@@ -5,9 +5,15 @@ metadata:
   name: ipv6.example.com
 spec:
   api:
-    dns: {}
+    loadBalancer:
+      class: Network
+      type: Public
   authorization:
     rbac: {}
+  awsLoadBalancerController:
+    enabled: true
+  certManager:
+    enabled: true
   channel: stable
   cloudControllerManager: {}
   cloudProvider: aws

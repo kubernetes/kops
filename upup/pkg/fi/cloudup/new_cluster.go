@@ -1100,6 +1100,12 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 		cluster.Spec.NonMasqueradeCIDR = "::/0"
 		cluster.Spec.ExternalCloudControllerManager = &api.CloudControllerManagerConfig{}
 		if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS {
+			cluster.Spec.AWSLoadBalancerController = &api.AWSLoadBalancerControllerConfig{
+				Enabled: fi.Bool(true),
+			}
+			cluster.Spec.CertManager = &api.CertManagerConfig{
+				Enabled: fi.Bool(true),
+			}
 			for i := range cluster.Spec.Subnets {
 				cluster.Spec.Subnets[i].IPv6CIDR = fmt.Sprintf("/64#%x", i)
 			}
@@ -1138,7 +1144,7 @@ func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
 	} else {
 		switch cluster.Spec.Topology.Masters {
 		case api.TopologyPublic:
-			if dns.IsGossipHostname(cluster.Name) {
+			if dns.IsGossipHostname(cluster.Name) || opt.IPv6 {
 				// gossip DNS names don't work outside the cluster, so we use a LoadBalancer instead
 				cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
 			} else {
@@ -1170,7 +1176,13 @@ func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
 
 	if cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.Class == "" && api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS {
 		switch opt.APILoadBalancerClass {
-		case "", "classic":
+		case "":
+			if opt.IPv6 {
+				cluster.Spec.API.LoadBalancer.Class = api.LoadBalancerClassNetwork
+			} else {
+				cluster.Spec.API.LoadBalancer.Class = api.LoadBalancerClassClassic
+			}
+		case "classic":
 			cluster.Spec.API.LoadBalancer.Class = api.LoadBalancerClassClassic
 		case "network":
 			cluster.Spec.API.LoadBalancer.Class = api.LoadBalancerClassNetwork
