@@ -151,7 +151,6 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-minimal-ipv6-example
     propagate_at_launch = true
     value               = "owned"
   }
-  target_group_arns   = [aws_lb_target_group.tcp-minimal-ipv6-example--bne5ih.id]
   vpc_zone_identifier = [aws_subnet.us-test-1a-minimal-ipv6-example-com.id]
 }
 
@@ -475,48 +474,6 @@ resource "aws_launch_template" "nodes-minimal-ipv6-example-com" {
   user_data = filebase64("${path.module}/data/aws_launch_template_nodes.minimal-ipv6.example.com_user_data")
 }
 
-resource "aws_lb" "api-minimal-ipv6-example-com" {
-  enable_cross_zone_load_balancing = false
-  internal                         = false
-  load_balancer_type               = "network"
-  name                             = "api-minimal-ipv6-example--jhj9te"
-  subnet_mapping {
-    subnet_id = aws_subnet.us-test-1a-minimal-ipv6-example-com.id
-  }
-  tags = {
-    "KubernetesCluster"                              = "minimal-ipv6.example.com"
-    "Name"                                           = "api.minimal-ipv6.example.com"
-    "kubernetes.io/cluster/minimal-ipv6.example.com" = "owned"
-  }
-}
-
-resource "aws_lb_listener" "api-minimal-ipv6-example-com-443" {
-  default_action {
-    target_group_arn = aws_lb_target_group.tcp-minimal-ipv6-example--bne5ih.id
-    type             = "forward"
-  }
-  load_balancer_arn = aws_lb.api-minimal-ipv6-example-com.id
-  port              = 443
-  protocol          = "TCP"
-}
-
-resource "aws_lb_target_group" "tcp-minimal-ipv6-example--bne5ih" {
-  health_check {
-    healthy_threshold   = 2
-    protocol            = "TCP"
-    unhealthy_threshold = 2
-  }
-  name     = "tcp-minimal-ipv6-example--bne5ih"
-  port     = 443
-  protocol = "TCP"
-  tags = {
-    "KubernetesCluster"                              = "minimal-ipv6.example.com"
-    "Name"                                           = "tcp-minimal-ipv6-example--bne5ih"
-    "kubernetes.io/cluster/minimal-ipv6.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.minimal-ipv6-example-com.id
-}
-
 resource "aws_nat_gateway" "us-test-1a-minimal-ipv6-example-com" {
   allocation_id = aws_eip.us-test-1a-minimal-ipv6-example-com.id
   subnet_id     = aws_subnet.us-test-1a-minimal-ipv6-example-com.id
@@ -555,28 +512,6 @@ resource "aws_route" "route-public-us-test-1a-__--0" {
   destination_ipv6_cidr_block = "::/0"
   gateway_id                  = aws_internet_gateway.minimal-ipv6-example-com.id
   route_table_id              = aws_route_table.public-us-test-1a-minimal-ipv6-example-com.id
-}
-
-resource "aws_route53_record" "api-minimal-ipv6-example-com" {
-  alias {
-    evaluate_target_health = false
-    name                   = aws_lb.api-minimal-ipv6-example-com.dns_name
-    zone_id                = aws_lb.api-minimal-ipv6-example-com.zone_id
-  }
-  name    = "api.minimal-ipv6.example.com"
-  type    = "A"
-  zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
-}
-
-resource "aws_route53_record" "api-minimal-ipv6-example-com-AAAA" {
-  alias {
-    evaluate_target_health = false
-    name                   = aws_lb.api-minimal-ipv6-example-com.dns_name
-    zone_id                = aws_lb.api-minimal-ipv6-example-com.zone_id
-  }
-  name    = "api.minimal-ipv6.example.com"
-  type    = "AAAA"
-  zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
 }
 
 resource "aws_route_table" "minimal-ipv6-example-com" {
@@ -764,17 +699,6 @@ resource "aws_s3_bucket_object" "nodeupconfig-nodes" {
   server_side_encryption = "AES256"
 }
 
-resource "aws_security_group" "api-elb-minimal-ipv6-example-com" {
-  description = "Security group for api ELB"
-  name        = "api-elb.minimal-ipv6.example.com"
-  tags = {
-    "KubernetesCluster"                              = "minimal-ipv6.example.com"
-    "Name"                                           = "api-elb.minimal-ipv6.example.com"
-    "kubernetes.io/cluster/minimal-ipv6.example.com" = "owned"
-  }
-  vpc_id = aws_vpc.minimal-ipv6-example-com.id
-}
-
 resource "aws_security_group" "masters-minimal-ipv6-example-com" {
   description = "Security group for masters"
   name        = "masters.minimal-ipv6.example.com"
@@ -957,33 +881,6 @@ resource "aws_security_group_rule" "from-nodes-minimal-ipv6-example-com-ingress-
   source_security_group_id = aws_security_group.nodes-minimal-ipv6-example-com.id
   to_port                  = 65535
   type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "https-elb-to-master" {
-  cidr_blocks       = ["172.20.0.0/16"]
-  from_port         = 443
-  protocol          = "tcp"
-  security_group_id = aws_security_group.masters-minimal-ipv6-example-com.id
-  to_port           = 443
-  type              = "ingress"
-}
-
-resource "aws_security_group_rule" "icmp-pmtu-api-elb-0-0-0-0--0" {
-  cidr_blocks       = ["0.0.0.0/0"]
-  from_port         = 3
-  protocol          = "icmp"
-  security_group_id = aws_security_group.masters-minimal-ipv6-example-com.id
-  to_port           = 4
-  type              = "ingress"
-}
-
-resource "aws_security_group_rule" "icmpv6-pmtu-api-elb-__--0" {
-  from_port         = -1
-  ipv6_cidr_blocks  = ["::/0"]
-  protocol          = "icmpv6"
-  security_group_id = aws_security_group.masters-minimal-ipv6-example-com.id
-  to_port           = -1
-  type              = "ingress"
 }
 
 resource "aws_subnet" "us-test-1a-minimal-ipv6-example-com" {

@@ -88,11 +88,6 @@
               "GroupTotalInstances"
             ]
           }
-        ],
-        "TargetGroupARNs": [
-          {
-            "Ref": "AWSElasticLoadBalancingV2TargetGrouptcpminimalipv6examplebne5ih"
-          }
         ]
       }
     },
@@ -870,66 +865,6 @@
         "IpProtocol": "udp"
       }
     },
-    "AWSEC2SecurityGroupIngresshttpselbtomaster": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersminimalipv6examplecom"
-        },
-        "FromPort": 443,
-        "ToPort": 443,
-        "IpProtocol": "tcp",
-        "CidrIp": "172.20.0.0/16"
-      }
-    },
-    "AWSEC2SecurityGroupIngressicmppmtuapielb00000": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersminimalipv6examplecom"
-        },
-        "FromPort": 3,
-        "ToPort": 4,
-        "IpProtocol": "icmp",
-        "CidrIp": "0.0.0.0/0"
-      }
-    },
-    "AWSEC2SecurityGroupIngressicmpv6pmtuapielb0": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersminimalipv6examplecom"
-        },
-        "FromPort": -1,
-        "ToPort": -1,
-        "IpProtocol": "icmpv6",
-        "CidrIpv6": "::/0"
-      }
-    },
-    "AWSEC2SecurityGroupapielbminimalipv6examplecom": {
-      "Type": "AWS::EC2::SecurityGroup",
-      "Properties": {
-        "GroupName": "api-elb.minimal-ipv6.example.com",
-        "VpcId": {
-          "Ref": "AWSEC2VPCminimalipv6examplecom"
-        },
-        "GroupDescription": "Security group for api ELB",
-        "Tags": [
-          {
-            "Key": "KubernetesCluster",
-            "Value": "minimal-ipv6.example.com"
-          },
-          {
-            "Key": "Name",
-            "Value": "api-elb.minimal-ipv6.example.com"
-          },
-          {
-            "Key": "kubernetes.io/cluster/minimal-ipv6.example.com",
-            "Value": "owned"
-          }
-        ]
-      }
-    },
     "AWSEC2SecurityGroupmastersminimalipv6examplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
@@ -1143,81 +1078,6 @@
             "Value": "owned"
           }
         ]
-      }
-    },
-    "AWSElasticLoadBalancingV2Listenerapiminimalipv6examplecom443": {
-      "Type": "AWS::ElasticLoadBalancingV2::Listener",
-      "Properties": {
-        "DefaultActions": [
-          {
-            "Type": "forward",
-            "TargetGroupArn": {
-              "Ref": "AWSElasticLoadBalancingV2TargetGrouptcpminimalipv6examplebne5ih"
-            }
-          }
-        ],
-        "LoadBalancerArn": {
-          "Ref": "AWSElasticLoadBalancingV2LoadBalancerapiminimalipv6examplecom"
-        },
-        "Port": 443,
-        "Protocol": "TCP"
-      }
-    },
-    "AWSElasticLoadBalancingV2LoadBalancerapiminimalipv6examplecom": {
-      "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
-      "Properties": {
-        "Name": "api-minimal-ipv6-example--jhj9te",
-        "Scheme": "internet-facing",
-        "SubnetMappings": [
-          {
-            "SubnetId": {
-              "Ref": "AWSEC2Subnetustest1aminimalipv6examplecom"
-            }
-          }
-        ],
-        "Type": "network",
-        "Tags": [
-          {
-            "Key": "KubernetesCluster",
-            "Value": "minimal-ipv6.example.com"
-          },
-          {
-            "Key": "Name",
-            "Value": "api.minimal-ipv6.example.com"
-          },
-          {
-            "Key": "kubernetes.io/cluster/minimal-ipv6.example.com",
-            "Value": "owned"
-          }
-        ]
-      }
-    },
-    "AWSElasticLoadBalancingV2TargetGrouptcpminimalipv6examplebne5ih": {
-      "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
-      "Properties": {
-        "Name": "tcp-minimal-ipv6-example--bne5ih",
-        "Port": 443,
-        "Protocol": "TCP",
-        "VpcId": {
-          "Ref": "AWSEC2VPCminimalipv6examplecom"
-        },
-        "Tags": [
-          {
-            "Key": "KubernetesCluster",
-            "Value": "minimal-ipv6.example.com"
-          },
-          {
-            "Key": "Name",
-            "Value": "tcp-minimal-ipv6-example--bne5ih"
-          },
-          {
-            "Key": "kubernetes.io/cluster/minimal-ipv6.example.com",
-            "Value": "owned"
-          }
-        ],
-        "HealthCheckProtocol": "TCP",
-        "HealthyThresholdCount": 2,
-        "UnhealthyThresholdCount": 2
       }
     },
     "AWSIAMInstanceProfilemastersminimalipv6examplecom": {
@@ -1612,52 +1472,6 @@
             "Value": "owned"
           }
         ]
-      }
-    },
-    "AWSRoute53RecordSetapiminimalipv6examplecom": {
-      "Type": "AWS::Route53::RecordSet",
-      "Properties": {
-        "Name": "api.minimal-ipv6.example.com",
-        "Type": "A",
-        "AliasTarget": {
-          "DNSName": {
-            "Fn::GetAtt": [
-              "AWSElasticLoadBalancingV2LoadBalancerapiminimalipv6examplecom",
-              "DNSName"
-            ]
-          },
-          "HostedZoneId": {
-            "Fn::GetAtt": [
-              "AWSElasticLoadBalancingV2LoadBalancerapiminimalipv6examplecom",
-              "CanonicalHostedZoneID"
-            ]
-          },
-          "EvaluateTargetHealth": false
-        },
-        "HostedZoneId": "/hostedzone/Z1AFAKE1ZON3YO"
-      }
-    },
-    "AWSRoute53RecordSetapiminimalipv6examplecomAAAA": {
-      "Type": "AWS::Route53::RecordSet",
-      "Properties": {
-        "Name": "api.minimal-ipv6.example.com",
-        "Type": "AAAA",
-        "AliasTarget": {
-          "DNSName": {
-            "Fn::GetAtt": [
-              "AWSElasticLoadBalancingV2LoadBalancerapiminimalipv6examplecom",
-              "DNSName"
-            ]
-          },
-          "HostedZoneId": {
-            "Fn::GetAtt": [
-              "AWSElasticLoadBalancingV2LoadBalancerapiminimalipv6examplecom",
-              "CanonicalHostedZoneID"
-            ]
-          },
-          "EvaluateTargetHealth": false
-        },
-        "HostedZoneId": "/hostedzone/Z1AFAKE1ZON3YO"
       }
     }
   }

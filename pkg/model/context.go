@@ -259,6 +259,9 @@ func (b *KopsModelContext) UsesSSHBastion() bool {
 
 // UseLoadBalancerForAPI checks if we are using a load balancer for the kubeapi
 func (b *KopsModelContext) UseLoadBalancerForAPI() bool {
+	if b.IsIPv6Only() {
+		return false
+	}
 	if b.Cluster.Spec.API == nil {
 		return false
 	}
