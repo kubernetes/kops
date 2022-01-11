@@ -908,14 +908,20 @@ func AddAWSLoadbalancerControllerPermissions(p *Policy) {
 		"ec2:DescribeNetworkInterfaces",
 		"elasticloadbalancing:DescribeTags",
 		"elasticloadbalancing:DescribeTargetGroupAttributes",
+		"elasticloadbalancing:DescribeLoadBalancerAttributes",
 		"elasticloadbalancing:DescribeRules",
+		"elasticloadbalancing:DescribeListeners",
 		"elasticloadbalancing:DescribeTargetHealth",
 		"elasticloadbalancing:DescribeListenerCertificates",
+		"elasticloadbalancing:DescribeLoadBalancers",
+		"elasticloadbalancing:DescribeTargetGroups",
+		"ec2:DescribeSecurityGroups",
+		"ec2:DescribeSubnets",
+		"ec2:DescribeInstances",
+		"ec2:DescribeVpcs",
 		"elasticloadbalancing:CreateRule",
 		"acm:ListCertificates",
 		"acm:DescribeCertificate",
-	)
-	p.clusterTaggedAction.Insert(
 		"ec2:AuthorizeSecurityGroupIngress", // aws.go
 		"ec2:DeleteSecurityGroup",           // aws.go
 		"ec2:RevokeSecurityGroupIngress",    // aws.go
@@ -923,6 +929,13 @@ func AddAWSLoadbalancerControllerPermissions(p *Policy) {
 		"elasticloadbalancing:ModifyTargetGroupAttributes",
 		"elasticloadbalancing:ModifyRule",
 		"elasticloadbalancing:DeleteRule",
+		"elasticloadbalancing:CreateTargetGroup",
+		"elasticloadbalancing:CreateLoadBalancer",
+		"elasticloadbalancing:CreateListener",
+		"elasticloadbalancing:RegisterTargets",
+		"elasticloadbalancing:ModifyListener",
+		"elasticloadbalancing:DeregisterTargets",
+		"elasticloadbalancing:DeleteTargetGroup",
 
 		"elasticloadbalancing:AddTags",
 		"elasticloadbalancing:RemoveTags",

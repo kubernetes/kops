@@ -4,34 +4,38 @@
       "Action": [
         "acm:DescribeCertificate",
         "acm:ListCertificates",
+        "ec2:AuthorizeSecurityGroupIngress",
+        "ec2:DeleteSecurityGroup",
         "ec2:DescribeAvailabilityZones",
+        "ec2:DescribeInstances",
         "ec2:DescribeNetworkInterfaces",
+        "ec2:DescribeSecurityGroups",
+        "ec2:DescribeSubnets",
+        "ec2:DescribeVpcs",
+        "ec2:RevokeSecurityGroupIngress",
+        "elasticloadbalancing:AddTags",
+        "elasticloadbalancing:CreateListener",
+        "elasticloadbalancing:CreateLoadBalancer",
         "elasticloadbalancing:CreateRule",
+        "elasticloadbalancing:CreateTargetGroup",
+        "elasticloadbalancing:DeleteRule",
+        "elasticloadbalancing:DeleteTargetGroup",
+        "elasticloadbalancing:DeregisterTargets",
         "elasticloadbalancing:DescribeListenerCertificates",
+        "elasticloadbalancing:DescribeListeners",
+        "elasticloadbalancing:DescribeLoadBalancerAttributes",
+        "elasticloadbalancing:DescribeLoadBalancers",
         "elasticloadbalancing:DescribeRules",
         "elasticloadbalancing:DescribeTags",
         "elasticloadbalancing:DescribeTargetGroupAttributes",
-        "elasticloadbalancing:DescribeTargetHealth"
-      ],
-      "Effect": "Allow",
-      "Resource": "*"
-    },
-    {
-      "Action": [
-        "ec2:AuthorizeSecurityGroupIngress",
-        "ec2:DeleteSecurityGroup",
-        "ec2:RevokeSecurityGroupIngress",
-        "elasticloadbalancing:AddTags",
-        "elasticloadbalancing:DeleteRule",
+        "elasticloadbalancing:DescribeTargetGroups",
+        "elasticloadbalancing:DescribeTargetHealth",
+        "elasticloadbalancing:ModifyListener",
         "elasticloadbalancing:ModifyRule",
         "elasticloadbalancing:ModifyTargetGroupAttributes",
+        "elasticloadbalancing:RegisterTargets",
         "elasticloadbalancing:RemoveTags"
       ],
-      "Condition": {
-        "StringEquals": {
-          "aws:ResourceTag/KubernetesCluster": "minimal.example.com"
-        }
-      },
       "Effect": "Allow",
       "Resource": "*"
     }
