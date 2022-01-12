@@ -48,14 +48,14 @@ metadata:
     service.beta.kubernetes.io/aws-load-balancer-healthcheck-protocol: "tcp"
 #  service.beta.kubernetes.io/aws-load-balancer-healthcheck-path: "/healthz"
     dns.alpha.kubernetes.io/external: "{{ .MasterPublicName }}"
-  name: apiserver-public
+  name: kube-apiserver
   namespace: kube-system
 spec:
-  selector:
-    k8s-app: kube-apiserver 
+  clusterIP: None
   ports:
     - protocol: TCP
       port: 443
       targetPort: 443
-  type: LoadBalancer
+  selector:
+    k8s-app: kube-apiserver
 {{ end }}

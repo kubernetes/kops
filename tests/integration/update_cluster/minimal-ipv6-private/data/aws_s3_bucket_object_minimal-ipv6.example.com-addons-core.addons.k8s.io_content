@@ -73,13 +73,13 @@ metadata:
     addon.kops.k8s.io/name: core.addons.k8s.io
     app.kubernetes.io/managed-by: kops
     k8s-addon: core.addons.k8s.io
-  name: apiserver-public
+  name: kube-apiserver
   namespace: kube-system
 spec:
+  clusterIP: None
   ports:
   - port: 443
     protocol: TCP
     targetPort: 443
   selector:
     k8s-app: kube-apiserver
-  type: LoadBalancer
