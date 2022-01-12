@@ -265,6 +265,7 @@ type OpenstackCloud interface {
 	ListAvailabilityZones(serviceClient *gophercloud.ServiceClient) ([]az.AvailabilityZone, error)
 	AssociateToPool(server *servers.Server, poolID string, opts v2pools.CreateMemberOpts) (*v2pools.Member, error)
 	CreatePool(opts v2pools.CreateOpts) (*v2pools.Pool, error)
+	CreatePoolMonitor(opts monitors.CreateOpts) (*monitors.Monitor, error)
 	GetPool(poolID string, memberID string) (*v2pools.Member, error)
 	ListPools(v2pools.ListOpts) ([]v2pools.Pool, error)
 
