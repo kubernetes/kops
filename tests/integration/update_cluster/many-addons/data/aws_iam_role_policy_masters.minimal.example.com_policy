@@ -179,6 +179,7 @@
         "ec2:DescribeTags",
         "ec2:DescribeVolumes",
         "ec2:DescribeVolumesModifications",
+        "ec2:DescribeVpcPeeringConnections",
         "ec2:DescribeVpcs",
         "ec2:DetachNetworkInterface",
         "ec2:ModifyNetworkInterfaceAttribute",

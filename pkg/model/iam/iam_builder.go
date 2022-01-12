@@ -915,6 +915,7 @@ func AddAWSLoadbalancerControllerPermissions(p *Policy) {
 		"elasticloadbalancing:DescribeListenerCertificates",
 		"elasticloadbalancing:DescribeLoadBalancers",
 		"elasticloadbalancing:DescribeTargetGroups",
+		"ec2:DescribeVpcPeeringConnections",
 		"ec2:DescribeSecurityGroups",
 		"ec2:DescribeSubnets",
 		"ec2:DescribeInstances",

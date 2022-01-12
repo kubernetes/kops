@@ -11,6 +11,7 @@
         "ec2:DescribeNetworkInterfaces",
         "ec2:DescribeSecurityGroups",
         "ec2:DescribeSubnets",
+        "ec2:DescribeVpcPeeringConnections",
         "ec2:DescribeVpcs",
         "ec2:RevokeSecurityGroupIngress",
         "elasticloadbalancing:AddTags",
