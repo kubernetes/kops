@@ -54,3 +54,32 @@ subjects:
   kind: ServiceAccount
   name: kube-proxy
   namespace: kube-system
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    dns.alpha.kubernetes.io/external: api.minimal-ipv6.example.com
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-port: "443"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-protocol: tcp
+    service.beta.kubernetes.io/aws-load-balancer-ip-address-type: dualstack
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+    service.beta.kubernetes.io/aws-load-balancer-type: external
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: core.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: core.addons.k8s.io
+  name: apiserver-public
+  namespace: kube-system
+spec:
+  ports:
+  - port: 443
+    protocol: TCP
+    targetPort: 443
+  selector:
+    k8s-app: kube-apiserver
+  type: LoadBalancer

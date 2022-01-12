@@ -13,7 +13,7 @@ spec:
       k8s-addon: kops-controller.addons.k8s.io
     version: 9.99.0
   - manifest: core.addons.k8s.io/v1.4.0.yaml
-    manifestHash: 18233793a8442224d052e44891e737c67ccfb4e051e95216392319653f4cb0e5
+    manifestHash: 9b6ce2b0134b5bef28284b7e4d60332c0944a8e17829978b0b6a878854e2e3ad
     name: core.addons.k8s.io
     selector:
       k8s-addon: core.addons.k8s.io
