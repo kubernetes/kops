@@ -324,6 +324,13 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		c.AddTask(listenerTask)
 
+		monitorTask := &openstacktasks.PoolMonitor{
+			Name:      lbTask.Name,
+			Pool:      poolTask,
+			Lifecycle: b.Lifecycle,
+		}
+		c.AddTask(monitorTask)
+
 		ifName, err := b.GetNetworkName()
 		if err != nil {
 			return err
@@ -340,6 +347,7 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 
 			c.AddTask(associateTask)
+
 		}
 
 	}
