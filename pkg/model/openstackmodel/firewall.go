@@ -26,6 +26,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/wellknownports"
+	"k8s.io/utils/net"
 
 	sg "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
@@ -35,6 +36,7 @@ const (
 	IPProtocolTCP   = string(rules.ProtocolTCP)
 	IPProtocolUDP   = string(rules.ProtocolUDP)
 	IPV4            = string(rules.EtherType4)
+	IPV6            = string(rules.EtherType6)
 	ProtocolIPEncap = "4" // IP in IPv4/IPv6
 )
 
@@ -98,11 +100,15 @@ func (b *FirewallModelBuilder) addSSHRules(c *fi.ModelBuilderContext, sgMap map[
 
 	if b.UsesSSHBastion() {
 		for _, sshAccess := range b.Cluster.Spec.SSHAccess {
+			etherType := IPV4
+			if !net.IsIPv4CIDRString(sshAccess) {
+				etherType = IPV6
+			}
 			sshRule := &openstacktasks.SecurityGroupRule{
 				Lifecycle:      b.Lifecycle,
 				Direction:      s(string(rules.DirIngress)),
 				Protocol:       s(string(rules.ProtocolTCP)),
-				EtherType:      s(string(rules.EtherType4)),
+				EtherType:      s(string(etherType)),
 				PortRangeMin:   i(22),
 				PortRangeMax:   i(22),
 				RemoteIPPrefix: s(sshAccess),
@@ -114,11 +120,15 @@ func (b *FirewallModelBuilder) addSSHRules(c *fi.ModelBuilderContext, sgMap map[
 		b.addDirectionalGroupRule(c, nodeSG, bastionSG, sshIngress)
 	} else {
 		for _, sshAccess := range b.Cluster.Spec.SSHAccess {
+			etherType := IPV4
+			if !net.IsIPv4CIDRString(sshAccess) {
+				etherType = IPV6
+			}
 			sshRule := &openstacktasks.SecurityGroupRule{
 				Lifecycle:      b.Lifecycle,
 				Direction:      s(string(rules.DirIngress)),
 				Protocol:       s(string(rules.ProtocolTCP)),
-				EtherType:      s(string(rules.EtherType4)),
+				EtherType:      s(string(etherType)),
 				PortRangeMin:   i(22),
 				PortRangeMax:   i(22),
 				RemoteIPPrefix: s(sshAccess),
@@ -240,11 +250,15 @@ func (b *FirewallModelBuilder) addHTTPSRules(c *fi.ModelBuilderContext, sgMap ma
 		if !useVIPACL {
 			// Allow API Access to the lb sg
 			for _, apiAccess := range b.Cluster.Spec.KubernetesAPIAccess {
+				etherType := IPV4
+				if !net.IsIPv4CIDRString(apiAccess) {
+					etherType = IPV6
+				}
 				b.addDirectionalGroupRule(c, lbSG, nil, &openstacktasks.SecurityGroupRule{
 					Lifecycle:      b.Lifecycle,
 					Direction:      s(string(rules.DirIngress)),
 					Protocol:       s(IPProtocolTCP),
-					EtherType:      s(IPV4),
+					EtherType:      s(etherType),
 					PortRangeMin:   i(443),
 					PortRangeMax:   i(443),
 					RemoteIPPrefix: s(apiAccess),
@@ -270,11 +284,15 @@ func (b *FirewallModelBuilder) addHTTPSRules(c *fi.ModelBuilderContext, sgMap ma
 	} else {
 		// Allow the masters to receive connections from KubernetesAPIAccess
 		for _, apiAccess := range b.Cluster.Spec.KubernetesAPIAccess {
+			etherType := IPV4
+			if !net.IsIPv4CIDRString(apiAccess) {
+				etherType = IPV6
+			}
 			b.addDirectionalGroupRule(c, masterSG, nil, &openstacktasks.SecurityGroupRule{
 				Lifecycle:      b.Lifecycle,
 				Direction:      s(string(rules.DirIngress)),
 				Protocol:       s(IPProtocolTCP),
-				EtherType:      s(IPV4),
+				EtherType:      s(etherType),
 				PortRangeMin:   i(443),
 				PortRangeMax:   i(443),
 				RemoteIPPrefix: s(apiAccess),
