@@ -24,7 +24,6 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
-	"k8s.io/utils/net"
 )
 
 // +kops:fitask
@@ -56,40 +55,17 @@ func (s *LBListener) CompareWithID() *string {
 	return s.ID
 }
 
-func NewLBListenerTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle, lb *listeners.Listener, find *LBListener) (*LBListener, error) {
-	loadbalancer, err := cloud.GetLB(lb.ID)
-	if err != nil {
-		return nil, fmt.Errorf("NewLBListenerTaskFromCloud: Failed to get Loadbalancer %s: %v", lb.Name, err)
-	}
-
-	vip := loadbalancer.VipAddress
-	var AllowedCIDRs []string
-
-	// Check if allowed CIDRs matched VIP type
-	if net.IsIPv4String(vip) {
-		for _, CIDR := range lb.AllowedCIDRs {
-			if net.IsIPv4CIDRString(CIDR) {
-				AllowedCIDRs = append(AllowedCIDRs, CIDR)
-			}
-		}
-	} else {
-		for _, CIDR := range lb.AllowedCIDRs {
-			if net.IsIPv6CIDRString(CIDR) {
-				AllowedCIDRs = append(AllowedCIDRs, CIDR)
-			}
-		}
-	}
-
+func NewLBListenerTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle, listener *listeners.Listener, find *LBListener) (*LBListener, error) {
 	// sort for consistent comparison
-	sort.Strings(AllowedCIDRs)
+	sort.Strings(listener.AllowedCIDRs)
 	listenerTask := &LBListener{
-		ID:           fi.String(lb.ID),
-		Name:         fi.String(lb.Name),
-		AllowedCIDRs: AllowedCIDRs,
+		ID:           fi.String(listener.ID),
+		Name:         fi.String(listener.Name),
+		AllowedCIDRs: listener.AllowedCIDRs,
 		Lifecycle:    lifecycle,
 	}
 
-	for _, pool := range lb.Pools {
+	for _, pool := range listener.Pools {
 		poolTask, err := NewLBPoolTaskFromCloud(cloud, lifecycle, &pool, find.Pool)
 		if err != nil {
 			return nil, fmt.Errorf("NewLBListenerTaskFromCloud: Failed to create new LBListener task for pool %s: %v", pool.Name, err)
@@ -161,35 +137,14 @@ func (_ *LBListener) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, chan
 		klog.V(2).Infof("Creating LB with Name: %q", fi.StringValue(e.Name))
 		listeneropts := listeners.CreateOpts{
 			Name:           fi.StringValue(e.Name),
-			DefaultPoolID:  *e.Pool.ID,
-			LoadbalancerID: *e.Pool.Loadbalancer.ID,
+			DefaultPoolID:  fi.StringValue(e.Pool.ID),
+			LoadbalancerID: fi.StringValue(e.Pool.Loadbalancer.ID),
 			Protocol:       listeners.ProtocolTCP,
 			ProtocolPort:   443,
 		}
 
-		// Check if Allowed CIDRs match VIP Type
-		loadbalancer, err := t.Cloud.GetLB(*e.Pool.Loadbalancer.ID)
-		if err != nil {
-			return fmt.Errorf("RenderOpenstack: Failed to get Loadbalancer %s: %v", *e.Pool.Loadbalancer.Name, err)
-		}
-
-		vip := loadbalancer.VipAddress
-		var AllowedCIDRs []string
 		if useVIPACL {
-			if net.IsIPv4String(vip) {
-				for _, CIDR := range e.AllowedCIDRs {
-					if net.IsIPv4CIDRString(CIDR) {
-						AllowedCIDRs = append(AllowedCIDRs, CIDR)
-					}
-				}
-			} else {
-				for _, CIDR := range e.AllowedCIDRs {
-					if net.IsIPv6CIDRString(CIDR) {
-						AllowedCIDRs = append(AllowedCIDRs, CIDR)
-					}
-				}
-			}
-			listeneropts.AllowedCIDRs = AllowedCIDRs
+			listeneropts.AllowedCIDRs = e.AllowedCIDRs
 		}
 
 		listener, err := t.Cloud.CreateListener(listeneropts)
