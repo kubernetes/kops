@@ -745,7 +745,7 @@ spec:
         - --ingress-class=alb
         - "--default-tags={{ CloudLabels }}"
         - --aws-region={{ Region }}
-        image: amazon/aws-alb-ingress-controller:{{ or .AWSLoadBalancerController.Version "v2.3.1" }}
+        image: olemarkus/aws-load-balancer-controller:{{ or .AWSLoadBalancerController.Version "v2.3.2" }}
         livenessProbe:
           failureThreshold: 2
           httpGet:
