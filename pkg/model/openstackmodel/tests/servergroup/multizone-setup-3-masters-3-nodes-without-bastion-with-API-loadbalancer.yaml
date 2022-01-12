@@ -839,6 +839,28 @@ ServerGroup:
   - anti-affinity
 Weight: 1
 ---
+ID: null
+Lifecycle: Sync
+Name: master-public-name
+Pool:
+  ID: null
+  Lifecycle: Sync
+  Loadbalancer:
+    ID: null
+    Lifecycle: Sync
+    Name: master-public-name
+    PortID: null
+    SecurityGroup:
+      Description: null
+      ID: null
+      Lifecycle: ""
+      Name: master-public-name
+      RemoveExtraRules: null
+      RemoveGroup: false
+    Subnet: subnet-a.cluster
+    VipSubnet: null
+  Name: master-public-name-https
+---
 AdditionalSecurityGroups: null
 ID: null
 InstanceGroupName: master-a
