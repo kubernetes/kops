@@ -33,6 +33,8 @@ spec:
       name: a
     memoryRequest: 100Mi
     name: events
+  externalDns:
+    provider: external-dns
   iam:
     allowContainerRegistry: true
     legacy: false

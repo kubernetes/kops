@@ -40,7 +40,7 @@ spec:
           readOnlyRootFilesystem: true
           capabilities:
             drop: ["ALL"]
-        image: k8s.gcr.io/external-dns/external-dns:v0.10.1
+        image: olemarkus/external-dns:ipv6
         args:
 {{ range $arg := ExternalDnsArgv }}
         - "{{ $arg }}"
