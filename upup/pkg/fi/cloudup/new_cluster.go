@@ -1106,6 +1106,9 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 			cluster.Spec.CertManager = &api.CertManagerConfig{
 				Enabled: fi.Bool(true),
 			}
+			cluster.Spec.ExternalDNS = &api.ExternalDNSConfig{
+				Provider: api.ExternalDNSProviderExternalDNS,
+			}
 			for i := range cluster.Spec.Subnets {
 				cluster.Spec.Subnets[i].IPv6CIDR = fmt.Sprintf("/64#%x", i)
 			}

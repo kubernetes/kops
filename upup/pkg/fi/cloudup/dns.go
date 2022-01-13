@@ -256,6 +256,7 @@ func buildPrecreateDNSHostnames(cluster *kops.Cluster) []recordKey {
 	}
 
 	hasAPILoadbalancer := cluster.Spec.API != nil && cluster.Spec.API.LoadBalancer != nil
+	hasAPILoadbalancer = false
 	useLBForInternalAPI := hasAPILoadbalancer && cluster.Spec.API.LoadBalancer.UseForInternalAPI
 
 	if cluster.Spec.MasterPublicName != "" && !hasAPILoadbalancer {
