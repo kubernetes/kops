@@ -405,8 +405,8 @@ func setupVPC(opt *NewClusterOptions, cluster *api.Cluster) error {
 				IgnoreAZ: fi.Bool(opt.OpenstackStorageIgnoreAZ),
 			},
 			Monitor: &api.OpenstackMonitor{
-				Delay:      fi.String("1m"),
-				Timeout:    fi.String("30s"),
+				Delay:      fi.String("15s"),
+				Timeout:    fi.String("10s"),
 				MaxRetries: fi.Int(3),
 			},
 		}
