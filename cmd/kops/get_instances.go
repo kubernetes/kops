@@ -56,7 +56,7 @@ var (
 
 type renderableCloudInstance struct {
 	ID            string   `json:"id"`
-	NodeName      string   `json:"nodeName"`
+	NodeName      string   `json:"nodeName,omitempty"`
 	Status        string   `json:"status"`
 	Roles         []string `json:"roles"`
 	InternalIP    string   `json:"internalIP"`
@@ -217,13 +217,15 @@ func asRenderable(instances []*cloudinstances.CloudInstance) []*renderableCloudI
 	for i, ci := range instances {
 		arr[i] = &renderableCloudInstance{
 			ID:            ci.ID,
-			NodeName:      ci.Node.Name,
 			Status:        ci.Status,
 			Roles:         ci.Roles,
 			InternalIP:    ci.PrivateIP,
 			InstanceGroup: ci.CloudInstanceGroup.HumanName,
 			MachineType:   ci.MachineType,
 			State:         string(ci.State),
+		}
+		if ci.Node != nil {
+			arr[i].NodeName = ci.Node.Name
 		}
 	}
 	return arr
