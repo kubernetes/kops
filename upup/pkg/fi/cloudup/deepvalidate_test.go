@@ -116,8 +116,8 @@ func TestDeepValidate_DuplicateZones(t *testing.T) {
 func TestDeepValidate_ExtraMasterZone(t *testing.T) {
 	c := buildDefaultCluster(t)
 	c.Spec.Subnets = []kopsapi.ClusterSubnetSpec{
-		{Name: "mock1a", Zone: "us-mock-1a", CIDR: "172.20.1.0/24"},
-		{Name: "mock1b", Zone: "us-mock-1b", CIDR: "172.20.2.0/24"},
+		{Name: "mock1a", Zone: "us-mock-1a", CIDR: "172.20.1.0/24", Type: kopsapi.SubnetTypePublic},
+		{Name: "mock1b", Zone: "us-mock-1b", CIDR: "172.20.2.0/24", Type: kopsapi.SubnetTypePublic},
 	}
 	var groups []*kopsapi.InstanceGroup
 	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-mock-1a"))
