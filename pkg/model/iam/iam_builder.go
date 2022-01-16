@@ -94,6 +94,9 @@ func (p *Policy) AsJSON() (string, error) {
 			},
 		})
 	}
+	if len(p.Statement) == 0 {
+		return "", fmt.Errorf("policy contains no statement")
+	}
 
 	j, err := json.MarshalIndent(p, "", "  ")
 	if err != nil {
