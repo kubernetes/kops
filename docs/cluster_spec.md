@@ -257,6 +257,10 @@ spec:
     - 12.34.56.78/32
 ```
 
+{{ kops_feature_table(kops_added_default='1.23') }}
+
+In AWS, instead of listing all CIDRs, it is possible to specify a pre-existing [AWS Prefix List](https://docs.aws.amazon.com/vpc/latest/userguide/managed-prefix-lists.html) ID.
+
 ## kubernetesApiAccess
 
 This array configures the CIDRs that are able to access the kubernetes API. On AWS this is manifested as inbound security group rules on the ELB or master security groups.
@@ -268,6 +272,10 @@ spec:
   kubernetesApiAccess:
     - 12.34.56.78/32
 ```
+
+{{ kops_feature_table(kops_added_default='1.23') }}
+
+In AWS, instead of listing all CIDRs, it is possible to specify a pre-existing [AWS Prefix List](https://docs.aws.amazon.com/vpc/latest/userguide/managed-prefix-lists.html) ID.
 
 ## cluster.spec Subnet Keys
 
