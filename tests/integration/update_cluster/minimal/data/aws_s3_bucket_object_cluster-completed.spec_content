@@ -41,8 +41,6 @@ spec:
     version: 3.4.13
   externalDns:
     provider: dns-controller
-  iam:
-    legacy: false
   keyStore: memfs://clusters.example.com/minimal.example.com/pki
   kubeAPIServer:
     allowPrivileged: true
