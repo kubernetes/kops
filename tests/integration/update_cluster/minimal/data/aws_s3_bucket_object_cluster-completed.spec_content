@@ -123,7 +123,6 @@ spec:
       leaderElect: true
     logLevel: 2
   kubelet:
-    anonymousAuth: false
     cgroupDriver: systemd
     cgroupRoot: /
     cloudProvider: aws
@@ -140,7 +139,6 @@ spec:
   kubernetesVersion: 1.21.0
   masterInternalName: api.internal.minimal.example.com
   masterKubelet:
-    anonymousAuth: false
     cgroupDriver: systemd
     cgroupRoot: /
     cloudProvider: aws
