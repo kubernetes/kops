@@ -721,6 +721,42 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
+    "AWSEC2SecurityGroupIngressfrom00000ingresstcp22to22masterscomplexexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp",
+        "SourcePrefixListId": "pl-66666666"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfrom00000ingresstcp22to22nodescomplexexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodescomplexexamplecom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp",
+        "SourcePrefixListId": "pl-66666666"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfrom00000ingresstcp443to443masterscomplexexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
+        },
+        "FromPort": 443,
+        "ToPort": 443,
+        "IpProtocol": "tcp",
+        "SourcePrefixListId": "pl-44444444"
+      }
+    },
     "AWSEC2SecurityGroupIngressfrom111024ingresstcp443to443masterscomplexexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
@@ -961,6 +997,18 @@
         "ToPort": 8443,
         "IpProtocol": "tcp",
         "CidrIp": "1.1.1.0/24"
+      }
+    },
+    "AWSEC2SecurityGroupIngresstcpapipl44444444": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
+        },
+        "FromPort": 8443,
+        "ToPort": 8443,
+        "IpProtocol": "tcp",
+        "SourcePrefixListId": "pl-44444444"
       }
     },
     "AWSEC2SecurityGroupapielbcomplexexamplecom": {
