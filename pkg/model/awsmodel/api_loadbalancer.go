@@ -19,6 +19,7 @@ package awsmodel
 import (
 	"fmt"
 	"sort"
+	"strings"
 	"time"
 
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -368,11 +369,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 					SecurityGroup: lbSG,
 					ToPort:        fi.Int64(443),
 				}
-				if utils.IsIPv6CIDR(cidr) {
-					t.IPv6CIDR = fi.String(cidr)
-				} else {
-					t.CIDR = fi.String(cidr)
-				}
+				t.SetCidrOrPrefix(cidr)
 				AddDirectionalGroupRule(c, t)
 			}
 
@@ -418,35 +415,36 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 						SecurityGroup: masterGroup.Task,
 						ToPort:        fi.Int64(443),
 					}
-					if utils.IsIPv6CIDR(cidr) {
-						t.IPv6CIDR = fi.String(cidr)
-					} else {
-						t.CIDR = fi.String(cidr)
-					}
+					t.SetCidrOrPrefix(cidr)
 					AddDirectionalGroupRule(c, t)
 				}
 
-				// Allow ICMP traffic required for PMTU discovery
-				if utils.IsIPv6CIDR(cidr) {
-					c.AddTask(&awstasks.SecurityGroupRule{
+				if strings.HasPrefix(cidr, "pl-") {
+					// In case of a prefix list we do not add a rule for ICMP traffic for PMTU discovery.
+					// This would require calling out to AWS to check whether the prefix list is IPv4 or IPv6.
+				} else if utils.IsIPv6CIDR(cidr) {
+					// Allow ICMP traffic required for PMTU discovery
+					t := &awstasks.SecurityGroupRule{
 						Name:          fi.String("icmpv6-pmtu-api-elb-" + cidr),
 						Lifecycle:     b.SecurityLifecycle,
-						IPv6CIDR:      fi.String(cidr),
 						FromPort:      fi.Int64(-1),
 						Protocol:      fi.String("icmpv6"),
 						SecurityGroup: masterGroup.Task,
 						ToPort:        fi.Int64(-1),
-					})
+					}
+					t.SetCidrOrPrefix(cidr)
+					c.AddTask(t)
 				} else {
-					c.AddTask(&awstasks.SecurityGroupRule{
+					t := &awstasks.SecurityGroupRule{
 						Name:          fi.String("icmp-pmtu-api-elb-" + cidr),
 						Lifecycle:     b.SecurityLifecycle,
-						CIDR:          fi.String(cidr),
 						FromPort:      fi.Int64(3),
 						Protocol:      fi.String("icmp"),
 						SecurityGroup: masterGroup.Task,
 						ToPort:        fi.Int64(4),
-					})
+					}
+					t.SetCidrOrPrefix(cidr)
+					c.AddTask(t)
 				}
 
 				if b.Cluster.Spec.API != nil && b.Cluster.Spec.API.LoadBalancer != nil && b.Cluster.Spec.API.LoadBalancer.SSLCertificate != "" {
@@ -459,11 +457,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 						SecurityGroup: masterGroup.Task,
 						ToPort:        fi.Int64(8443),
 					}
-					if utils.IsIPv6CIDR(cidr) {
-						t.IPv6CIDR = fi.String(cidr)
-					} else {
-						t.CIDR = fi.String(cidr)
-					}
+					t.SetCidrOrPrefix(cidr)
 					c.AddTask(t)
 				}
 			}
