@@ -26,7 +26,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
-	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 const (
@@ -219,11 +218,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			FromPort:      fi.Int64(22),
 			ToPort:        fi.Int64(22),
 		}
-		if utils.IsIPv6CIDR(sshAccess) {
-			t.IPv6CIDR = fi.String(sshAccess)
-		} else {
-			t.CIDR = fi.String(sshAccess)
-		}
+		t.SetCidrOrPrefix(sshAccess)
 		AddDirectionalGroupRule(c, t)
 	}
 

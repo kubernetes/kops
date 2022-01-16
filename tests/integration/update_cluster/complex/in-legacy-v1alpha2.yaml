@@ -21,6 +21,7 @@ spec:
         bucket: access-log-example
   kubernetesApiAccess:
   - 1.1.1.0/24
+  - pl-44444444
   channel: stable
   cloudProvider: aws
   cloudLabels:
@@ -66,6 +67,7 @@ spec:
       - 990F4193972F2BECF12DDEDA5237F9C952F20D9E
   sshAccess:
   - 1.1.1.1/32
+  - pl-66666666
   sshKeyName: ""
   target:
     terraform:

@@ -85,17 +85,35 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 
 	// SSHAccess
 	for i, cidr := range spec.SSHAccess {
-		allErrs = append(allErrs, validateCIDR(cidr, fieldPath.Child("sshAccess").Index(i))...)
+		if strings.HasPrefix(cidr, "pl-") {
+			if kops.CloudProviderID(spec.CloudProvider) != kops.CloudProviderAWS {
+				allErrs = append(allErrs, field.Invalid(fieldPath.Child("sshAccess").Index(i), cidr, "Prefix List ID only supported for AWS"))
+			}
+		} else {
+			allErrs = append(allErrs, validateCIDR(cidr, fieldPath.Child("sshAccess").Index(i))...)
+		}
 	}
 
 	// KubernetesAPIAccess
 	for i, cidr := range spec.KubernetesAPIAccess {
-		allErrs = append(allErrs, validateCIDR(cidr, fieldPath.Child("kubernetesAPIAccess").Index(i))...)
+		if strings.HasPrefix(cidr, "pl-") {
+			if kops.CloudProviderID(spec.CloudProvider) != kops.CloudProviderAWS {
+				allErrs = append(allErrs, field.Invalid(fieldPath.Child("kubernetesAPIAccess").Index(i), cidr, "Prefix List ID only supported for AWS"))
+			}
+		} else {
+			allErrs = append(allErrs, validateCIDR(cidr, fieldPath.Child("kubernetesAPIAccess").Index(i))...)
+		}
 	}
 
 	// NodePortAccess
 	for i, cidr := range spec.NodePortAccess {
-		allErrs = append(allErrs, validateCIDR(cidr, fieldPath.Child("nodePortAccess").Index(i))...)
+		if strings.HasPrefix(cidr, "pl-") {
+			if kops.CloudProviderID(spec.CloudProvider) != kops.CloudProviderAWS {
+				allErrs = append(allErrs, field.Invalid(fieldPath.Child("nodePortAccess").Index(i), cidr, "Prefix List ID only supported for AWS"))
+			}
+		} else {
+			allErrs = append(allErrs, validateCIDR(cidr, fieldPath.Child("nodePortAccess").Index(i))...)
+		}
 	}
 
 	// AdditionalNetworkCIDRs
