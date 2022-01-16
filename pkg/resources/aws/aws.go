@@ -2145,6 +2145,7 @@ func ListIAMOIDCProviders(cloud fi.Cloud, clusterName string) ([]*resources.Reso
 				return nil, fmt.Errorf("error getting IAM OIDC Provider: %v", err)
 			}
 			if !matchesIAMTags(tags, resp.Tags) {
+				klog.Infof("Skipping oidc provider %q with tags %v", aws.StringValue(arn), tags)
 				continue
 			}
 			providers = append(providers, arn)
