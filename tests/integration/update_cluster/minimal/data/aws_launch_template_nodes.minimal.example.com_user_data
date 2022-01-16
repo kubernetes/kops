@@ -139,7 +139,6 @@ kubeProxy:
   image: k8s.gcr.io/kube-proxy:v1.21.0
   logLevel: 2
 kubelet:
-  anonymousAuth: false
   cgroupDriver: systemd
   cgroupRoot: /
   cloudProvider: aws
@@ -160,7 +159,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: ehZK5PooPMXQw0YD3dy5oARwClEXIj8ymh6DR1XYbQ0=
+NodeupConfigHash: X3GTskTs5A1Xa9K+ujEWoAJd1PidV/fSdfPuDfuLLHA=
 
 __EOF_KUBE_ENV
 
