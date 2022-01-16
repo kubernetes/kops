@@ -234,6 +234,14 @@ func TestMinimalGossip(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
+// TestMinimal runs the test on a minimum gossip configuration with irsa enabled
+func TestMinimalGossipIRSA(t *testing.T) {
+	newIntegrationTest("minimal.k8s.local", "minimal_gossip_irsa").
+		withOIDCDiscovery().
+		withAddons(dnsControllerAddon).
+		runTestTerraformAWS(t)
+}
+
 // TestMinimalGCE runs tests on a minimal GCE configuration
 func TestMinimalGCE(t *testing.T) {
 	newIntegrationTest("minimal-gce.example.com", "minimal_gce").
