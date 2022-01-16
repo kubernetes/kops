@@ -2144,11 +2144,16 @@ func ListIAMOIDCProviders(cloud fi.Cloud, clusterName string) ([]*resources.Reso
 			if err != nil {
 				return nil, fmt.Errorf("error getting IAM OIDC Provider: %v", err)
 			}
-			if !matchesIAMTags(tags, resp.Tags) {
-				klog.Infof("Skipping oidc provider %q with tags %v", aws.StringValue(arn), tags)
-				continue
+			oidcTags := make(map[string]string)
+			for _, t := range resp.Tags {
+				oidcTags[*t.Key] = *t.Value
 			}
-			providers = append(providers, arn)
+			_, foundK8sTag := oidcTags["KubernetesCluster"]
+			if matchesIAMTags(tags, resp.Tags) || foundK8sTag {
+				providers = append(providers, arn)
+			} else {
+				klog.Infof("Skipping oidc provider %q with tags %v", aws.StringValue(arn), oidcTags)
+			}
 		}
 	}
 
