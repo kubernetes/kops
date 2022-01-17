@@ -1752,6 +1752,7 @@
                 "autoscaling:DescribeAutoScalingInstances",
                 "ec2:DescribeInstanceTypes",
                 "ec2:DescribeInstances",
+                "ec2:DescribeRegions",
                 "iam:GetServerCertificate",
                 "iam:ListServerCertificates",
                 "kms:GenerateRandom"
