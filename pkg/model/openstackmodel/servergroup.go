@@ -29,6 +29,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks"
+	"k8s.io/utils/net"
 )
 
 // ServerGroupModelBuilder configures server group objects
@@ -311,9 +312,15 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Pool:      poolTask,
 		}
 		if useVIPACL {
-			// sort for consistent comparison
-			sort.Strings(b.Cluster.Spec.KubernetesAPIAccess)
-			listenerTask.AllowedCIDRs = b.Cluster.Spec.KubernetesAPIAccess
+			var AllowedCIDRs []string
+			// currently kOps openstack supports only ipv4 addresses
+			for _, CIDR := range b.Cluster.Spec.KubernetesAPIAccess {
+				if net.IsIPv4CIDRString(CIDR) {
+					AllowedCIDRs = append(AllowedCIDRs, CIDR)
+				}
+			}
+			sort.Strings(AllowedCIDRs)
+			listenerTask.AllowedCIDRs = AllowedCIDRs
 		}
 		c.AddTask(listenerTask)
 
