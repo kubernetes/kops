@@ -240,7 +240,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					continue
 				}
 
-			case kops.SubnetTypePrivate:
+			case kops.SubnetTypeDualStack, kops.SubnetTypePrivate:
 				if bastionLoadBalancerType != kops.LoadBalancerTypeInternal {
 					continue
 				}

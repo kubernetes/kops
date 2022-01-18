@@ -115,72 +115,72 @@ func TestValidateSubnets(t *testing.T) {
 	}{
 		{
 			Input: []kops.ClusterSubnetSpec{
-				{Name: "a"},
+				{Name: "a", Type: kops.SubnetTypePublic},
 			},
 		},
 		{
 			Input: []kops.ClusterSubnetSpec{
-				{Name: "a", CIDR: "10.0.0.0/8"},
+				{Name: "a", CIDR: "10.0.0.0/8", Type: kops.SubnetTypePublic},
 			},
 		},
 		{
 			Input: []kops.ClusterSubnetSpec{
-				{Name: ""},
+				{Name: "", Type: kops.SubnetTypePublic},
 			},
 			ExpectedErrors: []string{"Required value::subnets[0].name"},
 		},
 		{
 			Input: []kops.ClusterSubnetSpec{
-				{Name: "a"},
-				{Name: "a"},
+				{Name: "a", Type: kops.SubnetTypePublic},
+				{Name: "a", Type: kops.SubnetTypePublic},
 			},
 			ExpectedErrors: []string{"Duplicate value::subnets[1].name"},
 		},
 		{
 			Input: []kops.ClusterSubnetSpec{
-				{Name: "a", ProviderID: "a"},
-				{Name: "b", ProviderID: "b"},
+				{Name: "a", ProviderID: "a", Type: kops.SubnetTypePublic},
+				{Name: "b", ProviderID: "b", Type: kops.SubnetTypePublic},
 			},
 		},
 		{
 			Input: []kops.ClusterSubnetSpec{
-				{Name: "a", ProviderID: "a"},
-				{Name: "b", ProviderID: ""},
+				{Name: "a", ProviderID: "a", Type: kops.SubnetTypePublic},
+				{Name: "b", ProviderID: "", Type: kops.SubnetTypePublic},
 			},
 			ExpectedErrors: []string{"Forbidden::subnets[1].id"},
 		},
 		{
 			Input: []kops.ClusterSubnetSpec{
-				{Name: "a", CIDR: "10.128.0.0/8"},
+				{Name: "a", CIDR: "10.128.0.0/8", Type: kops.SubnetTypePublic},
 			},
 			ExpectedErrors: []string{"Invalid value::subnets[0].cidr"},
 		},
 		{
 			Input: []kops.ClusterSubnetSpec{
-				{Name: "a", IPv6CIDR: "2001:db8::/56"},
+				{Name: "a", IPv6CIDR: "2001:db8::/56", Type: kops.SubnetTypePublic},
 			},
 		},
 		{
 			Input: []kops.ClusterSubnetSpec{
-				{Name: "a", IPv6CIDR: "10.0.0.0/8"},
-			},
-			ExpectedErrors: []string{"Invalid value::subnets[0].ipv6CIDR"},
-		},
-		{
-			Input: []kops.ClusterSubnetSpec{
-				{Name: "a", IPv6CIDR: "::ffff:10.128.0.0"},
+				{Name: "a", IPv6CIDR: "10.0.0.0/8", Type: kops.SubnetTypePublic},
 			},
 			ExpectedErrors: []string{"Invalid value::subnets[0].ipv6CIDR"},
 		},
 		{
 			Input: []kops.ClusterSubnetSpec{
-				{Name: "a", IPv6CIDR: "::ffff:10.128.0.0/8"},
+				{Name: "a", IPv6CIDR: "::ffff:10.128.0.0", Type: kops.SubnetTypePublic},
 			},
 			ExpectedErrors: []string{"Invalid value::subnets[0].ipv6CIDR"},
 		},
 		{
 			Input: []kops.ClusterSubnetSpec{
-				{Name: "a", CIDR: "::ffff:10.128.0.0/8"},
+				{Name: "a", IPv6CIDR: "::ffff:10.128.0.0/8", Type: kops.SubnetTypePublic},
+			},
+			ExpectedErrors: []string{"Invalid value::subnets[0].ipv6CIDR"},
+		},
+		{
+			Input: []kops.ClusterSubnetSpec{
+				{Name: "a", CIDR: "::ffff:10.128.0.0/8", Type: kops.SubnetTypePublic},
 			},
 			ExpectedErrors: []string{"Invalid value::subnets[0].cidr"},
 		},
@@ -430,7 +430,7 @@ func Test_Validate_AdditionalPolicies(t *testing.T) {
 			KubernetesVersion:  "1.17.0",
 			AdditionalPolicies: &g.Input,
 			Subnets: []kops.ClusterSubnetSpec{
-				{Name: "subnet1"},
+				{Name: "subnet1", Type: kops.SubnetTypePublic},
 			},
 			EtcdClusters: []kops.EtcdClusterSpec{
 				{

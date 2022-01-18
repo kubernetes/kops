@@ -721,6 +721,9 @@ func setupMasters(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap 
 			}
 
 			g.Spec.Subnets = []string{subnet.Name}
+			if opt.IPv6 && opt.Topology == api.TopologyPrivate {
+				g.Spec.Subnets = []string{"dualstack-" + subnet.Name}
+			}
 			if cloudProvider == api.CloudProviderGCE || cloudProvider == api.CloudProviderAzure {
 				g.Spec.Zones = []string{zone}
 			}
@@ -1040,6 +1043,27 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 			}
 		}
 
+		if opt.IPv6 {
+			var dualStackSubnets []api.ClusterSubnetSpec
+
+			for _, s := range cluster.Spec.Subnets {
+				if s.Type != api.SubnetTypePrivate {
+					continue
+				}
+				subnet := api.ClusterSubnetSpec{
+					Name:   "dualstack-" + s.Name,
+					Zone:   s.Zone,
+					Type:   api.SubnetTypeDualStack,
+					Region: s.Region,
+				}
+				if subnetID, ok := zoneToSubnetProviderID[s.Zone]; ok {
+					subnet.ProviderID = subnetID
+				}
+				dualStackSubnets = append(dualStackSubnets, subnet)
+			}
+			cluster.Spec.Subnets = append(cluster.Spec.Subnets, dualStackSubnets...)
+		}
+
 		addUtilitySubnets := true
 		switch api.CloudProviderID(cluster.Spec.CloudProvider) {
 		case api.CloudProviderGCE:
@@ -1051,7 +1075,7 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 			var utilitySubnets []api.ClusterSubnetSpec
 
 			for _, s := range cluster.Spec.Subnets {
-				if s.Type == api.SubnetTypeUtility {
+				if s.Type != api.SubnetTypePrivate {
 					continue
 				}
 				subnet := api.ClusterSubnetSpec{

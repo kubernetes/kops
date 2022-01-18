@@ -244,9 +244,9 @@ func TestPopulateCluster_Custom_CIDR(t *testing.T) {
 	cloud, c := buildMinimalCluster()
 	c.Spec.NetworkCIDR = "172.20.2.0/24"
 	c.Spec.Subnets = []kopsapi.ClusterSubnetSpec{
-		{Name: "subnet-us-mock-1a", Zone: "us-mock-1a", CIDR: "172.20.2.0/27"},
-		{Name: "subnet-us-mock-1b", Zone: "us-mock-1b", CIDR: "172.20.2.32/27"},
-		{Name: "subnet-us-mock-1c", Zone: "us-mock-1c", CIDR: "172.20.2.64/27"},
+		{Name: "subnet-us-mock-1a", Zone: "us-mock-1a", CIDR: "172.20.2.0/27", Type: kopsapi.SubnetTypePublic},
+		{Name: "subnet-us-mock-1b", Zone: "us-mock-1b", CIDR: "172.20.2.32/27", Type: kopsapi.SubnetTypePublic},
+		{Name: "subnet-us-mock-1c", Zone: "us-mock-1c", CIDR: "172.20.2.64/27", Type: kopsapi.SubnetTypePublic},
 	}
 
 	err := PerformAssignments(c, cloud)
