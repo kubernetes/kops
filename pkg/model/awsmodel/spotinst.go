@@ -687,7 +687,7 @@ func (b *SpotInstanceGroupModelBuilder) buildPublicIpOpts(ig *kops.InstanceGroup
 		if ig.Spec.AssociatePublicIP != nil {
 			associatePublicIP = *ig.Spec.AssociatePublicIP
 		}
-	case kops.SubnetTypePrivate:
+	case kops.SubnetTypeDualStack, kops.SubnetTypePrivate:
 		associatePublicIP = false
 		if ig.Spec.AssociatePublicIP != nil {
 			if *ig.Spec.AssociatePublicIP {

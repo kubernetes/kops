@@ -100,7 +100,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 					continue
 				}
 
-			case kops.SubnetTypePrivate:
+			case kops.SubnetTypeDualStack, kops.SubnetTypePrivate:
 				if lbSpec.Type != kops.LoadBalancerTypeInternal {
 					continue
 				}
@@ -556,7 +556,7 @@ func (a ByScoreDescending) Less(i, j int) bool {
 
 // Choose between subnets in a zone.
 // We have already applied the rules to match internal subnets to internal ELBs and vice-versa for public-facing ELBs.
-// For internal ELBs: we prefer the master subnets
+// For internal ELBs: we prefer dual stack and the master subnets
 // For public facing ELBs: we prefer the utility subnets
 func (b *APILoadBalancerBuilder) chooseBestSubnetForELB(zone string, subnets []*kops.ClusterSubnetSpec) *kops.ClusterSubnetSpec {
 	if len(subnets) == 0 {
@@ -581,8 +581,12 @@ func (b *APILoadBalancerBuilder) chooseBestSubnetForELB(zone string, subnets []*
 			score += 1
 		}
 
+		if subnet.Type == kops.SubnetTypeDualStack {
+			score += 2
+		}
+
 		if subnet.Type == kops.SubnetTypeUtility {
-			score += 1
+			score += 3
 		}
 
 		scoredSubnets = append(scoredSubnets, &scoredSubnet{

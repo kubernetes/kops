@@ -94,7 +94,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		for i := range b.Cluster.Spec.Subnets {
 			subnet := &b.Cluster.Spec.Subnets[i]
 			// Only need to deal with private subnets
-			if subnet.Type != kops.SubnetTypePrivate {
+			if subnet.Type != kops.SubnetTypeDualStack && subnet.Type != kops.SubnetTypePrivate {
 				continue
 			}
 
