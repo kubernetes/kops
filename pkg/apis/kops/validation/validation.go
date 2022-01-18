@@ -412,7 +412,7 @@ func validateSubnets(cluster *kops.ClusterSpec, fieldPath *field.Path) field.Err
 
 	// Each subnet must be valid
 	for i := range subnets {
-		allErrs = append(allErrs, validateSubnet(&subnets[i], fieldPath.Index(i))...)
+		allErrs = append(allErrs, validateSubnet(&subnets[i], cluster, fieldPath.Index(i))...)
 	}
 
 	// cannot duplicate subnet name
@@ -448,7 +448,7 @@ func validateSubnets(cluster *kops.ClusterSpec, fieldPath *field.Path) field.Err
 	return allErrs
 }
 
-func validateSubnet(subnet *kops.ClusterSubnetSpec, fieldPath *field.Path) field.ErrorList {
+func validateSubnet(subnet *kops.ClusterSubnetSpec, c *kops.ClusterSpec, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	// name is required
@@ -471,10 +471,22 @@ func validateSubnet(subnet *kops.ClusterSubnetSpec, fieldPath *field.Path) field
 			allErrs = append(allErrs, field.Invalid(fieldPath.Child("egress"), subnet.Egress,
 				"egress must be of type NAT Gateway, NAT Gateway with existing ElasticIP, NAT EC2 Instance, Transit Gateway, or External"))
 		}
-		if subnet.Egress != kops.EgressExternal && subnet.Type != "Private" && (subnet.IPv6CIDR == "" || subnet.Type != "Public") {
+		if subnet.Egress != kops.EgressExternal && subnet.Type != "DualStack" && subnet.Type != "Private" && (subnet.IPv6CIDR == "" || subnet.Type != "Public") {
 			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("egress"), "egress can only be specified for private or IPv6-capable public subnets"))
 		}
 	}
+
+	allErrs = append(allErrs, IsValidValue(fieldPath.Child("type"), fi.String(string(subnet.Type)), []string{
+		string(kops.SubnetTypePublic),
+		string(kops.SubnetTypePrivate),
+		string(kops.SubnetTypeDualStack),
+		string(kops.SubnetTypeUtility),
+	})...)
+
+	if subnet.Type == kops.SubnetTypeDualStack && !c.IsIPv6Only() {
+		allErrs = append(allErrs, field.Forbidden(fieldPath.Child("type"), "subnet type DualStack may only be used in IPv6 clusters"))
+	}
+
 	return allErrs
 }
 

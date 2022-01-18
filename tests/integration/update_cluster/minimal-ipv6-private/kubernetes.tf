@@ -13,6 +13,8 @@ locals {
   route_table_private-us-test-1a_id = aws_route_table.private-us-test-1a-minimal-ipv6-example-com.id
   route_table_private-us-test-1b_id = aws_route_table.private-us-test-1b-minimal-ipv6-example-com.id
   route_table_public_id             = aws_route_table.minimal-ipv6-example-com.id
+  subnet_dualstack-us-test-1a_id    = aws_subnet.dualstack-us-test-1a-minimal-ipv6-example-com.id
+  subnet_dualstack-us-test-1b_id    = aws_subnet.dualstack-us-test-1b-minimal-ipv6-example-com.id
   subnet_us-test-1a_id              = aws_subnet.us-test-1a-minimal-ipv6-example-com.id
   subnet_us-test-1b_id              = aws_subnet.us-test-1b-minimal-ipv6-example-com.id
   subnet_utility-us-test-1a_id      = aws_subnet.utility-us-test-1a-minimal-ipv6-example-com.id
@@ -75,6 +77,14 @@ output "route_table_private-us-test-1b_id" {
 
 output "route_table_public_id" {
   value = aws_route_table.minimal-ipv6-example-com.id
+}
+
+output "subnet_dualstack-us-test-1a_id" {
+  value = aws_subnet.dualstack-us-test-1a-minimal-ipv6-example-com.id
+}
+
+output "subnet_dualstack-us-test-1b_id" {
+  value = aws_subnet.dualstack-us-test-1b-minimal-ipv6-example-com.id
 }
 
 output "subnet_us-test-1a_id" {
@@ -172,7 +182,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-minimal-ipv6-example
     value               = "owned"
   }
   target_group_arns   = [aws_lb_target_group.tcp-minimal-ipv6-example--bne5ih.id]
-  vpc_zone_identifier = [aws_subnet.us-test-1a-minimal-ipv6-example-com.id]
+  vpc_zone_identifier = [aws_subnet.dualstack-us-test-1a-minimal-ipv6-example-com.id]
 }
 
 resource "aws_autoscaling_group" "nodes-minimal-ipv6-example-com" {
@@ -678,6 +688,16 @@ resource "aws_route_table" "private-us-test-1b-minimal-ipv6-example-com" {
   vpc_id = aws_vpc.minimal-ipv6-example-com.id
 }
 
+resource "aws_route_table_association" "private-dualstack-us-test-1a-minimal-ipv6-example-com" {
+  route_table_id = aws_route_table.private-us-test-1a-minimal-ipv6-example-com.id
+  subnet_id      = aws_subnet.dualstack-us-test-1a-minimal-ipv6-example-com.id
+}
+
+resource "aws_route_table_association" "private-dualstack-us-test-1b-minimal-ipv6-example-com" {
+  route_table_id = aws_route_table.private-us-test-1b-minimal-ipv6-example-com.id
+  subnet_id      = aws_subnet.dualstack-us-test-1b-minimal-ipv6-example-com.id
+}
+
 resource "aws_route_table_association" "private-us-test-1a-minimal-ipv6-example-com" {
   route_table_id = aws_route_table.private-us-test-1a-minimal-ipv6-example-com.id
   subnet_id      = aws_subnet.us-test-1a-minimal-ipv6-example-com.id
@@ -1071,36 +1091,68 @@ resource "aws_security_group_rule" "icmpv6-pmtu-api-elb-__--0" {
   type              = "ingress"
 }
 
-resource "aws_subnet" "us-test-1a-minimal-ipv6-example-com" {
+resource "aws_subnet" "dualstack-us-test-1a-minimal-ipv6-example-com" {
   availability_zone                              = "us-test-1a"
   cidr_block                                     = "172.20.32.0/19"
   enable_resource_name_dns_a_record_on_launch    = true
   enable_resource_name_dns_aaaa_record_on_launch = true
-  ipv6_cidr_block                                = "2001:db8:0:111::/64"
+  ipv6_cidr_block                                = "2001:db8:0:113::/64"
   private_dns_hostname_type_on_launch            = "resource-name"
   tags = {
     "KubernetesCluster"                              = "minimal-ipv6.example.com"
-    "Name"                                           = "us-test-1a.minimal-ipv6.example.com"
-    "SubnetType"                                     = "Private"
+    "Name"                                           = "dualstack-us-test-1a.minimal-ipv6.example.com"
+    "SubnetType"                                     = "DualStack"
     "kubernetes.io/cluster/minimal-ipv6.example.com" = "owned"
     "kubernetes.io/role/internal-elb"                = "1"
   }
   vpc_id = aws_vpc.minimal-ipv6-example-com.id
 }
 
-resource "aws_subnet" "us-test-1b-minimal-ipv6-example-com" {
+resource "aws_subnet" "dualstack-us-test-1b-minimal-ipv6-example-com" {
   availability_zone                              = "us-test-1b"
   cidr_block                                     = "172.20.64.0/19"
   enable_resource_name_dns_a_record_on_launch    = true
   enable_resource_name_dns_aaaa_record_on_launch = true
+  ipv6_cidr_block                                = "2001:db8:0:114::/64"
+  private_dns_hostname_type_on_launch            = "resource-name"
+  tags = {
+    "KubernetesCluster"                              = "minimal-ipv6.example.com"
+    "Name"                                           = "dualstack-us-test-1b.minimal-ipv6.example.com"
+    "SubnetType"                                     = "DualStack"
+    "kubernetes.io/cluster/minimal-ipv6.example.com" = "owned"
+    "kubernetes.io/role/internal-elb"                = "1"
+  }
+  vpc_id = aws_vpc.minimal-ipv6-example-com.id
+}
+
+resource "aws_subnet" "us-test-1a-minimal-ipv6-example-com" {
+  availability_zone                              = "us-test-1a"
+  enable_dns64                                   = true
+  enable_resource_name_dns_aaaa_record_on_launch = true
+  ipv6_cidr_block                                = "2001:db8:0:111::/64"
+  ipv6_native                                    = true
+  private_dns_hostname_type_on_launch            = "resource-name"
+  tags = {
+    "KubernetesCluster"                              = "minimal-ipv6.example.com"
+    "Name"                                           = "us-test-1a.minimal-ipv6.example.com"
+    "SubnetType"                                     = "Private"
+    "kubernetes.io/cluster/minimal-ipv6.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.minimal-ipv6-example-com.id
+}
+
+resource "aws_subnet" "us-test-1b-minimal-ipv6-example-com" {
+  availability_zone                              = "us-test-1b"
+  enable_dns64                                   = true
+  enable_resource_name_dns_aaaa_record_on_launch = true
   ipv6_cidr_block                                = "2001:db8:0:112::/64"
+  ipv6_native                                    = true
   private_dns_hostname_type_on_launch            = "resource-name"
   tags = {
     "KubernetesCluster"                              = "minimal-ipv6.example.com"
     "Name"                                           = "us-test-1b.minimal-ipv6.example.com"
     "SubnetType"                                     = "Private"
     "kubernetes.io/cluster/minimal-ipv6.example.com" = "owned"
-    "kubernetes.io/role/internal-elb"                = "1"
   }
   vpc_id = aws_vpc.minimal-ipv6-example-com.id
 }
@@ -1110,7 +1162,7 @@ resource "aws_subnet" "utility-us-test-1a-minimal-ipv6-example-com" {
   cidr_block                                     = "172.20.0.0/22"
   enable_resource_name_dns_a_record_on_launch    = true
   enable_resource_name_dns_aaaa_record_on_launch = true
-  ipv6_cidr_block                                = "2001:db8:0:113::/64"
+  ipv6_cidr_block                                = "2001:db8:0:115::/64"
   private_dns_hostname_type_on_launch            = "resource-name"
   tags = {
     "KubernetesCluster"                              = "minimal-ipv6.example.com"
@@ -1127,7 +1179,7 @@ resource "aws_subnet" "utility-us-test-1b-minimal-ipv6-example-com" {
   cidr_block                                     = "172.20.4.0/22"
   enable_resource_name_dns_a_record_on_launch    = true
   enable_resource_name_dns_aaaa_record_on_launch = true
-  ipv6_cidr_block                                = "2001:db8:0:114::/64"
+  ipv6_cidr_block                                = "2001:db8:0:116::/64"
   private_dns_hostname_type_on_launch            = "resource-name"
   tags = {
     "KubernetesCluster"                              = "minimal-ipv6.example.com"
