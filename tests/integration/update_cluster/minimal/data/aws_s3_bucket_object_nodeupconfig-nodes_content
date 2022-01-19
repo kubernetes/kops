@@ -38,7 +38,6 @@ Hooks:
 KeypairIDs:
   kubernetes-ca: "6982820025135291416230495506"
 KubeletConfig:
-  anonymousAuth: false
   cgroupDriver: systemd
   cgroupRoot: /
   cloudProvider: aws
