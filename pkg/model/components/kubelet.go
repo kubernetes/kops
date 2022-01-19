@@ -163,9 +163,9 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 			return fmt.Errorf("no networking mode set")
 		}
 		if UsesKubenet(networking) && b.IsKubernetesLT("1.24") {
-			clusterSpec.Kubelet.NetworkPluginName = "kubenet"
+			clusterSpec.Kubelet.NetworkPluginName = fi.String("kubenet")
 			clusterSpec.Kubelet.NetworkPluginMTU = fi.Int32(9001)
-			clusterSpec.Kubelet.NonMasqueradeCIDR = clusterSpec.NonMasqueradeCIDR
+			clusterSpec.Kubelet.NonMasqueradeCIDR = fi.String(clusterSpec.NonMasqueradeCIDR)
 		}
 	}
 
