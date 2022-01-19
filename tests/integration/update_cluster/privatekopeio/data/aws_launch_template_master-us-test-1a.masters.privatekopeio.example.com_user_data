@@ -214,6 +214,7 @@ kubelet:
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
+  podInfraContainerImage: k8s.gcr.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
 masterKubelet:
   anonymousAuth: false
@@ -226,6 +227,7 @@ masterKubelet:
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
+  podInfraContainerImage: k8s.gcr.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   registerSchedulable: false
 
@@ -236,7 +238,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privatekopeio.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: La1BH+OcPpqQslQHfAESteJtnlCBclfqVGutweHDz2s=
+NodeupConfigHash: KH5h6XpxnQ2OMm/UdM6tLlMgZY6tmf5WKuROtW2+xps=
 
 __EOF_KUBE_ENV
 
