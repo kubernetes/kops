@@ -487,42 +487,11 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
-		sess := session.Must(session.NewSession())
-		metadata := ec2metadata.New(sess)
-
-		// Get the actual instance type by querying the EC2 instance metadata service.
-		instanceTypeName, err := metadata.GetMetadata("instance-type")
-		if err != nil {
-			// Otherwise, fall back to the Instance Group spec.
-			instanceTypeName = *b.NodeupConfig.DefaultMachineType
-		}
-
-		awsCloud := b.Cloud.(awsup.AWSCloud)
-		// Get the instance type's detailed information.
-		instanceType, err := awsup.GetMachineTypeInfo(awsCloud, instanceTypeName)
+		maxPods, err := b.amazonVPCMaxPods()
 		if err != nil {
 			return nil, err
 		}
-
-		// Respect any MaxPods value the user sets explicitly.
-		if c.MaxPods == nil {
-			// Default maximum pods per node defined by KubeletConfiguration
-			maxPods := 110
-
-			// AWS VPC CNI plugin-specific maximum pod calculation based on:
-			// https://github.com/aws/amazon-vpc-cni-k8s/blob/v1.9.3/README.md#setup
-			enis := instanceType.InstanceENIs
-			ips := instanceType.InstanceIPsPerENI
-			if enis > 0 && ips > 0 {
-				instanceMaxPods := enis*(ips-1) + 2
-				if instanceMaxPods < maxPods {
-					maxPods = instanceMaxPods
-				}
-			}
-
-			// Write back values that could have changed
-			c.MaxPods = fi.Int32(int32(maxPods))
-		}
+		c.MaxPods = &maxPods
 	}
 
 	// Use --register-with-taints
@@ -577,6 +546,51 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 	}
 
 	return &c, nil
+}
+
+func (b *KubeletBuilder) amazonVPCMaxPods() (int32, error) {
+	c := b.Cluster.Spec.Kubelet
+
+	// Respect any MaxPods value the user sets explicitly.
+	if c.MaxPods != nil {
+		return fi.Int32Value(c.MaxPods), nil
+	}
+
+	// If using prefix mode, default to 110.
+	for _, env := range b.Cluster.Spec.Networking.AmazonVPC.Env {
+		if env.Name == "ENABLE_PREFIX_DELEGATION" && env.Value == "true" {
+			return 110, nil
+		}
+	}
+
+	// Use the instance type.
+	sess := session.Must(session.NewSession())
+	metadata := ec2metadata.New(sess)
+
+	// Get the actual instance type by querying the EC2 instance metadata service.
+	instanceTypeName, err := metadata.GetMetadata("instance-type")
+	if err != nil {
+		// Otherwise, fall back to the Instance Group spec.
+		instanceTypeName = *b.NodeupConfig.DefaultMachineType
+	}
+
+	awsCloud := b.Cloud.(awsup.AWSCloud)
+	// Get the instance type's detailed information.
+	instanceType, err := awsup.GetMachineTypeInfo(awsCloud, instanceTypeName)
+	if err != nil {
+		return 0, err
+	}
+
+	// AWS VPC CNI plugin-specific maximum pod calculation based on:
+	// https://github.com/aws/amazon-vpc-cni-k8s/blob/v1.9.3/README.md#setup
+	enis := instanceType.InstanceENIs
+	ips := instanceType.InstanceIPsPerENI
+	if enis > 0 && ips > 0 {
+		instanceMaxPods := enis*(ips-1) + 2
+		return int32(instanceMaxPods), nil
+	}
+
+	return 110, nil
 }
 
 // buildMasterKubeletKubeconfig builds a kubeconfig for the master kubelet, self-signing the kubelet cert

@@ -248,7 +248,18 @@ func TestSetupNetworking(t *testing.T) {
 			expected: api.Cluster{
 				Spec: api.ClusterSpec{
 					Networking: &api.NetworkingSpec{
-						AmazonVPC: &api.AmazonVPCNetworkingSpec{},
+						AmazonVPC: &api.AmazonVPCNetworkingSpec{
+							Env: []api.EnvVar{
+								{
+									Name:  "ENABLE_PREFIX_DELEGATION",
+									Value: "true",
+								},
+								{
+									Name:  "WARM_PREFIX_TARGET",
+									Value: "1",
+								},
+							},
+						},
 					},
 				},
 			},
@@ -260,7 +271,18 @@ func TestSetupNetworking(t *testing.T) {
 			expected: api.Cluster{
 				Spec: api.ClusterSpec{
 					Networking: &api.NetworkingSpec{
-						AmazonVPC: &api.AmazonVPCNetworkingSpec{},
+						AmazonVPC: &api.AmazonVPCNetworkingSpec{
+							Env: []api.EnvVar{
+								{
+									Name:  "ENABLE_PREFIX_DELEGATION",
+									Value: "true",
+								},
+								{
+									Name:  "WARM_PREFIX_TARGET",
+									Value: "1",
+								},
+							},
+						},
 					},
 				},
 			},
