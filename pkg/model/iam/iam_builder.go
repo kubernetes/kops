@@ -798,6 +798,8 @@ func AddLegacyCCMPermissions(p *Policy) {
 		"elasticloadbalancing:AddTags",
 		"elasticloadbalancing:RegisterTargets",
 		"elasticloadbalancing:CreateListener",
+		"elasticloadbalancing:DeleteListener",
+		"elasticloadbalancing:ModifyListener",
 	)
 }
 
@@ -845,9 +847,7 @@ func AddCCMPermissions(p *Policy, partition string, cloudRoutes bool) {
 		"elasticloadbalancing:RegisterInstancesWithLoadBalancer",
 		"elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer",
 		"elasticloadbalancing:AddTags",
-		"elasticloadbalancing:DeleteListener",
 		"elasticloadbalancing:DeleteTargetGroup",
-		"elasticloadbalancing:ModifyListener",
 		"elasticloadbalancing:ModifyTargetGroup",
 		"elasticloadbalancing:RegisterTargets",
 		"elasticloadbalancing:DeregisterTargets",
