@@ -231,7 +231,6 @@ KeypairIDs:
   kubernetes-ca: "6982820025135291416230495506"
   service-account: "2"
 KubeletConfig:
-  anonymousAuth: false
   cgroupDriver: systemd
   cgroupRoot: /
   cloudProvider: aws
