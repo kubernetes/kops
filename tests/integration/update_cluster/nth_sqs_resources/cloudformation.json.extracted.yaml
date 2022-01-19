@@ -217,6 +217,7 @@
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
+    podInfraContainerImage: k8s.gcr.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
   masterKubelet:
     anonymousAuth: false
@@ -230,6 +231,7 @@
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
+    podInfraContainerImage: k8s.gcr.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
 
@@ -240,7 +242,7 @@
   ConfigBase: memfs://clusters.example.com/nthsqsresources.longclustername.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: QuRvBHgR6HwOCw+tHjvxPgTIuTGrfUcVco/iDBvokUg=
+  NodeupConfigHash: p1qnqow7b5pLLiw11iGBshHMcudgM/yPr8DsLgwcc0M=
 
   __EOF_KUBE_ENV
 
@@ -399,6 +401,7 @@ Resources.AWSEC2LaunchTemplatenodesnthsqsresourceslongclusternameexamplecom.Prop
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
+    podInfraContainerImage: k8s.gcr.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
 
   __EOF_CLUSTER_SPEC
@@ -408,7 +411,7 @@ Resources.AWSEC2LaunchTemplatenodesnthsqsresourceslongclusternameexamplecom.Prop
   ConfigBase: memfs://clusters.example.com/nthsqsresources.longclustername.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: AyjAaPXmhcQmb0mOUtTDkTEVTejjaf8hlCq0rTtOUzc=
+  NodeupConfigHash: n5iJXLRDo3rgJQY+RP2ZuVVfTA80DRLaqI9cYvLKxjA=
 
   __EOF_KUBE_ENV
 

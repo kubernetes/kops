@@ -217,6 +217,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumexamplecom.Prope
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
+    podInfraContainerImage: k8s.gcr.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
   masterKubelet:
     anonymousAuth: false
@@ -230,6 +231,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumexamplecom.Prope
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
+    podInfraContainerImage: k8s.gcr.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
 
@@ -240,7 +242,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumexamplecom.Prope
   ConfigBase: memfs://clusters.example.com/privatecilium.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: xK5tetBM5yU+6mfKmyoRAa7uJM7gzFK/V/wG3aKWLcc=
+  NodeupConfigHash: UlcQyooCOFtGMBxOptft9SneCP5Us0444OMIktbFGTY=
 
   __EOF_KUBE_ENV
 
@@ -399,6 +401,7 @@ Resources.AWSEC2LaunchTemplatenodesprivateciliumexamplecom.Properties.LaunchTemp
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
+    podInfraContainerImage: k8s.gcr.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
 
   __EOF_CLUSTER_SPEC
@@ -408,7 +411,7 @@ Resources.AWSEC2LaunchTemplatenodesprivateciliumexamplecom.Properties.LaunchTemp
   ConfigBase: memfs://clusters.example.com/privatecilium.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: 5Dazs3/k8Wf7OsxAuXsA81pcB2xwO95EnZieHsWT49U=
+  NodeupConfigHash: aJf2+ZIzcYPB23/HAcM3eIV2tJpBZB61dKf2YztV98Y=
 
   __EOF_KUBE_ENV
 

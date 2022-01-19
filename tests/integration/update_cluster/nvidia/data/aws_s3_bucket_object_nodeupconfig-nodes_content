@@ -53,6 +53,7 @@ KubeletConfig:
     kops.k8s.io/gpu: "1"
     kubernetes.io/role: node
     node-role.kubernetes.io/node: ""
+  podInfraContainerImage: k8s.gcr.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   taints:
   - nvidia.com/gpu:NoSchedule

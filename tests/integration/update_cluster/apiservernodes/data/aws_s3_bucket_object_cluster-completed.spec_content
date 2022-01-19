@@ -140,6 +140,7 @@ spec:
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
+    podInfraContainerImage: k8s.gcr.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
   kubernetesApiAccess:
@@ -161,6 +162,7 @@ spec:
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
+    podInfraContainerImage: k8s.gcr.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
     registerSchedulable: false

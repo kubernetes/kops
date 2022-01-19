@@ -214,6 +214,7 @@ kubelet:
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
+  podInfraContainerImage: k8s.gcr.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
 masterKubelet:
   cgroupDriver: systemd
@@ -226,6 +227,7 @@ masterKubelet:
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
+  podInfraContainerImage: k8s.gcr.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   registerSchedulable: false
 
@@ -236,7 +238,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: 6Ic/iBFEUusDIz8TDIxs3dauSdMAmgiEPsmbj3+x0yk=
+NodeupConfigHash: v4mhlMFbVKFJtNb9xk/1/RelRW9KhdPxvkDb0rkt6nM=
 
 __EOF_KUBE_ENV
 
