@@ -181,14 +181,14 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 					allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("nonMasqueradeCIDR"), fmt.Sprintf("nonMasqueradeCIDR %q cannot overlap with networkCIDR %q", nonMasqueradeCIDRString, c.Spec.NetworkCIDR)))
 				}
 
-				if c.Spec.ContainerRuntime == "docker" && c.Spec.Kubelet != nil && c.Spec.Kubelet.NetworkPluginName == "kubenet" {
-					if c.Spec.Kubelet.NonMasqueradeCIDR != nonMasqueradeCIDRString {
-						if strict || c.Spec.Kubelet.NonMasqueradeCIDR != "" {
+				if c.Spec.ContainerRuntime == "docker" && c.Spec.Kubelet != nil && fi.StringValue(c.Spec.Kubelet.NetworkPluginName) == "kubenet" {
+					if fi.StringValue(c.Spec.Kubelet.NonMasqueradeCIDR) != nonMasqueradeCIDRString {
+						if strict || c.Spec.Kubelet.NonMasqueradeCIDR != nil {
 							allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubelet", "nonMasqueradeCIDR"), "kubelet nonMasqueradeCIDR did not match cluster nonMasqueradeCIDR"))
 						}
 					}
-					if c.Spec.MasterKubelet.NonMasqueradeCIDR != nonMasqueradeCIDRString {
-						if strict || c.Spec.MasterKubelet.NonMasqueradeCIDR != "" {
+					if fi.StringValue(c.Spec.MasterKubelet.NonMasqueradeCIDR) != nonMasqueradeCIDRString {
+						if strict || c.Spec.MasterKubelet.NonMasqueradeCIDR != nil {
 							allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("masterKubelet", "nonMasqueradeCIDR"), "masterKubelet nonMasqueradeCIDR did not match cluster nonMasqueradeCIDR"))
 						}
 					}
