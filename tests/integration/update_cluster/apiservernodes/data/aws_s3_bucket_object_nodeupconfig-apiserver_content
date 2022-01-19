@@ -154,6 +154,7 @@ KubeletConfig:
   nodeLabels:
     kubernetes.io/role: api-server
     node-role.kubernetes.io/api-server: ""
+  podInfraContainerImage: k8s.gcr.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
 UpdatePolicy: automatic

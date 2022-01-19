@@ -154,6 +154,7 @@ kubelet:
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
+  podInfraContainerImage: k8s.gcr.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
 
 __EOF_CLUSTER_SPEC
@@ -163,7 +164,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal-warmpool.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: n14X6wJZxIJ97TKqhg5MtTMvoRi6J2A/c9hdWDH0Vnk=
+NodeupConfigHash: YJCVXZCZTdPztdqK3JZ54fgpEteR5lrI3LG3Ze/W/tI=
 
 __EOF_KUBE_ENV
 

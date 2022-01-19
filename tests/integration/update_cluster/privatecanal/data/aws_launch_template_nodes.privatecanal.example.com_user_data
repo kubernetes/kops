@@ -154,6 +154,7 @@ kubelet:
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
+  podInfraContainerImage: k8s.gcr.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
 
@@ -164,7 +165,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privatecanal.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: y0AG6Quv95znOZsY2aZVRl5CxVEQrhCX36T0qObMMsc=
+NodeupConfigHash: FGnca2+VX90kYw427ZIeWjQwpodnhXYgV/9TLtqMdnA=
 
 __EOF_KUBE_ENV
 
