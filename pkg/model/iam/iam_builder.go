@@ -806,6 +806,7 @@ func (b *PolicyBuilder) addNodeupPermissions(p *Policy, enableHookSupport bool) 
 	addKMSGenerateRandomPolicies(p)
 	addASLifecyclePolicies(p, enableHookSupport)
 	p.unconditionalAction.Insert(
+		"ec2:DescribeRegions",
 		"ec2:DescribeInstances", // aws.go
 		"ec2:DescribeInstanceTypes",
 	)
