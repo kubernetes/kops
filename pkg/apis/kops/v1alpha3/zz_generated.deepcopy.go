@@ -3438,6 +3438,11 @@ func (in *KubeletConfigSpec) DeepCopyInto(out *KubeletConfigSpec) {
 		*out = new(v1.Duration)
 		**out = **in
 	}
+	if in.NetworkPluginName != nil {
+		in, out := &in.NetworkPluginName, &out.NetworkPluginName
+		*out = new(string)
+		**out = **in
+	}
 	if in.ReadOnlyPort != nil {
 		in, out := &in.ReadOnlyPort, &out.ReadOnlyPort
 		*out = new(int32)
@@ -3484,6 +3489,11 @@ func (in *KubeletConfigSpec) DeepCopyInto(out *KubeletConfigSpec) {
 		for key, val := range *in {
 			(*out)[key] = val
 		}
+	}
+	if in.NonMasqueradeCIDR != nil {
+		in, out := &in.NonMasqueradeCIDR, &out.NonMasqueradeCIDR
+		*out = new(string)
+		**out = **in
 	}
 	if in.EnableCustomMetrics != nil {
 		in, out := &in.EnableCustomMetrics, &out.EnableCustomMetrics

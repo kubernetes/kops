@@ -643,6 +643,15 @@ func validateKubelet(k *kops.KubeletConfigSpec, c *kops.Cluster, kubeletPath *fi
 	if k != nil {
 
 		{
+			// Flag removed in 1.5
+			if k.ConfigureCBR0 != nil {
+				allErrs = append(allErrs, field.Forbidden(
+					kubeletPath.Child("ConfigureCBR0"),
+					"configure-cbr0 flag was removed in 1.5"))
+			}
+		}
+
+		{
 			// Flag removed in 1.6
 			if k.APIServers != "" {
 				allErrs = append(allErrs, field.Forbidden(
@@ -689,6 +698,18 @@ func validateKubelet(k *kops.KubeletConfigSpec, c *kops.Cluster, kubeletPath *fi
 		if k.CPUCFSQuotaPeriod != nil {
 			if c.IsKubernetesGTE("1.20") {
 				allErrs = append(allErrs, field.Forbidden(kubeletPath.Child("cpuCFSQuotaPeriod"), "cpuCFSQuotaPeriod has been removed on Kubernetes >=1.20"))
+			}
+		}
+
+		if c.IsKubernetesGTE("1.24") {
+			if k.NetworkPluginName != nil {
+				allErrs = append(allErrs, field.Forbidden(kubeletPath.Child("networkPluginName"), "networkPluginName has been removed on Kubernetes >=1.24"))
+			}
+			if k.NetworkPluginMTU != nil {
+				allErrs = append(allErrs, field.Forbidden(kubeletPath.Child("networkPluginMTU"), "networkPluginMTU has been removed on Kubernetes >=1.24"))
+			}
+			if k.NonMasqueradeCIDR != nil {
+				allErrs = append(allErrs, field.Forbidden(kubeletPath.Child("nonMasqueradeCIDR"), "nonMasqueradeCIDR has been removed on Kubernetes >=1.24"))
 			}
 		}
 
