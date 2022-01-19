@@ -9,7 +9,7 @@ spec:
   channel: stable
   cloudProvider: aws
   configBase: memfs://clusters.example.com/minimal.example.com
-  containerRuntime: docker
+  containerRuntime: containerd
   etcdClusters:
   - etcdMembers:
     - instanceGroup: master-us-test-1a
@@ -25,7 +25,7 @@ spec:
       ExperimentalCriticalPodAnnotation: "true"
       AllowExtTrafficLocalEndpoints: "false"
     podManifestPath: "/etc/kubernetes/manifests"
-  kubernetesVersion: v1.22.0
+  kubernetesVersion: v1.24.0
   masterInternalName: api.internal.minimal.example.com
   masterPublicName: api.minimal.example.com
   networkCIDR: 172.20.0.0/16
