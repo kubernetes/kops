@@ -149,7 +149,7 @@ func Test_GetRequiredUpdates(t *testing.T) {
 			NeedsPKI: true,
 		},
 	}
-	addonUpdate, err := addon.GetRequiredUpdates(ctx, fakek8s, fakecm)
+	addonUpdate, err := addon.GetRequiredUpdates(ctx, fakek8s, fakecm, nil)
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
@@ -242,13 +242,15 @@ func Test_NeedsRollingUpdate(t *testing.T) {
 			annotations = g.originalAnnotations
 		}
 
-		objects := []runtime.Object{
-			&corev1.Namespace{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:        "kube-system",
-					Annotations: annotations,
-				},
+		kubeSystem := &corev1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "kube-system",
+				Annotations: annotations,
 			},
+		}
+
+		objects := []runtime.Object{
+			kubeSystem,
 			&corev1.Node{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "cp",
@@ -266,11 +268,14 @@ func Test_NeedsRollingUpdate(t *testing.T) {
 				},
 			},
 		}
+
+		existingChannels := FindChannelVersions(kubeSystem)
+
 		fakek8s := fakekubernetes.NewSimpleClientset(objects...)
 		fakecm := fakecertmanager.NewSimpleClientset()
 
 		addon := g.newAddon
-		required, err := addon.GetRequiredUpdates(ctx, fakek8s, fakecm)
+		required, err := addon.GetRequiredUpdates(ctx, fakek8s, fakecm, existingChannels[addon.Name])
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
