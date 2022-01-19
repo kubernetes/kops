@@ -313,11 +313,6 @@ func TestMinimalIPv6Private(t *testing.T) {
 
 // TestMinimalIPv6Calico runs the test on a minimum IPv6 configuration with Calico
 func TestMinimalIPv6Calico(t *testing.T) {
-	featureflag.ParseFlags("+AWSIPv6")
-	unsetFeatureFlags := func() {
-		featureflag.ParseFlags("-AWSIPv6")
-	}
-	defer unsetFeatureFlags()
 	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6-calico").
 		withAddons(awsCCMAddon, awsEBSCSIAddon, calicoAddon, dnsControllerAddon).
 		runTestTerraformAWS(t)
@@ -326,11 +321,6 @@ func TestMinimalIPv6Calico(t *testing.T) {
 
 // TestMinimalIPv6Calico runs the test on a minimum IPv6 configuration with Cilium
 func TestMinimalIPv6Cilium(t *testing.T) {
-	featureflag.ParseFlags("+AWSIPv6")
-	unsetFeatureFlags := func() {
-		featureflag.ParseFlags("-AWSIPv6")
-	}
-	defer unsetFeatureFlags()
 	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6-cilium").
 		withAddons(awsCCMAddon, awsEBSCSIAddon, ciliumAddon, dnsControllerAddon).
 		runTestTerraformAWS(t)
