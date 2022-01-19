@@ -1786,6 +1786,7 @@
               "Action": "ec2:CreateTags",
               "Condition": {
                 "StringEquals": {
+                  "aws:RequestTag/KubernetesCluster": "mixedinstances.example.com",
                   "ec2:CreateAction": [
                     "CreateVolume",
                     "CreateSnapshot"
@@ -1799,8 +1800,14 @@
               ]
             },
             {
-              "Action": "ec2:DeleteTags",
+              "Action": [
+                "ec2:CreateTags",
+                "ec2:DeleteTags"
+              ],
               "Condition": {
+                "Null": {
+                  "aws:RequestTag/KubernetesCluster": "true"
+                },
                 "StringEquals": {
                   "aws:ResourceTag/KubernetesCluster": "mixedinstances.example.com"
                 }
@@ -1894,6 +1901,7 @@
             {
               "Action": [
                 "ec2:CreateSecurityGroup",
+                "ec2:CreateSnapshot",
                 "ec2:CreateVolume",
                 "elasticloadbalancing:CreateListener",
                 "elasticloadbalancing:CreateLoadBalancer",

@@ -56,6 +56,54 @@ type Policy struct {
 	Version                   string
 }
 
+func (p *Policy) AddUnconditionalActions(actions ...string) {
+	p.unconditionalAction.Insert(actions...)
+}
+
+func (p *Policy) AddEC2CreateAction(actions, resources []string, partition string) {
+	actualActions := []string{}
+	for _, action := range actions {
+		actualActions = append(actualActions, "ec2:"+action)
+	}
+	actualResources := []string{}
+	for _, resource := range resources {
+		actualResources = append(actualResources, fmt.Sprintf("arn:%s:ec2:*:*:%s/*", partition, resource))
+	}
+
+	p.clusterTaggedCreateAction.Insert(actualActions...)
+
+	p.Statement = append(p.Statement,
+		&Statement{
+			Effect:   StatementEffectAllow,
+			Action:   stringorslice.String("ec2:CreateTags"),
+			Resource: stringorslice.Slice(actualResources),
+			Condition: Condition{
+				"StringEquals": map[string]interface{}{
+					"aws:RequestTag/KubernetesCluster": p.clusterName,
+					"ec2:CreateAction":                 actions,
+				},
+			},
+		},
+
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Slice([]string{
+				"ec2:CreateTags",
+				"ec2:DeleteTags", // aws.go, tag.go
+			}),
+			Resource: stringorslice.Slice(actualResources),
+			Condition: Condition{
+				"Null": map[string]string{
+					"aws:RequestTag/KubernetesCluster": "true",
+				},
+				"StringEquals": map[string]string{
+					"aws:ResourceTag/KubernetesCluster": p.clusterName,
+				},
+			},
+		},
+	)
+}
+
 // AsJSON converts the policy document to JSON format (parsable by AWS)
 func (p *Policy) AsJSON() (string, error) {
 	if len(p.unconditionalAction) > 0 {
@@ -960,49 +1008,17 @@ func AddAWSEBSCSIDriverPermissions(p *Policy, partition string, appendSnapshotPe
 		"ec2:DeleteVolume",            // aws.go
 		"ec2:DetachVolume",            // aws.go
 	)
-	p.clusterTaggedCreateAction.Insert(
-		"ec2:CreateVolume", // aws.go
-	)
 
-	p.Statement = append(p.Statement,
-		&Statement{
-			Effect: StatementEffectAllow,
-			Action: stringorslice.String(
-				"ec2:CreateTags", // aws.go, tag.go
-			),
-			Resource: stringorslice.Slice(
-				[]string{
-					fmt.Sprintf("arn:%v:ec2:*:*:volume/*", partition),
-					fmt.Sprintf("arn:%v:ec2:*:*:snapshot/*", partition),
-				},
-			),
-			Condition: Condition{
-				"StringEquals": map[string]interface{}{
-					"ec2:CreateAction": []string{
-						"CreateVolume",
-						"CreateSnapshot",
-					},
-				},
-			},
+	p.AddEC2CreateAction(
+		[]string{
+			"CreateVolume",
+			"CreateSnapshot",
 		},
-
-		&Statement{
-			Effect: StatementEffectAllow,
-			Action: stringorslice.String(
-				"ec2:DeleteTags", // aws.go, tag.go
-			),
-			Resource: stringorslice.Slice(
-				[]string{
-					fmt.Sprintf("arn:%v:ec2:*:*:volume/*", partition),
-					fmt.Sprintf("arn:%v:ec2:*:*:snapshot/*", partition),
-				},
-			),
-			Condition: Condition{
-				"StringEquals": map[string]string{
-					"aws:ResourceTag/KubernetesCluster": p.clusterName,
-				},
-			},
+		[]string{
+			"volume",
+			"snapshot",
 		},
+		partition,
 	)
 }
 
@@ -1114,7 +1130,6 @@ func addAmazonVPCCNIPermissions(p *Policy, partition string) {
 	p.unconditionalAction.Insert(
 		"ec2:AssignPrivateIpAddresses",
 		"ec2:AttachNetworkInterface",
-		"ec2:CreateNetworkInterface",
 		"ec2:DeleteNetworkInterface",
 		"ec2:DescribeInstances",
 		"ec2:DescribeInstanceTypes",
@@ -1123,7 +1138,9 @@ func addAmazonVPCCNIPermissions(p *Policy, partition string) {
 		"ec2:DetachNetworkInterface",
 		"ec2:ModifyNetworkInterfaceAttribute",
 		"ec2:UnassignPrivateIpAddresses",
+		"ec2:CreateNetworkInterface",
 	)
+
 	p.Statement = append(p.Statement,
 		&Statement{
 			Effect: StatementEffectAllow,
