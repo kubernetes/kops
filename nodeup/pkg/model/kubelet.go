@@ -259,11 +259,16 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 
 	// Add container runtime spcific flags
 	switch b.Cluster.Spec.ContainerRuntime {
-	case "docker", "":
-		flags += " --cni-bin-dir=" + b.CNIBinDir()
-		flags += " --cni-conf-dir=" + b.CNIConfDir()
+	case "docker":
+		if b.IsKubernetesLT("1.24") {
+			flags += " --container-runtime=docker"
+			flags += " --cni-bin-dir=" + b.CNIBinDir()
+			flags += " --cni-conf-dir=" + b.CNIConfDir()
+		}
 	case "containerd":
-		flags += " --container-runtime=remote"
+		if b.IsKubernetesLT("1.24") {
+			flags += " --container-runtime=remote"
+		}
 		flags += " --runtime-request-timeout=15m"
 		if b.Cluster.Spec.Containerd == nil || b.Cluster.Spec.Containerd.Address == nil {
 			flags += " --container-runtime-endpoint=unix:///run/containerd/containerd.sock"

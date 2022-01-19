@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
@@ -43,18 +44,12 @@ func (b *NetworkingOptionsBuilder) BuildOptions(o interface{}) error {
 		return fmt.Errorf("networking not set")
 	}
 
-	if UsesCNI(networking) {
-		if b.Context.IsKubernetesLT("1.24") {
-			options.Kubelet.NetworkPluginName = "cni"
+	if b.Context.IsKubernetesLT("1.24") {
+		if UsesCNI(networking) {
+			options.Kubelet.NetworkPluginName = fi.String("cni")
+		} else if networking.GCE != nil {
+			options.Kubelet.NetworkPluginName = fi.String("kubenet")
 		}
-
-		// ConfigureCBR0 flag removed from 1.5
-		options.Kubelet.ConfigureCBR0 = nil
-	}
-
-	if networking.GCE != nil {
-		// GCE IPAlias networking uses kubenet on the nodes
-		options.Kubelet.NetworkPluginName = "kubenet"
 	}
 
 	if networking.Classic != nil {
