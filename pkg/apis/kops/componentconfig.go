@@ -73,7 +73,7 @@ type KubeletConfigSpec struct {
 	// ClusterDNS is the IP address for a cluster DNS server
 	ClusterDNS string `json:"clusterDNS,omitempty" flag:"cluster-dns"`
 	// NetworkPluginName is the name of the network plugin to be invoked for various events in kubelet/pod lifecycle
-	NetworkPluginName string `json:"networkPluginName,omitempty" flag:"network-plugin"`
+	NetworkPluginName *string `json:"networkPluginName,omitempty" flag:"network-plugin"`
 	// CloudProvider is the provider for cloud services.
 	CloudProvider string `json:"cloudProvider,omitempty" flag:"cloud-provider"`
 	// KubeletCgroups is the absolute name of cgroups to isolate the kubelet in.
@@ -124,7 +124,7 @@ type KubeletConfigSpec struct {
 	// NodeLabels to add when registering the node in the cluster.
 	NodeLabels map[string]string `json:"nodeLabels,omitempty" flag:"node-labels"`
 	// NonMasqueradeCIDR configures masquerading: traffic to IPs outside this range will use IP masquerade.
-	NonMasqueradeCIDR string `json:"nonMasqueradeCIDR,omitempty" flag:"non-masquerade-cidr"`
+	NonMasqueradeCIDR *string `json:"nonMasqueradeCIDR,omitempty" flag:"non-masquerade-cidr"`
 	// Enable gathering custom metrics.
 	EnableCustomMetrics *bool `json:"enableCustomMetrics,omitempty" flag:"enable-custom-metrics"`
 	// NetworkPluginMTU is the MTU to be passed to the network plugin,
