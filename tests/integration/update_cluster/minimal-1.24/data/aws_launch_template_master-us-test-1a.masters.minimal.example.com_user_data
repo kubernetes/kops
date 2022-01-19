@@ -225,7 +225,6 @@ kubelet:
     InTreePluginAWSUnregister: "true"
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
-  networkPluginName: cni
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
 masterKubelet:
@@ -242,7 +241,6 @@ masterKubelet:
     InTreePluginAWSUnregister: "true"
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
-  networkPluginName: cni
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
   registerSchedulable: false
@@ -254,7 +252,7 @@ CloudProvider: aws
 ConfigBase: memfs://tests/minimal.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: G19o8iyxYuu/a0e4dRh4FGU9ZGX0YqfzaRdqEGn2qZs=
+NodeupConfigHash: CDzdXl/0qObw/fUKEXHnAs4vwUckB0u6Sb9hv98SEys=
 
 __EOF_KUBE_ENV
 
