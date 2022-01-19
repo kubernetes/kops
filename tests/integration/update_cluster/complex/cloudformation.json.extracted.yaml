@@ -232,6 +232,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscomplexexamplecom.Properties.
     logLevel: 2
     networkPluginName: cni
     nonMasqueradeCIDR: 100.64.0.0/10
+    podInfraContainerImage: k8s.gcr.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
   masterKubelet:
     anonymousAuth: false
@@ -246,6 +247,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscomplexexamplecom.Properties.
     logLevel: 2
     networkPluginName: cni
     nonMasqueradeCIDR: 100.64.0.0/10
+    podInfraContainerImage: k8s.gcr.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
 
@@ -256,7 +258,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscomplexexamplecom.Properties.
   ConfigBase: memfs://clusters.example.com/complex.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: DLpDrrH3h2Uy2+7dsECWpgBLoINeoU7fDp1uSjhJtMM=
+  NodeupConfigHash: KObN4vJQjNqWCRs1k3dZC0F74TO+QjhXmKzr/CHYqhM=
 
   __EOF_KUBE_ENV
 
@@ -436,6 +438,7 @@ Resources.AWSEC2LaunchTemplatenodescomplexexamplecom.Properties.LaunchTemplateDa
     logLevel: 2
     networkPluginName: cni
     nonMasqueradeCIDR: 100.64.0.0/10
+    podInfraContainerImage: k8s.gcr.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
 
   __EOF_CLUSTER_SPEC
@@ -445,7 +448,7 @@ Resources.AWSEC2LaunchTemplatenodescomplexexamplecom.Properties.LaunchTemplateDa
   ConfigBase: memfs://clusters.example.com/complex.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: fGTmBcbyKuWorJbX6eBkslcjYOq0PB5pxqJzrWuWxzE=
+  NodeupConfigHash: 4U43W1f3HydKEAauHMfgZb0Zgq9v4vvI2waq8HDlhLw=
 
   __EOF_KUBE_ENV
 

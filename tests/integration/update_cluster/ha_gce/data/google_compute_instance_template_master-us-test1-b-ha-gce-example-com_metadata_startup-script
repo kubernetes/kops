@@ -219,6 +219,7 @@ kubelet:
   logLevel: 2
   networkPluginName: cni
   nonMasqueradeCIDR: 100.64.0.0/10
+  podInfraContainerImage: k8s.gcr.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
 masterKubelet:
   anonymousAuth: false
@@ -234,6 +235,7 @@ masterKubelet:
   logLevel: 2
   networkPluginName: cni
   nonMasqueradeCIDR: 100.64.0.0/10
+  podInfraContainerImage: k8s.gcr.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   registerSchedulable: false
 
@@ -244,7 +246,7 @@ CloudProvider: gce
 ConfigBase: memfs://tests/ha-gce.example.com
 InstanceGroupName: master-us-test1-b
 InstanceGroupRole: Master
-NodeupConfigHash: ed1bwsN4PTJjUWdPgaSYtnSq5jPOvKqFr7xhGFt6uiU=
+NodeupConfigHash: ULZGZ/mrHNME/CcViCFyOh19n0ATheoJwsZ5McA3KyI=
 
 __EOF_KUBE_ENV
 
