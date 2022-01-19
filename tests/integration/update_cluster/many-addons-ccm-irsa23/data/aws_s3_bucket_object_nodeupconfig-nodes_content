@@ -58,6 +58,7 @@ KubeletConfig:
   nodeLabels:
     kubernetes.io/role: node
     node-role.kubernetes.io/node: ""
+  nonMasqueradeCIDR: 172.20.0.0/16
   podInfraContainerImage: k8s.gcr.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true

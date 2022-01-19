@@ -134,83 +134,9 @@ containerd:
   version: 1.6.1
 docker:
   skipInstall: true
-encryptionConfig: null
-etcdClusters:
-  events:
-    version: 3.5.1
-  main:
-    version: 3.5.1
-kubeAPIServer:
-  allowPrivileged: true
-  anonymousAuth: false
-  apiAudiences:
-  - kubernetes.svc.default
-  apiServerCount: 1
-  authorizationMode: AlwaysAllow
-  bindAddress: 0.0.0.0
-  cloudProvider: external
-  enableAdmissionPlugins:
-  - NamespaceLifecycle
-  - LimitRanger
-  - ServiceAccount
-  - DefaultStorageClass
-  - DefaultTolerationSeconds
-  - MutatingAdmissionWebhook
-  - ValidatingAdmissionWebhook
-  - NodeRestriction
-  - ResourceQuota
-  etcdServers:
-  - https://127.0.0.1:4001
-  etcdServersOverrides:
-  - /events#https://127.0.0.1:4002
-  featureGates:
-    CSIMigrationAWS: "true"
-    InTreePluginAWSUnregister: "true"
-  image: k8s.gcr.io/kube-apiserver:v1.23.0
-  kubeletPreferredAddressTypes:
-  - InternalIP
-  - Hostname
-  - ExternalIP
-  logLevel: 2
-  requestheaderAllowedNames:
-  - aggregator
-  requestheaderExtraHeaderPrefixes:
-  - X-Remote-Extra-
-  requestheaderGroupHeaders:
-  - X-Remote-Group
-  requestheaderUsernameHeaders:
-  - X-Remote-User
-  securePort: 443
-  serviceAccountIssuer: https://discovery.example.com/minimal.example.com
-  serviceAccountJWKSURI: https://discovery.example.com/minimal.example.com/openid/v1/jwks
-  serviceClusterIPRange: 172.20.0.0/19
-  storageBackend: etcd3
-kubeControllerManager:
-  allocateNodeCIDRs: true
-  attachDetachReconcileSyncPeriod: 1m0s
-  cloudProvider: external
-  clusterCIDR: 172.20.128.0/17
-  clusterName: minimal.example.com
-  configureCloudRoutes: false
-  featureGates:
-    CSIMigrationAWS: "true"
-    InTreePluginAWSUnregister: "true"
-  image: k8s.gcr.io/kube-controller-manager:v1.23.0
-  leaderElection:
-    leaderElect: true
-  logLevel: 2
-  useServiceAccountCredentials: true
 kubeProxy:
   cpuRequest: 100m
   image: k8s.gcr.io/kube-proxy:v1.23.0
-  logLevel: 2
-kubeScheduler:
-  featureGates:
-    CSIMigrationAWS: "true"
-    InTreePluginAWSUnregister: "true"
-  image: k8s.gcr.io/kube-scheduler:v1.23.0
-  leaderElection:
-    leaderElect: true
   logLevel: 2
 kubelet:
   anonymousAuth: false
@@ -233,37 +159,15 @@ kubelet:
   protectKernelDefaults: true
   shutdownGracePeriod: 0s
   shutdownGracePeriodCriticalPods: 0s
-masterKubelet:
-  anonymousAuth: false
-  cgroupDriver: systemd
-  cgroupRoot: /
-  cloudProvider: external
-  clusterDNS: 172.20.0.10
-  clusterDomain: cluster.local
-  enableDebuggingHandlers: true
-  evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-  featureGates:
-    CSIMigrationAWS: "true"
-    InTreePluginAWSUnregister: "true"
-  kubeconfigPath: /var/lib/kubelet/kubeconfig
-  logLevel: 2
-  networkPluginName: cni
-  nonMasqueradeCIDR: 172.20.0.0/16
-  podInfraContainerImage: k8s.gcr.io/pause:3.6
-  podManifestPath: /etc/kubernetes/manifests
-  protectKernelDefaults: true
-  registerSchedulable: false
-  shutdownGracePeriod: 0s
-  shutdownGracePeriodCriticalPods: 0s
 
 __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.example.com
-InstanceGroupName: master-us-test-1a
-InstanceGroupRole: Master
-NodeupConfigHash: e1bGs083btIG5nrKJb4m/cq5X3+QCG7Uy5eEeJCHj0s=
+InstanceGroupName: nodes
+InstanceGroupRole: Node
+NodeupConfigHash: 4Md474FaPqfvvlhfEdZlelEpriEgpSKLV8N9TibX1qQ=
 
 __EOF_KUBE_ENV
 
