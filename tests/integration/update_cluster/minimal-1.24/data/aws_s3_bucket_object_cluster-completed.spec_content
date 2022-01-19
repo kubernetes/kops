@@ -154,7 +154,6 @@ spec:
       InTreePluginAWSUnregister: "true"
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    networkPluginName: cni
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
   kubernetesApiAccess:
@@ -176,7 +175,6 @@ spec:
       InTreePluginAWSUnregister: "true"
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    networkPluginName: cni
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
     registerSchedulable: false

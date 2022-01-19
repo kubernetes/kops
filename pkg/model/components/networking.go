@@ -44,7 +44,9 @@ func (b *NetworkingOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if UsesCNI(networking) {
-		options.Kubelet.NetworkPluginName = "cni"
+		if b.Context.IsKubernetesLT("1.24") {
+			options.Kubelet.NetworkPluginName = "cni"
+		}
 
 		// ConfigureCBR0 flag removed from 1.5
 		options.Kubelet.ConfigureCBR0 = nil
