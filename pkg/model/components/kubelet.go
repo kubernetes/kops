@@ -167,15 +167,16 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 			clusterSpec.Kubelet.NetworkPluginMTU = fi.Int32(9001)
 			clusterSpec.Kubelet.NonMasqueradeCIDR = clusterSpec.NonMasqueradeCIDR
 		}
-
-		// Specify our pause image
-		image := "k8s.gcr.io/pause:3.5"
-		var err error
-		if image, err = b.AssetBuilder.RemapImage(image); err != nil {
-			return err
-		}
-		clusterSpec.Kubelet.PodInfraContainerImage = image
 	}
+
+	// Prevent image GC from pruning the pause image
+	// https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/2040-kubelet-cri#pinned-images
+	image := "k8s.gcr.io/pause:3.6"
+	var err error
+	if image, err = b.AssetBuilder.RemapImage(image); err != nil {
+		return err
+	}
+	clusterSpec.Kubelet.PodInfraContainerImage = image
 
 	if clusterSpec.Kubelet.FeatureGates == nil {
 		clusterSpec.Kubelet.FeatureGates = make(map[string]string)
