@@ -152,6 +152,7 @@ kubelet:
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
+  podInfraContainerImage: k8s.gcr.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
 
 __EOF_CLUSTER_SPEC
@@ -161,7 +162,7 @@ CloudProvider: gce
 ConfigBase: memfs://tests/ha-gce.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: w6I7+Gag8l95QA4GqHGXHuntmE8O3AhtpHG2okG64mE=
+NodeupConfigHash: qBD+3Pa8MCxEAjCkADHhn90LF7O/xcmRrYbNJvvph3E=
 
 __EOF_KUBE_ENV
 

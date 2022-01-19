@@ -26,6 +26,7 @@ contents: |
   [plugins]
 
     [plugins."io.containerd.grpc.v1.cri"]
+      sandbox_image = "k8s.gcr.io/pause:3.6"
 
       [plugins."io.containerd.grpc.v1.cri".cni]
         conf_template = "/etc/containerd/config-cni.template"
