@@ -245,7 +245,7 @@ const (
 	// "KeySigningKeyAlreadyExists".
 	//
 	// You've already created a key-signing key (KSK) with this name or with the
-	// same customer managed customer master key (CMK) ARN.
+	// same customer managed key ARN.
 	ErrCodeKeySigningKeyAlreadyExists = "KeySigningKeyAlreadyExists"
 
 	// ErrCodeKeySigningKeyInParentDSRecord for service response error code
