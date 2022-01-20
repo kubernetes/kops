@@ -928,7 +928,7 @@ func (c *Route53) CreateKeySigningKeyRequest(input *CreateKeySigningKeyInput) (r
 //
 //   * ErrCodeKeySigningKeyAlreadyExists "KeySigningKeyAlreadyExists"
 //   You've already created a key-signing key (KSK) with this name or with the
-//   same customer managed customer master key (CMK) ARN.
+//   same customer managed key ARN.
 //
 //   * ErrCodeTooManyKeySigningKeys "TooManyKeySigningKeys"
 //   You've reached the limit for the number of key-signing keys (KSKs). Remove
@@ -2139,6 +2139,12 @@ func (c *Route53) DeleteKeySigningKeyRequest(input *DeleteKeySigningKeyInput) (r
 // Deletes a key-signing key (KSK). Before you can delete a KSK, you must deactivate
 // it. The KSK must be deactivated before you can delete it regardless of whether
 // the hosted zone is enabled for DNSSEC signing.
+//
+// You can use DeactivateKeySigningKey (https://docs.aws.amazon.com/Route53/latest/APIReference/API_DeactivateKeySigningKey.html)
+// to deactivate the key before you delete it.
+//
+// Use GetDNSSEC (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetDNSSEC.html)
+// to verify that the KSK is in an INACTIVE status.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -6560,6 +6566,13 @@ func (c *Route53) UpdateHostedZoneCommentRequest(input *UpdateHostedZoneCommentI
 //   * ErrCodeInvalidInput "InvalidInput"
 //   The input is not valid.
 //
+//   * ErrCodePriorRequestNotComplete "PriorRequestNotComplete"
+//   If Amazon Route 53 can't process a request before the next request arrives,
+//   it will reject subsequent requests for the same hosted zone and return an
+//   HTTP 400 error (Bad request). If Route 53 returns this error repeatedly for
+//   the same request, we recommend that you wait, in intervals of increasing
+//   duration, before you try the request again.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/UpdateHostedZoneComment
 func (c *Route53) UpdateHostedZoneComment(input *UpdateHostedZoneCommentInput) (*UpdateHostedZoneCommentOutput, error) {
 	req, out := c.UpdateHostedZoneCommentRequest(input)
@@ -8259,6 +8272,9 @@ type CreateHostedZoneInput struct {
 	// the Amazon VPC that you're associating with this hosted zone.
 	//
 	// You can specify only one Amazon VPC when you create a private hosted zone.
+	// If you are associating a VPC with a hosted zone with this request, the paramaters
+	// VPCId and VPCRegion are also required.
+	//
 	// To associate additional Amazon VPCs with the hosted zone, use AssociateVPCWithHostedZone
 	// (https://docs.aws.amazon.com/Route53/latest/APIReference/API_AssociateVPCWithHostedZone.html)
 	// after you create a hosted zone.
@@ -8427,13 +8443,12 @@ type CreateKeySigningKeyInput struct {
 	// HostedZoneId is a required field
 	HostedZoneId *string `type:"string" required:"true"`
 
-	// The Amazon resource name (ARN) for a customer managed customer master key
-	// (CMK) in Key Management Service (KMS). The KeyManagementServiceArn must be
-	// unique for each key-signing key (KSK) in a single hosted zone. To see an
-	// example of KeyManagementServiceArn that grants the correct permissions for
-	// DNSSEC, scroll down to Example.
+	// The Amazon resource name (ARN) for a customer managed key in Key Management
+	// Service (KMS). The KeyManagementServiceArn must be unique for each key-signing
+	// key (KSK) in a single hosted zone. To see an example of KeyManagementServiceArn
+	// that grants the correct permissions for DNSSEC, scroll down to Example.
 	//
-	// You must configure the customer managed CMK as follows:
+	// You must configure the customer managed customer managed key as follows:
 	//
 	// Status
 	//
@@ -8462,7 +8477,7 @@ type CreateKeySigningKeyInput struct {
 	//
 	//    * "Service": "dnssec-route53.amazonaws.com"
 	//
-	// For more information about working with a customer managed CMK in KMS, see
+	// For more information about working with a customer managed key in KMS, see
 	// Key Management Service concepts (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html).
 	//
 	// KeyManagementServiceArn is a required field
@@ -9388,9 +9403,9 @@ type DNSSECStatus struct {
 	// ACTION_NEEDED
 	//
 	// There is a problem with signing in the hosted zone that requires you to take
-	// action to resolve. For example, the customer managed customer master key
-	// (CMK) might have been deleted, or the permissions for the customer managed
-	// CMK might have been changed.
+	// action to resolve. For example, the customer managed key might have been
+	// deleted, or the permissions for the customer managed key might have been
+	// changed.
 	//
 	// INTERNAL_FAILURE
 	//
@@ -13362,11 +13377,11 @@ type KeySigningKey struct {
 	// used to calculate the value is described in RFC-4034 Appendix B (https://tools.ietf.org/rfc/rfc4034.txt).
 	KeyTag *int64 `type:"integer"`
 
-	// The Amazon resource name (ARN) used to identify the customer managed customer
-	// master key (CMK) in Key Management Service (KMS). The KmsArn must be unique
-	// for each key-signing key (KSK) in a single hosted zone.
+	// The Amazon resource name (ARN) used to identify the customer managed key
+	// in Key Management Service (KMS). The KmsArn must be unique for each key-signing
+	// key (KSK) in a single hosted zone.
 	//
-	// You must configure the CMK as follows:
+	// You must configure the customer managed key as follows:
 	//
 	// Status
 	//
@@ -13395,7 +13410,7 @@ type KeySigningKey struct {
 	//
 	//    * "Service": "dnssec-route53.amazonaws.com"
 	//
-	// For more information about working with the customer managed CMK in KMS,
+	// For more information about working with the customer managed key in KMS,
 	// see Key Management Service concepts (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html).
 	KmsArn *string `type:"string"`
 
@@ -13438,9 +13453,8 @@ type KeySigningKey struct {
 	// ACTION_NEEDED
 	//
 	// There is a problem with the KSK that requires you to take action to resolve.
-	// For example, the customer managed customer master key (CMK) might have been
-	// deleted, or the permissions for the customer managed CMK might have been
-	// changed.
+	// For example, the customer managed key might have been deleted, or the permissions
+	// for the customer managed key might have been changed.
 	//
 	// INTERNAL_FAILURE
 	//
@@ -17810,10 +17824,10 @@ type UpdateHealthCheckInput struct {
 	//
 	//    * Unhealthy: Route 53 considers the health check to be unhealthy.
 	//
-	//    * LastKnownStatus: Route 53 uses the status of the health check from the
-	//    last time CloudWatch had sufficient data to determine the alarm state.
-	//    For new health checks that have no last known status, the default status
-	//    for the health check is healthy.
+	//    * LastKnownStatus: By default, Route 53 uses the status of the health
+	//    check from the last time CloudWatch had sufficient data to determine the
+	//    alarm state. For new health checks that have no last known status, the
+	//    status for the health check is healthy.
 	InsufficientDataHealthStatus *string `type:"string" enum:"InsufficientDataHealthStatus"`
 
 	// Specify whether you want Amazon Route 53 to invert the status of a health
@@ -18406,6 +18420,10 @@ func (s *UpdateTrafficPolicyInstanceOutput) SetTrafficPolicyInstance(v *TrafficP
 
 // (Private hosted zones only) A complex type that contains information about
 // an Amazon VPC.
+//
+// If you associate a private hosted zone with an Amazon VPC when you make a
+// CreateHostedZone (https://docs.aws.amazon.com/Route53/latest/APIReference/API_CreateHostedZone.html)
+// request, the following parameters are also required.
 type VPC struct {
 	_ struct{} `type:"structure"`
 
@@ -18566,6 +18584,9 @@ const (
 	// CloudWatchRegionApSoutheast2 is a CloudWatchRegion enum value
 	CloudWatchRegionApSoutheast2 = "ap-southeast-2"
 
+	// CloudWatchRegionApSoutheast3 is a CloudWatchRegion enum value
+	CloudWatchRegionApSoutheast3 = "ap-southeast-3"
+
 	// CloudWatchRegionApNortheast1 is a CloudWatchRegion enum value
 	CloudWatchRegionApNortheast1 = "ap-northeast-1"
 
@@ -18602,6 +18623,9 @@ const (
 	// CloudWatchRegionUsIsoEast1 is a CloudWatchRegion enum value
 	CloudWatchRegionUsIsoEast1 = "us-iso-east-1"
 
+	// CloudWatchRegionUsIsoWest1 is a CloudWatchRegion enum value
+	CloudWatchRegionUsIsoWest1 = "us-iso-west-1"
+
 	// CloudWatchRegionUsIsobEast1 is a CloudWatchRegion enum value
 	CloudWatchRegionUsIsobEast1 = "us-isob-east-1"
 )
@@ -18623,6 +18647,7 @@ func CloudWatchRegion_Values() []string {
 		CloudWatchRegionApSouth1,
 		CloudWatchRegionApSoutheast1,
 		CloudWatchRegionApSoutheast2,
+		CloudWatchRegionApSoutheast3,
 		CloudWatchRegionApNortheast1,
 		CloudWatchRegionApNortheast2,
 		CloudWatchRegionApNortheast3,
@@ -18635,6 +18660,7 @@ func CloudWatchRegion_Values() []string {
 		CloudWatchRegionUsGovWest1,
 		CloudWatchRegionUsGovEast1,
 		CloudWatchRegionUsIsoEast1,
+		CloudWatchRegionUsIsoWest1,
 		CloudWatchRegionUsIsobEast1,
 	}
 }
@@ -18913,6 +18939,9 @@ const (
 	// ResourceRecordSetRegionApSoutheast2 is a ResourceRecordSetRegion enum value
 	ResourceRecordSetRegionApSoutheast2 = "ap-southeast-2"
 
+	// ResourceRecordSetRegionApSoutheast3 is a ResourceRecordSetRegion enum value
+	ResourceRecordSetRegionApSoutheast3 = "ap-southeast-3"
+
 	// ResourceRecordSetRegionApNortheast1 is a ResourceRecordSetRegion enum value
 	ResourceRecordSetRegionApNortheast1 = "ap-northeast-1"
 
@@ -18964,6 +18993,7 @@ func ResourceRecordSetRegion_Values() []string {
 		ResourceRecordSetRegionEuCentral1,
 		ResourceRecordSetRegionApSoutheast1,
 		ResourceRecordSetRegionApSoutheast2,
+		ResourceRecordSetRegionApSoutheast3,
 		ResourceRecordSetRegionApNortheast1,
 		ResourceRecordSetRegionApNortheast2,
 		ResourceRecordSetRegionApNortheast3,
@@ -19075,6 +19105,9 @@ const (
 	// VPCRegionUsIsoEast1 is a VPCRegion enum value
 	VPCRegionUsIsoEast1 = "us-iso-east-1"
 
+	// VPCRegionUsIsoWest1 is a VPCRegion enum value
+	VPCRegionUsIsoWest1 = "us-iso-west-1"
+
 	// VPCRegionUsIsobEast1 is a VPCRegion enum value
 	VPCRegionUsIsobEast1 = "us-isob-east-1"
 
@@ -19083,6 +19116,9 @@ const (
 
 	// VPCRegionApSoutheast2 is a VPCRegion enum value
 	VPCRegionApSoutheast2 = "ap-southeast-2"
+
+	// VPCRegionApSoutheast3 is a VPCRegion enum value
+	VPCRegionApSoutheast3 = "ap-southeast-3"
 
 	// VPCRegionApSouth1 is a VPCRegion enum value
 	VPCRegionApSouth1 = "ap-south-1"
@@ -19131,9 +19167,11 @@ func VPCRegion_Values() []string {
 		VPCRegionUsGovWest1,
 		VPCRegionUsGovEast1,
 		VPCRegionUsIsoEast1,
+		VPCRegionUsIsoWest1,
 		VPCRegionUsIsobEast1,
 		VPCRegionApSoutheast1,
 		VPCRegionApSoutheast2,
+		VPCRegionApSoutheast3,
 		VPCRegionApSouth1,
 		VPCRegionApNortheast1,
 		VPCRegionApNortheast2,
