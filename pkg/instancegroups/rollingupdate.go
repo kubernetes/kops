@@ -77,6 +77,9 @@ type RollingUpdateCluster struct {
 
 	// ValidateCount is the amount of time that a cluster needs to be validated after single node update
 	ValidateCount int
+
+	// DrainTimeout is the maximum amount of time to wait while draining a node.
+	DrainTimeout time.Duration
 }
 
 // AdjustNeedUpdate adjusts the set of instances that need updating, using factors outside those known by the cloud implementation
