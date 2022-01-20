@@ -31,8 +31,8 @@ var _ iam.Subject = &ServiceAccount{}
 // BuildAWSPolicy generates a custom policy for a ServiceAccount IAM role.
 func (r *ServiceAccount) BuildAWSPolicy(b *iam.PolicyBuilder) (*iam.Policy, error) {
 	clusterName := b.Cluster.ObjectMeta.Name
-	p := iam.NewPolicy(clusterName)
-	iam.AddCCMPermissions(p, b.Partition, b.Cluster.Spec.Networking.Kubenet != nil)
+	p := iam.NewPolicy(clusterName, b.Partition)
+	iam.AddCCMPermissions(p, b.Cluster.Spec.Networking.Kubenet != nil)
 	if b.Cluster.IsKubernetesLT("1.23") {
 		iam.AddLegacyCCMPermissions(p)
 	}
