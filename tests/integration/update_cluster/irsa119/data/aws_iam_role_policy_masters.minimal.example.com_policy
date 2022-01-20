@@ -106,7 +106,7 @@
       },
       "Effect": "Allow",
       "Resource": [
-        "arn:aws-test:ec2:*:*:securitygroups/*"
+        "arn:aws-test:ec2:*:*:security-group/*"
       ]
     },
     {
@@ -124,7 +124,7 @@
       },
       "Effect": "Allow",
       "Resource": [
-        "arn:aws-test:ec2:*:*:securitygroups/*"
+        "arn:aws-test:ec2:*:*:security-group/*"
       ]
     },
     {
@@ -140,12 +140,8 @@
       },
       "Effect": "Allow",
       "Resource": [
-<<<<<<< HEAD:tests/integration/update_cluster/irsa119/data/aws_iam_role_policy_masters.minimal.example.com_policy
         "arn:aws-test:ec2:*:*:volume/*",
         "arn:aws-test:ec2:*:*:snapshot/*"
-=======
-        "arn:aws-test:ec2:*:*:security-group/*"
->>>>>>> Push partition into the policy struct:tests/integration/update_cluster/minimal-1.24/data/aws_iam_role_policy_masters.minimal.example.com_policy
       ]
     },
     {
@@ -163,12 +159,8 @@
       },
       "Effect": "Allow",
       "Resource": [
-<<<<<<< HEAD:tests/integration/update_cluster/irsa119/data/aws_iam_role_policy_masters.minimal.example.com_policy
         "arn:aws-test:ec2:*:*:volume/*",
         "arn:aws-test:ec2:*:*:snapshot/*"
-=======
-        "arn:aws-test:ec2:*:*:security-group/*"
->>>>>>> Push partition into the policy struct:tests/integration/update_cluster/minimal-1.24/data/aws_iam_role_policy_masters.minimal.example.com_policy
       ]
     },
     {
@@ -274,6 +266,11 @@
       },
       "Effect": "Allow",
       "Resource": "*"
+    },
+    {
+      "Action": "ec2:CreateSecurityGroup",
+      "Effect": "Allow",
+      "Resource": "arn:aws-test:ec2:*:*:vpc/*"
     }
   ],
   "Version": "2012-10-17"

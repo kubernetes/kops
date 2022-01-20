@@ -137,6 +137,15 @@ func (p *Policy) AsJSON() (string, error) {
 				},
 			},
 		})
+		// ec2:CreateSecurityGroup needs some special care as it also interacts with vpc, which do not support RequestTag.
+		// We also do not require VPCs to be tagged, so we are not sending any conditions, allowing SGs to be created in any VPC.
+		if p.clusterTaggedCreateAction.Has("ec2:CreateSecurityGroup") {
+			p.Statement = append(p.Statement, &Statement{
+				Effect:   StatementEffectAllow,
+				Action:   stringorslice.Of("ec2:CreateSecurityGroup"),
+				Resource: stringorslice.String(fmt.Sprintf("arn:%s:ec2:*:*:vpc/*", p.partition)),
+			})
+		}
 	}
 	if len(p.Statement) == 0 {
 		return "", fmt.Errorf("policy contains no statement")
@@ -874,12 +883,6 @@ func AddLegacyCCMPermissions(p *Policy) {
 }
 
 func AddCCMPermissions(p *Policy, cloudRoutes bool) {
-	// legacy permissions we want to get rid of
-
-	p.unconditionalAction.Insert(
-		"ec2:CreateTags",
-	)
-
 	p.unconditionalAction.Insert(
 		"autoscaling:DescribeAutoScalingGroups",
 		"autoscaling:DescribeTags",

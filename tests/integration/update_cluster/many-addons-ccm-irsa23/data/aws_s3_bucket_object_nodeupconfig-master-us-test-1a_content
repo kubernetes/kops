@@ -257,10 +257,7 @@ KubeletConfig:
     node-role.kubernetes.io/control-plane: ""
     node-role.kubernetes.io/master: ""
     node.kubernetes.io/exclude-from-external-load-balancers: ""
-<<<<<<< HEAD
   nonMasqueradeCIDR: 172.20.0.0/16
-=======
->>>>>>> Push partition into the policy struct
   podInfraContainerImage: k8s.gcr.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true

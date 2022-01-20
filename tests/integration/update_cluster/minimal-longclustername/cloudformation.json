@@ -1058,7 +1058,7 @@
               },
               "Effect": "Allow",
               "Resource": [
-                "arn:aws-test:ec2:*:*:securitygroups/*"
+                "arn:aws-test:ec2:*:*:security-group/*"
               ]
             },
             {
@@ -1076,7 +1076,7 @@
               },
               "Effect": "Allow",
               "Resource": [
-                "arn:aws-test:ec2:*:*:securitygroups/*"
+                "arn:aws-test:ec2:*:*:security-group/*"
               ]
             },
             {
@@ -1218,6 +1218,11 @@
               },
               "Effect": "Allow",
               "Resource": "*"
+            },
+            {
+              "Action": "ec2:CreateSecurityGroup",
+              "Effect": "Allow",
+              "Resource": "arn:aws-test:ec2:*:*:vpc/*"
             }
           ],
           "Version": "2012-10-17"
