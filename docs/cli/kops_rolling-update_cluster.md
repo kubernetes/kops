@@ -58,6 +58,7 @@ kops rolling-update cluster [CLUSTER] [flags]
 ```
       --bastion-interval duration      Time to wait between restarting bastions (default 15s)
       --cloudonly                      Perform rolling update without confirming progress with Kubernetes
+      --drain-timeout duration         Maximum time to wait for a node to drain (default 15m0s)
       --fail-on-drain-error            Fail if draining a node fails (default true)
       --fail-on-validate-error         Fail if the cluster fails to validate (default true)
       --force                          Force rolling update, even if no changes
