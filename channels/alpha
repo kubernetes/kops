@@ -58,11 +58,11 @@ spec:
       providerID: aws
       architectureID: amd64
       kubernetesVersion: ">=1.17.0 <1.18.0"
-    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211118
+    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220118
       providerID: aws
       architectureID: amd64
       kubernetesVersion: ">=1.18.0"
-    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20211118
+    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20220118
       providerID: aws
       architectureID: arm64
       kubernetesVersion: ">=1.20.0"
@@ -88,16 +88,16 @@ spec:
       kubenet: {}
   kubernetesVersions:
   - range: ">=1.23.0"
-    recommendedVersion: 1.23.1
+    recommendedVersion: 1.23.2
     requiredVersion: 1.23.0
   - range: ">=1.22.0"
-    recommendedVersion: 1.22.5
+    recommendedVersion: 1.22.6
     requiredVersion: 1.22.0
   - range: ">=1.21.0"
-    recommendedVersion: 1.21.8
+    recommendedVersion: 1.21.9
     requiredVersion: 1.21.0
   - range: ">=1.20.0"
-    recommendedVersion: 1.20.13
+    recommendedVersion: 1.20.15
     requiredVersion: 1.20.0
   - range: ">=1.19.0"
     recommendedVersion: 1.19.16
@@ -133,19 +133,19 @@ spec:
   - range: ">=1.23.0-alpha.1"
     #recommendedVersion: "1.23.0"
     #requiredVersion: 1.22.0
-    kubernetesVersion: 1.23.1
+    kubernetesVersion: 1.23.2
   - range: ">=1.22.0-alpha.1"
     recommendedVersion: "1.22.2"
     #requiredVersion: 1.22.0
-    kubernetesVersion: 1.22.5
+    kubernetesVersion: 1.22.6
   - range: ">=1.21.0-alpha.1"
     recommendedVersion: "1.22.2"
     #requiredVersion: 1.21.0
-    kubernetesVersion: 1.21.8
+    kubernetesVersion: 1.21.9
   - range: ">=1.20.0-alpha.1"
     recommendedVersion: "1.22.2"
     #requiredVersion: 1.20.0
-    kubernetesVersion: 1.20.13
+    kubernetesVersion: 1.20.15
   - range: ">=1.19.0-alpha.1"
     recommendedVersion: "1.22.2"
     #requiredVersion: 1.19.0
