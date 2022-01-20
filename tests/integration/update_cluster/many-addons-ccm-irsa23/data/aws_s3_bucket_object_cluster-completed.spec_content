@@ -172,7 +172,10 @@ spec:
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
+<<<<<<< HEAD
     nonMasqueradeCIDR: 172.20.0.0/16
+=======
+>>>>>>> Push partition into the policy struct
     podInfraContainerImage: k8s.gcr.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
@@ -197,7 +200,10 @@ spec:
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
+<<<<<<< HEAD
     nonMasqueradeCIDR: 172.20.0.0/16
+=======
+>>>>>>> Push partition into the policy struct
     podInfraContainerImage: k8s.gcr.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true

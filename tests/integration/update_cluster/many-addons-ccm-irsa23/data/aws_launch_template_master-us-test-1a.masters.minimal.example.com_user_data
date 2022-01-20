@@ -227,7 +227,10 @@ kubelet:
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
+<<<<<<< HEAD
   nonMasqueradeCIDR: 172.20.0.0/16
+=======
+>>>>>>> Push partition into the policy struct
   podInfraContainerImage: k8s.gcr.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
@@ -248,7 +251,10 @@ masterKubelet:
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
+<<<<<<< HEAD
   nonMasqueradeCIDR: 172.20.0.0/16
+=======
+>>>>>>> Push partition into the policy struct
   podInfraContainerImage: k8s.gcr.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
@@ -263,7 +269,11 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
+<<<<<<< HEAD
 NodeupConfigHash: e1bGs083btIG5nrKJb4m/cq5X3+QCG7Uy5eEeJCHj0s=
+=======
+NodeupConfigHash: EPGaKPAJ6gYBCyaI6fyRl8Gx4kmanytpoGWTdGyVvUU=
+>>>>>>> Push partition into the policy struct
 
 __EOF_KUBE_ENV
 

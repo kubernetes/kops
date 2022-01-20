@@ -1395,7 +1395,7 @@
               },
               "Effect": "Allow",
               "Resource": [
-                "arn:aws-test:ec2:*:*:securitygroups/*"
+                "arn:aws-test:ec2:*:*:security-group/*"
               ]
             },
             {
@@ -1413,7 +1413,7 @@
               },
               "Effect": "Allow",
               "Resource": [
-                "arn:aws-test:ec2:*:*:securitygroups/*"
+                "arn:aws-test:ec2:*:*:security-group/*"
               ]
             },
             {
