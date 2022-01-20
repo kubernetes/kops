@@ -328,8 +328,8 @@ func (b *FirewallModelBuilder) addKubeletRules(c *fi.ModelBuilderContext, sgMap 
 	return nil
 }
 
-// addNodeExporterRules - Allow 9100 TCP port from nodesg
-func (b *FirewallModelBuilder) addNodeExporterRules(c *fi.ModelBuilderContext, sgMap map[string]*openstacktasks.SecurityGroup) error {
+// addNodeExporterAndOccmRules - Allow 9100 TCP port from nodesg, allow 10258 from nodes to master - expose occm metrics
+func (b *FirewallModelBuilder) addNodeExporterAndOccmRules(c *fi.ModelBuilderContext, sgMap map[string]*openstacktasks.SecurityGroup) error {
 	masterName := b.SecurityGroupName(kops.InstanceGroupRoleMaster)
 	nodeName := b.SecurityGroupName(kops.InstanceGroupRoleNode)
 	masterSG := sgMap[masterName]
@@ -345,6 +345,16 @@ func (b *FirewallModelBuilder) addNodeExporterRules(c *fi.ModelBuilderContext, s
 	// allow 9100 port from nodeSG
 	b.addDirectionalGroupRule(c, masterSG, nodeSG, nodeExporterIngress)
 	b.addDirectionalGroupRule(c, nodeSG, nodeSG, nodeExporterIngress)
+
+	occmMetrics := &openstacktasks.SecurityGroupRule{
+		Lifecycle:    b.Lifecycle,
+		Direction:    s(string(rules.DirIngress)),
+		Protocol:     s(IPProtocolTCP),
+		EtherType:    s(IPV4),
+		PortRangeMin: i(10258),
+		PortRangeMax: i(10258),
+	}
+	b.addDirectionalGroupRule(c, masterSG, nodeSG, occmMetrics)
 	return nil
 }
 
@@ -633,8 +643,8 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	b.addDNSRules(c, sgMap)
 	// Add Kubelet Rules
 	b.addKubeletRules(c, sgMap)
-	// Add Node exporter Rules
-	b.addNodeExporterRules(c, sgMap)
+	// Add Node exporter and occm metrics Rules
+	b.addNodeExporterAndOccmRules(c, sgMap)
 	// Protokube Rules
 	b.addProtokubeRules(c, sgMap)
 	// Allow necessary local traffic
