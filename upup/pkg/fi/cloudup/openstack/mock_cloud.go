@@ -201,6 +201,10 @@ func (c *MockCloud) CreatePool(opts v2pools.CreateOpts) (pool *v2pools.Pool, err
 	return createPool(c, opts)
 }
 
+func (c *MockCloud) CreatePoolMonitor(opts monitors.CreateOpts) (*monitors.Monitor, error) {
+	return createPoolMonitor(c, opts)
+}
+
 func (c *MockCloud) CreatePort(opt ports.CreateOptsBuilder) (*ports.Port, error) {
 	return createPort(c, opt)
 }
