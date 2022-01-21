@@ -216,7 +216,7 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 }
 
 func UsesInstanceIDForNodeName(cluster *kops.Cluster) bool {
-	return cluster.Spec.ExternalCloudControllerManager != nil && cluster.IsKubernetesGTE("1.23") && kops.CloudProviderID(cluster.Spec.CloudProvider) == kops.CloudProviderAWS
+	return cluster.Spec.ExternalCloudControllerManager != nil && cluster.IsKubernetesGTE("1.22") && kops.CloudProviderID(cluster.Spec.CloudProvider) == kops.CloudProviderAWS
 }
 
 func filterFileAssets(f []kops.FileAssetSpec, role kops.InstanceGroupRole) []kops.FileAssetSpec {

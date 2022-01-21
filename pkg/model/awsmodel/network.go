@@ -270,7 +270,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Tags:             tags,
 		}
 
-		if b.Cluster.Spec.ExternalCloudControllerManager != nil && b.Cluster.IsKubernetesGTE("1.23") {
+		if b.Cluster.Spec.ExternalCloudControllerManager != nil && b.Cluster.IsKubernetesGTE("1.22") {
 			subnet.ResourceBasedNaming = fi.Bool(true)
 		}
 
