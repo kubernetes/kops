@@ -25,6 +25,8 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/eventbridge"
 	"github.com/aws/aws-sdk-go/service/eventbridge/eventbridgeiface"
+	"github.com/aws/aws-sdk-go/service/resourcegroupstaggingapi"
+	"github.com/aws/aws-sdk-go/service/resourcegroupstaggingapi/resourcegroupstaggingapiiface"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
 	"golang.org/x/sync/errgroup"
@@ -134,6 +136,7 @@ type AWSCloud interface {
 	Spotinst() spotinst.Cloud
 	SQS() sqsiface.SQSAPI
 	EventBridge() eventbridgeiface.EventBridgeAPI
+	ResourceGroupsTagging() resourcegroupstaggingapiiface.ResourceGroupsTaggingAPIAPI
 
 	// TODO: Document and rationalize these tags/filters methods
 	AddTags(name *string, tags map[string]string)
@@ -192,17 +195,18 @@ type AWSCloud interface {
 }
 
 type awsCloudImplementation struct {
-	cf          *cloudformation.CloudFormation
-	ec2         *ec2.EC2
-	iam         *iam.IAM
-	elb         *elb.ELB
-	elbv2       *elbv2.ELBV2
-	autoscaling *autoscaling.AutoScaling
-	route53     *route53.Route53
-	spotinst    spotinst.Cloud
-	sts         *sts.STS
-	sqs         *sqs.SQS
-	eventbridge *eventbridge.EventBridge
+	cf                    *cloudformation.CloudFormation
+	ec2                   *ec2.EC2
+	iam                   *iam.IAM
+	elb                   *elb.ELB
+	elbv2                 *elbv2.ELBV2
+	autoscaling           *autoscaling.AutoScaling
+	route53               *route53.Route53
+	spotinst              spotinst.Cloud
+	sts                   *sts.STS
+	sqs                   *sqs.SQS
+	eventbridge           *eventbridge.EventBridge
+	resourceGroupsTagging *resourcegroupstaggingapi.ResourceGroupsTaggingAPI
 
 	region string
 
@@ -381,6 +385,17 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 		c.eventbridge = eventbridge.New(sess, config)
 		c.eventbridge.Handlers.Send.PushFront(requestLogger)
 		c.addHandlers(region, &c.eventbridge.Handlers)
+
+		sess, err = session.NewSessionWithOptions(session.Options{
+			Config:            *config,
+			SharedConfigState: session.SharedConfigEnable,
+		})
+		if err != nil {
+			return c, err
+		}
+		c.resourceGroupsTagging = resourcegroupstaggingapi.New(sess, config)
+		c.resourceGroupsTagging.Handlers.Send.PushFront(requestLogger)
+		c.addHandlers(region, &c.resourceGroupsTagging.Handlers)
 
 		awsCloudInstances[region] = c
 		raw = c
@@ -1685,64 +1700,55 @@ func (c *awsCloudImplementation) FindELBByNameTag(findNameTag string) (*elb.Load
 }
 
 func findELBByNameTag(c AWSCloud, findNameTag string) (*elb.LoadBalancerDescription, error) {
-	// TODO: Any way around this?
-	klog.V(2).Infof("Listing all ELBs for findLoadBalancerByNameTag")
-
-	request := &elb.DescribeLoadBalancersInput{}
-	// ELB DescribeTags has a limit of 20 names, so we set the page size here to 20 also
-	request.PageSize = aws.Int64(20)
-
-	var found []*elb.LoadBalancerDescription
-
-	var innerError error
-	err := c.ELB().DescribeLoadBalancersPages(request, func(p *elb.DescribeLoadBalancersOutput, lastPage bool) bool {
-		if len(p.LoadBalancerDescriptions) == 0 {
-			return true
-		}
-
-		// TODO: Filter by cluster?
-
-		var names []string
-		nameToELB := make(map[string]*elb.LoadBalancerDescription)
-		for _, elb := range p.LoadBalancerDescriptions {
-			name := aws.StringValue(elb.LoadBalancerName)
-			nameToELB[name] = elb
-			names = append(names, name)
-		}
-
-		tagMap, err := c.DescribeELBTags(names)
-		if err != nil {
-			innerError = err
-			return false
-		}
-
-		for loadBalancerName, tags := range tagMap {
-			name, foundNameTag := FindELBTag(tags, "Name")
-			if !foundNameTag || name != findNameTag {
-				continue
-			}
-
-			elb := nameToELB[loadBalancerName]
-			found = append(found, elb)
-		}
-		return true
-	})
+	loadBalancerArn, err := findResourceArnByNameTag(c, "elasticloadbalancing", findNameTag)
 	if err != nil {
-		return nil, fmt.Errorf("error describing LoadBalancers: %v", err)
-	}
-	if innerError != nil {
-		return nil, fmt.Errorf("error describing LoadBalancers: %v", innerError)
+		return nil, fmt.Errorf("failed to find resource arn by name tag: %v", err)
 	}
 
-	if len(found) == 0 {
-		return nil, nil
+	// example load balancer ARN: arn:aws:elasticloadbalancing:region:accountId:loadbalancer/loadBalancerName
+	loadBalancerName := strings.Split(loadBalancerArn, "/")[1]
+
+	request := &elb.DescribeLoadBalancersInput{
+		LoadBalancerNames: aws.StringSlice([]string{
+			loadBalancerName,
+		}),
 	}
 
-	if len(found) != 1 {
-		return nil, fmt.Errorf("Found multiple ELBs with Name %q", findNameTag)
+	output, err := c.ELB().DescribeLoadBalancers(request)
+	if err != nil {
+		return nil, fmt.Errorf("error describing load balancers: %v", err)
 	}
 
-	return found[0], nil
+	return output.LoadBalancerDescriptions[0], nil
+}
+
+func findResourceArnByNameTag(c AWSCloud, resourceType, findNameTag string) (string, error) {
+	request := &resourcegroupstaggingapi.GetResourcesInput{
+		ResourceTypeFilters: aws.StringSlice([]string{
+			resourceType,
+		}),
+		TagFilters: []*resourcegroupstaggingapi.TagFilter{{
+			Key: aws.String("Name"),
+			Values: aws.StringSlice([]string{
+				findNameTag,
+			}),
+		}},
+	}
+
+	output, err := c.ResourceGroupsTagging().GetResources(request)
+	if err != nil {
+		return "", fmt.Errorf("error getting resources: %v", err)
+	}
+
+	if len(output.ResourceTagMappingList) == 0 {
+		return "", nil
+	}
+
+	if len(output.ResourceTagMappingList) != 1 {
+		return "", fmt.Errorf("found multiple resources with name %q", findNameTag)
+	}
+
+	return aws.StringValue(output.ResourceTagMappingList[0].ResourceARN), nil
 }
 
 func (c *awsCloudImplementation) DescribeELBTags(loadBalancerNames []string) (map[string][]*elb.Tag, error) {
@@ -1774,63 +1780,21 @@ func (c *awsCloudImplementation) FindELBV2ByNameTag(findNameTag string) (*elbv2.
 }
 
 func findELBV2ByNameTag(c AWSCloud, findNameTag string) (*elbv2.LoadBalancer, error) {
-	// TODO: Any way around this?
-	klog.V(2).Infof("Listing all NLBs for findNetworkLoadBalancerByNameTag")
-
-	request := &elbv2.DescribeLoadBalancersInput{}
-	// ELB DescribeTags has a limit of 20 names, so we set the page size here to 20 also
-	request.PageSize = aws.Int64(20)
-
-	var found []*elbv2.LoadBalancer
-
-	var innerError error
-	err := c.ELBV2().DescribeLoadBalancersPages(request, func(p *elbv2.DescribeLoadBalancersOutput, lastPage bool) bool {
-		if len(p.LoadBalancers) == 0 {
-			return true
-		}
-
-		// TODO: Filter by cluster?
-
-		var arns []string
-		arnToELB := make(map[string]*elbv2.LoadBalancer)
-		for _, elb := range p.LoadBalancers {
-			arn := aws.StringValue(elb.LoadBalancerArn)
-			arnToELB[arn] = elb
-			arns = append(arns, arn)
-		}
-
-		tagMap, err := c.DescribeELBV2Tags(arns)
-		if err != nil {
-			innerError = err
-			return false
-		}
-
-		for loadBalancerArn, tags := range tagMap {
-			name, foundNameTag := FindELBV2Tag(tags, "Name")
-			if !foundNameTag || name != findNameTag {
-				continue
-			}
-			elb := arnToELB[loadBalancerArn]
-			found = append(found, elb)
-		}
-		return true
-	})
+	loadBalancerArn, err := findResourceArnByNameTag(c, "elasticloadbalancing", findNameTag)
 	if err != nil {
-		return nil, fmt.Errorf("error describing LoadBalancers: %v", err)
-	}
-	if innerError != nil {
-		return nil, fmt.Errorf("error describing LoadBalancers: %v", innerError)
+		return nil, fmt.Errorf("failed to find resource arn by name tag: %v", err)
 	}
 
-	if len(found) == 0 {
-		return nil, nil
+	request := &elbv2.DescribeLoadBalancersInput{LoadBalancerArns: aws.StringSlice([]string{
+		loadBalancerArn,
+	})}
+
+	output, err := c.ELBV2().DescribeLoadBalancers(request)
+	if err != nil {
+		return nil, fmt.Errorf("failed to describe load balancers: %v", err)
 	}
 
-	if len(found) != 1 {
-		return nil, fmt.Errorf("Found multiple NLBs with Name %q", findNameTag)
-	}
-
-	return found[0], nil
+	return output.LoadBalancers[0], nil
 }
 
 func (c *awsCloudImplementation) DescribeELBV2Tags(loadBalancerArns []string) (map[string][]*elbv2.Tag, error) {
@@ -2116,6 +2080,10 @@ func (c *awsCloudImplementation) EventBridge() eventbridgeiface.EventBridgeAPI {
 
 func (c *awsCloudImplementation) FindVPCInfo(vpcID string) (*fi.VPCInfo, error) {
 	return findVPCInfo(c, vpcID)
+}
+
+func (c *awsCloudImplementation) ResourceGroupsTagging() resourcegroupstaggingapiiface.ResourceGroupsTaggingAPIAPI {
+	return c.resourceGroupsTagging
 }
 
 func findVPCInfo(c AWSCloud, vpcID string) (*fi.VPCInfo, error) {

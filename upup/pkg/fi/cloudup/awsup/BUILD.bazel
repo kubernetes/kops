@@ -51,6 +51,8 @@ go_library(
         "//vendor/github.com/aws/aws-sdk-go/service/eventbridge/eventbridgeiface:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/iam:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/iam/iamiface:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/resourcegroupstaggingapi:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/resourcegroupstaggingapi/resourcegroupstaggingapiiface:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/route53:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/route53/route53iface:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/sqs:go_default_library",

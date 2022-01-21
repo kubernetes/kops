@@ -30,6 +30,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 	"github.com/aws/aws-sdk-go/service/eventbridge/eventbridgeiface"
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
+	"github.com/aws/aws-sdk-go/service/resourcegroupstaggingapi/resourcegroupstaggingapiiface"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
 	v1 "k8s.io/api/core/v1"
@@ -46,6 +47,7 @@ type MockAWSCloud struct {
 	MockCloud
 	region string
 	tags   map[string]string
+	cache  map[string]string
 
 	zones []*ec2.AvailabilityZone
 }
@@ -62,7 +64,9 @@ func InstallMockAWSCloud(region string, zoneLetters string) *MockAWSCloud {
 }
 
 func BuildMockAWSCloud(region string, zoneLetters string) *MockAWSCloud {
-	i := &MockAWSCloud{region: region}
+	i := &MockAWSCloud{region: region,
+		cache: make(map[string]string),
+	}
 	for _, c := range zoneLetters {
 		azName := fmt.Sprintf("%s%c", region, c)
 		az := &ec2.AvailabilityZone{
@@ -76,16 +80,17 @@ func BuildMockAWSCloud(region string, zoneLetters string) *MockAWSCloud {
 }
 
 type MockCloud struct {
-	MockAutoscaling    autoscalingiface.AutoScalingAPI
-	MockCloudFormation *cloudformation.CloudFormation
-	MockEC2            ec2iface.EC2API
-	MockIAM            iamiface.IAMAPI
-	MockRoute53        route53iface.Route53API
-	MockELB            elbiface.ELBAPI
-	MockELBV2          elbv2iface.ELBV2API
-	MockSpotinst       spotinst.Cloud
-	MockSQS            sqsiface.SQSAPI
-	MockEventBridge    eventbridgeiface.EventBridgeAPI
+	MockAutoscaling           autoscalingiface.AutoScalingAPI
+	MockCloudFormation        *cloudformation.CloudFormation
+	MockEC2                   ec2iface.EC2API
+	MockIAM                   iamiface.IAMAPI
+	MockRoute53               route53iface.Route53API
+	MockELB                   elbiface.ELBAPI
+	MockELBV2                 elbv2iface.ELBV2API
+	MockSpotinst              spotinst.Cloud
+	MockSQS                   sqsiface.SQSAPI
+	MockEventBridge           eventbridgeiface.EventBridgeAPI
+	MockResourceGroupsTagging resourcegroupstaggingapiiface.ResourceGroupsTaggingAPIAPI
 }
 
 func (c *MockAWSCloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
@@ -299,6 +304,13 @@ func (c *MockAWSCloud) EventBridge() eventbridgeiface.EventBridgeAPI {
 		klog.Fatalf("MockEventBridgess not set")
 	}
 	return c.MockEventBridge
+}
+
+func (c *MockAWSCloud) ResourceGroupsTagging() resourcegroupstaggingapiiface.ResourceGroupsTaggingAPIAPI {
+	if c.MockEventBridge == nil {
+		klog.Fatalf("MockResourceGroupsTagging not set")
+	}
+	return c.MockResourceGroupsTagging
 }
 
 func (c *MockAWSCloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
