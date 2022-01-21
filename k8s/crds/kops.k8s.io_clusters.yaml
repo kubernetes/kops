@@ -418,6 +418,8 @@ spec:
                             type: string
                           manageSecurityGroups:
                             type: boolean
+                          maxSharedLB:
+                            type: integer
                           method:
                             type: string
                           provider:
