@@ -4470,6 +4470,11 @@ func (in *PackagesConfig) DeepCopyInto(out *PackagesConfig) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.MaxSharedLB != nil {
+		in, out := &in.MaxSharedLB, &out.MaxSharedLB
+		*out = new(int)
+		**out = **in
+	}
 	return
 }
 

@@ -158,7 +158,10 @@ func (b *CloudConfigBuilder) build(c *fi.ModelBuilderContext, inTree bool) error
 			if fi.StringValue(lb.IngressHostnameSuffix) != "" {
 				ingressHostnameSuffix = fi.StringValue(lb.IngressHostnameSuffix)
 			}
-
+			maxSharedLB := 0
+			if lb.MaxSharedLB != nil {
+				maxSharedLB = fi.IntValue(lb.MaxSharedLB)
+			}
 			lines = append(lines,
 				"[LoadBalancer]",
 				fmt.Sprintf("floating-network-id=%s", fi.StringValue(lb.FloatingNetworkID)),
@@ -168,6 +171,7 @@ func (b *CloudConfigBuilder) build(c *fi.ModelBuilderContext, inTree bool) error
 				fmt.Sprintf("manage-security-groups=%t", fi.BoolValue(lb.ManageSecGroups)),
 				fmt.Sprintf("enable-ingress-hostname=%t", fi.BoolValue(lb.EnableIngressHostname)),
 				fmt.Sprintf("ingress-hostname-suffix=%s", ingressHostnameSuffix),
+				fmt.Sprintf("max-shared-lb=%d", maxSharedLB),
 				"",
 			)
 
