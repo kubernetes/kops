@@ -1,0 +1,60 @@
+{
+  "Statement": [
+    {
+      "Action": [
+        "s3:Get*"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+        "arn:aws-test:s3:::placeholder-read-bucket/clusters.example.com/minimal.example.com/addons/*",
+        "arn:aws-test:s3:::placeholder-read-bucket/clusters.example.com/minimal.example.com/cluster-completed.spec",
+        "arn:aws-test:s3:::placeholder-read-bucket/clusters.example.com/minimal.example.com/igconfig/node/*",
+        "arn:aws-test:s3:::placeholder-read-bucket/clusters.example.com/minimal.example.com/secrets/dockerconfig"
+      ]
+    },
+    {
+      "Action": [
+        "s3:GetBucketLocation",
+        "s3:GetEncryptionConfiguration",
+        "s3:ListBucket",
+        "s3:ListBucketVersions"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+        "arn:aws-test:s3:::placeholder-read-bucket"
+      ]
+    },
+    {
+      "Action": [
+        "ec2:CreateTags"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+        "arn:aws-test:ec2:*:*:network-interface/*"
+      ]
+    },
+    {
+      "Action": [
+        "autoscaling:DescribeAutoScalingInstances",
+        "ec2:AssignPrivateIpAddresses",
+        "ec2:AttachNetworkInterface",
+        "ec2:CreateNetworkInterface",
+        "ec2:DeleteNetworkInterface",
+        "ec2:DescribeInstanceTypes",
+        "ec2:DescribeInstances",
+        "ec2:DescribeNetworkInterfaces",
+        "ec2:DescribeRegions",
+        "ec2:DescribeTags",
+        "ec2:DetachNetworkInterface",
+        "ec2:ModifyNetworkInterfaceAttribute",
+        "ec2:UnassignPrivateIpAddresses",
+        "iam:GetServerCertificate",
+        "iam:ListServerCertificates",
+        "kms:GenerateRandom"
+      ],
+      "Effect": "Allow",
+      "Resource": "*"
+    }
+  ],
+  "Version": "2012-10-17"
+}
