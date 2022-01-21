@@ -172,6 +172,9 @@ func (c *AutoScaling) AttachLoadBalancerTargetGroupsRequest(input *AttachLoadBal
 // API. To detach the target group from the Auto Scaling group, call the DetachLoadBalancerTargetGroups
 // API.
 //
+// This operation is additive and does not detach existing target groups or
+// Classic Load Balancers from the Auto Scaling group.
+//
 // For more information, see Elastic Load Balancing and Amazon EC2 Auto Scaling
 // (https://docs.aws.amazon.com/autoscaling/ec2/userguide/autoscaling-load-balancer.html)
 // in the Amazon EC2 Auto Scaling User Guide.
@@ -269,6 +272,9 @@ func (c *AutoScaling) AttachLoadBalancersRequest(input *AttachLoadBalancersInput
 // To describe the load balancers for an Auto Scaling group, call the DescribeLoadBalancers
 // API. To detach the load balancer from the Auto Scaling group, call the DetachLoadBalancers
 // API.
+//
+// This operation is additive and does not detach existing Classic Load Balancers
+// or target groups from the Auto Scaling group.
 //
 // For more information, see Elastic Load Balancing and Amazon EC2 Auto Scaling
 // (https://docs.aws.amazon.com/autoscaling/ec2/userguide/autoscaling-load-balancer.html)
@@ -629,7 +635,7 @@ func (c *AutoScaling) CompleteLifecycleActionRequest(input *CompleteLifecycleAct
 // This step is a part of the procedure for adding a lifecycle hook to an Auto
 // Scaling group:
 //
-// (Optional) Create a Lambda function and a rule that allows CloudWatch Events
+// (Optional) Create a Lambda function and a rule that allows Amazon EventBridge
 // to invoke your Lambda function when Amazon EC2 Auto Scaling launches or terminates
 // instances.
 //
@@ -643,7 +649,8 @@ func (c *AutoScaling) CompleteLifecycleActionRequest(input *CompleteLifecycleAct
 // If you need more time, record the lifecycle action heartbeat to keep the
 // instance in a pending state.
 //
-// If you finish before the timeout period ends, complete the lifecycle action.
+// If you finish before the timeout period ends, send a callback by using the
+// CompleteLifecycleAction API call.
 //
 // For more information, see Amazon EC2 Auto Scaling lifecycle hooks (https://docs.aws.amazon.com/autoscaling/ec2/userguide/lifecycle-hooks.html)
 // in the Amazon EC2 Auto Scaling User Guide.
@@ -4801,14 +4808,14 @@ func (c *AutoScaling) PutLifecycleHookRequest(input *PutLifecycleHookInput) (req
 //
 // Creates or updates a lifecycle hook for the specified Auto Scaling group.
 //
-// A lifecycle hook tells Amazon EC2 Auto Scaling to perform an action on an
-// instance when the instance launches (before it is put into service) or as
-// the instance terminates (before it is fully terminated).
+// A lifecycle hook enables an Auto Scaling group to be aware of events in the
+// Auto Scaling instance lifecycle, and then perform a custom action when the
+// corresponding lifecycle event occurs.
 //
 // This step is a part of the procedure for adding a lifecycle hook to an Auto
 // Scaling group:
 //
-// (Optional) Create a Lambda function and a rule that allows CloudWatch Events
+// (Optional) Create a Lambda function and a rule that allows Amazon EventBridge
 // to invoke your Lambda function when Amazon EC2 Auto Scaling launches or terminates
 // instances.
 //
@@ -4823,8 +4830,8 @@ func (c *AutoScaling) PutLifecycleHookRequest(input *PutLifecycleHookInput) (req
 // instance in a pending state using the RecordLifecycleActionHeartbeat API
 // call.
 //
-// If you finish before the timeout period ends, complete the lifecycle action
-// using the CompleteLifecycleAction API call.
+// If you finish before the timeout period ends, send a callback by using the
+// CompleteLifecycleAction API call.
 //
 // For more information, see Amazon EC2 Auto Scaling lifecycle hooks (https://docs.aws.amazon.com/autoscaling/ec2/userguide/lifecycle-hooks.html)
 // in the Amazon EC2 Auto Scaling User Guide.
@@ -5334,7 +5341,7 @@ func (c *AutoScaling) RecordLifecycleActionHeartbeatRequest(input *RecordLifecyc
 // This step is a part of the procedure for adding a lifecycle hook to an Auto
 // Scaling group:
 //
-// (Optional) Create a Lambda function and a rule that allows CloudWatch Events
+// (Optional) Create a Lambda function and a rule that allows Amazon EventBridge
 // to invoke your Lambda function when Amazon EC2 Auto Scaling launches or terminates
 // instances.
 //
@@ -5348,7 +5355,8 @@ func (c *AutoScaling) RecordLifecycleActionHeartbeatRequest(input *RecordLifecyc
 // If you need more time, record the lifecycle action heartbeat to keep the
 // instance in a pending state.
 //
-// If you finish before the timeout period ends, complete the lifecycle action.
+// If you finish before the timeout period ends, send a callback by using the
+// CompleteLifecycleAction API call.
 //
 // For more information, see Amazon EC2 Auto Scaling lifecycle hooks (https://docs.aws.amazon.com/autoscaling/ec2/userguide/lifecycle-hooks.html)
 // in the Amazon EC2 Auto Scaling User Guide.
@@ -5700,8 +5708,8 @@ func (c *AutoScaling) SetInstanceProtectionRequest(input *SetInstanceProtectionI
 // operation cannot be called on instances in a warm pool.
 //
 // For more information about preventing instances that are part of an Auto
-// Scaling group from terminating on scale in, see Instance scale-in protection
-// (https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-instance-termination.html#instance-protection)
+// Scaling group from terminating on scale in, see Using instance scale-in protection
+// (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-instance-protection.html)
 // in the Amazon EC2 Auto Scaling User Guide.
 //
 // If you exceed your maximum limit of instance IDs, which is 50 per Auto Scaling
@@ -7154,7 +7162,7 @@ func (s *CancelInstanceRefreshOutput) SetInstanceRefreshId(v string) *CancelInst
 type CapacityForecast struct {
 	_ struct{} `type:"structure"`
 
-	// The time stamps for the data points, in UTC format.
+	// The timestamps for the data points, in UTC format.
 	//
 	// Timestamps is a required field
 	Timestamps []*time.Time `type:"list" required:"true"`
@@ -7346,7 +7354,7 @@ type CreateAutoScalingGroupInput struct {
 	// attempts to launch a Spot Instance whenever Amazon EC2 notifies that a Spot
 	// Instance is at an elevated risk of interruption. After launching a new instance,
 	// it then terminates an old instance. For more information, see Amazon EC2
-	// Auto Scaling Capacity Rebalancing (https://docs.aws.amazon.com/autoscaling/ec2/userguide/capacity-rebalance.html)
+	// Auto Scaling Capacity Rebalancing (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-capacity-rebalancing.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	CapacityRebalance *bool `type:"boolean"`
 
@@ -7382,10 +7390,9 @@ type CreateAutoScalingGroupInput struct {
 	DesiredCapacityType *string `min:"1" type:"string"`
 
 	// The amount of time, in seconds, that Amazon EC2 Auto Scaling waits before
-	// checking the health status of an EC2 instance that has come into service.
-	// During this time, any health check failures for the instance are ignored.
-	// The default value is 0. For more information, see Health check grace period
-	// (https://docs.aws.amazon.com/autoscaling/ec2/userguide/healthcheck.html#health-check-grace-period)
+	// checking the health status of an EC2 instance that has come into service
+	// and marking it unhealthy due to a failed health check. The default value
+	// is 0. For more information, see Health check grace period (https://docs.aws.amazon.com/autoscaling/ec2/userguide/healthcheck.html#health-check-grace-period)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	//
 	// Conditional: Required if you are adding an ELB health check.
@@ -7463,14 +7470,14 @@ type CreateAutoScalingGroupInput struct {
 	// An embedded object that specifies a mixed instances policy.
 	//
 	// For more information, see Auto Scaling groups with multiple instance types
-	// and purchase options (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-purchase-options.html)
+	// and purchase options (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-mixed-instances-groups.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	MixedInstancesPolicy *MixedInstancesPolicy `type:"structure"`
 
 	// Indicates whether newly launched instances are protected from termination
 	// by Amazon EC2 Auto Scaling when scaling in. For more information about preventing
-	// instances from terminating on scale in, see Instance scale-in protection
-	// (https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-instance-termination.html#instance-protection)
+	// instances from terminating on scale in, see Using instance scale-in protection
+	// (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-instance-protection.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	NewInstancesProtectedFromScaleIn *bool `type:"boolean"`
 
@@ -8265,7 +8272,7 @@ func (s CreateOrUpdateTagsOutput) GoString() string {
 //    * Add values for each required parameter from CloudWatch. You can use
 //    an existing metric, or a new metric that you create. To use your own metric,
 //    you must first publish the metric to CloudWatch. For more information,
-//    see Publish Custom Metrics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html)
+//    see Publish custom metrics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html)
 //    in the Amazon CloudWatch User Guide.
 //
 //    * Choose a metric that changes proportionally with capacity. The value
@@ -8273,7 +8280,13 @@ func (s CreateOrUpdateTagsOutput) GoString() string {
 //    number of capacity units. That is, the value of the metric should decrease
 //    when capacity increases.
 //
-// For more information about CloudWatch, see Amazon CloudWatch Concepts (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html).
+// For more information about the CloudWatch terminology below, see Amazon CloudWatch
+// concepts (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html).
+//
+// Each individual service provides information about the metrics, namespace,
+// and dimensions they use. For more information, see Amazon Web Services services
+// that publish CloudWatch metrics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/aws-services-cloudwatch-metrics.html)
+// in the Amazon CloudWatch User Guide.
 type CustomizedMetricSpecification struct {
 	_ struct{} `type:"structure"`
 
@@ -8283,7 +8296,9 @@ type CustomizedMetricSpecification struct {
 	// the same dimensions in your scaling policy.
 	Dimensions []*MetricDimension `type:"list"`
 
-	// The name of the metric.
+	// The name of the metric. To get the exact metric name, namespace, and dimensions,
+	// inspect the Metric (https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_Metric.html)
+	// object that is returned by a call to ListMetrics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_ListMetrics.html).
 	//
 	// MetricName is a required field
 	MetricName *string `type:"string" required:"true"`
@@ -8298,7 +8313,9 @@ type CustomizedMetricSpecification struct {
 	// Statistic is a required field
 	Statistic *string `type:"string" required:"true" enum:"MetricStatistic"`
 
-	// The unit of the metric.
+	// The unit of the metric. For a complete list of the units that CloudWatch
+	// supports, see the MetricDatum (https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_MetricDatum.html)
+	// data type in the Amazon CloudWatch API Reference.
 	Unit *string `type:"string"`
 }
 
@@ -8629,8 +8646,7 @@ type DeleteNotificationConfigurationInput struct {
 	// AutoScalingGroupName is a required field
 	AutoScalingGroupName *string `min:"1" type:"string" required:"true"`
 
-	// The Amazon Resource Name (ARN) of the Amazon Simple Notification Service
-	// (Amazon SNS) topic.
+	// The Amazon Resource Name (ARN) of the Amazon SNS topic.
 	//
 	// TopicARN is a required field
 	TopicARN *string `min:"1" type:"string" required:"true"`
@@ -10924,7 +10940,7 @@ type DesiredConfiguration struct {
 	// instance types that Amazon EC2 Auto Scaling can launch and other information
 	// that Amazon EC2 Auto Scaling can use to launch instances and help optimize
 	// your costs. For more information, see Auto Scaling groups with multiple instance
-	// types and purchase options (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-purchase-options.html)
+	// types and purchase options (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-mixed-instances-groups.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	MixedInstancesPolicy *MixedInstancesPolicy `type:"structure"`
 }
@@ -12437,7 +12453,8 @@ type Group struct {
 	EnabledMetrics []*EnabledMetric `type:"list"`
 
 	// The amount of time, in seconds, that Amazon EC2 Auto Scaling waits before
-	// checking the health status of an EC2 instance that has come into service.
+	// checking the health status of an EC2 instance that has come into service
+	// and marking it unhealthy due to a failed health check.
 	HealthCheckGracePeriod *int64 `type:"integer"`
 
 	// The service to use for the health checks. The valid values are EC2 and ELB.
@@ -14225,7 +14242,7 @@ func (s *LaunchTemplate) SetOverrides(v []*LaunchTemplateOverrides) *LaunchTempl
 }
 
 // Describes an override for a launch template. For more information, see Configuring
-// overrides (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-override-options.html)
+// overrides (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-configuring-overrides.html)
 // in the Amazon EC2 Auto Scaling User Guide.
 type LaunchTemplateOverrides struct {
 	_ struct{} `type:"structure"`
@@ -14248,7 +14265,7 @@ type LaunchTemplateOverrides struct {
 	// a launch template with a different AMI. If not provided, Amazon EC2 Auto
 	// Scaling uses the launch template that's defined for your mixed instances
 	// policy. For more information, see Specifying a different launch template
-	// for an instance type (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-launch-template-overrides.html)
+	// for an instance type (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-mixed-instances-groups-launch-template-overrides.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	LaunchTemplateSpecification *LaunchTemplateSpecification `type:"structure"`
 
@@ -14261,7 +14278,7 @@ type LaunchTemplateOverrides struct {
 	// to fulfill capacity, and Amazon EC2 Auto Scaling can only launch an instance
 	// with a WeightedCapacity of five units, the instance is launched, and the
 	// desired capacity is exceeded by three units. For more information, see Instance
-	// weighting for Amazon EC2 Auto Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-instance-weighting.html)
+	// weighting for Amazon EC2 Auto Scaling (https://docs.aws.amazon.com/ec2-auto-scaling-mixed-instances-groups-instance-weighting.html)
 	// in the Amazon EC2 Auto Scaling User Guide. Value must be in the range of
 	// 1–999.
 	WeightedCapacity *string `min:"1" type:"string"`
@@ -14426,8 +14443,9 @@ func (s *LaunchTemplateSpecification) SetVersion(v string) *LaunchTemplateSpecif
 	return s
 }
 
-// Describes a lifecycle hook, which tells Amazon EC2 Auto Scaling that you
-// want to perform an action whenever it launches instances or terminates instances.
+// Describes a lifecycle hook, which enables an Auto Scaling group to be aware
+// of events in the Auto Scaling instance lifecycle, and then perform a custom
+// action when the corresponding lifecycle event occurs.
 type LifecycleHook struct {
 	_ struct{} `type:"structure"`
 
@@ -14548,29 +14566,6 @@ func (s *LifecycleHook) SetRoleARN(v string) *LifecycleHook {
 
 // Describes information used to specify a lifecycle hook for an Auto Scaling
 // group.
-//
-// A lifecycle hook tells Amazon EC2 Auto Scaling to perform an action on an
-// instance when the instance launches (before it is put into service) or as
-// the instance terminates (before it is fully terminated).
-//
-// This step is a part of the procedure for creating a lifecycle hook for an
-// Auto Scaling group:
-//
-// (Optional) Create a Lambda function and a rule that allows CloudWatch Events
-// to invoke your Lambda function when Amazon EC2 Auto Scaling launches or terminates
-// instances.
-//
-// (Optional) Create a notification target and an IAM role. The target can be
-// either an Amazon SQS queue or an Amazon SNS topic. The role allows Amazon
-// EC2 Auto Scaling to publish lifecycle notifications to the target.
-//
-// Create the lifecycle hook. Specify whether the hook is used when the instances
-// launch or terminate.
-//
-// If you need more time, record the lifecycle action heartbeat to keep the
-// instance in a pending state.
-//
-// If you finish before the timeout period ends, complete the lifecycle action.
 //
 // For more information, see Amazon EC2 Auto Scaling lifecycle hooks (https://docs.aws.amazon.com/autoscaling/ec2/userguide/lifecycle-hooks.html)
 // in the Amazon EC2 Auto Scaling User Guide.
@@ -14828,7 +14823,7 @@ type LoadForecast struct {
 	// MetricSpecification is a required field
 	MetricSpecification *PredictiveScalingMetricSpecification `type:"structure" required:"true"`
 
-	// The time stamps for the data points, in UTC format.
+	// The timestamps for the data points, in UTC format.
 	//
 	// Timestamps is a required field
 	Timestamps []*time.Time `type:"list" required:"true"`
@@ -14974,6 +14969,94 @@ func (s *MemoryMiBRequest) SetMin(v int64) *MemoryMiBRequest {
 	return s
 }
 
+// Represents a specific metric.
+type Metric struct {
+	_ struct{} `type:"structure"`
+
+	// The dimensions for the metric. For the list of available dimensions, see
+	// the Amazon Web Services documentation available from the table in Amazon
+	// Web Services services that publish CloudWatch metrics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/aws-services-cloudwatch-metrics.html)
+	// in the Amazon CloudWatch User Guide.
+	//
+	// Conditional: If you published your metric with dimensions, you must specify
+	// the same dimensions in your scaling policy.
+	Dimensions []*MetricDimension `type:"list"`
+
+	// The name of the metric.
+	//
+	// MetricName is a required field
+	MetricName *string `type:"string" required:"true"`
+
+	// The namespace of the metric. For more information, see the table in Amazon
+	// Web Services services that publish CloudWatch metrics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/aws-services-cloudwatch-metrics.html)
+	// in the Amazon CloudWatch User Guide.
+	//
+	// Namespace is a required field
+	Namespace *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Metric) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Metric) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *Metric) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "Metric"}
+	if s.MetricName == nil {
+		invalidParams.Add(request.NewErrParamRequired("MetricName"))
+	}
+	if s.Namespace == nil {
+		invalidParams.Add(request.NewErrParamRequired("Namespace"))
+	}
+	if s.Dimensions != nil {
+		for i, v := range s.Dimensions {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Dimensions", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDimensions sets the Dimensions field's value.
+func (s *Metric) SetDimensions(v []*MetricDimension) *Metric {
+	s.Dimensions = v
+	return s
+}
+
+// SetMetricName sets the MetricName field's value.
+func (s *Metric) SetMetricName(v string) *Metric {
+	s.MetricName = &v
+	return s
+}
+
+// SetNamespace sets the Namespace field's value.
+func (s *Metric) SetNamespace(v string) *Metric {
+	s.Namespace = &v
+	return s
+}
+
 // Describes a metric.
 type MetricCollectionType struct {
 	_ struct{} `type:"structure"`
@@ -15043,6 +15126,130 @@ func (s MetricCollectionType) GoString() string {
 // SetMetric sets the Metric field's value.
 func (s *MetricCollectionType) SetMetric(v string) *MetricCollectionType {
 	s.Metric = &v
+	return s
+}
+
+// The metric data to return. Also defines whether this call is returning data
+// for one metric only, or whether it is performing a math expression on the
+// values of returned metric statistics to create a new time series. A time
+// series is a series of data points, each of which is associated with a timestamp.
+//
+// For more information and examples, see Advanced predictive scaling policy
+// configurations using custom metrics (https://docs.aws.amazon.com/autoscaling/ec2/userguide/predictive-scaling-customized-metric-specification.html)
+// in the Amazon EC2 Auto Scaling User Guide.
+type MetricDataQuery struct {
+	_ struct{} `type:"structure"`
+
+	// The math expression to perform on the returned data, if this object is performing
+	// a math expression. This expression can use the Id of the other metrics to
+	// refer to those metrics, and can also use the Id of other expressions to use
+	// the result of those expressions.
+	//
+	// Conditional: Within each MetricDataQuery object, you must specify either
+	// Expression or MetricStat, but not both.
+	Expression *string `min:"1" type:"string"`
+
+	// A short name that identifies the object's results in the response. This name
+	// must be unique among all MetricDataQuery objects specified for a single scaling
+	// policy. If you are performing math expressions on this set of data, this
+	// name represents that data and can serve as a variable in the mathematical
+	// expression. The valid characters are letters, numbers, and underscores. The
+	// first character must be a lowercase letter.
+	//
+	// Id is a required field
+	Id *string `min:"1" type:"string" required:"true"`
+
+	// A human-readable label for this metric or expression. This is especially
+	// useful if this is a math expression, so that you know what the value represents.
+	Label *string `type:"string"`
+
+	// Information about the metric data to return.
+	//
+	// Conditional: Within each MetricDataQuery object, you must specify either
+	// Expression or MetricStat, but not both.
+	MetricStat *MetricStat `type:"structure"`
+
+	// Indicates whether to return the timestamps and raw data values of this metric.
+	//
+	// If you use any math expressions, specify true for this value for only the
+	// final math expression that the metric specification is based on. You must
+	// specify false for ReturnData for all the other metrics and expressions used
+	// in the metric specification.
+	//
+	// If you are only retrieving metrics and not performing any math expressions,
+	// do not specify anything for ReturnData. This sets it to its default (true).
+	ReturnData *bool `type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MetricDataQuery) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MetricDataQuery) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *MetricDataQuery) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "MetricDataQuery"}
+	if s.Expression != nil && len(*s.Expression) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Expression", 1))
+	}
+	if s.Id == nil {
+		invalidParams.Add(request.NewErrParamRequired("Id"))
+	}
+	if s.Id != nil && len(*s.Id) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Id", 1))
+	}
+	if s.MetricStat != nil {
+		if err := s.MetricStat.Validate(); err != nil {
+			invalidParams.AddNested("MetricStat", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetExpression sets the Expression field's value.
+func (s *MetricDataQuery) SetExpression(v string) *MetricDataQuery {
+	s.Expression = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *MetricDataQuery) SetId(v string) *MetricDataQuery {
+	s.Id = &v
+	return s
+}
+
+// SetLabel sets the Label field's value.
+func (s *MetricDataQuery) SetLabel(v string) *MetricDataQuery {
+	s.Label = &v
+	return s
+}
+
+// SetMetricStat sets the MetricStat field's value.
+func (s *MetricDataQuery) SetMetricStat(v *MetricStat) *MetricDataQuery {
+	s.MetricStat = v
+	return s
+}
+
+// SetReturnData sets the ReturnData field's value.
+func (s *MetricDataQuery) SetReturnData(v bool) *MetricDataQuery {
+	s.ReturnData = &v
 	return s
 }
 
@@ -15139,11 +15346,103 @@ func (s *MetricGranularityType) SetGranularity(v string) *MetricGranularityType 
 	return s
 }
 
+// This structure defines the CloudWatch metric to return, along with the statistic,
+// period, and unit.
+//
+// For more information about the CloudWatch terminology below, see Amazon CloudWatch
+// concepts (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html)
+// in the Amazon CloudWatch User Guide.
+type MetricStat struct {
+	_ struct{} `type:"structure"`
+
+	// The CloudWatch metric to return, including the metric name, namespace, and
+	// dimensions. To get the exact metric name, namespace, and dimensions, inspect
+	// the Metric (https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_Metric.html)
+	// object that is returned by a call to ListMetrics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_ListMetrics.html).
+	//
+	// Metric is a required field
+	Metric *Metric `type:"structure" required:"true"`
+
+	// The statistic to return. It can include any CloudWatch statistic or extended
+	// statistic. For a list of valid values, see the table in Statistics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#Statistic)
+	// in the Amazon CloudWatch User Guide.
+	//
+	// The most commonly used metrics for predictive scaling are Average and Sum.
+	//
+	// Stat is a required field
+	Stat *string `min:"1" type:"string" required:"true"`
+
+	// The unit to use for the returned data points. For a complete list of the
+	// units that CloudWatch supports, see the MetricDatum (https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_MetricDatum.html)
+	// data type in the Amazon CloudWatch API Reference.
+	Unit *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MetricStat) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MetricStat) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *MetricStat) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "MetricStat"}
+	if s.Metric == nil {
+		invalidParams.Add(request.NewErrParamRequired("Metric"))
+	}
+	if s.Stat == nil {
+		invalidParams.Add(request.NewErrParamRequired("Stat"))
+	}
+	if s.Stat != nil && len(*s.Stat) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Stat", 1))
+	}
+	if s.Metric != nil {
+		if err := s.Metric.Validate(); err != nil {
+			invalidParams.AddNested("Metric", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMetric sets the Metric field's value.
+func (s *MetricStat) SetMetric(v *Metric) *MetricStat {
+	s.Metric = v
+	return s
+}
+
+// SetStat sets the Stat field's value.
+func (s *MetricStat) SetStat(v string) *MetricStat {
+	s.Stat = &v
+	return s
+}
+
+// SetUnit sets the Unit field's value.
+func (s *MetricStat) SetUnit(v string) *MetricStat {
+	s.Unit = &v
+	return s
+}
+
 // Describes a mixed instances policy. A mixed instances policy contains the
 // instance types that Amazon EC2 Auto Scaling can launch and other information
 // that Amazon EC2 Auto Scaling can use to launch instances and help optimize
 // your costs. For more information, see Auto Scaling groups with multiple instance
-// types and purchase options (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-purchase-options.html)
+// types and purchase options (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-mixed-instances-groups.html)
 // in the Amazon EC2 Auto Scaling User Guide.
 type MixedInstancesPolicy struct {
 	_ struct{} `type:"structure"`
@@ -15264,8 +15563,7 @@ type NotificationConfiguration struct {
 	//    * autoscaling:TEST_NOTIFICATION
 	NotificationType *string `min:"1" type:"string"`
 
-	// The Amazon Resource Name (ARN) of the Amazon Simple Notification Service
-	// (Amazon SNS) topic.
+	// The Amazon Resource Name (ARN) of the Amazon SNS topic.
 	TopicARN *string `min:"1" type:"string"`
 }
 
@@ -15532,6 +15830,183 @@ func (s *PredictiveScalingConfiguration) SetSchedulingBufferTime(v int64) *Predi
 	return s
 }
 
+// Describes a customized capacity metric for a predictive scaling policy.
+type PredictiveScalingCustomizedCapacityMetric struct {
+	_ struct{} `type:"structure"`
+
+	// One or more metric data queries to provide the data points for a capacity
+	// metric. Use multiple metric data queries only if you are performing a math
+	// expression on returned data.
+	//
+	// MetricDataQueries is a required field
+	MetricDataQueries []*MetricDataQuery `type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PredictiveScalingCustomizedCapacityMetric) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PredictiveScalingCustomizedCapacityMetric) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PredictiveScalingCustomizedCapacityMetric) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PredictiveScalingCustomizedCapacityMetric"}
+	if s.MetricDataQueries == nil {
+		invalidParams.Add(request.NewErrParamRequired("MetricDataQueries"))
+	}
+	if s.MetricDataQueries != nil {
+		for i, v := range s.MetricDataQueries {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "MetricDataQueries", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMetricDataQueries sets the MetricDataQueries field's value.
+func (s *PredictiveScalingCustomizedCapacityMetric) SetMetricDataQueries(v []*MetricDataQuery) *PredictiveScalingCustomizedCapacityMetric {
+	s.MetricDataQueries = v
+	return s
+}
+
+// Describes a custom load metric for a predictive scaling policy.
+type PredictiveScalingCustomizedLoadMetric struct {
+	_ struct{} `type:"structure"`
+
+	// One or more metric data queries to provide the data points for a load metric.
+	// Use multiple metric data queries only if you are performing a math expression
+	// on returned data.
+	//
+	// MetricDataQueries is a required field
+	MetricDataQueries []*MetricDataQuery `type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PredictiveScalingCustomizedLoadMetric) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PredictiveScalingCustomizedLoadMetric) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PredictiveScalingCustomizedLoadMetric) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PredictiveScalingCustomizedLoadMetric"}
+	if s.MetricDataQueries == nil {
+		invalidParams.Add(request.NewErrParamRequired("MetricDataQueries"))
+	}
+	if s.MetricDataQueries != nil {
+		for i, v := range s.MetricDataQueries {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "MetricDataQueries", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMetricDataQueries sets the MetricDataQueries field's value.
+func (s *PredictiveScalingCustomizedLoadMetric) SetMetricDataQueries(v []*MetricDataQuery) *PredictiveScalingCustomizedLoadMetric {
+	s.MetricDataQueries = v
+	return s
+}
+
+// Describes a custom scaling metric for a predictive scaling policy.
+type PredictiveScalingCustomizedScalingMetric struct {
+	_ struct{} `type:"structure"`
+
+	// One or more metric data queries to provide the data points for a scaling
+	// metric. Use multiple metric data queries only if you are performing a math
+	// expression on returned data.
+	//
+	// MetricDataQueries is a required field
+	MetricDataQueries []*MetricDataQuery `type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PredictiveScalingCustomizedScalingMetric) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PredictiveScalingCustomizedScalingMetric) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PredictiveScalingCustomizedScalingMetric) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PredictiveScalingCustomizedScalingMetric"}
+	if s.MetricDataQueries == nil {
+		invalidParams.Add(request.NewErrParamRequired("MetricDataQueries"))
+	}
+	if s.MetricDataQueries != nil {
+		for i, v := range s.MetricDataQueries {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "MetricDataQueries", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMetricDataQueries sets the MetricDataQueries field's value.
+func (s *PredictiveScalingCustomizedScalingMetric) SetMetricDataQueries(v []*MetricDataQuery) *PredictiveScalingCustomizedScalingMetric {
+	s.MetricDataQueries = v
+	return s
+}
+
 // This structure specifies the metrics and target utilization settings for
 // a predictive scaling policy.
 //
@@ -15568,20 +16043,39 @@ func (s *PredictiveScalingConfiguration) SetSchedulingBufferTime(v int64) *Predi
 //    each hour of the forecast period so that the average number of requests
 //    received by each instance is as close to 1000 requests per minute as possible
 //    at all times.
+//
+// For information about using custom metrics with predictive scaling, see Advanced
+// predictive scaling policy configurations using custom metrics (https://docs.aws.amazon.com/autoscaling/ec2/userguide/predictive-scaling-customized-metric-specification.html)
+// in the Amazon EC2 Auto Scaling User Guide.
 type PredictiveScalingMetricSpecification struct {
 	_ struct{} `type:"structure"`
 
-	// The load metric specification.
+	// The customized capacity metric specification.
+	CustomizedCapacityMetricSpecification *PredictiveScalingCustomizedCapacityMetric `type:"structure"`
+
+	// The customized load metric specification.
+	CustomizedLoadMetricSpecification *PredictiveScalingCustomizedLoadMetric `type:"structure"`
+
+	// The customized scaling metric specification.
+	CustomizedScalingMetricSpecification *PredictiveScalingCustomizedScalingMetric `type:"structure"`
+
+	// The predefined load metric specification.
 	PredefinedLoadMetricSpecification *PredictiveScalingPredefinedLoadMetric `type:"structure"`
 
-	// The metric pair specification from which Amazon EC2 Auto Scaling determines
-	// the appropriate scaling metric and load metric to use.
+	// The predefined metric pair specification from which Amazon EC2 Auto Scaling
+	// determines the appropriate scaling metric and load metric to use.
 	PredefinedMetricPairSpecification *PredictiveScalingPredefinedMetricPair `type:"structure"`
 
-	// The scaling metric specification.
+	// The predefined scaling metric specification.
 	PredefinedScalingMetricSpecification *PredictiveScalingPredefinedScalingMetric `type:"structure"`
 
 	// Specifies the target utilization.
+	//
+	// Some metrics are based on a count instead of a percentage, such as the request
+	// count for an Application Load Balancer or the number of messages in an SQS
+	// queue. If the scaling policy specifies one of these metrics, specify the
+	// target utilization as the optimal average request or message count per instance
+	// during any one-minute interval.
 	//
 	// TargetValue is a required field
 	TargetValue *float64 `type:"double" required:"true"`
@@ -15611,6 +16105,21 @@ func (s *PredictiveScalingMetricSpecification) Validate() error {
 	if s.TargetValue == nil {
 		invalidParams.Add(request.NewErrParamRequired("TargetValue"))
 	}
+	if s.CustomizedCapacityMetricSpecification != nil {
+		if err := s.CustomizedCapacityMetricSpecification.Validate(); err != nil {
+			invalidParams.AddNested("CustomizedCapacityMetricSpecification", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.CustomizedLoadMetricSpecification != nil {
+		if err := s.CustomizedLoadMetricSpecification.Validate(); err != nil {
+			invalidParams.AddNested("CustomizedLoadMetricSpecification", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.CustomizedScalingMetricSpecification != nil {
+		if err := s.CustomizedScalingMetricSpecification.Validate(); err != nil {
+			invalidParams.AddNested("CustomizedScalingMetricSpecification", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.PredefinedLoadMetricSpecification != nil {
 		if err := s.PredefinedLoadMetricSpecification.Validate(); err != nil {
 			invalidParams.AddNested("PredefinedLoadMetricSpecification", err.(request.ErrInvalidParams))
@@ -15631,6 +16140,24 @@ func (s *PredictiveScalingMetricSpecification) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetCustomizedCapacityMetricSpecification sets the CustomizedCapacityMetricSpecification field's value.
+func (s *PredictiveScalingMetricSpecification) SetCustomizedCapacityMetricSpecification(v *PredictiveScalingCustomizedCapacityMetric) *PredictiveScalingMetricSpecification {
+	s.CustomizedCapacityMetricSpecification = v
+	return s
+}
+
+// SetCustomizedLoadMetricSpecification sets the CustomizedLoadMetricSpecification field's value.
+func (s *PredictiveScalingMetricSpecification) SetCustomizedLoadMetricSpecification(v *PredictiveScalingCustomizedLoadMetric) *PredictiveScalingMetricSpecification {
+	s.CustomizedLoadMetricSpecification = v
+	return s
+}
+
+// SetCustomizedScalingMetricSpecification sets the CustomizedScalingMetricSpecification field's value.
+func (s *PredictiveScalingMetricSpecification) SetCustomizedScalingMetricSpecification(v *PredictiveScalingCustomizedScalingMetric) *PredictiveScalingMetricSpecification {
+	s.CustomizedScalingMetricSpecification = v
+	return s
 }
 
 // SetPredefinedLoadMetricSpecification sets the PredefinedLoadMetricSpecification field's value.
@@ -16168,8 +16695,7 @@ type PutNotificationConfigurationInput struct {
 	// NotificationTypes is a required field
 	NotificationTypes []*string `type:"list" required:"true"`
 
-	// The Amazon Resource Name (ARN) of the Amazon Simple Notification Service
-	// (Amazon SNS) topic.
+	// The Amazon Resource Name (ARN) of the Amazon SNS topic.
 	//
 	// TopicARN is a required field
 	TopicARN *string `min:"1" type:"string" required:"true"`
@@ -16338,9 +16864,9 @@ type PutScalingPolicyInput struct {
 	//    * PredictiveScaling
 	PolicyType *string `min:"1" type:"string"`
 
-	// A predictive scaling policy. Provides support for only predefined metrics.
+	// A predictive scaling policy. Provides support for predefined and custom metrics.
 	//
-	// Predictive scaling works with CPU utilization, network in/out, and the Application
+	// Predefined metrics include CPU utilization, network in/out, and the Application
 	// Load Balancer request count.
 	//
 	// For more information, see PredictiveScalingConfiguration (https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_PredictiveScalingConfiguration.html)
@@ -16364,7 +16890,7 @@ type PutScalingPolicyInput struct {
 	// type.)
 	StepAdjustments []*StepAdjustment `type:"list"`
 
-	// A target tracking scaling policy. Provides support for predefined or customized
+	// A target tracking scaling policy. Provides support for predefined or custom
 	// metrics.
 	//
 	// The following predefined metrics are available:
@@ -18655,7 +19181,7 @@ type UpdateAutoScalingGroupInput struct {
 	AvailabilityZones []*string `type:"list"`
 
 	// Enables or disables Capacity Rebalancing. For more information, see Amazon
-	// EC2 Auto Scaling Capacity Rebalancing (https://docs.aws.amazon.com/autoscaling/ec2/userguide/capacity-rebalance.html)
+	// EC2 Auto Scaling Capacity Rebalancing (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-capacity-rebalancing.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	CapacityRebalance *bool `type:"boolean"`
 
@@ -18689,9 +19215,9 @@ type UpdateAutoScalingGroupInput struct {
 	DesiredCapacityType *string `min:"1" type:"string"`
 
 	// The amount of time, in seconds, that Amazon EC2 Auto Scaling waits before
-	// checking the health status of an EC2 instance that has come into service.
-	// The default value is 0. For more information, see Health check grace period
-	// (https://docs.aws.amazon.com/autoscaling/ec2/userguide/healthcheck.html#health-check-grace-period)
+	// checking the health status of an EC2 instance that has come into service
+	// and marking it unhealthy due to a failed health check. The default value
+	// is 0. For more information, see Health check grace period (https://docs.aws.amazon.com/autoscaling/ec2/userguide/healthcheck.html#health-check-grace-period)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	//
 	// Conditional: Required if you are adding an ELB health check.
@@ -18734,14 +19260,14 @@ type UpdateAutoScalingGroupInput struct {
 
 	// An embedded object that specifies a mixed instances policy. For more information,
 	// see Auto Scaling groups with multiple instance types and purchase options
-	// (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-purchase-options.html)
+	// (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-mixed-instances-groups.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	MixedInstancesPolicy *MixedInstancesPolicy `type:"structure"`
 
 	// Indicates whether newly launched instances are protected from termination
 	// by Amazon EC2 Auto Scaling when scaling in. For more information about preventing
-	// instances from terminating on scale in, see Instance scale-in protection
-	// (https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-instance-termination.html#instance-protection)
+	// instances from terminating on scale in, see Using instance scale-in protection
+	// (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-instance-protection.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	NewInstancesProtectedFromScaleIn *bool `type:"boolean"`
 
