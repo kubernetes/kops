@@ -674,6 +674,6 @@ func (b *KubeletBuilder) kubeletNames() ([]string, error) {
 		return nil, fmt.Errorf("error describing instances: %v", err)
 	}
 
-	useInstanceIDForNodeName := b.Cluster.Spec.ExternalCloudControllerManager != nil && b.IsKubernetesGTE("1.23")
+	useInstanceIDForNodeName := b.Cluster.Spec.ExternalCloudControllerManager != nil && b.IsKubernetesGTE("1.22")
 	return awsup.GetInstanceCertificateNames(result, useInstanceIDForNodeName)
 }

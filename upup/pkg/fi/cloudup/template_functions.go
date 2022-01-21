@@ -573,7 +573,7 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 				Region:     tf.Region,
 			}
 
-			if cluster.Spec.ExternalCloudControllerManager != nil && cluster.IsKubernetesGTE("1.23") {
+			if cluster.Spec.ExternalCloudControllerManager != nil && cluster.IsKubernetesGTE("1.22") {
 				config.Server.UseInstanceIDForNodeName = true
 			}
 
