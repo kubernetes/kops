@@ -744,6 +744,9 @@ func (tf *TemplateFunctions) OpenStackCCMTag() string {
 		if parsed.Minor == 13 {
 			// The bugfix release
 			tag = "1.13.1"
+		} else if parsed.Minor == 23 {
+			// The bugfix release, see https://github.com/kubernetes/cloud-provider-openstack/releases
+			tag = "1.23.1"
 		} else {
 			// otherwise we use always .0 ccm image, if needed that can be overrided using clusterspec
 			tag = fmt.Sprintf("v%d.%d.0", parsed.Major, parsed.Minor)
