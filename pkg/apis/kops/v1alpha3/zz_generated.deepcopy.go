@@ -4313,6 +4313,11 @@ func (in *OpenstackLoadbalancerConfig) DeepCopyInto(out *OpenstackLoadbalancerCo
 		*out = new(string)
 		**out = **in
 	}
+	if in.MaxSharedLB != nil {
+		in, out := &in.MaxSharedLB, &out.MaxSharedLB
+		*out = new(int)
+		**out = **in
+	}
 	return
 }
 
@@ -4468,11 +4473,6 @@ func (in *PackagesConfig) DeepCopyInto(out *PackagesConfig) {
 	if in.UrlArm64 != nil {
 		in, out := &in.UrlArm64, &out.UrlArm64
 		*out = new(string)
-		**out = **in
-	}
-	if in.MaxSharedLB != nil {
-		in, out := &in.MaxSharedLB, &out.MaxSharedLB
-		*out = new(int)
 		**out = **in
 	}
 	return
