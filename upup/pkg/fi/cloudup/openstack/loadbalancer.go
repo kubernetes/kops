@@ -28,6 +28,31 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
+func (c *openstackCloud) CreatePoolMonitor(opts monitors.CreateOpts) (*monitors.Monitor, error) {
+	return createPoolMonitor(c, opts)
+}
+
+func createPoolMonitor(c OpenstackCloud, opts monitors.CreateOpts) (poolMonitor *monitors.Monitor, err error) {
+	if c.LoadBalancerClient() == nil {
+		return nil, fmt.Errorf("loadbalancer support not available in this deployment")
+	}
+
+	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+		poolMonitor, err = monitors.Create(c.LoadBalancerClient(), opts).Extract()
+		if err != nil {
+			return false, fmt.Errorf("failed to create pool monitor: %v", err)
+		}
+		return true, nil
+	})
+	if !done {
+		if err == nil {
+			err = wait.ErrWaitTimeout
+		}
+		return poolMonitor, err
+	}
+	return poolMonitor, nil
+}
+
 func (c *openstackCloud) ListMonitors(opts monitors.ListOpts) (monitorList []monitors.Monitor, err error) {
 	return listMonitors(c, opts)
 }
