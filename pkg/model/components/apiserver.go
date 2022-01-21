@@ -169,6 +169,14 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		c.InsecurePort = fi.Int32(0)
 	}
 
+	// If metrics-server is enabled, we want aggregator routing enabled so that requests are load balanced.
+	metricsServer := clusterSpec.MetricsServer
+	if metricsServer != nil && fi.BoolValue(metricsServer.Enabled) {
+		if c.EnableAggregatorRouting == nil {
+			c.EnableAggregatorRouting = fi.Bool(true)
+		}
+	}
+
 	return nil
 }
 
