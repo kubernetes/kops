@@ -86,12 +86,6 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 		obj.Authorization.AlwaysAllow = &AlwaysAllowAuthorizationSpec{}
 	}
 
-	if obj.IAM == nil {
-		obj.IAM = &IAMSpec{
-			Legacy: true,
-		}
-	}
-
 	if obj.Networking != nil {
 		if obj.Networking.Flannel != nil {
 			// Populate with legacy default value; new clusters will be created with "vxlan" by

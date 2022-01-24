@@ -205,7 +205,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
       leaderElect: true
     logLevel: 2
   kubelet:
-    anonymousAuth: false
     cgroupDriver: systemd
     cgroupRoot: /
     cloudProvider: aws
@@ -219,7 +218,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
     nonMasqueradeCIDR: 100.64.0.0/10
     podManifestPath: /etc/kubernetes/manifests
   masterKubelet:
-    anonymousAuth: false
     cgroupDriver: systemd
     cgroupRoot: /
     cloudProvider: aws
@@ -241,7 +239,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: LFwTDQ1M/AxVLdvKc8ZPsktDgr836JEsdQRwn2TU+iM=
+  NodeupConfigHash: eIKJajpYSH1kKEG8Ah7zdvIqBC9cGdqI4mj1KYaE0VA=
 
   __EOF_KUBE_ENV
 
@@ -389,7 +387,6 @@ Resources.AWSEC2LaunchTemplatenodesminimalexamplecom.Properties.LaunchTemplateDa
     image: k8s.gcr.io/kube-proxy:v1.21.0
     logLevel: 2
   kubelet:
-    anonymousAuth: false
     cgroupDriver: systemd
     cgroupRoot: /
     cloudProvider: aws
@@ -410,7 +407,7 @@ Resources.AWSEC2LaunchTemplatenodesminimalexamplecom.Properties.LaunchTemplateDa
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: ehZK5PooPMXQw0YD3dy5oARwClEXIj8ymh6DR1XYbQ0=
+  NodeupConfigHash: X3GTskTs5A1Xa9K+ujEWoAJd1PidV/fSdfPuDfuLLHA=
 
   __EOF_KUBE_ENV
 

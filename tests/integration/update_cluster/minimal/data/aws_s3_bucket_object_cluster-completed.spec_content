@@ -41,8 +41,6 @@ spec:
     version: 3.4.13
   externalDns:
     provider: dns-controller
-  iam:
-    legacy: false
   keyStore: memfs://clusters.example.com/minimal.example.com/pki
   kubeAPIServer:
     allowPrivileged: true
@@ -123,7 +121,6 @@ spec:
       leaderElect: true
     logLevel: 2
   kubelet:
-    anonymousAuth: false
     cgroupDriver: systemd
     cgroupRoot: /
     cloudProvider: aws
@@ -141,7 +138,6 @@ spec:
   kubernetesVersion: 1.21.0
   masterInternalName: api.internal.minimal.example.com
   masterKubelet:
-    anonymousAuth: false
     cgroupDriver: systemd
     cgroupRoot: /
     cloudProvider: aws
