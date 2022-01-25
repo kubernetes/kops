@@ -24,6 +24,7 @@ import (
 
 	"google.golang.org/api/compute/v1"
 	"k8s.io/kops/cloudmock/aws/mockeventbridge"
+	"k8s.io/kops/cloudmock/aws/mockresourcegroupstaggingapi"
 	"k8s.io/kops/cloudmock/aws/mocksqs"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -147,6 +148,8 @@ func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
 	cloud.MockSQS = mockSQS
 	mockEventBridge := &mockeventbridge.MockEventBridge{}
 	cloud.MockEventBridge = mockEventBridge
+	mockResourceGroupsTagging := &mockresourcegroupstaggingapi.MockResourceGroupsTaggingAPI{}
+	cloud.MockResourceGroupsTagging = mockResourceGroupsTagging
 
 	mockRoute53.MockCreateZone(&route53.HostedZone{
 		Id:   aws.String("/hostedzone/Z1AFAKE1ZON3YO"),
