@@ -279,7 +279,7 @@ rules:
   resources: ["nodes", "pods"]
   verbs: ["get", "list", "watch", "patch", "delete"]
 - apiGroups: [""]
-  resources: ["configmaps"]
+  resources: ["configmaps", "persistentvolumes", "persistentvolumeclaims"]
   verbs: ["get", "list", "watch", "update"]
 - apiGroups: [""]
   resources: ["nodes"]
@@ -442,7 +442,7 @@ spec:
       dnsPolicy: Default
       containers:
         - name: manager
-          image: public.ecr.aws/karpenter/controller:v0.5.3
+          image: public.ecr.aws/karpenter/controller:v0.5.6
           resources: 
             limits:
               memory: 1Gi
@@ -463,6 +463,10 @@ spec:
               path: /readyz
               port: 8081
           env:
+            {{ if not .Networking.AmazonVPC }}
+            - name: AWS_ENI_LIMITED_POD_DENSITY
+              value: true
+            {{ end }}
             {{ if UsesInstanceIDForNodeName }}
             - name: AWS_NODE_NAME_CONVENTION
               value: "resource-name"
