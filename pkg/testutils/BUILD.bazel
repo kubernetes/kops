@@ -17,6 +17,7 @@ go_library(
         "//cloudmock/aws/mockelbv2:go_default_library",
         "//cloudmock/aws/mockeventbridge:go_default_library",
         "//cloudmock/aws/mockiam:go_default_library",
+        "//cloudmock/aws/mockresourcegroupstaggingapi:go_default_library",
         "//cloudmock/aws/mockroute53:go_default_library",
         "//cloudmock/aws/mocksqs:go_default_library",
         "//cloudmock/gce:go_default_library",

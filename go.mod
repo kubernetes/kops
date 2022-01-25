@@ -91,6 +91,7 @@ require (
 	k8s.io/client-go v0.23.1
 	k8s.io/component-base v0.23.1
 	k8s.io/gengo v0.0.0-20210813121822-485abfe95c7c
+	k8s.io/klog v1.0.0
 	k8s.io/klog/v2 v2.30.0
 	k8s.io/kubectl v0.23.1
 	k8s.io/legacy-cloud-providers v0.23.1
@@ -232,7 +233,6 @@ require (
 	k8s.io/apiextensions-apiserver v0.23.1 // indirect
 	k8s.io/cloud-provider v0.23.1 // indirect
 	k8s.io/csi-translation-lib v0.23.1 // indirect
-	k8s.io/klog v1.0.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20211115234752-e816edb12b65 // indirect
 	oras.land/oras-go v0.4.0 // indirect
 	sigs.k8s.io/json v0.0.0-20211020170558-c049b76a60c6 // indirect
