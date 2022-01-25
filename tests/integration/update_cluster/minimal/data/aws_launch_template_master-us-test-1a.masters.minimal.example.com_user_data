@@ -204,7 +204,6 @@ kubeScheduler:
     leaderElect: true
   logLevel: 2
 kubelet:
-  anonymousAuth: false
   cgroupDriver: systemd
   cgroupRoot: /
   cloudProvider: aws
@@ -218,7 +217,6 @@ kubelet:
   nonMasqueradeCIDR: 100.64.0.0/10
   podManifestPath: /etc/kubernetes/manifests
 masterKubelet:
-  anonymousAuth: false
   cgroupDriver: systemd
   cgroupRoot: /
   cloudProvider: aws
@@ -240,7 +238,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: LFwTDQ1M/AxVLdvKc8ZPsktDgr836JEsdQRwn2TU+iM=
+NodeupConfigHash: eIKJajpYSH1kKEG8Ah7zdvIqBC9cGdqI4mj1KYaE0VA=
 
 __EOF_KUBE_ENV
 
