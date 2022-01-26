@@ -47,7 +47,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.16
     manifest: certmanager.io/k8s-1.16.yaml
-    manifestHash: 71dcc0409edb49a5b9bf52416ccdca68bc075167dc9604441cb3bd73b7bba149
+    manifestHash: 0ad47440355c822d443ae607d7a052e93eaa024d60f69e18d925785b7ec3b406
     name: certmanager.io
     selector: null
     version: 9.99.0
