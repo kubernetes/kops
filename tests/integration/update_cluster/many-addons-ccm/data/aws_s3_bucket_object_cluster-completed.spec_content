@@ -163,6 +163,7 @@ spec:
     logLevel: 2
     networkPluginName: cni
     nonMasqueradeCIDR: 172.20.0.0/16
+    podInfraContainerImage: k8s.gcr.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
   kubernetesApiAccess:
   - 0.0.0.0/0
@@ -184,6 +185,7 @@ spec:
     logLevel: 2
     networkPluginName: cni
     nonMasqueradeCIDR: 172.20.0.0/16
+    podInfraContainerImage: k8s.gcr.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
   masterPublicName: api.minimal.example.com

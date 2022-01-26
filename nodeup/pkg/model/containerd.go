@@ -451,6 +451,9 @@ func (b *ContainerdBuilder) buildContainerdConfig() (string, error) {
 
 	config, _ := toml.Load("")
 	config.SetPath([]string{"version"}, int64(2))
+	if cluster.Spec.Kubelet != nil && cluster.Spec.Kubelet.PodInfraContainerImage != "" {
+		config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "sandbox_image"}, cluster.Spec.Kubelet.PodInfraContainerImage)
+	}
 	for name, endpoints := range containerd.RegistryMirrors {
 		config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "registry", "mirrors", name, "endpoint"}, endpoints)
 	}

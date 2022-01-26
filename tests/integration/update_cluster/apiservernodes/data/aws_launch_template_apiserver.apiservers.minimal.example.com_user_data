@@ -155,6 +155,7 @@ kubelet:
   logLevel: 2
   networkPluginName: cni
   nonMasqueradeCIDR: 100.64.0.0/10
+  podInfraContainerImage: k8s.gcr.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
 
@@ -165,7 +166,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: apiserver
 InstanceGroupRole: APIServer
-NodeupConfigHash: 9lEYmrPpO6ssrPOflH9XcgwjqVtaAipBiH+stfM0evM=
+NodeupConfigHash: gAJg1M6Qa3y03kN1JD1QD4dwAJR/0jD/oD/Ba0znnso=
 
 __EOF_KUBE_ENV
 

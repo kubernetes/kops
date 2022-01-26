@@ -151,6 +151,7 @@ kubelet:
   logLevel: 2
   networkPluginName: cni
   nonMasqueradeCIDR: 100.64.0.0/10
+  podInfraContainerImage: k8s.gcr.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
 
 __EOF_CLUSTER_SPEC
@@ -160,7 +161,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privatecilium.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: igS7JCgU4BRlNKb1SEvHE4dfJ3Qj//6MB9NyLRv23jY=
+NodeupConfigHash: sy0X1OqgcxarWdJjri8d1tDtlneKWC42ui/exLLZxL4=
 
 __EOF_KUBE_ENV
 

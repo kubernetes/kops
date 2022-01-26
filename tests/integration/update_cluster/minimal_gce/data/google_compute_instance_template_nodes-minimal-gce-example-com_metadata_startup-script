@@ -154,6 +154,7 @@ kubelet:
   logLevel: 2
   networkPluginName: cni
   nonMasqueradeCIDR: 100.64.0.0/10
+  podInfraContainerImage: k8s.gcr.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
 
@@ -164,7 +165,7 @@ CloudProvider: gce
 ConfigBase: memfs://tests/minimal-gce.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: DhAHxqu21d3Ucbqgp4vO5IrwGHSBJ48VmHDlQFYwMZI=
+NodeupConfigHash: swrfsD3OFlrCXjvaP/uljFHXr/9Y/aec2xNr/m9Srig=
 
 __EOF_KUBE_ENV
 
