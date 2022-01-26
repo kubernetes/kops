@@ -35,9 +35,9 @@ func (m *MockELB) ModifyLoadBalancerAttributes(request *elb.ModifyLoadBalancerAt
 		return nil, fmt.Errorf("LoadBalancer not found")
 	}
 
-	lb.attributes = *request.LoadBalancerAttributes
+	lb.Attributes = *request.LoadBalancerAttributes
 
-	copy := lb.attributes
+	copy := lb.Attributes
 
 	return &elb.ModifyLoadBalancerAttributesOutput{
 		LoadBalancerName:       request.LoadBalancerName,
@@ -56,7 +56,7 @@ func (m *MockELB) DescribeLoadBalancerAttributes(request *elb.DescribeLoadBalanc
 		return nil, fmt.Errorf("LoadBalancer not found")
 	}
 
-	copy := lb.attributes
+	copy := lb.Attributes
 
 	return &elb.DescribeLoadBalancerAttributesOutput{
 		LoadBalancerAttributes: &copy,

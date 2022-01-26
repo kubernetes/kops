@@ -34,13 +34,13 @@ type MockELB struct {
 
 	mutex sync.Mutex
 
-	LoadBalancers map[string]*loadBalancer
+	LoadBalancers map[string]*LoadBalancer
 }
 
-type loadBalancer struct {
-	description elb.LoadBalancerDescription
-	attributes  elb.LoadBalancerAttributes
-	tags        map[string]string
+type LoadBalancer struct {
+	Description elb.LoadBalancerDescription
+	Attributes  elb.LoadBalancerAttributes
+	Tags        map[string]string
 }
 
 func (m *MockELB) DescribeLoadBalancers(request *elb.DescribeLoadBalancersInput) (*elb.DescribeLoadBalancersOutput, error) {
@@ -62,7 +62,7 @@ func (m *MockELB) DescribeLoadBalancers(request *elb.DescribeLoadBalancersInput)
 
 		if len(request.LoadBalancerNames) > 0 {
 			for _, name := range request.LoadBalancerNames {
-				if aws.StringValue(elb.description.LoadBalancerName) == aws.StringValue(name) {
+				if aws.StringValue(elb.Description.LoadBalancerName) == aws.StringValue(name) {
 					match = true
 				}
 			}
@@ -71,7 +71,7 @@ func (m *MockELB) DescribeLoadBalancers(request *elb.DescribeLoadBalancersInput)
 		}
 
 		if match {
-			elbs = append(elbs, &elb.description)
+			elbs = append(elbs, &elb.Description)
 		}
 	}
 
@@ -101,8 +101,8 @@ func (m *MockELB) CreateLoadBalancer(request *elb.CreateLoadBalancerInput) (*elb
 
 	dnsName := *request.LoadBalancerName + ".elb.cloudmock.com"
 
-	lb := &loadBalancer{
-		description: elb.LoadBalancerDescription{
+	lb := &LoadBalancer{
+		Description: elb.LoadBalancerDescription{
 			AvailabilityZones: request.AvailabilityZones,
 			CreatedTime:       &createdTime,
 			LoadBalancerName:  request.LoadBalancerName,
@@ -113,27 +113,21 @@ func (m *MockELB) CreateLoadBalancer(request *elb.CreateLoadBalancerInput) (*elb
 
 			CanonicalHostedZoneNameID: aws.String(elbZoneID),
 		},
-		tags: make(map[string]string),
+		Tags: make(map[string]string),
+	}
+
+	for _, tag := range request.Tags {
+		lb.Tags[aws.StringValue(tag.Key)] = aws.StringValue(tag.Value)
 	}
 
 	for _, listener := range request.Listeners {
-		lb.description.ListenerDescriptions = append(lb.description.ListenerDescriptions, &elb.ListenerDescription{
+		lb.Description.ListenerDescriptions = append(lb.Description.ListenerDescriptions, &elb.ListenerDescription{
 			Listener: listener,
 		})
 	}
 
-	// for _, tag := range input.Tags {
-	// 	g.Tags = append(g.Tags, &autoscaling.TagDescription{
-	// 		Key:               tag.Key,
-	// 		PropagateAtLaunch: tag.PropagateAtLaunch,
-	// 		ResourceId:        tag.ResourceId,
-	// 		ResourceType:      tag.ResourceType,
-	// 		Value:             tag.Value,
-	// 	})
-	// }
-
 	if m.LoadBalancers == nil {
-		m.LoadBalancers = make(map[string]*loadBalancer)
+		m.LoadBalancers = make(map[string]*LoadBalancer)
 	}
 	m.LoadBalancers[*request.LoadBalancerName] = lb
 

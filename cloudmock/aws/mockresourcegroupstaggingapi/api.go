@@ -17,31 +17,62 @@ limitations under the License.
 package mockresourcegroupstaggingapi
 
 import (
-	"sync"
+	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/resourcegroupstaggingapi"
 	"github.com/aws/aws-sdk-go/service/resourcegroupstaggingapi/resourcegroupstaggingapiiface"
 	"k8s.io/klog"
+	"k8s.io/kops/cloudmock/aws/mockelb"
 )
 
 type MockResourceGroupsTaggingAPI struct {
 	resourcegroupstaggingapiiface.ResourceGroupsTaggingAPIAPI
 
-	mutex sync.Mutex
+	ElbLoadBalancers map[string]*mockelb.LoadBalancer
+	ElbV2Tags        map[string]*elbv2.TagDescription
 }
 
 var _ resourcegroupstaggingapiiface.ResourceGroupsTaggingAPIAPI = &MockResourceGroupsTaggingAPI{}
 
 func (m *MockResourceGroupsTaggingAPI) GetResources(input *resourcegroupstaggingapi.GetResourcesInput) (*resourcegroupstaggingapi.GetResourcesOutput, error) {
-	m.mutex.Lock()
-	defer m.mutex.Unlock()
 
 	klog.V(2).Infof("mock getResources: %v", input)
 
-	return &resourcegroupstaggingapi.GetResourcesOutput{
-		ResourceTagMappingList: []*resourcegroupstaggingapi.ResourceTagMapping{{
-			ResourceARN: aws.String("arn:aws:elasticloadbalancing:region:accountId:loadbalancer/loadBalancerName"),
-		}},
-	}, nil
+	result := &resourcegroupstaggingapi.GetResourcesOutput{}
+
+	for _, lb := range m.ElbLoadBalancers {
+		for _, tagFilter := range input.TagFilters {
+			if val, ok := lb.Tags[*tagFilter.Key]; ok {
+				for _, tagFilterValue := range tagFilter.Values {
+					if val == *tagFilterValue {
+						result.ResourceTagMappingList = append(result.ResourceTagMappingList, &resourcegroupstaggingapi.ResourceTagMapping{
+							ResourceARN: aws.String(fmt.Sprintf("arn:aws:elasticloadbalancing:region:accountId:loadbalancer/%s", *lb.Description.LoadBalancerName)),
+						})
+						return result, nil
+					}
+				}
+			}
+		}
+	}
+
+	for _, tagFilter := range input.TagFilters {
+		for _, elbTags := range m.ElbV2Tags {
+			for _, tag := range elbTags.Tags {
+				if tagFilter.Key == tag.Key {
+					for _, value := range tagFilter.Values {
+						if tag.Value == value {
+							result.ResourceTagMappingList = append(result.ResourceTagMappingList, &resourcegroupstaggingapi.ResourceTagMapping{
+								ResourceARN: elbTags.ResourceArn,
+							})
+							return result, nil
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return result, nil
 }
