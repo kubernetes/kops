@@ -39,6 +39,7 @@ var _ resourcegroupstaggingapiiface.ResourceGroupsTaggingAPIAPI = &MockResourceG
 func (m *MockResourceGroupsTaggingAPI) GetResources(input *resourcegroupstaggingapi.GetResourcesInput) (*resourcegroupstaggingapi.GetResourcesOutput, error) {
 
 	klog.V(2).Infof("mock getResources: %v", input)
+	klog.Infof("debug mock getResouces loadBalancers: %v, elbv2Tags: %v", m.ElbLoadBalancers, m.ElbV2Tags)
 
 	result := &resourcegroupstaggingapi.GetResourcesOutput{}
 

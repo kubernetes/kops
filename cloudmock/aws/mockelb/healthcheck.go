@@ -35,9 +35,9 @@ func (m *MockELB) ConfigureHealthCheck(request *elb.ConfigureHealthCheckInput) (
 		return nil, fmt.Errorf("LoadBalancer not found")
 	}
 
-	lb.description.HealthCheck = request.HealthCheck
+	lb.Description.HealthCheck = request.HealthCheck
 
-	copy := *lb.description.HealthCheck
+	copy := *lb.Description.HealthCheck
 
 	return &elb.ConfigureHealthCheckOutput{
 		HealthCheck: &copy,

@@ -51,7 +51,7 @@ func (m *MockELB) DescribeTags(request *elb.DescribeTagsInput) (*elb.DescribeTag
 		tagDescription := &elb.TagDescription{
 			LoadBalancerName: aws.String(k),
 		}
-		for k, v := range lb.tags {
+		for k, v := range lb.Tags {
 			tagDescription.Tags = append(tagDescription.Tags, &elb.Tag{
 				Key:   aws.String(k),
 				Value: aws.String(v),
@@ -79,7 +79,7 @@ func (m *MockELB) AddTags(request *elb.AddTagsInput) (*elb.AddTagsOutput, error)
 			return nil, fmt.Errorf("ELB %q not found", *name)
 		}
 		for _, tag := range request.Tags {
-			elb.tags[*tag.Key] = *tag.Value
+			elb.Tags[*tag.Key] = *tag.Value
 		}
 	}
 

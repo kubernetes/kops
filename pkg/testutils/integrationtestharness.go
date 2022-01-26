@@ -149,7 +149,7 @@ func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
 	mockEventBridge := &mockeventbridge.MockEventBridge{}
 	cloud.MockEventBridge = mockEventBridge
 	mockResourceGroupsTagging := &mockresourcegroupstaggingapi.MockResourceGroupsTaggingAPI{}
-	mockResourceGroupsTagging.ElbLoadbalancers = mockELB.LoadBalancers
+	mockResourceGroupsTagging.ElbLoadBalancers = mockELB.LoadBalancers
 	mockResourceGroupsTagging.ElbV2Tags = mockELBV2.Tags
 	cloud.MockResourceGroupsTagging = mockResourceGroupsTagging
 
