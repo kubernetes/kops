@@ -1705,6 +1705,10 @@ func findELBByNameTag(c AWSCloud, findNameTag string) (*elb.LoadBalancerDescript
 		return nil, fmt.Errorf("failed to find resource arn by name tag: %v", err)
 	}
 
+	if loadBalancerArn == "" {
+		return nil, nil
+	}
+
 	// example load balancer ARN: arn:aws:elasticloadbalancing:region:accountId:loadbalancer/loadBalancerName
 	loadBalancerName := strings.Split(loadBalancerArn, "/")[1]
 
@@ -1787,6 +1791,10 @@ func findELBV2ByNameTag(c AWSCloud, findNameTag string) (*elbv2.LoadBalancer, er
 	loadBalancerArn, err := findResourceArnByNameTag(c, "elasticloadbalancing", findNameTag)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find resource arn by name tag: %v", err)
+	}
+
+	if loadBalancerArn == "" {
+		return nil, nil
 	}
 
 	request := &elbv2.DescribeLoadBalancersInput{LoadBalancerArns: aws.StringSlice([]string{
