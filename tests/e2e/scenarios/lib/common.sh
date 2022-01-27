@@ -123,7 +123,7 @@ function kops-up() {
         create_args="${create_args} --zones=${ZONES}"
     fi
     if [[ -z "${K8S_VERSION-}" ]]; then
-        K8S_VERSION="1.22.1"
+        K8S_VERSION="v1.22.1"
     fi
     ${KUBETEST2} \
         --up \
