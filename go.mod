@@ -61,7 +61,7 @@ require (
 	github.com/hashicorp/hcl/v2 v2.10.1
 	github.com/hashicorp/vault/api v1.1.1
 	github.com/jacksontj/memberlistmesh v0.0.0-20190905163944-93462b9d2bb7
-	github.com/jetstack/cert-manager v1.6.1
+	github.com/jetstack/cert-manager v1.6.2
 	github.com/mitchellh/mapstructure v1.4.1
 	github.com/pelletier/go-toml v1.9.3
 	github.com/pkg/sftp v1.13.4
