@@ -624,12 +624,10 @@ func (c *RollingUpdateCluster) drainNode(u *cloudinstances.CloudInstance) error 
 		IgnoreAllDaemonSets: true,
 		Out:                 os.Stdout,
 		ErrOut:              os.Stderr,
+		Timeout:             c.DrainTimeout,
 
 		// We want to proceed even when pods are using emptyDir volumes
 		DeleteEmptyDirData: true,
-
-		// Other options we might want to set:
-		// Timeout?
 	}
 
 	if err := drain.RunCordonOrUncordon(helper, u.Node, true); err != nil {
