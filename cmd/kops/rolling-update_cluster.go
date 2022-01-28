@@ -107,6 +107,9 @@ type RollingUpdateOptions struct {
 	// does not validate, after a validation period.
 	FailOnValidate bool
 
+	// DrainTimeout is the maximum time to wait while draining a node.
+	DrainTimeout time.Duration
+
 	// PostDrainDelay is the duration of a pause after a drain operation
 	PostDrainDelay time.Duration
 
@@ -154,6 +157,8 @@ func (o *RollingUpdateOptions) InitDefaults() {
 	o.PostDrainDelay = 5 * time.Second
 	o.ValidationTimeout = 15 * time.Minute
 	o.ValidateCount = 2
+
+	o.DrainTimeout = 15 * time.Minute
 }
 
 func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
@@ -182,6 +187,7 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().BoolVar(&options.CloudOnly, "cloudonly", options.CloudOnly, "Perform rolling update without confirming progress with Kubernetes")
 
 	cmd.Flags().DurationVar(&options.ValidationTimeout, "validation-timeout", options.ValidationTimeout, "Maximum time to wait for a cluster to validate")
+	cmd.Flags().DurationVar(&options.DrainTimeout, "drain-timeout", options.DrainTimeout, "Maximum time to wait for a node to drain")
 	cmd.Flags().Int32Var(&options.ValidateCount, "validate-count", options.ValidateCount, "Number of times that a cluster needs to be validated after single node update")
 	cmd.Flags().DurationVar(&options.MasterInterval, "master-interval", options.MasterInterval, "Time to wait between restarting control plane nodes")
 	cmd.Flags().DurationVar(&options.NodeInterval, "node-interval", options.NodeInterval, "Time to wait between restarting worker nodes")
@@ -336,6 +342,7 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 		PostDrainDelay:    options.PostDrainDelay,
 		ValidationTimeout: options.ValidationTimeout,
 		ValidateCount:     int(options.ValidateCount),
+		DrainTimeout:      options.DrainTimeout,
 		// TODO should we expose this to the UI?
 		ValidateTickDuration:    30 * time.Second,
 		ValidateSuccessDuration: 10 * time.Second,
