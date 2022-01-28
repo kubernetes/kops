@@ -45,6 +45,11 @@ func (b *GCPCloudControllerManagerOptionsBuilder) BuildOptions(options interface
 	if ccmConfig == nil {
 		return nil
 	}
+
+	// No significant downside to always doing a leader election.
+	// Also, having multiple control plane nodes requires leader election.
+	ccmConfig.LeaderElection = &kops.LeaderElectionConfiguration{LeaderElect: fi.Bool(true)}
+
 	// CCM interacts directly with the GCP API, use the name safe for GCP
 	ccmConfig.ClusterName = gce.SafeClusterName(b.ClusterName)
 	ccmConfig.AllocateNodeCIDRs = fi.Bool(true)
