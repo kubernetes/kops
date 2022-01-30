@@ -35,10 +35,16 @@ type ManagedFile struct {
 	Name      *string
 	Lifecycle fi.Lifecycle
 
-	Base     *string
+	// Base is the root location of the store for the managed file
+	Base *string
+
+	// Location is the relative path of the managed file
 	Location *string
+
 	Contents fi.Resource
-	Public   *bool
+
+	// Public controls whether the object is world-readable
+	Public *bool
 }
 
 func (e *ManagedFile) Find(c *fi.Context) (*ManagedFile, error) {
@@ -103,6 +109,30 @@ func (s *ManagedFile) CheckChanges(a, e, changes *ManagedFile) error {
 	return nil
 }
 
+func (e *ManagedFile) getACL(c *fi.Context, p vfs.Path) (vfs.ACL, error) {
+	var acl vfs.ACL
+	if fi.BoolValue(e.Public) {
+		switch p := p.(type) {
+		case *vfs.S3Path:
+			acl = &vfs.S3Acl{
+				RequestACL: fi.String("public-read"),
+			}
+		case *vfs.MemFSPath:
+			if !p.IsClusterReadable() {
+				return nil, fmt.Errorf("the %q path is intended for use in tests", p.Path())
+			}
+			acl = &vfs.S3Acl{
+				RequestACL: fi.String("public-read"),
+			}
+		default:
+			return nil, fmt.Errorf("the %q path does not support public ACL", p.Path())
+		}
+		return acl, nil
+	}
+
+	return acls.GetACL(p, c.Cluster)
+}
+
 func (_ *ManagedFile) Render(c *fi.Context, a, e, changes *ManagedFile) error {
 	location := fi.StringValue(e.Location)
 	if location == "" {
@@ -120,27 +150,9 @@ func (_ *ManagedFile) Render(c *fi.Context, a, e, changes *ManagedFile) error {
 	}
 	p = p.Join(location)
 
-	var acl vfs.ACL
-	if fi.BoolValue(e.Public) {
-		switch p := p.(type) {
-		case *vfs.S3Path:
-			acl = &vfs.S3Acl{
-				RequestACL: fi.String("public-read"),
-			}
-		case *vfs.MemFSPath:
-			if !p.IsClusterReadable() {
-				return fmt.Errorf("the %q path is intended for use in tests", p.Path())
-			}
-			acl = nil
-		default:
-			return fmt.Errorf("the %q path does not support public ACL", p.Path())
-		}
-	} else {
-
-		acl, err = acls.GetACL(p, c.Cluster)
-		if err != nil {
-			return err
-		}
+	acl, err := e.getACL(c, p)
+	if err != nil {
+		return err
 	}
 
 	err = p.WriteFile(bytes.NewReader(data), acl)
@@ -181,7 +193,7 @@ func (f *ManagedFile) RenderTerraform(c *fi.Context, t *terraform.TerraformTarge
 	}
 	p = p.Join(location)
 
-	acl, err := acls.GetACL(p, c.Cluster)
+	acl, err := e.getACL(c, p)
 	if err != nil {
 		return err
 	}
