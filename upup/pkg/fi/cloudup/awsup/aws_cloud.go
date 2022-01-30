@@ -17,6 +17,7 @@ limitations under the License.
 package awsup
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
@@ -594,7 +595,7 @@ func deregisterInstance(c AWSCloud, i *cloudinstances.CloudInstance) error {
 	loadBalancerNames := aws.StringValueSlice(asgDetails.AutoScalingGroups[0].LoadBalancerNames)
 	targetGroupArns := aws.StringValueSlice(asgDetails.AutoScalingGroups[0].TargetGroupARNs)
 
-	eg, _ := errgroup.WithContext(aws.BackgroundContext())
+	eg, _ := errgroup.WithContext(context.Background())
 
 	if len(loadBalancerNames) != 0 {
 		eg.Go(func() error {
