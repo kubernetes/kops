@@ -81,6 +81,18 @@ func (e *ManagedFile) Find(c *fi.Context) (*ManagedFile, error) {
 		}
 	}
 
+	if memfsfile, ok := filePath.(*vfs.MemFSPath); ok {
+		public, err := memfsfile.IsPublic()
+		if err != nil {
+			return nil, err
+		}
+		actual.Public = &public
+
+		if e.Public == nil {
+			e.Public = fi.Bool(false)
+		}
+	}
+
 	// Avoid spurious changes
 	actual.Lifecycle = e.Lifecycle
 
