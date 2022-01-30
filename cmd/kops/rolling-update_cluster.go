@@ -140,6 +140,9 @@ type RollingUpdateOptions struct {
 	// InstanceGroupRoles is the list of roles we should rolling-update
 	// if not specified, all instance groups will be updated
 	InstanceGroupRoles []string
+
+	// TODO: Move more/all above options to RollingUpdateOptions
+	instancegroups.RollingUpdateOptions
 }
 
 func (o *RollingUpdateOptions) InitDefaults() {
@@ -159,6 +162,8 @@ func (o *RollingUpdateOptions) InitDefaults() {
 	o.ValidateCount = 2
 
 	o.DrainTimeout = 15 * time.Minute
+
+	o.RollingUpdateOptions.InitDefaults()
 }
 
 func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
@@ -262,9 +267,21 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 		return err
 	}
 
+	countByRole := make(map[kopsapi.InstanceGroupRole]int32)
 	var instanceGroups []*kopsapi.InstanceGroup
 	for i := range list.Items {
-		instanceGroups = append(instanceGroups, &list.Items[i])
+		instanceGroup := &list.Items[i]
+		instanceGroups = append(instanceGroups, instanceGroup)
+
+		minSize := int32(1)
+		if instanceGroup.Spec.MinSize != nil {
+			minSize = *instanceGroup.Spec.MinSize
+		}
+		countByRole[instanceGroup.Spec.Role] = countByRole[instanceGroup.Spec.Role] + minSize
+	}
+	if countByRole[kopsapi.InstanceGroupRoleAPIServer]+countByRole[kopsapi.InstanceGroupRoleMaster] <= 1 {
+		fmt.Fprintf(out, "Detected single-control-plane cluster; won't detach before draining\n")
+		options.DeregisterControlPlaneNodes = false
 	}
 
 	warnUnmatched := true
@@ -346,6 +363,9 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 		// TODO should we expose this to the UI?
 		ValidateTickDuration:    30 * time.Second,
 		ValidateSuccessDuration: 10 * time.Second,
+
+		// TODO: Move more of the passthrough options here, instead of duplicating them.
+		Options: options.RollingUpdateOptions,
 	}
 
 	err = d.AdjustNeedUpdate(groups)
