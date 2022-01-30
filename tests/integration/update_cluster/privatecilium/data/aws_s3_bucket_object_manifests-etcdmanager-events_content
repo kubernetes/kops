@@ -19,7 +19,7 @@ spec:
       --volume-provider=aws --volume-tag=k8s.io/etcd/events --volume-tag=k8s.io/role/master=1
       --volume-tag=kubernetes.io/cluster/privatecilium.example.com=owned > /tmp/pipe
       2>&1
-    image: k8s.gcr.io/etcdadm/etcd-manager:v3.0.20211124
+    image: k8s.gcr.io/etcdadm/etcd-manager:v3.0.20220128
     name: etcd-manager
     resources:
       requests:
