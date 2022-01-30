@@ -30,6 +30,7 @@ import (
 type MemFSPath struct {
 	context  *MemFSContext
 	location string
+	acl      ACL
 
 	mutex    sync.Mutex
 	contents []byte
@@ -109,6 +110,7 @@ func (p *MemFSPath) WriteFile(r io.ReadSeeker, acl ACL) error {
 		return fmt.Errorf("error reading data: %v", err)
 	}
 	p.contents = data
+	p.acl = acl
 	return nil
 }
 
@@ -191,6 +193,21 @@ func (p *MemFSPath) RemoveAllVersions() error {
 
 func (p *MemFSPath) Location() string {
 	return p.location
+}
+
+func (p *MemFSPath) IsPublic() (bool, error) {
+	if p.acl == nil {
+		return false, nil
+	}
+	s3Acl, ok := p.acl.(*S3Acl)
+	if !ok {
+		return false, fmt.Errorf("expected acl to be S3Acl, was %T", p.acl)
+	}
+	isPublic := false
+	if s3Acl.RequestACL != nil {
+		isPublic = *s3Acl.RequestACL == "public-read"
+	}
+	return isPublic, nil
 }
 
 // Terraform support for integration tests.
