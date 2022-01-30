@@ -19,7 +19,7 @@ spec:
       --volume-provider=gce --volume-tag=k8s-io-cluster-name=minimal-gce-private-example-com
       --volume-tag=k8s-io-etcd-main --volume-tag=k8s-io-role-master=master > /tmp/pipe
       2>&1
-    image: k8s.gcr.io/etcdadm/etcd-manager:v3.0.20211124
+    image: k8s.gcr.io/etcdadm/etcd-manager:v3.0.20220128
     name: etcd-manager
     resources:
       requests:
