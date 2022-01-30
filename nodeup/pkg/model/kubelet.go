@@ -266,7 +266,9 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 			flags += " --cni-conf-dir=" + b.CNIConfDir()
 		}
 	case "containerd":
-		if b.IsKubernetesLT("1.24") {
+		if b.IsKubernetesLT("1.25") {
+			// Will be removed in 1.27 as the only valid value is "remote"
+			// Keeping it for 1.24 as the default changed during the release.
 			flags += " --container-runtime=remote"
 		}
 		flags += " --runtime-request-timeout=15m"
