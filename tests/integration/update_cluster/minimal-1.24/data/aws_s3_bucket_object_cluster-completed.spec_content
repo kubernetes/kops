@@ -21,6 +21,8 @@ spec:
     configureCloudRoutes: false
     enableLeaderMigration: true
     image: gcr.io/k8s-staging-provider-aws/cloud-controller-manager:latest
+    leaderElection:
+      leaderElect: true
   cloudProvider: aws
   clusterDNSDomain: cluster.local
   configBase: memfs://tests/minimal.example.com
