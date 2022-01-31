@@ -156,19 +156,6 @@ func (d *deployer) verifyKopsFlags() error {
 		return errors.New("missing required --kops-binary-path when --kops-version-marker is not used")
 	}
 
-	// when we use a binary path, we want to use the corresponding nodeup et.al
-	if d.KopsBinaryPath != "" {
-		baseUrl := os.Getenv("KOPS_BASE_URL")
-		if baseUrl == "" {
-			stageLocation, err := defaultStageLocation(d.KopsRoot)
-			if err != nil {
-				return err
-			}
-			d.KopsBaseURL = strings.Replace(stageLocation, "gs://", "https://storage.googleapis.com/", 1)
-		}
-
-	}
-
 	switch d.CloudProvider {
 	case "aws":
 	case "gce":
