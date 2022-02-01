@@ -55,10 +55,6 @@ If you do not specify a mixed instances policy, only the instance type specified
 
 kOps will ignore the InstanceGroup `spec.subnets` configuration and unconditionally add all subnets eligible to run Nodes to all Provisioners. It is not currently possible to create Provisioners limited only to certain subnets.
 
-### CNI expectations
-
-Karpenter assumes the CNI is `amazonaws` when it calculates the maximum number of Pods that fit on a node. For other CNIs this means that Karpenter will calculate too few Pods on for smaller instances and too many Pods on larger instances. The default Karpenter-managed InstanceGroup is configured to avoid very large instance types for this reason.
-
 ### Karpenter-managed Launch Templates
 
 On EKS, Karpener creates its own launch templates for Provisioners. These launch templates will not work with a kOps cluster for a number of reasons. Most importantly, they do not use supported AMIs and they do not install and configure nodeup, the instance-side kOps component. The Karpenter features that require Karpenter to directly manage launch templates will not be available on kOps.
