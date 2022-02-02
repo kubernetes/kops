@@ -442,7 +442,7 @@ spec:
       dnsPolicy: Default
       containers:
         - name: manager
-          image: public.ecr.aws/karpenter/controller:v0.5.6
+          image: public.ecr.aws/karpenter/controller:v0.6.0
           resources: 
             limits:
               memory: 1Gi
@@ -536,7 +536,7 @@ spec:
       serviceAccountName: karpenter
       containers:
         - name: webhook
-          image: public.ecr.aws/karpenter/webhook:v0.5.3
+          image: public.ecr.aws/karpenter/webhook:v0.6.0
           args:
             - -port=8443
           resources: 
