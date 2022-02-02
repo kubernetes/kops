@@ -633,7 +633,7 @@ spec:
           value: arn:aws-test:iam::123456789012:role/karpenter.kube-system.sa.minimal.example.com
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
-        image: public.ecr.aws/karpenter/controller:v0.5.6
+        image: public.ecr.aws/karpenter/controller:v0.6.0
         livenessProbe:
           httpGet:
             path: /healthz
@@ -746,7 +746,7 @@ spec:
           value: arn:aws-test:iam::123456789012:role/karpenter.kube-system.sa.minimal.example.com
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
-        image: public.ecr.aws/karpenter/webhook:v0.5.3
+        image: public.ecr.aws/karpenter/webhook:v0.6.0
         livenessProbe:
           httpGet:
             port: 8443
