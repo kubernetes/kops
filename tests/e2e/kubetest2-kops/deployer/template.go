@@ -17,6 +17,7 @@ limitations under the License.
 package deployer
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"strings"
@@ -70,7 +71,7 @@ func (d *deployer) renderTemplate(values map[string]interface{}) error {
 func (d *deployer) templateValues(zones []string, publicIP string) (map[string]interface{}, error) {
 	publicKey, err := os.ReadFile(d.SSHPublicKeyPath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error reading public key file: %q", err)
 	}
 	return map[string]interface{}{
 		"cloudProvider":     d.CloudProvider,
