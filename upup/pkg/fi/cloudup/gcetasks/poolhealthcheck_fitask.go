@@ -41,7 +41,7 @@ func (o *PoolHealthCheck) SetLifecycle(lifecycle fi.Lifecycle) {
 
 var _ fi.HasName = &PoolHealthCheck{}
 
-// GetName PoolHealthCheck the Name of the object, implementing fi.HasName
+// GetName returns the Name of the object, implementing fi.HasName
 func (o *PoolHealthCheck) GetName() *string {
 	return o.Name
 }
