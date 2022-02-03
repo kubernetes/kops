@@ -97,7 +97,7 @@ spec:
           ip addr add dev lo 169.254.169.252/32
           iptables -w -t nat -I PREROUTING -p tcp -d 169.254.169.254 ! -i "${PRIMARY_DEV}" --dport 80 -m comment --comment "metadata-concealment: bridge traffic to metadata server goes to metadata proxy" -j DNAT --to-destination 169.254.169.252:988
           iptables -w -t nat -I PREROUTING -p tcp -d 169.254.169.254 ! -i "${PRIMARY_DEV}" --dport 8080 -m comment --comment "metadata-concealment: bridge traffic to metadata server goes to metadata proxy" -j DNAT --to-destination 169.254.169.252:987
-        image: gcr.io/google_containers/k8s-custom-iptables:1.0
+        image: k8s.gcr.io/k8s-custom-iptables:1.0
         imagePullPolicy: Always
         name: update-ipdtables
         securityContext:
