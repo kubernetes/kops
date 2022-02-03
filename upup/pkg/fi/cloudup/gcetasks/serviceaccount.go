@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"reflect"
-	"strings"
 
 	"google.golang.org/api/iam/v1"
 	"k8s.io/klog/v2"
@@ -48,24 +47,6 @@ func (e *ServiceAccount) CompareWithID() *string {
 	return e.Email
 }
 
-func splitServiceAccountEmail(email string) (string, string, error) {
-	accountID := ""
-	projectID := ""
-
-	tokens := strings.Split(email, "@")
-	if len(tokens) == 2 {
-		accountID = tokens[0]
-		if strings.HasSuffix(tokens[1], ".iam.gserviceaccount.com") {
-			projectID = strings.TrimSuffix(tokens[1], ".iam.gserviceaccount.com")
-		}
-	}
-
-	if accountID == "" || projectID == "" {
-		return "", "", fmt.Errorf("unexpected format for ServiceAccount email %q", email)
-	}
-	return accountID, projectID, nil
-}
-
 func (e *ServiceAccount) Find(c *fi.Context) (*ServiceAccount, error) {
 	cloud := c.Cloud.(gce.GCECloud)
 
@@ -78,12 +59,12 @@ func (e *ServiceAccount) Find(c *fi.Context) (*ServiceAccount, error) {
 		return e, nil
 	}
 
-	_, projectID, err := splitServiceAccountEmail(email)
+	_, projectID, err := gce.SplitServiceAccountEmail(email)
 	if err != nil {
 		return nil, err
 	}
 	fqn := "projects/" + projectID + "/serviceAccounts/" + email
-	sa, err := cloud.IAM().Projects.ServiceAccounts.Get(fqn).Context(ctx).Do()
+	sa, err := cloud.IAM().ServiceAccounts().Get(ctx, fqn)
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
@@ -132,7 +113,7 @@ func (_ *ServiceAccount) RenderGCE(t *gce.GCEAPITarget, a, e, changes *ServiceAc
 		}
 	}
 
-	accountID, projectID, err := splitServiceAccountEmail(email)
+	accountID, projectID, err := gce.SplitServiceAccountEmail(email)
 	if err != nil {
 		return err
 	}
@@ -145,12 +126,13 @@ func (_ *ServiceAccount) RenderGCE(t *gce.GCEAPITarget, a, e, changes *ServiceAc
 		sa := &iam.CreateServiceAccountRequest{
 			AccountId: accountID,
 			ServiceAccount: &iam.ServiceAccount{
+				Email:       email,
 				Description: fi.StringValue(e.Description),
 				DisplayName: fi.StringValue(e.DisplayName),
 			},
 		}
 
-		created, err := cloud.IAM().Projects.ServiceAccounts.Create("projects/"+projectID, sa).Context(ctx).Do()
+		created, err := cloud.IAM().ServiceAccounts().Create(ctx, "projects/"+projectID, sa)
 		if err != nil {
 			return fmt.Errorf("error creating ServiceAccount %q: %w", fqn, err)
 		}
@@ -160,10 +142,12 @@ func (_ *ServiceAccount) RenderGCE(t *gce.GCEAPITarget, a, e, changes *ServiceAc
 	} else {
 		if changes.Description != nil || changes.DisplayName != nil {
 			sa := &iam.ServiceAccount{
+				Email:       email,
 				Description: fi.StringValue(e.Description),
 				DisplayName: fi.StringValue(e.DisplayName),
 			}
-			_, err := cloud.IAM().Projects.ServiceAccounts.Update(fqn, sa).Context(ctx).Do()
+
+			_, err := cloud.IAM().ServiceAccounts().Update(ctx, fqn, sa)
 			if err != nil {
 				return fmt.Errorf("error creating ServiceAccount %q: %w", fqn, err)
 			}
@@ -196,7 +180,7 @@ func (_ *ServiceAccount) RenderTerraform(t *terraform.TerraformTarget, a, e, cha
 	}
 
 	email := fi.StringValue(e.Email)
-	accountID, projectID, err := splitServiceAccountEmail(email)
+	accountID, projectID, err := gce.SplitServiceAccountEmail(email)
 	if err != nil {
 		return err
 	}
