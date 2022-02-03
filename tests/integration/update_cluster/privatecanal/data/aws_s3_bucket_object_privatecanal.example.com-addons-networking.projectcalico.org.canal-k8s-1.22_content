@@ -4237,7 +4237,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/node:v3.21.1
+        image: docker.io/calico/node:v3.21.4
         lifecycle:
           preStop:
             exec:
@@ -4350,7 +4350,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/cni:v3.21.1
+        image: docker.io/calico/cni:v3.21.4
         name: install-cni
         securityContext:
           privileged: true
@@ -4359,7 +4359,7 @@ spec:
           name: cni-bin-dir
         - mountPath: /host/etc/cni/net.d
           name: cni-net-dir
-      - image: docker.io/calico/pod2daemon-flexvol:v3.21.1
+      - image: docker.io/calico/pod2daemon-flexvol:v3.21.4
         name: flexvol-driver
         securityContext:
           privileged: true
@@ -4467,7 +4467,7 @@ spec:
           value: node
         - name: DATASTORE_TYPE
           value: kubernetes
-        image: docker.io/calico/kube-controllers:v3.21.1
+        image: docker.io/calico/kube-controllers:v3.21.4
         livenessProbe:
           exec:
             command:
