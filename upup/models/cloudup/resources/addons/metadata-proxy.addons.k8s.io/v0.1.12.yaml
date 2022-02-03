@@ -48,7 +48,7 @@ spec:
       - name: update-ipdtables
         securityContext:
           privileged: true
-        image: gcr.io/google_containers/k8s-custom-iptables:1.0
+        image: k8s.gcr.io/k8s-custom-iptables:1.0
         imagePullPolicy: Always
         command:
         - "/bin/sh"
