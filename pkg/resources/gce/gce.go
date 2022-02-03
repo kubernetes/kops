@@ -401,6 +401,25 @@ func (d *clusterDiscoveryGCE) listTargetPools() ([]*resources.Resource, error) {
 
 		klog.V(4).Infof("Found resource: %s", tp.SelfLink)
 		resourceTrackers = append(resourceTrackers, resourceTracker)
+
+		for _, healthCheckLink := range tp.HealthChecks {
+			healthCheckName := gce.LastComponent(healthCheckLink)
+			hc, err := c.Compute().HTTPHealthChecks().Get(c.Project(), healthCheckName)
+			if err != nil {
+				return nil, fmt.Errorf("error getting HTTPHealthCheck %q: %w", healthCheckName, err)
+			}
+
+			healthCheckResource := &resources.Resource{
+				Name:    hc.Name,
+				ID:      hc.Name,
+				Type:    typeHTTPHealthcheck,
+				Deleter: deleteHTTPHealthCheck,
+				Obj:     hc,
+			}
+			healthCheckResource.Blocked = append(healthCheckResource.Blocked, resourceTracker.Type+":"+resourceTracker.ID)
+			resourceTrackers = append(resourceTrackers, healthCheckResource)
+		}
+
 	}
 
 	return resourceTrackers, nil
@@ -607,7 +626,6 @@ nextFirewallRule:
 				// l4 level healthchecks
 
 				healthCheckName := gce.LastComponent(healthCheckLink)
-
 				if !strings.HasPrefix(healthCheckName, "k8s-") || !strings.Contains(healthCheckLink, "/httpHealthChecks/") {
 					klog.Warningf("found non-k8s healthcheck %q in targetPool %q, assuming firewallRule %q is not a k8s rule", healthCheckLink, targetPoolName, firewallRule.Name)
 					continue nextFirewallRule
