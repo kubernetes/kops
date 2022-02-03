@@ -30,6 +30,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/values"
 	"k8s.io/kops/util/pkg/hashing"
@@ -176,7 +177,8 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 		registryMirror := *a.AssetsLocation.ContainerRegistry
 		normalized := image
 
-		// Remove the 'standard' kubernetes image prefix, just for sanity
+		// Remove the 'standard' kubernetes image prefix, because we assume this is the primary use of the mirror
+		// and so the prefix has been removed.
 		normalized = strings.TrimPrefix(normalized, "k8s.gcr.io/")
 
 		// When assembling the cluster spec, kops may call the option more then once until the config converges
@@ -185,9 +187,13 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 		// If this is the case, passing though the process again will re-prepend the container registry again
 		// and again, causing the spec to never converge and the config build to fail.
 		if !strings.HasPrefix(normalized, registryMirror+"/") {
-			// We can't nest arbitrarily
-			// Some risk of collisions, but also -- and __ in the names appear to be blocked by docker hub
-			normalized = strings.Replace(normalized, "/", "-", -1)
+			if featureflag.ContainerRegistryIsMirror.Enabled() {
+				klog.Infof("mapping image %q => %q", image, registryMirror+"/"+normalized)
+			} else {
+				// Most registries don't support additional "folders", so we replace / with -
+				// Some risk of collisions, but also -- and __ in the names appear to be blocked by docker hub
+				normalized = strings.Replace(normalized, "/", "-", -1)
+			}
 			asset.DownloadLocation = registryMirror + "/" + normalized
 		}
 

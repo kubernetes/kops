@@ -88,6 +88,8 @@ var (
 	AlphaAllowGCE = new("AlphaAllowGCE", Bool(false))
 	// Karpenter enables karpenter-managed Instance Groups
 	Karpenter = new("Karpenter", Bool(false))
+	// ContainerRegistryIsMirror specifies that the containerRegistry supports nested image names (e.g. registry-sandbox.gcr.io)
+	ContainerRegistryIsMirror = new("ContainerRegistryIsMirror", Bool(false))
 )
 
 // FeatureFlag defines a feature flag
