@@ -21,7 +21,6 @@ import (
 
 	"google.golang.org/api/cloudresourcemanager/v1"
 	compute "google.golang.org/api/compute/v1"
-	"google.golang.org/api/iam/v1"
 	"google.golang.org/api/storage/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
@@ -46,7 +45,7 @@ type MockGCECloud struct {
 
 	computeClient              *mockcompute.MockClient
 	dnsClient                  *mockdns.MockClient
-	iamClient                  *iam.Service
+	iamClient                  *mockiam.MockClient
 	storageClient              *storage.Service
 	cloudResourceManagerClient *cloudresourcemanager.Service
 }
@@ -60,7 +59,7 @@ func InstallMockGCECloud(region string, project string) *MockGCECloud {
 		region:                     region,
 		computeClient:              mockcompute.NewMockClient(project),
 		dnsClient:                  mockdns.NewMockClient(),
-		iamClient:                  mockiam.New(project),
+		iamClient:                  mockiam.NewMockClient(project),
 		storageClient:              mockstorage.New(),
 		cloudResourceManagerClient: mockcloudresourcemanager.New(),
 	}
@@ -117,7 +116,7 @@ func (c *MockGCECloud) Storage() *storage.Service {
 }
 
 // IAM returns the IAM client
-func (c *MockGCECloud) IAM() *iam.Service {
+func (c *MockGCECloud) IAM() gce.IamClient {
 	return c.iamClient
 }
 
