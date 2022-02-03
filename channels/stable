@@ -74,7 +74,7 @@ spec:
       providerID: gce
       architectureID: amd64
       kubernetesVersion: ">=1.16.0 <1.18.0"
-    - name: ubuntu-os-cloud/ubuntu-2004-focal-v20211118
+    - name: ubuntu-os-cloud/ubuntu-2004-focal-v20220118
       providerID: gce
       architectureID: amd64
       kubernetesVersion: ">=1.18.0"

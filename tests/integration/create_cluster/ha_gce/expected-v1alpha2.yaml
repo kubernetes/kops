@@ -71,7 +71,7 @@ metadata:
     kops.k8s.io/cluster: ha-gce.example.com
   name: master-us-test1-a
 spec:
-  image: ubuntu-os-cloud/ubuntu-2004-focal-v20211118
+  image: ubuntu-os-cloud/ubuntu-2004-focal-v20220118
   machineType: n1-standard-1
   manager: CloudGroup
   maxSize: 1
@@ -95,7 +95,7 @@ metadata:
     kops.k8s.io/cluster: ha-gce.example.com
   name: master-us-test1-b
 spec:
-  image: ubuntu-os-cloud/ubuntu-2004-focal-v20211118
+  image: ubuntu-os-cloud/ubuntu-2004-focal-v20220118
   machineType: n1-standard-1
   manager: CloudGroup
   maxSize: 1
@@ -119,7 +119,7 @@ metadata:
     kops.k8s.io/cluster: ha-gce.example.com
   name: master-us-test1-c
 spec:
-  image: ubuntu-os-cloud/ubuntu-2004-focal-v20211118
+  image: ubuntu-os-cloud/ubuntu-2004-focal-v20220118
   machineType: n1-standard-1
   manager: CloudGroup
   maxSize: 1
@@ -143,7 +143,7 @@ metadata:
     kops.k8s.io/cluster: ha-gce.example.com
   name: nodes-us-test1-a
 spec:
-  image: ubuntu-os-cloud/ubuntu-2004-focal-v20211118
+  image: ubuntu-os-cloud/ubuntu-2004-focal-v20220118
   machineType: n1-standard-2
   manager: CloudGroup
   maxSize: 1
@@ -167,7 +167,7 @@ metadata:
     kops.k8s.io/cluster: ha-gce.example.com
   name: nodes-us-test1-b
 spec:
-  image: ubuntu-os-cloud/ubuntu-2004-focal-v20211118
+  image: ubuntu-os-cloud/ubuntu-2004-focal-v20220118
   machineType: n1-standard-2
   manager: CloudGroup
   maxSize: 1
@@ -191,7 +191,7 @@ metadata:
     kops.k8s.io/cluster: ha-gce.example.com
   name: nodes-us-test1-c
 spec:
-  image: ubuntu-os-cloud/ubuntu-2004-focal-v20211118
+  image: ubuntu-os-cloud/ubuntu-2004-focal-v20220118
   machineType: n1-standard-2
   manager: CloudGroup
   maxSize: 1
