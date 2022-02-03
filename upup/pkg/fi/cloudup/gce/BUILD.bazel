@@ -8,6 +8,7 @@ go_library(
         "gce_apitarget.go",
         "gce_cloud.go",
         "gce_url.go",
+        "iam.go",
         "instancegroups.go",
         "labels.go",
         "network.go",
