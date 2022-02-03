@@ -54,11 +54,27 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		return fmt.Errorf("unhandled LoadBalancer type %q", lbSpec.Type)
 	}
 
+	healthCheck := &gcetasks.Healthcheck{
+		Name:      s(b.NameForHealthcheck("api")),
+		Port:      i64(3990),
+		Lifecycle: b.Lifecycle,
+	}
+
+	c.AddTask(healthCheck)
+
 	targetPool := &gcetasks.TargetPool{
 		Name:      s(b.NameForTargetPool("api")),
 		Lifecycle: b.Lifecycle,
 	}
 	c.AddTask(targetPool)
+
+	poolHealthCheck := &gcetasks.PoolHealthCheck{
+		Name:        s(b.NameForPoolHealthcheck("api")),
+		Healthcheck: healthCheck,
+		Pool:        targetPool,
+		Lifecycle:   b.Lifecycle,
+	}
+	c.AddTask(poolHealthCheck)
 
 	ipAddress := &gcetasks.Address{
 		Name:      s(b.NameForIPAddress("api")),

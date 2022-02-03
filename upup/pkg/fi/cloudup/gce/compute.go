@@ -658,6 +658,7 @@ type TargetPoolClient interface {
 	Delete(project, region, name string) (*compute.Operation, error)
 	Get(project, region, name string) (*compute.TargetPool, error)
 	List(ctx context.Context, project, region string) ([]*compute.TargetPool, error)
+	AddHealthCheck(project, region, name string, req *compute.TargetPoolsAddHealthCheckRequest) (*compute.Operation, error)
 }
 
 type targetPoolClientImpl struct {
@@ -676,6 +677,10 @@ func (c *targetPoolClientImpl) Delete(project, region, name string) (*compute.Op
 
 func (c *targetPoolClientImpl) Get(project, region, name string) (*compute.TargetPool, error) {
 	return c.srv.Get(project, region, name).Do()
+}
+
+func (c *targetPoolClientImpl) AddHealthCheck(project, region, name string, req *compute.TargetPoolsAddHealthCheckRequest) (*compute.Operation, error) {
+	return c.srv.AddHealthCheck(project, region, name, req).Do()
 }
 
 func (c *targetPoolClientImpl) List(ctx context.Context, project, region string) ([]*compute.TargetPool, error) {
