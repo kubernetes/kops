@@ -221,7 +221,7 @@ func RunCreateInstanceGroup(ctx context.Context, f *util.Factory, out io.Writer,
 			}
 			return nil
 		case OutputJSON:
-			if err := fullOutputJSON(out, ig); err != nil {
+			if err := fullOutputJSON(out, true, ig); err != nil {
 				return fmt.Errorf("error writing cluster json to stdout: %v", err)
 			}
 			return nil
