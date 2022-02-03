@@ -113,8 +113,12 @@ func RunGetInstanceGroups(ctx context.Context, f commandutils.Factory, out io.Wr
 		return err
 	}
 
+	singleObject := false
+
 	if len(instancegroups) == 0 {
 		return fmt.Errorf("no InstanceGroup objects found")
+	} else if len(instancegroups) == 1 {
+		singleObject = true
 	}
 
 	var obj []runtime.Object
@@ -130,7 +134,7 @@ func RunGetInstanceGroups(ctx context.Context, f commandutils.Factory, out io.Wr
 	case OutputYaml:
 		return fullOutputYAML(out, obj...)
 	case OutputJSON:
-		return fullOutputJSON(out, obj...)
+		return fullOutputJSON(out, singleObject, obj...)
 	default:
 		return fmt.Errorf("unknown output format: %q", options.Output)
 	}
