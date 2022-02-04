@@ -39,9 +39,16 @@ ${KUBETEST2} \
 		--down \
 		--kops-binary-path="${KOPS_B}" || echo "kubetest2 down failed"
 
-KOPS_BASE_URL=$(kops-base-from-marker "${KOPS_VERSION_A}")
-KOPS_A=$(kops-download-from-base)
-KOPS="${KOPS_A}"
+# First kOps version may be a released version. If so, it is prefixed with v
+if [[ "${KOPS_VERSION_A:0:1}" == "v" ]]; then
+  KOPS_BASE_URL=""
+  KOPS_A=$(kops-download-release "$KOPS_VERSION_A")
+  KOPS="${KOPS_A}"
+else
+  KOPS_BASE_URL=$(kops-base-from-marker "${KOPS_VERSION_A}")
+  KOPS_A=$(kops-download-from-base)
+  KOPS="${KOPS_A}"
+fi
 
 ${KUBETEST2} \
 		--up \
