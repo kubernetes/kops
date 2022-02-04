@@ -25,7 +25,7 @@ contents: |
       - --cluster-signing-key-file=/srv/kubernetes/kube-controller-manager/ca.key
       - --configure-cloud-routes=true
       - --enable-leader-migration=true
-      - --feature-gates=CSIMigrationAWS=true
+      - --feature-gates=CSIMigrationAWS=true,InTreePluginAWSUnregister=true
       - --flex-volume-plugin-dir=/usr/libexec/kubernetes/kubelet-plugins/volume/exec/
       - --kubeconfig=/var/lib/kube-controller-manager/kubeconfig
       - --leader-elect=true
