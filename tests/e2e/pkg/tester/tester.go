@@ -467,6 +467,10 @@ func (t *Tester) execute() error {
 
 	t.TestArgs += " --disable-log-dump"
 
+	if dir, ok := os.LookupEnv("KUBETEST2_RUN_DIR"); ok {
+		t.SetRunDir(dir)
+	}
+
 	return t.Test()
 }
 

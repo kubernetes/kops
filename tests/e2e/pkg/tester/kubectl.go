@@ -83,9 +83,14 @@ func (t *Tester) extractBinaries(downloadPath string) (string, error) {
 	}
 	tarReader := tar.NewReader(gzf)
 
-	kubectlDir, err := os.MkdirTemp("", "kubectl")
-	if err != nil {
-		return "", err
+	var kubectlDir string
+	if dir, ok := os.LookupEnv("KUBETEST2_RUN_DIR"); ok {
+		kubectlDir = dir
+	} else {
+		kubectlDir, err = os.MkdirTemp("", "kubectl")
+		if err != nil {
+			return "", err
+		}
 	}
 
 	// this is the expected path of the package inside the tar
