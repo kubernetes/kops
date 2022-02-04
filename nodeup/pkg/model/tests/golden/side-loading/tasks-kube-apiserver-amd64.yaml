@@ -29,6 +29,7 @@ contents: |
       - --etcd-keyfile=/srv/kubernetes/kube-apiserver/etcd-client.key
       - --etcd-servers-overrides=/events#https://127.0.0.1:4002
       - --etcd-servers=https://127.0.0.1:4001
+      - --feature-gates=CSIMigrationAWS=true,InTreePluginAWSUnregister=true
       - --kubelet-client-certificate=/srv/kubernetes/kube-apiserver/kubelet-api.crt
       - --kubelet-client-key=/srv/kubernetes/kube-apiserver/kubelet-api.key
       - --kubelet-preferred-address-types=InternalIP,Hostname,ExternalIP

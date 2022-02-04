@@ -165,7 +165,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: apiserver
 InstanceGroupRole: APIServer
-NodeupConfigHash: AQHPJZNIlLmvJbcdG7J6j41vrzOUaaUonWietUjHJ2c=
+NodeupConfigHash: lJvIfsBLG+O4Nj5rxkSE6Cre23QYwFVKyErAGDOps3U=
 
 __EOF_KUBE_ENV
 

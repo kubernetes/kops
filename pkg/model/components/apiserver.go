@@ -177,6 +177,27 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 	}
 
+	if clusterSpec.CloudConfig != nil && clusterSpec.CloudConfig.AWSEBSCSIDriver != nil && fi.BoolValue(clusterSpec.CloudConfig.AWSEBSCSIDriver.Enabled) {
+
+		if c.FeatureGates == nil {
+			c.FeatureGates = make(map[string]string)
+		}
+
+		if b.IsKubernetesLT("1.21.0") {
+			if _, found := c.FeatureGates["CSIMigrationAWSComplete"]; !found {
+				c.FeatureGates["CSIMigrationAWSComplete"] = "true"
+			}
+		} else {
+			if _, found := c.FeatureGates["InTreePluginAWSUnregister"]; !found {
+				c.FeatureGates["InTreePluginAWSUnregister"] = "true"
+			}
+		}
+
+		if _, found := c.FeatureGates["CSIMigrationAWS"]; !found {
+			c.FeatureGates["CSIMigrationAWS"] = "true"
+		}
+	}
+
 	return nil
 }
 
