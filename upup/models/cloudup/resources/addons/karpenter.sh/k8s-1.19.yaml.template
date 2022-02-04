@@ -465,7 +465,7 @@ spec:
           env:
             {{ if not .Networking.AmazonVPC }}
             - name: AWS_ENI_LIMITED_POD_DENSITY
-              value: true
+              value: "true"
             {{ end }}
             {{ if UsesInstanceIDForNodeName }}
             - name: AWS_NODE_NAME_CONVENTION
