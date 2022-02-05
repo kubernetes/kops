@@ -92,7 +92,7 @@ func defaultStageLocation(kopsRoot string) (string, error) {
 		jobName = defaultJobName
 	}
 
-	cmd := exec.Command("git", "describe", "--always")
+	cmd := exec.Command("git", "rev-parse", "--short", "HEAD")
 	cmd.SetDir(kopsRoot)
 	output, err := exec.CombinedOutputLines(cmd)
 	if err != nil {
