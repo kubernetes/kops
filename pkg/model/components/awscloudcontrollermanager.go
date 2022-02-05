@@ -49,6 +49,10 @@ func (b *AWSCloudControllerManagerOptionsBuilder) BuildOptions(o interface{}) er
 		return nil
 	}
 
+	// No significant downside to always doing a leader election.
+	// Also, having multiple control plane nodes requires leader election.
+	eccm.LeaderElection = &kops.LeaderElectionConfiguration{LeaderElect: fi.Bool(true)}
+
 	eccm.ClusterName = b.ClusterName
 
 	eccm.ClusterCIDR = clusterSpec.NonMasqueradeCIDR
