@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/blang/semver/v4"
 	"github.com/spf13/cobra"
@@ -190,9 +191,14 @@ func RunUpgradeCluster(ctx context.Context, f *util.Factory, out io.Writer, opti
 	// Prompt to upgrade image
 	if proposedKubernetesVersion != nil {
 		for _, ig := range instanceGroups {
-			architecture, err := cloudup.MachineArchitecture(cloud, ig.Spec.MachineType)
+			// Before kops v1.23, Spotinst uses the "ig.Spec.MachineType" field as a comma separated list to determine (among other) the allowed spot types.
+			// A list is allowed only if all the items are with the same arch.
+			// Therefore, it should be enough to check the arch for the first (possibly only) item
+			machineType := strings.Split(ig.Spec.MachineType, ",")[0]
+
+			architecture, err := cloudup.MachineArchitecture(cloud, machineType)
 			if err != nil {
-				klog.Warningf("Error finding architecture for machine type %q: %v", ig.Spec.MachineType, err)
+				klog.Warningf("Error finding architecture for machine type %q: %v", machineType, err)
 				continue
 			}
 			image := channel.FindImage(cloud.ProviderID(), *proposedKubernetesVersion, architecture)
