@@ -140,6 +140,7 @@ nav:
     - Building: "contributing/building.md"
     - Adding a feature: "contributing/adding_a_feature.md"
     - Testing: "contributing/testing.md"
+    - Testing preview versions: "contributing/test_versions.md"
     - Developing using Docker: "contributing/Docker.md"
     - Documentation Guidelines: "contributing/documentation.md"
     - Hack Directory: "contributing/hack.md"
