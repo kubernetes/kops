@@ -56,7 +56,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	healthCheck := &gcetasks.Healthcheck{
 		Name:      s(b.NameForHealthcheck("api")),
-		Port:      i64(3990),
+		Port:      i64(wellknownports.KubeAPIServerHealthCheck),
 		Lifecycle: b.Lifecycle,
 	}
 
