@@ -105,7 +105,9 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		kcm.CloudProvider = "external"
 	}
 
-	kcm.LogLevel = 2
+	if kcm.LogLevel == 0 {
+		kcm.LogLevel = 2
+	}
 
 	image, err := Image("kube-controller-manager", clusterSpec, b.AssetBuilder)
 	if err != nil {
