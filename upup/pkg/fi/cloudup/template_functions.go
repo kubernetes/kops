@@ -45,6 +45,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/flagbuilder"
 	"sigs.k8s.io/yaml"
 
 	kopscontrollerconfig "k8s.io/kops/cmd/kops-controller/pkg/config"
@@ -381,41 +382,28 @@ func (tf *TemplateFunctions) CloudControllerConfigArgv() ([]string, error) {
 	if cluster.Spec.ExternalCloudControllerManager == nil {
 		return nil, fmt.Errorf("ExternalCloudControllerManager is nil")
 	}
-	var argv []string
 
-	if cluster.Spec.ExternalCloudControllerManager.Master != "" {
-		argv = append(argv, fmt.Sprintf("--master=%s", cluster.Spec.ExternalCloudControllerManager.Master))
+	argv, err := flagbuilder.BuildFlagsList(cluster.Spec.ExternalCloudControllerManager)
+	if err != nil {
+		return nil, err
 	}
-	if cluster.Spec.ExternalCloudControllerManager.LogLevel != 0 {
-		argv = append(argv, fmt.Sprintf("--v=%d", cluster.Spec.ExternalCloudControllerManager.LogLevel))
-	} else {
+
+	// default verbosity to 2
+	if cluster.Spec.ExternalCloudControllerManager.LogLevel == 0 {
 		argv = append(argv, "--v=2")
 	}
-	if cluster.Spec.ExternalCloudControllerManager.CloudProvider != "" {
-		argv = append(argv, fmt.Sprintf("--cloud-provider=%s", cluster.Spec.ExternalCloudControllerManager.CloudProvider))
-	} else if cluster.Spec.CloudProvider != "" {
-		argv = append(argv, fmt.Sprintf("--cloud-provider=%s", cluster.Spec.CloudProvider))
-	} else {
-		return nil, fmt.Errorf("Cloud Provider is not set")
+
+	// take the cloud provider value from clusterSpec if unset
+	if cluster.Spec.ExternalCloudControllerManager.CloudProvider == "" {
+		if cluster.Spec.CloudProvider != "" {
+			argv = append(argv, fmt.Sprintf("--cloud-provider=%s", cluster.Spec.CloudProvider))
+		} else {
+			return nil, fmt.Errorf("Cloud Provider is not set")
+		}
 	}
-	if cluster.Spec.ExternalCloudControllerManager.ClusterName != "" {
-		argv = append(argv, fmt.Sprintf("--cluster-name=%s", cluster.Spec.ExternalCloudControllerManager.ClusterName))
-	}
-	if cluster.Spec.ExternalCloudControllerManager.ClusterCIDR != "" {
-		argv = append(argv, fmt.Sprintf("--cluster-cidr=%s", cluster.Spec.ExternalCloudControllerManager.ClusterCIDR))
-	}
-	if cluster.Spec.ExternalCloudControllerManager.AllocateNodeCIDRs != nil {
-		argv = append(argv, fmt.Sprintf("--allocate-node-cidrs=%t", *cluster.Spec.ExternalCloudControllerManager.AllocateNodeCIDRs))
-	}
-	if cluster.Spec.ExternalCloudControllerManager.ConfigureCloudRoutes != nil {
-		argv = append(argv, fmt.Sprintf("--configure-cloud-routes=%t", *cluster.Spec.ExternalCloudControllerManager.ConfigureCloudRoutes))
-	}
-	if cluster.Spec.ExternalCloudControllerManager.CIDRAllocatorType != nil && *cluster.Spec.ExternalCloudControllerManager.CIDRAllocatorType != "" {
-		argv = append(argv, fmt.Sprintf("--cidr-allocator-type=%s", *cluster.Spec.ExternalCloudControllerManager.CIDRAllocatorType))
-	}
-	if cluster.Spec.ExternalCloudControllerManager.UseServiceAccountCredentials != nil {
-		argv = append(argv, fmt.Sprintf("--use-service-account-credentials=%t", *cluster.Spec.ExternalCloudControllerManager.UseServiceAccountCredentials))
-	} else {
+
+	// default use-service-account-credentials to true
+	if cluster.Spec.ExternalCloudControllerManager.UseServiceAccountCredentials == nil {
 		argv = append(argv, fmt.Sprintf("--use-service-account-credentials=%t", true))
 	}
 
