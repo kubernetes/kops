@@ -840,7 +840,7 @@ webhooks:
   timeoutSeconds: 2 # This will affect the latency and performance. Finetune this value based on your application's tolerance.
 
 ---
-apiVersion: cert-manager.io/v1alpha2
+apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: snapshot-validation-service
