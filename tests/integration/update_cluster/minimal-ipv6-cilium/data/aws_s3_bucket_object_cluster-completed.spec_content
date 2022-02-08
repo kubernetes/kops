@@ -1,0 +1,237 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: "2016-12-10T22:42:27Z"
+  name: minimal-ipv6.example.com
+spec:
+  api:
+    loadBalancer:
+      class: Network
+      type: Public
+  authorization:
+    alwaysAllow: {}
+  channel: stable
+  cloudConfig:
+    awsEBSCSIDriver:
+      enabled: true
+      version: v1.5.0
+    manageStorageClasses: true
+    nodeIPFamilies:
+    - ipv6
+    - ipv4
+  cloudControllerManager:
+    allocateNodeCIDRs: true
+    clusterCIDR: ::/0
+    clusterName: minimal-ipv6.example.com
+    configureCloudRoutes: false
+    image: k8s.gcr.io/provider-aws/cloud-controller-manager:v1.21.0-alpha.0
+  cloudProvider: aws
+  clusterDNSDomain: cluster.local
+  configBase: memfs://clusters.example.com/minimal-ipv6.example.com
+  configStore: memfs://clusters.example.com/minimal-ipv6.example.com
+  containerRuntime: containerd
+  containerd:
+    logLevel: info
+    version: 1.4.12
+  dnsZone: Z1AFAKE1ZON3YO
+  docker:
+    skipInstall: true
+  etcdClusters:
+  - backups:
+      backupStore: memfs://clusters.example.com/minimal-ipv6.example.com/backups/etcd/main
+    etcdMembers:
+    - instanceGroup: master-us-test-1a
+      name: us-test-1a
+    name: main
+    version: 3.4.13
+  - backups:
+      backupStore: memfs://clusters.example.com/minimal-ipv6.example.com/backups/etcd/events
+    etcdMembers:
+    - instanceGroup: master-us-test-1a
+      name: us-test-1a
+    name: events
+    version: 3.4.13
+  externalDns:
+    provider: dns-controller
+  iam:
+    legacy: false
+  keyStore: memfs://clusters.example.com/minimal-ipv6.example.com/pki
+  kubeAPIServer:
+    allowPrivileged: true
+    anonymousAuth: false
+    apiAudiences:
+    - kubernetes.svc.default
+    apiServerCount: 1
+    authorizationMode: AlwaysAllow
+    bindAddress: '::'
+    cloudProvider: external
+    enableAdmissionPlugins:
+    - NamespaceLifecycle
+    - LimitRanger
+    - ServiceAccount
+    - DefaultStorageClass
+    - DefaultTolerationSeconds
+    - MutatingAdmissionWebhook
+    - ValidatingAdmissionWebhook
+    - NodeRestriction
+    - ResourceQuota
+    etcdServers:
+    - https://127.0.0.1:4001
+    etcdServersOverrides:
+    - /events#https://127.0.0.1:4002
+    featureGates:
+      CSIMigrationAWS: "true"
+      InTreePluginAWSUnregister: "true"
+    image: k8s.gcr.io/kube-apiserver:v1.21.0
+    kubeletPreferredAddressTypes:
+    - InternalIP
+    - Hostname
+    - ExternalIP
+    logLevel: 2
+    requestheaderAllowedNames:
+    - aggregator
+    requestheaderExtraHeaderPrefixes:
+    - X-Remote-Extra-
+    requestheaderGroupHeaders:
+    - X-Remote-Group
+    requestheaderUsernameHeaders:
+    - X-Remote-User
+    securePort: 443
+    serviceAccountIssuer: https://api.internal.minimal-ipv6.example.com
+    serviceAccountJWKSURI: https://api.internal.minimal-ipv6.example.com/openid/v1/jwks
+    serviceClusterIPRange: fd00:5e4f:ce::/108
+    storageBackend: etcd3
+  kubeControllerManager:
+    allocateNodeCIDRs: false
+    attachDetachReconcileSyncPeriod: 1m0s
+    cloudProvider: external
+    clusterName: minimal-ipv6.example.com
+    configureCloudRoutes: false
+    controllers:
+    - '*'
+    - -nodeipam
+    featureGates:
+      CSIMigrationAWS: "true"
+      InTreePluginAWSUnregister: "true"
+    image: k8s.gcr.io/kube-controller-manager:v1.21.0
+    leaderElection:
+      leaderElect: true
+    logLevel: 2
+    useServiceAccountCredentials: true
+  kubeDNS:
+    cacheMaxConcurrent: 150
+    cacheMaxSize: 1000
+    cpuRequest: 100m
+    domain: cluster.local
+    memoryLimit: 170Mi
+    memoryRequest: 70Mi
+    nodeLocalDNS:
+      cpuRequest: 25m
+      enabled: false
+      image: k8s.gcr.io/dns/k8s-dns-node-cache:1.21.3
+      memoryRequest: 5Mi
+    provider: CoreDNS
+    serverIP: fd00:5e4f:ce::a
+    upstreamNameservers:
+    - fd00:ec2::253
+  kubeProxy:
+    cpuRequest: 100m
+    image: k8s.gcr.io/kube-proxy:v1.21.0
+    logLevel: 2
+  kubeScheduler:
+    featureGates:
+      CSIMigrationAWS: "true"
+      InTreePluginAWSUnregister: "true"
+    image: k8s.gcr.io/kube-scheduler:v1.21.0
+    leaderElection:
+      leaderElect: true
+    logLevel: 2
+  kubelet:
+    anonymousAuth: false
+    cgroupDriver: systemd
+    cgroupRoot: /
+    cloudProvider: external
+    clusterDNS: fd00:5e4f:ce::a
+    clusterDomain: cluster.local
+    enableDebuggingHandlers: true
+    evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+    featureGates:
+      CSIMigrationAWS: "true"
+      InTreePluginAWSUnregister: "true"
+    kubeconfigPath: /var/lib/kubelet/kubeconfig
+    logLevel: 2
+    networkPluginName: cni
+    podInfraContainerImage: k8s.gcr.io/pause:3.6
+    podManifestPath: /etc/kubernetes/manifests
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  - ::/0
+  kubernetesVersion: 1.21.0
+  masterInternalName: api.internal.minimal-ipv6.example.com
+  masterKubelet:
+    anonymousAuth: false
+    cgroupDriver: systemd
+    cgroupRoot: /
+    cloudProvider: external
+    clusterDNS: fd00:5e4f:ce::a
+    clusterDomain: cluster.local
+    enableDebuggingHandlers: true
+    evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+    featureGates:
+      CSIMigrationAWS: "true"
+      InTreePluginAWSUnregister: "true"
+    kubeconfigPath: /var/lib/kubelet/kubeconfig
+    logLevel: 2
+    networkPluginName: cni
+    podInfraContainerImage: k8s.gcr.io/pause:3.6
+    podManifestPath: /etc/kubernetes/manifests
+    registerSchedulable: false
+  masterPublicName: api.minimal-ipv6.example.com
+  networkCIDR: 172.20.0.0/16
+  networking:
+    cilium:
+      agentPrometheusPort: 9090
+      bpfCTGlobalAnyMax: 262144
+      bpfCTGlobalTCPMax: 524288
+      bpfLBAlgorithm: random
+      bpfLBMaglevTableSize: "16381"
+      bpfLBMapMax: 65536
+      bpfNATGlobalMax: 524288
+      bpfNeighGlobalMax: 524288
+      bpfPolicyMapMax: 16384
+      clusterName: default
+      cpuRequest: 25m
+      disableCNPStatusUpdates: true
+      disableMasquerade: true
+      enableBPFMasquerade: false
+      enableEndpointHealthChecking: true
+      enableL7Proxy: true
+      enableRemoteNodeIdentity: true
+      hubble:
+        enabled: false
+      identityAllocationMode: crd
+      identityChangeGracePeriod: 5s
+      ipam: kubernetes
+      memoryRequest: 128Mi
+      monitorAggregation: medium
+      sidecarIstioProxyImage: cilium/istio_proxy
+      toFqdnsDnsRejectResponseCode: refused
+      tunnel: disabled
+      version: v1.10.5
+  nonMasqueradeCIDR: ::/0
+  secretStore: memfs://clusters.example.com/minimal-ipv6.example.com/secrets
+  serviceClusterIPRange: fd00:5e4f:ce::/108
+  sshAccess:
+  - 0.0.0.0/0
+  - ::/0
+  subnets:
+  - cidr: 172.20.32.0/19
+    ipv6CIDR: 2001:db8:0:111::/64
+    name: us-test-1a
+    type: Public
+    zone: us-test-1a
+  topology:
+    dns:
+      type: Public
+    masters: public
+    nodes: public
