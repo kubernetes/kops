@@ -20,12 +20,13 @@ spec:
     spec:
       containers:
       - args:
-        - --v=2
-        - --cloud-provider=aws
-        - --cluster-name=minimal.example.com
-        - --cluster-cidr=100.64.0.0/10
         - --allocate-node-cidrs=true
+        - --cloud-provider=aws
+        - --cluster-cidr=100.64.0.0/10
+        - --cluster-name=minimal.example.com
         - --configure-cloud-routes=false
+        - --leader-elect=true
+        - --v=2
         - --use-service-account-credentials=true
         - --cloud-config=/etc/kubernetes/cloud.config
         env:
