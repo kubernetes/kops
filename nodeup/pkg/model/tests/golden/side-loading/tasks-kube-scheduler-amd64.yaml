@@ -13,6 +13,7 @@ contents: |
       - --authentication-kubeconfig=/var/lib/kube-scheduler/kubeconfig
       - --authorization-kubeconfig=/var/lib/kube-scheduler/kubeconfig
       - --config=/var/lib/kube-scheduler/config.yaml
+      - --feature-gates=CSIMigrationAWS=true,InTreePluginAWSUnregister=true
       - --leader-elect=true
       - --tls-cert-file=/srv/kubernetes/kube-scheduler/server.crt
       - --tls-private-key-file=/srv/kubernetes/kube-scheduler/server.key

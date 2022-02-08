@@ -84,6 +84,9 @@ spec:
     - https://127.0.0.1:4001
     etcdServersOverrides:
     - /events#https://127.0.0.1:4002
+    featureGates:
+      CSIMigrationAWS: "true"
+      InTreePluginAWSUnregister: "true"
     image: k8s.gcr.io/kube-apiserver:v1.24.0-alpha.1
     kubeletPreferredAddressTypes:
     - InternalIP
@@ -113,6 +116,7 @@ spec:
     enableLeaderMigration: true
     featureGates:
       CSIMigrationAWS: "true"
+      InTreePluginAWSUnregister: "true"
     image: k8s.gcr.io/kube-controller-manager:v1.24.0-alpha.1
     leaderElection:
       leaderElect: true
@@ -138,6 +142,9 @@ spec:
     image: k8s.gcr.io/kube-proxy:v1.24.0-alpha.1
     logLevel: 2
   kubeScheduler:
+    featureGates:
+      CSIMigrationAWS: "true"
+      InTreePluginAWSUnregister: "true"
     image: k8s.gcr.io/kube-scheduler:v1.24.0-alpha.1
     leaderElection:
       leaderElect: true
