@@ -206,7 +206,7 @@ func findAllContainerdHashesAmd64() map[string]string {
 		"1.5.7":      "7fce75bab43a39d6f9efb3c370de2da49723f0e1dbaa9732d68fa7f620d720c8",
 		"1.5.8":      "5dbb7f43c0ac1fda79999ff63e648926e3464d7d1034402ee2117e6a93868431",
 		"1.5.9":      "f64c8e3b736b370c963b08c33ac70f030fc311bc48fcfd00461465af2fff3488",
-		"1.6.0-rc.2": "d3b3bb8848aecbdff79c6e9f453774279dc4f4c3720a528a5a8869dd49d97248",
+		"1.6.0-rc.3": "ead57ce46ebb92979dfdb35c1a9eac70a3a68086508da693ce75c7d8b7b2e790",
 	}
 
 	return hashes
@@ -214,7 +214,7 @@ func findAllContainerdHashesAmd64() map[string]string {
 
 func findAllContainerdHashesArm64() map[string]string {
 	hashes := map[string]string{
-		"1.6.0-rc.2": "1339b380fe489e590f7c56a518cc09c7f9b21052efbca31cc90e1592fda2346e",
+		"1.6.0-rc.3": "09fdff397546466f3ee76535aad5236192700f65727cd3068193ae204cd8fda9",
 	}
 
 	return hashes
