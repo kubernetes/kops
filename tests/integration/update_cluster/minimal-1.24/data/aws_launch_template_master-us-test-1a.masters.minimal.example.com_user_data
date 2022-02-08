@@ -167,6 +167,9 @@ kubeAPIServer:
   - https://127.0.0.1:4001
   etcdServersOverrides:
   - /events#https://127.0.0.1:4002
+  featureGates:
+    CSIMigrationAWS: "true"
+    InTreePluginAWSUnregister: "true"
   image: k8s.gcr.io/kube-apiserver:v1.24.0-alpha.1
   kubeletPreferredAddressTypes:
   - InternalIP
@@ -196,6 +199,7 @@ kubeControllerManager:
   enableLeaderMigration: true
   featureGates:
     CSIMigrationAWS: "true"
+    InTreePluginAWSUnregister: "true"
   image: k8s.gcr.io/kube-controller-manager:v1.24.0-alpha.1
   leaderElection:
     leaderElect: true
@@ -207,6 +211,9 @@ kubeProxy:
   image: k8s.gcr.io/kube-proxy:v1.24.0-alpha.1
   logLevel: 2
 kubeScheduler:
+  featureGates:
+    CSIMigrationAWS: "true"
+    InTreePluginAWSUnregister: "true"
   image: k8s.gcr.io/kube-scheduler:v1.24.0-alpha.1
   leaderElection:
     leaderElect: true
@@ -254,7 +261,7 @@ CloudProvider: aws
 ConfigBase: memfs://tests/minimal.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: /0b3OOOV7HCWhfm9ceSW8Q15KwZaV3nnMm+iCaX25sM=
+NodeupConfigHash: NXfoFadZZFaIoVdylF7mZac6ouynLlqIs+IG/yLL3lI=
 
 __EOF_KUBE_ENV
 
