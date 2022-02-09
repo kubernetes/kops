@@ -177,11 +177,11 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 	}
 
-	if clusterSpec.CloudConfig != nil && clusterSpec.CloudConfig.AWSEBSCSIDriver != nil && fi.BoolValue(clusterSpec.CloudConfig.AWSEBSCSIDriver.Enabled) {
+	if c.FeatureGates == nil {
+		c.FeatureGates = make(map[string]string)
+	}
 
-		if c.FeatureGates == nil {
-			c.FeatureGates = make(map[string]string)
-		}
+	if clusterSpec.CloudConfig != nil && clusterSpec.CloudConfig.AWSEBSCSIDriver != nil && fi.BoolValue(clusterSpec.CloudConfig.AWSEBSCSIDriver.Enabled) {
 
 		if b.IsKubernetesLT("1.21.0") {
 			if _, found := c.FeatureGates["CSIMigrationAWSComplete"]; !found {
@@ -195,6 +195,12 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 
 		if _, found := c.FeatureGates["CSIMigrationAWS"]; !found {
 			c.FeatureGates["CSIMigrationAWS"] = "true"
+		}
+	}
+
+	if b.IsKubernetesLT("1.20") && clusterSpec.ServiceAccountIssuerDiscovery != nil && fi.BoolValue(&clusterSpec.ServiceAccountIssuerDiscovery.EnableAWSOIDCProvider) {
+		if _, found := c.FeatureGates["ServiceAccountIssuerDiscovery"]; !found {
+			c.FeatureGates["ServiceAccountIssuerDiscovery"] = "true"
 		}
 	}
 
