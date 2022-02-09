@@ -1,5 +1,5 @@
 {{ with .NodeTerminationHandler }}
-# Sourced from https://github.com/aws/aws-node-termination-handler/releases/download/v1.13.3/all-resources.yaml
+# Sourced from https://github.com/aws/aws-node-termination-handler/releases/download/v1.14.0/all-resources.yaml
 ---
 # Source: aws-node-termination-handler/templates/serviceaccount.yaml
 apiVersion: v1
@@ -11,7 +11,7 @@ metadata:
     app.kubernetes.io/name: aws-node-termination-handler
     app.kubernetes.io/instance: aws-node-termination-handler
     k8s-app: aws-node-termination-handler
-    app.kubernetes.io/version: "1.13.3"
+    app.kubernetes.io/version: "1.14.0"
 ---
 # Source: aws-node-termination-handler/templates/clusterrole.yaml
 kind: ClusterRole
@@ -34,6 +34,7 @@ rules:
     - pods
   verbs:
     - list
+    - get
 - apiGroups:
     - ""
   resources:
@@ -78,7 +79,7 @@ metadata:
     app.kubernetes.io/name: aws-node-termination-handler
     app.kubernetes.io/instance: aws-node-termination-handler
     k8s-app: aws-node-termination-handler
-    app.kubernetes.io/version: "1.13.3"
+    app.kubernetes.io/version: "1.14.0"
 spec:
   replicas: 1
   selector:
@@ -117,7 +118,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: aws-node-termination-handler
-          image: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.13.3
+          image: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.14.0
           imagePullPolicy: IfNotPresent
           securityContext:
             readOnlyRootFilesystem: true
@@ -138,10 +139,6 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-            - name: SPOT_POD_IP
-              valueFrom:
-                fieldRef:
-                  fieldPath: status.podIP
             - name: DELETE_LOCAL_DATA
               value: ""
             - name: IGNORE_DAEMON_SETS
@@ -174,6 +171,8 @@ spec:
               value: ""
             - name: ENABLE_PROMETHEUS_SERVER
               value: "{{ .EnablePrometheusMetrics }}"
+            - name: ENABLE_PROBES_SERVER
+              value: "false"
             - name: ENABLE_SPOT_INTERRUPTION_DRAINING
               value: "false"
             - name: ENABLE_SCHEDULED_EVENT_DRAINING
@@ -188,6 +187,10 @@ spec:
               value: "{{ DefaultQueueName }}"
             - name: PROMETHEUS_SERVER_PORT
               value: "9092"
+            - name: PROBES_SERVER_PORT
+              value: "8080"
+            - name: PROBES_SERVER_ENDPOINT
+              value: "/healthz"
             - name: AWS_REGION
               value: ""
             - name: AWS_ENDPOINT
@@ -200,6 +203,8 @@ spec:
               value: "10"
             - name: EMIT_KUBERNETES_EVENTS
               value: "true"
+            - name: KUBERNETES_EVENTS_EXTRA_ANNOTATIONS
+              value: ""
           resources:
             requests:
               cpu: {{ .CPURequest }}
@@ -222,7 +227,7 @@ metadata:
     app.kubernetes.io/name: aws-node-termination-handler
     app.kubernetes.io/instance: aws-node-termination-handler
     k8s-app: aws-node-termination-handler
-    app.kubernetes.io/version: "1.13.3"
+    app.kubernetes.io/version: "1.14.0"
 spec:
   updateStrategy:
     rollingUpdate:
@@ -266,7 +271,7 @@ spec:
       dnsPolicy: "ClusterFirstWithHostNet"
       containers:
         - name: aws-node-termination-handler
-          image: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.13.3
+          image: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.14.0
           imagePullPolicy: IfNotPresent
           securityContext:
             readOnlyRootFilesystem: true
@@ -291,16 +296,22 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
-          - name: SPOT_POD_IP
-            valueFrom:
-              fieldRef:
-                fieldPath: status.podIP
           - name: DELETE_LOCAL_DATA
             value: "true"
           - name: IGNORE_DAEMON_SETS
             value: "true"
           - name: POD_TERMINATION_GRACE_PERIOD
             value: "-1"
+          - name: INSTANCE_METADATA_URL
+            value: ""
+          - name: NODE_TERMINATION_GRACE_PERIOD
+            value: ""
+          - name: WEBHOOK_URL
+            value: ""
+          - name: WEBHOOK_HEADERS
+            value: ""
+          - name: WEBHOOK_TEMPLATE
+            value: ""
           - name: ENABLE_SPOT_INTERRUPTION_DRAINING
             value: "{{ .EnableSpotInterruptionDraining }}"
           - name: ENABLE_SCHEDULED_EVENT_DRAINING
@@ -309,14 +320,38 @@ spec:
             value: "{{ .EnableRebalanceMonitoring }}"
           - name: ENABLE_REBALANCE_DRAINING
             value: "{{ .EnableRebalanceDraining }}"
+          - name: CHECK_ASG_TAG_BEFORE_DRAINING
+            value: "true"
+          - name: MANAGED_ASG_TAG
+            value: "aws-node-termination-handler/managed"
+          - name: METADATA_TRIES
+            value: "3"
+          - name: CORDON_ONLY
+            value: "false"
+          - name: TAINT_NODE
+            value: "false"
           - name: JSON_LOGGING
             value: "true"
           - name: ENABLE_PROMETHEUS_SERVER
             value: "{{ .EnablePrometheusMetrics }}"
+          - name: PROMETHEUS_SERVER_PORT
+            value: "9092"
           - name: LOG_LEVEL
             value: "info"
+          - name: WEBHOOK_PROXY
+            value: ""
+          - name: UPTIME_FROM_FILE
+            value: ""
           - name: EMIT_KUBERNETES_EVENTS
             value: "true"
+          - name: KUBERNETES_EVENTS_EXTRA_ANNOTATIONS
+            value: ""
+          - name: ENABLE_PROBES_SERVER
+            value: "false"
+          - name: PROBES_SERVER_PORT
+            value: "8080"
+          - name: PROBES_SERVER_ENDPOINT
+            value: "/healthz"
           resources:
             requests:
               cpu: {{ .CPURequest }}
