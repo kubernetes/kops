@@ -375,28 +375,39 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 	}
 
 	said := c.Spec.ServiceAccountIssuerDiscovery
-	if said != nil && said.DiscoveryStore != "" {
+	if said != nil {
 		saidStore := said.DiscoveryStore
-		saidStoreField := fieldSpec.Child("serviceAccountIssuerDiscovery", "discoveryStore")
-		base, err := vfs.Context.BuildVfsPath(saidStore)
-		if err != nil {
-			allErrs = append(allErrs, field.Invalid(saidStoreField, saidStore, "not a valid VFS path"))
-		} else {
-			switch base := base.(type) {
-			case *vfs.S3Path:
-				// OK
-			case *vfs.MemFSPath:
-				// memfs is ok for tests; not OK otherwise
-				if !base.IsClusterReadable() {
-					// (If this _is_ a test, we should call MarkClusterReadable)
+		if saidStore != "" {
+			saidStoreField := fieldSpec.Child("serviceAccountIssuerDiscovery", "discoveryStore")
+			base, err := vfs.Context.BuildVfsPath(saidStore)
+			if err != nil {
+				allErrs = append(allErrs, field.Invalid(saidStoreField, saidStore, "not a valid VFS path"))
+			} else {
+				switch base := base.(type) {
+				case *vfs.S3Path:
+					// OK
+				case *vfs.MemFSPath:
+					// memfs is ok for tests; not OK otherwise
+					if !base.IsClusterReadable() {
+						// (If this _is_ a test, we should call MarkClusterReadable)
+						allErrs = append(allErrs, field.Invalid(saidStoreField, saidStore, "S3 is the only supported VFS for discoveryStore"))
+					}
+				default:
 					allErrs = append(allErrs, field.Invalid(saidStoreField, saidStore, "S3 is the only supported VFS for discoveryStore"))
 				}
-			default:
-				allErrs = append(allErrs, field.Invalid(saidStoreField, saidStore, "S3 is the only supported VFS for discoveryStore"))
 			}
 		}
-	}
+		if said.EnableAWSOIDCProvider {
+			enableOIDCField := fieldSpec.Child("serviceAccountIssuerDiscovery", "enableAWSOIDCProvider")
+			if c.IsKubernetesLT("1.18") {
+				allErrs = append(allErrs, field.Forbidden(enableOIDCField, "AWS OIDC Provider requires kubernetes 1.18 or greates"))
+			}
+			if saidStore == "" {
+				allErrs = append(allErrs, field.Forbidden(enableOIDCField, "AWS OIDC Provider requires a discovery store"))
+			}
+		}
 
+	}
 	return allErrs
 }
 
