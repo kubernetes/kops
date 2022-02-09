@@ -158,7 +158,7 @@ func RunGet(ctx context.Context, f commandutils.Factory, out io.Writer, options 
 		return nil
 
 	case OutputJSON:
-		if err := fullOutputJSON(out, allObjects...); err != nil {
+		if err := fullOutputJSON(out, false, allObjects...); err != nil {
 			return fmt.Errorf("error writing json to stdout: %v", err)
 		}
 		return nil
