@@ -1,4 +1,4 @@
-# Vendored from https://raw.githubusercontent.com/aws/amazon-vpc-cni-k8s/master/config/v1.9/aws-k8s-cni.yaml
+# Vendored from https://raw.githubusercontent.com/aws/amazon-vpc-cni-k8s/master/config/v1.10/aws-k8s-cni.yaml
 
 ---
 # Source: aws-vpc-cni/templates/clusterrolebinding.yaml
@@ -10,7 +10,7 @@ metadata:
     app.kubernetes.io/name: aws-node
     app.kubernetes.io/instance: aws-vpc-cni
     k8s-app: aws-node
-    app.kubernetes.io/version: "v1.9.3"
+    app.kubernetes.io/version: "v1.10.2"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -29,7 +29,7 @@ metadata:
     app.kubernetes.io/name: aws-node
     app.kubernetes.io/instance: aws-vpc-cni
     k8s-app: aws-node
-    app.kubernetes.io/version: "v1.9.3"
+    app.kubernetes.io/version: "v1.10.2"
 rules:
   - apiGroups:
       - crd.k8s.amazonaws.com
@@ -62,7 +62,7 @@ metadata:
     app.kubernetes.io/name: aws-node
     app.kubernetes.io/instance: aws-vpc-cni
     k8s-app: aws-node
-    app.kubernetes.io/version: "v1.9.3"
+    app.kubernetes.io/version: "v1.10.2"
 spec:
   scope: Cluster
   group: crd.k8s.amazonaws.com
@@ -90,7 +90,7 @@ metadata:
     app.kubernetes.io/name: aws-node
     app.kubernetes.io/instance: aws-vpc-cni
     k8s-app: aws-node
-    app.kubernetes.io/version: "v1.9.3"
+    app.kubernetes.io/version: "v1.10.2"
 spec:
   updateStrategy:
     type: OnDelete
@@ -109,7 +109,7 @@ spec:
       hostNetwork: true
       initContainers:
       - name: aws-vpc-cni-init
-        image: "{{- or .Networking.AmazonVPC.InitImage "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.10.1" }}"
+        image: "{{- or .Networking.AmazonVPC.InitImage "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.10.2" }}"
         imagePullPolicy: Always
         env:
           - name: DISABLE_TCP_EARLY_DEMUX
@@ -131,7 +131,7 @@ spec:
         {}
       containers:
         - name: aws-node
-          image: "{{- or .Networking.AmazonVPC.Image "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.10.1" }}"
+          image: "{{- or .Networking.AmazonVPC.Image "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.10.2" }}"
           imagePullPolicy: Always
           ports:
             - containerPort: 61678
@@ -279,4 +279,4 @@ metadata:
     app.kubernetes.io/name: aws-node
     app.kubernetes.io/instance: aws-vpc-cni
     k8s-app: aws-node
-    app.kubernetes.io/version: "v1.9.3"
+    app.kubernetes.io/version: "v1.10.2"
