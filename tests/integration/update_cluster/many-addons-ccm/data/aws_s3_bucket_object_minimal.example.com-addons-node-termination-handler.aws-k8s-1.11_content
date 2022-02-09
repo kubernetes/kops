@@ -7,7 +7,7 @@ metadata:
     app.kubernetes.io/instance: aws-node-termination-handler
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node-termination-handler
-    app.kubernetes.io/version: 1.13.3
+    app.kubernetes.io/version: 1.14.0
     k8s-addon: node-termination-handler.aws
     k8s-app: aws-node-termination-handler
   name: aws-node-termination-handler
@@ -40,6 +40,7 @@ rules:
   - pods
   verbs:
   - list
+  - get
 - apiGroups:
   - ""
   resources:
@@ -90,7 +91,7 @@ metadata:
     app.kubernetes.io/instance: aws-node-termination-handler
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node-termination-handler
-    app.kubernetes.io/version: 1.13.3
+    app.kubernetes.io/version: 1.14.0
     k8s-addon: node-termination-handler.aws
     k8s-app: aws-node-termination-handler
   name: aws-node-termination-handler
@@ -138,16 +139,22 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        - name: SPOT_POD_IP
-          valueFrom:
-            fieldRef:
-              fieldPath: status.podIP
         - name: DELETE_LOCAL_DATA
           value: "true"
         - name: IGNORE_DAEMON_SETS
           value: "true"
         - name: POD_TERMINATION_GRACE_PERIOD
           value: "-1"
+        - name: INSTANCE_METADATA_URL
+          value: ""
+        - name: NODE_TERMINATION_GRACE_PERIOD
+          value: ""
+        - name: WEBHOOK_URL
+          value: ""
+        - name: WEBHOOK_HEADERS
+          value: ""
+        - name: WEBHOOK_TEMPLATE
+          value: ""
         - name: ENABLE_SPOT_INTERRUPTION_DRAINING
           value: "true"
         - name: ENABLE_SCHEDULED_EVENT_DRAINING
@@ -156,15 +163,39 @@ spec:
           value: "false"
         - name: ENABLE_REBALANCE_DRAINING
           value: "false"
+        - name: CHECK_ASG_TAG_BEFORE_DRAINING
+          value: "true"
+        - name: MANAGED_ASG_TAG
+          value: aws-node-termination-handler/managed
+        - name: METADATA_TRIES
+          value: "3"
+        - name: CORDON_ONLY
+          value: "false"
+        - name: TAINT_NODE
+          value: "false"
         - name: JSON_LOGGING
           value: "true"
         - name: ENABLE_PROMETHEUS_SERVER
           value: "false"
+        - name: PROMETHEUS_SERVER_PORT
+          value: "9092"
         - name: LOG_LEVEL
           value: info
+        - name: WEBHOOK_PROXY
+          value: ""
+        - name: UPTIME_FROM_FILE
+          value: ""
         - name: EMIT_KUBERNETES_EVENTS
           value: "true"
-        image: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.13.3
+        - name: KUBERNETES_EVENTS_EXTRA_ANNOTATIONS
+          value: ""
+        - name: ENABLE_PROBES_SERVER
+          value: "false"
+        - name: PROBES_SERVER_PORT
+          value: "8080"
+        - name: PROBES_SERVER_ENDPOINT
+          value: /healthz
+        image: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.14.0
         imagePullPolicy: IfNotPresent
         name: aws-node-termination-handler
         resources:
