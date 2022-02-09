@@ -64,7 +64,7 @@ metadata:
     kops.k8s.io/cluster: minimal.example.com
   name: master-us-test-1a
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220118
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220131
   machineType: m3.medium
   manager: CloudGroup
   maxSize: 1
@@ -85,7 +85,7 @@ metadata:
     kops.k8s.io/cluster: minimal.example.com
   name: nodes-us-test-1a
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220118
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220131
   machineType: t2.medium
   manager: CloudGroup
   maxSize: 1
