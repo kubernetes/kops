@@ -692,7 +692,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 			}
 			return nil
 		case OutputJSON:
-			if err := fullOutputJSON(out, obj...); err != nil {
+			if err := fullOutputJSON(out, true, obj...); err != nil {
 				return fmt.Errorf("error writing cluster json to stdout: %v", err)
 			}
 			return nil
