@@ -378,8 +378,18 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 	}
 
 	said := c.Spec.ServiceAccountIssuerDiscovery
-	if said != nil && said.DiscoveryStore != "" {
-		saidStore := said.DiscoveryStore
+	allErrs = append(allErrs, validateServiceAccountIssuerDiscovery(c, said, fieldSpec.Child("serviceAccountIssuerDiscovery"))...)
+
+	return allErrs
+}
+
+func validateServiceAccountIssuerDiscovery(c *kops.Cluster, said *kops.ServiceAccountIssuerDiscoveryConfig, fieldSpec *field.Path) field.ErrorList {
+	if said == nil {
+		return nil
+	}
+	allErrs := field.ErrorList{}
+	saidStore := said.DiscoveryStore
+	if saidStore != "" {
 		saidStoreField := fieldSpec.Child("serviceAccountIssuerDiscovery", "discoveryStore")
 		base, err := vfs.Context.BuildVfsPath(saidStore)
 		if err != nil {
@@ -397,6 +407,15 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 			default:
 				allErrs = append(allErrs, field.Invalid(saidStoreField, saidStore, "S3 is the only supported VFS for discoveryStore"))
 			}
+		}
+	}
+	if said.EnableAWSOIDCProvider {
+		enableOIDCField := fieldSpec.Child("serviceAccountIssuerDiscovery", "enableAWSOIDCProvider")
+		if c.IsKubernetesLT("1.18") {
+			allErrs = append(allErrs, field.Forbidden(enableOIDCField, "AWS OIDC Provider requires kubernetes 1.18 or greates"))
+		}
+		if saidStore == "" {
+			allErrs = append(allErrs, field.Forbidden(enableOIDCField, "AWS OIDC Provider requires a discovery store"))
 		}
 	}
 
