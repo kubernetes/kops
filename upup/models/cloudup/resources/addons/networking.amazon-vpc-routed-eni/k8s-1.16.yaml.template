@@ -235,10 +235,10 @@ spec:
             name: cni-net-dir
           - mountPath: /host/var/log/aws-routed-eni
             name: log-dir
-          - mountPath: /var/run/aws-node
-            name: run-dir
           - mountPath: /var/run/dockershim.sock
             name: dockershim
+          - mountPath: /var/run/aws-node
+            name: run-dir
           - mountPath: /run/xtables.lock
             name: xtables-lock
       volumes:
@@ -251,9 +251,6 @@ spec:
       - name: dockershim
         hostPath:
           path: "{{ if eq .ContainerRuntime "containerd" }}/run/containerd/containerd.sock{{ else }}/var/run/dockershim.sock{{ end }}"
-      - name: xtables-lock
-        hostPath:
-          path: /run/xtables.lock
       - name: log-dir
         hostPath:
           path: /var/log/aws-routed-eni
@@ -262,6 +259,9 @@ spec:
         hostPath:
           path: /var/run/aws-node
           type: DirectoryOrCreate
+      - name: xtables-lock
+        hostPath:
+          path: /run/xtables.lock
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
