@@ -216,6 +216,8 @@ kubelet:
   logLevel: 2
   podInfraContainerImage: k8s.gcr.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
+  shutdownGracePeriod: 30s
+  shutdownGracePeriodCriticalPods: 10s
 masterKubelet:
   anonymousAuth: false
   cgroupDriver: systemd
@@ -230,6 +232,8 @@ masterKubelet:
   podInfraContainerImage: k8s.gcr.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   registerSchedulable: false
+  shutdownGracePeriod: 30s
+  shutdownGracePeriodCriticalPods: 10s
 
 __EOF_CLUSTER_SPEC
 
@@ -238,7 +242,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privatekopeio.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: KH5h6XpxnQ2OMm/UdM6tLlMgZY6tmf5WKuROtW2+xps=
+NodeupConfigHash: a6r32cJzwLdFrJER/gjC2BG7FF1OsTXOX+YULb9SQ9I=
 
 __EOF_KUBE_ENV
 

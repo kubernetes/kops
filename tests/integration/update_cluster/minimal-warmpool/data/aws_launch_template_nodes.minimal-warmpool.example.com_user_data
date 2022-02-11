@@ -156,6 +156,8 @@ kubelet:
   networkPluginName: cni
   podInfraContainerImage: k8s.gcr.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
+  shutdownGracePeriod: 30s
+  shutdownGracePeriodCriticalPods: 10s
 
 __EOF_CLUSTER_SPEC
 
@@ -164,7 +166,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal-warmpool.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: YJCVXZCZTdPztdqK3JZ54fgpEteR5lrI3LG3Ze/W/tI=
+NodeupConfigHash: SsOEZRwQpnoowIuTXG1AcloDs0vYR5cnobX8F5gMgew=
 
 __EOF_KUBE_ENV
 

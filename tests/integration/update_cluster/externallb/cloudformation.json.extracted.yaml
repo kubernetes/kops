@@ -218,6 +218,8 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersexternallbexamplecom.Properti
     networkPluginName: cni
     podInfraContainerImage: k8s.gcr.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
+    shutdownGracePeriod: 30s
+    shutdownGracePeriodCriticalPods: 10s
   masterKubelet:
     anonymousAuth: false
     cgroupDriver: systemd
@@ -233,6 +235,8 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersexternallbexamplecom.Properti
     podInfraContainerImage: k8s.gcr.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
+    shutdownGracePeriod: 30s
+    shutdownGracePeriodCriticalPods: 10s
 
   __EOF_CLUSTER_SPEC
 
@@ -241,7 +245,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersexternallbexamplecom.Properti
   ConfigBase: memfs://clusters.example.com/externallb.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: qN55rMFSh+1Nronrci1RWYsusGOZ690rqTCIr2iLnus=
+  NodeupConfigHash: o1churxjrtIwataYPB07C1SnsYejMcjBbYHhmazlnCU=
 
   __EOF_KUBE_ENV
 
@@ -402,6 +406,8 @@ Resources.AWSEC2LaunchTemplatenodesexternallbexamplecom.Properties.LaunchTemplat
     networkPluginName: cni
     podInfraContainerImage: k8s.gcr.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
+    shutdownGracePeriod: 30s
+    shutdownGracePeriodCriticalPods: 10s
 
   __EOF_CLUSTER_SPEC
 
@@ -410,7 +416,7 @@ Resources.AWSEC2LaunchTemplatenodesexternallbexamplecom.Properties.LaunchTemplat
   ConfigBase: memfs://clusters.example.com/externallb.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: F8cHOZcNcvz3LXeJbHcUh6XPPeqQBI2NN15F52+Rx6s=
+  NodeupConfigHash: xyTVHoGQhfeQbn5Md/5ORFLSTuXsSKvVcu8/htSZdnM=
 
   __EOF_KUBE_ENV
 
