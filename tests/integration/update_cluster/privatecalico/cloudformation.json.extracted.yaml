@@ -219,6 +219,8 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivatecalicoexamplecom.Prope
     networkPluginName: cni
     podInfraContainerImage: k8s.gcr.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
+    shutdownGracePeriod: 30s
+    shutdownGracePeriodCriticalPods: 10s
   masterKubelet:
     anonymousAuth: false
     cgroupDriver: systemd
@@ -234,6 +236,8 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivatecalicoexamplecom.Prope
     podInfraContainerImage: k8s.gcr.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
+    shutdownGracePeriod: 30s
+    shutdownGracePeriodCriticalPods: 10s
 
   __EOF_CLUSTER_SPEC
 
@@ -242,7 +246,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivatecalicoexamplecom.Prope
   ConfigBase: memfs://clusters.example.com/privatecalico.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: E9xFqhL+OZEaLb3FJft/4KdE9fUgFCJllrLWsXusTzI=
+  NodeupConfigHash: joJBUkDwVPNz8hiUvPqF7bbSS+KapESEhHFibn5ZwrY=
 
   __EOF_KUBE_ENV
 
@@ -403,6 +407,8 @@ Resources.AWSEC2LaunchTemplatenodesprivatecalicoexamplecom.Properties.LaunchTemp
     networkPluginName: cni
     podInfraContainerImage: k8s.gcr.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
+    shutdownGracePeriod: 30s
+    shutdownGracePeriodCriticalPods: 10s
 
   __EOF_CLUSTER_SPEC
 
@@ -411,7 +417,7 @@ Resources.AWSEC2LaunchTemplatenodesprivatecalicoexamplecom.Properties.LaunchTemp
   ConfigBase: memfs://clusters.example.com/privatecalico.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: ILXbqT/UOlEJar3B2BDE9oG6IPwkFfxF2od0BjG2lEg=
+  NodeupConfigHash: OUsJtqQEStPNZ0etx4Etsa84uYAqeOuVrM/0v0K1Wh8=
 
   __EOF_KUBE_ENV
 
