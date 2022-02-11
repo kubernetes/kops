@@ -93,6 +93,7 @@ require (
 	k8s.io/gengo v0.0.0-20210813121822-485abfe95c7c
 	k8s.io/klog/v2 v2.30.0
 	k8s.io/kubectl v0.23.1
+	k8s.io/kubelet v0.23.1
 	k8s.io/legacy-cloud-providers v0.23.1
 	k8s.io/mount-utils v0.23.1
 	k8s.io/utils v0.0.0-20210930125809-cb0fa318a74b

@@ -742,6 +742,23 @@ spec:
     logFormat: json
 ```
 
+### Graceful Node Shutdown
+
+Graceful node shutdown allows kubelet to prevent instance shutdown until Pods have been safely terminated or a timeout has been reached.
+
+For all CNIs except `amazonaws`, kOps will try to add a 30 second timeout for 30 seconds where the first 20 seconds is reserved for normal Pods and the last 10 seconds for critical Pods. When using `amazonaws` this feature is disabled, as it leads to [leaking ENIs](https://github.com/aws/amazon-vpc-cni-k8s/issues/1223).
+
+This configuration can be changed as follows:
+
+```yaml
+spec:
+  kubelet:
+    shutdownGracePeriod: 60s
+    shutdownGracePeriodCriticalPods: 20s
+```
+
+Note that Kubelet will fail to install the shutdown inhibtor on systems where logind is configured with an `InhibitDelayMaxSeconds` lower than `shutdownGracePeriod`. On Ubuntu, this setting is 30 seconds.
+
 ## kubeScheduler
 
 This block contains configurations for `kube-scheduler`.  See https://kubernetes.io/docs/admin/kube-scheduler/
