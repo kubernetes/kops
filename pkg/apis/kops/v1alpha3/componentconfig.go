@@ -223,6 +223,13 @@ type KubeletConfigSpec struct {
 	EnableCadvisorJsonEndpoints *bool `json:"enableCadvisorJsonEndpoints,omitempty" flag:"enable-cadvisor-json-endpoints"`
 	// PodPidsLimit is the maximum number of pids in any pod.
 	PodPidsLimit *int64 `json:"podPidsLimit,omitempty" flag:"pod-max-pids"`
+
+	// ShutdownGracePeriod specifies the total duration that the node should delay the shutdown by.
+	// Default: 30s
+	ShutdownGracePeriod *metav1.Duration `json:"shutdownGracePeriod,omitempty"`
+	// ShutdownGracePeriodCriticalPods specifies the duration used to terminate critical pods during a node shutdown.
+	// Default: 10s
+	ShutdownGracePeriodCriticalPods *metav1.Duration `json:"shutdownGracePeriodCriticalPods,omitempty"`
 }
 
 // KubeProxyConfig defines the configuration for a proxy

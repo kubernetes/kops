@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"bytes"
 	"fmt"
 	"net"
 	"os"
@@ -31,6 +32,11 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
+	kubelet "k8s.io/kubelet/config/v1beta1"
+
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/nodelabels"
@@ -48,6 +54,8 @@ const (
 
 	// kubeletService is the name of the kubelet service
 	kubeletService = "kubelet.service"
+
+	kubeletConfigFilePath = "/var/lib/kubelet/kubelet.conf"
 )
 
 // KubeletBuilder installs kubelet
@@ -67,6 +75,15 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 	kubeletConfig, err := b.buildKubeletConfig()
 	if err != nil {
 		return fmt.Errorf("error building kubelet config: %v", err)
+	}
+
+	{
+		t, err := buildKubeletComponentConfig(kubeletConfig)
+		if err != nil {
+			return err
+		}
+
+		c.AddTask(t)
 	}
 
 	{
@@ -161,6 +178,39 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
+func buildKubeletComponentConfig(kubeletConfig *kops.KubeletConfigSpec) (*nodetasks.File, error) {
+	componentConfig := kubelet.KubeletConfiguration{
+		ShutdownGracePeriod:             *kubeletConfig.ShutdownGracePeriod,
+		ShutdownGracePeriodCriticalPods: *kubeletConfig.ShutdownGracePeriodCriticalPods,
+	}
+
+	s := runtime.NewScheme()
+	if err := kubelet.AddToScheme(s); err != nil {
+		return nil, err
+	}
+
+	gv := kubelet.SchemeGroupVersion
+	codecFactory := serializer.NewCodecFactory(s)
+	info, ok := runtime.SerializerInfoForMediaType(codecFactory.SupportedMediaTypes(), "application/yaml")
+	if !ok {
+		return nil, fmt.Errorf("failed to find serializer")
+	}
+	encoder := codecFactory.EncoderForVersion(info.Serializer, gv)
+	var w bytes.Buffer
+	if err := encoder.Encode(&componentConfig, &w); err != nil {
+		return nil, err
+	}
+
+	t := &nodetasks.File{
+		Path:           "/var/lib/kubelet/kubelet.conf",
+		Contents:       fi.NewBytesResource(w.Bytes()),
+		Type:           nodetasks.FileType_File,
+		BeforeServices: []string{kubeletService},
+	}
+
+	return t, nil
+}
+
 // kubeletPath returns the path of the kubelet based on distro
 func (b *KubeletBuilder) kubeletPath() string {
 	kubeletCommand := "/usr/local/bin/kubelet"
@@ -242,6 +292,8 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 	if b.Cluster.Spec.IsIPv6Only() {
 		flags += " --node-ip=::"
 	}
+
+	flags += " --config=" + kubeletConfigFilePath
 
 	sysconfig := "DAEMON_ARGS=\"" + flags + "\"\n"
 	// Makes kubelet read /root/.docker/config.json properly

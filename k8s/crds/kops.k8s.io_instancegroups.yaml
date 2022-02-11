@@ -603,6 +603,15 @@ spec:
                       the default value on nodes that // run docker daemon with version  <
                       1.9 or an Aufs storage backend. // Issue #10959 has more details.'
                     type: boolean
+                  shutdownGracePeriod:
+                    description: 'ShutdownGracePeriod specifies the total duration
+                      that the node should delay the shutdown by. Default: 30s'
+                    type: string
+                  shutdownGracePeriodCriticalPods:
+                    description: 'ShutdownGracePeriodCriticalPods specifies the duration
+                      used to terminate critical pods during a node shutdown. Default:
+                      10s'
+                    type: string
                   streamingConnectionIdleTimeout:
                     description: StreamingConnectionIdleTimeout is the maximum time
                       a streaming connection can be idle before the connection is
