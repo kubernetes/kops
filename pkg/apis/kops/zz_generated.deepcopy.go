@@ -3845,6 +3845,16 @@ func (in *KubeletConfigSpec) DeepCopyInto(out *KubeletConfigSpec) {
 		*out = new(int64)
 		**out = **in
 	}
+	if in.ShutdownGracePeriod != nil {
+		in, out := &in.ShutdownGracePeriod, &out.ShutdownGracePeriod
+		*out = new(v1.Duration)
+		**out = **in
+	}
+	if in.ShutdownGracePeriodCriticalPods != nil {
+		in, out := &in.ShutdownGracePeriodCriticalPods, &out.ShutdownGracePeriodCriticalPods
+		*out = new(v1.Duration)
+		**out = **in
+	}
 	return
 }
 
