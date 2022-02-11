@@ -156,6 +156,8 @@ kubelet:
   nonMasqueradeCIDR: 100.64.0.0/10
   podInfraContainerImage: k8s.gcr.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
+  shutdownGracePeriod: 30s
+  shutdownGracePeriodCriticalPods: 10s
 
 __EOF_CLUSTER_SPEC
 
@@ -164,7 +166,7 @@ CloudProvider: gce
 ConfigBase: memfs://tests/ha-gce.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: 8fDYj+rBeP3JaptuHJvHGO0RQSc5eHTx8PcppiiMXt0=
+NodeupConfigHash: biOUKN3QzZnKaTjL5zkgqfvK5I3seh8JNO2rvwXPhyI=
 
 __EOF_KUBE_ENV
 

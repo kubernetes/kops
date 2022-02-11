@@ -252,6 +252,8 @@ KubeletConfig:
   podInfraContainerImage: k8s.gcr.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   registerSchedulable: false
+  shutdownGracePeriod: 30s
+  shutdownGracePeriodCriticalPods: 10s
 UpdatePolicy: automatic
 channels:
 - memfs://clusters.example.com/privateweave.example.com/addons/bootstrap-channel.yaml

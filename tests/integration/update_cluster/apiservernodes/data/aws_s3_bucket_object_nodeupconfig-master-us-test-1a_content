@@ -260,6 +260,8 @@ KubeletConfig:
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
   registerSchedulable: false
+  shutdownGracePeriod: 30s
+  shutdownGracePeriodCriticalPods: 10s
 UpdatePolicy: automatic
 channels:
 - memfs://clusters.example.com/minimal.example.com/addons/bootstrap-channel.yaml

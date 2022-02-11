@@ -152,6 +152,8 @@ kubelet:
   nonMasqueradeCIDR: 100.64.0.0/10
   podInfraContainerImage: k8s.gcr.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
+  shutdownGracePeriod: 30s
+  shutdownGracePeriodCriticalPods: 10s
 
 __EOF_CLUSTER_SPEC
 
@@ -160,7 +162,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: uENkLgNFe/DNSFUizpxl39K7INUxUtCMRy9YhoO8QfU=
+NodeupConfigHash: D02MviKQ99x6auD6tdPerHrcEccgSgbIWG31Mn5flgs=
 
 __EOF_KUBE_ENV
 

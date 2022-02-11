@@ -55,6 +55,8 @@ KubeletConfig:
   nonMasqueradeCIDR: 100.64.0.0/10
   podInfraContainerImage: k8s.gcr.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
+  shutdownGracePeriod: 30s
+  shutdownGracePeriodCriticalPods: 10s
 UpdatePolicy: automatic
 channels:
 - memfs://clusters.example.com/bastionuserdata.example.com/addons/bootstrap-channel.yaml
