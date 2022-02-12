@@ -152,6 +152,8 @@ kubelet:
   networkPluginName: cni
   podInfraContainerImage: k8s.gcr.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
+  shutdownGracePeriod: 30s
+  shutdownGracePeriodCriticalPods: 10s
 
 __EOF_CLUSTER_SPEC
 
@@ -160,7 +162,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: karpenter-nodes-default
 InstanceGroupRole: Node
-NodeupConfigHash: GM6e3drISO8Zqm0SWEonsIHwczu4I/uS+hBiqCIdgjg=
+NodeupConfigHash: rtan9SIYx6EfsSB615gyo3ElrKYUN0Uxx+0DwM8bGwg=
 
 __EOF_KUBE_ENV
 

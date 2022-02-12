@@ -151,6 +151,8 @@ kubelet:
   logLevel: 2
   podInfraContainerImage: k8s.gcr.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
+  shutdownGracePeriod: 30s
+  shutdownGracePeriodCriticalPods: 10s
 
 __EOF_CLUSTER_SPEC
 
@@ -159,7 +161,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privatekopeio.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: ap9M9MxyfMhw2jQovvkQ0/IfRkJhFPNC/jVkHAOvF0g=
+NodeupConfigHash: 66CzPFNXaQdOW6ZmXfmyl/WelY3lgQp2Cur+/Qho6nw=
 
 __EOF_KUBE_ENV
 
