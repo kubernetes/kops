@@ -313,7 +313,7 @@ func TestContainerdVersionHash(t *testing.T) {
 
 func TestContainerdVersionsHashesAmd64(t *testing.T) {
 	if os.Getenv("VERIFY_HASHES") == "" {
-		t.Skip("VERIFY_HASHES not set, won't download & verify docker hashes")
+		t.Skip("VERIFY_HASHES not set, won't download & verify containerd hashes")
 	}
 
 	for version, hash := range findAllContainerdHashesAmd64() {
@@ -328,7 +328,7 @@ func TestContainerdVersionsHashesAmd64(t *testing.T) {
 
 func TestContainerdVersionsHashesArm64(t *testing.T) {
 	if os.Getenv("VERIFY_HASHES") == "" {
-		t.Skip("VERIFY_HASHES not set, won't download & verify docker hashes")
+		t.Skip("VERIFY_HASHES not set, won't download & verify containerd hashes")
 	}
 
 	for version, hash := range findAllContainerdHashesArm64() {
