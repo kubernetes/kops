@@ -229,6 +229,8 @@ kubelet:
   networkPluginName: cni
   podInfraContainerImage: k8s.gcr.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
+  shutdownGracePeriod: 0s
+  shutdownGracePeriodCriticalPods: 0s
 masterKubelet:
   anonymousAuth: false
   cgroupDriver: systemd
@@ -247,6 +249,8 @@ masterKubelet:
   podInfraContainerImage: k8s.gcr.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   registerSchedulable: false
+  shutdownGracePeriod: 0s
+  shutdownGracePeriodCriticalPods: 0s
 
 __EOF_CLUSTER_SPEC
 
@@ -255,7 +259,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: zZeMx3pGsQ7QTPST1c1Dza6Ar4Mi/ILWzhReypPCSwc=
+NodeupConfigHash: sVbCddA4ovPS0KW+DV0ROsOSwFiGh7BflhL1ho06H6g=
 
 __EOF_KUBE_ENV
 

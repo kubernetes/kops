@@ -162,6 +162,8 @@ spec:
     networkPluginName: cni
     podInfraContainerImage: k8s.gcr.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
+    shutdownGracePeriod: 30s
+    shutdownGracePeriodCriticalPods: 10s
   kubernetesApiAccess:
   - 1.1.1.0/24
   kubernetesVersion: 1.21.0
@@ -181,6 +183,8 @@ spec:
     podInfraContainerImage: k8s.gcr.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
+    shutdownGracePeriod: 30s
+    shutdownGracePeriodCriticalPods: 10s
   masterPublicName: api.complex.example.com
   networkCIDR: 172.20.0.0/16
   networking:

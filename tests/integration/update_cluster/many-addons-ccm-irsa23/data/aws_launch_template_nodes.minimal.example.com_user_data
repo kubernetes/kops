@@ -156,6 +156,8 @@ kubelet:
   podInfraContainerImage: k8s.gcr.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
+  shutdownGracePeriod: 0s
+  shutdownGracePeriodCriticalPods: 0s
 
 __EOF_CLUSTER_SPEC
 
@@ -164,7 +166,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: ZnyD/U2nCu0PhzIz1kfimiwoRyZ01cHG+irOdTbnOfU=
+NodeupConfigHash: ugkCtvC5iK+QFz+55uJPFz8ZvVMZdw6D8PhYE5Qgye4=
 
 __EOF_KUBE_ENV
 

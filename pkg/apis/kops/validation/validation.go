@@ -713,6 +713,14 @@ func validateKubelet(k *kops.KubeletConfigSpec, c *kops.Cluster, kubeletPath *fi
 			}
 		}
 
+		if k.ShutdownGracePeriodCriticalPods != nil {
+			if k.ShutdownGracePeriod == nil {
+				allErrs = append(allErrs, field.Forbidden(kubeletPath.Child("shutdownGracePeriodCriticalPods"), "shutdownGracePeriodCriticalPods require shutdownGracePeriod"))
+			}
+			if k.ShutdownGracePeriod.Duration.Seconds() < k.ShutdownGracePeriodCriticalPods.Seconds() {
+				allErrs = append(allErrs, field.Invalid(kubeletPath.Child("shutdownGracePeriodCriticalPods"), k.ShutdownGracePeriodCriticalPods.String(), "shutdownGracePeriodCriticalPods cannot be greater than shutdownGracePeriod"))
+			}
+		}
 	}
 	return allErrs
 }

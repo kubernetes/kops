@@ -155,6 +155,8 @@ kubelet:
   podInfraContainerImage: k8s.gcr.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
+  shutdownGracePeriod: 30s
+  shutdownGracePeriodCriticalPods: 10s
 
 __EOF_CLUSTER_SPEC
 
@@ -163,7 +165,7 @@ CloudProvider: gce
 ConfigBase: memfs://tests/minimal-gce.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: h3BBiDT/tsXXX+oE+1QHJ0Iro5/JoYYPLWghCjgkiXM=
+NodeupConfigHash: pf9GtzcYhFxJLkUjwM2FlXiNhB8ZxUe0cHrqFy9M8a0=
 
 __EOF_KUBE_ENV
 

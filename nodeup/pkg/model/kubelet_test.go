@@ -20,8 +20,11 @@ import (
 	"fmt"
 	"path/filepath"
 	"testing"
+	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/assets"
@@ -220,14 +223,23 @@ func runKubeletBuilder(t *testing.T, context *fi.ModelBuilderContext, nodeupMode
 		t.Fatalf("error from KubeletBuilder buildKubeletConfig: %v", err)
 		return
 	}
+	{
+		fileTask, err := buildKubeletComponentConfig(kubeletConfig)
+		if err != nil {
+			t.Fatalf("error from KubeletBuilder buildKubeletComponentConfig: %v", err)
+			return
+		}
 
-	fileTask, err := builder.buildSystemdEnvironmentFile(kubeletConfig)
-	if err != nil {
-		t.Fatalf("error from KubeletBuilder buildSystemdEnvironmentFile: %v", err)
-		return
+		context.AddTask(fileTask)
 	}
-	context.AddTask(fileTask)
-
+	{
+		fileTask, err := builder.buildSystemdEnvironmentFile(kubeletConfig)
+		if err != nil {
+			t.Fatalf("error from KubeletBuilder buildSystemdEnvironmentFile: %v", err)
+			return
+		}
+		context.AddTask(fileTask)
+	}
 	{
 		task, err := builder.buildManifestDirectory(kubeletConfig)
 		if err != nil {
@@ -414,4 +426,16 @@ func RunGoldenTest(t *testing.T, basedir string, key string, builder func(*Nodeu
 	}
 
 	testutils.ValidateTasks(t, filepath.Join(basedir, "tasks-"+key+".yaml"), context)
+}
+
+func Test_BuildComponentConfigFile(t *testing.T) {
+	componentConfig := kops.KubeletConfigSpec{
+		ShutdownGracePeriod:             &metav1.Duration{Duration: 30 * time.Second},
+		ShutdownGracePeriodCriticalPods: &metav1.Duration{Duration: 10 * time.Second},
+	}
+
+	_, err := buildKubeletComponentConfig(&componentConfig)
+	if err != nil {
+		t.Errorf("Failed to build component config file: %v", err)
+	}
 }
