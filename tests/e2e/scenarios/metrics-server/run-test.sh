@@ -27,11 +27,14 @@ kops-up
 # shellcheck disable=SC2164
 cd "$(mktemp -dt kops.XXXXXXXXX)"
 
-git clone --branch v0.5.0 https://github.com/kubernetes-sigs/metrics-server.git .
+git clone --branch v0.6.0 https://github.com/kubernetes-sigs/metrics-server.git .
 
-# The prometheus test expects to have only one metrics-server pod, but we use two
-# We scale down to meet test expectation
-kubectl scale -n kube-system --replicas=1 deployment/metrics-server
+# some of the metrics only show when requested
+kubectl get --raw "/apis/metrics.k8s.io/v1beta1/pods"
+kubectl get --raw "/apis/metrics.k8s.io/v1beta1/nodes"
+kubectl get --raw "/apis/metrics.k8s.io/v1beta1/pods"
+kubectl get --raw "/apis/metrics.k8s.io/v1beta1/nodes"
+
 
 # shellcheck disable=SC2164
 go test -v ./test/e2e_test.go -count=1
