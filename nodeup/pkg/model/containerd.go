@@ -106,9 +106,12 @@ func (b *ContainerdBuilder) installContainerd(c *fi.ModelBuilderContext) error {
 
 	// Add binaries from assets
 	if b.Cluster.Spec.ContainerRuntime == "containerd" {
-		f := b.Assets.FindMatches(regexp.MustCompile(`^(\./)?usr/local/(bin/containerd|bin/crictl|bin/ctr|sbin/runc)`))
+		// Add containerd binaries from containerd package
+		f := b.Assets.FindMatches(regexp.MustCompile(`^(\./)?usr/local/bin/(containerd|crictl|ctr)`))
 		if len(f) == 0 {
-			f = b.Assets.FindMatches(regexp.MustCompile(`^docker/(containerd|ctr|runc)`))
+			// Add containerd binaries from Docker package (for ARM64 builds < v1.6.0)
+			// https://github.com/containerd/containerd/pull/6196
+			f = b.Assets.FindMatches(regexp.MustCompile(`^docker/(containerd|ctr)`))
 		}
 		if len(f) == 0 {
 			return fmt.Errorf("unable to find any containerd binaries in assets")
@@ -116,6 +119,31 @@ func (b *ContainerdBuilder) installContainerd(c *fi.ModelBuilderContext) error {
 		for k, v := range f {
 			fileTask := &nodetasks.File{
 				Path:     filepath.Join("/usr/bin", k),
+				Contents: v,
+				Type:     nodetasks.FileType_File,
+				Mode:     fi.String("0755"),
+			}
+			c.AddTask(fileTask)
+		}
+
+		// Add runc binary from https://github.com/opencontainers/runc
+		// https://github.com/containerd/containerd/issues/6541
+		f = b.Assets.FindMatches(regexp.MustCompile(`/runc\.(amd64|arm64)$`))
+		if len(f) == 0 {
+			// Add runc binary from containerd package (for builds < v1.6.0)
+			f = b.Assets.FindMatches(regexp.MustCompile(`^(\./)?usr/local/sbin/runc$`))
+		}
+		if len(f) == 0 {
+			// Add runc binary from Docker package (for ARM64 builds < v1.6.0)
+			// https://github.com/containerd/containerd/pull/6196
+			f = b.Assets.FindMatches(regexp.MustCompile(`^docker/runc$`))
+		}
+		if len(f) != 1 {
+			return fmt.Errorf("error finding runc asset")
+		}
+		for _, v := range f {
+			fileTask := &nodetasks.File{
+				Path:     "/usr/bin/runc",
 				Contents: v,
 				Type:     nodetasks.FileType_File,
 				Mode:     fi.String("0755"),
