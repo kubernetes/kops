@@ -76,25 +76,29 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 	}
 
 	kcm.ClusterName = b.ClusterName
-	switch kops.CloudProviderID(clusterSpec.CloudProvider) {
-	case kops.CloudProviderAWS:
-		kcm.CloudProvider = "aws"
-
-	case kops.CloudProviderGCE:
-		kcm.CloudProvider = "gce"
-		kcm.ClusterName = gce.SafeClusterName(b.ClusterName)
-
-	case kops.CloudProviderDO:
+	if b.IsKubernetesGTE("1.24") {
 		kcm.CloudProvider = "external"
+	} else {
+		switch kops.CloudProviderID(clusterSpec.CloudProvider) {
+		case kops.CloudProviderAWS:
+			kcm.CloudProvider = "aws"
 
-	case kops.CloudProviderOpenstack:
-		kcm.CloudProvider = "openstack"
+		case kops.CloudProviderGCE:
+			kcm.CloudProvider = "gce"
+			kcm.ClusterName = gce.SafeClusterName(b.ClusterName)
 
-	case kops.CloudProviderAzure:
-		kcm.CloudProvider = "azure"
+		case kops.CloudProviderDO:
+			kcm.CloudProvider = "external"
 
-	default:
-		return fmt.Errorf("unknown cloudprovider %q", clusterSpec.CloudProvider)
+		case kops.CloudProviderOpenstack:
+			kcm.CloudProvider = "openstack"
+
+		case kops.CloudProviderAzure:
+			kcm.CloudProvider = "azure"
+
+		default:
+			return fmt.Errorf("unknown cloudprovider %q", clusterSpec.CloudProvider)
+		}
 	}
 
 	if clusterSpec.ExternalCloudControllerManager == nil {
