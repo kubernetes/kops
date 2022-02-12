@@ -744,6 +744,8 @@ spec:
 
 ### Graceful Node Shutdown
 
+{{ kops_feature_table(kops_added_default='1.23', k8s_min='1.21') }}
+
 Graceful node shutdown allows kubelet to prevent instance shutdown until Pods have been safely terminated or a timeout has been reached.
 
 For all CNIs except `amazonaws`, kOps will try to add a 30 second timeout for 30 seconds where the first 20 seconds is reserved for normal Pods and the last 10 seconds for critical Pods. When using `amazonaws` this feature is disabled, as it leads to [leaking ENIs](https://github.com/aws/amazon-vpc-cni-k8s/issues/1223).
