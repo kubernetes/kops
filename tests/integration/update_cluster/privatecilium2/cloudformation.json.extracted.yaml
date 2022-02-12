@@ -224,8 +224,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumexamplecom.Prope
     networkPluginName: cni
     podInfraContainerImage: k8s.gcr.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
-    shutdownGracePeriod: 30s
-    shutdownGracePeriodCriticalPods: 10s
   masterKubelet:
     anonymousAuth: false
     cgroupRoot: /
@@ -240,8 +238,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumexamplecom.Prope
     podInfraContainerImage: k8s.gcr.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
-    shutdownGracePeriod: 30s
-    shutdownGracePeriodCriticalPods: 10s
 
   __EOF_CLUSTER_SPEC
 
@@ -250,7 +246,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumexamplecom.Prope
   ConfigBase: memfs://clusters.example.com/privatecilium.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: DDzy/t2gCKdvv/Ij+C4Md0+rZYTsVSsclIsdaeH6bhQ=
+  NodeupConfigHash: FcYo+jXX2CHtiQSnsEqP1N/+ssJtONbuxTpv65chq1o=
 
   __EOF_KUBE_ENV
 
@@ -419,8 +415,6 @@ Resources.AWSEC2LaunchTemplatenodesprivateciliumexamplecom.Properties.LaunchTemp
     networkPluginName: cni
     podInfraContainerImage: k8s.gcr.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
-    shutdownGracePeriod: 30s
-    shutdownGracePeriodCriticalPods: 10s
 
   __EOF_CLUSTER_SPEC
 
@@ -429,7 +423,7 @@ Resources.AWSEC2LaunchTemplatenodesprivateciliumexamplecom.Properties.LaunchTemp
   ConfigBase: memfs://clusters.example.com/privatecilium.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: Auhcri4NZRNAPTv3pc3TlTxJr7q7iHYfgc1XHEO4RKc=
+  NodeupConfigHash: 3nc3P2ho8FpMe+fyURGD/ZqCAhzC9JHHGJdJj1EBiCY=
 
   __EOF_KUBE_ENV
 
