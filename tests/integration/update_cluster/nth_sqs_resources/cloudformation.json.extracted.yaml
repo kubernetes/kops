@@ -219,6 +219,8 @@
     networkPluginName: cni
     podInfraContainerImage: k8s.gcr.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
+    shutdownGracePeriod: 30s
+    shutdownGracePeriodCriticalPods: 10s
   masterKubelet:
     anonymousAuth: false
     cgroupDriver: systemd
@@ -234,6 +236,8 @@
     podInfraContainerImage: k8s.gcr.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
+    shutdownGracePeriod: 30s
+    shutdownGracePeriodCriticalPods: 10s
 
   __EOF_CLUSTER_SPEC
 
@@ -242,7 +246,7 @@
   ConfigBase: memfs://clusters.example.com/nthsqsresources.longclustername.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: p1qnqow7b5pLLiw11iGBshHMcudgM/yPr8DsLgwcc0M=
+  NodeupConfigHash: 8uGBpw4KbDSuN88SWoGR6fF2alk7n9h6JScvCz9sYwI=
 
   __EOF_KUBE_ENV
 
@@ -403,6 +407,8 @@ Resources.AWSEC2LaunchTemplatenodesnthsqsresourceslongclusternameexamplecom.Prop
     networkPluginName: cni
     podInfraContainerImage: k8s.gcr.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
+    shutdownGracePeriod: 30s
+    shutdownGracePeriodCriticalPods: 10s
 
   __EOF_CLUSTER_SPEC
 
@@ -411,7 +417,7 @@ Resources.AWSEC2LaunchTemplatenodesnthsqsresourceslongclusternameexamplecom.Prop
   ConfigBase: memfs://clusters.example.com/nthsqsresources.longclustername.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: n5iJXLRDo3rgJQY+RP2ZuVVfTA80DRLaqI9cYvLKxjA=
+  NodeupConfigHash: oL0djrIXylA8CIJjygVvd+wzFrx3i4h4/2XBAwlNILQ=
 
   __EOF_KUBE_ENV
 
