@@ -175,6 +175,8 @@ spec:
     nonMasqueradeCIDR: 172.20.0.0/16
     podInfraContainerImage: k8s.gcr.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
+    shutdownGracePeriod: 0s
+    shutdownGracePeriodCriticalPods: 0s
   kubernetesApiAccess:
   - 0.0.0.0/0
   kubernetesVersion: 1.21.0
@@ -198,6 +200,8 @@ spec:
     podInfraContainerImage: k8s.gcr.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
+    shutdownGracePeriod: 0s
+    shutdownGracePeriodCriticalPods: 0s
   masterPublicName: api.minimal.example.com
   networkCIDR: 172.20.0.0/16
   networking:
