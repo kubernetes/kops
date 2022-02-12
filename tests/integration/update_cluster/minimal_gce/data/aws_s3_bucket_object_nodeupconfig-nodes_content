@@ -5,12 +5,14 @@ Assets:
   - ab63ef67b254a2eae51782106593c266e0b054ac2248e2cb913f6d165afae83c@https://storage.googleapis.com/kubernetes-release/release/v1.23.0/bin/linux/amd64/mounter
   - 962100bbc4baeaaa5748cdbfce941f756b1531c2eadb290129401498bfac21e7@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz
   - ead57ce46ebb92979dfdb35c1a9eac70a3a68086508da693ce75c7d8b7b2e790@https://github.com/containerd/containerd/releases/download/v1.6.0-rc.3/cri-containerd-cni-1.6.0-rc.3-linux-amd64.tar.gz
+  - ab1c67fbcbdddbe481e48a55cf0ef9a86b38b166b5079e0010737fd87d7454bb@https://github.com/opencontainers/runc/releases/download/v1.1.0/runc.amd64
   arm64:
   - a546fb7ccce69c4163e4a0b19a31f30ea039b4e4560c23fd6e3016e2b2dfd0d9@https://storage.googleapis.com/kubernetes-release/release/v1.23.0/bin/linux/arm64/kubelet
   - 1d77d6027fc8dfed772609ad9bd68f611b7e4ce73afa949f27084ad3a92b15fe@https://storage.googleapis.com/kubernetes-release/release/v1.23.0/bin/linux/arm64/kubectl
   - 6ef5620ad47035a168bf28335aa39a09f246e17f5d6e42f0d8daba7d90fc4e9f@https://storage.googleapis.com/kubernetes-release/release/v1.23.0/bin/linux/arm64/mounter
   - ef17764ffd6cdcb16d76401bac1db6acc050c9b088f1be5efa0e094ea3b01df0@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-arm64-v0.9.1.tgz
   - 09fdff397546466f3ee76535aad5236192700f65727cd3068193ae204cd8fda9@https://github.com/containerd/containerd/releases/download/v1.6.0-rc.3/cri-containerd-cni-1.6.0-rc.3-linux-arm64.tar.gz
+  - 9ec8e68feabc4e7083a4cfa45ebe4d529467391e0b03ee7de7ddda5770b05e68@https://github.com/opencontainers/runc/releases/download/v1.1.0/runc.arm64
 CAs:
   kubernetes-ca: |
     -----BEGIN CERTIFICATE-----
