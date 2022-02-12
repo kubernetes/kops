@@ -167,7 +167,7 @@ CloudProvider: aws
 ConfigBase: memfs://tests/minimal.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: XNWSnOyaabbgKd9JPLC0g/QQXgBvQ3Bp4Kn80X8SpHw=
+NodeupConfigHash: luvLucANmvTDxN4xQO/p7lKFcQN9Ta87TtprJfsfk3E=
 
 __EOF_KUBE_ENV
 
