@@ -113,7 +113,6 @@ spec:
     clusterCIDR: 100.96.0.0/11
     clusterName: minimal.example.com
     configureCloudRoutes: false
-    enableLeaderMigration: true
     featureGates:
       CSIMigrationAWS: "true"
       InTreePluginAWSUnregister: "true"
