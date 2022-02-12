@@ -210,7 +210,8 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	// We do not enable graceful shutdown when using amazonaws due to leaking ENIs.
-	if clusterSpec.Kubelet.ShutdownGracePeriod == nil && clusterSpec.Networking.AmazonVPC == nil {
+	// Graceful shutdown is also not available by default on k8s < 1.21
+	if b.IsKubernetesGTE("1.21") && clusterSpec.Kubelet.ShutdownGracePeriod == nil && clusterSpec.Networking.AmazonVPC == nil {
 		clusterSpec.Kubelet.ShutdownGracePeriod = &metav1.Duration{Duration: time.Duration(30 * time.Second)}
 		clusterSpec.Kubelet.ShutdownGracePeriodCriticalPods = &metav1.Duration{Duration: time.Duration(10 * time.Second)}
 	} else if clusterSpec.Networking.AmazonVPC != nil {
