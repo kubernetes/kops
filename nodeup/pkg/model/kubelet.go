@@ -179,9 +179,12 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 }
 
 func buildKubeletComponentConfig(kubeletConfig *kops.KubeletConfigSpec) (*nodetasks.File, error) {
-	componentConfig := kubelet.KubeletConfiguration{
-		ShutdownGracePeriod:             *kubeletConfig.ShutdownGracePeriod,
-		ShutdownGracePeriodCriticalPods: *kubeletConfig.ShutdownGracePeriodCriticalPods,
+	componentConfig := kubelet.KubeletConfiguration{}
+	if kubeletConfig.ShutdownGracePeriod != nil {
+		componentConfig.ShutdownGracePeriod = *kubeletConfig.ShutdownGracePeriod
+	}
+	if kubeletConfig.ShutdownGracePeriodCriticalPods != nil {
+		componentConfig.ShutdownGracePeriodCriticalPods = *kubeletConfig.ShutdownGracePeriodCriticalPods
 	}
 
 	s := runtime.NewScheme()
