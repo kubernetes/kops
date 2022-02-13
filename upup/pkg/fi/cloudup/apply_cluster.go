@@ -1067,6 +1067,18 @@ func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error
 		}
 		c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(containerRuntimeAssetUrl, containerRuntimeAssetHash))
 
+		if c.Cluster.Spec.ContainerRuntime == "containerd" {
+			var runcAssetUrl *url.URL
+			var runcAssetHash *hashing.Hash
+			runcAssetUrl, runcAssetHash, err = findRuncAsset(c.Cluster, assetBuilder, arch)
+			if err != nil {
+				return err
+			}
+			if runcAssetUrl != nil && runcAssetHash != nil {
+				c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(runcAssetUrl, runcAssetHash))
+			}
+		}
+
 		asset, err := NodeUpAsset(assetBuilder, arch)
 		if err != nil {
 			return err

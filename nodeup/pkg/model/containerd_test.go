@@ -162,6 +162,7 @@ func runContainerdBuilderTest(t *testing.T, key string, distro distributions.Dis
 	nodeUpModelContext.Assets.AddForTest("critest", "usr/local/bin/critest", "testing containerd content")
 	nodeUpModelContext.Assets.AddForTest("ctr", "usr/local/bin/ctr", "testing containerd content")
 	nodeUpModelContext.Assets.AddForTest("runc", "usr/local/sbin/runc", "testing containerd content")
+	nodeUpModelContext.Assets.AddForTest("runc.amd64", "https://github.com/opencontainers/runc/releases/download/v1.1.0/runc.amd64", "testing runc content")
 
 	if err := nodeUpModelContext.Init(); err != nil {
 		t.Fatalf("error from nodeupModelContext.Init(): %v", err)
