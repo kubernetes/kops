@@ -115,8 +115,8 @@ type: file
 ---
 contents:
   Asset:
-    AssetPath: usr/local/sbin/runc
-    Key: runc
+    AssetPath: https://github.com/opencontainers/runc/releases/download/v1.1.0/runc.amd64
+    Key: runc.amd64
 mode: "0755"
 path: /usr/bin/runc
 type: file
