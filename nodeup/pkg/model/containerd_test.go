@@ -154,14 +154,12 @@ func runContainerdBuilderTest(t *testing.T, key string, distro distributions.Dis
 	nodeUpModelContext.Distribution = distro
 
 	nodeUpModelContext.Assets = fi.NewAssetStore("")
-	nodeUpModelContext.Assets.AddForTest("containerd", "usr/local/bin/containerd", "testing containerd content")
-	nodeUpModelContext.Assets.AddForTest("containerd-shim", "usr/local/bin/containerd-shim", "testing containerd content")
-	nodeUpModelContext.Assets.AddForTest("containerd-shim-runc-v1", "usr/local/bin/containerd-shim-runc-v1", "testing containerd content")
-	nodeUpModelContext.Assets.AddForTest("containerd-shim-runc-v2", "usr/local/bin/containerd-shim-runc-v2", "testing containerd content")
-	nodeUpModelContext.Assets.AddForTest("crictl", "usr/local/bin/crictl", "testing containerd content")
-	nodeUpModelContext.Assets.AddForTest("critest", "usr/local/bin/critest", "testing containerd content")
-	nodeUpModelContext.Assets.AddForTest("ctr", "usr/local/bin/ctr", "testing containerd content")
-	nodeUpModelContext.Assets.AddForTest("runc", "usr/local/sbin/runc", "testing containerd content")
+	nodeUpModelContext.Assets.AddForTest("containerd", "bin/containerd", "testing containerd content")
+	nodeUpModelContext.Assets.AddForTest("containerd-shim", "bin/containerd-shim", "testing containerd content")
+	nodeUpModelContext.Assets.AddForTest("containerd-shim-runc-v1", "bin/containerd-shim-runc-v1", "testing containerd content")
+	nodeUpModelContext.Assets.AddForTest("containerd-shim-runc-v2", "bin/containerd-shim-runc-v2", "testing containerd content")
+	nodeUpModelContext.Assets.AddForTest("containerd-stress", "bin/containerd-stress", "testing containerd content")
+	nodeUpModelContext.Assets.AddForTest("ctr", "bin/ctr", "testing containerd content")
 	nodeUpModelContext.Assets.AddForTest("runc.amd64", "https://github.com/opencontainers/runc/releases/download/v1.1.0/runc.amd64", "testing runc content")
 
 	if err := nodeUpModelContext.Init(); err != nil {
