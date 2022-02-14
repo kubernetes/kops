@@ -239,6 +239,22 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 				"--cloud-config=/etc/kubernetes/cloud.config",
 			},
 		},
+		{
+			desc: "Disable Controller",
+			cluster: &kops.Cluster{Spec: kops.ClusterSpec{
+				CloudProvider: string(kops.CloudProviderOpenstack),
+				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
+					Controllers: []string{"*", "-nodeipam"},
+				},
+			}},
+			expectedArgv: []string{
+				"--controllers=*,-nodeipam",
+				"--v=2",
+				"--cloud-provider=openstack",
+				"--use-service-account-credentials=true",
+				"--cloud-config=/etc/kubernetes/cloud.config",
+			},
+		},
 	}
 	for _, testCase := range tests {
 		t.Run(testCase.desc, func(t *testing.T) {
