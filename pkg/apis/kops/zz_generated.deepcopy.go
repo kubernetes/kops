@@ -790,6 +790,11 @@ func (in *CloudControllerManagerConfig) DeepCopyInto(out *CloudControllerManager
 		*out = new(bool)
 		**out = **in
 	}
+	if in.Controllers != nil {
+		in, out := &in.Controllers, &out.Controllers
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.CIDRAllocatorType != nil {
 		in, out := &in.CIDRAllocatorType, &out.CIDRAllocatorType
 		*out = new(string)
