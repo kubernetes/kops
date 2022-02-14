@@ -37,8 +37,8 @@ contents: |
   nodeStatusReportFrequency: 0s
   nodeStatusUpdateFrequency: 0s
   runtimeRequestTimeout: 0s
-  shutdownGracePeriod: 30s
-  shutdownGracePeriodCriticalPods: 10s
+  shutdownGracePeriod: 0s
+  shutdownGracePeriodCriticalPods: 0s
   streamingConnectionIdleTimeout: 0s
   syncFrequency: 0s
   volumeStatsAggPeriod: 0s
