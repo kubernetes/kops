@@ -48,6 +48,7 @@ func (c *CloudInstanceGroup) NewCloudInstance(instanceId string, status string, 
 	cm := &CloudInstance{
 		ID:                 instanceId,
 		CloudInstanceGroup: c,
+		Roles:              []string{},
 	}
 
 	if status == CloudInstanceStatusUpToDate {
