@@ -107,8 +107,12 @@ func (b *ContainerdBuilder) installContainerd(c *fi.ModelBuilderContext) error {
 
 	// Add binaries from assets
 	if b.Cluster.Spec.ContainerRuntime == "containerd" {
-		// Add containerd binaries from containerd package
-		f := b.Assets.FindMatches(regexp.MustCompile(`^(\./)?usr/local/bin/(containerd|crictl|ctr)`))
+		// Add containerd binaries from containerd release package
+		f := b.Assets.FindMatches(regexp.MustCompile(`^bin/(containerd|ctr)`))
+		if len(f) == 0 {
+			// Add containerd binaries from containerd bundle package
+			f = b.Assets.FindMatches(regexp.MustCompile(`^(\./)?usr/local/bin/(containerd|crictl|ctr)`))
+		}
 		if len(f) == 0 {
 			// Add containerd binaries from Docker package (for ARM64 builds < v1.6.0)
 			// https://github.com/containerd/containerd/pull/6196
@@ -144,7 +148,7 @@ func (b *ContainerdBuilder) installContainerd(c *fi.ModelBuilderContext) error {
 		}
 		for _, v := range f {
 			fileTask := &nodetasks.File{
-				Path:     "/usr/bin/runc",
+				Path:     "/usr/sbin/runc",
 				Contents: v,
 				Type:     nodetasks.FileType_File,
 				Mode:     fi.String("0755"),

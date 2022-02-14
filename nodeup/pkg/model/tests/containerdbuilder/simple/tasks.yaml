@@ -67,7 +67,7 @@ type: file
 ---
 contents:
   Asset:
-    AssetPath: usr/local/bin/containerd
+    AssetPath: bin/containerd
     Key: containerd
 mode: "0755"
 path: /usr/bin/containerd
@@ -75,7 +75,7 @@ type: file
 ---
 contents:
   Asset:
-    AssetPath: usr/local/bin/containerd-shim
+    AssetPath: bin/containerd-shim
     Key: containerd-shim
 mode: "0755"
 path: /usr/bin/containerd-shim
@@ -83,7 +83,7 @@ type: file
 ---
 contents:
   Asset:
-    AssetPath: usr/local/bin/containerd-shim-runc-v1
+    AssetPath: bin/containerd-shim-runc-v1
     Key: containerd-shim-runc-v1
 mode: "0755"
 path: /usr/bin/containerd-shim-runc-v1
@@ -91,7 +91,7 @@ type: file
 ---
 contents:
   Asset:
-    AssetPath: usr/local/bin/containerd-shim-runc-v2
+    AssetPath: bin/containerd-shim-runc-v2
     Key: containerd-shim-runc-v2
 mode: "0755"
 path: /usr/bin/containerd-shim-runc-v2
@@ -99,15 +99,15 @@ type: file
 ---
 contents:
   Asset:
-    AssetPath: usr/local/bin/crictl
-    Key: crictl
+    AssetPath: bin/containerd-stress
+    Key: containerd-stress
 mode: "0755"
-path: /usr/bin/crictl
+path: /usr/bin/containerd-stress
 type: file
 ---
 contents:
   Asset:
-    AssetPath: usr/local/bin/ctr
+    AssetPath: bin/ctr
     Key: ctr
 mode: "0755"
 path: /usr/bin/ctr
@@ -118,7 +118,7 @@ contents:
     AssetPath: https://github.com/opencontainers/runc/releases/download/v1.1.0/runc.amd64
     Key: runc.amd64
 mode: "0755"
-path: /usr/bin/runc
+path: /usr/sbin/runc
 type: file
 ---
 contents: |2
