@@ -524,6 +524,12 @@ spec:
                     description: ConfigureCloudRoutes enables CIDRs allocated with
                       to be configured on the cloud provider.
                     type: boolean
+                  controllers:
+                    description: Controllers is a list of controllers to enable on
+                      the controller-manager
+                    items:
+                      type: string
+                    type: array
                   enableLeaderMigration:
                     description: EnableLeaderMigration enables controller leader migration.
                     type: boolean
