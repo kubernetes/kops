@@ -2189,6 +2189,7 @@ func autoConvert_v1alpha2_CloudControllerManagerConfig_To_kops_CloudControllerMa
 	out.ClusterCIDR = in.ClusterCIDR
 	out.AllocateNodeCIDRs = in.AllocateNodeCIDRs
 	out.ConfigureCloudRoutes = in.ConfigureCloudRoutes
+	out.Controllers = in.Controllers
 	out.CIDRAllocatorType = in.CIDRAllocatorType
 	if in.LeaderElection != nil {
 		in, out := &in.LeaderElection, &out.LeaderElection
@@ -2218,6 +2219,7 @@ func autoConvert_kops_CloudControllerManagerConfig_To_v1alpha2_CloudControllerMa
 	out.ClusterCIDR = in.ClusterCIDR
 	out.AllocateNodeCIDRs = in.AllocateNodeCIDRs
 	out.ConfigureCloudRoutes = in.ConfigureCloudRoutes
+	out.Controllers = in.Controllers
 	out.CIDRAllocatorType = in.CIDRAllocatorType
 	if in.LeaderElection != nil {
 		in, out := &in.LeaderElection, &out.LeaderElection
