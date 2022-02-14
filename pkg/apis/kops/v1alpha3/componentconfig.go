@@ -678,6 +678,8 @@ type CloudControllerManagerConfig struct {
 	AllocateNodeCIDRs *bool `json:"allocateNodeCIDRs,omitempty" flag:"allocate-node-cidrs"`
 	// ConfigureCloudRoutes enables CIDRs allocated with to be configured on the cloud provider.
 	ConfigureCloudRoutes *bool `json:"configureCloudRoutes,omitempty" flag:"configure-cloud-routes"`
+	// Controllers is a list of controllers to enable on the controller-manager
+	Controllers []string `json:"controllers,omitempty" flag:"controllers"`
 	// CIDRAllocatorType specifies the type of CIDR allocator to use.
 	CIDRAllocatorType *string `json:"cidrAllocatorType,omitempty" flag:"cidr-allocator-type"`
 	// LeaderElection defines the configuration of leader election client.
