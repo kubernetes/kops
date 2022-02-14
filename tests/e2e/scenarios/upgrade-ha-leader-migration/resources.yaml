@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: recorder
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: recorder
+rules:
+  - apiGroups: [ "" ]
+    resources:
+      - pods
+      - pods/portforward # for port forwarding to the controller manager pods
+    verbs: [ "get", "list", "create" ]
+  - nonResourceURLs:
+      - /healthz   # this should be accessible by default, but adding it here for clarity
+      - /healthz/* # allow access to pre-controller health checks
+    verbs: [ "get" ]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: recorder
+subjects:
+  - kind: ServiceAccount
+    name: recorder
+    namespace: default
+roleRef:
+  kind: ClusterRole
+  name: recorder
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: recorder
+spec:
+  serviceAccountName: recorder
+  restartPolicy: Never
+  containers:
+    - image: debian
+      name: debian-recorder
+      args:
+        - bash
+        - -c
+        - 'while [[ ! -f /usr/local/bin/recorder ]]; do sleep 1; done; exec /usr/local/bin/recorder'
