@@ -30,10 +30,11 @@ import (
 )
 
 const (
+	// containerd packages URLs for v1.6.x+
+	containerdReleaseUrlAmd64 = "https://github.com/containerd/containerd/releases/download/v%s/containerd-%s-linux-amd64.tar.gz"
+	containerdReleaseUrlArm64 = "https://github.com/containerd/containerd/releases/download/v%s/containerd-%s-linux-arm64.tar.gz"
 	// containerd packages URLs for v1.4.x+
-	containerdVersionUrlAmd64 = "https://github.com/containerd/containerd/releases/download/v%s/cri-containerd-cni-%s-linux-amd64.tar.gz"
-	// containerd packages URLs for v1.6.x (ARM64)+
-	containerdVersionUrlArm64 = "https://github.com/containerd/containerd/releases/download/v%s/cri-containerd-cni-%s-linux-arm64.tar.gz"
+	containerdBundleUrlAmd64 = "https://github.com/containerd/containerd/releases/download/v%s/cri-containerd-cni-%s-linux-amd64.tar.gz"
 	// containerd legacy packages URLs for v1.2.x and v1.3.x
 	containerdLegacyUrlAmd64 = "https://storage.googleapis.com/cri-containerd-release/cri-containerd-%s.linux-amd64.tar.gz"
 	// containerd version that is available for both AMD64 and ARM64, used in case the selected version is not available for ARM64
@@ -118,14 +119,16 @@ func findContainerdVersionUrl(arch architectures.Architecture, version string) (
 	var u string
 	switch arch {
 	case architectures.ArchitectureAmd64:
-		if sv.GTE(semver.MustParse("1.3.8")) {
-			u = fmt.Sprintf(containerdVersionUrlAmd64, version, version)
+		if sv.GTE(semver.MustParse("1.6.0-beta.2")) {
+			u = fmt.Sprintf(containerdReleaseUrlAmd64, version, version)
+		} else if sv.GTE(semver.MustParse("1.3.8")) {
+			u = fmt.Sprintf(containerdBundleUrlAmd64, version, version)
 		} else {
 			u = fmt.Sprintf(containerdLegacyUrlAmd64, version)
 		}
 	case architectures.ArchitectureArm64:
 		if sv.GTE(semver.MustParse("1.6.0-beta.2")) {
-			u = fmt.Sprintf(containerdVersionUrlArm64, version, version)
+			u = fmt.Sprintf(containerdReleaseUrlArm64, version, version)
 		} else if findAllContainerdHashesAmd64()[version] != "" {
 			if findAllContainerdDockerMappings()[version] != "" {
 				u = fmt.Sprintf(dockerVersionUrlArm64, findAllContainerdDockerMappings()[version])
@@ -206,7 +209,7 @@ func findAllContainerdHashesAmd64() map[string]string {
 		"1.5.7":      "7fce75bab43a39d6f9efb3c370de2da49723f0e1dbaa9732d68fa7f620d720c8",
 		"1.5.8":      "5dbb7f43c0ac1fda79999ff63e648926e3464d7d1034402ee2117e6a93868431",
 		"1.5.9":      "f64c8e3b736b370c963b08c33ac70f030fc311bc48fcfd00461465af2fff3488",
-		"1.6.0-rc.3": "ead57ce46ebb92979dfdb35c1a9eac70a3a68086508da693ce75c7d8b7b2e790",
+		"1.6.0-rc.4": "55d0c0abbe6008ce6f687c8b7ad5527256a07b4d1b56414cc467e0d793b9a3b5",
 	}
 
 	return hashes
@@ -214,7 +217,7 @@ func findAllContainerdHashesAmd64() map[string]string {
 
 func findAllContainerdHashesArm64() map[string]string {
 	hashes := map[string]string{
-		"1.6.0-rc.3": "09fdff397546466f3ee76535aad5236192700f65727cd3068193ae204cd8fda9",
+		"1.6.0-rc.4": "9fb80ef87a2fd56bef1fac6b8061541cf9f8339a3d3b73312733fc5f5b16f60a",
 	}
 
 	return hashes
