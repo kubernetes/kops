@@ -29,6 +29,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
+	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 // +kops:fitask
@@ -40,6 +41,7 @@ type SecurityGroupRule struct {
 	SecurityGroup *SecurityGroup
 	CIDR          *string
 	IPv6CIDR      *string
+	PrefixList    *string
 	Protocol      *string
 
 	// FromPort is the lower-bound (inclusive) of the port-range
@@ -121,6 +123,9 @@ func (e *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
 		if e.IPv6CIDR != nil {
 			actual.IPv6CIDR = e.IPv6CIDR
 		}
+		if e.PrefixList != nil {
+			actual.PrefixList = e.PrefixList
+		}
 		if e.SourceGroup != nil {
 			actual.SourceGroup = &SecurityGroup{ID: e.SourceGroup.ID}
 		}
@@ -133,6 +138,16 @@ func (e *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
 		return actual, nil
 	}
 	return nil, nil
+}
+
+func (e *SecurityGroupRule) SetCidrOrPrefix(cidr string) {
+	if strings.HasPrefix(cidr, "pl-") {
+		e.PrefixList = &cidr
+	} else if utils.IsIPv6CIDR(cidr) {
+		e.IPv6CIDR = &cidr
+	} else {
+		e.CIDR = &cidr
+	}
 }
 
 func (e *SecurityGroupRule) matches(rule *ec2.SecurityGroupRule) bool {
@@ -168,6 +183,10 @@ func (e *SecurityGroupRule) matches(rule *ec2.SecurityGroupRule) bool {
 		return false
 	}
 
+	if fi.StringValue(e.PrefixList) != fi.StringValue(rule.PrefixListId) {
+		return false
+	}
+
 	if e.SourceGroup != nil || rule.ReferencedGroupInfo != nil {
 		if e.SourceGroup == nil || rule.ReferencedGroupInfo == nil {
 			return false
@@ -190,6 +209,9 @@ func (_ *SecurityGroupRule) CheckChanges(a, e, changes *SecurityGroupRule) error
 		}
 		if e.CIDR != nil && e.IPv6CIDR != nil {
 			return field.Forbidden(field.NewPath("CIDR/IPv6CIDR"), "Cannot set more than 1 CIDR or IPv6CIDR")
+		}
+		if e.PrefixList != nil && (e.CIDR != nil || e.IPv6CIDR != nil) {
+			return field.Forbidden(field.NewPath("PrefixList"), "Cannot set PrefixList when CIDR or IPv6CIDR is set")
 		}
 	}
 
@@ -231,6 +253,10 @@ func (e *SecurityGroupRule) Description() string {
 		description = append(description, fmt.Sprintf("ipv6cidr=%s", *e.IPv6CIDR))
 	}
 
+	if e.PrefixList != nil {
+		description = append(description, fmt.Sprintf("prefixList=%s", *e.PrefixList))
+	}
+
 	return strings.Join(description, " ")
 }
 
@@ -264,6 +290,11 @@ func (_ *SecurityGroupRule) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Secu
 			CIDR := e.CIDR
 			ipPermission.IpRanges = []*ec2.IpRange{
 				{CidrIp: CIDR},
+			}
+		} else if e.PrefixList != nil {
+			PrefixList := e.PrefixList
+			ipPermission.PrefixListIds = []*ec2.PrefixListId{
+				{PrefixListId: PrefixList},
 			}
 		} else {
 			ipPermission.IpRanges = []*ec2.IpRange{
@@ -320,6 +351,7 @@ type terraformSecurityGroupIngress struct {
 	Protocol       *string  `cty:"protocol"`
 	CIDRBlocks     []string `cty:"cidr_blocks"`
 	IPv6CIDRBlocks []string `cty:"ipv6_cidr_blocks"`
+	PrefixListIDs  []string `cty:"prefix_list_ids"`
 }
 
 func (_ *SecurityGroupRule) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SecurityGroupRule) error {
@@ -359,6 +391,9 @@ func (_ *SecurityGroupRule) RenderTerraform(t *terraform.TerraformTarget, a, e, 
 	if e.IPv6CIDR != nil {
 		tf.IPv6CIDRBlocks = append(tf.IPv6CIDRBlocks, *e.IPv6CIDR)
 	}
+	if e.PrefixList != nil {
+		tf.PrefixListIDs = append(tf.PrefixListIDs, *e.PrefixList)
+	}
 
 	return t.RenderResource("aws_security_group_rule", *e.Name, tf)
 }
@@ -370,9 +405,10 @@ type cloudformationSecurityGroupIngress struct {
 	FromPort *int64 `json:"FromPort,omitempty"`
 	ToPort   *int64 `json:"ToPort,omitempty"`
 
-	Protocol *string `json:"IpProtocol,omitempty"`
-	CidrIp   *string `json:"CidrIp,omitempty"`
-	CidrIpv6 *string `json:"CidrIpv6,omitempty"`
+	Protocol           *string `json:"IpProtocol,omitempty"`
+	CidrIp             *string `json:"CidrIp,omitempty"`
+	CidrIpv6           *string `json:"CidrIpv6,omitempty"`
+	SourcePrefixListId *string `json:"SourcePrefixListId,omitempty"`
 }
 
 func (_ *SecurityGroupRule) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *SecurityGroupRule) error {
@@ -412,6 +448,9 @@ func (_ *SecurityGroupRule) RenderCloudformation(t *cloudformation.Cloudformatio
 	}
 	if e.IPv6CIDR != nil {
 		tf.CidrIpv6 = e.IPv6CIDR
+	}
+	if e.PrefixList != nil {
+		tf.SourcePrefixListId = e.PrefixList
 	}
 
 	return t.RenderResource(cfType, *e.Name, tf)

@@ -401,79 +401,54 @@ func (m *MockEC2) AuthorizeSecurityGroupIngress(request *ec2.AuthorizeSecurityGr
 		m.SecurityGroupRules = make(map[string]*ec2.SecurityGroupRule)
 	}
 
+	newSecurityGroupRule := func(permission *ec2.IpPermission) (string, *ec2.SecurityGroupRule) {
+		n := len(m.SecurityGroupRules) + 1
+		id := fmt.Sprintf("sgr-%d", n)
+		rule := &ec2.SecurityGroupRule{
+			SecurityGroupRuleId: &id,
+			GroupId:             sg.GroupId,
+			FromPort:            permission.FromPort,
+			ToPort:              permission.ToPort,
+			IsEgress:            aws.Bool(false),
+			IpProtocol:          permission.IpProtocol,
+			Tags:                tagSpecificationsToTags(request.TagSpecifications, ec2.ResourceTypeSecurityGroupRule),
+		}
+		if permission.FromPort == nil {
+			rule.FromPort = aws.Int64(int64(-1))
+		}
+		if permission.ToPort == nil {
+			rule.ToPort = aws.Int64(int64(-1))
+		}
+
+		return id, rule
+	}
+
 	for _, permission := range request.IpPermissions {
 
 		for _, iprange := range permission.IpRanges {
-
-			n := len(m.SecurityGroupRules) + 1
-			id := fmt.Sprintf("sgr-%d", n)
-			rule := &ec2.SecurityGroupRule{
-				SecurityGroupRuleId: &id,
-				GroupId:             sg.GroupId,
-				FromPort:            permission.FromPort,
-				ToPort:              permission.ToPort,
-				IsEgress:            aws.Bool(false),
-				CidrIpv4:            iprange.CidrIp,
-				IpProtocol:          permission.IpProtocol,
-				Tags:                tagSpecificationsToTags(request.TagSpecifications, ec2.ResourceTypeSecurityGroupRule),
-			}
-			if permission.FromPort == nil {
-				rule.FromPort = aws.Int64(int64(-1))
-			}
-			if permission.ToPort == nil {
-				rule.ToPort = aws.Int64(int64(-1))
-			}
-
+			id, rule := newSecurityGroupRule(permission)
+			rule.CidrIpv4 = iprange.CidrIp
 			m.SecurityGroupRules[id] = rule
 		}
 
 		for _, iprange := range permission.Ipv6Ranges {
-
-			n := len(m.SecurityGroupRules) + 1
-			id := fmt.Sprintf("sgr-%d", n)
-			rule := &ec2.SecurityGroupRule{
-				SecurityGroupRuleId: &id,
-				GroupId:             sg.GroupId,
-				FromPort:            permission.FromPort,
-				ToPort:              permission.ToPort,
-				IsEgress:            aws.Bool(false),
-				CidrIpv6:            iprange.CidrIpv6,
-				IpProtocol:          permission.IpProtocol,
-				Tags:                tagSpecificationsToTags(request.TagSpecifications, ec2.ResourceTypeSecurityGroupRule),
-			}
-			if permission.FromPort == nil {
-				rule.FromPort = aws.Int64(int64(-1))
-			}
-			if permission.ToPort == nil {
-				rule.ToPort = aws.Int64(int64(-1))
-			}
-
+			id, rule := newSecurityGroupRule(permission)
+			rule.CidrIpv6 = iprange.CidrIpv6
 			m.SecurityGroupRules[id] = rule
 		}
 
+		for _, prefixListId := range permission.PrefixListIds {
+			id, rule := newSecurityGroupRule(permission)
+			rule.PrefixListId = prefixListId.PrefixListId
+			m.SecurityGroupRules[id] = rule
+
+		}
+
 		for _, group := range permission.UserIdGroupPairs {
-
-			n := len(m.SecurityGroupRules) + 1
-			id := fmt.Sprintf("sgr-%d", n)
-			rule := &ec2.SecurityGroupRule{
-				SecurityGroupRuleId: &id,
-				GroupId:             sg.GroupId,
-				FromPort:            permission.FromPort,
-				ToPort:              permission.ToPort,
-				IsEgress:            aws.Bool(false),
-				ReferencedGroupInfo: &ec2.ReferencedSecurityGroup{
-					GroupId: group.GroupId,
-				},
-				IpProtocol: permission.IpProtocol,
-				Tags:       tagSpecificationsToTags(request.TagSpecifications, ec2.ResourceTypeSecurityGroupRule),
+			id, rule := newSecurityGroupRule(permission)
+			rule.ReferencedGroupInfo = &ec2.ReferencedSecurityGroup{
+				GroupId: group.GroupId,
 			}
-			if permission.FromPort == nil {
-				rule.FromPort = aws.Int64(int64(-1))
-			}
-			if permission.ToPort == nil {
-				rule.ToPort = aws.Int64(int64(-1))
-			}
-
 			m.SecurityGroupRules[id] = rule
 		}
 	}
