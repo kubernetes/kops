@@ -24,7 +24,11 @@ OVERRIDES=("--node-count=1" "--master-count=3")
 case "${CLOUD_PROVIDER}" in
 gce)
   export KOPS_FEATURE_FLAGS=AlphaAllowGCE,SpecOverrideFlag
-  OVERRIDES+=("--zones=us-central1-a,us-central1-b,us-central1-c" "--master-zones=us-central1-a,us-central1-b,us-central1-c")
+  OVERRIDES+=(
+    "--zones=us-central1-a,us-central1-b,us-central1-c"
+    "--master-zones=us-central1-a,us-central1-b,us-central1-c"
+    "--gce-service-account=default" # see test-infra#24749
+  )
   ;;
 *) ;;
 
