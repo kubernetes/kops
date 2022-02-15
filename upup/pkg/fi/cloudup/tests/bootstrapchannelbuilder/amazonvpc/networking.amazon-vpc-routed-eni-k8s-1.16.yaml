@@ -96,7 +96,6 @@ rules:
   - update
 - apiGroups:
   - extensions
-  - apps
   resources:
   - '*'
   verbs:
@@ -193,7 +192,6 @@ spec:
         - name: CLUSTER_NAME
           value: minimal.example.com
         image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.10.2
-        imagePullPolicy: Always
         livenessProbe:
           exec:
             command:
@@ -241,8 +239,9 @@ spec:
       - env:
         - name: DISABLE_TCP_EARLY_DEMUX
           value: "false"
+        - name: ENABLE_IPv6
+          value: "false"
         image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.10.2
-        imagePullPolicy: Always
         name: aws-vpc-cni-init
         securityContext:
           privileged: true
