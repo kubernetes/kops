@@ -1,5 +1,5 @@
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
+apiVersion: v1
+kind: ServiceAccount
 metadata:
   creationTimestamp: null
   labels:
@@ -7,18 +7,43 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.9.3
+    app.kubernetes.io/version: v1.10.2
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: aws-node
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: aws-node
-subjects:
-- kind: ServiceAccount
-  name: aws-node
   namespace: kube-system
+
+---
+
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.amazon-vpc-routed-eni
+    app.kubernetes.io/instance: aws-vpc-cni
+    app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: aws-node
+    app.kubernetes.io/version: v1.10.2
+    k8s-app: aws-node
+    role.kubernetes.io/networking: "1"
+  name: eniconfigs.crd.k8s.amazonaws.com
+spec:
+  group: crd.k8s.amazonaws.com
+  names:
+    kind: ENIConfig
+    plural: eniconfigs
+    singular: eniconfig
+  preserveUnknownFields: false
+  scope: Cluster
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        type: object
+        x-kubernetes-preserve-unknown-fields: true
+    served: true
+    storage: true
 
 ---
 
@@ -31,7 +56,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.9.3
+    app.kubernetes.io/version: v1.10.2
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: aws-node
@@ -71,7 +96,6 @@ rules:
   - update
 - apiGroups:
   - extensions
-  - apps
   resources:
   - '*'
   verbs:
@@ -80,8 +104,8 @@ rules:
 
 ---
 
-apiVersion: apiextensions.k8s.io/v1
-kind: CustomResourceDefinition
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
 metadata:
   creationTimestamp: null
   labels:
@@ -89,26 +113,18 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.9.3
+    app.kubernetes.io/version: v1.10.2
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
-  name: eniconfigs.crd.k8s.amazonaws.com
-spec:
-  group: crd.k8s.amazonaws.com
-  names:
-    kind: ENIConfig
-    plural: eniconfigs
-    singular: eniconfig
-  preserveUnknownFields: false
-  scope: Cluster
-  versions:
-  - name: v1alpha1
-    schema:
-      openAPIV3Schema:
-        type: object
-        x-kubernetes-preserve-unknown-fields: true
-    served: true
-    storage: true
+  name: aws-node
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: aws-node
+subjects:
+- kind: ServiceAccount
+  name: aws-node
+  namespace: kube-system
 
 ---
 
@@ -121,7 +137,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.9.3
+    app.kubernetes.io/version: v1.10.2
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: aws-node
@@ -171,17 +187,16 @@ spec:
               fieldPath: spec.nodeName
         - name: CLUSTER_NAME
           value: minimal.example.com
-        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.10.1
-        imagePullPolicy: Always
+        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.10.2
         livenessProbe:
           exec:
             command:
             - /app/grpc-health-probe
             - -addr=:50051
-            - -connect-timeout=2s
-            - -rpc-timeout=2s
+            - -connect-timeout=5s
+            - -rpc-timeout=5s
           initialDelaySeconds: 60
-          timeoutSeconds: 5
+          timeoutSeconds: 10
         name: aws-node
         ports:
         - containerPort: 61678
@@ -191,10 +206,10 @@ spec:
             command:
             - /app/grpc-health-probe
             - -addr=:50051
-            - -connect-timeout=2s
-            - -rpc-timeout=2s
+            - -connect-timeout=5s
+            - -rpc-timeout=5s
           initialDelaySeconds: 1
-          timeoutSeconds: 5
+          timeoutSeconds: 10
         resources:
           requests:
             cpu: 10m
@@ -209,10 +224,10 @@ spec:
           name: cni-net-dir
         - mountPath: /host/var/log/aws-routed-eni
           name: log-dir
-        - mountPath: /var/run/aws-node
-          name: run-dir
         - mountPath: /var/run/dockershim.sock
           name: dockershim
+        - mountPath: /var/run/aws-node
+          name: run-dir
         - mountPath: /run/xtables.lock
           name: xtables-lock
       hostNetwork: true
@@ -220,8 +235,9 @@ spec:
       - env:
         - name: DISABLE_TCP_EARLY_DEMUX
           value: "false"
-        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.10.1
-        imagePullPolicy: Always
+        - name: ENABLE_IPv6
+          value: "false"
+        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.10.2
         name: aws-vpc-cni-init
         securityContext:
           privileged: true
@@ -245,9 +261,6 @@ spec:
           path: /run/containerd/containerd.sock
         name: dockershim
       - hostPath:
-          path: /run/xtables.lock
-        name: xtables-lock
-      - hostPath:
           path: /var/log/aws-routed-eni
           type: DirectoryOrCreate
         name: log-dir
@@ -255,22 +268,10 @@ spec:
           path: /var/run/aws-node
           type: DirectoryOrCreate
         name: run-dir
+      - hostPath:
+          path: /run/xtables.lock
+        name: xtables-lock
   updateStrategy:
-    type: OnDelete
-
----
-
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  creationTimestamp: null
-  labels:
-    addon.kops.k8s.io/name: networking.amazon-vpc-routed-eni
-    app.kubernetes.io/instance: aws-vpc-cni
-    app.kubernetes.io/managed-by: kops
-    app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.9.3
-    k8s-app: aws-node
-    role.kubernetes.io/networking: "1"
-  name: aws-node
-  namespace: kube-system
+    rollingUpdate:
+      maxUnavailable: 10%
+    type: RollingUpdate
