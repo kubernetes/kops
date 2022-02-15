@@ -23,7 +23,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
-	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 // ExternalAccessModelBuilder configures security group rules for external access
@@ -71,11 +70,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					FromPort:      fi.Int64(22),
 					ToPort:        fi.Int64(22),
 				}
-				if utils.IsIPv6CIDR(sshAccess) {
-					t.IPv6CIDR = fi.String(sshAccess)
-				} else {
-					t.CIDR = fi.String(sshAccess)
-				}
+				t.SetCidrOrPrefix(sshAccess)
 				AddDirectionalGroupRule(c, t)
 			}
 
@@ -89,11 +84,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					FromPort:      fi.Int64(22),
 					ToPort:        fi.Int64(22),
 				}
-				if utils.IsIPv6CIDR(sshAccess) {
-					t.IPv6CIDR = fi.String(sshAccess)
-				} else {
-					t.CIDR = fi.String(sshAccess)
-				}
+				t.SetCidrOrPrefix(sshAccess)
 				AddDirectionalGroupRule(c, t)
 			}
 		}
@@ -116,11 +107,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					FromPort:      fi.Int64(int64(nodePortRange.Base)),
 					ToPort:        fi.Int64(int64(nodePortRange.Base + nodePortRange.Size - 1)),
 				}
-				if utils.IsIPv6CIDR(nodePortAccess) {
-					t.IPv6CIDR = fi.String(nodePortAccess)
-				} else {
-					t.CIDR = fi.String(nodePortAccess)
-				}
+				t.SetCidrOrPrefix(nodePortAccess)
 				c.AddTask(t)
 			}
 			{
@@ -132,11 +119,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					FromPort:      fi.Int64(int64(nodePortRange.Base)),
 					ToPort:        fi.Int64(int64(nodePortRange.Base + nodePortRange.Size - 1)),
 				}
-				if utils.IsIPv6CIDR(nodePortAccess) {
-					t.IPv6CIDR = fi.String(nodePortAccess)
-				} else {
-					t.CIDR = fi.String(nodePortAccess)
-				}
+				t.SetCidrOrPrefix(nodePortAccess)
 				c.AddTask(t)
 			}
 		}
@@ -159,11 +142,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					FromPort:      fi.Int64(443),
 					ToPort:        fi.Int64(443),
 				}
-				if utils.IsIPv6CIDR(apiAccess) {
-					t.IPv6CIDR = fi.String(apiAccess)
-				} else {
-					t.CIDR = fi.String(apiAccess)
-				}
+				t.SetCidrOrPrefix(apiAccess)
 				AddDirectionalGroupRule(c, t)
 			}
 		}
