@@ -1,24 +1,43 @@
-# Vendored from https://raw.githubusercontent.com/aws/amazon-vpc-cni-k8s/master/config/v1.9/aws-k8s-cni.yaml
-
+# Vendored from https://github.com/aws/amazon-vpc-cni-k8s/blob/release-1.10/config/master/aws-k8s-cni.yaml
 ---
-# Source: aws-vpc-cni/templates/clusterrolebinding.yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
+# Source: aws-vpc-cni/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
 metadata:
   name: aws-node
+  namespace: kube-system
   labels:
     app.kubernetes.io/name: aws-node
     app.kubernetes.io/instance: aws-vpc-cni
     k8s-app: aws-node
-    app.kubernetes.io/version: "v1.9.3"
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: aws-node
-subjects:
-  - kind: ServiceAccount
-    name: aws-node
-    namespace: kube-system
+    app.kubernetes.io/version: "v1.10.2"
+---
+# Source: aws-vpc-cni/templates/customresourcedefinition.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: eniconfigs.crd.k8s.amazonaws.com
+  labels:
+    app.kubernetes.io/name: aws-node
+    app.kubernetes.io/instance: aws-vpc-cni
+    k8s-app: aws-node
+    app.kubernetes.io/version: "v1.10.2"
+spec:
+  scope: Cluster
+  group: crd.k8s.amazonaws.com
+  preserveUnknownFields: false
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+  names:
+    plural: eniconfigs
+    singular: eniconfig
+    kind: ENIConfig
 ---
 # Source: aws-vpc-cni/templates/clusterrole.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -29,7 +48,7 @@ metadata:
     app.kubernetes.io/name: aws-node
     app.kubernetes.io/instance: aws-vpc-cni
     k8s-app: aws-node
-    app.kubernetes.io/version: "v1.9.3"
+    app.kubernetes.io/version: "v1.10.2"
 rules:
   - apiGroups:
       - crd.k8s.amazonaws.com
@@ -48,37 +67,29 @@ rules:
     resources:
       - nodes
     verbs: ["list", "watch", "get", "update"]
-  - apiGroups: ["extensions", "apps"]
+  - apiGroups: ["extensions"]
     resources:
       - '*'
     verbs: ["list", "watch"]
 ---
-# Source: aws-vpc-cni/templates/customresourcedefinition.yaml
-apiVersion: apiextensions.k8s.io/v1
-kind: CustomResourceDefinition
+# Source: aws-vpc-cni/templates/clusterrolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
 metadata:
-  name: eniconfigs.crd.k8s.amazonaws.com
+  name: aws-node
   labels:
     app.kubernetes.io/name: aws-node
     app.kubernetes.io/instance: aws-vpc-cni
     k8s-app: aws-node
-    app.kubernetes.io/version: "v1.9.3"
-spec:
-  scope: Cluster
-  group: crd.k8s.amazonaws.com
-  preserveUnknownFields: false
-  versions:
-    - name: v1alpha1
-      served: true
-      storage: true
-      schema:
-        openAPIV3Schema:
-          type: object
-          x-kubernetes-preserve-unknown-fields: true
-  names:
-    plural: eniconfigs
-    singular: eniconfig
-    kind: ENIConfig
+    app.kubernetes.io/version: "v1.10.2"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: aws-node
+subjects:
+  - kind: ServiceAccount
+    name: aws-node
+    namespace: kube-system
 ---
 # Source: aws-vpc-cni/templates/daemonset.yaml
 kind: DaemonSet
@@ -90,10 +101,12 @@ metadata:
     app.kubernetes.io/name: aws-node
     app.kubernetes.io/instance: aws-vpc-cni
     k8s-app: aws-node
-    app.kubernetes.io/version: "v1.9.3"
+    app.kubernetes.io/version: "v1.10.2"
 spec:
   updateStrategy:
-    type: OnDelete
+    rollingUpdate:
+      maxUnavailable: 10%
+    type: RollingUpdate
   selector:
     matchLabels:
       k8s-app: aws-node
@@ -109,21 +122,17 @@ spec:
       hostNetwork: true
       initContainers:
       - name: aws-vpc-cni-init
-        image: "{{- or .Networking.AmazonVPC.InitImage "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.10.1" }}"
-        imagePullPolicy: Always
+        image: "{{- or .Networking.AmazonVPC.InitImage "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.10.2" }}"
         env:
           - name: DISABLE_TCP_EARLY_DEMUX
             value: "false"
-          {{- if IsIPv6Only }}
           - name: ENABLE_IPv6
-            value: "true"
-          {{- end }}
+            value: "{{ IsIPv6Only }}"
         securityContext:
             privileged: true
         volumeMounts:
           - mountPath: /host/opt/cni/bin
             name: cni-bin-dir
-
       terminationGracePeriodSeconds: 10
       tolerations:
         - operator: Exists
@@ -131,8 +140,7 @@ spec:
         {}
       containers:
         - name: aws-node
-          image: "{{- or .Networking.AmazonVPC.Image "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.10.1" }}"
-          imagePullPolicy: Always
+          image: "{{- or .Networking.AmazonVPC.Image "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.10.2" }}"
           ports:
             - containerPort: 61678
               name: metrics
@@ -141,19 +149,19 @@ spec:
               command:
               - /app/grpc-health-probe
               - -addr=:50051
-              - -connect-timeout=2s
-              - -rpc-timeout=2s
+              - -connect-timeout=5s
+              - -rpc-timeout=5s
             initialDelaySeconds: 60
-            timeoutSeconds: 5
+            timeoutSeconds: 10
           readinessProbe:
             exec:
               command:
               - /app/grpc-health-probe
               - -addr=:50051
-              - -connect-timeout=2s
-              - -rpc-timeout=2s
+              - -connect-timeout=5s
+              - -rpc-timeout=5s
             initialDelaySeconds: 1
-            timeoutSeconds: 5
+            timeoutSeconds: 10
           env:
             {{- range $name, $value := AmazonVpcEnvVars }}
             - "name": "{{ $name }}"
@@ -268,15 +276,3 @@ spec:
                 operator: NotIn
                 values:
                 - fargate
----
-# Source: aws-vpc-cni/templates/serviceaccount.yaml
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: aws-node
-  namespace: kube-system
-  labels:
-    app.kubernetes.io/name: aws-node
-    app.kubernetes.io/instance: aws-vpc-cni
-    k8s-app: aws-node
-    app.kubernetes.io/version: "v1.9.3"
