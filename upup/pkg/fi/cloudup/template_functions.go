@@ -255,6 +255,9 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		dest["EnableSQSTerminationDraining"] = func() bool { return *cluster.Spec.NodeTerminationHandler.EnableSQSTerminationDraining }
 	}
 
+
+	dest["ParseTaint"] = util.ParseTaint
+
 	return nil
 }
 
@@ -688,3 +691,123 @@ func (tf *TemplateFunctions) GetNodeInstanceGroups() map[string]kops.InstanceGro
 	}
 	return nodegroups
 }
+<<<<<<< HEAD
+=======
+
+func (tf *TemplateFunctions) architectureOfAMI(amiID string) string {
+	image, _ := tf.cloud.(awsup.AWSCloud).ResolveImage(amiID)
+	switch *image.Architecture {
+	case "x86_64":
+		return "amd64"
+	}
+	return "arm64"
+}
+
+func karpenterInstanceTypes(cloud awsup.AWSCloud, ig kops.InstanceGroupSpec) ([]string, error) {
+	var mixedInstancesPolicy *kops.MixedInstancesPolicySpec
+
+	if ig.MachineType == "" && ig.MixedInstancesPolicy == nil {
+		// Karpenter thinks all clusters run VPC CNI and schedules thinking Node Capacity is constrainted by number of ENIs.
+
+		// cpuMin is the reasonable lower limit for a Kubernetes Node
+		// Generally, it also avoids instances Karpenter thinks it can only schedule 4 Pods on.
+		cpuMin := resource.MustParse("2")
+		memoryMin := resource.MustParse(("2G"))
+
+		mixedInstancesPolicy = &kops.MixedInstancesPolicySpec{
+			InstanceRequirements: &kops.InstanceRequirementsSpec{
+				CPU: &kops.MinMaxSpec{
+					Min: &cpuMin,
+				},
+				Memory: &kops.MinMaxSpec{
+					Min: &memoryMin,
+				},
+			},
+		}
+	}
+	if ig.MixedInstancesPolicy != nil {
+		mixedInstancesPolicy = ig.MixedInstancesPolicy
+	}
+
+	if mixedInstancesPolicy != nil {
+		if len(mixedInstancesPolicy.Instances) > 0 {
+			return mixedInstancesPolicy.Instances, nil
+		}
+		if mixedInstancesPolicy.InstanceRequirements != nil {
+			instanceRequirements := mixedInstancesPolicy.InstanceRequirements
+			ami, err := cloud.ResolveImage(ig.Image)
+			if err != nil {
+				return nil, err
+			}
+			arch := ami.Architecture
+			hv := ami.VirtualizationType
+
+			ir := &ec2.InstanceRequirementsRequest{
+				VCpuCount:            &ec2.VCpuCountRangeRequest{},
+				MemoryMiB:            &ec2.MemoryMiBRequest{},
+				BurstablePerformance: fi.String("included"),
+			}
+			cpu := instanceRequirements.CPU
+			if cpu != nil {
+				if cpu.Max != nil {
+					cpuMax, _ := instanceRequirements.CPU.Max.AsInt64()
+					ir.VCpuCount.Max = &cpuMax
+				}
+				cpu := instanceRequirements.CPU
+				if cpu != nil {
+					if cpu.Max != nil {
+						cpuMax, _ := instanceRequirements.CPU.Max.AsInt64()
+						ir.VCpuCount.Max = &cpuMax
+					}
+					if cpu.Min != nil {
+						cpuMin, _ := instanceRequirements.CPU.Min.AsInt64()
+						ir.VCpuCount.Min = &cpuMin
+					}
+				} else {
+					ir.VCpuCount.Min = fi.Int64(0)
+				}
+
+				memory := instanceRequirements.Memory
+				if memory != nil {
+					if memory.Max != nil {
+						memoryMax := instanceRequirements.Memory.Max.ScaledValue(resource.Mega)
+						ir.MemoryMiB.Max = &memoryMax
+					}
+					if memory.Min != nil {
+						memoryMin := instanceRequirements.Memory.Min.ScaledValue(resource.Mega)
+						ir.MemoryMiB.Min = &memoryMin
+					}
+				} else {
+					ir.MemoryMiB.Min = fi.Int64(0)
+				}
+
+				ir.AcceleratorCount = &ec2.AcceleratorCountRequest{
+					Min: fi.Int64(0),
+					Max: fi.Int64(0),
+				}
+
+				response, err := cloud.EC2().GetInstanceTypesFromInstanceRequirements(
+					&ec2.GetInstanceTypesFromInstanceRequirementsInput{
+						ArchitectureTypes:    []*string{arch},
+						VirtualizationTypes:  []*string{hv},
+						InstanceRequirements: ir,
+					},
+				)
+				if err != nil {
+					return nil, err
+				}
+				types := []string{}
+				for _, it := range response.InstanceTypes {
+					types = append(types, *it.InstanceType)
+				}
+				if len(types) == 0 {
+					return nil, fmt.Errorf("no instances matched requirements")
+				}
+				return types, nil
+			}
+		}
+	}
+
+	return []string{ig.MachineType}, nil
+}
+>>>>>>> Validate taints in IG spec
