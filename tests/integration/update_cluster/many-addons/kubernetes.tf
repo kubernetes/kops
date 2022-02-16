@@ -551,10 +551,10 @@ resource "aws_s3_bucket_object" "minimal-example-com-addons-aws-ebs-csi-driver-a
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_bucket_object" "minimal-example-com-addons-aws-load-balancer-controller-addons-k8s-io-k8s-1-9" {
+resource "aws_s3_bucket_object" "minimal-example-com-addons-aws-load-balancer-controller-addons-k8s-io-k8s-1-19" {
   bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_minimal.example.com-addons-aws-load-balancer-controller.addons.k8s.io-k8s-1.9_content")
-  key                    = "clusters.example.com/minimal.example.com/addons/aws-load-balancer-controller.addons.k8s.io/k8s-1.9.yaml"
+  content                = file("${path.module}/data/aws_s3_bucket_object_minimal.example.com-addons-aws-load-balancer-controller.addons.k8s.io-k8s-1.19_content")
+  key                    = "clusters.example.com/minimal.example.com/addons/aws-load-balancer-controller.addons.k8s.io/k8s-1.19.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }

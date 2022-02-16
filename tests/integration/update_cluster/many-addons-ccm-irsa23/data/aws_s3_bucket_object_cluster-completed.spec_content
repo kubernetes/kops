@@ -8,6 +8,8 @@ spec:
     dns: {}
   authorization:
     alwaysAllow: {}
+  awsLoadBalancerController:
+    enabled: true
   certManager:
     enabled: true
   channel: stable
