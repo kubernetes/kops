@@ -4,8 +4,8 @@ metadata:
   creationTimestamp: "2016-12-10T22:42:27Z"
   name: minimal.example.com
 spec:
-  #awsLoadBalancerController:
-  #  enabled: true
+  awsLoadBalancerController:
+    enabled: true
   certManager:
     enabled: true
   clusterAutoscaler:
