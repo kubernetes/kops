@@ -46,7 +46,7 @@ func findRuncAsset(c *kops.Cluster, assetBuilder *assets.AssetBuilder, arch arch
 	}
 	// The a compatible runc binary is bundled with containerd builds < v1.6.0
 	// https://github.com/containerd/containerd/issues/6541
-	if containerdVersion.LT(semver.MustParse("1.6.0-beta.2")) {
+	if containerdVersion.LT(semver.MustParse("1.6.0")) {
 		return nil, nil, nil
 	}
 
