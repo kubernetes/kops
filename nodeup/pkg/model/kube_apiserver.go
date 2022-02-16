@@ -680,11 +680,17 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 	// We use lighter containers that don't include shells
 	// But they have richer logging support via klog
 	container.Command = []string{"/usr/local/bin/kube-apiserver"}
-	container.Args = append(
-		sortedStrings(flags),
-		"--logtostderr=false", // https://github.com/kubernetes/klog/issues/60
-		"--alsologtostderr",
-		"--log-file=/var/log/kube-apiserver.log")
+	if kubeAPIServer.LogFormat != "" && kubeAPIServer.LogFormat != "text" {
+		// When logging-format is not text, some flags are not accepted.
+		// https://github.com/kubernetes/kops/issues/13245
+		container.Args = sortedStrings(flags)
+	} else {
+		container.Args = append(
+			sortedStrings(flags),
+			"--logtostderr=false", // https://github.com/kubernetes/klog/issues/60
+			"--alsologtostderr",
+			"--log-file=/var/log/kube-apiserver.log")
+	}
 
 	for _, path := range b.SSLHostPaths() {
 		name := strings.Replace(path, "/", "", -1)
