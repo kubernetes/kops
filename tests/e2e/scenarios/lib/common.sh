@@ -20,7 +20,7 @@ set -o pipefail
 set -o xtrace
 
 echo "CLOUD_PROVIDER=${CLOUD_PROVIDER}"
-echo "CLUSTER_NAME=${CLUSTER_NAME}"
+echo "CLUSTER_NAME=${CLUSTER_NAME-}"
 
 if [[ -z "${WORKSPACE-}" ]]; then
     export WORKSPACE
@@ -43,7 +43,7 @@ export KOPS_FEATURE_FLAGS="SpecOverrideFlag"
 export KOPS_RUN_TOO_NEW_VERSION=1
 
 if [[ -z "${DISCOVERY_STORE-}" ]]; then 
-    DISCOVERY_STORE="${KOPS_STATE_STORE}"
+    DISCOVERY_STORE="${KOPS_STATE_STORE-}"
 fi
 
 if [[ ${KOPS_IRSA-} = true ]]; then
