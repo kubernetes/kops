@@ -51,9 +51,9 @@ spec:
     name: certmanager.io
     selector: null
     version: 9.99.0
-  - id: k8s-1.9
-    manifest: aws-load-balancer-controller.addons.k8s.io/k8s-1.9.yaml
-    manifestHash: 0dec6d6bd4596a08d6981ae2bd5c255d789bd1898c336314e563ff6024374a68
+  - id: k8s-1.19
+    manifest: aws-load-balancer-controller.addons.k8s.io/k8s-1.19.yaml
+    manifestHash: a26e4a85ef790c4c02077118857d90a856ab6bc219ac895af8ee458485e6c0b2
     name: aws-load-balancer-controller.addons.k8s.io
     needsPKI: true
     selector:
