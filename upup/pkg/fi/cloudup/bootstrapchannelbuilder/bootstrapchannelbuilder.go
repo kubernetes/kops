@@ -623,9 +623,20 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 
 		key := "aws-load-balancer-controller.addons.k8s.io"
 
-		{
+		if b.IsKubernetesLT("1.19") {
 			location := key + "/k8s-1.9.yaml"
 			id := "k8s-1.9"
+
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:     fi.String(key),
+				Selector: map[string]string{"k8s-addon": key},
+				Manifest: fi.String(location),
+				Id:       id,
+				NeedsPKI: true,
+			})
+		} else {
+			location := key + "/k8s-1.19.yaml"
+			id := "k8s-1.19"
 
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 				Name:     fi.String(key),
