@@ -25,8 +25,8 @@ Public and utility subnets are expected to be dual-stack. Subnets of type `Priva
 There is a new type of subnet `DualStack` which is like `Private` but is dual-stack.
 The `DualStack` subnets are used by default for the control plane and APIServer nodes.
 
-IPv6-only subnets require Kubernetes 1.23 or later. For this reason, private topology on an IPv6 cluster also
-requires Kubernetes 1.23 or later.
+IPv6-only subnets require Kubernetes 1.22 or later. For this reason, private topology on an IPv6 cluster also
+requires Kubernetes 1.22 or later.
 
 ## Routing and NAT64
 
