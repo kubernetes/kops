@@ -53,6 +53,7 @@ go_library(
         "cloudup/resources/addons/nvidia.addons.k8s.io/k8s-1.16.yaml",
         "cloudup/resources/addons/networking.projectcalico.org.canal/k8s-1.22.yaml.template",
         "cloudup/resources/addons/external-dns.addons.k8s.io/k8s-1.19.yaml.template",
+        "cloudup/resources/addons/aws-load-balancer-controller.addons.k8s.io/k8s-1.19.yaml.template",
     ],
     importpath = "k8s.io/kops/upup/models",
     visibility = ["//visibility:public"],
