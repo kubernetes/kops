@@ -4,6 +4,8 @@ locals {
   iam_openid_connect_provider_issuer                 = "discovery.example.com/minimal.example.com"
   kube-system-aws-cloud-controller-manager_role_arn  = aws_iam_role.aws-cloud-controller-manager-kube-system-sa-minimal-example-com.arn
   kube-system-aws-cloud-controller-manager_role_name = aws_iam_role.aws-cloud-controller-manager-kube-system-sa-minimal-example-com.name
+  kube-system-aws-load-balancer-controller_role_arn  = aws_iam_role.aws-load-balancer-controller-kube-system-sa-minimal-example-com.arn
+  kube-system-aws-load-balancer-controller_role_name = aws_iam_role.aws-load-balancer-controller-kube-system-sa-minimal-example-com.name
   kube-system-aws-node-termination-handler_role_arn  = aws_iam_role.aws-node-termination-handler-kube-system-sa-minimal-example-com.arn
   kube-system-aws-node-termination-handler_role_name = aws_iam_role.aws-node-termination-handler-kube-system-sa-minimal-example-com.name
   kube-system-cluster-autoscaler_role_arn            = aws_iam_role.cluster-autoscaler-kube-system-sa-minimal-example-com.arn
@@ -46,6 +48,14 @@ output "kube-system-aws-cloud-controller-manager_role_arn" {
 
 output "kube-system-aws-cloud-controller-manager_role_name" {
   value = aws_iam_role.aws-cloud-controller-manager-kube-system-sa-minimal-example-com.name
+}
+
+output "kube-system-aws-load-balancer-controller_role_arn" {
+  value = aws_iam_role.aws-load-balancer-controller-kube-system-sa-minimal-example-com.arn
+}
+
+output "kube-system-aws-load-balancer-controller_role_name" {
+  value = aws_iam_role.aws-load-balancer-controller-kube-system-sa-minimal-example-com.name
 }
 
 output "kube-system-aws-node-termination-handler_role_arn" {
@@ -331,6 +341,16 @@ resource "aws_iam_role" "aws-cloud-controller-manager-kube-system-sa-minimal-exa
   }
 }
 
+resource "aws_iam_role" "aws-load-balancer-controller-kube-system-sa-minimal-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_aws-load-balancer-controller.kube-system.sa.minimal.example.com_policy")
+  name               = "aws-load-balancer-controller.kube-system.sa.minimal.example.com"
+  tags = {
+    "KubernetesCluster"                         = "minimal.example.com"
+    "Name"                                      = "aws-load-balancer-controller.kube-system.sa.minimal.example.com"
+    "kubernetes.io/cluster/minimal.example.com" = "owned"
+  }
+}
+
 resource "aws_iam_role" "aws-node-termination-handler-kube-system-sa-minimal-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_aws-node-termination-handler.kube-system.sa.minimal.example.com_policy")
   name               = "aws-node-termination-handler.kube-system.sa.minimal.example.com"
@@ -395,6 +415,12 @@ resource "aws_iam_role_policy" "aws-cloud-controller-manager-kube-system-sa-mini
   name   = "aws-cloud-controller-manager.kube-system.sa.minimal.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_aws-cloud-controller-manager.kube-system.sa.minimal.example.com_policy")
   role   = aws_iam_role.aws-cloud-controller-manager-kube-system-sa-minimal-example-com.name
+}
+
+resource "aws_iam_role_policy" "aws-load-balancer-controller-kube-system-sa-minimal-example-com" {
+  name   = "aws-load-balancer-controller.kube-system.sa.minimal.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_aws-load-balancer-controller.kube-system.sa.minimal.example.com_policy")
+  role   = aws_iam_role.aws-load-balancer-controller-kube-system-sa-minimal-example-com.name
 }
 
 resource "aws_iam_role_policy" "aws-node-termination-handler-kube-system-sa-minimal-example-com" {
@@ -724,6 +750,14 @@ resource "aws_s3_bucket_object" "minimal-example-com-addons-aws-ebs-csi-driver-a
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_bucket_object_minimal.example.com-addons-aws-ebs-csi-driver.addons.k8s.io-k8s-1.17_content")
   key                    = "clusters.example.com/minimal.example.com/addons/aws-ebs-csi-driver.addons.k8s.io/k8s-1.17.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_bucket_object" "minimal-example-com-addons-aws-load-balancer-controller-addons-k8s-io-k8s-1-19" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_bucket_object_minimal.example.com-addons-aws-load-balancer-controller.addons.k8s.io-k8s-1.19_content")
+  key                    = "clusters.example.com/minimal.example.com/addons/aws-load-balancer-controller.addons.k8s.io/k8s-1.19.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
