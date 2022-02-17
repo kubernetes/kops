@@ -857,6 +857,33 @@ resource "aws_security_group" "nodes-complex-example-com" {
   vpc_id = aws_vpc.complex-example-com.id
 }
 
+resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-masters-complex-example-com" {
+  from_port         = 22
+  prefix_list_ids   = ["pl-66666666"]
+  protocol          = "tcp"
+  security_group_id = aws_security_group.masters-complex-example-com.id
+  to_port           = 22
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-nodes-complex-example-com" {
+  from_port         = 22
+  prefix_list_ids   = ["pl-66666666"]
+  protocol          = "tcp"
+  security_group_id = aws_security_group.nodes-complex-example-com.id
+  to_port           = 22
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-443to443-masters-complex-example-com" {
+  from_port         = 443
+  prefix_list_ids   = ["pl-44444444"]
+  protocol          = "tcp"
+  security_group_id = aws_security_group.masters-complex-example-com.id
+  to_port           = 443
+  type              = "ingress"
+}
+
 resource "aws_security_group_rule" "from-1-1-1-0--24-ingress-tcp-443to443-masters-complex-example-com" {
   cidr_blocks       = ["1.1.1.0/24"]
   from_port         = 443
@@ -1058,6 +1085,15 @@ resource "aws_security_group_rule" "nodeport-udp-external-to-node-10-20-30-0--24
 resource "aws_security_group_rule" "tcp-api-1-1-1-0--24" {
   cidr_blocks       = ["1.1.1.0/24"]
   from_port         = 8443
+  protocol          = "tcp"
+  security_group_id = aws_security_group.masters-complex-example-com.id
+  to_port           = 8443
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "tcp-api-pl-44444444" {
+  from_port         = 8443
+  prefix_list_ids   = ["pl-44444444"]
   protocol          = "tcp"
   security_group_id = aws_security_group.masters-complex-example-com.id
   to_port           = 8443
