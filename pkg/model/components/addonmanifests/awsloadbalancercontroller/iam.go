@@ -32,7 +32,7 @@ func (r *ServiceAccount) BuildAWSPolicy(b *iam.PolicyBuilder) (*iam.Policy, erro
 	clusterName := b.Cluster.ObjectMeta.Name
 	p := iam.NewPolicy(clusterName)
 
-	iam.AddAWSLoadbalancerControllerPermissions(p)
+	iam.AddAWSLoadbalancerControllerPermissions(p, b.Partition)
 
 	return p, nil
 }
