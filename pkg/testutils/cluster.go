@@ -33,6 +33,9 @@ func BuildMinimalCluster(clusterName string) *kops.Cluster {
 		{Name: "subnet-us-mock-1a", Zone: "us-mock-1a", CIDR: "172.20.1.0/24", Type: kops.SubnetTypePrivate},
 	}
 
+	c.Spec.ContainerRuntime = "containerd"
+	c.Spec.Containerd = &kops.ContainerdConfig{}
+
 	c.Spec.MasterPublicName = fmt.Sprintf("api.%v", clusterName)
 	c.Spec.MasterInternalName = fmt.Sprintf("internal.api.%v", clusterName)
 	c.Spec.KubernetesAPIAccess = []string{"0.0.0.0/0"}

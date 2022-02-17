@@ -18,6 +18,7 @@ package cloudup
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/blang/semver/v4"
@@ -173,7 +174,15 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 					ig.Spec.NodeLabels = make(map[string]string)
 				}
 				ig.Spec.NodeLabels["kops.k8s.io/gpu"] = "1"
-				ig.Spec.Taints = append(ig.Spec.Taints, "nvidia.com/gpu:NoSchedule")
+				hasNvidiaTaint := false
+				for _, taint := range ig.Spec.Taints {
+					if strings.HasPrefix(taint, "nvidia.com/gpu") {
+						hasNvidiaTaint = true
+					}
+				}
+				if !hasNvidiaTaint {
+					ig.Spec.Taints = append(ig.Spec.Taints, "nvidia.com/gpu:NoSchedule")
+				}
 			}
 		}
 	}
