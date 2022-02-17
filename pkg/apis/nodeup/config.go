@@ -208,7 +208,7 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		config.DefaultMachineType = fi.String(strings.Split(instanceGroup.Spec.MachineType, ",")[0])
 	}
 
-	if cluster.Spec.ExternalCloudControllerManager != nil && cluster.IsKubernetesGTE("1.23") && cluster.Spec.CloudProvider == string(kops.CloudProviderAWS) {
+	if cluster.Spec.ExternalCloudControllerManager != nil && cluster.IsKubernetesGTE("1.22") && cluster.Spec.CloudProvider == string(kops.CloudProviderAWS) {
 		config.UseInstanceIDForNodeName = true
 	}
 
