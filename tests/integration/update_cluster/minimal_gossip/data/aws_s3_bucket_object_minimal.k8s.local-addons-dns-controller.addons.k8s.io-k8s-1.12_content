@@ -7,7 +7,7 @@ metadata:
     app.kubernetes.io/managed-by: kops
     k8s-addon: dns-controller.addons.k8s.io
     k8s-app: dns-controller
-    version: v1.22.3
+    version: v1.22.4
   name: dns-controller
   namespace: kube-system
 spec:
@@ -24,7 +24,7 @@ spec:
       labels:
         k8s-addon: dns-controller.addons.k8s.io
         k8s-app: dns-controller
-        version: v1.22.3
+        version: v1.22.4
     spec:
       containers:
       - command:
@@ -40,7 +40,7 @@ spec:
         env:
         - name: KUBERNETES_SERVICE_HOST
           value: 127.0.0.1
-        image: k8s.gcr.io/kops/dns-controller:1.22.3
+        image: k8s.gcr.io/kops/dns-controller:1.22.4
         name: dns-controller
         resources:
           requests:
