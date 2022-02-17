@@ -895,28 +895,53 @@ func AddCCMPermissions(p *Policy, partition string, cloudRoutes bool) {
 // AddAWSLoadbalancerControllerPermissions adds the permissions needed for the aws load balancer controller to the givnen policy
 func AddAWSLoadbalancerControllerPermissions(p *Policy) {
 	p.unconditionalAction.Insert(
-		"ec2:DescribeAvailabilityZones",
-		"ec2:DescribeNetworkInterfaces",
-		"elasticloadbalancing:DescribeTags",
-		"elasticloadbalancing:DescribeTargetGroupAttributes",
-		"elasticloadbalancing:DescribeRules",
-		"elasticloadbalancing:DescribeTargetHealth",
-		"elasticloadbalancing:DescribeListenerCertificates",
-		"elasticloadbalancing:CreateRule",
-		"acm:ListCertificates",
 		"acm:DescribeCertificate",
+		"acm:ListCertificates",
+
+		"ec2:DescribeAvailabilityZones",
+		"ec2:DescribeInstances",
+		"ec2:DescribeInternetGateways",
+		"ec2:DescribeNetworkInterfaces",
+		"ec2:DescribeSubnets",
+		"ec2:DescribeSecurityGroups",
+		"ec2:DescribeVpcs",
+		"ec2:DescribeAccountAttributes",
+
+		"elasticloadbalancing:DescribeListeners",
+		"elasticloadbalancing:DescribeListenerCertificates",
+		"elasticloadbalancing:DescribeLoadBalancers",
+		"elasticloadbalancing:DescribeLoadBalancerAttributes",
+		"elasticloadbalancing:DescribeRules",
+		"elasticloadbalancing:DescribeTags",
+		"elasticloadbalancing:DescribeTargetGroups",
+		"elasticloadbalancing:DescribeTargetGroupAttributes",
+		"elasticloadbalancing:DescribeTargetHealth",
 	)
 	p.clusterTaggedAction.Insert(
 		"ec2:AuthorizeSecurityGroupIngress", // aws.go
 		"ec2:DeleteSecurityGroup",           // aws.go
 		"ec2:RevokeSecurityGroupIngress",    // aws.go
 
-		"elasticloadbalancing:ModifyTargetGroupAttributes",
-		"elasticloadbalancing:ModifyRule",
-		"elasticloadbalancing:DeleteRule",
-
 		"elasticloadbalancing:AddTags",
+		"elasticloadbalancing:DeleteListener",
+		"elasticloadbalancing:DeleteLoadBalancer",
+		"elasticloadbalancing:DeleteTargetGroup",
+		"elasticloadbalancing:DeleteRule",
+		"elasticloadbalancing:DeregisterTargets",
+		"elasticloadbalancing:ModifyRule",
+		"elasticloadbalancing:ModifyTargetGroup",
+		"elasticloadbalancing:ModifyTargetGroupAttributes",
+		"elasticloadbalancing:RegisterTargets",
 		"elasticloadbalancing:RemoveTags",
+		"elasticloadbalancing:SetIpAddressType",
+		"elasticloadbalancing:SetSecurityGroups",
+		"elasticloadbalancing:SetSubnets",
+	)
+	p.clusterTaggedCreateAction.Insert(
+		"elasticloadbalancing:CreateListener",
+		"elasticloadbalancing:CreateLoadBalancer",
+		"elasticloadbalancing:CreateRule",
+		"elasticloadbalancing:CreateTargetGroup",
 	)
 }
 

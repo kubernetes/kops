@@ -167,6 +167,7 @@
         "ec2:DescribeAvailabilityZones",
         "ec2:DescribeInstanceTypes",
         "ec2:DescribeInstances",
+        "ec2:DescribeInternetGateways",
         "ec2:DescribeLaunchTemplateVersions",
         "ec2:DescribeNetworkInterfaces",
         "ec2:DescribeRegions",
@@ -183,7 +184,6 @@
         "ec2:UnassignPrivateIpAddresses",
         "elasticloadbalancing:AddTags",
         "elasticloadbalancing:CreateListener",
-        "elasticloadbalancing:CreateRule",
         "elasticloadbalancing:CreateTargetGroup",
         "elasticloadbalancing:DeleteListener",
         "elasticloadbalancing:DescribeListenerCertificates",
@@ -226,6 +226,7 @@
         "elasticloadbalancing:ConfigureHealthCheck",
         "elasticloadbalancing:CreateLoadBalancerListeners",
         "elasticloadbalancing:CreateLoadBalancerPolicy",
+        "elasticloadbalancing:DeleteListener",
         "elasticloadbalancing:DeleteLoadBalancer",
         "elasticloadbalancing:DeleteLoadBalancerListeners",
         "elasticloadbalancing:DeleteRule",
@@ -240,8 +241,11 @@
         "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
         "elasticloadbalancing:RegisterTargets",
         "elasticloadbalancing:RemoveTags",
+        "elasticloadbalancing:SetIpAddressType",
         "elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer",
-        "elasticloadbalancing:SetLoadBalancerPoliciesOfListener"
+        "elasticloadbalancing:SetLoadBalancerPoliciesOfListener",
+        "elasticloadbalancing:SetSecurityGroups",
+        "elasticloadbalancing:SetSubnets"
       ],
       "Condition": {
         "StringEquals": {
@@ -257,6 +261,7 @@
         "ec2:CreateVolume",
         "elasticloadbalancing:CreateListener",
         "elasticloadbalancing:CreateLoadBalancer",
+        "elasticloadbalancing:CreateRule",
         "elasticloadbalancing:CreateTargetGroup"
       ],
       "Condition": {
