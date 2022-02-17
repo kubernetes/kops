@@ -47,7 +47,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.15
     manifest: cluster-autoscaler.addons.k8s.io/k8s-1.15.yaml
-    manifestHash: 0aba81e4fbb4b9063584261fe5c5fa346cc806f639ab5c911bbf9ab53b9d78b3
+    manifestHash: 015ff9a342e175aab3f26b5d4a6e06aac3e7569ebb5662a407fa991cd99ffd3c
     name: cluster-autoscaler.addons.k8s.io
     selector:
       k8s-addon: cluster-autoscaler.addons.k8s.io
@@ -133,14 +133,14 @@ spec:
     version: 9.99.0
   - id: k8s-1.17
     manifest: aws-ebs-csi-driver.addons.k8s.io/k8s-1.17.yaml
-    manifestHash: 8b58435bc8e9c29f2650dbdf9bcb0fbbec71781f2e3fe1f2614a03c1023976fe
+    manifestHash: 98d51338f6689e206535479f7579b6becd432f6aa1f3b44a2c53c41098cea3f4
     name: aws-ebs-csi-driver.addons.k8s.io
     selector:
       k8s-addon: aws-ebs-csi-driver.addons.k8s.io
     version: 9.99.0
   - id: k8s-1.20
     manifest: snapshot-controller.addons.k8s.io/k8s-1.20.yaml
-    manifestHash: a9781145d51aa191d5bd29bf31c535d17e50157e209ee0765ac20d6a7145eaf5
+    manifestHash: 005afa268578a742ba899964d0c92ce8843cb391c8a134a38a638bbddd711b07
     name: snapshot-controller.addons.k8s.io
     needsPKI: true
     selector:

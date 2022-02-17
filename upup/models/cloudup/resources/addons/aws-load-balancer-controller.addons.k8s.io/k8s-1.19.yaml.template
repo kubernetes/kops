@@ -724,7 +724,7 @@ metadata:
   name: aws-load-balancer-controller
   namespace: kube-system
 spec:
-  replicas: {{ ControlPlaneControllerReplicas }}
+  replicas: {{ ControlPlaneControllerReplicas false }}
   selector:
     matchLabels:
       app.kubernetes.io/component: controller

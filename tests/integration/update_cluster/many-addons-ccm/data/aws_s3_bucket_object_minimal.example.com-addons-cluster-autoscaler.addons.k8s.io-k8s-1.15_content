@@ -347,7 +347,6 @@ spec:
           requests:
             cpu: 100m
             memory: 300Mi
-      dnsPolicy: ClusterFirst
       nodeSelector:
         node-role.kubernetes.io/master: ""
       priorityClassName: system-cluster-critical

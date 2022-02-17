@@ -382,7 +382,7 @@ metadata:
     app.kubernetes.io/instance: aws-ebs-csi-driver
     app.kubernetes.io/version: {{ .Version }}
 spec:
-  replicas: {{ ControlPlaneControllerReplicas }}
+  replicas: {{ ControlPlaneControllerReplicas true }}
   selector:
     matchLabels:
       app: ebs-csi-controller

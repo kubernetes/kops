@@ -265,7 +265,7 @@ metadata:
   name: cluster-autoscaler
   namespace: kube-system
 spec:
-  replicas: {{ ControlPlaneControllerReplicas }}
+  replicas: {{ ControlPlaneControllerReplicas true }}
   selector:
     matchLabels:
       app: cluster-autoscaler
@@ -280,8 +280,28 @@ spec:
         k8s-app: cluster-autoscaler
         app.kubernetes.io/name: "cluster-autoscaler"
     spec:
-      priorityClassName: "system-cluster-critical"
-      dnsPolicy: "ClusterFirst"
+      priorityClassName: system-cluster-critical
+      serviceAccountName: cluster-autoscaler
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: "topology.kubernetes.io/zone"
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: cluster-autoscaler
+      - maxSkew: 1
+        topologyKey: "kubernetes.io/hostname"
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            app: cluster-autoscaler
+      {{ if not UseServiceAccountExternalPermissions }}
+      tolerations:
+      - operator: "Exists"
+        key: node-role.kubernetes.io/master
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      {{ end }}
       containers:
         - name: cluster-autoscaler
           image: "{{ .Image }}"

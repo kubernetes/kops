@@ -725,7 +725,7 @@ metadata:
   name: aws-load-balancer-controller
   namespace: kube-system
 spec:
-  replicas: 1
+  replicas: {{ ControlPlaneControllerReplicas false }}
   selector:
     matchLabels:
       app.kubernetes.io/component: controller
@@ -780,6 +780,21 @@ spec:
       terminationGracePeriodSeconds: 10
       tolerations:
         - operator: Exists
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: "topology.kubernetes.io/zone"
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app.kubernetes.io/component: controller
+            app.kubernetes.io/name: aws-load-balancer-controller
+      - maxSkew: 1
+        topologyKey: "kubernetes.io/hostname"
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            app.kubernetes.io/component: controller
+            app.kubernetes.io/name: aws-load-balancer-controller
       volumes:
       - name: cert
         secret:
