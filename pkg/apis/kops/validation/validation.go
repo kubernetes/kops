@@ -140,10 +140,6 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		allErrs = append(allErrs, validateKubelet(spec.MasterKubelet, c, fieldPath.Child("masterKubelet"))...)
 	}
 
-	if spec.AWSLoadBalancerController != nil && fi.BoolValue(spec.AWSLoadBalancerController.Enabled) && c.IsKubernetesGTE("1.22") {
-		allErrs = append(allErrs, field.Forbidden(fieldPath.Child("awsLoadBalancerController", "enabled"), "AWS load balancer controller is supported only for Kubernetes 1.21 and lower"))
-	}
-
 	if spec.Networking != nil {
 		allErrs = append(allErrs, validateNetworking(c, spec.Networking, fieldPath.Child("networking"))...)
 		if spec.Networking.Calico != nil {
