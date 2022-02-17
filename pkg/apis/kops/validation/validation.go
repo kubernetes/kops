@@ -388,8 +388,8 @@ func validateTopology(c *kops.Cluster, topology *kops.TopologySpec, fieldPath *f
 	} else {
 		allErrs = append(allErrs, IsValidValue(fieldPath.Child("nodes"), &topology.Nodes, kops.SupportedTopologies)...)
 
-		if topology.Nodes == "private" && c.Spec.IsIPv6Only() && c.IsKubernetesLT("1.23") {
-			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("nodes"), "private topology in IPv6 clusters requires Kubernetes 1.23+"))
+		if topology.Nodes == "private" && c.Spec.IsIPv6Only() && c.IsKubernetesLT("1.22") {
+			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("nodes"), "private topology in IPv6 clusters requires Kubernetes 1.22+"))
 		}
 	}
 
