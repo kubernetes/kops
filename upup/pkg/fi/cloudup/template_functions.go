@@ -255,6 +255,8 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		dest["EnableSQSTerminationDraining"] = func() bool { return *cluster.Spec.NodeTerminationHandler.EnableSQSTerminationDraining }
 	}
 
+	dest["ParseTaint"] = util.ParseTaint
+
 	return nil
 }
 

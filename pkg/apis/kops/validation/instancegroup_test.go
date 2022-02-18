@@ -334,6 +334,34 @@ func TestIGCloudLabelIsIGName(t *testing.T) {
 	}
 }
 
+func TestValidTaints(t *testing.T) {
+	grid := []struct {
+		taints   []string
+		expected []string
+	}{
+		{
+			taints: []string{
+				"nvidia.com/gpu:NoSchedule",
+			},
+		},
+		{
+			taints: []string{
+				"nvidia.com/gpu:NoSchedule",
+				"nvidia.com/gpu=1:NoSchedule",
+			},
+			expected: []string{"Forbidden::spec.taints[1]"},
+		},
+	}
+
+	for _, g := range grid {
+		ig := createMinimalInstanceGroup()
+
+		ig.Spec.Taints = g.taints
+		errs := ValidateInstanceGroup(ig, nil)
+		testErrors(t, g.taints, errs, g.expected)
+	}
+}
+
 func TestIGUpdatePolicy(t *testing.T) {
 	const unsupportedValueError = "Unsupported value::spec.updatePolicy"
 	for _, test := range []struct {
@@ -443,4 +471,20 @@ func TestValidInstanceGroup(t *testing.T) {
 		errList := ValidateInstanceGroup(g.IG, nil)
 		testErrors(t, g.Description, errList, []string{})
 	}
+}
+
+func createMinimalInstanceGroup() *kops.InstanceGroup {
+	ig := &kops.InstanceGroup{
+		ObjectMeta: v1.ObjectMeta{
+			Name: "some-ig",
+		},
+		Spec: kops.InstanceGroupSpec{
+			CloudLabels: make(map[string]string),
+			Role:        "Node",
+			MaxSize:     fi.Int32(1),
+			MinSize:     fi.Int32(1),
+			Image:       "my-image",
+		},
+	}
+	return ig
 }

@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	kopsapi "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/architectures"
 )
 
@@ -61,6 +62,51 @@ func TestPopulateInstanceGroup_Role_Required(t *testing.T) {
 	channel := &kopsapi.Channel{}
 
 	expectErrorFromPopulateInstanceGroup(t, cluster, g, channel, "spec.role")
+}
+
+func TestPopulateInstanceGroup_AddTaintsCollision(t *testing.T) {
+	_, cluster := buildMinimalCluster()
+	input := buildMinimalNodeInstanceGroup()
+	input.Spec.Image = "my-image"
+	input.Spec.Taints = []string{"nvidia.com/gpu:NoSchedule"}
+	input.Spec.MachineType = "g4dn.xlarge"
+	cluster.Spec.Containerd.NvidiaGPU = &kopsapi.NvidiaGPUConfig{Enabled: fi.Bool(true)}
+
+	channel := &kopsapi.Channel{}
+
+	cloud, err := BuildCloud(cluster)
+	if err != nil {
+		t.Fatalf("error from BuildCloud: %v", err)
+	}
+	output, err := PopulateInstanceGroupSpec(cluster, input, cloud, channel)
+	if err != nil {
+		t.Fatalf("error from PopulateInstanceGropuSpec: %v", err)
+	}
+	if len(output.Spec.Taints) != 1 {
+		t.Errorf("Expected only 1 taint, got %d", len(output.Spec.Taints))
+	}
+}
+
+func TestPopulateInstanceGroup_AddTaints(t *testing.T) {
+	_, cluster := buildMinimalCluster()
+	input := buildMinimalNodeInstanceGroup()
+	input.Spec.Image = "my-image"
+	input.Spec.MachineType = "g4dn.xlarge"
+	cluster.Spec.Containerd.NvidiaGPU = &kopsapi.NvidiaGPUConfig{Enabled: fi.Bool(true)}
+
+	channel := &kopsapi.Channel{}
+
+	cloud, err := BuildCloud(cluster)
+	if err != nil {
+		t.Fatalf("error from BuildCloud: %v", err)
+	}
+	output, err := PopulateInstanceGroupSpec(cluster, input, cloud, channel)
+	if err != nil {
+		t.Fatalf("error from PopulateInstanceGropuSpec: %v", err)
+	}
+	if len(output.Spec.Taints) != 1 {
+		t.Errorf("Expected only 1 taint, got %d", len(output.Spec.Taints))
+	}
 }
 
 func expectErrorFromPopulateInstanceGroup(t *testing.T, cluster *kopsapi.Cluster, g *kopsapi.InstanceGroup, channel *kopsapi.Channel, message string) {
