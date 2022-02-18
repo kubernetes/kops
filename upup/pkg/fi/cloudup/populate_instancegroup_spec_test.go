@@ -67,6 +67,7 @@ func TestPopulateInstanceGroup_Role_Required(t *testing.T) {
 func TestPopulateInstanceGroup_AddTaintsCollision(t *testing.T) {
 	_, cluster := buildMinimalCluster()
 	input := buildMinimalNodeInstanceGroup()
+	input.Spec.Image = "my-image"
 	input.Spec.Taints = []string{"nvidia.com/gpu:NoSchedule"}
 	input.Spec.MachineType = "g4dn.xlarge"
 	cluster.Spec.Containerd.NvidiaGPU = &kopsapi.NvidiaGPUConfig{Enabled: fi.Bool(true)}
@@ -89,6 +90,7 @@ func TestPopulateInstanceGroup_AddTaintsCollision(t *testing.T) {
 func TestPopulateInstanceGroup_AddTaints(t *testing.T) {
 	_, cluster := buildMinimalCluster()
 	input := buildMinimalNodeInstanceGroup()
+	input.Spec.Image = "my-image"
 	input.Spec.MachineType = "g4dn.xlarge"
 	cluster.Spec.Containerd.NvidiaGPU = &kopsapi.NvidiaGPUConfig{Enabled: fi.Bool(true)}
 
