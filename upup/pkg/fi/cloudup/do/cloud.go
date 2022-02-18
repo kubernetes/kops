@@ -70,10 +70,13 @@ type DOCloud interface {
 	LoadBalancersService() godo.LoadBalancersService
 	DomainService() godo.DomainsService
 	ActionsService() godo.ActionsService
+	VPCsService() godo.VPCsService
 	FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error)
 	GetAllLoadBalancers() ([]godo.LoadBalancer, error)
 	GetAllDropletsByTag(tag string) ([]godo.Droplet, error)
 	GetAllVolumesByRegion() ([]godo.Volume, error)
+	GetVPCUUID(networkCIDR string, vpcName string) (string, error)
+	GetAllVPCs() ([]*godo.VPC, error)
 }
 
 var readBackoff = wait.Backoff{
@@ -238,9 +241,42 @@ func (c *doCloudImplementation) ActionsService() godo.ActionsService {
 	return c.Client.Actions
 }
 
+func (c *doCloudImplementation) VPCsService() godo.VPCsService {
+	return c.Client.VPCs
+}
+
 // FindVPCInfo is not implemented, it's only here to satisfy the fi.Cloud interface
 func (c *doCloudImplementation) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 	return nil, errors.New("not implemented")
+}
+
+func (c *doCloudImplementation) GetVPCUUID(networkCIDR string, vpcName string) (string, error) {
+	vpcUUID := ""
+	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+		vpcs, err := c.GetAllVPCs()
+		if err != nil {
+			return false, err
+		}
+
+		for _, vpc := range vpcs {
+			if vpc.IPRange == networkCIDR && vpc.Name == vpcName {
+				vpcUUID = vpc.ID
+				return true, nil
+			}
+		}
+
+		return false, fmt.Errorf("vpc not yet created..")
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	if done {
+		return vpcUUID, nil
+	} else {
+		return "", wait.ErrWaitTimeout
+	}
 }
 
 func (c *doCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
@@ -530,6 +566,33 @@ func (c *doCloudImplementation) GetAllLoadBalancers() ([]godo.LoadBalancer, erro
 	}
 
 	return allLoadBalancers, nil
+}
+
+func (c *doCloudImplementation) GetAllVPCs() ([]*godo.VPC, error) {
+	allVPCs := []*godo.VPC{}
+
+	opt := &godo.ListOptions{}
+	for {
+		vpcs, resp, err := c.VPCsService().List(context.TODO(), opt)
+		if err != nil {
+			return nil, err
+		}
+
+		allVPCs = append(allVPCs, vpcs...)
+
+		if resp.Links == nil || resp.Links.IsLastPage() {
+			break
+		}
+
+		page, err := resp.Links.CurrentPage()
+		if err != nil {
+			return nil, err
+		}
+
+		opt.Page = page + 1
+	}
+
+	return allVPCs, nil
 }
 
 func (c *doCloudImplementation) GetAllDropletsByTag(tag string) ([]godo.Droplet, error) {
