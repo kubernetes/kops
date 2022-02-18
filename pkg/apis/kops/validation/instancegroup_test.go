@@ -357,7 +357,7 @@ func TestValidTaints(t *testing.T) {
 		ig := createMinimalInstanceGroup()
 
 		ig.Spec.Taints = g.taints
-		errs := ValidateInstanceGroup(ig, nil, true)
+		errs := ValidateInstanceGroup(ig, nil)
 		testErrors(t, g.taints, errs, g.expected)
 	}
 }
@@ -471,4 +471,20 @@ func TestValidInstanceGroup(t *testing.T) {
 		errList := ValidateInstanceGroup(g.IG, nil)
 		testErrors(t, g.Description, errList, []string{})
 	}
+}
+
+func createMinimalInstanceGroup() *kops.InstanceGroup {
+	ig := &kops.InstanceGroup{
+		ObjectMeta: v1.ObjectMeta{
+			Name: "some-ig",
+		},
+		Spec: kops.InstanceGroupSpec{
+			CloudLabels: make(map[string]string),
+			Role:        "Node",
+			MaxSize:     fi.Int32(1),
+			MinSize:     fi.Int32(1),
+			Image:       "my-image",
+		},
+	}
+	return ig
 }
