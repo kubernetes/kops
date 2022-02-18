@@ -73,6 +73,21 @@ kops create cluster --cloud=digitalocean --name=dev5.k8s.local --networking=cili
 kops delete cluster dev5.k8s.local --yes
 ```
 
+## VPC Support
+
+If you already have a VPC created and want to run kops cluster in this vpc, specify the vpc uuid as below.
+
+```bash
+/kops create cluster --cloud=digitalocean --name=dev1.example.com --vpc=af287488-862e-46c7-a783-5e5fa89cb200 --networking=cilium --zones=tor1 --ssh-public-key=~/.ssh/id_rsa.pub
+```
+
+If you want to create a new VPC for running your kops cluster, specify the network-cidr as below.
+
+```bash
+./kops create cluster --cloud=digitalocean --name=dev1.example.com --networking=calico --network-cidr=192.168.11.0/24 --zones=nyc1 --ssh-public-key=~/.ssh/id_rsa.pub --yes
+```
+
+
 ## Features Still in Development
 
 kOps for DigitalOcean currently does not support these features:
