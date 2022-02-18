@@ -24,16 +24,7 @@ import (
 )
 
 func TestCreateFile(t *testing.T) {
-	TempDir, err := os.MkdirTemp("", "test")
-	if err != nil {
-		t.Fatalf("error creating temp dir: %v", err)
-	}
-	defer func() {
-		err := os.RemoveAll(TempDir)
-		if err != nil {
-			t.Errorf("failed to remove temp dir %q: %v", TempDir, err)
-		}
-	}()
+	TempDir := t.TempDir()
 
 	tests := []struct {
 		path string
@@ -70,16 +61,7 @@ func TestCreateFile(t *testing.T) {
 }
 
 func TestWriteTo(t *testing.T) {
-	TempDir, err := os.MkdirTemp("", "test")
-	if err != nil {
-		t.Fatalf("error creating temp dir: %v", err)
-	}
-	defer func() {
-		err := os.RemoveAll(TempDir)
-		if err != nil {
-			t.Errorf("failed to remove temp dir %q: %v", TempDir, err)
-		}
-	}()
+	TempDir := t.TempDir()
 
 	tests := []struct {
 		path string
