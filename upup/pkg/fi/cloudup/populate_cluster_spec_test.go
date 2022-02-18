@@ -197,6 +197,7 @@ func build(c *kopsapi.Cluster) (*kopsapi.Cluster, error) {
 
 func TestPopulateCluster_Kubenet(t *testing.T) {
 	_, c := buildMinimalCluster()
+	c.Spec.ContainerRuntime = "docker"
 
 	full, err := build(c)
 	if err != nil {

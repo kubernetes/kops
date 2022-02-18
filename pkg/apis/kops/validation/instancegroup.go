@@ -24,8 +24,10 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
@@ -142,6 +144,21 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud) field.ErrorLis
 	}
 
 	allErrs = append(allErrs, IsValidValue(field.NewPath("spec", "updatePolicy"), g.Spec.UpdatePolicy, []string{kops.UpdatePolicyAutomatic, kops.UpdatePolicyExternal})...)
+
+	taintKeys := sets.NewString()
+	for i, taint := range g.Spec.Taints {
+		path := field.NewPath("spec", "taints").Index(i)
+		parts, err := util.ParseTaint(taint)
+		if err != nil {
+			allErrs = append(allErrs, field.Invalid(path, taint, "invalid taint value"))
+		}
+		key := parts["key"]
+		if taintKeys.Has(key) {
+			allErrs = append(allErrs, field.Forbidden(path, fmt.Sprintf("cannot add multiple taints with key %q", key)))
+		} else {
+			taintKeys.Insert(key)
+		}
+	}
 
 	return allErrs
 }
