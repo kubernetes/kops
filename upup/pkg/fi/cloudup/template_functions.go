@@ -293,7 +293,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 
 	dest["ArchitectureOfAMI"] = tf.architectureOfAMI
 
-	dest["ParseTaint"] = parseTaint
+	dest["ParseTaint"] = util.ParseTaint
 
 	dest["UsesInstanceIDForNodeName"] = func() bool {
 		return nodeup.UsesInstanceIDForNodeName(tf.Cluster)
@@ -761,42 +761,6 @@ func (tf *TemplateFunctions) architectureOfAMI(amiID string) string {
 		return "amd64"
 	}
 	return "arm64"
-}
-
-// parseTaint takes a string and returns a map of its value
-// it mimics the function from https://github.com/kubernetes/kubernetes/blob/master/pkg/util/taints/taints.go
-// but returns a map instead of a v1.Taint
-func parseTaint(st string) (map[string]string, error) {
-	taint := make(map[string]string)
-
-	var key string
-	var value string
-	var effect string
-
-	parts := strings.Split(st, ":")
-	switch len(parts) {
-	case 1:
-		key = parts[0]
-	case 2:
-		effect = parts[1]
-
-		partsKV := strings.Split(parts[0], "=")
-		if len(partsKV) > 2 {
-			return taint, fmt.Errorf("invalid taint spec: %v", st)
-		}
-		key = partsKV[0]
-		if len(partsKV) == 2 {
-			value = partsKV[1]
-		}
-	default:
-		return taint, fmt.Errorf("invalid taint spec: %v", st)
-	}
-
-	taint["key"] = key
-	taint["value"] = value
-	taint["effect"] = effect
-
-	return taint, nil
 }
 
 func karpenterInstanceTypes(cloud awsup.AWSCloud, ig kops.InstanceGroupSpec) ([]string, error) {

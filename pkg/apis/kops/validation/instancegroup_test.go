@@ -307,6 +307,34 @@ func TestIGCloudLabelIsIGName(t *testing.T) {
 	}
 }
 
+func TestValidTaints(t *testing.T) {
+	grid := []struct {
+		taints   []string
+		expected []string
+	}{
+		{
+			taints: []string{
+				"nvidia.com/gpu:NoSchedule",
+			},
+		},
+		{
+			taints: []string{
+				"nvidia.com/gpu:NoSchedule",
+				"nvidia.com/gpu=1:NoSchedule",
+			},
+			expected: []string{"Forbidden::spec.taints[1]"},
+		},
+	}
+
+	for _, g := range grid {
+		ig := createMinimalInstanceGroup()
+
+		ig.Spec.Taints = g.taints
+		errs := ValidateInstanceGroup(ig, nil, true)
+		testErrors(t, g.taints, errs, g.expected)
+	}
+}
+
 func TestIGUpdatePolicy(t *testing.T) {
 	const unsupportedValueError = "Unsupported value::spec.updatePolicy"
 	for _, test := range []struct {
