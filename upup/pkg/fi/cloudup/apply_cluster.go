@@ -585,6 +585,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			l.Builders = append(l.Builders,
 				&domodel.APILoadBalancerModelBuilder{DOModelContext: doModelContext, Lifecycle: securityLifecycle},
 				&domodel.DropletBuilder{DOModelContext: doModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: clusterLifecycle},
+				&domodel.NetworkModelBuilder{DOModelContext: doModelContext, Lifecycle: networkLifecycle},
 			)
 		case kops.CloudProviderGCE:
 			gceModelContext := &gcemodel.GCEModelContext{
