@@ -112,16 +112,7 @@ func TestRecoversFromBadNesting(t *testing.T) {
 }
 
 func runTest(t *testing.T, in string, expected string) {
-	dir, err := os.MkdirTemp("", "")
-	if err != nil {
-		t.Fatalf("error creating temp dir: %v", err)
-	}
-	defer func() {
-		err := os.RemoveAll(dir)
-		if err != nil {
-			t.Errorf("failed to remove temp dir %q: %v", dir, err)
-		}
-	}()
+	dir := t.TempDir()
 
 	p := filepath.Join(dir, "hosts")
 	namesToAddresses := map[string][]string{

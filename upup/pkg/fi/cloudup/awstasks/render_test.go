@@ -35,17 +35,7 @@ type renderTest struct {
 }
 
 func doRenderTests(t *testing.T, method string, cases []*renderTest) {
-	outdir, err := os.MkdirTemp("", "kops-render-")
-	if err != nil {
-		t.Errorf("failed to create local render directory: %s", err)
-		t.FailNow()
-	}
-	defer func() {
-		err := os.RemoveAll(outdir)
-		if err != nil {
-			t.Errorf("failed to remove temp dir %q: %v", outdir, err)
-		}
-	}()
+	outdir := t.TempDir()
 
 	for i, c := range cases {
 		var filename string
