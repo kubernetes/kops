@@ -31,16 +31,7 @@ func TestWriteFile(t *testing.T) {
 	// Clear the umask so an unusual umask doesn't break our test (for directory mode)
 	syscall.Umask(0)
 
-	tempDir, err := os.MkdirTemp("", "fitest")
-	if err != nil {
-		t.Fatalf("error creating temp dir: %v", err)
-	}
-	defer func() {
-		err := os.RemoveAll(tempDir)
-		if err != nil {
-			t.Errorf("failed to remove temp dir %q: %v", tempDir, err)
-		}
-	}()
+	tempDir := t.TempDir()
 
 	tests := []struct {
 		path     string
