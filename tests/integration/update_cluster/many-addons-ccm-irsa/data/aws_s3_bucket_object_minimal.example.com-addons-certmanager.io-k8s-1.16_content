@@ -30609,17 +30609,6 @@ status:
 ---
 
 apiVersion: v1
-kind: Namespace
-metadata:
-  creationTimestamp: null
-  labels:
-    addon.kops.k8s.io/name: certmanager.io
-    app.kubernetes.io/managed-by: kops
-  name: cert-manager
-
----
-
-apiVersion: v1
 automountServiceAccountToken: true
 kind: ServiceAccount
 metadata:
