@@ -32,9 +32,17 @@ fi
 export KOPS_BASE_URL
 
 echo "Cleaning up any leaked resources from previous cluster"
-KOPS_BASE_URL=$(kops-base-from-marker "${KOPS_VERSION_B}")
-KOPS_BASE_URL_B="${KOPS_BASE_URL}"
-KOPS_B=$(kops-download-from-base)
+# For KOPS_VERSION_B, the value "latest" means build of the tree
+if [[ "${KOPS_VERSION_B}" == "latest" ]]; then
+  kops-acquire-latest
+  KOPS_BASE_URL_B="${KOPS_BASE_URL}"
+  KOPS_B="${KOPS}"
+else
+  KOPS_BASE_URL=$(kops-base-from-marker "${KOPS_VERSION_B}")
+  KOPS_BASE_URL_B="${KOPS_BASE_URL}"
+  KOPS_B=$(kops-download-from-base)
+fi
+
 ${KUBETEST2} \
 		--down \
 		--kops-binary-path="${KOPS_B}" || echo "kubetest2 down failed"
