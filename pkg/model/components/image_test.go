@@ -22,10 +22,12 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
 func TestImage(t *testing.T) {
+	featureflag.ParseFlags("-ImageDigest")
 	grid := []struct {
 		Component string
 		Cluster   *kops.Cluster

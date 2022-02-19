@@ -21,6 +21,7 @@ go_library(
         "//util/pkg/vfs:go_default_library",
         "//vendor/github.com/blang/semver/v4:go_default_library",
         "//vendor/github.com/google/go-containerregistry/pkg/authn:go_default_library",
+        "//vendor/github.com/google/go-containerregistry/pkg/crane:go_default_library",
         "//vendor/github.com/google/go-containerregistry/pkg/name:go_default_library",
         "//vendor/github.com/google/go-containerregistry/pkg/v1/remote:go_default_library",
         "//vendor/github.com/google/go-containerregistry/pkg/v1/types:go_default_library",
