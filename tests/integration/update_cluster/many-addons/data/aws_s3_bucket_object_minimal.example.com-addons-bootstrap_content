@@ -103,7 +103,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.19
     manifest: aws-load-balancer-controller.addons.k8s.io/k8s-1.19.yaml
-    manifestHash: 9f57097ea954a71cb3a67444d2e8654bdb59b54444870b2c9ae9c40700fe318e
+    manifestHash: ab863a89548a526a9717d90d4e7815f452e8f5e10a89884eef8937cdecf50cde
     name: aws-load-balancer-controller.addons.k8s.io
     needsPKI: true
     selector:
@@ -133,7 +133,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.20
     manifest: snapshot-controller.addons.k8s.io/k8s-1.20.yaml
-    manifestHash: 005afa268578a742ba899964d0c92ce8843cb391c8a134a38a638bbddd711b07
+    manifestHash: 4469a7ef9574cb8fbd753c8d6d7f3770c13a70c2258650ee8aef045708f75f7b
     name: snapshot-controller.addons.k8s.io
     needsPKI: true
     selector:

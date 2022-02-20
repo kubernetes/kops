@@ -54,7 +54,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: networking.flannel/k8s-1.12.yaml
-    manifestHash: 154592245e346d2a282fa2806938eb52d444f40667b913b42ad27259ccbcc79d
+    manifestHash: e6ecee9b4e64b0ee838bcf999a33f572b19c00fcb3769b55437e30ac8509bb14
     name: networking.flannel
     selector:
       role.kubernetes.io/networking: "1"

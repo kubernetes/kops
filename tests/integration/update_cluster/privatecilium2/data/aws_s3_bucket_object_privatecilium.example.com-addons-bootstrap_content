@@ -20,7 +20,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: kube-dns.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: 86f35e6bc4ffa375038449e4fba4b7c9c7d7aa731d3713b7103389d08661a72c
+    manifestHash: 4873e84530b04842d90a11f341b504588fbc2f6c6880820513f394309d62d72b
     name: kube-dns.addons.k8s.io
     selector:
       k8s-addon: kube-dns.addons.k8s.io
@@ -61,7 +61,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: networking.cilium.io/k8s-1.12-v1.8.yaml
-    manifestHash: e7759ad14e563a755dad14e97624613286e104125197cf74884ed0b925607a5b
+    manifestHash: 45e7800246302a645955b99dd24b78287c968d404825364ebbcf2d4198d7ded8
     name: networking.cilium.io
     needsRollingUpdate: all
     selector:

@@ -54,7 +54,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: networking.kope.io/k8s-1.12.yaml
-    manifestHash: 294272eb01da2938395ff6425ac74690788b6f7ebe80327a83a77b2951b63968
+    manifestHash: 17194d8b9d4f159f86b0dfcdef040268fdf00480db74368150669467d4bb3523
     name: networking.kope.io
     prune:
       kinds:

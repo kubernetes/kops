@@ -148,10 +148,12 @@ spec:
       k8s-app: aws-node
   template:
     metadata:
+      creationTimestamp: null
       labels:
         app.kubernetes.io/instance: aws-vpc-cni
         app.kubernetes.io/name: aws-node
         k8s-app: aws-node
+        kops.k8s.io/managed-by: kops
     spec:
       affinity:
         nodeAffinity:
