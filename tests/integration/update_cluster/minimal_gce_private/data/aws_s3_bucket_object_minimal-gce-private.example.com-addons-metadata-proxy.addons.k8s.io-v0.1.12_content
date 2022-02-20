@@ -35,8 +35,10 @@ spec:
       version: v0.12
   template:
     metadata:
+      creationTimestamp: null
       labels:
         k8s-app: metadata-proxy
+        kops.k8s.io/managed-by: kops
         kubernetes.io/cluster-service: "true"
         version: v0.12
     spec:

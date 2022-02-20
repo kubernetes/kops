@@ -34,9 +34,11 @@ spec:
     metadata:
       annotations:
         dns.alpha.kubernetes.io/internal: kops-controller.internal.compress.example.com
+      creationTimestamp: null
       labels:
         k8s-addon: kops-controller.addons.k8s.io
         k8s-app: kops-controller
+        kops.k8s.io/managed-by: kops
         version: v1.24.0-alpha.2
     spec:
       containers:

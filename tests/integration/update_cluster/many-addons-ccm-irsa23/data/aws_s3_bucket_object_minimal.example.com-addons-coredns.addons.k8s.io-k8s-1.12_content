@@ -126,8 +126,10 @@ spec:
     type: RollingUpdate
   template:
     metadata:
+      creationTimestamp: null
       labels:
         k8s-app: kube-dns
+        kops.k8s.io/managed-by: kops
     spec:
       containers:
       - args:
@@ -354,8 +356,10 @@ spec:
     metadata:
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ""
+      creationTimestamp: null
       labels:
         k8s-app: coredns-autoscaler
+        kops.k8s.io/managed-by: kops
     spec:
       containers:
       - command:
