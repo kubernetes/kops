@@ -213,6 +213,13 @@ type ClusterSpec struct {
 	SnapshotController *SnapshotControllerConfig `json:"snapshotController,omitempty"`
 	// Karpenter defines the Karpenter configuration.
 	Karpenter *KarpenterConfig `json:"karpenter,omitempty"`
+	// PodIdentityWebhook determines the EKS Pod Identity Webhook configuration.
+	PodIdentityWebhook *PodIdentityWebhookConfig `json:"podIdentityWebhook,omitempty"`
+}
+
+// PodIdentityWebhookConfig configures an EKS Pod Identity Webhook.
+type PodIdentityWebhookConfig struct {
+	Enabled bool `json:"enabled,omitempty"`
 }
 
 type KarpenterConfig struct {
