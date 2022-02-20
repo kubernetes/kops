@@ -871,9 +871,11 @@ spec:
       app.kubernetes.io/name: aws-load-balancer-controller
   template:
     metadata:
+      creationTimestamp: null
       labels:
         app.kubernetes.io/component: controller
         app.kubernetes.io/name: aws-load-balancer-controller
+        kops.k8s.io/managed-by: kops
     spec:
       containers:
       - args:

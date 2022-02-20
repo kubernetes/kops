@@ -186,8 +186,10 @@ spec:
       tier: node
   template:
     metadata:
+      creationTimestamp: null
       labels:
         app: flannel
+        kops.k8s.io/managed-by: kops
         tier: node
     spec:
       affinity:

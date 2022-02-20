@@ -154,7 +154,9 @@ spec:
     metadata:
       annotations:
         prometheus.io/scrape: "true"
+      creationTimestamp: null
       labels:
+        kops.k8s.io/managed-by: kops
         name: weave-net
     spec:
       containers:

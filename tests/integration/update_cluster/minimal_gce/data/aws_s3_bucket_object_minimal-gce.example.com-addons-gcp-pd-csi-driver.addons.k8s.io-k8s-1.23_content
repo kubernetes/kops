@@ -580,8 +580,10 @@ spec:
       app: gcp-compute-persistent-disk-csi-driver
   template:
     metadata:
+      creationTimestamp: null
       labels:
         app: gcp-compute-persistent-disk-csi-driver
+        kops.k8s.io/managed-by: kops
     spec:
       containers:
       - args:
@@ -742,8 +744,10 @@ spec:
       app: gcp-compute-persistent-disk-csi-driver
   template:
     metadata:
+      creationTimestamp: null
       labels:
         app: gcp-compute-persistent-disk-csi-driver
+        kops.k8s.io/managed-by: kops
     spec:
       containers:
       - args:

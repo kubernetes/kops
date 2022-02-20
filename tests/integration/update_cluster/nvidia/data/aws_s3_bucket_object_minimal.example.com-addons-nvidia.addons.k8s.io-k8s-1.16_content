@@ -14,7 +14,9 @@ spec:
       name: nvidia-device-plugin-ds
   template:
     metadata:
+      creationTimestamp: null
       labels:
+        kops.k8s.io/managed-by: kops
         name: nvidia-device-plugin-ds
     spec:
       containers:
