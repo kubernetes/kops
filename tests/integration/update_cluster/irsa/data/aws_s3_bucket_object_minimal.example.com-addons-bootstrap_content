@@ -45,6 +45,20 @@ spec:
     selector:
       k8s-addon: dns-controller.addons.k8s.io
     version: 9.99.0
+  - id: k8s-1.16
+    manifest: certmanager.io/k8s-1.16.yaml
+    manifestHash: cd8c6f991a9e1f73bf16c8f3e1b8690ce724f5340ec28fe191c1d1cf2812ea5b
+    name: certmanager.io
+    selector: null
+    version: 9.99.0
+  - id: k8s-1.16
+    manifest: eks-pod-identity-webhook.addons.k8s.io/k8s-1.16.yaml
+    manifestHash: 781012ab6de0bc9188332dd94f232d3d771332f062005c769d5ddf452f77dc11
+    name: eks-pod-identity-webhook.addons.k8s.io
+    needsPKI: true
+    selector:
+      k8s-addon: eks-pod-identity-webhook.addons.k8s.io
+    version: 9.99.0
   - id: v1.15.0
     manifest: storage-aws.addons.k8s.io/v1.15.0.yaml
     manifestHash: 065ae832ddac8d0931e9992d6a76f43a33a36975a38003b34f4c5d86a7d42780
