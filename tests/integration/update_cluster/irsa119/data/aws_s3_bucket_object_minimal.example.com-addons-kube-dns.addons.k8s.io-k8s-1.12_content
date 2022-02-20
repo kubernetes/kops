@@ -18,8 +18,10 @@ spec:
     metadata:
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ""
+      creationTimestamp: null
       labels:
         k8s-app: kube-dns-autoscaler
+        kops.k8s.io/managed-by: kops
     spec:
       containers:
       - command:
@@ -70,8 +72,10 @@ spec:
         prometheus.io/port: "10055"
         prometheus.io/scrape: "true"
         scheduler.alpha.kubernetes.io/critical-pod: ""
+      creationTimestamp: null
       labels:
         k8s-app: kube-dns
+        kops.k8s.io/managed-by: kops
     spec:
       affinity:
         podAntiAffinity:
