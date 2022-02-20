@@ -211,6 +211,13 @@ type ClusterSpec struct {
 	ServiceAccountIssuerDiscovery *ServiceAccountIssuerDiscoveryConfig `json:"serviceAccountIssuerDiscovery,omitempty"`
 	// SnapshotController defines the CSI Snapshot Controller configuration.
 	SnapshotController *SnapshotControllerConfig `json:"snapshotController,omitempty"`
+	// PodIdentityWebhook determines the EKS Pod Identity Webhook configuration.
+	PodIdentityWebhook *PodIdentityWebhookConfig `json:"podIdentityWebhook,omitempty"`
+}
+
+// PodIdentityWebhookConfig configures an EKS Pod Identity Webhook.
+type PodIdentityWebhookConfig struct {
+	Enabled bool `json:"enabled,omitempty"`
 }
 
 // ServiceAccountIssuerDiscoveryConfig configures an OIDC Issuer.

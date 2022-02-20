@@ -58,6 +58,7 @@ go_library(
         "cloudup/resources/addons/leader-migration.rbac.addons.k8s.io/k8s-1.25.yaml",
         "cloudup/resources/addons/gcp-cloud-controller.addons.k8s.io/k8s-1.23.yaml.template",
         "cloudup/resources/addons/aws-load-balancer-controller.addons.k8s.io/k8s-1.19.yaml.template",
+        "cloudup/resources/addons/eks-pod-identity-webhook.addons.k8s.io/k8s-1.16.yaml.template",
     ],
     importpath = "k8s.io/kops/upup/models",
     visibility = ["//visibility:public"],

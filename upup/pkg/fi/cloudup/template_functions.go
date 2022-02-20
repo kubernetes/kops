@@ -53,6 +53,7 @@ import (
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components/kopscontroller"
+	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
@@ -283,6 +284,8 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	}
 
 	dest["ParseTaint"] = util.ParseTaint
+
+	dest["PodIdentityWebhookConfigMapData"] = tf.podIdentityWebhookConfigMapData
 
 	return nil
 }
@@ -747,4 +750,29 @@ func (tf *TemplateFunctions) GetNodeInstanceGroups() map[string]kops.InstanceGro
 		}
 	}
 	return nodegroups
+}
+
+type podIdentityWebhookMapping struct {
+	RoleARN         string
+	Audience        string
+	UseRegionalSTS  bool
+	TokenExpiration int64
+}
+
+func (tf *TemplateFunctions) podIdentityWebhookConfigMapData() (string, error) {
+	sas := tf.Cluster.Spec.IAM.ServiceAccountExternalPermissions
+	mappings := make(map[string]podIdentityWebhookMapping)
+	for _, sa := range sas {
+		if sa.AWS == nil {
+			continue
+		}
+		key := sa.Namespace + "/" + sa.Name
+		mappings[key] = podIdentityWebhookMapping{
+			RoleARN:        fmt.Sprintf("arn:%s:iam::%s:role/%s", tf.AWSPartition, tf.AWSAccountID, iam.IAMNameForServiceAccountRole(sa.Name, sa.Namespace, tf.ClusterName())),
+			Audience:       "amazonaws.com",
+			UseRegionalSTS: true,
+		}
+	}
+	jsonBytes, err := json.Marshal(mappings)
+	return fmt.Sprintf("%q", jsonBytes), err
 }
