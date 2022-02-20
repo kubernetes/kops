@@ -182,6 +182,7 @@ const (
 	awsCCMAddon         = "aws-cloud-controller.addons.k8s.io-k8s-1.18"
 	awsEBSCSIAddon      = "aws-ebs-csi-driver.addons.k8s.io-k8s-1.17"
 	leaderElectionAddon = "leader-migration.rbac.addons.k8s.io-k8s-1.23"
+	certManagerAddon    = "certmanager.io-k8s-1.16"
 )
 
 // TestMinimal runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
@@ -766,6 +767,8 @@ func TestCustomIRSA(t *testing.T) {
 		withServiceAccountRole("myserviceaccount.test-wildcard", false).
 		withServiceAccountRole("myotherserviceaccount.myapp", true).
 		withAddons(dnsControllerAddon).
+		withAddons(certManagerAddon).
+		withAddons("eks-pod-identity-webhook.addons.k8s.io-k8s-1.16").
 		runTestTerraformAWS(t)
 }
 
