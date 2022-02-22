@@ -197,6 +197,48 @@ This will enable Hubble in the Cilium agent as well as install hubble-relay. kOp
 
 The Hubble UI has to be installed separatly.
 
+## Hubble UI
+
+Hubble UI brings a dashboard on top of Hubble observability layer. It allows viewing service map and TCP flows directly inside a browser.
+
+When Cilium is intalled and managed by kOps, Cilium cli should not be used as the configuration it produces conflicts with the configuration managed by kOps (certificates are not managed the same way). For this reason, deploying Hubble UI can be tricky.
+
+Fortunately, recent versions of the Cilium Helm chart allow standalone install of Hubble UI. See `Helm (Standalone install)` tab in [Hubble UI documentation](https://docs.cilium.io/en/stable/gettingstarted/hubble/).
+
+Basically, it requires to disable all components in the chart (they are already managed by kOps) except Hubble UI, and setting `hubble.ui.standalone.enabled` to `true`.
+
+A minimal command line install should look like this:
+
+```
+helm upgrade --install --namespace kube-system --repo https://helm.cilium.io cilium cilium --version 1.11.1 --values - <<EOF
+agent: false
+
+operator:
+  enabled: false
+
+cni:
+  install: false
+
+hubble:
+  enabled: false
+
+  relay:
+    enabled: false
+
+  ui:
+    # enable Hubble UI
+    enabled: true
+
+    standalone:
+      # enable Hubble UI standalone deployment
+      enabled: true
+
+    # ...
+EOF
+```
+
+Note that you can create an ingress resource for Hubble UI by configuring the `hubble.ui.ingress` stanza. See [Cilium Helm chart documentation](https://artifacthub.io/packages/helm/cilium/cilium/1.11.1) for more information.
+
 ## Getting help
 
 For problems with deploying Cilium please post an issue to Github:
