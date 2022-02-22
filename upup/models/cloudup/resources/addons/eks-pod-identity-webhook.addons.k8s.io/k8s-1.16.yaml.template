@@ -96,6 +96,19 @@ spec:
         - name: cert
           mountPath: "/etc/webhook/certs"
           readOnly: true
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: "topology.kubernetes.io/zone"
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: pod-identity-webhook
+      - maxSkew: 1
+        topologyKey: "kubernetes.io/hostname"
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            app: pod-identity-webhook
       volumes:
       - name: cert
         secret:
@@ -181,3 +194,14 @@ metadata:
     prometheus.io/scrape: "true"
 data:
   config: {{ PodIdentityWebhookConfigMapData }}
+---
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: pod-identity-webhook
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: pod-identity-webhook
+  maxUnavailable: 50%
