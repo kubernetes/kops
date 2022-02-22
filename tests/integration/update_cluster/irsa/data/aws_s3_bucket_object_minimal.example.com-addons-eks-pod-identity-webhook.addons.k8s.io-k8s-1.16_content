@@ -136,6 +136,19 @@ spec:
           name: cert
           readOnly: true
       serviceAccountName: pod-identity-webhook
+      topologySpreadConstraints:
+      - labelSelector:
+          matchLabels:
+            app: pod-identity-webhook
+        maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: ScheduleAnyway
+      - labelSelector:
+          matchLabels:
+            app: pod-identity-webhook
+        maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
       volumes:
       - name: cert
         secret:
@@ -253,3 +266,21 @@ metadata:
     k8s-addon: eks-pod-identity-webhook.addons.k8s.io
   name: pod-identity-webhook
   namespace: kube-system
+
+---
+
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: eks-pod-identity-webhook.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: eks-pod-identity-webhook.addons.k8s.io
+  name: pod-identity-webhook
+  namespace: kube-system
+spec:
+  maxUnavailable: 50%
+  selector:
+    matchLabels:
+      app: pod-identity-webhook
