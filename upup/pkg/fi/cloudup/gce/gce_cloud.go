@@ -27,7 +27,6 @@ import (
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/cloudresourcemanager/v1"
 	compute "google.golang.org/api/compute/v1"
-	"google.golang.org/api/iam/v1"
 	oauth2 "google.golang.org/api/oauth2/v2"
 	"google.golang.org/api/storage/v1"
 	"k8s.io/klog/v2"
@@ -42,7 +41,7 @@ type GCECloud interface {
 	fi.Cloud
 	Compute() ComputeClient
 	Storage() *storage.Service
-	IAM() *iam.Service
+	IAM() IamClient
 	CloudDNS() DNSClient
 	Project() string
 	WaitForOp(op *compute.Operation) error
@@ -59,7 +58,7 @@ type GCECloud interface {
 type gceCloudImplementation struct {
 	compute *computeClientImpl
 	storage *storage.Service
-	iam     *iam.Service
+	iam     *iamClientImpl
 	dns     *dnsClientImpl
 
 	// cloudResourceManager is the client for the cloudresourcemanager API
@@ -139,7 +138,7 @@ func NewGCECloud(region string, project string, labels map[string]string) (GCECl
 	}
 	c.storage = storageService
 
-	iamService, err := iam.NewService(ctx)
+	iamService, err := newIamClientImpl(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error building IAM API client: %v", err)
 	}
@@ -202,7 +201,7 @@ func (c *gceCloudImplementation) Storage() *storage.Service {
 }
 
 // IAM returns the IAM client
-func (c *gceCloudImplementation) IAM() *iam.Service {
+func (c *gceCloudImplementation) IAM() IamClient {
 	return c.iam
 }
 
@@ -377,4 +376,23 @@ func (c *gceCloudImplementation) getTokenInfo(ctx context.Context) (*oauth2.Toke
 	}
 
 	return tokenInfo, nil
+}
+
+// SplitServiceAccountEmail splits service account email
+func SplitServiceAccountEmail(email string) (string, string, error) {
+	accountID := ""
+	projectID := ""
+
+	tokens := strings.Split(email, "@")
+	if len(tokens) == 2 {
+		accountID = tokens[0]
+		if strings.HasSuffix(tokens[1], ".iam.gserviceaccount.com") {
+			projectID = strings.TrimSuffix(tokens[1], ".iam.gserviceaccount.com")
+		}
+	}
+
+	if accountID == "" || projectID == "" {
+		return "", "", fmt.Errorf("unexpected format for ServiceAccount email %q", email)
+	}
+	return accountID, projectID, nil
 }
