@@ -986,7 +986,7 @@ func (d *clusterDiscoveryGCE) listServiceAccounts() ([]*resources.Resource, erro
 			return nil, fmt.Errorf("Invalid service account email '%s'", gce.LastComponent(sa.Name))
 		}
 		accountID := tokens[0]
-		names := []string{"control-plane", "bastion", "node"}
+		names := []string{gce.ControlPlane, gce.Bastion, gce.Node}
 		for _, name := range names {
 			generatedName, err := gce.ServiceAccountName(name, d.clusterName)
 			if err != nil {
