@@ -31,6 +31,9 @@ const (
 	GceLabelNameInstanceGroup     = "k8s-io-instance-group"
 	GceLabelNameRolePrefix        = "k8s-io-role-"
 	GceLabelNameEtcdClusterPrefix = "k8s-io-etcd-"
+	ControlPlane                  = "control-plane"
+	Bastion                       = "bastion"
+	Node                          = "node"
 )
 
 // EncodeGCELabel encodes a string into an RFC1035 compatible value, suitable for use as GCE label key or value
