@@ -19,10 +19,10 @@ package dotasks
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/digitalocean/godo"
 
-	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	_ "k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -35,14 +35,16 @@ type Droplet struct {
 	Name      *string
 	Lifecycle fi.Lifecycle
 
-	Region   *string
-	Size     *string
-	Image    *string
-	SSHKey   *string
-	VPC      *string
-	Tags     []string
-	Count    int
-	UserData fi.Resource
+	Region      *string
+	Size        *string
+	Image       *string
+	SSHKey      *string
+	VPCUUID     *string
+	NetworkCIDR *string
+	VPCName     *string
+	Tags        []string
+	Count       int
+	UserData    fi.Resource
 }
 
 var (
@@ -86,7 +88,7 @@ func (d *Droplet) Find(c *fi.Context) (*Droplet, error) {
 		Tags:      foundDroplet.Tags,
 		SSHKey:    d.SSHKey,   // TODO: get from droplet or ignore change
 		UserData:  d.UserData, // TODO: get from droplet or ignore change
-		VPC:       fi.String(foundDroplet.VPCUUID),
+		VPCUUID:   fi.String(foundDroplet.VPCUUID),
 		Lifecycle: d.Lifecycle,
 	}, nil
 }
@@ -147,6 +149,17 @@ func (_ *Droplet) RenderDO(t *do.DOAPITarget, a, e, changes *Droplet) error {
 		newDropletCount = expectedCount - actualCount
 	}
 
+	// associate vpcuuid to the droplet if set.
+	vpcUUID := ""
+	if fi.StringValue(e.NetworkCIDR) != "" {
+		vpcUUID, err = t.Cloud.GetVPCUUID(fi.StringValue(e.NetworkCIDR), fi.StringValue(e.VPCName))
+		if err != nil {
+			return fmt.Errorf("Error fetching vpcUUID from network cidr=%s", fi.StringValue(e.NetworkCIDR))
+		}
+	} else if fi.StringValue(e.VPCUUID) != "" {
+		vpcUUID = fi.StringValue(e.VPCUUID)
+	}
+
 	for i := 0; i < newDropletCount; i++ {
 		_, _, err = t.Cloud.DropletsService().Create(context.TODO(), &godo.DropletCreateRequest{
 			Name:     fi.StringValue(e.Name),
@@ -154,14 +167,13 @@ func (_ *Droplet) RenderDO(t *do.DOAPITarget, a, e, changes *Droplet) error {
 			Size:     fi.StringValue(e.Size),
 			Image:    godo.DropletCreateImage{Slug: fi.StringValue(e.Image)},
 			Tags:     e.Tags,
-			VPCUUID:  fi.StringValue(e.VPC),
+			VPCUUID:  vpcUUID,
 			UserData: userData,
 			SSHKeys:  []godo.DropletCreateSSHKey{{Fingerprint: fi.StringValue(e.SSHKey)}},
 		})
 
 		if err != nil {
-			klog.Errorf("Error creating droplet with Name=%s", fi.StringValue(e.Name))
-			return err
+			return fmt.Errorf("Error creating droplet with Name=%s", fi.StringValue(e.Name))
 		}
 	}
 

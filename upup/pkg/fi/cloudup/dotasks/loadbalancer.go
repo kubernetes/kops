@@ -41,6 +41,9 @@ type LoadBalancer struct {
 	Region       *string
 	DropletTag   *string
 	IPAddress    *string
+	VPCUUID      *string
+	VPCName      *string
+	NetworkCIDR  *string
 	ForAPIServer bool
 }
 
@@ -75,9 +78,10 @@ func (lb *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 	}
 
 	return &LoadBalancer{
-		Name:   fi.String(loadbalancer.Name),
-		ID:     fi.String(loadbalancer.ID),
-		Region: fi.String(loadbalancer.Region.Slug),
+		Name:    fi.String(loadbalancer.Name),
+		ID:      fi.String(loadbalancer.ID),
+		Region:  fi.String(loadbalancer.Region.Slug),
+		VPCUUID: fi.String(loadbalancer.VPCUUID),
 
 		// Ignore system fields
 		Lifecycle:    lb.Lifecycle,
@@ -154,17 +158,28 @@ func (_ *LoadBalancer) RenderDO(t *do.DOAPITarget, a, e, changes *LoadBalancer) 
 		}
 	}
 
+	// associate vpcuuid to the loadbalancer if set
+	vpcUUID := ""
+	if fi.StringValue(e.NetworkCIDR) != "" {
+		vpcUUID, err = t.Cloud.GetVPCUUID(fi.StringValue(e.NetworkCIDR), fi.StringValue(e.VPCName))
+		if err != nil {
+			return fmt.Errorf("Error fetching vpcUUID from network cidr=%s", fi.StringValue(e.NetworkCIDR))
+		}
+	} else if fi.StringValue(e.VPCUUID) != "" {
+		vpcUUID = fi.StringValue(e.VPCUUID)
+	}
+
 	loadBalancerService := t.Cloud.LoadBalancersService()
 	loadbalancer, _, err := loadBalancerService.Create(context.TODO(), &godo.LoadBalancerRequest{
 		Name:            fi.StringValue(e.Name),
 		Region:          fi.StringValue(e.Region),
 		Tag:             fi.StringValue(e.DropletTag),
+		VPCUUID:         vpcUUID,
 		ForwardingRules: Rules,
 		HealthCheck:     HealthCheck,
 	})
 	if err != nil {
-		klog.Errorf("Error creating load balancer with Name=%s, Error=%v", fi.StringValue(e.Name), err)
-		return err
+		return fmt.Errorf("Error creating load balancer with Name=%s, Error=%v", fi.StringValue(e.Name), err)
 	}
 
 	e.ID = fi.String(loadbalancer.ID)
