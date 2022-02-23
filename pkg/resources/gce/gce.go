@@ -23,6 +23,7 @@ import (
 
 	compute "google.golang.org/api/compute/v1"
 	clouddns "google.golang.org/api/dns/v1"
+	"google.golang.org/api/iam/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/resources"
@@ -47,6 +48,7 @@ const (
 	typeSubnet               = "Subnet"
 	typeRouter               = "Router"
 	typeDNSRecord            = "DNSRecord"
+	typeServiceAccount       = "ServiceAccount"
 )
 
 // Maximum number of `-` separated tokens in a name
@@ -106,6 +108,7 @@ func ListResourcesGCE(gceCloud gce.GCECloud, clusterName string, region string) 
 		d.listSubnets,
 		d.listRouters,
 		d.listNetworks,
+		d.listServiceAccounts,
 	}
 	for _, fn := range listFunctions {
 		resourceTrackers, err := fn()
@@ -984,6 +987,54 @@ func deleteRouter(cloud fi.Cloud, r *resources.Resource) error {
 	}
 
 	return c.WaitForOp(op)
+}
+
+func (d *clusterDiscoveryGCE) listServiceAccounts() ([]*resources.Resource, error) {
+	c := d.gceCloud
+	ctx := context.Background()
+
+	sas, err := c.IAM().ServiceAccounts().List(ctx, fmt.Sprintf("projects/%s", c.Project()))
+	if err != nil {
+		return nil, fmt.Errorf("error listing ServiceAccounts %w", err)
+	}
+	var resourceTrackers []*resources.Resource
+	for _, sa := range sas {
+		tokens := strings.Split(gce.LastComponent(sa.Name), "@")
+		if len(tokens) != 2 {
+			return nil, fmt.Errorf("Invalid service account email '%s'", gce.LastComponent(sa.Name))
+		}
+		accountID := tokens[0]
+		names := []string{gce.ControlPlane, gce.Bastion, gce.Node}
+		for _, name := range names {
+			generatedName, err := gce.ServiceAccountName(name, d.clusterName)
+			if err != nil {
+				return nil, err
+			}
+			if generatedName == accountID {
+				resourceTracker := &resources.Resource{
+					Name:    gce.LastComponent(sa.Name),
+					ID:      sa.Name,
+					Type:    typeServiceAccount,
+					Deleter: deleteServiceAccount,
+					Obj:     sa,
+				}
+
+				klog.V(4).Infof("found resource: %s", sa.Name)
+				resourceTrackers = append(resourceTrackers, resourceTracker)
+				break
+			}
+		}
+	}
+	return resourceTrackers, nil
+}
+
+func deleteServiceAccount(cloud fi.Cloud, r *resources.Resource) error {
+	c := cloud.(gce.GCECloud)
+	o := r.Obj.(*iam.ServiceAccount)
+
+	klog.V(2).Infof("deleting GCE ServiceAccount %s", o.Name)
+	_, err := c.IAM().ServiceAccounts().Delete(o.Name)
+	return err
 }
 
 func (d *clusterDiscoveryGCE) listNetworks() ([]*resources.Resource, error) {

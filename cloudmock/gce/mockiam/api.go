@@ -1,5 +1,5 @@
 /*
-Copyright 2021 The Kubernetes Authors.
+Copyright 2022 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,63 +17,30 @@ limitations under the License.
 package mockiam
 
 import (
-	"context"
-	"fmt"
-	"net/http"
-	"strings"
-
-	"google.golang.org/api/iam/v1"
-	option "google.golang.org/api/option"
-	"k8s.io/klog/v2"
+	"google.golang.org/api/googleapi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 )
 
-// mockIAMService represents a mocked IAM client.
-type mockIAMService struct {
-	svc *iam.Service
-
-	serviceAccounts serviceAccounts
+// MockClient represents a mocked IAM client.
+type MockClient struct {
+	serviceAccounts *serviceAccountClient
 }
 
-// New creates a new mock IAM client.
-func New(project string) *iam.Service {
-	ctx := context.Background()
+var _ gce.IamClient = &MockClient{}
 
-	s := &mockIAMService{}
-
-	s.serviceAccounts.Init()
-
-	httpClient := &http.Client{Transport: s}
-	svc, err := iam.NewService(ctx, option.WithHTTPClient(httpClient))
-	if err != nil {
-		klog.Fatalf("failed to build mock iam service: %v", err)
+// NewMockClient creates a new mock client.
+func NewMockClient(project string) *MockClient {
+	return &MockClient{
+		serviceAccounts: newServiceAccounts(project),
 	}
-	s.svc = svc
-	return svc
 }
 
-func (s *mockIAMService) RoundTrip(request *http.Request) (*http.Response, error) {
-	url := request.URL
-	if url.Host != "iam.googleapis.com" {
-		return nil, fmt.Errorf("unexpected host in request %#v", request)
+func (c *MockClient) ServiceAccounts() gce.ServiceAccountClient {
+	return c.serviceAccounts
+}
+
+func notFoundError() error {
+	return &googleapi.Error{
+		Code: 404,
 	}
-
-	pathTokens := strings.Split(strings.TrimPrefix(url.Path, "/"), "/")
-	if len(pathTokens) >= 1 && pathTokens[0] == "v1" {
-		if len(pathTokens) >= 3 && pathTokens[1] == "projects" {
-			projectID := pathTokens[2]
-			if len(pathTokens) >= 5 && pathTokens[3] == "serviceAccounts" {
-				serviceAccount := pathTokens[4]
-				if len(pathTokens) == 5 && request.Method == "GET" {
-					return s.serviceAccounts.Get(projectID, serviceAccount, request)
-				}
-			}
-
-			if len(pathTokens) == 4 && pathTokens[3] == "serviceAccounts" && request.Method == "POST" {
-				return s.serviceAccounts.Create(projectID, request)
-			}
-		}
-	}
-
-	klog.Warningf("request: %s %s %#v", request.Method, request.URL, request)
-	return nil, fmt.Errorf("unhandled request %#v", request)
 }
