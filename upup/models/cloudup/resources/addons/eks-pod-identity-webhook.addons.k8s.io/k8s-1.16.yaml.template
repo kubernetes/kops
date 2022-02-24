@@ -80,8 +80,7 @@ spec:
       serviceAccountName: pod-identity-webhook
       containers:
       - name: pod-identity-webhook
-        image: olemarkus/amazon-eks-pod-identity-webhook:latest
-        imagePullPolicy: Always
+        image: olemarkus/amazon-eks-pod-identity-webhook:kops-v1.23.0-beta.2
         command:
         - /webhook
         - --in-cluster=false
@@ -96,6 +95,7 @@ spec:
         - name: cert
           mountPath: "/etc/webhook/certs"
           readOnly: true
+      priorityClassName: "system-cluster-critical"
       topologySpreadConstraints:
       - maxSkew: 1
         topologyKey: "topology.kubernetes.io/zone"

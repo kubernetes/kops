@@ -128,13 +128,13 @@ spec:
         - --logtostderr
         - --watch-config-map
         - --v=5
-        image: olemarkus/amazon-eks-pod-identity-webhook:latest
-        imagePullPolicy: Always
+        image: olemarkus/amazon-eks-pod-identity-webhook:kops-v1.23.0-beta.2
         name: pod-identity-webhook
         volumeMounts:
         - mountPath: /etc/webhook/certs
           name: cert
           readOnly: true
+      priorityClassName: system-cluster-critical
       serviceAccountName: pod-identity-webhook
       topologySpreadConstraints:
       - labelSelector:
