@@ -62,7 +62,7 @@ func (d *deployer) Down() error {
 		klog.V(2).Info("releasing boskos project")
 		err := boskos.Release(
 			d.boskos,
-			d.GCPProject,
+			[]string{d.GCPProject},
 			d.boskosHeartbeatClose,
 		)
 		if err != nil {
