@@ -550,15 +550,17 @@ resource "google_project_iam_binding" "serviceaccount-nodes" {
 }
 
 resource "google_service_account" "control-plane" {
-  account_id  = "control-plane-minimal-g-sh4okp"
-  description = "kubernetes control-plane instances"
-  project     = "testproject"
+  account_id   = "control-plane-minimal-g-sh4okp"
+  description  = "kubernetes control-plane instances"
+  display_name = "control-plane"
+  project      = "testproject"
 }
 
 resource "google_service_account" "node" {
-  account_id  = "node-minimal-gce-privat-sh4okp"
-  description = "kubernetes worker nodes"
-  project     = "testproject"
+  account_id   = "node-minimal-gce-privat-sh4okp"
+  description  = "kubernetes worker nodes"
+  display_name = "node"
+  project      = "testproject"
 }
 
 terraform {
