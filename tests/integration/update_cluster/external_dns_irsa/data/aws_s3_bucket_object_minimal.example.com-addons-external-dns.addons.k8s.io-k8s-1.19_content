@@ -17,9 +17,11 @@ spec:
       k8s-app: external-dns
   template:
     metadata:
+      creationTimestamp: null
       labels:
         k8s-addon: external-dns.addons.k8s.io
         k8s-app: external-dns
+        kops.k8s.io/managed-by: kops
         version: v0.10.1
     spec:
       containers:

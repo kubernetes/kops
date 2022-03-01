@@ -19,7 +19,9 @@ spec:
         scheduler.alpha.kubernetes.io/critical-pod: ""
         scheduler.alpha.kubernetes.io/tolerations: '[{"key":"CriticalAddonsOnly",
           "operator":"Exists"}]'
+      creationTimestamp: null
       labels:
+        kops.k8s.io/managed-by: kops
         name: kopeio-networking-agent
     spec:
       containers:
