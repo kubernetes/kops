@@ -59,9 +59,10 @@ func (b *ServiceAccountsBuilder) Build(c *fi.ModelBuilderContext) error {
 		doneEmails[*link.Email] = true
 
 		serviceAccount := &gcetasks.ServiceAccount{
-			Name:      link.Name,
-			Email:     link.Email,
-			Lifecycle: b.Lifecycle,
+			Name:        link.Name,
+			DisplayName: link.Name,
+			Email:       link.Email,
+			Lifecycle:   b.Lifecycle,
 		}
 		switch ig.Spec.Role {
 		case kops.InstanceGroupRoleAPIServer, kops.InstanceGroupRoleMaster:
