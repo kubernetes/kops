@@ -62,6 +62,7 @@ func (s *serviceAccountClient) Update(ctx context.Context, name string, sa *iam.
 func (s *serviceAccountClient) Create(ctx context.Context, name string, req *iam.CreateServiceAccountRequest) (*iam.ServiceAccount, error) {
 	s.Lock()
 	defer s.Unlock()
+	req.ServiceAccount.Email = fmt.Sprintf("%s@%s.iam.gserviceaccount.com", req.AccountId, s.project)
 	fqn := fmt.Sprintf("%s/serviceAccounts/%s", name, req.ServiceAccount.Email)
 	req.ServiceAccount.Name = fqn
 	s.serviceaccounts[fqn] = req.ServiceAccount
