@@ -52,14 +52,17 @@ func (b *IAMModelContext) IAMNameForServiceAccountRole(role Subject) (string, er
 	if !ok {
 		return "", fmt.Errorf("role %v does not have ServiceAccount", role)
 	}
-
-	name := serviceAccount.Name + "." + strings.ReplaceAll(serviceAccount.Namespace, "*", "wildcard") + ".sa." + b.ClusterName()
-	name = truncate.TruncateString(name, truncate.TruncateStringOptions{MaxLength: MaxLengthIAMRoleName, AlwaysAddHash: false})
-
+	name := IAMNameForServiceAccountRole(serviceAccount.Name, serviceAccount.Namespace, b.ClusterName())
 	return name, nil
 }
 
 // ClusterName returns the cluster name
 func (b *IAMModelContext) ClusterName() string {
 	return b.Cluster.ObjectMeta.Name
+}
+
+func IAMNameForServiceAccountRole(name, namespace, clusterName string) string {
+	role := name + "." + strings.ReplaceAll(namespace, "*", "wildcard") + ".sa." + clusterName
+	role = truncate.TruncateString(role, truncate.TruncateStringOptions{MaxLength: MaxLengthIAMRoleName, AlwaysAddHash: false})
+	return role
 }

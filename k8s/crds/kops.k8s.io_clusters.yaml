@@ -5268,6 +5268,13 @@ spec:
               podCIDR:
                 description: PodCIDR is the CIDR from which we allocate IPs for pods
                 type: string
+              podIdentityWebhook:
+                description: PodIdentityWebhook determines the EKS Pod Identity Webhook
+                  configuration.
+                properties:
+                  enabled:
+                    type: boolean
+                type: object
               project:
                 description: Project is the cloud project we should use, required
                   on GCE

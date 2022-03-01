@@ -15,8 +15,10 @@ spec:
       k8s-app: aws-cloud-controller-manager
   template:
     metadata:
+      creationTimestamp: null
       labels:
         k8s-app: aws-cloud-controller-manager
+        kops.k8s.io/managed-by: kops
     spec:
       containers:
       - args:

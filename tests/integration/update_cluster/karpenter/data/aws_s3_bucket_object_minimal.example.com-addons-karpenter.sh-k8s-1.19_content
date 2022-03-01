@@ -599,8 +599,10 @@ spec:
     type: Recreate
   template:
     metadata:
+      creationTimestamp: null
       labels:
         karpenter: controller
+        kops.k8s.io/managed-by: kops
     spec:
       affinity:
         nodeAffinity:
@@ -712,8 +714,10 @@ spec:
     type: Recreate
   template:
     metadata:
+      creationTimestamp: null
       labels:
         karpenter: webhook
+        kops.k8s.io/managed-by: kops
     spec:
       affinity:
         nodeAffinity:

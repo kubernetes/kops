@@ -301,11 +301,13 @@ spec:
       annotations:
         prometheus.io/port: "8085"
         prometheus.io/scrape: "true"
+      creationTimestamp: null
       labels:
         app: cluster-autoscaler
         app.kubernetes.io/name: cluster-autoscaler
         k8s-addon: cluster-autoscaler.addons.k8s.io
         k8s-app: cluster-autoscaler
+        kops.k8s.io/managed-by: kops
     spec:
       containers:
       - command:

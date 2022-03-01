@@ -160,8 +160,10 @@ spec:
       k8s-app: metrics-server
   template:
     metadata:
+      creationTimestamp: null
       labels:
         k8s-app: metrics-server
+        kops.k8s.io/managed-by: kops
     spec:
       containers:
       - args:
