@@ -328,7 +328,7 @@ spec:
             - mountPath: /var/lib/csi/sockets/pluginproxy/
               name: socket-dir
         - name: cinder-csi-plugin
-          image: "{{- if .CloudConfig.Openstack.BlockStorage.CSIPluginImage -}} {{ .CloudConfig.Openstack.BlockStorage.CSIPluginImage }} {{- else -}} docker.io/k8scloudprovider/cinder-csi-plugin:{{OpenStackCCMTag}} {{- end -}}"
+          image: "{{- if .CloudConfig.Openstack.BlockStorage.CSIPluginImage -}} {{ .CloudConfig.Openstack.BlockStorage.CSIPluginImage }} {{- else -}} docker.io/k8scloudprovider/cinder-csi-plugin:{{OpenStackCSITag}} {{- end -}}"
           args:
             - /bin/cinder-csi-plugin
             - "--nodeid=$(NODE_ID)"
@@ -472,7 +472,7 @@ spec:
             capabilities:
               add: ["SYS_ADMIN"]
             allowPrivilegeEscalation: true
-          image: "{{- if .CloudConfig.Openstack.BlockStorage.CSIPluginImage -}} {{ .CloudConfig.Openstack.BlockStorage.CSIPluginImage }} {{- else -}} docker.io/k8scloudprovider/cinder-csi-plugin:{{OpenStackCCMTag}} {{- end -}}"
+          image: "{{- if .CloudConfig.Openstack.BlockStorage.CSIPluginImage -}} {{ .CloudConfig.Openstack.BlockStorage.CSIPluginImage }} {{- else -}} docker.io/k8scloudprovider/cinder-csi-plugin:{{OpenStackCSITag}} {{- end -}}"
           args :
             - /bin/cinder-csi-plugin
             - "--nodeid=$(NODE_ID)"
