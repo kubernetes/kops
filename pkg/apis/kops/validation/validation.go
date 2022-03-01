@@ -286,6 +286,10 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		}
 	}
 
+	if spec.PodIdentityWebhook != nil && spec.PodIdentityWebhook.Enabled {
+		allErrs = append(allErrs, validatePodIdentityWebhook(c, spec.PodIdentityWebhook, fieldPath.Child("podIdentityWebhook"))...)
+	}
+
 	return allErrs
 }
 
@@ -1663,5 +1667,15 @@ func validateSnapshotController(cluster *kops.Cluster, spec *kops.SnapshotContro
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("enabled"), "Snapshot controller requires that cert manager is enabled"))
 		}
 	}
+	return allErrs
+}
+
+func validatePodIdentityWebhook(cluster *kops.Cluster, spec *kops.PodIdentityWebhookConfig, fldPath *field.Path) (allErrs field.ErrorList) {
+	if spec != nil && spec.Enabled {
+		if !components.IsCertManagerEnabled(cluster) {
+			allErrs = append(allErrs, field.Forbidden(fldPath, "EKS Pod Identity Webhook requires that cert manager is enabled"))
+		}
+	}
+
 	return allErrs
 }

@@ -6,7 +6,7 @@ spec:
   addons:
   - id: k8s-1.16
     manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: 775bbe55c21e48e24bf2ed86b80f5be033072025d5256d3b71858a29eb5384cb
+    manifestHash: dc7c66ea896ca414a684bb94b843d66c80fb9829f97d333c53658b81cb30f089
     name: kops-controller.addons.k8s.io
     needsRollingUpdate: control-plane
     selector:
@@ -20,7 +20,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: kube-dns.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: 86f35e6bc4ffa375038449e4fba4b7c9c7d7aa731d3713b7103389d08661a72c
+    manifestHash: 4873e84530b04842d90a11f341b504588fbc2f6c6880820513f394309d62d72b
     name: kube-dns.addons.k8s.io
     selector:
       k8s-addon: kube-dns.addons.k8s.io
@@ -40,14 +40,14 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: dns-controller.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: ac3d2238b9a073b6d2e28d1668aabb35704ad01e96d586147006e074c8efb0f8
+    manifestHash: 934a45349486526278a8957d92419e76653928066a26e92b3a3c92bd847f73ef
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
     version: 9.99.0
   - id: k8s-1.11
     manifest: metrics-server.addons.k8s.io/k8s-1.11.yaml
-    manifestHash: 93c0127182da9877f996b5328d2ed6d8a835f2867fd1d0972333cc66bbc4423f
+    manifestHash: c411622c69ea31e9523f69a9259fcc99c38ebe16cc3cc5181ad315f2416363af
     name: metrics-server.addons.k8s.io
     needsPKI: true
     selector:
@@ -55,7 +55,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.16
     manifest: certmanager.io/k8s-1.16.yaml
-    manifestHash: 78281c2d5d9aaaded5e035d2f7b5d00466c80f8ab55dfa2ad9f26216b2071108
+    manifestHash: cd8c6f991a9e1f73bf16c8f3e1b8690ce724f5340ec28fe191c1d1cf2812ea5b
     name: certmanager.io
     selector: null
     version: 9.99.0
@@ -68,7 +68,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.16
     manifest: networking.cilium.io/k8s-1.16-v1.10.yaml
-    manifestHash: b98df037f3556a2b6e3233c01e9b07c7423b803e5ad1f92276ef8df6e52f9ce6
+    manifestHash: 760dded8cabec4049ab451a402737771777d475e6f32817ad2f470a5d107c209
     name: networking.cilium.io
     needsRollingUpdate: all
     selector:

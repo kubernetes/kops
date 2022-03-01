@@ -344,8 +344,10 @@ spec:
     metadata:
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ""
+      creationTimestamp: null
       labels:
         k8s-app: cilium
+        kops.k8s.io/managed-by: kops
         kubernetes.io/cluster-service: "true"
     spec:
       affinity:
@@ -596,8 +598,10 @@ spec:
     type: RollingUpdate
   template:
     metadata:
+      creationTimestamp: null
       labels:
         io.cilium/app: operator
+        kops.k8s.io/managed-by: kops
         name: cilium-operator
     spec:
       containers:

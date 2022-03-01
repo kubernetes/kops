@@ -155,8 +155,10 @@ spec:
     metadata:
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ""
+      creationTimestamp: null
       labels:
         k8s-app: aws-iam-authenticator
+        kops.k8s.io/managed-by: kops
     spec:
       containers:
       - args:
