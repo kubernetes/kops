@@ -32,6 +32,7 @@ spec:
       k8s-app: kops-controller
   template:
     metadata:
+      creationTimestamp: null
       labels:
         k8s-addon: kops-controller.addons.k8s.io
         k8s-app: kops-controller

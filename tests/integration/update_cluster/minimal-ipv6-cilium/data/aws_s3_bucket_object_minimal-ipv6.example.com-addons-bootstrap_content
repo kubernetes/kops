@@ -6,7 +6,7 @@ spec:
   addons:
   - id: k8s-1.16
     manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: 1c233651d95b15d2e68c5df3c7bb316f38425600b19c94fa9a77b61929f2eb4c
+    manifestHash: 5e2b76695a4d5f08f4e763c695396154a3f0cc3f5a4c11c9ecb2a0eb2c4c8041
     name: kops-controller.addons.k8s.io
     needsRollingUpdate: control-plane
     selector:
@@ -20,7 +20,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: coredns.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: cff21bb696d4a3b72aff6cd15a38414748d2efb56a46be42d49b71b52ca8bd97
+    manifestHash: 3834418f2c832b8e3c7e93f0205d669e8a6ce11c9a08619a435bebe2e45b6d59
     name: coredns.addons.k8s.io
     selector:
       k8s-addon: coredns.addons.k8s.io
@@ -40,7 +40,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: dns-controller.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: e34b816456e46119ecf0a7ed161bccb32393f302733e312fc7c367be2950bd75
+    manifestHash: 4fd09783d406265871d9c9003a97bfe7690ae912ade39cc459da2d869ced023a
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
@@ -54,7 +54,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.16
     manifest: networking.cilium.io/k8s-1.16-v1.10.yaml
-    manifestHash: 1206170b5352579dabf78db9f85cf7e4170454e18158315fe9aa7bf0d15c1b7a
+    manifestHash: dfe4f267c1fd758caaf32f91e9de814fec5272d0ca42161320620b93e1115ed1
     name: networking.cilium.io
     needsRollingUpdate: all
     selector:
@@ -69,7 +69,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.17
     manifest: aws-ebs-csi-driver.addons.k8s.io/k8s-1.17.yaml
-    manifestHash: 859d2efbcb97d06440eeb782ebbd761fa2cd1b350a830585a8e24a0e1e9a3088
+    manifestHash: 34ae40cbaeebb401655f475a8ac5d04abb2396a50ba660148bfc553d301c5fa7
     name: aws-ebs-csi-driver.addons.k8s.io
     selector:
       k8s-addon: aws-ebs-csi-driver.addons.k8s.io

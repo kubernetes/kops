@@ -61,9 +61,8 @@ func (b *IAMModelContext) IAMNameForServiceAccountRole(role Subject) (string, er
 func (b *IAMModelContext) ClusterName() string {
 	return b.Cluster.ObjectMeta.Name
 }
-
 func IAMNameForServiceAccountRole(name, namespace, clusterName string) string {
 	role := name + "." + strings.ReplaceAll(namespace, "*", "wildcard") + ".sa." + clusterName
-	role = awsup.TruncateString(name, awsup.TruncateStringOptions{MaxLength: MaxLengthIAMRoleName, AlwaysAddHash: false})
+	role = awsup.TruncateString(role, awsup.TruncateStringOptions{MaxLength: MaxLengthIAMRoleName, AlwaysAddHash: false})
 	return role
 }
