@@ -73,13 +73,19 @@ func ComputeAWSKeyFingerprint(publicKey string) (string, error) {
 		return "", err
 	}
 
-	der, err := toDER(sshPublicKey)
-	if err != nil {
-		return "", fmt.Errorf("error computing fingerprint for SSH public key: %v", err)
+	switch fmt.Sprintf("%T", sshPublicKey) {
+	case "*ssh.rsaPublicKey":
+		der, err := rsaToDER(sshPublicKey)
+		if err != nil {
+			return "", fmt.Errorf("error computing fingerprint for SSH public key: %v", err)
+		}
+		h := md5.Sum(der)
+		return colonSeparatedHex(h[:]), nil
+	case "ssh.ed25519PublicKey":
+		return ssh.FingerprintSHA256(sshPublicKey), nil
 	}
-	h := md5.Sum(der)
 
-	return colonSeparatedHex(h[:]), nil
+	return "", fmt.Errorf("unexpected type of SSH key (%T); AWS can only import RSA and ed25519 keys", sshPublicKey)
 }
 
 // ComputeOpenSSHKeyFingerprint computes the OpenSSH fingerprint of the SSH public key
@@ -93,30 +99,16 @@ func ComputeOpenSSHKeyFingerprint(publicKey string) (string, error) {
 	return colonSeparatedHex(h[:]), nil
 }
 
-// toDER gets the DER encoding of the SSH public key
+// rsaToDER gets the DER encoding of the SSH public key
 // Annoyingly, the ssh code wraps the actual crypto keys, so we have to use reflection tricks
-func toDER(pubkey ssh.PublicKey) ([]byte, error) {
-	pubkeyValue := reflect.ValueOf(pubkey)
-	typeName := fmt.Sprintf("%T", pubkey)
-
+func rsaToDER(pubkey ssh.PublicKey) ([]byte, error) {
 	var cryptoKey crypto.PublicKey
-	switch typeName {
-	case "*ssh.rsaPublicKey":
-		var rsaPublicKey *rsa.PublicKey
-		targetType := reflect.ValueOf(rsaPublicKey).Type()
-		rsaPublicKey = pubkeyValue.Convert(targetType).Interface().(*rsa.PublicKey)
-		cryptoKey = rsaPublicKey
+	var rsaPublicKey *rsa.PublicKey
 
-	// case "*dsaPublicKey":
-	//	var dsaPublicKey *dsa.PublicKey
-	//	targetType := reflect.ValueOf(dsaPublicKey).Type()
-	//	dsaPublicKey = pubkeyValue.Convert(targetType).Interface().(*dsa.PublicKey)
-	//	cryptoKey = dsaPublicKey
-
-	default:
-		return nil, fmt.Errorf("unexpected type of SSH key (%q); AWS can only import RSA keys", typeName)
-	}
-
+	pubkeyValue := reflect.ValueOf(pubkey)
+	targetType := reflect.ValueOf(rsaPublicKey).Type()
+	rsaPublicKey = pubkeyValue.Convert(targetType).Interface().(*rsa.PublicKey)
+	cryptoKey = rsaPublicKey
 	der, err := x509.MarshalPKIXPublicKey(cryptoKey)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling SSH public key: %v", err)
