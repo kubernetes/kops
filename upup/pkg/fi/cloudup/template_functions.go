@@ -156,6 +156,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 
 	// will return openstack external ccm image location for current kubernetes version
 	dest["OpenStackCCMTag"] = tf.OpenStackCCMTag
+	dest["OpenStackCSITag"] = tf.OpenStackCSITag
 	dest["ProxyEnv"] = tf.ProxyEnv
 
 	dest["KopsSystemEnv"] = tf.KopsSystemEnv
@@ -737,11 +738,25 @@ func (tf *TemplateFunctions) OpenStackCCMTag() string {
 			tag = "1.13.1"
 		} else if parsed.Minor == 23 {
 			// The bugfix release, see https://github.com/kubernetes/cloud-provider-openstack/releases
-			tag = "1.23.1"
+			tag = "v1.23.1"
 		} else {
 			// otherwise we use always .0 ccm image, if needed that can be overrided using clusterspec
 			tag = fmt.Sprintf("v%d.%d.0", parsed.Major, parsed.Minor)
 		}
+	}
+	return tag
+}
+
+// OpenStackCSI returns OpenStack csi current image
+// with tag specified to k8s version
+func (tf *TemplateFunctions) OpenStackCSITag() string {
+	var tag string
+	parsed, err := util.ParseKubernetesVersion(tf.Cluster.Spec.KubernetesVersion)
+	if err != nil {
+		tag = "latest"
+	} else {
+		// otherwise we use always .0 csi image, if needed that can be overrided using cloud config spec
+		tag = fmt.Sprintf("v%d.%d.0", parsed.Major, parsed.Minor)
 	}
 	return tag
 }
