@@ -97,6 +97,7 @@ func (d *deployer) initialize() error {
 				d.boskos,
 				"gce-project",
 				5*time.Minute,
+				5*time.Minute,
 				d.boskosHeartbeatClose,
 			)
 			if err != nil {
