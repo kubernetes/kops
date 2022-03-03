@@ -27,7 +27,9 @@ import (
 func buildContainerdCluster(version string) *kopsapi.Cluster {
 	return &kopsapi.Cluster{
 		Spec: kopsapi.ClusterSpec{
-			CloudProvider:     "aws",
+			CloudProvider: kopsapi.CloudProviderSpec{
+				AWS: &kopsapi.AWSSpec{},
+			},
 			KubernetesVersion: version,
 			Networking: &kopsapi.NetworkingSpec{
 				Kubenet: &kopsapi.KubenetNetworkingSpec{},

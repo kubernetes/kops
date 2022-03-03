@@ -71,7 +71,9 @@ func TestRootVolumeOptimizationFlag(t *testing.T) {
 			Lifecycle: fi.LifecycleSync,
 			Cluster: &kops.Cluster{
 				Spec: kops.ClusterSpec{
-					CloudProvider:     "aws",
+					CloudProvider: kops.CloudProviderSpec{
+						AWS: &kops.AWSSpec{},
+					},
 					Networking:        &kops.NetworkingSpec{},
 					KubernetesVersion: "1.20.0",
 				},

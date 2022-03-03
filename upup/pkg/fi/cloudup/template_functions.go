@@ -111,6 +111,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		return defaultValue
 	}
 
+	dest["GetCloudProvider"] = cluster.Spec.GetCloudProvider
 	dest["GetInstanceGroup"] = tf.GetInstanceGroup
 	dest["GetNodeInstanceGroups"] = tf.GetNodeInstanceGroups
 	dest["HasHighlyAvailableControlPlane"] = tf.HasHighlyAvailableControlPlane
@@ -211,7 +212,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 			if c.IPIPMode != "" {
 				return c.IPIPMode
 			}
-			if kops.CloudProviderID(cluster.Spec.CloudProvider) == kops.CloudProviderOpenstack {
+			if cluster.Spec.GetCloudProvider() == kops.CloudProviderOpenstack {
 				return "Always"
 			}
 			return "CrossSubnet"
@@ -399,8 +400,8 @@ func (tf *TemplateFunctions) CloudControllerConfigArgv() ([]string, error) {
 
 	// take the cloud provider value from clusterSpec if unset
 	if cluster.Spec.ExternalCloudControllerManager.CloudProvider == "" {
-		if cluster.Spec.CloudProvider != "" {
-			argv = append(argv, fmt.Sprintf("--cloud-provider=%s", cluster.Spec.CloudProvider))
+		if cluster.Spec.GetCloudProvider() != "" {
+			argv = append(argv, fmt.Sprintf("--cloud-provider=%s", cluster.Spec.GetCloudProvider()))
 		} else {
 			return nil, fmt.Errorf("Cloud Provider is not set")
 		}
@@ -493,7 +494,7 @@ func (tf *TemplateFunctions) DNSControllerArgv() ([]string, error) {
 			argv = append(argv, fmt.Sprintf("--gossip-seed-secondary=127.0.0.1:%d", wellknownports.ProtokubeGossipMemberlist))
 		}
 	} else {
-		switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
+		switch cluster.Spec.GetCloudProvider() {
 		case kops.CloudProviderAWS:
 			if strings.HasPrefix(os.Getenv("AWS_REGION"), "cn-") {
 				argv = append(argv, "--dns=gossip")
@@ -506,7 +507,7 @@ func (tf *TemplateFunctions) DNSControllerArgv() ([]string, error) {
 			argv = append(argv, "--dns=digitalocean")
 
 		default:
-			return nil, fmt.Errorf("unhandled cloudprovider %q", cluster.Spec.CloudProvider)
+			return nil, fmt.Errorf("unhandled cloudprovider %q", cluster.Spec.GetCloudProvider())
 		}
 	}
 
@@ -540,7 +541,7 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 	cluster := tf.Cluster
 
 	config := &kopscontrollerconfig.Options{
-		Cloud:      cluster.Spec.CloudProvider,
+		Cloud:      string(cluster.Spec.GetCloudProvider()),
 		ConfigBase: cluster.Spec.ConfigBase,
 	}
 
@@ -572,7 +573,7 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 			CertNames:             certNames,
 		}
 
-		switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
+		switch cluster.Spec.GetCloudProvider() {
 		case kops.CloudProviderAWS:
 			nodesRoles := sets.String{}
 			for _, ig := range tf.InstanceGroups {
@@ -618,7 +619,7 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 				MaxTimeSkew: 300,
 			}
 		default:
-			return "", fmt.Errorf("unsupported cloud provider %s", cluster.Spec.CloudProvider)
+			return "", fmt.Errorf("unsupported cloud provider %s", cluster.Spec.GetCloudProvider())
 		}
 	}
 
@@ -661,9 +662,9 @@ func (tf *TemplateFunctions) ExternalDNSArgv() ([]string, error) {
 
 	var argv []string
 
-	cloudProvider := cluster.Spec.CloudProvider
+	cloudProvider := cluster.Spec.GetCloudProvider()
 
-	switch kops.CloudProviderID(cloudProvider) {
+	switch cloudProvider {
 	case kops.CloudProviderAWS:
 		argv = append(argv, "--provider=aws")
 	case kops.CloudProviderGCE:
@@ -671,7 +672,7 @@ func (tf *TemplateFunctions) ExternalDNSArgv() ([]string, error) {
 		argv = append(argv, "--provider=google")
 		argv = append(argv, "--google-project="+project)
 	default:
-		return nil, fmt.Errorf("unhandled cloudprovider %q", cluster.Spec.CloudProvider)
+		return nil, fmt.Errorf("unhandled cloudprovider %q", cluster.Spec.GetCloudProvider())
 	}
 
 	argv = append(argv, "--events")

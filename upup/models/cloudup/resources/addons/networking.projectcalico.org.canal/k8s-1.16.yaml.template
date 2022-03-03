@@ -24,7 +24,7 @@ data:
   {{- if .Networking.Canal.MTU }}
   veth_mtu: "{{ .Networking.Canal.MTU }}"
   {{- else }}
-  veth_mtu: "{{- if eq .CloudProvider "openstack" -}}1430{{- else -}}1440{{- end -}}"
+  veth_mtu: "{{- if eq GetCloudProvider "openstack" -}}1430{{- else -}}1440{{- end -}}"
   {{- end }}
 
   # The CNI network configuration to install on each node.  The special

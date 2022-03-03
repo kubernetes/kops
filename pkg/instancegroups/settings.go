@@ -48,7 +48,7 @@ func resolveSettings(cluster *kops.Cluster, group *kops.InstanceGroup, numInstan
 
 	if rollingUpdate.MaxSurge == nil {
 		val := intstr.FromInt(0)
-		if kops.CloudProviderID(cluster.Spec.CloudProvider) == kops.CloudProviderAWS && !featureflag.Spotinst.Enabled() && group.Spec.Manager != kops.InstanceManagerKarpenter {
+		if cluster.Spec.GetCloudProvider() == kops.CloudProviderAWS && !featureflag.Spotinst.Enabled() && group.Spec.Manager != kops.InstanceManagerKarpenter {
 			val = intstr.FromInt(1)
 		}
 		rollingUpdate.MaxSurge = &val

@@ -2377,6 +2377,7 @@ func autoConvert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	}
 	out.ConfigBase = in.ConfigBase
 	out.CloudProvider = in.CloudProvider
+	// INFO: in.LegacyCloudProvider opted out of conversion generation
 	if in.GossipConfig != nil {
 		in, out := &in.GossipConfig, &out.GossipConfig
 		*out = new(kops.GossipConfig)

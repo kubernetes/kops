@@ -1,20 +1,18 @@
-apiVersion: kops.k8s.io/v1alpha3
+apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
   creationTimestamp: "2016-12-10T22:42:27Z"
   name: minimal.example.com
 spec:
-  additionalSANs:
+  DisableSubnetTags: true
+  additionalSans:
   - proxy.api.minimal.example.com
-  addons:
-  - manifest: s3://somebucket/example.yaml
   api:
     dns: {}
   authorization:
     alwaysAllow: {}
   channel: stable
-  cloudProvider:
-    aws: {}
+  cloudProvider: gce
   configBase: memfs://clusters.example.com/minimal.example.com
   etcdClusters:
   - cpuRequest: 200m
@@ -29,17 +27,16 @@ spec:
       name: us-test-1a
     memoryRequest: 100Mi
     name: events
-  iam: {}
-  kubernetesAPIAccess:
+  iam:
+    legacy: false
+  kubernetesApiAccess:
   - 0.0.0.0/0
   kubernetesVersion: v1.14.0
   masterInternalName: api.internal.minimal.example.com
   masterPublicName: api.minimal.example.com
   networkCIDR: 172.20.0.0/16
   networking:
-    cilium:
-      installIptablesRules: false
-      masquerade: false
+    kubenet: {}
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
   - 0.0.0.0/0
@@ -56,7 +53,7 @@ spec:
 
 ---
 
-apiVersion: kops.k8s.io/v1alpha3
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2016-12-10T22:42:28Z"
@@ -64,7 +61,7 @@ metadata:
     kops.k8s.io/cluster: minimal.example.com
   name: nodes
 spec:
-  associatePublicIP: true
+  associatePublicIp: true
   image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
   machineType: t2.medium
   maxSize: 2
@@ -75,7 +72,7 @@ spec:
 
 ---
 
-apiVersion: kops.k8s.io/v1alpha3
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2016-12-10T22:42:28Z"
@@ -83,7 +80,7 @@ metadata:
     kops.k8s.io/cluster: minimal.example.com
   name: master-us-test-1a
 spec:
-  associatePublicIP: true
+  associatePublicIp: true
   image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
   machineType: m3.medium
   maxSize: 1

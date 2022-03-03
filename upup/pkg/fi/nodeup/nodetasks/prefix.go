@@ -50,8 +50,8 @@ func (p *Prefix) String() string {
 }
 
 func (e *Prefix) Find(c *fi.Context) (*Prefix, error) {
-	if kops.CloudProviderID(c.Cluster.Spec.CloudProvider) != kops.CloudProviderAWS {
-		return nil, fmt.Errorf("unsupported cloud provider: %s", c.Cluster.Spec.CloudProvider)
+	if c.Cluster.Spec.GetCloudProvider() != kops.CloudProviderAWS {
+		return nil, fmt.Errorf("unsupported cloud provider: %s", c.Cluster.Spec.GetCloudProvider())
 	}
 
 	mac, err := getInstanceMetadataFirstValue("mac")

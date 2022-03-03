@@ -131,7 +131,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 	}
 
 	if ig.Spec.Tenancy != "" && ig.Spec.Tenancy != "default" {
-		switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
+		switch cluster.Spec.GetCloudProvider() {
 		case kops.CloudProviderAWS:
 			if _, ok := awsDedicatedInstanceExceptions[ig.Spec.MachineType]; ok {
 				return nil, fmt.Errorf("invalid dedicated instance type: %s", ig.Spec.MachineType)
@@ -176,7 +176,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 	}
 
 	if cluster.Spec.Containerd != nil && cluster.Spec.Containerd.NvidiaGPU != nil && fi.BoolValue(cluster.Spec.Containerd.NvidiaGPU.Enabled) {
-		switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
+		switch cluster.Spec.GetCloudProvider() {
 		case kops.CloudProviderAWS:
 			mt, err := awsup.GetMachineTypeInfo(cloud.(awsup.AWSCloud), ig.Spec.MachineType)
 			if err != nil {
@@ -208,7 +208,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 
 // defaultMachineType returns the default MachineType for the instance group, based on the cloudprovider
 func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.InstanceGroup) (string, error) {
-	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
+	switch cluster.Spec.GetCloudProvider() {
 	case kops.CloudProviderAWS:
 		if ig.Spec.Manager == kops.InstanceManagerKarpenter {
 			return "", nil
@@ -262,7 +262,7 @@ func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.Instance
 		}
 	}
 
-	klog.V(2).Infof("Cannot set default MachineType for CloudProvider=%q, Role=%q", cluster.Spec.CloudProvider, ig.Spec.Role)
+	klog.V(2).Infof("Cannot set default MachineType for CloudProvider=%q, Role=%q", cluster.Spec.GetCloudProvider(), ig.Spec.Role)
 	return "", nil
 }
 
@@ -278,18 +278,18 @@ func defaultImage(cluster *kops.Cluster, channel *kops.Channel, architecture arc
 			}
 		}
 		if kubernetesVersion != nil {
-			image := channel.FindImage(kops.CloudProviderID(cluster.Spec.CloudProvider), *kubernetesVersion, architecture)
+			image := channel.FindImage(cluster.Spec.GetCloudProvider(), *kubernetesVersion, architecture)
 			if image != nil {
 				return image.Name
 			}
 		}
 	}
 
-	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
+	switch cluster.Spec.GetCloudProvider() {
 	case kops.CloudProviderDO:
 		return defaultDONodeImage
 	}
-	klog.Infof("Cannot set default Image for CloudProvider=%q", cluster.Spec.CloudProvider)
+	klog.Infof("Cannot set default Image for CloudProvider=%q", cluster.Spec.GetCloudProvider())
 	return ""
 }
 
