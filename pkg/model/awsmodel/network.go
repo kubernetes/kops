@@ -307,6 +307,10 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					infoByZone[subnetSpec.Zone].NATSubnets = append(infoByZone[subnetSpec.Zone].NATSubnets, subnetSpec)
 					infoByZone[subnetSpec.Zone].HaveIPv6PublicSubnet = true
 				} else {
+					err := addAdditionalRoutes(subnetSpec.AdditionalRoutes, subnetName, publicRouteTable, b.Lifecycle, c)
+					if err != nil {
+						return err
+					}
 					c.AddTask(&awstasks.RouteTableAssociation{
 						Name:       fi.String(subnetSpec.Name + "." + b.ClusterName()),
 						Lifecycle:  b.Lifecycle,
@@ -564,6 +568,22 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					EgressOnlyInternetGateway: eigw,
 				})
 			}
+
+			subnets, err := b.LinkToPrivateSubnetInZone(zone)
+			if err != nil {
+				return err
+			}
+
+			for _, subnetSpec := range b.Cluster.Spec.Subnets {
+				for _, subnet := range subnets {
+					if strings.HasPrefix(*subnet.Name, subnetSpec.Name) {
+						err := addAdditionalRoutes(subnetSpec.AdditionalRoutes, subnetSpec.Name, rt, b.Lifecycle, c)
+						if err != nil {
+							return err
+						}
+					}
+				}
+			}
 		}
 
 		if info.HaveIPv6PublicSubnet {
@@ -613,5 +633,106 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
+	return nil
+}
+
+func addAdditionalRoutes(routes []kops.RouteSpec, sbName string, rt *awstasks.RouteTable, lf fi.Lifecycle, c *fi.ModelBuilderContext) error {
+	for _, r := range routes {
+		if strings.HasPrefix(r.Target, "pcx-") {
+			t := &awstasks.Route{
+				Name:                 fi.String("public-" + sbName + "." + r.CIDR),
+				Lifecycle:            lf,
+				CIDR:                 fi.String(r.CIDR),
+				RouteTable:           rt,
+				VPCPeeringConnection: fi.String(r.Target),
+			}
+			c.AddTask(t)
+		} else if strings.HasPrefix(r.Target, "i-") {
+			inst := &awstasks.Instance{
+				Name:      fi.String(r.Target),
+				Lifecycle: lf,
+				ID:        fi.String(r.Target),
+				Shared:    fi.Bool(true),
+			}
+			err := c.EnsureTask(inst)
+			if err != nil {
+				return err
+			}
+			t := &awstasks.Route{
+				Name:       fi.String("public-" + sbName + "." + r.CIDR),
+				Lifecycle:  lf,
+				CIDR:       fi.String(r.CIDR),
+				RouteTable: rt,
+				Instance:   inst,
+			}
+			c.AddTask(t)
+		} else if strings.HasPrefix(r.Target, "nat-") {
+			nat := &awstasks.NatGateway{
+				Name:      fi.String(r.Target),
+				Lifecycle: lf,
+				ID:        fi.String(r.Target),
+				Shared:    fi.Bool(true),
+			}
+			err := c.EnsureTask(nat)
+			if err != nil {
+				return err
+			}
+			t := &awstasks.Route{
+				Name:       fi.String("public-" + sbName + "." + r.CIDR),
+				Lifecycle:  lf,
+				CIDR:       fi.String(r.CIDR),
+				RouteTable: rt,
+				NatGateway: nat,
+			}
+			c.AddTask(t)
+		} else if strings.HasPrefix(r.Target, "tgw-") {
+			t := &awstasks.Route{
+				Name:             fi.String("public-" + sbName + "." + r.CIDR),
+				Lifecycle:        lf,
+				CIDR:             fi.String(r.CIDR),
+				RouteTable:       rt,
+				TransitGatewayID: fi.String(r.Target),
+			}
+			c.AddTask(t)
+		} else if strings.HasPrefix(r.Target, "igw-") {
+			internetGW := &awstasks.InternetGateway{
+				Name:      fi.String(r.Target),
+				Lifecycle: lf,
+				ID:        fi.String(r.Target),
+				Shared:    fi.Bool(true),
+			}
+			err := c.EnsureTask(internetGW)
+			if err != nil {
+				return err
+			}
+			t := &awstasks.Route{
+				Name:            fi.String("public-" + sbName + "." + r.CIDR),
+				Lifecycle:       lf,
+				CIDR:            fi.String(r.CIDR),
+				RouteTable:      rt,
+				InternetGateway: internetGW,
+			}
+			c.AddTask(t)
+		} else if strings.HasPrefix(r.Target, "eigw-") {
+			eigw := &awstasks.EgressOnlyInternetGateway{
+				Name:      fi.String(r.Target),
+				Lifecycle: lf,
+				ID:        fi.String(r.Target),
+				Shared:    fi.Bool(true),
+			}
+			err := c.EnsureTask(eigw)
+			if err != nil {
+				return err
+			}
+			t := &awstasks.Route{
+				Name:                      fi.String("public-" + sbName + "." + r.CIDR),
+				Lifecycle:                 lf,
+				CIDR:                      fi.String(r.CIDR),
+				RouteTable:                rt,
+				EgressOnlyInternetGateway: eigw,
+			}
+			c.AddTask(t)
+		}
+	}
 	return nil
 }
