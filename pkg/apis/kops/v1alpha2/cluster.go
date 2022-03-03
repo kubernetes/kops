@@ -686,6 +686,16 @@ type ClusterSubnetSpec struct {
 	Type SubnetType `json:"type,omitempty"`
 	// PublicIP to attach to NatGateway
 	PublicIP string `json:"publicIP,omitempty"`
+
+	// AdditionalRoutes to attach to the subnet's route table
+	AdditionalRoutes []RouteSpec `json:"additionalRoutes,omitempty"`
+}
+
+type RouteSpec struct {
+	// CIDR destination of the route
+	CIDR string `json:"cidr,omitempty"`
+	// Target of the route
+	Target string `json:"target,omitempty"`
 }
 
 type EgressProxySpec struct {
