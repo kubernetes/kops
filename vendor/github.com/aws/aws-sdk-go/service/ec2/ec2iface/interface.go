@@ -2002,6 +2002,13 @@ type EC2API interface {
 	ImportVolumeWithContext(aws.Context, *ec2.ImportVolumeInput, ...request.Option) (*ec2.ImportVolumeOutput, error)
 	ImportVolumeRequest(*ec2.ImportVolumeInput) (*request.Request, *ec2.ImportVolumeOutput)
 
+	ListImagesInRecycleBin(*ec2.ListImagesInRecycleBinInput) (*ec2.ListImagesInRecycleBinOutput, error)
+	ListImagesInRecycleBinWithContext(aws.Context, *ec2.ListImagesInRecycleBinInput, ...request.Option) (*ec2.ListImagesInRecycleBinOutput, error)
+	ListImagesInRecycleBinRequest(*ec2.ListImagesInRecycleBinInput) (*request.Request, *ec2.ListImagesInRecycleBinOutput)
+
+	ListImagesInRecycleBinPages(*ec2.ListImagesInRecycleBinInput, func(*ec2.ListImagesInRecycleBinOutput, bool) bool) error
+	ListImagesInRecycleBinPagesWithContext(aws.Context, *ec2.ListImagesInRecycleBinInput, func(*ec2.ListImagesInRecycleBinOutput, bool) bool, ...request.Option) error
+
 	ListSnapshotsInRecycleBin(*ec2.ListSnapshotsInRecycleBinInput) (*ec2.ListSnapshotsInRecycleBinOutput, error)
 	ListSnapshotsInRecycleBinWithContext(aws.Context, *ec2.ListSnapshotsInRecycleBinInput, ...request.Option) (*ec2.ListSnapshotsInRecycleBinOutput, error)
 	ListSnapshotsInRecycleBinRequest(*ec2.ListSnapshotsInRecycleBinInput) (*request.Request, *ec2.ListSnapshotsInRecycleBinOutput)
@@ -2380,6 +2387,10 @@ type EC2API interface {
 	RestoreAddressToClassic(*ec2.RestoreAddressToClassicInput) (*ec2.RestoreAddressToClassicOutput, error)
 	RestoreAddressToClassicWithContext(aws.Context, *ec2.RestoreAddressToClassicInput, ...request.Option) (*ec2.RestoreAddressToClassicOutput, error)
 	RestoreAddressToClassicRequest(*ec2.RestoreAddressToClassicInput) (*request.Request, *ec2.RestoreAddressToClassicOutput)
+
+	RestoreImageFromRecycleBin(*ec2.RestoreImageFromRecycleBinInput) (*ec2.RestoreImageFromRecycleBinOutput, error)
+	RestoreImageFromRecycleBinWithContext(aws.Context, *ec2.RestoreImageFromRecycleBinInput, ...request.Option) (*ec2.RestoreImageFromRecycleBinOutput, error)
+	RestoreImageFromRecycleBinRequest(*ec2.RestoreImageFromRecycleBinInput) (*request.Request, *ec2.RestoreImageFromRecycleBinOutput)
 
 	RestoreManagedPrefixListVersion(*ec2.RestoreManagedPrefixListVersionInput) (*ec2.RestoreManagedPrefixListVersionOutput, error)
 	RestoreManagedPrefixListVersionWithContext(aws.Context, *ec2.RestoreManagedPrefixListVersionInput, ...request.Option) (*ec2.RestoreManagedPrefixListVersionOutput, error)
