@@ -14,7 +14,7 @@ go_library(
         "race0.go",
         "security_windows.go",
         "service.go",
-        "setupapierrors_windows.go",
+        "setupapi_windows.go",
         "str.go",
         "syscall.go",
         "syscall_windows.go",
