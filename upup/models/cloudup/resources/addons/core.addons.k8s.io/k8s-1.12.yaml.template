@@ -122,7 +122,7 @@ spec:
         image: k8s.gcr.io/cloud-controller-manager:v{{ .KubernetesVersion }}  # Reviewers: Will this work?
         command:
         - /usr/local/bin/cloud-controller-manager
-        - --cloud-provider={{ .CloudProvider }}
+        - --cloud-provider={{ GetCloudProvider }}
         - --leader-elect=true
         - --use-service-account-credentials
         # these flags will vary for every cloud provider

@@ -669,7 +669,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 			return err
 		}
 		fullGroup.AddInstanceGroupNodeLabel()
-		if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
+		if cluster.Spec.GetCloudProvider() == api.CloudProviderGCE {
 			fullGroup.Spec.NodeLabels["cloud.google.com/metadata-proxy-ready"] = "true"
 		}
 		fullInstanceGroups = append(fullInstanceGroups, fullGroup)

@@ -29,7 +29,9 @@ func buildSchedulerConfigMapCluster(version string) *api.Cluster {
 
 	return &api.Cluster{
 		Spec: api.ClusterSpec{
-			CloudProvider:     "aws",
+			CloudProvider: api.CloudProviderSpec{
+				AWS: &api.AWSSpec{},
+			},
 			KubernetesVersion: version,
 			KubeScheduler: &api.KubeSchedulerConfig{
 				UsePolicyConfigMap: &usePolicyConfigMap,

@@ -39,7 +39,9 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 		{
 			desc: "Default Configuration",
 			cluster: &kops.Cluster{Spec: kops.ClusterSpec{
-				CloudProvider:                  string(kops.CloudProviderOpenstack),
+				CloudProvider: kops.CloudProviderSpec{
+					Openstack: &kops.OpenstackSpec{},
+				},
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{},
 			}},
 			expectedArgv: []string{
@@ -53,7 +55,9 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 			desc: "Log Level Configuration",
 			cluster: &kops.Cluster{
 				Spec: kops.ClusterSpec{
-					CloudProvider: string(kops.CloudProviderOpenstack),
+					CloudProvider: kops.CloudProviderSpec{
+						Openstack: &kops.OpenstackSpec{},
+					},
 					ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
 						LogLevel: 3,
 					},
@@ -97,7 +101,9 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 		{
 			desc: "k8s cluster name",
 			cluster: &kops.Cluster{Spec: kops.ClusterSpec{
-				CloudProvider: string(kops.CloudProviderOpenstack),
+				CloudProvider: kops.CloudProviderSpec{
+					Openstack: &kops.OpenstackSpec{},
+				},
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
 					ClusterName: "k8s",
 				},
@@ -113,7 +119,9 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 		{
 			desc: "Default Configuration",
 			cluster: &kops.Cluster{Spec: kops.ClusterSpec{
-				CloudProvider: string(kops.CloudProviderOpenstack),
+				CloudProvider: kops.CloudProviderSpec{
+					Openstack: &kops.OpenstackSpec{},
+				},
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
 					Master: "127.0.0.1",
 				},
@@ -129,7 +137,9 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 		{
 			desc: "Cluster-cidr Configuration",
 			cluster: &kops.Cluster{Spec: kops.ClusterSpec{
-				CloudProvider: string(kops.CloudProviderOpenstack),
+				CloudProvider: kops.CloudProviderSpec{
+					Openstack: &kops.OpenstackSpec{},
+				},
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
 					ClusterCIDR: "10.0.0.0/24",
 				},
@@ -145,7 +155,9 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 		{
 			desc: "AllocateNodeCIDRs Configuration",
 			cluster: &kops.Cluster{Spec: kops.ClusterSpec{
-				CloudProvider: string(kops.CloudProviderOpenstack),
+				CloudProvider: kops.CloudProviderSpec{
+					Openstack: &kops.OpenstackSpec{},
+				},
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
 					AllocateNodeCIDRs: fi.Bool(true),
 				},
@@ -161,7 +173,9 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 		{
 			desc: "ConfigureCloudRoutes Configuration",
 			cluster: &kops.Cluster{Spec: kops.ClusterSpec{
-				CloudProvider: string(kops.CloudProviderOpenstack),
+				CloudProvider: kops.CloudProviderSpec{
+					Openstack: &kops.OpenstackSpec{},
+				},
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
 					ConfigureCloudRoutes: fi.Bool(true),
 				},
@@ -177,7 +191,9 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 		{
 			desc: "CIDRAllocatorType Configuration",
 			cluster: &kops.Cluster{Spec: kops.ClusterSpec{
-				CloudProvider: string(kops.CloudProviderOpenstack),
+				CloudProvider: kops.CloudProviderSpec{
+					Openstack: &kops.OpenstackSpec{},
+				},
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
 					CIDRAllocatorType: fi.String("RangeAllocator"),
 				},
@@ -193,7 +209,9 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 		{
 			desc: "CIDRAllocatorType Configuration",
 			cluster: &kops.Cluster{Spec: kops.ClusterSpec{
-				CloudProvider: string(kops.CloudProviderOpenstack),
+				CloudProvider: kops.CloudProviderSpec{
+					Openstack: &kops.OpenstackSpec{},
+				},
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
 					UseServiceAccountCredentials: fi.Bool(false),
 				},
@@ -208,7 +226,9 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 		{
 			desc: "Leader Election",
 			cluster: &kops.Cluster{Spec: kops.ClusterSpec{
-				CloudProvider: string(kops.CloudProviderOpenstack),
+				CloudProvider: kops.CloudProviderSpec{
+					Openstack: &kops.OpenstackSpec{},
+				},
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
 					LeaderElection: &kops.LeaderElectionConfiguration{LeaderElect: fi.Bool(true)},
 				},
@@ -224,7 +244,9 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 		{
 			desc: "Leader Migration",
 			cluster: &kops.Cluster{Spec: kops.ClusterSpec{
-				CloudProvider: string(kops.CloudProviderOpenstack),
+				CloudProvider: kops.CloudProviderSpec{
+					Openstack: &kops.OpenstackSpec{},
+				},
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
 					LeaderElection:        &kops.LeaderElectionConfiguration{LeaderElect: fi.Bool(true)},
 					EnableLeaderMigration: fi.Bool(true),
@@ -242,7 +264,9 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 		{
 			desc: "Disable Controller",
 			cluster: &kops.Cluster{Spec: kops.ClusterSpec{
-				CloudProvider: string(kops.CloudProviderOpenstack),
+				CloudProvider: kops.CloudProviderSpec{
+					Openstack: &kops.OpenstackSpec{},
+				},
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
 					Controllers: []string{"*", "-nodeipam"},
 				},

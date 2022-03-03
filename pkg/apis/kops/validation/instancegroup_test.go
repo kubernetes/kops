@@ -185,7 +185,9 @@ func TestValidMasterInstanceGroup(t *testing.T) {
 func TestValidBootDevice(t *testing.T) {
 	cluster := &kops.Cluster{
 		Spec: kops.ClusterSpec{
-			CloudProvider: "aws",
+			CloudProvider: kops.CloudProviderSpec{
+				AWS: &kops.AWSSpec{},
+			},
 		},
 	}
 	grid := []struct {

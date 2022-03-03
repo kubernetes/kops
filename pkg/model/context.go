@@ -189,7 +189,7 @@ func (b *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 func (b *KopsModelContext) CloudTags(name string, shared bool) map[string]string {
 	tags := make(map[string]string)
 
-	switch kops.CloudProviderID(b.Cluster.Spec.CloudProvider) {
+	switch b.Cluster.Spec.GetCloudProvider() {
 	case kops.CloudProviderAWS:
 		if shared {
 			// If the resource is shared, we don't try to set the Name - we presume that is managed externally

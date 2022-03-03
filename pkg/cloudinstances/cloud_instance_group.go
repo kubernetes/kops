@@ -100,7 +100,7 @@ func (group *CloudInstanceGroup) AdjustNeedUpdate() {
 func GetNodeMap(nodes []v1.Node, cluster *kopsapi.Cluster) map[string]*v1.Node {
 	nodeMap := make(map[string]*v1.Node)
 
-	if kopsapi.CloudProviderID(cluster.Spec.CloudProvider) == kopsapi.CloudProviderAzure {
+	if cluster.Spec.GetCloudProvider() == kopsapi.CloudProviderAzure {
 		for i := range nodes {
 			node := &nodes[i]
 			vmName, err := toAzureVMName(node.Spec.ProviderID)

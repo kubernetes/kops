@@ -215,7 +215,9 @@ func TestBootstrapUserData(t *testing.T) {
 func makeTestCluster(hookSpecRoles []kops.InstanceGroupRole, fileAssetSpecRoles []kops.InstanceGroupRole) *kops.Cluster {
 	return &kops.Cluster{
 		Spec: kops.ClusterSpec{
-			CloudProvider:     "aws",
+			CloudProvider: kops.CloudProviderSpec{
+				AWS: &kops.AWSSpec{},
+			},
 			KubernetesVersion: "1.20.0",
 			Subnets: []kops.ClusterSubnetSpec{
 				{Name: "test", Zone: "eu-west-1a"},

@@ -6,15 +6,13 @@ metadata:
 spec:
   additionalSANs:
   - proxy.api.minimal.example.com
-  addons:
-  - manifest: s3://somebucket/example.yaml
   api:
     dns: {}
   authorization:
     alwaysAllow: {}
   channel: stable
   cloudProvider:
-    aws: {}
+    gce: {}
   configBase: memfs://clusters.example.com/minimal.example.com
   etcdClusters:
   - cpuRequest: 200m
@@ -37,9 +35,7 @@ spec:
   masterPublicName: api.minimal.example.com
   networkCIDR: 172.20.0.0/16
   networking:
-    cilium:
-      installIptablesRules: false
-      masquerade: false
+    kubenet: {}
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
   - 0.0.0.0/0
@@ -48,6 +44,7 @@ spec:
     name: us-test-1a
     type: Public
     zone: us-test-1a
+  tagSubnets: false
   topology:
     dns:
       type: Public
