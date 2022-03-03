@@ -3773,6 +3773,8 @@ func (c *EventBridge) PutTargetsRequest(input *PutTargetsInput) (req *request.Re
 //
 // Targets are the resources that are invoked when a rule is triggered.
 //
+// Each rule can have up to five (5) targets associated with it at one time.
+//
 // You can configure the following as targets for Events:
 //
 //    * API destination (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-api-destinations.html)
@@ -3790,6 +3792,8 @@ func (c *EventBridge) PutTargetsRequest(input *PutTargetsInput) (req *request.Re
 //    * CodePipeline
 //
 //    * Amazon EC2 CreateSnapshot API call
+//
+//    * EC2 Image Builder
 //
 //    * Amazon EC2 RebootInstances API call
 //
@@ -3815,7 +3819,7 @@ func (c *EventBridge) PutTargetsRequest(input *PutTargetsInput) (req *request.Re
 //
 //    * Amazon SNS topic
 //
-//    * Amazon SQS queues (includes FIFO queues
+//    * Amazon SQS queues (includes FIFO queues)
 //
 //    * SSM Automation
 //
@@ -4088,6 +4092,10 @@ func (c *EventBridge) RemoveTargetsRequest(input *RemoveTargetsInput) (req *requ
 //
 // Removes the specified targets from the specified rule. When the rule is triggered,
 // those targets are no longer be invoked.
+//
+// A successful execution of RemoveTargets doesn't guarantee all targets are
+// removed from the rule, it means that the target(s) listed in the request
+// are removed.
 //
 // When you remove a target, when the associated rule triggers, removed targets
 // might continue to be invoked. Allow a short period of time for changes to
@@ -9279,7 +9287,7 @@ type EcsParameters struct {
 	// Specifies the launch type on which your task is running. The launch type
 	// that you specify here must match one of the launch type (compatibilities)
 	// of the target task. The FARGATE value is supported only in the Regions where
-	// Fargate witt Amazon ECS is supported. For more information, see Fargate on
+	// Fargate with Amazon ECS is supported. For more information, see Fargate on
 	// Amazon ECS (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS-Fargate.html)
 	// in the Amazon Elastic Container Service Developer Guide.
 	LaunchType *string `type:"string" enum:"LaunchType"`
@@ -12254,7 +12262,7 @@ type PutEventsRequestEntry struct {
 	// call is used.
 	Time *time.Time `type:"timestamp"`
 
-	// An X-Ray trade header, which is an http header (X-Amzn-Trace-Id) that contains
+	// An X-Ray trace header, which is an http header (X-Amzn-Trace-Id) that contains
 	// the trace-id associated with the event.
 	//
 	// To learn more about X-Ray trace headers, see Tracing header (https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-tracingheader)
@@ -12338,7 +12346,8 @@ func (s *PutEventsRequestEntry) SetTraceHeader(v string) *PutEventsRequestEntry 
 	return s
 }
 
-// Represents an event that failed to be submitted.
+// Represents an event that failed to be submitted. For information about the
+// errors that are common to all actions, see Common Errors (https://docs.aws.amazon.com/eventbridge/latest/APIReference/CommonErrors.html).
 type PutEventsResultEntry struct {
 	_ struct{} `type:"structure"`
 
@@ -12664,6 +12673,8 @@ type PutPermissionInput struct {
 	// An identifier string for the external account that you are granting permissions
 	// to. If you later want to revoke the permission for this external account,
 	// specify this StatementId when you run RemovePermission (https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_RemovePermission.html).
+	//
+	// Each StatementId must be unique.
 	StatementId *string `min:"1" type:"string"`
 }
 
@@ -14645,7 +14656,9 @@ type Target struct {
 	// precedence.
 	HttpParameters *HttpParameters `type:"structure"`
 
-	// The ID of the target. We recommend using a memorable and unique string.
+	// The ID of the target within the specified rule. Use this ID to reference
+	// the target when updating the rule. We recommend using a memorable and unique
+	// string.
 	//
 	// Id is a required field
 	Id *string `min:"1" type:"string" required:"true"`
