@@ -393,7 +393,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		InstanceGroups:  c.InstanceGroups,
 	}
 
-	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
+	switch cluster.Spec.GetCloudProvider() {
 	case kops.CloudProviderGCE:
 		{
 			gceCloud := cloud.(gce.GCECloud)
@@ -452,7 +452,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			}
 		}
 	default:
-		return fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)
+		return fmt.Errorf("unknown CloudProvider %q", cluster.Spec.GetCloudProvider())
 	}
 
 	modelContext.SSHPublicKeys = sshPublicKeys
@@ -529,7 +529,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			&model.ConfigBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
 		)
 
-		switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
+		switch cluster.Spec.GetCloudProvider() {
 		case kops.CloudProviderAWS:
 			awsModelContext := &awsmodel.AWSModelContext{
 				KopsModelContext: modelContext,
@@ -633,7 +633,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			)
 
 		default:
-			return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
+			return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.GetCloudProvider())
 		}
 	}
 	c.TaskMap, err = l.BuildTasks(c.LifecycleOverrides)
@@ -646,7 +646,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 	switch c.TargetName {
 	case TargetDirect:
-		switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
+		switch cluster.Spec.GetCloudProvider() {
 		case kops.CloudProviderGCE:
 			target = gce.NewGCEAPITarget(cloud.(gce.GCECloud))
 		case kops.CloudProviderAWS:
@@ -658,7 +658,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		case kops.CloudProviderAzure:
 			target = azure.NewAzureAPITarget(cloud.(azure.AzureCloud))
 		default:
-			return fmt.Errorf("direct configuration not supported with CloudProvider:%q", cluster.Spec.CloudProvider)
+			return fmt.Errorf("direct configuration not supported with CloudProvider:%q", cluster.Spec.GetCloudProvider())
 		}
 
 	case TargetTerraform:
@@ -1076,7 +1076,7 @@ func ChannelForCluster(c *kops.Cluster) (*kops.Channel, error) {
 // This is only needed currently on ContainerOS i.e. GCE, but we don't have a nice way to detect it yet
 func needsMounterAsset(c *kops.Cluster, instanceGroups []*kops.InstanceGroup) bool {
 	// TODO: Do real detection of ContainerOS (but this has to work with image names, and maybe even forked images)
-	switch kops.CloudProviderID(c.Spec.CloudProvider) {
+	switch c.Spec.GetCloudProvider() {
 	case kops.CloudProviderGCE:
 		return true
 	default:

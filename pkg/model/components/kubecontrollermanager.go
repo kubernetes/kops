@@ -79,7 +79,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 	if b.IsKubernetesGTE("1.24") {
 		kcm.CloudProvider = "external"
 	} else {
-		switch kops.CloudProviderID(clusterSpec.CloudProvider) {
+		switch kops.CloudProviderID(clusterSpec.GetCloudProvider()) {
 		case kops.CloudProviderAWS:
 			kcm.CloudProvider = "aws"
 
@@ -97,7 +97,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 			kcm.CloudProvider = "azure"
 
 		default:
-			return fmt.Errorf("unknown cloudprovider %q", clusterSpec.CloudProvider)
+			return fmt.Errorf("unknown cloudprovider %q", clusterSpec.GetCloudProvider())
 		}
 	}
 

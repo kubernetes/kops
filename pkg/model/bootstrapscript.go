@@ -139,7 +139,7 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 		env["S3_SECRET_ACCESS_KEY"] = os.Getenv("S3_SECRET_ACCESS_KEY")
 	}
 
-	if kops.CloudProviderID(cluster.Spec.CloudProvider) == kops.CloudProviderOpenstack {
+	if cluster.Spec.GetCloudProvider() == kops.CloudProviderOpenstack {
 
 		osEnvs := []string{
 			"OS_TENANT_ID", "OS_TENANT_NAME", "OS_PROJECT_ID", "OS_PROJECT_NAME",
@@ -176,14 +176,14 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 		}
 	}
 
-	if kops.CloudProviderID(cluster.Spec.CloudProvider) == kops.CloudProviderDO {
+	if cluster.Spec.GetCloudProvider() == kops.CloudProviderDO {
 		doToken := os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
 		if doToken != "" {
 			env["DIGITALOCEAN_ACCESS_TOKEN"] = doToken
 		}
 	}
 
-	if kops.CloudProviderID(cluster.Spec.CloudProvider) == kops.CloudProviderAWS {
+	if cluster.Spec.GetCloudProvider() == kops.CloudProviderAWS {
 		region, err := awsup.FindRegion(cluster)
 		if err != nil {
 			return nil, err
@@ -195,7 +195,7 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 		}
 	}
 
-	if kops.CloudProviderID(cluster.Spec.CloudProvider) == kops.CloudProviderAzure {
+	if cluster.Spec.GetCloudProvider() == kops.CloudProviderAzure {
 		env["AZURE_STORAGE_ACCOUNT"] = os.Getenv("AZURE_STORAGE_ACCOUNT")
 		azureEnv := os.Getenv("AZURE_ENVIRONMENT")
 		if azureEnv != "" {

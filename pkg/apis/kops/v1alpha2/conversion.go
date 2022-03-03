@@ -18,6 +18,7 @@ package v1alpha2
 
 import (
 	"k8s.io/apimachinery/pkg/conversion"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/values"
 )
@@ -74,6 +75,27 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 	if err := autoConvert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in, out, s); err != nil {
 		return err
 	}
+	switch kops.CloudProviderID(in.LegacyCloudProvider) {
+	case kops.CloudProviderAWS:
+		out.CloudProvider.AWS = &kops.AWSSpec{}
+	case kops.CloudProviderAzure:
+		out.CloudProvider.Azure = &kops.AzureSpec{}
+	case kops.CloudProviderDO:
+		out.CloudProvider.DO = &kops.DOSpec{}
+	case kops.CloudProviderGCE:
+		out.CloudProvider.GCE = &kops.GCESpec{}
+	case kops.CloudProviderOpenstack:
+		out.CloudProvider.Openstack = &kops.OpenstackSpec{}
+	case "":
+	default:
+		return field.NotSupported(field.NewPath("spec").Child("cloudProvider"), in.LegacyCloudProvider, []string{
+			string(kops.CloudProviderGCE),
+			string(kops.CloudProviderDO),
+			string(kops.CloudProviderAzure),
+			string(kops.CloudProviderAWS),
+			string(kops.CloudProviderOpenstack),
+		})
+	}
 	if in.TagSubnets != nil {
 		out.TagSubnets = values.Bool(!*in.TagSubnets)
 	}
@@ -89,6 +111,7 @@ func Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, out 
 	if err := autoConvert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in, out, s); err != nil {
 		return err
 	}
+	out.LegacyCloudProvider = string(in.GetCloudProvider())
 	if in.TagSubnets != nil {
 		out.TagSubnets = values.Bool(!*in.TagSubnets)
 	}

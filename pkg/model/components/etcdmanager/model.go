@@ -371,7 +371,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec) (*v1.Pod
 	}
 
 	{
-		switch kops.CloudProviderID(b.Cluster.Spec.CloudProvider) {
+		switch b.Cluster.Spec.GetCloudProvider() {
 		case kops.CloudProviderAWS:
 			config.VolumeProvider = "aws"
 
@@ -427,7 +427,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec) (*v1.Pod
 			config.VolumeNameTag = openstack.TagNameEtcdClusterPrefix + etcdCluster.Name
 
 		default:
-			return nil, fmt.Errorf("CloudProvider %q not supported with etcd-manager", b.Cluster.Spec.CloudProvider)
+			return nil, fmt.Errorf("CloudProvider %q not supported with etcd-manager", b.Cluster.Spec.GetCloudProvider())
 		}
 	}
 

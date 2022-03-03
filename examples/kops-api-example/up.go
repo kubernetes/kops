@@ -35,10 +35,12 @@ func up(ctx context.Context) error {
 	cluster := &api.Cluster{}
 	cluster.ObjectMeta.Name = clusterName
 	cluster.Spec = api.ClusterSpec{
-		Channel:       "stable",
-		CloudProvider: "aws",
-		ConfigBase:    registryBase.Join(cluster.ObjectMeta.Name).Path(),
-		Topology:      &api.TopologySpec{},
+		Channel: "stable",
+		CloudProvider: api.CloudProviderSpec{
+			AWS: &api.AWSSpec{},
+		},
+		ConfigBase: registryBase.Join(cluster.ObjectMeta.Name).Path(),
+		Topology:   &api.TopologySpec{},
 	}
 	cluster.Spec.Topology.Masters = api.TopologyPublic
 	cluster.Spec.Topology.Nodes = api.TopologyPublic

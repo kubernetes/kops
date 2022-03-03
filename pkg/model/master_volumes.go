@@ -93,7 +93,7 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 			sort.Strings(allMembers)
 
-			switch kops.CloudProviderID(b.Cluster.Spec.CloudProvider) {
+			switch b.Cluster.Spec.GetCloudProvider() {
 			case kops.CloudProviderAWS:
 				err = b.addAWSVolume(c, name, volumeSize, zone, etcd, m, allMembers)
 				if err != nil {
@@ -111,7 +111,7 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 			case kops.CloudProviderAzure:
 				b.addAzureVolume(c, name, volumeSize, zone, etcd, m, allMembers)
 			default:
-				return fmt.Errorf("unknown cloudprovider %q", b.Cluster.Spec.CloudProvider)
+				return fmt.Errorf("unknown cloudprovider %q", b.Cluster.Spec.GetCloudProvider())
 			}
 		}
 	}
