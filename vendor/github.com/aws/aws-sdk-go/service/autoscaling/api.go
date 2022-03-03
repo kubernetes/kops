@@ -635,9 +635,13 @@ func (c *AutoScaling) CompleteLifecycleActionRequest(input *CompleteLifecycleAct
 // This step is a part of the procedure for adding a lifecycle hook to an Auto
 // Scaling group:
 //
+// (Optional) Create a launch template or launch configuration with a user data
+// script that runs while an instance is in a wait state due to a lifecycle
+// hook.
+//
 // (Optional) Create a Lambda function and a rule that allows Amazon EventBridge
-// to invoke your Lambda function when Amazon EC2 Auto Scaling launches or terminates
-// instances.
+// to invoke your Lambda function when an instance is put into a wait state
+// due to a lifecycle hook.
 //
 // (Optional) Create a notification target and an IAM role. The target can be
 // either an Amazon SQS queue or an Amazon SNS topic. The role allows Amazon
@@ -647,7 +651,7 @@ func (c *AutoScaling) CompleteLifecycleActionRequest(input *CompleteLifecycleAct
 // launch or terminate.
 //
 // If you need more time, record the lifecycle action heartbeat to keep the
-// instance in a pending state.
+// instance in a wait state.
 //
 // If you finish before the timeout period ends, send a callback by using the
 // CompleteLifecycleAction API call.
@@ -4808,16 +4812,20 @@ func (c *AutoScaling) PutLifecycleHookRequest(input *PutLifecycleHookInput) (req
 //
 // Creates or updates a lifecycle hook for the specified Auto Scaling group.
 //
-// A lifecycle hook enables an Auto Scaling group to be aware of events in the
-// Auto Scaling instance lifecycle, and then perform a custom action when the
-// corresponding lifecycle event occurs.
+// Lifecycle hooks let you create solutions that are aware of events in the
+// Auto Scaling instance lifecycle, and then perform a custom action on instances
+// when the corresponding lifecycle event occurs.
 //
 // This step is a part of the procedure for adding a lifecycle hook to an Auto
 // Scaling group:
 //
+// (Optional) Create a launch template or launch configuration with a user data
+// script that runs while an instance is in a wait state due to a lifecycle
+// hook.
+//
 // (Optional) Create a Lambda function and a rule that allows Amazon EventBridge
-// to invoke your Lambda function when Amazon EC2 Auto Scaling launches or terminates
-// instances.
+// to invoke your Lambda function when an instance is put into a wait state
+// due to a lifecycle hook.
 //
 // (Optional) Create a notification target and an IAM role. The target can be
 // either an Amazon SQS queue or an Amazon SNS topic. The role allows Amazon
@@ -4827,8 +4835,7 @@ func (c *AutoScaling) PutLifecycleHookRequest(input *PutLifecycleHookInput) (req
 // launch or terminate.
 //
 // If you need more time, record the lifecycle action heartbeat to keep the
-// instance in a pending state using the RecordLifecycleActionHeartbeat API
-// call.
+// instance in a wait state using the RecordLifecycleActionHeartbeat API call.
 //
 // If you finish before the timeout period ends, send a callback by using the
 // CompleteLifecycleAction API call.
@@ -5341,9 +5348,13 @@ func (c *AutoScaling) RecordLifecycleActionHeartbeatRequest(input *RecordLifecyc
 // This step is a part of the procedure for adding a lifecycle hook to an Auto
 // Scaling group:
 //
+// (Optional) Create a launch template or launch configuration with a user data
+// script that runs while an instance is in a wait state due to a lifecycle
+// hook.
+//
 // (Optional) Create a Lambda function and a rule that allows Amazon EventBridge
-// to invoke your Lambda function when Amazon EC2 Auto Scaling launches or terminates
-// instances.
+// to invoke your Lambda function when an instance is put into a wait state
+// due to a lifecycle hook.
 //
 // (Optional) Create a notification target and an IAM role. The target can be
 // either an Amazon SQS queue or an Amazon SNS topic. The role allows Amazon
@@ -5353,7 +5364,7 @@ func (c *AutoScaling) RecordLifecycleActionHeartbeatRequest(input *RecordLifecyc
 // launch or terminate.
 //
 // If you need more time, record the lifecycle action heartbeat to keep the
-// instance in a pending state.
+// instance in a wait state.
 //
 // If you finish before the timeout period ends, send a callback by using the
 // CompleteLifecycleAction API call.
@@ -7395,7 +7406,7 @@ type CreateAutoScalingGroupInput struct {
 	// is 0. For more information, see Health check grace period (https://docs.aws.amazon.com/autoscaling/ec2/userguide/healthcheck.html#health-check-grace-period)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	//
-	// Conditional: Required if you are adding an ELB health check.
+	// Required if you are adding an ELB health check.
 	HealthCheckGracePeriod *int64 `type:"integer"`
 
 	// The service to use for the health checks. The valid values are EC2 (default)
@@ -13573,6 +13584,10 @@ type InstanceRequirements struct {
 	// as a percentage. To turn off price protection, specify a high value, such
 	// as 999999.
 	//
+	// If you set DesiredCapacityType to vcpu or memory-mib, the price protection
+	// threshold is applied based on the per vCPU or per memory price instead of
+	// the per instance price.
+	//
 	// Default: 20
 	OnDemandMaxPricePercentageOverLowestPrice *int64 `type:"integer"`
 
@@ -13589,6 +13604,10 @@ type InstanceRequirements struct {
 	// instance types whose price is higher than your threshold. The parameter accepts
 	// an integer, which Amazon EC2 Auto Scaling interprets as a percentage. To
 	// turn off price protection, specify a high value, such as 999999.
+	//
+	// If you set DesiredCapacityType to vcpu or memory-mib, the price protection
+	// threshold is applied based on the per vCPU or per memory price instead of
+	// the per instance price.
 	//
 	// Default: 100
 	SpotMaxPricePercentageOverLowestPrice *int64 `type:"integer"`
@@ -13772,6 +13791,42 @@ func (s *InstanceRequirements) SetTotalLocalStorageGB(v *TotalLocalStorageGBRequ
 // SetVCpuCount sets the VCpuCount field's value.
 func (s *InstanceRequirements) SetVCpuCount(v *VCpuCountRequest) *InstanceRequirements {
 	s.VCpuCount = v
+	return s
+}
+
+// Describes an instance reuse policy for a warm pool.
+//
+// For more information, see Warm pools for Amazon EC2 Auto Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-warm-pools.html)
+// in the Amazon EC2 Auto Scaling User Guide.
+type InstanceReusePolicy struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies whether instances in the Auto Scaling group can be returned to
+	// the warm pool on scale in.
+	ReuseOnScaleIn *bool `type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InstanceReusePolicy) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InstanceReusePolicy) GoString() string {
+	return s.String()
+}
+
+// SetReuseOnScaleIn sets the ReuseOnScaleIn field's value.
+func (s *InstanceReusePolicy) SetReuseOnScaleIn(v bool) *InstanceReusePolicy {
+	s.ReuseOnScaleIn = &v
 	return s
 }
 
@@ -14260,12 +14315,11 @@ type LaunchTemplateOverrides struct {
 	// in the Amazon Elastic Compute Cloud User Guide.
 	InstanceType *string `min:"1" type:"string"`
 
-	// Provides the launch template to be used when launching the instance type
-	// specified in InstanceType. For example, some instance types might require
-	// a launch template with a different AMI. If not provided, Amazon EC2 Auto
-	// Scaling uses the launch template that's defined for your mixed instances
-	// policy. For more information, see Specifying a different launch template
-	// for an instance type (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-mixed-instances-groups-launch-template-overrides.html)
+	// Provides a launch template for the specified instance type or instance requirements.
+	// For example, some instance types might require a launch template with a different
+	// AMI. If not provided, Amazon EC2 Auto Scaling uses the launch template that's
+	// defined for your mixed instances policy. For more information, see Specifying
+	// a different launch template for an instance type (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-mixed-instances-groups-launch-template-overrides.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	LaunchTemplateSpecification *LaunchTemplateSpecification `type:"structure"`
 
@@ -14277,8 +14331,8 @@ type LaunchTemplateOverrides struct {
 	// if this results in an overage. For example, if there are two units remaining
 	// to fulfill capacity, and Amazon EC2 Auto Scaling can only launch an instance
 	// with a WeightedCapacity of five units, the instance is launched, and the
-	// desired capacity is exceeded by three units. For more information, see Instance
-	// weighting for Amazon EC2 Auto Scaling (https://docs.aws.amazon.com/ec2-auto-scaling-mixed-instances-groups-instance-weighting.html)
+	// desired capacity is exceeded by three units. For more information, see Configuring
+	// instance weighting for Amazon EC2 Auto Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-mixed-instances-groups-instance-weighting.html)
 	// in the Amazon EC2 Auto Scaling User Guide. Value must be in the range of
 	// 1–999.
 	WeightedCapacity *string `min:"1" type:"string"`
@@ -14443,9 +14497,9 @@ func (s *LaunchTemplateSpecification) SetVersion(v string) *LaunchTemplateSpecif
 	return s
 }
 
-// Describes a lifecycle hook, which enables an Auto Scaling group to be aware
-// of events in the Auto Scaling instance lifecycle, and then perform a custom
-// action when the corresponding lifecycle event occurs.
+// Describes a lifecycle hook. A lifecycle hook lets you create solutions that
+// are aware of events in the Auto Scaling instance lifecycle, and then perform
+// a custom action on instances when the corresponding lifecycle event occurs.
 type LifecycleHook struct {
 	_ struct{} `type:"structure"`
 
@@ -14488,7 +14542,7 @@ type LifecycleHook struct {
 	NotificationTargetARN *string `type:"string"`
 
 	// The ARN of the IAM role that allows the Auto Scaling group to publish to
-	// the specified notification target.
+	// the specified notification target (an Amazon SNS topic or an Amazon SQS queue).
 	RoleARN *string `min:"1" type:"string"`
 }
 
@@ -14610,8 +14664,11 @@ type LifecycleHookSpecification struct {
 	NotificationTargetARN *string `type:"string"`
 
 	// The ARN of the IAM role that allows the Auto Scaling group to publish to
-	// the specified notification target, for example, an Amazon SNS topic or an
-	// Amazon SQS queue.
+	// the specified notification target.
+	//
+	// Valid only if the notification target is an Amazon SNS topic or an Amazon
+	// SQS queue. Required for new lifecycle hooks, but optional when updating existing
+	// hooks.
 	RoleARN *string `min:"1" type:"string"`
 }
 
@@ -15613,14 +15670,14 @@ type PredefinedMetricSpecification struct {
 	//    * ASGAverageCPUUtilization - Average CPU utilization of the Auto Scaling
 	//    group.
 	//
-	//    * ASGAverageNetworkIn - Average number of bytes received on all network
-	//    interfaces by the Auto Scaling group.
+	//    * ASGAverageNetworkIn - Average number of bytes received (per instance
+	//    per minute) for the Auto Scaling group.
 	//
-	//    * ASGAverageNetworkOut - Average number of bytes sent out on all network
-	//    interfaces by the Auto Scaling group.
+	//    * ASGAverageNetworkOut - Average number of bytes sent out (per instance
+	//    per minute) for the Auto Scaling group.
 	//
-	//    * ALBRequestCountPerTarget - Number of requests completed per target in
-	//    an Application Load Balancer target group.
+	//    * ALBRequestCountPerTarget - Average Application Load Balancer request
+	//    count (per target per minute) for your Auto Scaling group.
 	//
 	// PredefinedMetricType is a required field
 	PredefinedMetricType *string `type:"string" required:"true" enum:"MetricType"`
@@ -16557,10 +16614,11 @@ type PutLifecycleHookInput struct {
 	NotificationTargetARN *string `type:"string"`
 
 	// The ARN of the IAM role that allows the Auto Scaling group to publish to
-	// the specified notification target, for example, an Amazon SNS topic or an
-	// Amazon SQS queue.
+	// the specified notification target.
 	//
-	// Required for new lifecycle hooks, but optional when updating existing hooks.
+	// Valid only if the notification target is an Amazon SNS topic or an Amazon
+	// SQS queue. Required for new lifecycle hooks, but optional when updating existing
+	// hooks.
 	RoleARN *string `min:"1" type:"string"`
 }
 
@@ -17305,6 +17363,11 @@ type PutWarmPoolInput struct {
 	// AutoScalingGroupName is a required field
 	AutoScalingGroupName *string `min:"1" type:"string" required:"true"`
 
+	// Indicates whether instances in the Auto Scaling group can be returned to
+	// the warm pool on scale in. The default is to terminate instances in the Auto
+	// Scaling group when the group scales in.
+	InstanceReusePolicy *InstanceReusePolicy `type:"structure"`
+
 	// Specifies the maximum number of instances that are allowed to be in the warm
 	// pool or in any state except Terminated for the Auto Scaling group. This is
 	// an optional property. Specify it only if you do not want the warm pool size
@@ -17377,6 +17440,12 @@ func (s *PutWarmPoolInput) Validate() error {
 // SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
 func (s *PutWarmPoolInput) SetAutoScalingGroupName(v string) *PutWarmPoolInput {
 	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetInstanceReusePolicy sets the InstanceReusePolicy field's value.
+func (s *PutWarmPoolInput) SetInstanceReusePolicy(v *InstanceReusePolicy) *PutWarmPoolInput {
+	s.InstanceReusePolicy = v
 	return s
 }
 
@@ -18963,6 +19032,12 @@ type TargetTrackingConfiguration struct {
 
 	// The target value for the metric.
 	//
+	// Some metrics are based on a count instead of a percentage, such as the request
+	// count for an Application Load Balancer or the number of messages in an SQS
+	// queue. If the scaling policy specifies one of these metrics, specify the
+	// target utilization as the optimal average request or message count per instance
+	// during any one-minute interval.
+	//
 	// TargetValue is a required field
 	TargetValue *float64 `type:"double" required:"true"`
 }
@@ -19220,7 +19295,7 @@ type UpdateAutoScalingGroupInput struct {
 	// is 0. For more information, see Health check grace period (https://docs.aws.amazon.com/autoscaling/ec2/userguide/healthcheck.html#health-check-grace-period)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	//
-	// Conditional: Required if you are adding an ELB health check.
+	// Required if you are adding an ELB health check.
 	HealthCheckGracePeriod *int64 `type:"integer"`
 
 	// The service to use for the health checks. The valid values are EC2 and ELB.
@@ -19561,6 +19636,9 @@ func (s *VCpuCountRequest) SetMin(v int64) *VCpuCountRequest {
 type WarmPoolConfiguration struct {
 	_ struct{} `type:"structure"`
 
+	// The instance reuse policy.
+	InstanceReusePolicy *InstanceReusePolicy `type:"structure"`
+
 	// The maximum number of instances that are allowed to be in the warm pool or
 	// in any state except Terminated for the Auto Scaling group.
 	MaxGroupPreparedCapacity *int64 `type:"integer"`
@@ -19591,6 +19669,12 @@ func (s WarmPoolConfiguration) String() string {
 // value will be replaced with "sensitive".
 func (s WarmPoolConfiguration) GoString() string {
 	return s.String()
+}
+
+// SetInstanceReusePolicy sets the InstanceReusePolicy field's value.
+func (s *WarmPoolConfiguration) SetInstanceReusePolicy(v *InstanceReusePolicy) *WarmPoolConfiguration {
+	s.InstanceReusePolicy = v
+	return s
 }
 
 // SetMaxGroupPreparedCapacity sets the MaxGroupPreparedCapacity field's value.
@@ -19903,6 +19987,9 @@ const (
 
 	// LifecycleStateWarmedRunning is a LifecycleState enum value
 	LifecycleStateWarmedRunning = "Warmed:Running"
+
+	// LifecycleStateWarmedHibernated is a LifecycleState enum value
+	LifecycleStateWarmedHibernated = "Warmed:Hibernated"
 )
 
 // LifecycleState_Values returns all elements of the LifecycleState enum
@@ -19930,6 +20017,7 @@ func LifecycleState_Values() []string {
 		LifecycleStateWarmedTerminated,
 		LifecycleStateWarmedStopped,
 		LifecycleStateWarmedRunning,
+		LifecycleStateWarmedHibernated,
 	}
 }
 
@@ -20199,6 +20287,9 @@ const (
 
 	// WarmPoolStateRunning is a WarmPoolState enum value
 	WarmPoolStateRunning = "Running"
+
+	// WarmPoolStateHibernated is a WarmPoolState enum value
+	WarmPoolStateHibernated = "Hibernated"
 )
 
 // WarmPoolState_Values returns all elements of the WarmPoolState enum
@@ -20206,6 +20297,7 @@ func WarmPoolState_Values() []string {
 	return []string{
 		WarmPoolStateStopped,
 		WarmPoolStateRunning,
+		WarmPoolStateHibernated,
 	}
 }
 
