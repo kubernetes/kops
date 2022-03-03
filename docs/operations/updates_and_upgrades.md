@@ -34,6 +34,12 @@ sudo mv ./kops /usr/local/bin/
 
 You can also rerun [these steps](../contributing/building.md) if previously built from source.
 
+You may want to run below commands to include fixes/features after updating kOps
+```
+kops update cluster $NAME --yes
+kops rolling-update cluster $NAME --yes
+```
+
 ## Upgrading Kubernetes
 
 Upgrading Kubernetes is easy with kOps. The cluster spec contains a `kubernetesVersion`, so you can simply edit it with `kops edit`, and apply the updated configuration to your cluster.
