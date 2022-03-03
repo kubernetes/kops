@@ -45,6 +45,7 @@ type Route struct {
 	InternetGateway           *InternetGateway
 	NatGateway                *NatGateway
 	TransitGatewayID          *string
+	VPCPeeringConnection      *string
 }
 
 func (e *Route) Find(c *fi.Context) (*Route, error) {
@@ -99,6 +100,9 @@ func (e *Route) Find(c *fi.Context) (*Route, error) {
 			}
 			if r.TransitGatewayId != nil {
 				actual.TransitGatewayID = r.TransitGatewayId
+			}
+			if r.VpcPeeringConnectionId != nil {
+				actual.VPCPeeringConnection = r.VpcPeeringConnectionId
 			}
 
 			if aws.StringValue(r.State) == "blackhole" {
@@ -155,11 +159,14 @@ func (s *Route) CheckChanges(a, e, changes *Route) error {
 		if e.TransitGatewayID != nil {
 			targetCount++
 		}
+		if e.VPCPeeringConnection != nil {
+			targetCount++
+		}
 		if targetCount == 0 {
-			return fmt.Errorf("EgressOnlyInternetGateway, InternetGateway, Instance, NatGateway, or TransitGateway is required")
+			return fmt.Errorf("EgressOnlyInternetGateway, InternetGateway, Instance, NatGateway, TransitGateway, or VpcPeeringConnection is required")
 		}
 		if targetCount != 1 {
-			return fmt.Errorf("cannot set more than one EgressOnlyInternetGateway, InternetGateway, Instance, NatGateway, or TransitGateway")
+			return fmt.Errorf("cannot set more than one EgressOnlyInternetGateway, InternetGateway, Instance, NatGateway, TransitGateway, or VpcPeeringConnection")
 		}
 	}
 
@@ -199,6 +206,8 @@ func (_ *Route) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Route) error {
 			request.NatGatewayId = checkNotNil(e.NatGateway.ID)
 		} else if e.TransitGatewayID != nil {
 			request.TransitGatewayId = e.TransitGatewayID
+		} else if e.VPCPeeringConnection != nil {
+			request.VpcPeeringConnectionId = e.VPCPeeringConnection
 		}
 
 		if e.Instance != nil {
@@ -241,6 +250,8 @@ func (_ *Route) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Route) error {
 			request.NatGatewayId = checkNotNil(e.NatGateway.ID)
 		} else if e.TransitGatewayID != nil {
 			request.TransitGatewayId = e.TransitGatewayID
+		} else if e.VPCPeeringConnection != nil {
+			request.VpcPeeringConnectionId = e.VPCPeeringConnection
 		}
 
 		if e.Instance != nil {
@@ -279,6 +290,7 @@ type terraformRoute struct {
 	NATGatewayID                *terraformWriter.Literal `cty:"nat_gateway_id"`
 	TransitGatewayID            *string                  `cty:"transit_gateway_id"`
 	InstanceID                  *terraformWriter.Literal `cty:"instance_id"`
+	VPCPeeringConnection        *string                  `cty:"vpc_peering_connection_id"`
 }
 
 func (_ *Route) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Route) error {
@@ -298,6 +310,8 @@ func (_ *Route) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Rou
 		tf.NATGatewayID = e.NatGateway.TerraformLink()
 	} else if e.TransitGatewayID != nil {
 		tf.TransitGatewayID = e.TransitGatewayID
+	} else if e.VPCPeeringConnection != nil {
+		tf.VPCPeeringConnection = e.VPCPeeringConnection
 	}
 
 	if e.Instance != nil {
@@ -311,13 +325,14 @@ func (_ *Route) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Rou
 }
 
 type cloudformationRoute struct {
-	RouteTableID      *cloudformation.Literal `json:"RouteTableId"`
-	CIDR              *string                 `json:"DestinationCidrBlock,omitempty"`
-	IPv6CIDR          *string                 `json:"DestinationIpv6CidrBlock,omitempty"`
-	InternetGatewayID *cloudformation.Literal `json:"GatewayId,omitempty"`
-	NATGatewayID      *cloudformation.Literal `json:"NatGatewayId,omitempty"`
-	TransitGatewayID  *string                 `json:"TransitGatewayId,omitempty"`
-	InstanceID        *cloudformation.Literal `json:"InstanceId,omitempty"`
+	RouteTableID         *cloudformation.Literal `json:"RouteTableId"`
+	CIDR                 *string                 `json:"DestinationCidrBlock,omitempty"`
+	IPv6CIDR             *string                 `json:"DestinationIpv6CidrBlock,omitempty"`
+	InternetGatewayID    *cloudformation.Literal `json:"GatewayId,omitempty"`
+	NATGatewayID         *cloudformation.Literal `json:"NatGatewayId,omitempty"`
+	TransitGatewayID     *string                 `json:"TransitGatewayId,omitempty"`
+	InstanceID           *cloudformation.Literal `json:"InstanceId,omitempty"`
+	VPCPeeringConnection *string                 `json:"VpcPeeringConnectionId,omitempty"`
 }
 
 func (_ *Route) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *Route) error {
@@ -335,6 +350,8 @@ func (_ *Route) RenderCloudformation(t *cloudformation.CloudformationTarget, a, 
 		tf.NATGatewayID = e.NatGateway.CloudformationLink()
 	} else if e.TransitGatewayID != nil {
 		tf.TransitGatewayID = e.TransitGatewayID
+	} else if e.VPCPeeringConnection != nil {
+		tf.VPCPeeringConnection = e.VPCPeeringConnection
 	}
 
 	if e.Instance != nil {

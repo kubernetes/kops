@@ -5372,6 +5372,19 @@ spec:
                 description: Configuration of subnets we are targeting
                 items:
                   properties:
+                    additionalRoutes:
+                      description: AdditionalRoutes to attach to the subnet's route
+                        table
+                      items:
+                        properties:
+                          cidr:
+                            description: CIDR destination of the route
+                            type: string
+                          target:
+                            description: Target of the route
+                            type: string
+                        type: object
+                      type: array
                     cidr:
                       description: CIDR is the IPv4 CIDR block assigned to the subnet.
                       type: string
