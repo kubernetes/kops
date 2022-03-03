@@ -95,6 +95,7 @@ spec:
 
 Read more about cert-manager in the [official documentation](https://cert-manager.io/docs/)
 
+
 #### Metrics server
 {{ kops_feature_table(kops_added_default='1.19') }}
 
@@ -234,6 +235,22 @@ spec:
       enabled: true
 ```
 
+#### EKS Pod Identity Webhook
+
+{{ kops_feature_table(kops_added_default='1.23') }}
+
+kOps can install EKS Pod Identity Webhook for IAM Role for Service Accounts.
+You need to enable cert-manager to use this feature.
+
+```yaml
+spec:
+  certManager:
+    enabled: true
+  podIdentityWebhook:
+    enabled: true
+```
+
+Read more about EKS Pod Identity Webhook in the [official documentation](https://github.com/aws/amazon-eks-pod-identity-webhook).
 
 ## Custom addons
 

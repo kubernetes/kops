@@ -104,10 +104,12 @@ spec:
       kubernetes.io/os: linux
   template:
     metadata:
+      creationTimestamp: null
       labels:
         app.kubernetes.io/instance: aws-node-termination-handler
         app.kubernetes.io/name: aws-node-termination-handler
         k8s-app: aws-node-termination-handler
+        kops.k8s.io/managed-by: kops
         kubernetes.io/os: linux
     spec:
       affinity:

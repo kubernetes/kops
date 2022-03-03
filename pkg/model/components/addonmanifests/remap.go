@@ -157,8 +157,26 @@ func addLabels(addon *addonsapi.AddonSpec, objects kubemanifest.ObjectList) erro
 
 			meta.Labels[key] = val
 		}
+		if hasPodSpecTemplate(object) {
+			addPodSpecLabels(object)
+		}
 		object.Set(meta, "metadata")
 	}
+	return nil
+}
+
+func addPodSpecLabels(object *kubemanifest.Object) error {
+	podMeta := &metav1.ObjectMeta{}
+
+	if err := object.Reparse(podMeta, "spec", "template", "metadata"); err != nil {
+		return fmt.Errorf("failed to parse spec.template.spec from Deployment: %v", err)
+	}
+	podMeta.Labels["kops.k8s.io/managed-by"] = "kops"
+
+	if err := object.Set(podMeta, "spec", "template", "metadata"); err != nil {
+		return fmt.Errorf("failed to set object: %w", err)
+	}
+
 	return nil
 }
 

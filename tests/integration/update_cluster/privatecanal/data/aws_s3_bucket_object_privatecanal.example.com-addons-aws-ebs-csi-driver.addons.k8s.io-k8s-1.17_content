@@ -469,11 +469,13 @@ spec:
       app.kubernetes.io/name: aws-ebs-csi-driver
   template:
     metadata:
+      creationTimestamp: null
       labels:
         app: ebs-csi-node
         app.kubernetes.io/instance: aws-ebs-csi-driver
         app.kubernetes.io/name: aws-ebs-csi-driver
         app.kubernetes.io/version: v1.5.0
+        kops.k8s.io/managed-by: kops
     spec:
       containers:
       - args:
@@ -590,11 +592,13 @@ spec:
       app.kubernetes.io/name: aws-ebs-csi-driver
   template:
     metadata:
+      creationTimestamp: null
       labels:
         app: ebs-csi-controller
         app.kubernetes.io/instance: aws-ebs-csi-driver
         app.kubernetes.io/name: aws-ebs-csi-driver
         app.kubernetes.io/version: v1.5.0
+        kops.k8s.io/managed-by: kops
     spec:
       affinity:
         podAntiAffinity:

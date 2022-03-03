@@ -4155,8 +4155,10 @@ spec:
       k8s-app: calico-node
   template:
     metadata:
+      creationTimestamp: null
       labels:
         k8s-app: calico-node
+        kops.k8s.io/managed-by: kops
     spec:
       containers:
       - env:
@@ -4458,8 +4460,10 @@ spec:
     type: Recreate
   template:
     metadata:
+      creationTimestamp: null
       labels:
         k8s-app: calico-kube-controllers
+        kops.k8s.io/managed-by: kops
       name: calico-kube-controllers
       namespace: kube-system
     spec:

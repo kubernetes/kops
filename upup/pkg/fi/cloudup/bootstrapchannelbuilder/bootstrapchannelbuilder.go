@@ -714,6 +714,26 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 		}
 	}
 
+	if b.Cluster.Spec.PodIdentityWebhook != nil && fi.BoolValue(&b.Cluster.Spec.PodIdentityWebhook.Enabled) {
+
+		key := "eks-pod-identity-webhook.addons.k8s.io"
+
+		{
+			id := "k8s-1.16"
+			location := key + "/" + id + ".yaml"
+
+			addons.Add(&channelsapi.AddonSpec{
+				Name: fi.String(key),
+				Selector: map[string]string{
+					"k8s-addon": key,
+				},
+				Manifest: fi.String(location),
+				Id:       id,
+				NeedsPKI: true,
+			})
+		}
+	}
+
 	if kops.CloudProviderID(b.Cluster.Spec.CloudProvider) == kops.CloudProviderAWS {
 		key := "storage-aws.addons.k8s.io"
 

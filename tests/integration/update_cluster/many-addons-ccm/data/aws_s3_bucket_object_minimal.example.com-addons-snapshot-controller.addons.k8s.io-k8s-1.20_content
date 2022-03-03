@@ -1215,8 +1215,10 @@ spec:
     type: RollingUpdate
   template:
     metadata:
+      creationTimestamp: null
       labels:
         app: snapshot-controller
+        kops.k8s.io/managed-by: kops
     spec:
       containers:
       - args:
@@ -1260,8 +1262,10 @@ spec:
       app: snapshot-validation
   template:
     metadata:
+      creationTimestamp: null
       labels:
         app: snapshot-validation
+        kops.k8s.io/managed-by: kops
     spec:
       containers:
       - args:
