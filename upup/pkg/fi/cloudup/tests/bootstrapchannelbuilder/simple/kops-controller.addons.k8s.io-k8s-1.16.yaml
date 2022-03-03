@@ -7,7 +7,7 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: kops-controller.addons.k8s.io
-    addon.kops.k8s.io/version: 1.21.4
+    addon.kops.k8s.io/version: 1.21.5
     app.kubernetes.io/managed-by: kops
     k8s-addon: kops-controller.addons.k8s.io
   name: kops-controller
@@ -21,11 +21,11 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: kops-controller.addons.k8s.io
-    addon.kops.k8s.io/version: 1.21.4
+    addon.kops.k8s.io/version: 1.21.5
     app.kubernetes.io/managed-by: kops
     k8s-addon: kops-controller.addons.k8s.io
     k8s-app: kops-controller
-    version: v1.21.4
+    version: v1.21.5
   name: kops-controller
   namespace: kube-system
 spec:
@@ -39,7 +39,7 @@ spec:
       labels:
         k8s-addon: kops-controller.addons.k8s.io
         k8s-app: kops-controller
-        version: v1.21.4
+        version: v1.21.5
     spec:
       containers:
       - command:
@@ -49,7 +49,7 @@ spec:
         env:
         - name: KUBERNETES_SERVICE_HOST
           value: 127.0.0.1
-        image: k8s.gcr.io/kops/kops-controller:1.21.4
+        image: k8s.gcr.io/kops/kops-controller:1.21.5
         name: kops-controller
         resources:
           requests:
@@ -91,7 +91,7 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: kops-controller.addons.k8s.io
-    addon.kops.k8s.io/version: 1.21.4
+    addon.kops.k8s.io/version: 1.21.5
     app.kubernetes.io/managed-by: kops
     k8s-addon: kops-controller.addons.k8s.io
   name: kops-controller
@@ -105,7 +105,7 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: kops-controller.addons.k8s.io
-    addon.kops.k8s.io/version: 1.21.4
+    addon.kops.k8s.io/version: 1.21.5
     app.kubernetes.io/managed-by: kops
     k8s-addon: kops-controller.addons.k8s.io
   name: kops-controller
@@ -128,7 +128,7 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: kops-controller.addons.k8s.io
-    addon.kops.k8s.io/version: 1.21.4
+    addon.kops.k8s.io/version: 1.21.5
     app.kubernetes.io/managed-by: kops
     k8s-addon: kops-controller.addons.k8s.io
   name: kops-controller
@@ -149,7 +149,7 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: kops-controller.addons.k8s.io
-    addon.kops.k8s.io/version: 1.21.4
+    addon.kops.k8s.io/version: 1.21.5
     app.kubernetes.io/managed-by: kops
     k8s-addon: kops-controller.addons.k8s.io
   name: kops-controller
@@ -196,7 +196,7 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: kops-controller.addons.k8s.io
-    addon.kops.k8s.io/version: 1.21.4
+    addon.kops.k8s.io/version: 1.21.5
     app.kubernetes.io/managed-by: kops
     k8s-addon: kops-controller.addons.k8s.io
   name: kops-controller
