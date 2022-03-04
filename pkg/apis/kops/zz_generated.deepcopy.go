@@ -2641,6 +2641,11 @@ func (in *InstanceGroupSpec) DeepCopyInto(out *InstanceGroupSpec) {
 		*out = new(WarmPoolSpec)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.Containerd != nil {
+		in, out := &in.Containerd, &out.Containerd
+		*out = new(ContainerdConfig)
+		(*in).DeepCopyInto(*out)
+	}
 	return
 }
 
