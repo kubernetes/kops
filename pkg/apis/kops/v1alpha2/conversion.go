@@ -91,6 +91,11 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 		out.CloudProvider.GCE = &kops.GCESpec{}
 	case kops.CloudProviderOpenstack:
 		out.CloudProvider.Openstack = &kops.OpenstackSpec{}
+		if in.CloudConfig != nil && in.CloudConfig.Openstack != nil {
+			if err := autoConvert_v1alpha2_OpenstackSpec_To_kops_OpenstackSpec(in.CloudConfig.Openstack, out.CloudProvider.Openstack, s); err != nil {
+				return err
+			}
+		}
 	case "":
 	default:
 		return field.NotSupported(field.NewPath("spec").Child("cloudProvider"), in.LegacyCloudProvider, []string{
@@ -126,6 +131,16 @@ func Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, out 
 			out.CloudConfig.Azure = &AzureSpec{}
 		}
 		if err := autoConvert_kops_AzureSpec_To_v1alpha2_AzureSpec(in.CloudProvider.Azure, out.CloudConfig.Azure, s); err != nil {
+			return err
+		}
+	case kops.CloudProviderOpenstack:
+		if out.CloudConfig == nil {
+			out.CloudConfig = &CloudConfiguration{}
+		}
+		if out.CloudConfig.Openstack == nil {
+			out.CloudConfig.Openstack = &OpenstackSpec{}
+		}
+		if err := autoConvert_kops_OpenstackSpec_To_v1alpha2_OpenstackSpec(in.CloudProvider.Openstack, out.CloudConfig.Openstack, s); err != nil {
 			return err
 		}
 	}

@@ -32,7 +32,7 @@ var _ loader.OptionsBuilder = &OpenStackOptionsBulder{}
 func (b *OpenStackOptionsBulder) BuildOptions(o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 
-	if clusterSpec.GetCloudProvider() != kops.CloudProviderOpenstack {
+	if clusterSpec.CloudProvider.Openstack == nil {
 		return nil
 	}
 
@@ -40,22 +40,19 @@ func (b *OpenStackOptionsBulder) BuildOptions(o interface{}) error {
 		clusterSpec.CloudConfig = &kops.CloudConfiguration{}
 	}
 
-	if clusterSpec.CloudConfig.Openstack == nil {
-		clusterSpec.CloudConfig.Openstack = &kops.OpenstackConfiguration{}
-	}
-	if clusterSpec.CloudConfig.Openstack.BlockStorage == nil {
-		clusterSpec.CloudConfig.Openstack.BlockStorage = &kops.OpenstackBlockStorageConfig{}
+	if clusterSpec.CloudProvider.Openstack.BlockStorage == nil {
+		clusterSpec.CloudProvider.Openstack.BlockStorage = &kops.OpenstackBlockStorageConfig{}
 	}
 
-	if clusterSpec.CloudConfig.Openstack.BlockStorage.CreateStorageClass == nil {
-		clusterSpec.CloudConfig.Openstack.BlockStorage.CreateStorageClass = fi.Bool(true)
+	if clusterSpec.CloudProvider.Openstack.BlockStorage.CreateStorageClass == nil {
+		clusterSpec.CloudProvider.Openstack.BlockStorage.CreateStorageClass = fi.Bool(true)
 	}
 
-	if clusterSpec.CloudConfig.Openstack.Metadata == nil {
-		clusterSpec.CloudConfig.Openstack.Metadata = &kops.OpenstackMetadata{}
+	if clusterSpec.CloudProvider.Openstack.Metadata == nil {
+		clusterSpec.CloudProvider.Openstack.Metadata = &kops.OpenstackMetadata{}
 	}
-	if clusterSpec.CloudConfig.Openstack.Metadata.ConfigDrive == nil {
-		clusterSpec.CloudConfig.Openstack.Metadata.ConfigDrive = fi.Bool(false)
+	if clusterSpec.CloudProvider.Openstack.Metadata.ConfigDrive == nil {
+		clusterSpec.CloudProvider.Openstack.Metadata.ConfigDrive = fi.Bool(false)
 	}
 
 	if clusterSpec.ExternalCloudControllerManager == nil {

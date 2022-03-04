@@ -50,8 +50,8 @@ func Test_OpenstackCloud_GetApiIngressStatus(t *testing.T) {
 			cluster: &kops.Cluster{
 				Spec: kops.ClusterSpec{
 					MasterPublicName: "master.k8s.local",
-					CloudConfig: &kops.CloudConfiguration{
-						Openstack: &kops.OpenstackConfiguration{
+					CloudProvider: kops.CloudProviderSpec{
+						Openstack: &kops.OpenstackSpec{
 							Loadbalancer: &kops.OpenstackLoadbalancerConfig{},
 						},
 					},
@@ -86,8 +86,8 @@ func Test_OpenstackCloud_GetApiIngressStatus(t *testing.T) {
 			cluster: &kops.Cluster{
 				Spec: kops.ClusterSpec{
 					MasterPublicName: "master.k8s.local",
-					CloudConfig: &kops.CloudConfiguration{
-						Openstack: &kops.OpenstackConfiguration{
+					CloudProvider: kops.CloudProviderSpec{
+						Openstack: &kops.OpenstackSpec{
 							Loadbalancer: &kops.OpenstackLoadbalancerConfig{},
 						},
 					},
@@ -131,8 +131,8 @@ func Test_OpenstackCloud_GetApiIngressStatus(t *testing.T) {
 			desc: "Loadbalancer configured master public name not set",
 			cluster: &kops.Cluster{
 				Spec: kops.ClusterSpec{
-					CloudConfig: &kops.CloudConfiguration{
-						Openstack: &kops.OpenstackConfiguration{
+					CloudProvider: kops.CloudProviderSpec{
+						Openstack: &kops.OpenstackSpec{
 							Loadbalancer: &kops.OpenstackLoadbalancerConfig{},
 						},
 					},
@@ -147,8 +147,8 @@ func Test_OpenstackCloud_GetApiIngressStatus(t *testing.T) {
 					Name: "cluster.k8s.local",
 				},
 				Spec: kops.ClusterSpec{
-					CloudConfig: &kops.CloudConfiguration{
-						Openstack: &kops.OpenstackConfiguration{},
+					CloudProvider: kops.CloudProviderSpec{
+						Openstack: &kops.OpenstackSpec{},
 					},
 				},
 			},
@@ -219,8 +219,8 @@ func Test_OpenstackCloud_GetApiIngressStatus(t *testing.T) {
 					Name: "cluster.k8s.local",
 				},
 				Spec: kops.ClusterSpec{
-					CloudConfig: &kops.CloudConfiguration{
-						Openstack: &kops.OpenstackConfiguration{},
+					CloudProvider: kops.CloudProviderSpec{
+						Openstack: &kops.OpenstackSpec{},
 					},
 				},
 			},

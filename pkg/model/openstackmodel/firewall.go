@@ -50,10 +50,8 @@ type FirewallModelBuilder struct {
 var _ fi.ModelBuilder = &FirewallModelBuilder{}
 
 func (b *FirewallModelBuilder) usesOctavia() bool {
-	if b.Cluster.Spec.CloudConfig != nil &&
-		b.Cluster.Spec.CloudConfig.Openstack != nil &&
-		b.Cluster.Spec.CloudConfig.Openstack.Loadbalancer != nil {
-		return fi.BoolValue(b.Cluster.Spec.CloudConfig.Openstack.Loadbalancer.UseOctavia)
+	if b.Cluster.Spec.CloudProvider.Openstack.Loadbalancer != nil {
+		return fi.BoolValue(b.Cluster.Spec.CloudProvider.Openstack.Loadbalancer.UseOctavia)
 	}
 	return false
 }
