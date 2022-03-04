@@ -128,8 +128,18 @@ spec:
         - --logtostderr
         - --watch-config-map
         - --v=5
-        image: olemarkus/amazon-eks-pod-identity-webhook:kops-v1.23.0-beta.2
+        image: amazon/amazon-eks-pod-identity-webhook:v0.4.0
         name: pod-identity-webhook
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /healthz
+            port: 9999
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 1
         volumeMounts:
         - mountPath: /etc/webhook/certs
           name: cert
