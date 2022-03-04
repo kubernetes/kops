@@ -22,10 +22,10 @@ import (
 )
 
 func openstackValidateCluster(c *kops.Cluster) (errList field.ErrorList) {
-	if c.Spec.CloudConfig == nil || c.Spec.CloudConfig.Openstack == nil {
+	if c.Spec.CloudProvider.Openstack == nil {
 		return errList
 	}
-	if c.Spec.CloudConfig.Openstack.Router == nil || c.Spec.CloudConfig.Openstack.Router.ExternalNetwork == nil {
+	if c.Spec.CloudProvider.Openstack.Router == nil || c.Spec.CloudProvider.Openstack.Router.ExternalNetwork == nil {
 		topology := c.Spec.Topology
 		if topology == nil || topology.Nodes == kops.TopologyPublic {
 			errList = append(errList, field.Forbidden(field.NewPath("spec", "topology", "nodes"), "Public topology requires an external network"))
