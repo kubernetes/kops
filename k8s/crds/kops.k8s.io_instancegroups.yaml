@@ -101,6 +101,72 @@ spec:
                 description: CompressUserData compresses parts of the user data to
                   save space
                 type: boolean
+              containerd:
+                description: Containerd specifies override configuration for instance
+                  group
+                properties:
+                  address:
+                    description: Address of containerd's GRPC server (default "/run/containerd/containerd.sock").
+                    type: string
+                  configOverride:
+                    description: ConfigOverride is the complete containerd config
+                      file provided by the user.
+                    type: string
+                  logLevel:
+                    description: LogLevel controls the logging details [trace, debug,
+                      info, warn, error, fatal, panic] (default "info").
+                    type: string
+                  nvidiaGPU:
+                    description: NvidiaGPU configures the Nvidia GPU runtime.
+                    properties:
+                      enabled:
+                        description: Enabled determines if kOps will install the Nvidia
+                          GPU runtime and drivers. They will only be installed on
+                          intances that has an Nvidia GPU.
+                        type: boolean
+                      package:
+                        description: Package is the name of the nvidia driver package
+                          that will be installed. Default is "nvidia-headless-460-server".
+                        type: string
+                    type: object
+                  packages:
+                    description: Packages overrides the URL and hash for the packages.
+                    properties:
+                      hashAmd64:
+                        description: HashAmd64 overrides the hash for the AMD64 package.
+                        type: string
+                      hashArm64:
+                        description: HashArm64 overrides the hash for the ARM64 package.
+                        type: string
+                      urlAmd64:
+                        description: UrlAmd64 overrides the URL for the AMD64 package.
+                        type: string
+                      urlArm64:
+                        description: UrlArm64 overrides the URL for the ARM64 package.
+                        type: string
+                    type: object
+                  registryMirrors:
+                    additionalProperties:
+                      items:
+                        type: string
+                      type: array
+                    description: RegistryMirrors is list of image registries
+                    type: object
+                  root:
+                    description: Root directory for persistent data (default "/var/lib/containerd").
+                    type: string
+                  skipInstall:
+                    description: SkipInstall prevents kOps from installing and modifying
+                      containerd in any way (default "false").
+                    type: boolean
+                  state:
+                    description: State directory for execution state files (default
+                      "/run/containerd").
+                    type: string
+                  version:
+                    description: Version used to pick the containerd package.
+                    type: string
+                type: object
               cpuCredits:
                 description: CPUCredits is the credit option for CPU Usage on burstable
                   instance types (AWS only)

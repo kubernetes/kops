@@ -227,7 +227,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 	}
 
 	if spec.Containerd != nil {
-		allErrs = append(allErrs, validateContainerdConfig(spec, spec.Containerd, fieldPath.Child("containerd"))...)
+		allErrs = append(allErrs, validateContainerdConfig(spec, spec.Containerd, fieldPath.Child("containerd"), true)...)
 	}
 
 	if spec.Docker != nil {
@@ -1371,7 +1371,7 @@ func validateContainerRuntime(c *kops.Cluster, runtime string, fldPath *field.Pa
 	return allErrs
 }
 
-func validateContainerdConfig(spec *kops.ClusterSpec, config *kops.ContainerdConfig, fldPath *field.Path) field.ErrorList {
+func validateContainerdConfig(spec *kops.ClusterSpec, config *kops.ContainerdConfig, fldPath *field.Path, inClusterConfig bool) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	if config.Version != nil {
@@ -1429,7 +1429,7 @@ func validateContainerdConfig(spec *kops.ClusterSpec, config *kops.ContainerdCon
 	}
 
 	if config.NvidiaGPU != nil {
-		allErrs = append(allErrs, validateNvidiaConfig(spec, config.NvidiaGPU, fldPath.Child("nvidia"))...)
+		allErrs = append(allErrs, validateNvidiaConfig(spec, config.NvidiaGPU, fldPath.Child("nvidia"), inClusterConfig)...)
 	}
 
 	return allErrs
@@ -1506,15 +1506,18 @@ func validateDockerConfig(config *kops.DockerConfig, fldPath *field.Path) field.
 	return allErrs
 }
 
-func validateNvidiaConfig(spec *kops.ClusterSpec, nvidia *kops.NvidiaGPUConfig, fldPath *field.Path) (allErrs field.ErrorList) {
+func validateNvidiaConfig(spec *kops.ClusterSpec, nvidia *kops.NvidiaGPUConfig, fldPath *field.Path, inClusterConfig bool) (allErrs field.ErrorList) {
 	if !fi.BoolValue(nvidia.Enabled) {
 		return allErrs
 	}
-	if spec.GetCloudProvider() != kops.CloudProviderAWS {
-		allErrs = append(allErrs, field.Forbidden(fldPath, "Nvidia is only supported on AWS"))
+	if spec.GetCloudProvider() != kops.CloudProviderAWS && spec.GetCloudProvider() != kops.CloudProviderOpenstack {
+		allErrs = append(allErrs, field.Forbidden(fldPath, "Nvidia is only supported on AWS and OpenStack"))
 	}
 	if spec.ContainerRuntime != "" && spec.ContainerRuntime != "containerd" {
 		allErrs = append(allErrs, field.Forbidden(fldPath, "Nvidia is only supported using containerd"))
+	}
+	if spec.GetCloudProvider() == kops.CloudProviderOpenstack && inClusterConfig {
+		allErrs = append(allErrs, field.Forbidden(fldPath, "OpenStack supports nvidia configuration only in instance group"))
 	}
 	return allErrs
 }
