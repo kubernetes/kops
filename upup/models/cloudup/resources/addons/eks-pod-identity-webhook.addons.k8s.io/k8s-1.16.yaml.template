@@ -80,7 +80,7 @@ spec:
       serviceAccountName: pod-identity-webhook
       containers:
       - name: pod-identity-webhook
-        image: olemarkus/amazon-eks-pod-identity-webhook:kops-v1.23.0-beta.2
+        image: amazon/amazon-eks-pod-identity-webhook:v0.4.0
         command:
         - /webhook
         - --in-cluster=false
@@ -91,6 +91,16 @@ spec:
         - --logtostderr
         - --watch-config-map
         - --v=5
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 9999
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 3
         volumeMounts:
         - name: cert
           mountPath: "/etc/webhook/certs"
