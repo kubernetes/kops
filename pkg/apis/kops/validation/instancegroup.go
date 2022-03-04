@@ -247,6 +247,10 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, cl
 		}
 	}
 
+	if g.Spec.Containerd != nil {
+		allErrs = append(allErrs, validateContainerdConfig(&cluster.Spec, g.Spec.Containerd, field.NewPath("spec", "containerd"), false)...)
+	}
+
 	{
 		warmPool := cluster.Spec.WarmPool.ResolveDefaults(g)
 		if warmPool.MaxSize == nil || *warmPool.MaxSize != 0 {

@@ -4535,6 +4535,15 @@ func autoConvert_v1alpha3_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 	} else {
 		out.WarmPool = nil
 	}
+	if in.Containerd != nil {
+		in, out := &in.Containerd, &out.Containerd
+		*out = new(kops.ContainerdConfig)
+		if err := Convert_v1alpha3_ContainerdConfig_To_kops_ContainerdConfig(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Containerd = nil
+	}
 	return nil
 }
 
@@ -4696,6 +4705,15 @@ func autoConvert_kops_InstanceGroupSpec_To_v1alpha3_InstanceGroupSpec(in *kops.I
 		}
 	} else {
 		out.WarmPool = nil
+	}
+	if in.Containerd != nil {
+		in, out := &in.Containerd, &out.Containerd
+		*out = new(ContainerdConfig)
+		if err := Convert_kops_ContainerdConfig_To_v1alpha3_ContainerdConfig(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Containerd = nil
 	}
 	return nil
 }

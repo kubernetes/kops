@@ -175,28 +175,44 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 		return nil, fmt.Errorf("unable to infer any Subnets for InstanceGroup %s ", ig.ObjectMeta.Name)
 	}
 
+	hasGPU := false
+	clusterNvidia := false
 	if cluster.Spec.Containerd != nil && cluster.Spec.Containerd.NvidiaGPU != nil && fi.BoolValue(cluster.Spec.Containerd.NvidiaGPU.Enabled) {
-		switch cluster.Spec.GetCloudProvider() {
-		case kops.CloudProviderAWS:
+		clusterNvidia = true
+	}
+	igNvidia := false
+	if ig.Spec.Containerd != nil && ig.Spec.Containerd.NvidiaGPU != nil && fi.BoolValue(ig.Spec.Containerd.NvidiaGPU.Enabled) {
+		igNvidia = true
+	}
+
+	switch cluster.Spec.GetCloudProvider() {
+	case kops.CloudProviderAWS:
+		if clusterNvidia || igNvidia {
 			mt, err := awsup.GetMachineTypeInfo(cloud.(awsup.AWSCloud), ig.Spec.MachineType)
 			if err != nil {
 				return ig, fmt.Errorf("error looking up machine type info: %v", err)
 			}
-			if mt.GPU {
-				if ig.Spec.NodeLabels == nil {
-					ig.Spec.NodeLabels = make(map[string]string)
-				}
-				ig.Spec.NodeLabels["kops.k8s.io/gpu"] = "1"
-				hasNvidiaTaint := false
-				for _, taint := range ig.Spec.Taints {
-					if strings.HasPrefix(taint, "nvidia.com/gpu") {
-						hasNvidiaTaint = true
-					}
-				}
-				if !hasNvidiaTaint {
-					ig.Spec.Taints = append(ig.Spec.Taints, "nvidia.com/gpu:NoSchedule")
-				}
+			hasGPU = mt.GPU
+		}
+	case kops.CloudProviderOpenstack:
+		if igNvidia {
+			hasGPU = true
+		}
+	}
+
+	if hasGPU {
+		if ig.Spec.NodeLabels == nil {
+			ig.Spec.NodeLabels = make(map[string]string)
+		}
+		ig.Spec.NodeLabels["kops.k8s.io/gpu"] = "1"
+		hasNvidiaTaint := false
+		for _, taint := range ig.Spec.Taints {
+			if strings.HasPrefix(taint, "nvidia.com/gpu") {
+				hasNvidiaTaint = true
 			}
+		}
+		if !hasNvidiaTaint {
+			ig.Spec.Taints = append(ig.Spec.Taints, "nvidia.com/gpu:NoSchedule")
 		}
 	}
 
