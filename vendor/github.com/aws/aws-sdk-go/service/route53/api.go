@@ -168,6 +168,21 @@ func (c *Route53) AssociateVPCWithHostedZoneRequest(input *AssociateVPCWithHoste
 // the account that created the VPC must submit an AssociateVPCWithHostedZone
 // request.
 //
+// When granting access, the hosted zone and the Amazon VPC must belong to the
+// same partition. A partition is a group of Amazon Web Services Regions. Each
+// Amazon Web Services account is scoped to one partition.
+//
+// The following are the supported partitions:
+//
+//    * aws - Amazon Web Services Regions
+//
+//    * aws-cn - China Regions
+//
+//    * aws-us-gov - Amazon Web Services GovCloud (US) Region
+//
+// For more information, see Access Management (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+// in the Amazon Web Services General Reference.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -348,9 +363,8 @@ func (c *Route53) ChangeResourceRecordSetsRequest(input *ChangeResourceRecordSet
 //    * DELETE: Deletes an existing resource record set that has the specified
 //    values.
 //
-//    * UPSERT: If a resource record set does not already exist, Amazon Web
-//    Services creates it. If a resource set does exist, Route 53 updates it
-//    with the values in the request.
+//    * UPSERT: If a resource set exists Route 53 updates it with the values
+//    in the request.
 //
 // Syntaxes for Creating, Updating, and Deleting Resource Record Sets
 //
@@ -753,6 +767,21 @@ func (c *Route53) CreateHostedZoneRequest(input *CreateHostedZoneInput) (req *re
 // The CreateHostedZone request requires the caller to have an ec2:DescribeVpcs
 // permission.
 //
+// When creating private hosted zones, the Amazon VPC must belong to the same
+// partition where the hosted zone is created. A partition is a group of Amazon
+// Web Services Regions. Each Amazon Web Services account is scoped to one partition.
+//
+// The following are the supported partitions:
+//
+//    * aws - Amazon Web Services Regions
+//
+//    * aws-cn - China Regions
+//
+//    * aws-us-gov - Amazon Web Services GovCloud (US) Region
+//
+// For more information, see Access Management (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+// in the Amazon Web Services General Reference.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -1051,6 +1080,21 @@ func (c *Route53) CreateQueryLoggingConfigRequest(input *CreateQueryLoggingConfi
 // the hosted zone name with *, for example:
 //
 // arn:aws:logs:us-east-1:123412341234:log-group:/aws/route53/*
+//
+// To avoid the confused deputy problem, a security issue where an entity without
+// a permission for an action can coerce a more-privileged entity to perform
+// it, you can optionally limit the permissions that a service has to a resource
+// in a resource-based policy by supplying the following values:
+//
+//    * For aws:SourceArn, supply the hosted zone ARN used in creating the query
+//    logging configuration. For example, aws:SourceArn: arn:aws:route53:::hostedzone/hosted
+//    zone ID.
+//
+//    * For aws:SourceAccount, supply the account ID for the account that creates
+//    the query logging configuration. For example, aws:SourceAccount:111111111111.
+//
+// For more information, see The confused deputy problem (https://docs.aws.amazon.com/IAM/latest/UserGuide/confused-deputy.html)
+// in the Amazon Web Services IAM User Guide.
 //
 // You can't use the CloudWatch console to create or edit a resource policy.
 // You must use the CloudWatch API, one of the Amazon Web Services SDKs, or
@@ -2855,6 +2899,21 @@ func (c *Route53) DisassociateVPCFromHostedZoneRequest(input *DisassociateVPCFro
 //    (https://docs.aws.amazon.com/Route53/latest/APIReference/API_ListHostedZonesByVPC.html),
 //    if the hosted zone has a value for OwningAccount, you can use DisassociateVPCFromHostedZone.
 //    If the hosted zone has a value for OwningService, you can't use DisassociateVPCFromHostedZone.
+//
+// When revoking access, the hosted zone and the Amazon VPC must belong to the
+// same partition. A partition is a group of Amazon Web Services Regions. Each
+// Amazon Web Services account is scoped to one partition.
+//
+// The following are the supported partitions:
+//
+//    * aws - Amazon Web Services Regions
+//
+//    * aws-cn - China Regions
+//
+//    * aws-us-gov - Amazon Web Services GovCloud (US) Region
+//
+// For more information, see Access Management (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+// in the Amazon Web Services General Reference.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5118,6 +5177,22 @@ func (c *Route53) ListHostedZonesByVPCRequest(input *ListHostedZonesByVPCInput) 
 //    that created and owns the hosted zone. For example, if a hosted zone was
 //    created by Amazon Elastic File System (Amazon EFS), the value of Owner
 //    is efs.amazonaws.com.
+//
+// When listing private hosted zones, the hosted zone and the Amazon VPC must
+// belong to the same partition where the hosted zones were created. A partition
+// is a group of Amazon Web Services Regions. Each Amazon Web Services account
+// is scoped to one partition.
+//
+// The following are the supported partitions:
+//
+//    * aws - Amazon Web Services Regions
+//
+//    * aws-cn - China Regions
+//
+//    * aws-us-gov - Amazon Web Services GovCloud (US) Region
+//
+// For more information, see Access Management (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+// in the Amazon Web Services General Reference.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about

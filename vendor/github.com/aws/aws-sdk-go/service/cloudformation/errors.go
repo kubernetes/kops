@@ -20,7 +20,7 @@ const (
 	// "ChangeSetNotFound".
 	//
 	// The specified change set name or ID doesn't exit. To view valid change sets
-	// for a stack, use the ListChangeSets action.
+	// for a stack, use the ListChangeSets operation.
 	ErrCodeChangeSetNotFoundException = "ChangeSetNotFound"
 
 	// ErrCodeCreatedButModifiedException for service response error code
@@ -54,7 +54,7 @@ const (
 	// "InvalidStateTransition".
 	//
 	// Error reserved for use by the CloudFormation CLI (https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/what-is-cloudformation-cli.html).
-	// CloudFormation does not return this error to users.
+	// CloudFormation doesn't return this error to users.
 	ErrCodeInvalidStateTransitionException = "InvalidStateTransition"
 
 	// ErrCodeLimitExceededException for service response error code
@@ -62,7 +62,8 @@ const (
 	//
 	// The quota for the resource has already been reached.
 	//
-	// For information on resource and stack limitations, see Limits (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html)
+	// For information on resource and stack limitations, see CloudFormation quotas
+	// (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html)
 	// in the CloudFormation User Guide.
 	ErrCodeLimitExceededException = "LimitExceededException"
 
@@ -95,7 +96,7 @@ const (
 	// "ConditionalCheckFailed".
 	//
 	// Error reserved for use by the CloudFormation CLI (https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/what-is-cloudformation-cli.html).
-	// CloudFormation does not return this error to users.
+	// CloudFormation doesn't return this error to users.
 	ErrCodeOperationStatusCheckFailedException = "ConditionalCheckFailed"
 
 	// ErrCodeStackInstanceNotFoundException for service response error code
@@ -107,7 +108,7 @@ const (
 	// ErrCodeStackNotFoundException for service response error code
 	// "StackNotFoundException".
 	//
-	// The specified stack ARN doesn’t exist or stack doesn’t exist corresponding
+	// The specified stack ARN doesn't exist or stack doesn't exist corresponding
 	// to the ARN in input.
 	ErrCodeStackNotFoundException = "StackNotFoundException"
 
@@ -141,12 +142,12 @@ const (
 	// ErrCodeTypeConfigurationNotFoundException for service response error code
 	// "TypeConfigurationNotFoundException".
 	//
-	// The specified extension configuration cannot be found.
+	// The specified extension configuration can't be found.
 	ErrCodeTypeConfigurationNotFoundException = "TypeConfigurationNotFoundException"
 
 	// ErrCodeTypeNotFoundException for service response error code
 	// "TypeNotFoundException".
 	//
-	// The specified extension does not exist in the CloudFormation registry.
+	// The specified extension doesn't exist in the CloudFormation registry.
 	ErrCodeTypeNotFoundException = "TypeNotFoundException"
 )
