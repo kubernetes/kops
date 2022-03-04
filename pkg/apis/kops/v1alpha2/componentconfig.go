@@ -811,8 +811,8 @@ type OpenstackMetadata struct {
 	ConfigDrive *bool `json:"configDrive,omitempty"`
 }
 
-// OpenstackConfiguration defines cloud config elements for the openstack cloud provider
-type OpenstackConfiguration struct {
+// OpenstackSpec defines cloud config elements for the openstack cloud provider
+type OpenstackSpec struct {
 	Loadbalancer       *OpenstackLoadbalancerConfig `json:"loadbalancer,omitempty"`
 	Monitor            *OpenstackMonitor            `json:"monitor,omitempty"`
 	Router             *OpenstackRouter             `json:"router,omitempty"`
@@ -886,7 +886,8 @@ type CloudConfiguration struct {
 	SpotinstProduct     *string `json:"spotinstProduct,omitempty"`
 	SpotinstOrientation *string `json:"spotinstOrientation,omitempty"`
 	// Openstack cloud-config options
-	Openstack *OpenstackConfiguration `json:"openstack,omitempty"`
+	// +k8s:conversion-gen=false
+	Openstack *OpenstackSpec `json:"openstack,omitempty"`
 	// Azure cloud-config options
 	// +k8s:conversion-gen=false
 	Azure *AzureSpec `json:"azure,omitempty"`

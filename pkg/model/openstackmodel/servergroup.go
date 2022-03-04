@@ -96,7 +96,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 	securityGroupName := b.SecurityGroupName(ig.Spec.Role)
 	securityGroups = append(securityGroups, b.LinkToSecurityGroup(securityGroupName))
 
-	if b.Cluster.Spec.CloudConfig.Openstack.Loadbalancer == nil && ig.Spec.Role == kops.InstanceGroupRoleMaster {
+	if b.Cluster.Spec.CloudProvider.Openstack.Loadbalancer == nil && ig.Spec.Role == kops.InstanceGroupRoleMaster {
 		securityGroups = append(securityGroups, b.LinkToSecurityGroup(b.Cluster.Spec.MasterPublicName))
 	}
 
@@ -177,13 +177,13 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 			Metadata:         metaWithName,
 			SecurityGroups:   ig.Spec.AdditionalSecurityGroups,
 			AvailabilityZone: az,
-			ConfigDrive:      b.Cluster.Spec.CloudConfig.Openstack.Metadata.ConfigDrive,
+			ConfigDrive:      b.Cluster.Spec.CloudProvider.Openstack.Metadata.ConfigDrive,
 		}
 		c.AddTask(instanceTask)
 
 		// Associate a floating IP to the instances if we have external network in router
 		// and respective topology is "public"
-		if b.Cluster.Spec.CloudConfig.Openstack != nil && b.Cluster.Spec.CloudConfig.Openstack.Router != nil {
+		if b.Cluster.Spec.CloudProvider.Openstack.Router != nil {
 			if ig.Spec.AssociatePublicIP != nil && !fi.BoolValue(ig.Spec.AssociatePublicIP) {
 				continue
 			}
@@ -260,7 +260,7 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	if b.Cluster.Spec.CloudConfig.Openstack.Loadbalancer != nil {
+	if b.Cluster.Spec.CloudProvider.Openstack.Loadbalancer != nil {
 		var lbSubnetName string
 		var err error
 		for _, sp := range b.Cluster.Spec.Subnets {

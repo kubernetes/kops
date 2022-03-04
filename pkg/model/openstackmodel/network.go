@@ -34,7 +34,7 @@ var _ fi.ModelBuilder = &NetworkModelBuilder{}
 func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	clusterName := b.ClusterName()
 
-	osSpec := b.Cluster.Spec.CloudConfig.Openstack
+	osSpec := b.Cluster.Spec.CloudProvider.Openstack
 
 	netName, err := b.GetNetworkName()
 	if err != nil {

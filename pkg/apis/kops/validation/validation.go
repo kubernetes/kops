@@ -256,7 +256,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 	}
 
 	if spec.CloudConfig != nil {
-		allErrs = append(allErrs, validateCloudConfiguration(spec.CloudConfig, fieldPath.Child("cloudConfig"))...)
+		allErrs = append(allErrs, validateCloudConfiguration(spec.CloudConfig, spec, fieldPath.Child("cloudConfig"))...)
 	}
 
 	if spec.WarmPool != nil {
@@ -1636,10 +1636,10 @@ func validateAWSLoadBalancerController(cluster *kops.Cluster, spec *kops.AWSLoad
 	return allErrs
 }
 
-func validateCloudConfiguration(cloudConfig *kops.CloudConfiguration, fldPath *field.Path) (allErrs field.ErrorList) {
-	if cloudConfig.ManageStorageClasses != nil && cloudConfig.Openstack != nil &&
-		cloudConfig.Openstack.BlockStorage != nil && cloudConfig.Openstack.BlockStorage.CreateStorageClass != nil {
-		if *cloudConfig.Openstack.BlockStorage.CreateStorageClass != *cloudConfig.ManageStorageClasses {
+func validateCloudConfiguration(cloudConfig *kops.CloudConfiguration, spec *kops.ClusterSpec, fldPath *field.Path) (allErrs field.ErrorList) {
+	if cloudConfig.ManageStorageClasses != nil && spec.CloudProvider.Openstack != nil &&
+		spec.CloudProvider.Openstack.BlockStorage != nil && spec.CloudProvider.Openstack.BlockStorage.CreateStorageClass != nil {
+		if *spec.CloudProvider.Openstack.BlockStorage.CreateStorageClass != *cloudConfig.ManageStorageClasses {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("manageStorageClasses"),
 				"Management of storage classes and OpenStack block storage classes are both specified but disagree"))
 		}
