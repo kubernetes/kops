@@ -1458,3 +1458,5 @@ spec:
               }
             ]
 ```
+
+To configure Pods to assume the given IAM roles, enable the [Pod Identity Webhook](/addons/#pod-identity-webhook). Without this webhook, you need to modify your Pod specs yourself for your Pod to assume the defined roles.
