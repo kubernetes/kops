@@ -126,7 +126,6 @@ func (_ *ServiceAccount) RenderGCE(t *gce.GCEAPITarget, a, e, changes *ServiceAc
 		sa := &iam.CreateServiceAccountRequest{
 			AccountId: accountID,
 			ServiceAccount: &iam.ServiceAccount{
-				Email:       email,
 				Description: fi.StringValue(e.Description),
 				DisplayName: fi.StringValue(e.DisplayName),
 			},
