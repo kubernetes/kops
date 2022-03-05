@@ -249,7 +249,7 @@ spec:
 
 #### EKS Pod Identity Webhook
 
-{{ kops_feature_table(kops_added_default='1.24') }}
+{{ kops_feature_table(kops_added_default='1.23') }}
 
 kOps can install EKS Pod Identity Webhook for IAM Role for Service Accounts.
 You need to enable cert-manager to use this feature.
