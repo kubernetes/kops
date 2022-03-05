@@ -19,6 +19,10 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
+if [[ -z "${CLOUD_PROVIDER-}" ]]; then
+    export CLOUD_PROVIDER="aws"
+fi
+
 echo "CLOUD_PROVIDER=${CLOUD_PROVIDER}"
 echo "CLUSTER_NAME=${CLUSTER_NAME-}"
 
@@ -129,9 +133,11 @@ function kops-up() {
     if [[ -z "${K8S_VERSION-}" ]]; then
         K8S_VERSION="v1.22.1"
     fi
+
     ${KUBETEST2} \
         --up \
         --kops-binary-path="${KOPS}" \
         --kubernetes-version="${K8S_VERSION}" \
-        --create-args="${create_args}"
+        --create-args="${create_args}" \
+        --template-path="${KOPS_TEMPLATE-}"
 }
