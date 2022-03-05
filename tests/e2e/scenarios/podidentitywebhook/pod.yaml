@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pod-identity-webhook-test
+  namespace: default
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-identity-webhook-test
+  namespace: default
+spec:
+  containers:
+  - name: aws-cli
+    image: amazon/aws-cli:latest
+    command:
+    - sleep
+    - "300"
+  serviceAccountName: "pod-identity-webhook-test"
