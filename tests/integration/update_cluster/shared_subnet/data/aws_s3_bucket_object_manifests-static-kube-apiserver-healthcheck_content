@@ -10,7 +10,7 @@ spec:
     - --client-key=/secrets/client.key
     command:
     - /kube-apiserver-healthcheck
-    image: k8s.gcr.io/kops/kube-apiserver-healthcheck:1.23.0-beta.2
+    image: k8s.gcr.io/kops/kube-apiserver-healthcheck:1.23.0
     livenessProbe:
       httpGet:
         host: 127.0.0.1
