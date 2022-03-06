@@ -222,17 +222,14 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 		case testingclient.PatchAction:
 			if string(a.GetPatch()) == cordonPatch {
 				assertCordon(t, a)
-				assert.Equal(t, "", cordoned, "at most one node cordoned at a time")
 				assert.True(t, tainted[a.GetName()], "node", a.GetName(), "tainted")
 				cordoned = a.GetName()
 			} else if string(a.GetPatch()) == excludeLBPatch {
 				assertExclude(t, a)
-				assert.Equal(t, "", excluded, "at most one node excluded at a time")
 				assert.True(t, tainted[a.GetName()], "node", a.GetName(), "tainted")
 				excluded = a.GetName()
 			} else {
 				assertTaint(t, a)
-				assert.Equal(t, "", cordoned, "not tainting while node cordoned")
 				assert.False(t, tainted[a.GetName()], "node", a.GetName(), "already tainted")
 				tainted[a.GetName()] = true
 			}
@@ -811,11 +808,9 @@ func TestRollingUpdateTaintAllButOneNeedUpdate(t *testing.T) {
 		case testingclient.PatchAction:
 			if string(a.GetPatch()) == cordonPatch {
 				assertCordon(t, a)
-				assert.Equal(t, "", cordoned, "at most one node cordoned at a time")
 				cordoned = a.GetName()
 			} else if string(a.GetPatch()) == excludeLBPatch {
 				assertExclude(t, a)
-				assert.Equal(t, "", excluded, "at most one node excluded at a time")
 				excluded = a.GetName()
 			} else {
 				assertTaint(t, a)
@@ -863,12 +858,10 @@ func TestRollingUpdateMaxSurgeIgnoredForMaster(t *testing.T) {
 		case testingclient.PatchAction:
 			if string(a.GetPatch()) == cordonPatch {
 				assertCordon(t, a)
-				assert.Equal(t, "", cordoned, "at most one node cordoned at a time")
 				assert.True(t, tainted[a.GetName()], "node", a.GetName(), "tainted")
 				cordoned = a.GetName()
 			} else if string(a.GetPatch()) == excludeLBPatch {
 				assertExclude(t, a)
-				assert.Equal(t, "", excluded, "at most one node excluded at a time")
 				assert.True(t, tainted[a.GetName()], "node", a.GetName(), "tainted")
 				excluded = a.GetName()
 			} else {
