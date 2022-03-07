@@ -89,12 +89,13 @@ spec:
         host: 127.0.0.1
       initialDelaySeconds: 5
       timeoutSeconds: 5
-    command:
-    - /kube-apiserver-healthcheck
     args:
     - --ca-cert=/secrets/ca.crt
     - --client-cert=/secrets/client.crt
     - --client-key=/secrets/client.key
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 10012
     volumeMounts:
     - name: healthcheck-secrets
       mountPath: /secrets
