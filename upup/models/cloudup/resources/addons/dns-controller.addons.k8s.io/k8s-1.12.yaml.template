@@ -39,7 +39,7 @@ spec:
       containers:
       - name: dns-controller
         image: k8s.gcr.io/kops/dns-controller:1.24.0-alpha.2
-        command:
+        args:
 {{ range $arg := DnsControllerArgv }}
         - "{{ $arg }}"
 {{ end }}
