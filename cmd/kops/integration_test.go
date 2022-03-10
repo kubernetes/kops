@@ -348,6 +348,14 @@ func TestMinimalGp3(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "minimal-gp3").runTestCloudformation(t)
 }
 
+// TestMinimal runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
+func TestMinimalLongClusterName(t *testing.T) {
+	newIntegrationTest("this.is.truly.a.really.really.long.cluster-name.minimal.example.com", "minimal-longclustername").
+		withAddons(dnsControllerAddon).
+		runTestTerraformAWS(t)
+	newIntegrationTest("this.is.truly.a.really.really.long.cluster-name.minimal.example.com", "minimal-longclustername").runTestCloudformation(t)
+}
+
 // TestExistingIAMCloudformation runs the test with existing IAM instance profiles, similar to kops create cluster minimal.example.com --zones us-west-1a
 func TestExistingIAMCloudformation(t *testing.T) {
 	lifecycleOverrides := []string{"IAMRole=ExistsAndWarnIfChanges", "IAMRolePolicy=ExistsAndWarnIfChanges", "IAMInstanceProfileRole=ExistsAndWarnIfChanges"}
