@@ -17,7 +17,6 @@ limitations under the License.
 package deployer
 
 import (
-	"crypto/md5"
 	"errors"
 	"fmt"
 	"os"
@@ -234,9 +233,6 @@ func defaultClusterName(cloudProvider string) (string, error) {
 		return "", errors.New("PULL_NUMBER must be set when JOB_TYPE=presubmit and --cluster-name is not set")
 	}
 
-	buildIDHash := fmt.Sprintf("%x", md5.Sum([]byte(buildID)))
-	jobHash := fmt.Sprintf("%x", md5.Sum([]byte(jobName)))
-
 	var suffix string
 	switch cloudProvider {
 	case "aws":
@@ -246,10 +242,9 @@ func defaultClusterName(cloudProvider string) (string, error) {
 	}
 
 	if jobType == "presubmit" {
-		pullHash := fmt.Sprintf("%x", md5.Sum([]byte(pullNumber)))
-		return fmt.Sprintf("e2e-%v-%v.%v", pullHash[:10], jobHash[:5], suffix), nil
+		return fmt.Sprintf("e2e-pr%s.%s.%s", pullNumber, jobName, suffix), nil
 	}
-	return fmt.Sprintf("e2e-%v-%v.%v", buildIDHash[:10], jobHash[:5], suffix), nil
+	return fmt.Sprintf("e2e-%s.%s", jobName, suffix), nil
 }
 
 // stateStore returns the kops state store to use
