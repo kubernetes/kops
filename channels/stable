@@ -58,11 +58,11 @@ spec:
       providerID: aws
       architectureID: amd64
       kubernetesVersion: ">=1.17.0 <1.18.0"
-    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220131
+    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220308
       providerID: aws
       architectureID: amd64
       kubernetesVersion: ">=1.18.0"
-    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20220131
+    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20220308
       providerID: aws
       architectureID: arm64
       kubernetesVersion: ">=1.20.0"
