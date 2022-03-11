@@ -14,13 +14,13 @@ support Kubernetes 1.20.5, 1.19.2, and several previous Kubernetes versions.
 
 ## Compatibility Matrix
 
-| kOps version  | k8s 1.18.x | k8s 1.19.x | k8s 1.20.x | k8s 1.21.x | k8s 1.22.x |
+| kOps version  | k8s 1.19.x | k8s 1.20.x | k8s 1.21.x | k8s 1.22.x | k8s 1.23.x |
 |---------------|------------|------------|------------|------------|------------|
-| 1.22.x        | ✔          | ✔          | ✔          | ✔          | ✔          |
-| 1.21.x        | ✔          | ✔          | ✔          | ✔          | ⚫         |
-| ~~1.20.x~~    | ✔          | ✔          | ✔          | ⚫         | ⚫         |
-| ~~1.19.x~~    | ✔          | ✔          | ⚫         | ⚫         | ⚫         |
-| ~~1.18.x~~    | ✔          | ⚫         | ⚫         | ⚫         | ⚫         |
+| 1.23.x        | ✔          | ✔          | ✔          | ✔          | ✔          |
+| 1.22.x        | ✔          | ✔          | ✔          | ✔          | ⚫         |
+| ~~1.21.x~~    | ✔          | ✔          | ✔          | ⚫         | ⚫         |
+| ~~1.20.x~~    | ✔          | ✔          | ⚫         | ⚫         | ⚫         |
+| ~~1.19.x~~    | ✔          | ⚫         | ⚫         | ⚫         | ⚫         |
 
 
 Use the latest version of kOps for all releases of Kubernetes, with the caveat
