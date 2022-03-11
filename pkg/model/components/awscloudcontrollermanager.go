@@ -97,6 +97,8 @@ func (b *AWSCloudControllerManagerOptionsBuilder) BuildOptions(o interface{}) er
 			eccm.Image = "k8s.gcr.io/provider-aws/cloud-controller-manager:v1.22.0-alpha.2"
 		case 23:
 			eccm.Image = "k8s.gcr.io/provider-aws/cloud-controller-manager:v1.23.0-alpha.0"
+		case 24:
+			eccm.Image = "k8s.gcr.io/provider-aws/cloud-controller-manager:v1.23.0-alpha.0"
 		default:
 			eccm.Image = "gcr.io/k8s-staging-provider-aws/cloud-controller-manager:latest"
 		}
