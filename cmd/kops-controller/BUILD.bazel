@@ -58,7 +58,7 @@ ARCH = [
     name = "image-%s" % arch,
     architecture = arch,
     base = "@distroless_base_%s//image" % arch,
-    cmd = ["/kops-controller"],
+    entrypoint = ["/kops-controller"],
     files = [
         "//cmd/kops-controller",
     ],
