@@ -44,7 +44,7 @@ ARCH = [
     name = "image-%s" % arch,
     architecture = arch,
     base = "@distroless_base_%s//image" % arch,
-    cmd = ["/kube-apiserver-healthcheck"],
+    entrypoint = ["/kube-apiserver-healthcheck"],
     files = [
         "//cmd/kube-apiserver-healthcheck",
     ],
