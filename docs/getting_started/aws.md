@@ -254,6 +254,18 @@ to revert or recover a previous state store.
 aws s3api put-bucket-versioning --bucket prefix-example-com-state-store  --versioning-configuration Status=Enabled
 ```
 
+In order for ServiceAccounts to use external permissions (aka IAM Roles for ServiceAccounts), you also need a bucket for hosting the OIDC documents.
+While you can reuse the bucket above if you grant it a public ACL, we do recommend a separate bucket for these files.
+
+The ACL must be public so that the AWS STS service can access them.
+
+```bash
+aws s3api create-bucket \
+    --bucket prefix-example-com-oidc-store \
+    --region us-east-1
+    --acl public-read
+```
+
 Information regarding cluster state store location must be set when using `kops` cli. See [state store](../state.md) for further information.
 
 ### Using S3 default bucket encryption
@@ -324,6 +336,7 @@ it. Make sure you have generated an SSH key pair before creating your cluster.
 ```bash
 kops create cluster \
     --zones=us-west-2a \
+    --discovery-store=s3://prefix-example-com-oidc-store/${NAME}/discovery
     ${NAME}
 ```
 
