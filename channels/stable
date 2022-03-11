@@ -137,11 +137,11 @@ spec:
   - range: ">=1.22.0-alpha.1"
     recommendedVersion: "1.22.3"
     #requiredVersion: 1.22.0
-    kubernetesVersion: 1.22.6
+    kubernetesVersion: 1.22.7
   - range: ">=1.21.0-alpha.1"
     recommendedVersion: "1.22.3"
     #requiredVersion: 1.21.0
-    kubernetesVersion: 1.21.9
+    kubernetesVersion: 1.21.10
   - range: ">=1.20.0-alpha.1"
     recommendedVersion: "1.22.3"
     #requiredVersion: 1.20.0
