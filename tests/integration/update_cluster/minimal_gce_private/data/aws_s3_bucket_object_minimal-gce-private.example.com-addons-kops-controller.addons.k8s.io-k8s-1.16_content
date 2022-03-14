@@ -40,8 +40,7 @@ spec:
         version: v1.24.0-alpha.2
     spec:
       containers:
-      - command:
-        - /kops-controller
+      - args:
         - --v=2
         - --conf=/etc/kubernetes/kops-controller/config/config.yaml
         env:
@@ -55,6 +54,7 @@ spec:
             memory: 50Mi
         securityContext:
           runAsNonRoot: true
+          runAsUser: 10011
         volumeMounts:
         - mountPath: /etc/kubernetes/kops-controller/config/
           name: kops-controller-config

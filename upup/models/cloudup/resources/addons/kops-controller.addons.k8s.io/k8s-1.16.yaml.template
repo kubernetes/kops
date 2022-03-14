@@ -64,7 +64,7 @@ spec:
           name: kops-controller-config
         - mountPath: /etc/kubernetes/kops-controller/pki/
           name: kops-controller-pki
-        command:
+        args:
 {{ range $arg := KopsControllerArgv }}
         - "{{ $arg }}"
 {{ end }}
@@ -83,6 +83,7 @@ spec:
             memory: 50Mi
         securityContext:
           runAsNonRoot: true
+          runAsUser: 10011
       volumes:
 {{ if .UseHostCertificates }}
       - hostPath:

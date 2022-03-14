@@ -56,7 +56,7 @@ ARCH = [
     name = "image-%s" % arch,
     architecture = arch,
     base = "@distroless_base_%s//image" % arch,
-    cmd = ["/dns-controller"],
+    entrypoint = ["/dns-controller"],
     files = [
         "//dns-controller/cmd/dns-controller",
     ],
