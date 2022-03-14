@@ -423,8 +423,6 @@ func (tf *TemplateFunctions) DNSControllerArgv() ([]string, error) {
 
 	var argv []string
 
-	argv = append(argv, "/dns-controller")
-
 	// @check if the dns controller has custom configuration
 	if cluster.Spec.ExternalDNS == nil {
 		argv = append(argv, []string{"--watch-ingress=false"}...)
@@ -645,8 +643,6 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 // KopsControllerArgv returns the args to kops-controller
 func (tf *TemplateFunctions) KopsControllerArgv() ([]string, error) {
 	var argv []string
-
-	argv = append(argv, "/kops-controller")
 
 	// Verbose, but not excessive logging
 	argv = append(argv, "--v=2")

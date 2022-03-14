@@ -29,8 +29,7 @@ spec:
         version: v1.24.0-alpha.2
     spec:
       containers:
-      - command:
-        - /dns-controller
+      - args:
         - --watch-ingress=false
         - --dns=aws-route53
         - --zone=private.example.com
