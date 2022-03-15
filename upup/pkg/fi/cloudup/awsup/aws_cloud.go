@@ -720,6 +720,8 @@ func deregisterInstanceFromTargetGroup(c AWSCloud, targetGroupArn string, instan
 		time.Sleep(5 * time.Second)
 	}
 
+	klog.Infof("Successfully drained instance from targetGroup: %s", targetGroupArn)
+
 	return nil
 }
 
