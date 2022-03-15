@@ -98,33 +98,16 @@
       "Action": "ec2:CreateTags",
       "Condition": {
         "StringEquals": {
-          "aws:RequestTag/KubernetesCluster": "this.is.truly.a.really.really.long.cluster-name.minimal.example.com",
           "ec2:CreateAction": [
-            "CreateSecurityGroup"
+            "CreateVolume",
+            "CreateSnapshot"
           ]
         }
       },
       "Effect": "Allow",
       "Resource": [
-        "arn:aws-test:ec2:*:*:security-group/*"
-      ]
-    },
-    {
-      "Action": [
-        "ec2:CreateTags",
-        "ec2:DeleteTags"
-      ],
-      "Condition": {
-        "Null": {
-          "aws:RequestTag/KubernetesCluster": "true"
-        },
-        "StringEquals": {
-          "aws:ResourceTag/KubernetesCluster": "this.is.truly.a.really.really.long.cluster-name.minimal.example.com"
-        }
-      },
-      "Effect": "Allow",
-      "Resource": [
-        "arn:aws-test:ec2:*:*:security-group/*"
+        "arn:aws-test:ec2:*:*:volume/*",
+        "arn:aws-test:ec2:*:*:snapshot/*"
       ]
     },
     {
@@ -169,13 +152,8 @@
         "autoscaling:DescribeAutoScalingInstances",
         "autoscaling:DescribeLaunchConfigurations",
         "autoscaling:DescribeTags",
-        "ec2:AttachVolume",
-        "ec2:AuthorizeSecurityGroupIngress",
         "ec2:CreateSecurityGroup",
         "ec2:CreateTags",
-        "ec2:DeleteRoute",
-        "ec2:DeleteSecurityGroup",
-        "ec2:DeleteVolume",
         "ec2:DescribeAccountAttributes",
         "ec2:DescribeInstanceTypes",
         "ec2:DescribeInstances",
@@ -188,18 +166,17 @@
         "ec2:DescribeVolumes",
         "ec2:DescribeVolumesModifications",
         "ec2:DescribeVpcs",
-        "ec2:DetachVolume",
-        "ec2:ModifyInstanceAttribute",
-        "ec2:ModifyVolume",
         "elasticloadbalancing:AddTags",
         "elasticloadbalancing:CreateListener",
         "elasticloadbalancing:CreateTargetGroup",
+        "elasticloadbalancing:DeleteListener",
         "elasticloadbalancing:DescribeListeners",
         "elasticloadbalancing:DescribeLoadBalancerAttributes",
         "elasticloadbalancing:DescribeLoadBalancerPolicies",
         "elasticloadbalancing:DescribeLoadBalancers",
         "elasticloadbalancing:DescribeTargetGroups",
         "elasticloadbalancing:DescribeTargetHealth",
+        "elasticloadbalancing:ModifyListener",
         "elasticloadbalancing:RegisterTargets",
         "iam:GetServerCertificate",
         "iam:ListServerCertificates",
@@ -215,6 +192,7 @@
         "autoscaling:TerminateInstanceInAutoScalingGroup",
         "ec2:AttachVolume",
         "ec2:AuthorizeSecurityGroupIngress",
+        "ec2:DeleteRoute",
         "ec2:DeleteSecurityGroup",
         "ec2:DeleteVolume",
         "ec2:DetachVolume",
@@ -227,14 +205,12 @@
         "elasticloadbalancing:ConfigureHealthCheck",
         "elasticloadbalancing:CreateLoadBalancerListeners",
         "elasticloadbalancing:CreateLoadBalancerPolicy",
-        "elasticloadbalancing:DeleteListener",
         "elasticloadbalancing:DeleteLoadBalancer",
         "elasticloadbalancing:DeleteLoadBalancerListeners",
         "elasticloadbalancing:DeleteTargetGroup",
         "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
         "elasticloadbalancing:DeregisterTargets",
         "elasticloadbalancing:DetachLoadBalancerFromSubnets",
-        "elasticloadbalancing:ModifyListener",
         "elasticloadbalancing:ModifyLoadBalancerAttributes",
         "elasticloadbalancing:ModifyTargetGroup",
         "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
@@ -266,11 +242,6 @@
       },
       "Effect": "Allow",
       "Resource": "*"
-    },
-    {
-      "Action": "ec2:CreateSecurityGroup",
-      "Effect": "Allow",
-      "Resource": "arn:aws-test:ec2:*:*:vpc/*"
     }
   ],
   "Version": "2012-10-17"

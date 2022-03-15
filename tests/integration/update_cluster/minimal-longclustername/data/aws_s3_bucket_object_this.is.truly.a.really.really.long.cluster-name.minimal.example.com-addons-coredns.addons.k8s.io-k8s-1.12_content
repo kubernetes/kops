@@ -131,6 +131,18 @@ spec:
         k8s-app: kube-dns
         kops.k8s.io/managed-by: kops
     spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: k8s-app
+                  operator: In
+                  values:
+                  - kube-dns
+              topologyKey: kubernetes.io/hostname
+            weight: 100
       containers:
       - args:
         - -conf
@@ -188,19 +200,6 @@ spec:
       tolerations:
       - key: CriticalAddonsOnly
         operator: Exists
-      topologySpreadConstraints:
-      - labelSelector:
-          matchLabels:
-            k8s-app: kube-dns
-        maxSkew: 1
-        topologyKey: topology.kubernetes.io/zone
-        whenUnsatisfiable: ScheduleAnyway
-      - labelSelector:
-          matchLabels:
-            k8s-app: kube-dns
-        maxSkew: 1
-        topologyKey: kubernetes.io/hostname
-        whenUnsatisfiable: ScheduleAnyway
       volumes:
       - configMap:
           name: coredns

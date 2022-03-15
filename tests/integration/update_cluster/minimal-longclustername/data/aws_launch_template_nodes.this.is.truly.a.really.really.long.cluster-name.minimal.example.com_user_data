@@ -40,7 +40,7 @@ download-or-bust() {
     if ! validate-hash "${file}" "${hash}"; then
       rm -f "${file}"
     else
-      return 0
+      return
     fi
   fi
 
@@ -63,7 +63,7 @@ download-or-bust() {
           rm -f "${file}"
         else
           echo "== Downloaded ${url} (SHA256 = ${hash}) =="
-          return 0
+          return
         fi
       done
     done
@@ -149,6 +149,7 @@ kubelet:
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
+  nonMasqueradeCIDR: 100.64.0.0/10
   podInfraContainerImage: k8s.gcr.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   shutdownGracePeriod: 30s
@@ -161,7 +162,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: yttvj/0vEuJw6SygY1nNaLoqWq605gzj5o6zEYGctk4=
+NodeupConfigHash: c6bIO8flDwjfCG5GoaxIBMv7Sn0UBXP5/PgzqOJxgxk=
 
 __EOF_KUBE_ENV
 

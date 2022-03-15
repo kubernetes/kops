@@ -233,7 +233,7 @@
           ],
           "IamInstanceProfile": {
             "Name": {
-              "Ref": "AWSIAMInstanceProfilemastersthisistrulyareallyreallylongclusternameminimalexamplecom"
+              "Ref": "AWSIAMInstanceProfilemastersthisistrulyareallyreallylongclusternamemkaamp9"
             }
           },
           "ImageId": "ami-12345678",
@@ -375,7 +375,7 @@
           ],
           "IamInstanceProfile": {
             "Name": {
-              "Ref": "AWSIAMInstanceProfilenodesthisistrulyareallyreallylongclusternameminimalexamplecom"
+              "Ref": "AWSIAMInstanceProfilenodesthisistrulyareallyreallylongclusternameminh1jir9"
             }
           },
           "ImageId": "ami-12345678",
@@ -919,35 +919,35 @@
         ]
       }
     },
-    "AWSIAMInstanceProfilemastersthisistrulyareallyreallylongclusternameminimalexamplecom": {
+    "AWSIAMInstanceProfilemastersthisistrulyareallyreallylongclusternamemkaamp9": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
-        "InstanceProfileName": "masters.this.is.truly.a.really.really.long.cluster-name.minimal.example.com",
+        "InstanceProfileName": "masters.this.is.truly.a.really.really.long.cluster-name.m-kaamp9",
         "Roles": [
           {
-            "Ref": "AWSIAMRolemastersthisistrulyareallyreallylongclusternameminimalexamplecom"
+            "Ref": "AWSIAMRolemastersthisistrulyareallyreallylongclusternamemkaamp9"
           }
         ]
       }
     },
-    "AWSIAMInstanceProfilenodesthisistrulyareallyreallylongclusternameminimalexamplecom": {
+    "AWSIAMInstanceProfilenodesthisistrulyareallyreallylongclusternameminh1jir9": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
-        "InstanceProfileName": "nodes.this.is.truly.a.really.really.long.cluster-name.minimal.example.com",
+        "InstanceProfileName": "nodes.this.is.truly.a.really.really.long.cluster-name.min-h1jir9",
         "Roles": [
           {
-            "Ref": "AWSIAMRolenodesthisistrulyareallyreallylongclusternameminimalexamplecom"
+            "Ref": "AWSIAMRolenodesthisistrulyareallyreallylongclusternameminh1jir9"
           }
         ]
       }
     },
-    "AWSIAMPolicymastersthisistrulyareallyreallylongclusternameminimalexamplecom": {
+    "AWSIAMPolicymastersthisistrulyareallyreallylongclusternamemkaamp9": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
-        "PolicyName": "masters.this.is.truly.a.really.really.long.cluster-name.minimal.example.com",
+        "PolicyName": "masters.this.is.truly.a.really.really.long.cluster-name.m-kaamp9",
         "Roles": [
           {
-            "Ref": "AWSIAMRolemastersthisistrulyareallyreallylongclusternameminimalexamplecom"
+            "Ref": "AWSIAMRolemastersthisistrulyareallyreallylongclusternamemkaamp9"
           }
         ],
         "PolicyDocument": {
@@ -1050,33 +1050,16 @@
               "Action": "ec2:CreateTags",
               "Condition": {
                 "StringEquals": {
-                  "aws:RequestTag/KubernetesCluster": "this.is.truly.a.really.really.long.cluster-name.minimal.example.com",
                   "ec2:CreateAction": [
-                    "CreateSecurityGroup"
+                    "CreateVolume",
+                    "CreateSnapshot"
                   ]
                 }
               },
               "Effect": "Allow",
               "Resource": [
-                "arn:aws-test:ec2:*:*:security-group/*"
-              ]
-            },
-            {
-              "Action": [
-                "ec2:CreateTags",
-                "ec2:DeleteTags"
-              ],
-              "Condition": {
-                "Null": {
-                  "aws:RequestTag/KubernetesCluster": "true"
-                },
-                "StringEquals": {
-                  "aws:ResourceTag/KubernetesCluster": "this.is.truly.a.really.really.long.cluster-name.minimal.example.com"
-                }
-              },
-              "Effect": "Allow",
-              "Resource": [
-                "arn:aws-test:ec2:*:*:security-group/*"
+                "arn:aws-test:ec2:*:*:volume/*",
+                "arn:aws-test:ec2:*:*:snapshot/*"
               ]
             },
             {
@@ -1121,13 +1104,8 @@
                 "autoscaling:DescribeAutoScalingInstances",
                 "autoscaling:DescribeLaunchConfigurations",
                 "autoscaling:DescribeTags",
-                "ec2:AttachVolume",
-                "ec2:AuthorizeSecurityGroupIngress",
                 "ec2:CreateSecurityGroup",
                 "ec2:CreateTags",
-                "ec2:DeleteRoute",
-                "ec2:DeleteSecurityGroup",
-                "ec2:DeleteVolume",
                 "ec2:DescribeAccountAttributes",
                 "ec2:DescribeInstanceTypes",
                 "ec2:DescribeInstances",
@@ -1140,18 +1118,17 @@
                 "ec2:DescribeVolumes",
                 "ec2:DescribeVolumesModifications",
                 "ec2:DescribeVpcs",
-                "ec2:DetachVolume",
-                "ec2:ModifyInstanceAttribute",
-                "ec2:ModifyVolume",
                 "elasticloadbalancing:AddTags",
                 "elasticloadbalancing:CreateListener",
                 "elasticloadbalancing:CreateTargetGroup",
+                "elasticloadbalancing:DeleteListener",
                 "elasticloadbalancing:DescribeListeners",
                 "elasticloadbalancing:DescribeLoadBalancerAttributes",
                 "elasticloadbalancing:DescribeLoadBalancerPolicies",
                 "elasticloadbalancing:DescribeLoadBalancers",
                 "elasticloadbalancing:DescribeTargetGroups",
                 "elasticloadbalancing:DescribeTargetHealth",
+                "elasticloadbalancing:ModifyListener",
                 "elasticloadbalancing:RegisterTargets",
                 "iam:GetServerCertificate",
                 "iam:ListServerCertificates",
@@ -1167,6 +1144,7 @@
                 "autoscaling:TerminateInstanceInAutoScalingGroup",
                 "ec2:AttachVolume",
                 "ec2:AuthorizeSecurityGroupIngress",
+                "ec2:DeleteRoute",
                 "ec2:DeleteSecurityGroup",
                 "ec2:DeleteVolume",
                 "ec2:DetachVolume",
@@ -1179,14 +1157,12 @@
                 "elasticloadbalancing:ConfigureHealthCheck",
                 "elasticloadbalancing:CreateLoadBalancerListeners",
                 "elasticloadbalancing:CreateLoadBalancerPolicy",
-                "elasticloadbalancing:DeleteListener",
                 "elasticloadbalancing:DeleteLoadBalancer",
                 "elasticloadbalancing:DeleteLoadBalancerListeners",
                 "elasticloadbalancing:DeleteTargetGroup",
                 "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
                 "elasticloadbalancing:DeregisterTargets",
                 "elasticloadbalancing:DetachLoadBalancerFromSubnets",
-                "elasticloadbalancing:ModifyListener",
                 "elasticloadbalancing:ModifyLoadBalancerAttributes",
                 "elasticloadbalancing:ModifyTargetGroup",
                 "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
@@ -1218,24 +1194,19 @@
               },
               "Effect": "Allow",
               "Resource": "*"
-            },
-            {
-              "Action": "ec2:CreateSecurityGroup",
-              "Effect": "Allow",
-              "Resource": "arn:aws-test:ec2:*:*:vpc/*"
             }
           ],
           "Version": "2012-10-17"
         }
       }
     },
-    "AWSIAMPolicynodesthisistrulyareallyreallylongclusternameminimalexamplecom": {
+    "AWSIAMPolicynodesthisistrulyareallyreallylongclusternameminh1jir9": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
-        "PolicyName": "nodes.this.is.truly.a.really.really.long.cluster-name.minimal.example.com",
+        "PolicyName": "nodes.this.is.truly.a.really.really.long.cluster-name.min-h1jir9",
         "Roles": [
           {
-            "Ref": "AWSIAMRolenodesthisistrulyareallyreallylongclusternameminimalexamplecom"
+            "Ref": "AWSIAMRolenodesthisistrulyareallyreallylongclusternameminh1jir9"
           }
         ],
         "PolicyDocument": {
@@ -1282,10 +1253,10 @@
         }
       }
     },
-    "AWSIAMRolemastersthisistrulyareallyreallylongclusternameminimalexamplecom": {
+    "AWSIAMRolemastersthisistrulyareallyreallylongclusternamemkaamp9": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "RoleName": "masters.this.is.truly.a.really.really.long.cluster-name.minimal.example.com",
+        "RoleName": "masters.this.is.truly.a.really.really.long.cluster-name.m-kaamp9",
         "AssumeRolePolicyDocument": {
           "Statement": [
             {
@@ -1305,7 +1276,7 @@
           },
           {
             "Key": "Name",
-            "Value": "masters.this.is.truly.a.really.really.long.cluster-name.minimal.example.com"
+            "Value": "masters.this.is.truly.a.really.really.long.cluster-name.m-kaamp9"
           },
           {
             "Key": "kubernetes.io/cluster/this.is.truly.a.really.really.long.cluster-name.minimal.example.com",
@@ -1314,10 +1285,10 @@
         ]
       }
     },
-    "AWSIAMRolenodesthisistrulyareallyreallylongclusternameminimalexamplecom": {
+    "AWSIAMRolenodesthisistrulyareallyreallylongclusternameminh1jir9": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "RoleName": "nodes.this.is.truly.a.really.really.long.cluster-name.minimal.example.com",
+        "RoleName": "nodes.this.is.truly.a.really.really.long.cluster-name.min-h1jir9",
         "AssumeRolePolicyDocument": {
           "Statement": [
             {
@@ -1337,7 +1308,7 @@
           },
           {
             "Key": "Name",
-            "Value": "nodes.this.is.truly.a.really.really.long.cluster-name.minimal.example.com"
+            "Value": "nodes.this.is.truly.a.really.really.long.cluster-name.min-h1jir9"
           },
           {
             "Key": "kubernetes.io/cluster/this.is.truly.a.really.really.long.cluster-name.minimal.example.com",
