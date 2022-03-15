@@ -126,16 +126,26 @@ spec:
     type: RollingUpdate
   template:
     metadata:
-      creationTimestamp: null
       labels:
         k8s-app: kube-dns
-        kops.k8s.io/managed-by: kops
     spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: k8s-app
+                  operator: In
+                  values:
+                  - kube-dns
+              topologyKey: kubernetes.io/hostname
+            weight: 100
       containers:
       - args:
         - -conf
         - /etc/coredns/Corefile
-        image: k8s.gcr.io/coredns/coredns:v1.8.5
+        image: k8s.gcr.io/coredns/coredns:v1.8.4
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 5
@@ -188,21 +198,11 @@ spec:
       tolerations:
       - key: CriticalAddonsOnly
         operator: Exists
-      topologySpreadConstraints:
-      - labelSelector:
-          matchLabels:
-            k8s-app: kube-dns
-        maxSkew: 1
-        topologyKey: topology.kubernetes.io/zone
-        whenUnsatisfiable: ScheduleAnyway
-      - labelSelector:
-          matchLabels:
-            k8s-app: kube-dns
-        maxSkew: 1
-        topologyKey: kubernetes.io/hostname
-        whenUnsatisfiable: ScheduleAnyway
       volumes:
       - configMap:
+          items:
+          - key: Corefile
+            path: Corefile
           name: coredns
         name: config-volume
 
@@ -253,7 +253,7 @@ metadata:
   name: kube-dns
   namespace: kube-system
 spec:
-  maxUnavailable: 50%
+  minAvailable: 1
   selector:
     matchLabels:
       k8s-app: kube-dns
@@ -356,10 +356,8 @@ spec:
     metadata:
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ""
-      creationTimestamp: null
       labels:
         k8s-app: coredns-autoscaler
-        kops.k8s.io/managed-by: kops
     spec:
       containers:
       - command:

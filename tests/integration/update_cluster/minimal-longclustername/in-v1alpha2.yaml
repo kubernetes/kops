@@ -18,6 +18,8 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: events
+  iam:
+    legacy: false
   kubernetesVersion: v1.21.0
   masterInternalName: api.internal.this.is.truly.a.really.really.long.cluster-name.minimal.example.com
   masterPublicName: api.this.is.truly.a.really.really.long.cluster-name.minimal.example.com

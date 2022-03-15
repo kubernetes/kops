@@ -27,20 +27,28 @@ spec:
   etcdClusters:
   - backups:
       backupStore: memfs://clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com/backups/etcd/main
+    enableEtcdTLS: true
+    enableTLSAuth: true
     etcdMembers:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: main
+    provider: Manager
     version: 3.4.13
   - backups:
       backupStore: memfs://clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com/backups/etcd/events
+    enableEtcdTLS: true
+    enableTLSAuth: true
     etcdMembers:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: events
+    provider: Manager
     version: 3.4.13
   externalDns:
     provider: dns-controller
+  iam:
+    legacy: false
   keyStore: memfs://clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com/pki
   kubeAPIServer:
     allowPrivileged: true
@@ -106,13 +114,15 @@ spec:
     nodeLocalDNS:
       cpuRequest: 25m
       enabled: false
-      image: k8s.gcr.io/dns/k8s-dns-node-cache:1.21.3
+      image: k8s.gcr.io/dns/k8s-dns-node-cache:1.20.0
       memoryRequest: 5Mi
     provider: CoreDNS
+    replicas: 2
     serverIP: 100.64.0.10
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
+    hostnameOverride: '@aws'
     image: k8s.gcr.io/kube-proxy:v1.21.0
     logLevel: 2
   kubeScheduler:
@@ -128,13 +138,12 @@ spec:
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+    hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    podInfraContainerImage: k8s.gcr.io/pause:3.6
+    nonMasqueradeCIDR: 100.64.0.0/10
     podManifestPath: /etc/kubernetes/manifests
-    shutdownGracePeriod: 30s
-    shutdownGracePeriodCriticalPods: 10s
   kubernetesApiAccess:
   - 0.0.0.0/0
   kubernetesVersion: 1.21.0
@@ -147,14 +156,13 @@ spec:
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+    hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    podInfraContainerImage: k8s.gcr.io/pause:3.6
+    nonMasqueradeCIDR: 100.64.0.0/10
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
-    shutdownGracePeriod: 30s
-    shutdownGracePeriodCriticalPods: 10s
   masterPublicName: api.this.is.truly.a.really.really.long.cluster-name.minimal.example.com
   networkCIDR: 172.20.0.0/16
   networking:

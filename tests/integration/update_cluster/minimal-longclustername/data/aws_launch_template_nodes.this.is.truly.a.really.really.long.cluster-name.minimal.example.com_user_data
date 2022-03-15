@@ -40,7 +40,7 @@ download-or-bust() {
     if ! validate-hash "${file}" "${hash}"; then
       rm -f "${file}"
     else
-      return 0
+      return
     fi
   fi
 
@@ -63,7 +63,7 @@ download-or-bust() {
           rm -f "${file}"
         else
           echo "== Downloaded ${url} (SHA256 = ${hash}) =="
-          return 0
+          return
         fi
       done
     done
@@ -136,6 +136,7 @@ docker:
 kubeProxy:
   clusterCIDR: 100.96.0.0/11
   cpuRequest: 100m
+  hostnameOverride: '@aws'
   image: k8s.gcr.io/kube-proxy:v1.21.0
   logLevel: 2
 kubelet:
@@ -146,13 +147,12 @@ kubelet:
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+  hostnameOverride: '@aws'
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
-  podInfraContainerImage: k8s.gcr.io/pause:3.6
+  nonMasqueradeCIDR: 100.64.0.0/10
   podManifestPath: /etc/kubernetes/manifests
-  shutdownGracePeriod: 30s
-  shutdownGracePeriodCriticalPods: 10s
 
 __EOF_CLUSTER_SPEC
 
@@ -161,7 +161,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: yttvj/0vEuJw6SygY1nNaLoqWq605gzj5o6zEYGctk4=
+NodeupConfigHash: zQ5PR5EwXnsdFHuX+BSgllUXwoH9xSco2O/+kidvYNg=
 
 __EOF_KUBE_ENV
 

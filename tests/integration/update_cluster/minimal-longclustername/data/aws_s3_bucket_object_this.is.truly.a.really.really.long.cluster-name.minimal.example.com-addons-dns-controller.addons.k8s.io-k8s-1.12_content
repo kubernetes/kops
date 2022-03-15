@@ -7,7 +7,7 @@ metadata:
     app.kubernetes.io/managed-by: kops
     k8s-addon: dns-controller.addons.k8s.io
     k8s-app: dns-controller
-    version: v1.24.0-alpha.2
+    version: v1.22.4
   name: dns-controller
   namespace: kube-system
 spec:
@@ -21,12 +21,10 @@ spec:
     metadata:
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ""
-      creationTimestamp: null
       labels:
         k8s-addon: dns-controller.addons.k8s.io
         k8s-app: dns-controller
-        kops.k8s.io/managed-by: kops
-        version: v1.24.0-alpha.2
+        version: v1.22.4
     spec:
       containers:
       - command:
@@ -34,13 +32,12 @@ spec:
         - --watch-ingress=false
         - --dns=aws-route53
         - --zone=*/Z1AFAKE1ZON3YO
-        - --internal-ipv4
         - --zone=*/*
         - -v=2
         env:
         - name: KUBERNETES_SERVICE_HOST
           value: 127.0.0.1
-        image: k8s.gcr.io/kops/dns-controller:1.24.0-alpha.2
+        image: k8s.gcr.io/kops/dns-controller:1.22.4
         name: dns-controller
         resources:
           requests:

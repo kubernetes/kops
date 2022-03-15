@@ -238,6 +238,7 @@ KubeletConfig:
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+  hostnameOverride: '@aws'
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
@@ -247,11 +248,9 @@ KubeletConfig:
     node-role.kubernetes.io/control-plane: ""
     node-role.kubernetes.io/master: ""
     node.kubernetes.io/exclude-from-external-load-balancers: ""
-  podInfraContainerImage: k8s.gcr.io/pause:3.6
+  nonMasqueradeCIDR: 100.64.0.0/10
   podManifestPath: /etc/kubernetes/manifests
   registerSchedulable: false
-  shutdownGracePeriod: 30s
-  shutdownGracePeriodCriticalPods: 10s
 UpdatePolicy: automatic
 channels:
 - memfs://clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com/addons/bootstrap-channel.yaml

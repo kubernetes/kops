@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
   config.yaml: |
-    {"cloud":"aws","configBase":"memfs://clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com","server":{"Listen":":3988","provider":{"aws":{"nodesRoles":["nodes.this.is.truly.a.really.really.long.cluster-name.minimal.example.com"],"Region":"us-test-1"}},"serverKeyPath":"/etc/kubernetes/kops-controller/pki/kops-controller.key","serverCertificatePath":"/etc/kubernetes/kops-controller/pki/kops-controller.crt","caBasePath":"/etc/kubernetes/kops-controller/pki","signingCAs":["kubernetes-ca"],"certNames":["kubelet","kubelet-server","kube-proxy"]}}
+    {"cloud":"aws","configBase":"memfs://clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com","server":{"Listen":":3988","provider":{"aws":{"nodesRoles":["nodes.this.is.truly.a.really.really.long.cluster-name.min-h1jir9"],"Region":"us-test-1"}},"serverKeyPath":"/etc/kubernetes/kops-controller/pki/kops-controller.key","serverCertificatePath":"/etc/kubernetes/kops-controller/pki/kops-controller.crt","caBasePath":"/etc/kubernetes/kops-controller/pki","signingCAs":["kubernetes-ca"],"certNames":["kubelet","kubelet-server","kube-proxy"]}}
 kind: ConfigMap
 metadata:
   creationTimestamp: null
@@ -23,7 +23,7 @@ metadata:
     app.kubernetes.io/managed-by: kops
     k8s-addon: kops-controller.addons.k8s.io
     k8s-app: kops-controller
-    version: v1.24.0-alpha.2
+    version: v1.22.4
   name: kops-controller
   namespace: kube-system
 spec:
@@ -34,12 +34,10 @@ spec:
     metadata:
       annotations:
         dns.alpha.kubernetes.io/internal: kops-controller.internal.this.is.truly.a.really.really.long.cluster-name.minimal.example.com
-      creationTimestamp: null
       labels:
         k8s-addon: kops-controller.addons.k8s.io
         k8s-app: kops-controller
-        kops.k8s.io/managed-by: kops
-        version: v1.24.0-alpha.2
+        version: v1.22.4
     spec:
       containers:
       - command:
@@ -49,7 +47,7 @@ spec:
         env:
         - name: KUBERNETES_SERVICE_HOST
           value: 127.0.0.1
-        image: k8s.gcr.io/kops/kops-controller:1.24.0-alpha.2
+        image: k8s.gcr.io/kops/kops-controller:1.22.4
         name: kops-controller
         resources:
           requests:

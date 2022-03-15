@@ -42,6 +42,7 @@ import (
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/jsonutils"
+	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/pkg/testutils/golden"
@@ -1005,6 +1006,9 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 		expectedFilenames = append(expectedFilenames, "aws_key_pair_kubernetes."+i.clusterName+"-c4a6ed9aa889b9e2c39cd663eb9c7157_public_key")
 	}
 
+	masterRole := awsup.TruncateString("masters."+i.clusterName, awsup.TruncateStringOptions{MaxLength: iam.MaxLengthIAMRoleName, AlwaysAddHash: false})
+	nodeRole := awsup.TruncateString("nodes."+i.clusterName, awsup.TruncateStringOptions{MaxLength: iam.MaxLengthIAMRoleName, AlwaysAddHash: false})
+
 	for j := 0; j < i.zones; j++ {
 		zone := "us-test-1" + string([]byte{byte('a') + byte(j)})
 		expectedFilenames = append(expectedFilenames,
@@ -1014,10 +1018,10 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 
 	if i.expectPolicies {
 		expectedFilenames = append(expectedFilenames, []string{
-			"aws_iam_role_masters." + i.clusterName + "_policy",
-			"aws_iam_role_nodes." + i.clusterName + "_policy",
-			"aws_iam_role_policy_masters." + i.clusterName + "_policy",
-			"aws_iam_role_policy_nodes." + i.clusterName + "_policy",
+			"aws_iam_role_" + masterRole + "_policy",
+			"aws_iam_role_" + nodeRole + "_policy",
+			"aws_iam_role_policy_" + masterRole + "_policy",
+			"aws_iam_role_policy_" + nodeRole + "_policy",
 		}...)
 		if i.private {
 			expectedFilenames = append(expectedFilenames, []string{
