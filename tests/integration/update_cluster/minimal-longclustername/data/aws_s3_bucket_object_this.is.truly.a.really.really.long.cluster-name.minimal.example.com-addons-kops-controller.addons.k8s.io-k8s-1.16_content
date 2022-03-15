@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
   config.yaml: |
-    {"cloud":"aws","configBase":"memfs://clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com","server":{"Listen":":3988","provider":{"aws":{"nodesRoles":["nodes.this.is.truly.a.really.really.long.cluster-name.minimal.example.com"],"Region":"us-test-1"}},"serverKeyPath":"/etc/kubernetes/kops-controller/pki/kops-controller.key","serverCertificatePath":"/etc/kubernetes/kops-controller/pki/kops-controller.crt","caBasePath":"/etc/kubernetes/kops-controller/pki","signingCAs":["kubernetes-ca"],"certNames":["kubelet","kubelet-server","kube-proxy"]}}
+    {"cloud":"aws","configBase":"memfs://clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com","server":{"Listen":":3988","provider":{"aws":{"nodesRoles":["nodes.this.is.truly.a.really.really.long.cluster-name.min-h1jir9"],"Region":"us-test-1"}},"serverKeyPath":"/etc/kubernetes/kops-controller/pki/kops-controller.key","serverCertificatePath":"/etc/kubernetes/kops-controller/pki/kops-controller.crt","caBasePath":"/etc/kubernetes/kops-controller/pki","signingCAs":["kubernetes-ca"],"certNames":["kubelet","kubelet-server","kube-proxy"]}}
 kind: ConfigMap
 metadata:
   creationTimestamp: null
@@ -42,8 +42,7 @@ spec:
         version: v1.24.0-alpha.2
     spec:
       containers:
-      - command:
-        - /kops-controller
+      - args:
         - --v=2
         - --conf=/etc/kubernetes/kops-controller/config/config.yaml
         env:
@@ -57,6 +56,7 @@ spec:
             memory: 50Mi
         securityContext:
           runAsNonRoot: true
+          runAsUser: 10011
         volumeMounts:
         - mountPath: /etc/kubernetes/kops-controller/config/
           name: kops-controller-config

@@ -2,13 +2,13 @@ locals {
   cluster_name                 = "this.is.truly.a.really.really.long.cluster-name.minimal.example.com"
   master_autoscaling_group_ids = [aws_autoscaling_group.master-us-test-1a-masters-this-is-truly-a-really-really-long-cluster-name-minimal-example-com.id]
   master_security_group_ids    = [aws_security_group.masters-this-is-truly-a-really-really-long-cluster-name-minimal-example-com.id]
-  masters_role_arn             = aws_iam_role.masters-this-is-truly-a-really-really-long-cluster-name-minimal-example-com.arn
-  masters_role_name            = aws_iam_role.masters-this-is-truly-a-really-really-long-cluster-name-minimal-example-com.name
+  masters_role_arn             = aws_iam_role.masters-this-is-truly-a-really-really-long-cluster-name-m-kaamp9.arn
+  masters_role_name            = aws_iam_role.masters-this-is-truly-a-really-really-long-cluster-name-m-kaamp9.name
   node_autoscaling_group_ids   = [aws_autoscaling_group.nodes-this-is-truly-a-really-really-long-cluster-name-minimal-example-com.id]
   node_security_group_ids      = [aws_security_group.nodes-this-is-truly-a-really-really-long-cluster-name-minimal-example-com.id]
   node_subnet_ids              = [aws_subnet.us-test-1a-this-is-truly-a-really-really-long-cluster-name-minimal-example-com.id]
-  nodes_role_arn               = aws_iam_role.nodes-this-is-truly-a-really-really-long-cluster-name-minimal-example-com.arn
-  nodes_role_name              = aws_iam_role.nodes-this-is-truly-a-really-really-long-cluster-name-minimal-example-com.name
+  nodes_role_arn               = aws_iam_role.nodes-this-is-truly-a-really-really-long-cluster-name-min-h1jir9.arn
+  nodes_role_name              = aws_iam_role.nodes-this-is-truly-a-really-really-long-cluster-name-min-h1jir9.name
   region                       = "us-test-1"
   route_table_public_id        = aws_route_table.this-is-truly-a-really-really-long-cluster-name-minimal-example-com.id
   subnet_us-test-1a_id         = aws_subnet.us-test-1a-this-is-truly-a-really-really-long-cluster-name-minimal-example-com.id
@@ -29,11 +29,11 @@ output "master_security_group_ids" {
 }
 
 output "masters_role_arn" {
-  value = aws_iam_role.masters-this-is-truly-a-really-really-long-cluster-name-minimal-example-com.arn
+  value = aws_iam_role.masters-this-is-truly-a-really-really-long-cluster-name-m-kaamp9.arn
 }
 
 output "masters_role_name" {
-  value = aws_iam_role.masters-this-is-truly-a-really-really-long-cluster-name-minimal-example-com.name
+  value = aws_iam_role.masters-this-is-truly-a-really-really-long-cluster-name-m-kaamp9.name
 }
 
 output "node_autoscaling_group_ids" {
@@ -49,11 +49,11 @@ output "node_subnet_ids" {
 }
 
 output "nodes_role_arn" {
-  value = aws_iam_role.nodes-this-is-truly-a-really-really-long-cluster-name-minimal-example-com.arn
+  value = aws_iam_role.nodes-this-is-truly-a-really-really-long-cluster-name-min-h1jir9.arn
 }
 
 output "nodes_role_name" {
-  value = aws_iam_role.nodes-this-is-truly-a-really-really-long-cluster-name-minimal-example-com.name
+  value = aws_iam_role.nodes-this-is-truly-a-really-really-long-cluster-name-min-h1jir9.name
 }
 
 output "region" {
@@ -230,56 +230,56 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-this-is-truly-a-really-really-lo
   type       = "gp3"
 }
 
-resource "aws_iam_instance_profile" "masters-this-is-truly-a-really-really-long-cluster-name-minimal-example-com" {
-  name = "masters.this.is.truly.a.really.really.long.cluster-name.minimal.example.com"
-  role = aws_iam_role.masters-this-is-truly-a-really-really-long-cluster-name-minimal-example-com.name
+resource "aws_iam_instance_profile" "masters-this-is-truly-a-really-really-long-cluster-name-m-kaamp9" {
+  name = "masters.this.is.truly.a.really.really.long.cluster-name.m-kaamp9"
+  role = aws_iam_role.masters-this-is-truly-a-really-really-long-cluster-name-m-kaamp9.name
   tags = {
     "KubernetesCluster"                                                                         = "this.is.truly.a.really.really.long.cluster-name.minimal.example.com"
-    "Name"                                                                                      = "masters.this.is.truly.a.really.really.long.cluster-name.minimal.example.com"
+    "Name"                                                                                      = "masters.this.is.truly.a.really.really.long.cluster-name.m-kaamp9"
     "kubernetes.io/cluster/this.is.truly.a.really.really.long.cluster-name.minimal.example.com" = "owned"
   }
 }
 
-resource "aws_iam_instance_profile" "nodes-this-is-truly-a-really-really-long-cluster-name-minimal-example-com" {
-  name = "nodes.this.is.truly.a.really.really.long.cluster-name.minimal.example.com"
-  role = aws_iam_role.nodes-this-is-truly-a-really-really-long-cluster-name-minimal-example-com.name
+resource "aws_iam_instance_profile" "nodes-this-is-truly-a-really-really-long-cluster-name-min-h1jir9" {
+  name = "nodes.this.is.truly.a.really.really.long.cluster-name.min-h1jir9"
+  role = aws_iam_role.nodes-this-is-truly-a-really-really-long-cluster-name-min-h1jir9.name
   tags = {
     "KubernetesCluster"                                                                         = "this.is.truly.a.really.really.long.cluster-name.minimal.example.com"
-    "Name"                                                                                      = "nodes.this.is.truly.a.really.really.long.cluster-name.minimal.example.com"
+    "Name"                                                                                      = "nodes.this.is.truly.a.really.really.long.cluster-name.min-h1jir9"
     "kubernetes.io/cluster/this.is.truly.a.really.really.long.cluster-name.minimal.example.com" = "owned"
   }
 }
 
-resource "aws_iam_role" "masters-this-is-truly-a-really-really-long-cluster-name-minimal-example-com" {
-  assume_role_policy = file("${path.module}/data/aws_iam_role_masters.this.is.truly.a.really.really.long.cluster-name.minimal.example.com_policy")
-  name               = "masters.this.is.truly.a.really.really.long.cluster-name.minimal.example.com"
+resource "aws_iam_role" "masters-this-is-truly-a-really-really-long-cluster-name-m-kaamp9" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_masters.this.is.truly.a.really.really.long.cluster-name.m-kaamp9_policy")
+  name               = "masters.this.is.truly.a.really.really.long.cluster-name.m-kaamp9"
   tags = {
     "KubernetesCluster"                                                                         = "this.is.truly.a.really.really.long.cluster-name.minimal.example.com"
-    "Name"                                                                                      = "masters.this.is.truly.a.really.really.long.cluster-name.minimal.example.com"
+    "Name"                                                                                      = "masters.this.is.truly.a.really.really.long.cluster-name.m-kaamp9"
     "kubernetes.io/cluster/this.is.truly.a.really.really.long.cluster-name.minimal.example.com" = "owned"
   }
 }
 
-resource "aws_iam_role" "nodes-this-is-truly-a-really-really-long-cluster-name-minimal-example-com" {
-  assume_role_policy = file("${path.module}/data/aws_iam_role_nodes.this.is.truly.a.really.really.long.cluster-name.minimal.example.com_policy")
-  name               = "nodes.this.is.truly.a.really.really.long.cluster-name.minimal.example.com"
+resource "aws_iam_role" "nodes-this-is-truly-a-really-really-long-cluster-name-min-h1jir9" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_nodes.this.is.truly.a.really.really.long.cluster-name.min-h1jir9_policy")
+  name               = "nodes.this.is.truly.a.really.really.long.cluster-name.min-h1jir9"
   tags = {
     "KubernetesCluster"                                                                         = "this.is.truly.a.really.really.long.cluster-name.minimal.example.com"
-    "Name"                                                                                      = "nodes.this.is.truly.a.really.really.long.cluster-name.minimal.example.com"
+    "Name"                                                                                      = "nodes.this.is.truly.a.really.really.long.cluster-name.min-h1jir9"
     "kubernetes.io/cluster/this.is.truly.a.really.really.long.cluster-name.minimal.example.com" = "owned"
   }
 }
 
-resource "aws_iam_role_policy" "masters-this-is-truly-a-really-really-long-cluster-name-minimal-example-com" {
-  name   = "masters.this.is.truly.a.really.really.long.cluster-name.minimal.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_masters.this.is.truly.a.really.really.long.cluster-name.minimal.example.com_policy")
-  role   = aws_iam_role.masters-this-is-truly-a-really-really-long-cluster-name-minimal-example-com.name
+resource "aws_iam_role_policy" "masters-this-is-truly-a-really-really-long-cluster-name-m-kaamp9" {
+  name   = "masters.this.is.truly.a.really.really.long.cluster-name.m-kaamp9"
+  policy = file("${path.module}/data/aws_iam_role_policy_masters.this.is.truly.a.really.really.long.cluster-name.m-kaamp9_policy")
+  role   = aws_iam_role.masters-this-is-truly-a-really-really-long-cluster-name-m-kaamp9.name
 }
 
-resource "aws_iam_role_policy" "nodes-this-is-truly-a-really-really-long-cluster-name-minimal-example-com" {
-  name   = "nodes.this.is.truly.a.really.really.long.cluster-name.minimal.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.this.is.truly.a.really.really.long.cluster-name.minimal.example.com_policy")
-  role   = aws_iam_role.nodes-this-is-truly-a-really-really-long-cluster-name-minimal-example-com.name
+resource "aws_iam_role_policy" "nodes-this-is-truly-a-really-really-long-cluster-name-min-h1jir9" {
+  name   = "nodes.this.is.truly.a.really.really.long.cluster-name.min-h1jir9"
+  policy = file("${path.module}/data/aws_iam_role_policy_nodes.this.is.truly.a.really.really.long.cluster-name.min-h1jir9_policy")
+  role   = aws_iam_role.nodes-this-is-truly-a-really-really-long-cluster-name-min-h1jir9.name
 }
 
 resource "aws_internet_gateway" "this-is-truly-a-really-really-long-cluster-name-minimal-example-com" {
@@ -318,7 +318,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-this-is-truly-a-really
     virtual_name = "ephemeral0"
   }
   iam_instance_profile {
-    name = aws_iam_instance_profile.masters-this-is-truly-a-really-really-long-cluster-name-minimal-example-com.id
+    name = aws_iam_instance_profile.masters-this-is-truly-a-really-really-long-cluster-name-m-kaamp9.id
   }
   image_id      = "ami-12345678"
   instance_type = "m3.medium"
@@ -400,7 +400,7 @@ resource "aws_launch_template" "nodes-this-is-truly-a-really-really-long-cluster
     }
   }
   iam_instance_profile {
-    name = aws_iam_instance_profile.nodes-this-is-truly-a-really-really-long-cluster-name-minimal-example-com.id
+    name = aws_iam_instance_profile.nodes-this-is-truly-a-really-really-long-cluster-name-min-h1jir9.id
   }
   image_id      = "ami-12345678"
   instance_type = "t2.medium"
