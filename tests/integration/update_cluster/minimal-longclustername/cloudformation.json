@@ -233,7 +233,7 @@
           ],
           "IamInstanceProfile": {
             "Name": {
-              "Ref": "AWSIAMInstanceProfilemastersthisistrulyareallyreallylongclusternameminimalexamplecom"
+              "Ref": "AWSIAMInstanceProfilemastersthisistrulyareallyreallylongclusternamemkaamp9"
             }
           },
           "ImageId": "ami-12345678",
@@ -375,7 +375,7 @@
           ],
           "IamInstanceProfile": {
             "Name": {
-              "Ref": "AWSIAMInstanceProfilenodesthisistrulyareallyreallylongclusternameminimalexamplecom"
+              "Ref": "AWSIAMInstanceProfilenodesthisistrulyareallyreallylongclusternameminh1jir9"
             }
           },
           "ImageId": "ami-12345678",
@@ -919,35 +919,35 @@
         ]
       }
     },
-    "AWSIAMInstanceProfilemastersthisistrulyareallyreallylongclusternameminimalexamplecom": {
+    "AWSIAMInstanceProfilemastersthisistrulyareallyreallylongclusternamemkaamp9": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
-        "InstanceProfileName": "masters.this.is.truly.a.really.really.long.cluster-name.minimal.example.com",
+        "InstanceProfileName": "masters.this.is.truly.a.really.really.long.cluster-name.m-kaamp9",
         "Roles": [
           {
-            "Ref": "AWSIAMRolemastersthisistrulyareallyreallylongclusternameminimalexamplecom"
+            "Ref": "AWSIAMRolemastersthisistrulyareallyreallylongclusternamemkaamp9"
           }
         ]
       }
     },
-    "AWSIAMInstanceProfilenodesthisistrulyareallyreallylongclusternameminimalexamplecom": {
+    "AWSIAMInstanceProfilenodesthisistrulyareallyreallylongclusternameminh1jir9": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
-        "InstanceProfileName": "nodes.this.is.truly.a.really.really.long.cluster-name.minimal.example.com",
+        "InstanceProfileName": "nodes.this.is.truly.a.really.really.long.cluster-name.min-h1jir9",
         "Roles": [
           {
-            "Ref": "AWSIAMRolenodesthisistrulyareallyreallylongclusternameminimalexamplecom"
+            "Ref": "AWSIAMRolenodesthisistrulyareallyreallylongclusternameminh1jir9"
           }
         ]
       }
     },
-    "AWSIAMPolicymastersthisistrulyareallyreallylongclusternameminimalexamplecom": {
+    "AWSIAMPolicymastersthisistrulyareallyreallylongclusternamemkaamp9": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
-        "PolicyName": "masters.this.is.truly.a.really.really.long.cluster-name.minimal.example.com",
+        "PolicyName": "masters.this.is.truly.a.really.really.long.cluster-name.m-kaamp9",
         "Roles": [
           {
-            "Ref": "AWSIAMRolemastersthisistrulyareallyreallylongclusternameminimalexamplecom"
+            "Ref": "AWSIAMRolemastersthisistrulyareallyreallylongclusternamemkaamp9"
           }
         ],
         "PolicyDocument": {
@@ -1229,13 +1229,13 @@
         }
       }
     },
-    "AWSIAMPolicynodesthisistrulyareallyreallylongclusternameminimalexamplecom": {
+    "AWSIAMPolicynodesthisistrulyareallyreallylongclusternameminh1jir9": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
-        "PolicyName": "nodes.this.is.truly.a.really.really.long.cluster-name.minimal.example.com",
+        "PolicyName": "nodes.this.is.truly.a.really.really.long.cluster-name.min-h1jir9",
         "Roles": [
           {
-            "Ref": "AWSIAMRolenodesthisistrulyareallyreallylongclusternameminimalexamplecom"
+            "Ref": "AWSIAMRolenodesthisistrulyareallyreallylongclusternameminh1jir9"
           }
         ],
         "PolicyDocument": {
@@ -1282,10 +1282,10 @@
         }
       }
     },
-    "AWSIAMRolemastersthisistrulyareallyreallylongclusternameminimalexamplecom": {
+    "AWSIAMRolemastersthisistrulyareallyreallylongclusternamemkaamp9": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "RoleName": "masters.this.is.truly.a.really.really.long.cluster-name.minimal.example.com",
+        "RoleName": "masters.this.is.truly.a.really.really.long.cluster-name.m-kaamp9",
         "AssumeRolePolicyDocument": {
           "Statement": [
             {
@@ -1305,7 +1305,7 @@
           },
           {
             "Key": "Name",
-            "Value": "masters.this.is.truly.a.really.really.long.cluster-name.minimal.example.com"
+            "Value": "masters.this.is.truly.a.really.really.long.cluster-name.m-kaamp9"
           },
           {
             "Key": "kubernetes.io/cluster/this.is.truly.a.really.really.long.cluster-name.minimal.example.com",
@@ -1314,10 +1314,10 @@
         ]
       }
     },
-    "AWSIAMRolenodesthisistrulyareallyreallylongclusternameminimalexamplecom": {
+    "AWSIAMRolenodesthisistrulyareallyreallylongclusternameminh1jir9": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "RoleName": "nodes.this.is.truly.a.really.really.long.cluster-name.minimal.example.com",
+        "RoleName": "nodes.this.is.truly.a.really.really.long.cluster-name.min-h1jir9",
         "AssumeRolePolicyDocument": {
           "Statement": [
             {
@@ -1337,7 +1337,7 @@
           },
           {
             "Key": "Name",
-            "Value": "nodes.this.is.truly.a.really.really.long.cluster-name.minimal.example.com"
+            "Value": "nodes.this.is.truly.a.really.really.long.cluster-name.min-h1jir9"
           },
           {
             "Key": "kubernetes.io/cluster/this.is.truly.a.really.really.long.cluster-name.minimal.example.com",
