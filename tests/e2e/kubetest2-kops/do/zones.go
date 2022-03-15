@@ -19,6 +19,7 @@ package do
 import (
 	"errors"
 	"math/rand"
+	"time"
 )
 
 var allZones = []string{
@@ -46,7 +47,8 @@ func RandomZones(count int) ([]string, error) {
 		return nil, ErrMoreThanOneZone
 	}
 
-	n := rand.Int() % len(allZones)
+	rand.Seed(time.Now().UnixNano())
+	n := rand.Intn(1000) % len(allZones)
 	chosenZone := allZones[n]
 
 	chosenZones := make([]string, 0)
