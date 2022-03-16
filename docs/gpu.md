@@ -50,3 +50,47 @@ spec:
   subnets:
   - eu-central-1c
 ```
+
+## GPUs in OpenStack
+
+OpenStack does not support enabling containerd configuration in cluster level. It needs to be done in instance group:
+
+```yaml
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: <cluster name>
+  name: gpu-nodes
+spec:
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200907
+  nodeLabels:
+    kops.k8s.io/instancegroup: gpu-nodes
+  machineType: g4dn.xlarge
+  maxSize: 1
+  minSize: 1
+  role: Node
+  subnets:
+  - eu-central-1c
+  containerd:
+    nvidiaGPU:
+      enabled: true
+```
+
+## Verifying GPUs
+
+1. after new GPU nodes are coming up, you should see them in `kubectl get nodes`
+2. nodes should have `kops.k8s.io/gpu` label and `nvidia.com/gpu:NoSchedule` taint
+3. `kube-system` namespace should have nvidia-device-plugin-daemonset pod provisioned to GPU node(s)
+4. if you see `nvidia.com/gpu` in kubectl describe node <node> everything should work.
+
+```
+Capacity:
+  cpu:                4
+  ephemeral-storage:  9983232Ki
+  hugepages-1Gi:      0
+  hugepages-2Mi:      0
+  memory:             32796292Ki
+  nvidia.com/gpu:     1 <- this one
+  pods:               110
+```

@@ -301,7 +301,12 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 				modelContext.GPUVendor = architectures.GPUVendorNvidia
 			}
 		}
-
+	} else if cloudProvider == api.CloudProviderOpenstack {
+		// NvidiaGPU possible to enable only in instance group level in OpenStack. When we assume that GPU is supported
+		if nodeupConfig.NvidiaGPU != nil && fi.BoolValue(nodeupConfig.NvidiaGPU.Enabled) {
+			klog.Info("instance supports GPU acceleration")
+			modelContext.GPUVendor = architectures.GPUVendorNvidia
+		}
 	}
 
 	if err := loadKernelModules(modelContext); err != nil {
