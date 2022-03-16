@@ -86,6 +86,7 @@ func (d *deployer) Up() error {
 	}
 	isUp, err := d.IsUp()
 	if err != nil {
+		d.Down()
 		return err
 	} else if isUp {
 		klog.V(1).Infof("cluster reported as up")
