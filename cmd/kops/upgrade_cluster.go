@@ -193,7 +193,7 @@ func RunUpgradeCluster(ctx context.Context, f *util.Factory, out io.Writer, opti
 				klog.Warningf("No matching images specified in channel; cannot prompt for upgrade")
 				continue
 			}
-			if channel.HasUpstreamImagePrefix(ig.Spec.Image) {
+			if ig.Spec.Image == "" || channel.HasUpstreamImagePrefix(ig.Spec.Image) {
 				if ig.Spec.Image != image.Name {
 					target := ig
 					actions = append(actions, &upgradeAction{
