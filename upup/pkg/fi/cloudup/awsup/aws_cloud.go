@@ -662,12 +662,44 @@ func deregisterInstanceFromClassicLoadBalancer(c AWSCloud, loadBalancerNames []s
 // deregisterInstanceFromTargetGroups ensures that instances are fully unused in the corresponding targetGroups before instance termination.
 // this ensures that connections are fully drained from the instance before terminating.
 func deregisterInstanceFromTargetGroups(c AWSCloud, targetGroupArns []string, instanceId string) error {
-	klog.Infof("Deregistering instance from targetGroups: %v", targetGroupArns)
+	eg, _ := errgroup.WithContext(context.Background())
+
+	for _, targetGroupArn := range targetGroupArns {
+		arn := targetGroupArn
+		eg.Go(func() error {
+			return deregisterInstanceFromTargetGroup(c, arn, instanceId)
+		})
+	}
+
+	if err := eg.Wait(); err != nil {
+		return fmt.Errorf("failed to register instance from targetGroups: %w", err)
+	}
+
+	return nil
+}
+
+func deregisterInstanceFromTargetGroup(c AWSCloud, targetGroupArn string, instanceId string) error {
+	klog.Infof("Deregistering instance from targetGroup: %s", targetGroupArn)
 
 	for {
 		instanceDraining := false
-		for _, targetGroupArn := range targetGroupArns {
-			response, err := c.ELBV2().DescribeTargetHealth(&elbv2.DescribeTargetHealthInput{
+
+		response, err := c.ELBV2().DescribeTargetHealth(&elbv2.DescribeTargetHealthInput{
+			TargetGroupArn: aws.String(targetGroupArn),
+			Targets: []*elbv2.TargetDescription{{
+				Id: aws.String(instanceId),
+			}},
+		})
+
+		if err != nil {
+			return fmt.Errorf("error describing target health: %w", err)
+		}
+
+		// there will be only one target in the DescribeTargetHealth response.
+		// DescribeTargetHealth response will contain a target even if the targetId doesn't exist.
+		// all other states besides TargetHealthStateUnused means that the instance may still be serving traffic.
+		if aws.StringValue(response.TargetHealthDescriptions[0].TargetHealth.State) != elbv2.TargetHealthStateEnumUnused {
+			_, err = c.ELBV2().DeregisterTargets(&elbv2.DeregisterTargetsInput{
 				TargetGroupArn: aws.String(targetGroupArn),
 				Targets: []*elbv2.TargetDescription{{
 					Id: aws.String(instanceId),
@@ -675,21 +707,10 @@ func deregisterInstanceFromTargetGroups(c AWSCloud, targetGroupArns []string, in
 			})
 
 			if err != nil {
-				return fmt.Errorf("error describing target health: %v", err)
+				return fmt.Errorf("error deregistering target: %w", err)
 			}
 
-			// there will be only one target in the DescribeTargetHealth response.
-			// DescribeTargetHealth response will contain a target even if the targetId doesn't exist.
-			// all other states besides TargetHealthStateUnused means that the instance may still be serving traffic.
-			if aws.StringValue(response.TargetHealthDescriptions[0].TargetHealth.State) != elbv2.TargetHealthStateEnumUnused {
-				c.ELBV2().DeregisterTargets(&elbv2.DeregisterTargetsInput{
-					TargetGroupArn: aws.String(targetGroupArn),
-					Targets: []*elbv2.TargetDescription{{
-						Id: aws.String(instanceId),
-					}},
-				})
-				instanceDraining = true
-			}
+			instanceDraining = true
 		}
 
 		if !instanceDraining {
@@ -698,6 +719,9 @@ func deregisterInstanceFromTargetGroups(c AWSCloud, targetGroupArns []string, in
 
 		time.Sleep(5 * time.Second)
 	}
+
+	klog.Infof("Successfully drained instance from targetGroup: %s", targetGroupArn)
+
 	return nil
 }
 
