@@ -274,6 +274,7 @@
         "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
         "elasticloadbalancing:DeregisterTargets",
         "elasticloadbalancing:DetachLoadBalancerFromSubnets",
+        "elasticloadbalancing:ModifyListener",
         "elasticloadbalancing:ModifyLoadBalancerAttributes",
         "elasticloadbalancing:ModifyRule",
         "elasticloadbalancing:ModifyTargetGroup",
