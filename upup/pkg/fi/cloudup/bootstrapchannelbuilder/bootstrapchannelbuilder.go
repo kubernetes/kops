@@ -658,8 +658,15 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 	}
 
 	nvidia := b.Cluster.Spec.Containerd.NvidiaGPU
+	igNvidia := false
+	for _, ig := range b.KopsModelContext.InstanceGroups {
+		if ig.Spec.Containerd != nil && ig.Spec.Containerd.NvidiaGPU != nil && fi.BoolValue(ig.Spec.Containerd.NvidiaGPU.Enabled) {
+			igNvidia = true
+			break
+		}
+	}
 
-	if nvidia != nil && fi.BoolValue(nvidia.Enabled) {
+	if nvidia != nil && fi.BoolValue(nvidia.Enabled) || igNvidia {
 
 		key := "nvidia.addons.k8s.io"
 

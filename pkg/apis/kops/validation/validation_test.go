@@ -1359,7 +1359,7 @@ func TestValidateSAExternalPermissions(t *testing.T) {
 	}
 }
 
-func Test_Validate_Nvdia(t *testing.T) {
+func Test_Validate_Nvidia_Cluster(t *testing.T) {
 	grid := []struct {
 		Input          kops.ClusterSpec
 		ExpectedErrors []string
@@ -1373,6 +1373,86 @@ func Test_Validate_Nvdia(t *testing.T) {
 				},
 				CloudProvider: kops.CloudProviderSpec{
 					AWS: &kops.AWSSpec{},
+				},
+				ContainerRuntime: "containerd",
+			},
+		},
+		{
+			Input: kops.ClusterSpec{
+				Containerd: &kops.ContainerdConfig{
+					NvidiaGPU: &kops.NvidiaGPUConfig{
+						Enabled: fi.Bool(true),
+					},
+				},
+				CloudProvider: kops.CloudProviderSpec{
+					Openstack: &kops.OpenstackSpec{},
+				},
+				ContainerRuntime: "containerd",
+			},
+			ExpectedErrors: []string{"Forbidden::containerd.nvidiaGPU"},
+		},
+		{
+			Input: kops.ClusterSpec{
+				Containerd: &kops.ContainerdConfig{
+					NvidiaGPU: &kops.NvidiaGPUConfig{
+						Enabled: fi.Bool(true),
+					},
+				},
+				CloudProvider: kops.CloudProviderSpec{
+					GCE: &kops.GCESpec{},
+				},
+				ContainerRuntime: "containerd",
+			},
+			ExpectedErrors: []string{"Forbidden::containerd.nvidiaGPU"},
+		},
+		{
+			Input: kops.ClusterSpec{
+				Containerd: &kops.ContainerdConfig{
+					NvidiaGPU: &kops.NvidiaGPUConfig{
+						Enabled: fi.Bool(true),
+					},
+				},
+				CloudProvider: kops.CloudProviderSpec{
+					AWS: &kops.AWSSpec{},
+				},
+				ContainerRuntime: "docker",
+			},
+			ExpectedErrors: []string{"Forbidden::containerd.nvidiaGPU"},
+		},
+	}
+	for _, g := range grid {
+		errs := validateNvidiaConfig(&g.Input, g.Input.Containerd.NvidiaGPU, field.NewPath("containerd", "nvidiaGPU"), true)
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
+	}
+}
+
+func Test_Validate_Nvidia_Ig(t *testing.T) {
+	grid := []struct {
+		Input          kops.ClusterSpec
+		ExpectedErrors []string
+	}{
+		{
+			Input: kops.ClusterSpec{
+				Containerd: &kops.ContainerdConfig{
+					NvidiaGPU: &kops.NvidiaGPUConfig{
+						Enabled: fi.Bool(true),
+					},
+				},
+				CloudProvider: kops.CloudProviderSpec{
+					AWS: &kops.AWSSpec{},
+				},
+				ContainerRuntime: "containerd",
+			},
+		},
+		{
+			Input: kops.ClusterSpec{
+				Containerd: &kops.ContainerdConfig{
+					NvidiaGPU: &kops.NvidiaGPUConfig{
+						Enabled: fi.Bool(true),
+					},
+				},
+				CloudProvider: kops.CloudProviderSpec{
+					Openstack: &kops.OpenstackSpec{},
 				},
 				ContainerRuntime: "containerd",
 			},
@@ -1407,7 +1487,7 @@ func Test_Validate_Nvdia(t *testing.T) {
 		},
 	}
 	for _, g := range grid {
-		errs := validateNvidiaConfig(&g.Input, g.Input.Containerd.NvidiaGPU, field.NewPath("containerd", "nvidiaGPU"))
+		errs := validateNvidiaConfig(&g.Input, g.Input.Containerd.NvidiaGPU, field.NewPath("containerd", "nvidiaGPU"), false)
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }

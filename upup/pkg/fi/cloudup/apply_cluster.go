@@ -70,6 +70,7 @@ import (
 	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/mirrors"
+	"k8s.io/kops/util/pkg/reflectutils"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -1397,12 +1398,12 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 	config.Channels = n.channels
 	config.EtcdManifests = n.etcdManifests[role]
 
-	if cluster.Spec.ContainerRuntime == "containerd" {
-		config.ContainerdConfig = cluster.Spec.Containerd
+	if ig.Spec.Containerd != nil || cluster.Spec.ContainerRuntime == "containerd" {
+		config.ContainerdConfig = n.buildContainerdConfig(ig)
 	}
 
-	if cluster.Spec.Containerd != nil && cluster.Spec.Containerd.NvidiaGPU != nil {
-		config.NvidiaGPU = cluster.Spec.Containerd.NvidiaGPU
+	if (cluster.Spec.Containerd != nil && cluster.Spec.Containerd.NvidiaGPU != nil) || (ig.Spec.Containerd != nil && ig.Spec.Containerd.NvidiaGPU != nil) {
+		config.NvidiaGPU = n.buildNvidiaConfig(ig)
 	}
 
 	if ig.Spec.WarmPool != nil || cluster.Spec.WarmPool != nil {
@@ -1429,6 +1430,33 @@ func loadCertificates(keysets map[string]*fi.Keyset, name string, config *nodeup
 		config.KeypairIDs[name] = keyset.Primary.Id
 	}
 	return nil
+}
+
+// buildNvidiaConfig builds nvidia configuration for instance group
+func (n *nodeUpConfigBuilder) buildNvidiaConfig(ig *kops.InstanceGroup) *kops.NvidiaGPUConfig {
+	config := &kops.NvidiaGPUConfig{}
+	if n.cluster.Spec.Containerd != nil && n.cluster.Spec.Containerd.NvidiaGPU != nil {
+		config = n.cluster.Spec.Containerd.NvidiaGPU
+	}
+
+	if ig.Spec.Containerd != nil && ig.Spec.Containerd.NvidiaGPU != nil {
+		reflectutils.JSONMergeStruct(&config, ig.Spec.Containerd.NvidiaGPU)
+	}
+
+	if config.DriverPackage == "" {
+		config.DriverPackage = kops.NvidiaDefaultDriverPackage
+	}
+
+	return config
+}
+
+// buildContainerdConfig builds containerd configuration for instance. Instance group configuration will override cluster configuration
+func (n *nodeUpConfigBuilder) buildContainerdConfig(ig *kops.InstanceGroup) *kops.ContainerdConfig {
+	config := n.cluster.Spec.Containerd.DeepCopy()
+	if ig.Spec.Containerd != nil {
+		reflectutils.JSONMergeStruct(&config, ig.Spec.Containerd)
+	}
+	return config
 }
 
 // buildWarmPoolImages returns a list of container images that should be pre-pulled during instance pre-initialization

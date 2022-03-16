@@ -16,6 +16,9 @@ limitations under the License.
 
 package kops
 
+// NvidiaDefaultDriverPackage is the nvidia driver default version
+const NvidiaDefaultDriverPackage = "nvidia-headless-460-server"
+
 // ContainerdConfig is the configuration for containerd
 type ContainerdConfig struct {
 	// Address of containerd's GRPC server (default "/run/containerd/containerd.sock").
