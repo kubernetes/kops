@@ -23,8 +23,10 @@ import (
 	"os"
 	"reflect"
 	"sort"
+	"sync"
 	"time"
 
+	"golang.org/x/sync/errgroup"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -39,6 +41,26 @@ import (
 var StoreVersion = v1alpha2.SchemeGroupVersion
 
 type ValidationFunction func(o runtime.Object) error
+
+// safeSlice is safe to use concurrently
+type safeSlice struct {
+	sync.Mutex
+	value reflect.Value
+}
+
+// Append adds the value
+func (s *safeSlice) append(x ...reflect.Value) {
+	defer s.Unlock()
+	s.Lock()
+	s.value = reflect.Append(s.value, x...)
+}
+
+// Value returns the current value of the slice
+func (s *safeSlice) getValue() reflect.Value {
+	defer s.Unlock()
+	s.Lock()
+	return s.value
+}
 
 type commonVFS struct {
 	kind     string
@@ -236,18 +258,33 @@ func (c *commonVFS) readAll(ctx context.Context, items interface{}) (interface{}
 		return nil, err
 	}
 
-	for _, name := range names {
-		o, err := c.find(ctx, name)
-		if err != nil {
-			return nil, err
-		}
-
-		if o == nil {
-			return nil, fmt.Errorf("%s was listed, but then not found %q", c.kind, name)
-		}
-
-		sliceValue = reflect.Append(sliceValue, reflect.ValueOf(o).Elem())
+	// Use errgroup with Context to fail in the first failed read
+	wg, ctx := errgroup.WithContext(ctx)
+	safeSliceValue := &safeSlice{
+		value: sliceValue,
 	}
 
-	return sliceValue.Interface(), nil
+	// Parallelize the IG files read
+	for _, name := range names {
+		name := name // https://golang.org/doc/faq#closures_and_goroutines
+		wg.Go(func() error {
+			o, err := c.find(ctx, name)
+			if err != nil {
+				return err
+			}
+
+			if o == nil {
+				return fmt.Errorf("%s was listed, but then not found %q", c.kind, name)
+			}
+			safeSliceValue.append(reflect.ValueOf(o).Elem())
+			return nil
+		})
+	}
+
+	// Wait for all the threads to finish
+	if err := wg.Wait(); err != nil {
+		return nil, err
+	}
+
+	return safeSliceValue.getValue().Interface(), nil
 }
