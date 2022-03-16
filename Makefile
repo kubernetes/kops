@@ -28,7 +28,6 @@ ARTIFACTS?=$(BUILD)/artifacts
 DIST=$(BUILD)/dist
 IMAGES=$(DIST)/images
 CHANNELS=$(LOCAL)/channels
-NODEUP=$(LOCAL)/nodeup
 PROTOKUBE=$(LOCAL)/protokube
 UPLOAD=$(BUILD)/upload
 BAZELBUILD=$(KOPS_ROOT)/.bazelbuild
@@ -109,7 +108,7 @@ all-install: all kops-install channels-install
 	cp ${PROTOKUBE} ${GOPATH_1ST}/bin
 
 .PHONY: all
-all: ${KOPS} ${PROTOKUBE} ${NODEUP} ${CHANNELS}
+all: ${KOPS} ${PROTOKUBE} nodeup ${CHANNELS}
 
 include tests/e2e/e2e.mk
 
@@ -185,16 +184,16 @@ test:
 test-windows:
 	go test -v $(go list ./... | grep -v /nodeup/)
 
-.PHONY: ${DIST}/linux/amd64/nodeup ${DIST}/linux/arm64/nodeup
-${DIST}/linux/amd64/nodeup ${DIST}/linux/arm64/nodeup: ${DIST}/linux/%/nodeup:
-	mkdir -p ${DIST}
-	GOOS=linux GOARCH=$* go build ${GCFLAGS} -a ${EXTRA_BUILDFLAGS} -o $@ ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/nodeup
+.PHONY: nodeup-amd64 nodeup-arm64
+nodeup-amd64 nodeup-arm64: nodeup-%:
+	mkdir -p ${DIST}/linux/$*
+	GOOS=linux GOARCH=$* go build ${GCFLAGS} -a ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/$*/nodeup ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/nodeup
 
-.PHONY: crossbuild-nodeup-amd64 crossbuild-nodeup-arm64
-crossbuild-nodeup-amd64 crossbuild-nodeup-arm64: crossbuild-nodeup-%: ${DIST}/linux/%/nodeup
+.PHONY: nodeup
+nodeup: nodeup-amd64
 
 .PHONY: crossbuild-nodeup
-crossbuild-nodeup: crossbuild-nodeup-amd64 crossbuild-nodeup-arm64
+crossbuild-nodeup: nodeup-amd64 nodeup-arm64
 
 .PHONY: ${DIST}/darwin/amd64/kops ${DIST}/darwin/arm64/kops
 ${DIST}/darwin/amd64/kops ${DIST}/darwin/arm64/kops: ${DIST}/darwin/%/kops:
@@ -288,8 +287,8 @@ gen-cli-docs: ${KOPS} # Regenerate CLI docs
 	${KOPS} gen-cli-docs --out docs/cli
 
 .PHONY: push-amd64 push-arm64
-push-amd64 push-arm64: push-%: crossbuild-nodeup-%
-	scp -C .build/dist/linux/$*/nodeup  ${TARGET}:/tmp/
+push-amd64 push-arm64: push-%: nodeup-%
+	scp -C ${DIST}/linux/$*/nodeup  ${TARGET}:/tmp/
 
 .PHONY: push-gce-dry-amd64 push-gce-dry-arm64
 push-gce-dry-amd64 push-gce-dry-arm64: push-gce-dry-%: push-%
@@ -315,8 +314,6 @@ ${PROTOKUBE}:
 .PHONY: protokube
 protokube: ${PROTOKUBE}
 
-.PHONY: nodeup
-nodeup: ${NODEUP}
 
 .PHONY: ${NODEUP}
 ${NODEUP}:
