@@ -984,6 +984,8 @@ func AddAWSLoadbalancerControllerPermissions(p *Policy, partition string) {
 		"elasticloadbalancing:DeleteTargetGroup",
 		"elasticloadbalancing:DeleteRule",
 		"elasticloadbalancing:DeregisterTargets",
+		"elasticloadbalancing:ModifyLoadBalancerAttributes",
+		"elasticloadbalancing:ModifyListener",
 		"elasticloadbalancing:ModifyRule",
 		"elasticloadbalancing:ModifyTargetGroup",
 		"elasticloadbalancing:ModifyTargetGroupAttributes",

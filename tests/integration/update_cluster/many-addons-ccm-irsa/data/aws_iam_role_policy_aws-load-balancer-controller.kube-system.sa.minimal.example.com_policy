@@ -69,6 +69,8 @@
         "elasticloadbalancing:DeleteRule",
         "elasticloadbalancing:DeleteTargetGroup",
         "elasticloadbalancing:DeregisterTargets",
+        "elasticloadbalancing:ModifyListener",
+        "elasticloadbalancing:ModifyLoadBalancerAttributes",
         "elasticloadbalancing:ModifyRule",
         "elasticloadbalancing:ModifyTargetGroup",
         "elasticloadbalancing:ModifyTargetGroupAttributes",
