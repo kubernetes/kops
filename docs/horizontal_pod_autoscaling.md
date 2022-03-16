@@ -9,7 +9,7 @@ The HorizontalPodAutscaler `autoscaling/v2` stable API moved to GA in 1.23.
 The previous stable version, which only includes support for CPU autoscaling, can
 be found in the `autoscaling/v1` API version. The beta version, which includes
 support for scaling on memory and custom metrics, can be found in
-`autoscaling/v2beta1` in 1.8 - 1.18 (and `autoscaling/v2beta2` in 1.12 - 1.22).
+`autoscaling/v2beta1` in 1.8 - 1.24 (and `autoscaling/v2beta2` in 1.12 - 1.25).
 
 kOps sets up HPA out of the box. Relevant reading to go through:
 
