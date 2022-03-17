@@ -490,7 +490,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        image: k8s.gcr.io/provider-aws/aws-ebs-csi-driver:v1.5.0
+        image: registry.k8s.io/provider-aws/aws-ebs-csi-driver:v1.5.0
         livenessProbe:
           failureThreshold: 5
           httpGet:
@@ -523,7 +523,7 @@ spec:
           value: /csi/csi.sock
         - name: DRIVER_REG_SOCK_PATH
           value: /var/lib/kubelet/plugins/ebs.csi.aws.com/csi.sock
-        image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.1.0
+        image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.1.0
         lifecycle:
           preStop:
             exec:
@@ -539,7 +539,7 @@ spec:
           name: registration-dir
       - args:
         - --csi-address=/csi/csi.sock
-        image: k8s.gcr.io/sig-storage/livenessprobe:v2.2.0
+        image: registry.k8s.io/sig-storage/livenessprobe:v2.2.0
         name: liveness-probe
         volumeMounts:
         - mountPath: /csi
@@ -632,7 +632,7 @@ spec:
           value: arn:aws-test:iam::123456789012:role/ebs-csi-controller-sa.kube-system.sa.minimal.example.com
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
-        image: k8s.gcr.io/provider-aws/aws-ebs-csi-driver:v1.5.0
+        image: registry.k8s.io/provider-aws/aws-ebs-csi-driver:v1.5.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 5
@@ -668,7 +668,7 @@ spec:
           value: arn:aws-test:iam::123456789012:role/ebs-csi-controller-sa.kube-system.sa.minimal.example.com
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
-        image: k8s.gcr.io/sig-storage/csi-provisioner:v2.2.0
+        image: registry.k8s.io/sig-storage/csi-provisioner:v2.2.0
         name: csi-provisioner
         resources: {}
         volumeMounts:
@@ -688,7 +688,7 @@ spec:
           value: arn:aws-test:iam::123456789012:role/ebs-csi-controller-sa.kube-system.sa.minimal.example.com
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
-        image: k8s.gcr.io/sig-storage/csi-attacher:v3.2.0
+        image: registry.k8s.io/sig-storage/csi-attacher:v3.2.0
         name: csi-attacher
         resources: {}
         volumeMounts:
@@ -707,7 +707,7 @@ spec:
           value: arn:aws-test:iam::123456789012:role/ebs-csi-controller-sa.kube-system.sa.minimal.example.com
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
-        image: k8s.gcr.io/sig-storage/csi-snapshotter:v4.0.0
+        image: registry.k8s.io/sig-storage/csi-snapshotter:v4.0.0
         name: csi-snapshotter
         resources: {}
         volumeMounts:
@@ -726,7 +726,7 @@ spec:
           value: arn:aws-test:iam::123456789012:role/ebs-csi-controller-sa.kube-system.sa.minimal.example.com
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
-        image: k8s.gcr.io/sig-storage/csi-resizer:v1.1.0
+        image: registry.k8s.io/sig-storage/csi-resizer:v1.1.0
         imagePullPolicy: Always
         name: csi-resizer
         resources: {}
@@ -743,7 +743,7 @@ spec:
           value: arn:aws-test:iam::123456789012:role/ebs-csi-controller-sa.kube-system.sa.minimal.example.com
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
-        image: k8s.gcr.io/sig-storage/livenessprobe:v2.2.0
+        image: registry.k8s.io/sig-storage/livenessprobe:v2.2.0
         name: liveness-probe
         resources: {}
         volumeMounts:

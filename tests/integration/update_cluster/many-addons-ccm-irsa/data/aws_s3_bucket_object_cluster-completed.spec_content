@@ -24,7 +24,7 @@ spec:
     clusterCIDR: 172.20.0.0/16
     clusterName: minimal.example.com
     configureCloudRoutes: false
-    image: k8s.gcr.io/provider-aws/cloud-controller-manager:v1.21.0-alpha.0
+    image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.21.0-alpha.0
     leaderElection:
       leaderElect: true
   cloudProvider: aws
@@ -33,7 +33,7 @@ spec:
     balanceSimilarNodeGroups: false
     enabled: true
     expander: random
-    image: k8s.gcr.io/autoscaling/cluster-autoscaler:v1.21.2
+    image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.21.2
     maxNodeProvisionTime: 15m0s
     newPodScaleUpDelay: 0s
     scaleDownDelayAfterAdd: 10m0s
@@ -97,7 +97,7 @@ spec:
     featureGates:
       CSIMigrationAWS: "true"
       InTreePluginAWSUnregister: "true"
-    image: k8s.gcr.io/kube-apiserver:v1.21.0
+    image: registry.k8s.io/kube-apiserver:v1.21.0
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
@@ -126,7 +126,7 @@ spec:
     featureGates:
       CSIMigrationAWS: "true"
       InTreePluginAWSUnregister: "true"
-    image: k8s.gcr.io/kube-controller-manager:v1.21.0
+    image: registry.k8s.io/kube-controller-manager:v1.21.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -141,19 +141,19 @@ spec:
     nodeLocalDNS:
       cpuRequest: 25m
       enabled: false
-      image: k8s.gcr.io/dns/k8s-dns-node-cache:1.21.3
+      image: registry.k8s.io/dns/k8s-dns-node-cache:1.21.3
       memoryRequest: 5Mi
     provider: CoreDNS
     serverIP: 172.20.0.10
   kubeProxy:
     cpuRequest: 100m
-    image: k8s.gcr.io/kube-proxy:v1.21.0
+    image: registry.k8s.io/kube-proxy:v1.21.0
     logLevel: 2
   kubeScheduler:
     featureGates:
       CSIMigrationAWS: "true"
       InTreePluginAWSUnregister: "true"
-    image: k8s.gcr.io/kube-scheduler:v1.21.0
+    image: registry.k8s.io/kube-scheduler:v1.21.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -172,7 +172,7 @@ spec:
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    podInfraContainerImage: k8s.gcr.io/pause:3.6
+    podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     shutdownGracePeriod: 0s
     shutdownGracePeriodCriticalPods: 0s
@@ -195,7 +195,7 @@ spec:
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    podInfraContainerImage: k8s.gcr.io/pause:3.6
+    podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
     shutdownGracePeriod: 0s

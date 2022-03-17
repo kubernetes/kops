@@ -164,7 +164,7 @@
     - https://127.0.0.1:4001
     etcdServersOverrides:
     - /events#https://127.0.0.1:4002
-    image: k8s.gcr.io/kube-apiserver:v1.20.0
+    image: registry.k8s.io/kube-apiserver:v1.20.0
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
@@ -190,7 +190,7 @@
     clusterCIDR: 100.96.0.0/11
     clusterName: nthsqsresources.longclustername.example.com
     configureCloudRoutes: false
-    image: k8s.gcr.io/kube-controller-manager:v1.20.0
+    image: registry.k8s.io/kube-controller-manager:v1.20.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -198,10 +198,10 @@
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    image: k8s.gcr.io/kube-proxy:v1.20.0
+    image: registry.k8s.io/kube-proxy:v1.20.0
     logLevel: 2
   kubeScheduler:
-    image: k8s.gcr.io/kube-scheduler:v1.20.0
+    image: registry.k8s.io/kube-scheduler:v1.20.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -217,7 +217,7 @@
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    podInfraContainerImage: k8s.gcr.io/pause:3.6
+    podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
   masterKubelet:
     anonymousAuth: false
@@ -231,7 +231,7 @@
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    podInfraContainerImage: k8s.gcr.io/pause:3.6
+    podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
 
@@ -242,7 +242,7 @@
   ConfigBase: memfs://clusters.example.com/nthsqsresources.longclustername.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: p1qnqow7b5pLLiw11iGBshHMcudgM/yPr8DsLgwcc0M=
+  NodeupConfigHash: IsRqrb7dMKBFiJFudQJc6Mo0JVApIrD5B2dewuutYf8=
 
   __EOF_KUBE_ENV
 
@@ -387,7 +387,7 @@ Resources.AWSEC2LaunchTemplatenodesnthsqsresourceslongclusternameexamplecom.Prop
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    image: k8s.gcr.io/kube-proxy:v1.20.0
+    image: registry.k8s.io/kube-proxy:v1.20.0
     logLevel: 2
   kubelet:
     anonymousAuth: false
@@ -401,7 +401,7 @@ Resources.AWSEC2LaunchTemplatenodesnthsqsresourceslongclusternameexamplecom.Prop
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    podInfraContainerImage: k8s.gcr.io/pause:3.6
+    podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
 
   __EOF_CLUSTER_SPEC
@@ -411,7 +411,7 @@ Resources.AWSEC2LaunchTemplatenodesnthsqsresourceslongclusternameexamplecom.Prop
   ConfigBase: memfs://clusters.example.com/nthsqsresources.longclustername.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: n5iJXLRDo3rgJQY+RP2ZuVVfTA80DRLaqI9cYvLKxjA=
+  NodeupConfigHash: hq+JAH/l0SsE9rH7Q8POHxFMrXDRXcmmf042WElqcUM=
 
   __EOF_KUBE_ENV
 

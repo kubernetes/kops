@@ -170,7 +170,7 @@ kubeAPIServer:
   featureGates:
     CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
-  image: k8s.gcr.io/kube-apiserver:v1.23.0
+  image: registry.k8s.io/kube-apiserver:v1.23.0
   kubeletPreferredAddressTypes:
   - InternalIP
   - Hostname
@@ -200,7 +200,7 @@ kubeControllerManager:
   featureGates:
     CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
-  image: k8s.gcr.io/kube-controller-manager:v1.23.0
+  image: registry.k8s.io/kube-controller-manager:v1.23.0
   leaderElection:
     leaderElect: true
   logLevel: 2
@@ -208,13 +208,13 @@ kubeControllerManager:
 kubeProxy:
   clusterCIDR: 100.96.0.0/11
   cpuRequest: 100m
-  image: k8s.gcr.io/kube-proxy:v1.23.0
+  image: registry.k8s.io/kube-proxy:v1.23.0
   logLevel: 2
 kubeScheduler:
   featureGates:
     CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
-  image: k8s.gcr.io/kube-scheduler:v1.23.0
+  image: registry.k8s.io/kube-scheduler:v1.23.0
   leaderElection:
     leaderElect: true
   logLevel: 2
@@ -233,7 +233,7 @@ kubelet:
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
-  podInfraContainerImage: k8s.gcr.io/pause:3.6
+  podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
   shutdownGracePeriod: 30s
@@ -253,7 +253,7 @@ masterKubelet:
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
-  podInfraContainerImage: k8s.gcr.io/pause:3.6
+  podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
   registerSchedulable: false
@@ -267,7 +267,7 @@ CloudProvider: aws
 ConfigBase: memfs://tests/minimal.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: q7RjbWyP2scwawYt5jmocItvDFXCIdEYgz6IgJG+lt4=
+NodeupConfigHash: nJXPW5AXOYWQY42owArWoSfvtbF8zmnq/7/a/MdV2I4=
 
 __EOF_KUBE_ENV
 

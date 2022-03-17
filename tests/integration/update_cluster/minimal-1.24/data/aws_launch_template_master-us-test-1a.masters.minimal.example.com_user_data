@@ -170,7 +170,7 @@ kubeAPIServer:
   featureGates:
     CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
-  image: k8s.gcr.io/kube-apiserver:v1.24.0-alpha.1
+  image: registry.k8s.io/kube-apiserver:v1.24.0-alpha.1
   kubeletPreferredAddressTypes:
   - InternalIP
   - Hostname
@@ -199,7 +199,7 @@ kubeControllerManager:
   featureGates:
     CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
-  image: k8s.gcr.io/kube-controller-manager:v1.24.0-alpha.1
+  image: registry.k8s.io/kube-controller-manager:v1.24.0-alpha.1
   leaderElection:
     leaderElect: true
   logLevel: 2
@@ -207,13 +207,13 @@ kubeControllerManager:
 kubeProxy:
   clusterCIDR: 100.96.0.0/11
   cpuRequest: 100m
-  image: k8s.gcr.io/kube-proxy:v1.24.0-alpha.1
+  image: registry.k8s.io/kube-proxy:v1.24.0-alpha.1
   logLevel: 2
 kubeScheduler:
   featureGates:
     CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
-  image: k8s.gcr.io/kube-scheduler:v1.24.0-alpha.1
+  image: registry.k8s.io/kube-scheduler:v1.24.0-alpha.1
   leaderElection:
     leaderElect: true
   logLevel: 2
@@ -231,7 +231,7 @@ kubelet:
     InTreePluginAWSUnregister: "true"
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
-  podInfraContainerImage: k8s.gcr.io/pause:3.6
+  podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
   shutdownGracePeriod: 30s
@@ -250,7 +250,7 @@ masterKubelet:
     InTreePluginAWSUnregister: "true"
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
-  podInfraContainerImage: k8s.gcr.io/pause:3.6
+  podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
   registerSchedulable: false
@@ -264,7 +264,7 @@ CloudProvider: aws
 ConfigBase: memfs://tests/minimal.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: kCj0/R7O2WDHr1hXkntExKvjf90upojo+tSsg4ogixA=
+NodeupConfigHash: 09ePsFy7anq2lz5R/eqXGKLz9jLwiDyrKzSpZhcqhqI=
 
 __EOF_KUBE_ENV
 

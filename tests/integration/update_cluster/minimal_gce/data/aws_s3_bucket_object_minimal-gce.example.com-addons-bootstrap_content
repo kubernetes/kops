@@ -6,7 +6,7 @@ spec:
   addons:
   - id: k8s-1.16
     manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: 72ec5e3e910708ada8a37aeb0d4213131d0147337ba3afdf6939406660056d0c
+    manifestHash: 5651f303569de5d70bd1ac5cbdee8ba553b47afbe09505756cf790d3b7fac67b
     name: kops-controller.addons.k8s.io
     needsRollingUpdate: control-plane
     selector:
@@ -20,7 +20,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: coredns.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: dedfaf2f3773767925719c3b67af005d98758c90b74198850305ee4f42d92b96
+    manifestHash: 8fdf9ea40a3f6c07d8d1e8b1ab6bcccd402daf15a2d41e26f74c8e6b315fdaee
     name: coredns.addons.k8s.io
     selector:
       k8s-addon: coredns.addons.k8s.io
@@ -47,7 +47,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: dns-controller.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: 5f500b2d98b8bacb3361849b66d15458c0b8eb80b0f75211c60bc9355577cb63
+    manifestHash: 874174f7e88c323911ee47bc662401b3b6675bdcaab49645c7a4377bf5ab117f
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
@@ -61,7 +61,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.23
     manifest: gcp-pd-csi-driver.addons.k8s.io/k8s-1.23.yaml
-    manifestHash: ed9945894e8c7a92f661229add3096cf130b99548cad3e5c5900ab6fd23c9126
+    manifestHash: 1d39fdc2fcd7473ff3a0d9bd4141036be0933a94f4862f34e37be8b3163dcdb5
     name: gcp-pd-csi-driver.addons.k8s.io
     selector:
       k8s-addon: gcp-pd-csi-driver.addons.k8s.io

@@ -138,7 +138,7 @@ Resources.AWSEC2LaunchTemplateapiserverapiserversminimalexamplecom.Properties.La
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    image: k8s.gcr.io/kube-proxy:v1.22.0
+    image: registry.k8s.io/kube-proxy:v1.22.0
     logLevel: 2
   kubelet:
     anonymousAuth: false
@@ -155,7 +155,7 @@ Resources.AWSEC2LaunchTemplateapiserverapiserversminimalexamplecom.Properties.La
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    podInfraContainerImage: k8s.gcr.io/pause:3.6
+    podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
     shutdownGracePeriod: 30s
@@ -168,7 +168,7 @@ Resources.AWSEC2LaunchTemplateapiserverapiserversminimalexamplecom.Properties.La
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: apiserver
   InstanceGroupRole: APIServer
-  NodeupConfigHash: F31aq5UzKxEaZKJb7E+biWdEYEC+9KGM2uIU4XgtlCE=
+  NodeupConfigHash: 2g+iSy2UdZf6vXOvy/mYF/UNQbrzjq/Ma6pz6lzfdto=
 
   __EOF_KUBE_ENV
 
@@ -343,7 +343,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
     featureGates:
       CSIMigrationAWS: "true"
       InTreePluginAWSUnregister: "true"
-    image: k8s.gcr.io/kube-apiserver:v1.22.0
+    image: registry.k8s.io/kube-apiserver:v1.22.0
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
@@ -372,7 +372,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
     featureGates:
       CSIMigrationAWS: "true"
       InTreePluginAWSUnregister: "true"
-    image: k8s.gcr.io/kube-controller-manager:v1.22.0
+    image: registry.k8s.io/kube-controller-manager:v1.22.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -380,13 +380,13 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    image: k8s.gcr.io/kube-proxy:v1.22.0
+    image: registry.k8s.io/kube-proxy:v1.22.0
     logLevel: 2
   kubeScheduler:
     featureGates:
       CSIMigrationAWS: "true"
       InTreePluginAWSUnregister: "true"
-    image: k8s.gcr.io/kube-scheduler:v1.22.0
+    image: registry.k8s.io/kube-scheduler:v1.22.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -405,7 +405,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    podInfraContainerImage: k8s.gcr.io/pause:3.6
+    podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
     shutdownGracePeriod: 30s
@@ -425,7 +425,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    podInfraContainerImage: k8s.gcr.io/pause:3.6
+    podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
     registerSchedulable: false
@@ -439,7 +439,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: qNeMECkSrl9NjmAE/74iYm+rj/a73JrSSKspMTU/Esc=
+  NodeupConfigHash: EOWNs8/wjh0FZPfcfA8xxlrhlhvjK5V82X1FeFzZqM0=
 
   __EOF_KUBE_ENV
 
@@ -585,7 +585,7 @@ Resources.AWSEC2LaunchTemplatenodesminimalexamplecom.Properties.LaunchTemplateDa
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    image: k8s.gcr.io/kube-proxy:v1.22.0
+    image: registry.k8s.io/kube-proxy:v1.22.0
     logLevel: 2
   kubelet:
     anonymousAuth: false
@@ -602,7 +602,7 @@ Resources.AWSEC2LaunchTemplatenodesminimalexamplecom.Properties.LaunchTemplateDa
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    podInfraContainerImage: k8s.gcr.io/pause:3.6
+    podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
     shutdownGracePeriod: 30s
@@ -615,7 +615,7 @@ Resources.AWSEC2LaunchTemplatenodesminimalexamplecom.Properties.LaunchTemplateDa
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: Vd9DttXjD/aZhW/pLYVSx/pA78+aRZphN+aQfR6mSnQ=
+  NodeupConfigHash: Ojz14cKdbBtjB//C+lmMWpLMbdnjnurwMGsb56e2dt0=
 
   __EOF_KUBE_ENV
 

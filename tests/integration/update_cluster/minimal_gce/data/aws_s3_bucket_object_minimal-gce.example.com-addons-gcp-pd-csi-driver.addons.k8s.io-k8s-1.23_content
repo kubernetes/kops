@@ -601,7 +601,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: k8s.gcr.io/sig-storage/csi-provisioner:v2.1.0
+        image: registry.k8s.io/sig-storage/csi-provisioner:v2.1.0
         livenessProbe:
           failureThreshold: 1
           httpGet:
@@ -630,7 +630,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: k8s.gcr.io/sig-storage/csi-attacher:v3.1.0
+        image: registry.k8s.io/sig-storage/csi-attacher:v3.1.0
         livenessProbe:
           failureThreshold: 1
           httpGet:
@@ -659,7 +659,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: k8s.gcr.io/sig-storage/csi-resizer:v1.1.0
+        image: registry.k8s.io/sig-storage/csi-resizer:v1.1.0
         livenessProbe:
           failureThreshold: 1
           httpGet:
@@ -688,7 +688,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: k8s.gcr.io/sig-storage/csi-snapshotter:v3.0.3
+        image: registry.k8s.io/sig-storage/csi-snapshotter:v3.0.3
         name: csi-snapshotter
         volumeMounts:
         - mountPath: /csi
@@ -697,7 +697,7 @@ spec:
         - --v=5
         - --endpoint=unix:/csi/csi.sock
         - --extra-labels=k8s-io-cluster-name=minimal-gce-example-com
-        image: k8s.gcr.io/cloud-provider-gcp/gcp-compute-persistent-disk-csi-driver:v1.3.4
+        image: registry.k8s.io/cloud-provider-gcp/gcp-compute-persistent-disk-csi-driver:v1.3.4
         name: gce-pd-driver
         volumeMounts:
         - mountPath: /csi
@@ -759,7 +759,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.1.0
+        image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.1.0
         name: csi-driver-registrar
         volumeMounts:
         - mountPath: /csi
@@ -770,7 +770,7 @@ spec:
         - --v=5
         - --endpoint=unix:/csi/csi.sock
         - --run-controller-service=false
-        image: k8s.gcr.io/cloud-provider-gcp/gcp-compute-persistent-disk-csi-driver:v1.3.4
+        image: registry.k8s.io/cloud-provider-gcp/gcp-compute-persistent-disk-csi-driver:v1.3.4
         name: gce-pd-driver
         securityContext:
           privileged: true

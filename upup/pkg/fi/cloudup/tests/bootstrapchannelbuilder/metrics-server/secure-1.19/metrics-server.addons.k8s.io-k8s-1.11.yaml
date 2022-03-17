@@ -173,7 +173,7 @@ spec:
         - --kubelet-preferred-address-types=Hostname
         - --tls-cert-file=/srv/tls.crt
         - --tls-private-key-file=/srv/tls.key
-        image: k8s.gcr.io/metrics-server/metrics-server:v0.6.0
+        image: registry.k8s.io/metrics-server/metrics-server:v0.6.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3

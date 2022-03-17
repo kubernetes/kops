@@ -30,7 +30,7 @@ KubeletConfig:
   nodeLabels:
     kubernetes.io/role: node
     node-role.kubernetes.io/node: ""
-  podInfraContainerImage: k8s.gcr.io/pause:3.6
+  podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   shutdownGracePeriod: 30s
   shutdownGracePeriodCriticalPods: 10s

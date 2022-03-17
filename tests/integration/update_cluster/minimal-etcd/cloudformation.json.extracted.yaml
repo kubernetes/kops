@@ -179,7 +179,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimaletcdexamplecom.Propert
     - https://127.0.0.1:4001
     etcdServersOverrides:
     - /events#https://127.0.0.1:4002
-    image: k8s.gcr.io/kube-apiserver:v1.21.0
+    image: registry.k8s.io/kube-apiserver:v1.21.0
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
@@ -205,7 +205,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimaletcdexamplecom.Propert
     clusterCIDR: 100.96.0.0/11
     clusterName: minimal-etcd.example.com
     configureCloudRoutes: false
-    image: k8s.gcr.io/kube-controller-manager:v1.21.0
+    image: registry.k8s.io/kube-controller-manager:v1.21.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -213,10 +213,10 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimaletcdexamplecom.Propert
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    image: k8s.gcr.io/kube-proxy:v1.21.0
+    image: registry.k8s.io/kube-proxy:v1.21.0
     logLevel: 2
   kubeScheduler:
-    image: k8s.gcr.io/kube-scheduler:v1.21.0
+    image: registry.k8s.io/kube-scheduler:v1.21.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -232,7 +232,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimaletcdexamplecom.Propert
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    podInfraContainerImage: k8s.gcr.io/pause:3.6
+    podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     shutdownGracePeriod: 30s
     shutdownGracePeriodCriticalPods: 10s
@@ -248,7 +248,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimaletcdexamplecom.Propert
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    podInfraContainerImage: k8s.gcr.io/pause:3.6
+    podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
     shutdownGracePeriod: 30s
@@ -261,7 +261,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimaletcdexamplecom.Propert
   ConfigBase: memfs://clusters.example.com/minimal-etcd.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: mZql3Qd/5kz3NtMzpQP9E1XUL3Q1obEYIFJ7jkeVXiU=
+  NodeupConfigHash: rU8eky9R3dEeLu2MgXrXTVCfaU3ZGdH8xtTPCVnB+AY=
 
   __EOF_KUBE_ENV
 
@@ -406,7 +406,7 @@ Resources.AWSEC2LaunchTemplatenodesminimaletcdexamplecom.Properties.LaunchTempla
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    image: k8s.gcr.io/kube-proxy:v1.21.0
+    image: registry.k8s.io/kube-proxy:v1.21.0
     logLevel: 2
   kubelet:
     anonymousAuth: false
@@ -420,7 +420,7 @@ Resources.AWSEC2LaunchTemplatenodesminimaletcdexamplecom.Properties.LaunchTempla
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    podInfraContainerImage: k8s.gcr.io/pause:3.6
+    podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     shutdownGracePeriod: 30s
     shutdownGracePeriodCriticalPods: 10s
@@ -432,7 +432,7 @@ Resources.AWSEC2LaunchTemplatenodesminimaletcdexamplecom.Properties.LaunchTempla
   ConfigBase: memfs://clusters.example.com/minimal-etcd.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: H6FR7dILQfHFFtL46VKYk3+SLn1EAbRT1FBRxMqr+uU=
+  NodeupConfigHash: UFye0jAPqOv5CcCI40SyH1QNZIBC4aqAEr/pkW+a0XI=
 
   __EOF_KUBE_ENV
 
