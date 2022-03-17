@@ -76,7 +76,7 @@ func TestValidate_RemapImage_ContainerProxy_AppliesToSimplifiedKubernetesURL(t *
 	builder := buildAssetBuilder(t)
 
 	proxyURL := "proxy.example.com/"
-	image := "k8s.gcr.io/kube-apiserver"
+	image := "registry.k8s.io/kube-apiserver"
 	expected := "proxy.example.com/kube-apiserver"
 	version, _ := util.ParseKubernetesVersion("1.10")
 
@@ -116,7 +116,7 @@ func TestValidate_RemapImage_ContainerProxy_AppliesToImagesWithTags(t *testing.T
 	builder := buildAssetBuilder(t)
 
 	proxyURL := "proxy.example.com/"
-	image := "k8s.gcr.io/kube-apiserver:1.2.3"
+	image := "registry.k8s.io/kube-apiserver:1.2.3"
 	expected := "proxy.example.com/kube-apiserver:1.2.3"
 	version, _ := util.ParseKubernetesVersion("1.10")
 

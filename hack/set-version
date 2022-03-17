@@ -62,13 +62,13 @@ sed -i.bak -e "s@KUBE_APISERVER_HEALTHCHECK_TAG=${KOPS_RELEASE_VERSION}@KUBE_API
 sed -i.bak -e "s@\"${KOPS_RELEASE_VERSION}\"@\"${NEW_RELEASE_VERSION}\"@g" upup/pkg/fi/cloudup/bootstrapchannelbuilder/bootstrapchannelbuilder.go
 sed -i.bak -e "s@${KOPS_RELEASE_VERSION}@${NEW_RELEASE_VERSION}@g" upup/pkg/fi/cloudup/urls_test.go
 
-git grep -l k8s.gcr.io/kops/dns-controller | xargs -I {} sed -i.bak -e "s@dns-controller:${KOPS_RELEASE_VERSION}@dns-controller:${NEW_RELEASE_VERSION}@g" {}
+git grep -l registry.k8s.io/kops/dns-controller | xargs -I {} sed -i.bak -e "s@dns-controller:${KOPS_RELEASE_VERSION}@dns-controller:${NEW_RELEASE_VERSION}@g" {}
 git grep -l "version..v${KOPS_RELEASE_VERSION}" upup/models/cloudup/resources/addons/dns-controller.addons.k8s.io/ | xargs -I {} sed -i.bak -e "s@version: v${KOPS_RELEASE_VERSION}@version: v${NEW_RELEASE_VERSION}@g" {}
 
-git grep -l k8s.gcr.io/kops/kops-controller | xargs -I {} sed -i.bak -e "s@kops-controller:${KOPS_RELEASE_VERSION}@kops-controller:${NEW_RELEASE_VERSION}@g" {}
+git grep -l registry.k8s.io/kops/kops-controller | xargs -I {} sed -i.bak -e "s@kops-controller:${KOPS_RELEASE_VERSION}@kops-controller:${NEW_RELEASE_VERSION}@g" {}
 git grep -l "version..v${KOPS_RELEASE_VERSION}" upup/models/cloudup/resources/addons/kops-controller.addons.k8s.io/ | xargs -I {} sed -i.bak -e "s@version: v${KOPS_RELEASE_VERSION}@version: v${NEW_RELEASE_VERSION}@g" {}
 
-git grep -l k8s.gcr.io/kops/kube-apiserver-healthcheck | xargs -I {} sed -i.bak -e "s@kube-apiserver-healthcheck:${KOPS_RELEASE_VERSION}@kube-apiserver-healthcheck:${NEW_RELEASE_VERSION}@g" {}
+git grep -l registry.k8s.io/kops/kube-apiserver-healthcheck | xargs -I {} sed -i.bak -e "s@kube-apiserver-healthcheck:${KOPS_RELEASE_VERSION}@kube-apiserver-healthcheck:${NEW_RELEASE_VERSION}@g" {}
 
 git grep -l "version..${KOPS_RELEASE_VERSION}" upup/pkg/fi/cloudup/tests/bootstrapchannelbuilder/ | xargs -I {} sed -i.bak -e "s@version: ${KOPS_RELEASE_VERSION}@version: ${NEW_RELEASE_VERSION}@g" {}
 
