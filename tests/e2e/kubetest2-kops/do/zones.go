@@ -26,12 +26,10 @@ var allZones = []string{
 	"nyc1",
 	"nyc3",
 	"sfo3",
-	"sfo2",
 	"tor1",
 	"lon1",
 	"sgp1",
 	"blr1",
-	"sfo2",
 	"sfo3",
 }
 
