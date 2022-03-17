@@ -644,3 +644,148 @@ func TestAWSAuthentication(t *testing.T) {
 		testErrors(t, test, errs, test.expected)
 	}
 }
+
+func TestAWSAdditionalRoutes(t *testing.T) {
+	tests := []struct {
+		clusterCidr string
+		providerId  string
+		route       []kops.RouteSpec
+		expected    []string
+	}{
+		{ // valid pcx
+			clusterCidr: "100.64.0.0/10",
+			route: []kops.RouteSpec{
+				{
+					CIDR:   "10.0.0.0/8",
+					Target: "pcx-abcdef",
+				},
+			},
+		},
+		{ // valid instance
+			clusterCidr: "100.64.0.0/10",
+			route: []kops.RouteSpec{
+				{
+					CIDR:   "10.0.0.0/8",
+					Target: "i-abcdef",
+				},
+			},
+		},
+		{ // valid nat
+			clusterCidr: "100.64.0.0/10",
+			route: []kops.RouteSpec{
+				{
+					CIDR:   "10.0.0.0/8",
+					Target: "nat-abcdef",
+				},
+			},
+		},
+		{ // valid transit gateway
+			clusterCidr: "100.64.0.0/10",
+			route: []kops.RouteSpec{
+				{
+					CIDR:   "10.0.0.0/8",
+					Target: "tgw-abcdef",
+				},
+			},
+		},
+		{ // valid internet gateway
+			clusterCidr: "100.64.0.0/10",
+			route: []kops.RouteSpec{
+				{
+					CIDR:   "10.0.0.0/8",
+					Target: "igw-abcdef",
+				},
+			},
+		},
+		{ // valid egress only internet gateway
+			clusterCidr: "100.64.0.0/10",
+			route: []kops.RouteSpec{
+				{
+					CIDR:   "10.0.0.0/8",
+					Target: "eigw-abcdef",
+				},
+			},
+		},
+		{ // bad cluster cidr
+			clusterCidr: "not cidr",
+			route: []kops.RouteSpec{
+				{
+					CIDR:   "10.0.0.0/8",
+					Target: "pcx-abcdef",
+				},
+			},
+			expected: []string{"Invalid value::spec.NetworkCIDR"},
+		},
+		{ // bad cidr
+			clusterCidr: "100.64.0.0/10",
+			route: []kops.RouteSpec{
+				{
+					CIDR:   "bad cidr",
+					Target: "pcx-abcdef",
+				},
+			},
+			expected: []string{"Invalid value::spec.Subnets[0].AdditionalRoutes[0]"},
+		},
+		{ // bad target
+			clusterCidr: "100.64.0.0/10",
+			route: []kops.RouteSpec{
+				{
+					CIDR:   "10.0.0.0/8",
+					Target: "unknown-abcdef",
+				},
+			},
+			expected: []string{"Invalid value::spec.Subnets[0].AdditionalRoutes[0]"},
+		},
+		{ // target more specific
+			clusterCidr: "100.64.0.0/10",
+			route: []kops.RouteSpec{
+				{
+					CIDR:   "100.64.1.0/24",
+					Target: "pcx-abcdef",
+				},
+			},
+			expected: []string{"Forbidden::spec.Subnets[0].AdditionalRoutes[0]"},
+		},
+		{ // duplicates cidr
+			clusterCidr: "100.64.0.0/10",
+			route: []kops.RouteSpec{
+				{
+					CIDR:   "10.0.0.0/8",
+					Target: "pcx-abcdef",
+				},
+				{
+					CIDR:   "10.0.0.0/8",
+					Target: "tgw-abcdef",
+				},
+			},
+			expected: []string{"Duplicate value::spec.Subnets[0].AdditionalRoutes[1].CIDR"},
+		},
+		{ // shared subnet
+			clusterCidr: "100.64.0.0/10",
+			providerId:  "123456",
+			route: []kops.RouteSpec{
+				{
+					CIDR:   "10.0.0.0/8",
+					Target: "pcx-abcdef",
+				},
+			},
+			expected: []string{"Invalid value::spec.Subnets[0]"},
+		},
+	}
+
+	for _, test := range tests {
+		cluster := kops.Cluster{
+			Spec: kops.ClusterSpec{
+				NetworkCIDR: test.clusterCidr,
+				Subnets: []kops.ClusterSubnetSpec{
+					{
+						ProviderID:       test.providerId,
+						AdditionalRoutes: test.route,
+					},
+				},
+			},
+		}
+		errs := awsValidateCluster(&cluster)
+		testErrors(t, test, errs, test.expected)
+	}
+}
