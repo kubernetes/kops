@@ -167,7 +167,7 @@ spec:
         - --state-dir=/var/aws-iam-authenticator
         - --kubeconfig-pregenerated=true
         - --backend-mode=CRD
-        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-iam-authenticator:v0.5.3-debian-stretch
+        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-iam-authenticator:v0.5.5
         livenessProbe:
           httpGet:
             host: 127.0.0.1
@@ -187,6 +187,8 @@ spec:
           capabilities:
             drop:
             - ALL
+          runAsGroup: 10000
+          runAsUser: 10000
         volumeMounts:
         - mountPath: /var/aws-iam-authenticator/
           name: state
