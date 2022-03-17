@@ -53,7 +53,7 @@ spec:
       serviceAccount: kops-controller
       containers:
       - name: kops-controller
-        image: k8s.gcr.io/kops/kops-controller:1.24.0-alpha.2
+        image: registry.k8s.io/kops/kops-controller:1.24.0-alpha.2
         volumeMounts:
 {{ if .UseHostCertificates }}
         - mountPath: /etc/ssl/certs

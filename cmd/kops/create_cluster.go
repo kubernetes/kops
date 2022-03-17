@@ -899,7 +899,7 @@ func completeKubernetesVersion(cmd *cobra.Command, args []string, toComplete str
 	tooNewVersion.Pre = nil
 	tooNewVersion.Build = nil
 
-	repo, err := name.NewRepository("k8s.gcr.io/kube-apiserver")
+	repo, err := name.NewRepository("registry.k8s.io/kube-apiserver")
 	if err != nil {
 		return commandutils.CompletionError("parsing kube-apiserver repo", err)
 	}

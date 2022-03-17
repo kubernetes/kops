@@ -154,7 +154,7 @@ spec:
             k8s-app: kube-dns
       containers:
       - name: coredns
-        image: {{ if KubeDNS.CoreDNSImage }}{{ KubeDNS.CoreDNSImage }}{{ else }}k8s.gcr.io/coredns/coredns:v1.8.5{{ end }}
+        image: {{ if KubeDNS.CoreDNSImage }}{{ KubeDNS.CoreDNSImage }}{{ else }}registry.k8s.io/coredns/coredns:v1.8.5{{ end }}
         imagePullPolicy: IfNotPresent
         resources:
           limits:
@@ -318,7 +318,7 @@ spec:
     spec:
       containers:
       - name: autoscaler
-        image: {{ if KubeDNS.CPAImage }}{{ KubeDNS.CPAImage }}{{ else }}k8s.gcr.io/cpa/cluster-proportional-autoscaler:1.8.4{{ end }}
+        image: {{ if KubeDNS.CPAImage }}{{ KubeDNS.CPAImage }}{{ else }}registry.k8s.io/cpa/cluster-proportional-autoscaler:1.8.4{{ end }}
         resources:
             requests:
                 cpu: "20m"
