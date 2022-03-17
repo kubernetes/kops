@@ -51,6 +51,9 @@ func awsValidateCluster(c *kops.Cluster) field.ErrorList {
 	for i, subnet := range c.Spec.Subnets {
 		f := field.NewPath("spec", "Subnets").Index(i)
 		if subnet.AdditionalRoutes != nil {
+			if len(subnet.ProviderID) > 0 {
+				allErrs = append(allErrs, field.Invalid(f, subnet, "additional routes cannot be added if the subnet is shared"))
+			}
 			allErrs = append(allErrs, awsValidateAdditionalRoutes(f.Child("AdditionalRoutes"), subnet.AdditionalRoutes, c.Spec.NetworkCIDR)...)
 		}
 	}
@@ -358,29 +361,29 @@ func hasAWSEBSCSIDriver(c kops.ClusterSpec) bool {
 func awsValidateAdditionalRoutes(fieldPath *field.Path, routes []kops.RouteSpec, cidr string) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	_, clusterNet, err := net.ParseCIDR(cidr)
-	if err != nil {
-		allErrs = append(allErrs, field.Invalid(fieldPath, cidr, "Invalid cluster cidr"))
-	}
+	_, clusterNet, errClusterNet := net.ParseCIDR(cidr)
+	if errClusterNet != nil {
+		allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "NetworkCIDR"), cidr, "Invalid cluster cidr"))
+	} else {
+		for i, r := range routes {
+			f := fieldPath.Index(i)
 
-	for i, r := range routes {
-		f := fieldPath.Index(i)
+			// Check if target is a known type
+			if !strings.HasPrefix(r.Target, "pcx-") &&
+				!strings.HasPrefix(r.Target, "i-") &&
+				!strings.HasPrefix(r.Target, "nat-") &&
+				!strings.HasPrefix(r.Target, "tgw-") &&
+				!strings.HasPrefix(r.Target, "igw-") &&
+				!strings.HasPrefix(r.Target, "eigw-") {
+				allErrs = append(allErrs, field.Invalid(f, r, "unknown target type for route"))
+			}
 
-		// Check if target is a known type
-		if !strings.HasPrefix(r.Target, "pcx-") &&
-			!strings.HasPrefix(r.Target, "i-") &&
-			!strings.HasPrefix(r.Target, "nat-") &&
-			!strings.HasPrefix(r.Target, "tgw-") &&
-			!strings.HasPrefix(r.Target, "igw-") &&
-			!strings.HasPrefix(r.Target, "eigw-") {
-			allErrs = append(allErrs, field.Invalid(f, r, "unknown target type for route"))
-		}
-
-		ipRoute, _, e := net.ParseCIDR(r.CIDR)
-		if e != nil {
-			allErrs = append(allErrs, field.Invalid(f, r, "invalid cidr"))
-		} else if clusterNet.Contains(ipRoute) && strings.HasPrefix(r.Target, "pcx-") {
-			allErrs = append(allErrs, field.Invalid(f, r, "target is more specific than cluster CIDR block. This route can target only an interface or an instance."))
+			ipRoute, _, e := net.ParseCIDR(r.CIDR)
+			if e != nil {
+				allErrs = append(allErrs, field.Invalid(f, r, "invalid cidr"))
+			} else if clusterNet.Contains(ipRoute) && strings.HasPrefix(r.Target, "pcx-") {
+				allErrs = append(allErrs, field.Forbidden(f, "target is more specific than cluster CIDR block. This route can target only an interface or an instance."))
+			}
 		}
 	}
 
@@ -391,7 +394,7 @@ func awsValidateAdditionalRoutes(fieldPath *field.Path, routes []kops.RouteSpec,
 		for i := range routes {
 			rCidr := routes[i].CIDR
 			if cidrs.Has(rCidr) {
-				allErrs = append(allErrs, field.Invalid(fieldPath, routes, "routes with duplicate destination CIDR block found"))
+				allErrs = append(allErrs, field.Duplicate(fieldPath.Index(i).Child("CIDR"), rCidr))
 			}
 			cidrs.Insert(rCidr)
 		}
