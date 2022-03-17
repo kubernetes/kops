@@ -490,7 +490,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        image: k8s.gcr.io/provider-aws/aws-ebs-csi-driver:v1.5.0
+        image: registry.k8s.io/provider-aws/aws-ebs-csi-driver:v1.5.0
         livenessProbe:
           failureThreshold: 5
           httpGet:
@@ -523,7 +523,7 @@ spec:
           value: /csi/csi.sock
         - name: DRIVER_REG_SOCK_PATH
           value: /var/lib/kubelet/plugins/ebs.csi.aws.com/csi.sock
-        image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.1.0
+        image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.1.0
         lifecycle:
           preStop:
             exec:
@@ -539,7 +539,7 @@ spec:
           name: registration-dir
       - args:
         - --csi-address=/csi/csi.sock
-        image: k8s.gcr.io/sig-storage/livenessprobe:v2.2.0
+        image: registry.k8s.io/sig-storage/livenessprobe:v2.2.0
         name: liveness-probe
         volumeMounts:
         - mountPath: /csi
@@ -628,7 +628,7 @@ spec:
               key: access_key
               name: aws-secret
               optional: true
-        image: k8s.gcr.io/provider-aws/aws-ebs-csi-driver:v1.5.0
+        image: registry.k8s.io/provider-aws/aws-ebs-csi-driver:v1.5.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 5
@@ -656,7 +656,7 @@ spec:
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
-        image: k8s.gcr.io/sig-storage/csi-provisioner:v2.2.0
+        image: registry.k8s.io/sig-storage/csi-provisioner:v2.2.0
         name: csi-provisioner
         volumeMounts:
         - mountPath: /var/lib/csi/sockets/pluginproxy/
@@ -668,7 +668,7 @@ spec:
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
-        image: k8s.gcr.io/sig-storage/csi-attacher:v3.2.0
+        image: registry.k8s.io/sig-storage/csi-attacher:v3.2.0
         name: csi-attacher
         volumeMounts:
         - mountPath: /var/lib/csi/sockets/pluginproxy/
@@ -679,7 +679,7 @@ spec:
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
-        image: k8s.gcr.io/sig-storage/csi-snapshotter:v4.0.0
+        image: registry.k8s.io/sig-storage/csi-snapshotter:v4.0.0
         name: csi-snapshotter
         volumeMounts:
         - mountPath: /var/lib/csi/sockets/pluginproxy/
@@ -690,7 +690,7 @@ spec:
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
-        image: k8s.gcr.io/sig-storage/csi-resizer:v1.1.0
+        image: registry.k8s.io/sig-storage/csi-resizer:v1.1.0
         imagePullPolicy: Always
         name: csi-resizer
         volumeMounts:
@@ -698,7 +698,7 @@ spec:
           name: socket-dir
       - args:
         - --csi-address=/csi/csi.sock
-        image: k8s.gcr.io/sig-storage/livenessprobe:v2.2.0
+        image: registry.k8s.io/sig-storage/livenessprobe:v2.2.0
         name: liveness-probe
         volumeMounts:
         - mountPath: /csi

@@ -44,7 +44,7 @@ spec:
           value: arn:aws-test:iam::123456789012:role/external-dns.kube-system.sa.minimal.example.com
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
-        image: k8s.gcr.io/external-dns/external-dns:v0.10.1
+        image: registry.k8s.io/external-dns/external-dns:v0.10.1
         livenessProbe:
           failureThreshold: 2
           httpGet:

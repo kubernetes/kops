@@ -56,7 +56,7 @@ KubeletConfig:
   nodeLabels:
     kubernetes.io/role: node
     node-role.kubernetes.io/node: ""
-  podInfraContainerImage: k8s.gcr.io/pause:3.6
+  podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   shutdownGracePeriod: 30s
   shutdownGracePeriodCriticalPods: 10s
@@ -67,9 +67,9 @@ containerdConfig:
   logLevel: info
   version: 1.4.12
 warmPoolImages:
-- k8s.gcr.io/kube-proxy:v1.21.0
-- k8s.gcr.io/provider-aws/aws-ebs-csi-driver:v1.5.0
-- k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.1.0
-- k8s.gcr.io/sig-storage/livenessprobe:v2.2.0
 - quay.io/cilium/cilium:v1.10.5
 - quay.io/cilium/operator:v1.10.5
+- registry.k8s.io/kube-proxy:v1.21.0
+- registry.k8s.io/provider-aws/aws-ebs-csi-driver:v1.5.0
+- registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.1.0
+- registry.k8s.io/sig-storage/livenessprobe:v2.2.0

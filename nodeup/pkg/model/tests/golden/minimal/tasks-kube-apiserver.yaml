@@ -55,7 +55,7 @@ contents: |
       - --v=2
       command:
       - /go-runner
-      image: k8s.gcr.io/kube-apiserver:v1.23.0
+      image: registry.k8s.io/kube-apiserver:v1.23.0
       livenessProbe:
         httpGet:
           host: 127.0.0.1
