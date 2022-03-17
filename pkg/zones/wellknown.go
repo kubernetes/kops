@@ -273,7 +273,6 @@ var doZones = []string{
 	"nyc3",
 
 	"sfo1",
-	"sfo2",
 	"sfo3",
 
 	"ams2",
