@@ -139,7 +139,7 @@ docker:
   skipInstall: true
 kubeProxy:
   cpuRequest: 100m
-  image: k8s.gcr.io/kube-proxy:v1.23.0
+  image: registry.k8s.io/kube-proxy:v1.23.0
   logLevel: 2
 kubelet:
   anonymousAuth: false
@@ -156,7 +156,7 @@ kubelet:
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
-  podInfraContainerImage: k8s.gcr.io/pause:3.6
+  podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
   shutdownGracePeriod: 30s
@@ -169,7 +169,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal-ipv6.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: a3r4T260vRQp+C6fnu4C7eKScTVFe2E+bR41EORWAak=
+NodeupConfigHash: V+o66Z3Juo3wYYkn5c2b6YW3z39EbcYKI99dsfIrrBE=
 
 __EOF_KUBE_ENV
 

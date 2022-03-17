@@ -25,7 +25,7 @@ APIServerConfig:
     featureGates:
       CSIMigrationAWS: "true"
       InTreePluginAWSUnregister: "true"
-    image: k8s.gcr.io/kube-apiserver:v1.22.0
+    image: registry.k8s.io/kube-apiserver:v1.22.0
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
@@ -157,7 +157,7 @@ KubeletConfig:
   nodeLabels:
     kubernetes.io/role: api-server
     node-role.kubernetes.io/api-server: ""
-  podInfraContainerImage: k8s.gcr.io/pause:3.6
+  podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
   shutdownGracePeriod: 30s

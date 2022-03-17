@@ -164,7 +164,7 @@
     - https://127.0.0.1:4001
     etcdServersOverrides:
     - /events#https://127.0.0.1:4002
-    image: k8s.gcr.io/kube-apiserver:v1.21.0
+    image: registry.k8s.io/kube-apiserver:v1.21.0
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
@@ -190,7 +190,7 @@
     clusterCIDR: 100.96.0.0/11
     clusterName: this.is.truly.a.really.really.long.cluster-name.minimal.example.com
     configureCloudRoutes: false
-    image: k8s.gcr.io/kube-controller-manager:v1.21.0
+    image: registry.k8s.io/kube-controller-manager:v1.21.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -198,10 +198,10 @@
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    image: k8s.gcr.io/kube-proxy:v1.21.0
+    image: registry.k8s.io/kube-proxy:v1.21.0
     logLevel: 2
   kubeScheduler:
-    image: k8s.gcr.io/kube-scheduler:v1.21.0
+    image: registry.k8s.io/kube-scheduler:v1.21.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -216,7 +216,7 @@
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    podInfraContainerImage: k8s.gcr.io/pause:3.6
+    podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     shutdownGracePeriod: 30s
     shutdownGracePeriodCriticalPods: 10s
@@ -231,7 +231,7 @@
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    podInfraContainerImage: k8s.gcr.io/pause:3.6
+    podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
     shutdownGracePeriod: 30s
@@ -244,7 +244,7 @@
   ConfigBase: memfs://clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: 2OwLvOj2eqTftHopBvTABoSXY2IfJHLoTH2Z5+PDYNM=
+  NodeupConfigHash: urLp/r2nq7WqKItlcXIPY4DX+4Au4RmsvS2PF4FJQgw=
 
   __EOF_KUBE_ENV
 
@@ -390,7 +390,7 @@
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    image: k8s.gcr.io/kube-proxy:v1.21.0
+    image: registry.k8s.io/kube-proxy:v1.21.0
     logLevel: 2
   kubelet:
     cgroupDriver: systemd
@@ -403,7 +403,7 @@
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     networkPluginName: cni
-    podInfraContainerImage: k8s.gcr.io/pause:3.6
+    podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     shutdownGracePeriod: 30s
     shutdownGracePeriodCriticalPods: 10s
@@ -415,7 +415,7 @@
   ConfigBase: memfs://clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: yttvj/0vEuJw6SygY1nNaLoqWq605gzj5o6zEYGctk4=
+  NodeupConfigHash: yfDv+pqge28jGHwqpMqOc1aATLoceUPU+ktGCJQrU4s=
 
   __EOF_KUBE_ENV
 
