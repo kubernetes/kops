@@ -446,11 +446,6 @@ ci: govet verify-gofmt verify-crds verify-gomod verify-goimports verify-boilerpl
 quick-ci: verify-crds verify-goimports govet verify-boilerplate verify-bazel verify-versions verify-misspelling verify-shellcheck | verify-gendocs verify-apimachinery verify-codegen
 	echo "Done!"
 
-.PHONY: pr
-pr:
-	@echo "Test passed!"
-	@echo "Feel free to open your pr at https://github.com/kubernetes/kops/compare"
-
 # --------------------------------------------------
 # channel tool
 
