@@ -49,6 +49,7 @@ const (
 	typeSubnet               = "Subnet"
 	typeRouter               = "Router"
 	typeDNSRecord            = "DNSRecord"
+	typeManagedZone          = "ManagedZone"
 	typeServiceAccount       = "ServiceAccount"
 	typeBackendService       = "BackendService"
 )
@@ -1291,6 +1292,17 @@ func (d *clusterDiscoveryGCE) listGCEDNSZone() ([]*resources.Resource, error) {
 	}
 
 	for _, zone := range managedZones {
+		if creator, ok := zone.Labels["created-by"]; ok && creator == "kops" {
+			resource := resources.Resource{
+				Name:    zone.Name,
+				ID:      zone.Name,
+				Type:    typeManagedZone,
+				Deleter: deleteManagedZone,
+				Obj:     zone,
+			}
+			resourceTrackers = append(resourceTrackers, &resource)
+		}
+
 		if !strings.HasSuffix(d.clusterDNSName(), zone.DnsName) {
 			continue
 		}
@@ -1320,6 +1332,17 @@ func (d *clusterDiscoveryGCE) listGCEDNSZone() ([]*resources.Resource, error) {
 	}
 
 	return resourceTrackers, nil
+}
+
+func deleteManagedZone(cloud fi.Cloud, r *resources.Resource) error {
+	c := cloud.(gce.GCECloud)
+	zoneName := r.ID
+
+	err := c.CloudDNS().ManagedZones().Delete(c.Project(), zoneName)
+	if err != nil {
+		return fmt.Errorf("error deleting GCE DNS managed zone %w", err)
+	}
+	return nil
 }
 
 func deleteDNSRecords(cloud fi.Cloud, r []*resources.Resource) error {

@@ -537,6 +537,16 @@ resource "google_compute_subnetwork" "us-test1-minimal-gce-private-example-com" 
   region        = "us-test1"
 }
 
+resource "google_dns_managed_zone" "zone-minimal-gce-private-example-com" {
+  description = ""
+  dns_name    = "1."
+  labels = {
+    "cluster"    = "minimal-gce-private.example.com"
+    "created-by" = "kops"
+  }
+  name = "zone-minimal-gce-private-example-com"
+}
+
 resource "google_project_iam_binding" "serviceaccount-control-plane" {
   members = ["serviceAccount:control-plane-minimal-g-sh4okp@testproject.iam.gserviceaccount.com"]
   project = "testproject"

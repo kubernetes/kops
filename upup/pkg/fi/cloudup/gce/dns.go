@@ -65,6 +65,8 @@ func (c *dnsClientImpl) Changes() ChangeClient {
 
 type ManagedZoneClient interface {
 	List(project string) ([]*dns.ManagedZone, error)
+	Insert(project string, zone *dns.ManagedZone) error
+	Delete(project string, zoneName string) error
 }
 
 type managedZoneClientImpl struct {
@@ -72,6 +74,16 @@ type managedZoneClientImpl struct {
 }
 
 var _ ManagedZoneClient = &managedZoneClientImpl{}
+
+func (c *managedZoneClientImpl) Insert(project string, zone *dns.ManagedZone) error {
+	_, err := c.srv.Create(project, zone).Do()
+	return err
+}
+
+func (c *managedZoneClientImpl) Delete(project string, zoneName string) error {
+	err := c.srv.Delete(project, zoneName).Do()
+	return err
+}
 
 func (c *managedZoneClientImpl) List(project string) ([]*dns.ManagedZone, error) {
 	r, err := c.srv.List(project).Do()

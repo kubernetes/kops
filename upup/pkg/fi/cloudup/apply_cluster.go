@@ -621,7 +621,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			}
 
 			l.Builders = append(l.Builders,
-
 				&gcemodel.APILoadBalancerBuilder{GCEModelContext: gceModelContext, Lifecycle: securityLifecycle},
 				&gcemodel.ExternalAccessModelBuilder{GCEModelContext: gceModelContext, Lifecycle: securityLifecycle},
 				&gcemodel.FirewallModelBuilder{GCEModelContext: gceModelContext, Lifecycle: securityLifecycle},
@@ -629,6 +628,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				&gcemodel.StorageAclBuilder{GCEModelContext: gceModelContext, Cloud: cloud.(gce.GCECloud), Lifecycle: storageACLLifecycle},
 				&gcemodel.AutoscalingGroupModelBuilder{GCEModelContext: gceModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: clusterLifecycle},
 				&gcemodel.ServiceAccountsBuilder{GCEModelContext: gceModelContext, Lifecycle: clusterLifecycle},
+				&gcemodel.DNSModelBuilder{GCEModelContext: gceModelContext, Cloud: cloud.(gce.GCECloud), Lifecycle: clusterLifecycle},
 			)
 		case kops.CloudProviderAzure:
 			azureModelContext := &azuremodel.AzureModelContext{

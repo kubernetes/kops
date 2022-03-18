@@ -17,6 +17,8 @@ limitations under the License.
 package mockdns
 
 import (
+	"fmt"
+
 	dns "google.golang.org/api/dns/v1"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 )
@@ -44,4 +46,23 @@ func (c *managedZoneClient) List(project string) ([]*dns.ManagedZone, error) {
 		l = append(l, mz)
 	}
 	return l, nil
+}
+func (c *managedZoneClient) Insert(project string, zone *dns.ManagedZone) error {
+	m := c.managedZones[project]
+	if m == nil {
+		c.managedZones[project] = map[string]*dns.ManagedZone{}
+	}
+	c.managedZones[project][zone.Name] = zone
+	return nil
+}
+func (c *managedZoneClient) Delete(project string, zoneName string) error {
+	m := c.managedZones[project]
+	if m == nil {
+		return fmt.Errorf("No such project %v", project)
+	}
+	if _, ok := m[zoneName]; !ok {
+		return fmt.Errorf("No such zone %v in project %v", zoneName, project)
+	}
+	delete(c.managedZones[project], zoneName)
+	return nil
 }
