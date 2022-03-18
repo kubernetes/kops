@@ -162,15 +162,14 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud, strict bool) f
 	taintKeys := sets.NewString()
 	for i, taint := range g.Spec.Taints {
 		path := field.NewPath("spec", "taints").Index(i)
-		parts, err := util.ParseTaint(taint)
+		_, err := util.ParseTaint(taint)
 		if err != nil {
 			allErrs = append(allErrs, field.Invalid(path, taint, "invalid taint value"))
 		}
-		key := parts["key"]
-		if taintKeys.Has(key) {
-			allErrs = append(allErrs, field.Forbidden(path, fmt.Sprintf("cannot add multiple taints with key %q", key)))
+		if taintKeys.Has(taint) {
+			allErrs = append(allErrs, field.Duplicate(path, taint))
 		} else {
-			taintKeys.Insert(key)
+			taintKeys.Insert(taint)
 		}
 	}
 
