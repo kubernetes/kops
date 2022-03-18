@@ -217,12 +217,6 @@ crossbuild: ${DIST}/windows/amd64/kops.exe ${DIST}/darwin/amd64/kops ${DIST}/dar
 upload: bazel-version-dist # Upload kops to S3
 	aws s3 sync --acl public-read ${UPLOAD}/ ${S3_BUCKET}
 
-# oss-upload builds kops and uploads to OSS
-.PHONY: oss-upload
-oss-upload: bazel-version-dist
-	@echo "== Uploading kops =="
-	aliyun oss cp --acl public-read -r -f --include "*" ${UPLOAD}/ ${OSS_BUCKET}
-
 # gcs-upload builds kops and uploads to GCS
 .PHONY: gcs-upload
 gcs-upload: bazel-version-dist
