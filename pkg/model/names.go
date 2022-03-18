@@ -23,6 +23,7 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
@@ -139,20 +140,21 @@ func (b *KopsModelContext) NameForDNSZone() string {
 
 // IAMName determines the name of the IAM Role and Instance Profile to use for the InstanceGroup
 func (b *KopsModelContext) IAMName(role kops.InstanceGroupRole) string {
+	var rolename string
 	switch role {
 	case kops.InstanceGroupRoleMaster:
-		return "masters." + b.ClusterName()
+		rolename = "masters." + b.ClusterName()
 	case kops.InstanceGroupRoleAPIServer:
-		return "apiservers." + b.ClusterName()
+		rolename = "apiservers." + b.ClusterName()
 	case kops.InstanceGroupRoleBastion:
-		return "bastions." + b.ClusterName()
+		rolename = "bastions." + b.ClusterName()
 	case kops.InstanceGroupRoleNode:
-		return "nodes." + b.ClusterName()
+		rolename = "nodes." + b.ClusterName()
 
 	default:
 		klog.Fatalf("unknown InstanceGroup Role: %q", role)
-		return ""
 	}
+	return awsup.TruncateString(rolename, awsup.TruncateStringOptions{MaxLength: iam.MaxLengthIAMRoleName, AlwaysAddHash: false})
 }
 
 var roleNamRegExp = regexp.MustCompile(`([^/]+$)`)
