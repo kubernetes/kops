@@ -24,7 +24,7 @@ APIServerConfig:
     - /events#https://127.0.0.1:4002
     featureGates:
       ServiceAccountIssuerDiscovery: "true"
-    image: k8s.gcr.io/kube-apiserver:v1.19.0
+    image: registry.k8s.io/kube-apiserver:v1.19.0
     insecurePort: 0
     kubeletPreferredAddressTypes:
     - InternalIP
@@ -250,7 +250,7 @@ KubeletConfig:
     node-role.kubernetes.io/control-plane: ""
     node-role.kubernetes.io/master: ""
     node.kubernetes.io/exclude-from-external-load-balancers: ""
-  podInfraContainerImage: k8s.gcr.io/pause:3.6
+  podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   registerSchedulable: false
 UpdatePolicy: automatic

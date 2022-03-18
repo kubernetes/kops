@@ -62,7 +62,7 @@ func (b *NodeProblemDetectorOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if npd.Image == nil {
-		npd.Image = fi.String("k8s.gcr.io/node-problem-detector/node-problem-detector:v0.8.8")
+		npd.Image = fi.String("registry.k8s.io/node-problem-detector/node-problem-detector:v0.8.8")
 	}
 
 	return nil

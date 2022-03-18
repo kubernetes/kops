@@ -124,7 +124,7 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 		CanonicalLocation: image,
 	}
 
-	if strings.HasPrefix(image, "k8s.gcr.io/kops/dns-controller:") {
+	if strings.HasPrefix(image, "k8s.gcr.io/kops/dns-controller:") || strings.HasPrefix(image, "registry.k8s.io/kops/dns-controller:") {
 		// To use user-defined DNS Controller:
 		// 1. DOCKER_REGISTRY=[your docker hub repo] make dns-controller-push
 		// 2. export DNSCONTROLLER_IMAGE=[your docker hub repo]
@@ -135,7 +135,7 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 		}
 	}
 
-	if strings.HasPrefix(image, "k8s.gcr.io/kops/kops-controller:") {
+	if strings.HasPrefix(image, "k8s.gcr.io/kops/kops-controller:") || strings.HasPrefix(image, "registry.k8s.io/kops/kops-controller:") {
 		// To use user-defined DNS Controller:
 		// 1. DOCKER_REGISTRY=[your docker hub repo] make kops-controller-push
 		// 2. export KOPSCONTROLLER_IMAGE=[your docker hub repo]
@@ -146,7 +146,7 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 		}
 	}
 
-	if strings.HasPrefix(image, "k8s.gcr.io/kops/kube-apiserver-healthcheck:") {
+	if strings.HasPrefix(image, "k8s.gcr.io/kops/kube-apiserver-healthcheck:") || strings.HasPrefix(image, "registry.k8s.io/kops/kube-apiserver-healthcheck:") {
 		override := os.Getenv("KUBE_APISERVER_HEALTHCHECK_IMAGE")
 		if override != "" {
 			image = override
@@ -157,7 +157,8 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 		containerProxy := strings.TrimSuffix(*a.AssetsLocation.ContainerProxy, "/")
 		normalized := image
 
-		// If the image name contains only a single / we need to determine if the image is located on docker-hub or if it's using a convenient URL like k8s.gcr.io/<image-name>
+		// If the image name contains only a single / we need to determine if the image is located on docker-hub or if it's using a convenient URL,
+		// like k8s.gcr.io/<image-name> or registry.k8s.io/<image-name>
 		// In case of a hub image it should be sufficient to just prepend the proxy url, producing eg docker-proxy.example.com/weaveworks/weave-kube
 		if strings.Count(normalized, "/") <= 1 && !strings.ContainsAny(strings.Split(normalized, "/")[0], ".:") {
 			normalized = containerProxy + "/" + normalized
@@ -176,8 +177,9 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 		registryMirror := *a.AssetsLocation.ContainerRegistry
 		normalized := image
 
-		// Remove the 'standard' kubernetes image prefix, just for sanity
+		// Remove the 'standard' kubernetes image prefixes, just for sanity
 		normalized = strings.TrimPrefix(normalized, "k8s.gcr.io/")
+		normalized = strings.TrimPrefix(normalized, "registry.k8s.io/")
 
 		// When assembling the cluster spec, kops may call the option more then once until the config converges
 		// This means that this function may me called more than once on the same image
