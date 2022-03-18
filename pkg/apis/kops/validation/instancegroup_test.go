@@ -347,9 +347,15 @@ func TestValidTaints(t *testing.T) {
 		{
 			taints: []string{
 				"nvidia.com/gpu:NoSchedule",
-				"nvidia.com/gpu=1:NoSchedule",
+				"nvidia.com/gpu:NoExecute",
 			},
-			expected: []string{"Forbidden::spec.taints[1]"},
+		},
+		{
+			taints: []string{
+				"nvidia.com/gpu:NoSchedule",
+				"nvidia.com/gpu:NoSchedule",
+			},
+			expected: []string{"Duplicate value::spec.taints[1]"},
 		},
 	}
 
