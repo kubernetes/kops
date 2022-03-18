@@ -196,7 +196,7 @@ func (_ *Route) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Route) error {
 			klog.Fatal("both CIDR and IPv6CIDR were unexpectedly nil")
 		}
 
-		if e.EgressOnlyInternetGateway == nil && e.InternetGateway == nil && e.NatGateway == nil && e.TransitGatewayID == nil {
+		if e.EgressOnlyInternetGateway == nil && e.InternetGateway == nil && e.NatGateway == nil && e.TransitGatewayID == nil && e.VPCPeeringConnection == nil {
 			return fmt.Errorf("missing target for route")
 		} else if e.EgressOnlyInternetGateway != nil {
 			request.EgressOnlyInternetGatewayId = checkNotNil(e.EgressOnlyInternetGateway.ID)
@@ -242,7 +242,7 @@ func (_ *Route) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Route) error {
 			klog.Fatal("both CIDR and IPv6CIDR were unexpectedly nil")
 		}
 
-		if e.InternetGateway == nil && e.NatGateway == nil && e.TransitGatewayID == nil {
+		if e.InternetGateway == nil && e.NatGateway == nil && e.TransitGatewayID == nil && e.VPCPeeringConnection == nil {
 			return fmt.Errorf("missing target for route")
 		} else if e.InternetGateway != nil {
 			request.GatewayId = checkNotNil(e.InternetGateway.ID)
@@ -300,7 +300,7 @@ func (_ *Route) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Rou
 		IPv6CIDR:     e.IPv6CIDR,
 	}
 
-	if e.EgressOnlyInternetGateway == nil && e.InternetGateway == nil && e.NatGateway == nil && e.TransitGatewayID == nil {
+	if e.EgressOnlyInternetGateway == nil && e.InternetGateway == nil && e.NatGateway == nil && e.TransitGatewayID == nil && e.VPCPeeringConnection == nil {
 		return fmt.Errorf("missing target for route")
 	} else if e.EgressOnlyInternetGateway != nil {
 		tf.EgressOnlyInternetGatewayID = e.EgressOnlyInternetGateway.TerraformLink()
@@ -342,7 +342,7 @@ func (_ *Route) RenderCloudformation(t *cloudformation.CloudformationTarget, a, 
 		IPv6CIDR:     e.IPv6CIDR,
 	}
 
-	if e.InternetGateway == nil && e.NatGateway == nil && e.TransitGatewayID == nil {
+	if e.InternetGateway == nil && e.NatGateway == nil && e.TransitGatewayID == nil && e.VPCPeeringConnection == nil {
 		return fmt.Errorf("missing target for route")
 	} else if e.InternetGateway != nil {
 		tf.InternetGatewayID = e.InternetGateway.CloudformationLink()
