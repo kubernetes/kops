@@ -117,9 +117,9 @@ spec:
       serviceAccountName: cloud-controller-manager
       containers:
       - name: cloud-controller-manager
-        # for in-tree providers we use k8s.gcr.io/cloud-controller-manager
+        # for in-tree providers we use registry.k8s.io/cloud-controller-manager
         # this can be replaced with any other image for out-of-tree providers
-        image: k8s.gcr.io/cloud-controller-manager:v{{ .KubernetesVersion }}  # Reviewers: Will this work?
+        image: registry.k8s.io/cloud-controller-manager:v{{ .KubernetesVersion }}  # Reviewers: Will this work?
         command:
         - /usr/local/bin/cloud-controller-manager
         - --cloud-provider={{ GetCloudProvider }}

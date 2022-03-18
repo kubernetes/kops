@@ -129,7 +129,7 @@ func Image(component string, clusterSpec *kops.ClusterSpec, assetsBuilder *asset
 	imageName := component
 
 	if !IsBaseURL(clusterSpec.KubernetesVersion) {
-		image := "k8s.gcr.io/" + imageName + ":" + "v" + kubernetesVersion.String()
+		image := "registry.k8s.io/" + imageName + ":" + "v" + kubernetesVersion.String()
 
 		image, err := assetsBuilder.RemapImage(image)
 		if err != nil {
@@ -142,12 +142,12 @@ func Image(component string, clusterSpec *kops.ClusterSpec, assetsBuilder *asset
 	// are loading from a tarfile then the image is tagged with
 	// the architecture suffix.
 	//
-	// i.e. k8s.gcr.io/kube-apiserver:v1.20.0 is a manifest list
+	// i.e. registry.k8s.io/kube-apiserver:v1.20.0 is a manifest list
 	// and we _can_ also pull
-	// k8s.gcr.io/kube-apiserver-amd64:v1.20.0 directly.  But if
+	// registry.k8s.io/kube-apiserver-amd64:v1.20.0 directly.  But if
 	// we load https://.../v1.20.0/amd64/kube-apiserver.tar then
 	// the image inside that tar file is named
-	// "k8s.gcr.io/kube-apiserver-amd64:v1.20.0"
+	// "registry.k8s.io/kube-apiserver-amd64:v1.20.0"
 	imageName += "-amd64"
 
 	baseURL := clusterSpec.KubernetesVersion
@@ -163,7 +163,7 @@ func Image(component string, clusterSpec *kops.ClusterSpec, assetsBuilder *asset
 	tag := strings.TrimSpace(string(b))
 	klog.V(2).Infof("Found tag %q for %q", tag, component)
 
-	image := "k8s.gcr.io/" + imageName + ":" + tag
+	image := "registry.k8s.io/" + imageName + ":" + tag
 
 	return image, nil
 }
