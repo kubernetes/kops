@@ -127,6 +127,13 @@ func (e *IAMRole) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
+func (s *IAMRole) ShouldCreate(a, e, changes *IAMRole) (bool, error) {
+	if len(*e.Name) > 64 {
+		return false, fmt.Errorf("role name length must be equal to 64 or less: %q", *e.Name)
+	}
+	return true, nil
+}
+
 func (s *IAMRole) CheckChanges(a, e, changes *IAMRole) error {
 	if a != nil {
 		if e.Name == nil {
