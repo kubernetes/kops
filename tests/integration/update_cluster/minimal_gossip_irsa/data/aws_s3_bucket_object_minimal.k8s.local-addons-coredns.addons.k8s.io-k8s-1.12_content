@@ -139,7 +139,7 @@ spec:
       - args:
         - -conf
         - /etc/coredns/Corefile
-        image: k8s.gcr.io/coredns/coredns:v1.8.5
+        image: registry.k8s.io/coredns/coredns:v1.8.5
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 5
@@ -374,7 +374,7 @@ spec:
         - --default-params={"linear":{"coresPerReplica":256,"nodesPerReplica":16,"preventSinglePointFailure":true}}
         - --logtostderr=true
         - --v=2
-        image: k8s.gcr.io/cpa/cluster-proportional-autoscaler:1.8.4
+        image: registry.k8s.io/cpa/cluster-proportional-autoscaler:1.8.4
         name: autoscaler
         resources:
           requests:

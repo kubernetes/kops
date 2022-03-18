@@ -137,7 +137,7 @@ docker:
 kubeProxy:
   clusterCIDR: 100.96.0.0/11
   cpuRequest: 100m
-  image: k8s.gcr.io/kube-proxy:v1.21.0
+  image: registry.k8s.io/kube-proxy:v1.21.0
   logLevel: 2
 kubelet:
   anonymousAuth: false
@@ -152,7 +152,7 @@ kubelet:
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
-  podInfraContainerImage: k8s.gcr.io/pause:3.6
+  podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   shutdownGracePeriod: 30s
   shutdownGracePeriodCriticalPods: 10s
@@ -164,7 +164,7 @@ CloudProvider: gce
 ConfigBase: memfs://tests/minimal-gce-private.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: 4vv5h3BpOfpV/S0DcxxgkhB2hBj9/KzN6/ZS+zoM6+Q=
+NodeupConfigHash: 1Is9j+HaJ2+fVlGbwroVT00ndaB1v8/qWBlDup6Mo70=
 
 __EOF_KUBE_ENV
 

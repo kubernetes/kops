@@ -23,7 +23,7 @@ contents: |
       - --log-file=/var/log/kube-scheduler.log
       command:
       - /usr/local/bin/kube-scheduler
-      image: k8s.gcr.io/kube-scheduler-amd64:v1.22.0
+      image: registry.k8s.io/kube-scheduler-amd64:v1.22.0
       livenessProbe:
         httpGet:
           host: 127.0.0.1

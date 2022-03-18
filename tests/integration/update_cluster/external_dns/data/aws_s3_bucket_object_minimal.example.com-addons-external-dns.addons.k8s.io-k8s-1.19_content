@@ -40,7 +40,7 @@ spec:
           value: 127.0.0.1
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: k8s.gcr.io/external-dns/external-dns:v0.10.1
+        image: registry.k8s.io/external-dns/external-dns:v0.10.1
         livenessProbe:
           failureThreshold: 2
           httpGet:

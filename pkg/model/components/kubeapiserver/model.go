@@ -79,7 +79,7 @@ kind: Pod
 spec:
   containers:
   - name: healthcheck
-    image: k8s.gcr.io/kops/kube-apiserver-healthcheck:1.24.0-alpha.2
+    image: registry.k8s.io/kops/kube-apiserver-healthcheck:1.24.0-alpha.2
     livenessProbe:
       httpGet:
         # The sidecar serves a healthcheck on the same port,
