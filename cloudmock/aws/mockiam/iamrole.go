@@ -52,8 +52,6 @@ func (m *MockIAM) CreateRole(request *iam.CreateRoleInput) (*iam.CreateRoleOutpu
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	klog.Infof("CreateRole: %v", request)
-
 	roleID := m.createID()
 	r := &iam.Role{
 		AssumeRolePolicyDocument: request.AssumeRolePolicyDocument,

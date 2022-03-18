@@ -176,6 +176,7 @@ go_test(
         "//pkg/featureflag:go_default_library",
         "//pkg/jsonutils:go_default_library",
         "//pkg/kopscodecs:go_default_library",
+        "//pkg/model/iam:go_default_library",
         "//pkg/pki:go_default_library",
         "//pkg/testutils:go_default_library",
         "//pkg/testutils/golden:go_default_library",
