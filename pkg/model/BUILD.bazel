@@ -32,6 +32,7 @@ go_library(
         "//pkg/pki:go_default_library",
         "//pkg/rbac:go_default_library",
         "//pkg/tokens:go_default_library",
+        "//pkg/truncate:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/awstasks:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
