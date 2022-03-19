@@ -80,9 +80,31 @@ type VMSizes struct {
 }
 
 type LaunchSpecification struct {
-	Image   *Image   `json:"image,omitempty"`
-	Network *Network `json:"network,omitempty"`
-	Login   *Login   `json:"login,omitempty"`
+	Image                    *Image                    `json:"image,omitempty"`
+	Network                  *Network                  `json:"network,omitempty"`
+	Login                    *Login                    `json:"login,omitempty"`
+	CustomData               *string                   `json:"customData,omitempty"`
+	ManagedServiceIdentities []*ManagedServiceIdentity `json:"managedServiceIdentities,omitempty"`
+	LoadBalancersConfig      *LoadBalancersConfig      `json:"loadBalancersConfig,omitempty"`
+	ShutdownScript           *string                   `json:"shutdownScript,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type LoadBalancersConfig struct {
+	LoadBalancers []*LoadBalancer `json:"loadBalancers,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type LoadBalancer struct {
+	Type              *string  `json:"type,omitempty"`
+	ResourceGroupName *string  `json:"resourceGroupName,omitempty"`
+	Name              *string  `json:"name,omitempty"`
+	SKU               *string  `json:"sku,omitempty"`
+	BackendPoolNames  []string `json:"backendPoolNames,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -124,10 +146,11 @@ type Network struct {
 }
 
 type NetworkInterface struct {
-	SubnetName          *string               `json:"subnetName,omitempty"`
-	AssignPublicIP      *bool                 `json:"assignPublicIp,omitempty"`
-	IsPrimary           *bool                 `json:"isPrimary,omitempty"`
-	AdditionalIPConfigs []*AdditionalIPConfig `json:"additionalIpConfigurations,omitempty"`
+	SubnetName                *string                     `json:"subnetName,omitempty"`
+	AssignPublicIP            *bool                       `json:"assignPublicIp,omitempty"`
+	IsPrimary                 *bool                       `json:"isPrimary,omitempty"`
+	AdditionalIPConfigs       []*AdditionalIPConfig       `json:"additionalIpConfigurations,omitempty"`
+	ApplicationSecurityGroups []*ApplicationSecurityGroup `json:"applicationSecurityGroups,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -145,6 +168,22 @@ type Login struct {
 	UserName     *string `json:"userName,omitempty"`
 	SSHPublicKey *string `json:"sshPublicKey,omitempty"`
 	Password     *string `json:"password,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ApplicationSecurityGroup struct {
+	Name              *string `json:"name,omitempty"`
+	ResourceGroupName *string `json:"resourceGroupName,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ManagedServiceIdentity struct {
+	ResourceGroupName *string `json:"resourceGroupName,omitempty"`
+	Name              *string `json:"name,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -559,6 +598,35 @@ func (o *LaunchSpecification) SetLogin(v *Login) *LaunchSpecification {
 	return o
 }
 
+func (o *LaunchSpecification) SetCustomData(v *string) *LaunchSpecification {
+	if o.CustomData = v; o.CustomData == nil {
+		o.nullFields = append(o.nullFields, "CustomData")
+	}
+	return o
+}
+
+func (o *LaunchSpecification) SetManagedServiceIdentities(v []*ManagedServiceIdentity) *LaunchSpecification {
+	if o.ManagedServiceIdentities = v; o.ManagedServiceIdentities == nil {
+		o.nullFields = append(o.nullFields, "ManagedServiceIdentities")
+	}
+	return o
+}
+
+func (o *LaunchSpecification) SetLoadBalancersConfig(v *LoadBalancersConfig) *LaunchSpecification {
+	if o.LoadBalancersConfig = v; o.LoadBalancersConfig == nil {
+		o.nullFields = append(o.nullFields, "LoadBalancersConfig")
+	}
+	return o
+}
+
+// SetShutdownScript sets the shutdown script used when draining instances
+func (o *LaunchSpecification) SetShutdownScript(v *string) *LaunchSpecification {
+	if o.ShutdownScript = v; o.ShutdownScript == nil {
+		o.nullFields = append(o.nullFields, "ShutdownScript")
+	}
+	return o
+}
+
 // endregion
 
 // region Image
@@ -714,6 +782,13 @@ func (o *NetworkInterface) SetIsPrimary(v *bool) *NetworkInterface {
 	return o
 }
 
+func (o *NetworkInterface) SetApplicationSecurityGroups(v []*ApplicationSecurityGroup) *NetworkInterface {
+	if o.ApplicationSecurityGroups = v; o.ApplicationSecurityGroups == nil {
+		o.nullFields = append(o.nullFields, "ApplicationSecurityGroups")
+	}
+	return o
+}
+
 // endregion
 
 // region AdditionalIPConfig
@@ -724,7 +799,6 @@ func (o AdditionalIPConfig) MarshalJSON() ([]byte, error) {
 	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
 }
 
-// SetName sets the name
 func (o *AdditionalIPConfig) SetName(v *string) *AdditionalIPConfig {
 	if o.Name = v; o.Name == nil {
 		o.nullFields = append(o.nullFields, "Name")
@@ -732,7 +806,6 @@ func (o *AdditionalIPConfig) SetName(v *string) *AdditionalIPConfig {
 	return o
 }
 
-// SetPrivateIPAddressVersion sets the ip address version
 func (o *AdditionalIPConfig) SetPrivateIPAddressVersion(v *string) *AdditionalIPConfig {
 	if o.PrivateIPAddressVersion = v; o.PrivateIPAddressVersion == nil {
 		o.nullFields = append(o.nullFields, "PrivateIPAddressVersion")
@@ -767,6 +840,116 @@ func (o *Login) SetSSHPublicKey(v *string) *Login {
 func (o *Login) SetPassword(v *string) *Login {
 	if o.Password = v; o.Password == nil {
 		o.nullFields = append(o.nullFields, "Password")
+	}
+	return o
+}
+
+// endregion
+
+// region ApplicationSecurityGroup
+
+func (o ApplicationSecurityGroup) MarshalJSON() ([]byte, error) {
+	type noMethod ApplicationSecurityGroup
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ApplicationSecurityGroup) SetName(v *string) *ApplicationSecurityGroup {
+	if o.Name = v; o.Name == nil {
+		o.nullFields = append(o.nullFields, "Name")
+	}
+	return o
+}
+
+func (o *ApplicationSecurityGroup) SetResourceGroupName(v *string) *ApplicationSecurityGroup {
+	if o.ResourceGroupName = v; o.ResourceGroupName == nil {
+		o.nullFields = append(o.nullFields, "ResourceGroupName")
+	}
+	return o
+}
+
+// endregion
+
+// region ManagedServiceIdentity
+
+func (o ManagedServiceIdentity) MarshalJSON() ([]byte, error) {
+	type noMethod ManagedServiceIdentity
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ManagedServiceIdentity) SetResourceGroupName(v *string) *ManagedServiceIdentity {
+	if o.ResourceGroupName = v; o.ResourceGroupName == nil {
+		o.nullFields = append(o.nullFields, "ResourceGroupName")
+	}
+	return o
+}
+
+func (o *ManagedServiceIdentity) SetName(v *string) *ManagedServiceIdentity {
+	if o.Name = v; o.Name == nil {
+		o.nullFields = append(o.nullFields, "Name")
+	}
+	return o
+}
+
+// endregion
+
+// region LoadBalancersConfig
+
+func (o LoadBalancersConfig) MarshalJSON() ([]byte, error) {
+	type noMethod LoadBalancersConfig
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *LoadBalancersConfig) SetLoadBalancers(v []*LoadBalancer) *LoadBalancersConfig {
+	if o.LoadBalancers = v; o.LoadBalancers == nil {
+		o.nullFields = append(o.nullFields, "LoadBalancers")
+	}
+	return o
+}
+
+// endregion
+
+// region LoadBalancer
+
+func (o LoadBalancer) MarshalJSON() ([]byte, error) {
+	type noMethod LoadBalancer
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *LoadBalancer) SetType(v *string) *LoadBalancer {
+	if o.Type = v; o.Type == nil {
+		o.nullFields = append(o.nullFields, "Type")
+	}
+	return o
+}
+
+func (o *LoadBalancer) SetResourceGroupName(v *string) *LoadBalancer {
+	if o.ResourceGroupName = v; o.ResourceGroupName == nil {
+		o.nullFields = append(o.nullFields, "ResourceGroupName")
+	}
+	return o
+}
+
+func (o *LoadBalancer) SetName(v *string) *LoadBalancer {
+	if o.Name = v; o.Name == nil {
+		o.nullFields = append(o.nullFields, "Name")
+	}
+	return o
+}
+
+func (o *LoadBalancer) SetSKU(v *string) *LoadBalancer {
+	if o.SKU = v; o.SKU == nil {
+		o.nullFields = append(o.nullFields, "SKU")
+	}
+	return o
+}
+
+func (o *LoadBalancer) SeBackendPoolNames(v []string) *LoadBalancer {
+	if o.BackendPoolNames = v; o.BackendPoolNames == nil {
+		o.nullFields = append(o.nullFields, "BackendPoolNames")
 	}
 	return o
 }

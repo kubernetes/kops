@@ -14,6 +14,7 @@ The following experimental features are currently available:
 * `+GoogleCloudBucketAcl` - Enables setting the ACL on the state store bucket when using GCS
 * `+Spotinst` - Enables the use of the Spot integration
 * `+SpotinstOcean` - Enables the use of the Spot Ocean integration
+* `+SpotinstOceanTemplate` - Enables the use of Spot Ocean object as a template for Virtual Node Groups
 * `+SpotinstHybrid` - Toggles between hybrid and full instance group implementations
 * `-SpotinstController` - Toggles the installation of the Spot controller addon off
 * `+SkipEtcdVersionCheck` - Bypasses the check that etcd-manager is using a supported etcd version

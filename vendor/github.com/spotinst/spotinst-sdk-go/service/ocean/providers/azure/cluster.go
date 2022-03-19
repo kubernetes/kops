@@ -73,7 +73,7 @@ type VirtualNodeGroupTemplate struct {
 }
 
 type ResourceLimits struct {
-	MaxVCPU      *int `json:"maxVcpu,omitempty"`
+	MaxVCPU      *int `json:"maxVCpu,omitempty"`
 	MaxMemoryGib *int `json:"maxMemoryGib,omitempty"`
 
 	forceSendFields []string
@@ -104,33 +104,36 @@ type Automatic struct {
 }
 
 type VMSizes struct {
-	Whitelist []*string `json:"whitelist,omitempty"`
+	Whitelist []string `json:"whitelist,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
 }
 
 type LaunchSpecification struct {
-	ResourceGroupName   *string              `json:"resourceGroupName,omitempty"`
-	CustomData          *string              `json:"customData,omitempty"`
-	Image               *Image               `json:"image,omitempty"`
-	Network             *Network             `json:"network,omitempty"`
-	OSDisk              *OSDisk              `json:"osDisk,omitempty"`
-	Login               *Login               `json:"login,omitempty"`
-	LoadBalancersConfig *LoadBalancersConfig `json:"loadBalancersConfig,omitempty"`
-	Extensions          []*Extension         `json:"extensions,omitempty"`
-	Tags                []*Tag               `json:"tags,omitempty"`
+	ResourceGroupName        *string                   `json:"resourceGroupName,omitempty"`
+	CustomData               *string                   `json:"customData,omitempty"`
+	Image                    *Image                    `json:"image,omitempty"`
+	Network                  *Network                  `json:"network,omitempty"`
+	OSDisk                   *OSDisk                   `json:"osDisk,omitempty"`
+	Login                    *Login                    `json:"login,omitempty"`
+	LoadBalancersConfig      *LoadBalancersConfig      `json:"loadBalancersConfig,omitempty"`
+	ManagedServiceIdentities []*ManagedServiceIdentity `json:"managedServiceIdentities,omitempty"`
+	Extensions               []*Extension              `json:"extensions,omitempty"`
+	Tags                     []*Tag                    `json:"tags,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
 }
 
 type Extension struct {
-	APIVersion              *string `json:"apiVersion,omitempty"`
-	MinorVersionAutoUpgrade *bool   `json:"minorVersionAutoUpgrade,omitempty"`
-	Name                    *string `json:"name,omitempty"`
-	Publisher               *string `json:"publisher,omitempty"`
-	Type                    *string `json:"type,omitempty"`
+	APIVersion              *string     `json:"apiVersion,omitempty"`
+	MinorVersionAutoUpgrade *bool       `json:"minorVersionAutoUpgrade,omitempty"`
+	Name                    *string     `json:"name,omitempty"`
+	Publisher               *string     `json:"publisher,omitempty"`
+	Type                    *string     `json:"type,omitempty"`
+	ProtectedSettings       interface{} `json:"protectedSettings,omitempty"`
+	PublicSettings          interface{} `json:"publicSettings,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -178,11 +181,11 @@ type MarketplaceImage struct {
 }
 
 type LoadBalancer struct {
-	BackendPoolNames  []*string `json:"backendPoolNames,omitempty"`
-	LoadBalancerSKU   *string   `json:"loadBalancerSku,omitempty"`
-	Name              *string   `json:"name,omitempty"`
-	ResourceGroupName *string   `json:"resourceGroupName,omitempty"`
-	Type              *string   `json:"type,omitempty"`
+	BackendPoolNames  []string `json:"backendPoolNames,omitempty"`
+	LoadBalancerSKU   *string  `json:"loadBalancerSku,omitempty"`
+	Name              *string  `json:"name,omitempty"`
+	ResourceGroupName *string  `json:"resourceGroupName,omitempty"`
+	Type              *string  `json:"type,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -194,6 +197,7 @@ type NetworkInterface struct {
 	IsPrimary           *bool                 `json:"isPrimary,omitempty"`
 	EnableIPForwarding  *bool                 `json:"enableIPForwarding,omitempty"`
 	PublicIPSKU         *string               `json:"publicIpSku,omitempty"`
+	SecurityGroup       *SecurityGroup        `json:"securityGroup,omitempty"`
 	AdditionalIPConfigs []*AdditionalIPConfig `json:"additionalIpConfigurations,omitempty"`
 
 	forceSendFields []string
@@ -209,6 +213,14 @@ type AdditionalIPConfig struct {
 }
 
 type SecurityGroup struct {
+	ResourceGroupName *string `json:"resourceGroupName,omitempty"`
+	Name              *string `json:"name,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ManagedServiceIdentity struct {
 	ResourceGroupName *string `json:"resourceGroupName,omitempty"`
 	Name              *string `json:"name,omitempty"`
 
@@ -793,7 +805,7 @@ func (o VMSizes) MarshalJSON() ([]byte, error) {
 	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
 }
 
-func (o *VMSizes) SetWhitelist(v []*string) *VMSizes {
+func (o *VMSizes) SetWhitelist(v []string) *VMSizes {
 	if o.Whitelist = v; o.Whitelist == nil {
 		o.nullFields = append(o.nullFields, "Whitelist")
 	}
@@ -841,6 +853,41 @@ func (o *LaunchSpecification) SetNetwork(v *Network) *LaunchSpecification {
 func (o *LaunchSpecification) SetLogin(v *Login) *LaunchSpecification {
 	if o.Login = v; o.Login == nil {
 		o.nullFields = append(o.nullFields, "Login")
+	}
+	return o
+}
+
+func (o *LaunchSpecification) SetManagedServiceIdentities(v []*ManagedServiceIdentity) *LaunchSpecification {
+	if o.ManagedServiceIdentities = v; o.ManagedServiceIdentities == nil {
+		o.nullFields = append(o.nullFields, "ManagedServiceIdentities")
+	}
+	return o
+}
+
+func (o *LaunchSpecification) SetExtensions(v []*Extension) *LaunchSpecification {
+	if o.Extensions = v; o.Extensions == nil {
+		o.nullFields = append(o.nullFields, "Extensions")
+	}
+	return o
+}
+
+func (o *LaunchSpecification) SetLoadBalancersConfig(v *LoadBalancersConfig) *LaunchSpecification {
+	if o.LoadBalancersConfig = v; o.LoadBalancersConfig == nil {
+		o.nullFields = append(o.nullFields, "LoadBalancersConfig")
+	}
+	return o
+}
+
+func (o *LaunchSpecification) SetOSDisk(v *OSDisk) *LaunchSpecification {
+	if o.OSDisk = v; o.OSDisk == nil {
+		o.nullFields = append(o.nullFields, "OSDisk")
+	}
+	return o
+}
+
+func (o *LaunchSpecification) SetTags(v []*Tag) *LaunchSpecification {
+	if o.Tags = v; o.Tags == nil {
+		o.nullFields = append(o.nullFields, "Tags")
 	}
 	return o
 }
@@ -983,6 +1030,13 @@ func (o *NetworkInterface) SetPublicIPSKU(v *string) *NetworkInterface {
 	return o
 }
 
+func (o *NetworkInterface) SetSecurityGroup(v *SecurityGroup) *NetworkInterface {
+	if o.SecurityGroup = v; o.SecurityGroup == nil {
+		o.nullFields = append(o.nullFields, "SecurityGroup")
+	}
+	return o
+}
+
 // endregion
 
 // region AdditionalIPConfig
@@ -1078,6 +1132,20 @@ func (o *Extension) SetMinorVersionAutoUpgrade(v *bool) *Extension {
 	return o
 }
 
+func (o *Extension) SetProtectedSettings(v interface{}) *Extension {
+	if o.ProtectedSettings = v; o.ProtectedSettings == nil {
+		o.nullFields = append(o.nullFields, "ProtectedSettings")
+	}
+	return o
+}
+
+func (o *Extension) SetPublicSettings(v interface{}) *Extension {
+	if o.PublicSettings = v; o.PublicSettings == nil {
+		o.nullFields = append(o.nullFields, "PublicSettings")
+	}
+	return o
+}
+
 // endregion
 
 // region LoadBalancersConfig
@@ -1088,7 +1156,7 @@ func (o LoadBalancersConfig) MarshalJSON() ([]byte, error) {
 	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
 }
 
-func (o *LoadBalancersConfig) SetUserName(v []*LoadBalancer) *LoadBalancersConfig {
+func (o *LoadBalancersConfig) SetLoadBalancers(v []*LoadBalancer) *LoadBalancersConfig {
 	if o.LoadBalancers = v; o.LoadBalancers == nil {
 		o.nullFields = append(o.nullFields, "LoadBalancers")
 	}
@@ -1133,7 +1201,7 @@ func (o *LoadBalancer) SetType(v *string) *LoadBalancer {
 	return o
 }
 
-func (o *LoadBalancer) SeBackendPoolNames(v []*string) *LoadBalancer {
+func (o *LoadBalancer) SeBackendPoolNames(v []string) *LoadBalancer {
 	if o.BackendPoolNames = v; o.BackendPoolNames == nil {
 		o.nullFields = append(o.nullFields, "BackendPoolNames")
 	}
@@ -1158,6 +1226,30 @@ func (o *SecurityGroup) SetResourceGroupName(v *string) *SecurityGroup {
 }
 
 func (o *SecurityGroup) SetName(v *string) *SecurityGroup {
+	if o.Name = v; o.Name == nil {
+		o.nullFields = append(o.nullFields, "Name")
+	}
+	return o
+}
+
+// endregion
+
+// region ManagedServiceIdentity
+
+func (o ManagedServiceIdentity) MarshalJSON() ([]byte, error) {
+	type noMethod ManagedServiceIdentity
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ManagedServiceIdentity) SetResourceGroupName(v *string) *ManagedServiceIdentity {
+	if o.ResourceGroupName = v; o.ResourceGroupName == nil {
+		o.nullFields = append(o.nullFields, "ResourceGroupName")
+	}
+	return o
+}
+
+func (o *ManagedServiceIdentity) SetName(v *string) *ManagedServiceIdentity {
 	if o.Name = v; o.Name == nil {
 		o.nullFields = append(o.nullFields, "Name")
 	}
