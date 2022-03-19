@@ -292,7 +292,7 @@ func (b *SpotInstanceGroupModelBuilder) buildElastigroup(c *fi.ModelBuilderConte
 	}
 
 	// Public IP.
-	group.AssociatePublicIP, err = b.buildPublicIpOpts(ig)
+	group.AssociatePublicIPAddress, err = b.buildPublicIPOpts(ig)
 	if err != nil {
 		return fmt.Errorf("error building public ip options: %v", err)
 	}
@@ -337,41 +337,29 @@ func (b *SpotInstanceGroupModelBuilder) buildOcean(c *fi.ModelBuilderContext, ig
 		Name:      fi.String("nodes." + b.ClusterName()),
 	}
 
-	// Attempt to find the default LaunchSpec.
-	var ig *kops.InstanceGroup
-	{
-		// Single instance group.
-		if len(igs) == 1 {
-			ig = igs[0].DeepCopy()
-		}
+	if featureflag.SpotinstOceanTemplate.Enabled() {
+		ocean.UseAsTemplateOnly = fi.Bool(true)
+	}
 
-		// Multiple instance groups.
-		if len(igs) > 1 {
-			for _, g := range igs {
-				for k, v := range g.ObjectMeta.Labels {
-					if k == SpotInstanceGroupLabelOceanDefaultLaunchSpec {
-						defaultLaunchSpec, err := parseBool(v)
-						if err != nil {
-							continue
+	ig := igs[0].DeepCopy()
+	if len(igs) > 1 {
+		for _, g := range igs {
+			for k, v := range g.ObjectMeta.Labels {
+				if k == SpotInstanceGroupLabelOceanDefaultLaunchSpec {
+					defaultLaunchSpec, err := parseBool(v)
+					if err != nil {
+						continue
+					}
+					if fi.BoolValue(defaultLaunchSpec) {
+						if ig != nil {
+							return fmt.Errorf("unable to detect default launch spec: "+
+								"multiple instance groups labeled with `%s: \"true\"`",
+								SpotInstanceGroupLabelOceanDefaultLaunchSpec)
 						}
-
-						if fi.BoolValue(defaultLaunchSpec) {
-							if ig != nil {
-								return fmt.Errorf("unable to detect default launch spec: "+
-									"multiple instance groups labeled with `%s: \"true\"`",
-									SpotInstanceGroupLabelOceanDefaultLaunchSpec)
-							}
-
-							ig = g.DeepCopy()
-							break
-						}
+						ig = g.DeepCopy()
+						break
 					}
 				}
-			}
-
-			// No default instance group. Use the first one.
-			if ig == nil {
-				ig = igs[0].DeepCopy()
 			}
 		}
 
@@ -428,34 +416,8 @@ func (b *SpotInstanceGroupModelBuilder) buildOcean(c *fi.ModelBuilderContext, ig
 		}
 	}
 
-	// Capacity.
-	ocean.MinSize = fi.Int64(0)
-	ocean.MaxSize = fi.Int64(0)
-
 	// Monitoring.
 	ocean.Monitoring = ig.Spec.DetailedInstanceMonitoring
-
-	// User data.
-	ocean.UserData, err = b.BootstrapScriptBuilder.ResourceNodeUp(c, ig)
-	if err != nil {
-		return fmt.Errorf("error building user data: %v", err)
-	}
-
-	// Instance profile.
-	ocean.IAMInstanceProfile, err = b.LinkToIAMInstanceProfile(ig)
-	if err != nil {
-		return fmt.Errorf("error building iam instance profile: %v", err)
-	}
-
-	// Root volume.
-	rootVolumeOpts, err := b.buildRootVolumeOpts(ig)
-	if err != nil {
-		return fmt.Errorf("error building root volume options: %v", err)
-	}
-	if rootVolumeOpts != nil {
-		ocean.RootVolumeOpts = rootVolumeOpts
-		ocean.RootVolumeOpts.Type = nil // not supported in Ocean
-	}
 
 	// Security groups.
 	ocean.SecurityGroups, err = b.buildSecurityGroups(c, ig)
@@ -469,22 +431,10 @@ func (b *SpotInstanceGroupModelBuilder) buildOcean(c *fi.ModelBuilderContext, ig
 		return fmt.Errorf("error building ssh key: %v", err)
 	}
 
-	// Public IP.
-	ocean.AssociatePublicIP, err = b.buildPublicIpOpts(ig)
-	if err != nil {
-		return fmt.Errorf("error building public ip options: %v", err)
-	}
-
 	// Subnets.
 	ocean.Subnets, err = b.buildSubnets(ig)
 	if err != nil {
 		return fmt.Errorf("error building subnets: %v", err)
-	}
-
-	// Tags.
-	ocean.Tags, err = b.buildTags(ig)
-	if err != nil {
-		return fmt.Errorf("error building cloud tags: %v", err)
 	}
 
 	// Auto Scaler.
@@ -496,6 +446,46 @@ func (b *SpotInstanceGroupModelBuilder) buildOcean(c *fi.ModelBuilderContext, ig
 		ocean.AutoScalerOpts.Labels = nil
 		ocean.AutoScalerOpts.Taints = nil
 		ocean.AutoScalerOpts.Headroom = nil
+	}
+
+	if !fi.BoolValue(ocean.UseAsTemplateOnly) {
+		// Capacity.
+		ocean.MinSize = fi.Int64(0)
+		ocean.MaxSize = fi.Int64(0)
+
+		// User data.
+		ocean.UserData, err = b.BootstrapScriptBuilder.ResourceNodeUp(c, ig)
+		if err != nil {
+			return fmt.Errorf("error building user data: %v", err)
+		}
+
+		// Instance profile.
+		ocean.IAMInstanceProfile, err = b.LinkToIAMInstanceProfile(ig)
+		if err != nil {
+			return fmt.Errorf("error building iam instance profile: %v", err)
+		}
+
+		// Root volume.
+		rootVolumeOpts, err := b.buildRootVolumeOpts(ig)
+		if err != nil {
+			return fmt.Errorf("error building root volume options: %v", err)
+		}
+		if rootVolumeOpts != nil {
+			ocean.RootVolumeOpts = rootVolumeOpts
+			ocean.RootVolumeOpts.Type = nil // not supported in Ocean
+		}
+
+		// Public IP.
+		ocean.AssociatePublicIPAddress, err = b.buildPublicIPOpts(ig)
+		if err != nil {
+			return fmt.Errorf("error building public ip options: %v", err)
+		}
+
+		// Tags.
+		ocean.Tags, err = b.buildTags(ig)
+		if err != nil {
+			return fmt.Errorf("error building cloud tags: %v", err)
+		}
 	}
 
 	// Create a Launch Spec for each instance group.
@@ -551,11 +541,16 @@ func (b *SpotInstanceGroupModelBuilder) buildLaunchSpec(c *fi.ModelBuilderContex
 
 	// Capacity.
 	minSize, maxSize := b.buildCapacity(ig)
-	ocean.MinSize = fi.Int64(fi.Int64Value(ocean.MinSize) + fi.Int64Value(minSize))
-	ocean.MaxSize = fi.Int64(fi.Int64Value(ocean.MaxSize) + fi.Int64Value(maxSize))
+	if fi.BoolValue(ocean.UseAsTemplateOnly) {
+		launchSpec.MinSize = minSize
+		launchSpec.MaxSize = maxSize
+	} else {
+		ocean.MinSize = fi.Int64(fi.Int64Value(ocean.MinSize) + fi.Int64Value(minSize))
+		ocean.MaxSize = fi.Int64(fi.Int64Value(ocean.MaxSize) + fi.Int64Value(maxSize))
+	}
 
 	// User data.
-	if ig.Name == igOcean.Name {
+	if ig.Name == igOcean.Name && !featureflag.SpotinstOceanTemplate.Enabled() {
 		launchSpec.UserData = ocean.UserData
 	} else {
 		launchSpec.UserData, err = b.BootstrapScriptBuilder.ResourceNodeUp(c, ig)
@@ -578,6 +573,12 @@ func (b *SpotInstanceGroupModelBuilder) buildLaunchSpec(c *fi.ModelBuilderContex
 	if rootVolumeOpts != nil { // remove unsupported options
 		launchSpec.RootVolumeOpts = rootVolumeOpts
 		launchSpec.RootVolumeOpts.Optimization = nil
+	}
+
+	// Public IP.
+	launchSpec.AssociatePublicIPAddress, err = b.buildPublicIPOpts(ig)
+	if err != nil {
+		return fmt.Errorf("error building public ip options: %v", err)
 	}
 
 	// Security groups.
@@ -661,7 +662,7 @@ func (b *SpotInstanceGroupModelBuilder) buildSubnets(ig *kops.InstanceGroup) ([]
 	return out, nil
 }
 
-func (b *SpotInstanceGroupModelBuilder) buildPublicIpOpts(ig *kops.InstanceGroup) (*bool, error) {
+func (b *SpotInstanceGroupModelBuilder) buildPublicIPOpts(ig *kops.InstanceGroup) (*bool, error) {
 	subnetMap := make(map[string]*kops.ClusterSubnetSpec)
 	for i := range b.Cluster.Spec.Subnets {
 		subnet := &b.Cluster.Spec.Subnets[i]
@@ -691,7 +692,7 @@ func (b *SpotInstanceGroupModelBuilder) buildPublicIpOpts(ig *kops.InstanceGroup
 		associatePublicIP = false
 		if ig.Spec.AssociatePublicIP != nil {
 			if *ig.Spec.AssociatePublicIP {
-				klog.Warningf("Ignoring AssociatePublicIP=true for private SpotInstanceGroup %q", ig.ObjectMeta.Name)
+				klog.Warningf("Ignoring AssociatePublicIPAddress=true for private SpotInstanceGroup %q", ig.ObjectMeta.Name)
 			}
 		}
 	default:

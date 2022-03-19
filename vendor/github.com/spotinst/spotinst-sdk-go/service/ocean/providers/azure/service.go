@@ -24,6 +24,7 @@ type Service interface {
 	ReadVirtualNodeGroup(context.Context, *ReadVirtualNodeGroupInput) (*ReadVirtualNodeGroupOutput, error)
 	UpdateVirtualNodeGroup(context.Context, *UpdateVirtualNodeGroupInput) (*UpdateVirtualNodeGroupOutput, error)
 	DeleteVirtualNodeGroup(context.Context, *DeleteVirtualNodeGroupInput) (*DeleteVirtualNodeGroupOutput, error)
+	ListResourceSuggestions(context.Context, *ListResourceSuggestionsInput) (*ListResourceSuggestionsOutput, error)
 }
 
 type ServiceOp struct {

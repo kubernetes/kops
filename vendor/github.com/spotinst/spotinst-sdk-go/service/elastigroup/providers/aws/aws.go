@@ -423,35 +423,66 @@ type Task struct {
 }
 
 type Scaling struct {
-	Up     []*ScalingPolicy `json:"up,omitempty"`
-	Down   []*ScalingPolicy `json:"down,omitempty"`
-	Target []*ScalingPolicy `json:"target,omitempty"`
+	Up              []*ScalingPolicy `json:"up,omitempty"`
+	Down            []*ScalingPolicy `json:"down,omitempty"`
+	Target          []*ScalingPolicy `json:"target,omitempty"`
+	MultipleMetrics *MultipleMetrics `json:"multipleMetrics,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type MultipleMetrics struct {
+	Metrics     []*Metrics     `json:"metrics,omitempty"`
+	Expressions []*Expressions `json:"expressions,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
 }
 
 type ScalingPolicy struct {
-	PolicyName          *string      `json:"policyName,omitempty"`
-	MetricName          *string      `json:"metricName,omitempty"`
-	Namespace           *string      `json:"namespace,omitempty"`
-	Source              *string      `json:"source,omitempty"`
-	Statistic           *string      `json:"statistic,omitempty"`
-	Unit                *string      `json:"unit,omitempty"`
-	Threshold           *float64     `json:"threshold,omitempty"`
-	Adjustment          *int         `json:"adjustment,omitempty"`
-	MinTargetCapacity   *int         `json:"minTargetCapacity,omitempty"`
-	MaxTargetCapacity   *int         `json:"maxTargetCapacity,omitempty"`
-	EvaluationPeriods   *int         `json:"evaluationPeriods,omitempty"`
-	Period              *int         `json:"period,omitempty"`
-	Cooldown            *int         `json:"cooldown,omitempty"`
-	Operator            *string      `json:"operator,omitempty"`
-	Dimensions          []*Dimension `json:"dimensions,omitempty"`
-	Action              *Action      `json:"action,omitempty"`
-	Target              *float64     `json:"target,omitempty"`
-	IsEnabled           *bool        `json:"isEnabled,omitempty"`
-	MaxCapacityPerScale *string      `json:"maxCapacityPerScale,omitempty"`
-	Predictive          *Predictive  `json:"predictive,omitempty"`
+	PolicyName          *string           `json:"policyName,omitempty"`
+	MetricName          *string           `json:"metricName,omitempty"`
+	Namespace           *string           `json:"namespace,omitempty"`
+	Source              *string           `json:"source,omitempty"`
+	Statistic           *string           `json:"statistic,omitempty"`
+	Unit                *string           `json:"unit,omitempty"`
+	Threshold           *float64          `json:"threshold,omitempty"`
+	Adjustment          *int              `json:"adjustment,omitempty"`
+	MinTargetCapacity   *int              `json:"minTargetCapacity,omitempty"`
+	MaxTargetCapacity   *int              `json:"maxTargetCapacity,omitempty"`
+	EvaluationPeriods   *int              `json:"evaluationPeriods,omitempty"`
+	Period              *int              `json:"period,omitempty"`
+	Cooldown            *int              `json:"cooldown,omitempty"`
+	Operator            *string           `json:"operator,omitempty"`
+	Dimensions          []*Dimension      `json:"dimensions,omitempty"`
+	Action              *Action           `json:"action,omitempty"`
+	Target              *float64          `json:"target,omitempty"`
+	IsEnabled           *bool             `json:"isEnabled,omitempty"`
+	MaxCapacityPerScale *string           `json:"maxCapacityPerScale,omitempty"`
+	Predictive          *Predictive       `json:"predictive,omitempty"`
+	StepAdjustments     []*StepAdjustment `json:"stepAdjustments,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type Metrics struct {
+	Name              *string      `json:"name,omitempty"`
+	MetricName        *string      `json:"metricName,omitempty"`
+	Namespace         *string      `json:"namespace,omitempty"`
+	Dimensions        []*Dimension `json:"dimensions,omitempty"`
+	ExtendedStatistic *string      `json:"extendedStatistic,omitempty"`
+	Statistic         *string      `json:"statistic,omitempty"`
+	Unit              *string      `json:"unit,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type Expressions struct {
+	Expression *string `json:"expression,omitempty"`
+	Name       *string `json:"name,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -480,6 +511,14 @@ type Dimension struct {
 
 type Predictive struct {
 	Mode *string `json:"mode,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type StepAdjustment struct {
+	Action    *Action `json:"action,omitempty"`
+	Threshold *int    `json:"threshold,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -600,26 +639,91 @@ type AvailabilityZone struct {
 }
 
 type LaunchSpecification struct {
-	LoadBalancerNames                             []string              `json:"loadBalancerNames,omitempty"`
-	LoadBalancersConfig                           *LoadBalancersConfig  `json:"loadBalancersConfig,omitempty"`
-	SecurityGroupIDs                              []string              `json:"securityGroupIds,omitempty"`
-	HealthCheckType                               *string               `json:"healthCheckType,omitempty"`
-	HealthCheckGracePeriod                        *int                  `json:"healthCheckGracePeriod,omitempty"`
-	HealthCheckUnhealthyDurationBeforeReplacement *int                  `json:"healthCheckUnhealthyDurationBeforeReplacement,omitempty"`
-	ImageID                                       *string               `json:"imageId,omitempty"`
-	KeyPair                                       *string               `json:"keyPair,omitempty"`
-	UserData                                      *string               `json:"userData,omitempty"`
-	ShutdownScript                                *string               `json:"shutdownScript,omitempty"`
-	Tenancy                                       *string               `json:"tenancy,omitempty"`
-	Monitoring                                    *bool                 `json:"monitoring,omitempty"`
-	EBSOptimized                                  *bool                 `json:"ebsOptimized,omitempty"`
-	IAMInstanceProfile                            *IAMInstanceProfile   `json:"iamRole,omitempty"`
-	CreditSpecification                           *CreditSpecification  `json:"creditSpecification,omitempty"`
-	BlockDeviceMappings                           []*BlockDeviceMapping `json:"blockDeviceMappings,omitempty"`
-	NetworkInterfaces                             []*NetworkInterface   `json:"networkInterfaces,omitempty"`
-	Tags                                          []*Tag                `json:"tags,omitempty"`
-	MetadataOptions                               *MetadataOptions      `json:"metadataOptions,omitempty"`
-	CPUOptions                                    *CPUOptions           `json:"cpuOptions,omitempty"`
+	LoadBalancerNames                             []string                  `json:"loadBalancerNames,omitempty"`
+	LoadBalancersConfig                           *LoadBalancersConfig      `json:"loadBalancersConfig,omitempty"`
+	SecurityGroupIDs                              []string                  `json:"securityGroupIds,omitempty"`
+	HealthCheckType                               *string                   `json:"healthCheckType,omitempty"`
+	HealthCheckGracePeriod                        *int                      `json:"healthCheckGracePeriod,omitempty"`
+	HealthCheckUnhealthyDurationBeforeReplacement *int                      `json:"healthCheckUnhealthyDurationBeforeReplacement,omitempty"`
+	ImageID                                       *string                   `json:"imageId,omitempty"`
+	KeyPair                                       *string                   `json:"keyPair,omitempty"`
+	UserData                                      *string                   `json:"userData,omitempty"`
+	ShutdownScript                                *string                   `json:"shutdownScript,omitempty"`
+	Tenancy                                       *string                   `json:"tenancy,omitempty"`
+	Monitoring                                    *bool                     `json:"monitoring,omitempty"`
+	EBSOptimized                                  *bool                     `json:"ebsOptimized,omitempty"`
+	IAMInstanceProfile                            *IAMInstanceProfile       `json:"iamRole,omitempty"`
+	CreditSpecification                           *CreditSpecification      `json:"creditSpecification,omitempty"`
+	BlockDeviceMappings                           []*BlockDeviceMapping     `json:"blockDeviceMappings,omitempty"`
+	NetworkInterfaces                             []*NetworkInterface       `json:"networkInterfaces,omitempty"`
+	Tags                                          []*Tag                    `json:"tags,omitempty"`
+	MetadataOptions                               *MetadataOptions          `json:"metadataOptions,omitempty"`
+	CPUOptions                                    *CPUOptions               `json:"cpuOptions,omitempty"`
+	ResourceTagSpecification                      *ResourceTagSpecification `json:"resourceTagSpecification,omitempty"`
+	ITF                                           *ITF                      `json:"itf,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ITF struct {
+	LoadBalancers                 []*ITFLoadBalancer   `json:"loadBalancers,omitempty"`
+	MigrationHealthinessThreshold *int                 `json:"migrationHealthinessThreshold,omitempty"`
+	FixedTargetGroups             *bool                `json:"fixedTargetGroups,omitempty"`
+	WeightStrategy                *string              `json:"weightStrategy,omitempty"`
+	TargetGroupConfig             *TargetGroupConfig   `json:"targetGroupConfig,omitempty"`
+	DefaultStaticTargetGroups     []*StaticTargetGroup `json:"defaultStaticTargetGroups,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ITFLoadBalancer struct {
+	ListenerRules   []*ListenerRule `json:"listenerRules,omitempty"`
+	LoadBalancerARN *string         `json:"loadBalancerArn,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ListenerRule struct {
+	RuleARN            *string              `json:"ruleArn,omitempty"`
+	StaticTargetGroups []*StaticTargetGroup `json:"staticTargetGroups,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type StaticTargetGroup struct {
+	StaticTargetGroupARN *string  `json:"arn,omitempty"`
+	Percentage           *float64 `json:"percentage,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type TargetGroupConfig struct {
+	VPCID                      *string  `json:"vpcId,omitempty"`
+	HealthCheckIntervalSeconds *int     `json:"healthCheckIntervalSeconds,omitempty"`
+	HealthCheckPath            *string  `json:"healthCheckPath,omitempty"`
+	HealthCheckPort            *string  `json:"healthCheckPort,omitempty"`
+	HealthCheckProtocol        *string  `json:"healthCheckProtocol,omitempty"`
+	HealthCheckTimeoutSeconds  *int     `json:"healthCheckTimeoutSeconds,omitempty"`
+	HealthyThresholdCount      *int     `json:"healthyThresholdCount,omitempty"`
+	UnhealthyThresholdCount    *int     `json:"unhealthyThresholdCount,omitempty"`
+	Port                       *int     `json:"port,omitempty"`
+	Protocol                   *string  `json:"protocol,omitempty"`
+	ProtocolVersion            *string  `json:"protocolVersion,omitempty"`
+	Matcher                    *Matcher `json:"matcher,omitempty"`
+	Tags                       []*Tag   `json:"tags,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type Matcher struct {
+	HTTPCode *string `json:"httpCode,omitempty"`
+	GRPCCode *string `json:"grpcCode,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -635,6 +739,44 @@ type MetadataOptions struct {
 
 type CPUOptions struct {
 	ThreadsPerCore *int `json:"threadsPerCore,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ResourceTagSpecification struct {
+	Volumes   *Volumes   `json:"volumes,omitempty"`
+	Snapshots *Snapshots `json:"snapshots,omitempty"`
+	ENIs      *ENIs      `json:"enis,omitempty"`
+	AMIs      *AMIs      `json:"amis,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type Volumes struct {
+	ShouldTag *bool `json:"shouldTag,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type Snapshots struct {
+	ShouldTag *bool `json:"shouldTag,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ENIs struct {
+	ShouldTag *bool `json:"shouldTag,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type AMIs struct {
+	ShouldTag *bool `json:"shouldTag,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -2918,6 +3060,13 @@ func (o *Scaling) SetTarget(v []*ScalingPolicy) *Scaling {
 	return o
 }
 
+func (o *Scaling) SetMultipleMetrics(v *MultipleMetrics) *Scaling {
+	if o.MultipleMetrics = v; o.MultipleMetrics == nil {
+		o.nullFields = append(o.nullFields, "MultipleMetrics")
+	}
+	return o
+}
+
 // endregion
 
 // region ScalingPolicy
@@ -3068,6 +3217,120 @@ func (o *ScalingPolicy) SetMaxCapacityPerScale(v *string) *ScalingPolicy {
 	return o
 }
 
+func (o *ScalingPolicy) SetStepAdjustments(v []*StepAdjustment) *ScalingPolicy {
+	if o.StepAdjustments = v; o.StepAdjustments == nil {
+		o.nullFields = append(o.nullFields, "StepAdjustments")
+	}
+	return o
+}
+
+// endregion
+
+// region MultipleMetrics
+
+func (o MultipleMetrics) MarshalJSON() ([]byte, error) {
+	type noMethod MultipleMetrics
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *MultipleMetrics) SetExpressions(v []*Expressions) *MultipleMetrics {
+	if o.Expressions = v; o.Expressions == nil {
+		o.nullFields = append(o.nullFields, "Expressions")
+	}
+	return o
+}
+
+func (o *MultipleMetrics) SetMetrics(v []*Metrics) *MultipleMetrics {
+	if o.Metrics = v; o.Metrics == nil {
+		o.nullFields = append(o.nullFields, "Metrics")
+	}
+	return o
+}
+
+// endregion
+
+// region Metrics
+
+func (o Metrics) MarshalJSON() ([]byte, error) {
+	type noMethod Metrics
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *Metrics) SetMetricName(v *string) *Metrics {
+	if o.MetricName = v; o.MetricName == nil {
+		o.nullFields = append(o.nullFields, "MetricName")
+	}
+	return o
+}
+
+func (o *Metrics) SetNamespace(v *string) *Metrics {
+	if o.Namespace = v; o.Namespace == nil {
+		o.nullFields = append(o.nullFields, "Namespace")
+	}
+	return o
+}
+
+func (o *Metrics) SetDimensions(v []*Dimension) *Metrics {
+	if o.Dimensions = v; o.Dimensions == nil {
+		o.nullFields = append(o.nullFields, "Dimensions")
+	}
+	return o
+}
+
+func (o *Metrics) SetName(v *string) *Metrics {
+	if o.Name = v; o.Name == nil {
+		o.nullFields = append(o.nullFields, "Name")
+	}
+	return o
+}
+
+func (o *Metrics) SetExtendedStatistic(v *string) *Metrics {
+	if o.ExtendedStatistic = v; o.ExtendedStatistic == nil {
+		o.nullFields = append(o.nullFields, "ExtendedStatistic")
+	}
+	return o
+}
+
+func (o *Metrics) SetStatistic(v *string) *Metrics {
+	if o.Statistic = v; o.Statistic == nil {
+		o.nullFields = append(o.nullFields, "Statistic")
+	}
+	return o
+}
+
+func (o *Metrics) SetUnit(v *string) *Metrics {
+	if o.Unit = v; o.Unit == nil {
+		o.nullFields = append(o.nullFields, "Unit")
+	}
+	return o
+}
+
+// endregion
+
+// region Expression
+
+func (o Expressions) MarshalJSON() ([]byte, error) {
+	type noMethod Expressions
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *Expressions) SetExpression(v *string) *Expressions {
+	if o.Expression = v; o.Expression == nil {
+		o.nullFields = append(o.nullFields, "Expression")
+	}
+	return o
+}
+
+func (o *Expressions) SetName(v *string) *Expressions {
+	if o.Name = v; o.Name == nil {
+		o.nullFields = append(o.nullFields, "Name")
+	}
+	return o
+}
+
 // endregion
 
 // region Action
@@ -3164,6 +3427,30 @@ func (o *Predictive) MarshalJSON() ([]byte, error) {
 func (o *Predictive) SetMode(v *string) *Predictive {
 	if o.Mode = v; o.Mode == nil {
 		o.nullFields = append(o.nullFields, "Mode")
+	}
+	return o
+}
+
+// endregion
+
+// region StepAdjustments
+
+func (o StepAdjustment) MarshalJSON() ([]byte, error) {
+	type noMethod StepAdjustment
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *StepAdjustment) SetAction(v *Action) *StepAdjustment {
+	if o.Action = v; o.Action == nil {
+		o.nullFields = append(o.nullFields, "Action")
+	}
+	return o
+}
+
+func (o *StepAdjustment) SetThreshold(v *int) *StepAdjustment {
+	if o.Threshold = v; o.Threshold == nil {
+		o.nullFields = append(o.nullFields, "Threshold")
 	}
 	return o
 }
@@ -3762,6 +4049,267 @@ func (o *LaunchSpecification) SetMetadataOptions(v *MetadataOptions) *LaunchSpec
 func (o *LaunchSpecification) SetCPUOptions(v *CPUOptions) *LaunchSpecification {
 	if o.CPUOptions = v; o.CPUOptions == nil {
 		o.nullFields = append(o.nullFields, "CPUOptions")
+	}
+	return o
+}
+
+func (o *LaunchSpecification) SetResourceTagSpecification(v *ResourceTagSpecification) *LaunchSpecification {
+	if o.ResourceTagSpecification = v; o.ResourceTagSpecification == nil {
+		o.nullFields = append(o.nullFields, "ResourceTagSpecification")
+	}
+	return o
+}
+
+func (o *LaunchSpecification) SetITF(v *ITF) *LaunchSpecification {
+	if o.ITF = v; o.ITF == nil {
+		o.nullFields = append(o.nullFields, "ITF")
+	}
+	return o
+}
+
+// endregion
+
+// region Matcher
+
+func (o Matcher) MarshalJSON() ([]byte, error) {
+	type noMethod Matcher
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *Matcher) SetHTTPCode(v *string) *Matcher {
+	if o.HTTPCode = v; o.HTTPCode == nil {
+		o.nullFields = append(o.nullFields, "HTTPCode")
+	}
+	return o
+}
+
+func (o *Matcher) SetGRPCCode(v *string) *Matcher {
+	if o.GRPCCode = v; o.GRPCCode == nil {
+		o.nullFields = append(o.nullFields, "GRPCCode")
+	}
+	return o
+}
+
+// endregion
+
+// region ITF
+
+func (o ITF) MarshalJSON() ([]byte, error) {
+	type noMethod ITF
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ITF) SetLoadBalancers(v []*ITFLoadBalancer) *ITF {
+	if o.LoadBalancers = v; o.LoadBalancers == nil {
+		o.nullFields = append(o.nullFields, "LoadBalancers")
+	}
+	return o
+}
+
+func (o *ITF) SetMigrationHealthinessThreshold(v *int) *ITF {
+	if o.MigrationHealthinessThreshold = v; o.MigrationHealthinessThreshold == nil {
+		o.nullFields = append(o.nullFields, "MigrationHealthinessThreshold")
+	}
+	return o
+}
+
+func (o *ITF) SetFixedTargetGroups(v *bool) *ITF {
+	if o.FixedTargetGroups = v; o.FixedTargetGroups == nil {
+		o.nullFields = append(o.nullFields, "FixedTargetGroups")
+	}
+	return o
+}
+
+func (o *ITF) SetWeightStrategy(v *string) *ITF {
+	if o.WeightStrategy = v; o.WeightStrategy == nil {
+		o.nullFields = append(o.nullFields, "WeightStrategy")
+	}
+	return o
+}
+
+func (o *ITF) SetTargetGroupConfig(v *TargetGroupConfig) *ITF {
+	if o.TargetGroupConfig = v; o.TargetGroupConfig == nil {
+		o.nullFields = append(o.nullFields, "TargetGroupConfig")
+	}
+	return o
+}
+
+func (o *ITF) SetDefaultStaticTargetGroups(v []*StaticTargetGroup) *ITF {
+	if o.DefaultStaticTargetGroups = v; o.DefaultStaticTargetGroups == nil {
+		o.nullFields = append(o.nullFields, "DefaultStaticTargetGroups")
+	}
+	return o
+}
+
+// endregion
+
+// region ITFLoadBalancer
+
+func (o ITFLoadBalancer) MarshalJSON() ([]byte, error) {
+	type noMethod ITFLoadBalancer
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ITFLoadBalancer) SetListenerRules(v []*ListenerRule) *ITFLoadBalancer {
+	if o.ListenerRules = v; o.ListenerRules == nil {
+		o.nullFields = append(o.nullFields, "ListenerRules")
+	}
+	return o
+}
+
+func (o *ITFLoadBalancer) SetLoadBalancerARN(v *string) *ITFLoadBalancer {
+	if o.LoadBalancerARN = v; o.LoadBalancerARN == nil {
+		o.nullFields = append(o.nullFields, "LoadBalancerARN")
+	}
+	return o
+}
+
+// endregion
+
+// region ListenerRule
+
+func (o ListenerRule) MarshalJSON() ([]byte, error) {
+	type noMethod ListenerRule
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ListenerRule) SetRuleARN(v *string) *ListenerRule {
+	if o.RuleARN = v; o.RuleARN == nil {
+		o.nullFields = append(o.nullFields, "RuleARN")
+	}
+	return o
+}
+
+func (o *ListenerRule) SetStaticTargetGroups(v []*StaticTargetGroup) *ListenerRule {
+	if o.StaticTargetGroups = v; o.StaticTargetGroups == nil {
+		o.nullFields = append(o.nullFields, "StaticTargetGroups")
+	}
+	return o
+}
+
+// endregion
+
+// region StaticTargetGroup
+
+func (o StaticTargetGroup) MarshalJSON() ([]byte, error) {
+	type noMethod StaticTargetGroup
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *StaticTargetGroup) SetStaticTargetGroupARN(v *string) *StaticTargetGroup {
+	if o.StaticTargetGroupARN = v; o.StaticTargetGroupARN == nil {
+		o.nullFields = append(o.nullFields, "StaticTargetGroupARN")
+	}
+	return o
+}
+
+func (o *StaticTargetGroup) SetPercentage(v *float64) *StaticTargetGroup {
+	if o.Percentage = v; o.Percentage == nil {
+		o.nullFields = append(o.nullFields, "Percentage")
+	}
+	return o
+}
+
+// region TargetGroupConfig
+
+func (o TargetGroupConfig) MarshalJSON() ([]byte, error) {
+	type noMethod TargetGroupConfig
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *TargetGroupConfig) SetVPCId(v *string) *TargetGroupConfig {
+	if o.VPCID = v; o.VPCID == nil {
+		o.nullFields = append(o.nullFields, "VPCID")
+	}
+	return o
+}
+
+func (o *TargetGroupConfig) SetHealthCheckIntervalSeconds(v *int) *TargetGroupConfig {
+	if o.HealthCheckIntervalSeconds = v; o.HealthCheckIntervalSeconds == nil {
+		o.nullFields = append(o.nullFields, "HealthCheckIntervalSeconds")
+	}
+	return o
+}
+
+func (o *TargetGroupConfig) SetHealthCheckPath(v *string) *TargetGroupConfig {
+	if o.HealthCheckPath = v; o.HealthCheckPath == nil {
+		o.nullFields = append(o.nullFields, "HealthCheckPath")
+	}
+	return o
+}
+
+func (o *TargetGroupConfig) SetHealthCheckPort(v *string) *TargetGroupConfig {
+	if o.HealthCheckPort = v; o.HealthCheckPort == nil {
+		o.nullFields = append(o.nullFields, "HealthCheckPort")
+	}
+	return o
+}
+
+func (o *TargetGroupConfig) SetHealthCheckProtocol(v *string) *TargetGroupConfig {
+	if o.HealthCheckProtocol = v; o.HealthCheckProtocol == nil {
+		o.nullFields = append(o.nullFields, "HealthCheckProtocol")
+	}
+	return o
+}
+
+func (o *TargetGroupConfig) SetHealthyThresholdCount(v *int) *TargetGroupConfig {
+	if o.HealthyThresholdCount = v; o.HealthyThresholdCount == nil {
+		o.nullFields = append(o.nullFields, "HealthyThresholdCount")
+	}
+	return o
+}
+
+func (o *TargetGroupConfig) SetUnhealthyThresholdCount(v *int) *TargetGroupConfig {
+	if o.UnhealthyThresholdCount = v; o.UnhealthyThresholdCount == nil {
+		o.nullFields = append(o.nullFields, "UnhealthyThresholdCount")
+	}
+	return o
+}
+
+func (o *TargetGroupConfig) SetHealthCheckTimeoutSeconds(v *int) *TargetGroupConfig {
+	if o.HealthCheckTimeoutSeconds = v; o.HealthCheckTimeoutSeconds == nil {
+		o.nullFields = append(o.nullFields, "HealthCheckTimeoutSeconds")
+	}
+	return o
+}
+
+func (o *TargetGroupConfig) SetPort(v *int) *TargetGroupConfig {
+	if o.Port = v; o.Port == nil {
+		o.nullFields = append(o.nullFields, "Port")
+	}
+	return o
+}
+
+func (o *TargetGroupConfig) SetProtocol(v *string) *TargetGroupConfig {
+	if o.Protocol = v; o.Protocol == nil {
+		o.nullFields = append(o.nullFields, "Protocol")
+	}
+	return o
+}
+
+func (o *TargetGroupConfig) SetProtocolVersion(v *string) *TargetGroupConfig {
+	if o.ProtocolVersion = v; o.ProtocolVersion == nil {
+		o.nullFields = append(o.nullFields, "ProtocolVersion")
+	}
+	return o
+}
+
+func (o *TargetGroupConfig) SetMatcher(v *Matcher) *TargetGroupConfig {
+	if o.Matcher = v; o.Matcher == nil {
+		o.nullFields = append(o.nullFields, "Matcher")
+	}
+	return o
+}
+
+func (o *TargetGroupConfig) SetTags(v []*Tag) *TargetGroupConfig {
+	if o.Tags = v; o.Tags == nil {
+		o.nullFields = append(o.nullFields, "Tags")
 	}
 	return o
 }
@@ -4626,6 +5174,112 @@ func (o *Device) SetVolumeID(v *string) *Device {
 func (o *Device) SetSnapshotID(v *string) *Device {
 	if o.SnapshotID = v; o.SnapshotID == nil {
 		o.nullFields = append(o.nullFields, "SnapshotID")
+	}
+	return o
+}
+
+// endregion
+
+// region ResourceTagSpecification
+
+func (o ResourceTagSpecification) MarshalJSON() ([]byte, error) {
+	type noMethod ResourceTagSpecification
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ResourceTagSpecification) SetVolumes(v *Volumes) *ResourceTagSpecification {
+	if o.Volumes = v; o.Volumes == nil {
+		o.nullFields = append(o.nullFields, "Volumes")
+	}
+	return o
+}
+
+func (o *ResourceTagSpecification) SetSnapshots(v *Snapshots) *ResourceTagSpecification {
+	if o.Snapshots = v; o.Snapshots == nil {
+		o.nullFields = append(o.nullFields, "Snapshots")
+	}
+	return o
+}
+
+func (o *ResourceTagSpecification) SetENIs(v *ENIs) *ResourceTagSpecification {
+	if o.ENIs = v; o.ENIs == nil {
+		o.nullFields = append(o.nullFields, "ENIs")
+	}
+	return o
+}
+
+func (o *ResourceTagSpecification) SetAMIs(v *AMIs) *ResourceTagSpecification {
+	if o.AMIs = v; o.AMIs == nil {
+		o.nullFields = append(o.nullFields, "AMIs")
+	}
+	return o
+}
+
+// endregion
+
+// region Volumes
+
+func (o Volumes) MarshalJSON() ([]byte, error) {
+	type noMethod Volumes
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *Volumes) SetShouldTag(v *bool) *Volumes {
+	if o.ShouldTag = v; o.ShouldTag == nil {
+		o.nullFields = append(o.nullFields, "ShouldTag")
+	}
+	return o
+}
+
+// endregion
+
+// region Snapshots
+
+func (o Snapshots) MarshalJSON() ([]byte, error) {
+	type noMethod Snapshots
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *Snapshots) SetShouldTag(v *bool) *Snapshots {
+	if o.ShouldTag = v; o.ShouldTag == nil {
+		o.nullFields = append(o.nullFields, "ShouldTag")
+	}
+	return o
+}
+
+// endregion
+
+// region ENIs
+
+func (o ENIs) MarshalJSON() ([]byte, error) {
+	type noMethod ENIs
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ENIs) SetShouldTag(v *bool) *ENIs {
+	if o.ShouldTag = v; o.ShouldTag == nil {
+		o.nullFields = append(o.nullFields, "ShouldTag")
+	}
+	return o
+}
+
+// endregion
+
+// region AMIs
+
+func (o AMIs) MarshalJSON() ([]byte, error) {
+	type noMethod AMIs
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *AMIs) SetShouldTag(v *bool) *AMIs {
+	if o.ShouldTag = v; o.ShouldTag == nil {
+		o.nullFields = append(o.nullFields, "ShouldTag")
 	}
 	return o
 }

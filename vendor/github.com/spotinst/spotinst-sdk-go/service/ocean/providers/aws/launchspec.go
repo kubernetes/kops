@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/spotinst/spotinst-sdk-go/spotinst"
@@ -23,6 +24,7 @@ type LaunchSpec struct {
 	SecurityGroupIDs         []string              `json:"securityGroupIds,omitempty"`
 	SubnetIDs                []string              `json:"subnetIds,omitempty"`
 	InstanceTypes            []string              `json:"instanceTypes,omitempty"`
+	PreferredSpotTypes       []string              `json:"preferredSpotTypes,omitempty"`
 	Strategy                 *LaunchSpecStrategy   `json:"strategy,omitempty"`
 	ResourceLimits           *ResourceLimits       `json:"resourceLimits,omitempty"`
 	IAMInstanceProfile       *IAMInstanceProfile   `json:"iamInstanceProfile,omitempty"`
@@ -34,6 +36,7 @@ type LaunchSpec struct {
 	Tags                     []*Tag                `json:"tags,omitempty"`
 	AssociatePublicIPAddress *bool                 `json:"associatePublicIpAddress,omitempty"`
 	RestrictScaleDown        *bool                 `json:"restrictScaleDown,omitempty"`
+	LaunchSpecScheduling     *LaunchSpecScheduling `json:"scheduling,omitempty"`
 
 	// Read-only fields.
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
@@ -58,6 +61,7 @@ type LaunchSpec struct {
 
 type ResourceLimits struct {
 	MaxInstanceCount *int `json:"maxInstanceCount,omitempty"`
+	MinInstanceCount *int `json:"minInstanceCount,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -153,6 +157,49 @@ type LaunchSpecStrategy struct {
 	nullFields      []string
 }
 
+type LaunchSpecScheduling struct {
+	Tasks         []*LaunchSpecTask        `json:"tasks,omitempty"`
+	ShutdownHours *LaunchSpecShutdownHours `json:"shutdownHours,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type LaunchSpecTask struct {
+	IsEnabled      *bool       `json:"isEnabled,omitempty"`
+	CronExpression *string     `json:"cronExpression,omitempty"`
+	TaskType       *string     `json:"taskType,omitempty"`
+	Config         *TaskConfig `json:"config,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type LaunchSpecShutdownHours struct {
+	IsEnabled   *bool    `json:"isEnabled,omitempty"`
+	TimeWindows []string `json:"timeWindows,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type TaskConfig struct {
+	TaskHeadrooms []*LaunchSpecTaskHeadroom `json:"headrooms,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type LaunchSpecTaskHeadroom struct {
+	CPUPerUnit    *int `json:"cpuPerUnit,omitempty"`
+	GPUPerUnit    *int `json:"gpuPerUnit,omitempty"`
+	MemoryPerUnit *int `json:"memoryPerUnit,omitempty"`
+	NumOfUnits    *int `json:"numOfUnits,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
 type ListLaunchSpecsInput struct {
 	OceanID *string `json:"oceanId,omitempty"`
 }
@@ -162,7 +209,8 @@ type ListLaunchSpecsOutput struct {
 }
 
 type CreateLaunchSpecInput struct {
-	LaunchSpec *LaunchSpec `json:"launchSpec,omitempty"`
+	LaunchSpec   *LaunchSpec `json:"launchSpec,omitempty"`
+	InitialNodes *int        `json:"-"`
 }
 
 type CreateLaunchSpecOutput struct {
@@ -187,6 +235,7 @@ type UpdateLaunchSpecOutput struct {
 
 type DeleteLaunchSpecInput struct {
 	LaunchSpecID *string `json:"launchSpecId,omitempty"`
+	ForceDelete  *bool   `json:"-"`
 }
 
 type DeleteLaunchSpecOutput struct{}
@@ -250,6 +299,10 @@ func (s *ServiceOp) ListLaunchSpecs(ctx context.Context, input *ListLaunchSpecsI
 func (s *ServiceOp) CreateLaunchSpec(ctx context.Context, input *CreateLaunchSpecInput) (*CreateLaunchSpecOutput, error) {
 	r := client.NewRequest(http.MethodPost, "/ocean/aws/k8s/launchSpec")
 	r.Obj = input
+
+	if input.InitialNodes != nil {
+		r.Params.Set("initialNodes", strconv.Itoa(spotinst.IntValue(input.InitialNodes)))
+	}
 
 	resp, err := client.RequireOK(s.Client.Do(ctx, r))
 	if err != nil {
@@ -341,6 +394,10 @@ func (s *ServiceOp) DeleteLaunchSpec(ctx context.Context, input *DeleteLaunchSpe
 
 	r := client.NewRequest(http.MethodDelete, path)
 
+	if input.ForceDelete != nil {
+		r.Params.Set("forceDelete", strconv.FormatBool(spotinst.BoolValue(input.ForceDelete)))
+	}
+
 	resp, err := client.RequireOK(s.Client.Do(ctx, r))
 	if err != nil {
 		return nil, err
@@ -412,6 +469,13 @@ func (o *LaunchSpec) SetSubnetIDs(v []string) *LaunchSpec {
 func (o *LaunchSpec) SetInstanceTypes(v []string) *LaunchSpec {
 	if o.InstanceTypes = v; o.InstanceTypes == nil {
 		o.nullFields = append(o.nullFields, "InstanceTypes")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetPreferredSpotTypes(v []string) *LaunchSpec {
+	if o.PreferredSpotTypes = v; o.PreferredSpotTypes == nil {
+		o.nullFields = append(o.nullFields, "PreferredSpotTypes")
 	}
 	return o
 }
@@ -496,6 +560,13 @@ func (o *LaunchSpec) SetAssociatePublicIPAddress(v *bool) *LaunchSpec {
 func (o *LaunchSpec) SetRestrictScaleDown(v *bool) *LaunchSpec {
 	if o.RestrictScaleDown = v; o.RestrictScaleDown == nil {
 		o.nullFields = append(o.nullFields, "RestrictScaleDown")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetScheduling(v *LaunchSpecScheduling) *LaunchSpec {
+	if o.LaunchSpecScheduling = v; o.LaunchSpecScheduling == nil {
+		o.nullFields = append(o.nullFields, "LaunchSpecScheduling")
 	}
 	return o
 }
@@ -655,6 +726,13 @@ func (o ResourceLimits) MarshalJSON() ([]byte, error) {
 func (o *ResourceLimits) SetMaxInstanceCount(v *int) *ResourceLimits {
 	if o.MaxInstanceCount = v; o.MaxInstanceCount == nil {
 		o.nullFields = append(o.nullFields, "MaxInstanceCount")
+	}
+	return o
+}
+
+func (o *ResourceLimits) SetMinInstanceCount(v *int) *ResourceLimits {
+	if o.MinInstanceCount = v; o.MinInstanceCount == nil {
+		o.nullFields = append(o.nullFields, "MinInstanceCount")
 	}
 	return o
 }
@@ -823,6 +901,145 @@ func (o LaunchSpecStrategy) MarshalJSON() ([]byte, error) {
 func (o *LaunchSpecStrategy) SetSpotPercentage(v *int) *LaunchSpecStrategy {
 	if o.SpotPercentage = v; o.SpotPercentage == nil {
 		o.nullFields = append(o.nullFields, "SpotPercentage")
+	}
+	return o
+}
+
+// endregion
+
+//region Scheduling
+
+func (o LaunchSpecScheduling) MarshalJSON() ([]byte, error) {
+	type noMethod LaunchSpecScheduling
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *LaunchSpecScheduling) SetTasks(v []*LaunchSpecTask) *LaunchSpecScheduling {
+	if o.Tasks = v; o.Tasks == nil {
+		o.nullFields = append(o.nullFields, "Tasks")
+	}
+	return o
+}
+
+func (o *LaunchSpecScheduling) SetShutdownHours(v *LaunchSpecShutdownHours) *LaunchSpecScheduling {
+	if o.ShutdownHours = v; o.ShutdownHours == nil {
+		o.nullFields = append(o.nullFields, "ShutdownHours")
+	}
+	return o
+}
+
+// endregion
+
+//region LaunchSpecTask
+
+func (o LaunchSpecTask) MarshalJSON() ([]byte, error) {
+	type noMethod LaunchSpecTask
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *LaunchSpecTask) SetIsEnabled(v *bool) *LaunchSpecTask {
+	if o.IsEnabled = v; o.IsEnabled == nil {
+		o.nullFields = append(o.nullFields, "IsEnabled")
+	}
+	return o
+}
+
+func (o *LaunchSpecTask) SetCronExpression(v *string) *LaunchSpecTask {
+	if o.CronExpression = v; o.CronExpression == nil {
+		o.nullFields = append(o.nullFields, "CronExpression")
+	}
+	return o
+}
+
+func (o *LaunchSpecTask) SetTaskType(v *string) *LaunchSpecTask {
+	if o.TaskType = v; o.TaskType == nil {
+		o.nullFields = append(o.nullFields, "TaskType")
+	}
+	return o
+}
+
+func (o *LaunchSpecTask) SetTaskConfig(v *TaskConfig) *LaunchSpecTask {
+	if o.Config = v; o.Config == nil {
+		o.nullFields = append(o.nullFields, "Config")
+	}
+	return o
+}
+
+// endregion
+
+//region LaunchSpecShutdownHours
+
+func (o LaunchSpecShutdownHours) MarshalJSON() ([]byte, error) {
+	type noMethod LaunchSpecShutdownHours
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *LaunchSpecShutdownHours) SetIsEnabled(v *bool) *LaunchSpecShutdownHours {
+	if o.IsEnabled = v; o.IsEnabled == nil {
+		o.nullFields = append(o.nullFields, "IsEnabled")
+	}
+	return o
+}
+
+func (o *LaunchSpecShutdownHours) SetTimeWindows(v []string) *LaunchSpecShutdownHours {
+	if o.TimeWindows = v; o.TimeWindows == nil {
+		o.nullFields = append(o.nullFields, "TimeWindows")
+	}
+	return o
+}
+
+//region TaskConfig
+
+func (o TaskConfig) MarshalJSON() ([]byte, error) {
+	type noMethod TaskConfig
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *TaskConfig) SetHeadrooms(v []*LaunchSpecTaskHeadroom) *TaskConfig {
+	if o.TaskHeadrooms = v; o.TaskHeadrooms == nil {
+		o.nullFields = append(o.nullFields, "TaskHeadrooms")
+	}
+	return o
+}
+
+// endregion
+
+// region LaunchSpecTaskHeadroom
+
+func (o LaunchSpecTaskHeadroom) MarshalJSON() ([]byte, error) {
+	type noMethod LaunchSpecTaskHeadroom
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *LaunchSpecTaskHeadroom) SetCPUPerUnit(v *int) *LaunchSpecTaskHeadroom {
+	if o.CPUPerUnit = v; o.CPUPerUnit == nil {
+		o.nullFields = append(o.nullFields, "CPUPerUnit")
+	}
+	return o
+}
+
+func (o *LaunchSpecTaskHeadroom) SetGPUPerUnit(v *int) *LaunchSpecTaskHeadroom {
+	if o.GPUPerUnit = v; o.GPUPerUnit == nil {
+		o.nullFields = append(o.nullFields, "GPUPerUnit")
+	}
+	return o
+}
+
+func (o *LaunchSpecTaskHeadroom) SetMemoryPerUnit(v *int) *LaunchSpecTaskHeadroom {
+	if o.MemoryPerUnit = v; o.MemoryPerUnit == nil {
+		o.nullFields = append(o.nullFields, "MemoryPerUnit")
+	}
+	return o
+}
+
+func (o *LaunchSpecTaskHeadroom) SetNumOfUnits(v *int) *LaunchSpecTaskHeadroom {
+	if o.NumOfUnits = v; o.NumOfUnits == nil {
+		o.nullFields = append(o.nullFields, "NumOfUnits")
 	}
 	return o
 }

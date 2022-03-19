@@ -62,6 +62,8 @@ var (
 	Spotinst = new("Spotinst", Bool(false))
 	// SpotinstOcean toggles the use of Spotinst Ocean instance group implementation.
 	SpotinstOcean = new("SpotinstOcean", Bool(false))
+	// SpotinstOceanTemplate toggles the use of Spotinst Ocean object as a template for Virtual Node Groups.
+	SpotinstOceanTemplate = new("SpotinstOceanTemplate", Bool(false))
 	// SpotinstHybrid toggles between hybrid and full instance group implementations.
 	SpotinstHybrid = new("SpotinstHybrid", Bool(false))
 	// SpotinstController toggles the installation of the Spotinst controller addon.

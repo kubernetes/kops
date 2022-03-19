@@ -709,7 +709,7 @@ github.com/spf13/pflag
 # github.com/spf13/viper v1.8.1
 ## explicit; go 1.12
 github.com/spf13/viper
-# github.com/spotinst/spotinst-sdk-go v1.85.0
+# github.com/spotinst/spotinst-sdk-go v1.110.0
 ## explicit; go 1.16
 github.com/spotinst/spotinst-sdk-go/service/elastigroup
 github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/aws
@@ -1012,7 +1012,7 @@ gopkg.in/gcfg.v1/types
 # gopkg.in/inf.v0 v0.9.1
 ## explicit
 gopkg.in/inf.v0
-# gopkg.in/ini.v1 v1.62.0
+# gopkg.in/ini.v1 v1.66.3
 ## explicit
 gopkg.in/ini.v1
 # gopkg.in/square/go-jose.v2 v2.5.1
