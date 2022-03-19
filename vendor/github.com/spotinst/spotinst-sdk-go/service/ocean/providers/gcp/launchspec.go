@@ -13,14 +13,25 @@ import (
 )
 
 type LaunchSpec struct {
-	ID                *string     `json:"id,omitempty"`
-	OceanID           *string     `json:"oceanId,omitempty"`
-	SourceImage       *string     `json:"sourceImage,omitempty"`
-	Metadata          []*Metadata `json:"metadata,omitempty"`
-	Labels            []*Label    `json:"labels,omitempty"`
-	Taints            []*Taint    `json:"taints,omitempty"`
-	AutoScale         *AutoScale  `json:"autoScale,omitempty"`
-	RestrictScaleDown *bool       `json:"restrictScaleDown,omitempty"`
+	ID                     *string                  `json:"id,omitempty"`
+	Name                   *string                  `json:"name,omitempty"`
+	OceanID                *string                  `json:"oceanId,omitempty"`
+	SourceImage            *string                  `json:"sourceImage,omitempty"`
+	Metadata               []*Metadata              `json:"metadata,omitempty"`
+	Labels                 []*Label                 `json:"labels,omitempty"`
+	Taints                 []*Taint                 `json:"taints,omitempty"`
+	AutoScale              *AutoScale               `json:"autoScale,omitempty"`
+	RestrictScaleDown      *bool                    `json:"restrictScaleDown,omitempty"`
+	Tags                   []*Tag                   `json:"tags,omitempty"`
+	Strategy               *LaunchSpecStrategy      `json:"strategy,omitempty"`
+	RootVolumeSizeInGB     *int                     `json:"rootVolumeSizeInGb,omitempty"`
+	RootVolumeType         *string                  `json:"rootVolumeType,omitempty"`
+	ShieldedInstanceConfig *ShieldedInstanceConfig  `json:"shieldedInstanceConfig,omitempty"`
+	ServiceAccount         *string                  `json:"serviceAccount,omitempty"`
+	InstanceTypes          []string                 `json:"instanceTypes,omitempty"`
+	Storage                *Storage                 `json:"storage,omitempty"`
+	ResourceLimits         *ResourceLimits          `json:"resourceLimits,omitempty"`
+	LaunchSpecScheduling   *GKELaunchSpecScheduling `json:"scheduling,omitempty"`
 
 	// forceSendFields is a list of field names (e.g. "Keys") to
 	// unconditionally include in API requests. By default, fields with
@@ -64,6 +75,70 @@ type AutoScale struct {
 }
 
 type AutoScaleHeadroom struct {
+	CPUPerUnit    *int `json:"cpuPerUnit,omitempty"`
+	GPUPerUnit    *int `json:"gpuPerUnit,omitempty"`
+	MemoryPerUnit *int `json:"memoryPerUnit,omitempty"`
+	NumOfUnits    *int `json:"numOfUnits,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type LaunchSpecStrategy struct {
+	PreemptiblePercentage *int `json:"preemptiblePercentage,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ShieldedInstanceConfig struct {
+	EnableSecureBoot          *bool `json:"enableSecureBoot,omitempty"`
+	EnableIntegrityMonitoring *bool `json:"enableIntegrityMonitoring,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type Storage struct {
+	LocalSSDCount *int `json:"localSsdCount,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ResourceLimits struct {
+	MaxInstanceCount *int `json:"maxInstanceCount,omitempty"`
+	MinInstanceCount *int `json:"minInstanceCount,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type GKELaunchSpecScheduling struct {
+	Tasks []*GKELaunchSpecTask `json:"tasks,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type GKELaunchSpecTask struct {
+	IsEnabled      *bool          `json:"isEnabled,omitempty"`
+	CronExpression *string        `json:"cronExpression,omitempty"`
+	TaskType       *string        `json:"taskType,omitempty"`
+	Config         *GKETaskConfig `json:"config,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type GKETaskConfig struct {
+	TaskHeadrooms []*GKELaunchSpecTaskHeadroom `json:"headrooms,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type GKELaunchSpecTaskHeadroom struct {
 	CPUPerUnit    *int `json:"cpuPerUnit,omitempty"`
 	GPUPerUnit    *int `json:"gpuPerUnit,omitempty"`
 	MemoryPerUnit *int `json:"memoryPerUnit,omitempty"`
@@ -322,6 +397,13 @@ func (o *LaunchSpec) SetOceanId(v *string) *LaunchSpec {
 	return o
 }
 
+func (o *LaunchSpec) SetName(v *string) *LaunchSpec {
+	if o.Name = v; o.Name == nil {
+		o.nullFields = append(o.nullFields, "Name")
+	}
+	return o
+}
+
 func (o *LaunchSpec) SetSourceImage(v *string) *LaunchSpec {
 	if o.SourceImage = v; o.SourceImage == nil {
 		o.nullFields = append(o.nullFields, "SourceImage")
@@ -360,6 +442,76 @@ func (o *LaunchSpec) SetAutoScale(v *AutoScale) *LaunchSpec {
 func (o *LaunchSpec) SetRestrictScaleDown(v *bool) *LaunchSpec {
 	if o.RestrictScaleDown = v; o.RestrictScaleDown == nil {
 		o.nullFields = append(o.nullFields, "RestrictScaleDown")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetStrategy(v *LaunchSpecStrategy) *LaunchSpec {
+	if o.Strategy = v; o.Strategy == nil {
+		o.nullFields = append(o.nullFields, "Strategy")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetRootVolumeSizeInGB(v *int) *LaunchSpec {
+	if o.RootVolumeSizeInGB = v; o.RootVolumeSizeInGB == nil {
+		o.nullFields = append(o.nullFields, "RootVolumeSizeInGB")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetRootVolumeType(v *string) *LaunchSpec {
+	if o.RootVolumeType = v; o.RootVolumeType == nil {
+		o.nullFields = append(o.nullFields, "RootVolumeType")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetServiceAccount(v *string) *LaunchSpec {
+	if o.ServiceAccount = v; o.ServiceAccount == nil {
+		o.nullFields = append(o.nullFields, "ServiceAccount")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetTags(v []*Tag) *LaunchSpec {
+	if o.Tags = v; o.Tags == nil {
+		o.nullFields = append(o.nullFields, "Tags")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetShieldedInstanceConfig(v *ShieldedInstanceConfig) *LaunchSpec {
+	if o.ShieldedInstanceConfig = v; o.ShieldedInstanceConfig == nil {
+		o.nullFields = append(o.nullFields, "ShieldedInstanceConfig")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetInstanceTypes(v []string) *LaunchSpec {
+	if o.InstanceTypes = v; o.InstanceTypes == nil {
+		o.nullFields = append(o.nullFields, "InstanceTypes")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetStorage(v *Storage) *LaunchSpec {
+	if o.Storage = v; o.Storage == nil {
+		o.nullFields = append(o.nullFields, "Storage")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetResourceLimits(v *ResourceLimits) *LaunchSpec {
+	if o.ResourceLimits = v; o.ResourceLimits == nil {
+		o.nullFields = append(o.nullFields, "ResourceLimits")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetScheduling(v *GKELaunchSpecScheduling) *LaunchSpec {
+	if o.LaunchSpecScheduling = v; o.LaunchSpecScheduling == nil {
+		o.nullFields = append(o.nullFields, "GKELaunchSpecScheduling")
 	}
 	return o
 }
@@ -482,6 +634,198 @@ func (o *AutoScaleHeadroom) SetMemoryPerUnit(v *int) *AutoScaleHeadroom {
 }
 
 func (o *AutoScaleHeadroom) SetNumOfUnits(v *int) *AutoScaleHeadroom {
+	if o.NumOfUnits = v; o.NumOfUnits == nil {
+		o.nullFields = append(o.nullFields, "NumOfUnits")
+	}
+	return o
+}
+
+// endregion
+
+// region Strategy
+
+func (o LaunchSpecStrategy) MarshalJSON() ([]byte, error) {
+	type noMethod LaunchSpecStrategy
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *LaunchSpecStrategy) SetPreemptiblePercentage(v *int) *LaunchSpecStrategy {
+	if o.PreemptiblePercentage = v; o.PreemptiblePercentage == nil {
+		o.nullFields = append(o.nullFields, "PreemptiblePercentage")
+	}
+	return o
+}
+
+//endregion
+
+// region ShieldedInstanceConfig
+
+func (o ShieldedInstanceConfig) MarshalJSON() ([]byte, error) {
+	type noMethod ShieldedInstanceConfig
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ShieldedInstanceConfig) SetEnableIntegrityMonitoring(v *bool) *ShieldedInstanceConfig {
+	if o.EnableIntegrityMonitoring = v; o.EnableIntegrityMonitoring == nil {
+		o.nullFields = append(o.nullFields, "EnableIntegrityMonitoring")
+	}
+	return o
+}
+
+func (o *ShieldedInstanceConfig) SetEnableSecureBoot(v *bool) *ShieldedInstanceConfig {
+	if o.EnableSecureBoot = v; o.EnableSecureBoot == nil {
+		o.nullFields = append(o.nullFields, "EnableSecureBoot")
+	}
+	return o
+}
+
+//endregion
+
+// region Storage
+
+func (o Storage) MarshalJSON() ([]byte, error) {
+	type noMethod Storage
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *Storage) SetLocalSSDCount(v *int) *Storage {
+	if o.LocalSSDCount = v; o.LocalSSDCount == nil {
+		o.nullFields = append(o.nullFields, "LocalSSDCount")
+	}
+	return o
+}
+
+//endregion
+
+// region ResourceLimits
+
+func (o ResourceLimits) MarshalJSON() ([]byte, error) {
+	type noMethod ResourceLimits
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ResourceLimits) SetMaxInstanceCount(v *int) *ResourceLimits {
+	if o.MaxInstanceCount = v; o.MaxInstanceCount == nil {
+		o.nullFields = append(o.nullFields, "MaxInstanceCount")
+	}
+	return o
+}
+
+func (o *ResourceLimits) SetMinInstanceCount(v *int) *ResourceLimits {
+	if o.MinInstanceCount = v; o.MinInstanceCount == nil {
+		o.nullFields = append(o.nullFields, "MinInstanceCount")
+	}
+	return o
+}
+
+//endregion
+
+//region Scheduling
+
+func (o GKELaunchSpecScheduling) MarshalJSON() ([]byte, error) {
+	type noMethod GKELaunchSpecScheduling
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *GKELaunchSpecScheduling) SetTasks(v []*GKELaunchSpecTask) *GKELaunchSpecScheduling {
+	if o.Tasks = v; o.Tasks == nil {
+		o.nullFields = append(o.nullFields, "Tasks")
+	}
+	return o
+}
+
+// endregion
+
+//region LaunchSpecTask
+
+func (o GKELaunchSpecTask) MarshalJSON() ([]byte, error) {
+	type noMethod GKELaunchSpecTask
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *GKELaunchSpecTask) SetIsEnabled(v *bool) *GKELaunchSpecTask {
+	if o.IsEnabled = v; o.IsEnabled == nil {
+		o.nullFields = append(o.nullFields, "IsEnabled")
+	}
+	return o
+}
+
+func (o *GKELaunchSpecTask) SetCronExpression(v *string) *GKELaunchSpecTask {
+	if o.CronExpression = v; o.CronExpression == nil {
+		o.nullFields = append(o.nullFields, "CronExpression")
+	}
+	return o
+}
+
+func (o *GKELaunchSpecTask) SetTaskType(v *string) *GKELaunchSpecTask {
+	if o.TaskType = v; o.TaskType == nil {
+		o.nullFields = append(o.nullFields, "TaskType")
+	}
+	return o
+}
+
+func (o *GKELaunchSpecTask) SetTaskConfig(v *GKETaskConfig) *GKELaunchSpecTask {
+	if o.Config = v; o.Config == nil {
+		o.nullFields = append(o.nullFields, "Config")
+	}
+	return o
+}
+
+// endregion
+
+//region TaskConfig
+
+func (o GKETaskConfig) MarshalJSON() ([]byte, error) {
+	type noMethod GKETaskConfig
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *GKETaskConfig) SetHeadrooms(v []*GKELaunchSpecTaskHeadroom) *GKETaskConfig {
+	if o.TaskHeadrooms = v; o.TaskHeadrooms == nil {
+		o.nullFields = append(o.nullFields, "TaskHeadroom")
+	}
+	return o
+}
+
+// endregion
+
+// region LaunchSpecTaskHeadroom
+
+func (o GKELaunchSpecTaskHeadroom) MarshalJSON() ([]byte, error) {
+	type noMethod GKELaunchSpecTaskHeadroom
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *GKELaunchSpecTaskHeadroom) SetCPUPerUnit(v *int) *GKELaunchSpecTaskHeadroom {
+	if o.CPUPerUnit = v; o.CPUPerUnit == nil {
+		o.nullFields = append(o.nullFields, "CPUPerUnit")
+	}
+	return o
+}
+
+func (o *GKELaunchSpecTaskHeadroom) SetGPUPerUnit(v *int) *GKELaunchSpecTaskHeadroom {
+	if o.GPUPerUnit = v; o.GPUPerUnit == nil {
+		o.nullFields = append(o.nullFields, "GPUPerUnit")
+	}
+	return o
+}
+
+func (o *GKELaunchSpecTaskHeadroom) SetMemoryPerUnit(v *int) *GKELaunchSpecTaskHeadroom {
+	if o.MemoryPerUnit = v; o.MemoryPerUnit == nil {
+		o.nullFields = append(o.nullFields, "MemoryPerUnit")
+	}
+	return o
+}
+
+func (o *GKELaunchSpecTaskHeadroom) SetNumOfUnits(v *int) *GKELaunchSpecTaskHeadroom {
 	if o.NumOfUnits = v; o.NumOfUnits == nil {
 		o.nullFields = append(o.nullFields, "NumOfUnits")
 	}

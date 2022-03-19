@@ -24,6 +24,7 @@ type Cluster struct {
 	Compute             *Compute    `json:"compute,omitempty"`
 	Scheduling          *Scheduling `json:"scheduling,omitempty"`
 	AutoScaler          *AutoScaler `json:"autoScaler,omitempty"`
+	Logging             *Logging    `json:"logging,omitempty"`
 
 	// Read-only fields.
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
@@ -110,18 +111,19 @@ type InstanceTypes struct {
 }
 
 type LaunchSpecification struct {
-	AssociatePublicIPAddress *bool               `json:"associatePublicIpAddress,omitempty"`
-	SecurityGroupIDs         []string            `json:"securityGroupIds,omitempty"`
-	ImageID                  *string             `json:"imageId,omitempty"`
-	KeyPair                  *string             `json:"keyPair,omitempty"`
-	UserData                 *string             `json:"userData,omitempty"`
-	IAMInstanceProfile       *IAMInstanceProfile `json:"iamInstanceProfile,omitempty"`
-	Tags                     []*Tag              `json:"tags,omitempty"`
-	LoadBalancers            []*LoadBalancer     `json:"loadBalancers,omitempty"`
-	RootVolumeSize           *int                `json:"rootVolumeSize,omitempty"`
-	Monitoring               *bool               `json:"monitoring,omitempty"`
-	EBSOptimized             *bool               `json:"ebsOptimized,omitempty"`
-	UseAsTemplateOnly        *bool               `json:"useAsTemplateOnly,omitempty"`
+	AssociatePublicIPAddress *bool                    `json:"associatePublicIpAddress,omitempty"`
+	SecurityGroupIDs         []string                 `json:"securityGroupIds,omitempty"`
+	ImageID                  *string                  `json:"imageId,omitempty"`
+	KeyPair                  *string                  `json:"keyPair,omitempty"`
+	UserData                 *string                  `json:"userData,omitempty"`
+	IAMInstanceProfile       *IAMInstanceProfile      `json:"iamInstanceProfile,omitempty"`
+	Tags                     []*Tag                   `json:"tags,omitempty"`
+	LoadBalancers            []*LoadBalancer          `json:"loadBalancers,omitempty"`
+	RootVolumeSize           *int                     `json:"rootVolumeSize,omitempty"`
+	Monitoring               *bool                    `json:"monitoring,omitempty"`
+	EBSOptimized             *bool                    `json:"ebsOptimized,omitempty"`
+	UseAsTemplateOnly        *bool                    `json:"useAsTemplateOnly,omitempty"`
+	InstanceMetadataOptions  *InstanceMetadataOptions `json:"instanceMetadataOptions,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -145,13 +147,15 @@ type LoadBalancer struct {
 }
 
 type AutoScaler struct {
-	IsEnabled              *bool                     `json:"isEnabled,omitempty"`
-	IsAutoConfig           *bool                     `json:"isAutoConfig,omitempty"`
-	Cooldown               *int                      `json:"cooldown,omitempty"`
-	AutoHeadroomPercentage *int                      `json:"autoHeadroomPercentage,omitempty"`
-	Headroom               *AutoScalerHeadroom       `json:"headroom,omitempty"`
-	ResourceLimits         *AutoScalerResourceLimits `json:"resourceLimits,omitempty"`
-	Down                   *AutoScalerDown           `json:"down,omitempty"`
+	IsEnabled                        *bool                     `json:"isEnabled,omitempty"`
+	IsAutoConfig                     *bool                     `json:"isAutoConfig,omitempty"`
+	Cooldown                         *int                      `json:"cooldown,omitempty"`
+	AutoHeadroomPercentage           *int                      `json:"autoHeadroomPercentage,omitempty"`
+	Headroom                         *AutoScalerHeadroom       `json:"headroom,omitempty"`
+	ResourceLimits                   *AutoScalerResourceLimits `json:"resourceLimits,omitempty"`
+	Down                             *AutoScalerDown           `json:"down,omitempty"`
+	EnableAutomaticAndManualHeadroom *bool                     `json:"enableAutomaticAndManualHeadroom,omitempty"`
+	ExtendedResourceDefinitions      []string                  `json:"extendedResourceDefinitions,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -178,6 +182,35 @@ type AutoScalerResourceLimits struct {
 type AutoScalerDown struct {
 	EvaluationPeriods      *int     `json:"evaluationPeriods,omitempty"`
 	MaxScaleDownPercentage *float64 `json:"maxScaleDownPercentage,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type InstanceMetadataOptions struct {
+	HTTPTokens              *string `json:"httpTokens,omitempty"`
+	HTTPPutResponseHopLimit *int    `json:"httpPutResponseHopLimit,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type Logging struct {
+	Export *Export `json:"export,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type Export struct {
+	S3 *S3 `json:"s3,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type S3 struct {
+	ID *string `json:"id,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -872,6 +905,13 @@ func (o *Cluster) SetAutoScaler(v *AutoScaler) *Cluster {
 	return o
 }
 
+func (o *Cluster) SetLogging(v *Logging) *Cluster {
+	if o.Logging = v; o.Logging == nil {
+		o.nullFields = append(o.nullFields, "Logging")
+	}
+	return o
+}
+
 // endregion
 
 // region Strategy
@@ -1183,6 +1223,13 @@ func (o *LaunchSpecification) SetUseAsTemplateOnly(v *bool) *LaunchSpecification
 	return o
 }
 
+func (o *LaunchSpecification) SetInstanceMetadataOptions(v *InstanceMetadataOptions) *LaunchSpecification {
+	if o.InstanceMetadataOptions = v; o.InstanceMetadataOptions == nil {
+		o.nullFields = append(o.nullFields, "InstanceMetadataOptions")
+	}
+	return o
+}
+
 // endregion
 
 // region LoadBalancer
@@ -1287,6 +1334,20 @@ func (o *AutoScaler) SetResourceLimits(v *AutoScalerResourceLimits) *AutoScaler 
 func (o *AutoScaler) SetDown(v *AutoScalerDown) *AutoScaler {
 	if o.Down = v; o.Down == nil {
 		o.nullFields = append(o.nullFields, "Down")
+	}
+	return o
+}
+
+func (o *AutoScaler) SetEnableAutomaticAndManualHeadroom(v *bool) *AutoScaler {
+	if o.EnableAutomaticAndManualHeadroom = v; o.EnableAutomaticAndManualHeadroom == nil {
+		o.nullFields = append(o.nullFields, "EnableAutomaticAndManualHeadroom")
+	}
+	return o
+}
+
+func (o *AutoScaler) SetExtendedResourceDefinitions(v []string) *AutoScaler {
+	if o.ExtendedResourceDefinitions = v; o.ExtendedResourceDefinitions == nil {
+		o.nullFields = append(o.nullFields, "ExtendedResourceDefinitions")
 	}
 	return o
 }
@@ -1470,6 +1531,81 @@ func (o *RollSpec) SetLaunchSpecIDs(v []string) *RollSpec {
 func (o *RollSpec) SetInstanceIDs(v []string) *RollSpec {
 	if o.InstanceIDs = v; o.InstanceIDs == nil {
 		o.nullFields = append(o.nullFields, "InstanceIDs")
+	}
+	return o
+}
+
+// endregion
+
+// region InstanceMetadataOptions
+
+func (o InstanceMetadataOptions) MarshalJSON() ([]byte, error) {
+	type noMethod InstanceMetadataOptions
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *InstanceMetadataOptions) SetHTTPTokens(v *string) *InstanceMetadataOptions {
+	if o.HTTPTokens = v; o.HTTPTokens == nil {
+		o.nullFields = append(o.nullFields, "HTTPTokens")
+	}
+	return o
+}
+
+func (o *InstanceMetadataOptions) SetHTTPPutResponseHopLimit(v *int) *InstanceMetadataOptions {
+	if o.HTTPPutResponseHopLimit = v; o.HTTPPutResponseHopLimit == nil {
+		o.nullFields = append(o.nullFields, "HTTPPutResponseHopLimit")
+	}
+	return o
+}
+
+// endregion
+
+// region Logging
+
+func (o Logging) MarshalJSON() ([]byte, error) {
+	type noMethod Logging
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *Logging) SetExport(v *Export) *Logging {
+	if o.Export = v; o.Export == nil {
+		o.nullFields = append(o.nullFields, "Export")
+	}
+	return o
+}
+
+// endregion
+
+// region Export
+
+func (o Export) MarshalJSON() ([]byte, error) {
+	type noMethod Export
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *Export) SetS3(v *S3) *Export {
+	if o.S3 = v; o.S3 == nil {
+		o.nullFields = append(o.nullFields, "S3")
+	}
+	return o
+}
+
+// endregion
+
+// region S3
+
+func (o S3) MarshalJSON() ([]byte, error) {
+	type noMethod S3
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *S3) SetId(v *string) *S3 {
+	if o.ID = v; o.ID == nil {
+		o.nullFields = append(o.nullFields, "ID")
 	}
 	return o
 }

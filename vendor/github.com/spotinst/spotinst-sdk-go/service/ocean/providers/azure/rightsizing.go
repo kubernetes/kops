@@ -1,4 +1,4 @@
-package aws
+package azure
 
 import (
 	"context"
@@ -10,29 +10,6 @@ import (
 	"github.com/spotinst/spotinst-sdk-go/spotinst/client"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/util/uritemplates"
 )
-
-// ResourceSuggestion represents a single resource suggestion.
-type ResourceSuggestion struct {
-	ResourceName    *string                        `json:"resourceName,omitempty"`
-	ResourceType    *string                        `json:"resourceType,omitempty"`
-	DeploymentName  *string                        `json:"deploymentName,omitempty"`
-	Namespace       *string                        `json:"namespace,omitempty"`
-	SuggestedCPU    *float64                       `json:"suggestedCPU,omitempty"`
-	RequestedCPU    *float64                       `json:"requestedCPU,omitempty"`
-	SuggestedMemory *float64                       `json:"suggestedMemory,omitempty"`
-	RequestedMemory *float64                       `json:"requestedMemory,omitempty"`
-	Containers      []*ContainerResourceSuggestion `json:"containers,omitempty"`
-}
-
-// ContainerResourceSuggestion represents a resource suggestion for a
-// single container.
-type ContainerResourceSuggestion struct {
-	Name            *string  `json:"name,omitempty"`
-	SuggestedCPU    *float64 `json:"suggestedCpu,omitempty"`
-	RequestedCPU    *float64 `json:"requestedCpu,omitempty"`
-	SuggestedMemory *float64 `json:"suggestedMemory,omitempty"`
-	RequestedMemory *float64 `json:"requestedMemory,omitempty"`
-}
 
 type Filter struct {
 	Attribute  *Attribute `json:"attribute,omitempty"`
@@ -52,27 +29,41 @@ type Attribute struct {
 	nullFields      []string
 }
 
-// Deprecated: Use ListOceanResourceSuggestionsInput instead.
+// ResourceSuggestion represents a single resource suggestion.
+type ResourceSuggestion struct {
+	ResourceName    *string                        `json:"resourceName,omitempty"`
+	ResourceType    *string                        `json:"resourceType,omitempty"`
+	Namespace       *string                        `json:"namespace,omitempty"`
+	SuggestedCPU    *float64                       `json:"suggestedCPU,omitempty"`
+	RequestedCPU    *float64                       `json:"requestedCPU,omitempty"`
+	SuggestedMemory *float64                       `json:"suggestedMemory,omitempty"`
+	RequestedMemory *float64                       `json:"requestedMemory,omitempty"`
+	Containers      []*ContainerResourceSuggestion `json:"containers,omitempty"`
+}
+
+// ContainerResourceSuggestion represents a resource suggestion for a
+// single container.
+type ContainerResourceSuggestion struct {
+	Name            *string  `json:"name,omitempty"`
+	SuggestedCPU    *float64 `json:"suggestedCpu,omitempty"`
+	RequestedCPU    *float64 `json:"requestedCpu,omitempty"`
+	SuggestedMemory *float64 `json:"suggestedMemory,omitempty"`
+	RequestedMemory *float64 `json:"requestedMemory,omitempty"`
+}
+
+// ListResourceSuggestionsInput represents the input of `ListResourceSuggestions` function.
 type ListResourceSuggestionsInput struct {
 	OceanID   *string `json:"oceanId,omitempty"`
 	Namespace *string `json:"namespace,omitempty"`
+	Filter    *Filter `json:"filter,omitempty"`
 }
 
-// Deprecated: Use ListOceanResourceSuggestionsOutput instead.
+// ListResourceSuggestionsOutput represents the output of `ListResourceSuggestions` function.
 type ListResourceSuggestionsOutput struct {
 	Suggestions []*ResourceSuggestion `json:"suggestions,omitempty"`
 }
 
-// ListOceanResourceSuggestionsInput represents the input of `ListOceanResourceSuggestions` function.
-type ListOceanResourceSuggestionsInput struct {
-	OceanID *string `json:"oceanId,omitempty"`
-	Filter  *Filter `json:"filter,omitempty"`
-}
-
-// ListOceanResourceSuggestionsOutput represents the output of `ListOceanResourceSuggestions` function.
-type ListOceanResourceSuggestionsOutput struct {
-	Suggestions []*ResourceSuggestion `json:"suggestions,omitempty"`
-}
+// region Unmarshallers
 
 func resourceSuggestionFromJSON(in []byte) (*ResourceSuggestion, error) {
 	b := new(ResourceSuggestion)
@@ -106,10 +97,14 @@ func resourceSuggestionsFromHTTPResponse(resp *http.Response) ([]*ResourceSugges
 	return resourceSuggestionsFromJSON(body)
 }
 
-// ListOceanResourceSuggestions returns a list of right-sizing resource suggestions
+// endregion
+
+// region API request
+
+// ListResourceSuggestions returns a list of right-sizing resource suggestions
 // for an Ocean cluster.
-func (s *ServiceOp) ListOceanResourceSuggestions(ctx context.Context, input *ListOceanResourceSuggestionsInput) (*ListOceanResourceSuggestionsOutput, error) {
-	path, err := uritemplates.Expand("/ocean/aws/k8s/cluster/{oceanId}/rightSizing/suggestion", uritemplates.Values{
+func (s *ServiceOp) ListResourceSuggestions(ctx context.Context, input *ListResourceSuggestionsInput) (*ListResourceSuggestionsOutput, error) {
+	path, err := uritemplates.Expand("/ocean/azure/k8s/cluster/{oceanId}/rightSizing/suggestion", uritemplates.Values{
 		"oceanId": spotinst.StringValue(input.OceanID),
 	})
 	if err != nil {
@@ -133,35 +128,7 @@ func (s *ServiceOp) ListOceanResourceSuggestions(ctx context.Context, input *Lis
 		return nil, err
 	}
 
-	return &ListOceanResourceSuggestionsOutput{Suggestions: rs}, nil
+	return &ListResourceSuggestionsOutput{Suggestions: rs}, nil
 }
 
-// Deprecated: Use ListOceanResourceSuggestions instead.
-func (s *ServiceOp) ListResourceSuggestions(ctx context.Context, input *ListResourceSuggestionsInput) (*ListResourceSuggestionsOutput, error) {
-	path, err := uritemplates.Expand("/ocean/aws/k8s/cluster/{oceanId}/rightSizing/resourceSuggestion", uritemplates.Values{
-		"oceanId": spotinst.StringValue(input.OceanID),
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	r := client.NewRequest(http.MethodGet, path)
-
-	if input.Namespace != nil {
-		r.Params.Set("namespace", *input.Namespace)
-	}
-	r.Obj = input
-
-	resp, err := client.RequireOK(s.Client.Do(ctx, r))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	gs, err := resourceSuggestionsFromHTTPResponse(resp)
-	if err != nil {
-		return nil, err
-	}
-
-	return &ListResourceSuggestionsOutput{Suggestions: gs}, nil
-}
+//endregion
