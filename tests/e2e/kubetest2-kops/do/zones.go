@@ -24,15 +24,12 @@ import (
 
 var allZones = []string{
 	"nyc1",
-	"nyc2",
 	"nyc3",
 	"tor1",
 	"lon1",
 	"sgp1",
 	"blr1",
-	"sfo1",
 	"sfo3",
-	"ams2",
 	"ams3",
 	"fra1",
 }
