@@ -269,13 +269,10 @@ var gceZones = []string{
 
 var doZones = []string{
 	"nyc1",
-	"nyc2",
 	"nyc3",
 
-	"sfo1",
 	"sfo3",
 
-	"ams2",
 	"ams3",
 
 	"tor1",
