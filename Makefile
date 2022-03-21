@@ -61,7 +61,7 @@ KOPS_RELEASE_VERSION:=$(shell grep 'KOPS_RELEASE_VERSION\s*=' version.go | awk '
 KOPS_CI_VERSION:=$(shell grep 'KOPS_CI_VERSION\s*=' version.go | awk '{print $$3}' | sed -e 's_"__g')
 
 # kops local location
-KOPS                 = ${LOCAL}/kops
+KOPS=${DIST}/$(shell go env GOOS)/$(shell go env GOARCH)/kops
 
 GITSHA := $(shell cd ${KOPS_ROOT}; git describe --always)
 
@@ -95,8 +95,8 @@ ifdef DEBUGGABLE
 endif
 
 .PHONY: kops-install # Install kops to local $GOPATH/bin
-kops-install:
-	go install ${GCFLAGS} ${EXTRA_BUILDFLAGS} ${LDFLAGS}"-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}" k8s.io/kops/cmd/kops/
+kops-install: kops
+	cp ${DIST}/$(shell go env GOOS)/$(shell go env GOARCH)/kops* $(shell go env GOBIN)
 
 .PHONY: channels-install # Install channels to local $GOPATH/bin
 channels-install: ${CHANNELS}
@@ -108,7 +108,7 @@ all-install: all kops-install channels-install
 	cp ${PROTOKUBE} ${GOPATH_1ST}/bin
 
 .PHONY: all
-all: ${KOPS} ${PROTOKUBE} nodeup ${CHANNELS} ko-kops-controller-export ko-dns-controller-export ko-kube-apiserver-healthcheck-export
+all: kops ${PROTOKUBE} nodeup ${CHANNELS} ko-kops-controller-export ko-dns-controller-export ko-kube-apiserver-healthcheck-export
 
 include tests/e2e/e2e.mk
 
@@ -145,13 +145,6 @@ clean:
 	${BAZEL} clean
 	rm -rf tests/integration/update_cluster/*/.terraform
 
-.PHONY: kops
-kops: ${KOPS}
-
-.PHONY: ${KOPS}
-${KOPS}:
-	go build ${GCFLAGS} ${EXTRA_BUILDFLAGS} ${LDFLAGS}"-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}" -o $@ k8s.io/kops/cmd/kops/
-
 .PHONY: codegen
 codegen:
 	go build -o ${KOPS_ROOT}/_output/bin k8s.io/kops/upup/tools/generators/...
@@ -184,10 +177,36 @@ test:
 test-windows:
 	go test -v $(go list ./... | grep -v /nodeup/)
 
+
+.PHONY: kops
+kops: crossbuild-kops-$(shell go env GOOS)-$(shell go env GOARCH)
+
+.PHONY: crossbuild-kops-linux-amd64 crossbuild-kops-linux-arm64
+crossbuild-kops-linux-amd64 crossbuild-kops-linux-arm64: crossbuild-kops-linux-%:
+	mkdir -p ${DIST}/linux/$*
+	GOOS=linux GOARCH=$* go build ${GCFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/$*/kops ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
+
+.PHONY: crossbuild-kops-darwin-amd64 crossbuild-kops-darwin-arm64
+crossbuild-kops-darwin-amd64 crossbuild-kops-darwin-arm64: crossbuild-kops-darwin-%:
+	mkdir -p ${DIST}/darwin/$*
+	GOOS=darwin GOARCH=$* go build ${GCFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/darwin/$*/kops ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
+
+
+.PHONY: crossbuild-kops-windows-amd64
+crossbuild-kops-windows-amd64:
+	mkdir -p ${DIST}/windows/amd64
+	GOOS=windows GOARCH=amd64 go build ${GCFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/windows/kops.exe ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
+
+.PHONY: crossbuild
+crossbuild: crossbuild-kops
+
+.PHONY: crossbuild-kops
+crossbuild: crossbuild-kops-linux-amd64 crossbuild-kops-linux-arm64 crossbuild-kops-darwin-amd64 crossbuild-kops-darwin-arm64 crossbuild-kops-windows-amd64
+
 .PHONY: nodeup-amd64 nodeup-arm64
 nodeup-amd64 nodeup-arm64: nodeup-%:
 	mkdir -p ${DIST}/linux/$*
-	GOOS=linux GOARCH=$* go build ${GCFLAGS} -a ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/$*/nodeup ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/nodeup
+	GOOS=linux GOARCH=$* go build ${GCFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/$*/nodeup ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/nodeup
 
 .PHONY: nodeup
 nodeup: nodeup-amd64
@@ -195,23 +214,6 @@ nodeup: nodeup-amd64
 .PHONY: crossbuild-nodeup
 crossbuild-nodeup: nodeup-amd64 nodeup-arm64
 
-.PHONY: ${DIST}/darwin/amd64/kops ${DIST}/darwin/arm64/kops
-${DIST}/darwin/amd64/kops ${DIST}/darwin/arm64/kops: ${DIST}/darwin/%/kops:
-	mkdir -p ${DIST}
-	GOOS=darwin GOARCH=$* go build ${GCFLAGS} -a ${EXTRA_BUILDFLAGS} -o $@ ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
-
-.PHONY: ${DIST}/linux/amd64/kops ${DIST}/linux/arm64/kops
-${DIST}/linux/amd64/kops ${DIST}/linux/arm64/kops: ${DIST}/linux/%/kops:
-	mkdir -p ${DIST}
-	GOOS=linux GOARCH=$* go build ${GCFLAGS} -a ${EXTRA_BUILDFLAGS} -o $@ ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
-
-.PHONY: ${DIST}/windows/amd64/kops.exe
-${DIST}/windows/amd64/kops.exe:
-	mkdir -p ${DIST}
-	GOOS=windows GOARCH=amd64 go build ${GCFLAGS} -a ${EXTRA_BUILDFLAGS} -o $@ ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
-
-.PHONY: crossbuild
-crossbuild: ${DIST}/windows/amd64/kops.exe ${DIST}/darwin/amd64/kops ${DIST}/darwin/arm64/kops ${DIST}/linux/amd64/kops ${DIST}/linux/arm64/kops
 
 .PHONY: upload
 upload: bazel-version-dist # Upload kops to S3
@@ -275,10 +277,10 @@ gcs-publish-ci: bazel-version-ci
 	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp ${BAZELUPLOAD}/${LATEST_FILE} ${GCS_LOCATION}
 
 .PHONY: gen-cli-docs
-gen-cli-docs: ${KOPS} # Regenerate CLI docs
+gen-cli-docs: kops # Regenerate CLI docs
 	KOPS_STATE_STORE= \
 	KOPS_FEATURE_FLAGS= \
-	${KOPS} gen-cli-docs --out docs/cli
+	${DIST}/ gen-cli-docs --out docs/cli
 
 .PHONY: push-amd64 push-arm64
 push-amd64 push-arm64: push-%: nodeup-%
@@ -393,7 +395,7 @@ verify-misspelling:
 	hack/verify-spelling.sh
 
 .PHONY: verify-gendocs
-verify-gendocs: ${KOPS}
+verify-gendocs: kops
 	@TMP_DOCS="$$(mktemp -d)"; \
 	'${KOPS}' gen-cli-docs --out "$$TMP_DOCS"; \
 	\
