@@ -128,6 +128,9 @@ spec:
       annotations:
         prometheus.io/port: "9253"
         prometheus.io/scrape: "true"
+{{- with KubeDNS.NodeLocalDNS.PodAnnotations }}
+        {{- . | nindent 8 }}
+{{- end }}
     spec:
       priorityClassName: system-node-critical
       serviceAccountName: node-local-dns
