@@ -8,7 +8,7 @@ require (
 	github.com/octago/sflags v0.2.0
 	github.com/spf13/pflag v1.0.5
 	gopkg.in/yaml.v2 v2.4.0
-	k8s.io/apimachinery v0.23.1
+	k8s.io/apimachinery v0.23.5
 	k8s.io/klog/v2 v2.30.0
 	k8s.io/kops v0.0.0-00010101000000-000000000000
 	sigs.k8s.io/boskos v0.0.0-20200710214748-f5935686c7fc
@@ -112,13 +112,13 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/square/go-jose.v2 v2.5.1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
-	k8s.io/api v0.23.1 // indirect
+	k8s.io/api v0.23.5 // indirect
 	k8s.io/client-go v9.0.0+incompatible // indirect
 	k8s.io/klog v1.0.0 // indirect
 	k8s.io/release v0.7.1-0.20210204090829-09fb5e3883b8 // indirect
 	k8s.io/test-infra v0.0.0-20200617221206-ea73eaeab7ff // indirect
-	k8s.io/utils v0.0.0-20210930125809-cb0fa318a74b // indirect
-	sigs.k8s.io/structured-merge-diff/v4 v4.2.0 // indirect
+	k8s.io/utils v0.0.0-20211116205334-6203023598ed // indirect
+	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 )
 
 replace k8s.io/kops => ../../.
