@@ -108,7 +108,7 @@ all-install: all kops-install channels-install
 	cp ${PROTOKUBE} ${GOPATH_1ST}/bin
 
 .PHONY: all
-all: ${KOPS} ${PROTOKUBE} nodeup ${CHANNELS}
+all: ${KOPS} ${PROTOKUBE} nodeup ${CHANNELS} ko-kops-controller-export ko-dns-controller-export ko-kube-apiserver-healthcheck-export
 
 include tests/e2e/e2e.mk
 
@@ -598,6 +598,10 @@ bazel-push-aws-run: bazel-push
 	ssh ${TARGET} chmod +x /tmp/nodeup
 	ssh -t ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /tmp/nodeup --conf=/opt/kops/conf/kube_env.yaml --v=8
 
+.PHONY: ko
+ko:
+	hack/install-ko.sh
+
 .PHONY: bazelisk
 bazelisk:
 	hack/install-bazelisk.sh
@@ -638,6 +642,39 @@ bazel-kops-controller-export-linux-amd64 bazel-kops-controller-export-linux-arm6
 .PHONY: bazel-kops-controller-export
 bazel-kops-controller-export: bazel-kops-controller-export-linux-amd64 bazel-kops-controller-export-linux-arm64
 	echo "Done exporting kops-controller images"
+
+.PHONY: ko-kops-controller-export-linux-amd64 ko-kops-controller-export-linux-arm64
+ko-kops-controller-export-linux-amd64 ko-kops-controller-export-linux-arm64: ko-kops-controller-export-linux-%: ko
+	mkdir -p ${IMAGES}
+	KO_DOCKER_REPO="registry.k8s.io/kops" ko build --tags ${KOPS_CONTROLLER_TAG} --platform=linux/$* -B --push=false --tarball=${IMAGES}/kops-controller-$*.tar ./cmd/kops-controller/
+	gzip -f ${IMAGES}/kops-controller-$*.tar
+	tools/sha256 ${IMAGES}/kops-controller-$*.tar.gz ${IMAGES}/kops-controller-$*.tar.gz.sha256
+
+.PHONY: ko-kops-controller-export
+ko-kops-controller-export: ko-kops-controller-export-linux-amd64 ko-kops-controller-export-linux-arm64
+	echo "Done exporting kops-controller images"
+
+.PHONY: ko-kube-apiserver-healthcheck-export-linux-amd64 ko-kube-apiserver-healthcheck-export-linux-arm64
+ko-kube-apiserver-healthcheck-export-linux-amd64 ko-kube-apiserver-healthcheck-export-linux-arm64: ko-kube-apiserver-healthcheck-export-linux-%: ko
+	mkdir -p ${IMAGES}
+	KO_DOCKER_REPO="registry.k8s.io/kops" ko build --tags ${KUBE_APISERVER_HEALTHCHECK_TAG} --platform=linux/$* -B --push=false --tarball=${IMAGES}/kube-apiserver-healthcheck-$*.tar ./cmd/kube-apiserver-healthcheck
+	gzip -f ${IMAGES}/kube-apiserver-healthcheck-$*.tar
+	tools/sha256 ${IMAGES}/kube-apiserver-healthcheck-$*.tar.gz ${IMAGES}/kube-apiserver-healthcheck-$*.tar.gz.sha256
+
+.PHONY: ko-kube-apiserver-healthcheck-export
+ko-kube-apiserver-healthcheck-export: ko-kube-apiserver-healthcheck-export-linux-amd64 ko-kube-apiserver-healthcheck-export-linux-arm64
+	echo "Done exporting kube-apiserver-healthcheck images"
+
+.PHONY: ko-dns-controller-export-linux-amd64 ko-dns-controller-export-linux-arm64
+ko-dns-controller-export-linux-amd64 ko-dns-controller-export-linux-arm64: ko-dns-controller-export-linux-%: ko
+	mkdir -p ${IMAGES}
+	KO_DOCKER_REPO="registry.k8s.io/kops" ko build --tags ${DNS_CONTROLLER_TAG} --platform=linux/$* -B --push=false --tarball=${IMAGES}/dns-controller-$*.tar ./dns-controller/cmd/dns-controller
+	gzip -f ${IMAGES}/dns-controller-$*.tar
+	tools/sha256 ${IMAGES}/dns-controller-$*.tar.gz ${IMAGES}/dns-controller-$*.tar.gz.sha256
+
+.PHONY: ko-dns-controller-export
+ko-dns-controller-export: ko-dns-controller-export-linux-amd64 ko-dns-controller-export-linux-arm64
+	echo "Done exporting dns-controller images"
 
 .PHONY: bazel-dns-controller-export-linux-amd64 bazel-dns-controller-export-linux-arm64
 bazel-dns-controller-export-linux-amd64 bazel-dns-controller-export-linux-arm64: bazel-dns-controller-export-linux-%:
