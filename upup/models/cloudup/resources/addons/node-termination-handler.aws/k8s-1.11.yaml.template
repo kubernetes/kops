@@ -174,13 +174,13 @@ spec:
             - name: ENABLE_PROBES_SERVER
               value: "false"
             - name: ENABLE_SPOT_INTERRUPTION_DRAINING
-              value: "false"
+              value: "{{ .EnableSpotInterruptionDraining }}"
             - name: ENABLE_SCHEDULED_EVENT_DRAINING
-              value: "false"
+              value: "{{ .EnableScheduledEventDraining }}"
             - name: ENABLE_REBALANCE_MONITORING
-              value: "false"
+              value: "{{ .EnableRebalanceMonitoring }}"
             - name: ENABLE_REBALANCE_DRAINING
-              value: "false"
+              value: "{{ .EnableRebalanceDraining }}"
             - name: ENABLE_SQS_TERMINATION_DRAINING
               value: "true"
             - name: QUEUE_URL
