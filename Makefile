@@ -27,8 +27,6 @@ LOCAL=$(BUILD)/local
 ARTIFACTS?=$(BUILD)/artifacts
 DIST=$(BUILD)/dist
 IMAGES=$(DIST)/images
-CHANNELS=$(LOCAL)/channels
-PROTOKUBE=$(LOCAL)/protokube
 UPLOAD=$(BUILD)/upload
 BAZELBUILD=$(KOPS_ROOT)/.bazelbuild
 BAZELDIST=$(BAZELBUILD)/dist
@@ -42,6 +40,7 @@ BAZEL_CONFIG?=
 API_OPTIONS?=
 GCFLAGS?=
 BAZEL_BIN=.bazel-bin
+OSARCH=$(shell go env GOOS)/$(shell go env GOARCH)
 
 # CODEGEN_VERSION is the version of k8s.io/code-generator to use
 CODEGEN_VERSION=v0.22.2
@@ -98,17 +97,19 @@ endif
 kops-install: kops
 	cp ${DIST}/$(shell go env GOOS)/$(shell go env GOARCH)/kops* $(shell go env GOBIN)
 
-.PHONY: channels-install # Install channels to local $GOPATH/bin
-channels-install: ${CHANNELS}
-	cp ${CHANNELS} ${GOPATH_1ST}/bin
+.phony: channels-install # install channels to local $gopath/bin
+channels-install: channels
+	cp ${DIST}/${OSARCH}/channels ${GOPATH_1ST}/bin
+
+.phony: nodeup-install # install channels to local $gopath/bin
+nodeup-install: nodeup
+	cp ${DIST}/${OSARCH}/channels ${GOPATH_1ST}/bin
 
 .PHONY: all-install # Install all kops project binaries
-all-install: all kops-install channels-install
-	cp ${NODEUP} ${GOPATH_1ST}/bin
-	cp ${PROTOKUBE} ${GOPATH_1ST}/bin
+all-install: all kops-install channels-install nodeup-install
 
 .PHONY: all
-all: kops ${PROTOKUBE} nodeup ${CHANNELS} ko-kops-controller-export ko-dns-controller-export ko-kube-apiserver-healthcheck-export
+all: kops protokube nodeup channels ko-kops-controller-export ko-dns-controller-export ko-kube-apiserver-healthcheck-export
 
 include tests/e2e/e2e.mk
 
@@ -214,6 +215,27 @@ nodeup: nodeup-amd64
 .PHONY: crossbuild-nodeup
 crossbuild-nodeup: nodeup-amd64 nodeup-arm64
 
+.PHONY: protokube-amd64 protokube-arm64
+protokube-amd64 protokube-arm64: protokube-%:
+	mkdir -p ${DIST}/linux/$*
+	GOOS=linux GOARCH=$* go build ${GCFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/$*/protokube ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/protokube/cmd/protokube
+
+.PHONY: protokube
+protokube: protokube-amd64
+
+.PHONY: crossbuild-protokube
+crossbuild-protokube: protokube-amd64 protokube-arm64
+
+.PHONY: channels-amd64 channels-arm64
+channels-amd64 channels-arm64: channels-%:
+	mkdir -p ${DIST}/linux/$*
+	GOOS=linux GOARCH=$* go build ${GCFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/$*/channels ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/channels/cmd/channels
+
+.PHONY: channels
+nodeup: channels-amd64
+
+.PHONY: crossbuild-channels
+crossbuild-channels: channels-amd64 channels-arm64
 
 .PHONY: upload
 upload: bazel-version-dist # Upload kops to S3
@@ -303,13 +325,6 @@ push-gce-run-amd64 push-gce-run-arm64: push-gce-run-%: push-%
 .PHONY: push-aws-run-amd64 push-aws-run-arm64
 push-aws-run-amd64 push-aws-run-arm64: push-aws-run-%: push-%
 	ssh -t ${TARGET} sudo /tmp/nodeup --conf=/opt/kops/conf/kube_env.yaml --v=8
-
-${PROTOKUBE}:
-	go build ${GCFLAGS} ${EXTRA_BUILDFLAGS} -o $@ -tags 'peer_name_alternative peer_name_hash' k8s.io/kops/protokube/cmd/protokube
-
-.PHONY: protokube
-protokube: ${PROTOKUBE}
-
 
 .PHONY: ${NODEUP}
 ${NODEUP}:
@@ -441,16 +456,6 @@ ci: govet verify-gofmt verify-crds verify-gomod verify-goimports verify-boilerpl
 .PHONY: quick-ci
 quick-ci: verify-crds verify-goimports govet verify-boilerplate verify-bazel verify-versions verify-misspelling verify-shellcheck | verify-gendocs verify-apimachinery verify-codegen
 	echo "Done!"
-
-# --------------------------------------------------
-# channel tool
-
-.PHONY: channels
-channels: ${CHANNELS}
-
-.PHONY: ${CHANNELS}
-${CHANNELS}:
-	go build ${GCFLAGS} ${EXTRA_BUILDFLAGS} -o $@ ${LDFLAGS}"-X k8s.io/kops.Version=${VERSION} ${EXTRA_LDFLAGS}" k8s.io/kops/channels/cmd/channels
 
 # --------------------------------------------------
 # release tasks
