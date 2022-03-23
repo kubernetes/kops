@@ -855,22 +855,22 @@ dev-upload-kube-apiserver-healthcheck: bazel-kube-apiserver-healthcheck-export #
 
 # dev-upload-linux-amd64 does a faster build and uploads to GCS / S3
 .PHONY: dev-upload-linux-amd64 dev-upload-linux-arm64
-dev-upload-linux-amd64 dev-upload-linux-arm64: dev-upload-linux-%: bazel-build-nodeup-linux-% ko-kops-controller-export-linux-% ko-kube-apiserver-healthcheck-export-linux-% ko-dns-controller-export-linux-% bazel-build-protokube-linux-% bazel-build-channels-linux-%
-	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/images/
-	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/$*/
-	cp -fp ${BAZEL_BIN}/cmd/nodeup/linux-$*/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/$*/nodeup
-	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/$*/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/$*/nodeup.sha256
-	cp -fp ${BAZEL_BIN}/channels/cmd/channels/linux-$*/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/$*/channels
-	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/$*/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/$*/channels.sha256
-	cp -fp ${BAZEL_BIN}/protokube/cmd/protokube/linux-$*/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/$*/protokube
-	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/$*/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/$*/protokube.sha256
-	cp -fp ${IMAGES}/kops-controller-$*.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-$*.tar.gz
-	cp -fp ${IMAGES}/kops-controller-$*.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-$*.tar.gz.sha256
-	cp -fp ${IMAGES}/dns-controller-$*.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller-$*.tar.gz
-	cp -fp ${IMAGES}/dns-controller-$*.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller-$*.tar.gz.sha256
-	cp -fp ${IMAGES}/kube-apiserver-healthcheck-$*.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-$*.tar.gz
-	cp -fp ${IMAGES}/kube-apiserver-healthcheck-$*.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-$*.tar.gz.sha256
-	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
+dev-upload-linux-amd64 dev-upload-linux-arm64: dev-upload-linux-%: nodeup-% ko-kops-controller-export-linux-% ko-kube-apiserver-healthcheck-export-linux-% ko-dns-controller-export-linux-% protokube-% channels-%
+	mkdir -p ${UPLOAD}/kops/${VERSION}/images/
+	mkdir -p ${UPLOAD}/kops/${VERSION}/linux/$*/
+	cp -fp ${DIST}/linux/$*/nodeup ${UPLOAD}/kops/${VERSION}/linux/$*/nodeup
+	tools/sha256 ${UPLOAD}/kops/${VERSION}/linux/$*/nodeup ${UPLOAD}/kops/${VERSION}/linux/$*/nodeup.sha256
+	cp -fp ${DIST}/linux/$*/channels ${UPLOAD}/kops/${VERSION}/linux/$*/channels
+	tools/sha256 ${UPLOAD}/kops/${VERSION}/linux/$*/channels ${UPLOAD}/kops/${VERSION}/linux/$*/channels.sha256
+	cp -fp ${DIST}/linux/$*/protokube ${UPLOAD}/kops/${VERSION}/linux/$*/protokube
+	tools/sha256 ${UPLOAD}/kops/${VERSION}/linux/$*/protokube ${UPLOAD}/kops/${VERSION}/linux/$*/protokube.sha256
+	cp -fp ${IMAGES}/kops-controller-$*.tar.gz ${UPLOAD}/kops/${VERSION}/images/kops-controller-$*.tar.gz
+	cp -fp ${IMAGES}/kops-controller-$*.tar.gz.sha256 ${UPLOAD}/kops/${VERSION}/images/kops-controller-$*.tar.gz.sha256
+	cp -fp ${IMAGES}/dns-controller-$*.tar.gz ${UPLOAD}/kops/${VERSION}/images/dns-controller-$*.tar.gz
+	cp -fp ${IMAGES}/dns-controller-$*.tar.gz.sha256 ${UPLOAD}/kops/${VERSION}/images/dns-controller-$*.tar.gz.sha256
+	cp -fp ${IMAGES}/kube-apiserver-healthcheck-$*.tar.gz ${UPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-$*.tar.gz
+	cp -fp ${IMAGES}/kube-apiserver-healthcheck-$*.tar.gz.sha256 ${UPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-$*.tar.gz.sha256
+	${UPLOAD_CMD} ${UPLOAD}/ ${UPLOAD_DEST}
 
 # dev-upload does a faster build and uploads to GCS / S3
 .PHONY: dev-upload
