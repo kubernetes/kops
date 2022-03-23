@@ -47,10 +47,14 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Allow all traffic from nodes -> nodes
 	{
+		network, err := b.LinkToNetwork()
+		if err != nil {
+			return err
+		}
 		t := &gcetasks.FirewallRule{
 			Name:       s(b.NameForFirewallRule("node-to-node")),
 			Lifecycle:  b.Lifecycle,
-			Network:    b.LinkToNetwork(),
+			Network:    network,
 			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
 			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
 			Allowed:    allProtocols,
@@ -60,10 +64,14 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Allow full traffic from master -> master
 	{
+		network, err := b.LinkToNetwork()
+		if err != nil {
+			return err
+		}
 		t := &gcetasks.FirewallRule{
 			Name:       s(b.NameForFirewallRule("master-to-master")),
 			Lifecycle:  b.Lifecycle,
-			Network:    b.LinkToNetwork(),
+			Network:    network,
 			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
 			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
 			Allowed:    allProtocols,
@@ -73,10 +81,14 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Allow full traffic from master -> node
 	{
+		network, err := b.LinkToNetwork()
+		if err != nil {
+			return err
+		}
 		t := &gcetasks.FirewallRule{
 			Name:       s(b.NameForFirewallRule("master-to-node")),
 			Lifecycle:  b.Lifecycle,
-			Network:    b.LinkToNetwork(),
+			Network:    network,
 			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
 			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
 			Allowed:    allProtocols,
@@ -86,10 +98,14 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Allow limited traffic from nodes -> masters
 	{
+		network, err := b.LinkToNetwork()
+		if err != nil {
+			return err
+		}
 		t := &gcetasks.FirewallRule{
 			Name:       s(b.NameForFirewallRule("node-to-master")),
 			Lifecycle:  b.Lifecycle,
-			Network:    b.LinkToNetwork(),
+			Network:    network,
 			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
 			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
 			Allowed: []string{
@@ -117,10 +133,14 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			return fmt.Errorf("expected PodCIDR to be set for IPAlias / kubenet")
 		}
 
+		network, err := b.LinkToNetwork()
+		if err != nil {
+			return err
+		}
 		c.AddTask(&gcetasks.FirewallRule{
 			Name:         s(b.NameForFirewallRule("pod-cidrs-to-node")),
 			Lifecycle:    b.Lifecycle,
-			Network:      b.LinkToNetwork(),
+			Network:      network,
 			SourceRanges: []string{b.Cluster.Spec.PodCIDR},
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
 			Allowed:      allProtocols,

@@ -32,13 +32,20 @@ type GCEModelContext struct {
 }
 
 // LinkToNetwork returns the GCE Network object the cluster is located in
-func (c *GCEModelContext) LinkToNetwork() *gcetasks.Network {
-	name := c.Cluster.Spec.NetworkID
-	if name == "" {
-		name = c.SafeClusterName()
+func (c *GCEModelContext) LinkToNetwork() (*gcetasks.Network, error) {
+	if c.Cluster.Spec.NetworkID == "" {
+		return &gcetasks.Network{Name: s(c.SafeClusterName())}, nil
+	}
+	name, project, err := gce.ParseNameAndProjectFromNetworkID(c.Cluster.Spec.NetworkID)
+	if err != nil {
+		return nil, err
 	}
 
-	return &gcetasks.Network{Name: s(name)}
+	network := &gcetasks.Network{Name: s(name)}
+	if project != "" {
+		network.Project = &project
+	}
+	return network, nil
 }
 
 // NameForIPAliasRange returns the name for the secondary IP range attached to a subnet
@@ -84,6 +91,14 @@ func (c *GCEModelContext) LinkToTargetPool(id string) *gcetasks.TargetPool {
 }
 
 func (c *GCEModelContext) NameForTargetPool(id string) string {
+	return c.SafeObjectName(id)
+}
+
+func (c *GCEModelContext) NameForHealthCheck(id string) string {
+	return c.SafeObjectName(id)
+}
+
+func (c *GCEModelContext) NameForBackendService(id string) string {
 	return c.SafeObjectName(id)
 }
 
