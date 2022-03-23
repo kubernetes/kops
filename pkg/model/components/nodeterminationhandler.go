@@ -74,5 +74,9 @@ func (b *NodeTerminationHandlerOptionsBuilder) BuildOptions(o interface{}) error
 		nth.MemoryRequest = &defaultMemoryRequest
 	}
 
+	if nth.Version == nil {
+		nth.Version = fi.String("v1.14.0")
+	}
+
 	return nil
 }
