@@ -31,6 +31,7 @@ import (
 // +kops:fitask
 type Network struct {
 	Name      *string
+	Project   *string
 	Lifecycle fi.Lifecycle
 	Mode      string
 
@@ -47,8 +48,12 @@ func (e *Network) CompareWithID() *string {
 
 func (e *Network) Find(c *fi.Context) (*Network, error) {
 	cloud := c.Cloud.(gce.GCECloud)
+	project := cloud.Project()
+	if e.Project != nil {
+		project = *e.Project
+	}
 
-	r, err := cloud.Compute().Networks().Get(cloud.Project(), *e.Name)
+	r, err := cloud.Compute().Networks().Get(project, *e.Name)
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
@@ -65,9 +70,10 @@ func (e *Network) Find(c *fi.Context) (*Network, error) {
 	} else {
 		actual.Mode = "custom"
 	}
+	actual.Project = &project
 
-	if r.SelfLink != e.URL(cloud.Project()) {
-		klog.Warningf("SelfLink did not match URL: %q vs %q", r.SelfLink, e.URL(cloud.Project()))
+	if r.SelfLink != e.URL(project) {
+		klog.Warningf("SelfLink did not match URL: %q vs %q", r.SelfLink, e.URL(project))
 	}
 
 	// Ignore "system" fields
@@ -189,6 +195,7 @@ func (_ *Network) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Network) error {
 type terraformNetwork struct {
 	Name                  *string `cty:"name"`
 	IPv4Range             *string `cty:"ipv4_range"`
+	Project               *string `cty:"project"`
 	AutoCreateSubnetworks *bool   `cty:"auto_create_subnetworks"`
 }
 
@@ -200,7 +207,8 @@ func (_ *Network) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *N
 	}
 
 	tf := &terraformNetwork{
-		Name: e.Name,
+		Name:    e.Name,
+		Project: e.Project,
 	}
 
 	switch e.Mode {
@@ -225,7 +233,11 @@ func (e *Network) TerraformLink() *terraformWriter.Literal {
 		}
 
 		klog.V(4).Infof("reusing existing network with name %q", *e.Name)
-		return terraformWriter.LiteralFromStringValue(*e.Name)
+		name := *e.Name
+		if e.Project != nil {
+			name = *e.Project + "/" + name
+		}
+		return terraformWriter.LiteralFromStringValue(name)
 	}
 
 	return terraformWriter.LiteralProperty("google_compute_network", *e.Name, "name")

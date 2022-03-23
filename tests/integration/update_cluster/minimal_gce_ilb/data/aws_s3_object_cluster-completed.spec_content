@@ -1,0 +1,189 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  name: minimal-gce-ilb.example.com
+spec:
+  api:
+    loadBalancer:
+      subnets:
+      - name: us-test-1
+      type: Internal
+      useForInternalApi: true
+  authorization:
+    alwaysAllow: {}
+  channel: stable
+  cloudConfig:
+    gcpPDCSIDriver:
+      enabled: false
+    manageStorageClasses: true
+    multizone: true
+    nodeTags: minimal-gce-ilb-example-com-k8s-io-role-node
+  cloudProvider: gce
+  clusterDNSDomain: cluster.local
+  configBase: memfs://tests/minimal-gce-ilb.example.com
+  configStore: memfs://tests/minimal-gce-ilb.example.com
+  containerRuntime: containerd
+  containerd:
+    logLevel: info
+    version: 1.4.12
+  dnsZone: "1"
+  docker:
+    skipInstall: true
+  etcdClusters:
+  - backups:
+      backupStore: memfs://tests/minimal-gce-ilb.example.com/backups/etcd/main
+    etcdMembers:
+    - instanceGroup: master-us-test1-a
+      name: "1"
+    name: main
+    version: 3.4.13
+  - backups:
+      backupStore: memfs://tests/minimal-gce-ilb.example.com/backups/etcd/events
+    etcdMembers:
+    - instanceGroup: master-us-test1-a
+      name: "1"
+    name: events
+    version: 3.4.13
+  externalDns:
+    provider: dns-controller
+  iam:
+    legacy: false
+  keyStore: memfs://tests/minimal-gce-ilb.example.com/pki
+  kubeAPIServer:
+    allowPrivileged: true
+    anonymousAuth: false
+    apiAudiences:
+    - kubernetes.svc.default
+    apiServerCount: 1
+    authorizationMode: AlwaysAllow
+    bindAddress: 0.0.0.0
+    cloudProvider: gce
+    enableAdmissionPlugins:
+    - NamespaceLifecycle
+    - LimitRanger
+    - ServiceAccount
+    - DefaultStorageClass
+    - DefaultTolerationSeconds
+    - MutatingAdmissionWebhook
+    - ValidatingAdmissionWebhook
+    - NodeRestriction
+    - ResourceQuota
+    etcdServers:
+    - https://127.0.0.1:4001
+    etcdServersOverrides:
+    - /events#https://127.0.0.1:4002
+    image: registry.k8s.io/kube-apiserver:v1.21.0
+    kubeletPreferredAddressTypes:
+    - InternalIP
+    - Hostname
+    - ExternalIP
+    logLevel: 2
+    requestheaderAllowedNames:
+    - aggregator
+    requestheaderExtraHeaderPrefixes:
+    - X-Remote-Extra-
+    requestheaderGroupHeaders:
+    - X-Remote-Group
+    requestheaderUsernameHeaders:
+    - X-Remote-User
+    securePort: 443
+    serviceAccountIssuer: https://api.internal.minimal-gce-ilb.example.com
+    serviceAccountJWKSURI: https://api.internal.minimal-gce-ilb.example.com/openid/v1/jwks
+    serviceClusterIPRange: 100.64.0.0/13
+    storageBackend: etcd3
+  kubeControllerManager:
+    allocateNodeCIDRs: true
+    attachDetachReconcileSyncPeriod: 1m0s
+    cloudProvider: gce
+    clusterCIDR: 100.96.0.0/11
+    clusterName: minimal-gce-ilb-example-com
+    configureCloudRoutes: false
+    image: registry.k8s.io/kube-controller-manager:v1.21.0
+    leaderElection:
+      leaderElect: true
+    logLevel: 2
+    useServiceAccountCredentials: true
+  kubeDNS:
+    cacheMaxConcurrent: 150
+    cacheMaxSize: 1000
+    cpuRequest: 100m
+    domain: cluster.local
+    memoryLimit: 170Mi
+    memoryRequest: 70Mi
+    nodeLocalDNS:
+      cpuRequest: 25m
+      enabled: false
+      image: registry.k8s.io/dns/k8s-dns-node-cache:1.21.3
+      memoryRequest: 5Mi
+    provider: CoreDNS
+    serverIP: 100.64.0.10
+  kubeProxy:
+    clusterCIDR: 100.96.0.0/11
+    cpuRequest: 100m
+    image: registry.k8s.io/kube-proxy:v1.21.0
+    logLevel: 2
+  kubeScheduler:
+    image: registry.k8s.io/kube-scheduler:v1.21.0
+    leaderElection:
+      leaderElect: true
+    logLevel: 2
+  kubelet:
+    anonymousAuth: false
+    cgroupDriver: systemd
+    cgroupRoot: /
+    cloudProvider: gce
+    clusterDNS: 100.64.0.10
+    clusterDomain: cluster.local
+    enableDebuggingHandlers: true
+    evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+    hairpinMode: promiscuous-bridge
+    kubeconfigPath: /var/lib/kubelet/kubeconfig
+    logLevel: 2
+    networkPluginName: cni
+    podInfraContainerImage: registry.k8s.io/pause:3.6
+    podManifestPath: /etc/kubernetes/manifests
+    shutdownGracePeriod: 30s
+    shutdownGracePeriodCriticalPods: 10s
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  kubernetesVersion: 1.21.0
+  masterInternalName: api.internal.minimal-gce-ilb.example.com
+  masterKubelet:
+    anonymousAuth: false
+    cgroupDriver: systemd
+    cgroupRoot: /
+    cloudProvider: gce
+    clusterDNS: 100.64.0.10
+    clusterDomain: cluster.local
+    enableDebuggingHandlers: true
+    evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+    hairpinMode: promiscuous-bridge
+    kubeconfigPath: /var/lib/kubelet/kubeconfig
+    logLevel: 2
+    networkPluginName: cni
+    podInfraContainerImage: registry.k8s.io/pause:3.6
+    podManifestPath: /etc/kubernetes/manifests
+    registerSchedulable: false
+    shutdownGracePeriod: 30s
+    shutdownGracePeriodCriticalPods: 10s
+  masterPublicName: api.minimal-gce-ilb.example.com
+  networking:
+    cni: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  podCIDR: 100.96.0.0/11
+  project: testproject
+  secretStore: memfs://tests/minimal-gce-ilb.example.com/secrets
+  serviceClusterIPRange: 100.64.0.0/13
+  sshAccess:
+  - 0.0.0.0/0
+  subnets:
+  - cidr: 10.0.16.0/20
+    name: us-test1
+    region: us-test1
+    type: Private
+  topology:
+    dns:
+      type: Public
+    masters: private
+    nodes: private
