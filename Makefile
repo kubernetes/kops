@@ -196,7 +196,7 @@ crossbuild-kops-darwin-amd64 crossbuild-kops-darwin-arm64: crossbuild-kops-darwi
 .PHONY: crossbuild-kops-windows-amd64
 crossbuild-kops-windows-amd64:
 	mkdir -p ${DIST}/windows/amd64
-	GOOS=windows GOARCH=amd64 go build ${GCFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/windows/kops.exe ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
+	GOOS=windows GOARCH=amd64 go build ${GCFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/windows/amd64/kops.exe ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
 
 .PHONY: crossbuild
 crossbuild: crossbuild-kops
@@ -238,14 +238,14 @@ nodeup: channels-amd64
 crossbuild-channels: channels-amd64 channels-arm64
 
 .PHONY: upload
-upload: bazel-version-dist # Upload kops to S3
+upload: version-dist # Upload kops to S3
 	aws s3 sync --acl public-read ${UPLOAD}/ ${S3_BUCKET}
 
 # gcs-upload builds kops and uploads to GCS
 .PHONY: gcs-upload
-gcs-upload: bazel-version-dist
+gcs-upload: version-dist
 	@echo "== Uploading kops =="
-	gsutil -h "Cache-Control:private, max-age=0, no-transform" -m cp -n -r ${BAZELUPLOAD}/kops/* ${GCS_LOCATION}
+	gsutil -h "Cache-Control:private, max-age=0, no-transform" -m cp -n -r ${UPLOAD}/kops/* ${GCS_LOCATION}
 
 # gcs-upload-tag runs gcs-upload to upload, then uploads a version-marker to LATEST_FILE
 .PHONY: gcs-upload-and-tag
@@ -291,12 +291,12 @@ bazel-version-ci: bazel-version-dist-linux-amd64 bazel-version-dist-linux-arm64
 # In CI testing, always upload the CI version.
 .PHONY: gcs-publish-ci
 gcs-publish-ci: VERSION := ${KOPS_CI_VERSION}+${GITSHA}
-gcs-publish-ci: bazel-version-ci
+gcs-publish-ci: version-dist
 	@echo "== Uploading kops =="
-	gsutil -h "Cache-Control:private, max-age=0, no-transform" -m cp -n -r ${BAZELUPLOAD}/kops/* ${GCS_LOCATION}
+	gsutil -h "Cache-Control:private, max-age=0, no-transform" -m cp -n -r ${UPLOAD}/kops/* ${GCS_LOCATION}
 	echo "VERSION: ${VERSION}"
-	echo "${GCS_URL}/${VERSION}" > ${BAZELUPLOAD}/${LATEST_FILE}
-	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp ${BAZELUPLOAD}/${LATEST_FILE} ${GCS_LOCATION}
+	echo "${GCS_URL}/${VERSION}" > ${UPLOAD}/${LATEST_FILE}
+	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp ${UPLOAD}/${LATEST_FILE} ${GCS_LOCATION}
 
 .PHONY: gen-cli-docs
 gen-cli-docs: kops # Regenerate CLI docs
@@ -744,6 +744,24 @@ bazel-version-dist: bazel-version-dist-linux-amd64 bazel-version-dist-linux-arm6
 	tar cfvz ${BAZELUPLOAD}/kops/${VERSION}/images/images.tar.gz -C ${BAZELIMAGES} --exclude "*.sha256" .
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/images.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/images.tar.gz.sha256
 	cp -fr ${BAZELUPLOAD}/kops/${VERSION}/* ${BAZELDIST}/
+
+.PHONY: version-dist
+version-dist: dev-version-dist-amd64 dev-version-dist-arm64 crossbuild
+	mkdir -p ${UPLOAD}/kops/${VERSION}/linux/amd64/
+	mkdir -p ${UPLOAD}/kops/${VERSION}/linux/arm64/
+	mkdir -p ${UPLOAD}/kops/${VERSION}/darwin/amd64/
+	mkdir -p ${UPLOAD}/kops/${VERSION}/darwin/arm64/
+	mkdir -p ${UPLOAD}/kops/${VERSION}/windows/amd64/
+	cp ${DIST}/linux/amd64/kops ${UPLOAD}/kops/${VERSION}/linux/amd64/kops
+	tools/sha256 ${UPLOAD}/kops/${VERSION}/linux/amd64/kops ${UPLOAD}/kops/${VERSION}/linux/amd64/kops.sha256
+	cp ${DIST}/linux/arm64/kops ${UPLOAD}/kops/${VERSION}/linux/arm64/kops
+	tools/sha256 ${UPLOAD}/kops/${VERSION}/linux/arm64/kops ${UPLOAD}/kops/${VERSION}/linux/arm64/kops.sha256
+	cp ${DIST}/darwin/amd64/kops ${UPLOAD}/kops/${VERSION}/darwin/amd64/kops
+	tools/sha256 ${UPLOAD}/kops/${VERSION}/darwin/amd64/kops ${UPLOAD}/kops/${VERSION}/darwin/amd64/kops.sha256
+	cp ${DIST}/darwin/arm64/kops ${UPLOAD}/kops/${VERSION}/darwin/arm64/kops
+	tools/sha256 ${UPLOAD}/kops/${VERSION}/darwin/arm64/kops ${UPLOAD}/kops/${VERSION}/darwin/arm64/kops.sha256
+	cp ${DIST}/windows/amd64/kops.exe ${UPLOAD}/kops/${VERSION}/windows/amd64/kops.exe
+	tools/sha256 ${UPLOAD}/kops/${VERSION}/windows/amd64/kops.exe ${UPLOAD}/kops/${VERSION}/windows/amd64/kops.exe.sha256
 
 .PHONY: bazel-upload
 bazel-upload: bazel-version-dist # Upload kops to S3
