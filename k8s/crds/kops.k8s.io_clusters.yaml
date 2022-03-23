@@ -5250,6 +5250,9 @@ spec:
                   prometheusEnable:
                     description: EnablePrometheusMetrics enables the "/metrics" endpoint.
                     type: boolean
+                  version:
+                    description: Version is the container image tag used.
+                    type: string
                 type: object
               nonMasqueradeCIDR:
                 description: MasterIPRange                 string `json:",omitempty"`

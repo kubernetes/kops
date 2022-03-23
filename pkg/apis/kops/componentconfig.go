@@ -939,6 +939,8 @@ type NodeTerminationHandlerConfig struct {
 	// CPURequest of NodeTerminationHandler container.
 	// Default: 50m
 	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
+	// Version is the container image tag used.
+	Version *string `json:"version,omitempty"`
 }
 
 // NodeProblemDetector determines the node problem detector configuration.
