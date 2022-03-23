@@ -6375,6 +6375,7 @@ func autoConvert_v1alpha2_NodeTerminationHandlerConfig_To_kops_NodeTerminationHa
 	out.ManagedASGTag = in.ManagedASGTag
 	out.MemoryRequest = in.MemoryRequest
 	out.CPURequest = in.CPURequest
+	out.Version = in.Version
 	return nil
 }
 
@@ -6394,6 +6395,7 @@ func autoConvert_kops_NodeTerminationHandlerConfig_To_v1alpha2_NodeTerminationHa
 	out.ManagedASGTag = in.ManagedASGTag
 	out.MemoryRequest = in.MemoryRequest
 	out.CPURequest = in.CPURequest
+	out.Version = in.Version
 	return nil
 }
 
