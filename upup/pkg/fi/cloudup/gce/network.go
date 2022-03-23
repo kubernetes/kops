@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"strings"
 
 	compute "google.golang.org/api/compute/v1"
 	"k8s.io/klog/v2"
@@ -46,6 +47,28 @@ func PerformNetworkAssignments(ctx context.Context, c *kops.Cluster, cloudObj fi
 	}
 }
 
+// ParseNameAndProjectFromNetworkID will take in the GCE-flavored network ID,
+// and return the project and name of the resource.  The permitted formats are
+// "network-name", or "project-id/network-name".  Empty string is also accepted.
+func ParseNameAndProjectFromNetworkID(networkID string) (string, string, error) {
+	var name, project string
+	if networkID == "" {
+		return "", "", nil
+	}
+	name = networkID
+	// If the network ID has a slash, then we take the part before the / as a project ID.
+	// Otherwise, we assume the entire provided value is the network ID.
+	if strings.Contains(name, "/") {
+		nameParts := strings.Split(name, "/")
+		if len(nameParts) > 2 {
+			return "", "", fmt.Errorf("cannot parse network name %q as either project/network or network", name)
+		}
+		name = nameParts[1]
+		project = nameParts[0]
+	}
+	return name, project, nil
+}
+
 func buildUsed(ctx context.Context, c *kops.Cluster, cloudObj fi.Cloud) (*subnet.CIDRMap, error) {
 	networkName := c.Spec.NetworkID
 	if networkName == "" {
@@ -53,8 +76,15 @@ func buildUsed(ctx context.Context, c *kops.Cluster, cloudObj fi.Cloud) (*subnet
 	}
 
 	cloud := cloudObj.(GCECloud)
+	networkName, projectName, err := ParseNameAndProjectFromNetworkID(networkName)
+	if err != nil {
+		return nil, err
+	}
+	if projectName == "" {
+		projectName = cloud.Project()
+	}
 
-	network, err := cloud.Compute().Networks().Get(cloud.Project(), networkName)
+	network, err := cloud.Compute().Networks().Get(projectName, networkName)
 	if err != nil {
 		if IsNotFound(err) {
 			network = nil

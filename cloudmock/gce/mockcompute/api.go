@@ -29,9 +29,11 @@ type MockClient struct {
 
 	networkClient          *networkClient
 	subnetworkClient       *subnetworkClient
+	backendServiceClient   *backendServiceClient
 	routeClient            *routeClient
 	forwardingRuleClient   *forwardingRuleClient
 	httpHealthChecksClient *httpHealthChecksClient
+	healthCheckClient      *healthCheckClient
 	addressClient          *addressClient
 	firewallClient         *firewallClient
 	routerClient           *routerClient
@@ -53,9 +55,11 @@ func NewMockClient(project string) *MockClient {
 
 		networkClient:          newNetworkClient(),
 		subnetworkClient:       newSubnetworkClient(),
+		backendServiceClient:   newBackendServiceClient(),
 		routeClient:            newRouteClient(),
 		forwardingRuleClient:   newForwardingRuleClient(),
 		httpHealthChecksClient: newHttpHealthChecksClient(),
+		healthCheckClient:      newHealthCheckClient(),
 		addressClient:          newAddressClient(),
 		firewallClient:         newFirewallClient(),
 		routerClient:           newRouterClient(),
@@ -73,13 +77,14 @@ func (c *MockClient) AllResources() map[string]interface{} {
 	fs := []func() map[string]interface{}{
 		c.projectClient.All,
 		c.zoneClient.All,
-		// Do not call c.networkClient.All() as currently pkg/resources/gce/gce.go
-		// does not delete a network.
+		// Do not call c.networkClient.All() or c.subnetworkClient.All,
+		// as currently pkg/resources/gce/gce.go
+		// does not delete a network or subnetwork.
 		// TODO(kenji): Fix this.
-		c.subnetworkClient.All,
 		c.routeClient.All,
 		c.forwardingRuleClient.All,
 		c.httpHealthChecksClient.All,
+		c.healthCheckClient.All,
 		c.addressClient.All,
 		c.firewallClient.All,
 		c.routerClient.All,
@@ -87,6 +92,7 @@ func (c *MockClient) AllResources() map[string]interface{} {
 		c.instanceGroupManagerClient.All,
 		c.targetPoolClient.All,
 		c.diskClient.All,
+		c.backendServiceClient.All,
 	}
 	for _, f := range fs {
 		m := f()
@@ -129,6 +135,14 @@ func (c *MockClient) ForwardingRules() gce.ForwardingRuleClient {
 
 func (c *MockClient) HTTPHealthChecks() gce.HttpHealthChecksClient {
 	return c.httpHealthChecksClient
+}
+
+func (c *MockClient) RegionHealthChecks() gce.RegionHealthChecksClient {
+	return c.healthCheckClient
+}
+
+func (c *MockClient) RegionBackendServices() gce.RegionBackendServiceClient {
+	return c.backendServiceClient
 }
 
 func (c *MockClient) Addresses() gce.AddressClient {

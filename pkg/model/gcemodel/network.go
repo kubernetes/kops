@@ -36,11 +36,12 @@ var _ fi.ModelBuilder = &NetworkModelBuilder{}
 func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	sharedNetwork := b.Cluster.Spec.NetworkID != ""
 
-	network := &gcetasks.Network{
-		Name:      b.LinkToNetwork().Name,
-		Lifecycle: b.Lifecycle,
-		Shared:    fi.Bool(sharedNetwork),
+	network, err := b.LinkToNetwork()
+	if err != nil {
+		return nil
 	}
+	network.Lifecycle = b.Lifecycle
+	network.Shared = fi.Bool(sharedNetwork)
 	if !sharedNetwork {
 		// As we're creating the network, we're also creating the subnets.
 		// We therefore use custom mode, for a few reasons:
@@ -55,9 +56,13 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		sharedSubnet := subnet.ProviderID != ""
 
+		network, err := b.LinkToNetwork()
+		if err != nil {
+			return nil
+		}
 		t := &gcetasks.Subnet{
 			Name:              b.LinkToSubnet(subnet).Name,
-			Network:           b.LinkToNetwork(),
+			Network:           network,
 			Lifecycle:         b.Lifecycle,
 			Region:            s(b.Region),
 			Shared:            fi.Bool(sharedSubnet),
@@ -118,10 +123,15 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		if len(subnetworks) != 0 {
+
+			network, err := b.LinkToNetwork()
+			if err != nil {
+				return nil
+			}
 			r := &gcetasks.Router{
 				Name:                          s(b.SafeObjectName("nat")),
 				Lifecycle:                     b.Lifecycle,
-				Network:                       b.LinkToNetwork(),
+				Network:                       network,
 				Region:                        s(b.Region),
 				NATIPAllocationOption:         s(gcetasks.NATIPAllocationOptionAutoOnly),
 				SourceSubnetworkIPRangesToNAT: s(gcetasks.SourceSubnetworkIPRangesSpecificSubnets),
