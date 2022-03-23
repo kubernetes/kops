@@ -11,7 +11,7 @@ metadata:
     app.kubernetes.io/name: aws-node-termination-handler
     app.kubernetes.io/instance: aws-node-termination-handler
     k8s-app: aws-node-termination-handler
-    app.kubernetes.io/version: "{{ or .Version "v1.14.0" }}"
+    app.kubernetes.io/version: "{{ .Version }}"
 ---
 # Source: aws-node-termination-handler/templates/clusterrole.yaml
 kind: ClusterRole
@@ -79,7 +79,7 @@ metadata:
     app.kubernetes.io/name: aws-node-termination-handler
     app.kubernetes.io/instance: aws-node-termination-handler
     k8s-app: aws-node-termination-handler
-    app.kubernetes.io/version: "{{ or .Version "v1.14.0" }}"
+    app.kubernetes.io/version: "{{ .Version }}"
 spec:
   replicas: 1
   selector:
@@ -118,7 +118,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: aws-node-termination-handler
-          image: public.ecr.aws/aws-ec2/aws-node-termination-handler:{{ or .Version "v1.14.0" }}
+          image: public.ecr.aws/aws-ec2/aws-node-termination-handler:{{ .Version }}
           imagePullPolicy: IfNotPresent
           securityContext:
             readOnlyRootFilesystem: true
@@ -227,7 +227,7 @@ metadata:
     app.kubernetes.io/name: aws-node-termination-handler
     app.kubernetes.io/instance: aws-node-termination-handler
     k8s-app: aws-node-termination-handler
-    app.kubernetes.io/version: "{{ or .Version "v1.14.0" }}"
+    app.kubernetes.io/version: "{{ .Version }}"
 spec:
   updateStrategy:
     rollingUpdate:
@@ -271,7 +271,7 @@ spec:
       dnsPolicy: "ClusterFirstWithHostNet"
       containers:
         - name: aws-node-termination-handler
-          image: public.ecr.aws/aws-ec2/aws-node-termination-handler:{{ or .Version "v1.14.0" }}
+          image: public.ecr.aws/aws-ec2/aws-node-termination-handler:{{ .Version }}
           imagePullPolicy: IfNotPresent
           securityContext:
             readOnlyRootFilesystem: true
