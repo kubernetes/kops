@@ -7,7 +7,7 @@ metadata:
     app.kubernetes.io/instance: aws-node-termination-handler
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node-termination-handler
-    app.kubernetes.io/version: 1.14.0
+    app.kubernetes.io/version: v1.14.0
     k8s-addon: node-termination-handler.aws
     k8s-app: aws-node-termination-handler
   name: aws-node-termination-handler
@@ -91,7 +91,7 @@ metadata:
     app.kubernetes.io/instance: aws-node-termination-handler
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node-termination-handler
-    app.kubernetes.io/version: 1.14.0
+    app.kubernetes.io/version: v1.14.0
     k8s-addon: node-termination-handler.aws
     k8s-app: aws-node-termination-handler
   name: aws-node-termination-handler
