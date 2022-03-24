@@ -4358,6 +4358,11 @@ func (in *NodeTerminationHandlerConfig) DeepCopyInto(out *NodeTerminationHandler
 		x := (*in).DeepCopy()
 		*out = &x
 	}
+	if in.Version != nil {
+		in, out := &in.Version, &out.Version
+		*out = new(string)
+		**out = **in
+	}
 	return
 }
 
