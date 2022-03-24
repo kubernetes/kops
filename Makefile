@@ -776,101 +776,117 @@ build-docs-netlify:
 #-----------------------------------------------------------
 # development targets
 
-# dev-upload-nodeup uploads nodeup to GCS
-.PHONY: dev-upload-nodeup
-dev-upload-nodeup: bazel-crossbuild-nodeup
-	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/
-	cp -fp ${BAZEL_BIN}/cmd/nodeup/linux-amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup
-	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup.sha256
-	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/
-	cp -fp ${BAZEL_BIN}/cmd/nodeup/linux-arm64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup
-	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup.sha256
-	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
+# dev-upload-nodeup uploads nodeup
+.PHONY: version-dist-nodeup version-dist-nodeup-amd64 version-dist-nodeup-arm64
+version-dist-nodeup: version-dist-nodeup-amd64 version-dist-nodeup-arm64
 
-.PHONY: dev-upload-nodeup-amd64
-dev-upload-nodeup-amd64: bazel-build-nodeup-linux-amd64
-	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/
-	cp -fp ${BAZEL_BIN}/cmd/nodeup/linux-amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup
-	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup.sha256
-	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
-
-.PHONY: dev-upload-nodeup-arm64
-dev-upload-nodeup-arm64: bazel-build-nodeup-linux-arm64
-	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/
-	cp -fp ${BAZEL_BIN}/cmd/nodeup/linux-arm64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup
-	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup.sha256
-	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
-
-# dev-upload-protokube uploads protokube to GCS
-.PHONY: dev-upload-protokube
-dev-upload-protokube: bazel-crossbuild-protokube # Upload kops to GCS
-	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/
-	cp -fp ${BAZEL_BIN}/protokube/cmd/protokube/linux-amd64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube
-	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/protokube.sha256
-	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/
-	cp -fp ${BAZEL_BIN}/protokube/cmd/protokube/linux-arm64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube
-	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/protokube.sha256
-	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
-
-# dev-upload-channels uploads channels to GCS
-.PHONY: dev-upload-channels
-dev-upload-channels: bazel-crossbuild-channels
-	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/
-	cp -fp ${BAZEL_BIN}/channels/cmd/channels/linux-amd64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/channels
-	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/channels.sha256
-	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/
-	cp -fp ${BAZEL_BIN}/channels/cmd/channels/linux-arm64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/channels
-	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/channels ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/channels.sha256
-	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
-
-# dev-upload-kops-controller uploads kops-controller to GCS
-.PHONY: dev-upload-kops-controller
-dev-upload-kops-controller: bazel-kops-controller-export # Upload kops to GCS
-	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/images/
-	cp -fp ${BAZELIMAGES}/kops-controller-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-amd64.tar.gz
-	cp -fp ${BAZELIMAGES}/kops-controller-amd64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-amd64.tar.gz.sha256
-	cp -fp ${BAZELIMAGES}/kops-controller-arm64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-arm64.tar.gz
-	cp -fp ${BAZELIMAGES}/kops-controller-arm64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-arm64.tar.gz.sha256
-	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
-
-# dev-upload-dns-controller uploads dns-controller to GCS
-.PHONY: dev-upload-dns-controller
-dev-upload-dns-controller: bazel-dns-controller-export # Upload kops to GCS
-	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/images/
-	cp -fp ${BAZELIMAGES}/dns-controller-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller-amd64.tar.gz
-	cp -fp ${BAZELIMAGES}/dns-controller-amd64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller-amd64.tar.gz.sha256
-	cp -fp ${BAZELIMAGES}/dns-controller-arm64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller-arm64.tar.gz
-	cp -fp ${BAZELIMAGES}/dns-controller-arm64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller-arm64.tar.gz.sha256
-	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
-
-# dev-upload-kube-apiserver-healthcheck uploads kube-apiserver-healthcheck to GCS
-.PHONY: dev-upload-kube-apiserver-healthcheck
-dev-upload-kube-apiserver-healthcheck: bazel-kube-apiserver-healthcheck-export # Upload kops to GCS
-	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/images/
-	cp -fp ${BAZELIMAGES}/kube-apiserver-healthcheck-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-amd64.tar.gz
-	cp -fp ${BAZELIMAGES}/kube-apiserver-healthcheck-amd64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-amd64.tar.gz.sha256
-	cp -fp ${BAZELIMAGES}/kube-apiserver-healthcheck-arm64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-arm64.tar.gz
-	cp -fp ${BAZELIMAGES}/kube-apiserver-healthcheck-arm64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-arm64.tar.gz.sha256
-	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
-
-# dev-upload-linux-amd64 does a faster build and uploads to GCS / S3
-.PHONY: dev-upload-linux-amd64 dev-upload-linux-arm64
-dev-upload-linux-amd64 dev-upload-linux-arm64: dev-upload-linux-%: nodeup-% ko-kops-controller-export-linux-% ko-kube-apiserver-healthcheck-export-linux-% ko-dns-controller-export-linux-% protokube-% channels-%
-	mkdir -p ${UPLOAD}/kops/${VERSION}/images/
+version-dist-nodeup-amd64 version-dist-nodeup-arm64: version-dist-nodeup-%: nodeup-%
 	mkdir -p ${UPLOAD}/kops/${VERSION}/linux/$*/
 	cp -fp ${DIST}/linux/$*/nodeup ${UPLOAD}/kops/${VERSION}/linux/$*/nodeup
 	tools/sha256 ${UPLOAD}/kops/${VERSION}/linux/$*/nodeup ${UPLOAD}/kops/${VERSION}/linux/$*/nodeup.sha256
-	cp -fp ${DIST}/linux/$*/channels ${UPLOAD}/kops/${VERSION}/linux/$*/channels
-	tools/sha256 ${UPLOAD}/kops/${VERSION}/linux/$*/channels ${UPLOAD}/kops/${VERSION}/linux/$*/channels.sha256
+
+.PHONY: dev-upload-nodeup
+dev-upload-nodeup: version-dist-nodeup
+	${UPLOAD_CMD} ${UPLOAD}/ ${UPLOAD_DEST}
+
+.PHONY: dev-upload-nodeup-amd64 dev-upload-nodeup-arm64
+dev-upload-nodeup-amd64 dev-upload-nodeup-arm64: dev-upload-nodeup-%: version-dist-nodeup-%
+	${UPLOAD_CMD} ${UPLOAD}/ ${UPLOAD_DEST}
+
+# dev-upload-protokube uploads protokube
+.PHONY: version-dist-protokube version-dist-protokube-amd64 version-dist-protokube-arm64
+version-dist-protokube: version-dist-protokube-amd64 version-dist-protokube-arm64
+
+version-dist-protokube-amd64 version-dist-protokube-arm64: version-dist-protokube-%: protokube-%
+	mkdir -p ${UPLOAD}/kops/${VERSION}/linux/$*/
 	cp -fp ${DIST}/linux/$*/protokube ${UPLOAD}/kops/${VERSION}/linux/$*/protokube
 	tools/sha256 ${UPLOAD}/kops/${VERSION}/linux/$*/protokube ${UPLOAD}/kops/${VERSION}/linux/$*/protokube.sha256
-	cp -fp ${IMAGES}/kops-controller-$*.tar.gz ${UPLOAD}/kops/${VERSION}/images/kops-controller-$*.tar.gz
-	cp -fp ${IMAGES}/kops-controller-$*.tar.gz.sha256 ${UPLOAD}/kops/${VERSION}/images/kops-controller-$*.tar.gz.sha256
-	cp -fp ${IMAGES}/dns-controller-$*.tar.gz ${UPLOAD}/kops/${VERSION}/images/dns-controller-$*.tar.gz
-	cp -fp ${IMAGES}/dns-controller-$*.tar.gz.sha256 ${UPLOAD}/kops/${VERSION}/images/dns-controller-$*.tar.gz.sha256
-	cp -fp ${IMAGES}/kube-apiserver-healthcheck-$*.tar.gz ${UPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-$*.tar.gz
-	cp -fp ${IMAGES}/kube-apiserver-healthcheck-$*.tar.gz.sha256 ${UPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-$*.tar.gz.sha256
+
+.PHONY: dev-upload-protokube
+dev-upload-protokube: version-dist-protokube
 	${UPLOAD_CMD} ${UPLOAD}/ ${UPLOAD_DEST}
+
+.PHONY: dev-upload-protokube-amd64 dev-upload-protokube-arm64
+dev-upload-protokube-amd64 dev-upload-protokube-arm64: dev-upload-protokube-%: version-dist-protokube-%
+	${UPLOAD_CMD} ${UPLOAD}/ ${UPLOAD_DEST}
+
+# dev-upload-channels uploads channels
+.PHONY: version-dist-channels version-dist-channels-amd64 version-dist-channels-arm64
+version-dist-channels: version-dist-channels-amd64 version-dist-channels-arm64
+
+version-dist-channels-amd64 version-dist-channels-arm64: version-dist-channels-%: channels-%
+	mkdir -p ${UPLOAD}/kops/${VERSION}/linux/$*/
+	cp -fp ${DIST}/linux/$*/channels ${UPLOAD}/kops/${VERSION}/linux/$*/channels
+	tools/sha256 ${UPLOAD}/kops/${VERSION}/linux/$*/channels ${UPLOAD}/kops/${VERSION}/linux/$*/channels.sha256
+
+.PHONY: dev-upload-channels
+dev-upload-channels: version-dist-channels
+	${UPLOAD_CMD} ${PLOAD}/ ${UPLOAD_DEST}
+
+.PHONY: dev-upload-channels-amd64 dev-upload-channels-arm64
+dev-upload-channels-amd64 dev-upload-channels-arm64: dev-upload-channels-%: version-dist-channels-%
+	${UPLOAD_CMD} ${UPLOAD}/ ${UPLOAD_DEST}
+
+# dev-upload-kops-controller uploads kops-controller
+.PHONY: version-dist-kops-controller version-dist-kops-controller-amd64 version-dist-kops-controller-arm64
+version-dist-kops-controller: version-dist-kops-controller-amd64 version-dist-kops-controller-arm64
+
+version-dist-kops-controller-amd64 version-dist-kops-controller-arm64: version-dist-kops-controller-%: ko-kops-controller-export-linux-%
+	mkdir -p ${UPLOAD}/kops/${VERSION}/images/
+	cp -fp ${IMAGES}/kops-controller-amd64.tar.gz ${UPLOAD}/kops/${VERSION}/images/kops-controller-amd64.tar.gz
+	cp -fp ${IMAGES}/kops-controller-amd64.tar.gz.sha256 ${UPLOAD}/kops/${VERSION}/images/kops-controller-amd64.tar.gz.sha256
+
+.PHONY: dev-upload-kops-controller
+dev-upload-kops-controller: version-dist-kops-controller
+	${UPLOAD_CMD} ${UPLOAD}/ ${UPLOAD_DEST}
+
+.PHONY: dev-upload-kops-controller-amd64 dev-upload-kops-controller-arm64
+dev-upload-kops-controller-amd64 dev-upload-kops-controller-arm64: dev-upload-kops-controller-%: version-dist-kops-controller-%
+	${UPLOAD_CMD} ${UPLOAD}/ ${UPLOAD_DEST}
+
+# dev-upload-kube-apiserver-healthcheck uploads kube-apiserver-healthcheck
+.PHONY: version-dist-kube-apiserver-healthcheck version-dist-kube-apiserver-healthcheck-amd64 version-dist-kube-apiserver-healthcheck-arm64
+version-dist-kube-apiserver-healthcheck: version-dist-kube-apiserver-healthcheck-amd64 version-dist-kube-apiserver-healthcheck-arm64
+
+version-dist-kube-apiserver-healthcheck-amd64 version-dist-kube-apiserver-healthcheck-arm64: version-dist-kube-apiserver-healthcheck-%: ko-kube-apiserver-healthcheck-export-linux-%
+	mkdir -p ${UPLOAD}/kops/${VERSION}/images/
+	cp -fp ${IMAGES}/kube-apiserver-healthcheck-amd64.tar.gz ${UPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-amd64.tar.gz
+	cp -fp ${IMAGES}/kube-apiserver-healthcheck-amd64.tar.gz.sha256 ${UPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-amd64.tar.gz.sha256
+
+.PHONY: dev-upload-kube-apiserver-healthcheck
+dev-upload-kube-apiserver-healthcheck: version-dist-kube-apiserver-healthcheck
+	${UPLOAD_CMD} ${UPLOAD}/ ${UPLOAD_DEST}
+
+.PHONY: dev-upload-kube-apiserver-healthcheck-amd64 dev-upload-kube-apiserver-healthcheck-arm64
+dev-upload-kube-apiserver-healthcheck-amd64 dev-upload-kube-apiserver-healthcheck-arm64: dev-upload-kube-apiserver-healthcheck-%: version-dist-kube-apiserver-healthcheck-%
+	${UPLOAD_CMD} ${UPLOAD}/ ${UPLOAD_DEST}
+
+# dev-upload-dns-controller uploads dns-controller
+.PHONY: version-dist-dns-controller version-dist-dns-controller-amd64 version-dist-dns-controller-arm64
+version-dist-dns-controller: version-dist-dns-controller-amd64 version-dist-dns-controller-arm64
+
+version-dist-dns-controller-amd64 version-dist-dns-controller-arm64: version-dist-dns-controller-%: ko-dns-controller-export-linux-%
+	mkdir -p ${UPLOAD}/kops/${VERSION}/images/
+	cp -fp ${IMAGES}/dns-controller-amd64.tar.gz ${UPLOAD}/kops/${VERSION}/images/dns-controller-amd64.tar.gz
+	cp -fp ${IMAGES}/dns-controller-amd64.tar.gz.sha256 ${UPLOAD}/kops/${VERSION}/images/dns-controller-amd64.tar.gz.sha256
+
+.PHONY: dev-upload-dns-controller
+dev-upload-dns-controller: version-dist-dns-controller
+	${UPLOAD_CMD} ${UPLOAD}/ ${UPLOAD_DEST}
+
+.PHONY: dev-upload-dns-controller-amd64 dev-upload-dns-controller-arm64
+dev-upload-dns-controller-amd64 dev-upload-dns-controller-arm64: dev-upload-dns-controller-%: version-dist-dns-controller-%
+	${UPLOAD_CMD} ${UPLOAD}/ ${UPLOAD_DEST}
+
+# dev-upload-linux-amd64 does a faster build and uploads to GCS / S3
+.PHONY: dev-version-dist dev-version-dist-amd64 dev-version-dist-arm64
+dev-version-dist: dev-version-dist-amd64 dev-version-dist-arm64
+
+dev-version-dist-amd64 dev-version-dist-arm64: dev-version-dist-%: version-dist-nodeup-% version-dist-channels-% version-dist-protokube-% version-dist-kops-controller-% version-dist-kube-apiserver-healthcheck-% version-dist-dns-controller-%
+
+.PHONY: dev-upload-linux-amd64 dev-upload-linux-arm64
+dev-upload-linux-amd64 dev-upload-linux-arm64: dev-upload-linux-%: dev-version-dist-%
+	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
 
 # dev-upload does a faster build and uploads to GCS / S3
 .PHONY: dev-upload
