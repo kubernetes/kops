@@ -854,8 +854,8 @@ version-dist-kops-controller: version-dist-kops-controller-amd64 version-dist-ko
 
 version-dist-kops-controller-amd64 version-dist-kops-controller-arm64: version-dist-kops-controller-%: ko-kops-controller-export-linux-%
 	mkdir -p ${UPLOAD}/kops/${VERSION}/images/
-	cp -fp ${IMAGES}/kops-controller-amd64.tar.gz ${UPLOAD}/kops/${VERSION}/images/kops-controller-amd64.tar.gz
-	cp -fp ${IMAGES}/kops-controller-amd64.tar.gz.sha256 ${UPLOAD}/kops/${VERSION}/images/kops-controller-amd64.tar.gz.sha256
+	cp -fp ${IMAGES}/kops-controller-$*.tar.gz ${UPLOAD}/kops/${VERSION}/images/kops-controller-$*.tar.gz
+	cp -fp ${IMAGES}/kops-controller-$*.tar.gz.sha256 ${UPLOAD}/kops/${VERSION}/images/kops-controller-$*.tar.gz.sha256
 
 .PHONY: dev-upload-kops-controller
 dev-upload-kops-controller: version-dist-kops-controller
@@ -871,8 +871,8 @@ version-dist-kube-apiserver-healthcheck: version-dist-kube-apiserver-healthcheck
 
 version-dist-kube-apiserver-healthcheck-amd64 version-dist-kube-apiserver-healthcheck-arm64: version-dist-kube-apiserver-healthcheck-%: ko-kube-apiserver-healthcheck-export-linux-%
 	mkdir -p ${UPLOAD}/kops/${VERSION}/images/
-	cp -fp ${IMAGES}/kube-apiserver-healthcheck-amd64.tar.gz ${UPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-amd64.tar.gz
-	cp -fp ${IMAGES}/kube-apiserver-healthcheck-amd64.tar.gz.sha256 ${UPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-amd64.tar.gz.sha256
+	cp -fp ${IMAGES}/kube-apiserver-healthcheck-$*.tar.gz ${UPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-$*.tar.gz
+	cp -fp ${IMAGES}/kube-apiserver-healthcheck-$*.tar.gz.sha256 ${UPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-$*.tar.gz.sha256
 
 .PHONY: dev-upload-kube-apiserver-healthcheck
 dev-upload-kube-apiserver-healthcheck: version-dist-kube-apiserver-healthcheck
@@ -888,8 +888,8 @@ version-dist-dns-controller: version-dist-dns-controller-amd64 version-dist-dns-
 
 version-dist-dns-controller-amd64 version-dist-dns-controller-arm64: version-dist-dns-controller-%: ko-dns-controller-export-linux-%
 	mkdir -p ${UPLOAD}/kops/${VERSION}/images/
-	cp -fp ${IMAGES}/dns-controller-amd64.tar.gz ${UPLOAD}/kops/${VERSION}/images/dns-controller-amd64.tar.gz
-	cp -fp ${IMAGES}/dns-controller-amd64.tar.gz.sha256 ${UPLOAD}/kops/${VERSION}/images/dns-controller-amd64.tar.gz.sha256
+	cp -fp ${IMAGES}/dns-controller-$*.tar.gz ${UPLOAD}/kops/${VERSION}/images/dns-controller-$*.tar.gz
+	cp -fp ${IMAGES}/dns-controller-$*.tar.gz.sha256 ${UPLOAD}/kops/${VERSION}/images/dns-controller-$*.tar.gz.sha256
 
 .PHONY: dev-upload-dns-controller
 dev-upload-dns-controller: version-dist-dns-controller
