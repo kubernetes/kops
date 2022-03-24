@@ -289,6 +289,7 @@ bazel-version-ci: bazel-version-dist-linux-amd64 bazel-version-dist-linux-arm64
 
 # gcs-publish-ci is the entry point for CI testing
 # In CI testing, always upload the CI version.
+# The last copy part is to satisfy kubetest2 path expectations
 .PHONY: gcs-publish-ci
 gcs-publish-ci: VERSION := ${KOPS_CI_VERSION}+${GITSHA}
 gcs-publish-ci: version-dist
@@ -297,6 +298,8 @@ gcs-publish-ci: version-dist
 	echo "VERSION: ${VERSION}"
 	echo "${GCS_URL}/${VERSION}" > ${UPLOAD}/${LATEST_FILE}
 	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp ${UPLOAD}/${LATEST_FILE} ${GCS_LOCATION}
+	mkdir -p ${BAZEL_BIN}/cmd/kops/linux-amd64/
+	cp  ${DIST}/linux/amd64/kops ${BAZEL_BIN}/cmd/kops/linux-amd64/
 
 .PHONY: gen-cli-docs
 gen-cli-docs: kops # Regenerate CLI docs
