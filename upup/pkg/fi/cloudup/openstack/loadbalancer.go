@@ -19,6 +19,7 @@ package openstack
 import (
 	"fmt"
 
+	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
@@ -337,6 +338,17 @@ func updateMemberInPool(c OpenstackCloud, poolID string, memberID string, opts v
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
 		association, err = v2pools.UpdateMember(c.LoadBalancerClient(), poolID, memberID, opts).Extract()
 		if err != nil {
+			// member not found anymore
+			if isNotFound(err) {
+				return true, nil
+			}
+			// pool is currently in immutable state, try to retry
+			if errCode, ok := err.(gophercloud.ErrUnexpectedResponseCode); ok {
+				if errCode.Actual == http.StatusConflict {
+					klog.Infof("got error %v retrying...", err)
+					return false, nil
+				}
+			}
 			return false, fmt.Errorf("failed to update pool membership: %v", err)
 		}
 		return true, nil

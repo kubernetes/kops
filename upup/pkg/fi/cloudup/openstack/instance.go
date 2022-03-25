@@ -254,7 +254,6 @@ func drainSingleLB(c OpenstackCloud, lb loadbalancers.LoadBalancer, instanceName
 	}
 
 	if draining {
-		// TODO: should we do somekind of loop here and check that connections are really drained?
 		time.Sleep(20 * time.Second)
 
 		newStats, err := c.GetLBStats(lb.ID)
@@ -262,7 +261,8 @@ func drainSingleLB(c OpenstackCloud, lb loadbalancers.LoadBalancer, instanceName
 			return err
 		}
 
-		klog.Infof("Loadbalancer %s connections before draining %d and after %d", lb.Name, oldStats.ActiveConnections, newStats.ActiveConnections)
+		// NOTE! this is total loadbalancer connections NOT member connections
+		klog.V(4).Infof("Loadbalancer %s connections before draining %d and after %d", lb.Name, oldStats.ActiveConnections, newStats.ActiveConnections)
 	}
 	return nil
 }
