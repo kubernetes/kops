@@ -1,5 +1,2 @@
-mkdocs-material==7.1.1
-mkdocs~=1.2.2
-pymdown-extensions==8.2
-pygments~=2.9.0
-mkdocs-macros-plugin==0.5.12
+mkdocs-material==8.2.7
+mkdocs-macros-plugin==0.6.4
