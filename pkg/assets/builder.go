@@ -32,6 +32,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/values"
 	"k8s.io/kops/util/pkg/hashing"
@@ -200,6 +201,10 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 	}
 
 	a.ImageAssets = append(a.ImageAssets, asset)
+
+	if !featureflag.ImageDigest.Enabled() {
+		return image, nil
+	}
 
 	if strings.Contains(image, "@") {
 		return image, nil
