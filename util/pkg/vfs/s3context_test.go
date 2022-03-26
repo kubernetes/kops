@@ -85,6 +85,16 @@ func Test_VFSPath(t *testing.T) {
 			ExpectError:    false,
 		},
 		{
+			Input:          "https://s3.us-gov-west-1.amazonaws.com/bucket",
+			ExpectedResult: "s3://bucket",
+			ExpectError:    false,
+		},
+		{
+			Input:          "https://s3.us-gov-west-1.amazonaws.com/bucket/path",
+			ExpectedResult: "s3://bucket/path",
+			ExpectError:    false,
+		},
+		{
 			Input:          "https://s3.amazonaws.com/bucket",
 			ExpectedResult: "s3://bucket",
 			ExpectError:    false,
