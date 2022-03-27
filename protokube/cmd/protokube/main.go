@@ -252,11 +252,6 @@ func run() error {
 			klog.Fatalf("seed provider for %q not yet implemented", cloud)
 		}
 
-		id := os.Getenv("HOSTNAME")
-		if id == "" {
-			klog.Warningf("Unable to fetch HOSTNAME for use as node identifier")
-		}
-
 		channelName := "dns"
 		var gossipState gossip.GossipState
 
