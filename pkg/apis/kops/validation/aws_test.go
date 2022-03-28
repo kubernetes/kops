@@ -649,11 +649,13 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 	tests := []struct {
 		clusterCidr string
 		providerId  string
+		subnetType  kops.SubnetType
 		route       []kops.RouteSpec
 		expected    []string
 	}{
 		{ // valid pcx
 			clusterCidr: "100.64.0.0/10",
+			subnetType:  kops.SubnetTypePrivate,
 			route: []kops.RouteSpec{
 				{
 					CIDR:   "10.0.0.0/8",
@@ -663,6 +665,7 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 		},
 		{ // valid instance
 			clusterCidr: "100.64.0.0/10",
+			subnetType:  kops.SubnetTypePrivate,
 			route: []kops.RouteSpec{
 				{
 					CIDR:   "10.0.0.0/8",
@@ -672,6 +675,7 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 		},
 		{ // valid nat
 			clusterCidr: "100.64.0.0/10",
+			subnetType:  kops.SubnetTypePrivate,
 			route: []kops.RouteSpec{
 				{
 					CIDR:   "10.0.0.0/8",
@@ -681,6 +685,7 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 		},
 		{ // valid transit gateway
 			clusterCidr: "100.64.0.0/10",
+			subnetType:  kops.SubnetTypePrivate,
 			route: []kops.RouteSpec{
 				{
 					CIDR:   "10.0.0.0/8",
@@ -690,6 +695,7 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 		},
 		{ // valid internet gateway
 			clusterCidr: "100.64.0.0/10",
+			subnetType:  kops.SubnetTypePrivate,
 			route: []kops.RouteSpec{
 				{
 					CIDR:   "10.0.0.0/8",
@@ -699,6 +705,7 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 		},
 		{ // valid egress only internet gateway
 			clusterCidr: "100.64.0.0/10",
+			subnetType:  kops.SubnetTypePrivate,
 			route: []kops.RouteSpec{
 				{
 					CIDR:   "10.0.0.0/8",
@@ -708,6 +715,7 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 		},
 		{ // bad cluster cidr
 			clusterCidr: "not cidr",
+			subnetType:  kops.SubnetTypePrivate,
 			route: []kops.RouteSpec{
 				{
 					CIDR:   "10.0.0.0/8",
@@ -718,6 +726,7 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 		},
 		{ // bad cidr
 			clusterCidr: "100.64.0.0/10",
+			subnetType:  kops.SubnetTypePrivate,
 			route: []kops.RouteSpec{
 				{
 					CIDR:   "bad cidr",
@@ -728,6 +737,7 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 		},
 		{ // bad target
 			clusterCidr: "100.64.0.0/10",
+			subnetType:  kops.SubnetTypePrivate,
 			route: []kops.RouteSpec{
 				{
 					CIDR:   "10.0.0.0/8",
@@ -738,6 +748,7 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 		},
 		{ // target more specific
 			clusterCidr: "100.64.0.0/10",
+			subnetType:  kops.SubnetTypePrivate,
 			route: []kops.RouteSpec{
 				{
 					CIDR:   "100.64.1.0/24",
@@ -748,6 +759,7 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 		},
 		{ // duplicates cidr
 			clusterCidr: "100.64.0.0/10",
+			subnetType:  kops.SubnetTypePrivate,
 			route: []kops.RouteSpec{
 				{
 					CIDR:   "10.0.0.0/8",
@@ -762,7 +774,19 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 		},
 		{ // shared subnet
 			clusterCidr: "100.64.0.0/10",
+			subnetType:  kops.SubnetTypePrivate,
 			providerId:  "123456",
+			route: []kops.RouteSpec{
+				{
+					CIDR:   "10.0.0.0/8",
+					Target: "pcx-abcdef",
+				},
+			},
+			expected: []string{"Invalid value::spec.subnets[0]"},
+		},
+		{ // not a private subnet
+			clusterCidr: "100.64.0.0/10",
+			subnetType:  kops.SubnetTypePublic,
 			route: []kops.RouteSpec{
 				{
 					CIDR:   "10.0.0.0/8",
@@ -780,6 +804,7 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 				Subnets: []kops.ClusterSubnetSpec{
 					{
 						ProviderID:       test.providerId,
+						Type:             test.subnetType,
 						AdditionalRoutes: test.route,
 					},
 				},

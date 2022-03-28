@@ -307,10 +307,6 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					infoByZone[subnetSpec.Zone].NATSubnets = append(infoByZone[subnetSpec.Zone].NATSubnets, subnetSpec)
 					infoByZone[subnetSpec.Zone].HaveIPv6PublicSubnet = true
 				} else {
-					err := addAdditionalRoutes(subnetSpec.AdditionalRoutes, subnetName, publicRouteTable, b.Lifecycle, c)
-					if err != nil {
-						return err
-					}
 					c.AddTask(&awstasks.RouteTableAssociation{
 						Name:       fi.String(subnetSpec.Name + "." + b.ClusterName()),
 						Lifecycle:  b.Lifecycle,
@@ -639,7 +635,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 func addAdditionalRoutes(routes []kops.RouteSpec, sbName string, rt *awstasks.RouteTable, lf fi.Lifecycle, c *fi.ModelBuilderContext) error {
 	for _, r := range routes {
 		t := &awstasks.Route{
-			Name:       fi.String("public-" + sbName + "." + r.CIDR),
+			Name:       fi.String(sbName + "." + r.CIDR),
 			Lifecycle:  lf,
 			CIDR:       fi.String(r.CIDR),
 			RouteTable: rt,
