@@ -14,6 +14,7 @@ provisioner: pd.csi.storage.gke.io
 parameters:
   type: pd-standard
 volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
 {{ end }}
 
 ---
@@ -340,8 +341,15 @@ spec:
       # this requirement when issue is resolved and before any exposure of
       # metrics ports
       hostNetwork: true
+      # run controller in masters because nodes does not have enough permissions to provision / manage volumes
+      tolerations:
+      - effect: NoSchedule
+        operator: Exists
+      - key: CriticalAddonsOnly
+        operator: Exists
       nodeSelector:
         kubernetes.io/os: linux
+        node-role.kubernetes.io/master: ""
       serviceAccountName: csi-gce-pd-controller-sa
       priorityClassName: csi-gce-pd-controller
       containers:
