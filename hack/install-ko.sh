@@ -21,5 +21,5 @@ set -o pipefail
 if ! command -v ko &> /dev/null; then
   . "$(dirname "${BASH_SOURCE[0]}")/common.sh"
   cd "${KOPS_ROOT}/hack" || exit 1
-  go install github.com/google/ko@v0.10.0
+  go install github.com/google/ko@v0.11.2
 fi
