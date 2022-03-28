@@ -53,6 +53,7 @@ import (
 	"k8s.io/kops/cloudmock/openstack/mockloadbalancer"
 	"k8s.io/kops/cloudmock/openstack/mocknetworking"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -75,6 +76,7 @@ type IntegrationTestHarness struct {
 }
 
 func NewIntegrationTestHarness(t *testing.T) *IntegrationTestHarness {
+	featureflag.ParseFlags("-ImageDigest")
 	h := &IntegrationTestHarness{}
 	tempDir, err := os.MkdirTemp("", "test")
 	if err != nil {
