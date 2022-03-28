@@ -105,12 +105,12 @@ func RunGetSSHPublicKeys(ctx context.Context, f *util.Factory, out io.Writer, op
 		items = append(items, item)
 	}
 
-	if len(items) == 0 {
-		return fmt.Errorf("no SSH public key found")
-	}
 	switch options.Output {
 
 	case OutputTable:
+		if len(items) == 0 {
+			return fmt.Errorf("no SSH public key found")
+		}
 		t := &tables.Table{}
 		t.AddColumn("ID", func(i *SSHKeyItem) string {
 			return i.ID
