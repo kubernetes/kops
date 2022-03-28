@@ -340,9 +340,18 @@ bazel-crossbuild-dns-controller:
 
 
 .PHONY: dns-controller-push
-dns-controller-push: bazelisk
+dns-controller-push: ko-dns-controller-push
+
+.PHONY: bazel-dns-controller-push
+bazel-dns-controller-push: bazelisk
 	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} DNS_CONTROLLER_TAG=${DNS_CONTROLLER_PUSH_TAG} ${BAZEL} run --@io_bazel_rules_go//go/config:pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/cmd/dns-controller:push-image-amd64
 	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} DNS_CONTROLLER_TAG=${DNS_CONTROLLER_PUSH_TAG} ${BAZEL} run --@io_bazel_rules_go//go/config:pure --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //dns-controller/cmd/dns-controller:push-image-arm64
+
+.PHONY: ko-dns-controller-push
+ko-dns-controller-push: ko
+	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}dns-controller" ko build --tags ${DNS_CONTROLLER_PUSH_TAG} --platform=linux/amd64,linux/arm64 --bare ./dns-controller/cmd/dns-controller/
+
+
 
 .PHONY: dns-controller-manifest
 dns-controller-manifest:
@@ -931,9 +940,16 @@ crds:
 # kops-controller
 
 .PHONY: kops-controller-push
-kops-controller-push: bazelisk
+kops-controller-push: ko-kops-controller-push
+
+.PHONY: bazel-kops-controller-push
+bazel-kops-controller-push: bazelisk
 	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} KOPS_CONTROLLER_TAG=${KOPS_CONTROLLER_PUSH_TAG} ${BAZEL} run --@io_bazel_rules_go//go/config:pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kops-controller:push-image-amd64
 	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} KOPS_CONTROLLER_TAG=${KOPS_CONTROLLER_PUSH_TAG} ${BAZEL} run --@io_bazel_rules_go//go/config:pure --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //cmd/kops-controller:push-image-arm64
+
+.PHONY: ko-kops-controller-push
+ko-kops-controller-push: ko
+	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kops-controller" ko build --tags ${KOPS_CONTROLLER_PUSH_TAG} --platform=linux/amd64,linux/arm64 --bare ./cmd/kops-controller/
 
 .PHONY: kops-controller-manifest
 kops-controller-manifest:
@@ -945,9 +961,16 @@ kops-controller-manifest:
 # kube-apiserver-healthcheck
 
 .PHONY: kube-apiserver-healthcheck-push
-kube-apiserver-healthcheck-push: bazelisk
+kube-apiserver-healthcheck-push: ko-kube-apiserver-healthcheck-push
+
+.PHONY: bazel-kube-apiserver-healthcheck-push
+bazel-kube-apiserver-healthcheck-push: bazelisk
 	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} KUBE_APISERVER_HEALTHCHECK_TAG=${KUBE_APISERVER_HEALTHCHECK_PUSH_TAG} ${BAZEL} run --@io_bazel_rules_go//go/config:pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kube-apiserver-healthcheck:push-image-amd64
 	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} KUBE_APISERVER_HEALTHCHECK_TAG=${KUBE_APISERVER_HEALTHCHECK_PUSH_TAG} ${BAZEL} run --@io_bazel_rules_go//go/config:pure --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //cmd/kube-apiserver-healthcheck:push-image-arm64
+
+.PHONY: ko-kube-apiserver-healthcheck-push
+ko-kube-apiserver-healthcheck-push: ko
+	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kube-apiserver-healthcheck" ko build --tags ${KUBE_APISERVER_HEALTHCHECK_PUSH_TAG} --platform=linux/amd64,linux/arm64 --bare ./cmd/kube-apiserver-healthcheck/
 
 .PHONY: kube-apiserver-healthcheck-manifest
 kube-apiserver-healthcheck-manifest:
