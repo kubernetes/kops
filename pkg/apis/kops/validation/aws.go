@@ -49,12 +49,12 @@ func awsValidateCluster(c *kops.Cluster) field.ErrorList {
 	}
 
 	for i, subnet := range c.Spec.Subnets {
-		f := field.NewPath("spec", "Subnets").Index(i)
+		f := field.NewPath("spec", "subnets").Index(i)
 		if subnet.AdditionalRoutes != nil {
 			if len(subnet.ProviderID) > 0 {
 				allErrs = append(allErrs, field.Invalid(f, subnet, "additional routes cannot be added if the subnet is shared"))
 			}
-			allErrs = append(allErrs, awsValidateAdditionalRoutes(f.Child("AdditionalRoutes"), subnet.AdditionalRoutes, c.Spec.NetworkCIDR)...)
+			allErrs = append(allErrs, awsValidateAdditionalRoutes(f.Child("additionalRoutes"), subnet.AdditionalRoutes, c.Spec.NetworkCIDR)...)
 		}
 	}
 
@@ -363,7 +363,7 @@ func awsValidateAdditionalRoutes(fieldPath *field.Path, routes []kops.RouteSpec,
 
 	_, clusterNet, errClusterNet := net.ParseCIDR(cidr)
 	if errClusterNet != nil {
-		allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "NetworkCIDR"), cidr, "Invalid cluster cidr"))
+		allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "networkCIDR"), cidr, "Invalid cluster cidr"))
 	} else {
 		for i, r := range routes {
 			f := fieldPath.Index(i)
@@ -375,14 +375,14 @@ func awsValidateAdditionalRoutes(fieldPath *field.Path, routes []kops.RouteSpec,
 				!strings.HasPrefix(r.Target, "tgw-") &&
 				!strings.HasPrefix(r.Target, "igw-") &&
 				!strings.HasPrefix(r.Target, "eigw-") {
-				allErrs = append(allErrs, field.Invalid(f, r, "unknown target type for route"))
+				allErrs = append(allErrs, field.Invalid(f.Child("target"), r, "unknown target type for route"))
 			}
 
 			ipRoute, _, e := net.ParseCIDR(r.CIDR)
 			if e != nil {
-				allErrs = append(allErrs, field.Invalid(f, r, "invalid cidr"))
+				allErrs = append(allErrs, field.Invalid(f.Child("cidr"), r, "invalid cidr"))
 			} else if clusterNet.Contains(ipRoute) && strings.HasPrefix(r.Target, "pcx-") {
-				allErrs = append(allErrs, field.Forbidden(f, "target is more specific than cluster CIDR block. This route can target only an interface or an instance."))
+				allErrs = append(allErrs, field.Forbidden(f.Child("target"), "target is more specific than cluster CIDR block. This route can target only an interface or an instance."))
 			}
 		}
 	}
@@ -394,7 +394,7 @@ func awsValidateAdditionalRoutes(fieldPath *field.Path, routes []kops.RouteSpec,
 		for i := range routes {
 			rCidr := routes[i].CIDR
 			if cidrs.Has(rCidr) {
-				allErrs = append(allErrs, field.Duplicate(fieldPath.Index(i).Child("CIDR"), rCidr))
+				allErrs = append(allErrs, field.Duplicate(fieldPath.Index(i).Child("cidr"), rCidr))
 			}
 			cidrs.Insert(rCidr)
 		}

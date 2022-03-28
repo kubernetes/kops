@@ -569,7 +569,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				})
 			}
 
-			subnets, err := b.LinkToPrivateSubnetInZone(zone)
+			subnets, err := b.LinkToPrivateSubnetsInZone(zone)
 			if err != nil {
 				return err
 			}
@@ -638,14 +638,14 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 func addAdditionalRoutes(routes []kops.RouteSpec, sbName string, rt *awstasks.RouteTable, lf fi.Lifecycle, c *fi.ModelBuilderContext) error {
 	for _, r := range routes {
+		t := &awstasks.Route{
+			Name:       fi.String("public-" + sbName + "." + r.CIDR),
+			Lifecycle:  lf,
+			CIDR:       fi.String(r.CIDR),
+			RouteTable: rt,
+		}
 		if strings.HasPrefix(r.Target, "pcx-") {
-			t := &awstasks.Route{
-				Name:                 fi.String("public-" + sbName + "." + r.CIDR),
-				Lifecycle:            lf,
-				CIDR:                 fi.String(r.CIDR),
-				RouteTable:           rt,
-				VPCPeeringConnection: fi.String(r.Target),
-			}
+			t.VPCPeeringConnectionID = fi.String(r.Target)
 			c.AddTask(t)
 		} else if strings.HasPrefix(r.Target, "i-") {
 			inst := &awstasks.Instance{
@@ -658,13 +658,7 @@ func addAdditionalRoutes(routes []kops.RouteSpec, sbName string, rt *awstasks.Ro
 			if err != nil {
 				return err
 			}
-			t := &awstasks.Route{
-				Name:       fi.String("public-" + sbName + "." + r.CIDR),
-				Lifecycle:  lf,
-				CIDR:       fi.String(r.CIDR),
-				RouteTable: rt,
-				Instance:   inst,
-			}
+			t.Instance = inst
 			c.AddTask(t)
 		} else if strings.HasPrefix(r.Target, "nat-") {
 			nat := &awstasks.NatGateway{
@@ -677,22 +671,10 @@ func addAdditionalRoutes(routes []kops.RouteSpec, sbName string, rt *awstasks.Ro
 			if err != nil {
 				return err
 			}
-			t := &awstasks.Route{
-				Name:       fi.String("public-" + sbName + "." + r.CIDR),
-				Lifecycle:  lf,
-				CIDR:       fi.String(r.CIDR),
-				RouteTable: rt,
-				NatGateway: nat,
-			}
+			t.NatGateway = nat
 			c.AddTask(t)
 		} else if strings.HasPrefix(r.Target, "tgw-") {
-			t := &awstasks.Route{
-				Name:             fi.String("public-" + sbName + "." + r.CIDR),
-				Lifecycle:        lf,
-				CIDR:             fi.String(r.CIDR),
-				RouteTable:       rt,
-				TransitGatewayID: fi.String(r.Target),
-			}
+			t.TransitGatewayID = fi.String(r.Target)
 			c.AddTask(t)
 		} else if strings.HasPrefix(r.Target, "igw-") {
 			internetGW := &awstasks.InternetGateway{
@@ -705,13 +687,7 @@ func addAdditionalRoutes(routes []kops.RouteSpec, sbName string, rt *awstasks.Ro
 			if err != nil {
 				return err
 			}
-			t := &awstasks.Route{
-				Name:            fi.String("public-" + sbName + "." + r.CIDR),
-				Lifecycle:       lf,
-				CIDR:            fi.String(r.CIDR),
-				RouteTable:      rt,
-				InternetGateway: internetGW,
-			}
+			t.InternetGateway = internetGW
 			c.AddTask(t)
 		} else if strings.HasPrefix(r.Target, "eigw-") {
 			eigw := &awstasks.EgressOnlyInternetGateway{
@@ -724,13 +700,7 @@ func addAdditionalRoutes(routes []kops.RouteSpec, sbName string, rt *awstasks.Ro
 			if err != nil {
 				return err
 			}
-			t := &awstasks.Route{
-				Name:                      fi.String("public-" + sbName + "." + r.CIDR),
-				Lifecycle:                 lf,
-				CIDR:                      fi.String(r.CIDR),
-				RouteTable:                rt,
-				EgressOnlyInternetGateway: eigw,
-			}
+			t.EgressOnlyInternetGateway = eigw
 			c.AddTask(t)
 		}
 	}
