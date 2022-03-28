@@ -80,7 +80,7 @@ func (b *AWSModelContext) LinkToUtilitySubnetInZone(zoneName string) (*awstasks.
 
 	return b.LinkToSubnet(matches[0]), nil
 }
-func (b *AWSModelContext) LinkToPrivateSubnetInZone(zoneName string) ([]*awstasks.Subnet, error) {
+func (b *AWSModelContext) LinkToPrivateSubnetsInZone(zoneName string) ([]*awstasks.Subnet, error) {
 	var matches []*kops.ClusterSubnetSpec
 	for i := range b.Cluster.Spec.Subnets {
 		s := &b.Cluster.Spec.Subnets[i]
