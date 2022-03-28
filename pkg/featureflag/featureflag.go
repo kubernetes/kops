@@ -90,6 +90,8 @@ var (
 	AlphaAllowGCE = new("AlphaAllowGCE", Bool(false))
 	// Karpenter enables karpenter-managed Instance Groups
 	Karpenter = new("Karpenter", Bool(false))
+	// ImageDigest remaps all manifests with image digests
+	ImageDigest = new("ImageDigest", Bool(true))
 )
 
 // FeatureFlag defines a feature flag

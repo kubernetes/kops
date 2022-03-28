@@ -26,10 +26,13 @@ import (
 	"time"
 
 	"github.com/blang/semver/v4"
+	"github.com/google/go-containerregistry/pkg/authn"
+	"github.com/google/go-containerregistry/pkg/crane"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/values"
 	"k8s.io/kops/util/pkg/hashing"
@@ -198,7 +201,22 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 	}
 
 	a.ImageAssets = append(a.ImageAssets, asset)
-	return image, nil
+
+	if !featureflag.ImageDigest.Enabled() {
+		return image, nil
+	}
+
+	if strings.Contains(image, "@") {
+		return image, nil
+	}
+
+	digest, err := crane.Digest(image, crane.WithAuthFromKeychain(authn.DefaultKeychain))
+	if err != nil {
+		klog.Warningf("failed to digest image %q", image)
+		return image, nil
+	}
+
+	return image + "@" + digest, nil
 }
 
 // RemapFileAndSHA returns a remapped URL for the file, if AssetsLocation is defined.
