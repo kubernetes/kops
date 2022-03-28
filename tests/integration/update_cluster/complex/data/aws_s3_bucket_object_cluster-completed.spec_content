@@ -202,10 +202,7 @@ spec:
   - pl-66666666
   sshKeyName: ""
   subnets:
-  - additionalRoutes:
-    - cidr: 10.1.0.0/16
-      target: pcx-abcdef
-    cidr: 172.20.32.0/19
+  - cidr: 172.20.32.0/19
     name: us-test-1a
     type: Public
     zone: us-test-1a
@@ -217,10 +214,7 @@ spec:
     name: us-east-1a-private
     type: Private
     zone: us-test-1a
-  - additionalRoutes:
-    - cidr: 5.5.0.0/16
-      target: pcx-0123abc
-    cidr: 172.20.96.0/19
+  - cidr: 172.20.96.0/19
     name: us-east-1a-utility
     type: Utility
     zone: us-test-1a

@@ -632,22 +632,10 @@ resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
   transit_gateway_id     = "tgw-123456"
 }
 
-resource "aws_route" "route-public-us-east-1a-private-192-168-1-10--32" {
+resource "aws_route" "route-us-east-1a-private-192-168-1-10--32" {
   destination_cidr_block = "192.168.1.10/32"
   route_table_id         = aws_route_table.private-us-test-1a-complex-example-com.id
   transit_gateway_id     = "tgw-0123456"
-}
-
-resource "aws_route" "route-public-us-east-1a-utility-complex-example-com-5-5-0-0--16" {
-  destination_cidr_block    = "5.5.0.0/16"
-  route_table_id            = aws_route_table.complex-example-com.id
-  vpc_peering_connection_id = "pcx-0123abc"
-}
-
-resource "aws_route" "route-public-us-test-1a-complex-example-com-10-1-0-0--16" {
-  destination_cidr_block    = "10.1.0.0/16"
-  route_table_id            = aws_route_table.complex-example-com.id
-  vpc_peering_connection_id = "pcx-abcdef"
 }
 
 resource "aws_route53_record" "api-complex-example-com" {
