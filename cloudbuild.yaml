@@ -5,7 +5,7 @@ options:
   machineType: 'N1_HIGHCPU_8'
 steps:
 # Push the images
-- name: 'gcr.io/k8s-testimages/kubekins-e2e:v20210825-f1955d1-experimental'
+- name: 'gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6'
   id: images
   entrypoint: make
   env:
@@ -20,7 +20,7 @@ steps:
   - dns-controller-push
   - kube-apiserver-healthcheck-push
 # Push the artifacts
-- name: 'gcr.io/k8s-testimages/kubekins-e2e:v20210825-f1955d1-experimental'
+- name: 'gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6'
   id: artifacts
   entrypoint: make
   env:
@@ -50,7 +50,7 @@ steps:
 #  - dns-controller-manifest
 #  - kube-apiserver-healthcheck-manifest
 # Build cloudbuild artifacts (for attestation)
-- name: 'gcr.io/k8s-testimages/kubekins-e2e:v20210825-f1955d1-experimental'
+- name: 'gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6'
   id: cloudbuild-artifacts
   entrypoint: make
   env:
