@@ -292,7 +292,7 @@ bazel-version-ci: bazel-version-dist-linux-amd64 bazel-version-dist-linux-arm64
 # The last copy part is to satisfy kubetest2 path expectations
 .PHONY: gcs-publish-ci
 gcs-publish-ci: VERSION := ${KOPS_CI_VERSION}+${GITSHA}
-gcs-publish-ci: version-dist
+gcs-publish-ci: version-dist-ci
 	@echo "== Uploading kops =="
 	gsutil -h "Cache-Control:private, max-age=0, no-transform" -m cp -n -r ${UPLOAD}/kops/* ${GCS_LOCATION}
 	echo "VERSION: ${VERSION}"
@@ -765,6 +765,14 @@ version-dist: dev-version-dist-amd64 dev-version-dist-arm64 crossbuild
 	tools/sha256 ${UPLOAD}/kops/${VERSION}/darwin/arm64/kops ${UPLOAD}/kops/${VERSION}/darwin/arm64/kops.sha256
 	cp ${DIST}/windows/amd64/kops.exe ${UPLOAD}/kops/${VERSION}/windows/amd64/kops.exe
 	tools/sha256 ${UPLOAD}/kops/${VERSION}/windows/amd64/kops.exe ${UPLOAD}/kops/${VERSION}/windows/amd64/kops.exe.sha256
+
+# This target skips arm64 and windows kops binary since CI does not use them
+.PHONY: version-dist-ci
+version-dist-ci: dev-version-dist-amd64 dev-version-dist-arm64 crossbuild-kops-linux-amd64
+	mkdir -p ${UPLOAD}/kops/${VERSION}/linux/amd64/
+	cp ${DIST}/linux/amd64/kops ${UPLOAD}/kops/${VERSION}/linux/amd64/kops
+	tools/sha256 ${UPLOAD}/kops/${VERSION}/linux/amd64/kops ${UPLOAD}/kops/${VERSION}/linux/amd64/kops.sha256
+
 
 .PHONY: bazel-upload
 bazel-upload: bazel-version-dist # Upload kops to S3
