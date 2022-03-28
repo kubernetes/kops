@@ -123,6 +123,9 @@ const instanceInServiceState = "InService"
 // AWSErrCodeInvalidAction is returned in AWS partitions that don't support certain actions
 const AWSErrCodeInvalidAction = "InvalidAction"
 
+// AWSErrCodeAccessDenied is returned in AWS accounts where iam:TagRole is explicitly denied
+const AWSErrCodeAccessDenied = "AccessDenied"
+
 type AWSCloud interface {
 	fi.Cloud
 	CloudFormation() *cloudformation.CloudFormation

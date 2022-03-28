@@ -323,7 +323,11 @@ func (_ *IAMRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRole) error
 				}
 				_, err = t.Cloud.IAM().TagRole(tagRequest)
 				if err != nil {
-					return fmt.Errorf("error tagging IAMRole: %v", err)
+					if awsup.AWSErrorCode(err) == awsup.AWSErrCodeAccessDenied {
+						klog.Warningf("Received AccessDenied when tagging role, skipping tags on %v", *e.Name)
+					} else {
+						return fmt.Errorf("error tagging IAMRole: %v", err)
+					}
 				}
 			}
 		}
