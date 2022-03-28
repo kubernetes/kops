@@ -714,7 +714,7 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 					Target: "pcx-abcdef",
 				},
 			},
-			expected: []string{"Invalid value::spec.NetworkCIDR"},
+			expected: []string{"Invalid value::spec.networkCIDR"},
 		},
 		{ // bad cidr
 			clusterCidr: "100.64.0.0/10",
@@ -724,7 +724,7 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 					Target: "pcx-abcdef",
 				},
 			},
-			expected: []string{"Invalid value::spec.Subnets[0].AdditionalRoutes[0]"},
+			expected: []string{"Invalid value::spec.subnets[0].additionalRoutes[0].cidr"},
 		},
 		{ // bad target
 			clusterCidr: "100.64.0.0/10",
@@ -734,7 +734,7 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 					Target: "unknown-abcdef",
 				},
 			},
-			expected: []string{"Invalid value::spec.Subnets[0].AdditionalRoutes[0]"},
+			expected: []string{"Invalid value::spec.subnets[0].additionalRoutes[0].target"},
 		},
 		{ // target more specific
 			clusterCidr: "100.64.0.0/10",
@@ -744,7 +744,7 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 					Target: "pcx-abcdef",
 				},
 			},
-			expected: []string{"Forbidden::spec.Subnets[0].AdditionalRoutes[0]"},
+			expected: []string{"Forbidden::spec.subnets[0].additionalRoutes[0].target"},
 		},
 		{ // duplicates cidr
 			clusterCidr: "100.64.0.0/10",
@@ -758,7 +758,7 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 					Target: "tgw-abcdef",
 				},
 			},
-			expected: []string{"Duplicate value::spec.Subnets[0].AdditionalRoutes[1].CIDR"},
+			expected: []string{"Duplicate value::spec.subnets[0].additionalRoutes[1].cidr"},
 		},
 		{ // shared subnet
 			clusterCidr: "100.64.0.0/10",
@@ -769,7 +769,7 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 					Target: "pcx-abcdef",
 				},
 			},
-			expected: []string{"Invalid value::spec.Subnets[0]"},
+			expected: []string{"Invalid value::spec.subnets[0]"},
 		},
 	}
 
