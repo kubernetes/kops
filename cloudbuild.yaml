@@ -35,20 +35,20 @@ steps:
   args:
   - gcs-upload-and-tag
 # Push the manifests
-- name: 'gcr.io/k8s-staging-test-infra/gcb-docker-gcloud:v20211118-2f2d816b90'
-  id: manifests
-  waitFor: [images]
-  entrypoint: make
-  env:
-  - DOCKER_CLI_EXPERIMENTAL=enabled
-  - CI=$_CI
-  - PULL_BASE_REF=$_PULL_BASE_REF
-  - DOCKER_REGISTRY=$_DOCKER_REGISTRY
-  - DOCKER_IMAGE_PREFIX=$_DOCKER_IMAGE_PREFIX
-  args:
-  - kops-controller-manifest
-  - dns-controller-manifest
-  - kube-apiserver-healthcheck-manifest
+#- name: 'gcr.io/k8s-staging-test-infra/gcb-docker-gcloud:v20211118-2f2d816b90'
+#  id: manifests
+#  waitFor: [images]
+#  entrypoint: make
+#  env:
+#  - DOCKER_CLI_EXPERIMENTAL=enabled
+#  - CI=$_CI
+#  - PULL_BASE_REF=$_PULL_BASE_REF
+#  - DOCKER_REGISTRY=$_DOCKER_REGISTRY
+#  - DOCKER_IMAGE_PREFIX=$_DOCKER_IMAGE_PREFIX
+#  args:
+#  - kops-controller-manifest
+#  - dns-controller-manifest
+#  - kube-apiserver-healthcheck-manifest
 # Build cloudbuild artifacts (for attestation)
 - name: 'gcr.io/k8s-testimages/kubekins-e2e:v20210825-f1955d1-experimental'
   id: cloudbuild-artifacts
