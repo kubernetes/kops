@@ -5,7 +5,7 @@ options:
   machineType: 'N1_HIGHCPU_8'
 steps:
 # Push the images
-- name: 'docker.io/library/golang:1.18.0-bullseye'
+- name: 'gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master'
   id: images
   entrypoint: make
   env:
@@ -20,7 +20,7 @@ steps:
   - dns-controller-push
   - kube-apiserver-healthcheck-push
 # Push the artifacts
-- name: 'docker.io/library/golang:1.18.0-bullseye'
+- name: 'gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master'
   id: artifacts
   entrypoint: make
   env:
@@ -50,7 +50,7 @@ steps:
 #  - dns-controller-manifest
 #  - kube-apiserver-healthcheck-manifest
 # Build cloudbuild artifacts (for attestation)
-- name: 'docker.io/library/golang:1.18.0-bullseye'
+- name: 'gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master'
   id: cloudbuild-artifacts
   entrypoint: make
   env:
