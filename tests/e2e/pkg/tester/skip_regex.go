@@ -58,6 +58,8 @@ func (t *Tester) setSkipRegexFlag() error {
 			// https://github.com/cilium/cilium/issues/5719
 			skipRegex += "|should.create.a.Pod.with.SCTP.HostPort"
 		}
+		// https://github.com/cilium/cilium/issues/18241
+		skipRegex += "|Services.should.create.endpoints.for.unready.pods"
 	} else if networking.Kuberouter != nil {
 		skipRegex += "|load-balancer|hairpin|affinity\\stimeout|service\\.kubernetes\\.io|CLOSE_WAIT"
 	} else if networking.Kubenet != nil {
