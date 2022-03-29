@@ -250,8 +250,8 @@ gcs-upload: gsutil version-dist
 # gcs-upload-tag runs gcs-upload to upload, then uploads a version-marker to LATEST_FILE
 .PHONY: gcs-upload-and-tag
 gcs-upload-and-tag: gsutil gcs-upload
-	echo "${GCS_URL}${VERSION}" > ${BAZELUPLOAD}/latest.txt
-	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp ${BAZELUPLOAD}/latest.txt ${GCS_LOCATION}${LATEST_FILE}
+	echo "${GCS_URL}${VERSION}" > ${UPLOAD}/latest.txt
+	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp ${UPLOAD}/latest.txt ${GCS_LOCATION}${LATEST_FILE}
 
 .PHONY: bazel-version-ci
 bazel-version-ci: bazel-version-dist-linux-amd64 bazel-version-dist-linux-arm64
