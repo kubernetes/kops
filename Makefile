@@ -243,15 +243,15 @@ upload: version-dist # Upload kops to S3
 
 # gcs-upload builds kops and uploads to GCS
 .PHONY: gcs-upload
-gcs-upload: version-dist
+gcs-upload: gsutil version-dist
 	@echo "== Uploading kops =="
 	gsutil -h "Cache-Control:private, max-age=0, no-transform" -m cp -n -r ${UPLOAD}/kops/* ${GCS_LOCATION}
 
 # gcs-upload-tag runs gcs-upload to upload, then uploads a version-marker to LATEST_FILE
 .PHONY: gcs-upload-and-tag
-gcs-upload-and-tag: gcs-upload
-	echo "${GCS_URL}${VERSION}" > ${BAZELUPLOAD}/latest.txt
-	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp ${BAZELUPLOAD}/latest.txt ${GCS_LOCATION}${LATEST_FILE}
+gcs-upload-and-tag: gsutil gcs-upload
+	echo "${GCS_URL}${VERSION}" > ${UPLOAD}/latest.txt
+	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp ${UPLOAD}/latest.txt ${GCS_LOCATION}${LATEST_FILE}
 
 .PHONY: bazel-version-ci
 bazel-version-ci: bazel-version-dist-linux-amd64 bazel-version-dist-linux-arm64
@@ -292,7 +292,7 @@ bazel-version-ci: bazel-version-dist-linux-amd64 bazel-version-dist-linux-arm64
 # The last copy part is to satisfy kubetest2 path expectations
 .PHONY: gcs-publish-ci
 gcs-publish-ci: VERSION := ${KOPS_CI_VERSION}+${GITSHA}
-gcs-publish-ci: version-dist-ci
+gcs-publish-ci: gsutil version-dist-ci
 	@echo "== Uploading kops =="
 	gsutil -h "Cache-Control:private, max-age=0, no-transform" -m cp -n -r ${UPLOAD}/kops/* ${GCS_LOCATION}
 	echo "VERSION: ${VERSION}"
@@ -616,6 +616,10 @@ bazel-push-gce-run: bazel-push
 bazel-push-aws-run: bazel-push
 	ssh ${TARGET} chmod +x /tmp/nodeup
 	ssh -t ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /tmp/nodeup --conf=/opt/kops/conf/kube_env.yaml --v=8
+
+.PHONY: gsutil
+gsutil:
+	hack/install-gsutil.sh
 
 .PHONY: ko
 ko:
@@ -986,7 +990,7 @@ kube-apiserver-healthcheck-manifest:
 .PHONY: cloudbuild-artifacts
 cloudbuild-artifacts:
 	mkdir -p ${KOPS_ROOT}/cloudbuild/
-	cd ${BAZELUPLOAD}/kops/; find . -type f | sort | xargs sha256sum > ${KOPS_ROOT}/cloudbuild/files.sha256
-	cd ${KOPS_ROOT}/${BAZEL_BIN}/; find . -name '*.digest' -type f | sort | xargs grep . > ${KOPS_ROOT}/cloudbuild/image-digests
+	cd ${UPLOAD}/kops/; find . -type f | sort | xargs sha256sum > ${KOPS_ROOT}/cloudbuild/files.sha256
+	# cd ${KOPS_ROOT}/${BAZEL_BIN}/; find . -name '*.digest' -type f | sort | xargs grep . > ${KOPS_ROOT}/cloudbuild/image-digests
 	# ${BUILDER_OUTPUT}/output is a special cloudbuild target; the first 4KB is captured securely
 	cd ${KOPS_ROOT}/cloudbuild/; find -type f | sort | xargs sha256sum > ${BUILDER_OUTPUT}/output
