@@ -435,6 +435,8 @@ func (t *Tester) execute() error {
 	}
 	t.addNonBlockingTaintsFlag()
 
+	t.TestArgs += " --disable-log-dump"
+
 	return t.Test()
 }
 
