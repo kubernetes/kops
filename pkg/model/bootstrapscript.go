@@ -203,6 +203,10 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 		}
 	}
 
+	if cluster.Spec.GetCloudProvider() == kops.CloudProviderGCE {
+		env["GCE_ACCESS_TOKEN_URL"] = "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token"
+	}
+
 	return env, nil
 }
 

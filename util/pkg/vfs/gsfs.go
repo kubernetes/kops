@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"os"
 	"path"
@@ -254,6 +255,37 @@ func (p *GSPath) ReadFile() ([]byte, error) {
 	}
 }
 
+func (p *GSPath) fetchHTTPResponse() (*http.Response, error) {
+	url := fmt.Sprintf("https://storage.googleapis.com/%s/%s", p.bucket, p.key)
+	klog.Infof("Downloading %q as a fallback due to failures with authenticated download.", url)
+
+	// Create a client with custom timeouts
+	// to avoid idle downloads to hang the program
+	httpClient := &http.Client{
+		Transport: &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+			DialContext: (&net.Dialer{
+				Timeout:   30 * time.Second,
+				KeepAlive: 30 * time.Second,
+			}).DialContext,
+			TLSHandshakeTimeout:   10 * time.Second,
+			ResponseHeaderTimeout: 30 * time.Second,
+			IdleConnTimeout:       30 * time.Second,
+		},
+	}
+
+	// this will stop slow downloads after 3 minutes
+	// and interrupt reading of the Response.Body
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("Cannot create request: %v", err)
+	}
+	return httpClient.Do(req)
+}
+
 // WriteTo implements io.WriterTo::WriteTo
 func (p *GSPath) WriteTo(out io.Writer) (int64, error) {
 	klog.V(4).Infof("Reading file %q", p)
@@ -263,7 +295,18 @@ func (p *GSPath) WriteTo(out io.Writer) (int64, error) {
 		if isGCSNotFound(err) {
 			return 0, os.ErrNotExist
 		}
-		return 0, fmt.Errorf("error reading %s: %v", p, err)
+		if isGCSAuthUnavailable(err) {
+			response, err = p.fetchHTTPResponse()
+			if err != nil {
+				return 0, err
+			}
+			if response.StatusCode >= 400 {
+				errorBody, _ := io.ReadAll(response.Body)
+				return 0, fmt.Errorf("error reading %s while falling back to http download: %v", p, string(errorBody))
+			}
+		} else {
+			return 0, fmt.Errorf("error reading %s: %v", p, err)
+		}
 	}
 	if response == nil {
 		return 0, fmt.Errorf("no response returned from reading %s", p)
@@ -445,4 +488,12 @@ func isGCSNotFound(err error) bool {
 	}
 	ae, ok := err.(*googleapi.Error)
 	return ok && ae.Code == http.StatusNotFound
+}
+
+func isGCSAuthUnavailable(err error) bool {
+	if err == nil {
+		return false
+	}
+	ae, ok := err.(*googleapi.Error)
+	return ok && ae.Code == 412 && strings.Contains(ae.Body, "The type of authentication token used for this request requires that")
 }

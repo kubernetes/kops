@@ -18,11 +18,14 @@ package fi
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
+	"os/exec"
 	"path"
 	"time"
 
@@ -67,15 +70,71 @@ func DownloadURL(url string, dest string, hash *hashing.Hash) (*hashing.Hash, er
 	return hash, nil
 }
 
+func addAuthHeadersFromEnvironment(client *http.Client, req *http.Request) error {
+	// We need to figure out if we're running in a GCP VM, making a request to
+	// google cloud storage.  If so, we need
+	// to get an auth token from the metadata server.
+	if req.URL.Host == "storage.googleapis.com" {
+		cmd := exec.Command("systemctl", "check", "oem-gce")
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			if exitErr, ok := err.(*exec.ExitError); ok {
+				if exitErr.ExitCode() == 4 {
+					klog.Infof("systemctl did not find oem-gce, assuming we are not on GCE: %s", out)
+				}
+				klog.Warningf("systemctl error: %v; %s", exitErr, out)
+				// just return because it is perfectly fine to not be on GCE!
+				return nil
+			} else {
+				klog.Errorf("failed to run systemctl: %w", err)
+				return err
+			}
+		}
+		// The "metadata.google.internal" URL is reachable from a GCE VM, but not from anywhere else.
+		// If we fail to reach it, we should assume that we are, in fact, not on GCE, despite previous
+		// indications to the contrary.
+		metadataAuthReq, err := http.NewRequestWithContext(req.Context(), http.MethodGet, "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token", nil)
+		if err != nil {
+			klog.Warningf("Failed to construct request to metadata.google.internal - are we not on GCE?: %v", err)
+			return nil
+		}
+		metadataAuthReq.Header.Add("Metadata-Flavor", "Google")
+		metadataAuthResp, err := client.Do(metadataAuthReq)
+		if err != nil {
+			klog.Warningf("Failed to send request to metadata.google.internal - are we not on GCE?: %v", err)
+			return nil
+		}
+		authFromMetadata, err := ioutil.ReadAll(metadataAuthResp.Body)
+		if err != nil {
+			return fmt.Errorf("failed to read auth metadata from gce: %w", err)
+		}
+
+		if metadataAuthResp.StatusCode != 200 {
+			klog.Warning("Got non-200 status code %v from metadata server with body: %s", metadataAuthResp.StatusCode, authFromMetadata)
+			return fmt.Errorf("non-200 status code while reading auth metadata from gce: %v", authFromMetadata)
+		}
+		var auth map[string]interface{}
+		if err := json.Unmarshal(authFromMetadata, &auth); err != nil {
+			klog.Errorf("Received response from metadata.google.internal, but it was not parsable. Assuming we are not on GCE: %v", err)
+			return fmt.Errorf("unparsable response while reading auth metadata from gce: %w", err)
+		}
+		klog.Infof("Found auth token: %v", auth)
+
+		req.Header.Add("Authorization", "Bearer "+auth["access_token"].(string))
+	}
+
+	return nil
+}
+
 func downloadURLAlways(url string, destPath string, dirMode os.FileMode) error {
 	err := os.MkdirAll(path.Dir(destPath), dirMode)
 	if err != nil {
-		return fmt.Errorf("error creating directories for destination file %q: %v", destPath, err)
+		return fmt.Errorf("error creating directories for destination file %q: %w", destPath, err)
 	}
 
 	output, err := os.Create(destPath)
 	if err != nil {
-		return fmt.Errorf("error creating file for download %q: %v", destPath, err)
+		return fmt.Errorf("error creating file for download %q: %w", destPath, err)
 	}
 	defer output.Close()
 
@@ -103,25 +162,43 @@ func downloadURLAlways(url string, destPath string, dirMode os.FileMode) error {
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return fmt.Errorf("Cannot create request: %v", err)
+		return fmt.Errorf("Cannot create request: %w", err)
 	}
-
-	response, err := httpClient.Do(req)
+	responseWithoutAuth, err := httpClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("error doing HTTP fetch of %q: %v", url, err)
+		return fmt.Errorf("error doing HTTP fetch of %q: %w", url, err)
 	}
-	defer response.Body.Close()
+	defer responseWithoutAuth.Body.Close()
+	response := responseWithoutAuth
+
+	if response.StatusCode == 401 || response.StatusCode == 403 {
+		klog.Infof("Detected that authentication is required.  Attempting to find auth token.")
+		// Create the same request again, but this time add auth headers.
+		req, err = http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+		if err != nil {
+			return fmt.Errorf("Cannot create request: %w", err)
+		}
+		if err := addAuthHeadersFromEnvironment(httpClient, req); err != nil {
+			return fmt.Errorf("Cannot determine authentication headers: %w", err)
+		}
+		responseWithAuth, err := httpClient.Do(req)
+		if err != nil {
+			return fmt.Errorf("error doing authenticated HTTP fetch of %q: %w", url, err)
+		}
+		response = responseWithAuth
+	}
 
 	if response.StatusCode >= 400 {
 		return fmt.Errorf("error response from %q: HTTP %v", url, response.StatusCode)
 	}
 
+	defer response.Body.Close()
 	start := time.Now()
 	defer klog.Infof("Copying %q to %q took %q seconds", url, destPath, time.Since(start))
 
 	_, err = io.Copy(output, response.Body)
 	if err != nil {
-		return fmt.Errorf("error downloading HTTP content from %q: %v", url, err)
+		return fmt.Errorf("error downloading HTTP content from %q: %w", url, err)
 	}
 	return nil
 }

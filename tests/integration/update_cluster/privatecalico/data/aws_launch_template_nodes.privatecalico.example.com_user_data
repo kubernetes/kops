@@ -30,6 +30,22 @@ function ensure-install-dir() {
   cd ${INSTALL_DIR}
 }
 
+try-download-file() {
+  local -r url="$1"
+  local -r file="$2"
+  local -r auth="$3"
+  if [[ "$auth" == "" ]]; then
+        if curl -f --compressed -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 "${url}"; then return 0; fi
+        if wget --compression=auto -O "${file}" --connect-timeout=20 --tries=6 --wait=10 "${url}"; then return 0; fi
+        if curl -f -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 "${url}"; then return 0; fi
+        if wget -O "${file}" --connect-timeout=20 --tries=6 --wait=10 "${url}"; then return 0; fi
+  else
+        if curl -f --compressed -Lo "${file}" -v -H "Authorization: Bearer ${auth}" --connect-timeout 20 --retry 6 --retry-delay 10 "${url}"; then return 0; fi
+        if curl -f -Lo "${file}" -v -H "Authorization: Bearer ${auth}" --connect-timeout 20 --retry 6 --retry-delay 10 "${url}"; then return 0; fi
+  fi
+  return 1
+}
+
 # Retry a download until we get it. args: name, sha, urls
 download-or-bust() {
   local -r file="$1"
@@ -46,29 +62,28 @@ download-or-bust() {
 
   while true; do
     for url in "${urls[@]}"; do
-      commands=(
-        "curl -f --compressed -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10"
-        "wget --compression=auto -O "${file}" --connect-timeout=20 --tries=6 --wait=10"
-        "curl -f -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10"
-        "wget -O "${file}" --connect-timeout=20 --tries=6 --wait=10"
-      )
-      for cmd in "${commands[@]}"; do
-        echo "Attempting download with: ${cmd} {url}"
-        if ! (${cmd} "${url}"); then
-          echo "== Download failed with ${cmd} =="
-          continue
-        fi
-        if ! validate-hash "${file}" "${hash}"; then
-          echo "== Hash validation of ${url} failed. Retrying. =="
-          rm -f "${file}"
-        else
-          echo "== Downloaded ${url} (SHA256 = ${hash}) =="
-          return 0
-        fi
-      done
+      local access_token=""
+      if [[ "${GCE_ACCESS_TOKEN_URL:-}" != "" ]]; then
+        # The token always begins with 'ya29' and continues until the next double-quote.
+        # We would normally use jq to be more tolerant of format changes, 
+        # but it's not available in flatcar during startup (depends on docker, which isn't up yet.)
+        access_token=$(curl "$GCE_ACCESS_TOKEN_URL" -H "Metadata-Flavor: Google" | grep -Eo 'ya29\.[^\"]*')
+      fi
+
+      echo "Attempting download of ${url}"
+      if ! try-download-file "${url}" "${file}" "${access_token}" ; then
+        continue
+      fi
+      if ! validate-hash "${file}" "${hash}"; then
+        echo "== Hash validation of ${url} failed. Retrying. =="
+        rm -f "${file}"
+      else
+        echo "== Downloaded ${url} (SHA256 = ${hash}) =="
+        return
+      fi
     done
 
-    echo "All downloads failed; sleeping before retrying"
+    echo "Download failed with all plausible commands; sleeping before retrying"
     sleep 60
   done
 }

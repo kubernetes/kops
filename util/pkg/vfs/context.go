@@ -121,9 +121,6 @@ func (c *VFSContext) ReadFile(location string, options ...VFSOption) ([]byte, er
 			default:
 				return nil, fmt.Errorf("unknown metadata type: %q in %q", u.Host, location)
 			}
-
-		case "http", "https":
-			return c.readHTTPLocation(location, nil, opts)
 		}
 	}
 
@@ -131,7 +128,7 @@ func (c *VFSContext) ReadFile(location string, options ...VFSOption) ([]byte, er
 
 	p, err := c.BuildVfsPath(location)
 	if err != nil {
-		return nil, err
+		return c.readHTTPLocation(location, nil, opts)
 	}
 	return p.ReadFile()
 }
@@ -158,7 +155,7 @@ func (c *VFSContext) BuildVfsPath(p string) (Path, error) {
 		return c.buildMemFSPath(p)
 	}
 
-	if strings.HasPrefix(p, "gs://") {
+	if strings.HasPrefix(p, "gs://") || strings.HasPrefix(p, "https://storage.googleapis.com/") {
 		return c.buildGCSPath(p)
 	}
 
@@ -364,18 +361,24 @@ func (c *VFSContext) buildGCSPath(p string) (*GSPath, error) {
 		return nil, fmt.Errorf("invalid google cloud storage path: %q", p)
 	}
 
-	if u.Scheme != "gs" {
+	var bucket, path string
+	if u.Host == "storage.googleapis.com" {
+		pathElements := strings.Split(strings.TrimPrefix(u.Path, "/"), "/")
+		bucket = pathElements[0]
+		path = strings.Join(pathElements[1:], "/")
+	} else if u.Scheme == "gs" {
+		bucket = strings.TrimSuffix(u.Host, "/")
+		path = u.Path
+	} else {
 		return nil, fmt.Errorf("invalid google cloud storage path: %q", p)
 	}
-
-	bucket := strings.TrimSuffix(u.Host, "/")
 
 	gcsClient, err := c.getGCSClient()
 	if err != nil {
 		return nil, err
 	}
 
-	gcsPath := NewGSPath(gcsClient, bucket, u.Path)
+	gcsPath := NewGSPath(gcsClient, bucket, path)
 	return gcsPath, nil
 }
 
