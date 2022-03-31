@@ -1387,16 +1387,33 @@
               "Action": "ec2:CreateTags",
               "Condition": {
                 "StringEquals": {
+                  "aws:RequestTag/KubernetesCluster": "minimal-ipv6.example.com",
                   "ec2:CreateAction": [
-                    "CreateVolume",
-                    "CreateSnapshot"
+                    "CreateSecurityGroup"
                   ]
                 }
               },
               "Effect": "Allow",
               "Resource": [
-                "arn:aws-test:ec2:*:*:volume/*",
-                "arn:aws-test:ec2:*:*:snapshot/*"
+                "arn:aws-test:ec2:*:*:security-group/*"
+              ]
+            },
+            {
+              "Action": [
+                "ec2:CreateTags",
+                "ec2:DeleteTags"
+              ],
+              "Condition": {
+                "Null": {
+                  "aws:RequestTag/KubernetesCluster": "true"
+                },
+                "StringEquals": {
+                  "aws:ResourceTag/KubernetesCluster": "minimal-ipv6.example.com"
+                }
+              },
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws-test:ec2:*:*:security-group/*"
               ]
             },
             {
@@ -1406,8 +1423,13 @@
                 "autoscaling:DescribeLaunchConfigurations",
                 "autoscaling:DescribeTags",
                 "ec2:AssignIpv6Addresses",
+                "ec2:AttachVolume",
+                "ec2:AuthorizeSecurityGroupIngress",
                 "ec2:CreateSecurityGroup",
                 "ec2:CreateTags",
+                "ec2:DeleteRoute",
+                "ec2:DeleteSecurityGroup",
+                "ec2:DeleteVolume",
                 "ec2:DescribeAccountAttributes",
                 "ec2:DescribeInstanceTypes",
                 "ec2:DescribeInstances",
@@ -1421,7 +1443,10 @@
                 "ec2:DescribeVolumes",
                 "ec2:DescribeVolumesModifications",
                 "ec2:DescribeVpcs",
+                "ec2:DetachVolume",
+                "ec2:ModifyInstanceAttribute",
                 "ec2:ModifyNetworkInterfaceAttribute",
+                "ec2:ModifyVolume",
                 "elasticloadbalancing:AddTags",
                 "elasticloadbalancing:CreateListener",
                 "elasticloadbalancing:CreateTargetGroup",
@@ -1448,7 +1473,6 @@
                 "autoscaling:TerminateInstanceInAutoScalingGroup",
                 "ec2:AttachVolume",
                 "ec2:AuthorizeSecurityGroupIngress",
-                "ec2:DeleteRoute",
                 "ec2:DeleteSecurityGroup",
                 "ec2:DeleteVolume",
                 "ec2:DetachVolume",
@@ -1498,6 +1522,11 @@
               },
               "Effect": "Allow",
               "Resource": "*"
+            },
+            {
+              "Action": "ec2:CreateSecurityGroup",
+              "Effect": "Allow",
+              "Resource": "arn:aws-test:ec2:*:*:vpc/*"
             }
           ],
           "Version": "2012-10-17"
