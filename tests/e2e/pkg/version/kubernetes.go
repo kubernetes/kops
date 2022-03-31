@@ -22,7 +22,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/blang/semver"
+	"github.com/blang/semver/v4"
 	"k8s.io/kops/tests/e2e/pkg/util"
 )
 
