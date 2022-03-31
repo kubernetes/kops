@@ -3,7 +3,7 @@ module k8s.io/kops/tests/e2e
 go 1.17
 
 require (
-	github.com/blang/semver v3.5.1+incompatible
+	github.com/blang/semver/v4 v4.0.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/octago/sflags v0.2.0
 	github.com/spf13/pflag v1.0.5
@@ -26,7 +26,7 @@ require (
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
 	github.com/apparentlymart/go-cidr v1.1.0 // indirect
 	github.com/aws/aws-sdk-go v1.43.11 // indirect
-	github.com/blang/semver/v4 v4.0.0 // indirect
+	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/cenkalti/backoff/v3 v3.0.0 // indirect
 	github.com/containerd/stargz-snapshotter/estargz v0.10.0 // indirect
 	github.com/containers/image/v5 v5.9.0 // indirect
