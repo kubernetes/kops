@@ -4246,6 +4246,13 @@ func (in *NodeLocalDNSConfig) DeepCopyInto(out *NodeLocalDNSConfig) {
 		x := (*in).DeepCopy()
 		*out = &x
 	}
+	if in.PodAnnotations != nil {
+		in, out := &in.PodAnnotations, &out.PodAnnotations
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	return
 }
 
