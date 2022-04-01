@@ -3099,6 +3099,12 @@ spec:
                           5Mi.
                         pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                         x-kubernetes-int-or-string: true
+                      podAnnotations:
+                        additionalProperties:
+                          type: string
+                        description: 'PodAnnotations makes possible to add additional
+                          annotations to node-local-dns. Default: none'
+                        type: object
                     type: object
                   provider:
                     description: Provider indicates whether CoreDNS or kube-dns will

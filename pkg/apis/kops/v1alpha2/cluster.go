@@ -545,6 +545,9 @@ type NodeLocalDNSConfig struct {
 	MemoryRequest *resource.Quantity `json:"memoryRequest,omitempty"`
 	// CPURequest specifies the cpu requests of each node-local-dns container in the daemonset. Default 25m.
 	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
+	// PodAnnotations makes possible to add additional annotations to node-local-dns.
+	// Default: none
+	PodAnnotations map[string]string `json:"podAnnotations,omitempty"`
 }
 
 type ExternalDNSProvider string
