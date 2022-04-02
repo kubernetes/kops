@@ -280,6 +280,18 @@ spec:
         k8s-app: cluster-autoscaler
         app.kubernetes.io/name: "cluster-autoscaler"
     spec:
+      {{ if not UseServiceAccountExternalPermissions }}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
+      {{ end }}
       priorityClassName: "system-cluster-critical"
       dnsPolicy: "ClusterFirst"
       containers:
@@ -328,13 +340,11 @@ spec:
             requests:
               cpu: {{ or .CPURequest "100m"}}
               memory: {{ or .MemoryRequest "300Mi"}}
-      {{ if not UseServiceAccountExternalPermissions }}
-      nodeSelector:
-        node-role.kubernetes.io/master: ""
-      {{ end }}
       serviceAccountName: cluster-autoscaler
       {{ if not UseServiceAccountExternalPermissions }}
       tolerations:
+      - operator: "Exists"
+        key: node-role.kubernetes.io/control-plane
       - operator: "Exists"
         key: node-role.kubernetes.io/master
       {{ end }}
