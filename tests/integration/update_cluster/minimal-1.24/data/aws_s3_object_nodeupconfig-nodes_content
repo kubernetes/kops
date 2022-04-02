@@ -55,7 +55,6 @@ KubeletConfig:
   logLevel: 2
   nodeLabels:
     kops.k8s.io/instancegroup: nodes-us-test-1a
-    kubernetes.io/role: node
     node-role.kubernetes.io/node: ""
   podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
