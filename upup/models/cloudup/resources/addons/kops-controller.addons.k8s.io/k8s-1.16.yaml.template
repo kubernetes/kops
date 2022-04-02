@@ -37,6 +37,20 @@ spec:
         dns.alpha.kubernetes.io/internal: kops-controller.internal.{{ ClusterName }}
 {{ end }}
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+              - key: kops.k8s.io/kops-controller-pki
+                operator: Exists
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
+              - key: kops.k8s.io/kops-controller-pki
+                operator: Exists
       priorityClassName: system-cluster-critical
       tolerations:
       - key: node.cloudprovider.kubernetes.io/uninitialized
@@ -45,9 +59,8 @@ spec:
         operator: Exists
       - key: node-role.kubernetes.io/master
         operator: Exists
-      nodeSelector:
-        node-role.kubernetes.io/master: ""
-        kops.k8s.io/kops-controller-pki: ""
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
       dnsPolicy: Default  # Don't use cluster DNS (we are likely running before kube-dns)
       hostNetwork: true
       serviceAccount: kops-controller
