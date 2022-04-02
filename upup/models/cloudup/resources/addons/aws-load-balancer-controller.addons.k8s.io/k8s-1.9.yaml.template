@@ -736,6 +736,16 @@ spec:
         app.kubernetes.io/component: controller
         app.kubernetes.io/name: aws-load-balancer-controller
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
       containers:
       - args:
         - --cluster-name={{ ClusterName }}
@@ -772,8 +782,6 @@ spec:
           name: cert
           readOnly: true
       priorityClassName: system-cluster-critical
-      nodeSelector:
-        node-role.kubernetes.io/master: ""
       securityContext:
         fsGroup: 1337
       serviceAccountName: aws-load-balancer-controller
