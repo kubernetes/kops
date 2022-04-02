@@ -1153,3 +1153,18 @@ spec:
   secretName: hubble-relay-client-certs
 {{ end }}
 {{ end }}
+---
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: cilium-operator
+  namespace: kube-system
+  labels:
+    io.cilium/app: operator
+    name: cilium-operator
+spec:
+  selector:
+    matchLabels:
+      io.cilium/app: operator
+      name: cilium-operator
+  maxUnavailable: 1
