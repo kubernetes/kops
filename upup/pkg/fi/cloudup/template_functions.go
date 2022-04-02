@@ -308,6 +308,11 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 
 	dest["PodIdentityWebhookConfigMapData"] = tf.podIdentityWebhookConfigMapData
 
+	dest["HasSnapshotController"] = func() bool {
+		sc := cluster.Spec.SnapshotController
+		return sc != nil && fi.BoolValue(sc.Enabled)
+	}
+
 	return nil
 }
 
