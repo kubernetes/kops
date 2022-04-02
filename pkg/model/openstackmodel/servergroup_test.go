@@ -60,6 +60,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 							},
 						},
 					},
+					KubernetesVersion: "1.24.0",
 					Subnets: []kops.ClusterSubnetSpec{
 						{
 							Name:   "subnet",
@@ -117,6 +118,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 							},
 						},
 					},
+					KubernetesVersion: "1.24.0",
 					Subnets: []kops.ClusterSubnetSpec{
 						{
 							Name:   "subnet",
@@ -202,6 +204,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 							},
 						},
 					},
+					KubernetesVersion: "1.24.0",
 					Subnets: []kops.ClusterSubnetSpec{
 						{
 							Name:   "subnet-a",
@@ -327,6 +330,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 					Topology: &kops.TopologySpec{
 						Masters: kops.TopologyPrivate,
 					},
+					KubernetesVersion: "1.24.0",
 					Subnets: []kops.ClusterSubnetSpec{
 						{
 							Name:   "subnet-a",
@@ -448,6 +452,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 							},
 						},
 					},
+					KubernetesVersion: "1.24.0",
 					Subnets: []kops.ClusterSubnetSpec{
 						{
 							Name:   "subnet-a",
@@ -569,6 +574,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 							},
 						},
 					},
+					KubernetesVersion: "1.24.0",
 					Subnets: []kops.ClusterSubnetSpec{
 						{
 							Name:   "subnet-a",
@@ -650,6 +656,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 							},
 						},
 					},
+					KubernetesVersion: "1.24.0",
 					Subnets: []kops.ClusterSubnetSpec{
 						{
 							Name:   "subnet",
@@ -709,6 +716,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 							},
 						},
 					},
+					KubernetesVersion: "1.24.0",
 					Subnets: []kops.ClusterSubnetSpec{
 						{
 							Name:   "subnet",
@@ -791,6 +799,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 							},
 						},
 					},
+					KubernetesVersion: "1.24.0",
 					Subnets: []kops.ClusterSubnetSpec{
 						{
 							Name:   "subnet",
@@ -834,6 +843,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 							},
 						},
 					},
+					KubernetesVersion: "1.24.0",
 					Subnets: []kops.ClusterSubnetSpec{
 						{
 							Name:   "subnet",
@@ -879,6 +889,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 							},
 						},
 					},
+					KubernetesVersion: "1.24.0",
 					Subnets: []kops.ClusterSubnetSpec{
 						{
 							Name:   "subnet",
@@ -922,6 +933,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 							},
 						},
 					},
+					KubernetesVersion: "1.24.0",
 					Subnets: []kops.ClusterSubnetSpec{
 						{
 							Name:   "subnet",
@@ -965,6 +977,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 							},
 						},
 					},
+					KubernetesVersion: "1.24.0",
 					Subnets: []kops.ClusterSubnetSpec{
 						{
 							Name:   "subnet",
@@ -1008,6 +1021,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 							},
 						},
 					},
+					KubernetesVersion: "1.24.0",
 					Subnets: []kops.ClusterSubnetSpec{
 						{
 							Name:   "subnet",
