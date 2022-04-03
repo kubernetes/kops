@@ -138,10 +138,18 @@ encryptionConfig: null
 etcdClusters:
   events:
     cpuRequest: 100m
+    manager:
+      env:
+      - name: ETCD_EXPERIMENTAL_INITIAL_CORRUPT_CHECK
+        value: "true"
     memoryRequest: 100Mi
     version: 3.5.1
   main:
     cpuRequest: 200m
+    manager:
+      env:
+      - name: ETCD_EXPERIMENTAL_INITIAL_CORRUPT_CHECK
+        value: "true"
     memoryRequest: 100Mi
     version: 3.5.1
 kubeAPIServer:
