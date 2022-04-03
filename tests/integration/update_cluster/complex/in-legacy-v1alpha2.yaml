@@ -88,6 +88,9 @@ spec:
     type: Private
     zone: us-test-1a
     egress: tgw-123456
+    additionalRoutes:
+    - cidr: "192.168.1.10/32"
+      target: "tgw-0123456"
   - cidr: 172.20.96.0/19
     name: us-east-1a-utility
     type: Utility

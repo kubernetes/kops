@@ -673,6 +673,16 @@
         "TransitGatewayId": "tgw-123456"
       }
     },
+    "AWSEC2Routeuseast1aprivate19216811032": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTableprivateustest1acomplexexamplecom"
+        },
+        "DestinationCidrBlock": "192.168.1.10/32",
+        "TransitGatewayId": "tgw-0123456"
+      }
+    },
     "AWSEC2SecurityGroupEgressfrommasterscomplexexamplecomegressall0to00": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {

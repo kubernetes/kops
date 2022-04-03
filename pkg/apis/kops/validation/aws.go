@@ -48,6 +48,18 @@ func awsValidateCluster(c *kops.Cluster) field.ErrorList {
 		allErrs = append(allErrs, awsValidateIAMAuthenticator(field.NewPath("spec", "authentication", "aws"), c.Spec.Authentication.AWS)...)
 	}
 
+	for i, subnet := range c.Spec.Subnets {
+		f := field.NewPath("spec", "subnets").Index(i)
+		if subnet.AdditionalRoutes != nil {
+			if len(subnet.ProviderID) > 0 {
+				allErrs = append(allErrs, field.Invalid(f, subnet, "additional routes cannot be added if the subnet is shared"))
+			} else if subnet.Type != kops.SubnetTypePrivate {
+				allErrs = append(allErrs, field.Invalid(f, subnet, "additional routes can only be added on private subnets"))
+			}
+			allErrs = append(allErrs, awsValidateAdditionalRoutes(f.Child("additionalRoutes"), subnet.AdditionalRoutes, c.Spec.NetworkCIDR)...)
+		}
+	}
+
 	return allErrs
 }
 
@@ -346,4 +358,49 @@ func hasAWSEBSCSIDriver(c kops.ClusterSpec) bool {
 	}
 
 	return *c.CloudConfig.AWSEBSCSIDriver.Enabled
+}
+
+func awsValidateAdditionalRoutes(fieldPath *field.Path, routes []kops.RouteSpec, cidr string) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	_, clusterNet, errClusterNet := net.ParseCIDR(cidr)
+	if errClusterNet != nil {
+		allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "networkCIDR"), cidr, "Invalid cluster cidr"))
+	} else {
+		for i, r := range routes {
+			f := fieldPath.Index(i)
+
+			// Check if target is a known type
+			if !strings.HasPrefix(r.Target, "pcx-") &&
+				!strings.HasPrefix(r.Target, "i-") &&
+				!strings.HasPrefix(r.Target, "nat-") &&
+				!strings.HasPrefix(r.Target, "tgw-") &&
+				!strings.HasPrefix(r.Target, "igw-") &&
+				!strings.HasPrefix(r.Target, "eigw-") {
+				allErrs = append(allErrs, field.Invalid(f.Child("target"), r, "unknown target type for route"))
+			}
+
+			ipRoute, _, e := net.ParseCIDR(r.CIDR)
+			if e != nil {
+				allErrs = append(allErrs, field.Invalid(f.Child("cidr"), r, "invalid cidr"))
+			} else if clusterNet.Contains(ipRoute) && strings.HasPrefix(r.Target, "pcx-") {
+				allErrs = append(allErrs, field.Forbidden(f.Child("target"), "target is more specific than cluster CIDR block. This route can target only an interface or an instance."))
+			}
+		}
+	}
+
+	// Check for duplicated CIDR
+	{
+		cidrs := sets.NewString()
+		cidrs.Insert(cidr)
+		for i := range routes {
+			rCidr := routes[i].CIDR
+			if cidrs.Has(rCidr) {
+				allErrs = append(allErrs, field.Duplicate(fieldPath.Index(i).Child("cidr"), rCidr))
+			}
+			cidrs.Insert(rCidr)
+		}
+	}
+
+	return allErrs
 }
