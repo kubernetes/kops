@@ -351,6 +351,25 @@ spec:
     zone: us-east-1a
 ```
 
+### additionalRoutes
+
+{{ kops_feature_table(kops_added_default='1.24') }}
+
+Add routes in the route tables of the subnet. Targets of routes can be an instance, a peering connection, a NAT gateway, a transit gateway, an internet gateway or an egress-only internet gateway.
+Currently, only AWS is supported.
+
+```yaml
+spec:
+  subnets:
+  - cidr: 10.20.64.0/21
+    name: us-east-1a
+    type: Private
+    zone: us-east-1a
+    additionalRoutes:
+    - cidr: 10.21.0.0/16
+      target: vpc-abcdef
+```
+
 ## kubeAPIServer
 
 This block contains configuration for the `kube-apiserver`.
