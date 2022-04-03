@@ -206,7 +206,10 @@ spec:
     name: us-test-1a
     type: Public
     zone: us-test-1a
-  - cidr: 172.20.64.0/19
+  - additionalRoutes:
+    - cidr: 192.168.1.10/32
+      target: tgw-0123456
+    cidr: 172.20.64.0/19
     egress: tgw-123456
     name: us-east-1a-private
     type: Private

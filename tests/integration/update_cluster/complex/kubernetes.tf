@@ -632,6 +632,12 @@ resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
   transit_gateway_id     = "tgw-123456"
 }
 
+resource "aws_route" "route-us-east-1a-private-192-168-1-10--32" {
+  destination_cidr_block = "192.168.1.10/32"
+  route_table_id         = aws_route_table.private-us-test-1a-complex-example-com.id
+  transit_gateway_id     = "tgw-0123456"
+}
+
 resource "aws_route53_record" "api-complex-example-com" {
   alias {
     evaluate_target_health = false
