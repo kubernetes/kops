@@ -131,6 +131,7 @@
         "ec2:ModifyVolume",
         "ecr:BatchCheckLayerAvailability",
         "ecr:BatchGetImage",
+        "ecr:BatchImportUpstreamImage",
         "ecr:DescribeRepositories",
         "ecr:GetAuthorizationToken",
         "ecr:GetDownloadUrlForLayer",

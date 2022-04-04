@@ -54,7 +54,8 @@
         "ecr:GetRepositoryPolicy",
         "ecr:DescribeRepositories",
         "ecr:ListImages",
-        "ecr:BatchGetImage"
+        "ecr:BatchGetImage",
+        "ecr:BatchImportUpstreamImage"
       ],
       "Effect": "Allow",
       "Resource": [

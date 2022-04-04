@@ -28,6 +28,7 @@ The additional permissions are:
   "Action": [
     "ecr:BatchCheckLayerAvailability",
     "ecr:BatchGetImage",
+    "ecr:BatchImportUpstreamImage",
     "ecr:DescribeRepositories",
     "ecr:GetAuthorizationToken",
     "ecr:GetDownloadUrlForLayer",

@@ -806,6 +806,7 @@ func addECRPermissions(p *Policy) {
 		"ecr:DescribeRepositories",
 		"ecr:ListImages",
 		"ecr:BatchGetImage",
+		"ecr:BatchImportUpstreamImage",
 	)
 }
 
