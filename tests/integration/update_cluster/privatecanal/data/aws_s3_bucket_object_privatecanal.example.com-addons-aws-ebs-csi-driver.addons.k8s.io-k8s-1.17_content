@@ -675,17 +675,6 @@ spec:
           name: socket-dir
       - args:
         - --csi-address=$(ADDRESS)
-        - --leader-election=true
-        env:
-        - name: ADDRESS
-          value: /var/lib/csi/sockets/pluginproxy/csi.sock
-        image: registry.k8s.io/sig-storage/csi-snapshotter:v4.0.0
-        name: csi-snapshotter
-        volumeMounts:
-        - mountPath: /var/lib/csi/sockets/pluginproxy/
-          name: socket-dir
-      - args:
-        - --csi-address=$(ADDRESS)
         - --v=5
         env:
         - name: ADDRESS
