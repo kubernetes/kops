@@ -202,7 +202,7 @@ spec:
       sidecarIstioProxyImage: cilium/istio_proxy
       toFqdnsDnsRejectResponseCode: refused
       tunnel: disabled
-      version: v1.10.5
+      version: v1.11.3
   nonMasqueradeCIDR: 100.64.0.0/10
   podCIDR: 100.96.0.0/11
   secretStore: memfs://clusters.example.com/privateciliumadvanced.example.com/secrets
