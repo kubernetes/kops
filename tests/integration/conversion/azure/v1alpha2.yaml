@@ -12,6 +12,13 @@ spec:
   authorization:
     alwaysAllow: {}
   channel: stable
+  cloudConfig:
+    azure:
+      adminUser: admin-user
+      resourceGroupName: resource-group-name
+      routeTableName: route-table-name
+      subscriptionId: subs-id
+      tenantId: tenant-id
   cloudProvider: azure
   configBase: memfs://clusters.example.com/minimal.example.com
   etcdClusters:

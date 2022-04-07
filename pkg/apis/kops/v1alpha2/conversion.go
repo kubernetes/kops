@@ -80,6 +80,11 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 		out.CloudProvider.AWS = &kops.AWSSpec{}
 	case kops.CloudProviderAzure:
 		out.CloudProvider.Azure = &kops.AzureSpec{}
+		if in.CloudConfig != nil && in.CloudConfig.Azure != nil {
+			if err := autoConvert_v1alpha2_AzureSpec_To_kops_AzureSpec(in.CloudConfig.Azure, out.CloudProvider.Azure, s); err != nil {
+				return err
+			}
+		}
 	case kops.CloudProviderDO:
 		out.CloudProvider.DO = &kops.DOSpec{}
 	case kops.CloudProviderGCE:
@@ -112,6 +117,18 @@ func Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, out 
 		return err
 	}
 	out.LegacyCloudProvider = string(in.GetCloudProvider())
+	switch kops.CloudProviderID(out.LegacyCloudProvider) {
+	case kops.CloudProviderAzure:
+		if out.CloudConfig == nil {
+			out.CloudConfig = &CloudConfiguration{}
+		}
+		if out.CloudConfig.Azure == nil {
+			out.CloudConfig.Azure = &AzureSpec{}
+		}
+		if err := autoConvert_kops_AzureSpec_To_v1alpha2_AzureSpec(in.CloudProvider.Azure, out.CloudConfig.Azure, s); err != nil {
+			return err
+		}
+	}
 	if in.TagSubnets != nil {
 		out.TagSubnets = values.Bool(!*in.TagSubnets)
 	}

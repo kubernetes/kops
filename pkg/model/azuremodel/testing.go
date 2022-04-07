@@ -49,6 +49,12 @@ func newTestCluster() *kops.Cluster {
 					Type: kops.LoadBalancerTypeInternal,
 				},
 			},
+			CloudProvider: kops.CloudProviderSpec{
+				Azure: &kops.AzureSpec{
+					ResourceGroupName: "test-resource-group",
+					RouteTableName:    "test-route-table",
+				},
+			},
 			Networking:  &kops.NetworkingSpec{},
 			NetworkID:   "test-virtual-network",
 			NetworkCIDR: "10.0.0.0/8",
@@ -57,12 +63,6 @@ func newTestCluster() *kops.Cluster {
 					Name: "test-subnet",
 					CIDR: "10.0.1.0/24",
 					Type: kops.SubnetTypePrivate,
-				},
-			},
-			CloudConfig: &kops.CloudConfiguration{
-				Azure: &kops.AzureConfiguration{
-					ResourceGroupName: "test-resource-group",
-					RouteTableName:    "test-route-table",
 				},
 			},
 		},

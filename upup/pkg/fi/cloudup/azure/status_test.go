@@ -205,8 +205,8 @@ func TestGetCloudGroups(t *testing.T) {
 			Name: clusterName,
 		},
 		Spec: kops.ClusterSpec{
-			CloudConfig: &kops.CloudConfiguration{
-				Azure: &kops.AzureConfiguration{
+			CloudProvider: kops.CloudProviderSpec{
+				Azure: &kops.AzureSpec{
 					ResourceGroupName: "my-rg",
 				},
 			},
