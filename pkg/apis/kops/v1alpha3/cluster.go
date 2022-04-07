@@ -241,10 +241,6 @@ type CloudProviderSpec struct {
 type AWSSpec struct {
 }
 
-// AzureSpec configures the Azure cloud provider.
-type AzureSpec struct {
-}
-
 // DOSpec configures the Digital Ocean cloud provider.
 type DOSpec struct {
 }

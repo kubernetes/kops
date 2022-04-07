@@ -822,8 +822,8 @@ type OpenstackConfiguration struct {
 	Metadata           *OpenstackMetadata           `json:"metadata,omitempty"`
 }
 
-// AzureConfiguration defines Azure specific cluster configuration.
-type AzureConfiguration struct {
+// AzureSpec defines Azure specific cluster configuration.
+type AzureSpec struct {
 	// SubscriptionID specifies the subscription used for the cluster installation.
 	SubscriptionID string `json:"subscriptionId,omitempty"`
 	// TenantID is the ID of the tenant that the cluster is deployed in.
@@ -888,7 +888,8 @@ type CloudConfiguration struct {
 	// Openstack cloud-config options
 	Openstack *OpenstackConfiguration `json:"openstack,omitempty"`
 	// Azure cloud-config options
-	Azure *AzureConfiguration `json:"azure,omitempty"`
+	// +k8s:conversion-gen=false
+	Azure *AzureSpec `json:"azure,omitempty"`
 	// AWSEBSCSIDriver is the config for the AWS EBS CSI driver
 	AWSEBSCSIDriver *AWSEBSCSIDriver `json:"awsEBSCSIDriver,omitempty"`
 	// GCPPDCSIDriver is the config for the GCP PD CSI driver
