@@ -140,8 +140,16 @@ docker:
 encryptionConfig: null
 etcdClusters:
   events:
+    manager:
+      env:
+      - name: ETCD_EXPERIMENTAL_INITIAL_CORRUPT_CHECK
+        value: "true"
     version: 3.5.1
   main:
+    manager:
+      env:
+      - name: ETCD_EXPERIMENTAL_INITIAL_CORRUPT_CHECK
+        value: "true"
     version: 3.5.1
 kubeAPIServer:
   allowPrivileged: true
