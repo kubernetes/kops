@@ -5241,6 +5241,11 @@ spec:
                     description: 'Enabled enables the node termination handler. Default:
                       true'
                     type: boolean
+                  excludeFromLoadBalancers:
+                    description: 'ExcludeFromLoadBalancers makes node termination
+                      handler will mark for exclusion from load balancers before node
+                      are cordoned. Default: false'
+                    type: boolean
                   managedASGTag:
                     description: ManagedASGTag is the tag used to determine which
                       nodes NTH can take action on
