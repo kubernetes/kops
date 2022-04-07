@@ -56,6 +56,10 @@ spec:
     etcdMembers:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
+    manager:
+      env:
+      - name: ETCD_EXPERIMENTAL_INITIAL_CORRUPT_CHECK
+        value: "true"
     name: main
     version: 3.5.1
   - backups:
@@ -63,6 +67,10 @@ spec:
     etcdMembers:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
+    manager:
+      env:
+      - name: ETCD_EXPERIMENTAL_INITIAL_CORRUPT_CHECK
+        value: "true"
     name: events
     version: 3.5.1
   externalDns:
