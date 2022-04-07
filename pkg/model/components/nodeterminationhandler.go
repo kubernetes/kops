@@ -51,6 +51,9 @@ func (b *NodeTerminationHandlerOptionsBuilder) BuildOptions(o interface{}) error
 	if nth.EnableRebalanceDraining == nil {
 		nth.EnableRebalanceDraining = fi.Bool(false)
 	}
+	if nth.ExcludeFromLoadBalancers == nil {
+		nth.ExcludeFromLoadBalancers = fi.Bool(false)
+	}
 
 	if nth.EnablePrometheusMetrics == nil {
 		nth.EnablePrometheusMetrics = fi.Bool(false)
@@ -75,7 +78,7 @@ func (b *NodeTerminationHandlerOptionsBuilder) BuildOptions(o interface{}) error
 	}
 
 	if nth.Version == nil {
-		nth.Version = fi.String("v1.14.0")
+		nth.Version = fi.String("v1.16.0")
 	}
 
 	return nil

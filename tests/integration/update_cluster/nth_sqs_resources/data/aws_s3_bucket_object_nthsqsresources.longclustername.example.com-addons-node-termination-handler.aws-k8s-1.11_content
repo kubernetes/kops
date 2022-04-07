@@ -4,10 +4,12 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: node-termination-handler.aws
+    app.kubernetes.io/component: aws-node-termination-handler
     app.kubernetes.io/instance: aws-node-termination-handler
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node-termination-handler
-    app.kubernetes.io/version: v1.14.0
+    app.kubernetes.io/part-of: aws-node-termination-handler
+    app.kubernetes.io/version: v1.16.0
     k8s-addon: node-termination-handler.aws
     k8s-app: aws-node-termination-handler
   name: aws-node-termination-handler
@@ -21,7 +23,12 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: node-termination-handler.aws
+    app.kubernetes.io/component: aws-node-termination-handler
+    app.kubernetes.io/instance: aws-node-termination-handler
     app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: aws-node-termination-handler
+    app.kubernetes.io/part-of: aws-node-termination-handler
+    app.kubernetes.io/version: v1.16.0
     k8s-addon: node-termination-handler.aws
   name: aws-node-termination-handler
 rules:
@@ -68,7 +75,12 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: node-termination-handler.aws
+    app.kubernetes.io/component: aws-node-termination-handler
+    app.kubernetes.io/instance: aws-node-termination-handler
     app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: aws-node-termination-handler
+    app.kubernetes.io/part-of: aws-node-termination-handler
+    app.kubernetes.io/version: v1.16.0
     k8s-addon: node-termination-handler.aws
   name: aws-node-termination-handler
 roleRef:
@@ -91,7 +103,7 @@ metadata:
     app.kubernetes.io/instance: aws-node-termination-handler
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node-termination-handler
-    app.kubernetes.io/version: v1.14.0
+    app.kubernetes.io/version: v1.16.0
     k8s-addon: node-termination-handler.aws
     k8s-app: aws-node-termination-handler
   name: aws-node-termination-handler
@@ -186,6 +198,8 @@ spec:
           value: "false"
         - name: ENABLE_SQS_TERMINATION_DRAINING
           value: "true"
+        - name: EXCLUDE_FROM_LOAD_BALANCERS
+          value: "false"
         - name: QUEUE_URL
           value: https://sqs.us-test-1.amazonaws.com/123456789012/nthsqsresources-longclustername-example-com-nth
         - name: PROMETHEUS_SERVER_PORT
@@ -208,7 +222,7 @@ spec:
           value: "true"
         - name: KUBERNETES_EVENTS_EXTRA_ANNOTATIONS
           value: ""
-        image: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.14.0
+        image: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.16.0
         imagePullPolicy: IfNotPresent
         name: aws-node-termination-handler
         resources:

@@ -1,5 +1,5 @@
 {{ with .NodeTerminationHandler }}
-# Sourced from https://github.com/aws/aws-node-termination-handler/releases/download/v1.14.0/all-resources.yaml
+# Sourced from https://github.com/aws/aws-node-termination-handler/releases/download/v1.16.0/all-resources.yaml
 ---
 # Source: aws-node-termination-handler/templates/serviceaccount.yaml
 apiVersion: v1
@@ -12,53 +12,67 @@ metadata:
     app.kubernetes.io/instance: aws-node-termination-handler
     k8s-app: aws-node-termination-handler
     app.kubernetes.io/version: "{{ .Version }}"
+    app.kubernetes.io/component: aws-node-termination-handler
+    app.kubernetes.io/part-of: aws-node-termination-handler
 ---
 # Source: aws-node-termination-handler/templates/clusterrole.yaml
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: aws-node-termination-handler
+  labels:
+    app.kubernetes.io/name: aws-node-termination-handler
+    app.kubernetes.io/instance: aws-node-termination-handler
+    app.kubernetes.io/version: "{{ .Version }}"
+    app.kubernetes.io/component: aws-node-termination-handler
+    app.kubernetes.io/part-of: aws-node-termination-handler
 rules:
 - apiGroups:
-    - ""
+  - ""
   resources:
-    - nodes
+  - nodes
   verbs:
-    - get
-    - list
-    - patch
-    - update
+  - get
+  - list
+  - patch
+  - update
 - apiGroups:
-    - ""
+  - ""
   resources:
-    - pods
+  - pods
   verbs:
-    - list
-    - get
+  - list
+  - get
 - apiGroups:
-    - ""
+  - ""
   resources:
-    - pods/eviction
+  - pods/eviction
   verbs:
-    - create
+  - create
 - apiGroups:
-    - extensions
+  - extensions
   resources:
-    - daemonsets
+  - daemonsets
   verbs:
-    - get
+  - get
 - apiGroups:
-    - apps
+  - apps
   resources:
-    - daemonsets
+  - daemonsets
   verbs:
-    - get
+  - get
 ---
 # Source: aws-node-termination-handler/templates/clusterrolebinding.yaml
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: aws-node-termination-handler
+  labels:
+    app.kubernetes.io/name: aws-node-termination-handler
+    app.kubernetes.io/instance: aws-node-termination-handler
+    app.kubernetes.io/version: "{{ .Version }}"
+    app.kubernetes.io/component: aws-node-termination-handler
+    app.kubernetes.io/part-of: aws-node-termination-handler
 subjects:
 - kind: ServiceAccount
   name: aws-node-termination-handler
@@ -183,6 +197,8 @@ spec:
               value: "false"
             - name: ENABLE_SQS_TERMINATION_DRAINING
               value: "true"
+            - name: EXCLUDE_FROM_LOAD_BALANCERS
+              value: "{{ .ExcludeFromLoadBalancers }}"
             - name: QUEUE_URL
               value: "{{ DefaultQueueName }}"
             - name: PROMETHEUS_SERVER_PORT
@@ -361,6 +377,8 @@ spec:
             value: "false"
           - name: TAINT_NODE
             value: "false"
+          - name: EXCLUDE_FROM_LOAD_BALANCERS
+            value: "{{ .ExcludeFromLoadBalancers }}"
           - name: JSON_LOGGING
             value: "true"
           - name: ENABLE_PROMETHEUS_SERVER

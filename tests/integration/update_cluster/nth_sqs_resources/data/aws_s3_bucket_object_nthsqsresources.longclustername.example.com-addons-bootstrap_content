@@ -47,7 +47,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.11
     manifest: node-termination-handler.aws/k8s-1.11.yaml
-    manifestHash: e8aeccc2a21370e9579e49c153c5e46c92a3bc705bcc2545957133dadd395114
+    manifestHash: e37bd0e876b0b811ff0a4ec68e163ad919c16f1ec056bfc9243615f5b8493db4
     name: node-termination-handler.aws
     prune:
       kinds:
@@ -73,8 +73,6 @@ spec:
       - group: policy
         kind: PodDisruptionBudget
         labelSelector: addon.kops.k8s.io/name=node-termination-handler.aws,app.kubernetes.io/managed-by=kops
-        namespaces:
-        - kube-system
       - group: rbac.authorization.k8s.io
         kind: ClusterRole
         labelSelector: addon.kops.k8s.io/name=node-termination-handler.aws,app.kubernetes.io/managed-by=kops
