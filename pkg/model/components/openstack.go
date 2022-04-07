@@ -22,17 +22,18 @@ import (
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
-// OpenStackOptionsBulder adds options for OpenStack to the model
-type OpenStackOptionsBulder struct {
+// OpenStackOptionsBuilder adds options for OpenStack to the model
+type OpenStackOptionsBuilder struct {
 	Context *OptionsContext
 }
 
-var _ loader.OptionsBuilder = &OpenStackOptionsBulder{}
+var _ loader.OptionsBuilder = &OpenStackOptionsBuilder{}
 
-func (b *OpenStackOptionsBulder) BuildOptions(o interface{}) error {
+func (b *OpenStackOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
+	openstack := clusterSpec.CloudProvider.Openstack
 
-	if clusterSpec.CloudProvider.Openstack == nil {
+	if openstack == nil {
 		return nil
 	}
 
@@ -40,19 +41,19 @@ func (b *OpenStackOptionsBulder) BuildOptions(o interface{}) error {
 		clusterSpec.CloudConfig = &kops.CloudConfiguration{}
 	}
 
-	if clusterSpec.CloudProvider.Openstack.BlockStorage == nil {
-		clusterSpec.CloudProvider.Openstack.BlockStorage = &kops.OpenstackBlockStorageConfig{}
+	if openstack.BlockStorage == nil {
+		openstack.BlockStorage = &kops.OpenstackBlockStorageConfig{}
 	}
 
-	if clusterSpec.CloudProvider.Openstack.BlockStorage.CreateStorageClass == nil {
-		clusterSpec.CloudProvider.Openstack.BlockStorage.CreateStorageClass = fi.Bool(true)
+	if openstack.BlockStorage.CreateStorageClass == nil {
+		openstack.BlockStorage.CreateStorageClass = fi.Bool(true)
 	}
 
-	if clusterSpec.CloudProvider.Openstack.Metadata == nil {
-		clusterSpec.CloudProvider.Openstack.Metadata = &kops.OpenstackMetadata{}
+	if openstack.Metadata == nil {
+		openstack.Metadata = &kops.OpenstackMetadata{}
 	}
-	if clusterSpec.CloudProvider.Openstack.Metadata.ConfigDrive == nil {
-		clusterSpec.CloudProvider.Openstack.Metadata.ConfigDrive = fi.Bool(false)
+	if openstack.Metadata.ConfigDrive == nil {
+		openstack.Metadata.ConfigDrive = fi.Bool(false)
 	}
 
 	if clusterSpec.ExternalCloudControllerManager == nil {
