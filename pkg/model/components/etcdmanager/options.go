@@ -49,7 +49,9 @@ func (b *EtcdManagerOptionsBuilder) BuildOptions(o interface{}) error {
 			etcdCluster.Backups.BackupStore = urls.Join(base, "backups", "etcd", etcdCluster.Name)
 		}
 
-		if !etcdVersionIsSupported(etcdCluster.Version) {
+		version := strings.TrimPrefix(etcdCluster.Version, "v")
+
+		if !etcdVersionIsSupported(version) {
 			if featureflag.SkipEtcdVersionCheck.Enabled() {
 				klog.Warningf("etcd version %q is not known to be supported, but ignoring because of SkipEtcdVersionCheck feature flag", etcdCluster.Version)
 			} else {
@@ -57,19 +59,40 @@ func (b *EtcdManagerOptionsBuilder) BuildOptions(o interface{}) error {
 				return fmt.Errorf("etcd version %q is not supported with etcd-manager, please specify a supported version or remove the value to use the default version.  Supported versions: %s", etcdCluster.Version, strings.Join(supportedEtcdVersions, ", "))
 			}
 		}
-	}
+		for _, s := range []string{"3.5.0", "3.5.1"} {
+			if s == version {
+				appendCorruptionCheckFlag(etcdCluster)
+			}
+		}
 
+	}
 	return nil
 }
 
 var supportedEtcdVersions = []string{"3.1.12", "3.2.18", "3.2.24", "3.3.10", "3.3.13", "3.3.17", "3.4.3", "3.4.13", "3.5.0", "3.5.1"}
 
 func etcdVersionIsSupported(version string) bool {
-	version = strings.TrimPrefix(version, "v")
 	for _, v := range supportedEtcdVersions {
 		if v == version {
 			return true
 		}
 	}
 	return false
+}
+
+func appendCorruptionCheckFlag(etcdCluster *kops.EtcdClusterSpec) {
+	varName := "ETCD_EXPERIMENTAL_INITIAL_CORRUPT_CHECK"
+	if etcdCluster.Manager == nil {
+		etcdCluster.Manager = &kops.EtcdManagerSpec{}
+	}
+	for _, env := range etcdCluster.Manager.Env {
+		if env.Name == varName {
+			return
+		}
+	}
+	etcdCluster.Manager.Env = append(etcdCluster.Manager.Env,
+		kops.EnvVar{
+			Name:  varName,
+			Value: "true",
+		})
 }
