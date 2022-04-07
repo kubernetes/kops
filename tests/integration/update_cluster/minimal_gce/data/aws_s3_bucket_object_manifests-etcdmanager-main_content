@@ -18,6 +18,9 @@ spec:
       --v=6 --volume-name-tag=k8s-io-etcd-main --volume-provider=gce --volume-tag=k8s-io-cluster-name=minimal-gce-example-com
       --volume-tag=k8s-io-etcd-main --volume-tag=k8s-io-role-master=master > /tmp/pipe
       2>&1
+    env:
+    - name: ETCD_EXPERIMENTAL_INITIAL_CORRUPT_CHECK
+      value: "true"
     image: k8s.gcr.io/etcdadm/etcd-manager:v3.0.20220203
     name: etcd-manager
     resources:

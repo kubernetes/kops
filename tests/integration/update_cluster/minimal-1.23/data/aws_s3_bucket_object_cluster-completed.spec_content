@@ -33,6 +33,10 @@ spec:
     - encryptedVolume: true
       instanceGroup: master-us-test-1a
       name: a
+    manager:
+      env:
+      - name: ETCD_EXPERIMENTAL_INITIAL_CORRUPT_CHECK
+        value: "true"
     memoryRequest: 100Mi
     name: main
     version: 3.5.1
@@ -43,6 +47,10 @@ spec:
     - encryptedVolume: true
       instanceGroup: master-us-test-1a
       name: a
+    manager:
+      env:
+      - name: ETCD_EXPERIMENTAL_INITIAL_CORRUPT_CHECK
+        value: "true"
     memoryRequest: 100Mi
     name: events
     version: 3.5.1
