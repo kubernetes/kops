@@ -264,7 +264,13 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 	case api.CloudProviderAWS:
 		cluster.Spec.CloudProvider.AWS = &api.AWSSpec{}
 	case api.CloudProviderAzure:
-		cluster.Spec.CloudProvider.Azure = &api.AzureSpec{}
+		cluster.Spec.CloudProvider.Azure = &api.AzureSpec{
+			SubscriptionID:    opt.AzureSubscriptionID,
+			TenantID:          opt.AzureTenantID,
+			ResourceGroupName: opt.AzureResourceGroupName,
+			RouteTableName:    opt.AzureRouteTableName,
+			AdminUser:         opt.AzureAdminUser,
+		}
 	case api.CloudProviderDO:
 		cluster.Spec.CloudProvider.DO = &api.DOSpec{}
 	case api.CloudProviderGCE:
@@ -451,14 +457,6 @@ func setupVPC(opt *NewClusterOptions, cluster *api.Cluster) error {
 		// Creating an empty CloudConfig so that --cloud-config is passed to kubelet, api-server, etc.
 		if cluster.Spec.CloudConfig == nil {
 			cluster.Spec.CloudConfig = &api.CloudConfiguration{}
-		}
-
-		cluster.Spec.CloudConfig.Azure = &api.AzureConfiguration{
-			SubscriptionID:    opt.AzureSubscriptionID,
-			TenantID:          opt.AzureTenantID,
-			ResourceGroupName: opt.AzureResourceGroupName,
-			RouteTableName:    opt.AzureRouteTableName,
-			AdminUser:         opt.AzureAdminUser,
 		}
 	}
 

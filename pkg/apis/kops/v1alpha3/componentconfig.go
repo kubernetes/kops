@@ -820,10 +820,10 @@ type OpenstackConfiguration struct {
 	Metadata           *OpenstackMetadata           `json:"metadata,omitempty"`
 }
 
-// AzureConfiguration defines Azure specific cluster configuration.
-type AzureConfiguration struct {
+// AzureSpec defines Azure specific cluster configuration.
+type AzureSpec struct {
 	// SubscriptionID specifies the subscription used for the cluster installation.
-	SubscriptionID string `json:"subscriptionId,omitempty"`
+	SubscriptionID string `json:"subscriptionID,omitempty"`
 	// TenantID is the ID of the tenant that the cluster is deployed in.
 	TenantID string `json:"tenantID"`
 	// ResourceGroupName specifies the name of the resource group
@@ -864,8 +864,6 @@ type CloudConfiguration struct {
 	SpotinstOrientation *string `json:"spotinstOrientation,omitempty"`
 	// Openstack cloud-config options
 	Openstack *OpenstackConfiguration `json:"openstack,omitempty"`
-	// Azure cloud-config options
-	Azure *AzureConfiguration `json:"azure,omitempty"`
 	// AWSEBSCSIDriver is the config for the AWS EBS CSI driver
 	AWSEBSCSIDriver *AWSEBSCSIDriver `json:"awsEBSCSIDriver,omitempty"`
 	// GCPPDCSIDriver is the config for the GCP PD CSI driver
