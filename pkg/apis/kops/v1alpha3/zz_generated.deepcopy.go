@@ -4341,6 +4341,11 @@ func (in *NodeTerminationHandlerConfig) DeepCopyInto(out *NodeTerminationHandler
 		*out = new(string)
 		**out = **in
 	}
+	if in.ExcludeFromLoadBalancers != nil {
+		in, out := &in.ExcludeFromLoadBalancers, &out.ExcludeFromLoadBalancers
+		*out = new(bool)
+		**out = **in
+	}
 	if in.MemoryRequest != nil {
 		in, out := &in.MemoryRequest, &out.MemoryRequest
 		x := (*in).DeepCopy()

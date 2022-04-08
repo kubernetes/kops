@@ -6389,6 +6389,7 @@ func autoConvert_v1alpha2_NodeTerminationHandlerConfig_To_kops_NodeTerminationHa
 	out.EnableRebalanceDraining = in.EnableRebalanceDraining
 	out.EnablePrometheusMetrics = in.EnablePrometheusMetrics
 	out.EnableSQSTerminationDraining = in.EnableSQSTerminationDraining
+	out.ExcludeFromLoadBalancers = in.ExcludeFromLoadBalancers
 	out.ManagedASGTag = in.ManagedASGTag
 	out.MemoryRequest = in.MemoryRequest
 	out.CPURequest = in.CPURequest
@@ -6409,6 +6410,7 @@ func autoConvert_kops_NodeTerminationHandlerConfig_To_v1alpha2_NodeTerminationHa
 	out.EnableRebalanceDraining = in.EnableRebalanceDraining
 	out.EnablePrometheusMetrics = in.EnablePrometheusMetrics
 	out.EnableSQSTerminationDraining = in.EnableSQSTerminationDraining
+	out.ExcludeFromLoadBalancers = in.ExcludeFromLoadBalancers
 	out.ManagedASGTag = in.ManagedASGTag
 	out.MemoryRequest = in.MemoryRequest
 	out.CPURequest = in.CPURequest
