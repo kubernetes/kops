@@ -212,6 +212,7 @@ spec:
     enableScheduledEventDraining: false
     enableSpotInterruptionDraining: true
     enabled: true
+    excludeFromLoadBalancers: true
     managedASGTag: aws-node-termination-handler/managed
     memoryRequest: 64Mi
     prometheusEnable: false
