@@ -61,6 +61,13 @@ rules:
   - daemonsets
   verbs:
   - get
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
 ---
 # Source: aws-node-termination-handler/templates/clusterrolebinding.yaml
 kind: ClusterRoleBinding
