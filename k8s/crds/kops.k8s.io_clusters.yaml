@@ -5244,7 +5244,7 @@ spec:
                   excludeFromLoadBalancers:
                     description: 'ExcludeFromLoadBalancers makes node termination
                       handler will mark for exclusion from load balancers before node
-                      are cordoned. Default: false'
+                      are cordoned. Default: true'
                     type: boolean
                   managedASGTag:
                     description: ManagedASGTag is the tag used to determine which

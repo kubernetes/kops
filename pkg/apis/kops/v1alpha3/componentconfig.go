@@ -918,9 +918,6 @@ type NodeTerminationHandlerConfig struct {
 	// EnableRebalanceDraining makes node termination handler drain nodes when the rebalance recommendation notice is received
 	// Default: false
 	EnableRebalanceDraining *bool `json:"enableRebalanceDraining,omitempty"`
-	// ExcludeFromLoadBalancers makes node termination handler will mark for exclusion from load balancers before node are cordoned.
-	// Default: false
-	ExcludeFromLoadBalancers *bool `json:"excludeFromLoadBalancers,omitempty"`
 
 	// EnablePrometheusMetrics enables the "/metrics" endpoint.
 	EnablePrometheusMetrics *bool `json:"prometheusEnable,omitempty"`
@@ -930,6 +927,10 @@ type NodeTerminationHandlerConfig struct {
 
 	// ManagedASGTag is the tag used to determine which nodes NTH can take action on
 	ManagedASGTag *string `json:"managedASGTag,omitempty"`
+
+	// ExcludeFromLoadBalancers makes node termination handler will mark for exclusion from load balancers before node are cordoned.
+	// Default: true
+	ExcludeFromLoadBalancers *bool `json:"excludeFromLoadBalancers,omitempty"`
 
 	// MemoryRequest of NodeTerminationHandler container.
 	// Default: 64Mi
