@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node-termination-handler
     app.kubernetes.io/part-of: aws-node-termination-handler
-    app.kubernetes.io/version: v1.16.0
+    app.kubernetes.io/version: v1.16.1
     k8s-addon: node-termination-handler.aws
     k8s-app: aws-node-termination-handler
   name: aws-node-termination-handler
@@ -28,7 +28,7 @@ metadata:
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node-termination-handler
     app.kubernetes.io/part-of: aws-node-termination-handler
-    app.kubernetes.io/version: v1.16.0
+    app.kubernetes.io/version: v1.16.1
     k8s-addon: node-termination-handler.aws
   name: aws-node-termination-handler
 rules:
@@ -80,7 +80,7 @@ metadata:
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node-termination-handler
     app.kubernetes.io/part-of: aws-node-termination-handler
-    app.kubernetes.io/version: v1.16.0
+    app.kubernetes.io/version: v1.16.1
     k8s-addon: node-termination-handler.aws
   name: aws-node-termination-handler
 roleRef:
@@ -103,7 +103,7 @@ metadata:
     app.kubernetes.io/instance: aws-node-termination-handler
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node-termination-handler
-    app.kubernetes.io/version: v1.16.0
+    app.kubernetes.io/version: v1.16.1
     k8s-addon: node-termination-handler.aws
     k8s-app: aws-node-termination-handler
   name: aws-node-termination-handler
@@ -125,21 +125,6 @@ spec:
         kops.k8s.io/managed-by: kops
         kubernetes.io/os: linux
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: kubernetes.io/os
-                operator: In
-                values:
-                - linux
-              - key: kubernetes.io/arch
-                operator: In
-                values:
-                - amd64
-                - arm64
-                - arm
       containers:
       - env:
         - name: NODE_NAME
@@ -154,40 +139,44 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        - name: DELETE_LOCAL_DATA
-          value: ""
-        - name: IGNORE_DAEMON_SETS
-          value: ""
-        - name: POD_TERMINATION_GRACE_PERIOD
-          value: ""
-        - name: INSTANCE_METADATA_URL
-          value: ""
-        - name: NODE_TERMINATION_GRACE_PERIOD
-          value: ""
-        - name: WEBHOOK_URL
-          value: ""
-        - name: WEBHOOK_HEADERS
-          value: ""
-        - name: WEBHOOK_TEMPLATE
-          value: ""
+        - name: ENABLE_PROBES_SERVER
+          value: "true"
+        - name: PROBES_SERVER_PORT
+          value: "8080"
+        - name: PROBES_SERVER_ENDPOINT
+          value: /healthz
+        - name: LOG_LEVEL
+          value: info
+        - name: JSON_LOGGING
+          value: "true"
+        - name: ENABLE_PROMETHEUS_SERVER
+          value: "false"
+        - name: PROMETHEUS_SERVER_PORT
+          value: "9092"
+        - name: CHECK_ASG_TAG_BEFORE_DRAINING
+          value: "true"
+        - name: MANAGED_ASG_TAG
+          value: aws-node-termination-handler/managed
+        - name: ASSUME_ASG_TAG_PROPAGATION
+          value: "false"
         - name: DRY_RUN
           value: "false"
-        - name: METADATA_TRIES
-          value: "3"
         - name: CORDON_ONLY
           value: "false"
         - name: TAINT_NODE
           value: "false"
-        - name: JSON_LOGGING
+        - name: EXCLUDE_FROM_LOAD_BALANCERS
           value: "true"
-        - name: LOG_LEVEL
-          value: info
-        - name: WEBHOOK_PROXY
-          value: ""
-        - name: ENABLE_PROMETHEUS_SERVER
-          value: "false"
-        - name: ENABLE_PROBES_SERVER
-          value: "false"
+        - name: DELETE_LOCAL_DATA
+          value: "true"
+        - name: IGNORE_DAEMON_SETS
+          value: "true"
+        - name: POD_TERMINATION_GRACE_PERIOD
+          value: "-1"
+        - name: NODE_TERMINATION_GRACE_PERIOD
+          value: "120"
+        - name: EMIT_KUBERNETES_EVENTS
+          value: "true"
         - name: ENABLE_SPOT_INTERRUPTION_DRAINING
           value: "false"
         - name: ENABLE_SCHEDULED_EVENT_DRAINING
@@ -198,33 +187,23 @@ spec:
           value: "false"
         - name: ENABLE_SQS_TERMINATION_DRAINING
           value: "true"
-        - name: EXCLUDE_FROM_LOAD_BALANCERS
-          value: "false"
         - name: QUEUE_URL
           value: https://sqs.us-test-1.amazonaws.com/123456789012/nthsqsresources-longclustername-example-com-nth
-        - name: PROMETHEUS_SERVER_PORT
-          value: "9092"
-        - name: PROBES_SERVER_PORT
-          value: "8080"
-        - name: PROBES_SERVER_ENDPOINT
-          value: /healthz
-        - name: AWS_REGION
-          value: ""
-        - name: AWS_ENDPOINT
-          value: ""
-        - name: CHECK_ASG_TAG_BEFORE_DRAINING
-          value: "true"
-        - name: MANAGED_ASG_TAG
-          value: aws-node-termination-handler/managed
         - name: WORKERS
           value: "10"
-        - name: EMIT_KUBERNETES_EVENTS
-          value: "true"
-        - name: KUBERNETES_EVENTS_EXTRA_ANNOTATIONS
-          value: ""
-        image: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.16.0
+        image: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.16.1
         imagePullPolicy: IfNotPresent
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
         name: aws-node-termination-handler
+        ports:
+        - containerPort: 8080
+          name: liveness-probe
+          protocol: TCP
         resources:
           requests:
             cpu: 50m
@@ -235,8 +214,6 @@ spec:
           runAsGroup: 1000
           runAsNonRoot: true
           runAsUser: 1000
-      dnsPolicy: ""
-      hostNetwork: false
       nodeSelector:
         node-role.kubernetes.io/master: ""
       priorityClassName: system-cluster-critical
