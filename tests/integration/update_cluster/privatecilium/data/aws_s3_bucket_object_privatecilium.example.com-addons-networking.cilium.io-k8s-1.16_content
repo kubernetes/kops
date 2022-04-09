@@ -649,3 +649,24 @@ spec:
       - configMap:
           name: cilium-config
         name: cilium-config-path
+
+---
+
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.cilium.io
+    app.kubernetes.io/managed-by: kops
+    io.cilium/app: operator
+    name: cilium-operator
+    role.kubernetes.io/networking: "1"
+  name: cilium-operator
+  namespace: kube-system
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      io.cilium/app: operator
+      name: cilium-operator
