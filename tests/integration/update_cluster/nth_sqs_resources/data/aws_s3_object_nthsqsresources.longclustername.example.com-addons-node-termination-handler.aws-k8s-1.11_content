@@ -132,6 +132,16 @@ spec:
         kops.k8s.io/managed-by: kops
         kubernetes.io/os: linux
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
       containers:
       - env:
         - name: NODE_NAME
@@ -221,8 +231,6 @@ spec:
           runAsGroup: 1000
           runAsNonRoot: true
           runAsUser: 1000
-      nodeSelector:
-        node-role.kubernetes.io/master: ""
       priorityClassName: system-cluster-critical
       securityContext:
         fsGroup: 1000
