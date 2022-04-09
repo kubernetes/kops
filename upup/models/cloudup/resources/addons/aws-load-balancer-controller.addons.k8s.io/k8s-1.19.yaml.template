@@ -736,6 +736,16 @@ spec:
         app.kubernetes.io/component: controller
         app.kubernetes.io/name: aws-load-balancer-controller
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
       containers:
       - args:
         - --cluster-name={{ ClusterName }}
@@ -772,13 +782,13 @@ spec:
           name: cert
           readOnly: true
       priorityClassName: system-cluster-critical
-      nodeSelector:
-        node-role.kubernetes.io/master: ""
       securityContext:
         fsGroup: 1337
       serviceAccountName: aws-load-balancer-controller
       terminationGracePeriodSeconds: 10
       tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
         - key: node-role.kubernetes.io/master
           operator: Exists
       topologySpreadConstraints:
@@ -949,3 +959,18 @@ spec:
     apiGroup: elbv2.k8s.aws
     kind: IngressClassParams
     name: alb
+---
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: aws-load-balancer-controller
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/name: aws-load-balancer-controller
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: controller
+      app.kubernetes.io/name: aws-load-balancer-controller
+  maxUnavailable: 1
