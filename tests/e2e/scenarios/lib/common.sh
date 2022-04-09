@@ -131,7 +131,7 @@ function kops-up() {
         create_args="${create_args} --zones=${ZONES}"
     fi
     if [[ -z "${K8S_VERSION-}" ]]; then
-        K8S_VERSION="v1.22.1"
+        K8S_VERSION="$(curl -s https://storage.googleapis.com/kubernetes-release/release/latest.txt)"
     fi
 
     ${KUBETEST2} \
