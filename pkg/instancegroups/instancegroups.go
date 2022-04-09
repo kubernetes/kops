@@ -413,7 +413,6 @@ func (c *RollingUpdateCluster) drainTerminateAndWait(u *cloudinstances.CloudInst
 		if u.Node == nil {
 			klog.Warningf("no kubernetes Node associated with %s, skipping node deletion", instanceID)
 		} else {
-			13477
 			klog.Infof("deleting node %q from kubernetes", nodeName)
 			if err := c.deleteNode(u.Node); err != nil {
 				return fmt.Errorf("error deleting node %q: %v", nodeName, err)
