@@ -408,9 +408,8 @@ func (c *RollingUpdateCluster) drainTerminateAndWait(u *cloudinstances.CloudInst
 		}
 	}
 
-	// We unregister the node before deleting it; if the replacement comes up with the same name it would otherwise still be cordoned
-	// (It often seems like GCE tries to re-use names)
-	if !isBastion && !c.CloudOnly {
+	// GCE often re-uses names, so we delete the node object to prevent the new instance from using the cordoned Node object
+	if api.CloudProviderID(c.Cluster.Spec.CloudProvider) == api.CloudProviderGCE && !isBastion && !c.CloudOnly {
 		if u.Node == nil {
 			klog.Warningf("no kubernetes Node associated with %s, skipping node deletion", instanceID)
 		} else {
