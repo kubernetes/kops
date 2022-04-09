@@ -231,3 +231,39 @@ spec:
       serviceAccountName: aws-node-termination-handler
       tolerations:
       - operator: Exists
+      topologySpreadConstraints:
+      - labelSelector:
+          matchLabels:
+            io.cilium/app: operator
+            name: cilium-operator
+        maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: ScheduleAnyway
+      - labelSelector:
+          matchLabels:
+            app.kubernetes.io/instance: aws-node-termination-handler
+            app.kubernetes.io/name: aws-node-termination-handler
+        maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
+
+---
+
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: node-termination-handler.aws
+    app.kubernetes.io/instance: aws-node-termination-handler
+    app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: aws-node-termination-handler
+    k8s-addon: node-termination-handler.aws
+  name: aws-node-termination-handler
+  namespace: kube-system
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: aws-node-termination-handler
+      app.kubernetes.io/name: aws-node-termination-handler
