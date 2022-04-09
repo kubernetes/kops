@@ -951,6 +951,10 @@ type NodeTerminationHandlerConfig struct {
 	// EnableSQSTerminationDraining enables queue-processor mode which drains nodes when an SQS termination event is received.
 	EnableSQSTerminationDraining *bool `json:"enableSQSTerminationDraining,omitempty"`
 
+	// ExcludeFromLoadBalancers makes node termination handler will mark for exclusion from load balancers before node are cordoned.
+	// Default: true
+	ExcludeFromLoadBalancers *bool `json:"excludeFromLoadBalancers,omitempty"`
+
 	// ManagedASGTag is the tag used to determine which nodes NTH can take action on
 	ManagedASGTag *string `json:"managedASGTag,omitempty"`
 
