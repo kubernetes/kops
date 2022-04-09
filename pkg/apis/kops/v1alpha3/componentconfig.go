@@ -928,6 +928,10 @@ type NodeTerminationHandlerConfig struct {
 	// ManagedASGTag is the tag used to determine which nodes NTH can take action on
 	ManagedASGTag *string `json:"managedASGTag,omitempty"`
 
+	// ExcludeFromLoadBalancers makes node termination handler will mark for exclusion from load balancers before node are cordoned.
+	// Default: true
+	ExcludeFromLoadBalancers *bool `json:"excludeFromLoadBalancers,omitempty"`
+
 	// MemoryRequest of NodeTerminationHandler container.
 	// Default: 64Mi
 	MemoryRequest *resource.Quantity `json:"memoryRequest,omitempty"`

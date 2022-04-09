@@ -1,5 +1,5 @@
 {{ with .NodeTerminationHandler }}
-# Sourced from https://github.com/aws/aws-node-termination-handler/releases/download/v1.14.0/all-resources.yaml
+# Sourced from https://github.com/aws/aws-node-termination-handler/releases/download/v1.16.1/all-resources.yaml
 ---
 # Source: aws-node-termination-handler/templates/serviceaccount.yaml
 apiVersion: v1
@@ -12,53 +12,74 @@ metadata:
     app.kubernetes.io/instance: aws-node-termination-handler
     k8s-app: aws-node-termination-handler
     app.kubernetes.io/version: "{{ .Version }}"
+    app.kubernetes.io/component: aws-node-termination-handler
+    app.kubernetes.io/part-of: aws-node-termination-handler
 ---
 # Source: aws-node-termination-handler/templates/clusterrole.yaml
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: aws-node-termination-handler
+  labels:
+    app.kubernetes.io/name: aws-node-termination-handler
+    app.kubernetes.io/instance: aws-node-termination-handler
+    app.kubernetes.io/version: "{{ .Version }}"
+    app.kubernetes.io/component: aws-node-termination-handler
+    app.kubernetes.io/part-of: aws-node-termination-handler
 rules:
 - apiGroups:
-    - ""
+  - ""
   resources:
-    - nodes
+  - nodes
   verbs:
-    - get
-    - list
-    - patch
-    - update
+  - get
+  - list
+  - patch
+  - update
 - apiGroups:
-    - ""
+  - ""
   resources:
-    - pods
+  - pods
   verbs:
-    - list
-    - get
+  - list
+  - get
 - apiGroups:
-    - ""
+  - ""
   resources:
-    - pods/eviction
+  - pods/eviction
   verbs:
-    - create
+  - create
 - apiGroups:
-    - extensions
+  - extensions
   resources:
-    - daemonsets
+  - daemonsets
   verbs:
-    - get
+  - get
 - apiGroups:
-    - apps
+  - apps
   resources:
-    - daemonsets
+  - daemonsets
   verbs:
-    - get
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
 ---
 # Source: aws-node-termination-handler/templates/clusterrolebinding.yaml
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: aws-node-termination-handler
+  labels:
+    app.kubernetes.io/name: aws-node-termination-handler
+    app.kubernetes.io/instance: aws-node-termination-handler
+    app.kubernetes.io/version: "{{ .Version }}"
+    app.kubernetes.io/component: aws-node-termination-handler
+    app.kubernetes.io/part-of: aws-node-termination-handler
 subjects:
 - kind: ServiceAccount
   name: aws-node-termination-handler
@@ -95,125 +116,104 @@ spec:
         k8s-app: aws-node-termination-handler
         kubernetes.io/os: linux
     spec:
-      priorityClassName: "system-cluster-critical"
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: "kubernetes.io/os"
-                    operator: In
-                    values:
-                      - linux
-                  - key: "kubernetes.io/arch"
-                    operator: In
-                    values:
-                      - amd64
-                      - arm64
-                      - arm
+      priorityClassName: system-cluster-critical
       serviceAccountName: aws-node-termination-handler
-      hostNetwork: false
-      dnsPolicy: ""
       securityContext:
         fsGroup: 1000
       containers:
-        - name: aws-node-termination-handler
-          image: public.ecr.aws/aws-ec2/aws-node-termination-handler:{{ .Version }}
-          imagePullPolicy: IfNotPresent
-          securityContext:
-            readOnlyRootFilesystem: true
-            runAsNonRoot: true
-            runAsUser: 1000
-            runAsGroup: 1000
-            allowPrivilegeEscalation: false
-          env:
-            - name: NODE_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: spec.nodeName
-            - name: POD_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.name
-            - name: NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
-            - name: DELETE_LOCAL_DATA
-              value: ""
-            - name: IGNORE_DAEMON_SETS
-              value: ""
-            - name: POD_TERMINATION_GRACE_PERIOD
-              value: ""
-            - name: INSTANCE_METADATA_URL
-              value: ""
-            - name: NODE_TERMINATION_GRACE_PERIOD
-              value: ""
-            - name: WEBHOOK_URL
-              value: ""
-            - name: WEBHOOK_HEADERS
-              value: ""
-            - name: WEBHOOK_TEMPLATE
-              value: ""
-            - name: DRY_RUN
-              value: "false"
-            - name: METADATA_TRIES
-              value: "3"
-            - name: CORDON_ONLY
-              value: "false"
-            - name: TAINT_NODE
-              value: "false"
-            - name: JSON_LOGGING
-              value: "true"
-            - name: LOG_LEVEL
-              value: "info"
-            - name: WEBHOOK_PROXY
-              value: ""
-            - name: ENABLE_PROMETHEUS_SERVER
-              value: "{{ .EnablePrometheusMetrics }}"
-            - name: ENABLE_PROBES_SERVER
-              value: "false"
-            - name: ENABLE_SPOT_INTERRUPTION_DRAINING
-              value: "false"
-            - name: ENABLE_SCHEDULED_EVENT_DRAINING
-              value: "false"
-            - name: ENABLE_REBALANCE_MONITORING
-              value: "false"
-            - name: ENABLE_REBALANCE_DRAINING
-              value: "false"
-            - name: ENABLE_SQS_TERMINATION_DRAINING
-              value: "true"
-            - name: QUEUE_URL
-              value: "{{ DefaultQueueName }}"
-            - name: PROMETHEUS_SERVER_PORT
-              value: "9092"
-            - name: PROBES_SERVER_PORT
-              value: "8080"
-            - name: PROBES_SERVER_ENDPOINT
-              value: "/healthz"
-            - name: AWS_REGION
-              value: ""
-            - name: AWS_ENDPOINT
-              value: ""
-            - name: CHECK_ASG_TAG_BEFORE_DRAINING
-              value: "true"
-            - name: MANAGED_ASG_TAG
-              value: "{{ .ManagedASGTag }}"
-            - name: WORKERS
-              value: "10"
-            - name: EMIT_KUBERNETES_EVENTS
-              value: "true"
-            - name: KUBERNETES_EVENTS_EXTRA_ANNOTATIONS
-              value: ""
-          resources:
-            requests:
-              cpu: {{ .CPURequest }}
-              memory: {{ .MemoryRequest }}
+      - name: aws-node-termination-handler
+        image: public.ecr.aws/aws-ec2/aws-node-termination-handler:{{ .Version }}
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          allowPrivilegeEscalation: false
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: ENABLE_PROBES_SERVER
+          value: "true"
+        - name: PROBES_SERVER_PORT
+          value: "8080"
+        - name: PROBES_SERVER_ENDPOINT
+          value: "/healthz"
+        - name: LOG_LEVEL
+          value: "info"
+        - name: JSON_LOGGING
+          value: "true"
+        - name: ENABLE_PROMETHEUS_SERVER
+          value: "false"
+        - name: PROMETHEUS_SERVER_PORT
+          value: "9092"
+        - name: CHECK_ASG_TAG_BEFORE_DRAINING
+          value: "true"
+        - name: MANAGED_ASG_TAG
+          value: "{{ .ManagedASGTag }}"
+        - name: ASSUME_ASG_TAG_PROPAGATION
+          value: "false"
+        - name: DRY_RUN
+          value: "false"
+        - name: CORDON_ONLY
+          value: "false"
+        - name: TAINT_NODE
+          value: "false"
+        - name: EXCLUDE_FROM_LOAD_BALANCERS
+          value: "{{ .ExcludeFromLoadBalancers }}"
+        - name: DELETE_LOCAL_DATA
+          value: "true"
+        - name: IGNORE_DAEMON_SETS
+          value: "true"
+        - name: POD_TERMINATION_GRACE_PERIOD
+          value: "-1"
+        - name: NODE_TERMINATION_GRACE_PERIOD
+          value: "120"
+        - name: EMIT_KUBERNETES_EVENTS
+          value: "true"
+        - name: ENABLE_SPOT_INTERRUPTION_DRAINING
+          value: "false"
+        - name: ENABLE_SCHEDULED_EVENT_DRAINING
+          value: "false"
+        - name: ENABLE_REBALANCE_MONITORING
+          value: "false"
+        - name: ENABLE_REBALANCE_DRAINING
+          value: "false"
+        - name: ENABLE_SQS_TERMINATION_DRAINING
+          value: "true"
+        - name: QUEUE_URL
+          value: "{{ DefaultQueueName }}"
+        - name: WORKERS
+          value: "10"
+        ports:
+        - name: liveness-probe
+          protocol: TCP
+          containerPort: 8080
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        resources:
+          requests:
+            cpu: {{ .CPURequest }}
+            memory: {{ .MemoryRequest }}
       {{ if not UseServiceAccountExternalPermissions }}
       nodeSelector:
         node-role.kubernetes.io/master: ""
       tolerations:
-        - operator: Exists
+      - operator: Exists
       {{ end }}
       topologySpreadConstraints:
       - maxSkew: 1
@@ -221,8 +221,8 @@ spec:
         whenUnsatisfiable: ScheduleAnyway
         labelSelector:
           matchLabels:
-            io.cilium/app: operator
-            name: cilium-operator
+            app.kubernetes.io/name: aws-node-termination-handler
+            app.kubernetes.io/instance: aws-node-termination-handler
       - maxSkew: 1
         topologyKey: "kubernetes.io/hostname"
         whenUnsatisfiable: DoNotSchedule
@@ -262,7 +262,7 @@ metadata:
 spec:
   updateStrategy:
     rollingUpdate:
-      maxUnavailable: 1
+      maxUnavailable: 25%
     type: RollingUpdate
   selector:
     matchLabels:
@@ -278,118 +278,93 @@ spec:
         kubernetes.io/os: linux
     spec:
       volumes:
-        - name: "uptime"
-          hostPath:
-            path: "/proc/uptime"
-      priorityClassName: "system-node-critical"
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                - key: "kubernetes.io/os"
-                  operator: In
-                  values:
-                    - linux
-                - key: "kubernetes.io/arch"
-                  operator: In
-                  values:
-                    - amd64
-                    - arm64
-                    - arm
+      - name: "uptime"
+        hostPath:
+          path: "/proc/uptime"
+      priorityClassName: system-node-critical
       serviceAccountName: aws-node-termination-handler
       hostNetwork: true
-      dnsPolicy: "ClusterFirstWithHostNet"
+      dnsPolicy: ClusterFirstWithHostNet
       containers:
-        - name: aws-node-termination-handler
-          image: public.ecr.aws/aws-ec2/aws-node-termination-handler:{{ .Version }}
-          imagePullPolicy: IfNotPresent
-          securityContext:
-            readOnlyRootFilesystem: true
-            runAsNonRoot: true
-            runAsUser: 1000
-            runAsGroup: 1000
-            allowPrivilegeEscalation: false
-          volumeMounts:
-            - name: "uptime"
-              mountPath: "/proc/uptime"
-              readOnly: true
-          env:
-          - name: NODE_NAME
-            valueFrom:
-              fieldRef:
-                fieldPath: spec.nodeName
-          - name: POD_NAME
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.name
-          - name: NAMESPACE
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.namespace
-          - name: DELETE_LOCAL_DATA
-            value: "true"
-          - name: IGNORE_DAEMON_SETS
-            value: "true"
-          - name: POD_TERMINATION_GRACE_PERIOD
-            value: "-1"
-          - name: INSTANCE_METADATA_URL
-            value: ""
-          - name: NODE_TERMINATION_GRACE_PERIOD
-            value: ""
-          - name: WEBHOOK_URL
-            value: ""
-          - name: WEBHOOK_HEADERS
-            value: ""
-          - name: WEBHOOK_TEMPLATE
-            value: ""
-          - name: ENABLE_SPOT_INTERRUPTION_DRAINING
-            value: "{{ .EnableSpotInterruptionDraining }}"
-          - name: ENABLE_SCHEDULED_EVENT_DRAINING
-            value: "{{ .EnableScheduledEventDraining }}"
-          - name: ENABLE_REBALANCE_MONITORING
-            value: "{{ .EnableRebalanceMonitoring }}"
-          - name: ENABLE_REBALANCE_DRAINING
-            value: "{{ .EnableRebalanceDraining }}"
-          - name: CHECK_ASG_TAG_BEFORE_DRAINING
-            value: "true"
-          - name: MANAGED_ASG_TAG
-            value: "aws-node-termination-handler/managed"
-          - name: METADATA_TRIES
-            value: "3"
-          - name: CORDON_ONLY
-            value: "false"
-          - name: TAINT_NODE
-            value: "false"
-          - name: JSON_LOGGING
-            value: "true"
-          - name: ENABLE_PROMETHEUS_SERVER
-            value: "{{ .EnablePrometheusMetrics }}"
-          - name: PROMETHEUS_SERVER_PORT
-            value: "9092"
-          - name: LOG_LEVEL
-            value: "info"
-          - name: WEBHOOK_PROXY
-            value: ""
-          - name: UPTIME_FROM_FILE
-            value: ""
-          - name: EMIT_KUBERNETES_EVENTS
-            value: "true"
-          - name: KUBERNETES_EVENTS_EXTRA_ANNOTATIONS
-            value: ""
-          - name: ENABLE_PROBES_SERVER
-            value: "false"
-          - name: PROBES_SERVER_PORT
-            value: "8080"
-          - name: PROBES_SERVER_ENDPOINT
-            value: "/healthz"
-          resources:
-            requests:
-              cpu: {{ .CPURequest }}
-              memory: {{ .MemoryRequest }}
+      - name: aws-node-termination-handler
+        image: public.ecr.aws/aws-ec2/aws-node-termination-handler:{{ .Version }}
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          allowPrivilegeEscalation: false
+        volumeMounts:
+        - name: "uptime"
+          mountPath: "/proc/uptime"
+          readOnly: true
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: ENABLE_PROBES_SERVER
+          value: "false"
+        - name: PROBES_SERVER_PORT
+          value: "8080"
+        - name: PROBES_SERVER_ENDPOINT
+          value: "/healthz"
+        - name: LOG_LEVEL
+          value: "info"
+        - name: JSON_LOGGING
+          value: "true"
+        - name: ENABLE_PROMETHEUS_SERVER
+          value: "{{ WithDefaultBool .EnablePrometheusMetrics false }}"
+        - name: PROMETHEUS_SERVER_PORT
+          value: "9092"
+        - name: METADATA_TRIES
+          value: "3"
+        - name: DRY_RUN
+          value: "false"
+        - name: CORDON_ONLY
+          value: "false"
+        - name: TAINT_NODE
+          value: "false"
+        - name: EXCLUDE_FROM_LOAD_BALANCERS
+          value: "{{ WithDefaultBool .ExcludeFromLoadBalancers true }}"
+        - name: DELETE_LOCAL_DATA
+          value: "true"
+        - name: IGNORE_DAEMON_SETS
+          value: "true"
+        - name: POD_TERMINATION_GRACE_PERIOD
+          value: "-1"
+        - name: NODE_TERMINATION_GRACE_PERIOD
+          value: "120"
+        - name: EMIT_KUBERNETES_EVENTS
+          value: "true"
+        - name: ENABLE_SPOT_INTERRUPTION_DRAINING
+          value: "{{ WithDefaultBool .EnableSpotInterruptionDraining true }}"
+        - name: ENABLE_SCHEDULED_EVENT_DRAINING
+          value: "{{ WithDefaultBool .EnableScheduledEventDraining false }}"
+        - name: ENABLE_REBALANCE_MONITORING
+          value: "{{ WithDefaultBool .EnableRebalanceMonitoring false }}"
+        - name: ENABLE_REBALANCE_DRAINING
+          value: "{{ WithDefaultBool .EnableRebalanceDraining false }}"
+        - name: ENABLE_SQS_TERMINATION_DRAINING
+          value: "false"
+        - name: UPTIME_FROM_FILE
+          value: "/proc/uptime"
+        resources:
+          requests:
+            cpu: {{ .CPURequest }}
+            memory: {{ .MemoryRequest }}
       nodeSelector:
         kubernetes.io/os: linux
       tolerations:
-        - operator: Exists
+      - operator: Exists
 {{ end }}
 {{ end }}

@@ -4,10 +4,12 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: node-termination-handler.aws
+    app.kubernetes.io/component: aws-node-termination-handler
     app.kubernetes.io/instance: aws-node-termination-handler
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node-termination-handler
-    app.kubernetes.io/version: v1.14.0
+    app.kubernetes.io/part-of: aws-node-termination-handler
+    app.kubernetes.io/version: v1.16.1
     k8s-addon: node-termination-handler.aws
     k8s-app: aws-node-termination-handler
   name: aws-node-termination-handler
@@ -21,7 +23,12 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: node-termination-handler.aws
+    app.kubernetes.io/component: aws-node-termination-handler
+    app.kubernetes.io/instance: aws-node-termination-handler
     app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: aws-node-termination-handler
+    app.kubernetes.io/part-of: aws-node-termination-handler
+    app.kubernetes.io/version: v1.16.1
     k8s-addon: node-termination-handler.aws
   name: aws-node-termination-handler
 rules:
@@ -59,6 +66,13 @@ rules:
   - daemonsets
   verbs:
   - get
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
 
 ---
 
@@ -68,7 +82,12 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: node-termination-handler.aws
+    app.kubernetes.io/component: aws-node-termination-handler
+    app.kubernetes.io/instance: aws-node-termination-handler
     app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: aws-node-termination-handler
+    app.kubernetes.io/part-of: aws-node-termination-handler
+    app.kubernetes.io/version: v1.16.1
     k8s-addon: node-termination-handler.aws
   name: aws-node-termination-handler
 roleRef:
@@ -91,7 +110,7 @@ metadata:
     app.kubernetes.io/instance: aws-node-termination-handler
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node-termination-handler
-    app.kubernetes.io/version: v1.14.0
+    app.kubernetes.io/version: v1.16.1
     k8s-addon: node-termination-handler.aws
     k8s-app: aws-node-termination-handler
   name: aws-node-termination-handler
@@ -112,21 +131,6 @@ spec:
         kops.k8s.io/managed-by: kops
         kubernetes.io/os: linux
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: kubernetes.io/os
-                operator: In
-                values:
-                - linux
-              - key: kubernetes.io/arch
-                operator: In
-                values:
-                - amd64
-                - arm64
-                - arm
       containers:
       - env:
         - name: NODE_NAME
@@ -141,22 +145,40 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        - name: ENABLE_PROBES_SERVER
+          value: "false"
+        - name: PROBES_SERVER_PORT
+          value: "8080"
+        - name: PROBES_SERVER_ENDPOINT
+          value: /healthz
+        - name: LOG_LEVEL
+          value: info
+        - name: JSON_LOGGING
+          value: "true"
+        - name: ENABLE_PROMETHEUS_SERVER
+          value: "false"
+        - name: PROMETHEUS_SERVER_PORT
+          value: "9092"
+        - name: METADATA_TRIES
+          value: "3"
+        - name: DRY_RUN
+          value: "false"
+        - name: CORDON_ONLY
+          value: "false"
+        - name: TAINT_NODE
+          value: "false"
+        - name: EXCLUDE_FROM_LOAD_BALANCERS
+          value: "true"
         - name: DELETE_LOCAL_DATA
           value: "true"
         - name: IGNORE_DAEMON_SETS
           value: "true"
         - name: POD_TERMINATION_GRACE_PERIOD
           value: "-1"
-        - name: INSTANCE_METADATA_URL
-          value: ""
         - name: NODE_TERMINATION_GRACE_PERIOD
-          value: ""
-        - name: WEBHOOK_URL
-          value: ""
-        - name: WEBHOOK_HEADERS
-          value: ""
-        - name: WEBHOOK_TEMPLATE
-          value: ""
+          value: "120"
+        - name: EMIT_KUBERNETES_EVENTS
+          value: "true"
         - name: ENABLE_SPOT_INTERRUPTION_DRAINING
           value: "true"
         - name: ENABLE_SCHEDULED_EVENT_DRAINING
@@ -165,39 +187,11 @@ spec:
           value: "false"
         - name: ENABLE_REBALANCE_DRAINING
           value: "false"
-        - name: CHECK_ASG_TAG_BEFORE_DRAINING
-          value: "true"
-        - name: MANAGED_ASG_TAG
-          value: aws-node-termination-handler/managed
-        - name: METADATA_TRIES
-          value: "3"
-        - name: CORDON_ONLY
+        - name: ENABLE_SQS_TERMINATION_DRAINING
           value: "false"
-        - name: TAINT_NODE
-          value: "false"
-        - name: JSON_LOGGING
-          value: "true"
-        - name: ENABLE_PROMETHEUS_SERVER
-          value: "false"
-        - name: PROMETHEUS_SERVER_PORT
-          value: "9092"
-        - name: LOG_LEVEL
-          value: info
-        - name: WEBHOOK_PROXY
-          value: ""
         - name: UPTIME_FROM_FILE
-          value: ""
-        - name: EMIT_KUBERNETES_EVENTS
-          value: "true"
-        - name: KUBERNETES_EVENTS_EXTRA_ANNOTATIONS
-          value: ""
-        - name: ENABLE_PROBES_SERVER
-          value: "false"
-        - name: PROBES_SERVER_PORT
-          value: "8080"
-        - name: PROBES_SERVER_ENDPOINT
-          value: /healthz
-        image: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.14.0
+          value: /proc/uptime
+        image: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.16.1
         imagePullPolicy: IfNotPresent
         name: aws-node-termination-handler
         resources:
@@ -228,5 +222,5 @@ spec:
         name: uptime
   updateStrategy:
     rollingUpdate:
-      maxUnavailable: 1
+      maxUnavailable: 25%
     type: RollingUpdate

@@ -60,6 +60,10 @@ func (b *NodeTerminationHandlerOptionsBuilder) BuildOptions(o interface{}) error
 		nth.EnableSQSTerminationDraining = fi.Bool(false)
 	}
 
+	if nth.ExcludeFromLoadBalancers == nil {
+		nth.ExcludeFromLoadBalancers = fi.Bool(true)
+	}
+
 	if nth.ManagedASGTag == nil {
 		nth.ManagedASGTag = fi.String("aws-node-termination-handler/managed")
 	}
@@ -75,7 +79,7 @@ func (b *NodeTerminationHandlerOptionsBuilder) BuildOptions(o interface{}) error
 	}
 
 	if nth.Version == nil {
-		nth.Version = fi.String("v1.14.0")
+		nth.Version = fi.String("v1.16.1")
 	}
 
 	return nil

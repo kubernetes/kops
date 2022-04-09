@@ -4426,6 +4426,11 @@ func (in *NodeTerminationHandlerConfig) DeepCopyInto(out *NodeTerminationHandler
 		*out = new(bool)
 		**out = **in
 	}
+	if in.ExcludeFromLoadBalancers != nil {
+		in, out := &in.ExcludeFromLoadBalancers, &out.ExcludeFromLoadBalancers
+		*out = new(bool)
+		**out = **in
+	}
 	if in.ManagedASGTag != nil {
 		in, out := &in.ManagedASGTag, &out.ManagedASGTag
 		*out = new(string)
