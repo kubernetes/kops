@@ -9376,6 +9376,16 @@ spec:
         app.kubernetes.io/version: v1.8.0
         kops.k8s.io/managed-by: kops
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
       containers:
       - args:
         - --v=2
@@ -9390,13 +9400,13 @@ spec:
         name: cert-manager
         securityContext:
           allowPrivilegeEscalation: false
-      nodeSelector:
-        node-role.kubernetes.io/master: ""
       priorityClassName: system-cluster-critical
       securityContext:
         runAsNonRoot: true
       serviceAccountName: cert-manager-cainjector
       tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
       - key: node-role.kubernetes.io/master
         operator: Exists
 
@@ -9438,6 +9448,16 @@ spec:
         app.kubernetes.io/version: v1.8.0
         kops.k8s.io/managed-by: kops
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
       containers:
       - args:
         - --v=2
@@ -9459,13 +9479,13 @@ spec:
         resources: {}
         securityContext:
           allowPrivilegeEscalation: false
-      nodeSelector:
-        node-role.kubernetes.io/master: ""
       priorityClassName: system-cluster-critical
       securityContext:
         runAsNonRoot: true
       serviceAccountName: cert-manager
       tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
       - key: node-role.kubernetes.io/master
         operator: Exists
 
@@ -9503,6 +9523,16 @@ spec:
         app.kubernetes.io/version: v1.8.0
         kops.k8s.io/managed-by: kops
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
       containers:
       - args:
         - --v=2
@@ -9544,13 +9574,13 @@ spec:
           timeoutSeconds: 1
         securityContext:
           allowPrivilegeEscalation: false
-      nodeSelector:
-        node-role.kubernetes.io/master: ""
       priorityClassName: system-cluster-critical
       securityContext:
         runAsNonRoot: true
       serviceAccountName: cert-manager-webhook
       tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
       - key: node-role.kubernetes.io/master
         operator: Exists
 
