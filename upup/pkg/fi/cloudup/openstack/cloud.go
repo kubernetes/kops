@@ -629,7 +629,7 @@ func getCloudGroups(c OpenstackCloud, cluster *kops.Cluster, instancegroups []*k
 			}
 			continue
 		}
-		groups[instancegroup.ObjectMeta.Name], err = osBuildCloudInstanceGroup(c, cluster, instancegroup, &grp, nodeMap)
+		groups[instancegroup.ObjectMeta.Name], err = osBuildCloudInstanceGroup(c, cluster, instancegroup, grp, nodeMap)
 		if err != nil {
 			return nil, fmt.Errorf("error getting cloud instance group %q: %v", instancegroup.ObjectMeta.Name, err)
 		}
