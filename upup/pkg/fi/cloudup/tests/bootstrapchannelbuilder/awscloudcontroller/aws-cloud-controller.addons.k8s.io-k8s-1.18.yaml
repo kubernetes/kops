@@ -20,6 +20,16 @@ spec:
         k8s-app: aws-cloud-controller-manager
         kops.k8s.io/managed-by: kops
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
       containers:
       - args:
         - --allocate-node-cidrs=true
@@ -45,8 +55,6 @@ spec:
           name: cloudconfig
           readOnly: true
       hostNetwork: true
-      nodeSelector:
-        node-role.kubernetes.io/master: ""
       priorityClassName: system-cluster-critical
       serviceAccountName: aws-cloud-controller-manager
       tolerations:
@@ -55,6 +63,8 @@ spec:
         value: "true"
       - effect: NoSchedule
         key: node.kubernetes.io/not-ready
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/control-plane
       - effect: NoSchedule
         key: node-role.kubernetes.io/master
       volumes:

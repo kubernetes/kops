@@ -600,6 +600,24 @@ spec:
         app.kubernetes.io/version: v1.5.0
         kops.k8s.io/managed-by: kops
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                - linux
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                - linux
       containers:
       - args:
         - controller
@@ -703,9 +721,6 @@ spec:
         volumeMounts:
         - mountPath: /csi
           name: socket-dir
-      nodeSelector:
-        kubernetes.io/os: linux
-        node-role.kubernetes.io/master: ""
       priorityClassName: system-cluster-critical
       serviceAccountName: ebs-csi-controller-sa
       tolerations:
