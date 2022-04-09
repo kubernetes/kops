@@ -50,12 +50,6 @@ if [[ -z "${DISCOVERY_STORE-}" ]]; then
     DISCOVERY_STORE="${KOPS_STATE_STORE-}"
 fi
 
-if [[ ${KOPS_IRSA-} = true ]]; then
-    OVERRIDES="${OVERRIDES-} --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=${DISCOVERY_STORE}/${CLUSTER_NAME}/discovery"
-    OVERRIDES="${OVERRIDES} --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true"
-    OVERRIDES="${OVERRIDES} --override=cluster.spec.iam.useServiceAccountExternalPermissions=true"
-fi
-
 export GO111MODULE=on
 
 if [[ -z "${AWS_SSH_PRIVATE_KEY_FILE-}" ]]; then
@@ -132,6 +126,10 @@ function kops-up() {
     fi
     if [[ -z "${K8S_VERSION-}" ]]; then
         K8S_VERSION="$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)"
+    fi
+
+    if [[ ${KOPS_IRSA-} = true ]]; then
+        create_args="${create_args} --discovery-store=${DISCOVERY_STORE}/${CLUSTER_NAME}/discovery"
     fi
 
     ${KUBETEST2} \
