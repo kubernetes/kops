@@ -232,8 +232,8 @@ spec:
       topologySpreadConstraints:
       - labelSelector:
           matchLabels:
-            io.cilium/app: operator
-            name: cilium-operator
+            app.kubernetes.io/instance: aws-node-termination-handler
+            app.kubernetes.io/name: aws-node-termination-handler
         maxSkew: 1
         topologyKey: topology.kubernetes.io/zone
         whenUnsatisfiable: ScheduleAnyway
