@@ -18,9 +18,10 @@ go_library(
         "edns.go",
         "format.go",
         "generate.go",
+        "hash.go",
         "labels.go",
-        "listen_go111.go",
-        "listen_go_not111.go",
+        "listen_no_reuseport.go",
+        "listen_reuseport.go",
         "msg.go",
         "msg_helpers.go",
         "msg_truncate.go",
@@ -51,9 +52,7 @@ go_library(
     importmap = "k8s.io/kops/vendor/github.com/miekg/dns",
     importpath = "github.com/miekg/dns",
     visibility = ["//visibility:public"],
-    deps = [
-        "//vendor/golang.org/x/crypto/ed25519:go_default_library",
-    ] + select({
+    deps = select({
         "@io_bazel_rules_go//go/platform:aix": [
             "//vendor/golang.org/x/net/ipv4:go_default_library",
             "//vendor/golang.org/x/net/ipv6:go_default_library",
