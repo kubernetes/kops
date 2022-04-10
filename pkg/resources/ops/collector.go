@@ -25,12 +25,14 @@ import (
 	"k8s.io/kops/pkg/resources/azure"
 	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/pkg/resources/gce"
+	"k8s.io/kops/pkg/resources/hetzner"
 	"k8s.io/kops/pkg/resources/openstack"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	cloudazure "k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	clouddo "k8s.io/kops/upup/pkg/fi/cloudup/do"
 	cloudgce "k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	cloudhetzner "k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	cloudopenstack "k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
 
@@ -44,6 +46,8 @@ func ListResources(cloud fi.Cloud, cluster *kops.Cluster, region string) (map[st
 		return digitalocean.ListResources(cloud.(clouddo.DOCloud), clusterName)
 	case kops.CloudProviderGCE:
 		return gce.ListResourcesGCE(cloud.(cloudgce.GCECloud), clusterName, region)
+	case kops.CloudProviderHetzner:
+		return hetzner.ListResources(cloud.(cloudhetzner.HetznerCloud), clusterName)
 	case kops.CloudProviderOpenstack:
 		return openstack.ListResources(cloud.(cloudopenstack.OpenstackCloud), clusterName)
 	case kops.CloudProviderAzure:
