@@ -1,0 +1,32 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "client.go",
+        "constants.go",
+        "util.go",
+    ],
+    importmap = "k8s.io/kops/vendor/helm.sh/helm/v3/pkg/registry",
+    importpath = "helm.sh/helm/v3/pkg/registry",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/Masterminds/semver/v3:go_default_library",
+        "//vendor/github.com/containerd/containerd/remotes:go_default_library",
+        "//vendor/github.com/opencontainers/image-spec/specs-go/v1:go_default_library",
+        "//vendor/github.com/pkg/errors:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/helm.sh/helm/v3/internal/version:go_default_library",
+        "//vendor/helm.sh/helm/v3/pkg/chart:go_default_library",
+        "//vendor/helm.sh/helm/v3/pkg/chart/loader:go_default_library",
+        "//vendor/helm.sh/helm/v3/pkg/helmpath:go_default_library",
+        "//vendor/oras.land/oras-go/pkg/auth:go_default_library",
+        "//vendor/oras.land/oras-go/pkg/auth/docker:go_default_library",
+        "//vendor/oras.land/oras-go/pkg/content:go_default_library",
+        "//vendor/oras.land/oras-go/pkg/context:go_default_library",
+        "//vendor/oras.land/oras-go/pkg/oras:go_default_library",
+        "//vendor/oras.land/oras-go/pkg/registry:go_default_library",
+        "//vendor/oras.land/oras-go/pkg/registry/remote:go_default_library",
+        "//vendor/oras.land/oras-go/pkg/registry/remote/auth:go_default_library",
+    ],
+)
