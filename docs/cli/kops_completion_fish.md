@@ -3,18 +3,19 @@
 
 ## kops completion fish
 
-generate the autocompletion script for fish
+Generate the autocompletion script for fish
 
 ### Synopsis
-
 
 Generate the autocompletion script for the fish shell.
 
 To load completions in your current shell session:
-$ kops completion fish | source
+
+	kops completion fish | source
 
 To load completions for every new session, execute once:
-$ kops completion fish > ~/.config/fish/completions/kops.fish
+
+	kops completion fish > ~/.config/fish/completions/kops.fish
 
 You will need to start a new shell for this setup to take effect.
 
@@ -53,5 +54,5 @@ kops completion fish [flags]
 
 ### SEE ALSO
 
-* [kops completion](kops_completion.md)	 - generate the autocompletion script for the specified shell
+* [kops completion](kops_completion.md)	 - Generate the autocompletion script for the specified shell
 

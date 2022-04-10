@@ -37,7 +37,7 @@ kOps is Kubernetes Operations.
 
 ### SEE ALSO
 
-* [kops completion](kops_completion.md)	 - generate the autocompletion script for the specified shell
+* [kops completion](kops_completion.md)	 - Generate the autocompletion script for the specified shell
 * [kops create](kops_create.md)	 - Create a resource by command line, filename or stdin.
 * [kops delete](kops_delete.md)	 - Delete clusters, instancegroups, instances, and secrets.
 * [kops distrust](kops_distrust.md)	 - Distrust keypairs.
