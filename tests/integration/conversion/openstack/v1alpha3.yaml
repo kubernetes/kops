@@ -11,8 +11,23 @@ spec:
   authorization:
     alwaysAllow: {}
   channel: stable
+  cloudConfig: {}
   cloudProvider:
-    openstack: {}
+    openstack:
+      blockStorage:
+        bs-version: test-bs-version
+      insecureSkipVerify: true
+      loadbalancer:
+        method: lb-method
+      metadata:
+        configDrive: true
+      monitor:
+        delay: 44s
+      network:
+        availabilityZoneHints:
+        - test-az-hints
+      router:
+        externalNetwork: test-external-network
   configBase: memfs://clusters.example.com/minimal.example.com
   etcdClusters:
   - cpuRequest: 200m

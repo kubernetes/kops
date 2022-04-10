@@ -119,7 +119,7 @@ func (b *CloudConfigBuilder) build(c *fi.ModelBuilderContext, inTree bool) error
 			}
 		}
 	case "openstack":
-		osc := cloudConfig.Openstack
+		osc := b.Cluster.Spec.CloudProvider.Openstack
 		if osc == nil {
 			break
 		}
