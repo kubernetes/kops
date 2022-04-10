@@ -22,11 +22,14 @@ set -o pipefail
 
 cd "${KOPS_ROOT}"
 
-export API_OPTIONS="--verify-only"
-if make apimachinery-codegen; then
-	echo "apimachinery is up to date"
-else
-	echo -e "\n FAIL: - the verify-apimachinery.sh test failed, apimachinery is not up to date"
-	echo -e "\n FAIL: - please run the command 'make apimachinery'"
-	exit 1
+make apimachinery-codegen
+changed_files=$(git status --porcelain --untracked-files=no || true)
+if [ -n "${changed_files}" ]; then
+   echo "Detected that apimachinery is not up to date; run 'make apimachinery'"
+   echo "changed files:"
+   printf "%s\n" "${changed_files}"
+   echo "git diff:"
+   git --no-pager diff
+   echo "To fix: run 'make apimachinery'"
+   exit 1
 fi
