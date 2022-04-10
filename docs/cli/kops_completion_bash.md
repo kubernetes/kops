@@ -3,10 +3,9 @@
 
 ## kops completion bash
 
-generate the autocompletion script for bash
+Generate the autocompletion script for bash
 
 ### Synopsis
-
 
 Generate the autocompletion script for the bash shell.
 
@@ -14,16 +13,21 @@ This script depends on the 'bash-completion' package.
 If it is not installed already, you can install it via your OS's package manager.
 
 To load completions in your current shell session:
-$ source <(kops completion bash)
+
+	source <(kops completion bash)
 
 To load completions for every new session, execute once:
-Linux:
-  $ kops completion bash > /etc/bash_completion.d/kops
-MacOS:
-  $ kops completion bash > /usr/local/etc/bash_completion.d/kops
+
+#### Linux:
+
+	kops completion bash > /etc/bash_completion.d/kops
+
+#### macOS:
+
+	kops completion bash > /usr/local/etc/bash_completion.d/kops
 
 You will need to start a new shell for this setup to take effect.
-  
+
 
 ```
 kops completion bash
@@ -59,5 +63,5 @@ kops completion bash
 
 ### SEE ALSO
 
-* [kops completion](kops_completion.md)	 - generate the autocompletion script for the specified shell
+* [kops completion](kops_completion.md)	 - Generate the autocompletion script for the specified shell
 
