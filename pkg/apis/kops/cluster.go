@@ -236,6 +236,8 @@ type CloudProviderSpec struct {
 	DO *DOSpec `json:"do,omitempty"`
 	// GCE configures the GCE cloud provider.
 	GCE *GCESpec `json:"gce,omitempty"`
+	// Hetzner configures the Hetzner cloud provider.
+	Hetzner *HetznerSpec `json:"hetzner,omitempty"`
 	// Openstack configures the Openstack cloud provider.
 	Openstack *OpenstackSpec `json:"openstack,omitempty"`
 }
@@ -250,6 +252,10 @@ type DOSpec struct {
 
 // GCESpec configures the GCE cloud provider.
 type GCESpec struct {
+}
+
+// HetznerSpec configures the Hetzner cloud provider.
+type HetznerSpec struct {
 }
 
 type KarpenterConfig struct {
@@ -896,6 +902,8 @@ func (c *ClusterSpec) GetCloudProvider() CloudProviderID {
 		return CloudProviderDO
 	} else if c.CloudProvider.GCE != nil {
 		return CloudProviderGCE
+	} else if c.CloudProvider.Hetzner != nil {
+		return CloudProviderHetzner
 	} else if c.CloudProvider.Openstack != nil {
 		return CloudProviderOpenstack
 	}

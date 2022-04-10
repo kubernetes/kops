@@ -64,6 +64,16 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		kubeAPIServer = *b.NodeupConfig.APIServerConfig.KubeAPIServer
 	}
 
+	if b.CloudProvider == kops.CloudProviderHetzner {
+		localIP, err := b.GetMetadataLocalIP()
+		if err != nil {
+			return err
+		}
+		if localIP != "" {
+			kubeAPIServer.AdvertiseAddress = localIP
+		}
+	}
+
 	if err := b.writeAuthenticationConfig(c, &kubeAPIServer); err != nil {
 		return err
 	}

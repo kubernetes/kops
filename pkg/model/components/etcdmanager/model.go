@@ -38,6 +38,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/util/pkg/env"
@@ -415,6 +416,14 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec) (*v1.Pod
 				do.TagKubernetesClusterIndex,
 			}
 			config.VolumeNameTag = do.TagNameEtcdClusterPrefix + etcdCluster.Name
+
+		case kops.CloudProviderHetzner:
+			config.VolumeProvider = "hetzner"
+
+			config.VolumeTag = []string{
+				fmt.Sprintf("%s=%s", hetzner.TagKubernetesClusterName, b.Cluster.Name),
+				fmt.Sprintf("%s=%s", hetzner.TagKubernetesVolumeRole, etcdCluster.Name),
+			}
 
 		case kops.CloudProviderOpenstack:
 			config.VolumeProvider = "openstack"

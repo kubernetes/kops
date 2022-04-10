@@ -89,6 +89,8 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 		out.CloudProvider.DO = &kops.DOSpec{}
 	case kops.CloudProviderGCE:
 		out.CloudProvider.GCE = &kops.GCESpec{}
+	case kops.CloudProviderHetzner:
+		out.CloudProvider.Hetzner = &kops.HetznerSpec{}
 	case kops.CloudProviderOpenstack:
 		out.CloudProvider.Openstack = &kops.OpenstackSpec{}
 		if in.CloudConfig != nil && in.CloudConfig.Openstack != nil {
@@ -103,6 +105,7 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 			string(kops.CloudProviderDO),
 			string(kops.CloudProviderAzure),
 			string(kops.CloudProviderAWS),
+			string(kops.CloudProviderHetzner),
 			string(kops.CloudProviderOpenstack),
 		})
 	}

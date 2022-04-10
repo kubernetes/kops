@@ -183,6 +183,13 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 		}
 	}
 
+	if cluster.Spec.GetCloudProvider() == kops.CloudProviderHetzner {
+		hcloudToken := os.Getenv("HCLOUD_TOKEN")
+		if hcloudToken != "" {
+			env["HCLOUD_TOKEN"] = hcloudToken
+		}
+	}
+
 	if cluster.Spec.GetCloudProvider() == kops.CloudProviderAWS {
 		region, err := awsup.FindRegion(cluster)
 		if err != nil {

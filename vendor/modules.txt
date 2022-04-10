@@ -571,6 +571,12 @@ github.com/hashicorp/vault/sdk/version
 # github.com/hashicorp/yamux v0.0.0-20180604194846-3520598351bb
 ## explicit
 github.com/hashicorp/yamux
+# github.com/hetznercloud/hcloud-go v1.33.2
+## explicit; go 1.17
+github.com/hetznercloud/hcloud-go/hcloud
+github.com/hetznercloud/hcloud-go/hcloud/internal/instrumentation
+github.com/hetznercloud/hcloud-go/hcloud/metadata
+github.com/hetznercloud/hcloud-go/hcloud/schema
 # github.com/huandu/xstrings v1.3.2
 ## explicit; go 1.12
 github.com/huandu/xstrings

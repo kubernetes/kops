@@ -18,14 +18,17 @@ package model
 
 import (
 	"fmt"
+	"net"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/aws/ec2metadata"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/blang/semver/v4"
+	hcloudmetadata "github.com/hetznercloud/hcloud-go/hcloud/metadata"
 	"k8s.io/klog/v2"
-	"k8s.io/mount-utils"
-
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/util"
@@ -36,8 +39,8 @@ import (
 	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/distributions"
 	"k8s.io/kops/util/pkg/vfs"
-
-	"github.com/blang/semver/v4"
+	"k8s.io/mount-utils"
+	"sigs.k8s.io/yaml"
 )
 
 const (
@@ -372,8 +375,10 @@ func (c *NodeupModelContext) UseKopsControllerForNodeBootstrap() bool {
 
 // UsesSecondaryIP checks if the CNI in use attaches secondary interfaces to the host.
 func (c *NodeupModelContext) UsesSecondaryIP() bool {
-	return (c.Cluster.Spec.Networking.CNI != nil && c.Cluster.Spec.Networking.CNI.UsesSecondaryIP) || c.Cluster.Spec.Networking.AmazonVPC != nil ||
-		(c.Cluster.Spec.Networking.Cilium != nil && c.Cluster.Spec.Networking.Cilium.IPAM == kops.CiliumIpamEni)
+	return (c.Cluster.Spec.Networking.CNI != nil && c.Cluster.Spec.Networking.CNI.UsesSecondaryIP) ||
+		c.Cluster.Spec.Networking.AmazonVPC != nil ||
+		(c.Cluster.Spec.Networking.Cilium != nil && c.Cluster.Spec.Networking.Cilium.IPAM == kops.CiliumIpamEni) ||
+		c.CloudProvider == kops.CloudProviderHetzner
 }
 
 // UseBootstrapTokens checks if we are using bootstrap tokens
@@ -616,4 +621,52 @@ func (c *NodeupModelContext) InstallNvidiaRuntime() bool {
 // RunningOnGCE returns true if we are running on GCE
 func (c *NodeupModelContext) RunningOnGCE() bool {
 	return c.CloudProvider == kops.CloudProviderGCE
+}
+
+// GetMetadataLocalIP returns the local IP address read from metadata
+func (c *NodeupModelContext) GetMetadataLocalIP() (string, error) {
+	var internalIP string
+
+	switch c.CloudProvider {
+	case kops.CloudProviderAWS:
+		sess := session.Must(session.NewSession())
+		metadata := ec2metadata.New(sess)
+		localIPv4, err := metadata.GetMetadata("local-ipv4")
+		if err != nil {
+			return "", fmt.Errorf("failed to get local-ipv4 address from ec2 metadata: %w", err)
+		}
+		internalIP = localIPv4
+
+	case kops.CloudProviderHetzner:
+		client := hcloudmetadata.NewClient()
+		privateNetworksYaml, err := client.PrivateNetworks()
+		if err != nil {
+			return "", fmt.Errorf("failed to get private networks from hetzner cloud metadata: %w", err)
+		}
+		var privateNetworks []struct {
+			IP           net.IP   `json:"ip"`
+			AliasIPs     []net.IP `json:"alias_ips"`
+			InterfaceNum int      `json:"interface_num"`
+			MACAddress   string   `json:"mac_address"`
+			NetworkID    int      `json:"network_id"`
+			NetworkName  string   `json:"network_name"`
+			Network      string   `json:"network"`
+			Subnet       string   `json:"subnet"`
+			Gateway      net.IP   `json:"gateway"`
+		}
+		err = yaml.Unmarshal([]byte(privateNetworksYaml), &privateNetworks)
+		if err != nil {
+			return "", fmt.Errorf("failed to convert private networks to object: %w", err)
+		}
+		for _, privateNetwork := range privateNetworks {
+			if privateNetwork.InterfaceNum == 1 {
+				internalIP = privateNetwork.IP.String()
+			}
+		}
+
+	default:
+		return "", fmt.Errorf("getting local IP from metadata is not supported for cloud provider: %q", c.CloudProvider)
+	}
+
+	return internalIP, nil
 }
