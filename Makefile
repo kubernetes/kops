@@ -309,7 +309,7 @@ gcs-publish-ci: gsutil version-dist-ci
 gen-cli-docs: kops # Regenerate CLI docs
 	KOPS_STATE_STORE= \
 	KOPS_FEATURE_FLAGS= \
-	${DIST}/ gen-cli-docs --out docs/cli
+	${DIST}/${OSARCH}/kops gen-cli-docs --out docs/cli
 
 .PHONY: push-amd64 push-arm64
 push-amd64 push-arm64: push-%: nodeup-%
