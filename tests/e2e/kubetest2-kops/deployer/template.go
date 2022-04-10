@@ -22,9 +22,9 @@ import (
 	"path"
 	"strings"
 
-	"gopkg.in/yaml.v2"
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/kubetest2/pkg/exec"
+	"sigs.k8s.io/yaml"
 )
 
 // renderTemplate will render the manifest template with the provided values,
