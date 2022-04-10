@@ -92,6 +92,8 @@ var (
 	Karpenter = new("Karpenter", Bool(false))
 	// ImageDigest remaps all manifests with image digests
 	ImageDigest = new("ImageDigest", Bool(true))
+	// Hetzner toggles the Hetzner Cloud support.
+	Hetzner = new("Hetzner", Bool(false))
 )
 
 // FeatureFlag defines a feature flag

@@ -169,6 +169,10 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		return os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
 	}
 
+	dest["HCLOUD_TOKEN"] = func() string {
+		return os.Getenv("HCLOUD_TOKEN")
+	}
+
 	if featureflag.Spotinst.Enabled() {
 		if creds, err := spotinst.LoadCredentials(); err == nil {
 			dest["SpotinstToken"] = func() string { return creds.Token }
