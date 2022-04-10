@@ -24,7 +24,7 @@
 
 #set -x
 
-# bazel caching doesn't work when when we switch architectures
+# Dev environments typically do not need to test multiple architectures
 KOPS_ARCH=amd64
 export KOPS_ARCH
 
