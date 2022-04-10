@@ -42,10 +42,10 @@ func (b *CloudConfigurationOptionsBuilder) BuildOptions(o interface{}) error {
 
 	if c.ManageStorageClasses == nil {
 		var manage *bool
-		if c.Openstack != nil && c.Openstack.BlockStorage != nil && c.Openstack.BlockStorage.CreateStorageClass != nil {
+		if clusterSpec.CloudProvider.Openstack != nil && clusterSpec.CloudProvider.Openstack.BlockStorage != nil && clusterSpec.CloudProvider.Openstack.BlockStorage.CreateStorageClass != nil {
 			// Avoid a spurious conflict with a user-specified configuration for OpenStack by
 			// adopting that more particular setting generally.
-			manage = c.Openstack.BlockStorage.CreateStorageClass
+			manage = clusterSpec.CloudProvider.Openstack.BlockStorage.CreateStorageClass
 		} else {
 			manage = fi.Bool(true)
 		}

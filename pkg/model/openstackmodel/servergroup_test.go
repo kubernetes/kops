@@ -50,8 +50,8 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 				},
 				Spec: kops.ClusterSpec{
 					MasterPublicName: "master-public-name",
-					CloudConfig: &kops.CloudConfiguration{
-						Openstack: &kops.OpenstackConfiguration{
+					CloudProvider: kops.CloudProviderSpec{
+						Openstack: &kops.OpenstackSpec{
 							Router: &kops.OpenstackRouter{
 								ExternalNetwork: fi.String("test"),
 							},
@@ -107,8 +107,8 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 				},
 				Spec: kops.ClusterSpec{
 					MasterPublicName: "master-public-name",
-					CloudConfig: &kops.CloudConfiguration{
-						Openstack: &kops.OpenstackConfiguration{
+					CloudProvider: kops.CloudProviderSpec{
+						Openstack: &kops.OpenstackSpec{
 							Router: &kops.OpenstackRouter{
 								ExternalNetwork: fi.String("test"),
 							},
@@ -192,8 +192,8 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 				},
 				Spec: kops.ClusterSpec{
 					MasterPublicName: "master-public-name",
-					CloudConfig: &kops.CloudConfiguration{
-						Openstack: &kops.OpenstackConfiguration{
+					CloudProvider: kops.CloudProviderSpec{
+						Openstack: &kops.OpenstackSpec{
 							Router: &kops.OpenstackRouter{
 								ExternalNetwork: fi.String("test"),
 							},
@@ -313,8 +313,8 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 				},
 				Spec: kops.ClusterSpec{
 					MasterPublicName: "master-public-name",
-					CloudConfig: &kops.CloudConfiguration{
-						Openstack: &kops.OpenstackConfiguration{
+					CloudProvider: kops.CloudProviderSpec{
+						Openstack: &kops.OpenstackSpec{
 							Loadbalancer: &kops.OpenstackLoadbalancerConfig{},
 							Router: &kops.OpenstackRouter{
 								ExternalNetwork: fi.String("test"),
@@ -441,8 +441,8 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 				},
 				Spec: kops.ClusterSpec{
 					MasterPublicName: "master-public-name",
-					CloudConfig: &kops.CloudConfiguration{
-						Openstack: &kops.OpenstackConfiguration{
+					CloudProvider: kops.CloudProviderSpec{
+						Openstack: &kops.OpenstackSpec{
 							Metadata: &kops.OpenstackMetadata{
 								ConfigDrive: fi.Bool(false),
 							},
@@ -559,8 +559,8 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 				},
 				Spec: kops.ClusterSpec{
 					MasterPublicName: "master-public-name",
-					CloudConfig: &kops.CloudConfiguration{
-						Openstack: &kops.OpenstackConfiguration{
+					CloudProvider: kops.CloudProviderSpec{
+						Openstack: &kops.OpenstackSpec{
 							Router: &kops.OpenstackRouter{
 								ExternalNetwork: fi.String("test"),
 							},
@@ -640,8 +640,8 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 				},
 				Spec: kops.ClusterSpec{
 					MasterPublicName: "master-public-name",
-					CloudConfig: &kops.CloudConfiguration{
-						Openstack: &kops.OpenstackConfiguration{
+					CloudProvider: kops.CloudProviderSpec{
+						Openstack: &kops.OpenstackSpec{
 							Router: &kops.OpenstackRouter{
 								ExternalNetwork: fi.String("test"),
 							},
@@ -699,8 +699,8 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 				},
 				Spec: kops.ClusterSpec{
 					MasterPublicName: "master-public-name",
-					CloudConfig: &kops.CloudConfiguration{
-						Openstack: &kops.OpenstackConfiguration{
+					CloudProvider: kops.CloudProviderSpec{
+						Openstack: &kops.OpenstackSpec{
 							Router: &kops.OpenstackRouter{
 								ExternalNetwork: fi.String("test"),
 							},
@@ -784,8 +784,8 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 				},
 				Spec: kops.ClusterSpec{
 					MasterPublicName: "master-public-name",
-					CloudConfig: &kops.CloudConfiguration{
-						Openstack: &kops.OpenstackConfiguration{
+					CloudProvider: kops.CloudProviderSpec{
+						Openstack: &kops.OpenstackSpec{
 							Metadata: &kops.OpenstackMetadata{
 								ConfigDrive: fi.Bool(false),
 							},
@@ -827,8 +827,8 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 				},
 				Spec: kops.ClusterSpec{
 					MasterPublicName: "master-public-name",
-					CloudConfig: &kops.CloudConfiguration{
-						Openstack: &kops.OpenstackConfiguration{
+					CloudProvider: kops.CloudProviderSpec{
+						Openstack: &kops.OpenstackSpec{
 							Metadata: &kops.OpenstackMetadata{
 								ConfigDrive: fi.Bool(false),
 							},
@@ -872,8 +872,8 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 				},
 				Spec: kops.ClusterSpec{
 					MasterPublicName: "master-public-name",
-					CloudConfig: &kops.CloudConfiguration{
-						Openstack: &kops.OpenstackConfiguration{
+					CloudProvider: kops.CloudProviderSpec{
+						Openstack: &kops.OpenstackSpec{
 							Metadata: &kops.OpenstackMetadata{
 								ConfigDrive: fi.Bool(false),
 							},
@@ -915,8 +915,8 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 				},
 				Spec: kops.ClusterSpec{
 					MasterPublicName: "master-public-name",
-					CloudConfig: &kops.CloudConfiguration{
-						Openstack: &kops.OpenstackConfiguration{
+					CloudProvider: kops.CloudProviderSpec{
+						Openstack: &kops.OpenstackSpec{
 							Metadata: &kops.OpenstackMetadata{
 								ConfigDrive: fi.Bool(false),
 							},
@@ -958,8 +958,8 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 				},
 				Spec: kops.ClusterSpec{
 					MasterPublicName: "master-public-name",
-					CloudConfig: &kops.CloudConfiguration{
-						Openstack: &kops.OpenstackConfiguration{
+					CloudProvider: kops.CloudProviderSpec{
+						Openstack: &kops.OpenstackSpec{
 							Metadata: &kops.OpenstackMetadata{
 								ConfigDrive: fi.Bool(false),
 							},
@@ -1001,8 +1001,8 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 				},
 				Spec: kops.ClusterSpec{
 					MasterPublicName: "master-public-name",
-					CloudConfig: &kops.CloudConfiguration{
-						Openstack: &kops.OpenstackConfiguration{
+					CloudProvider: kops.CloudProviderSpec{
+						Openstack: &kops.OpenstackSpec{
 							Metadata: &kops.OpenstackMetadata{
 								ConfigDrive: fi.Bool(false),
 							},

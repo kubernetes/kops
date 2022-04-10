@@ -809,8 +809,8 @@ type OpenstackMetadata struct {
 	ConfigDrive *bool `json:"configDrive,omitempty"`
 }
 
-// OpenstackConfiguration defines cloud config elements for the openstack cloud provider
-type OpenstackConfiguration struct {
+// OpenstackSpec defines cloud config elements for the openstack cloud provider
+type OpenstackSpec struct {
 	Loadbalancer       *OpenstackLoadbalancerConfig `json:"loadbalancer,omitempty"`
 	Monitor            *OpenstackMonitor            `json:"monitor,omitempty"`
 	Router             *OpenstackRouter             `json:"router,omitempty"`
@@ -862,8 +862,6 @@ type CloudConfiguration struct {
 	// Spotinst cloud-config specs
 	SpotinstProduct     *string `json:"spotinstProduct,omitempty"`
 	SpotinstOrientation *string `json:"spotinstOrientation,omitempty"`
-	// Openstack cloud-config options
-	Openstack *OpenstackConfiguration `json:"openstack,omitempty"`
 	// AWSEBSCSIDriver is the config for the AWS EBS CSI driver
 	AWSEBSCSIDriver *AWSEBSCSIDriver `json:"awsEBSCSIDriver,omitempty"`
 	// GCPPDCSIDriver is the config for the GCP PD CSI driver

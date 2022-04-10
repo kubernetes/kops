@@ -31,8 +31,8 @@ func Test_ValidateTopology(t *testing.T) {
 	}{
 		{
 			Input: kops.ClusterSpec{
-				CloudConfig: &kops.CloudConfiguration{
-					Openstack: &kops.OpenstackConfiguration{},
+				CloudProvider: kops.CloudProviderSpec{
+					Openstack: &kops.OpenstackSpec{},
 				},
 			},
 			ExpectedErrors: []string{
@@ -42,8 +42,8 @@ func Test_ValidateTopology(t *testing.T) {
 		},
 		{
 			Input: kops.ClusterSpec{
-				CloudConfig: &kops.CloudConfiguration{
-					Openstack: &kops.OpenstackConfiguration{
+				CloudProvider: kops.CloudProviderSpec{
+					Openstack: &kops.OpenstackSpec{
 						Router: &kops.OpenstackRouter{},
 					},
 				},
@@ -55,8 +55,8 @@ func Test_ValidateTopology(t *testing.T) {
 		},
 		{
 			Input: kops.ClusterSpec{
-				CloudConfig: &kops.CloudConfiguration{
-					Openstack: &kops.OpenstackConfiguration{},
+				CloudProvider: kops.CloudProviderSpec{
+					Openstack: &kops.OpenstackSpec{},
 				},
 				Topology: &kops.TopologySpec{
 					Masters: kops.TopologyPrivate,
@@ -67,8 +67,8 @@ func Test_ValidateTopology(t *testing.T) {
 		},
 		{
 			Input: kops.ClusterSpec{
-				CloudConfig: &kops.CloudConfiguration{
-					Openstack: &kops.OpenstackConfiguration{
+				CloudProvider: kops.CloudProviderSpec{
+					Openstack: &kops.OpenstackSpec{
 						Router: &kops.OpenstackRouter{
 							ExternalNetwork: fi.String("foo"),
 						},
