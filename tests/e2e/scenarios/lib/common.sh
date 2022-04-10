@@ -111,7 +111,7 @@ function kops-acquire-latest() {
             KOPS_BASE_URL=""
          fi
          $KUBETEST2 --build
-         KOPS="${REPO_ROOT}/.bazelbuild/dist/linux/amd64/kops"
+         KOPS="${REPO_ROOT}/.build/dist/linux/amd64/kops"
          KOPS_BASE_URL=$(cat "${REPO_ROOT}/.kubetest2/kops-base-url")
          export KOPS_BASE_URL
          echo "KOPS_BASE_URL=$KOPS_BASE_URL"
