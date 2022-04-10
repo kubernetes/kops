@@ -25,7 +25,7 @@ import (
 	"strings"
 
 	"github.com/blang/semver/v4"
-	"github.com/jetstack/cert-manager/pkg/client/clientset/versioned"
+	"github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/dynamic"

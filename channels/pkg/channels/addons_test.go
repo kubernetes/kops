@@ -21,7 +21,7 @@ import (
 	"testing"
 
 	"github.com/blang/semver/v4"
-	fakecertmanager "github.com/jetstack/cert-manager/pkg/client/clientset/versioned/fake"
+	fakecertmanager "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned/fake"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"

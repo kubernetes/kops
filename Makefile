@@ -236,7 +236,7 @@ channels-amd64 channels-arm64: channels-%:
 	GOOS=linux GOARCH=$* go build ${GCFLAGS} ${BUILDFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/$*/channels ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/channels/cmd/channels
 
 .PHONY: channels
-nodeup: channels-amd64
+channels: channels-amd64
 
 .PHONY: crossbuild-channels
 crossbuild-channels: channels-amd64 channels-arm64

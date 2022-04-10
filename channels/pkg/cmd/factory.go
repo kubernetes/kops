@@ -27,7 +27,7 @@ import (
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
-	certmanager "github.com/jetstack/cert-manager/pkg/client/clientset/versioned"
+	certmanager "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
 )
 
 type Factory interface {
