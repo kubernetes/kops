@@ -281,7 +281,7 @@ spec:
             - "--timeout=3m"
             - "--extra-create-metadata"
             - "--default-fstype=ext4"
-{{ if WithDefaultBool .CloudConfig.Openstack.BlockStorage.CSITopologySupport false }}
+{{ if WithDefaultBool .CloudProvider.Openstack.BlockStorage.CSITopologySupport false }}
             - --feature-gates=Topology=true
 {{ end }}
           env:
@@ -328,7 +328,7 @@ spec:
             - mountPath: /var/lib/csi/sockets/pluginproxy/
               name: socket-dir
         - name: cinder-csi-plugin
-          image: "{{- if .CloudConfig.Openstack.BlockStorage.CSIPluginImage -}} {{ .CloudConfig.Openstack.BlockStorage.CSIPluginImage }} {{- else -}} docker.io/k8scloudprovider/cinder-csi-plugin:{{OpenStackCSITag}} {{- end -}}"
+          image: "{{- if .CloudProvider.Openstack.BlockStorage.CSIPluginImage -}} {{ .CloudProvider.Openstack.BlockStorage.CSIPluginImage }} {{- else -}} docker.io/k8scloudprovider/cinder-csi-plugin:{{OpenStackCSITag}} {{- end -}}"
           args:
             - /bin/cinder-csi-plugin
             - "--nodeid=$(NODE_ID)"
@@ -472,7 +472,7 @@ spec:
             capabilities:
               add: ["SYS_ADMIN"]
             allowPrivilegeEscalation: true
-          image: "{{- if .CloudConfig.Openstack.BlockStorage.CSIPluginImage -}} {{ .CloudConfig.Openstack.BlockStorage.CSIPluginImage }} {{- else -}} docker.io/k8scloudprovider/cinder-csi-plugin:{{OpenStackCSITag}} {{- end -}}"
+          image: "{{- if .CloudProvider.Openstack.BlockStorage.CSIPluginImage -}} {{ .CloudProvider.Openstack.BlockStorage.CSIPluginImage }} {{- else -}} docker.io/k8scloudprovider/cinder-csi-plugin:{{OpenStackCSITag}} {{- end -}}"
           args :
             - /bin/cinder-csi-plugin
             - "--nodeid=$(NODE_ID)"
@@ -535,7 +535,7 @@ spec:
   - Persistent
   - Ephemeral
 
-{{ if and (WithDefaultBool .CloudConfig.ManageStorageClasses true) (WithDefaultBool .CloudConfig.Openstack.BlockStorage.CreateStorageClass true) }}
+{{ if and (WithDefaultBool .CloudConfig.ManageStorageClasses true) (WithDefaultBool .CloudProvider.Openstack.BlockStorage.CreateStorageClass true) }}
 ---
 apiVersion: storage.k8s.io/v1
 kind: StorageClass

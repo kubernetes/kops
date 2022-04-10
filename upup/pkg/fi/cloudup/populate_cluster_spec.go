@@ -275,7 +275,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 			codeModels = append(codeModels, &components.CloudConfigurationOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.CalicoOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.CiliumOptionsBuilder{Context: optionsContext})
-			codeModels = append(codeModels, &components.OpenStackOptionsBulder{Context: optionsContext})
+			codeModels = append(codeModels, &components.OpenStackOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.DiscoveryOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.ClusterAutoscalerOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.NodeTerminationHandlerOptionsBuilder{OptionsContext: optionsContext})

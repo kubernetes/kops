@@ -252,10 +252,6 @@ type DOSpec struct {
 type GCESpec struct {
 }
 
-// OpenstackSpec configures the Openstack cloud provider.
-type OpenstackSpec struct {
-}
-
 type KarpenterConfig struct {
 	Enabled bool `json:"enabled,omitempty"`
 }

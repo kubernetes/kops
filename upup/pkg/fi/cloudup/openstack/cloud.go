@@ -317,7 +317,7 @@ type openstackCloud struct {
 
 var _ fi.Cloud = &openstackCloud{}
 
-var openstackCloudInstances map[string]OpenstackCloud = make(map[string]OpenstackCloud)
+var openstackCloudInstances = make(map[string]OpenstackCloud)
 
 func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec, uagent string) (OpenstackCloud, error) {
 	config := vfs.OpenstackConfig{}
@@ -346,9 +346,9 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec, uagent st
 	provider.UserAgent = ua
 	klog.V(4).Infof("Using user-agent %s", ua.Join())
 
-	if spec != nil && spec.CloudConfig != nil && spec.CloudConfig.Openstack != nil && spec.CloudConfig.Openstack.InsecureSkipVerify != nil {
+	if spec != nil && spec.CloudProvider.Openstack != nil && spec.CloudProvider.Openstack.InsecureSkipVerify != nil {
 		tlsconfig := &tls.Config{}
-		tlsconfig.InsecureSkipVerify = fi.BoolValue(spec.CloudConfig.Openstack.InsecureSkipVerify)
+		tlsconfig.InsecureSkipVerify = fi.BoolValue(spec.CloudProvider.Openstack.InsecureSkipVerify)
 		transport := &http.Transport{TLSClientConfig: tlsconfig}
 		provider.HTTPClient = http.Client{
 			Transport: transport,
@@ -424,42 +424,41 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec, uagent st
 	octavia := false
 	floatingEnabled := false
 	if spec != nil &&
-		spec.CloudConfig != nil &&
-		spec.CloudConfig.Openstack != nil &&
-		spec.CloudConfig.Openstack.Router != nil {
+		spec.CloudProvider.Openstack != nil &&
+		spec.CloudProvider.Openstack.Router != nil {
 
 		floatingEnabled = true
-		c.extNetworkName = spec.CloudConfig.Openstack.Router.ExternalNetwork
+		c.extNetworkName = spec.CloudProvider.Openstack.Router.ExternalNetwork
 
-		if spec.CloudConfig.Openstack.Router.ExternalSubnet != nil {
-			c.extSubnetName = spec.CloudConfig.Openstack.Router.ExternalSubnet
+		if spec.CloudProvider.Openstack.Router.ExternalSubnet != nil {
+			c.extSubnetName = spec.CloudProvider.Openstack.Router.ExternalSubnet
 		}
-		if spec.CloudConfig.Openstack.Loadbalancer != nil &&
-			spec.CloudConfig.Openstack.Loadbalancer.FloatingNetworkID == nil &&
-			spec.CloudConfig.Openstack.Loadbalancer.FloatingNetwork != nil {
+		if spec.CloudProvider.Openstack.Loadbalancer != nil &&
+			spec.CloudProvider.Openstack.Loadbalancer.FloatingNetworkID == nil &&
+			spec.CloudProvider.Openstack.Loadbalancer.FloatingNetwork != nil {
 			// This field is derived
 			lbNet, err := c.ListNetworks(networks.ListOpts{
-				Name: fi.StringValue(spec.CloudConfig.Openstack.Loadbalancer.FloatingNetwork),
+				Name: fi.StringValue(spec.CloudProvider.Openstack.Loadbalancer.FloatingNetwork),
 			})
 			if err != nil || len(lbNet) != 1 {
 				return c, fmt.Errorf("could not establish floating network id")
 			}
-			spec.CloudConfig.Openstack.Loadbalancer.FloatingNetworkID = fi.String(lbNet[0].ID)
+			spec.CloudProvider.Openstack.Loadbalancer.FloatingNetworkID = fi.String(lbNet[0].ID)
 		}
-		if spec.CloudConfig.Openstack.Loadbalancer != nil {
-			if spec.CloudConfig.Openstack.Loadbalancer.UseOctavia != nil {
-				octavia = fi.BoolValue(spec.CloudConfig.Openstack.Loadbalancer.UseOctavia)
+		if spec.CloudProvider.Openstack.Loadbalancer != nil {
+			if spec.CloudProvider.Openstack.Loadbalancer.UseOctavia != nil {
+				octavia = fi.BoolValue(spec.CloudProvider.Openstack.Loadbalancer.UseOctavia)
 			}
-			if spec.CloudConfig.Openstack.Loadbalancer.FloatingSubnet != nil {
-				c.floatingSubnet = spec.CloudConfig.Openstack.Loadbalancer.FloatingSubnet
+			if spec.CloudProvider.Openstack.Loadbalancer.FloatingSubnet != nil {
+				c.floatingSubnet = spec.CloudProvider.Openstack.Loadbalancer.FloatingSubnet
 			}
 		}
 	}
 	c.floatingEnabled = floatingEnabled
 	c.useOctavia = octavia
 	var lbClient *gophercloud.ServiceClient
-	if spec != nil && spec.CloudConfig != nil && spec.CloudConfig.Openstack != nil {
-		if spec.CloudConfig.Openstack.Loadbalancer != nil && octavia {
+	if spec != nil && spec.CloudProvider.Openstack != nil {
+		if spec.CloudProvider.Openstack.Loadbalancer != nil && octavia {
 			klog.V(2).Infof("Openstack using Octavia lbaasv2 api")
 			lbClient, err = os.NewLoadBalancerV2(provider, gophercloud.EndpointOpts{
 				Region: region,
@@ -467,7 +466,7 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec, uagent st
 			if err != nil {
 				return nil, fmt.Errorf("error building lb client: %v", err)
 			}
-		} else if spec.CloudConfig.Openstack.Loadbalancer != nil {
+		} else if spec.CloudProvider.Openstack.Loadbalancer != nil {
 			klog.V(2).Infof("Openstack using deprecated lbaasv2 api")
 			lbClient, err = os.NewNetworkV2(provider, gophercloud.EndpointOpts{
 				Region: region,
@@ -684,7 +683,7 @@ func (c *openstackCloud) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIng
 }
 
 func getApiIngressStatus(c OpenstackCloud, cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
-	if cluster.Spec.CloudConfig.Openstack.Loadbalancer != nil {
+	if cluster.Spec.CloudProvider.Openstack.Loadbalancer != nil {
 		return getLoadBalancerIngressStatus(c, cluster)
 	} else {
 		return getIPIngressStatus(c, cluster)
