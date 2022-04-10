@@ -624,11 +624,18 @@ func UnpackRRWithHeader(h RR_Header, msg []byte, off int) (rr RR, off1 int, err 
 		rr = &RFC3597{Hdr: h}
 	}
 
-	if noRdata(h) {
-		return rr, off, nil
+	if off < 0 || off > len(msg) {
+		return &h, off, &Error{err: "bad off"}
 	}
 
 	end := off + int(h.Rdlength)
+	if end < off || end > len(msg) {
+		return &h, end, &Error{err: "bad rdlength"}
+	}
+
+	if noRdata(h) {
+		return rr, off, nil
+	}
 
 	off, err = rr.unpack(msg, off)
 	if err != nil {
@@ -735,7 +742,7 @@ func (dns *Msg) packBufferWithCompressionMap(buf []byte, compression compression
 	}
 
 	// Set extended rcode unconditionally if we have an opt, this will allow
-	// reseting the extended rcode bits if they need to.
+	// resetting the extended rcode bits if they need to.
 	if opt := dns.IsEdns0(); opt != nil {
 		opt.SetExtendedRcode(uint16(dns.Rcode))
 	} else if dns.Rcode > 0xF {
@@ -894,6 +901,11 @@ func (dns *Msg) String() string {
 	s += "ANSWER: " + strconv.Itoa(len(dns.Answer)) + ", "
 	s += "AUTHORITY: " + strconv.Itoa(len(dns.Ns)) + ", "
 	s += "ADDITIONAL: " + strconv.Itoa(len(dns.Extra)) + "\n"
+	opt := dns.IsEdns0()
+	if opt != nil {
+		// OPT PSEUDOSECTION
+		s += opt.String() + "\n"
+	}
 	if len(dns.Question) > 0 {
 		s += "\n;; QUESTION SECTION:\n"
 		for _, r := range dns.Question {
@@ -916,10 +928,10 @@ func (dns *Msg) String() string {
 			}
 		}
 	}
-	if len(dns.Extra) > 0 {
+	if len(dns.Extra) > 0 && (opt == nil || len(dns.Extra) > 1) {
 		s += "\n;; ADDITIONAL SECTION:\n"
 		for _, r := range dns.Extra {
-			if r != nil {
+			if r != nil && r.Header().Rrtype != TypeOPT {
 				s += r.String() + "\n"
 			}
 		}

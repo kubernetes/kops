@@ -1,0 +1,13 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["codec.go"],
+    importmap = "k8s.io/kops/vendor/github.com/spf13/viper/internal/encoding/hcl",
+    importpath = "github.com/spf13/viper/internal/encoding/hcl",
+    visibility = ["//vendor/github.com/spf13/viper:__subpackages__"],
+    deps = [
+        "//vendor/github.com/hashicorp/hcl:go_default_library",
+        "//vendor/github.com/hashicorp/hcl/hcl/printer:go_default_library",
+    ],
+)

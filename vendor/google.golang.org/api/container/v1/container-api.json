@@ -2459,7 +2459,7 @@
       }
     }
   },
-  "revision": "20210820",
+  "revision": "20211014",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -2521,6 +2521,18 @@
         "networkPolicyConfig": {
           "$ref": "NetworkPolicyConfig",
           "description": "Configuration for NetworkPolicy. This only tracks whether the addon is enabled or not on the Master, it does not track whether network policy is enabled for the nodes."
+        }
+      },
+      "type": "object"
+    },
+    "AdvancedMachineFeatures": {
+      "description": "Specifies options for controlling advanced machine features.",
+      "id": "AdvancedMachineFeatures",
+      "properties": {
+        "threadsPerCore": {
+          "description": "The number of threads per physical core. To disable simultaneous multithreading (SMT) set this to 1. If unset, the maximum number of threads supported per core by the underlying processor is assumed.",
+          "format": "int64",
+          "type": "string"
         }
       },
       "type": "object"
@@ -2861,6 +2873,10 @@
           "$ref": "MasterAuthorizedNetworksConfig",
           "description": "The configuration options for master authorized networks feature."
         },
+        "meshCertificates": {
+          "$ref": "MeshCertificates",
+          "description": "Configuration for issuance of mTLS keys and certificates to Kubernetes pods."
+        },
         "monitoringConfig": {
           "$ref": "MonitoringConfig",
           "description": "Monitoring configuration for the cluster."
@@ -2893,6 +2909,10 @@
           "description": "[Output only] The size of the address space on each node for hosting containers. This is provisioned from within the `container_ipv4_cidr` range. This field will only be set when cluster is in route-based network mode.",
           "format": "int32",
           "type": "integer"
+        },
+        "nodePoolDefaults": {
+          "$ref": "NodePoolDefaults",
+          "description": "Default NodePool settings for the entire cluster. These settings are overridden if specified on the specific NodePool object."
         },
         "nodePools": {
           "description": "The node pools associated with this cluster. This field should not be set if \"node_config\" or \"initial_node_count\" are specified.",
@@ -3040,10 +3060,6 @@
           "$ref": "AuthenticatorGroupsConfig",
           "description": "The desired authenticator groups config for the cluster."
         },
-        "desiredAutopilot": {
-          "$ref": "Autopilot",
-          "description": "The desired Autopilot configuration for the cluster."
-        },
         "desiredBinaryAuthorization": {
           "$ref": "BinaryAuthorization",
           "description": "The desired configuration options for the Binary Authorization feature."
@@ -3073,6 +3089,14 @@
         "desiredDefaultSnatStatus": {
           "$ref": "DefaultSnatStatus",
           "description": "The desired status of whether to disable default sNAT for this cluster."
+        },
+        "desiredDnsConfig": {
+          "$ref": "DNSConfig",
+          "description": "DNSConfig contains clusterDNS config for this cluster."
+        },
+        "desiredGcfsConfig": {
+          "$ref": "GcfsConfig",
+          "description": "The desired GCFS config for the cluster"
         },
         "desiredImageType": {
           "description": "The desired image type for the node pool. NOTE: Set the \"desired_node_pool\" field as well.",
@@ -3108,6 +3132,10 @@
         "desiredMasterVersion": {
           "description": "The Kubernetes version to change the master to. Users may specify either explicit versions offered by Kubernetes Engine or version aliases, which have the following behavior: - \"latest\": picks the highest valid Kubernetes version - \"1.X\": picks the highest valid patch+gke.N patch in the 1.X version - \"1.X.Y\": picks the highest valid gke.N patch in the 1.X.Y version - \"1.X.Y-gke.N\": picks an explicit Kubernetes version - \"-\": picks the default Kubernetes version",
           "type": "string"
+        },
+        "desiredMeshCertificates": {
+          "$ref": "MeshCertificates",
+          "description": "Configuration for issuance of mTLS keys and certificates to Kubernetes pods."
         },
         "desiredMonitoringConfig": {
           "$ref": "MonitoringConfig",
@@ -3282,6 +3310,43 @@
       },
       "type": "object"
     },
+    "DNSConfig": {
+      "description": "DNSConfig contains the desired set of options for configuring clusterDNS.",
+      "id": "DNSConfig",
+      "properties": {
+        "clusterDns": {
+          "description": "cluster_dns indicates which in-cluster DNS provider should be used.",
+          "enum": [
+            "PROVIDER_UNSPECIFIED",
+            "PLATFORM_DEFAULT",
+            "CLOUD_DNS"
+          ],
+          "enumDescriptions": [
+            "Default value",
+            "Use GKE default DNS provider(kube-dns) for DNS resolution.",
+            "Use CloudDNS for DNS resolution."
+          ],
+          "type": "string"
+        },
+        "clusterDnsDomain": {
+          "description": "cluster_dns_domain is the suffix used for all cluster service records.",
+          "type": "string"
+        },
+        "clusterDnsScope": {
+          "description": "cluster_dns_scope indicates the scope of access to cluster DNS records.",
+          "enum": [
+            "DNS_SCOPE_UNSPECIFIED",
+            "VPC_SCOPE"
+          ],
+          "enumDescriptions": [
+            "Default value, will be inferred as cluster scope.",
+            "DNS records are accessible from within the VPC."
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "DailyMaintenanceWindow": {
       "description": "Time window specified for daily maintenance operations.",
       "id": "DailyMaintenanceWindow",
@@ -3356,6 +3421,17 @@
       "properties": {
         "enabled": {
           "description": "Whether the Compute Engine PD CSI driver is enabled for this cluster.",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "GcfsConfig": {
+      "description": "GcfsConfig contains configurations of Google Container File System (image streaming).",
+      "id": "GcfsConfig",
+      "properties": {
+        "enabled": {
+          "description": "Whether to use GCFS.",
           "type": "boolean"
         }
       },
@@ -3853,6 +3929,17 @@
       },
       "type": "object"
     },
+    "MeshCertificates": {
+      "description": "Configuration for issuance of mTLS keys and certificates to Kubernetes pods.",
+      "id": "MeshCertificates",
+      "properties": {
+        "enableCertificates": {
+          "description": "enable_certificates controls issuance of workload mTLS certificates. If set, the GKE Workload Identity Certificates controller and node agent will be deployed in the cluster, which can then be configured by creating a WorkloadCertificateConfig Custom Resource. Requires Workload Identity (workload_pool must be non-empty).",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
     "Metric": {
       "description": "Progress metric is (string, int|float|string) pair.",
       "id": "Metric",
@@ -3932,6 +4019,10 @@
         "defaultSnatStatus": {
           "$ref": "DefaultSnatStatus",
           "description": "Whether the cluster disables default in-node sNAT rules. In-node sNAT rules will be disabled when default_snat_status is disabled. When disabled is set to false, default IP masquerade rules will be applied to the nodes to prevent sNAT on cluster internal traffic."
+        },
+        "dnsConfig": {
+          "$ref": "DNSConfig",
+          "description": "DNSConfig contains clusterDNS config for this cluster."
         },
         "enableIntraNodeVisibility": {
           "description": "Whether Intra-node visibility is enabled for this cluster. This makes same node pod to pod traffic visible for VPC network.",
@@ -4013,6 +4104,10 @@
           },
           "type": "array"
         },
+        "advancedMachineFeatures": {
+          "$ref": "AdvancedMachineFeatures",
+          "description": "Advanced features for the Compute Engine VM."
+        },
         "bootDiskKmsKey": {
           "description": " The Customer Managed Encryption Key used to encrypt the boot disk attached to each node in the node pool. This should be of the form projects/[KEY_PROJECT_ID]/locations/[LOCATION]/keyRings/[RING_NAME]/cryptoKeys/[KEY_NAME]. For more information about protecting resources with Cloud KMS Keys please see: https://cloud.google.com/compute/docs/disks/customer-managed-encryption",
           "type": "string"
@@ -4025,6 +4120,10 @@
         "diskType": {
           "description": "Type of the disk attached to each node (e.g. 'pd-standard', 'pd-ssd' or 'pd-balanced') If unspecified, the default disk type is 'pd-standard'",
           "type": "string"
+        },
+        "gcfsConfig": {
+          "$ref": "GcfsConfig",
+          "description": "Google Container File System (image streaming) configs."
         },
         "gvnic": {
           "$ref": "VirtualNIC",
@@ -4117,6 +4216,17 @@
         "workloadMetadataConfig": {
           "$ref": "WorkloadMetadataConfig",
           "description": "The workload metadata configuration for this node."
+        }
+      },
+      "type": "object"
+    },
+    "NodeConfigDefaults": {
+      "description": "Subset of NodeConfig message that has defaults.",
+      "id": "NodeConfigDefaults",
+      "properties": {
+        "gcfsConfig": {
+          "$ref": "GcfsConfig",
+          "description": "GCFS (Google Container File System, a.k.a Riptide) options."
         }
       },
       "type": "object"
@@ -4291,14 +4401,25 @@
           "type": "boolean"
         },
         "maxNodeCount": {
-          "description": "Maximum number of nodes in the NodePool. Must be \u003e= min_node_count. There has to be enough quota to scale up the cluster.",
+          "description": "Maximum number of nodes for one location in the NodePool. Must be \u003e= min_node_count. There has to be enough quota to scale up the cluster.",
           "format": "int32",
           "type": "integer"
         },
         "minNodeCount": {
-          "description": "Minimum number of nodes in the NodePool. Must be \u003e= 1 and \u003c= max_node_count.",
+          "description": "Minimum number of nodes for one location in the NodePool. Must be \u003e= 1 and \u003c= max_node_count.",
           "format": "int32",
           "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "NodePoolDefaults": {
+      "description": "Subset of Nodepool message that has defaults.",
+      "id": "NodePoolDefaults",
+      "properties": {
+        "nodeConfigDefaults": {
+          "$ref": "NodeConfigDefaults",
+          "description": "Subset of NodeConfig message that has defaults."
         }
       },
       "type": "object"
@@ -5407,6 +5528,10 @@
         "clusterId": {
           "description": "Deprecated. The name of the cluster to upgrade. This field has been deprecated and replaced by the name field.",
           "type": "string"
+        },
+        "gcfsConfig": {
+          "$ref": "GcfsConfig",
+          "description": "GCFS config."
         },
         "gvnic": {
           "$ref": "VirtualNIC",
