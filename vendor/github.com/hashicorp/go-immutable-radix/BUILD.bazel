@@ -8,6 +8,7 @@ go_library(
         "iter.go",
         "node.go",
         "raw_iter.go",
+        "reverse_iter.go",
     ],
     importmap = "k8s.io/kops/vendor/github.com/hashicorp/go-immutable-radix",
     importpath = "github.com/hashicorp/go-immutable-radix",
