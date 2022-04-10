@@ -1,0 +1,19 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "clientset.go",
+        "doc.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/cert-manager/cert-manager/pkg/client/clientset/versioned",
+    importpath = "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/cert-manager/cert-manager/pkg/client/clientset/versioned/typed/acme/v1:go_default_library",
+        "//vendor/github.com/cert-manager/cert-manager/pkg/client/clientset/versioned/typed/certmanager/v1:go_default_library",
+        "//vendor/k8s.io/client-go/discovery:go_default_library",
+        "//vendor/k8s.io/client-go/rest:go_default_library",
+        "//vendor/k8s.io/client-go/util/flowcontrol:go_default_library",
+    ],
+)

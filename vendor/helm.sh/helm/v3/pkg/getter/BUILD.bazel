@@ -14,11 +14,11 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/pkg/errors:go_default_library",
-        "//vendor/helm.sh/helm/v3/internal/experimental/registry:go_default_library",
         "//vendor/helm.sh/helm/v3/internal/tlsutil:go_default_library",
         "//vendor/helm.sh/helm/v3/internal/urlutil:go_default_library",
         "//vendor/helm.sh/helm/v3/internal/version:go_default_library",
         "//vendor/helm.sh/helm/v3/pkg/cli:go_default_library",
         "//vendor/helm.sh/helm/v3/pkg/plugin:go_default_library",
+        "//vendor/helm.sh/helm/v3/pkg/registry:go_default_library",
     ],
 )

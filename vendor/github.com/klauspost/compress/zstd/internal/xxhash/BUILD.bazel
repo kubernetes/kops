@@ -4,8 +4,9 @@ go_library(
     name = "go_default_library",
     srcs = [
         "xxhash.go",
-        "xxhash_amd64.go",
         "xxhash_amd64.s",
+        "xxhash_arm64.s",
+        "xxhash_asm.go",
         "xxhash_other.go",
         "xxhash_safe.go",
     ],
