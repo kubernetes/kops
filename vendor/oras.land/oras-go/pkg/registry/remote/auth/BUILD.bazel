@@ -1,0 +1,20 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "cache.go",
+        "challenge.go",
+        "client.go",
+        "credential.go",
+        "scope.go",
+    ],
+    importmap = "k8s.io/kops/vendor/oras.land/oras-go/pkg/registry/remote/auth",
+    importpath = "oras.land/oras-go/pkg/registry/remote/auth",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/oras.land/oras-go/pkg/content:go_default_library",
+        "//vendor/oras.land/oras-go/pkg/registry/remote/internal/errutil:go_default_library",
+        "//vendor/oras.land/oras-go/pkg/registry/remote/internal/syncutil:go_default_library",
+    ],
+)

@@ -20,7 +20,7 @@ import (
 	"context"
 	"testing"
 
-	cmfake "github.com/jetstack/cert-manager/pkg/client/clientset/versioned/fake"
+	cmfake "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned/fake"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	fakek8s "k8s.io/client-go/kubernetes/fake"

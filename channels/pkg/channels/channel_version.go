@@ -23,7 +23,7 @@ import (
 	"strconv"
 	"strings"
 
-	certmanager "github.com/jetstack/cert-manager/pkg/client/clientset/versioned"
+	certmanager "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

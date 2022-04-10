@@ -26,7 +26,7 @@ import (
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/util/pkg/vfs"
 
-	certmanager "github.com/jetstack/cert-manager/pkg/client/clientset/versioned"
+	certmanager "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 
@@ -35,7 +35,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/channels/pkg/api"
 
-	cmv1 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1"
+	cmv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
