@@ -20,9 +20,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	yamlv2 "gopkg.in/yaml.v2"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/yaml"
 )
 
 // KubeObjectToApplyYAML returns the kubernetes object converted to YAML, with "noisy" fields removed.
@@ -41,7 +41,7 @@ func KubeObjectToApplyYAML(data runtime.Object) (string, error) {
 
 	// Convert the JSON to a map.
 	jsonObj := make(map[string]interface{})
-	if err := yamlv2.Unmarshal(j, &jsonObj); err != nil {
+	if err := yaml.Unmarshal(j, &jsonObj); err != nil {
 		return "", err
 	}
 
@@ -61,7 +61,7 @@ func KubeObjectToApplyYAML(data runtime.Object) (string, error) {
 	}
 
 	// Marshal the cleaned-up map into YAML.
-	y, err := yamlv2.Marshal(jsonObj)
+	y, err := yaml.Marshal(jsonObj)
 	if err != nil {
 		return "", err
 	}
