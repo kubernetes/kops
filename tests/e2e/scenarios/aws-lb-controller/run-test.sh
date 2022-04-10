@@ -41,7 +41,7 @@ REPORT_DIR="${ARTIFACTS:-$(pwd)/_artifacts}/aws-lb-controller/"
 
 # shellcheck disable=SC2164
 cd "$(mktemp -dt kops.XXXXXXXXX)"
-go get github.com/onsi/ginkgo/ginkgo
+go install github.com/onsi/ginkgo/ginkgo@latest
 
 git clone https://github.com/kubernetes-sigs/aws-load-balancer-controller .
 
