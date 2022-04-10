@@ -3,10 +3,9 @@
 
 ## kops completion
 
-generate the autocompletion script for the specified shell
+Generate the autocompletion script for the specified shell
 
 ### Synopsis
-
 
 Generate the autocompletion script for kops for the specified shell.
 See each sub-command's help for details on how to use the generated script.
@@ -42,8 +41,8 @@ See each sub-command's help for details on how to use the generated script.
 ### SEE ALSO
 
 * [kops](kops.md)	 - kOps is Kubernetes Operations.
-* [kops completion bash](kops_completion_bash.md)	 - generate the autocompletion script for bash
-* [kops completion fish](kops_completion_fish.md)	 - generate the autocompletion script for fish
-* [kops completion powershell](kops_completion_powershell.md)	 - generate the autocompletion script for powershell
-* [kops completion zsh](kops_completion_zsh.md)	 - generate the autocompletion script for zsh
+* [kops completion bash](kops_completion_bash.md)	 - Generate the autocompletion script for bash
+* [kops completion fish](kops_completion_fish.md)	 - Generate the autocompletion script for fish
+* [kops completion powershell](kops_completion_powershell.md)	 - Generate the autocompletion script for powershell
+* [kops completion zsh](kops_completion_zsh.md)	 - Generate the autocompletion script for zsh
 

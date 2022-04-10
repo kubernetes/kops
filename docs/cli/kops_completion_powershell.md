@@ -3,15 +3,15 @@
 
 ## kops completion powershell
 
-generate the autocompletion script for powershell
+Generate the autocompletion script for powershell
 
 ### Synopsis
-
 
 Generate the autocompletion script for powershell.
 
 To load completions in your current shell session:
-PS C:\> kops completion powershell | Out-String | Invoke-Expression
+
+	kops completion powershell | Out-String | Invoke-Expression
 
 To load completions for every new session, add the output of the above command
 to your powershell profile.
@@ -51,5 +51,5 @@ kops completion powershell [flags]
 
 ### SEE ALSO
 
-* [kops completion](kops_completion.md)	 - generate the autocompletion script for the specified shell
+* [kops completion](kops_completion.md)	 - Generate the autocompletion script for the specified shell
 
