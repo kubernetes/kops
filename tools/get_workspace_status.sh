@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This script will be run bazel when building process starts to
+# This script will be run when building process starts to
 # generate key-value information that represents the status of the
 # workspace. The output should be like
 #
