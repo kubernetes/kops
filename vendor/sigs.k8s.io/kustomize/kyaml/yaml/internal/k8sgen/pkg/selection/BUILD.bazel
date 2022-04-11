@@ -1,9 +1,0 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
-
-go_library(
-    name = "go_default_library",
-    srcs = ["operator.go"],
-    importmap = "k8s.io/kops/vendor/sigs.k8s.io/kustomize/kyaml/yaml/internal/k8sgen/pkg/selection",
-    importpath = "sigs.k8s.io/kustomize/kyaml/yaml/internal/k8sgen/pkg/selection",
-    visibility = ["//vendor/sigs.k8s.io/kustomize/kyaml/yaml:__subpackages__"],
-)

@@ -6,16 +6,29 @@ go_library(
         "doc.go",
         "register.go",
     ],
-    importmap = "k8s.io/kops/vendor/github.com/cert-manager/cert-manager/pkg/client/clientset/versioned/scheme",
     importpath = "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned/scheme",
     visibility = ["//visibility:public"],
     deps = [
-        "//vendor/github.com/cert-manager/cert-manager/pkg/apis/acme/v1:go_default_library",
-        "//vendor/github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/runtime/serializer:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/util/runtime:go_default_library",
+        "//pkg/apis/acme/v1:go_default_library",
+        "//pkg/apis/certmanager/v1:go_default_library",
+        "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
+        "@io_k8s_apimachinery//pkg/runtime:go_default_library",
+        "@io_k8s_apimachinery//pkg/runtime/schema:go_default_library",
+        "@io_k8s_apimachinery//pkg/runtime/serializer:go_default_library",
+        "@io_k8s_apimachinery//pkg/util/runtime:go_default_library",
     ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
 )
