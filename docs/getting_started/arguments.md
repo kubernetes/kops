@@ -1,6 +1,6 @@
 # Detailed description of a few selected arguments
 
-This list is not the full list, but a few arguments that where chosen.
+This list is not the full list, but a few arguments that were chosen.
 
 ## admin-access
 
@@ -23,7 +23,7 @@ See the docs in [../cluster_spec.md#adminaccess](../cluster_spec.md#adminaccess)
 
 ## dns-zone
 
-`dns-zone` controls the Route53 hosted zone in which DNS records will be created.  It can either by the name
+`dns-zone` controls the Route53 hosted zone in which DNS records will be created.  It can either be the name
 of the hosted zone (`example.com`), or it can be the ID of the hosted zone (`Z1GABCD1ABC2DEF`)
 
 Suppose you are creating a cluster named "dev.kubernetes.example.com`:
