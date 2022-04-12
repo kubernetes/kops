@@ -13,7 +13,7 @@ require (
 	k8s.io/klog/v2 v2.30.0
 	k8s.io/kops v0.0.0-00010101000000-000000000000
 	sigs.k8s.io/boskos v0.0.0-20200710214748-f5935686c7fc
-	sigs.k8s.io/kubetest2 v0.0.0-20220224035534-5e5d3e9eebc6
+	sigs.k8s.io/kubetest2 v0.0.0-20220411203323-036d47c48813
 	sigs.k8s.io/yaml v1.3.0
 )
 
