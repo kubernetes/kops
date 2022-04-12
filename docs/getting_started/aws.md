@@ -335,9 +335,10 @@ it. Make sure you have generated an SSH key pair before creating your cluster.
 
 ```bash
 kops create cluster \
+    --name=${NAME} \
+    --cloud=aws \
     --zones=us-west-2a \
     --discovery-store=s3://prefix-example-com-oidc-store/${NAME}/discovery
-    ${NAME}
 ```
 
 All instances created by `kops` will be built within ASG (Auto Scaling Groups),
@@ -350,7 +351,7 @@ Now we have a cluster configuration, we can look at every aspect that defines
 our cluster by editing the description.
 
 ```bash
-kops edit cluster ${NAME}
+kops edit cluster --name ${NAME}
 ```
 
 This opens your editor (as defined by $EDITOR) and allows you to edit the
@@ -367,7 +368,7 @@ while.  Once it finishes you'll have to wait longer while the booted instances
 finish downloading Kubernetes components and reach a "ready" state.
 
 ```bash
-kops update cluster ${NAME} --yes
+kops update cluster --name ${NAME} --yes
 ```
 
 ### Use the Cluster
