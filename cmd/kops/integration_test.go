@@ -143,7 +143,7 @@ func (i *integrationTest) withDedicatedAPIServer() *integrationTest {
 		"aws_iam_role_apiservers."+i.clusterName+"_policy",
 		"aws_iam_role_policy_apiservers."+i.clusterName+"_policy",
 		"aws_launch_template_apiserver.apiservers."+i.clusterName+"_user_data",
-		"aws_s3_bucket_object_nodeupconfig-apiserver_content",
+		"aws_s3_object_nodeupconfig-apiserver_content",
 	)
 	return i
 }
@@ -166,7 +166,7 @@ func (i *integrationTest) withOIDCDiscovery() *integrationTest {
 func (i *integrationTest) withManagedFiles(files ...string) *integrationTest {
 	for _, file := range files {
 		i.expectTerraformFilenames = append(i.expectTerraformFilenames,
-			"aws_s3_bucket_object_"+file+"_content")
+			"aws_s3_object_"+file+"_content")
 	}
 	return i
 }
@@ -174,7 +174,7 @@ func (i *integrationTest) withManagedFiles(files ...string) *integrationTest {
 func (i *integrationTest) withAddons(addons ...string) *integrationTest {
 	for _, addon := range addons {
 		i.expectTerraformFilenames = append(i.expectTerraformFilenames,
-			"aws_s3_bucket_object_"+i.clusterName+"-addons-"+addon+"_content")
+			"aws_s3_object_"+i.clusterName+"-addons-"+addon+"_content")
 	}
 	return i
 }
@@ -643,8 +643,8 @@ func TestKarpenter(t *testing.T) {
 	test.expectTerraformFilenames = append(test.expectTerraformFilenames,
 		"aws_launch_template_karpenter-nodes-single-machinetype.minimal.example.com_user_data",
 		"aws_launch_template_karpenter-nodes-default.minimal.example.com_user_data",
-		"aws_s3_bucket_object_nodeupconfig-karpenter-nodes-single-machinetype_content",
-		"aws_s3_bucket_object_nodeupconfig-karpenter-nodes-default_content",
+		"aws_s3_object_nodeupconfig-karpenter-nodes-single-machinetype_content",
+		"aws_s3_object_nodeupconfig-karpenter-nodes-default_content",
 	)
 	test.runTestTerraformAWS(t)
 }
@@ -1119,31 +1119,31 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 	expectedFilenames := i.expectTerraformFilenames
 	expectedFilenames = append(expectedFilenames,
 		"aws_launch_template_nodes."+i.clusterName+"_user_data",
-		"aws_s3_bucket_object_cluster-completed.spec_content",
-		"aws_s3_bucket_object_etcd-cluster-spec-events_content",
-		"aws_s3_bucket_object_etcd-cluster-spec-main_content",
-		"aws_s3_bucket_object_kops-version.txt_content",
-		"aws_s3_bucket_object_manifests-etcdmanager-events_content",
-		"aws_s3_bucket_object_manifests-etcdmanager-main_content",
-		"aws_s3_bucket_object_manifests-static-kube-apiserver-healthcheck_content",
-		"aws_s3_bucket_object_nodeupconfig-nodes_content",
-		"aws_s3_bucket_object_"+i.clusterName+"-addons-bootstrap_content",
-		"aws_s3_bucket_object_"+i.clusterName+"-addons-core.addons.k8s.io_content",
-		"aws_s3_bucket_object_"+i.clusterName+"-addons-kops-controller.addons.k8s.io-k8s-1.16_content",
-		"aws_s3_bucket_object_"+i.clusterName+"-addons-kubelet-api.rbac.addons.k8s.io-k8s-1.9_content",
-		"aws_s3_bucket_object_"+i.clusterName+"-addons-limit-range.addons.k8s.io_content",
-		"aws_s3_bucket_object_"+i.clusterName+"-addons-storage-aws.addons.k8s.io-v1.15.0_content")
+		"aws_s3_object_cluster-completed.spec_content",
+		"aws_s3_object_etcd-cluster-spec-events_content",
+		"aws_s3_object_etcd-cluster-spec-main_content",
+		"aws_s3_object_kops-version.txt_content",
+		"aws_s3_object_manifests-etcdmanager-events_content",
+		"aws_s3_object_manifests-etcdmanager-main_content",
+		"aws_s3_object_manifests-static-kube-apiserver-healthcheck_content",
+		"aws_s3_object_nodeupconfig-nodes_content",
+		"aws_s3_object_"+i.clusterName+"-addons-bootstrap_content",
+		"aws_s3_object_"+i.clusterName+"-addons-core.addons.k8s.io_content",
+		"aws_s3_object_"+i.clusterName+"-addons-kops-controller.addons.k8s.io-k8s-1.16_content",
+		"aws_s3_object_"+i.clusterName+"-addons-kubelet-api.rbac.addons.k8s.io-k8s-1.9_content",
+		"aws_s3_object_"+i.clusterName+"-addons-limit-range.addons.k8s.io_content",
+		"aws_s3_object_"+i.clusterName+"-addons-storage-aws.addons.k8s.io-v1.15.0_content")
 
 	if i.kubeDNS {
-		expectedFilenames = append(expectedFilenames, "aws_s3_bucket_object_"+i.clusterName+"-addons-kube-dns.addons.k8s.io-k8s-1.12_content")
+		expectedFilenames = append(expectedFilenames, "aws_s3_object_"+i.clusterName+"-addons-kube-dns.addons.k8s.io-k8s-1.12_content")
 	} else {
-		expectedFilenames = append(expectedFilenames, "aws_s3_bucket_object_"+i.clusterName+"-addons-coredns.addons.k8s.io-k8s-1.12_content")
+		expectedFilenames = append(expectedFilenames, "aws_s3_object_"+i.clusterName+"-addons-coredns.addons.k8s.io-k8s-1.12_content")
 	}
 
 	if i.discovery {
 		expectedFilenames = append(expectedFilenames,
-			"aws_s3_bucket_object_discovery.json_content",
-			"aws_s3_bucket_object_keys.json_content")
+			"aws_s3_object_discovery.json_content",
+			"aws_s3_object_keys.json_content")
 	}
 
 	if i.sshKey {
@@ -1156,7 +1156,7 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 	for j := 0; j < i.zones; j++ {
 		zone := "us-test-1" + string([]byte{byte('a') + byte(j)})
 		expectedFilenames = append(expectedFilenames,
-			"aws_s3_bucket_object_nodeupconfig-master-"+zone+"_content",
+			"aws_s3_object_nodeupconfig-master-"+zone+"_content",
 			"aws_launch_template_master-"+zone+".masters."+i.clusterName+"_user_data")
 	}
 
@@ -1174,13 +1174,13 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 			}...)
 			if i.bastionUserData {
 				expectedFilenames = append(expectedFilenames,
-					"aws_s3_bucket_object_nodeupconfig-bastion_content",
+					"aws_s3_object_nodeupconfig-bastion_content",
 					"aws_launch_template_bastion."+i.clusterName+"_user_data")
 			}
 		}
 		if i.nth {
 			expectedFilenames = append(expectedFilenames, []string{
-				"aws_s3_bucket_object_" + i.clusterName + "-addons-node-termination-handler.aws-k8s-1.11_content",
+				"aws_s3_object_" + i.clusterName + "-addons-node-termination-handler.aws-k8s-1.11_content",
 				"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-ASGLifecycle_event_pattern",
 				"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-RebalanceRecommendation_event_pattern",
 				"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-SpotInterruption_event_pattern",
@@ -1252,28 +1252,28 @@ func (i *integrationTest) runTestTerraformGCE(t *testing.T) {
 	expectedFilenames = append(expectedFilenames,
 		"google_compute_instance_template_nodes-"+gce.SafeClusterName(i.clusterName)+"_metadata_startup-script",
 		"google_compute_instance_template_nodes-"+gce.SafeClusterName(i.clusterName)+"_metadata_ssh-keys",
-		"aws_s3_bucket_object_cluster-completed.spec_content",
-		"aws_s3_bucket_object_etcd-cluster-spec-events_content",
-		"aws_s3_bucket_object_etcd-cluster-spec-main_content",
-		"aws_s3_bucket_object_kops-version.txt_content",
-		"aws_s3_bucket_object_manifests-etcdmanager-events_content",
-		"aws_s3_bucket_object_manifests-etcdmanager-main_content",
-		"aws_s3_bucket_object_manifests-static-kube-apiserver-healthcheck_content",
-		"aws_s3_bucket_object_nodeupconfig-nodes_content",
-		"aws_s3_bucket_object_"+i.clusterName+"-addons-bootstrap_content",
-		"aws_s3_bucket_object_"+i.clusterName+"-addons-core.addons.k8s.io_content",
-		"aws_s3_bucket_object_"+i.clusterName+"-addons-coredns.addons.k8s.io-k8s-1.12_content",
-		"aws_s3_bucket_object_"+i.clusterName+"-addons-kops-controller.addons.k8s.io-k8s-1.16_content",
-		"aws_s3_bucket_object_"+i.clusterName+"-addons-kubelet-api.rbac.addons.k8s.io-k8s-1.9_content",
-		"aws_s3_bucket_object_"+i.clusterName+"-addons-limit-range.addons.k8s.io_content",
-		"aws_s3_bucket_object_"+i.clusterName+"-addons-metadata-proxy.addons.k8s.io-v0.1.12_content",
-		"aws_s3_bucket_object_"+i.clusterName+"-addons-storage-gce.addons.k8s.io-v1.7.0_content")
+		"aws_s3_object_cluster-completed.spec_content",
+		"aws_s3_object_etcd-cluster-spec-events_content",
+		"aws_s3_object_etcd-cluster-spec-main_content",
+		"aws_s3_object_kops-version.txt_content",
+		"aws_s3_object_manifests-etcdmanager-events_content",
+		"aws_s3_object_manifests-etcdmanager-main_content",
+		"aws_s3_object_manifests-static-kube-apiserver-healthcheck_content",
+		"aws_s3_object_nodeupconfig-nodes_content",
+		"aws_s3_object_"+i.clusterName+"-addons-bootstrap_content",
+		"aws_s3_object_"+i.clusterName+"-addons-core.addons.k8s.io_content",
+		"aws_s3_object_"+i.clusterName+"-addons-coredns.addons.k8s.io-k8s-1.12_content",
+		"aws_s3_object_"+i.clusterName+"-addons-kops-controller.addons.k8s.io-k8s-1.16_content",
+		"aws_s3_object_"+i.clusterName+"-addons-kubelet-api.rbac.addons.k8s.io-k8s-1.9_content",
+		"aws_s3_object_"+i.clusterName+"-addons-limit-range.addons.k8s.io_content",
+		"aws_s3_object_"+i.clusterName+"-addons-metadata-proxy.addons.k8s.io-v0.1.12_content",
+		"aws_s3_object_"+i.clusterName+"-addons-storage-gce.addons.k8s.io-v1.7.0_content")
 
 	for j := 0; j < i.zones; j++ {
 		zone := "us-test1-" + string([]byte{byte('a') + byte(j)})
 		prefix := "google_compute_instance_template_master-" + zone + "-" + gce.SafeClusterName(i.clusterName) + "_metadata_"
 
-		expectedFilenames = append(expectedFilenames, "aws_s3_bucket_object_nodeupconfig-master-"+zone+"_content")
+		expectedFilenames = append(expectedFilenames, "aws_s3_object_nodeupconfig-master-"+zone+"_content")
 		expectedFilenames = append(expectedFilenames, prefix+"startup-script")
 		expectedFilenames = append(expectedFilenames, prefix+"ssh-keys")
 	}
