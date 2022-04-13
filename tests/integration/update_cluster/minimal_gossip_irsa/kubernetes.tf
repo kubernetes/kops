@@ -508,155 +508,155 @@ resource "aws_route_table_association" "us-test-1a-minimal-k8s-local" {
   subnet_id      = aws_subnet.us-test-1a-minimal-k8s-local.id
 }
 
-resource "aws_s3_bucket_object" "cluster-completed-spec" {
+resource "aws_s3_object" "cluster-completed-spec" {
   bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_cluster-completed.spec_content")
+  content                = file("${path.module}/data/aws_s3_object_cluster-completed.spec_content")
   key                    = "clusters.example.com/minimal.k8s.local/cluster-completed.spec"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_bucket_object" "discovery-json" {
+resource "aws_s3_object" "discovery-json" {
   acl                    = "public-read"
   bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_discovery.json_content")
+  content                = file("${path.module}/data/aws_s3_object_discovery.json_content")
   key                    = "discovery.example.com/minimal.example.com/.well-known/openid-configuration"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_bucket_object" "etcd-cluster-spec-events" {
+resource "aws_s3_object" "etcd-cluster-spec-events" {
   bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_etcd-cluster-spec-events_content")
+  content                = file("${path.module}/data/aws_s3_object_etcd-cluster-spec-events_content")
   key                    = "clusters.example.com/minimal.k8s.local/backups/etcd/events/control/etcd-cluster-spec"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_bucket_object" "etcd-cluster-spec-main" {
+resource "aws_s3_object" "etcd-cluster-spec-main" {
   bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_etcd-cluster-spec-main_content")
+  content                = file("${path.module}/data/aws_s3_object_etcd-cluster-spec-main_content")
   key                    = "clusters.example.com/minimal.k8s.local/backups/etcd/main/control/etcd-cluster-spec"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_bucket_object" "keys-json" {
+resource "aws_s3_object" "keys-json" {
   acl                    = "public-read"
   bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_keys.json_content")
+  content                = file("${path.module}/data/aws_s3_object_keys.json_content")
   key                    = "discovery.example.com/minimal.example.com/openid/v1/jwks"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_bucket_object" "kops-version-txt" {
+resource "aws_s3_object" "kops-version-txt" {
   bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_kops-version.txt_content")
+  content                = file("${path.module}/data/aws_s3_object_kops-version.txt_content")
   key                    = "clusters.example.com/minimal.k8s.local/kops-version.txt"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_bucket_object" "manifests-etcdmanager-events" {
+resource "aws_s3_object" "manifests-etcdmanager-events" {
   bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_manifests-etcdmanager-events_content")
+  content                = file("${path.module}/data/aws_s3_object_manifests-etcdmanager-events_content")
   key                    = "clusters.example.com/minimal.k8s.local/manifests/etcd/events.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_bucket_object" "manifests-etcdmanager-main" {
+resource "aws_s3_object" "manifests-etcdmanager-main" {
   bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_manifests-etcdmanager-main_content")
+  content                = file("${path.module}/data/aws_s3_object_manifests-etcdmanager-main_content")
   key                    = "clusters.example.com/minimal.k8s.local/manifests/etcd/main.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_bucket_object" "manifests-static-kube-apiserver-healthcheck" {
+resource "aws_s3_object" "manifests-static-kube-apiserver-healthcheck" {
   bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_manifests-static-kube-apiserver-healthcheck_content")
+  content                = file("${path.module}/data/aws_s3_object_manifests-static-kube-apiserver-healthcheck_content")
   key                    = "clusters.example.com/minimal.k8s.local/manifests/static/kube-apiserver-healthcheck.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_bucket_object" "minimal-k8s-local-addons-bootstrap" {
+resource "aws_s3_object" "minimal-k8s-local-addons-bootstrap" {
   bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_minimal.k8s.local-addons-bootstrap_content")
+  content                = file("${path.module}/data/aws_s3_object_minimal.k8s.local-addons-bootstrap_content")
   key                    = "clusters.example.com/minimal.k8s.local/addons/bootstrap-channel.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_bucket_object" "minimal-k8s-local-addons-core-addons-k8s-io" {
+resource "aws_s3_object" "minimal-k8s-local-addons-core-addons-k8s-io" {
   bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_minimal.k8s.local-addons-core.addons.k8s.io_content")
+  content                = file("${path.module}/data/aws_s3_object_minimal.k8s.local-addons-core.addons.k8s.io_content")
   key                    = "clusters.example.com/minimal.k8s.local/addons/core.addons.k8s.io/v1.4.0.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_bucket_object" "minimal-k8s-local-addons-coredns-addons-k8s-io-k8s-1-12" {
+resource "aws_s3_object" "minimal-k8s-local-addons-coredns-addons-k8s-io-k8s-1-12" {
   bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_minimal.k8s.local-addons-coredns.addons.k8s.io-k8s-1.12_content")
+  content                = file("${path.module}/data/aws_s3_object_minimal.k8s.local-addons-coredns.addons.k8s.io-k8s-1.12_content")
   key                    = "clusters.example.com/minimal.k8s.local/addons/coredns.addons.k8s.io/k8s-1.12.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_bucket_object" "minimal-k8s-local-addons-dns-controller-addons-k8s-io-k8s-1-12" {
+resource "aws_s3_object" "minimal-k8s-local-addons-dns-controller-addons-k8s-io-k8s-1-12" {
   bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_minimal.k8s.local-addons-dns-controller.addons.k8s.io-k8s-1.12_content")
+  content                = file("${path.module}/data/aws_s3_object_minimal.k8s.local-addons-dns-controller.addons.k8s.io-k8s-1.12_content")
   key                    = "clusters.example.com/minimal.k8s.local/addons/dns-controller.addons.k8s.io/k8s-1.12.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_bucket_object" "minimal-k8s-local-addons-kops-controller-addons-k8s-io-k8s-1-16" {
+resource "aws_s3_object" "minimal-k8s-local-addons-kops-controller-addons-k8s-io-k8s-1-16" {
   bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_minimal.k8s.local-addons-kops-controller.addons.k8s.io-k8s-1.16_content")
+  content                = file("${path.module}/data/aws_s3_object_minimal.k8s.local-addons-kops-controller.addons.k8s.io-k8s-1.16_content")
   key                    = "clusters.example.com/minimal.k8s.local/addons/kops-controller.addons.k8s.io/k8s-1.16.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_bucket_object" "minimal-k8s-local-addons-kubelet-api-rbac-addons-k8s-io-k8s-1-9" {
+resource "aws_s3_object" "minimal-k8s-local-addons-kubelet-api-rbac-addons-k8s-io-k8s-1-9" {
   bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_minimal.k8s.local-addons-kubelet-api.rbac.addons.k8s.io-k8s-1.9_content")
+  content                = file("${path.module}/data/aws_s3_object_minimal.k8s.local-addons-kubelet-api.rbac.addons.k8s.io-k8s-1.9_content")
   key                    = "clusters.example.com/minimal.k8s.local/addons/kubelet-api.rbac.addons.k8s.io/k8s-1.9.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_bucket_object" "minimal-k8s-local-addons-limit-range-addons-k8s-io" {
+resource "aws_s3_object" "minimal-k8s-local-addons-limit-range-addons-k8s-io" {
   bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_minimal.k8s.local-addons-limit-range.addons.k8s.io_content")
+  content                = file("${path.module}/data/aws_s3_object_minimal.k8s.local-addons-limit-range.addons.k8s.io_content")
   key                    = "clusters.example.com/minimal.k8s.local/addons/limit-range.addons.k8s.io/v1.5.0.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_bucket_object" "minimal-k8s-local-addons-storage-aws-addons-k8s-io-v1-15-0" {
+resource "aws_s3_object" "minimal-k8s-local-addons-storage-aws-addons-k8s-io-v1-15-0" {
   bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_minimal.k8s.local-addons-storage-aws.addons.k8s.io-v1.15.0_content")
+  content                = file("${path.module}/data/aws_s3_object_minimal.k8s.local-addons-storage-aws.addons.k8s.io-v1.15.0_content")
   key                    = "clusters.example.com/minimal.k8s.local/addons/storage-aws.addons.k8s.io/v1.15.0.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_bucket_object" "nodeupconfig-master-us-test-1a" {
+resource "aws_s3_object" "nodeupconfig-master-us-test-1a" {
   bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_nodeupconfig-master-us-test-1a_content")
+  content                = file("${path.module}/data/aws_s3_object_nodeupconfig-master-us-test-1a_content")
   key                    = "clusters.example.com/minimal.k8s.local/igconfig/master/master-us-test-1a/nodeupconfig.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_bucket_object" "nodeupconfig-nodes" {
+resource "aws_s3_object" "nodeupconfig-nodes" {
   bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_bucket_object_nodeupconfig-nodes_content")
+  content                = file("${path.module}/data/aws_s3_object_nodeupconfig-nodes_content")
   key                    = "clusters.example.com/minimal.k8s.local/igconfig/node/nodes/nodeupconfig.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
@@ -857,7 +857,7 @@ terraform {
     aws = {
       "configuration_aliases" = [aws.files]
       "source"                = "hashicorp/aws"
-      "version"               = ">= 3.71.0"
+      "version"               = ">= 4.0.0"
     }
   }
 }
