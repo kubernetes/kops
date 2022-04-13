@@ -236,7 +236,7 @@ func (p *MemFSPath) RenderTerraform(w *terraformWriter.TerraformWriter, name str
 		return fmt.Errorf("reading data: %v", err)
 	}
 
-	content, err := w.AddFileBytes("aws_s3_bucket_object", name, "content", bytes, false)
+	content, err := w.AddFileBytes("aws_s3_object", name, "content", bytes, false)
 	if err != nil {
 		return fmt.Errorf("rendering S3 file: %v", err)
 	}
@@ -258,5 +258,5 @@ func (p *MemFSPath) RenderTerraform(w *terraformWriter.TerraformWriter, name str
 		Acl:      requestAcl,
 		Provider: terraformWriter.LiteralTokens("aws", "files"),
 	}
-	return w.RenderResource("aws_s3_bucket_object", name, tf)
+	return w.RenderResource("aws_s3_object", name, tf)
 }

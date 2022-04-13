@@ -539,7 +539,7 @@ func (p *S3Path) RenderTerraform(w *terraformWriter.TerraformWriter, name string
 		return fmt.Errorf("reading data: %v", err)
 	}
 
-	content, err := w.AddFileBytes("aws_s3_bucket_object", name, "content", bytes, false)
+	content, err := w.AddFileBytes("aws_s3_object", name, "content", bytes, false)
 	if err != nil {
 		return fmt.Errorf("rendering S3 file: %v", err)
 	}
@@ -562,7 +562,7 @@ func (p *S3Path) RenderTerraform(w *terraformWriter.TerraformWriter, name string
 		Acl:      requestACL,
 		Provider: terraformWriter.LiteralTokens("aws", "files"),
 	}
-	return w.RenderResource("aws_s3_bucket_object", name, tf)
+	return w.RenderResource("aws_s3_object", name, tf)
 }
 
 // AWSErrorCode returns the aws error code, if it is an awserr.Error, otherwise ""

@@ -122,7 +122,7 @@ func (t *TerraformTarget) finishHCL2() error {
 		}
 		writeMap(requiredProvidersBody, "aws", map[string]cty.Value{
 			"source":                cty.StringVal("hashicorp/aws"),
-			"version":               cty.StringVal(">= 3.71.0"),
+			"version":               cty.StringVal(">= 4.0.0"),
 			"configuration_aliases": aliasesVal,
 		})
 		if featureflag.Spotinst.Enabled() {
