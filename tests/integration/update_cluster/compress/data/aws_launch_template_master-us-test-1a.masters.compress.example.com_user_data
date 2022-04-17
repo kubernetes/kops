@@ -14,8 +14,8 @@ set -o pipefail
 
 NODEUP_URL_AMD64=https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/nodeup-linux-amd64
 NODEUP_HASH_AMD64=585fbda0f0a43184656b4bfc0cc5f0c0b85612faf43b8816acca1f99d422c924
-NODEUP_URL_ARM64=https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/arm64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/nodeup-linux-arm64
-NODEUP_HASH_ARM64=7603675379699105a9b9915ff97718ea99b1bbb01a4c184e2f827c8a96e8e865
+NODEUP_URL_ARM64=
+NODEUP_HASH_ARM64=
 
 export AWS_REGION=us-test-1
 
@@ -133,7 +133,7 @@ ensure-install-dir
 
 echo "H4sIAAAAAAAA/+xWT5Pbtg+9+1Nw5jeZXGLJ2uwvbTU51LHTrps4de2k6ZUmYZk1RSogKa/76TsgJf/ZXTfT6bGdzGRXAAgCDw+PK7QNcmLNRlXlgDG+d2/frCar2RRVC0gmxsDwtQZZsg3XDgaM1dzwClbeIq9gorlz4ErmMcBAWOO5MoDLYLyqoWRHizw5JSXWtnoPLeiSKbOxA8ZaQKesKVmR3WbFzUBasUs1uJ1qZsZ5rnV3DxiBh8Yra7rimQlaD8ALOdHBeUBHB6EF411q45j+JaV/GftQ5mnfLqxhvJitADsUuNZ2v0DVKg0VYRGrYIwbaw61DW4c/PaEEG/UOEgFRkC8fcgoIxrw4DLXikzChgftU2i6ZmKD8SUryBb81qL6g1ODcyuhZGO95wc3pjIGjK2VkWMpEZwr2SiL/waMxWku0LZKApY0zUE/vrGslaMeFzpUynRVfeA1uIYLeK82IA5CQzS/V7XyS24qwPhNBSoBYyGoxmiapgbOSXBu/2g1YCx/BcIamZzz4LlXpjoW8xnWW2t30fkr10ped3+wEpbgPCpBaaNtCc4GFPBLsJ5Tq17IBGbX39b7xpV5Xtx8E0EqytvRqLiM/LkFRCX7QeWJM/978ujNgDFV8wpKtvvWZZXATNmcZjvkjXKJLm2R3RRxHuTQ4BcIG0CEfmQfD01/28x4QMP1bBE/76zzhtdpCm/vz3ynbaEaEL4EcH4LXAJGUoCMs0xZeVUhVNxbfBj79t4jv4u/UlXqvj/y23AJtfUwjBHDh+d+RBuadO7hgeh6GP/JUek1PH2EvLTWIALCwqIv2e3ty2g5J9rMuUA87kfBG5WpDrBM2LohMDO453WjgQyPMvz0+d3q03L2N1LktgGjZN4W+e/7nTtl7GRltoh7UbJiNMpe3RI18igmLm3CGy52YGQZGZaEZGKNR6s14DwK51FQBPdAtJ7Mpkt3khTvudhOgf5f0vIIpWF1MGIBqKwsWVGP3LVlF6lKyphK/O5VKrE4OYkopMtP4ieinAaECaVf2uBJ23tdu8J9cexwWHctnpZAJ+JpiHub9PbMduz7kuHBwaXqTBAkGK+47qGiqxdo7w/lVxtvwjKxM/qoz223af32l+z593zvnl9vsolXnfV1Vi8FrMQWZNBpvFdyuGPMP8OnE5by+gskKlrL7hln7uA81PJoX1rrS5Z/hUXTD6sznhejM4+Nb2f/mRGX9fGtmcI6VJUy1R03UtP69z1Am9T7jqMsWQ21xUPGW640nXtdjEZz9cJYCRt3YX7WGxX9dD8gwOv/P3sRUX4U2lsvYv965IRnYv6CE4p5yzHXap13QOengEdMNeD3FnfpXe12yyhyWDPn7ksA5GnHL0WD4GysnHOjNuB8dzF4kZ/+VsjrzusGNSek3/03+H/b4OllrRSh3SkM9dvP+08AAAD//wEAAP//kmdU7MALAAA=" | base64 -d | gzip -d > conf/cluster_spec.yaml
 
-echo "H4sIAAAAAAAA/1TOwU7DMBAE0Lu/wj+QuggOlSUuLaKtRAKKoojr4mzAws4ar02cv0ehp1xHb0ZzcpSHt0i/dsCoJcwsTjSN9vMIjFp69CNrpYzLnDDyDgv44HBnyCtDPkTkTSiuEyeYDJ4j5dCAX0dg7VaZq4ScqjvYopYcaln/I9HQgDncLlyAv7Rc9paLeSnL9b5rX/fP5XxRH92hL+N8tEv9XtzcHuxP//Tw/Sj+AAAA//8BAAD///+TVvHPAAAA" | base64 -d | gzip -d > conf/kube_env.yaml
+echo "H4sIAAAAAAAA/1TOQUvEMBAF4Ht+Rf5AtysuBQNerGAFLUWF2uOQTLUlyaSZpBV/vdQ99fr43uPVlrLpIq2TwagkbCxq8uP09QCMSjp0I6uy1DZzwsgn/AEXLJ40uVKTCxH5EIpnzwm8xqdIObTg9hHYu0XmIiGn4gaO6I0sKvn6j0RLBnO4XmiAv5Uc3vtPYy+hu2ssrfHM/sL977rdVtXyAfOwzC/d8Bgabc734g8AAP//AQAA///AxfazzwAAAA==" | base64 -d | gzip -d > conf/kube_env.yaml
 
 download-release
 echo "== nodeup node config done =="

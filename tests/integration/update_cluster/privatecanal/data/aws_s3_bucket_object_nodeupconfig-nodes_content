@@ -4,11 +4,6 @@ Assets:
   - 703e70d49b82271535bc66bc7bd469a58c11d47f188889bd37101c9772f14fa1@https://storage.googleapis.com/kubernetes-release/release/v1.22.0/bin/linux/amd64/kubectl
   - 962100bbc4baeaaa5748cdbfce941f756b1531c2eadb290129401498bfac21e7@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz
   - f6120552408175ca332fd3b5d31c5edd115d8426d6731664e4ea3951c5eee3b4@https://github.com/containerd/containerd/releases/download/v1.4.12/cri-containerd-cni-1.4.12-linux-amd64.tar.gz
-  arm64:
-  - cea637a7da4f1097b16b0195005351c07032a820a3d64c3ff326b9097cfac930@https://storage.googleapis.com/kubernetes-release/release/v1.22.0/bin/linux/arm64/kubelet
-  - 8d9cc92dcc942f5ea2b2fc93c4934875d9e0e8ddecbde24c7d4c4e092cfc7afc@https://storage.googleapis.com/kubernetes-release/release/v1.22.0/bin/linux/arm64/kubectl
-  - ef17764ffd6cdcb16d76401bac1db6acc050c9b088f1be5efa0e094ea3b01df0@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-arm64-v0.9.1.tgz
-  - 87a4219c54552797ffd38790b72832372a90eceb7c8e451c36a682093d57dae6@https://download.docker.com/linux/static/stable/aarch64/docker-20.10.11.tgz
 CAs:
   kubernetes-ca: |
     -----BEGIN CERTIFICATE-----

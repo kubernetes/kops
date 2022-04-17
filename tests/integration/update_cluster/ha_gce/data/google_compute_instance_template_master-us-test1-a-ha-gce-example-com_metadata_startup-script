@@ -5,8 +5,8 @@ set -o pipefail
 
 NODEUP_URL_AMD64=https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/nodeup-linux-amd64
 NODEUP_HASH_AMD64=585fbda0f0a43184656b4bfc0cc5f0c0b85612faf43b8816acca1f99d422c924
-NODEUP_URL_ARM64=https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/arm64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/nodeup-linux-arm64
-NODEUP_HASH_ARM64=7603675379699105a9b9915ff97718ea99b1bbb01a4c184e2f827c8a96e8e865
+NODEUP_URL_ARM64=
+NODEUP_HASH_ARM64=
 
 
 
@@ -244,7 +244,7 @@ CloudProvider: gce
 ConfigBase: memfs://tests/ha-gce.example.com
 InstanceGroupName: master-us-test1-a
 InstanceGroupRole: Master
-NodeupConfigHash: 3xHxVjTR1JPfx7HidvZY07qpmK+14yCJzkA7H4IN60g=
+NodeupConfigHash: awUPDkkAY7OID8c4Iy2vve+dYMlI4CdiGxaztxiHwY8=
 
 __EOF_KUBE_ENV
 

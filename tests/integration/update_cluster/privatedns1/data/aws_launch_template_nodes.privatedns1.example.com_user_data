@@ -5,8 +5,8 @@ set -o pipefail
 
 NODEUP_URL_AMD64=https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/nodeup-linux-amd64
 NODEUP_HASH_AMD64=585fbda0f0a43184656b4bfc0cc5f0c0b85612faf43b8816acca1f99d422c924
-NODEUP_URL_ARM64=https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/arm64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/nodeup-linux-arm64
-NODEUP_HASH_ARM64=7603675379699105a9b9915ff97718ea99b1bbb01a4c184e2f827c8a96e8e865
+NODEUP_URL_ARM64=
+NODEUP_HASH_ARM64=
 
 export AWS_REGION=us-test-1
 
@@ -162,7 +162,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privatedns1.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: KOE4/tcEk3yVEmlW/UStobdHpaPXYSetj232s84yOR8=
+NodeupConfigHash: 2zUq4yrf5o6+dCdHccxb+KmYhT1W1Nr4htSFGH/oVRc=
 
 __EOF_KUBE_ENV
 
