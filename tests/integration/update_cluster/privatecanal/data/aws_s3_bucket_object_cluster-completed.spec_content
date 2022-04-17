@@ -37,7 +37,7 @@ spec:
       name: us-test-1a
     name: main
     provider: Manager
-    version: 3.5.1
+    version: 3.5.3
   - backups:
       backupStore: memfs://clusters.example.com/privatecanal.example.com/backups/etcd/events
     enableEtcdTLS: true
@@ -47,7 +47,7 @@ spec:
       name: us-test-1a
     name: events
     provider: Manager
-    version: 3.5.1
+    version: 3.5.3
   externalDns:
     provider: dns-controller
   iam:
