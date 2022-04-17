@@ -21,7 +21,7 @@ spec:
       --volume-provider=aws --volume-tag=k8s.io/etcd/main --volume-tag=k8s.io/role/master=1
       --volume-tag=kubernetes.io/cluster/bastionuserdata.example.com=owned > /tmp/pipe
       2>&1
-    image: k8s.gcr.io/etcdadm/etcd-manager:v3.0.20220203
+    image: k8s.gcr.io/etcdadm/etcd-manager:v3.0.20220417
     name: etcd-manager
     resources:
       requests:

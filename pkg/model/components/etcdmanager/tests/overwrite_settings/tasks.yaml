@@ -90,7 +90,7 @@ Contents: |
       env:
       - name: ETCD_QUOTA_BACKEND_BYTES
         value: "10737418240"
-      image: k8s.gcr.io/etcdadm/etcd-manager:v3.0.20220203
+      image: k8s.gcr.io/etcdadm/etcd-manager:v3.0.20220417
       name: etcd-manager
       resources:
         requests:
@@ -163,7 +163,7 @@ Contents: |
       env:
       - name: ETCD_QUOTA_BACKEND_BYTES
         value: "10737418240"
-      image: k8s.gcr.io/etcdadm/etcd-manager:v3.0.20220203
+      image: k8s.gcr.io/etcdadm/etcd-manager:v3.0.20220417
       name: etcd-manager
       resources:
         requests:
