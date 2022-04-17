@@ -33,14 +33,14 @@ spec:
     - instanceGroup: master-us-test1-a
       name: "1"
     name: main
-    version: 3.5.1
+    version: 3.5.3
   - backups:
       backupStore: memfs://tests/minimal-gce.example.com/backups/etcd/events
     etcdMembers:
     - instanceGroup: master-us-test1-a
       name: "1"
     name: events
-    version: 3.5.1
+    version: 3.5.3
   externalDns:
     provider: dns-controller
   iam:
