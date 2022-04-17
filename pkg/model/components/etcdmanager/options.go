@@ -62,7 +62,7 @@ func (b *EtcdManagerOptionsBuilder) BuildOptions(o interface{}) error {
 	return nil
 }
 
-var supportedEtcdVersions = []string{"3.1.12", "3.2.18", "3.2.24", "3.3.10", "3.3.13", "3.3.17", "3.4.3", "3.4.13", "3.5.0", "3.5.1"}
+var supportedEtcdVersions = []string{"3.1.12", "3.2.18", "3.2.24", "3.3.10", "3.3.13", "3.3.17", "3.4.3", "3.4.13", "3.5.0", "3.5.1", "3.5.3"}
 
 func etcdVersionIsSupported(version string) bool {
 	version = strings.TrimPrefix(version, "v")

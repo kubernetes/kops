@@ -139,11 +139,11 @@ etcdClusters:
   events:
     cpuRequest: 100m
     memoryRequest: 100Mi
-    version: 3.5.1
+    version: 3.5.3
   main:
     cpuRequest: 200m
     memoryRequest: 100Mi
-    version: 3.5.1
+    version: 3.5.3
 kubeAPIServer:
   allowPrivileged: true
   anonymousAuth: false
