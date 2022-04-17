@@ -86,7 +86,7 @@ Contents: |
         --v=6 --volume-name-tag=k8s.io/etcd/events --volume-provider=aws --volume-tag=k8s.io/etcd/events
         --volume-tag=k8s.io/role/master=1 --volume-tag=kubernetes.io/cluster/minimal.example.com=owned
         > /tmp/pipe 2>&1
-      image: registry.k8s.io/etcdadm/etcd-manager:v3.0.20220203@sha256:739a0b74cfe2dea3417bcddf1d03f3e76a0d9110935d3032abc3f03e334d8cb7
+      image: registry.k8s.io/etcdadm/etcd-manager:v3.0.20220417@sha256:a0465bfcef15657f3260f4ba3b7ab359b10c32767cf2cd3ee7a263f3cfa3b64e
       name: etcd-manager
       resources:
         requests:
@@ -155,7 +155,7 @@ Contents: |
         --v=6 --volume-name-tag=k8s.io/etcd/main --volume-provider=aws --volume-tag=k8s.io/etcd/main
         --volume-tag=k8s.io/role/master=1 --volume-tag=kubernetes.io/cluster/minimal.example.com=owned
         > /tmp/pipe 2>&1
-      image: registry.k8s.io/etcdadm/etcd-manager:v3.0.20220203@sha256:739a0b74cfe2dea3417bcddf1d03f3e76a0d9110935d3032abc3f03e334d8cb7
+      image: registry.k8s.io/etcdadm/etcd-manager:v3.0.20220417@sha256:a0465bfcef15657f3260f4ba3b7ab359b10c32767cf2cd3ee7a263f3cfa3b64e
       name: etcd-manager
       resources:
         requests:
