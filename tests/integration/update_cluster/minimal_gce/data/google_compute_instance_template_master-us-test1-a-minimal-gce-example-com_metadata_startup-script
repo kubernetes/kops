@@ -138,9 +138,9 @@ docker:
 encryptionConfig: null
 etcdClusters:
   events:
-    version: 3.5.1
+    version: 3.5.3
   main:
-    version: 3.5.1
+    version: 3.5.3
 kubeAPIServer:
   allowPrivileged: true
   anonymousAuth: false
