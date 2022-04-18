@@ -100,7 +100,11 @@ func (c *GCEModelContext) NameForHealthcheck(id string) string {
 }
 
 func (c *GCEModelContext) NameForFirewallRule(id string) string {
-	return c.SafeObjectName(id)
+	name, err := gce.ClusterSuffixedName(id, c.Cluster.ObjectMeta.Name, 63)
+	if err != nil {
+		klog.Fatalf("failed to construct firewallrule name: %w", err)
+	}
+	return name
 }
 
 func (c *GCEModelContext) NetworkingIsIPAlias() bool {
