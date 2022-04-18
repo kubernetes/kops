@@ -1022,6 +1022,9 @@ type ClusterAutoscalerConfig struct {
 	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
 	// MaxNodeProvisionTime determines how long CAS will wait for a node to join the cluster.
 	MaxNodeProvisionTime string `json:"maxNodeProvisionTime,omitempty"`
+	// PodAnnotations are the annotations added to cluster autoscaler pod when they are created.
+	// Default: none
+	PodAnnotations map[string]string `json:"podAnnotations,omitempty"`
 }
 
 // MetricsServerConfig determines the metrics server configuration.
