@@ -2258,6 +2258,7 @@ func autoConvert_v1alpha2_ClusterAutoscalerConfig_To_kops_ClusterAutoscalerConfi
 	out.MemoryRequest = in.MemoryRequest
 	out.CPURequest = in.CPURequest
 	out.MaxNodeProvisionTime = in.MaxNodeProvisionTime
+	out.PodAnnotations = in.PodAnnotations
 	return nil
 }
 
@@ -2280,6 +2281,7 @@ func autoConvert_kops_ClusterAutoscalerConfig_To_v1alpha2_ClusterAutoscalerConfi
 	out.MemoryRequest = in.MemoryRequest
 	out.CPURequest = in.CPURequest
 	out.MaxNodeProvisionTime = in.MaxNodeProvisionTime
+	out.PodAnnotations = in.PodAnnotations
 	return nil
 }
 
