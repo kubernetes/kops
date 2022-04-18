@@ -3,8 +3,6 @@ module k8s.io/kops/hack
 go 1.17
 
 require (
-	github.com/bazelbuild/bazel-gazelle v0.23.0
-	github.com/bazelbuild/bazelisk v1.10.1
 	github.com/client9/misspell v0.3.4
 	github.com/golangci/golangci-lint v1.45.0
 	golang.org/x/tools v0.1.10
@@ -23,11 +21,9 @@ require (
 	github.com/alexkohler/prealloc v1.0.0 // indirect
 	github.com/ashanbrown/forbidigo v1.3.0 // indirect
 	github.com/ashanbrown/makezero v1.1.1 // indirect
-	github.com/bazelbuild/buildtools v0.0.0-20200718160251-b1667ff58f71 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bkielbasa/cyclop v1.2.0 // indirect
 	github.com/blizzy78/varnamelen v0.6.0 // indirect
-	github.com/bmatcuk/doublestar v1.2.2 // indirect
 	github.com/bombsimon/wsl/v3 v3.3.0 // indirect
 	github.com/breml/bidichk v0.2.2 // indirect
 	github.com/breml/errchkjson v0.2.3 // indirect
