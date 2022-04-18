@@ -588,7 +588,11 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 	{
 		if len(c.Taints) == 0 && isMaster {
 			// (Even though the value is empty, we still expect <Key>=<Value>:<Effect>)
-			c.Taints = append(c.Taints, nodelabels.RoleLabelMaster16+"=:"+string(v1.TaintEffectNoSchedule))
+			if b.IsKubernetesLT("1.24") {
+				c.Taints = append(c.Taints, nodelabels.RoleLabelMaster16+"=:"+string(v1.TaintEffectNoSchedule))
+			} else {
+				c.Taints = append(c.Taints, nodelabels.RoleLabelControlPlane20+"=:"+string(v1.TaintEffectNoSchedule))
+			}
 		}
 		if len(c.Taints) == 0 && isAPIServer {
 			// (Even though the value is empty, we still expect <Key>=<Value>:<Effect>)

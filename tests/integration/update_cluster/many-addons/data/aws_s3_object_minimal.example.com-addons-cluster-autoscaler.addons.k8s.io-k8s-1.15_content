@@ -309,6 +309,16 @@ spec:
         k8s-app: cluster-autoscaler
         kops.k8s.io/managed-by: kops
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
       containers:
       - command:
         - ./cluster-autoscaler
@@ -350,11 +360,11 @@ spec:
             cpu: 100m
             memory: 300Mi
       dnsPolicy: ClusterFirst
-      nodeSelector:
-        node-role.kubernetes.io/master: ""
       priorityClassName: system-cluster-critical
       serviceAccountName: cluster-autoscaler
       tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
       - key: node-role.kubernetes.io/master
         operator: Exists
       topologySpreadConstraints:

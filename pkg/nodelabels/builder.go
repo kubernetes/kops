@@ -67,13 +67,17 @@ func BuildNodeLabels(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) m
 		if isAPIServer || featureflag.APIServerNodes.Enabled() {
 			nodeLabels[RoleLabelAPIServer16] = ""
 		}
-		nodeLabels[RoleLabelName15] = RoleAPIServerLabelValue15
+		if cluster.IsKubernetesLT("1.24") {
+			nodeLabels[RoleLabelName15] = RoleAPIServerLabelValue15
+		}
 	} else {
 		if nodeLabels == nil {
 			nodeLabels = make(map[string]string)
 		}
 		nodeLabels[RoleLabelNode16] = ""
-		nodeLabels[RoleLabelName15] = RoleNodeLabelValue15
+		if cluster.IsKubernetesLT("1.24") {
+			nodeLabels[RoleLabelName15] = RoleNodeLabelValue15
+		}
 	}
 
 	if isControlPlane {
@@ -82,6 +86,10 @@ func BuildNodeLabels(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) m
 		}
 		for label, value := range BuildMandatoryControlPlaneLabels() {
 			nodeLabels[label] = value
+		}
+		if cluster.IsKubernetesLT("1.24") {
+			nodeLabels[RoleLabelMaster16] = ""
+			nodeLabels[RoleLabelName15] = RoleMasterLabelValue15
 		}
 	}
 
@@ -102,9 +110,7 @@ func BuildNodeLabels(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) m
 // BuildMandatoryControlPlaneLabels returns the list of labels all CP nodes must have
 func BuildMandatoryControlPlaneLabels() map[string]string {
 	nodeLabels := make(map[string]string)
-	nodeLabels[RoleLabelMaster16] = ""
 	nodeLabels[RoleLabelControlPlane20] = ""
-	nodeLabels[RoleLabelName15] = RoleMasterLabelValue15
 	nodeLabels["kops.k8s.io/kops-controller-pki"] = ""
 	nodeLabels["node.kubernetes.io/exclude-from-external-load-balancers"] = ""
 	return nodeLabels

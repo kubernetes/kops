@@ -396,6 +396,28 @@ spec:
         app.kubernetes.io/instance: aws-ebs-csi-driver
         app.kubernetes.io/version: {{ .Version }}
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              {{ if not UseServiceAccountExternalPermissions }}
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+              {{ end }}
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                - linux
+            - matchExpressions:
+              {{ if not UseServiceAccountExternalPermissions }}
+              - key: node-role.kubernetes.io/master
+                operator: Exists
+              {{ end }}
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                - linux
       topologySpreadConstraints:
       - maxSkew: 1
         topologyKey: "topology.kubernetes.io/zone"
@@ -413,11 +435,6 @@ spec:
             app: ebs-csi-controller
             app.kubernetes.io/name: aws-ebs-csi-driver
             app.kubernetes.io/instance: aws-ebs-csi-driver
-      nodeSelector:
-        kubernetes.io/os: linux
-        {{ if not UseServiceAccountExternalPermissions }}
-        node-role.kubernetes.io/master: ""
-        {{ end }}
       serviceAccountName: ebs-csi-controller-sa
       priorityClassName: system-cluster-critical
       {{ if not UseServiceAccountExternalPermissions }}

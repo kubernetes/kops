@@ -39,6 +39,20 @@ spec:
         kops.k8s.io/managed-by: kops
         version: v1.24.0-alpha.3
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+              - key: kops.k8s.io/kops-controller-pki
+                operator: Exists
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
+              - key: kops.k8s.io/kops-controller-pki
+                operator: Exists
       containers:
       - args:
         - --v=2
@@ -62,9 +76,6 @@ spec:
           name: kops-controller-pki
       dnsPolicy: Default
       hostNetwork: true
-      nodeSelector:
-        kops.k8s.io/kops-controller-pki: ""
-        node-role.kubernetes.io/master: ""
       priorityClassName: system-cluster-critical
       serviceAccount: kops-controller
       tolerations:
@@ -73,6 +84,8 @@ spec:
       - key: node.kubernetes.io/not-ready
         operator: Exists
       - key: node-role.kubernetes.io/master
+        operator: Exists
+      - key: node-role.kubernetes.io/control-plane
         operator: Exists
       volumes:
       - configMap:
