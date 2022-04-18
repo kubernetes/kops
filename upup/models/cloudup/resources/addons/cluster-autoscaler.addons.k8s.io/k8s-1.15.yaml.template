@@ -274,9 +274,9 @@ spec:
       annotations:
         prometheus.io/port: "8085"
         prometheus.io/scrape: "true"
-        {{ range $key, $value := .PodAnnotations }}
-        $key: $value
-        {{ end }}
+        {{- with .PodAnnotations }}
+        {{- . | nindent 8 }}
+        {{- end }}
       labels:
         app: cluster-autoscaler
         k8s-addon: cluster-autoscaler.addons.k8s.io
