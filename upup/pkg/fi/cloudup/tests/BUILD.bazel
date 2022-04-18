@@ -1,5 +1,0 @@
-filegroup(
-    name = "exported_testdata",
-    srcs = glob(["**"]),
-    visibility = ["//visibility:public"],
-)

@@ -18,7 +18,7 @@
 
 cd "${KOPS_ROOT}" || exit 1
 
-bad_files=$(git ls-files "*.go" | grep -v vendor | xargs bazelisk run @go_sdk//:bin/gofmt -- -s -w -l)
+bad_files=$(git ls-files "*.go" | grep -v vendor | xargs gofmt -s -w -l)
 if [[ -n "${bad_files}" ]]; then
   echo "FAIL: 'make gofmt' needs to be run on the following files: "
   echo "${bad_files}"
