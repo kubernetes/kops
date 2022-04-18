@@ -113,15 +113,6 @@ github.com/ashanbrown/makezero v1.1.1/go.mod h1:i1bJLCRSCHOcOa9Y6MyF2FTfMZMFdHvx
 github.com/aws/aws-sdk-go v1.23.20/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
 github.com/aws/aws-sdk-go v1.25.37/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
 github.com/aws/aws-sdk-go v1.36.30/go.mod h1:hcU610XS61/+aQV88ixoOzUoG7v3b31pl2zKMmprdro=
-github.com/bazelbuild/bazel-gazelle v0.23.0 h1:Ks6YN+WkOv2lYWlvf7ksxUpLvrDbBHPBXXUrBFQ3BZM=
-github.com/bazelbuild/bazel-gazelle v0.23.0/go.mod h1:3mHi4TYn0QxwdMKPJfj3FKhZxYgWm46DjWQQPOg20BY=
-github.com/bazelbuild/bazelisk v1.10.1 h1:2EWA2lRrt/k8B5ASt0mlTDQ+7mnzvKdF6ShNWLbk0o0=
-github.com/bazelbuild/bazelisk v1.10.1/go.mod h1:s3ZIQZj3l9iCk/03rBgjhYvqz0c5SPRvoQCZuz8Lw/4=
-github.com/bazelbuild/buildtools v0.0.0-20200718160251-b1667ff58f71 h1:Et1IIXrXwhpDvR5wH9REPEZ0sUtzUoJSq19nfmBqzBY=
-github.com/bazelbuild/buildtools v0.0.0-20200718160251-b1667ff58f71/go.mod h1:5JP0TXzWDHXv8qvxRC4InIazwdyDseBDbzESUMKk1yU=
-github.com/bazelbuild/rules_go v0.0.0-20190719190356-6dae44dc5cab/go.mod h1:MC23Dc/wkXEyk3Wpq6lCqz0ZAYOZDw2DR5y3N1q2i7M=
-github.com/bazelbuild/rules_go v0.28.0 h1:fNtx0dJpG5ENGdMj3/GICoi/7z+ixB3IIW5rERTzOgM=
-github.com/bazelbuild/rules_go v0.28.0/go.mod h1:MC23Dc/wkXEyk3Wpq6lCqz0ZAYOZDw2DR5y3N1q2i7M=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
@@ -133,8 +124,6 @@ github.com/bkielbasa/cyclop v1.2.0/go.mod h1:qOI0yy6A7dYC4Zgsa72Ppm9kONl0RoIlPbz
 github.com/blang/semver v3.5.1+incompatible/go.mod h1:kRBLl5iJ+tD4TcOOxsy/0fnwebNt5EWlYSAyrTnjyyk=
 github.com/blizzy78/varnamelen v0.6.0 h1:TOIDk9qRIMspALZKX8x+5hQfAjuvAFogppnxtvuNmBo=
 github.com/blizzy78/varnamelen v0.6.0/go.mod h1:zy2Eic4qWqjrxa60jG34cfL0VXcSwzUrIx68eJPb4Q8=
-github.com/bmatcuk/doublestar v1.2.2 h1:oC24CykoSAB8zd7XgruHo33E0cHJf/WhQA/7BeXj+x0=
-github.com/bmatcuk/doublestar v1.2.2/go.mod h1:wiQtGV+rzVYxB7WIlirSN++5HPtPlXEo9MEoZQC/PmE=
 github.com/bombsimon/wsl/v3 v3.3.0 h1:Mka/+kRLoQJq7g2rggtgQsjuI/K5Efd87WX96EWFxjM=
 github.com/bombsimon/wsl/v3 v3.3.0/go.mod h1:st10JtZYLE4D5sC7b8xV4zTKZwAQjCH/Hy2Pm1FNZIc=
 github.com/breml/bidichk v0.2.2 h1:w7QXnpH0eCBJm55zGCTJveZEkQBt6Fs5zThIdA6qQ9Y=
