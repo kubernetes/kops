@@ -461,7 +461,7 @@ func Test_ValidateMasterStaticPods(t *testing.T) {
 				Node: &v1.Node{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:   "master-1a",
-						Labels: map[string]string{"kubernetes.io/role": "master"},
+						Labels: map[string]string{"node-role.kubernetes.io/control-plane": ""},
 					},
 					Status: v1.NodeStatus{
 						Addresses: []v1.NodeAddress{
@@ -482,7 +482,7 @@ func Test_ValidateMasterStaticPods(t *testing.T) {
 				Node: &v1.Node{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:   "master-1b",
-						Labels: map[string]string{"kubernetes.io/role": "master"},
+						Labels: map[string]string{"node-role.kubernetes.io/control-plane": ""},
 					},
 					Status: v1.NodeStatus{
 						Conditions: []v1.NodeCondition{
@@ -501,7 +501,7 @@ func Test_ValidateMasterStaticPods(t *testing.T) {
 				Node: &v1.Node{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:   "master-1c",
-						Labels: map[string]string{"kubernetes.io/role": "master"},
+						Labels: map[string]string{"node-role.kubernetes.io/control-plane": ""},
 					},
 					Status: v1.NodeStatus{
 						Conditions: []v1.NodeCondition{

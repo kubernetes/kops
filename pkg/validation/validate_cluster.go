@@ -182,13 +182,14 @@ var masterStaticPods = []string{
 }
 
 func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kubernetes.Interface, nodes []v1.Node,
-	nodeInstanceGroupMapping map[string]*kops.InstanceGroup) error {
+	nodeInstanceGroupMapping map[string]*kops.InstanceGroup,
+) error {
 	masterWithoutPod := map[string]map[string]bool{}
 	nodeByAddress := map[string]string{}
 
 	for _, node := range nodes {
 		labels := node.GetLabels()
-		if labels != nil && labels["kubernetes.io/role"] == "master" {
+		if _, found := labels["node-role.kubernetes.io/control-plane"]; found {
 			masterWithoutPod[node.Name] = map[string]bool{}
 			for _, pod := range masterStaticPods {
 				masterWithoutPod[node.Name][pod] = true
