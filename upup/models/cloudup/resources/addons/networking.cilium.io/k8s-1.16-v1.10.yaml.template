@@ -915,6 +915,16 @@ spec:
         io.cilium/app: operator
         name: cilium-operator
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
       containers:
       - args:
         - "--config-dir=/tmp/cilium/config-map"
@@ -1020,8 +1030,6 @@ spec:
           path: /etc/kubernetes/pki/cilium
           type: Directory
 {{- end }}
-      nodeSelector:
-        node-role.kubernetes.io/master: ""
 {{ if WithDefaultBool .Hubble.Enabled false }}
 ---
 # Source: cilium/charts/hubble-relay/templates/deployment.yaml

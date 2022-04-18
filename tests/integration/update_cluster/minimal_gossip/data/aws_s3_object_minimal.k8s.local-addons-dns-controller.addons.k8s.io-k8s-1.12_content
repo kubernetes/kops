@@ -28,6 +28,16 @@ spec:
         kops.k8s.io/managed-by: kops
         version: v1.24.0-alpha.3
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
       containers:
       - args:
         - --watch-ingress=false
@@ -52,14 +62,14 @@ spec:
           runAsNonRoot: true
       dnsPolicy: Default
       hostNetwork: true
-      nodeSelector:
-        node-role.kubernetes.io/master: ""
       priorityClassName: system-cluster-critical
       serviceAccount: dns-controller
       tolerations:
       - key: node.cloudprovider.kubernetes.io/uninitialized
         operator: Exists
       - key: node.kubernetes.io/not-ready
+        operator: Exists
+      - key: node-role.kubernetes.io/control-plane
         operator: Exists
       - key: node-role.kubernetes.io/master
         operator: Exists

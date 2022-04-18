@@ -252,9 +252,7 @@ KubeletConfig:
   nodeLabels:
     kops.k8s.io/instancegroup: master-us-test-1a
     kops.k8s.io/kops-controller-pki: ""
-    kubernetes.io/role: master
     node-role.kubernetes.io/control-plane: ""
-    node-role.kubernetes.io/master: ""
     node.kubernetes.io/exclude-from-external-load-balancers: ""
   podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
