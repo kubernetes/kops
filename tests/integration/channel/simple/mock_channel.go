@@ -21,6 +21,7 @@ import (
 	"os"
 
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/channel"
 )
 
 func NewMockChannel(sourcePath string) (*kops.Channel, error) {
@@ -29,7 +30,7 @@ func NewMockChannel(sourcePath string) (*kops.Channel, error) {
 		return nil, fmt.Errorf("unexpected error reading sourcePath %q: %v", sourcePath, err)
 	}
 
-	channel, err := kops.ParseChannel(sourceBytes)
+	channel, err := channel.ParseChannel(sourceBytes)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse channel: %v", err)
 	}

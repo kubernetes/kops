@@ -749,3 +749,21 @@ cloudbuild-artifacts:
 	# cd ${KOPS_ROOT}/${BAZEL_BIN}/; find . -name '*.digest' -type f | sort | xargs grep . > ${KOPS_ROOT}/cloudbuild/image-digests
 	# ${BUILDER_OUTPUT}/output is a special cloudbuild target; the first 4KB is captured securely
 	cd ${KOPS_ROOT}/cloudbuild/; find -type f | sort | xargs sha256sum > ${BUILDER_OUTPUT}/output
+
+
+#------------------------------------------------------
+# Channel images
+#
+# We create some images for channels.
+
+.PHONY: ko-channel-images-push-alpha ko-channel-images-push-stable
+ko-channel-images-push-alpha ko-channel-images-push-stable: ko-channel-images-push-%:
+	mkdir -p ${IMAGES}/channels/$*/
+	cp -fp channels/$* ${IMAGES}/channels/$*/channel.yaml
+	mkdir -p ${UPLOAD}/kops/${VERSION}/images/
+	rm -f ${UPLOAD}/kops/${VERSION}/images/channels-$*.tar.gz
+	cd ${IMAGES}/channels/$*/; tar cvf ${UPLOAD}/kops/${VERSION}/images/channels-$*.tar.gz .
+	crane append -f ${UPLOAD}/kops/${VERSION}/images/channels-$*.tar.gz -t justinsb/kops-channels-v1.24-$*:latest
+
+.PHONY: ko-channel-images-push
+ko-channel-images-push: ko-channel-images-push-alpha ko-channel-images-push-stable

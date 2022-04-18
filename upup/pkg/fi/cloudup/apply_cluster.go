@@ -35,6 +35,7 @@ import (
 	"k8s.io/klog/v2"
 	kopsbase "k8s.io/kops"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/channel"
 	apiModel "k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/util"
@@ -1087,7 +1088,7 @@ func ChannelForCluster(c *kops.Cluster) (*kops.Channel, error) {
 	if channelLocation == "" {
 		channelLocation = kops.DefaultChannel
 	}
-	return kops.LoadChannel(channelLocation)
+	return channel.LoadChannel(channelLocation)
 }
 
 // needsMounterAsset checks if we need the mounter program

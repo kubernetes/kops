@@ -23,6 +23,7 @@ import (
 
 	"github.com/blang/semver/v4"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/channel"
 	"k8s.io/kops/tests/integration/channel/simple"
 	"k8s.io/kops/util/pkg/architectures"
 )
@@ -121,7 +122,7 @@ func TestKubernetesUpgrades(t *testing.T) {
 		t.Fatalf("unexpected error reading sourcePath %q: %v", sourcePath, err)
 	}
 
-	channel, err := kops.ParseChannel(sourceBytes)
+	channel, err := channel.ParseChannel(sourceBytes)
 	if err != nil {
 		t.Fatalf("failed to parse channel: %v", err)
 	}
@@ -215,7 +216,7 @@ func TestFindImage(t *testing.T) {
 		t.Fatalf("unexpected error reading sourcePath %q: %v", sourcePath, err)
 	}
 
-	channel, err := kops.ParseChannel(sourceBytes)
+	channel, err := channel.ParseChannel(sourceBytes)
 	if err != nil {
 		t.Fatalf("failed to parse channel: %v", err)
 	}
@@ -270,7 +271,7 @@ func TestRecommendedKubernetesVersion(t *testing.T) {
 		t.Fatalf("unexpected error reading sourcePath %q: %v", sourcePath, err)
 	}
 
-	channel, err := kops.ParseChannel(sourceBytes)
+	channel, err := channel.ParseChannel(sourceBytes)
 	if err != nil {
 		t.Fatalf("failed to parse channel: %v", err)
 	}
@@ -364,7 +365,7 @@ func TestChannelsSelfConsistent(t *testing.T) {
 			t.Fatalf("unexpected error reading sourcePath %q: %v", sourcePath, err)
 		}
 
-		channel, err := kops.ParseChannel(sourceBytes)
+		channel, err := channel.ParseChannel(sourceBytes)
 		if err != nil {
 			t.Fatalf("failed to parse channel %s: %v", g.Channel, err)
 		}
@@ -404,21 +405,21 @@ func semverString(sv *semver.Version) string {
 
 // All Images in channel should have a specified upstream image prefix
 func TestChannelImages(t *testing.T) {
-	for _, channel := range []string{"stable", "alpha"} {
-		t.Run(channel+"-channel", func(t *testing.T) {
-			sourcePath := "../../../channels/" + channel
+	for _, channelName := range []string{"stable", "alpha"} {
+		t.Run(channelName+"-channel", func(t *testing.T) {
+			sourcePath := "../../../channels/" + channelName
 			sourceBytes, err := os.ReadFile(sourcePath)
 			if err != nil {
 				t.Fatalf("unexpected error reading sourcePath %q: %v", sourcePath, err)
 			}
 
-			channel, err := kops.ParseChannel(sourceBytes)
+			c, err := channel.ParseChannel(sourceBytes)
 			if err != nil {
 				t.Fatalf("failed to parse channel: %v", err)
 			}
 
-			for _, image := range channel.Spec.Images {
-				if !channel.HasUpstreamImagePrefix(image.Name) {
+			for _, image := range c.Spec.Images {
+				if !c.HasUpstreamImagePrefix(image.Name) {
 					t.Errorf("unknown image prefix: %q", image.Name)
 				}
 			}

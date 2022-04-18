@@ -52,7 +52,7 @@ import (
 	"k8s.io/kops/cloudmock/openstack/mockimage"
 	"k8s.io/kops/cloudmock/openstack/mockloadbalancer"
 	"k8s.io/kops/cloudmock/openstack/mocknetworking"
-	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/channel"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
@@ -65,8 +65,8 @@ type IntegrationTestHarness struct {
 	TempDir string
 	T       *testing.T
 
-	// The original kops DefaultChannelBase value, restored on Close
-	originalDefaultChannelBase string
+	// The original TestChannelBase value, restored on Close
+	originalTestChannelBase string
 
 	// originalKopsVersion is the original kops.Version value, restored on Close
 	originalKopsVersion string
@@ -97,10 +97,10 @@ func NewIntegrationTestHarness(t *testing.T) *IntegrationTestHarness {
 			t.Fatalf("error resolving stable channel path: %v", err)
 		}
 		channelPath += "/"
-		h.originalDefaultChannelBase = kops.DefaultChannelBase
+		h.originalTestChannelBase = channel.TestChannelBase
 
 		// Make sure any platform-specific separators that aren't /, are converted to / for use in a file: protocol URL
-		kops.DefaultChannelBase = "file://" + filepath.ToSlash(channelPath)
+		channel.TestChannelBase = "file://" + filepath.ToSlash(channelPath)
 	}
 
 	return h
@@ -122,9 +122,7 @@ func (h *IntegrationTestHarness) Close() {
 		kopsroot.Version = h.originalKopsVersion
 	}
 
-	if h.originalDefaultChannelBase != "" {
-		kops.DefaultChannelBase = h.originalDefaultChannelBase
-	}
+	channel.TestChannelBase = h.originalTestChannelBase
 
 	if h.originalPKIDefaultPrivateKeySize != 0 {
 		pki.DefaultPrivateKeySize = h.originalPKIDefaultPrivateKeySize

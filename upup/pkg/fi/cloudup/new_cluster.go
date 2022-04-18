@@ -30,6 +30,7 @@ import (
 
 	"k8s.io/kops"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/channel"
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/dns"
@@ -183,7 +184,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 	if opt.Channel == "" {
 		opt.Channel = api.DefaultChannel
 	}
-	channel, err := api.LoadChannel(opt.Channel)
+	channel, err := channel.LoadChannel(opt.Channel)
 	if err != nil {
 		return nil, err
 	}

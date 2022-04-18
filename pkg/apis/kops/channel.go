@@ -18,7 +18,6 @@ package kops
 
 import (
 	"fmt"
-	"net/url"
 	"strings"
 
 	"github.com/blang/semver/v4"
@@ -27,10 +26,7 @@ import (
 	kopsbase "k8s.io/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/util/pkg/architectures"
-	"k8s.io/kops/util/pkg/vfs"
 )
-
-var DefaultChannelBase = "https://raw.githubusercontent.com/kubernetes/kops/master/channels/"
 
 const (
 	DefaultChannel = "stable"
@@ -101,68 +97,6 @@ type PackageVersionSpec struct {
 
 	// KopsVersion specifies that this package only applies to a semver range of kOps version
 	KopsVersion string `json:"kopsVersion,omitempty"`
-}
-
-// ResolveChannel maps a channel to an absolute URL (possibly a VFS URL)
-// If the channel is the well-known "none" value, we return (nil, nil)
-func ResolveChannel(location string) (*url.URL, error) {
-	if location == "none" {
-		return nil, nil
-	}
-
-	u, err := url.Parse(location)
-	if err != nil {
-		return nil, fmt.Errorf("invalid channel location: %q", location)
-	}
-
-	if !u.IsAbs() {
-		base, err := url.Parse(DefaultChannelBase)
-		if err != nil {
-			return nil, fmt.Errorf("invalid base channel location: %q", DefaultChannelBase)
-		}
-		klog.V(4).Infof("resolving %q against default channel location %q", location, DefaultChannelBase)
-		u = base.ResolveReference(u)
-	}
-
-	return u, nil
-}
-
-// LoadChannel loads a Channel object from the specified VFS location
-func LoadChannel(location string) (*Channel, error) {
-	resolvedURL, err := ResolveChannel(location)
-	if err != nil {
-		return nil, err
-	}
-
-	if resolvedURL == nil {
-		return &Channel{}, nil
-	}
-
-	resolved := resolvedURL.String()
-
-	klog.V(2).Infof("Loading channel from %q", resolved)
-	channelBytes, err := vfs.Context.ReadFile(resolved)
-	if err != nil {
-		return nil, fmt.Errorf("error reading channel %q: %v", resolved, err)
-	}
-	channel, err := ParseChannel(channelBytes)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing channel %q: %v", resolved, err)
-	}
-	klog.V(4).Infof("Channel contents: %s", string(channelBytes))
-
-	return channel, nil
-}
-
-// ParseChannel parses a Channel object
-func ParseChannel(channelBytes []byte) (*Channel, error) {
-	channel := &Channel{}
-	err := ParseRawYaml(channelBytes, channel)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing channel %v", err)
-	}
-
-	return channel, nil
 }
 
 // FindRecommendedUpgrade returns a string with a new version, if the current version is out of date

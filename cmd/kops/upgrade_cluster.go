@@ -29,6 +29,7 @@ import (
 	"k8s.io/kops"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/channel"
 	kopsutil "k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/commands/commandutils"
@@ -138,7 +139,7 @@ func RunUpgradeCluster(ctx context.Context, f *util.Factory, out io.Writer, opti
 		})
 	}
 
-	channel, err := kopsapi.LoadChannel(channelLocation)
+	channel, err := channel.LoadChannel(channelLocation)
 	if err != nil {
 		return fmt.Errorf("error loading channel %q: %v", channelLocation, err)
 	}

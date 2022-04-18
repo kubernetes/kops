@@ -36,6 +36,7 @@ import (
 
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/channel"
 	"k8s.io/kops/pkg/try"
 	"k8s.io/kops/pkg/util/templater"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -174,7 +175,7 @@ func RunToolBoxTemplate(f *util.Factory, out io.Writer, options *ToolboxTemplate
 		}
 	}
 
-	channel, err := kopsapi.LoadChannel(options.channel)
+	channel, err := channel.LoadChannel(options.channel)
 	if err != nil {
 		return fmt.Errorf("error loading channel %q: %v", options.channel, err)
 	}

@@ -25,6 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	channelsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/channel"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/upup/pkg/fi"
@@ -87,7 +88,7 @@ func (b *Builder) loadClusterPackage(u *unstructured.Unstructured) (*Package, er
 	id := operatorVersion
 
 	location := path.Join("packages", operatorKey, operatorVersion, "manifest.yaml")
-	channelURL, err := kops.ResolveChannel(b.Cluster.Spec.Channel)
+	channelURL, err := channel.ResolveChannel(b.Cluster.Spec.Channel)
 	if err != nil {
 		return nil, fmt.Errorf("error resolving channel %q: %v", b.Cluster.Spec.Channel, err)
 	}

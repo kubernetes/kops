@@ -24,6 +24,7 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/channel"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
@@ -136,7 +137,7 @@ func PerformAssignments(c *kops.Cluster, cloud fi.Cloud) error {
 func ensureKubernetesVersion(c *kops.Cluster) error {
 	if c.Spec.KubernetesVersion == "" {
 		if c.Spec.Channel != "" {
-			channel, err := kops.LoadChannel(c.Spec.Channel)
+			channel, err := channel.LoadChannel(c.Spec.Channel)
 			if err != nil {
 				return err
 			}
