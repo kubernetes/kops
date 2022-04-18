@@ -116,6 +116,20 @@ spec:
         k8s-app: aws-node-termination-handler
         kubernetes.io/os: linux
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              {{ if not UseServiceAccountExternalPermissions }}
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+              {{ end }}
+            - matchExpressions:
+              {{ if not UseServiceAccountExternalPermissions }}
+              - key: node-role.kubernetes.io/master
+                operator: Exists
+              {{ end }}
       priorityClassName: system-cluster-critical
       serviceAccountName: aws-node-termination-handler
       securityContext:
@@ -210,8 +224,6 @@ spec:
             cpu: {{ .CPURequest }}
             memory: {{ .MemoryRequest }}
       {{ if not UseServiceAccountExternalPermissions }}
-      nodeSelector:
-        node-role.kubernetes.io/master: ""
       tolerations:
       - operator: Exists
       {{ end }}

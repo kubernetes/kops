@@ -600,6 +600,20 @@ spec:
         app.kubernetes.io/version: v1.5.0
         kops.k8s.io/managed-by: kops
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                - linux
+            - matchExpressions:
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                - linux
       containers:
       - args:
         - controller
@@ -752,8 +766,6 @@ spec:
         - mountPath: /var/run/secrets/amazonaws.com/
           name: token-amazonaws-com
           readOnly: true
-      nodeSelector:
-        kubernetes.io/os: linux
       priorityClassName: system-cluster-critical
       securityContext:
         fsGroup: 10001

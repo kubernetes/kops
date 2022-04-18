@@ -372,7 +372,9 @@ func (t *Tester) addNonBlockingTaintsFlag() {
 	if hasFlag(t.TestArgs, "non-blocking-taints") {
 		return
 	}
-	nbt := "node-role.kubernetes.io/master,node-role.kubernetes.io/api-server"
+	nbt := "node-role.kubernetes.io/master,"
+	nbt += "node-role.kubernetes.io/api-server,"
+	nbt += "node-role.kubernetes.io/control-plane"
 	klog.Infof("Setting --non-blocking-taints=%s", nbt)
 	t.TestArgs += fmt.Sprintf(" --non-blocking-taints=%v", nbt)
 }

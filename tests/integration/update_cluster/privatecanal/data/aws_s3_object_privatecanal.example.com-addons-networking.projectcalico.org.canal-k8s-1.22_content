@@ -4465,6 +4465,24 @@ spec:
       name: calico-kube-controllers
       namespace: kube-system
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                - linux
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                - linux
       containers:
       - env:
         - name: ENABLED_CONTROLLERS
@@ -4488,8 +4506,6 @@ spec:
             - /usr/bin/check-status
             - -r
           periodSeconds: 10
-      nodeSelector:
-        kubernetes.io/os: linux
       priorityClassName: system-cluster-critical
       serviceAccountName: calico-kube-controllers
       tolerations:
@@ -4497,6 +4513,8 @@ spec:
         operator: Exists
       - effect: NoSchedule
         key: node-role.kubernetes.io/master
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/control-plane
 
 ---
 
