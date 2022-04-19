@@ -586,6 +586,24 @@ spec:
         app: gcp-compute-persistent-disk-csi-driver
         kops.k8s.io/managed-by: kops
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                - linux
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                - linux
       containers:
       - args:
         - --v=5
@@ -704,9 +722,6 @@ spec:
         - mountPath: /csi
           name: socket-dir
       hostNetwork: true
-      nodeSelector:
-        kubernetes.io/os: linux
-        node-role.kubernetes.io/master: ""
       priorityClassName: csi-gce-pd-controller
       serviceAccountName: csi-gce-pd-controller-sa
       tolerations:
