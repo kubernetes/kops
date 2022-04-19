@@ -23,7 +23,7 @@ require (
 	github.com/Azure/azure-storage-blob-go v0.13.0 // indirect
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
 	github.com/apparentlymart/go-cidr v1.1.0 // indirect
-	github.com/aws/aws-sdk-go v1.43.11 // indirect
+	github.com/aws/aws-sdk-go v1.43.41 // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/cenkalti/backoff/v3 v3.0.0 // indirect
 	github.com/containers/image/v5 v5.9.0 // indirect
