@@ -23869,7 +23869,7 @@ type GetAccountAuthorizationDetailsInput struct {
 	// The format for this parameter is a comma-separated (if more than one) list
 	// of strings. Each string value in the list must be one of the valid values
 	// listed below.
-	Filter []*string `type:"list"`
+	Filter []*string `type:"list" enum:"EntityType"`
 
 	// Use this parameter only when paginating results and only after you receive
 	// a response indicating that the results are truncated. Set it to the value

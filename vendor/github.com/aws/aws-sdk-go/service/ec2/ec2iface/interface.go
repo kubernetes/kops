@@ -2088,6 +2088,10 @@ type EC2API interface {
 	ModifyInstanceEventWindowWithContext(aws.Context, *ec2.ModifyInstanceEventWindowInput, ...request.Option) (*ec2.ModifyInstanceEventWindowOutput, error)
 	ModifyInstanceEventWindowRequest(*ec2.ModifyInstanceEventWindowInput) (*request.Request, *ec2.ModifyInstanceEventWindowOutput)
 
+	ModifyInstanceMaintenanceOptions(*ec2.ModifyInstanceMaintenanceOptionsInput) (*ec2.ModifyInstanceMaintenanceOptionsOutput, error)
+	ModifyInstanceMaintenanceOptionsWithContext(aws.Context, *ec2.ModifyInstanceMaintenanceOptionsInput, ...request.Option) (*ec2.ModifyInstanceMaintenanceOptionsOutput, error)
+	ModifyInstanceMaintenanceOptionsRequest(*ec2.ModifyInstanceMaintenanceOptionsInput) (*request.Request, *ec2.ModifyInstanceMaintenanceOptionsOutput)
+
 	ModifyInstanceMetadataOptions(*ec2.ModifyInstanceMetadataOptionsInput) (*ec2.ModifyInstanceMetadataOptionsOutput, error)
 	ModifyInstanceMetadataOptionsWithContext(aws.Context, *ec2.ModifyInstanceMetadataOptionsInput, ...request.Option) (*ec2.ModifyInstanceMetadataOptionsOutput, error)
 	ModifyInstanceMetadataOptionsRequest(*ec2.ModifyInstanceMetadataOptionsInput) (*request.Request, *ec2.ModifyInstanceMetadataOptionsOutput)

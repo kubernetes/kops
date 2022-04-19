@@ -46,7 +46,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/apparentlymart/go-cidr v1.1.0
 	github.com/aws/amazon-ec2-instance-selector/v2 v2.0.2
-	github.com/aws/aws-sdk-go v1.43.11
+	github.com/aws/aws-sdk-go v1.43.41
 	github.com/blang/semver/v4 v4.0.0
 	github.com/cert-manager/cert-manager v1.8.0
 	github.com/digitalocean/godo v1.65.0
