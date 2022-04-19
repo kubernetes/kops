@@ -13446,7 +13446,7 @@ type InstanceRequirements struct {
 	//    * For instance types with Xilinx devices, specify xilinx.
 	//
 	// Default: Any manufacturer
-	AcceleratorManufacturers []*string `type:"list"`
+	AcceleratorManufacturers []*string `type:"list" enum:"AcceleratorManufacturer"`
 
 	// Lists the accelerators that must be on an instance type.
 	//
@@ -13465,7 +13465,7 @@ type InstanceRequirements struct {
 	//    * For instance types with Xilinx VU9P FPGAs, specify vu9p.
 	//
 	// Default: Any accelerator
-	AcceleratorNames []*string `type:"list"`
+	AcceleratorNames []*string `type:"list" enum:"AcceleratorName"`
 
 	// The minimum and maximum total memory size for the accelerators on an instance
 	// type, in MiB.
@@ -13482,7 +13482,7 @@ type InstanceRequirements struct {
 	//    * For instance types with inference accelerators, specify inference.
 	//
 	// Default: Any accelerator type
-	AcceleratorTypes []*string `type:"list"`
+	AcceleratorTypes []*string `type:"list" enum:"AcceleratorType"`
 
 	// Indicates whether bare metal instance types are included, excluded, or required.
 	//
@@ -13516,7 +13516,7 @@ type InstanceRequirements struct {
 	// Amazon Machine Image (AMI) that you specify in your launch template.
 	//
 	// Default: Any manufacturer
-	CpuManufacturers []*string `type:"list"`
+	CpuManufacturers []*string `type:"list" enum:"CpuManufacturer"`
 
 	// Lists which instance types to exclude. You can use strings with one or more
 	// wild cards, represented by an asterisk (*). The following are examples: c5*,
@@ -13540,7 +13540,7 @@ type InstanceRequirements struct {
 	//    * For previous generation instance types, specify previous.
 	//
 	// Default: Any current or previous generation
-	InstanceGenerations []*string `type:"list"`
+	InstanceGenerations []*string `type:"list" enum:"InstanceGeneration"`
 
 	// Indicates whether instance types with instance store volumes are included,
 	// excluded, or required. For more information, see Amazon EC2 instance store
@@ -13557,7 +13557,7 @@ type InstanceRequirements struct {
 	//    * For instance types with solid state drive (SSD) storage, specify sdd.
 	//
 	// Default: Any local storage type
-	LocalStorageTypes []*string `type:"list"`
+	LocalStorageTypes []*string `type:"list" enum:"LocalStorageType"`
 
 	// The minimum and maximum amount of memory per vCPU for an instance type, in
 	// GiB.

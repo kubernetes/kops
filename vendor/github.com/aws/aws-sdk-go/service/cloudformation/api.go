@@ -7959,7 +7959,7 @@ type CreateChangeSetInput struct {
 	//    action, and specifying this capability. For more information on macros,
 	//    see Using CloudFormation macros to perform custom processing on templates
 	//    (http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-macros.html).
-	Capabilities []*string `type:"list"`
+	Capabilities []*string `type:"list" enum:"Capability"`
 
 	// The name of the change set. The name must be unique among all change sets
 	// that are associated with the specified stack.
@@ -8343,7 +8343,7 @@ type CreateStackInput struct {
 	//    Be aware that the Lambda function owner can update the function operation
 	//    without CloudFormation being notified. For more information, see Using
 	//    CloudFormation macros to perform custom processing on templates (http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-macros.html).
-	Capabilities []*string `type:"list"`
+	Capabilities []*string `type:"list" enum:"Capability"`
 
 	// A unique identifier for this CreateStack request. Specify this token if you
 	// plan to retry requests so that CloudFormation knows that you're not attempting
@@ -8972,7 +8972,7 @@ type CreateStackSetInput struct {
 	//    transforms, which are macros hosted by CloudFormation.) Even if you specify
 	//    this capability for a stack set with service-managed permissions, if you
 	//    reference a macro in your template the stack set operation will fail.
-	Capabilities []*string `type:"list"`
+	Capabilities []*string `type:"list" enum:"Capability"`
 
 	// A unique identifier for this CreateStackSet request. Specify this token if
 	// you plan to retry requests so that CloudFormation knows that you're not attempting
@@ -10346,7 +10346,7 @@ type DescribeChangeSetOutput struct {
 
 	// If you execute the change set, the list of capabilities that were explicitly
 	// acknowledged when the change set was created.
-	Capabilities []*string `type:"list"`
+	Capabilities []*string `type:"list" enum:"Capability"`
 
 	// The Amazon Resource Name (ARN) of the change set.
 	ChangeSetId *string `min:"1" type:"string"`
@@ -11100,7 +11100,7 @@ type DescribeStackResourceDriftsInput struct {
 	//    configuration.
 	//
 	//    * NOT_CHECKED: CloudFormation doesn't currently return this value.
-	StackResourceDriftStatusFilters []*string `min:"1" type:"list"`
+	StackResourceDriftStatusFilters []*string `min:"1" type:"list" enum:"StackResourceDriftStatus"`
 }
 
 // String returns the string representation.
@@ -13147,7 +13147,7 @@ type GetTemplateOutput struct {
 	// and Processed templates are always available. For change sets, the Original
 	// template is always available. After CloudFormation finishes creating the
 	// change set, the Processed template becomes available.
-	StagesAvailable []*string `type:"list"`
+	StagesAvailable []*string `type:"list" enum:"TemplateStage"`
 
 	// Structure containing the template body. (For more information, go to Template
 	// Anatomy (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-anatomy.html)
@@ -13322,7 +13322,7 @@ type GetTemplateSummaryOutput struct {
 	//
 	// For more information, see Acknowledging IAM Resources in CloudFormation Templates
 	// (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-iam-template.html#capabilities).
-	Capabilities []*string `type:"list"`
+	Capabilities []*string `type:"list" enum:"Capability"`
 
 	// The list of resources that generated the values in the Capabilities response
 	// element.
@@ -14626,7 +14626,7 @@ type ListStacksInput struct {
 	// Stack status to use as a filter. Specify one or more stack status codes to
 	// list only stacks with the specified status codes. For a complete list of
 	// stack status codes, see the StackStatus parameter of the Stack data type.
-	StackStatusFilter []*string `type:"list"`
+	StackStatusFilter []*string `type:"list" enum:"StackStatus"`
 }
 
 // String returns the string representation.
@@ -16463,7 +16463,7 @@ type ResourceChange struct {
 	// For the Modify action, indicates which resource attribute is triggering this
 	// update, such as a change in the resource attribute's Metadata, Properties,
 	// or Tags.
-	Scope []*string `type:"list"`
+	Scope []*string `type:"list" enum:"ResourceAttribute"`
 }
 
 // String returns the string representation.
@@ -17598,7 +17598,7 @@ type Stack struct {
 	_ struct{} `type:"structure"`
 
 	// The capabilities allowed in the stack.
-	Capabilities []*string `type:"list"`
+	Capabilities []*string `type:"list" enum:"Capability"`
 
 	// The unique ID of the change set.
 	ChangeSetId *string `min:"1" type:"string"`
@@ -19290,7 +19290,7 @@ type StackSet struct {
 	// account—for example, by creating new Identity and Access Management (IAM)
 	// users. For more information, see Acknowledging IAM Resources in CloudFormation
 	// Templates. (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-iam-template.html#capabilities)
-	Capabilities []*string `type:"list"`
+	Capabilities []*string `type:"list" enum:"Capability"`
 
 	// A description of the stack set that you specify when the stack set is created
 	// or updated.
@@ -21423,7 +21423,7 @@ type UpdateStackInput struct {
 	//    Be aware that the Lambda function owner can update the function operation
 	//    without CloudFormation being notified. For more information, see Using
 	//    CloudFormation Macros to Perform Custom Processing on Templates (http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-macros.html).
-	Capabilities []*string `type:"list"`
+	Capabilities []*string `type:"list" enum:"Capability"`
 
 	// A unique identifier for this UpdateStack request. Specify this token if you
 	// plan to retry requests so that CloudFormation knows that you're not attempting
@@ -22083,7 +22083,7 @@ type UpdateStackSetInput struct {
 	//    transforms, which are macros hosted by CloudFormation.) Even if you specify
 	//    this capability for a stack set with service-managed permissions, if you
 	//    reference a macro in your template the stack set operation will fail.
-	Capabilities []*string `type:"list"`
+	Capabilities []*string `type:"list" enum:"Capability"`
 
 	// [Service-managed permissions] The Organizations accounts in which to update
 	// associated stack instances.
@@ -22620,7 +22620,7 @@ type ValidateTemplateOutput struct {
 	//
 	// For more information, see Acknowledging IAM Resources in CloudFormation Templates
 	// (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-iam-template.html#capabilities).
-	Capabilities []*string `type:"list"`
+	Capabilities []*string `type:"list" enum:"Capability"`
 
 	// The list of resources that generated the values in the Capabilities response
 	// element.
