@@ -12812,7 +12812,7 @@ type HealthCheckConfig struct {
 	// health checks, Route 53 will briefly continue to perform checks from that
 	// region to ensure that some health checkers are always checking the endpoint
 	// (for example, if you replace three regions with four different regions).
-	Regions []*string `locationNameList:"Region" min:"3" type:"list"`
+	Regions []*string `locationNameList:"Region" min:"3" type:"list" enum:"HealthCheckRegion"`
 
 	// The number of seconds between the time that Amazon Route 53 gets a response
 	// from your endpoint and the time that it sends the next health check request.
@@ -17919,7 +17919,7 @@ type UpdateHealthCheckInput struct {
 
 	// A complex type that contains one Region element for each region that you
 	// want Amazon Route 53 health checkers to check the specified endpoint from.
-	Regions []*string `locationNameList:"Region" min:"3" type:"list"`
+	Regions []*string `locationNameList:"Region" min:"3" type:"list" enum:"HealthCheckRegion"`
 
 	// A complex type that contains one ResettableElementName element for each element
 	// that you want to reset to the default value. Valid values for ResettableElementName
@@ -17936,7 +17936,7 @@ type UpdateHealthCheckInput struct {
 	//
 	//    * ResourcePath: Route 53 resets ResourcePath (https://docs.aws.amazon.com/Route53/latest/APIReference/API_HealthCheckConfig.html#Route53-Type-HealthCheckConfig-ResourcePath)
 	//    to null.
-	ResetElements []*string `locationNameList:"ResettableElementName" type:"list"`
+	ResetElements []*string `locationNameList:"ResettableElementName" type:"list" enum:"ResettableElementName"`
 
 	// The path that you want Amazon Route 53 to request when performing health
 	// checks. The path can be any value for which your endpoint will return an

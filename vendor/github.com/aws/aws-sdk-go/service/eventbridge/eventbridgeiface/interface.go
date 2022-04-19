@@ -80,6 +80,10 @@ type EventBridgeAPI interface {
 	CreateConnectionWithContext(aws.Context, *eventbridge.CreateConnectionInput, ...request.Option) (*eventbridge.CreateConnectionOutput, error)
 	CreateConnectionRequest(*eventbridge.CreateConnectionInput) (*request.Request, *eventbridge.CreateConnectionOutput)
 
+	CreateEndpoint(*eventbridge.CreateEndpointInput) (*eventbridge.CreateEndpointOutput, error)
+	CreateEndpointWithContext(aws.Context, *eventbridge.CreateEndpointInput, ...request.Option) (*eventbridge.CreateEndpointOutput, error)
+	CreateEndpointRequest(*eventbridge.CreateEndpointInput) (*request.Request, *eventbridge.CreateEndpointOutput)
+
 	CreateEventBus(*eventbridge.CreateEventBusInput) (*eventbridge.CreateEventBusOutput, error)
 	CreateEventBusWithContext(aws.Context, *eventbridge.CreateEventBusInput, ...request.Option) (*eventbridge.CreateEventBusOutput, error)
 	CreateEventBusRequest(*eventbridge.CreateEventBusInput) (*request.Request, *eventbridge.CreateEventBusOutput)
@@ -108,6 +112,10 @@ type EventBridgeAPI interface {
 	DeleteConnectionWithContext(aws.Context, *eventbridge.DeleteConnectionInput, ...request.Option) (*eventbridge.DeleteConnectionOutput, error)
 	DeleteConnectionRequest(*eventbridge.DeleteConnectionInput) (*request.Request, *eventbridge.DeleteConnectionOutput)
 
+	DeleteEndpoint(*eventbridge.DeleteEndpointInput) (*eventbridge.DeleteEndpointOutput, error)
+	DeleteEndpointWithContext(aws.Context, *eventbridge.DeleteEndpointInput, ...request.Option) (*eventbridge.DeleteEndpointOutput, error)
+	DeleteEndpointRequest(*eventbridge.DeleteEndpointInput) (*request.Request, *eventbridge.DeleteEndpointOutput)
+
 	DeleteEventBus(*eventbridge.DeleteEventBusInput) (*eventbridge.DeleteEventBusOutput, error)
 	DeleteEventBusWithContext(aws.Context, *eventbridge.DeleteEventBusInput, ...request.Option) (*eventbridge.DeleteEventBusOutput, error)
 	DeleteEventBusRequest(*eventbridge.DeleteEventBusInput) (*request.Request, *eventbridge.DeleteEventBusOutput)
@@ -131,6 +139,10 @@ type EventBridgeAPI interface {
 	DescribeConnection(*eventbridge.DescribeConnectionInput) (*eventbridge.DescribeConnectionOutput, error)
 	DescribeConnectionWithContext(aws.Context, *eventbridge.DescribeConnectionInput, ...request.Option) (*eventbridge.DescribeConnectionOutput, error)
 	DescribeConnectionRequest(*eventbridge.DescribeConnectionInput) (*request.Request, *eventbridge.DescribeConnectionOutput)
+
+	DescribeEndpoint(*eventbridge.DescribeEndpointInput) (*eventbridge.DescribeEndpointOutput, error)
+	DescribeEndpointWithContext(aws.Context, *eventbridge.DescribeEndpointInput, ...request.Option) (*eventbridge.DescribeEndpointOutput, error)
+	DescribeEndpointRequest(*eventbridge.DescribeEndpointInput) (*request.Request, *eventbridge.DescribeEndpointOutput)
 
 	DescribeEventBus(*eventbridge.DescribeEventBusInput) (*eventbridge.DescribeEventBusOutput, error)
 	DescribeEventBusWithContext(aws.Context, *eventbridge.DescribeEventBusInput, ...request.Option) (*eventbridge.DescribeEventBusOutput, error)
@@ -171,6 +183,10 @@ type EventBridgeAPI interface {
 	ListConnections(*eventbridge.ListConnectionsInput) (*eventbridge.ListConnectionsOutput, error)
 	ListConnectionsWithContext(aws.Context, *eventbridge.ListConnectionsInput, ...request.Option) (*eventbridge.ListConnectionsOutput, error)
 	ListConnectionsRequest(*eventbridge.ListConnectionsInput) (*request.Request, *eventbridge.ListConnectionsOutput)
+
+	ListEndpoints(*eventbridge.ListEndpointsInput) (*eventbridge.ListEndpointsOutput, error)
+	ListEndpointsWithContext(aws.Context, *eventbridge.ListEndpointsInput, ...request.Option) (*eventbridge.ListEndpointsOutput, error)
+	ListEndpointsRequest(*eventbridge.ListEndpointsInput) (*request.Request, *eventbridge.ListEndpointsOutput)
 
 	ListEventBuses(*eventbridge.ListEventBusesInput) (*eventbridge.ListEventBusesOutput, error)
 	ListEventBusesWithContext(aws.Context, *eventbridge.ListEventBusesInput, ...request.Option) (*eventbridge.ListEventBusesOutput, error)
@@ -263,6 +279,10 @@ type EventBridgeAPI interface {
 	UpdateConnection(*eventbridge.UpdateConnectionInput) (*eventbridge.UpdateConnectionOutput, error)
 	UpdateConnectionWithContext(aws.Context, *eventbridge.UpdateConnectionInput, ...request.Option) (*eventbridge.UpdateConnectionOutput, error)
 	UpdateConnectionRequest(*eventbridge.UpdateConnectionInput) (*request.Request, *eventbridge.UpdateConnectionOutput)
+
+	UpdateEndpoint(*eventbridge.UpdateEndpointInput) (*eventbridge.UpdateEndpointOutput, error)
+	UpdateEndpointWithContext(aws.Context, *eventbridge.UpdateEndpointInput, ...request.Option) (*eventbridge.UpdateEndpointOutput, error)
+	UpdateEndpointRequest(*eventbridge.UpdateEndpointInput) (*request.Request, *eventbridge.UpdateEndpointOutput)
 }
 
 var _ EventBridgeAPI = (*eventbridge.EventBridge)(nil)
