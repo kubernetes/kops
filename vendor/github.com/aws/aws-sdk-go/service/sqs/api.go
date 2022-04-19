@@ -3407,7 +3407,7 @@ type GetQueueAttributesInput struct {
 	//
 	// For information on throughput quotas, see Quotas related to messages (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/quotas-messages.html)
 	// in the Amazon SQS Developer Guide.
-	AttributeNames []*string `locationNameList:"AttributeName" type:"list" flattened:"true"`
+	AttributeNames []*string `locationNameList:"AttributeName" type:"list" flattened:"true" enum:"QueueAttributeName"`
 
 	// The URL of the Amazon SQS queue whose attribute information is retrieved.
 	//
@@ -4281,7 +4281,7 @@ type ReceiveMessageInput struct {
 	//    in sequence.
 	//
 	//    * SequenceNumber – Returns the value provided by Amazon SQS.
-	AttributeNames []*string `locationNameList:"AttributeName" type:"list" flattened:"true"`
+	AttributeNames []*string `locationNameList:"AttributeName" type:"list" flattened:"true" enum:"QueueAttributeName"`
 
 	// The maximum number of messages to return. Amazon SQS never returns more messages
 	// than this value (however, fewer messages might be returned). Valid values:
