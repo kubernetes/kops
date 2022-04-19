@@ -472,6 +472,97 @@ func (c *EventBridge) CreateConnectionWithContext(ctx aws.Context, input *Create
 	return out, req.Send()
 }
 
+const opCreateEndpoint = "CreateEndpoint"
+
+// CreateEndpointRequest generates a "aws/request.Request" representing the
+// client's request for the CreateEndpoint operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateEndpoint for more information on using the CreateEndpoint
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the CreateEndpointRequest method.
+//    req, resp := client.CreateEndpointRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/CreateEndpoint
+func (c *EventBridge) CreateEndpointRequest(input *CreateEndpointInput) (req *request.Request, output *CreateEndpointOutput) {
+	op := &request.Operation{
+		Name:       opCreateEndpoint,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &CreateEndpointInput{}
+	}
+
+	output = &CreateEndpointOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateEndpoint API operation for Amazon EventBridge.
+//
+// Creates a global endpoint. Global endpoints improve your application's availability
+// by making it regional-fault tolerant. To do this, you define a primary and
+// secondary Region with event buses in each Region. You also create a Amazon
+// Route 53 health check that will tell EventBridge to route events to the secondary
+// Region when an "unhealthy" state is encountered and events will be routed
+// back to the primary Region when the health check reports a "healthy" state.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon EventBridge's
+// API operation CreateEndpoint for usage and error information.
+//
+// Returned Error Types:
+//   * ResourceAlreadyExistsException
+//   The resource you are trying to create already exists.
+//
+//   * LimitExceededException
+//   The request failed because it attempted to create resource beyond the allowed
+//   service quota.
+//
+//   * InternalException
+//   This exception occurs due to unexpected causes.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/CreateEndpoint
+func (c *EventBridge) CreateEndpoint(input *CreateEndpointInput) (*CreateEndpointOutput, error) {
+	req, out := c.CreateEndpointRequest(input)
+	return out, req.Send()
+}
+
+// CreateEndpointWithContext is the same as CreateEndpoint with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateEndpoint for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EventBridge) CreateEndpointWithContext(ctx aws.Context, input *CreateEndpointInput, opts ...request.Option) (*CreateEndpointOutput, error) {
+	req, out := c.CreateEndpointRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opCreateEventBus = "CreateEventBus"
 
 // CreateEventBusRequest generates a "aws/request.Request" representing the
@@ -1133,6 +1224,95 @@ func (c *EventBridge) DeleteConnectionWithContext(ctx aws.Context, input *Delete
 	return out, req.Send()
 }
 
+const opDeleteEndpoint = "DeleteEndpoint"
+
+// DeleteEndpointRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteEndpoint operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteEndpoint for more information on using the DeleteEndpoint
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the DeleteEndpointRequest method.
+//    req, resp := client.DeleteEndpointRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DeleteEndpoint
+func (c *EventBridge) DeleteEndpointRequest(input *DeleteEndpointInput) (req *request.Request, output *DeleteEndpointOutput) {
+	op := &request.Operation{
+		Name:       opDeleteEndpoint,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteEndpointInput{}
+	}
+
+	output = &DeleteEndpointOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteEndpoint API operation for Amazon EventBridge.
+//
+// Delete an existing global endpoint. For more information about global endpoints,
+// see Making applications Regional-fault tolerant with global endpoints and
+// event replication (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-global-endpoints.html)
+// in the Amazon EventBridge User Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon EventBridge's
+// API operation DeleteEndpoint for usage and error information.
+//
+// Returned Error Types:
+//   * ConcurrentModificationException
+//   There is concurrent modification on a rule, target, archive, or replay.
+//
+//   * ResourceNotFoundException
+//   An entity that you specified does not exist.
+//
+//   * InternalException
+//   This exception occurs due to unexpected causes.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DeleteEndpoint
+func (c *EventBridge) DeleteEndpoint(input *DeleteEndpointInput) (*DeleteEndpointOutput, error) {
+	req, out := c.DeleteEndpointRequest(input)
+	return out, req.Send()
+}
+
+// DeleteEndpointWithContext is the same as DeleteEndpoint with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteEndpoint for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EventBridge) DeleteEndpointWithContext(ctx aws.Context, input *DeleteEndpointInput, opts ...request.Option) (*DeleteEndpointOutput, error) {
+	req, out := c.DeleteEndpointRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDeleteEventBus = "DeleteEventBus"
 
 // DeleteEventBusRequest generates a "aws/request.Request" representing the
@@ -1662,6 +1842,91 @@ func (c *EventBridge) DescribeConnection(input *DescribeConnectionInput) (*Descr
 // for more information on using Contexts.
 func (c *EventBridge) DescribeConnectionWithContext(ctx aws.Context, input *DescribeConnectionInput, opts ...request.Option) (*DescribeConnectionOutput, error) {
 	req, out := c.DescribeConnectionRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDescribeEndpoint = "DescribeEndpoint"
+
+// DescribeEndpointRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeEndpoint operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeEndpoint for more information on using the DescribeEndpoint
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the DescribeEndpointRequest method.
+//    req, resp := client.DescribeEndpointRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DescribeEndpoint
+func (c *EventBridge) DescribeEndpointRequest(input *DescribeEndpointInput) (req *request.Request, output *DescribeEndpointOutput) {
+	op := &request.Operation{
+		Name:       opDescribeEndpoint,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DescribeEndpointInput{}
+	}
+
+	output = &DescribeEndpointOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeEndpoint API operation for Amazon EventBridge.
+//
+// Get the information about an existing global endpoint. For more information
+// about global endpoints, see Making applications Regional-fault tolerant with
+// global endpoints and event replication (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-global-endpoints.html)
+// in the Amazon EventBridge User Guide..
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon EventBridge's
+// API operation DescribeEndpoint for usage and error information.
+//
+// Returned Error Types:
+//   * ResourceNotFoundException
+//   An entity that you specified does not exist.
+//
+//   * InternalException
+//   This exception occurs due to unexpected causes.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DescribeEndpoint
+func (c *EventBridge) DescribeEndpoint(input *DescribeEndpointInput) (*DescribeEndpointOutput, error) {
+	req, out := c.DescribeEndpointRequest(input)
+	return out, req.Send()
+}
+
+// DescribeEndpointWithContext is the same as DescribeEndpoint with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeEndpoint for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EventBridge) DescribeEndpointWithContext(ctx aws.Context, input *DescribeEndpointInput, opts ...request.Option) (*DescribeEndpointOutput, error) {
+	req, out := c.DescribeEndpointRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -2545,6 +2810,88 @@ func (c *EventBridge) ListConnectionsWithContext(ctx aws.Context, input *ListCon
 	return out, req.Send()
 }
 
+const opListEndpoints = "ListEndpoints"
+
+// ListEndpointsRequest generates a "aws/request.Request" representing the
+// client's request for the ListEndpoints operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListEndpoints for more information on using the ListEndpoints
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the ListEndpointsRequest method.
+//    req, resp := client.ListEndpointsRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/ListEndpoints
+func (c *EventBridge) ListEndpointsRequest(input *ListEndpointsInput) (req *request.Request, output *ListEndpointsOutput) {
+	op := &request.Operation{
+		Name:       opListEndpoints,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ListEndpointsInput{}
+	}
+
+	output = &ListEndpointsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListEndpoints API operation for Amazon EventBridge.
+//
+// List the global endpoints associated with this account. For more information
+// about global endpoints, see Making applications Regional-fault tolerant with
+// global endpoints and event replication (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-global-endpoints.html)
+// in the Amazon EventBridge User Guide..
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon EventBridge's
+// API operation ListEndpoints for usage and error information.
+//
+// Returned Error Types:
+//   * InternalException
+//   This exception occurs due to unexpected causes.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/ListEndpoints
+func (c *EventBridge) ListEndpoints(input *ListEndpointsInput) (*ListEndpointsOutput, error) {
+	req, out := c.ListEndpointsRequest(input)
+	return out, req.Send()
+}
+
+// ListEndpointsWithContext is the same as ListEndpoints with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListEndpoints for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EventBridge) ListEndpointsWithContext(ctx aws.Context, input *ListEndpointsInput, opts ...request.Option) (*ListEndpointsOutput, error) {
+	req, out := c.ListEndpointsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opListEventBuses = "ListEventBuses"
 
 // ListEventBusesRequest generates a "aws/request.Request" representing the
@@ -3341,6 +3688,10 @@ func (c *EventBridge) PutEventsRequest(input *PutEventsInput) (req *request.Requ
 // Sends custom events to Amazon EventBridge so that they can be matched to
 // rules.
 //
+// PutEvents will only process nested JSON up to 1100 levels deep.
+//
+// This AWS SDK does not support calling multi-region endpoints with SigV4a authentication.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -3779,55 +4130,59 @@ func (c *EventBridge) PutTargetsRequest(input *PutTargetsInput) (req *request.Re
 //
 //    * API destination (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-api-destinations.html)
 //
-//    * Amazon API Gateway REST API endpoints
-//
-//    * API Gateway
+//    * API Gateway (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-api-gateway-target.html)
 //
 //    * Batch job queue
 //
-//    * CloudWatch Logs group
+//    * CloudWatch group
 //
 //    * CodeBuild project
 //
 //    * CodePipeline
 //
-//    * Amazon EC2 CreateSnapshot API call
+//    * EC2 CreateSnapshot API call
 //
 //    * EC2 Image Builder
 //
-//    * Amazon EC2 RebootInstances API call
+//    * EC2 RebootInstances API call
 //
-//    * Amazon EC2 StopInstances API call
+//    * EC2 StopInstances API call
 //
-//    * Amazon EC2 TerminateInstances API call
+//    * EC2 TerminateInstances API call
 //
-//    * Amazon ECS tasks
+//    * ECS task
 //
-//    * Event bus in a different Amazon Web Services account or Region. You
-//    can use an event bus in the US East (N. Virginia) us-east-1, US West (Oregon)
-//    us-west-2, or Europe (Ireland) eu-west-1 Regions as a target for a rule.
+//    * Event bus in a different account or Region (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-cross-account.html)
 //
-//    * Firehose delivery stream (Kinesis Data Firehose)
+//    * Event bus in the same account and Region (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-bus-to-bus.html)
 //
-//    * Inspector assessment template (Amazon Inspector)
+//    * Firehose delivery stream
 //
-//    * Kinesis stream (Kinesis Data Stream)
+//    * Glue workflow
+//
+//    * Incident Manager response plan (https://docs.aws.amazon.com/incident-manager/latest/userguide/incident-creation.html#incident-tracking-auto-eventbridge)
+//
+//    * Inspector assessment template
+//
+//    * Kinesis stream
 //
 //    * Lambda function
 //
-//    * Redshift clusters (Data API statement execution)
+//    * Redshift cluster
 //
-//    * Amazon SNS topic
+//    * SageMaker Pipeline
 //
-//    * Amazon SQS queues (includes FIFO queues)
+//    * SNS topic
 //
-//    * SSM Automation
+//    * SQS queue
 //
-//    * SSM OpsItem
+//    * Step Functions state machine
 //
-//    * SSM Run Command
+//    * Systems Manager Automation
 //
-//    * Step Functions state machines
+//    * Systems Manager OpsItem
+//
+//    * Systems Manager Run Command
 //
 // Creating rules with built-in targets is supported only in the Amazon Web
 // Services Management Console. The built-in targets are EC2 CreateSnapshot
@@ -4810,6 +5165,94 @@ func (c *EventBridge) UpdateConnection(input *UpdateConnectionInput) (*UpdateCon
 // for more information on using Contexts.
 func (c *EventBridge) UpdateConnectionWithContext(ctx aws.Context, input *UpdateConnectionInput, opts ...request.Option) (*UpdateConnectionOutput, error) {
 	req, out := c.UpdateConnectionRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opUpdateEndpoint = "UpdateEndpoint"
+
+// UpdateEndpointRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateEndpoint operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateEndpoint for more information on using the UpdateEndpoint
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the UpdateEndpointRequest method.
+//    req, resp := client.UpdateEndpointRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/UpdateEndpoint
+func (c *EventBridge) UpdateEndpointRequest(input *UpdateEndpointInput) (req *request.Request, output *UpdateEndpointOutput) {
+	op := &request.Operation{
+		Name:       opUpdateEndpoint,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &UpdateEndpointInput{}
+	}
+
+	output = &UpdateEndpointOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdateEndpoint API operation for Amazon EventBridge.
+//
+// Update an existing endpoint. For more information about global endpoints,
+// see Making applications Regional-fault tolerant with global endpoints and
+// event replication (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-global-endpoints.html)
+// in the Amazon EventBridge User Guide..
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon EventBridge's
+// API operation UpdateEndpoint for usage and error information.
+//
+// Returned Error Types:
+//   * ResourceNotFoundException
+//   An entity that you specified does not exist.
+//
+//   * ConcurrentModificationException
+//   There is concurrent modification on a rule, target, archive, or replay.
+//
+//   * InternalException
+//   This exception occurs due to unexpected causes.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/UpdateEndpoint
+func (c *EventBridge) UpdateEndpoint(input *UpdateEndpointInput) (*UpdateEndpointOutput, error) {
+	req, out := c.UpdateEndpointRequest(input)
+	return out, req.Send()
+}
+
+// UpdateEndpointWithContext is the same as UpdateEndpoint with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateEndpoint for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EventBridge) UpdateEndpointWithContext(ctx aws.Context, input *UpdateEndpointInput, opts ...request.Option) (*UpdateEndpointOutput, error) {
+	req, out := c.UpdateEndpointRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -7024,6 +7467,218 @@ func (s *CreateConnectionOutput) SetLastModifiedTime(v time.Time) *CreateConnect
 	return s
 }
 
+type CreateEndpointInput struct {
+	_ struct{} `type:"structure"`
+
+	// A description of the global endpoint.
+	Description *string `type:"string"`
+
+	// Define the event buses used.
+	//
+	// The names of the event buses must be identical in each Region.
+	//
+	// EventBuses is a required field
+	EventBuses []*EndpointEventBus `min:"2" type:"list" required:"true"`
+
+	// The name of the global endpoint. For example, "Name":"us-east-2-custom_bus_A-endpoint".
+	//
+	// Name is a required field
+	Name *string `min:"1" type:"string" required:"true"`
+
+	// Enable or disable event replication.
+	ReplicationConfig *ReplicationConfig `type:"structure"`
+
+	// The ARN of the role used for replication.
+	RoleArn *string `min:"1" type:"string"`
+
+	// Configure the routing policy, including the health check and secondary Region..
+	//
+	// RoutingConfig is a required field
+	RoutingConfig *RoutingConfig `type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateEndpointInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateEndpointInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateEndpointInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateEndpointInput"}
+	if s.EventBuses == nil {
+		invalidParams.Add(request.NewErrParamRequired("EventBuses"))
+	}
+	if s.EventBuses != nil && len(s.EventBuses) < 2 {
+		invalidParams.Add(request.NewErrParamMinLen("EventBuses", 2))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.RoleArn != nil && len(*s.RoleArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RoleArn", 1))
+	}
+	if s.RoutingConfig == nil {
+		invalidParams.Add(request.NewErrParamRequired("RoutingConfig"))
+	}
+	if s.EventBuses != nil {
+		for i, v := range s.EventBuses {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "EventBuses", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.RoutingConfig != nil {
+		if err := s.RoutingConfig.Validate(); err != nil {
+			invalidParams.AddNested("RoutingConfig", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDescription sets the Description field's value.
+func (s *CreateEndpointInput) SetDescription(v string) *CreateEndpointInput {
+	s.Description = &v
+	return s
+}
+
+// SetEventBuses sets the EventBuses field's value.
+func (s *CreateEndpointInput) SetEventBuses(v []*EndpointEventBus) *CreateEndpointInput {
+	s.EventBuses = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateEndpointInput) SetName(v string) *CreateEndpointInput {
+	s.Name = &v
+	return s
+}
+
+// SetReplicationConfig sets the ReplicationConfig field's value.
+func (s *CreateEndpointInput) SetReplicationConfig(v *ReplicationConfig) *CreateEndpointInput {
+	s.ReplicationConfig = v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *CreateEndpointInput) SetRoleArn(v string) *CreateEndpointInput {
+	s.RoleArn = &v
+	return s
+}
+
+// SetRoutingConfig sets the RoutingConfig field's value.
+func (s *CreateEndpointInput) SetRoutingConfig(v *RoutingConfig) *CreateEndpointInput {
+	s.RoutingConfig = v
+	return s
+}
+
+type CreateEndpointOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the endpoint that was created by this request.
+	Arn *string `min:"1" type:"string"`
+
+	// The event buses used by this request.
+	EventBuses []*EndpointEventBus `min:"2" type:"list"`
+
+	// The name of the endpoint that was created by this request.
+	Name *string `min:"1" type:"string"`
+
+	// Whether event replication was enabled or disabled by this request.
+	ReplicationConfig *ReplicationConfig `type:"structure"`
+
+	// The ARN of the role used by event replication for this request.
+	RoleArn *string `min:"1" type:"string"`
+
+	// The routing configuration defined by this request.
+	RoutingConfig *RoutingConfig `type:"structure"`
+
+	// The state of the endpoint that was created by this request.
+	State *string `type:"string" enum:"EndpointState"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateEndpointOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateEndpointOutput) GoString() string {
+	return s.String()
+}
+
+// SetArn sets the Arn field's value.
+func (s *CreateEndpointOutput) SetArn(v string) *CreateEndpointOutput {
+	s.Arn = &v
+	return s
+}
+
+// SetEventBuses sets the EventBuses field's value.
+func (s *CreateEndpointOutput) SetEventBuses(v []*EndpointEventBus) *CreateEndpointOutput {
+	s.EventBuses = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateEndpointOutput) SetName(v string) *CreateEndpointOutput {
+	s.Name = &v
+	return s
+}
+
+// SetReplicationConfig sets the ReplicationConfig field's value.
+func (s *CreateEndpointOutput) SetReplicationConfig(v *ReplicationConfig) *CreateEndpointOutput {
+	s.ReplicationConfig = v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *CreateEndpointOutput) SetRoleArn(v string) *CreateEndpointOutput {
+	s.RoleArn = &v
+	return s
+}
+
+// SetRoutingConfig sets the RoutingConfig field's value.
+func (s *CreateEndpointOutput) SetRoutingConfig(v *RoutingConfig) *CreateEndpointOutput {
+	s.RoutingConfig = v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *CreateEndpointOutput) SetState(v string) *CreateEndpointOutput {
+	s.State = &v
+	return s
+}
+
 type CreateEventBusInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7735,6 +8390,77 @@ func (s *DeleteConnectionOutput) SetLastAuthorizedTime(v time.Time) *DeleteConne
 func (s *DeleteConnectionOutput) SetLastModifiedTime(v time.Time) *DeleteConnectionOutput {
 	s.LastModifiedTime = &v
 	return s
+}
+
+type DeleteEndpointInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the endpoint you want to delete. For example, "Name":"us-east-2-custom_bus_A-endpoint"..
+	//
+	// Name is a required field
+	Name *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteEndpointInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteEndpointInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteEndpointInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteEndpointInput"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetName sets the Name field's value.
+func (s *DeleteEndpointInput) SetName(v string) *DeleteEndpointInput {
+	s.Name = &v
+	return s
+}
+
+type DeleteEndpointOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteEndpointOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteEndpointOutput) GoString() string {
+	return s.String()
 }
 
 type DeleteEventBusInput struct {
@@ -8498,6 +9224,210 @@ func (s *DescribeConnectionOutput) SetSecretArn(v string) *DescribeConnectionOut
 
 // SetStateReason sets the StateReason field's value.
 func (s *DescribeConnectionOutput) SetStateReason(v string) *DescribeConnectionOutput {
+	s.StateReason = &v
+	return s
+}
+
+type DescribeEndpointInput struct {
+	_ struct{} `type:"structure"`
+
+	// The primary Region of the endpoint you want to get information about. For
+	// example "HomeRegion": "us-east-1".
+	HomeRegion *string `min:"9" type:"string"`
+
+	// The name of the endpoint you want to get information about. For example,
+	// "Name":"us-east-2-custom_bus_A-endpoint".
+	//
+	// Name is a required field
+	Name *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeEndpointInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeEndpointInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeEndpointInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeEndpointInput"}
+	if s.HomeRegion != nil && len(*s.HomeRegion) < 9 {
+		invalidParams.Add(request.NewErrParamMinLen("HomeRegion", 9))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetHomeRegion sets the HomeRegion field's value.
+func (s *DescribeEndpointInput) SetHomeRegion(v string) *DescribeEndpointInput {
+	s.HomeRegion = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *DescribeEndpointInput) SetName(v string) *DescribeEndpointInput {
+	s.Name = &v
+	return s
+}
+
+type DescribeEndpointOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the endpoint you asked for information about.
+	Arn *string `min:"1" type:"string"`
+
+	// The time the endpoint you asked for information about was created.
+	CreationTime *time.Time `type:"timestamp"`
+
+	// The description of the endpoint you asked for information about.
+	Description *string `type:"string"`
+
+	// The ID of the endpoint you asked for information about.
+	EndpointId *string `min:"1" type:"string"`
+
+	// The URL of the endpoint you asked for information about.
+	EndpointUrl *string `min:"1" type:"string"`
+
+	// The event buses being used by the endpoint you asked for information about.
+	EventBuses []*EndpointEventBus `min:"2" type:"list"`
+
+	// The last time the endpoint you asked for information about was modified.
+	LastModifiedTime *time.Time `type:"timestamp"`
+
+	// The name of the endpoint you asked for information about.
+	Name *string `min:"1" type:"string"`
+
+	// Whether replication is enabled or disabled for the endpoint you asked for
+	// information about.
+	ReplicationConfig *ReplicationConfig `type:"structure"`
+
+	// The ARN of the role used by the endpoint you asked for information about.
+	RoleArn *string `min:"1" type:"string"`
+
+	// The routing configuration of the endpoint you asked for information about.
+	RoutingConfig *RoutingConfig `type:"structure"`
+
+	// The current state of the endpoint you asked for information about.
+	State *string `type:"string" enum:"EndpointState"`
+
+	// The reason the endpoint you asked for information about is in its current
+	// state.
+	StateReason *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeEndpointOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeEndpointOutput) GoString() string {
+	return s.String()
+}
+
+// SetArn sets the Arn field's value.
+func (s *DescribeEndpointOutput) SetArn(v string) *DescribeEndpointOutput {
+	s.Arn = &v
+	return s
+}
+
+// SetCreationTime sets the CreationTime field's value.
+func (s *DescribeEndpointOutput) SetCreationTime(v time.Time) *DescribeEndpointOutput {
+	s.CreationTime = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *DescribeEndpointOutput) SetDescription(v string) *DescribeEndpointOutput {
+	s.Description = &v
+	return s
+}
+
+// SetEndpointId sets the EndpointId field's value.
+func (s *DescribeEndpointOutput) SetEndpointId(v string) *DescribeEndpointOutput {
+	s.EndpointId = &v
+	return s
+}
+
+// SetEndpointUrl sets the EndpointUrl field's value.
+func (s *DescribeEndpointOutput) SetEndpointUrl(v string) *DescribeEndpointOutput {
+	s.EndpointUrl = &v
+	return s
+}
+
+// SetEventBuses sets the EventBuses field's value.
+func (s *DescribeEndpointOutput) SetEventBuses(v []*EndpointEventBus) *DescribeEndpointOutput {
+	s.EventBuses = v
+	return s
+}
+
+// SetLastModifiedTime sets the LastModifiedTime field's value.
+func (s *DescribeEndpointOutput) SetLastModifiedTime(v time.Time) *DescribeEndpointOutput {
+	s.LastModifiedTime = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *DescribeEndpointOutput) SetName(v string) *DescribeEndpointOutput {
+	s.Name = &v
+	return s
+}
+
+// SetReplicationConfig sets the ReplicationConfig field's value.
+func (s *DescribeEndpointOutput) SetReplicationConfig(v *ReplicationConfig) *DescribeEndpointOutput {
+	s.ReplicationConfig = v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *DescribeEndpointOutput) SetRoleArn(v string) *DescribeEndpointOutput {
+	s.RoleArn = &v
+	return s
+}
+
+// SetRoutingConfig sets the RoutingConfig field's value.
+func (s *DescribeEndpointOutput) SetRoutingConfig(v *RoutingConfig) *DescribeEndpointOutput {
+	s.RoutingConfig = v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *DescribeEndpointOutput) SetState(v string) *DescribeEndpointOutput {
+	s.State = &v
+	return s
+}
+
+// SetStateReason sets the StateReason field's value.
+func (s *DescribeEndpointOutput) SetStateReason(v string) *DescribeEndpointOutput {
 	s.StateReason = &v
 	return s
 }
@@ -9574,6 +10504,201 @@ func (s EnableRuleOutput) GoString() string {
 	return s.String()
 }
 
+// An global endpoint used to improve your application's availability by making
+// it regional-fault tolerant. For more information about global endpoints,
+// see Making applications Regional-fault tolerant with global endpoints and
+// event replication (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-global-endpoints.html)
+// in the Amazon EventBridge User Guide..
+type Endpoint struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the endpoint.
+	Arn *string `min:"1" type:"string"`
+
+	// The time the endpoint was created.
+	CreationTime *time.Time `type:"timestamp"`
+
+	// A description for the endpoint.
+	Description *string `type:"string"`
+
+	// The URL subdomain of the endpoint. For example, if the URL for Endpoint is
+	// abcde.veo.endpoints.event.amazonaws.com, then the EndpointId is abcde.veo.
+	EndpointId *string `min:"1" type:"string"`
+
+	// The URL of the endpoint.
+	EndpointUrl *string `min:"1" type:"string"`
+
+	// The event buses being used by the endpoint.
+	EventBuses []*EndpointEventBus `min:"2" type:"list"`
+
+	// The last time the endpoint was modified.
+	LastModifiedTime *time.Time `type:"timestamp"`
+
+	// The name of the endpoint.
+	Name *string `min:"1" type:"string"`
+
+	// Whether event replication was enabled or disabled for this endpoint.
+	ReplicationConfig *ReplicationConfig `type:"structure"`
+
+	// The ARN of the role used by event replication for the endpoint.
+	RoleArn *string `min:"1" type:"string"`
+
+	// The routing configuration of the endpoint.
+	RoutingConfig *RoutingConfig `type:"structure"`
+
+	// The current state of the endpoint.
+	State *string `type:"string" enum:"EndpointState"`
+
+	// The reason the endpoint is in its current state.
+	StateReason *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Endpoint) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Endpoint) GoString() string {
+	return s.String()
+}
+
+// SetArn sets the Arn field's value.
+func (s *Endpoint) SetArn(v string) *Endpoint {
+	s.Arn = &v
+	return s
+}
+
+// SetCreationTime sets the CreationTime field's value.
+func (s *Endpoint) SetCreationTime(v time.Time) *Endpoint {
+	s.CreationTime = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *Endpoint) SetDescription(v string) *Endpoint {
+	s.Description = &v
+	return s
+}
+
+// SetEndpointId sets the EndpointId field's value.
+func (s *Endpoint) SetEndpointId(v string) *Endpoint {
+	s.EndpointId = &v
+	return s
+}
+
+// SetEndpointUrl sets the EndpointUrl field's value.
+func (s *Endpoint) SetEndpointUrl(v string) *Endpoint {
+	s.EndpointUrl = &v
+	return s
+}
+
+// SetEventBuses sets the EventBuses field's value.
+func (s *Endpoint) SetEventBuses(v []*EndpointEventBus) *Endpoint {
+	s.EventBuses = v
+	return s
+}
+
+// SetLastModifiedTime sets the LastModifiedTime field's value.
+func (s *Endpoint) SetLastModifiedTime(v time.Time) *Endpoint {
+	s.LastModifiedTime = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *Endpoint) SetName(v string) *Endpoint {
+	s.Name = &v
+	return s
+}
+
+// SetReplicationConfig sets the ReplicationConfig field's value.
+func (s *Endpoint) SetReplicationConfig(v *ReplicationConfig) *Endpoint {
+	s.ReplicationConfig = v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *Endpoint) SetRoleArn(v string) *Endpoint {
+	s.RoleArn = &v
+	return s
+}
+
+// SetRoutingConfig sets the RoutingConfig field's value.
+func (s *Endpoint) SetRoutingConfig(v *RoutingConfig) *Endpoint {
+	s.RoutingConfig = v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *Endpoint) SetState(v string) *Endpoint {
+	s.State = &v
+	return s
+}
+
+// SetStateReason sets the StateReason field's value.
+func (s *Endpoint) SetStateReason(v string) *Endpoint {
+	s.StateReason = &v
+	return s
+}
+
+// The event buses the endpoint is associated with.
+type EndpointEventBus struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the event bus the endpoint is associated with.
+	//
+	// EventBusArn is a required field
+	EventBusArn *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EndpointEventBus) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EndpointEventBus) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *EndpointEventBus) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "EndpointEventBus"}
+	if s.EventBusArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("EventBusArn"))
+	}
+	if s.EventBusArn != nil && len(*s.EventBusArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("EventBusArn", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetEventBusArn sets the EventBusArn field's value.
+func (s *EndpointEventBus) SetEventBusArn(v string) *EndpointEventBus {
+	s.EventBusArn = &v
+	return s
+}
+
 // An event bus receives events from a source and routes them to rules associated
 // with that event bus. Your account's default event bus receives events from
 // Amazon Web Services services. A custom event bus can receive events from
@@ -9711,6 +10836,79 @@ func (s *EventSource) SetName(v string) *EventSource {
 // SetState sets the State field's value.
 func (s *EventSource) SetState(v string) *EventSource {
 	s.State = &v
+	return s
+}
+
+// The failover configuration for an endpoint. This includes what triggers failover
+// and what happens when it's triggered.
+type FailoverConfig struct {
+	_ struct{} `type:"structure"`
+
+	// The main Region of the endpoint.
+	//
+	// Primary is a required field
+	Primary *Primary `type:"structure" required:"true"`
+
+	// The Region that events are routed to when failover is triggered or event
+	// replication is enabled.
+	//
+	// Secondary is a required field
+	Secondary *Secondary `type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FailoverConfig) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FailoverConfig) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *FailoverConfig) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "FailoverConfig"}
+	if s.Primary == nil {
+		invalidParams.Add(request.NewErrParamRequired("Primary"))
+	}
+	if s.Secondary == nil {
+		invalidParams.Add(request.NewErrParamRequired("Secondary"))
+	}
+	if s.Primary != nil {
+		if err := s.Primary.Validate(); err != nil {
+			invalidParams.AddNested("Primary", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Secondary != nil {
+		if err := s.Secondary.Validate(); err != nil {
+			invalidParams.AddNested("Secondary", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetPrimary sets the Primary field's value.
+func (s *FailoverConfig) SetPrimary(v *Primary) *FailoverConfig {
+	s.Primary = v
+	return s
+}
+
+// SetSecondary sets the Secondary field's value.
+func (s *FailoverConfig) SetSecondary(v *Secondary) *FailoverConfig {
+	s.Secondary = v
 	return s
 }
 
@@ -10625,6 +11823,137 @@ func (s *ListConnectionsOutput) SetConnections(v []*Connection) *ListConnections
 
 // SetNextToken sets the NextToken field's value.
 func (s *ListConnectionsOutput) SetNextToken(v string) *ListConnectionsOutput {
+	s.NextToken = &v
+	return s
+}
+
+type ListEndpointsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The primary Region of the endpoints associated with this account. For example
+	// "HomeRegion": "us-east-1".
+	HomeRegion *string `min:"9" type:"string"`
+
+	// The maximum number of results returned by the call.
+	MaxResults *int64 `min:"1" type:"integer"`
+
+	// A value that will return a subset of the endpoints associated with this account.
+	// For example, "NamePrefix": "ABC" will return all endpoints with "ABC" in
+	// the name.
+	NamePrefix *string `min:"1" type:"string"`
+
+	// If nextToken is returned, there are more results available. The value of
+	// nextToken is a unique pagination token for each page. Make the call again
+	// using the returned token to retrieve the next page. Keep all other arguments
+	// unchanged. Each pagination token expires after 24 hours. Using an expired
+	// pagination token will return an HTTP 400 InvalidToken error.
+	NextToken *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListEndpointsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListEndpointsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListEndpointsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListEndpointsInput"}
+	if s.HomeRegion != nil && len(*s.HomeRegion) < 9 {
+		invalidParams.Add(request.NewErrParamMinLen("HomeRegion", 9))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.NamePrefix != nil && len(*s.NamePrefix) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NamePrefix", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetHomeRegion sets the HomeRegion field's value.
+func (s *ListEndpointsInput) SetHomeRegion(v string) *ListEndpointsInput {
+	s.HomeRegion = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListEndpointsInput) SetMaxResults(v int64) *ListEndpointsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNamePrefix sets the NamePrefix field's value.
+func (s *ListEndpointsInput) SetNamePrefix(v string) *ListEndpointsInput {
+	s.NamePrefix = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListEndpointsInput) SetNextToken(v string) *ListEndpointsInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListEndpointsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The endpoints returned by the call.
+	Endpoints []*Endpoint `type:"list"`
+
+	// If nextToken is returned, there are more results available. The value of
+	// nextToken is a unique pagination token for each page. Make the call again
+	// using the returned token to retrieve the next page. Keep all other arguments
+	// unchanged. Each pagination token expires after 24 hours. Using an expired
+	// pagination token will return an HTTP 400 InvalidToken error.
+	NextToken *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListEndpointsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListEndpointsOutput) GoString() string {
+	return s.String()
+}
+
+// SetEndpoints sets the Endpoints field's value.
+func (s *ListEndpointsOutput) SetEndpoints(v []*Endpoint) *ListEndpointsOutput {
+	s.Endpoints = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListEndpointsOutput) SetNextToken(v string) *ListEndpointsOutput {
 	s.NextToken = &v
 	return s
 }
@@ -12131,8 +13460,67 @@ func (s *PolicyLengthExceededException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+// The primary Region of the endpoint.
+type Primary struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the health check used by the endpoint to determine whether failover
+	// is triggered.
+	//
+	// HealthCheck is a required field
+	HealthCheck *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Primary) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Primary) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *Primary) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "Primary"}
+	if s.HealthCheck == nil {
+		invalidParams.Add(request.NewErrParamRequired("HealthCheck"))
+	}
+	if s.HealthCheck != nil && len(*s.HealthCheck) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("HealthCheck", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetHealthCheck sets the HealthCheck field's value.
+func (s *Primary) SetHealthCheck(v string) *Primary {
+	s.HealthCheck = &v
+	return s
+}
+
 type PutEventsInput struct {
 	_ struct{} `type:"structure"`
+
+	// The URL subdomain of the endpoint. For example, if the URL for Endpoint is
+	// abcde.veo.endpoints.event.amazonaws.com, then the EndpointId is abcde.veo.
+	//
+	// When using Java, you must include auth-crt on the class path.
+	//
+	// This AWS SDK does not support calling multi-region endpoints with SigV4a authentication.
+	EndpointId *string `min:"1" type:"string"`
 
 	// The entry that defines an event in your system. You can specify several parameters
 	// for the entry such as the source and type of the event, resources associated
@@ -12163,6 +13551,9 @@ func (s PutEventsInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *PutEventsInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "PutEventsInput"}
+	if s.EndpointId != nil && len(*s.EndpointId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("EndpointId", 1))
+	}
 	if s.Entries == nil {
 		invalidParams.Add(request.NewErrParamRequired("Entries"))
 	}
@@ -12184,6 +13575,12 @@ func (s *PutEventsInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetEndpointId sets the EndpointId field's value.
+func (s *PutEventsInput) SetEndpointId(v string) *PutEventsInput {
+	s.EndpointId = &v
+	return s
 }
 
 // SetEntries sets the Entries field's value.
@@ -12238,7 +13635,7 @@ func (s *PutEventsOutput) SetFailedEntryCount(v int64) *PutEventsOutput {
 type PutEventsRequestEntry struct {
 	_ struct{} `type:"structure"`
 
-	// A valid JSON string. There is no other schema imposed. The JSON string may
+	// A valid JSON object. There is no other schema imposed. The JSON object may
 	// contain fields and nested subobjects.
 	Detail *string `type:"string"`
 
@@ -12248,6 +13645,11 @@ type PutEventsRequestEntry struct {
 	// The name or ARN of the event bus to receive the event. Only the rules that
 	// are associated with this event bus are used to match the event. If you omit
 	// this, the default event bus is used.
+	//
+	// If you're using a global endpoint with a custom bus, you must enter the name,
+	// not the ARN, of the event bus in either the primary or secondary Region here
+	// and the corresponding event bus in the other Region will be determined based
+	// on the endpoint referenced by the EndpointId.
 	EventBusName *string `min:"1" type:"string"`
 
 	// Amazon Web Services resources, identified by Amazon Resource Name (ARN),
@@ -12791,7 +14193,7 @@ type PutRuleInput struct {
 	// this, the default event bus is used.
 	EventBusName *string `min:"1" type:"string"`
 
-	// The event pattern. For more information, see Events and Event Patterns (https://docs.aws.amazon.com/eventbridge/latest/userguide/eventbridge-and-event-patterns.html)
+	// The event pattern. For more information, see EventBridge event patterns (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-event-patterns.html.html)
 	// in the Amazon EventBridge User Guide.
 	EventPattern *string `type:"string"`
 
@@ -13684,6 +15086,38 @@ func (s *ReplayDestination) SetFilterArns(v []*string) *ReplayDestination {
 	return s
 }
 
+// Endpoints can replicate all events to the secondary Region.
+type ReplicationConfig struct {
+	_ struct{} `type:"structure"`
+
+	// The state of event replication.
+	State *string `type:"string" enum:"ReplicationState"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplicationConfig) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplicationConfig) GoString() string {
+	return s.String()
+}
+
+// SetState sets the State field's value.
+func (s *ReplicationConfig) SetState(v string) *ReplicationConfig {
+	s.State = &v
+	return s
+}
+
 // The resource you are trying to create already exists.
 type ResourceAlreadyExistsException struct {
 	_            struct{}                  `type:"structure"`
@@ -13865,6 +15299,59 @@ func (s *RetryPolicy) SetMaximumEventAgeInSeconds(v int64) *RetryPolicy {
 // SetMaximumRetryAttempts sets the MaximumRetryAttempts field's value.
 func (s *RetryPolicy) SetMaximumRetryAttempts(v int64) *RetryPolicy {
 	s.MaximumRetryAttempts = &v
+	return s
+}
+
+// The routing configuration of the endpoint.
+type RoutingConfig struct {
+	_ struct{} `type:"structure"`
+
+	// The failover configuration for an endpoint. This includes what triggers failover
+	// and what happens when it's triggered.
+	//
+	// FailoverConfig is a required field
+	FailoverConfig *FailoverConfig `type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RoutingConfig) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RoutingConfig) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RoutingConfig) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RoutingConfig"}
+	if s.FailoverConfig == nil {
+		invalidParams.Add(request.NewErrParamRequired("FailoverConfig"))
+	}
+	if s.FailoverConfig != nil {
+		if err := s.FailoverConfig.Validate(); err != nil {
+			invalidParams.AddNested("FailoverConfig", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFailoverConfig sets the FailoverConfig field's value.
+func (s *RoutingConfig) SetFailoverConfig(v *FailoverConfig) *RoutingConfig {
+	s.FailoverConfig = v
 	return s
 }
 
@@ -14232,6 +15719,57 @@ func (s *SageMakerPipelineParameters) Validate() error {
 // SetPipelineParameterList sets the PipelineParameterList field's value.
 func (s *SageMakerPipelineParameters) SetPipelineParameterList(v []*SageMakerPipelineParameter) *SageMakerPipelineParameters {
 	s.PipelineParameterList = v
+	return s
+}
+
+// The secondary Region that processes events when failover is triggered or
+// replication is enabled.
+type Secondary struct {
+	_ struct{} `type:"structure"`
+
+	// Defines the secondary Region.
+	//
+	// Route is a required field
+	Route *string `min:"9" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Secondary) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Secondary) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *Secondary) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "Secondary"}
+	if s.Route == nil {
+		invalidParams.Add(request.NewErrParamRequired("Route"))
+	}
+	if s.Route != nil && len(*s.Route) < 9 {
+		invalidParams.Add(request.NewErrParamMinLen("Route", 9))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetRoute sets the Route field's value.
+func (s *Secondary) SetRoute(v string) *Secondary {
+	s.Route = &v
 	return s
 }
 
@@ -15877,6 +17415,227 @@ func (s *UpdateConnectionOutput) SetLastModifiedTime(v time.Time) *UpdateConnect
 	return s
 }
 
+type UpdateEndpointInput struct {
+	_ struct{} `type:"structure"`
+
+	// A description for the endpoint.
+	Description *string `type:"string"`
+
+	// Define event buses used for replication.
+	EventBuses []*EndpointEventBus `min:"2" type:"list"`
+
+	// The name of the endpoint you want to update.
+	//
+	// Name is a required field
+	Name *string `min:"1" type:"string" required:"true"`
+
+	// Whether event replication was enabled or disabled by this request.
+	ReplicationConfig *ReplicationConfig `type:"structure"`
+
+	// The ARN of the role used by event replication for this request.
+	RoleArn *string `min:"1" type:"string"`
+
+	// Configure the routing policy, including the health check and secondary Region..
+	RoutingConfig *RoutingConfig `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateEndpointInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateEndpointInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateEndpointInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateEndpointInput"}
+	if s.EventBuses != nil && len(s.EventBuses) < 2 {
+		invalidParams.Add(request.NewErrParamMinLen("EventBuses", 2))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.RoleArn != nil && len(*s.RoleArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RoleArn", 1))
+	}
+	if s.EventBuses != nil {
+		for i, v := range s.EventBuses {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "EventBuses", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.RoutingConfig != nil {
+		if err := s.RoutingConfig.Validate(); err != nil {
+			invalidParams.AddNested("RoutingConfig", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDescription sets the Description field's value.
+func (s *UpdateEndpointInput) SetDescription(v string) *UpdateEndpointInput {
+	s.Description = &v
+	return s
+}
+
+// SetEventBuses sets the EventBuses field's value.
+func (s *UpdateEndpointInput) SetEventBuses(v []*EndpointEventBus) *UpdateEndpointInput {
+	s.EventBuses = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *UpdateEndpointInput) SetName(v string) *UpdateEndpointInput {
+	s.Name = &v
+	return s
+}
+
+// SetReplicationConfig sets the ReplicationConfig field's value.
+func (s *UpdateEndpointInput) SetReplicationConfig(v *ReplicationConfig) *UpdateEndpointInput {
+	s.ReplicationConfig = v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *UpdateEndpointInput) SetRoleArn(v string) *UpdateEndpointInput {
+	s.RoleArn = &v
+	return s
+}
+
+// SetRoutingConfig sets the RoutingConfig field's value.
+func (s *UpdateEndpointInput) SetRoutingConfig(v *RoutingConfig) *UpdateEndpointInput {
+	s.RoutingConfig = v
+	return s
+}
+
+type UpdateEndpointOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the endpoint you updated in this request.
+	Arn *string `min:"1" type:"string"`
+
+	// The ID of the endpoint you updated in this request.
+	EndpointId *string `min:"1" type:"string"`
+
+	// The URL of the endpoint you updated in this request.
+	EndpointUrl *string `min:"1" type:"string"`
+
+	// The event buses used for replication for the endpoint you updated in this
+	// request.
+	EventBuses []*EndpointEventBus `min:"2" type:"list"`
+
+	// The name of the endpoint you updated in this request.
+	Name *string `min:"1" type:"string"`
+
+	// Whether event replication was enabled or disabled for the endpoint you updated
+	// in this request.
+	ReplicationConfig *ReplicationConfig `type:"structure"`
+
+	// The ARN of the role used by event replication for the endpoint you updated
+	// in this request.
+	RoleArn *string `min:"1" type:"string"`
+
+	// The routing configuration you updated in this request.
+	RoutingConfig *RoutingConfig `type:"structure"`
+
+	// The state of the endpoint you updated in this request.
+	State *string `type:"string" enum:"EndpointState"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateEndpointOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateEndpointOutput) GoString() string {
+	return s.String()
+}
+
+// SetArn sets the Arn field's value.
+func (s *UpdateEndpointOutput) SetArn(v string) *UpdateEndpointOutput {
+	s.Arn = &v
+	return s
+}
+
+// SetEndpointId sets the EndpointId field's value.
+func (s *UpdateEndpointOutput) SetEndpointId(v string) *UpdateEndpointOutput {
+	s.EndpointId = &v
+	return s
+}
+
+// SetEndpointUrl sets the EndpointUrl field's value.
+func (s *UpdateEndpointOutput) SetEndpointUrl(v string) *UpdateEndpointOutput {
+	s.EndpointUrl = &v
+	return s
+}
+
+// SetEventBuses sets the EventBuses field's value.
+func (s *UpdateEndpointOutput) SetEventBuses(v []*EndpointEventBus) *UpdateEndpointOutput {
+	s.EventBuses = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *UpdateEndpointOutput) SetName(v string) *UpdateEndpointOutput {
+	s.Name = &v
+	return s
+}
+
+// SetReplicationConfig sets the ReplicationConfig field's value.
+func (s *UpdateEndpointOutput) SetReplicationConfig(v *ReplicationConfig) *UpdateEndpointOutput {
+	s.ReplicationConfig = v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *UpdateEndpointOutput) SetRoleArn(v string) *UpdateEndpointOutput {
+	s.RoleArn = &v
+	return s
+}
+
+// SetRoutingConfig sets the RoutingConfig field's value.
+func (s *UpdateEndpointOutput) SetRoutingConfig(v *RoutingConfig) *UpdateEndpointOutput {
+	s.RoutingConfig = v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *UpdateEndpointOutput) SetState(v string) *UpdateEndpointOutput {
+	s.State = &v
+	return s
+}
+
 const (
 	// ApiDestinationHttpMethodPost is a ApiDestinationHttpMethod enum value
 	ApiDestinationHttpMethodPost = "POST"
@@ -16054,6 +17813,42 @@ func ConnectionState_Values() []string {
 }
 
 const (
+	// EndpointStateActive is a EndpointState enum value
+	EndpointStateActive = "ACTIVE"
+
+	// EndpointStateCreating is a EndpointState enum value
+	EndpointStateCreating = "CREATING"
+
+	// EndpointStateUpdating is a EndpointState enum value
+	EndpointStateUpdating = "UPDATING"
+
+	// EndpointStateDeleting is a EndpointState enum value
+	EndpointStateDeleting = "DELETING"
+
+	// EndpointStateCreateFailed is a EndpointState enum value
+	EndpointStateCreateFailed = "CREATE_FAILED"
+
+	// EndpointStateUpdateFailed is a EndpointState enum value
+	EndpointStateUpdateFailed = "UPDATE_FAILED"
+
+	// EndpointStateDeleteFailed is a EndpointState enum value
+	EndpointStateDeleteFailed = "DELETE_FAILED"
+)
+
+// EndpointState_Values returns all elements of the EndpointState enum
+func EndpointState_Values() []string {
+	return []string{
+		EndpointStateActive,
+		EndpointStateCreating,
+		EndpointStateUpdating,
+		EndpointStateDeleting,
+		EndpointStateCreateFailed,
+		EndpointStateUpdateFailed,
+		EndpointStateDeleteFailed,
+	}
+}
+
+const (
 	// EventSourceStatePending is a EventSourceState enum value
 	EventSourceStatePending = "PENDING"
 
@@ -16170,6 +17965,22 @@ func ReplayState_Values() []string {
 		ReplayStateCompleted,
 		ReplayStateCancelled,
 		ReplayStateFailed,
+	}
+}
+
+const (
+	// ReplicationStateEnabled is a ReplicationState enum value
+	ReplicationStateEnabled = "ENABLED"
+
+	// ReplicationStateDisabled is a ReplicationState enum value
+	ReplicationStateDisabled = "DISABLED"
+)
+
+// ReplicationState_Values returns all elements of the ReplicationState enum
+func ReplicationState_Values() []string {
+	return []string{
+		ReplicationStateEnabled,
+		ReplicationStateDisabled,
 	}
 }
 
