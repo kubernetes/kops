@@ -8691,7 +8691,7 @@ type CreateGrantInput struct {
 	// in the Key Management Service Developer Guide.
 	//
 	// Operations is a required field
-	Operations []*string `type:"list" required:"true"`
+	Operations []*string `type:"list" required:"true" enum:"GrantOperation"`
 
 	// The principal that has permission to use the RetireGrant operation to retire
 	// the grant.
@@ -12407,7 +12407,7 @@ type GetPublicKeyOutput struct {
 	//
 	// This field appears in the response only when the KeyUsage of the public key
 	// is ENCRYPT_DECRYPT.
-	EncryptionAlgorithms []*string `type:"list"`
+	EncryptionAlgorithms []*string `type:"list" enum:"EncryptionAlgorithmSpec"`
 
 	// The Amazon Resource Name (key ARN (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id-key-ARN))
 	// of the asymmetric KMS key from which the public key was downloaded.
@@ -12436,7 +12436,7 @@ type GetPublicKeyOutput struct {
 	//
 	// This field appears in the response only when the KeyUsage of the public key
 	// is SIGN_VERIFY.
-	SigningAlgorithms []*string `type:"list"`
+	SigningAlgorithms []*string `type:"list" enum:"SigningAlgorithmSpec"`
 }
 
 // String returns the string representation.
@@ -12603,7 +12603,7 @@ type GrantListEntry struct {
 	Name *string `min:"1" type:"string"`
 
 	// The list of operations permitted by the grant.
-	Operations []*string `type:"list"`
+	Operations []*string `type:"list" enum:"GrantOperation"`
 
 	// The principal that can retire the grant.
 	RetiringPrincipal *string `min:"1" type:"string"`
@@ -13863,7 +13863,7 @@ type KeyMetadata struct {
 	// key with other encryption algorithms within KMS.
 	//
 	// This value is present only when the KeyUsage of the KMS key is ENCRYPT_DECRYPT.
-	EncryptionAlgorithms []*string `type:"list"`
+	EncryptionAlgorithms []*string `type:"list" enum:"EncryptionAlgorithmSpec"`
 
 	// Specifies whether the KMS key's key material expires. This value is present
 	// only when Origin is EXTERNAL, otherwise this value is omitted.
@@ -13944,7 +13944,7 @@ type KeyMetadata struct {
 	// key with other signing algorithms within KMS.
 	//
 	// This field appears only when the KeyUsage of the KMS key is SIGN_VERIFY.
-	SigningAlgorithms []*string `type:"list"`
+	SigningAlgorithms []*string `type:"list" enum:"SigningAlgorithmSpec"`
 
 	// The time at which the imported key material expires. When the key material
 	// expires, KMS deletes the key material and the KMS key becomes unusable. This
