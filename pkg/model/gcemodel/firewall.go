@@ -48,7 +48,7 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Allow all traffic from nodes -> nodes
 	{
 		t := &gcetasks.FirewallRule{
-			Name:       s(b.SafeObjectName("node-to-node")),
+			Name:       s(b.NameForFirewallRule("node-to-node")),
 			Lifecycle:  b.Lifecycle,
 			Network:    b.LinkToNetwork(),
 			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
@@ -61,7 +61,7 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Allow full traffic from master -> master
 	{
 		t := &gcetasks.FirewallRule{
-			Name:       s(b.SafeObjectName("master-to-master")),
+			Name:       s(b.NameForFirewallRule("master-to-master")),
 			Lifecycle:  b.Lifecycle,
 			Network:    b.LinkToNetwork(),
 			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
@@ -74,7 +74,7 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Allow full traffic from master -> node
 	{
 		t := &gcetasks.FirewallRule{
-			Name:       s(b.SafeObjectName("master-to-node")),
+			Name:       s(b.NameForFirewallRule("master-to-node")),
 			Lifecycle:  b.Lifecycle,
 			Network:    b.LinkToNetwork(),
 			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
@@ -87,7 +87,7 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Allow limited traffic from nodes -> masters
 	{
 		t := &gcetasks.FirewallRule{
-			Name:       s(b.SafeObjectName("node-to-master")),
+			Name:       s(b.NameForFirewallRule("node-to-master")),
 			Lifecycle:  b.Lifecycle,
 			Network:    b.LinkToNetwork(),
 			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
@@ -118,7 +118,7 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		c.AddTask(&gcetasks.FirewallRule{
-			Name:         s(b.SafeObjectName("pod-cidrs-to-node")),
+			Name:         s(b.NameForFirewallRule("pod-cidrs-to-node")),
 			Lifecycle:    b.Lifecycle,
 			Network:      b.LinkToNetwork(),
 			SourceRanges: []string{b.Cluster.Spec.PodCIDR},
