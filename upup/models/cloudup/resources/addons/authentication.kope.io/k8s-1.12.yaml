@@ -41,14 +41,24 @@ spec:
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
       serviceAccountName: auth-api
       hostNetwork: true
-      nodeSelector:
-        node-role.kubernetes.io/master: ""
       priorityClassName: system-node-critical
       tolerations:
       - effect: NoSchedule
         key: node-role.kubernetes.io/master
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/control-plane
       - key: "CriticalAddonsOnly"
         operator: "Exists"
       containers:
