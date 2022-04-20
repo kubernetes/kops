@@ -19,17 +19,27 @@ spec:
         k8s-app: external-dns
         version: v0.10.1
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
       priorityClassName: system-cluster-critical
       serviceAccountName: external-dns
       securityContext:
         fsGroup: 65534
       tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
       - key: "node-role.kubernetes.io/master"
         effect: NoSchedule
       - key: "node.kubernetes.io/not-ready"
         effect: NoSchedule
-      nodeSelector:
-        node-role.kubernetes.io/master: ""
       dnsPolicy: Default  # Don't use cluster DNS (we are likely running before kube-dns)
       hostNetwork: true
       containers:

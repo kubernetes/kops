@@ -336,6 +336,24 @@ spec:
       labels:
         app: gcp-compute-persistent-disk-csi-driver
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                - linux
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                - linux
       # Host network must be used for interaction with Workload Identity in GKE
       # since it replaces GCE Metadata Server with GKE Metadata Server. Remove
       # this requirement when issue is resolved and before any exposure of
@@ -347,9 +365,6 @@ spec:
         operator: Exists
       - key: CriticalAddonsOnly
         operator: Exists
-      nodeSelector:
-        kubernetes.io/os: linux
-        node-role.kubernetes.io/master: ""
       serviceAccountName: csi-gce-pd-controller-sa
       priorityClassName: csi-gce-pd-controller
       containers:
