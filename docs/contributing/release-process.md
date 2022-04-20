@@ -73,6 +73,7 @@ git add . && git commit -m "Release ${VERSION}"
 This is the "release commit". Push and create a PR.
 
 ```
+git push -u origin release_${VERSION}
 gh pr create -f
 ```
 
@@ -123,6 +124,7 @@ Review then send a PR with the release notes:
 ```
 git add -p docs/releases/${DOC}-NOTES.md
 git commit -m "Release notes for ${VERSION}"
+git push -u origin relnotes_${VERSION}
 gh pr create -f
 ```
 
@@ -154,6 +156,7 @@ Currently we send the image and non-image artifact promotion PRs separately.
 cd ${GOPATH}/src/k8s.io/k8s.io
 git add -p k8s.gcr.io/images/k8s-staging-kops/images.yaml
 git commit -m "Promote kOps $VERSION images"
+git push -u origin kops_images_${VERSION}
 gh pr create -f
 ```
 
@@ -178,6 +181,7 @@ Verify, then send a PR:
 ```
 git add artifacts/manifests/k8s-staging-kops/${VERSION}.yaml
 git commit -m "Promote kOps $VERSION binary artifacts"
+git push -u origin kops_artifacts_${VERSION}
 gh pr create -f
 ```
 
