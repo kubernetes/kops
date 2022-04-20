@@ -661,14 +661,14 @@ spec:
           name: token-amazonaws-com
           readOnly: true
       dnsPolicy: Default
-      nodeSelector:
-        node-role.kubernetes.io/master: ""
       priorityClassName: system-cluster-critical
       securityContext:
         fsGroup: 10001
       serviceAccountName: karpenter
       tolerations:
       - key: node-role.kubernetes.io/master
+        operator: Exists
+      - key: node-role.kubernetes.io/control-plane
         operator: Exists
       topologySpreadConstraints:
       - labelSelector:
@@ -730,6 +730,17 @@ spec:
                 - linux
               - key: karpenter.sh/provisioner-name
                 operator: DoesNotExist
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+            - matchExpressions:
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                - linux
+              - key: karpenter.sh/provisioner-name
+                operator: DoesNotExist
+              - key: node-role.kubernetes.io/master
+                operator: Exists
       containers:
       - args:
         - -port=8443
@@ -774,14 +785,14 @@ spec:
         - mountPath: /var/run/secrets/amazonaws.com/
           name: token-amazonaws-com
           readOnly: true
-      nodeSelector:
-        node-role.kubernetes.io/master: ""
       priorityClassName: system-cluster-critical
       securityContext:
         fsGroup: 10001
       serviceAccountName: karpenter
       tolerations:
       - key: node-role.kubernetes.io/master
+        operator: Exists
+      - key: node-role.kubernetes.io/control-plane
         operator: Exists
       topologySpreadConstraints:
       - labelSelector:

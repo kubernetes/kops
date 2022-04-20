@@ -437,6 +437,16 @@ spec:
       labels:
         karpenter: controller
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
       priorityClassName: system-cluster-critical
       serviceAccountName: karpenter
       dnsPolicy: Default
@@ -497,6 +507,8 @@ spec:
       tolerations:
       - key: node-role.kubernetes.io/master
         operator: Exists
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
       topologySpreadConstraints:
       - maxSkew: 1
         topologyKey: "topology.kubernetes.io/zone"
@@ -510,8 +522,6 @@ spec:
         labelSelector:
           matchLabels:
             karpenter: webhook
-      nodeSelector:
-        node-role.kubernetes.io/master: ""
 
 ---
 # Source: karpenter/templates/webhook/deployment.yaml
@@ -581,8 +591,21 @@ spec:
                 - linux
               - key: karpenter.sh/provisioner-name
                 operator: DoesNotExist
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+            - matchExpressions:
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                - linux
+              - key: karpenter.sh/provisioner-name
+                operator: DoesNotExist
+              - key: node-role.kubernetes.io/master
+                operator: Exists
       tolerations:
       - key: node-role.kubernetes.io/master
+        operator: Exists
+      - key: node-role.kubernetes.io/control-plane
         operator: Exists
       topologySpreadConstraints:
       - maxSkew: 1
@@ -597,8 +620,6 @@ spec:
         labelSelector:
           matchLabels:
             karpenter: webhook
-      nodeSelector:
-        node-role.kubernetes.io/master: ""
 ---
 # Source: karpenter/templates/webhook/webhooks.yaml
 apiVersion: admissionregistration.k8s.io/v1

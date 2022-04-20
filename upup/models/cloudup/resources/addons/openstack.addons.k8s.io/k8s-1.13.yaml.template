@@ -181,11 +181,20 @@ spec:
       labels:
         name: openstack-cloud-provider
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
+
       # run on the host network (don't depend on CNI)
       hostNetwork: true
       # run on each master node
-      nodeSelector:
-        node-role.kubernetes.io/master: ""
       priorityClassName: system-node-critical
       securityContext:
         runAsUser: 1001
