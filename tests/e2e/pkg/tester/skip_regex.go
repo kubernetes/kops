@@ -97,6 +97,11 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|should.not.disrupt.a.cloud.load-balancer.s.connectivity.during.rollout"
 	}
 
+	if strings.Contains(cluster.Spec.KubernetesVersion, "v1.23.") {
+		// beta feature not enabled by default
+		skipRegex += "|Topology.Hints"
+	}
+
 	// Ensure it is valid regex
 	if _, err := regexp.Compile(skipRegex); err != nil {
 		return err
