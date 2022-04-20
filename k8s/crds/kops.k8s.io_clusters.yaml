@@ -647,6 +647,12 @@ spec:
                       ignore unschedulable pods until they are a certain "age", regardless
                       of the scan-interval Default: 0s'
                     type: string
+                  podAnnotations:
+                    additionalProperties:
+                      type: string
+                    description: 'PodAnnotations are the annotations added to cluster
+                      autoscaler pod when they are created. Default: none'
+                    type: object
                   scaleDownDelayAfterAdd:
                     description: 'ScaleDownDelayAfterAdd determines the time after
                       scale up that scale down evaluation resumes Default: 10m0s'
