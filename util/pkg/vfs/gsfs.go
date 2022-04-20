@@ -428,7 +428,7 @@ func (p *GSPath) RenderTerraform(w *terraformWriter.TerraformWriter, name string
 		RoleEntity: make([]string, 0),
 		Provider:   terraformWriter.LiteralTokens("google", "files"),
 	}
-	for _, re := range acl.(GSAcl).Acl {
+	for _, re := range acl.(*GSAcl).Acl {
 		// https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/storage_object_acl#role_entity
 		tfACL.RoleEntity = append(tfACL.RoleEntity, fmt.Sprintf("%v:%v", re.Role, re.Entity))
 	}
