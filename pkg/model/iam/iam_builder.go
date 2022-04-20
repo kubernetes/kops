@@ -427,7 +427,12 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		if b.Cluster.Spec.AWSLoadBalancerController != nil && fi.BoolValue(b.Cluster.Spec.AWSLoadBalancerController.Enabled) {
 			AddAWSLoadbalancerControllerPermissions(p)
 		}
-		AddClusterAutoscalerPermissions(p)
+
+		var useStaticInstanceList bool
+		if ca := b.Cluster.Spec.ClusterAutoscaler; ca != nil && fi.BoolValue(ca.AWSUseStaticInstanceList) {
+			useStaticInstanceList = true
+		}
+		AddClusterAutoscalerPermissions(p, useStaticInstanceList)
 
 		nth := b.Cluster.Spec.NodeTerminationHandler
 		if nth != nil && fi.BoolValue(nth.Enabled) && fi.BoolValue(nth.EnableSQSTerminationDraining) {
@@ -1013,7 +1018,7 @@ func AddAWSLoadbalancerControllerPermissions(p *Policy) {
 	)
 }
 
-func AddClusterAutoscalerPermissions(p *Policy) {
+func AddClusterAutoscalerPermissions(p *Policy, useStaticInstanceList bool) {
 	p.clusterTaggedAction.Insert(
 		"autoscaling:SetDesiredCapacity",
 		"autoscaling:TerminateInstanceInAutoScalingGroup",
@@ -1024,6 +1029,11 @@ func AddClusterAutoscalerPermissions(p *Policy) {
 		"autoscaling:DescribeLaunchConfigurations",
 		"ec2:DescribeLaunchTemplateVersions",
 	)
+	if !useStaticInstanceList {
+		p.unconditionalAction.Insert(
+			"ec2:DescribeInstanceTypes",
+		)
+	}
 }
 
 // AddAWSEBSCSIDriverPermissions appens policy statements that the AWS EBS CSI Driver needs to operate.
