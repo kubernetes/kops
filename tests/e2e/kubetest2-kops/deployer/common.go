@@ -29,6 +29,7 @@ import (
 	"k8s.io/kops/tests/e2e/kubetest2-kops/gce"
 	"k8s.io/kops/tests/e2e/pkg/kops"
 	"k8s.io/kops/tests/e2e/pkg/target"
+	"k8s.io/kops/tests/e2e/pkg/util"
 	"sigs.k8s.io/kubetest2/pkg/boskos"
 )
 
@@ -66,13 +67,13 @@ func (d *deployer) initialize() error {
 
 	switch d.CloudProvider {
 	case "aws":
-		// These environment variables are defined by the "preset-aws-ssh" prow preset
-		// https://github.com/kubernetes/test-infra/blob/3d3b325c98b739b526ba5d93ce21c90a05e1f46d/config/prow/config.yaml#L653-L670
-		if d.SSHPrivateKeyPath == "" {
-			d.SSHPrivateKeyPath = os.Getenv("AWS_SSH_PRIVATE_KEY_FILE")
-		}
-		if d.SSHPublicKeyPath == "" {
-			d.SSHPublicKeyPath = os.Getenv("AWS_SSH_PUBLIC_KEY_FILE")
+		if d.SSHPrivateKeyPath == "" || d.SSHPublicKeyPath == "" {
+			publicKeyPath, privateKeyPath, err := util.CreateSSHKeyPair(d.ClusterName)
+			if err != nil {
+				return err
+			}
+			d.SSHPublicKeyPath = publicKeyPath
+			d.SSHPrivateKeyPath = privateKeyPath
 		}
 	case "digitalocean":
 		if d.SSHPrivateKeyPath == "" {
@@ -185,6 +186,9 @@ func (d *deployer) env() []string {
 				vars = append(vars, k+"="+v)
 			}
 		}
+		// Recognized by the e2e framework
+		// https://github.com/kubernetes/kubernetes/blob/a750d8054a6cb3167f495829ce3e77ab0ccca48e/test/e2e/framework/ssh/ssh.go#L59-L62
+		vars = append(vars, fmt.Sprintf("KUBE_SSH_KEY_PATH=%v", d.SSHPrivateKeyPath))
 	} else if d.CloudProvider == "digitalocean" {
 		// Pass through some env vars if set
 		for _, k := range []string{"DIGITALOCEAN_ACCESS_TOKEN", "S3_ACCESS_KEY_ID", "S3_SECRET_ACCESS_KEY"} {
