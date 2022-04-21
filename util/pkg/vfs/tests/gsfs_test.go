@@ -90,7 +90,7 @@ func TestGSRenderTerraform(t *testing.T) {
 			}
 			target := terraform.NewTerraformTarget(cloud, "", vfsProvider, "/dev/null", nil)
 
-			acl := vfs.GSAcl{
+			acl := &vfs.GSAcl{
 				Acl: []*storage.ObjectAccessControl{
 					{
 						Entity: fmt.Sprintf("user-%v", tc.serviceAcct),
