@@ -54,7 +54,11 @@ func (c *GCEModelContext) NameForIPAliasRange(key string) string {
 func (c *GCEModelContext) LinkToSubnet(subnet *kops.ClusterSubnetSpec) *gcetasks.Subnet {
 	name := subnet.ProviderID
 	if name == "" {
-		name = c.SafeObjectName(subnet.Name)
+		var err error
+		name, err = gce.ClusterSuffixedName(subnet.Name, c.Cluster.ObjectMeta.Name, 63)
+		if err != nil {
+			klog.Fatalf("failed to construct subnet name: %w", err)
+		}
 	}
 
 	return &gcetasks.Subnet{Name: s(name)}
