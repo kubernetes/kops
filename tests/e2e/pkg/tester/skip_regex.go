@@ -51,7 +51,7 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|external.IP.is.not.assigned.to.a.node"
 		// https://github.com/cilium/cilium/issues/14287
 		skipRegex += "|same.port.number.but.different.protocols|same.hostPort.but.different.hostIP.and.protocol"
-		if strings.Contains(cluster.Spec.KubernetesVersion, "v1.23") || strings.Contains(cluster.Spec.KubernetesVersion, "v1.24") {
+		if strings.Contains(cluster.Spec.KubernetesVersion, "v1.23") || strings.Contains(cluster.Spec.KubernetesVersion, "v1.24") || strings.Contains(cluster.Spec.KubernetesVersion, "v1.25") {
 			// Reassess after https://github.com/kubernetes/kubernetes/pull/102643 is merged
 			// ref:
 			// https://github.com/kubernetes/kubernetes/issues/96717
