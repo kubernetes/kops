@@ -27,6 +27,8 @@ spec:
     image: k8s.gcr.io/autoscaling/cluster-autoscaler:v1.21.2
     maxNodeProvisionTime: 15m0s
     newPodScaleUpDelay: 0s
+    podAnnotations:
+      testAnnotation: testAnnotation
     scaleDownDelayAfterAdd: 10m0s
     scaleDownUtilizationThreshold: "0.5"
     skipNodesWithLocalStorage: true
