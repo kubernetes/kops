@@ -301,6 +301,7 @@ spec:
       annotations:
         prometheus.io/port: "8085"
         prometheus.io/scrape: "true"
+        testAnnotation: testAnnotation
       creationTimestamp: null
       labels:
         app: cluster-autoscaler
