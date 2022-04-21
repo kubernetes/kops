@@ -92,8 +92,8 @@ spec:
         fsGroup: 65534
       serviceAccountName: external-dns
       tolerations:
-      - key: node-role.kubernetes.io/control-plane
-        operator: Exists
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/control-plane
       - effect: NoSchedule
         key: node-role.kubernetes.io/master
       - effect: NoSchedule
