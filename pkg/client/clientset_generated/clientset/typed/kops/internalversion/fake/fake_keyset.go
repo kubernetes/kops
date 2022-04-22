@@ -105,7 +105,7 @@ func (c *FakeKeysets) Update(ctx context.Context, keyset *kops.Keyset, opts v1.U
 // Delete takes name of the keyset and deletes it. Returns an error if one occurs.
 func (c *FakeKeysets) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewDeleteAction(keysetsResource, c.ns, name), &kops.Keyset{})
+		Invokes(testing.NewDeleteActionWithOptions(keysetsResource, c.ns, name, opts), &kops.Keyset{})
 
 	return err
 }

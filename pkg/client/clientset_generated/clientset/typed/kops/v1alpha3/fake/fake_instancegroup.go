@@ -105,7 +105,7 @@ func (c *FakeInstanceGroups) Update(ctx context.Context, instanceGroup *v1alpha3
 // Delete takes name of the instanceGroup and deletes it. Returns an error if one occurs.
 func (c *FakeInstanceGroups) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewDeleteAction(instancegroupsResource, c.ns, name), &v1alpha3.InstanceGroup{})
+		Invokes(testing.NewDeleteActionWithOptions(instancegroupsResource, c.ns, name, opts), &v1alpha3.InstanceGroup{})
 
 	return err
 }
