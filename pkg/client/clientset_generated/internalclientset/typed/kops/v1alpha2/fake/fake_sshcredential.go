@@ -105,7 +105,7 @@ func (c *FakeSSHCredentials) Update(ctx context.Context, sSHCredential *v1alpha2
 // Delete takes name of the sSHCredential and deletes it. Returns an error if one occurs.
 func (c *FakeSSHCredentials) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewDeleteAction(sshcredentialsResource, c.ns, name), &v1alpha2.SSHCredential{})
+		Invokes(testing.NewDeleteActionWithOptions(sshcredentialsResource, c.ns, name, opts), &v1alpha2.SSHCredential{})
 
 	return err
 }
