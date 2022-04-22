@@ -35,7 +35,7 @@ GCFLAGS?=
 OSARCH=$(shell go env GOOS)/$(shell go env GOARCH)
 
 # CODEGEN_VERSION is the version of k8s.io/code-generator to use
-CODEGEN_VERSION=v0.22.2
+CODEGEN_VERSION=v0.24.0-rc.0
 
 
 UPLOAD_CMD=$(KOPS_ROOT)/hack/upload ${UPLOAD_ARGS}
