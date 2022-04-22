@@ -34,21 +34,6 @@ steps:
   - LATEST_FILE=markers/${_PULL_BASE_REF}/latest-ci.txt
   args:
   - gcs-upload-and-tag
-# Push the manifests
-#- name: 'docker.io/library/golang:1.18.1-bullseye'
-#  id: manifests
-#  waitFor: [images]
-#  entrypoint: make
-#  env:
-#  - DOCKER_CLI_EXPERIMENTAL=enabled
-#  - CI=$_CI
-#  - PULL_BASE_REF=$_PULL_BASE_REF
-#  - DOCKER_REGISTRY=$_DOCKER_REGISTRY
-#  - DOCKER_IMAGE_PREFIX=$_DOCKER_IMAGE_PREFIX
-#  args:
-#  - kops-controller-manifest
-#  - dns-controller-manifest
-#  - kube-apiserver-healthcheck-manifest
 # Build cloudbuild artifacts (for attestation)
 - name: 'docker.io/library/golang:1.18.1-bullseye'
   id: cloudbuild-artifacts
