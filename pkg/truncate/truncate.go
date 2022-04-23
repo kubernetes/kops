@@ -37,7 +37,7 @@ type TruncateStringOptions struct {
 	HashLength int
 }
 
-// TruncateString will attempt to truncate a string to a max, adding a prefix to avoid collisions.
+// TruncateString will attempt to truncate a string to a max length, adding a suffix to avoid collisions.
 // Will never return a string longer than maxLength chars
 func TruncateString(s string, opt TruncateStringOptions) string {
 	if opt.MaxLength == 0 {
