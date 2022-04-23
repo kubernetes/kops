@@ -1,4 +1,4 @@
-# Pulled and modified from: https://raw.githubusercontent.com/coreos/flannel/v0.15.1/Documentation/kube-flannel.yml
+# Pulled and modified from: https://raw.githubusercontent.com/coreos/flannel/v0.17.0/Documentation/kube-flannel.yml
 
 ---
 apiVersion: policy/v1beta1
@@ -170,8 +170,19 @@ spec:
       - operator: Exists
       serviceAccountName: flannel
       initContainers:
+      - name: install-cni-plugin
+        image: rancher/mirrored-flannelcni-flannel-cni-plugin:v1.0.1
+        command:
+        - cp
+        args:
+        - -f
+        - /flannel
+        - /opt/cni/bin/flannel
+        volumeMounts:
+        - name: cni-plugin
+          mountPath: /opt/cni/bin
       - name: install-cni
-        image: quay.io/coreos/flannel:v0.15.1
+        image: rancher/mirrored-flannelcni-flannel:v0.17.0
         command:
         - cp
         args:
@@ -185,7 +196,7 @@ spec:
           mountPath: /etc/kube-flannel/
       containers:
       - name: kube-flannel
-        image: quay.io/coreos/flannel:v0.15.1
+        image: rancher/mirrored-flannelcni-flannel:v0.17.0
         command:
         - /opt/bin/flanneld
         args:
@@ -218,6 +229,8 @@ spec:
           mountPath: /dev/net
         - name: flannel-cfg
           mountPath: /etc/kube-flannel/
+        - name: xtables-lock
+          mountPath: /run/xtables.lock
       volumes:
       - name: run
         hostPath:
@@ -225,9 +238,16 @@ spec:
       - name: dev-net
         hostPath:
           path: /dev/net
+      - name: cni-plugin
+        hostPath:
+          path: /opt/cni/bin
       - name: cni
         hostPath:
           path: /etc/cni/net.d
       - name: flannel-cfg
         configMap:
           name: kube-flannel-cfg
+      - name: xtables-lock
+        hostPath:
+          path: /run/xtables.lock
+          type: FileOrCreate
