@@ -73,6 +73,20 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			t.CIDR = s(subnet.CIDR)
 		}
 
+		stackType := "IPV4_ONLY"
+		if b.IsIPv6Only() {
+			// The subnets are dual-mode; IPV6_ONLY is not yet supported.
+			// This means that VMs will get an IPv4 and a /96 IPv6.
+			// However, pods will still be IPv6 only.
+			stackType = "IPV4_IPV6"
+
+			// Ipv6AccessType must be set when enabling IPv6.
+			// EXTERNAL is currently the only supported value
+			ipv6AccessType := "EXTERNAL"
+			t.Ipv6AccessType = &ipv6AccessType
+		}
+		t.StackType = &stackType
+
 		t.SecondaryIpRanges = make(map[string]string)
 		if gce.UsesIPAliases(b.Cluster) {
 			// The primary CIDR is used by the nodes,
