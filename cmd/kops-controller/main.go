@@ -175,19 +175,10 @@ func main() {
 	}
 
 	if opt.EnableCloudIPAM {
-		setupLog.Info("enabling IPAM controller")
-		if opt.Cloud != "aws" {
-			klog.Error("IPAM controller only supported by aws")
+		if err := setupCloudIPAM(mgr, &opt); err != nil {
+			setupLog.Error(err, "unable to setup cloud IPAM")
 			os.Exit(1)
-		}
-		ipamController, err := controllers.NewAWSIPAMReconciler(mgr)
-		if err != nil {
-			setupLog.Error(err, "unable to create controller", "controller", "IPAMController")
-			os.Exit(1)
-		}
-		if err := ipamController.SetupWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create controller", "controller", "IPAMController")
-			os.Exit(1)
+
 		}
 	}
 
@@ -320,6 +311,38 @@ func addGossipController(mgr manager.Manager, opt *config.Options) error {
 
 	if err := controller.SetupWithManager(mgr); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// Reconciler is the interface for a standard Reconciler.
+type Reconciler interface {
+	SetupWithManager(mgr manager.Manager) error
+}
+
+func setupCloudIPAM(mgr manager.Manager, opt *config.Options) error {
+	setupLog.Info("enabling IPAM controller")
+	var controller Reconciler
+	switch opt.Cloud {
+	case "aws":
+		ipamController, err := controllers.NewAWSIPAMReconciler(mgr)
+		if err != nil {
+			return fmt.Errorf("creating aws IPAM controller: %w", err)
+		}
+		controller = ipamController
+	case "gce":
+		ipamController, err := controllers.NewGCEIPAMReconciler(mgr)
+		if err != nil {
+			return fmt.Errorf("creating gce IPAM controller: %w", err)
+		}
+		controller = ipamController
+	default:
+		return fmt.Errorf("kOps IPAM controller is not supported on cloud %q", opt.Cloud)
+	}
+
+	if err := controller.SetupWithManager(mgr); err != nil {
+		return fmt.Errorf("registering IPAM controller: %w", err)
 	}
 
 	return nil
