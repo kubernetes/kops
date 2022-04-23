@@ -46,6 +46,7 @@ type Instance struct {
 	CanIPForward *bool
 	IPAddress    *Address
 	Subnet       *Subnet
+	StackType    *string
 
 	Scopes []string
 
@@ -79,13 +80,13 @@ func (e *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 	actual.Zone = fi.PtrTo(lastComponent(r.Zone))
 	actual.MachineType = fi.PtrTo(lastComponent(r.MachineType))
 	actual.CanIPForward = &r.CanIpForward
-
 	if r.Scheduling != nil {
 		actual.Preemptible = &r.Scheduling.Preemptible
 	}
 	if len(r.NetworkInterfaces) != 0 {
 		ni := r.NetworkInterfaces[0]
 		actual.Network = &Network{Name: fi.PtrTo(lastComponent(ni.Network))}
+		actual.StackType = &ni.StackType
 		if len(ni.AccessConfigs) != 0 {
 			ac := ni.AccessConfigs[0]
 			if ac.NatIP != "" {
@@ -233,23 +234,29 @@ func (e *Instance) mapToGCE(project string, ipAddressResolver func(*Address) (*s
 	}
 
 	var networkInterfaces []*compute.NetworkInterface
-	if e.IPAddress != nil {
-		addr, err := ipAddressResolver(e.IPAddress)
-		if err != nil {
-			return nil, fmt.Errorf("unable to resolve IP for instance: %v", err)
-		}
-		if addr == nil {
-			return nil, fmt.Errorf("instance IP address has not yet been created")
-		}
+	{
 		networkInterface := &compute.NetworkInterface{
 			AccessConfigs: []*compute.AccessConfig{{
-				NatIP: *addr,
-				Type:  "ONE_TO_ONE_NAT",
+				Type: "ONE_TO_ONE_NAT",
 			}},
 			Network: e.Network.URL(project),
 		}
+
+		if e.IPAddress != nil {
+			addr, err := ipAddressResolver(e.IPAddress)
+			if err != nil {
+				return nil, fmt.Errorf("unable to resolve IP for instance: %v", err)
+			}
+			if addr == nil {
+				return nil, fmt.Errorf("instance IP address has not yet been created")
+			}
+			networkInterface.AccessConfigs[0].NatIP = *addr
+		}
 		if e.Subnet != nil {
 			networkInterface.Subnetwork = *e.Subnet.Name
+		}
+		if e.StackType != nil {
+			networkInterface.StackType = *e.StackType
 		}
 		networkInterfaces = append(networkInterfaces, networkInterface)
 	}
@@ -466,7 +473,7 @@ func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *
 		tf.Disks = append(tf.Disks, tfd)
 	}
 
-	tf.NetworkInterfaces = addNetworks(e.Network, e.Subnet, i.NetworkInterfaces)
+	tf.NetworkInterfaces = addNetworks(e.StackType, e.Network, e.Subnet, i.NetworkInterfaces)
 
 	metadata, err := addMetadata(t, i.Name, i.Metadata)
 	if err != nil {

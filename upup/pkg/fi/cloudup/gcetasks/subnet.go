@@ -37,6 +37,12 @@ type Subnet struct {
 	Region  *string
 	CIDR    *string
 
+	// StackType indicates the address families supported (IPV4_IPV6 or IPV4_ONLY)
+	StackType *string
+
+	// Ipv6AccessType indicates whether the IPv6 addresses are accessible externally
+	Ipv6AccessType *string
+
 	SecondaryIpRanges map[string]string
 
 	Shared *bool
@@ -69,6 +75,8 @@ func (e *Subnet) Find(c *fi.CloudupContext) (*Subnet, error) {
 	actual.Network = &Network{Name: fi.PtrTo(lastComponent(s.Network))}
 	actual.Region = fi.PtrTo(lastComponent(s.Region))
 	actual.CIDR = &s.IpCidrRange
+	actual.StackType = &s.StackType
+	actual.Ipv6AccessType = &s.Ipv6AccessType
 
 	shared := fi.ValueOf(e.Shared)
 	{
@@ -117,9 +125,11 @@ func (_ *Subnet) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Subnet) error {
 		klog.V(2).Infof("Creating Subnet with CIDR: %q", fi.ValueOf(e.CIDR))
 
 		subnet := &compute.Subnetwork{
-			IpCidrRange: fi.ValueOf(e.CIDR),
-			Name:        *e.Name,
-			Network:     e.Network.URL(project),
+			IpCidrRange:    fi.ValueOf(e.CIDR),
+			Name:           *e.Name,
+			Network:        e.Network.URL(project),
+			StackType:      fi.ValueOf(e.StackType),
+			Ipv6AccessType: fi.ValueOf(e.Ipv6AccessType),
 		}
 
 		for k, v := range e.SecondaryIpRanges {
@@ -150,6 +160,15 @@ func (_ *Subnet) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Subnet) error {
 			}
 
 			changes.SecondaryIpRanges = nil
+		}
+
+		if changes.StackType != nil {
+			if err := updateStackTypeAndIPv6AccessType(cloud, e); err != nil {
+				return err
+			}
+
+			changes.StackType = nil
+			changes.Ipv6AccessType = nil
 		}
 
 		empty := &Subnet{}
@@ -217,9 +236,35 @@ func updateSecondaryRanges(cloud gce.GCECloud, op string, e *Subnet) error {
 		}
 	}
 
-	_, err = cloud.Compute().Subnetworks().Patch(cloud.Project(), cloud.Region(), subnet.Name, subnet)
+	patchOp, err := cloud.Compute().Subnetworks().Patch(cloud.Project(), cloud.Region(), subnet.Name, subnet)
 	if err != nil {
 		return fmt.Errorf("error patching Subnet: %w", err)
+	}
+
+	if err := cloud.WaitForOp(patchOp); err != nil {
+		return fmt.Errorf("error waiting for Subnet patch to complete: %w", err)
+	}
+
+	return nil
+}
+
+func updateStackTypeAndIPv6AccessType(cloud gce.GCECloud, e *Subnet) error {
+	// We need to refetch to patch it
+	subnet, err := cloud.Compute().Subnetworks().Get(cloud.Project(), cloud.Region(), *e.Name)
+	if err != nil {
+		return fmt.Errorf("error fetching subnet for patch: %w", err)
+	}
+
+	subnet.StackType = fi.ValueOf(e.StackType)
+	subnet.Ipv6AccessType = fi.ValueOf(e.Ipv6AccessType)
+
+	patchOp, err := cloud.Compute().Subnetworks().Patch(cloud.Project(), cloud.Region(), subnet.Name, subnet)
+	if err != nil {
+		return fmt.Errorf("error patching Subnet: %w", err)
+	}
+
+	if err := cloud.WaitForOp(patchOp); err != nil {
+		return fmt.Errorf("error waiting for Subnet patch to complete: %w", err)
 	}
 
 	return nil
@@ -244,6 +289,9 @@ type terraformSubnet struct {
 
 	// SecondaryIPRange defines additional IP ranges
 	SecondaryIPRange []terraformSubnetRange `cty:"secondary_ip_range"`
+
+	StackType      *string `cty:"stack_type"`
+	Ipv6AccessType *string `cty:"ipv6_access_type"`
 }
 
 type terraformSubnetRange struct {
@@ -259,10 +307,12 @@ func (_ *Subnet) RenderSubnet(t *terraform.TerraformTarget, a, e, changes *Subne
 	}
 
 	tf := &terraformSubnet{
-		Name:    e.Name,
-		Network: e.Network.TerraformLink(),
-		Region:  e.Region,
-		CIDR:    e.CIDR,
+		Name:           e.Name,
+		Network:        e.Network.TerraformLink(),
+		Region:         e.Region,
+		CIDR:           e.CIDR,
+		StackType:      e.StackType,
+		Ipv6AccessType: e.Ipv6AccessType,
 	}
 
 	for k, v := range e.SecondaryIpRanges {
