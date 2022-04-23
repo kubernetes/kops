@@ -217,7 +217,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: quay.io/coreos/flannel:v0.15.1
+        image: rancher/mirrored-flannelcni-flannel:v0.17.0
         name: kube-flannel
         resources:
           limits:
@@ -238,15 +238,28 @@ spec:
           name: dev-net
         - mountPath: /etc/kube-flannel/
           name: flannel-cfg
+        - mountPath: /run/xtables.lock
+          name: xtables-lock
       hostNetwork: true
       initContainers:
+      - args:
+        - -f
+        - /flannel
+        - /opt/cni/bin/flannel
+        command:
+        - cp
+        image: rancher/mirrored-flannelcni-flannel-cni-plugin:v1.0.1
+        name: install-cni-plugin
+        volumeMounts:
+        - mountPath: /opt/cni/bin
+          name: cni-plugin
       - args:
         - -f
         - /etc/kube-flannel/cni-conf.json
         - /etc/cni/net.d/10-flannel.conflist
         command:
         - cp
-        image: quay.io/coreos/flannel:v0.15.1
+        image: rancher/mirrored-flannelcni-flannel:v0.17.0
         name: install-cni
         volumeMounts:
         - mountPath: /etc/cni/net.d
@@ -265,8 +278,15 @@ spec:
           path: /dev/net
         name: dev-net
       - hostPath:
+          path: /opt/cni/bin
+        name: cni-plugin
+      - hostPath:
           path: /etc/cni/net.d
         name: cni
       - configMap:
           name: kube-flannel-cfg
         name: flannel-cfg
+      - hostPath:
+          path: /run/xtables.lock
+          type: FileOrCreate
+        name: xtables-lock
