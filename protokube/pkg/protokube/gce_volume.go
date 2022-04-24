@@ -67,11 +67,6 @@ func NewGCEVolumes() (*GCEVolumes, error) {
 	return a, nil
 }
 
-// ClusterID implements Volumes ClusterID
-func (a *GCEVolumes) ClusterID() string {
-	return a.clusterName
-}
-
 // Project returns the current GCE project
 func (a *GCEVolumes) Project() string {
 	return a.project
