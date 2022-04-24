@@ -80,11 +80,6 @@ func NewAzureVolumes() (*AzureVolumes, error) {
 	}, nil
 }
 
-// ClusterID implements Volumes ClusterID.
-func (a *AzureVolumes) ClusterID() string {
-	return a.clusterTag
-}
-
 // InstanceID implements Volumes InstanceID.
 func (a *AzureVolumes) InstanceID() string {
 	return a.instanceID
