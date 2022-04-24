@@ -366,6 +366,7 @@ func RecommendedKubernetesVersion(c *Channel, kopsVersionString string) *semver.
 func (c *Channel) HasUpstreamImagePrefix(image string) bool {
 	return strings.HasPrefix(image, "kope.io/k8s-") ||
 		strings.HasPrefix(image, "099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-") ||
+		strings.HasPrefix(image, "099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-") ||
 		strings.HasPrefix(image, "cos-cloud/cos-stable-") ||
 		strings.HasPrefix(image, "ubuntu-os-cloud/ubuntu-2004-focal-") ||
 		strings.HasPrefix(image, "Canonical:0001-com-ubuntu-server-focal:20_04-lts-gen2:")
