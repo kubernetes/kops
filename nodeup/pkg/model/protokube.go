@@ -156,6 +156,7 @@ func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 
 // ProtokubeFlags are the flags for protokube
 type ProtokubeFlags struct {
+	ClusterID         *string  `json:"clusterID,omitempty" flag:"cluster-id"`
 	Channels          []string `json:"channels,omitempty" flag:"channels"`
 	Cloud             *string  `json:"cloud,omitempty" flag:"cloud"`
 	Containerized     *bool    `json:"containerized,omitempty" flag:"containerized"`
@@ -194,6 +195,8 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 		LogLevel:      fi.Int32(4),
 		Master:        b(t.IsMaster),
 	}
+
+	f.ClusterID = fi.String(t.Cluster.ObjectMeta.Name)
 
 	zone := t.Cluster.Spec.DNSZone
 	if zone != "" {
