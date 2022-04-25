@@ -76,7 +76,7 @@ func (d *Distribution) DefaultUsers() ([]string, error) {
 	case "debian":
 		return []string{"admin", "root"}, nil
 	case "ubuntu":
-		return []string{"ubuntu"}, nil
+		return []string{"ubuntu", "root"}, nil
 	case "centos":
 		return []string{"centos"}, nil
 	case "rhel", "amazonlinux2":
