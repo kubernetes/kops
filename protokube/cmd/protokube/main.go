@@ -71,7 +71,7 @@ func run() error {
 	flag.BoolVar(&containerized, "containerized", containerized, "Set if we are running containerized.")
 	flag.BoolVar(&master, "master", master, "Whether or not this node is a master")
 	flag.StringVar(&cloud, "cloud", "aws", "CloudProvider we are using (aws,digitalocean,gce,openstack)")
-	flag.StringVar(&clusterID, "cluster-id", clusterID, "Cluster ID")
+	flag.StringVar(&clusterID, "cluster-id", clusterID, "Cluster ID for internal domain names")
 	flag.StringVar(&dnsInternalSuffix, "dns-internal-suffix", dnsInternalSuffix, "DNS suffix for internal domain names")
 	flags.IntVar(&dnsUpdateInterval, "dns-update-interval", 5, "Configure interval at which to update DNS records.")
 	flag.StringVar(&flagChannels, "channels", flagChannels, "channels to install")
@@ -112,10 +112,6 @@ func run() error {
 		volumes = awsVolumes
 		internalIP = awsVolumes.InternalIP()
 
-		if clusterID == "" {
-			clusterID = awsVolumes.ClusterID()
-		}
-
 	} else if cloud == "digitalocean" {
 		doVolumes, err := protokube.NewDOVolumes()
 		if err != nil {
@@ -129,13 +125,6 @@ func run() error {
 			os.Exit(1)
 		}
 
-		if clusterID == "" {
-			clusterID, err = protokube.GetClusterID()
-			if err != nil {
-				klog.Errorf("Error getting clusterid: %s", err)
-				os.Exit(1)
-			}
-		}
 	} else if cloud == "gce" {
 		gceVolumes, err := protokube.NewGCEVolumes()
 		if err != nil {
@@ -146,9 +135,6 @@ func run() error {
 		volumes = gceVolumes
 		internalIP = gceVolumes.InternalIP()
 
-		if clusterID == "" {
-			clusterID = gceVolumes.ClusterID()
-		}
 	} else if cloud == "openstack" {
 		klog.Info("Initializing openstack volumes")
 		osVolumes, err := protokube.NewOpenstackVolumes()
@@ -159,9 +145,6 @@ func run() error {
 		volumes = osVolumes
 		internalIP = osVolumes.InternalIP()
 
-		if clusterID == "" {
-			clusterID = osVolumes.ClusterID()
-		}
 	} else if cloud == "azure" {
 		klog.Info("Initializing Azure volumes")
 		azureVolumes, err := protokube.NewAzureVolumes()
@@ -172,18 +155,10 @@ func run() error {
 		volumes = azureVolumes
 		internalIP = azureVolumes.InternalIP()
 
-		if clusterID == "" {
-			clusterID = azureVolumes.ClusterID()
-		}
 	} else {
 		klog.Errorf("Unknown cloud %q", cloud)
 		os.Exit(1)
 	}
-
-	if clusterID == "" {
-		return fmt.Errorf("cluster-id is required (cannot be determined from cloud)")
-	}
-	klog.Infof("cluster-id: %s", clusterID)
 
 	if internalIP == nil {
 		klog.Errorf("Cannot determine internal IP")
@@ -191,6 +166,9 @@ func run() error {
 	}
 
 	if dnsInternalSuffix == "" {
+		if clusterID == "" {
+			return fmt.Errorf("cluster-id is required when dns-internal-suffix is not set")
+		}
 		// TODO: Maybe only master needs DNS?
 		dnsInternalSuffix = ".internal." + clusterID
 		klog.Infof("Setting dns-internal-suffix to %q", dnsInternalSuffix)

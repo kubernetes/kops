@@ -100,10 +100,6 @@ func NewAWSVolumes() (*AWSVolumes, error) {
 	return a, nil
 }
 
-func (a *AWSVolumes) ClusterID() string {
-	return a.clusterTag
-}
-
 func (a *AWSVolumes) InternalIP() net.IP {
 	return a.internalIP
 }
