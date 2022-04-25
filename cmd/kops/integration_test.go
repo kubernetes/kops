@@ -259,6 +259,13 @@ func TestMinimalGCEPrivate(t *testing.T) {
 		runTestTerraformGCE(t)
 }
 
+// TestMinimalGCE runs tests on a minimal GCE configuration with an internal load balancer.
+func TestMinimalGCEInternalLoadBalancer(t *testing.T) {
+	newIntegrationTest("minimal-gce-ilb.example.com", "minimal_gce_ilb").
+		withAddons(dnsControllerAddon, "rbac.addons.k8s.io-k8s-1.8").
+		runTestTerraformGCE(t)
+}
+
 // TestHA runs the test on a simple HA configuration, similar to kops create cluster minimal.example.com --zones us-west-1a,us-west-1b,us-west-1c --master-count=3
 func TestHA(t *testing.T) {
 	newIntegrationTest("ha.example.com", "ha").withZones(3).

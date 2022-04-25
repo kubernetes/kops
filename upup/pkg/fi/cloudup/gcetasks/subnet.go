@@ -50,8 +50,13 @@ func (e *Subnet) CompareWithID() *string {
 
 func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
 	cloud := c.Cloud.(gce.GCECloud)
-
-	s, err := cloud.Compute().Subnetworks().Get(cloud.Project(), cloud.Region(), *e.Name)
+	_, project, err := gce.ParseNameAndProjectFromNetworkID(c.Cluster.Spec.NetworkID)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing network name from cluster spec: %w", err)
+	} else if project == "" {
+		project = cloud.Project()
+	}
+	s, err := cloud.Compute().Subnetworks().Get(project, cloud.Region(), *e.Name)
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
@@ -277,8 +282,12 @@ func (e *Subnet) TerraformLink() *terraformWriter.Literal {
 			klog.Fatalf("GCEName must be set, if subnet is shared: %#v", e)
 		}
 
-		klog.V(4).Infof("reusing existing subnet with name %q", *e.Name)
-		return terraformWriter.LiteralFromStringValue(*e.Name)
+		name := *e.Name
+		if e.Network != nil && e.Network.Project != nil {
+			name = *e.Network.Project + "/" + name
+		}
+		klog.V(4).Infof("reusing existing subnet with name %q", name)
+		return terraformWriter.LiteralFromStringValue(name)
 	}
 
 	return terraformWriter.LiteralProperty("google_compute_subnetwork", *e.Name, "name")

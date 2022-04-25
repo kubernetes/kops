@@ -32,6 +32,7 @@ type ComputeClient interface {
 	Routes() RouteClient
 	ForwardingRules() ForwardingRuleClient
 	HTTPHealthChecks() HttpHealthChecksClient
+	RegionHealthChecks() RegionHealthChecksClient
 	Addresses() AddressClient
 	Firewalls() FirewallClient
 	Routers() RouterClient
@@ -40,6 +41,7 @@ type ComputeClient interface {
 	InstanceGroupManagers() InstanceGroupManagerClient
 	TargetPools() TargetPoolClient
 	Disks() DiskClient
+	RegionBackendServices() RegionBackendServiceClient
 }
 
 type computeClientImpl struct {
@@ -100,9 +102,21 @@ func (c *computeClientImpl) ForwardingRules() ForwardingRuleClient {
 	}
 }
 
+func (c *computeClientImpl) RegionBackendServices() RegionBackendServiceClient {
+	return &regionBackendServiceClientImpl{
+		srv: c.srv.RegionBackendServices,
+	}
+}
+
 func (c *computeClientImpl) HTTPHealthChecks() HttpHealthChecksClient {
 	return &httpHealthCheckClientImpl{
 		srv: c.srv.HttpHealthChecks,
+	}
+}
+
+func (c *computeClientImpl) RegionHealthChecks() RegionHealthChecksClient {
+	return &healthCheckClientImpl{
+		srv: c.srv.RegionHealthChecks,
 	}
 }
 
@@ -282,6 +296,45 @@ func (c *subnetworkClientImpl) List(ctx context.Context, project, region string)
 	return subnetworks, nil
 }
 
+// ===
+type RegionBackendServiceClient interface {
+	Insert(project, region string, fr *compute.BackendService) (*compute.Operation, error)
+	Delete(project, region, name string) (*compute.Operation, error)
+	Get(project, region, name string) (*compute.BackendService, error)
+	List(ctx context.Context, project, region string) ([]*compute.BackendService, error)
+}
+
+type regionBackendServiceClientImpl struct {
+	srv *compute.RegionBackendServicesService
+}
+
+var _ RegionBackendServiceClient = &regionBackendServiceClientImpl{}
+
+func (c *regionBackendServiceClientImpl) Insert(project, region string, fr *compute.BackendService) (*compute.Operation, error) {
+	return c.srv.Insert(project, region, fr).Do()
+}
+
+func (c *regionBackendServiceClientImpl) Delete(project, region, name string) (*compute.Operation, error) {
+	return c.srv.Delete(project, region, name).Do()
+}
+
+func (c *regionBackendServiceClientImpl) Get(project, region, name string) (*compute.BackendService, error) {
+	return c.srv.Get(project, region, name).Do()
+}
+
+func (c *regionBackendServiceClientImpl) List(ctx context.Context, project, region string) ([]*compute.BackendService, error) {
+	var hcs []*compute.BackendService
+	if err := c.srv.List(project, region).Pages(ctx, func(p *compute.BackendServiceList) error {
+		hcs = append(hcs, p.Items...)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+	return hcs, nil
+}
+
+// ===
+
 type RouteClient interface {
 	Delete(project, name string) (*compute.Operation, error)
 	List(ctx context.Context, project string) ([]*compute.Route, error)
@@ -342,6 +395,42 @@ func (c *forwardingRuleClientImpl) List(ctx context.Context, project, region str
 		return nil, err
 	}
 	return frs, nil
+}
+
+type RegionHealthChecksClient interface {
+	Insert(project, region string, fr *compute.HealthCheck) (*compute.Operation, error)
+	Delete(project, region, name string) (*compute.Operation, error)
+	Get(project, region, name string) (*compute.HealthCheck, error)
+	List(ctx context.Context, project, region string) ([]*compute.HealthCheck, error)
+}
+
+type healthCheckClientImpl struct {
+	srv *compute.RegionHealthChecksService
+}
+
+var _ RegionHealthChecksClient = &healthCheckClientImpl{}
+
+func (c *healthCheckClientImpl) Insert(project, region string, fr *compute.HealthCheck) (*compute.Operation, error) {
+	return c.srv.Insert(project, region, fr).Do()
+}
+
+func (c *healthCheckClientImpl) Delete(project, region, name string) (*compute.Operation, error) {
+	return c.srv.Delete(project, region, name).Do()
+}
+
+func (c *healthCheckClientImpl) Get(project, region, name string) (*compute.HealthCheck, error) {
+	return c.srv.Get(project, region, name).Do()
+}
+
+func (c *healthCheckClientImpl) List(ctx context.Context, project, region string) ([]*compute.HealthCheck, error) {
+	var hcs []*compute.HealthCheck
+	if err := c.srv.List(project, region).Pages(ctx, func(p *compute.HealthCheckList) error {
+		hcs = append(hcs, p.Items...)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+	return hcs, nil
 }
 
 type HttpHealthChecksClient interface {

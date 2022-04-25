@@ -42,6 +42,7 @@ const (
 	typeFirewallRule         = "FirewallRule"
 	typeForwardingRule       = "ForwardingRule"
 	typeHTTPHealthcheck      = "HTTP HealthCheck"
+	typeHealthcheck          = "HealthCheck"
 	typeAddress              = "Address"
 	typeRoute                = "Route"
 	typeNetwork              = "Network"
@@ -49,6 +50,7 @@ const (
 	typeRouter               = "Router"
 	typeDNSRecord            = "DNSRecord"
 	typeServiceAccount       = "ServiceAccount"
+	typeBackendService       = "BackendService"
 )
 
 // Maximum number of `-` separated tokens in a name
@@ -109,6 +111,8 @@ func ListResourcesGCE(gceCloud gce.GCECloud, clusterName string, region string) 
 		d.listRouters,
 		d.listNetworks,
 		d.listServiceAccounts,
+		d.listBackendServices,
+		d.listHealthchecks,
 	}
 	for _, fn := range listFunctions {
 		resourceTrackers, err := fn()
@@ -1035,6 +1039,107 @@ func deleteServiceAccount(cloud fi.Cloud, r *resources.Resource) error {
 	klog.V(2).Infof("deleting GCE ServiceAccount %s", o.Name)
 	_, err := c.IAM().ServiceAccounts().Delete(o.Name)
 	return err
+}
+
+// containsOnlyListedIGMs returns true if all the given backend service's backends
+// are contained in the provided list of IGM resources.
+func containsOnlyListedIGMs(svc *compute.BackendService, igms []*resources.Resource) bool {
+	for _, be := range svc.Backends {
+		listed := false
+		for _, igm := range igms {
+			// NOTE: this should be sufficient / strict enough since IGM names include the cluster
+			// that they are part of, but revisit if naming conventions change.
+			if strings.HasSuffix(be.Group, "/"+igm.Name) {
+				listed = true
+				break
+			}
+		}
+
+		if !listed {
+			return false
+		}
+	}
+	return true
+}
+
+func (d *clusterDiscoveryGCE) listBackendServices() ([]*resources.Resource, error) {
+	c := d.gceCloud
+
+	svcs, err := c.Compute().RegionBackendServices().List(context.Background(), c.Project(), c.Region())
+	if err != nil {
+		if gce.IsNotFound(err) {
+			klog.Infof("backend services not found, assuming none exist in project: %q region: %q", c.Project(), c.Region())
+			return nil, nil
+		}
+		return nil, fmt.Errorf("Failed to list backend services: %w", err)
+	}
+	// TODO: cache, for efficiency, if needed.
+	// Find all relevant backend services by finding all the cluster's IGMs, and then
+	// listing all backend services in the project / region, then selecting
+	// the backend services which contain only the relevant IGMs.
+	igms, err := d.listInstanceGroupManagersAndInstances()
+	if err != nil {
+		return nil, err
+	}
+	var bs []*resources.Resource
+	for _, svc := range svcs {
+		if containsOnlyListedIGMs(svc, igms) {
+			bs = append(bs, &resources.Resource{
+				Name: svc.Name,
+				ID:   svc.Name,
+				Type: typeBackendService,
+				Deleter: func(cloud fi.Cloud, r *resources.Resource) error {
+					op, err := c.Compute().RegionBackendServices().Delete(c.Project(), c.Region(), svc.Name)
+					if err != nil {
+						return err
+					}
+					return c.WaitForOp(op)
+				},
+				Obj: svc,
+			})
+		}
+	}
+
+	return bs, nil
+}
+
+func (d *clusterDiscoveryGCE) listHealthchecks() ([]*resources.Resource, error) {
+	c := d.gceCloud
+	// TODO: cache, for efficiency, if needed.
+	// Find relevant healthchecks by finding all the backend services relevant to this
+	// cluster, then selecting all the healthchecks they use.
+	backendServices, err := d.listBackendServices()
+	if err != nil {
+		return nil, err
+	}
+	hcs := make(map[string]struct{})
+	for _, bs := range backendServices {
+		bsObj, ok := bs.Obj.(*compute.BackendService)
+		if !ok {
+			return nil, fmt.Errorf("%T is not a *compute.BackendService", bs)
+		}
+		for _, hc := range bsObj.HealthChecks {
+			hcs[hc] = struct{}{}
+		}
+	}
+	var hcResources []*resources.Resource
+	for hc := range hcs {
+		hcResources = append(hcResources, &resources.Resource{
+			Name: gce.LastComponent(hc),
+			ID:   gce.LastComponent(hc),
+			Type: typeHealthcheck,
+			Deleter: func(cloud fi.Cloud, r *resources.Resource) error {
+				op, err := c.Compute().RegionHealthChecks().Delete(c.Project(), c.Region(), gce.LastComponent(hc))
+				if err != nil {
+					return err
+				}
+				return c.WaitForOp(op)
+			},
+			Obj: hc,
+		})
+	}
+
+	return hcResources, nil
 }
 
 func (d *clusterDiscoveryGCE) listNetworks() ([]*resources.Resource, error) {

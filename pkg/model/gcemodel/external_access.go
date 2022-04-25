@@ -49,12 +49,16 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// But I think we can always add more permissions in this case later, but we can't easily take them away
 		klog.V(2).Infof("bastion is in use; won't configure SSH access to master / node instances")
 	} else {
+		network, err := b.LinkToNetwork()
+		if err != nil {
+			return err
+		}
 		b.AddFirewallRulesTasks(c, "ssh-external-to-master", &gcetasks.FirewallRule{
 			Lifecycle:    b.Lifecycle,
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
 			Allowed:      []string{"tcp:22"},
 			SourceRanges: b.Cluster.Spec.SSHAccess,
-			Network:      b.LinkToNetwork(),
+			Network:      network,
 		})
 
 		b.AddFirewallRulesTasks(c, "ssh-external-to-node", &gcetasks.FirewallRule{
@@ -62,7 +66,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
 			Allowed:      []string{"tcp:22"},
 			SourceRanges: b.Cluster.Spec.SSHAccess,
-			Network:      b.LinkToNetwork(),
+			Network:      network,
 		})
 	}
 
@@ -74,6 +78,10 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		nodePortRangeString := nodePortRange.String()
+		network, err := b.LinkToNetwork()
+		if err != nil {
+			return err
+		}
 		b.AddFirewallRulesTasks(c, "nodeport-external-to-node", &gcetasks.FirewallRule{
 			Lifecycle:  b.Lifecycle,
 			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
@@ -82,7 +90,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				"udp:" + nodePortRangeString,
 			},
 			SourceRanges: b.Cluster.Spec.NodePortAccess,
-			Network:      b.LinkToNetwork(),
+			Network:      network,
 		})
 	}
 
@@ -92,12 +100,17 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// We need to open security groups directly to the master nodes (instead of via the ELB)
 
 		// HTTPS to the master is allowed (for API access)
+
+		network, err := b.LinkToNetwork()
+		if err != nil {
+			return err
+		}
 		b.AddFirewallRulesTasks(c, "kubernetes-master-https", &gcetasks.FirewallRule{
 			Lifecycle:    b.Lifecycle,
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
 			Allowed:      []string{"tcp:443"},
 			SourceRanges: b.Cluster.Spec.KubernetesAPIAccess,
-			Network:      b.LinkToNetwork(),
+			Network:      network,
 		})
 	}
 

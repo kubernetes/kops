@@ -422,17 +422,21 @@ func (p *GSPath) RenderTerraform(w *terraformWriter.TerraformWriter, name string
 		return err
 	}
 
-	tfACL := &terraformGSObjectAccessControl{
-		Bucket:     p.Bucket(),
-		Object:     p.TerraformLink(name),
-		RoleEntity: make([]string, 0),
-		Provider:   terraformWriter.LiteralTokens("google", "files"),
+	// file ACLs can be empty on GCP, because of a bucket-only ACL.
+	if acl != nil {
+		tfACL := &terraformGSObjectAccessControl{
+			Bucket:     p.Bucket(),
+			Object:     p.TerraformLink(name),
+			RoleEntity: make([]string, 0),
+			Provider:   terraformWriter.LiteralTokens("google", "files"),
+		}
+		for _, re := range acl.(*GSAcl).Acl {
+			// https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/storage_object_acl#role_entity
+			tfACL.RoleEntity = append(tfACL.RoleEntity, fmt.Sprintf("%v:%v", re.Role, re.Entity))
+		}
+		return w.RenderResource("google_storage_object_access_control", name, tfACL)
 	}
-	for _, re := range acl.(*GSAcl).Acl {
-		// https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/storage_object_acl#role_entity
-		tfACL.RoleEntity = append(tfACL.RoleEntity, fmt.Sprintf("%v:%v", re.Role, re.Entity))
-	}
-	return w.RenderResource("google_storage_object_access_control", name, tfACL)
+	return nil
 }
 
 func (s *GSPath) TerraformLink(name string) *terraformWriter.Literal {
