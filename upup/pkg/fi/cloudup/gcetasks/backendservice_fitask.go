@@ -25,28 +25,28 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-// HealthCheck
+// BackendService
 
-var _ fi.HasLifecycle = &HealthCheck{}
+var _ fi.HasLifecycle = &BackendService{}
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
-func (o *HealthCheck) GetLifecycle() fi.Lifecycle {
+func (o *BackendService) GetLifecycle() fi.Lifecycle {
 	return o.Lifecycle
 }
 
 // SetLifecycle sets the Lifecycle of the object, implementing fi.SetLifecycle
-func (o *HealthCheck) SetLifecycle(lifecycle fi.Lifecycle) {
+func (o *BackendService) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &HealthCheck{}
+var _ fi.HasName = &BackendService{}
 
 // GetName returns the Name of the object, implementing fi.HasName
-func (o *HealthCheck) GetName() *string {
+func (o *BackendService) GetName() *string {
 	return o.Name
 }
 
 // String is the stringer function for the task, producing readable output using fi.TaskAsString
-func (o *HealthCheck) String() string {
+func (o *BackendService) String() string {
 	return fi.TaskAsString(o)
 }

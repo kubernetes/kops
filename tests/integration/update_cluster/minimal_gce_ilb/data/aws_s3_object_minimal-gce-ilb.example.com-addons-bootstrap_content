@@ -1,0 +1,68 @@
+kind: Addons
+metadata:
+  creationTimestamp: null
+  name: bootstrap
+spec:
+  addons:
+  - id: k8s-1.16
+    manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
+    manifestHash: 7c529075d1f9023a8868eb3834008d0c46350228d730410c4c8ab6eb2274157e
+    name: kops-controller.addons.k8s.io
+    needsRollingUpdate: control-plane
+    selector:
+      k8s-addon: kops-controller.addons.k8s.io
+    version: 9.99.0
+  - manifest: core.addons.k8s.io/v1.4.0.yaml
+    manifestHash: 18233793a8442224d052e44891e737c67ccfb4e051e95216392319653f4cb0e5
+    name: core.addons.k8s.io
+    selector:
+      k8s-addon: core.addons.k8s.io
+    version: 9.99.0
+  - id: k8s-1.12
+    manifest: coredns.addons.k8s.io/k8s-1.12.yaml
+    manifestHash: 8fdf9ea40a3f6c07d8d1e8b1ab6bcccd402daf15a2d41e26f74c8e6b315fdaee
+    name: coredns.addons.k8s.io
+    selector:
+      k8s-addon: coredns.addons.k8s.io
+    version: 9.99.0
+  - id: k8s-1.8
+    manifest: rbac.addons.k8s.io/k8s-1.8.yaml
+    manifestHash: f81bd7c57bc1902ca342635d7ad7d01b82dfeaff01a1192b076e66907d87871e
+    name: rbac.addons.k8s.io
+    selector:
+      k8s-addon: rbac.addons.k8s.io
+    version: 9.99.0
+  - id: k8s-1.9
+    manifest: kubelet-api.rbac.addons.k8s.io/k8s-1.9.yaml
+    manifestHash: 01c120e887bd98d82ef57983ad58a0b22bc85efb48108092a24c4b82e4c9ea81
+    name: kubelet-api.rbac.addons.k8s.io
+    selector:
+      k8s-addon: kubelet-api.rbac.addons.k8s.io
+    version: 9.99.0
+  - manifest: limit-range.addons.k8s.io/v1.5.0.yaml
+    manifestHash: 2d55c3bc5e354e84a3730a65b42f39aba630a59dc8d32b30859fcce3d3178bc2
+    name: limit-range.addons.k8s.io
+    selector:
+      k8s-addon: limit-range.addons.k8s.io
+    version: 9.99.0
+  - id: k8s-1.12
+    manifest: dns-controller.addons.k8s.io/k8s-1.12.yaml
+    manifestHash: 539a79ee7a1d627e74d4c503d5724619037a3d12912458e4f687bb5b82586a80
+    name: dns-controller.addons.k8s.io
+    selector:
+      k8s-addon: dns-controller.addons.k8s.io
+    version: 9.99.0
+  - id: v1.7.0
+    manifest: storage-gce.addons.k8s.io/v1.7.0.yaml
+    manifestHash: 101aceff3d82b4d7066f75fdf537f272eccec6da767d508e2a72bff5e11b0b6d
+    name: storage-gce.addons.k8s.io
+    selector:
+      k8s-addon: storage-gce.addons.k8s.io
+    version: 9.99.0
+  - id: v0.1.12
+    manifest: metadata-proxy.addons.k8s.io/v0.1.12.yaml
+    manifestHash: 86ec56ce7f5f4103793e3a03af7b213a8830dc958d4bf1fd65f0a032bf6d65b0
+    name: metadata-proxy.addons.k8s.io
+    selector:
+      k8s-addon: metadata-proxy.addons.k8s.io
+    version: 9.99.0

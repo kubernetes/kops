@@ -29,7 +29,7 @@ import (
 type PoolHealthCheck struct {
 	Name        *string
 	Lifecycle   fi.Lifecycle
-	Healthcheck *Healthcheck
+	Healthcheck *HTTPHealthcheck
 	Pool        *TargetPool
 }
 
@@ -39,7 +39,7 @@ var _ fi.CompareWithID = &PoolHealthCheck{}
 func (_ *PoolHealthCheck) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	var deps []fi.Task
 	for _, task := range tasks {
-		if _, ok := task.(*Healthcheck); ok {
+		if _, ok := task.(*HTTPHealthcheck); ok {
 			deps = append(deps, task)
 		}
 		if _, ok := task.(*TargetPool); ok {
