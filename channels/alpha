@@ -88,13 +88,13 @@ spec:
       kubenet: {}
   kubernetesVersions:
   - range: ">=1.23.0"
-    recommendedVersion: 1.23.5
+    recommendedVersion: 1.23.6
     requiredVersion: 1.23.0
   - range: ">=1.22.0"
-    recommendedVersion: 1.22.8
+    recommendedVersion: 1.22.9
     requiredVersion: 1.22.0
   - range: ">=1.21.0"
-    recommendedVersion: 1.21.11
+    recommendedVersion: 1.21.12
     requiredVersion: 1.21.0
   - range: ">=1.20.0"
     recommendedVersion: 1.20.15
@@ -133,15 +133,15 @@ spec:
   - range: ">=1.23.0-alpha.1"
     recommendedVersion: "1.23.0"
     #requiredVersion: 1.22.0
-    kubernetesVersion: 1.23.5
+    kubernetesVersion: 1.23.6
   - range: ">=1.22.0-alpha.1"
     recommendedVersion: "1.23.0"
     #requiredVersion: 1.22.0
-    kubernetesVersion: 1.22.8
+    kubernetesVersion: 1.22.9
   - range: ">=1.21.0-alpha.1"
     recommendedVersion: "1.23.0"
     #requiredVersion: 1.21.0
-    kubernetesVersion: 1.21.11
+    kubernetesVersion: 1.21.12
   - range: ">=1.20.0-alpha.1"
     recommendedVersion: "1.23.0"
     #requiredVersion: 1.20.0
