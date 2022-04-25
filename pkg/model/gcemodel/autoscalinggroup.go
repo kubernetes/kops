@@ -75,11 +75,15 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderC
 			}
 
 			namePrefix := gce.LimitedLengthName(name, gcetasks.InstanceTemplateNamePrefixMaxLength)
+			network, err := b.LinkToNetwork()
+			if err != nil {
+				return nil, err
+			}
 			t := &gcetasks.InstanceTemplate{
 				Name:           s(name),
 				NamePrefix:     s(namePrefix),
 				Lifecycle:      b.Lifecycle,
-				Network:        b.LinkToNetwork(),
+				Network:        network,
 				MachineType:    s(ig.Spec.MachineType),
 				BootDiskType:   s(volumeType),
 				BootDiskSizeGB: i64(int64(volumeSize)),
@@ -263,7 +267,15 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			switch ig.Spec.Role {
 			case kops.InstanceGroupRoleMaster:
 				if b.UseLoadBalancerForAPI() {
-					t.TargetPools = append(t.TargetPools, b.LinkToTargetPool("api"))
+					lbSpec := b.Cluster.Spec.API.LoadBalancer
+					if lbSpec != nil {
+						switch lbSpec.Type {
+						case kops.LoadBalancerTypePublic:
+							t.TargetPools = append(t.TargetPools, b.LinkToTargetPool("api"))
+						case kops.LoadBalancerTypeInternal:
+							klog.Warningf("Not hooking the instance group manager up to anything.")
+						}
+					}
 				}
 			}
 

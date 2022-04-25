@@ -274,9 +274,15 @@ func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.Ins
 	}
 
 	var networkInterfaces []*compute.NetworkInterface
+
+	networkProject := project
+	if e.Network.Project != nil {
+		networkProject = *e.Network.Project
+	}
+
 	ni := &compute.NetworkInterface{
 		Kind:    "compute#networkInterface",
-		Network: e.Network.URL(project),
+		Network: e.Network.URL(networkProject),
 	}
 	if fi.BoolValue(e.HasExternalIP) {
 		ni.AccessConfigs = []*compute.AccessConfig{
@@ -289,7 +295,7 @@ func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.Ins
 	}
 
 	if e.Subnet != nil {
-		ni.Subnetwork = e.Subnet.URL(project, region)
+		ni.Subnetwork = e.Subnet.URL(networkProject, region)
 	}
 	if e.AliasIPRanges != nil {
 		for k, v := range e.AliasIPRanges {

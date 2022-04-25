@@ -23,73 +23,127 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
-// Healthcheck represents a GCE Healthcheck
 // +kops:fitask
-type Healthcheck struct {
+// HealthCheck represents a GCE "healthcheck" type - this is the
+// non-deprecated new-style HC, which combines the deprecated HTTPHealthCheck
+// and HTTPSHealthCheck.  Those HCs are still needed for some types, so both
+// are implemented in kops, but this one should be preferred when possible.
+type HealthCheck struct {
 	Name      *string
+	Port      int64
 	Lifecycle fi.Lifecycle
-
-	SelfLink string
-	Port     *int64
 }
 
-var _ fi.CompareWithID = &Healthcheck{}
+var _ fi.CompareWithID = &HealthCheck{}
 
-func (e *Healthcheck) CompareWithID() *string {
+func (e *HealthCheck) CompareWithID() *string {
 	return e.Name
 }
 
-func (e *Healthcheck) Find(c *fi.Context) (*Healthcheck, error) {
-	cloud := c.Cloud.(gce.GCECloud)
-	name := fi.StringValue(e.Name)
-	r, err := cloud.Compute().HTTPHealthChecks().Get(cloud.Project(), name)
+func (e *HealthCheck) Find(c *fi.Context) (*HealthCheck, error) {
+	actual, err := e.find(c.Cloud.(gce.GCECloud))
+	if actual != nil && err == nil {
+		// Ignore system fields
+		actual.Lifecycle = e.Lifecycle
+	}
+	return actual, err
+}
+
+func (e *HealthCheck) URL(cloud gce.GCECloud) string {
+	return fmt.Sprintf("https://www.googleapis.com/compute/v1/projects/%s/regions/%s/healthChecks/%s",
+		cloud.Project(),
+		cloud.Region(),
+		*e.Name)
+}
+
+func (e *HealthCheck) find(cloud gce.GCECloud) (*HealthCheck, error) {
+	r, err := cloud.Compute().RegionHealthChecks().Get(cloud.Project(), cloud.Region(), *e.Name)
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("error getting HealthCheck %q: %v", name, err)
+
+		return nil, fmt.Errorf("error listing Health Checks: %v", err)
 	}
-	actual := &Healthcheck{
-		Name:     fi.String(r.Name),
-		Port:     fi.Int64(r.Port),
-		SelfLink: r.SelfLink,
+
+	actual := &HealthCheck{}
+	actual.Name = &r.Name
+	if r.TcpHealthCheck != nil {
+		actual.Port = r.TcpHealthCheck.Port
 	}
-	// System fields
-	actual.Lifecycle = e.Lifecycle
-	e.SelfLink = r.SelfLink
+
 	return actual, nil
 }
 
-func (e *Healthcheck) Run(c *fi.Context) error {
+func (e *HealthCheck) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
-func (_ *Healthcheck) CheckChanges(a, e, changes *Healthcheck) error {
-	if fi.StringValue(e.Name) == "" {
-		return fi.RequiredField("Name")
+func (_ *HealthCheck) CheckChanges(a, e, changes *HealthCheck) error {
+	if a != nil {
+		if changes.Name != nil {
+			return fi.CannotChangeField("Name")
+		}
+		if e.Port != a.Port {
+			return fi.CannotChangeField("Port")
+		}
 	}
 	return nil
 }
 
-func (h *Healthcheck) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Healthcheck) error {
+func (_ *HealthCheck) RenderGCE(t *gce.GCEAPITarget, a, e, changes *HealthCheck) error {
+	cloud := t.Cloud
+	hc := &compute.HealthCheck{
+		Name: *e.Name,
+		TcpHealthCheck: &compute.TCPHealthCheck{
+			Port: e.Port,
+		},
+		Type: "TCP",
+
+		Region: cloud.Region(),
+	}
+
 	if a == nil {
-		o := &compute.HttpHealthCheck{
-			Name:        fi.StringValue(e.Name),
-			Port:        fi.Int64Value(e.Port),
-			RequestPath: "/healthz",
+		klog.Infof("GCE creating healthcheck: %q", hc.Name)
+
+		op, err := cloud.Compute().RegionHealthChecks().Insert(cloud.Project(), cloud.Region(), hc)
+		if err != nil {
+			return fmt.Errorf("error creating healthcheck: %v", err)
 		}
 
-		klog.V(4).Infof("Creating Healthcheck %q", o.Name)
-		r, err := t.Cloud.Compute().HTTPHealthChecks().Insert(t.Cloud.Project(), o)
-		if err != nil {
-			return fmt.Errorf("error creating Healthcheck %q: %v", o.Name, err)
+		if err := cloud.WaitForOp(op); err != nil {
+			return fmt.Errorf("error waiting for healthcheck: %v", err)
 		}
-		if err := t.Cloud.WaitForOp(r); err != nil {
-			return fmt.Errorf("error creating Healthcheck: %v", err)
-		}
-		h.SelfLink = r.TargetLink
+	} else {
+		return fmt.Errorf("cannot apply changes to healthcheck: %v", changes)
 	}
+
 	return nil
+}
+
+type terraformTCPBlock struct {
+	Port int64 `cty:"port"`
+}
+
+type terraformHealthCheck struct {
+	Name           string            `cty:"name"`
+	TCPHealthCheck terraformTCPBlock `cty:"tcp_health_check"`
+}
+
+func (_ *HealthCheck) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *HealthCheck) error {
+	tf := &terraformHealthCheck{
+		Name: *e.Name,
+		TCPHealthCheck: terraformTCPBlock{
+			Port: e.Port,
+		},
+	}
+	return t.RenderResource("google_compute_health_check", *e.Name, tf)
+}
+
+func (e *HealthCheck) TerraformAddress() *terraformWriter.Literal {
+	return terraformWriter.LiteralProperty("google_compute_health_check", *e.Name, "id")
 }
