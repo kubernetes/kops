@@ -3,7 +3,7 @@ contents:
     AssetPath: /path/to/kubectl/asset
     Key: kubectl
 mode: "0755"
-path: /usr/local/bin/kubectl
+path: /opt/kops/bin/kubectl
 type: file
 ---
 contents:
