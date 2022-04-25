@@ -117,11 +117,6 @@ func NewOpenstackVolumes() (*OpenstackVolumes, error) {
 	return a, nil
 }
 
-// ClusterID implements Volumes ClusterID
-func (a *OpenstackVolumes) ClusterID() string {
-	return a.meta.UserMeta.ClusterName
-}
-
 // Project returns the current GCE project
 func (a *OpenstackVolumes) Project() string {
 	return a.meta.ProjectID
