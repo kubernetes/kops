@@ -47,6 +47,7 @@ var (
 	DistributionUbuntu2204   = Distribution{packageFormat: "deb", project: "ubuntu", id: "jammy", version: 22.04}
 	DistributionAmazonLinux2 = Distribution{packageFormat: "rpm", project: "amazonlinux2", id: "amazonlinux2", version: 0}
 	DistributionRhel8        = Distribution{packageFormat: "rpm", project: "rhel", id: "rhel8", version: 8}
+	DistributionRocky8       = Distribution{packageFormat: "rpm", project: "rocky", id: "rocky8", version: 8}
 	DistributionFlatcar      = Distribution{packageFormat: "", project: "flatcar", id: "flatcar", version: 0}
 	DistributionContainerOS  = Distribution{packageFormat: "", project: "containeros", id: "containeros", version: 0}
 )
@@ -82,6 +83,8 @@ func (d *Distribution) DefaultUsers() ([]string, error) {
 		return []string{"centos"}, nil
 	case "rhel", "amazonlinux2":
 		return []string{"ec2-user"}, nil
+	case "rocky":
+		return []string{"rocky"}, nil
 	case "flatcar":
 		return []string{"core"}, nil
 	default:
