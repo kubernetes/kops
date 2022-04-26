@@ -96,8 +96,8 @@ func TestFindDistribution(t *testing.T) {
 		},
 		{
 			rootfs:   "ubuntu1804",
-			err:      fmt.Errorf("unsupported distro: ubuntu-18.04"),
-			expected: Distribution{},
+			err:      nil,
+			expected: DistributionUbuntu1804,
 		},
 		{
 			rootfs:   "ubuntu2004",
