@@ -78,6 +78,9 @@ func FindDistribution(rootfs string) (Distribution, error) {
 	if strings.HasPrefix(distro, "rhel-8.") {
 		return DistributionRhel8, nil
 	}
+	if strings.HasPrefix(distro, "rocky-8.") {
+		return DistributionRocky8, nil
+	}
 
 	// Some distros are not supported
 	klog.V(2).Infof("Contents of /etc/os-release:\n%s", osReleaseBytes)
