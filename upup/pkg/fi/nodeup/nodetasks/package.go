@@ -333,7 +333,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 			args = []string{"apt-get", "install", "--yes", "--no-install-recommends"}
 			env = append(env, "DEBIAN_FRONTEND=noninteractive")
 		} else if d.IsRHELFamily() {
-			if d == distributions.DistributionRhel8 {
+			if d == distributions.DistributionRhel8 || d == distributions.DistributionRocky8 {
 				args = []string{"/usr/bin/dnf", "install", "-y", "--setopt=install_weak_deps=False"}
 			} else {
 				args = []string{"/usr/bin/yum", "install", "-y"}
