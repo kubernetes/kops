@@ -4441,7 +4441,7 @@ spec:
         # This container runs flannel using the kube-subnet-mgr backend
         # for allocating subnets.
         - name: kube-flannel
-          image: quay.io/coreos/flannel:v0.14.0
+          image: quay.io/coreos/flannel:v0.15.1
           command: [ "/opt/bin/flanneld", "--ip-masq", "--kube-subnet-mgr" ]
           securityContext:
             privileged: true
