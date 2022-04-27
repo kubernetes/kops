@@ -47,10 +47,11 @@ The following table provides the support status for various distros with regards
 | [Kope.io](#kopeio)                  |            - |      - |       1.18 |       - |
 | [RHEL 7](#rhel-7)                   |            - |    1.5 |       1.21 |       - |
 | [RHEL 8](#rhel-8)                   |         1.15 |   1.18 |          - |       - |
-| [RHEL 8](#rhel-8)                   |         1.15 |   1.18 |          - |       - |
+| [Rocky 8](#rocky-8)                 |       1.23.2 |   1.24 |          - |       - |
 | Ubuntu 16.04                        |          1.5 |   1.10 |       1.17 |    1.20 |
 | [Ubuntu 18.04](#ubuntu-1804-bionic) |         1.10 |   1.16 |          - |       - |
 | [Ubuntu 20.04](#ubuntu-2004-focal)  |       1.16.2 |   1.18 |          - |       - |
+| [Ubuntu 22.04](#ubuntu-2204-jammy)  |         1.23 |   1.24 |          - |       - |
 
 ## Supported Distros
 
@@ -137,6 +138,19 @@ aws ec2 describe-images --region us-east-1 --output table \
   --filters "Name=name,Values=RHEL-8.*x86_64*"
 ```
 
+### Rocky 8
+
+Rocky Linux is a community enterprise Operating System designed to be 100% bug-for-bug compatible with [RHEL 8](#rhel-8).
+
+Available images can be listed using:
+
+```bash
+aws ec2 describe-images --region us-east-1 --output table \
+  --owners 792107900819 \
+  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
+  --filters "Name=name,Values=Rocky-8-ec2-8.*.x86_64"
+```
+
 ### Ubuntu 18.04 (Bionic)
 
 Ubuntu 18.04.5 is based on Kernel version **5.4** which fixes all the known major Kernel bugs.
@@ -162,6 +176,19 @@ aws ec2 describe-images --region us-east-1 --output table \
   --owners 099720109477 \
   --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
   --filters "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-*"
+```
+
+### Ubuntu 22.04 (Jammy)
+
+Ubuntu 22.04 is based on Kernel version **5.15** which fixes all the known major Kernel bugs.
+
+Available images can be listed using:
+
+```bash
+aws ec2 describe-images --region us-east-1 --output table \
+  --owners 099720109477 \
+  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
+  --filters "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-*"
 ```
 
 ## Deprecated Distros
