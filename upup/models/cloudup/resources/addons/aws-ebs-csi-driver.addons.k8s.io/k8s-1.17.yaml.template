@@ -285,7 +285,7 @@ spec:
         - name: ebs-plugin
           securityContext:
             privileged: true
-          image: registry.k8s.io/provider-aws/aws-ebs-csi-driver:{{ .Version }}
+          image: public.ecr.aws/ebs-csi-driver/aws-ebs-csi-driver:{{ .Version }}
           args:
             - node
             - --endpoint=$(CSI_ENDPOINT)
@@ -443,7 +443,7 @@ spec:
       {{ end }}
       containers:
         - name: ebs-plugin
-          image: registry.k8s.io/provider-aws/aws-ebs-csi-driver:{{ .Version }}
+          image: public.ecr.aws/ebs-csi-driver/aws-ebs-csi-driver:{{ .Version }}
           imagePullPolicy: IfNotPresent
           args:
             - controller
@@ -544,7 +544,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: liveness-probe
-          image: registry.k8s.io/sig-storage/livenessprobe:v2.2.0
+          image: registry.k8s.io/sig-storage/livenessprobe:v2.4.0
           args:
             - --csi-address=/csi/csi.sock
           volumeMounts:
