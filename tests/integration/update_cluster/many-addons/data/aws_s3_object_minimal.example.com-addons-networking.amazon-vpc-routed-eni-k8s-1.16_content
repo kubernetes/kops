@@ -7,7 +7,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.10.3
+    app.kubernetes.io/version: v1.11.0
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: aws-node
@@ -24,7 +24,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.10.3
+    app.kubernetes.io/version: v1.11.0
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: eniconfigs.crd.k8s.amazonaws.com
@@ -56,7 +56,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.10.3
+    app.kubernetes.io/version: v1.11.0
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: aws-node
@@ -113,7 +113,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.10.3
+    app.kubernetes.io/version: v1.11.0
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: aws-node
@@ -137,7 +137,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.10.3
+    app.kubernetes.io/version: v1.11.0
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: aws-node
@@ -177,19 +177,49 @@ spec:
       - env:
         - name: ADDITIONAL_ENI_TAGS
           value: '{"KubernetesCluster":"minimal.example.com","kubernetes.io/cluster/minimal.example.com":"owned"}'
+        - name: AWS_VPC_CNI_NODE_PORT_SUPPORT
+          value: "true"
+        - name: AWS_VPC_ENI_MTU
+          value: "9001"
         - name: AWS_VPC_K8S_CNI_CONFIGURE_RPFILTER
+          value: "false"
+        - name: AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG
+          value: "false"
+        - name: AWS_VPC_K8S_CNI_EXTERNALSNAT
+          value: "false"
+        - name: AWS_VPC_K8S_CNI_LOGLEVEL
+          value: DEBUG
+        - name: AWS_VPC_K8S_CNI_LOG_FILE
+          value: /host/var/log/aws-routed-eni/ipamd.log
+        - name: AWS_VPC_K8S_CNI_RANDOMIZESNAT
+          value: prng
+        - name: AWS_VPC_K8S_CNI_VETHPREFIX
+          value: eni
+        - name: AWS_VPC_K8S_PLUGIN_LOG_FILE
+          value: /var/log/aws-routed-eni/plugin.log
+        - name: AWS_VPC_K8S_PLUGIN_LOG_LEVEL
+          value: DEBUG
+        - name: DISABLE_INTROSPECTION
+          value: "false"
+        - name: DISABLE_METRICS
+          value: "false"
+        - name: DISABLE_NETWORK_RESOURCE_PROVISIONING
           value: "false"
         - name: ENABLE_IPv4
           value: "true"
         - name: ENABLE_IPv6
           value: "false"
+        - name: ENABLE_POD_ENI
+          value: "false"
+        - name: WARM_ENI_TARGET
+          value: "1"
         - name: MY_NODE_NAME
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
         - name: CLUSTER_NAME
           value: minimal.example.com
-        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.10.3
+        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.11.0
         livenessProbe:
           exec:
             command:
@@ -239,7 +269,7 @@ spec:
           value: "false"
         - name: ENABLE_IPv6
           value: "false"
-        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.10.3
+        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.11.0
         name: aws-vpc-cni-init
         securityContext:
           privileged: true
