@@ -92,6 +92,22 @@ spec:
     managed: false
 ```
 
+##### DNS nameserver configuration for cert-manager pod
+{{ kops_feature_table(kops_added_default='1.23.3', k8s_min='1.16') }}
+
+Optional list of DNS nameserver IP addresses for the cert-manager pod to use.
+This is useful if you have a public and private DNS zone for the same domain to ensure that cert-manager can access ingress, or DNS01 challenge TXT records at all times.
+
+You can set pod DNS nameserver configuration for cert-manager like so:
+```yaml
+spec:
+  certManager:
+    enabled: true
+    nameservers:
+      - 1.1.1.1
+      - 8.8.8.8
+```
+
 
 Read more about cert-manager in the [official documentation](https://cert-manager.io/docs/)
 
