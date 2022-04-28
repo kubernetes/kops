@@ -51,7 +51,7 @@ spec:
           value: "127.0.0.1"
         resources:
           requests:
-            cpu: 200m
+            cpu: {{ or .ExternalCloudControllerManager.CPURequest "200m" }}
         volumeMounts:
         - mountPath: /etc/kubernetes/cloud.config
           name: cloudconfig

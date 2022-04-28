@@ -168,6 +168,7 @@ spec:
 ```yaml
 spec:
   nodeTerminationHandler:
+    cpuRequest: 200m
     enabled: true
     enableSQSTerminationDraining: true
     managedASGTag: "aws-node-termination-handler/managed"
