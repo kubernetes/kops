@@ -724,6 +724,11 @@ func (in *CloudControllerManagerConfig) DeepCopyInto(out *CloudControllerManager
 		*out = new(bool)
 		**out = **in
 	}
+	if in.CPURequest != nil {
+		in, out := &in.CPURequest, &out.CPURequest
+		x := (*in).DeepCopy()
+		*out = &x
+	}
 	return
 }
 
