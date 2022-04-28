@@ -182,7 +182,24 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		c := cluster.Spec.Networking.AmazonVPC
 		dest["AmazonVpcEnvVars"] = func() map[string]string {
 			envVars := map[string]string{
-				"AWS_VPC_K8S_CNI_CONFIGURE_RPFILTER": "false",
+				// Use defaults from the official AWS VPC CNI Helm chart:
+				// https://github.com/aws/amazon-vpc-cni-k8s/blob/master/charts/aws-vpc-cni/values.yaml
+				"AWS_VPC_CNI_NODE_PORT_SUPPORT":         "true",
+				"AWS_VPC_ENI_MTU":                       "9001",
+				"AWS_VPC_K8S_CNI_CONFIGURE_RPFILTER":    "false",
+				"AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG":    "false",
+				"AWS_VPC_K8S_CNI_EXTERNALSNAT":          "false",
+				"AWS_VPC_K8S_CNI_LOG_FILE":              "/host/var/log/aws-routed-eni/ipamd.log",
+				"AWS_VPC_K8S_CNI_LOGLEVEL":              "DEBUG",
+				"AWS_VPC_K8S_CNI_RANDOMIZESNAT":         "prng",
+				"AWS_VPC_K8S_CNI_VETHPREFIX":            "eni",
+				"AWS_VPC_K8S_PLUGIN_LOG_FILE":           "/var/log/aws-routed-eni/plugin.log",
+				"AWS_VPC_K8S_PLUGIN_LOG_LEVEL":          "DEBUG",
+				"DISABLE_INTROSPECTION":                 "false",
+				"DISABLE_METRICS":                       "false",
+				"ENABLE_POD_ENI":                        "false",
+				"WARM_ENI_TARGET":                       "1",
+				"DISABLE_NETWORK_RESOURCE_PROVISIONING": "false",
 			}
 			for _, e := range c.Env {
 				envVars[e.Name] = e.Value
