@@ -5215,6 +5215,14 @@ spec:
             - matchExpressions:
               - key: node-role.kubernetes.io/master
                 operator: Exists
+      {{ if .CertManager.Nameservers }}
+      dnsConfig:
+        nameservers:
+        {{ range $nameserver := .CertManager.Nameservers }}
+        - "{{ $nameserver }}"
+        {{ end }}
+      dnsPolicy: None
+      {{ end }}
       priorityClassName: system-cluster-critical
       serviceAccountName: cert-manager
       securityContext:

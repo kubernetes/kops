@@ -536,6 +536,11 @@ func (in *CertManagerConfig) DeepCopyInto(out *CertManagerConfig) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.Nameservers != nil {
+		in, out := &in.Nameservers, &out.Nameservers
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 
