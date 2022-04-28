@@ -54,7 +54,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.22
     manifest: networking.projectcalico.org.canal/k8s-1.22.yaml
-    manifestHash: 3ba7d989e4267b133b6d469eed4833ab790a2d9809e788b11853c86361e767d7
+    manifestHash: b71e423aaac74d5fdb3e3a254759150d32f523df77ad6bb0def85cc088b0ff87
     name: networking.projectcalico.org.canal
     selector:
       role.kubernetes.io/networking: "1"
