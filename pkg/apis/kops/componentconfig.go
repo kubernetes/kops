@@ -1050,6 +1050,10 @@ type CertManagerConfig struct {
 	// defaultIssuer sets a default clusterIssuer
 	// Default: none
 	DefaultIssuer *string `json:"defaultIssuer,omitempty"`
+
+	// nameservers is a list of nameserver IP addresses to use instead of the pod defaults.
+	// Default: none
+	Nameservers []string `json:"nameservers,omitempty"`
 }
 
 // AWSLoadBalancerControllerConfig determines the AWS LB controller configuration.
