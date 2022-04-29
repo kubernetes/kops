@@ -690,6 +690,9 @@ type CloudControllerManagerConfig struct {
 	UseServiceAccountCredentials *bool `json:"useServiceAccountCredentials,omitempty" flag:"use-service-account-credentials"`
 	// EnableLeaderMigration enables controller leader migration.
 	EnableLeaderMigration *bool `json:"enableLeaderMigration,omitempty" flag:"enable-leader-migration"`
+	// CPURequest of CloudControllerManager container.
+	// Default: 200m
+	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
 }
 
 // KubeSchedulerConfig is the configuration for the kube-scheduler
