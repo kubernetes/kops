@@ -2141,7 +2141,9 @@ func ListIAMOIDCProviders(cloud fi.Cloud, clusterName string) ([]*resources.Reso
 				OpenIDConnectProviderArn: arn,
 			}
 			resp, err := c.IAM().GetOpenIDConnectProvider(descReq)
-			if err != nil {
+			if err != nil && awsup.AWSErrorCode(err) == iam.ErrCodeNoSuchEntityException {
+				continue
+			} else if err != nil {
 				return nil, fmt.Errorf("error getting IAM OIDC Provider: %v", err)
 			}
 			if !matchesIAMTags(tags, resp.Tags) {
