@@ -38,7 +38,6 @@ func (b *PackagesBuilder) Build(c *fi.ModelBuilderContext) error {
 	//   ebtables - kops #1711
 	//   ethtool - kops #1830
 	if b.Distribution.IsDebianFamily() {
-		c.AddTask(&nodetasks.Package{Name: "nfs-common"})
 		// From containerd: https://github.com/containerd/cri/blob/master/contrib/ansible/tasks/bootstrap_ubuntu.yaml
 		c.AddTask(&nodetasks.Package{Name: "bridge-utils"})
 		c.AddTask(&nodetasks.Package{Name: "cgroupfs-mount"})
@@ -53,7 +52,6 @@ func (b *PackagesBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(&nodetasks.Package{Name: "socat"})
 		c.AddTask(&nodetasks.Package{Name: "util-linux"})
 	} else if b.Distribution.IsRHELFamily() {
-		c.AddTask(&nodetasks.Package{Name: "nfs-utils"})
 		// From containerd: https://github.com/containerd/cri/blob/master/contrib/ansible/tasks/bootstrap_centos.yaml
 		c.AddTask(&nodetasks.Package{Name: "conntrack-tools"})
 		c.AddTask(&nodetasks.Package{Name: "ebtables"})
