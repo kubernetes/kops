@@ -202,7 +202,7 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 
 	a.ImageAssets = append(a.ImageAssets, asset)
 
-	if !featureflag.ImageDigest.Enabled() {
+	if !featureflag.ImageDigest.Enabled() || os.Getenv("KOPS_BASE_URL") != "" {
 		return image, nil
 	}
 
