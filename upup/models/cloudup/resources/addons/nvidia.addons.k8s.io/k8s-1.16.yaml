@@ -17,7 +17,7 @@ spec:
         name: nvidia-device-plugin-ds
     spec:
       containers:
-      - image: docker.io/nvidia/k8s-device-plugin:v0.10.0
+      - image: docker.io/nvidia/k8s-device-plugin:v0.11.0
         name: nvidia-device-plugin-ctr
         args: ["--fail-on-init-error=false"]
         securityContext:
