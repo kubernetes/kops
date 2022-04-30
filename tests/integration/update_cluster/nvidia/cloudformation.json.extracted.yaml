@@ -133,7 +133,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
     logLevel: info
     nvidiaGPU:
       enabled: true
-      package: nvidia-headless-460-server
+      package: nvidia-headless-510-server
     version: 1.4.12
   docker:
     skipInstall: true
@@ -248,7 +248,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: XfW6vDRNRfTHJPOGeKVjmi0X8oyJNK2bnzKsVZy00K8=
+  NodeupConfigHash: Pxds5Al5CozIY+FCKHuqBqRAPIeptslqIdIdX8lPnkE=
 
   __EOF_KUBE_ENV
 
@@ -389,7 +389,7 @@ Resources.AWSEC2LaunchTemplatenodesminimalexamplecom.Properties.LaunchTemplateDa
     logLevel: info
     nvidiaGPU:
       enabled: true
-      package: nvidia-headless-460-server
+      package: nvidia-headless-510-server
     version: 1.4.12
   docker:
     skipInstall: true
@@ -422,7 +422,7 @@ Resources.AWSEC2LaunchTemplatenodesminimalexamplecom.Properties.LaunchTemplateDa
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: rXMJNOQF0/HDGwb7T9kem3+Ydeau/+I6oiA8ankZdEM=
+  NodeupConfigHash: me4mBnPl+0J3noivly6hq8f5geHok77lvs0noMjPxHQ=
 
   __EOF_KUBE_ENV
 
