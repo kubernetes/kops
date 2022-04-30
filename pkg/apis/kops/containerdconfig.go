@@ -17,7 +17,7 @@ limitations under the License.
 package kops
 
 // NvidiaDefaultDriverPackage is the nvidia driver default version
-const NvidiaDefaultDriverPackage = "nvidia-headless-460-server"
+const NvidiaDefaultDriverPackage = "nvidia-headless-510-server"
 
 // ContainerdConfig is the configuration for containerd
 type ContainerdConfig struct {
@@ -45,7 +45,7 @@ type ContainerdConfig struct {
 
 type NvidiaGPUConfig struct {
 	// Package is the name of the nvidia driver package that will be installed.
-	// Default is "nvidia-headless-460-server".
+	// Default is "nvidia-headless-510-server".
 	DriverPackage string `json:"package,omitempty"`
 	// Enabled determines if kOps will install the Nvidia GPU runtime and drivers.
 	// They will only be installed on intances that has an Nvidia GPU.
