@@ -231,6 +231,17 @@ func (c *RootCmd) clusterNameArgsNoKubeconfig(clusterName *string) func(cmd *cob
 	}
 }
 
+func (c *RootCmd) clusterNameArgsAllowNoCluster(clusterName *string) func(cmd *cobra.Command, args []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		if err := c.ProcessArgs(args); err != nil {
+			return err
+		}
+
+		*clusterName = c.clusterName
+		return nil
+	}
+}
+
 // ProcessArgs will parse the positional args.  It assumes one of these formats:
 //  * <no arguments at all>
 //  * <clustername> (and --name not specified)
