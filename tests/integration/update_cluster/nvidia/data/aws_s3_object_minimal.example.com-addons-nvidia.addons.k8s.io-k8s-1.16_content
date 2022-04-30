@@ -22,7 +22,7 @@ spec:
       containers:
       - args:
         - --fail-on-init-error=false
-        image: docker.io/nvidia/k8s-device-plugin:v0.10.0
+        image: docker.io/nvidia/k8s-device-plugin:v0.11.0
         name: nvidia-device-plugin-ctr
         securityContext:
           allowPrivilegeEscalation: false
