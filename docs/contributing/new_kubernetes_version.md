@@ -1,13 +1,5 @@
 ## Checklist for a new kubernetes version
 
-### Update bazel rules_go / rules_docker / gazelle etc
-
-### Run gazelle
-
-```bash
-make gazelle
-```
-
 ### Check go version used in k/k
 
 ### Update base images
