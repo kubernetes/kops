@@ -21,9 +21,10 @@ set -o xtrace
 
 export KOPS_FEATURE_FLAGS="SpecOverrideFlag,${KOPS_FEATURE_FLAGS:-}"
 REPO_ROOT=$(git rev-parse --show-toplevel);
-PATH=$REPO_ROOT/.bazel-bin/cmd/kops/$(go env GOOS)-$(go env GOARCH):$PATH
+KOPSPATH=$REPO_ROOT/.build/dist/$(go env GOOS)/$(go env GOARCH)
+PATH=$KOPSPATH:$PATH
 
-KUBETEST2_COMMON_ARGS="-v=2 --cloud-provider=digitalocean --cluster-name=e2e-test-do.k8s.local --kops-binary-path=${REPO_ROOT}/.bazel-bin/cmd/kops/linux-amd64/kops"
+KUBETEST2_COMMON_ARGS="-v=2 --cloud-provider=digitalocean --cluster-name=e2e-test-do.k8s.local --kops-binary-path=${KOPSPATH}/kops"
 KUBETEST2_COMMON_ARGS="${KUBETEST2_COMMON_ARGS} --admin-access=${ADMIN_ACCESS:-}"
 
 export GO111MODULE=on

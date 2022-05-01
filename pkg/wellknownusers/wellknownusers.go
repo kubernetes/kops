@@ -28,7 +28,7 @@ const (
 	AWSAuthenticator = 10000
 
 	// KopsControllerID is the user id for kops-controller, which needs some extra permissions e.g. to write local logs
-	// This should match the user in cmd/kops-controller/BUILD.bazel
+	// This should match the kops-controller DaemonSet's runAsUser
 	KopsControllerID = 10011
 
 	// KopsControllerName is the username for the kops-controller user
@@ -36,7 +36,7 @@ const (
 
 	// KubeApiserverHealthcheckID is the user id for kube-apiserver-healthcheck sidecar
 	// The user needs some extra permissions e.g. to read local secrets
-	// This should match the user in cmd/kube-apiserver-healthcheck/BUILD.bazel
+	// This should match the static pod's runAsUser
 	KubeApiserverHealthcheckID = 10012
 
 	// KubeApiserverHealthcheckName is the username for the kube-apiserver-healthcheck user

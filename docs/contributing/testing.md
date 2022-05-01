@@ -49,7 +49,7 @@ kubetest2 kops \
   --test \
   --cloud-provider=aws \
   --cluster-name=my.testcluster.com \
-  --kops-binary-path=${KOPS_ROOT}/.bazel-bin/cmd/kops/linux-amd64/kops \
+  --kops-binary-path=${KOPS_ROOT}/.build/dist/$(go env GOOS)/$(go env GOARCH)/kops \
   --kubernetes-version=v1.20.2 \
   --test=kops \
   -- \
@@ -73,7 +73,7 @@ kubetest2 kops \
   --cloud-provider=aws \
   --cluster-name=my.testcluster.com \
   --create-args="--networking calico" \
-  --kops-binary-path=${KOPS_ROOT}/.bazel-bin/cmd/kops/linux-amd64/kops \
+  --kops-binary-path=${KOPS_ROOT}/.build/dist/$(go env GOOS)/$(go env GOARCH)/kops \
   --kubernetes-version=v1.20.2 \
   --test=kops \
   --
@@ -99,7 +99,7 @@ kubetest2 kops \
   --up \
   --cloud-provider=aws \
   --cluster-name=my.testcluster.com \
-  --kops-binary-path=${KOPS_ROOT}/.bazel-bin/cmd/kops/linux-amd64/kops \
+  --kops-binary-path=${KOPS_ROOT}/.build/dist/$(go env GOOS)/$(go env GOARCH)/kops \
   --kubernetes-version=v1.20.2 \
   --template-path=my.testcluster.com.yaml \
   --test=kops \
