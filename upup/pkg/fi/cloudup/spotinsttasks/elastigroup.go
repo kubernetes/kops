@@ -79,6 +79,7 @@ type RootVolumeOpts struct {
 	IOPS         *int64
 	Throughput   *int64
 	Optimization *bool
+	Encryption   *bool
 }
 
 type AutoScalerOpts struct {
@@ -305,6 +306,9 @@ func (e *Elastigroup) Find(c *fi.Context) (*Elastigroup, error) {
 						}
 						if b.EBS.Throughput != nil {
 							actual.RootVolumeOpts.Throughput = fi.Int64(int64(fi.IntValue(b.EBS.Throughput)))
+						}
+						if b.EBS.Encrypted != nil {
+							actual.RootVolumeOpts.Encryption = b.EBS.Encrypted
 						}
 					}
 				}
@@ -1394,6 +1398,7 @@ type terraformElastigroupBlockDevice struct {
 	VolumeSize          *int64  `cty:"volume_size"`
 	VolumeIOPS          *int64  `cty:"iops"`
 	VolumeThroughput    *int64  `cty:"throughput"`
+	Encrypted           *bool   `cty:"encrypted"`
 	DeleteOnTermination *bool   `cty:"delete_on_termination"`
 }
 
@@ -1594,6 +1599,7 @@ func (_ *Elastigroup) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 					VolumeSize:          rootDevice.EbsVolumeSize,
 					VolumeIOPS:          rootDevice.EbsVolumeIops,
 					VolumeThroughput:    rootDevice.EbsVolumeThroughput,
+					Encrypted:           rootDevice.EbsEncrypted,
 					DeleteOnTermination: fi.Bool(true),
 				}
 
@@ -1780,6 +1786,7 @@ func buildRootDevice(cloud awsup.AWSCloud, volumeOpts *RootVolumeOpts,
 		DeviceName:             img.RootDeviceName,
 		EbsVolumeSize:          volumeOpts.Size,
 		EbsVolumeType:          volumeOpts.Type,
+		EbsEncrypted:           volumeOpts.Encryption,
 		EbsDeleteOnTermination: fi.Bool(true),
 	}
 
@@ -1806,6 +1813,7 @@ func (e *Elastigroup) convertBlockDeviceMapping(in *awstasks.BlockDeviceMapping)
 		out.EBS = &aws.EBS{
 			VolumeType:          in.EbsVolumeType,
 			VolumeSize:          fi.Int(int(fi.Int64Value(in.EbsVolumeSize))),
+			Encrypted:           in.EbsEncrypted,
 			DeleteOnTermination: in.EbsDeleteOnTermination,
 		}
 
