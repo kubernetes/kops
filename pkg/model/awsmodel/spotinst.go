@@ -712,6 +712,13 @@ func (b *SpotInstanceGroupModelBuilder) buildRootVolumeOpts(ig *kops.InstanceGro
 		}
 	}
 
+	// Encryption.
+	{
+		if fi.BoolValue(ig.Spec.RootVolumeEncryption) {
+			opts.Encryption = ig.Spec.RootVolumeEncryption
+		}
+	}
+
 	// Size.
 	{
 		size := fi.Int32Value(ig.Spec.RootVolumeSize)

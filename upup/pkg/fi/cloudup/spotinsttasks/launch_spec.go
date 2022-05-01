@@ -220,6 +220,9 @@ func (o *LaunchSpec) Find(c *fi.Context) (*LaunchSpec, error) {
 					if b.EBS.Throughput != nil {
 						actual.RootVolumeOpts.Throughput = fi.Int64(int64(fi.IntValue(b.EBS.Throughput)))
 					}
+					if b.EBS.Encrypted != nil {
+						actual.RootVolumeOpts.Encryption = b.EBS.Encrypted
+					}
 				}
 			}
 		}
@@ -876,6 +879,7 @@ type terraformBlockDeviceMappingEBS struct {
 	VolumeSize          *int64  `cty:"volume_size"`
 	VolumeIOPS          *int64  `cty:"iops"`
 	VolumeThroughput    *int64  `cty:"throughput"`
+	Encrypted           *bool   `cty:"encrypted"`
 	DeleteOnTermination *bool   `cty:"delete_on_termination"`
 }
 
@@ -981,6 +985,7 @@ func (_ *LaunchSpec) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 				VolumeSize:          rootDevice.EbsVolumeSize,
 				VolumeIOPS:          rootDevice.EbsVolumeIops,
 				VolumeThroughput:    rootDevice.EbsVolumeThroughput,
+				Encrypted:           rootDevice.EbsEncrypted,
 				DeleteOnTermination: fi.Bool(true),
 			},
 		})
