@@ -178,8 +178,9 @@ metadata:
   namespace: kube-system
 spec:
   containers:
-  - image: registry.k8s.io/etcdadm/etcd-manager:v3.0.20220417
-    name: etcd-manager
+  - name: etcd-manager
+    # image: registry.k8s.io/etcdadm/etcd-manager:v3.0.20220417
+    image: gcr.io/k8s-staging-etcdadm/etcd-manager:v3.0.20220417-19-g1140ce25
     resources:
       requests:
         cpu: 100m
