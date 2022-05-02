@@ -62,23 +62,10 @@ network_closure.sh
 
 # build stuff
 .build
-.bazelbuild
 
 # Ignore all Exhuberant Ctags files
 # Removed for now - we have a package named tags
 # tags
-
-# Bazel output directories
-# bazel-bin is now a symlink to .bazel-bin
-bazel-genfiles
-bazel-kops
-bazel-out
-bazel-testlogs
-.bazel-bin
-.bazel-genfiles
-.bazel-kops
-.bazel-out
-.bazel-testlogs
 
 # Ignore default apiserver config
 apiserver.local.config
