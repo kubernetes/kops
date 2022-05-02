@@ -166,7 +166,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal-warmpool.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: ll6L4KZlNXo7wyMRfGzC6ImwjgLHVA3MFCb5ubi5lgs=
+NodeupConfigHash: VB+wVXktis1pq5AJsf340nKkPeJX5/1mlbANYgA3jQ0=
 
 __EOF_KUBE_ENV
 
