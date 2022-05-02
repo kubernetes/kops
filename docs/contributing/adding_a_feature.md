@@ -237,7 +237,7 @@ and then push nodeup using:
 export S3_BUCKET_NAME=<yourbucketname>
 make kops-install dev-upload UPLOAD_DEST=s3://${S3_BUCKET_NAME}
 
-KOPS_VERSION=`bazelisk run //cmd/kops version -- --short`
+KOPS_VERSION=`.build/dist/$(go env GOOS)/$(go env GOARCH)/kops version -- --short`
 export KOPS_BASE_URL=https://${S3_BUCKET_NAME}.s3.amazonaws.com/kops/${KOPS_VERSION}/
 export KOPS_ARCH=amd64
 kops create cluster <clustername> --zones us-east-1b
@@ -249,7 +249,7 @@ If you have changed the dns or kOps controllers, you would want to test them as 
 For dns-controller:
 
 ```bash
-KOPS_VERSION=`bazelisk run //cmd/kops version -- --short`
+KOPS_VERSION=`.build/dist/$(go env GOOS)/$(go env GOARCH)/kops version -- --short`
 export DOCKER_IMAGE_PREFIX=${USER}/
 export DOCKER_REGISTRY=
 make dns-controller-push
@@ -259,7 +259,7 @@ export DNSCONTROLLER_IMAGE=${DOCKER_IMAGE_PREFIX}dns-controller:${KOPS_VERSION}
 For kops-controller:
 
 ```bash
-KOPS_VERSION=`bazelisk run //cmd/kops version -- --short`
+KOPS_VERSION=`.build/dist/$(go env GOOS)/$(go env GOARCH)/kops version -- --short`
 export DOCKER_IMAGE_PREFIX=${USER}/
 export DOCKER_REGISTRY=
 make kops-controller-push

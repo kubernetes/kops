@@ -1,5 +1,4 @@
 **/zz_generated.*.go linguist-generated=true
-BUILD.bazel linguist-generated=true
 /docs/cli/** linguist-generated=true
 /protokube/pkg/gossip/mesh/mesh.pb.go linguist-generated=true
 /protokube/pkg/gossip/mesh/mesh.proto linguist-generated=true
