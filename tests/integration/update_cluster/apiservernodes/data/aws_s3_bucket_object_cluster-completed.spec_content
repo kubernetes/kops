@@ -32,14 +32,14 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: main
-    version: 3.5.3
+    version: 3.5.4
   - backups:
       backupStore: memfs://clusters.example.com/minimal.example.com/backups/etcd/events
     etcdMembers:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: events
-    version: 3.5.3
+    version: 3.5.4
   externalDns:
     provider: dns-controller
   iam:
