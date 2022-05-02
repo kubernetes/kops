@@ -88,7 +88,7 @@ Contents: |
       env:
       - name: ETCD_QUOTA_BACKEND_BYTES
         value: "10737418240"
-      image: registry.k8s.io/etcdadm/etcd-manager:v3.0.20220417@sha256:a0465bfcef15657f3260f4ba3b7ab359b10c32767cf2cd3ee7a263f3cfa3b64e
+      image: gcr.io/k8s-staging-etcdadm/etcd-manager:v3.0.20220417-19-g1140ce25@sha256:17461d4049f3406b34b7899f779482240db334f17df4f62768c6804ad6c4a9b0
       name: etcd-manager
       resources:
         requests:
@@ -159,7 +159,7 @@ Contents: |
       env:
       - name: ETCD_QUOTA_BACKEND_BYTES
         value: "10737418240"
-      image: registry.k8s.io/etcdadm/etcd-manager:v3.0.20220417@sha256:a0465bfcef15657f3260f4ba3b7ab359b10c32767cf2cd3ee7a263f3cfa3b64e
+      image: gcr.io/k8s-staging-etcdadm/etcd-manager:v3.0.20220417-19-g1140ce25@sha256:17461d4049f3406b34b7899f779482240db334f17df4f62768c6804ad6c4a9b0
       name: etcd-manager
       resources:
         requests:
