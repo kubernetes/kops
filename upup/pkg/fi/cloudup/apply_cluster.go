@@ -1410,6 +1410,10 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 		config.WarmPoolImages = n.buildWarmPoolImages(ig)
 	}
 
+	if ig.Spec.Packages != nil {
+		config.Packages = ig.Spec.Packages
+	}
+
 	return config, bootConfig, nil
 }
 

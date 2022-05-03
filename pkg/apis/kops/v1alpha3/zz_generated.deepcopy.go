@@ -2476,6 +2476,11 @@ func (in *InstanceGroupSpec) DeepCopyInto(out *InstanceGroupSpec) {
 		*out = new(ContainerdConfig)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.Packages != nil {
+		in, out := &in.Packages, &out.Packages
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 

@@ -158,6 +158,8 @@ type InstanceGroupSpec struct {
 	WarmPool *WarmPoolSpec `json:"warmPool,omitempty"`
 	// Containerd specifies override configuration for instance group
 	Containerd *ContainerdConfig `json:"containerd,omitempty"`
+	// Packages specifies additional packages to be installed.
+	Packages []string `json:"packages,omitempty"`
 }
 
 // InstanceMetadataOptions defines the EC2 instance metadata service options (AWS Only)
