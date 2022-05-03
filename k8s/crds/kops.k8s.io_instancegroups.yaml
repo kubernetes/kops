@@ -834,6 +834,11 @@ spec:
                 description: NodeLabels indicates the kubernetes labels for nodes
                   in this instance group
                 type: object
+              packages:
+                description: Packages specifies additional packages to be installed.
+                items:
+                  type: string
+                type: array
               role:
                 description: 'Type determines the role of instances in this instance
                   group: masters or nodes'
