@@ -88,7 +88,11 @@ Contents: |
         --v=6 --volume-name-tag=k8s.io/etcd/events --volume-provider=aws --volume-tag=k8s.io/etcd/events
         --volume-tag=k8s.io/role/master=1 --volume-tag=kubernetes.io/cluster/minimal.example.com=owned
         > /tmp/pipe 2>&1
+<<<<<<< HEAD
       image: k8s.gcr.io/etcdadm/etcd-manager:v3.0.20220417
+=======
+      image: registry.k8s.io/etcdadm/etcd-manager:v3.0.20220503@sha256:17461d4049f3406b34b7899f779482240db334f17df4f62768c6804ad6c4a9b0
+>>>>>>> Run hack/update-expected.sh
       name: etcd-manager
       resources:
         requests:
@@ -159,7 +163,11 @@ Contents: |
         --v=6 --volume-name-tag=k8s.io/etcd/main --volume-provider=aws --volume-tag=k8s.io/etcd/main
         --volume-tag=k8s.io/role/master=1 --volume-tag=kubernetes.io/cluster/minimal.example.com=owned
         > /tmp/pipe 2>&1
+<<<<<<< HEAD
       image: k8s.gcr.io/etcdadm/etcd-manager:v3.0.20220417
+=======
+      image: registry.k8s.io/etcdadm/etcd-manager:v3.0.20220503@sha256:17461d4049f3406b34b7899f779482240db334f17df4f62768c6804ad6c4a9b0
+>>>>>>> Run hack/update-expected.sh
       name: etcd-manager
       resources:
         requests:

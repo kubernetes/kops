@@ -21,7 +21,11 @@ spec:
       --volume-provider=aws --volume-tag=k8s.io/etcd/main --volume-tag=k8s.io/role/master=1
       --volume-tag=kubernetes.io/cluster/existingsg.example.com=owned > /tmp/pipe
       2>&1
+<<<<<<< HEAD:tests/integration/update_cluster/existing_sg/data/aws_s3_bucket_object_manifests-etcdmanager-main_content
     image: k8s.gcr.io/etcdadm/etcd-manager:v3.0.20220417
+=======
+    image: registry.k8s.io/etcdadm/etcd-manager:v3.0.20220503
+>>>>>>> Run hack/update-expected.sh:tests/integration/update_cluster/existing_sg/data/aws_s3_object_manifests-etcdmanager-main_content
     name: etcd-manager
     resources:
       requests:
