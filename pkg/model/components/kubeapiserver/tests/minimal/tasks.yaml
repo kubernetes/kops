@@ -3,7 +3,9 @@ Contents: |
   apiVersion: v1
   kind: Pod
   metadata:
+    annotations: null
     creationTimestamp: null
+    labels: null
   spec:
     containers:
     - args:
@@ -21,11 +23,15 @@ Contents: |
         initialDelaySeconds: 5
         timeoutSeconds: 5
       name: healthcheck
-      resources: {}
+      resources:
+        limits: null
+        requests: null
       volumeMounts:
       - mountPath: /secrets
         name: healthcheck-secrets
         readOnly: true
+    nodeSelector: null
+    overhead: null
     volumes:
     - hostPath:
         path: /etc/kubernetes/kube-apiserver-healthcheck/secrets
