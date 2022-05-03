@@ -260,6 +260,7 @@ spec:
         app: csi-cinder-controllerplugin
         k8s-addon: storage-openstack.addons.k8s.io
     spec:
+      priorityClassName: system-cluster-critical
       serviceAccount: csi-cinder-controller-sa
       containers:
         - name: csi-attacher
@@ -433,6 +434,7 @@ spec:
         k8s-addon: storage-openstack.addons.k8s.io
     spec:
       serviceAccount: csi-cinder-node-sa
+      priorityClassName: system-node-critical
       tolerations:
       - operator: Exists
       hostNetwork: true
