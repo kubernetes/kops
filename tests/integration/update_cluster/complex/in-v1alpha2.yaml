@@ -119,6 +119,8 @@ spec:
   machineType: t2.medium
   maxSize: 2
   minSize: 2
+  packages:
+  - nfs-common
   role: Node
   subnets:
   - us-test-1a
