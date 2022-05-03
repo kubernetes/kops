@@ -3,13 +3,13 @@ Assets:
   - 4756ff345dd80704b749d87efb8eb294a143a1f4a251ec586197d26ad20ea518@https://storage.googleapis.com/kubernetes-release/release/v1.23.0/bin/linux/amd64/kubelet
   - 2d0f5ba6faa787878b642c151ccb2c3390ce4c1e6c8e2b59568b3869ba407c4f@https://storage.googleapis.com/kubernetes-release/release/v1.23.0/bin/linux/amd64/kubectl
   - 962100bbc4baeaaa5748cdbfce941f756b1531c2eadb290129401498bfac21e7@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz
-  - 3d94f887de5f284b0d6ee61fa17ba413a7d60b4bb27d756a402b713a53685c6a@https://github.com/containerd/containerd/releases/download/v1.6.2/containerd-1.6.2-linux-amd64.tar.gz
+  - f23c8ac914d748f85df94d3e82d11ca89ca9fe19a220ce61b99a05b070044de0@https://github.com/containerd/containerd/releases/download/v1.6.4/containerd-1.6.4-linux-amd64.tar.gz
   - ab1c67fbcbdddbe481e48a55cf0ef9a86b38b166b5079e0010737fd87d7454bb@https://github.com/opencontainers/runc/releases/download/v1.1.0/runc.amd64
   arm64:
   - a546fb7ccce69c4163e4a0b19a31f30ea039b4e4560c23fd6e3016e2b2dfd0d9@https://storage.googleapis.com/kubernetes-release/release/v1.23.0/bin/linux/arm64/kubelet
   - 1d77d6027fc8dfed772609ad9bd68f611b7e4ce73afa949f27084ad3a92b15fe@https://storage.googleapis.com/kubernetes-release/release/v1.23.0/bin/linux/arm64/kubectl
   - ef17764ffd6cdcb16d76401bac1db6acc050c9b088f1be5efa0e094ea3b01df0@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-arm64-v0.9.1.tgz
-  - a4b24b3c38a67852daa80f03ec2bc94e31a0f4393477cd7dc1c1a7c2d3eb2a95@https://github.com/containerd/containerd/releases/download/v1.6.2/containerd-1.6.2-linux-arm64.tar.gz
+  - 0205bd1907154388dc85b1afeeb550cbb44c470ef4a290cb1daf91501c85cae6@https://github.com/containerd/containerd/releases/download/v1.6.4/containerd-1.6.4-linux-arm64.tar.gz
   - 9ec8e68feabc4e7083a4cfa45ebe4d529467391e0b03ee7de7ddda5770b05e68@https://github.com/opencontainers/runc/releases/download/v1.1.0/runc.arm64
 CAs:
   kubernetes-ca: |
@@ -68,5 +68,5 @@ channels:
 - memfs://clusters.example.com/minimal.example.com/addons/bootstrap-channel.yaml
 containerdConfig:
   logLevel: info
-  version: 1.6.2
+  version: 1.6.4
 useInstanceIDForNodeName: true
