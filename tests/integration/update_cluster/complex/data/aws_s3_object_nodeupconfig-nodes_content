@@ -62,3 +62,5 @@ channels:
 containerdConfig:
   logLevel: info
   version: 1.4.12
+packages:
+- nfs-common

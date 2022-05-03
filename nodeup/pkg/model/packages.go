@@ -51,6 +51,10 @@ func (b *PackagesBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(&nodetasks.Package{Name: "pigz"})
 		c.AddTask(&nodetasks.Package{Name: "socat"})
 		c.AddTask(&nodetasks.Package{Name: "util-linux"})
+		// Additional packages
+		for _, additionalPackage := range b.NodeupConfig.Packages {
+			c.EnsureTask(&nodetasks.Package{Name: additionalPackage})
+		}
 	} else if b.Distribution.IsRHELFamily() {
 		// From containerd: https://github.com/containerd/cri/blob/master/contrib/ansible/tasks/bootstrap_centos.yaml
 		c.AddTask(&nodetasks.Package{Name: "conntrack-tools"})
@@ -69,6 +73,10 @@ func (b *PackagesBuilder) Build(c *fi.ModelBuilderContext) error {
 		default:
 			c.AddTask(&nodetasks.Package{Name: "container-selinux"})
 			c.AddTask(&nodetasks.Package{Name: "pigz"})
+		}
+		// Additional packages
+		for _, additionalPackage := range b.NodeupConfig.Packages {
+			c.EnsureTask(&nodetasks.Package{Name: additionalPackage})
 		}
 	} else {
 		// Hopefully they are already installed
