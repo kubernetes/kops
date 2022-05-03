@@ -18,7 +18,6 @@ package openstack
 
 import (
 	"fmt"
-	"net/http"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
@@ -345,11 +344,10 @@ func updateMemberInPool(c OpenstackCloud, poolID string, memberID string, opts v
 				return true, nil
 			}
 			// pool is currently in immutable state, try to retry
-			if errCode, ok := err.(gophercloud.ErrUnexpectedResponseCode); ok {
-				if errCode.Actual == http.StatusConflict {
-					klog.Infof("got error %v retrying...", err)
-					return false, nil
-				}
+			errCode, ok := err.(gophercloud.ErrDefault409)
+			if ok {
+				klog.Infof("got error %v retrying...", errCode)
+				return false, nil
 			}
 			return false, fmt.Errorf("failed to update pool membership: %v", err)
 		}
