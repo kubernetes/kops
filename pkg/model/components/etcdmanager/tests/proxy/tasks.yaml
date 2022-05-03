@@ -94,7 +94,7 @@ Contents: |
         value: http://proxy.example.com
       - name: no_proxy
         value: noproxy.example.com
-      image: gcr.io/k8s-staging-etcdadm/etcd-manager:v3.0.20220417-19-g1140ce25@sha256:17461d4049f3406b34b7899f779482240db334f17df4f62768c6804ad6c4a9b0
+      image: registry.k8s.io/etcdadm/etcd-manager:v3.0.20220503@sha256:17461d4049f3406b34b7899f779482240db334f17df4f62768c6804ad6c4a9b0
       name: etcd-manager
       resources:
         requests:
@@ -171,7 +171,7 @@ Contents: |
         value: http://proxy.example.com
       - name: no_proxy
         value: noproxy.example.com
-      image: gcr.io/k8s-staging-etcdadm/etcd-manager:v3.0.20220417-19-g1140ce25@sha256:17461d4049f3406b34b7899f779482240db334f17df4f62768c6804ad6c4a9b0
+      image: registry.k8s.io/etcdadm/etcd-manager:v3.0.20220503@sha256:17461d4049f3406b34b7899f779482240db334f17df4f62768c6804ad6c4a9b0
       name: etcd-manager
       resources:
         requests:
