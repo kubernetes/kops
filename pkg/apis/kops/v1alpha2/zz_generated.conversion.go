@@ -4413,6 +4413,7 @@ func autoConvert_v1alpha2_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 	} else {
 		out.Containerd = nil
 	}
+	out.Packages = in.Packages
 	return nil
 }
 
@@ -4584,6 +4585,7 @@ func autoConvert_kops_InstanceGroupSpec_To_v1alpha2_InstanceGroupSpec(in *kops.I
 	} else {
 		out.Containerd = nil
 	}
+	out.Packages = in.Packages
 	return nil
 }
 
