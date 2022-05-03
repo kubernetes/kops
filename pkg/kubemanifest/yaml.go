@@ -51,7 +51,7 @@ func KubeObjectToApplyYAML(data runtime.Object) (string, error) {
 	// Remove metadata.creationTimestamp (can't be applied, shouldn't be specified)
 	metadataObj, found := jsonObj["metadata"]
 	if found {
-		if metadata, ok := metadataObj.(map[interface{}]interface{}); ok {
+		if metadata, ok := metadataObj.(map[string]interface{}); ok {
 			delete(metadata, "creationTimestamp")
 		} else {
 			klog.Warningf("unexpected type for object metadata: %T", metadataObj)
