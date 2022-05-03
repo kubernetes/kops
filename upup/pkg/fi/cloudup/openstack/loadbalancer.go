@@ -300,6 +300,41 @@ func getPool(c OpenstackCloud, poolID string, memberID string) (member *v2pools.
 	return member, nil
 }
 
+func (c *openstackCloud) UpdateMemberInPool(poolID string, memberID string, opts v2pools.UpdateMemberOptsBuilder) (association *v2pools.Member, err error) {
+	return updateMemberInPool(c, poolID, memberID, opts)
+}
+
+func updateMemberInPool(c OpenstackCloud, poolID string, memberID string, opts v2pools.UpdateMemberOptsBuilder) (association *v2pools.Member, err error) {
+	if c.LoadBalancerClient() == nil {
+		return nil, fmt.Errorf("loadbalancer support not available in this deployment")
+	}
+
+	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+		association, err = v2pools.UpdateMember(c.LoadBalancerClient(), poolID, memberID, opts).Extract()
+		if err != nil {
+			// member not found anymore
+			if isNotFound(err) {
+				return true, nil
+			}
+			// pool is currently in immutable state, try to retry
+			errCode, ok := err.(gophercloud.ErrDefault409)
+			if ok {
+				klog.Infof("got error %v retrying...", errCode)
+				return false, nil
+			}
+			return false, fmt.Errorf("failed to update pool membership: %v", err)
+		}
+		return true, nil
+	})
+	if !done {
+		if err == nil {
+			err = wait.ErrWaitTimeout
+		}
+		return association, err
+	}
+	return association, nil
+}
+
 func (c *openstackCloud) AssociateToPool(server *servers.Server, poolID string, opts v2pools.CreateMemberOpts) (association *v2pools.Member, err error) {
 	return associateToPool(c, server, poolID, opts)
 }
