@@ -22,7 +22,7 @@ spec:
   containerRuntime: containerd
   containerd:
     logLevel: info
-    version: 1.6.2
+    version: 1.6.4
   dnsZone: "1"
   docker:
     skipInstall: true
