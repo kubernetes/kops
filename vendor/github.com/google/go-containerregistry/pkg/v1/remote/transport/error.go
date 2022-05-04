@@ -155,6 +155,10 @@ const (
 	UnsupportedErrorCode         ErrorCode = "UNSUPPORTED"
 	TooManyRequestsErrorCode     ErrorCode = "TOOMANYREQUESTS"
 	UnknownErrorCode             ErrorCode = "UNKNOWN"
+
+	// This isn't defined by either docker or OCI spec, but is defined by docker/distribution:
+	// https://github.com/distribution/distribution/blob/6a977a5a754baa213041443f841705888107362a/registry/api/errcode/register.go#L60
+	UnavailableErrorCode ErrorCode = "UNAVAILABLE"
 )
 
 // TODO: Include other error types.
@@ -162,6 +166,7 @@ var temporaryErrorCodes = map[ErrorCode]struct{}{
 	BlobUploadInvalidErrorCode: {},
 	TooManyRequestsErrorCode:   {},
 	UnknownErrorCode:           {},
+	UnavailableErrorCode:       {},
 }
 
 var temporaryStatusCodes = map[int]struct{}{

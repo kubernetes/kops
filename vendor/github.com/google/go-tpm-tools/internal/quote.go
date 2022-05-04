@@ -66,7 +66,8 @@ func VerifyQuote(q *pb.Quote, trustedPub crypto.PublicKey, extraData []byte) err
 		return fmt.Errorf("attestation data does not contain quote info")
 	}
 	if subtle.ConstantTimeCompare(attestationData.ExtraData, extraData) == 0 {
-		return fmt.Errorf("quote extraData did not match expected extraData")
+		return fmt.Errorf("quote extraData %v did not match expected extraData %v",
+			attestationData.ExtraData, extraData)
 	}
 	return validatePCRDigest(attestedQuoteInfo, q.GetPcrs(), hash)
 }

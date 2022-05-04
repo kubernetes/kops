@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"crypto"
 	"fmt"
 
 	"github.com/google/go-tpm/tpm2"
@@ -32,4 +33,17 @@ func GetSigningHashAlg(pubArea tpm2.Public) (tpm2.Algorithm, error) {
 	default:
 		return tpm2.AlgNull, fmt.Errorf("unsupported signing algorithm: %v", sigScheme.Alg)
 	}
+}
+
+// PubKeysEqual returns whether the two public keys are equal.
+func PubKeysEqual(k1 crypto.PublicKey, k2 crypto.PublicKey) bool {
+	// Common interface for all the standard public key types, see:
+	// https://pkg.go.dev/crypto@go1.18beta1#PublicKey
+	type publicKey interface {
+		Equal(crypto.PublicKey) bool
+	}
+	if key, ok := k1.(publicKey); ok {
+		return key.Equal(k2)
+	}
+	return false
 }

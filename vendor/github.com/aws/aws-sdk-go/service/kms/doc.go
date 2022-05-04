@@ -24,6 +24,12 @@
 // We recommend that you use the Amazon Web Services SDKs to make programmatic
 // API calls to KMS.
 //
+// If you need to use FIPS 140-2 validated cryptographic modules when communicating
+// with Amazon Web Services, use the FIPS endpoint in your preferred Amazon
+// Web Services Region. For more information about the available FIPS endpoints,
+// see Service endpoints (https://docs.aws.amazon.com/general/latest/gr/kms.html#kms_region)
+// in the Key Management Service topic of the Amazon Web Services General Reference.
+//
 // Clients must support TLS (Transport Layer Security) 1.0. We recommend TLS
 // 1.2. Clients must also support cipher suites with Perfect Forward Secrecy
 // (PFS) such as Ephemeral Diffie-Hellman (DHE) or Elliptic Curve Ephemeral

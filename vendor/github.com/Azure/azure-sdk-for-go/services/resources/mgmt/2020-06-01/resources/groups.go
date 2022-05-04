@@ -235,7 +235,7 @@ func (client GroupsClient) Delete(ctx context.Context, resourceGroupName string,
 
 	result, err = client.DeleteSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "resources.GroupsClient", "Delete", nil, "Failure sending request")
+		err = autorest.NewErrorWithError(err, "resources.GroupsClient", "Delete", result.Response(), "Failure sending request")
 		return
 	}
 
@@ -269,6 +269,7 @@ func (client GroupsClient) DeletePreparer(ctx context.Context, resourceGroupName
 // http.Response Body if it receives an error.
 func (client GroupsClient) DeleteSender(req *http.Request) (future GroupsDeleteFuture, err error) {
 	var resp *http.Response
+	future.FutureAPI = &azure.Future{}
 	resp, err = client.Send(req, azure.DoRetryWithRegistration(client.Client))
 	if err != nil {
 		return
@@ -322,7 +323,7 @@ func (client GroupsClient) ExportTemplate(ctx context.Context, resourceGroupName
 
 	result, err = client.ExportTemplateSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "resources.GroupsClient", "ExportTemplate", nil, "Failure sending request")
+		err = autorest.NewErrorWithError(err, "resources.GroupsClient", "ExportTemplate", result.Response(), "Failure sending request")
 		return
 	}
 
@@ -355,6 +356,7 @@ func (client GroupsClient) ExportTemplatePreparer(ctx context.Context, resourceG
 // http.Response Body if it receives an error.
 func (client GroupsClient) ExportTemplateSender(req *http.Request) (future GroupsExportTemplateFuture, err error) {
 	var resp *http.Response
+	future.FutureAPI = &azure.Future{}
 	resp, err = client.Send(req, azure.DoRetryWithRegistration(client.Client))
 	if err != nil {
 		return

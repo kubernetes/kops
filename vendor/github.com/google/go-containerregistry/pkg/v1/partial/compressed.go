@@ -17,6 +17,7 @@ package partial
 import (
 	"io"
 
+	"github.com/google/go-containerregistry/internal/and"
 	"github.com/google/go-containerregistry/internal/gzip"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/types"
@@ -45,11 +46,28 @@ type compressedLayerExtender struct {
 
 // Uncompressed implements v1.Layer
 func (cle *compressedLayerExtender) Uncompressed() (io.ReadCloser, error) {
-	r, err := cle.Compressed()
+	rc, err := cle.Compressed()
 	if err != nil {
 		return nil, err
 	}
-	return gzip.UnzipReadCloser(r)
+
+	// Often, the "compressed" bytes are not actually gzip-compressed.
+	// Peek at the first two bytes to determine whether or not it's correct to
+	// wrap this with gzip.UnzipReadCloser.
+	gzipped, pr, err := gzip.Peek(rc)
+	if err != nil {
+		return nil, err
+	}
+	prc := &and.ReadCloser{
+		Reader:    pr,
+		CloseFunc: rc.Close,
+	}
+
+	if !gzipped {
+		return prc, nil
+	}
+
+	return gzip.UnzipReadCloser(prc)
 }
 
 // DiffID implements v1.Layer
