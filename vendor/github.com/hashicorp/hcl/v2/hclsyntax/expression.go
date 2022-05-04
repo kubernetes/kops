@@ -2,6 +2,7 @@ package hclsyntax
 
 import (
 	"fmt"
+	"sort"
 	"sync"
 
 	"github.com/hashicorp/hcl/v2"
@@ -615,12 +616,8 @@ func (e *ConditionalExpr) Value(ctx *hcl.EvalContext) (cty.Value, hcl.Diagnostic
 				Severity: hcl.DiagError,
 				Summary:  "Inconsistent conditional result types",
 				Detail: fmt.Sprintf(
-					// FIXME: Need a helper function for showing natural-language type diffs,
-					// since this will generate some useless messages in some cases, like
-					// "These expressions are object and object respectively" if the
-					// object types don't exactly match.
-					"The true and false result expressions must have consistent types. The given expressions are %s and %s, respectively.",
-					trueResult.Type().FriendlyName(), falseResult.Type().FriendlyName(),
+					"The true and false result expressions must have consistent types. %s.",
+					describeConditionalTypeMismatch(trueResult.Type(), falseResult.Type()),
 				),
 				Subject:     hcl.RangeBetween(e.TrueResult.Range(), e.FalseResult.Range()).Ptr(),
 				Context:     &e.SrcRange,
@@ -652,7 +649,7 @@ func (e *ConditionalExpr) Value(ctx *hcl.EvalContext) (cty.Value, hcl.Diagnostic
 		diags = append(diags, &hcl.Diagnostic{
 			Severity:    hcl.DiagError,
 			Summary:     "Incorrect condition type",
-			Detail:      fmt.Sprintf("The condition expression must be of type bool."),
+			Detail:      "The condition expression must be of type bool.",
 			Subject:     e.Condition.Range().Ptr(),
 			Context:     &e.SrcRange,
 			Expression:  e.Condition,
@@ -710,6 +707,144 @@ func (e *ConditionalExpr) Value(ctx *hcl.EvalContext) (cty.Value, hcl.Diagnostic
 		}
 		return falseResult, diags
 	}
+}
+
+// describeConditionalTypeMismatch makes a best effort to describe the
+// difference between types in the true and false arms of a conditional
+// expression in a way that would be useful to someone trying to understand
+// why their conditional expression isn't valid.
+//
+// NOTE: This function is only designed to deal with situations
+// where trueTy and falseTy are different. Calling it with two equal
+// types will produce a nonsense result. This function also only really
+// deals with situations that type unification can't resolve, so we should
+// call this function only after trying type unification first.
+func describeConditionalTypeMismatch(trueTy, falseTy cty.Type) string {
+	// The main tricky cases here are when both trueTy and falseTy are
+	// of the same structural type kind, such as both being object types
+	// or both being tuple types. In that case the "FriendlyName" method
+	// returns only "object" or "tuple" and so we need to do some more
+	// work to describe what's different inside them.
+
+	switch {
+	case trueTy.IsObjectType() && falseTy.IsObjectType():
+		// We'll first gather up the attribute names and sort them. In the
+		// event that there are multiple attributes that disagree across
+		// the two types, we'll prefer to report the one that sorts lexically
+		// least just so that our error message is consistent between
+		// evaluations.
+		var trueAttrs, falseAttrs []string
+		for name := range trueTy.AttributeTypes() {
+			trueAttrs = append(trueAttrs, name)
+		}
+		sort.Strings(trueAttrs)
+		for name := range falseTy.AttributeTypes() {
+			falseAttrs = append(falseAttrs, name)
+		}
+		sort.Strings(falseAttrs)
+
+		for _, name := range trueAttrs {
+			if !falseTy.HasAttribute(name) {
+				return fmt.Sprintf("The 'true' value includes object attribute %q, which is absent in the 'false' value", name)
+			}
+			trueAty := trueTy.AttributeType(name)
+			falseAty := falseTy.AttributeType(name)
+			if !trueAty.Equals(falseAty) {
+				// For deeply-nested differences this will likely get very
+				// clunky quickly by nesting these messages inside one another,
+				// but we'll accept that for now in the interests of producing
+				// _some_ useful feedback, even if it isn't as concise as
+				// we'd prefer it to be. Deeply-nested structures in
+				// conditionals are thankfully not super common.
+				return fmt.Sprintf(
+					"Type mismatch for object attribute %q: %s",
+					name, describeConditionalTypeMismatch(trueAty, falseAty),
+				)
+			}
+		}
+		for _, name := range falseAttrs {
+			if !trueTy.HasAttribute(name) {
+				return fmt.Sprintf("The 'false' value includes object attribute %q, which is absent in the 'true' value", name)
+			}
+			// NOTE: We don't need to check the attribute types again, because
+			// any attribute that both types have in common would already have
+			// been checked in the previous loop.
+		}
+	case trueTy.IsTupleType() && falseTy.IsTupleType():
+		trueEtys := trueTy.TupleElementTypes()
+		falseEtys := falseTy.TupleElementTypes()
+
+		if trueCount, falseCount := len(trueEtys), len(falseEtys); trueCount != falseCount {
+			return fmt.Sprintf("The 'true' tuple has length %d, but the 'false' tuple has length %d", trueCount, falseCount)
+		}
+
+		// NOTE: Thanks to the condition above, we know that both tuples are
+		// of the same length and so they must have some differing types
+		// instead.
+		for i := range trueEtys {
+			trueEty := trueEtys[i]
+			falseEty := falseEtys[i]
+
+			if !trueEty.Equals(falseEty) {
+				// For deeply-nested differences this will likely get very
+				// clunky quickly by nesting these messages inside one another,
+				// but we'll accept that for now in the interests of producing
+				// _some_ useful feedback, even if it isn't as concise as
+				// we'd prefer it to be. Deeply-nested structures in
+				// conditionals are thankfully not super common.
+				return fmt.Sprintf(
+					"Type mismatch for tuple element %d: %s",
+					i, describeConditionalTypeMismatch(trueEty, falseEty),
+				)
+			}
+		}
+	case trueTy.IsCollectionType() && falseTy.IsCollectionType():
+		// For this case we're specifically interested in the situation where:
+		// - both collections are of the same kind, AND
+		// - the element types of both are either object or tuple types.
+		// This is just to avoid writing a useless statement like
+		// "The 'true' value is list of object, but the 'false' value is list of object".
+		// This still doesn't account for more awkward cases like collections
+		// of collections of structural types, but we won't let perfect be
+		// the enemy of the good.
+		trueEty := trueTy.ElementType()
+		falseEty := falseTy.ElementType()
+		if (trueTy.IsListType() && falseTy.IsListType()) || (trueTy.IsMapType() && falseTy.IsMapType()) || (trueTy.IsSetType() && falseTy.IsSetType()) {
+			if (trueEty.IsObjectType() && falseEty.IsObjectType()) || (trueEty.IsTupleType() && falseEty.IsTupleType()) {
+				noun := "collection"
+				switch { // NOTE: We now know that trueTy and falseTy have the same collection kind
+				case trueTy.IsListType():
+					noun = "list"
+				case trueTy.IsSetType():
+					noun = "set"
+				case trueTy.IsMapType():
+					noun = "map"
+				}
+				return fmt.Sprintf(
+					"Mismatched %s element types: %s",
+					noun, describeConditionalTypeMismatch(trueEty, falseEty),
+				)
+			}
+		}
+	}
+
+	// If we don't manage any more specialized message, we'll just report
+	// what the two types are.
+	trueName := trueTy.FriendlyName()
+	falseName := falseTy.FriendlyName()
+	if trueName == falseName {
+		// Absolute last resort for when we have no special rule above but
+		// we have two types with the same friendly name anyway. This is
+		// the most vague of all possible messages but is reserved for
+		// particularly awkward cases, like lists of lists of differing tuple
+		// types.
+		return "At least one deeply-nested attribute or element is not compatible across both the 'true' and the 'false' value"
+	}
+	return fmt.Sprintf(
+		"The 'true' value is %s, but the 'false' value is %s",
+		trueTy.FriendlyName(), falseTy.FriendlyName(),
+	)
+
 }
 
 func (e *ConditionalExpr) Range() hcl.Range {
@@ -1432,9 +1567,22 @@ func (e *SplatExpr) Value(ctx *hcl.EvalContext) (cty.Value, hcl.Diagnostics) {
 		return cty.DynamicVal, diags
 	}
 
+	upgradedUnknown := false
 	if autoUpgrade {
+		// If we're upgrading an unknown value to a tuple/list, the result
+		// cannot be known. Otherwise a tuple containing an unknown value will
+		// upgrade to a different number of elements depending on whether
+		// sourceVal becomes null or not.
+		// We record this condition here so we can process any remaining
+		// expression after the * to verify the result of the traversal. For
+		// example, it is valid to use a splat on a single object to retrieve a
+		// list of a single attribute, but we still need to check if that
+		// attribute actually exists.
+		upgradedUnknown = !sourceVal.IsKnown()
+
 		sourceVal = cty.TupleVal([]cty.Value{sourceVal})
 		sourceTy = sourceVal.Type()
+
 	}
 
 	// We'll compute our result type lazily if we need it. In the normal case
@@ -1498,6 +1646,10 @@ func (e *SplatExpr) Value(ctx *hcl.EvalContext) (cty.Value, hcl.Diagnostics) {
 		vals = append(vals, newItem)
 	}
 	e.Item.clearValue(ctx) // clean up our temporary value
+
+	if upgradedUnknown {
+		return cty.DynamicVal, diags
+	}
 
 	if !isKnown {
 		// We'll ingore the resultTy diagnostics in this case since they

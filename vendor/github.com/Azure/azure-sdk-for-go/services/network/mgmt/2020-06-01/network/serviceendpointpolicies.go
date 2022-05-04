@@ -55,7 +55,7 @@ func (client ServiceEndpointPoliciesClient) CreateOrUpdate(ctx context.Context, 
 
 	result, err = client.CreateOrUpdateSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.ServiceEndpointPoliciesClient", "CreateOrUpdate", nil, "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.ServiceEndpointPoliciesClient", "CreateOrUpdate", result.Response(), "Failure sending request")
 		return
 	}
 
@@ -90,6 +90,7 @@ func (client ServiceEndpointPoliciesClient) CreateOrUpdatePreparer(ctx context.C
 // http.Response Body if it receives an error.
 func (client ServiceEndpointPoliciesClient) CreateOrUpdateSender(req *http.Request) (future ServiceEndpointPoliciesCreateOrUpdateFuture, err error) {
 	var resp *http.Response
+	future.FutureAPI = &azure.Future{}
 	resp, err = client.Send(req, azure.DoRetryWithRegistration(client.Client))
 	if err != nil {
 		return
@@ -136,7 +137,7 @@ func (client ServiceEndpointPoliciesClient) Delete(ctx context.Context, resource
 
 	result, err = client.DeleteSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.ServiceEndpointPoliciesClient", "Delete", nil, "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.ServiceEndpointPoliciesClient", "Delete", result.Response(), "Failure sending request")
 		return
 	}
 
@@ -168,6 +169,7 @@ func (client ServiceEndpointPoliciesClient) DeletePreparer(ctx context.Context, 
 // http.Response Body if it receives an error.
 func (client ServiceEndpointPoliciesClient) DeleteSender(req *http.Request) (future ServiceEndpointPoliciesDeleteFuture, err error) {
 	var resp *http.Response
+	future.FutureAPI = &azure.Future{}
 	resp, err = client.Send(req, azure.DoRetryWithRegistration(client.Client))
 	if err != nil {
 		return

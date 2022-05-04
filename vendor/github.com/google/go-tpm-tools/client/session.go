@@ -68,7 +68,7 @@ func newEKSession(rw io.ReadWriter) (session, error) {
 
 func (e ekSession) Auth() (auth tpm2.AuthCommand, err error) {
 	nullAuth := tpm2.AuthCommand{Session: tpm2.HandlePasswordSession, Attributes: tpm2.AttrContinueSession}
-	if _, err = tpm2.PolicySecret(e.rw, tpm2.HandleEndorsement, nullAuth, e.session, nil, nil, nil, 0); err != nil {
+	if _, _, err = tpm2.PolicySecret(e.rw, tpm2.HandleEndorsement, nullAuth, e.session, nil, nil, nil, 0); err != nil {
 		return
 	}
 	return tpm2.AuthCommand{Session: e.session, Attributes: tpm2.AttrContinueSession}, nil

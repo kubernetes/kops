@@ -23,13 +23,22 @@ type TokenCredential interface {
 	SetToken(newToken string)
 }
 
+func tokenCredentialPointers(credential TokenCredential) *string {
+	if credential == nil {
+		return nil
+	}
+
+	out := "Bearer " + credential.Token()
+	return &out
+}
+
 // NewTokenCredential creates a token credential for use with role-based access control (RBAC) access to Azure Storage
 // resources. You initialize the TokenCredential with an initial token value. If you pass a non-nil value for
 // tokenRefresher, then the function you pass will be called immediately so it can refresh and change the
 // TokenCredential's token value by calling SetToken. Your tokenRefresher function must return a time.Duration
 // indicating how long the TokenCredential object should wait before calling your tokenRefresher function again.
 // If your tokenRefresher callback fails to refresh the token, you can return a duration of 0 to stop your
-// TokenCredential object from ever invoking tokenRefresher again. Also, oen way to deal with failing to refresh a
+// TokenCredential object from ever invoking tokenRefresher again. Also, one way to deal with failing to refresh a
 // token is to cancel a context.Context object used by requests that have the TokenCredential object in their pipeline.
 func NewTokenCredential(initialToken string, tokenRefresher TokenRefresher) TokenCredential {
 	tc := &tokenCredential{}
@@ -68,7 +77,7 @@ func (f *tokenCredentialWithRefresh) New(next pipeline.Policy, po *pipeline.Poli
 	return f.token.New(next, po)
 }
 
-///////////////////////////////////////////////////////////////////////////////
+// /////////////////////////////////////////////////////////////////////////////
 
 // tokenCredential is a pipeline.Factory is the credential's policy factory.
 type tokenCredential struct {

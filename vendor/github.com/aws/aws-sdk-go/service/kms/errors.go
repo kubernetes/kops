@@ -252,9 +252,10 @@ const (
 	//    is incompatible with the type of key material in the KMS key (KeySpec).
 	//
 	// For encrypting, decrypting, re-encrypting, and generating data keys, the
-	// KeyUsage must be ENCRYPT_DECRYPT. For signing and verifying, the KeyUsage
-	// must be SIGN_VERIFY. To find the KeyUsage of a KMS key, use the DescribeKey
-	// operation.
+	// KeyUsage must be ENCRYPT_DECRYPT. For signing and verifying messages, the
+	// KeyUsage must be SIGN_VERIFY. For generating and verifying message authentication
+	// codes (MACs), the KeyUsage must be GENERATE_VERIFY_MAC. To find the KeyUsage
+	// of a KMS key, use the DescribeKey operation.
 	//
 	// To find the encryption or signing algorithms supported for a particular KMS
 	// key, use the DescribeKey operation.
@@ -274,9 +275,17 @@ const (
 	// valid for this request.
 	//
 	// For more information about how key state affects the use of a KMS key, see
-	// Key state: Effect on your KMS key (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
+	// Key states of KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
 	// in the Key Management Service Developer Guide .
 	ErrCodeInvalidStateException = "KMSInvalidStateException"
+
+	// ErrCodeKMSInvalidMacException for service response error code
+	// "KMSInvalidMacException".
+	//
+	// The request was rejected because the HMAC verification failed. HMAC verification
+	// fails when the HMAC computed by using the specified message, HMAC KMS key,
+	// and MAC algorithm does not match the HMAC specified in the request.
+	ErrCodeKMSInvalidMacException = "KMSInvalidMacException"
 
 	// ErrCodeKMSInvalidSignatureException for service response error code
 	// "KMSInvalidSignatureException".
@@ -356,6 +365,7 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"InvalidKeyUsageException":                     newErrorInvalidKeyUsageException,
 	"InvalidMarkerException":                       newErrorInvalidMarkerException,
 	"KMSInvalidStateException":                     newErrorInvalidStateException,
+	"KMSInvalidMacException":                       newErrorKMSInvalidMacException,
 	"KMSInvalidSignatureException":                 newErrorKMSInvalidSignatureException,
 	"KeyUnavailableException":                      newErrorKeyUnavailableException,
 	"LimitExceededException":                       newErrorLimitExceededException,

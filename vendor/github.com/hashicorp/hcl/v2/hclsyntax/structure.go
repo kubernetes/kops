@@ -13,17 +13,12 @@ func (b *Block) AsHCLBlock() *hcl.Block {
 		return nil
 	}
 
-	lastHeaderRange := b.TypeRange
-	if len(b.LabelRanges) > 0 {
-		lastHeaderRange = b.LabelRanges[len(b.LabelRanges)-1]
-	}
-
 	return &hcl.Block{
 		Type:   b.Type,
 		Labels: b.Labels,
 		Body:   b.Body,
 
-		DefRange:    hcl.RangeBetween(b.TypeRange, lastHeaderRange),
+		DefRange:    b.DefRange(),
 		TypeRange:   b.TypeRange,
 		LabelRanges: b.LabelRanges,
 	}
@@ -40,7 +35,7 @@ type Body struct {
 	hiddenBlocks map[string]struct{}
 
 	SrcRange hcl.Range
-	EndRange hcl.Range // Final token of the body, for reporting missing items
+	EndRange hcl.Range // Final token of the body (zero-length range)
 }
 
 // Assert that *Body implements hcl.Body
@@ -390,5 +385,9 @@ func (b *Block) Range() hcl.Range {
 }
 
 func (b *Block) DefRange() hcl.Range {
-	return hcl.RangeBetween(b.TypeRange, b.OpenBraceRange)
+	lastHeaderRange := b.TypeRange
+	if len(b.LabelRanges) > 0 {
+		lastHeaderRange = b.LabelRanges[len(b.LabelRanges)-1]
+	}
+	return hcl.RangeBetween(b.TypeRange, lastHeaderRange)
 }
