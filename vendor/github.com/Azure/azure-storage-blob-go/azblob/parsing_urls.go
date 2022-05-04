@@ -69,6 +69,7 @@ func NewBlobURLParts(u url.URL) BlobURLParts {
 		if isIPEndpointStyle(up.Host) {
 			if accountEndIndex := strings.Index(path, "/"); accountEndIndex == -1 { // Slash not found; path has account name & no container name or blob
 				up.IPEndpointStyleInfo.AccountName = path
+				path = "" // No ContainerName present in the URL so path should be empty
 			} else {
 				up.IPEndpointStyleInfo.AccountName = path[:accountEndIndex] // The account name is the part between the slashes
 				path = path[accountEndIndex+1:]                             // path refers to portion after the account name now (container & blob names)

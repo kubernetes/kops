@@ -17,8 +17,10 @@
 package tpm2
 
 import (
+	"errors"
 	"fmt"
 	"io"
+	"os"
 
 	"github.com/google/go-tpm/tpmutil"
 )
@@ -26,17 +28,30 @@ import (
 // OpenTPM opens a channel to the TPM at the given path. If the file is a
 // device, then it treats it like a normal TPM device, and if the file is a
 // Unix domain socket, then it opens a connection to the socket.
-func OpenTPM(path string) (io.ReadWriteCloser, error) {
-	rwc, err := tpmutil.OpenTPM(path)
+//
+// This function may also be invoked with no paths, as tpm2.OpenTPM(). In this
+// case, the default paths on Linux (/dev/tpmrm0 then /dev/tpm0), will be used.
+func OpenTPM(path ...string) (tpm io.ReadWriteCloser, err error) {
+	switch len(path) {
+	case 0:
+		tpm, err = tpmutil.OpenTPM("/dev/tpmrm0")
+		if errors.Is(err, os.ErrNotExist) {
+			tpm, err = tpmutil.OpenTPM("/dev/tpm0")
+		}
+	case 1:
+		tpm, err = tpmutil.OpenTPM(path[0])
+	default:
+		return nil, errors.New("cannot specify multiple paths to tpm2.OpenTPM")
+	}
 	if err != nil {
 		return nil, err
 	}
 
 	// Make sure this is a TPM 2.0
-	_, err = GetManufacturer(rwc)
+	_, err = GetManufacturer(tpm)
 	if err != nil {
-		rwc.Close()
+		tpm.Close()
 		return nil, fmt.Errorf("open %s: device is not a TPM 2.0", path)
 	}
-	return rwc, nil
+	return tpm, nil
 }

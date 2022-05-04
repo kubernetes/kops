@@ -222,11 +222,12 @@ type ECSRollClusterOutput struct {
 }
 
 type ECSRoll struct {
-	ClusterID           *string  `json:"clusterId,omitempty"`
-	Comment             *string  `json:"comment,omitempty"`
-	BatchSizePercentage *int     `json:"batchSizePercentage,omitempty"`
-	LaunchSpecIDs       []string `json:"launchSpecIds,omitempty"`
-	InstanceIDs         []string `json:"instanceIds,omitempty"`
+	ClusterID                 *string  `json:"clusterId,omitempty"`
+	Comment                   *string  `json:"comment,omitempty"`
+	BatchSizePercentage       *int     `json:"batchSizePercentage,omitempty"`
+	BatchMinHealthyPercentage *int     `json:"batchMinHealthyPercentage,omitempty"`
+	LaunchSpecIDs             []string `json:"launchSpecIds,omitempty"`
+	InstanceIDs               []string `json:"instanceIds,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -1041,6 +1042,13 @@ func (o *ECSRoll) SetComment(v *string) *ECSRoll {
 func (o *ECSRoll) SetBatchSizePercentage(v *int) *ECSRoll {
 	if o.BatchSizePercentage = v; o.BatchSizePercentage == nil {
 		o.nullFields = append(o.nullFields, "BatchSizePercentage")
+	}
+	return o
+}
+
+func (o *ECSRoll) SetBatchMinHealthyPercentage(v *int) *ECSRoll {
+	if o.BatchMinHealthyPercentage = v; o.BatchMinHealthyPercentage == nil {
+		o.nullFields = append(o.nullFields, "BatchMinHealthyPercentage")
 	}
 	return o
 }

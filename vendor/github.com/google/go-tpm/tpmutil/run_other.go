@@ -78,7 +78,7 @@ func NewEmulatorReadWriteCloser(path string) *EmulatorReadWriteCloser {
 func (erw *EmulatorReadWriteCloser) Read(p []byte) (int, error) {
 	// Read is always the second operation in a Write/Read sequence.
 	if erw.conn == nil {
-		return 0, fmt.Errorf("Must call Write then Read in an alternating sequence")
+		return 0, fmt.Errorf("must call Write then Read in an alternating sequence")
 	}
 	n, err := erw.conn.Read(p)
 	erw.conn.Close()
@@ -90,7 +90,7 @@ func (erw *EmulatorReadWriteCloser) Read(p []byte) (int, error) {
 // writing.
 func (erw *EmulatorReadWriteCloser) Write(p []byte) (int, error) {
 	if erw.conn != nil {
-		return 0, fmt.Errorf("Must call Write then Read in an alternating sequence")
+		return 0, fmt.Errorf("must call Write then Read in an alternating sequence")
 	}
 	var err error
 	erw.conn, err = erw.dialer("unix", erw.path)
@@ -103,7 +103,7 @@ func (erw *EmulatorReadWriteCloser) Write(p []byte) (int, error) {
 // Close implements io.Closer by closing the Unix domain socket if one is open.
 func (erw *EmulatorReadWriteCloser) Close() error {
 	if erw.conn == nil {
-		return fmt.Errorf("Cannot call Close when no connection is open")
+		return fmt.Errorf("cannot call Close when no connection is open")
 	}
 	err := erw.conn.Close()
 	erw.conn = nil

@@ -64,9 +64,14 @@ type Public struct {
 
 	// Exactly one of the following fields should be set
 	// When encoding/decoding, one will be picked based on Type.
-	RSAParameters       *RSAParams
-	ECCParameters       *ECCParams
+
+	// RSAParameters contains both [rsa]parameters and [rsa]unique.
+	RSAParameters *RSAParams
+	// ECCParameters contains both [ecc]parameters and [ecc]unique.
+	ECCParameters *ECCParams
+	// SymCipherParameters contains both [sym]parameters and [sym]unique.
 	SymCipherParameters *SymCipherParams
+	// KeyedHashParameters contains both [keyedHash]parameters and [keyedHash]unique.
 	KeyedHashParameters *KeyedHashParams
 }
 
@@ -142,7 +147,7 @@ func (p Public) Name() (Name, error) {
 // MatchesTemplate checks if the Public area has the same algorithms and
 // parameters as the provided template. Note that this does not necessarily
 // mean that the key was created from this template, as the Unique field is
-// both provided in the template and overriden in the key creation process.
+// both provided in the template and overridden in the key creation process.
 func (p Public) MatchesTemplate(template Public) bool {
 	if p.Type != template.Type ||
 		p.NameAlg != template.NameAlg ||
@@ -189,7 +194,8 @@ func DecodePublic(buf []byte) (Public, error) {
 	return pub, err
 }
 
-// RSAParams represents parameters of an RSA key pair.
+// RSAParams represents parameters of an RSA key pair:
+// both the TPMS_RSA_PARMS and the TPM2B_PUBLIC_KEY_RSA.
 //
 // Symmetric and Sign may be nil, depending on key Attributes in Public.
 //
@@ -259,7 +265,8 @@ func decodeRSAParams(in *bytes.Buffer) (*RSAParams, error) {
 	return &params, nil
 }
 
-// ECCParams represents parameters of an ECC key pair.
+// ECCParams represents parameters of an ECC key pair:
+// both the TPMS_ECC_PARMS and the TPMS_ECC_POINT.
 //
 // Symmetric, Sign and KDF may be nil, depending on key Attributes in Public.
 type ECCParams struct {
@@ -340,7 +347,8 @@ func decodeECCParams(in *bytes.Buffer) (*ECCParams, error) {
 	return &params, nil
 }
 
-// SymCipherParams represents parameters of a symmetric block cipher TPM object.
+// SymCipherParams represents parameters of a symmetric block cipher TPM object:
+// both the TPMS_SYMCIPHER_PARMS and the TPM2B_DIGEST (hash of the key).
 type SymCipherParams struct {
 	Symmetric *SymScheme
 	Unique    tpmutil.U16Bytes
@@ -375,7 +383,8 @@ func decodeSymCipherParams(in *bytes.Buffer) (*SymCipherParams, error) {
 	return &params, nil
 }
 
-// KeyedHashParams represents parameters of a keyed hash TPM object.
+// KeyedHashParams represents parameters of a keyed hash TPM object:
+// both the TPMS_KEYEDHASH_PARMS and the TPM2B_DIGEST (hash of the key).
 type KeyedHashParams struct {
 	Alg    Algorithm
 	Hash   Algorithm
@@ -564,6 +573,27 @@ type Signature struct {
 	ECC *SignatureECC
 }
 
+// Encode serializes a Signature structure in TPM wire format.
+func (s Signature) Encode() ([]byte, error) {
+	head, err := tpmutil.Pack(s.Alg)
+	if err != nil {
+		return nil, fmt.Errorf("encoding Alg: %v", err)
+	}
+	var signature []byte
+	switch s.Alg {
+	case AlgRSASSA, AlgRSAPSS:
+		if signature, err = tpmutil.Pack(s.RSA); err != nil {
+			return nil, fmt.Errorf("encoding RSA: %v", err)
+		}
+	case AlgECDSA:
+		signature, err = tpmutil.Pack(s.ECC.HashAlg, tpmutil.U16Bytes(s.ECC.R.Bytes()), tpmutil.U16Bytes(s.ECC.S.Bytes()))
+		if err != nil {
+			return nil, fmt.Errorf("encoding ECC: %v", err)
+		}
+	}
+	return concat(head, signature)
+}
+
 // DecodeSignature decodes a serialized TPMT_SIGNATURE structure.
 func DecodeSignature(in *bytes.Buffer) (*Signature, error) {
 	var sig Signature
@@ -674,7 +704,7 @@ func DecodeAttestationData(in []byte) (*AttestationData, error) {
 			return nil, fmt.Errorf("decoding AttestedQuoteInfo: %v", err)
 		}
 	default:
-		return nil, fmt.Errorf("only Certify & Creation attestation structures are supported, got type 0x%x", ad.Type)
+		return nil, fmt.Errorf("only Quote, Certify & Creation attestation structures are supported, got type 0x%x", ad.Type)
 	}
 
 	return &ad, nil
@@ -705,8 +735,12 @@ func (ad AttestationData) Encode() ([]byte, error) {
 		if info, err = ad.AttestedCreationInfo.encode(); err != nil {
 			return nil, fmt.Errorf("encoding AttestedCreationInfo: %v", err)
 		}
+	case TagAttestQuote:
+		if info, err = ad.AttestedQuoteInfo.encode(); err != nil {
+			return nil, fmt.Errorf("encoding AttestedQuoteInfo: %v", err)
+		}
 	default:
-		return nil, fmt.Errorf("only Certify & Creation attestation structures are supported, got type 0x%x", ad.Type)
+		return nil, fmt.Errorf("only Quote, Certify & Creation attestation structures are supported, got type 0x%x", ad.Type)
 	}
 
 	return concat(head, signer, tail, info)
@@ -807,6 +841,20 @@ func decodeQuoteInfo(in *bytes.Buffer) (*QuoteInfo, error) {
 	return &out, nil
 }
 
+func (qi QuoteInfo) encode() ([]byte, error) {
+	sel, err := encodeTPMLPCRSelection(qi.PCRSelection)
+	if err != nil {
+		return nil, fmt.Errorf("encoding PCRSelection: %v", err)
+	}
+
+	digest, err := tpmutil.Pack(qi.PCRDigest)
+	if err != nil {
+		return nil, fmt.Errorf("encoding PCRDigest: %v", err)
+	}
+
+	return concat(sel, digest)
+}
+
 // IDObject represents an encrypted credential bound to a TPM object.
 type IDObject struct {
 	IntegrityHMAC tpmutil.U16Bytes
@@ -827,7 +875,8 @@ type CreationData struct {
 	OutsideInfo         tpmutil.U16Bytes
 }
 
-func (cd *CreationData) encode() ([]byte, error) {
+// EncodeCreationData encodes byte array to TPMS_CREATION_DATA message.
+func (cd *CreationData) EncodeCreationData() ([]byte, error) {
 	sel, err := encodeTPMLPCRSelection(cd.PCRSelection)
 	if err != nil {
 		return nil, fmt.Errorf("encoding PCRSelection: %v", err)

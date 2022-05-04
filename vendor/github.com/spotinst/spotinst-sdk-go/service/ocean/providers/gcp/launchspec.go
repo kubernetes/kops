@@ -22,7 +22,6 @@ type LaunchSpec struct {
 	Taints                 []*Taint                 `json:"taints,omitempty"`
 	AutoScale              *AutoScale               `json:"autoScale,omitempty"`
 	RestrictScaleDown      *bool                    `json:"restrictScaleDown,omitempty"`
-	Tags                   []*Tag                   `json:"tags,omitempty"`
 	Strategy               *LaunchSpecStrategy      `json:"strategy,omitempty"`
 	RootVolumeSizeInGB     *int                     `json:"rootVolumeSizeInGb,omitempty"`
 	RootVolumeType         *string                  `json:"rootVolumeType,omitempty"`
@@ -68,7 +67,8 @@ type Taint struct {
 }
 
 type AutoScale struct {
-	Headrooms []*AutoScaleHeadroom `json:"headrooms,omitempty"`
+	Headrooms              []*AutoScaleHeadroom `json:"headrooms,omitempty"`
+	AutoHeadroomPercentage *int                 `json:"autoHeadroomPercentage,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -474,13 +474,6 @@ func (o *LaunchSpec) SetServiceAccount(v *string) *LaunchSpec {
 	return o
 }
 
-func (o *LaunchSpec) SetTags(v []*Tag) *LaunchSpec {
-	if o.Tags = v; o.Tags == nil {
-		o.nullFields = append(o.nullFields, "Tags")
-	}
-	return o
-}
-
 func (o *LaunchSpec) SetShieldedInstanceConfig(v *ShieldedInstanceConfig) *LaunchSpec {
 	if o.ShieldedInstanceConfig = v; o.ShieldedInstanceConfig == nil {
 		o.nullFields = append(o.nullFields, "ShieldedInstanceConfig")
@@ -598,6 +591,13 @@ func (o AutoScale) MarshalJSON() ([]byte, error) {
 func (o *AutoScale) SetHeadrooms(v []*AutoScaleHeadroom) *AutoScale {
 	if o.Headrooms = v; o.Headrooms == nil {
 		o.nullFields = append(o.nullFields, "Headrooms")
+	}
+	return o
+}
+
+func (o *AutoScale) SetAutoHeadroomPercentage(v *int) *AutoScale {
+	if o.AutoHeadroomPercentage = v; o.AutoHeadroomPercentage == nil {
+		o.nullFields = append(o.nullFields, "AutoHeadroomPercentage")
 	}
 	return o
 }

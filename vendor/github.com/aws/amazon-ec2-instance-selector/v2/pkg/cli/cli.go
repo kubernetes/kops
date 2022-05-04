@@ -16,6 +16,7 @@ package cli
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"reflect"
 	"strings"
@@ -185,6 +186,10 @@ func (cl *CommandLineInterface) SetUntouchedFlagValuesToNil() error {
 				if v.Quantity == 0 {
 					cl.Flags[f.Name] = nil
 				}
+			case *float64:
+				if reflect.ValueOf(*v).IsZero() {
+					cl.Flags[f.Name] = nil
+				}
 			case *string:
 				if reflect.ValueOf(*v).IsZero() {
 					cl.Flags[f.Name] = nil
@@ -231,6 +236,8 @@ func (cl *CommandLineInterface) ProcessRangeFilterFlags() error {
 				cl.Flags[rangeHelperMin] = cl.IntMe(0)
 			case *bytequantity.ByteQuantity:
 				cl.Flags[rangeHelperMin] = cl.ByteQuantityMe(bytequantity.ByteQuantity{Quantity: 0})
+			case *float64:
+				cl.Flags[rangeHelperMin] = cl.Float64Me(0.0)
 			default:
 				return fmt.Errorf("Unable to set %s", rangeHelperMax)
 			}
@@ -240,6 +247,8 @@ func (cl *CommandLineInterface) ProcessRangeFilterFlags() error {
 				cl.Flags[rangeHelperMax] = cl.IntMe(maxInt)
 			case *bytequantity.ByteQuantity:
 				cl.Flags[rangeHelperMax] = cl.ByteQuantityMe(bytequantity.ByteQuantity{Quantity: maxUint64})
+			case *float64:
+				cl.Flags[rangeHelperMax] = cl.Float64Me(math.MaxFloat64)
 			default:
 				return fmt.Errorf("Unable to set %s", rangeHelperMin)
 			}
@@ -255,6 +264,11 @@ func (cl *CommandLineInterface) ProcessRangeFilterFlags() error {
 			cl.Flags[flagName] = &selector.ByteQuantityRangeFilter{
 				LowerBound: *cl.ByteQuantityMe(cl.Flags[rangeHelperMin]),
 				UpperBound: *cl.ByteQuantityMe(cl.Flags[rangeHelperMax]),
+			}
+		case *float64:
+			cl.Flags[flagName] = &selector.Float64RangeFilter{
+				LowerBound: *cl.Float64Me(cl.Flags[rangeHelperMin]),
+				UpperBound: *cl.Float64Me(cl.Flags[rangeHelperMax]),
 			}
 		}
 	}

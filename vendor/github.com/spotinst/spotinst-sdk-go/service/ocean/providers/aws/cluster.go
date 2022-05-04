@@ -293,6 +293,7 @@ type RollSpec struct {
 	Comment                      *string  `json:"comment,omitempty"`
 	Status                       *string  `json:"status,omitempty"`
 	BatchSizePercentage          *int     `json:"batchSizePercentage,omitempty"`
+	BatchMinHealthyPercentage    *int     `json:"batchMinHealthyPercentage,omitempty"`
 	DisableLaunchSpecAutoScaling *bool    `json:"disableLaunchSpecAutoScaling,omitempty"`
 	LaunchSpecIDs                []string `json:"launchSpecIds,omitempty"`
 	InstanceIDs                  []string `json:"instanceIds,omitempty"`
@@ -1510,6 +1511,13 @@ func (o *RollSpec) SetStatus(v *string) *RollSpec {
 func (o *RollSpec) SetBatchSizePercentage(v *int) *RollSpec {
 	if o.BatchSizePercentage = v; o.BatchSizePercentage == nil {
 		o.nullFields = append(o.nullFields, "BatchSizePercentage")
+	}
+	return o
+}
+
+func (o *RollSpec) SetBatchMinHealthyPercentage(v *int) *RollSpec {
+	if o.BatchMinHealthyPercentage = v; o.BatchMinHealthyPercentage == nil {
+		o.nullFields = append(o.nullFields, "BatchMinHealthyPercentage")
 	}
 	return o
 }

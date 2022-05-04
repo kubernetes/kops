@@ -184,6 +184,7 @@ func (p *AzureBlobPath) WriteFile(data io.ReadSeeker, acl ACL) error {
 		azblob.AccessTierNone,
 		azblob.BlobTagsMap{},
 		azblob.ClientProvidedKeyOptions{},
+		azblob.ImmutabilityPolicyOptions{},
 	)
 	return err
 }

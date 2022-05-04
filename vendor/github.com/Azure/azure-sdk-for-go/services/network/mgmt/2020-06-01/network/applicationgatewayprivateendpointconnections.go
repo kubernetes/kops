@@ -56,7 +56,7 @@ func (client ApplicationGatewayPrivateEndpointConnectionsClient) Delete(ctx cont
 
 	result, err = client.DeleteSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.ApplicationGatewayPrivateEndpointConnectionsClient", "Delete", nil, "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.ApplicationGatewayPrivateEndpointConnectionsClient", "Delete", result.Response(), "Failure sending request")
 		return
 	}
 
@@ -89,6 +89,7 @@ func (client ApplicationGatewayPrivateEndpointConnectionsClient) DeletePreparer(
 // http.Response Body if it receives an error.
 func (client ApplicationGatewayPrivateEndpointConnectionsClient) DeleteSender(req *http.Request) (future ApplicationGatewayPrivateEndpointConnectionsDeleteFuture, err error) {
 	var resp *http.Response
+	future.FutureAPI = &azure.Future{}
 	resp, err = client.Send(req, azure.DoRetryWithRegistration(client.Client))
 	if err != nil {
 		return
@@ -332,7 +333,7 @@ func (client ApplicationGatewayPrivateEndpointConnectionsClient) Update(ctx cont
 
 	result, err = client.UpdateSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "network.ApplicationGatewayPrivateEndpointConnectionsClient", "Update", nil, "Failure sending request")
+		err = autorest.NewErrorWithError(err, "network.ApplicationGatewayPrivateEndpointConnectionsClient", "Update", result.Response(), "Failure sending request")
 		return
 	}
 
@@ -369,6 +370,7 @@ func (client ApplicationGatewayPrivateEndpointConnectionsClient) UpdatePreparer(
 // http.Response Body if it receives an error.
 func (client ApplicationGatewayPrivateEndpointConnectionsClient) UpdateSender(req *http.Request) (future ApplicationGatewayPrivateEndpointConnectionsUpdateFuture, err error) {
 	var resp *http.Response
+	future.FutureAPI = &azure.Future{}
 	resp, err = client.Send(req, azure.DoRetryWithRegistration(client.Client))
 	if err != nil {
 		return
