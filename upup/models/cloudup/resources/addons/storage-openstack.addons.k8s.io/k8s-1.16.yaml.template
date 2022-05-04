@@ -250,7 +250,7 @@ spec:
       serviceAccount: csi-cinder-controller-sa
       containers:
         - name: csi-attacher
-          image: k8s.gcr.io/sig-storage/csi-attacher:v3.4.0
+          image: registry.k8s.io/sig-storage/csi-attacher:v3.4.0
           args:
             - "--csi-address=$(ADDRESS)"
             - "--timeout=3m"
@@ -263,7 +263,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: csi-provisioner
-          image: k8s.gcr.io/sig-storage/csi-provisioner:v3.1.0
+          image: registry.k8s.io/sig-storage/csi-provisioner:v3.1.0
           args:
             - "--csi-address=$(ADDRESS)"
             - "--timeout=3m"
@@ -281,7 +281,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: csi-snapshotter
-          image: k8s.gcr.io/sig-storage/csi-snapshotter:v5.0.1
+          image: registry.k8s.io/sig-storage/csi-snapshotter:v5.0.1
           args:
             - "--csi-address=$(ADDRESS)"
             - "--timeout=3m"
@@ -295,7 +295,7 @@ spec:
             - mountPath: /var/lib/csi/sockets/pluginproxy/
               name: socket-dir
         - name: csi-resizer
-          image: k8s.gcr.io/sig-storage/csi-resizer:v1.4.0
+          image: registry.k8s.io/sig-storage/csi-resizer:v1.4.0
           args:
             - "--csi-address=$(ADDRESS)"
             - "--timeout=3m"
@@ -309,7 +309,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: liveness-probe
-          image: k8s.gcr.io/sig-storage/livenessprobe:v2.6.0
+          image: registry.k8s.io/sig-storage/livenessprobe:v2.6.0
           args:
             - "--csi-address=$(ADDRESS)"
           env:
@@ -425,7 +425,7 @@ spec:
       hostNetwork: true
       containers:
         - name: node-driver-registrar
-          image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.5.0
+          image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.5.0
           args:
             - "--csi-address=$(ADDRESS)"
             - "--kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)"
@@ -445,7 +445,7 @@ spec:
             - name: registration-dir
               mountPath: /registration
         - name: liveness-probe
-          image: k8s.gcr.io/sig-storage/livenessprobe:v2.6.0
+          image: registry.k8s.io/sig-storage/livenessprobe:v2.6.0
           args:
             - --csi-address=/csi/csi.sock
           volumeMounts:
