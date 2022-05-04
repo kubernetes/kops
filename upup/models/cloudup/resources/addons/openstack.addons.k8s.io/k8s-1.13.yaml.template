@@ -218,8 +218,7 @@ spec:
 {{- range $arg := CloudControllerConfigArgv }}
           - {{ $arg }}
 {{- end }}
-          - --cloud-config=/etc/kubernetes/cloud.config
-          - --address=127.0.0.1
+          - --bind-address=127.0.0.1
         resources:
           requests:
             cpu: {{ or .ExternalCloudControllerManager.CPURequest "200m" }}
