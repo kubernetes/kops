@@ -203,6 +203,8 @@ func findAllDockerHashesAmd64() map[string]string {
 		"20.10.9":  "caf74e54b58c0b38bb4d96c8f87665f29b684371c9a325562a3904b8c389995e",
 		"20.10.10": "1719446f99cd56e87d0c67019996af4ea859f11891bfd89de2252d6c916ccaaa",
 		"20.10.11": "dd6ff72df1edfd61ae55feaa4aadb88634161f0aa06dbaaf291d1be594099ff3",
+		"20.10.12": "ee9b5be14e54bf92f48c82c2e6a83fbdd1c5329e8f247525a9ed2fe90d9f89a5",
+		"20.10.13": "39edf7c8d773939ff5e4d318ae565691a9c7e754ed768e172757e58898fb7079",
 	}
 
 	return hashes
@@ -258,6 +260,8 @@ func findAllDockerHashesArm64() map[string]string {
 		"20.10.9":  "0259f8b6572f02cf0dafd7388ca0e4adfdbbfaba81cfb1b7443e89fccbed22c7",
 		"20.10.10": "8db47cdcd7ac6e082c9ce83347d8fb99eaa01e04b0c8d94851e8d58f350a3633",
 		"20.10.11": "87a4219c54552797ffd38790b72832372a90eceb7c8e451c36a682093d57dae6",
+		"20.10.12": "e1f964e9a7a824bbe2164560c0eb335fab9cc7ee9eb90da36c250c073459cf17",
+		"20.10.13": "debed306ed9a4e70dcbcb228a0b3898f9730099e324f34bb0e76abbaddf7a6a7",
 	}
 
 	return hashes
