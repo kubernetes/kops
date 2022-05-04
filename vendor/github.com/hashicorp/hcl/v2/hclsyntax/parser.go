@@ -76,14 +76,37 @@ Token:
 		default:
 			bad := p.Read()
 			if !p.recovery {
-				if bad.Type == TokenOQuote {
+				switch bad.Type {
+				case TokenOQuote:
 					diags = append(diags, &hcl.Diagnostic{
 						Severity: hcl.DiagError,
 						Summary:  "Invalid argument name",
 						Detail:   "Argument names must not be quoted.",
 						Subject:  &bad.Range,
 					})
-				} else {
+				case TokenEOF:
+					switch end {
+					case TokenCBrace:
+						// If we're looking for a closing brace then we're parsing a block
+						diags = append(diags, &hcl.Diagnostic{
+							Severity: hcl.DiagError,
+							Summary:  "Unclosed configuration block",
+							Detail:   "There is no closing brace for this block before the end of the file. This may be caused by incorrect brace nesting elsewhere in this file.",
+							Subject:  &startRange,
+						})
+					default:
+						// The only other "end" should itself be TokenEOF (for
+						// the top-level body) and so we shouldn't get here,
+						// but we'll return a generic error message anyway to
+						// be resilient.
+						diags = append(diags, &hcl.Diagnostic{
+							Severity: hcl.DiagError,
+							Summary:  "Unclosed configuration body",
+							Detail:   "Found end of file before the end of this configuration body.",
+							Subject:  &startRange,
+						})
+					}
+				default:
 					diags = append(diags, &hcl.Diagnostic{
 						Severity: hcl.DiagError,
 						Summary:  "Argument or block definition required",
@@ -144,8 +167,6 @@ func (p *parser) ParseBodyItem() (Node, hcl.Diagnostics) {
 			},
 		}
 	}
-
-	return nil, nil
 }
 
 // parseSingleAttrBody is a weird variant of ParseBody that deals with the
@@ -388,12 +409,23 @@ Token:
 			// user intent for this one, we'll skip it if we're already in
 			// recovery mode.
 			if !p.recovery {
-				diags = append(diags, &hcl.Diagnostic{
-					Severity: hcl.DiagError,
-					Summary:  "Invalid single-argument block definition",
-					Detail:   "A single-line block definition must end with a closing brace immediately after its single argument definition.",
-					Subject:  p.Peek().Range.Ptr(),
-				})
+				switch p.Peek().Type {
+				case TokenEOF:
+					diags = append(diags, &hcl.Diagnostic{
+						Severity: hcl.DiagError,
+						Summary:  "Unclosed configuration block",
+						Detail:   "There is no closing brace for this block before the end of the file. This may be caused by incorrect brace nesting elsewhere in this file.",
+						Subject:  oBrace.Range.Ptr(),
+						Context:  hcl.RangeBetween(ident.Range, oBrace.Range).Ptr(),
+					})
+				default:
+					diags = append(diags, &hcl.Diagnostic{
+						Severity: hcl.DiagError,
+						Summary:  "Invalid single-argument block definition",
+						Detail:   "A single-line block definition must end with a closing brace immediately after its single argument definition.",
+						Subject:  p.Peek().Range.Ptr(),
+					})
+				}
 			}
 			p.recover(TokenCBrace)
 		}
@@ -1059,12 +1091,22 @@ func (p *parser) parseExpressionTerm() (Expression, hcl.Diagnostics) {
 	default:
 		var diags hcl.Diagnostics
 		if !p.recovery {
-			diags = append(diags, &hcl.Diagnostic{
-				Severity: hcl.DiagError,
-				Summary:  "Invalid expression",
-				Detail:   "Expected the start of an expression, but found an invalid expression token.",
-				Subject:  &start.Range,
-			})
+			switch start.Type {
+			case TokenEOF:
+				diags = append(diags, &hcl.Diagnostic{
+					Severity: hcl.DiagError,
+					Summary:  "Missing expression",
+					Detail:   "Expected the start of an expression, but found the end of the file.",
+					Subject:  &start.Range,
+				})
+			default:
+				diags = append(diags, &hcl.Diagnostic{
+					Severity: hcl.DiagError,
+					Summary:  "Invalid expression",
+					Detail:   "Expected the start of an expression, but found an invalid expression token.",
+					Subject:  &start.Range,
+				})
+			}
 		}
 		p.setRecovery()
 
@@ -1163,13 +1205,23 @@ Token:
 		}
 
 		if sep.Type != TokenComma {
-			diags = append(diags, &hcl.Diagnostic{
-				Severity: hcl.DiagError,
-				Summary:  "Missing argument separator",
-				Detail:   "A comma is required to separate each function argument from the next.",
-				Subject:  &sep.Range,
-				Context:  hcl.RangeBetween(name.Range, sep.Range).Ptr(),
-			})
+			switch sep.Type {
+			case TokenEOF:
+				diags = append(diags, &hcl.Diagnostic{
+					Severity: hcl.DiagError,
+					Summary:  "Unterminated function call",
+					Detail:   "There is no closing parenthesis for this function call before the end of the file. This may be caused by incorrect parethesis nesting elsewhere in this file.",
+					Subject:  hcl.RangeBetween(name.Range, openTok.Range).Ptr(),
+				})
+			default:
+				diags = append(diags, &hcl.Diagnostic{
+					Severity: hcl.DiagError,
+					Summary:  "Missing argument separator",
+					Detail:   "A comma is required to separate each function argument from the next.",
+					Subject:  &sep.Range,
+					Context:  hcl.RangeBetween(name.Range, sep.Range).Ptr(),
+				})
+			}
 			closeTok = p.recover(TokenCParen)
 			break Token
 		}
@@ -1242,13 +1294,23 @@ func (p *parser) parseTupleCons() (Expression, hcl.Diagnostics) {
 
 		if next.Type != TokenComma {
 			if !p.recovery {
-				diags = append(diags, &hcl.Diagnostic{
-					Severity: hcl.DiagError,
-					Summary:  "Missing item separator",
-					Detail:   "Expected a comma to mark the beginning of the next item.",
-					Subject:  &next.Range,
-					Context:  hcl.RangeBetween(open.Range, next.Range).Ptr(),
-				})
+				switch next.Type {
+				case TokenEOF:
+					diags = append(diags, &hcl.Diagnostic{
+						Severity: hcl.DiagError,
+						Summary:  "Unterminated tuple constructor expression",
+						Detail:   "There is no corresponding closing bracket before the end of the file. This may be caused by incorrect bracket nesting elsewhere in this file.",
+						Subject:  open.Range.Ptr(),
+					})
+				default:
+					diags = append(diags, &hcl.Diagnostic{
+						Severity: hcl.DiagError,
+						Summary:  "Missing item separator",
+						Detail:   "Expected a comma to mark the beginning of the next item.",
+						Subject:  &next.Range,
+						Context:  hcl.RangeBetween(open.Range, next.Range).Ptr(),
+					})
+				}
 			}
 			close = p.recover(TokenCBrack)
 			break
@@ -1359,6 +1421,13 @@ func (p *parser) parseObjectCons() (Expression, hcl.Diagnostics) {
 						Subject:  &next.Range,
 						Context:  hcl.RangeBetween(open.Range, next.Range).Ptr(),
 					})
+				case TokenEOF:
+					diags = append(diags, &hcl.Diagnostic{
+						Severity: hcl.DiagError,
+						Summary:  "Unterminated object constructor expression",
+						Detail:   "There is no corresponding closing brace before the end of the file. This may be caused by incorrect brace nesting elsewhere in this file.",
+						Subject:  open.Range.Ptr(),
+					})
 				default:
 					diags = append(diags, &hcl.Diagnostic{
 						Severity: hcl.DiagError,
@@ -1399,13 +1468,23 @@ func (p *parser) parseObjectCons() (Expression, hcl.Diagnostics) {
 
 		if next.Type != TokenComma && next.Type != TokenNewline {
 			if !p.recovery {
-				diags = append(diags, &hcl.Diagnostic{
-					Severity: hcl.DiagError,
-					Summary:  "Missing attribute separator",
-					Detail:   "Expected a newline or comma to mark the beginning of the next attribute.",
-					Subject:  &next.Range,
-					Context:  hcl.RangeBetween(open.Range, next.Range).Ptr(),
-				})
+				switch next.Type {
+				case TokenEOF:
+					diags = append(diags, &hcl.Diagnostic{
+						Severity: hcl.DiagError,
+						Summary:  "Unterminated object constructor expression",
+						Detail:   "There is no corresponding closing brace before the end of the file. This may be caused by incorrect brace nesting elsewhere in this file.",
+						Subject:  open.Range.Ptr(),
+					})
+				default:
+					diags = append(diags, &hcl.Diagnostic{
+						Severity: hcl.DiagError,
+						Summary:  "Missing attribute separator",
+						Detail:   "Expected a newline or comma to mark the beginning of the next attribute.",
+						Subject:  &next.Range,
+						Context:  hcl.RangeBetween(open.Range, next.Range).Ptr(),
+					})
+				}
 			}
 			close = p.recover(TokenCBrace)
 			break

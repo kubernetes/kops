@@ -1,18 +1,16 @@
 package azblob
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
-
-	"bytes"
 	"os"
 	"sync"
 	"time"
-
-	"errors"
 
 	"github.com/Azure/azure-pipeline-go/pipeline"
 )
@@ -65,6 +63,10 @@ type UploadToBlockBlobOptions struct {
 	// ClientProvidedKeyOptions indicates the client provided key by name and/or by value to encrypt/decrypt data.
 	ClientProvidedKeyOptions ClientProvidedKeyOptions
 
+	// ImmutabilityPolicyOptions indicates a immutability policy or legal hold to be placed upon finishing upload.
+	// A container with object-level immutability enabled is required.
+	ImmutabilityPolicyOptions ImmutabilityPolicyOptions
+
 	// Parallelism indicates the maximum number of blocks to upload in parallel (0=default)
 	Parallelism uint16
 }
@@ -95,7 +97,7 @@ func uploadReaderAtToBlockBlob(ctx context.Context, reader io.ReaderAt, readerSi
 		if o.Progress != nil {
 			body = pipeline.NewRequestBodyProgress(body, o.Progress)
 		}
-		return blockBlobURL.Upload(ctx, body, o.BlobHTTPHeaders, o.Metadata, o.AccessConditions, o.BlobAccessTier, o.BlobTagsMap, o.ClientProvidedKeyOptions)
+		return blockBlobURL.Upload(ctx, body, o.BlobHTTPHeaders, o.Metadata, o.AccessConditions, o.BlobAccessTier, o.BlobTagsMap, o.ClientProvidedKeyOptions, o.ImmutabilityPolicyOptions)
 	}
 
 	var numBlocks = uint16(((readerSize - 1) / o.BlockSize) + 1)
@@ -139,7 +141,7 @@ func uploadReaderAtToBlockBlob(ctx context.Context, reader io.ReaderAt, readerSi
 		return nil, err
 	}
 	// All put blocks were successful, call Put Block List to finalize the blob
-	return blockBlobURL.CommitBlockList(ctx, blockIDList, o.BlobHTTPHeaders, o.Metadata, o.AccessConditions, o.BlobAccessTier, o.BlobTagsMap, o.ClientProvidedKeyOptions)
+	return blockBlobURL.CommitBlockList(ctx, blockIDList, o.BlobHTTPHeaders, o.Metadata, o.AccessConditions, o.BlobAccessTier, o.BlobTagsMap, o.ClientProvidedKeyOptions, o.ImmutabilityPolicyOptions)
 }
 
 // UploadBufferToBlockBlob uploads a buffer in blocks to a block blob.
@@ -507,13 +509,14 @@ type UploadStreamToBlockBlobOptions struct {
 	// BufferSize sizes the buffer used to read data from source. If < 1 MiB, defaults to 1 MiB.
 	BufferSize int
 	// MaxBuffers defines the number of simultaneous uploads will be performed to upload the file.
-	MaxBuffers               int
-	BlobHTTPHeaders          BlobHTTPHeaders
-	Metadata                 Metadata
-	AccessConditions         BlobAccessConditions
-	BlobAccessTier           AccessTierType
-	BlobTagsMap              BlobTagsMap
-	ClientProvidedKeyOptions ClientProvidedKeyOptions
+	MaxBuffers                int
+	BlobHTTPHeaders           BlobHTTPHeaders
+	Metadata                  Metadata
+	AccessConditions          BlobAccessConditions
+	BlobAccessTier            AccessTierType
+	BlobTagsMap               BlobTagsMap
+	ClientProvidedKeyOptions  ClientProvidedKeyOptions
+	ImmutabilityPolicyOptions ImmutabilityPolicyOptions
 }
 
 func (u *UploadStreamToBlockBlobOptions) defaults() error {

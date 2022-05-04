@@ -2553,6 +2553,9 @@ type EC2API interface {
 	WaitUntilNatGatewayAvailable(*ec2.DescribeNatGatewaysInput) error
 	WaitUntilNatGatewayAvailableWithContext(aws.Context, *ec2.DescribeNatGatewaysInput, ...request.WaiterOption) error
 
+	WaitUntilNatGatewayDeleted(*ec2.DescribeNatGatewaysInput) error
+	WaitUntilNatGatewayDeletedWithContext(aws.Context, *ec2.DescribeNatGatewaysInput, ...request.WaiterOption) error
+
 	WaitUntilNetworkInterfaceAvailable(*ec2.DescribeNetworkInterfacesInput) error
 	WaitUntilNetworkInterfaceAvailableWithContext(aws.Context, *ec2.DescribeNetworkInterfacesInput, ...request.WaiterOption) error
 

@@ -18,27 +18,31 @@ import (
 	"regexp"
 
 	"github.com/aws/amazon-ec2-instance-selector/v2/pkg/bytequantity"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/amazon-ec2-instance-selector/v2/pkg/ec2pricing"
+	"github.com/aws/amazon-ec2-instance-selector/v2/pkg/instancetypes"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 )
 
 // InstanceTypesOutput can be implemented to provide custom output to instance type results
 type InstanceTypesOutput interface {
-	Output([]*ec2.InstanceTypeInfo) []string
+	Output([]*instancetypes.Details) []string
 }
 
 // InstanceTypesOutputFn is the func type definition for InstanceTypesOuput
-type InstanceTypesOutputFn func([]*ec2.InstanceTypeInfo) []string
+type InstanceTypesOutputFn func([]*instancetypes.Details) []string
 
 // Output implements InstanceTypesOutput interface on InstanceTypesOutputFn
 // This allows any InstanceTypesOutputFn to be passed into funcs accepting InstanceTypesOutput interface
-func (fn InstanceTypesOutputFn) Output(instanceTypes []*ec2.InstanceTypeInfo) []string {
+func (fn InstanceTypesOutputFn) Output(instanceTypes []*instancetypes.Details) []string {
 	return fn(instanceTypes)
 }
 
 // Selector is used to filter instance type resource specs
 type Selector struct {
-	EC2 ec2iface.EC2API
+	EC2                   ec2iface.EC2API
+	EC2Pricing            ec2pricing.EC2PricingIface
+	InstanceTypesProvider *instancetypes.Provider
+	ServiceRegistry       ServiceRegistry
 }
 
 // IntRangeFilter holds an upper and lower bound int
@@ -60,6 +64,13 @@ type Uint64RangeFilter struct {
 type ByteQuantityRangeFilter struct {
 	UpperBound bytequantity.ByteQuantity
 	LowerBound bytequantity.ByteQuantity
+}
+
+// Float64RangeFilter holds an upper and lower bound float64
+// The lower and upper bound are used to range filter resource specs
+type Float64RangeFilter struct {
+	UpperBound float64
+	LowerBound float64
 }
 
 // filterPair holds a tuple of the passed in filter value and the instance resource spec value
@@ -104,15 +115,27 @@ type Filters struct {
 	// Burstable is used to only return burstable instance type results like the t* series
 	Burstable *bool
 
+	// AutoRecovery is used to filter by instance types that support auto recovery
+	AutoRecovery *bool
+
+	// FreeTier is used to filter by instance types that can be used as part of the EC2 free tier
+	FreeTier *bool
+
 	// CPUArchitecture of the EC2 instance type
 	// Possible values are: x86_64/amd64 or arm64
 	CPUArchitecture *string
+
+	// CPUManufacturer is used to filter instance types with a specific CPU manufacturer
+	CPUManufacturer *string
 
 	// CurrentGeneration returns the latest generation of instance types
 	CurrentGeneration *bool
 
 	// EnaSupport returns instances that can support an Elastic Network Adapter.
 	EnaSupport *bool
+
+	// EfaSupport returns instances that can support an Elastic Fabric Adapter.
+	EfaSupport *bool
 
 	// FPGA is used to only return FPGA instance type results
 	Fpga *bool
@@ -122,6 +145,21 @@ type Filters struct {
 
 	// GpuMemoryRange filter is a range of acceptable GPU memory in Gibibytes (GiB) available to an EC2 instance type in aggreagte across all GPUs.
 	GpuMemoryRange *ByteQuantityRangeFilter
+
+	// GPUManufacturer filters by GPU manufacturer
+	GPUManufacturer *string
+
+	// GPUModel filter by the GPU model name
+	GPUModel *string
+
+	// InferenceAcceleratorsRange filters inference accelerators available to the instance type
+	InferenceAcceleratorsRange *IntRangeFilter
+
+	// InferenceAcceleratorManufacturer filters by inference acceleartor manufacturer
+	InferenceAcceleratorManufacturer *string
+
+	// InferenceAcceleratorModel filters by inference accelerator model name
+	InferenceAcceleratorModel *string
 
 	// HibernationSupported denotes whether EC2 hibernate is supported
 	// Possible values are: true or false
@@ -142,6 +180,12 @@ type Filters struct {
 
 	// NetworkPerformance filter is a range of network bandwidth an instance type can support
 	NetworkPerformance *IntRangeFilter
+
+	// NetworkEncryption filters for instance types that automatically encrypt network traffic in-transit
+	NetworkEncryption *bool
+
+	// IPv6 filters for instance types that support IPv6
+	IPv6 *bool
 
 	// PlacementGroupStrategy is used to return instance types based on its support
 	// for a specific placement group strategy
@@ -179,4 +223,45 @@ type Filters struct {
 	// Flexible finds an opinionated set of general (c, m, r, t, a, etc.) instance types that match a criteria specified
 	// or defaults to 4 vcpus
 	Flexible *bool
+
+	// Service filters instance types based on a service's supported list of instance types
+	// Example: eks or emr
+	Service *string
+
+	// InstanceTypes filters instance types and only allows instance types in this slice
+	InstanceTypes *[]string
+
+	// VirtualizationType is used to return instance types that match either hvm or pv virtualization types
+	VirtualizationType *string
+
+	// PricePerHour is used to return instance types that are equal to or cheaper than the specified price
+	PricePerHour *Float64RangeFilter
+
+	// InstanceStorageRange filters on a range of storage available as local disk
+	InstanceStorageRange *ByteQuantityRangeFilter
+
+	// DiskType is the backing storage medium
+	// Possible values are: hdd or ssd
+	DiskType *string
+
+	// NVME filters for NVME disks, including both EBS and local instance storage
+	NVME *bool
+
+	// EBSOptimized filters for instance types that support EBS Optimized
+	EBSOptimized *bool
+
+	// DiskEncryption filters for instance types that support EBS Encryption or local storage encryption
+	DiskEncryption *bool
+
+	// EBSOptimizedBaselineBandwidth filters on a range of bandwidth that an EBS Optimized volume supports
+	EBSOptimizedBaselineBandwidth *ByteQuantityRangeFilter
+
+	// EBSOptimizedBaselineThroughput filters on a range of throughput that an EBS Optimized volume supports
+	EBSOptimizedBaselineThroughput *ByteQuantityRangeFilter
+
+	// EBSOptimizedBaselineIOPS filters on a range of IOPS that an EBS Optimized volume supports
+	EBSOptimizedBaselineIOPS *IntRangeFilter
+
+	// DedicatedHosts filters on instance types that support dedicated hosts tenancy
+	DedicatedHosts *bool
 }

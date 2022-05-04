@@ -18,19 +18,47 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/google/go-containerregistry/internal/windows"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/mutate"
 	"github.com/google/go-containerregistry/pkg/v1/stream"
 	"github.com/google/go-containerregistry/pkg/v1/tarball"
 )
 
+func isWindows(img v1.Image) (bool, error) {
+	if img == nil {
+		return false, nil
+	}
+	cfg, err := img.ConfigFile()
+	if err != nil {
+		return false, err
+	}
+	return cfg != nil && cfg.OS == "windows", nil
+}
+
 // Append reads a layer from path and appends it the the v1.Image base.
+//
+// If the base image is a Windows base image (i.e., its config.OS is
+// "windows"), the contents of the tarballs will be modified to be suitable for
+// a Windows container image.`,
 func Append(base v1.Image, paths ...string) (v1.Image, error) {
+	win, err := isWindows(base)
+	if err != nil {
+		return nil, fmt.Errorf("getting base image: %w", err)
+	}
+
 	layers := make([]v1.Layer, 0, len(paths))
 	for _, path := range paths {
 		layer, err := getLayer(path)
 		if err != nil {
 			return nil, fmt.Errorf("reading layer %q: %w", path, err)
+		}
+
+		if win {
+			layer, err = windows.Windows(layer)
+			if err != nil {
+				return nil, fmt.Errorf("converting %q for Windows: %w", path, err)
+			}
 		}
 
 		layers = append(layers, layer)

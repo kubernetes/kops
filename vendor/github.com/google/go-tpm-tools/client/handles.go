@@ -17,6 +17,14 @@ const (
 	SRKECCReservedHandle = tpmutil.Handle(0x81000002)
 )
 
+// From "TCG EK Credential Profile", v2.3r2 Section 2.2.1.4
+const (
+	// RSA 2048 EK Cert.
+	EKCertNVIndexRSA uint32 = 0x01c00002
+	// ECC P256 EK Cert.
+	EKCertNVIndexECC uint32 = 0x01c0000a
+)
+
 // Picked available handles from TPM 2.0 Handles and Localities 2.3.1 - Table 11
 // go-tpm-tools will use handles in the range from 0x81008F00 to 0x81008FFF
 const (
@@ -24,9 +32,13 @@ const (
 	DefaultAKRSAHandle = tpmutil.Handle(0x81008F01)
 )
 
-// NV Indices holding GCE AK Templates
+// GCE Attestation Key NV Indices
 const (
+	// RSA 2048 AK.
+	GceAKCertNVIndexRSA     uint32 = 0x01c10000
 	GceAKTemplateNVIndexRSA uint32 = 0x01c10001
+	// ECC P256 AK.
+	GceAKCertNVIndexECC     uint32 = 0x01c10002
 	GceAKTemplateNVIndexECC uint32 = 0x01c10003
 )
 

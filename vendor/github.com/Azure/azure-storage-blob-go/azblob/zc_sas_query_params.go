@@ -83,37 +83,48 @@ func parseSASTimeString(val string) (t time.Time, timeFormat string, err error) 
 // This type defines the components used by all Azure Storage resources (Containers, Blobs, Files, & Queues).
 type SASQueryParameters struct {
 	// All members are immutable or values so copies of this struct are goroutine-safe.
-	version            string      `param:"sv"`
-	services           string      `param:"ss"`
-	resourceTypes      string      `param:"srt"`
-	protocol           SASProtocol `param:"spr"`
-	startTime          time.Time   `param:"st"`
-	expiryTime         time.Time   `param:"se"`
-	snapshotTime       time.Time   `param:"snapshot"`
-	ipRange            IPRange     `param:"sip"`
-	identifier         string      `param:"si"`
-	resource           string      `param:"sr"`
-	permissions        string      `param:"sp"`
-	signature          string      `param:"sig"`
-	cacheControl       string      `param:"rscc"`
-	contentDisposition string      `param:"rscd"`
-	contentEncoding    string      `param:"rsce"`
-	contentLanguage    string      `param:"rscl"`
-	contentType        string      `param:"rsct"`
-	signedOid          string      `param:"skoid"`
-	signedTid          string      `param:"sktid"`
-	signedStart        time.Time   `param:"skt"`
-	signedExpiry       time.Time   `param:"ske"`
-	signedService      string      `param:"sks"`
-	signedVersion      string      `param:"skv"`
-
+	version                    string      `param:"sv"`
+	services                   string      `param:"ss"`
+	resourceTypes              string      `param:"srt"`
+	protocol                   SASProtocol `param:"spr"`
+	startTime                  time.Time   `param:"st"`
+	expiryTime                 time.Time   `param:"se"`
+	snapshotTime               time.Time   `param:"snapshot"`
+	ipRange                    IPRange     `param:"sip"`
+	identifier                 string      `param:"si"`
+	resource                   string      `param:"sr"`
+	permissions                string      `param:"sp"`
+	signature                  string      `param:"sig"`
+	cacheControl               string      `param:"rscc"`
+	contentDisposition         string      `param:"rscd"`
+	contentEncoding            string      `param:"rsce"`
+	contentLanguage            string      `param:"rscl"`
+	contentType                string      `param:"rsct"`
+	signedOid                  string      `param:"skoid"`
+	signedTid                  string      `param:"sktid"`
+	signedStart                time.Time   `param:"skt"`
+	signedService              string      `param:"sks"`
+	signedExpiry               time.Time   `param:"ske"`
+	signedVersion              string      `param:"skv"`
+	signedDirectoryDepth       string      `param:"sdd"`
+	preauthorizedAgentObjectId string      `param:"saoid"`
+	agentObjectId              string      `param:"suoid"`
+	correlationId              string      `param:"scid"`
 	// private member used for startTime and expiryTime formatting.
 	stTimeFormat string
 	seTimeFormat string
 }
 
-func (p *SASQueryParameters) SignedOid() string {
-	return p.signedOid
+func (p *SASQueryParameters) PreauthorizedAgentObjectId() string {
+	return p.preauthorizedAgentObjectId
+}
+
+func (p *SASQueryParameters) AgentObjectId() string {
+	return p.agentObjectId
+}
+
+func (p *SASQueryParameters) SignedCorrelationId() string {
+	return p.correlationId
 }
 
 func (p *SASQueryParameters) SignedTid() string {
@@ -199,6 +210,10 @@ func (p *SASQueryParameters) ContentType() string {
 	return p.contentType
 }
 
+func (p *SASQueryParameters) SignedDirectoryDepth() string {
+	return p.signedDirectoryDepth
+}
+
 // IPRange represents a SAS IP range's start IP and (optionally) end IP.
 type IPRange struct {
 	Start net.IP // Not specified if length = 0
@@ -279,6 +294,14 @@ func newSASQueryParameters(values url.Values, deleteSASParametersFromValues bool
 			p.signedService = val
 		case "skv":
 			p.signedVersion = val
+		case "sdd":
+			p.signedDirectoryDepth = val
+		case "saoid":
+			p.preauthorizedAgentObjectId = val
+		case "suoid":
+			p.agentObjectId = val
+		case "scid":
+			p.correlationId = val
 		default:
 			isSASKey = false // We didn't recognize the query parameter
 		}
@@ -346,6 +369,18 @@ func (p *SASQueryParameters) addToValues(v url.Values) url.Values {
 	}
 	if p.contentType != "" {
 		v.Add("rsct", p.contentType)
+	}
+	if p.signedDirectoryDepth != "" {
+		v.Add("sdd", p.signedDirectoryDepth)
+	}
+	if p.preauthorizedAgentObjectId != "" {
+		v.Add("saoid", p.preauthorizedAgentObjectId)
+	}
+	if p.agentObjectId != "" {
+		v.Add("suoid", p.agentObjectId)
+	}
+	if p.correlationId != "" {
+		v.Add("scid", p.correlationId)
 	}
 	return v
 }
