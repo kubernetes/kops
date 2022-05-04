@@ -1022,12 +1022,13 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 			id := "k8s-1.16"
 			location := key + "/" + id + ".yaml"
 
-			addons.Add(&channelsapi.AddonSpec{
+			addon := addons.Add(&channelsapi.AddonSpec{
 				Name:     fi.String(key),
 				Manifest: fi.String(location),
 				Selector: map[string]string{"k8s-addon": key},
 				Id:       id,
 			})
+			addon.BuildPrune = true
 		}
 
 		if b.Cluster.Spec.ExternalCloudControllerManager != nil {
