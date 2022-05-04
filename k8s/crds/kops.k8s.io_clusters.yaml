@@ -304,6 +304,12 @@ spec:
                         description: 'Enabled enables the AWS EBS CSI driver Default:
                           false'
                         type: boolean
+                      podAnnotations:
+                        additionalProperties:
+                          type: string
+                        description: 'PodAnnotations are the annotations added to
+                          AWS EBS CSI node and controller Pods. Default: none'
+                        type: object
                       version:
                         description: 'Version is the container image tag used. Default:
                           The latest stable release which is compatible with your

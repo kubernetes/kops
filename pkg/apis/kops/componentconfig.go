@@ -889,6 +889,10 @@ type AWSEBSCSIDriver struct {
 	// If not specified, the value is approximated from the instance type.
 	// Default: -
 	VolumeAttachLimit *int `json:"volumeAttachLimit,omitempty"`
+
+	// PodAnnotations are the annotations added to AWS EBS CSI node and controller Pods.
+	// Default: none
+	PodAnnotations map[string]string `json:"podAnnotations,omitempty"`
 }
 
 // GCPPDCSIDriver is the config for the GCP PD CSI driver
