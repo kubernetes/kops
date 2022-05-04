@@ -88,9 +88,9 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - serviceaccounts/token
+  - services/status
   verbs:
-  - create
+  - patch
 - apiGroups:
   - ""
   resources:
@@ -98,6 +98,12 @@ rules:
   verbs:
   - create
   - get
+- apiGroups:
+  - ""
+  resources:
+  - serviceaccounts/token
+  verbs:
+  - create
 - apiGroups:
   - ""
   resources:
