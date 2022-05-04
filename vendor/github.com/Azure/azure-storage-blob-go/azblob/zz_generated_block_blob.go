@@ -34,7 +34,7 @@ func newBlockBlobClient(url url.URL, p pipeline.Pipeline) blockBlobClient {
 // the committed block list or from the uncommitted block list, or to commit the most recently uploaded version of the
 // block, whichever list it may belong to.
 //
-// timeout is the timeout parameter is expressed in seconds. For more information, see <a
+// blocks is blob Blocks. timeout is the timeout parameter is expressed in seconds. For more information, see <a
 // href="https://docs.microsoft.com/en-us/rest/api/storageservices/fileservices/setting-timeouts-for-blob-service-operations">Setting
 // Timeouts for Blob Service Operations.</a> blobCacheControl is optional. Sets the blob's cache control. If specified,
 // this property is stored with the blob and returned with a read request. blobContentType is optional. Sets the blob's
@@ -67,15 +67,17 @@ func newBlockBlobClient(url url.URL, p pipeline.Pipeline) blockBlobClient {
 // matching value. ifTags is specify a SQL where clause on blob tags to operate only on blobs with a matching value.
 // requestID is provides a client-generated, opaque value with a 1 KB character limit that is recorded in the analytics
 // logs when storage analytics logging is enabled. blobTagsString is optional.  Used to set blob tags in various blob
-// operations.
-func (client blockBlobClient) CommitBlockList(ctx context.Context, blocks BlockLookupList, timeout *int32, blobCacheControl *string, blobContentType *string, blobContentEncoding *string, blobContentLanguage *string, blobContentMD5 []byte, transactionalContentMD5 []byte, transactionalContentCrc64 []byte, metadata map[string]string, leaseID *string, blobContentDisposition *string, encryptionKey *string, encryptionKeySha256 *string, encryptionAlgorithm EncryptionAlgorithmType, encryptionScope *string, tier AccessTierType, ifModifiedSince *time.Time, ifUnmodifiedSince *time.Time, ifMatch *ETag, ifNoneMatch *ETag, ifTags *string, requestID *string, blobTagsString *string) (*BlockBlobCommitBlockListResponse, error) {
+// operations. immutabilityPolicyExpiry is specifies the date time when the blobs immutability policy is set to expire.
+// immutabilityPolicyMode is specifies the immutability policy mode to set on the blob. legalHold is specified if a
+// legal hold should be set on the blob.
+func (client blockBlobClient) CommitBlockList(ctx context.Context, blocks BlockLookupList, timeout *int32, blobCacheControl *string, blobContentType *string, blobContentEncoding *string, blobContentLanguage *string, blobContentMD5 []byte, transactionalContentMD5 []byte, transactionalContentCrc64 []byte, metadata map[string]string, leaseID *string, blobContentDisposition *string, encryptionKey *string, encryptionKeySha256 *string, encryptionAlgorithm EncryptionAlgorithmType, encryptionScope *string, tier AccessTierType, ifModifiedSince *time.Time, ifUnmodifiedSince *time.Time, ifMatch *ETag, ifNoneMatch *ETag, ifTags *string, requestID *string, blobTagsString *string, immutabilityPolicyExpiry *time.Time, immutabilityPolicyMode BlobImmutabilityPolicyModeType, legalHold *bool) (*BlockBlobCommitBlockListResponse, error) {
 	if err := validate([]validation{
 		{targetValue: timeout,
 			constraints: []constraint{{target: "timeout", name: null, rule: false,
 				chain: []constraint{{target: "timeout", name: inclusiveMinimum, rule: 0, chain: nil}}}}}}); err != nil {
 		return nil, err
 	}
-	req, err := client.commitBlockListPreparer(blocks, timeout, blobCacheControl, blobContentType, blobContentEncoding, blobContentLanguage, blobContentMD5, transactionalContentMD5, transactionalContentCrc64, metadata, leaseID, blobContentDisposition, encryptionKey, encryptionKeySha256, encryptionAlgorithm, encryptionScope, tier, ifModifiedSince, ifUnmodifiedSince, ifMatch, ifNoneMatch, ifTags, requestID, blobTagsString)
+	req, err := client.commitBlockListPreparer(blocks, timeout, blobCacheControl, blobContentType, blobContentEncoding, blobContentLanguage, blobContentMD5, transactionalContentMD5, transactionalContentCrc64, metadata, leaseID, blobContentDisposition, encryptionKey, encryptionKeySha256, encryptionAlgorithm, encryptionScope, tier, ifModifiedSince, ifUnmodifiedSince, ifMatch, ifNoneMatch, ifTags, requestID, blobTagsString, immutabilityPolicyExpiry, immutabilityPolicyMode, legalHold)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +89,7 @@ func (client blockBlobClient) CommitBlockList(ctx context.Context, blocks BlockL
 }
 
 // commitBlockListPreparer prepares the CommitBlockList request.
-func (client blockBlobClient) commitBlockListPreparer(blocks BlockLookupList, timeout *int32, blobCacheControl *string, blobContentType *string, blobContentEncoding *string, blobContentLanguage *string, blobContentMD5 []byte, transactionalContentMD5 []byte, transactionalContentCrc64 []byte, metadata map[string]string, leaseID *string, blobContentDisposition *string, encryptionKey *string, encryptionKeySha256 *string, encryptionAlgorithm EncryptionAlgorithmType, encryptionScope *string, tier AccessTierType, ifModifiedSince *time.Time, ifUnmodifiedSince *time.Time, ifMatch *ETag, ifNoneMatch *ETag, ifTags *string, requestID *string, blobTagsString *string) (pipeline.Request, error) {
+func (client blockBlobClient) commitBlockListPreparer(blocks BlockLookupList, timeout *int32, blobCacheControl *string, blobContentType *string, blobContentEncoding *string, blobContentLanguage *string, blobContentMD5 []byte, transactionalContentMD5 []byte, transactionalContentCrc64 []byte, metadata map[string]string, leaseID *string, blobContentDisposition *string, encryptionKey *string, encryptionKeySha256 *string, encryptionAlgorithm EncryptionAlgorithmType, encryptionScope *string, tier AccessTierType, ifModifiedSince *time.Time, ifUnmodifiedSince *time.Time, ifMatch *ETag, ifNoneMatch *ETag, ifTags *string, requestID *string, blobTagsString *string, immutabilityPolicyExpiry *time.Time, immutabilityPolicyMode BlobImmutabilityPolicyModeType, legalHold *bool) (pipeline.Request, error) {
 	req, err := pipeline.NewRequest("PUT", client.url, nil)
 	if err != nil {
 		return req, pipeline.NewError(err, "failed to create request")
@@ -166,6 +168,15 @@ func (client blockBlobClient) commitBlockListPreparer(blocks BlockLookupList, ti
 	}
 	if blobTagsString != nil {
 		req.Header.Set("x-ms-tags", *blobTagsString)
+	}
+	if immutabilityPolicyExpiry != nil {
+		req.Header.Set("x-ms-immutability-policy-until-date", (*immutabilityPolicyExpiry).In(gmt).Format(time.RFC1123))
+	}
+	if immutabilityPolicyMode != BlobImmutabilityPolicyModeNone {
+		req.Header.Set("x-ms-immutability-policy-mode", string(immutabilityPolicyMode))
+	}
+	if legalHold != nil {
+		req.Header.Set("x-ms-legal-hold", strconv.FormatBool(*legalHold))
 	}
 	b, err := xml.Marshal(blocks)
 	if err != nil {
@@ -273,6 +284,192 @@ func (client blockBlobClient) getBlockListResponder(resp pipeline.Response) (pip
 		}
 	}
 	return result, nil
+}
+
+// PutBlobFromURL the Put Blob from URL operation creates a new Block Blob where the contents of the blob are read from
+// a given URL.  This API is supported beginning with the 2020-04-08 version. Partial updates are not supported with
+// Put Blob from URL; the content of an existing blob is overwritten with the content of the new blob.  To perform
+// partial updates to a block blob’s contents using a source URL, use the Put Block from URL API in conjunction with
+// Put Block List.
+//
+// contentLength is the length of the request. copySource is specifies the name of the source page blob snapshot. This
+// value is a URL of up to 2 KB in length that specifies a page blob snapshot. The value should be URL-encoded as it
+// would appear in a request URI. The source blob must either be public or must be authenticated via a shared access
+// signature. timeout is the timeout parameter is expressed in seconds. For more information, see <a
+// href="https://docs.microsoft.com/en-us/rest/api/storageservices/fileservices/setting-timeouts-for-blob-service-operations">Setting
+// Timeouts for Blob Service Operations.</a> transactionalContentMD5 is specify the transactional md5 for the body, to
+// be validated by the service. blobContentType is optional. Sets the blob's content type. If specified, this property
+// is stored with the blob and returned with a read request. blobContentEncoding is optional. Sets the blob's content
+// encoding. If specified, this property is stored with the blob and returned with a read request. blobContentLanguage
+// is optional. Set the blob's content language. If specified, this property is stored with the blob and returned with
+// a read request. blobContentMD5 is optional. An MD5 hash of the blob content. Note that this hash is not validated,
+// as the hashes for the individual blocks were validated when each was uploaded. blobCacheControl is optional. Sets
+// the blob's cache control. If specified, this property is stored with the blob and returned with a read request.
+// metadata is optional. Specifies a user-defined name-value pair associated with the blob. If no name-value pairs are
+// specified, the operation will copy the metadata from the source blob or file to the destination blob. If one or more
+// name-value pairs are specified, the destination blob is created with the specified metadata, and metadata is not
+// copied from the source blob or file. Note that beginning with version 2009-09-19, metadata names must adhere to the
+// naming rules for C# identifiers. See Naming and Referencing Containers, Blobs, and Metadata for more information.
+// leaseID is if specified, the operation only succeeds if the resource's lease is active and matches this ID.
+// blobContentDisposition is optional. Sets the blob's Content-Disposition header. encryptionKey is optional. Specifies
+// the encryption key to use to encrypt the data provided in the request. If not specified, encryption is performed
+// with the root account encryption key.  For more information, see Encryption at Rest for Azure Storage Services.
+// encryptionKeySha256 is the SHA-256 hash of the provided encryption key. Must be provided if the x-ms-encryption-key
+// header is provided. encryptionAlgorithm is the algorithm used to produce the encryption key hash. Currently, the
+// only accepted value is "AES256". Must be provided if the x-ms-encryption-key header is provided. encryptionScope is
+// optional. Version 2019-07-07 and later.  Specifies the name of the encryption scope to use to encrypt the data
+// provided in the request. If not specified, encryption is performed with the default account encryption scope.  For
+// more information, see Encryption at Rest for Azure Storage Services. tier is optional. Indicates the tier to be set
+// on the blob. ifModifiedSince is specify this header value to operate only on a blob if it has been modified since
+// the specified date/time. ifUnmodifiedSince is specify this header value to operate only on a blob if it has not been
+// modified since the specified date/time. ifMatch is specify an ETag value to operate only on blobs with a matching
+// value. ifNoneMatch is specify an ETag value to operate only on blobs without a matching value. ifTags is specify a
+// SQL where clause on blob tags to operate only on blobs with a matching value. sourceIfModifiedSince is specify this
+// header value to operate only on a blob if it has been modified since the specified date/time.
+// sourceIfUnmodifiedSince is specify this header value to operate only on a blob if it has not been modified since the
+// specified date/time. sourceIfMatch is specify an ETag value to operate only on blobs with a matching value.
+// sourceIfNoneMatch is specify an ETag value to operate only on blobs without a matching value. sourceIfTags is
+// specify a SQL where clause on blob tags to operate only on blobs with a matching value. requestID is provides a
+// client-generated, opaque value with a 1 KB character limit that is recorded in the analytics logs when storage
+// analytics logging is enabled. sourceContentMD5 is specify the md5 calculated for the range of bytes that must be
+// read from the copy source. blobTagsString is optional.  Used to set blob tags in various blob operations.
+// copySourceBlobProperties is optional, default is true.  Indicates if properties from the source blob should be
+// copied. copySourceAuthorization is only Bearer type is supported. Credentials should be a valid OAuth access token
+// to copy source.
+func (client blockBlobClient) PutBlobFromURL(ctx context.Context, contentLength int64, copySource string, timeout *int32, transactionalContentMD5 []byte, blobContentType *string, blobContentEncoding *string, blobContentLanguage *string, blobContentMD5 []byte, blobCacheControl *string, metadata map[string]string, leaseID *string, blobContentDisposition *string, encryptionKey *string, encryptionKeySha256 *string, encryptionAlgorithm EncryptionAlgorithmType, encryptionScope *string, tier AccessTierType, ifModifiedSince *time.Time, ifUnmodifiedSince *time.Time, ifMatch *ETag, ifNoneMatch *ETag, ifTags *string, sourceIfModifiedSince *time.Time, sourceIfUnmodifiedSince *time.Time, sourceIfMatch *ETag, sourceIfNoneMatch *ETag, sourceIfTags *string, requestID *string, sourceContentMD5 []byte, blobTagsString *string, copySourceBlobProperties *bool, copySourceAuthorization *string) (*BlockBlobPutBlobFromURLResponse, error) {
+	if err := validate([]validation{
+		{targetValue: timeout,
+			constraints: []constraint{{target: "timeout", name: null, rule: false,
+				chain: []constraint{{target: "timeout", name: inclusiveMinimum, rule: 0, chain: nil}}}}}}); err != nil {
+		return nil, err
+	}
+	req, err := client.putBlobFromURLPreparer(contentLength, copySource, timeout, transactionalContentMD5, blobContentType, blobContentEncoding, blobContentLanguage, blobContentMD5, blobCacheControl, metadata, leaseID, blobContentDisposition, encryptionKey, encryptionKeySha256, encryptionAlgorithm, encryptionScope, tier, ifModifiedSince, ifUnmodifiedSince, ifMatch, ifNoneMatch, ifTags, sourceIfModifiedSince, sourceIfUnmodifiedSince, sourceIfMatch, sourceIfNoneMatch, sourceIfTags, requestID, sourceContentMD5, blobTagsString, copySourceBlobProperties, copySourceAuthorization)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := client.Pipeline().Do(ctx, responderPolicyFactory{responder: client.putBlobFromURLResponder}, req)
+	if err != nil {
+		return nil, err
+	}
+	return resp.(*BlockBlobPutBlobFromURLResponse), err
+}
+
+// putBlobFromURLPreparer prepares the PutBlobFromURL request.
+func (client blockBlobClient) putBlobFromURLPreparer(contentLength int64, copySource string, timeout *int32, transactionalContentMD5 []byte, blobContentType *string, blobContentEncoding *string, blobContentLanguage *string, blobContentMD5 []byte, blobCacheControl *string, metadata map[string]string, leaseID *string, blobContentDisposition *string, encryptionKey *string, encryptionKeySha256 *string, encryptionAlgorithm EncryptionAlgorithmType, encryptionScope *string, tier AccessTierType, ifModifiedSince *time.Time, ifUnmodifiedSince *time.Time, ifMatch *ETag, ifNoneMatch *ETag, ifTags *string, sourceIfModifiedSince *time.Time, sourceIfUnmodifiedSince *time.Time, sourceIfMatch *ETag, sourceIfNoneMatch *ETag, sourceIfTags *string, requestID *string, sourceContentMD5 []byte, blobTagsString *string, copySourceBlobProperties *bool, copySourceAuthorization *string) (pipeline.Request, error) {
+	req, err := pipeline.NewRequest("PUT", client.url, nil)
+	if err != nil {
+		return req, pipeline.NewError(err, "failed to create request")
+	}
+	params := req.URL.Query()
+	if timeout != nil {
+		params.Set("timeout", strconv.FormatInt(int64(*timeout), 10))
+	}
+	req.URL.RawQuery = params.Encode()
+	if transactionalContentMD5 != nil {
+		req.Header.Set("Content-MD5", base64.StdEncoding.EncodeToString(transactionalContentMD5))
+	}
+	req.Header.Set("Content-Length", strconv.FormatInt(contentLength, 10))
+	if blobContentType != nil {
+		req.Header.Set("x-ms-blob-content-type", *blobContentType)
+	}
+	if blobContentEncoding != nil {
+		req.Header.Set("x-ms-blob-content-encoding", *blobContentEncoding)
+	}
+	if blobContentLanguage != nil {
+		req.Header.Set("x-ms-blob-content-language", *blobContentLanguage)
+	}
+	if blobContentMD5 != nil {
+		req.Header.Set("x-ms-blob-content-md5", base64.StdEncoding.EncodeToString(blobContentMD5))
+	}
+	if blobCacheControl != nil {
+		req.Header.Set("x-ms-blob-cache-control", *blobCacheControl)
+	}
+	if metadata != nil {
+		for k, v := range metadata {
+			req.Header.Set("x-ms-meta-"+k, v)
+		}
+	}
+	if leaseID != nil {
+		req.Header.Set("x-ms-lease-id", *leaseID)
+	}
+	if blobContentDisposition != nil {
+		req.Header.Set("x-ms-blob-content-disposition", *blobContentDisposition)
+	}
+	if encryptionKey != nil {
+		req.Header.Set("x-ms-encryption-key", *encryptionKey)
+	}
+	if encryptionKeySha256 != nil {
+		req.Header.Set("x-ms-encryption-key-sha256", *encryptionKeySha256)
+	}
+	if encryptionAlgorithm != EncryptionAlgorithmNone {
+		req.Header.Set("x-ms-encryption-algorithm", string(encryptionAlgorithm))
+	}
+	if encryptionScope != nil {
+		req.Header.Set("x-ms-encryption-scope", *encryptionScope)
+	}
+	if tier != AccessTierNone {
+		req.Header.Set("x-ms-access-tier", string(tier))
+	}
+	if ifModifiedSince != nil {
+		req.Header.Set("If-Modified-Since", (*ifModifiedSince).In(gmt).Format(time.RFC1123))
+	}
+	if ifUnmodifiedSince != nil {
+		req.Header.Set("If-Unmodified-Since", (*ifUnmodifiedSince).In(gmt).Format(time.RFC1123))
+	}
+	if ifMatch != nil {
+		req.Header.Set("If-Match", string(*ifMatch))
+	}
+	if ifNoneMatch != nil {
+		req.Header.Set("If-None-Match", string(*ifNoneMatch))
+	}
+	if ifTags != nil {
+		req.Header.Set("x-ms-if-tags", *ifTags)
+	}
+	if sourceIfModifiedSince != nil {
+		req.Header.Set("x-ms-source-if-modified-since", (*sourceIfModifiedSince).In(gmt).Format(time.RFC1123))
+	}
+	if sourceIfUnmodifiedSince != nil {
+		req.Header.Set("x-ms-source-if-unmodified-since", (*sourceIfUnmodifiedSince).In(gmt).Format(time.RFC1123))
+	}
+	if sourceIfMatch != nil {
+		req.Header.Set("x-ms-source-if-match", string(*sourceIfMatch))
+	}
+	if sourceIfNoneMatch != nil {
+		req.Header.Set("x-ms-source-if-none-match", string(*sourceIfNoneMatch))
+	}
+	if sourceIfTags != nil {
+		req.Header.Set("x-ms-source-if-tags", *sourceIfTags)
+	}
+	req.Header.Set("x-ms-version", ServiceVersion)
+	if requestID != nil {
+		req.Header.Set("x-ms-client-request-id", *requestID)
+	}
+	if sourceContentMD5 != nil {
+		req.Header.Set("x-ms-source-content-md5", base64.StdEncoding.EncodeToString(sourceContentMD5))
+	}
+	if blobTagsString != nil {
+		req.Header.Set("x-ms-tags", *blobTagsString)
+	}
+	req.Header.Set("x-ms-copy-source", copySource)
+	if copySourceBlobProperties != nil {
+		req.Header.Set("x-ms-copy-source-blob-properties", strconv.FormatBool(*copySourceBlobProperties))
+	}
+	if copySourceAuthorization != nil {
+		req.Header.Set("x-ms-copy-source-authorization", *copySourceAuthorization)
+	}
+	req.Header.Set("x-ms-blob-type", "BlockBlob")
+	return req, nil
+}
+
+// putBlobFromURLResponder handles the response to the PutBlobFromURL request.
+func (client blockBlobClient) putBlobFromURLResponder(resp pipeline.Response) (pipeline.Response, error) {
+	err := validateResponse(resp, http.StatusOK, http.StatusCreated)
+	if resp == nil {
+		return nil, err
+	}
+	io.Copy(ioutil.Discard, resp.Response().Body)
+	resp.Response().Body.Close()
+	return &BlockBlobPutBlobFromURLResponse{rawResponse: resp.Response()}, err
 }
 
 // StageBlock the Stage Block operation creates a new block to be committed as part of a blob
@@ -394,15 +591,16 @@ func (client blockBlobClient) stageBlockResponder(resp pipeline.Response) (pipel
 // blob if it has not been modified since the specified date/time. sourceIfMatch is specify an ETag value to operate
 // only on blobs with a matching value. sourceIfNoneMatch is specify an ETag value to operate only on blobs without a
 // matching value. requestID is provides a client-generated, opaque value with a 1 KB character limit that is recorded
-// in the analytics logs when storage analytics logging is enabled.
-func (client blockBlobClient) StageBlockFromURL(ctx context.Context, blockID string, contentLength int64, sourceURL string, sourceRange *string, sourceContentMD5 []byte, sourceContentcrc64 []byte, timeout *int32, encryptionKey *string, encryptionKeySha256 *string, encryptionAlgorithm EncryptionAlgorithmType, encryptionScope *string, leaseID *string, sourceIfModifiedSince *time.Time, sourceIfUnmodifiedSince *time.Time, sourceIfMatch *ETag, sourceIfNoneMatch *ETag, requestID *string) (*BlockBlobStageBlockFromURLResponse, error) {
+// in the analytics logs when storage analytics logging is enabled. copySourceAuthorization is only Bearer type is
+// supported. Credentials should be a valid OAuth access token to copy source.
+func (client blockBlobClient) StageBlockFromURL(ctx context.Context, blockID string, contentLength int64, sourceURL string, sourceRange *string, sourceContentMD5 []byte, sourceContentcrc64 []byte, timeout *int32, encryptionKey *string, encryptionKeySha256 *string, encryptionAlgorithm EncryptionAlgorithmType, encryptionScope *string, leaseID *string, sourceIfModifiedSince *time.Time, sourceIfUnmodifiedSince *time.Time, sourceIfMatch *ETag, sourceIfNoneMatch *ETag, requestID *string, copySourceAuthorization *string) (*BlockBlobStageBlockFromURLResponse, error) {
 	if err := validate([]validation{
 		{targetValue: timeout,
 			constraints: []constraint{{target: "timeout", name: null, rule: false,
 				chain: []constraint{{target: "timeout", name: inclusiveMinimum, rule: 0, chain: nil}}}}}}); err != nil {
 		return nil, err
 	}
-	req, err := client.stageBlockFromURLPreparer(blockID, contentLength, sourceURL, sourceRange, sourceContentMD5, sourceContentcrc64, timeout, encryptionKey, encryptionKeySha256, encryptionAlgorithm, encryptionScope, leaseID, sourceIfModifiedSince, sourceIfUnmodifiedSince, sourceIfMatch, sourceIfNoneMatch, requestID)
+	req, err := client.stageBlockFromURLPreparer(blockID, contentLength, sourceURL, sourceRange, sourceContentMD5, sourceContentcrc64, timeout, encryptionKey, encryptionKeySha256, encryptionAlgorithm, encryptionScope, leaseID, sourceIfModifiedSince, sourceIfUnmodifiedSince, sourceIfMatch, sourceIfNoneMatch, requestID, copySourceAuthorization)
 	if err != nil {
 		return nil, err
 	}
@@ -414,7 +612,7 @@ func (client blockBlobClient) StageBlockFromURL(ctx context.Context, blockID str
 }
 
 // stageBlockFromURLPreparer prepares the StageBlockFromURL request.
-func (client blockBlobClient) stageBlockFromURLPreparer(blockID string, contentLength int64, sourceURL string, sourceRange *string, sourceContentMD5 []byte, sourceContentcrc64 []byte, timeout *int32, encryptionKey *string, encryptionKeySha256 *string, encryptionAlgorithm EncryptionAlgorithmType, encryptionScope *string, leaseID *string, sourceIfModifiedSince *time.Time, sourceIfUnmodifiedSince *time.Time, sourceIfMatch *ETag, sourceIfNoneMatch *ETag, requestID *string) (pipeline.Request, error) {
+func (client blockBlobClient) stageBlockFromURLPreparer(blockID string, contentLength int64, sourceURL string, sourceRange *string, sourceContentMD5 []byte, sourceContentcrc64 []byte, timeout *int32, encryptionKey *string, encryptionKeySha256 *string, encryptionAlgorithm EncryptionAlgorithmType, encryptionScope *string, leaseID *string, sourceIfModifiedSince *time.Time, sourceIfUnmodifiedSince *time.Time, sourceIfMatch *ETag, sourceIfNoneMatch *ETag, requestID *string, copySourceAuthorization *string) (pipeline.Request, error) {
 	req, err := pipeline.NewRequest("PUT", client.url, nil)
 	if err != nil {
 		return req, pipeline.NewError(err, "failed to create request")
@@ -467,6 +665,9 @@ func (client blockBlobClient) stageBlockFromURLPreparer(blockID string, contentL
 	req.Header.Set("x-ms-version", ServiceVersion)
 	if requestID != nil {
 		req.Header.Set("x-ms-client-request-id", *requestID)
+	}
+	if copySourceAuthorization != nil {
+		req.Header.Set("x-ms-copy-source-authorization", *copySourceAuthorization)
 	}
 	return req, nil
 }
@@ -521,7 +722,10 @@ func (client blockBlobClient) stageBlockFromURLResponder(resp pipeline.Response)
 // SQL where clause on blob tags to operate only on blobs with a matching value. requestID is provides a
 // client-generated, opaque value with a 1 KB character limit that is recorded in the analytics logs when storage
 // analytics logging is enabled. blobTagsString is optional.  Used to set blob tags in various blob operations.
-func (client blockBlobClient) Upload(ctx context.Context, body io.ReadSeeker, contentLength int64, timeout *int32, transactionalContentMD5 []byte, blobContentType *string, blobContentEncoding *string, blobContentLanguage *string, blobContentMD5 []byte, blobCacheControl *string, metadata map[string]string, leaseID *string, blobContentDisposition *string, encryptionKey *string, encryptionKeySha256 *string, encryptionAlgorithm EncryptionAlgorithmType, encryptionScope *string, tier AccessTierType, ifModifiedSince *time.Time, ifUnmodifiedSince *time.Time, ifMatch *ETag, ifNoneMatch *ETag, ifTags *string, requestID *string, blobTagsString *string) (*BlockBlobUploadResponse, error) {
+// immutabilityPolicyExpiry is specifies the date time when the blobs immutability policy is set to expire.
+// immutabilityPolicyMode is specifies the immutability policy mode to set on the blob. legalHold is specified if a
+// legal hold should be set on the blob.
+func (client blockBlobClient) Upload(ctx context.Context, body io.ReadSeeker, contentLength int64, timeout *int32, transactionalContentMD5 []byte, blobContentType *string, blobContentEncoding *string, blobContentLanguage *string, blobContentMD5 []byte, blobCacheControl *string, metadata map[string]string, leaseID *string, blobContentDisposition *string, encryptionKey *string, encryptionKeySha256 *string, encryptionAlgorithm EncryptionAlgorithmType, encryptionScope *string, tier AccessTierType, ifModifiedSince *time.Time, ifUnmodifiedSince *time.Time, ifMatch *ETag, ifNoneMatch *ETag, ifTags *string, requestID *string, blobTagsString *string, immutabilityPolicyExpiry *time.Time, immutabilityPolicyMode BlobImmutabilityPolicyModeType, legalHold *bool) (*BlockBlobUploadResponse, error) {
 	if err := validate([]validation{
 		{targetValue: body,
 			constraints: []constraint{{target: "body", name: null, rule: true, chain: nil}}},
@@ -530,7 +734,7 @@ func (client blockBlobClient) Upload(ctx context.Context, body io.ReadSeeker, co
 				chain: []constraint{{target: "timeout", name: inclusiveMinimum, rule: 0, chain: nil}}}}}}); err != nil {
 		return nil, err
 	}
-	req, err := client.uploadPreparer(body, contentLength, timeout, transactionalContentMD5, blobContentType, blobContentEncoding, blobContentLanguage, blobContentMD5, blobCacheControl, metadata, leaseID, blobContentDisposition, encryptionKey, encryptionKeySha256, encryptionAlgorithm, encryptionScope, tier, ifModifiedSince, ifUnmodifiedSince, ifMatch, ifNoneMatch, ifTags, requestID, blobTagsString)
+	req, err := client.uploadPreparer(body, contentLength, timeout, transactionalContentMD5, blobContentType, blobContentEncoding, blobContentLanguage, blobContentMD5, blobCacheControl, metadata, leaseID, blobContentDisposition, encryptionKey, encryptionKeySha256, encryptionAlgorithm, encryptionScope, tier, ifModifiedSince, ifUnmodifiedSince, ifMatch, ifNoneMatch, ifTags, requestID, blobTagsString, immutabilityPolicyExpiry, immutabilityPolicyMode, legalHold)
 	if err != nil {
 		return nil, err
 	}
@@ -542,7 +746,7 @@ func (client blockBlobClient) Upload(ctx context.Context, body io.ReadSeeker, co
 }
 
 // uploadPreparer prepares the Upload request.
-func (client blockBlobClient) uploadPreparer(body io.ReadSeeker, contentLength int64, timeout *int32, transactionalContentMD5 []byte, blobContentType *string, blobContentEncoding *string, blobContentLanguage *string, blobContentMD5 []byte, blobCacheControl *string, metadata map[string]string, leaseID *string, blobContentDisposition *string, encryptionKey *string, encryptionKeySha256 *string, encryptionAlgorithm EncryptionAlgorithmType, encryptionScope *string, tier AccessTierType, ifModifiedSince *time.Time, ifUnmodifiedSince *time.Time, ifMatch *ETag, ifNoneMatch *ETag, ifTags *string, requestID *string, blobTagsString *string) (pipeline.Request, error) {
+func (client blockBlobClient) uploadPreparer(body io.ReadSeeker, contentLength int64, timeout *int32, transactionalContentMD5 []byte, blobContentType *string, blobContentEncoding *string, blobContentLanguage *string, blobContentMD5 []byte, blobCacheControl *string, metadata map[string]string, leaseID *string, blobContentDisposition *string, encryptionKey *string, encryptionKeySha256 *string, encryptionAlgorithm EncryptionAlgorithmType, encryptionScope *string, tier AccessTierType, ifModifiedSince *time.Time, ifUnmodifiedSince *time.Time, ifMatch *ETag, ifNoneMatch *ETag, ifTags *string, requestID *string, blobTagsString *string, immutabilityPolicyExpiry *time.Time, immutabilityPolicyMode BlobImmutabilityPolicyModeType, legalHold *bool) (pipeline.Request, error) {
 	req, err := pipeline.NewRequest("PUT", client.url, body)
 	if err != nil {
 		return req, pipeline.NewError(err, "failed to create request")
@@ -618,6 +822,15 @@ func (client blockBlobClient) uploadPreparer(body io.ReadSeeker, contentLength i
 	}
 	if blobTagsString != nil {
 		req.Header.Set("x-ms-tags", *blobTagsString)
+	}
+	if immutabilityPolicyExpiry != nil {
+		req.Header.Set("x-ms-immutability-policy-until-date", (*immutabilityPolicyExpiry).In(gmt).Format(time.RFC1123))
+	}
+	if immutabilityPolicyMode != BlobImmutabilityPolicyModeNone {
+		req.Header.Set("x-ms-immutability-policy-mode", string(immutabilityPolicyMode))
+	}
+	if legalHold != nil {
+		req.Header.Set("x-ms-legal-hold", strconv.FormatBool(*legalHold))
 	}
 	req.Header.Set("x-ms-blob-type", "BlockBlob")
 	return req, nil

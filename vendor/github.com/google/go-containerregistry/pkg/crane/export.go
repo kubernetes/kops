@@ -22,8 +22,26 @@ import (
 )
 
 // Export writes the filesystem contents (as a tarball) of img to w.
+// If img has a single layer, just write the (uncompressed) contents to w so
+// that this "just works" for images that just wrap a single blob.
 func Export(img v1.Image, w io.Writer) error {
+	layers, err := img.Layers()
+	if err != nil {
+		return err
+	}
+	if len(layers) == 1 {
+		// If it's a single layer, we don't have to flatten the filesystem.
+		// An added perk of skipping mutate.Extract here is that this works
+		// for non-tarball layers.
+		l := layers[0]
+		rc, err := l.Uncompressed()
+		if err != nil {
+			return err
+		}
+		_, err = io.Copy(w, rc)
+		return err
+	}
 	fs := mutate.Extract(img)
-	_, err := io.Copy(w, fs)
+	_, err = io.Copy(w, fs)
 	return err
 }

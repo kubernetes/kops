@@ -19,15 +19,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"text/tabwriter"
 
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/ghodss/yaml"
+	"github.com/aws/amazon-ec2-instance-selector/v2/pkg/instancetypes"
 )
 
 // SimpleInstanceTypeOutput is an OutputFn which outputs a slice of instance type names
-func SimpleInstanceTypeOutput(instanceTypeInfoSlice []*ec2.InstanceTypeInfo) []string {
+func SimpleInstanceTypeOutput(instanceTypeInfoSlice []*instancetypes.Details) []string {
 	instanceTypeStrings := []string{}
 	for _, instanceTypeInfo := range instanceTypeInfoSlice {
 		instanceTypeStrings = append(instanceTypeStrings, *instanceTypeInfo.InstanceType)
@@ -36,7 +36,7 @@ func SimpleInstanceTypeOutput(instanceTypeInfoSlice []*ec2.InstanceTypeInfo) []s
 }
 
 // VerboseInstanceTypeOutput is an OutputFn which outputs a slice of instance type names
-func VerboseInstanceTypeOutput(instanceTypeInfoSlice []*ec2.InstanceTypeInfo) []string {
+func VerboseInstanceTypeOutput(instanceTypeInfoSlice []*instancetypes.Details) []string {
 	output, err := json.MarshalIndent(instanceTypeInfoSlice, "", "    ")
 	if err != nil {
 		log.Println("Unable to convert instance type info to JSON")
@@ -48,112 +48,9 @@ func VerboseInstanceTypeOutput(instanceTypeInfoSlice []*ec2.InstanceTypeInfo) []
 	return []string{string(output)}
 }
 
-// TerraformSpotMixedInstancesPolicyHCLOutput is an OutputFn which returns an ASG MixedInstancePolicy in Terraform HCL syntax
-func TerraformSpotMixedInstancesPolicyHCLOutput(instanceTypeInfoSlice []*ec2.InstanceTypeInfo) []string {
-	instanceTypeOverrides := instanceTypeInfoToOverrides(instanceTypeInfoSlice)
-	overridesString := ""
-	for _, override := range instanceTypeOverrides {
-		overridesString = overridesString + fmt.Sprintf(`
-			override {
-				instance_type = "%s"
-			}
-		`, override.InstanceType)
-	}
-	asgResource := fmt.Sprintf(`resource "aws_autoscaling_group" "AutoScalingGroupMIG" {
-		vpc_zone_identifier = [
-		  "REPLACE_WITH_SUBNET_ID"
-		]
-	  
-		name = "AutoScalingGroupMIG"
-		max_size = 0
-		min_size = 0
-		desired_capacity = 0
-	  
-		mixed_instances_policy {
-		  instances_distribution {
-			on_demand_base_capacity = 0
-			on_demand_percentage_above_base_capacity = 0
-			spot_allocation_strategy = "capacity-optimized"
-		  }
-	  
-		  launch_template {
-			launch_template_specification {
-			  launch_template_id = "REPLACE_WITH_LAUNCH_TEMPLATE_ID"
-			  version = "$$Latest"
-			}
-
-			%s
-		  }
-		}
-	  }
-	  provider "aws" {
-		  region = "us-east-1"
-	  }
-	  `, overridesString)
-
-	return []string{asgResource}
-}
-
-// CloudFormationSpotMixedInstancesPolicyYAMLOutput is an OutputFn which returns an ASG MixedInstancePolicy in CloudFormation YAML syntax
-func CloudFormationSpotMixedInstancesPolicyYAMLOutput(instanceTypeInfoSlice []*ec2.InstanceTypeInfo) []string {
-	instanceTypeOverrides := instanceTypeInfoToOverrides(instanceTypeInfoSlice)
-	cfnMig := getCfnMIGResources(instanceTypeOverrides)
-	cfnMigYAML, err := yaml.Marshal(cfnMig)
-	if err != nil {
-		log.Printf("Unable to create CloudFormation YAML: %v\n", err)
-	}
-	return []string{string(cfnMigYAML)}
-}
-
-// CloudFormationSpotMixedInstancesPolicyJSONOutput is an OutputFn which returns an MixedInstancePolicy in CloudFormation JSON syntax
-func CloudFormationSpotMixedInstancesPolicyJSONOutput(instanceTypeInfoSlice []*ec2.InstanceTypeInfo) []string {
-	instanceTypeOverrides := instanceTypeInfoToOverrides(instanceTypeInfoSlice)
-	cfnMig := getCfnMIGResources(instanceTypeOverrides)
-	cfnJSONMig, err := json.MarshalIndent(cfnMig, "", "    ")
-	if err != nil {
-		log.Printf("Unable to create CloudFormation JSON: %v\n", err)
-		return []string{}
-	}
-	return []string{string(cfnJSONMig)}
-}
-
-func getCfnMIGResources(instanceTypeOverrides []InstanceTypeOverride) Resources {
-	resources := map[string]AutoScalingGroup{}
-	resources["AutoScalingGroupMIG"] = AutoScalingGroup{
-		Type: typeASG,
-		Properties: AutoScalingGroupProperties{
-			AutoScalingGroupName: "REPLACE_WITH_NAME",
-			VPCZoneIdentifier:    []string{"replace-with-subnet-ids"},
-			MixedInstancesPolicy: MixedInstancesPolicy{
-				InstancesDistribution: InstancesDistribution{
-					OnDemandBaseCapacity:                0,
-					OnDemandPercentageAboveBaseCapacity: 0,
-					SpotAllocationStrategy:              capacityOptimized,
-				},
-				LaunchTemplate: LaunchTemplate{
-					LaunchTemplateSpecification: LaunchTemplateSpecification{
-						LaunchTemplateID: "REPLACE_WITH_LAUNCH_TEMPLATE_ID",
-						Version:          "REPLACE_WITH_VERSION",
-					},
-					Overrides: instanceTypeOverrides,
-				},
-			},
-		},
-	}
-	return Resources{Resources: resources}
-}
-
-func instanceTypeInfoToOverrides(instanceTypeInfoSlice []*ec2.InstanceTypeInfo) []InstanceTypeOverride {
-	instanceTypeOverrides := []InstanceTypeOverride{}
-	for _, instanceTypeInfo := range instanceTypeInfoSlice {
-		instanceTypeOverrides = append(instanceTypeOverrides, InstanceTypeOverride{InstanceType: *instanceTypeInfo.InstanceType})
-	}
-	return instanceTypeOverrides
-}
-
 // TableOutputShort is an OutputFn which returns a CLI table for easy reading
-func TableOutputShort(instanceTypeInfoSlice []*ec2.InstanceTypeInfo) []string {
-	if instanceTypeInfoSlice == nil || len(instanceTypeInfoSlice) == 0 {
+func TableOutputShort(instanceTypeInfoSlice []*instancetypes.Details) []string {
+	if len(instanceTypeInfoSlice) == 0 {
 		return nil
 	}
 	w := new(tabwriter.Writer)
@@ -177,10 +74,10 @@ func TableOutputShort(instanceTypeInfoSlice []*ec2.InstanceTypeInfo) []string {
 	fmt.Fprintf(w, "\n"+headerFormat, separators...)
 
 	for _, instanceTypeInfo := range instanceTypeInfoSlice {
-		fmt.Fprintf(w, "\n%s\t%d\t%.3f\t",
+		fmt.Fprintf(w, "\n%s\t%d\t%s\t",
 			*instanceTypeInfo.InstanceType,
 			*instanceTypeInfo.VCpuInfo.DefaultVCpus,
-			float64(*instanceTypeInfo.MemoryInfo.SizeInMiB)/1024.0,
+			formatFloat(float64(*instanceTypeInfo.MemoryInfo.SizeInMiB)/1024.0),
 		)
 	}
 	w.Flush()
@@ -188,8 +85,8 @@ func TableOutputShort(instanceTypeInfoSlice []*ec2.InstanceTypeInfo) []string {
 }
 
 // TableOutputWide is an OutputFn which returns a detailed CLI table for easy reading
-func TableOutputWide(instanceTypeInfoSlice []*ec2.InstanceTypeInfo) []string {
-	if instanceTypeInfoSlice == nil || len(instanceTypeInfoSlice) == 0 {
+func TableOutputWide(instanceTypeInfoSlice []*instancetypes.Details) []string {
+	if len(instanceTypeInfoSlice) == 0 {
 		return nil
 	}
 	w := new(tabwriter.Writer)
@@ -197,6 +94,9 @@ func TableOutputWide(instanceTypeInfoSlice []*ec2.InstanceTypeInfo) []string {
 	none := "none"
 	w.Init(buf, 8, 8, 2, ' ', 0)
 	defer w.Flush()
+
+	onDemandPricePerHourHeader := "On-Demand Price/Hr"
+	spotPricePerHourHeader := "Spot Price/Hr (30d avg)"
 
 	headers := []interface{}{
 		"Instance Type",
@@ -211,8 +111,10 @@ func TableOutputWide(instanceTypeInfoSlice []*ec2.InstanceTypeInfo) []string {
 		"GPUs",
 		"GPU Mem (GiB)",
 		"GPU Info",
+		onDemandPricePerHourHeader,
+		spotPricePerHourHeader,
 	}
-	separators := []interface{}{}
+	separators := make([]interface{}, 0)
 
 	headerFormat := ""
 	for _, header := range headers {
@@ -242,10 +144,19 @@ func TableOutputWide(instanceTypeInfoSlice []*ec2.InstanceTypeInfo) []string {
 			}
 		}
 
-		fmt.Fprintf(w, "\n%s\t%d\t%.3f\t%s\t%t\t%t\t%s\t%s\t%d\t%d\t%.2f\t%s\t",
+		onDemandPricePerHourStr := "-Not Fetched-"
+		spotPricePerHourStr := "-Not Fetched-"
+		if instanceTypeInfo.OndemandPricePerHour != nil {
+			onDemandPricePerHourStr = fmt.Sprintf("$%s", formatFloat(*instanceTypeInfo.OndemandPricePerHour))
+		}
+		if instanceTypeInfo.SpotPrice != nil {
+			spotPricePerHourStr = fmt.Sprintf("$%s", formatFloat(*instanceTypeInfo.SpotPrice))
+		}
+
+		fmt.Fprintf(w, "\n%s\t%d\t%s\t%s\t%t\t%t\t%s\t%s\t%d\t%d\t%s\t%s\t%s\t%s\t",
 			*instanceTypeInfo.InstanceType,
 			*instanceTypeInfo.VCpuInfo.DefaultVCpus,
-			float64(*instanceTypeInfo.MemoryInfo.SizeInMiB)/1024.0,
+			formatFloat(float64(*instanceTypeInfo.MemoryInfo.SizeInMiB)/1024.0),
 			*hypervisor,
 			*instanceTypeInfo.CurrentGeneration,
 			*instanceTypeInfo.HibernationSupported,
@@ -253,8 +164,10 @@ func TableOutputWide(instanceTypeInfoSlice []*ec2.InstanceTypeInfo) []string {
 			*instanceTypeInfo.NetworkInfo.NetworkPerformance,
 			*instanceTypeInfo.NetworkInfo.MaximumNetworkInterfaces,
 			gpus,
-			float64(gpuMemory)/1024.0,
+			formatFloat(float64(gpuMemory)/1024.0),
 			strings.Join(gpuType, ", "),
+			onDemandPricePerHourStr,
+			spotPricePerHourStr,
 		)
 	}
 	w.Flush()
@@ -262,7 +175,7 @@ func TableOutputWide(instanceTypeInfoSlice []*ec2.InstanceTypeInfo) []string {
 }
 
 // OneLineOutput is an output function which prints the instance type names on a single line separated by commas
-func OneLineOutput(instanceTypeInfoSlice []*ec2.InstanceTypeInfo) []string {
+func OneLineOutput(instanceTypeInfoSlice []*instancetypes.Details) []string {
 	instanceTypeNames := []string{}
 	for _, instanceType := range instanceTypeInfoSlice {
 		instanceTypeNames = append(instanceTypeNames, *instanceType.InstanceType)
@@ -271,4 +184,30 @@ func OneLineOutput(instanceTypeInfoSlice []*ec2.InstanceTypeInfo) []string {
 		return []string{}
 	}
 	return []string{strings.Join(instanceTypeNames, ",")}
+}
+
+func formatFloat(f float64) string {
+	s := strconv.FormatFloat(f, 'f', 5, 64)
+	parts := strings.Split(s, ".")
+	if len(parts) == 1 {
+		return s
+	}
+	reversed := reverse(parts[0])
+	withCommas := ""
+	for i, p := range reversed {
+		if i%3 == 0 && i != 0 {
+			withCommas += ","
+		}
+		withCommas += string(p)
+	}
+	s = strings.Join([]string{reverse(withCommas), parts[1]}, ".")
+	return strings.TrimRight(strings.TrimRight(s, "0"), ".")
+}
+
+func reverse(s string) string {
+	runes := []rune(s)
+	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
+		runes[i], runes[j] = runes[j], runes[i]
+	}
+	return string(runes)
 }

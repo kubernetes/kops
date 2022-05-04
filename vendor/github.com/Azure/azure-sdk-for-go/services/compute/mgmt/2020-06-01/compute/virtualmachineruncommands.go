@@ -57,7 +57,7 @@ func (client VirtualMachineRunCommandsClient) CreateOrUpdate(ctx context.Context
 
 	result, err = client.CreateOrUpdateSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineRunCommandsClient", "CreateOrUpdate", nil, "Failure sending request")
+		err = autorest.NewErrorWithError(err, "compute.VirtualMachineRunCommandsClient", "CreateOrUpdate", result.Response(), "Failure sending request")
 		return
 	}
 
@@ -92,6 +92,7 @@ func (client VirtualMachineRunCommandsClient) CreateOrUpdatePreparer(ctx context
 // http.Response Body if it receives an error.
 func (client VirtualMachineRunCommandsClient) CreateOrUpdateSender(req *http.Request) (future VirtualMachineRunCommandsCreateOrUpdateFuture, err error) {
 	var resp *http.Response
+	future.FutureAPI = &azure.Future{}
 	resp, err = client.Send(req, azure.DoRetryWithRegistration(client.Client))
 	if err != nil {
 		return
@@ -139,7 +140,7 @@ func (client VirtualMachineRunCommandsClient) Delete(ctx context.Context, resour
 
 	result, err = client.DeleteSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineRunCommandsClient", "Delete", nil, "Failure sending request")
+		err = autorest.NewErrorWithError(err, "compute.VirtualMachineRunCommandsClient", "Delete", result.Response(), "Failure sending request")
 		return
 	}
 
@@ -172,6 +173,7 @@ func (client VirtualMachineRunCommandsClient) DeletePreparer(ctx context.Context
 // http.Response Body if it receives an error.
 func (client VirtualMachineRunCommandsClient) DeleteSender(req *http.Request) (future VirtualMachineRunCommandsDeleteFuture, err error) {
 	var resp *http.Response
+	future.FutureAPI = &azure.Future{}
 	resp, err = client.Send(req, azure.DoRetryWithRegistration(client.Client))
 	if err != nil {
 		return
@@ -627,7 +629,7 @@ func (client VirtualMachineRunCommandsClient) Update(ctx context.Context, resour
 
 	result, err = client.UpdateSender(req)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineRunCommandsClient", "Update", nil, "Failure sending request")
+		err = autorest.NewErrorWithError(err, "compute.VirtualMachineRunCommandsClient", "Update", result.Response(), "Failure sending request")
 		return
 	}
 
@@ -662,6 +664,7 @@ func (client VirtualMachineRunCommandsClient) UpdatePreparer(ctx context.Context
 // http.Response Body if it receives an error.
 func (client VirtualMachineRunCommandsClient) UpdateSender(req *http.Request) (future VirtualMachineRunCommandsUpdateFuture, err error) {
 	var resp *http.Response
+	future.FutureAPI = &azure.Future{}
 	resp, err = client.Send(req, azure.DoRetryWithRegistration(client.Client))
 	if err != nil {
 		return

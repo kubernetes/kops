@@ -139,6 +139,23 @@ func (*CommandLineInterface) ByteQuantityRangeMe(i interface{}) *selector.ByteQu
 	}
 }
 
+// Float64RangeMe takes an interface and returns a pointer to a Float64RangeFilter value
+// If the underlying interface kind is not Float64RangeFilter or *Float64RangeFilter then nil is returned
+func (*CommandLineInterface) Float64RangeMe(i interface{}) *selector.Float64RangeFilter {
+	if i == nil {
+		return nil
+	}
+	switch v := i.(type) {
+	case *selector.Float64RangeFilter:
+		return v
+	case selector.Float64RangeFilter:
+		return &v
+	default:
+		log.Printf("%s cannot be converted to a Float64Range", i)
+		return nil
+	}
+}
+
 // StringMe takes an interface and returns a pointer to a string value
 // If the underlying interface kind is not string or *string then nil is returned
 func (*CommandLineInterface) StringMe(i interface{}) *string {

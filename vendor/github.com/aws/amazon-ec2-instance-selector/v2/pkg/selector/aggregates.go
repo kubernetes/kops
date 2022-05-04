@@ -48,7 +48,7 @@ func (itf Selector) TransformBaseInstanceType(filters Filters) (Filters, error) 
 	if filters.BareMetal == nil {
 		filters.BareMetal = instanceTypeInfo.BareMetal
 	}
-	if filters.CPUArchitecture == nil {
+	if filters.CPUArchitecture == nil && len(instanceTypeInfo.ProcessorInfo.SupportedArchitectures) == 1 {
 		filters.CPUArchitecture = instanceTypeInfo.ProcessorInfo.SupportedArchitectures[0]
 	}
 	if filters.Fpga == nil {
@@ -71,6 +71,9 @@ func (itf Selector) TransformBaseInstanceType(filters Filters) (Filters, error) 
 		lowerBound := int(float64(*instanceTypeInfo.VCpuInfo.DefaultVCpus) * AggregateLowPercentile)
 		upperBound := int(float64(*instanceTypeInfo.VCpuInfo.DefaultVCpus) * AggregateHighPercentile)
 		filters.VCpusRange = &IntRangeFilter{LowerBound: lowerBound, UpperBound: upperBound}
+	}
+	if filters.VirtualizationType == nil && len(instanceTypeInfo.SupportedVirtualizationTypes) == 1 {
+		filters.VirtualizationType = instanceTypeInfo.SupportedVirtualizationTypes[0]
 	}
 	filters.InstanceTypeBase = nil
 
@@ -106,4 +109,9 @@ func (itf Selector) TransformFlexible(filters Filters) (Filters, error) {
 	}
 
 	return filters, nil
+}
+
+// TransformForService transforms lower level filters based on the service
+func (itf Selector) TransformForService(filters Filters) (Filters, error) {
+	return itf.ServiceRegistry.ExecuteTransforms(filters)
 }

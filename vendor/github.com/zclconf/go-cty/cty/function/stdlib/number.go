@@ -371,14 +371,21 @@ var CeilFunc = function.New(&function.Spec{
 	},
 	Type: function.StaticReturnType(cty.Number),
 	Impl: func(args []cty.Value, retType cty.Type) (ret cty.Value, err error) {
-		var val float64
-		if err := gocty.FromCtyValue(args[0], &val); err != nil {
-			return cty.UnknownVal(cty.String), err
+		f := args[0].AsBigFloat()
+
+		if f.IsInf() {
+			return cty.NumberVal(f), nil
 		}
-		if math.IsInf(val, 0) {
-			return cty.NumberFloatVal(val), nil
+
+		i, acc := f.Int(nil)
+		switch acc {
+		case big.Exact, big.Above:
+			// Done.
+		case big.Below:
+			i.Add(i, big.NewInt(1))
 		}
-		return cty.NumberIntVal(int64(math.Ceil(val))), nil
+
+		return cty.NumberVal(f.SetInt(i)), nil
 	},
 })
 
@@ -393,14 +400,21 @@ var FloorFunc = function.New(&function.Spec{
 	},
 	Type: function.StaticReturnType(cty.Number),
 	Impl: func(args []cty.Value, retType cty.Type) (ret cty.Value, err error) {
-		var val float64
-		if err := gocty.FromCtyValue(args[0], &val); err != nil {
-			return cty.UnknownVal(cty.String), err
+		f := args[0].AsBigFloat()
+
+		if f.IsInf() {
+			return cty.NumberVal(f), nil
 		}
-		if math.IsInf(val, 0) {
-			return cty.NumberFloatVal(val), nil
+
+		i, acc := f.Int(nil)
+		switch acc {
+		case big.Exact, big.Below:
+			// Done.
+		case big.Above:
+			i.Sub(i, big.NewInt(1))
 		}
-		return cty.NumberIntVal(int64(math.Floor(val))), nil
+
+		return cty.NumberVal(f.SetInt(i)), nil
 	},
 })
 

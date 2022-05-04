@@ -39,6 +39,146 @@ func TokensForTraversal(traversal hcl.Traversal) Tokens {
 	return toks
 }
 
+// TokensForIdentifier returns a sequence of tokens representing just the
+// given identifier.
+//
+// In practice this function can only ever generate exactly one token, because
+// an identifier is always a leaf token in the syntax tree.
+//
+// This is similar to calling TokensForTraversal with a single-step absolute
+// traversal, but avoids the need to construct a separate traversal object
+// for this simple common case. If you need to generate a multi-step traversal,
+// use TokensForTraversal instead.
+func TokensForIdentifier(name string) Tokens {
+	return Tokens{
+		newIdentToken(name),
+	}
+}
+
+// TokensForTuple returns a sequence of tokens that represents a tuple
+// constructor, with element expressions populated from the given list
+// of tokens.
+//
+// TokensForTuple includes the given elements verbatim into the element
+// positions in the resulting tuple expression, without any validation to
+// ensure that they represent valid expressions. Use TokensForValue or
+// TokensForTraversal to generate valid leaf expression values, or use
+// TokensForTuple, TokensForObject, and TokensForFunctionCall to
+// generate other nested compound expressions.
+func TokensForTuple(elems []Tokens) Tokens {
+	var toks Tokens
+	toks = append(toks, &Token{
+		Type:  hclsyntax.TokenOBrack,
+		Bytes: []byte{'['},
+	})
+	for index, elem := range elems {
+		if index > 0 {
+			toks = append(toks, &Token{
+				Type:  hclsyntax.TokenComma,
+				Bytes: []byte{','},
+			})
+		}
+		toks = append(toks, elem...)
+	}
+
+	toks = append(toks, &Token{
+		Type:  hclsyntax.TokenCBrack,
+		Bytes: []byte{']'},
+	})
+
+	format(toks) // fiddle with the SpacesBefore field to get canonical spacing
+	return toks
+}
+
+// TokensForObject returns a sequence of tokens that represents an object
+// constructor, with attribute name/value pairs populated from the given
+// list of attribute token objects.
+//
+// TokensForObject includes the given tokens verbatim into the name and
+// value positions in the resulting object expression, without any validation
+// to ensure that they represent valid expressions. Use TokensForValue or
+// TokensForTraversal to generate valid leaf expression values, or use
+// TokensForTuple, TokensForObject, and TokensForFunctionCall to
+// generate other nested compound expressions.
+//
+// Note that HCL requires placing a traversal expression in parentheses if
+// you intend to use it as an attribute name expression, because otherwise
+// the parser will interpret it as a literal attribute name. TokensForObject
+// does not handle that situation automatically, so a caller must add the
+// necessary `TokenOParen` and TokenCParen` manually if needed.
+func TokensForObject(attrs []ObjectAttrTokens) Tokens {
+	var toks Tokens
+	toks = append(toks, &Token{
+		Type:  hclsyntax.TokenOBrace,
+		Bytes: []byte{'{'},
+	})
+	if len(attrs) > 0 {
+		toks = append(toks, &Token{
+			Type:  hclsyntax.TokenNewline,
+			Bytes: []byte{'\n'},
+		})
+	}
+	for _, attr := range attrs {
+		toks = append(toks, attr.Name...)
+		toks = append(toks, &Token{
+			Type:  hclsyntax.TokenEqual,
+			Bytes: []byte{'='},
+		})
+		toks = append(toks, attr.Value...)
+		toks = append(toks, &Token{
+			Type:  hclsyntax.TokenNewline,
+			Bytes: []byte{'\n'},
+		})
+	}
+	toks = append(toks, &Token{
+		Type:  hclsyntax.TokenCBrace,
+		Bytes: []byte{'}'},
+	})
+
+	format(toks) // fiddle with the SpacesBefore field to get canonical spacing
+	return toks
+}
+
+// TokensForFunctionCall returns a sequence of tokens that represents call
+// to the function with the given name, using the argument tokens to
+// populate the argument expressions.
+//
+// TokensForFunctionCall includes the given argument tokens verbatim into the
+// positions in the resulting call expression, without any validation
+// to ensure that they represent valid expressions. Use TokensForValue or
+// TokensForTraversal to generate valid leaf expression values, or use
+// TokensForTuple, TokensForObject, and TokensForFunctionCall to
+// generate other nested compound expressions.
+//
+// This function doesn't include an explicit way to generate the expansion
+// symbol "..." on the final argument. Currently, generating that requires
+// manually appending a TokenEllipsis with the bytes "..." to the tokens for
+// the final argument.
+func TokensForFunctionCall(funcName string, args ...Tokens) Tokens {
+	var toks Tokens
+	toks = append(toks, TokensForIdentifier(funcName)...)
+	toks = append(toks, &Token{
+		Type:  hclsyntax.TokenOParen,
+		Bytes: []byte{'('},
+	})
+	for index, arg := range args {
+		if index > 0 {
+			toks = append(toks, &Token{
+				Type:  hclsyntax.TokenComma,
+				Bytes: []byte{','},
+			})
+		}
+		toks = append(toks, arg...)
+	}
+	toks = append(toks, &Token{
+		Type:  hclsyntax.TokenCParen,
+		Bytes: []byte{')'},
+	})
+
+	format(toks) // fiddle with the SpacesBefore field to get canonical spacing
+	return toks
+}
+
 func appendTokensForValue(val cty.Value, toks Tokens) Tokens {
 	switch {
 

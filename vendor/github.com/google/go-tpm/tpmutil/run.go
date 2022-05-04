@@ -19,6 +19,7 @@ import (
 	"errors"
 	"io"
 	"os"
+	"time"
 )
 
 // maxTPMResponse is the largest possible response from the TPM. We need to know
@@ -41,32 +42,51 @@ func RunCommand(rw io.ReadWriter, tag Tag, cmd Command, in ...interface{}) ([]by
 		return nil, 0, err
 	}
 
-	if _, err := rw.Write(inb); err != nil {
-		return nil, 0, err
-	}
+	// f(t) = (2^t)ms, up to 2s
+	var backoffFac uint
+	var rh responseHeader
+	var outb []byte
 
-	// If the TPM is a real device, it may not be ready for reading immediately after writing
-	// the command. Wait until the file descriptor is ready to be read from.
-	if f, ok := rw.(*os.File); ok {
-		if err = poll(f); err != nil {
+	for {
+		if _, err := rw.Write(inb); err != nil {
 			return nil, 0, err
 		}
-	}
 
-	outb := make([]byte, maxTPMResponse)
-	outlen, err := rw.Read(outb)
-	if err != nil {
-		return nil, 0, err
-	}
-	// Resize the buffer to match the amount read from the TPM.
-	outb = outb[:outlen]
+		// If the TPM is a real device, it may not be ready for reading immediately after writing
+		// the command. Wait until the file descriptor is ready to be read from.
+		if f, ok := rw.(*os.File); ok {
+			if err = poll(f); err != nil {
+				return nil, 0, err
+			}
+		}
 
-	var rh responseHeader
-	read, err := Unpack(outb, &rh)
-	if err != nil {
-		return nil, 0, err
+		outb = make([]byte, maxTPMResponse)
+		outlen, err := rw.Read(outb)
+		if err != nil {
+			return nil, 0, err
+		}
+		// Resize the buffer to match the amount read from the TPM.
+		outb = outb[:outlen]
+
+		read, err := Unpack(outb, &rh)
+		if err != nil {
+			return nil, 0, err
+		}
+		outb = outb[read:]
+
+		// In case TPM is busy retry the command after waiting a few miliseconds
+		if rh.Res == RCRetry {
+			if backoffFac < 11 {
+				dur := (1 << backoffFac) * time.Millisecond
+				time.Sleep(dur)
+				backoffFac++
+			} else {
+				return nil, 0, err
+			}
+		} else {
+			break
+		}
 	}
-	outb = outb[read:]
 
 	if rh.Res != RCSuccess {
 		return nil, rh.Res, nil

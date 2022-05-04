@@ -191,8 +191,10 @@ func checkInvalidTokens(tokens Tokens) hcl.Diagnostics {
 	toldBadUTF8 := 0
 
 	for _, tok := range tokens {
-		// copy token so it's safe to point to it
-		tok := tok
+		tokRange := func() *hcl.Range {
+			r := tok.Range
+			return &r
+		}
 
 		switch tok.Type {
 		case TokenBitwiseAnd, TokenBitwiseOr, TokenBitwiseXor, TokenBitwiseNot:
@@ -211,7 +213,7 @@ func checkInvalidTokens(tokens Tokens) hcl.Diagnostics {
 					Severity: hcl.DiagError,
 					Summary:  "Unsupported operator",
 					Detail:   fmt.Sprintf("Bitwise operators are not supported.%s", suggestion),
-					Subject:  &tok.Range,
+					Subject:  tokRange(),
 				})
 				toldBitwise++
 			}
@@ -221,7 +223,7 @@ func checkInvalidTokens(tokens Tokens) hcl.Diagnostics {
 					Severity: hcl.DiagError,
 					Summary:  "Unsupported operator",
 					Detail:   "\"**\" is not a supported operator. Exponentiation is not supported as an operator.",
-					Subject:  &tok.Range,
+					Subject:  tokRange(),
 				})
 
 				toldExponent++
@@ -234,7 +236,7 @@ func checkInvalidTokens(tokens Tokens) hcl.Diagnostics {
 					Severity: hcl.DiagError,
 					Summary:  "Invalid character",
 					Detail:   "The \"`\" character is not valid. To create a multi-line string, use the \"heredoc\" syntax, like \"<<EOT\".",
-					Subject:  &tok.Range,
+					Subject:  tokRange(),
 				})
 			}
 			if toldBacktick <= 2 {
@@ -246,7 +248,7 @@ func checkInvalidTokens(tokens Tokens) hcl.Diagnostics {
 					Severity: hcl.DiagError,
 					Summary:  "Invalid character",
 					Detail:   "Single quotes are not valid. Use double quotes (\") to enclose strings.",
-					Subject:  &tok.Range,
+					Subject:  tokRange(),
 				}
 				diags = append(diags, newDiag)
 			}
@@ -259,7 +261,7 @@ func checkInvalidTokens(tokens Tokens) hcl.Diagnostics {
 					Severity: hcl.DiagError,
 					Summary:  "Invalid character",
 					Detail:   "The \";\" character is not valid. Use newlines to separate arguments and blocks, and commas to separate items in collection values.",
-					Subject:  &tok.Range,
+					Subject:  tokRange(),
 				})
 
 				toldSemicolon++
@@ -270,7 +272,7 @@ func checkInvalidTokens(tokens Tokens) hcl.Diagnostics {
 					Severity: hcl.DiagError,
 					Summary:  "Invalid character",
 					Detail:   "Tab characters may not be used. The recommended indentation style is two spaces per indent.",
-					Subject:  &tok.Range,
+					Subject:  tokRange(),
 				})
 
 				toldTabs++
@@ -281,7 +283,7 @@ func checkInvalidTokens(tokens Tokens) hcl.Diagnostics {
 					Severity: hcl.DiagError,
 					Summary:  "Invalid character encoding",
 					Detail:   "All input files must be UTF-8 encoded. Ensure that UTF-8 encoding is selected in your editor.",
-					Subject:  &tok.Range,
+					Subject:  tokRange(),
 				})
 
 				toldBadUTF8++
@@ -291,7 +293,7 @@ func checkInvalidTokens(tokens Tokens) hcl.Diagnostics {
 				Severity: hcl.DiagError,
 				Summary:  "Invalid multi-line string",
 				Detail:   "Quoted strings may not be split over multiple lines. To produce a multi-line string, either use the \\n escape to represent a newline character or use the \"heredoc\" multi-line template syntax.",
-				Subject:  &tok.Range,
+				Subject:  tokRange(),
 			})
 		case TokenInvalid:
 			chars := string(tok.Bytes)
@@ -301,14 +303,14 @@ func checkInvalidTokens(tokens Tokens) hcl.Diagnostics {
 					Severity: hcl.DiagError,
 					Summary:  "Invalid character",
 					Detail:   "\"Curly quotes\" are not valid here. These can sometimes be inadvertently introduced when sharing code via documents or discussion forums. It might help to replace the character with a \"straight quote\".",
-					Subject:  &tok.Range,
+					Subject:  tokRange(),
 				})
 			default:
 				diags = append(diags, &hcl.Diagnostic{
 					Severity: hcl.DiagError,
 					Summary:  "Invalid character",
 					Detail:   "This character is not used within the language.",
-					Subject:  &tok.Range,
+					Subject:  tokRange(),
 				})
 			}
 		}

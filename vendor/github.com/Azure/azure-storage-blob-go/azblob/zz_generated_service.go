@@ -298,7 +298,7 @@ func (client serviceClient) getStatisticsResponder(resp pipeline.Response) (pipe
 // GetUserDelegationKey retrieves a user delegation key for the Blob service. This is only a valid operation when using
 // bearer token authentication.
 //
-// timeout is the timeout parameter is expressed in seconds. For more information, see <a
+// keyInfo is key information timeout is the timeout parameter is expressed in seconds. For more information, see <a
 // href="https://docs.microsoft.com/en-us/rest/api/storageservices/fileservices/setting-timeouts-for-blob-service-operations">Setting
 // Timeouts for Blob Service Operations.</a> requestID is provides a client-generated, opaque value with a 1 KB
 // character limit that is recorded in the analytics logs when storage analytics logging is enabled.

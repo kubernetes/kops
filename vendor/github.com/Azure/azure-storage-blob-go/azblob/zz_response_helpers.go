@@ -29,7 +29,7 @@ func (bgpr BlobGetPropertiesResponse) NewHTTPHeaders() BlobHTTPHeaders {
 	}
 }
 
-///////////////////////////////////////////////////////////////////////////////
+// /////////////////////////////////////////////////////////////////////////////
 
 // NewHTTPHeaders returns the user-modifiable properties for this blob.
 func (dr downloadResponse) NewHTTPHeaders() BlobHTTPHeaders {
@@ -43,9 +43,9 @@ func (dr downloadResponse) NewHTTPHeaders() BlobHTTPHeaders {
 	}
 }
 
-///////////////////////////////////////////////////////////////////////////////
+// /////////////////////////////////////////////////////////////////////////////
 
-// DownloadResponse wraps AutoRest generated DownloadResponse and helps to provide info for retry.
+// DownloadResponse wraps AutoRest generated downloadResponse and helps to provide info for retry.
 type DownloadResponse struct {
 	r       *downloadResponse
 	ctx     context.Context
@@ -196,7 +196,7 @@ func (r DownloadResponse) Date() time.Time {
 
 // ETag returns the value for header ETag.
 func (r DownloadResponse) ETag() ETag {
-	return r.r.ETag()
+	return ETag(r.r.ETag())
 }
 
 // IsServerEncrypted returns the value for header x-ms-server-encrypted.

@@ -181,25 +181,25 @@ func NewRetryPolicyFactory(o RetryOptions) pipeline.Factory {
 				}
 
 				// Set the server-side timeout query parameter "timeout=[seconds]"
-				timeout := int32(o.TryTimeout.Seconds()) // Max seconds per try
-				if deadline, ok := ctx.Deadline(); ok {  // If user's ctx has a deadline, make the timeout the smaller of the two
-					t := int32(deadline.Sub(time.Now()).Seconds()) // Duration from now until user's ctx reaches its deadline
-					logf("MaxTryTimeout=%d secs, TimeTilDeadline=%d sec\n", timeout, t)
+				timeout := o.TryTimeout                 // Max time per try
+				if deadline, ok := ctx.Deadline(); ok { // If user's ctx has a deadline, make the timeout the smaller of the two
+					t := deadline.Sub(time.Now()) // Duration from now until user's ctx reaches its deadline
+					logf("MaxTryTimeout=%d secs, TimeTilDeadline=%d sec\n", int32(timeout.Seconds()), int32(t.Seconds()))
 					if t < timeout {
 						timeout = t
 					}
 					if timeout < 0 {
 						timeout = 0 // If timeout ever goes negative, set it to zero; this happen while debugging
 					}
-					logf("TryTimeout adjusted to=%d sec\n", timeout)
+					logf("TryTimeout adjusted to=%d sec\n", int32(timeout.Seconds()))
 				}
 				q := requestCopy.Request.URL.Query()
-				q.Set("timeout", strconv.Itoa(int(timeout+1))) // Add 1 to "round up"
+				q.Set("timeout", strconv.Itoa(int(timeout.Seconds()+1))) // Add 1 to "round up"
 				requestCopy.Request.URL.RawQuery = q.Encode()
 				logf("Url=%s\n", requestCopy.Request.URL.String())
 
 				// Set the time for this particular retry operation and then Do the operation.
-				tryCtx, tryCancel := context.WithTimeout(ctx, time.Second*time.Duration(timeout))
+				tryCtx, tryCancel := context.WithTimeout(ctx, timeout)
 				//requestCopy.Body = &deadlineExceededReadCloser{r: requestCopy.Request.Body}
 				response, err = next.Do(tryCtx, requestCopy) // Make the request
 				/*err = improveDeadlineExceeded(err)
@@ -256,7 +256,7 @@ func NewRetryPolicyFactory(o RetryOptions) pipeline.Factory {
 						tryCancel() // If we're returning an error, cancel this current/last per-retry timeout context
 					} else {
 						// We wrap the last per-try context in a body and overwrite the Response's Body field with our wrapper.
-						// So, when the user closes the Body, the our per-try context gets closed too.
+						// So, when the user closes the Body, then our per-try context gets closed too.
 						// Another option, is that the Last Policy do this wrapping for a per-retry context (not for the user's context)
 						if response == nil || response.Response() == nil {
 							// We do panic in the case response or response.Response() is nil,
@@ -265,7 +265,12 @@ func NewRetryPolicyFactory(o RetryOptions) pipeline.Factory {
 							// as in this case, current per-try has nothing to do in future.
 							return nil, errors.New("invalid state, response should not be nil when the operation is executed successfully")
 						}
-						response.Response().Body = &contextCancelReadCloser{cf: tryCancel, body: response.Response().Body}
+						if response.Response().Body == http.NoBody {
+							// If the response is empty the caller isn't obligated to call close
+							tryCancel();
+						} else {
+							response.Response().Body = &contextCancelReadCloser{cf: tryCancel, body: response.Response().Body}
+						}
 					}
 					break // Don't retry
 				}
