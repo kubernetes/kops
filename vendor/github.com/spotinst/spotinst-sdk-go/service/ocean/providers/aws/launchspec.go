@@ -119,7 +119,8 @@ type Taint struct {
 }
 
 type AutoScale struct {
-	Headrooms []*AutoScaleHeadroom `json:"headrooms,omitempty"`
+	Headrooms              []*AutoScaleHeadroom `json:"headrooms,omitempty"`
+	AutoHeadroomPercentage *int                 `json:"autoHeadroomPercentage,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -805,6 +806,13 @@ func (o AutoScale) MarshalJSON() ([]byte, error) {
 func (o *AutoScale) SetHeadrooms(v []*AutoScaleHeadroom) *AutoScale {
 	if o.Headrooms = v; o.Headrooms == nil {
 		o.nullFields = append(o.nullFields, "Headrooms")
+	}
+	return o
+}
+
+func (o *AutoScale) SetAutoHeadroomPercentage(v *int) *AutoScale {
+	if o.AutoHeadroomPercentage = v; o.AutoHeadroomPercentage == nil {
+		o.nullFields = append(o.nullFields, "AutoHeadroomPercentage")
 	}
 	return o
 }

@@ -52,6 +52,51 @@ func (t primitiveType) GoString() string {
 	}
 }
 
+// rawNumberEqual is our cty-specific definition of whether two big floats
+// underlying cty.Number are "equal" for the purposes of the Value.Equals and
+// Value.RawEquals methods.
+//
+// The built-in equality for big.Float is a direct comparison of the mantissa
+// bits and the exponent, but that's too precise a check for cty because we
+// routinely send numbers through decimal approximations and back and so
+// we only promise to accurately represent the subset of binary floating point
+// numbers that can be derived from a decimal string representation.
+//
+// In respect of the fact that cty only tries to preserve numbers that can
+// reasonably be written in JSON documents, we use the string representation of
+// a decimal approximation of the number as our comparison, relying on the
+// big.Float type's heuristic for discarding extraneous mantissa bits that seem
+// likely to only be there as a result of an earlier decimal-to-binary
+// approximation during parsing, e.g. in ParseNumberVal.
+func rawNumberEqual(a, b *big.Float) bool {
+	switch {
+	case (a == nil) != (b == nil):
+		return false
+	case a == nil: // b == nil too then, due to previous case
+		return true
+	default:
+		// This format and precision matches that used by cty/json.Marshal,
+		// and thus achieves our definition of "two numbers are equal if
+		// we'd use the same JSON serialization for both of them".
+		const format = 'f'
+		const prec = -1
+		aStr := a.Text(format, prec)
+		bStr := b.Text(format, prec)
+
+		// The one exception to our rule about equality-by-stringification is
+		// negative zero, because we want -0 to always be equal to +0.
+		const posZero = "0"
+		const negZero = "-0"
+		if aStr == negZero {
+			aStr = posZero
+		}
+		if bStr == negZero {
+			bStr = posZero
+		}
+		return aStr == bStr
+	}
+}
+
 // Number is the numeric type. Number values are arbitrary-precision
 // decimal numbers, which can then be converted into Go's various numeric
 // types only if they are in the appropriate range.

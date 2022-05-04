@@ -30,7 +30,7 @@ type Context uintptr
 // Version of TPM being used by the application.
 type Version uint32
 
-// Flag indicates TPM verisions that are supported by the application.
+// Flag indicates TPM versions that are supported by the application.
 type Flag uint32
 
 // CommandPriority is used to determine which pending command to submit whenever the TPM is free.
@@ -145,7 +145,7 @@ func sliceAddress(s []byte) uintptr {
 	return uintptr(unsafe.Pointer(&(s[0])))
 }
 
-// Declaration of TPM_DEVICE_INFO from tbs.h
+// DeviceInfo is TPM_DEVICE_INFO from tbs.h
 type DeviceInfo struct {
 	StructVersion    uint32
 	TPMVersion       Version
@@ -153,6 +153,8 @@ type DeviceInfo struct {
 	TPMImpRevision   uint32
 }
 
+// GetDeviceInfo gets the DeviceInfo of the current TPM:
+// https://docs.microsoft.com/en-us/windows/win32/api/tbs/nf-tbs-tbsi_getdeviceinfo
 func GetDeviceInfo() (*DeviceInfo, error) {
 	info := DeviceInfo{}
 	// TBS_RESULT Tbsi_GetDeviceInfo(

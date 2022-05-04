@@ -114,6 +114,16 @@ func (ts Tokens) BuildTokens(to Tokens) Tokens {
 	return append(to, ts...)
 }
 
+// ObjectAttrTokens represents the raw tokens for the name and value of
+// one attribute in an object constructor expression.
+//
+// This is defined primarily for use with function TokensForObject. See
+// that function's documentation for more information.
+type ObjectAttrTokens struct {
+	Name  Tokens
+	Value Tokens
+}
+
 func newIdentToken(name string) *Token {
 	return &Token{
 		Type:  hclsyntax.TokenIdent,

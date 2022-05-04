@@ -43,6 +43,10 @@ var ConcatFunc = function.New(&function.Spec{
 
 		etys := make([]cty.Type, 0, len(args))
 		for i, val := range args {
+			// Discard marks for nested values, as we only need to handle types
+			// and lengths.
+			val, _ := val.UnmarkDeep()
+
 			ety := val.Type()
 			switch {
 			case ety.IsTupleType():

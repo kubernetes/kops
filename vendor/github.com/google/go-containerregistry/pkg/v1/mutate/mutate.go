@@ -299,7 +299,7 @@ func extract(img v1.Image, w io.Writer) error {
 			if !tombstone {
 				tarWriter.WriteHeader(header)
 				if header.Size > 0 {
-					if _, err := io.Copy(tarWriter, tarReader); err != nil {
+					if _, err := io.CopyN(tarWriter, tarReader, header.Size); err != nil {
 						return err
 					}
 				}
@@ -409,7 +409,8 @@ func layerTime(layer v1.Layer, t time.Time) (v1.Layer, error) {
 		}
 
 		if header.Typeflag == tar.TypeReg {
-			if _, err = io.Copy(tarWriter, tarReader); err != nil {
+			// TODO(#1168): This should be lazy, and not buffer the entire layer contents.
+			if _, err = io.CopyN(tarWriter, tarReader, header.Size); err != nil {
 				return nil, fmt.Errorf("writing layer file: %w", err)
 			}
 		}

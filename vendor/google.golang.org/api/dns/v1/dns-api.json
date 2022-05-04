@@ -1233,9 +1233,507 @@
           ]
         }
       }
+    },
+    "responsePolicies": {
+      "methods": {
+        "create": {
+          "description": "Creates a new Response Policy",
+          "flatPath": "dns/v1/projects/{project}/responsePolicies",
+          "httpMethod": "POST",
+          "id": "dns.responsePolicies.create",
+          "parameterOrder": [
+            "project"
+          ],
+          "parameters": {
+            "clientOperationId": {
+              "description": "For mutating operation requests only. An optional identifier specified by the client. Must be unique for operation resources in the Operations collection.",
+              "location": "query",
+              "type": "string"
+            },
+            "project": {
+              "description": "Identifies the project addressed by this request.",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "dns/v1/projects/{project}/responsePolicies",
+          "request": {
+            "$ref": "ResponsePolicy"
+          },
+          "response": {
+            "$ref": "ResponsePolicy"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/ndev.clouddns.readwrite"
+          ]
+        },
+        "delete": {
+          "description": "Deletes a previously created Response Policy. Fails if the response policy is non-empty or still being referenced by a network.",
+          "flatPath": "dns/v1/projects/{project}/responsePolicies/{responsePolicy}",
+          "httpMethod": "DELETE",
+          "id": "dns.responsePolicies.delete",
+          "parameterOrder": [
+            "project",
+            "responsePolicy"
+          ],
+          "parameters": {
+            "clientOperationId": {
+              "description": "For mutating operation requests only. An optional identifier specified by the client. Must be unique for operation resources in the Operations collection.",
+              "location": "query",
+              "type": "string"
+            },
+            "project": {
+              "description": "Identifies the project addressed by this request.",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "responsePolicy": {
+              "description": "User assigned name of the Response Policy addressed by this request.",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "dns/v1/projects/{project}/responsePolicies/{responsePolicy}",
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/ndev.clouddns.readwrite"
+          ]
+        },
+        "get": {
+          "description": "Fetches the representation of an existing Response Policy.",
+          "flatPath": "dns/v1/projects/{project}/responsePolicies/{responsePolicy}",
+          "httpMethod": "GET",
+          "id": "dns.responsePolicies.get",
+          "parameterOrder": [
+            "project",
+            "responsePolicy"
+          ],
+          "parameters": {
+            "clientOperationId": {
+              "description": "For mutating operation requests only. An optional identifier specified by the client. Must be unique for operation resources in the Operations collection.",
+              "location": "query",
+              "type": "string"
+            },
+            "project": {
+              "description": "Identifies the project addressed by this request.",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "responsePolicy": {
+              "description": "User assigned name of the Response Policy addressed by this request.",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "dns/v1/projects/{project}/responsePolicies/{responsePolicy}",
+          "response": {
+            "$ref": "ResponsePolicy"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/cloud-platform.read-only",
+            "https://www.googleapis.com/auth/ndev.clouddns.readonly",
+            "https://www.googleapis.com/auth/ndev.clouddns.readwrite"
+          ]
+        },
+        "list": {
+          "description": "Enumerates all Response Policies associated with a project.",
+          "flatPath": "dns/v1/projects/{project}/responsePolicies",
+          "httpMethod": "GET",
+          "id": "dns.responsePolicies.list",
+          "parameterOrder": [
+            "project"
+          ],
+          "parameters": {
+            "maxResults": {
+              "description": "Optional. Maximum number of results to be returned. If unspecified, the server decides how many results to return.",
+              "format": "int32",
+              "location": "query",
+              "type": "integer"
+            },
+            "pageToken": {
+              "description": "Optional. A tag returned by a previous list request that was truncated. Use this parameter to continue a previous list request.",
+              "location": "query",
+              "type": "string"
+            },
+            "project": {
+              "description": "Identifies the project addressed by this request.",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "dns/v1/projects/{project}/responsePolicies",
+          "response": {
+            "$ref": "ResponsePoliciesListResponse"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/cloud-platform.read-only",
+            "https://www.googleapis.com/auth/ndev.clouddns.readonly",
+            "https://www.googleapis.com/auth/ndev.clouddns.readwrite"
+          ]
+        },
+        "patch": {
+          "description": "Applies a partial update to an existing Response Policy.",
+          "flatPath": "dns/v1/projects/{project}/responsePolicies/{responsePolicy}",
+          "httpMethod": "PATCH",
+          "id": "dns.responsePolicies.patch",
+          "parameterOrder": [
+            "project",
+            "responsePolicy"
+          ],
+          "parameters": {
+            "clientOperationId": {
+              "description": "For mutating operation requests only. An optional identifier specified by the client. Must be unique for operation resources in the Operations collection.",
+              "location": "query",
+              "type": "string"
+            },
+            "project": {
+              "description": "Identifies the project addressed by this request.",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "responsePolicy": {
+              "description": "User assigned name of the Respones Policy addressed by this request.",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "dns/v1/projects/{project}/responsePolicies/{responsePolicy}",
+          "request": {
+            "$ref": "ResponsePolicy"
+          },
+          "response": {
+            "$ref": "ResponsePoliciesPatchResponse"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/ndev.clouddns.readwrite"
+          ]
+        },
+        "update": {
+          "description": "Updates an existing Response Policy.",
+          "flatPath": "dns/v1/projects/{project}/responsePolicies/{responsePolicy}",
+          "httpMethod": "PUT",
+          "id": "dns.responsePolicies.update",
+          "parameterOrder": [
+            "project",
+            "responsePolicy"
+          ],
+          "parameters": {
+            "clientOperationId": {
+              "description": "For mutating operation requests only. An optional identifier specified by the client. Must be unique for operation resources in the Operations collection.",
+              "location": "query",
+              "type": "string"
+            },
+            "project": {
+              "description": "Identifies the project addressed by this request.",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "responsePolicy": {
+              "description": "User assigned name of the Response Policy addressed by this request.",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "dns/v1/projects/{project}/responsePolicies/{responsePolicy}",
+          "request": {
+            "$ref": "ResponsePolicy"
+          },
+          "response": {
+            "$ref": "ResponsePoliciesUpdateResponse"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/ndev.clouddns.readwrite"
+          ]
+        }
+      }
+    },
+    "responsePolicyRules": {
+      "methods": {
+        "create": {
+          "description": "Creates a new Response Policy Rule.",
+          "flatPath": "dns/v1/projects/{project}/responsePolicies/{responsePolicy}/rules",
+          "httpMethod": "POST",
+          "id": "dns.responsePolicyRules.create",
+          "parameterOrder": [
+            "project",
+            "responsePolicy"
+          ],
+          "parameters": {
+            "clientOperationId": {
+              "description": "For mutating operation requests only. An optional identifier specified by the client. Must be unique for operation resources in the Operations collection.",
+              "location": "query",
+              "type": "string"
+            },
+            "project": {
+              "description": "Identifies the project addressed by this request.",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "responsePolicy": {
+              "description": "User assigned name of the Response Policy containing the Response Policy Rule.",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "dns/v1/projects/{project}/responsePolicies/{responsePolicy}/rules",
+          "request": {
+            "$ref": "ResponsePolicyRule"
+          },
+          "response": {
+            "$ref": "ResponsePolicyRule"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/ndev.clouddns.readwrite"
+          ]
+        },
+        "delete": {
+          "description": "Deletes a previously created Response Policy Rule.",
+          "flatPath": "dns/v1/projects/{project}/responsePolicies/{responsePolicy}/rules/{responsePolicyRule}",
+          "httpMethod": "DELETE",
+          "id": "dns.responsePolicyRules.delete",
+          "parameterOrder": [
+            "project",
+            "responsePolicy",
+            "responsePolicyRule"
+          ],
+          "parameters": {
+            "clientOperationId": {
+              "description": "For mutating operation requests only. An optional identifier specified by the client. Must be unique for operation resources in the Operations collection.",
+              "location": "query",
+              "type": "string"
+            },
+            "project": {
+              "description": "Identifies the project addressed by this request.",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "responsePolicy": {
+              "description": "User assigned name of the Response Policy containing the Response Policy Rule.",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "responsePolicyRule": {
+              "description": "User assigned name of the Response Policy Rule addressed by this request.",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "dns/v1/projects/{project}/responsePolicies/{responsePolicy}/rules/{responsePolicyRule}",
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/ndev.clouddns.readwrite"
+          ]
+        },
+        "get": {
+          "description": "Fetches the representation of an existing Response Policy Rule.",
+          "flatPath": "dns/v1/projects/{project}/responsePolicies/{responsePolicy}/rules/{responsePolicyRule}",
+          "httpMethod": "GET",
+          "id": "dns.responsePolicyRules.get",
+          "parameterOrder": [
+            "project",
+            "responsePolicy",
+            "responsePolicyRule"
+          ],
+          "parameters": {
+            "clientOperationId": {
+              "description": "For mutating operation requests only. An optional identifier specified by the client. Must be unique for operation resources in the Operations collection.",
+              "location": "query",
+              "type": "string"
+            },
+            "project": {
+              "description": "Identifies the project addressed by this request.",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "responsePolicy": {
+              "description": "User assigned name of the Response Policy containing the Response Policy Rule.",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "responsePolicyRule": {
+              "description": "User assigned name of the Response Policy Rule addressed by this request.",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "dns/v1/projects/{project}/responsePolicies/{responsePolicy}/rules/{responsePolicyRule}",
+          "response": {
+            "$ref": "ResponsePolicyRule"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/cloud-platform.read-only",
+            "https://www.googleapis.com/auth/ndev.clouddns.readonly",
+            "https://www.googleapis.com/auth/ndev.clouddns.readwrite"
+          ]
+        },
+        "list": {
+          "description": "Enumerates all Response Policy Rules associated with a project.",
+          "flatPath": "dns/v1/projects/{project}/responsePolicies/{responsePolicy}/rules",
+          "httpMethod": "GET",
+          "id": "dns.responsePolicyRules.list",
+          "parameterOrder": [
+            "project",
+            "responsePolicy"
+          ],
+          "parameters": {
+            "maxResults": {
+              "description": "Optional. Maximum number of results to be returned. If unspecified, the server decides how many results to return.",
+              "format": "int32",
+              "location": "query",
+              "type": "integer"
+            },
+            "pageToken": {
+              "description": "Optional. A tag returned by a previous list request that was truncated. Use this parameter to continue a previous list request.",
+              "location": "query",
+              "type": "string"
+            },
+            "project": {
+              "description": "Identifies the project addressed by this request.",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "responsePolicy": {
+              "description": "User assigned name of the Response Policy to list.",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "dns/v1/projects/{project}/responsePolicies/{responsePolicy}/rules",
+          "response": {
+            "$ref": "ResponsePolicyRulesListResponse"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/cloud-platform.read-only",
+            "https://www.googleapis.com/auth/ndev.clouddns.readonly",
+            "https://www.googleapis.com/auth/ndev.clouddns.readwrite"
+          ]
+        },
+        "patch": {
+          "description": "Applies a partial update to an existing Response Policy Rule.",
+          "flatPath": "dns/v1/projects/{project}/responsePolicies/{responsePolicy}/rules/{responsePolicyRule}",
+          "httpMethod": "PATCH",
+          "id": "dns.responsePolicyRules.patch",
+          "parameterOrder": [
+            "project",
+            "responsePolicy",
+            "responsePolicyRule"
+          ],
+          "parameters": {
+            "clientOperationId": {
+              "description": "For mutating operation requests only. An optional identifier specified by the client. Must be unique for operation resources in the Operations collection.",
+              "location": "query",
+              "type": "string"
+            },
+            "project": {
+              "description": "Identifies the project addressed by this request.",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "responsePolicy": {
+              "description": "User assigned name of the Response Policy containing the Response Policy Rule.",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "responsePolicyRule": {
+              "description": "User assigned name of the Response Policy Rule addressed by this request.",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "dns/v1/projects/{project}/responsePolicies/{responsePolicy}/rules/{responsePolicyRule}",
+          "request": {
+            "$ref": "ResponsePolicyRule"
+          },
+          "response": {
+            "$ref": "ResponsePolicyRulesPatchResponse"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/ndev.clouddns.readwrite"
+          ]
+        },
+        "update": {
+          "description": "Updates an existing Response Policy Rule.",
+          "flatPath": "dns/v1/projects/{project}/responsePolicies/{responsePolicy}/rules/{responsePolicyRule}",
+          "httpMethod": "PUT",
+          "id": "dns.responsePolicyRules.update",
+          "parameterOrder": [
+            "project",
+            "responsePolicy",
+            "responsePolicyRule"
+          ],
+          "parameters": {
+            "clientOperationId": {
+              "description": "For mutating operation requests only. An optional identifier specified by the client. Must be unique for operation resources in the Operations collection.",
+              "location": "query",
+              "type": "string"
+            },
+            "project": {
+              "description": "Identifies the project addressed by this request.",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "responsePolicy": {
+              "description": "User assigned name of the Response Policy containing the Response Policy Rule.",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "responsePolicyRule": {
+              "description": "User assigned name of the Response Policy Rule addressed by this request.",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "dns/v1/projects/{project}/responsePolicies/{responsePolicy}/rules/{responsePolicyRule}",
+          "request": {
+            "$ref": "ResponsePolicyRule"
+          },
+          "response": {
+            "$ref": "ResponsePolicyRulesUpdateResponse"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/ndev.clouddns.readwrite"
+          ]
+        }
+      }
     }
   },
-  "revision": "20211103",
+  "revision": "20220127",
   "rootUrl": "https://dns.googleapis.com/",
   "schemas": {
     "Change": {
@@ -2090,6 +2588,11 @@
           "format": "int32",
           "type": "integer"
         },
+        "itemsPerRoutingPolicy": {
+          "description": "Maximum allowed number of items per routing policy.",
+          "format": "int32",
+          "type": "integer"
+        },
         "kind": {
           "default": "dns#quota",
           "type": "string"
@@ -2111,6 +2614,11 @@
         },
         "networksPerPolicy": {
           "description": "Maximum allowed number of networks per policy.",
+          "format": "int32",
+          "type": "integer"
+        },
+        "peeringZonesPerTargetNetwork": {
+          "description": "Maximum allowed number of consumer peering zones per target network owned by this producer project",
           "format": "int32",
           "type": "integer"
         },
@@ -2164,6 +2672,115 @@
       },
       "type": "object"
     },
+    "RRSetRoutingPolicy": {
+      "description": "A RRSetRoutingPolicy represents ResourceRecordSet data that is returned dynamically with the response varying based on configured properties such as geolocation or by weighted random selection.",
+      "id": "RRSetRoutingPolicy",
+      "properties": {
+        "geo": {
+          "$ref": "RRSetRoutingPolicyGeoPolicy"
+        },
+        "kind": {
+          "default": "dns#rRSetRoutingPolicy",
+          "type": "string"
+        },
+        "wrr": {
+          "$ref": "RRSetRoutingPolicyWrrPolicy"
+        }
+      },
+      "type": "object"
+    },
+    "RRSetRoutingPolicyGeoPolicy": {
+      "description": "Configures a RRSetRoutingPolicy that routes based on the geo location of the querying user.",
+      "id": "RRSetRoutingPolicyGeoPolicy",
+      "properties": {
+        "items": {
+          "description": "The primary geo routing configuration. If there are multiple items with the same location, an error is returned instead.",
+          "items": {
+            "$ref": "RRSetRoutingPolicyGeoPolicyGeoPolicyItem"
+          },
+          "type": "array"
+        },
+        "kind": {
+          "default": "dns#rRSetRoutingPolicyGeoPolicy",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "RRSetRoutingPolicyGeoPolicyGeoPolicyItem": {
+      "description": "ResourceRecordSet data for one geo location.",
+      "id": "RRSetRoutingPolicyGeoPolicyGeoPolicyItem",
+      "properties": {
+        "kind": {
+          "default": "dns#rRSetRoutingPolicyGeoPolicyGeoPolicyItem",
+          "type": "string"
+        },
+        "location": {
+          "description": "The geo-location granularity is a GCP region. This location string should correspond to a GCP region. e.g. \"us-east1\", \"southamerica-east1\", \"asia-east1\", etc.",
+          "type": "string"
+        },
+        "rrdatas": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "signatureRrdatas": {
+          "description": "DNSSEC generated signatures for all the rrdata within this item. Note that if health checked targets are provided for DNSSEC enabled zones, there's a restriction of 1 ip per item. .",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "RRSetRoutingPolicyWrrPolicy": {
+      "description": "Configures a RRSetRoutingPolicy that routes in a weighted round robin fashion.",
+      "id": "RRSetRoutingPolicyWrrPolicy",
+      "properties": {
+        "items": {
+          "items": {
+            "$ref": "RRSetRoutingPolicyWrrPolicyWrrPolicyItem"
+          },
+          "type": "array"
+        },
+        "kind": {
+          "default": "dns#rRSetRoutingPolicyWrrPolicy",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "RRSetRoutingPolicyWrrPolicyWrrPolicyItem": {
+      "description": "A routing block which contains the routing information for one WRR item.",
+      "id": "RRSetRoutingPolicyWrrPolicyWrrPolicyItem",
+      "properties": {
+        "kind": {
+          "default": "dns#rRSetRoutingPolicyWrrPolicyWrrPolicyItem",
+          "type": "string"
+        },
+        "rrdatas": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "signatureRrdatas": {
+          "description": "DNSSEC generated signatures for all the rrdata within this item. Note that if health checked targets are provided for DNSSEC enabled zones, there's a restriction of 1 ip per item. .",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "weight": {
+          "description": "The weight corresponding to this subset of rrdata. When multiple WeightedRoundRobinPolicyItems are configured, the probability of returning an rrset is proportional to its weight relative to the sum of weights configured for all items. This weight should be non-negative.",
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "type": "object"
+    },
     "ResourceRecordSet": {
       "description": "A unit of data that is returned by the DNS servers.",
       "id": "ResourceRecordSet",
@@ -2175,6 +2792,10 @@
         "name": {
           "description": "For example, www.example.com.",
           "type": "string"
+        },
+        "routingPolicy": {
+          "$ref": "RRSetRoutingPolicy",
+          "description": "Configures dynamic query responses based on geo location of querying user or a weighted round robin based routing policy. A ResourceRecordSet should only have either rrdata (static) or routing_policy (dynamic). An error is returned otherwise."
         },
         "rrdatas": {
           "description": "As defined in RFC 1035 (section 5) and RFC 1034 (section 3.6.1) -- see examples.",
@@ -2239,6 +2860,187 @@
         "operationId": {
           "description": "For mutating operation requests that completed successfully. This is the client_operation_id if the client specified it, otherwise it is generated by the server (output only).",
           "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ResponsePoliciesListResponse": {
+      "id": "ResponsePoliciesListResponse",
+      "properties": {
+        "header": {
+          "$ref": "ResponseHeader"
+        },
+        "nextPageToken": {
+          "description": "The presence of this field indicates that there exist more results following your last page of results in pagination order. To fetch them, make another list request using this value as your page token. This lets you the complete contents of even very large collections one page at a time. However, if the contents of the collection change between the first and last paginated list request, the set of all elements returned are an inconsistent view of the collection. You cannot retrieve a consistent snapshot of a collection larger than the maximum page size.",
+          "type": "string"
+        },
+        "responsePolicies": {
+          "description": "The Response Policy resources.",
+          "items": {
+            "$ref": "ResponsePolicy"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "ResponsePoliciesPatchResponse": {
+      "id": "ResponsePoliciesPatchResponse",
+      "properties": {
+        "header": {
+          "$ref": "ResponseHeader"
+        },
+        "responsePolicy": {
+          "$ref": "ResponsePolicy"
+        }
+      },
+      "type": "object"
+    },
+    "ResponsePoliciesUpdateResponse": {
+      "id": "ResponsePoliciesUpdateResponse",
+      "properties": {
+        "header": {
+          "$ref": "ResponseHeader"
+        },
+        "responsePolicy": {
+          "$ref": "ResponsePolicy"
+        }
+      },
+      "type": "object"
+    },
+    "ResponsePolicy": {
+      "description": "A Response Policy is a collection of selectors that apply to queries made against one or more Virtual Private Cloud networks.",
+      "id": "ResponsePolicy",
+      "properties": {
+        "description": {
+          "description": "User-provided description for this Response Policy.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Unique identifier for the resource; defined by the server (output only).",
+          "format": "int64",
+          "type": "string"
+        },
+        "kind": {
+          "default": "dns#responsePolicy",
+          "type": "string"
+        },
+        "networks": {
+          "description": "List of network names specifying networks to which this policy is applied.",
+          "items": {
+            "$ref": "ResponsePolicyNetwork"
+          },
+          "type": "array"
+        },
+        "responsePolicyName": {
+          "description": "User assigned name for this Response Policy.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ResponsePolicyNetwork": {
+      "id": "ResponsePolicyNetwork",
+      "properties": {
+        "kind": {
+          "default": "dns#responsePolicyNetwork",
+          "type": "string"
+        },
+        "networkUrl": {
+          "description": "The fully qualified URL of the VPC network to bind to. This should be formatted like https://www.googleapis.com/compute/v1/projects/{project}/global/networks/{network}",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ResponsePolicyRule": {
+      "description": "A Response Policy Rule is a selector that applies its behavior to queries that match the selector. Selectors are DNS names, which may be wildcards or exact matches. Each DNS query subject to a Response Policy matches at most one ResponsePolicyRule, as identified by the dns_name field with the longest matching suffix.",
+      "id": "ResponsePolicyRule",
+      "properties": {
+        "behavior": {
+          "description": "Answer this query with a behavior rather than DNS data.",
+          "enum": [
+            "behaviorUnspecified",
+            "bypassResponsePolicy"
+          ],
+          "enumDescriptions": [
+            "",
+            "Skip a less-specific ResponsePolicyRule and continue normal query logic. This can be used in conjunction with a wildcard to exempt a subset of the wildcard ResponsePolicyRule from the ResponsePolicy behavior and e.g., query the public internet instead. For instance, if these rules exist: *.example.com -\u003e 1.2.3.4 foo.example.com -\u003e PASSTHRU Then a query for 'foo.example.com' skips the wildcard."
+          ],
+          "type": "string"
+        },
+        "dnsName": {
+          "description": "The DNS name (wildcard or exact) to apply this rule to. Must be unique within the Response Policy Rule.",
+          "type": "string"
+        },
+        "kind": {
+          "default": "dns#responsePolicyRule",
+          "type": "string"
+        },
+        "localData": {
+          "$ref": "ResponsePolicyRuleLocalData",
+          "description": "Answer this query directly with DNS data. These ResourceRecordSets override any other DNS behavior for the matched name; in particular they override private zones, the public internet, and GCP internal DNS. No SOA nor NS types are allowed."
+        },
+        "ruleName": {
+          "description": "An identifier for this rule. Must be unique with the ResponsePolicy.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ResponsePolicyRuleLocalData": {
+      "id": "ResponsePolicyRuleLocalData",
+      "properties": {
+        "localDatas": {
+          "description": "All resource record sets for this selector, one per resource record type. The name must match the dns_name.",
+          "items": {
+            "$ref": "ResourceRecordSet"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "ResponsePolicyRulesListResponse": {
+      "id": "ResponsePolicyRulesListResponse",
+      "properties": {
+        "header": {
+          "$ref": "ResponseHeader"
+        },
+        "nextPageToken": {
+          "description": "The presence of this field indicates that there exist more results following your last page of results in pagination order. To fetch them, make another list request using this value as your page token. This lets you the complete contents of even very large collections one page at a time. However, if the contents of the collection change between the first and last paginated list request, the set of all elements returned are an inconsistent view of the collection. You cannot retrieve a consistent snapshot of a collection larger than the maximum page size.",
+          "type": "string"
+        },
+        "responsePolicyRules": {
+          "description": "The Response Policy Rule resources.",
+          "items": {
+            "$ref": "ResponsePolicyRule"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "ResponsePolicyRulesPatchResponse": {
+      "id": "ResponsePolicyRulesPatchResponse",
+      "properties": {
+        "header": {
+          "$ref": "ResponseHeader"
+        },
+        "responsePolicyRule": {
+          "$ref": "ResponsePolicyRule"
+        }
+      },
+      "type": "object"
+    },
+    "ResponsePolicyRulesUpdateResponse": {
+      "id": "ResponsePolicyRulesUpdateResponse",
+      "properties": {
+        "header": {
+          "$ref": "ResponseHeader"
+        },
+        "responsePolicyRule": {
+          "$ref": "ResponsePolicyRule"
         }
       },
       "type": "object"
