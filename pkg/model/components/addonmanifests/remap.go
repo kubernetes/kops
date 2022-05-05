@@ -33,6 +33,7 @@ import (
 	"k8s.io/kops/pkg/model/components/addonmanifests/dnscontroller"
 	"k8s.io/kops/pkg/model/components/addonmanifests/externaldns"
 	"k8s.io/kops/pkg/model/components/addonmanifests/karpenter"
+	"k8s.io/kops/pkg/model/components/addonmanifests/kuberouter"
 	"k8s.io/kops/pkg/model/components/addonmanifests/nodeterminationhandler"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
@@ -129,6 +130,8 @@ func getWellknownServiceAccount(name string) iam.Subject {
 		return &externaldns.ServiceAccount{}
 	case "karpenter":
 		return &karpenter.ServiceAccount{}
+	case "kube-router":
+		return &kuberouter.ServiceAccount{}
 	default:
 		return nil
 	}
