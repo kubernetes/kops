@@ -100,6 +100,9 @@ func (d *Distribution) HasLoopbackEtcResolvConf() bool {
 		// Ubuntu > 16.04 has it
 		return d.version > 16.04
 	}
+	if d.project == "flatcar" {
+		return true
+	}
 	return false
 }
 
