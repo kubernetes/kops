@@ -1115,6 +1115,14 @@ func AddDNSControllerPermissions(b *PolicyBuilder, p *Policy) {
 	})
 }
 
+// AddKubeRouterPermissions adds IAM permissions used by kube-router
+// for disabling the source/destination check on EC2 instances.
+func AddKubeRouterPermissions(b *PolicyBuilder, p *Policy) {
+	p.clusterTaggedAction.Insert(
+		"ec2:ModifyInstanceAttribute",
+	)
+}
+
 func addKMSIAMPolicies(p *Policy, resource stringorslice.StringOrSlice) {
 	// TODO could use "kms:ViaService" Condition Key here?
 	p.unconditionalAction.Insert(
