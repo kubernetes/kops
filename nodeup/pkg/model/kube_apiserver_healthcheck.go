@@ -28,15 +28,7 @@ import (
 )
 
 func (b *KubeAPIServerBuilder) findHealthcheckManifest() *nodeup.StaticManifest {
-	if b.NodeupConfig == nil {
-		return nil
-	}
-	for _, manifest := range b.NodeupConfig.StaticManifests {
-		if manifest.Key == "kube-apiserver-healthcheck" {
-			return manifest
-		}
-	}
-	return nil
+	return b.findStaticManifest("kube-apiserver-healthcheck")
 }
 
 func (b *KubeAPIServerBuilder) addHealthcheckSidecar(pod *corev1.Pod) error {

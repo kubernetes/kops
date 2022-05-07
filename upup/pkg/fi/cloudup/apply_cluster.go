@@ -44,12 +44,14 @@ import (
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/awsmodel"
 	"k8s.io/kops/pkg/model/azuremodel"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/model/components/etcdmanager"
 	"k8s.io/kops/pkg/model/components/kubeapiserver"
+	"k8s.io/kops/pkg/model/components/kubescheduler"
 	"k8s.io/kops/pkg/model/domodel"
 	"k8s.io/kops/pkg/model/gcemodel"
 	"k8s.io/kops/pkg/model/hetznermodel"
@@ -144,6 +146,9 @@ type ApplyClusterCmd struct {
 	ImageAssets []*assets.ImageAsset
 	// FileAssets are the file assets we use (output).
 	FileAssets []*assets.FileAsset
+
+	// AdditionalObjects holds cluster-asssociated configuration objects, other than the Cluster and InstanceGroups.
+	AdditionalObjects kubemanifest.ObjectList
 }
 
 func (c *ApplyClusterCmd) Run(ctx context.Context) error {
@@ -169,6 +174,18 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			instanceGroups = append(instanceGroups, &list.Items[i])
 		}
 		c.InstanceGroups = instanceGroups
+	}
+
+	if c.AdditionalObjects == nil {
+		additionalObjects, err := c.Clientset.AddonsFor(c.Cluster).List()
+		if err != nil {
+			return err
+		}
+		// We use the nil object to mean "uninitialized"
+		if additionalObjects == nil {
+			additionalObjects = []*kubemanifest.Object{}
+		}
+		c.AdditionalObjects = additionalObjects
 	}
 
 	for _, ig := range c.InstanceGroups {
@@ -392,8 +409,9 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	}
 
 	modelContext := &model.KopsModelContext{
-		IAMModelContext: iam.IAMModelContext{Cluster: cluster},
-		InstanceGroups:  c.InstanceGroups,
+		IAMModelContext:   iam.IAMModelContext{Cluster: cluster},
+		InstanceGroups:    c.InstanceGroups,
+		AdditionalObjects: c.AdditionalObjects,
 	}
 
 	switch cluster.Spec.GetCloudProvider() {
@@ -521,6 +539,11 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				Cluster:          cluster,
 			},
 			&kubeapiserver.KubeApiserverBuilder{
+				AssetBuilder:     assetBuilder,
+				KopsModelContext: modelContext,
+				Lifecycle:        clusterLifecycle,
+			},
+			&kubescheduler.KubeSchedulerBuilder{
 				AssetBuilder:     assetBuilder,
 				KopsModelContext: modelContext,
 				Lifecycle:        clusterLifecycle,
@@ -1405,6 +1428,24 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 		config.StaticManifests = append(config.StaticManifests, &nodeup.StaticManifest{
 			Key:  manifest.Key,
 			Path: manifest.Path,
+		})
+	}
+
+	for _, staticFile := range n.assetBuilder.StaticFiles {
+		match := false
+		for _, r := range staticFile.Roles {
+			if r == role {
+				match = true
+			}
+		}
+
+		if !match {
+			continue
+		}
+
+		config.FileAssets = append(config.FileAssets, kops.FileAssetSpec{
+			Content: staticFile.Content,
+			Path:    staticFile.Path,
 		})
 	}
 

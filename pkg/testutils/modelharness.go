@@ -24,6 +24,7 @@ import (
 	"strings"
 	"testing"
 
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
@@ -36,6 +37,9 @@ import (
 type Model struct {
 	Cluster        *kops.Cluster
 	InstanceGroups []*kops.InstanceGroup
+
+	// AdditionalObjects holds cluster-asssociated configuration objects, other than the Cluster and InstanceGroups.
+	AdditionalObjects []*unstructured.Unstructured
 }
 
 // LoadModel loads a cluster and instancegroups from a cluster.yaml file found in basedir
@@ -68,8 +72,11 @@ func LoadModel(basedir string) (*Model, error) {
 		case *kops.InstanceGroup:
 			spec.InstanceGroups = append(spec.InstanceGroups, v)
 
+		case *unstructured.Unstructured:
+			spec.AdditionalObjects = append(spec.AdditionalObjects, v)
+
 		default:
-			return nil, fmt.Errorf("unhandled kind %q", gvk)
+			return nil, fmt.Errorf("unhandled kind %T %q", o, gvk)
 		}
 	}
 
