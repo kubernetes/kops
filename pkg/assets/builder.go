@@ -50,15 +50,31 @@ type AssetBuilder struct {
 	// KubernetesVersion is the version of kubernetes we are installing
 	KubernetesVersion semver.Version
 
-	// StaticManifests records static manifests
+	// StaticManifests records manifests used by nodeup:
+	// * e.g. sidecar manifests for static pods run by kubelet
 	StaticManifests []*StaticManifest
+
+	// StaticFiles records static files:
+	// * Configuration files supporting static pods
+	StaticFiles []*StaticFile
+}
+
+type StaticFile struct {
+	// Path is the path to the manifest.
+	Path string
+
+	// Content holds the desired file contents.
+	Content string
+
+	// The static manifest will only be applied to instances matching the specified role
+	Roles []kops.InstanceGroupRole
 }
 
 type StaticManifest struct {
 	// Key is the unique identifier of the manifest
 	Key string
 
-	// Path is the path to the manifest
+	// Path is the path to the manifest.
 	Path string
 
 	// The static manifest will only be applied to instances matching the specified role
