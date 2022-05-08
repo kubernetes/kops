@@ -1,0 +1,15 @@
+metadata:
+  creationTimestamp: null
+  name: minimal.example.com
+spec:
+  api:
+    dns: {}
+  authorization:
+    alwaysAllow: {}
+  cloudProvider: {}
+  kubernetesVersion: v1.21.0
+  topology:
+    dns:
+      type: Public
+    masters: public
+    nodes: public
