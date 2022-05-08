@@ -244,7 +244,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.k8s.local
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: kWYLtn9W4VjY476VKEh1REYk7CPPeD1mtICyvyVJ4KU=
+NodeupConfigHash: cGo62HHA0fzCZKg3+5KrxjPts33grfsl728Q1tnhRf0=
 
 __EOF_KUBE_ENV
 

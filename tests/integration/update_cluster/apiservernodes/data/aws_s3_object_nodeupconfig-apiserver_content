@@ -131,6 +131,13 @@ CAs:
     9B7UD2ushcVFPtaeoL9Gfu8aY4KJBeqqg5ojl4qmRnThjw==
     -----END CERTIFICATE-----
 ClusterName: minimal.example.com
+FileAssets:
+- content: |
+    apiVersion: kubescheduler.config.k8s.io/v1beta2
+    clientConnection:
+      kubeconfig: /var/lib/kube-scheduler/kubeconfig
+    kind: KubeSchedulerConfiguration
+  path: /var/lib/kube-scheduler/config.yaml
 Hooks:
 - null
 - null
