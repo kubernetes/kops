@@ -1,0 +1,4 @@
+apiVersion: kubescheduler.config.k8s.io/v1beta1
+clientConnection:
+  kubeconfig: /var/lib/kube-scheduler/kubeconfig
+kind: KubeSchedulerConfiguration
