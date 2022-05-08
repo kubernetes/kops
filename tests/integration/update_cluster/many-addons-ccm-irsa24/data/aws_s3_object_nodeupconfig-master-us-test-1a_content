@@ -224,6 +224,13 @@ CAs:
     -----END CERTIFICATE-----
 ClusterName: minimal.example.com
 DefaultMachineType: m3.medium
+FileAssets:
+- content: |
+    apiVersion: kubescheduler.config.k8s.io/v1beta2
+    clientConnection:
+      kubeconfig: /var/lib/kube-scheduler/kubeconfig
+    kind: KubeSchedulerConfiguration
+  path: /var/lib/kube-scheduler/config.yaml
 Hooks:
 - null
 - null
