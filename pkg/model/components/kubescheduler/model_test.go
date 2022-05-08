@@ -59,6 +59,7 @@ func Test_RunKubeSchedulerBuilder(t *testing.T) {
 			}
 
 			testutils.ValidateTasks(t, filepath.Join(basedir, "tasks.yaml"), context)
+			testutils.ValidateStaticFiles(t, basedir, builder.AssetBuilder)
 		})
 	}
 }
