@@ -102,6 +102,13 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|Topology.Hints"
 	}
 
+	if strings.Contains(cluster.Spec.KubernetesVersion, "v1.25.") {
+		// this test was being skipped automatically because it isn't applicable with CSIMigration=true which is default
+		// but skipping logic has been changed and now the test is planned for removal
+		// ref: https://github.com/kubernetes/kubernetes/pull/109649#issuecomment-1108574843
+		skipRegex += "|should.verify.that.all.nodes.have.volume.limits"
+	}
+
 	// Ensure it is valid regex
 	if _, err := regexp.Compile(skipRegex); err != nil {
 		return err
