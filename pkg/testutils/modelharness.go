@@ -140,3 +140,14 @@ func ValidateStaticFiles(t *testing.T, expectedDir string, assetBuilder *assets.
 		}
 	}
 }
+
+func ValidateCompletedCluster(t *testing.T, expectedFile string, cluster *kops.Cluster) {
+	b, err := kops.ToRawYaml(cluster)
+	if err != nil {
+		t.Fatalf("error serializing cluster: %v", err)
+	}
+
+	yaml := strings.TrimSpace(string(b))
+
+	golden.AssertMatchesFile(t, yaml, expectedFile)
+}

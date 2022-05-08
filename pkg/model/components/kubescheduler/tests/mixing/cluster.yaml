@@ -6,6 +6,7 @@ spec:
   kubernetesVersion: v1.24.0
   kubeScheduler:
     burst: 123
+    maxPersistentVolumes: 20
 
 ---
 
