@@ -143,6 +143,25 @@ spec:
   compressUserData: true
 ```
 
+## packages
+{{ kops_feature_table(kops_added_default='1.24') }}
+
+To install additional packages to hosts in the instance group, specify the `packages` field as an array of strings.
+
+Package names are distro specific and are not validated in any way. Specifying incorrect package names may prevent nodes from starting.
+
+For example:
+
+```YAML
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  name: nodes
+spec:
+  packages:
+  - nfs-common
+```
+
 ## sysctlParameters
 {{ kops_feature_table(kops_added_default='1.17') }}
 
@@ -164,8 +183,8 @@ metadata:
   name: nodes
 spec:
   sysctlParameters:
-    - fs.pipe-user-pages-soft=524288
-    - net.ipv4.tcp_keepalive_time=200
+  - fs.pipe-user-pages-soft=524288
+  - net.ipv4.tcp_keepalive_time=200
 ```
 
 which would end up in a drop-in file on nodes of the instance group in question.
