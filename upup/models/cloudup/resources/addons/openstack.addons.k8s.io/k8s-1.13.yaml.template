@@ -218,7 +218,6 @@ spec:
 {{- range $arg := CloudControllerConfigArgv }}
           - {{ $arg }}
 {{- end }}
-          - --bind-address=127.0.0.1
         resources:
           requests:
             cpu: {{ or .ExternalCloudControllerManager.CPURequest "200m" }}
