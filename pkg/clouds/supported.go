@@ -33,6 +33,9 @@ func SupportedClouds() []kops.CloudProviderID {
 	if featureflag.AlphaAllowGCE.Enabled() {
 		clouds = append(clouds, kops.CloudProviderGCE)
 	}
+	if featureflag.Hetzner.Enabled() {
+		clouds = append(clouds, kops.CloudProviderHetzner)
+	}
 
 	return clouds
 }
