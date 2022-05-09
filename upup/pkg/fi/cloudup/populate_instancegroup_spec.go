@@ -37,16 +37,19 @@ import (
 
 // Default Machine types for various types of instance group machine
 const (
-	defaultNodeMachineTypeGCE   = "n1-standard-2"
-	defaultNodeMachineTypeDO    = "s-2vcpu-4gb"
-	defaultNodeMachineTypeAzure = "Standard_B2ms"
+	defaultNodeMachineTypeGCE     = "n1-standard-2"
+	defaultNodeMachineTypeDO      = "s-2vcpu-4gb"
+	defaultNodeMachineTypeAzure   = "Standard_B2ms"
+	defaultNodeMachineTypeHetzner = "cx21"
 
-	defaultBastionMachineTypeGCE   = "f1-micro"
-	defaultBastionMachineTypeAzure = "Standard_B2ms"
+	defaultBastionMachineTypeGCE     = "f1-micro"
+	defaultBastionMachineTypeAzure   = "Standard_B2ms"
+	defaultBastionMachineTypeHetzner = "cx11"
 
-	defaultMasterMachineTypeGCE   = "n1-standard-1"
-	defaultMasterMachineTypeDO    = "s-2vcpu-4gb"
-	defaultMasterMachineTypeAzure = "Standard_B2ms"
+	defaultMasterMachineTypeGCE     = "n1-standard-1"
+	defaultMasterMachineTypeDO      = "s-2vcpu-4gb"
+	defaultMasterMachineTypeAzure   = "Standard_B2ms"
+	defaultMasterMachineTypeHetzner = "cx21"
 
 	defaultDONodeImage = "ubuntu-20-04-x64"
 )
@@ -256,6 +259,18 @@ func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.Instance
 		case kops.InstanceGroupRoleNode:
 			return defaultNodeMachineTypeDO, nil
 
+		}
+
+	case kops.CloudProviderHetzner:
+		switch ig.Spec.Role {
+		case kops.InstanceGroupRoleMaster:
+			return defaultMasterMachineTypeHetzner, nil
+
+		case kops.InstanceGroupRoleNode:
+			return defaultNodeMachineTypeHetzner, nil
+
+		case kops.InstanceGroupRoleBastion:
+			return defaultBastionMachineTypeHetzner, nil
 		}
 
 	case kops.CloudProviderOpenstack:

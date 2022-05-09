@@ -35,6 +35,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/dotasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
+	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
+	"k8s.io/kops/upup/pkg/fi/cloudup/hetznertasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks"
 )
@@ -105,6 +107,8 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 				b.addDOVolume(c, name, volumeSize, zone, etcd, m, allMembers)
 			case kops.CloudProviderGCE:
 				b.addGCEVolume(c, prefix, volumeSize, zone, etcd, m, allMembers)
+			case kops.CloudProviderHetzner:
+				b.addHetznerVolume(c, name, volumeSize, zone, etcd, m, allMembers)
 			case kops.CloudProviderOpenstack:
 				err = b.addOpenstackVolume(c, name, volumeSize, zone, etcd, m, allMembers)
 				if err != nil {
@@ -288,6 +292,24 @@ func (b *MasterVolumeBuilder) addGCEVolume(c *fi.ModelBuilderContext, prefix str
 	}
 
 	c.AddTask(t)
+}
+
+func (b *MasterVolumeBuilder) addHetznerVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, zone string, etcd kops.EtcdClusterSpec, m kops.EtcdMemberSpec, allMembers []string) {
+	tags := make(map[string]string)
+	tags[hetzner.TagKubernetesClusterName] = b.Cluster.ObjectMeta.Name
+	tags[hetzner.TagKubernetesInstanceGroup] = fi.StringValue(m.InstanceGroup)
+	tags[hetzner.TagKubernetesVolumeRole] = etcd.Name
+
+	t := &hetznertasks.Volume{
+		Name:      fi.String(name),
+		Lifecycle: b.Lifecycle,
+		Size:      int(volumeSize),
+		Location:  zone,
+		Labels:    tags,
+	}
+	c.AddTask(t)
+
+	return
 }
 
 func (b *MasterVolumeBuilder) addOpenstackVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, zone string, etcd kops.EtcdClusterSpec, m kops.EtcdMemberSpec, allMembers []string) error {

@@ -66,6 +66,9 @@ func BuildSystemComponentEnvVars(spec *kops.ClusterSpec) EnvVars {
 	// Digital Ocean related values.
 	vars.addEnvVariableIfExist("DIGITALOCEAN_ACCESS_TOKEN")
 
+	// Hetzner Cloud related values.
+	vars.addEnvVariableIfExist("HCLOUD_TOKEN")
+
 	// Azure related values.
 	vars.addEnvVariableIfExist("AZURE_STORAGE_ACCOUNT")
 

@@ -136,6 +136,10 @@ func (i *Installation) buildEnvFile() *nodetasks.File {
 		envVars["DIGITALOCEAN_ACCESS_TOKEN"] = os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
 	}
 
+	if os.Getenv("HCLOUD_TOKEN") != "" {
+		envVars["HCLOUD_TOKEN"] = os.Getenv("HCLOUD_TOKEN")
+	}
+
 	if os.Getenv("OSS_REGION") != "" {
 		envVars["OSS_REGION"] = os.Getenv("OSS_REGION")
 	}

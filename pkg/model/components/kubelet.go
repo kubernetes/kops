@@ -147,6 +147,10 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 
 	}
 
+	if cloudProvider == kops.CloudProviderHetzner {
+		clusterSpec.Kubelet.CloudProvider = "external"
+	}
+
 	if cloudProvider == kops.CloudProviderOpenstack {
 		clusterSpec.Kubelet.CloudProvider = "openstack"
 	}
