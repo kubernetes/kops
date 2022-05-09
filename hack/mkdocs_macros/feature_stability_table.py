@@ -23,8 +23,8 @@ def define_env(env):
         """
         Generate a markdown table which will be rendered when called, along with the supported passed keyword args.
         :param kwargs:
-                       kops_added_ff => Kops version in which this feature was added as a feature flag
-                       kops_added_default => Kops version in which this feature was introduced as stable
+                       kops_added_ff => kOps version in which this feature was added as a feature flag
+                       kops_added_default => kOps version in which this feature was introduced as stable
                        k8s_min => Minimum k8s version which supports this feature
         :return: rendered markdown table
         """
@@ -51,9 +51,9 @@ def define_env(env):
                 title += f' {header} |'
             separators += ' :-: |'
             if arg == 'k8s_min':
-                values += f' K8s {kwargs[arg]} |'
+                values += f' k8s {kwargs[arg]} |'
             else:
-                values += f' Kops {kwargs[arg]} |'
+                values += f' kOps {kwargs[arg]} |'
 
         # Create a list object containing all the table rows,
         # Then return a string object which contains every list item in a new line.
