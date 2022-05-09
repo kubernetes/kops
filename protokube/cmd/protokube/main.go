@@ -125,6 +125,19 @@ func run() error {
 			os.Exit(1)
 		}
 
+	} else if cloud == "hetzner" {
+		hetznerVolumes, err := protokube.NewHetznerVolumes()
+		if err != nil {
+			klog.Errorf("error initializing Hetzner Cloud: %q", err)
+			os.Exit(1)
+		}
+		volumes = hetznerVolumes
+		internalIP, err = hetznerVolumes.InternalIP()
+		if err != nil {
+			klog.Errorf("error getting server internal IP: %s", err)
+			os.Exit(1)
+		}
+
 	} else if cloud == "gce" {
 		gceVolumes, err := protokube.NewGCEVolumes()
 		if err != nil {
@@ -220,6 +233,12 @@ func run() error {
 				return err
 			}
 			gossipName = volumes.(*protokube.DOVolumes).InstanceName()
+		} else if cloud == "hetzner" {
+			gossipSeeds, err = volumes.(*protokube.HetznerVolumes).GossipSeeds()
+			if err != nil {
+				return err
+			}
+			gossipName = volumes.(*protokube.HetznerVolumes).InstanceID()
 		} else if cloud == "azure" {
 			gossipSeeds, err = volumes.(*protokube.AzureVolumes).GossipSeeds()
 			if err != nil {

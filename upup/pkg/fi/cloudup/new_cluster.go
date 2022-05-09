@@ -275,6 +275,8 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		cluster.Spec.CloudProvider.DO = &api.DOSpec{}
 	case api.CloudProviderGCE:
 		cluster.Spec.CloudProvider.GCE = &api.GCESpec{}
+	case api.CloudProviderHetzner:
+		cluster.Spec.CloudProvider.Hetzner = &api.HetznerSpec{}
 	case api.CloudProviderOpenstack:
 		cluster.Spec.CloudProvider.Openstack = &api.OpenstackSpec{
 			Router: &api.OpenstackRouter{
@@ -540,6 +542,12 @@ func setupZones(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.Stri
 		}
 		zoneToSubnetMap[region] = subnet
 		return zoneToSubnetMap, nil
+
+	case api.CloudProviderHetzner:
+		if len(opt.Zones) > 1 {
+			return nil, fmt.Errorf("hetzner cloud provider currently supports only one zone (location)")
+		}
+		// TODO(hakman): Add customizations for Hetzner Cloud
 
 	case api.CloudProviderAzure:
 		// On Azure, subnets are regional - we create one per region, not per zone

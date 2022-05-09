@@ -289,6 +289,7 @@ const (
 	CloudProviderAWS       CloudProviderID = "aws"
 	CloudProviderDO        CloudProviderID = "digitalocean"
 	CloudProviderGCE       CloudProviderID = "gce"
+	CloudProviderHetzner   CloudProviderID = "hetzner"
 	CloudProviderOpenstack CloudProviderID = "openstack"
 	CloudProviderAzure     CloudProviderID = "azure"
 )

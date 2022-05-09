@@ -37,6 +37,7 @@ import (
 	nodeidentityazure "k8s.io/kops/pkg/nodeidentity/azure"
 	nodeidentitydo "k8s.io/kops/pkg/nodeidentity/do"
 	nodeidentitygce "k8s.io/kops/pkg/nodeidentity/gce"
+	nodeidentityhetzner "k8s.io/kops/pkg/nodeidentity/hetzner"
 	nodeidentityos "k8s.io/kops/pkg/nodeidentity/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm/gcetpmverifier"
@@ -204,6 +205,12 @@ func addNodeController(mgr manager.Manager, opt *config.Options) error {
 		legacyIdentifier, err = nodeidentitydo.New()
 		if err != nil {
 			return fmt.Errorf("error building identifier: %v", err)
+		}
+
+	case "hetzner":
+		identifier, err = nodeidentityhetzner.New(opt.CacheNodeidentityInfo)
+		if err != nil {
+			return fmt.Errorf("error building identifier: %w", err)
 		}
 
 	case "azure":
