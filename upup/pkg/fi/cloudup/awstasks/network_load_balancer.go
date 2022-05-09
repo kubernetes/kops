@@ -430,7 +430,7 @@ func (e *NetworkLoadBalancer) IsForAPIServer() bool {
 	return e.ForAPIServer
 }
 
-func (e *NetworkLoadBalancer) FindIPAddress(context *fi.Context) (*string, error) {
+func (e *NetworkLoadBalancer) FindAddresses(context *fi.Context) ([]string, error) {
 	cloud := context.Cloud.(awsup.AWSCloud)
 
 	lb, err := cloud.FindELBV2ByNameTag(e.Tags["Name"])
@@ -445,7 +445,7 @@ func (e *NetworkLoadBalancer) FindIPAddress(context *fi.Context) (*string, error
 	if lbDnsName == "" {
 		return nil, nil
 	}
-	return &lbDnsName, nil
+	return []string{lbDnsName}, nil
 }
 
 func (e *NetworkLoadBalancer) Run(c *fi.Context) error {

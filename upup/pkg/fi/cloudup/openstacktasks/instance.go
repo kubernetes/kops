@@ -98,7 +98,7 @@ func (e *Instance) IsForAPIServer() bool {
 	return e.ForAPIServer
 }
 
-func (e *Instance) FindIPAddress(context *fi.Context) (*string, error) {
+func (e *Instance) FindAddresses(context *fi.Context) ([]string, error) {
 	cloud := context.Cloud.(openstack.OpenstackCloud)
 	if e.Port == nil {
 		return nil, nil
@@ -110,7 +110,7 @@ func (e *Instance) FindIPAddress(context *fi.Context) (*string, error) {
 	}
 
 	for _, port := range ports.FixedIPs {
-		return fi.String(port.IPAddress), nil
+		return []string{port.IPAddress}, nil
 	}
 
 	return nil, nil
