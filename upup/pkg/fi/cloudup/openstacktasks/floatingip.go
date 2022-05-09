@@ -77,7 +77,7 @@ func (e *FloatingIP) IsForAPIServer() bool {
 	return e.ForAPIServer
 }
 
-func (e *FloatingIP) FindIPAddress(context *fi.Context) (*string, error) {
+func (e *FloatingIP) FindAddresses(context *fi.Context) ([]string, error) {
 	if e.ID == nil {
 		if e.LB != nil && e.LB.ID == nil {
 			return nil, nil
@@ -94,7 +94,7 @@ func (e *FloatingIP) FindIPAddress(context *fi.Context) (*string, error) {
 			return nil, err
 		}
 		if len(fips) == 1 && fips[0].PortID == fi.StringValue(e.LB.PortID) {
-			return &fips[0].FloatingIP, nil
+			return []string{fips[0].FloatingIP}, nil
 		}
 		return nil, fmt.Errorf("Could not find port floatingips port=%s", fi.StringValue(e.LB.PortID))
 	}
@@ -103,7 +103,7 @@ func (e *FloatingIP) FindIPAddress(context *fi.Context) (*string, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &fip.FloatingIP, nil
+	return []string{fip.FloatingIP}, nil
 }
 
 // GetDependencies returns the dependencies of the Instance task
