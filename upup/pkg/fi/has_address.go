@@ -23,5 +23,5 @@ type HasAddress interface {
 	// IsForAPIServer indicates whether the implementation provides an address that needs to be added to the api-server server certificate.
 	IsForAPIServer() bool
 	// FindIPAddress returns the address associated with the implementor.  If there is no address, returns (nil, nil).
-	FindIPAddress(context *Context) (*string, error)
+	FindAddresses(context *Context) ([]string, error)
 }
