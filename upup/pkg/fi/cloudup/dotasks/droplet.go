@@ -84,7 +84,7 @@ func (d *Droplet) Find(c *fi.Context) (*Droplet, error) {
 		Count:     count,
 		Region:    fi.String(foundDroplet.Region.Slug),
 		Size:      fi.String(foundDroplet.Size.Slug),
-		Image:     fi.String(foundDroplet.Image.Slug),
+		Image:     d.Image, //Image should not change so we keep it as-is
 		Tags:      foundDroplet.Tags,
 		SSHKey:    d.SSHKey,   // TODO: get from droplet or ignore change
 		UserData:  d.UserData, // TODO: get from droplet or ignore change
