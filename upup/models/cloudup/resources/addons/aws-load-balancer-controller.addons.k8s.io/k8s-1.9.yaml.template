@@ -749,8 +749,8 @@ spec:
       containers:
       - args:
         - --cluster-name={{ ClusterName }}
-        - --enable-waf=false
-        - --enable-wafv2=false
+        - --enable-waf={{ .AWSLoadBalancerController.EnableWAF }}
+        - --enable-wafv2={{ .AWSLoadBalancerController.EnableWAFv2 }}
         - --enable-shield=false
         - --ingress-class=alb
         - "--default-tags={{ CloudLabels }}"

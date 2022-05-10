@@ -1324,6 +1324,8 @@ func Convert_kops_AWSEBSCSIDriver_To_v1alpha2_AWSEBSCSIDriver(in *kops.AWSEBSCSI
 func autoConvert_v1alpha2_AWSLoadBalancerControllerConfig_To_kops_AWSLoadBalancerControllerConfig(in *AWSLoadBalancerControllerConfig, out *kops.AWSLoadBalancerControllerConfig, s conversion.Scope) error {
 	out.Enabled = in.Enabled
 	out.Version = in.Version
+	out.EnableWAF = in.EnableWAF
+	out.EnableWAFv2 = in.EnableWAFv2
 	return nil
 }
 
@@ -1335,6 +1337,8 @@ func Convert_v1alpha2_AWSLoadBalancerControllerConfig_To_kops_AWSLoadBalancerCon
 func autoConvert_kops_AWSLoadBalancerControllerConfig_To_v1alpha2_AWSLoadBalancerControllerConfig(in *kops.AWSLoadBalancerControllerConfig, out *AWSLoadBalancerControllerConfig, s conversion.Scope) error {
 	out.Enabled = in.Enabled
 	out.Version = in.Version
+	out.EnableWAF = in.EnableWAF
+	out.EnableWAFv2 = in.EnableWAFv2
 	return nil
 }
 
