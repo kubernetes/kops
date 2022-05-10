@@ -388,6 +388,15 @@ func (b *KubeAPIServerBuilder) writeServerCertificate(c *fi.ModelBuilderContext,
 		// We also want to be able to reference it locally via https://127.0.0.1
 		alternateNames = append(alternateNames, "127.0.0.1")
 
+		if b.CloudProvider == kops.CloudProviderHetzner {
+			localIP, err := b.GetMetadataLocalIP()
+			if err != nil {
+				return err
+			}
+			if localIP != "" {
+				alternateNames = append(alternateNames, localIP)
+			}
+		}
 		if b.CloudProvider == kops.CloudProviderOpenstack {
 			if b.Cluster.Spec.Topology != nil && b.Cluster.Spec.Topology.Masters == kops.TopologyPrivate {
 				instanceAddress, err := getInstanceAddress()
