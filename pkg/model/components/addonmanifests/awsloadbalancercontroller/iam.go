@@ -21,7 +21,7 @@ import (
 	"k8s.io/kops/pkg/model/iam"
 )
 
-// ServiceAccount represents the service-account used by the dns-controller.
+// ServiceAccount represents the service-account used by the AWS Load Balancer Controller.
 // It implements iam.Subject to get AWS IAM permissions.
 type ServiceAccount struct{}
 
@@ -32,7 +32,13 @@ func (r *ServiceAccount) BuildAWSPolicy(b *iam.PolicyBuilder) (*iam.Policy, erro
 	clusterName := b.Cluster.ObjectMeta.Name
 	p := iam.NewPolicy(clusterName, b.Partition)
 
-	iam.AddAWSLoadbalancerControllerPermissions(p)
+	var enableWAF bool
+	var enableWAFv2 bool
+	if c := b.Cluster.Spec.AWSLoadBalancerController; c != nil {
+		enableWAF = c.EnableWAF
+		enableWAFv2 = c.EnableWAFv2
+	}
+	iam.AddAWSLoadbalancerControllerPermissions(p, enableWAF, enableWAFv2)
 
 	return p, nil
 }
