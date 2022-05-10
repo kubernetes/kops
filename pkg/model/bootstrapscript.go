@@ -81,16 +81,18 @@ func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.Context) (string
 	var alternateNames []string
 
 	for _, hasAddress := range b.alternateNameTasks {
-		address, err := hasAddress.FindIPAddress(c)
+		addresses, err := hasAddress.FindAddresses(c)
 		if err != nil {
 			return "", fmt.Errorf("error finding address for %v: %v", hasAddress, err)
 		}
-		if address == nil {
+		if len(addresses) == 0 {
 			klog.Warningf("Task did not have an address: %v", hasAddress)
 			continue
 		}
-		klog.V(8).Infof("Resolved alternateName %q for %q", *address, hasAddress)
-		alternateNames = append(alternateNames, *address)
+		for _, address := range addresses {
+			klog.V(8).Infof("Resolved alternateName %q for %q", address, hasAddress)
+			alternateNames = append(alternateNames, address)
+		}
 	}
 
 	sort.Strings(alternateNames)

@@ -100,7 +100,7 @@ func (e *Address) IsForAPIServer() bool {
 	return e.ForAPIServer
 }
 
-func (e *Address) FindIPAddress(context *fi.Context) (*string, error) {
+func (e *Address) FindAddresses(context *fi.Context) ([]string, error) {
 	actual, err := e.find(context.Cloud.(gce.GCECloud))
 	if err != nil {
 		return nil, fmt.Errorf("error querying for IP Address: %v", err)
@@ -108,7 +108,7 @@ func (e *Address) FindIPAddress(context *fi.Context) (*string, error) {
 	if actual == nil {
 		return nil, nil
 	}
-	return actual.IPAddress, nil
+	return []string{fi.StringValue(actual.IPAddress)}, nil
 }
 
 func (e *Address) Run(c *fi.Context) error {
