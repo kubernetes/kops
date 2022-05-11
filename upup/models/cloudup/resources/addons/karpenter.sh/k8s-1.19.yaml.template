@@ -10,6 +10,8 @@ metadata:
 spec:
   group: karpenter.sh
   names:
+    categories:
+    - karpenter
     kind: Provisioner
     listKind: ProvisionerList
     plural: provisioners
@@ -40,6 +42,17 @@ spec:
               Node properties are determined from a combination of provisioner and
               pod scheduling constraints.
             properties:
+              kubeletConfiguration:
+                description: KubeletConfiguration are options passed to the kubelet
+                  when provisioning nodes
+                properties:
+                  clusterDNS:
+                    description: clusterDNS is a list of IP addresses for the cluster
+                      DNS server. Note that not all providers may use all addresses.
+                    items:
+                      type: string
+                    type: array
+                type: object
               labels:
                 additionalProperties:
                   type: string
@@ -246,7 +259,7 @@ data:
         "thereafter": 100
       },
       "outputPaths": ["stdout"],
-    "errorOutputPaths": ["stderr"],
+      "errorOutputPaths": ["stderr"],
       "encoding": "console",
       "encoderConfig": {
         "timeKey": "time",
@@ -260,8 +273,8 @@ data:
       }
     }
   # Log level overrides
-  # loglevel.controller: info # debug
-  # loglevel.webhook: info # debug
+  loglevel.controller: debug
+  loglevel.webhook: debug
 ---
 # Source: karpenter/templates/controller/rbac.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -270,17 +283,23 @@ metadata:
   name: karpenter-controller
 rules:
 - apiGroups: ["karpenter.sh"]
-  resources: ["provisioners", "provisioners/status"]
+  resources: ["provisioners"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["karpenter.sh"]
+  resources: ["provisioners/status"]
   verbs: ["create", "delete", "patch", "get", "list", "watch"]
-- apiGroups: ["coordination.k8s.io"]
-  resources: ["leases"]
-  verbs: ["create", "get", "patch", "update", "watch"]
+- apiGroups: [""]
+  resources: ["persistentvolumes", "persistentvolumeclaims"]
+  verbs: ["get", "list", "watch", "update"]
+- apiGroups: ["storage.k8s.io"]
+  resources: ["storageclasses"]
+  verbs: ["get", "list", "watch"]
 - apiGroups: [""]
   resources: ["nodes", "pods"]
   verbs: ["get", "list", "watch", "patch", "delete"]
 - apiGroups: [""]
-  resources: ["configmaps", "persistentvolumes", "persistentvolumeclaims"]
-  verbs: ["get", "list", "watch", "update"]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "watch"]
 - apiGroups: [""]
   resources: ["nodes"]
   verbs: ["create"]
@@ -354,7 +373,7 @@ metadata:
   namespace: kube-system
 rules:
 - apiGroups: [""]
-  resources: ["configmaps", "namespaces"]
+  resources: ["namespaces"]
   verbs: ["get", "list", "watch"]
 - apiGroups: [""]
   resources: ["secrets"]
@@ -402,7 +421,7 @@ metadata:
 spec:
   ports:
     - port: 8080
-      targetPort: metrics
+      targetPort: http-metrics
   selector:
     karpenter: controller
 ---
@@ -415,7 +434,7 @@ metadata:
 spec:
   ports:
     - port: 443
-      targetPort: webhook
+      targetPort: https-webhook
   selector:
     karpenter: webhook
 ---
@@ -436,6 +455,7 @@ spec:
     metadata:
       labels:
         karpenter: controller
+        app.kubernetes.io/name: karpenter
     spec:
       affinity:
         nodeAffinity:
@@ -451,27 +471,30 @@ spec:
       serviceAccountName: karpenter
       dnsPolicy: Default
       containers:
-        - name: manager
-          image: public.ecr.aws/karpenter/controller:v0.6.0
-          resources: 
+        - name: controller
+          image: public.ecr.aws/karpenter/controller:v0.10.0
+          imagePullPolicy: IfNotPresent
+          resources:
             limits:
               memory: 1Gi
             requests:
               cpu: 500m
               memory: 1Gi
           ports:
-            - name: metrics
+            - name: http-metrics
               containerPort: 8080
-            - name: health-probe
+              protocol: TCP
+            - name: http
               containerPort: 8081
+              protocol: TCP
           livenessProbe:
             httpGet:
               path: /healthz
-              port: 8081
+              port: http
           readinessProbe:
             httpGet:
               path: /readyz
-              port: 8081
+              port: http
           env:
             {{ if not .Networking.AmazonVPC }}
             - name: AWS_ENI_LIMITED_POD_DENSITY
@@ -489,6 +512,8 @@ spec:
               value: https://{{ .MasterInternalName }}
             - name: CONFIG_LOGGING_NAME
               value: "karpenter-config-logging"
+            - name: KARPENTER_SERVICE
+              value: karpenter-webhook
             - name: SYSTEM_NAMESPACE
               valueFrom:
                 fieldRef:
@@ -540,13 +565,16 @@ spec:
   template:
     metadata:
       labels:
+        app.kubernetes.io/name: karpenter
         karpenter: webhook
     spec:
       priorityClassName: system-cluster-critical
       serviceAccountName: karpenter
+      dnsPolicy: Default
       containers:
         - name: webhook
-          image: public.ecr.aws/karpenter/webhook:v0.6.0
+          image: public.ecr.aws/karpenter/webhook:v0.10.0
+          imagePullPolicy: IfNotPresent
           args:
             - -port=8443
           resources: 
@@ -557,25 +585,35 @@ spec:
               cpu: 100m
               memory: 50Mi
           ports:
-            - name: webhook
+            - name: https-webhook
               containerPort: 8443
+              protocol: TCP
           livenessProbe:
             httpGet:
               scheme: HTTPS
-              port: 8443
+              port: https-webhook
           readinessProbe:
             httpGet:
               scheme: HTTPS
-              port: 8443
+              port: https-webhook
+          startupProbe:
+            httpGet:
+              scheme: HTTPS
+              port: https-webhook
+            failureThreshold: 6
           env:
             - name: AWS_REGION
               value: {{ Region }}
             - name: CLUSTER_NAME
               value: {{ ClusterName }}
+            - name: KUBERNETES_MIN_VERSION
+              value: "1.19.0-0"
             - name: CLUSTER_ENDPOINT
               value: https://{{ .MasterInternalName }}
             - name: CONFIG_LOGGING_NAME
               value: "karpenter-config-logging"
+            - name: KARPENTER_SERVICE
+              value: karpenter-webhook
             - name: SYSTEM_NAMESPACE
               valueFrom:
                 fieldRef:
@@ -609,7 +647,7 @@ spec:
         operator: Exists
       topologySpreadConstraints:
       - maxSkew: 1
-        topologyKey: "topology.kubernetes.io/zone"
+        topologyKey: topology.kubernetes.io/zone
         whenUnsatisfiable: ScheduleAnyway
         labelSelector:
           matchLabels:
@@ -642,7 +680,7 @@ webhooks:
     - v1alpha5
     resources:
     - provisioners
-      provisioners/status
+    - provisioners/status
     operations:
     - CREATE
     - UPDATE
@@ -668,10 +706,11 @@ webhooks:
     - v1alpha5
     resources:
     - provisioners
-      provisioners/status
+    - provisioners/status
     operations:
     - CREATE
     - UPDATE
+    - DELETE
 ---
 # Source: karpenter/templates/webhook/webhooks.yaml
 apiVersion: admissionregistration.k8s.io/v1
@@ -690,6 +729,17 @@ webhooks:
   objectSelector:
     matchLabels:
       app.kubernetes.io/part-of: karpenter
+---
+# Source: karpenter/templates/poddisruptionbudget.yaml
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: karpenter
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: karpenter
 
 {{ range $name, $spec := GetNodeInstanceGroups }}
 {{ if eq $spec.Manager "Karpenter" }}
@@ -730,10 +780,7 @@ spec:
   {{ end }}
 {{ end }}
   provider:
-    instanceProfile: nodes.{{ ClusterName }}
     launchTemplate: {{ $name }}.{{ ClusterName }}
-    securityGroupSelector:
-      Name: nodes.{{ ClusterName }}
     subnetSelector:
       kubernetes.io/role/internal-elb: "1"
       kubernetes.io/cluster/{{ ClusterName }}: "*"
