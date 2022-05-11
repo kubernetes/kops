@@ -269,7 +269,7 @@ Instead of configuring specific machine types, the InstanceGroup can be configur
 ```
 spec:
   mixedInstancesPolicy:
-    instanceRquirements:
+    instanceRequirements:
       cpu:
         min: "2"
         max: "16"
