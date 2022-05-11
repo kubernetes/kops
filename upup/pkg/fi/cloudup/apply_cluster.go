@@ -605,6 +605,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				&hetznermodel.SSHKeyModelBuilder{HetznerModelContext: hetznerModelContext, Lifecycle: securityLifecycle},
 				&hetznermodel.NetworkModelBuilder{HetznerModelContext: hetznerModelContext, Lifecycle: networkLifecycle},
 				&hetznermodel.ExternalAccessModelBuilder{HetznerModelContext: hetznerModelContext, Lifecycle: networkLifecycle},
+				&hetznermodel.LoadBalancerModelBuilder{HetznerModelContext: hetznerModelContext, Lifecycle: networkLifecycle},
 				&hetznermodel.ServerModelBuilder{HetznerModelContext: hetznerModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: clusterLifecycle},
 			)
 		case kops.CloudProviderGCE:
