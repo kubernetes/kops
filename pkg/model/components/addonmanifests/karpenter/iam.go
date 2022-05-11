@@ -48,7 +48,9 @@ func (r *ServiceAccount) ServiceAccount() (types.NamespacedName, bool) {
 
 func addKarpenterPermissions(p *iam.Policy) {
 	p.AddUnconditionalActions(
-		//		"ec2:CreateLaunchTemplate",
+		// Not included because we require Karpenter
+		// use existing kOps instance group launch templates
+		// "ec2:CreateLaunchTemplate",
 		"ec2:CreateFleet",
 		"ec2:RunInstances",
 		"ec2:CreateTags",
