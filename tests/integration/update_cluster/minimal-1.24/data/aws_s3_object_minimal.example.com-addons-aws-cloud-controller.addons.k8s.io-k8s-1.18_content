@@ -45,7 +45,7 @@ spec:
         env:
         - name: KUBERNETES_SERVICE_HOST
           value: 127.0.0.1
-        image: gcr.io/k8s-staging-provider-aws/cloud-controller-manager:latest
+        image: gcr.io/k8s-staging-provider-aws/cloud-controller-manager:v1.24.0-alpha.0-23-gf6b92bb
         imagePullPolicy: IfNotPresent
         name: aws-cloud-controller-manager
         resources:
