@@ -603,6 +603,30 @@ func TestManyAddonsCCMIRSA23(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
+func TestManyAddonsCCMIRSA24(t *testing.T) {
+	newIntegrationTest("minimal.example.com", "many-addons-ccm-irsa24").
+		withOIDCDiscovery().
+		withServiceAccountRole("aws-load-balancer-controller.kube-system", true).
+		withServiceAccountRole("dns-controller.kube-system", true).
+		withServiceAccountRole("aws-cloud-controller-manager.kube-system", true).
+		withServiceAccountRole("cluster-autoscaler.kube-system", true).
+		withServiceAccountRole("ebs-csi-controller-sa.kube-system", true).
+		withServiceAccountRole("aws-node-termination-handler.kube-system", true).
+		withAddons(
+			"aws-load-balancer-controller.addons.k8s.io-k8s-1.19",
+			"aws-ebs-csi-driver.addons.k8s.io-k8s-1.17",
+			"certmanager.io-k8s-1.16",
+			"cluster-autoscaler.addons.k8s.io-k8s-1.15",
+			"networking.amazon-vpc-routed-eni-k8s-1.16",
+			"node-termination-handler.aws-k8s-1.11",
+			"snapshot-controller.addons.k8s.io-k8s-1.20",
+			"aws-cloud-controller.addons.k8s.io-k8s-1.18",
+			leaderElectionAddon,
+			dnsControllerAddon,
+		).
+		runTestTerraformAWS(t)
+}
+
 func TestCCM(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "many-addons-ccm").
 		withAddons(
