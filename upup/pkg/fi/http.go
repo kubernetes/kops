@@ -79,7 +79,7 @@ func downloadURLAlways(url string, destPath string, dirMode os.FileMode) error {
 	}
 	defer output.Close()
 
-	klog.Infof("Downloading %q", url)
+	klog.V(2).Infof("Downloading %q", url)
 
 	// Create a client with custom timeouts
 	// to avoid idle downloads to hang the program
@@ -117,7 +117,7 @@ func downloadURLAlways(url string, destPath string, dirMode os.FileMode) error {
 	}
 
 	start := time.Now()
-	defer klog.Infof("Copying %q to %q took %q seconds", url, destPath, time.Since(start))
+	defer klog.V(2).Infof("Copying %q to %q took %q", url, destPath, time.Since(start))
 
 	_, err = io.Copy(output, response.Body)
 	if err != nil {
