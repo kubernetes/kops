@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: core.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: core.addons.k8s.io
+  name: kube-system
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: core.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: core.addons.k8s.io
+  name: kube-dns
+  namespace: kube-system
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: core.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: core.addons.k8s.io
+  name: kube-proxy
+  namespace: kube-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: core.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: core.addons.k8s.io
+  name: kubeadm:node-proxier
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:node-proxier
+subjects:
+- apiGroup: ""
+  kind: ServiceAccount
+  name: kube-proxy
+  namespace: kube-system
