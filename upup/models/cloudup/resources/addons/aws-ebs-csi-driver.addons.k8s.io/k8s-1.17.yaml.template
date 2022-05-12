@@ -274,6 +274,10 @@ spec:
         app.kubernetes.io/name: aws-ebs-csi-driver
         app.kubernetes.io/instance: aws-ebs-csi-driver
         app.kubernetes.io/version: {{ .Version }}
+      annotations:
+        {{- range $key, $value := .PodAnnotations }}
+        {{ $key }}: "{{ $value }}"
+        {{- end }}
     spec:
       nodeSelector:
         kubernetes.io/os: linux
@@ -395,6 +399,10 @@ spec:
         app.kubernetes.io/name: aws-ebs-csi-driver
         app.kubernetes.io/instance: aws-ebs-csi-driver
         app.kubernetes.io/version: {{ .Version }}
+      annotations:
+        {{- range $key, $value := .PodAnnotations }}
+        {{ $key }}: "{{ $value }}"
+        {{- end }}
     spec:
       affinity:
         nodeAffinity:

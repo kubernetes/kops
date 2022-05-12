@@ -111,6 +111,13 @@ func (in *AWSEBSCSIDriver) DeepCopyInto(out *AWSEBSCSIDriver) {
 		*out = new(int)
 		**out = **in
 	}
+	if in.PodAnnotations != nil {
+		in, out := &in.PodAnnotations, &out.PodAnnotations
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	return
 }
 
