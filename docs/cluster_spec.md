@@ -1128,6 +1128,19 @@ spec:
     elbSecurityGroup: sg-123445678
 ```
 
+### manageStorageClasses
+{{ kops_feature_table(kops_added_default='1.20') }}
+
+
+By default kops will create `StorageClass` resources with some opinionated settings specific to cloud provider on which the cluster is installed. One of those storage classes will be defined as default applying the annotation `storageclass.kubernetes.io/is-default-class: "true"`. This may not always be a desirable behaviour and some cluster admins rather prefer to have more control of storage classes and manage them outside of kops. When set to `false`, kOps will no longer create any `StorageClass` objects. Any such objects that kOps created in the past are left as is, and kOps and will no longer reconcile them against future changes.
+
+The existing `spec.cloudConfig.openstack.blockStorage.createStorageClass` field remains in place. However, if both that and the new `spec.cloudConfig.manageStorageClasses` field are populated, they must agree: It is invalid both to disable management of `StorageClass` objects globally but to enable them for OpenStack and, conversely, to enable management globally but disable it for OpenStack.
+
+```yaml
+spec:
+  cloudConfig:
+    manageStorageClasses: false
+
 ## containerRuntime
 {{ kops_feature_table(kops_added_default='1.18', k8s_min='1.11') }}
 
