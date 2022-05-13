@@ -49,7 +49,7 @@ spec:
           value: arn:aws-test:iam::123456789012:role/aws-cloud-controller-manager.kube-system.sa.minimal.example.com
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
-        image: gcr.io/k8s-staging-provider-aws/cloud-controller-manager:v1.24.0-alpha.0-23-gf6b92bb
+        image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.24.0
         imagePullPolicy: IfNotPresent
         name: aws-cloud-controller-manager
         resources:
