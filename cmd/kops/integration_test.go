@@ -29,6 +29,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"path/filepath"
 	"reflect"
 	"sort"
 	"strings"
@@ -910,15 +911,40 @@ func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarn
 
 	// Compare data files if they are provided
 	if len(expectedDataFilenames) > 0 {
-		actualDataPath := path.Join(h.TempDir, "out", "data")
-		files, err := os.ReadDir(actualDataPath)
+		actualDataDir := filepath.Join(h.TempDir, "out", "data")
+
+		expectedDataDir := filepath.Join(i.srcDir, "data")
+		for _, filename := range expectedDataFilenames {
+			expectedPath := filepath.Join(expectedDataDir, filename)
+			actualPath := filepath.Join(actualDataDir, filename)
+			actualDataContent, err := os.ReadFile(actualPath)
+			if err != nil {
+				t.Errorf("failed to read actual data file %q: %v", actualPath, err)
+				continue
+			}
+			golden.AssertMatchesFile(t, string(actualDataContent), expectedPath)
+		}
+
+		actualFiles, err := os.ReadDir(actualDataDir)
 		if err != nil {
-			t.Fatalf("failed to read data dir: %v", err)
+			t.Fatalf("failed to read data dir %q: %v", actualDataDir, err)
 		}
 
 		var actualDataFilenames []string
-		for _, f := range files {
+		for _, f := range actualFiles {
 			actualDataFilenames = append(actualDataFilenames, f.Name())
+
+			if golden.UpdateExpectedOutput() {
+				filename := f.Name()
+				expectedPath := filepath.Join(expectedDataDir, filename)
+				actualPath := filepath.Join(actualDataDir, filename)
+				actualDataContent, err := os.ReadFile(actualPath)
+				if err != nil {
+					t.Errorf("failed to read actual data file %q: %v", actualPath, err)
+					continue
+				}
+				golden.AssertMatchesFile(t, string(actualDataContent), expectedPath)
+			}
 		}
 
 		sort.Strings(expectedDataFilenames)
@@ -933,26 +959,12 @@ func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarn
 			expected := strings.Join(expectedDataFilenames, "\n")
 			diff := diff.FormatDiff(actual, expected)
 			t.Log(diff)
-			t.Fatal("unexpected data files.")
+			t.Error("unexpected data files.")
 		}
 
-		// Some tests might provide _some_ tf data files (not necessarily all that
-		// are actually produced), validate that the provided expected data file
-		// contents match actual data file content
-		expectedDataPath := path.Join(i.srcDir, "data")
-		{
-			for _, dataFileName := range expectedDataFilenames {
-				actualDataContent, err := os.ReadFile(path.Join(actualDataPath, dataFileName))
-				if err != nil {
-					t.Fatalf("failed to read actual data file: %v", err)
-				}
-				golden.AssertMatchesFile(t, string(actualDataContent), path.Join(expectedDataPath, dataFileName))
-			}
-		}
-
-		existingExpectedFiles, err := os.ReadDir(expectedDataPath)
+		existingExpectedFiles, err := os.ReadDir(expectedDataDir)
 		if err != nil {
-			t.Fatalf("failed to read data dir: %v", err)
+			t.Fatalf("failed to read data dir %q: %v", expectedDataDir, err)
 		}
 		existingExpectedFilenames := make([]string, len(existingExpectedFiles))
 		for i, f := range existingExpectedFiles {
