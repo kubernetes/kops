@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"strings"
 
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/klog/v2"
 
 	channelsapi "k8s.io/kops/channels/pkg/api"
@@ -209,7 +210,26 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
+	// Not all objects in ClusterAddons should be applied to the cluster - although most should.
+	// However, there are a handful of well-known exceptions:
+	// e.g. configuration objects which are instead configured via files on the nodes.
+	var applyAdditionalObjectsToCluster kubemanifest.ObjectList
 	if b.ClusterAddons != nil {
+		for _, addon := range b.ClusterAddons {
+			applyToCluster := true
+
+			switch addon.GroupVersionKind().GroupKind() {
+			case schema.GroupKind{Group: "kubescheduler.config.k8s.io", Kind: "KubeSchedulerConfiguration"}:
+				applyToCluster = false
+			}
+
+			if applyToCluster {
+				applyAdditionalObjectsToCluster = append(applyAdditionalObjectsToCluster, addon)
+			}
+		}
+	}
+
+	if len(applyAdditionalObjectsToCluster) != 0 {
 		key := "cluster-addons.kops.k8s.io"
 		location := key + "/default.yaml"
 
@@ -222,7 +242,7 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 		name := b.Cluster.ObjectMeta.Name + "-addons-" + key
 		manifestPath := "addons/" + *a.Manifest
 
-		manifestBytes, err := b.ClusterAddons.ToYAML()
+		manifestBytes, err := applyAdditionalObjectsToCluster.ToYAML()
 		if err != nil {
 			return fmt.Errorf("error serializing addons: %v", err)
 		}
