@@ -25,10 +25,13 @@ import (
 	"github.com/spf13/cobra"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/pkg/apis/kops"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/kopscodecs"
+	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/text"
 	"k8s.io/kops/util/pkg/vfs"
@@ -104,6 +107,10 @@ func RunCreate(ctx context.Context, f *util.Factory, out io.Writer, c *CreateOpt
 	// var cSpec = false
 	var sb bytes.Buffer
 	fmt.Fprintf(&sb, "\n")
+
+	var addons kubemanifest.ObjectList
+	var clusters []*kops.Cluster
+
 	for _, f := range c.Filenames {
 		var contents []byte
 		if f == "-" {
@@ -146,6 +153,7 @@ func RunCreate(ctx context.Context, f *util.Factory, out io.Writer, c *CreateOpt
 					return fmt.Errorf("error creating cluster: %v", err)
 				}
 				fmt.Fprintf(&sb, "Created cluster/%s\n", v.ObjectMeta.Name)
+				clusters = append(clusters, v)
 				// cSpec = true
 
 			case *kopsapi.InstanceGroup:
@@ -197,12 +205,34 @@ func RunCreate(ctx context.Context, f *util.Factory, out io.Writer, c *CreateOpt
 				}
 				fmt.Fprintf(&sb, "Added ssh credential\n")
 
+			case *unstructured.Unstructured:
+				addons = append(addons, kubemanifest.NewObject(v.Object))
+
 			default:
 				klog.V(2).Infof("Type of object was %T", v)
 				return fmt.Errorf("Unhandled kind %q in %s", gvk, f)
 			}
 		}
 	}
+
+	// Because not all addons support labels, we can only support one cluster here.
+	// A single cluster per create is probably a good idea anyway.
+	if len(addons) != 0 {
+		if len(clusters) > 1 {
+			return fmt.Errorf("cannot specify additional objects when multiple clusters are created")
+		}
+		if len(clusters) == 0 {
+			return fmt.Errorf("must specify a cluster when creating additional objects")
+		}
+		cluster := clusters[0]
+
+		addonsClient := clientset.AddonsFor(cluster)
+
+		if err := addonsClient.Replace(addons); err != nil {
+			return fmt.Errorf("error writing additional objects: %v", err)
+		}
+	}
+
 	{
 		// If there is a value in this sb, this should mean that we have something to deploy
 		// so let's advise the user how to engage the cloud provider and deploy
