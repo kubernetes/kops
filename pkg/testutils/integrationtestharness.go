@@ -203,6 +203,15 @@ func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
 		Architecture:   aws.String("x86_64"),
 	})
 
+	mockEC2.Images = append(mockEC2.Images, &ec2.Image{
+		CreationDate:   aws.String("2022-04-04T00:00:00.000Z"),
+		ImageId:        aws.String("ami-12345678"),
+		Name:           aws.String("ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404"),
+		OwnerId:        aws.String(awsup.WellKnownAccountUbuntu),
+		RootDeviceName: aws.String("/dev/xvda"),
+		Architecture:   aws.String("x86_64"),
+	})
+
 	mockEC2.CreateVpcWithId(&ec2.CreateVpcInput{
 		CidrBlock: aws.String("172.20.0.0/16"),
 		TagSpecifications: []*ec2.TagSpecification{
