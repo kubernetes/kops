@@ -18,12 +18,15 @@ package vfsclientset
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"os"
 
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/acls"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/util/pkg/vfs"
@@ -56,6 +59,23 @@ func newAddonsVFS(c *VFSClientset, cluster *kops.Cluster) *vfsAddonsClient {
 
 // TODO: Offer partial replacement?
 func (c *vfsAddonsClient) Replace(addons kubemanifest.ObjectList) error {
+	ctx := context.TODO()
+
+	for _, addon := range addons {
+		fieldPath := field.NewPath("addons")
+		if kind := addon.Kind(); kind != "" {
+			fieldPath = fieldPath.Child("kind=" + kind)
+		}
+		if name := addon.GetName(); name != "" {
+			fieldPath = fieldPath.Child("name=" + name)
+		}
+
+		errors := validation.ValidateAdditionalObject(ctx, fieldPath, addon.ToUnstructured())
+		if len(errors) != 0 {
+			return errors.ToAggregate()
+		}
+	}
+
 	b, err := addons.ToYAML()
 	if err != nil {
 		return err
