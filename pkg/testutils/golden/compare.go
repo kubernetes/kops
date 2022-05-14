@@ -26,6 +26,11 @@ import (
 	"k8s.io/kops/pkg/diff"
 )
 
+// UpdateExpectedOutput returns true if we should be writing/updating the expected output.
+func UpdateExpectedOutput() bool {
+	return os.Getenv("HACK_UPDATE_EXPECTED_IN_PLACE") != ""
+}
+
 // AssertMatchesFile matches the actual value to a with expected file.
 // If HACK_UPDATE_EXPECTED_IN_PLACE is set, it will write the actual value to the expected file,
 // which is very handy when updating our tests.
@@ -41,7 +46,7 @@ func AssertMatchesFile(t *testing.T, actual string, p string) {
 
 	expectedBytes, err := os.ReadFile(p)
 	if err != nil {
-		if !os.IsNotExist(err) || os.Getenv("HACK_UPDATE_EXPECTED_IN_PLACE") == "" {
+		if !os.IsNotExist(err) && !UpdateExpectedOutput() {
 			t.Fatalf("error reading file %q: %v", p, err)
 		}
 	}
@@ -55,7 +60,7 @@ func AssertMatchesFile(t *testing.T, actual string, p string) {
 		return
 	}
 
-	if os.Getenv("HACK_UPDATE_EXPECTED_IN_PLACE") != "" {
+	if UpdateExpectedOutput() {
 		t.Logf("HACK_UPDATE_EXPECTED_IN_PLACE: writing expected output %s", p)
 
 		// Keep git happy with a trailing newline
