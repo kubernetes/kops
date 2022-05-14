@@ -111,4 +111,4 @@ ${KUBETEST2} \
 		-- \
 		--test-package-version="${K8S_VERSION_B}" \
 		--parallel 25 \
-		--skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|TCP.CLOSE_WAIT|Projected.configMap.optional.updates|Invalid.AWS.KMS.key|Volume.limits.should.verify.that.all.nodes.have.volume.limits"
+		--skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|nfs|NFS|TCP.CLOSE_WAIT|Projected.configMap.optional.updates|Invalid.AWS.KMS.key|Volume.limits.should.verify.that.all.nodes.have.volume.limits"
