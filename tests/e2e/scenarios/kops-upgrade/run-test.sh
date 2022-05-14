@@ -52,5 +52,4 @@ ${KUBETEST2} \
 		--test=kops \
 		-- \
 		--test-package-version="${K8S_VERSION}" \
-		--parallel 25 \
-		--skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|TCP.CLOSE_WAIT|Projected.configMap.optional.updates"
+		--parallel 25
