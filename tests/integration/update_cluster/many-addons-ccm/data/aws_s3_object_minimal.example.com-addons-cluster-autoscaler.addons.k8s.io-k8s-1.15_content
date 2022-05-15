@@ -360,6 +360,7 @@ spec:
             cpu: 100m
             memory: 300Mi
       dnsPolicy: ClusterFirst
+      nodeSelector: null
       priorityClassName: system-cluster-critical
       serviceAccountName: cluster-autoscaler
       tolerations:
