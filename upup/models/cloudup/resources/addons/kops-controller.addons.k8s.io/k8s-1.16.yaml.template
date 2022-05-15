@@ -52,6 +52,7 @@ spec:
               - key: kops.k8s.io/kops-controller-pki
                 operator: Exists
       priorityClassName: system-cluster-critical
+      nodeSelector: null
       tolerations:
       - key: node.cloudprovider.kubernetes.io/uninitialized
         operator: Exists
@@ -81,6 +82,7 @@ spec:
 {{ range $arg := KopsControllerArgv }}
         - "{{ $arg }}"
 {{ end }}
+        command: null
         env:
         - name: KUBERNETES_SERVICE_HOST
           value: "127.0.0.1"
