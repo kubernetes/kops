@@ -923,6 +923,7 @@ spec:
         - mountPath: /tmp/k8s-webhook-server/serving-certs
           name: cert
           readOnly: true
+      nodeSelector: null
       priorityClassName: system-cluster-critical
       securityContext:
         fsGroup: 1337

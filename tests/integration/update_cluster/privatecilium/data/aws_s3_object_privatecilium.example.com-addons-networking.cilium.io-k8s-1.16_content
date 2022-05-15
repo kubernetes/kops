@@ -632,6 +632,7 @@ spec:
           name: cilium-config-path
           readOnly: true
       hostNetwork: true
+      nodeSelector: null
       priorityClassName: system-cluster-critical
       restartPolicy: Always
       serviceAccount: cilium-operator
