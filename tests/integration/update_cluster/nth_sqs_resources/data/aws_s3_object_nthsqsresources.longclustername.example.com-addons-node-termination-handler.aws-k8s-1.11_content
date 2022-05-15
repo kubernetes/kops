@@ -231,6 +231,7 @@ spec:
           runAsGroup: 1000
           runAsNonRoot: true
           runAsUser: 1000
+      nodeSelector: null
       priorityClassName: system-cluster-critical
       securityContext:
         fsGroup: 1000

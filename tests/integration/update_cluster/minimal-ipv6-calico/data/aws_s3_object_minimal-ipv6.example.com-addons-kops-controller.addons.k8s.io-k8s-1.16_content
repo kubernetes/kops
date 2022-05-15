@@ -59,6 +59,7 @@ spec:
       - args:
         - --v=2
         - --conf=/etc/kubernetes/kops-controller/config/config.yaml
+        command: null
         env:
         - name: KUBERNETES_SERVICE_HOST
           value: 127.0.0.1
@@ -78,6 +79,7 @@ spec:
           name: kops-controller-pki
       dnsPolicy: Default
       hostNetwork: true
+      nodeSelector: null
       priorityClassName: system-cluster-critical
       serviceAccount: kops-controller
       tolerations:
