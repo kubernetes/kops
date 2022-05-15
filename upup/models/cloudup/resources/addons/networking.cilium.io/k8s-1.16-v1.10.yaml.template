@@ -915,6 +915,7 @@ spec:
         io.cilium/app: operator
         name: cilium-operator
     spec:
+      nodeSelector: null
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:

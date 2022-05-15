@@ -18,6 +18,7 @@ spec:
         tier: control-plane
         component: cloud-controller-manager
     spec:
+      nodeSelector: null
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:

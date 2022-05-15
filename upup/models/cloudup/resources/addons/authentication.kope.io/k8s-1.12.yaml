@@ -53,6 +53,7 @@ spec:
                 operator: Exists
       serviceAccountName: auth-api
       hostNetwork: true
+      nodeSelector: null
       priorityClassName: system-node-critical
       tolerations:
       - effect: NoSchedule
