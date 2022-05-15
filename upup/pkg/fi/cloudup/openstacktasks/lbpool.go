@@ -132,9 +132,13 @@ func (_ *LBPool) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes 
 			return fmt.Errorf("failed to loadbalancer ACTIVE provisioning status %v: %v", provisioningStatus, err)
 		}
 
+		LbMethod := v2pools.LBMethodRoundRobin
+		if fi.StringValue(e.Loadbalancer.Provider) == "ovn" {
+			LbMethod = "SOURCE_IP_PORT"
+		}
 		poolopts := v2pools.CreateOpts{
 			Name:           fi.StringValue(e.Name),
-			LBMethod:       v2pools.LBMethodRoundRobin,
+			LBMethod:       LbMethod,
 			Protocol:       v2pools.ProtocolTCP,
 			LoadbalancerID: fi.StringValue(e.Loadbalancer.ID),
 		}
