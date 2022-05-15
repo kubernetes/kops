@@ -21,7 +21,6 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -241,9 +240,9 @@ func (s *Server) Start(ctx context.Context) error {
 	// load CA to verify client certificate
 	if s.ClientCAName != "" {
 		certPool := x509.NewCertPool()
-		clientCABytes, err := ioutil.ReadFile(filepath.Join(s.CertDir, s.ClientCAName))
+		clientCABytes, err := os.ReadFile(filepath.Join(s.CertDir, s.ClientCAName))
 		if err != nil {
-			return fmt.Errorf("failed to read client CA cert: %v", err)
+			return fmt.Errorf("failed to read client CA cert: %w", err)
 		}
 
 		ok := certPool.AppendCertsFromPEM(clientCABytes)
@@ -305,11 +304,11 @@ func (s *Server) StartedChecker() healthz.Checker {
 		d := &net.Dialer{Timeout: 10 * time.Second}
 		conn, err := tls.DialWithDialer(d, "tcp", net.JoinHostPort(s.Host, strconv.Itoa(s.Port)), config)
 		if err != nil {
-			return fmt.Errorf("webhook server is not reachable: %v", err)
+			return fmt.Errorf("webhook server is not reachable: %w", err)
 		}
 
 		if err := conn.Close(); err != nil {
-			return fmt.Errorf("webhook server is not reachable: closing connection: %v", err)
+			return fmt.Errorf("webhook server is not reachable: closing connection: %w", err)
 		}
 
 		return nil
