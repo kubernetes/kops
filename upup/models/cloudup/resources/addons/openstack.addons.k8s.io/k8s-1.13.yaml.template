@@ -202,6 +202,7 @@ spec:
       hostNetwork: true
       # run on each master node
       priorityClassName: system-node-critical
+      nodeSelector: null
       securityContext:
         runAsUser: 1001
       serviceAccountName: cloud-controller-manager
