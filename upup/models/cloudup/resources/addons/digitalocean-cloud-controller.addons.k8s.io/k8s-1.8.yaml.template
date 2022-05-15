@@ -37,6 +37,7 @@ spec:
                 operator: Exists
       serviceAccountName: cloud-controller-manager
       dnsPolicy: Default
+      nodeSelector: null
       hostNetwork: true
       priorityClassName: system-node-critical
       tolerations:

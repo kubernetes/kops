@@ -284,6 +284,7 @@ spec:
         app.kubernetes.io/name: "cluster-autoscaler"
     spec:
       {{ if not UseServiceAccountExternalPermissions }}
+      nodeSelector: null
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:

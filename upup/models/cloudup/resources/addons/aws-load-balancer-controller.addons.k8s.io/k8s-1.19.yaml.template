@@ -736,6 +736,7 @@ spec:
         app.kubernetes.io/component: controller
         app.kubernetes.io/name: aws-load-balancer-controller
     spec:
+      nodeSelector: null
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
