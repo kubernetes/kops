@@ -445,6 +445,7 @@ spec:
             app.kubernetes.io/instance: aws-ebs-csi-driver
       serviceAccountName: ebs-csi-controller-sa
       priorityClassName: system-cluster-critical
+      nodeSelector: null
       {{ if not UseServiceAccountExternalPermissions }}
       tolerations:
         - operator: Exists
