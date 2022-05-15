@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Set up go
-        uses: actions/setup-go@f6164bd8c8acb4a71fb2791a8b6c4024ff038dab
+        uses: actions/setup-go@fcdc43634adb5f7ae75a9d7a9b9361790f7293e2
         with:
           go-version: 1.18.1
 
@@ -34,7 +34,7 @@ jobs:
     runs-on: macos-10.15
     steps:
     - name: Set up go
-      uses: actions/setup-go@f6164bd8c8acb4a71fb2791a8b6c4024ff038dab
+      uses: actions/setup-go@fcdc43634adb5f7ae75a9d7a9b9361790f7293e2
       with:
         go-version: 1.18.1
 
@@ -51,7 +51,7 @@ jobs:
     runs-on: windows-2019
     steps:
     - name: Set up go
-      uses: actions/setup-go@f6164bd8c8acb4a71fb2791a8b6c4024ff038dab
+      uses: actions/setup-go@fcdc43634adb5f7ae75a9d7a9b9361790f7293e2
       with:
         go-version: 1.18.1
 
@@ -68,7 +68,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Set up go
-        uses: actions/setup-go@f6164bd8c8acb4a71fb2791a8b6c4024ff038dab
+        uses: actions/setup-go@fcdc43634adb5f7ae75a9d7a9b9361790f7293e2
         with:
           go-version: 1.18.1
 
