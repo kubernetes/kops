@@ -270,20 +270,21 @@ func (c *hetznerCloudImplementation) DeleteGroup(g *cloudinstances.CloudInstance
 // DeregisterInstance is not implemented
 func (c *hetznerCloudImplementation) DeregisterInstance(i *cloudinstances.CloudInstance) error {
 	// TODO(hakman): Implement me
-	klog.Info("hetzner cloud provider does not implement DeregisterInstance at this time")
+	klog.Warning("hetzner cloud provider does not implement DeregisterInstance at this time")
 	return nil
 }
 
 // FindVPCInfo is not implemented
 func (c *hetznerCloudImplementation) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 	// TODO(hakman): Implement me
-	return nil, errors.New("hetzner cloud provider does not implement FindVPCInfo instances at this time")
+	return nil, errors.New("hetzner cloud provider does not implement FindVPCInfo at this time")
 }
 
 // FindClusterStatus is not implemented
 func (c *hetznerCloudImplementation) FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error) {
 	// TODO(hakman): Implement me
-	return nil, errors.New("hetzner cloud provider does not implement FindClusterStatus instances at this time")
+	klog.Warning("hetzner cloud provider does not implement FindClusterStatus at this time")
+	return nil, nil
 }
 
 func (c *hetznerCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
