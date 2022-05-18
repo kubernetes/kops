@@ -25,9 +25,10 @@ kops upgrade cluster [CLUSTER] [flags]
 ### Options
 
 ```
-      --channel string   Channel to use for upgrade
-  -h, --help             help for cluster
-  -y, --yes              Apply update
+      --channel string              Channel to use for upgrade
+  -h, --help                        help for cluster
+      --kubernetes-version string   Kubernetes version to use for upgrade
+  -y, --yes                         Apply update
 ```
 
 ### Options inherited from parent commands
