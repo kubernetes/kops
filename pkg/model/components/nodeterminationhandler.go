@@ -79,7 +79,7 @@ func (b *NodeTerminationHandlerOptionsBuilder) BuildOptions(o interface{}) error
 	}
 
 	if nth.Version == nil {
-		nth.Version = fi.String("v1.16.1")
+		nth.Version = fi.String("v1.16.4")
 	}
 
 	return nil
