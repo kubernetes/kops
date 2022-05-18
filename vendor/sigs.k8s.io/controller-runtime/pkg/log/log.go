@@ -29,7 +29,7 @@ limitations under the License.
 //
 // All logging in controller-runtime is structured, using a set of interfaces
 // defined by a package called logr
-// (https://godoc.org/github.com/go-logr/logr).  The sub-package zap provides
+// (https://pkg.go.dev/github.com/go-logr/logr).  The sub-package zap provides
 // helpers for setting up logr backed by Zap (go.uber.org/zap).
 package log
 

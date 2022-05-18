@@ -1676,13 +1676,14 @@ oras.land/oras-go/pkg/registry/remote/auth
 oras.land/oras-go/pkg/registry/remote/internal/errutil
 oras.land/oras-go/pkg/registry/remote/internal/syncutil
 oras.land/oras-go/pkg/target
-# sigs.k8s.io/controller-runtime v0.11.2
+# sigs.k8s.io/controller-runtime v0.12.0
 ## explicit; go 1.17
 sigs.k8s.io/controller-runtime
 sigs.k8s.io/controller-runtime/pkg/builder
 sigs.k8s.io/controller-runtime/pkg/cache
 sigs.k8s.io/controller-runtime/pkg/cache/internal
 sigs.k8s.io/controller-runtime/pkg/certwatcher
+sigs.k8s.io/controller-runtime/pkg/certwatcher/metrics
 sigs.k8s.io/controller-runtime/pkg/client
 sigs.k8s.io/controller-runtime/pkg/client/apiutil
 sigs.k8s.io/controller-runtime/pkg/client/config

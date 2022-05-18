@@ -107,7 +107,7 @@ limitations under the License.
 //
 // Logging (pkg/log) in controller-runtime is done via structured logs, using a
 // log set of interfaces called logr
-// (https://godoc.org/github.com/go-logr/logr).  While controller-runtime
+// (https://pkg.go.dev/github.com/go-logr/logr).  While controller-runtime
 // provides easy setup for using Zap (https://go.uber.org/zap, pkg/log/zap),
 // you can provide any implementation of logr as the base logger for
 // controller-runtime.
