@@ -64,10 +64,27 @@ func addCiliumAddon(b *BootstrapChannelBuilder, addons *AddonList) error {
 				}
 				addons.Add(addon)
 			}
-		} else if ver.Minor == 10 || ver.Minor == 11 {
+		} else if ver.Minor == 10 || (ver.Minor == 11 && ver.Patch < 5) {
 			{
 				id := "k8s-1.16"
 				location := key + "/" + id + "-v1.10.yaml"
+
+				addon := &api.AddonSpec{
+					Name:               fi.String(key),
+					Selector:           networkingSelector(),
+					Manifest:           fi.String(location),
+					Id:                 id,
+					NeedsRollingUpdate: "all",
+				}
+				if cilium.Hubble != nil && fi.BoolValue(cilium.Hubble.Enabled) {
+					addon.NeedsPKI = true
+				}
+				addons.Add(addon)
+			}
+		} else if ver.Minor == 11 {
+			{
+				id := "k8s-1.16"
+				location := key + "/" + id + "-v1.11.yaml"
 
 				addon := &api.AddonSpec{
 					Name:               fi.String(key),
