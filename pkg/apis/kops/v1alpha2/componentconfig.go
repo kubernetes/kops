@@ -1085,6 +1085,12 @@ type AWSLoadBalancerControllerConfig struct {
 	Enabled *bool `json:"enabled,omitempty"`
 	// Version is the container image tag used.
 	Version *string `json:"version,omitempty"`
+	// EnableWAF specifies whether the controller can use WAFs (Classic Regional).
+	// Default: false
+	EnableWAF bool `json:"enableWAF,omitempty"`
+	// EnableWAFv2 specifies whether the controller can use WAFs (V2).
+	// Default: false
+	EnableWAFv2 bool `json:"enableWAFv2,omitempty"`
 }
 
 // HasAdmissionController checks if a specific admission controller is enabled

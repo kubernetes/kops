@@ -22,6 +22,33 @@ spec:
     enabled: true
 ```
 
+Though the AWS Load Balancer Controller can integrate the AWS WAF and
+Shield services with your Application Load Balancers (ALBs), kOps
+disables those capabilities by default.
+
+{{ kops_feature_table(kops_added_default='1.24') }}
+
+You can enable use of either or both of the WAF and WAF Classic
+services by including the following fields in the cluster spec:
+
+```yaml
+spec:
+  awsLoadBalancerController:
+    enabled: true
+    enableWAF: true
+    enableWAFv2: true
+```
+
+Note that the controller will only succeed in associating one WAF with
+a given ALB at a time, despite it accepting both the
+"alb.ingress.kubernetes.io/waf-acl-id" and
+"alb.ingress.kubernetes.io/wafv2-acl-arn" annotations on the same
+_Ingress_ object.
+
+Support for this WAF service in kOps is currently **beta**, meaning
+that the accepted configuration and the AWS resources involved may
+change.
+
 Read more in the [official documentation](https://kubernetes-sigs.github.io/aws-load-balancer-controller/latest/).
 
 #### Cluster autoscaler
