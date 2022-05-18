@@ -128,6 +128,18 @@ type Options struct {
 	// Be very careful with this, when enabled you must DeepCopy any object before mutating it,
 	// otherwise you will mutate the object in the cache.
 	UnsafeDisableDeepCopyByObject DisableDeepCopyByObject
+
+	// TransformByObject is a map from GVKs to transformer functions which
+	// get applied when objects of the transformation are about to be committed
+	// to cache.
+	//
+	// This function is called both for new objects to enter the cache,
+	// 	and for updated objects.
+	TransformByObject TransformByObject
+
+	// DefaultTransform is the transform used for all GVKs which do
+	// not have an explicit transform func set in TransformByObject
+	DefaultTransform toolscache.TransformFunc
 }
 
 var defaultResyncTime = 10 * time.Hour
@@ -146,7 +158,12 @@ func New(config *rest.Config, opts Options) (Cache, error) {
 	if err != nil {
 		return nil, err
 	}
-	im := internal.NewInformersMap(config, opts.Scheme, opts.Mapper, *opts.Resync, opts.Namespace, selectorsByGVK, disableDeepCopyByGVK)
+	transformByGVK, err := convertToTransformByKindAndGVK(opts.TransformByObject, opts.DefaultTransform, opts.Scheme)
+	if err != nil {
+		return nil, err
+	}
+
+	im := internal.NewInformersMap(config, opts.Scheme, opts.Mapper, *opts.Resync, opts.Namespace, selectorsByGVK, disableDeepCopyByGVK, transformByGVK)
 	return &informerCache{InformersMap: im}, nil
 }
 
@@ -240,4 +257,19 @@ func convertToDisableDeepCopyByGVK(disableDeepCopyByObject DisableDeepCopyByObje
 		}
 	}
 	return disableDeepCopyByGVK, nil
+}
+
+// TransformByObject associate a client.Object's GVK to a transformer function
+// to be applied when storing the object into the cache.
+type TransformByObject map[client.Object]toolscache.TransformFunc
+
+func convertToTransformByKindAndGVK(t TransformByObject, defaultTransform toolscache.TransformFunc, scheme *runtime.Scheme) (internal.TransformFuncByObject, error) {
+	result := internal.NewTransformFuncByObject()
+	for obj, transformation := range t {
+		if err := result.Set(obj, scheme, transformation); err != nil {
+			return nil, err
+		}
+	}
+	result.SetDefault(defaultTransform)
+	return result, nil
 }

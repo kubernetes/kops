@@ -56,7 +56,7 @@ func (n *namespacedClient) RESTMapper() meta.RESTMapper {
 func (n *namespacedClient) Create(ctx context.Context, obj Object, opts ...CreateOption) error {
 	isNamespaceScoped, err := objectutil.IsAPINamespaced(obj, n.Scheme(), n.RESTMapper())
 	if err != nil {
-		return fmt.Errorf("error finding the scope of the object: %v", err)
+		return fmt.Errorf("error finding the scope of the object: %w", err)
 	}
 
 	objectNamespace := obj.GetNamespace()
@@ -74,7 +74,7 @@ func (n *namespacedClient) Create(ctx context.Context, obj Object, opts ...Creat
 func (n *namespacedClient) Update(ctx context.Context, obj Object, opts ...UpdateOption) error {
 	isNamespaceScoped, err := objectutil.IsAPINamespaced(obj, n.Scheme(), n.RESTMapper())
 	if err != nil {
-		return fmt.Errorf("error finding the scope of the object: %v", err)
+		return fmt.Errorf("error finding the scope of the object: %w", err)
 	}
 
 	objectNamespace := obj.GetNamespace()
@@ -92,7 +92,7 @@ func (n *namespacedClient) Update(ctx context.Context, obj Object, opts ...Updat
 func (n *namespacedClient) Delete(ctx context.Context, obj Object, opts ...DeleteOption) error {
 	isNamespaceScoped, err := objectutil.IsAPINamespaced(obj, n.Scheme(), n.RESTMapper())
 	if err != nil {
-		return fmt.Errorf("error finding the scope of the object: %v", err)
+		return fmt.Errorf("error finding the scope of the object: %w", err)
 	}
 
 	objectNamespace := obj.GetNamespace()
@@ -110,7 +110,7 @@ func (n *namespacedClient) Delete(ctx context.Context, obj Object, opts ...Delet
 func (n *namespacedClient) DeleteAllOf(ctx context.Context, obj Object, opts ...DeleteAllOfOption) error {
 	isNamespaceScoped, err := objectutil.IsAPINamespaced(obj, n.Scheme(), n.RESTMapper())
 	if err != nil {
-		return fmt.Errorf("error finding the scope of the object: %v", err)
+		return fmt.Errorf("error finding the scope of the object: %w", err)
 	}
 
 	if isNamespaceScoped {
@@ -123,7 +123,7 @@ func (n *namespacedClient) DeleteAllOf(ctx context.Context, obj Object, opts ...
 func (n *namespacedClient) Patch(ctx context.Context, obj Object, patch Patch, opts ...PatchOption) error {
 	isNamespaceScoped, err := objectutil.IsAPINamespaced(obj, n.Scheme(), n.RESTMapper())
 	if err != nil {
-		return fmt.Errorf("error finding the scope of the object: %v", err)
+		return fmt.Errorf("error finding the scope of the object: %w", err)
 	}
 
 	objectNamespace := obj.GetNamespace()
@@ -141,7 +141,7 @@ func (n *namespacedClient) Patch(ctx context.Context, obj Object, patch Patch, o
 func (n *namespacedClient) Get(ctx context.Context, key ObjectKey, obj Object) error {
 	isNamespaceScoped, err := objectutil.IsAPINamespaced(obj, n.Scheme(), n.RESTMapper())
 	if err != nil {
-		return fmt.Errorf("error finding the scope of the object: %v", err)
+		return fmt.Errorf("error finding the scope of the object: %w", err)
 	}
 	if isNamespaceScoped {
 		if key.Namespace != "" && key.Namespace != n.namespace {
@@ -179,7 +179,7 @@ func (nsw *namespacedClientStatusWriter) Update(ctx context.Context, obj Object,
 	isNamespaceScoped, err := objectutil.IsAPINamespaced(obj, nsw.namespacedclient.Scheme(), nsw.namespacedclient.RESTMapper())
 
 	if err != nil {
-		return fmt.Errorf("error finding the scope of the object: %v", err)
+		return fmt.Errorf("error finding the scope of the object: %w", err)
 	}
 
 	objectNamespace := obj.GetNamespace()
@@ -198,7 +198,7 @@ func (nsw *namespacedClientStatusWriter) Patch(ctx context.Context, obj Object, 
 	isNamespaceScoped, err := objectutil.IsAPINamespaced(obj, nsw.namespacedclient.Scheme(), nsw.namespacedclient.RESTMapper())
 
 	if err != nil {
-		return fmt.Errorf("error finding the scope of the object: %v", err)
+		return fmt.Errorf("error finding the scope of the object: %w", err)
 	}
 
 	objectNamespace := obj.GetNamespace()

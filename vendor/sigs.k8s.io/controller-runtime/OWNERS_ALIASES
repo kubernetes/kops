@@ -27,6 +27,7 @@ aliases:
   - vincepri
   - alexeldeib
   - varshaprasad96
+  - fillzpp
 
   # folks to can approve things in the directly-ported
   # testing_frameworks portions of the codebase

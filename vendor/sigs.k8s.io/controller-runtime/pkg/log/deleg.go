@@ -177,7 +177,7 @@ func (l *DelegatingLogSink) Fulfill(actual logr.LogSink) {
 }
 
 // NewDelegatingLogSink constructs a new DelegatingLogSink which uses
-// the given logger before it's promise is fulfilled.
+// the given logger before its promise is fulfilled.
 func NewDelegatingLogSink(initial logr.LogSink) *DelegatingLogSink {
 	l := &DelegatingLogSink{
 		logger:  initial,
