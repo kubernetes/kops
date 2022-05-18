@@ -735,7 +735,7 @@ resource "aws_s3_object" "minimal-ipv6-example-com-addons-limit-range-addons-k8s
 resource "aws_s3_object" "minimal-ipv6-example-com-addons-networking-cilium-io-k8s-1-16" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_minimal-ipv6.example.com-addons-networking.cilium.io-k8s-1.16_content")
-  key                    = "clusters.example.com/minimal-ipv6.example.com/addons/networking.cilium.io/k8s-1.16-v1.10.yaml"
+  key                    = "clusters.example.com/minimal-ipv6.example.com/addons/networking.cilium.io/k8s-1.16-v1.11.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }

@@ -57,6 +57,7 @@ data:
   kube-proxy-replacement: partial
   masquerade: "true"
   monitor-aggregation: medium
+  nodes-gc-interval: 5m0s
   preallocate-bpf-maps: "false"
   sidecar-istio-proxy-image: cilium/istio_proxy
   tofqdns-dns-reject-response-code: refused
@@ -105,36 +106,16 @@ rules:
   resources:
   - namespaces
   - services
-  - nodes
-  - endpoints
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
   - pods
-  - pods/finalizers
-  verbs:
-  - get
-  - list
-  - watch
-  - update
-  - delete
-- apiGroups:
-  - ""
-  resources:
+  - endpoints
   - nodes
   verbs:
   - get
   - list
   - watch
-  - update
 - apiGroups:
   - ""
   resources:
-  - nodes
   - nodes/status
   verbs:
   - patch
@@ -153,21 +134,15 @@ rules:
   resources:
   - ciliumnetworkpolicies
   - ciliumnetworkpolicies/status
-  - ciliumnetworkpolicies/finalizers
   - ciliumclusterwidenetworkpolicies
   - ciliumclusterwidenetworkpolicies/status
-  - ciliumclusterwidenetworkpolicies/finalizers
   - ciliumendpoints
   - ciliumendpoints/status
-  - ciliumendpoints/finalizers
   - ciliumnodes
   - ciliumnodes/status
-  - ciliumnodes/finalizers
   - ciliumidentities
-  - ciliumidentities/finalizers
   - ciliumlocalredirectpolicies
   - ciliumlocalredirectpolicies/status
-  - ciliumlocalredirectpolicies/finalizers
   - ciliumegressnatpolicies
   verbs:
   - '*'
@@ -193,6 +168,20 @@ rules:
   - list
   - watch
   - delete
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  - nodes/status
+  verbs:
+  - patch
 - apiGroups:
   - discovery.k8s.io
   resources:
@@ -379,7 +368,7 @@ spec:
           value: api.internal.minimal-warmpool.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/cilium:v1.11.4
+        image: quay.io/cilium/cilium:v1.11.5
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -475,7 +464,7 @@ spec:
               key: clean-cilium-bpf-state
               name: cilium-config
               optional: true
-        image: quay.io/cilium/cilium:v1.11.4
+        image: quay.io/cilium/cilium:v1.11.5
         imagePullPolicy: IfNotPresent
         name: clean-cilium-state
         resources:
@@ -611,7 +600,7 @@ spec:
           value: api.internal.minimal-warmpool.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/operator:v1.11.4
+        image: quay.io/cilium/operator:v1.11.5
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:

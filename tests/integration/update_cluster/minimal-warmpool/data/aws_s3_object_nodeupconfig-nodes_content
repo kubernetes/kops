@@ -67,8 +67,8 @@ containerdConfig:
   logLevel: info
   version: 1.4.12
 warmPoolImages:
-- quay.io/cilium/cilium:v1.11.4
-- quay.io/cilium/operator:v1.11.4
+- quay.io/cilium/cilium:v1.11.5
+- quay.io/cilium/operator:v1.11.5
 - registry.k8s.io/kube-proxy:v1.21.0
 - registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.1.0
 - registry.k8s.io/sig-storage/livenessprobe:v2.2.0
