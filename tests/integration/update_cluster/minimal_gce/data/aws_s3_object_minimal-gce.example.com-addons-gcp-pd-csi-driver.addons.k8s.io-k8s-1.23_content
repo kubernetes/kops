@@ -722,6 +722,7 @@ spec:
         - mountPath: /csi
           name: socket-dir
       hostNetwork: true
+      nodeSelector: null
       priorityClassName: csi-gce-pd-controller
       serviceAccountName: csi-gce-pd-controller-sa
       tolerations:

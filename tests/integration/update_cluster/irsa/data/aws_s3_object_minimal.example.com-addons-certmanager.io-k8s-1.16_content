@@ -9400,6 +9400,7 @@ spec:
         name: cert-manager
         securityContext:
           allowPrivilegeEscalation: false
+      nodeSelector: null
       priorityClassName: system-cluster-critical
       securityContext:
         runAsNonRoot: true
@@ -9479,6 +9480,7 @@ spec:
         resources: {}
         securityContext:
           allowPrivilegeEscalation: false
+      nodeSelector: null
       priorityClassName: system-cluster-critical
       securityContext:
         runAsNonRoot: true
@@ -9574,6 +9576,7 @@ spec:
           timeoutSeconds: 1
         securityContext:
           allowPrivilegeEscalation: false
+      nodeSelector: null
       priorityClassName: system-cluster-critical
       securityContext:
         runAsNonRoot: true

@@ -714,6 +714,7 @@ spec:
         volumeMounts:
         - mountPath: /csi
           name: socket-dir
+      nodeSelector: null
       priorityClassName: system-cluster-critical
       serviceAccountName: ebs-csi-controller-sa
       tolerations:
