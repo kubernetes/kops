@@ -49,6 +49,7 @@ spec:
         - --internal-ipv4
         - --zone=*/*
         - -v=2
+        command: null
         env:
         - name: KUBERNETES_SERVICE_HOST
           value: 127.0.0.1
@@ -62,6 +63,7 @@ spec:
           runAsNonRoot: true
       dnsPolicy: Default
       hostNetwork: true
+      nodeSelector: null
       priorityClassName: system-cluster-critical
       serviceAccount: dns-controller
       tolerations:

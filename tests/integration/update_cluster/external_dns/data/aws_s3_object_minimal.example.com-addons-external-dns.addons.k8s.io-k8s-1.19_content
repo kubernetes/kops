@@ -87,6 +87,7 @@ spec:
           runAsUser: 65534
       dnsPolicy: Default
       hostNetwork: true
+      nodeSelector: null
       priorityClassName: system-cluster-critical
       securityContext:
         fsGroup: 65534

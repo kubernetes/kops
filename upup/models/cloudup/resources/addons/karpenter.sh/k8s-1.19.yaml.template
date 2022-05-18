@@ -547,6 +547,7 @@ spec:
         labelSelector:
           matchLabels:
             karpenter: webhook
+      nodeSelector: null
 
 ---
 # Source: karpenter/templates/webhook/deployment.yaml
@@ -658,6 +659,7 @@ spec:
         labelSelector:
           matchLabels:
             karpenter: webhook
+      nodeSelector: null
 ---
 # Source: karpenter/templates/webhook/webhooks.yaml
 apiVersion: admissionregistration.k8s.io/v1

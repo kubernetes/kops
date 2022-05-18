@@ -42,6 +42,7 @@ spec:
         effect: NoSchedule
       dnsPolicy: Default  # Don't use cluster DNS (we are likely running before kube-dns)
       hostNetwork: true
+      nodeSelector: null
       containers:
       - name: external-dns
         securityContext:
