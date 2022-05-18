@@ -569,14 +569,6 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - secrets
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
   - services
   verbs:
   - get
@@ -756,7 +748,7 @@ spec:
         - --ingress-class=alb
         - "--default-tags={{ CloudLabels }}"
         - --aws-region={{ Region }}
-        image: amazon/aws-alb-ingress-controller:{{ or .AWSLoadBalancerController.Version "v2.4.0" }}
+        image: amazon/aws-alb-ingress-controller:{{ or .AWSLoadBalancerController.Version "v2.4.1" }}
         livenessProbe:
           failureThreshold: 2
           httpGet:
