@@ -289,6 +289,12 @@ spec:
                       by kOps. The deployment of cert-manager is skipped if this is
                       set to false.
                     type: boolean
+                  nameservers:
+                    description: 'nameservers is a list of nameserver IP addresses
+                      to use instead of the pod defaults. Default: none'
+                    items:
+                      type: string
+                    type: array
                 type: object
               channel:
                 description: The Channel we are following
