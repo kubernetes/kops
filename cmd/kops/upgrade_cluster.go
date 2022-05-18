@@ -58,6 +58,8 @@ type UpgradeClusterOptions struct {
 	ClusterName string
 	Yes         bool
 	Channel     string
+	// KubernetesVersion is the k8s version to use for upgrade.
+	KubernetesVersion string
 }
 
 func NewCmdUpgradeCluster(f *util.Factory, out io.Writer) *cobra.Command {
@@ -80,6 +82,8 @@ func NewCmdUpgradeCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", false, "Apply update")
 	cmd.Flags().StringVar(&options.Channel, "channel", "", "Channel to use for upgrade")
 	cmd.RegisterFlagCompletionFunc("channel", completeChannel)
+	cmd.Flags().StringVar(&options.KubernetesVersion, "kubernetes-version", "", "Kubernetes version to use for upgrade")
+	cmd.RegisterFlagCompletionFunc("kubernetes-version", completeKubernetesVersion)
 
 	return cmd
 }
@@ -149,12 +153,21 @@ func RunUpgradeCluster(ctx context.Context, f *util.Factory, out io.Writer, opti
 		}
 	}
 
-	proposedKubernetesVersion := kopsapi.RecommendedKubernetesVersion(channel, kops.Version)
+	var proposedKubernetesVersion *semver.Version
+	if options.KubernetesVersion != "" {
+		proposedKubernetesVersion, err = kopsutil.ParseKubernetesVersion(options.KubernetesVersion)
+		if err != nil {
+			klog.Warningf("error parsing KubernetesVersion %q", cluster.Spec.KubernetesVersion)
+		}
+	}
+	if proposedKubernetesVersion == nil {
+		proposedKubernetesVersion = kopsapi.RecommendedKubernetesVersion(channel, kops.Version)
+	}
 
 	// We won't propose a downgrade
 	// TODO: What if a kubernetes version is bad?
 	if currentKubernetesVersion != nil && proposedKubernetesVersion != nil && currentKubernetesVersion.GT(*proposedKubernetesVersion) {
-		klog.Warningf("cluster version %q is greater than recommended version %q", *currentKubernetesVersion, *proposedKubernetesVersion)
+		klog.Warningf("cluster version %q is greater than the desired version %q", *currentKubernetesVersion, *proposedKubernetesVersion)
 		proposedKubernetesVersion = currentKubernetesVersion
 	}
 
