@@ -234,6 +234,16 @@ resource "aws_cloudwatch_event_rule" "nthsqsresources-longclustername-e-fkbaoh-A
   }
 }
 
+resource "aws_cloudwatch_event_rule" "nthsqsresources-longclustername-e-fkbaoh-InstanceScheduledChange" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_nthsqsresources.longclustername.e-fkbaoh-InstanceScheduledChange_event_pattern")
+  name          = "nthsqsresources.longclustername.e-fkbaoh-InstanceScheduledChange"
+  tags = {
+    "KubernetesCluster"                                                 = "nthsqsresources.longclustername.example.com"
+    "Name"                                                              = "nthsqsresources.longclustername.e-fkbaoh-InstanceScheduledChange"
+    "kubernetes.io/cluster/nthsqsresources.longclustername.example.com" = "owned"
+  }
+}
+
 resource "aws_cloudwatch_event_rule" "nthsqsresources-longclustername-e-fkbaoh-InstanceStateChange" {
   event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_nthsqsresources.longclustername.e-fkbaoh-InstanceStateChange_event_pattern")
   name          = "nthsqsresources.longclustername.e-fkbaoh-InstanceStateChange"
@@ -267,6 +277,11 @@ resource "aws_cloudwatch_event_rule" "nthsqsresources-longclustername-e-fkbaoh-S
 resource "aws_cloudwatch_event_target" "nthsqsresources-longclustername-e-fkbaoh-ASGLifecycle-Target" {
   arn  = aws_sqs_queue.nthsqsresources-longclustername-example-com-nth.arn
   rule = aws_cloudwatch_event_rule.nthsqsresources-longclustername-e-fkbaoh-ASGLifecycle.id
+}
+
+resource "aws_cloudwatch_event_target" "nthsqsresources-longclustername-e-fkbaoh-InstanceScheduledChange-Target" {
+  arn  = aws_sqs_queue.nthsqsresources-longclustername-example-com-nth.arn
+  rule = aws_cloudwatch_event_rule.nthsqsresources-longclustername-e-fkbaoh-InstanceScheduledChange.id
 }
 
 resource "aws_cloudwatch_event_target" "nthsqsresources-longclustername-e-fkbaoh-InstanceStateChange-Target" {
