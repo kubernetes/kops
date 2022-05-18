@@ -262,6 +262,14 @@ spec:
                 description: AWSLoadbalancerControllerConfig determines the AWS LB
                   controller configuration.
                 properties:
+                  enableWAF:
+                    description: 'EnableWAF specifies whether the controller can use
+                      WAFs (Classic Regional). Default: false'
+                    type: boolean
+                  enableWAFv2:
+                    description: 'EnableWAFv2 specifies whether the controller can
+                      use WAFs (V2). Default: false'
+                    type: boolean
                   enabled:
                     description: 'Enabled enables the loadbalancer controller. Default:
                       false'
