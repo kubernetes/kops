@@ -55,6 +55,7 @@ spec:
           name: cloudconfig
           readOnly: true
       hostNetwork: true
+      nodeSelector: null
       priorityClassName: system-cluster-critical
       serviceAccountName: aws-cloud-controller-manager
       tolerations:

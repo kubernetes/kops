@@ -17,6 +17,7 @@ spec:
       labels:
         k8s-app: aws-cloud-controller-manager
     spec:
+      nodeSelector: null
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:

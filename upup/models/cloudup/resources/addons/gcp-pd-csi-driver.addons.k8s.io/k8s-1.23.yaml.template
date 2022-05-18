@@ -365,6 +365,7 @@ spec:
         operator: Exists
       - key: CriticalAddonsOnly
         operator: Exists
+      nodeSelector: null
       serviceAccountName: csi-gce-pd-controller-sa
       priorityClassName: csi-gce-pd-controller
       containers:

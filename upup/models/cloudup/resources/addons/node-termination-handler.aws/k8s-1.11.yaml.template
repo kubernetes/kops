@@ -116,6 +116,7 @@ spec:
         k8s-app: aws-node-termination-handler
         kubernetes.io/os: linux
     spec:
+      nodeSelector: null
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
