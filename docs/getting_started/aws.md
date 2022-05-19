@@ -262,7 +262,7 @@ The ACL must be public so that the AWS STS service can access them.
 ```bash
 aws s3api create-bucket \
     --bucket prefix-example-com-oidc-store \
-    --region us-east-1
+    --region us-east-1 \
     --acl public-read
 ```
 
