@@ -14,7 +14,7 @@ spec:
   cloudConfig:
     awsEBSCSIDriver:
       enabled: true
-      version: v1.6.1
+      version: v1.6.2
     manageStorageClasses: true
   cloudProvider: aws
   clusterDNSDomain: cluster.local
