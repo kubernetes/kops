@@ -70,6 +70,10 @@ var (
 			name:    "InstanceStateChange",
 			pattern: `{"source": ["aws.ec2"],"detail-type": ["EC2 Instance State-change Notification"]}`,
 		},
+		{
+			name:    "InstanceScheduledChange",
+			pattern: `{"source": ["aws.health"],"detail-type": ["AWS Health Event"],"detail": {"service": ["EC2"],"eventTypeCategory": ["scheduledChange"]}}`,
+		},
 	}
 )
 
