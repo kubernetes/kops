@@ -991,6 +991,36 @@
         ]
       }
     },
+    "AWSEventsRulenthsqsresourceslongclusternameefkbaohInstanceScheduledChange": {
+      "Type": "AWS::Events::Rule",
+      "Properties": {
+        "Name": "nthsqsresources.longclustername.e-fkbaoh-InstanceScheduledChange",
+        "EventPattern": {
+          "detail": {
+            "eventTypeCategory": [
+              "scheduledChange"
+            ],
+            "service": [
+              "EC2"
+            ]
+          },
+          "detail-type": [
+            "AWS Health Event"
+          ],
+          "source": [
+            "aws.health"
+          ]
+        },
+        "Targets": [
+          {
+            "Id": "1",
+            "Arn": {
+              "Ref": "AWSSQSQueuenthsqsresourceslongclusternameexamplecomnth"
+            }
+          }
+        ]
+      }
+    },
     "AWSEventsRulenthsqsresourceslongclusternameefkbaohInstanceStateChange": {
       "Type": "AWS::Events::Rule",
       "Properties": {
