@@ -18,7 +18,7 @@ We like to think of it as `kubectl` for clusters.
 `kops` will not only help you create, destroy, upgrade and maintain production-grade, highly
 available, Kubernetes cluster, but it will also provision the necessary cloud infrastructure.
 
-[AWS](getting_started/aws.md) (Amazon Web Services) is currently officially supported, with [DigitalOcean](getting_started/digitalocean.md) and [OpenStack](getting_started/openstack.md) in beta support, and [Azure](getting_started/azure.md), and [GCE](getting_started/gce.md) in alpha.
+[AWS](getting_started/aws.md) (Amazon Web Services) is currently officially supported, with [DigitalOcean](getting_started/digitalocean.md), [GCE](getting_started/gce.md) and [OpenStack](getting_started/openstack.md) in beta support, and [Azure](getting_started/azure.md), and AliCloud in alpha.
 
 ## Can I see it in action?
 
