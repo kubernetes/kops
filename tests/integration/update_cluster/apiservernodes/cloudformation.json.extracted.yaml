@@ -127,7 +127,7 @@ Resources.AWSEC2LaunchTemplateapiserverapiserversminimalexamplecom.Properties.La
   cloudConfig:
     awsEBSCSIDriver:
       enabled: true
-      version: v1.6.1
+      version: v1.6.2
     manageStorageClasses: true
   containerRuntime: containerd
   containerd:
@@ -303,7 +303,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
   cloudConfig:
     awsEBSCSIDriver:
       enabled: true
-      version: v1.6.1
+      version: v1.6.2
     manageStorageClasses: true
   containerRuntime: containerd
   containerd:
@@ -574,7 +574,7 @@ Resources.AWSEC2LaunchTemplatenodesminimalexamplecom.Properties.LaunchTemplateDa
   cloudConfig:
     awsEBSCSIDriver:
       enabled: true
-      version: v1.6.1
+      version: v1.6.2
     manageStorageClasses: true
   containerRuntime: containerd
   containerd:
