@@ -142,7 +142,7 @@ spec:
 {{ if or (not UseKopsControllerForNodeBootstrap) (WithDefaultBool .MetricsServer.Insecure true) }}
           - --kubelet-insecure-tls
 {{ end }}
-        image: {{ or .MetricsServer.Image "registry.k8s.io/metrics-server/metrics-server:v0.6.0" }}
+        image: {{ or .MetricsServer.Image "registry.k8s.io/metrics-server/metrics-server:v0.6.1" }}
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
