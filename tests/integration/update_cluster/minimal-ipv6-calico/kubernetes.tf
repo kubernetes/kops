@@ -112,22 +112,17 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-minimal-ipv6-example
     value               = "master-us-test-1a.masters.minimal-ipv6.example.com"
   }
   tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/instancegroup"
+    propagate_at_launch = true
+    value               = "master-us-test-1a"
+  }
+  tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"
     propagate_at_launch = true
     value               = ""
   }
   tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
-    propagate_at_launch = true
-    value               = "master"
-  }
-  tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"
-    propagate_at_launch = true
-    value               = ""
-  }
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"
     propagate_at_launch = true
     value               = ""
   }
@@ -161,9 +156,9 @@ resource "aws_autoscaling_group" "nodes-minimal-ipv6-example-com" {
     id      = aws_launch_template.nodes-minimal-ipv6-example-com.id
     version = aws_launch_template.nodes-minimal-ipv6-example-com.latest_version
   }
-  max_size              = 2
+  max_size              = 1
   metrics_granularity   = "1Minute"
-  min_size              = 2
+  min_size              = 1
   name                  = "nodes.minimal-ipv6.example.com"
   protect_from_scale_in = false
   tag {
@@ -177,9 +172,9 @@ resource "aws_autoscaling_group" "nodes-minimal-ipv6-example-com" {
     value               = "nodes.minimal-ipv6.example.com"
   }
   tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/instancegroup"
     propagate_at_launch = true
-    value               = "node"
+    value               = "nodes"
   }
   tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"
@@ -328,15 +323,11 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-ipv6-example-c
       volume_type           = "gp3"
     }
   }
-  block_device_mappings {
-    device_name  = "/dev/sdc"
-    virtual_name = "ephemeral0"
-  }
   iam_instance_profile {
     name = aws_iam_instance_profile.masters-minimal-ipv6-example-com.id
   }
   image_id      = "ami-12345678"
-  instance_type = "m3.medium"
+  instance_type = "t3.medium"
   key_name      = aws_key_pair.kubernetes-minimal-ipv6-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {
     create_before_destroy = true
@@ -345,7 +336,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-ipv6-example-c
     http_endpoint               = "enabled"
     http_protocol_ipv6          = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   monitoring {
     enabled = false
@@ -362,10 +353,9 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-ipv6-example-c
     tags = {
       "KubernetesCluster"                                                                                     = "minimal-ipv6.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.minimal-ipv6.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/instancegroup"                               = "master-us-test-1a"
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
-      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                                      = "master"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
-      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
       "k8s.io/role/master"                                                                                    = "1"
       "kops.k8s.io/instancegroup"                                                                             = "master-us-test-1a"
@@ -377,10 +367,9 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-ipv6-example-c
     tags = {
       "KubernetesCluster"                                                                                     = "minimal-ipv6.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.minimal-ipv6.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/instancegroup"                               = "master-us-test-1a"
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
-      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                                      = "master"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
-      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
       "k8s.io/role/master"                                                                                    = "1"
       "kops.k8s.io/instancegroup"                                                                             = "master-us-test-1a"
@@ -390,10 +379,9 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-ipv6-example-c
   tags = {
     "KubernetesCluster"                                                                                     = "minimal-ipv6.example.com"
     "Name"                                                                                                  = "master-us-test-1a.masters.minimal-ipv6.example.com"
+    "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/instancegroup"                               = "master-us-test-1a"
     "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
-    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                                      = "master"
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
-    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
     "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
     "k8s.io/role/master"                                                                                    = "1"
     "kops.k8s.io/instancegroup"                                                                             = "master-us-test-1a"
@@ -418,7 +406,7 @@ resource "aws_launch_template" "nodes-minimal-ipv6-example-com" {
     name = aws_iam_instance_profile.nodes-minimal-ipv6-example-com.id
   }
   image_id      = "ami-12345678"
-  instance_type = "t2.medium"
+  instance_type = "t3.medium"
   key_name      = aws_key_pair.kubernetes-minimal-ipv6-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {
     create_before_destroy = true
@@ -426,8 +414,8 @@ resource "aws_launch_template" "nodes-minimal-ipv6-example-com" {
   metadata_options {
     http_endpoint               = "enabled"
     http_protocol_ipv6          = "enabled"
-    http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_put_response_hop_limit = 3
+    http_tokens                 = "required"
   }
   monitoring {
     enabled = false
@@ -444,7 +432,7 @@ resource "aws_launch_template" "nodes-minimal-ipv6-example-com" {
     tags = {
       "KubernetesCluster"                                                          = "minimal-ipv6.example.com"
       "Name"                                                                       = "nodes.minimal-ipv6.example.com"
-      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+      "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/instancegroup"    = "nodes"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
       "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -456,7 +444,7 @@ resource "aws_launch_template" "nodes-minimal-ipv6-example-com" {
     tags = {
       "KubernetesCluster"                                                          = "minimal-ipv6.example.com"
       "Name"                                                                       = "nodes.minimal-ipv6.example.com"
-      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+      "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/instancegroup"    = "nodes"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
       "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -466,7 +454,7 @@ resource "aws_launch_template" "nodes-minimal-ipv6-example-com" {
   tags = {
     "KubernetesCluster"                                                          = "minimal-ipv6.example.com"
     "Name"                                                                       = "nodes.minimal-ipv6.example.com"
-    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+    "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/instancegroup"    = "nodes"
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
     "k8s.io/role/node"                                                           = "1"
     "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -724,6 +712,14 @@ resource "aws_s3_object" "minimal-ipv6-example-com-addons-kubelet-api-rbac-addon
   server_side_encryption = "AES256"
 }
 
+resource "aws_s3_object" "minimal-ipv6-example-com-addons-leader-migration-rbac-addons-k8s-io-k8s-1-23" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_minimal-ipv6.example.com-addons-leader-migration.rbac.addons.k8s.io-k8s-1.23_content")
+  key                    = "clusters.example.com/minimal-ipv6.example.com/addons/leader-migration.rbac.addons.k8s.io/k8s-1.23.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
 resource "aws_s3_object" "minimal-ipv6-example-com-addons-limit-range-addons-k8s-io" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_minimal-ipv6.example.com-addons-limit-range.addons.k8s.io_content")
@@ -732,10 +728,10 @@ resource "aws_s3_object" "minimal-ipv6-example-com-addons-limit-range-addons-k8s
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_object" "minimal-ipv6-example-com-addons-networking-projectcalico-org-k8s-1-16" {
+resource "aws_s3_object" "minimal-ipv6-example-com-addons-networking-projectcalico-org-k8s-1-23" {
   bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_object_minimal-ipv6.example.com-addons-networking.projectcalico.org-k8s-1.16_content")
-  key                    = "clusters.example.com/minimal-ipv6.example.com/addons/networking.projectcalico.org/k8s-1.16.yaml"
+  content                = file("${path.module}/data/aws_s3_object_minimal-ipv6.example.com-addons-networking.projectcalico.org-k8s-1.23_content")
+  key                    = "clusters.example.com/minimal-ipv6.example.com/addons/networking.projectcalico.org/k8s-1.23.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
@@ -987,9 +983,12 @@ resource "aws_security_group_rule" "icmpv6-pmtu-api-elb-__--0" {
 }
 
 resource "aws_subnet" "us-test-1a-minimal-ipv6-example-com" {
-  availability_zone = "us-test-1a"
-  cidr_block        = "172.20.32.0/19"
-  ipv6_cidr_block   = "2001:db8:0:111::/64"
+  availability_zone                              = "us-test-1a"
+  cidr_block                                     = "172.20.32.0/19"
+  enable_resource_name_dns_a_record_on_launch    = true
+  enable_resource_name_dns_aaaa_record_on_launch = true
+  ipv6_cidr_block                                = "2001:db8:0:111::/64"
+  private_dns_hostname_type_on_launch            = "resource-name"
   tags = {
     "KubernetesCluster"                              = "minimal-ipv6.example.com"
     "Name"                                           = "us-test-1a.minimal-ipv6.example.com"

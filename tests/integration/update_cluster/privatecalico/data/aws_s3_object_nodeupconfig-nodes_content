@@ -1,14 +1,16 @@
 Assets:
   amd64:
-  - 681c81b7934ae2bf38b9f12d891683972d1fbbf6d7d97e50940a47b139d41b35@https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kubelet
-  - 9f74f2fa7ee32ad07e17211725992248470310ca1988214518806b39b1dad9f0@https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kubectl
-  - 977824932d5667c7a37aa6a3cbba40100a6873e7bd97e83e8be837e3e7afd0a8@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-amd64-v0.8.7.tgz
-  - f6120552408175ca332fd3b5d31c5edd115d8426d6731664e4ea3951c5eee3b4@https://github.com/containerd/containerd/releases/download/v1.4.12/cri-containerd-cni-1.4.12-linux-amd64.tar.gz
+  - 3d98ac8b4fb8dc99f9952226f2565951cc366c442656a889facc5b1b2ec2ba52@https://storage.googleapis.com/kubernetes-release/release/v1.24.0/bin/linux/amd64/kubelet
+  - 94d686bb6772f6fb59e3a32beff908ab406b79acdfb2427abdc4ac3ce1bb98d7@https://storage.googleapis.com/kubernetes-release/release/v1.24.0/bin/linux/amd64/kubectl
+  - 962100bbc4baeaaa5748cdbfce941f756b1531c2eadb290129401498bfac21e7@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz
+  - f23c8ac914d748f85df94d3e82d11ca89ca9fe19a220ce61b99a05b070044de0@https://github.com/containerd/containerd/releases/download/v1.6.4/containerd-1.6.4-linux-amd64.tar.gz
+  - e0436dfc5d26ca88f00e84cbdab5801dd9829b1e5ded05dcfc162ce5718c32ce@https://github.com/opencontainers/runc/releases/download/v1.1.2/runc.amd64
   arm64:
-  - 17832b192be5ea314714f7e16efd5e5f65347974bbbf41def6b02f68931380c4@https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/arm64/kubelet
-  - a4dd7100f547a40d3e2f83850d0bab75c6ea5eb553f0a80adcf73155bef1fd0d@https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/arm64/kubectl
-  - ae13d7b5c05bd180ea9b5b68f44bdaa7bfb41034a2ef1d68fd8e1259797d642f@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-arm64-v0.8.7.tgz
-  - 87a4219c54552797ffd38790b72832372a90eceb7c8e451c36a682093d57dae6@https://download.docker.com/linux/static/stable/aarch64/docker-20.10.11.tgz
+  - 8f066c9a048dd1704bf22ccf6e994e2fa2ea1175c9768a786f6cb6608765025e@https://storage.googleapis.com/kubernetes-release/release/v1.24.0/bin/linux/arm64/kubelet
+  - 449278789de283648e4076ade46816da249714f96e71567e035e9d17e1fff06d@https://storage.googleapis.com/kubernetes-release/release/v1.24.0/bin/linux/arm64/kubectl
+  - ef17764ffd6cdcb16d76401bac1db6acc050c9b088f1be5efa0e094ea3b01df0@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-arm64-v0.9.1.tgz
+  - 0205bd1907154388dc85b1afeeb550cbb44c470ef4a290cb1daf91501c85cae6@https://github.com/containerd/containerd/releases/download/v1.6.4/containerd-1.6.4-linux-arm64.tar.gz
+  - 6ebd968d46d00a3886e9a0cae2e0a7b399e110cf5d7b26e63ce23c1d81ea10ef@https://github.com/opencontainers/runc/releases/download/v1.1.2/runc.arm64
 CAs:
   kubernetes-ca: |
     -----BEGIN CERTIFICATE-----
@@ -41,19 +43,21 @@ KubeletConfig:
   anonymousAuth: false
   cgroupDriver: systemd
   cgroupRoot: /
-  cloudProvider: aws
+  cloudProvider: external
   clusterDNS: 100.64.0.10
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+  featureGates:
+    CSIMigrationAWS: "true"
+    InTreePluginAWSUnregister: "true"
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
-  networkPluginName: cni
   nodeLabels:
-    kubernetes.io/role: node
     node-role.kubernetes.io/node: ""
   podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
+  protectKernelDefaults: true
   shutdownGracePeriod: 30s
   shutdownGracePeriodCriticalPods: 10s
 UpdatePolicy: automatic
@@ -61,4 +65,5 @@ channels:
 - memfs://clusters.example.com/privatecalico.example.com/addons/bootstrap-channel.yaml
 containerdConfig:
   logLevel: info
-  version: 1.4.12
+  version: 1.6.4
+useInstanceIDForNodeName: true
