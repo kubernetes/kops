@@ -34,22 +34,17 @@
             "PropagateAtLaunch": true
           },
           {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/instancegroup",
+            "Value": "master-us-test-1a",
+            "PropagateAtLaunch": true
+          },
+          {
             "Key": "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki",
             "Value": "",
             "PropagateAtLaunch": true
           },
           {
-            "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
-            "Value": "master",
-            "PropagateAtLaunch": true
-          },
-          {
             "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane",
-            "Value": "",
-            "PropagateAtLaunch": true
-          },
-          {
-            "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master",
             "Value": "",
             "PropagateAtLaunch": true
           },
@@ -111,8 +106,8 @@
             ]
           }
         },
-        "MaxSize": "2",
-        "MinSize": "2",
+        "MaxSize": "1",
+        "MinSize": "1",
         "VPCZoneIdentifier": [
           {
             "Ref": "AWSEC2Subnetustest1aminimalipv6examplecom"
@@ -130,8 +125,8 @@
             "PropagateAtLaunch": true
           },
           {
-            "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
-            "Value": "node",
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/instancegroup",
+            "Value": "nodes",
             "PropagateAtLaunch": true
           },
           {
@@ -250,10 +245,6 @@
                 "DeleteOnTermination": true,
                 "Encrypted": true
               }
-            },
-            {
-              "DeviceName": "/dev/sdc",
-              "VirtualName": "ephemeral0"
             }
           ],
           "IamInstanceProfile": {
@@ -262,11 +253,11 @@
             }
           },
           "ImageId": "ami-12345678",
-          "InstanceType": "m3.medium",
+          "InstanceType": "t3.medium",
           "KeyName": "kubernetes.minimal-ipv6.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
           "MetadataOptions": {
             "HttpPutResponseHopLimit": 1,
-            "HttpTokens": "optional"
+            "HttpTokens": "required"
           },
           "Monitoring": {
             "Enabled": false
@@ -297,19 +288,15 @@
                   "Value": "master-us-test-1a.masters.minimal-ipv6.example.com"
                 },
                 {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/instancegroup",
+                  "Value": "master-us-test-1a"
+                },
+                {
                   "Key": "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki",
                   "Value": ""
                 },
                 {
-                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
-                  "Value": "master"
-                },
-                {
                   "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane",
-                  "Value": ""
-                },
-                {
-                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master",
                   "Value": ""
                 },
                 {
@@ -342,19 +329,15 @@
                   "Value": "master-us-test-1a.masters.minimal-ipv6.example.com"
                 },
                 {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/instancegroup",
+                  "Value": "master-us-test-1a"
+                },
+                {
                   "Key": "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki",
                   "Value": ""
                 },
                 {
-                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
-                  "Value": "master"
-                },
-                {
                   "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane",
-                  "Value": ""
-                },
-                {
-                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master",
                   "Value": ""
                 },
                 {
@@ -404,11 +387,11 @@
             }
           },
           "ImageId": "ami-12345678",
-          "InstanceType": "t2.medium",
+          "InstanceType": "t3.medium",
           "KeyName": "kubernetes.minimal-ipv6.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
           "MetadataOptions": {
-            "HttpPutResponseHopLimit": 1,
-            "HttpTokens": "optional"
+            "HttpPutResponseHopLimit": 3,
+            "HttpTokens": "required"
           },
           "Monitoring": {
             "Enabled": false
@@ -439,8 +422,8 @@
                   "Value": "nodes.minimal-ipv6.example.com"
                 },
                 {
-                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
-                  "Value": "node"
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/instancegroup",
+                  "Value": "nodes"
                 },
                 {
                   "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node",
@@ -472,8 +455,8 @@
                   "Value": "nodes.minimal-ipv6.example.com"
                 },
                 {
-                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
-                  "Value": "node"
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/instancegroup",
+                  "Value": "nodes"
                 },
                 {
                   "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node",
@@ -1423,13 +1406,6 @@
                 "autoscaling:DescribeLaunchConfigurations",
                 "autoscaling:DescribeTags",
                 "ec2:AssignIpv6Addresses",
-                "ec2:AttachVolume",
-                "ec2:AuthorizeSecurityGroupIngress",
-                "ec2:CreateSecurityGroup",
-                "ec2:CreateTags",
-                "ec2:DeleteRoute",
-                "ec2:DeleteSecurityGroup",
-                "ec2:DeleteVolume",
                 "ec2:DescribeAccountAttributes",
                 "ec2:DescribeInstanceTypes",
                 "ec2:DescribeInstances",
@@ -1443,20 +1419,20 @@
                 "ec2:DescribeVolumes",
                 "ec2:DescribeVolumesModifications",
                 "ec2:DescribeVpcs",
-                "ec2:DetachVolume",
-                "ec2:ModifyInstanceAttribute",
                 "ec2:ModifyNetworkInterfaceAttribute",
-                "ec2:ModifyVolume",
-                "elasticloadbalancing:AddTags",
-                "elasticloadbalancing:CreateListener",
-                "elasticloadbalancing:CreateTargetGroup",
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:BatchGetImage",
+                "ecr:DescribeRepositories",
+                "ecr:GetAuthorizationToken",
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:GetRepositoryPolicy",
+                "ecr:ListImages",
                 "elasticloadbalancing:DescribeListeners",
                 "elasticloadbalancing:DescribeLoadBalancerAttributes",
                 "elasticloadbalancing:DescribeLoadBalancerPolicies",
                 "elasticloadbalancing:DescribeLoadBalancers",
                 "elasticloadbalancing:DescribeTargetGroups",
                 "elasticloadbalancing:DescribeTargetHealth",
-                "elasticloadbalancing:RegisterTargets",
                 "iam:GetServerCertificate",
                 "iam:ListServerCertificates",
                 "kms:DescribeKey",
@@ -1576,6 +1552,13 @@
                 "ec2:DescribeInstances",
                 "ec2:DescribeRegions",
                 "ec2:ModifyNetworkInterfaceAttribute",
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:BatchGetImage",
+                "ecr:DescribeRepositories",
+                "ecr:GetAuthorizationToken",
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:GetRepositoryPolicy",
+                "ecr:ListImages",
                 "iam:GetServerCertificate",
                 "iam:ListServerCertificates",
                 "kms:GenerateRandom"
