@@ -143,7 +143,7 @@ func (_ *LBListener) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, chan
 			ProtocolPort:   443,
 		}
 
-		if useVIPACL {
+		if useVIPACL && (fi.StringValue(e.Pool.Loadbalancer.Provider) != "ovn") {
 			listeneropts.AllowedCIDRs = e.AllowedCIDRs
 		}
 
@@ -154,7 +154,7 @@ func (_ *LBListener) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, chan
 		e.ID = fi.String(listener.ID)
 		return nil
 	} else if len(changes.AllowedCIDRs) > 0 {
-		if useVIPACL {
+		if useVIPACL && (fi.StringValue(e.Pool.Loadbalancer.Provider) != "ovn") {
 			opts := listeners.UpdateOpts{
 				AllowedCIDRs: &changes.AllowedCIDRs,
 			}
