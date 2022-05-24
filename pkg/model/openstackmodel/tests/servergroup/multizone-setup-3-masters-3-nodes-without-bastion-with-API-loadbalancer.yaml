@@ -24,6 +24,7 @@ LB:
   Lifecycle: Sync
   Name: master-public-name
   PortID: null
+  Provider: null
   SecurityGroup:
     Description: null
     ID: null
@@ -617,6 +618,7 @@ ID: null
 Lifecycle: Sync
 Name: master-public-name
 PortID: null
+Provider: null
 SecurityGroup:
   Description: null
   ID: null
@@ -639,6 +641,7 @@ Pool:
     Lifecycle: Sync
     Name: master-public-name
     PortID: null
+    Provider: null
     SecurityGroup:
       Description: null
       ID: null
@@ -657,6 +660,7 @@ Loadbalancer:
   Lifecycle: Sync
   Name: master-public-name
   PortID: null
+  Provider: null
   SecurityGroup:
     Description: null
     ID: null
@@ -740,6 +744,7 @@ Pool:
     Lifecycle: Sync
     Name: master-public-name
     PortID: null
+    Provider: null
     SecurityGroup:
       Description: null
       ID: null
@@ -774,6 +779,7 @@ Pool:
     Lifecycle: Sync
     Name: master-public-name
     PortID: null
+    Provider: null
     SecurityGroup:
       Description: null
       ID: null
@@ -808,6 +814,7 @@ Pool:
     Lifecycle: Sync
     Name: master-public-name
     PortID: null
+    Provider: null
     SecurityGroup:
       Description: null
       ID: null
@@ -841,6 +848,7 @@ Pool:
     Lifecycle: Sync
     Name: master-public-name
     PortID: null
+    Provider: null
     SecurityGroup:
       Description: null
       ID: null

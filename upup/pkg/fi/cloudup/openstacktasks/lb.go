@@ -40,6 +40,7 @@ type LB struct {
 	Lifecycle     fi.Lifecycle
 	PortID        *string
 	SecurityGroup *SecurityGroup
+	Provider      *string
 }
 
 const (
@@ -124,6 +125,7 @@ func NewLBTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle, 
 		PortID:    fi.String(lb.VipPortID),
 		Subnet:    fi.String(sub.Name),
 		VipSubnet: fi.String(lb.VipSubnetID),
+		Provider:  fi.String(lb.Provider),
 	}
 
 	if secGroup {
@@ -212,6 +214,7 @@ func (_ *LB) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *LB)
 		e.ID = fi.String(lb.ID)
 		e.PortID = fi.String(lb.VipPortID)
 		e.VipSubnet = fi.String(lb.VipSubnetID)
+		e.Provider = fi.String(lb.Provider)
 
 		if e.SecurityGroup != nil {
 			opts := ports.UpdateOpts{

@@ -1236,9 +1236,13 @@ func initializeOpenstackAPI(opt *NewClusterOptions, cluster *api.Cluster) {
 			}
 		}
 
+		LbMethod := "ROUND_ROBIN"
+		if provider == "ovn" {
+			LbMethod = "SOURCE_IP_PORT"
+		}
 		cluster.Spec.CloudProvider.Openstack.Loadbalancer = &api.OpenstackLoadbalancerConfig{
 			FloatingNetwork: fi.String(opt.OpenstackExternalNet),
-			Method:          fi.String("ROUND_ROBIN"),
+			Method:          fi.String(LbMethod),
 			Provider:        fi.String(provider),
 			UseOctavia:      fi.Bool(opt.OpenstackLBOctavia),
 		}
