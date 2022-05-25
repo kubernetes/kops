@@ -65,15 +65,27 @@ func NewLBListenerTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lif
 		Lifecycle:    lifecycle,
 	}
 
-	for _, pool := range listener.Pools {
-		poolTask, err := NewLBPoolTaskFromCloud(cloud, lifecycle, &pool, find.Pool)
+	if len(listener.Pools) > 0 {
+		for _, pool := range listener.Pools {
+			poolTask, err := NewLBPoolTaskFromCloud(cloud, lifecycle, &pool, find.Pool)
+			if err != nil {
+				return nil, fmt.Errorf("NewLBListenerTaskFromCloud: Failed to create new LBListener task for pool %s: %v", pool.Name, err)
+			} else {
+				listenerTask.Pool = poolTask
+				// TODO: Support Multiple?
+				break
+			}
+		}
+	} else {
+		pool, err := cloud.GetPool(listener.DefaultPoolID)
+		if err != nil {
+			return nil, fmt.Errorf("Fail to get pool with ID: %s: %v", listener.DefaultPoolID, err)
+		}
+		poolTask, err := NewLBPoolTaskFromCloud(cloud, lifecycle, pool, find.Pool)
 		if err != nil {
 			return nil, fmt.Errorf("NewLBListenerTaskFromCloud: Failed to create new LBListener task for pool %s: %v", pool.Name, err)
-		} else {
-			listenerTask.Pool = poolTask
-			// TODO: Support Multiple?
-			break
 		}
+		listenerTask.Pool = poolTask
 	}
 	if find != nil {
 		// Update all search terms
@@ -154,7 +166,7 @@ func (_ *LBListener) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, chan
 		e.ID = fi.String(listener.ID)
 		return nil
 	} else if len(changes.AllowedCIDRs) > 0 {
-		if useVIPACL && (fi.StringValue(e.Pool.Loadbalancer.Provider) != "ovn") {
+		if useVIPACL && (fi.StringValue(a.Pool.Loadbalancer.Provider) != "ovn") {
 			opts := listeners.UpdateOpts{
 				AllowedCIDRs: &changes.AllowedCIDRs,
 			}
