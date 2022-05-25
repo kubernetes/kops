@@ -139,6 +139,7 @@ func NewLBTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle, 
 		find.ID = actual.ID
 		find.PortID = actual.PortID
 		find.VipSubnet = actual.VipSubnet
+		find.Provider = actual.Provider
 	}
 	return actual, nil
 }

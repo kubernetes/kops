@@ -85,7 +85,7 @@ func (p *PoolAssociation) Find(context *fi.Context) (*PoolAssociation, error) {
 	// check is member already created
 	var found *v2pools.Member
 	for _, member := range a.Members {
-		poolMember, err := cloud.GetPool(a.ID, member.ID)
+		poolMember, err := cloud.GetPoolMember(a.ID, member.ID)
 		if err != nil {
 			return nil, err
 		}
