@@ -369,8 +369,12 @@ func (c *MockCloud) GetLBFloatingSubnet() (subnet *subnets.Subnet, err error) {
 	return getLBFloatingSubnet(c, c.floatingSubnet)
 }
 
-func (c *MockCloud) GetPool(poolID string, memberID string) (member *v2pools.Member, err error) {
-	return getPool(c, poolID, memberID)
+func (c *MockCloud) GetPool(poolID string) (pool *v2pools.Pool, err error) {
+	return getPool(c, poolID)
+}
+
+func (c *MockCloud) GetPoolMember(poolID string, memberID string) (member *v2pools.Member, err error) {
+	return getPoolMember(c, poolID, memberID)
 }
 
 func (c *MockCloud) GetPort(id string) (*ports.Port, error) {
