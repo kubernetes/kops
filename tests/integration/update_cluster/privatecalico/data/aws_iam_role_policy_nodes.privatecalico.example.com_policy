@@ -31,6 +31,13 @@
         "ec2:DescribeInstances",
         "ec2:DescribeRegions",
         "ec2:ModifyNetworkInterfaceAttribute",
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:BatchGetImage",
+        "ecr:DescribeRepositories",
+        "ecr:GetAuthorizationToken",
+        "ecr:GetDownloadUrlForLayer",
+        "ecr:GetRepositoryPolicy",
+        "ecr:ListImages",
         "iam:GetServerCertificate",
         "iam:ListServerCertificates",
         "kms:GenerateRandom"

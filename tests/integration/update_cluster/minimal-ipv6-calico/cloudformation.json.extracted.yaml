@@ -135,15 +135,15 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalipv6examplecom.Propert
   containerRuntime: containerd
   containerd:
     logLevel: info
-    version: 1.4.12
+    version: 1.6.4
   docker:
     skipInstall: true
   encryptionConfig: null
   etcdClusters:
     events:
-      version: 3.4.13
+      version: 3.5.4
     main:
-      version: 3.4.13
+      version: 3.5.4
   kubeAPIServer:
     allowPrivileged: true
     anonymousAuth: false
@@ -170,7 +170,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalipv6examplecom.Propert
     featureGates:
       CSIMigrationAWS: "true"
       InTreePluginAWSUnregister: "true"
-    image: registry.k8s.io/kube-apiserver:v1.21.0
+    image: registry.k8s.io/kube-apiserver:v1.24.0
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
@@ -201,20 +201,20 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalipv6examplecom.Propert
     featureGates:
       CSIMigrationAWS: "true"
       InTreePluginAWSUnregister: "true"
-    image: registry.k8s.io/kube-controller-manager:v1.21.0
+    image: registry.k8s.io/kube-controller-manager:v1.24.0
     leaderElection:
       leaderElect: true
     logLevel: 2
     useServiceAccountCredentials: true
   kubeProxy:
     cpuRequest: 100m
-    image: registry.k8s.io/kube-proxy:v1.21.0
+    image: registry.k8s.io/kube-proxy:v1.24.0
     logLevel: 2
   kubeScheduler:
     featureGates:
       CSIMigrationAWS: "true"
       InTreePluginAWSUnregister: "true"
-    image: registry.k8s.io/kube-scheduler:v1.21.0
+    image: registry.k8s.io/kube-scheduler:v1.24.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -232,9 +232,9 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalipv6examplecom.Propert
       InTreePluginAWSUnregister: "true"
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    networkPluginName: cni
     podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
+    protectKernelDefaults: true
     shutdownGracePeriod: 30s
     shutdownGracePeriodCriticalPods: 10s
   masterKubelet:
@@ -251,9 +251,9 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalipv6examplecom.Propert
       InTreePluginAWSUnregister: "true"
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    networkPluginName: cni
     podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
+    protectKernelDefaults: true
     registerSchedulable: false
     shutdownGracePeriod: 30s
     shutdownGracePeriodCriticalPods: 10s
@@ -265,7 +265,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalipv6examplecom.Propert
   ConfigBase: memfs://clusters.example.com/minimal-ipv6.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: MK0ADjiimAJft3zga357N1BVO5pDNmYLFsWDE8ejK2Q=
+  NodeupConfigHash: MBtPdYem3jr0OrwuTXnCWCDdA1tVBlNyFRg7sn26fds=
 
   __EOF_KUBE_ENV
 
@@ -408,12 +408,12 @@ Resources.AWSEC2LaunchTemplatenodesminimalipv6examplecom.Properties.LaunchTempla
   containerRuntime: containerd
   containerd:
     logLevel: info
-    version: 1.4.12
+    version: 1.6.4
   docker:
     skipInstall: true
   kubeProxy:
     cpuRequest: 100m
-    image: registry.k8s.io/kube-proxy:v1.21.0
+    image: registry.k8s.io/kube-proxy:v1.24.0
     logLevel: 2
   kubelet:
     anonymousAuth: false
@@ -429,9 +429,9 @@ Resources.AWSEC2LaunchTemplatenodesminimalipv6examplecom.Properties.LaunchTempla
       InTreePluginAWSUnregister: "true"
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    networkPluginName: cni
     podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
+    protectKernelDefaults: true
     shutdownGracePeriod: 30s
     shutdownGracePeriodCriticalPods: 10s
 
@@ -442,7 +442,7 @@ Resources.AWSEC2LaunchTemplatenodesminimalipv6examplecom.Properties.LaunchTempla
   ConfigBase: memfs://clusters.example.com/minimal-ipv6.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: jycf2UcZw5xd4lE+V/y/LowQ7qd9dg7399iHXUaYxF0=
+  NodeupConfigHash: bj/aCfw/GsuQbjywSyLjG0xl9bAo8+ZXkgr+63Q5l9s=
 
   __EOF_KUBE_ENV
 
