@@ -290,9 +290,13 @@ type CiliumNetworkingSpec struct {
 	// AgentLabels is unused.
 	// +k8s:conversion-gen=false
 	AgentLabels []string `json:"agentLabels,omitempty"`
+
 	// AgentPrometheusPort is the port to listen to for Prometheus metrics.
 	// Defaults to 9090.
 	AgentPrometheusPort int `json:"agentPrometheusPort,omitempty"`
+	// Metrics is a list of metrics to add or remove from the default list of metrics the agent exposes.
+	Metrics []string `json:"metrics,omitempty"`
+
 	// AllowLocalhost is unused.
 	// +k8s:conversion-gen=false
 	AllowLocalhost string `json:"allowLocalhost,omitempty"`
