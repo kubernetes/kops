@@ -8,12 +8,6 @@ spec:
     loadBalancer:
       type: Public
       class: Network
-  kubernetesApiAccess:
-  - 0.0.0.0/0
-  - ::/0
-  sshAccess:
-  - 0.0.0.0/0
-  - ::/0
   channel: stable
   cloudConfig:
     awsEBSCSIDriver:
@@ -30,25 +24,33 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: events
-  iam: {}
+  iam:
+    allowContainerRegistry: true
+    legacy: false
   kubelet:
     anonymousAuth: false
-  kubernetesVersion: v1.21.0
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  - ::/0
+  kubernetesVersion: v1.24.0
   masterInternalName: api.internal.minimal-ipv6.example.com
   masterPublicName: api.minimal-ipv6.example.com
   networkCIDR: 172.20.0.0/16
   networking:
     calico: {}
   nonMasqueradeCIDR: ::/0
-  topology:
-    masters: public
-    nodes: public
+  sshAccess:
+  - 0.0.0.0/0
+  - ::/0
   subnets:
   - cidr: 172.20.32.0/19
     ipv6CIDR: 2001:db8:0:111::/64
     name: us-test-1a
     type: Public
     zone: us-test-1a
+  topology:
+    masters: public
+    nodes: public
 
 ---
 
@@ -56,16 +58,20 @@ apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2016-12-10T22:42:28Z"
-  name: nodes
   labels:
     kops.k8s.io/cluster: minimal-ipv6.example.com
+  name: master-us-test-1a
 spec:
-  associatePublicIp: true
   image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
-  machineType: t2.medium
-  maxSize: 2
-  minSize: 2
-  role: Node
+  instanceMetadata:
+    httpPutResponseHopLimit: 1
+    httpTokens: required
+  machineType: t3.medium
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-us-test-1a
+  role: Master
   subnets:
   - us-test-1a
 
@@ -75,15 +81,19 @@ apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2016-12-10T22:42:28Z"
-  name: master-us-test-1a
   labels:
     kops.k8s.io/cluster: minimal-ipv6.example.com
+  name: nodes
 spec:
-  associatePublicIp: true
   image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
-  machineType: m3.medium
+  instanceMetadata:
+    httpPutResponseHopLimit: 3
+    httpTokens: required
+  machineType: t3.medium
   maxSize: 1
   minSize: 1
-  role: Master
+  nodeLabels:
+    kops.k8s.io/instancegroup: nodes
+  role: Node
   subnets:
   - us-test-1a
