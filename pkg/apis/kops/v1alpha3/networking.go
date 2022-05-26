@@ -262,6 +262,9 @@ type CiliumNetworkingSpec struct {
 	// AgentPrometheusPort is the port to listen to for Prometheus metrics.
 	// Defaults to 9090.
 	AgentPrometheusPort int `json:"agentPrometheusPort,omitempty"`
+	// Metrics is a list of metrics to add or remove from the default list of metrics the agent exposes.
+	Metrics []string `json:"metrics,omitempty"`
+
 	// ChainingMode allows using Cilium in combination with other CNI plugins.
 	// With Cilium CNI chaining, the base network connectivity and IP address management is managed
 	// by the non-Cilium CNI plugin, but Cilium attaches eBPF programs to the network devices created

@@ -555,6 +555,11 @@ func (in *CiliumNetworkingSpec) DeepCopyInto(out *CiliumNetworkingSpec) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.Metrics != nil {
+		in, out := &in.Metrics, &out.Metrics
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.ContainerRuntime != nil {
 		in, out := &in.ContainerRuntime, &out.ContainerRuntime
 		*out = make([]string, len(*in))

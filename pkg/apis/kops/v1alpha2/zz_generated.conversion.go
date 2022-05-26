@@ -1916,6 +1916,7 @@ func autoConvert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	// INFO: in.AccessLog opted out of conversion generation
 	// INFO: in.AgentLabels opted out of conversion generation
 	out.AgentPrometheusPort = in.AgentPrometheusPort
+	out.Metrics = in.Metrics
 	// INFO: in.AllowLocalhost opted out of conversion generation
 	// INFO: in.AutoIpv6NodeRoutes opted out of conversion generation
 	// INFO: in.BPFRoot opted out of conversion generation
@@ -2022,6 +2023,7 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha2_CiliumNetworkingSpec(in *
 	out.MemoryRequest = in.MemoryRequest
 	out.CPURequest = in.CPURequest
 	out.AgentPrometheusPort = in.AgentPrometheusPort
+	out.Metrics = in.Metrics
 	out.ChainingMode = in.ChainingMode
 	out.Debug = in.Debug
 	out.DisableEndpointCRD = in.DisableEndpointCRD

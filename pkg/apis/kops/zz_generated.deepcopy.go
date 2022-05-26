@@ -648,6 +648,11 @@ func (in *CiliumNetworkingSpec) DeepCopyInto(out *CiliumNetworkingSpec) {
 		x := (*in).DeepCopy()
 		*out = &x
 	}
+	if in.Metrics != nil {
+		in, out := &in.Metrics, &out.Metrics
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.EnableL7Proxy != nil {
 		in, out := &in.EnableL7Proxy, &out.EnableL7Proxy
 		*out = new(bool)
