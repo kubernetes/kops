@@ -1940,6 +1940,7 @@ func autoConvert_v1alpha3_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	out.MemoryRequest = in.MemoryRequest
 	out.CPURequest = in.CPURequest
 	out.AgentPrometheusPort = in.AgentPrometheusPort
+	out.Metrics = in.Metrics
 	out.ChainingMode = in.ChainingMode
 	out.Debug = in.Debug
 	out.DisableEndpointCRD = in.DisableEndpointCRD
@@ -2001,6 +2002,7 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha3_CiliumNetworkingSpec(in *
 	out.MemoryRequest = in.MemoryRequest
 	out.CPURequest = in.CPURequest
 	out.AgentPrometheusPort = in.AgentPrometheusPort
+	out.Metrics = in.Metrics
 	out.ChainingMode = in.ChainingMode
 	out.Debug = in.Debug
 	out.DisableEndpointCRD = in.DisableEndpointCRD
