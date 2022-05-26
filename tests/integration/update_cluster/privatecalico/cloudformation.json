@@ -34,11 +34,6 @@
             "PropagateAtLaunch": true
           },
           {
-            "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
-            "Value": "node",
-            "PropagateAtLaunch": true
-          },
-          {
             "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node",
             "Value": "",
             "PropagateAtLaunch": true
@@ -120,17 +115,7 @@
             "PropagateAtLaunch": true
           },
           {
-            "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
-            "Value": "master",
-            "PropagateAtLaunch": true
-          },
-          {
             "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane",
-            "Value": "",
-            "PropagateAtLaunch": true
-          },
-          {
-            "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master",
             "Value": "",
             "PropagateAtLaunch": true
           },
@@ -208,11 +193,6 @@
           {
             "Key": "Name",
             "Value": "nodes.privatecalico.example.com",
-            "PropagateAtLaunch": true
-          },
-          {
-            "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
-            "Value": "node",
             "PropagateAtLaunch": true
           },
           {
@@ -339,7 +319,7 @@
             }
           },
           "ImageId": "ami-12345678",
-          "InstanceType": "t2.micro",
+          "InstanceType": "t3.micro",
           "KeyName": "kubernetes.privatecalico.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
           "MetadataOptions": {
             "HttpPutResponseHopLimit": 1,
@@ -374,10 +354,6 @@
                   "Value": "bastion.privatecalico.example.com"
                 },
                 {
-                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
-                  "Value": "node"
-                },
-                {
                   "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node",
                   "Value": ""
                 },
@@ -405,10 +381,6 @@
                 {
                   "Key": "Name",
                   "Value": "bastion.privatecalico.example.com"
-                },
-                {
-                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
-                  "Value": "node"
                 },
                 {
                   "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node",
@@ -449,10 +421,6 @@
                 "DeleteOnTermination": true,
                 "Encrypted": true
               }
-            },
-            {
-              "DeviceName": "/dev/sdc",
-              "VirtualName": "ephemeral0"
             }
           ],
           "IamInstanceProfile": {
@@ -461,11 +429,11 @@
             }
           },
           "ImageId": "ami-12345678",
-          "InstanceType": "m3.medium",
+          "InstanceType": "t3.medium",
           "KeyName": "kubernetes.privatecalico.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
           "MetadataOptions": {
             "HttpPutResponseHopLimit": 1,
-            "HttpTokens": "optional"
+            "HttpTokens": "required"
           },
           "Monitoring": {
             "Enabled": false
@@ -500,15 +468,7 @@
                   "Value": ""
                 },
                 {
-                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
-                  "Value": "master"
-                },
-                {
                   "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane",
-                  "Value": ""
-                },
-                {
-                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master",
                   "Value": ""
                 },
                 {
@@ -545,15 +505,7 @@
                   "Value": ""
                 },
                 {
-                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
-                  "Value": "master"
-                },
-                {
                   "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane",
-                  "Value": ""
-                },
-                {
-                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master",
                   "Value": ""
                 },
                 {
@@ -603,11 +555,11 @@
             }
           },
           "ImageId": "ami-12345678",
-          "InstanceType": "t2.medium",
+          "InstanceType": "t3.medium",
           "KeyName": "kubernetes.privatecalico.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
           "MetadataOptions": {
-            "HttpPutResponseHopLimit": 1,
-            "HttpTokens": "optional"
+            "HttpPutResponseHopLimit": 3,
+            "HttpTokens": "required"
           },
           "Monitoring": {
             "Enabled": false
@@ -638,10 +590,6 @@
                   "Value": "nodes.privatecalico.example.com"
                 },
                 {
-                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
-                  "Value": "node"
-                },
-                {
                   "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node",
                   "Value": ""
                 },
@@ -669,10 +617,6 @@
                 {
                   "Key": "Name",
                   "Value": "nodes.privatecalico.example.com"
-                },
-                {
-                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
-                  "Value": "node"
                 },
                 {
                   "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node",
@@ -957,6 +901,30 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
+    "AWSEC2SecurityGroupIngressfrom0ingresstcp22to22bastionelbprivatecalicoexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupbastionelbprivatecalicoexamplecom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp",
+        "CidrIpv6": "::/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfrom0ingresstcp443to443apielbprivatecalicoexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupapielbprivatecalicoexamplecom"
+        },
+        "FromPort": 443,
+        "ToPort": 443,
+        "IpProtocol": "tcp",
+        "CidrIpv6": "::/0"
+      }
+    },
     "AWSEC2SecurityGroupIngressfrombastionelbprivatecalicoexamplecomingresstcp22to22bastionprivatecalicoexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
@@ -1135,6 +1103,18 @@
         "ToPort": 4,
         "IpProtocol": "icmp",
         "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressicmpv6pmtuapielb0": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupapielbprivatecalicoexamplecom"
+        },
+        "FromPort": -1,
+        "ToPort": -1,
+        "IpProtocol": "icmpv6",
+        "CidrIpv6": "::/0"
       }
     },
     "AWSEC2SecurityGroupapielbprivatecalicoexamplecom": {
@@ -1728,39 +1708,6 @@
                 "StringEquals": {
                   "aws:RequestTag/KubernetesCluster": "privatecalico.example.com",
                   "ec2:CreateAction": [
-                    "CreateSecurityGroup"
-                  ]
-                }
-              },
-              "Effect": "Allow",
-              "Resource": [
-                "arn:aws-test:ec2:*:*:security-group/*"
-              ]
-            },
-            {
-              "Action": [
-                "ec2:CreateTags",
-                "ec2:DeleteTags"
-              ],
-              "Condition": {
-                "Null": {
-                  "aws:RequestTag/KubernetesCluster": "true"
-                },
-                "StringEquals": {
-                  "aws:ResourceTag/KubernetesCluster": "privatecalico.example.com"
-                }
-              },
-              "Effect": "Allow",
-              "Resource": [
-                "arn:aws-test:ec2:*:*:security-group/*"
-              ]
-            },
-            {
-              "Action": "ec2:CreateTags",
-              "Condition": {
-                "StringEquals": {
-                  "aws:RequestTag/KubernetesCluster": "privatecalico.example.com",
-                  "ec2:CreateAction": [
                     "CreateVolume",
                     "CreateSnapshot"
                   ]
@@ -1792,18 +1739,44 @@
               ]
             },
             {
+              "Action": "ec2:CreateTags",
+              "Condition": {
+                "StringEquals": {
+                  "aws:RequestTag/KubernetesCluster": "privatecalico.example.com",
+                  "ec2:CreateAction": [
+                    "CreateSecurityGroup"
+                  ]
+                }
+              },
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws-test:ec2:*:*:security-group/*"
+              ]
+            },
+            {
+              "Action": [
+                "ec2:CreateTags",
+                "ec2:DeleteTags"
+              ],
+              "Condition": {
+                "Null": {
+                  "aws:RequestTag/KubernetesCluster": "true"
+                },
+                "StringEquals": {
+                  "aws:ResourceTag/KubernetesCluster": "privatecalico.example.com"
+                }
+              },
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws-test:ec2:*:*:security-group/*"
+              ]
+            },
+            {
               "Action": [
                 "autoscaling:DescribeAutoScalingGroups",
                 "autoscaling:DescribeAutoScalingInstances",
                 "autoscaling:DescribeLaunchConfigurations",
                 "autoscaling:DescribeTags",
-                "ec2:AttachVolume",
-                "ec2:AuthorizeSecurityGroupIngress",
-                "ec2:CreateSecurityGroup",
-                "ec2:CreateTags",
-                "ec2:DeleteRoute",
-                "ec2:DeleteSecurityGroup",
-                "ec2:DeleteVolume",
                 "ec2:DescribeAccountAttributes",
                 "ec2:DescribeInstanceTypes",
                 "ec2:DescribeInstances",
@@ -1816,20 +1789,20 @@
                 "ec2:DescribeVolumes",
                 "ec2:DescribeVolumesModifications",
                 "ec2:DescribeVpcs",
-                "ec2:DetachVolume",
-                "ec2:ModifyInstanceAttribute",
                 "ec2:ModifyNetworkInterfaceAttribute",
-                "ec2:ModifyVolume",
-                "elasticloadbalancing:AddTags",
-                "elasticloadbalancing:CreateListener",
-                "elasticloadbalancing:CreateTargetGroup",
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:BatchGetImage",
+                "ecr:DescribeRepositories",
+                "ecr:GetAuthorizationToken",
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:GetRepositoryPolicy",
+                "ecr:ListImages",
                 "elasticloadbalancing:DescribeListeners",
                 "elasticloadbalancing:DescribeLoadBalancerAttributes",
                 "elasticloadbalancing:DescribeLoadBalancerPolicies",
                 "elasticloadbalancing:DescribeLoadBalancers",
                 "elasticloadbalancing:DescribeTargetGroups",
                 "elasticloadbalancing:DescribeTargetHealth",
-                "elasticloadbalancing:RegisterTargets",
                 "iam:GetServerCertificate",
                 "iam:ListServerCertificates",
                 "kms:DescribeKey",
@@ -1948,6 +1921,13 @@
                 "ec2:DescribeInstances",
                 "ec2:DescribeRegions",
                 "ec2:ModifyNetworkInterfaceAttribute",
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:BatchGetImage",
+                "ecr:DescribeRepositories",
+                "ecr:GetAuthorizationToken",
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:GetRepositoryPolicy",
+                "ecr:ListImages",
                 "iam:GetServerCertificate",
                 "iam:ListServerCertificates",
                 "kms:GenerateRandom"
