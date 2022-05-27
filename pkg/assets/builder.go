@@ -156,6 +156,10 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 		}
 	}
 
+	if !featureflag.RegistrySandbox.Enabled() {
+		image = strings.ReplaceAll(image, "registry.k8s.io", "registry-sandbox.k8s.io")
+	}
+
 	if a.AssetsLocation != nil && a.AssetsLocation.ContainerProxy != nil {
 		containerProxy := strings.TrimSuffix(*a.AssetsLocation.ContainerProxy, "/")
 		normalized := image

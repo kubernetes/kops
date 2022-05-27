@@ -92,6 +92,8 @@ var (
 	Karpenter = new("Karpenter", Bool(false))
 	// ImageDigest remaps all manifests with image digests
 	ImageDigest = new("ImageDigest", Bool(true))
+	// RegistrySandbox switches images pulled from registry.k8s.io to registry-sandbox.k8s.io
+	RegistrySandbox = new("RegistrySandbox", Bool(false))
 	// Hetzner toggles the Hetzner Cloud support.
 	Hetzner = new("Hetzner", Bool(false))
 )
