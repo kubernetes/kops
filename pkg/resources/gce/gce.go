@@ -1292,16 +1292,20 @@ func (d *clusterDiscoveryGCE) listGCEDNSZone() ([]*resources.Resource, error) {
 	}
 
 	for _, zone := range managedZones {
-		if creator, ok := zone.Labels["created-by"]; ok && creator == "kops" {
-			resource := resources.Resource{
-				Name:    zone.Name,
-				ID:      zone.Name,
-				Type:    typeManagedZone,
-				Deleter: deleteManagedZone,
-				Obj:     zone,
-			}
-			resourceTrackers = append(resourceTrackers, &resource)
+		if cluster, ok := zone.Labels["cluster"]; !ok || cluster != d.clusterName {
+			continue
 		}
+		if creator, ok := zone.Labels["created-by"]; !ok || creator != "kops" {
+			continue
+		}
+		resource := resources.Resource{
+			Name:    zone.Name,
+			ID:      zone.Name,
+			Type:    typeManagedZone,
+			Deleter: deleteManagedZone,
+			Obj:     zone,
+		}
+		resourceTrackers = append(resourceTrackers, &resource)
 
 		if !strings.HasSuffix(d.clusterDNSName(), zone.DnsName) {
 			continue
