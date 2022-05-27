@@ -4901,6 +4901,12 @@ spec:
                           + operator container. (default: 128Mi)'
                         pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                         x-kubernetes-int-or-string: true
+                      metrics:
+                        description: Metrics is a list of metrics to add or remove
+                          from the default list of metrics the agent exposes.
+                        items:
+                          type: string
+                        type: array
                       monitorAggregation:
                         description: 'MonitorAggregation sets the level of packet
                           monitoring. Possible values are "low", "medium", or "maximum".

@@ -85,6 +85,15 @@ data:
   enable-metrics: "true"
   {{ end }}
 
+  {{ if .Metrics }}
+  # Metrics that should be enabled or disabled from the default metric
+  # list. (+metric_foo to enable metric_foo , -metric_bar to disable
+  # metric_bar).
+  metrics: {{- range .Metrics }}
+    {{ . }}
+  {{- end }}
+  {{ end }}
+
   {{ if .EnableEncryption }}
   {{ if eq .EncryptionType "ipsec" }}
   enable-ipsec: "true"
