@@ -19,7 +19,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"net"
 	"os"
 	"path"
 	"strings"
@@ -92,79 +91,62 @@ func run() error {
 	flags.AddGoFlagSet(flag.CommandLine)
 	flags.Parse(os.Args)
 
-	var volumes protokube.Volumes
-	var internalIP net.IP
-
+	var cloudProvider protokube.CloudProvider
 	if cloud == "aws" {
-		awsVolumes, err := protokube.NewAWSVolumes()
+		awsCloudProvider, err := protokube.NewAWSCloudProvider()
 		if err != nil {
 			klog.Errorf("Error initializing AWS: %q", err)
 			os.Exit(1)
 		}
-		volumes = awsVolumes
-		internalIP = awsVolumes.InternalIP()
+		cloudProvider = awsCloudProvider
 
 	} else if cloud == "digitalocean" {
-		doVolumes, err := protokube.NewDOVolumes()
+		doCloudProvider, err := protokube.NewDOCloudProvider()
 		if err != nil {
 			klog.Errorf("Error initializing DigitalOcean: %q", err)
 			os.Exit(1)
 		}
-		volumes = doVolumes
-		internalIP, err = protokube.GetDropletInternalIP()
-		if err != nil {
-			klog.Errorf("Error getting droplet internal IP: %s", err)
-			os.Exit(1)
-		}
+		cloudProvider = doCloudProvider
 
 	} else if cloud == "hetzner" {
-		hetznerVolumes, err := protokube.NewHetznerVolumes()
+		hetznerCloudProvider, err := protokube.NewHetznerCloudProvider()
 		if err != nil {
 			klog.Errorf("error initializing Hetzner Cloud: %q", err)
 			os.Exit(1)
 		}
-		volumes = hetznerVolumes
-		internalIP, err = hetznerVolumes.InternalIP()
-		if err != nil {
-			klog.Errorf("error getting server internal IP: %s", err)
-			os.Exit(1)
-		}
+		cloudProvider = hetznerCloudProvider
 
 	} else if cloud == "gce" {
-		gceVolumes, err := protokube.NewGCEVolumes()
+		gceCloudProvider, err := protokube.NewGCECloudProvider()
 		if err != nil {
 			klog.Errorf("Error initializing GCE: %q", err)
 			os.Exit(1)
 		}
 
-		volumes = gceVolumes
-		internalIP = gceVolumes.InternalIP()
+		cloudProvider = gceCloudProvider
 
 	} else if cloud == "openstack" {
-		klog.Info("Initializing openstack volumes")
-		osVolumes, err := protokube.NewOpenstackVolumes()
+		osCloudProvider, err := protokube.NewOpenStackCloudProvider()
 		if err != nil {
-			klog.Errorf("Error initializing openstack: %q", err)
+			klog.Errorf("Error initializing OpenStack: %q", err)
 			os.Exit(1)
 		}
-		volumes = osVolumes
-		internalIP = osVolumes.InternalIP()
+		cloudProvider = osCloudProvider
 
 	} else if cloud == "azure" {
-		klog.Info("Initializing Azure volumes")
-		azureVolumes, err := protokube.NewAzureVolumes()
+		azureVolumes, err := protokube.NewAzureCloudProvider()
 		if err != nil {
 			klog.Errorf("Error initializing Azure: %q", err)
 			os.Exit(1)
 		}
-		volumes = azureVolumes
-		internalIP = azureVolumes.InternalIP()
+		cloudProvider = azureVolumes
 
 	} else {
 		klog.Errorf("Unknown cloud %q", cloud)
 		os.Exit(1)
 	}
 
+	internalIP := cloudProvider.InstanceInternalIP()
 	if internalIP == nil {
 		klog.Errorf("Cannot determine internal IP")
 		os.Exit(1)
@@ -196,71 +178,31 @@ func run() error {
 			Path: path.Join(rootfs, "etc/hosts"),
 		}
 
-		var gossipSeeds gossiputils.SeedProvider
-		var err error
-		var gossipName string
-		if cloud == "aws" {
-			gossipSeeds, err = volumes.(*protokube.AWSVolumes).GossipSeeds()
-			if err != nil {
-				return err
-			}
-			gossipName = volumes.(*protokube.AWSVolumes).InstanceID()
-		} else if cloud == "gce" {
-			gossipSeeds, err = volumes.(*protokube.GCEVolumes).GossipSeeds()
-			if err != nil {
-				return err
-			}
-			gossipName = volumes.(*protokube.GCEVolumes).InstanceName()
-		} else if cloud == "openstack" {
-			gossipSeeds, err = volumes.(*protokube.OpenstackVolumes).GossipSeeds()
-			if err != nil {
-				return err
-			}
-			gossipName = volumes.(*protokube.OpenstackVolumes).InstanceName()
-		} else if cloud == "digitalocean" {
-			gossipSeeds, err = volumes.(*protokube.DOVolumes).GossipSeeds()
-			if err != nil {
-				return err
-			}
-			gossipName = volumes.(*protokube.DOVolumes).InstanceName()
-		} else if cloud == "hetzner" {
-			gossipSeeds, err = volumes.(*protokube.HetznerVolumes).GossipSeeds()
-			if err != nil {
-				return err
-			}
-			gossipName = volumes.(*protokube.HetznerVolumes).InstanceID()
-		} else if cloud == "azure" {
-			gossipSeeds, err = volumes.(*protokube.AzureVolumes).GossipSeeds()
-			if err != nil {
-				return err
-			}
-			gossipName = volumes.(*protokube.AzureVolumes).InstanceID()
-		} else {
-			klog.Fatalf("seed provider for %q not yet implemented", cloud)
+		gossipName := cloudProvider.InstanceID()
+		gossipSeeds, err := cloudProvider.GossipSeeds()
+		if err != nil {
+			klog.Errorf("error finding gossip seeds: %w", err)
 		}
 
 		channelName := "dns"
-		var gossipState gossiputils.GossipState
-
-		gossipState, err = gossiputils.GetGossipState(gossipProtocol, gossipListen, channelName, gossipName, []byte(gossipSecret), gossipSeeds)
+		gossipState, err := gossiputils.GetGossipState(gossipProtocol, gossipListen, channelName, gossipName, []byte(gossipSecret), gossipSeeds)
 		if err != nil {
-			klog.Errorf("Error initializing gossip: %v", err)
+			klog.Errorf("error initializing gossip: %w", err)
 			os.Exit(1)
 		}
 
 		if gossipProtocolSecondary != "" {
-
 			secondaryGossipState, err := gossiputils.GetGossipState(gossipProtocolSecondary, gossipListenSecondary, channelName, gossipName, []byte(gossipSecretSecondary), gossipSeeds)
 			if err != nil {
-				klog.Errorf("Error initializing secondary gossip: %v", err)
+				klog.Errorf("error initializing secondary gossip: %w", err)
 				os.Exit(1)
 			}
-
 			gossipState = &gossiputils.MultiGossipState{
 				Primary:   gossipState,
 				Secondary: secondaryGossipState,
 			}
 		}
+
 		go func() {
 			err := gossipState.Start()
 			if err != nil {
