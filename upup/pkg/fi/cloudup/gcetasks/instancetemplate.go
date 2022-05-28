@@ -75,6 +75,8 @@ type InstanceTemplate struct {
 
 	// ID is the actual name
 	ID *string
+
+	GuestAccelerators []AcceleratorConfig
 }
 
 var (
@@ -209,6 +211,16 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 		// System fields
 		actual.Lifecycle = e.Lifecycle
 
+		if p.GuestAccelerators != nil {
+			actual.GuestAccelerators = []AcceleratorConfig{}
+			for _, accelerator := range p.GuestAccelerators {
+				actual.GuestAccelerators = append(actual.GuestAccelerators, AcceleratorConfig{
+					AcceleratorCount: accelerator.AcceleratorCount,
+					AcceleratorType:  accelerator.AcceleratorType,
+				})
+			}
+		}
+
 		return actual, nil
 	}
 
@@ -338,12 +350,25 @@ func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.Ins
 		})
 	}
 
+	var accelerators []*compute.AcceleratorConfig
+	if e.GuestAccelerators != nil {
+		accelerators = []*compute.AcceleratorConfig{}
+		for _, accelerator := range e.GuestAccelerators {
+			accelerators = append(accelerators, &compute.AcceleratorConfig{
+				AcceleratorCount: accelerator.AcceleratorCount,
+				AcceleratorType:  accelerator.AcceleratorType,
+			})
+		}
+	}
+
 	i := &compute.InstanceTemplate{
 		Kind: "compute#instanceTemplate",
 		Properties: &compute.InstanceProperties{
 			CanIpForward: *e.CanIPForward,
 
 			Disks: disks,
+
+			GuestAccelerators: accelerators,
 
 			MachineType: *e.MachineType,
 

@@ -148,6 +148,8 @@ type InstanceGroupSpec struct {
 	UpdatePolicy *string `json:"updatePolicy,omitempty"`
 	// WarmPool configures an ASG warm pool for the instance group
 	WarmPool *WarmPoolSpec `json:"warmPool,omitempty"`
+	// GuestAccelerators configures additional accelerators
+	GuestAccelerators []AcceleratorConfig `json:"guestAccelerators,omitempty"`
 }
 
 // InstanceMetadataOptions defines the EC2 instance metadata service options (AWS Only)
@@ -242,4 +244,10 @@ type LoadBalancer struct {
 	LoadBalancerName *string `json:"loadBalancerName,omitempty"`
 	// TargetGroupARN to associate with this instance group (AWS ALB/NLB)
 	TargetGroupARN *string `json:"targetGroupARN,omitempty"`
+}
+
+// AcceleratorConfig defines an accelerator config
+type AcceleratorConfig struct {
+	AcceleratorCount int64  `json:"acceleratorCount,omitempty"`
+	AcceleratorType  string `json:"acceleratorType,omitempty"`
 }

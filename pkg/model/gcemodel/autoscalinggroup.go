@@ -86,7 +86,7 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderC
 				BootDiskImage:  s(ig.Spec.Image),
 
 				// TODO: Support preemptible nodes?
-				Preemptible: fi.Bool(false),
+				Preemptible: fi.Bool(ig.Spec.GuestAccelerators != nil && len(ig.Spec.GuestAccelerators) > 0),
 
 				HasExternalIP: fi.Bool(b.Cluster.Spec.Topology.Masters == kops.TopologyPublic),
 
@@ -172,6 +172,16 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderC
 			//	return fmt.Errorf("error building cloud tags: %v", err)
 			//}
 			//t.Labels = labels
+
+			if ig.Spec.GuestAccelerators != nil && len(ig.Spec.GuestAccelerators) > 0 {
+				t.GuestAccelerators = []gcetasks.AcceleratorConfig{}
+				for _, accelerator := range ig.Spec.GuestAccelerators {
+					t.GuestAccelerators = append(t.GuestAccelerators, gcetasks.AcceleratorConfig{
+						AcceleratorCount: accelerator.AcceleratorCount,
+						AcceleratorType:  accelerator.AcceleratorType,
+					})
+				}
+			}
 
 			return t, nil
 		}
