@@ -22,13 +22,9 @@ import (
 	"io"
 	"net"
 	"net/http"
-	"os"
 	"strings"
 
-	cinderv3 "github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach"
 	"k8s.io/klog/v2"
-	"k8s.io/kops/protokube/pkg/etcd"
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipos "k8s.io/kops/protokube/pkg/gossip/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
@@ -50,8 +46,8 @@ type InstanceMetadata struct {
 	ServerID         string    `json:"uuid"`
 }
 
-// GCEVolumes is the Volumes implementation for GCE
-type OpenstackVolumes struct {
+// OpenStackCloudProvider is the CloudProvider implementation for OpenStack
+type OpenStackCloudProvider struct {
 	cloud openstack.OpenstackCloud
 
 	meta *InstanceMetadata
@@ -63,7 +59,7 @@ type OpenstackVolumes struct {
 	storageZone  string
 }
 
-var _ Volumes = &OpenstackVolumes{}
+var _ CloudProvider = &OpenStackCloudProvider{}
 
 func getLocalMetadata() (*InstanceMetadata, error) {
 	var meta InstanceMetadata
@@ -88,8 +84,8 @@ func getLocalMetadata() (*InstanceMetadata, error) {
 	return nil, err
 }
 
-// NewOpenstackVolumes builds a OpenstackVolume
-func NewOpenstackVolumes() (*OpenstackVolumes, error) {
+// NewOpenStackCloudProvider builds a OpenstackVolume
+func NewOpenStackCloudProvider() (*OpenStackCloudProvider, error) {
 	metadata, err := getLocalMetadata()
 	if err != nil {
 		return nil, fmt.Errorf("Failed to get server metadata: %v", err)
@@ -101,10 +97,10 @@ func NewOpenstackVolumes() (*OpenstackVolumes, error) {
 
 	oscloud, err := openstack.NewOpenstackCloud(tags, nil, "protokube")
 	if err != nil {
-		return nil, fmt.Errorf("Failed to initialize OpenstackVolumes: %v", err)
+		return nil, fmt.Errorf("Failed to initialize OpenStackCloudProvider: %v", err)
 	}
 
-	a := &OpenstackVolumes{
+	a := &OpenStackCloudProvider{
 		cloud: oscloud,
 		meta:  metadata,
 	}
@@ -117,17 +113,17 @@ func NewOpenstackVolumes() (*OpenstackVolumes, error) {
 	return a, nil
 }
 
-// Project returns the current GCE project
-func (a *OpenstackVolumes) Project() string {
+// Project returns the current OpenStack project
+func (a *OpenStackCloudProvider) Project() string {
 	return a.meta.ProjectID
 }
 
-// InternalIP implements Volumes InternalIP
-func (a *OpenstackVolumes) InternalIP() net.IP {
+// InstanceInternalIP implements CloudProvider InstanceInternalIP
+func (a *OpenStackCloudProvider) InstanceInternalIP() net.IP {
 	return a.internalIP
 }
 
-func (a *OpenstackVolumes) discoverTags() error {
+func (a *OpenStackCloudProvider) discoverTags() error {
 	// Cluster Name
 	{
 		a.clusterName = strings.TrimSpace(string(a.meta.UserMeta.ClusterName))
@@ -185,99 +181,10 @@ func (a *OpenstackVolumes) discoverTags() error {
 	return nil
 }
 
-func (v *OpenstackVolumes) buildOpenstackVolume(d *cinderv3.Volume) (*Volume, error) {
-	volumeName := d.Name
-	vol := &Volume{
-		ID: d.ID,
-		Info: VolumeInfo{
-			Description: volumeName,
-		},
-	}
-
-	vol.Status = d.Status
-
-	for _, attachedTo := range d.Attachments {
-		vol.AttachedTo = attachedTo.HostName
-		if attachedTo.ServerID == v.meta.ServerID {
-			vol.LocalDevice = attachedTo.Device
-		}
-	}
-
-	// FIXME: Zone matters, broken in my env
-
-	for k, v := range d.Metadata {
-		if strings.HasPrefix(k, openstack.TagNameEtcdClusterPrefix) {
-			etcdClusterName := k[len(openstack.TagNameEtcdClusterPrefix):]
-			spec, err := etcd.ParseEtcdClusterSpec(etcdClusterName, v)
-			if err != nil {
-				return nil, fmt.Errorf("error parsing etcd cluster meta %q on volume %q: %v", v, d.Name, err)
-			}
-			vol.Info.EtcdClusters = append(vol.Info.EtcdClusters, spec)
-		}
-	}
-
-	return vol, nil
-}
-
-func (v *OpenstackVolumes) FindVolumes() ([]*Volume, error) {
-	var volumes []*Volume
-
-	klog.V(2).Infof("Listing Openstack disks in %s/%s", v.project, v.meta.AvailabilityZone)
-
-	vols, err := v.cloud.ListVolumes(cinderv3.ListOpts{
-		TenantID: v.project,
-	})
-	if err != nil {
-		return volumes, fmt.Errorf("FindVolumes: Failed to list volume.")
-	}
-
-	for _, volume := range vols {
-		if clusterName, ok := volume.Metadata[openstack.TagClusterName]; ok && clusterName == v.clusterName {
-			if _, isMasterRole := volume.Metadata[openstack.TagNameRolePrefix+"master"]; isMasterRole {
-				vol, err := v.buildOpenstackVolume(&volume)
-				if err != nil {
-					klog.Errorf("FindVolumes: Failed to build openstack volume %s: %v", volume.Name, err)
-					continue
-				}
-				volumes = append(volumes, vol)
-			}
-		}
-	}
-
-	return volumes, nil
-}
-
-// FindMountedVolume implements Volumes::FindMountedVolume
-func (v *OpenstackVolumes) FindMountedVolume(volume *Volume) (string, error) {
-	device := volume.LocalDevice
-
-	_, err := os.Stat(pathFor(device))
-	if err == nil {
-		return device, nil
-	}
-	if os.IsNotExist(err) {
-		return "", nil
-	}
-	return "", fmt.Errorf("error checking for device %q: %v", device, err)
-}
-
-// AttachVolume attaches the specified volume to this instance, returning the mountpoint & nil if successful
-func (v *OpenstackVolumes) AttachVolume(volume *Volume) error {
-	opts := volumeattach.CreateOpts{
-		VolumeID: volume.ID,
-	}
-	attachment, err := v.cloud.AttachVolume(v.meta.ServerID, opts)
-	if err != nil {
-		return fmt.Errorf("AttachVolume: failed to attach volume: %s", err)
-	}
-	volume.LocalDevice = attachment.Device
-	return nil
-}
-
-func (g *OpenstackVolumes) GossipSeeds() (gossip.SeedProvider, error) {
+func (g *OpenStackCloudProvider) GossipSeeds() (gossip.SeedProvider, error) {
 	return gossipos.NewSeedProvider(g.cloud.ComputeClient(), g.clusterName, g.project)
 }
 
-func (g *OpenstackVolumes) InstanceName() string {
+func (g *OpenStackCloudProvider) InstanceID() string {
 	return g.instanceName
 }
