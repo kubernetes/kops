@@ -61,7 +61,7 @@ func run() error {
 	var dnsUpdateInterval int
 
 	flag.BoolVar(&containerized, "containerized", containerized, "Set if we are running containerized")
-	flag.BoolVar(&master, "gossip", gossip, "Set if we are using gossip dns")
+	flag.BoolVar(&gossip, "gossip", gossip, "Set if we are using gossip dns")
 	flag.BoolVar(&master, "master", master, "Whether or not this node is a master")
 	flag.StringVar(&cloud, "cloud", "aws", "CloudProvider we are using (aws,digitalocean,gce,openstack)")
 	flag.StringVar(&clusterID, "cluster-id", clusterID, "Cluster ID")
