@@ -105,6 +105,3 @@ _output
 
 # Used by E2E testing
 _artifacts
-
-# Vendor
-/vendor/
