@@ -153,6 +153,18 @@ spec:
                       type: array
                   type: object
                 type: array
+              guestAccelerators:
+                description: GuestAccelerators configures additional accelerators
+                items:
+                  description: AcceleratorConfig defines an accelerator config
+                  properties:
+                    acceleratorCount:
+                      format: int64
+                      type: integer
+                    acceleratorType:
+                      type: string
+                  type: object
+                type: array
               hooks:
                 description: 'Hooks is a list of hooks for this instanceGroup, note:
                   these can override the cluster wide ones if required'
