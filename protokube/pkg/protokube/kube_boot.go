@@ -37,8 +37,6 @@ type KubeBoot struct {
 	InternalDNSSuffix string
 	// InternalIP is the internal ip address of the node
 	InternalIP net.IP
-	// DNS is the dns provider
-	DNS DNSProvider
 	// Kubernetes holds a kubernetes client
 	Kubernetes *KubernetesContext
 	// Master indicates we are a master node
