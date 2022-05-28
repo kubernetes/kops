@@ -98,14 +98,3 @@ func (k *KubeBoot) syncOnce(ctx context.Context) error {
 
 	return nil
 }
-
-func pathFor(hostPath string) string {
-	if hostPath[0] != '/' {
-		klog.Fatalf("path was not absolute: %q", hostPath)
-	}
-	return RootFS + hostPath[1:]
-}
-
-func (k *KubeBoot) String() string {
-	return DebugString(k)
-}

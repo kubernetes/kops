@@ -17,50 +17,13 @@ limitations under the License.
 package protokube
 
 import (
-	"k8s.io/kops/protokube/pkg/etcd"
+	"net"
+
+	"k8s.io/kops/protokube/pkg/gossip"
 )
 
-type Volumes interface {
-	AttachVolume(volume *Volume) error
-	FindVolumes() ([]*Volume, error)
-
-	// FindMountedVolume returns the device (e.g. /dev/sda) where the volume is mounted
-	// If not found, it returns "", nil
-	// On error, it returns "", err
-	FindMountedVolume(volume *Volume) (device string, err error)
-}
-
-type Volume struct {
-	// ID is the cloud-provider identifier for the volume
-	ID string
-
-	// LocalDevice is set if the volume is attached to the local machine
-	LocalDevice string
-
-	// AttachedTo is set to the ID of the machine the volume is attached to, or "" if not attached
-	AttachedTo string
-
-	// Mountpoint is the path on which the volume is mounted, if mounted
-	// It will likely be "/mnt/master-" + ID
-	Mountpoint string
-
-	// Status is a volume provider specific Status string; it makes it easier for the volume provider
-	Status string
-
-	Info VolumeInfo
-}
-
-func (v *Volume) String() string {
-	return DebugString(v)
-}
-
-type VolumeInfo struct {
-	Description string
-	// MasterID    int
-	// TODO: Maybe the events cluster can just be a PetSet - do we need it for boot?
-	EtcdClusters []*etcd.EtcdClusterSpec
-}
-
-func (v *VolumeInfo) String() string {
-	return DebugString(v)
+type CloudProvider interface {
+	InstanceID() string
+	InstanceInternalIP() net.IP
+	GossipSeeds() (gossip.SeedProvider, error)
 }
