@@ -38,8 +38,8 @@ type client interface {
 
 var _ client = &gossipazure.Client{}
 
-// AzureVolumes implements the Volumes interface for Azure.
-type AzureVolumes struct {
+// AzureCloudProvider implements the CloudProvider interface for Azure.
+type AzureCloudProvider struct {
 	client client
 
 	clusterTag string
@@ -47,10 +47,10 @@ type AzureVolumes struct {
 	internalIP net.IP
 }
 
-var _ Volumes = &AzureVolumes{}
+var _ CloudProvider = &AzureCloudProvider{}
 
-// NewAzureVolumes returns a new AzureVolumes.
-func NewAzureVolumes() (*AzureVolumes, error) {
+// NewAzureCloudProvider returns a new AzureCloudProvider.
+func NewAzureCloudProvider() (*AzureCloudProvider, error) {
 	client, err := gossipazure.NewClient()
 	if err != nil {
 		return nil, fmt.Errorf("error creating a new Azure client: %s", err)
@@ -72,7 +72,7 @@ func NewAzureVolumes() (*AzureVolumes, error) {
 	if internalIP == nil {
 		return nil, fmt.Errorf("error querying internal IP")
 	}
-	return &AzureVolumes{
+	return &AzureCloudProvider{
 		client:     client,
 		clusterTag: clusterTag,
 		instanceID: instanceID,
@@ -80,37 +80,20 @@ func NewAzureVolumes() (*AzureVolumes, error) {
 	}, nil
 }
 
-// InstanceID implements Volumes InstanceID.
-func (a *AzureVolumes) InstanceID() string {
+// InstanceID implements CloudProvider InstanceID.
+func (a *AzureCloudProvider) InstanceID() string {
 	return a.instanceID
 }
 
-// InternalIP implements Volumes InternalIP.
-func (a *AzureVolumes) InternalIP() net.IP {
+// InstanceInternalIP implements CloudProvider InstanceInternalIP.
+func (a *AzureCloudProvider) InstanceInternalIP() net.IP {
 	return a.internalIP
 }
 
-func (a *AzureVolumes) GossipSeeds() (gossip.SeedProvider, error) {
+// GossipSeeds implements CloudProvider GossipSeeds.
+func (a *AzureCloudProvider) GossipSeeds() (gossip.SeedProvider, error) {
 	tags := map[string]string{
 		azure.TagClusterName: a.clusterTag,
 	}
 	return gossipazure.NewSeedProvider(a.client, tags)
-}
-
-func (a *AzureVolumes) AttachVolume(volume *Volume) error {
-	// TODO(kenji): Implement this. We currently don't need to implement this
-	// as we let etcd-manager manage volumes, not protokube.
-	return nil
-}
-
-func (a *AzureVolumes) FindVolumes() ([]*Volume, error) {
-	// TODO(kenji): Implement this. We currently don't need to implement this
-	// as we let etcd-manager manage volumes, not protokube.
-	return nil, nil
-}
-
-func (a *AzureVolumes) FindMountedVolume(volume *Volume) (string, error) {
-	// TODO(kenji): Implement this. We currently don't need to implement this
-	// as we let etcd-manager manage volumes, not protokube.
-	return "", nil
 }

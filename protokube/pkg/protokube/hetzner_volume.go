@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"strconv"
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/hcloud-go/hcloud/metadata"
@@ -31,31 +30,17 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 )
 
-// HetznerVolumes defines the Hetzner Cloud volume implementation.
-type HetznerVolumes struct {
+// HetznerCloudProvider defines the Hetzner Cloud volume implementation.
+type HetznerCloudProvider struct {
 	hcloudClient *hcloud.Client
 	server       *hcloud.Server
+	serverIP     net.IP
 }
 
-func (h HetznerVolumes) AttachVolume(volume *Volume) error {
-	// TODO(hakman): no longer needed, remove from interface
-	panic("implement me")
-}
+var _ CloudProvider = &HetznerCloudProvider{}
 
-func (h HetznerVolumes) FindVolumes() ([]*Volume, error) {
-	// TODO(hakman): no longer needed, remove from interface
-	panic("implement me")
-}
-
-func (h HetznerVolumes) FindMountedVolume(volume *Volume) (device string, err error) {
-	// TODO(hakman): no longer needed, remove from interface
-	panic("implement me")
-}
-
-var _ Volumes = &HetznerVolumes{}
-
-// NewHetznerVolumes returns a new Hetzner Cloud volume provider.
-func NewHetznerVolumes() (*HetznerVolumes, error) {
+// NewHetznerCloudProvider returns a new Hetzner Cloud provider.
+func NewHetznerCloudProvider() (*HetznerCloudProvider, error) {
 	serverID, err := metadata.NewClient().InstanceID()
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve server id: %s", err)
@@ -89,25 +74,20 @@ func NewHetznerVolumes() (*HetznerVolumes, error) {
 		return nil, fmt.Errorf("failed to find private net of the running server")
 	}
 
-	h := &HetznerVolumes{
+	h := &HetznerCloudProvider{
 		hcloudClient: hcloudClient,
 		server:       server,
+		serverIP:     server.PrivateNet[0].IP,
 	}
 
 	return h, nil
 }
 
-func (h HetznerVolumes) InternalIP() (ip net.IP, err error) {
-	if len(h.server.PrivateNet) == 0 {
-		return nil, fmt.Errorf("failed to find server private ip address")
-	}
-
-	klog.V(4).Infof("Found first private IP of the running server: %s", h.server.PrivateNet[0].IP.String())
-
-	return h.server.PrivateNet[0].IP, nil
+func (h HetznerCloudProvider) InstanceInternalIP() net.IP {
+	return h.serverIP
 }
 
-func (h *HetznerVolumes) GossipSeeds() (gossip.SeedProvider, error) {
+func (h *HetznerCloudProvider) GossipSeeds() (gossip.SeedProvider, error) {
 	clusterName, ok := h.server.Labels[hetzner.TagKubernetesClusterName]
 	if !ok {
 		return nil, fmt.Errorf("failed to find cluster name label for running server: %v", h.server.Labels)
@@ -115,6 +95,6 @@ func (h *HetznerVolumes) GossipSeeds() (gossip.SeedProvider, error) {
 	return gossiphetzner.NewSeedProvider(h.hcloudClient, clusterName)
 }
 
-func (h *HetznerVolumes) InstanceID() string {
-	return strconv.Itoa(h.server.ID)
+func (h *HetznerCloudProvider) InstanceID() string {
+	return fmt.Sprintf("%s-%d", h.server.Name, h.server.ID)
 }
