@@ -7,3 +7,13 @@ updates:
     day: "sunday"
   labels:
   - "ok-to-test"
+- package-ecosystem: "gomod"
+  directory: "/"
+  schedule:
+    interval: "weekly"
+    day: "sunday"
+  labels:
+  - "ok-to-test"
+  ignore:
+  - dependency-name: "k8s.io/*"
+    update-types: ["version-update:semver-minor"]
