@@ -213,7 +213,7 @@ crossbuild-nodeup: nodeup-amd64 nodeup-arm64
 .PHONY: protokube-amd64 protokube-arm64
 protokube-amd64 protokube-arm64: protokube-%:
 	mkdir -p ${DIST}/linux/$*
-	GOOS=linux GOARCH=$* go build ${GCFLAGS} ${BUILDFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/$*/protokube ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/protokube/cmd/protokube
+	GOOS=linux GOARCH=$* go build -tags=peer_name_alternative,peer_name_hash ${GCFLAGS} ${BUILDFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/$*/protokube ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/protokube/cmd/protokube
 
 .PHONY: protokube
 protokube: protokube-amd64
@@ -296,7 +296,7 @@ dns-controller-push: ko-dns-controller-push
 
 .PHONY: ko-dns-controller-push
 ko-dns-controller-push: ko
-	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}dns-controller" ko build --tags ${DNS_CONTROLLER_PUSH_TAG} --platform=linux/amd64,linux/arm64 --bare ./dns-controller/cmd/dns-controller/
+	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}dns-controller" GOFLAGS="-tags=peer_name_alternative,peer_name_hash" ko build --tags ${DNS_CONTROLLER_PUSH_TAG} --platform=linux/amd64,linux/arm64 --bare ./dns-controller/cmd/dns-controller/
 
 # --------------------------------------------------
 # development targets
@@ -305,9 +305,6 @@ ko-dns-controller-push: ko
 gomod:
 	go mod tidy
 	go mod vendor
-	# Switch weavemesh to use peer_name_hash - bazel rule-go doesn't support build tags yet
-	rm vendor/github.com/weaveworks/mesh/peer_name_mac.go
-	sed -i.bak -e 's/peer_name_hash/!peer_name_mac/g' vendor/github.com/weaveworks/mesh/peer_name_hash.go
 	cd tests/e2e; go mod tidy
 	cd hack; go mod tidy
 
@@ -531,7 +528,7 @@ ko-kube-apiserver-healthcheck-export: ko-kube-apiserver-healthcheck-export-linux
 .PHONY: ko-dns-controller-export-linux-amd64 ko-dns-controller-export-linux-arm64
 ko-dns-controller-export-linux-amd64 ko-dns-controller-export-linux-arm64: ko-dns-controller-export-linux-%: ko
 	mkdir -p ${IMAGES}
-	KO_DOCKER_REPO="registry.k8s.io/kops" ko build --tags ${DNS_CONTROLLER_TAG} --platform=linux/$* -B --push=false --tarball=${IMAGES}/dns-controller-$*.tar ./dns-controller/cmd/dns-controller
+	KO_DOCKER_REPO="registry.k8s.io/kops" GOFLAGS="-tags=peer_name_alternative,peer_name_hash" ko build --tags ${DNS_CONTROLLER_TAG} --platform=linux/$* -B --push=false --tarball=${IMAGES}/dns-controller-$*.tar ./dns-controller/cmd/dns-controller
 	gzip -f ${IMAGES}/dns-controller-$*.tar
 	tools/sha256 ${IMAGES}/dns-controller-$*.tar.gz ${IMAGES}/dns-controller-$*.tar.gz.sha256
 
