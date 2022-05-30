@@ -1509,7 +1509,8 @@ func (n *nodeUpConfigBuilder) buildWarmPoolImages(ig *kops.InstanceGroup) []stri
 		"registry.k8s.io/sig-storage/livenessprobe:",
 		"quay.io/calico/",
 		"quay.io/cilium/",
-		"quay.io/coreos/flannel:",
+		//"quay.io/coreos/flannel:",
+		"docker.io/rancher/mirrored-flannelcni-flannel:",
 		"quay.io/weaveworks/",
 	}
 	assetBuilder := n.assetBuilder

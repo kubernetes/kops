@@ -4534,7 +4534,7 @@ spec:
             configMapKeyRef:
               key: masquerade
               name: canal-config
-        image: quay.io/coreos/flannel:v0.15.1
+        image: rancher/mirrored-flannelcni-flannel:v0.18.0
         name: kube-flannel
         securityContext:
           privileged: true
