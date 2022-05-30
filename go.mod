@@ -73,7 +73,6 @@ require (
 	github.com/spf13/viper v1.11.0
 	github.com/spotinst/spotinst-sdk-go v1.118.0
 	github.com/stretchr/testify v1.7.1
-	github.com/weaveworks/mesh v0.0.0-20191105120815-58dbcc3e8e63
 	github.com/zclconf/go-cty v1.10.0
 	golang.org/x/crypto v0.0.0-20220427172511-eb4f295cb31f
 	golang.org/x/net v0.0.0-20220425223048-2871e0cb64e4

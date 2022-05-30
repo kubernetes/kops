@@ -825,9 +825,6 @@ github.com/subosito/gotenv
 # github.com/vbatts/tar-split v0.11.2
 ## explicit; go 1.15
 github.com/vbatts/tar-split/archive/tar
-# github.com/weaveworks/mesh v0.0.0-20191105120815-58dbcc3e8e63
-## explicit; go 1.12
-github.com/weaveworks/mesh
 # github.com/xlab/treeprint v0.0.0-20181112141820-a009c3971eca
 ## explicit
 github.com/xlab/treeprint

@@ -17,9 +17,9 @@ limitations under the License.
 package mesh
 
 import (
-	"github.com/weaveworks/mesh"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/protokube/pkg/gossip"
+	"k8s.io/kops/protokube/pkg/weaveworks/mesh"
 )
 
 // Peer encapsulates state and implements mesh.Gossiper.

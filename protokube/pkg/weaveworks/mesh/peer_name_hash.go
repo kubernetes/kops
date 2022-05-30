@@ -1,3 +1,4 @@
+//go:build !peer_name_mac
 // +build !peer_name_mac
 
 package mesh

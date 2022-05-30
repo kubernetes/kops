@@ -305,9 +305,6 @@ ko-dns-controller-push: ko
 gomod:
 	go mod tidy
 	go mod vendor
-	# Switch weavemesh to use peer_name_hash - bazel rule-go doesn't support build tags yet
-	rm vendor/github.com/weaveworks/mesh/peer_name_mac.go
-	sed -i.bak -e 's/peer_name_hash/!peer_name_mac/g' vendor/github.com/weaveworks/mesh/peer_name_hash.go
 	cd tests/e2e; go mod tidy
 	cd hack; go mod tidy
 
