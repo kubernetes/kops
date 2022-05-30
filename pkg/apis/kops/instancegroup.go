@@ -180,6 +180,8 @@ type InstanceGroupSpec struct {
 	UpdatePolicy *string `json:"updatePolicy,omitempty"`
 	// WarmPool specifies a pool of pre-warmed instances for later use (AWS only).
 	WarmPool *WarmPoolSpec `json:"warmPool,omitempty"`
+	// GuestAccelerators configures additional accelerators
+	GuestAccelerators []AcceleratorConfig `json:"guestAccelerators,omitempty"`
 }
 
 const (
@@ -335,4 +337,10 @@ type LoadBalancer struct {
 	LoadBalancerName *string `json:"loadBalancerName,omitempty"`
 	// TargetGroupARN to associate with this instance group (AWS ALB/NLB)
 	TargetGroupARN *string `json:"targetGroupARN,omitempty"`
+}
+
+// AcceleratorConfig defines an accelerator config
+type AcceleratorConfig struct {
+	AcceleratorCount int64  `json:"acceleratorCount,omitempty"`
+	AcceleratorType  string `json:"acceleratorType,omitempty"`
 }
