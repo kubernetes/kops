@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node-termination-handler
     app.kubernetes.io/part-of: aws-node-termination-handler
-    app.kubernetes.io/version: v1.16.4
+    app.kubernetes.io/version: v1.16.5
     k8s-addon: node-termination-handler.aws
     k8s-app: aws-node-termination-handler
   name: aws-node-termination-handler
@@ -28,7 +28,7 @@ metadata:
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node-termination-handler
     app.kubernetes.io/part-of: aws-node-termination-handler
-    app.kubernetes.io/version: v1.16.4
+    app.kubernetes.io/version: v1.16.5
     k8s-addon: node-termination-handler.aws
   name: aws-node-termination-handler
 rules:
@@ -87,7 +87,7 @@ metadata:
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node-termination-handler
     app.kubernetes.io/part-of: aws-node-termination-handler
-    app.kubernetes.io/version: v1.16.4
+    app.kubernetes.io/version: v1.16.5
     k8s-addon: node-termination-handler.aws
   name: aws-node-termination-handler
 roleRef:
@@ -110,7 +110,7 @@ metadata:
     app.kubernetes.io/instance: aws-node-termination-handler
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node-termination-handler
-    app.kubernetes.io/version: v1.16.4
+    app.kubernetes.io/version: v1.16.5
     k8s-addon: node-termination-handler.aws
     k8s-app: aws-node-termination-handler
   name: aws-node-termination-handler
@@ -208,7 +208,7 @@ spec:
           value: https://sqs.us-test-1.amazonaws.com/123456789012/nthsqsresources-longclustername-example-com-nth
         - name: WORKERS
           value: "10"
-        image: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.16.4
+        image: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.16.5
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
