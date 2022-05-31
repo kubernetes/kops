@@ -65,6 +65,7 @@ const (
 	LBMethodRoundRobin       LBMethod = "ROUND_ROBIN"
 	LBMethodLeastConnections LBMethod = "LEAST_CONNECTIONS"
 	LBMethodSourceIp         LBMethod = "SOURCE_IP"
+	LBMethodSourceIpPort     LBMethod = "SOURCE_IP_PORT"
 
 	ProtocolTCP   Protocol = "TCP"
 	ProtocolUDP   Protocol = "UDP"
@@ -87,8 +88,8 @@ type CreateOptsBuilder interface {
 // operation.
 type CreateOpts struct {
 	// The algorithm used to distribute load between the members of the pool. The
-	// current specification supports LBMethodRoundRobin, LBMethodLeastConnections
-	// and LBMethodSourceIp as valid values for this attribute.
+	// current specification supports LBMethodRoundRobin, LBMethodLeastConnections,
+	// LBMethodSourceIp and LBMethodSourceIpPort as valid values for this attribute.
 	LBMethod LBMethod `json:"lb_algorithm" required:"true"`
 
 	// The protocol used by the pool members, you can use either
@@ -181,8 +182,8 @@ type UpdateOpts struct {
 	Description *string `json:"description,omitempty"`
 
 	// The algorithm used to distribute load between the members of the pool. The
-	// current specification supports LBMethodRoundRobin, LBMethodLeastConnections
-	// and LBMethodSourceIp as valid values for this attribute.
+	// current specification supports LBMethodRoundRobin, LBMethodLeastConnections,
+	// LBMethodSourceIp and LBMethodSourceIpPort as valid values for this attribute.
 	LBMethod LBMethod `json:"lb_algorithm,omitempty"`
 
 	// The administrative state of the Pool. A valid value is true (UP)
