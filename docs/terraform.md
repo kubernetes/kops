@@ -26,7 +26,7 @@ You could keep your Terraform state locally, but we **strongly recommend** savin
 ```terraform
 terraform {
   backend "s3" {
-    bucket = "mybucket"
+    bucket = "terraform_state_bucket"
     key    = "path/to/my/key"
     region = "us-east-1"
   }
@@ -42,14 +42,14 @@ For example, a complete setup might be:
 ```
 $ kops create cluster \
   --name=kubernetes.mydomain.com \
-  --state=s3://mycompany.kubernetes \
+  --state=s3://mycompany.kops_state_bucket \
   --dns-zone=kubernetes.mydomain.com \
   [... your other options ...]
   --out=. \
   --target=terraform
 ```
 
-The above command will create kOps state on S3 (defined in `--state`) and output a representation of your configuration into Terraform files. Thereafter you can preview your changes in `kubernetes.tf` and then use Terraform to create all the resources as shown below:
+The above command will create the [kOps state store](state.md) on S3 (defined in `--state`) and output a representation of your configuration into Terraform files. Thereafter, you can preview your changes in `kubernetes.tf` and then use Terraform to create all the resources as shown below:
 
 Additional Terraform `.tf` files could be added at this stage to customize your deployment, but remember the kOps state should continue to remain the ultimate source of truth for the Kubernetes cluster.
 
@@ -90,7 +90,7 @@ It's possible to use Terraform to make changes to your infrastructure as defined
 ```
 $ kops edit cluster \
   --name=kubernetes.mydomain.com \
-  --state=s3://mycompany.kubernetes
+  --state=s3://mycompany.kops_state_bucket
 
 # editor opens, make your changes ...
 ```
@@ -100,7 +100,7 @@ Then output your changes/edits to kOps cluster state into the Terraform files. R
 ```
 $ kops update cluster \
   --name=kubernetes.mydomain.com \
-  --state=s3://mycompany.kubernetes \
+  --state=s3://mycompany.kops_state_bucket \
   --out=. \
   --target=terraform
 ```
@@ -125,7 +125,7 @@ $ terraform plan -destroy
 $ terraform destroy
 $ kops delete cluster --yes \
   --name=kubernetes.mydomain.com \
-  --state=s3://mycompany.kubernetes
+  --state=s3://mycompany.kops_state_bucket
 ```
 
 Ps: You don't have to `kops delete cluster` if you just want to recreate from scratch. Deleting kOps cluster state means that you've have to `kops create` again.
