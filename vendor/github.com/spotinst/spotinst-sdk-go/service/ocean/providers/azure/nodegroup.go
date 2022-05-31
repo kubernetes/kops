@@ -22,6 +22,7 @@ type VirtualNodeGroup struct {
 	AutoScale           *VirtualNodeGroupAutoScale           `json:"autoScale,omitempty"`
 	ResourceLimits      *VirtualNodeGroupResourceLimits      `json:"resourceLimits,omitempty"`
 	LaunchSpecification *VirtualNodeGroupLaunchSpecification `json:"launchSpecification,omitempty"`
+	Zones               []string                             `json:"zones,omitempty"`
 
 	// Read-only fields.
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
@@ -320,6 +321,13 @@ func (o *VirtualNodeGroup) SetLaunchSpecification(v *VirtualNodeGroupLaunchSpeci
 func (o *VirtualNodeGroup) SetAutoScale(v *VirtualNodeGroupAutoScale) *VirtualNodeGroup {
 	if o.AutoScale = v; o.AutoScale == nil {
 		o.nullFields = append(o.nullFields, "AutoScale")
+	}
+	return o
+}
+
+func (o *VirtualNodeGroup) SetZones(v []string) *VirtualNodeGroup {
+	if o.Zones = v; o.Zones == nil {
+		o.nullFields = append(o.nullFields, "Zones")
 	}
 	return o
 }
