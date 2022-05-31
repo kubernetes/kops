@@ -17,7 +17,7 @@ type L7Policy struct {
 	// The ID of the listener.
 	ListenerID string `json:"listener_id"`
 
-	// The L7 policy action. One of REDIRECT_TO_POOL, REDIRECT_TO_URL, or REJECT.
+	// The L7 policy action. One of REDIRECT_PREFIX, REDIRECT_TO_POOL, REDIRECT_TO_URL, or REJECT.
 	Action string `json:"action"`
 
 	// The position of this policy on the listener.
@@ -34,9 +34,17 @@ type L7Policy struct {
 	// Only valid if action is REDIRECT_TO_POOL.
 	RedirectPoolID string `json:"redirect_pool_id"`
 
+	// Requests matching this policy will be redirected to this Prefix URL.
+	// Only valid if action is REDIRECT_PREFIX.
+	RedirectPrefix string `json:"redirect_prefix"`
+
 	// Requests matching this policy will be redirected to this URL.
 	// Only valid if action is REDIRECT_TO_URL.
 	RedirectURL string `json:"redirect_url"`
+
+	// Requests matching this policy will be redirected to the specified URL or Prefix URL
+	// with the HTTP response code. Valid if action is REDIRECT_TO_URL or REDIRECT_PREFIX.
+	RedirectHttpCode int32 `json:"redirect_http_code"`
 
 	// The administrative state of the L7 policy, which is up (true) or down (false).
 	AdminStateUp bool `json:"admin_state_up"`
