@@ -84,12 +84,38 @@ type Listener struct {
 	// A list of IPv4, IPv6 or mix of both CIDRs
 	AllowedCIDRs []string `json:"allowed_cidrs"`
 
+	// List of ciphers in OpenSSL format (colon-separated). See
+	// https://www.openssl.org/docs/man1.1.1/man1/ciphers.html
+	// New in version 2.15
+	TLSCiphers string `json:"tls_ciphers"`
+
 	// A list of TLS protocol versions. Available from microversion 2.17
 	TLSVersions []string `json:"tls_versions"`
 
 	// Tags is a list of resource tags. Tags are arbitrarily defined strings
 	// attached to the resource. New in version 2.5
 	Tags []string `json:"tags"`
+
+	// A list of ALPN protocols. Available protocols: http/1.0, http/1.1, h2
+	// New in version 2.20
+	ALPNProtocols []string `json:"alpn_protocols"`
+
+	// The TLS client authentication mode. One of the options NONE, OPTIONAL or MANDATORY.
+	// New in version 2.8
+	ClientAuthentication string `json:"client_authentication"`
+
+	// The ref of the key manager service secret containing a PEM format
+	// client CA certificate bundle for TERMINATED_HTTPS listeners.
+	// New in version 2.8
+	ClientCATLSContainerRef string `json:"client_ca_tls_container_ref"`
+
+	// The URI of the key manager service secret containing a PEM format CA
+	// revocation list file for TERMINATED_HTTPS listeners.
+	// New in version 2.8
+	ClientCRLContainerRef string `json:"client_crl_container_ref"`
+
+	// The operating status of the resource
+	OperatingStatus string `json:"operating_status"`
 }
 
 type Stats struct {

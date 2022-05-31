@@ -134,7 +134,7 @@ func (_ *LBPool) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes 
 
 		LbMethod := v2pools.LBMethodRoundRobin
 		if fi.StringValue(e.Loadbalancer.Provider) == "ovn" {
-			LbMethod = "SOURCE_IP_PORT"
+			LbMethod = v2pools.LBMethodSourceIpPort
 		}
 		poolopts := v2pools.CreateOpts{
 			Name:           fi.StringValue(e.Name),

@@ -29,6 +29,12 @@ type ServerGroup struct {
 	// Members are the members of the server group.
 	Members []string `json:"members"`
 
+	// UserID of the server group.
+	UserID string `json:"user_id"`
+
+	// ProjectID of the server group.
+	ProjectID string `json:"project_id"`
+
 	// Metadata includes a list of all user-specified key-value pairs attached
 	// to the Server Group.
 	Metadata map[string]interface{}

@@ -12,6 +12,12 @@ type ListOptsBuilder interface {
 type ListOpts struct {
 	// AllProjects is a bool to show all projects.
 	AllProjects bool `q:"all_projects"`
+
+	// Requests a page size of items.
+	Limit int `q:"limit"`
+
+	// Used in conjunction with limit to return a slice of items.
+	Offset int `q:"offset"`
 }
 
 // ToServerListQuery formats a ListOpts into a query string.
