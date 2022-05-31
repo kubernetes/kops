@@ -74,6 +74,7 @@ const (
 	ProtocolUDP       RuleProtocol  = "udp"
 	ProtocolUDPLite   RuleProtocol  = "udplite"
 	ProtocolVRRP      RuleProtocol  = "vrrp"
+	ProtocolAny       RuleProtocol  = "any"
 )
 
 // CreateOptsBuilder allows extensions to add additional parameters to the
