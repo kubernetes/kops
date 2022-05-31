@@ -112,6 +112,11 @@ type RecordSet struct {
 	// useful for passing along to other APIs that might want a recordset
 	// reference.
 	Links []gophercloud.Link `json:"-"`
+
+	// Metadata contains the total_count of resources matching the filter
+	Metadata struct {
+		TotalCount int `json:"total_count"`
+	} `json:"metadata"`
 }
 
 func (r *RecordSet) UnmarshalJSON(b []byte) error {
