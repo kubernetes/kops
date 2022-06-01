@@ -72,6 +72,11 @@ func (f *FileAssetsBuilder) buildFileAssets(c *fi.ModelBuilderContext, assets []
 			content = string(decoded)
 		}
 
+		// If not specified, the default Mode is 0440
+		if asset.Mode == "" {
+			asset.Mode = "0440"
+		}
+
 		// We use EnsureTask so that we don't have to check if the asset directories have already been done
 		c.EnsureTask(&nodetasks.File{
 			Path: filepath.Dir(assetPath),
@@ -81,7 +86,7 @@ func (f *FileAssetsBuilder) buildFileAssets(c *fi.ModelBuilderContext, assets []
 
 		c.AddTask(&nodetasks.File{
 			Contents: fi.NewStringResource(content),
-			Mode:     s("0440"),
+			Mode:     s(asset.Mode),
 			Path:     assetPath,
 			Type:     nodetasks.FileType_File,
 		})
