@@ -155,7 +155,7 @@ ${KOPS}:
 
 .PHONY: codegen
 codegen:
-	go build -o ${KOPS_ROOT}/_output/bin k8s.io/kops/upup/tools/generators/...
+	go build -o ${KOPS_ROOT}/_output/bin/ k8s.io/kops/upup/tools/generators/...
 	${KOPS_ROOT}/_output/bin/fitask \
 		--input-dirs k8s.io/kops/upup/pkg/fi/... \
 		--go-header-file hack/boilerplate/boilerplate.generatego.txt \
@@ -163,7 +163,7 @@ codegen:
 
 .PHONY: verify-codegen
 verify-codegen:
-	go build -o ${KOPS_ROOT}/_output/bin k8s.io/kops/upup/tools/generators/...
+	go build -o ${KOPS_ROOT}/_output/bin/ k8s.io/kops/upup/tools/generators/...
 	${KOPS_ROOT}/_output/bin/fitask --verify-only \
 		--input-dirs k8s.io/kops/upup/pkg/fi/... \
 		--go-header-file hack/boilerplate/boilerplate.generatego.txt \
