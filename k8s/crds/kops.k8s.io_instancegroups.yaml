@@ -137,6 +137,9 @@ spec:
                     isBase64:
                       description: IsBase64 indicates the contents is base64 encoded
                       type: boolean
+                    mode:
+                      description: Mode is this file's mode and permission bits
+                      type: string
                     name:
                       description: Name is a shortened reference to the asset
                       type: string
