@@ -397,6 +397,8 @@ func (b *BootstrapScript) Run(c *fi.Context) error {
 	// See https://github.com/kubernetes/kops/issues/10206 for details.
 	nodeupScript.SetSysctls = setSysctls()
 
+	nodeupScript.CloudProvider = string(c.Cluster.Spec.GetCloudProvider())
+
 	nodeupScriptResource, err := nodeupScript.Build()
 	if err != nil {
 		return err
