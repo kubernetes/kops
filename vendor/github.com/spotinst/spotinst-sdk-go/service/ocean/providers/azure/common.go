@@ -37,8 +37,9 @@ func (o *Tag) SetValue(v *string) *Tag {
 // region OSDisk
 
 type OSDisk struct {
-	SizeGB *int    `json:"sizeGB,omitempty"`
-	Type   *string `json:"type,omitempty"`
+	SizeGB                  *int    `json:"sizeGB,omitempty"`
+	Type                    *string `json:"type,omitempty"`
+	UtilizeEphemeralStorage *bool   `json:"utilizeEphemeralStorage,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -60,6 +61,13 @@ func (o *OSDisk) SetSizeGB(v *int) *OSDisk {
 func (o *OSDisk) SetType(v *string) *OSDisk {
 	if o.Type = v; o.Type == nil {
 		o.nullFields = append(o.nullFields, "Type")
+	}
+	return o
+}
+
+func (o *OSDisk) SetUtilizeEphemeralStorage(v *bool) *OSDisk {
+	if o.UtilizeEphemeralStorage = v; o.UtilizeEphemeralStorage == nil {
+		o.nullFields = append(o.nullFields, "UtilizeEphemeralStorage")
 	}
 	return o
 }

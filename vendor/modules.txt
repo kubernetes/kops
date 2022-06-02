@@ -790,7 +790,7 @@ github.com/spf13/viper/internal/encoding/javaproperties
 github.com/spf13/viper/internal/encoding/json
 github.com/spf13/viper/internal/encoding/toml
 github.com/spf13/viper/internal/encoding/yaml
-# github.com/spotinst/spotinst-sdk-go v1.118.0
+# github.com/spotinst/spotinst-sdk-go v1.120.0
 ## explicit; go 1.16
 github.com/spotinst/spotinst-sdk-go/service/elastigroup
 github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/aws
