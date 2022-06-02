@@ -289,7 +289,7 @@ spec:
         - name: ebs-plugin
           securityContext:
             privileged: true
-          image: public.ecr.aws/ebs-csi-driver/aws-ebs-csi-driver:{{ .Version }}
+          image: registry.k8s.io/provider-aws/aws-ebs-csi-driver:{{ .Version }}
           args:
             - node
             - --endpoint=$(CSI_ENDPOINT)
@@ -452,7 +452,7 @@ spec:
       {{ end }}
       containers:
         - name: ebs-plugin
-          image: public.ecr.aws/ebs-csi-driver/aws-ebs-csi-driver:{{ .Version }}
+          image: registry.k8s.io/provider-aws/aws-ebs-csi-driver:{{ .Version }}
           imagePullPolicy: IfNotPresent
           args:
             - controller
