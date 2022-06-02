@@ -762,6 +762,8 @@ func (tf *TemplateFunctions) OpenStackCCMTag() string {
 		} else if parsed.Minor == 23 {
 			// The bugfix release, see https://github.com/kubernetes/cloud-provider-openstack/releases
 			tag = "v1.23.1"
+		} else if parsed.Minor == 24 {
+			tag = "v1.24.1"
 		} else {
 			// otherwise we use always .0 ccm image, if needed that can be overrided using clusterspec
 			tag = fmt.Sprintf("v%d.%d.0", parsed.Major, parsed.Minor)
@@ -778,8 +780,12 @@ func (tf *TemplateFunctions) OpenStackCSITag() string {
 	if err != nil {
 		tag = "latest"
 	} else {
-		// otherwise we use always .0 csi image, if needed that can be overrided using cloud config spec
-		tag = fmt.Sprintf("v%d.%d.0", parsed.Major, parsed.Minor)
+		if parsed.Minor == 24 {
+			tag = "v1.24.1"
+		} else {
+			// otherwise we use always .0 csi image, if needed that can be overrided using cloud config spec
+			tag = fmt.Sprintf("v%d.%d.0", parsed.Major, parsed.Minor)
+		}
 	}
 	return tag
 }
