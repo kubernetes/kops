@@ -492,7 +492,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        image: public.ecr.aws/ebs-csi-driver/aws-ebs-csi-driver:v1.6.2
+        image: registry.k8s.io/provider-aws/aws-ebs-csi-driver:v1.6.2
         livenessProbe:
           failureThreshold: 5
           httpGet:
@@ -650,7 +650,7 @@ spec:
               key: access_key
               name: aws-secret
               optional: true
-        image: public.ecr.aws/ebs-csi-driver/aws-ebs-csi-driver:v1.6.2
+        image: registry.k8s.io/provider-aws/aws-ebs-csi-driver:v1.6.2
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 5
