@@ -19,7 +19,7 @@ metadata:
   labels:
     k8s-addon: kops-controller.addons.k8s.io
     k8s-app: kops-controller
-    version: v1.24.0-alpha.5
+    version: v1.24.0-beta.1
 spec:
   selector:
     matchLabels:
@@ -31,7 +31,7 @@ spec:
       labels:
         k8s-addon: kops-controller.addons.k8s.io
         k8s-app: kops-controller
-        version: v1.24.0-alpha.5
+        version: v1.24.0-beta.1
 {{ if UseKopsControllerForNodeBootstrap }}
       annotations:
         dns.alpha.kubernetes.io/internal: kops-controller.internal.{{ ClusterName }}
@@ -67,7 +67,7 @@ spec:
       serviceAccount: kops-controller
       containers:
       - name: kops-controller
-        image: registry.k8s.io/kops/kops-controller:1.24.0-alpha.5
+        image: registry.k8s.io/kops/kops-controller:1.24.0-beta.1
         volumeMounts:
 {{ if .UseHostCertificates }}
         - mountPath: /etc/ssl/certs
