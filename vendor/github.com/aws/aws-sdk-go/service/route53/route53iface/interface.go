@@ -68,6 +68,10 @@ type Route53API interface {
 	AssociateVPCWithHostedZoneWithContext(aws.Context, *route53.AssociateVPCWithHostedZoneInput, ...request.Option) (*route53.AssociateVPCWithHostedZoneOutput, error)
 	AssociateVPCWithHostedZoneRequest(*route53.AssociateVPCWithHostedZoneInput) (*request.Request, *route53.AssociateVPCWithHostedZoneOutput)
 
+	ChangeCidrCollection(*route53.ChangeCidrCollectionInput) (*route53.ChangeCidrCollectionOutput, error)
+	ChangeCidrCollectionWithContext(aws.Context, *route53.ChangeCidrCollectionInput, ...request.Option) (*route53.ChangeCidrCollectionOutput, error)
+	ChangeCidrCollectionRequest(*route53.ChangeCidrCollectionInput) (*request.Request, *route53.ChangeCidrCollectionOutput)
+
 	ChangeResourceRecordSets(*route53.ChangeResourceRecordSetsInput) (*route53.ChangeResourceRecordSetsOutput, error)
 	ChangeResourceRecordSetsWithContext(aws.Context, *route53.ChangeResourceRecordSetsInput, ...request.Option) (*route53.ChangeResourceRecordSetsOutput, error)
 	ChangeResourceRecordSetsRequest(*route53.ChangeResourceRecordSetsInput) (*request.Request, *route53.ChangeResourceRecordSetsOutput)
@@ -75,6 +79,10 @@ type Route53API interface {
 	ChangeTagsForResource(*route53.ChangeTagsForResourceInput) (*route53.ChangeTagsForResourceOutput, error)
 	ChangeTagsForResourceWithContext(aws.Context, *route53.ChangeTagsForResourceInput, ...request.Option) (*route53.ChangeTagsForResourceOutput, error)
 	ChangeTagsForResourceRequest(*route53.ChangeTagsForResourceInput) (*request.Request, *route53.ChangeTagsForResourceOutput)
+
+	CreateCidrCollection(*route53.CreateCidrCollectionInput) (*route53.CreateCidrCollectionOutput, error)
+	CreateCidrCollectionWithContext(aws.Context, *route53.CreateCidrCollectionInput, ...request.Option) (*route53.CreateCidrCollectionOutput, error)
+	CreateCidrCollectionRequest(*route53.CreateCidrCollectionInput) (*request.Request, *route53.CreateCidrCollectionOutput)
 
 	CreateHealthCheck(*route53.CreateHealthCheckInput) (*route53.CreateHealthCheckOutput, error)
 	CreateHealthCheckWithContext(aws.Context, *route53.CreateHealthCheckInput, ...request.Option) (*route53.CreateHealthCheckOutput, error)
@@ -115,6 +123,10 @@ type Route53API interface {
 	DeactivateKeySigningKey(*route53.DeactivateKeySigningKeyInput) (*route53.DeactivateKeySigningKeyOutput, error)
 	DeactivateKeySigningKeyWithContext(aws.Context, *route53.DeactivateKeySigningKeyInput, ...request.Option) (*route53.DeactivateKeySigningKeyOutput, error)
 	DeactivateKeySigningKeyRequest(*route53.DeactivateKeySigningKeyInput) (*request.Request, *route53.DeactivateKeySigningKeyOutput)
+
+	DeleteCidrCollection(*route53.DeleteCidrCollectionInput) (*route53.DeleteCidrCollectionOutput, error)
+	DeleteCidrCollectionWithContext(aws.Context, *route53.DeleteCidrCollectionInput, ...request.Option) (*route53.DeleteCidrCollectionOutput, error)
+	DeleteCidrCollectionRequest(*route53.DeleteCidrCollectionInput) (*request.Request, *route53.DeleteCidrCollectionOutput)
 
 	DeleteHealthCheck(*route53.DeleteHealthCheckInput) (*route53.DeleteHealthCheckOutput, error)
 	DeleteHealthCheckWithContext(aws.Context, *route53.DeleteHealthCheckInput, ...request.Option) (*route53.DeleteHealthCheckOutput, error)
@@ -231,6 +243,27 @@ type Route53API interface {
 	GetTrafficPolicyInstanceCount(*route53.GetTrafficPolicyInstanceCountInput) (*route53.GetTrafficPolicyInstanceCountOutput, error)
 	GetTrafficPolicyInstanceCountWithContext(aws.Context, *route53.GetTrafficPolicyInstanceCountInput, ...request.Option) (*route53.GetTrafficPolicyInstanceCountOutput, error)
 	GetTrafficPolicyInstanceCountRequest(*route53.GetTrafficPolicyInstanceCountInput) (*request.Request, *route53.GetTrafficPolicyInstanceCountOutput)
+
+	ListCidrBlocks(*route53.ListCidrBlocksInput) (*route53.ListCidrBlocksOutput, error)
+	ListCidrBlocksWithContext(aws.Context, *route53.ListCidrBlocksInput, ...request.Option) (*route53.ListCidrBlocksOutput, error)
+	ListCidrBlocksRequest(*route53.ListCidrBlocksInput) (*request.Request, *route53.ListCidrBlocksOutput)
+
+	ListCidrBlocksPages(*route53.ListCidrBlocksInput, func(*route53.ListCidrBlocksOutput, bool) bool) error
+	ListCidrBlocksPagesWithContext(aws.Context, *route53.ListCidrBlocksInput, func(*route53.ListCidrBlocksOutput, bool) bool, ...request.Option) error
+
+	ListCidrCollections(*route53.ListCidrCollectionsInput) (*route53.ListCidrCollectionsOutput, error)
+	ListCidrCollectionsWithContext(aws.Context, *route53.ListCidrCollectionsInput, ...request.Option) (*route53.ListCidrCollectionsOutput, error)
+	ListCidrCollectionsRequest(*route53.ListCidrCollectionsInput) (*request.Request, *route53.ListCidrCollectionsOutput)
+
+	ListCidrCollectionsPages(*route53.ListCidrCollectionsInput, func(*route53.ListCidrCollectionsOutput, bool) bool) error
+	ListCidrCollectionsPagesWithContext(aws.Context, *route53.ListCidrCollectionsInput, func(*route53.ListCidrCollectionsOutput, bool) bool, ...request.Option) error
+
+	ListCidrLocations(*route53.ListCidrLocationsInput) (*route53.ListCidrLocationsOutput, error)
+	ListCidrLocationsWithContext(aws.Context, *route53.ListCidrLocationsInput, ...request.Option) (*route53.ListCidrLocationsOutput, error)
+	ListCidrLocationsRequest(*route53.ListCidrLocationsInput) (*request.Request, *route53.ListCidrLocationsOutput)
+
+	ListCidrLocationsPages(*route53.ListCidrLocationsInput, func(*route53.ListCidrLocationsOutput, bool) bool) error
+	ListCidrLocationsPagesWithContext(aws.Context, *route53.ListCidrLocationsInput, func(*route53.ListCidrLocationsOutput, bool) bool, ...request.Option) error
 
 	ListGeoLocations(*route53.ListGeoLocationsInput) (*route53.ListGeoLocationsOutput, error)
 	ListGeoLocationsWithContext(aws.Context, *route53.ListGeoLocationsInput, ...request.Option) (*route53.ListGeoLocationsOutput, error)
