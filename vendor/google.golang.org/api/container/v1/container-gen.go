@@ -639,6 +639,19 @@ type BinaryAuthorization struct {
 	// all container images will be validated by Binary Authorization.
 	Enabled bool `json:"enabled,omitempty"`
 
+	// EvaluationMode: Mode of operation for binauthz policy evaluation.
+	// Currently the only options are equivalent to enable/disable. If
+	// unspecified, defaults to DISABLED.
+	//
+	// Possible values:
+	//   "EVALUATION_MODE_UNSPECIFIED" - Default value, equivalent to
+	// DISABLED.
+	//   "DISABLED" - Disable BinaryAuthorization
+	//   "PROJECT_SINGLETON_POLICY_ENFORCE" - If enabled, enforce Kubernetes
+	// admission requests with BinAuthz using the project's singleton
+	// policy. Equivalent to bool enabled=true.
+	EvaluationMode string `json:"evaluationMode,omitempty"`
+
 	// ForceSendFields is a list of field names (e.g. "Enabled") to
 	// unconditionally include in API requests. By default, fields with
 	// empty or default values are omitted from API requests. However, any
