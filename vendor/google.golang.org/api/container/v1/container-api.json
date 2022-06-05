@@ -2459,7 +2459,7 @@
       }
     }
   },
-  "revision": "20220419",
+  "revision": "20220420",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -2647,6 +2647,20 @@
         "enabled": {
           "description": "Enable Binary Authorization for this cluster. If enabled, all container images will be validated by Binary Authorization.",
           "type": "boolean"
+        },
+        "evaluationMode": {
+          "description": "Mode of operation for binauthz policy evaluation. Currently the only options are equivalent to enable/disable. If unspecified, defaults to DISABLED.",
+          "enum": [
+            "EVALUATION_MODE_UNSPECIFIED",
+            "DISABLED",
+            "PROJECT_SINGLETON_POLICY_ENFORCE"
+          ],
+          "enumDescriptions": [
+            "Default value, equivalent to DISABLED.",
+            "Disable BinaryAuthorization",
+            "If enabled, enforce Kubernetes admission requests with BinAuthz using the project's singleton policy. Equivalent to bool enabled=true."
+          ],
+          "type": "string"
         }
       },
       "type": "object"
