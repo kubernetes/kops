@@ -27909,6 +27909,47 @@
             "https://www.googleapis.com/auth/compute"
           ]
         },
+        "setCertificateMap": {
+          "description": "Changes the Certificate Map for TargetHttpsProxy.",
+          "flatPath": "projects/{project}/global/targetHttpsProxies/{targetHttpsProxy}/setCertificateMap",
+          "httpMethod": "POST",
+          "id": "compute.targetHttpsProxies.setCertificateMap",
+          "parameterOrder": [
+            "project",
+            "targetHttpsProxy"
+          ],
+          "parameters": {
+            "project": {
+              "description": "Project ID for this request.",
+              "location": "path",
+              "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+              "required": true,
+              "type": "string"
+            },
+            "requestId": {
+              "description": "An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. For example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported ( 00000000-0000-0000-0000-000000000000).",
+              "location": "query",
+              "type": "string"
+            },
+            "targetHttpsProxy": {
+              "description": "Name of the TargetHttpsProxy resource whose CertificateMap is to be set. The name must be 1-63 characters long, and comply with RFC1035.",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "projects/{project}/global/targetHttpsProxies/{targetHttpsProxy}/setCertificateMap",
+          "request": {
+            "$ref": "TargetHttpsProxiesSetCertificateMapRequest"
+          },
+          "response": {
+            "$ref": "Operation"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/compute"
+          ]
+        },
         "setQuicOverride": {
           "description": "Sets the QUIC override policy for TargetHttpsProxy.",
           "flatPath": "projects/{project}/global/targetHttpsProxies/{targetHttpsProxy}/setQuicOverride",
@@ -29095,6 +29136,47 @@
           "path": "projects/{project}/global/targetSslProxies/{targetSslProxy}/setBackendService",
           "request": {
             "$ref": "TargetSslProxiesSetBackendServiceRequest"
+          },
+          "response": {
+            "$ref": "Operation"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/compute"
+          ]
+        },
+        "setCertificateMap": {
+          "description": "Changes the Certificate Map for TargetSslProxy.",
+          "flatPath": "projects/{project}/global/targetSslProxies/{targetSslProxy}/setCertificateMap",
+          "httpMethod": "POST",
+          "id": "compute.targetSslProxies.setCertificateMap",
+          "parameterOrder": [
+            "project",
+            "targetSslProxy"
+          ],
+          "parameters": {
+            "project": {
+              "description": "Project ID for this request.",
+              "location": "path",
+              "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+              "required": true,
+              "type": "string"
+            },
+            "requestId": {
+              "description": "An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed. For example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported ( 00000000-0000-0000-0000-000000000000).",
+              "location": "query",
+              "type": "string"
+            },
+            "targetSslProxy": {
+              "description": "Name of the TargetSslProxy resource whose CertificateMap is to be set. The name must be 1-63 characters long, and comply with RFC1035.",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "projects/{project}/global/targetSslProxies/{targetSslProxy}/setCertificateMap",
+          "request": {
+            "$ref": "TargetSslProxiesSetCertificateMapRequest"
           },
           "response": {
             "$ref": "Operation"
@@ -31075,7 +31157,7 @@
       }
     }
   },
-  "revision": "20220426",
+  "revision": "20220510",
   "rootUrl": "https://compute.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -31647,6 +31729,7 @@
             "IPSEC_INTERCONNECT",
             "NAT_AUTO",
             "PRIVATE_SERVICE_CONNECT",
+            "SERVERLESS",
             "SHARED_LOADBALANCER_VIP",
             "VPC_PEERING"
           ],
@@ -31656,6 +31739,7 @@
             "A regional internal IP address range reserved for the VLAN attachment that is used in IPsec-encrypted Cloud Interconnect. This regional internal IP address range must not overlap with any IP address range of subnet/route in the VPC network and its peering networks. After the VLAN attachment is created with the reserved IP address range, when creating a new VPN gateway, its interface IP address is allocated from the associated VLAN attachment’s IP address range.",
             "External IP automatically reserved for Cloud NAT.",
             "A private network IP address that can be used to configure Private Service Connect. This purpose can be specified only for GLOBAL addresses of Type INTERNAL",
+            "A regional internal IP address range reserved for Serverless.",
             "A private network IP address that can be shared by multiple Internal Load Balancer forwarding rules.",
             "IP range for peer networks."
           ],
@@ -34916,9 +35000,11 @@
             "GENERAL_PURPOSE_N2D",
             "GENERAL_PURPOSE_T2D",
             "MEMORY_OPTIMIZED",
+            "MEMORY_OPTIMIZED_M3",
             "TYPE_UNSPECIFIED"
           ],
           "enumDescriptions": [
+            "",
             "",
             "",
             "",
@@ -37776,7 +37862,7 @@
       "id": "ForwardingRule",
       "properties": {
         "IPAddress": {
-          "description": "IP address that this forwarding rule serves. When a client sends traffic to this IP address, the forwarding rule directs the traffic to the target that you specify in the forwarding rule. If you don't specify a reserved IP address, an ephemeral IP address is assigned. Methods for specifying an IP address: * IPv4 dotted decimal, as in `100.1.2.3` * Full URL, as in https://www.googleapis.com/compute/v1/projects/project_id/regions/region /addresses/address-name * Partial URL or by name, as in: - projects/project_id/regions/region/addresses/address-name - regions/region/addresses/address-name - global/addresses/address-name - address-name The loadBalancingScheme and the forwarding rule's target determine the type of IP address that you can use. For detailed information, see [IP address specifications](https://cloud.google.com/load-balancing/docs/forwarding-rule-concepts#ip_address_specifications). Must be set to `0.0.0.0` when the target is targetGrpcProxy that has validateForProxyless field set to true. For Private Service Connect forwarding rules that forward traffic to Google APIs, IP address must be provided.",
+          "description": "IP address for which this forwarding rule accepts traffic. When a client sends traffic to this IP address, the forwarding rule directs the traffic to the referenced target or backendService. While creating a forwarding rule, specifying an IPAddress is required under the following circumstances: - When the target is set to targetGrpcProxy and validateForProxyless is set to true, the IPAddress should be set to 0.0.0.0. - When the target is a Private Service Connect Google APIs bundle, you must specify an IPAddress. Otherwise, you can optionally specify an IP address that references an existing static (reserved) IP address resource. When omitted, Google Cloud assigns an ephemeral IP address. Use one of the following formats to specify an IP address while creating a forwarding rule: * IP address number, as in `100.1.2.3` * Full resource URL, as in https://www.googleapis.com/compute/v1/projects/project_id/regions/region /addresses/address-name * Partial URL or by name, as in: - projects/project_id/regions/region/addresses/address-name - regions/region/addresses/address-name - global/addresses/address-name - address-name The forwarding rule's target or backendService, and in most cases, also the loadBalancingScheme, determine the type of IP address that you can use. For detailed information, see [IP address specifications](https://cloud.google.com/load-balancing/docs/forwarding-rule-concepts#ip_address_specifications). When reading an IPAddress, the API always returns the IP address number.",
           "type": "string"
         },
         "IPProtocol": {
@@ -39515,7 +39601,7 @@
           "type": "string"
         },
         "hosts": {
-          "description": "The list of host patterns to match. They must be valid hostnames with optional port numbers in the format host:port. * matches any string of ([a-z0-9-.]*). In that case, * must be the first character and must be followed in the pattern by either - or .. * based matching is not supported when the URL map is bound to a target gRPC proxy that has the validateForProxyless field set to true.",
+          "description": "The list of host patterns to match. They must be valid hostnames with optional port numbers in the format host:port. * matches any string of ([a-z0-9-.]*). In that case, * must be the first character, and if followed by anything, the immediate following character must be either - or .. * based matching is not supported when the URL map is bound to a target gRPC proxy that has the validateForProxyless field set to true.",
           "items": {
             "type": "string"
           },
@@ -39954,7 +40040,7 @@
         },
         "faultInjectionPolicy": {
           "$ref": "HttpFaultInjection",
-          "description": "The specification for fault injection introduced into traffic to test the resiliency of clients to backend service failure. As part of fault injection, when clients send requests to a backend service, delays can be introduced by a load balancer on a percentage of requests before sending those requests to the backend service. Similarly requests from clients can be aborted by the load balancer for a percentage of requests. timeout and retry_policy is ignored by clients that are configured with a fault_injection_policy if: 1. The traffic is generated by fault injection AND 2. The fault injection is not a delay fault injection."
+          "description": "The specification for fault injection introduced into traffic to test the resiliency of clients to backend service failure. As part of fault injection, when clients send requests to a backend service, delays can be introduced by a load balancer on a percentage of requests before sending those requests to the backend service. Similarly requests from clients can be aborted by the load balancer for a percentage of requests. timeout and retry_policy is ignored by clients that are configured with a fault_injection_policy if: 1. The traffic is generated by fault injection AND 2. The fault injection is not a delay fault injection. Fault injection is not supported with the global external HTTP(S) load balancer (classic). To see which load balancers support fault injection, see Load balancing: Routing and traffic management features."
         },
         "maxStreamDuration": {
           "$ref": "Duration",
@@ -40417,7 +40503,7 @@
         },
         "sourceType": {
           "default": "RAW",
-          "description": "The type of the image used to create this disk. The default and only value is RAW",
+          "description": "The type of the image used to create this disk. The default and only valid value is RAW.",
           "enum": [
             "RAW"
           ],
@@ -41829,7 +41915,7 @@
           "description": "The maximum number of instances that can be unavailable during the update process. An instance is considered available if all of the following conditions are satisfied: - The instance's status is RUNNING. - If there is a health check on the instance group, the instance's health check status must be HEALTHY at least once. If there is no health check on the group, then the instance only needs to have a status of RUNNING to be considered available. This value can be either a fixed number or, if the group has 10 or more instances, a percentage. If you set a percentage, the number of instances is rounded if necessary. The default value for maxUnavailable is a fixed value equal to the number of zones in which the managed instance group operates. At least one of either maxSurge or maxUnavailable must be greater than 0. Learn more about maxUnavailable."
         },
         "minimalAction": {
-          "description": "Minimal action to be taken on an instance. You can specify either RESTART to restart existing instances or REPLACE to delete and create new instances from the target template. If you specify a RESTART, the Updater will attempt to perform that action only. However, if the Updater determines that the minimal action you specify is not enough to perform the update, it might perform a more disruptive action.",
+          "description": "Minimal action to be taken on an instance. Use this option to minimize disruption as much as possible or to apply a more disruptive action than is necessary. - To limit disruption as much as possible, set the minimal action to REFRESH. If your update requires a more disruptive action, Compute Engine performs the necessary action to execute the update. - To apply a more disruptive action than is strictly necessary, set the minimal action to RESTART or REPLACE. For example, Compute Engine does not need to restart a VM to change its metadata. But if your application reads instance metadata only when a VM is restarted, you can set the minimal action to RESTART in order to pick up metadata changes. ",
           "enum": [
             "NONE",
             "REFRESH",
@@ -45277,6 +45363,20 @@
           },
           "description": "Location configurations mapped by location name. Currently only zone names are supported and must be represented as valid internal URLs, such as zones/us-central1-a.",
           "type": "object"
+        },
+        "targetShape": {
+          "description": "Strategy for distributing VMs across zones in a region.",
+          "enum": [
+            "ANY",
+            "ANY_SINGLE_ZONE",
+            "BALANCED"
+          ],
+          "enumDescriptions": [
+            "GCE picks zones for creating VM instances to fulfill the requested number of VMs within present resource constraints and to maximize utilization of unused zonal reservations. Recommended for batch workloads that do not require high availability.",
+            "GCE always selects a single zone for all the VMs, optimizing for resource quotas, available reservations and general capacity. Recommended for batch workloads that cannot tollerate distribution over multiple zones. This the default shape in Bulk Insert and Capacity Advisor APIs.",
+            "GCE prioritizes acquisition of resources, scheduling VMs in zones where resources are available while distributing VMs as evenly as possible across allowed zones to minimize the impact of zonal failure. Recommended for highly available serving workloads."
+          ],
+          "type": "string"
         }
       },
       "type": "object"
@@ -54398,7 +54498,7 @@
       "id": "ResourcePolicyGroupPlacementPolicy",
       "properties": {
         "availabilityDomainCount": {
-          "description": "The number of availability domains instances will be spread across. If two instances are in different availability domain, they will not be put in the same low latency network",
+          "description": "The number of availability domains to spread instances across. If two instances are in different availability domain, they are not in the same low latency network.",
           "format": "int32",
           "type": "integer"
         },
@@ -54415,7 +54515,7 @@
           "type": "string"
         },
         "vmCount": {
-          "description": "Number of vms in this placement group",
+          "description": "Number of VMs in this placement group. Google does not recommend that you use this field unless you use a compact policy and you want your policy to work only if it contains this exact number of VMs.",
           "format": "int32",
           "type": "integer"
         }
@@ -60645,6 +60745,16 @@
       },
       "type": "object"
     },
+    "TargetHttpsProxiesSetCertificateMapRequest": {
+      "id": "TargetHttpsProxiesSetCertificateMapRequest",
+      "properties": {
+        "certificateMap": {
+          "description": "URL of the Certificate Map to associate with this TargetHttpsProxy.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "TargetHttpsProxiesSetQuicOverrideRequest": {
       "id": "TargetHttpsProxiesSetQuicOverrideRequest",
       "properties": {
@@ -60684,6 +60794,10 @@
       "properties": {
         "authorizationPolicy": {
           "description": "Optional. A URL referring to a networksecurity.AuthorizationPolicy resource that describes how the proxy should authorize inbound traffic. If left blank, access will not be restricted by an authorization policy. Refer to the AuthorizationPolicy resource for additional details. authorizationPolicy only applies to a global TargetHttpsProxy attached to globalForwardingRules with the loadBalancingScheme set to INTERNAL_SELF_MANAGED. Note: This field currently has no impact.",
+          "type": "string"
+        },
+        "certificateMap": {
+          "description": "URL of a certificate map that identifies a certificate map associated with the given target proxy. This field can only be set for global target proxies. If set, sslCertificates will be ignored.",
           "type": "string"
         },
         "creationTimestamp": {
@@ -61920,6 +62034,16 @@
       },
       "type": "object"
     },
+    "TargetSslProxiesSetCertificateMapRequest": {
+      "id": "TargetSslProxiesSetCertificateMapRequest",
+      "properties": {
+        "certificateMap": {
+          "description": "URL of the Certificate Map to associate with this TargetSslProxy.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "TargetSslProxiesSetProxyHeaderRequest": {
       "id": "TargetSslProxiesSetProxyHeaderRequest",
       "properties": {
@@ -61955,6 +62079,10 @@
       "description": "Represents a Target SSL Proxy resource. A target SSL proxy is a component of a SSL Proxy load balancer. Global forwarding rules reference a target SSL proxy, and the target proxy then references an external backend service. For more information, read Using Target Proxies.",
       "id": "TargetSslProxy",
       "properties": {
+        "certificateMap": {
+          "description": "URL of a certificate map that identifies a certificate map associated with the given target proxy. This field can only be set for global target proxies. If set, sslCertificates will be ignored.",
+          "type": "string"
+        },
         "creationTimestamp": {
           "description": "[Output Only] Creation timestamp in RFC3339 text format.",
           "type": "string"
