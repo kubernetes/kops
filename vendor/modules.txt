@@ -99,7 +99,7 @@ github.com/aws/amazon-ec2-instance-selector/v2/pkg/ec2pricing
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/instancetypes
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector/outputs
-# github.com/aws/aws-sdk-go v1.44.6
+# github.com/aws/aws-sdk-go v1.44.28
 ## explicit; go 1.11
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/arn

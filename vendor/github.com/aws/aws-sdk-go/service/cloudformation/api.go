@@ -452,8 +452,8 @@ func (c *CloudFormation) CreateChangeSetRequest(input *CreateChangeSetInput) (re
 //   * ErrCodeLimitExceededException "LimitExceededException"
 //   The quota for the resource has already been reached.
 //
-//   For information on resource and stack limitations, see CloudFormation quotas
-//   (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html)
+//   For information about resource and stack limitations, see CloudFormation
+//   quotas (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html)
 //   in the CloudFormation User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudformation-2010-05-15/CreateChangeSet
@@ -537,8 +537,8 @@ func (c *CloudFormation) CreateStackRequest(input *CreateStackInput) (req *reque
 //   * ErrCodeLimitExceededException "LimitExceededException"
 //   The quota for the resource has already been reached.
 //
-//   For information on resource and stack limitations, see CloudFormation quotas
-//   (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html)
+//   For information about resource and stack limitations, see CloudFormation
+//   quotas (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html)
 //   in the CloudFormation User Guide.
 //
 //   * ErrCodeAlreadyExistsException "AlreadyExistsException"
@@ -650,8 +650,8 @@ func (c *CloudFormation) CreateStackInstancesRequest(input *CreateStackInstances
 //   * ErrCodeLimitExceededException "LimitExceededException"
 //   The quota for the resource has already been reached.
 //
-//   For information on resource and stack limitations, see CloudFormation quotas
-//   (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html)
+//   For information about resource and stack limitations, see CloudFormation
+//   quotas (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html)
 //   in the CloudFormation User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudformation-2010-05-15/CreateStackInstances
@@ -739,8 +739,8 @@ func (c *CloudFormation) CreateStackSetRequest(input *CreateStackSetInput) (req 
 //   * ErrCodeLimitExceededException "LimitExceededException"
 //   The quota for the resource has already been reached.
 //
-//   For information on resource and stack limitations, see CloudFormation quotas
-//   (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html)
+//   For information about resource and stack limitations, see CloudFormation
+//   quotas (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html)
 //   in the CloudFormation User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudformation-2010-05-15/CreateStackSet
@@ -1167,8 +1167,8 @@ func (c *CloudFormation) DeleteStackSetRequest(input *DeleteStackSetInput) (req 
 
 // DeleteStackSet API operation for AWS CloudFormation.
 //
-// Deletes a stack set. Before you can delete a stack set, all of its member
-// stack instances must be deleted. For more information about how to do this,
+// Deletes a stack set. Before you can delete a stack set, all its member stack
+// instances must be deleted. For more information about how to complete this,
 // see DeleteStackInstances.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -1657,7 +1657,7 @@ func (c *CloudFormation) DescribePublisherRequest(input *DescribePublisherInput)
 // publisher, DescribePublisher returns information about your own publisher
 // account.
 //
-// For more information on registering as a publisher, see:
+// For more information about registering as a publisher, see:
 //
 //    * RegisterPublisher (https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_RegisterPublisher.html)
 //
@@ -1746,7 +1746,7 @@ func (c *CloudFormation) DescribeStackDriftDetectionStatusRequest(input *Describ
 // or has drifted, from it's expected configuration, as defined in the stack
 // template and any values specified as template parameters. A stack is considered
 // to have drifted if one or more of its resources have drifted. For more information
-// on stack and resource drift, see Detecting Unregulated Configuration Changes
+// about stack and resource drift, see Detecting Unregulated Configuration Changes
 // to Stacks and Resources (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-stack-drift.html).
 //
 // Use DetectStackDrift to initiate a stack drift detection operation. DetectStackDrift
@@ -3042,7 +3042,7 @@ func (c *CloudFormation) DetectStackSetDriftRequest(input *DetectStackSetDriftIn
 //    * Use DescribeStackInstance to return detailed information about a specific
 //    stack instance, including its drift status and last drift time checked.
 //
-// For more information on performing a drift detection operation on a stack
+// For more information about performing a drift detection operation on a stack
 // set, see Detecting unmanaged changes in stack sets (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-drift.html).
 //
 // You can only run a single drift detection operation on a given stack set
@@ -3585,8 +3585,8 @@ func (c *CloudFormation) ImportStacksToStackSetRequest(input *ImportStacksToStac
 //   * ErrCodeLimitExceededException "LimitExceededException"
 //   The quota for the resource has already been reached.
 //
-//   For information on resource and stack limitations, see CloudFormation quotas
-//   (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html)
+//   For information about resource and stack limitations, see CloudFormation
+//   quotas (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html)
 //   in the CloudFormation User Guide.
 //
 //   * ErrCodeStackSetNotFoundException "StackSetNotFoundException"
@@ -5332,7 +5332,7 @@ func (c *CloudFormation) PublishTypeRequest(input *PublishTypeInput) (req *reque
 //
 // Publishes the specified extension to the CloudFormation registry as a public
 // extension in this region. Public extensions are available for use by all
-// CloudFormation users. For more information on publishing extensions, see
+// CloudFormation users. For more information about publishing extensions, see
 // Publishing extensions to make them available for public use (https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/publish-extension.html)
 // in the CloudFormation CLI User Guide.
 //
@@ -5511,8 +5511,9 @@ func (c *CloudFormation) RegisterPublisherRequest(input *RegisterPublisherInput)
 // registry. Public extensions are available for use by all CloudFormation users.
 // This publisher ID applies to your account in all Amazon Web Services Regions.
 //
-// For information on requirements for registering as a public extension publisher,
-// see Registering your account to publish CloudFormation extensions (https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/publish-extension.html#publish-extension-prereqs)
+// For information about requirements for registering as a public extension
+// publisher, see Registering your account to publish CloudFormation extensions
+// (https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/publish-extension.html#publish-extension-prereqs)
 // in the CloudFormation CLI User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -5602,7 +5603,7 @@ func (c *CloudFormation) RegisterTypeRequest(input *RegisterTypeInput) (req *req
 //
 //    * Making the extension available for use in your account.
 //
-// For more information on how to develop extensions and ready them for registration,
+// For more information about how to develop extensions and ready them for registration,
 // see Creating Resource Providers (https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/resource-types.html)
 // in the CloudFormation CLI User Guide.
 //
@@ -6897,7 +6898,7 @@ type ActivateTypeInput struct {
 	// You can specify MajorVersion or VersionBump, but not both.
 	MajorVersion *int64 `min:"1" type:"long"`
 
-	// The Amazon Resource Number (ARN) of the public extension.
+	// The Amazon Resource Name (ARN) of the public extension.
 	//
 	// Conditional: You must specify PublicTypeArn, or TypeName, Type, and PublisherId.
 	PublicTypeArn *string `type:"string"`
@@ -7050,7 +7051,7 @@ func (s *ActivateTypeInput) SetVersionBump(v string) *ActivateTypeInput {
 type ActivateTypeOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The Amazon Resource Number (ARN) of the activated extension, in this account
+	// The Amazon Resource Name (ARN) of the activated extension, in this account
 	// and region.
 	Arn *string `type:"string"`
 }
@@ -7929,7 +7930,7 @@ type CreateChangeSetInput struct {
 	//    IAM resources, you can specify either capability. If you have IAM resources
 	//    with custom names, you must specify CAPABILITY_NAMED_IAM. If you don't
 	//    specify either of these capabilities, CloudFormation returns an InsufficientCapabilities
-	//    error. If your stack template contains these resources, we recommend that
+	//    error. If your stack template contains these resources, we suggest that
 	//    you review all permissions associated with them and edit their permissions
 	//    if necessary. AWS::IAM::AccessKey (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-iam-accesskey.html)
 	//    AWS::IAM::Group (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-iam-group.html)
@@ -7956,7 +7957,7 @@ type CreateChangeSetInput struct {
 	//    sets has no effect. If you want to create a stack from a stack template
 	//    that contains macros and nested stacks, you must create or update the
 	//    stack directly from the template using the CreateStack or UpdateStack
-	//    action, and specifying this capability. For more information on macros,
+	//    action, and specifying this capability. For more information about macros,
 	//    see Using CloudFormation macros to perform custom processing on templates
 	//    (http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-macros.html).
 	Capabilities []*string `type:"list" enum:"Capability"`
@@ -8899,7 +8900,7 @@ func (s *CreateStackOutput) SetStackId(v string) *CreateStackOutput {
 type CreateStackSetInput struct {
 	_ struct{} `type:"structure"`
 
-	// The Amazon Resource Number (ARN) of the IAM role to use to create this stack
+	// The Amazon Resource Name (ARN) of the IAM role to use to create this stack
 	// set.
 	//
 	// Specify an IAM role only if you are using customized administrator roles
@@ -9014,7 +9015,7 @@ type CreateStackSetInput struct {
 	PermissionModel *string `type:"string" enum:"PermissionModels"`
 
 	// The stack ID you are importing into a new stack set. Specify the Amazon Resource
-	// Number (ARN) of the stack.
+	// Name (ARN) of the stack.
 	StackId *string `type:"string"`
 
 	// The name to associate with the stack set. The name must be unique in the
@@ -11173,8 +11174,8 @@ func (s *DescribeStackResourceDriftsInput) SetStackResourceDriftStatusFilters(v 
 type DescribeStackResourceDriftsOutput struct {
 	_ struct{} `type:"structure"`
 
-	// If the request doesn't return all of the remaining results, NextToken is
-	// set to a token. To retrieve the next set of results, call DescribeStackResourceDrifts
+	// If the request doesn't return all the remaining results, NextToken is set
+	// to a token. To retrieve the next set of results, call DescribeStackResourceDrifts
 	// again and assign that token to the request object's NextToken parameter.
 	// If the request returns all results, NextToken is set to null.
 	NextToken *string `min:"1" type:"string"`
@@ -11764,7 +11765,7 @@ type DescribeTypeInput struct {
 
 	// The publisher ID of the extension publisher.
 	//
-	// Extensions provided by Amazon are not assigned a publisher ID.
+	// Extensions provided by Amazon Web Services are not assigned a publisher ID.
 	PublisherId *string `min:"1" type:"string"`
 
 	// The kind of extension.
@@ -11889,9 +11890,9 @@ type DescribeTypeOutput struct {
 	// when the extension version isn't specified.
 	//
 	// This applies only to private extensions you have registered in your account.
-	// For public extensions, both those provided by Amazon and published by third
-	// parties, CloudFormation returns null. For more information, see RegisterType
-	// (https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_RegisterType.html).
+	// For public extensions, both those provided by Amazon Web Services and published
+	// by third parties, CloudFormation returns null. For more information, see
+	// RegisterType (https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_RegisterType.html).
 	//
 	// To set the default version of an extension, use SetTypeDefaultVersion .
 	DefaultVersionId *string `min:"1" type:"string"`
@@ -11927,7 +11928,7 @@ type DescribeTypeOutput struct {
 	// credentials.
 	ExecutionRoleArn *string `min:"1" type:"string"`
 
-	// Whether or not the extension is activated in the account and region.
+	// Whether the extension is activated in the account and region.
 	//
 	// This only applies to public third-party extensions. For all other extensions,
 	// CloudFormation returns null.
@@ -11936,8 +11937,8 @@ type DescribeTypeOutput struct {
 	// Whether the specified extension version is set as the default version.
 	//
 	// This applies only to private extensions you have registered in your account,
-	// and extensions published by Amazon. For public third-party extensions, whether
-	// or not they are activated in your account, CloudFormation returns null.
+	// and extensions published by Amazon Web Services. For public third-party extensions,
+	// whether they are activated in your account, CloudFormation returns null.
 	IsDefaultVersion *bool `type:"boolean"`
 
 	// When the specified extension version was registered. This applies only to:
@@ -11957,8 +11958,9 @@ type DescribeTypeOutput struct {
 
 	// Contains logging configuration information for private extensions. This applies
 	// only to private extensions you have registered in your account. For public
-	// extensions, both those provided by Amazon and published by third parties,
-	// CloudFormation returns null. For more information, see RegisterType (https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_RegisterType.html).
+	// extensions, both those provided by Amazon Web Services and published by third
+	// parties, CloudFormation returns null. For more information, see RegisterType
+	// (https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_RegisterType.html).
 	LoggingConfig *LoggingConfig `type:"structure"`
 
 	// For public extensions that have been activated for this account and region,
@@ -12012,7 +12014,8 @@ type DescribeTypeOutput struct {
 
 	// The schema that defines the extension.
 	//
-	// For more information on extension schemas, see Resource Provider Schema (https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/resource-type-schema.html)
+	// For more information about extension schemas, see Resource Provider Schema
+	// (https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/resource-type-schema.html)
 	// in the CloudFormation CLI User Guide.
 	Schema *string `min:"1" type:"string"`
 
@@ -12037,8 +12040,8 @@ type DescribeTypeOutput struct {
 	// extension test status of a specific extension version, you must specify VersionId.
 	//
 	// This applies only to registered private extension versions. CloudFormation
-	// doesn't return this information for public extensions, whether or not they
-	// are activated in your account.
+	// doesn't return this information for public extensions, whether they are activated
+	// in your account.
 	//
 	//    * PASSED: The extension has passed all its contract tests. An extension
 	//    must have a test status of PASSED before it can be published. For more
@@ -12057,8 +12060,8 @@ type DescribeTypeOutput struct {
 	// a specific extension version, you must specify VersionId.
 	//
 	// This applies only to registered private extension versions. CloudFormation
-	// doesn't return this information for public extensions, whether or not they
-	// are activated in your account.
+	// doesn't return this information for public extensions, whether they are activated
+	// in your account.
 	TypeTestsStatusDescription *string `min:"1" type:"string"`
 
 	// The scope at which the extension is visible and usable in CloudFormation
@@ -12071,7 +12074,7 @@ type DescribeTypeOutput struct {
 	//    as PRIVATE.
 	//
 	//    * PUBLIC: The extension is publicly visible and usable within any Amazon
-	//    account.
+	//    Web Services account.
 	Visibility *string `type:"string" enum:"Visibility"`
 }
 
@@ -12593,7 +12596,7 @@ type DetectStackSetDriftInput struct {
 	// The user-specified preferences for how CloudFormation performs a stack set
 	// operation.
 	//
-	// For more information on maximum concurrent accounts and failure tolerance,
+	// For more information about maximum concurrent accounts and failure tolerance,
 	// see Stack set operation options (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-concepts.html#stackset-ops-options).
 	OperationPreferences *StackSetOperationPreferences `type:"structure"`
 
@@ -13445,7 +13448,7 @@ type ImportStacksToStackSetInput struct {
 	// The user-specified preferences for how CloudFormation performs a stack set
 	// operation.
 	//
-	// For more information on maximum concurrent accounts and failure tolerance,
+	// For more information about maximum concurrent accounts and failure tolerance,
 	// see Stack set operation options (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-concepts.html#stackset-ops-options).
 	OperationPreferences *StackSetOperationPreferences `type:"structure"`
 
@@ -13908,7 +13911,7 @@ type ListStackInstancesInput struct {
 	// set of results.
 	MaxResults *int64 `min:"1" type:"integer"`
 
-	// If the previous request didn't return all of the remaining results, the response's
+	// If the previous request didn't return all the remaining results, the response's
 	// NextToken parameter value is set to a token. To retrieve the next set of
 	// results, call ListStackInstances again and assign that token to the request
 	// object's NextToken parameter. If there are no remaining results, the previous
@@ -14197,7 +14200,7 @@ type ListStackSetOperationResultsInput struct {
 	// set of results.
 	MaxResults *int64 `min:"1" type:"integer"`
 
-	// If the previous request didn't return all of the remaining results, the response
+	// If the previous request didn't return all the remaining results, the response
 	// object's NextToken parameter value is set to a token. To retrieve the next
 	// set of results, call ListStackSetOperationResults again and assign that token
 	// to the request object's NextToken parameter. If there are no remaining results,
@@ -14828,10 +14831,10 @@ func (s *ListTypeRegistrationsInput) SetTypeName(v string) *ListTypeRegistration
 type ListTypeRegistrationsOutput struct {
 	_ struct{} `type:"structure"`
 
-	// If the request doesn't return all of the remaining results, NextToken is
-	// set to a token. To retrieve the next set of results, call this action again
-	// and assign that token to the request object's NextToken parameter. If the
-	// request returns all results, NextToken is set to null.
+	// If the request doesn't return all the remaining results, NextToken is set
+	// to a token. To retrieve the next set of results, call this action again and
+	// assign that token to the request object's NextToken parameter. If the request
+	// returns all results, NextToken is set to null.
 	NextToken *string `min:"1" type:"string"`
 
 	// A list of extension registration tokens.
@@ -15076,7 +15079,7 @@ type ListTypesInput struct {
 	// set of results.
 	MaxResults *int64 `min:"1" type:"integer"`
 
-	// If the previous paginated request didn't return all of the remaining results,
+	// If the previous paginated request didn't return all the remaining results,
 	// the response object's NextToken parameter value is set to a token. To retrieve
 	// the next set of results, call this action again and assign that token to
 	// the request object's NextToken parameter. If there are no remaining results,
@@ -15116,8 +15119,8 @@ type ListTypesInput struct {
 	//    account and region.
 	//
 	//    * PUBLIC: Extensions that are publicly visible and available to be activated
-	//    within any Amazon account. This includes extensions from Amazon, as well
-	//    as third-party publishers.
+	//    within any Amazon Web Services account. This includes extensions from
+	//    Amazon Web Services, in addition to third-party publishers.
 	//
 	// The default is PRIVATE.
 	Visibility *string `type:"string" enum:"Visibility"`
@@ -15364,8 +15367,8 @@ func (s *ManagedExecution) SetActive(v bool) *ManagedExecution {
 // Contains information about the module from which the resource was created,
 // if the resource was created from a module included in the stack template.
 //
-// For more information on modules, see Using modules to encapsulate and reuse
-// resource configurations (AWSCloudFormation/latest/UserGuide/modules.html)
+// For more information about modules, see Using modules to encapsulate and
+// reuse resource configurations (AWSCloudFormation/latest/UserGuide/modules.html)
 // in the CloudFormation User Guide.
 type ModuleInfo struct {
 	_ struct{} `type:"structure"`
@@ -15793,7 +15796,7 @@ func (s *PropertyDifference) SetPropertyPath(v string) *PropertyDifference {
 type PublishTypeInput struct {
 	_ struct{} `type:"structure"`
 
-	// The Amazon Resource Number (ARN) of the extension.
+	// The Amazon Resource Name (ARN) of the extension.
 	//
 	// Conditional: You must specify Arn, or TypeName and Type.
 	Arn *string `type:"string"`
@@ -15886,7 +15889,7 @@ func (s *PublishTypeInput) SetTypeName(v string) *PublishTypeInput {
 type PublishTypeOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The Amazon Resource Number (ARN) assigned to the public extension upon publication.
+	// The Amazon Resource Name (ARN) assigned to the public extension upon publication.
 	PublicTypeArn *string `type:"string"`
 }
 
@@ -16158,7 +16161,7 @@ type RegisterTypeInput struct {
 	//
 	// For CloudFormation to assume the specified execution role, the role must
 	// contain a trust relationship with the CloudFormation service principle (resources.cloudformation.amazonaws.com).
-	// For more information on adding trust relationships, see Modifying a role
+	// For more information about adding trust relationships, see Modifying a role
 	// trust policy (IAM/latest/UserGuide/roles-managingrole-editing-console.html#roles-managingrole_edit-trust-policy)
 	// in the Identity and Access Management User Guide.
 	//
@@ -16177,7 +16180,7 @@ type RegisterTypeInput struct {
 	// A URL to the S3 bucket containing the extension project package that contains
 	// the necessary files for the extension you want to register.
 	//
-	// For information on generating a schema handler package for the extension
+	// For information about generating a schema handler package for the extension
 	// you want to register, see submit (https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/resource-type-cli-submit.html)
 	// in the CloudFormation CLI User Guide.
 	//
@@ -16195,11 +16198,13 @@ type RegisterTypeInput struct {
 
 	// The name of the extension being registered.
 	//
-	// We recommend that extension names adhere to the following patterns:
+	// We suggest that extension names adhere to the following patterns:
 	//
 	//    * For resource types, company_or_organization::service::type.
 	//
 	//    * For modules, company_or_organization::service::type::MODULE.
+	//
+	//    * For hooks, MyCompany::Testing::MyTestHook.
 	//
 	// The following organization namespaces are reserved and can't be used in your
 	// extension names:
@@ -17621,16 +17626,16 @@ type Stack struct {
 	//    * false: enable rollback.
 	DisableRollback *bool `type:"boolean"`
 
-	// Information on whether a stack's actual configuration differs, or has drifted,
-	// from it's expected configuration, as defined in the stack template and any
-	// values specified as template parameters. For more information, see Detecting
-	// Unregulated Configuration Changes to Stacks and Resources (http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-stack-drift.html).
+	// Information about whether a stack's actual configuration differs, or has
+	// drifted, from it's expected configuration, as defined in the stack template
+	// and any values specified as template parameters. For more information, see
+	// Detecting Unregulated Configuration Changes to Stacks and Resources (http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-stack-drift.html).
 	DriftInformation *StackDriftInformation `type:"structure"`
 
 	// Whether termination protection is enabled for the stack.
 	//
 	// For nested stacks (http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-nested-stacks.html),
-	// termination protection is set on the root stack and cannot be changed directly
+	// termination protection is set on the root stack and can't be changed directly
 	// on the nested stack. For more information, see Protecting a Stack From Being
 	// Deleted (http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-protect-stacks.html)
 	// in the CloudFormation User Guide.
@@ -19113,8 +19118,8 @@ type StackResourceDriftInformationSummary struct {
 	//    Resources that Support Drift Detection (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-stack-drift-resource-list.html).
 	//    If you performed an ContinueUpdateRollback operation on a stack, any resources
 	//    included in ResourcesToSkip will also have a status of NOT_CHECKED. For
-	//    more information on skipping resources during rollback operations, see
-	//    Continue Rolling Back an Update (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-continueupdaterollback.html)
+	//    more information about skipping resources during rollback operations,
+	//    see Continue Rolling Back an Update (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-continueupdaterollback.html)
 	//    in the CloudFormation User Guide.
 	//
 	//    * IN_SYNC: The resource's actual configuration matches its expected configuration.
@@ -19271,8 +19276,8 @@ func (s *StackResourceSummary) SetResourceType(v string) *StackResourceSummary {
 type StackSet struct {
 	_ struct{} `type:"structure"`
 
-	// The Amazon Resource Number (ARN) of the IAM role used to create or update
-	// the stack set.
+	// The Amazon Resource Name (ARN) of the IAM role used to create or update the
+	// stack set.
 	//
 	// Use customized administrator roles to control which users or groups can manage
 	// specific stack sets within the same administrator account. For more information,
@@ -19324,7 +19329,7 @@ type StackSet struct {
 	//    more information, see Grant Service-Managed Stack Set Permissions (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-prereqs-service-managed.html).
 	PermissionModel *string `type:"string" enum:"PermissionModels"`
 
-	// The Amazon Resource Number (ARN) of the stack set.
+	// The Amazon Resource Name (ARN) of the stack set.
 	StackSetARN *string `type:"string"`
 
 	// Detailed information about the drift status of the stack set.
@@ -19623,7 +19628,7 @@ type StackSetOperation struct {
 	// itself, in addition to all associated stack set instances.
 	Action *string `type:"string" enum:"StackSetOperationAction"`
 
-	// The Amazon Resource Number (ARN) of the IAM role used to perform this stack
+	// The Amazon Resource Name (ARN) of the IAM role used to perform this stack
 	// set operation.
 	//
 	// Use customized administrator roles to control which users or groups can manage
@@ -19704,6 +19709,9 @@ type StackSetOperation struct {
 	//    * SUCCEEDED: The operation completed creating or updating all the specified
 	//    stacks without exceeding the failure tolerance for the operation.
 	Status *string `type:"string" enum:"StackSetOperationStatus"`
+
+	// The status of the operation in details.
+	StatusReason *string `type:"string"`
 }
 
 // String returns the string representation.
@@ -19796,10 +19804,16 @@ func (s *StackSetOperation) SetStatus(v string) *StackSetOperation {
 	return s
 }
 
+// SetStatusReason sets the StatusReason field's value.
+func (s *StackSetOperation) SetStatusReason(v string) *StackSetOperation {
+	s.StatusReason = &v
+	return s
+}
+
 // The user-specified preferences for how CloudFormation performs a stack set
 // operation.
 //
-// For more information on maximum concurrent accounts and failure tolerance,
+// For more information about maximum concurrent accounts and failure tolerance,
 // see Stack set operation options (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-concepts.html#stackset-ops-options).
 type StackSetOperationPreferences struct {
 	_ struct{} `type:"structure"`
@@ -20087,6 +20101,9 @@ type StackSetOperationSummary struct {
 	//    * SUCCEEDED: The operation completed creating or updating all the specified
 	//    stacks without exceeding the failure tolerance for the operation.
 	Status *string `type:"string" enum:"StackSetOperationStatus"`
+
+	// The status of the operation in details.
+	StatusReason *string `type:"string"`
 }
 
 // String returns the string representation.
@@ -20134,6 +20151,12 @@ func (s *StackSetOperationSummary) SetOperationId(v string) *StackSetOperationSu
 // SetStatus sets the Status field's value.
 func (s *StackSetOperationSummary) SetStatus(v string) *StackSetOperationSummary {
 	s.Status = &v
+	return s
+}
+
+// SetStatusReason sets the StatusReason field's value.
+func (s *StackSetOperationSummary) SetStatusReason(v string) *StackSetOperationSummary {
+	s.StatusReason = &v
 	return s
 }
 
@@ -20283,7 +20306,7 @@ type StackSummary struct {
 	// The time the stack was deleted.
 	DeletionTime *time.Time `type:"timestamp"`
 
-	// Summarizes information on whether a stack's actual configuration differs,
+	// Summarizes information about whether a stack's actual configuration differs,
 	// or has drifted, from it's expected configuration, as defined in the stack
 	// template and any values specified as template parameters. For more information,
 	// see Detecting Unregulated Configuration Changes to Stacks and Resources (http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-stack-drift.html).
@@ -20817,8 +20840,7 @@ type TypeConfigurationDetails struct {
 	// returns {}.
 	Configuration *string `min:"1" type:"string"`
 
-	// Whether or not this configuration data is the default configuration for the
-	// extension.
+	// Whether this configuration data is the default configuration for the extension.
 	IsDefaultConfiguration *bool `type:"boolean"`
 
 	// When the configuration data was last updated for this extension.
@@ -21091,7 +21113,7 @@ type TypeSummary struct {
 	// The description of the extension.
 	Description *string `min:"1" type:"string"`
 
-	// Whether or not the extension is activated for this account and region.
+	// Whether the extension is activated for this account and region.
 	//
 	// This applies only to third-party public extensions. Extensions published
 	// by Amazon are activated by default.
@@ -21392,7 +21414,7 @@ type UpdateStackInput struct {
 	//    IAM resources, you can specify either capability. If you have IAM resources
 	//    with custom names, you must specify CAPABILITY_NAMED_IAM. If you don't
 	//    specify either of these capabilities, CloudFormation returns an InsufficientCapabilities
-	//    error. If your stack template contains these resources, we recommend that
+	//    error. If your stack template contains these resources, we suggest that
 	//    you review all permissions associated with them and edit their permissions
 	//    if necessary. AWS::IAM::AccessKey (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-iam-accesskey.html)
 	//    AWS::IAM::Group (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-iam-group.html)
@@ -21503,7 +21525,7 @@ type UpdateStackInput struct {
 	// parameter, but not both.
 	//
 	// If you want to update protected resources, specify a temporary overriding
-	// stack policy during this update. If you do not specify a stack policy, the
+	// stack policy during this update. If you don't specify a stack policy, the
 	// current policy that is associated with the stack will be used.
 	StackPolicyDuringUpdateBody *string `min:"1" type:"string"`
 
@@ -21513,7 +21535,7 @@ type UpdateStackInput struct {
 	// or the StackPolicyDuringUpdateURL parameter, but not both.
 	//
 	// If you want to update protected resources, specify a temporary overriding
-	// stack policy during this update. If you do not specify a stack policy, the
+	// stack policy during this update. If you don't specify a stack policy, the
 	// current policy that is associated with the stack will be used.
 	StackPolicyDuringUpdateURL *string `min:"1" type:"string"`
 
@@ -22009,7 +22031,7 @@ type UpdateStackSetInput struct {
 	// other stack instances with their existing stack instance status.
 	Accounts []*string `type:"list"`
 
-	// The Amazon Resource Number (ARN) of the IAM role to use to update this stack
+	// The Amazon Resource Name (ARN) of the IAM role to use to update this stack
 	// set.
 	//
 	// Specify an IAM role only if you are using customized administrator roles
