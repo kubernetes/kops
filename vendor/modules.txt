@@ -506,10 +506,10 @@ github.com/hashicorp/go-rootcerts
 # github.com/hashicorp/go-secure-stdlib/mlock v0.1.1
 ## explicit; go 1.16
 github.com/hashicorp/go-secure-stdlib/mlock
-# github.com/hashicorp/go-secure-stdlib/parseutil v0.1.1
+# github.com/hashicorp/go-secure-stdlib/parseutil v0.1.5
 ## explicit; go 1.16
 github.com/hashicorp/go-secure-stdlib/parseutil
-# github.com/hashicorp/go-secure-stdlib/strutil v0.1.1
+# github.com/hashicorp/go-secure-stdlib/strutil v0.1.2
 ## explicit; go 1.16
 github.com/hashicorp/go-secure-stdlib/strutil
 # github.com/hashicorp/go-sockaddr v1.0.2
@@ -546,10 +546,10 @@ github.com/hashicorp/hcl/v2/hclwrite
 # github.com/hashicorp/memberlist v0.3.1
 ## explicit; go 1.12
 github.com/hashicorp/memberlist
-# github.com/hashicorp/vault/api v1.5.0
+# github.com/hashicorp/vault/api v1.6.0
 ## explicit; go 1.13
 github.com/hashicorp/vault/api
-# github.com/hashicorp/vault/sdk v0.4.1
+# github.com/hashicorp/vault/sdk v0.5.0
 ## explicit; go 1.16
 github.com/hashicorp/vault/sdk/helper/certutil
 github.com/hashicorp/vault/sdk/helper/compressutil
