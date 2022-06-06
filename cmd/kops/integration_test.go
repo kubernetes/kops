@@ -812,18 +812,6 @@ func TestCustomIRSA(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
-// TestCustomIRSA119 runs a simple k8s 1.19 configuration, but with some additional IAM roles for ServiceAccounts
-func TestCustomIRSA119(t *testing.T) {
-	newIntegrationTest("minimal.example.com", "irsa119").
-		withOIDCDiscovery().
-		withServiceAccountRole("myserviceaccount.default", false).
-		withServiceAccountRole("myserviceaccount.test-wildcard", false).
-		withServiceAccountRole("myotherserviceaccount.myapp", true).
-		withKubeDNS().
-		withAddons(dnsControllerAddon).
-		runTestTerraformAWS(t)
-}
-
 // TestClusterNameDigit runs a configuration with a cluster name beginning with a digit
 func TestClusterNameDigit(t *testing.T) {
 	newIntegrationTest("123.example.com", "digit").
