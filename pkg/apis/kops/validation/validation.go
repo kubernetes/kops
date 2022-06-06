@@ -1170,7 +1170,7 @@ func validateEtcdVersion(spec kops.EtcdClusterSpec, fieldPath *field.Path, minim
 
 	version := spec.Version
 	if spec.Version == "" {
-		version = components.DefaultEtcd3Version_1_19
+		version = components.DefaultEtcd3Version_1_20
 	}
 
 	sem, err := semver.Parse(strings.TrimPrefix(version, "v"))
