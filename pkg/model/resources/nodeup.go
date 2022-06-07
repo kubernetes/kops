@@ -149,6 +149,12 @@ function download-release() {
 
 /bin/systemd-machine-id-setup || echo "failed to set up ensure machine-id configured"
 
+{{- if eq GetCloudProvider "digitalocean" }}
+  # DO has machine-id baked into the image and journald should be flushed
+  # to use the new machine-id
+  systemctl restart systemd-journald
+{{- end }}
+
 echo "== nodeup node config starting =="
 ensure-install-dir
 
@@ -178,6 +184,7 @@ type NodeUpScript struct {
 	KubeEnv              string
 	CompressUserData     bool
 	SetSysctls           string
+	CloudProvider        string
 	ProxyEnv             func() (string, error)
 	EnvironmentVariables func() (string, error)
 	ClusterSpec          func() (string, error)
@@ -234,6 +241,10 @@ func (b *NodeUpScript) Build() (fi.Resource, error) {
 
 		"CompressUserData": func() bool {
 			return b.CompressUserData
+		},
+
+		"GetCloudProvider": func() string {
+			return b.CloudProvider
 		},
 
 		"SetSysctls": func() string {
