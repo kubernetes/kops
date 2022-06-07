@@ -942,27 +942,13 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "Could not parse as semantic version"))
 		}
 
-		if !(version.Minor >= 8 && version.Minor <= 11) {
-			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "Only versions 1.8 through 1.11 are supported"))
-		}
-
-		if version.Minor < 10 && c.IsIPv6Only() {
-			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "kOps only supports IPv6 on version 1.10 or later"))
+		if version.Minor != 11 && version.Patch < 5 {
+			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "Only version 1.11 with patch version 5 or higher is supported"))
 		}
 
 		if v.Hubble != nil && fi.BoolValue(v.Hubble.Enabled) {
 			if !components.IsCertManagerEnabled(cluster) {
 				allErrs = append(allErrs, field.Forbidden(fldPath.Child("hubble", "enabled"), "Hubble requires that cert manager is enabled"))
-			}
-		}
-
-		if version.Minor < 10 && v.EncryptionType == kops.CiliumEncryptionTypeWireguard {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("encryptionType"), "Cilium EncryptionType=WireGuard is not available for Cilium version < 1.10.0."))
-		}
-
-		if version.Minor < 11 {
-			if v.EnableServiceTopology {
-				allErrs = append(allErrs, field.Forbidden(fldPath.Child("enableServiceTopology"), "Service topology requires Cilium 1.11"))
 			}
 		}
 	}
