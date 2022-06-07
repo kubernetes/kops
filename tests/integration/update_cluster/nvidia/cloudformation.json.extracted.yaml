@@ -134,7 +134,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
     nvidiaGPU:
       enabled: true
       package: nvidia-headless-460-server
-    version: 1.4.12
+    version: 1.4.13
   docker:
     skipInstall: true
   encryptionConfig: null
@@ -250,7 +250,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: KJyYwgZBfF6r8WQPZT0OFEL0qTih6KjlmGybsTRTX00=
+  NodeupConfigHash: e7Az2cX8mk5ERGI0JJKHsIOBS+UNra6FSqkjB7J1xAc=
 
   __EOF_KUBE_ENV
 
@@ -392,7 +392,7 @@ Resources.AWSEC2LaunchTemplatenodesminimalexamplecom.Properties.LaunchTemplateDa
     nvidiaGPU:
       enabled: true
       package: nvidia-headless-460-server
-    version: 1.4.12
+    version: 1.4.13
   docker:
     skipInstall: true
   kubeProxy:
@@ -425,7 +425,7 @@ Resources.AWSEC2LaunchTemplatenodesminimalexamplecom.Properties.LaunchTemplateDa
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: r9i6BZsRdoLrL5EHslFbYAQhkQSyIivHN+Xrzd/7gso=
+  NodeupConfigHash: lfcSundv2JEKbcYZ2j5Xu3o1aF1IxJNmQ4FC/NomAa4=
 
   __EOF_KUBE_ENV
 

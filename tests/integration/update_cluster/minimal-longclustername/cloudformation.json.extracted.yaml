@@ -132,7 +132,7 @@
   containerRuntime: containerd
   containerd:
     logLevel: info
-    version: 1.4.12
+    version: 1.4.13
   docker:
     skipInstall: true
   encryptionConfig: null
@@ -246,7 +246,7 @@
   ConfigBase: memfs://clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: LswnepLAACLM8hG9+XqPJxbyGYSfO5+BvQpYNHhbbJc=
+  NodeupConfigHash: yWrMPboP/1+oy0EzxgF26NTvfzji8PiJCW4o7ii+NSo=
 
   __EOF_KUBE_ENV
 
@@ -386,7 +386,7 @@
   containerRuntime: containerd
   containerd:
     logLevel: info
-    version: 1.4.12
+    version: 1.4.13
   docker:
     skipInstall: true
   kubeProxy:
@@ -418,7 +418,7 @@
   ConfigBase: memfs://clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: c6bIO8flDwjfCG5GoaxIBMv7Sn0UBXP5/PgzqOJxgxk=
+  NodeupConfigHash: fnLxAokDlJzZAQl5saxNEaITFJodiKulECO53IcM8S8=
 
   __EOF_KUBE_ENV
 
