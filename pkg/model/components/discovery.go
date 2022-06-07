@@ -40,17 +40,6 @@ func (b *DiscoveryOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.KubeAPIServer = &kops.KubeAPIServerConfig{}
 	}
 
-	if b.IsKubernetesLT("1.20") {
-		// TODO when dropping support for 1.19, remove the logic in nodeup's KubeAPIServerBuilder
-		// and apply_cluster for handling an empty ServiceAccountIssuer.
-		if clusterSpec.KubeAPIServer.FeatureGates == nil {
-			return nil
-		}
-		if _, ok := clusterSpec.KubeAPIServer.FeatureGates["ServiceAccountIssuerDiscovery"]; !ok {
-			return nil
-		}
-	}
-
 	kubeAPIServer := clusterSpec.KubeAPIServer
 
 	if len(kubeAPIServer.APIAudiences) == 0 {

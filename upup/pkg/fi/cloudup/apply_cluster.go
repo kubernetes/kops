@@ -80,9 +80,9 @@ const (
 	starline = "*********************************************************************************"
 
 	// OldestSupportedKubernetesVersion is the oldest kubernetes version that is supported in kOps.
-	OldestSupportedKubernetesVersion = "1.19.0"
+	OldestSupportedKubernetesVersion = "1.20.0"
 	// OldestRecommendedKubernetesVersion is the oldest kubernetes version that is not deprecated in kOps.
-	OldestRecommendedKubernetesVersion = "1.21.0"
+	OldestRecommendedKubernetesVersion = "1.22.0"
 )
 
 // TerraformCloudProviders is the list of cloud providers with terraform target support
@@ -1342,9 +1342,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 					return nil, nil, err
 				}
 			}
-			if cluster.Spec.KubeAPIServer != nil && fi.StringValue(cluster.Spec.KubeAPIServer.ServiceAccountIssuer) != "" {
-				config.KeypairIDs["service-account"] = keysets["service-account"].Primary.Id
-			}
+			config.KeypairIDs["service-account"] = keysets["service-account"].Primary.Id
 
 			config.APIServerConfig.EncryptionConfigSecretHash = n.encryptionConfigSecretHash
 			serviceAccountPublicKeys, err := keysets["service-account"].ToPublicKeys()

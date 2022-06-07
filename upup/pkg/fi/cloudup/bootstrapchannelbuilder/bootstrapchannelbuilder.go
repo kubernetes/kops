@@ -356,14 +356,8 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 
 	kubeDNS := b.Cluster.Spec.KubeDNS
 
-	// This checks if the Kubernetes version is greater than or equal to 1.20
-	// and makes the default DNS server as CoreDNS if the DNS provider is not specified
-	// and the Kubernetes version is >=1.19
 	if kubeDNS.Provider == "" {
-		kubeDNS.Provider = "KubeDNS"
-		if b.Cluster.IsKubernetesGTE("1.20") {
-			kubeDNS.Provider = "CoreDNS"
-		}
+		kubeDNS.Provider = "CoreDNS"
 	}
 
 	if kubeDNS.Provider == "KubeDNS" {
@@ -688,29 +682,16 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 
 		key := "aws-load-balancer-controller.addons.k8s.io"
 
-		if b.IsKubernetesLT("1.19") {
-			location := key + "/k8s-1.9.yaml"
-			id := "k8s-1.9"
+		location := key + "/k8s-1.19.yaml"
+		id := "k8s-1.19"
 
-			addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.String(key),
-				Selector: map[string]string{"k8s-addon": key},
-				Manifest: fi.String(location),
-				Id:       id,
-				NeedsPKI: true,
-			})
-		} else {
-			location := key + "/k8s-1.19.yaml"
-			id := "k8s-1.19"
-
-			addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.String(key),
-				Selector: map[string]string{"k8s-addon": key},
-				Manifest: fi.String(location),
-				Id:       id,
-				NeedsPKI: true,
-			})
-		}
+		addons.Add(&channelsapi.AddonSpec{
+			Name:     fi.String(key),
+			Selector: map[string]string{"k8s-addon": key},
+			Manifest: fi.String(location),
+			Id:       id,
+			NeedsPKI: true,
+		})
 
 		// Generate aws-load-balancer-controller ServiceAccount IAM permissions
 		if b.UseServiceAccountExternalPermissions() {

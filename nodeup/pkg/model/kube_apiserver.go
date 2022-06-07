@@ -109,12 +109,10 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Set the signing key if we're using Service Account Token VolumeProjection
 	if kubeAPIServer.ServiceAccountSigningKeyFile == nil {
-		if fi.StringValue(kubeAPIServer.ServiceAccountIssuer) != "" {
-			s := filepath.Join(pathSrvKAPI, "service-account.key")
-			kubeAPIServer.ServiceAccountSigningKeyFile = &s
-			if err := b.BuildPrivateKeyTask(c, "service-account", pathSrvKAPI, "service-account", nil, nil); err != nil {
-				return err
-			}
+		s := filepath.Join(pathSrvKAPI, "service-account.key")
+		kubeAPIServer.ServiceAccountSigningKeyFile = &s
+		if err := b.BuildPrivateKeyTask(c, "service-account", pathSrvKAPI, "service-account", nil, nil); err != nil {
+			return err
 		}
 	}
 

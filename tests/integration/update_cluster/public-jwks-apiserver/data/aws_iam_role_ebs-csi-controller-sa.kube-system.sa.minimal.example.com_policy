@@ -4,7 +4,7 @@
       "Action": "sts:AssumeRoleWithWebIdentity",
       "Condition": {
         "StringEquals": {
-          "discovery.example.com/minimal.example.com:sub": "system:serviceaccount:myapp:myotherserviceaccount"
+          "discovery.example.com/minimal.example.com:sub": "system:serviceaccount:kube-system:ebs-csi-controller-sa"
         }
       },
       "Effect": "Allow",
