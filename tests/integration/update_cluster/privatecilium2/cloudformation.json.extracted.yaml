@@ -127,36 +127,30 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumexamplecom.Prope
   cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
   cloudConfig:
     awsEBSCSIDriver:
-      enabled: false
+      enabled: true
+      version: v1.6.2
     manageStorageClasses: true
-  containerRuntime: docker
+  containerRuntime: containerd
   containerd:
-    configOverride: |
-      disabled_plugins = ["cri"]
     logLevel: info
+    version: 1.6.6
   docker:
-    ipMasq: false
-    ipTables: false
-    logDriver: json-file
-    logLevel: info
-    logOpt:
-    - max-size=10m
-    - max-file=5
-    storage: overlay2,overlay,aufs
-    version: 19.03.15
+    skipInstall: true
   encryptionConfig: null
   etcdClusters:
     events:
-      version: 3.4.13
+      version: 3.5.4
     main:
-      version: 3.4.13
+      version: 3.5.4
   kubeAPIServer:
     allowPrivileged: true
     anonymousAuth: false
+    apiAudiences:
+    - kubernetes.svc.default
     apiServerCount: 1
     authorizationMode: AlwaysAllow
     bindAddress: 0.0.0.0
-    cloudProvider: aws
+    cloudProvider: external
     enableAdmissionPlugins:
     - NamespaceLifecycle
     - LimitRanger
@@ -171,8 +165,10 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumexamplecom.Prope
     - https://127.0.0.1:4001
     etcdServersOverrides:
     - /events#https://127.0.0.1:4002
-    image: registry.k8s.io/kube-apiserver:v1.19.0
-    insecurePort: 0
+    featureGates:
+      CSIMigrationAWS: "true"
+      InTreePluginAWSUnregister: "true"
+    image: registry.k8s.io/kube-apiserver:v1.24.0
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
@@ -187,16 +183,21 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumexamplecom.Prope
     requestheaderUsernameHeaders:
     - X-Remote-User
     securePort: 443
+    serviceAccountIssuer: https://api.internal.privatecilium.example.com
+    serviceAccountJWKSURI: https://api.internal.privatecilium.example.com/openid/v1/jwks
     serviceClusterIPRange: 100.64.0.0/13
     storageBackend: etcd3
   kubeControllerManager:
     allocateNodeCIDRs: true
     attachDetachReconcileSyncPeriod: 1m0s
-    cloudProvider: aws
+    cloudProvider: external
     clusterCIDR: 100.96.0.0/11
     clusterName: privatecilium.example.com
     configureCloudRoutes: false
-    image: registry.k8s.io/kube-controller-manager:v1.19.0
+    featureGates:
+      CSIMigrationAWS: "true"
+      InTreePluginAWSUnregister: "true"
+    image: registry.k8s.io/kube-controller-manager:v1.24.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -204,40 +205,55 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumexamplecom.Prope
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    image: registry.k8s.io/kube-proxy:v1.19.0
+    image: registry.k8s.io/kube-proxy:v1.24.0
     logLevel: 2
   kubeScheduler:
-    image: registry.k8s.io/kube-scheduler:v1.19.0
+    featureGates:
+      CSIMigrationAWS: "true"
+      InTreePluginAWSUnregister: "true"
+    image: registry.k8s.io/kube-scheduler:v1.24.0
     leaderElection:
       leaderElect: true
     logLevel: 2
   kubelet:
     anonymousAuth: false
+    cgroupDriver: systemd
     cgroupRoot: /
-    cloudProvider: aws
+    cloudProvider: external
     clusterDNS: 100.64.0.10
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+    featureGates:
+      CSIMigrationAWS: "true"
+      InTreePluginAWSUnregister: "true"
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    networkPluginName: cni
     podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
+    protectKernelDefaults: true
+    shutdownGracePeriod: 30s
+    shutdownGracePeriodCriticalPods: 10s
   masterKubelet:
     anonymousAuth: false
+    cgroupDriver: systemd
     cgroupRoot: /
-    cloudProvider: aws
+    cloudProvider: external
     clusterDNS: 100.64.0.10
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+    featureGates:
+      CSIMigrationAWS: "true"
+      InTreePluginAWSUnregister: "true"
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    networkPluginName: cni
     podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
+    protectKernelDefaults: true
     registerSchedulable: false
+    shutdownGracePeriod: 30s
+    shutdownGracePeriodCriticalPods: 10s
 
   __EOF_CLUSTER_SPEC
 
@@ -246,7 +262,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumexamplecom.Prope
   ConfigBase: memfs://clusters.example.com/privatecilium.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: lQl5vPS8cn5z6ZqlLfEpYOp5FJd5Rvo3/U5dA3VWZ88=
+  NodeupConfigHash: RdSNFHb8HrZwhDUmxJnqm+aztTCrCDT836YrjbPrhZQ=
 
   __EOF_KUBE_ENV
 
@@ -380,41 +396,39 @@ Resources.AWSEC2LaunchTemplatenodesprivateciliumexamplecom.Properties.LaunchTemp
   cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
   cloudConfig:
     awsEBSCSIDriver:
-      enabled: false
+      enabled: true
+      version: v1.6.2
     manageStorageClasses: true
-  containerRuntime: docker
+  containerRuntime: containerd
   containerd:
-    configOverride: |
-      disabled_plugins = ["cri"]
     logLevel: info
+    version: 1.6.6
   docker:
-    ipMasq: false
-    ipTables: false
-    logDriver: json-file
-    logLevel: info
-    logOpt:
-    - max-size=10m
-    - max-file=5
-    storage: overlay2,overlay,aufs
-    version: 19.03.15
+    skipInstall: true
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    image: registry.k8s.io/kube-proxy:v1.19.0
+    image: registry.k8s.io/kube-proxy:v1.24.0
     logLevel: 2
   kubelet:
     anonymousAuth: false
+    cgroupDriver: systemd
     cgroupRoot: /
-    cloudProvider: aws
+    cloudProvider: external
     clusterDNS: 100.64.0.10
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+    featureGates:
+      CSIMigrationAWS: "true"
+      InTreePluginAWSUnregister: "true"
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    networkPluginName: cni
     podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
+    protectKernelDefaults: true
+    shutdownGracePeriod: 30s
+    shutdownGracePeriodCriticalPods: 10s
 
   __EOF_CLUSTER_SPEC
 
@@ -423,7 +437,7 @@ Resources.AWSEC2LaunchTemplatenodesprivateciliumexamplecom.Properties.LaunchTemp
   ConfigBase: memfs://clusters.example.com/privatecilium.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: mONybsIQLRIuQ/k4BkPRuh6YET6I5XQVGqkv/UC114k=
+  NodeupConfigHash: qwUFYSeT5I8+V21GQ/JQY28wlCekz91WS9kK245Uuhg=
 
   __EOF_KUBE_ENV
 
