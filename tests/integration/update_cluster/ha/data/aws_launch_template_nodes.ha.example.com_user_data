@@ -130,7 +130,7 @@ cloudConfig:
 containerRuntime: containerd
 containerd:
   logLevel: info
-  version: 1.4.12
+  version: 1.4.13
 docker:
   skipInstall: true
 kubeProxy:
@@ -162,7 +162,7 @@ CloudProvider: aws
 ConfigBase: memfs://tests/ha.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: xQmfROgehuVX/fUpG9fhPe52RkwPEAvSNnIka3IFnkg=
+NodeupConfigHash: +iaw87B4L/+K+mi4c5PQEgnz+u6w/JAtM0FozHk9rhA=
 
 __EOF_KUBE_ENV
 
