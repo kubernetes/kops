@@ -68,7 +68,7 @@ import (
 
 func main() {
 	// ...
-	ecrHelper := ecr.ECRHelper{ClientFactory: api.DefaultClientFactory()}
+	ecrHelper := ecr.ECRHelper{ClientFactory: api.DefaultClientFactory{}}
 	img, err := remote.Get(ref, remote.WithAuthFromKeychain(authn.NewKeychainFromHelper(ecrHelper)))
 	if err != nil {
 		panic(err)
