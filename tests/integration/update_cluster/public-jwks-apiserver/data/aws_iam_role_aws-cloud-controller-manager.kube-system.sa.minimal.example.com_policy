@@ -4,7 +4,7 @@
       "Action": "sts:AssumeRoleWithWebIdentity",
       "Condition": {
         "StringEquals": {
-          "discovery.example.com/minimal.example.com:sub": "system:serviceaccount:default:myserviceaccount"
+          "discovery.example.com/minimal.example.com:sub": "system:serviceaccount:kube-system:aws-cloud-controller-manager"
         }
       },
       "Effect": "Allow",

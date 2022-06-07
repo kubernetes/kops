@@ -125,41 +125,39 @@ ensure-install-dir
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   awsEBSCSIDriver:
-    enabled: false
+    enabled: true
+    version: v1.6.2
   manageStorageClasses: true
-containerRuntime: docker
+containerRuntime: containerd
 containerd:
-  configOverride: |
-    disabled_plugins = ["cri"]
   logLevel: info
+  version: 1.6.6
 docker:
-  ipMasq: false
-  ipTables: false
-  logDriver: json-file
-  logLevel: info
-  logOpt:
-  - max-size=10m
-  - max-file=5
-  storage: overlay2,overlay,aufs
-  version: 19.03.15
+  skipInstall: true
 kubeProxy:
   clusterCIDR: 100.96.0.0/11
   cpuRequest: 100m
-  image: registry.k8s.io/kube-proxy:v1.19.0
+  image: registry.k8s.io/kube-proxy:v1.24.0
   logLevel: 2
 kubelet:
   anonymousAuth: false
+  cgroupDriver: systemd
   cgroupRoot: /
-  cloudProvider: aws
+  cloudProvider: external
   clusterDNS: 100.64.0.10
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+  featureGates:
+    CSIMigrationAWS: "true"
+    InTreePluginAWSUnregister: "true"
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
-  networkPluginName: cni
   podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
+  protectKernelDefaults: true
+  shutdownGracePeriod: 30s
+  shutdownGracePeriodCriticalPods: 10s
 
 __EOF_CLUSTER_SPEC
 
@@ -168,7 +166,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: urnwCuCO8EPAvJFOTFu9P2/VrkW9b1gUzntYRX9HaNU=
+NodeupConfigHash: 7G+LRrw88cyCXykIPIY36rA7L1xKt4YQ9jT++plII6w=
 
 __EOF_KUBE_ENV
 
