@@ -252,7 +252,7 @@ func TestValidateKubeAPIServer(t *testing.T) {
 					Authorization: &kops.AuthorizationSpec{
 						RBAC: &kops.RBACAuthorizationSpec{},
 					},
-					KubernetesVersion: "1.19.0",
+					KubernetesVersion: "1.25.0",
 					CloudProvider: kops.CloudProviderSpec{
 						AWS: &kops.AWSSpec{},
 					},
@@ -271,7 +271,7 @@ func TestValidateKubeAPIServer(t *testing.T) {
 					Authorization: &kops.AuthorizationSpec{
 						RBAC: &kops.RBACAuthorizationSpec{},
 					},
-					KubernetesVersion: "1.19.0",
+					KubernetesVersion: "1.25.0",
 					CloudProvider: kops.CloudProviderSpec{
 						AWS: &kops.AWSSpec{},
 					},
@@ -287,7 +287,7 @@ func TestValidateKubeAPIServer(t *testing.T) {
 					Authorization: &kops.AuthorizationSpec{
 						RBAC: &kops.RBACAuthorizationSpec{},
 					},
-					KubernetesVersion: "1.19.0",
+					KubernetesVersion: "1.25.0",
 					CloudProvider: kops.CloudProviderSpec{
 						AWS: &kops.AWSSpec{},
 					},
