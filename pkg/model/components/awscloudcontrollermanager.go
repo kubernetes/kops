@@ -87,8 +87,6 @@ func (b *AWSCloudControllerManagerOptionsBuilder) BuildOptions(o interface{}) er
 	if eccm.Image == "" {
 		// See https://us.gcr.io/k8s-artifacts-prod/provider-aws/cloud-controller-manager
 		switch b.KubernetesVersion.Minor {
-		case 19:
-			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.19.0-alpha.1"
 		case 20:
 			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.20.0-alpha.0"
 		case 21:
