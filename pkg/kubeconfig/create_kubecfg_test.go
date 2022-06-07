@@ -122,7 +122,7 @@ func buildMinimalCluster(clusterName string, masterPublicName string, lbCert boo
 	cluster := testutils.BuildMinimalCluster(clusterName)
 	cluster.Spec.MasterPublicName = masterPublicName
 	cluster.Spec.MasterInternalName = fmt.Sprintf("internal.%v", masterPublicName)
-	cluster.Spec.KubernetesVersion = "1.19.3"
+	cluster.Spec.KubernetesVersion = "1.24.0"
 	cluster.Spec.API = &kops.AccessSpec{
 		LoadBalancer: &kops.LoadBalancerAccessSpec{},
 	}
