@@ -46,8 +46,6 @@ var MagicTimestamp = metav1.Time{Time: time.Date(2017, 1, 1, 0, 0, 0, 0, time.UT
 
 // TestCreateClusterMinimal runs kops create cluster minimal.example.com --zones us-test-1a
 func TestCreateClusterMinimal(t *testing.T) {
-	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-1.18", "v1alpha2")
-	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-1.19", "v1alpha2")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-1.20", "v1alpha2")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-1.21", "v1alpha2")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-1.22", "v1alpha2")
