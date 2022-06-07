@@ -208,7 +208,7 @@ func (b *KubeControllerManagerBuilder) buildPod(kcm *kops.KubeControllerManagerC
 	flags = append(flags, "--flex-volume-plugin-dir="+volumePluginDir)
 
 	image := kcm.Image
-	if components.IsBaseURL(b.Cluster.Spec.KubernetesVersion) {
+	if components.IsBaseURL(b.Cluster.Spec.KubernetesVersion) && b.IsKubernetesLT("1.25") {
 		image = strings.Replace(image, "registry.k8s.io", "k8s.gcr.io", 1)
 	}
 	if b.Architecture != architectures.ArchitectureAmd64 {
