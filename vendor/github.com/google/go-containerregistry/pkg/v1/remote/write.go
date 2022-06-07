@@ -410,33 +410,33 @@ func (w *writer) incrProgress(written int64) {
 
 // uploadOne performs a complete upload of a single layer.
 func (w *writer) uploadOne(ctx context.Context, l v1.Layer) error {
-	var from, mount string
-	if h, err := l.Digest(); err == nil {
-		// If we know the digest, this isn't a streaming layer. Do an existence
-		// check so we can skip uploading the layer if possible.
-		existing, err := w.checkExistingBlob(h)
-		if err != nil {
-			return err
-		}
-		if existing {
-			size, err := l.Size()
+	tryUpload := func() error {
+		var from, mount string
+		if h, err := l.Digest(); err == nil {
+			// If we know the digest, this isn't a streaming layer. Do an existence
+			// check so we can skip uploading the layer if possible.
+			existing, err := w.checkExistingBlob(h)
 			if err != nil {
 				return err
 			}
-			w.incrProgress(size)
-			logs.Progress.Printf("existing blob: %v", h)
-			return nil
+			if existing {
+				size, err := l.Size()
+				if err != nil {
+					return err
+				}
+				w.incrProgress(size)
+				logs.Progress.Printf("existing blob: %v", h)
+				return nil
+			}
+
+			mount = h.String()
+		}
+		if ml, ok := l.(*MountableLayer); ok {
+			if w.repo.RegistryStr() == ml.Reference.Context().RegistryStr() {
+				from = ml.Reference.Context().RepositoryStr()
+			}
 		}
 
-		mount = h.String()
-	}
-	if ml, ok := l.(*MountableLayer); ok {
-		if w.repo.RegistryStr() == ml.Reference.Context().RegistryStr() {
-			from = ml.Reference.Context().RepositoryStr()
-		}
-	}
-
-	tryUpload := func() error {
 		location, mounted, err := w.initiateUpload(from, mount)
 		if err != nil {
 			return err
