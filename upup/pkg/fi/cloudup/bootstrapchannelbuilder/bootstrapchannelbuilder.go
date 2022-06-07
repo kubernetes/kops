@@ -356,14 +356,8 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 
 	kubeDNS := b.Cluster.Spec.KubeDNS
 
-	// This checks if the Kubernetes version is greater than or equal to 1.20
-	// and makes the default DNS server as CoreDNS if the DNS provider is not specified
-	// and the Kubernetes version is >=1.19
 	if kubeDNS.Provider == "" {
-		kubeDNS.Provider = "KubeDNS"
-		if b.Cluster.IsKubernetesGTE("1.20") {
-			kubeDNS.Provider = "CoreDNS"
-		}
+		kubeDNS.Provider = "CoreDNS"
 	}
 
 	if kubeDNS.Provider == "KubeDNS" {
