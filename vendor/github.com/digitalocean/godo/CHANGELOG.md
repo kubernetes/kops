@@ -1,5 +1,9 @@
 # Change Log
 
+## [v1.80.0] - 2022-05-23
+
+- #533 - @ElanHasson - APPS-5636 - App Platform updates
+
 ## [v1.79.0] - 2022-04-29
 
 - #530 - @anitgandhi - monitoring: alerts for Load Balancers TLS conns/s utilization
