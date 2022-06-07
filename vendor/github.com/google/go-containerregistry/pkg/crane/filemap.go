@@ -17,6 +17,8 @@ package crane
 import (
 	"archive/tar"
 	"bytes"
+	"io"
+	"io/ioutil"
 	"sort"
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -52,7 +54,11 @@ func Layer(filemap map[string][]byte) (v1.Layer, error) {
 	if err := w.Close(); err != nil {
 		return nil, err
 	}
-	return tarball.LayerFromReader(b)
+
+	// Return a new copy of the buffer each time it's opened.
+	return tarball.LayerFromOpener(func() (io.ReadCloser, error) {
+		return ioutil.NopCloser(bytes.NewBuffer(b.Bytes())), nil
+	})
 }
 
 // Image creates a image with the given filemaps as its contents. These images are reproducible and consistent.
