@@ -76,12 +76,7 @@ func NewWithContext(ctx context.Context, reg name.Registry, auth authn.Authentic
 		if !ok {
 			return nil, fmt.Errorf("malformed www-authenticate, missing realm: %v", pr.parameters)
 		}
-		service, ok := pr.parameters["service"]
-		if !ok {
-			// If the service parameter is not specified, then default it to the registry
-			// with which we are talking.
-			service = reg.String()
-		}
+		service := pr.parameters["service"]
 		bt := &bearerTransport{
 			inner:    t,
 			basic:    auth,

@@ -15,7 +15,9 @@
 package v1
 
 import (
+	"fmt"
 	"sort"
+	"strings"
 )
 
 // Platform represents the target os/arch for an image.
@@ -28,11 +30,59 @@ type Platform struct {
 	Features     []string `json:"features,omitempty"`
 }
 
+func (p Platform) String() string {
+	if p.OS == "" {
+		return ""
+	}
+	var b strings.Builder
+	b.WriteString(p.OS)
+	if p.Architecture != "" {
+		b.WriteString("/")
+		b.WriteString(p.Architecture)
+	}
+	if p.Variant != "" {
+		b.WriteString("/")
+		b.WriteString(p.Variant)
+	}
+	if p.OSVersion != "" {
+		b.WriteString(":")
+		b.WriteString(p.OSVersion)
+	}
+	return b.String()
+}
+
+// ParsePlatform parses a string representing a Platform, if possible.
+func ParsePlatform(s string) (*Platform, error) {
+	var p Platform
+	parts := strings.Split(strings.TrimSpace(s), ":")
+	if len(parts) == 2 {
+		p.OSVersion = parts[1]
+	}
+	parts = strings.Split(parts[0], "/")
+	if len(parts) > 0 {
+		p.OS = parts[0]
+	}
+	if len(parts) > 1 {
+		p.Architecture = parts[1]
+	}
+	if len(parts) > 2 {
+		p.Variant = parts[2]
+	}
+	if len(parts) > 3 {
+		return nil, fmt.Errorf("too many slashes in platform spec: %s", s)
+	}
+	return &p, nil
+}
+
 // Equals returns true if the given platform is semantically equivalent to this one.
 // The order of Features and OSFeatures is not important.
 func (p Platform) Equals(o Platform) bool {
-	return p.OS == o.OS && p.Architecture == o.Architecture && p.Variant == o.Variant && p.OSVersion == o.OSVersion &&
-		stringSliceEqualIgnoreOrder(p.OSFeatures, o.OSFeatures) && stringSliceEqualIgnoreOrder(p.Features, o.Features)
+	return p.OS == o.OS &&
+		p.Architecture == o.Architecture &&
+		p.Variant == o.Variant &&
+		p.OSVersion == o.OSVersion &&
+		stringSliceEqualIgnoreOrder(p.OSFeatures, o.OSFeatures) &&
+		stringSliceEqualIgnoreOrder(p.Features, o.Features)
 }
 
 // stringSliceEqual compares 2 string slices and returns if their contents are identical.
