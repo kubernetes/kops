@@ -118,7 +118,10 @@ Resources.AWSEC2LaunchTemplateapiserverapiserversminimalexamplecom.Properties.La
 
   ####################################################################################
 
-  /bin/systemd-machine-id-setup || echo "failed to set up ensure machine-id configured"
+  if [[ ! -s /etc/machine-id ]]; then
+    echo "Generating machine-id"
+    /bin/systemd-machine-id-setup || echo "failed to set up ensure machine-id configured"
+  fi
 
   echo "== nodeup node config starting =="
   ensure-install-dir
@@ -294,7 +297,10 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
 
   ####################################################################################
 
-  /bin/systemd-machine-id-setup || echo "failed to set up ensure machine-id configured"
+  if [[ ! -s /etc/machine-id ]]; then
+    echo "Generating machine-id"
+    /bin/systemd-machine-id-setup || echo "failed to set up ensure machine-id configured"
+  fi
 
   echo "== nodeup node config starting =="
   ensure-install-dir
@@ -565,7 +571,10 @@ Resources.AWSEC2LaunchTemplatenodesminimalexamplecom.Properties.LaunchTemplateDa
 
   ####################################################################################
 
-  /bin/systemd-machine-id-setup || echo "failed to set up ensure machine-id configured"
+  if [[ ! -s /etc/machine-id ]]; then
+    echo "Generating machine-id"
+    /bin/systemd-machine-id-setup || echo "failed to set up ensure machine-id configured"
+  fi
 
   echo "== nodeup node config starting =="
   ensure-install-dir
