@@ -180,6 +180,22 @@ func (i *integrationTest) withAddons(addons ...string) *integrationTest {
 	return i
 }
 
+func (i integrationTest) withDefaultServiceAccountRoles24() *integrationTest {
+	return i.withServiceAccountRole("dns-controller.kube-system", true).
+		withServiceAccountRole("aws-cloud-controller-manager.kube-system", true).
+		withServiceAccountRole("ebs-csi-controller-sa.kube-system", true)
+}
+
+// withDefaultAddons24 adds the default addons for an AWS cluster running k8s 1.24
+func (i integrationTest) withDefaultAddons24() *integrationTest {
+	return i.withAddons(
+		awsCCMAddon,
+		awsEBSCSIAddon,
+		dnsControllerAddon,
+		leaderElectionAddon,
+	)
+}
+
 const (
 	awsCCMAddon         = "aws-cloud-controller.addons.k8s.io-k8s-1.18"
 	awsEBSCSIAddon      = "aws-ebs-csi-driver.addons.k8s.io-k8s-1.17"
@@ -431,8 +447,8 @@ func TestPrivateCilium(t *testing.T) {
 func TestPrivateCilium2(t *testing.T) {
 	newIntegrationTest("privatecilium.example.com", "privatecilium2").
 		withPrivate().
-		withAddons("networking.cilium.io-k8s-1.12", dnsControllerAddon).
-		withKubeDNS().
+		withDefaultAddons24().
+		withAddons("networking.cilium.io-k8s-1.12").
 		runTestTerraformAWS(t)
 	newIntegrationTest("privatecilium.example.com", "privatecilium2").
 		withPrivate().
@@ -516,10 +532,9 @@ func TestPrivateDns2(t *testing.T) {
 // TestDiscoveryFeatureGate runs a simple configuration, but with UseServiceAccountExternalPermissions and the ServiceAccountIssuerDiscovery feature gate enabled
 func TestDiscoveryFeatureGate(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "public-jwks-apiserver").
-		withServiceAccountRole("dns-controller.kube-system", true).
-		withAddons(dnsControllerAddon).
+		withDefaultServiceAccountRoles24().
+		withDefaultAddons24().
 		withOIDCDiscovery().
-		withKubeDNS().
 		runTestTerraformAWS(t)
 }
 

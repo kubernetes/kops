@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
   config.yaml: |
-    {"cloud":"aws","configBase":"memfs://clusters.example.com/privatecilium.example.com","server":{"Listen":":3988","provider":{"aws":{"nodesRoles":["nodes.privatecilium.example.com"],"Region":"us-test-1"}},"serverKeyPath":"/etc/kubernetes/kops-controller/pki/kops-controller.key","serverCertificatePath":"/etc/kubernetes/kops-controller/pki/kops-controller.crt","caBasePath":"/etc/kubernetes/kops-controller/pki","signingCAs":["kubernetes-ca"],"certNames":["kubelet","kubelet-server","kube-proxy"]}}
+    {"cloud":"aws","configBase":"memfs://clusters.example.com/privatecilium.example.com","server":{"Listen":":3988","provider":{"aws":{"nodesRoles":["nodes.privatecilium.example.com"],"Region":"us-test-1"}},"serverKeyPath":"/etc/kubernetes/kops-controller/pki/kops-controller.key","serverCertificatePath":"/etc/kubernetes/kops-controller/pki/kops-controller.crt","caBasePath":"/etc/kubernetes/kops-controller/pki","signingCAs":["kubernetes-ca"],"certNames":["kubelet","kubelet-server","kube-proxy"],"useInstanceIDForNodeName":true}}
 kind: ConfigMap
 metadata:
   creationTimestamp: null
