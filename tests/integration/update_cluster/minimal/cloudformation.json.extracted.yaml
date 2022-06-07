@@ -131,7 +131,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
   containerRuntime: containerd
   containerd:
     logLevel: info
-    version: 1.4.12
+    version: 1.4.13
   docker:
     skipInstall: true
   encryptionConfig: null
@@ -243,7 +243,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: C8qAUpqZBMluWjUGWsSBFeNhbWVZEBa2LeAhLCfq6EI=
+  NodeupConfigHash: rcD6Wigqk32Hrt/EI+ORn5t4s0Q+GaSXCYum/ZHyAjY=
 
   __EOF_KUBE_ENV
 
@@ -382,7 +382,7 @@ Resources.AWSEC2LaunchTemplatenodesminimalexamplecom.Properties.LaunchTemplateDa
   containerRuntime: containerd
   containerd:
     logLevel: info
-    version: 1.4.12
+    version: 1.4.13
   docker:
     skipInstall: true
   kubeProxy:
@@ -413,7 +413,7 @@ Resources.AWSEC2LaunchTemplatenodesminimalexamplecom.Properties.LaunchTemplateDa
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: nt2U9XS+exP3kAEZtdZuAN+2aqdHBpI2bFjWB6WRnE8=
+  NodeupConfigHash: h4zvii805APnyhYmWJJoUspAkYzjhkUDpyG2hvNwomk=
 
   __EOF_KUBE_ENV
 
