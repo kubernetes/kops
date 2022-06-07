@@ -11,28 +11,29 @@ spec:
   channel: stable
   cloudConfig:
     awsEBSCSIDriver:
-      enabled: false
+      enabled: true
+      version: v1.6.2
     manageStorageClasses: true
+  cloudControllerManager:
+    allocateNodeCIDRs: true
+    clusterCIDR: 100.64.0.0/10
+    clusterName: minimal.example.com
+    configureCloudRoutes: false
+    enableLeaderMigration: true
+    image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.24.0
+    leaderElection:
+      leaderElect: true
   cloudProvider: aws
   clusterDNSDomain: cluster.local
   configBase: memfs://clusters.example.com/minimal.example.com
   configStore: memfs://clusters.example.com/minimal.example.com
-  containerRuntime: docker
+  containerRuntime: containerd
   containerd:
-    configOverride: |
-      disabled_plugins = ["cri"]
     logLevel: info
+    version: 1.6.6
   dnsZone: Z1AFAKE1ZON3YO
   docker:
-    ipMasq: false
-    ipTables: false
-    logDriver: json-file
-    logLevel: info
-    logOpt:
-    - max-size=10m
-    - max-file=5
-    storage: overlay2,overlay,aufs
-    version: 19.03.15
+    skipInstall: true
   etcdClusters:
   - backups:
       backupStore: memfs://clusters.example.com/minimal.example.com/backups/etcd/main
@@ -40,14 +41,14 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: main
-    version: 3.4.13
+    version: 3.5.4
   - backups:
       backupStore: memfs://clusters.example.com/minimal.example.com/backups/etcd/events
     etcdMembers:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: events
-    version: 3.4.13
+    version: 3.5.4
   externalDns:
     provider: dns-controller
   iam:
@@ -62,7 +63,7 @@ spec:
     apiServerCount: 1
     authorizationMode: AlwaysAllow
     bindAddress: 0.0.0.0
-    cloudProvider: aws
+    cloudProvider: external
     enableAdmissionPlugins:
     - NamespaceLifecycle
     - LimitRanger
@@ -78,9 +79,10 @@ spec:
     etcdServersOverrides:
     - /events#https://127.0.0.1:4002
     featureGates:
+      CSIMigrationAWS: "true"
+      InTreePluginAWSUnregister: "true"
       ServiceAccountIssuerDiscovery: "true"
-    image: registry.k8s.io/kube-apiserver:v1.19.0
-    insecurePort: 0
+    image: registry.k8s.io/kube-apiserver:v1.24.0
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
@@ -102,11 +104,14 @@ spec:
   kubeControllerManager:
     allocateNodeCIDRs: true
     attachDetachReconcileSyncPeriod: 1m0s
-    cloudProvider: aws
+    cloudProvider: external
     clusterCIDR: 100.96.0.0/11
     clusterName: minimal.example.com
     configureCloudRoutes: false
-    image: registry.k8s.io/kube-controller-manager:v1.19.0
+    featureGates:
+      CSIMigrationAWS: "true"
+      InTreePluginAWSUnregister: "true"
+    image: registry.k8s.io/kube-controller-manager:v1.24.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -123,49 +128,64 @@ spec:
       enabled: false
       image: registry.k8s.io/dns/k8s-dns-node-cache:1.21.3
       memoryRequest: 5Mi
-    provider: KubeDNS
+    provider: CoreDNS
     serverIP: 100.64.0.10
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    image: registry.k8s.io/kube-proxy:v1.19.0
+    image: registry.k8s.io/kube-proxy:v1.24.0
     logLevel: 2
   kubeScheduler:
-    image: registry.k8s.io/kube-scheduler:v1.19.0
+    featureGates:
+      CSIMigrationAWS: "true"
+      InTreePluginAWSUnregister: "true"
+    image: registry.k8s.io/kube-scheduler:v1.24.0
     leaderElection:
       leaderElect: true
     logLevel: 2
   kubelet:
     anonymousAuth: false
+    cgroupDriver: systemd
     cgroupRoot: /
-    cloudProvider: aws
+    cloudProvider: external
     clusterDNS: 100.64.0.10
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+    featureGates:
+      CSIMigrationAWS: "true"
+      InTreePluginAWSUnregister: "true"
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    networkPluginName: cni
     podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
+    protectKernelDefaults: true
+    shutdownGracePeriod: 30s
+    shutdownGracePeriodCriticalPods: 10s
   kubernetesApiAccess:
   - 0.0.0.0/0
-  kubernetesVersion: 1.19.0
+  kubernetesVersion: 1.24.0
   masterInternalName: api.internal.minimal.example.com
   masterKubelet:
     anonymousAuth: false
+    cgroupDriver: systemd
     cgroupRoot: /
-    cloudProvider: aws
+    cloudProvider: external
     clusterDNS: 100.64.0.10
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+    featureGates:
+      CSIMigrationAWS: "true"
+      InTreePluginAWSUnregister: "true"
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    networkPluginName: cni
     podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
+    protectKernelDefaults: true
     registerSchedulable: false
+    shutdownGracePeriod: 30s
+    shutdownGracePeriodCriticalPods: 10s
   masterPublicName: api.minimal.example.com
   networkCIDR: 172.20.0.0/16
   networking:
