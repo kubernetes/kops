@@ -834,6 +834,14 @@ resource "aws_s3_object" "privatecilium-example-com-addons-bootstrap" {
   server_side_encryption = "AES256"
 }
 
+resource "aws_s3_object" "privatecilium-example-com-addons-certmanager-io-k8s-1-16" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_privatecilium.example.com-addons-certmanager.io-k8s-1.16_content")
+  key                    = "clusters.example.com/privatecilium.example.com/addons/certmanager.io/k8s-1.16.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
 resource "aws_s3_object" "privatecilium-example-com-addons-core-addons-k8s-io" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_privatecilium.example.com-addons-core.addons.k8s.io_content")
@@ -890,10 +898,10 @@ resource "aws_s3_object" "privatecilium-example-com-addons-limit-range-addons-k8
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_object" "privatecilium-example-com-addons-networking-cilium-io-k8s-1-12" {
+resource "aws_s3_object" "privatecilium-example-com-addons-networking-cilium-io-k8s-1-16" {
   bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_object_privatecilium.example.com-addons-networking.cilium.io-k8s-1.12_content")
-  key                    = "clusters.example.com/privatecilium.example.com/addons/networking.cilium.io/k8s-1.12-v1.8.yaml"
+  content                = file("${path.module}/data/aws_s3_object_privatecilium.example.com-addons-networking.cilium.io-k8s-1.16_content")
+  key                    = "clusters.example.com/privatecilium.example.com/addons/networking.cilium.io/k8s-1.16-v1.11.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
