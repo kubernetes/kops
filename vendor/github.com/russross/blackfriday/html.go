@@ -32,6 +32,7 @@ const (
 	HTML_SAFELINK                              // only link to trusted protocols
 	HTML_NOFOLLOW_LINKS                        // only link with rel="nofollow"
 	HTML_NOREFERRER_LINKS                      // only link with rel="noreferrer"
+	HTML_NOOPENER_LINKS                        // only link with rel="noopener"
 	HTML_HREF_TARGET_BLANK                     // add a blank target
 	HTML_TOC                                   // generate a table of contents
 	HTML_OMIT_CONTENTS                         // skip the main contents (for a standalone table of contents)
@@ -445,6 +446,9 @@ func (options *Html) AutoLink(out *bytes.Buffer, link []byte, kind int) {
 	if options.flags&HTML_NOREFERRER_LINKS != 0 && !isRelativeLink(link) {
 		relAttrs = append(relAttrs, "noreferrer")
 	}
+	if options.flags&HTML_NOOPENER_LINKS != 0 && !isRelativeLink(link) {
+		relAttrs = append(relAttrs, "noopener")
+	}
 	if len(relAttrs) > 0 {
 		out.WriteString(fmt.Sprintf("\" rel=\"%s", strings.Join(relAttrs, " ")))
 	}
@@ -558,6 +562,9 @@ func (options *Html) Link(out *bytes.Buffer, link []byte, title []byte, content 
 	}
 	if options.flags&HTML_NOREFERRER_LINKS != 0 && !isRelativeLink(link) {
 		relAttrs = append(relAttrs, "noreferrer")
+	}
+	if options.flags&HTML_NOOPENER_LINKS != 0 && !isRelativeLink(link) {
+		relAttrs = append(relAttrs, "noopener")
 	}
 	if len(relAttrs) > 0 {
 		out.WriteString(fmt.Sprintf("\" rel=\"%s", strings.Join(relAttrs, " ")))

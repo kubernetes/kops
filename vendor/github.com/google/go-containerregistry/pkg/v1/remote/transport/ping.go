@@ -79,7 +79,7 @@ func ping(ctx context.Context, reg name.Registry, t http.RoundTripper) (*pingRes
 		schemes = append(schemes, "http")
 	}
 
-	var errs []string
+	var errs []error
 	for _, scheme := range schemes {
 		url := fmt.Sprintf("%s://%s/v2/", scheme, reg.Name())
 		req, err := http.NewRequest(http.MethodGet, url, nil)
@@ -88,7 +88,7 @@ func ping(ctx context.Context, reg name.Registry, t http.RoundTripper) (*pingRes
 		}
 		resp, err := client.Do(req.WithContext(ctx))
 		if err != nil {
-			errs = append(errs, err.Error())
+			errs = append(errs, err)
 			// Potentially retry with http.
 			continue
 		}
@@ -125,7 +125,7 @@ func ping(ctx context.Context, reg name.Registry, t http.RoundTripper) (*pingRes
 			return nil, CheckError(resp, http.StatusOK, http.StatusUnauthorized)
 		}
 	}
-	return nil, errors.New(strings.Join(errs, "; "))
+	return nil, multierrs(errs)
 }
 
 func pickFromMultipleChallenges(challenges []authchallenge.Challenge) authchallenge.Challenge {
@@ -144,4 +144,37 @@ func pickFromMultipleChallenges(challenges []authchallenge.Challenge) authchalle
 	}
 
 	return challenges[0]
+}
+
+type multierrs []error
+
+func (m multierrs) Error() string {
+	var b strings.Builder
+	hasWritten := false
+	for _, err := range m {
+		if hasWritten {
+			b.WriteString("; ")
+		}
+		hasWritten = true
+		b.WriteString(err.Error())
+	}
+	return b.String()
+}
+
+func (m multierrs) As(target interface{}) bool {
+	for _, err := range m {
+		if errors.As(err, target) {
+			return true
+		}
+	}
+	return false
+}
+
+func (m multierrs) Is(target error) bool {
+	for _, err := range m {
+		if errors.Is(err, target) {
+			return true
+		}
+	}
+	return false
 }
