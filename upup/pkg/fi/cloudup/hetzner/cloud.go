@@ -32,11 +32,12 @@ import (
 )
 
 const (
-	TagKubernetesClusterName   = "kops.k8s.io/cluster"
-	TagKubernetesFirewallRole  = "kops.k8s.io/firewall-role"
-	TagKubernetesInstanceGroup = "kops.k8s.io/instance-group"
-	TagKubernetesInstanceRole  = "kops.k8s.io/instance-role"
-	TagKubernetesVolumeRole    = "kops.k8s.io/volume-role"
+	TagKubernetesClusterName      = "kops.k8s.io/cluster"
+	TagKubernetesFirewallRole     = "kops.k8s.io/firewall-role"
+	TagKubernetesInstanceGroup    = "kops.k8s.io/instance-group"
+	TagKubernetesInstanceRole     = "kops.k8s.io/instance-role"
+	TagKubernetesInstanceUserData = "kops.k8s.io/instance-userdata"
+	TagKubernetesVolumeRole       = "kops.k8s.io/volume-role"
 )
 
 // HetznerCloud exposes all the interfaces required to operate on Hetzner Cloud resources
