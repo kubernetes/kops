@@ -23,7 +23,7 @@ spec:
     nvidiaGPU:
       enabled: true
       package: nvidia-headless-510-server
-    version: 1.4.12
+    version: 1.4.13
   dnsZone: Z1AFAKE1ZON3YO
   docker:
     skipInstall: true

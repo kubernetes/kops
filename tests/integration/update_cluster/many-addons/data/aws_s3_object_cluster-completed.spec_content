@@ -39,7 +39,7 @@ spec:
   containerRuntime: containerd
   containerd:
     logLevel: info
-    version: 1.4.12
+    version: 1.4.13
   dnsZone: Z1AFAKE1ZON3YO
   docker:
     skipInstall: true
