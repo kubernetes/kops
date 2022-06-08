@@ -56,6 +56,7 @@ func (f *DefaultFactory) restConfig() (*rest.Config, error) {
 		if err != nil {
 			return nil, fmt.Errorf("cannot load kubecfg settings: %w", err)
 		}
+		restConfig.UserAgent = "kops"
 		f.cachedRESTConfig = restConfig
 	}
 	return f.cachedRESTConfig, nil
