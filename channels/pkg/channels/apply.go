@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 
+	"go.uber.org/multierr"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -95,6 +96,8 @@ func (p *Applier) applyObjects(ctx context.Context, gvr schema.GroupVersionResou
 		actualMap[key] = actualObject
 	}
 
+	var merr error
+
 	for _, expectedObjects := range expectedObjects {
 		name := expectedObjects.GetName()
 		namespace := expectedObjects.GetNamespace()
@@ -114,17 +117,17 @@ func (p *Applier) applyObjects(ctx context.Context, gvr schema.GroupVersionResou
 			var opts v1.UpdateOptions
 			obj.SetResourceVersion(actual.GetResourceVersion())
 			if _, err := resource.Update(ctx, obj, opts); err != nil {
-				return fmt.Errorf("failed to create %s: %w", key, err)
+				merr = multierr.Append(merr, fmt.Errorf("failed to create %s: %w", key, err))
 			}
 		} else {
 			klog.V(2).Infof("creating %s %s", gvr, key)
 			var opts v1.CreateOptions
 			if _, err := resource.Create(ctx, obj, opts); err != nil {
-				return fmt.Errorf("failed to create %s: %w", key, err)
+				merr = multierr.Append(merr, fmt.Errorf("failed to create %s: %w", key, err))
 			}
 		}
 
 	}
 
-	return nil
+	return merr
 }
