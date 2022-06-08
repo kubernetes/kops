@@ -52,6 +52,12 @@ spec:
     selector:
       k8s-addon: dns-controller.addons.k8s.io
     version: 9.99.0
+  - id: k8s-1.16
+    manifest: certmanager.io/k8s-1.16.yaml
+    manifestHash: 3384fad329bef1ec8392862d1dae429b2fea5172e3befea7d3e30d9698cad669
+    name: certmanager.io
+    selector: null
+    version: 9.99.0
   - id: v1.15.0
     manifest: storage-aws.addons.k8s.io/v1.15.0.yaml
     manifestHash: 4e2cda50cd5048133aad1b5e28becb60f4629d3f9e09c514a2757c27998b4200
@@ -59,10 +65,11 @@ spec:
     selector:
       k8s-addon: storage-aws.addons.k8s.io
     version: 9.99.0
-  - id: k8s-1.12
-    manifest: networking.cilium.io/k8s-1.12-v1.8.yaml
-    manifestHash: 45e7800246302a645955b99dd24b78287c968d404825364ebbcf2d4198d7ded8
+  - id: k8s-1.23
+    manifest: networking.cilium.io/k8s-1.23-v1.11.yaml
+    manifestHash: 0011803e576bee28ed9b5d94e961046faa8c568ba49e9f8067e80c987f41b986
     name: networking.cilium.io
+    needsPKI: true
     needsRollingUpdate: all
     selector:
       role.kubernetes.io/networking: "1"

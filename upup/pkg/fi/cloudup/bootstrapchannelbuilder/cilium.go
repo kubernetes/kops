@@ -17,10 +17,6 @@ limitations under the License.
 package bootstrapchannelbuilder
 
 import (
-	"fmt"
-
-	"github.com/blang/semver/v4"
-
 	"k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/upup/pkg/fi"
 )
@@ -28,29 +24,12 @@ import (
 func addCiliumAddon(b *BootstrapChannelBuilder, addons *AddonList) error {
 	cilium := b.Cluster.Spec.Networking.Cilium
 	if cilium != nil {
-		ver, err := semver.ParseTolerant(cilium.Version)
-		if err != nil {
-			return fmt.Errorf("Failed to parse cilium version: %w", err)
-		}
-
 		key := "networking.cilium.io"
-		if ver.Minor < 9 {
-			{
-				id := "k8s-1.12"
-				location := key + "/" + id + "-v1.8.yaml"
 
-				addons.Add(&api.AddonSpec{
-					Name:               fi.String(key),
-					Selector:           networkingSelector(),
-					Manifest:           fi.String(location),
-					Id:                 id,
-					NeedsRollingUpdate: "all",
-				})
-			}
-		} else if ver.Minor == 9 {
+		if b.IsKubernetesGTE("1.23") {
 			{
-				id := "k8s-1.12"
-				location := key + "/" + id + "-v1.9.yaml"
+				id := "k8s-1.23"
+				location := key + "/" + id + "-v1.11.yaml"
 
 				addon := &api.AddonSpec{
 					Name:               fi.String(key),
@@ -64,24 +43,7 @@ func addCiliumAddon(b *BootstrapChannelBuilder, addons *AddonList) error {
 				}
 				addons.Add(addon)
 			}
-		} else if ver.Minor == 10 || (ver.Minor == 11 && ver.Patch < 5) {
-			{
-				id := "k8s-1.16"
-				location := key + "/" + id + "-v1.10.yaml"
-
-				addon := &api.AddonSpec{
-					Name:               fi.String(key),
-					Selector:           networkingSelector(),
-					Manifest:           fi.String(location),
-					Id:                 id,
-					NeedsRollingUpdate: "all",
-				}
-				if cilium.Hubble != nil && fi.BoolValue(cilium.Hubble.Enabled) {
-					addon.NeedsPKI = true
-				}
-				addons.Add(addon)
-			}
-		} else if ver.Minor == 11 {
+		} else {
 			{
 				id := "k8s-1.16"
 				location := key + "/" + id + "-v1.11.yaml"
@@ -98,8 +60,6 @@ func addCiliumAddon(b *BootstrapChannelBuilder, addons *AddonList) error {
 				}
 				addons.Add(addon)
 			}
-		} else {
-			return fmt.Errorf("unknown cilium version: %q", cilium.Version)
 		}
 	}
 	return nil

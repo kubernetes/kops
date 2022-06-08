@@ -6,6 +6,8 @@ metadata:
 spec:
   kubernetesApiAccess:
   - 0.0.0.0/0
+  certManager:
+    enabled: true
   channel: stable
   cloudProvider: aws
   configBase: memfs://clusters.example.com/privatecilium.example.com
@@ -27,7 +29,8 @@ spec:
   networkCIDR: 172.20.0.0/16
   networking:
     cilium:
-      version: v1.8.0
+      hubble:
+        enabled: true
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
   - 0.0.0.0/0
