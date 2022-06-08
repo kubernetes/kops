@@ -27,6 +27,7 @@ import (
 	"github.com/blang/semver/v4"
 	"github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
 	"github.com/spf13/cobra"
+	"go.uber.org/multierr"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
@@ -168,18 +169,18 @@ func applyMenu(ctx context.Context, menu *channels.AddonMenu, k8sClient kubernet
 		RESTMapper: restMapper,
 	}
 
+	var merr error
+
 	for _, needUpdate := range needUpdates {
 		update, err := needUpdate.EnsureUpdated(ctx, k8sClient, cmClient, pruner, channelVersions[needUpdate.GetNamespace()+":"+needUpdate.Name])
 		if err != nil {
-			fmt.Printf("error updating %q: %v", needUpdate.Name, err)
+			merr = multierr.Append(merr, fmt.Errorf("updating %q: %w", needUpdate.Name, err))
 		} else if update != nil {
 			fmt.Printf("Updated %q\n", update.Name)
 		}
 	}
 
-	fmt.Printf("\n")
-
-	return nil
+	return merr
 }
 
 func getUpdates(ctx context.Context, menu *channels.AddonMenu, k8sClient kubernetes.Interface, cmClient versioned.Interface, channelVersions map[string]*channels.ChannelVersion) ([]*channels.AddonUpdate, []*channels.Addon, error) {
