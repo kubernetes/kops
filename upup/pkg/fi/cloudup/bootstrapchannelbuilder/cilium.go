@@ -26,21 +26,40 @@ func addCiliumAddon(b *BootstrapChannelBuilder, addons *AddonList) error {
 	if cilium != nil {
 		key := "networking.cilium.io"
 
-		{
-			id := "k8s-1.16"
-			location := key + "/" + id + "-v1.11.yaml"
+		if b.IsKubernetesGTE("1.23") {
+			{
+				id := "k8s-1.23"
+				location := key + "/" + id + "-v1.11.yaml"
 
-			addon := &api.AddonSpec{
-				Name:               fi.String(key),
-				Selector:           networkingSelector(),
-				Manifest:           fi.String(location),
-				Id:                 id,
-				NeedsRollingUpdate: "all",
+				addon := &api.AddonSpec{
+					Name:               fi.String(key),
+					Selector:           networkingSelector(),
+					Manifest:           fi.String(location),
+					Id:                 id,
+					NeedsRollingUpdate: "all",
+				}
+				if cilium.Hubble != nil && fi.BoolValue(cilium.Hubble.Enabled) {
+					addon.NeedsPKI = true
+				}
+				addons.Add(addon)
 			}
-			if cilium.Hubble != nil && fi.BoolValue(cilium.Hubble.Enabled) {
-				addon.NeedsPKI = true
+		} else {
+			{
+				id := "k8s-1.16"
+				location := key + "/" + id + "-v1.11.yaml"
+
+				addon := &api.AddonSpec{
+					Name:               fi.String(key),
+					Selector:           networkingSelector(),
+					Manifest:           fi.String(location),
+					Id:                 id,
+					NeedsRollingUpdate: "all",
+				}
+				if cilium.Hubble != nil && fi.BoolValue(cilium.Hubble.Enabled) {
+					addon.NeedsPKI = true
+				}
+				addons.Add(addon)
 			}
-			addons.Add(addon)
 		}
 	}
 	return nil
