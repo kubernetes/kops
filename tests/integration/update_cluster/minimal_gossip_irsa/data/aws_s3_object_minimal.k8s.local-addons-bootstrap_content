@@ -40,7 +40,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: dns-controller.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: 20eb1d6938e632e90b6f2911f64c6d830eda35d260cd8928e9369c27ed3e5bf7
+    manifestHash: 2699ed968542c2acb1430df0ee3a3c77c2ddf51d4c60ec034c5ded6b110d12d0
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
