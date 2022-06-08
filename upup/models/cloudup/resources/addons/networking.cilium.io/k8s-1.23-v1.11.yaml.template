@@ -1,4 +1,5 @@
 {{ with .Networking.Cilium }}
+{{ $semver := (trimPrefix "v" .Version) }}
 {{- if CiliumSecret }}
 apiVersion: v1
 kind: Secret
@@ -49,6 +50,8 @@ data:
     trusted-ca-file: '/var/lib/etcd-secrets/etcd-ca.crt'
     key-file: '/var/lib/etcd-secrets/etcd-client-cilium.key'
     cert-file: '/var/lib/etcd-secrets/etcd-client-cilium.crt'
+
+  enable-k8s-event-handover: "true"
 {{ end }}
 
   # Identity allocation mode selects how identities are shared between cilium
@@ -64,8 +67,12 @@ data:
   # (default crd)
   identity-allocation-mode: "{{ .IdentityAllocationMode }}"
 
+  # Time to wait before using new identity on endpoint identity change (default 5s)
+  identity-change-grace-period: "{{ .IdentityChangeGracePeriod }}"
+
   # If you want to run cilium in debug mode change this value to true
   debug: "{{ .Debug }}"
+
   {{ if .EnablePrometheusMetrics }}
   # If you want metrics enabled in all of your Cilium agents, set the port for
   # which the Cilium agents will have their metrics exposed.
@@ -77,16 +84,31 @@ data:
   operator-prometheus-serve-addr: ":6942"
   enable-metrics: "true"
   {{ end }}
+
+  {{ if .Metrics }}
+  # Metrics that should be enabled or disabled from the default metric
+  # list. (+metric_foo to enable metric_foo , -metric_bar to disable
+  # metric_bar).
+  metrics: {{- range .Metrics }}
+    {{ . }}
+  {{- end }}
+  {{ end }}
+
   {{ if .EnableEncryption }}
+  {{ if eq .EncryptionType "ipsec" }}
   enable-ipsec: "true"
   ipsec-key-file: /etc/ipsec/keys
+  {{ else if eq .EncryptionType "wireguard"  }}
+  enable-wireguard: "true"
   {{ end }}
+  {{ end }}
+
   # Enable IPv4 addressing. If enabled, all endpoints are allocated an IPv4
   # address.
-  enable-ipv4: "true"
+  enable-ipv4: "{{ not IsIPv6Only }}"
   # Enable IPv6 addressing. If enabled, all endpoints are allocated an IPv6
   # address.
-  enable-ipv6: "false"
+  enable-ipv6: "{{ IsIPv6Only }}"
   # If you want cilium monitor to aggregate tracing for packets, set this level
   # to "low", "medium", or "maximum". The higher the level, the less packets
   # that will be seen in monitor output.
@@ -127,13 +149,18 @@ data:
   # backend and affinity maps. (default 65536)
   bpf-lb-map-max: "{{ .BPFLBMapMax }}"
 
+  # bpf-lb-sock-hostns-only enables skipping socket LB for services when inside a pod namespace,
+  # in favor of service LB at the pod interface. Socket LB is still used when in the host namespace.
+  # Required by service mesh (e.g., Istio, Linkerd). (default false)
+  bpf-lb-sock-hostns-only: "{{ .BPFLBSockHostNSOnly }}"
+
   {{ if .ChainingMode }}
   cni-chaining-mode: "{{ .ChainingMode }}"
   {{ end }}
 
   # enable-bpf-masquerade enables masquerading packets from endpoints leaving
   # the host with BPF instead of iptables. (default false)
-  enable-bpf-masquerade: "{{ .EnableBPFMasquerade }}"
+  enable-bpf-masquerade: "{{ and (WithDefaultBool .EnableBPFMasquerade false) (not IsIPv6Only) }}"
 
   # Pre-allocation of map entries allows per-packet latency to be reduced, at
   # the expense of up-front memory allocation for the entries in the maps. The
@@ -180,8 +207,10 @@ data:
   # [0] http://docs.cilium.io/en/stable/policy/language/#dns-based
   # [1] http://docs.cilium.io/en/stable/install/upgrade/#changes-that-may-require-action
   tofqdns-enable-poller: "{{- if .ToFQDNsEnablePoller -}}true{{- else -}}false{{- end -}}"
+  {{- if not (semverCompare ">=1.10.4 || ~1.9.10" $semver) }}
   # wait-bpf-mount makes init container wait until bpf filesystem is mounted
   wait-bpf-mount: "false"
+  {{- end }}
   # Enable fetching of container-runtime specific metadata
   #
   # By default, the Kubernetes pod and namespace labels are retrieved and
@@ -202,6 +231,7 @@ data:
   # - auto (automatically detect the container runtime)
   #
   masquerade: "{{ .Masquerade }}"
+  enable-ipv6-masquerade: "false"
   install-iptables-rules: "{{ WithDefaultBool .InstallIptablesRules true }}"
   auto-direct-node-routes: "{{ .AutoDirectNodeRoutes }}"
   {{ if .EnableHostReachableServices }}
@@ -232,6 +262,11 @@ data:
   enable-l7-proxy: "{{ .EnableL7Proxy }}"
 
   cgroup-root: /run/cilium/cgroupv2
+
+  disable-cnp-status-updates: "{{ .DisableCNPStatusUpdates }}"
+  nodes-gc-interval: "5m0s"
+
+  enable-service-topology: "{{ .EnableServiceTopology }}"
 
   {{ if WithDefaultBool .Hubble.Enabled false }}
   # Enable Hubble gRPC service.
@@ -300,36 +335,16 @@ rules:
   resources:
   - namespaces
   - services
-  - nodes
-  - endpoints
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
   - pods
-  - pods/finalizers
-  verbs:
-  - get
-  - list
-  - watch
-  - update
-  - delete
-- apiGroups:
-  - ""
-  resources:
+  - endpoints
   - nodes
   verbs:
   - get
   - list
   - watch
-  - update
 - apiGroups:
   - ""
   resources:
-  - nodes
   - nodes/status
   verbs:
   - patch
@@ -348,21 +363,16 @@ rules:
   resources:
   - ciliumnetworkpolicies
   - ciliumnetworkpolicies/status
-  - ciliumnetworkpolicies/finalizers
   - ciliumclusterwidenetworkpolicies
   - ciliumclusterwidenetworkpolicies/status
-  - ciliumclusterwidenetworkpolicies/finalizers
   - ciliumendpoints
   - ciliumendpoints/status
-  - ciliumendpoints/finalizers
   - ciliumnodes
   - ciliumnodes/status
-  - ciliumnodes/finalizers
   - ciliumidentities
-  - ciliumidentities/finalizers
   - ciliumlocalredirectpolicies
   - ciliumlocalredirectpolicies/status
-  - ciliumlocalredirectpolicies/finalizers
+  - ciliumegressnatpolicies
   verbs:
   - '*'
 ---
@@ -383,6 +393,22 @@ rules:
   - watch
   - delete
 - apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  # To remove node taints
+  - nodes
+  # To set NetworkUnavailable false on startup
+  - nodes/status
+  verbs:
+  - patch
+- apiGroups:
   - discovery.k8s.io
   resources:
   - endpointslices
@@ -390,6 +416,21 @@ rules:
   - get
   - list
   - watch
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  # to perform LB IP allocation for BGP
+  - services/status
+  verbs:
+  - update
 - apiGroups:
   - ""
   resources:
@@ -562,23 +603,34 @@ spec:
         kubernetes.io/cluster-service: "true"
     spec:
       affinity:
-        podAntiAffinity:
+        nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-              - key: k8s-app
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/os
                 operator: In
                 values:
-                - cilium
-            topologyKey: kubernetes.io/hostname
+                - linux
       containers:
       - args:
         - --config-dir=/tmp/cilium/config-map
         command:
         - cilium-agent
+        startupProbe:
+          httpGet:
+            host: '{{- if IsIPv6Only -}}::1{{- else -}}127.0.0.1{{- end -}}'
+            path: /healthz
+            port: 9876
+            scheme: HTTP
+            httpHeaders:
+            - name: "brief"
+              value: "true"
+          failureThreshold: 105
+          periodSeconds: 2
+          successThreshold:
         livenessProbe:
           httpGet:
-            host: '127.0.0.1'
+            host: '{{- if IsIPv6Only -}}::1{{- else -}}127.0.0.1{{- end -}}'
             path: /healthz
             port: 9876
             scheme: HTTP
@@ -586,10 +638,6 @@ spec:
             - name: "brief"
               value: "true"
           failureThreshold: 10
-          # The initial delay for the liveness probe is intentionally large to
-          # avoid an endless kill & restart cycle if in the event that the initial
-          # bootstrapping takes longer than expected.
-          initialDelaySeconds: 120
           periodSeconds: 30
           successThreshold: 1
           timeoutSeconds: 5
@@ -599,7 +647,7 @@ spec:
             memory: {{ or .MemoryRequest "128Mi" }}
         readinessProbe:
           httpGet:
-            host: '127.0.0.1'
+            host: '{{- if IsIPv6Only -}}::1{{- else -}}127.0.0.1{{- end -}}'
             path: /healthz
             port: 9876
             scheme: HTTP
@@ -622,18 +670,6 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: metadata.namespace
-        - name: CILIUM_FLANNEL_MASTER_DEVICE
-          valueFrom:
-            configMapKeyRef:
-              key: flannel-master-device
-              name: cilium-config
-              optional: true
-        - name: CILIUM_FLANNEL_UNINSTALL_ON_EXIT
-          valueFrom:
-            configMapKeyRef:
-              key: flannel-uninstall-on-exit
-              name: cilium-config
-              optional: true
         - name: CILIUM_CLUSTERMESH_CONFIG
           value: /var/lib/cilium/clustermesh/
         - name: CILIUM_CNI_CHAINING_MODE
@@ -663,6 +699,7 @@ spec:
             exec:
               command:
               - /cni-install.sh
+              - --cni-exclusive=true
           preStop:
             exec:
               command:
@@ -684,14 +721,13 @@ spec:
         {{ end }}
 
         securityContext:
-          capabilities:
-            add:
-            - NET_ADMIN
-            - SYS_MODULE
           privileged: true
         volumeMounts:
         - mountPath: /sys/fs/bpf
           name: bpf-maps
+          {{- if semverCompare ">=1.10.4 || ~1.9.10" $semver }}
+          mountPropagation: Bidirectional
+          {{- end }}
         - mountPath: /var/run/cilium
           name: cilium-run
         - mountPath: /host/opt/cni/bin
@@ -744,25 +780,26 @@ spec:
               key: clean-cilium-bpf-state
               name: cilium-config
               optional: true
+        {{- if not (semverCompare ">=1.10.4 || ~1.9.10" $semver) }}
         - name: CILIUM_WAIT_BPF_MOUNT
           valueFrom:
             configMapKeyRef:
               key: wait-bpf-mount
               name: cilium-config
               optional: true
+        {{- end }}
         image: "quay.io/cilium/cilium:{{ .Version }}"
         imagePullPolicy: IfNotPresent
         name: clean-cilium-state
         securityContext:
-          capabilities:
-            add:
-            - NET_ADMIN
           privileged: true
         volumeMounts:
         - mountPath: /sys/fs/bpf
           name: bpf-maps
+          {{- if not (semverCompare ">=1.10.4 || ~1.9.10" $semver) }}
           mountPropagation: HostToContainer
-        # Required to mount cgroup filesystem from the host to cilium agent pod
+          {{- end }}
+         # Required to mount cgroup filesystem from the host to cilium agent pod
         - mountPath: /run/cilium/cgroupv2
           name: cilium-cgroup
           mountPropagation: HostToContainer
@@ -787,7 +824,7 @@ spec:
           path: /var/run/cilium
           type: DirectoryOrCreate
         name: cilium-run
-        # To keep state between restarts / upgrades for bpf maps
+      # To keep state between restarts / upgrades for bpf maps
       - hostPath:
           path: /sys/fs/bpf
           type: DirectoryOrCreate
@@ -802,7 +839,7 @@ spec:
           path: /run/cilium/cgroupv2
           type: Directory
         name: cilium-cgroup
-      # To install cilium cni configuration in the host
+        # To install cilium cni configuration in the host
       - hostPath:
           path: /etc/cni/net.d
           type: DirectoryOrCreate
@@ -862,7 +899,7 @@ metadata:
   name: cilium-operator
   namespace: kube-system
 spec:
-  replicas: 1
+  replicas: {{ ControlPlaneControllerReplicas false }}
   selector:
     matchLabels:
       io.cilium/app: operator
@@ -878,6 +915,17 @@ spec:
         io.cilium/app: operator
         name: cilium-operator
     spec:
+      nodeSelector: null
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
       containers:
       - args:
         - "--config-dir=/tmp/cilium/config-map"
@@ -948,6 +996,21 @@ spec:
       serviceAccountName: cilium-operator
       tolerations:
       - operator: Exists
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: "topology.kubernetes.io/zone"
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            io.cilium/app: operator
+            name: cilium-operator
+      - maxSkew: 1
+        topologyKey: "kubernetes.io/hostname"
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            io.cilium/app: operator
+            name: cilium-operator
       volumes:
         # To read the configuration from the config map
       - configMap:
@@ -968,8 +1031,6 @@ spec:
           path: /etc/kubernetes/pki/cilium
           type: Directory
 {{- end }}
-      nodeSelector:
-        node-role.kubernetes.io/master: ""
 {{ if WithDefaultBool .Hubble.Enabled false }}
 ---
 # Source: cilium/charts/hubble-relay/templates/deployment.yaml
@@ -981,7 +1042,7 @@ metadata:
     k8s-app: hubble-relay
   namespace: kube-system
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       k8s-app: hubble-relay
@@ -994,16 +1055,6 @@ spec:
       labels:
         k8s-app: hubble-relay
     spec:
-      affinity:
-        podAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-                - key: "k8s-app"
-                  operator: In
-                  values:
-                    - cilium
-            topologyKey: "kubernetes.io/hostname"
       containers:
         - name: hubble-relay
           image: "quay.io/cilium/hubble-relay:{{ .Version }}"
@@ -1041,8 +1092,19 @@ spec:
       serviceAccount: hubble-relay
       serviceAccountName: hubble-relay
       terminationGracePeriodSeconds: 0
-      tolerations:
-      - operator: Exists
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: "topology.kubernetes.io/zone"
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            k8s-app: hubble-relay
+      - maxSkew: 1
+        topologyKey: "kubernetes.io/hostname"
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            k8s-app: hubble-relay
       volumes:
       - hostPath:
           path: /var/run/cilium
@@ -1100,3 +1162,18 @@ spec:
   secretName: hubble-relay-client-certs
 {{ end }}
 {{ end }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: cilium-operator
+  namespace: kube-system
+  labels:
+    io.cilium/app: operator
+    name: cilium-operator
+spec:
+  selector:
+    matchLabels:
+      io.cilium/app: operator
+      name: cilium-operator
+  maxUnavailable: 1
