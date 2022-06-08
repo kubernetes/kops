@@ -169,10 +169,15 @@ func applyMenu(ctx context.Context, menu *channels.AddonMenu, k8sClient kubernet
 		RESTMapper: restMapper,
 	}
 
+	applier := &channels.Applier{
+		Client:     dynamicClient,
+		RESTMapper: restMapper,
+	}
+
 	var merr error
 
 	for _, needUpdate := range needUpdates {
-		update, err := needUpdate.EnsureUpdated(ctx, k8sClient, cmClient, pruner, channelVersions[needUpdate.GetNamespace()+":"+needUpdate.Name])
+		update, err := needUpdate.EnsureUpdated(ctx, k8sClient, cmClient, pruner, applier, channelVersions[needUpdate.GetNamespace()+":"+needUpdate.Name])
 		if err != nil {
 			merr = multierr.Append(merr, fmt.Errorf("updating %q: %w", needUpdate.Name, err))
 		} else if update != nil {
