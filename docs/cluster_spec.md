@@ -389,7 +389,7 @@ spec:
     oidcGroupsPrefix: "oidc:"
     oidcCAFile: /etc/kubernetes/ssl/kc-ca.pem
     oidcRequiredClaim:
-    	- "key=value"
+    - "key=value"
 ```
 
 ### Audit Logging
@@ -1090,19 +1090,38 @@ spec:
 
 ## fileAssets
 
-FileAssets permits you to place inline file content into the cluster and instanceGroup specification. This is useful for deploying additional configuration files that kubernetes components requires, such as auditlogs or admission controller configurations.
+FileAssets permit you to place inline file content into the Cluster and [Instance Group](instance_groups.md) specifications. This is useful for deploying additional files that Kubernetes components require, such as audit logging or admission controller configurations.
 
 ```yaml
 spec:
   fileAssets:
   - name: iptable-restore
-    # Note if not path is specified the default path it /srv/kubernetes/assets/<name>
+    # Note if path is not specified, the default is /srv/kubernetes/assets/<name>
     path: /var/lib/iptables/rules-save
-    roles: [Master,Node,Bastion] # a list of roles to apply the asset to, zero defaults to all
+    # Note if roles are not specified, the default is all roles
+    roles: [Master,Node,Bastion] # a list of roles to apply the asset to
     content: |
       some file content
 ```
 
+### mode
+
+{{ kops_feature_table(kops_added_default='1.24') }}
+
+Optionally, `mode` allows you to specify a file's mode and permission bits.
+
+**NOTE**: If not specified, the default is `"0440"`, which matches the behaviour of older versions of kOps.
+
+```yaml
+spec:
+  fileAssets:
+  - name: my-script
+    path: /usr/local/bin/my-script
+    mode: "0550"
+    content: |
+      #! /usr/bin/env bash
+      ...
+```
 
 ## cloudConfig
 
