@@ -41,6 +41,7 @@ else
   KOPS_BASE_URL=$(kops-base-from-marker "${KOPS_VERSION_B}")
   KOPS_BASE_URL_B="${KOPS_BASE_URL}"
   KOPS_B=$(kops-download-from-base)
+  CHANNELS=$(kops-channels-download-from-base)
 fi
 
 ${KUBETEST2} \
@@ -91,6 +92,8 @@ kubectl get nodes -owide --kubeconfig "${KUBECONFIG_A}"
 
 # Sleep to ensure channels has done its thing
 sleep 60s
+
+${CHANNELS} apply channel "$KOPS_STATE_STORE"/"${CLUSTER_NAME}"/addons/bootstrap-channel.yaml --yes -v4
 
 "${KOPS_B}" rolling-update cluster
 "${KOPS_B}" rolling-update cluster --yes --validation-timeout 30m
