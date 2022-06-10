@@ -143,7 +143,7 @@ clean:
 
 .PHONY: codegen
 codegen:
-	go build -o ${KOPS_ROOT}/_output/bin k8s.io/kops/upup/tools/generators/...
+	go build -o ${KOPS_ROOT}/_output/bin/ k8s.io/kops/upup/tools/generators/...
 	${KOPS_ROOT}/_output/bin/fitask \
 		--input-dirs k8s.io/kops/upup/pkg/fi/... \
 		--go-header-file hack/boilerplate/boilerplate.generatego.txt \
@@ -151,7 +151,7 @@ codegen:
 
 .PHONY: verify-codegen
 verify-codegen:
-	go build -o ${KOPS_ROOT}/_output/bin k8s.io/kops/upup/tools/generators/...
+	go build -o ${KOPS_ROOT}/_output/bin/ k8s.io/kops/upup/tools/generators/...
 	${KOPS_ROOT}/_output/bin/fitask --verify-only \
 		--input-dirs k8s.io/kops/upup/pkg/fi/... \
 		--go-header-file hack/boilerplate/boilerplate.generatego.txt \
@@ -464,7 +464,7 @@ apimachinery-codegen-client:
 		 --go-header-file "hack/boilerplate/boilerplate.generatego.txt"
 	go run k8s.io/code-generator/cmd/client-gen@${CODEGEN_VERSION} --v=0 --clientset-name="clientset" \
 		 --input-base=k8s.io/kops/pkg/apis --input-dirs=. --input="kops/,kops/v1alpha2,kops/v1alpha3" \
- 		 --output-package=k8s.io/kops/pkg/client/clientset_generated/  --output-base=$(TMPDIR) \
+		 --output-package=k8s.io/kops/pkg/client/clientset_generated/ --output-base=$(TMPDIR) \
 		 --go-header-file "hack/boilerplate/boilerplate.generatego.txt"
 	cp -r $(TMPDIR)/k8s.io/kops/pkg .
 	rm -rf $(TMPDIR)
