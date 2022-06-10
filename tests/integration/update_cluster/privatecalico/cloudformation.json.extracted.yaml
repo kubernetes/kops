@@ -262,7 +262,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivatecalicoexamplecom.Prope
   ConfigBase: memfs://clusters.example.com/privatecalico.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: UeQv8/u5MqsCmZgea5Hjd+vHb43ZRFwjG6FjQZApipQ=
+  NodeupConfigHash: ty8gjj9KgV9KU1CnyvFyX3s7Z9R135EXmZQo9fYT5a0=
 
   __EOF_KUBE_ENV
 
@@ -437,7 +437,7 @@ Resources.AWSEC2LaunchTemplatenodesprivatecalicoexamplecom.Properties.LaunchTemp
   ConfigBase: memfs://clusters.example.com/privatecalico.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: edPtYTIBLg+aRqbUD3ZiC6sdPYMKUZ+VJL0+EFyvVCU=
+  NodeupConfigHash: hBaHyZ30TXd4oOikU5zz9F5wC7fUTDzqTNkADi4TTfE=
 
   __EOF_KUBE_ENV
 
