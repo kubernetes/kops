@@ -30,7 +30,7 @@ import (
 )
 
 const (
-	runcVersion         = "1.1.2"
+	runcVersion         = "1.1.3"
 	runcVersionUrlAmd64 = "https://github.com/opencontainers/runc/releases/download/v%s/runc.amd64"
 	runcVersionUrlArm64 = "https://github.com/opencontainers/runc/releases/download/v%s/runc.arm64"
 )
@@ -136,6 +136,7 @@ func findAllRuncHashesAmd64() map[string]string {
 		"1.1.0": "ab1c67fbcbdddbe481e48a55cf0ef9a86b38b166b5079e0010737fd87d7454bb",
 		"1.1.1": "5798c85d2c8b6942247ab8d6830ef362924cd72a8e236e77430c3ab1be15f080",
 		"1.1.2": "e0436dfc5d26ca88f00e84cbdab5801dd9829b1e5ded05dcfc162ce5718c32ce",
+		"1.1.3": "6e8b24be90fffce6b025d254846da9d2ca6d65125f9139b6354bab0272253d01",
 	}
 
 	return hashes
@@ -146,6 +147,7 @@ func findAllRuncHashesArm64() map[string]string {
 		"1.1.0": "9ec8e68feabc4e7083a4cfa45ebe4d529467391e0b03ee7de7ddda5770b05e68",
 		"1.1.1": "20c436a736547309371c7ac2a335f5fe5a42b450120e497d09c8dc3902c28444",
 		"1.1.2": "6ebd968d46d00a3886e9a0cae2e0a7b399e110cf5d7b26e63ce23c1d81ea10ef",
+		"1.1.3": "00c9ad161a77a01d9dcbd25b1d76fa9822e57d8e4abf26ba8907c98f6bcfcd0f",
 	}
 
 	return hashes
