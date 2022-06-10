@@ -440,21 +440,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 		// AWS and GCE KCM-to-CCM leader migration
 		key := "leader-migration.rbac.addons.k8s.io"
 
-		if b.IsKubernetesLT("1.25") {
+		{
 			location := key + "/k8s-1.23.yaml"
 			id := "k8s-1.23"
-
-			addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.String(key),
-				Selector: map[string]string{"k8s-addon": key},
-				Manifest: fi.String(location),
-				Id:       id,
-			})
-		}
-
-		if b.IsKubernetesGTE("1.25") {
-			location := key + "/k8s-1.25.yaml"
-			id := "k8s-1.25"
 
 			addons.Add(&channelsapi.AddonSpec{
 				Name:     fi.String(key),
