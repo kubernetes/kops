@@ -3856,6 +3856,7 @@ func autoConvert_v1alpha2_FileAssetSpec_To_kops_FileAssetSpec(in *FileAssetSpec,
 	}
 	out.Content = in.Content
 	out.IsBase64 = in.IsBase64
+	out.Mode = in.Mode
 	return nil
 }
 
@@ -3878,6 +3879,7 @@ func autoConvert_kops_FileAssetSpec_To_v1alpha2_FileAssetSpec(in *kops.FileAsset
 	}
 	out.Content = in.Content
 	out.IsBase64 = in.IsBase64
+	out.Mode = in.Mode
 	return nil
 }
 
