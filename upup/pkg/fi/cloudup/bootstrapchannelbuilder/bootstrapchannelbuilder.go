@@ -1084,20 +1084,6 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 					Id:       id,
 				})
 			}
-		} else {
-			{
-				key := "core.addons.k8s.io"
-
-				location := key + "/k8s-1.12.yaml"
-				id := "k8s-1.12-ccm"
-
-				addons.Add(&channelsapi.AddonSpec{
-					Name:     fi.String(key),
-					Selector: map[string]string{"k8s-addon": key},
-					Manifest: fi.String(location),
-					Id:       id,
-				})
-			}
 		}
 	}
 
