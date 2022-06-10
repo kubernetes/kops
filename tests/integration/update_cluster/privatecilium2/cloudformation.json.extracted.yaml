@@ -262,7 +262,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumexamplecom.Prope
   ConfigBase: memfs://clusters.example.com/privatecilium.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: RdSNFHb8HrZwhDUmxJnqm+aztTCrCDT836YrjbPrhZQ=
+  NodeupConfigHash: 31GrgktH5EsIMKshxuh5vBRVAQK8oinRU4HIXvv89fI=
 
   __EOF_KUBE_ENV
 
@@ -437,7 +437,7 @@ Resources.AWSEC2LaunchTemplatenodesprivateciliumexamplecom.Properties.LaunchTemp
   ConfigBase: memfs://clusters.example.com/privatecilium.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: qwUFYSeT5I8+V21GQ/JQY28wlCekz91WS9kK245Uuhg=
+  NodeupConfigHash: NQwH3sIMY6zPrDmN3NNFF0jSkDLmQWj72v/+QVT6FWw=
 
   __EOF_KUBE_ENV
 
