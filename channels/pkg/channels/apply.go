@@ -46,7 +46,7 @@ func Apply(data []byte) error {
 		return fmt.Errorf("error writing temp file: %v", err)
 	}
 
-	_, err = execKubectl("replace", "-f", localManifestFile, "--force", "--field-manager=kops")
+	_, err = execKubectl("apply", "-f", localManifestFile, "--server-side", "--force-conflicts", "--field-manager=kops")
 	return err
 }
 
