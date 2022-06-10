@@ -24,7 +24,7 @@ spec:
     clusterCIDR: ::/0
     clusterName: minimal-ipv6.example.com
     configureCloudRoutes: false
-    image: k8s.gcr.io/provider-aws/cloud-controller-manager:v1.21.0-alpha.0
+    image: k8s.gcr.io/provider-aws/cloud-controller-manager:v1.21.0
     leaderElection:
       leaderElect: true
   cloudProvider: aws
