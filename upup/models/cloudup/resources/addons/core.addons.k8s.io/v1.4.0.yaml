@@ -6,27 +6,3 @@ metadata:
   namespace: kube-system
   labels:
     k8s-addon: core.addons.k8s.io
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: kube-proxy
-  namespace: kube-system
-  labels:
-    k8s-addon: core.addons.k8s.io
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: kubeadm:node-proxier
-  labels:
-    k8s-addon: core.addons.k8s.io
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: system:node-proxier
-subjects:
-- apiGroup: ""
-  kind: ServiceAccount
-  name: kube-proxy
-  namespace: kube-system
