@@ -251,6 +251,18 @@ spec:
 ---
 
 apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kube-dns
+  namespace: kube-system
+  labels:
+    k8s-addon: kube-dns.addons.k8s.io
+    k8s-app: kube-dns
+    kubernetes.io/cluster-service: "true"
+
+---
+
+apiVersion: v1
 kind: Service
 metadata:
   name: kube-dns
