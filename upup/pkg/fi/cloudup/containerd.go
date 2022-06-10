@@ -38,7 +38,7 @@ const (
 	// containerd legacy packages URLs for v1.2.x and v1.3.x
 	containerdLegacyUrlAmd64 = "https://storage.googleapis.com/cri-containerd-release/cri-containerd-%s.linux-amd64.tar.gz"
 	// containerd version that is available for both AMD64 and ARM64, used in case the selected version is not available for ARM64
-	containerdFallbackVersion = "1.4.11"
+	containerdFallbackVersion = "1.4.13"
 )
 
 func findContainerdAsset(c *kops.Cluster, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*url.URL, *hashing.Hash, error) {
@@ -210,11 +210,17 @@ func findAllContainerdHashesAmd64() map[string]string {
 		"1.5.7":  "7fce75bab43a39d6f9efb3c370de2da49723f0e1dbaa9732d68fa7f620d720c8",
 		"1.5.8":  "5dbb7f43c0ac1fda79999ff63e648926e3464d7d1034402ee2117e6a93868431",
 		"1.5.9":  "f64c8e3b736b370c963b08c33ac70f030fc311bc48fcfd00461465af2fff3488",
+		"1.5.10": "370113fcf75e3b6ddcb4d5fdd7eea90a348c46747abd2a703a405c47f61c64d5",
+		"1.5.11": "f9b078e297558b38a6d72e7d5e9ac5b712ffa537bc68b956fef3d15f93f7c18e",
+		"1.5.12": "2d7595d821b1d5f186c5bf8eea8428935c31a0e89a0eb49e1fef10897a4beefa",
+		"1.5.13": "8b3903c7cf231f05b4c0843ca0fc3aeb7cfe1bb1da3fc66a36ce1039227ee36a",
 		"1.6.0":  "f77725e4f757523bf1472ec3b9e02b09303a5d99529173be0f11a6d39f5676e9",
 		"1.6.1":  "c1df0a12af2be019ca2d6c157f94e8ce7430484ab29948c9805882df40ec458b",
 		"1.6.2":  "3d94f887de5f284b0d6ee61fa17ba413a7d60b4bb27d756a402b713a53685c6a",
 		"1.6.3":  "306b3c77f0b5e28ed10d527edf3d73f56bf0a1fb296075af4483d8516b6975ed",
 		"1.6.4":  "f23c8ac914d748f85df94d3e82d11ca89ca9fe19a220ce61b99a05b070044de0",
+		"1.6.5":  "cf02a2da998bfcf61727c65ede6f53e89052a68190563a1799a7298b0cea86b4",
+		"1.6.6":  "0212869675742081d70600a1afc6cea4388435cc52bf5dc21f4efdcb9a92d2ef",
 	}
 
 	return hashes
@@ -227,6 +233,8 @@ func findAllContainerdHashesArm64() map[string]string {
 		"1.6.2": "a4b24b3c38a67852daa80f03ec2bc94e31a0f4393477cd7dc1c1a7c2d3eb2a95",
 		"1.6.3": "354e30d52ff94bd6cd7ceb8259bdf28419296b46cf5585e9492a87fdefcfe8b2",
 		"1.6.4": "0205bd1907154388dc85b1afeeb550cbb44c470ef4a290cb1daf91501c85cae6",
+		"1.6.5": "2833e2f0e8f3cb5044566d64121fdd92bbdfe523e9fe912259e936af280da62a",
+		"1.6.6": "807bf333df331d713708ead66919189d7b142a0cc21ec32debbc988f9069d5eb",
 	}
 
 	return hashes

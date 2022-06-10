@@ -131,9 +131,9 @@ function download-release() {
 echo "== nodeup node config starting =="
 ensure-install-dir
 
-echo "H4sIAAAAAAAA/3RSTW/bMAy9+1fw0lsn221XbEIvW7KtAdYiSH4BYzEuEVnMRMlZ/v1gN26WfZwMv0eRj++x8ZLdTMKWW1sA4EG/fF7P1ot55J7iAAFQwI0nZ2GLXqkA6DBgS+skEVuaeVQltZBipqKRkJADxVUOiTuy8Ia4M+mGxl7a79STt8BhKwVAT1FZgoXa3Jn6pnDS7F416I73i6AJvT/N2eUNLaP8PA5047MmirPFfGWhrirz8d5UpirreiD3eUU/Mmkaua4A4A5bshCpZU3xaHYf1LCUQ893+7FpX5ub2lQXKm/GoZ7SaFSQcOwk66ecXs7ONG2UvD+ZB3rURJ17w1ciyUI5KpbsllF6dkMhHvS8xvx5/brF/Z2pTF39xkiHHOz0a7w06IspoDltcttyaB8xOE9xigSAem4SS3jE6Cx01Ek8GuyR/fDuoa6qJ74O4mirF/DVBPLw1a+R6OH91fVo31+lE3pRWwAMpjXjgS1xsKrsMZaeN+XJzfJc8IfdAIHSQeJu6XPL4RnHcwpcAOzFLcI24my6qMW/I91jVrK35v71zRMG3pKmkxJKzTg9BkqkZXdihyz0JScnh/AtYkNLiizOwm31H2oWOXGDfilOh+y0+AUAAP//AQAA//+wCvSmWAMAAA==" | base64 -d | gzip -d > conf/cluster_spec.yaml
+echo "H4sIAAAAAAAA/3RSTW/bMAy9+1fw0lsn221XbEIvW7KtAdYiSH4BYzEuEVnMRMlZ/v1gN26WfZwMv0eRj++x8ZLdTMKWW1sA4EG/fF7P1ot55J7iAAFQwI0nZ2GLXqkA6DBgS+skEVuaeVQltZBipqKRkJADxVUOiTuy8Ia4M+mGxl7a79STt8BhKwVAT1FZgoXa3Jn6tnDS7F416I73i6AJvT/N2eUNLaP8PA5047MmirPFfGWhrirz8d5UpirreiD3eUU/Mmkaua4A4A5bshCpZU3xaHYf1LCUQ893+7FpX5ub2lQXKm/GoZ7SaFSQcOwk66ecXs7ONG2UvD+ZB3rURJ17w1ciyUI5KpbsllF6dkMhHvS8xvx5/brF/Z2pTF39xkiHHOz0a7w06IspoDltcttyaB8xOE9xigSAem4SS3jE6Cx01Ek8GuyR/fDuoa6qJ74O4mirF/DVBPLw1a+R6OH91fVo31+lE3pRWwAMpjXjgS1xsKrsMZaeN+XJzfJc8IfdAIHSQeJu6XPL4RnHcwpcAOzFLcI24my6qMW/I91jVrK35v71zRMG3pKmkxJKzTg9BkqkZXdihyz0JScnh/AtYkNLiizOwm31H2oWOXGDfilOh+y0+AUAAP//AQAA//+sA4HXWAMAAA==" | base64 -d | gzip -d > conf/cluster_spec.yaml
 
-echo "H4sIAAAAAAAA/1SNPWvDMBQAd/0K7QZ7MZQKOrQa2rrFblVoQjYhPX8kkp7Qs2L734eQycsNd8NJh9n+JLxOFpLgeiEmMfTT8KYJBPfgexJVZVymGRKVsGofHZQGfWXQxwS0k+wz0KyDgfeEObbag+ABLdA+KHQgeIsW2B05PqYfmkbB1fbXjOkgzaroW65LU8ynenvu1PkpWjoOnfpKv8Xl/7UeXtgNAAD//wEAAP//kWgTA8EAAAA=" | base64 -d | gzip -d > conf/kube_env.yaml
+echo "H4sIAAAAAAAA/1SNsW7CMBQAd3+FvyBW1amWOrRR1QShBIIUIjZjP4cg28/4xZDPR4gpyw13w5UOs9klvE8GkuTqQazEYKfxVxFI7sFbkkJol2mGRAUsykcHhUYvNPqYgFaS1YFmFTT8J8yxUR4kD2iA1qFDB5I3aIC9kON7Wim6SG67fqiuX7e/ig6bc69OtcDQLvQxHG0eUymmdvvT4udi9t/sCQAA//8BAAD//xitTqnBAAAA" | base64 -d | gzip -d > conf/kube_env.yaml
 
 download-release
 echo "== nodeup node config done =="
