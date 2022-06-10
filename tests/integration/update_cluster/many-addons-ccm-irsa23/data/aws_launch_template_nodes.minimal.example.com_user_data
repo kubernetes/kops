@@ -167,7 +167,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: I5B5KSamI600/r+pgbSXCE9558hmuvBVPDFihqdp2BQ=
+NodeupConfigHash: TWsLtP+m5kS2PcV/bSTzcv9b8zfKArfcdP6QnngMRCY=
 
 __EOF_KUBE_ENV
 
