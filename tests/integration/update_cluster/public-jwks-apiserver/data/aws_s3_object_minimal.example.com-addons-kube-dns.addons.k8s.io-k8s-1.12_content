@@ -211,6 +211,21 @@ spec:
 ---
 
 apiVersion: v1
+kind: ServiceAccount
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: kube-dns.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: kube-dns.addons.k8s.io
+    k8s-app: kube-dns
+    kubernetes.io/cluster-service: "true"
+  name: kube-dns
+  namespace: kube-system
+
+---
+
+apiVersion: v1
 kind: Service
 metadata:
   creationTimestamp: null

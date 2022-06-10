@@ -830,14 +830,6 @@ resource "aws_s3_object" "privatecalico-example-com-addons-bootstrap" {
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_object" "privatecalico-example-com-addons-core-addons-k8s-io" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_object_privatecalico.example.com-addons-core.addons.k8s.io_content")
-  key                    = "clusters.example.com/privatecalico.example.com/addons/core.addons.k8s.io/v1.4.0.yaml"
-  provider               = aws.files
-  server_side_encryption = "AES256"
-}
-
 resource "aws_s3_object" "privatecalico-example-com-addons-coredns-addons-k8s-io-k8s-1-12" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_privatecalico.example.com-addons-coredns.addons.k8s.io-k8s-1.12_content")
