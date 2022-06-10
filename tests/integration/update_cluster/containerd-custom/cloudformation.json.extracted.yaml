@@ -139,7 +139,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscontainerdexamplecom.Properti
       - http://HostIP2:Port2
       docker.io:
       - https://registry-1.docker.io
-    version: 1.4.12
+    version: 1.4.13
   docker:
     skipInstall: true
   encryptionConfig: null
@@ -255,7 +255,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscontainerdexamplecom.Properti
   ConfigBase: memfs://clusters.example.com/containerd.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: WMtLIUhKcOxt60zzbtWb2fTQR423rvJRflBBqYYueCY=
+  NodeupConfigHash: x7Udp3Jnasm9Po5qNJYAcS05yXSD/J0P73+h6c7HHNc=
 
   __EOF_KUBE_ENV
 
@@ -402,7 +402,7 @@ Resources.AWSEC2LaunchTemplatenodescontainerdexamplecom.Properties.LaunchTemplat
       - http://HostIP2:Port2
       docker.io:
       - https://registry-1.docker.io
-    version: 1.4.12
+    version: 1.4.13
   docker:
     skipInstall: true
   kubeProxy:
@@ -435,7 +435,7 @@ Resources.AWSEC2LaunchTemplatenodescontainerdexamplecom.Properties.LaunchTemplat
   ConfigBase: memfs://clusters.example.com/containerd.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: jFATdOivsVKRaveo6Bao8x26n8fUy/1GBVLWVyUuR58=
+  NodeupConfigHash: jXjValF7q1Zl9PWmUYXojVAAwkaX6JCUvBTeaE8zR5g=
 
   __EOF_KUBE_ENV
 
