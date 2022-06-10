@@ -325,18 +325,6 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 		}
 	}
 
-	{
-		key := "core.addons.k8s.io"
-		version := "1.4.0"
-		location := key + "/v" + version + ".yaml"
-
-		addons.Add(&channelsapi.AddonSpec{
-			Name:     fi.String(key),
-			Selector: map[string]string{"k8s-addon": key},
-			Manifest: fi.String(location),
-		})
-	}
-
 	// @check if podsecuritypolicies are enabled and if so, push the default kube-system policy
 	if b.Cluster.Spec.KubeAPIServer != nil && b.Cluster.Spec.KubeAPIServer.HasAdmissionController("PodSecurityPolicy") {
 		key := "podsecuritypolicy.addons.k8s.io"
