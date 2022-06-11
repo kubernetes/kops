@@ -4351,7 +4351,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: cert-manager-webhook
-  namespace: "cert-manager"
+  namespace: "kube-system"
   labels:
     app: webhook
     app.kubernetes.io/name: webhook
