@@ -8177,7 +8177,7 @@ metadata:
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
   name: cert-manager-webhook
-  namespace: cert-manager
+  namespace: kube-system
 
 ---
 
