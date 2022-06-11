@@ -153,6 +153,9 @@ spec:
           periodSeconds: 10
         name: metrics-server
         ports:
+        - containerPort: 443 # We need to rename this port to keep the name unique due to SSA
+          name: oldhttps
+          protocol: TCP
         - containerPort: 4443
           name: https
           protocol: TCP
