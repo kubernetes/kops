@@ -901,7 +901,7 @@ golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 golang.org/x/mod/internal/lazyregexp
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20220520000938-2e3eb7b945c2
+# golang.org/x/net v0.0.0-20220607020251-c690dde0001d
 ## explicit; go 1.17
 golang.org/x/net/bpf
 golang.org/x/net/context
@@ -919,7 +919,7 @@ golang.org/x/net/ipv4
 golang.org/x/net/ipv6
 golang.org/x/net/proxy
 golang.org/x/net/trace
-# golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5
+# golang.org/x/oauth2 v0.0.0-20220524215830-622c5d57e401
 ## explicit; go 1.11
 golang.org/x/oauth2
 golang.org/x/oauth2/authhandler
@@ -928,7 +928,7 @@ golang.org/x/oauth2/google/internal/externalaccount
 golang.org/x/oauth2/internal
 golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
-# golang.org/x/sync v0.0.0-20220513210516-0976fa681c29
+# golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f
 ## explicit
 golang.org/x/sync/errgroup
 golang.org/x/sync/semaphore
@@ -986,7 +986,7 @@ golang.org/x/xerrors/internal
 # gomodules.xyz/jsonpatch/v2 v2.2.0
 ## explicit; go 1.12
 gomodules.xyz/jsonpatch/v2
-# google.golang.org/api v0.81.0
+# google.golang.org/api v0.83.0
 ## explicit; go 1.15
 google.golang.org/api/cloudresourcemanager/v1
 google.golang.org/api/compute/v0.alpha
@@ -1022,12 +1022,12 @@ google.golang.org/appengine/internal/modules
 google.golang.org/appengine/internal/remote_api
 google.golang.org/appengine/internal/urlfetch
 google.golang.org/appengine/urlfetch
-# google.golang.org/genproto v0.0.0-20220519153652-3a47de7e79bd
+# google.golang.org/genproto v0.0.0-20220602131408-e326c6e8e9c8
 ## explicit; go 1.15
 google.golang.org/genproto/googleapis/rpc/code
 google.golang.org/genproto/googleapis/rpc/errdetails
 google.golang.org/genproto/googleapis/rpc/status
-# google.golang.org/grpc v1.46.2
+# google.golang.org/grpc v1.47.0
 ## explicit; go 1.14
 google.golang.org/grpc
 google.golang.org/grpc/attributes
