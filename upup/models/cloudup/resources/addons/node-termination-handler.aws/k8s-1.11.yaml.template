@@ -117,20 +117,18 @@ spec:
         kubernetes.io/os: linux
     spec:
       nodeSelector: null
+      {{ if not UseServiceAccountExternalPermissions }}
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              {{ if not UseServiceAccountExternalPermissions }}
               - key: node-role.kubernetes.io/control-plane
                 operator: Exists
-              {{ end }}
             - matchExpressions:
-              {{ if not UseServiceAccountExternalPermissions }}
               - key: node-role.kubernetes.io/master
                 operator: Exists
-              {{ end }}
+      {{ end }}
       priorityClassName: system-cluster-critical
       serviceAccountName: aws-node-termination-handler
       securityContext:
