@@ -236,7 +236,11 @@ spec:
     port: 9153
     protocol: TCP
 ---
+{{ if IsKubernetesGTE "1.23" }}
+apiVersion: policy/v1
+{{ else }}
 apiVersion: policy/v1beta1
+{{ end }}
 kind: PodDisruptionBudget
 metadata:
   name: kube-dns
