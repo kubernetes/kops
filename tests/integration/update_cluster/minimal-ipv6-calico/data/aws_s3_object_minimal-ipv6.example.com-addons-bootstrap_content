@@ -20,7 +20,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: coredns.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: 87a7f09ef2ce0065d9ab77906935207b878f8b2b2cdc71b6f49c8f8d97edf960
+    manifestHash: e8afce39d0ee5828c53389d09c8ed3b6c0c47ccd582b43a580665e07416fe598
     name: coredns.addons.k8s.io
     selector:
       k8s-addon: coredns.addons.k8s.io
@@ -75,7 +75,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.17
     manifest: aws-ebs-csi-driver.addons.k8s.io/k8s-1.17.yaml
-    manifestHash: 7a8dee1431494e565daf0d8fdf65a2381fb10b8a8e4e95f189f47f308939414c
+    manifestHash: 169ef2274e24cafa0ebd26fd9161a48059b549a9f4395381026592bb243f29bb
     name: aws-ebs-csi-driver.addons.k8s.io
     selector:
       k8s-addon: aws-ebs-csi-driver.addons.k8s.io
