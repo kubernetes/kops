@@ -184,6 +184,9 @@ spec:
           periodSeconds: 10
         name: metrics-server
         ports:
+        - containerPort: 443
+          name: oldhttps
+          protocol: TCP
         - containerPort: 4443
           name: https
           protocol: TCP
