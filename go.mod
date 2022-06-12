@@ -75,7 +75,7 @@ require (
 	github.com/stretchr/testify v1.7.2
 	github.com/weaveworks/mesh v0.0.0-20191105120815-58dbcc3e8e63
 	github.com/zclconf/go-cty v1.10.0
-	go.uber.org/multierr v1.6.0
+	go.uber.org/multierr v1.8.0
 	golang.org/x/crypto v0.0.0-20220427172511-eb4f295cb31f
 	golang.org/x/net v0.0.0-20220520000938-2e3eb7b945c2
 	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5
