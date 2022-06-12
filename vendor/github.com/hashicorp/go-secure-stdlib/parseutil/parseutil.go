@@ -493,7 +493,7 @@ func SafeParseIntSlice(in interface{}, elements int) ([]int, error) {
 		return nil, err
 	}
 
-	var result = make([]int, len(raw))
+	var result = make([]int, 0, len(raw))
 	for _, element := range raw {
 		result = append(result, int(element))
 	}
