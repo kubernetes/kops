@@ -1921,7 +1921,7 @@
       }
     }
   },
-  "revision": "20220511",
+  "revision": "20220526",
   "rootUrl": "https://iam.googleapis.com/",
   "schemas": {
     "AdminAuditData": {
@@ -3085,6 +3085,12 @@
           "type": "string"
         }
       },
+      "type": "object"
+    },
+    "WorkloadIdentityPoolOperationMetadata": {
+      "description": "Metadata for long-running WorkloadIdentityPool operations.",
+      "id": "WorkloadIdentityPoolOperationMetadata",
+      "properties": {},
       "type": "object"
     },
     "WorkloadIdentityPoolProvider": {
