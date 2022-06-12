@@ -2700,6 +2700,11 @@ func (s *WorkloadIdentityPool) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// WorkloadIdentityPoolOperationMetadata: Metadata for long-running
+// WorkloadIdentityPool operations.
+type WorkloadIdentityPoolOperationMetadata struct {
+}
+
 // WorkloadIdentityPoolProvider: A configuration for an external
 // identity provider.
 type WorkloadIdentityPoolProvider struct {
