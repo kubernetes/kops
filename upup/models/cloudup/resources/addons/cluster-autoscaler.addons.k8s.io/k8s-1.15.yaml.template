@@ -2,7 +2,11 @@
 # Sourced from https://github.com/kubernetes/autoscaler/
 ---
 # Source: cluster-autoscaler/templates/pdb.yaml
+{{ if IsKubernetesGTE "1.23" }}
+apiVersion: policy/v1
+{{ else }}
 apiVersion: policy/v1beta1
+{{ end }}
 kind: PodDisruptionBudget
 metadata:
   labels:
