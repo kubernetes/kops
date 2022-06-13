@@ -576,7 +576,11 @@ spec:
   attachRequired: true
   podInfoOnMount: false
 ---
+{{ if IsKubernetesGTE "1.23" }}
+apiVersion: policy/v1
+{{ else }}
 apiVersion: policy/v1beta1
+{{ end }}
 kind: PodDisruptionBudget
 metadata:
   name: ebs-csi-controller
