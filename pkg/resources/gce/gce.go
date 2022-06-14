@@ -516,7 +516,7 @@ func deleteForwardingRule(cloud fi.Cloud, r *resources.Resource) error {
 	return c.WaitForOp(op)
 }
 
-// listFirewallRules discovers Firewall objects for the cluster
+// listFirewallRules discovers firewalls, forwarding rules, target pools, and health checks for the cluster
 func (d *clusterDiscoveryGCE) listFirewallRules() ([]*resources.Resource, error) {
 	c := d.gceCloud
 
@@ -538,11 +538,12 @@ nextFirewallRule:
 		// TODO: Check network?  (or other fields?)  No label support currently.
 
 		// We consider only firewall rules that target our cluster tags, which include the cluster name
-		tagPrefix := gce.SafeClusterName(d.clusterName) + "-"
+		legacyTagPrefix := gce.SafeClusterName(d.clusterName) + "-"
+		tagPrefix := gce.ClusterSuffixedName(id, c.Cluster.ObjectMeta.Name, 63)
 		if len(firewallRule.TargetTags) != 0 {
 			tagMatchCount := 0
 			for _, target := range firewallRule.TargetTags {
-				if strings.HasPrefix(target, tagPrefix) {
+				if strings.HasPrefix(target, tagPrefix) || strings.HasPrefix(target, legacyTagPrefix) {
 					tagMatchCount++
 				}
 			}
