@@ -304,14 +304,13 @@ ko-dns-controller-push: ko
 .PHONY: gomod
 gomod:
 	go mod tidy
-	go mod vendor
 	cd tests/e2e; go mod tidy
 	cd hack; go mod tidy
 
 
 .PHONY: gofmt
 gofmt:
-	find $(KOPS_ROOT) -name "*.go" | grep -v vendor | xargs gofmt -w -s
+	find $(KOPS_ROOT) -name "*.go" | xargs gofmt -w -s
 
 .PHONY: goimports
 goimports:
@@ -499,7 +498,7 @@ check-markdown-links:
 		-e LANG=en_US.UTF-8 \
 		-e LANGUAGE=en_US.UTF-8 \
 		rubygem/awesome_bot --allow-dupe --allow-redirect \
-		$(shell find $$PWD -name "*.md" -mindepth 1 -printf '%P\n' | grep -v vendor | grep -v Changelog.md)
+		$(shell find $$PWD -name "*.md" -mindepth 1 -printf '%P\n' | grep -v Changelog.md)
 
 #-----------------------------------------------------------
 
