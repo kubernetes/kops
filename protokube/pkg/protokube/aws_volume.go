@@ -32,8 +32,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
-var devices = []string{"/dev/xvdu", "/dev/xvdv", "/dev/xvdx", "/dev/xvdx", "/dev/xvdy", "/dev/xvdz"}
-
 // AWSCloudProvider defines the AWS cloud provider implementation
 type AWSCloudProvider struct {
 	mutex sync.Mutex
