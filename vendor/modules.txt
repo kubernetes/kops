@@ -1646,7 +1646,7 @@ k8s.io/kubelet/config/v1beta1
 ## explicit; go 1.16
 k8s.io/legacy-cloud-providers/aws
 k8s.io/legacy-cloud-providers/gce
-# k8s.io/mount-utils v0.24.0
+# k8s.io/mount-utils v0.24.1
 ## explicit; go 1.16
 k8s.io/mount-utils
 # k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9
