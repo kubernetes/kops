@@ -23,6 +23,7 @@ linters:
     - ineffassign
     - staticcheck
     - unused
+    - tenv
 
 linters-settings: # please keep this alphabetized
   staticcheck:

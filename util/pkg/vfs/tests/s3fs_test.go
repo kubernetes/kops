@@ -19,7 +19,6 @@ package tests
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
@@ -52,13 +51,9 @@ func TestS3RenderTerraform(t *testing.T) {
 			`,
 		},
 	}
-	origEndpoint := os.Getenv("S3_ENDPOINT")
-	os.Setenv("S3_ENDPOINT", "foo.s3.amazonaws.com")
-	defer os.Setenv("S3_ENDPOINT", origEndpoint)
+	t.Setenv("S3_ENDPOINT", "foo.s3.amazonaws.com")
 
-	origACL := os.Getenv("KOPS_STATE_S3_ACL")
-	os.Setenv("KOPS_STATE_S3_ACL", "bucket-owner-full-control")
-	defer os.Setenv("KOPS_STATE_S3_ACL", origACL)
+	t.Setenv("KOPS_STATE_S3_ACL", "bucket-owner-full-control")
 	for _, tc := range grid {
 
 		t.Run(tc.s3Path, func(t *testing.T) {
