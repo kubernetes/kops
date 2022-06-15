@@ -17,7 +17,6 @@ limitations under the License.
 package bootstrap
 
 import (
-	"os"
 	"path/filepath"
 	"testing"
 
@@ -26,11 +25,7 @@ import (
 )
 
 func TestBootstarapBuilder_Simple(t *testing.T) {
-	origRegion := os.Getenv("AWS_REGION")
-	os.Setenv("AWS_REGION", "us-test1")
-	defer func() {
-		os.Setenv("AWS_REGION", origRegion)
-	}()
+	t.Setenv("AWS_REGION", "us-test1")
 
 	runInstallBuilderTest(t, "tests/simple")
 }

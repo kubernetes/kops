@@ -17,7 +17,6 @@ limitations under the License.
 package cloudup
 
 import (
-	"os"
 	"testing"
 
 	api "k8s.io/kops/pkg/apis/kops"
@@ -29,12 +28,8 @@ func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
 	desiredCNIVersion := "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-TEST-VERSION.tar.gz"
 	desiredCNIVersionHash := "sha256:0000000000000000000000000000000000000000000000000000000000000000"
 
-	os.Setenv(ENV_VAR_CNI_ASSET_URL, desiredCNIVersion)
-	os.Setenv(ENV_VAR_CNI_ASSET_HASH, desiredCNIVersionHash)
-	defer func() {
-		os.Unsetenv(ENV_VAR_CNI_ASSET_URL)
-		os.Unsetenv(ENV_VAR_CNI_ASSET_HASH)
-	}()
+	t.Setenv(ENV_VAR_CNI_ASSET_URL, desiredCNIVersion)
+	t.Setenv(ENV_VAR_CNI_ASSET_HASH, desiredCNIVersionHash)
 
 	cluster := &api.Cluster{}
 	cluster.Spec.KubernetesVersion = "v1.18.0"
