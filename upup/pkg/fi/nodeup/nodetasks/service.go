@@ -46,7 +46,6 @@ const (
 
 	containerdService = "containerd.service"
 	dockerService     = "docker.service"
-	kubeletService    = "kubelet.service"
 	protokubeService  = "protokube.service"
 )
 
