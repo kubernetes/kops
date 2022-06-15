@@ -92,3 +92,6 @@ _output
 
 # Used by E2E testing
 _artifacts
+
+# kops binary
+kops
