@@ -18,7 +18,6 @@ package instancegroups
 
 import (
 	"context"
-	"os"
 	"testing"
 	"time"
 
@@ -103,11 +102,7 @@ var TempTestSkip = func(t *testing.T, message string) {
 func TestRollingUpdateDisabledSurgeOS(t *testing.T) {
 	TempTestSkip(t, "Failing in new release PR when build is not yet published")
 
-	origRegion := os.Getenv("OS_REGION_NAME")
-	os.Setenv("OS_REGION_NAME", "us-test1")
-	defer func() {
-		os.Setenv("OS_REGION_NAME", origRegion)
-	}()
+	t.Setenv("OS_REGION_NAME", "us-test1")
 
 	c, cloud := getTestSetupOS(t)
 
