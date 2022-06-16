@@ -73,15 +73,15 @@ func ComputeAWSKeyFingerprint(publicKey string) (string, error) {
 		return "", err
 	}
 
-	switch fmt.Sprintf("%T", sshPublicKey) {
-	case "*ssh.rsaPublicKey":
+	switch sshPublicKey.Type() {
+	case ssh.KeyAlgoRSA:
 		der, err := rsaToDER(sshPublicKey)
 		if err != nil {
 			return "", fmt.Errorf("error computing fingerprint for SSH public key: %v", err)
 		}
 		h := md5.Sum(der)
 		return colonSeparatedHex(h[:]), nil
-	case "ssh.ed25519PublicKey":
+	case ssh.KeyAlgoED25519:
 		return ssh.FingerprintSHA256(sshPublicKey), nil
 	}
 
