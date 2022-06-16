@@ -17,7 +17,6 @@ limitations under the License.
 package featureflag
 
 import (
-	"os"
 	"testing"
 
 	"k8s.io/klog/v2"
@@ -49,7 +48,7 @@ func TestSetenv(t *testing.T) {
 		t.Fatalf("Flag did not default true")
 	}
 
-	os.Setenv("KOPS_FEATURE_FLAGS", "-UnitTest2")
+	t.Setenv("KOPS_FEATURE_FLAGS", "-UnitTest2")
 	if !f.Enabled() {
 		t.Fatalf("Flag was reparsed immediately after os.Setenv")
 	}
