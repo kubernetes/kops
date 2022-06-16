@@ -99,7 +99,7 @@ github.com/aws/amazon-ec2-instance-selector/v2/pkg/ec2pricing
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/instancetypes
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector/outputs
-# github.com/aws/aws-sdk-go v1.44.32
+# github.com/aws/aws-sdk-go v1.44.35
 ## explicit; go 1.11
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/arn
@@ -1580,8 +1580,8 @@ k8s.io/cloud-provider/volume/helpers
 # k8s.io/cloud-provider-aws v1.24.0
 ## explicit; go 1.18
 k8s.io/cloud-provider-aws/pkg/providers/v1
-# k8s.io/cloud-provider-gcp/providers v0.23.0
-## explicit; go 1.17
+# k8s.io/cloud-provider-gcp/providers v0.21.0
+## explicit; go 1.15
 k8s.io/cloud-provider-gcp/providers/gce
 # k8s.io/component-base v0.24.0
 ## explicit; go 1.16

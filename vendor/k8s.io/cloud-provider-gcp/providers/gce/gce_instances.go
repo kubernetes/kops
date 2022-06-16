@@ -1,4 +1,3 @@
-//go:build !providerless
 // +build !providerless
 
 /*
@@ -45,7 +44,6 @@ import (
 const (
 	defaultZone                   = ""
 	networkInterfaceIP            = "instance/network-interfaces/%s/ip"
-	networkInterfaceIPV6          = "instance/network-interfaces/%s/ipv6s"
 	networkInterfaceAccessConfigs = "instance/network-interfaces/%s/access-configs"
 	networkInterfaceExternalIP    = "instance/network-interfaces/%s/access-configs/%s/external-ip"
 )
@@ -118,27 +116,6 @@ func (g *Cloud) NodeAddresses(ctx context.Context, nodeName types.NodeName) ([]v
 				}
 				nodeAddresses = append(nodeAddresses, v1.NodeAddress{Type: v1.NodeInternalIP, Address: internalIP})
 
-				if g.stackType == NetworkStackDualStack {
-					// Both internal and external IPv6 addresses are written to this array
-					ipv6s, err := metadata.Get(fmt.Sprintf(networkInterfaceIPV6, nic))
-					if err != nil {
-						return nil, fmt.Errorf("couldn't get internal IPV6 addresses for node %v: %v", nodeName, err)
-					}
-					ipv6Arr := strings.Split(ipv6s, "/\n")
-					var internalIPV6 string
-					for _, ip := range ipv6Arr {
-						if ip == "" {
-							continue
-						}
-						internalIPV6 = ip
-						break
-					}
-					if internalIPV6 != "" {
-						nodeAddresses = append(nodeAddresses, v1.NodeAddress{Type: v1.NodeInternalIP, Address: internalIPV6})
-					} else {
-						klog.Warningf("internal IPV6 range is empty for node %v", nodeName)
-					}
-				}
 				acs, err := metadata.Get(fmt.Sprintf(networkInterfaceAccessConfigs, nic))
 				if err != nil {
 					return nil, fmt.Errorf("couldn't get access configs: %v", err)
@@ -182,21 +159,12 @@ func (g *Cloud) NodeAddresses(ctx context.Context, nodeName types.NodeName) ([]v
 		return nil, fmt.Errorf("couldn't get instance details: %v", err)
 	}
 
-	if g.stackType == NetworkStackDualStack {
-		instance, err := g.c.Instances().Get(timeoutCtx, meta.ZonalKey(canonicalizeInstanceName(instanceObj.Name), instanceObj.Zone))
-		if err != nil {
-			return nil, fmt.Errorf("error while querying for instance: %v", err)
-		}
-
-		return g.nodeAddressesFromInstance(instance)
-	}
-
 	instance, err := g.c.Instances().Get(timeoutCtx, meta.ZonalKey(canonicalizeInstanceName(instanceObj.Name), instanceObj.Zone))
 	if err != nil {
-		return nil, fmt.Errorf("error while querying for instance: %v", err)
+		return []v1.NodeAddress{}, fmt.Errorf("error while querying for instance: %v", err)
 	}
 
-	return g.nodeAddressesFromInstance(instance)
+	return nodeAddressesFromInstance(instance)
 }
 
 // NodeAddressesByProviderID will not be called from the node that is requesting this ID.
@@ -210,21 +178,12 @@ func (g *Cloud) NodeAddressesByProviderID(ctx context.Context, providerID string
 		return []v1.NodeAddress{}, err
 	}
 
-	if g.stackType == NetworkStackDualStack {
-		instance, err := g.c.Instances().Get(timeoutCtx, meta.ZonalKey(canonicalizeInstanceName(name), zone))
-		if err != nil {
-			return []v1.NodeAddress{}, fmt.Errorf("error while querying for providerID %q: %v", providerID, err)
-		}
-
-		return g.nodeAddressesFromInstance(instance)
-	}
-
 	instance, err := g.c.Instances().Get(timeoutCtx, meta.ZonalKey(canonicalizeInstanceName(name), zone))
 	if err != nil {
 		return []v1.NodeAddress{}, fmt.Errorf("error while querying for providerID %q: %v", providerID, err)
 	}
 
-	return g.nodeAddressesFromInstance(instance)
+	return nodeAddressesFromInstance(instance)
 }
 
 // instanceByProviderID returns the cloudprovider instance of the node
@@ -256,35 +215,20 @@ func (g *Cloud) InstanceShutdown(ctx context.Context, node *v1.Node) (bool, erro
 	return false, cloudprovider.NotImplemented
 }
 
-func (g *Cloud) nodeAddressesFromInstance(instance *compute.Instance) ([]v1.NodeAddress, error) {
+func nodeAddressesFromInstance(instance *compute.Instance) ([]v1.NodeAddress, error) {
 	if len(instance.NetworkInterfaces) < 1 {
 		return nil, fmt.Errorf("could not find network interfaces for instanceID %q", instance.Id)
 	}
 	nodeAddresses := []v1.NodeAddress{}
+
 	for _, nic := range instance.NetworkInterfaces {
 		nodeAddresses = append(nodeAddresses, v1.NodeAddress{Type: v1.NodeInternalIP, Address: nic.NetworkIP})
 		for _, config := range nic.AccessConfigs {
 			nodeAddresses = append(nodeAddresses, v1.NodeAddress{Type: v1.NodeExternalIP, Address: config.NatIP})
 		}
-		if g.stackType == NetworkStackDualStack {
-			ipv6Addr := getIPV6AddressFromInterface(nic)
-			if ipv6Addr != "" {
-				nodeAddresses = append(nodeAddresses, v1.NodeAddress{Type: v1.NodeInternalIP, Address: ipv6Addr})
-			}
-		}
 	}
 
 	return nodeAddresses, nil
-}
-
-func getIPV6AddressFromInterface(nic *compute.NetworkInterface) string {
-	ipv6Addr := nic.Ipv6Address
-	if ipv6Addr == "" && nic.Ipv6AccessType == "EXTERNAL" {
-		for _, r := range nic.Ipv6AccessConfigs {
-			ipv6Addr = r.ExternalIpv6
-		}
-	}
-	return ipv6Addr
 }
 
 // InstanceTypeByProviderID returns the cloudprovider instance type of the node
@@ -353,23 +297,19 @@ func (g *Cloud) InstanceMetadata(ctx context.Context, node *v1.Node) (*cloudprov
 		return nil, err
 	}
 
-	var addresses []v1.NodeAddress
-	var instanceType string
 	instance, err := g.c.Instances().Get(timeoutCtx, meta.ZonalKey(canonicalizeInstanceName(name), zone))
 	if err != nil {
 		return nil, fmt.Errorf("error while querying for providerID %q: %v", providerID, err)
 	}
 
-	addresses, err = g.nodeAddressesFromInstance(instance)
+	addresses, err := nodeAddressesFromInstance(instance)
 	if err != nil {
 		return nil, err
 	}
 
-	instanceType = lastComponent(instance.MachineType)
-
 	return &cloudprovider.InstanceMetadata{
 		ProviderID:    providerID,
-		InstanceType:  instanceType,
+		InstanceType:  lastComponent(instance.MachineType),
 		NodeAddresses: addresses,
 		Zone:          zone,
 		Region:        region,
@@ -561,8 +501,8 @@ func (g *Cloud) AliasRangesByProviderID(providerID string) (cidrs []string, err 
 		return nil, err
 	}
 
-	var res *compute.Instance
-	res, err = g.c.Instances().Get(ctx, meta.ZonalKey(canonicalizeInstanceName(name), zone))
+	var res *computebeta.Instance
+	res, err = g.c.BetaInstances().Get(ctx, meta.ZonalKey(canonicalizeInstanceName(name), zone))
 	if err != nil {
 		return
 	}
@@ -570,16 +510,6 @@ func (g *Cloud) AliasRangesByProviderID(providerID string) (cidrs []string, err 
 	for _, networkInterface := range res.NetworkInterfaces {
 		for _, r := range networkInterface.AliasIpRanges {
 			cidrs = append(cidrs, r.IpCidrRange)
-		}
-		if g.stackType == NetworkStackDualStack {
-			ipv6Addr := getIPV6AddressFromInterface(networkInterface)
-			if ipv6Addr == "" {
-				return nil, fmt.Errorf("IPV6 address not found for %s", providerID)
-			}
-			// The podCIDR range is the first /112 subrange from the /96 assigned to
-			// the node
-			ipv6PodCIDR := fmt.Sprintf("%s/112", ipv6Addr)
-			cidrs = append(cidrs, ipv6PodCIDR)
 		}
 	}
 	return
