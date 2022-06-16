@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"strings"
 
+	aws "k8s.io/cloud-provider-aws/pkg/providers/v1"
 	"k8s.io/klog/v2"
-	"k8s.io/legacy-cloud-providers/aws"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
