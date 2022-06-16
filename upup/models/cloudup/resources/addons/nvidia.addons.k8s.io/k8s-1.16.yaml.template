@@ -42,7 +42,11 @@ spec:
 ---
 
 kind: RuntimeClass
+{{ if IsKubernetesGTE "1.23" }}
+apiVersion: node.k8s.io/v1
+{{ else }}
 apiVersion: node.k8s.io/v1beta1
+{{ end }}
 metadata:
   name: nvidia
 handler: nvidia
