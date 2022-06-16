@@ -60,12 +60,13 @@ require (
 	k8s.io/apimachinery v0.24.0
 	k8s.io/cli-runtime v0.24.0
 	k8s.io/client-go v0.24.0
+	k8s.io/cloud-provider-aws v1.24.0
+	k8s.io/cloud-provider-gcp/providers v0.23.0
 	k8s.io/component-base v0.24.0
 	k8s.io/gengo v0.0.0-20220307231824-4627b89bbf1b
 	k8s.io/klog/v2 v2.60.1
 	k8s.io/kubectl v0.24.0
 	k8s.io/kubelet v0.24.0
-	k8s.io/legacy-cloud-providers v0.24.0
 	k8s.io/mount-utils v0.24.0
 	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9
 	sigs.k8s.io/controller-runtime v0.12.0
@@ -199,7 +200,6 @@ require (
 	github.com/spf13/afero v1.8.2 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
-	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/subosito/gotenv v1.3.0 // indirect
 	github.com/vbatts/tar-split v0.11.2 // indirect
 	github.com/xlab/treeprint v0.0.0-20181112141820-a009c3971eca // indirect
