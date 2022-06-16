@@ -176,6 +176,7 @@ type LaunchSpecification struct {
 	Tags                   []string                          `json:"tags,omitempty"`
 	RootVolumeType         *string                           `json:"rootVolumeType,omitempty"`
 	ShieldedInstanceConfig *LaunchSpecShieldedInstanceConfig `json:"shieldedInstanceConfig,omitempty"`
+	UseAsTemplateOnly      *bool                             `json:"useAsTemplateOnly,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -996,6 +997,13 @@ func (o *LaunchSpecification) SetRootVolumeType(v *string) *LaunchSpecification 
 func (o *LaunchSpecification) SetShieldedInstanceConfig(v *LaunchSpecShieldedInstanceConfig) *LaunchSpecification {
 	if o.ShieldedInstanceConfig = v; o.ShieldedInstanceConfig == nil {
 		o.nullFields = append(o.nullFields, "ShieldedInstanceConfig")
+	}
+	return o
+}
+
+func (o *LaunchSpecification) SetUseAsTemplateOnly(v *bool) *LaunchSpecification {
+	if o.UseAsTemplateOnly = v; o.UseAsTemplateOnly == nil {
+		o.nullFields = append(o.nullFields, "UseAsTemplateOnly")
 	}
 	return o
 }

@@ -792,7 +792,7 @@ github.com/spf13/viper/internal/encoding/javaproperties
 github.com/spf13/viper/internal/encoding/json
 github.com/spf13/viper/internal/encoding/toml
 github.com/spf13/viper/internal/encoding/yaml
-# github.com/spotinst/spotinst-sdk-go v1.120.0
+# github.com/spotinst/spotinst-sdk-go v1.121.0
 ## explicit; go 1.16
 github.com/spotinst/spotinst-sdk-go/service/elastigroup
 github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/aws
@@ -1121,7 +1121,7 @@ gopkg.in/gcfg.v1/types
 # gopkg.in/inf.v0 v0.9.1
 ## explicit
 gopkg.in/inf.v0
-# gopkg.in/ini.v1 v1.66.4
+# gopkg.in/ini.v1 v1.66.6
 ## explicit
 gopkg.in/ini.v1
 # gopkg.in/square/go-jose.v2 v2.6.0
@@ -1580,8 +1580,8 @@ k8s.io/cloud-provider/volume/helpers
 # k8s.io/cloud-provider-aws v1.24.0
 ## explicit; go 1.18
 k8s.io/cloud-provider-aws/pkg/providers/v1
-# k8s.io/cloud-provider-gcp/providers v0.23.0
-## explicit; go 1.17
+# k8s.io/cloud-provider-gcp/providers v0.21.0
+## explicit; go 1.15
 k8s.io/cloud-provider-gcp/providers/gce
 # k8s.io/component-base v0.24.0
 ## explicit; go 1.16

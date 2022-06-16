@@ -41,7 +41,7 @@ require (
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.12.0
-	github.com/spotinst/spotinst-sdk-go v1.120.0
+	github.com/spotinst/spotinst-sdk-go v1.121.0
 	github.com/stretchr/testify v1.7.2
 	github.com/weaveworks/mesh v0.0.0-20191105120815-58dbcc3e8e63
 	github.com/zclconf/go-cty v1.10.0
@@ -61,7 +61,7 @@ require (
 	k8s.io/cli-runtime v0.24.0
 	k8s.io/client-go v0.24.0
 	k8s.io/cloud-provider-aws v1.24.0
-	k8s.io/cloud-provider-gcp/providers v0.23.0
+	k8s.io/cloud-provider-gcp/providers v0.21.0
 	k8s.io/component-base v0.24.0
 	k8s.io/gengo v0.0.0-20220307231824-4627b89bbf1b
 	k8s.io/klog/v2 v2.60.1
@@ -217,7 +217,7 @@ require (
 	google.golang.org/genproto v0.0.0-20220602131408-e326c6e8e9c8 // indirect
 	google.golang.org/grpc v1.47.0 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
-	gopkg.in/ini.v1 v1.66.4 // indirect
+	gopkg.in/ini.v1 v1.66.6 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
