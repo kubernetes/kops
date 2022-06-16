@@ -448,7 +448,7 @@ func TestPrivateCilium2(t *testing.T) {
 	newIntegrationTest("privatecilium.example.com", "privatecilium2").
 		withPrivate().
 		withDefaultAddons24().
-		withAddons("networking.cilium.io-k8s-1.23").
+		withAddons("networking.cilium.io-k8s-1.16").
 		withAddons(certManagerAddon).
 		runTestTerraformAWS(t)
 	newIntegrationTest("privatecilium.example.com", "privatecilium2").
