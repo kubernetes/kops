@@ -93,5 +93,7 @@ _output
 # Used by E2E testing
 _artifacts
 
-# kops binary
+# kops binaries
 /kops
+/kops-controller
+/kube-apiserver-healthcheck
