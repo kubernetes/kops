@@ -1,4 +1,3 @@
-//go:build !providerless
 // +build !providerless
 
 /*
@@ -94,12 +93,6 @@ var _ cloudprovider.Zones = (*Cloud)(nil)
 var _ cloudprovider.PVLabeler = (*Cloud)(nil)
 var _ cloudprovider.Clusters = (*Cloud)(nil)
 
-type StackType string
-
-const NetworkStackDualStack StackType = "IPV4_IPV6"
-const NetworkStackIPV4 StackType = "IPV4"
-const NetworkStackIPV6 StackType = "IPV6"
-
 // Cloud is an implementation of Interface, LoadBalancer and Instances for Google Compute Engine.
 type Cloud struct {
 	// ClusterID contains functionality for getting (and initializing) the ingress-uid. Call Cloud.Initialize()
@@ -173,9 +166,6 @@ type Cloud struct {
 	s *cloud.Service
 
 	metricsCollector loadbalancerMetricsCollector
-	// stackType indicates whether the cluster is a single stack IPv4, single
-	// stack IPv6 or a dual stack cluster
-	stackType StackType
 }
 
 // ConfigGlobal is the in memory representation of the gce.conf config data
@@ -190,7 +180,6 @@ type ConfigGlobal struct {
 	NetworkProjectID string `gcfg:"network-project-id"`
 	NetworkName      string `gcfg:"network-name"`
 	SubnetworkName   string `gcfg:"subnetwork-name"`
-	StackType        string `gcfg:"stack-type"`
 	// DEPRECATED: Do not rely on this value as it may be incorrect.
 	// SecondaryRangeName is the name of the secondary range to allocate IP
 	// aliases. The secondary range must be present on the subnetwork the
@@ -246,7 +235,6 @@ type CloudConfig struct {
 	TokenSource        oauth2.TokenSource
 	UseMetadataServer  bool
 	AlphaFeatureGate   *AlphaFeatureGate
-	StackType          string
 }
 
 func init() {
@@ -404,10 +392,6 @@ func generateCloudConfig(configFile *ConfigFile) (cloudConfig *CloudConfig, err 
 		cloudConfig.SecondaryRangeName = configFile.Global.SecondaryRangeName
 	}
 
-	if configFile != nil {
-		cloudConfig.StackType = configFile.Global.StackType
-	}
-
 	return cloudConfig, err
 }
 
@@ -452,16 +436,10 @@ func CreateGCECloud(config *CloudConfig) (*Cloud, error) {
 	// For example,
 	// staging API endpoint: https://www.googleapis.com/compute/staging_v1/
 	if config.APIEndpoint != "" {
-		service.BasePath = config.APIEndpoint
-		serviceBeta.BasePath = strings.Replace(config.APIEndpoint, "v1", "beta", -1)
-		serviceAlpha.BasePath = strings.Replace(config.APIEndpoint, "v1", "alpha", -1)
+		service.BasePath = fmt.Sprintf("%sprojects/", config.APIEndpoint)
+		serviceBeta.BasePath = fmt.Sprintf("%sprojects/", strings.Replace(config.APIEndpoint, "v1", "beta", -1))
+		serviceAlpha.BasePath = fmt.Sprintf("%sprojects/", strings.Replace(config.APIEndpoint, "v1", "alpha", -1))
 	}
-
-	// Previously "projects/" was a part of BasePath, but recent changes in Google Cloud SDK removed it from there.
-	// To bring the old format back we update BasePath including "projects/" there again.
-	service.BasePath += "projects/"
-	serviceBeta.BasePath += "projects/"
-	serviceAlpha.BasePath += "projects/"
 
 	containerService, err := container.NewService(context.Background(), option.WithTokenSource(config.TokenSource))
 	if err != nil {
@@ -546,7 +524,6 @@ func CreateGCECloud(config *CloudConfig) (*Cloud, error) {
 		AlphaFeatureGate:         config.AlphaFeatureGate,
 		nodeZones:                map[string]sets.String{},
 		metricsCollector:         newLoadBalancerMetrics(),
-		stackType:                StackType(config.StackType),
 	}
 
 	gce.manager = &gceServiceManager{gce}
