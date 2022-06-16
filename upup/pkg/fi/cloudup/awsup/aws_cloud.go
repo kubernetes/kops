@@ -53,7 +53,7 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
-	k8s_aws "k8s.io/legacy-cloud-providers/aws"
+	k8s_aws "k8s.io/cloud-provider-aws/pkg/providers/v1"
 
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	dnsproviderroute53 "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53"
@@ -690,7 +690,6 @@ func deregisterInstanceFromTargetGroup(c AWSCloud, targetGroupArn string, instan
 				Id: aws.String(instanceId),
 			}},
 		})
-
 		if err != nil {
 			return fmt.Errorf("error describing target health: %w", err)
 		}

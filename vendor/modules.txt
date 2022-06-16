@@ -813,13 +813,9 @@ github.com/spotinst/spotinst-sdk-go/spotinst/util/jsonutil
 github.com/spotinst/spotinst-sdk-go/spotinst/util/stringutil
 github.com/spotinst/spotinst-sdk-go/spotinst/util/uritemplates
 github.com/spotinst/spotinst-sdk-go/spotinst/util/useragent
-# github.com/stretchr/objx v0.2.0
-## explicit; go 1.12
-github.com/stretchr/objx
 # github.com/stretchr/testify v1.7.2
 ## explicit; go 1.13
 github.com/stretchr/testify/assert
-github.com/stretchr/testify/mock
 github.com/stretchr/testify/require
 # github.com/subosito/gotenv v1.3.0
 ## explicit; go 1.18
@@ -1581,6 +1577,12 @@ k8s.io/cloud-provider/service/helpers
 k8s.io/cloud-provider/volume
 k8s.io/cloud-provider/volume/errors
 k8s.io/cloud-provider/volume/helpers
+# k8s.io/cloud-provider-aws v1.24.0
+## explicit; go 1.18
+k8s.io/cloud-provider-aws/pkg/providers/v1
+# k8s.io/cloud-provider-gcp/providers v0.23.0
+## explicit; go 1.17
+k8s.io/cloud-provider-gcp/providers/gce
 # k8s.io/component-base v0.24.0
 ## explicit; go 1.16
 k8s.io/component-base/config
@@ -1642,10 +1644,6 @@ k8s.io/kubectl/pkg/validation
 # k8s.io/kubelet v0.24.0
 ## explicit; go 1.16
 k8s.io/kubelet/config/v1beta1
-# k8s.io/legacy-cloud-providers v0.24.0
-## explicit; go 1.16
-k8s.io/legacy-cloud-providers/aws
-k8s.io/legacy-cloud-providers/gce
 # k8s.io/mount-utils v0.24.0
 ## explicit; go 1.16
 k8s.io/mount-utils
