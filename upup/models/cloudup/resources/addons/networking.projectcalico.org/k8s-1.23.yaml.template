@@ -4545,6 +4545,9 @@ spec:
               name: cni-net-dir
           securityContext:
             privileged: true
+        - name: flexvol-driver
+          image: busybox
+          command: ['sh', '-c', 'echo Temporary fix to avoid server side apply issues']
       containers:
         # Runs calico-node container on each Kubernetes node. This
         # container programs network policy and routes on each
