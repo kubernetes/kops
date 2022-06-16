@@ -890,10 +890,10 @@ resource "aws_s3_object" "privatecilium-example-com-addons-limit-range-addons-k8
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_object" "privatecilium-example-com-addons-networking-cilium-io-k8s-1-23" {
+resource "aws_s3_object" "privatecilium-example-com-addons-networking-cilium-io-k8s-1-16" {
   bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_object_privatecilium.example.com-addons-networking.cilium.io-k8s-1.23_content")
-  key                    = "clusters.example.com/privatecilium.example.com/addons/networking.cilium.io/k8s-1.23-v1.11.yaml"
+  content                = file("${path.module}/data/aws_s3_object_privatecilium.example.com-addons-networking.cilium.io-k8s-1.16_content")
+  key                    = "clusters.example.com/privatecilium.example.com/addons/networking.cilium.io/k8s-1.16-v1.11.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
