@@ -4579,6 +4579,12 @@ spec:
           name: cni-bin-dir
         - mountPath: /host/etc/cni/net.d
           name: cni-net-dir
+      - command:
+        - sh
+        - -c
+        - echo Temporary fix to avoid server side apply issues
+        image: busybox
+        name: flexvol-driver
       nodeSelector:
         kubernetes.io/os: linux
       priorityClassName: system-node-critical
