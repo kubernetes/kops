@@ -48,10 +48,10 @@ require (
 	go.uber.org/multierr v1.8.0
 	golang.org/x/crypto v0.0.0-20220427172511-eb4f295cb31f
 	golang.org/x/net v0.0.0-20220607020251-c690dde0001d
-	golang.org/x/oauth2 v0.0.0-20220524215830-622c5d57e401
+	golang.org/x/oauth2 v0.0.0-20220608161450-d0670ef3b1eb
 	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f
-	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a
-	google.golang.org/api v0.83.0
+	golang.org/x/sys v0.0.0-20220610221304-9f5ed59c137d
+	google.golang.org/api v0.84.0
 	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/inf.v0 v0.9.1
 	gopkg.in/square/go-jose.v2 v2.6.0
@@ -61,7 +61,7 @@ require (
 	k8s.io/cli-runtime v0.24.0
 	k8s.io/client-go v0.24.0
 	k8s.io/cloud-provider-aws v1.24.0
-	k8s.io/cloud-provider-gcp/providers v0.23.0
+	k8s.io/cloud-provider-gcp/providers v0.21.0
 	k8s.io/component-base v0.24.0
 	k8s.io/gengo v0.0.0-20220307231824-4627b89bbf1b
 	k8s.io/klog/v2 v2.60.1
@@ -126,6 +126,7 @@ require (
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
+	github.com/googleapis/enterprise-certificate-proxy v0.0.0-20220520183353-fd19c99a87aa // indirect
 	github.com/googleapis/gax-go/v2 v2.4.0 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
@@ -211,10 +212,10 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8 // indirect
 	golang.org/x/tools v0.1.10 // indirect
-	golang.org/x/xerrors v0.0.0-20220517211312-f3a8303e98df // indirect
+	golang.org/x/xerrors v0.0.0-20220609144429-65e65417b02f // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20220602131408-e326c6e8e9c8 // indirect
+	google.golang.org/genproto v0.0.0-20220608133413-ed9918b62aac // indirect
 	google.golang.org/grpc v1.47.0 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/ini.v1 v1.66.4 // indirect
