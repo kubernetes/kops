@@ -251,7 +251,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 			value := string(lbSpec.Class)
 			allErrs = append(allErrs, IsValidValue(lbPath.Child("class"), &value, kops.SupportedLoadBalancerClasses)...)
 			if lbSpec.SSLCertificate != "" && lbSpec.Class != kops.LoadBalancerClassNetwork {
-				allErrs = append(allErrs, field.Forbidden(lbPath, "sslCertificate requires network loadbalancer for K8s 1.19+ see https://github.com/kubernetes/kops/blob/master/permalinks/acm_nlb.md"))
+				allErrs = append(allErrs, field.Forbidden(lbPath, "sslCertificate requires network loadbalancer. See https://github.com/kubernetes/kops/blob/master/permalinks/acm_nlb.md"))
 			}
 			if lbSpec.Class == kops.LoadBalancerClassNetwork && lbSpec.UseForInternalAPI && lbSpec.Type == kops.LoadBalancerTypeInternal {
 				allErrs = append(allErrs, field.Forbidden(lbPath, "useForInternalApi cannot be used with internal NLB due lack of hairpinning support"))
