@@ -221,6 +221,9 @@ spec:
         - containerPort: 8080
           name: liveness-probe
           protocol: TCP
+        - containerPort: 9092
+          name: metrics
+          protocol: TCP
         resources:
           requests:
             cpu: 50m
