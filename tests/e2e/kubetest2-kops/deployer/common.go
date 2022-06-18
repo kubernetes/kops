@@ -157,6 +157,10 @@ func (d *deployer) verifyKopsFlags() error {
 		return errors.New("missing required --kops-binary-path when --kops-version-marker is not used")
 	}
 
+	if d.ControlPlaneSize == 0 {
+		d.ControlPlaneSize = 1
+	}
+
 	switch d.CloudProvider {
 	case "aws":
 	case "gce":
