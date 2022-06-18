@@ -59,10 +59,14 @@ else
   KOPS="${KOPS_A}"
 fi
 
+
+
 ${KUBETEST2} \
     --up \
     --kops-binary-path="${KOPS_A}" \
     --kubernetes-version="${K8S_VERSION_A}" \
+    --control-plane-size="${KOPS_CONTROL_PLANE_SIZE:-1}" \
+    --template-path="${KOPS_TEMPLATE:-}" \
     --create-args="--networking calico"
 
 # Export kubeconfig-a
@@ -106,6 +110,10 @@ kubectl get nodes -owide --kubeconfig="${KUBECONFIG_A}"
 cp "${KOPS_B}" "${WORKSPACE}/kops"
 
 "${KOPS_B}" export kubecfg --name "${CLUSTER_NAME}" --admin
+
+if [[ -z ${KOPS_SKIP_E2E:-} ]]; then
+  exit
+fi
 
 ${KUBETEST2} \
     --cloud-provider="${CLOUD_PROVIDER}" \
