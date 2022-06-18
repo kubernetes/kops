@@ -140,6 +140,7 @@ type ECSLaunchSpecification struct {
 	EBSOptimized             *bool                       `json:"ebsOptimized,omitempty"`
 	BlockDeviceMappings      []*ECSBlockDeviceMapping    `json:"blockDeviceMappings,omitempty"`
 	InstanceMetadataOptions  *ECSInstanceMetadataOptions `json:"instanceMetadataOptions,omitempty"`
+	UseAsTemplateOnly        *bool                       `json:"useAsTemplateOnly,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -912,6 +913,13 @@ func (o *ECSLaunchSpecification) SetBlockDeviceMappings(v []*ECSBlockDeviceMappi
 func (o *ECSLaunchSpecification) SetInstanceMetadataOptions(v *ECSInstanceMetadataOptions) *ECSLaunchSpecification {
 	if o.InstanceMetadataOptions = v; o.InstanceMetadataOptions == nil {
 		o.nullFields = append(o.nullFields, "InstanceMetadataOptions")
+	}
+	return o
+}
+
+func (o *ECSLaunchSpecification) SetUseAsTemplateOnly(v *bool) *ECSLaunchSpecification {
+	if o.UseAsTemplateOnly = v; o.UseAsTemplateOnly == nil {
+		o.nullFields = append(o.nullFields, "UseAsTemplateOnly")
 	}
 	return o
 }

@@ -228,6 +228,7 @@ type ServerListOpts struct {
 	ListOpts
 	Name   string
 	Status []ServerStatus
+	Sort   []string
 }
 
 func (l ServerListOpts) values() url.Values {
@@ -237,6 +238,9 @@ func (l ServerListOpts) values() url.Values {
 	}
 	for _, status := range l.Status {
 		vals.Add("status", string(status))
+	}
+	for _, sort := range l.Sort {
+		vals.Add("sort", sort)
 	}
 	return vals
 }

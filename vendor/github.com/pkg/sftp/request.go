@@ -168,9 +168,11 @@ func (r *Request) copy() *Request {
 }
 
 // New Request initialized based on packet data
-func requestFromPacket(ctx context.Context, pkt hasPath) *Request {
-	method := requestMethod(pkt)
-	request := NewRequest(method, pkt.getPath())
+func requestFromPacket(ctx context.Context, pkt hasPath, baseDir string) *Request {
+	request := &Request{
+		Method:   requestMethod(pkt),
+		Filepath: cleanPathWithBase(baseDir, pkt.getPath()),
+	}
 	request.ctx, request.cancelCtx = context.WithCancel(ctx)
 
 	switch p := pkt.(type) {
@@ -180,13 +182,13 @@ func requestFromPacket(ctx context.Context, pkt hasPath) *Request {
 		request.Flags = p.Flags
 		request.Attrs = p.Attrs.([]byte)
 	case *sshFxpRenamePacket:
-		request.Target = cleanPath(p.Newpath)
+		request.Target = cleanPathWithBase(baseDir, p.Newpath)
 	case *sshFxpSymlinkPacket:
 		// NOTE: given a POSIX compliant signature: symlink(target, linkpath string)
 		// this makes Request.Target the linkpath, and Request.Filepath the target.
-		request.Target = cleanPath(p.Linkpath)
+		request.Target = cleanPathWithBase(baseDir, p.Linkpath)
 	case *sshFxpExtendedPacketHardlink:
-		request.Target = cleanPath(p.Newpath)
+		request.Target = cleanPathWithBase(baseDir, p.Newpath)
 	}
 	return request
 }
