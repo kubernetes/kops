@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/testutils"
@@ -29,6 +30,7 @@ import (
 )
 
 func Test_RunEtcdManagerBuilder(t *testing.T) {
+	featureflag.ParseFlags("-ImageDigest")
 	tests := []string{
 		"tests/minimal",
 		"tests/pollinterval",
