@@ -19,7 +19,7 @@ spec:
       --v=6 --volume-name-tag=k8s.io/etcd/main --volume-provider=aws --volume-tag=k8s.io/etcd/main
       --volume-tag=k8s.io/role/master=1 --volume-tag=kubernetes.io/cluster/this.is.truly.a.really.really.long.cluster-name.minimal.example.com=owned
       > /tmp/pipe 2>&1
-    image: k8s.gcr.io/etcdadm/etcd-manager:v3.0.20220503
+    image: k8s.gcr.io/etcdadm/etcd-manager:v3.0.20220617
     name: etcd-manager
     resources:
       requests:
