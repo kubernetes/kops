@@ -1,3 +1,4 @@
+//go:build !plan9
 // +build !plan9
 
 package sftp
@@ -23,7 +24,7 @@ func translateErrno(errno syscall.Errno) uint32 {
 		return sshFxOk
 	case syscall.ENOENT:
 		return sshFxNoSuchFile
-	case syscall.EPERM:
+	case syscall.EACCES, syscall.EPERM:
 		return sshFxPermissionDenied
 	}
 

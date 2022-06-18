@@ -999,9 +999,6 @@ func (f *File) readAtSequential(b []byte, off int64) (read int, err error) {
 			read += n
 		}
 		if err != nil {
-			if errors.Is(err, io.EOF) {
-				return read, nil // return nil explicitly.
-			}
 			return read, err
 		}
 	}
@@ -1179,11 +1176,11 @@ func (f *File) writeToSequential(w io.Writer) (written int64, err error) {
 		if n > 0 {
 			f.offset += int64(n)
 
-			m, err2 := w.Write(b[:n])
+			m, err := w.Write(b[:n])
 			written += int64(m)
 
-			if err == nil {
-				err = err2
+			if err != nil {
+				return written, err
 			}
 		}
 
@@ -1461,10 +1458,19 @@ func (f *File) writeAtConcurrent(b []byte, off int64) (int, error) {
 	cancel := make(chan struct{})
 
 	type work struct {
-		b   []byte
+		id  uint32
+		res chan result
+
 		off int64
 	}
 	workCh := make(chan work)
+
+	concurrency := len(b)/f.c.maxPacket + 1
+	if concurrency > f.c.maxConcurrentRequests || concurrency < 1 {
+		concurrency = f.c.maxConcurrentRequests
+	}
+
+	pool := newResChanPool(concurrency)
 
 	// Slice: cut up the Read into any number of buffers of length <= f.c.maxPacket, and at appropriate offsets.
 	go func() {
@@ -1479,8 +1485,20 @@ func (f *File) writeAtConcurrent(b []byte, off int64) (int, error) {
 				wb = wb[:chunkSize]
 			}
 
+			id := f.c.nextID()
+			res := pool.Get()
+			off := off + int64(read)
+
+			f.c.dispatchRequest(res, &sshFxpWritePacket{
+				ID:     id,
+				Handle: f.handle,
+				Offset: uint64(off),
+				Length: uint32(len(wb)),
+				Data:   wb,
+			})
+
 			select {
-			case workCh <- work{wb, off + int64(read)}:
+			case workCh <- work{id, res, off}:
 			case <-cancel:
 				return
 			}
@@ -1495,11 +1513,6 @@ func (f *File) writeAtConcurrent(b []byte, off int64) (int, error) {
 	}
 	errCh := make(chan wErr)
 
-	concurrency := len(b)/f.c.maxPacket + 1
-	if concurrency > f.c.maxConcurrentRequests || concurrency < 1 {
-		concurrency = f.c.maxConcurrentRequests
-	}
-
 	var wg sync.WaitGroup
 	wg.Add(concurrency)
 	for i := 0; i < concurrency; i++ {
@@ -1507,13 +1520,22 @@ func (f *File) writeAtConcurrent(b []byte, off int64) (int, error) {
 		go func() {
 			defer wg.Done()
 
-			ch := make(chan result, 1) // reusable channel per mapper.
+			for work := range workCh {
+				s := <-work.res
+				pool.Put(work.res)
 
-			for packet := range workCh {
-				n, err := f.writeChunkAt(ch, packet.b, packet.off)
+				err := s.err
+				if err == nil {
+					switch s.typ {
+					case sshFxpStatus:
+						err = normaliseError(unmarshalStatus(work.id, s.data))
+					default:
+						err = unimplementedPacketErr(s.typ)
+					}
+				}
+
 				if err != nil {
-					// return the offset as the start + how much we wrote before the error.
-					errCh <- wErr{packet.off + int64(n), err}
+					errCh <- wErr{work.off, err}
 				}
 			}
 		}()
@@ -1598,8 +1620,9 @@ func (f *File) ReadFromWithConcurrency(r io.Reader, concurrency int) (read int64
 	cancel := make(chan struct{})
 
 	type work struct {
-		b   []byte
-		n   int
+		id  uint32
+		res chan result
+
 		off int64
 	}
 	workCh := make(chan work)
@@ -1614,24 +1637,34 @@ func (f *File) ReadFromWithConcurrency(r io.Reader, concurrency int) (read int64
 		concurrency = f.c.maxConcurrentRequests
 	}
 
-	pool := newBufPool(concurrency, f.c.maxPacket)
+	pool := newResChanPool(concurrency)
 
 	// Slice: cut up the Read into any number of buffers of length <= f.c.maxPacket, and at appropriate offsets.
 	go func() {
 		defer close(workCh)
 
+		b := make([]byte, f.c.maxPacket)
 		off := f.offset
 
 		for {
-			b := pool.Get()
-
 			n, err := r.Read(b)
+
 			if n > 0 {
 				read += int64(n)
 
+				id := f.c.nextID()
+				res := pool.Get()
+
+				f.c.dispatchRequest(res, &sshFxpWritePacket{
+					ID:     id,
+					Handle: f.handle,
+					Offset: uint64(off),
+					Length: uint32(n),
+					Data:   b,
+				})
+
 				select {
-				case workCh <- work{b, n, off}:
-					// We need the pool.Put(b) to put the whole slice, not just trunced.
+				case workCh <- work{id, res, off}:
 				case <-cancel:
 					return
 				}
@@ -1655,15 +1688,23 @@ func (f *File) ReadFromWithConcurrency(r io.Reader, concurrency int) (read int64
 		go func() {
 			defer wg.Done()
 
-			ch := make(chan result, 1) // reusable channel per mapper.
+			for work := range workCh {
+				s := <-work.res
+				pool.Put(work.res)
 
-			for packet := range workCh {
-				n, err := f.writeChunkAt(ch, packet.b[:packet.n], packet.off)
-				if err != nil {
-					// return the offset as the start + how much we wrote before the error.
-					errCh <- rwErr{packet.off + int64(n), err}
+				err := s.err
+				if err == nil {
+					switch s.typ {
+					case sshFxpStatus:
+						err = normaliseError(unmarshalStatus(work.id, s.data))
+					default:
+						err = unimplementedPacketErr(s.typ)
+					}
 				}
-				pool.Put(packet.b)
+
+				if err != nil {
+					errCh <- rwErr{work.off, err}
+				}
 			}
 		}()
 	}
