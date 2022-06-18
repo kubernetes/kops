@@ -18,7 +18,7 @@ spec:
       --quarantine-client-urls=https://__name__:3994 --v=6 --volume-name-tag=k8s.io/etcd/main
       --volume-provider=aws --volume-tag=k8s.io/etcd/main --volume-tag=k8s.io/role/master=1
       --volume-tag=kubernetes.io/cluster/123.example.com=owned > /tmp/pipe 2>&1
-    image: k8s.gcr.io/etcdadm/etcd-manager:v3.0.20220503
+    image: k8s.gcr.io/etcdadm/etcd-manager:v3.0.20220617
     name: etcd-manager
     resources:
       requests:
