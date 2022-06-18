@@ -35452,7 +35452,7 @@
       }
     }
   },
-  "revision": "20220526",
+  "revision": "20220531",
   "rootUrl": "https://compute.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -46095,6 +46095,18 @@
         "kind": {
           "default": "compute#instanceGroupManager",
           "description": "[Output Only] The resource type, which is always compute#instanceGroupManager for managed instance groups.",
+          "type": "string"
+        },
+        "listManagedInstancesResults": {
+          "description": "Pagination behavior of the listManagedInstances API method for this managed instance group.",
+          "enum": [
+            "PAGELESS",
+            "PAGINATED"
+          ],
+          "enumDescriptions": [
+            "(Default) Pagination is disabled for the group's listManagedInstances API method. maxResults and pageToken query parameters are ignored and all instances are returned in a single response.",
+            "Pagination is enabled for the group's listManagedInstances API method. maxResults and pageToken query parameters are respected."
+          ],
           "type": "string"
         },
         "name": {

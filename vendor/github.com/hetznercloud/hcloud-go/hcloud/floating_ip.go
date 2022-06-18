@@ -137,12 +137,16 @@ func (c *FloatingIPClient) Get(ctx context.Context, idOrName string) (*FloatingI
 type FloatingIPListOpts struct {
 	ListOpts
 	Name string
+	Sort []string
 }
 
 func (l FloatingIPListOpts) values() url.Values {
 	vals := l.ListOpts.values()
 	if l.Name != "" {
 		vals.Add("name", l.Name)
+	}
+	for _, sort := range l.Sort {
+		vals.Add("sort", sort)
 	}
 	return vals
 }
