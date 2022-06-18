@@ -244,14 +244,31 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		allErrs = append(allErrs, validateRollingUpdate(spec.RollingUpdate, fieldPath.Child("rollingUpdate"), false)...)
 	}
 
-	if spec.API != nil && spec.API.LoadBalancer != nil && spec.GetCloudProvider() == kops.CloudProviderAWS {
-		value := string(spec.API.LoadBalancer.Class)
-		allErrs = append(allErrs, IsValidValue(fieldPath.Child("class"), &value, kops.SupportedLoadBalancerClasses)...)
-		if spec.API.LoadBalancer.SSLCertificate != "" && spec.API.LoadBalancer.Class != kops.LoadBalancerClassNetwork {
-			allErrs = append(allErrs, field.Forbidden(fieldPath, "sslCertificate requires network loadbalancer for K8s 1.19+ see https://github.com/kubernetes/kops/blob/master/permalinks/acm_nlb.md"))
+	if spec.API != nil && spec.API.LoadBalancer != nil {
+		lbSpec := spec.API.LoadBalancer
+		lbPath := fieldPath.Child("api", "loadBalancer")
+		if spec.GetCloudProvider() == kops.CloudProviderAWS {
+			value := string(lbSpec.Class)
+			allErrs = append(allErrs, IsValidValue(lbPath.Child("class"), &value, kops.SupportedLoadBalancerClasses)...)
+			if lbSpec.SSLCertificate != "" && lbSpec.Class != kops.LoadBalancerClassNetwork {
+				allErrs = append(allErrs, field.Forbidden(lbPath, "sslCertificate requires network loadbalancer. See https://github.com/kubernetes/kops/blob/master/permalinks/acm_nlb.md"))
+			}
+			if lbSpec.Class == kops.LoadBalancerClassNetwork && lbSpec.UseForInternalAPI && lbSpec.Type == kops.LoadBalancerTypeInternal {
+				allErrs = append(allErrs, field.Forbidden(lbPath, "useForInternalApi cannot be used with internal NLB due lack of hairpinning support"))
+			}
 		}
-		if spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork && spec.API.LoadBalancer.UseForInternalAPI && spec.API.LoadBalancer.Type == kops.LoadBalancerTypeInternal {
-			allErrs = append(allErrs, field.Forbidden(fieldPath, "useForInternalApi cannot be used with internal NLB due lack of hairpinning support"))
+
+		if lbSpec.Type == kops.LoadBalancerTypeInternal {
+			var hasPrivate bool
+			for _, subnet := range spec.Subnets {
+				if subnet.Type == kops.SubnetTypePrivate {
+					hasPrivate = true
+					break
+				}
+			}
+			if !hasPrivate {
+				allErrs = append(allErrs, field.Forbidden(lbPath.Child("type"), "Internal LoadBalancers must have at least one subnet of type Private"))
+			}
 		}
 	}
 
