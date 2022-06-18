@@ -95,6 +95,9 @@ func (d *deployer) Up() error {
 			}
 		}
 	}
+
+	time.Sleep(10 * time.Second)
+
 	isUp, err := d.IsUp()
 	if err != nil {
 		return err
