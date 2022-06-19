@@ -1,5 +1,17 @@
 # Change Log
 
+## [v1.81.0] - 2022-06-15
+
+- #532 - @senorprogrammer - Add support for Reserved IP addresses
+- #538 - @bentranter - util: update droplet create example
+- #537 - @rpmoore - Adding project_id to databases
+- #536 - @andrewsomething - account: Now may include info on current team.
+- #535 - @ElanHasson - APPS-5636 Update App Platform for functions and Starter Tier App Proposals.
+
+## [v1.80.0] - 2022-05-23
+
+- #533 - @ElanHasson - APPS-5636 - App Platform updates
+
 ## [v1.79.0] - 2022-04-29
 
 - #530 - @anitgandhi - monitoring: alerts for Load Balancers TLS conns/s utilization

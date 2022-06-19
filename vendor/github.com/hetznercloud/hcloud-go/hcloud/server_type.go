@@ -92,12 +92,16 @@ func (c *ServerTypeClient) Get(ctx context.Context, idOrName string) (*ServerTyp
 type ServerTypeListOpts struct {
 	ListOpts
 	Name string
+	Sort []string
 }
 
 func (l ServerTypeListOpts) values() url.Values {
 	vals := l.ListOpts.values()
 	if l.Name != "" {
 		vals.Add("name", l.Name)
+	}
+	for _, sort := range l.Sort {
+		vals.Add("sort", sort)
 	}
 	return vals
 }
