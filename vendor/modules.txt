@@ -1156,7 +1156,7 @@ helm.sh/helm/v3/pkg/helmpath/xdg
 helm.sh/helm/v3/pkg/plugin
 helm.sh/helm/v3/pkg/registry
 helm.sh/helm/v3/pkg/strvals
-# k8s.io/api v0.24.0
+# k8s.io/api v0.24.2
 ## explicit; go 1.16
 k8s.io/api/admission/v1
 k8s.io/api/admission/v1beta1
@@ -1210,7 +1210,7 @@ k8s.io/api/storage/v1beta1
 ## explicit; go 1.16
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1
-# k8s.io/apimachinery v0.24.0
+# k8s.io/apimachinery v0.24.2
 ## explicit; go 1.16
 k8s.io/apimachinery/pkg/api/equality
 k8s.io/apimachinery/pkg/api/errors
@@ -1267,12 +1267,12 @@ k8s.io/apimachinery/pkg/watch
 k8s.io/apimachinery/third_party/forked/golang/json
 k8s.io/apimachinery/third_party/forked/golang/netutil
 k8s.io/apimachinery/third_party/forked/golang/reflect
-# k8s.io/cli-runtime v0.24.0
+# k8s.io/cli-runtime v0.24.2
 ## explicit; go 1.16
 k8s.io/cli-runtime/pkg/genericclioptions
 k8s.io/cli-runtime/pkg/printers
 k8s.io/cli-runtime/pkg/resource
-# k8s.io/client-go v0.24.0
+# k8s.io/client-go v0.24.2
 ## explicit; go 1.16
 k8s.io/client-go/applyconfigurations/admissionregistration/v1
 k8s.io/client-go/applyconfigurations/admissionregistration/v1beta1
@@ -1580,8 +1580,8 @@ k8s.io/cloud-provider/volume/helpers
 # k8s.io/cloud-provider-aws v1.24.0
 ## explicit; go 1.18
 k8s.io/cloud-provider-aws/pkg/providers/v1
-# k8s.io/cloud-provider-gcp/providers v0.23.0
-## explicit; go 1.17
+# k8s.io/cloud-provider-gcp/providers v0.21.0
+## explicit; go 1.15
 k8s.io/cloud-provider-gcp/providers/gce
 # k8s.io/component-base v0.24.0
 ## explicit; go 1.16
