@@ -94,12 +94,6 @@ var _ cloudprovider.Zones = (*Cloud)(nil)
 var _ cloudprovider.PVLabeler = (*Cloud)(nil)
 var _ cloudprovider.Clusters = (*Cloud)(nil)
 
-type StackType string
-
-const NetworkStackDualStack StackType = "IPV4_IPV6"
-const NetworkStackIPV4 StackType = "IPV4"
-const NetworkStackIPV6 StackType = "IPV6"
-
 // Cloud is an implementation of Interface, LoadBalancer and Instances for Google Compute Engine.
 type Cloud struct {
 	// ClusterID contains functionality for getting (and initializing) the ingress-uid. Call Cloud.Initialize()
@@ -173,9 +167,9 @@ type Cloud struct {
 	s *cloud.Service
 
 	metricsCollector loadbalancerMetricsCollector
-	// stackType indicates whether the cluster is a single stack IPv4, single
-	// stack IPv6 or a dual stack cluster
-	stackType StackType
+
+	// the compute API endpoint with the `projects/` element.
+	projectsBasePath string
 }
 
 // ConfigGlobal is the in memory representation of the gce.conf config data
@@ -190,7 +184,6 @@ type ConfigGlobal struct {
 	NetworkProjectID string `gcfg:"network-project-id"`
 	NetworkName      string `gcfg:"network-name"`
 	SubnetworkName   string `gcfg:"subnetwork-name"`
-	StackType        string `gcfg:"stack-type"`
 	// DEPRECATED: Do not rely on this value as it may be incorrect.
 	// SecondaryRangeName is the name of the secondary range to allocate IP
 	// aliases. The secondary range must be present on the subnetwork the
@@ -246,7 +239,6 @@ type CloudConfig struct {
 	TokenSource        oauth2.TokenSource
 	UseMetadataServer  bool
 	AlphaFeatureGate   *AlphaFeatureGate
-	StackType          string
 }
 
 func init() {
@@ -404,10 +396,6 @@ func generateCloudConfig(configFile *ConfigFile) (cloudConfig *CloudConfig, err 
 		cloudConfig.SecondaryRangeName = configFile.Global.SecondaryRangeName
 	}
 
-	if configFile != nil {
-		cloudConfig.StackType = configFile.Global.StackType
-	}
-
 	return cloudConfig, err
 }
 
@@ -447,21 +435,17 @@ func CreateGCECloud(config *CloudConfig) (*Cloud, error) {
 	}
 	serviceAlpha.UserAgent = userAgent
 
-	// Expect override api endpoint to always be v1 api and follows the same pattern as prod.
-	// Generate alpha and beta api endpoints based on override v1 api endpoint.
-	// For example,
-	// staging API endpoint: https://www.googleapis.com/compute/staging_v1/
 	if config.APIEndpoint != "" {
-		service.BasePath = config.APIEndpoint
-		serviceBeta.BasePath = strings.Replace(config.APIEndpoint, "v1", "beta", -1)
-		serviceAlpha.BasePath = strings.Replace(config.APIEndpoint, "v1", "alpha", -1)
+		if strings.HasSuffix(service.BasePath, "/projects/") {
+			service.BasePath = getProjectsBasePath(config.APIEndpoint)
+			serviceBeta.BasePath = getProjectsBasePath(strings.Replace(config.APIEndpoint, "v1", "beta", -1))
+			serviceAlpha.BasePath = getProjectsBasePath(strings.Replace(config.APIEndpoint, "v1", "alpha", -1))
+		} else {
+			service.BasePath = config.APIEndpoint
+			serviceBeta.BasePath = strings.Replace(config.APIEndpoint, "v1", "beta", -1)
+			serviceAlpha.BasePath = strings.Replace(config.APIEndpoint, "v1", "alpha", -1)
+		}
 	}
-
-	// Previously "projects/" was a part of BasePath, but recent changes in Google Cloud SDK removed it from there.
-	// To bring the old format back we update BasePath including "projects/" there again.
-	service.BasePath += "projects/"
-	serviceBeta.BasePath += "projects/"
-	serviceAlpha.BasePath += "projects/"
 
 	containerService, err := container.NewService(context.Background(), option.WithTokenSource(config.TokenSource))
 	if err != nil {
@@ -546,7 +530,7 @@ func CreateGCECloud(config *CloudConfig) (*Cloud, error) {
 		AlphaFeatureGate:         config.AlphaFeatureGate,
 		nodeZones:                map[string]sets.String{},
 		metricsCollector:         newLoadBalancerMetrics(),
-		stackType:                StackType(config.StackType),
+		projectsBasePath:         getProjectsBasePath(service.BasePath),
 	}
 
 	gce.manager = &gceServiceManager{gce}
@@ -816,6 +800,18 @@ func (g *Cloud) HasClusterID() bool {
 	return true
 }
 
+// getProjectsBasePath returns the compute API endpoint with the `projects/` element.
+// The suffix must be added when generating compute resource urls.
+func getProjectsBasePath(basePath string) string {
+	if !strings.HasSuffix(basePath, "/") {
+		basePath += "/"
+	}
+	if !strings.HasSuffix(basePath, "/projects/") {
+		basePath += "projects/"
+	}
+	return basePath
+}
+
 // Project IDs cannot have a digit for the first characeter. If the id contains a digit,
 // then it must be a project number.
 func isProjectNumber(idOrNumber string) bool {
@@ -959,7 +955,7 @@ func newOauthClient(tokenSource oauth2.TokenSource) (*http.Client, error) {
 func (manager *gceServiceManager) getProjectsAPIEndpoint() string {
 	projectsAPIEndpoint := gceComputeAPIEndpoint + "projects/"
 	if manager.gce.service != nil {
-		projectsAPIEndpoint = manager.gce.service.BasePath
+		projectsAPIEndpoint = manager.gce.projectsBasePath
 	}
 
 	return projectsAPIEndpoint
