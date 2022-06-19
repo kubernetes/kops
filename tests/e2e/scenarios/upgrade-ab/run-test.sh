@@ -23,10 +23,10 @@ if [ -z "${KOPS_VERSION_A-}" ] || [ -z "${K8S_VERSION_A-}" ] || [ -z "${KOPS_VER
 fi
 
 if [[ "$K8S_VERSION_A" == "latest" ]]; then
-	K8S_VERSION_A=$(curl https://storage.googleapis.com/kubernetes-release/release/latest.txt)
+  K8S_VERSION_A=$(curl https://storage.googleapis.com/kubernetes-release/release/latest.txt)
 fi
 if [[ "$K8S_VERSION_B" == "latest" ]]; then
-	K8S_VERSION_B=$(curl https://storage.googleapis.com/kubernetes-release/release/latest.txt)
+  K8S_VERSION_B=$(curl https://storage.googleapis.com/kubernetes-release/release/latest.txt)
 fi
 
 export KOPS_BASE_URL
@@ -45,8 +45,8 @@ else
 fi
 
 ${KUBETEST2} \
-		--down \
-		--kops-binary-path="${KOPS_B}" || echo "kubetest2 down failed"
+    --down \
+    --kops-binary-path="${KOPS_B}" || echo "kubetest2 down failed"
 
 # First kOps version may be a released version. If so, it is prefixed with v
 if [[ "${KOPS_VERSION_A:0:1}" == "v" ]]; then
@@ -60,10 +60,10 @@ else
 fi
 
 ${KUBETEST2} \
-		--up \
-		--kops-binary-path="${KOPS_A}" \
-		--kubernetes-version="${K8S_VERSION_A}" \
-		--create-args="--networking calico"
+    --up \
+    --kops-binary-path="${KOPS_A}" \
+    --kubernetes-version="${K8S_VERSION_A}" \
+    --create-args="--networking calico"
 
 # Export kubeconfig-a
 KUBECONFIG_A=$(mktemp -t kops.XXXXXXXXX)
@@ -108,9 +108,9 @@ cp "${KOPS_B}" "${WORKSPACE}/kops"
 "${KOPS_B}" export kubecfg --name "${CLUSTER_NAME}" --admin
 
 ${KUBETEST2} \
-		--cloud-provider="${CLOUD_PROVIDER}" \
-		--kops-binary-path="${KOPS}" \
-		--test=kops \
-		-- \
-		--test-package-version="${K8S_VERSION_B}" \
-		--parallel 25
+    --cloud-provider="${CLOUD_PROVIDER}" \
+    --kops-binary-path="${KOPS}" \
+    --test=kops \
+    -- \
+    --test-package-version="${K8S_VERSION_B}" \
+    --parallel 25
