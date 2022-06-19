@@ -31,10 +31,11 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
+	cloudprovider "k8s.io/cloud-provider"
 	servicehelpers "k8s.io/cloud-provider/service/helpers"
 	utilnet "k8s.io/utils/net"
 
-	compute "google.golang.org/api/compute/v1"
+	"google.golang.org/api/compute/v1"
 	"k8s.io/klog/v2"
 )
 
@@ -51,6 +52,11 @@ const (
 // new load balancers and updating existing load balancers, recognizing when
 // each is needed.
 func (g *Cloud) ensureExternalLoadBalancer(clusterName string, clusterID string, apiService *v1.Service, existingFwdRule *compute.ForwardingRule, nodes []*v1.Node) (*v1.LoadBalancerStatus, error) {
+	// Skip service handling if it uses Regional Backend Services and handled by other controllers
+	if usesL4RBS(apiService, existingFwdRule) {
+		return nil, cloudprovider.ImplementedElsewhere
+	}
+
 	if len(nodes) == 0 {
 		return nil, fmt.Errorf(errStrLbNoHosts)
 	}
@@ -82,7 +88,12 @@ func (g *Cloud) ensureExternalLoadBalancer(clusterName string, clusterID string,
 		return nil, err
 	}
 	klog.V(4).Infof("ensureExternalLoadBalancer(%s): Desired network tier %q.", lbRefStr, netTier)
-	g.deleteWrongNetworkTieredResources(loadBalancerName, lbRefStr, netTier)
+	// TODO: distinguish between unspecified and specified network tiers annotation properly in forwardingrule creation
+	// Only delete ForwardingRule when network tier annotation is specified, otherwise leave it only to avoid wrongful
+	// deletion against user intention when network tier annotation is not specified.
+	if _, ok := apiService.Annotations[NetworkTierAnnotationKey]; ok {
+		g.deleteWrongNetworkTieredResources(loadBalancerName, lbRefStr, netTier)
+	}
 
 	// Check if the forwarding rule exists, and if so, what its IP is.
 	fwdRuleExists, fwdRuleNeedsUpdate, fwdRuleIP, err := g.forwardingRuleNeedsUpdate(loadBalancerName, g.region, requestedIP, ports)
@@ -280,6 +291,11 @@ func (g *Cloud) ensureExternalLoadBalancer(clusterName string, clusterID string,
 
 // updateExternalLoadBalancer is the external implementation of LoadBalancer.UpdateLoadBalancer.
 func (g *Cloud) updateExternalLoadBalancer(clusterName string, service *v1.Service, nodes []*v1.Node) error {
+	// Skip service update if it uses Regional Backend Services and handled by other controllers
+	if usesL4RBS(service, nil) {
+		return cloudprovider.ImplementedElsewhere
+	}
+
 	hosts, err := g.getInstancesByNames(nodeNames(nodes))
 	if err != nil {
 		return err
@@ -291,6 +307,11 @@ func (g *Cloud) updateExternalLoadBalancer(clusterName string, service *v1.Servi
 
 // ensureExternalLoadBalancerDeleted is the external implementation of LoadBalancer.EnsureLoadBalancerDeleted
 func (g *Cloud) ensureExternalLoadBalancerDeleted(clusterName, clusterID string, service *v1.Service) error {
+	// Skip service deletion if it uses Regional Backend Services and handled by other controllers
+	if usesL4RBS(service, nil) {
+		return cloudprovider.ImplementedElsewhere
+	}
+
 	loadBalancerName := g.GetLoadBalancerName(context.TODO(), clusterName, service)
 	serviceName := types.NamespacedName{Namespace: service.Namespace, Name: service.Name}
 	lbRefStr := fmt.Sprintf("%v(%v)", loadBalancerName, serviceName)
@@ -448,7 +469,7 @@ func verifyUserRequestedIP(s CloudAddressService, region, requestedIP, fwdRuleIP
 		netTier := cloud.NetworkTierGCEValueToType(netTierStr)
 		if netTier != desiredNetTier {
 			klog.Errorf("verifyUserRequestedIP: requested static IP %q (name: %s) for LB %s has network tier %s, need %s.", requestedIP, existingAddress.Name, lbRef, netTier, desiredNetTier)
-			return false, fmt.Errorf("requrested IP %q belongs to the %s network tier; expected %s", requestedIP, netTier, desiredNetTier)
+			return false, fmt.Errorf("requested IP %q belongs to the %s network tier; expected %s", requestedIP, netTier, desiredNetTier)
 		}
 		klog.V(4).Infof("verifyUserRequestedIP: the requested static IP %q (name: %s, tier: %s) for LB %s exists.", requestedIP, existingAddress.Name, netTier, lbRef)
 		return true, nil
@@ -633,7 +654,7 @@ func (g *Cloud) updateTargetPool(loadBalancerName string, hosts []*gceInstance) 
 }
 
 func (g *Cloud) targetPoolURL(name string) string {
-	return g.service.BasePath + strings.Join([]string{g.projectID, "regions", g.region, "targetPools", name}, "/")
+	return g.projectsBasePath + strings.Join([]string{g.projectID, "regions", g.region, "targetPools", name}, "/")
 }
 
 func makeHTTPHealthCheck(name, path string, port int32) *compute.HttpHealthCheck {
