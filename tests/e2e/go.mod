@@ -5,10 +5,7 @@ go 1.18
 replace k8s.io/kops => ../../.
 
 // These should match the go.mod from k8s.io/kops
-replace (
-	k8s.io/api => k8s.io/api v0.24.0
-	k8s.io/client-go => k8s.io/client-go v0.24.0
-)
+replace k8s.io/client-go => k8s.io/client-go v0.24.0
 
 require (
 	github.com/blang/semver/v4 v4.0.0
