@@ -136,12 +136,16 @@ func (c *FirewallClient) Get(ctx context.Context, idOrName string) (*Firewall, *
 type FirewallListOpts struct {
 	ListOpts
 	Name string
+	Sort []string
 }
 
 func (l FirewallListOpts) values() url.Values {
 	vals := l.ListOpts.values()
 	if l.Name != "" {
 		vals.Add("name", l.Name)
+	}
+	for _, sort := range l.Sort {
+		vals.Add("sort", sort)
 	}
 	return vals
 }

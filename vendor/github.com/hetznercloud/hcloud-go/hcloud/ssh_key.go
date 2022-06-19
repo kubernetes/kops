@@ -81,6 +81,7 @@ type SSHKeyListOpts struct {
 	ListOpts
 	Name        string
 	Fingerprint string
+	Sort        []string
 }
 
 func (l SSHKeyListOpts) values() url.Values {
@@ -90,6 +91,9 @@ func (l SSHKeyListOpts) values() url.Values {
 	}
 	if l.Fingerprint != "" {
 		vals.Add("fingerprint", l.Fingerprint)
+	}
+	for _, sort := range l.Sort {
+		vals.Add("sort", sort)
 	}
 	return vals
 }

@@ -31,7 +31,7 @@ require (
 	github.com/gophercloud/gophercloud v0.25.0
 	github.com/hashicorp/hcl/v2 v2.12.0
 	github.com/hashicorp/vault/api v1.7.2
-	github.com/hetznercloud/hcloud-go v1.33.2
+	github.com/hetznercloud/hcloud-go v1.34.0
 	github.com/jacksontj/memberlistmesh v0.0.0-20190905163944-93462b9d2bb7
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/pelletier/go-toml v1.9.5
