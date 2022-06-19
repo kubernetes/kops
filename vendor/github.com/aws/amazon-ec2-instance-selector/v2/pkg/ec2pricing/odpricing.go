@@ -22,6 +22,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -214,6 +215,12 @@ func (c *OnDemandPricing) getRegionForPricingAPI() string {
 			regionDescription = region.Description()
 		}
 	}
+
+	// endpoints package returns European regions with the word "Europe," but the pricing API expects the word "EU."
+	// This formatting mismatch is only present with European regions.
+	// So replace "Europe" with "EU" if it exists in the regionDescription string.
+	regionDescription = strings.ReplaceAll(regionDescription, "Europe", "EU")
+
 	return regionDescription
 }
 

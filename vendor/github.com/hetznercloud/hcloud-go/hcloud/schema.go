@@ -842,7 +842,9 @@ func loadBalancerCreateOptsToSchema(opts LoadBalancerCreateOpts) schema.LoadBala
 		req.Network = Int(opts.Network.ID)
 	}
 	for _, target := range opts.Targets {
-		schemaTarget := schema.LoadBalancerCreateRequestTarget{}
+		schemaTarget := schema.LoadBalancerCreateRequestTarget{
+			UsePrivateIP: target.UsePrivateIP,
+		}
 		switch target.Type {
 		case LoadBalancerTargetTypeServer:
 			schemaTarget.Type = string(LoadBalancerTargetTypeServer)

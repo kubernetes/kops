@@ -31,6 +31,7 @@ type LaunchSpec struct {
 	Storage                *Storage                 `json:"storage,omitempty"`
 	ResourceLimits         *ResourceLimits          `json:"resourceLimits,omitempty"`
 	LaunchSpecScheduling   *GKELaunchSpecScheduling `json:"scheduling,omitempty"`
+	LaunchSpecTags         []string                 `json:"tags,omitempty"`
 
 	// forceSendFields is a list of field names (e.g. "Keys") to
 	// unconditionally include in API requests. By default, fields with
@@ -505,6 +506,13 @@ func (o *LaunchSpec) SetResourceLimits(v *ResourceLimits) *LaunchSpec {
 func (o *LaunchSpec) SetScheduling(v *GKELaunchSpecScheduling) *LaunchSpec {
 	if o.LaunchSpecScheduling = v; o.LaunchSpecScheduling == nil {
 		o.nullFields = append(o.nullFields, "GKELaunchSpecScheduling")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetLaunchSpecTags(v []string) *LaunchSpec {
+	if o.LaunchSpecTags = v; o.LaunchSpecTags == nil {
+		o.nullFields = append(o.nullFields, "LaunchSpecTags")
 	}
 	return o
 }
