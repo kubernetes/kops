@@ -35,7 +35,7 @@ require (
 	github.com/jacksontj/memberlistmesh v0.0.0-20190905163944-93462b9d2bb7
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/pelletier/go-toml v1.9.5
-	github.com/pkg/sftp v1.13.4
+	github.com/pkg/sftp v1.13.5
 	github.com/prometheus/client_golang v1.12.2
 	github.com/sergi/go-diff v1.2.0
 	github.com/spf13/cobra v1.4.0
@@ -61,7 +61,7 @@ require (
 	k8s.io/cli-runtime v0.24.0
 	k8s.io/client-go v0.24.0
 	k8s.io/cloud-provider-aws v1.24.0
-	k8s.io/cloud-provider-gcp/providers v0.23.0
+	k8s.io/cloud-provider-gcp/providers v0.21.0
 	k8s.io/component-base v0.24.0
 	k8s.io/gengo v0.0.0-20220307231824-4627b89bbf1b
 	k8s.io/klog/v2 v2.60.1
