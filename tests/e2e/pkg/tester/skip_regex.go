@@ -60,6 +60,7 @@ func (t *Tester) setSkipRegexFlag() error {
 		}
 		// https://github.com/cilium/cilium/issues/18241
 		skipRegex += "|Services.should.create.endpoints.for.unready.pods"
+		skipRegex += "|Services.should.be.able.to.connect.to.terminating.and.unready.endpoints.if.PublishNotReadyAddresses.is.true"
 	} else if networking.Kuberouter != nil {
 		skipRegex += "|load-balancer|hairpin|affinity\\stimeout|service\\.kubernetes\\.io|CLOSE_WAIT"
 	} else if networking.Kubenet != nil {
