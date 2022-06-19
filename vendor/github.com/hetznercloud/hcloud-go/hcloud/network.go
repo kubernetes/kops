@@ -114,12 +114,16 @@ func (c *NetworkClient) Get(ctx context.Context, idOrName string) (*Network, *Re
 type NetworkListOpts struct {
 	ListOpts
 	Name string
+	Sort []string
 }
 
 func (l NetworkListOpts) values() url.Values {
 	vals := l.ListOpts.values()
 	if l.Name != "" {
 		vals.Add("name", l.Name)
+	}
+	for _, sort := range l.Sort {
+		vals.Add("sort", sort)
 	}
 	return vals
 }

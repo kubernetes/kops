@@ -1242,7 +1242,7 @@ func (p *sshFxpExtendedPacketPosixRename) UnmarshalBinary(b []byte) error {
 }
 
 func (p *sshFxpExtendedPacketPosixRename) respond(s *Server) responsePacket {
-	err := os.Rename(p.Oldpath, p.Newpath)
+	err := os.Rename(toLocalPath(p.Oldpath), toLocalPath(p.Newpath))
 	return statusFromError(p.ID, err)
 }
 
@@ -1271,6 +1271,6 @@ func (p *sshFxpExtendedPacketHardlink) UnmarshalBinary(b []byte) error {
 }
 
 func (p *sshFxpExtendedPacketHardlink) respond(s *Server) responsePacket {
-	err := os.Link(p.Oldpath, p.Newpath)
+	err := os.Link(toLocalPath(p.Oldpath), toLocalPath(p.Newpath))
 	return statusFromError(p.ID, err)
 }

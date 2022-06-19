@@ -80,6 +80,7 @@ type PlacementGroupListOpts struct {
 	ListOpts
 	Name string
 	Type PlacementGroupType
+	Sort []string
 }
 
 func (l PlacementGroupListOpts) values() url.Values {
@@ -89,6 +90,9 @@ func (l PlacementGroupListOpts) values() url.Values {
 	}
 	if l.Type != "" {
 		vals.Add("type", string(l.Type))
+	}
+	for _, sort := range l.Sort {
+		vals.Add("sort", sort)
 	}
 	return vals
 }
