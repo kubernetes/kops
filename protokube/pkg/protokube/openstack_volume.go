@@ -84,7 +84,7 @@ func getLocalMetadata() (*InstanceMetadata, error) {
 	return nil, err
 }
 
-// NewOpenStackCloudProvider builds a OpenstackVolume
+// NewOpenStackCloudProvider builds a OpenStackCloudProvider
 func NewOpenStackCloudProvider() (*OpenStackCloudProvider, error) {
 	metadata, err := getLocalMetadata()
 	if err != nil {
