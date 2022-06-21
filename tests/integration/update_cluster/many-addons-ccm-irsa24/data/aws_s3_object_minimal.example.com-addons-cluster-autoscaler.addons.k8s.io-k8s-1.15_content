@@ -309,6 +309,13 @@ spec:
         k8s-app: cluster-autoscaler
         kops.k8s.io/managed-by: kops
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/spot-worker
+                operator: DoesNotExist
       containers:
       - command:
         - ./cluster-autoscaler
