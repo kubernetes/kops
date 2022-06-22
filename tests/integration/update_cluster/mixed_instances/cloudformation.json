@@ -363,7 +363,8 @@
           },
           "InstancesDistribution": {
             "OnDemandPercentageAboveBaseCapacity": 5,
-            "SpotInstancePools": 3
+            "SpotInstancePools": 3,
+            "SpotMaxPrice": ""
           }
         }
       }
