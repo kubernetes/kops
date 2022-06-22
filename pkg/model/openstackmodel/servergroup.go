@@ -26,6 +26,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/truncate"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks"
@@ -43,6 +44,15 @@ var _ fi.ModelBuilder = &ServerGroupModelBuilder{}
 
 // See https://specs.openstack.org/openstack/nova-specs/specs/newton/approved/lowercase-metadata-keys.html for details
 var instanceMetadataNotAllowedCharacters = regexp.MustCompile("[^a-zA-Z0-9-_:. ]")
+
+// Constants for truncating Tags
+const MAX_TAG_LENGTH_OPENSTACK = 60
+
+var TRUNCATE_OPT = truncate.TruncateStringOptions{
+	MaxLength:     MAX_TAG_LENGTH_OPENSTACK,
+	AlwaysAddHash: false,
+	HashLength:    6,
+}
 
 func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *openstacktasks.ServerGroup, ig *kops.InstanceGroup) error {
 	sshKeyNameFull, err := b.SSHKeyName()
@@ -146,9 +156,9 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 			InstanceGroupName: &groupName,
 			Network:           b.LinkToNetwork(),
 			Tags: []string{
-				fmt.Sprintf("%s=%s", openstack.TagKopsInstanceGroup, groupName),
-				fmt.Sprintf("%s=%s", openstack.TagKopsName, portTagKopsName),
-				fmt.Sprintf("%s=%s", openstack.TagClusterName, b.ClusterName()),
+				truncate.TruncateString(fmt.Sprintf("%s=%s", openstack.TagKopsInstanceGroup, groupName), TRUNCATE_OPT),
+				truncate.TruncateString(fmt.Sprintf("%s=%s", openstack.TagKopsName, portTagKopsName), TRUNCATE_OPT),
+				truncate.TruncateString(fmt.Sprintf("%s=%s", openstack.TagClusterName, b.ClusterName()), TRUNCATE_OPT),
 			},
 			SecurityGroups:           securityGroups,
 			AdditionalSecurityGroups: ig.Spec.AdditionalSecurityGroups,

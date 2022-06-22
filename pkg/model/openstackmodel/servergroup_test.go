@@ -309,6 +309,64 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 			},
 		},
 		{
+			desc: "truncate cluster names to 42 characters",
+			cluster: &kops.Cluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "tom-software-dev-playground-real33-k8s-local",
+				},
+				Spec: kops.ClusterSpec{
+					MasterPublicName: "master-public-name",
+					CloudProvider: kops.CloudProviderSpec{
+						Openstack: &kops.OpenstackSpec{
+							Router: &kops.OpenstackRouter{
+								ExternalNetwork: fi.String("test"),
+							},
+							Metadata: &kops.OpenstackMetadata{
+								ConfigDrive: fi.Bool(false),
+							},
+						},
+					},
+					KubernetesVersion: "1.24.0",
+					Subnets: []kops.ClusterSubnetSpec{
+						{
+							Name:   "subnet",
+							Region: "region",
+						},
+					},
+				},
+			},
+			instanceGroups: []*kops.InstanceGroup{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "master",
+					},
+					Spec: kops.InstanceGroupSpec{
+						Role:        kops.InstanceGroupRoleMaster,
+						Image:       "image-master",
+						MinSize:     i32(1),
+						MaxSize:     i32(1),
+						MachineType: "blc.1-2",
+						Subnets:     []string{"subnet"},
+						Zones:       []string{"zone-1"},
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "node",
+					},
+					Spec: kops.InstanceGroupSpec{
+						Role:        kops.InstanceGroupRoleNode,
+						Image:       "image-node",
+						MinSize:     i32(1),
+						MaxSize:     i32(1),
+						MachineType: "blc.2-4",
+						Subnets:     []string{"subnet"},
+						Zones:       []string{"zone-1"},
+					},
+				},
+			},
+		},
+		{
 			desc: "multizone setup 3 masters 3 nodes without bastion with API loadbalancer",
 			cluster: &kops.Cluster{
 				ObjectMeta: metav1.ObjectMeta{
