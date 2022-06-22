@@ -1,0 +1,393 @@
+Lifecycle: ""
+Name: master
+---
+Lifecycle: ""
+Name: node
+---
+ForAPIServer: true
+ID: null
+IP: null
+LB: null
+Lifecycle: Sync
+Name: fip-master-1-tom-software-dev-playground-real33-k8s-local
+---
+ForAPIServer: false
+ID: null
+IP: null
+LB: null
+Lifecycle: Sync
+Name: fip-node-1-tom-software-dev-playground-real33-k8s-local
+---
+AvailabilityZone: zone-1
+ConfigDrive: false
+Flavor: blc.1-2
+FloatingIP:
+  ForAPIServer: true
+  ID: null
+  IP: null
+  LB: null
+  Lifecycle: Sync
+  Name: fip-master-1-tom-software-dev-playground-real33-k8s-local
+ForAPIServer: false
+GroupName: master
+ID: null
+Image: image-master
+Lifecycle: Sync
+Metadata:
+  KopsInstanceGroup: master
+  KopsName: master-1-tom-software-dev-playground-real33-k8s-local
+  KopsNetwork: tom-software-dev-playground-real33-k8s-local
+  KopsRole: Master
+  KubernetesCluster: tom-software-dev-playground-real33-k8s-local
+  cluster_generation: "0"
+  ig_generation: "0"
+  k8s: tom-software-dev-playground-real33-k8s-local
+  k8s.io_cluster-autoscaler_node-template_label_kops.k8s.io_kops-controller-pki: ""
+  k8s.io_cluster-autoscaler_node-template_label_node-role.kubernetes.io_control-plane: ""
+  k8s.io_cluster-autoscaler_node-template_label_node.kubernetes.io_exclude-from-external-load-balancers: ""
+  k8s.io_role_master: "1"
+  kops.k8s.io_instancegroup: master
+Name: master-1-tom-software-dev-playground-real33-k8s-local
+Port:
+  AdditionalSecurityGroups: null
+  ID: null
+  InstanceGroupName: master
+  Lifecycle: Sync
+  Name: port-master-1-tom-software-dev-playground-real33-k8s-local
+  Network:
+    AvailabilityZoneHints: null
+    ID: null
+    Lifecycle: ""
+    Name: tom-software-dev-playground-real33-k8s-local
+    Tag: null
+  SecurityGroups:
+  - Description: null
+    ID: null
+    Lifecycle: ""
+    Name: masters.tom-software-dev-playground-real33-k8s-local
+    RemoveExtraRules: null
+    RemoveGroup: false
+  - Description: null
+    ID: null
+    Lifecycle: ""
+    Name: master-public-name
+    RemoveExtraRules: null
+    RemoveGroup: false
+  Subnets:
+  - CIDR: null
+    DNSServers: null
+    ID: null
+    Lifecycle: ""
+    Name: subnet.tom-software-dev-playground-real33-k8s-local
+    Network: null
+    Tag: null
+  Tags:
+  - KopsInstanceGroup=master
+  - KopsName=port-master-1
+  - KubernetesCluster=tom-software-dev-playground-real33--kngu8l
+Region: region
+Role: Master
+SSHKey: kubernetes.tom-software-dev-playground-real33-k8s-local-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
+SecurityGroups: null
+ServerGroup:
+  ClusterName: tom-software-dev-playground-real33-k8s-local
+  ID: null
+  IGName: master
+  Lifecycle: Sync
+  MaxSize: 1
+  Name: tom-software-dev-playground-real33-k8s-local-master
+  Policies:
+  - anti-affinity
+UserData:
+  task:
+    Lifecycle: ""
+    Name: master
+---
+AvailabilityZone: zone-1
+ConfigDrive: false
+Flavor: blc.2-4
+FloatingIP:
+  ForAPIServer: false
+  ID: null
+  IP: null
+  LB: null
+  Lifecycle: Sync
+  Name: fip-node-1-tom-software-dev-playground-real33-k8s-local
+ForAPIServer: false
+GroupName: node
+ID: null
+Image: image-node
+Lifecycle: Sync
+Metadata:
+  KopsInstanceGroup: node
+  KopsName: node-1-tom-software-dev-playground-real33-k8s-local
+  KopsNetwork: tom-software-dev-playground-real33-k8s-local
+  KopsRole: Node
+  KubernetesCluster: tom-software-dev-playground-real33-k8s-local
+  cluster_generation: "0"
+  ig_generation: "0"
+  k8s: tom-software-dev-playground-real33-k8s-local
+  k8s.io_cluster-autoscaler_node-template_label_node-role.kubernetes.io_node: ""
+  k8s.io_role_node: "1"
+  kops.k8s.io_instancegroup: node
+Name: node-1-tom-software-dev-playground-real33-k8s-local
+Port:
+  AdditionalSecurityGroups: null
+  ID: null
+  InstanceGroupName: node
+  Lifecycle: Sync
+  Name: port-node-1-tom-software-dev-playground-real33-k8s-local
+  Network:
+    AvailabilityZoneHints: null
+    ID: null
+    Lifecycle: ""
+    Name: tom-software-dev-playground-real33-k8s-local
+    Tag: null
+  SecurityGroups:
+  - Description: null
+    ID: null
+    Lifecycle: ""
+    Name: nodes.tom-software-dev-playground-real33-k8s-local
+    RemoveExtraRules: null
+    RemoveGroup: false
+  Subnets:
+  - CIDR: null
+    DNSServers: null
+    ID: null
+    Lifecycle: ""
+    Name: subnet.tom-software-dev-playground-real33-k8s-local
+    Network: null
+    Tag: null
+  Tags:
+  - KopsInstanceGroup=node
+  - KopsName=port-node-1
+  - KubernetesCluster=tom-software-dev-playground-real33--kngu8l
+Region: region
+Role: Node
+SSHKey: kubernetes.tom-software-dev-playground-real33-k8s-local-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
+SecurityGroups: null
+ServerGroup:
+  ClusterName: tom-software-dev-playground-real33-k8s-local
+  ID: null
+  IGName: node
+  Lifecycle: Sync
+  MaxSize: 1
+  Name: tom-software-dev-playground-real33-k8s-local-node
+  Policies:
+  - anti-affinity
+UserData:
+  task:
+    Lifecycle: ""
+    Name: node
+---
+Lifecycle: ""
+Name: apiserver-aggregator-ca
+Signer: null
+alternateNames: null
+issuer: ""
+oldFormat: false
+subject: cn=apiserver-aggregator-ca
+type: ca
+---
+Lifecycle: ""
+Name: etcd-clients-ca
+Signer: null
+alternateNames: null
+issuer: ""
+oldFormat: false
+subject: cn=etcd-clients-ca
+type: ca
+---
+Lifecycle: ""
+Name: etcd-manager-ca-events
+Signer: null
+alternateNames: null
+issuer: ""
+oldFormat: false
+subject: cn=etcd-manager-ca-events
+type: ca
+---
+Lifecycle: ""
+Name: etcd-manager-ca-main
+Signer: null
+alternateNames: null
+issuer: ""
+oldFormat: false
+subject: cn=etcd-manager-ca-main
+type: ca
+---
+Lifecycle: ""
+Name: etcd-peers-ca-events
+Signer: null
+alternateNames: null
+issuer: ""
+oldFormat: false
+subject: cn=etcd-peers-ca-events
+type: ca
+---
+Lifecycle: ""
+Name: etcd-peers-ca-main
+Signer: null
+alternateNames: null
+issuer: ""
+oldFormat: false
+subject: cn=etcd-peers-ca-main
+type: ca
+---
+Lifecycle: ""
+Name: kube-proxy
+Signer:
+  Lifecycle: ""
+  Name: kubernetes-ca
+  Signer: null
+  alternateNames: null
+  issuer: ""
+  oldFormat: false
+  subject: cn=kubernetes
+  type: ca
+alternateNames: null
+issuer: ""
+oldFormat: false
+subject: cn=kube-proxy
+type: client
+---
+Lifecycle: ""
+Name: kubelet
+Signer:
+  Lifecycle: ""
+  Name: kubernetes-ca
+  Signer: null
+  alternateNames: null
+  issuer: ""
+  oldFormat: false
+  subject: cn=kubernetes
+  type: ca
+alternateNames: null
+issuer: ""
+oldFormat: false
+subject: cn=kubelet
+type: client
+---
+Lifecycle: ""
+Name: kubernetes-ca
+Signer: null
+alternateNames: null
+issuer: ""
+oldFormat: false
+subject: cn=kubernetes
+type: ca
+---
+Lifecycle: ""
+Name: service-account
+Signer: null
+alternateNames: null
+issuer: ""
+oldFormat: false
+subject: cn=service-account
+type: ca
+---
+Base: null
+Contents:
+  task:
+    Lifecycle: ""
+    Name: master
+Lifecycle: ""
+Location: igconfig/master/master/nodeupconfig.yaml
+Name: nodeupconfig-master
+Public: null
+---
+Base: null
+Contents:
+  task:
+    Lifecycle: ""
+    Name: node
+Lifecycle: ""
+Location: igconfig/node/node/nodeupconfig.yaml
+Name: nodeupconfig-node
+Public: null
+---
+AdditionalSecurityGroups: null
+ID: null
+InstanceGroupName: master
+Lifecycle: Sync
+Name: port-master-1-tom-software-dev-playground-real33-k8s-local
+Network:
+  AvailabilityZoneHints: null
+  ID: null
+  Lifecycle: ""
+  Name: tom-software-dev-playground-real33-k8s-local
+  Tag: null
+SecurityGroups:
+- Description: null
+  ID: null
+  Lifecycle: ""
+  Name: masters.tom-software-dev-playground-real33-k8s-local
+  RemoveExtraRules: null
+  RemoveGroup: false
+- Description: null
+  ID: null
+  Lifecycle: ""
+  Name: master-public-name
+  RemoveExtraRules: null
+  RemoveGroup: false
+Subnets:
+- CIDR: null
+  DNSServers: null
+  ID: null
+  Lifecycle: ""
+  Name: subnet.tom-software-dev-playground-real33-k8s-local
+  Network: null
+  Tag: null
+Tags:
+- KopsInstanceGroup=master
+- KopsName=port-master-1
+- KubernetesCluster=tom-software-dev-playground-real33--kngu8l
+---
+AdditionalSecurityGroups: null
+ID: null
+InstanceGroupName: node
+Lifecycle: Sync
+Name: port-node-1-tom-software-dev-playground-real33-k8s-local
+Network:
+  AvailabilityZoneHints: null
+  ID: null
+  Lifecycle: ""
+  Name: tom-software-dev-playground-real33-k8s-local
+  Tag: null
+SecurityGroups:
+- Description: null
+  ID: null
+  Lifecycle: ""
+  Name: nodes.tom-software-dev-playground-real33-k8s-local
+  RemoveExtraRules: null
+  RemoveGroup: false
+Subnets:
+- CIDR: null
+  DNSServers: null
+  ID: null
+  Lifecycle: ""
+  Name: subnet.tom-software-dev-playground-real33-k8s-local
+  Network: null
+  Tag: null
+Tags:
+- KopsInstanceGroup=node
+- KopsName=port-node-1
+- KubernetesCluster=tom-software-dev-playground-real33--kngu8l
+---
+ClusterName: tom-software-dev-playground-real33-k8s-local
+ID: null
+IGName: master
+Lifecycle: Sync
+MaxSize: 1
+Name: tom-software-dev-playground-real33-k8s-local-master
+Policies:
+- anti-affinity
+---
+ClusterName: tom-software-dev-playground-real33-k8s-local
+ID: null
+IGName: node
+Lifecycle: Sync
+MaxSize: 1
+Name: tom-software-dev-playground-real33-k8s-local-node
+Policies:
+- anti-affinity

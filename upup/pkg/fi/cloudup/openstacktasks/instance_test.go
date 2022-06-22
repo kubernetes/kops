@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
+	"k8s.io/kops/pkg/truncate"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
 
@@ -73,6 +74,39 @@ func TestFilterPortsReturnsOnlyTaggedPort(t *testing.T) {
 func TestFilterPortsReturnsOnlyTaggedPorts(t *testing.T) {
 	clusterName := "fakeCluster"
 	clusterNameTag := fmt.Sprintf("%s=%s", openstack.TagClusterName, clusterName)
+
+	allPorts := []ports.Port{
+		{
+			ID: "fakeID_1",
+			Tags: []string{
+				clusterNameTag,
+			},
+		},
+		{
+			ID: "fakeID_2",
+		},
+		{
+			ID: "fakeID_3",
+			Tags: []string{
+				clusterNameTag,
+			},
+		},
+	}
+
+	expectedPorts := []ports.Port{
+		allPorts[0],
+		allPorts[2],
+	}
+	actualPorts := filterInstancePorts(allPorts, clusterName)
+
+	if !reflect.DeepEqual(expectedPorts, actualPorts) {
+		t.Fatalf("expected '%+v', but got '%+v", expectedPorts, actualPorts)
+	}
+}
+
+func TestFilterPortsReturnsOnlyTaggedPortsWithLongClustername(t *testing.T) {
+	clusterName := "tom-software-dev-playground-real33-k8s-local"
+	clusterNameTag := truncate.TruncateString(fmt.Sprintf("%s=%s", openstack.TagClusterName, clusterName), TRUNCATE_OPT)
 
 	allPorts := []ports.Port{
 		{
