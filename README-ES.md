@@ -14,7 +14,7 @@ La forma más fácil de poner en marcha un cluster Kubernetes en producción.
 Queremos pensar que es algo como `kubectl` para clusters.
 
 `kops` ayuda a crear, destruir, mejorar y mantener un grado de producción, altamente
-disponible, desde las líneas de comando de Kubernetes clusters. AWS (Amazon Web Services)
+disponible, desde las líneas de commando de Kubernetes clusters. AWS (Amazon Web Services)
 está oficialmente soportado actualmente, con GCE en soporte beta , y VMware vSphere
 en alpha, y otras plataformas planeadas.
 
@@ -43,7 +43,7 @@ Para instalar un Kubernetes cluster en GCE por fabor siga esta [guide](/docs/get
 * Construye en un modelo de estado sincronizado para **dry-runs** y **idempotency** automático
 * Capacidad de generar [Terraform](/docs/terraform.md)
 * Soporta un Kubernetes personalizado [add-ons](/docs/operations/addons.md)
-* Línea de comando [autocompletion](/docs/cli/kops_completion.md)
+* Línea de commando [autocompletion](/docs/cli/kops_completion.md)
 * YAML Archivo de Manifiesto Basado en API [Configuration](/docs/manifests_and_customizing_via_api.md)
 * [Templating](/docs/cluster_template.md) y ejecutar modos de simulacro para crear
  Manifiestos
@@ -162,7 +162,7 @@ __Pull Requests__
 * Descargue, compile y ejecute el código y asegúrese de que las pruebas pasen (make test).
   - También verifique que la nueva característica parezca cuerda, siga los mejores patrones arquitectónicos e incluya pruebas.
 
-Este repositorio usa los bots de Kubernetes.  Hay una lista completa de los comandos [aqui](https://go.k8s.io/bot-commands).
+Este repositorio usa los bots de Kubernetes.  Hay una lista completa de los commandos [aqui](https://go.k8s.io/bot-commands).
 
 
 ## Horas de Oficina
@@ -203,7 +203,7 @@ Los mantenedores y otros miembros de la comunidad están generalmente disponible
 Si cree que ha encontrado un error, siga las instrucciones a continuación.
 
 - Dedique una pequeña cantidad de tiempo a prestar la debida diligencia al rastreador de problemas. Tu problema puede ser un duplicado.
-- Establezca la `-v 10` línea de comando y guarde la salida de los registros. Por favor pegue esto en su issue.
+- Establezca la `-v 10` línea de commando y guarde la salida de los registros. Por favor pegue esto en su issue.
 - Note the version of kOps you are running (from `kops version`), and the command line options you are using.
 - Abra un [new issue](https://github.com/kubernetes/kops/issues/new).
 - Recuerde que los usuarios pueden estar buscando su issue en el futuro, por lo que debe darle un título significativo para ayudar a otros.

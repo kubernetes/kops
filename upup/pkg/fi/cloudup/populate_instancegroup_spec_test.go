@@ -95,7 +95,7 @@ func TestPopulateInstanceGroup_AddTaintsCollision(t *testing.T) {
 	}
 	output, err := PopulateInstanceGroupSpec(cluster, input, cloud, channel)
 	if err != nil {
-		t.Fatalf("error from PopulateInstanceGropuSpec: %v", err)
+		t.Fatalf("error from PopulateInstanceGroupSpec: %v", err)
 	}
 	if len(output.Spec.Taints) != 1 {
 		t.Errorf("Expected only 1 taint, got %d", len(output.Spec.Taints))
@@ -116,7 +116,7 @@ func TestPopulateInstanceGroup_AddTaints(t *testing.T) {
 	}
 	output, err := PopulateInstanceGroupSpec(cluster, input, cloud, channel)
 	if err != nil {
-		t.Fatalf("error from PopulateInstanceGropuSpec: %v", err)
+		t.Fatalf("error from PopulateInstanceGroupSpec: %v", err)
 	}
 	if len(output.Spec.Taints) != 1 {
 		t.Errorf("Expected only 1 taint, got %d", len(output.Spec.Taints))
