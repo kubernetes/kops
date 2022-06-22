@@ -539,7 +539,12 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 		t.MixedOnDemandBase = spec.OnDemandBase
 		t.MixedSpotAllocationStrategy = spec.SpotAllocationStrategy
 		t.MixedSpotInstancePools = spec.SpotInstancePools
-		t.MixedSpotMaxPrice = ig.Spec.MaxPrice
+		// In order to unset maxprice, the value needs to be ""
+		if ig.Spec.MaxPrice == nil {
+			t.MixedSpotMaxPrice = fi.String("")
+		} else {
+			t.MixedSpotMaxPrice = ig.Spec.MaxPrice
+		}
 	}
 
 	return t, nil
