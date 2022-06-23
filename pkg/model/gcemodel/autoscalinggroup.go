@@ -53,8 +53,10 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderC
 	// Indented to keep diff manageable
 	// TODO: Remove spurious indent
 	{
-		var err error
-		name := b.SafeObjectName(ig.ObjectMeta.Name)
+		name, err := gce.ClusterSuffixedName(ig.ObjectMeta.Name, b.ClusterName(), 63)
+		if err != nil {
+			return nil, err
+		}
 
 		startupScript, err := b.BootstrapScriptBuilder.ResourceNodeUp(c, ig)
 		if err != nil {
