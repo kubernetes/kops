@@ -541,7 +541,7 @@ resource "google_compute_instance_template" "master-us-test1-a-ha-gce-example-co
   }
   labels = {
     "k8s-io-cluster-name"   = "ha-gce-example-com"
-    "k8s-io-instance-group" = "master-us-test1-a-ha-gce-example-com"
+    "k8s-io-instance-group" = "master-us-test1-a"
     "k8s-io-role-master"    = ""
   }
   machine_type = "n1-standard-1"
@@ -587,7 +587,7 @@ resource "google_compute_instance_template" "master-us-test1-b-ha-gce-example-co
   }
   labels = {
     "k8s-io-cluster-name"   = "ha-gce-example-com"
-    "k8s-io-instance-group" = "master-us-test1-b-ha-gce-example-com"
+    "k8s-io-instance-group" = "master-us-test1-b"
     "k8s-io-role-master"    = ""
   }
   machine_type = "n1-standard-1"
@@ -633,7 +633,7 @@ resource "google_compute_instance_template" "master-us-test1-c-ha-gce-example-co
   }
   labels = {
     "k8s-io-cluster-name"   = "ha-gce-example-com"
-    "k8s-io-instance-group" = "master-us-test1-c-ha-gce-example-com"
+    "k8s-io-instance-group" = "master-us-test1-c"
     "k8s-io-role-master"    = ""
   }
   machine_type = "n1-standard-1"
@@ -679,7 +679,7 @@ resource "google_compute_instance_template" "nodes-ha-gce-example-com" {
   }
   labels = {
     "k8s-io-cluster-name"   = "ha-gce-example-com"
-    "k8s-io-instance-group" = "nodes-ha-gce-example-com"
+    "k8s-io-instance-group" = "nodes"
     "k8s-io-role-node"      = ""
   }
   machine_type = "n1-standard-2"
