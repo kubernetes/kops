@@ -146,7 +146,7 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderC
 			t.Labels = map[string]string{
 				gce.GceLabelNameKubernetesCluster: gce.SafeClusterName(b.ClusterName()),
 				roleLabel:                         "",
-				gce.GceLabelNameInstanceGroup:     name,
+				gce.GceLabelNameInstanceGroup:     ig.ObjectMeta.Name,
 			}
 
 			if gce.UsesIPAliases(b.Cluster) {
