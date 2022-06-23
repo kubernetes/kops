@@ -1237,8 +1237,12 @@ func (d *clusterDiscoveryGCE) matchesClusterNameMultipart(name string, maxParts 
 		if id == "" {
 			continue
 		}
-		klog.Infof("matchesClusterNameMultipart - %s - %s - %s", name, id, gce.SafeObjectName(id, d.clusterName))
-		if name == gce.SafeObjectName(id, d.clusterName) {
+		suffixName, err := gce.ClusterSuffixedName(id, d.clusterName, 63)
+		if err != nil {
+			return false
+		}
+		klog.Infof("matchesClusterNameMultipart - %s - %s - %s - %s", name, id, suffixName, gce.SafeObjectName(id, d.clusterName))
+		if name == gce.SafeObjectName(id, d.clusterName) || name == suffixName {
 			return true
 		}
 	}
