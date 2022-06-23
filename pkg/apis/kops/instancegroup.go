@@ -194,6 +194,8 @@ type InstanceGroupSpec struct {
 	Containerd *ContainerdConfig `json:"containerd,omitempty"`
 	// Packages specifies additional packages to be installed.
 	Packages []string `json:"packages,omitempty"`
+	// GuestAccelerators configures additional accelerators
+	GuestAccelerators []AcceleratorConfig `json:"guestAccelerators,omitempty"`
 }
 
 const (
@@ -362,4 +364,10 @@ type LoadBalancer struct {
 	LoadBalancerName *string `json:"loadBalancerName,omitempty"`
 	// TargetGroupARN to associate with this instance group (AWS ALB/NLB)
 	TargetGroupARN *string `json:"targetGroupARN,omitempty"`
+}
+
+// AcceleratorConfig defines an accelerator config
+type AcceleratorConfig struct {
+	AcceleratorCount int64  `json:"acceleratorCount,omitempty"`
+	AcceleratorType  string `json:"acceleratorType,omitempty"`
 }
