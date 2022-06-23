@@ -1237,7 +1237,14 @@ func (d *clusterDiscoveryGCE) matchesClusterNameMultipart(name string, maxParts 
 		if id == "" {
 			continue
 		}
-		if name == gce.SafeObjectName(id, d.clusterName) {
+
+		safeName := gce.SafeObjectName(id, d.clusterName)
+		suffixedName, err := gce.ClusterSuffixedName(id, d.clusterName, 63)
+		if err != nil {
+			return false
+		}
+
+		if name == safeName || name == suffixedName {
 			return true
 		}
 	}
