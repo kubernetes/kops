@@ -49,6 +49,24 @@ func IsNotReady(err error) bool {
 	return false
 }
 
+// ClusterPrefixedName returns a cluster-prefixed name, with a maxLength
+func ClusterPrefixedName(objectName string, clusterName string, maxLength int) string {
+	suffix := "-" + objectName
+	suffixLength := maxLength - len(suffix)
+
+	// GCE does not support . in tags / names
+	safeClusterName := strings.Replace(clusterName, ".", "-", -1)
+
+	opt := truncate.TruncateStringOptions{
+		MaxLength:     suffixLength,
+		AlwaysAddHash: false,
+		HashLength:    6,
+	}
+	prefix := truncate.TruncateString(safeClusterName, opt)
+
+	return prefix + suffix
+}
+
 // ClusterSuffixedName returns a cluster-suffixed name, with a maxLength
 func ClusterSuffixedName(objectName string, clusterName string, maxLength int) (string, error) {
 	prefix := objectName + "-"
