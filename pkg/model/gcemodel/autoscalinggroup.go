@@ -168,6 +168,14 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderC
 			//}
 			//t.Labels = labels
 
+			t.GuestAccelerators = []gcetasks.AcceleratorConfig{}
+			for _, accelerator := range ig.Spec.GuestAccelerators {
+				t.GuestAccelerators = append(t.GuestAccelerators, gcetasks.AcceleratorConfig{
+					AcceleratorCount: accelerator.AcceleratorCount,
+					AcceleratorType:  accelerator.AcceleratorType,
+				})
+			}
+
 			return t, nil
 		}
 	}
