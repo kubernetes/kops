@@ -18,7 +18,7 @@ require (
 	k8s.io/klog/v2 v2.60.1
 	k8s.io/kops v1.24.0-beta.2
 	sigs.k8s.io/boskos v0.0.0-20200710214748-f5935686c7fc
-	sigs.k8s.io/kubetest2 v0.0.0-20220411203323-036d47c48813
+	sigs.k8s.io/kubetest2 v0.0.0-20220625123257-6d8d7ca3e95c
 	sigs.k8s.io/yaml v1.3.0
 )
 
@@ -158,7 +158,6 @@ require (
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/klog v1.0.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20220328201542-3ee0da9b0b42 // indirect
 	k8s.io/release v0.7.1-0.20210204090829-09fb5e3883b8 // indirect
 	k8s.io/test-infra v0.0.0-20200617221206-ea73eaeab7ff // indirect
