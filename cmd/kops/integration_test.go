@@ -271,17 +271,24 @@ func TestMinimalGCE(t *testing.T) {
 		runTestTerraformGCE(t)
 }
 
-// TestMinimalGCE runs tests on a minimal GCE configuration with private topology.
+// TestMinimalGCEPrivate runs tests on a minimal GCE configuration with private topology.
 func TestMinimalGCEPrivate(t *testing.T) {
 	newIntegrationTest("minimal-gce-private.example.com", "minimal_gce_private").
 		withAddons(dnsControllerAddon, "rbac.addons.k8s.io-k8s-1.8").
 		runTestTerraformGCE(t)
 }
 
-// TestMinimalGCE runs tests on a minimal GCE configuration with an internal load balancer.
+// TestMinimalGCEInternalLoadBalancer runs tests on a minimal GCE configuration with an internal load balancer.
 func TestMinimalGCEInternalLoadBalancer(t *testing.T) {
 	newIntegrationTest("minimal-gce-ilb.example.com", "minimal_gce_ilb").
 		withAddons(dnsControllerAddon, "rbac.addons.k8s.io-k8s-1.8").
+		runTestTerraformGCE(t)
+}
+
+// TestMinimalGCELongClusterName runs tests on a minimal GCE configuration with a very long cluster name
+func TestMinimalGCELongClusterName(t *testing.T) {
+	newIntegrationTest("minimal-gce-with-a-very-very-very-long-name.example.com", "minimal_gce_longclustername").
+		withAddons(dnsControllerAddon, leaderElectionAddon, "gcp-pd-csi-driver.addons.k8s.io-k8s-1.23").
 		runTestTerraformGCE(t)
 }
 
