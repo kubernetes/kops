@@ -45,9 +45,28 @@ func Apply(data []byte) error {
 	if err := os.WriteFile(localManifestFile, data, 0o600); err != nil {
 		return fmt.Errorf("error writing temp file: %v", err)
 	}
+	{
+		_, err := execKubectl("apply", "-f", localManifestFile, "--server-side", "--force-conflicts", "--field-manager=kops")
+		if err != nil {
+			klog.Errorf("failed to apply the manifest: %v", err)
+		}
+	}
+	{
+		_, err := execKubectl("replace", "-f", localManifestFile, "--field-manager=kops")
+		if err != nil {
+			return fmt.Errorf("failed to replace manifest: %w", err)
+		}
+	}
 
-	_, err = execKubectl("apply", "-f", localManifestFile, "--server-side", "--force-conflicts", "--field-manager=kops")
-	return err
+	// Remove this one. Just to show that apply works properly after replace
+	{
+		_, err := execKubectl("apply", "-f", localManifestFile, "--server-side", "--force-conflicts", "--field-manager=kops")
+		if err != nil {
+			return fmt.Errorf("failed to apply the manifest: %w", err)
+		}
+	}
+
+	return nil
 }
 
 func execKubectl(args ...string) (string, error) {

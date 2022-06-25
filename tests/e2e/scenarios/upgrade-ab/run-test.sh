@@ -111,7 +111,7 @@ cp "${KOPS_B}" "${WORKSPACE}/kops"
 
 "${KOPS_B}" export kubecfg --name "${CLUSTER_NAME}" --admin
 
-if [[ -z ${KOPS_SKIP_E2E:-} ]]; then
+if [[ -n ${KOPS_SKIP_E2E:-} ]]; then
   exit
 fi
 
