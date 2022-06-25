@@ -104,6 +104,10 @@ cp "${KOPS_B}" "${WORKSPACE}/kops"
 
 "${KOPS_B}" export kubecfg --name "${CLUSTER_NAME}" --admin
 
+if [[ -n ${KOPS_SKIP_E2E:-} ]]; then
+  exit
+fi
+
 ${KUBETEST2} \
 		--cloud-provider="${CLOUD_PROVIDER}" \
 		--kops-binary-path="${KOPS}" \
