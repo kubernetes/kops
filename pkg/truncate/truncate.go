@@ -52,16 +52,7 @@ func TruncateString(s string, opt TruncateStringOptions) string {
 		opt.HashLength = 6
 	}
 
-	// We always compute the hash and add it, lest we trick users into assuming that we never do this
-	h := fnv.New32a()
-	if _, err := h.Write([]byte(s)); err != nil {
-		klog.Fatalf("error hashing values: %v", err)
-	}
-	hashString := base32.HexEncoding.EncodeToString(h.Sum(nil))
-	hashString = strings.ToLower(hashString)
-	if len(hashString) > opt.HashLength {
-		hashString = hashString[:opt.HashLength]
-	}
+	hashString := HashString(s, opt.HashLength)
 
 	maxBaseLength := opt.MaxLength - len(hashString) - 1
 	if len(s) > maxBaseLength {
@@ -70,4 +61,25 @@ func TruncateString(s string, opt TruncateStringOptions) string {
 	s = s + "-" + hashString
 
 	return s
+}
+
+// HashString will attempt to hash the string.
+// Will never return a string longer than length
+func HashString(s string, length int) string {
+	if length == 0 {
+		klog.Fatalf("hash length must be a positive number")
+	}
+
+	// We always compute the hash and add it, lest we trick users into assuming that we never do this
+	h := fnv.New32a()
+	if _, err := h.Write([]byte(s)); err != nil {
+		klog.Fatalf("error hashing values: %v", err)
+	}
+	hashString := base32.HexEncoding.EncodeToString(h.Sum(nil))
+	hashString = strings.ToLower(hashString)
+	if len(hashString) > length {
+		hashString = hashString[:length]
+	}
+
+	return hashString
 }

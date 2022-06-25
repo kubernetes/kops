@@ -27,6 +27,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/resources"
+	"k8s.io/kops/pkg/truncate"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 )
@@ -537,12 +538,13 @@ nextFirewallRule:
 
 		// TODO: Check network?  (or other fields?)  No label support currently.
 
-		// We consider only firewall rules that target our cluster tags, which include the cluster name
+		// We consider only firewall rules that target our cluster tags, which include the cluster name or hash
 		tagPrefix := gce.SafeClusterName(d.clusterName) + "-"
+		clusterNameHash := truncate.HashString(d.clusterName, 6)
 		if len(firewallRule.TargetTags) != 0 {
 			tagMatchCount := 0
 			for _, target := range firewallRule.TargetTags {
-				if strings.HasPrefix(target, tagPrefix) {
+				if strings.HasPrefix(target, tagPrefix) || strings.Contains(target, clusterNameHash) {
 					tagMatchCount++
 				}
 			}
