@@ -1581,7 +1581,7 @@ k8s.io/cloud-provider/service/helpers
 k8s.io/cloud-provider/volume
 k8s.io/cloud-provider/volume/errors
 k8s.io/cloud-provider/volume/helpers
-# k8s.io/cloud-provider-aws v1.24.0
+# k8s.io/cloud-provider-aws v1.24.1
 ## explicit; go 1.18
 k8s.io/cloud-provider-aws/pkg/providers/v1
 # k8s.io/component-base v0.24.2

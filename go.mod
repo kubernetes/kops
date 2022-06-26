@@ -58,7 +58,7 @@ require (
 	k8s.io/apimachinery v0.24.2
 	k8s.io/cli-runtime v0.24.2
 	k8s.io/client-go v0.24.2
-	k8s.io/cloud-provider-aws v1.24.0
+	k8s.io/cloud-provider-aws v1.24.1
 	k8s.io/component-base v0.24.2
 	k8s.io/gengo v0.0.0-20220613173612-397b4ae3bce7
 	k8s.io/klog/v2 v2.60.1
