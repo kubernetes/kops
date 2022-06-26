@@ -180,7 +180,7 @@ github.com/blang/semver/v4
 # github.com/cenkalti/backoff/v3 v3.0.0
 ## explicit; go 1.12
 github.com/cenkalti/backoff/v3
-# github.com/cert-manager/cert-manager v1.8.1
+# github.com/cert-manager/cert-manager v1.8.2
 ## explicit; go 1.17
 github.com/cert-manager/cert-manager/pkg/apis/acme
 github.com/cert-manager/cert-manager/pkg/apis/acme/v1

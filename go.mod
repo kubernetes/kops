@@ -16,7 +16,7 @@ require (
 	github.com/aws/amazon-ec2-instance-selector/v2 v2.3.1
 	github.com/aws/aws-sdk-go v1.44.37
 	github.com/blang/semver/v4 v4.0.0
-	github.com/cert-manager/cert-manager v1.8.1
+	github.com/cert-manager/cert-manager v1.8.2
 	github.com/digitalocean/godo v1.81.0
 	github.com/go-ini/ini v1.66.6
 	github.com/go-logr/logr v1.2.3
