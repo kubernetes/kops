@@ -63,6 +63,28 @@ type Diagnostic struct {
 	// case of colliding names.
 	Expression  Expression
 	EvalContext *EvalContext
+
+	// Extra is an extension point for additional machine-readable information
+	// about this problem.
+	//
+	// Recipients of diagnostic objects may type-assert this value with
+	// specific interface types they know about to discover if any additional
+	// information is available that is interesting for their use-case.
+	//
+	// Extra is always considered to be optional extra information and so a
+	// diagnostic message should still always be fully described (from the
+	// perspective of a human who understands the language the messages are
+	// written in) by the other fields in case a particular recipient.
+	//
+	// Functions that return diagnostics with Extra populated should typically
+	// document that they place values implementing a particular interface,
+	// rather than a concrete type, and define that interface such that its
+	// methods can dynamically indicate a lack of support at runtime even
+	// if the interface happens to be statically available. An Extra
+	// type that wraps other Extra values should additionally implement
+	// interface DiagnosticExtraUnwrapper to return the value they are wrapping
+	// so that callers can access inner values to type-assert against.
+	Extra interface{}
 }
 
 // Diagnostics is a list of Diagnostic instances.
@@ -140,4 +162,25 @@ func (d Diagnostics) Errs() []error {
 type DiagnosticWriter interface {
 	WriteDiagnostic(*Diagnostic) error
 	WriteDiagnostics(Diagnostics) error
+}
+
+// DiagnosticExtraUnwrapper is an interface implemented by values in the
+// Extra field of Diagnostic when they are wrapping another "Extra" value that
+// was generated downstream.
+//
+// Diagnostic recipients which want to examine "Extra" values to sniff for
+// particular types of extra data can either type-assert this interface
+// directly and repeatedly unwrap until they recieve nil, or can use the
+// helper function DiagnosticExtra.
+type DiagnosticExtraUnwrapper interface {
+	// If the reciever is wrapping another "diagnostic extra" value, returns
+	// that value. Otherwise returns nil to indicate dynamically that nothing
+	// is wrapped.
+	//
+	// The "nothing is wrapped" condition can be signalled either by this
+	// method returning nil or by a type not implementing this interface at all.
+	//
+	// Implementers should never create unwrap "cycles" where a nested extra
+	// value returns a value that was also wrapping it.
+	UnwrapDiagnosticExtra() interface{}
 }
