@@ -122,6 +122,7 @@ resource "aws_autoscaling_group" "bastion-bastionuserdata-example-com" {
     version = aws_launch_template.bastion-bastionuserdata-example-com.latest_version
   }
   load_balancers        = [aws_elb.bastion-bastionuserdata-example-com.id]
+  max_instance_lifetime = 0
   max_size              = 1
   metrics_granularity   = "1Minute"
   min_size              = 1
@@ -172,6 +173,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-bastionuserdata-exam
     version = aws_launch_template.master-us-test-1a-masters-bastionuserdata-example-com.latest_version
   }
   load_balancers        = [aws_elb.api-bastionuserdata-example-com.id]
+  max_instance_lifetime = 0
   max_size              = 1
   metrics_granularity   = "1Minute"
   min_size              = 1
@@ -236,6 +238,7 @@ resource "aws_autoscaling_group" "nodes-bastionuserdata-example-com" {
     id      = aws_launch_template.nodes-bastionuserdata-example-com.id
     version = aws_launch_template.nodes-bastionuserdata-example-com.latest_version
   }
+  max_instance_lifetime = 0
   max_size              = 2
   metrics_granularity   = "1Minute"
   min_size              = 2

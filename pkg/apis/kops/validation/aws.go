@@ -24,6 +24,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
@@ -98,6 +99,21 @@ func awsValidateInstanceGroup(ig *kops.InstanceGroup, cloud awsup.AWSCloud) fiel
 
 	if ig.Spec.CPUCredits != nil {
 		allErrs = append(allErrs, awsValidateCPUCredits(field.NewPath("spec"), &ig.Spec, cloud)...)
+	}
+
+	if ig.Spec.MaxInstanceLifetime != nil {
+		allErrs = append(allErrs, awsValidateMaximumInstanceLifetime(field.NewPath(ig.GetName(), "spec"), ig.Spec.MaxInstanceLifetime)...)
+	}
+
+	return allErrs
+}
+
+func awsValidateMaximumInstanceLifetime(fieldPath *field.Path, maxInstanceLifetime *metav1.Duration) field.ErrorList {
+	allErrs := field.ErrorList{}
+	const minMaxInstanceLifetime = 86400
+	lifetimeSec := int64(maxInstanceLifetime.Seconds())
+	if lifetimeSec != 0 && lifetimeSec < minMaxInstanceLifetime {
+		allErrs = append(allErrs, field.Invalid(fieldPath.Child("maxInstanceLifetime"), maxInstanceLifetime, fmt.Sprintf("max instance lifetime must be greater than %d or equal to 0", int64(minMaxInstanceLifetime))))
 	}
 
 	return allErrs

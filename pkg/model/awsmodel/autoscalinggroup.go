@@ -547,5 +547,11 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 		}
 	}
 
+	if ig.Spec.MaxInstanceLifetime != nil {
+		lifetimeSec := int64(ig.Spec.MaxInstanceLifetime.Seconds())
+		t.MaxInstanceLifetime = fi.Int64(lifetimeSec)
+	} else {
+		t.MaxInstanceLifetime = fi.Int64(0)
+	}
 	return t, nil
 }
