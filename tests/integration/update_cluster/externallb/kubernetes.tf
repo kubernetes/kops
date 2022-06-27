@@ -92,6 +92,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-externallb-example-c
     version = aws_launch_template.master-us-test-1a-masters-externallb-example-com.latest_version
   }
   load_balancers        = ["my-external-elb-1", "my-external-elb-2", "my-external-elb-3"]
+  max_instance_lifetime = 0
   max_size              = 1
   metrics_granularity   = "1Minute"
   min_size              = 1
@@ -158,6 +159,7 @@ resource "aws_autoscaling_group" "nodes-externallb-example-com" {
     version = aws_launch_template.nodes-externallb-example-com.latest_version
   }
   load_balancers        = ["my-external-elb-1"]
+  max_instance_lifetime = 0
   max_size              = 2
   metrics_granularity   = "1Minute"
   min_size              = 2

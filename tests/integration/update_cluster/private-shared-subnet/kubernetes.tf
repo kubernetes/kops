@@ -112,6 +112,7 @@ resource "aws_autoscaling_group" "bastion-private-shared-subnet-example-com" {
     version = aws_launch_template.bastion-private-shared-subnet-example-com.latest_version
   }
   load_balancers        = [aws_elb.bastion-private-shared-subnet-example-com.id]
+  max_instance_lifetime = 0
   max_size              = 1
   metrics_granularity   = "1Minute"
   min_size              = 1
@@ -162,6 +163,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-private-shared-subne
     version = aws_launch_template.master-us-test-1a-masters-private-shared-subnet-example-com.latest_version
   }
   load_balancers        = [aws_elb.api-private-shared-subnet-example-com.id]
+  max_instance_lifetime = 0
   max_size              = 1
   metrics_granularity   = "1Minute"
   min_size              = 1
@@ -226,6 +228,7 @@ resource "aws_autoscaling_group" "nodes-private-shared-subnet-example-com" {
     id      = aws_launch_template.nodes-private-shared-subnet-example-com.id
     version = aws_launch_template.nodes-private-shared-subnet-example-com.latest_version
   }
+  max_instance_lifetime = 0
   max_size              = 2
   metrics_granularity   = "1Minute"
   min_size              = 2
