@@ -51,7 +51,7 @@ etcd and etcdctl are installed into directories in /opt - look for the latest ve
 ```
 # DIRNAME=/opt/etcd-v3.5.1-linux-amd64
 # ETCDCTL_API=3
-# alias etcdctl='$DIRNAME/etcdctl --cacert=/etc/kubernetes/pki/etcd-manager/etcd-clients-ca.crt --cert=/etc/kubernetes/pki/etcd-manager/etcd-clients-ca.key --key=/etc/kubernetes/pki/etcd-manager/etcd-clients-ca.key --endpoints=https://127.0.0.1:4001'
+# alias etcdctl='$DIRNAME/etcdctl --cacert=/etc/kubernetes/pki/etcd-manager/etcd-clients-ca.crt --cert==/etc/kubernetes/pki/etcd-manager/etcd-clients-ca.crt --key=/etc/kubernetes/pki/etcd-manager/etcd-clients-ca.key --endpoints=https://127.0.0.1:4001'
 ```
 You can get a list of the leases eg:
 ```
