@@ -157,6 +157,7 @@ func (c *RollingUpdateCluster) rollingUpdateInstanceGroup(group *cloudinstances.
 				if err := c.detachInstance(u); err != nil {
 					// If detaching a node fails, we simply proceed to the next one instead of
 					// bubbling up the error.
+					klog.Errorf("Failed to detach instance %q: %v", u.ID, err)
 					skippedNodes++
 					numSurge--
 					if maxSurge > len(update)-skippedNodes {
