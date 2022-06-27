@@ -754,6 +754,11 @@ spec:
               manager:
                 description: Manager determines what is managing the node lifecycle
                 type: string
+              maxInstanceLifetime:
+                description: MaxInstanceLifetime to the maximum amount of time, in
+                  seconds, that an instance can be in service. Value expected must
+                  be in form of duration ("ms", "s", "m", "h")
+                type: string
               maxPrice:
                 description: MaxPrice indicates this is a spot-pricing group, with
                   the specified value as our max-price bid

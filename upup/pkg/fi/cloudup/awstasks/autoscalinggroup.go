@@ -37,7 +37,7 @@ import (
 // CloudTagInstanceGroupRolePrefix is a cloud tag that defines the instance role
 const CloudTagInstanceGroupRolePrefix = "k8s.io/role/"
 
-// AutoscalingGroup provdes the definition for a autoscaling group in aws
+// AutoscalingGroup provides the definition for a autoscaling group in aws
 // +kops:fitask
 type AutoscalingGroup struct {
 	// Name is the name of the ASG
@@ -53,6 +53,8 @@ type AutoscalingGroup struct {
 	LaunchTemplate *LaunchTemplate
 	// LoadBalancers is a list of elastic load balancer names to add to the autoscaling group
 	LoadBalancers []*ClassicLoadBalancer
+	// MaxInstanceLifetime is the maximum amount of time, in seconds, that an instance can be in service.
+	MaxInstanceLifetime *int64
 	// MaxSize is the max number of nodes in asg
 	MaxSize *int64
 	// Metrics is a collection of metrics to monitor
@@ -110,9 +112,17 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 	}
 
 	actual := &AutoscalingGroup{
-		Name:    g.AutoScalingGroupName,
-		MaxSize: g.MaxSize,
-		MinSize: g.MinSize,
+		Name:                g.AutoScalingGroupName,
+		MaxSize:             g.MaxSize,
+		MinSize:             g.MinSize,
+		MaxInstanceLifetime: g.MaxInstanceLifetime,
+	}
+
+	// Use 0 as default value when api returns nil (same as model)
+	if g.MaxInstanceLifetime == nil {
+		actual.MaxInstanceLifetime = fi.Int64(0)
+	} else {
+		actual.MaxInstanceLifetime = g.MaxInstanceLifetime
 	}
 
 	actual.LoadBalancers = []*ClassicLoadBalancer{}
@@ -344,6 +354,13 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			VPCZoneIdentifier:                fi.String(strings.Join(e.AutoscalingGroupSubnets(), ",")),
 		}
 
+		//On ASG creation 0 value is forbidden
+		if fi.Int64Value(e.MaxInstanceLifetime) == 0 {
+			request.MaxInstanceLifetime = nil
+		} else {
+			request.MaxInstanceLifetime = e.MaxInstanceLifetime
+		}
+
 		for _, k := range e.LoadBalancers {
 			if k.LoadBalancerName == nil {
 				lbDesc, err := t.Cloud.FindELBByNameTag(fi.StringValue(k.GetName()))
@@ -521,6 +538,13 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		if changes.Subnets != nil {
 			request.VPCZoneIdentifier = aws.String(strings.Join(e.AutoscalingGroupSubnets(), ","))
 			changes.Subnets = nil
+		}
+
+		if changes.MaxInstanceLifetime != nil {
+			request.MaxInstanceLifetime = e.MaxInstanceLifetime
+			changes.MaxInstanceLifetime = nil
+		} else {
+			request.MaxInstanceLifetime = fi.Int64(0)
 		}
 
 		var updateTagsRequest *autoscaling.CreateOrUpdateTagsInput
@@ -891,17 +915,19 @@ type terraformAutoscalingGroup struct {
 	InstanceProtection      *bool                                            `cty:"protect_from_scale_in"`
 	LoadBalancers           []*terraformWriter.Literal                       `cty:"load_balancers"`
 	TargetGroupARNs         []*terraformWriter.Literal                       `cty:"target_group_arns"`
+	MaxInstanceLifetime     *int64                                           `cty:"max_instance_lifetime"`
 }
 
 // RenderTerraform is responsible for rendering the terraform codebase
 func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *AutoscalingGroup) error {
 	tf := &terraformAutoscalingGroup{
-		Name:               e.Name,
-		MinSize:            e.MinSize,
-		MaxSize:            e.MaxSize,
-		MetricsGranularity: e.Granularity,
-		EnabledMetrics:     aws.StringSlice(e.Metrics),
-		InstanceProtection: e.InstanceProtection,
+		Name:                e.Name,
+		MinSize:             e.MinSize,
+		MaxSize:             e.MaxSize,
+		MetricsGranularity:  e.Granularity,
+		EnabledMetrics:      aws.StringSlice(e.Metrics),
+		InstanceProtection:  e.InstanceProtection,
+		MaxInstanceLifetime: e.MaxInstanceLifetime,
 	}
 
 	for _, s := range e.Subnets {
