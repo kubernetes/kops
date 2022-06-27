@@ -280,6 +280,7 @@ spec:
           volumeMounts:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
+        {{ if HasSnapshotController }}
         - name: csi-snapshotter
           image: registry.k8s.io/sig-storage/csi-snapshotter:v5.0.1
           args:
@@ -294,6 +295,7 @@ spec:
           volumeMounts:
             - mountPath: /var/lib/csi/sockets/pluginproxy/
               name: socket-dir
+        {{ end }}
         - name: csi-resizer
           image: registry.k8s.io/sig-storage/csi-resizer:v1.4.0
           args:
