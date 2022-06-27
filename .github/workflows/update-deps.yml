@@ -37,5 +37,5 @@ jobs:
           body: |
             Updating go.mod with latest dependencies:
             ```
-            ${{ steps.update_deps.outputs.changes }}
+            ${{ join(steps.update_deps.outputs.changes, "\n") }}
             ```
