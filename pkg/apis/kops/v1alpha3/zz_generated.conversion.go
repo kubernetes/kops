@@ -4610,6 +4610,7 @@ func autoConvert_v1alpha3_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 	} else {
 		out.GuestAccelerators = nil
 	}
+	out.MaxInstanceLifetime = in.MaxInstanceLifetime
 	return nil
 }
 
@@ -4793,6 +4794,7 @@ func autoConvert_kops_InstanceGroupSpec_To_v1alpha3_InstanceGroupSpec(in *kops.I
 	} else {
 		out.GuestAccelerators = nil
 	}
+	out.MaxInstanceLifetime = in.MaxInstanceLifetime
 	return nil
 }
 

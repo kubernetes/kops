@@ -121,6 +121,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-123-example-com" {
     id      = aws_launch_template.master-us-test-1a-masters-123-example-com.id
     version = aws_launch_template.master-us-test-1a-masters-123-example-com.latest_version
   }
+  max_instance_lifetime = 0
   max_size              = 1
   metrics_granularity   = "1Minute"
   min_size              = 1
@@ -185,6 +186,7 @@ resource "aws_autoscaling_group" "nodes-123-example-com" {
     id      = aws_launch_template.nodes-123-example-com.id
     version = aws_launch_template.nodes-123-example-com.latest_version
   }
+  max_instance_lifetime = 0
   max_size              = 2
   metrics_granularity   = "1Minute"
   min_size              = 2
