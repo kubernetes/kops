@@ -35,7 +35,4 @@ jobs:
           delete-branch: true
           labels: ok-to-test
           body: |
-            Updating go.mod with latest dependencies:
-            ```
-            ${{ join(steps.update_deps.outputs.changes, "\n") }}
-            ```
+            Updating go.mod with latest dependencies...
