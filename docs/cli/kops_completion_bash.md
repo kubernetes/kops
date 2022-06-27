@@ -24,7 +24,7 @@ To load completions for every new session, execute once:
 
 #### macOS:
 
-	kops completion bash > /usr/local/etc/bash_completion.d/kops
+	kops completion bash > $(brew --prefix)/etc/bash_completion.d/kops
 
 You will need to start a new shell for this setup to take effect.
 
