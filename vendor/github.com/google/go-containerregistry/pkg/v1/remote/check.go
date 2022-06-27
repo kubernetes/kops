@@ -39,7 +39,7 @@ func CheckPushPermission(ref name.Reference, kc authn.Keychain, t http.RoundTrip
 		client:  &http.Client{Transport: tr},
 		context: context.Background(),
 	}
-	loc, _, err := w.initiateUpload("", "")
+	loc, _, err := w.initiateUpload("", "", "")
 	if loc != "" {
 		// Since we're only initiating the upload to check whether we
 		// can, we should attempt to cancel it, in case initiating

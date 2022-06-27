@@ -219,7 +219,7 @@ func (c *Pricing) GetAttributeValuesRequest(input *GetAttributeValuesInput) (req
 // Returns a list of attribute values. Attributes are similar to the details
 // in a Price List API offer file. For a list of available attributes, see Offer
 // File Definitions (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/reading-an-offer.html#pps-defs)
-// in the Amazon Web Services Billing and Cost Management User Guide (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/billing-what-is.html).
+// in the Billing and Cost Management User Guide (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/billing-what-is.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -926,7 +926,9 @@ type GetProductsInput struct {
 	NextToken *string `type:"string"`
 
 	// The code for the service whose products you want to retrieve.
-	ServiceCode *string `type:"string"`
+	//
+	// ServiceCode is a required field
+	ServiceCode *string `type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -952,6 +954,9 @@ func (s *GetProductsInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "GetProductsInput"}
 	if s.MaxResults != nil && *s.MaxResults < 1 {
 		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.ServiceCode == nil {
+		invalidParams.Add(request.NewErrParamRequired("ServiceCode"))
 	}
 	if s.Filters != nil {
 		for i, v := range s.Filters {
@@ -1316,7 +1321,9 @@ type Service struct {
 	AttributeNames []*string `type:"list"`
 
 	// The code for the Amazon Web Services service.
-	ServiceCode *string `type:"string"`
+	//
+	// ServiceCode is a required field
+	ServiceCode *string `type:"string" required:"true"`
 }
 
 // String returns the string representation.
