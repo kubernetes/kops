@@ -313,7 +313,7 @@ goget:
 	go get $(shell go list -f '{{if not (or .Main .Indirect)}}{{.Path}}{{end}}' -mod=mod -m all)
 
 .PHONY: depup
-depup: goget gomod
+depup: goget gomod gen-cli-docs
 
 .PHONY: gofmt
 gofmt:
