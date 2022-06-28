@@ -86,8 +86,6 @@ var (
 	UseAddonOperators = new("UseAddonOperators", Bool(false))
 	// TerraformManagedFiles enables rendering managed files into the Terraform configuration.
 	TerraformManagedFiles = new("TerraformManagedFiles", Bool(true))
-	// AlphaAllowGCE is a feature flag that gates GCE support while it is alpha.
-	AlphaAllowGCE = new("AlphaAllowGCE", Bool(false))
 	// Karpenter enables karpenter-managed Instance Groups
 	Karpenter = new("Karpenter", Bool(false))
 	// ImageDigest remaps all manifests with image digests

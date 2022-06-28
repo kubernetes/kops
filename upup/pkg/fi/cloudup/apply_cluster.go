@@ -401,11 +401,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		{
 			gceCloud := cloud.(gce.GCECloud)
 			project = gceCloud.Project()
-
-			if !featureflag.AlphaAllowGCE.Enabled() {
-				return fmt.Errorf("GCE support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=AlphaAllowGCE")
-			}
-
 		}
 
 	case kops.CloudProviderHetzner:

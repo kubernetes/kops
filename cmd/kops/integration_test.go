@@ -1291,8 +1291,6 @@ func (i *integrationTest) runTestPhase(t *testing.T, phase cloudup.Phase) {
 }
 
 func (i *integrationTest) runTestTerraformGCE(t *testing.T) {
-	featureflag.ParseFlags("+AlphaAllowGCE")
-
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
