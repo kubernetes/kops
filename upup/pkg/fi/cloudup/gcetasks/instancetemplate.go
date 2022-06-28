@@ -249,6 +249,7 @@ func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.Ins
 		scheduling = &compute.Scheduling{
 			AutomaticRestart:  fi.Bool(false),
 			OnHostMaintenance: "TERMINATE",
+			ProvisioningModel: "STANDARD", // TODO: Support Spot?
 			Preemptible:       true,
 		}
 	} else {
@@ -256,6 +257,7 @@ func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.Ins
 			AutomaticRestart: fi.Bool(true),
 			// TODO: Migrate or terminate?
 			OnHostMaintenance: "MIGRATE",
+			ProvisioningModel: "STANDARD",
 			Preemptible:       false,
 		}
 	}
