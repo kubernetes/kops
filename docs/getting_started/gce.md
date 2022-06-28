@@ -34,7 +34,6 @@ You can also put this in your `~/.bashrc` or similar.
 
 
     PROJECT=`gcloud config get-value project`
-    export KOPS_FEATURE_FLAGS=AlphaAllowGCE # to unlock the GCE features
     kops create cluster simple.k8s.local --zones us-central1-a --state ${KOPS_STATE_STORE}/ --project=${PROJECT}
 
 
