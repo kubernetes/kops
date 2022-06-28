@@ -41,7 +41,6 @@ OVERRIDES=("--channel=alpha" "--node-count=1" "--master-count=3")
 
 case "${CLOUD_PROVIDER}" in
 gce)
-	export KOPS_FEATURE_FLAGS="${KOPS_FEATURE_FLAGS},AlphaAllowGCE"
 	OVERRIDES+=(
 		"--zones=us-central1-a,us-central1-b,us-central1-c"
 		"--master-zones=us-central1-a,us-central1-b,us-central1-c"
