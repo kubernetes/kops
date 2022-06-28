@@ -18,6 +18,7 @@ package openstack
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
@@ -29,6 +30,14 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/util/pkg/vfs"
 )
+
+// memberBackoff is the backoff strategy for openstack updating members in loadbalancer pool
+var memberBackoff = wait.Backoff{
+	Duration: time.Second,
+	Factor:   2,
+	Jitter:   0.1,
+	Steps:    10,
+}
 
 func (c *openstackCloud) CreatePoolMonitor(opts monitors.CreateOpts) (*monitors.Monitor, error) {
 	return createPoolMonitor(c, opts)
@@ -361,7 +370,7 @@ func updateMemberInPool(c OpenstackCloud, poolID string, memberID string, opts v
 		return nil, fmt.Errorf("loadbalancer support not available in this deployment")
 	}
 
-	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+	done, err := vfs.RetryWithBackoff(memberBackoff, func() (bool, error) {
 		association, err = v2pools.UpdateMember(c.LoadBalancerClient(), poolID, memberID, opts).Extract()
 		if err != nil {
 			// member not found anymore
