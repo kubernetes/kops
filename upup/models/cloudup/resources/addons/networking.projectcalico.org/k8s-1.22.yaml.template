@@ -4419,7 +4419,7 @@ spec:
 
 # This manifest creates a Pod Disruption Budget for Typha to allow K8s Cluster Autoscaler to evict
 
-apiVersion: policy/v1
+apiVersion: policy/v1{{ if IsKubernetesLT "1.23" }}beta1{{ end }}
 kind: PodDisruptionBudget
 metadata:
   name: calico-typha
@@ -4901,7 +4901,7 @@ metadata:
 
 # This manifest creates a Pod Disruption Budget for Controller to allow K8s Cluster Autoscaler to evict
 
-apiVersion: policy/v1
+apiVersion: policy/v1{{ if IsKubernetesLT "1.23" }}beta1{{ end }}
 kind: PodDisruptionBudget
 metadata:
   name: calico-kube-controllers
