@@ -108,6 +108,14 @@ func WithUserAgent(ua string) Option {
 	}
 }
 
+// WithNondistributable is an option that allows pushing non-distributable
+// layers.
+func WithNondistributable() Option {
+	return func(o *Options) {
+		o.Remote = append(o.Remote, remote.WithNondistributable)
+	}
+}
+
 // WithContext is a functional option for setting the context.
 func WithContext(ctx context.Context) Option {
 	return func(o *Options) {

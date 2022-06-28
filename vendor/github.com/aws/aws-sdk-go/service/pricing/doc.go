@@ -3,12 +3,11 @@
 // Package pricing provides the client and types for making API
 // requests to AWS Price List Service.
 //
-// Amazon Web Services Price List Service API (Amazon Web Services Price List
-// Service) is a centralized and convenient way to programmatically query Amazon
-// Web Services for services, products, and pricing information. The Amazon
-// Web Services Price List Service uses standardized product attributes such
-// as Location, Storage Class, and Operating System, and provides prices at
-// the SKU level. You can use the Amazon Web Services Price List Service to
+// Amazon Web Services Price List API is a centralized and convenient way to
+// programmatically query Amazon Web Services for services, products, and pricing
+// information. The Amazon Web Services Price List uses standardized product
+// attributes such as Location, Storage Class, and Operating System, and provides
+// prices at the SKU level. You can use the Amazon Web Services Price List to
 // build cost control and scenario planning tools, reconcile billing data, forecast
 // future spend for budgeting purposes, and provide cost benefit analysis that
 // compare your internal workloads with Amazon Web Services.
@@ -23,7 +22,7 @@
 //
 // Service Endpoint
 //
-// Amazon Web Services Price List Service API provides the following two endpoints:
+// Amazon Web Services Price List service API provides the following two endpoints:
 //
 //    * https://api.pricing.us-east-1.amazonaws.com
 //
