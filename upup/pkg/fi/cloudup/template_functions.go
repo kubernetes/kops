@@ -335,6 +335,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	}
 
 	dest["IsKubernetesGTE"] = tf.IsKubernetesGTE
+	dest["IsKubernetesLT"] = tf.IsKubernetesLT
 
 	return nil
 }
