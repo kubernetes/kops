@@ -309,7 +309,7 @@ func (blder *Builder) doController(r reconcile.Reconciler) error {
 
 	// Setup the logger.
 	if ctrlOptions.LogConstructor == nil {
-		log = blder.mgr.GetLogger().WithValues(
+		log := blder.mgr.GetLogger().WithValues(
 			"controller", controllerName,
 			"controllerGroup", gvk.Group,
 			"controllerKind", gvk.Kind,
