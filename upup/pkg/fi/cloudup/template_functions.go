@@ -334,6 +334,8 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		return sc != nil && fi.BoolValue(sc.Enabled)
 	}
 
+	dest["IsKubernetesLT"] = tf.IsKubernetesLT
+
 	return nil
 }
 
