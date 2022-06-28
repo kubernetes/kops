@@ -473,8 +473,6 @@ func runLifecycleTestGCE(o *LifecycleTestOptions) {
 
 	h.MockKopsVersion("1.21.0-alpha.1")
 
-	featureflag.ParseFlags("AlphaAllowGCE")
-
 	cloud := h.SetupMockGCE()
 
 	var beforeIds []string
