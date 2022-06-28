@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"net/url"
 
+	"go.uber.org/multierr"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/util/pkg/vfs"
 
@@ -161,44 +162,55 @@ func (a *Addon) EnsureUpdated(ctx context.Context, k8sClient kubernetes.Interfac
 		return nil, nil
 	}
 
+	var merr error
+
 	if required.NewVersion != nil {
-		manifestURL, err := a.GetManifestFullUrl()
+		err := a.updateAddon(ctx, k8sClient, pruner, required)
 		if err != nil {
-			return nil, err
-		}
-		klog.Infof("Applying update from %q", manifestURL)
-
-		// We copy the manifest to a temp file because it is likely e.g. an s3 URL, which kubectl can't read
-		data, err := vfs.Context.ReadFile(manifestURL.String())
-		if err != nil {
-			return nil, fmt.Errorf("error reading manifest: %w", err)
-		}
-
-		if err := Apply(data); err != nil {
-			return nil, fmt.Errorf("error applying update from %q: %w", manifestURL, err)
-		}
-
-		if err := pruner.Prune(ctx, data, a.Spec.Prune); err != nil {
-			return nil, fmt.Errorf("error pruning manifest from %q: %w", manifestURL, err)
-		}
-
-		if err := a.AddNeedsUpdateLabel(ctx, k8sClient, required); err != nil {
-			return nil, fmt.Errorf("error adding needs-update label: %v", err)
-		}
-
-		channel := a.buildChannel()
-		err = channel.SetInstalledVersion(ctx, k8sClient, a.ChannelVersion())
-		if err != nil {
-			return nil, fmt.Errorf("error applying annotation to record addon installation: %v", err)
+			merr = multierr.Append(merr, err)
 		}
 	}
 	if required.InstallPKI {
 		err := a.installPKI(ctx, k8sClient, cmClient)
 		if err != nil {
-			return nil, fmt.Errorf("error installing PKI: %v", err)
+			merr = multierr.Append(merr, err)
 		}
 	}
-	return required, nil
+	return required, merr
+}
+
+func (a *Addon) updateAddon(ctx context.Context, k8sClient kubernetes.Interface, pruner *Pruner, required *AddonUpdate) error {
+	manifestURL, err := a.GetManifestFullUrl()
+	if err != nil {
+		return err
+	}
+
+	klog.Infof("Applying update from %q", manifestURL)
+
+	// We copy the manifest to a temp file because it is likely e.g. an s3 URL, which kubectl can't read
+	data, err := vfs.Context.ReadFile(manifestURL.String())
+	if err != nil {
+		return fmt.Errorf("error reading manifest: %w", err)
+	}
+
+	if err := Apply(data); err != nil {
+		return fmt.Errorf("error applying update from %q: %w", manifestURL, err)
+	}
+
+	if err := pruner.Prune(ctx, data, a.Spec.Prune); err != nil {
+		return fmt.Errorf("error pruning manifest from %q: %w", manifestURL, err)
+	}
+
+	if err := a.AddNeedsUpdateLabel(ctx, k8sClient, required); err != nil {
+		return fmt.Errorf("error adding needs-update label: %v", err)
+	}
+
+	channel := a.buildChannel()
+	err = channel.SetInstalledVersion(ctx, k8sClient, a.ChannelVersion())
+	if err != nil {
+		return fmt.Errorf("error applying annotation to record addon installation: %v", err)
+	}
+	return nil
 }
 
 func (a *Addon) AddNeedsUpdateLabel(ctx context.Context, k8sClient kubernetes.Interface, required *AddonUpdate) error {
