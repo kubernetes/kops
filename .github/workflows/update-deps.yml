@@ -1,5 +1,8 @@
 name: "update-deps"
-on: [workflow_dispatch]
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 5"
 
 env:
   GOPROXY: https://proxy.golang.org
