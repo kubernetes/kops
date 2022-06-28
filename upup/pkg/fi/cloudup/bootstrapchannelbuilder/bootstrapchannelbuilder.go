@@ -921,8 +921,8 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 	if b.Cluster.Spec.Networking.Calico != nil {
 		key := "networking.projectcalico.org"
 
-		if b.IsKubernetesGTE("v1.23.0") {
-			id := "k8s-1.23"
+		if b.IsKubernetesGTE("v1.21.0") {
+			id := "k8s-1.21"
 			location := key + "/" + id + ".yaml"
 
 			addons.Add(&channelsapi.AddonSpec{
