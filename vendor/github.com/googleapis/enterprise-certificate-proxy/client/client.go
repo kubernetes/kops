@@ -1,3 +1,7 @@
+// Copyright 2022 Google LLC.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+//
 // Client is a cross-platform client for the signer binary (a.k.a."EnterpriseCertSigner").
 // The signer binary is OS-specific, but exposes a standard set of APIs for the client to use.
 package client
@@ -20,16 +24,16 @@ const signAPI = "EnterpriseCertSigner.Sign"
 const certificateChainAPI = "EnterpriseCertSigner.CertificateChain"
 const publicKeyAPI = "EnterpriseCertSigner.Public"
 
-// A Transport wraps a pair of unidirectional streams as an io.ReadWriteCloser.
-type Transport struct {
+// A Connection wraps a pair of unidirectional streams as an io.ReadWriteCloser.
+type Connection struct {
 	io.ReadCloser
 	io.WriteCloser
 }
 
-// Close closes t's underlying ReadCloser and WriteCloser.
-func (t *Transport) Close() error {
-	rerr := t.ReadCloser.Close()
-	werr := t.WriteCloser.Close()
+// Close closes c's underlying ReadCloser and WriteCloser.
+func (c *Connection) Close() error {
+	rerr := c.ReadCloser.Close()
+	werr := c.WriteCloser.Close()
 	if rerr != nil {
 		return rerr
 	}
@@ -69,7 +73,10 @@ func (k *Key) Close() error {
 	if err := k.cmd.Process.Kill(); err != nil {
 		return fmt.Errorf("failed to kill signer process: %w", err)
 	}
-	return k.cmd.Wait()
+	if err := k.cmd.Wait(); err.Error() != "signal: killed" {
+		return fmt.Errorf("signer process was not killed: %w", err)
+	}
+	return nil
 }
 
 // Public returns the public key for this Key.
@@ -114,7 +121,7 @@ func Cred(configFilePath string) (*Key, error) {
 	if err != nil {
 		return nil, err
 	}
-	k.client = rpc.NewClient(&Transport{kout, kin})
+	k.client = rpc.NewClient(&Connection{kout, kin})
 
 	if err := k.cmd.Start(); err != nil {
 		return nil, fmt.Errorf("starting enterprise cert signer subprocess: %w", err)

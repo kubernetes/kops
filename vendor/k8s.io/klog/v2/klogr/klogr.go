@@ -85,7 +85,11 @@ func flatten(kvList ...interface{}) string {
 		if i+1 < len(kvList) {
 			v = kvList[i+1]
 		}
-		keys = append(keys, k)
+		// Only print each key once...
+		if _, seen := vals[k]; !seen {
+			keys = append(keys, k)
+		}
+		// ... with the latest value.
 		vals[k] = v
 	}
 	sort.Strings(keys)
@@ -119,16 +123,15 @@ func (l klogger) Info(level int, msg string, kvList ...interface{}) {
 	switch l.format {
 	case FormatSerialize:
 		msgStr := flatten("msg", msg)
-		trimmed := serialize.TrimDuplicates(l.values, kvList)
-		fixedStr := flatten(trimmed[0]...)
-		userStr := flatten(trimmed[1]...)
-		klog.V(klog.Level(level)).InfoDepth(l.callDepth+1, l.prefix, " ", msgStr, " ", fixedStr, " ", userStr)
+		merged := serialize.MergeKVs(l.values, kvList)
+		kvStr := flatten(merged...)
+		klog.V(klog.Level(level)).InfoDepth(l.callDepth+1, l.prefix, " ", msgStr, " ", kvStr)
 	case FormatKlog:
-		trimmed := serialize.TrimDuplicates(l.values, kvList)
+		merged := serialize.MergeKVs(l.values, kvList)
 		if l.prefix != "" {
 			msg = l.prefix + ": " + msg
 		}
-		klog.V(klog.Level(level)).InfoSDepth(l.callDepth+1, msg, append(trimmed[0], trimmed[1]...)...)
+		klog.V(klog.Level(level)).InfoSDepth(l.callDepth+1, msg, merged...)
 	}
 }
 
@@ -145,16 +148,15 @@ func (l klogger) Error(err error, msg string, kvList ...interface{}) {
 	switch l.format {
 	case FormatSerialize:
 		errStr := flatten("error", loggableErr)
-		trimmed := serialize.TrimDuplicates(l.values, kvList)
-		fixedStr := flatten(trimmed[0]...)
-		userStr := flatten(trimmed[1]...)
-		klog.ErrorDepth(l.callDepth+1, l.prefix, " ", msgStr, " ", errStr, " ", fixedStr, " ", userStr)
+		merged := serialize.MergeKVs(l.values, kvList)
+		kvStr := flatten(merged...)
+		klog.ErrorDepth(l.callDepth+1, l.prefix, " ", msgStr, " ", errStr, " ", kvStr)
 	case FormatKlog:
-		trimmed := serialize.TrimDuplicates(l.values, kvList)
+		merged := serialize.MergeKVs(l.values, kvList)
 		if l.prefix != "" {
 			msg = l.prefix + ": " + msg
 		}
-		klog.ErrorSDepth(l.callDepth+1, err, msg, append(trimmed[0], trimmed[1]...)...)
+		klog.ErrorSDepth(l.callDepth+1, err, msg, merged...)
 	}
 }
 
