@@ -92,14 +92,17 @@ func defaultStageLocation(kopsRoot string) (string, error) {
 		jobName = defaultJobName
 	}
 
-	cmd := exec.Command("git", "rev-parse", "--short", "HEAD")
-	cmd.SetDir(kopsRoot)
-	output, err := exec.CombinedOutputLines(cmd)
-	if err != nil {
-		return "", err
-	} else if len(output) != 1 {
-		return "", fmt.Errorf("unexpected output from git describe: %v", output)
+	sha := os.Getenv("PULL_PULL_SHA")
+	if sha == "" {
+		cmd := exec.Command("git", "rev-parse", "--short", "HEAD")
+		cmd.SetDir(kopsRoot)
+		output, err := exec.CombinedOutputLines(cmd)
+		if err != nil {
+			return "", err
+		} else if len(output) != 1 {
+			return "", fmt.Errorf("unexpected output from git describe: %v", output)
+		}
+		sha = strings.TrimSpace(output[0])
 	}
-	sha := strings.TrimSpace(output[0])
 	return fmt.Sprintf(defaultGCSPath, jobName, sha), nil
 }
