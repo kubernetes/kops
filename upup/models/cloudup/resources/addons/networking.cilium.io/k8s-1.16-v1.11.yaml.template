@@ -1,5 +1,6 @@
 {{ with .Networking.Cilium }}
 {{ $semver := (trimPrefix "v" .Version) }}
+{{ $healthPort := (ternary 9879 9876 (semverCompare ">=1.11.6" $semver)) }}
 {{- if CiliumSecret }}
 apiVersion: v1
 kind: Secret
@@ -584,11 +585,6 @@ spec:
   template:
     metadata:
       annotations:
-        # This annotation plus the CriticalAddonsOnly toleration makes
-        # cilium to be a critical pod in the cluster, which ensures cilium
-        # gets priority scheduling.
-        # https://kubernetes.io/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods/
-        scheduler.alpha.kubernetes.io/critical-pod: ""
         {{ if .EnablePrometheusMetrics }}
         # Annotation required for prometheus auto-discovery scraping
         # https://docs.cilium.io/en/v1.9/operations/metrics/#installation
@@ -620,7 +616,7 @@ spec:
           httpGet:
             host: '{{- if IsIPv6Only -}}::1{{- else -}}127.0.0.1{{- end -}}'
             path: /healthz
-            port: 9876
+            port: {{ $healthPort }}
             scheme: HTTP
             httpHeaders:
             - name: "brief"
@@ -632,7 +628,7 @@ spec:
           httpGet:
             host: '{{- if IsIPv6Only -}}::1{{- else -}}127.0.0.1{{- end -}}'
             path: /healthz
-            port: 9876
+            port: {{ $healthPort }}
             scheme: HTTP
             httpHeaders:
             - name: "brief"
@@ -649,7 +645,7 @@ spec:
           httpGet:
             host: '{{- if IsIPv6Only -}}::1{{- else -}}127.0.0.1{{- end -}}'
             path: /healthz
-            port: 9876
+            port: {{ $healthPort }}
             scheme: HTTP
             httpHeaders:
             - name: "brief"
