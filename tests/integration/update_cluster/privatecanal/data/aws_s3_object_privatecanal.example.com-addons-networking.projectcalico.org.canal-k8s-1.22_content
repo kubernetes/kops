@@ -4739,7 +4739,7 @@ metadata:
 
 ---
 
-apiVersion: policy/v1
+apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
   creationTimestamp: null
