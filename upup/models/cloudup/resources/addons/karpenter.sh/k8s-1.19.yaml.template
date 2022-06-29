@@ -282,33 +282,38 @@ kind: ClusterRole
 metadata:
   name: karpenter-controller
 rules:
+# Read
 - apiGroups: ["karpenter.sh"]
-  resources: ["provisioners"]
+  resources: ["provisioners", "provisioners/status"]
   verbs: ["get", "list", "watch"]
-- apiGroups: ["karpenter.sh"]
-  resources: ["provisioners/status"]
-  verbs: ["create", "delete", "patch", "get", "list", "watch"]
+- apiGroups: ["karpenter.k8s.aws"]
+  resources: ["awsnodetemplates"]
+  verbs: ["get", "list", "watch"]
 - apiGroups: [""]
-  resources: ["persistentvolumes", "persistentvolumeclaims"]
-  verbs: ["get", "list", "watch", "update"]
+  resources: ["pods", "nodes", "persistentvolumes", "persistentvolumeclaims"]
+  verbs: ["get", "list", "watch"]
 - apiGroups: ["storage.k8s.io"]
-  resources: ["storageclasses"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: [""]
-  resources: ["nodes", "pods"]
-  verbs: ["get", "list", "watch", "patch", "delete"]
-- apiGroups: [""]
-  resources: ["configmaps"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: [""]
-  resources: ["nodes"]
-  verbs: ["create"]
-- apiGroups: [""]
-  resources: ["pods/binding", "pods/eviction"]
-  verbs: ["create"]
+  resources: ["storageclasses", "csinodes"]
+  verbs: ["get", "watch", "list"]
 - apiGroups: ["apps"]
   resources: ["daemonsets"]
   verbs: ["list", "watch"]
+# Write
+- apiGroups: ["karpenter.sh"]
+  resources: ["provisioners/status"]
+  verbs: ["create", "delete", "patch"]
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["create", "patch"]
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["create", "patch", "delete"]
+- apiGroups: [""]
+  resources: ["pods/eviction"]
+  verbs: ["create"]
+- apiGroups: [""]
+  resources: ["persistentvolumeclaims"]
+  verbs: ["update"]
 ---
 # Source: karpenter/templates/webhook/rbac.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -318,7 +323,15 @@ metadata:
 rules:
 - apiGroups: ["admissionregistration.k8s.io"]
   resources: ["validatingwebhookconfigurations", "mutatingwebhookconfigurations"]
-  verbs: ["get", "watch", "list", "update"]
+  verbs: ["get", "watch", "list"]
+- apiGroups: ["admissionregistration.k8s.io"]
+  resources: ["validatingwebhookconfigurations"]
+  verbs: ["update"]
+  resourceNames: ["validation.webhook.provisioners.karpenter.sh", "validation.webhook.config.karpenter.sh"]
+- apiGroups: ["admissionregistration.k8s.io"]
+  resources: ["mutatingwebhookconfigurations"]
+  verbs: ["update"]
+  resourceNames: ["defaulting.webhook.provisioners.karpenter.sh"]
 ---
 # Source: karpenter/templates/controller/rbac.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -355,14 +368,39 @@ metadata:
   name: karpenter-controller
   namespace: kube-system
 rules:
+# Read
+- apiGroups: ["coordination.k8s.io"]
+  resources: ["leases"]
+  verbs: ["get", "watch"]
+- apiGroups: [""]
+  resources: ["configmaps", "namespaces", "secrets"]
+  verbs: ["get", "list", "watch"]
+# Write
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["update"]
+  resourceNames: ["karpenter-webhook-cert"]
 - apiGroups: [""]
   resources: ["configmaps"]
-  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  verbs: ["update", "patch", "delete"]
+  resourceNames:
+    - karpenter-config-logging
+- apiGroups: ["coordination.k8s.io"]
+  resources: ["leases"]
+  verbs: ["patch", "update"]
+  resourceNames:
+    - "karpenter-leader-election"
+    - "webhook.configmapwebhook.00-of-01"
+    - "webhook.defaultingwebhook.00-of-01"
+    - "webhook.validationwebhook.00-of-01"
+    - "webhook.webhookcertificates.00-of-01"
+# Cannot specify resourceNames on create
+# https://kubernetes.io/docs/reference/access-authn-authz/rbac/#referring-to-resources
+- apiGroups: ["coordination.k8s.io"]
+  resources: ["leases"]
+  verbs: ["create"]
 - apiGroups: [""]
-  resources: ["configmaps/status"]
-  verbs: ["get", "update", "patch"]
-- apiGroups: [""]
-  resources: ["events"]
+  resources: ["configmaps"]
   verbs: ["create"]
 ---
 # Source: karpenter/templates/webhook/rbac.yaml
@@ -472,7 +510,7 @@ spec:
       dnsPolicy: Default
       containers:
         - name: controller
-          image: public.ecr.aws/karpenter/controller:v0.10.0
+          image: public.ecr.aws/karpenter/controller:v0.13.1
           imagePullPolicy: IfNotPresent
           resources:
             limits:
@@ -574,7 +612,7 @@ spec:
       dnsPolicy: Default
       containers:
         - name: webhook
-          image: public.ecr.aws/karpenter/webhook:v0.10.0
+          image: public.ecr.aws/karpenter/webhook:v0.13.1
           imagePullPolicy: IfNotPresent
           args:
             - -port=8443
@@ -677,6 +715,17 @@ webhooks:
   name: defaulting.webhook.provisioners.karpenter.sh
   rules:
   - apiGroups:
+    - karpenter.k8s.aws
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - awsnodetemplates
+    - awsnodetemplates/status
+    scope: '*'
+  - apiGroups:
     - karpenter.sh
     apiVersions:
     - v1alpha5
@@ -702,6 +751,18 @@ webhooks:
   sideEffects: None
   name: validation.webhook.provisioners.karpenter.sh
   rules:
+  - apiGroups:
+    - karpenter.k8s.aws
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    - DELETE
+    resources:
+    - awsnodetemplates
+    - awsnodetemplates/status
+    scope: '*'
   - apiGroups:
     - karpenter.sh
     apiVersions:
