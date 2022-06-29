@@ -34,7 +34,7 @@ When a PR builds successfully, you can test the PR using the following script:
 ```sh
 pr=13208
 sha=$(curl -s -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/kubernetes/kops/pulls/${pr} | jq -r .head.sha )
-export KOPS_BASE_URL=https://storage.googleapis.com/kops-ci/pulls/pull-kops-e2e-kubernetes-aws/pull-v1.24.0-alpha.2-68-g8a1070a1b9
+export KOPS_BASE_URL="https://storage.googleapis.com/kops-ci/pulls/pull-kops-e2e-kubernetes-aws/pull-${sha}"
 wget -q "$KOPS_BASE_URL/$(go env GOOS)/$(go env GOARCH)/kops"
 chmod +x ./kops
 ./kops version
