@@ -4383,7 +4383,7 @@ spec:
             - name: IP
               value: "{{- if not IsIPv6Only -}}autodetect{{- else -}}none{{- end -}}"
             - name: IP6
-              value: "{{- if CalicoUseIPv6) -}}autodetect{{- else -}}none{{- end -}}"
+              value: "{{- if CalicoUseIPv6 -}}autodetect{{- else -}}none{{- end -}}"
             {{- if IsIPv6Only }}
             - name: IP_AUTODETECTION_METHOD
               value: "{{- or .Networking.Calico.IPv4AutoDetectionMethod "none" }}"

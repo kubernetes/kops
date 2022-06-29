@@ -248,6 +248,10 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 			return "CrossSubnet"
 		}
 		dest["CalicoUseIPv6"] = func() bool {
+			// TODO:
+			// In the templates this is done:
+			// value: "{{- or .Networking.Calico.IPv6AutoDetectionMethod "none" }}"
+			// But doc states that default is "first-found", so this might not work like expected (IPv6 always on)
 			return cluster.Spec.IsIPv6Only() || c.IPv6AutoDetectionMethod != "none"
 		}
 	}
