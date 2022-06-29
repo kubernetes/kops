@@ -199,7 +199,7 @@ func (i integrationTest) withDefaultAddons24() *integrationTest {
 const (
 	awsCCMAddon         = "aws-cloud-controller.addons.k8s.io-k8s-1.18"
 	awsEBSCSIAddon      = "aws-ebs-csi-driver.addons.k8s.io-k8s-1.17"
-	calicoAddon         = "networking.projectcalico.org-k8s-1.23"
+	calicoAddon         = "networking.projectcalico.org-k8s-1.22"
 	certManagerAddon    = "certmanager.io-k8s-1.16"
 	ciliumAddon         = "networking.cilium.io-k8s-1.16"
 	dnsControllerAddon  = "dns-controller.addons.k8s.io-k8s-1.12"
