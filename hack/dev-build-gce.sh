@@ -44,7 +44,4 @@ KOPS_STATE_STORE="gs://kops-state-$(gcloud config get-value project)"
 export KOPS_STATE_STORE
 gsutil ls "${KOPS_STATE_STORE}" || gsutil mb "${KOPS_STATE_STORE}" || return
 
-# Set feature flags needed on GCE
-export KOPS_FEATURE_FLAGS=AlphaAllowGCE
-
 echo "SUCCESS"

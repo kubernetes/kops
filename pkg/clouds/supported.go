@@ -25,13 +25,11 @@ func SupportedClouds() []kops.CloudProviderID {
 	clouds := []kops.CloudProviderID{
 		kops.CloudProviderAWS,
 		kops.CloudProviderDO,
+		kops.CloudProviderGCE,
 		kops.CloudProviderOpenstack,
 	}
 	if featureflag.Azure.Enabled() {
 		clouds = append(clouds, kops.CloudProviderAzure)
-	}
-	if featureflag.AlphaAllowGCE.Enabled() {
-		clouds = append(clouds, kops.CloudProviderGCE)
 	}
 	if featureflag.Hetzner.Enabled() {
 		clouds = append(clouds, kops.CloudProviderHetzner)
