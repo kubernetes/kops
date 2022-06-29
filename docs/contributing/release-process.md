@@ -73,7 +73,7 @@ git add . && git commit -m "Release ${VERSION}"
 This is the "release commit". Push and create a PR.
 
 ```
-gh pr create -f
+gh pr create -f -l tide/merge-method-squash
 ```
 
 Wait for the PR to merge.
