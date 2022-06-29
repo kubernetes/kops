@@ -878,10 +878,10 @@ resource "aws_s3_object" "privatecalico-example-com-addons-limit-range-addons-k8
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_object" "privatecalico-example-com-addons-networking-projectcalico-org-k8s-1-23" {
+resource "aws_s3_object" "privatecalico-example-com-addons-networking-projectcalico-org-k8s-1-21" {
   bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_object_privatecalico.example.com-addons-networking.projectcalico.org-k8s-1.23_content")
-  key                    = "clusters.example.com/privatecalico.example.com/addons/networking.projectcalico.org/k8s-1.23.yaml"
+  content                = file("${path.module}/data/aws_s3_object_privatecalico.example.com-addons-networking.projectcalico.org-k8s-1.21_content")
+  key                    = "clusters.example.com/privatecalico.example.com/addons/networking.projectcalico.org/k8s-1.21.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
