@@ -53,8 +53,8 @@ spec:
     selector:
       k8s-addon: storage-aws.addons.k8s.io
     version: 9.99.0
-  - id: k8s-1.23
-    manifest: networking.projectcalico.org/k8s-1.23.yaml
+  - id: k8s-1.22
+    manifest: networking.projectcalico.org/k8s-1.22.yaml
     manifestHash: 881a7a81b9197ad49624cc3894c497a812d5f629c9ec31cd69b6ddae0fafe5c1
     name: networking.projectcalico.org
     selector:
