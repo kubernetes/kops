@@ -247,6 +247,9 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 			}
 			return "CrossSubnet"
 		}
+		dest["CalicoUseIPv6"] = func() bool {
+			return cluster.Spec.IsIPv6Only() || c.IPv6AutoDetectionMethod != "none"
+		}
 	}
 
 	if cluster.Spec.Networking != nil && cluster.Spec.Networking.Cilium != nil {

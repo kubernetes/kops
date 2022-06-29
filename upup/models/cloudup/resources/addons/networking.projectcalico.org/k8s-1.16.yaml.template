@@ -49,7 +49,7 @@ data:
           "mtu": __CNI_MTU__,
           "ipam": {
               "assign_ipv4": "{{ not IsIPv6Only }}",
-              "assign_ipv6": "{{ IsIPv6Only }}",
+              "assign_ipv6": "{{ CalicoUseIPv6 }}",
               {{- if IsIPv6Only }}
               "type": "host-local",
               "ranges": [[{ "subnet": "usePodCidr" }]]
@@ -3916,7 +3916,7 @@ rules:
     resources:
       - endpointslices
     verbs:
-      - watch 
+      - watch
       - list
   - apiGroups: [""]
     resources:
@@ -4383,7 +4383,7 @@ spec:
             - name: IP
               value: "{{- if not IsIPv6Only -}}autodetect{{- else -}}none{{- end -}}"
             - name: IP6
-              value: "{{- if IsIPv6Only -}}autodetect{{- else -}}none{{- end -}}"
+              value: "{{- if CalicoUseIPv6) -}}autodetect{{- else -}}none{{- end -}}"
             {{- if IsIPv6Only }}
             - name: IP_AUTODETECTION_METHOD
               value: "{{- or .Networking.Calico.IPv4AutoDetectionMethod "none" }}"
@@ -4430,6 +4430,8 @@ spec:
             {{- else }}
             - name: CALICO_IPV4POOL_CIDR
               value: "{{ .KubeControllerManager.ClusterCIDR }}"
+            - name: CALICO_IPV6POOL_NAT_OUTGOING
+              value: "{{- CalicoUseIPv6 }}"
             {{- end }}
             # Disable file logging so `kubectl logs` works.
             - name: CALICO_DISABLE_FILE_LOGGING
@@ -4439,7 +4441,7 @@ spec:
               value: "ACCEPT"
             # Set IPv6 on Kubernetes.
             - name: FELIX_IPV6SUPPORT
-              value: "{{ IsIPv6Only }}"
+              value: "{{ CalicoUseIPv6 }}"
             - name: FELIX_HEALTHENABLED
               value: "true"
 
