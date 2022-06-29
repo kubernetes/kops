@@ -720,10 +720,10 @@ resource "aws_s3_object" "minimal-ipv6-example-com-addons-limit-range-addons-k8s
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_object" "minimal-ipv6-example-com-addons-networking-projectcalico-org-k8s-1-23" {
+resource "aws_s3_object" "minimal-ipv6-example-com-addons-networking-projectcalico-org-k8s-1-22" {
   bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_object_minimal-ipv6.example.com-addons-networking.projectcalico.org-k8s-1.23_content")
-  key                    = "clusters.example.com/minimal-ipv6.example.com/addons/networking.projectcalico.org/k8s-1.23.yaml"
+  content                = file("${path.module}/data/aws_s3_object_minimal-ipv6.example.com-addons-networking.projectcalico.org-k8s-1.22_content")
+  key                    = "clusters.example.com/minimal-ipv6.example.com/addons/networking.projectcalico.org/k8s-1.22.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
