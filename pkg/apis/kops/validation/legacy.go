@@ -424,7 +424,10 @@ func validateServiceAccountIssuerDiscovery(c *kops.Cluster, said *kops.ServiceAc
 		} else {
 			switch base := base.(type) {
 			case *vfs.S3Path:
-				// OK
+				// S3 bucket should not contain dots because of the wildcard certificate
+				if strings.Contains(base.Bucket(), ".") {
+					allErrs = append(allErrs, field.Invalid(saidStoreField, saidStore, "Bucket name cannot contain dots"))
+				}
 			case *vfs.MemFSPath:
 				// memfs is ok for tests; not OK otherwise
 				if !base.IsClusterReadable() {
