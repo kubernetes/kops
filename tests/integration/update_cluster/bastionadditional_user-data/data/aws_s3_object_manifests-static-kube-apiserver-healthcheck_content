@@ -8,7 +8,7 @@ spec:
     - --ca-cert=/secrets/ca.crt
     - --client-cert=/secrets/client.crt
     - --client-key=/secrets/client.key
-    image: registry.k8s.io/kops/kube-apiserver-healthcheck:1.24.0-beta.1
+    image: registry.k8s.io/kops/kube-apiserver-healthcheck:1.25.0-alpha.1
     livenessProbe:
       httpGet:
         host: 127.0.0.1
