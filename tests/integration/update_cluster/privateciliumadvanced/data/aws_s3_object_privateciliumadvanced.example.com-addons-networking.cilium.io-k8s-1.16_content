@@ -331,8 +331,6 @@ spec:
       kubernetes.io/cluster-service: "true"
   template:
     metadata:
-      annotations:
-        scheduler.alpha.kubernetes.io/critical-pod: ""
       creationTimestamp: null
       labels:
         k8s-app: cilium
@@ -382,7 +380,7 @@ spec:
           value: api.internal.privateciliumadvanced.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/cilium:v1.11.5
+        image: quay.io/cilium/cilium:v1.11.6
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -402,7 +400,7 @@ spec:
             - name: brief
               value: "true"
             path: /healthz
-            port: 9876
+            port: 9879
             scheme: HTTP
           periodSeconds: 30
           successThreshold: 1
@@ -416,7 +414,7 @@ spec:
             - name: brief
               value: "true"
             path: /healthz
-            port: 9876
+            port: 9879
             scheme: HTTP
           initialDelaySeconds: 5
           periodSeconds: 30
@@ -436,7 +434,7 @@ spec:
             - name: brief
               value: "true"
             path: /healthz
-            port: 9876
+            port: 9879
             scheme: HTTP
           periodSeconds: 2
           successThreshold: null
@@ -484,7 +482,7 @@ spec:
               key: clean-cilium-bpf-state
               name: cilium-config
               optional: true
-        image: quay.io/cilium/cilium:v1.11.5
+        image: quay.io/cilium/cilium:v1.11.6
         imagePullPolicy: IfNotPresent
         name: clean-cilium-state
         resources:
@@ -631,7 +629,7 @@ spec:
           value: api.internal.privateciliumadvanced.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/operator:v1.11.5
+        image: quay.io/cilium/operator:v1.11.6
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
