@@ -540,7 +540,7 @@ nextFirewallRule:
 
 		// We consider only firewall rules that target our cluster tags, which include the cluster name or hash
 		tagPrefix := gce.SafeClusterName(d.clusterName) + "-"
-		clusterNameHash := truncate.HashString(d.clusterName, 6)
+		clusterNameHash := truncate.HashString(gce.SafeClusterName(d.clusterName), 6)
 		if len(firewallRule.TargetTags) != 0 {
 			tagMatchCount := 0
 			for _, target := range firewallRule.TargetTags {
@@ -1241,12 +1241,9 @@ func (d *clusterDiscoveryGCE) matchesClusterNameMultipart(name string, maxParts 
 		}
 
 		safeName := gce.SafeObjectName(id, d.clusterName)
-		suffixedName, err := gce.ClusterSuffixedName(id, d.clusterName, 63)
-		if err != nil {
-			return false
-		}
+		clusterNameHash := truncate.HashString(gce.SafeClusterName(d.clusterName), 6)
 
-		if name == safeName || name == suffixedName {
+		if name == safeName || strings.Contains(name, clusterNameHash) {
 			return true
 		}
 	}
