@@ -4257,6 +4257,14 @@ rules:
   verbs:
   - patch
 - apiGroups:
+  - ""
+  resourceNames:
+  - calico-node
+  resources:
+  - serviceaccounts/token
+  verbs:
+  - create
+- apiGroups:
   - crd.projectcalico.org
   resources:
   - globalfelixconfigs
@@ -4458,7 +4466,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/node:v3.23.1
+        image: docker.io/calico/node:v3.23.2
         lifecycle:
           preStop:
             exec:
@@ -4571,7 +4579,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/cni:v3.23.1
+        image: docker.io/calico/cni:v3.23.2
         name: install-cni
         securityContext:
           privileged: true
@@ -4697,7 +4705,7 @@ spec:
           value: node
         - name: DATASTORE_TYPE
           value: kubernetes
-        image: docker.io/calico/kube-controllers:v3.23.1
+        image: docker.io/calico/kube-controllers:v3.23.2
         livenessProbe:
           exec:
             command:
