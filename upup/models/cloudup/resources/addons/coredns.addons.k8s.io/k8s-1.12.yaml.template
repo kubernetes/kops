@@ -77,7 +77,7 @@ data:
           ttl 30
         }
     {{- if GossipDomains }}
-        hosts /etc/coredns/hosts {{ join GossipDomains " " }} {
+        hosts /rootfs/etc/hosts {{ join GossipDomains " " }} {
           ttl 30
           fallthrough
         }
@@ -164,6 +164,11 @@ spec:
         - name: config-volume
           mountPath: /etc/coredns
           readOnly: true
+{{- if GossipDomains }}
+        - name: etc-hosts
+          mountPath: /rootfs/etc/hosts
+          readOnly: true
+{{- end }}
         ports:
         - containerPort: 53
           name: dns
@@ -201,6 +206,12 @@ spec:
         - name: config-volume
           configMap:
             name: coredns
+{{- if GossipDomains }}
+        - name: etc-hosts
+          hostPath:
+            path: /etc/hosts
+            type: File
+{{- end }}
 ---
 apiVersion: v1
 kind: Service
