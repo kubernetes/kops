@@ -34,11 +34,13 @@ func (r *ServiceAccount) BuildAWSPolicy(b *iam.PolicyBuilder) (*iam.Policy, erro
 
 	var enableWAF bool
 	var enableWAFv2 bool
+	var enableShield bool
 	if c := b.Cluster.Spec.AWSLoadBalancerController; c != nil {
 		enableWAF = c.EnableWAF
 		enableWAFv2 = c.EnableWAFv2
+		enableShield = c.EnableShield
 	}
-	iam.AddAWSLoadbalancerControllerPermissions(p, enableWAF, enableWAFv2)
+	iam.AddAWSLoadbalancerControllerPermissions(p, enableWAF, enableWAFv2, enableShield)
 
 	return p, nil
 }
