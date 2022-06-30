@@ -95,7 +95,7 @@ fi
 kubectl get nodes -owide --kubeconfig "${KUBECONFIG_A}"
 
 # Sleep to ensure channels has done its thing
-sleep 60s
+sleep 120s
 
 ${CHANNELS} apply channel "$KOPS_STATE_STORE"/"${CLUSTER_NAME}"/addons/bootstrap-channel.yaml --yes -v4
 
