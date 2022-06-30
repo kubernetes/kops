@@ -304,7 +304,7 @@ func (c *gceCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]f
 	var ingresses []fi.ApiIngressStatus
 
 	// Note that this must match GCEModelContext::NameForForwardingRule
-	name := SafeObjectName("api", cluster.ObjectMeta.Name)
+	name := ClusterSuffixedName("api", cluster.ObjectMeta.Name, 63)
 
 	klog.V(2).Infof("Querying GCE to find ForwardingRules for API (%q)", name)
 	// These are the ingress rules, so we search for them in the network project.
