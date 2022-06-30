@@ -90,6 +90,8 @@ spec:
         - --token-audience=amazonaws.com
         - --logtostderr
         - --watch-config-map
+        - --sts-regional-endpoint
+        - --aws-default-region={{ Region }}
         - --v=5
         readinessProbe:
           httpGet:
