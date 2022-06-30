@@ -262,6 +262,10 @@ spec:
                 description: AWSLoadbalancerControllerConfig determines the AWS LB
                   controller configuration.
                 properties:
+                  enableShield:
+                    description: 'EnableShield specifies whether the controller can
+                      enable Shield Advanced. Default: false'
+                    type: boolean
                   enableWAF:
                     description: 'EnableWAF specifies whether the controller can use
                       WAFs (Classic Regional). Default: false'

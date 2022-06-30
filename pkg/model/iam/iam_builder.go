@@ -425,7 +425,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		}
 
 		if c := b.Cluster.Spec.AWSLoadBalancerController; c != nil && fi.BoolValue(b.Cluster.Spec.AWSLoadBalancerController.Enabled) {
-			AddAWSLoadbalancerControllerPermissions(p, c.EnableWAF, c.EnableWAFv2)
+			AddAWSLoadbalancerControllerPermissions(p, c.EnableWAF, c.EnableWAFv2, c.EnableShield)
 		}
 
 		var useStaticInstanceList bool
@@ -956,7 +956,7 @@ func AddCCMPermissions(p *Policy, cloudRoutes bool) {
 }
 
 // AddAWSLoadbalancerControllerPermissions adds the permissions needed for the AWS Load Balancer Controller to the givnen policy
-func AddAWSLoadbalancerControllerPermissions(p *Policy, enableWAF bool, enableWAFv2 bool) {
+func AddAWSLoadbalancerControllerPermissions(p *Policy, enableWAF, enableWAFv2, enableShield bool) {
 	p.unconditionalAction.Insert(
 		"acm:DescribeCertificate",
 		"acm:ListCertificates",
@@ -998,6 +998,16 @@ func AddAWSLoadbalancerControllerPermissions(p *Policy, enableWAF bool, enableWA
 			"wafv2:GetWebACLForResource",
 		)
 	}
+
+	if enableShield {
+		p.unconditionalAction.Insert(
+			"shield:GetSubscriptionState",
+			"shield:DescribeProtection",
+			"shield:CreateProtection",
+			"shield:DeleteProtection",
+		)
+	}
+
 	p.clusterTaggedAction.Insert(
 		"ec2:AuthorizeSecurityGroupIngress", // aws.go
 		"ec2:DeleteSecurityGroup",           // aws.go
