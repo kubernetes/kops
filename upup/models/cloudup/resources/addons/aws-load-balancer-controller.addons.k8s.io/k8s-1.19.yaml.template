@@ -744,7 +744,7 @@ spec:
         - --cluster-name={{ ClusterName }}
         - --enable-waf={{ .AWSLoadBalancerController.EnableWAF }}
         - --enable-wafv2={{ .AWSLoadBalancerController.EnableWAFv2 }}
-        - --enable-shield=false
+        - --enable-shield={{ .AWSLoadBalancerController.EnableShield }}
         - --ingress-class=alb
         - "--default-tags={{ CloudLabels }}"
         - --aws-region={{ Region }}

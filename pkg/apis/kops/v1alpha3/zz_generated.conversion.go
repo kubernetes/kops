@@ -1336,6 +1336,7 @@ func autoConvert_v1alpha3_AWSLoadBalancerControllerConfig_To_kops_AWSLoadBalance
 	out.Version = in.Version
 	out.EnableWAF = in.EnableWAF
 	out.EnableWAFv2 = in.EnableWAFv2
+	out.EnableShield = in.EnableShield
 	return nil
 }
 
@@ -1349,6 +1350,7 @@ func autoConvert_kops_AWSLoadBalancerControllerConfig_To_v1alpha3_AWSLoadBalance
 	out.Version = in.Version
 	out.EnableWAF = in.EnableWAF
 	out.EnableWAFv2 = in.EnableWAFv2
+	out.EnableShield = in.EnableShield
 	return nil
 }
 
