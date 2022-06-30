@@ -1012,10 +1012,7 @@ func (d *clusterDiscoveryGCE) listServiceAccounts() ([]*resources.Resource, erro
 		accountID := tokens[0]
 		names := []string{gce.ControlPlane, gce.Bastion, gce.Node}
 		for _, name := range names {
-			generatedName, err := gce.ServiceAccountName(name, d.clusterName)
-			if err != nil {
-				return nil, err
-			}
+			generatedName := gce.ServiceAccountName(name, d.clusterName)
 			if generatedName == accountID {
 				resourceTracker := &resources.Resource{
 					Name:    gce.LastComponent(sa.Name),
