@@ -74,7 +74,6 @@ func (a *Attributes) SetPermissions(perms FileMode) {
 // GetACModTime returns the ATime and MTime fields and a bool that is true if and only if the values are valid/defined.
 func (a *Attributes) GetACModTime() (atime, mtime uint32, ok bool) {
 	return a.ATime, a.MTime, a.Flags&AttrACModTime != 0
-	return a.ATime, a.MTime, a.Flags&AttrACModTime != 0
 }
 
 // SetACModTime is a convenience function that sets the ATime and MTime fields,

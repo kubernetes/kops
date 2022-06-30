@@ -138,12 +138,16 @@ func (c *CertificateClient) Get(ctx context.Context, idOrName string) (*Certific
 type CertificateListOpts struct {
 	ListOpts
 	Name string
+	Sort []string
 }
 
 func (l CertificateListOpts) values() url.Values {
 	vals := l.ListOpts.values()
 	if l.Name != "" {
 		vals.Add("name", l.Name)
+	}
+	for _, sort := range l.Sort {
+		vals.Add("sort", sort)
 	}
 	return vals
 }

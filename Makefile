@@ -308,6 +308,12 @@ gomod:
 	cd tests/e2e; go mod tidy
 	cd hack; go mod tidy
 
+.PHONY: goget
+goget:
+	go get $(shell go list -f '{{if not (or .Main .Indirect)}}{{.Path}}{{end}}' -mod=mod -m all)
+
+.PHONY: depup
+depup: goget gomod gen-cli-docs
 
 .PHONY: gofmt
 gofmt:
