@@ -61,11 +61,7 @@ func (c *GCEModelContext) NameForIPAliasRange(key string) string {
 func (c *GCEModelContext) LinkToSubnet(subnet *kops.ClusterSubnetSpec) *gcetasks.Subnet {
 	name := subnet.ProviderID
 	if name == "" {
-		var err error
-		name, err = gce.ClusterSuffixedName(subnet.Name, c.Cluster.ObjectMeta.Name, 63)
-		if err != nil {
-			klog.Fatalf("failed to construct subnet name: %w", err)
-		}
+		name = gce.ClusterSuffixedName(subnet.Name, c.Cluster.ObjectMeta.Name, 63)
 	}
 
 	return &gcetasks.Subnet{Name: s(name)}
@@ -119,11 +115,7 @@ func (c *GCEModelContext) NameForHealthcheck(id string) string {
 }
 
 func (c *GCEModelContext) NameForFirewallRule(id string) string {
-	name, err := gce.ClusterSuffixedName(id, c.Cluster.ObjectMeta.Name, 63)
-	if err != nil {
-		klog.Fatalf("failed to construct firewallrule name: %w", err)
-	}
-	return name
+	return gce.ClusterSuffixedName(id, c.Cluster.ObjectMeta.Name, 63)
 }
 
 func (c *GCEModelContext) NetworkingIsIPAlias() bool {
@@ -163,10 +155,7 @@ func (c *GCEModelContext) LinkToServiceAccount(ig *kops.InstanceGroup) *gcetasks
 		klog.Fatalf("unknown role %q", role)
 	}
 
-	accountID, err := gce.ServiceAccountName(name, c.ClusterName())
-	if err != nil {
-		klog.Fatalf("failed to construct serviceaccount name: %w", err)
-	}
+	accountID := gce.ServiceAccountName(name, c.ClusterName())
 	projectID := c.ProjectID
 
 	email := accountID + "@" + projectID + ".iam.gserviceaccount.com"
