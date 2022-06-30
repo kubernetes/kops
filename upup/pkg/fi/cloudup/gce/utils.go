@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"google.golang.org/api/googleapi"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/truncate"
 )
 
@@ -52,13 +53,16 @@ func IsNotReady(err error) bool {
 // ClusterPrefixedName returns a cluster-prefixed name, with a maxLength
 func ClusterPrefixedName(objectName string, clusterName string, maxLength int) string {
 	suffix := "-" + objectName
-	suffixLength := maxLength - len(suffix)
+	prefixLength := maxLength - len(suffix)
+	if prefixLength < 10 {
+		klog.Fatalf("cannot construct a reasonable object name of length %d with a suffix of length %d (%q)", maxLength, len(suffix), suffix)
+	}
 
 	// GCE does not support . in tags / names
 	safeClusterName := strings.Replace(clusterName, ".", "-", -1)
 
 	opt := truncate.TruncateStringOptions{
-		MaxLength:     suffixLength,
+		MaxLength:     prefixLength,
 		AlwaysAddHash: false,
 		HashLength:    6,
 	}
@@ -68,11 +72,11 @@ func ClusterPrefixedName(objectName string, clusterName string, maxLength int) s
 }
 
 // ClusterSuffixedName returns a cluster-suffixed name, with a maxLength
-func ClusterSuffixedName(objectName string, clusterName string, maxLength int) (string, error) {
+func ClusterSuffixedName(objectName string, clusterName string, maxLength int) string {
 	prefix := objectName + "-"
 	suffixLength := maxLength - len(prefix)
 	if suffixLength < 10 {
-		return "", fmt.Errorf("cannot construct a reasonable object name of length %d with a prefix of length %d (%q)", maxLength, len(prefix), prefix)
+		klog.Fatalf("cannot construct a reasonable object name of length %d with a prefix of length %d (%q)", maxLength, len(prefix), prefix)
 	}
 
 	// GCE does not support . in tags / names
@@ -85,7 +89,7 @@ func ClusterSuffixedName(objectName string, clusterName string, maxLength int) (
 	}
 	suffix := truncate.TruncateString(safeClusterName, opt)
 
-	return prefix + suffix, nil
+	return prefix + suffix
 }
 
 // SafeClusterName returns a cluster-suffixed name
@@ -105,7 +109,7 @@ func SafeObjectName(name string, clusterName string) string {
 }
 
 // ServiceAccountName returns the cluster-suffixed service-account name
-func ServiceAccountName(name string, clusterName string) (string, error) {
+func ServiceAccountName(name string, clusterName string) string {
 	return ClusterSuffixedName(name, clusterName, 30)
 }
 
