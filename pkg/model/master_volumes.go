@@ -23,7 +23,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/ec2"
 
-	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/upup/pkg/fi"
@@ -276,10 +275,7 @@ func (b *MasterVolumeBuilder) addGCEVolume(c *fi.ModelBuilderContext, prefix str
 	if strings.IndexByte("0123456789-", prefix[0]) != -1 {
 		prefix = "d" + prefix
 	}
-	name, err := gce.ClusterSuffixedName(prefix, b.Cluster.ObjectMeta.Name, 63)
-	if err != nil {
-		klog.Fatalf("failed to construct disk name: %w", err)
-	}
+	name := gce.ClusterSuffixedName(prefix, b.Cluster.ObjectMeta.Name, 63)
 
 	t := &gcetasks.Disk{
 		Name:      fi.String(name),
