@@ -72,6 +72,11 @@ func (c *GCEModelContext) SafeObjectName(name string) string {
 	return gce.SafeObjectName(name, c.Cluster.ObjectMeta.Name)
 }
 
+// SafeSuffixedObjectName returns the object name and cluster name escaped for GCE, limited to 63 chars
+func (c *GCEModelContext) SafeSuffixedObjectName(name string) string {
+	return gce.ClusterSuffixedName(name, c.Cluster.ObjectMeta.Name, 63)
+}
+
 // SafeClusterName returns the cluster name escaped for use as a GCE resource name
 func (c *GCEModelContext) SafeClusterName() string {
 	return gce.SafeClusterName(c.Cluster.ObjectMeta.Name)
@@ -87,7 +92,7 @@ func (c *GCEModelContext) LinkToTargetPool(id string) *gcetasks.TargetPool {
 }
 
 func (c *GCEModelContext) NameForTargetPool(id string) string {
-	return c.SafeObjectName(id)
+	return c.SafeSuffixedObjectName(id)
 }
 
 func (c *GCEModelContext) NameForHealthCheck(id string) string {
@@ -99,11 +104,11 @@ func (c *GCEModelContext) NameForBackendService(id string) string {
 }
 
 func (c *GCEModelContext) NameForForwardingRule(id string) string {
-	return c.SafeObjectName(id)
+	return c.SafeSuffixedObjectName(id)
 }
 
 func (c *GCEModelContext) NameForIPAddress(id string) string {
-	return c.SafeObjectName(id)
+	return c.SafeSuffixedObjectName(id)
 }
 
 func (c *GCEModelContext) NameForPoolHealthcheck(id string) string {
@@ -111,7 +116,7 @@ func (c *GCEModelContext) NameForPoolHealthcheck(id string) string {
 }
 
 func (c *GCEModelContext) NameForHealthcheck(id string) string {
-	return c.SafeObjectName(id)
+	return c.SafeSuffixedObjectName(id)
 }
 
 func (c *GCEModelContext) NameForFirewallRule(id string) string {
