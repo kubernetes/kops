@@ -45,7 +45,16 @@ a given ALB at a time, despite it accepting both the
 "alb.ingress.kubernetes.io/wafv2-acl-arn" annotations on the same
 _Ingress_ object.
 
-Support for this WAF service in kOps is currently **beta**, meaning
+You can enable use of Shield Advanced by including the following fields in the cluster spec:
+
+```yaml
+spec:
+  awsLoadBalancerController:
+    enabled: true
+    enableShield: true
+```
+
+Support for the WAF and Shield services in kOps is currently **beta**, meaning
 that the accepted configuration and the AWS resources involved may
 change.
 
