@@ -1095,6 +1095,9 @@ type AWSLoadBalancerControllerConfig struct {
 	// EnableWAFv2 specifies whether the controller can use WAFs (V2).
 	// Default: false
 	EnableWAFv2 bool `json:"enableWAFv2,omitempty"`
+	// EnableShield specifies whether the controller can enable Shield Advanced.
+	// Default: false
+	EnableShield bool `json:"enableShield,omitempty"`
 }
 
 // HasAdmissionController checks if a specific admission controller is enabled
