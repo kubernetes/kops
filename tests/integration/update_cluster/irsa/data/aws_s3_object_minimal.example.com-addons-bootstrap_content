@@ -47,7 +47,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.16
     manifest: eks-pod-identity-webhook.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: 3cb2a206a51d01886014383dca7a94d99e941a7eb6eec663c607bb14a28fb907
+    manifestHash: 0bec2a812bd438f03cb28b18391b78453430e17c7123c4b87a165cb5a1a03a92
     name: eks-pod-identity-webhook.addons.k8s.io
     needsPKI: true
     selector:
