@@ -267,13 +267,16 @@ func (w *writer) checkExistingManifest(h v1.Hash, mt types.MediaType) (bool, err
 // On success, the layer was either mounted (nothing more to do) or a blob
 // upload was initiated and the body of that blob should be sent to the returned
 // location.
-func (w *writer) initiateUpload(from, mount string) (location string, mounted bool, err error) {
+func (w *writer) initiateUpload(from, mount, origin string) (location string, mounted bool, err error) {
 	u := w.url(fmt.Sprintf("/v2/%s/blobs/uploads/", w.repo.RepositoryStr()))
 	uv := url.Values{}
 	if mount != "" && from != "" {
 		// Quay will fail if we specify a "mount" without a "from".
-		uv["mount"] = []string{mount}
-		uv["from"] = []string{from}
+		uv.Set("mount", mount)
+		uv.Set("from", from)
+		if origin != "" {
+			uv.Set("origin", origin)
+		}
 	}
 	u.RawQuery = uv.Encode()
 
@@ -334,16 +337,29 @@ func (r *progressReader) Close() error { return r.rc.Close() }
 // streamBlob streams the contents of the blob to the specified location.
 // On failure, this will return an error.  On success, this will return the location
 // header indicating how to commit the streamed blob.
-func (w *writer) streamBlob(ctx context.Context, blob io.ReadCloser, streamLocation string) (commitLocation string, rerr error) {
+func (w *writer) streamBlob(ctx context.Context, layer v1.Layer, streamLocation string) (commitLocation string, rerr error) {
 	reset := func() {}
 	defer func() {
 		if rerr != nil {
 			reset()
 		}
 	}()
+	blob, err := layer.Compressed()
+	if err != nil {
+		return "", err
+	}
+
+	getBody := layer.Compressed
 	if w.updates != nil {
 		var count int64
 		blob = &progressReader{rc: blob, updates: w.updates, lastUpdate: w.lastUpdate, count: &count}
+		getBody = func() (io.ReadCloser, error) {
+			blob, err := layer.Compressed()
+			if err != nil {
+				return nil, err
+			}
+			return &progressReader{rc: blob, updates: w.updates, lastUpdate: w.lastUpdate, count: &count}, nil
+		}
 		reset = func() {
 			atomic.AddInt64(&w.lastUpdate.Complete, -count)
 			w.updates <- *w.lastUpdate
@@ -353,6 +369,10 @@ func (w *writer) streamBlob(ctx context.Context, blob io.ReadCloser, streamLocat
 	req, err := http.NewRequest(http.MethodPatch, streamLocation, blob)
 	if err != nil {
 		return "", err
+	}
+	if _, ok := layer.(*stream.Layer); !ok {
+		// We can't retry streaming layers.
+		req.GetBody = getBody
 	}
 	req.Header.Set("Content-Type", "application/octet-stream")
 
@@ -410,34 +430,33 @@ func (w *writer) incrProgress(written int64) {
 
 // uploadOne performs a complete upload of a single layer.
 func (w *writer) uploadOne(ctx context.Context, l v1.Layer) error {
-	var from, mount string
-	if h, err := l.Digest(); err == nil {
-		// If we know the digest, this isn't a streaming layer. Do an existence
-		// check so we can skip uploading the layer if possible.
-		existing, err := w.checkExistingBlob(h)
-		if err != nil {
-			return err
-		}
-		if existing {
-			size, err := l.Size()
+	tryUpload := func() error {
+		var from, mount, origin string
+		if h, err := l.Digest(); err == nil {
+			// If we know the digest, this isn't a streaming layer. Do an existence
+			// check so we can skip uploading the layer if possible.
+			existing, err := w.checkExistingBlob(h)
 			if err != nil {
 				return err
 			}
-			w.incrProgress(size)
-			logs.Progress.Printf("existing blob: %v", h)
-			return nil
-		}
+			if existing {
+				size, err := l.Size()
+				if err != nil {
+					return err
+				}
+				w.incrProgress(size)
+				logs.Progress.Printf("existing blob: %v", h)
+				return nil
+			}
 
-		mount = h.String()
-	}
-	if ml, ok := l.(*MountableLayer); ok {
-		if w.repo.RegistryStr() == ml.Reference.Context().RegistryStr() {
+			mount = h.String()
+		}
+		if ml, ok := l.(*MountableLayer); ok {
 			from = ml.Reference.Context().RepositoryStr()
+			origin = ml.Reference.Context().RegistryStr()
 		}
-	}
 
-	tryUpload := func() error {
-		location, mounted, err := w.initiateUpload(from, mount)
+		location, mounted, err := w.initiateUpload(from, mount, origin)
 		if err != nil {
 			return err
 		} else if mounted {
@@ -465,11 +484,7 @@ func (w *writer) uploadOne(ctx context.Context, l v1.Layer) error {
 			ctx = redact.NewContext(ctx, "omitting binary blobs from logs")
 		}
 
-		blob, err := l.Compressed()
-		if err != nil {
-			return err
-		}
-		location, err = w.streamBlob(ctx, blob, location)
+		location, err = w.streamBlob(ctx, l, location)
 		if err != nil {
 			return err
 		}

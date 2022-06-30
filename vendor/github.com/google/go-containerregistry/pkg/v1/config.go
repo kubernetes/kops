@@ -37,6 +37,7 @@ type ConfigFile struct {
 	RootFS        RootFS    `json:"rootfs"`
 	Config        Config    `json:"config"`
 	OSVersion     string    `json:"os.version,omitempty"`
+	Variant       string    `json:"variant,omitempty"`
 }
 
 // History is one entry of a list recording how this container image was built.

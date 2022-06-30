@@ -2459,7 +2459,7 @@
       }
     }
   },
-  "revision": "20220419",
+  "revision": "20220610",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -2478,6 +2478,10 @@
         "gpuPartitionSize": {
           "description": "Size of partitions to create on the GPU. Valid values are described in the NVIDIA [mig user guide](https://docs.nvidia.com/datacenter/tesla/mig-user-guide/#partitioning).",
           "type": "string"
+        },
+        "gpuSharingConfig": {
+          "$ref": "GPUSharingConfig",
+          "description": "The configuration for GPU sharing options."
         }
       },
       "type": "object"
@@ -2647,6 +2651,20 @@
         "enabled": {
           "description": "Enable Binary Authorization for this cluster. If enabled, all container images will be validated by Binary Authorization.",
           "type": "boolean"
+        },
+        "evaluationMode": {
+          "description": "Mode of operation for binauthz policy evaluation. Currently the only options are equivalent to enable/disable. If unspecified, defaults to DISABLED.",
+          "enum": [
+            "EVALUATION_MODE_UNSPECIFIED",
+            "DISABLED",
+            "PROJECT_SINGLETON_POLICY_ENFORCE"
+          ],
+          "enumDescriptions": [
+            "Default value",
+            "Disable BinaryAuthorization",
+            "Enforce Kubernetes admission requests with BinaryAuthorization using the project's singleton policy. This is equivalent to setting the enabled boolean to true."
+          ],
+          "type": "string"
         }
       },
       "type": "object"
@@ -3461,6 +3479,30 @@
       },
       "type": "object"
     },
+    "GPUSharingConfig": {
+      "description": "GPUSharingConfig represents the GPU sharing configuration for Hardware Accelerators.",
+      "id": "GPUSharingConfig",
+      "properties": {
+        "gpuSharingStrategy": {
+          "description": "The type of GPU sharing strategy to enable on the GPU node.",
+          "enum": [
+            "GPU_SHARING_STRATEGY_UNSPECIFIED",
+            "TIME_SHARING"
+          ],
+          "enumDescriptions": [
+            "Default value.",
+            "GPUs are time-shared between containers."
+          ],
+          "type": "string"
+        },
+        "maxSharedClientsPerGpu": {
+          "description": "The max number of containers that can share a physical GPU.",
+          "format": "int64",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "GcePersistentDiskCsiDriverConfig": {
       "description": "Configuration for the Compute Engine PD CSI driver.",
       "id": "GcePersistentDiskCsiDriverConfig",
@@ -4224,7 +4266,7 @@
       "type": "object"
     },
     "NodeConfig": {
-      "description": "Parameters that describe the nodes in a cluster. *Note: *GKE Autopilot clusters do not recognize parameters in `NodeConfig`. Use AutoprovisioningNodePoolDefaults instead.",
+      "description": "Parameters that describe the nodes in a cluster. GKE Autopilot clusters do not recognize parameters in `NodeConfig`. Use AutoprovisioningNodePoolDefaults instead.",
       "id": "NodeConfig",
       "properties": {
         "accelerators": {
@@ -4241,6 +4283,10 @@
         "bootDiskKmsKey": {
           "description": " The Customer Managed Encryption Key used to encrypt the boot disk attached to each node in the node pool. This should be of the form projects/[KEY_PROJECT_ID]/locations/[LOCATION]/keyRings/[RING_NAME]/cryptoKeys/[KEY_NAME]. For more information about protecting resources with Cloud KMS Keys please see: https://cloud.google.com/compute/docs/disks/customer-managed-encryption",
           "type": "string"
+        },
+        "confidentialNodes": {
+          "$ref": "ConfidentialNodes",
+          "description": "Confidential nodes config. All the nodes in the node pool will be Confidential VM once enabled."
         },
         "diskSizeGb": {
           "description": "Size of the disk attached to each node, specified in GB. The smallest allowed disk size is 10GB. If unspecified, the default disk size is 100GB.",
@@ -5785,6 +5831,10 @@
         "clusterId": {
           "description": "Deprecated. The name of the cluster to upgrade. This field has been deprecated and replaced by the name field.",
           "type": "string"
+        },
+        "confidentialNodes": {
+          "$ref": "ConfidentialNodes",
+          "description": "Confidential nodes config. All the nodes in the node pool will be Confidential VM once enabled."
         },
         "gcfsConfig": {
           "$ref": "GcfsConfig",

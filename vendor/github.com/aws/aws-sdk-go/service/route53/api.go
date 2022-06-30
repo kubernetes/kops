@@ -228,15 +228,10 @@ func (c *Route53) AssociateVPCWithHostedZoneRequest(input *AssociateVPCWithHoste
 //      is already associated with another hosted zone that has the same name.
 //
 //   * ErrCodeLimitsExceeded "LimitsExceeded"
-//   This operation can't be completed either because the current account has
-//   reached the limit on reusable delegation sets that it can create or because
-//   you've reached the limit on the number of Amazon VPCs that you can associate
-//   with a private hosted zone. To get the current limit on the number of reusable
-//   delegation sets, see GetAccountLimit (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetAccountLimit.html).
-//   To get the current limit on the number of Amazon VPCs that you can associate
-//   with a private hosted zone, see GetHostedZoneLimit (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetHostedZoneLimit.html).
-//   To request a higher limit, create a case (http://aws.amazon.com/route53-request)
-//   with the Amazon Web Services Support Center.
+//   This operation can't be completed because the current account has reached
+//   the limit on the resource you are trying to create. To request a higher limit,
+//   create a case (http://aws.amazon.com/route53-request) with the Amazon Web
+//   Services Support Center.
 //
 //   * ErrCodePriorRequestNotComplete "PriorRequestNotComplete"
 //   If Amazon Route 53 can't process a request before the next request arrives,
@@ -262,6 +257,123 @@ func (c *Route53) AssociateVPCWithHostedZone(input *AssociateVPCWithHostedZoneIn
 // for more information on using Contexts.
 func (c *Route53) AssociateVPCWithHostedZoneWithContext(ctx aws.Context, input *AssociateVPCWithHostedZoneInput, opts ...request.Option) (*AssociateVPCWithHostedZoneOutput, error) {
 	req, out := c.AssociateVPCWithHostedZoneRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opChangeCidrCollection = "ChangeCidrCollection"
+
+// ChangeCidrCollectionRequest generates a "aws/request.Request" representing the
+// client's request for the ChangeCidrCollection operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ChangeCidrCollection for more information on using the ChangeCidrCollection
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the ChangeCidrCollectionRequest method.
+//    req, resp := client.ChangeCidrCollectionRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ChangeCidrCollection
+func (c *Route53) ChangeCidrCollectionRequest(input *ChangeCidrCollectionInput) (req *request.Request, output *ChangeCidrCollectionOutput) {
+	op := &request.Operation{
+		Name:       opChangeCidrCollection,
+		HTTPMethod: "POST",
+		HTTPPath:   "/2013-04-01/cidrcollection/{CidrCollectionId}",
+	}
+
+	if input == nil {
+		input = &ChangeCidrCollectionInput{}
+	}
+
+	output = &ChangeCidrCollectionOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ChangeCidrCollection API operation for Amazon Route 53.
+//
+// Creates, changes, or deletes CIDR blocks within a collection. Contains authoritative
+// IP information mapping blocks to one or multiple locations.
+//
+// A change request can update multiple locations in a collection at a time,
+// which is helpful if you want to move one or more CIDR blocks from one location
+// to another in one transaction, without downtime.
+//
+// Limits
+//
+// The max number of CIDR blocks included in the request is 1000. As a result,
+// big updates require multiple API calls.
+//
+//  PUT and DELETE_IF_EXISTS
+//
+// Use ChangeCidrCollection to perform the following actions:
+//
+//    * PUT: Create a CIDR block within the specified collection.
+//
+//    * DELETE_IF_EXISTS: Delete an existing CIDR block from the collection.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Route 53's
+// API operation ChangeCidrCollection for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeNoSuchCidrCollectionException "NoSuchCidrCollectionException"
+//   The CIDR collection you specified, doesn't exist.
+//
+//   * ErrCodeCidrCollectionVersionMismatchException "CidrCollectionVersionMismatchException"
+//   The CIDR collection version you provided, doesn't match the one in the ListCidrCollections
+//   operation.
+//
+//   * ErrCodeInvalidInput "InvalidInput"
+//   The input is not valid.
+//
+//   * ErrCodeCidrBlockInUseException "CidrBlockInUseException"
+//   This CIDR block is already in use.
+//
+//   * ErrCodeLimitsExceeded "LimitsExceeded"
+//   This operation can't be completed because the current account has reached
+//   the limit on the resource you are trying to create. To request a higher limit,
+//   create a case (http://aws.amazon.com/route53-request) with the Amazon Web
+//   Services Support Center.
+//
+//   * ErrCodeConcurrentModification "ConcurrentModification"
+//   Another user submitted a request to create, update, or delete the object
+//   at the same time that you did. Retry the request.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ChangeCidrCollection
+func (c *Route53) ChangeCidrCollection(input *ChangeCidrCollectionInput) (*ChangeCidrCollectionOutput, error) {
+	req, out := c.ChangeCidrCollectionRequest(input)
+	return out, req.Send()
+}
+
+// ChangeCidrCollectionWithContext is the same as ChangeCidrCollection with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ChangeCidrCollection for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Route53) ChangeCidrCollectionWithContext(ctx aws.Context, input *ChangeCidrCollectionInput, opts ...request.Option) (*ChangeCidrCollectionOutput, error) {
+	req, out := c.ChangeCidrCollectionRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -538,6 +650,99 @@ func (c *Route53) ChangeTagsForResource(input *ChangeTagsForResourceInput) (*Cha
 // for more information on using Contexts.
 func (c *Route53) ChangeTagsForResourceWithContext(ctx aws.Context, input *ChangeTagsForResourceInput, opts ...request.Option) (*ChangeTagsForResourceOutput, error) {
 	req, out := c.ChangeTagsForResourceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opCreateCidrCollection = "CreateCidrCollection"
+
+// CreateCidrCollectionRequest generates a "aws/request.Request" representing the
+// client's request for the CreateCidrCollection operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateCidrCollection for more information on using the CreateCidrCollection
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the CreateCidrCollectionRequest method.
+//    req, resp := client.CreateCidrCollectionRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/CreateCidrCollection
+func (c *Route53) CreateCidrCollectionRequest(input *CreateCidrCollectionInput) (req *request.Request, output *CreateCidrCollectionOutput) {
+	op := &request.Operation{
+		Name:       opCreateCidrCollection,
+		HTTPMethod: "POST",
+		HTTPPath:   "/2013-04-01/cidrcollection",
+	}
+
+	if input == nil {
+		input = &CreateCidrCollectionInput{}
+	}
+
+	output = &CreateCidrCollectionOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateCidrCollection API operation for Amazon Route 53.
+//
+// Creates a CIDR collection in the current Amazon Web Services account.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Route 53's
+// API operation CreateCidrCollection for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeLimitsExceeded "LimitsExceeded"
+//   This operation can't be completed because the current account has reached
+//   the limit on the resource you are trying to create. To request a higher limit,
+//   create a case (http://aws.amazon.com/route53-request) with the Amazon Web
+//   Services Support Center.
+//
+//   * ErrCodeInvalidInput "InvalidInput"
+//   The input is not valid.
+//
+//   * ErrCodeCidrCollectionAlreadyExistsException "CidrCollectionAlreadyExistsException"
+//   A CIDR collection with this name and a different caller reference already
+//   exists in this account.
+//
+//   * ErrCodeConcurrentModification "ConcurrentModification"
+//   Another user submitted a request to create, update, or delete the object
+//   at the same time that you did. Retry the request.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/CreateCidrCollection
+func (c *Route53) CreateCidrCollection(input *CreateCidrCollectionInput) (*CreateCidrCollectionOutput, error) {
+	req, out := c.CreateCidrCollectionRequest(input)
+	return out, req.Send()
+}
+
+// CreateCidrCollectionWithContext is the same as CreateCidrCollection with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateCidrCollection for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Route53) CreateCidrCollectionWithContext(ctx aws.Context, input *CreateCidrCollectionInput, opts ...request.Option) (*CreateCidrCollectionOutput, error) {
+	req, out := c.CreateCidrCollectionRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -1323,15 +1528,10 @@ func (c *Route53) CreateReusableDelegationSetRequest(input *CreateReusableDelega
 //   already been created.
 //
 //   * ErrCodeLimitsExceeded "LimitsExceeded"
-//   This operation can't be completed either because the current account has
-//   reached the limit on reusable delegation sets that it can create or because
-//   you've reached the limit on the number of Amazon VPCs that you can associate
-//   with a private hosted zone. To get the current limit on the number of reusable
-//   delegation sets, see GetAccountLimit (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetAccountLimit.html).
-//   To get the current limit on the number of Amazon VPCs that you can associate
-//   with a private hosted zone, see GetHostedZoneLimit (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetHostedZoneLimit.html).
-//   To request a higher limit, create a case (http://aws.amazon.com/route53-request)
-//   with the Amazon Web Services Support Center.
+//   This operation can't be completed because the current account has reached
+//   the limit on the resource you are trying to create. To request a higher limit,
+//   create a case (http://aws.amazon.com/route53-request) with the Amazon Web
+//   Services Support Center.
 //
 //   * ErrCodeHostedZoneNotFound "HostedZoneNotFound"
 //   The specified HostedZone can't be found.
@@ -1891,6 +2091,97 @@ func (c *Route53) DeactivateKeySigningKey(input *DeactivateKeySigningKeyInput) (
 // for more information on using Contexts.
 func (c *Route53) DeactivateKeySigningKeyWithContext(ctx aws.Context, input *DeactivateKeySigningKeyInput, opts ...request.Option) (*DeactivateKeySigningKeyOutput, error) {
 	req, out := c.DeactivateKeySigningKeyRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteCidrCollection = "DeleteCidrCollection"
+
+// DeleteCidrCollectionRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteCidrCollection operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteCidrCollection for more information on using the DeleteCidrCollection
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the DeleteCidrCollectionRequest method.
+//    req, resp := client.DeleteCidrCollectionRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/DeleteCidrCollection
+func (c *Route53) DeleteCidrCollectionRequest(input *DeleteCidrCollectionInput) (req *request.Request, output *DeleteCidrCollectionOutput) {
+	op := &request.Operation{
+		Name:       opDeleteCidrCollection,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/2013-04-01/cidrcollection/{CidrCollectionId}",
+	}
+
+	if input == nil {
+		input = &DeleteCidrCollectionInput{}
+	}
+
+	output = &DeleteCidrCollectionOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restxml.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteCidrCollection API operation for Amazon Route 53.
+//
+// Deletes a CIDR collection in the current Amazon Web Services account. The
+// collection must be empty before it can be deleted.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Route 53's
+// API operation DeleteCidrCollection for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeNoSuchCidrCollectionException "NoSuchCidrCollectionException"
+//   The CIDR collection you specified, doesn't exist.
+//
+//   * ErrCodeCidrCollectionInUseException "CidrCollectionInUseException"
+//   This CIDR collection is in use, and isn't empty.
+//
+//   * ErrCodeInvalidInput "InvalidInput"
+//   The input is not valid.
+//
+//   * ErrCodeConcurrentModification "ConcurrentModification"
+//   Another user submitted a request to create, update, or delete the object
+//   at the same time that you did. Retry the request.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/DeleteCidrCollection
+func (c *Route53) DeleteCidrCollection(input *DeleteCidrCollectionInput) (*DeleteCidrCollectionOutput, error) {
+	req, out := c.DeleteCidrCollectionRequest(input)
+	return out, req.Send()
+}
+
+// DeleteCidrCollectionWithContext is the same as DeleteCidrCollection with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteCidrCollection for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Route53) DeleteCidrCollectionWithContext(ctx aws.Context, input *DeleteCidrCollectionInput, opts ...request.Option) (*DeleteCidrCollectionOutput, error) {
+	req, out := c.DeleteCidrCollectionRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -4606,6 +4897,428 @@ func (c *Route53) GetTrafficPolicyInstanceCountWithContext(ctx aws.Context, inpu
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+const opListCidrBlocks = "ListCidrBlocks"
+
+// ListCidrBlocksRequest generates a "aws/request.Request" representing the
+// client's request for the ListCidrBlocks operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListCidrBlocks for more information on using the ListCidrBlocks
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the ListCidrBlocksRequest method.
+//    req, resp := client.ListCidrBlocksRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListCidrBlocks
+func (c *Route53) ListCidrBlocksRequest(input *ListCidrBlocksInput) (req *request.Request, output *ListCidrBlocksOutput) {
+	op := &request.Operation{
+		Name:       opListCidrBlocks,
+		HTTPMethod: "GET",
+		HTTPPath:   "/2013-04-01/cidrcollection/{CidrCollectionId}/cidrblocks",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListCidrBlocksInput{}
+	}
+
+	output = &ListCidrBlocksOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListCidrBlocks API operation for Amazon Route 53.
+//
+// Returns a paginated list of location objects and their CIDR blocks.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Route 53's
+// API operation ListCidrBlocks for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeNoSuchCidrCollectionException "NoSuchCidrCollectionException"
+//   The CIDR collection you specified, doesn't exist.
+//
+//   * ErrCodeNoSuchCidrLocationException "NoSuchCidrLocationException"
+//   The CIDR collection location doesn't match any locations in your account.
+//
+//   * ErrCodeInvalidInput "InvalidInput"
+//   The input is not valid.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListCidrBlocks
+func (c *Route53) ListCidrBlocks(input *ListCidrBlocksInput) (*ListCidrBlocksOutput, error) {
+	req, out := c.ListCidrBlocksRequest(input)
+	return out, req.Send()
+}
+
+// ListCidrBlocksWithContext is the same as ListCidrBlocks with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListCidrBlocks for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Route53) ListCidrBlocksWithContext(ctx aws.Context, input *ListCidrBlocksInput, opts ...request.Option) (*ListCidrBlocksOutput, error) {
+	req, out := c.ListCidrBlocksRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListCidrBlocksPages iterates over the pages of a ListCidrBlocks operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListCidrBlocks method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//    // Example iterating over at most 3 pages of a ListCidrBlocks operation.
+//    pageNum := 0
+//    err := client.ListCidrBlocksPages(params,
+//        func(page *route53.ListCidrBlocksOutput, lastPage bool) bool {
+//            pageNum++
+//            fmt.Println(page)
+//            return pageNum <= 3
+//        })
+//
+func (c *Route53) ListCidrBlocksPages(input *ListCidrBlocksInput, fn func(*ListCidrBlocksOutput, bool) bool) error {
+	return c.ListCidrBlocksPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListCidrBlocksPagesWithContext same as ListCidrBlocksPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Route53) ListCidrBlocksPagesWithContext(ctx aws.Context, input *ListCidrBlocksInput, fn func(*ListCidrBlocksOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListCidrBlocksInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListCidrBlocksRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListCidrBlocksOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListCidrCollections = "ListCidrCollections"
+
+// ListCidrCollectionsRequest generates a "aws/request.Request" representing the
+// client's request for the ListCidrCollections operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListCidrCollections for more information on using the ListCidrCollections
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the ListCidrCollectionsRequest method.
+//    req, resp := client.ListCidrCollectionsRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListCidrCollections
+func (c *Route53) ListCidrCollectionsRequest(input *ListCidrCollectionsInput) (req *request.Request, output *ListCidrCollectionsOutput) {
+	op := &request.Operation{
+		Name:       opListCidrCollections,
+		HTTPMethod: "GET",
+		HTTPPath:   "/2013-04-01/cidrcollection",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListCidrCollectionsInput{}
+	}
+
+	output = &ListCidrCollectionsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListCidrCollections API operation for Amazon Route 53.
+//
+// Returns a paginated list of CIDR collections in the Amazon Web Services account
+// (metadata only).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Route 53's
+// API operation ListCidrCollections for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeInvalidInput "InvalidInput"
+//   The input is not valid.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListCidrCollections
+func (c *Route53) ListCidrCollections(input *ListCidrCollectionsInput) (*ListCidrCollectionsOutput, error) {
+	req, out := c.ListCidrCollectionsRequest(input)
+	return out, req.Send()
+}
+
+// ListCidrCollectionsWithContext is the same as ListCidrCollections with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListCidrCollections for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Route53) ListCidrCollectionsWithContext(ctx aws.Context, input *ListCidrCollectionsInput, opts ...request.Option) (*ListCidrCollectionsOutput, error) {
+	req, out := c.ListCidrCollectionsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListCidrCollectionsPages iterates over the pages of a ListCidrCollections operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListCidrCollections method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//    // Example iterating over at most 3 pages of a ListCidrCollections operation.
+//    pageNum := 0
+//    err := client.ListCidrCollectionsPages(params,
+//        func(page *route53.ListCidrCollectionsOutput, lastPage bool) bool {
+//            pageNum++
+//            fmt.Println(page)
+//            return pageNum <= 3
+//        })
+//
+func (c *Route53) ListCidrCollectionsPages(input *ListCidrCollectionsInput, fn func(*ListCidrCollectionsOutput, bool) bool) error {
+	return c.ListCidrCollectionsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListCidrCollectionsPagesWithContext same as ListCidrCollectionsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Route53) ListCidrCollectionsPagesWithContext(ctx aws.Context, input *ListCidrCollectionsInput, fn func(*ListCidrCollectionsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListCidrCollectionsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListCidrCollectionsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListCidrCollectionsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListCidrLocations = "ListCidrLocations"
+
+// ListCidrLocationsRequest generates a "aws/request.Request" representing the
+// client's request for the ListCidrLocations operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListCidrLocations for more information on using the ListCidrLocations
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the ListCidrLocationsRequest method.
+//    req, resp := client.ListCidrLocationsRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListCidrLocations
+func (c *Route53) ListCidrLocationsRequest(input *ListCidrLocationsInput) (req *request.Request, output *ListCidrLocationsOutput) {
+	op := &request.Operation{
+		Name:       opListCidrLocations,
+		HTTPMethod: "GET",
+		HTTPPath:   "/2013-04-01/cidrcollection/{CidrCollectionId}",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListCidrLocationsInput{}
+	}
+
+	output = &ListCidrLocationsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListCidrLocations API operation for Amazon Route 53.
+//
+// Returns a paginated list of CIDR locations for the given collection (metadata
+// only, does not include CIDR blocks).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Route 53's
+// API operation ListCidrLocations for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeNoSuchCidrCollectionException "NoSuchCidrCollectionException"
+//   The CIDR collection you specified, doesn't exist.
+//
+//   * ErrCodeInvalidInput "InvalidInput"
+//   The input is not valid.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListCidrLocations
+func (c *Route53) ListCidrLocations(input *ListCidrLocationsInput) (*ListCidrLocationsOutput, error) {
+	req, out := c.ListCidrLocationsRequest(input)
+	return out, req.Send()
+}
+
+// ListCidrLocationsWithContext is the same as ListCidrLocations with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListCidrLocations for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Route53) ListCidrLocationsWithContext(ctx aws.Context, input *ListCidrLocationsInput, opts ...request.Option) (*ListCidrLocationsOutput, error) {
+	req, out := c.ListCidrLocationsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListCidrLocationsPages iterates over the pages of a ListCidrLocations operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListCidrLocations method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//    // Example iterating over at most 3 pages of a ListCidrLocations operation.
+//    pageNum := 0
+//    err := client.ListCidrLocationsPages(params,
+//        func(page *route53.ListCidrLocationsOutput, lastPage bool) bool {
+//            pageNum++
+//            fmt.Println(page)
+//            return pageNum <= 3
+//        })
+//
+func (c *Route53) ListCidrLocationsPages(input *ListCidrLocationsInput, fn func(*ListCidrLocationsOutput, bool) bool) error {
+	return c.ListCidrLocationsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListCidrLocationsPagesWithContext same as ListCidrLocationsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Route53) ListCidrLocationsPagesWithContext(ctx aws.Context, input *ListCidrLocationsInput, fn func(*ListCidrLocationsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListCidrLocationsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListCidrLocationsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListCidrLocationsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opListGeoLocations = "ListGeoLocations"
@@ -7744,6 +8457,142 @@ func (s *ChangeBatch) SetComment(v string) *ChangeBatch {
 	return s
 }
 
+type ChangeCidrCollectionInput struct {
+	_ struct{} `locationName:"ChangeCidrCollectionRequest" type:"structure" xmlURI:"https://route53.amazonaws.com/doc/2013-04-01/"`
+
+	// Information about changes to a CIDR collection.
+	//
+	// Changes is a required field
+	Changes []*CidrCollectionChange `min:"1" type:"list" required:"true"`
+
+	// A sequential counter that Amazon Route 53 sets to 1 when you create a collection
+	// and increments it by 1 each time you update the collection.
+	//
+	// We recommend that you use ListCidrCollection to get the current value of
+	// CollectionVersion for the collection that you want to update, and then include
+	// that value with the change request. This prevents Route 53 from overwriting
+	// an intervening update:
+	//
+	//    * If the value in the request matches the value of CollectionVersion in
+	//    the collection, Route 53 updates the collection.
+	//
+	//    * If the value of CollectionVersion in the collection is greater than
+	//    the value in the request, the collection was changed after you got the
+	//    version number. Route 53 does not update the collection, and it returns
+	//    a CidrCollectionVersionMismatch error.
+	CollectionVersion *int64 `min:"1" type:"long"`
+
+	// The UUID of the CIDR collection to update.
+	//
+	// Id is a required field
+	Id *string `location:"uri" locationName:"CidrCollectionId" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ChangeCidrCollectionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ChangeCidrCollectionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ChangeCidrCollectionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ChangeCidrCollectionInput"}
+	if s.Changes == nil {
+		invalidParams.Add(request.NewErrParamRequired("Changes"))
+	}
+	if s.Changes != nil && len(s.Changes) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Changes", 1))
+	}
+	if s.CollectionVersion != nil && *s.CollectionVersion < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("CollectionVersion", 1))
+	}
+	if s.Id == nil {
+		invalidParams.Add(request.NewErrParamRequired("Id"))
+	}
+	if s.Id != nil && len(*s.Id) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Id", 1))
+	}
+	if s.Changes != nil {
+		for i, v := range s.Changes {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Changes", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetChanges sets the Changes field's value.
+func (s *ChangeCidrCollectionInput) SetChanges(v []*CidrCollectionChange) *ChangeCidrCollectionInput {
+	s.Changes = v
+	return s
+}
+
+// SetCollectionVersion sets the CollectionVersion field's value.
+func (s *ChangeCidrCollectionInput) SetCollectionVersion(v int64) *ChangeCidrCollectionInput {
+	s.CollectionVersion = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *ChangeCidrCollectionInput) SetId(v string) *ChangeCidrCollectionInput {
+	s.Id = &v
+	return s
+}
+
+type ChangeCidrCollectionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID that is returned by ChangeCidrCollection. You can use it as input
+	// to GetChange to see if a CIDR collection change has propagated or not.
+	//
+	// Id is a required field
+	Id *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ChangeCidrCollectionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ChangeCidrCollectionOutput) GoString() string {
+	return s.String()
+}
+
+// SetId sets the Id field's value.
+func (s *ChangeCidrCollectionOutput) SetId(v string) *ChangeCidrCollectionOutput {
+	s.Id = &v
+	return s
+}
+
 // A complex type that describes change information about changes made to your
 // hosted zone.
 type ChangeInfo struct {
@@ -8047,6 +8896,257 @@ func (s ChangeTagsForResourceOutput) GoString() string {
 	return s.String()
 }
 
+// A complex type that lists the CIDR blocks.
+type CidrBlockSummary struct {
+	_ struct{} `type:"structure"`
+
+	// Value for the CIDR block.
+	CidrBlock *string `min:"1" type:"string"`
+
+	// The location name of the CIDR block.
+	LocationName *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CidrBlockSummary) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CidrBlockSummary) GoString() string {
+	return s.String()
+}
+
+// SetCidrBlock sets the CidrBlock field's value.
+func (s *CidrBlockSummary) SetCidrBlock(v string) *CidrBlockSummary {
+	s.CidrBlock = &v
+	return s
+}
+
+// SetLocationName sets the LocationName field's value.
+func (s *CidrBlockSummary) SetLocationName(v string) *CidrBlockSummary {
+	s.LocationName = &v
+	return s
+}
+
+// A complex type that identifies a CIDR collection.
+type CidrCollection struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the collection. Can be used to reference the collection in IAM
+	// policy or in another Amazon Web Services account.
+	Arn *string `min:"20" type:"string"`
+
+	// The unique ID of the CIDR collection.
+	Id *string `type:"string"`
+
+	// The name of a CIDR collection.
+	Name *string `min:"1" type:"string"`
+
+	// A sequential counter that Route 53 sets to 1 when you create a CIDR collection
+	// and increments by 1 each time you update settings for the CIDR collection.
+	Version *int64 `min:"1" type:"long"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CidrCollection) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CidrCollection) GoString() string {
+	return s.String()
+}
+
+// SetArn sets the Arn field's value.
+func (s *CidrCollection) SetArn(v string) *CidrCollection {
+	s.Arn = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *CidrCollection) SetId(v string) *CidrCollection {
+	s.Id = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CidrCollection) SetName(v string) *CidrCollection {
+	s.Name = &v
+	return s
+}
+
+// SetVersion sets the Version field's value.
+func (s *CidrCollection) SetVersion(v int64) *CidrCollection {
+	s.Version = &v
+	return s
+}
+
+// A complex type that contains information about the CIDR collection change.
+type CidrCollectionChange struct {
+	_ struct{} `type:"structure"`
+
+	// CIDR collection change action.
+	//
+	// Action is a required field
+	Action *string `type:"string" required:"true" enum:"CidrCollectionChangeAction"`
+
+	// List of CIDR blocks.
+	//
+	// CidrList is a required field
+	CidrList []*string `locationNameList:"Cidr" min:"1" type:"list" required:"true"`
+
+	// Name of the location that is associated with the CIDR collection.
+	//
+	// LocationName is a required field
+	LocationName *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CidrCollectionChange) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CidrCollectionChange) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CidrCollectionChange) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CidrCollectionChange"}
+	if s.Action == nil {
+		invalidParams.Add(request.NewErrParamRequired("Action"))
+	}
+	if s.CidrList == nil {
+		invalidParams.Add(request.NewErrParamRequired("CidrList"))
+	}
+	if s.CidrList != nil && len(s.CidrList) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("CidrList", 1))
+	}
+	if s.LocationName == nil {
+		invalidParams.Add(request.NewErrParamRequired("LocationName"))
+	}
+	if s.LocationName != nil && len(*s.LocationName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("LocationName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAction sets the Action field's value.
+func (s *CidrCollectionChange) SetAction(v string) *CidrCollectionChange {
+	s.Action = &v
+	return s
+}
+
+// SetCidrList sets the CidrList field's value.
+func (s *CidrCollectionChange) SetCidrList(v []*string) *CidrCollectionChange {
+	s.CidrList = v
+	return s
+}
+
+// SetLocationName sets the LocationName field's value.
+func (s *CidrCollectionChange) SetLocationName(v string) *CidrCollectionChange {
+	s.LocationName = &v
+	return s
+}
+
+// The object that is specified in resource record set object when you are linking
+// a resource record set to a CIDR location.
+//
+// A LocationName with an asterisk “*” can be used to create a default CIDR
+// record. CollectionId is still required for default record.
+type CidrRoutingConfig struct {
+	_ struct{} `type:"structure"`
+
+	// The CIDR collection ID.
+	//
+	// CollectionId is a required field
+	CollectionId *string `type:"string" required:"true"`
+
+	// The CIDR collection location name.
+	//
+	// LocationName is a required field
+	LocationName *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CidrRoutingConfig) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CidrRoutingConfig) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CidrRoutingConfig) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CidrRoutingConfig"}
+	if s.CollectionId == nil {
+		invalidParams.Add(request.NewErrParamRequired("CollectionId"))
+	}
+	if s.LocationName == nil {
+		invalidParams.Add(request.NewErrParamRequired("LocationName"))
+	}
+	if s.LocationName != nil && len(*s.LocationName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("LocationName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCollectionId sets the CollectionId field's value.
+func (s *CidrRoutingConfig) SetCollectionId(v string) *CidrRoutingConfig {
+	s.CollectionId = &v
+	return s
+}
+
+// SetLocationName sets the LocationName field's value.
+func (s *CidrRoutingConfig) SetLocationName(v string) *CidrRoutingConfig {
+	s.LocationName = &v
+	return s
+}
+
 // A complex type that contains information about the CloudWatch alarm that
 // Amazon Route 53 is monitoring for this health check.
 type CloudWatchAlarmConfiguration struct {
@@ -8164,6 +9264,177 @@ func (s *CloudWatchAlarmConfiguration) SetStatistic(v string) *CloudWatchAlarmCo
 // SetThreshold sets the Threshold field's value.
 func (s *CloudWatchAlarmConfiguration) SetThreshold(v float64) *CloudWatchAlarmConfiguration {
 	s.Threshold = &v
+	return s
+}
+
+// A complex type that is an entry in an CidrCollection (https://docs.aws.amazon.com/Route53/latest/APIReference/API_CidrCollection.html)
+// array.
+type CollectionSummary struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the collection summary. Can be used to reference the collection
+	// in IAM policy or cross-account.
+	Arn *string `min:"20" type:"string"`
+
+	// Unique ID for the CIDR collection.
+	Id *string `type:"string"`
+
+	// The name of a CIDR collection.
+	Name *string `min:"1" type:"string"`
+
+	// A sequential counter that Route 53 sets to 1 when you create a CIDR collection
+	// and increments by 1 each time you update settings for the CIDR collection.
+	Version *int64 `min:"1" type:"long"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CollectionSummary) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CollectionSummary) GoString() string {
+	return s.String()
+}
+
+// SetArn sets the Arn field's value.
+func (s *CollectionSummary) SetArn(v string) *CollectionSummary {
+	s.Arn = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *CollectionSummary) SetId(v string) *CollectionSummary {
+	s.Id = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CollectionSummary) SetName(v string) *CollectionSummary {
+	s.Name = &v
+	return s
+}
+
+// SetVersion sets the Version field's value.
+func (s *CollectionSummary) SetVersion(v int64) *CollectionSummary {
+	s.Version = &v
+	return s
+}
+
+type CreateCidrCollectionInput struct {
+	_ struct{} `locationName:"CreateCidrCollectionRequest" type:"structure" xmlURI:"https://route53.amazonaws.com/doc/2013-04-01/"`
+
+	// A client-specific token that allows requests to be securely retried so that
+	// the intended outcome will only occur once, retries receive a similar response,
+	// and there are no additional edge cases to handle.
+	//
+	// CallerReference is a required field
+	CallerReference *string `min:"1" type:"string" required:"true"`
+
+	// A unique identifier for the account that can be used to reference the collection
+	// from other API calls.
+	//
+	// Name is a required field
+	Name *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateCidrCollectionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateCidrCollectionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateCidrCollectionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateCidrCollectionInput"}
+	if s.CallerReference == nil {
+		invalidParams.Add(request.NewErrParamRequired("CallerReference"))
+	}
+	if s.CallerReference != nil && len(*s.CallerReference) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("CallerReference", 1))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCallerReference sets the CallerReference field's value.
+func (s *CreateCidrCollectionInput) SetCallerReference(v string) *CreateCidrCollectionInput {
+	s.CallerReference = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateCidrCollectionInput) SetName(v string) *CreateCidrCollectionInput {
+	s.Name = &v
+	return s
+}
+
+type CreateCidrCollectionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A complex type that contains information about the CIDR collection.
+	Collection *CidrCollection `type:"structure"`
+
+	// A unique URL that represents the location for the CIDR collection.
+	Location *string `location:"header" locationName:"Location" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateCidrCollectionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateCidrCollectionOutput) GoString() string {
+	return s.String()
+}
+
+// SetCollection sets the Collection field's value.
+func (s *CreateCidrCollectionOutput) SetCollection(v *CidrCollection) *CreateCidrCollectionOutput {
+	s.Collection = v
+	return s
+}
+
+// SetLocation sets the Location field's value.
+func (s *CreateCidrCollectionOutput) SetLocation(v string) *CreateCidrCollectionOutput {
+	s.Location = &v
 	return s
 }
 
@@ -9680,6 +10951,77 @@ func (s *DelegationSet) SetNameServers(v []*string) *DelegationSet {
 	return s
 }
 
+type DeleteCidrCollectionInput struct {
+	_ struct{} `locationName:"DeleteCidrCollectionRequest" type:"structure"`
+
+	// The UUID of the collection to delete.
+	//
+	// Id is a required field
+	Id *string `location:"uri" locationName:"CidrCollectionId" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteCidrCollectionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteCidrCollectionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteCidrCollectionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteCidrCollectionInput"}
+	if s.Id == nil {
+		invalidParams.Add(request.NewErrParamRequired("Id"))
+	}
+	if s.Id != nil && len(*s.Id) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Id", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetId sets the Id field's value.
+func (s *DeleteCidrCollectionInput) SetId(v string) *DeleteCidrCollectionInput {
+	s.Id = &v
+	return s
+}
+
+type DeleteCidrCollectionOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteCidrCollectionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteCidrCollectionOutput) GoString() string {
+	return s.String()
+}
+
 // This action deletes a health check.
 type DeleteHealthCheckInput struct {
 	_ struct{} `locationName:"DeleteHealthCheckRequest" type:"structure"`
@@ -10987,7 +12329,7 @@ type GetChangeInput struct {
 	// the request.
 	//
 	// Id is a required field
-	Id *string `location:"uri" locationName:"Id" type:"string" required:"true"`
+	Id *string `location:"uri" locationName:"Id" min:"1" type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -13708,6 +15050,328 @@ func (s *LinkedService) SetServicePrincipal(v string) *LinkedService {
 	return s
 }
 
+type ListCidrBlocksInput struct {
+	_ struct{} `locationName:"ListCidrBlocksRequest" type:"structure"`
+
+	// The UUID of the CIDR collection.
+	//
+	// CollectionId is a required field
+	CollectionId *string `location:"uri" locationName:"CidrCollectionId" type:"string" required:"true"`
+
+	// The name of the CIDR collection location.
+	LocationName *string `location:"querystring" locationName:"location" min:"1" type:"string"`
+
+	// Maximum number of results you want returned.
+	MaxResults *string `location:"querystring" locationName:"maxresults" type:"string"`
+
+	// An opaque pagination token to indicate where the service is to begin enumerating
+	// results.
+	NextToken *string `location:"querystring" locationName:"nexttoken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListCidrBlocksInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListCidrBlocksInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListCidrBlocksInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListCidrBlocksInput"}
+	if s.CollectionId == nil {
+		invalidParams.Add(request.NewErrParamRequired("CollectionId"))
+	}
+	if s.CollectionId != nil && len(*s.CollectionId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("CollectionId", 1))
+	}
+	if s.LocationName != nil && len(*s.LocationName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("LocationName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCollectionId sets the CollectionId field's value.
+func (s *ListCidrBlocksInput) SetCollectionId(v string) *ListCidrBlocksInput {
+	s.CollectionId = &v
+	return s
+}
+
+// SetLocationName sets the LocationName field's value.
+func (s *ListCidrBlocksInput) SetLocationName(v string) *ListCidrBlocksInput {
+	s.LocationName = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListCidrBlocksInput) SetMaxResults(v string) *ListCidrBlocksInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListCidrBlocksInput) SetNextToken(v string) *ListCidrBlocksInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListCidrBlocksOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A complex type that contains information about the CIDR blocks.
+	CidrBlocks []*CidrBlockSummary `type:"list"`
+
+	// An opaque pagination token to indicate where the service is to begin enumerating
+	// results.
+	//
+	// If no value is provided, the listing of results starts from the beginning.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListCidrBlocksOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListCidrBlocksOutput) GoString() string {
+	return s.String()
+}
+
+// SetCidrBlocks sets the CidrBlocks field's value.
+func (s *ListCidrBlocksOutput) SetCidrBlocks(v []*CidrBlockSummary) *ListCidrBlocksOutput {
+	s.CidrBlocks = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListCidrBlocksOutput) SetNextToken(v string) *ListCidrBlocksOutput {
+	s.NextToken = &v
+	return s
+}
+
+type ListCidrCollectionsInput struct {
+	_ struct{} `locationName:"ListCidrCollectionsRequest" type:"structure"`
+
+	// The maximum number of CIDR collections to return in the response.
+	MaxResults *string `location:"querystring" locationName:"maxresults" type:"string"`
+
+	// An opaque pagination token to indicate where the service is to begin enumerating
+	// results.
+	//
+	// If no value is provided, the listing of results starts from the beginning.
+	NextToken *string `location:"querystring" locationName:"nexttoken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListCidrCollectionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListCidrCollectionsInput) GoString() string {
+	return s.String()
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListCidrCollectionsInput) SetMaxResults(v string) *ListCidrCollectionsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListCidrCollectionsInput) SetNextToken(v string) *ListCidrCollectionsInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListCidrCollectionsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A complex type with information about the CIDR collection.
+	CidrCollections []*CollectionSummary `type:"list"`
+
+	// An opaque pagination token to indicate where the service is to begin enumerating
+	// results.
+	//
+	// If no value is provided, the listing of results starts from the beginning.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListCidrCollectionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListCidrCollectionsOutput) GoString() string {
+	return s.String()
+}
+
+// SetCidrCollections sets the CidrCollections field's value.
+func (s *ListCidrCollectionsOutput) SetCidrCollections(v []*CollectionSummary) *ListCidrCollectionsOutput {
+	s.CidrCollections = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListCidrCollectionsOutput) SetNextToken(v string) *ListCidrCollectionsOutput {
+	s.NextToken = &v
+	return s
+}
+
+type ListCidrLocationsInput struct {
+	_ struct{} `locationName:"ListCidrLocationsRequest" type:"structure"`
+
+	// The CIDR collection ID.
+	//
+	// CollectionId is a required field
+	CollectionId *string `location:"uri" locationName:"CidrCollectionId" type:"string" required:"true"`
+
+	// The maximum number of CIDR collection locations to return in the response.
+	MaxResults *string `location:"querystring" locationName:"maxresults" type:"string"`
+
+	// An opaque pagination token to indicate where the service is to begin enumerating
+	// results.
+	//
+	// If no value is provided, the listing of results starts from the beginning.
+	NextToken *string `location:"querystring" locationName:"nexttoken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListCidrLocationsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListCidrLocationsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListCidrLocationsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListCidrLocationsInput"}
+	if s.CollectionId == nil {
+		invalidParams.Add(request.NewErrParamRequired("CollectionId"))
+	}
+	if s.CollectionId != nil && len(*s.CollectionId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("CollectionId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCollectionId sets the CollectionId field's value.
+func (s *ListCidrLocationsInput) SetCollectionId(v string) *ListCidrLocationsInput {
+	s.CollectionId = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListCidrLocationsInput) SetMaxResults(v string) *ListCidrLocationsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListCidrLocationsInput) SetNextToken(v string) *ListCidrLocationsInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListCidrLocationsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A complex type that contains information about the list of CIDR locations.
+	CidrLocations []*LocationSummary `type:"list"`
+
+	// An opaque pagination token to indicate where the service is to begin enumerating
+	// results.
+	//
+	// If no value is provided, the listing of results starts from the beginning.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListCidrLocationsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListCidrLocationsOutput) GoString() string {
+	return s.String()
+}
+
+// SetCidrLocations sets the CidrLocations field's value.
+func (s *ListCidrLocationsOutput) SetCidrLocations(v []*LocationSummary) *ListCidrLocationsOutput {
+	s.CidrLocations = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListCidrLocationsOutput) SetNextToken(v string) *ListCidrLocationsOutput {
+	s.NextToken = &v
+	return s
+}
+
 // A request to get a list of geographic locations that Amazon Route 53 supports
 // for geolocation resource record sets.
 type ListGeoLocationsInput struct {
@@ -16243,6 +17907,38 @@ func (s *ListVPCAssociationAuthorizationsOutput) SetVPCs(v []*VPC) *ListVPCAssoc
 	return s
 }
 
+// A complex type that contains information about the CIDR location.
+type LocationSummary struct {
+	_ struct{} `type:"structure"`
+
+	// A string that specifies a location name.
+	LocationName *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LocationSummary) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LocationSummary) GoString() string {
+	return s.String()
+}
+
+// SetLocationName sets the LocationName field's value.
+func (s *LocationSummary) SetLocationName(v string) *LocationSummary {
+	s.LocationName = &v
+	return s
+}
+
 // A complex type that contains information about a configuration for DNS query
 // logging.
 type QueryLoggingConfig struct {
@@ -16380,6 +18076,13 @@ type ResourceRecordSet struct {
 	//    hosted zone, see Configuring Failover in a Private Hosted Zone (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-private-hosted-zones.html)
 	//    in the Amazon Route 53 Developer Guide.
 	AliasTarget *AliasTarget `type:"structure"`
+
+	// The object that is specified in resource record set object when you are linking
+	// a resource record set to a CIDR location.
+	//
+	// A LocationName with an asterisk “*” can be used to create a default CIDR
+	// record. CollectionId is still required for default record.
+	CidrRoutingConfig *CidrRoutingConfig `type:"structure"`
 
 	// Failover resource record sets only: To configure failover, you add the Failover
 	// element to two resource record sets. For one resource record set, you specify
@@ -16834,6 +18537,11 @@ func (s *ResourceRecordSet) Validate() error {
 			invalidParams.AddNested("AliasTarget", err.(request.ErrInvalidParams))
 		}
 	}
+	if s.CidrRoutingConfig != nil {
+		if err := s.CidrRoutingConfig.Validate(); err != nil {
+			invalidParams.AddNested("CidrRoutingConfig", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.GeoLocation != nil {
 		if err := s.GeoLocation.Validate(); err != nil {
 			invalidParams.AddNested("GeoLocation", err.(request.ErrInvalidParams))
@@ -16859,6 +18567,12 @@ func (s *ResourceRecordSet) Validate() error {
 // SetAliasTarget sets the AliasTarget field's value.
 func (s *ResourceRecordSet) SetAliasTarget(v *AliasTarget) *ResourceRecordSet {
 	s.AliasTarget = v
+	return s
+}
+
+// SetCidrRoutingConfig sets the CidrRoutingConfig field's value.
+func (s *ResourceRecordSet) SetCidrRoutingConfig(v *CidrRoutingConfig) *ResourceRecordSet {
+	s.CidrRoutingConfig = v
 	return s
 }
 
@@ -18613,6 +20327,22 @@ func ChangeStatus_Values() []string {
 	return []string{
 		ChangeStatusPending,
 		ChangeStatusInsync,
+	}
+}
+
+const (
+	// CidrCollectionChangeActionPut is a CidrCollectionChangeAction enum value
+	CidrCollectionChangeActionPut = "PUT"
+
+	// CidrCollectionChangeActionDeleteIfExists is a CidrCollectionChangeAction enum value
+	CidrCollectionChangeActionDeleteIfExists = "DELETE_IF_EXISTS"
+)
+
+// CidrCollectionChangeAction_Values returns all elements of the CidrCollectionChangeAction enum
+func CidrCollectionChangeAction_Values() []string {
+	return []string{
+		CidrCollectionChangeActionPut,
+		CidrCollectionChangeActionDeleteIfExists,
 	}
 }
 

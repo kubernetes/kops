@@ -119,7 +119,7 @@ func formatSpaces(lines []formatLine) {
 			if i < (len(line.lead) - 1) {
 				after = line.lead[i+1]
 			} else {
-				after = nilToken
+				continue
 			}
 			if spaceAfterToken(token, before, after) {
 				after.SpacesBefore = 1
@@ -143,7 +143,7 @@ func formatSpaces(lines []formatLine) {
 			if i < (len(line.assign) - 1) {
 				after = line.assign[i+1]
 			} else {
-				after = nilToken
+				continue
 			}
 			if spaceAfterToken(token, before, after) {
 				after.SpacesBefore = 1

@@ -291,6 +291,10 @@ type Bucket struct {
 	// configuration.
 	Cors []*BucketCors `json:"cors,omitempty"`
 
+	// CustomPlacementConfig: The bucket's custom placement configuration
+	// for Custom Dual Regions.
+	CustomPlacementConfig *BucketCustomPlacementConfig `json:"customPlacementConfig,omitempty"`
+
 	// DefaultEventBasedHold: The default value for event-based hold on
 	// newly created objects in this bucket. Event-based hold is a way to
 	// retain objects indefinitely until an event occurs, signified by the
@@ -538,6 +542,36 @@ func (s *BucketCors) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// BucketCustomPlacementConfig: The bucket's custom placement
+// configuration for Custom Dual Regions.
+type BucketCustomPlacementConfig struct {
+	// DataLocations: The list of regional locations in which data is
+	// placed.
+	DataLocations []string `json:"dataLocations,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "DataLocations") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "DataLocations") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *BucketCustomPlacementConfig) MarshalJSON() ([]byte, error) {
+	type NoMethod BucketCustomPlacementConfig
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // BucketEncryption: Encryption configuration for a bucket.
 type BucketEncryption struct {
 	// DefaultKmsKeyName: A Cloud KMS key that will be used to encrypt
@@ -756,8 +790,8 @@ type BucketLifecycleRuleAction struct {
 	// action is SetStorageClass.
 	StorageClass string `json:"storageClass,omitempty"`
 
-	// Type: Type of the action. Currently, only Delete and SetStorageClass
-	// are supported.
+	// Type: Type of the action. Currently, only Delete, SetStorageClass,
+	// and AbortIncompleteMultipartUpload are supported.
 	Type string `json:"type,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "StorageClass") to
@@ -827,11 +861,21 @@ type BucketLifecycleRuleCondition struct {
 	// ways and that it is not guaranteed to be released.
 	MatchesPattern string `json:"matchesPattern,omitempty"`
 
+	// MatchesPrefix: List of object name prefixes. This condition will be
+	// satisfied when at least one of the prefixes exactly matches the
+	// beginning of the object name.
+	MatchesPrefix []string `json:"matchesPrefix,omitempty"`
+
 	// MatchesStorageClass: Objects having any of the storage classes
 	// specified by this condition will be matched. Values include
 	// MULTI_REGIONAL, REGIONAL, NEARLINE, COLDLINE, ARCHIVE, STANDARD, and
 	// DURABLE_REDUCED_AVAILABILITY.
 	MatchesStorageClass []string `json:"matchesStorageClass,omitempty"`
+
+	// MatchesSuffix: List of object name suffixes. This condition will be
+	// satisfied when at least one of the suffixes exactly matches the end
+	// of the object name.
+	MatchesSuffix []string `json:"matchesSuffix,omitempty"`
 
 	// NoncurrentTimeBefore: A date in RFC 3339 format with only the date
 	// part (for instance, "2013-01-15"). This condition is satisfied when

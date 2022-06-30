@@ -90,6 +90,8 @@ type LstatFileLister interface {
 // We use "/" as start directory for relative paths, implementing this
 // interface you can customize the start directory.
 // You have to return an absolute POSIX path.
+//
+// Deprecated: if you want to set a start directory use WithStartDirectory RequestServerOption instead.
 type RealPathFileLister interface {
 	FileLister
 	RealPath(string) string

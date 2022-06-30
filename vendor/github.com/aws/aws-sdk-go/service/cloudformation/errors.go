@@ -62,8 +62,8 @@ const (
 	//
 	// The quota for the resource has already been reached.
 	//
-	// For information on resource and stack limitations, see CloudFormation quotas
-	// (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html)
+	// For information about resource and stack limitations, see CloudFormation
+	// quotas (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html)
 	// in the CloudFormation User Guide.
 	ErrCodeLimitExceededException = "LimitExceededException"
 

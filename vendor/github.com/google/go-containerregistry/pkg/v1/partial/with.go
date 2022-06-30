@@ -88,9 +88,22 @@ func (cl *configLayer) MediaType() (types.MediaType, error) {
 
 var _ v1.Layer = (*configLayer)(nil)
 
+// withConfigLayer allows partial image implementations to provide a layer
+// for their config file.
+type withConfigLayer interface {
+	ConfigLayer() (v1.Layer, error)
+}
+
 // ConfigLayer implements v1.Layer from the raw config bytes.
 // This is so that clients (e.g. remote) can access the config as a blob.
+//
+// Images that want to return a specific layer implementation can implement
+// withConfigLayer.
 func ConfigLayer(i WithRawConfigFile) (v1.Layer, error) {
+	if wcl, ok := unwrap(i).(withConfigLayer); ok {
+		return wcl.ConfigLayer()
+	}
+
 	h, err := ConfigName(i)
 	if err != nil {
 		return nil, err
