@@ -715,7 +715,7 @@ spec:
       - args:
         - --v=5
         - --endpoint=unix:/csi/csi.sock
-        - --extra-labels=k8s-io-cluster-name=minimal-gce-with-a-very-very-very-long-name-example-com
+        - --extra-labels=k8s-io-cluster-name=minimal-gce-with-a-very-very-very-very-very-long-name-example-com
         image: registry.k8s.io/cloud-provider-gcp/gcp-compute-persistent-disk-csi-driver:v1.3.4
         name: gce-pd-driver
         volumeMounts:
