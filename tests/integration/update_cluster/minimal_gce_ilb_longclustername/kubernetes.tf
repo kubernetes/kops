@@ -516,16 +516,16 @@ resource "google_compute_network" "minimal-gce-with-a-very-very-very-very-very-l
   name                    = "minimal-gce-with-a-very-very-very-very-very-long-name-example-com"
 }
 
-resource "google_compute_router" "nat-minimal-gce-with-a-very-very-very-very-very-long-name-example-com" {
-  name    = "nat-minimal-gce-with-a-very-very-very-very-very-long-name-example-com"
+resource "google_compute_router" "nat-minimal-gce-with-a-very-very-very-very-very-long-nam-96dqvi" {
+  name    = "nat-minimal-gce-with-a-very-very-very-very-very-long-nam-96dqvi"
   network = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-example-com.name
 }
 
-resource "google_compute_router_nat" "nat-minimal-gce-with-a-very-very-very-very-very-long-name-example-com" {
-  name                               = "nat-minimal-gce-with-a-very-very-very-very-very-long-name-example-com"
+resource "google_compute_router_nat" "nat-minimal-gce-with-a-very-very-very-very-very-long-nam-96dqvi" {
+  name                               = "nat-minimal-gce-with-a-very-very-very-very-very-long-nam-96dqvi"
   nat_ip_allocate_option             = "AUTO_ONLY"
   region                             = "us-test1"
-  router                             = google_compute_router.nat-minimal-gce-with-a-very-very-very-very-very-long-name-example-com.name
+  router                             = google_compute_router.nat-minimal-gce-with-a-very-very-very-very-very-long-nam-96dqvi.name
   source_subnetwork_ip_ranges_to_nat = "LIST_OF_SUBNETWORKS"
   subnetwork {
     name                    = google_compute_subnetwork.us-test1-minimal-gce-with-a-very-very-very-very-very-lon-96dqvi.name
