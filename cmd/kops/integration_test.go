@@ -271,7 +271,14 @@ func TestMinimalGCEInternalLoadBalancer(t *testing.T) {
 
 // TestMinimalGCELongClusterName runs tests on a minimal GCE configuration with a very long cluster name
 func TestMinimalGCELongClusterName(t *testing.T) {
-	newIntegrationTest("minimal-gce-with-a-very-very-very-long-name.example.com", "minimal_gce_longclustername").
+	newIntegrationTest("minimal-gce-with-a-very-very-very-very-very-long-name.example.com", "minimal_gce_longclustername").
+		withAddons(dnsControllerAddon, leaderElectionAddon, "gcp-pd-csi-driver.addons.k8s.io-k8s-1.23").
+		runTestTerraformGCE(t)
+}
+
+// TestMinimalGCEInternalLoadBalancerLongClusterName runs tests on a minimal GCE configuration with an internal load balancer and a very long cluster name
+func TestMinimalGCEInternalLoadBalancerLongClusterName(t *testing.T) {
+	newIntegrationTest("minimal-gce-with-a-very-very-very-very-very-long-name.example.com", "minimal_gce_ilb_longclustername").
 		withAddons(dnsControllerAddon, leaderElectionAddon, "gcp-pd-csi-driver.addons.k8s.io-k8s-1.23").
 		runTestTerraformGCE(t)
 }
