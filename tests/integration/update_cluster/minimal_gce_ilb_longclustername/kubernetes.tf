@@ -178,6 +178,16 @@ resource "aws_s3_object" "nodeupconfig-nodes" {
   server_side_encryption = "AES256"
 }
 
+resource "google_compute_backend_service" "api-minimal-gce-with-a-very-very-very-very-very-long-name-example-com" {
+  backend {
+    group = google_compute_instance_group_manager.a-master-us-test1-a-minimal-gce-with-a-very-very-very-ve-j0fh8f.instance_group
+  }
+  health_checks         = [google_compute_health_check.api-minimal-gce-with-a-very-very-very-very-very-long-name-example-com.id]
+  load_balancing_scheme = "INTERNAL_SELF_MANAGED"
+  name                  = "api-minimal-gce-with-a-very-very-very-very-very-long-name-example-com"
+  protocol              = "TCP"
+}
+
 resource "google_compute_disk" "d1-etcd-events-minimal-gce-with-a-very-very-very-very-ve-96dqvi" {
   labels = {
     "k8s-io-cluster-name" = "minimal-gce-with-a-very-very-very-very-very-long-name-example-com"
@@ -200,30 +210,6 @@ resource "google_compute_disk" "d1-etcd-main-minimal-gce-with-a-very-very-very-v
   size = 20
   type = "pd-ssd"
   zone = "us-test1-a"
-}
-
-resource "google_compute_firewall" "kubernetes-master-https-ipv6-minimal-gce-with-a-very-ver-96dqvi" {
-  allow {
-    ports    = ["443"]
-    protocol = "tcp"
-  }
-  disabled      = true
-  name          = "kubernetes-master-https-ipv6-minimal-gce-with-a-very-ver-96dqvi"
-  network       = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-example-com.name
-  source_ranges = ["::/0"]
-  target_tags   = ["minimal-gce-with-a-very-very-very-ver-96dqvi-k8s-io-role-master"]
-}
-
-resource "google_compute_firewall" "kubernetes-master-https-minimal-gce-with-a-very-very-ver-96dqvi" {
-  allow {
-    ports    = ["443"]
-    protocol = "tcp"
-  }
-  disabled      = false
-  name          = "kubernetes-master-https-minimal-gce-with-a-very-very-ver-96dqvi"
-  network       = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-example-com.name
-  source_ranges = ["0.0.0.0/0"]
-  target_tags   = ["minimal-gce-with-a-very-very-very-ver-96dqvi-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "master-to-master-minimal-gce-with-a-very-very-very-very--96dqvi" {
@@ -400,6 +386,23 @@ resource "google_compute_firewall" "ssh-external-to-node-minimal-gce-with-a-very
   target_tags   = ["minimal-gce-with-a-very-very-very-very--96dqvi-k8s-io-role-node"]
 }
 
+resource "google_compute_forwarding_rule" "us-test-1-minimal-gce-with-a-very-very-very-very-very-lo-96dqvi" {
+  backend_service       = google_compute_backend_service.api-minimal-gce-with-a-very-very-very-very-very-long-name-example-com.id
+  ip_protocol           = "TCP"
+  load_balancing_scheme = "INTERNAL"
+  name                  = "us-test-1-minimal-gce-with-a-very-very-very-very-very-lo-96dqvi"
+  network               = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-example-com.name
+  ports                 = ["443"]
+  subnetwork            = "us-test-1"
+}
+
+resource "google_compute_health_check" "api-minimal-gce-with-a-very-very-very-very-very-long-name-example-com" {
+  name = "api-minimal-gce-with-a-very-very-very-very-very-long-name-example-com"
+  tcp_health_check {
+    port = 443
+  }
+}
+
 resource "google_compute_instance_group_manager" "a-master-us-test1-a-minimal-gce-with-a-very-very-very-ve-j0fh8f" {
   base_instance_name = "master-us-test1-a"
   name               = "a-master-us-test1-a-minimal-gce-with-a-very-very-very-ve-j0fh8f"
@@ -449,8 +452,6 @@ resource "google_compute_instance_template" "master-us-test1-a-minimal-gce-with-
   }
   name_prefix = "master-us-test1-a-minimal-ivl9ll-"
   network_interface {
-    access_config {
-    }
     network    = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-example-com.name
     subnetwork = google_compute_subnetwork.us-test1-minimal-gce-with-a-very-very-very-very-very-lon-96dqvi.name
   }
@@ -495,8 +496,6 @@ resource "google_compute_instance_template" "nodes-minimal-gce-with-a-very-very-
   }
   name_prefix = "nodes-minimal-gce-with-a--k0ql96-"
   network_interface {
-    access_config {
-    }
     network    = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-example-com.name
     subnetwork = google_compute_subnetwork.us-test1-minimal-gce-with-a-very-very-very-very-very-lon-96dqvi.name
   }
@@ -515,6 +514,23 @@ resource "google_compute_instance_template" "nodes-minimal-gce-with-a-very-very-
 resource "google_compute_network" "minimal-gce-with-a-very-very-very-very-very-long-name-example-com" {
   auto_create_subnetworks = false
   name                    = "minimal-gce-with-a-very-very-very-very-very-long-name-example-com"
+}
+
+resource "google_compute_router" "nat-minimal-gce-with-a-very-very-very-very-very-long-name-example-com" {
+  name    = "nat-minimal-gce-with-a-very-very-very-very-very-long-name-example-com"
+  network = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-example-com.name
+}
+
+resource "google_compute_router_nat" "nat-minimal-gce-with-a-very-very-very-very-very-long-name-example-com" {
+  name                               = "nat-minimal-gce-with-a-very-very-very-very-very-long-name-example-com"
+  nat_ip_allocate_option             = "AUTO_ONLY"
+  region                             = "us-test1"
+  router                             = google_compute_router.nat-minimal-gce-with-a-very-very-very-very-very-long-name-example-com.name
+  source_subnetwork_ip_ranges_to_nat = "LIST_OF_SUBNETWORKS"
+  subnetwork {
+    name                    = google_compute_subnetwork.us-test1-minimal-gce-with-a-very-very-very-very-very-lon-96dqvi.name
+    source_ip_ranges_to_nat = ["ALL_IP_RANGES"]
+  }
 }
 
 resource "google_compute_subnetwork" "us-test1-minimal-gce-with-a-very-very-very-very-very-lon-96dqvi" {
