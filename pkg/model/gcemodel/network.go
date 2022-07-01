@@ -129,7 +129,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				return nil
 			}
 			r := &gcetasks.Router{
-				Name:                          s(b.SafeObjectName("nat")),
+				Name:                          s(b.NameForRouter("nat")),
 				Lifecycle:                     b.Lifecycle,
 				Network:                       network,
 				Region:                        s(b.Region),
