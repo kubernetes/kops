@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
   config.yaml: |
-    {"cloud":"gce","configBase":"memfs://tests/minimal-gce-with-a-very-very-very-long-name.example.com","server":{"Listen":":3988","provider":{"gce":{"projectID":"testproject","region":"us-test1","clusterName":"minimal-gce-with-a-very-very-very-long-name.example.com","MaxTimeSkew":300}},"serverKeyPath":"/etc/kubernetes/kops-controller/pki/kops-controller.key","serverCertificatePath":"/etc/kubernetes/kops-controller/pki/kops-controller.crt","caBasePath":"/etc/kubernetes/kops-controller/pki","signingCAs":["kubernetes-ca"],"certNames":["kubelet","kubelet-server","kube-proxy"]}}
+    {"cloud":"gce","configBase":"memfs://tests/minimal-gce-with-a-very-very-very-very-very-long-name.example.com","server":{"Listen":":3988","provider":{"gce":{"projectID":"testproject","region":"us-test1","clusterName":"minimal-gce-with-a-very-very-very-very-very-long-name.example.com","MaxTimeSkew":300}},"serverKeyPath":"/etc/kubernetes/kops-controller/pki/kops-controller.key","serverCertificatePath":"/etc/kubernetes/kops-controller/pki/kops-controller.crt","caBasePath":"/etc/kubernetes/kops-controller/pki","signingCAs":["kubernetes-ca"],"certNames":["kubelet","kubelet-server","kube-proxy"]}}
 kind: ConfigMap
 metadata:
   creationTimestamp: null
@@ -33,7 +33,7 @@ spec:
   template:
     metadata:
       annotations:
-        dns.alpha.kubernetes.io/internal: kops-controller.internal.minimal-gce-with-a-very-very-very-long-name.example.com
+        dns.alpha.kubernetes.io/internal: kops-controller.internal.minimal-gce-with-a-very-very-very-very-very-long-name.example.com
       creationTimestamp: null
       labels:
         k8s-addon: kops-controller.addons.k8s.io
