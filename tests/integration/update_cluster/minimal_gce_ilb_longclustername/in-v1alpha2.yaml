@@ -5,7 +5,11 @@ metadata:
   name: minimal-gce-with-a-very-very-very-very-very-long-name.example.com
 spec:
   api:
-    dns: {}
+    loadBalancer:
+      type: Internal
+      useForInternalApi: true
+      subnets:
+        - name: us-test-1
   authorization:
     alwaysAllow: {}
   channel: stable
@@ -38,12 +42,12 @@ spec:
   subnets:
   - name: us-test1
     region: us-test1
-    type: Public
+    type: Private
   topology:
     dns:
       type: Public
-    masters: public
-    nodes: public
+    masters: private
+    nodes: private
 
 ---
 

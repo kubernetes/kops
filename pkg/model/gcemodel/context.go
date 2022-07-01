@@ -119,6 +119,10 @@ func (c *GCEModelContext) NameForHealthcheck(id string) string {
 	return c.SafeSuffixedObjectName(id)
 }
 
+func (c *GCEModelContext) NameForRouter(id string) string {
+	return c.SafeSuffixedObjectName(id)
+}
+
 func (c *GCEModelContext) NameForFirewallRule(id string) string {
 	return gce.ClusterSuffixedName(id, c.Cluster.ObjectMeta.Name, 63)
 }

@@ -127,17 +127,83 @@ cloudConfig:
     enabled: true
   manageStorageClasses: true
   multizone: true
-  nodeTags: minimal-gce-with-a-very-very-very-long--jvje0u-k8s-io-role-node
+  nodeTags: minimal-gce-with-a-very-very-very-very--96dqvi-k8s-io-role-node
 containerRuntime: containerd
 containerd:
   logLevel: info
   version: 1.6.6
 docker:
   skipInstall: true
+encryptionConfig: null
+etcdClusters:
+  events:
+    version: 3.5.4
+  main:
+    version: 3.5.4
+kubeAPIServer:
+  allowPrivileged: true
+  anonymousAuth: false
+  apiAudiences:
+  - kubernetes.svc.default
+  apiServerCount: 1
+  authorizationMode: AlwaysAllow
+  bindAddress: 0.0.0.0
+  cloudProvider: gce
+  enableAdmissionPlugins:
+  - NamespaceLifecycle
+  - LimitRanger
+  - ServiceAccount
+  - DefaultStorageClass
+  - DefaultTolerationSeconds
+  - MutatingAdmissionWebhook
+  - ValidatingAdmissionWebhook
+  - NodeRestriction
+  - ResourceQuota
+  etcdServers:
+  - https://127.0.0.1:4001
+  etcdServersOverrides:
+  - /events#https://127.0.0.1:4002
+  image: registry.k8s.io/kube-apiserver:v1.23.0
+  kubeletPreferredAddressTypes:
+  - InternalIP
+  - Hostname
+  - ExternalIP
+  logLevel: 2
+  requestheaderAllowedNames:
+  - aggregator
+  requestheaderExtraHeaderPrefixes:
+  - X-Remote-Extra-
+  requestheaderGroupHeaders:
+  - X-Remote-Group
+  requestheaderUsernameHeaders:
+  - X-Remote-User
+  securePort: 443
+  serviceAccountIssuer: https://api.internal.minimal-gce-with-a-very-very-very-very-very-long-name.example.com
+  serviceAccountJWKSURI: https://api.internal.minimal-gce-with-a-very-very-very-very-very-long-name.example.com/openid/v1/jwks
+  serviceClusterIPRange: 100.64.0.0/13
+  storageBackend: etcd3
+kubeControllerManager:
+  allocateNodeCIDRs: true
+  attachDetachReconcileSyncPeriod: 1m0s
+  cloudProvider: gce
+  clusterCIDR: 100.96.0.0/11
+  clusterName: minimal-gce-with-a-very-very-very-very-very-long-name-example-com
+  configureCloudRoutes: false
+  enableLeaderMigration: true
+  image: registry.k8s.io/kube-controller-manager:v1.23.0
+  leaderElection:
+    leaderElect: true
+  logLevel: 2
+  useServiceAccountCredentials: true
 kubeProxy:
   clusterCIDR: 100.96.0.0/11
   cpuRequest: 100m
   image: registry.k8s.io/kube-proxy:v1.23.0
+  logLevel: 2
+kubeScheduler:
+  image: registry.k8s.io/kube-scheduler:v1.23.0
+  leaderElection:
+    leaderElect: true
   logLevel: 2
 kubelet:
   anonymousAuth: false
@@ -157,15 +223,34 @@ kubelet:
   protectKernelDefaults: true
   shutdownGracePeriod: 30s
   shutdownGracePeriodCriticalPods: 10s
+masterKubelet:
+  anonymousAuth: false
+  cgroupDriver: systemd
+  cgroupRoot: /
+  cloudProvider: gce
+  clusterDNS: 100.64.0.10
+  clusterDomain: cluster.local
+  enableDebuggingHandlers: true
+  evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+  hairpinMode: promiscuous-bridge
+  kubeconfigPath: /var/lib/kubelet/kubeconfig
+  logLevel: 2
+  networkPluginName: cni
+  podInfraContainerImage: registry.k8s.io/pause:3.6
+  podManifestPath: /etc/kubernetes/manifests
+  protectKernelDefaults: true
+  registerSchedulable: false
+  shutdownGracePeriod: 30s
+  shutdownGracePeriodCriticalPods: 10s
 
 __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: gce
-ConfigBase: memfs://tests/minimal-gce-with-a-very-very-very-long-name.example.com
-InstanceGroupName: nodes
-InstanceGroupRole: Node
-NodeupConfigHash: eKSMWkttkEQHrhltD/neO5WET+f6xZSBSLZdH+cwOIs=
+ConfigBase: memfs://tests/minimal-gce-with-a-very-very-very-very-very-long-name.example.com
+InstanceGroupName: master-us-test1-a
+InstanceGroupRole: Master
+NodeupConfigHash: FgrpSg7uv4tUwPz0jDDVjlni6FjrVC3caGLmTOUOQ3w=
 
 __EOF_KUBE_ENV
 
