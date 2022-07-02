@@ -510,7 +510,7 @@ spec:
       dnsPolicy: Default
       containers:
         - name: controller
-          image: public.ecr.aws/karpenter/controller:v0.13.1
+          image: public.ecr.aws/karpenter-snapshots/controller:4c35c0fe3cc13f55f7edba361cb2f5e662ac9867
           imagePullPolicy: IfNotPresent
           resources:
             limits:
@@ -612,7 +612,7 @@ spec:
       dnsPolicy: Default
       containers:
         - name: webhook
-          image: public.ecr.aws/karpenter/webhook:v0.13.1
+          image: public.ecr.aws/karpenter-snapshots/webhook:4c35c0fe3cc13f55f7edba361cb2f5e662ac9867
           imagePullPolicy: IfNotPresent
           args:
             - -port=8443

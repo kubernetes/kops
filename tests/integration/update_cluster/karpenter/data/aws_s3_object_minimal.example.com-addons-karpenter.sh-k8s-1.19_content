@@ -717,7 +717,7 @@ spec:
           value: arn:aws-test:iam::123456789012:role/karpenter.kube-system.sa.minimal.example.com
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
-        image: public.ecr.aws/karpenter/controller:v0.13.1
+        image: public.ecr.aws/karpenter-snapshots/controller:4c35c0fe3cc13f55f7edba361cb2f5e662ac9867
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -851,7 +851,7 @@ spec:
           value: arn:aws-test:iam::123456789012:role/karpenter.kube-system.sa.minimal.example.com
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
-        image: public.ecr.aws/karpenter/webhook:v0.13.1
+        image: public.ecr.aws/karpenter-snapshots/webhook:4c35c0fe3cc13f55f7edba361cb2f5e662ac9867
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
