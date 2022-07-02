@@ -786,6 +786,6 @@ spec:
     subnetSelector:
       kubernetes.io/role/internal-elb: "1"
       kubernetes.io/cluster/{{ ClusterName }}: "*"
-  ttlSecondsAfterEmpty: 30
+  ttlSecondsAfterEmpty: 300
 {{ end }}
 {{ end }}
