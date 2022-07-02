@@ -1077,7 +1077,7 @@ spec:
     operator: In
     values:
     - c5.large
-  ttlSecondsAfterEmpty: 300
+  ttlSecondsAfterEmpty: 1800
 
 ---
 
@@ -1109,4 +1109,4 @@ spec:
     operator: In
     values:
     - t2.medium
-  ttlSecondsAfterEmpty: 300
+  ttlSecondsAfterEmpty: 1800
