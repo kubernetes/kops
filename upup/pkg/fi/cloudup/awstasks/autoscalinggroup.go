@@ -218,6 +218,10 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 			actual.MixedSpotAllocationStrategy = mpd.SpotAllocationStrategy
 			actual.MixedSpotInstancePools = mpd.SpotInstancePools
 			actual.MixedSpotMaxPrice = mpd.SpotMaxPrice
+			// MixedSpotMaxPrice must be set to "" in order to unset.
+			if mpd.SpotMaxPrice == nil {
+				actual.MixedSpotMaxPrice = fi.String("")
+			}
 		}
 
 		if g.MixedInstancesPolicy.LaunchTemplate != nil {

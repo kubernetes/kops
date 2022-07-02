@@ -296,6 +296,7 @@ resource "aws_autoscaling_group" "nodes-mixedinstances-example-com" {
     instances_distribution {
       on_demand_percentage_above_base_capacity = 5
       spot_instance_pools                      = 3
+      spot_max_price                           = ""
     }
     launch_template {
       launch_template_specification {
