@@ -134,7 +134,7 @@ rules:
     verbs: ["get", "list", "watch"]
   - apiGroups: ["snapshot.storage.k8s.io"]
     resources: ["volumesnapshotcontents"]
-    verbs: ["create", "get", "list", "watch", "update", "delete"]
+    verbs: ["create", "get", "list", "watch", "update", "delete", "patch"]
   - apiGroups: ["snapshot.storage.k8s.io"]
     resources: ["volumesnapshotcontents/status"]
     verbs: ["update"]
@@ -290,6 +290,7 @@ spec:
           securityContext:
             privileged: true
           image: registry.k8s.io/provider-aws/aws-ebs-csi-driver:{{ .Version }}
+          imagePullPolicy: IfNotPresent
           args:
             - node
             - --endpoint=$(CSI_ENDPOINT)
@@ -330,7 +331,8 @@ spec:
             periodSeconds: 10
             failureThreshold: 5
         - name: node-driver-registrar
-          image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.1.0
+          image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.5.1
+          imagePullPolicy: IfNotPresent
           args:
             - --csi-address=$(ADDRESS)
             - --kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)
@@ -350,7 +352,8 @@ spec:
             - name: registration-dir
               mountPath: /registration
         - name: liveness-probe
-          image: registry.k8s.io/sig-storage/livenessprobe:v2.2.0
+          image: registry.k8s.io/sig-storage/livenessprobe:v2.5.0
+          imagePullPolicy: IfNotPresent
           args:
             - --csi-address=/csi/csi.sock
           volumeMounts:
@@ -466,13 +469,13 @@ spec:
             - name: AWS_EC2_METADATA_SERVICE_ENDPOINT_MODE
               value: IPv6
             {{- end }}
+            - name: CSI_ENDPOINT
+              value: unix:///var/lib/csi/sockets/pluginproxy/csi.sock
             - name: CSI_NODE_NAME
               valueFrom:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: spec.nodeName
-            - name: CSI_ENDPOINT
-              value: unix:///var/lib/csi/sockets/pluginproxy/csi.sock
             - name: AWS_ACCESS_KEY_ID
               valueFrom:
                 secretKeyRef:
@@ -500,14 +503,23 @@ spec:
             timeoutSeconds: 3
             periodSeconds: 10
             failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: healthz
+            initialDelaySeconds: 10
+            timeoutSeconds: 3
+            periodSeconds: 10
+            failureThreshold: 5
         - name: csi-provisioner
-          image: registry.k8s.io/sig-storage/csi-provisioner:v2.2.0
+          image: registry.k8s.io/sig-storage/csi-provisioner:v3.1.0
+          imagePullPolicy: IfNotPresent
           args:
             - --csi-address=$(ADDRESS)
             - --v=5
             - --feature-gates=Topology=true
+            - --extra-create-metadata
             - --leader-election=true
-            - --extra-create-metadata=true
             - --default-fstype=ext4
           env:
             - name: ADDRESS
@@ -516,7 +528,8 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: csi-attacher
-          image: registry.k8s.io/sig-storage/csi-attacher:v3.2.0
+          image: registry.k8s.io/sig-storage/csi-attacher:v3.4.0
+          imagePullPolicy: IfNotPresent
           args:
             - --csi-address=$(ADDRESS)
             - --v=5
@@ -529,7 +542,8 @@ spec:
               mountPath: /var/lib/csi/sockets/pluginproxy/
         {{ if HasSnapshotController }}
         - name: csi-snapshotter
-          image: registry.k8s.io/sig-storage/csi-snapshotter:v4.0.0
+          image: registry.k8s.io/sig-storage/csi-snapshotter:v6.0.1
+          imagePullPolicy: IfNotPresent
           args:
             - --csi-address=$(ADDRESS)
             - --leader-election=true
@@ -541,8 +555,8 @@ spec:
               mountPath: /var/lib/csi/sockets/pluginproxy/
         {{ end }}
         - name: csi-resizer
-          image: registry.k8s.io/sig-storage/csi-resizer:v1.1.0
-          imagePullPolicy: Always
+          image: registry.k8s.io/sig-storage/csi-resizer:v1.4.0
+          imagePullPolicy: IfNotPresent
           args:
             - --csi-address=$(ADDRESS)
             - --v=5
@@ -553,7 +567,8 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: liveness-probe
-          image: registry.k8s.io/sig-storage/livenessprobe:v2.4.0
+          image: registry.k8s.io/sig-storage/livenessprobe:v2.5.0
+          imagePullPolicy: IfNotPresent
           args:
             - --csi-address=/csi/csi.sock
           volumeMounts:
