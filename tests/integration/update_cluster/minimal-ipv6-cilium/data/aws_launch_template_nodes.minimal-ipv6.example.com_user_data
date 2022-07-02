@@ -126,7 +126,7 @@ cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   awsEBSCSIDriver:
     enabled: true
-    version: v1.6.2
+    version: v1.8.0
   manageStorageClasses: true
   nodeIPFamilies:
   - ipv6
