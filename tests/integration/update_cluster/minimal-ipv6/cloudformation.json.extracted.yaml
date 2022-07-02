@@ -127,7 +127,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalipv6examplecom.Propert
   cloudConfig:
     awsEBSCSIDriver:
       enabled: true
-      version: v1.6.2
+      version: v1.8.0
     manageStorageClasses: true
     nodeIPFamilies:
     - ipv6
@@ -400,7 +400,7 @@ Resources.AWSEC2LaunchTemplatenodesminimalipv6examplecom.Properties.LaunchTempla
   cloudConfig:
     awsEBSCSIDriver:
       enabled: true
-      version: v1.6.2
+      version: v1.8.0
     manageStorageClasses: true
     nodeIPFamilies:
     - ipv6

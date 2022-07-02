@@ -128,7 +128,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumexamplecom.Prope
   cloudConfig:
     awsEBSCSIDriver:
       enabled: true
-      version: v1.6.2
+      version: v1.8.0
     manageStorageClasses: true
   containerRuntime: containerd
   containerd:
@@ -397,7 +397,7 @@ Resources.AWSEC2LaunchTemplatenodesprivateciliumexamplecom.Properties.LaunchTemp
   cloudConfig:
     awsEBSCSIDriver:
       enabled: true
-      version: v1.6.2
+      version: v1.8.0
     manageStorageClasses: true
   containerRuntime: containerd
   containerd:
