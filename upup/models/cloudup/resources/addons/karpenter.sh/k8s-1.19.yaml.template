@@ -290,7 +290,7 @@ rules:
   resources: ["awsnodetemplates"]
   verbs: ["get", "list", "watch"]
 - apiGroups: [""]
-  resources: ["pods", "nodes", "persistentvolumes", "persistentvolumeclaims"]
+  resources: ["pods", "namespaces", "nodes", "persistentvolumes", "persistentvolumeclaims"]
   verbs: ["get", "list", "watch"]
 - apiGroups: ["storage.k8s.io"]
   resources: ["storageclasses", "csinodes"]

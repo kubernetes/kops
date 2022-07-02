@@ -325,6 +325,7 @@ rules:
   - ""
   resources:
   - pods
+  - namespaces
   - nodes
   - persistentvolumes
   - persistentvolumeclaims
