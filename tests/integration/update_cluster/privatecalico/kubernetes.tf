@@ -122,6 +122,7 @@ resource "aws_autoscaling_group" "bastion-privatecalico-example-com" {
     version = aws_launch_template.bastion-privatecalico-example-com.latest_version
   }
   load_balancers        = [aws_elb.bastion-privatecalico-example-com.id]
+  max_instance_lifetime = 0
   max_size              = 1
   metrics_granularity   = "1Minute"
   min_size              = 1
@@ -167,6 +168,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-privatecalico-exampl
     version = aws_launch_template.master-us-test-1a-masters-privatecalico-example-com.latest_version
   }
   load_balancers        = [aws_elb.api-privatecalico-example-com.id]
+  max_instance_lifetime = 0
   max_size              = 1
   metrics_granularity   = "1Minute"
   min_size              = 1
@@ -221,6 +223,7 @@ resource "aws_autoscaling_group" "nodes-privatecalico-example-com" {
     id      = aws_launch_template.nodes-privatecalico-example-com.id
     version = aws_launch_template.nodes-privatecalico-example-com.latest_version
   }
+  max_instance_lifetime = 0
   max_size              = 2
   metrics_granularity   = "1Minute"
   min_size              = 2

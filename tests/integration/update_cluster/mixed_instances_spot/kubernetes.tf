@@ -101,6 +101,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-mixedinstances-examp
     id      = aws_launch_template.master-us-test-1a-masters-mixedinstances-example-com.id
     version = aws_launch_template.master-us-test-1a-masters-mixedinstances-example-com.latest_version
   }
+  max_instance_lifetime = 0
   max_size              = 1
   metrics_granularity   = "1Minute"
   min_size              = 1
@@ -165,6 +166,7 @@ resource "aws_autoscaling_group" "master-us-test-1b-masters-mixedinstances-examp
     id      = aws_launch_template.master-us-test-1b-masters-mixedinstances-example-com.id
     version = aws_launch_template.master-us-test-1b-masters-mixedinstances-example-com.latest_version
   }
+  max_instance_lifetime = 0
   max_size              = 1
   metrics_granularity   = "1Minute"
   min_size              = 1
@@ -229,6 +231,7 @@ resource "aws_autoscaling_group" "master-us-test-1c-masters-mixedinstances-examp
     id      = aws_launch_template.master-us-test-1c-masters-mixedinstances-example-com.id
     version = aws_launch_template.master-us-test-1c-masters-mixedinstances-example-com.latest_version
   }
+  max_instance_lifetime = 0
   max_size              = 1
   metrics_granularity   = "1Minute"
   min_size              = 1
@@ -288,10 +291,11 @@ resource "aws_autoscaling_group" "master-us-test-1c-masters-mixedinstances-examp
 }
 
 resource "aws_autoscaling_group" "nodes-mixedinstances-example-com" {
-  enabled_metrics     = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
-  max_size            = 2
-  metrics_granularity = "1Minute"
-  min_size            = 2
+  enabled_metrics       = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  max_instance_lifetime = 0
+  max_size              = 2
+  metrics_granularity   = "1Minute"
+  min_size              = 2
   mixed_instances_policy {
     instances_distribution {
       on_demand_percentage_above_base_capacity = 5

@@ -162,6 +162,9 @@ type InstanceGroupSpec struct {
 	Packages []string `json:"packages,omitempty"`
 	// GuestAccelerators configures additional accelerators
 	GuestAccelerators []AcceleratorConfig `json:"guestAccelerators,omitempty"`
+	// MaxInstanceLifetime to the maximum amount of time, in seconds, that an instance can be in service.
+	// Value expected must be in form of duration ("ms", "s", "m", "h")
+	MaxInstanceLifetime *metav1.Duration `json:"maxInstanceLifetime,omitempty"`
 }
 
 // InstanceMetadataOptions defines the EC2 instance metadata service options (AWS Only)

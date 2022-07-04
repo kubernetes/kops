@@ -96,6 +96,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-minimal-ipv6-example
     id      = aws_launch_template.master-us-test-1a-masters-minimal-ipv6-example-com.id
     version = aws_launch_template.master-us-test-1a-masters-minimal-ipv6-example-com.latest_version
   }
+  max_instance_lifetime = 0
   max_size              = 1
   metrics_granularity   = "1Minute"
   min_size              = 1
@@ -156,6 +157,7 @@ resource "aws_autoscaling_group" "nodes-minimal-ipv6-example-com" {
     id      = aws_launch_template.nodes-minimal-ipv6-example-com.id
     version = aws_launch_template.nodes-minimal-ipv6-example-com.latest_version
   }
+  max_instance_lifetime = 0
   max_size              = 1
   metrics_granularity   = "1Minute"
   min_size              = 1

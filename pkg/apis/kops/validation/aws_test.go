@@ -18,6 +18,7 @@ package validation
 
 import (
 	"testing"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -26,6 +27,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 )
@@ -201,6 +203,26 @@ func TestValidateInstanceGroupSpec(t *testing.T) {
 		{
 			Input: kops.InstanceGroupSpec{
 				InstanceInterruptionBehavior: fi.String("stop"),
+			},
+			ExpectedErrors: []string{},
+		},
+		{
+			Input: kops.InstanceGroupSpec{
+				MaxInstanceLifetime: &metav1.Duration{Duration: time.Duration(100 * float64(time.Second))},
+			},
+			ExpectedErrors: []string{
+				"Invalid value::test-nodes.spec.maxInstanceLifetime",
+			},
+		},
+		{
+			Input: kops.InstanceGroupSpec{
+				MaxInstanceLifetime: &metav1.Duration{Duration: time.Duration(86400 * float64(time.Second))},
+			},
+			ExpectedErrors: []string{},
+		},
+		{
+			Input: kops.InstanceGroupSpec{
+				MaxInstanceLifetime: &metav1.Duration{Duration: time.Duration(0 * float64(time.Second))},
 			},
 			ExpectedErrors: []string{},
 		},
