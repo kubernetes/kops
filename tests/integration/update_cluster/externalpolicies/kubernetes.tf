@@ -92,6 +92,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-externalpolicies-exa
     version = aws_launch_template.master-us-test-1a-masters-externalpolicies-example-com.latest_version
   }
   load_balancers        = [aws_elb.api-externalpolicies-example-com.id]
+  max_instance_lifetime = 0
   max_size              = 1
   metrics_granularity   = "1Minute"
   min_size              = 1
@@ -166,6 +167,7 @@ resource "aws_autoscaling_group" "nodes-externalpolicies-example-com" {
     id      = aws_launch_template.nodes-externalpolicies-example-com.id
     version = aws_launch_template.nodes-externalpolicies-example-com.latest_version
   }
+  max_instance_lifetime = 0
   max_size              = 2
   metrics_granularity   = "1Minute"
   min_size              = 2

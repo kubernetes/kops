@@ -51,6 +51,7 @@ spec:
   machineType: t2.medium
   maxSize: 2
   minSize: 2
+  maxInstanceLifetime: 48h20m
   role: Node
   subnets:
   - us-test-1a
@@ -70,6 +71,7 @@ spec:
   machineType: m3.medium
   maxSize: 1
   minSize: 1
+  maxInstanceLifetime: "0"
   role: Master
   subnets:
   - us-test-1a

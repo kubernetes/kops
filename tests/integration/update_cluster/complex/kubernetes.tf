@@ -109,6 +109,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-complex-example-com"
     version = aws_launch_template.master-us-test-1a-masters-complex-example-com.latest_version
   }
   load_balancers        = ["my-external-lb-1"]
+  max_instance_lifetime = 0
   max_size              = 1
   metrics_granularity   = "1Minute"
   min_size              = 1
@@ -185,6 +186,7 @@ resource "aws_autoscaling_group" "nodes-complex-example-com" {
     version = aws_launch_template.nodes-complex-example-com.latest_version
   }
   load_balancers        = ["my-external-lb-1"]
+  max_instance_lifetime = 0
   max_size              = 2
   metrics_granularity   = "1Minute"
   min_size              = 2

@@ -320,3 +320,19 @@ spec:
     httpPutResponseHopLimit: 1
     httpTokens: required
 ```
+
+## maxInstanceLifetime (AWS Only)
+
+{{ kops_feature_table(kops_added_default='1.24') }}
+
+The maximum instance lifetime specifies the maximum amount of time (in go duration [format](https://pkg.go.dev/time#ParseDuration)) that an instance can be in service before it is terminated and replaced.
+A common use case might be a requirement to replace your instances on a schedule because of internal security policies or external compliance controls. 
+In other words, this feature helps you to put a bit of ephemerality in your cluster.
+You must specify a value of at least 24h (86,400 seconds). To clear a previously set value, specify a new value of 0.
+
+The following configuration enables a maximum instance lifetime to two days.
+
+```yaml
+spec:
+  maxInstanceLifetime: "48h"
+```
