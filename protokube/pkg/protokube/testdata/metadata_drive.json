@@ -1,0 +1,7 @@
+{
+    "uuid": "01234567-cafe-babe-beef-0123456789ab",
+    "hostname": "test-server.config.drv",
+    "name": "test-server",
+    "availability_zone": "nova",
+    "project_id": "0123456789abcdeffedcba9876543210"
+}
