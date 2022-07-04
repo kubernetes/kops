@@ -117,6 +117,7 @@ resource "aws_autoscaling_group" "bastion-privatedns2-example-com" {
     version = aws_launch_template.bastion-privatedns2-example-com.latest_version
   }
   load_balancers        = [aws_elb.bastion-privatedns2-example-com.id]
+  max_instance_lifetime = 0
   max_size              = 1
   metrics_granularity   = "1Minute"
   min_size              = 1
@@ -167,6 +168,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-privatedns2-example-
     version = aws_launch_template.master-us-test-1a-masters-privatedns2-example-com.latest_version
   }
   load_balancers        = [aws_elb.api-privatedns2-example-com.id]
+  max_instance_lifetime = 0
   max_size              = 1
   metrics_granularity   = "1Minute"
   min_size              = 1
@@ -231,6 +233,7 @@ resource "aws_autoscaling_group" "nodes-privatedns2-example-com" {
     id      = aws_launch_template.nodes-privatedns2-example-com.id
     version = aws_launch_template.nodes-privatedns2-example-com.latest_version
   }
+  max_instance_lifetime = 0
   max_size              = 2
   metrics_granularity   = "1Minute"
   min_size              = 2

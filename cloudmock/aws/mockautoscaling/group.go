@@ -74,6 +74,7 @@ func (m *MockAutoscaling) CreateAutoScalingGroup(input *autoscaling.CreateAutoSc
 		TargetGroupARNs:     input.TargetGroupARNs,
 		TerminationPolicies: input.TerminationPolicies,
 		VPCZoneIdentifier:   input.VPCZoneIdentifier,
+		MaxInstanceLifetime: input.MaxInstanceLifetime,
 	}
 
 	if input.LaunchTemplate != nil {

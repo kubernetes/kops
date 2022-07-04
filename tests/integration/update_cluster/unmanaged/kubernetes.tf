@@ -117,6 +117,7 @@ resource "aws_autoscaling_group" "bastion-unmanaged-example-com" {
     version = aws_launch_template.bastion-unmanaged-example-com.latest_version
   }
   load_balancers        = [aws_elb.bastion-unmanaged-example-com.id]
+  max_instance_lifetime = 0
   max_size              = 1
   metrics_granularity   = "1Minute"
   min_size              = 1
@@ -167,6 +168,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-unmanaged-example-co
     version = aws_launch_template.master-us-test-1a-masters-unmanaged-example-com.latest_version
   }
   load_balancers        = [aws_elb.api-unmanaged-example-com.id]
+  max_instance_lifetime = 0
   max_size              = 1
   metrics_granularity   = "1Minute"
   min_size              = 1
@@ -231,6 +233,7 @@ resource "aws_autoscaling_group" "nodes-unmanaged-example-com" {
     id      = aws_launch_template.nodes-unmanaged-example-com.id
     version = aws_launch_template.nodes-unmanaged-example-com.latest_version
   }
+  max_instance_lifetime = 0
   max_size              = 2
   metrics_granularity   = "1Minute"
   min_size              = 2

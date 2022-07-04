@@ -91,6 +91,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-this-is-truly-a-real
     id      = aws_launch_template.master-us-test-1a-masters-this-is-truly-a-really-really-long-cluster-name-minimal-example-com.id
     version = aws_launch_template.master-us-test-1a-masters-this-is-truly-a-really-really-long-cluster-name-minimal-example-com.latest_version
   }
+  max_instance_lifetime = 0
   max_size              = 1
   metrics_granularity   = "1Minute"
   min_size              = 1
@@ -155,6 +156,7 @@ resource "aws_autoscaling_group" "nodes-this-is-truly-a-really-really-long-clust
     id      = aws_launch_template.nodes-this-is-truly-a-really-really-long-cluster-name-minimal-example-com.id
     version = aws_launch_template.nodes-this-is-truly-a-really-really-long-cluster-name-minimal-example-com.latest_version
   }
+  max_instance_lifetime = 0
   max_size              = 2
   metrics_granularity   = "1Minute"
   min_size              = 2
