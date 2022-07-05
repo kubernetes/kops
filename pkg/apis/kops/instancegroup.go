@@ -199,6 +199,11 @@ type InstanceGroupSpec struct {
 	// MaxInstanceLifetime to the maximum amount of time, in seconds, that an instance can be in service.
 	// Value expected must be in form of duration ("ms", "s", "m", "h")
 	MaxInstanceLifetime *metav1.Duration `json:"maxInstanceLifetime,omitempty"`
+	// GCPProvisioningModel: Specifies the provisioning model of the GCP instance.
+	// Valid values:
+	//   'STANDARD': (default) standard provisioning with user controlled run time, no discounts
+	//   'SPOT': heavily discounted, no guaranteed run time.
+	GCPProvisioningModel *string `json:"gcpProvisioningModel,omitempty"`
 }
 
 const (
