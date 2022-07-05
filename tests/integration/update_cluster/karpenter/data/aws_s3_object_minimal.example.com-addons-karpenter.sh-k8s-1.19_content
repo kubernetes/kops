@@ -2,7 +2,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.7.0
+    controller-gen.kubebuilder.io/version: v0.8.0
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: karpenter.sh
@@ -54,6 +54,10 @@ spec:
                     items:
                       type: string
                     type: array
+                  containerRuntime:
+                    description: ContainerRuntime is the container runtime to be used
+                      with your worker nodes.
+                    type: string
                 type: object
               labels:
                 additionalProperties:
@@ -79,6 +83,20 @@ spec:
                 description: Provider contains fields specific to your cloudprovider.
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
+              providerRef:
+                description: ProviderRef is a reference to a dedicated CRD for the
+                  chosen provider, that holds additional configuration options
+                properties:
+                  apiVersion:
+                    description: API version of the referent
+                    type: string
+                  kind:
+                    description: 'Kind of the referent; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds"'
+                    type: string
+                  name:
+                    description: 'Name of the referent; More info: http://kubernetes.io/docs/user-guide/identifiers#names'
+                    type: string
+                type: object
               requirements:
                 description: Requirements are layered with Labels and applied to every
                   node.
@@ -107,6 +125,39 @@ spec:
                   required:
                   - key
                   - operator
+                  type: object
+                type: array
+              startupTaints:
+                description: StartupTaints are taints that are applied to nodes upon
+                  startup which are expected to be removed automatically within a
+                  short period of time, typically by a DaemonSet that tolerates the
+                  taint. These are commonly used by daemonsets to allow initialization
+                  and enforce startup ordering.  StartupTaints are ignored for provisioning
+                  purposes in that pods are not required to tolerate a StartupTaint
+                  in order to have nodes provisioned for them.
+                items:
+                  description: The node this Taint is attached to has the "effect"
+                    on any pod that does not tolerate the Taint.
+                  properties:
+                    effect:
+                      description: Required. The effect of the taint on pods that
+                        do not tolerate the taint. Valid effects are NoSchedule, PreferNoSchedule
+                        and NoExecute.
+                      type: string
+                    key:
+                      description: Required. The taint key to be applied to a node.
+                      type: string
+                    timeAdded:
+                      description: TimeAdded represents the time at which the taint
+                        was added. It is only written for NoExecute taints.
+                      format: date-time
+                      type: string
+                    value:
+                      description: The taint value corresponding to the taint key.
+                      type: string
+                  required:
+                  - effect
+                  - key
                   type: object
                 type: array
               taints:
@@ -226,6 +277,233 @@ status:
 
 ---
 
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.8.0
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: karpenter.sh
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: karpenter.sh
+  name: awsnodetemplates.karpenter.k8s.aws
+spec:
+  group: karpenter.k8s.aws
+  names:
+    categories:
+    - karpenter
+    kind: AWSNodeTemplate
+    listKind: AWSNodeTemplateList
+    plural: awsnodetemplates
+    singular: awsnodetemplate
+  scope: Cluster
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: AWSNodeTemplate is the Schema for the AWSNodeTemplate API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: AWSNodeTemplateSpec is the top level specification for the
+              AWS Karpenter Provider. This will contain configuration necessary to
+              launch instances in AWS.
+            properties:
+              amiFamily:
+                description: AMIFamily is the AMI family that instances use.
+                type: string
+              apiVersion:
+                description: 'APIVersion defines the versioned schema of this representation
+                  of an object. Servers should convert recognized schemas to the latest
+                  internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+                type: string
+              blockDeviceMappings:
+                description: BlockDeviceMappings to be applied to provisioned nodes.
+                items:
+                  properties:
+                    deviceName:
+                      description: The device name (for example, /dev/sdh or xvdh).
+                      type: string
+                    ebs:
+                      description: EBS contains parameters used to automatically set
+                        up EBS volumes when an instance is launched.
+                      properties:
+                        deleteOnTermination:
+                          description: DeleteOnTermination indicates whether the EBS
+                            volume is deleted on instance termination.
+                          type: boolean
+                        encrypted:
+                          description: Encrypted indicates whether the EBS volume
+                            is encrypted. Encrypted volumes can only be attached to
+                            instances that support Amazon EBS encryption. If you are
+                            creating a volume from a snapshot, you can't specify an
+                            encryption value.
+                          type: boolean
+                        iops:
+                          description: "IOPS is the number of I/O operations per second
+                            (IOPS). For gp3, io1, and io2 volumes, this represents
+                            the number of IOPS that are provisioned for the volume.
+                            For gp2 volumes, this represents the baseline performance
+                            of the volume and the rate at which the volume accumulates
+                            I/O credits for bursting. \n The following are the supported
+                            values for each volume type: \n * gp3: 3,000-16,000 IOPS
+                            \n * io1: 100-64,000 IOPS \n * io2: 100-64,000 IOPS \n
+                            For io1 and io2 volumes, we guarantee 64,000 IOPS only
+                            for Instances built on the Nitro System (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#ec2-nitro-instances).
+                            Other instance families guarantee performance up to 32,000
+                            IOPS. \n This parameter is supported for io1, io2, and
+                            gp3 volumes only. This parameter is not supported for
+                            gp2, st1, sc1, or standard volumes."
+                          format: int64
+                          type: integer
+                        kmsKeyID:
+                          description: KMSKeyID (ARN) of the symmetric Key Management
+                            Service (KMS) CMK used for encryption.
+                          type: string
+                        snapshotID:
+                          description: SnapshotID is the ID of an EBS snapshot
+                          type: string
+                        throughput:
+                          description: 'Throughput to provision for a gp3 volume,
+                            with a maximum of 1,000 MiB/s. Valid Range: Minimum value
+                            of 125. Maximum value of 1000.'
+                          format: int64
+                          type: integer
+                        volumeSize:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          description: "VolumeSize in GiBs. You must specify either
+                            a snapshot ID or a volume size. The following are the
+                            supported volumes sizes for each volume type: \n * gp2
+                            and gp3: 1-16,384 \n * io1 and io2: 4-16,384 \n * st1
+                            and sc1: 125-16,384 \n * standard: 1-1,024"
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        volumeType:
+                          description: VolumeType of the block device. For more information,
+                            see Amazon EBS volume types (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html)
+                            in the Amazon Elastic Compute Cloud User Guide.
+                          type: string
+                      type: object
+                  type: object
+                type: array
+              context:
+                description: Context is a Reserved field in EC2 APIs https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateFleet.html
+                type: string
+              instanceProfile:
+                description: InstanceProfile is the AWS identity that instances use.
+                type: string
+              kind:
+                description: 'Kind is a string value representing the REST resource
+                  this object represents. Servers may infer this from the endpoint
+                  the client submits requests to. Cannot be updated. In CamelCase.
+                  More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                type: string
+              launchTemplate:
+                description: 'LaunchTemplateName for the node. If not specified, a
+                  launch template will be generated. NOTE: This field is for specifying
+                  a custom launch template and is exposed in the Spec as `launchTemplate`
+                  for backwards compatibility.'
+                type: string
+              metadataOptions:
+                description: "MetadataOptions for the generated launch template of
+                  provisioned nodes. \n This specifies the exposure of the Instance
+                  Metadata Service to provisioned EC2 nodes. For more information,
+                  see Instance Metadata and User Data (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html)
+                  in the Amazon Elastic Compute Cloud User Guide. \n Refer to recommended,
+                  security best practices (https://aws.github.io/aws-eks-best-practices/security/docs/iam/#restrict-access-to-the-instance-profile-assigned-to-the-worker-node)
+                  for limiting exposure of Instance Metadata and User Data to pods.
+                  If omitted, defaults to httpEndpoint enabled, with httpProtocolIPv6
+                  disabled, with httpPutResponseLimit of 2, and with httpTokens required."
+                properties:
+                  httpEndpoint:
+                    description: "HTTPEndpoint enables or disables the HTTP metadata
+                      endpoint on provisioned nodes. If metadata options is non-nil,
+                      but this parameter is not specified, the default state is \"enabled\".
+                      \n If you specify a value of \"disabled\", instance metadata
+                      will not be accessible on the node."
+                    type: string
+                  httpProtocolIPv6:
+                    description: HTTPProtocolIPv6 enables or disables the IPv6 endpoint
+                      for the instance metadata service on provisioned nodes. If metadata
+                      options is non-nil, but this parameter is not specified, the
+                      default state is "disabled".
+                    type: string
+                  httpPutResponseHopLimit:
+                    description: HTTPPutResponseHopLimit is the desired HTTP PUT response
+                      hop limit for instance metadata requests. The larger the number,
+                      the further instance metadata requests can travel. Possible
+                      values are integers from 1 to 64. If metadata options is non-nil,
+                      but this parameter is not specified, the default value is 1.
+                    format: int64
+                    type: integer
+                  httpTokens:
+                    description: "HTTPTokens determines the state of token usage for
+                      instance metadata requests. If metadata options is non-nil,
+                      but this parameter is not specified, the default state is \"optional\".
+                      \n If the state is optional, one can choose to retrieve instance
+                      metadata with or without a signed token header on the request.
+                      If one retrieves the IAM role credentials without a token, the
+                      version 1.0 role credentials are returned. If one retrieves
+                      the IAM role credentials using a valid signed token, the version
+                      2.0 role credentials are returned. \n If the state is \"required\",
+                      one must send a signed token header with any instance metadata
+                      retrieval requests. In this state, retrieving the IAM role credentials
+                      always returns the version 2.0 credentials; the version 1.0
+                      credentials are not available."
+                    type: string
+                type: object
+              securityGroupSelector:
+                additionalProperties:
+                  type: string
+                description: SecurityGroups specify the names of the security groups.
+                type: object
+              subnetSelector:
+                additionalProperties:
+                  type: string
+                description: SubnetSelector discovers subnets by tags. A value of
+                  "" is a wildcard.
+                type: object
+              tags:
+                additionalProperties:
+                  type: string
+                description: Tags to be applied on ec2 resources like instances and
+                  launch templates.
+                type: object
+              userData:
+                description: UserData to be applied to the provisioned nodes. It must
+                  be in the appropriate format based on the AMIFamily in use. Karpenter
+                  will merge certain fields into this UserData to ensure nodes are
+                  being provisioned with the correct configuration.
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+
+---
+
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -294,6 +572,23 @@ metadata:
 
 ---
 
+apiVersion: v1
+data:
+  batchIdleDuration: 1s
+  batchMaxDuration: 10s
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: karpenter.sh
+    app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/part-of: karpenter
+    k8s-addon: karpenter.sh
+  name: karpenter-global-settings
+  namespace: kube-system
+
+---
+
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -308,8 +603,45 @@ rules:
   - karpenter.sh
   resources:
   - provisioners
+  - provisioners/status
   verbs:
   - get
+  - list
+  - watch
+- apiGroups:
+  - karpenter.k8s.aws
+  resources:
+  - awsnodetemplates
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - nodes
+  - namespaces
+  - persistentvolumes
+  - persistentvolumeclaims
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - storage.k8s.io
+  resources:
+  - storageclasses
+  - csinodes
+  verbs:
+  - get
+  - watch
+  - list
+- apiGroups:
+  - apps
+  resources:
+  - daemonsets
+  verbs:
   - list
   - watch
 - apiGroups:
@@ -320,66 +652,33 @@ rules:
   - create
   - delete
   - patch
-  - get
-  - list
-  - watch
 - apiGroups:
   - ""
   resources:
-  - persistentvolumes
-  - persistentvolumeclaims
+  - events
   verbs:
-  - get
-  - list
-  - watch
-  - update
-- apiGroups:
-  - storage.k8s.io
-  resources:
-  - storageclasses
-  verbs:
-  - get
-  - list
-  - watch
+  - create
+  - patch
 - apiGroups:
   - ""
   resources:
   - nodes
-  - pods
   verbs:
-  - get
-  - list
-  - watch
+  - create
   - patch
   - delete
 - apiGroups:
   - ""
   resources:
-  - configmaps
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - nodes
-  verbs:
-  - create
-- apiGroups:
-  - ""
-  resources:
-  - pods/binding
   - pods/eviction
   verbs:
   - create
 - apiGroups:
-  - apps
+  - ""
   resources:
-  - daemonsets
+  - persistentvolumeclaims
   verbs:
-  - list
-  - watch
+  - update
 
 ---
 
@@ -402,6 +701,22 @@ rules:
   - get
   - watch
   - list
+- apiGroups:
+  - admissionregistration.k8s.io
+  resourceNames:
+  - validation.webhook.provisioners.karpenter.sh
+  - validation.webhook.config.karpenter.sh
+  resources:
+  - validatingwebhookconfigurations
+  verbs:
+  - update
+- apiGroups:
+  - admissionregistration.k8s.io
+  resourceNames:
+  - defaulting.webhook.provisioners.karpenter.sh
+  resources:
+  - mutatingwebhookconfigurations
+  verbs:
   - update
 
 ---
@@ -458,29 +773,64 @@ metadata:
   namespace: kube-system
 rules:
 - apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - get
+  - watch
+- apiGroups:
   - ""
   resources:
   - configmaps
+  - namespaces
+  - secrets
   verbs:
   - get
   - list
   - watch
-  - create
+- apiGroups:
+  - ""
+  resourceNames:
+  - karpenter-webhook-cert
+  resources:
+  - secrets
+  verbs:
+  - update
+- apiGroups:
+  - ""
+  resourceNames:
+  - karpenter-global-settings
+  - karpenter-config-logging
+  resources:
+  - configmaps
+  verbs:
   - update
   - patch
   - delete
 - apiGroups:
-  - ""
+  - coordination.k8s.io
+  resourceNames:
+  - karpenter-leader-election
+  - webhook.configmapwebhook.00-of-01
+  - webhook.defaultingwebhook.00-of-01
+  - webhook.validationwebhook.00-of-01
+  - webhook.webhookcertificates.00-of-01
   resources:
-  - configmaps/status
+  - leases
   verbs:
-  - get
-  - update
   - patch
+  - update
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
 - apiGroups:
   - ""
   resources:
-  - events
+  - configmaps
   verbs:
   - create
 
@@ -664,7 +1014,7 @@ spec:
           value: arn:aws-test:iam::123456789012:role/karpenter.kube-system.sa.minimal.example.com
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
-        image: public.ecr.aws/karpenter/controller:v0.10.0
+        image: public.ecr.aws/karpenter/controller:v0.13.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -798,7 +1148,7 @@ spec:
           value: arn:aws-test:iam::123456789012:role/karpenter.kube-system.sa.minimal.example.com
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
-        image: public.ecr.aws/karpenter/webhook:v0.10.0
+        image: public.ecr.aws/karpenter/webhook:v0.13.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -884,6 +1234,17 @@ webhooks:
   name: defaulting.webhook.provisioners.karpenter.sh
   rules:
   - apiGroups:
+    - karpenter.k8s.aws
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - awsnodetemplates
+    - awsnodetemplates/status
+    scope: '*'
+  - apiGroups:
     - karpenter.sh
     apiVersions:
     - v1alpha5
@@ -916,6 +1277,18 @@ webhooks:
   failurePolicy: Fail
   name: validation.webhook.provisioners.karpenter.sh
   rules:
+  - apiGroups:
+    - karpenter.k8s.aws
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    - DELETE
+    resources:
+    - awsnodetemplates
+    - awsnodetemplates/status
+    scope: '*'
   - apiGroups:
     - karpenter.sh
     apiVersions:
@@ -1001,7 +1374,7 @@ spec:
     operator: In
     values:
     - c5.large
-  ttlSecondsAfterEmpty: 30
+  ttlSecondsAfterEmpty: 300
 
 ---
 
@@ -1033,4 +1406,4 @@ spec:
     operator: In
     values:
     - t2.medium
-  ttlSecondsAfterEmpty: 30
+  ttlSecondsAfterEmpty: 300
