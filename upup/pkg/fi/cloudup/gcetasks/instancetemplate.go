@@ -51,10 +51,11 @@ type InstanceTemplate struct {
 
 	Lifecycle fi.Lifecycle
 
-	Network     *Network
-	Tags        []string
-	Labels      map[string]string
-	Preemptible *bool
+	Network              *Network
+	Tags                 []string
+	Labels               map[string]string
+	Preemptible          *bool
+	GCPProvisioningModel *string
 
 	BootDiskImage  *string
 	BootDiskSizeGB *int64
@@ -132,6 +133,7 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 
 		if p.Scheduling != nil {
 			actual.Preemptible = &p.Scheduling.Preemptible
+			actual.GCPProvisioningModel = &p.Scheduling.ProvisioningModel
 		}
 		if len(p.NetworkInterfaces) != 0 {
 			ni := p.NetworkInterfaces[0]
@@ -249,7 +251,7 @@ func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.Ins
 		scheduling = &compute.Scheduling{
 			AutomaticRestart:  fi.Bool(false),
 			OnHostMaintenance: "TERMINATE",
-			ProvisioningModel: "STANDARD", // TODO: Support Spot?
+			ProvisioningModel: fi.StringValue(e.GCPProvisioningModel),
 			Preemptible:       true,
 		}
 	} else {
@@ -501,6 +503,7 @@ type terraformScheduling struct {
 	AutomaticRestart  bool   `cty:"automatic_restart"`
 	OnHostMaintenance string `cty:"on_host_maintenance"`
 	Preemptible       bool   `cty:"preemptible"`
+	ProvisioningModel string `cty:"provisioning_model"`
 }
 
 type terraformInstanceTemplateAttachedDisk struct {
@@ -649,6 +652,7 @@ func (_ *InstanceTemplate) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 			AutomaticRestart:  fi.BoolValue(i.Properties.Scheduling.AutomaticRestart),
 			OnHostMaintenance: i.Properties.Scheduling.OnHostMaintenance,
 			Preemptible:       i.Properties.Scheduling.Preemptible,
+			ProvisioningModel: i.Properties.Scheduling.ProvisioningModel,
 		}
 	}
 

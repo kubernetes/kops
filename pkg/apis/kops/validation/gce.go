@@ -19,6 +19,7 @@ package validation
 import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 )
 
 func gceValidateCluster(c *kops.Cluster) field.ErrorList {
@@ -43,5 +44,15 @@ func gceValidateCluster(c *kops.Cluster) field.ErrorList {
 		}
 	}
 
+	return allErrs
+}
+
+func gceValidateInstanceGroup(ig *kops.InstanceGroup, cloud gce.GCECloud) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	if ig.Spec.GCPProvisioningModel != nil {
+		fieldSpec := field.NewPath("spec")
+		allErrs = append(allErrs, IsValidValue(fieldSpec.Child("gcpProvisioningModel"), ig.Spec.GCPProvisioningModel, []string{"STANDARD", "SPOT"})...)
+	}
 	return allErrs
 }

@@ -222,6 +222,12 @@ spec:
                       type: array
                   type: object
                 type: array
+              gcpProvisioningModel:
+                description: 'GCPProvisioningModel: Specifies the provisioning model
+                  of the GCP instance. Valid values:   ''STANDARD'': (default) standard
+                  provisioning with user controlled run time, no discounts   ''SPOT'':
+                  heavily discounted, no guaranteed run time.'
+                type: string
               guestAccelerators:
                 description: GuestAccelerators configures additional accelerators
                 items:
