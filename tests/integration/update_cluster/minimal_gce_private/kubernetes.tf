@@ -448,6 +448,7 @@ resource "google_compute_instance_template" "master-us-test1-a-minimal-gce-priva
     automatic_restart   = true
     on_host_maintenance = "MIGRATE"
     preemptible         = false
+    provisioning_model  = "STANDARD"
   }
   service_account {
     email  = google_service_account.control-plane.email
@@ -492,6 +493,7 @@ resource "google_compute_instance_template" "nodes-minimal-gce-private-example-c
     automatic_restart   = true
     on_host_maintenance = "MIGRATE"
     preemptible         = false
+    provisioning_model  = "STANDARD"
   }
   service_account {
     email  = google_service_account.node.email
