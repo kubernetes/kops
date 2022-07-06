@@ -2540,6 +2540,11 @@ func (in *InstanceGroupSpec) DeepCopyInto(out *InstanceGroupSpec) {
 		*out = make([]AcceleratorConfig, len(*in))
 		copy(*out, *in)
 	}
+	if in.MaxInstanceLifetime != nil {
+		in, out := &in.MaxInstanceLifetime, &out.MaxInstanceLifetime
+		*out = new(v1.Duration)
+		**out = **in
+	}
 	return
 }
 

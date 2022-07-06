@@ -102,6 +102,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-existingsg-example-c
     version = aws_launch_template.master-us-test-1a-masters-existingsg-example-com.latest_version
   }
   load_balancers        = [aws_elb.api-existingsg-example-com.id]
+  max_instance_lifetime = 0
   max_size              = 1
   metrics_granularity   = "1Minute"
   min_size              = 1
@@ -167,6 +168,7 @@ resource "aws_autoscaling_group" "master-us-test-1b-masters-existingsg-example-c
     version = aws_launch_template.master-us-test-1b-masters-existingsg-example-com.latest_version
   }
   load_balancers        = [aws_elb.api-existingsg-example-com.id]
+  max_instance_lifetime = 0
   max_size              = 1
   metrics_granularity   = "1Minute"
   min_size              = 1
@@ -232,6 +234,7 @@ resource "aws_autoscaling_group" "master-us-test-1c-masters-existingsg-example-c
     version = aws_launch_template.master-us-test-1c-masters-existingsg-example-com.latest_version
   }
   load_balancers        = [aws_elb.api-existingsg-example-com.id]
+  max_instance_lifetime = 0
   max_size              = 1
   metrics_granularity   = "1Minute"
   min_size              = 1
@@ -296,6 +299,7 @@ resource "aws_autoscaling_group" "nodes-existingsg-example-com" {
     id      = aws_launch_template.nodes-existingsg-example-com.id
     version = aws_launch_template.nodes-existingsg-example-com.latest_version
   }
+  max_instance_lifetime = 0
   max_size              = 2
   metrics_granularity   = "1Minute"
   min_size              = 2
