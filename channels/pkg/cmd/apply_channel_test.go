@@ -77,3 +77,49 @@ func TestGetUpdates(t *testing.T) {
 		t.Errorf("expected update in kube-system, but update applied to %q", needUpdates[0].GetNamespace())
 	}
 }
+
+func TestGetDeletions(t *testing.T) {
+	kubeSystemNS := corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "kube-system",
+			Annotations: map[string]string{
+				"addons.k8s.io/aws-ebs-csi-driver.addons.k8s.io": "{\"channel\":\"s3://mystatestore/cluster.example.com/addons/bootstrap-channel.yaml\",\"id\":\"k8s-1.17\",\"manifestHash\":\"abc\",\"systemGeneration\":1}",
+			},
+		},
+	}
+	defaultNS := corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "default",
+			Annotations: map[string]string{
+				"addons.k8s.io/aws-ebs-csi-driver.addons.k8s.io": "{\"channel\":\"s3://mystatestore/cluster.example.com/addons/bootstrap-channel.yaml\",\"id\":\"k8s-1.17\",\"manifestHash\":\"abc\",\"systemGeneration\":1}",
+			},
+		},
+	}
+	k8sClient := fakek8s.NewSimpleClientset(&kubeSystemNS, &defaultNS)
+	ctx := context.Background()
+
+	// channelVersions is a list of ChannelsVersion keyed by namespace + addon name
+	channelVersions, err := getChannelVersions(ctx, k8sClient)
+	if err != nil {
+		t.Errorf("failed to get channel versions: %v", err)
+	}
+
+	menu := channels.NewAddonMenu()
+	menu.Addons = map[string]*channels.Addon{
+		"aws-ebs-csi-driver.addons.k8s.io": {
+			Name: "aws-ebs-csi-driver.addons.k8s.io",
+			Spec: &api.AddonSpec{
+				Name:         fi.String("aws-ebs-csi-driver.addons.k8s.io"),
+				Id:           "k8s-1.17",
+				ManifestHash: "abc",
+				Namespace:    fi.String("kube-system"),
+			},
+		},
+	}
+
+	needDeletion := getDeletions(menu, channelVersions)
+
+	if len(needDeletion) != 1 {
+		t.Fatalf("expected 1 update, but got %d", len(needDeletion))
+	}
+}

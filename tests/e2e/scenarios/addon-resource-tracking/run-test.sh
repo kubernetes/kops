@@ -23,6 +23,12 @@ function haveds() {
 	return $ds
 }
 
+function havedeploy() {
+	local ds=0
+	kubectl get deploy -n kube-system aws-node-termination-handler --show-labels || ds=$?
+	return $ds
+}
+
 # Start a cluster with an old version of channel
 
 export KOPS_BASE_URL
@@ -32,6 +38,7 @@ KOPS=$(kops-download-from-base)
 # Start with a cluster running nodeTerminationHandler
 ARGS="--override=cluster.spec.nodeTerminationHandler.enabled=true"
 
+KOPS_BASE_URL=""
 ${KUBETEST2} \
     --up \
     --kubernetes-version="1.21.0" \
@@ -40,7 +47,7 @@ ${KUBETEST2} \
 
 
 if ! haveds; then
-  echo "Expected aws-node-termination-handler to exist"
+  echo "Expected daemonset aws-node-termination-handler to exist"
   exit 1
 fi
 
@@ -59,11 +66,33 @@ kops update cluster --yes --allow-kops-downgrade
 # Rolling-upgrade is needed so we get the new channels binary that supports prune
 kops rolling-update cluster --instance-group-roles=master --yes
 
+sleep 120s
+
 # just make sure pods are ready
 kops validate cluster --wait=5m
 
 # We should no longer have a daemonset called aws-node-termination-handler
 if haveds; then
-  echo "Expected aws-node-termination-handler to have been pruned"
+  echo "Expected daemonset aws-node-termination-handler to have been pruned"
   exit 1
 fi
+
+# Switch to queue mode. This should remove the DS and install a Deployment instead
+kops edit cluster "${CLUSTER_NAME}" "--set=cluster.spec.nodeTerminationHandler.enabled=false"
+
+# allow downgrade is a bug where the version written to VFS is not the same as the running version.
+kops update cluster --allow-kops-downgrade
+kops update cluster --yes --allow-kops-downgrade
+
+sleep 120s
+
+# just make sure pods are ready
+kops validate cluster --wait=5m
+
+# We should no longer have a deployment called aws-node-termination-handler
+if havedeploy; then
+  echo "Expected deployment aws-node-termination-handler to have been pruned"
+  exit 1
+fi
+
+

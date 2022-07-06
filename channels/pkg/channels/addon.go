@@ -25,6 +25,7 @@ import (
 
 	"go.uber.org/multierr"
 	"k8s.io/kops/pkg/pki"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
 
 	certmanager "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
@@ -79,6 +80,16 @@ func (m *AddonMenu) MergeAddons(o *AddonMenu) {
 			}
 		}
 	}
+}
+
+// FindAddon returns the addon with the given name in the given namespace, or nil if not found
+func (m *AddonMenu) FindAddon(name, namespace string) *Addon {
+	for _, addon := range m.Addons {
+		if addon.Name == name && addon.GetNamespace() == namespace {
+			return addon
+		}
+	}
+	return nil
 }
 
 func (a *Addon) ChannelVersion() *ChannelVersion {
@@ -235,8 +246,8 @@ func (a *Addon) patchNeedsUpdateLabel(ctx context.Context, k8sClient kubernetes.
 		selector = "node-role.kubernetes.io/node="
 	}
 
-	annotationPatch := &annotationPatch{Metadata: annotationPatchMetadata{Annotations: map[string]string{
-		"kops.k8s.io/needs-update": "",
+	annotationPatch := &annotationPatch{Metadata: annotationPatchMetadata{Annotations: map[string]*string{
+		"kops.k8s.io/needs-update": fi.String(""),
 	}}}
 	annotationPatchJSON, err := json.Marshal(annotationPatch)
 	if err != nil {

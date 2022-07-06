@@ -363,3 +363,48 @@ func Test_InstallPKI(t *testing.T) {
 		t.Errorf("unexpected error: %v", err)
 	}
 }
+
+func TestFindAddon(t *testing.T) {
+	menu := NewAddonMenu()
+	menu.Addons = map[string]*Addon{
+		"aws-ebs-csi-driver.addons.k8s.io": {
+			Name: "aws-ebs-csi-driver.addons.k8s.io",
+			Spec: &api.AddonSpec{
+				Name:         fi.String("aws-ebs-csi-driver.addons.k8s.io"),
+				Id:           "k8s-1.17",
+				ManifestHash: "abc",
+				Namespace:    fi.String("default"),
+			},
+		},
+		"aws-ebs-csi-driver.addons.k8s.io2": {
+			Name: "aws-ebs-csi-driver.addons.k8s.io",
+			Spec: &api.AddonSpec{
+				Name:         fi.String("aws-ebs-csi-driver.addons.k8s.io"),
+				Id:           "k8s-1.17",
+				ManifestHash: "abc",
+				Namespace:    fi.String("kube-system"),
+			},
+		},
+	}
+	{
+		addon := menu.FindAddon("aws-ebs-csi-driver.addons.k8s.io", "default")
+
+		if addon == nil {
+			t.Errorf("expected addon, but got nil")
+		}
+	}
+	{
+		addon := menu.FindAddon("aws-ebs-csi-driver.addons.k8s.io", "kube-system")
+
+		if addon == nil {
+			t.Errorf("expected addon, but got nil")
+		}
+	}
+	{
+		addon := menu.FindAddon("aws-ebs-csi-driver.addons.k8s.io", "w00l")
+
+		if addon != nil {
+			t.Errorf("expected nil, but got %v", addon)
+		}
+	}
+}

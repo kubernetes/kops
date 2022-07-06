@@ -22,6 +22,7 @@ import (
 	"io"
 	"net/url"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/blang/semver/v4"
@@ -29,10 +30,13 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/multierr"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/restmapper"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/channels/pkg/channels"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/util/pkg/tables"
@@ -123,7 +127,9 @@ func applyMenu(ctx context.Context, menu *channels.AddonMenu, k8sClient kubernet
 		return fmt.Errorf("failed to get updates: %w", err)
 	}
 
-	if len(updates) == 0 {
+	deletions := getDeletions(menu, channelVersions)
+
+	if len(updates) == 0 && len(deletions) == 0 {
 		fmt.Printf("No update required\n")
 		return nil
 	}
@@ -159,6 +165,10 @@ func applyMenu(ctx context.Context, menu *channels.AddonMenu, k8sClient kubernet
 		}
 	}
 
+	for key := range deletions {
+		fmt.Printf("Will deleting addon %q\n", key)
+	}
+
 	if !apply {
 		fmt.Printf("\nMust specify --yes to update\n")
 		return nil
@@ -185,6 +195,13 @@ func applyMenu(ctx context.Context, menu *channels.AddonMenu, k8sClient kubernet
 		}
 	}
 
+	for key := range deletions {
+		err := deleteAddon(ctx, k8sClient, pruner, key)
+		if err != nil {
+			merr = multierr.Append(merr, fmt.Errorf("failed to prune %q: %w", key, err))
+		}
+	}
+
 	return merr
 }
 
@@ -202,6 +219,80 @@ func getUpdates(ctx context.Context, menu *channels.AddonMenu, k8sClient kuberne
 		}
 	}
 	return updates, needUpdates, nil
+}
+
+func getDeletions(menu *channels.AddonMenu, channelVersions map[string]*channels.ChannelVersion) map[string]*channels.ChannelVersion {
+	deletions := make(map[string]*channels.ChannelVersion)
+
+	for key, channelVersion := range channelVersions {
+		parts := strings.Split(key, ":")
+		name := parts[1]
+		namespace := parts[0]
+		klog.Infof("Checking for deletion of %q in %q", name, namespace)
+		if addon := menu.FindAddon(name, namespace); addon == nil {
+			deletions[key] = channelVersion
+		}
+
+	}
+
+	return deletions
+}
+
+func buildDeletionPruneSpec(name string) (*api.PruneSpec, error) {
+	spec := &api.PruneSpec{}
+
+	// We add these labels to all objects we manage, so we reuse them for pruning.
+	selectorMap := map[string]string{
+		"app.kubernetes.io/managed-by": "kops",
+		"addon.kops.k8s.io/name":       name,
+	}
+	selector, err := labels.ValidatedSelectorFromSet(selectorMap)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing selector %v: %w", selectorMap, err)
+	}
+
+	// We always include a set of well-known group kinds,
+	// so that we prune even if we end up removing something from the manifest.
+	alwaysPruneGroupKinds := []schema.GroupKind{
+		{Group: "", Kind: "ConfigMap"},
+		{Group: "", Kind: "Service"},
+		{Group: "", Kind: "ServiceAccount"},
+		{Group: "apps", Kind: "Deployment"},
+		{Group: "apps", Kind: "DaemonSet"},
+		{Group: "apps", Kind: "StatefulSet"},
+		{Group: "rbac.authorization.k8s.io", Kind: "ClusterRole"},
+		{Group: "rbac.authorization.k8s.io", Kind: "ClusterRoleBinding"},
+		{Group: "rbac.authorization.k8s.io", Kind: "Role"},
+		{Group: "rbac.authorization.k8s.io", Kind: "RoleBinding"},
+		{Group: "policy", Kind: "PodDisruptionBudget"},
+	}
+	pruneGroupKind := make(map[schema.GroupKind]bool)
+	for _, gk := range alwaysPruneGroupKinds {
+		pruneGroupKind[gk] = true
+	}
+
+	var groupKinds []schema.GroupKind
+	for gk := range pruneGroupKind {
+		groupKinds = append(groupKinds, gk)
+	}
+
+	sort.Slice(groupKinds, func(i, j int) bool {
+		if groupKinds[i].Group != groupKinds[j].Group {
+			return groupKinds[i].Group < groupKinds[j].Group
+		}
+		return groupKinds[i].Kind < groupKinds[j].Kind
+	})
+
+	for _, gk := range groupKinds {
+		pruneSpec := api.PruneKindSpec{}
+		pruneSpec.Group = gk.Group
+		pruneSpec.Kind = gk.Kind
+
+		pruneSpec.LabelSelector = selector.String()
+
+		spec.Kinds = append(spec.Kinds, pruneSpec)
+	}
+	return spec, nil
 }
 
 func getChannelVersions(ctx context.Context, k8sClient kubernetes.Interface) (map[string]*channels.ChannelVersion, error) {
@@ -272,4 +363,21 @@ func buildMenu(kubernetesVersion semver.Version, args []string, localFiles bool)
 		menu.MergeAddons(current)
 	}
 	return menu, nil
+}
+
+func deleteAddon(ctx context.Context, k8sClient kubernetes.Interface, pruner *channels.Pruner, key string) error {
+	parts := strings.Split(key, ":")
+	name := parts[1]
+	pruneSpec, _ := buildDeletionPruneSpec(name)
+
+	err := pruner.Prune(ctx, []byte{}, pruneSpec)
+	if err != nil {
+		return fmt.Errorf("failed to prune addon %q: %w", key, err)
+	}
+	channel := &channels.Channel{
+		Namespace: parts[0],
+		Name:      name,
+	}
+	channel.Remove(ctx, k8sClient)
+	return nil
 }

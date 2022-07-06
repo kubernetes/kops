@@ -180,7 +180,7 @@ type annotationPatch struct {
 }
 
 type annotationPatchMetadata struct {
-	Annotations map[string]string `json:"annotations,omitempty"`
+	Annotations map[string]*string `json:"annotations"`
 }
 
 func (c *Channel) SetInstalledVersion(ctx context.Context, k8sClient kubernetes.Interface, version *ChannelVersion) error {
@@ -195,7 +195,7 @@ func (c *Channel) SetInstalledVersion(ctx context.Context, k8sClient kubernetes.
 		return err
 	}
 
-	annotationPatch := &annotationPatch{Metadata: annotationPatchMetadata{Annotations: map[string]string{c.AnnotationName(): value}}}
+	annotationPatch := &annotationPatch{Metadata: annotationPatchMetadata{Annotations: map[string]*string{c.AnnotationName(): &value}}}
 	annotationPatchJSON, err := json.Marshal(annotationPatch)
 	if err != nil {
 		return fmt.Errorf("error building annotation patch: %v", err)
@@ -206,6 +206,28 @@ func (c *Channel) SetInstalledVersion(ctx context.Context, k8sClient kubernetes.
 	_, err = k8sClient.CoreV1().Namespaces().Patch(ctx, c.Namespace, types.StrategicMergePatchType, annotationPatchJSON, metav1.PatchOptions{})
 	if err != nil {
 		return fmt.Errorf("error applying annotation to namespace: %v", err)
+	}
+	return nil
+}
+
+// Remove removes the channel from the namespace.
+func (c *Channel) Remove(ctx context.Context, k8sClient kubernetes.Interface) error {
+	_, err := k8sClient.CoreV1().Namespaces().Get(ctx, c.Namespace, metav1.GetOptions{})
+	if err != nil {
+		return fmt.Errorf("error querying namespace %q: %w", c.Namespace, err)
+	}
+
+	annotationPatch := &annotationPatch{Metadata: annotationPatchMetadata{Annotations: map[string]*string{c.AnnotationName(): nil}}}
+	annotationPatchJSON, err := json.Marshal(annotationPatch)
+	if err != nil {
+		return fmt.Errorf("error building annotation patch: %w", err)
+	}
+
+	klog.V(2).Infof("sending patch: %q", string(annotationPatchJSON))
+
+	_, err = k8sClient.CoreV1().Namespaces().Patch(ctx, c.Namespace, types.StrategicMergePatchType, annotationPatchJSON, metav1.PatchOptions{})
+	if err != nil {
+		return fmt.Errorf("error applying annotation to namespace: %w", err)
 	}
 	return nil
 }
