@@ -14,7 +14,7 @@ spec:
   cloudConfig:
     awsEBSCSIDriver:
       enabled: true
-      version: v1.6.2
+      version: v1.8.0
     manageStorageClasses: true
     nodeIPFamilies:
     - ipv6
