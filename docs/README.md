@@ -113,6 +113,6 @@ For a better viewing experience please check out our live documentation site at 
 * [Low level description on how kops works](contributing/how_it_works.md)
 * [Notes on Gossip design](contributing/gossip.md)
 * [Notes on master instance sizing](contributing/instancesizes.md)
-* [Our release process](contributing/release.md)
+* [Our release process](contributing/release-process.md)
 * [Releasing with Homebrew](contributing/homebrew.md)
-* [Rolling Update Diagrams](contributing/rolling_update.md)
+* [Rolling Updates](operations/rolling-update.md)
