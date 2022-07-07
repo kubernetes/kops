@@ -116,6 +116,29 @@ func (e *Instance) FindAddresses(context *fi.Context) ([]string, error) {
 	return nil, nil
 }
 
+// filterInstancePorts tries to get all ports of an instance tagged with the cluster name.
+// If no tagged ports are found it will return all ports of the instance, to not change the legacy behavior when there weren't tagged ports
+func filterInstancePorts(allPorts []ports.Port, clusterName string) []ports.Port {
+	clusterNameTag := fmt.Sprintf("%s=%s", openstack.TagClusterName, clusterName)
+
+	var taggedPorts []ports.Port
+
+	for _, port := range allPorts {
+		for _, tag := range port.Tags {
+			if tag == clusterNameTag {
+				taggedPorts = append(taggedPorts, port)
+				break
+			}
+		}
+	}
+
+	if len(taggedPorts) == 0 {
+		return allPorts
+	}
+
+	return taggedPorts
+}
+
 func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 	if e == nil || e.Name == nil {
 		return nil, nil
@@ -177,6 +200,8 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch port for instance %v: %v", server.ID, err)
 	}
+
+	ports = filterInstancePorts(ports, fi.StringValue(e.ServerGroup.ClusterName))
 
 	if len(ports) == 1 {
 		port := ports[0]
