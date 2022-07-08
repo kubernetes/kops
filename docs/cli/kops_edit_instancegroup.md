@@ -30,7 +30,9 @@ kops edit instancegroup INSTANCE_GROUP [flags]
 ### Options
 
 ```
-  -h, --help   help for instancegroup
+  -h, --help            help for instancegroup
+      --set strings     Directly set values in the spec
+      --unset strings   Directly unset values in the spec
 ```
 
 ### Options inherited from parent commands
