@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	"go.uber.org/multierr"
+	"k8s.io/apimachinery/pkg/api/meta"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -42,38 +43,47 @@ func (p *Applier) Apply(ctx context.Context, manifest []byte) error {
 		return fmt.Errorf("failed to parse objects: %w", err)
 	}
 
-	objectsByKind := make(map[schema.GroupKind][]*kubemanifest.Object)
+	objectsByGVK := make(map[schema.GroupVersionKind][]*kubemanifest.Object)
 	for _, object := range objects {
+		key := object.GetNamespace() + "/" + object.GetName()
 		gv, err := schema.ParseGroupVersion(object.APIVersion())
 		if err != nil || gv.Version == "" {
-			return fmt.Errorf("failed to parse apiVersion %q", object.APIVersion())
+			return fmt.Errorf("failed to parse apiVersion %q in object %s", object.APIVersion(), key)
 		}
 		kind := object.Kind()
 		if kind == "" {
-			return fmt.Errorf("failed to find kind in object")
+			return fmt.Errorf("failed to find kind in object %s", key)
 		}
 
 		gvk := gv.WithKind(kind)
-		gk := gvk.GroupKind()
-		objectsByKind[gk] = append(objectsByKind[gk], object)
+		objectsByGVK[gvk] = append(objectsByGVK[gvk], object)
 	}
 
-	for gk := range objectsByKind {
-		if err := p.applyObjectsOfKind(ctx, gk, objectsByKind[gk]); err != nil {
-			return fmt.Errorf("failed to apply objects of kind %s: %w", gk, err)
+	var applyErrors error
+	for gvk := range objectsByGVK {
+		if err := p.applyObjectsOfKind(ctx, gvk, objectsByGVK[gvk]); err != nil {
+			applyErrors = multierr.Append(applyErrors, fmt.Errorf("failed to apply objects of kind %s: %w", gvk, err))
 		}
 	}
+	return applyErrors
+}
+
+func (p *Applier) applyObjectsOfKind(ctx context.Context, gvk schema.GroupVersionKind, expectedObjects []*kubemanifest.Object) error {
+	klog.V(2).Infof("applying objects of kind: %v", gvk)
+
+	restMapping, err := p.RESTMapper.RESTMapping(gvk.GroupKind(), gvk.Version)
+	if err != nil {
+		return fmt.Errorf("unable to find resource for %s: %w", gvk, err)
+	}
+
+	if err := p.applyObjects(ctx, restMapping, expectedObjects); err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func (p *Applier) applyObjectsOfKind(ctx context.Context, gk schema.GroupKind, expectedObjects []*kubemanifest.Object) error {
-	klog.V(2).Infof("applying objects of kind: %v", gk)
-
-	restMapping, err := p.RESTMapper.RESTMapping(gk)
-	if err != nil {
-		return fmt.Errorf("unable to find resource for %s: %w", gk, err)
-	}
-
+func (p *Applier) applyObjects(ctx context.Context, restMapping *meta.RESTMapping, expectedObjects []*kubemanifest.Object) error {
 	gvr := restMapping.Resource
 
 	baseResource := p.Client.Resource(gvr)
@@ -82,14 +92,7 @@ func (p *Applier) applyObjectsOfKind(ctx context.Context, gk schema.GroupKind, e
 	if err != nil {
 		return fmt.Errorf("error listing objects: %w", err)
 	}
-	if err := p.applyObjects(ctx, gvr, actualObjects, expectedObjects); err != nil {
-		return err
-	}
 
-	return nil
-}
-
-func (p *Applier) applyObjects(ctx context.Context, gvr schema.GroupVersionResource, actualObjects *unstructured.UnstructuredList, expectedObjects []*kubemanifest.Object) error {
 	actualMap := make(map[string]unstructured.Unstructured)
 	for _, actualObject := range actualObjects.Items {
 		key := actualObject.GetNamespace() + "/" + actualObject.GetName()
@@ -98,19 +101,25 @@ func (p *Applier) applyObjects(ctx context.Context, gvr schema.GroupVersionResou
 
 	var merr error
 
-	for _, expectedObjects := range expectedObjects {
-		name := expectedObjects.GetName()
-		namespace := expectedObjects.GetNamespace()
+	for _, expectedObject := range expectedObjects {
+		name := expectedObject.GetName()
+		namespace := expectedObject.GetNamespace()
 		key := namespace + "/" + name
 
 		var resource dynamic.ResourceInterface
-		if namespace != "" {
+		if restMapping.Scope.Name() == meta.RESTScopeNameNamespace {
+			if namespace == "" {
+				return fmt.Errorf("namespace not set for namespace-scoped object %q", key)
+			}
 			resource = p.Client.Resource(gvr).Namespace(namespace)
 		} else {
+			if namespace != "" {
+				return fmt.Errorf("namespace was set for cluster-scoped object %q", key)
+			}
 			resource = p.Client.Resource(gvr)
 		}
 
-		obj := expectedObjects.ToUnstructured()
+		obj := expectedObject.ToUnstructured()
 
 		if actual, found := actualMap[key]; found {
 			klog.V(2).Infof("updating %s %s", gvr, key)
