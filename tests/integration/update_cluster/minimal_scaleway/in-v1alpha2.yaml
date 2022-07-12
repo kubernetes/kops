@@ -62,7 +62,7 @@ metadata:
   name: control-plane-fr-par-1
 spec:
   image: ubuntu_focal
-  machineType: DEV1-M
+  machineType: PLAY2-NANO
   maxSize: 1
   minSize: 1
   role: Master
@@ -80,7 +80,7 @@ metadata:
   name: nodes-fr-par-1
 spec:
   image: ubuntu_focal
-  machineType: DEV1-M
+  machineType: PLAY2-NANO
   maxSize: 1
   minSize: 1
   role: Node
