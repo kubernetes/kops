@@ -303,14 +303,20 @@ func TestHighAvailabilityGCE(t *testing.T) {
 func TestComplex(t *testing.T) {
 	newIntegrationTest("complex.example.com", "complex").withoutSSHKey().
 		withAddons(
+			awsEBSCSIAddon,
 			dnsControllerAddon,
+			awsCCMAddon,
+			leaderElectionAddon,
 			awsAuthenticatorAddon,
 		).
 		runTestTerraformAWS(t)
 	newIntegrationTest("complex.example.com", "complex").withoutSSHKey().runTestCloudformation(t)
 	newIntegrationTest("complex.example.com", "complex").withoutSSHKey().withVersion("legacy-v1alpha2").
 		withAddons(
+			awsEBSCSIAddon,
 			dnsControllerAddon,
+			awsCCMAddon,
+			leaderElectionAddon,
 			awsAuthenticatorAddon,
 		).
 		runTestTerraformAWS(t)
