@@ -100,39 +100,6 @@
         "StringEquals": {
           "aws:RequestTag/KubernetesCluster": "complex.example.com",
           "ec2:CreateAction": [
-            "CreateSecurityGroup"
-          ]
-        }
-      },
-      "Effect": "Allow",
-      "Resource": [
-        "arn:aws-test:ec2:*:*:security-group/*"
-      ]
-    },
-    {
-      "Action": [
-        "ec2:CreateTags",
-        "ec2:DeleteTags"
-      ],
-      "Condition": {
-        "Null": {
-          "aws:RequestTag/KubernetesCluster": "true"
-        },
-        "StringEquals": {
-          "aws:ResourceTag/KubernetesCluster": "complex.example.com"
-        }
-      },
-      "Effect": "Allow",
-      "Resource": [
-        "arn:aws-test:ec2:*:*:security-group/*"
-      ]
-    },
-    {
-      "Action": "ec2:CreateTags",
-      "Condition": {
-        "StringEquals": {
-          "aws:RequestTag/KubernetesCluster": "complex.example.com",
-          "ec2:CreateAction": [
             "CreateVolume",
             "CreateSnapshot"
           ]
@@ -164,18 +131,44 @@
       ]
     },
     {
+      "Action": "ec2:CreateTags",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestTag/KubernetesCluster": "complex.example.com",
+          "ec2:CreateAction": [
+            "CreateSecurityGroup"
+          ]
+        }
+      },
+      "Effect": "Allow",
+      "Resource": [
+        "arn:aws-test:ec2:*:*:security-group/*"
+      ]
+    },
+    {
+      "Action": [
+        "ec2:CreateTags",
+        "ec2:DeleteTags"
+      ],
+      "Condition": {
+        "Null": {
+          "aws:RequestTag/KubernetesCluster": "true"
+        },
+        "StringEquals": {
+          "aws:ResourceTag/KubernetesCluster": "complex.example.com"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": [
+        "arn:aws-test:ec2:*:*:security-group/*"
+      ]
+    },
+    {
       "Action": [
         "autoscaling:DescribeAutoScalingGroups",
         "autoscaling:DescribeAutoScalingInstances",
         "autoscaling:DescribeLaunchConfigurations",
         "autoscaling:DescribeTags",
-        "ec2:AttachVolume",
-        "ec2:AuthorizeSecurityGroupIngress",
-        "ec2:CreateSecurityGroup",
-        "ec2:CreateTags",
-        "ec2:DeleteRoute",
-        "ec2:DeleteSecurityGroup",
-        "ec2:DeleteVolume",
         "ec2:DescribeAccountAttributes",
         "ec2:DescribeInstanceTypes",
         "ec2:DescribeInstances",
@@ -188,19 +181,12 @@
         "ec2:DescribeVolumes",
         "ec2:DescribeVolumesModifications",
         "ec2:DescribeVpcs",
-        "ec2:DetachVolume",
-        "ec2:ModifyInstanceAttribute",
-        "ec2:ModifyVolume",
-        "elasticloadbalancing:AddTags",
-        "elasticloadbalancing:CreateListener",
-        "elasticloadbalancing:CreateTargetGroup",
         "elasticloadbalancing:DescribeListeners",
         "elasticloadbalancing:DescribeLoadBalancerAttributes",
         "elasticloadbalancing:DescribeLoadBalancerPolicies",
         "elasticloadbalancing:DescribeLoadBalancers",
         "elasticloadbalancing:DescribeTargetGroups",
         "elasticloadbalancing:DescribeTargetHealth",
-        "elasticloadbalancing:RegisterTargets",
         "iam:GetServerCertificate",
         "iam:ListServerCertificates",
         "kms:DescribeKey",

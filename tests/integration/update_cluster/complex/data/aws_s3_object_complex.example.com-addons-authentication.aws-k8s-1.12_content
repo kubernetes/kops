@@ -197,7 +197,7 @@ spec:
           name: output
       hostNetwork: true
       nodeSelector:
-        node-role.kubernetes.io/master: ""
+        node-role.kubernetes.io/control-plane: ""
       priorityClassName: system-node-critical
       serviceAccountName: aws-iam-authenticator
       tolerations:
