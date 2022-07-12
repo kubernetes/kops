@@ -6,7 +6,7 @@ spec:
   addons:
   - id: k8s-1.16
     manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: 7f10a1733f21e576bdb0dfd28660860e7452f11f27ee1457ac781e82e2bf9371
+    manifestHash: e5bf02483d2d3393e839d7212c007ab06ca188f536379cb3f0d0eb3fe97a300b
     name: kops-controller.addons.k8s.io
     needsRollingUpdate: control-plane
     selector:
@@ -26,6 +26,13 @@ spec:
     selector:
       k8s-addon: kubelet-api.rbac.addons.k8s.io
     version: 9.99.0
+  - id: k8s-1.23
+    manifest: leader-migration.rbac.addons.k8s.io/k8s-1.23.yaml
+    manifestHash: b9c91e09c0f28c9b74ff140b8395d611834c627d698846d625c10975a74a48c4
+    name: leader-migration.rbac.addons.k8s.io
+    selector:
+      k8s-addon: leader-migration.rbac.addons.k8s.io
+    version: 9.99.0
   - manifest: limit-range.addons.k8s.io/v1.5.0.yaml
     manifestHash: 2d55c3bc5e354e84a3730a65b42f39aba630a59dc8d32b30859fcce3d3178bc2
     name: limit-range.addons.k8s.io
@@ -41,8 +48,29 @@ spec:
     version: 9.99.0
   - id: v1.15.0
     manifest: storage-aws.addons.k8s.io/v1.15.0.yaml
-    manifestHash: 065ae832ddac8d0931e9992d6a76f43a33a36975a38003b34f4c5d86a7d42780
+    manifestHash: 4e2cda50cd5048133aad1b5e28becb60f4629d3f9e09c514a2757c27998b4200
     name: storage-aws.addons.k8s.io
     selector:
       k8s-addon: storage-aws.addons.k8s.io
+    version: 9.99.0
+  - id: k8s-1.12
+    manifest: authentication.aws/k8s-1.12.yaml
+    manifestHash: aabaf46bd54c0d325b6ff3a7ea7af0abde58bf27e97acdc48260851c48f71541
+    name: authentication.aws
+    selector:
+      role.kubernetes.io/authentication: "1"
+    version: 9.99.0
+  - id: k8s-1.18
+    manifest: aws-cloud-controller.addons.k8s.io/k8s-1.18.yaml
+    manifestHash: a898fc86900a2455b2a3f424f0adbd7d96509895dd2619808623efb06b6c43a6
+    name: aws-cloud-controller.addons.k8s.io
+    selector:
+      k8s-addon: aws-cloud-controller.addons.k8s.io
+    version: 9.99.0
+  - id: k8s-1.17
+    manifest: aws-ebs-csi-driver.addons.k8s.io/k8s-1.17.yaml
+    manifestHash: 09d3a77fec729b9aa7755dbbaa5a4fc409e65b5d0134ecb76bae272a50f96cd2
+    name: aws-ebs-csi-driver.addons.k8s.io
+    selector:
+      k8s-addon: aws-ebs-csi-driver.addons.k8s.io
     version: 9.99.0
