@@ -19,8 +19,6 @@ spec:
     type: Recreate
   template:
     metadata:
-      annotations:
-        scheduler.alpha.kubernetes.io/critical-pod: ""
       creationTimestamp: null
       labels:
         k8s-addon: dns-controller.addons.k8s.io

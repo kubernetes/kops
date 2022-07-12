@@ -328,8 +328,6 @@ spec:
     metadata:
       labels:
         k8s-app: coredns-autoscaler
-      annotations:
-        scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       containers:
       - name: autoscaler

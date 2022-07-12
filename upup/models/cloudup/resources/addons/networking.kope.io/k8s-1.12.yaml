@@ -13,9 +13,6 @@ spec:
     metadata:
       labels:
         name: kopeio-networking-agent
-      annotations:
-        scheduler.alpha.kubernetes.io/critical-pod: ''
-        scheduler.alpha.kubernetes.io/tolerations: '[{"key":"CriticalAddonsOnly", "operator":"Exists"}]'
     spec:
       hostPID: true
       hostIPC: true

@@ -14,7 +14,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: coredns.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: ed4ebb28ce94674546af82d90c41f8d2a8a2bc9487cabbda663ce0bf8c7f5b73
+    manifestHash: f6977c7baa2f1df314c0e86da9c69fb0dd7de4c0f444d74ee3a48403f871422f
     name: coredns.addons.k8s.io
     selector:
       k8s-addon: coredns.addons.k8s.io
@@ -41,7 +41,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: dns-controller.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: ca2f603d5d732fa9d58f24e21c069bc06916ebb06734988d9532b64b542ca820
+    manifestHash: c94bffbadbc4f7564cf4669e62b503e4556c75530fa8be48bf425596ff044fd9
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io

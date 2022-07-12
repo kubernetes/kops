@@ -38,8 +38,6 @@ spec:
     metadata:
       labels:
         app: auth-api
-      annotations:
-        scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       affinity:
         nodeAffinity:
