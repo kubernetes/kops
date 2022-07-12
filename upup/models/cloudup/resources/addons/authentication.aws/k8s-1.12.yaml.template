@@ -127,8 +127,6 @@ spec:
       k8s-app: aws-iam-authenticator
   template:
     metadata:
-      annotations:
-        scheduler.alpha.kubernetes.io/critical-pod: ""
       labels:
         k8s-app: aws-iam-authenticator
     spec:
