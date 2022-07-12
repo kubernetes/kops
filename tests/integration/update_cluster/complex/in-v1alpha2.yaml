@@ -19,6 +19,8 @@ spec:
           allocationId: eipalloc-012345a678b9cdefa
       accessLog:
         bucket: access-log-example
+  authentication:
+    aws: {}
   kubernetesApiAccess:
   - 1.1.1.0/24
   - pl-44444444
