@@ -22,6 +22,8 @@ spec:
       - allocationId: eipalloc-012345a678b9cdefa
         name: us-test-1a
       type: Public
+  authentication:
+    aws: {}
   authorization:
     alwaysAllow: {}
   channel: stable
