@@ -197,13 +197,14 @@ func (i integrationTest) withDefaultAddons24() *integrationTest {
 }
 
 const (
-	awsCCMAddon         = "aws-cloud-controller.addons.k8s.io-k8s-1.18"
-	awsEBSCSIAddon      = "aws-ebs-csi-driver.addons.k8s.io-k8s-1.17"
-	calicoAddon         = "networking.projectcalico.org-k8s-1.22"
-	certManagerAddon    = "certmanager.io-k8s-1.16"
-	ciliumAddon         = "networking.cilium.io-k8s-1.16"
-	dnsControllerAddon  = "dns-controller.addons.k8s.io-k8s-1.12"
-	leaderElectionAddon = "leader-migration.rbac.addons.k8s.io-k8s-1.23"
+	awsAuthenticatorAddon = "authentication.aws-k8s-1.12"
+	awsCCMAddon           = "aws-cloud-controller.addons.k8s.io-k8s-1.18"
+	awsEBSCSIAddon        = "aws-ebs-csi-driver.addons.k8s.io-k8s-1.17"
+	calicoAddon           = "networking.projectcalico.org-k8s-1.22"
+	certManagerAddon      = "certmanager.io-k8s-1.16"
+	ciliumAddon           = "networking.cilium.io-k8s-1.16"
+	dnsControllerAddon    = "dns-controller.addons.k8s.io-k8s-1.12"
+	leaderElectionAddon   = "leader-migration.rbac.addons.k8s.io-k8s-1.23"
 )
 
 // TestMinimal runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
@@ -317,11 +318,23 @@ func TestHighAvailabilityGCE(t *testing.T) {
 // TestComplex runs the test on a more complex configuration, intended to hit more of the edge cases
 func TestComplex(t *testing.T) {
 	newIntegrationTest("complex.example.com", "complex").withoutSSHKey().
-		withAddons(dnsControllerAddon).
+		withAddons(
+			awsEBSCSIAddon,
+			dnsControllerAddon,
+			awsCCMAddon,
+			leaderElectionAddon,
+			awsAuthenticatorAddon,
+		).
 		runTestTerraformAWS(t)
 	newIntegrationTest("complex.example.com", "complex").withoutSSHKey().runTestCloudformation(t)
 	newIntegrationTest("complex.example.com", "complex").withoutSSHKey().withVersion("legacy-v1alpha2").
-		withAddons(dnsControllerAddon).
+		withAddons(
+			awsEBSCSIAddon,
+			dnsControllerAddon,
+			awsCCMAddon,
+			leaderElectionAddon,
+			awsAuthenticatorAddon,
+		).
 		runTestTerraformAWS(t)
 }
 
