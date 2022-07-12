@@ -391,6 +391,8 @@ func (tf *TemplateFunctions) ControlPlaneControllerReplicas(deployOnWorkersIfExt
 func (tf *TemplateFunctions) APIServerNodeRole() string {
 	if featureflag.APIServerNodes.Enabled() {
 		return "node-role.kubernetes.io/api-server"
+	} else if tf.Cluster.IsKubernetesGTE("1.24") {
+		return "node-role.kubernetes.io/control-plane"
 	}
 	return "node-role.kubernetes.io/master"
 }
