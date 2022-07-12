@@ -77,70 +77,36 @@ func (f *fakeDomainService) RecordsByTypeAndName(ctx context.Context, domain str
 }
 
 func TestZonesList(t *testing.T) {
-	client, err := scw.NewClient(nil)
+	// happy path
+	config, _ := scw.LoadConfig()
+	profile := config.Profiles["devterraform"]
+	client, err := scw.NewClient(scw.WithProfile(profile))
 	if err != nil {
 		t.Errorf("error creating client: %v", err)
 	}
-	fake := &fakeDomainService{}
-
-	// happy path
-	fake.listFunc = func(ctx context.Context, listOpts *scw.RequestOption) ([]domain.DomainSummary, error) {
-		domains := []domain.DomainSummary{
-			{
-				Domain: "example.com",
-			},
-		}
-
-		return domains, nil
-	}
-
-	z := &zones{client}
+	z := &zones{client: client}
 	zoneList, err := z.List()
 	if err != nil {
 		t.Errorf("error listing zones: %v", err)
 	}
-
 	if len(zoneList) != 1 {
 		t.Errorf("expected only 1 zone, got %d", len(zoneList))
 	}
-
 	zone := zoneList[0]
-	if zone.Name() != "example.com" {
+	if zone.Name() != "scaleway-terraform.com" {
 		t.Errorf("expected example.com as zone name, got: %s", zone.Name())
 	}
 
 	// bad response path
-	fake.listFunc = func(ctx context.Context, listOpts *scw.RequestOption) ([]domain.DomainSummary, error) {
-		domains := []domain.DomainSummary{
-			{
-				Domain: "example.com",
-			},
-		}
-
-		return domains, errors.New("internal error!")
+	client, err = scw.NewClient(scw.WithoutAuth())
+	if err != nil {
+		t.Errorf("error creating client: %v", err)
 	}
-
 	z = &zones{client}
 	zoneList, err = z.List()
 	if err == nil {
 		t.Errorf("expected non-nil err")
 	}
-
-	if zoneList != nil {
-		t.Errorf("expected nil zone, got %v", zoneList)
-	}
-
-	// scw client returned error path
-	fake.listFunc = func(ctx context.Context, listOpts *scw.RequestOption) ([]domain.DomainSummary, error) {
-		return nil, errors.New("error!")
-	}
-
-	z = &zones{client}
-	zoneList, err = z.List()
-	if err == nil {
-		t.Errorf("expected non-nil err")
-	}
-
 	if zoneList != nil {
 		t.Errorf("expected nil zone, got %v", zoneList)
 	}
