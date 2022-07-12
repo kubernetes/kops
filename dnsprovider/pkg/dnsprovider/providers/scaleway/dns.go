@@ -309,11 +309,11 @@ func (r *resourceRecordChangeset) Upsert(rrset dnsprovider.ResourceRecordSet) dn
 func (r *resourceRecordChangeset) Apply(ctx context.Context) error {
 	// Empty changesets should be a relatively quick no-op
 	if r.IsEmpty() {
-		klog.V(4).Info("record change set is empty")
+		klog.V(4).Info(ctx, "record change set is empty")
 		return nil
 	}
 
-	klog.V(2).Info("applying changes in record change set")
+	klog.V(2).Info(ctx, "applying changes in record change set")
 
 	if len(r.additions) > 0 {
 		for _, rrset := range r.additions {
@@ -323,7 +323,7 @@ func (r *resourceRecordChangeset) Apply(ctx context.Context) error {
 			}
 		}
 
-		klog.V(2).Info("record change set additions complete")
+		klog.V(2).Info(ctx, "record change set additions complete")
 	}
 
 	if len(r.upserts) > 0 {
@@ -334,7 +334,7 @@ func (r *resourceRecordChangeset) Apply(ctx context.Context) error {
 			}
 		}
 
-		klog.V(2).Info("record change set upserts complete")
+		klog.V(2).Info(ctx, "record change set upserts complete")
 	}
 
 	if len(r.removals) > 0 {
@@ -355,10 +355,10 @@ func (r *resourceRecordChangeset) Apply(ctx context.Context) error {
 			}
 		}
 
-		klog.V(2).Info("record change set removals complete")
+		klog.V(2).Info(ctx, "record change set removals complete")
 	}
 
-	klog.V(2).Info("record change sets successfully applied")
+	klog.V(2).Info(ctx, "record change sets successfully applied")
 	return nil
 }
 
@@ -414,6 +414,7 @@ func (r *resourceRecordChangeset) applyResourceRecordSet(rrset dnsprovider.Resou
 }
 
 // listDomains returns a list of scaleway Domain objects
+//func listDomains(c *scw.Client) ([]*domain.DNSZone, error) {
 func listDomains(c *scw.Client) ([]*domain.DomainSummary, error) {
 	registrarApi := domain.NewRegistrarAPI(c)
 
@@ -426,7 +427,19 @@ func listDomains(c *scw.Client) ([]*domain.DomainSummary, error) {
 		ProjectID:      nil,
 		OrganizationID: nil,
 		IsExternal:     nil,
-	}, scw.WithContext(context.TODO())) //TODO : what should I send as requestOption ?
+	})
+	//api := domain.NewAPI(c)
+	//
+	//domains, err := api.ListDNSZones(&domain.ListDNSZonesRequest{
+	//	OrganizationID: nil,
+	//	ProjectID:      nil,
+	//	OrderBy:        "",
+	//	Page:           nil,
+	//	PageSize:       nil,
+	//	Domain:         "",
+	//	DNSZone:        "",
+	//})
+
 	//domains, _, err := c.Domains.List(context.TODO(), &scw.ListOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to list domains: %v", err)
@@ -439,7 +452,7 @@ func listDomains(c *scw.Client) ([]*domain.DomainSummary, error) {
 func createDomain(c *scw.Client, createRequest *domain.CreateDNSZoneRequest) (*domain.DNSZone, error) {
 	api := domain.NewAPI(c)
 
-	dnsZone, err := api.CreateDNSZone(createRequest, scw.WithContext(context.TODO()))
+	dnsZone, err := api.CreateDNSZone(createRequest)
 	//domain, _, err := c.Domains.Create(context.TODO(), createRequest)
 	if err != nil {
 		return nil, err
@@ -455,7 +468,7 @@ func deleteDomain(c *scw.Client, name string) error {
 
 	_, err := api.DeleteDNSZone(&domain.DeleteDNSZoneRequest{
 		DNSZone: name,
-	}, scw.WithContext(context.TODO()))
+	})
 	if err != nil {
 		return err
 	}
@@ -469,7 +482,7 @@ func getRecords(c *scw.Client, zoneName string) ([]*domain.Record, error) {
 
 	records, err := api.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
 		DNSZone: zoneName,
-	}, scw.WithContext(context.TODO())) //TODO : what should I send as requestOption ?
+	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to list records: %v", err)
 	}
@@ -503,7 +516,7 @@ func getRecordsByName(client *scw.Client, zoneName, recordName string) ([]*domai
 	records, err := api.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
 		DNSZone: zoneName,
 		Name:    recordName,
-	}, scw.WithContext(context.TODO())) //TODO : what should I send as requestOption ?
+	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to list records: %v", err)
 	}
@@ -515,7 +528,7 @@ func getRecordsByName(client *scw.Client, zoneName, recordName string) ([]*domai
 func createRecord(c *scw.Client, createRequest *domain.CreateDNSZoneRequest) error {
 	api := domain.NewAPI(c)
 
-	_, err := api.CreateDNSZone(createRequest, scw.WithContext(context.TODO()))
+	_, err := api.CreateDNSZone(createRequest)
 	//_, _, err := c.Domains.CreateRecord(context.TODO(), zoneName, createRequest)
 	if err != nil {
 		return fmt.Errorf("error creating record: %v", err)
@@ -531,7 +544,7 @@ func createRecord(c *scw.Client, createRequest *domain.CreateDNSZoneRequest) err
 //	//_, err := c.Domains.DeleteRecord(context.TODO(), zoneName, recordID)
 //	_, err := api.DeleteDNSZone(&domain.DeleteDNSZoneRequest{
 //		DNSZone: zoneName,
-//	}, scw.WithContext(context.TODO()))
+//	})
 //	if err != nil {
 //		return fmt.Errorf("error deleting record: %v", err)
 //	}

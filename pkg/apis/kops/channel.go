@@ -21,13 +21,14 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/blang/semver/v4"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
 	kopsbase "k8s.io/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/vfs"
+
+	"github.com/blang/semver/v4"
 )
 
 var DefaultChannelBase = "https://raw.githubusercontent.com/kubernetes/kops/master/channels/"
@@ -292,6 +293,7 @@ const (
 	CloudProviderHetzner   CloudProviderID = "hetzner"
 	CloudProviderOpenstack CloudProviderID = "openstack"
 	CloudProviderAzure     CloudProviderID = "azure"
+	CloudProviderScaleway  CloudProviderID = "scaleway"
 )
 
 // FindImage returns the image for the cloudprovider, or nil if none found
