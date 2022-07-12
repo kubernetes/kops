@@ -698,6 +698,14 @@ resource "aws_s3_object" "cluster-completed-spec" {
   server_side_encryption = "AES256"
 }
 
+resource "aws_s3_object" "complex-example-com-addons-authentication-aws-k8s-1-12" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_complex.example.com-addons-authentication.aws-k8s-1.12_content")
+  key                    = "clusters.example.com/complex.example.com/addons/authentication.aws/k8s-1.12.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
 resource "aws_s3_object" "complex-example-com-addons-bootstrap" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_complex.example.com-addons-bootstrap_content")
