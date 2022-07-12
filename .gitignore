@@ -93,3 +93,8 @@ _output
 # Used by E2E testing
 _artifacts
 _rundir
+
+# TODO(Mia-Cross): make this clean before PR#1
+s3:
+zzzs3-state-store
+.run/

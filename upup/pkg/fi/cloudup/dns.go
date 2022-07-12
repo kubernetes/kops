@@ -231,6 +231,10 @@ func precreateDNS(ctx context.Context, cluster *kops.Cluster, cloud fi.Cloud) er
 	if len(created) != 0 {
 		klog.Infof("Pre-creating DNS records")
 
+		if cloud.ProviderID() == kops.CloudProviderScaleway && os.Getenv("SCW_DNS_ZONE") == "" {
+			os.Setenv("SCW_DNS_ZONE", cluster.Spec.DNSZone)
+		}
+
 		err := changeset.Apply(ctx)
 		if err != nil {
 			return fmt.Errorf("error pre-creating DNS records: %v", err)

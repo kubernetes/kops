@@ -682,13 +682,13 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				&openstackmodel.FirewallModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: securityLifecycle},
 				&openstackmodel.ServerGroupModelBuilder{OpenstackModelContext: openstackModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: clusterLifecycle},
 			)
-
 		case kops.CloudProviderScaleway:
 			scwModelContext := &scalewaymodel.ScwModelContext{
 				KopsModelContext: modelContext,
 			}
 			l.Builders = append(l.Builders,
-				&scalewaymodel.APILoadBalancerModelBuilder{ScwModelContext: scwModelContext, Lifecycle: networkLifecycle},
+				//&scalewaymodel.NetworkModelBuilder{ScwModelContext: scwModelContext, Lifecycle: networkLifecycle},
+				&scalewaymodel.APILoadBalancerModelBuilder{ScwModelContext: scwModelContext, Lifecycle: clusterLifecycle},
 				&scalewaymodel.InstanceModelBuilder{ScwModelContext: scwModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: clusterLifecycle},
 				&scalewaymodel.SSHKeyModelBuilder{ScwModelContext: scwModelContext, Lifecycle: securityLifecycle},
 			)

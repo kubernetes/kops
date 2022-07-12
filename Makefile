@@ -14,8 +14,8 @@
 
 # kops source root directory (without trailing /)
 KOPS_ROOT?=$(patsubst %/,%,$(abspath $(dir $(firstword $(MAKEFILE_LIST)))))
-DOCKER_REGISTRY?=gcr.io/must-override
-S3_BUCKET?=s3://must-override/
+DOCKER_REGISTRY?=rg.fr-par.scw.cloud
+S3_BUCKET?=scw://kops-images/
 UPLOAD_DEST?=$(S3_BUCKET)
 GCS_LOCATION?=gs://must-override
 GCS_URL=$(GCS_LOCATION:gs://%=https://storage.googleapis.com/%)

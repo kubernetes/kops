@@ -18,12 +18,12 @@ package zones
 
 import (
 	"sort"
-
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
@@ -233,6 +233,14 @@ var azureZones = []string{
 	"westusstage",
 }
 
+func scwZones() []string {
+	var scwZones []string
+	for _, zone := range scw.AllZones {
+		scwZones = append(scwZones, string(zone))
+	}
+	return scwZones
+}
+
 func WellKnownZonesForCloud(matchCloud kops.CloudProviderID, prefix string) []string {
 	var found []string
 	switch matchCloud {
@@ -279,6 +287,9 @@ func WellKnownZonesForCloud(matchCloud kops.CloudProviderID, prefix string) []st
 		found = gceZones
 	case kops.CloudProviderHetzner:
 		found = hetznerZones
+	case kops.CloudProviderScaleway:
+		found = scwZones()
+
 	default:
 		return nil
 	}

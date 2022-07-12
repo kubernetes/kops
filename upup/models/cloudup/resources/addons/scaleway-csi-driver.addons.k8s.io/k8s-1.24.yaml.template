@@ -12,9 +12,9 @@ stringData:
   SCW_SECRET_KEY: {{ SCW_SECRET_KEY }}
   # Project ID could also be an Organization ID
   SCW_DEFAULT_PROJECT_ID: {{ SCW_DEFAULT_PROJECT_ID }}
-  # Region is where your load-balancer will be created, ex: nl-ams, nl-ams
+  # Region is where your load-balancer will be created, ex: fr-par, nl-ams
   SCW_DEFAULT_REGION: {{ SCW_DEFAULT_REGION }}
-  # Zone is where your servers and volumes will be created, ex: nl-ams-1, nl-ams-2
+  # Zone is where your servers and volumes will be created, ex: fr-par-1, nl-ams-2
   SCW_DEFAULT_ZONE: {{ SCW_DEFAULT_ZONE }}
 ---
 apiVersion: storage.k8s.io/v1

@@ -41,6 +41,7 @@ type Instance struct {
 
 	UserData     *fi.Resource
 	LoadBalancer *LoadBalancer
+	//Network        *Network
 }
 
 var _ fi.CloudupTask = &Instance{}
@@ -79,6 +80,7 @@ func (s *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 		Tags:           server.Tags,
 		UserData:       s.UserData,
 		Lifecycle:      s.Lifecycle,
+		//Network:        s.Network,
 	}, nil
 }
 
@@ -135,6 +137,14 @@ func (_ *Instance) RenderScw(c *fi.CloudupContext, actual, expected, changes *In
 		}
 		newInstanceCount = expected.Count - actual.Count
 	}
+
+	//pn, err := cloud.GetClusterVPCs(c.Cluster.Name)
+	//if err != nil {
+	//	return fmt.Errorf("error listing private networks: %v", err)
+	//}
+	//if len(pn) != 1 {
+	//	return fmt.Errorf("more than 1 private network named %s found", c.Cluster.Name)
+	//}
 
 	// If newInstanceCount > 0, we need to create new instances for this group
 	for i := 0; i < newInstanceCount; i++ {
@@ -203,6 +213,26 @@ func (_ *Instance) RenderScw(c *fi.CloudupContext, actual, expected, changes *In
 			}
 			controlPlanePrivateIPs = append(controlPlanePrivateIPs, *server.Server.PrivateIP)
 		}
+
+		// We put the instance inside the private network
+		//pNIC, err := instanceService.CreatePrivateNIC(&instance.CreatePrivateNICRequest{
+		//	Zone:             zone,
+		//	ServerID:         srv.Server.ID,
+		//	PrivateNetworkID: pn[0].ID,
+		//})
+		//if err != nil {
+		//	return fmt.Errorf("error linking instance to private network: %v", err)
+		//}
+		//
+		//// We wait for the private nic to be ready before proceeding
+		//_, err = instanceService.WaitForPrivateNIC(&instance.WaitForPrivateNICRequest{
+		//	ServerID:     srv.Server.ID,
+		//	PrivateNicID: pNIC.PrivateNic.ID,
+		//	Zone:         zone,
+		//})
+		//if err != nil {
+		//	return fmt.Errorf("error waiting for private nic: %v", err)
+		//}
 	}
 
 	// If newInstanceCount < 0, we need to delete instances of this group
@@ -284,6 +314,48 @@ func (_ *Instance) RenderScw(c *fi.CloudupContext, actual, expected, changes *In
 			}
 		}
 	}
+
+	//gwService := cloud.GatewayService()
+	//rules := []*vpcgw.SetPATRulesRequestRule(nil)
+	//port := uint32(2022)
+
+	// We create NAT rules linking the gateway to our instances in order to be able to connect via SSH
+	//// TODO(Mia-Cross): This part is for dev purposes only, remove when done
+	//gwNetwork, err := cloud.GetClusterGatewayNetworks(pn[0].ID)
+	//if err != nil {
+	//	return err
+	//}
+	//if len(gwNetwork) < 1 {
+	//	klog.V(4).Infof("Could not find any gateway connexion, skipping NAT rules creation")
+	//} else {
+	//	entries, err := gwService.ListDHCPEntries(&vpcgw.ListDHCPEntriesRequest{
+	//		Zone:             zone,
+	//		GatewayNetworkID: scw.StringPtr(gwNetwork[0].ID),
+	//	}, scw.WithAllPages())
+	//	if err != nil {
+	//		return fmt.Errorf("error listing DHCP entries")
+	//	}
+	//	klog.V(4).Infof("=== DHCP entries are %v", entries.DHCPEntries)
+	//	for _, entry := range entries.DHCPEntries {
+	//		rules = append(rules, &vpcgw.SetPATRulesRequestRule{
+	//			PublicPort:  port,
+	//			PrivateIP:   entry.IPAddress,
+	//			PrivatePort: 22,
+	//			Protocol:    "both",
+	//		})
+	//		port += 1
+	//	}
+	//
+	//	_, err = gwService.SetPATRules(&vpcgw.SetPATRulesRequest{
+	//		Zone:      zone,
+	//		GatewayID: gwNetwork[0].GatewayID,
+	//		PatRules:  rules,
+	//	})
+	//	if err != nil {
+	//		return fmt.Errorf("error setting PAT rules for gateway")
+	//	}
+	//	klog.V(4).Infof("=== rules set")
+	//}
 
 	return nil
 }

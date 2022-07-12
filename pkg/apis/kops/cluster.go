@@ -241,9 +241,8 @@ type GCESpec struct {
 // HetznerSpec configures the Hetzner cloud provider.
 type HetznerSpec struct{}
 
-// ScalewaySpec configures the Scaleway cloud provider
-type ScalewaySpec struct {
-}
+// ScalewaySpec configures the Scaleway cloud provider.
+type ScalewaySpec struct {}
 
 type KarpenterConfig struct {
 	Enabled bool `json:"enabled,omitempty"`

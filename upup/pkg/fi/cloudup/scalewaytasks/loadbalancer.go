@@ -39,6 +39,10 @@ type LoadBalancer struct {
 	Description           string
 	SslCompatibilityLevel string
 	ForAPIServer          bool
+
+	VPCId *string // set if Cluster.Spec.NetworkID is
+	//VPCName     *string // set if Cluster.Spec.NetworkCIDR is
+	//NetworkCIDR *string // set if Cluster.Spec.NetworkCIDR is
 }
 
 var _ fi.CompareWithID = &LoadBalancer{}

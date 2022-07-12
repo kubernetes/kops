@@ -44,6 +44,10 @@ func (d *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			return fmt.Errorf("error building instance task for %q: %w", name, err)
 		}
 
+		if ig.IsMaster() {
+			instance.Tags = append(instance.Tags, scaleway.TagNameRolePrefix+scaleway.TagRoleMaster)
+		}
+
 		userData, err := d.BootstrapScriptBuilder.ResourceNodeUp(c, ig)
 		if err != nil {
 			return fmt.Errorf("error building bootstrap script for %q: %w", name, err)

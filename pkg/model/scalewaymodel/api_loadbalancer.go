@@ -100,6 +100,13 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 
 	c.AddTask(lbFrontend)
 
+	//if b.Cluster.Spec.NetworkID != "" {
+	//	loadBalancer.VPCId = fi.String(b.Cluster.Spec.NetworkID)
+	//} else if b.Cluster.Spec.NetworkCIDR != "" {
+	//	loadBalancer.VPCName = fi.String(b.ClusterName())
+	//	loadBalancer.NetworkCIDR = fi.String(b.Cluster.Spec.NetworkCIDR)
+	//}
+
 	if dns.IsGossipClusterName(b.Cluster.Name) || b.Cluster.UsesPrivateDNS() || b.Cluster.UsesNoneDNS() {
 		// Ensure the LB hostname is included in the TLS certificate,
 		// if we're not going to use an alias for it

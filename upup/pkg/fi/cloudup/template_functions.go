@@ -207,6 +207,12 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		scwCloud := tf.cloud.(scaleway.ScwCloud)
 		return scwCloud.Zone()
 	}
+	dest["SCW_DEFAULT_ZONE"] = func() string {
+		return os.Getenv("SCW_DEFAULT_ZONE")
+	}
+	dest["SCW_DNS_ZONE"] = func() string {
+		return cluster.Spec.DNSZone
+	}
 
 	if featureflag.Spotinst.Enabled() {
 		if creds, err := spotinst.LoadCredentials(); err == nil {
@@ -597,6 +603,8 @@ func (tf *TemplateFunctions) DNSControllerArgv() ([]string, error) {
 			argv = append(argv, "--dns=google-clouddns")
 		case kops.CloudProviderDO:
 			argv = append(argv, "--dns=digitalocean")
+		case kops.CloudProviderScaleway:
+			argv = append(argv, "--dns=scaleway")
 
 		default:
 			return nil, fmt.Errorf("unhandled cloudprovider %q", cluster.Spec.GetCloudProvider())
