@@ -174,8 +174,6 @@ metadata:
   labels:
     k8s-app: openstack-cloud-provider
     k8s-addon: openstack.addons.k8s.io
-  annotations:
-    scheduler.alpha.kubernetes.io/critical-pod: ""
 spec:
   updateStrategy:
     type: RollingUpdate

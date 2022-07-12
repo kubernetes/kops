@@ -48,8 +48,6 @@ spec:
     metadata:
       labels:
         k8s-app: kube-dns-autoscaler
-      annotations:
-        scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       containers:
       - name: autoscaler
@@ -103,7 +101,6 @@ spec:
       labels:
         k8s-app: kube-dns
       annotations:
-        scheduler.alpha.kubernetes.io/critical-pod: ''
         prometheus.io/scrape: 'true'
         prometheus.io/port: '10055'
     spec:

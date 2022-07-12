@@ -22,8 +22,6 @@ spec:
     metadata:
       labels:
         k8s-app: digitalocean-cloud-controller-manager
-      annotations:
-        scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       affinity:
         nodeAffinity:
