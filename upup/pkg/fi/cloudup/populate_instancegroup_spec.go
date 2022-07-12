@@ -41,7 +41,7 @@ const (
 	defaultNodeMachineTypeDO       = "s-2vcpu-4gb"
 	defaultNodeMachineTypeAzure    = "Standard_B2s"
 	defaultNodeMachineTypeHetzner  = "cx21"
-	defaultNodeMachineTypeScaleway = "DEV1-M"
+	defaultNodeMachineTypeScaleway = "PLAY2-NANO"
 
 	defaultBastionMachineTypeGCE     = "e2-micro"
 	defaultBastionMachineTypeAzure   = "Standard_B2s"
@@ -51,7 +51,7 @@ const (
 	defaultMasterMachineTypeDO       = "s-2vcpu-4gb"
 	defaultMasterMachineTypeAzure    = "Standard_B2s"
 	defaultMasterMachineTypeHetzner  = "cx21"
-	defaultMasterMachineTypeScaleway = "DEV1-M"
+	defaultMasterMachineTypeScaleway = "PLAY2-NANO"
 
 	defaultDOImageFocal       = "ubuntu-20-04-x64"
 	defaultHetznerImageFocal  = "ubuntu-20.04"

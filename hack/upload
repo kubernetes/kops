@@ -56,8 +56,16 @@ fi
 
 if [[ "${DEST:0:6}" == "scw://" ]]; then
   SCW_BUCKET=$(echo "${DEST}" | cut -c 7-)
-  echo "--> s3cmd put ${SRC} s3://$SCW_BUCKET --recursive ${PUBLIC:+--acl-public} --progress"
-  s3cmd put ${SRC} s3://$SCW_BUCKET --recursive ${PUBLIC:+--acl-public} --progress
+  if [[ $(pwd) == "/home/leila/Desktop/kops" ]]; then
+    echo "--> rclone sync ${SRC} normal-par://$SCW_BUCKET --progress"
+    rclone sync ${SRC} normal-par://$SCW_BUCKET --progress
+  elif [[ $(pwd) == "/home/leila/Desktop/kops_v2" ]]; then
+    echo "--> rclone sync ${SRC} normal-ams://$SCW_BUCKET --progress"
+    rclone sync ${SRC} normal-ams://$SCW_BUCKET --progress
+  fi
+#    echo "--> s3cmd put ${SRC} s3://$SCW_BUCKET --recursive ${PUBLIC:+--acl-public} --progress"
+#    s3cmd put ${SRC} s3://$SCW_BUCKET --recursive ${PUBLIC:+--acl-public} --progress
+#  fi
   exit 0
 fi
 

@@ -50,6 +50,11 @@ type LoadBalancer struct {
 	// WellKnownServices indicates which services are supported by this resource.
 	// This field is internal and is not rendered to the cloud.
 	WellKnownServices []wellknownservices.WellKnownService
+	ForAPIServer          bool
+
+	VPCId *string // set if Cluster.Spec.NetworkID is
+	//VPCName     *string // set if Cluster.Spec.NetworkCIDR is
+	//NetworkCIDR *string // set if Cluster.Spec.NetworkCIDR is
 }
 
 var _ fi.CompareWithID = &LoadBalancer{}

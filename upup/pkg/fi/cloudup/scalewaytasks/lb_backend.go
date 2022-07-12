@@ -41,7 +41,7 @@ type LBBackend struct {
 	StickySessions       *string
 	ProxyProtocol        *string
 
-	LoadBalancer *LoadBalancer
+	LoadBalancer  *LoadBalancer
 }
 
 var _ fi.CloudupTask = &LBBackend{}
