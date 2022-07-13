@@ -29,7 +29,7 @@ func init() {
 			return nil, err
 		}
 
-		return NewProvider(client), nil
+		return NewProvider(client, ""), nil //TODO: remplir le nom de domaine
 	})
 }
 
@@ -67,24 +67,27 @@ func newClient() (*scw.Client, error) {
 
 // DNS implements dnsprovider.Interface
 type Interface struct {
-	client *scw.Client
+	client       *scw.Client
+	parentDomain string
 }
 
 // NewProvider returns an implementation of dnsprovider.Interface
-func NewProvider(client *scw.Client) dnsprovider.Interface {
-	return &Interface{client: client}
+func NewProvider(client *scw.Client, parentDomain string) dnsprovider.Interface {
+	return &Interface{client: client, parentDomain: parentDomain}
 }
 
 // Zones returns an implementation of dnsprovider.Zones
 func (d Interface) Zones() (dnsprovider.Zones, bool) {
 	return &zones{
-		client: d.client,
+		client:       d.client,
+		parentDomain: d.parentDomain,
 	}, true
 }
 
 // zones is an implementation of dnsprovider.Zones
 type zones struct {
-	client *scw.Client
+	client       *scw.Client
+	parentDomain string
 }
 
 // List returns a list of all dns zones
@@ -98,8 +101,9 @@ func (z *zones) List() ([]dnsprovider.Zone, error) {
 	var zones []dnsprovider.Zone
 	for _, domainSummary := range domains {
 		newZone = &zone{
-			name:   domainSummary.Domain, // TODO: check if .Domain == .Name
-			client: z.client,
+			name:         domainSummary.Domain, // TODO: check if .Domain == .Name
+			parentDomain: z.parentDomain,
+			client:       z.client,
 		}
 		zones = append(zones, newZone)
 	}
@@ -110,7 +114,8 @@ func (z *zones) List() ([]dnsprovider.Zone, error) {
 // Add adds a new DNS zone
 func (z *zones) Add(newZone dnsprovider.Zone) (dnsprovider.Zone, error) {
 	domainCreateRequest := &domain.CreateDNSZoneRequest{
-		Domain: newZone.Name(),
+		Subdomain: newZone.Name(),
+		Domain:    z.parentDomain,
 	}
 
 	d, err := createDomain(z.client, domainCreateRequest)
@@ -119,28 +124,31 @@ func (z *zones) Add(newZone dnsprovider.Zone) (dnsprovider.Zone, error) {
 	}
 
 	return &zone{
-		name:   d.Domain,
-		client: z.client,
+		name:         d.Subdomain,
+		parentDomain: d.Domain,
+		client:       z.client,
 	}, nil
 }
 
 // Remove deletes a zone
 func (z *zones) Remove(zone dnsprovider.Zone) error {
-	return deleteDomain(z.client, zone.Name())
+	return deleteDomain(z.client, zone.Name()+"."+z.parentDomain)
 }
 
 // New returns a new implementation of dnsprovider.Zone
 func (z *zones) New(name string) (dnsprovider.Zone, error) {
 	return &zone{
-		name:   name,
-		client: z.client,
+		name:         name,
+		parentDomain: z.parentDomain,
+		client:       z.client,
 	}, nil
 }
 
 // zone implements dnsprovider.Zone
 type zone struct {
-	name   string
-	client *scw.Client
+	name         string
+	client       *scw.Client
+	parentDomain string
 }
 
 // Name returns the Name of a dns zone
@@ -148,12 +156,12 @@ func (z *zone) Name() string {
 	return z.name
 }
 
-// ID returns the name of a dns zone, in DO the ID is the name
+// ID returns the name of a dns zone, in DO the ID is the name  //TODO: is it the same for us ?
 func (z *zone) ID() string {
 	return z.name
 }
 
-// ResourceRecordSet returns an implementation of dnsprovider.ResourceRecordSets
+// ResourceRecordSets returns an implementation of dnsprovider.ResourceRecordSets
 func (z *zone) ResourceRecordSets() (dnsprovider.ResourceRecordSets, bool) {
 	return &resourceRecordSets{zone: z, client: z.client}, true
 }
@@ -175,7 +183,7 @@ func (r *resourceRecordSets) List() ([]dnsprovider.ResourceRecordSet, error) {
 	rrsetsWithoutDups := make(map[string]*resourceRecordSet)
 
 	for _, record := range records {
-		// digitalocean API returns the record without the zone
+		// The scaleway API returns the record without the zone
 		// but the consumers of this interface expect the zone to be included
 		recordName := dns.EnsureDotSuffix(record.Name) + r.Zone().Name()
 		if set, ok := rrsetsWithoutDups[recordName]; !ok {
@@ -260,7 +268,6 @@ func (r *resourceRecordSet) Name() string {
 }
 
 // Rrdatas returns a list of data associated with a resource record set
-// in DO this is almost always the IP of a record
 func (r *resourceRecordSet) Rrdatas() []string {
 	return r.data
 }
@@ -346,8 +353,7 @@ func (r *resourceRecordChangeset) Apply(ctx context.Context) error {
 		for _, record := range r.removals {
 			for _, domainRecord := range records {
 				if domainRecord.Name == record.Name() {
-					err := deleteDomain(r.client, r.zone.Name())
-					//err := deleteRecord(r.client, r.zone.Name(), domainRecord.ID)
+					err := deleteRecord(r.client, r.zone.Name(), domainRecord.ID)
 					if err != nil {
 						return fmt.Errorf("failed to delete record: %v", err)
 					}
@@ -371,14 +377,14 @@ func (r *resourceRecordChangeset) IsEmpty() bool {
 	return false
 }
 
-// ResourceRecordSet returns the associated resourceRecordSets of a changeset
+// ResourceRecordSets returns the associated resourceRecordSets of a changeset
 func (r *resourceRecordChangeset) ResourceRecordSets() dnsprovider.ResourceRecordSets {
 	return r.rrsets
 }
 
 // applyResourceRecordSet will create records of a domain as required by resourceRecordChangeset
 // and delete any previously created records matching the same name.
-// This is required for digitalocean since it's API does not handle record sets, but
+// This is required for scaleway since it's API does not handle record sets, but
 // only individual records
 func (r *resourceRecordChangeset) applyResourceRecordSet(rrset dnsprovider.ResourceRecordSet) error {
 	deleteRecords, err := getRecordsByName(r.client, r.zone.Name(), rrset.Name())
@@ -386,25 +392,37 @@ func (r *resourceRecordChangeset) applyResourceRecordSet(rrset dnsprovider.Resou
 		return fmt.Errorf("failed to get record IDs to delete")
 	}
 
+	addRecords := []*domain.Record(nil)
+
 	for range rrset.Rrdatas() {
-		//for _, rrdata := range rrset.Rrdatas() {
-		recordCreateRequest := &domain.CreateDNSZoneRequest{
-			Subdomain: rrset.Name(),
-			Domain:    r.zone.Name(),
-			//Name: rrset.Name(),
-			//Data: rrdata,
-			//TTL:  int(rrset.Ttl()),
-			//Type: string(rrset.Type()),
-		}
-		err := createRecord(r.client, recordCreateRequest)
-		if err != nil {
-			return fmt.Errorf("could not create record: %v", err)
+		for _, rrdata := range rrset.Rrdatas() {
+			addRecords = append(addRecords, &domain.Record{
+				Name: rrset.Name(),
+				Data: rrdata,
+				TTL:  uint32(rrset.Ttl()),
+				Type: domain.RecordType(rrset.Type()),
+			})
 		}
 	}
 
-	for range deleteRecords {
-		err := deleteDomain(r.client, r.zone.Name())
-		//err := deleteRecord(r.client, r.zone.Name(), record.ID)
+	recordCreateRequest := &domain.UpdateDNSZoneRecordsRequest{
+		DNSZone: r.zone.parentDomain,
+		Changes: []*domain.RecordChange{
+			{
+				Add: &domain.RecordChangeAdd{
+					Records: addRecords,
+				},
+			},
+		},
+	}
+
+	_, err = createRecord(r.client, recordCreateRequest)
+	if err != nil {
+		return fmt.Errorf("could not create record: %v", err)
+	}
+
+	for _, record := range deleteRecords {
+		err = deleteRecord(r.client, r.zone.Name(), record.ID)
 		if err != nil {
 			return fmt.Errorf("error cleaning up old records: %v", err)
 		}
@@ -440,7 +458,6 @@ func listDomains(c *scw.Client) ([]*domain.DomainSummary, error) {
 	//	DNSZone:        "",
 	//})
 
-	//domains, _, err := c.Domains.List(context.TODO(), &scw.ListOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to list domains: %v", err)
 	}
@@ -453,7 +470,7 @@ func createDomain(c *scw.Client, createRequest *domain.CreateDNSZoneRequest) (*d
 	api := domain.NewAPI(c)
 
 	dnsZone, err := api.CreateDNSZone(createRequest)
-	//domain, _, err := c.Domains.Create(context.TODO(), createRequest)
+
 	if err != nil {
 		return nil, err
 	}
@@ -463,7 +480,6 @@ func createDomain(c *scw.Client, createRequest *domain.CreateDNSZoneRequest) (*d
 
 // deleteDomain deletes a domain given its name
 func deleteDomain(c *scw.Client, name string) error {
-	//_, err := c.Domains.Delete(context.TODO(), name)
 	api := domain.NewAPI(c)
 
 	_, err := api.DeleteDNSZone(&domain.DeleteDNSZoneRequest{
@@ -525,29 +541,41 @@ func getRecordsByName(client *scw.Client, zoneName, recordName string) ([]*domai
 }
 
 // createRecord creates a record given an associated zone and a godo.DomainRecordEditRequest
-func createRecord(c *scw.Client, createRequest *domain.CreateDNSZoneRequest) error {
+func createRecord(c *scw.Client, recordsCreateRequest *domain.UpdateDNSZoneRecordsRequest) ([]string, error) {
 	api := domain.NewAPI(c)
 
-	_, err := api.CreateDNSZone(createRequest)
-	//_, _, err := c.Domains.CreateRecord(context.TODO(), zoneName, createRequest)
+	resp, err := api.UpdateDNSZoneRecords(recordsCreateRequest)
 	if err != nil {
-		return fmt.Errorf("error creating record: %v", err)
+		return nil, fmt.Errorf("error creating record: %v", err)
+	}
+
+	recordsIds := []string(nil)
+	for _, record := range resp.Records {
+		recordsIds = append(recordsIds, record.ID)
+	}
+
+	return recordsIds, nil
+}
+
+// deleteRecord deletes a record given an associated zone and a record ID
+func deleteRecord(c *scw.Client, zoneName string, recordID string) error {
+	api := domain.NewAPI(c)
+
+	recordDeleteRequest := &domain.UpdateDNSZoneRecordsRequest{
+		DNSZone: zoneName,
+		Changes: []*domain.RecordChange{
+			{
+				Delete: &domain.RecordChangeDelete{
+					ID: &recordID,
+				},
+			},
+		},
+	}
+
+	_, err := api.UpdateDNSZoneRecords(recordDeleteRequest)
+	if err != nil {
+		return fmt.Errorf("error deleting record: %v", err)
 	}
 
 	return nil
 }
-
-// deleteRecord deletes a record given an associated zone and a record ID
-//func deleteRecord(c *scw.Client, zoneName string, recordID int) error {
-//	api := domain.NewAPI(c)
-//
-//	//_, err := c.Domains.DeleteRecord(context.TODO(), zoneName, recordID)
-//	_, err := api.DeleteDNSZone(&domain.DeleteDNSZoneRequest{
-//		DNSZone: zoneName,
-//	})
-//	if err != nil {
-//		return fmt.Errorf("error deleting record: %v", err)
-//	}
-//
-//	return nil
-//}
