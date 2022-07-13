@@ -1,0 +1,40 @@
+name: Check PR
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - labeled
+      - unlabeled
+      - reopened
+      - synchronize
+    branches:
+      - 'master*'
+      - 'release*'
+
+jobs:
+  check-pr:
+    name: Check PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check commit messages for WIP
+        uses: gsactions/commit-message-checker@v1
+        with:
+          pattern: '^(?!WIP)'
+          flags: 'gmi'
+          error: Work in progress
+          checkAllCommitMessages: true
+          accessToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check PR labels
+        uses: jesusvasquez333/verify-pr-label-action@v1.4.0
+        with:
+          valid-labels: 'merge'
+          invalid-labels: 'do-not-merge, wip, wait-before-merge'
+          disable-reviews: true
+          github-token: '${{ secrets.GITHUB_TOKEN }}'
+
+      - name: Enable auto merge
+        uses: alexwilson/enable-github-automerge-action@main
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
