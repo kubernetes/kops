@@ -1941,9 +1941,14 @@ func (in *EtcdManagerSpec) DeepCopyInto(out *EtcdManagerSpec) {
 		*out = make([]EnvVar, len(*in))
 		copy(*out, *in)
 	}
+	if in.BackupInterval != nil {
+		in, out := &in.BackupInterval, &out.BackupInterval
+		*out = new(v1.Duration)
+		**out = **in
+	}
 	if in.DiscoveryPollInterval != nil {
 		in, out := &in.DiscoveryPollInterval, &out.DiscoveryPollInterval
-		*out = new(string)
+		*out = new(v1.Duration)
 		**out = **in
 	}
 	if in.LogLevel != nil {

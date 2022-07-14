@@ -1100,6 +1100,10 @@ spec:
                     manager:
                       description: Manager describes the manager configuration
                       properties:
+                        backupInterval:
+                          description: BackupInterval which is used for backups. The
+                            default is 15 minutes.
+                          type: string
                         discoveryPollInterval:
                           description: DiscoveryPollInterval which is used for discovering
                             other cluster members. The default is 60 seconds.

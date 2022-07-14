@@ -33,7 +33,7 @@ func Test_RunEtcdManagerBuilder(t *testing.T) {
 	featureflag.ParseFlags("-ImageDigest")
 	tests := []string{
 		"tests/minimal",
-		"tests/pollinterval",
+		"tests/interval",
 		"tests/proxy",
 		"tests/overwrite_settings",
 	}
