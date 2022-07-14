@@ -81,7 +81,7 @@ Contents: |
       - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /etcd-manager
         --backup-store=memfs://clusters.example.com/minimal.example.com/backups/etcd-events
         --client-urls=https://__name__:4002 --cluster-name=etcd-events --containerized=true
-        --discovery-poll-interval=75s --dns-suffix=.internal.minimal.example.com --grpc-port=3997
+        --discovery-poll-interval=1m15s --dns-suffix=.internal.minimal.example.com --grpc-port=3997
         --peer-urls=https://__name__:2381 --quarantine-client-urls=https://__name__:3995
         --v=6 --volume-name-tag=k8s.io/etcd/events --volume-provider=aws --volume-tag=k8s.io/etcd/events
         --volume-tag=k8s.io/role/master=1 --volume-tag=kubernetes.io/cluster/minimal.example.com=owned
@@ -148,9 +148,9 @@ Contents: |
       - /bin/sh
       - -c
       - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /etcd-manager
-        --backup-store=memfs://clusters.example.com/minimal.example.com/backups/etcd-main
+        --backup-interval=1h0m0s --backup-store=memfs://clusters.example.com/minimal.example.com/backups/etcd-main
         --client-urls=https://__name__:4001 --cluster-name=etcd --containerized=true
-        --discovery-poll-interval=75s --dns-suffix=.internal.minimal.example.com --grpc-port=3996
+        --discovery-poll-interval=1m15s --dns-suffix=.internal.minimal.example.com --grpc-port=3996
         --peer-urls=https://__name__:2380 --quarantine-client-urls=https://__name__:3994
         --v=6 --volume-name-tag=k8s.io/etcd/main --volume-provider=aws --volume-tag=k8s.io/etcd/main
         --volume-tag=k8s.io/role/master=1 --volume-tag=kubernetes.io/cluster/minimal.example.com=owned
