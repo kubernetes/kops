@@ -67,7 +67,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: kops-linux-amd64
-          path: ${{ env.GOPATH }}/src/k8s.io/kops/.build/local/kops
+          path: ${{ env.GOPATH }}/src/k8s.io/kops/.build/dist/linux/amd64/kops
           if-no-files-found: error
           retention-days: 1
 
@@ -102,7 +102,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: kops-darwin-amd64
-          path: ${{ env.GOPATH }}/src/k8s.io/kops/.build/local/kops
+          path: ${{ env.GOPATH }}/src/k8s.io/kops/.build/dist/darwin/amd64/kops
           if-no-files-found: error
           retention-days: 1
 
