@@ -542,14 +542,17 @@ func (c *awsCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstance)
 	return deleteInstance(c, i)
 }
 
-// DeregisterInstance drains a cloud instance and loadbalancers.
+// DeregisterInstance drains a cloud instance and load balancers.
 func (c *awsCloudImplementation) DeregisterInstance(i *cloudinstances.CloudInstance) error {
-	if i.CloudInstanceGroup.InstanceGroup.Spec.Manager != kops.InstanceManagerKarpenter {
-		err := deregisterInstance(c, i)
-		if err != nil {
-			return fmt.Errorf("failed to deregister instance from loadBalancer before terminating: %v", err)
-		}
+	if c.spotinst != nil || i.CloudInstanceGroup.InstanceGroup.Spec.Manager == kops.InstanceManagerKarpenter {
+		return nil
 	}
+
+	err := deregisterInstance(c, i)
+	if err != nil {
+		return fmt.Errorf("failed to deregister instance from loadBalancer before terminating: %v", err)
+	}
+
 	return nil
 }
 
