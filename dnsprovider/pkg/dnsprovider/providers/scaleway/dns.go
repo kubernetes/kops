@@ -65,7 +65,7 @@ func newClient() (*scw.Client, error) {
 	return scwClient, nil
 }
 
-// DNS implements dnsprovider.Interface
+// Interface implements dnsprovider.Interface
 type Interface struct {
 	client       *scw.Client
 	parentDomain string
@@ -101,7 +101,7 @@ func (z *zones) List() ([]dnsprovider.Zone, error) {
 	var zones []dnsprovider.Zone
 	for _, domainSummary := range domains {
 		newZone = &zone{
-			name:         domainSummary.Domain, // TODO: check if .Domain == .Name
+			name:         domainSummary.Domain,
 			parentDomain: z.parentDomain,
 			client:       z.client,
 		}
@@ -149,6 +149,7 @@ type zone struct {
 	name         string
 	client       *scw.Client
 	parentDomain string
+	//id           string
 }
 
 // Name returns the Name of a dns zone
@@ -156,8 +157,10 @@ func (z *zone) Name() string {
 	return z.name
 }
 
-// ID returns the name of a dns zone, in DO the ID is the name  //TODO: is it the same for us ?
+// ID returns the ID of a dns zone
 func (z *zone) ID() string {
+	//return z.id
+	// TODO: shall we use the name as ID ? or handle the zone as a record to be able to get the ID ?
 	return z.name
 }
 
@@ -492,7 +495,7 @@ func deleteDomain(c *scw.Client, name string) error {
 	return nil
 }
 
-// getRecords returns a list of scaleway DomainRecord objects given a zone name
+// getRecords returns a list of scaleway given a zone name
 func getRecords(c *scw.Client, zoneName string) ([]*domain.Record, error) {
 	api := domain.NewAPI(c)
 
@@ -506,27 +509,8 @@ func getRecords(c *scw.Client, zoneName string) ([]*domain.Record, error) {
 	return records.Records, err
 }
 
-// getRecordsByName returns a list of godo.DomainRecord based on the provided zone and name
+// getRecordsByName returns a list of domain Records based on the provided zone and name
 func getRecordsByName(client *scw.Client, zoneName, recordName string) ([]*domain.Record, error) {
-	//records, err := getRecords(client, zoneName)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//// digitalocean record.Name returns record without the zone suffix
-	//// so normalize record by removing it
-	//normalizedRecordName := strings.TrimSuffix(recordName, ".")
-	//normalizedRecordName = strings.TrimSuffix(normalizedRecordName, "."+zoneName)
-	//
-	//var recordsByName []godo.DomainRecord
-	//for _, record := range records {
-	//	if record.Name == normalizedRecordName {
-	//		recordsByName = append(recordsByName, record)
-	//	}
-	//}
-	//
-	//return recordsByName, nil
-	//TODO: check if this is equivalent to the above
 	api := domain.NewAPI(client)
 
 	records, err := api.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
@@ -540,7 +524,7 @@ func getRecordsByName(client *scw.Client, zoneName, recordName string) ([]*domai
 	return records.Records, err
 }
 
-// createRecord creates a record given an associated zone and a godo.DomainRecordEditRequest
+// createRecord creates a record given an associated zone and an UpdateDNSZoneRecordsRequest
 func createRecord(c *scw.Client, recordsCreateRequest *domain.UpdateDNSZoneRecordsRequest) ([]string, error) {
 	api := domain.NewAPI(c)
 
