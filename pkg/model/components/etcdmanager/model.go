@@ -348,8 +348,12 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec) (*v1.Pod
 		config.LogLevel = int(*etcdCluster.Manager.LogLevel)
 	}
 
+	if etcdCluster.Manager != nil && etcdCluster.Manager.BackupInterval != nil {
+		config.BackupInterval = fi.String(etcdCluster.Manager.BackupInterval.Duration.String())
+	}
+
 	if etcdCluster.Manager != nil && etcdCluster.Manager.DiscoveryPollInterval != nil {
-		config.DiscoveryPollInterval = etcdCluster.Manager.DiscoveryPollInterval
+		config.DiscoveryPollInterval = fi.String(etcdCluster.Manager.DiscoveryPollInterval.Duration.String())
 	}
 
 	{
@@ -530,6 +534,7 @@ type config struct {
 	QuarantineClientUrls  string   `flag:"quarantine-client-urls"`
 	ClusterName           string   `flag:"cluster-name"`
 	BackupStore           string   `flag:"backup-store"`
+	BackupInterval        *string  `flag:"backup-interval"`
 	DataDir               string   `flag:"data-dir"`
 	VolumeProvider        string   `flag:"volume-provider"`
 	VolumeTag             []string `flag:"volume-tag,repeat"`

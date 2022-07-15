@@ -17,6 +17,7 @@ spec:
     memoryRequest: 100Mi
     name: main
     manager:
+      backupInterval: 1h
       discoveryPollInterval: 75s
     provider: Manager
     backups:
