@@ -8054,7 +8054,7 @@
           ]
         },
         "listManagedInstances": {
-          "description": "Lists all of the instances in the managed instance group. Each instance in the list has a currentAction, which indicates the action that the managed instance group is performing on the instance. For example, if the group is still creating an instance, the currentAction is CREATING. If a previous action failed, the list displays the errors for that failed action. The orderBy query parameter is not supported.",
+          "description": "Lists all of the instances in the managed instance group. Each instance in the list has a currentAction, which indicates the action that the managed instance group is performing on the instance. For example, if the group is still creating an instance, the currentAction is CREATING. If a previous action failed, the list displays the errors for that failed action. The orderBy query parameter is not supported. The `pageToken` query parameter is supported only in the alpha and beta API and only if the group's `listManagedInstancesResults` field is set to `PAGINATED`.",
           "flatPath": "projects/{project}/zones/{zone}/instanceGroupManagers/{instanceGroupManager}/listManagedInstances",
           "httpMethod": "POST",
           "id": "compute.instanceGroupManagers.listManagedInstances",
@@ -21839,7 +21839,7 @@
           ]
         },
         "listManagedInstances": {
-          "description": "Lists the instances in the managed instance group and instances that are scheduled to be created. The list includes any current actions that the group has scheduled for its instances. The orderBy query parameter is not supported.",
+          "description": "Lists the instances in the managed instance group and instances that are scheduled to be created. The list includes any current actions that the group has scheduled for its instances. The orderBy query parameter is not supported. The `pageToken` query parameter is supported only in the alpha and beta API and only if the group's `listManagedInstancesResults` field is set to `PAGINATED`.",
           "flatPath": "projects/{project}/regions/{region}/instanceGroupManagers/{instanceGroupManager}/listManagedInstances",
           "httpMethod": "POST",
           "id": "compute.regionInstanceGroupManagers.listManagedInstances",
@@ -35452,7 +35452,7 @@
       }
     }
   },
-  "revision": "20220607",
+  "revision": "20220621",
   "rootUrl": "https://compute.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -36572,6 +36572,20 @@
       "description": "An instance-attached disk resource.",
       "id": "AttachedDisk",
       "properties": {
+        "architecture": {
+          "description": "[Output Only] The architecture of the attached disk. Valid values are ARM64 or X86_64.",
+          "enum": [
+            "ARCHITECTURE_UNSPECIFIED",
+            "ARM64",
+            "X86_64"
+          ],
+          "enumDescriptions": [
+            "Default value indicating Architecture is not set.",
+            "Machines with architecture ARM64",
+            "Machines with architecture X86_64"
+          ],
+          "type": "string"
+        },
         "autoDelete": {
           "description": "Specifies whether the disk will be auto-deleted when the instance is deleted (but not when the disk is detached from the instance).",
           "type": "boolean"
@@ -36683,6 +36697,20 @@
       "description": "[Input Only] Specifies the parameters for a new disk that will be created alongside the new instance. Use initialization parameters to create boot disks or local SSDs attached to the new instance. This field is persisted and returned for instanceTemplate and not returned in the context of instance. This property is mutually exclusive with the source property; you can only define one or the other, but not both.",
       "id": "AttachedDiskInitializeParams",
       "properties": {
+        "architecture": {
+          "description": "The architecture of the attached disk. Valid values are arm64 or x86_64.",
+          "enum": [
+            "ARCHITECTURE_UNSPECIFIED",
+            "ARM64",
+            "X86_64"
+          ],
+          "enumDescriptions": [
+            "Default value indicating Architecture is not set.",
+            "Machines with architecture ARM64",
+            "Machines with architecture X86_64"
+          ],
+          "type": "string"
+        },
         "description": {
           "description": "An optional description. Provide this property when creating the disk.",
           "type": "string"
@@ -40052,6 +40080,20 @@
       "description": "Represents a Persistent Disk resource. Google Compute Engine has two Disk resources: * [Zonal](/compute/docs/reference/rest/beta/disks) * [Regional](/compute/docs/reference/rest/beta/regionDisks) Persistent disks are required for running your VM instances. Create both boot and non-boot (data) persistent disks. For more information, read Persistent Disks. For more storage options, read Storage options. The disks resource represents a zonal persistent disk. For more information, read Zonal persistent disks. The regionDisks resource represents a regional persistent disk. For more information, read Regional resources.",
       "id": "Disk",
       "properties": {
+        "architecture": {
+          "description": "The architecture of the disk. Valid values are ARM64 or X86_64.",
+          "enum": [
+            "ARCHITECTURE_UNSPECIFIED",
+            "ARM64",
+            "X86_64"
+          ],
+          "enumDescriptions": [
+            "Default value indicating Architecture is not set.",
+            "Machines with architecture ARM64",
+            "Machines with architecture X86_64"
+          ],
+          "type": "string"
+        },
         "creationTimestamp": {
           "description": "[Output Only] Creation timestamp in RFC3339 text format.",
           "type": "string"
@@ -41191,6 +41233,28 @@
         "seconds": {
           "description": "Span of time at a resolution of a second. Must be from 0 to 315,576,000,000 inclusive. Note: these bounds are computed from: 60 sec/min * 60 min/hr * 24 hr/day * 365.25 days/year * 10000 years",
           "format": "int64",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ErrorInfo": {
+      "description": "Describes the cause of the error with structured details. Example of an error when contacting the \"pubsub.googleapis.com\" API when it is not enabled: { \"reason\": \"API_DISABLED\" \"domain\": \"googleapis.com\" \"metadata\": { \"resource\": \"projects/123\", \"service\": \"pubsub.googleapis.com\" } } This response indicates that the pubsub.googleapis.com API is not enabled. Example of an error that is returned when attempting to create a Spanner instance in a region that is out of stock: { \"reason\": \"STOCKOUT\" \"domain\": \"spanner.googleapis.com\", \"metadata\": { \"availableRegions\": \"us-central1,us-east2\" } }",
+      "id": "ErrorInfo",
+      "properties": {
+        "domain": {
+          "description": "The logical grouping to which the \"reason\" belongs. The error domain is typically the registered service name of the tool or product that generates the error. Example: \"pubsub.googleapis.com\". If the error is generated by some common infrastructure, the error domain must be a globally unique value that identifies the infrastructure. For Google API infrastructure, the error domain is \"googleapis.com\".",
+          "type": "string"
+        },
+        "metadatas": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Additional structured details about this error. Keys should match /[a-zA-Z0-9-_]/ and be limited to 64 characters in length. When identifying the current value of an exceeded limit, the units should be contained in the key, not the value. For example, rather than {\"instanceLimit\": \"100/request\"}, should be returned as, {\"instanceLimitPerRequest\": \"100\"}, if the client exceeds the number of instances that can be created in a single (batch) request.",
+          "type": "object"
+        },
+        "reason": {
+          "description": "The reason of the error. This is a constant value that identifies the proximate cause of the error. Error reasons are unique within a particular domain of errors. This should be at most 63 characters and match /[A-Z0-9_]+/.",
           "type": "string"
         }
       },
@@ -42418,7 +42482,7 @@
           "type": "string"
         },
         "ipVersion": {
-          "description": "The IP Version that will be used by this forwarding rule. Valid options are IPV4 or IPV6. This can only be specified for an external global forwarding rule.",
+          "description": "The IP Version that will be used by this forwarding rule. Valid options are IPV4 or IPV6.",
           "enum": [
             "IPV4",
             "IPV6",
@@ -42528,6 +42592,7 @@
           "enum": [
             "ACCEPTED",
             "CLOSED",
+            "NEEDS_ATTENTION",
             "PENDING",
             "REJECTED",
             "STATUS_UNSPECIFIED"
@@ -42535,6 +42600,7 @@
           "enumDescriptions": [
             "The connection has been accepted by the producer.",
             "The connection has been closed by the producer and will not serve traffic going forward.",
+            "The connection has been accepted by the producer, but the producer needs to take further action before the forwarding rule can serve traffic.",
             "The connection is pending acceptance by the producer.",
             "The connection has been rejected by the producer.",
             ""
@@ -44111,6 +44177,35 @@
       },
       "type": "object"
     },
+    "Help": {
+      "description": "Provides links to documentation or for performing an out of band action. For example, if a quota check failed with an error indicating the calling project hasn't enabled the accessed service, this can contain a URL pointing directly to the right place in the developer console to flip the bit.",
+      "id": "Help",
+      "properties": {
+        "links": {
+          "description": "URL(s) pointing to additional information on handling the current error.",
+          "items": {
+            "$ref": "HelpLink"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "HelpLink": {
+      "description": "Describes a URL link.",
+      "id": "HelpLink",
+      "properties": {
+        "description": {
+          "description": "Describes what the link offers.",
+          "type": "string"
+        },
+        "url": {
+          "description": "The URL of the link.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "HostRule": {
       "description": "UrlMaps A host-matching rule for a URL. If matched, will use the named PathMatcher to select the BackendService.",
       "id": "HostRule",
@@ -44896,6 +44991,20 @@
       "description": "Represents an Image resource. You can use images to create boot disks for your VM instances. For more information, read Images.",
       "id": "Image",
       "properties": {
+        "architecture": {
+          "description": "The architecture of the image. Valid values are ARM64 or X86_64.",
+          "enum": [
+            "ARCHITECTURE_UNSPECIFIED",
+            "ARM64",
+            "X86_64"
+          ],
+          "enumDescriptions": [
+            "Default value indicating Architecture is not set.",
+            "Machines with architecture ARM64",
+            "Machines with architecture X86_64"
+          ],
+          "type": "string"
+        },
         "archiveSizeBytes": {
           "description": "Size of the image tar.gz archive stored in Google Cloud Storage (in bytes).",
           "format": "int64",
@@ -50234,6 +50343,21 @@
       },
       "type": "object"
     },
+    "LocalizedMessage": {
+      "description": "Provides a localized error message that is safe to return to the user which can be attached to an RPC error.",
+      "id": "LocalizedMessage",
+      "properties": {
+        "locale": {
+          "description": "The locale used following the specification defined at http://www.rfc-editor.org/rfc/bcp/bcp47.txt. Examples are: \"en-US\", \"fr-CH\", \"es-MX\"",
+          "type": "string"
+        },
+        "message": {
+          "description": "The localized error message in the above locale.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "LocationPolicy": {
       "description": "Configuration for location policy among multiple possible locations (e.g. preferences for zone selection among zones in a single region).",
       "id": "LocationPolicy",
@@ -51206,6 +51330,24 @@
                   "code": {
                     "description": "[Output Only] The error type identifier for this error.",
                     "type": "string"
+                  },
+                  "errorDetails": {
+                    "description": "[Output Only] An optional list of messages that contain the error details. There is a set of defined message types to use for providing details.The syntax depends on the error code. For example, QuotaExceededInfo will have details when the error code is QUOTA_EXCEEDED.",
+                    "items": {
+                      "properties": {
+                        "errorInfo": {
+                          "$ref": "ErrorInfo"
+                        },
+                        "help": {
+                          "$ref": "Help"
+                        },
+                        "localizedMessage": {
+                          "$ref": "LocalizedMessage"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "type": "array"
                   },
                   "location": {
                     "description": "[Output Only] Indicates the field in the request that caused the error. This property is optional.",
@@ -54775,6 +54917,24 @@
                   "code": {
                     "description": "[Output Only] The error type identifier for this error.",
                     "type": "string"
+                  },
+                  "errorDetails": {
+                    "description": "[Output Only] An optional list of messages that contain the error details. There is a set of defined message types to use for providing details.The syntax depends on the error code. For example, QuotaExceededInfo will have details when the error code is QUOTA_EXCEEDED.",
+                    "items": {
+                      "properties": {
+                        "errorInfo": {
+                          "$ref": "ErrorInfo"
+                        },
+                        "help": {
+                          "$ref": "Help"
+                        },
+                        "localizedMessage": {
+                          "$ref": "LocalizedMessage"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "type": "array"
                   },
                   "location": {
                     "description": "[Output Only] Indicates the field in the request that caused the error. This property is optional.",
@@ -61829,6 +61989,20 @@
       "description": "An instance-attached disk resource.",
       "id": "SavedDisk",
       "properties": {
+        "architecture": {
+          "description": "[Output Only] The architecture of the attached disk.",
+          "enum": [
+            "ARCHITECTURE_UNSPECIFIED",
+            "ARM64",
+            "X86_64"
+          ],
+          "enumDescriptions": [
+            "Default value indicating Architecture is not set.",
+            "Machines with architecture ARM64",
+            "Machines with architecture X86_64"
+          ],
+          "type": "string"
+        },
         "kind": {
           "default": "compute#savedDisk",
           "description": "[Output Only] Type of the resource. Always compute#savedDisk for attached disks.",
@@ -63267,6 +63441,7 @@
           "enum": [
             "ACCEPTED",
             "CLOSED",
+            "NEEDS_ATTENTION",
             "PENDING",
             "REJECTED",
             "STATUS_UNSPECIFIED"
@@ -63274,6 +63449,7 @@
           "enumDescriptions": [
             "The connection has been accepted by the producer.",
             "The connection has been closed by the producer.",
+            "The connection has been accepted by the producer, but the producer needs to take further action before the forwarding rule can serve traffic.",
             "The connection is pending acceptance by the producer.",
             "The consumer is still connected but not using the connection.",
             ""
@@ -63713,6 +63889,20 @@
       "description": "Represents a Persistent Disk Snapshot resource. You can use snapshots to back up data on a regular interval. For more information, read Creating persistent disk snapshots.",
       "id": "Snapshot",
       "properties": {
+        "architecture": {
+          "description": "[Output Only] The architecture of the snapshot. Valid values are ARM64 or X86_64.",
+          "enum": [
+            "ARCHITECTURE_UNSPECIFIED",
+            "ARM64",
+            "X86_64"
+          ],
+          "enumDescriptions": [
+            "Default value indicating Architecture is not set.",
+            "Machines with architecture ARM64",
+            "Machines with architecture X86_64"
+          ],
+          "type": "string"
+        },
         "autoCreated": {
           "description": "[Output Only] Set to true if snapshots are automatically created by applying resource policy on the target disk.",
           "type": "boolean"
