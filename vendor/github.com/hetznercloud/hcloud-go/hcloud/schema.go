@@ -82,6 +82,40 @@ func FloatingIPFromSchema(s schema.FloatingIP) *FloatingIP {
 	return f
 }
 
+// PrimaryIPFromSchema converts a schema.PrimaryIP to a PrimaryIP.
+func PrimaryIPFromSchema(s schema.PrimaryIP) *PrimaryIP {
+	f := &PrimaryIP{
+		ID:         s.ID,
+		Type:       PrimaryIPType(s.Type),
+		AutoDelete: s.AutoDelete,
+
+		Created: s.Created,
+		Blocked: s.Blocked,
+		Protection: PrimaryIPProtection{
+			Delete: s.Protection.Delete,
+		},
+		Name:         s.Name,
+		AssigneeType: s.AssigneeType,
+		AssigneeID:   s.AssigneeID,
+		Datacenter:   DatacenterFromSchema(s.Datacenter),
+	}
+
+	if f.Type == PrimaryIPTypeIPv4 {
+		f.IP = net.ParseIP(s.IP)
+	} else {
+		f.IP, f.Network, _ = net.ParseCIDR(s.IP)
+	}
+	f.DNSPtr = map[string]string{}
+	for _, entry := range s.DNSPtr {
+		f.DNSPtr[entry.IP] = entry.DNSPtr
+	}
+	f.Labels = map[string]string{}
+	for key, value := range s.Labels {
+		f.Labels[key] = value
+	}
+	return f
+}
+
 // ISOFromSchema converts a schema.ISO to an ISO.
 func ISOFromSchema(s schema.ISO) *ISO {
 	return &ISO{
@@ -201,6 +235,7 @@ func ServerPublicNetFromSchema(s schema.ServerPublicNet) ServerPublicNet {
 // a ServerPublicNetIPv4.
 func ServerPublicNetIPv4FromSchema(s schema.ServerPublicNetIPv4) ServerPublicNetIPv4 {
 	return ServerPublicNetIPv4{
+		ID:      s.ID,
 		IP:      net.ParseIP(s.IP),
 		Blocked: s.Blocked,
 		DNSPtr:  s.DNSPtr,
@@ -211,6 +246,7 @@ func ServerPublicNetIPv4FromSchema(s schema.ServerPublicNetIPv4) ServerPublicNet
 // a ServerPublicNetIPv6.
 func ServerPublicNetIPv6FromSchema(s schema.ServerPublicNetIPv6) ServerPublicNetIPv6 {
 	ipv6 := ServerPublicNetIPv6{
+		ID:      s.ID,
 		Blocked: s.Blocked,
 		DNSPtr:  map[string]string{},
 	}
@@ -680,6 +716,24 @@ func PricingFromSchema(s schema.Pricing) Pricing {
 			pricings = append(pricings, p)
 		}
 		p.FloatingIPs = append(p.FloatingIPs, FloatingIPTypePricing{Type: FloatingIPType(floatingIPType.Type), Pricings: pricings})
+	}
+	for _, primaryIPType := range s.PrimaryIPs {
+		var pricings []PrimaryIPTypePricing
+		for _, price := range primaryIPType.Prices {
+			p := PrimaryIPTypePricing{
+				Datacenter: price.Datacenter,
+				Monthly: PrimaryIPPrice{
+					Net:   price.PriceMonthly.Net,
+					Gross: price.PriceMonthly.Gross,
+				},
+				Hourly: PrimaryIPPrice{
+					Net:   price.PriceHourly.Net,
+					Gross: price.PriceHourly.Gross,
+				},
+			}
+			pricings = append(pricings, p)
+		}
+		p.PrimaryIPs = append(p.PrimaryIPs, PrimaryIPPricing{Type: primaryIPType.Type, Pricings: pricings})
 	}
 	for _, serverType := range s.ServerTypes {
 		var pricings []ServerTypeLocationPricing
