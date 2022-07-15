@@ -38,6 +38,9 @@ type Server struct {
 	Size     string
 	Image    string
 
+	EnableIPv4 bool
+	EnableIPv6 bool
+
 	UserData fi.Resource
 
 	Labels map[string]string
@@ -76,6 +79,12 @@ func (v *Server) Find(c *fi.Context) (*Server, error) {
 			}
 			if server.Image != nil {
 				matches.Image = server.Image.Name
+			}
+			if server.PublicNet.IPv4.IP != nil {
+				matches.EnableIPv4 = true
+			}
+			if server.PublicNet.IPv6.IP != nil {
+				matches.EnableIPv4 = true
 			}
 
 			// Ignore fields that are not returned by the Hetzner Cloud API
@@ -176,6 +185,10 @@ func (_ *Server) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *Serve
 			},
 			UserData: userData,
 			Labels:   e.Labels,
+			PublicNet: &hcloud.ServerCreatePublicNet{
+				EnableIPv4: e.EnableIPv4,
+				EnableIPv6: e.EnableIPv6,
+			},
 		}
 
 		_, _, err = client.Create(context.TODO(), opts)
