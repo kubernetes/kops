@@ -98,17 +98,27 @@ type ServerPublicNet struct {
 
 // ServerPublicNetIPv4 represents a server's public IPv4 address.
 type ServerPublicNetIPv4 struct {
+	ID      int
 	IP      net.IP
 	Blocked bool
 	DNSPtr  string
 }
 
+func (n *ServerPublicNetIPv4) IsUnspecified() bool {
+	return n.IP == nil || n.IP.Equal(net.IPv4zero)
+}
+
 // ServerPublicNetIPv6 represents a Server's public IPv6 network and address.
 type ServerPublicNetIPv6 struct {
+	ID      int
 	IP      net.IP
 	Network *net.IPNet
 	Blocked bool
 	DNSPtr  map[string]string
+}
+
+func (n *ServerPublicNetIPv6) IsUnspecified() bool {
+	return n.IP == nil || n.IP.Equal(net.IPv6unspecified)
 }
 
 // ServerPrivateNet defines the schema of a Server's private network information.
@@ -120,8 +130,8 @@ type ServerPrivateNet struct {
 }
 
 // DNSPtrForIP returns the reverse dns pointer of the ip address.
-func (s *ServerPublicNetIPv6) DNSPtrForIP(ip net.IP) string {
-	return s.DNSPtr[ip.String()]
+func (n *ServerPublicNetIPv6) DNSPtrForIP(ip net.IP) string {
+	return n.DNSPtr[ip.String()]
 }
 
 // ServerFirewallStatus represents a Firewall and its status on a Server's
@@ -136,9 +146,8 @@ type ServerRescueType string
 
 // List of rescue types.
 const (
-	ServerRescueTypeLinux32   ServerRescueType = "linux32"
-	ServerRescueTypeLinux64   ServerRescueType = "linux64"
-	ServerRescueTypeFreeBSD64 ServerRescueType = "freebsd64"
+	ServerRescueTypeLinux32 ServerRescueType = "linux32"
+	ServerRescueTypeLinux64 ServerRescueType = "linux64"
 )
 
 // changeDNSPtr changes or resets the reverse DNS pointer for a IP address.
@@ -309,6 +318,14 @@ type ServerCreateOpts struct {
 	Networks         []*Network
 	Firewalls        []*ServerCreateFirewall
 	PlacementGroup   *PlacementGroup
+	PublicNet        *ServerCreatePublicNet
+}
+
+type ServerCreatePublicNet struct {
+	EnableIPv4 bool
+	EnableIPv6 bool
+	IPv4       *PrimaryIP
+	IPv6       *PrimaryIP
 }
 
 // ServerCreateFirewall defines which Firewalls to apply when creating a Server.
@@ -329,6 +346,12 @@ func (o ServerCreateOpts) Validate() error {
 	}
 	if o.Location != nil && o.Datacenter != nil {
 		return errors.New("location and datacenter are mutually exclusive")
+	}
+	if o.PublicNet != nil {
+		if !o.PublicNet.EnableIPv4 && !o.PublicNet.EnableIPv6 &&
+			len(o.Networks) == 0 && (o.StartAfterCreate == nil || *o.StartAfterCreate) {
+			return errors.New("missing networks or StartAfterCreate == false when EnableIPv4 and EnableIPv6 is false")
+		}
 	}
 	return nil
 }
@@ -378,6 +401,19 @@ func (c *ServerClient) Create(ctx context.Context, opts ServerCreateOpts) (Serve
 		reqBody.Firewalls = append(reqBody.Firewalls, schema.ServerCreateFirewalls{
 			Firewall: firewall.Firewall.ID,
 		})
+	}
+
+	if opts.PublicNet != nil {
+		reqBody.PublicNet = &schema.ServerCreatePublicNet{
+			EnableIPv4: opts.PublicNet.EnableIPv4,
+			EnableIPv6: opts.PublicNet.EnableIPv6,
+		}
+		if opts.PublicNet.IPv4 != nil {
+			reqBody.PublicNet.IPv4ID = opts.PublicNet.IPv4.ID
+		}
+		if opts.PublicNet.IPv6 != nil {
+			reqBody.PublicNet.IPv6ID = opts.PublicNet.IPv6.ID
+		}
 	}
 	if opts.Location != nil {
 		if opts.Location.ID != 0 {

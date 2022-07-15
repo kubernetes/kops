@@ -1016,7 +1016,7 @@ type GetProductsOutput struct {
 
 	// The list of products that match your filters. The list contains both the
 	// product metadata and the price information.
-	PriceList []aws.JSONValue `type:"list"`
+	PriceList []*string `type:"list"`
 }
 
 // String returns the string representation.
@@ -1050,7 +1050,7 @@ func (s *GetProductsOutput) SetNextToken(v string) *GetProductsOutput {
 }
 
 // SetPriceList sets the PriceList field's value.
-func (s *GetProductsOutput) SetPriceList(v []aws.JSONValue) *GetProductsOutput {
+func (s *GetProductsOutput) SetPriceList(v []*string) *GetProductsOutput {
 	s.PriceList = v
 	return s
 }

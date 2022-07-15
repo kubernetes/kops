@@ -225,10 +225,14 @@ func (c *OnDemandPricing) getRegionForPricingAPI() string {
 }
 
 // parseOndemandUnitPrice takes a priceList from the pricing API and parses its weirdness
-func (c *OnDemandPricing) parseOndemandUnitPrice(priceList aws.JSONValue) (string, float64, error) {
+func (c *OnDemandPricing) parseOndemandUnitPrice(priceDoc *string) (string, float64, error) {
 	// TODO: this could probably be cleaned up a bit by adding a couple structs with json tags
 	//       We still need to some weird for-loops to get at elements under json keys that are IDs...
 	//       But it would probably be cleaner than this.
+	var priceList map[string]interface{}
+	if err := json.Unmarshal([]byte(*priceDoc), &priceList); err != nil {
+		return "", float64(-1.0), fmt.Errorf("unable to deserialize pricing doc")
+	}
 	attributes, ok := priceList["product"].(map[string]interface{})["attributes"]
 	if !ok {
 		return "", float64(-1.0), fmt.Errorf("unable to find product attributes")
