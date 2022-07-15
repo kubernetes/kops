@@ -7,6 +7,7 @@ type Pricing struct {
 	Image             PricingImage              `json:"image"`
 	FloatingIP        PricingFloatingIP         `json:"floating_ip"`
 	FloatingIPs       []PricingFloatingIPType   `json:"floating_ips"`
+	PrimaryIPs        []PricingPrimaryIP        `json:"primary_ips"`
 	Traffic           PricingTraffic            `json:"traffic"`
 	ServerBackup      PricingServerBackup       `json:"server_backup"`
 	ServerTypes       []PricingServerType       `json:"server_types"`
@@ -91,4 +92,18 @@ type PricingLoadBalancerTypePrice struct {
 // PricingGetResponse defines the schema of the response when retrieving pricing information.
 type PricingGetResponse struct {
 	Pricing Pricing `json:"pricing"`
+}
+
+// PricingPrimaryIPTypePrice defines the schema of pricing information for a primary IP
+// type at a datacenter.
+type PricingPrimaryIPTypePrice struct {
+	Datacenter   string `json:"datacenter"`
+	PriceHourly  Price  `json:"price_hourly"`
+	PriceMonthly Price  `json:"price_monthly"`
+}
+
+// PricingPrimaryIP define the schema of pricing information for a primary IP at a datacenter
+type PricingPrimaryIP struct {
+	Type   string                      `json:"type"`
+	Prices []PricingPrimaryIPTypePrice `json:"prices"`
 }
