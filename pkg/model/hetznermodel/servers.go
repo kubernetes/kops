@@ -54,15 +54,17 @@ func (b *ServerModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			// https://github.com/hetznercloud/hcloud-cloud-controller-manager/blob/f7d624e83c2c3475c5606306214814250922cb8a/hcloud/util.go#L39
 			name := ig.Name + "-" + strconv.Itoa(i)
 			server := hetznertasks.Server{
-				Name:      fi.String(name),
-				Lifecycle: b.Lifecycle,
-				SSHKey:    b.LinkToSSHKey(),
-				Network:   b.LinkToNetwork(),
-				Location:  ig.Spec.Subnets[0],
-				Size:      ig.Spec.MachineType,
-				Image:     ig.Spec.Image,
-				UserData:  userData,
-				Labels:    labels,
+				Name:       fi.String(name),
+				Lifecycle:  b.Lifecycle,
+				SSHKey:     b.LinkToSSHKey(),
+				Network:    b.LinkToNetwork(),
+				Location:   ig.Spec.Subnets[0],
+				Size:       ig.Spec.MachineType,
+				Image:      ig.Spec.Image,
+				EnableIPv4: true,
+				EnableIPv6: false,
+				UserData:   userData,
+				Labels:     labels,
 			}
 
 			c.AddTask(&server)
