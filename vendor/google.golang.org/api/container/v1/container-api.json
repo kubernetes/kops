@@ -730,6 +730,34 @@
               "resources": {
                 "nodePools": {
                   "methods": {
+                    "completeUpgrade": {
+                      "description": "CompleteNodePoolUpgrade will signal an on-going node pool upgrade to complete.",
+                      "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}/nodePools/{nodePoolsId}:completeUpgrade",
+                      "httpMethod": "POST",
+                      "id": "container.projects.locations.clusters.nodePools.completeUpgrade",
+                      "parameterOrder": [
+                        "name"
+                      ],
+                      "parameters": {
+                        "name": {
+                          "description": "The name (project, location, cluster, node pool id) of the node pool to complete upgrade. Specified in the format 'projects/*/locations/*/clusters/*/nodePools/*'.",
+                          "location": "path",
+                          "pattern": "^projects/[^/]+/locations/[^/]+/clusters/[^/]+/nodePools/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        }
+                      },
+                      "path": "v1/{+name}:completeUpgrade",
+                      "request": {
+                        "$ref": "CompleteNodePoolUpgradeRequest"
+                      },
+                      "response": {
+                        "$ref": "Empty"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform"
+                      ]
+                    },
                     "create": {
                       "description": "Creates a node pool for a cluster.",
                       "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}/nodePools",
@@ -2459,7 +2487,7 @@
       }
     }
   },
-  "revision": "20220518",
+  "revision": "20220615",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -2660,11 +2688,80 @@
             "PROJECT_SINGLETON_POLICY_ENFORCE"
           ],
           "enumDescriptions": [
-            "Default value, equivalent to DISABLED.",
+            "Default value",
             "Disable BinaryAuthorization",
-            "If enabled, enforce Kubernetes admission requests with BinAuthz using the project's singleton policy. Equivalent to bool enabled=true."
+            "Enforce Kubernetes admission requests with BinaryAuthorization using the project's singleton policy. This is equivalent to setting the enabled boolean to true."
           ],
           "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "BlueGreenInfo": {
+      "description": "Information relevant to blue-green upgrade.",
+      "id": "BlueGreenInfo",
+      "properties": {
+        "blueInstanceGroupUrls": {
+          "description": "The resource URLs of the [managed instance groups] (/compute/docs/instance-groups/creating-groups-of-managed-instances) associated with blue pool.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "bluePoolDeletionStartTime": {
+          "description": "Time to start deleting blue pool to complete blue-green upgrade, in [RFC3339](https://www.ietf.org/rfc/rfc3339.txt) text format.",
+          "type": "string"
+        },
+        "greenInstanceGroupUrls": {
+          "description": "The resource URLs of the [managed instance groups] (/compute/docs/instance-groups/creating-groups-of-managed-instances) associated with green pool.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "greenPoolVersion": {
+          "description": "Version of green pool.",
+          "type": "string"
+        },
+        "phase": {
+          "description": "Current blue-green upgrade phase.",
+          "enum": [
+            "PHASE_UNSPECIFIED",
+            "UPDATE_STARTED",
+            "CREATING_GREEN_POOL",
+            "CORDONING_BLUE_POOL",
+            "DRAINING_BLUE_POOL",
+            "NODE_POOL_SOAKING",
+            "DELETING_BLUE_POOL",
+            "ROLLBACK_STARTED"
+          ],
+          "enumDescriptions": [
+            "Unspecified phase.",
+            "blue-green upgrade has been initiated.",
+            "Start creating green pool nodes.",
+            "Start cordoning blue pool nodes.",
+            "Start draining blue pool nodes.",
+            "Start soaking time after draining entire blue pool.",
+            "Start deleting blue nodes.",
+            "Rollback has been initiated."
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "BlueGreenSettings": {
+      "description": "Settings for blue-green upgrade.",
+      "id": "BlueGreenSettings",
+      "properties": {
+        "nodePoolSoakDuration": {
+          "description": "Time needed after draining entire blue pool. After this period, blue pool will be cleaned up.",
+          "format": "google-duration",
+          "type": "string"
+        },
+        "standardRolloutPolicy": {
+          "$ref": "StandardRolloutPolicy",
+          "description": "Standard policy for the blue-green upgrade."
         }
       },
       "type": "object"
@@ -3263,6 +3360,12 @@
           "type": "string"
         }
       },
+      "type": "object"
+    },
+    "CompleteNodePoolUpgradeRequest": {
+      "description": "CompleteNodePoolUpgradeRequest sets the name of target node pool to complete upgrade.",
+      "id": "CompleteNodePoolUpgradeRequest",
+      "properties": {},
       "type": "object"
     },
     "ConfidentialNodes": {
@@ -4105,11 +4208,17 @@
           "items": {
             "enum": [
               "COMPONENT_UNSPECIFIED",
-              "SYSTEM_COMPONENTS"
+              "SYSTEM_COMPONENTS",
+              "APISERVER",
+              "SCHEDULER",
+              "CONTROLLER_MANAGER"
             ],
             "enumDescriptions": [
               "Default value. This shouldn't be used.",
-              "system components"
+              "system components",
+              "kube-apiserver",
+              "kube-scheduler",
+              "kube-controller-manager"
             ],
             "type": "string"
           },
@@ -4406,7 +4515,7 @@
       "properties": {
         "gcfsConfig": {
           "$ref": "GcfsConfig",
-          "description": "GCFS (Google Container File System, a.k.a Riptide) options."
+          "description": "GCFS (Google Container File System, a.k.a. Riptide) options."
         }
       },
       "type": "object"
@@ -4516,7 +4625,7 @@
           "type": "integer"
         },
         "instanceGroupUrls": {
-          "description": "[Output only] The resource URLs of the [managed instance groups](https://cloud.google.com/compute/docs/instance-groups/creating-groups-of-managed-instances) associated with this node pool.",
+          "description": "[Output only] The resource URLs of the [managed instance groups](https://cloud.google.com/compute/docs/instance-groups/creating-groups-of-managed-instances) associated with this node pool. During the node pool blue-green upgrade operation, the URLs contain both blue and green resources.",
           "items": {
             "type": "string"
           },
@@ -4580,6 +4689,11 @@
           "description": "[Output only] Deprecated. Use conditions instead. Additional information about the current status of this node pool instance, if available.",
           "type": "string"
         },
+        "updateInfo": {
+          "$ref": "UpdateInfo",
+          "description": "Output only. [Output only] Update info contains relevant information during a node pool update.",
+          "readOnly": true
+        },
         "upgradeSettings": {
           "$ref": "UpgradeSettings",
           "description": "Upgrade settings control disruption and speed of the upgrade."
@@ -4614,6 +4728,20 @@
           "description": "Is autoscaling enabled for this node pool.",
           "type": "boolean"
         },
+        "locationPolicy": {
+          "description": "Location policy used when scaling up a nodepool.",
+          "enum": [
+            "LOCATION_POLICY_UNSPECIFIED",
+            "BALANCED",
+            "ANY"
+          ],
+          "enumDescriptions": [
+            "Not set.",
+            "BALANCED is a best effort policy that aims to balance the sizes of different zones.",
+            "ANY policy picks zones that have the highest capacity available."
+          ],
+          "type": "string"
+        },
         "maxNodeCount": {
           "description": "Maximum number of nodes for one location in the NodePool. Must be \u003e= min_node_count. There has to be enough quota to scale up the cluster.",
           "format": "int32",
@@ -4621,6 +4749,16 @@
         },
         "minNodeCount": {
           "description": "Minimum number of nodes for one location in the NodePool. Must be \u003e= 1 and \u003c= max_node_count.",
+          "format": "int32",
+          "type": "integer"
+        },
+        "totalMaxNodeCount": {
+          "description": "Maximum number of nodes in the node pool. Must be greater than total_min_node_count. There has to be enough quota to scale up the cluster. The total_*_node_count fields are mutually exclusive with the *_node_count fields.",
+          "format": "int32",
+          "type": "integer"
+        },
+        "totalMinNodeCount": {
+          "description": "Minimum number of nodes in the node pool. Must be greater than 1 less than total_max_node_count. The total_*_node_count fields are mutually exclusive with the *_node_count fields.",
           "format": "int32",
           "type": "integer"
         }
@@ -5094,6 +5232,10 @@
         "projectId": {
           "description": "Deprecated. The Google Developers Console [project ID or project number](https://cloud.google.com/resource-manager/docs/creating-managing-projects). This field has been deprecated and replaced by the name field.",
           "type": "string"
+        },
+        "respectPdb": {
+          "description": "Option for rollback to ignore the PodDisruptionBudget. Default value is false.",
+          "type": "boolean"
         },
         "zone": {
           "description": "Deprecated. The name of the Google Compute Engine [zone](https://cloud.google.com/compute/docs/zones#available) in which the cluster resides. This field has been deprecated and replaced by the name field.",
@@ -5620,6 +5762,28 @@
       },
       "type": "object"
     },
+    "StandardRolloutPolicy": {
+      "description": "Standard rollout policy is the default policy for blue-green.",
+      "id": "StandardRolloutPolicy",
+      "properties": {
+        "batchNodeCount": {
+          "description": "Number of blue nodes to drain in a batch.",
+          "format": "int32",
+          "type": "integer"
+        },
+        "batchPercentage": {
+          "description": "Percentage of the bool pool nodes to drain in a batch. The range of this field should be (0.0, 1.0].",
+          "format": "float",
+          "type": "number"
+        },
+        "batchSoakDuration": {
+          "description": "Soak time after each batch gets drained. Default to zero.",
+          "format": "google-duration",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "StartIPRotationRequest": {
       "description": "StartIPRotationRequest creates a new IP for the cluster and then performs a node upgrade on each node pool to point to the new IP.",
       "id": "StartIPRotationRequest",
@@ -5797,6 +5961,17 @@
       },
       "type": "object"
     },
+    "UpdateInfo": {
+      "description": "UpdateInfo contains resource (instance groups, etc), status and other intermediate information relevant to a node pool upgrade.",
+      "id": "UpdateInfo",
+      "properties": {
+        "blueGreenInfo": {
+          "$ref": "BlueGreenInfo",
+          "description": "Information of a blue-green upgrade."
+        }
+      },
+      "type": "object"
+    },
     "UpdateMasterRequest": {
       "description": "UpdateMasterRequest updates the master of the cluster.",
       "id": "UpdateMasterRequest",
@@ -5870,6 +6045,10 @@
         "name": {
           "description": "The name (project, location, cluster, node pool) of the node pool to update. Specified in the format `projects/*/locations/*/clusters/*/nodePools/*`.",
           "type": "string"
+        },
+        "nodeNetworkConfig": {
+          "$ref": "NodeNetworkConfig",
+          "description": "Node network config."
         },
         "nodePoolId": {
           "description": "Deprecated. The name of the node pool to upgrade. This field has been deprecated and replaced by the name field.",
@@ -5982,9 +6161,13 @@
       "type": "object"
     },
     "UpgradeSettings": {
-      "description": "These upgrade settings control the level of parallelism and the level of disruption caused by an upgrade. maxUnavailable controls the number of nodes that can be simultaneously unavailable. maxSurge controls the number of additional nodes that can be added to the node pool temporarily for the time of the upgrade to increase the number of available nodes. (maxUnavailable + maxSurge) determines the level of parallelism (how many nodes are being upgraded at the same time). Note: upgrades inevitably introduce some disruption since workloads need to be moved from old nodes to new, upgraded ones. Even if maxUnavailable=0, this holds true. (Disruption stays within the limits of PodDisruptionBudget, if it is configured.) Consider a hypothetical node pool with 5 nodes having maxSurge=2, maxUnavailable=1. This means the upgrade process upgrades 3 nodes simultaneously. It creates 2 additional (upgraded) nodes, then it brings down 3 old (not yet upgraded) nodes at the same time. This ensures that there are always at least 4 nodes available.",
+      "description": "These upgrade settings control the level of parallelism and the level of disruption caused by an upgrade. maxUnavailable controls the number of nodes that can be simultaneously unavailable. maxSurge controls the number of additional nodes that can be added to the node pool temporarily for the time of the upgrade to increase the number of available nodes. (maxUnavailable + maxSurge) determines the level of parallelism (how many nodes are being upgraded at the same time). Note: upgrades inevitably introduce some disruption since workloads need to be moved from old nodes to new, upgraded ones. Even if maxUnavailable=0, this holds true. (Disruption stays within the limits of PodDisruptionBudget, if it is configured.) Consider a hypothetical node pool with 5 nodes having maxSurge=2, maxUnavailable=1. This means the upgrade process upgrades 3 nodes simultaneously. It creates 2 additional (upgraded) nodes, then it brings down 3 old (not yet upgraded) nodes at the same time. This ensures that there are always at least 4 nodes available. These upgrade settings configure the upgrade strategy for the node pool. Use strategy to switch between the strategies applied to the node pool. If the strategy is ROLLING, use max_surge and max_unavailable to control the level of parallelism and the level of disruption caused by upgrade. 1. maxSurge controls the number of additional nodes that can be added to the node pool temporarily for the time of the upgrade to increase the number of available nodes. 2. maxUnavailable controls the number of nodes that can be simultaneously unavailable. 3. (maxUnavailable + maxSurge) determines the level of parallelism (how many nodes are being upgraded at the same time). If the strategy is BLUE_GREEN, use blue_green_settings to configure the blue-green upgrade related settings. 1. standard_rollout_policy is the default policy. The policy is used to control the way blue pool gets drained. The draining is executed in the batch mode. The batch size could be specified as either percentage of the node pool size or the number of nodes. batch_soak_duration is the soak time after each batch gets drained. 2. node_pool_soak_duration is the soak time after all blue nodes are drained. After this period, the blue pool nodes will be deleted.",
       "id": "UpgradeSettings",
       "properties": {
+        "blueGreenSettings": {
+          "$ref": "BlueGreenSettings",
+          "description": "Settings for blue-green upgrade strategy."
+        },
         "maxSurge": {
           "description": "The maximum number of nodes that can be created beyond the current size of the node pool during the upgrade process.",
           "format": "int32",
@@ -5994,6 +6177,20 @@
           "description": "The maximum number of nodes that can be simultaneously unavailable during the upgrade process. A node is considered available if its status is Ready.",
           "format": "int32",
           "type": "integer"
+        },
+        "strategy": {
+          "description": "Update strategy of the node pool.",
+          "enum": [
+            "NODE_POOL_UPDATE_STRATEGY_UNSPECIFIED",
+            "BLUE_GREEN",
+            "SURGE"
+          ],
+          "enumDescriptions": [
+            "Default value.",
+            "blue-green upgrade.",
+            "SURGE is the traditional way of upgrade a node pool. max_surge and max_unavailable determines the level of upgrade parallelism."
+          ],
+          "type": "string"
         }
       },
       "type": "object"
