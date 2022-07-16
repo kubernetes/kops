@@ -31,6 +31,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 )
 
 // ValidateInstanceGroup is responsible for validating the configuration of a instancegroup
@@ -147,8 +148,13 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud, strict bool) f
 		allErrs = append(allErrs, validateIGCloudLabels(g, field.NewPath("spec", "cloudLabels"))...)
 	}
 
-	if cloud != nil && cloud.ProviderID() == kops.CloudProviderAWS {
-		allErrs = append(allErrs, awsValidateInstanceGroup(g, cloud.(awsup.AWSCloud))...)
+	if cloud != nil {
+		switch cloud.ProviderID() {
+		case kops.CloudProviderAWS:
+			allErrs = append(allErrs, awsValidateInstanceGroup(g, cloud.(awsup.AWSCloud))...)
+		case kops.CloudProviderGCE:
+			allErrs = append(allErrs, gceValidateInstanceGroup(g, cloud.(gce.GCECloud))...)
+		}
 	}
 
 	for i, lb := range g.Spec.ExternalLoadBalancers {
