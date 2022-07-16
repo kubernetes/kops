@@ -223,7 +223,8 @@ type ClusterSpec struct {
 
 // PodIdentityWebhookConfig configures an EKS Pod Identity Webhook.
 type PodIdentityWebhookConfig struct {
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled  bool `json:"enabled,omitempty"`
+	Replicas int  `json:"replicas,omitempty"`
 }
 
 // CloudProviderSpec configures the cloud provider to use.
