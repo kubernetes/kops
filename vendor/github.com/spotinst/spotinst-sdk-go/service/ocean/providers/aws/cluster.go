@@ -294,6 +294,7 @@ type RollSpec struct {
 	Status                       *string  `json:"status,omitempty"`
 	BatchSizePercentage          *int     `json:"batchSizePercentage,omitempty"`
 	BatchMinHealthyPercentage    *int     `json:"batchMinHealthyPercentage,omitempty"`
+	RespectPDB                   *bool    `json:"respectPdb,omitempty"`
 	DisableLaunchSpecAutoScaling *bool    `json:"disableLaunchSpecAutoScaling,omitempty"`
 	LaunchSpecIDs                []string `json:"launchSpecIds,omitempty"`
 	InstanceIDs                  []string `json:"instanceIds,omitempty"`
@@ -371,6 +372,126 @@ type GetLogEventsInput struct {
 
 type GetLogEventsOutput struct {
 	Events []*LogEvent `json:"events,omitempty"`
+}
+
+type ClusterAggregatedCostInput struct {
+	OceanId   *string           `json:"oceanId,omitempty"`
+	StartTime *string           `json:"startTime,omitempty"`
+	EndTime   *string           `json:"endTime,omitempty"`
+	GroupBy   *string           `json:"groupBy,omitempty"`
+	Filter    *AggregatedFilter `json:"filter,omitempty"`
+}
+
+type AggregatedFilter struct {
+	Scope      *string     `json:"scope,omitempty"`
+	Conditions *Conditions `json:"conditions,omitempty"`
+}
+
+type Conditions struct {
+	AnyMatch []*AllMatch `json:"anyMatch,omitempty"`
+}
+
+type AllMatch struct {
+	AllMatches []*AllMatchInner `json:"allMatch,omitempty"`
+}
+
+type AllMatchInner struct {
+	Type     *string `json:"type,omitempty"`
+	Key      *string `json:"key,omitempty"`
+	Operator *string `json:"operator,omitempty"`
+	Value    *string `json:"value,omitempty"`
+}
+
+type ClusterAggregatedCostOutput struct {
+	AggregatedClusterCosts []*AggregatedClusterCost `json:"aggregatedClusterCosts,omitempty"`
+}
+
+type AggregatedClusterCost struct {
+	Result *Result `json:"result,omitempty"`
+}
+
+type Result struct {
+	TotalForDuration *TotalForDuration `json:"totalForDuration,omitempty"`
+}
+
+type TotalForDuration struct {
+	Summary       *Summary       `json:"summary,omitempty"`
+	StartTime     *string        `json:"startTime,omitempty"`
+	EndTime       *string        `json:"endTime,omitempty"`
+	DetailedCosts *DetailedCosts `json:"detailedCosts,omitempty"`
+}
+
+type DetailedCosts struct {
+	Aggregations map[string]Property `json:"aggregations,omitempty"`
+	GroupedBy    *string             `json:"groupedBy,omitempty"`
+}
+
+type Property struct {
+	Resources []AggregatedCostResource `json:"resources,omitempty"`
+	Summary   *Summary                 `json:"summary,omitempty"`
+}
+
+type Summary struct {
+	Compute *AggregatedCompute `json:"compute,omitempty"`
+	Storage *AggregatedStorage `json:"storage,omitempty"`
+	Total   *float64           `json:"total,omitempty"`
+}
+
+type AggregatedCostResource struct {
+	Compute  *AggregatedCompute `json:"compute,omitempty"`
+	Storage  *AggregatedStorage `json:"storage,omitempty"`
+	MetaData *MetaData          `json:"metaData,omitempty"`
+	Total    *float64           `json:"total,omitempty"`
+}
+
+type AggregatedCompute struct {
+	Headroom  *Headroom  `json:"headroom,omitempty"`
+	Total     *float64   `json:"total,omitempty"`
+	Workloads *Workloads `json:"workloads,omitempty"`
+}
+
+type AggregatedStorage struct {
+	Block *Block   `json:"block,omitempty"`
+	File  *File    `json:"file,omitempty"`
+	Total *float64 `json:"total,omitempty"`
+}
+
+type MetaData struct {
+	Name       *string `json:"name,omitempty"`
+	Namespace  *string `json:"namespace,omitempty"`
+	Type       *string `json:"type,omitempty"`
+	CustomType *string `json:"customType,omitempty"`
+}
+
+type Headroom struct {
+	Total *float64 `json:"total,omitempty"`
+}
+
+type Workloads struct {
+	Total *float64 `json:"total,omitempty"`
+}
+
+type Block struct {
+	EbsPv *EbsPv   `json:"ebsPv,omitempty"`
+	NonPv *NonPv   `json:"nonPv,omitempty"`
+	Total *float64 `json:"total,omitempty"`
+}
+
+type File struct {
+	EfsPv *EfsPv   `json:"efsPv,omitempty"`
+	Total *float64 `json:"total,omitempty"`
+}
+
+type EbsPv struct {
+	Total *float64 `json:"total,omitempty"`
+}
+
+type NonPv struct {
+	Total *float64 `json:"total,omitempty"`
+}
+
+type EfsPv struct {
+	Total *float64 `json:"total,omitempty"`
 }
 
 func clusterFromJSON(in []byte) (*Cluster, error) {
@@ -511,6 +632,45 @@ func logEventsFromHttpResponse(resp *http.Response) ([]*LogEvent, error) {
 		return nil, err
 	}
 	return logEventsFromJSON(body)
+}
+
+func clusterAggregatedCostFromJSON(in []byte) (*AggregatedClusterCost, error) {
+	b := new(AggregatedClusterCost)
+	if err := json.Unmarshal(in, b); err != nil {
+		return nil, err
+	}
+
+	return b, nil
+}
+
+func clusterAggregatedCostsFromJSON(in []byte) ([]*AggregatedClusterCost, error) {
+	var rw client.Response
+	if err := json.Unmarshal(in, &rw); err != nil {
+		return nil, err
+	}
+	out := make([]*AggregatedClusterCost, len(rw.Response.Items))
+
+	if len(out) == 0 {
+		return out, nil
+	}
+	for i, rb := range rw.Response.Items {
+		b, err := clusterAggregatedCostFromJSON(rb)
+		if err != nil {
+			return nil, err
+		}
+		out[i] = b
+	}
+
+	return out, nil
+}
+
+func clusterAggregatedCostsFromHttpResponse(resp *http.Response) ([]*AggregatedClusterCost, error) {
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return clusterAggregatedCostsFromJSON(body)
 }
 
 func (s *ServiceOp) ListClusters(ctx context.Context, input *ListClustersInput) (*ListClustersOutput, error) {
@@ -833,6 +993,35 @@ func (s *ServiceOp) Roll(ctx context.Context, input *RollClusterInput) (*RollClu
 	}
 
 	return output, nil
+}
+
+func (s *ServiceOp) GetClusterAggregatedCosts(ctx context.Context, input *ClusterAggregatedCostInput) (*ClusterAggregatedCostOutput, error) {
+	path, err := uritemplates.Expand("/ocean/aws/k8s/cluster/{oceanId}/aggregatedCosts", uritemplates.Values{
+		"oceanId": spotinst.StringValue(input.OceanId),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// We do not need the ID anymore so let's drop it.
+	input.OceanId = nil
+
+	r := client.NewRequest(http.MethodPost, path)
+
+	r.Obj = input
+
+	resp, err := client.RequireOK(s.Client.Do(ctx, r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	costs, err := clusterAggregatedCostsFromHttpResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ClusterAggregatedCostOutput{costs}, nil
 }
 
 // region Cluster
@@ -1518,6 +1707,13 @@ func (o *RollSpec) SetBatchSizePercentage(v *int) *RollSpec {
 func (o *RollSpec) SetBatchMinHealthyPercentage(v *int) *RollSpec {
 	if o.BatchMinHealthyPercentage = v; o.BatchMinHealthyPercentage == nil {
 		o.nullFields = append(o.nullFields, "BatchMinHealthyPercentage")
+	}
+	return o
+}
+
+func (o *RollSpec) SetRespectPDB(v *bool) *RollSpec {
+	if o.RespectPDB = v; o.RespectPDB == nil {
+		o.nullFields = append(o.nullFields, "RespectPDB")
 	}
 	return o
 }

@@ -348,8 +348,9 @@ func (o ServerCreateOpts) Validate() error {
 		return errors.New("location and datacenter are mutually exclusive")
 	}
 	if o.PublicNet != nil {
-		if !o.PublicNet.EnableIPv4 && !o.PublicNet.EnableIPv6 && len(o.Networks) == 0 {
-			return errors.New("missing networks when EnableIPv4 and EnableIPv6 is false")
+		if !o.PublicNet.EnableIPv4 && !o.PublicNet.EnableIPv6 &&
+			len(o.Networks) == 0 && (o.StartAfterCreate == nil || *o.StartAfterCreate) {
+			return errors.New("missing networks or StartAfterCreate == false when EnableIPv4 and EnableIPv6 is false")
 		}
 	}
 	return nil
