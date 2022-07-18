@@ -18,7 +18,7 @@ spec:
       --v=6 --volume-name-tag=k8s-io-etcd-main --volume-provider=gce --volume-tag=k8s-io-cluster-name=minimal-gce-ilb-example-com
       --volume-tag=k8s-io-etcd-main --volume-tag=k8s-io-role-master=master > /tmp/pipe
       2>&1
-    image: registry.k8s.io/etcdadm/etcd-manager:v3.0.20220617
+    image: registry.k8s.io/etcdadm/etcd-manager:v3.0.20220717
     name: etcd-manager
     resources:
       requests:
