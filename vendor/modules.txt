@@ -758,7 +758,12 @@ github.com/russross/blackfriday/v2
 github.com/ryanuber/go-glob
 # github.com/scaleway/scaleway-sdk-go v1.0.0-beta.9
 ## explicit; go 1.17
+github.com/scaleway/scaleway-sdk-go/api/account/v2alpha1
 github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1
+github.com/scaleway/scaleway-sdk-go/api/instance/v1
+github.com/scaleway/scaleway-sdk-go/api/lb/v1
+github.com/scaleway/scaleway-sdk-go/api/marketplace/v1
+github.com/scaleway/scaleway-sdk-go/internal/async
 github.com/scaleway/scaleway-sdk-go/internal/auth
 github.com/scaleway/scaleway-sdk-go/internal/errors
 github.com/scaleway/scaleway-sdk-go/internal/marshaler
