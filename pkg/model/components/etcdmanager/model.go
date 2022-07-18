@@ -180,7 +180,7 @@ metadata:
 spec:
   containers:
   - name: etcd-manager
-    image: registry.k8s.io/etcdadm/etcd-manager:v3.0.20220617
+    image: registry.k8s.io/etcdadm/etcd-manager:v3.0.20220717
     resources:
       requests:
         cpu: 100m
