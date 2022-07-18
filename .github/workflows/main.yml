@@ -21,7 +21,7 @@ jobs:
         with:
           go-version: 1.18.1
 
-      - uses: actions/checkout@629c2de402a417ea7690ca6ce3f33229e27606a5 # v2 https://api.github.com/repos/actions/checkout/git/tags/629c2de402a417ea7690ca6ce3f33229e27606a5
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
         with:
           path: ${{ env.GOPATH }}/src/k8s.io/kops
 
@@ -38,7 +38,7 @@ jobs:
       with:
         go-version: 1.18.1
 
-    - uses: actions/checkout@629c2de402a417ea7690ca6ce3f33229e27606a5 # v2 https://api.github.com/repos/actions/checkout/git/tags/629c2de402a417ea7690ca6ce3f33229e27606a5
+    - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
       with:
         path: ${{ env.GOPATH }}/src/k8s.io/kops
 
@@ -55,7 +55,7 @@ jobs:
       with:
         go-version: 1.18.1
 
-    - uses: actions/checkout@629c2de402a417ea7690ca6ce3f33229e27606a5 # v2 https://api.github.com/repos/actions/checkout/git/tags/629c2de402a417ea7690ca6ce3f33229e27606a5
+    - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
       with:
         path: ${{ env.GOPATH }}/src/k8s.io/kops
 
@@ -72,7 +72,7 @@ jobs:
         with:
           go-version: 1.18.1
 
-      - uses: actions/checkout@629c2de402a417ea7690ca6ce3f33229e27606a5 # v2 https://api.github.com/repos/actions/checkout/git/tags/629c2de402a417ea7690ca6ce3f33229e27606a5
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
         with:
           path: ${{ env.GOPATH }}/src/k8s.io/kops
 
