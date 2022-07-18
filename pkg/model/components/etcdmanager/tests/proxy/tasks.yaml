@@ -94,7 +94,7 @@ Contents: |
         value: http://proxy.example.com
       - name: no_proxy
         value: noproxy.example.com
-      image: k8s.gcr.io/etcdadm/etcd-manager:v3.0.20220617
+      image: k8s.gcr.io/etcdadm/etcd-manager:v3.0.20220717
       name: etcd-manager
       resources:
         requests:
@@ -171,7 +171,7 @@ Contents: |
         value: http://proxy.example.com
       - name: no_proxy
         value: noproxy.example.com
-      image: k8s.gcr.io/etcdadm/etcd-manager:v3.0.20220617
+      image: k8s.gcr.io/etcdadm/etcd-manager:v3.0.20220717
       name: etcd-manager
       resources:
         requests:
