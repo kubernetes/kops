@@ -14,6 +14,7 @@ permissions:
 
 jobs:
   update-deps:
+    if: ${{ github.repository == 'kubernetes/kops' }}
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/setup-go@b22fbbc2921299758641fab08929b4ac52b32923
