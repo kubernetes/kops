@@ -19,7 +19,7 @@ jobs:
       - name: Set up go
         uses: actions/setup-go@b22fbbc2921299758641fab08929b4ac52b32923
         with:
-          go-version: 1.18.1
+          go-version: 1.18.4
 
       - uses: actions/checkout@629c2de402a417ea7690ca6ce3f33229e27606a5 # v2 https://api.github.com/repos/actions/checkout/git/tags/629c2de402a417ea7690ca6ce3f33229e27606a5
         with:
@@ -36,7 +36,7 @@ jobs:
     - name: Set up go
       uses: actions/setup-go@b22fbbc2921299758641fab08929b4ac52b32923
       with:
-        go-version: 1.18.1
+        go-version: 1.18.4
 
     - uses: actions/checkout@629c2de402a417ea7690ca6ce3f33229e27606a5 # v2 https://api.github.com/repos/actions/checkout/git/tags/629c2de402a417ea7690ca6ce3f33229e27606a5
       with:
@@ -53,7 +53,7 @@ jobs:
     - name: Set up go
       uses: actions/setup-go@b22fbbc2921299758641fab08929b4ac52b32923
       with:
-        go-version: 1.18.1
+        go-version: 1.18.4
 
     - uses: actions/checkout@629c2de402a417ea7690ca6ce3f33229e27606a5 # v2 https://api.github.com/repos/actions/checkout/git/tags/629c2de402a417ea7690ca6ce3f33229e27606a5
       with:
@@ -70,7 +70,7 @@ jobs:
       - name: Set up go
         uses: actions/setup-go@b22fbbc2921299758641fab08929b4ac52b32923
         with:
-          go-version: 1.18.1
+          go-version: 1.18.4
 
       - uses: actions/checkout@629c2de402a417ea7690ca6ce3f33229e27606a5 # v2 https://api.github.com/repos/actions/checkout/git/tags/629c2de402a417ea7690ca6ce3f33229e27606a5
         with:
