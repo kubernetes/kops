@@ -23,6 +23,11 @@ export S3_SECRET_ACCESS_KEY=<secret-key>
 export KOPS_STATE_STORE=s3://<bucket-name>
 ```
 
+Some S3 compatible stores may also require to set the region:
+```bash
+export S3_REGION=<region>
+```
+
 ## Creating a Single Master Cluster
 
 In the following examples, `example.k8s.local` is a [gossip-based DNS ](../gossip.md) cluster name.
