@@ -1,4 +1,4 @@
-name: 'Dependency Review'
+name: 'Review Dependencies'
 
 on:
   pull_request:
@@ -14,5 +14,5 @@ jobs:
     steps:
       - name: 'Checkout Repository'
         uses: actions/checkout@v3
-      - name: 'Dependency Review'
+      - name: 'Review Dependencies'
         uses: actions/dependency-review-action@v2
