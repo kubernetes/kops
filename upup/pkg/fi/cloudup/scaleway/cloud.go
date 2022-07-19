@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"fmt"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
 	kopsv "k8s.io/kops"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
@@ -41,14 +42,13 @@ var _ fi.Cloud = &scwCloudImplementation{}
 // scwCloudImplementation holds the scw.Client object to interact with Scaleway resources.
 type scwCloudImplementation struct {
 	client *scw.Client
-	//Client *scw.Client
 	dns    dnsprovider.Interface
 	region string
 	tags   map[string]string
 
-	account  *account.API
-	instance *instance.API
-	lb       *lb.API
+	accountAPI  *account.API
+	instanceAPI *instance.API
+	lbAPI       *lb.API
 }
 
 // NewScwCloud returns a Cloud, using the env vars SCW_ACCESS_KEY and SCW_SECRET_KEY
@@ -92,26 +92,26 @@ func NewScwCloud(region string, tags map[string]string) (ScwCloud, error) {
 	}
 
 	return &scwCloudImplementation{
-		client:   scwClient,
-		dns:      dns.NewProvider(scwClient, ""), //TODO: fill in domain name
-		region:   region,
-		tags:     tags,
-		account:  account.NewAPI(scwClient),
-		instance: instance.NewAPI(scwClient),
-		lb:       lb.NewAPI(scwClient),
+		client:      scwClient,
+		dns:         dns.NewProvider(scwClient, ""), //TODO: fill in domain name
+		region:      region,
+		tags:        tags,
+		accountAPI:  account.NewAPI(scwClient),
+		instanceAPI: instance.NewAPI(scwClient),
+		lbAPI:       lb.NewAPI(scwClient),
 	}, nil
 }
 
 func (s *scwCloudImplementation) Account() *account.API {
-	return s.account
+	return s.accountAPI
 }
 
 func (s *scwCloudImplementation) Instance() *instance.API {
-	return s.instance
+	return s.instanceAPI
 }
 
 func (s *scwCloudImplementation) LB() *lb.API {
-	return s.lb
+	return s.lbAPI
 }
 
 func (s *scwCloudImplementation) ProviderID() kops.CloudProviderID {
@@ -133,35 +133,37 @@ func (s *scwCloudImplementation) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 }
 
 func (s *scwCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstance) error {
-	instanceAPI := instance.NewAPI(s.client)
+	zone, id, err := parseZonedID(i.ID)
+	if err != nil {
+		return fmt.Errorf("delete instance %s: %v", i.ID, err)
+	}
 
 	// reach stopped state
-	// WIP : I need to rewrite all these functions from the provider :
-	// reachState, waitForInstanceServer
-	err := reachState(ctx, instanceAPI, zone, id, instance.ServerStateStopped)
+	err = reachState(s.instanceAPI, zone, id, instance.ServerStateStopped)
 	if is404Error(err) {
+		klog.V(8).Info("delete instance %s: instance was already deleted", id)
 		return nil
 	}
 	if err != nil {
-		return err
+		return fmt.Errorf("delete instance %s: error reaching stopped state: %v", id, err)
 	}
 
-	_, err = waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutDelete))
+	_, err = waitForInstanceServer(s.instanceAPI, zone, id)
 	if err != nil {
-		return err
+		return fmt.Errorf("delete instance %s: error waiting for instance: %v", id, err)
 	}
 
-	err = instanceAPI.DeleteServer(&instance.DeleteServerRequest{
+	err = s.instanceAPI.DeleteServer(&instance.DeleteServerRequest{
 		Zone:     zone,
 		ServerID: id,
-	}, scw.WithContext(ctx))
+	})
 	if err != nil && !is404Error(err) {
-		return err
+		return fmt.Errorf("error deleting instance %s: %v", id, err)
 	}
 
-	_, err = waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutDelete))
+	_, err = waitForInstanceServer(s.instanceAPI, zone, id)
 	if err != nil && !is404Error(err) {
-		return err
+		return fmt.Errorf("delete instance %s: error waiting for instance: %v", id, err)
 	}
 
 	return nil
@@ -200,21 +202,21 @@ func (s *scwCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]f
 	var ingresses []fi.ApiIngressStatus
 	name := "api." + cluster.Name
 
-	describeLoadBalancersArgs := &lb.ListLBsRequest{
+	responseLoadBalancers, err := s.lbAPI.ListLBs(&lb.ListLBsRequest{
 		Region: scw.Region(s.Region()),
 		Name:   &name,
-	}
-
-	responseLoadBalancers, err := s.LB().ListLBs(describeLoadBalancersArgs)
+	})
 	if err != nil {
-		return nil, fmt.Errorf("error finding LoadBalancers: %v", err)
+		return nil, fmt.Errorf("error finding load-balancers: %v", err)
 	}
-	// Don't exist loadbalancer with specified ClusterTags or Name.
 	if len(responseLoadBalancers.LBs) == 0 {
+		// QUESTION: Is it serious ? I should probably log it
+		klog.V(8).Infof("could not find any load-balancers for cluster %s", cluster.Name)
 		return nil, nil
+		// TODO: Careful when getting this result, not an empty tab
 	}
 	if len(responseLoadBalancers.LBs) > 1 {
-		klog.V(4).Infof("The number of specified loadbalancer with the same name exceeds 1, loadbalancerName:%q", name)
+		klog.V(4).Infof("more than 1 load-balancer with the name %s was found", name)
 	}
 
 	address := responseLoadBalancers.LBs[0].IP[0].IPAddress
