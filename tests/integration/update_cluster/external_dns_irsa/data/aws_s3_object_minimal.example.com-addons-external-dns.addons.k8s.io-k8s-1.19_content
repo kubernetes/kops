@@ -127,6 +127,7 @@ metadata:
     app.kubernetes.io/managed-by: kops
     k8s-addon: external-dns.addons.k8s.io
   name: external-dns
+  namespace: kube-system
 spec:
   ports:
   - name: http
