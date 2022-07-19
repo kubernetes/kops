@@ -1,8 +1,9 @@
-name: "update-deps"
+name: 'Update Dependencies'
+
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 6 * * 5"
+    - cron: '0 6 * * 5'
 
 env:
   GOPROXY: https://proxy.golang.org
@@ -13,12 +14,13 @@ permissions:
 
 jobs:
   update-deps:
+    if: ${{ github.repository == 'kubernetes/kops' }}
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@629c2de402a417ea7690ca6ce3f33229e27606a5
       - uses: actions/setup-go@b22fbbc2921299758641fab08929b4ac52b32923
         with:
           go-version: '1.18'
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
       - name: Update Dependencies
         id: update_deps
         run: |
