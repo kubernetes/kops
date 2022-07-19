@@ -1,14 +1,19 @@
-name: 'Dependency Review'
-on: [pull_request]
+name: 'Review Dependencies'
+
+on:
+  pull_request:
+    paths:
+      - 'go.mod'
 
 permissions:
   contents: read
 
 jobs:
   dependency-review:
-    runs-on: ubuntu-latest
+    if: ${{ github.repository == 'kubernetes/kops' }}
+    runs-on: ubuntu-20.04
     steps:
       - name: 'Checkout Repository'
-        uses: actions/checkout@v3
-      - name: 'Dependency Review'
-        uses: actions/dependency-review-action@v2
+        uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
+      - name: 'Review Dependencies'
+        uses: actions/dependency-review-action@94145f3150bfabdc97540cbd5f7e926306ea7744
