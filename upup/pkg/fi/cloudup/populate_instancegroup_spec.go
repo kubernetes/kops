@@ -51,7 +51,7 @@ const (
 	defaultMasterMachineTypeAzure   = "Standard_B2ms"
 	defaultMasterMachineTypeHetzner = "cx21"
 
-	defaultDONodeImage = "ubuntu-20-04-x64"
+	defaultDONodeImage = "ubuntu-22-04-x64"
 )
 
 // TODO: this hardcoded list can be replaced with DescribeInstanceTypes' DedicatedHostsSupported field
