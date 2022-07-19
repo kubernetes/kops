@@ -221,8 +221,8 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/apiextensions-apiserver v0.24.2 // indirect
-	k8s.io/cloud-provider v0.24.0 // indirect
-	k8s.io/csi-translation-lib v0.24.0 // indirect
+	k8s.io/cloud-provider v0.24.2 // indirect
+	k8s.io/csi-translation-lib v0.24.2 // indirect
 	k8s.io/klog v1.0.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20220328201542-3ee0da9b0b42 // indirect
 	oras.land/oras-go v1.1.1 // indirect
