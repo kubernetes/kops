@@ -95,6 +95,7 @@ metadata:
   labels:
     k8s-addon: external-dns.addons.k8s.io
   name: external-dns
+  namespace: kube-system
 spec:
   type: ClusterIP
   selector:
