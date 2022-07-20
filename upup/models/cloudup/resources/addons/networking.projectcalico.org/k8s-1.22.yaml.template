@@ -4367,7 +4367,7 @@ spec:
       securityContext:
         fsGroup: 65534
       containers:
-      - image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/typha:{{ or .Networking.Calico.Version "v3.23.2" }}
+      - image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/typha:{{ or .Networking.Calico.Version "v3.23.3" }}
         name: calico-typha
         ports:
         - containerPort: 5473
@@ -4488,7 +4488,7 @@ spec:
         # It can be deleted if this is a fresh installation, or if you have already
         # upgraded to use calico-ipam.
         - name: upgrade-ipam
-          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/cni:{{ or .Networking.Calico.Version "v3.23.2" }}
+          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/cni:{{ or .Networking.Calico.Version "v3.23.3" }}
           command: ["/opt/cni/bin/calico-ipam", "-upgrade"]
           envFrom:
           - configMapRef:
@@ -4515,7 +4515,7 @@ spec:
         # This container installs the CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/cni:{{ or .Networking.Calico.Version "v3.23.2" }}
+          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/cni:{{ or .Networking.Calico.Version "v3.23.3" }}
           command: ["/opt/cni/bin/install"]
           envFrom:
           - configMapRef:
@@ -4553,6 +4553,30 @@ spec:
               name: cni-net-dir
           securityContext:
             privileged: true
+        # This init container mounts the necessary filesystems needed by the BPF data plane
+        # i.e. bpf at /sys/fs/bpf and cgroup2 at /run/calico/cgroup. Calico-node initialisation is executed
+        # in best effort fashion, i.e. no failure for errors, to not disrupt pod creation in iptable mode.
+        - name: "mount-bpffs"
+          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/node:{{ or .Networking.Calico.Version "v3.23.3" }}
+          command: ["calico-node", "-init", "-best-effort"]
+          volumeMounts:
+            - mountPath: /sys/fs
+              name: sys-fs
+              # Bidirectional is required to ensure that the new mount we make at /sys/fs/bpf propagates to the host
+              # so that it outlives the init container.
+              mountPropagation: Bidirectional
+            - mountPath: /var/run/calico
+              name: var-run-calico
+              # Bidirectional is required to ensure that the new mount we make at /run/calico/cgroup propagates to the host
+              # so that it outlives the init container.
+              mountPropagation: Bidirectional
+            # Mount /proc/ from host which usually is an init program at /nodeproc. It's needed by mountns binary,
+            # executed by calico-node, to mount root cgroup2 fs at /run/calico/cgroup to attach CTLB programs correctly.
+            - mountPath: /nodeproc
+              name: nodeproc
+              readOnly: true
+          securityContext:
+            privileged: true
         - name: flexvol-driver
           image: busybox
           command: ['sh', '-c', 'echo Temporary fix to avoid server side apply issues']
@@ -4561,7 +4585,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/node:{{ or .Networking.Calico.Version "v3.23.2" }}
+          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/node:{{ or .Networking.Calico.Version "v3.23.3" }}
           envFrom:
           - configMapRef:
               # Allow KUBERNETES_SERVICE_HOST and KUBERNETES_SERVICE_PORT to be overridden for eBPF mode.
@@ -4778,11 +4802,8 @@ spec:
               mountPath: /var/run/nodeagent
             # For eBPF mode, we need to be able to mount the BPF filesystem at /sys/fs/bpf so we mount in the
             # parent directory.
-            - name: sysfs
-              mountPath: /sys/fs/
-              # Bidirectional means that, if we mount the BPF filesystem at /sys/fs/bpf it will propagate to the host.
-              # If the host is known to mount that filesystem already then Bidirectional can be omitted.
-              mountPropagation: Bidirectional
+            - name: bpffs
+              mountPath: /sys/fs/bpf
             - name: cni-log-dir
               mountPath: /var/log/calico/cni
               readOnly: true
@@ -4801,10 +4822,18 @@ spec:
           hostPath:
             path: /run/xtables.lock
             type: FileOrCreate
-        - name: sysfs
+        - name: sys-fs
           hostPath:
             path: /sys/fs/
             type: DirectoryOrCreate
+        - name: bpffs
+          hostPath:
+            path: /sys/fs/bpf
+            type: Directory
+        # mount /proc at /nodeproc to be used by mount-bpffs initContainer to mount root cgroup2 fs.
+        - name: nodeproc
+          hostPath:
+            path: /proc
         # Used to install CNI.
         - name: cni-bin-dir
           hostPath:
@@ -4874,7 +4903,7 @@ spec:
       priorityClassName: system-cluster-critical
       containers:
         - name: calico-kube-controllers
-          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/kube-controllers:{{ or .Networking.Calico.Version "v3.23.2" }}
+          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/kube-controllers:{{ or .Networking.Calico.Version "v3.23.3" }}
           env:
             # Choose which controllers to run.
             - name: ENABLED_CONTROLLERS
