@@ -36,7 +36,6 @@ func TestGSRenderTerraform(t *testing.T) {
 	creds, err := filepath.Abs(credsFile)
 	if err != nil {
 		t.Fatalf("failed to prepare mock gcp credentials: %v", err)
-		t.FailNow()
 	}
 	t.Setenv("GOOGLE_APPLICATION_CREDENTIALS", creds)
 
@@ -80,13 +79,11 @@ func TestGSRenderTerraform(t *testing.T) {
 			path, err := vfs.Context.BuildVfsPath(tc.gsPath)
 			if err != nil {
 				t.Fatalf("error building VFS path: %v", err)
-				t.FailNow()
 			}
 
 			vfsProvider, err := path.(vfs.TerraformPath).TerraformProvider()
 			if err != nil {
 				t.Fatalf("error building VFS Terraform provider: %v", err)
-				t.FailNow()
 			}
 			target := terraform.NewTerraformTarget(cloud, "", vfsProvider, "/dev/null", nil)
 
@@ -103,32 +100,26 @@ func TestGSRenderTerraform(t *testing.T) {
 			)
 			if err != nil {
 				t.Fatalf("error rendering terraform %v", err)
-				t.FailNow()
 			}
 			res, err := target.GetResourcesByType()
 			if err != nil {
 				t.Fatalf("error fetching terraform resources: %v", err)
-				t.FailNow()
 			}
 			if objs := res["google_storage_bucket_object"]; objs == nil {
 				t.Fatalf("google_storage_bucket_object resources not found: %v", res)
-				t.FailNow()
 			}
 			if obj := res["google_storage_bucket_object"][tc.gsObject]; obj == nil {
 				t.Fatalf("google_storage_bucket_object object not found: %v", res["google_storage_bucket_object"])
-				t.FailNow()
 			}
 			obj, err := json.Marshal(res["google_storage_bucket_object"][tc.gsObject])
 			if err != nil {
 				t.Fatalf("error marshaling gs object: %v", err)
-				t.FailNow()
 			}
 			if !assert.JSONEq(t, tc.expectedObjectJSON, string(obj), "JSON representation of terraform resource did not match") {
 				t.FailNow()
 			}
 			if objs := target.TerraformWriter.Files[fmt.Sprintf("data/google_storage_bucket_object_%v_content", tc.gsObject)]; objs == nil {
 				t.Fatalf("google_storage_bucket_object content file not found: %v", target.TerraformWriter.Files)
-				t.FailNow()
 			}
 			actualContent := string(target.TerraformWriter.Files[fmt.Sprintf("data/google_storage_bucket_object_%v_content", tc.gsObject)])
 			if !assert.Equal(t, content, actualContent, "google_storage_bucket_object content did not match") {
@@ -137,16 +128,13 @@ func TestGSRenderTerraform(t *testing.T) {
 
 			if objs := res["google_storage_object_access_control"]; objs == nil {
 				t.Fatalf("google_storage_object_access_control resources not found: %v", res)
-				t.FailNow()
 			}
 			if obj := res["google_storage_object_access_control"][tc.gsObject]; obj == nil {
 				t.Fatalf("google_storage_object_access_control object not found: %v", res["google_storage_object_access_control"])
-				t.FailNow()
 			}
 			actualACL, err := json.Marshal(res["google_storage_object_access_control"][tc.gsObject])
 			if err != nil {
 				t.Fatalf("error marshaling gs ACL: %v", err)
-				t.FailNow()
 			}
 			if !assert.JSONEq(t, tc.expectedACLJSON, string(actualACL), "JSON representation of terraform resource did not match") {
 				t.FailNow()
