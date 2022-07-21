@@ -292,6 +292,8 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 				MaxRetries: fi.Int(3),
 			},
 		}
+	case api.CloudProviderScaleway:
+		cluster.Spec.CloudProvider.Scaleway = &api.ScalewaySpec{}
 	default:
 		return nil, fmt.Errorf("unsupported cloud provider %s", opt.CloudProvider)
 	}

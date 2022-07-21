@@ -31,6 +31,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
+	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 )
 
 func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
@@ -160,6 +161,21 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 			}
 
 			cloud = azureCloud
+		}
+	case kops.CloudProviderScaleway:
+		{
+			region, err := scaleway.FindRegion(cluster)
+			if err != nil {
+				return nil, err
+			}
+
+			// TODO: handle tags
+			scwCloud, err := scaleway.NewScwCloud(region, nil)
+			if err != nil {
+				return nil, fmt.Errorf("error initializing scaleway cloud: %s", err)
+			}
+
+			cloud = scwCloud
 		}
 	default:
 		return nil, fmt.Errorf("unknown CloudProvider %q", cluster.Spec.GetCloudProvider())

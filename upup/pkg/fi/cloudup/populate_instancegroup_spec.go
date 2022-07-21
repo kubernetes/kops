@@ -37,21 +37,25 @@ import (
 
 // Default Machine types for various types of instance group machine
 const (
-	defaultNodeMachineTypeGCE     = "n1-standard-2"
-	defaultNodeMachineTypeDO      = "s-2vcpu-4gb"
-	defaultNodeMachineTypeAzure   = "Standard_B2ms"
-	defaultNodeMachineTypeHetzner = "cx21"
+	defaultNodeMachineTypeGCE      = "n1-standard-2"
+	defaultNodeMachineTypeDO       = "s-2vcpu-4gb"
+	defaultNodeMachineTypeAzure    = "Standard_B2ms"
+	defaultNodeMachineTypeHetzner  = "cx21"
+	defaultNodeMachineTypeScaleway = "replace me"
 
-	defaultBastionMachineTypeGCE     = "f1-micro"
-	defaultBastionMachineTypeAzure   = "Standard_B2ms"
-	defaultBastionMachineTypeHetzner = "cx11"
+	defaultBastionMachineTypeGCE      = "f1-micro"
+	defaultBastionMachineTypeAzure    = "Standard_B2ms"
+	defaultBastionMachineTypeHetzner  = "cx11"
+	defaultBastionMachineTypeScaleway = "replace me"
 
-	defaultMasterMachineTypeGCE     = "n1-standard-1"
-	defaultMasterMachineTypeDO      = "s-2vcpu-4gb"
-	defaultMasterMachineTypeAzure   = "Standard_B2ms"
-	defaultMasterMachineTypeHetzner = "cx21"
+	defaultMasterMachineTypeGCE      = "n1-standard-1"
+	defaultMasterMachineTypeDO       = "s-2vcpu-4gb"
+	defaultMasterMachineTypeAzure    = "Standard_B2ms"
+	defaultMasterMachineTypeHetzner  = "cx21"
+	defaultMasterMachineTypeScaleway = "replace me"
 
-	defaultDONodeImage = "ubuntu-20-04-x64"
+	defaultDONodeImage       = "ubuntu-20-04-x64"
+	defaultScalewayNodeImage = "replace me"
 )
 
 // TODO: this hardcoded list can be replaced with DescribeInstanceTypes' DedicatedHostsSupported field
@@ -291,6 +295,18 @@ func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.Instance
 		case kops.InstanceGroupRoleBastion:
 			return defaultBastionMachineTypeAzure, nil
 		}
+
+	case kops.CloudProviderScaleway:
+		switch ig.Spec.Role {
+		case kops.InstanceGroupRoleMaster:
+			return defaultMasterMachineTypeScaleway, nil
+
+		case kops.InstanceGroupRoleNode:
+			return defaultNodeMachineTypeScaleway, nil
+
+		case kops.InstanceGroupRoleBastion:
+			return defaultBastionMachineTypeScaleway, nil
+		}
 	}
 
 	klog.V(2).Infof("Cannot set default MachineType for CloudProvider=%q, Role=%q", cluster.Spec.GetCloudProvider(), ig.Spec.Role)
@@ -319,7 +335,10 @@ func defaultImage(cluster *kops.Cluster, channel *kops.Channel, architecture arc
 	switch cluster.Spec.GetCloudProvider() {
 	case kops.CloudProviderDO:
 		return defaultDONodeImage
+	case kops.CloudProviderScaleway:
+		return defaultScalewayNodeImage
 	}
+
 	klog.Infof("Cannot set default Image for CloudProvider=%q", cluster.Spec.GetCloudProvider())
 	return ""
 }

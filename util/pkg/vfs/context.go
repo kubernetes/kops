@@ -178,6 +178,10 @@ func (c *VFSContext) BuildVfsPath(p string) (Path, error) {
 		return c.buildAzureBlobPath(p)
 	}
 
+	if strings.HasPrefix(p, "scw://") {
+		return c.buildSCWPath(p)
+	}
+
 	return nil, fmt.Errorf("unknown / unhandled path type: %q", p)
 }
 
@@ -496,4 +500,22 @@ func (c *VFSContext) getAzureBlobClient() (*azureClient, error) {
 	}
 	c.azureClient = client
 	return client, nil
+}
+
+func (c *VFSContext) buildSCWPath(p string) (*S3Path, error) {
+	u, err := url.Parse(p)
+	if err != nil {
+		return nil, fmt.Errorf("invalid bucket path: %q", p)
+	}
+	if u.Scheme != "scw" {
+		return nil, fmt.Errorf("invalid bucket path: %q", p)
+	}
+
+	bucket := strings.TrimSuffix(u.Host, "/")
+	if bucket == "" {
+		return nil, fmt.Errorf("invalid bucket path: %q", p)
+	}
+
+	s3path := newS3Path(c.s3Context, u.Scheme, bucket, u.Path, false)
+	return s3path, nil
 }
