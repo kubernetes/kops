@@ -32,8 +32,7 @@ kops create cluster \
 
 ### Select an Encapsulation Mode
 
-In order to send network traffic to and from Kubernetes pods, Calico can use either of two networking encapsulation modes: [IP-in-IP](https://tools.ietf.org/html/rfc2003)  or [VXLAN](https://tools.ietf.org/html/rfc7348). Though IP-in-IP encapsulation uses fewer bytes of overhead per packet than VXLAN encapsulation, [VXLAN can be a better
-choice when used in concert with Calico's eBPF dataplane|https://docs.projectcalico.org/maintenance/troubleshoot/troubleshoot-ebpf#poor-performance]. In particular, eBPF programs can redirect packets between Layer 2 devices, but not between devices at Layer 2 and Layer 3, as is required to use IP-in-IP tunneling.
+In order to send network traffic to and from Kubernetes pods, Calico can use either of two networking encapsulation modes: [IP-in-IP](https://tools.ietf.org/html/rfc2003)  or [VXLAN](https://tools.ietf.org/html/rfc7348). Though IP-in-IP encapsulation uses fewer bytes of overhead per packet than VXLAN encapsulation, [VXLAN can be a better choice when used in concert with Calico's eBPF dataplane](https://docs.projectcalico.org/maintenance/troubleshoot/troubleshoot-ebpf#poor-performance). In particular, eBPF programs can redirect packets between Layer 2 devices, but not between devices at Layer 2 and Layer 3, as is required to use IP-in-IP tunneling.
 
 kOps chooses the IP-in-IP encapsulation mode by default, it still being the Calico project's default choice, which is equivalent to writing the following in the cluster spec:
 ```yaml
@@ -184,7 +183,7 @@ For more general information on options available with Calico see the official [
 
 ### New nodes are taking minutes for syncing IP routes and new pods on them can't reach kubedns
 
-This is caused by nodes in the Calico etcd nodestore no longer existing. Due to the ephemeral nature of AWS EC2 instances, new nodes are brought up with different hostnames, and nodes that are taken offline remain in the Calico nodestore. This is unlike most datacentre deployments where the hostnames are mostly static in a cluster. Read this issue](https://github.com/kubernetes/kops/issues/3224) for more detail.
+This is caused by nodes in the Calico etcd nodestore no longer existing. Due to the ephemeral nature of AWS EC2 instances, new nodes are brought up with different hostnames, and nodes that are taken offline remain in the Calico nodestore. This is unlike most datacentre deployments where the hostnames are mostly static in a cluster. [Read this issue](https://github.com/kubernetes/kops/issues/3224) for more detail.
 
 This has been solved in kOps 1.9.0, when creating a new cluster no action is needed, but if the cluster was created with a prior kOps version the following actions should be taken:
 
