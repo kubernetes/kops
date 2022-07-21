@@ -31,7 +31,7 @@ jobs:
           make all examples test
 
   build-macos-amd64:
-    runs-on: macos-10.15
+    runs-on: macos-latest
     steps:
     - name: Set up go
       uses: actions/setup-go@b22fbbc2921299758641fab08929b4ac52b32923
