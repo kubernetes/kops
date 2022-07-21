@@ -4654,6 +4654,33 @@ func (in *OpenstackNetwork) DeepCopyInto(out *OpenstackNetwork) {
 			}
 		}
 	}
+	if in.IPv6SupportDisabled != nil {
+		in, out := &in.IPv6SupportDisabled, &out.IPv6SupportDisabled
+		*out = new(bool)
+		**out = **in
+	}
+	if in.PublicNetworkNames != nil {
+		in, out := &in.PublicNetworkNames, &out.PublicNetworkNames
+		*out = make([]*string, len(*in))
+		for i := range *in {
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = new(string)
+				**out = **in
+			}
+		}
+	}
+	if in.InternalNetworkNames != nil {
+		in, out := &in.InternalNetworkNames, &out.InternalNetworkNames
+		*out = make([]*string, len(*in))
+		for i := range *in {
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = new(string)
+				**out = **in
+			}
+		}
+	}
 	return
 }
 

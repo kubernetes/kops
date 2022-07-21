@@ -479,6 +479,16 @@ spec:
                             items:
                               type: string
                             type: array
+                          internalNetworkNames:
+                            items:
+                              type: string
+                            type: array
+                          ipv6SupportDisabled:
+                            type: boolean
+                          publicNetworkNames:
+                            items:
+                              type: string
+                            type: array
                         type: object
                       router:
                         description: OpenstackRouter defines the config for a router

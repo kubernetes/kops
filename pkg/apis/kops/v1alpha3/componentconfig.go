@@ -804,6 +804,9 @@ type OpenstackRouter struct {
 // OpenstackNetwork defines the config for a network
 type OpenstackNetwork struct {
 	AvailabilityZoneHints []*string `json:"availabilityZoneHints,omitempty"`
+	IPv6SupportDisabled   *bool     `json:"ipv6SupportDisabled,omitempty"`
+	PublicNetworkNames    []*string `json:"publicNetworkNames,omitempty"`
+	InternalNetworkNames  []*string `json:"internalNetworkNames,omitempty"`
 }
 
 // OpenstackMetadata defines config for metadata service related settings
