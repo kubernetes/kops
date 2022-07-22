@@ -659,7 +659,7 @@
       }
     }
   },
-  "revision": "20220412",
+  "revision": "20220714",
   "rootUrl": "https://tpu.googleapis.com/",
   "schemas": {
     "AcceleratorType": {
@@ -861,7 +861,7 @@
             "V2_ALPHA1"
           ],
           "enumDescriptions": [
-            "API version is unknown.",
+            "LINT.IfChange API version is unknown.",
             "TPU API V1Alpha1 version.",
             "TPU API V1 version.",
             "TPU API V2Alpha1 version."
@@ -969,7 +969,7 @@
             "UNHIDING"
           ],
           "enumDescriptions": [
-            "TPU node state is not known/set.",
+            "LINT.IfChange TPU node state is not known/set.",
             "TPU node is being created.",
             "TPU node has been created.",
             "TPU node is restarting.",
@@ -983,7 +983,7 @@
             "TPU node has been terminated due to maintenance or has reached the end of its life cycle (for preemptible nodes).",
             "TPU node is currently hiding.",
             "TPU node has been hidden.",
-            "TPU node is currently unhiding."
+            "TPU node is currently unhiding. LINT.ThenChange(//depot/google3/java/com/google/cloud/boq/clientapi/tpu/api/gce_tpu.proto)"
           ],
           "readOnly": true,
           "type": "string"
