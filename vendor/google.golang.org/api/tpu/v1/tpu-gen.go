@@ -533,7 +533,7 @@ type Node struct {
 	// ApiVersion: Output only. The API version that created this Node.
 	//
 	// Possible values:
-	//   "API_VERSION_UNSPECIFIED" - API version is unknown.
+	//   "API_VERSION_UNSPECIFIED" - LINT.IfChange API version is unknown.
 	//   "V1_ALPHA1" - TPU API V1Alpha1 version.
 	//   "V1" - TPU API V1 version.
 	//   "V2_ALPHA1" - TPU API V2Alpha1 version.
@@ -612,7 +612,8 @@ type Node struct {
 	// State: Output only. The current state for the TPU Node.
 	//
 	// Possible values:
-	//   "STATE_UNSPECIFIED" - TPU node state is not known/set.
+	//   "STATE_UNSPECIFIED" - LINT.IfChange TPU node state is not
+	// known/set.
 	//   "CREATING" - TPU node is being created.
 	//   "READY" - TPU node has been created.
 	//   "RESTARTING" - TPU node is restarting.
@@ -630,6 +631,8 @@ type Node struct {
 	//   "HIDING" - TPU node is currently hiding.
 	//   "HIDDEN" - TPU node has been hidden.
 	//   "UNHIDING" - TPU node is currently unhiding.
+	// LINT.ThenChange(//depot/google3/java/com/google/cloud/boq/clientapi/tp
+	// u/api/gce_tpu.proto)
 	State string `json:"state,omitempty"`
 
 	// Symptoms: Output only. The Symptoms that have occurred to the TPU

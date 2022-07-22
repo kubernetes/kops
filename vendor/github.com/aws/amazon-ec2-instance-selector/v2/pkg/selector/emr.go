@@ -56,10 +56,18 @@ func (e EMR) getEMRInstanceTypes(version semver.Version) ([]string, error) {
 	instanceTypes := []string{}
 
 	for _, instanceType := range e.getAllEMRInstanceTypes() {
-		if semver.MustParseRange(">=5.25.0")(version) {
+		if semver.MustParseRange(">=5.33.0")(version) {
+			instanceTypes = append(instanceTypes, instanceType)
+		} else if semver.MustParseRange(">=5.25.0 <5.33.0")(version) {
+			if e.isOnlyEMR_5_33_0_plus(instanceType) {
+				continue
+			}
 			instanceTypes = append(instanceTypes, instanceType)
 		} else if semver.MustParseRange(">=5.20.0 <5.25.0")(version) {
 			if e.isOnlyEMR_5_25_0_plus(instanceType) {
+				continue
+			}
+			if e.isOnlyEMR_5_33_0_plus(instanceType) {
 				continue
 			}
 			instanceTypes = append(instanceTypes, instanceType)
@@ -73,12 +81,18 @@ func (e EMR) getEMRInstanceTypes(version semver.Version) ([]string, error) {
 			if e.isOnlyEMR_5_25_0_plus(instanceType) {
 				continue
 			}
+			if e.isOnlyEMR_5_33_0_plus(instanceType) {
+				continue
+			}
 			instanceTypes = append(instanceTypes, instanceType)
 		} else if semver.MustParseRange(">=5.13.0 <5.15.0")(version) {
 			if e.isOnlyEMR_5_20_0_plus(instanceType) {
 				continue
 			}
 			if e.isOnlyEMR_5_25_0_plus(instanceType) {
+				continue
+			}
+			if e.isOnlyEMR_5_33_0_plus(instanceType) {
 				continue
 			}
 			instanceTypes = append(instanceTypes, instanceType)
@@ -92,6 +106,9 @@ func (e EMR) getEMRInstanceTypes(version semver.Version) ([]string, error) {
 			if e.isOnlyEMR_5_25_0_plus(instanceType) {
 				continue
 			}
+			if e.isOnlyEMR_5_33_0_plus(instanceType) {
+				continue
+			}
 			instanceTypes = append(instanceTypes, instanceType)
 		} else {
 			if e.isEMR_5_13_0_plus(instanceType) {
@@ -101,6 +118,9 @@ func (e EMR) getEMRInstanceTypes(version semver.Version) ([]string, error) {
 				continue
 			}
 			if e.isOnlyEMR_5_25_0_plus(instanceType) {
+				continue
+			}
+			if e.isOnlyEMR_5_33_0_plus(instanceType) {
 				continue
 			}
 			if strings.HasPrefix(instanceType, "i3") {
@@ -155,6 +175,21 @@ func (EMR) isOnlyEMR_5_25_0_plus(instanceType string) bool {
 	return false
 }
 
+func (EMR) isOnlyEMR_5_33_0_plus(instanceType string) bool {
+	prefixes := []string{
+		"m5zn.",
+		"m6gd",
+		"r5b",
+		"r6gd",
+	}
+	for _, prefix := range prefixes {
+		if strings.HasPrefix(instanceType, prefix) {
+			return true
+		}
+	}
+	return false
+}
+
 func (EMR) getAllEMRInstanceTypes() []string {
 	return []string{
 		"c1.medium",
@@ -177,11 +212,17 @@ func (EMR) getAllEMRInstanceTypes() []string {
 		"c5.xlarge",
 		"c5a.12xlarge",
 		"c5a.16xlarge",
-		"c5a.24xlarge",
 		"c5a.2xlarge",
 		"c5a.4xlarge",
 		"c5a.8xlarge",
 		"c5a.xlarge",
+		"c5ad.12xlarge",
+		"c5ad.16xlarge",
+		"c5ad.24xlarge",
+		"c5ad.2xlarge",
+		"c5ad.4xlarge",
+		"c5ad.8xlarge",
+		"c5ad.xlarge",
 		"c5d.12xlarge",
 		"c5d.18xlarge",
 		"c5d.24xlarge",
@@ -200,11 +241,34 @@ func (EMR) getAllEMRInstanceTypes() []string {
 		"c6g.4xlarge",
 		"c6g.8xlarge",
 		"c6g.xlarge",
+		"c6gd.12xlarge",
+		"c6gd.16xlarge",
+		"c6gd.2xlarge",
+		"c6gd.4xlarge",
+		"c6gd.8xlarge",
+		"c6gd.xlarge",
+		"c6gn.12xlarge",
+		"c6gn.16xlarge",
+		"c6gn.2xlarge",
+		"c6gn.4xlarge",
+		"c6gn.8xlarge",
+		"c6gn.xlarge",
 		"cc2.8xlarge",
+		"cr1.8xlarge",
 		"d2.2xlarge",
 		"d2.4xlarge",
 		"d2.8xlarge",
 		"d2.xlarge",
+		"d3.2xlarge",
+		"d3.4xlarge",
+		"d3.8xlarge",
+		"d3.xlarge",
+		"d3en.2xlarge",
+		"d3en.4xlarge",
+		"d3en.6xlarge",
+		"d3en.8xlarge",
+		"d3en.12xlarge",
+		"d3en.xlarge",
 		"g2.2xlarge",
 		"g3.16xlarge",
 		"g3.4xlarge",
@@ -220,6 +284,7 @@ func (EMR) getAllEMRInstanceTypes() []string {
 		"h1.2xlarge",
 		"h1.4xlarge",
 		"h1.8xlarge",
+		"hs1.8xlarge",
 		"i2.2xlarge",
 		"i2.4xlarge",
 		"i2.8xlarge",
@@ -256,7 +321,6 @@ func (EMR) getAllEMRInstanceTypes() []string {
 		"m5.2xlarge",
 		"m5.4xlarge",
 		"m5.8xlarge",
-		"m5.metal",
 		"m5.xlarge",
 		"m5a.12xlarge",
 		"m5a.16xlarge",
@@ -265,42 +329,30 @@ func (EMR) getAllEMRInstanceTypes() []string {
 		"m5a.4xlarge",
 		"m5a.8xlarge",
 		"m5a.xlarge",
-		"m5ad.12xlarge",
-		"m5ad.16xlarge",
-		"m5ad.24xlarge",
-		"m5ad.2xlarge",
-		"m5ad.4xlarge",
-		"m5ad.8xlarge",
-		"m5ad.xlarge",
 		"m5d.12xlarge",
 		"m5d.16xlarge",
 		"m5d.24xlarge",
 		"m5d.2xlarge",
 		"m5d.4xlarge",
 		"m5d.8xlarge",
-		"m5d.metal",
 		"m5d.xlarge",
-		"m5dn.12xlarge",
-		"m5dn.16xlarge",
-		"m5dn.24xlarge",
-		"m5dn.2xlarge",
-		"m5dn.4xlarge",
-		"m5dn.8xlarge",
-		"m5dn.xlarge",
-		"m5n.12xlarge",
-		"m5n.16xlarge",
-		"m5n.24xlarge",
-		"m5n.2xlarge",
-		"m5n.4xlarge",
-		"m5n.8xlarge",
-		"m5n.xlarge",
+		"m5zn.12xlarge",
+		"m5zn.2xlarge",
+		"m5zn.3xlarge",
+		"m5zn.6xlarge",
+		"m5zn.xlarge",
 		"m6g.12xlarge",
 		"m6g.16xlarge",
 		"m6g.2xlarge",
 		"m6g.4xlarge",
 		"m6g.8xlarge",
 		"m6g.xlarge",
-		"mac1.metal",
+		"m6gd.12xlarge",
+		"m6gd.16xlarge",
+		"m6gd.2xlarge",
+		"m6gd.4xlarge",
+		"m6gd.8xlarge",
+		"m6gd.xlarge",
 		"p2.16xlarge",
 		"p2.8xlarge",
 		"p2.xlarge",
@@ -323,7 +375,6 @@ func (EMR) getAllEMRInstanceTypes() []string {
 		"r5.2xlarge",
 		"r5.4xlarge",
 		"r5.8xlarge",
-		"r5.metal",
 		"r5.xlarge",
 		"r5a.12xlarge",
 		"r5a.16xlarge",
@@ -332,27 +383,39 @@ func (EMR) getAllEMRInstanceTypes() []string {
 		"r5a.4xlarge",
 		"r5a.8xlarge",
 		"r5a.xlarge",
+		"r5b.12xlarge",
+		"r5b.16xlarge",
+		"r5b.24xlarge",
+		"r5b.2xlarge",
+		"r5b.4xlarge",
+		"r5b.8xlarge",
+		"r5b.xlarge",
 		"r5d.12xlarge",
 		"r5d.16xlarge",
 		"r5d.24xlarge",
 		"r5d.2xlarge",
 		"r5d.4xlarge",
 		"r5d.8xlarge",
-		"r5d.metal",
 		"r5d.xlarge",
-		"r5n.12xlarge",
-		"r5n.16xlarge",
-		"r5n.24xlarge",
-		"r5n.2xlarge",
-		"r5n.4xlarge",
-		"r5n.8xlarge",
-		"r5n.xlarge",
+		"r5dn.12xlarge",
+		"r5dn.16xlarge",
+		"r5dn.24xlarge",
+		"r5dn.2xlarge",
+		"r5dn.4xlarge",
+		"r5dn.8xlarge",
+		"r5dn.xlarge",
 		"r6g.12xlarge",
 		"r6g.16xlarge",
 		"r6g.2xlarge",
 		"r6g.4xlarge",
 		"r6g.8xlarge",
 		"r6g.xlarge",
+		"r6gd.12xlarge",
+		"r6gd.16xlarge",
+		"r6gd.2xlarge",
+		"r6gd.4xlarge",
+		"r6gd.8xlarge",
+		"r6gd.xlarge",
 		"x1.32xlarge",
 		"z1d.12xlarge",
 		"z1d.2xlarge",
