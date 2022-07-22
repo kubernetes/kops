@@ -61,13 +61,11 @@ func TestS3RenderTerraform(t *testing.T) {
 			path, err := vfs.Context.BuildVfsPath(tc.s3Path)
 			if err != nil {
 				t.Fatalf("error building VFS path: %v", err)
-				t.FailNow()
 			}
 
 			vfsProvider, err := path.(vfs.TerraformPath).TerraformProvider()
 			if err != nil {
 				t.Fatalf("error building VFS Terraform provider: %v", err)
-				t.FailNow()
 			}
 			target := terraform.NewTerraformTarget(cloud, "", vfsProvider, "/dev/null", nil)
 
@@ -76,32 +74,26 @@ func TestS3RenderTerraform(t *testing.T) {
 			)
 			if err != nil {
 				t.Fatalf("error rendering terraform %v", err)
-				t.FailNow()
 			}
 			res, err := target.GetResourcesByType()
 			if err != nil {
 				t.Fatalf("error fetching terraform resources: %v", err)
-				t.FailNow()
 			}
 			if objs := res["aws_s3_object"]; objs == nil {
 				t.Fatalf("aws_s3_object resources not found: %v", res)
-				t.FailNow()
 			}
 			if obj := res["aws_s3_object"][tc.s3Object]; obj == nil {
 				t.Fatalf("aws_s3_object object not found: %v", res["aws_s3_object"])
-				t.FailNow()
 			}
 			obj, err := json.Marshal(res["aws_s3_object"][tc.s3Object])
 			if err != nil {
 				t.Fatalf("error marshaling s3 object: %v", err)
-				t.FailNow()
 			}
 			if !assert.JSONEq(t, tc.expectedJSON, string(obj), "JSON representation of terraform resource did not match") {
 				t.FailNow()
 			}
 			if objs := target.TerraformWriter.Files[fmt.Sprintf("data/aws_s3_object_%v_content", tc.s3Object)]; objs == nil {
 				t.Fatalf("aws_s3_object content file not found: %v", target.TerraformWriter.Files)
-				t.FailNow()
 			}
 			actualContent := string(target.TerraformWriter.Files[fmt.Sprintf("data/aws_s3_object_%v_content", tc.s3Object)])
 			if !assert.Equal(t, content, actualContent, "aws_s3_object content did not match") {
