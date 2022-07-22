@@ -18,6 +18,7 @@ package kubemanifest
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -44,6 +45,7 @@ func (o *Object) ToUnstructured() *unstructured.Unstructured {
 	return &unstructured.Unstructured{Object: o.data}
 }
 
+// GroupVersionKind returns the group/version/kind information for the object
 func (o *Object) GroupVersionKind() schema.GroupVersionKind {
 	return o.ToUnstructured().GroupVersionKind()
 }
@@ -126,7 +128,15 @@ func (l ObjectList) ToYAML() ([]byte, error) {
 func (m *Object) ToYAML() ([]byte, error) {
 	b, err := yaml.Marshal(m.data)
 	if err != nil {
-		return nil, fmt.Errorf("error marshaling manifest to yaml: %v", err)
+		return nil, fmt.Errorf("error marshaling manifest to yaml: %w", err)
+	}
+	return b, nil
+}
+
+func (m *Object) MarshalJSON() ([]byte, error) {
+	b, err := json.Marshal(m.data)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling manifest to json: %w", err)
 	}
 	return b, nil
 }
