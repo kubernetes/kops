@@ -24,7 +24,7 @@ func CheckPushPermission(ref name.Reference, kc authn.Keychain, t http.RoundTrip
 	}
 
 	scopes := []string{ref.Scope(transport.PushScope)}
-	tr, err := transport.New(ref.Context().Registry, auth, t, scopes)
+	tr, err := transport.NewWithContext(context.TODO(), ref.Context().Registry, auth, t, scopes)
 	if err != nil {
 		return fmt.Errorf("creating push check transport for %v failed: %w", ref.Context().Registry, err)
 	}
