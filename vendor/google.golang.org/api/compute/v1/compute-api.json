@@ -8765,7 +8765,7 @@
           ]
         },
         "bulkInsert": {
-          "description": "Creates multiple instances. Count specifies the number of instances to create.",
+          "description": "Creates multiple instances. Count specifies the number of instances to create. For more information, see About bulk creation of VMs.",
           "flatPath": "projects/{project}/zones/{zone}/instances/bulkInsert",
           "httpMethod": "POST",
           "id": "compute.instances.bulkInsert",
@@ -31172,7 +31172,7 @@
       }
     }
   },
-  "revision": "20220621",
+  "revision": "20220705",
   "rootUrl": "https://compute.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -33292,7 +33292,7 @@
           "type": "number"
         },
         "maxUtilization": {
-          "description": "Optional parameter to define a target capacity for the UTILIZATIONbalancing mode. The valid range is [0.0, 1.0]. For usage guidelines, see Utilization balancing mode.",
+          "description": "Optional parameter to define a target capacity for the UTILIZATION balancing mode. The valid range is [0.0, 1.0]. For usage guidelines, see Utilization balancing mode.",
           "format": "float",
           "type": "number"
         }
@@ -34790,7 +34790,7 @@
         },
         "locationPolicy": {
           "$ref": "LocationPolicy",
-          "description": "Policy for chosing target zone."
+          "description": "Policy for chosing target zone. For more information, see Create VMs in bulk ."
         },
         "minCount": {
           "description": "The minimum number of instances to create. If no min_count is specified then count is used as the default value. If min_count instances cannot be created, then no instances will be created and instances already created will be deleted.",
@@ -45558,7 +45558,7 @@
           "description": "Constraints that the caller requires on the result distribution in this zone."
         },
         "preference": {
-          "description": "Preference for a given location.",
+          "description": "Preference for a given location. Set to either ALLOW or DENY.",
           "enum": [
             "ALLOW",
             "DENY",
@@ -46682,6 +46682,10 @@
         "enableUlaInternalIpv6": {
           "description": "Enable ULA internal ipv6 on this network. Enabling this feature will assign a /48 from google defined ULA prefix fd20::/20. .",
           "type": "boolean"
+        },
+        "firewallPolicy": {
+          "description": "[Output Only] URL of the firewall policy the network is associated with.",
+          "type": "string"
         },
         "gatewayIPv4": {
           "description": "[Output Only] The gateway address for default routing out of the network, selected by GCP.",
@@ -58609,6 +58613,14 @@
         },
         "sourceDiskId": {
           "description": "[Output Only] The ID value of the disk used to create this snapshot. This value may be used to determine whether the snapshot was taken from the current or a previous instance of a given disk name.",
+          "type": "string"
+        },
+        "sourceSnapshotSchedulePolicy": {
+          "description": "[Output Only] URL of the resource policy which created this scheduled snapshot.",
+          "type": "string"
+        },
+        "sourceSnapshotSchedulePolicyId": {
+          "description": "[Output Only] ID of the resource policy which created this scheduled snapshot.",
           "type": "string"
         },
         "status": {
