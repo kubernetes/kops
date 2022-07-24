@@ -31,8 +31,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/ec2metadata"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/kms"
-
+	"k8s.io/klog/v2"
 	"k8s.io/kops/nodeup/pkg/model"
 	"k8s.io/kops/nodeup/pkg/model/dns"
 	"k8s.io/kops/nodeup/pkg/model/networking"
@@ -56,12 +61,6 @@ import (
 	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/distributions"
 	"k8s.io/kops/util/pkg/vfs"
-
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/ec2metadata"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"k8s.io/klog/v2"
 )
 
 // MaxTaskDuration is the amount of time to keep trying for; we retry for a long time - there is not really any great fallback
@@ -483,15 +482,46 @@ func evaluateSpec(c *NodeUpCommand, nodeupConfig *nodeup.Config) error {
 func evaluateHostnameOverride(cloudProvider api.CloudProviderID, useInstanceIDForNodeName bool) (string, error) {
 	switch cloudProvider {
 	case api.CloudProviderAWS:
-		source := "local-hostname"
-		if useInstanceIDForNodeName {
-			source = "instance-id"
-		}
-		nodeNameBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/" + source)
+		instanceIDBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/instance-id")
 		if err != nil {
-			return "", fmt.Errorf("error reading %s from AWS metadata: %v", source, err)
+			return "", fmt.Errorf("error reading instance-id from AWS metadata: %v", err)
 		}
-		return string(nodeNameBytes), nil
+		instanceID := string(instanceIDBytes)
+
+		if useInstanceIDForNodeName {
+			return instanceID, nil
+		}
+
+		azBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/placement/availability-zone")
+		if err != nil {
+			return "", fmt.Errorf("error reading availability zone from AWS metadata: %v", err)
+		}
+
+		config := aws.NewConfig()
+		config = config.WithCredentialsChainVerboseErrors(true)
+
+		s, err := session.NewSession(config)
+		if err != nil {
+			return "", fmt.Errorf("error starting new AWS session: %v", err)
+		}
+
+		svc := ec2.New(s, config.WithRegion(string(azBytes[:len(azBytes)-1])))
+
+		result, err := svc.DescribeInstances(&ec2.DescribeInstancesInput{
+			InstanceIds: []*string{&instanceID},
+		})
+		if err != nil {
+			return "", fmt.Errorf("error describing instances: %v", err)
+		}
+
+		if len(result.Reservations) > 1 {
+			return "", fmt.Errorf("too many reservations returned for the single instance-id")
+		}
+		if len(result.Reservations[0].Instances) > 1 {
+			return "", fmt.Errorf("too many instances returned for the single instance-id")
+		}
+
+		return *(result.Reservations[0].Instances[0].PrivateDnsName), nil
 
 	case api.CloudProviderGCE:
 		// This lets us tolerate broken hostnames (i.e. systemd)
