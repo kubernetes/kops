@@ -39,7 +39,10 @@ kops create cluster --name=my-cluster.example.k8s.local \
   --ssh-public-key=~/.ssh/id_rsa.pub --cloud=hetzner --zones=fsn1 \
   --image=ubuntu-20.04 --networking=calico --network-cidr=10.10.0.0/16 \
   --node-size cpx31
-kops update cluster my-cluster.example.k8s.local --yes
+kops update cluster --name=my-cluster.example.k8s.local --yes
+
+# validate a cluster
+kops validate cluster --name=my-cluster.example.k8s.local
 
 # delete a cluster
 kops delete cluster --name=my-cluster.example.k8s.local --yes
@@ -55,12 +58,9 @@ kops delete cluster --name=my-cluster.example.k8s.local --yes
 
 kOps for Hetzner Cloud currently does not support the following features:
 
-* Cluster validation
-* Rolling updates
+* Multiple SSH keys
 * Autoscaling using [Cluster Autoscaler](https://github.com/hetznercloud/autoscaler)
-* Volumes using the [CSI Driver](https://github.com/hetznercloud/csi-driver)
 * [Terraform](https://github.com/hetznercloud/terraform-provider-hcloud) support
-* Multiple SSH keys 
 
 # Next steps
 
