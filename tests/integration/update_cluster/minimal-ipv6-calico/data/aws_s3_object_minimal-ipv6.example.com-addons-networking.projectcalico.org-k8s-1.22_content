@@ -4475,7 +4475,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/node:v3.23.2
+        image: docker.io/calico/node:v3.23.3
         lifecycle:
           preStop:
             exec:
@@ -4522,9 +4522,8 @@ spec:
           readOnly: false
         - mountPath: /var/run/nodeagent
           name: policysync
-        - mountPath: /sys/fs/
-          mountPropagation: Bidirectional
-          name: sysfs
+        - mountPath: /sys/fs/bpf
+          name: bpffs
         - mountPath: /var/log/calico/cni
           name: cni-log-dir
           readOnly: true
@@ -4547,7 +4546,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/cni:v3.23.2
+        image: docker.io/calico/cni:v3.23.3
         name: upgrade-ipam
         securityContext:
           privileged: true
@@ -4581,7 +4580,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/cni:v3.23.2
+        image: docker.io/calico/cni:v3.23.3
         name: install-cni
         securityContext:
           privileged: true
@@ -4590,6 +4589,24 @@ spec:
           name: cni-bin-dir
         - mountPath: /host/etc/cni/net.d
           name: cni-net-dir
+      - command:
+        - calico-node
+        - -init
+        - -best-effort
+        image: docker.io/calico/node:v3.23.3
+        name: mount-bpffs
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /sys/fs
+          mountPropagation: Bidirectional
+          name: sys-fs
+        - mountPath: /var/run/calico
+          mountPropagation: Bidirectional
+          name: var-run-calico
+        - mountPath: /nodeproc
+          name: nodeproc
+          readOnly: true
       - command:
         - sh
         - -c
@@ -4625,7 +4642,14 @@ spec:
       - hostPath:
           path: /sys/fs/
           type: DirectoryOrCreate
-        name: sysfs
+        name: sys-fs
+      - hostPath:
+          path: /sys/fs/bpf
+          type: Directory
+        name: bpffs
+      - hostPath:
+          path: /proc
+        name: nodeproc
       - hostPath:
           path: /opt/cni/bin
         name: cni-bin-dir
@@ -4695,7 +4719,7 @@ spec:
           value: node
         - name: DATASTORE_TYPE
           value: kubernetes
-        image: docker.io/calico/kube-controllers:v3.23.2
+        image: docker.io/calico/kube-controllers:v3.23.3
         livenessProbe:
           exec:
             command:
