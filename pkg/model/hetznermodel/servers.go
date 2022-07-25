@@ -52,7 +52,6 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			SSHKey:     b.LinkToSSHKey(),
 			Network:    b.LinkToNetwork(),
 			Count:      int(igSize),
-			Outdated:   0,
 			Location:   ig.Spec.Subnets[0],
 			Size:       ig.Spec.MachineType,
 			Image:      ig.Spec.Image,

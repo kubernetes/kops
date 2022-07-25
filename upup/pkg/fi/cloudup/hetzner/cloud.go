@@ -21,6 +21,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
+	"time"
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	v1 "k8s.io/api/core/v1"
@@ -32,12 +34,13 @@ import (
 )
 
 const (
-	TagKubernetesClusterName      = "kops.k8s.io/cluster"
-	TagKubernetesFirewallRole     = "kops.k8s.io/firewall-role"
-	TagKubernetesInstanceGroup    = "kops.k8s.io/instance-group"
-	TagKubernetesInstanceRole     = "kops.k8s.io/instance-role"
-	TagKubernetesInstanceUserData = "kops.k8s.io/instance-userdata"
-	TagKubernetesVolumeRole       = "kops.k8s.io/volume-role"
+	TagKubernetesClusterName         = "kops.k8s.io/cluster"
+	TagKubernetesFirewallRole        = "kops.k8s.io/firewall-role"
+	TagKubernetesInstanceGroup       = "kops.k8s.io/instance-group"
+	TagKubernetesInstanceRole        = "kops.k8s.io/instance-role"
+	TagKubernetesInstanceUserData    = "kops.k8s.io/instance-userdata"
+	TagKubernetesInstanceNeedsUpdate = "kops.k8s.io/needs-update"
+	TagKubernetesVolumeRole          = "kops.k8s.io/volume-role"
 )
 
 // HetznerCloud exposes all the interfaces required to operate on Hetzner Cloud resources
@@ -204,7 +207,10 @@ func (c *hetznerCloudImplementation) GetServers(clusterName string) ([]*hcloud.S
 		PerPage:       50,
 		LabelSelector: labelSelector,
 	}
-	serverListOptions := hcloud.ServerListOpts{ListOpts: listOptions}
+	sortOptions := []string{
+		"created:desc",
+	}
+	serverListOptions := hcloud.ServerListOpts{ListOpts: listOptions, Sort: sortOptions}
 
 	matches, err := client.AllWithOpts(context.TODO(), serverListOptions)
 	if err != nil {
@@ -237,14 +243,52 @@ func (c *hetznerCloudImplementation) DNS() (dnsprovider.Interface, error) {
 	panic("implement me")
 }
 
-func (c *hetznerCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstance) error {
-	// TODO(hakman): implement me
-	panic("implement me")
+func (c *hetznerCloudImplementation) DeleteInstance(instance *cloudinstances.CloudInstance) error {
+	serverID, err := strconv.Atoi(instance.ID)
+	if err != nil {
+		return fmt.Errorf("failed to convert server ID %q to int: %w", instance.ID, err)
+	}
+
+	err = deleteServer(c, serverID)
+
+	return err
+}
+
+// deleteServer shuts down and deletes the given server
+func deleteServer(c *hetznerCloudImplementation, id int) error {
+	client := c.ServerClient()
+	ctx := context.TODO()
+
+	server := &hcloud.Server{ID: id}
+	_, _, err := client.Shutdown(ctx, server)
+	if err != nil {
+		return fmt.Errorf("failed to stop server %q: %w", strconv.Itoa(id), err)
+	}
+
+	for i := 1; i <= 30; i++ {
+		server, _, err := client.GetByID(ctx, id)
+		if err != nil || server == nil {
+			return fmt.Errorf("failed to get info for server %q: %w", strconv.Itoa(id), err)
+		}
+
+		if server.Status == hcloud.ServerStatusOff {
+			break
+		}
+
+		time.Sleep(time.Second * 5)
+	}
+
+	_, err = client.Delete(ctx, server)
+	if err != nil {
+		return fmt.Errorf("failed to delete server %q: %w", strconv.Itoa(id), err)
+	}
+
+	return nil
 }
 
 func (c *hetznerCloudImplementation) DetachInstance(instance *cloudinstances.CloudInstance) error {
-	// TODO(hakman): implement me
-	panic("implement me")
+	// Hetzner Cloud API doesn't provide the option of using cloud groups
+	return nil
 }
 
 // ProviderID returns the kOps API identifier for Hetzner Cloud
@@ -257,21 +301,118 @@ func (c *hetznerCloudImplementation) Region() string {
 	return c.region
 }
 
-func (c *hetznerCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
-	// TODO(hakman): Implement me
-	return nil, fmt.Errorf("hetzner cloud provider does not implement GetCloudGroups at this time")
+func (c *hetznerCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instanceGroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+	nodeMap := cloudinstances.GetNodeMap(nodes, cluster)
+
+	serverGroups, err := findServerGroups(c, cluster.Name)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find server groups: %v", err)
+	}
+
+	cloudInstanceGroups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	for name, serverGroup := range serverGroups {
+		var instanceGroup *kops.InstanceGroup
+		for _, ig := range instanceGroups {
+			groupName := fmt.Sprintf("%s-%s", cluster.Name, ig.Name)
+			if name == groupName {
+				instanceGroup = ig
+				break
+			}
+		}
+		if instanceGroup == nil {
+			if warnUnmatched {
+				klog.Warningf("Server group %q has no corresponding instance group", name)
+			}
+			continue
+		}
+
+		cloudInstanceGroups[instanceGroup.Name], err = buildCloudInstanceGroup(instanceGroup, serverGroup, nodeMap)
+		if err != nil {
+			return nil, fmt.Errorf("failed to build cloud instance group for instance group %q: %w", instanceGroup.Name, err)
+		}
+	}
+
+	return cloudInstanceGroups, nil
 }
 
-// DeleteGroup is not implemented
+// findServerGroups finds all server groups belonging to the cluster
+func findServerGroups(c *hetznerCloudImplementation, clusterName string) (map[string][]*hcloud.Server, error) {
+	servers, err := c.GetServers(clusterName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list servers: %w", err)
+	}
+
+	serverGroups := make(map[string][]*hcloud.Server)
+	for _, server := range servers {
+		instanceGroupNameLabel, ok := server.Labels[TagKubernetesInstanceGroup]
+		if !ok {
+			klog.Warning("failed to find instance group name for server %s(%d)", server.Name, server.ID)
+			continue
+		}
+
+		instanceGroupName := fmt.Sprintf("%s-%s", clusterName, instanceGroupNameLabel)
+		serverGroups[instanceGroupName] = append(serverGroups[instanceGroupName], server)
+	}
+
+	return serverGroups, nil
+}
+
+func buildCloudInstanceGroup(ig *kops.InstanceGroup, sg []*hcloud.Server, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
+	cloudInstanceGroup := &cloudinstances.CloudInstanceGroup{
+		HumanName:     ig.Name,
+		InstanceGroup: ig,
+		Raw:           sg,
+		MinSize:       int(fi.Int32Value(ig.Spec.MinSize)),
+		TargetSize:    int(fi.Int32Value(ig.Spec.MinSize)),
+		MaxSize:       int(fi.Int32Value(ig.Spec.MaxSize)),
+	}
+
+	for _, server := range sg {
+		status := cloudinstances.CloudInstanceStatusUpToDate
+		if _, ok := server.Labels[TagKubernetesInstanceNeedsUpdate]; ok {
+			status = cloudinstances.CloudInstanceStatusNeedsUpdate
+		}
+
+		id := strconv.Itoa(server.ID)
+		cloudInstance, err := cloudInstanceGroup.NewCloudInstance(id, status, nodeMap[id])
+		if err != nil {
+			return nil, fmt.Errorf("failed to create cloud group instance for server %s(%d): %w", server.Name, server.ID, err)
+		}
+
+		// Add additional instance info
+		cloudInstance.State = cloudinstances.State(server.Status)
+		if role, ok := server.Labels[TagKubernetesInstanceRole]; ok {
+			cloudInstance.Roles = append(cloudInstance.Roles, role)
+		}
+		if server.ServerType != nil {
+			cloudInstance.MachineType = server.ServerType.Name
+		}
+		if len(server.PrivateNet) > 0 {
+			cloudInstance.PrivateIP = server.PrivateNet[0].IP.String()
+		}
+	}
+
+	return cloudInstanceGroup, nil
+}
+
 func (c *hetznerCloudImplementation) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
-	// TODO(hakman): Implement me
-	return fmt.Errorf("hetzner cloud provider does not implement DeleteGroup at this time")
+	for _, cloudInstance := range append(g.NeedUpdate, g.Ready...) {
+		serverID, err := strconv.Atoi(cloudInstance.ID)
+		if err != nil {
+			return fmt.Errorf("failed to convert server ID %q to int: %w", cloudInstance.ID, err)
+		}
+
+		err = deleteServer(c, serverID)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
-// DeregisterInstance is not implemented
 func (c *hetznerCloudImplementation) DeregisterInstance(i *cloudinstances.CloudInstance) error {
-	// TODO(hakman): Implement me
-	klog.Warning("hetzner cloud provider does not implement DeregisterInstance at this time")
+	// Hetzner Cloud API doesn't provide the option to drain and remove an instance from the associated load balancers
 	return nil
 }
 
