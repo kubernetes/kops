@@ -4199,6 +4199,14 @@ metadata:
 rules:
 - apiGroups:
   - ""
+  resourceNames:
+  - canal
+  resources:
+  - serviceaccounts/token
+  verbs:
+  - create
+- apiGroups:
+  - ""
   resources:
   - pods
   - nodes
@@ -4419,6 +4427,10 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
+        - name: CALICO_CNI_SERVICE_ACCOUNT
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.serviceAccountName
         - name: CALICO_NETWORKING_BACKEND
           value: none
         - name: CLUSTER_TYPE
@@ -4458,7 +4470,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/node:v3.23.1
+        image: docker.io/calico/node:v3.23.3
         lifecycle:
           preStop:
             exec:
@@ -4505,9 +4517,8 @@ spec:
           readOnly: false
         - mountPath: /var/run/nodeagent
           name: policysync
-        - mountPath: /sys/fs/
-          mountPropagation: Bidirectional
-          name: sysfs
+        - mountPath: /sys/fs/bpf
+          name: bpffs
         - mountPath: /var/log/calico/cni
           name: cni-log-dir
           readOnly: true
@@ -4549,6 +4560,10 @@ spec:
       - command:
         - /opt/cni/bin/install
         env:
+        - name: CALICO_CNI_SERVICE_ACCOUNT
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.serviceAccountName
         - name: CNI_CONF_NAME
           value: 10-canal.conflist
         - name: CNI_NETWORK_CONFIG
@@ -4571,7 +4586,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/cni:v3.23.1
+        image: docker.io/calico/cni:v3.23.3
         name: install-cni
         securityContext:
           privileged: true
@@ -4580,6 +4595,24 @@ spec:
           name: cni-bin-dir
         - mountPath: /host/etc/cni/net.d
           name: cni-net-dir
+      - command:
+        - calico-node
+        - -init
+        - -best-effort
+        image: docker.io/calico/node:v3.23.3
+        name: mount-bpffs
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /sys/fs
+          mountPropagation: Bidirectional
+          name: sys-fs
+        - mountPath: /var/run/calico
+          mountPropagation: Bidirectional
+          name: var-run-calico
+        - mountPath: /nodeproc
+          name: nodeproc
+          readOnly: true
       nodeSelector:
         kubernetes.io/os: linux
       priorityClassName: system-node-critical
@@ -4609,7 +4642,14 @@ spec:
       - hostPath:
           path: /sys/fs/
           type: DirectoryOrCreate
-        name: sysfs
+        name: sys-fs
+      - hostPath:
+          path: /sys/fs/bpf
+          type: Directory
+        name: bpffs
+      - hostPath:
+          path: /proc
+        name: nodeproc
       - configMap:
           name: canal-config
         name: flannel-cfg
@@ -4697,7 +4737,7 @@ spec:
           value: node
         - name: DATASTORE_TYPE
           value: kubernetes
-        image: docker.io/calico/kube-controllers:v3.23.1
+        image: docker.io/calico/kube-controllers:v3.23.3
         livenessProbe:
           exec:
             command:
