@@ -18,8 +18,11 @@ package hetznertasks
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/base64"
 	"fmt"
-	"strconv"
+	"math/rand"
+	"strings"
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"k8s.io/kops/upup/pkg/fi"
@@ -27,13 +30,15 @@ import (
 )
 
 // +kops:fitask
-type Server struct {
+type ServerGroup struct {
 	Name      *string
 	Lifecycle fi.Lifecycle
 	SSHKey    *SSHKey
 	Network   *Network
 
-	ID       *int
+	Count    int
+	Outdated int
+
 	Location string
 	Size     string
 	Image    string
@@ -46,123 +51,131 @@ type Server struct {
 	Labels map[string]string
 }
 
-var _ fi.CompareWithID = &Server{}
-
-func (v *Server) CompareWithID() *string {
-	return fi.String(strconv.Itoa(fi.IntValue(v.ID)))
-}
-
-func (v *Server) Find(c *fi.Context) (*Server, error) {
+func (v *ServerGroup) Find(c *fi.Context) (*ServerGroup, error) {
 	cloud := c.Cloud.(hetzner.HetznerCloud)
 	client := cloud.ServerClient()
 
-	// TODO(hakman): Find using label selector
-	servers, err := client.All(context.TODO())
+	labelSelector := []string{
+		fmt.Sprintf("%s=%s", hetzner.TagKubernetesClusterName, c.Cluster.Name),
+		fmt.Sprintf("%s=%s", hetzner.TagKubernetesInstanceGroup, v.Labels[hetzner.TagKubernetesInstanceGroup]),
+	}
+	listOptions := hcloud.ListOpts{
+		PerPage:       50,
+		LabelSelector: strings.Join(labelSelector, ","),
+	}
+	serverListOptions := hcloud.ServerListOpts{ListOpts: listOptions}
+	servers, err := client.AllWithOpts(context.TODO(), serverListOptions)
 	if err != nil {
 		return nil, err
 	}
-
-	for _, server := range servers {
-		if server.Name == fi.StringValue(v.Name) {
-			matches := &Server{
-				Lifecycle: v.Lifecycle,
-				Name:      fi.String(server.Name),
-				ID:        fi.Int(server.ID),
-				Labels:    server.Labels,
-			}
-
-			if server.Datacenter != nil && server.Datacenter.Location != nil {
-				matches.Location = server.Datacenter.Location.Name
-			}
-			if server.ServerType != nil {
-				matches.Size = server.ServerType.Name
-			}
-			if server.Image != nil {
-				matches.Image = server.Image.Name
-			}
-			if server.PublicNet.IPv4.IP != nil {
-				matches.EnableIPv4 = true
-			}
-			if server.PublicNet.IPv6.IP != nil {
-				matches.EnableIPv4 = true
-			}
-
-			// Ignore fields that are not returned by the Hetzner Cloud API
-			matches.SSHKey = v.SSHKey
-			matches.UserData = v.UserData
-
-			// TODO: The API only returns the network ID, a new API call is required to get the network name
-			matches.Network = v.Network
-
-			v.ID = matches.ID
-			return matches, nil
-		}
+	if len(servers) == 0 {
+		return nil, nil
 	}
 
-	return nil, nil
+	// Calculate the user-data hash
+	userDataBytes, err := fi.ResourceAsBytes(v.UserData)
+	if err != nil {
+		return nil, err
+	}
+	userDataHash := safeBytesHash(userDataBytes)
+
+	// Add the expected user-data hash label
+	v.Labels[hetzner.TagKubernetesInstanceUserData] = userDataHash
+
+	actual := *v
+	actual.Count = 0
+
+	for _, server := range servers {
+		if server.Labels[hetzner.TagKubernetesInstanceUserData] != userDataHash {
+			actual.Outdated++
+			continue
+		}
+		if server.Datacenter == nil || server.Datacenter.Location == nil || server.Datacenter.Location.Name != v.Location {
+			actual.Outdated++
+			continue
+		}
+		if server.ServerType == nil || server.ServerType.Name != v.Size {
+			actual.Outdated++
+			continue
+		}
+		if server.Image == nil || server.Image.Name != v.Image {
+			actual.Outdated++
+			continue
+		}
+		if (server.PublicNet.IPv4.IP != nil) != v.EnableIPv4 {
+			actual.Outdated++
+			continue
+		}
+		if (server.PublicNet.IPv6.IP != nil) != v.EnableIPv6 {
+			actual.Outdated++
+			continue
+		}
+
+		actual.Count++
+	}
+
+	return &actual, nil
 }
 
-func (v *Server) Run(c *fi.Context) error {
+func (v *ServerGroup) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(v, c)
 }
 
-func (_ *Server) CheckChanges(a, e, changes *Server) error {
-	if a != nil {
-		if changes.Name != nil {
-			return fi.CannotChangeField("Name")
-		}
-		if changes.ID != nil {
-			return fi.CannotChangeField("ID")
-		}
-		if changes.Location != "" {
-			return fi.CannotChangeField("Location")
-		}
-		if changes.Size != "" {
-			return fi.CannotChangeField("Size")
-		}
-		if changes.Image != "" {
-			return fi.CannotChangeField("Image")
-		}
-		if changes.UserData != nil {
-			return fi.CannotChangeField("UserData")
-		}
-	} else {
-		if e.Name == nil {
-			return fi.RequiredField("Name")
-		}
-		if e.Location == "" {
-			return fi.RequiredField("Location")
-		}
-		if e.Size == "" {
-			return fi.RequiredField("Size")
-		}
-		if e.Image == "" {
-			return fi.RequiredField("Image")
-		}
-		if e.UserData == nil {
-			return fi.RequiredField("UserData")
-		}
+func (_ *ServerGroup) CheckChanges(a, e, changes *ServerGroup) error {
+	if e.Name == nil {
+		return fi.RequiredField("Name")
+	}
+	if e.Location == "" {
+		return fi.RequiredField("Location")
+	}
+	if e.Size == "" {
+		return fi.RequiredField("Size")
+	}
+	if e.Image == "" {
+		return fi.RequiredField("Image")
+	}
+	if e.UserData == nil {
+		return fi.RequiredField("UserData")
 	}
 	return nil
 }
 
-func (_ *Server) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *Server) error {
+func (_ *ServerGroup) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *ServerGroup) error {
 	client := t.Cloud.ServerClient()
-	if a == nil {
-		if e.SSHKey == nil {
-			return fmt.Errorf("failed to find ssh key for server %q", fi.StringValue(e.Name))
-		}
-		if e.Network == nil {
-			return fmt.Errorf("failed to find network for server %q", fi.StringValue(e.Name))
-		}
 
-		userData, err := fi.ResourceAsString(e.UserData)
-		if err != nil {
-			return err
-		}
+	actualCount := 0
+	if a != nil {
+		actualCount = a.Count
+	}
+	expectedCount := e.Count
+
+	if actualCount >= expectedCount {
+		return nil
+	}
+
+	if e.SSHKey == nil {
+		return fmt.Errorf("failed to find ssh key for server %q", fi.StringValue(e.Name))
+	}
+	if e.Network == nil {
+		return fmt.Errorf("failed to find network for server %q", fi.StringValue(e.Name))
+	}
+
+	userData, err := fi.ResourceAsString(e.UserData)
+	if err != nil {
+		return err
+	}
+	userDataBytes, err := fi.ResourceAsBytes(e.UserData)
+	if err != nil {
+		return err
+	}
+	userDataHash := safeBytesHash(userDataBytes)
+
+	for i := 1; i <= expectedCount-actualCount; i++ {
+		// Append a random/unique ID to the node name
+		name := fmt.Sprintf("%s-%x", e.Labels[hetzner.TagKubernetesInstanceGroup], rand.Int63())
 
 		opts := hcloud.ServerCreateOpts{
-			Name:             fi.StringValue(e.Name),
+			Name:             name,
 			StartAfterCreate: fi.Bool(true),
 			SSHKeys: []*hcloud.SSHKey{
 				{
@@ -191,28 +204,29 @@ func (_ *Server) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *Serve
 			},
 		}
 
+		// Add the user-data hash label
+		opts.Labels[hetzner.TagKubernetesInstanceUserData] = userDataHash
+
 		_, _, err = client.Create(context.TODO(), opts)
 		if err != nil {
 			return err
 		}
-
-	} else {
-		server, _, err := client.Get(context.TODO(), strconv.Itoa(fi.IntValue(a.ID)))
-		if err != nil {
-			return err
-		}
-
-		// Update the labels
-		if changes.Name != nil || len(changes.Labels) != 0 {
-			_, _, err := client.Update(context.TODO(), server, hcloud.ServerUpdateOpts{
-				Name:   fi.StringValue(e.Name),
-				Labels: e.Labels,
-			})
-			if err != nil {
-				return err
-			}
-		}
 	}
 
 	return nil
+}
+
+func safeBytesHash(data []byte) string {
+	// Calculate the SHA256 checksum of the data
+	sum256 := sha256.Sum256(data)
+
+	// Replace the unsupported chars with supported ones
+	safe256 := base64.StdEncoding.EncodeToString(sum256[:])
+	safe256 = strings.ReplaceAll(safe256, "+", "-")
+	safe256 = strings.ReplaceAll(safe256, "/", "_")
+
+	// Trim the unsupported "=" padding chars
+	safe256 = strings.TrimRight(safe256, "=")
+
+	return fmt.Sprintf("sha256.%s", safe256)
 }
