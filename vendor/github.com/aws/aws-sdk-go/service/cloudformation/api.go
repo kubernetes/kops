@@ -9841,6 +9841,27 @@ func (s DeleteStackSetOutput) GoString() string {
 type DeploymentTargets struct {
 	_ struct{} `type:"structure"`
 
+	// Limit deployment targets to individual accounts or include additional accounts
+	// with provided OUs.
+	//
+	// The following is a list of possible values for the AccountFilterType operation.
+	//
+	//    * INTERSECTION: StackSets deploys to the accounts specified in Accounts
+	//    parameter.
+	//
+	//    * DIFFERENCE: StackSets excludes the accounts specified in Accounts parameter.
+	//    This enables user to avoid certain accounts within an OU such as suspended
+	//    accounts.
+	//
+	//    * UNION: (default value) StackSets includes additional accounts deployment
+	//    targets. This is the default value if AccountFilterType is not provided.
+	//    This enables user to update an entire OU and individual accounts from
+	//    a different OU in one request, which used to be two separate requests.
+	//
+	//    * NONE: Deploys to all the accounts in specified organizational units
+	//    (OU).
+	AccountFilterType *string `type:"string" enum:"AccountFilterType"`
+
 	// The names of one or more Amazon Web Services accounts for which you want
 	// to deploy stack set updates.
 	Accounts []*string `type:"list"`
@@ -9882,6 +9903,12 @@ func (s *DeploymentTargets) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAccountFilterType sets the AccountFilterType field's value.
+func (s *DeploymentTargets) SetAccountFilterType(v string) *DeploymentTargets {
+	s.AccountFilterType = &v
+	return s
 }
 
 // SetAccounts sets the Accounts field's value.
@@ -22704,6 +22731,30 @@ func (s *ValidateTemplateOutput) SetDescription(v string) *ValidateTemplateOutpu
 func (s *ValidateTemplateOutput) SetParameters(v []*TemplateParameter) *ValidateTemplateOutput {
 	s.Parameters = v
 	return s
+}
+
+const (
+	// AccountFilterTypeNone is a AccountFilterType enum value
+	AccountFilterTypeNone = "NONE"
+
+	// AccountFilterTypeIntersection is a AccountFilterType enum value
+	AccountFilterTypeIntersection = "INTERSECTION"
+
+	// AccountFilterTypeDifference is a AccountFilterType enum value
+	AccountFilterTypeDifference = "DIFFERENCE"
+
+	// AccountFilterTypeUnion is a AccountFilterType enum value
+	AccountFilterTypeUnion = "UNION"
+)
+
+// AccountFilterType_Values returns all elements of the AccountFilterType enum
+func AccountFilterType_Values() []string {
+	return []string{
+		AccountFilterTypeNone,
+		AccountFilterTypeIntersection,
+		AccountFilterTypeDifference,
+		AccountFilterTypeUnion,
+	}
 }
 
 const (

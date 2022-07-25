@@ -161,6 +161,7 @@ type GKE struct {
 
 type InstanceTypes struct {
 	Whitelist []string `json:"whitelist,omitempty"`
+	Blacklist []string `json:"blacklist,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -917,6 +918,13 @@ func (o InstanceTypes) MarshalJSON() ([]byte, error) {
 func (o *InstanceTypes) SetWhitelist(v []string) *InstanceTypes {
 	if o.Whitelist = v; o.Whitelist == nil {
 		o.nullFields = append(o.nullFields, "Whitelist")
+	}
+	return o
+}
+
+func (o *InstanceTypes) SetBlacklist(v []string) *InstanceTypes {
+	if o.Blacklist = v; o.Blacklist == nil {
+		o.nullFields = append(o.nullFields, "Blacklist")
 	}
 	return o
 }
