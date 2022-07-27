@@ -88,4 +88,4 @@ roll:
 
 * This pipeline does not have a true "dryrun" job that can be ran on non-master branches, for example before a merge request is merged.
   This is because the required `kops replace` before the `kops update cluster` will update the live assets in the state store which could impact newly launched nodes that download these assets.
-  [PR #6465](https://github.com/kubernetes/kops/pull/6465) could add support for copying the state store to a local filesystem prior to `kops replace`, allowing the dryrun pipeline to be completely isolated from the live state store.
+  [PR #6465](https://github.com/kubernetes/kops/pull/6465) added support for copying the state store to a local filesystem prior to `kops replace`, allowing the dryrun pipeline to be completely isolated from the live state store. For example, run `aws s3 sync "$KOPS_STATE_STORE"/"$CLUSTER_NAME" /some/local/path/"$CLUSTER_NAME" --exclude '*backups/*' --quiet` first, then pass `--state /some/local/path` to `kops replace` and `kops update cluster`.
