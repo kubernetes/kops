@@ -26,7 +26,7 @@ func NewCmdGet(f Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:        "get",
 		SuggestFor: []string{"list"},
-		Short:      "list or get objects",
+		Short:      "list or get addons",
 	}
 
 	// create subcommands
