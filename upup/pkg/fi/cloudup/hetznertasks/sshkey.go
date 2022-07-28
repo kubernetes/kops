@@ -109,7 +109,7 @@ func (_ *SSHKey) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *SSHKe
 		if len(tokens) == 3 {
 			sshkeyComment := tokens[2]
 			_, err := mail.ParseAddress(sshkeyComment)
-			if err != nil {
+			if err == nil {
 				name = sshkeyComment
 			}
 		}
