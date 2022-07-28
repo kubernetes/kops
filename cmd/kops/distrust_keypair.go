@@ -148,6 +148,8 @@ func distrustKeypair(out io.Writer, name string, keypairIDs []string, keyStore f
 	keyset, err := keyStore.FindKeyset(name)
 	if err != nil {
 		return err
+	} else if keyset == nil {
+		return fmt.Errorf("keyset not found")
 	}
 
 	if len(keypairIDs) == 0 {
