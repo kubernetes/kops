@@ -33,7 +33,7 @@ import (
 type ServerGroup struct {
 	Name      *string
 	Lifecycle fi.Lifecycle
-	SSHKey    *SSHKey
+	SSHKeys   []*SSHKey
 	Network   *Network
 
 	Count    int
@@ -153,8 +153,8 @@ func (_ *ServerGroup) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *
 		return nil
 	}
 
-	if e.SSHKey == nil {
-		return fmt.Errorf("failed to find ssh key for server %q", fi.StringValue(e.Name))
+	if len(e.SSHKeys) == 0 {
+		return fmt.Errorf("failed to find ssh keys for server %q", fi.StringValue(e.Name))
 	}
 	if e.Network == nil {
 		return fmt.Errorf("failed to find network for server %q", fi.StringValue(e.Name))
@@ -177,11 +177,6 @@ func (_ *ServerGroup) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *
 		opts := hcloud.ServerCreateOpts{
 			Name:             name,
 			StartAfterCreate: fi.Bool(true),
-			SSHKeys: []*hcloud.SSHKey{
-				{
-					ID: fi.IntValue(e.SSHKey.ID),
-				},
-			},
 			Networks: []*hcloud.Network{
 				{
 					ID: fi.IntValue(e.Network.ID),
@@ -202,6 +197,11 @@ func (_ *ServerGroup) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *
 				EnableIPv4: e.EnableIPv4,
 				EnableIPv6: e.EnableIPv6,
 			},
+		}
+
+		// Add the SSH keys
+		for _, sshkey := range e.SSHKeys {
+			opts.SSHKeys = append(opts.SSHKeys, &hcloud.SSHKey{ID: fi.IntValue(sshkey.ID)})
 		}
 
 		// Add the user-data hash label
