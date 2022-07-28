@@ -148,5 +148,6 @@ function kops-up() {
         --kops-binary-path="${KOPS}" \
         --kubernetes-version="${K8S_VERSION}" \
         --create-args="${create_args}" \
+        --control-plane-size="${KOPS_CONTROL_PLANE_SIZE:-1}" \
         --template-path="${KOPS_TEMPLATE-}"
 }
