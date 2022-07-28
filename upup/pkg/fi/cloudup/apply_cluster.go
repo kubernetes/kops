@@ -597,7 +597,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				KopsModelContext: modelContext,
 			}
 			l.Builders = append(l.Builders,
-				&hetznermodel.SSHKeyModelBuilder{HetznerModelContext: hetznerModelContext, Lifecycle: securityLifecycle},
 				&hetznermodel.NetworkModelBuilder{HetznerModelContext: hetznerModelContext, Lifecycle: networkLifecycle},
 				&hetznermodel.ExternalAccessModelBuilder{HetznerModelContext: hetznerModelContext, Lifecycle: networkLifecycle},
 				&hetznermodel.LoadBalancerModelBuilder{HetznerModelContext: hetznerModelContext, Lifecycle: networkLifecycle},
