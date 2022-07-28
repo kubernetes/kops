@@ -594,6 +594,20 @@ func validateKubeAPIServer(v *kops.KubeAPIServerConfig, c *kops.Cluster, fldPath
 		}
 	}
 
+	for _, plugin := range v.EnableAdmissionPlugins {
+		if plugin == "PodSecurityPolicy" && c.IsKubernetesGTE("1.25") {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("enableAdmissionPlugins"),
+				"PodSecurityPolicy has been removed from Kubernetes 1.25"))
+		}
+	}
+
+	for _, plugin := range v.AdmissionControl {
+		if plugin == "PodSecurityPolicy" && c.IsKubernetesGTE("1.25") {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("admissionControl"),
+				"PodSecurityPolicy has been removed from Kubernetes 1.25"))
+		}
+	}
+
 	proxyClientCertIsNil := v.ProxyClientCertFile == nil
 	proxyClientKeyIsNil := v.ProxyClientKeyFile == nil
 
