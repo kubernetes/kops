@@ -36,15 +36,15 @@ func Test_BuildMirroredAsset(t *testing.T) {
 		{
 			url: "https://artifacts.k8s.io/binaries/kops/%s/linux/amd64/nodeup",
 			expected: []string{
-				"https://artifacts.k8s.io/binaries/kops/1.25.0-alpha.1/linux/amd64/nodeup",
-				"https://github.com/kubernetes/kops/releases/download/v1.25.0-alpha.1/nodeup-linux-amd64",
+				"https://artifacts.k8s.io/binaries/kops/1.25.0-alpha.2/linux/amd64/nodeup",
+				"https://github.com/kubernetes/kops/releases/download/v1.25.0-alpha.2/nodeup-linux-amd64",
 			},
 		},
 		{
 			url: "https://artifacts.k8s.io/binaries/kops/%s/linux/arm64/nodeup",
 			expected: []string{
-				"https://artifacts.k8s.io/binaries/kops/1.25.0-alpha.1/linux/arm64/nodeup",
-				"https://github.com/kubernetes/kops/releases/download/v1.25.0-alpha.1/nodeup-linux-arm64",
+				"https://artifacts.k8s.io/binaries/kops/1.25.0-alpha.2/linux/arm64/nodeup",
+				"https://github.com/kubernetes/kops/releases/download/v1.25.0-alpha.2/nodeup-linux-arm64",
 			},
 		},
 	}
