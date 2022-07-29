@@ -25,7 +25,6 @@ metadata:
   name: weave-net
   labels:
     name: weave-net
-  namespace: kube-system
 rules:
   - apiGroups:
       - ''
@@ -67,7 +66,6 @@ metadata:
   name: weave-net
   labels:
     name: weave-net
-  namespace: kube-system
 roleRef:
   kind: ClusterRole
   name: weave-net
