@@ -54,6 +54,38 @@ const (
 	// Annotation key used to denote whether a Secret is named on a Certificate
 	// as a 'next private key' Secret resource.
 	IsNextPrivateKeySecretLabelKey = "cert-manager.io/next-private-key"
+
+	// Annotation key used to limit the number of CertificateRequests to be kept for a Certificate.
+	// Minimum value is 1.
+	// If unset all CertificateRequests will be kept.
+	RevisionHistoryLimitAnnotationKey = "cert-manager.io/revision-history-limit"
+
+	// Annotation key used to set the PrivateKeyAlgorithm for a Certificate.
+	// If PrivateKeyAlgorithm is specified and `size` is not provided,
+	// key size of 256 will be used for `ECDSA` key algorithm and
+	// key size of 2048 will be used for `RSA` key algorithm.
+	// key size is ignored when using the `Ed25519` key algorithm.
+	// If unset an algorithm `RSA` will be used.
+	PrivateKeyAlgorithmAnnotationKey = "cert-manager.io/private-key-algorithm"
+
+	// Annotation key used to set the PrivateKeyEncoding for a Certificate.
+	// If provided, allowed values are `PKCS1` and `PKCS8` standing for PKCS#1
+	// and PKCS#8, respectively.
+	// If unset an encoding `PKCS1` will be used.
+	PrivateKeyEncodingAnnotationKey = "cert-manager.io/private-key-encoding"
+
+	// Annotation key used to set the size of the private key for a Certificate.
+	// If PrivateKeyAlgorithm is set to `RSA`, valid values are `2048`, `4096` or `8192`,
+	// and will default to `2048` if not specified.
+	// If PrivateKeyAlgorithm is set to `ECDSA`, valid values are `256`, `384` or `521`,
+	// and will default to `256` if not specified.
+	// If PrivateKeyAlgorithm is set to `Ed25519`, Size is ignored.
+	// No other values are allowed.
+	PrivateKeySizeAnnotationKey = "cert-manager.io/private-key-size"
+
+	// Annotation key used to set the PrivateKeyRotationPolicy for a Certificate.
+	// If unset a policy `Never` will be used.
+	PrivateKeyRotationPolicyAnnotationKey = "cert-manager.io/private-key-rotation-policy"
 )
 
 const (
