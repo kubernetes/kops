@@ -36,29 +36,29 @@ func Test_BuildMirroredAsset(t *testing.T) {
 		{
 			url: "https://artifacts.k8s.io/binaries/kops/%s/images/protokube-linux-amd64",
 			expected: []string{
-				"https://artifacts.k8s.io/binaries/kops/1.22.5/images/protokube-linux-amd64",
-				"https://github.com/kubernetes/kops/releases/download/v1.22.5/images-protokube-linux-amd64",
+				"https://artifacts.k8s.io/binaries/kops/1.22.6/images/protokube-linux-amd64",
+				"https://github.com/kubernetes/kops/releases/download/v1.22.6/images-protokube-linux-amd64",
 			},
 		},
 		{
 			url: "https://artifacts.k8s.io/binaries/kops/%s/images/protokube-linux-arm64",
 			expected: []string{
-				"https://artifacts.k8s.io/binaries/kops/1.22.5/images/protokube-linux-arm64",
-				"https://github.com/kubernetes/kops/releases/download/v1.22.5/images-protokube-linux-arm64",
+				"https://artifacts.k8s.io/binaries/kops/1.22.6/images/protokube-linux-arm64",
+				"https://github.com/kubernetes/kops/releases/download/v1.22.6/images-protokube-linux-arm64",
 			},
 		},
 		{
 			url: "https://artifacts.k8s.io/binaries/kops/%s/linux/amd64/nodeup",
 			expected: []string{
-				"https://artifacts.k8s.io/binaries/kops/1.22.5/linux/amd64/nodeup",
-				"https://github.com/kubernetes/kops/releases/download/v1.22.5/nodeup-linux-amd64",
+				"https://artifacts.k8s.io/binaries/kops/1.22.6/linux/amd64/nodeup",
+				"https://github.com/kubernetes/kops/releases/download/v1.22.6/nodeup-linux-amd64",
 			},
 		},
 		{
 			url: "https://artifacts.k8s.io/binaries/kops/%s/linux/arm64/nodeup",
 			expected: []string{
-				"https://artifacts.k8s.io/binaries/kops/1.22.5/linux/arm64/nodeup",
-				"https://github.com/kubernetes/kops/releases/download/v1.22.5/nodeup-linux-arm64",
+				"https://artifacts.k8s.io/binaries/kops/1.22.6/linux/arm64/nodeup",
+				"https://github.com/kubernetes/kops/releases/download/v1.22.6/nodeup-linux-arm64",
 			},
 		},
 	}
