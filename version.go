@@ -21,8 +21,8 @@ var Version = KOPS_RELEASE_VERSION
 
 // These constants are parsed by build tooling - be careful about changing the formats
 const (
-	KOPS_RELEASE_VERSION = "1.22.5"
-	KOPS_CI_VERSION      = "1.22.6"
+	KOPS_RELEASE_VERSION = "1.22.6"
+	KOPS_CI_VERSION      = "1.22.7"
 )
 
 // GitVersion should be replaced by the makefile
