@@ -17,7 +17,10 @@ limitations under the License.
 package model
 
 import (
+	"path/filepath"
+
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
 // EtcdManagerTLSBuilder configures TLS support for etcd-manager
@@ -50,9 +53,16 @@ func (b *EtcdManagerTLSBuilder) Build(ctx *fi.ModelBuilderContext) error {
 		}
 
 		for fileName, keystoreName := range keys {
-			if err := b.buildCertificatePairTask(ctx, keystoreName, d, fileName, nil, nil, true); err != nil {
+			if err := b.buildCertificatePairTask(ctx, keystoreName, d, fileName, nil, nil, false); err != nil {
 				return err
 			}
+			ctx.AddTask(&nodetasks.File{
+				Path:     filepath.Join(d, fileName+".crt"),
+				Contents: fi.NewStringResource(b.NodeupConfig.CAs[keystoreName]),
+				Type:     nodetasks.FileType_File,
+				Mode:     fi.String("0644"),
+			})
+
 		}
 	}
 
