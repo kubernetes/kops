@@ -48,7 +48,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: networking.weave/k8s-1.12.yaml
-    manifestHash: eb848eaccd84305e17ea213aa255625fb3c35cc76fd2386adbc5385e2ed72557
+    manifestHash: 88a53d6a9d91f7515d7d369200e3773db2244222bbb964a5119611b45a6db1d6
     name: networking.weave
     selector:
       role.kubernetes.io/networking: "1"
