@@ -26,7 +26,7 @@ function haveds() {
 # Start a cluster with an old version of channel
 
 export KOPS_BASE_URL
-KOPS_BASE_URL="$(curl -s https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.21/latest-ci.txt)"
+KOPS_BASE_URL="https://artifacts.k8s.io/binaries/kops/1.21.5"
 KOPS=$(kops-download-from-base)
 
 # Start with a cluster running nodeTerminationHandler
