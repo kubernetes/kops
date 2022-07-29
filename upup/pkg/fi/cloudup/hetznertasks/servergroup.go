@@ -36,8 +36,8 @@ type ServerGroup struct {
 	SSHKey    *SSHKey
 	Network   *Network
 
-	Count    int
-	Outdated int
+	Count      int
+	NeedUpdate []string
 
 	Location string
 	Size     string
@@ -83,35 +83,40 @@ func (v *ServerGroup) Find(c *fi.Context) (*ServerGroup, error) {
 	v.Labels[hetzner.TagKubernetesInstanceUserData] = userDataHash
 
 	actual := *v
-	actual.Count = 0
+	actual.Count = len(servers)
 
+	// Find servers that need to be updated
 	for _, server := range servers {
+		// Ignore servers that are already labeled as needing update
+		if _, ok := server.Labels[hetzner.TagKubernetesInstanceNeedsUpdate]; ok {
+			continue
+		}
+
+		// Check if server matches the expected group template
 		if server.Labels[hetzner.TagKubernetesInstanceUserData] != userDataHash {
-			actual.Outdated++
+			actual.NeedUpdate = append(actual.NeedUpdate, server.Name)
 			continue
 		}
 		if server.Datacenter == nil || server.Datacenter.Location == nil || server.Datacenter.Location.Name != v.Location {
-			actual.Outdated++
+			actual.NeedUpdate = append(actual.NeedUpdate, server.Name)
 			continue
 		}
 		if server.ServerType == nil || server.ServerType.Name != v.Size {
-			actual.Outdated++
+			actual.NeedUpdate = append(actual.NeedUpdate, server.Name)
 			continue
 		}
 		if server.Image == nil || server.Image.Name != v.Image {
-			actual.Outdated++
+			actual.NeedUpdate = append(actual.NeedUpdate, server.Name)
 			continue
 		}
 		if (server.PublicNet.IPv4.IP != nil) != v.EnableIPv4 {
-			actual.Outdated++
+			actual.NeedUpdate = append(actual.NeedUpdate, server.Name)
 			continue
 		}
 		if (server.PublicNet.IPv6.IP != nil) != v.EnableIPv6 {
-			actual.Outdated++
+			actual.NeedUpdate = append(actual.NeedUpdate, server.Name)
 			continue
 		}
-
-		actual.Count++
 	}
 
 	return &actual, nil
@@ -142,6 +147,28 @@ func (_ *ServerGroup) CheckChanges(a, e, changes *ServerGroup) error {
 
 func (_ *ServerGroup) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *ServerGroup) error {
 	client := t.Cloud.ServerClient()
+
+	if a != nil {
+		// Add "kops.k8s.io/needs-update" label to servers needing update
+		for _, serverName := range a.NeedUpdate {
+			server, _, err := client.GetByName(context.TODO(), serverName)
+			if err != nil {
+				return err
+			}
+			if server == nil {
+				continue
+			}
+
+			server.Labels[hetzner.TagKubernetesInstanceNeedsUpdate] = ""
+			_, _, err = client.Update(context.TODO(), server, hcloud.ServerUpdateOpts{
+				Name:   server.Name,
+				Labels: server.Labels,
+			})
+			if err != nil {
+				return err
+			}
+		}
+	}
 
 	actualCount := 0
 	if a != nil {
