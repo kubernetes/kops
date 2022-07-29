@@ -86,7 +86,8 @@ func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.Context) (string
 			return "", fmt.Errorf("error finding address for %v: %v", hasAddress, err)
 		}
 		if len(addresses) == 0 {
-			klog.Warningf("Task did not have an address: %v", hasAddress)
+			// Such tasks won't have an address in dry-run mode, until the resource is created
+			klog.V(2).Infof("Task did not have an address: %v", hasAddress)
 			continue
 		}
 		for _, address := range addresses {

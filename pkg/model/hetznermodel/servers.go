@@ -18,6 +18,7 @@ package hetznermodel
 
 import (
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetznertasks"
@@ -33,6 +34,24 @@ type ServerGroupModelBuilder struct {
 var _ fi.ModelBuilder = &ServerGroupModelBuilder{}
 
 func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
+	var sshkeyTasks []*hetznertasks.SSHKey
+	for _, sshkey := range b.SSHPublicKeys {
+		fingerprint, err := pki.ComputeOpenSSHKeyFingerprint(string(sshkey))
+		if err != nil {
+			return err
+		}
+		t := &hetznertasks.SSHKey{
+			Name:      fi.String(b.ClusterName() + "-" + fingerprint),
+			Lifecycle: b.Lifecycle,
+			PublicKey: string(sshkey),
+			Labels: map[string]string{
+				hetzner.TagKubernetesClusterName: b.ClusterName(),
+			},
+		}
+		c.AddTask(t)
+		sshkeyTasks = append(sshkeyTasks, t)
+	}
+
 	for _, ig := range b.InstanceGroups {
 		igSize := fi.Int32Value(ig.Spec.MinSize)
 
@@ -49,10 +68,9 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		serverGroup := hetznertasks.ServerGroup{
 			Name:       fi.String(ig.Name),
 			Lifecycle:  b.Lifecycle,
-			SSHKey:     b.LinkToSSHKey(),
+			SSHKeys:    sshkeyTasks,
 			Network:    b.LinkToNetwork(),
 			Count:      int(igSize),
-			Outdated:   0,
 			Location:   ig.Spec.Subnets[0],
 			Size:       ig.Spec.MachineType,
 			Image:      ig.Spec.Image,
