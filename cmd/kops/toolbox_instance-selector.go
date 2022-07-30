@@ -26,7 +26,6 @@ import (
 	"github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/commands/commandutils"
@@ -111,7 +110,7 @@ var (
 )
 
 // NewCmdToolboxInstanceSelector defines the cobra command for the instance-selector tool
-func NewCmdToolboxInstanceSelector(f *util.Factory, out io.Writer) *cobra.Command {
+func NewCmdToolboxInstanceSelector(f commandutils.Factory, out io.Writer) *cobra.Command {
 	options := &InstanceSelectorOptions{}
 
 	commandline := cli.New(
@@ -233,7 +232,7 @@ func NewCmdToolboxInstanceSelector(f *util.Factory, out io.Writer) *cobra.Comman
 }
 
 // RunToolboxInstanceSelector executes the instance-selector tool to create instance groups with declarative resource specifications
-func RunToolboxInstanceSelector(ctx context.Context, f *util.Factory, out io.Writer, commandline *cli.CommandLineInterface, options *InstanceSelectorOptions) error {
+func RunToolboxInstanceSelector(ctx context.Context, f commandutils.Factory, out io.Writer, commandline *cli.CommandLineInterface, options *InstanceSelectorOptions) error {
 	clientset, cluster, channel, err := retrieveClusterRefs(ctx, f, options.ClusterName)
 	if err != nil {
 		return err
@@ -372,8 +371,8 @@ func processAndValidateFlags(commandline *cli.CommandLineInterface) error {
 	return nil
 }
 
-func retrieveClusterRefs(ctx context.Context, f *util.Factory, clusterName string) (simple.Clientset, *kops.Cluster, *kops.Channel, error) {
-	clientset, err := f.Clientset()
+func retrieveClusterRefs(ctx context.Context, f commandutils.Factory, clusterName string) (simple.Clientset, *kops.Cluster, *kops.Channel, error) {
+	clientset, err := f.KopsClient()
 	if err != nil {
 		return nil, nil, nil, err
 	}
