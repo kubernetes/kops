@@ -89,7 +89,7 @@ func NewCmdGetInstanceGroups(f *util.Factory, out io.Writer, getOptions *GetOpti
 }
 
 func RunGetInstanceGroups(ctx context.Context, f commandutils.Factory, out io.Writer, options *GetInstanceGroupsOptions) error {
-	clientset, err := f.Clientset()
+	clientset, err := f.KopsClient()
 	if err != nil {
 		return err
 	}

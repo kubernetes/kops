@@ -70,7 +70,7 @@ type SSHKeyItem struct {
 }
 
 func RunGetSSHPublicKeys(ctx context.Context, f *util.Factory, out io.Writer, options *GetSSHPublicKeysOptions) error {
-	clientset, err := f.Clientset()
+	clientset, err := f.KopsClient()
 	if err != nil {
 		return err
 	}

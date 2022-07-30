@@ -62,7 +62,7 @@ For example, a valid value follows the format s3://<bucket>.
 Trailing slash will be trimmed.`
 )
 
-func (f *Factory) Clientset() (simple.Clientset, error) {
+func (f *Factory) KopsClient() (simple.Clientset, error) {
 	if f.clientset == nil {
 		registryPath := f.options.RegistryPath
 		klog.V(2).Infof("state store %s", registryPath)

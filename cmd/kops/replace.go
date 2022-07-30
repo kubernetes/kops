@@ -85,7 +85,7 @@ func NewCmdReplace(f *util.Factory, out io.Writer) *cobra.Command {
 
 // RunReplace processes the replace command
 func RunReplace(ctx context.Context, f *util.Factory, out io.Writer, c *ReplaceOptions) error {
-	clientset, err := f.Clientset()
+	clientset, err := f.KopsClient()
 	if err != nil {
 		return err
 	}

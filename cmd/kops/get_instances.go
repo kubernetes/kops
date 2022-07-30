@@ -81,7 +81,7 @@ func NewCmdGetInstances(f *util.Factory, out io.Writer, options *GetOptions) *co
 }
 
 func RunGetInstances(ctx context.Context, f *util.Factory, out io.Writer, options *GetOptions) error {
-	clientset, err := f.Clientset()
+	clientset, err := f.KopsClient()
 	if err != nil {
 		return err
 	}

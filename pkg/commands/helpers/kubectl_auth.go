@@ -218,7 +218,7 @@ func loadCachedExecCredential(cacheFilePath string) (*ExecCredential, error) {
 }
 
 func buildCredentials(ctx context.Context, f *util.Factory, options *HelperKubectlAuthOptions) (*ExecCredentialStatus, error) {
-	clientset, err := f.Clientset()
+	clientset, err := f.KopsClient()
 	if err != nil {
 		return nil, err
 	}
