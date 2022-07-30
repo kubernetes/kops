@@ -18,17 +18,19 @@ package channels
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"go.uber.org/multierr"
 	"k8s.io/apimachinery/pkg/api/meta"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/restmapper"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/kubemanifest"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 type Applier struct {
@@ -84,59 +86,48 @@ func (p *Applier) applyObjectsOfKind(ctx context.Context, gvk schema.GroupVersio
 }
 
 func (p *Applier) applyObjects(ctx context.Context, restMapping *meta.RESTMapping, expectedObjects []*kubemanifest.Object) error {
-	gvr := restMapping.Resource
-
-	baseResource := p.Client.Resource(gvr)
-
-	actualObjects, err := baseResource.List(ctx, v1.ListOptions{})
-	if err != nil {
-		return fmt.Errorf("error listing objects: %w", err)
-	}
-
-	actualMap := make(map[string]unstructured.Unstructured)
-	for _, actualObject := range actualObjects.Items {
-		key := actualObject.GetNamespace() + "/" + actualObject.GetName()
-		actualMap[key] = actualObject
-	}
-
 	var merr error
 
 	for _, expectedObject := range expectedObjects {
-		name := expectedObject.GetName()
-		namespace := expectedObject.GetNamespace()
-		key := namespace + "/" + name
-
-		var resource dynamic.ResourceInterface
-		if restMapping.Scope.Name() == meta.RESTScopeNameNamespace {
-			if namespace == "" {
-				return fmt.Errorf("namespace not set for namespace-scoped object %q", key)
-			}
-			resource = p.Client.Resource(gvr).Namespace(namespace)
-		} else {
-			if namespace != "" {
-				return fmt.Errorf("namespace was set for cluster-scoped object %q", key)
-			}
-			resource = p.Client.Resource(gvr)
-		}
-
-		obj := expectedObject.ToUnstructured()
-
-		if actual, found := actualMap[key]; found {
-			klog.V(2).Infof("updating %s %s", gvr, key)
-			var opts v1.UpdateOptions
-			obj.SetResourceVersion(actual.GetResourceVersion())
-			if _, err := resource.Update(ctx, obj, opts); err != nil {
-				merr = multierr.Append(merr, fmt.Errorf("failed to create %s: %w", key, err))
-			}
-		} else {
-			klog.V(2).Infof("creating %s %s", gvr, key)
-			var opts v1.CreateOptions
-			if _, err := resource.Create(ctx, obj, opts); err != nil {
-				merr = multierr.Append(merr, fmt.Errorf("failed to create %s: %w", key, err))
-			}
-		}
-
+		err := p.patchObject(ctx, restMapping, expectedObject)
+		merr = multierr.Append(merr, err)
 	}
 
 	return merr
+}
+
+func (p *Applier) patchObject(ctx context.Context, restMapping *meta.RESTMapping, expectedObject *kubemanifest.Object) error {
+	gvr := restMapping.Resource
+	name := expectedObject.GetName()
+	namespace := expectedObject.GetNamespace()
+	key := namespace + "/" + name
+
+	var resource dynamic.ResourceInterface
+
+	if restMapping.Scope.Name() == meta.RESTScopeNameNamespace {
+		if namespace == "" {
+			return fmt.Errorf("namespace not set for namespace-scoped object %q", key)
+		}
+		resource = p.Client.Resource(gvr).Namespace(namespace)
+	} else {
+		if namespace != "" {
+			return fmt.Errorf("namespace was set for cluster-scoped object %q", key)
+		}
+		resource = p.Client.Resource(gvr)
+	}
+
+	obj := expectedObject.ToUnstructured()
+
+	jsonData, err := json.Marshal(obj)
+	if err != nil {
+		return fmt.Errorf("failed to marsal %q into json: %w", obj.GetName(), err)
+	}
+
+	{
+		_, err := resource.Patch(ctx, obj.GetName(), types.ApplyPatchType, jsonData, v1.PatchOptions{FieldManager: "kops", Force: fi.Bool(true)})
+		if err != nil {
+			return fmt.Errorf("failed to path object %q: %w", obj.GetName(), err)
+		}
+	}
+	return nil
 }
