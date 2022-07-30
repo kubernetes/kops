@@ -22,12 +22,13 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/channels/pkg/cmd"
+	"k8s.io/kops/cmd/kops/util"
 )
 
 func main() {
 	klog.InitFlags(nil)
 
-	f := &cmd.DefaultFactory{}
+	f := util.NewFactory(nil)
 	if err := cmd.Execute(f, os.Stdout); err != nil {
 		fmt.Fprintf(os.Stderr, "\n%v\n", err)
 		os.Exit(1)
