@@ -62,7 +62,7 @@ func NewCmdDeleteSSHPublicKey(f *util.Factory, out io.Writer) *cobra.Command {
 }
 
 func RunDeleteSSHPublicKey(ctx context.Context, f *util.Factory, out io.Writer, options *DeleteSSHPublicKeyOptions) error {
-	clientset, err := f.Clientset()
+	clientset, err := f.KopsClient()
 	if err != nil {
 		return err
 	}

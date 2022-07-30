@@ -135,7 +135,7 @@ func RunEditInstanceGroup(ctx context.Context, f *util.Factory, out io.Writer, o
 		klog.Warningf("%v", err)
 	}
 
-	clientset, err := f.Clientset()
+	clientset, err := f.KopsClient()
 	if err != nil {
 		return err
 	}

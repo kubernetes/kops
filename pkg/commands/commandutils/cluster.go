@@ -33,7 +33,7 @@ func CompleteClusterName(f Factory, suppressIfArgs bool, suppressArgs bool) func
 
 		ConfigureKlogForCompletion()
 
-		client, err := f.Clientset()
+		client, err := f.KopsClient()
 		if err != nil {
 			return CompletionError("getting clientset", err)
 		}
