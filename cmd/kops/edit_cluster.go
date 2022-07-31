@@ -74,7 +74,7 @@ func NewCmdEditCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &EditClusterOptions{}
 
 	cmd := &cobra.Command{
-		Use:               "cluster [CLUSTER]",
+		Use:               "cluster",
 		Short:             i18n.T("Edit cluster."),
 		Long:              editClusterLong,
 		Example:           editClusterExample,
