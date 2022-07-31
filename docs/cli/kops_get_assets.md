@@ -14,7 +14,7 @@ When invoked with the `--copy` flag, will copy each asset from the
 canonical to the download location.
 
 ```
-kops get assets [CLUSTER] [flags]
+kops get assets [flags]
 ```
 
 ### Examples

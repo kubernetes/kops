@@ -14,7 +14,7 @@ Create a new Docker config and store it in the state store. Used to configure Do
  This will also work when using containerd as the container runtime.
 
 ```
-kops create secret dockerconfig [CLUSTER] -f FILENAME [flags]
+kops create secret dockerconfig -f FILENAME [flags]
 ```
 
 ### Examples

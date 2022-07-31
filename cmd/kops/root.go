@@ -37,6 +37,7 @@ import (
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/commands/commandutils"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
 )
@@ -247,6 +248,15 @@ func (c *RootCmd) clusterNameArgsAllowNoCluster(clusterName *string) func(cmd *c
 //  * <clustername> (and --name not specified)
 // Everything else is an error.
 func (c *RootCmd) ProcessArgs(args []string) error {
+	if len(args) > 0 {
+		fmt.Printf("\n")
+		fmt.Printf("\nClusterName as positional argument is deprecated and will be removed\n")
+		fmt.Printf("Use `KOPS_FEATURE_FLAGS=PositionalClusterArg` to revert to the old behavior.")
+		fmt.Printf("\n")
+	}
+	if !featureflag.PositionalClusterArg.Enabled() {
+		return nil
+	}
 	if len(args) == 0 {
 		return nil
 	}
