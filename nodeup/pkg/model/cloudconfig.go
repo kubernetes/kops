@@ -190,6 +190,28 @@ func (b *CloudConfigBuilder) build(c *fi.ModelBuilderContext, inTree bool) error
 				fmt.Sprintf("ignore-volume-az=%t", fi.BoolValue(bs.IgnoreAZ)),
 				"")
 		}
+
+		if networking := osc.Network; networking != nil {
+			// Networking Config
+			// https://github.com/kubernetes/cloud-provider-openstack/blob/master/docs/openstack-cloud-controller-manager/using-openstack-cloud-controller-manager.md#networking
+			var networkingLines []string
+
+			if networking.IPv6SupportDisabled != nil {
+				networkingLines = append(networkingLines, fmt.Sprintf("ipv6-support-disabled=%t", fi.BoolValue(networking.IPv6SupportDisabled)))
+			}
+			for _, name := range networking.PublicNetworkNames {
+				networkingLines = append(networkingLines, fmt.Sprintf("public-network-name=%s", fi.StringValue(name)))
+			}
+			for _, name := range networking.InternalNetworkNames {
+				networkingLines = append(networkingLines, fmt.Sprintf("internal-network-name=%s", fi.StringValue(name)))
+			}
+
+			if len(networkingLines) > 0 {
+				lines = append(lines, "[Networking]")
+				lines = append(lines, networkingLines...)
+				lines = append(lines, "")
+			}
+		}
 	case "azure":
 		requireGlobal = false
 
