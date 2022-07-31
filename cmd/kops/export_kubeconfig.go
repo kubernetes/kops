@@ -107,7 +107,7 @@ func NewCmdExportKubeconfig(f *util.Factory, out io.Writer) *cobra.Command {
 }
 
 func RunExportKubeconfig(ctx context.Context, f *util.Factory, out io.Writer, options *ExportKubeconfigOptions, args []string) error {
-	clientset, err := f.Clientset()
+	clientset, err := f.KopsClient()
 	if err != nil {
 		return err
 	}

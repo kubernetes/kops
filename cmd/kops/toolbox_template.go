@@ -34,7 +34,6 @@ import (
 
 	helmvalues "helm.sh/helm/v3/pkg/cli/values"
 
-	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/try"
 	"k8s.io/kops/pkg/util/templater"
@@ -74,7 +73,7 @@ type ToolboxTemplateOptions struct {
 }
 
 // NewCmdToolboxTemplate returns a new templating command.
-func NewCmdToolboxTemplate(f *util.Factory, out io.Writer) *cobra.Command {
+func NewCmdToolboxTemplate(f commandutils.Factory, out io.Writer) *cobra.Command {
 	options := &ToolboxTemplateOptions{
 		channel: kopsapi.DefaultChannel,
 	}
@@ -121,7 +120,7 @@ func NewCmdToolboxTemplate(f *util.Factory, out io.Writer) *cobra.Command {
 }
 
 // RunToolBoxTemplate is the action for the command
-func RunToolBoxTemplate(f *util.Factory, out io.Writer, options *ToolboxTemplateOptions) error {
+func RunToolBoxTemplate(f commandutils.Factory, out io.Writer, options *ToolboxTemplateOptions) error {
 	// @step: read in the configuration if any
 	context, err := newTemplateContext(options.configPath, options.values, options.stringValues)
 	if err != nil {

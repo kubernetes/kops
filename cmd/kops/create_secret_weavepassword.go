@@ -88,7 +88,7 @@ func NewCmdCreateSecretWeavePassword(f *util.Factory, out io.Writer) *cobra.Comm
 	return cmd
 }
 
-func RunCreateSecretWeavePassword(ctx context.Context, f *util.Factory, out io.Writer, options *CreateSecretWeavePasswordOptions) error {
+func RunCreateSecretWeavePassword(ctx context.Context, f commandutils.Factory, out io.Writer, options *CreateSecretWeavePasswordOptions) error {
 	secret, err := fi.CreateSecret()
 	if err != nil {
 		return fmt.Errorf("creating Weave password: %v", err)
@@ -99,7 +99,7 @@ func RunCreateSecretWeavePassword(ctx context.Context, f *util.Factory, out io.W
 		return err
 	}
 
-	clientset, err := f.Clientset()
+	clientset, err := f.KopsClient()
 	if err != nil {
 		return err
 	}

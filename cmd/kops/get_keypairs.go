@@ -156,7 +156,7 @@ func listKeypairs(keyStore fi.CAStore, names []string, includeDistrusted bool) (
 }
 
 func RunGetKeypairs(ctx context.Context, f commandutils.Factory, out io.Writer, options *GetKeypairsOptions) error {
-	clientset, err := f.Clientset()
+	clientset, err := f.KopsClient()
 	if err != nil {
 		return err
 	}

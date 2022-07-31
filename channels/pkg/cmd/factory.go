@@ -17,12 +17,8 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
-
-	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 	"k8s.io/client-go/restmapper"
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -35,92 +31,4 @@ type Factory interface {
 	CertManagerClient() (certmanager.Interface, error)
 	RESTMapper() (*restmapper.DeferredDiscoveryRESTMapper, error)
 	DynamicClient() (dynamic.Interface, error)
-}
-
-type DefaultFactory struct {
-	ConfigFlags genericclioptions.ConfigFlags
-
-	kubernetesClient  kubernetes.Interface
-	certManagerClient certmanager.Interface
-
-	cachedRESTConfig *rest.Config
-	dynamicClient    dynamic.Interface
-	restMapper       *restmapper.DeferredDiscoveryRESTMapper
-}
-
-var _ Factory = &DefaultFactory{}
-
-func (f *DefaultFactory) restConfig() (*rest.Config, error) {
-	if f.cachedRESTConfig == nil {
-		restConfig, err := f.ConfigFlags.ToRESTConfig()
-		if err != nil {
-			return nil, fmt.Errorf("cannot load kubecfg settings: %w", err)
-		}
-		restConfig.UserAgent = "kops"
-		f.cachedRESTConfig = restConfig
-	}
-	return f.cachedRESTConfig, nil
-}
-
-func (f *DefaultFactory) KubernetesClient() (kubernetes.Interface, error) {
-	if f.kubernetesClient == nil {
-		restConfig, err := f.restConfig()
-		if err != nil {
-			return nil, err
-		}
-		k8sClient, err := kubernetes.NewForConfig(restConfig)
-		if err != nil {
-			return nil, fmt.Errorf("cannot build kube client: %w", err)
-		}
-		f.kubernetesClient = k8sClient
-	}
-
-	return f.kubernetesClient, nil
-}
-
-func (f *DefaultFactory) DynamicClient() (dynamic.Interface, error) {
-	if f.dynamicClient == nil {
-		restConfig, err := f.restConfig()
-		if err != nil {
-			return nil, fmt.Errorf("cannot load kubecfg settings: %w", err)
-		}
-		dynamicClient, err := dynamic.NewForConfig(restConfig)
-		if err != nil {
-			return nil, fmt.Errorf("cannot build dynamicClient client: %v", err)
-		}
-		f.dynamicClient = dynamicClient
-	}
-
-	return f.dynamicClient, nil
-}
-
-func (f *DefaultFactory) CertManagerClient() (certmanager.Interface, error) {
-	if f.certManagerClient == nil {
-		restConfig, err := f.restConfig()
-		if err != nil {
-			return nil, err
-		}
-		certManagerClient, err := certmanager.NewForConfig(restConfig)
-		if err != nil {
-			return nil, fmt.Errorf("cannot build kube client: %v", err)
-		}
-		f.certManagerClient = certManagerClient
-	}
-
-	return f.certManagerClient, nil
-}
-
-func (f *DefaultFactory) RESTMapper() (*restmapper.DeferredDiscoveryRESTMapper, error) {
-	if f.restMapper == nil {
-		discoveryClient, err := f.ConfigFlags.ToDiscoveryClient()
-		if err != nil {
-			return nil, err
-		}
-
-		restMapper := restmapper.NewDeferredDiscoveryRESTMapper(discoveryClient)
-
-		f.restMapper = restMapper
-	}
-
-	return f.restMapper, nil
 }

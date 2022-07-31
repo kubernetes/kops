@@ -153,7 +153,7 @@ func RunCreateKeypair(ctx context.Context, f *util.Factory, out io.Writer, optio
 		return fmt.Errorf("error getting cluster: %q: %v", options.ClusterName, err)
 	}
 
-	clientSet, err := f.Clientset()
+	clientSet, err := f.KopsClient()
 	if err != nil {
 		return fmt.Errorf("error getting clientset: %v", err)
 	}

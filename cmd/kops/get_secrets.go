@@ -110,7 +110,7 @@ func RunGetSecrets(ctx context.Context, f *util.Factory, out io.Writer, options 
 		return fmt.Errorf("unknown secret type %q", options.Type)
 	}
 
-	clientset, err := f.Clientset()
+	clientset, err := f.KopsClient()
 	if err != nil {
 		return err
 	}
