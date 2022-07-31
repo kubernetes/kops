@@ -154,7 +154,7 @@ func RunCreateInstanceGroup(ctx context.Context, f *util.Factory, out io.Writer,
 		return fmt.Errorf("error getting cluster: %q: %v", options.ClusterName, err)
 	}
 
-	clientset, err := f.Clientset()
+	clientset, err := f.KopsClient()
 	if err != nil {
 		return err
 	}

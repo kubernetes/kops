@@ -19,5 +19,5 @@ package commandutils
 import "k8s.io/kops/pkg/client/simple"
 
 type Factory interface {
-	Clientset() (simple.Clientset, error)
+	KopsClient() (simple.Clientset, error)
 }
