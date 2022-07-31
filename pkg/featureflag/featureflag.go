@@ -92,6 +92,8 @@ var (
 	ImageDigest = new("ImageDigest", Bool(true))
 	// Hetzner toggles the Hetzner Cloud support.
 	Hetzner = new("Hetzner", Bool(false))
+	// PositionalClusterArg enables passing cluster name as positional argument to various kOps commands
+	PositionalClusterArg = new("PositionalClusterArg", Bool(false))
 )
 
 // FeatureFlag defines a feature flag
