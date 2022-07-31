@@ -1040,7 +1040,7 @@ func (i *integrationTest) setupCluster(t *testing.T, inputYAML string, ctx conte
 		t.Fatalf("error getting cluster: %v", err)
 	}
 
-	clientSet, err := factory.Clientset()
+	clientSet, err := factory.KopsClient()
 	if err != nil {
 		t.Fatalf("error getting clientset: %v", err)
 	}

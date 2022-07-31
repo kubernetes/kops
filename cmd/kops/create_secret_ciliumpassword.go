@@ -85,13 +85,13 @@ func NewCmdCreateSecretCiliumPassword(f *util.Factory, out io.Writer) *cobra.Com
 	return cmd
 }
 
-func RunCreateSecretCiliumEncryptionConfig(ctx context.Context, f *util.Factory, out io.Writer, options *CreateSecretCiliumPasswordOptions) error {
+func RunCreateSecretCiliumEncryptionConfig(ctx context.Context, f commandutils.Factory, out io.Writer, options *CreateSecretCiliumPasswordOptions) error {
 	cluster, err := GetCluster(ctx, f, options.ClusterName)
 	if err != nil {
 		return err
 	}
 
-	clientset, err := f.Clientset()
+	clientset, err := f.KopsClient()
 	if err != nil {
 		return err
 	}

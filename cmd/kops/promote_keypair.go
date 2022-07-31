@@ -123,7 +123,7 @@ func RunPromoteKeypair(ctx context.Context, f *util.Factory, out io.Writer, opti
 		return fmt.Errorf("getting cluster: %q: %v", options.ClusterName, err)
 	}
 
-	clientSet, err := f.Clientset()
+	clientSet, err := f.KopsClient()
 	if err != nil {
 		return fmt.Errorf("getting clientset: %v", err)
 	}

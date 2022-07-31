@@ -118,7 +118,7 @@ func NewCmdGetCluster(f *util.Factory, out io.Writer, getOptions *GetOptions) *c
 }
 
 func RunGetClusters(ctx context.Context, f commandutils.Factory, out io.Writer, options *GetClusterOptions) error {
-	client, err := f.Clientset()
+	client, err := f.KopsClient()
 	if err != nil {
 		return err
 	}
