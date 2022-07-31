@@ -12,7 +12,7 @@ Create a Kubernetes cluster using command line flags. This command creates cloud
  These operations are done in parallel and rely on eventual consistency.
 
 ```
-kops create cluster [CLUSTER] [flags]
+kops create cluster [flags]
 ```
 
 ### Examples

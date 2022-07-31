@@ -10,7 +10,7 @@ Create an encryption config.
 Create a new encryption config and store it in the state store. Used to configure encryption-at-rest by the kube-apiserver process.
 
 ```
-kops create secret encryptionconfig [CLUSTER] -f FILENAME [flags]
+kops create secret encryptionconfig -f FILENAME [flags]
 ```
 
 ### Examples

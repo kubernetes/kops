@@ -6,7 +6,7 @@
 Get one or many secrets.
 
 ```
-kops get sshpublickeys [CLUSTER] [flags]
+kops get sshpublickeys [flags]
 ```
 
 ### Examples
