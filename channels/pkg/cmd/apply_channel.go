@@ -39,8 +39,7 @@ import (
 )
 
 type ApplyChannelOptions struct {
-	Yes   bool
-	Files []string
+	Yes bool
 }
 
 func NewCmdApplyChannel(f Factory, out io.Writer) *cobra.Command {
@@ -56,7 +55,6 @@ func NewCmdApplyChannel(f Factory, out io.Writer) *cobra.Command {
 	}
 
 	cmd.Flags().BoolVar(&options.Yes, "yes", false, "Apply update")
-	cmd.Flags().StringSliceVarP(&options.Files, "filename", "f", []string{}, "Apply from a local file")
 
 	return cmd
 }
@@ -95,17 +93,17 @@ func RunApplyChannel(ctx context.Context, f Factory, out io.Writer, options *App
 	// Remove Pre and Patch, as they make semver comparisons impractical
 	kubernetesVersion.Pre = nil
 
+	if len(args) != 1 {
+		return fmt.Errorf("unexpected number of arguments. Only one channel may be processed at the same time.")
+	}
+
+	channelLocation := args[0]
+
 	// menu is the expected list of addons in the cluster and their configurations.
-	menu, err := buildMenu(kubernetesVersion, args, false)
+	menu, err := buildMenu(kubernetesVersion, channelLocation)
 	if err != nil {
 		return fmt.Errorf("cannot build the addon menu from args: %w", err)
 	}
-
-	filesMenu, err := buildMenu(kubernetesVersion, options.Files, true)
-	if err != nil {
-		return fmt.Errorf("cannot build the addon menu from files: %w", err)
-	}
-	menu.MergeAddons(filesMenu)
 
 	return applyMenu(ctx, menu, k8sClient, cmClient, dynamicClient, restMapper, options.Yes)
 }
@@ -221,55 +219,41 @@ func getChannelVersions(ctx context.Context, k8sClient kubernetes.Interface) (ma
 	return channelVersions, nil
 }
 
-func buildMenu(kubernetesVersion semver.Version, args []string, localFiles bool) (*channels.AddonMenu, error) {
+func buildMenu(kubernetesVersion semver.Version, channelLocation string) (*channels.AddonMenu, error) {
 	menu := channels.NewAddonMenu()
 
-	for _, name := range args {
-		location, err := url.Parse(name)
-		if err != nil {
-			return nil, fmt.Errorf("unable to parse argument %q as url", name)
-		}
-		if !location.IsAbs() {
-			if !localFiles {
-				// We recognize the following "well-known" format:
-				// <name> with no slashes ->
-				if strings.Contains(name, "/") {
-					return nil, fmt.Errorf("channel format not recognized (did you mean to use `-f` to specify a local file?): %q", name)
-				}
-				expanded := "https://raw.githubusercontent.com/kubernetes/kops/master/addons/" + name + "/addon.yaml"
-				location, err = url.Parse(expanded)
-				if err != nil {
-					return nil, fmt.Errorf("unable to parse expanded argument %q as url", expanded)
-				}
-				// Disallow the use of legacy addons from the "well-known" location starting Kubernetes 1.23:
-				// https://raw.githubusercontent.com/kubernetes/kops/master/addons/<name>/addon.yaml
-				if util.IsKubernetesGTE("1.23", kubernetesVersion) {
-					return nil, fmt.Errorf("legacy addons are deprecated and unmaintained, use managed addons instead of %s", expanded)
-				} else {
-					klog.Warningf("Legacy addons are deprecated and unmaintained, use managed addons instead of %s", expanded)
-				}
-			} else {
-				cwd, err := os.Getwd()
-				if err != nil {
-					return nil, fmt.Errorf("error getting current directory: %v", err)
-				}
-				baseURL, err := url.Parse(cwd + string(os.PathSeparator))
-				if err != nil {
-					return nil, fmt.Errorf("error building url for current directory %q: %v", cwd, err)
-				}
-				location = baseURL.ResolveReference(location)
-			}
-		}
-		o, err := channels.LoadAddons(name, location)
-		if err != nil {
-			return nil, fmt.Errorf("error loading channel %q: %v", location, err)
-		}
-
-		current, err := o.GetCurrent(kubernetesVersion)
-		if err != nil {
-			return nil, fmt.Errorf("error processing latest versions in %q: %v", location, err)
-		}
-		menu.MergeAddons(current)
+	location, err := url.Parse(channelLocation)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse argument %q as url", channelLocation)
 	}
+	if !location.IsAbs() {
+		// We recognize the following "well-known" format:
+		// <name> with no slashes ->
+		if strings.Contains(channelLocation, "/") {
+			return nil, fmt.Errorf("channel format not recognized (did you mean to use `-f` to specify a local file?): %q", channelLocation)
+		}
+		expanded := "https://raw.githubusercontent.com/kubernetes/kops/master/addons/" + channelLocation + "/addon.yaml"
+		location, err = url.Parse(expanded)
+		if err != nil {
+			return nil, fmt.Errorf("unable to parse expanded argument %q as url", expanded)
+		}
+		// Disallow the use of legacy addons from the "well-known" location starting Kubernetes 1.23:
+		// https://raw.githubusercontent.com/kubernetes/kops/master/addons/<name>/addon.yaml
+		if util.IsKubernetesGTE("1.23", kubernetesVersion) {
+			return nil, fmt.Errorf("legacy addons are deprecated and unmaintained, use managed addons instead of %s", expanded)
+		} else {
+			klog.Warningf("Legacy addons are deprecated and unmaintained, use managed addons instead of %s", expanded)
+		}
+	}
+	o, err := channels.LoadAddons(channelLocation, location)
+	if err != nil {
+		return nil, fmt.Errorf("error loading channel %q: %v", location, err)
+	}
+
+	current, err := o.GetCurrent(kubernetesVersion)
+	if err != nil {
+		return nil, fmt.Errorf("error processing latest versions in %q: %v", location, err)
+	}
+	menu.MergeAddons(current)
 	return menu, nil
 }
