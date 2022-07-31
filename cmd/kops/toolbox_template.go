@@ -79,7 +79,7 @@ func NewCmdToolboxTemplate(f commandutils.Factory, out io.Writer) *cobra.Command
 	}
 
 	cmd := &cobra.Command{
-		Use:               "template [CLUSTER]",
+		Use:               "template",
 		Short:             toolboxTemplatingShort,
 		Long:              toolboxTemplatingLong,
 		Example:           toolboxTemplatingExample,

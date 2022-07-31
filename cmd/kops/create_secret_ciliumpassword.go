@@ -64,7 +64,7 @@ func NewCmdCreateSecretCiliumPassword(f *util.Factory, out io.Writer) *cobra.Com
 	options := &CreateSecretCiliumPasswordOptions{}
 
 	cmd := &cobra.Command{
-		Use:               "ciliumpassword [CLUSTER] -f FILENAME",
+		Use:               "ciliumpassword -f FILENAME",
 		Short:             createSecretCiliumPasswordShort,
 		Long:              createSecretCiliumPasswordLong,
 		Example:           createSecretCiliumPasswordExample,

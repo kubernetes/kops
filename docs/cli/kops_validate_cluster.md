@@ -15,7 +15,7 @@ This commands validates the following components:
   4.  All pods with a critical priority are running and have "Ready" status.
 
 ```
-kops validate cluster [CLUSTER] [flags]
+kops validate cluster [flags]
 ```
 
 ### Examples
