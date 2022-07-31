@@ -6621,6 +6621,9 @@ func Convert_kops_OpenstackMonitor_To_v1alpha3_OpenstackMonitor(in *kops.Opensta
 
 func autoConvert_v1alpha3_OpenstackNetwork_To_kops_OpenstackNetwork(in *OpenstackNetwork, out *kops.OpenstackNetwork, s conversion.Scope) error {
 	out.AvailabilityZoneHints = in.AvailabilityZoneHints
+	out.IPv6SupportDisabled = in.IPv6SupportDisabled
+	out.PublicNetworkNames = in.PublicNetworkNames
+	out.InternalNetworkNames = in.InternalNetworkNames
 	return nil
 }
 
@@ -6631,6 +6634,9 @@ func Convert_v1alpha3_OpenstackNetwork_To_kops_OpenstackNetwork(in *OpenstackNet
 
 func autoConvert_kops_OpenstackNetwork_To_v1alpha3_OpenstackNetwork(in *kops.OpenstackNetwork, out *OpenstackNetwork, s conversion.Scope) error {
 	out.AvailabilityZoneHints = in.AvailabilityZoneHints
+	out.IPv6SupportDisabled = in.IPv6SupportDisabled
+	out.PublicNetworkNames = in.PublicNetworkNames
+	out.InternalNetworkNames = in.InternalNetworkNames
 	return nil
 }
 
