@@ -14,7 +14,7 @@ Create a new weave encryption secret and store it in the state store. Used by We
  WARNING: cannot be enabled or changed on a running cluster without downtime.
 
 ```
-kops create secret weavepassword [CLUSTER] [flags]
+kops create secret weavepassword [flags]
 ```
 
 ### Examples

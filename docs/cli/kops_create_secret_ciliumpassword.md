@@ -10,7 +10,7 @@ Create a Cilium IPsec configuration.
 Create a new Cilium IPsec configuration and store it in the state store. This is used by Cilium to encrypt communication between pods/nodes.
 
 ```
-kops create secret ciliumpassword [CLUSTER] -f FILENAME [flags]
+kops create secret ciliumpassword -f FILENAME [flags]
 ```
 
 ### Examples

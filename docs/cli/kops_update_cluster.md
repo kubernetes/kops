@@ -12,7 +12,7 @@ Create or update cloud or cluster resources to match the current cluster and ins
  If, such as during a Kubernetes upgrade, nodes need updating, a rolling-update may be subsequently required.
 
 ```
-kops update cluster [CLUSTER] [flags]
+kops update cluster [flags]
 ```
 
 ### Examples
