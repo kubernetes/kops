@@ -1284,6 +1284,8 @@ resource "aws_subnet" "us-test-1a-privatedns1-example-com" {
     "Owner"                                         = "John Doe"
     "SubnetType"                                    = "Private"
     "foo/bar"                                       = "fib+baz"
+    "kops.k8s.io/instance-group/master-us-test-1a"  = "true"
+    "kops.k8s.io/instance-group/nodes"              = "true"
     "kubernetes.io/cluster/privatedns1.example.com" = "owned"
     "kubernetes.io/role/internal-elb"               = "1"
   }
@@ -1299,6 +1301,7 @@ resource "aws_subnet" "utility-us-test-1a-privatedns1-example-com" {
     "Owner"                                         = "John Doe"
     "SubnetType"                                    = "Utility"
     "foo/bar"                                       = "fib+baz"
+    "kops.k8s.io/instance-group/bastion"            = "true"
     "kubernetes.io/cluster/privatedns1.example.com" = "owned"
     "kubernetes.io/role/elb"                        = "1"
   }
