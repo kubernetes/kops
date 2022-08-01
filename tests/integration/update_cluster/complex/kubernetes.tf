@@ -1149,14 +1149,16 @@ resource "aws_subnet" "us-test-1a-complex-example-com" {
   enable_resource_name_dns_a_record_on_launch = true
   private_dns_hostname_type_on_launch         = "resource-name"
   tags = {
-    "KubernetesCluster"                         = "complex.example.com"
-    "Name"                                      = "us-test-1a.complex.example.com"
-    "Owner"                                     = "John Doe"
-    "SubnetType"                                = "Public"
-    "foo/bar"                                   = "fib+baz"
-    "kubernetes.io/cluster/complex.example.com" = "owned"
-    "kubernetes.io/role/elb"                    = "1"
-    "kubernetes.io/role/internal-elb"           = "1"
+    "KubernetesCluster"                            = "complex.example.com"
+    "Name"                                         = "us-test-1a.complex.example.com"
+    "Owner"                                        = "John Doe"
+    "SubnetType"                                   = "Public"
+    "foo/bar"                                      = "fib+baz"
+    "kops.k8s.io/instance-group/master-us-test-1a" = "true"
+    "kops.k8s.io/instance-group/nodes"             = "true"
+    "kubernetes.io/cluster/complex.example.com"    = "owned"
+    "kubernetes.io/role/elb"                       = "1"
+    "kubernetes.io/role/internal-elb"              = "1"
   }
   vpc_id = aws_vpc.complex-example-com.id
 }

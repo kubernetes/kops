@@ -1359,8 +1359,8 @@ spec:
   provider:
     launchTemplate: karpenter-nodes-default.minimal.example.com
     subnetSelector:
+      kops.k8s.io/instance-group/karpenter-nodes-default: '*'
       kubernetes.io/cluster/minimal.example.com: '*'
-      kubernetes.io/role/internal-elb: "1"
   requirements:
   - key: karpenter.sh/capacity-type
     operator: In
@@ -1391,8 +1391,8 @@ spec:
   provider:
     launchTemplate: karpenter-nodes-single-machinetype.minimal.example.com
     subnetSelector:
+      kops.k8s.io/instance-group/karpenter-nodes-single-machinetype: '*'
       kubernetes.io/cluster/minimal.example.com: '*'
-      kubernetes.io/role/internal-elb: "1"
   requirements:
   - key: karpenter.sh/capacity-type
     operator: In

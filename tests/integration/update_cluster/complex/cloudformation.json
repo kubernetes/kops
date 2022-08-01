@@ -1225,6 +1225,14 @@
             "Value": "fib+baz"
           },
           {
+            "Key": "kops.k8s.io/instance-group/master-us-test-1a",
+            "Value": "true"
+          },
+          {
+            "Key": "kops.k8s.io/instance-group/nodes",
+            "Value": "true"
+          },
+          {
             "Key": "kubernetes.io/cluster/complex.example.com",
             "Value": "owned"
           },

@@ -769,12 +769,14 @@ resource "aws_subnet" "us-test-1a-minimal-k8s-local" {
   availability_zone = "us-test-1a"
   cidr_block        = "172.20.32.0/19"
   tags = {
-    "KubernetesCluster"                       = "minimal.k8s.local"
-    "Name"                                    = "us-test-1a.minimal.k8s.local"
-    "SubnetType"                              = "Public"
-    "kubernetes.io/cluster/minimal.k8s.local" = "owned"
-    "kubernetes.io/role/elb"                  = "1"
-    "kubernetes.io/role/internal-elb"         = "1"
+    "KubernetesCluster"                            = "minimal.k8s.local"
+    "Name"                                         = "us-test-1a.minimal.k8s.local"
+    "SubnetType"                                   = "Public"
+    "kops.k8s.io/instance-group/master-us-test-1a" = "true"
+    "kops.k8s.io/instance-group/nodes"             = "true"
+    "kubernetes.io/cluster/minimal.k8s.local"      = "owned"
+    "kubernetes.io/role/elb"                       = "1"
+    "kubernetes.io/role/internal-elb"              = "1"
   }
   vpc_id = aws_vpc.minimal-k8s-local.id
 }
