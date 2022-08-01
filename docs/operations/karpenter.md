@@ -45,15 +45,15 @@ A Karpenter-managed InstanceGroup controls a corresponding Karpenter Provisioner
 
 Note that not all features of InstanceGroups are supported.
 
+## Subnets
+
+By default, kOps will tag subnets with `kops.k8s.io/instance-group/<intancegroup>: "true"` for each InstanceGroup the subnet is assigned to. If you enable manual tagging of subnets, you have to ensure these tags are added, if not Karpenter will fail to provision any instances.
+
 ## Instance Types
 
 If you do not specify a mixed instances policy, only the instance type specified by `spec.machineType` will be used. With Karpenter, one typically wants a wider range of instances to choose from. kOps supports both providing a list of instance types through `spec.mixedInstancesPolicy.instances` and providing instance type requirements through `spec.mixedInstancesPolicy.instanceRequirements`. See (/instance_groups)[InstanceGroup documentation] for more details.
 
 ## Known limitations
-
-### Subnet selections
-
-kOps will ignore the InstanceGroup `spec.subnets` configuration and unconditionally add all subnets eligible to run Nodes to all Provisioners. It is not currently possible to create Provisioners limited only to certain subnets.
 
 ### Karpenter-managed Launch Templates
 
