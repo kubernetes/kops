@@ -10,10 +10,12 @@
         "ec2:DescribeInstances",
         "ec2:DescribeLaunchTemplates",
         "ec2:DescribeSecurityGroups",
+        "ec2:DescribeSpotPriceHistory",
         "ec2:DescribeSubnets",
         "ec2:RunInstances",
         "ec2:TerminateInstances",
         "iam:PassRole",
+        "pricing:GetProducts",
         "ssm:GetParameter"
       ],
       "Effect": "Allow",

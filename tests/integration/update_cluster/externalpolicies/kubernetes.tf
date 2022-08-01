@@ -966,6 +966,8 @@ resource "aws_subnet" "us-test-1a-externalpolicies-example-com" {
     "Owner"                                              = "John Doe"
     "SubnetType"                                         = "Public"
     "foo/bar"                                            = "fib+baz"
+    "kops.k8s.io/instance-group/master-us-test-1a"       = "true"
+    "kops.k8s.io/instance-group/nodes"                   = "true"
     "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
     "kubernetes.io/role/elb"                             = "1"
     "kubernetes.io/role/internal-elb"                    = "1"
