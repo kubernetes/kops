@@ -867,7 +867,7 @@ func buildKarpenterGroup(c AWSCloud, cluster *kops.Cluster, ig *kops.InstanceGro
 		}
 	}
 
-	klog.Infof("found %d karpenter instances", len(instances))
+	klog.V(2).Infof("found %d karpenter instances", len(instances))
 
 	{
 		req := &ec2.DescribeInstancesInput{
@@ -891,7 +891,7 @@ func buildKarpenterGroup(c AWSCloud, cluster *kops.Cluster, ig *kops.InstanceGro
 			}
 		}
 	}
-	klog.Infof("found %d updated instances", len(updatedInstances))
+	klog.V(2).Infof("found %d updated instances", len(updatedInstances))
 
 	{
 		for _, instance := range instances {
