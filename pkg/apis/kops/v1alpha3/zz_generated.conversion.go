@@ -3848,6 +3848,7 @@ func autoConvert_v1alpha3_EtcdManagerSpec_To_kops_EtcdManagerSpec(in *EtcdManage
 	} else {
 		out.Env = nil
 	}
+	out.BackupInterval = in.BackupInterval
 	out.DiscoveryPollInterval = in.DiscoveryPollInterval
 	out.LogLevel = in.LogLevel
 	return nil
@@ -3871,6 +3872,7 @@ func autoConvert_kops_EtcdManagerSpec_To_v1alpha3_EtcdManagerSpec(in *kops.EtcdM
 	} else {
 		out.Env = nil
 	}
+	out.BackupInterval = in.BackupInterval
 	out.DiscoveryPollInterval = in.DiscoveryPollInterval
 	out.LogLevel = in.LogLevel
 	return nil
@@ -6817,6 +6819,7 @@ func Convert_kops_PackagesConfig_To_v1alpha3_PackagesConfig(in *kops.PackagesCon
 
 func autoConvert_v1alpha3_PodIdentityWebhookConfig_To_kops_PodIdentityWebhookConfig(in *PodIdentityWebhookConfig, out *kops.PodIdentityWebhookConfig, s conversion.Scope) error {
 	out.Enabled = in.Enabled
+	out.Replicas = in.Replicas
 	return nil
 }
 
@@ -6827,6 +6830,7 @@ func Convert_v1alpha3_PodIdentityWebhookConfig_To_kops_PodIdentityWebhookConfig(
 
 func autoConvert_kops_PodIdentityWebhookConfig_To_v1alpha3_PodIdentityWebhookConfig(in *kops.PodIdentityWebhookConfig, out *PodIdentityWebhookConfig, s conversion.Scope) error {
 	out.Enabled = in.Enabled
+	out.Replicas = in.Replicas
 	return nil
 }
 

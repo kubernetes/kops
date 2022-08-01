@@ -29,8 +29,3 @@ func (b *HetznerModelContext) LinkToNetwork() *hetznertasks.Network {
 	name := b.ClusterName()
 	return &hetznertasks.Network{Name: &name}
 }
-
-func (b *HetznerModelContext) LinkToSSHKey() *hetznertasks.SSHKey {
-	name := b.ClusterName()
-	return &hetznertasks.SSHKey{Name: &name}
-}

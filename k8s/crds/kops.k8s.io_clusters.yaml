@@ -1100,6 +1100,10 @@ spec:
                     manager:
                       description: Manager describes the manager configuration
                       properties:
+                        backupInterval:
+                          description: BackupInterval which is used for backups. The
+                            default is 15 minutes.
+                          type: string
                         discoveryPollInterval:
                           description: DiscoveryPollInterval which is used for discovering
                             other cluster members. The default is 60 seconds.
@@ -5327,6 +5331,8 @@ spec:
                 properties:
                   enabled:
                     type: boolean
+                  replicas:
+                    type: integer
                 type: object
               project:
                 description: Project is the cloud project we should use, required

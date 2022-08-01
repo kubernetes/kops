@@ -6,7 +6,7 @@ spec:
   addons:
   - id: k8s-1.16
     manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: e2e37433995a98a80ddac65e5adf041c4b33688435532b38d58cb137b57e63fc
+    manifestHash: c5287257131c1d3005471364387fcf37b982d08b297f46071a6b1891a575bd21
     name: kops-controller.addons.k8s.io
     needsRollingUpdate: control-plane
     selector:
@@ -41,7 +41,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: dns-controller.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: dbd926f89ec541545a0b858c16052ff10443c2067d2538e2a0ca2630f0f233ae
+    manifestHash: d5c02aad5ffe8c96a5cc57dc867864b46e37459ad9d5dbf2c1536c322ca072d9
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
@@ -53,9 +53,9 @@ spec:
     selector:
       k8s-addon: storage-aws.addons.k8s.io
     version: 9.99.0
-  - id: k8s-1.23
-    manifest: networking.projectcalico.org/k8s-1.23.yaml
-    manifestHash: a8944d4c2d1651f30eeaced654ccbf6179cbf26c2bb42aaf44849d360837c4af
+  - id: k8s-1.22
+    manifest: networking.projectcalico.org/k8s-1.22.yaml
+    manifestHash: c0608fb886a1ad8b3db3be4c901b048f1e8f4e99b40f30d7cdaaf645b6e396a7
     name: networking.projectcalico.org
     selector:
       role.kubernetes.io/networking: "1"

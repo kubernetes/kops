@@ -44,7 +44,7 @@ jobs:
       - name: Set up go
         uses: actions/setup-go@b22fbbc2921299758641fab08929b4ac52b32923
         with:
-          go-version: 1.18.1
+          go-version: 1.18.4
 
       - name: Checkout full
         if: startsWith(github.ref, 'refs/tags/')
@@ -79,7 +79,7 @@ jobs:
       - name: Set up go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.18.1
+          go-version: 1.18.4
 
       - name: Checkout full
         if: startsWith(github.ref, 'refs/tags/')
@@ -114,7 +114,7 @@ jobs:
       - name: Set up go
         uses: actions/setup-go@b22fbbc2921299758641fab08929b4ac52b32923
         with:
-          go-version: 1.18.1
+          go-version: 1.18.4
 
       - name: Checkout repository
         uses: actions/checkout@v2

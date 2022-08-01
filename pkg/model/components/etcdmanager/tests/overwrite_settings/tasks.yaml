@@ -88,7 +88,7 @@ Contents: |
       env:
       - name: ETCD_QUOTA_BACKEND_BYTES
         value: "10737418240"
-      image: registry.k8s.io/etcdadm/etcd-manager:v3.0.20220617
+      image: registry.k8s.io/etcdadm/etcd-manager:v3.0.20220727
       name: etcd-manager
       resources:
         requests:
@@ -159,7 +159,7 @@ Contents: |
       env:
       - name: ETCD_QUOTA_BACKEND_BYTES
         value: "10737418240"
-      image: registry.k8s.io/etcdadm/etcd-manager:v3.0.20220617
+      image: registry.k8s.io/etcdadm/etcd-manager:v3.0.20220727
       name: etcd-manager
       resources:
         requests:

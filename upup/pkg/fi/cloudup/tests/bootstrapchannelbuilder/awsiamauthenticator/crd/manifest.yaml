@@ -6,7 +6,7 @@ spec:
   addons:
   - id: k8s-1.16
     manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: b97d7b5c3db042138cbd99c43cf622c725dfcf6a7b32a98311a30e09727eaf74
+    manifestHash: db994a90b869613f2fe69ed196a3f88b9fb256c4a8177bb4254e1fdf4faab5a3
     name: kops-controller.addons.k8s.io
     needsRollingUpdate: control-plane
     selector:
@@ -34,7 +34,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: dns-controller.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: dbd926f89ec541545a0b858c16052ff10443c2067d2538e2a0ca2630f0f233ae
+    manifestHash: d5c02aad5ffe8c96a5cc57dc867864b46e37459ad9d5dbf2c1536c322ca072d9
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
@@ -48,7 +48,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: authentication.aws/k8s-1.12.yaml
-    manifestHash: 93c9176865015c0ae01ea61470cba42f0a7277d805bac87760a91cd13ef8ecdd
+    manifestHash: 199e55d42cfac00efd024896901a69c95cf96d823f61d981ab4c26d484697dca
     name: authentication.aws
     selector:
       role.kubernetes.io/authentication: "1"

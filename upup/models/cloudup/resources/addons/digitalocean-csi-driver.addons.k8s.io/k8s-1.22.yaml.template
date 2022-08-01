@@ -26,8 +26,8 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.4.0
-    api-approved.kubernetes.io: "https://github.com/kubernetes-csi/external-snapshotter/pull/419"
+    controller-gen.kubebuilder.io/version: v0.8.0
+    api-approved.kubernetes.io: "https://github.com/kubernetes-csi/external-snapshotter/pull/665"
   creationTimestamp: null
   name: volumesnapshotclasses.snapshot.storage.k8s.io
 spec:
@@ -36,6 +36,9 @@ spec:
     kind: VolumeSnapshotClass
     listKind: VolumeSnapshotClassList
     plural: volumesnapshotclasses
+    shortNames:
+      - vsclass
+      - vsclasses
     singular: volumesnapshotclass
   scope: Cluster
   versions:
@@ -127,7 +130,7 @@ spec:
             - deletionPolicy
             - driver
           type: object
-      served: true
+      served: false
       storage: false
       subresources: {}
 status:
@@ -143,8 +146,8 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.4.0
-    api-approved.kubernetes.io: "https://github.com/kubernetes-csi/external-snapshotter/pull/419"
+    controller-gen.kubebuilder.io/version: v0.8.0
+    api-approved.kubernetes.io: "https://github.com/kubernetes-csi/external-snapshotter/pull/665"
   creationTimestamp: null
   name: volumesnapshotcontents.snapshot.storage.k8s.io
 spec:
@@ -153,6 +156,9 @@ spec:
     kind: VolumeSnapshotContent
     listKind: VolumeSnapshotContentList
     plural: volumesnapshotcontents
+    shortNames:
+      - vsc
+      - vscs
     singular: volumesnapshotcontent
   scope: Cluster
   versions:
@@ -224,6 +230,12 @@ spec:
                   oneOf:
                     - required: ["snapshotHandle"]
                     - required: ["volumeHandle"]
+                sourceVolumeMode:
+                  description: SourceVolumeMode is the mode of the volume whose snapshot
+                    is taken. Can be either “Filesystem” or “Block”. If not specified,
+                    it indicates the source volume's mode is unknown. This field is
+                    immutable. This field is an alpha field.
+                  type: string
                 volumeSnapshotClassName:
                   description: name of the VolumeSnapshotClass from which this snapshot was (or will be) created. Note that after provisioning, the VolumeSnapshotClass may be deleted or recreated with different set of values, and as such, should not be referenced post-snapshot creation.
                   type: string
@@ -432,7 +444,7 @@ spec:
           required:
             - spec
           type: object
-      served: true
+      served: false
       storage: false
       subresources:
         status: {}
@@ -449,8 +461,8 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.4.0
-    api-approved.kubernetes.io: "https://github.com/kubernetes-csi/external-snapshotter/pull/419"
+    controller-gen.kubebuilder.io/version: v0.8.0
+    api-approved.kubernetes.io: "https://github.com/kubernetes-csi/external-snapshotter/pull/665"
   creationTimestamp: null
   name: volumesnapshots.snapshot.storage.k8s.io
 spec:
@@ -459,6 +471,8 @@ spec:
     kind: VolumeSnapshot
     listKind: VolumeSnapshotList
     plural: volumesnapshots
+    shortNames:
+      - vs
     singular: volumesnapshot
   scope: Namespaced
   versions:
@@ -538,7 +552,7 @@ spec:
                   format: date-time
                   type: string
                 error:
-                  description: error is the last observed error during snapshot creation, if any. This field could be helpful to upper level controllers(i.e., application controller) to decide whether they should continue on waiting for the snapshot to be created based on the type of error reported. The snapshot controller will keep retrying when an error occurrs during the snapshot creation. Upon success, this error field will be cleared.
+                  description: error is the last observed error during snapshot creation, if any. This field could be helpful to upper level controllers(i.e., application controller) to decide whether they should continue on waiting for the snapshot to be created based on the type of error reported. The snapshot controller will keep retrying when an error occurs during the snapshot creation. Upon success, this error field will be cleared.
                   properties:
                     message:
                       description: 'message is a string detailing the encountered error during snapshot creation if specified. NOTE: message may be logged, and it should not contain sensitive information.'
@@ -642,7 +656,7 @@ spec:
                   format: date-time
                   type: string
                 error:
-                  description: error is the last observed error during snapshot creation, if any. This field could be helpful to upper level controllers(i.e., application controller) to decide whether they should continue on waiting for the snapshot to be created based on the type of error reported. The snapshot controller will keep retrying when an error occurrs during the snapshot creation. Upon success, this error field will be cleared.
+                  description: error is the last observed error during snapshot creation, if any. This field could be helpful to upper level controllers(i.e., application controller) to decide whether they should continue on waiting for the snapshot to be created based on the type of error reported. The snapshot controller will keep retrying when an error occurs during the snapshot creation. Upon success, this error field will be cleared.
                   properties:
                     message:
                       description: 'message is a string detailing the encountered error during snapshot creation if specified. NOTE: message may be logged, and it should not contain sensitive information.'
@@ -664,7 +678,7 @@ spec:
           required:
             - spec
           type: object
-      served: true
+      served: false
       storage: false
       subresources:
         status: {}
@@ -725,6 +739,39 @@ allowVolumeExpansion: true
 
 ---
 
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: do-block-storage-retain
+provisioner: dobs.csi.digitalocean.com
+reclaimPolicy: Retain
+allowVolumeExpansion: true
+
+---
+
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: do-block-storage-xfs
+provisioner: dobs.csi.digitalocean.com
+parameters:
+  fstype: xfs
+allowVolumeExpansion: true
+
+---
+
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: do-block-storage-xfs-retain
+provisioner: dobs.csi.digitalocean.com
+parameters:
+  fstype: xfs
+reclaimPolicy: Retain
+allowVolumeExpansion: true
+
+---
+
 ##############################################
 ###########                       ############
 ###########   Controller plugin   ############
@@ -754,7 +801,7 @@ spec:
       serviceAccount: csi-do-controller-sa
       containers:
         - name: csi-provisioner
-          image: k8s.gcr.io/sig-storage/csi-provisioner:v3.0.0
+          image: k8s.gcr.io/sig-storage/csi-provisioner:v3.2.1
           args:
             - "--csi-address=$(ADDRESS)"
             - "--default-fstype=ext4"
@@ -767,10 +814,12 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: csi-attacher
-          image: k8s.gcr.io/sig-storage/csi-attacher:v3.3.0
+          image: k8s.gcr.io/sig-storage/csi-attacher:v3.5.0
           args:
             - "--csi-address=$(ADDRESS)"
             - "--v=5"
+            - "--reconcile-sync=30m"
+            - "--timeout=2m"
           env:
             - name: ADDRESS
               value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -779,7 +828,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: csi-snapshotter
-          image: k8s.gcr.io/sig-storage/csi-snapshotter:v5.0.0
+          image: k8s.gcr.io/sig-storage/csi-snapshotter:v6.0.1
           args:
             - "--csi-address=$(ADDRESS)"
             - "--v=5"
@@ -791,7 +840,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: csi-resizer
-          image: k8s.gcr.io/sig-storage/csi-resizer:v1.3.0
+          image: k8s.gcr.io/sig-storage/csi-resizer:v1.5.0
           args:
             - "--csi-address=$(ADDRESS)"
             - "--timeout=30s"
@@ -806,11 +855,12 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: csi-do-plugin
-          image: digitalocean/do-csi-plugin:v4.0.0
+          image: digitalocean/do-csi-plugin:v4.2.0
           args :
             - "--endpoint=$(CSI_ENDPOINT)"
             - "--token=$(DIGITALOCEAN_ACCESS_TOKEN)"
             - "--url=$(DIGITALOCEAN_API_URL)"
+            - "--default-volumes-page-size=200"
           env:
             - name: CSI_ENDPOINT
               value: unix:///var/lib/csi/sockets/pluginproxy/csi.sock
@@ -940,7 +990,7 @@ rules:
     verbs: ["get", "list", "watch"]
   - apiGroups: ["snapshot.storage.k8s.io"]
     resources: ["volumesnapshotcontents"]
-    verbs: ["create", "get", "list", "watch", "update", "delete", "patch"]
+    verbs: ["get", "list", "watch", "update", "patch"]
   - apiGroups: ["snapshot.storage.k8s.io"]
     resources: ["volumesnapshotcontents/status"]
     verbs: ["update", "patch"]
@@ -1038,7 +1088,7 @@ spec:
               mountPath: /etc/udev/rules.d/
       containers:
         - name: csi-node-driver-registrar
-          image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.4.0
+          image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.5.1
           args:
             - "--v=5"
             - "--csi-address=$(ADDRESS)"
@@ -1062,7 +1112,7 @@ spec:
             - name: registration-dir
               mountPath: /registration/
         - name: csi-do-plugin
-          image: digitalocean/do-csi-plugin:v4.0.0
+          image: digitalocean/do-csi-plugin:v4.2.0
           args :
             - "--endpoint=$(CSI_ENDPOINT)"
             - "--url=$(DIGITALOCEAN_API_URL)"
@@ -1141,7 +1191,6 @@ roleRef:
   name: csi-do-node-driver-registrar-role
   apiGroup: rbac.authorization.k8s.io
 ---
-
 # Copyright 2022 DigitalOcean
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -1178,10 +1227,10 @@ spec:
       labels:
         app: snapshot-controller
     spec:
-      serviceAccount: snapshot-controller
+      serviceAccountName: snapshot-controller
       containers:
         - name: snapshot-controller
-          image: k8s.gcr.io/sig-storage/snapshot-controller:v5.0.0
+          image: k8s.gcr.io/sig-storage/snapshot-controller:v6.0.1
           args:
             - "--v=5"
           imagePullPolicy: IfNotPresent
@@ -1207,9 +1256,6 @@ rules:
   - apiGroups: [""]
     resources: ["persistentvolumeclaims"]
     verbs: ["get", "list", "watch", "update"]
-  - apiGroups: ["storage.k8s.io"]
-    resources: ["storageclasses"]
-    verbs: ["get", "list", "watch"]
   - apiGroups: [""]
     resources: ["events"]
     verbs: ["list", "watch", "create", "update", "patch"]
@@ -1218,16 +1264,16 @@ rules:
     verbs: ["get", "list", "watch"]
   - apiGroups: ["snapshot.storage.k8s.io"]
     resources: ["volumesnapshotcontents"]
-    verbs: ["create", "get", "list", "watch", "patch", "update", "delete"]
+    verbs: ["create", "get", "list", "watch", "update", "delete", "patch"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshotcontents/status"]
+    verbs: ["patch"]
   - apiGroups: ["snapshot.storage.k8s.io"]
     resources: ["volumesnapshots"]
     verbs: ["get", "list", "watch", "update", "patch"]
   - apiGroups: ["snapshot.storage.k8s.io"]
     resources: ["volumesnapshots/status"]
     verbs: ["update", "patch"]
-  - apiGroups: [ "snapshot.storage.k8s.io" ]
-    resources: [ "volumesnapshotcontents/status" ]
-    verbs: ["patch"]
 
 ---
 

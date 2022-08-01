@@ -22,7 +22,6 @@ metadata:
     name: weave-net
     role.kubernetes.io/networking: "1"
   name: weave-net
-  namespace: kube-system
 rules:
 - apiGroups:
   - ""
@@ -70,7 +69,6 @@ metadata:
     name: weave-net
     role.kubernetes.io/networking: "1"
   name: weave-net
-  namespace: kube-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole

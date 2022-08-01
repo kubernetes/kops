@@ -44,6 +44,8 @@ type serviceKubernetes interface {
 	// Deprecated: Roll is obsolete, exists for backward compatibility only,
 	// and should not be used. Please use CreateRoll instead.
 	Roll(context.Context, *RollClusterInput) (*RollClusterOutput, error)
+
+	GetClusterAggregatedCosts(context.Context, *ClusterAggregatedCostInput) (*ClusterAggregatedCostOutput, error)
 }
 
 type serviceECS interface {

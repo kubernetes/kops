@@ -68,7 +68,7 @@ metadata:
   name: pod-identity-webhook
   namespace: kube-system
 spec:
-  replicas: 2
+  replicas: {{ or .PodIdentityWebhook.Replicas "2" }}
   selector:
     matchLabels:
       app: pod-identity-webhook

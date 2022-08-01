@@ -335,6 +335,8 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		return sc != nil && fi.BoolValue(sc.Enabled)
 	}
 
+	dest["IsKubernetesLT"] = tf.IsKubernetesLT
+
 	return nil
 }
 
@@ -389,6 +391,8 @@ func (tf *TemplateFunctions) ControlPlaneControllerReplicas(deployOnWorkersIfExt
 func (tf *TemplateFunctions) APIServerNodeRole() string {
 	if featureflag.APIServerNodes.Enabled() {
 		return "node-role.kubernetes.io/api-server"
+	} else if tf.Cluster.IsKubernetesGTE("1.24") {
+		return "node-role.kubernetes.io/control-plane"
 	}
 	return "node-role.kubernetes.io/master"
 }
