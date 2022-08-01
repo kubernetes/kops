@@ -1129,7 +1129,7 @@ spec:
   provider:
     launchTemplate: {{ $name }}.{{ ClusterName }}
     subnetSelector:
-      kubernetes.io/role/internal-elb: "1"
+      kops.k8s.io/instance-group/{{ $name }}: "*"
       kubernetes.io/cluster/{{ ClusterName }}: "*"
   ttlSecondsAfterEmpty: 300
 {{ end }}

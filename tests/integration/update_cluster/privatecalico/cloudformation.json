@@ -1281,6 +1281,14 @@
             "Value": "Private"
           },
           {
+            "Key": "kops.k8s.io/instance-group/master-us-test-1a",
+            "Value": "true"
+          },
+          {
+            "Key": "kops.k8s.io/instance-group/nodes",
+            "Value": "true"
+          },
+          {
             "Key": "kubernetes.io/cluster/privatecalico.example.com",
             "Value": "owned"
           },
@@ -1311,6 +1319,10 @@
           {
             "Key": "SubnetType",
             "Value": "Utility"
+          },
+          {
+            "Key": "kops.k8s.io/instance-group/bastion",
+            "Value": "true"
           },
           {
             "Key": "kubernetes.io/cluster/privatecalico.example.com",
