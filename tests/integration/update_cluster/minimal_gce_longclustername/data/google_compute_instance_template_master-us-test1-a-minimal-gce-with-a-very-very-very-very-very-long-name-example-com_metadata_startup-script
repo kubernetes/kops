@@ -252,7 +252,7 @@ CloudProvider: gce
 ConfigBase: memfs://tests/minimal-gce-with-a-very-very-very-very-very-long-name.example.com
 InstanceGroupName: master-us-test1-a
 InstanceGroupRole: Master
-NodeupConfigHash: zHEbk/bYEELbSpN761SRfM9ELsB4tC37ByiNOp3n270=
+NodeupConfigHash: NZz9iW0XHM4RUj5lDt/SkqHc0A7lgXi5HZBrdEBdwxw=
 
 __EOF_KUBE_ENV
 

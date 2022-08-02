@@ -244,7 +244,7 @@
   ConfigBase: memfs://clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: BrBINZ6kFSxJLawbcSAt3G/JcnpvuAbULlujw0L9GX0=
+  NodeupConfigHash: gEtl0OBxTp9ioWqdTCAFlxsQ2w4xZrQo6h8QHTono2c=
 
   __EOF_KUBE_ENV
 
