@@ -278,7 +278,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscomplexexamplecom.Properties.
   ConfigBase: memfs://clusters.example.com/complex.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: vKh+sb32qypm5Pz+2q53e24dmSJZESBG/6mwQjvK/3M=
+  NodeupConfigHash: KhcVvtBQHn+cj/WFHIbpkfR8Zi4oFnz5MG/Yvzdh1cQ=
 
   __EOF_KUBE_ENV
 

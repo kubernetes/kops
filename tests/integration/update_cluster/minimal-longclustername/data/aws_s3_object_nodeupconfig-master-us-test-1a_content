@@ -266,8 +266,8 @@ containerdConfig:
   logLevel: info
   version: 1.4.13
 etcdManifests:
-- memfs://clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com/manifests/etcd/main.yaml
-- memfs://clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com/manifests/etcd/events.yaml
+- memfs://clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com/manifests/etcd/main-master-us-test-1a.yaml
+- memfs://clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com/manifests/etcd/events-master-us-test-1a.yaml
 staticManifests:
 - key: kube-apiserver-healthcheck
   path: manifests/static/kube-apiserver-healthcheck.yaml

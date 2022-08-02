@@ -270,8 +270,8 @@ containerdConfig:
   logLevel: info
   version: 1.4.13
 etcdManifests:
-- memfs://tests/minimal-gce-ilb.example.com/manifests/etcd/main.yaml
-- memfs://tests/minimal-gce-ilb.example.com/manifests/etcd/events.yaml
+- memfs://tests/minimal-gce-ilb.example.com/manifests/etcd/main-master-us-test1-a.yaml
+- memfs://tests/minimal-gce-ilb.example.com/manifests/etcd/events-master-us-test1-a.yaml
 staticManifests:
 - key: kube-apiserver-healthcheck
   path: manifests/static/kube-apiserver-healthcheck.yaml
