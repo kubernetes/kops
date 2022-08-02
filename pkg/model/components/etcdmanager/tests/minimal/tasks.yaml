@@ -127,8 +127,8 @@ Contents: |
       name: varlogetcd
   status: {}
 Lifecycle: ""
-Location: manifests/etcd/events.yaml
-Name: manifests-etcdmanager-events
+Location: manifests/etcd/events-master-us-test-1a.yaml
+Name: manifests-etcdmanager-events-master-us-test-1a
 Public: null
 ---
 Base: null
@@ -195,6 +195,6 @@ Contents: |
       name: varlogetcd
   status: {}
 Lifecycle: ""
-Location: manifests/etcd/main.yaml
-Name: manifests-etcdmanager-main
+Location: manifests/etcd/main-master-us-test-1a.yaml
+Name: manifests-etcdmanager-main-master-us-test-1a
 Public: null
