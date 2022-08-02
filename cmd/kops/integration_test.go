@@ -487,7 +487,7 @@ func TestPrivateCiliumAdvanced(t *testing.T) {
 	newIntegrationTest("privateciliumadvanced.example.com", "privateciliumadvanced").
 		withPrivate().
 		withCiliumEtcd().
-		withManagedFiles("etcd-cluster-spec-cilium", "manifests-etcdmanager-cilium").
+		withManagedFiles("etcd-cluster-spec-cilium", "manifests-etcdmanager-cilium-master-us-test-1a").
 		withAddons(ciliumAddon, dnsControllerAddon).
 		runTestTerraformAWS(t)
 	newIntegrationTest("privateciliumadvanced.example.com", "privateciliumadvanced").
@@ -1202,8 +1202,6 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 		"aws_s3_object_etcd-cluster-spec-events_content",
 		"aws_s3_object_etcd-cluster-spec-main_content",
 		"aws_s3_object_kops-version.txt_content",
-		"aws_s3_object_manifests-etcdmanager-events_content",
-		"aws_s3_object_manifests-etcdmanager-main_content",
 		"aws_s3_object_manifests-static-kube-apiserver-healthcheck_content",
 		"aws_s3_object_nodeupconfig-nodes_content",
 		"aws_s3_object_"+i.clusterName+"-addons-bootstrap_content",
@@ -1234,6 +1232,8 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 	for j := 0; j < i.zones; j++ {
 		zone := "us-test-1" + string([]byte{byte('a') + byte(j)})
 		expectedFilenames = append(expectedFilenames,
+			"aws_s3_object_manifests-etcdmanager-events-master-"+zone+"_content",
+			"aws_s3_object_manifests-etcdmanager-main-master-"+zone+"_content",
 			"aws_s3_object_nodeupconfig-master-"+zone+"_content",
 			"aws_launch_template_master-"+zone+".masters."+i.clusterName+"_user_data")
 	}
@@ -1333,8 +1333,6 @@ func (i *integrationTest) runTestTerraformGCE(t *testing.T) {
 		"aws_s3_object_etcd-cluster-spec-events_content",
 		"aws_s3_object_etcd-cluster-spec-main_content",
 		"aws_s3_object_kops-version.txt_content",
-		"aws_s3_object_manifests-etcdmanager-events_content",
-		"aws_s3_object_manifests-etcdmanager-main_content",
 		"aws_s3_object_manifests-static-kube-apiserver-healthcheck_content",
 		"aws_s3_object_nodeupconfig-nodes_content",
 		"aws_s3_object_"+i.clusterName+"-addons-bootstrap_content",
@@ -1349,6 +1347,8 @@ func (i *integrationTest) runTestTerraformGCE(t *testing.T) {
 		zone := "us-test1-" + string([]byte{byte('a') + byte(j)})
 		prefix := "google_compute_instance_template_master-" + zone + "-" + gce.SafeClusterName(i.clusterName) + "_metadata_"
 
+		expectedFilenames = append(expectedFilenames, "aws_s3_object_manifests-etcdmanager-events-master-"+zone+"_content")
+		expectedFilenames = append(expectedFilenames, "aws_s3_object_manifests-etcdmanager-main-master-"+zone+"_content")
 		expectedFilenames = append(expectedFilenames, "aws_s3_object_nodeupconfig-master-"+zone+"_content")
 		expectedFilenames = append(expectedFilenames, prefix+"startup-script")
 		expectedFilenames = append(expectedFilenames, prefix+"ssh-keys")
