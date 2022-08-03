@@ -524,13 +524,6 @@ spec:
         - name: DRIVER_REG_SOCK_PATH
           value: /var/lib/kubelet/plugins/ebs.csi.aws.com/csi.sock
         image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.1.0
-        lifecycle:
-          preStop:
-            exec:
-              command:
-              - /bin/sh
-              - -c
-              - rm -rf /registration/ebs.csi.aws.com-reg.sock /csi/csi.sock
         name: node-driver-registrar
         volumeMounts:
         - mountPath: /csi
