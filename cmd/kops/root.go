@@ -249,10 +249,10 @@ func (c *RootCmd) clusterNameArgsAllowNoCluster(clusterName *string) func(cmd *c
 // Everything else is an error.
 func (c *RootCmd) ProcessArgs(args []string) error {
 	if len(args) > 0 {
-		fmt.Printf("\n")
-		fmt.Printf("\nClusterName as positional argument is deprecated and will be removed\n")
-		fmt.Printf("Use `KOPS_FEATURE_FLAGS=PositionalClusterArg` to revert to the old behavior.")
-		fmt.Printf("\n")
+		fmt.Fprintf(os.Stderr, "\n")
+		fmt.Fprintf(os.Stderr, "\nClusterName as positional argument is deprecated and will be removed\n")
+		fmt.Fprintf(os.Stderr, "Use `KOPS_FEATURE_FLAGS=PositionalClusterArg` to revert to the old behavior.")
+		fmt.Fprintf(os.Stderr, "\n")
 	}
 	if !featureflag.PositionalClusterArg.Enabled() {
 		return nil
