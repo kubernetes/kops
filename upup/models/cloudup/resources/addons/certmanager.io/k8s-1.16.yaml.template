@@ -25,6 +25,18 @@ metadata:
     # Generated labels
     app.kubernetes.io/version: "v1.8.0"
 spec:
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        caBundle: ""
+        service:
+          name: cert-manager-webhook
+          namespace: kube-system
+          path: /convert
+          port: 443
+      conversionReviewVersions:
+        - v1beta1
   group: cert-manager.io
   names:
     kind: CertificateRequest
@@ -225,6 +237,18 @@ metadata:
     # Generated labels
     app.kubernetes.io/version: "v1.8.0"
 spec:
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        caBundle: ""
+        service:
+          name: cert-manager-webhook
+          namespace: kube-system
+          path: /convert
+          port: 443
+      conversionReviewVersions:
+        - v1beta1
   group: cert-manager.io
   names:
     kind: Certificate
@@ -595,6 +619,18 @@ metadata:
     # Generated labels
     app.kubernetes.io/version: "v1.8.0"
 spec:
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        caBundle: ""
+        service:
+          name: cert-manager-webhook
+          namespace: kube-system
+          path: /convert
+          port: 443
+      conversionReviewVersions:
+        - v1beta1
   group: acme.cert-manager.io
   names:
     kind: Challenge
@@ -1630,6 +1666,18 @@ metadata:
     # Generated labels
     app.kubernetes.io/version: "v1.8.0"
 spec:
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        caBundle: ""
+        service:
+          name: cert-manager-webhook
+          namespace: kube-system
+          path: /convert
+          port: 443
+      conversionReviewVersions:
+        - v1beta1
   group: cert-manager.io
   names:
     kind: ClusterIssuer
@@ -2882,6 +2930,18 @@ metadata:
     # Generated labels
     app.kubernetes.io/version: "v1.8.0"
 spec:
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        caBundle: ""
+        service:
+          name: cert-manager-webhook
+          namespace: kube-system
+          path: /convert
+          port: 443
+      conversionReviewVersions:
+        - v1beta1
   group: cert-manager.io
   names:
     kind: Issuer
@@ -4134,6 +4194,18 @@ metadata:
     # Generated labels
     app.kubernetes.io/version: "v1.8.0"
 spec:
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        caBundle: ""
+        service:
+          name: cert-manager-webhook
+          namespace: kube-system
+          path: /convert
+          port: 443
+      conversionReviewVersions:
+        - v1beta1
   group: acme.cert-manager.io
   names:
     kind: Order
