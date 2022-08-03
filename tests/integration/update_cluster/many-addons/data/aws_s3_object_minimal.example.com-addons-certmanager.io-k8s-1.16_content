@@ -11,6 +11,18 @@ metadata:
     app.kubernetes.io/version: v1.8.0
   name: certificaterequests.cert-manager.io
 spec:
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        caBundle: ""
+        service:
+          name: cert-manager-webhook
+          namespace: kube-system
+          path: /convert
+          port: 443
+      conversionReviewVersions:
+      - v1beta1
   group: cert-manager.io
   names:
     categories:
@@ -270,6 +282,18 @@ metadata:
     app.kubernetes.io/version: v1.8.0
   name: certificates.cert-manager.io
 spec:
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        caBundle: ""
+        service:
+          name: cert-manager-webhook
+          namespace: kube-system
+          path: /convert
+          port: 443
+      conversionReviewVersions:
+      - v1beta1
   group: cert-manager.io
   names:
     categories:
@@ -795,6 +819,18 @@ metadata:
     app.kubernetes.io/version: v1.8.0
   name: challenges.acme.cert-manager.io
 spec:
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        caBundle: ""
+        service:
+          name: cert-manager-webhook
+          namespace: kube-system
+          path: /convert
+          port: 443
+      conversionReviewVersions:
+      - v1beta1
   group: acme.cert-manager.io
   names:
     categories:
@@ -2769,6 +2805,18 @@ metadata:
     app.kubernetes.io/version: v1.8.0
   name: clusterissuers.cert-manager.io
 spec:
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        caBundle: ""
+        service:
+          name: cert-manager-webhook
+          namespace: kube-system
+          path: /convert
+          port: 443
+      conversionReviewVersions:
+      - v1beta1
   group: cert-manager.io
   names:
     categories:
@@ -5323,6 +5371,18 @@ metadata:
     app.kubernetes.io/version: v1.8.0
   name: issuers.cert-manager.io
 spec:
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        caBundle: ""
+        service:
+          name: cert-manager-webhook
+          namespace: kube-system
+          path: /convert
+          port: 443
+      conversionReviewVersions:
+      - v1beta1
   group: cert-manager.io
   names:
     categories:
@@ -7876,6 +7936,18 @@ metadata:
     app.kubernetes.io/version: v1.8.0
   name: orders.acme.cert-manager.io
 spec:
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        caBundle: ""
+        service:
+          name: cert-manager-webhook
+          namespace: kube-system
+          path: /convert
+          port: 443
+      conversionReviewVersions:
+      - v1beta1
   group: acme.cert-manager.io
   names:
     categories:
