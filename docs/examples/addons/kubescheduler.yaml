@@ -1,0 +1,6 @@
+# This is an example "addon" object to provide additional/custom kube-scheduler configuration
+apiVersion: kubescheduler.config.k8s.io/v1beta2
+kind: KubeSchedulerConfiguration
+clientConnection:
+  burst: 100
+  qps: 3.1
