@@ -87,7 +87,7 @@ func (s *S3Context) getClient(region string) (*s3.S3, error) {
 			config = config.WithCredentialsChainVerboseErrors(true)
 		} else {
 			// Use customized S3 storage
-			klog.Infof("Found S3_ENDPOINT=%q, using as non-AWS S3 backend", endpoint)
+			klog.V(2).Infof("Found S3_ENDPOINT=%q, using as non-AWS S3 backend", endpoint)
 			config, err = getCustomS3Config(endpoint, region)
 			if err != nil {
 				return nil, err
