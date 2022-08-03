@@ -126,7 +126,7 @@ func (p *Applier) patchObject(ctx context.Context, restMapping *meta.RESTMapping
 	{
 		_, err := resource.Patch(ctx, obj.GetName(), types.ApplyPatchType, jsonData, v1.PatchOptions{FieldManager: "kops", Force: fi.Bool(true)})
 		if err != nil {
-			return fmt.Errorf("failed to path object %q: %w", obj.GetName(), err)
+			return fmt.Errorf("failed to patch object %q: %w", obj.GetName(), err)
 		}
 	}
 	return nil
