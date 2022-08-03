@@ -529,13 +529,6 @@ spec:
           value: /var/lib/kubelet/plugins/ebs.csi.aws.com/csi.sock
         image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.5.1
         imagePullPolicy: IfNotPresent
-        lifecycle:
-          preStop:
-            exec:
-              command:
-              - /bin/sh
-              - -c
-              - rm -rf /registration/ebs.csi.aws.com-reg.sock /csi/csi.sock
         name: node-driver-registrar
         volumeMounts:
         - mountPath: /csi
