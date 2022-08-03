@@ -119,6 +119,23 @@ func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
 		case "cloud-provider-gce-l7lb-src-cidrs":
 			// Skip; these is dragged in by the google cloudprovider dependency
 
+		// Hide klog flags that just clutter the --help output; they are still supported, we just don't show them
+		case "add_dir_header",
+			"alsologtostderr",
+			"log_backtrace_at",
+			"log_dir",
+			"log_file",
+			"log_file_max_size",
+			"logtostderr",
+			"one_output",
+			"skip_headers",
+			"skip_log_headers",
+			"stderrthreshold",
+			"vmodule":
+			// We keep "v" as that flag is generally useful
+			cmd.PersistentFlags().AddGoFlag(goflag)
+			cmd.PersistentFlags().Lookup(goflag.Name).Hidden = true
+
 		default:
 			cmd.PersistentFlags().AddGoFlag(goflag)
 		}
