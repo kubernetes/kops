@@ -133,6 +133,8 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumexamplecom.Prope
   containerRuntime: containerd
   containerd:
     logLevel: info
+    runc:
+      version: 1.1.3
     version: 1.6.6
   docker:
     skipInstall: true
@@ -262,7 +264,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumexamplecom.Prope
   ConfigBase: memfs://clusters.example.com/privatecilium.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: 9a1mUuwr+QrpCamMjXy783qDY9fNA97ScIRqYjszwq4=
+  NodeupConfigHash: uR8erN952y4FqJSnHCJ9pBMDuEELIkOvbpGh5lWSI6k=
 
   __EOF_KUBE_ENV
 
@@ -402,6 +404,8 @@ Resources.AWSEC2LaunchTemplatenodesprivateciliumexamplecom.Properties.LaunchTemp
   containerRuntime: containerd
   containerd:
     logLevel: info
+    runc:
+      version: 1.1.3
     version: 1.6.6
   docker:
     skipInstall: true
@@ -437,7 +441,7 @@ Resources.AWSEC2LaunchTemplatenodesprivateciliumexamplecom.Properties.LaunchTemp
   ConfigBase: memfs://clusters.example.com/privatecilium.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: NQwH3sIMY6zPrDmN3NNFF0jSkDLmQWj72v/+QVT6FWw=
+  NodeupConfigHash: v5NweZJgGYi+Yp/zAvTlJsFk4mtlD1YV/KK3G20VLbc=
 
   __EOF_KUBE_ENV
 

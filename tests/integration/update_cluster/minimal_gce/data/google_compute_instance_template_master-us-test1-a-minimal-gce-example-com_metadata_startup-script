@@ -131,6 +131,8 @@ cloudConfig:
 containerRuntime: containerd
 containerd:
   logLevel: info
+  runc:
+    version: 1.1.3
   version: 1.6.6
 docker:
   skipInstall: true
@@ -250,7 +252,7 @@ CloudProvider: gce
 ConfigBase: memfs://tests/minimal-gce.example.com
 InstanceGroupName: master-us-test1-a
 InstanceGroupRole: Master
-NodeupConfigHash: 1KcS5RTDbsHpfECn9qHb0wu8FBjSeMal6v9EtXUacG0=
+NodeupConfigHash: NvS1PUcl9eaEL+PHJrhuegCD0Y+ya/oc1+Y1/iTwREk=
 
 __EOF_KUBE_ENV
 
