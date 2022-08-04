@@ -831,6 +831,8 @@ resource "aws_subnet" "us-test-1a-additionalobjects-example-com" {
     "KubernetesCluster"                                   = "additionalobjects.example.com"
     "Name"                                                = "us-test-1a.additionalobjects.example.com"
     "SubnetType"                                          = "Public"
+    "kops.k8s.io/instance-group/master-us-test-1a"        = "true"
+    "kops.k8s.io/instance-group/nodes"                    = "true"
     "kubernetes.io/cluster/additionalobjects.example.com" = "owned"
     "kubernetes.io/role/elb"                              = "1"
     "kubernetes.io/role/internal-elb"                     = "1"
