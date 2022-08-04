@@ -133,6 +133,8 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivatecalicoexamplecom.Prope
   containerRuntime: containerd
   containerd:
     logLevel: info
+    runc:
+      version: 1.1.3
     version: 1.6.6
   docker:
     skipInstall: true
@@ -262,7 +264,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivatecalicoexamplecom.Prope
   ConfigBase: memfs://clusters.example.com/privatecalico.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: ty8gjj9KgV9KU1CnyvFyX3s7Z9R135EXmZQo9fYT5a0=
+  NodeupConfigHash: syF78MnIuzeyl0mEi08hV4CBh6wzoNmCzet7h3/R9RY=
 
   __EOF_KUBE_ENV
 
@@ -402,6 +404,8 @@ Resources.AWSEC2LaunchTemplatenodesprivatecalicoexamplecom.Properties.LaunchTemp
   containerRuntime: containerd
   containerd:
     logLevel: info
+    runc:
+      version: 1.1.3
     version: 1.6.6
   docker:
     skipInstall: true
@@ -437,7 +441,7 @@ Resources.AWSEC2LaunchTemplatenodesprivatecalicoexamplecom.Properties.LaunchTemp
   ConfigBase: memfs://clusters.example.com/privatecalico.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: hBaHyZ30TXd4oOikU5zz9F5wC7fUTDzqTNkADi4TTfE=
+  NodeupConfigHash: EPE2RxXEPVrcS3ydNj3/gDlJuO3Uph68nrlkUF6+CtY=
 
   __EOF_KUBE_ENV
 

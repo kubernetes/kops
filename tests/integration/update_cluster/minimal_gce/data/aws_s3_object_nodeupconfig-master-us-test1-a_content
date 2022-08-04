@@ -264,6 +264,8 @@ channels:
 - memfs://tests/minimal-gce.example.com/addons/bootstrap-channel.yaml
 containerdConfig:
   logLevel: info
+  runc:
+    version: 1.1.3
   version: 1.6.6
 etcdManifests:
 - memfs://tests/minimal-gce.example.com/manifests/etcd/main.yaml
