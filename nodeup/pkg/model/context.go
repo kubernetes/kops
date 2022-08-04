@@ -670,3 +670,28 @@ func (c *NodeupModelContext) GetMetadataLocalIP() (string, error) {
 
 	return internalIP, nil
 }
+
+func (c *NodeupModelContext) findStaticManifest(key string) *nodeup.StaticManifest {
+	if c == nil || c.NodeupConfig == nil {
+		return nil
+	}
+	for _, manifest := range c.NodeupConfig.StaticManifests {
+		if manifest.Key == key {
+			return manifest
+		}
+	}
+	return nil
+}
+
+func (c *NodeupModelContext) findFileAsset(path string) *kops.FileAssetSpec {
+	if c == nil || c.NodeupConfig == nil {
+		return nil
+	}
+	for i := range c.NodeupConfig.FileAssets {
+		f := &c.NodeupConfig.FileAssets[i]
+		if f.Path == path {
+			return f
+		}
+	}
+	return nil
+}

@@ -247,7 +247,7 @@ CloudProvider: gce
 ConfigBase: memfs://tests/ha-gce.example.com
 InstanceGroupName: master-us-test1-a
 InstanceGroupRole: Master
-NodeupConfigHash: pTg+W+oakWctILWSMOdgNGnxlX4FYDspKlk72xEjSxI=
+NodeupConfigHash: vcpPQhqxJx6BcyxYXUg0zXB3SJ+WxE0qO7zeWSkZChs=
 
 __EOF_KUBE_ENV
 
