@@ -22,12 +22,14 @@ import (
 	"strconv"
 	"strings"
 
+	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/configbuilder"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model/components"
+	"k8s.io/kops/pkg/model/components/kubescheduler"
 	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -60,8 +62,6 @@ type KubeSchedulerBuilder struct {
 }
 
 var _ fi.ModelBuilder = &KubeSchedulerBuilder{}
-
-const defaultKubeConfig = "/var/lib/kube-scheduler/kubeconfig"
 
 // Build is responsible for building the manifest for the kube-scheduler
 func (b *KubeSchedulerBuilder) Build(c *fi.ModelBuilderContext) error {
@@ -97,13 +97,22 @@ func (b *KubeSchedulerBuilder) Build(c *fi.ModelBuilderContext) error {
 		kubeconfig := b.BuildIssuedKubeconfig("kube-scheduler", nodetasks.PKIXName{CommonName: rbac.KubeScheduler}, c)
 
 		c.AddTask(&nodetasks.File{
-			Path:     "/var/lib/kube-scheduler/kubeconfig",
+			Path:     kubescheduler.KubeConfigPath,
 			Contents: kubeconfig,
 			Type:     nodetasks.FileType_File,
 			Mode:     s("0400"),
 		})
 	}
-	{
+
+	// Load the kube-scheduler config object if one has been provided.
+	kubeSchedulerConfigAsset := b.findFileAsset(kubescheduler.KubeSchedulerConfigPath)
+
+	if kubeSchedulerConfigAsset != nil {
+		klog.Infof("using kubescheduler configuration from file assets")
+		// FileAssets are written automatically, we don't need to write it.
+	} else {
+		// We didn't get a kubescheduler configuration; warn as we're aiming to move this to generation in the kops CLI
+		klog.Warningf("using embedded kubescheduler configuration")
 		var config *SchedulerConfig
 		if b.IsKubernetesGTE("1.22") {
 			config = NewSchedulerConfig("kubescheduler.config.k8s.io/v1beta2")
@@ -111,14 +120,13 @@ func (b *KubeSchedulerBuilder) Build(c *fi.ModelBuilderContext) error {
 			config = NewSchedulerConfig("kubescheduler.config.k8s.io/v1beta1")
 		}
 
-		manifest, err := configbuilder.BuildConfigYaml(&kubeScheduler, config)
+		kubeSchedulerConfig, err := configbuilder.BuildConfigYaml(&kubeScheduler, config)
 		if err != nil {
 			return err
 		}
-
 		c.AddTask(&nodetasks.File{
-			Path:     "/var/lib/kube-scheduler/config.yaml",
-			Contents: fi.NewBytesResource(manifest),
+			Path:     kubescheduler.KubeSchedulerConfigPath,
+			Contents: fi.NewBytesResource(kubeSchedulerConfig),
 			Type:     nodetasks.FileType_File,
 			Mode:     s("0400"),
 		})
@@ -143,7 +151,7 @@ func NewSchedulerConfig(apiVersion string) *SchedulerConfig {
 	schedConfig.APIVersion = apiVersion
 	schedConfig.Kind = "KubeSchedulerConfiguration"
 	schedConfig.ClientConnection = ClientConnectionConfig{}
-	schedConfig.ClientConnection.Kubeconfig = defaultKubeConfig
+	schedConfig.ClientConnection.Kubeconfig = kubescheduler.KubeConfigPath
 	return schedConfig
 }
 
@@ -190,7 +198,7 @@ func (b *KubeSchedulerBuilder) buildPod(kubeScheduler *kops.KubeSchedulerConfig)
 
 	// Add kubeconfig flags
 	for _, flag := range []string{"authentication-", "authorization-"} {
-		flags = append(flags, "--"+flag+"kubeconfig="+defaultKubeConfig)
+		flags = append(flags, "--"+flag+"kubeconfig="+kubescheduler.KubeConfigPath)
 	}
 
 	if fi.BoolValue(kubeScheduler.UsePolicyConfigMap) {

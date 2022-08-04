@@ -1,0 +1,24 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  name: minimal.example.com
+spec:
+  kubernetesVersion: v1.24.0
+  kubeScheduler:
+    burst: 123
+    maxPersistentVolumes: 20
+
+---
+
+apiVersion: kubescheduler.config.k8s.io/v1beta2
+kind: KubeSchedulerConfiguration
+profiles:
+- plugins:
+    score:
+      disabled:
+      - name: PodTopologySpread
+      enabled:
+      - name: MyCustomPluginA
+        weight: 2
+      - name: MyCustomPluginB
+        weight: 1

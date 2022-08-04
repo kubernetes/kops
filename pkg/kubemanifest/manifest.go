@@ -23,6 +23,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/util/pkg/text"
 	"sigs.k8s.io/yaml"
@@ -41,6 +42,10 @@ func NewObject(data map[string]interface{}) *Object {
 // ToUnstructured converts the object to an unstructured.Unstructured
 func (o *Object) ToUnstructured() *unstructured.Unstructured {
 	return &unstructured.Unstructured{Object: o.data}
+}
+
+func (o *Object) GroupVersionKind() schema.GroupVersionKind {
+	return o.ToUnstructured().GroupVersionKind()
 }
 
 // FromRuntimeObject converts from a runtime.Object.

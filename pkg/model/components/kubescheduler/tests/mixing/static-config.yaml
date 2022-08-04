@@ -1,0 +1,15 @@
+apiVersion: kubescheduler.config.k8s.io/v1beta2
+clientConnection:
+  burst: 123
+  kubeconfig: /var/lib/kube-scheduler/kubeconfig
+kind: KubeSchedulerConfiguration
+profiles:
+- plugins:
+    score:
+      disabled:
+      - name: PodTopologySpread
+      enabled:
+      - name: MyCustomPluginA
+        weight: 2
+      - name: MyCustomPluginB
+        weight: 1
