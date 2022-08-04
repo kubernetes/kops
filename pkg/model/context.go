@@ -25,6 +25,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/dns"
+	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/model/iam"
 	nodeidentityaws "k8s.io/kops/pkg/nodeidentity/aws"
@@ -48,6 +49,9 @@ type KopsModelContext struct {
 	InstanceGroups []*kops.InstanceGroup
 	Region         string
 	SSHPublicKeys  [][]byte
+
+	// AdditionalObjects holds cluster-asssociated configuration objects, other than the Cluster and InstanceGroups.
+	AdditionalObjects kubemanifest.ObjectList
 }
 
 // GatherSubnets maps the subnet names in an InstanceGroup to the ClusterSubnetSpec objects (which are stored on the Cluster)

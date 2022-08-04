@@ -29,7 +29,7 @@ import (
 
 func TestParseDefault(t *testing.T) {
 	expect := []byte(
-		`apiVersion: kubescheduler.config.k8s.io/v1alpha2
+		`apiVersion: kubescheduler.config.k8s.io/v1beta2
 clientConnection:
   kubeconfig: /var/lib/kube-scheduler/kubeconfig
 kind: KubeSchedulerConfiguration
@@ -37,7 +37,7 @@ kind: KubeSchedulerConfiguration
 
 	s := &kops.KubeSchedulerConfig{}
 
-	yaml, err := configbuilder.BuildConfigYaml(s, NewSchedulerConfig("kubescheduler.config.k8s.io/v1alpha2"))
+	yaml, err := configbuilder.BuildConfigYaml(s, NewSchedulerConfig("kubescheduler.config.k8s.io/v1beta2"))
 	if err != nil {
 		t.Errorf("unexpected error: %s", err)
 	}
@@ -49,7 +49,7 @@ kind: KubeSchedulerConfiguration
 
 func TestParse(t *testing.T) {
 	expect := []byte(
-		`apiVersion: kubescheduler.config.k8s.io/v1alpha2
+		`apiVersion: kubescheduler.config.k8s.io/v1beta2
 clientConnection:
   burst: 100
   kubeconfig: /var/lib/kube-scheduler/kubeconfig
@@ -60,7 +60,7 @@ kind: KubeSchedulerConfiguration
 
 	s := &kops.KubeSchedulerConfig{Qps: &qps, Burst: 100}
 
-	yaml, err := configbuilder.BuildConfigYaml(s, NewSchedulerConfig("kubescheduler.config.k8s.io/v1alpha2"))
+	yaml, err := configbuilder.BuildConfigYaml(s, NewSchedulerConfig("kubescheduler.config.k8s.io/v1beta2"))
 	if err != nil {
 		t.Errorf("unexpected error: %s", err)
 	}

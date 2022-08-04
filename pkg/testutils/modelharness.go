@@ -20,13 +20,16 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"sort"
 	"strings"
 	"testing"
 
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/pkg/testutils/golden"
 	"k8s.io/kops/upup/pkg/fi"
@@ -36,6 +39,9 @@ import (
 type Model struct {
 	Cluster        *kops.Cluster
 	InstanceGroups []*kops.InstanceGroup
+
+	// AdditionalObjects holds cluster-asssociated configuration objects, other than the Cluster and InstanceGroups.
+	AdditionalObjects []*unstructured.Unstructured
 }
 
 // LoadModel loads a cluster and instancegroups from a cluster.yaml file found in basedir
@@ -68,8 +74,11 @@ func LoadModel(basedir string) (*Model, error) {
 		case *kops.InstanceGroup:
 			spec.InstanceGroups = append(spec.InstanceGroups, v)
 
+		case *unstructured.Unstructured:
+			spec.AdditionalObjects = append(spec.AdditionalObjects, v)
+
 		default:
-			return nil, fmt.Errorf("unhandled kind %q", gvk)
+			return nil, fmt.Errorf("unhandled kind %T %q", o, gvk)
 		}
 	}
 
@@ -100,4 +109,45 @@ func ValidateTasks(t *testing.T, expectedFile string, context *fi.ModelBuilderCo
 
 	// Asserts that FindTaskDependencies doesn't call klog.Fatalf()
 	fi.FindTaskDependencies(context.Tasks)
+}
+
+// ValidateStaticFiles is used to validate generate StaticFiles.
+func ValidateStaticFiles(t *testing.T, expectedDir string, assetBuilder *assets.AssetBuilder) {
+	files, err := os.ReadDir(expectedDir)
+	if err != nil {
+		t.Fatalf("error reading directory %q: %v", expectedDir, err)
+	}
+
+	prefix := "static-"
+
+	staticFiles := make(map[string]*assets.StaticFile)
+	for _, staticFile := range assetBuilder.StaticFiles {
+		k := filepath.Base(staticFile.Path)
+		staticFiles[k] = staticFile
+		expectedFile := filepath.Join(expectedDir, prefix+k)
+		golden.AssertMatchesFile(t, staticFile.Content, expectedFile)
+	}
+
+	for _, file := range files {
+		name := file.Name()
+		if !strings.HasPrefix(name, prefix) {
+			continue
+		}
+		p := filepath.Join(expectedDir, name)
+		key := strings.TrimPrefix(name, prefix)
+		if _, found := staticFiles[key]; !found {
+			t.Errorf("unexpected file with prefix %q: %q", prefix, p)
+		}
+	}
+}
+
+func ValidateCompletedCluster(t *testing.T, expectedFile string, cluster *kops.Cluster) {
+	b, err := kops.ToRawYaml(cluster)
+	if err != nil {
+		t.Fatalf("error serializing cluster: %v", err)
+	}
+
+	yaml := strings.TrimSpace(string(b))
+
+	golden.AssertMatchesFile(t, yaml, expectedFile)
 }
