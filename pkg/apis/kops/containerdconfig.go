@@ -41,6 +41,8 @@ type ContainerdConfig struct {
 	Version *string `json:"version,omitempty"`
 	// NvidiaGPU configures the Nvidia GPU runtime.
 	NvidiaGPU *NvidiaGPUConfig `json:"nvidiaGPU,omitempty"`
+	// Runc configures the runc runtime.
+	Runc *Runc `json:"runc,omitempty"`
 }
 
 type NvidiaGPUConfig struct {
@@ -50,4 +52,11 @@ type NvidiaGPUConfig struct {
 	// Enabled determines if kOps will install the Nvidia GPU runtime and drivers.
 	// They will only be installed on intances that has an Nvidia GPU.
 	Enabled *bool `json:"enabled,omitempty"`
+}
+
+type Runc struct {
+	// Version used to pick the runc package.
+	Version *string `json:"version,omitempty"`
+	// Packages overrides the URL and hash for the packages.
+	Packages *PackagesConfig `json:"packages,omitempty"`
 }
