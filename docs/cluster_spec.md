@@ -1229,6 +1229,30 @@ tar tf cri-containerd-cni-1.4.4-linux-amd64.tar.gz
     usr/local/sbin/runc
 ```
 
+### Runc Version and Packages
+{{ kops_feature_table(kops_added_default='1.24.2') }}
+
+kOps uses the binaries from https://github.com/opencontainers/runc for installing runc on any supported OS. This makes it easy to specify the desired release version:
+
+```yaml
+spec:
+  containerd:
+    runc:
+      version: 1.1.2
+```
+
+It also makes it possible to use a newer version than the kOps binary, pre-release packages, or even a custom build, by specifying its URL and sha256:
+
+```yaml
+spec:
+  containerd:
+    runc:
+      version: 1.100.0
+      packages:
+        urlAmd64: https://cdn.example.com/k8s/runc/releases/download/v1.100.0/runc.amd64
+        hashAmd64: ab1c67fbcbdddbe481e48a55cf0ef9a86b38b166b5079e0010737fd87d7454bb
+```
+
 ### Registry Mirrors
 {{ kops_feature_table(kops_added_default='1.19') }}
 
