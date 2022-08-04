@@ -790,6 +790,33 @@ spec:
                   root:
                     description: Root directory for persistent data (default "/var/lib/containerd").
                     type: string
+                  runc:
+                    description: Runc configures the runc runtime.
+                    properties:
+                      packages:
+                        description: Packages overrides the URL and hash for the packages.
+                        properties:
+                          hashAmd64:
+                            description: HashAmd64 overrides the hash for the AMD64
+                              package.
+                            type: string
+                          hashArm64:
+                            description: HashArm64 overrides the hash for the ARM64
+                              package.
+                            type: string
+                          urlAmd64:
+                            description: UrlAmd64 overrides the URL for the AMD64
+                              package.
+                            type: string
+                          urlArm64:
+                            description: UrlArm64 overrides the URL for the ARM64
+                              package.
+                            type: string
+                        type: object
+                      version:
+                        description: Version used to pick the runc package.
+                        type: string
+                    type: object
                   skipInstall:
                     description: SkipInstall prevents kOps from installing and modifying
                       containerd in any way (default "false").
