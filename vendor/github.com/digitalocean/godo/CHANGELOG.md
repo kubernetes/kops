@@ -1,5 +1,13 @@
 # Change Log
 
+## [v1.82.0] - 2022-08-04
+
+- #544 - @andrewsomething - apps: Add URN() method.
+- #542 - @andrewsomething - databases: Support advanced config endpoints.
+- #543 - @nicktate - Ntate/detection models
+- #541 - @andrewsomething - droplets: Support listing Droplets filtered by name.
+- #540 - @bentranter - Update links to API documentation
+
 ## [v1.81.0] - 2022-06-15
 
 - #532 - @senorprogrammer - Add support for Reserved IP addresses
