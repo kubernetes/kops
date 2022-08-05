@@ -523,6 +523,11 @@ type AppCreateRequest struct {
 	Spec *AppSpec `json:"spec"`
 }
 
+// DeployTemplate struct for DeployTemplate
+type DeployTemplate struct {
+	Spec *AppSpec `json:"spec,omitempty"`
+}
+
 // Deployment struct for Deployment
 type Deployment struct {
 	ID                   string                  `json:"id,omitempty"`
@@ -657,6 +662,75 @@ type DeploymentWorker struct {
 	Name             string `json:"name,omitempty"`
 	SourceCommitHash string `json:"source_commit_hash,omitempty"`
 }
+
+// DetectRequest struct for DetectRequest
+type DetectRequest struct {
+	Git    *GitSourceSpec    `json:"git,omitempty"`
+	GitHub *GitHubSourceSpec `json:"github,omitempty"`
+	GitLab *GitLabSourceSpec `json:"gitlab,omitempty"`
+	// An optional commit hash to use instead of the branch specified in the source spec.
+	CommitSHA string `json:"commit_sha,omitempty"`
+	// An optional path to the working directory for the detection process.
+	SourceDir string `json:"source_dir,omitempty"`
+}
+
+// DetectResponse struct for DetectResponse
+type DetectResponse struct {
+	Components    []*DetectResponseComponent `json:"components,omitempty"`
+	Template      *DeployTemplate            `json:"template,omitempty"`
+	TemplateFound bool                       `json:"template_found,omitempty"`
+	TemplateValid bool                       `json:"template_valid,omitempty"`
+	TemplateError string                     `json:"template_error,omitempty"`
+}
+
+// DetectResponseComponent struct for DetectResponseComponent
+type DetectResponseComponent struct {
+	Strategy DetectResponseType `json:"strategy,omitempty"`
+	Types    []string           `json:"types,omitempty"`
+	// A list of Dockerfiles that were found for this component. The recommendation is to use the first Dockerfile.
+	Dockerfiles     []string `json:"dockerfiles,omitempty"`
+	BuildCommand    string   `json:"build_command,omitempty"`
+	RunCommand      string   `json:"run_command,omitempty"`
+	EnvironmentSlug string   `json:"environment_slug,omitempty"`
+	// A list of HTTP ports that this component may listen on. The recommendation is to use the last port in the list.
+	HTTPPorts          []int64                            `json:"http_ports,omitempty"`
+	EnvVars            []*AppVariableDefinition           `json:"env_vars,omitempty"`
+	ServerlessPackages []*DetectResponseServerlessPackage `json:"serverless_packages,omitempty"`
+	SourceDir          string                             `json:"source_dir,omitempty"`
+}
+
+// DetectResponseServerlessFunction struct for DetectResponseServerlessFunction
+type DetectResponseServerlessFunction struct {
+	Name    string                                  `json:"name,omitempty"`
+	Package string                                  `json:"package,omitempty"`
+	Runtime string                                  `json:"runtime,omitempty"`
+	Limits  *DetectResponseServerlessFunctionLimits `json:"limits,omitempty"`
+}
+
+// DetectResponseServerlessFunctionLimits struct for DetectResponseServerlessFunctionLimits
+type DetectResponseServerlessFunctionLimits struct {
+	Timeout string `json:"timeout,omitempty"`
+	Memory  string `json:"memory,omitempty"`
+	Logs    string `json:"logs,omitempty"`
+}
+
+// DetectResponseServerlessPackage struct for DetectResponseServerlessPackage
+type DetectResponseServerlessPackage struct {
+	Name      string                              `json:"name,omitempty"`
+	Functions []*DetectResponseServerlessFunction `json:"functions,omitempty"`
+}
+
+// DetectResponseType the model 'DetectResponseType'
+type DetectResponseType string
+
+// List of DetectResponseType
+const (
+	DetectResponseType_Unspecified DetectResponseType = "UNSPECIFIED"
+	DetectResponseType_Dockerfile  DetectResponseType = "DOCKERFILE"
+	DetectResponseType_Buildpack   DetectResponseType = "BUILDPACK"
+	DetectResponseType_HTML        DetectResponseType = "HTML"
+	DetectResponseType_Serverless  DetectResponseType = "SERVERLESS"
+)
 
 // DeploymentCauseDetailsDigitalOceanUserActionName the model 'CauseDetailsDigitalOceanUserActionName'
 type DeploymentCauseDetailsDigitalOceanUserActionName string
