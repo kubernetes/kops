@@ -27,6 +27,8 @@ import (
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // +kops:fitask
@@ -57,7 +59,7 @@ func (v *ServerGroup) Find(c *fi.Context) (*ServerGroup, error) {
 
 	labelSelector := []string{
 		fmt.Sprintf("%s=%s", hetzner.TagKubernetesClusterName, c.Cluster.Name),
-		fmt.Sprintf("%s=%s", hetzner.TagKubernetesInstanceGroup, v.Labels[hetzner.TagKubernetesInstanceGroup]),
+		fmt.Sprintf("%s=%s", hetzner.TagKubernetesInstanceGroup, fi.StringValue(v.Name)),
 	}
 	listOptions := hcloud.ListOpts{
 		PerPage:       50,
@@ -181,10 +183,10 @@ func (_ *ServerGroup) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *
 	}
 
 	if len(e.SSHKeys) == 0 {
-		return fmt.Errorf("failed to find ssh keys for server %q", fi.StringValue(e.Name))
+		return fmt.Errorf("failed to find ssh keys for server group %q", fi.StringValue(e.Name))
 	}
 	if e.Network == nil {
-		return fmt.Errorf("failed to find network for server %q", fi.StringValue(e.Name))
+		return fmt.Errorf("failed to find network for server group %q", fi.StringValue(e.Name))
 	}
 
 	userData, err := fi.ResourceAsString(e.UserData)
@@ -199,7 +201,7 @@ func (_ *ServerGroup) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *
 
 	for i := 1; i <= expectedCount-actualCount; i++ {
 		// Append a random/unique ID to the node name
-		name := fmt.Sprintf("%s-%x", e.Labels[hetzner.TagKubernetesInstanceGroup], rand.Int63())
+		name := fmt.Sprintf("%s-%x", fi.StringValue(e.Name), rand.Int63())
 
 		opts := hcloud.ServerCreateOpts{
 			Name:             name,
@@ -256,4 +258,69 @@ func safeBytesHash(data []byte) string {
 	safe256 = strings.TrimRight(safe256, "=")
 
 	return fmt.Sprintf("sha256.%s", safe256)
+}
+
+type terraformServer struct {
+	Count      *int                       `cty:"count"`
+	Name       *terraformWriter.Literal   `cty:"name"`
+	Location   *string                    `cty:"location"`
+	ServerType *string                    `cty:"server_type"`
+	Image      *string                    `cty:"image"`
+	SSHKeys    []*terraformWriter.Literal `cty:"ssh_keys"`
+	Network    []*terraformServerNetwork  `cty:"network"`
+	PublicNet  *terraformServerPublicNet  `cty:"public_net"`
+	UserData   *terraformWriter.Literal   `cty:"user_data"`
+	Labels     map[string]string          `cty:"labels"`
+}
+
+type terraformServerNetwork struct {
+	ID         *terraformWriter.Literal `cty:"network_id"`
+	IP         *string                  `cty:"ip"`
+	AliasIPs   *string                  `cty:"alias_ips"`
+	MACAddress *string                  `cty:"mac_address"`
+}
+
+type terraformServerPublicNet struct {
+	EnableIPv4 *bool `cty:"ipv4_enabled"`
+	EnableIPv6 *bool `cty:"ipv6_enabled"`
+}
+
+func (_ *ServerGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ServerGroup) error {
+	name := terraformWriter.LiteralWithIndex(fi.StringValue(e.Name))
+	tf := &terraformServer{
+		Count:      fi.Int(e.Count),
+		Name:       name,
+		Location:   fi.String(e.Location),
+		ServerType: fi.String(e.Size),
+		Image:      fi.String(e.Image),
+		Network: []*terraformServerNetwork{
+			{
+				ID: e.Network.TerraformLink(),
+			},
+		},
+		PublicNet: &terraformServerPublicNet{
+			EnableIPv4: fi.Bool(e.EnableIPv4),
+			EnableIPv6: fi.Bool(e.EnableIPv6),
+		},
+		Labels: e.Labels,
+	}
+
+	for _, sshkey := range e.SSHKeys {
+		tf.SSHKeys = append(tf.SSHKeys, sshkey.TerraformLink())
+	}
+
+	if e.UserData != nil {
+		data, err := fi.ResourceAsBytes(e.UserData)
+		if err != nil {
+			return err
+		}
+		if data != nil {
+			tf.UserData, err = t.AddFileBytes("hcloud_server", fi.StringValue(e.Name), "user_data", data, true)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return t.RenderResource("hcloud_server", fi.StringValue(e.Name), tf)
 }

@@ -24,6 +24,7 @@ import (
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
 // +kops:fitask
@@ -203,5 +204,56 @@ type FirewallRule struct {
 var _ fi.HasDependencies = &FirewallRule{}
 
 func (e *FirewallRule) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	return nil
+}
+
+type terraformFirewall struct {
+	Name    *string                     `cty:"name"`
+	ApplyTo []*terraformFirewallApplyTo `cty:"apply_to"`
+	Rules   []*terraformFirewallRule    `cty:"rule"`
+	Labels  map[string]string           `cty:"labels"`
+}
+
+type terraformFirewallApplyTo struct {
+	LabelSelector *string `cty:"label_selector"`
+}
+
+type terraformFirewallRule struct {
+	Direction *string   `cty:"direction"`
+	SourceIPs []*string `cty:"source_ips"`
+	Protocol  *string   `cty:"protocol"`
+	Port      *string   `cty:"port"`
+}
+
+func (_ *Firewall) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Firewall) error {
+	{
+		tf := &terraformFirewall{
+			Name: e.Name,
+			ApplyTo: []*terraformFirewallApplyTo{
+				{
+					LabelSelector: fi.String(e.Selector),
+				},
+			},
+			Labels: e.Labels,
+		}
+		for _, rule := range e.Rules {
+			tfr := &terraformFirewallRule{
+				Direction: fi.String(string(rule.Direction)),
+				Protocol:  fi.String(string(rule.Protocol)),
+				Port:      rule.Port,
+			}
+			for _, ip := range rule.SourceIPs {
+				tfr.SourceIPs = append(tfr.SourceIPs, fi.String(ip.String()))
+			}
+			tf.Rules = append(tf.Rules, tfr)
+		}
+
+		err := t.RenderResource("hcloud_firewall", *e.Name, tf)
+		if err != nil {
+			return err
+		}
+
+	}
+
 	return nil
 }
