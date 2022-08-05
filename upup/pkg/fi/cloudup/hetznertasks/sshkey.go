@@ -26,6 +26,8 @@ import (
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // +kops:fitask
@@ -126,4 +128,24 @@ func (_ *SSHKey) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *SSHKe
 	}
 
 	return nil
+}
+
+type terraformSSHKey struct {
+	Name      *string           `cty:"name"`
+	PublicKey *string           `cty:"public_key"`
+	Labels    map[string]string `cty:"labels"`
+}
+
+func (_ *SSHKey) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SSHKey) error {
+	tf := &terraformSSHKey{
+		Name:      e.Name,
+		PublicKey: fi.String(e.PublicKey),
+		Labels:    e.Labels,
+	}
+
+	return t.RenderResource("hcloud_ssh_key", *e.Name, tf)
+}
+
+func (e *SSHKey) TerraformLink() *terraformWriter.Literal {
+	return terraformWriter.LiteralProperty("hcloud_ssh_key", *e.Name, "id")
 }
