@@ -122,6 +122,7 @@ type LaunchSpecification struct {
 	ManagedServiceIdentities []*ManagedServiceIdentity `json:"managedServiceIdentities,omitempty"`
 	Extensions               []*Extension              `json:"extensions,omitempty"`
 	Tags                     []*Tag                    `json:"tags,omitempty"`
+	MaxPods                  *int                      `json:"maxPods,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -896,6 +897,13 @@ func (o *LaunchSpecification) SetOSDisk(v *OSDisk) *LaunchSpecification {
 func (o *LaunchSpecification) SetTags(v []*Tag) *LaunchSpecification {
 	if o.Tags = v; o.Tags == nil {
 		o.nullFields = append(o.nullFields, "Tags")
+	}
+	return o
+}
+
+func (o *LaunchSpecification) SetMaxPods(v *int) *LaunchSpecification {
+	if o.MaxPods = v; o.MaxPods == nil {
+		o.nullFields = append(o.nullFields, "MaxPods")
 	}
 	return o
 }
