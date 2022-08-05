@@ -14,10 +14,10 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/apparentlymart/go-cidr v1.1.0
 	github.com/aws/amazon-ec2-instance-selector/v2 v2.3.3
-	github.com/aws/aws-sdk-go v1.44.65
+	github.com/aws/aws-sdk-go v1.44.70
 	github.com/blang/semver/v4 v4.0.0
 	github.com/cert-manager/cert-manager v1.9.1
-	github.com/digitalocean/godo v1.81.0
+	github.com/digitalocean/godo v1.82.0
 	github.com/go-ini/ini v1.66.6
 	github.com/go-logr/logr v1.2.3
 	github.com/gogo/protobuf v1.3.2
@@ -29,7 +29,7 @@ require (
 	github.com/gophercloud/gophercloud v0.25.0
 	github.com/hashicorp/hcl/v2 v2.13.0
 	github.com/hashicorp/vault/api v1.7.2
-	github.com/hetznercloud/hcloud-go v1.35.1
+	github.com/hetznercloud/hcloud-go v1.35.2
 	github.com/jacksontj/memberlistmesh v0.0.0-20190905163944-93462b9d2bb7
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/pelletier/go-toml v1.9.5
@@ -39,17 +39,17 @@ require (
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.12.0
-	github.com/spotinst/spotinst-sdk-go v1.124.0
+	github.com/spotinst/spotinst-sdk-go v1.125.0
 	github.com/stretchr/testify v1.8.0
 	github.com/weaveworks/mesh v0.0.0-20191105120815-58dbcc3e8e63
 	github.com/zclconf/go-cty v1.10.0
 	go.uber.org/multierr v1.8.0
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa
-	golang.org/x/net v0.0.0-20220728211354-c7608f3a8462
+	golang.org/x/net v0.0.0-20220805013720-a33c5aa5df48
 	golang.org/x/oauth2 v0.0.0-20220722155238-128564f6959c
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4
-	golang.org/x/sys v0.0.0-20220728004956-3c1f35247d10
-	google.golang.org/api v0.90.0
+	golang.org/x/sys v0.0.0-20220804214406-8e32c043e418
+	google.golang.org/api v0.91.0
 	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/inf.v0 v0.9.1
 	gopkg.in/square/go-jose.v2 v2.6.0
