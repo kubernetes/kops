@@ -1,0 +1,100 @@
+{{$zone := index .zones 0}}
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  name: {{.clusterName}}
+spec:
+  kubernetesApiAccess:
+  - {{.publicIP}}
+  channel: stable
+  cloudProvider: {{.cloudProvider}}
+  configBase: "{{.stateStore}}/{{.clusterName}}"
+  etcdClusters:
+  - etcdMembers:
+    - instanceGroup: master-{{$zone}}
+      name: {{$zone}}
+    name: main
+  - etcdMembers:
+    - instanceGroup: master-{{$zone}}
+      name: {{$zone}}
+    name: events
+  iam: {}
+  kubelet:
+    anonymousAuth: false
+    cpuManagerPolicy: static
+    evictionHard: memory.available<200Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<15%,imagefs.inodesFree<5%
+    kubeReserved:
+      cpu: 100m
+      ephemeral-storage: 1Gi
+      memory: 150Mi
+    systemReserved:
+      cpu: 100m
+      ephemeral-storage: 1Gi
+      memory: 120Mi
+  kubernetesVersion: {{.kubernetesVersion}}
+  masterInternalName: api.internal.{{.clusterName}}
+  masterPublicName: api.{{.clusterName}}
+  networkCIDR: 172.20.0.0/16
+  networking:
+    calico: {}
+  nodePortAccess:
+    - 0.0.0.0/0
+  nonMasqueradeCIDR: 100.64.0.0/10
+  sshAccess:
+    - {{.publicIP}}
+  topology:
+    masters: public
+    nodes: public
+  subnets:
+  - cidr: 172.20.32.0/19
+    name: {{$zone}}
+    type: Public
+    zone: {{$zone}}
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: SSHCredential
+metadata:
+  name: admin
+  labels:
+    kops.k8s.io/cluster: {{.clusterName}}
+spec:
+  publicKey: {{.sshPublicKey}}
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  name: nodes-{{$zone}}
+  labels:
+    kops.k8s.io/cluster: {{.clusterName}}
+spec:
+  associatePublicIp: true
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201112.1
+  machineType: t3.medium
+  maxSize: 4
+  minSize: 4
+  role: Node
+  subnets:
+  - {{$zone}}
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  name: master-{{$zone}}
+  labels:
+    kops.k8s.io/cluster: {{.clusterName}}
+spec:
+  associatePublicIp: true
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201112.1
+  machineType: c5.large
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - {{$zone}}
+
