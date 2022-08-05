@@ -25,6 +25,8 @@ import (
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // +kops:fitask
@@ -187,4 +189,57 @@ func (_ *Network) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *Netw
 	}
 
 	return nil
+}
+
+type terraformNetwork struct {
+	Name    *string           `cty:"name"`
+	IPRange *string           `cty:"ip_range"`
+	Labels  map[string]string `cty:"labels"`
+}
+
+type terraformNetworkSubnet struct {
+	NetworkID   *terraformWriter.Literal `cty:"network_id"`
+	Type        *string                  `cty:"type"`
+	NetworkZone *string                  `cty:"network_zone"`
+	IPRange     *string                  `cty:"ip_range"`
+}
+
+func (_ *Network) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Network) error {
+	{
+		tf := &terraformNetwork{
+			Name:    e.Name,
+			IPRange: fi.String(e.IPRange),
+			Labels:  e.Labels,
+		}
+
+		err := t.RenderResource("hcloud_network", *e.Name, tf)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, subnet := range e.Subnets {
+		_, subnetIpRange, err := net.ParseCIDR(subnet)
+		if err != nil {
+			return err
+		}
+
+		tf := &terraformNetworkSubnet{
+			NetworkID:   e.TerraformLink(),
+			Type:        fi.String(string(hcloud.NetworkSubnetTypeCloud)),
+			IPRange:     fi.String(subnetIpRange.String()),
+			NetworkZone: fi.String(e.Region),
+		}
+
+		err = t.RenderResource("hcloud_network_subnet", *e.Name+"-"+subnet, tf)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (e *Network) TerraformLink() *terraformWriter.Literal {
+	return terraformWriter.LiteralProperty("hcloud_network", *e.Name, "id")
 }

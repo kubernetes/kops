@@ -88,7 +88,11 @@ const (
 )
 
 // TerraformCloudProviders is the list of cloud providers with terraform target support
-var TerraformCloudProviders = []kops.CloudProviderID{kops.CloudProviderAWS, kops.CloudProviderGCE}
+var TerraformCloudProviders = []kops.CloudProviderID{
+	kops.CloudProviderAWS,
+	kops.CloudProviderGCE,
+	kops.CloudProviderHetzner,
+}
 
 type ApplyClusterCmd struct {
 	Cloud   fi.Cloud
