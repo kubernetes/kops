@@ -379,6 +379,29 @@ func (t *Tester) addNonBlockingTaintsFlag() {
 	t.TestArgs += fmt.Sprintf(" --non-blocking-taints=%v", nbt)
 }
 
+func (t *Tester) addCSIDriverFlags() error {
+	cluster, err := t.getKopsCluster()
+	if err != nil {
+		return err
+	}
+
+	if cluster.Spec.CloudConfig != nil &&
+		cluster.Spec.CloudConfig.AWSEBSCSIDriver != nil &&
+		cluster.Spec.CloudConfig.AWSEBSCSIDriver.Enabled != nil &&
+		*cluster.Spec.CloudConfig.AWSEBSCSIDriver.Enabled {
+		cwd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		klog.Infof("Setting --storage.testdriver=%s/tests/e2e/csi-manifests/ebs.yaml --storage.migratedPlugins=kubernetes.io/aws-ebs", cwd)
+		t.TestArgs += fmt.Sprintf(" --storage.testdriver=%s/tests/e2e/csi-manifests/aws-ebs/driver.yaml --storage.migratedPlugins=kubernetes.io/aws-ebs", cwd)
+	} else {
+		klog.Info("EBS CSI driver not enabled. Skipping tests")
+	}
+	return nil
+
+}
+
 func (t *Tester) execute() error {
 	fs, err := gpflag.Parse(t)
 	if err != nil {
@@ -435,7 +458,12 @@ func (t *Tester) execute() error {
 	if err := t.addNodeOSArchFlag(); err != nil {
 		return err
 	}
+
 	t.addNonBlockingTaintsFlag()
+
+	if err := t.addCSIDriverFlags(); err != nil {
+		return err
+	}
 
 	t.TestArgs += " --disable-log-dump"
 
