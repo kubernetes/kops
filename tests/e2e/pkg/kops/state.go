@@ -17,6 +17,7 @@ limitations under the License.
 package kops
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -30,7 +31,7 @@ import (
 // GetCluster will retrieve the specified Cluster from the state store.
 func GetCluster(kopsBinary, clusterName string, env []string) (*api.Cluster, error) {
 	args := []string{
-		kopsBinary, "get", "cluster", clusterName, "-ojson",
+		kopsBinary, "get", "cluster", clusterName, "-ojson", "--full",
 	}
 	c := exec.Command(args[0], args[1:]...)
 	c.SetEnv(env...)
@@ -43,8 +44,18 @@ func GetCluster(kopsBinary, clusterName string, env []string) (*api.Cluster, err
 		return nil, fmt.Errorf("error querying cluster from %s: %w", strings.Join(args, " "), err)
 	}
 
+	var jsonBytes []byte
+
 	cluster := &api.Cluster{}
-	if err := json.Unmarshal(stdout.Bytes(), cluster); err != nil {
+	scanner := bufio.NewScanner(&stdout)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.HasPrefix(line, "//") {
+			continue
+		}
+		jsonBytes = append(jsonBytes, scanner.Bytes()...)
+	}
+	if err := json.Unmarshal(jsonBytes, cluster); err != nil {
 		return nil, fmt.Errorf("error parsing cluster json: %w", err)
 	}
 	return cluster, nil
