@@ -1,0 +1,10 @@
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: kops-csi-1-21-test
+parameters:
+  type: gp3
+  encrypted: "true"
+provisioner: ebs.csi.aws.com
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer

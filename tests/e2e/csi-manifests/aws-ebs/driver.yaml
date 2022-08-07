@@ -1,0 +1,32 @@
+# Manifest for Kubernetes external tests.
+# See https://github.com/kubernetes/kubernetes/tree/master/test/e2e/storage/external
+
+ShortName: ebs
+StorageClass:
+  FromFile: tests/e2e/csi-manifests/aws-ebs/sc.yaml
+# kOps does not install snapshotClass by default
+#SnapshotClass:
+#  FromFile: snapshotclass.yaml
+DriverInfo:
+  Name: ebs.csi.aws.com
+  SupportedSizeRange:
+    Min: 1Gi
+    Max: 16Ti
+  SupportedFsType:
+    xfs: {}
+    ext4: {}
+  SupportedMountOption:
+    dirsync: {}
+  TopologyKeys: ["topology.ebs.csi.aws.com/zone"]
+  Capabilities:
+    persistence: true
+    fsGroup: true
+    block: true
+    exec: true
+    snapshotDataSource: true
+    pvcDataSource: false
+    multipods: true
+    controllerExpansion: true
+    nodeExpansion: true
+    volumeLimits: true
+    topology: true
