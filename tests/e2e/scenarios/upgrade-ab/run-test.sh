@@ -35,10 +35,10 @@ if [[ "$K8S_VERSION_B" == "stable" ]]; then
   K8S_VERSION_B=$(curl https://storage.googleapis.com/kubernetes-release/release/stable.txt)
 fi
 if [[ "$K8S_VERSION_A" == "ci" ]]; then
-  K8S_VERSION_A=$(curl https://storage.googleapis.com/k8s-release-dev/ci/latest.txt)
+  K8S_VERSION_A=https://storage.googleapis.com/k8s-release-dev/ci/$(curl https://storage.googleapis.com/k8s-release-dev/ci/latest.txt)
 fi
 if [[ "$K8S_VERSION_B" == "ci" ]]; then
-  K8S_VERSION_B=$(curl https://storage.googleapis.com/k8s-release-dev/ci/latest.txt)
+  K8S_VERSION_B=https://storage.googleapis.com/k8s-release-dev/ci/$(curl https://storage.googleapis.com/k8s-release-dev/ci/latest.txt)
 fi
 
 export KOPS_BASE_URL
