@@ -330,6 +330,9 @@ spec:
     metadata:
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ""
+        test1: "true"
+        test2: "123"
+        test3: awesome
       creationTimestamp: null
       labels:
         k8s-app: cilium

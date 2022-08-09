@@ -26,7 +26,11 @@ spec:
   masterPublicName: api.privatecilium.example.com
   networkCIDR: 172.20.0.0/16
   networking:
-    cilium: {}
+    cilium:
+      agentPodAnnotations:
+        test1: "true"
+        test2: "123"
+        test3: awesome
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
   - 0.0.0.0/0
