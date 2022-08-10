@@ -7,7 +7,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.11.2
+    app.kubernetes.io/version: v1.11.3
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: aws-node
@@ -24,7 +24,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.11.2
+    app.kubernetes.io/version: v1.11.3
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: eniconfigs.crd.k8s.amazonaws.com
@@ -56,7 +56,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.11.2
+    app.kubernetes.io/version: v1.11.3
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: aws-node
@@ -101,6 +101,16 @@ rules:
   verbs:
   - list
   - watch
+- apiGroups:
+  - ""
+  - events.k8s.io
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+  - list
+  - get
 
 ---
 
@@ -113,7 +123,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.11.2
+    app.kubernetes.io/version: v1.11.3
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: aws-node
@@ -137,7 +147,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.11.2
+    app.kubernetes.io/version: v1.11.3
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: aws-node
@@ -221,7 +231,7 @@ spec:
               fieldPath: spec.nodeName
         - name: CLUSTER_NAME
           value: minimal.example.com
-        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.11.2
+        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.11.3
         livenessProbe:
           exec:
             command:
@@ -246,7 +256,7 @@ spec:
           timeoutSeconds: 10
         resources:
           requests:
-            cpu: 10m
+            cpu: 25m
         securityContext:
           capabilities:
             add:
@@ -271,7 +281,7 @@ spec:
           value: "false"
         - name: ENABLE_IPv6
           value: "false"
-        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.11.2
+        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.11.3
         name: aws-vpc-cni-init
         securityContext:
           privileged: true
