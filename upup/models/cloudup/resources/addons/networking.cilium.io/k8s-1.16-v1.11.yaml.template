@@ -591,9 +591,9 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "{{ .AgentPrometheusPort }}"
         {{ end }}
-{{- with .AgentPodAnnotations }}
-        {{- . | nindent 8 }}
-{{- end }}
+        {{- range $key, $value := .AgentPodAnnotations }}
+        {{ $key }}: "{{ $value }}"
+        {{- end }}
       labels:
         k8s-app: cilium
         kubernetes.io/cluster-service: "true"

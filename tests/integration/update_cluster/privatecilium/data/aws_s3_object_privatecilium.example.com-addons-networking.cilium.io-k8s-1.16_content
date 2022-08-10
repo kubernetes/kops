@@ -317,6 +317,10 @@ spec:
       kubernetes.io/cluster-service: "true"
   template:
     metadata:
+      annotations:
+        test1: "true"
+        test2: "123"
+        test3: awesome
       creationTimestamp: null
       labels:
         k8s-app: cilium
