@@ -20,6 +20,7 @@ import (
 	"regexp"
 	"strings"
 
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
@@ -108,6 +109,10 @@ func (t *Tester) setSkipRegexFlag() error {
 		// but skipping logic has been changed and now the test is planned for removal
 		// ref: https://github.com/kubernetes/kubernetes/pull/109649#issuecomment-1108574843
 		skipRegex += "|should.verify.that.all.nodes.have.volume.limits"
+	}
+
+	if cluster.Spec.CloudConfig != nil && cluster.Spec.CloudConfig.AWSEBSCSIDriver != nil && fi.BoolValue(cluster.Spec.CloudConfig.AWSEBSCSIDriver.Enabled) {
+		skipRegex += "|In-tree.Volumes.\\[Driver:.aws\\]"
 	}
 
 	// Ensure it is valid regex
