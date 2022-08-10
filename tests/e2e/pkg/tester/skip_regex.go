@@ -20,6 +20,7 @@ import (
 	"regexp"
 	"strings"
 
+	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/utils"
 )
@@ -34,6 +35,10 @@ func (t *Tester) setSkipRegexFlag() error {
 	}
 
 	cluster, err := t.getKopsCluster()
+	if err != nil {
+		return err
+	}
+	k8sVersion, err := util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
 	if err != nil {
 		return err
 	}
@@ -75,36 +80,31 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|Firewall"
 		// kube-dns tests are not skipped automatically if a cluster uses CoreDNS instead
 		skipRegex += "|kube-dns"
-		// this tests assumes a custom config for containerd:
-		// https://github.com/kubernetes/test-infra/blob/578d86a7be187214be6ccd60e6ea7317b51aeb15/jobs/e2e_node/containerd/config.toml#L19-L21
-		// ref: https://github.com/kubernetes/kubernetes/pull/104803
-		skipRegex += "|RuntimeClass.should.run"
 		// this test assumes the cluster runs COS but kOps uses Ubuntu by default
 		// ref: https://github.com/kubernetes/test-infra/pull/22190
 		skipRegex += "|should.be.mountable.when.non-attachable"
 		// The in-tree driver and its E2E tests use `topology.kubernetes.io/zone` but the CSI driver uses `topology.gke.io/zone`
 		skipRegex += "|In-tree.Volumes.\\[Driver:.gcepd\\].*topology.should.provision.a.volume.and.schedule.a.pod.with.AllowedTopologies"
-	} else if strings.Contains(cluster.Spec.KubernetesVersion, "v1.1") ||
-		strings.Contains(cluster.Spec.KubernetesVersion, "v1.20.") ||
-		strings.Contains(cluster.Spec.KubernetesVersion, "v1.21.") ||
-		strings.Contains(cluster.Spec.KubernetesVersion, "v1.22.") {
+	}
+
+	if k8sVersion.Minor <= 22 {
 		// this tests assumes a custom config for containerd:
 		// https://github.com/kubernetes/test-infra/blob/578d86a7be187214be6ccd60e6ea7317b51aeb15/jobs/e2e_node/containerd/config.toml#L19-L21
 		// ref: https://github.com/kubernetes/kubernetes/pull/104803
 		skipRegex += "|RuntimeClass.should.run"
 	}
 
-	if strings.Contains(cluster.Spec.KubernetesVersion, "v1.23.") && cluster.Spec.LegacyCloudProvider == "aws" && utils.IsIPv6CIDR(cluster.Spec.NonMasqueradeCIDR) {
+	if k8sVersion.Minor == 23 && cluster.Spec.LegacyCloudProvider == "aws" && utils.IsIPv6CIDR(cluster.Spec.NonMasqueradeCIDR) {
 		// ref: https://github.com/kubernetes/kubernetes/pull/106992
 		skipRegex += "|should.not.disrupt.a.cloud.load-balancer.s.connectivity.during.rollout"
 	}
 
-	if strings.Contains(cluster.Spec.KubernetesVersion, "v1.23.") {
+	if k8sVersion.Minor == 23 {
 		// beta feature not enabled by default
 		skipRegex += "|Topology.Hints"
 	}
 
-	if strings.Contains(cluster.Spec.KubernetesVersion, "v1.25.") {
+	if k8sVersion.Minor == 25 {
 		// this test was being skipped automatically because it isn't applicable with CSIMigration=true which is default
 		// but skipping logic has been changed and now the test is planned for removal
 		// ref: https://github.com/kubernetes/kubernetes/pull/109649#issuecomment-1108574843
