@@ -884,6 +884,7 @@ func karpenterInstanceTypes(cloud awsup.AWSCloud, ig kops.InstanceGroupSpec) ([]
 				VCpuCount:            &ec2.VCpuCountRangeRequest{},
 				MemoryMiB:            &ec2.MemoryMiBRequest{},
 				BurstablePerformance: fi.String("included"),
+				InstanceGenerations:  []*string{fi.String("current")},
 			}
 			cpu := instanceRequirements.CPU
 			if cpu != nil {
