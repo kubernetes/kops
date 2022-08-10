@@ -167,6 +167,10 @@ spec:
   networkCIDR: 172.20.0.0/16
   networking:
     cilium:
+      agentPodAnnotations:
+        test1: "true"
+        test2: "123"
+        test3: awesome
       agentPrometheusPort: 9090
       bpfCTGlobalAnyMax: 262144
       bpfCTGlobalTCPMax: 524288
