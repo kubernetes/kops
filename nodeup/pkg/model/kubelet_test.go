@@ -218,7 +218,7 @@ func runKubeletBuilder(t *testing.T, context *fi.ModelBuilderContext, nodeupMode
 
 	builder := KubeletBuilder{NodeupModelContext: nodeupModelContext}
 
-	kubeletConfig, err := builder.buildKubeletConfig()
+	kubeletConfig, err := builder.buildKubeletConfigSpec()
 	if err != nil {
 		t.Fatalf("error from KubeletBuilder buildKubeletConfig: %v", err)
 		return
