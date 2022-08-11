@@ -102,7 +102,7 @@ metadata:
     k8s-app: aws-node-termination-handler
     app.kubernetes.io/version: "{{ .Version }}"
 spec:
-  replicas: 1
+  replicas: {{ ControlPlaneControllerReplicas true }}
   selector:
     matchLabels:
       app.kubernetes.io/name: aws-node-termination-handler
@@ -115,6 +115,7 @@ spec:
         app.kubernetes.io/instance: aws-node-termination-handler
         k8s-app: aws-node-termination-handler
         kubernetes.io/os: linux
+        kops.k8s.io/nth-mode: sqs
     spec:
       nodeSelector: null
       {{ if not UseServiceAccountExternalPermissions }}
@@ -237,6 +238,7 @@ spec:
           matchLabels:
             app.kubernetes.io/name: aws-node-termination-handler
             app.kubernetes.io/instance: aws-node-termination-handler
+            kops.k8s.io/nth-mode: sqs
       - maxSkew: 1
         topologyKey: "kubernetes.io/hostname"
         whenUnsatisfiable: DoNotSchedule
@@ -244,7 +246,7 @@ spec:
           matchLabels:
             app.kubernetes.io/name: aws-node-termination-handler
             app.kubernetes.io/instance: aws-node-termination-handler
-
+            kops.k8s.io/nth-mode: sqs
 ---
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
@@ -259,6 +261,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: aws-node-termination-handler
       app.kubernetes.io/instance: aws-node-termination-handler
+      kops.k8s.io/nth-mode: sqs
   maxUnavailable: 1
 {{ else }}
 ---
