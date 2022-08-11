@@ -261,6 +261,9 @@ func (b *KubeletBuilder) kubeletPath() string {
 
 // buildManifestDirectory creates the directory where kubelet expects static manifests to reside
 func (b *KubeletBuilder) buildManifestDirectory(kubeletConfig *kops.KubeletConfigSpec) (*nodetasks.File, error) {
+	if kubeletConfig.PodManifestPath == "" {
+		return nil, fmt.Errorf("failed to build manifest path. Path was empty")
+	}
 	directory := &nodetasks.File{
 		Path: kubeletConfig.PodManifestPath,
 		Type: nodetasks.FileType_Directory,
