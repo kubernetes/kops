@@ -92,7 +92,13 @@ func TestTaintsApplied(t *testing.T) {
 
 	for _, g := range tests {
 		cluster := &kops.Cluster{Spec: kops.ClusterSpec{KubernetesVersion: g.version}}
-		ig := &kops.InstanceGroup{Spec: kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleMaster, Taints: g.taints}}
+		input := testutils.BuildMinimalMasterInstanceGroup("eu-central-1a")
+		input.Spec.Taints = g.taints
+
+		ig, err := cloudup.PopulateInstanceGroupSpec(cluster, &input, nil, nil)
+		if err != nil {
+			t.Fatalf("failed to populate ig: %v", err)
+		}
 
 		config, bootConfig := nodeup.NewConfig(cluster, ig)
 		b := &KubeletBuilder{
