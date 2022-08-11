@@ -321,6 +321,8 @@ func BuildNodeupModelContext(model *testutils.Model) (*NodeupModelContext, error
 	}
 	nodeupModelContext.NodeupConfig.UpdatePolicy = *updatePolicy
 
+	nodeupModelContext.NodeupConfig.KubeletConfig.PodManifestPath = "/etc/kubernetes/manifests"
+
 	return nodeupModelContext, nil
 }
 
