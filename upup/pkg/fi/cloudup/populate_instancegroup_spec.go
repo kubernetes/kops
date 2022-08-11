@@ -24,6 +24,8 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
+	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/pkg/nodelabels"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
@@ -60,7 +62,6 @@ var awsDedicatedInstanceExceptions = map[string]bool{
 }
 
 // PopulateInstanceGroupSpec sets default values in the InstanceGroup
-// The InstanceGroup is simpler than the cluster spec, so we just populate in place (like the rest of k8s)
 func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup, cloud fi.Cloud, channel *kops.Channel) (*kops.InstanceGroup, error) {
 	klog.Infof("Populating instance group spec for %q", input.GetName())
 
@@ -72,6 +73,110 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 
 	ig := &kops.InstanceGroup{}
 	reflectutils.JSONMergeStruct(ig, input)
+
+	spec := &ig.Spec
+
+	// TODO: Clean up
+	if ig.IsMaster() {
+		if ig.Spec.MachineType == "" {
+			ig.Spec.MachineType, err = defaultMachineType(cloud, cluster, ig)
+			if err != nil {
+				return nil, fmt.Errorf("error assigning default machine type for masters: %v", err)
+			}
+
+		}
+		if ig.Spec.MinSize == nil {
+			ig.Spec.MinSize = fi.Int32(1)
+		}
+		if ig.Spec.MaxSize == nil {
+			ig.Spec.MaxSize = fi.Int32(1)
+		}
+	} else if ig.Spec.Role == kops.InstanceGroupRoleBastion {
+		if ig.Spec.MachineType == "" {
+			ig.Spec.MachineType, err = defaultMachineType(cloud, cluster, ig)
+			if err != nil {
+				return nil, fmt.Errorf("error assigning default machine type for bastions: %v", err)
+			}
+		}
+		if ig.Spec.MinSize == nil {
+			ig.Spec.MinSize = fi.Int32(1)
+		}
+		if ig.Spec.MaxSize == nil {
+			ig.Spec.MaxSize = fi.Int32(1)
+		}
+	} else {
+		if ig.IsAPIServerOnly() && !featureflag.APIServerNodes.Enabled() {
+			return nil, fmt.Errorf("apiserver nodes requires the APIServerNodes feature flag to be enabled")
+		}
+		if ig.Spec.MachineType == "" {
+			ig.Spec.MachineType, err = defaultMachineType(cloud, cluster, ig)
+			if err != nil {
+				return nil, fmt.Errorf("error assigning default machine type for nodes: %v", err)
+			}
+		}
+		if ig.Spec.MinSize == nil {
+			ig.Spec.MinSize = fi.Int32(2)
+		}
+		if ig.Spec.MaxSize == nil {
+			ig.Spec.MaxSize = fi.Int32(2)
+		}
+	}
+
+	if ig.Spec.Image == "" {
+		architecture, err := MachineArchitecture(cloud, ig.Spec.MachineType)
+		if err != nil {
+			return nil, fmt.Errorf("unable to determine machine architecture for InstanceGroup %q: %v", ig.ObjectMeta.Name, err)
+		}
+		ig.Spec.Image = defaultImage(cluster, channel, architecture)
+		if ig.Spec.Image == "" {
+			return nil, fmt.Errorf("unable to determine default image for InstanceGroup %s", ig.ObjectMeta.Name)
+		}
+	}
+
+	if ig.Spec.Tenancy != "" && ig.Spec.Tenancy != "default" {
+		switch cluster.Spec.GetCloudProvider() {
+		case kops.CloudProviderAWS:
+			if _, ok := awsDedicatedInstanceExceptions[ig.Spec.MachineType]; ok {
+				return nil, fmt.Errorf("invalid dedicated instance type: %s", ig.Spec.MachineType)
+			}
+		default:
+			klog.Warning("Trying to set tenancy on non-AWS environment")
+		}
+	}
+
+	if ig.IsMaster() {
+		if len(ig.Spec.Subnets) == 0 {
+			return nil, fmt.Errorf("master InstanceGroup %s did not specify any Subnets", ig.ObjectMeta.Name)
+		}
+	} else if ig.IsAPIServerOnly() && cluster.Spec.IsIPv6Only() {
+		if len(ig.Spec.Subnets) == 0 {
+			for _, subnet := range cluster.Spec.Subnets {
+				if subnet.Type != kops.SubnetTypePrivate && subnet.Type != kops.SubnetTypeUtility {
+					ig.Spec.Subnets = append(ig.Spec.Subnets, subnet.Name)
+				}
+			}
+		}
+	} else {
+		if len(ig.Spec.Subnets) == 0 {
+			for _, subnet := range cluster.Spec.Subnets {
+				if subnet.Type != kops.SubnetTypeDualStack && subnet.Type != kops.SubnetTypeUtility {
+					ig.Spec.Subnets = append(ig.Spec.Subnets, subnet.Name)
+				}
+			}
+		}
+
+		if len(ig.Spec.Subnets) == 0 {
+			for _, subnet := range cluster.Spec.Subnets {
+				if subnet.Type != kops.SubnetTypeUtility {
+					ig.Spec.Subnets = append(ig.Spec.Subnets, subnet.Name)
+				}
+			}
+		}
+	}
+
+	if len(ig.Spec.Subnets) == 0 {
+		return nil, fmt.Errorf("unable to infer any Subnets for InstanceGroup %s ", ig.ObjectMeta.Name)
+	}
 
 	hasGPU := false
 	clusterNvidia := false
@@ -117,6 +222,40 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 	if ig.Spec.Manager == "" {
 		ig.Spec.Manager = kops.InstanceManagerCloudGroup
 	}
+
+	if spec.Kubelet == nil {
+		spec.Kubelet = &kops.KubeletConfigSpec{}
+	}
+
+	kubeletConfig := spec.Kubelet
+
+	// We include the NodeLabels in the userdata even for Kubernetes 1.16 and later so that
+	// rolling update will still replace nodes when they change.
+	kubeletConfig.NodeLabels = nodelabels.BuildNodeLabels(cluster, ig)
+
+	kubeletConfig.Taints = append(kubeletConfig.Taints, spec.Taints...)
+
+	if ig.IsMaster() {
+		reflectutils.JSONMergeStruct(kubeletConfig, cluster.Spec.MasterKubelet)
+
+		// A few settings in Kubelet override those in MasterKubelet. I'm not sure why.
+		if cluster.Spec.Kubelet != nil && cluster.Spec.Kubelet.AnonymousAuth != nil && !*cluster.Spec.Kubelet.AnonymousAuth {
+			kubeletConfig.AnonymousAuth = fi.Bool(false)
+		}
+	} else {
+		reflectutils.JSONMergeStruct(kubeletConfig, cluster.Spec.Kubelet)
+	}
+
+	if ig.Spec.Kubelet != nil {
+		useSecureKubelet := fi.BoolValue(kubeletConfig.AnonymousAuth)
+
+		reflectutils.JSONMergeStruct(kubeletConfig, spec.Kubelet)
+
+		if useSecureKubelet {
+			kubeletConfig.AnonymousAuth = fi.Bool(false)
+		}
+	}
+
 	return ig, nil
 }
 
