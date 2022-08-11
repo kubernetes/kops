@@ -252,11 +252,17 @@ func (b *KubeControllerManagerBuilder) buildPod(kcm *kops.KubeControllerManagerC
 		container.Args = append(container.Args, sortedStrings(flags)...)
 	} else {
 		container.Command = []string{"/usr/local/bin/kube-controller-manager"}
-		container.Args = append(
-			sortedStrings(flags),
-			"--logtostderr=false", // https://github.com/kubernetes/klog/issues/60
-			"--alsologtostderr",
-			"--log-file=/var/log/kube-controller-manager.log")
+		if kcm.LogFormat != "" && kcm.LogFormat != "text" {
+			// When logging-format is not text, some flags are not accepted.
+			// https://github.com/kubernetes/kops/issues/14100
+			container.Args = sortedStrings(flags)
+		} else {
+			container.Args = append(
+				sortedStrings(flags),
+				"--logtostderr=false", // https://github.com/kubernetes/klog/issues/60
+				"--alsologtostderr",
+				"--log-file=/var/log/kube-controller-manager.log")
+		}
 	}
 	for _, path := range b.SSLHostPaths() {
 		name := strings.Replace(path, "/", "", -1)
