@@ -56,6 +56,22 @@ spec:
                     description: ContainerRuntime is the container runtime to be used
                       with your worker nodes.
                     type: string
+                  maxPods:
+                    description: MaxPods is an override for the maximum number of
+                      pods that can run on a worker node instance.
+                    format: int32
+                    type: integer
+                  systemReserved:
+                    additionalProperties:
+                      anyOf:
+                      - type: integer
+                      - type: string
+                      pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                      x-kubernetes-int-or-string: true
+                    description: SystemReserved contains resources reserved for OS
+                      system daemons and kernel memory.
+                    type: object
+
                 type: object
               labels:
                 additionalProperties:
@@ -316,6 +332,11 @@ spec:
               amiFamily:
                 description: AMIFamily is the AMI family that instances use.
                 type: string
+              amiSelector:
+                additionalProperties:
+                  type: string
+                description: AMISelector discovers AMIs to be used by Amazon EC2 tags.
+                type: object
               apiVersion:
                 description: 'APIVersion defines the versioned schema of this representation
                   of an object. Servers should convert recognized schemas to the latest
@@ -594,9 +615,6 @@ rules:
 - apiGroups: [""]
   resources: ["pods/eviction"]
   verbs: ["create"]
-- apiGroups: [""]
-  resources: ["persistentvolumeclaims"]
-  verbs: ["update"]
 ---
 # Source: karpenter/templates/webhook/rbac.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -794,7 +812,7 @@ spec:
       dnsPolicy: Default
       containers:
         - name: controller
-          image: public.ecr.aws/karpenter/controller:v0.13.1
+          image: public.ecr.aws/karpenter/controller:v0.14.0
           imagePullPolicy: IfNotPresent
           resources:
             limits:
@@ -810,6 +828,7 @@ spec:
               containerPort: 8081
               protocol: TCP
           livenessProbe:
+            initialDelaySeconds: 30
             httpGet:
               path: /healthz
               port: http
@@ -896,7 +915,7 @@ spec:
       dnsPolicy: Default
       containers:
         - name: webhook
-          image: public.ecr.aws/karpenter/webhook:v0.13.1
+          image: public.ecr.aws/karpenter/webhook:v0.14.0
           imagePullPolicy: IfNotPresent
           args:
             - -port=8443
@@ -912,6 +931,7 @@ spec:
               containerPort: 8443
               protocol: TCP
           livenessProbe:
+            initialDelaySeconds: 30
             httpGet:
               scheme: HTTPS
               port: https-webhook
