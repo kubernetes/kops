@@ -17,30 +17,30 @@
 // access Amazon SQS using your favorite programming language. The SDKs perform
 // tasks such as the following automatically:
 //
-//    * Cryptographically sign your service requests
+//   - Cryptographically sign your service requests
 //
-//    * Retry requests
+//   - Retry requests
 //
-//    * Handle error responses
+//   - Handle error responses
 //
 // Additional information
 //
-//    * Amazon SQS Product Page (http://aws.amazon.com/sqs/)
+//   - Amazon SQS Product Page (http://aws.amazon.com/sqs/)
 //
-//    * Amazon SQS Developer Guide Making API Requests (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-making-api-requests.html)
-//    Amazon SQS Message Attributes (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-message-metadata.html#sqs-message-attributes)
-//    Amazon SQS Dead-Letter Queues (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html)
+//   - Amazon SQS Developer Guide Making API Requests (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-making-api-requests.html)
+//     Amazon SQS Message Attributes (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-message-metadata.html#sqs-message-attributes)
+//     Amazon SQS Dead-Letter Queues (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html)
 //
-//    * Amazon SQS in the Command Line Interface (http://docs.aws.amazon.com/cli/latest/reference/sqs/index.html)
+//   - Amazon SQS in the Command Line Interface (http://docs.aws.amazon.com/cli/latest/reference/sqs/index.html)
 //
-//    * Amazon Web Services General Reference Regions and Endpoints (https://docs.aws.amazon.com/general/latest/gr/rande.html#sqs_region)
+//   - Amazon Web Services General Reference Regions and Endpoints (https://docs.aws.amazon.com/general/latest/gr/rande.html#sqs_region)
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/sqs-2012-11-05 for more information on this service.
 //
 // See sqs package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/sqs/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact Amazon Simple Queue Service with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.
