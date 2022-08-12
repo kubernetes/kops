@@ -130,6 +130,7 @@ spec:
         app.kubernetes.io/name: aws-node-termination-handler
         k8s-app: aws-node-termination-handler
         kops.k8s.io/managed-by: kops
+        kops.k8s.io/nth-mode: sqs
         kubernetes.io/os: linux
     spec:
       affinity:
@@ -243,6 +244,7 @@ spec:
           matchLabels:
             app.kubernetes.io/instance: aws-node-termination-handler
             app.kubernetes.io/name: aws-node-termination-handler
+            kops.k8s.io/nth-mode: sqs
         maxSkew: 1
         topologyKey: topology.kubernetes.io/zone
         whenUnsatisfiable: ScheduleAnyway
@@ -250,6 +252,7 @@ spec:
           matchLabels:
             app.kubernetes.io/instance: aws-node-termination-handler
             app.kubernetes.io/name: aws-node-termination-handler
+            kops.k8s.io/nth-mode: sqs
         maxSkew: 1
         topologyKey: kubernetes.io/hostname
         whenUnsatisfiable: DoNotSchedule
@@ -274,3 +277,4 @@ spec:
     matchLabels:
       app.kubernetes.io/instance: aws-node-termination-handler
       app.kubernetes.io/name: aws-node-termination-handler
+      kops.k8s.io/nth-mode: sqs
