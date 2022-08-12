@@ -29,6 +29,7 @@ const (
 	databaseEvictionPolicyPath = databaseBasePath + "/%s/eviction_policy"
 	databaseSQLModePath        = databaseBasePath + "/%s/sql_mode"
 	databaseFirewallRulesPath  = databaseBasePath + "/%s/firewall"
+	databaseOptionsPath        = databaseBasePath + "/options"
 )
 
 // SQL Mode constants allow for MySQL-specific SQL flavor configuration.
@@ -139,6 +140,7 @@ type DatabasesService interface {
 	UpdatePostgreSQLConfig(context.Context, string, *PostgreSQLConfig) (*Response, error)
 	UpdateRedisConfig(context.Context, string, *RedisConfig) (*Response, error)
 	UpdateMySQLConfig(context.Context, string, *MySQLConfig) (*Response, error)
+	ListOptions(todo context.Context) (*DatabaseOptions, *Response, error)
 }
 
 // DatabasesServiceOp handles communication with the Databases related methods
@@ -524,6 +526,32 @@ type sqlModeRoot struct {
 
 type databaseFirewallRuleRoot struct {
 	Rules []DatabaseFirewallRule `json:"rules"`
+}
+
+// databaseOptionsRoot represents the root of all available database options (i.e. engines, regions, version, etc.)
+type databaseOptionsRoot struct {
+	Options *DatabaseOptions `json:"options"`
+}
+
+// DatabaseOptions represents the available database engines
+type DatabaseOptions struct {
+	MongoDBOptions     DatabaseEngineOptions `json:"mongodb"`
+	MySQLOptions       DatabaseEngineOptions `json:"mysql"`
+	PostgresSQLOptions DatabaseEngineOptions `json:"pg"`
+	RedisOptions       DatabaseEngineOptions `json:"redis"`
+}
+
+// DatabaseEngineOptions represents the configuration options that are available for a given database engine
+type DatabaseEngineOptions struct {
+	Regions  []string         `json:"regions"`
+	Versions []string         `json:"versions"`
+	Layouts  []DatabaseLayout `json:"layouts"`
+}
+
+// DatabaseLayout represents the slugs available for a given database engine at various node counts
+type DatabaseLayout struct {
+	NodeNum int      `json:"num_nodes"`
+	Sizes   []string `json:"sizes"`
 }
 
 // URN returns a URN identifier for the database
@@ -1133,4 +1161,20 @@ func (svc *DatabasesServiceOp) UpdateMySQLConfig(ctx context.Context, databaseID
 		return resp, err
 	}
 	return resp, nil
+}
+
+// ListOptions gets the database options available.
+func (svc *DatabasesServiceOp) ListOptions(ctx context.Context) (*DatabaseOptions, *Response, error) {
+	root := new(databaseOptionsRoot)
+	req, err := svc.client.NewRequest(ctx, http.MethodGet, databaseOptionsPath, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	resp, err := svc.client.Do(ctx, req, root)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return root.Options, resp, nil
 }

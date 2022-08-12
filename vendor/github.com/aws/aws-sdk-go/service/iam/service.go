@@ -39,13 +39,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a IAM client from just a session.
-//     svc := iam.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a IAM client with additional configuration
-//     svc := iam.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a IAM client from just a session.
+//	svc := iam.New(mySession)
+//
+//	// Create a IAM client with additional configuration
+//	svc := iam.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *IAM {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

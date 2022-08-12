@@ -29,14 +29,13 @@ const opActivateEventSource = "ActivateEventSource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ActivateEventSourceRequest method.
+//	req, resp := client.ActivateEventSourceRequest(params)
 //
-//    // Example sending a request using the ActivateEventSourceRequest method.
-//    req, resp := client.ActivateEventSourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/ActivateEventSource
 func (c *EventBridge) ActivateEventSourceRequest(input *ActivateEventSourceInput) (req *request.Request, output *ActivateEventSourceOutput) {
@@ -69,20 +68,21 @@ func (c *EventBridge) ActivateEventSourceRequest(input *ActivateEventSourceInput
 // API operation ActivateEventSource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * InvalidStateException
-//   The specified state is not a valid state for an event source.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - InvalidStateException
+//     The specified state is not a valid state for an event source.
 //
-//   * OperationDisabledException
-//   The operation you are attempting is not available in this region.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
+//
+//   - OperationDisabledException
+//     The operation you are attempting is not available in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/ActivateEventSource
 func (c *EventBridge) ActivateEventSource(input *ActivateEventSourceInput) (*ActivateEventSourceOutput, error) {
@@ -122,14 +122,13 @@ const opCancelReplay = "CancelReplay"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelReplayRequest method.
+//	req, resp := client.CancelReplayRequest(params)
 //
-//    // Example sending a request using the CancelReplayRequest method.
-//    req, resp := client.CancelReplayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/CancelReplay
 func (c *EventBridge) CancelReplayRequest(input *CancelReplayInput) (req *request.Request, output *CancelReplayOutput) {
@@ -160,18 +159,19 @@ func (c *EventBridge) CancelReplayRequest(input *CancelReplayInput) (req *reques
 // API operation CancelReplay for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * IllegalStatusException
-//   An error occurred because a replay can be canceled only when the state is
-//   Running or Starting.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - IllegalStatusException
+//     An error occurred because a replay can be canceled only when the state is
+//     Running or Starting.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/CancelReplay
 func (c *EventBridge) CancelReplay(input *CancelReplayInput) (*CancelReplayOutput, error) {
@@ -211,14 +211,13 @@ const opCreateApiDestination = "CreateApiDestination"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateApiDestinationRequest method.
+//	req, resp := client.CreateApiDestinationRequest(params)
 //
-//    // Example sending a request using the CreateApiDestinationRequest method.
-//    req, resp := client.CreateApiDestinationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/CreateApiDestination
 func (c *EventBridge) CreateApiDestinationRequest(input *CreateApiDestinationInput) (req *request.Request, output *CreateApiDestinationOutput) {
@@ -250,18 +249,19 @@ func (c *EventBridge) CreateApiDestinationRequest(input *CreateApiDestinationInp
 // API operation CreateApiDestination for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceAlreadyExistsException
-//   The resource you are trying to create already exists.
 //
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
+//   - ResourceAlreadyExistsException
+//     The resource you are trying to create already exists.
 //
-//   * LimitExceededException
-//   The request failed because it attempted to create resource beyond the allowed
-//   service quota.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - LimitExceededException
+//     The request failed because it attempted to create resource beyond the allowed
+//     service quota.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/CreateApiDestination
 func (c *EventBridge) CreateApiDestination(input *CreateApiDestinationInput) (*CreateApiDestinationOutput, error) {
@@ -301,14 +301,13 @@ const opCreateArchive = "CreateArchive"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateArchiveRequest method.
+//	req, resp := client.CreateArchiveRequest(params)
 //
-//    // Example sending a request using the CreateArchiveRequest method.
-//    req, resp := client.CreateArchiveRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/CreateArchive
 func (c *EventBridge) CreateArchiveRequest(input *CreateArchiveInput) (req *request.Request, output *CreateArchiveOutput) {
@@ -344,24 +343,25 @@ func (c *EventBridge) CreateArchiveRequest(input *CreateArchiveInput) (req *requ
 // API operation CreateArchive for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * ResourceAlreadyExistsException
-//   The resource you are trying to create already exists.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
+//   - ResourceAlreadyExistsException
+//     The resource you are trying to create already exists.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * LimitExceededException
-//   The request failed because it attempted to create resource beyond the allowed
-//   service quota.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
-//   * InvalidEventPatternException
-//   The event pattern is not valid.
+//   - LimitExceededException
+//     The request failed because it attempted to create resource beyond the allowed
+//     service quota.
+//
+//   - InvalidEventPatternException
+//     The event pattern is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/CreateArchive
 func (c *EventBridge) CreateArchive(input *CreateArchiveInput) (*CreateArchiveOutput, error) {
@@ -401,14 +401,13 @@ const opCreateConnection = "CreateConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateConnectionRequest method.
+//	req, resp := client.CreateConnectionRequest(params)
 //
-//    // Example sending a request using the CreateConnectionRequest method.
-//    req, resp := client.CreateConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/CreateConnection
 func (c *EventBridge) CreateConnectionRequest(input *CreateConnectionInput) (req *request.Request, output *CreateConnectionOutput) {
@@ -440,15 +439,16 @@ func (c *EventBridge) CreateConnectionRequest(input *CreateConnectionInput) (req
 // API operation CreateConnection for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceAlreadyExistsException
-//   The resource you are trying to create already exists.
 //
-//   * LimitExceededException
-//   The request failed because it attempted to create resource beyond the allowed
-//   service quota.
+//   - ResourceAlreadyExistsException
+//     The resource you are trying to create already exists.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - LimitExceededException
+//     The request failed because it attempted to create resource beyond the allowed
+//     service quota.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/CreateConnection
 func (c *EventBridge) CreateConnection(input *CreateConnectionInput) (*CreateConnectionOutput, error) {
@@ -488,14 +488,13 @@ const opCreateEndpoint = "CreateEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateEndpointRequest method.
+//	req, resp := client.CreateEndpointRequest(params)
 //
-//    // Example sending a request using the CreateEndpointRequest method.
-//    req, resp := client.CreateEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/CreateEndpoint
 func (c *EventBridge) CreateEndpointRequest(input *CreateEndpointInput) (req *request.Request, output *CreateEndpointOutput) {
@@ -531,15 +530,16 @@ func (c *EventBridge) CreateEndpointRequest(input *CreateEndpointInput) (req *re
 // API operation CreateEndpoint for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceAlreadyExistsException
-//   The resource you are trying to create already exists.
 //
-//   * LimitExceededException
-//   The request failed because it attempted to create resource beyond the allowed
-//   service quota.
+//   - ResourceAlreadyExistsException
+//     The resource you are trying to create already exists.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - LimitExceededException
+//     The request failed because it attempted to create resource beyond the allowed
+//     service quota.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/CreateEndpoint
 func (c *EventBridge) CreateEndpoint(input *CreateEndpointInput) (*CreateEndpointOutput, error) {
@@ -579,14 +579,13 @@ const opCreateEventBus = "CreateEventBus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateEventBusRequest method.
+//	req, resp := client.CreateEventBusRequest(params)
 //
-//    // Example sending a request using the CreateEventBusRequest method.
-//    req, resp := client.CreateEventBusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/CreateEventBus
 func (c *EventBridge) CreateEventBusRequest(input *CreateEventBusInput) (req *request.Request, output *CreateEventBusOutput) {
@@ -620,27 +619,28 @@ func (c *EventBridge) CreateEventBusRequest(input *CreateEventBusInput) (req *re
 // API operation CreateEventBus for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceAlreadyExistsException
-//   The resource you are trying to create already exists.
 //
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
+//   - ResourceAlreadyExistsException
+//     The resource you are trying to create already exists.
 //
-//   * InvalidStateException
-//   The specified state is not a valid state for an event source.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - InvalidStateException
+//     The specified state is not a valid state for an event source.
 //
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
-//   * LimitExceededException
-//   The request failed because it attempted to create resource beyond the allowed
-//   service quota.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * OperationDisabledException
-//   The operation you are attempting is not available in this region.
+//   - LimitExceededException
+//     The request failed because it attempted to create resource beyond the allowed
+//     service quota.
+//
+//   - OperationDisabledException
+//     The operation you are attempting is not available in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/CreateEventBus
 func (c *EventBridge) CreateEventBus(input *CreateEventBusInput) (*CreateEventBusOutput, error) {
@@ -680,14 +680,13 @@ const opCreatePartnerEventSource = "CreatePartnerEventSource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePartnerEventSourceRequest method.
+//	req, resp := client.CreatePartnerEventSourceRequest(params)
 //
-//    // Example sending a request using the CreatePartnerEventSourceRequest method.
-//    req, resp := client.CreatePartnerEventSourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/CreatePartnerEventSource
 func (c *EventBridge) CreatePartnerEventSourceRequest(input *CreatePartnerEventSourceInput) (req *request.Request, output *CreatePartnerEventSourceOutput) {
@@ -744,21 +743,22 @@ func (c *EventBridge) CreatePartnerEventSourceRequest(input *CreatePartnerEventS
 // API operation CreatePartnerEventSource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceAlreadyExistsException
-//   The resource you are trying to create already exists.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceAlreadyExistsException
+//     The resource you are trying to create already exists.
 //
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
-//   * LimitExceededException
-//   The request failed because it attempted to create resource beyond the allowed
-//   service quota.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * OperationDisabledException
-//   The operation you are attempting is not available in this region.
+//   - LimitExceededException
+//     The request failed because it attempted to create resource beyond the allowed
+//     service quota.
+//
+//   - OperationDisabledException
+//     The operation you are attempting is not available in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/CreatePartnerEventSource
 func (c *EventBridge) CreatePartnerEventSource(input *CreatePartnerEventSourceInput) (*CreatePartnerEventSourceOutput, error) {
@@ -798,14 +798,13 @@ const opDeactivateEventSource = "DeactivateEventSource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeactivateEventSourceRequest method.
+//	req, resp := client.DeactivateEventSourceRequest(params)
 //
-//    // Example sending a request using the DeactivateEventSourceRequest method.
-//    req, resp := client.DeactivateEventSourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DeactivateEventSource
 func (c *EventBridge) DeactivateEventSourceRequest(input *DeactivateEventSourceInput) (req *request.Request, output *DeactivateEventSourceOutput) {
@@ -843,20 +842,21 @@ func (c *EventBridge) DeactivateEventSourceRequest(input *DeactivateEventSourceI
 // API operation DeactivateEventSource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * InvalidStateException
-//   The specified state is not a valid state for an event source.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - InvalidStateException
+//     The specified state is not a valid state for an event source.
 //
-//   * OperationDisabledException
-//   The operation you are attempting is not available in this region.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
+//
+//   - OperationDisabledException
+//     The operation you are attempting is not available in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DeactivateEventSource
 func (c *EventBridge) DeactivateEventSource(input *DeactivateEventSourceInput) (*DeactivateEventSourceOutput, error) {
@@ -896,14 +896,13 @@ const opDeauthorizeConnection = "DeauthorizeConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeauthorizeConnectionRequest method.
+//	req, resp := client.DeauthorizeConnectionRequest(params)
 //
-//    // Example sending a request using the DeauthorizeConnectionRequest method.
-//    req, resp := client.DeauthorizeConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DeauthorizeConnection
 func (c *EventBridge) DeauthorizeConnectionRequest(input *DeauthorizeConnectionInput) (req *request.Request, output *DeauthorizeConnectionOutput) {
@@ -936,14 +935,15 @@ func (c *EventBridge) DeauthorizeConnectionRequest(input *DeauthorizeConnectionI
 // API operation DeauthorizeConnection for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DeauthorizeConnection
 func (c *EventBridge) DeauthorizeConnection(input *DeauthorizeConnectionInput) (*DeauthorizeConnectionOutput, error) {
@@ -983,14 +983,13 @@ const opDeleteApiDestination = "DeleteApiDestination"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteApiDestinationRequest method.
+//	req, resp := client.DeleteApiDestinationRequest(params)
 //
-//    // Example sending a request using the DeleteApiDestinationRequest method.
-//    req, resp := client.DeleteApiDestinationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DeleteApiDestination
 func (c *EventBridge) DeleteApiDestinationRequest(input *DeleteApiDestinationInput) (req *request.Request, output *DeleteApiDestinationOutput) {
@@ -1022,14 +1021,15 @@ func (c *EventBridge) DeleteApiDestinationRequest(input *DeleteApiDestinationInp
 // API operation DeleteApiDestination for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DeleteApiDestination
 func (c *EventBridge) DeleteApiDestination(input *DeleteApiDestinationInput) (*DeleteApiDestinationOutput, error) {
@@ -1069,14 +1069,13 @@ const opDeleteArchive = "DeleteArchive"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteArchiveRequest method.
+//	req, resp := client.DeleteArchiveRequest(params)
 //
-//    // Example sending a request using the DeleteArchiveRequest method.
-//    req, resp := client.DeleteArchiveRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DeleteArchive
 func (c *EventBridge) DeleteArchiveRequest(input *DeleteArchiveInput) (req *request.Request, output *DeleteArchiveOutput) {
@@ -1108,14 +1107,15 @@ func (c *EventBridge) DeleteArchiveRequest(input *DeleteArchiveInput) (req *requ
 // API operation DeleteArchive for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DeleteArchive
 func (c *EventBridge) DeleteArchive(input *DeleteArchiveInput) (*DeleteArchiveOutput, error) {
@@ -1155,14 +1155,13 @@ const opDeleteConnection = "DeleteConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteConnectionRequest method.
+//	req, resp := client.DeleteConnectionRequest(params)
 //
-//    // Example sending a request using the DeleteConnectionRequest method.
-//    req, resp := client.DeleteConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DeleteConnection
 func (c *EventBridge) DeleteConnectionRequest(input *DeleteConnectionInput) (req *request.Request, output *DeleteConnectionOutput) {
@@ -1193,14 +1192,15 @@ func (c *EventBridge) DeleteConnectionRequest(input *DeleteConnectionInput) (req
 // API operation DeleteConnection for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DeleteConnection
 func (c *EventBridge) DeleteConnection(input *DeleteConnectionInput) (*DeleteConnectionOutput, error) {
@@ -1240,14 +1240,13 @@ const opDeleteEndpoint = "DeleteEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEndpointRequest method.
+//	req, resp := client.DeleteEndpointRequest(params)
 //
-//    // Example sending a request using the DeleteEndpointRequest method.
-//    req, resp := client.DeleteEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DeleteEndpoint
 func (c *EventBridge) DeleteEndpointRequest(input *DeleteEndpointInput) (req *request.Request, output *DeleteEndpointOutput) {
@@ -1282,14 +1281,15 @@ func (c *EventBridge) DeleteEndpointRequest(input *DeleteEndpointInput) (req *re
 // API operation DeleteEndpoint for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DeleteEndpoint
 func (c *EventBridge) DeleteEndpoint(input *DeleteEndpointInput) (*DeleteEndpointOutput, error) {
@@ -1329,14 +1329,13 @@ const opDeleteEventBus = "DeleteEventBus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEventBusRequest method.
+//	req, resp := client.DeleteEventBusRequest(params)
 //
-//    // Example sending a request using the DeleteEventBusRequest method.
-//    req, resp := client.DeleteEventBusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DeleteEventBus
 func (c *EventBridge) DeleteEventBusRequest(input *DeleteEventBusInput) (req *request.Request, output *DeleteEventBusOutput) {
@@ -1370,11 +1369,12 @@ func (c *EventBridge) DeleteEventBusRequest(input *DeleteEventBusInput) (req *re
 // API operation DeleteEventBus for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   This exception occurs due to unexpected causes.
 //
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
+//
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DeleteEventBus
 func (c *EventBridge) DeleteEventBus(input *DeleteEventBusInput) (*DeleteEventBusOutput, error) {
@@ -1414,14 +1414,13 @@ const opDeletePartnerEventSource = "DeletePartnerEventSource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePartnerEventSourceRequest method.
+//	req, resp := client.DeletePartnerEventSourceRequest(params)
 //
-//    // Example sending a request using the DeletePartnerEventSourceRequest method.
-//    req, resp := client.DeletePartnerEventSourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DeletePartnerEventSource
 func (c *EventBridge) DeletePartnerEventSourceRequest(input *DeletePartnerEventSourceInput) (req *request.Request, output *DeletePartnerEventSourceOutput) {
@@ -1457,14 +1456,15 @@ func (c *EventBridge) DeletePartnerEventSourceRequest(input *DeletePartnerEventS
 // API operation DeletePartnerEventSource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   This exception occurs due to unexpected causes.
 //
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
-//   * OperationDisabledException
-//   The operation you are attempting is not available in this region.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
+//
+//   - OperationDisabledException
+//     The operation you are attempting is not available in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DeletePartnerEventSource
 func (c *EventBridge) DeletePartnerEventSource(input *DeletePartnerEventSourceInput) (*DeletePartnerEventSourceOutput, error) {
@@ -1504,14 +1504,13 @@ const opDeleteRule = "DeleteRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRuleRequest method.
+//	req, resp := client.DeleteRuleRequest(params)
 //
-//    // Example sending a request using the DeleteRuleRequest method.
-//    req, resp := client.DeleteRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DeleteRule
 func (c *EventBridge) DeleteRuleRequest(input *DeleteRuleInput) (req *request.Request, output *DeleteRuleOutput) {
@@ -1559,22 +1558,23 @@ func (c *EventBridge) DeleteRuleRequest(input *DeleteRuleInput) (req *request.Re
 // API operation DeleteRule for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * ManagedRuleException
-//   This rule was created by an Amazon Web Services service on behalf of your
-//   account. It is managed by that service. If you see this error in response
-//   to DeleteRule or RemoveTargets, you can use the Force parameter in those
-//   calls to delete the rule or remove targets from the rule. You cannot modify
-//   these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
-//   TagResource, or UntagResource.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ManagedRuleException
+//     This rule was created by an Amazon Web Services service on behalf of your
+//     account. It is managed by that service. If you see this error in response
+//     to DeleteRule or RemoveTargets, you can use the Force parameter in those
+//     calls to delete the rule or remove targets from the rule. You cannot modify
+//     these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
+//     TagResource, or UntagResource.
 //
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
+//
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DeleteRule
 func (c *EventBridge) DeleteRule(input *DeleteRuleInput) (*DeleteRuleOutput, error) {
@@ -1614,14 +1614,13 @@ const opDescribeApiDestination = "DescribeApiDestination"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeApiDestinationRequest method.
+//	req, resp := client.DescribeApiDestinationRequest(params)
 //
-//    // Example sending a request using the DescribeApiDestinationRequest method.
-//    req, resp := client.DescribeApiDestinationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DescribeApiDestination
 func (c *EventBridge) DescribeApiDestinationRequest(input *DescribeApiDestinationInput) (req *request.Request, output *DescribeApiDestinationOutput) {
@@ -1652,11 +1651,12 @@ func (c *EventBridge) DescribeApiDestinationRequest(input *DescribeApiDestinatio
 // API operation DescribeApiDestination for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DescribeApiDestination
 func (c *EventBridge) DescribeApiDestination(input *DescribeApiDestinationInput) (*DescribeApiDestinationOutput, error) {
@@ -1696,14 +1696,13 @@ const opDescribeArchive = "DescribeArchive"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeArchiveRequest method.
+//	req, resp := client.DescribeArchiveRequest(params)
 //
-//    // Example sending a request using the DescribeArchiveRequest method.
-//    req, resp := client.DescribeArchiveRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DescribeArchive
 func (c *EventBridge) DescribeArchiveRequest(input *DescribeArchiveInput) (req *request.Request, output *DescribeArchiveOutput) {
@@ -1734,14 +1733,15 @@ func (c *EventBridge) DescribeArchiveRequest(input *DescribeArchiveInput) (req *
 // API operation DescribeArchive for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceAlreadyExistsException
-//   The resource you are trying to create already exists.
 //
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
+//   - ResourceAlreadyExistsException
+//     The resource you are trying to create already exists.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DescribeArchive
 func (c *EventBridge) DescribeArchive(input *DescribeArchiveInput) (*DescribeArchiveOutput, error) {
@@ -1781,14 +1781,13 @@ const opDescribeConnection = "DescribeConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeConnectionRequest method.
+//	req, resp := client.DescribeConnectionRequest(params)
 //
-//    // Example sending a request using the DescribeConnectionRequest method.
-//    req, resp := client.DescribeConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DescribeConnection
 func (c *EventBridge) DescribeConnectionRequest(input *DescribeConnectionInput) (req *request.Request, output *DescribeConnectionOutput) {
@@ -1819,11 +1818,12 @@ func (c *EventBridge) DescribeConnectionRequest(input *DescribeConnectionInput) 
 // API operation DescribeConnection for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DescribeConnection
 func (c *EventBridge) DescribeConnection(input *DescribeConnectionInput) (*DescribeConnectionOutput, error) {
@@ -1863,14 +1863,13 @@ const opDescribeEndpoint = "DescribeEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEndpointRequest method.
+//	req, resp := client.DescribeEndpointRequest(params)
 //
-//    // Example sending a request using the DescribeEndpointRequest method.
-//    req, resp := client.DescribeEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DescribeEndpoint
 func (c *EventBridge) DescribeEndpointRequest(input *DescribeEndpointInput) (req *request.Request, output *DescribeEndpointOutput) {
@@ -1904,11 +1903,12 @@ func (c *EventBridge) DescribeEndpointRequest(input *DescribeEndpointInput) (req
 // API operation DescribeEndpoint for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DescribeEndpoint
 func (c *EventBridge) DescribeEndpoint(input *DescribeEndpointInput) (*DescribeEndpointOutput, error) {
@@ -1948,14 +1948,13 @@ const opDescribeEventBus = "DescribeEventBus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEventBusRequest method.
+//	req, resp := client.DescribeEventBusRequest(params)
 //
-//    // Example sending a request using the DescribeEventBusRequest method.
-//    req, resp := client.DescribeEventBusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DescribeEventBus
 func (c *EventBridge) DescribeEventBusRequest(input *DescribeEventBusInput) (req *request.Request, output *DescribeEventBusOutput) {
@@ -1995,11 +1994,12 @@ func (c *EventBridge) DescribeEventBusRequest(input *DescribeEventBusInput) (req
 // API operation DescribeEventBus for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DescribeEventBus
 func (c *EventBridge) DescribeEventBus(input *DescribeEventBusInput) (*DescribeEventBusOutput, error) {
@@ -2039,14 +2039,13 @@ const opDescribeEventSource = "DescribeEventSource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEventSourceRequest method.
+//	req, resp := client.DescribeEventSourceRequest(params)
 //
-//    // Example sending a request using the DescribeEventSourceRequest method.
-//    req, resp := client.DescribeEventSourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DescribeEventSource
 func (c *EventBridge) DescribeEventSourceRequest(input *DescribeEventSourceInput) (req *request.Request, output *DescribeEventSourceOutput) {
@@ -2078,14 +2077,15 @@ func (c *EventBridge) DescribeEventSourceRequest(input *DescribeEventSourceInput
 // API operation DescribeEventSource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * OperationDisabledException
-//   The operation you are attempting is not available in this region.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
+//
+//   - OperationDisabledException
+//     The operation you are attempting is not available in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DescribeEventSource
 func (c *EventBridge) DescribeEventSource(input *DescribeEventSourceInput) (*DescribeEventSourceOutput, error) {
@@ -2125,14 +2125,13 @@ const opDescribePartnerEventSource = "DescribePartnerEventSource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribePartnerEventSourceRequest method.
+//	req, resp := client.DescribePartnerEventSourceRequest(params)
 //
-//    // Example sending a request using the DescribePartnerEventSourceRequest method.
-//    req, resp := client.DescribePartnerEventSourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DescribePartnerEventSource
 func (c *EventBridge) DescribePartnerEventSourceRequest(input *DescribePartnerEventSourceInput) (req *request.Request, output *DescribePartnerEventSourceOutput) {
@@ -2167,14 +2166,15 @@ func (c *EventBridge) DescribePartnerEventSourceRequest(input *DescribePartnerEv
 // API operation DescribePartnerEventSource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * OperationDisabledException
-//   The operation you are attempting is not available in this region.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
+//
+//   - OperationDisabledException
+//     The operation you are attempting is not available in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DescribePartnerEventSource
 func (c *EventBridge) DescribePartnerEventSource(input *DescribePartnerEventSourceInput) (*DescribePartnerEventSourceOutput, error) {
@@ -2214,14 +2214,13 @@ const opDescribeReplay = "DescribeReplay"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeReplayRequest method.
+//	req, resp := client.DescribeReplayRequest(params)
 //
-//    // Example sending a request using the DescribeReplayRequest method.
-//    req, resp := client.DescribeReplayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DescribeReplay
 func (c *EventBridge) DescribeReplayRequest(input *DescribeReplayInput) (req *request.Request, output *DescribeReplayOutput) {
@@ -2260,11 +2259,12 @@ func (c *EventBridge) DescribeReplayRequest(input *DescribeReplayInput) (req *re
 // API operation DescribeReplay for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DescribeReplay
 func (c *EventBridge) DescribeReplay(input *DescribeReplayInput) (*DescribeReplayOutput, error) {
@@ -2304,14 +2304,13 @@ const opDescribeRule = "DescribeRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeRuleRequest method.
+//	req, resp := client.DescribeRuleRequest(params)
 //
-//    // Example sending a request using the DescribeRuleRequest method.
-//    req, resp := client.DescribeRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DescribeRule
 func (c *EventBridge) DescribeRuleRequest(input *DescribeRuleInput) (req *request.Request, output *DescribeRuleOutput) {
@@ -2345,11 +2344,12 @@ func (c *EventBridge) DescribeRuleRequest(input *DescribeRuleInput) (req *reques
 // API operation DescribeRule for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DescribeRule
 func (c *EventBridge) DescribeRule(input *DescribeRuleInput) (*DescribeRuleOutput, error) {
@@ -2389,14 +2389,13 @@ const opDisableRule = "DisableRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisableRuleRequest method.
+//	req, resp := client.DisableRuleRequest(params)
 //
-//    // Example sending a request using the DisableRuleRequest method.
-//    req, resp := client.DisableRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DisableRule
 func (c *EventBridge) DisableRuleRequest(input *DisableRuleInput) (req *request.Request, output *DisableRuleOutput) {
@@ -2432,22 +2431,23 @@ func (c *EventBridge) DisableRuleRequest(input *DisableRuleInput) (req *request.
 // API operation DisableRule for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * ManagedRuleException
-//   This rule was created by an Amazon Web Services service on behalf of your
-//   account. It is managed by that service. If you see this error in response
-//   to DeleteRule or RemoveTargets, you can use the Force parameter in those
-//   calls to delete the rule or remove targets from the rule. You cannot modify
-//   these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
-//   TagResource, or UntagResource.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ManagedRuleException
+//     This rule was created by an Amazon Web Services service on behalf of your
+//     account. It is managed by that service. If you see this error in response
+//     to DeleteRule or RemoveTargets, you can use the Force parameter in those
+//     calls to delete the rule or remove targets from the rule. You cannot modify
+//     these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
+//     TagResource, or UntagResource.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DisableRule
 func (c *EventBridge) DisableRule(input *DisableRuleInput) (*DisableRuleOutput, error) {
@@ -2487,14 +2487,13 @@ const opEnableRule = "EnableRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableRuleRequest method.
+//	req, resp := client.EnableRuleRequest(params)
 //
-//    // Example sending a request using the EnableRuleRequest method.
-//    req, resp := client.EnableRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/EnableRule
 func (c *EventBridge) EnableRuleRequest(input *EnableRuleInput) (req *request.Request, output *EnableRuleOutput) {
@@ -2530,22 +2529,23 @@ func (c *EventBridge) EnableRuleRequest(input *EnableRuleInput) (req *request.Re
 // API operation EnableRule for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * ManagedRuleException
-//   This rule was created by an Amazon Web Services service on behalf of your
-//   account. It is managed by that service. If you see this error in response
-//   to DeleteRule or RemoveTargets, you can use the Force parameter in those
-//   calls to delete the rule or remove targets from the rule. You cannot modify
-//   these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
-//   TagResource, or UntagResource.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ManagedRuleException
+//     This rule was created by an Amazon Web Services service on behalf of your
+//     account. It is managed by that service. If you see this error in response
+//     to DeleteRule or RemoveTargets, you can use the Force parameter in those
+//     calls to delete the rule or remove targets from the rule. You cannot modify
+//     these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
+//     TagResource, or UntagResource.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/EnableRule
 func (c *EventBridge) EnableRule(input *EnableRuleInput) (*EnableRuleOutput, error) {
@@ -2585,14 +2585,13 @@ const opListApiDestinations = "ListApiDestinations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListApiDestinationsRequest method.
+//	req, resp := client.ListApiDestinationsRequest(params)
 //
-//    // Example sending a request using the ListApiDestinationsRequest method.
-//    req, resp := client.ListApiDestinationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/ListApiDestinations
 func (c *EventBridge) ListApiDestinationsRequest(input *ListApiDestinationsInput) (req *request.Request, output *ListApiDestinationsOutput) {
@@ -2623,8 +2622,8 @@ func (c *EventBridge) ListApiDestinationsRequest(input *ListApiDestinationsInput
 // API operation ListApiDestinations for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/ListApiDestinations
 func (c *EventBridge) ListApiDestinations(input *ListApiDestinationsInput) (*ListApiDestinationsOutput, error) {
@@ -2664,14 +2663,13 @@ const opListArchives = "ListArchives"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListArchivesRequest method.
+//	req, resp := client.ListArchivesRequest(params)
 //
-//    // Example sending a request using the ListArchivesRequest method.
-//    req, resp := client.ListArchivesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/ListArchives
 func (c *EventBridge) ListArchivesRequest(input *ListArchivesInput) (req *request.Request, output *ListArchivesOutput) {
@@ -2703,11 +2701,12 @@ func (c *EventBridge) ListArchivesRequest(input *ListArchivesInput) (req *reques
 // API operation ListArchives for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/ListArchives
 func (c *EventBridge) ListArchives(input *ListArchivesInput) (*ListArchivesOutput, error) {
@@ -2747,14 +2746,13 @@ const opListConnections = "ListConnections"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListConnectionsRequest method.
+//	req, resp := client.ListConnectionsRequest(params)
 //
-//    // Example sending a request using the ListConnectionsRequest method.
-//    req, resp := client.ListConnectionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/ListConnections
 func (c *EventBridge) ListConnectionsRequest(input *ListConnectionsInput) (req *request.Request, output *ListConnectionsOutput) {
@@ -2785,8 +2783,8 @@ func (c *EventBridge) ListConnectionsRequest(input *ListConnectionsInput) (req *
 // API operation ListConnections for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/ListConnections
 func (c *EventBridge) ListConnections(input *ListConnectionsInput) (*ListConnectionsOutput, error) {
@@ -2826,14 +2824,13 @@ const opListEndpoints = "ListEndpoints"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEndpointsRequest method.
+//	req, resp := client.ListEndpointsRequest(params)
 //
-//    // Example sending a request using the ListEndpointsRequest method.
-//    req, resp := client.ListEndpointsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/ListEndpoints
 func (c *EventBridge) ListEndpointsRequest(input *ListEndpointsInput) (req *request.Request, output *ListEndpointsOutput) {
@@ -2867,8 +2864,8 @@ func (c *EventBridge) ListEndpointsRequest(input *ListEndpointsInput) (req *requ
 // API operation ListEndpoints for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/ListEndpoints
 func (c *EventBridge) ListEndpoints(input *ListEndpointsInput) (*ListEndpointsOutput, error) {
@@ -2908,14 +2905,13 @@ const opListEventBuses = "ListEventBuses"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEventBusesRequest method.
+//	req, resp := client.ListEventBusesRequest(params)
 //
-//    // Example sending a request using the ListEventBusesRequest method.
-//    req, resp := client.ListEventBusesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/ListEventBuses
 func (c *EventBridge) ListEventBusesRequest(input *ListEventBusesInput) (req *request.Request, output *ListEventBusesOutput) {
@@ -2947,8 +2943,8 @@ func (c *EventBridge) ListEventBusesRequest(input *ListEventBusesInput) (req *re
 // API operation ListEventBuses for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/ListEventBuses
 func (c *EventBridge) ListEventBuses(input *ListEventBusesInput) (*ListEventBusesOutput, error) {
@@ -2988,14 +2984,13 @@ const opListEventSources = "ListEventSources"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEventSourcesRequest method.
+//	req, resp := client.ListEventSourcesRequest(params)
 //
-//    // Example sending a request using the ListEventSourcesRequest method.
-//    req, resp := client.ListEventSourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/ListEventSources
 func (c *EventBridge) ListEventSourcesRequest(input *ListEventSourcesInput) (req *request.Request, output *ListEventSourcesOutput) {
@@ -3028,11 +3023,12 @@ func (c *EventBridge) ListEventSourcesRequest(input *ListEventSourcesInput) (req
 // API operation ListEventSources for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   This exception occurs due to unexpected causes.
 //
-//   * OperationDisabledException
-//   The operation you are attempting is not available in this region.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
+//
+//   - OperationDisabledException
+//     The operation you are attempting is not available in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/ListEventSources
 func (c *EventBridge) ListEventSources(input *ListEventSourcesInput) (*ListEventSourcesOutput, error) {
@@ -3072,14 +3068,13 @@ const opListPartnerEventSourceAccounts = "ListPartnerEventSourceAccounts"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPartnerEventSourceAccountsRequest method.
+//	req, resp := client.ListPartnerEventSourceAccountsRequest(params)
 //
-//    // Example sending a request using the ListPartnerEventSourceAccountsRequest method.
-//    req, resp := client.ListPartnerEventSourceAccountsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/ListPartnerEventSourceAccounts
 func (c *EventBridge) ListPartnerEventSourceAccountsRequest(input *ListPartnerEventSourceAccountsInput) (req *request.Request, output *ListPartnerEventSourceAccountsOutput) {
@@ -3112,14 +3107,15 @@ func (c *EventBridge) ListPartnerEventSourceAccountsRequest(input *ListPartnerEv
 // API operation ListPartnerEventSourceAccounts for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * OperationDisabledException
-//   The operation you are attempting is not available in this region.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
+//
+//   - OperationDisabledException
+//     The operation you are attempting is not available in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/ListPartnerEventSourceAccounts
 func (c *EventBridge) ListPartnerEventSourceAccounts(input *ListPartnerEventSourceAccountsInput) (*ListPartnerEventSourceAccountsOutput, error) {
@@ -3159,14 +3155,13 @@ const opListPartnerEventSources = "ListPartnerEventSources"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPartnerEventSourcesRequest method.
+//	req, resp := client.ListPartnerEventSourcesRequest(params)
 //
-//    // Example sending a request using the ListPartnerEventSourcesRequest method.
-//    req, resp := client.ListPartnerEventSourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/ListPartnerEventSources
 func (c *EventBridge) ListPartnerEventSourcesRequest(input *ListPartnerEventSourcesInput) (req *request.Request, output *ListPartnerEventSourcesOutput) {
@@ -3199,11 +3194,12 @@ func (c *EventBridge) ListPartnerEventSourcesRequest(input *ListPartnerEventSour
 // API operation ListPartnerEventSources for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   This exception occurs due to unexpected causes.
 //
-//   * OperationDisabledException
-//   The operation you are attempting is not available in this region.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
+//
+//   - OperationDisabledException
+//     The operation you are attempting is not available in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/ListPartnerEventSources
 func (c *EventBridge) ListPartnerEventSources(input *ListPartnerEventSourcesInput) (*ListPartnerEventSourcesOutput, error) {
@@ -3243,14 +3239,13 @@ const opListReplays = "ListReplays"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListReplaysRequest method.
+//	req, resp := client.ListReplaysRequest(params)
 //
-//    // Example sending a request using the ListReplaysRequest method.
-//    req, resp := client.ListReplaysRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/ListReplays
 func (c *EventBridge) ListReplaysRequest(input *ListReplaysInput) (req *request.Request, output *ListReplaysOutput) {
@@ -3282,8 +3277,8 @@ func (c *EventBridge) ListReplaysRequest(input *ListReplaysInput) (req *request.
 // API operation ListReplays for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/ListReplays
 func (c *EventBridge) ListReplays(input *ListReplaysInput) (*ListReplaysOutput, error) {
@@ -3323,14 +3318,13 @@ const opListRuleNamesByTarget = "ListRuleNamesByTarget"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRuleNamesByTargetRequest method.
+//	req, resp := client.ListRuleNamesByTargetRequest(params)
 //
-//    // Example sending a request using the ListRuleNamesByTargetRequest method.
-//    req, resp := client.ListRuleNamesByTargetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/ListRuleNamesByTarget
 func (c *EventBridge) ListRuleNamesByTargetRequest(input *ListRuleNamesByTargetInput) (req *request.Request, output *ListRuleNamesByTargetOutput) {
@@ -3362,11 +3356,12 @@ func (c *EventBridge) ListRuleNamesByTargetRequest(input *ListRuleNamesByTargetI
 // API operation ListRuleNamesByTarget for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   This exception occurs due to unexpected causes.
 //
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
+//
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/ListRuleNamesByTarget
 func (c *EventBridge) ListRuleNamesByTarget(input *ListRuleNamesByTargetInput) (*ListRuleNamesByTargetOutput, error) {
@@ -3406,14 +3401,13 @@ const opListRules = "ListRules"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRulesRequest method.
+//	req, resp := client.ListRulesRequest(params)
 //
-//    // Example sending a request using the ListRulesRequest method.
-//    req, resp := client.ListRulesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/ListRules
 func (c *EventBridge) ListRulesRequest(input *ListRulesInput) (req *request.Request, output *ListRulesOutput) {
@@ -3448,11 +3442,12 @@ func (c *EventBridge) ListRulesRequest(input *ListRulesInput) (req *request.Requ
 // API operation ListRules for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   This exception occurs due to unexpected causes.
 //
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
+//
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/ListRules
 func (c *EventBridge) ListRules(input *ListRulesInput) (*ListRulesOutput, error) {
@@ -3492,14 +3487,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/ListTagsForResource
 func (c *EventBridge) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -3531,11 +3525,12 @@ func (c *EventBridge) ListTagsForResourceRequest(input *ListTagsForResourceInput
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/ListTagsForResource
 func (c *EventBridge) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -3575,14 +3570,13 @@ const opListTargetsByRule = "ListTargetsByRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTargetsByRuleRequest method.
+//	req, resp := client.ListTargetsByRuleRequest(params)
 //
-//    // Example sending a request using the ListTargetsByRuleRequest method.
-//    req, resp := client.ListTargetsByRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/ListTargetsByRule
 func (c *EventBridge) ListTargetsByRuleRequest(input *ListTargetsByRuleInput) (req *request.Request, output *ListTargetsByRuleOutput) {
@@ -3613,11 +3607,12 @@ func (c *EventBridge) ListTargetsByRuleRequest(input *ListTargetsByRuleInput) (r
 // API operation ListTargetsByRule for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/ListTargetsByRule
 func (c *EventBridge) ListTargetsByRule(input *ListTargetsByRuleInput) (*ListTargetsByRuleOutput, error) {
@@ -3657,14 +3652,13 @@ const opPutEvents = "PutEvents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutEventsRequest method.
+//	req, resp := client.PutEventsRequest(params)
 //
-//    // Example sending a request using the PutEventsRequest method.
-//    req, resp := client.PutEventsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/PutEvents
 func (c *EventBridge) PutEventsRequest(input *PutEventsInput) (req *request.Request, output *PutEventsOutput) {
@@ -3700,8 +3694,8 @@ func (c *EventBridge) PutEventsRequest(input *PutEventsInput) (req *request.Requ
 // API operation PutEvents for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/PutEvents
 func (c *EventBridge) PutEvents(input *PutEventsInput) (*PutEventsOutput, error) {
@@ -3741,14 +3735,13 @@ const opPutPartnerEvents = "PutPartnerEvents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutPartnerEventsRequest method.
+//	req, resp := client.PutPartnerEventsRequest(params)
 //
-//    // Example sending a request using the PutPartnerEventsRequest method.
-//    req, resp := client.PutPartnerEventsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/PutPartnerEvents
 func (c *EventBridge) PutPartnerEventsRequest(input *PutPartnerEventsInput) (req *request.Request, output *PutPartnerEventsOutput) {
@@ -3780,11 +3773,12 @@ func (c *EventBridge) PutPartnerEventsRequest(input *PutPartnerEventsInput) (req
 // API operation PutPartnerEvents for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   This exception occurs due to unexpected causes.
 //
-//   * OperationDisabledException
-//   The operation you are attempting is not available in this region.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
+//
+//   - OperationDisabledException
+//     The operation you are attempting is not available in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/PutPartnerEvents
 func (c *EventBridge) PutPartnerEvents(input *PutPartnerEventsInput) (*PutPartnerEventsOutput, error) {
@@ -3824,14 +3818,13 @@ const opPutPermission = "PutPermission"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutPermissionRequest method.
+//	req, resp := client.PutPermissionRequest(params)
 //
-//    // Example sending a request using the PutPermissionRequest method.
-//    req, resp := client.PutPermissionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/PutPermission
 func (c *EventBridge) PutPermissionRequest(input *PutPermissionInput) (req *request.Request, output *PutPermissionOutput) {
@@ -3883,20 +3876,21 @@ func (c *EventBridge) PutPermissionRequest(input *PutPermissionInput) (req *requ
 // API operation PutPermission for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * PolicyLengthExceededException
-//   The event bus policy is too long. For more information, see the limits.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - PolicyLengthExceededException
+//     The event bus policy is too long. For more information, see the limits.
 //
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
-//   * OperationDisabledException
-//   The operation you are attempting is not available in this region.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
+//
+//   - OperationDisabledException
+//     The operation you are attempting is not available in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/PutPermission
 func (c *EventBridge) PutPermission(input *PutPermissionInput) (*PutPermissionOutput, error) {
@@ -3936,14 +3930,13 @@ const opPutRule = "PutRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutRuleRequest method.
+//	req, resp := client.PutRuleRequest(params)
 //
-//    // Example sending a request using the PutRuleRequest method.
-//    req, resp := client.PutRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/PutRule
 func (c *EventBridge) PutRuleRequest(input *PutRuleInput) (req *request.Request, output *PutRuleOutput) {
@@ -4029,29 +4022,30 @@ func (c *EventBridge) PutRuleRequest(input *PutRuleInput) (req *request.Request,
 // API operation PutRule for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidEventPatternException
-//   The event pattern is not valid.
 //
-//   * LimitExceededException
-//   The request failed because it attempted to create resource beyond the allowed
-//   service quota.
+//   - InvalidEventPatternException
+//     The event pattern is not valid.
 //
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
+//   - LimitExceededException
+//     The request failed because it attempted to create resource beyond the allowed
+//     service quota.
 //
-//   * ManagedRuleException
-//   This rule was created by an Amazon Web Services service on behalf of your
-//   account. It is managed by that service. If you see this error in response
-//   to DeleteRule or RemoveTargets, you can use the Force parameter in those
-//   calls to delete the rule or remove targets from the rule. You cannot modify
-//   these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
-//   TagResource, or UntagResource.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ManagedRuleException
+//     This rule was created by an Amazon Web Services service on behalf of your
+//     account. It is managed by that service. If you see this error in response
+//     to DeleteRule or RemoveTargets, you can use the Force parameter in those
+//     calls to delete the rule or remove targets from the rule. You cannot modify
+//     these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
+//     TagResource, or UntagResource.
 //
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
+//
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/PutRule
 func (c *EventBridge) PutRule(input *PutRuleInput) (*PutRuleOutput, error) {
@@ -4091,14 +4085,13 @@ const opPutTargets = "PutTargets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutTargetsRequest method.
+//	req, resp := client.PutTargetsRequest(params)
 //
-//    // Example sending a request using the PutTargetsRequest method.
-//    req, resp := client.PutTargetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/PutTargets
 func (c *EventBridge) PutTargetsRequest(input *PutTargetsInput) (req *request.Request, output *PutTargetsOutput) {
@@ -4128,61 +4121,61 @@ func (c *EventBridge) PutTargetsRequest(input *PutTargetsInput) (req *request.Re
 //
 // You can configure the following as targets for Events:
 //
-//    * API destination (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-api-destinations.html)
+//   - API destination (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-api-destinations.html)
 //
-//    * API Gateway (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-api-gateway-target.html)
+//   - API Gateway (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-api-gateway-target.html)
 //
-//    * Batch job queue
+//   - Batch job queue
 //
-//    * CloudWatch group
+//   - CloudWatch group
 //
-//    * CodeBuild project
+//   - CodeBuild project
 //
-//    * CodePipeline
+//   - CodePipeline
 //
-//    * EC2 CreateSnapshot API call
+//   - EC2 CreateSnapshot API call
 //
-//    * EC2 Image Builder
+//   - EC2 Image Builder
 //
-//    * EC2 RebootInstances API call
+//   - EC2 RebootInstances API call
 //
-//    * EC2 StopInstances API call
+//   - EC2 StopInstances API call
 //
-//    * EC2 TerminateInstances API call
+//   - EC2 TerminateInstances API call
 //
-//    * ECS task
+//   - ECS task
 //
-//    * Event bus in a different account or Region (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-cross-account.html)
+//   - Event bus in a different account or Region (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-cross-account.html)
 //
-//    * Event bus in the same account and Region (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-bus-to-bus.html)
+//   - Event bus in the same account and Region (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-bus-to-bus.html)
 //
-//    * Firehose delivery stream
+//   - Firehose delivery stream
 //
-//    * Glue workflow
+//   - Glue workflow
 //
-//    * Incident Manager response plan (https://docs.aws.amazon.com/incident-manager/latest/userguide/incident-creation.html#incident-tracking-auto-eventbridge)
+//   - Incident Manager response plan (https://docs.aws.amazon.com/incident-manager/latest/userguide/incident-creation.html#incident-tracking-auto-eventbridge)
 //
-//    * Inspector assessment template
+//   - Inspector assessment template
 //
-//    * Kinesis stream
+//   - Kinesis stream
 //
-//    * Lambda function
+//   - Lambda function
 //
-//    * Redshift cluster
+//   - Redshift cluster
 //
-//    * SageMaker Pipeline
+//   - SageMaker Pipeline
 //
-//    * SNS topic
+//   - SNS topic
 //
-//    * SQS queue
+//   - SQS queue
 //
-//    * Step Functions state machine
+//   - Step Functions state machine
 //
-//    * Systems Manager Automation
+//   - Systems Manager Automation
 //
-//    * Systems Manager OpsItem
+//   - Systems Manager OpsItem
 //
-//    * Systems Manager Run Command
+//   - Systems Manager Run Command
 //
 // Creating rules with built-in targets is supported only in the Amazon Web
 // Services Management Console. The built-in targets are EC2 CreateSnapshot
@@ -4229,21 +4222,21 @@ func (c *EventBridge) PutTargetsRequest(input *PutTargetsInput) (req *request.Re
 // Input, InputPath, and InputTransformer are mutually exclusive and optional
 // parameters of a target. When a rule is triggered due to a matched event:
 //
-//    * If none of the following arguments are specified for a target, then
-//    the entire event is passed to the target in JSON format (unless the target
-//    is Amazon EC2 Run Command or Amazon ECS task, in which case nothing from
-//    the event is passed to the target).
+//   - If none of the following arguments are specified for a target, then
+//     the entire event is passed to the target in JSON format (unless the target
+//     is Amazon EC2 Run Command or Amazon ECS task, in which case nothing from
+//     the event is passed to the target).
 //
-//    * If Input is specified in the form of valid JSON, then the matched event
-//    is overridden with this constant.
+//   - If Input is specified in the form of valid JSON, then the matched event
+//     is overridden with this constant.
 //
-//    * If InputPath is specified in the form of JSONPath (for example, $.detail),
-//    then only the part of the event specified in the path is passed to the
-//    target (for example, only the detail part of the event is passed).
+//   - If InputPath is specified in the form of JSONPath (for example, $.detail),
+//     then only the part of the event specified in the path is passed to the
+//     target (for example, only the detail part of the event is passed).
 //
-//    * If InputTransformer is specified, then one or more specified JSONPaths
-//    are extracted from the event and used as values in a template that you
-//    specify as the input to the target.
+//   - If InputTransformer is specified, then one or more specified JSONPaths
+//     are extracted from the event and used as values in a template that you
+//     specify as the input to the target.
 //
 // When you specify InputPath or InputTransformer, you must use JSON dot notation,
 // not bracket notation.
@@ -4265,26 +4258,27 @@ func (c *EventBridge) PutTargetsRequest(input *PutTargetsInput) (req *request.Re
 // API operation PutTargets for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * LimitExceededException
-//   The request failed because it attempted to create resource beyond the allowed
-//   service quota.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * ManagedRuleException
-//   This rule was created by an Amazon Web Services service on behalf of your
-//   account. It is managed by that service. If you see this error in response
-//   to DeleteRule or RemoveTargets, you can use the Force parameter in those
-//   calls to delete the rule or remove targets from the rule. You cannot modify
-//   these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
-//   TagResource, or UntagResource.
+//   - LimitExceededException
+//     The request failed because it attempted to create resource beyond the allowed
+//     service quota.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ManagedRuleException
+//     This rule was created by an Amazon Web Services service on behalf of your
+//     account. It is managed by that service. If you see this error in response
+//     to DeleteRule or RemoveTargets, you can use the Force parameter in those
+//     calls to delete the rule or remove targets from the rule. You cannot modify
+//     these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
+//     TagResource, or UntagResource.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/PutTargets
 func (c *EventBridge) PutTargets(input *PutTargetsInput) (*PutTargetsOutput, error) {
@@ -4324,14 +4318,13 @@ const opRemovePermission = "RemovePermission"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemovePermissionRequest method.
+//	req, resp := client.RemovePermissionRequest(params)
 //
-//    // Example sending a request using the RemovePermissionRequest method.
-//    req, resp := client.RemovePermissionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/RemovePermission
 func (c *EventBridge) RemovePermissionRequest(input *RemovePermissionInput) (req *request.Request, output *RemovePermissionOutput) {
@@ -4367,17 +4360,18 @@ func (c *EventBridge) RemovePermissionRequest(input *RemovePermissionInput) (req
 // API operation RemovePermission for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
-//   * OperationDisabledException
-//   The operation you are attempting is not available in this region.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
+//
+//   - OperationDisabledException
+//     The operation you are attempting is not available in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/RemovePermission
 func (c *EventBridge) RemovePermission(input *RemovePermissionInput) (*RemovePermissionOutput, error) {
@@ -4417,14 +4411,13 @@ const opRemoveTargets = "RemoveTargets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveTargetsRequest method.
+//	req, resp := client.RemoveTargetsRequest(params)
 //
-//    // Example sending a request using the RemoveTargetsRequest method.
-//    req, resp := client.RemoveTargetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/RemoveTargets
 func (c *EventBridge) RemoveTargetsRequest(input *RemoveTargetsInput) (req *request.Request, output *RemoveTargetsOutput) {
@@ -4469,22 +4462,23 @@ func (c *EventBridge) RemoveTargetsRequest(input *RemoveTargetsInput) (req *requ
 // API operation RemoveTargets for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * ManagedRuleException
-//   This rule was created by an Amazon Web Services service on behalf of your
-//   account. It is managed by that service. If you see this error in response
-//   to DeleteRule or RemoveTargets, you can use the Force parameter in those
-//   calls to delete the rule or remove targets from the rule. You cannot modify
-//   these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
-//   TagResource, or UntagResource.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ManagedRuleException
+//     This rule was created by an Amazon Web Services service on behalf of your
+//     account. It is managed by that service. If you see this error in response
+//     to DeleteRule or RemoveTargets, you can use the Force parameter in those
+//     calls to delete the rule or remove targets from the rule. You cannot modify
+//     these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
+//     TagResource, or UntagResource.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/RemoveTargets
 func (c *EventBridge) RemoveTargets(input *RemoveTargetsInput) (*RemoveTargetsOutput, error) {
@@ -4524,14 +4518,13 @@ const opStartReplay = "StartReplay"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartReplayRequest method.
+//	req, resp := client.StartReplayRequest(params)
 //
-//    // Example sending a request using the StartReplayRequest method.
-//    req, resp := client.StartReplayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/StartReplay
 func (c *EventBridge) StartReplayRequest(input *StartReplayInput) (req *request.Request, output *StartReplayOutput) {
@@ -4570,21 +4563,22 @@ func (c *EventBridge) StartReplayRequest(input *StartReplayInput) (req *request.
 // API operation StartReplay for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * ResourceAlreadyExistsException
-//   The resource you are trying to create already exists.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * InvalidEventPatternException
-//   The event pattern is not valid.
+//   - ResourceAlreadyExistsException
+//     The resource you are trying to create already exists.
 //
-//   * LimitExceededException
-//   The request failed because it attempted to create resource beyond the allowed
-//   service quota.
+//   - InvalidEventPatternException
+//     The event pattern is not valid.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - LimitExceededException
+//     The request failed because it attempted to create resource beyond the allowed
+//     service quota.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/StartReplay
 func (c *EventBridge) StartReplay(input *StartReplayInput) (*StartReplayOutput, error) {
@@ -4624,14 +4618,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/TagResource
 func (c *EventBridge) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -4678,22 +4671,23 @@ func (c *EventBridge) TagResourceRequest(input *TagResourceInput) (req *request.
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * ManagedRuleException
-//   This rule was created by an Amazon Web Services service on behalf of your
-//   account. It is managed by that service. If you see this error in response
-//   to DeleteRule or RemoveTargets, you can use the Force parameter in those
-//   calls to delete the rule or remove targets from the rule. You cannot modify
-//   these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
-//   TagResource, or UntagResource.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
+//
+//   - ManagedRuleException
+//     This rule was created by an Amazon Web Services service on behalf of your
+//     account. It is managed by that service. If you see this error in response
+//     to DeleteRule or RemoveTargets, you can use the Force parameter in those
+//     calls to delete the rule or remove targets from the rule. You cannot modify
+//     these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
+//     TagResource, or UntagResource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/TagResource
 func (c *EventBridge) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -4733,14 +4727,13 @@ const opTestEventPattern = "TestEventPattern"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TestEventPatternRequest method.
+//	req, resp := client.TestEventPatternRequest(params)
 //
-//    // Example sending a request using the TestEventPatternRequest method.
-//    req, resp := client.TestEventPatternRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/TestEventPattern
 func (c *EventBridge) TestEventPatternRequest(input *TestEventPatternInput) (req *request.Request, output *TestEventPatternOutput) {
@@ -4777,11 +4770,12 @@ func (c *EventBridge) TestEventPatternRequest(input *TestEventPatternInput) (req
 // API operation TestEventPattern for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidEventPatternException
-//   The event pattern is not valid.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - InvalidEventPatternException
+//     The event pattern is not valid.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/TestEventPattern
 func (c *EventBridge) TestEventPattern(input *TestEventPatternInput) (*TestEventPatternOutput, error) {
@@ -4821,14 +4815,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/UntagResource
 func (c *EventBridge) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -4861,22 +4854,23 @@ func (c *EventBridge) UntagResourceRequest(input *UntagResourceInput) (req *requ
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
-//   * ManagedRuleException
-//   This rule was created by an Amazon Web Services service on behalf of your
-//   account. It is managed by that service. If you see this error in response
-//   to DeleteRule or RemoveTargets, you can use the Force parameter in those
-//   calls to delete the rule or remove targets from the rule. You cannot modify
-//   these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
-//   TagResource, or UntagResource.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
+//
+//   - ManagedRuleException
+//     This rule was created by an Amazon Web Services service on behalf of your
+//     account. It is managed by that service. If you see this error in response
+//     to DeleteRule or RemoveTargets, you can use the Force parameter in those
+//     calls to delete the rule or remove targets from the rule. You cannot modify
+//     these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
+//     TagResource, or UntagResource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/UntagResource
 func (c *EventBridge) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -4916,14 +4910,13 @@ const opUpdateApiDestination = "UpdateApiDestination"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateApiDestinationRequest method.
+//	req, resp := client.UpdateApiDestinationRequest(params)
 //
-//    // Example sending a request using the UpdateApiDestinationRequest method.
-//    req, resp := client.UpdateApiDestinationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/UpdateApiDestination
 func (c *EventBridge) UpdateApiDestinationRequest(input *UpdateApiDestinationInput) (req *request.Request, output *UpdateApiDestinationOutput) {
@@ -4954,18 +4947,19 @@ func (c *EventBridge) UpdateApiDestinationRequest(input *UpdateApiDestinationInp
 // API operation UpdateApiDestination for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * LimitExceededException
-//   The request failed because it attempted to create resource beyond the allowed
-//   service quota.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
+//
+//   - LimitExceededException
+//     The request failed because it attempted to create resource beyond the allowed
+//     service quota.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/UpdateApiDestination
 func (c *EventBridge) UpdateApiDestination(input *UpdateApiDestinationInput) (*UpdateApiDestinationOutput, error) {
@@ -5005,14 +4999,13 @@ const opUpdateArchive = "UpdateArchive"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateArchiveRequest method.
+//	req, resp := client.UpdateArchiveRequest(params)
 //
-//    // Example sending a request using the UpdateArchiveRequest method.
-//    req, resp := client.UpdateArchiveRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/UpdateArchive
 func (c *EventBridge) UpdateArchiveRequest(input *UpdateArchiveInput) (req *request.Request, output *UpdateArchiveOutput) {
@@ -5043,21 +5036,22 @@ func (c *EventBridge) UpdateArchiveRequest(input *UpdateArchiveInput) (req *requ
 // API operation UpdateArchive for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * LimitExceededException
-//   The request failed because it attempted to create resource beyond the allowed
-//   service quota.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
-//   * InvalidEventPatternException
-//   The event pattern is not valid.
+//   - LimitExceededException
+//     The request failed because it attempted to create resource beyond the allowed
+//     service quota.
+//
+//   - InvalidEventPatternException
+//     The event pattern is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/UpdateArchive
 func (c *EventBridge) UpdateArchive(input *UpdateArchiveInput) (*UpdateArchiveOutput, error) {
@@ -5097,14 +5091,13 @@ const opUpdateConnection = "UpdateConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateConnectionRequest method.
+//	req, resp := client.UpdateConnectionRequest(params)
 //
-//    // Example sending a request using the UpdateConnectionRequest method.
-//    req, resp := client.UpdateConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/UpdateConnection
 func (c *EventBridge) UpdateConnectionRequest(input *UpdateConnectionInput) (req *request.Request, output *UpdateConnectionOutput) {
@@ -5135,18 +5128,19 @@ func (c *EventBridge) UpdateConnectionRequest(input *UpdateConnectionInput) (req
 // API operation UpdateConnection for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * LimitExceededException
-//   The request failed because it attempted to create resource beyond the allowed
-//   service quota.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
+//
+//   - LimitExceededException
+//     The request failed because it attempted to create resource beyond the allowed
+//     service quota.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/UpdateConnection
 func (c *EventBridge) UpdateConnection(input *UpdateConnectionInput) (*UpdateConnectionOutput, error) {
@@ -5186,14 +5180,13 @@ const opUpdateEndpoint = "UpdateEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateEndpointRequest method.
+//	req, resp := client.UpdateEndpointRequest(params)
 //
-//    // Example sending a request using the UpdateEndpointRequest method.
-//    req, resp := client.UpdateEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/UpdateEndpoint
 func (c *EventBridge) UpdateEndpointRequest(input *UpdateEndpointInput) (req *request.Request, output *UpdateEndpointOutput) {
@@ -5227,14 +5220,15 @@ func (c *EventBridge) UpdateEndpointRequest(input *UpdateEndpointInput) (req *re
 // API operation UpdateEndpoint for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/UpdateEndpoint
 func (c *EventBridge) UpdateEndpoint(input *UpdateEndpointInput) (*UpdateEndpointOutput, error) {

@@ -20,20 +20,20 @@
 // to find specific products that you're interested in, such as an AmazonEC2
 // instance, with a Provisioned IOPS volumeType.
 //
-// Service Endpoint
+// # Service Endpoint
 //
 // Amazon Web Services Price List service API provides the following two endpoints:
 //
-//    * https://api.pricing.us-east-1.amazonaws.com
+//   - https://api.pricing.us-east-1.amazonaws.com
 //
-//    * https://api.pricing.ap-south-1.amazonaws.com
+//   - https://api.pricing.ap-south-1.amazonaws.com
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/pricing-2017-10-15 for more information on this service.
 //
 // See pricing package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/pricing/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact AWS Price List Service with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

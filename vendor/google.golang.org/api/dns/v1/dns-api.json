@@ -1824,7 +1824,7 @@
       }
     }
   },
-  "revision": "20220630",
+  "revision": "20220728",
   "rootUrl": "https://dns.googleapis.com/",
   "schemas": {
     "Change": {
@@ -3000,6 +3000,9 @@
           "default": "dns#rRSetRoutingPolicy",
           "type": "string"
         },
+        "primaryBackup": {
+          "$ref": "RRSetRoutingPolicyPrimaryBackupPolicy"
+        },
         "wrr": {
           "$ref": "RRSetRoutingPolicyWrrPolicy"
         }
@@ -3010,6 +3013,10 @@
       "description": "Configures a RRSetRoutingPolicy that routes based on the geo location of the querying user.",
       "id": "RRSetRoutingPolicyGeoPolicy",
       "properties": {
+        "enableFencing": {
+          "description": "Without fencing, if health check fails for all configured items in the current geo bucket, we'll failover to the next nearest geo bucket. With fencing, if health check is enabled, as long as some targets in the current geo bucket are healthy, we'll return only the healthy targets. However, if they're all unhealthy, we won't failover to the next nearest bucket, we'll simply return all the items in the current bucket even though they're unhealthy.",
+          "type": "boolean"
+        },
         "items": {
           "description": "The primary geo routing configuration. If there are multiple items with the same location, an error is returned instead.",
           "items": {
@@ -3028,6 +3035,10 @@
       "description": "ResourceRecordSet data for one geo location.",
       "id": "RRSetRoutingPolicyGeoPolicyGeoPolicyItem",
       "properties": {
+        "healthCheckedTargets": {
+          "$ref": "RRSetRoutingPolicyHealthCheckTargets",
+          "description": "For A and AAAA types only. Endpoints to return in the query result only if they are healthy. These can be specified along with rrdata within this item."
+        },
         "kind": {
           "default": "dns#rRSetRoutingPolicyGeoPolicyGeoPolicyItem",
           "type": "string"
@@ -3048,6 +3059,96 @@
             "type": "string"
           },
           "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "RRSetRoutingPolicyHealthCheckTargets": {
+      "description": "HealthCheckTargets describes endpoints to health-check when responding to Routing Policy queries. Only the healthy endpoints will be included in the response.",
+      "id": "RRSetRoutingPolicyHealthCheckTargets",
+      "properties": {
+        "internalLoadBalancers": {
+          "items": {
+            "$ref": "RRSetRoutingPolicyLoadBalancerTarget"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "RRSetRoutingPolicyLoadBalancerTarget": {
+      "id": "RRSetRoutingPolicyLoadBalancerTarget",
+      "properties": {
+        "ipAddress": {
+          "description": "The frontend IP address of the",
+          "type": "string"
+        },
+        "ipProtocol": {
+          "enum": [
+            "undefined",
+            "tcp",
+            "udp"
+          ],
+          "enumDescriptions": [
+            "",
+            "",
+            ""
+          ],
+          "type": "string"
+        },
+        "kind": {
+          "default": "dns#rRSetRoutingPolicyLoadBalancerTarget",
+          "type": "string"
+        },
+        "loadBalancerType": {
+          "enum": [
+            "none",
+            "regionalL4ilb"
+          ],
+          "enumDescriptions": [
+            "",
+            ""
+          ],
+          "type": "string"
+        },
+        "networkUrl": {
+          "description": "The fully qualified url of the network on which the ILB is",
+          "type": "string"
+        },
+        "port": {
+          "description": "Load Balancer to health check. The configured port of the Load Balancer.",
+          "type": "string"
+        },
+        "project": {
+          "description": "present. This should be formatted like https://www.googleapis.com/compute/v1/projects/{project}/global/networks/{network} The project ID in which the ILB exists.",
+          "type": "string"
+        },
+        "region": {
+          "description": "The region for regional ILBs.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "RRSetRoutingPolicyPrimaryBackupPolicy": {
+      "description": "Configures a RRSetRoutingPolicy such that all queries are responded with the primary_targets if they are healthy. And if all of them are unhealthy, then we fallback to a geo localized policy.",
+      "id": "RRSetRoutingPolicyPrimaryBackupPolicy",
+      "properties": {
+        "backupGeoTargets": {
+          "$ref": "RRSetRoutingPolicyGeoPolicy",
+          "description": "Backup targets provide a regional failover policy for the otherwise global primary targets. If serving state is set to BACKUP, this policy essentially becomes a geo routing policy."
+        },
+        "kind": {
+          "default": "dns#rRSetRoutingPolicyPrimaryBackupPolicy",
+          "type": "string"
+        },
+        "primaryTargets": {
+          "$ref": "RRSetRoutingPolicyHealthCheckTargets"
+        },
+        "trickleTraffic": {
+          "description": "When serving state is PRIMARY, this field provides the option of sending a small percentage of the traffic to the backup targets.",
+          "format": "double",
+          "type": "number"
         }
       },
       "type": "object"
@@ -3073,6 +3174,10 @@
       "description": "A routing block which contains the routing information for one WRR item.",
       "id": "RRSetRoutingPolicyWrrPolicyWrrPolicyItem",
       "properties": {
+        "healthCheckedTargets": {
+          "$ref": "RRSetRoutingPolicyHealthCheckTargets",
+          "description": "endpoints that need to be health checked before making the routing decision. The unhealthy endpoints will be omitted from the result. If all endpoints within a buckete are unhealthy, we'll choose a different bucket (sampled w.r.t. its weight) for responding. Note that if DNSSEC is enabled for this zone, only one of rrdata or health_checked_targets can be set."
+        },
         "kind": {
           "default": "dns#rRSetRoutingPolicyWrrPolicyWrrPolicyItem",
           "type": "string"

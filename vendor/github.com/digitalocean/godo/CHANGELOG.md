@@ -1,5 +1,9 @@
 # Change Log
 
+## [v1.83.0] - 2022-08-10
+
+- #546 - @DWizGuy58 - Add support for database options
+
 ## [v1.82.0] - 2022-08-04
 
 - #544 - @andrewsomething - apps: Add URN() method.
