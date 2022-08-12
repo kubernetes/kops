@@ -27,14 +27,13 @@ const opDescribeServices = "DescribeServices"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeServicesRequest method.
+//	req, resp := client.DescribeServicesRequest(params)
 //
-//    // Example sending a request using the DescribeServicesRequest method.
-//    req, resp := client.DescribeServicesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pricing-2017-10-15/DescribeServices
 func (c *Pricing) DescribeServicesRequest(input *DescribeServicesInput) (req *request.Request, output *DescribeServicesOutput) {
@@ -76,21 +75,22 @@ func (c *Pricing) DescribeServicesRequest(input *DescribeServicesInput) (req *re
 // API operation DescribeServices for usage and error information.
 //
 // Returned Error Types:
-//   * InternalErrorException
-//   An error on the server occurred during the processing of your request. Try
-//   again later.
 //
-//   * InvalidParameterException
-//   One or more parameters had an invalid value.
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
 //
-//   * NotFoundException
-//   The requested resource can't be found.
+//   - InvalidParameterException
+//     One or more parameters had an invalid value.
 //
-//   * InvalidNextTokenException
-//   The pagination token is invalid. Try again without a pagination token.
+//   - NotFoundException
+//     The requested resource can't be found.
 //
-//   * ExpiredNextTokenException
-//   The pagination token expired. Try again without a pagination token.
+//   - InvalidNextTokenException
+//     The pagination token is invalid. Try again without a pagination token.
+//
+//   - ExpiredNextTokenException
+//     The pagination token expired. Try again without a pagination token.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pricing-2017-10-15/DescribeServices
 func (c *Pricing) DescribeServices(input *DescribeServicesInput) (*DescribeServicesOutput, error) {
@@ -122,15 +122,14 @@ func (c *Pricing) DescribeServicesWithContext(ctx aws.Context, input *DescribeSe
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeServices operation.
-//    pageNum := 0
-//    err := client.DescribeServicesPages(params,
-//        func(page *pricing.DescribeServicesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeServices operation.
+//	pageNum := 0
+//	err := client.DescribeServicesPages(params,
+//	    func(page *pricing.DescribeServicesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Pricing) DescribeServicesPages(input *DescribeServicesInput, fn func(*DescribeServicesOutput, bool) bool) error {
 	return c.DescribeServicesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -182,14 +181,13 @@ const opGetAttributeValues = "GetAttributeValues"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAttributeValuesRequest method.
+//	req, resp := client.GetAttributeValuesRequest(params)
 //
-//    // Example sending a request using the GetAttributeValuesRequest method.
-//    req, resp := client.GetAttributeValuesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pricing-2017-10-15/GetAttributeValues
 func (c *Pricing) GetAttributeValuesRequest(input *GetAttributeValuesInput) (req *request.Request, output *GetAttributeValuesOutput) {
@@ -229,21 +227,22 @@ func (c *Pricing) GetAttributeValuesRequest(input *GetAttributeValuesInput) (req
 // API operation GetAttributeValues for usage and error information.
 //
 // Returned Error Types:
-//   * InternalErrorException
-//   An error on the server occurred during the processing of your request. Try
-//   again later.
 //
-//   * InvalidParameterException
-//   One or more parameters had an invalid value.
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
 //
-//   * NotFoundException
-//   The requested resource can't be found.
+//   - InvalidParameterException
+//     One or more parameters had an invalid value.
 //
-//   * InvalidNextTokenException
-//   The pagination token is invalid. Try again without a pagination token.
+//   - NotFoundException
+//     The requested resource can't be found.
 //
-//   * ExpiredNextTokenException
-//   The pagination token expired. Try again without a pagination token.
+//   - InvalidNextTokenException
+//     The pagination token is invalid. Try again without a pagination token.
+//
+//   - ExpiredNextTokenException
+//     The pagination token expired. Try again without a pagination token.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pricing-2017-10-15/GetAttributeValues
 func (c *Pricing) GetAttributeValues(input *GetAttributeValuesInput) (*GetAttributeValuesOutput, error) {
@@ -275,15 +274,14 @@ func (c *Pricing) GetAttributeValuesWithContext(ctx aws.Context, input *GetAttri
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetAttributeValues operation.
-//    pageNum := 0
-//    err := client.GetAttributeValuesPages(params,
-//        func(page *pricing.GetAttributeValuesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetAttributeValues operation.
+//	pageNum := 0
+//	err := client.GetAttributeValuesPages(params,
+//	    func(page *pricing.GetAttributeValuesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Pricing) GetAttributeValuesPages(input *GetAttributeValuesInput, fn func(*GetAttributeValuesOutput, bool) bool) error {
 	return c.GetAttributeValuesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -335,14 +333,13 @@ const opGetProducts = "GetProducts"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetProductsRequest method.
+//	req, resp := client.GetProductsRequest(params)
 //
-//    // Example sending a request using the GetProductsRequest method.
-//    req, resp := client.GetProductsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pricing-2017-10-15/GetProducts
 func (c *Pricing) GetProductsRequest(input *GetProductsInput) (req *request.Request, output *GetProductsOutput) {
@@ -379,21 +376,22 @@ func (c *Pricing) GetProductsRequest(input *GetProductsInput) (req *request.Requ
 // API operation GetProducts for usage and error information.
 //
 // Returned Error Types:
-//   * InternalErrorException
-//   An error on the server occurred during the processing of your request. Try
-//   again later.
 //
-//   * InvalidParameterException
-//   One or more parameters had an invalid value.
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
 //
-//   * NotFoundException
-//   The requested resource can't be found.
+//   - InvalidParameterException
+//     One or more parameters had an invalid value.
 //
-//   * InvalidNextTokenException
-//   The pagination token is invalid. Try again without a pagination token.
+//   - NotFoundException
+//     The requested resource can't be found.
 //
-//   * ExpiredNextTokenException
-//   The pagination token expired. Try again without a pagination token.
+//   - InvalidNextTokenException
+//     The pagination token is invalid. Try again without a pagination token.
+//
+//   - ExpiredNextTokenException
+//     The pagination token expired. Try again without a pagination token.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pricing-2017-10-15/GetProducts
 func (c *Pricing) GetProducts(input *GetProductsInput) (*GetProductsOutput, error) {
@@ -425,15 +423,14 @@ func (c *Pricing) GetProductsWithContext(ctx aws.Context, input *GetProductsInpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetProducts operation.
-//    pageNum := 0
-//    err := client.GetProductsPages(params,
-//        func(page *pricing.GetProductsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetProducts operation.
+//	pageNum := 0
+//	err := client.GetProductsPages(params,
+//	    func(page *pricing.GetProductsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Pricing) GetProductsPages(input *GetProductsInput, fn func(*GetProductsOutput, bool) bool) error {
 	return c.GetProductsPagesWithContext(aws.BackgroundContext(), input, fn)
 }

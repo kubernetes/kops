@@ -31172,7 +31172,7 @@
       }
     }
   },
-  "revision": "20220720",
+  "revision": "20220726",
   "rootUrl": "https://compute.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -32449,6 +32449,13 @@
           "description": "Indicates how many IOPS to provision for the disk. This sets the number of I/O operations per second that the disk can handle. Values must be between 10,000 and 120,000. For more details, see the Extreme persistent disk documentation.",
           "format": "int64",
           "type": "string"
+        },
+        "resourceManagerTags": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Resource manager tags to be bound to the disk. Tag keys and values have the same definition as resource manager tags. Keys must be in the format `tagKeys/{tag_key_id}`, and values are in the format `tagValues/456`. The field is ignored (both PUT \u0026 PATCH) when empty.",
+          "type": "object"
         },
         "resourcePolicies": {
           "description": "Resource policies applied to this disk for automatic snapshot creations. Specified using the full or partial URL. For instance template, specify only the resource policy name.",
@@ -35817,6 +35824,10 @@
           "description": "Internal use only.",
           "type": "string"
         },
+        "params": {
+          "$ref": "DiskParams",
+          "description": "Input only. [Input Only] Additional params passed with the request, but not persisted as part of resource payload."
+        },
         "physicalBlockSizeBytes": {
           "description": "Physical block size of the persistent disk, in bytes. If not present in a request, a default value is used. The currently supported size is 4096, other sizes may be added in the future. If an unsupported value is requested, the error message will list the supported values for the caller's project.",
           "format": "int64",
@@ -36228,6 +36239,20 @@
         "targetDisk": {
           "description": "The URL of the target disk to move. This can be a full or partial URL. For example, the following are all valid URLs to a disk: - https://www.googleapis.com/compute/v1/projects/project/zones/zone /disks/disk - projects/project/zones/zone/disks/disk - zones/zone/disks/disk ",
           "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "DiskParams": {
+      "description": "Additional disk params.",
+      "id": "DiskParams",
+      "properties": {
+        "resourceManagerTags": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Resource manager tags to be bound to the disk. Tag keys and values have the same definition as resource manager tags. Keys must be in the format `tagKeys/{tag_key_id}`, and values are in the format `tagValues/456`. The field is ignored (both PUT \u0026 PATCH) when empty.",
+          "type": "object"
         }
       },
       "type": "object"
@@ -57625,6 +57650,10 @@
     "SecurityPolicyAdvancedOptionsConfig": {
       "id": "SecurityPolicyAdvancedOptionsConfig",
       "properties": {
+        "jsonCustomConfig": {
+          "$ref": "SecurityPolicyAdvancedOptionsConfigJsonCustomConfig",
+          "description": "Custom configuration to apply the JSON parsing. Only applicable when json_parsing is set to STANDARD."
+        },
         "jsonParsing": {
           "enum": [
             "DISABLED",
@@ -57646,6 +57675,19 @@
             ""
           ],
           "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "SecurityPolicyAdvancedOptionsConfigJsonCustomConfig": {
+      "id": "SecurityPolicyAdvancedOptionsConfigJsonCustomConfig",
+      "properties": {
+        "contentTypes": {
+          "description": "A list of custom Content-Type header values to apply the JSON parsing. As per RFC 1341, a Content-Type header value has the following format: Content-Type := type \"/\" subtype *[\";\" parameter] When configuring a custom Content-Type header value, only the type/subtype needs to be specified, and the parameters should be excluded.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
         }
       },
       "type": "object"
