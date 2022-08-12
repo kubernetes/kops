@@ -50,9 +50,7 @@ data:
         reload
         loop
         bind {{ KubeDNS.NodeLocalDNS.LocalIP }}
-        forward . {{ NodeLocalDNSClusterIP }} {
-          force_tcp
-        }
+        forward . {{ NodeLocalDNSClusterIP }}
         prometheus :9253
         health {{ joinHostPort KubeDNS.NodeLocalDNS.LocalIP NodeLocalDNSHealthCheck }}
     }
@@ -63,9 +61,7 @@ data:
         reload
         loop
         bind {{ KubeDNS.NodeLocalDNS.LocalIP }}
-        forward . {{ NodeLocalDNSClusterIP }} {
-          force_tcp
-        }
+        forward . {{ NodeLocalDNSClusterIP }}
         prometheus :9253
     }
     {{- else }}
@@ -75,9 +71,7 @@ data:
         reload
         loop
         bind {{ KubeDNS.NodeLocalDNS.LocalIP }}
-        forward . {{ NodeLocalDNSClusterIP }} {
-          force_tcp
-        }
+        forward . {{ NodeLocalDNSClusterIP }}
         prometheus :9253
     }
     ip6.arpa:53 {
@@ -86,9 +80,7 @@ data:
         reload
         loop
         bind {{ KubeDNS.NodeLocalDNS.LocalIP }}
-        forward . {{ NodeLocalDNSClusterIP }} {
-          force_tcp
-        }
+        forward . {{ NodeLocalDNSClusterIP }}
         prometheus :9253
     }
     .:53 {
