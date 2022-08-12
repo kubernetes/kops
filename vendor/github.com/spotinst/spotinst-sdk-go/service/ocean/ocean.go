@@ -4,6 +4,7 @@ import (
 	"github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws"
 	"github.com/spotinst/spotinst-sdk-go/service/ocean/providers/azure"
 	"github.com/spotinst/spotinst-sdk-go/service/ocean/providers/gcp"
+	"github.com/spotinst/spotinst-sdk-go/service/ocean/spark"
 	"github.com/spotinst/spotinst-sdk-go/spotinst"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/client"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/session"
@@ -16,6 +17,7 @@ type Service interface {
 	CloudProviderAWS() aws.Service
 	CloudProviderGCP() gcp.Service
 	CloudProviderAzure() azure.Service
+	Spark() spark.Service
 }
 
 type ServiceOp struct {
@@ -48,6 +50,12 @@ func (s *ServiceOp) CloudProviderGCP() gcp.Service {
 
 func (s *ServiceOp) CloudProviderAzure() azure.Service {
 	return &azure.ServiceOp{
+		Client: s.Client,
+	}
+}
+
+func (s *ServiceOp) Spark() spark.Service {
+	return &spark.ServiceOp{
 		Client: s.Client,
 	}
 }

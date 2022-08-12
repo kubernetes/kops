@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a EventBridge client from just a session.
-//     svc := eventbridge.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a EventBridge client with additional configuration
-//     svc := eventbridge.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a EventBridge client from just a session.
+//	svc := eventbridge.New(mySession)
+//
+//	// Create a EventBridge client with additional configuration
+//	svc := eventbridge.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *EventBridge {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

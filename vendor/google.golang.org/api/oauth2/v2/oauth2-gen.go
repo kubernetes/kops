@@ -8,35 +8,35 @@
 //
 // For product documentation, see: https://developers.google.com/identity/protocols/oauth2/
 //
-// Creating a client
+// # Creating a client
 //
 // Usage example:
 //
-//   import "google.golang.org/api/oauth2/v2"
-//   ...
-//   ctx := context.Background()
-//   oauth2Service, err := oauth2.NewService(ctx)
+//	import "google.golang.org/api/oauth2/v2"
+//	...
+//	ctx := context.Background()
+//	oauth2Service, err := oauth2.NewService(ctx)
 //
 // In this example, Google Application Default Credentials are used for authentication.
 //
 // For information on how to create and obtain Application Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
 //
-// Other authentication options
+// # Other authentication options
 //
 // By default, all available scopes (see "Constants") are used to authenticate. To restrict scopes, use option.WithScopes:
 //
-//   oauth2Service, err := oauth2.NewService(ctx, option.WithScopes(oauth2.OpenIDScope))
+//	oauth2Service, err := oauth2.NewService(ctx, option.WithScopes(oauth2.OpenIDScope))
 //
 // To use an API key for authentication (note: some APIs do not support API keys), use option.WithAPIKey:
 //
-//   oauth2Service, err := oauth2.NewService(ctx, option.WithAPIKey("AIza..."))
+//	oauth2Service, err := oauth2.NewService(ctx, option.WithAPIKey("AIza..."))
 //
 // To use an OAuth token (e.g., a user token obtained via a three-legged OAuth flow), use option.WithTokenSource:
 //
-//   config := &oauth2.Config{...}
-//   // ...
-//   token, err := config.Exchange(ctx, ...)
-//   oauth2Service, err := oauth2.NewService(ctx, option.WithTokenSource(config.TokenSource(ctx, token)))
+//	config := &oauth2.Config{...}
+//	// ...
+//	token, err := config.Exchange(ctx, ...)
+//	oauth2Service, err := oauth2.NewService(ctx, option.WithTokenSource(config.TokenSource(ctx, token)))
 //
 // See https://godoc.org/google.golang.org/api/option/ for details on options.
 package oauth2 // import "google.golang.org/api/oauth2/v2"
