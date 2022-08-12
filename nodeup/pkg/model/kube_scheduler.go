@@ -272,11 +272,17 @@ func (b *KubeSchedulerBuilder) buildPod(kubeScheduler *kops.KubeSchedulerConfig)
 		container.Args = append(container.Args, sortedStrings(flags)...)
 	} else {
 		container.Command = []string{"/usr/local/bin/kube-scheduler"}
-		container.Args = append(
-			sortedStrings(flags),
-			"--logtostderr=false", // https://github.com/kubernetes/klog/issues/60
-			"--alsologtostderr",
-			"--log-file=/var/log/kube-scheduler.log")
+		if kubeScheduler.LogFormat != "" && kubeScheduler.LogFormat != "text" {
+			// When logging-format is not text, some flags are not accepted.
+			// https://github.com/kubernetes/kops/issues/14100
+			container.Args = sortedStrings(flags)
+		} else {
+			container.Args = append(
+				sortedStrings(flags),
+				"--logtostderr=false", // https://github.com/kubernetes/klog/issues/60
+				"--alsologtostderr",
+				"--log-file=/var/log/kube-scheduler.log")
+		}
 	}
 
 	if kubeScheduler.MaxPersistentVolumes != nil {
