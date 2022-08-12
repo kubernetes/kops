@@ -8,35 +8,35 @@
 //
 // For product documentation, see: https://cloud.google.com/dns/docs
 //
-// Creating a client
+// # Creating a client
 //
 // Usage example:
 //
-//   import "google.golang.org/api/dns/v1"
-//   ...
-//   ctx := context.Background()
-//   dnsService, err := dns.NewService(ctx)
+//	import "google.golang.org/api/dns/v1"
+//	...
+//	ctx := context.Background()
+//	dnsService, err := dns.NewService(ctx)
 //
 // In this example, Google Application Default Credentials are used for authentication.
 //
 // For information on how to create and obtain Application Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
 //
-// Other authentication options
+// # Other authentication options
 //
 // By default, all available scopes (see "Constants") are used to authenticate. To restrict scopes, use option.WithScopes:
 //
-//   dnsService, err := dns.NewService(ctx, option.WithScopes(dns.NdevClouddnsReadwriteScope))
+//	dnsService, err := dns.NewService(ctx, option.WithScopes(dns.NdevClouddnsReadwriteScope))
 //
 // To use an API key for authentication (note: some APIs do not support API keys), use option.WithAPIKey:
 //
-//   dnsService, err := dns.NewService(ctx, option.WithAPIKey("AIza..."))
+//	dnsService, err := dns.NewService(ctx, option.WithAPIKey("AIza..."))
 //
 // To use an OAuth token (e.g., a user token obtained via a three-legged OAuth flow), use option.WithTokenSource:
 //
-//   config := &oauth2.Config{...}
-//   // ...
-//   token, err := config.Exchange(ctx, ...)
-//   dnsService, err := dns.NewService(ctx, option.WithTokenSource(config.TokenSource(ctx, token)))
+//	config := &oauth2.Config{...}
+//	// ...
+//	token, err := config.Exchange(ctx, ...)
+//	dnsService, err := dns.NewService(ctx, option.WithTokenSource(config.TokenSource(ctx, token)))
 //
 // See https://godoc.org/google.golang.org/api/option/ for details on options.
 package dns // import "google.golang.org/api/dns/v1"
@@ -2292,6 +2292,8 @@ type RRSetRoutingPolicy struct {
 
 	Kind string `json:"kind,omitempty"`
 
+	PrimaryBackup *RRSetRoutingPolicyPrimaryBackupPolicy `json:"primaryBackup,omitempty"`
+
 	Wrr *RRSetRoutingPolicyWrrPolicy `json:"wrr,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Geo") to
@@ -2320,13 +2322,22 @@ func (s *RRSetRoutingPolicy) MarshalJSON() ([]byte, error) {
 // RRSetRoutingPolicyGeoPolicy: Configures a RRSetRoutingPolicy that
 // routes based on the geo location of the querying user.
 type RRSetRoutingPolicyGeoPolicy struct {
+	// EnableFencing: Without fencing, if health check fails for all
+	// configured items in the current geo bucket, we'll failover to the
+	// next nearest geo bucket. With fencing, if health check is enabled, as
+	// long as some targets in the current geo bucket are healthy, we'll
+	// return only the healthy targets. However, if they're all unhealthy,
+	// we won't failover to the next nearest bucket, we'll simply return all
+	// the items in the current bucket even though they're unhealthy.
+	EnableFencing bool `json:"enableFencing,omitempty"`
+
 	// Items: The primary geo routing configuration. If there are multiple
 	// items with the same location, an error is returned instead.
 	Items []*RRSetRoutingPolicyGeoPolicyGeoPolicyItem `json:"items,omitempty"`
 
 	Kind string `json:"kind,omitempty"`
 
-	// ForceSendFields is a list of field names (e.g. "Items") to
+	// ForceSendFields is a list of field names (e.g. "EnableFencing") to
 	// unconditionally include in API requests. By default, fields with
 	// empty or default values are omitted from API requests. However, any
 	// non-pointer, non-interface field appearing in ForceSendFields will be
@@ -2334,10 +2345,10 @@ type RRSetRoutingPolicyGeoPolicy struct {
 	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
-	// NullFields is a list of field names (e.g. "Items") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
+	// NullFields is a list of field names (e.g. "EnableFencing") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
 	// null. It is an error if a field in this list has a non-empty value.
 	// This may be used to include null fields in Patch requests.
 	NullFields []string `json:"-"`
@@ -2352,6 +2363,11 @@ func (s *RRSetRoutingPolicyGeoPolicy) MarshalJSON() ([]byte, error) {
 // RRSetRoutingPolicyGeoPolicyGeoPolicyItem: ResourceRecordSet data for
 // one geo location.
 type RRSetRoutingPolicyGeoPolicyGeoPolicyItem struct {
+	// HealthCheckedTargets: For A and AAAA types only. Endpoints to return
+	// in the query result only if they are healthy. These can be specified
+	// along with rrdata within this item.
+	HealthCheckedTargets *RRSetRoutingPolicyHealthCheckTargets `json:"healthCheckedTargets,omitempty"`
+
 	Kind string `json:"kind,omitempty"`
 
 	// Location: The geo-location granularity is a GCP region. This location
@@ -2366,20 +2382,22 @@ type RRSetRoutingPolicyGeoPolicyGeoPolicyItem struct {
 	// for DNSSEC enabled zones, there's a restriction of 1 ip per item. .
 	SignatureRrdatas []string `json:"signatureRrdatas,omitempty"`
 
-	// ForceSendFields is a list of field names (e.g. "Kind") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g.
+	// "HealthCheckedTargets") to unconditionally include in API requests.
+	// By default, fields with empty or default values are omitted from API
+	// requests. However, any non-pointer, non-interface field appearing in
+	// ForceSendFields will be sent to the server regardless of whether the
+	// field is empty or not. This may be used to include empty fields in
+	// Patch requests.
 	ForceSendFields []string `json:"-"`
 
-	// NullFields is a list of field names (e.g. "Kind") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "HealthCheckedTargets") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
 	NullFields []string `json:"-"`
 }
 
@@ -2387,6 +2405,150 @@ func (s *RRSetRoutingPolicyGeoPolicyGeoPolicyItem) MarshalJSON() ([]byte, error)
 	type NoMethod RRSetRoutingPolicyGeoPolicyGeoPolicyItem
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// RRSetRoutingPolicyHealthCheckTargets: HealthCheckTargets describes
+// endpoints to health-check when responding to Routing Policy queries.
+// Only the healthy endpoints will be included in the response.
+type RRSetRoutingPolicyHealthCheckTargets struct {
+	InternalLoadBalancers []*RRSetRoutingPolicyLoadBalancerTarget `json:"internalLoadBalancers,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g.
+	// "InternalLoadBalancers") to unconditionally include in API requests.
+	// By default, fields with empty or default values are omitted from API
+	// requests. However, any non-pointer, non-interface field appearing in
+	// ForceSendFields will be sent to the server regardless of whether the
+	// field is empty or not. This may be used to include empty fields in
+	// Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "InternalLoadBalancers") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *RRSetRoutingPolicyHealthCheckTargets) MarshalJSON() ([]byte, error) {
+	type NoMethod RRSetRoutingPolicyHealthCheckTargets
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type RRSetRoutingPolicyLoadBalancerTarget struct {
+	// IpAddress: The frontend IP address of the
+	IpAddress string `json:"ipAddress,omitempty"`
+
+	// Possible values:
+	//   "undefined"
+	//   "tcp"
+	//   "udp"
+	IpProtocol string `json:"ipProtocol,omitempty"`
+
+	Kind string `json:"kind,omitempty"`
+
+	// Possible values:
+	//   "none"
+	//   "regionalL4ilb"
+	LoadBalancerType string `json:"loadBalancerType,omitempty"`
+
+	// NetworkUrl: The fully qualified url of the network on which the ILB
+	// is
+	NetworkUrl string `json:"networkUrl,omitempty"`
+
+	// Port: Load Balancer to health check. The configured port of the Load
+	// Balancer.
+	Port string `json:"port,omitempty"`
+
+	// Project: present. This should be formatted like
+	// https://www.googleapis.com/compute/v1/projects/{project}/global/networks/{network}
+	// The project ID in which the ILB exists.
+	Project string `json:"project,omitempty"`
+
+	// Region: The region for regional ILBs.
+	Region string `json:"region,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "IpAddress") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "IpAddress") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *RRSetRoutingPolicyLoadBalancerTarget) MarshalJSON() ([]byte, error) {
+	type NoMethod RRSetRoutingPolicyLoadBalancerTarget
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// RRSetRoutingPolicyPrimaryBackupPolicy: Configures a
+// RRSetRoutingPolicy such that all queries are responded with the
+// primary_targets if they are healthy. And if all of them are
+// unhealthy, then we fallback to a geo localized policy.
+type RRSetRoutingPolicyPrimaryBackupPolicy struct {
+	// BackupGeoTargets: Backup targets provide a regional failover policy
+	// for the otherwise global primary targets. If serving state is set to
+	// BACKUP, this policy essentially becomes a geo routing policy.
+	BackupGeoTargets *RRSetRoutingPolicyGeoPolicy `json:"backupGeoTargets,omitempty"`
+
+	Kind string `json:"kind,omitempty"`
+
+	PrimaryTargets *RRSetRoutingPolicyHealthCheckTargets `json:"primaryTargets,omitempty"`
+
+	// TrickleTraffic: When serving state is PRIMARY, this field provides
+	// the option of sending a small percentage of the traffic to the backup
+	// targets.
+	TrickleTraffic float64 `json:"trickleTraffic,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "BackupGeoTargets") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "BackupGeoTargets") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *RRSetRoutingPolicyPrimaryBackupPolicy) MarshalJSON() ([]byte, error) {
+	type NoMethod RRSetRoutingPolicyPrimaryBackupPolicy
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *RRSetRoutingPolicyPrimaryBackupPolicy) UnmarshalJSON(data []byte) error {
+	type NoMethod RRSetRoutingPolicyPrimaryBackupPolicy
+	var s1 struct {
+		TrickleTraffic gensupport.JSONFloat64 `json:"trickleTraffic"`
+		*NoMethod
+	}
+	s1.NoMethod = (*NoMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.TrickleTraffic = float64(s1.TrickleTraffic)
+	return nil
 }
 
 // RRSetRoutingPolicyWrrPolicy: Configures a RRSetRoutingPolicy that
@@ -2422,6 +2584,14 @@ func (s *RRSetRoutingPolicyWrrPolicy) MarshalJSON() ([]byte, error) {
 // RRSetRoutingPolicyWrrPolicyWrrPolicyItem: A routing block which
 // contains the routing information for one WRR item.
 type RRSetRoutingPolicyWrrPolicyWrrPolicyItem struct {
+	// HealthCheckedTargets: endpoints that need to be health checked before
+	// making the routing decision. The unhealthy endpoints will be omitted
+	// from the result. If all endpoints within a buckete are unhealthy,
+	// we'll choose a different bucket (sampled w.r.t. its weight) for
+	// responding. Note that if DNSSEC is enabled for this zone, only one of
+	// rrdata or health_checked_targets can be set.
+	HealthCheckedTargets *RRSetRoutingPolicyHealthCheckTargets `json:"healthCheckedTargets,omitempty"`
+
 	Kind string `json:"kind,omitempty"`
 
 	Rrdatas []string `json:"rrdatas,omitempty"`
@@ -2438,20 +2608,22 @@ type RRSetRoutingPolicyWrrPolicyWrrPolicyItem struct {
 	// should be non-negative.
 	Weight float64 `json:"weight,omitempty"`
 
-	// ForceSendFields is a list of field names (e.g. "Kind") to
-	// unconditionally include in API requests. By default, fields with
-	// empty or default values are omitted from API requests. However, any
-	// non-pointer, non-interface field appearing in ForceSendFields will be
-	// sent to the server regardless of whether the field is empty or not.
-	// This may be used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g.
+	// "HealthCheckedTargets") to unconditionally include in API requests.
+	// By default, fields with empty or default values are omitted from API
+	// requests. However, any non-pointer, non-interface field appearing in
+	// ForceSendFields will be sent to the server regardless of whether the
+	// field is empty or not. This may be used to include empty fields in
+	// Patch requests.
 	ForceSendFields []string `json:"-"`
 
-	// NullFields is a list of field names (e.g. "Kind") to include in API
-	// requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "HealthCheckedTargets") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
 	NullFields []string `json:"-"`
 }
 
@@ -3019,9 +3191,9 @@ type ChangesCreateCall struct {
 
 // Create: Atomically updates the ResourceRecordSet collection.
 //
-// - managedZone: Identifies the managed zone addressed by this request.
-//   Can be the managed zone name or ID.
-// - project: Identifies the project addressed by this request.
+//   - managedZone: Identifies the managed zone addressed by this request.
+//     Can be the managed zone name or ID.
+//   - project: Identifies the project addressed by this request.
 func (r *ChangesService) Create(project string, managedZone string, change *Change) *ChangesCreateCall {
 	c := &ChangesCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -3188,11 +3360,11 @@ type ChangesGetCall struct {
 
 // Get: Fetches the representation of an existing Change.
 //
-// - changeId: The identifier of the requested change, from a previous
-//   ResourceRecordSetsChangeResponse.
-// - managedZone: Identifies the managed zone addressed by this request.
-//   Can be the managed zone name or ID.
-// - project: Identifies the project addressed by this request.
+//   - changeId: The identifier of the requested change, from a previous
+//     ResourceRecordSetsChangeResponse.
+//   - managedZone: Identifies the managed zone addressed by this request.
+//     Can be the managed zone name or ID.
+//   - project: Identifies the project addressed by this request.
 func (r *ChangesService) Get(project string, managedZone string, changeId string) *ChangesGetCall {
 	c := &ChangesGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -3373,9 +3545,9 @@ type ChangesListCall struct {
 
 // List: Enumerates Changes to a ResourceRecordSet collection.
 //
-// - managedZone: Identifies the managed zone addressed by this request.
-//   Can be the managed zone name or ID.
-// - project: Identifies the project addressed by this request.
+//   - managedZone: Identifies the managed zone addressed by this request.
+//     Can be the managed zone name or ID.
+//   - project: Identifies the project addressed by this request.
 func (r *ChangesService) List(project string, managedZone string) *ChangesListCall {
 	c := &ChangesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -3403,7 +3575,8 @@ func (c *ChangesListCall) PageToken(pageToken string) *ChangesListCall {
 // only supported value is change sequence.
 //
 // Possible values:
-//   "changeSequence" (default)
+//
+//	"changeSequence" (default)
 func (c *ChangesListCall) SortBy(sortBy string) *ChangesListCall {
 	c.urlParams_.Set("sortBy", sortBy)
 	return c
@@ -3616,10 +3789,10 @@ type DnsKeysGetCall struct {
 
 // Get: Fetches the representation of an existing DnsKey.
 //
-// - dnsKeyId: The identifier of the requested DnsKey.
-// - managedZone: Identifies the managed zone addressed by this request.
-//   Can be the managed zone name or ID.
-// - project: Identifies the project addressed by this request.
+//   - dnsKeyId: The identifier of the requested DnsKey.
+//   - managedZone: Identifies the managed zone addressed by this request.
+//     Can be the managed zone name or ID.
+//   - project: Identifies the project addressed by this request.
 func (r *DnsKeysService) Get(project string, managedZone string, dnsKeyId string) *DnsKeysGetCall {
 	c := &DnsKeysGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -3814,9 +3987,9 @@ type DnsKeysListCall struct {
 
 // List: Enumerates DnsKeys to a ResourceRecordSet collection.
 //
-// - managedZone: Identifies the managed zone addressed by this request.
-//   Can be the managed zone name or ID.
-// - project: Identifies the project addressed by this request.
+//   - managedZone: Identifies the managed zone addressed by this request.
+//     Can be the managed zone name or ID.
+//   - project: Identifies the project addressed by this request.
 func (r *DnsKeysService) List(project string, managedZone string) *DnsKeysListCall {
 	c := &DnsKeysListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -4037,10 +4210,10 @@ type ManagedZoneOperationsGetCall struct {
 
 // Get: Fetches the representation of an existing Operation.
 //
-// - managedZone: Identifies the managed zone addressed by this request.
-// - operation: Identifies the operation addressed by this request (ID
-//   of the operation).
-// - project: Identifies the project addressed by this request.
+//   - managedZone: Identifies the managed zone addressed by this request.
+//   - operation: Identifies the operation addressed by this request (ID
+//     of the operation).
+//   - project: Identifies the project addressed by this request.
 func (r *ManagedZoneOperationsService) Get(project string, managedZone string, operation string) *ManagedZoneOperationsGetCall {
 	c := &ManagedZoneOperationsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -4250,8 +4423,9 @@ func (c *ManagedZoneOperationsListCall) PageToken(pageToken string) *ManagedZone
 // only supported values are START_TIME and ID.
 //
 // Possible values:
-//   "startTime" (default)
-//   "id"
+//
+//	"startTime" (default)
+//	"id"
 func (c *ManagedZoneOperationsListCall) SortBy(sortBy string) *ManagedZoneOperationsListCall {
 	c.urlParams_.Set("sortBy", sortBy)
 	return c
@@ -4609,9 +4783,9 @@ type ManagedZonesDeleteCall struct {
 
 // Delete: Deletes a previously created ManagedZone.
 //
-// - managedZone: Identifies the managed zone addressed by this request.
-//   Can be the managed zone name or ID.
-// - project: Identifies the project addressed by this request.
+//   - managedZone: Identifies the managed zone addressed by this request.
+//     Can be the managed zone name or ID.
+//   - project: Identifies the project addressed by this request.
 func (r *ManagedZonesService) Delete(project string, managedZone string) *ManagedZonesDeleteCall {
 	c := &ManagedZonesDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -4740,9 +4914,9 @@ type ManagedZonesGetCall struct {
 
 // Get: Fetches the representation of an existing ManagedZone.
 //
-// - managedZone: Identifies the managed zone addressed by this request.
-//   Can be the managed zone name or ID.
-// - project: Identifies the project addressed by this request.
+//   - managedZone: Identifies the managed zone addressed by this request.
+//     Can be the managed zone name or ID.
+//   - project: Identifies the project addressed by this request.
 func (r *ManagedZonesService) Get(project string, managedZone string) *ManagedZonesGetCall {
 	c := &ManagedZonesGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -4915,10 +5089,10 @@ type ManagedZonesGetIamPolicyCall struct {
 // an empty policy if the resource exists and does not have a policy
 // set.
 //
-// - resource: REQUIRED: The resource for which the policy is being
-//   requested. See Resource names
-//   (https://cloud.google.com/apis/design/resource_names) for the
-//   appropriate value for this field.
+//   - resource: REQUIRED: The resource for which the policy is being
+//     requested. See Resource names
+//     (https://cloud.google.com/apis/design/resource_names) for the
+//     appropriate value for this field.
 func (r *ManagedZonesService) GetIamPolicy(resource string, googleiamv1getiampolicyrequest *GoogleIamV1GetIamPolicyRequest) *ManagedZonesGetIamPolicyCall {
 	c := &ManagedZonesGetIamPolicyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.resource = resource
@@ -5273,9 +5447,9 @@ type ManagedZonesPatchCall struct {
 
 // Patch: Applies a partial update to an existing ManagedZone.
 //
-// - managedZone: Identifies the managed zone addressed by this request.
-//   Can be the managed zone name or ID.
-// - project: Identifies the project addressed by this request.
+//   - managedZone: Identifies the managed zone addressed by this request.
+//     Can be the managed zone name or ID.
+//   - project: Identifies the project addressed by this request.
 func (r *ManagedZonesService) Patch(project string, managedZone string, managedzone *ManagedZone) *ManagedZonesPatchCall {
 	c := &ManagedZonesPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -5442,10 +5616,10 @@ type ManagedZonesSetIamPolicyCall struct {
 // resource. Replaces any existing policy. Can return `NOT_FOUND`,
 // `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors.
 //
-// - resource: REQUIRED: The resource for which the policy is being
-//   specified. See Resource names
-//   (https://cloud.google.com/apis/design/resource_names) for the
-//   appropriate value for this field.
+//   - resource: REQUIRED: The resource for which the policy is being
+//     specified. See Resource names
+//     (https://cloud.google.com/apis/design/resource_names) for the
+//     appropriate value for this field.
 func (r *ManagedZonesService) SetIamPolicy(resource string, googleiamv1setiampolicyrequest *GoogleIamV1SetIamPolicyRequest) *ManagedZonesSetIamPolicyCall {
 	c := &ManagedZonesSetIamPolicyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.resource = resource
@@ -5593,10 +5767,10 @@ type ManagedZonesTestIamPermissionsCall struct {
 // and command-line tools, not for authorization checking. This
 // operation may "fail open" without warning.
 //
-// - resource: REQUIRED: The resource for which the policy detail is
-//   being requested. See Resource names
-//   (https://cloud.google.com/apis/design/resource_names) for the
-//   appropriate value for this field.
+//   - resource: REQUIRED: The resource for which the policy detail is
+//     being requested. See Resource names
+//     (https://cloud.google.com/apis/design/resource_names) for the
+//     appropriate value for this field.
 func (r *ManagedZonesService) TestIamPermissions(resource string, googleiamv1testiampermissionsrequest *GoogleIamV1TestIamPermissionsRequest) *ManagedZonesTestIamPermissionsCall {
 	c := &ManagedZonesTestIamPermissionsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.resource = resource
@@ -5743,9 +5917,9 @@ type ManagedZonesUpdateCall struct {
 
 // Update: Updates an existing ManagedZone.
 //
-// - managedZone: Identifies the managed zone addressed by this request.
-//   Can be the managed zone name or ID.
-// - project: Identifies the project addressed by this request.
+//   - managedZone: Identifies the managed zone addressed by this request.
+//     Can be the managed zone name or ID.
+//   - project: Identifies the project addressed by this request.
 func (r *ManagedZonesService) Update(project string, managedZone string, managedzone *ManagedZone) *ManagedZonesUpdateCall {
 	c := &ManagedZonesUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -6067,9 +6241,9 @@ type PoliciesDeleteCall struct {
 // Delete: Deletes a previously created Policy. Fails if the policy is
 // still being referenced by a network.
 //
-// - policy: User given friendly name of the policy addressed by this
-//   request.
-// - project: Identifies the project addressed by this request.
+//   - policy: User given friendly name of the policy addressed by this
+//     request.
+//   - project: Identifies the project addressed by this request.
 func (r *PoliciesService) Delete(project string, policy string) *PoliciesDeleteCall {
 	c := &PoliciesDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -6198,9 +6372,9 @@ type PoliciesGetCall struct {
 
 // Get: Fetches the representation of an existing Policy.
 //
-// - policy: User given friendly name of the policy addressed by this
-//   request.
-// - project: Identifies the project addressed by this request.
+//   - policy: User given friendly name of the policy addressed by this
+//     request.
+//   - project: Identifies the project addressed by this request.
 func (r *PoliciesService) Get(project string, policy string) *PoliciesGetCall {
 	c := &PoliciesGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -6568,9 +6742,9 @@ type PoliciesPatchCall struct {
 
 // Patch: Applies a partial update to an existing Policy.
 //
-// - policy: User given friendly name of the policy addressed by this
-//   request.
-// - project: Identifies the project addressed by this request.
+//   - policy: User given friendly name of the policy addressed by this
+//     request.
+//   - project: Identifies the project addressed by this request.
 func (r *PoliciesService) Patch(project string, policy string, policy2 *Policy) *PoliciesPatchCall {
 	c := &PoliciesPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -6736,9 +6910,9 @@ type PoliciesUpdateCall struct {
 
 // Update: Updates an existing Policy.
 //
-// - policy: User given friendly name of the policy addressed by this
-//   request.
-// - project: Identifies the project addressed by this request.
+//   - policy: User given friendly name of the policy addressed by this
+//     request.
+//   - project: Identifies the project addressed by this request.
 func (r *PoliciesService) Update(project string, policy string, policy2 *Policy) *PoliciesUpdateCall {
 	c := &PoliciesUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -7066,9 +7240,9 @@ type ResourceRecordSetsCreateCall struct {
 
 // Create: Creates a new ResourceRecordSet.
 //
-// - managedZone: Identifies the managed zone addressed by this request.
-//   Can be the managed zone name or ID.
-// - project: Identifies the project addressed by this request.
+//   - managedZone: Identifies the managed zone addressed by this request.
+//     Can be the managed zone name or ID.
+//   - project: Identifies the project addressed by this request.
 func (r *ResourceRecordSetsService) Create(project string, managedZone string, resourcerecordset *ResourceRecordSet) *ResourceRecordSetsCreateCall {
 	c := &ResourceRecordSetsCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -7235,11 +7409,11 @@ type ResourceRecordSetsDeleteCall struct {
 
 // Delete: Deletes a previously created ResourceRecordSet.
 //
-// - managedZone: Identifies the managed zone addressed by this request.
-//   Can be the managed zone name or ID.
-// - name: Fully qualified domain name.
-// - project: Identifies the project addressed by this request.
-// - type: RRSet type.
+//   - managedZone: Identifies the managed zone addressed by this request.
+//     Can be the managed zone name or ID.
+//   - name: Fully qualified domain name.
+//   - project: Identifies the project addressed by this request.
+//   - type: RRSet type.
 func (r *ResourceRecordSetsService) Delete(project string, managedZone string, name string, type_ string) *ResourceRecordSetsDeleteCall {
 	c := &ResourceRecordSetsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -7416,11 +7590,11 @@ type ResourceRecordSetsGetCall struct {
 
 // Get: Fetches the representation of an existing ResourceRecordSet.
 //
-// - managedZone: Identifies the managed zone addressed by this request.
-//   Can be the managed zone name or ID.
-// - name: Fully qualified domain name.
-// - project: Identifies the project addressed by this request.
-// - type: RRSet type.
+//   - managedZone: Identifies the managed zone addressed by this request.
+//     Can be the managed zone name or ID.
+//   - name: Fully qualified domain name.
+//   - project: Identifies the project addressed by this request.
+//   - type: RRSet type.
 func (r *ResourceRecordSetsService) Get(project string, managedZone string, name string, type_ string) *ResourceRecordSetsGetCall {
 	c := &ResourceRecordSetsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -7611,9 +7785,9 @@ type ResourceRecordSetsListCall struct {
 // List: Enumerates ResourceRecordSets that you have created but not yet
 // deleted.
 //
-// - managedZone: Identifies the managed zone addressed by this request.
-//   Can be the managed zone name or ID.
-// - project: Identifies the project addressed by this request.
+//   - managedZone: Identifies the managed zone addressed by this request.
+//     Can be the managed zone name or ID.
+//   - project: Identifies the project addressed by this request.
 func (r *ResourceRecordSetsService) List(project string, managedZone string) *ResourceRecordSetsListCall {
 	c := &ResourceRecordSetsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -7846,11 +8020,11 @@ type ResourceRecordSetsPatchCall struct {
 
 // Patch: Applies a partial update to an existing ResourceRecordSet.
 //
-// - managedZone: Identifies the managed zone addressed by this request.
-//   Can be the managed zone name or ID.
-// - name: Fully qualified domain name.
-// - project: Identifies the project addressed by this request.
-// - type: RRSet type.
+//   - managedZone: Identifies the managed zone addressed by this request.
+//     Can be the managed zone name or ID.
+//   - name: Fully qualified domain name.
+//   - project: Identifies the project addressed by this request.
+//   - type: RRSet type.
 func (r *ResourceRecordSetsService) Patch(project string, managedZone string, name string, type_ string, resourcerecordset *ResourceRecordSet) *ResourceRecordSetsPatchCall {
 	c := &ResourceRecordSetsPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -8190,9 +8364,9 @@ type ResponsePoliciesDeleteCall struct {
 // Delete: Deletes a previously created Response Policy. Fails if the
 // response policy is non-empty or still being referenced by a network.
 //
-// - project: Identifies the project addressed by this request.
-// - responsePolicy: User assigned name of the Response Policy addressed
-//   by this request.
+//   - project: Identifies the project addressed by this request.
+//   - responsePolicy: User assigned name of the Response Policy addressed
+//     by this request.
 func (r *ResponsePoliciesService) Delete(project string, responsePolicy string) *ResponsePoliciesDeleteCall {
 	c := &ResponsePoliciesDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -8321,9 +8495,9 @@ type ResponsePoliciesGetCall struct {
 
 // Get: Fetches the representation of an existing Response Policy.
 //
-// - project: Identifies the project addressed by this request.
-// - responsePolicy: User assigned name of the Response Policy addressed
-//   by this request.
+//   - project: Identifies the project addressed by this request.
+//   - responsePolicy: User assigned name of the Response Policy addressed
+//     by this request.
 func (r *ResponsePoliciesService) Get(project string, responsePolicy string) *ResponsePoliciesGetCall {
 	c := &ResponsePoliciesGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -8691,9 +8865,9 @@ type ResponsePoliciesPatchCall struct {
 
 // Patch: Applies a partial update to an existing Response Policy.
 //
-// - project: Identifies the project addressed by this request.
-// - responsePolicy: User assigned name of the Respones Policy addressed
-//   by this request.
+//   - project: Identifies the project addressed by this request.
+//   - responsePolicy: User assigned name of the Respones Policy addressed
+//     by this request.
 func (r *ResponsePoliciesService) Patch(project string, responsePolicy string, responsepolicy *ResponsePolicy) *ResponsePoliciesPatchCall {
 	c := &ResponsePoliciesPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -8859,9 +9033,9 @@ type ResponsePoliciesUpdateCall struct {
 
 // Update: Updates an existing Response Policy.
 //
-// - project: Identifies the project addressed by this request.
-// - responsePolicy: User assigned name of the Response Policy addressed
-//   by this request.
+//   - project: Identifies the project addressed by this request.
+//   - responsePolicy: User assigned name of the Response Policy addressed
+//     by this request.
 func (r *ResponsePoliciesService) Update(project string, responsePolicy string, responsepolicy *ResponsePolicy) *ResponsePoliciesUpdateCall {
 	c := &ResponsePoliciesUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -9027,9 +9201,9 @@ type ResponsePolicyRulesCreateCall struct {
 
 // Create: Creates a new Response Policy Rule.
 //
-// - project: Identifies the project addressed by this request.
-// - responsePolicy: User assigned name of the Response Policy
-//   containing the Response Policy Rule.
+//   - project: Identifies the project addressed by this request.
+//   - responsePolicy: User assigned name of the Response Policy
+//     containing the Response Policy Rule.
 func (r *ResponsePolicyRulesService) Create(project string, responsePolicy string, responsepolicyrule *ResponsePolicyRule) *ResponsePolicyRulesCreateCall {
 	c := &ResponsePolicyRulesCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -9195,11 +9369,11 @@ type ResponsePolicyRulesDeleteCall struct {
 
 // Delete: Deletes a previously created Response Policy Rule.
 //
-// - project: Identifies the project addressed by this request.
-// - responsePolicy: User assigned name of the Response Policy
-//   containing the Response Policy Rule.
-// - responsePolicyRule: User assigned name of the Response Policy Rule
-//   addressed by this request.
+//   - project: Identifies the project addressed by this request.
+//   - responsePolicy: User assigned name of the Response Policy
+//     containing the Response Policy Rule.
+//   - responsePolicyRule: User assigned name of the Response Policy Rule
+//     addressed by this request.
 func (r *ResponsePolicyRulesService) Delete(project string, responsePolicy string, responsePolicyRule string) *ResponsePolicyRulesDeleteCall {
 	c := &ResponsePolicyRulesDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -9338,11 +9512,11 @@ type ResponsePolicyRulesGetCall struct {
 
 // Get: Fetches the representation of an existing Response Policy Rule.
 //
-// - project: Identifies the project addressed by this request.
-// - responsePolicy: User assigned name of the Response Policy
-//   containing the Response Policy Rule.
-// - responsePolicyRule: User assigned name of the Response Policy Rule
-//   addressed by this request.
+//   - project: Identifies the project addressed by this request.
+//   - responsePolicy: User assigned name of the Response Policy
+//     containing the Response Policy Rule.
+//   - responsePolicyRule: User assigned name of the Response Policy Rule
+//     addressed by this request.
 func (r *ResponsePolicyRulesService) Get(project string, responsePolicy string, responsePolicyRule string) *ResponsePolicyRulesGetCall {
 	c := &ResponsePolicyRulesGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -9731,11 +9905,11 @@ type ResponsePolicyRulesPatchCall struct {
 
 // Patch: Applies a partial update to an existing Response Policy Rule.
 //
-// - project: Identifies the project addressed by this request.
-// - responsePolicy: User assigned name of the Response Policy
-//   containing the Response Policy Rule.
-// - responsePolicyRule: User assigned name of the Response Policy Rule
-//   addressed by this request.
+//   - project: Identifies the project addressed by this request.
+//   - responsePolicy: User assigned name of the Response Policy
+//     containing the Response Policy Rule.
+//   - responsePolicyRule: User assigned name of the Response Policy Rule
+//     addressed by this request.
 func (r *ResponsePolicyRulesService) Patch(project string, responsePolicy string, responsePolicyRule string, responsepolicyrule *ResponsePolicyRule) *ResponsePolicyRulesPatchCall {
 	c := &ResponsePolicyRulesPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -9911,11 +10085,11 @@ type ResponsePolicyRulesUpdateCall struct {
 
 // Update: Updates an existing Response Policy Rule.
 //
-// - project: Identifies the project addressed by this request.
-// - responsePolicy: User assigned name of the Response Policy
-//   containing the Response Policy Rule.
-// - responsePolicyRule: User assigned name of the Response Policy Rule
-//   addressed by this request.
+//   - project: Identifies the project addressed by this request.
+//   - responsePolicy: User assigned name of the Response Policy
+//     containing the Response Policy Rule.
+//   - responsePolicyRule: User assigned name of the Response Policy Rule
+//     addressed by this request.
 func (r *ResponsePolicyRulesService) Update(project string, responsePolicy string, responsePolicyRule string, responsepolicyrule *ResponsePolicyRule) *ResponsePolicyRulesUpdateCall {
 	c := &ResponsePolicyRulesUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project

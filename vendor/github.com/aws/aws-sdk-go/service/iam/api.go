@@ -29,14 +29,13 @@ const opAddClientIDToOpenIDConnectProvider = "AddClientIDToOpenIDConnectProvider
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddClientIDToOpenIDConnectProviderRequest method.
+//	req, resp := client.AddClientIDToOpenIDConnectProviderRequest(params)
 //
-//    // Example sending a request using the AddClientIDToOpenIDConnectProviderRequest method.
-//    req, resp := client.AddClientIDToOpenIDConnectProviderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/AddClientIDToOpenIDConnectProvider
 func (c *IAM) AddClientIDToOpenIDConnectProviderRequest(input *AddClientIDToOpenIDConnectProviderInput) (req *request.Request, output *AddClientIDToOpenIDConnectProviderOutput) {
@@ -72,22 +71,23 @@ func (c *IAM) AddClientIDToOpenIDConnectProviderRequest(input *AddClientIDToOpen
 // API operation AddClientIDToOpenIDConnectProvider for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
 //
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/AddClientIDToOpenIDConnectProvider
 func (c *IAM) AddClientIDToOpenIDConnectProvider(input *AddClientIDToOpenIDConnectProviderInput) (*AddClientIDToOpenIDConnectProviderOutput, error) {
@@ -127,14 +127,13 @@ const opAddRoleToInstanceProfile = "AddRoleToInstanceProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddRoleToInstanceProfileRequest method.
+//	req, resp := client.AddRoleToInstanceProfileRequest(params)
 //
-//    // Example sending a request using the AddRoleToInstanceProfileRequest method.
-//    req, resp := client.AddRoleToInstanceProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/AddRoleToInstanceProfile
 func (c *IAM) AddRoleToInstanceProfileRequest(input *AddRoleToInstanceProfileInput) (req *request.Request, output *AddRoleToInstanceProfileOutput) {
@@ -180,28 +179,29 @@ func (c *IAM) AddRoleToInstanceProfileRequest(input *AddRoleToInstanceProfileInp
 // API operation AddRoleToInstanceProfile for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
-//   The request was rejected because it attempted to create a resource that already
-//   exists.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
+//     The request was rejected because it attempted to create a resource that already
+//     exists.
 //
-//   * ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
-//   The request was rejected because only the service that depends on the service-linked
-//   role can modify or delete the role on your behalf. The error message includes
-//   the name of the service that depends on this service-linked role. You must
-//   request the change through that service.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
+//     The request was rejected because only the service that depends on the service-linked
+//     role can modify or delete the role on your behalf. The error message includes
+//     the name of the service that depends on this service-linked role. You must
+//     request the change through that service.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/AddRoleToInstanceProfile
 func (c *IAM) AddRoleToInstanceProfile(input *AddRoleToInstanceProfileInput) (*AddRoleToInstanceProfileOutput, error) {
@@ -241,14 +241,13 @@ const opAddUserToGroup = "AddUserToGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddUserToGroupRequest method.
+//	req, resp := client.AddUserToGroupRequest(params)
 //
-//    // Example sending a request using the AddUserToGroupRequest method.
-//    req, resp := client.AddUserToGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/AddUserToGroup
 func (c *IAM) AddUserToGroupRequest(input *AddUserToGroupInput) (req *request.Request, output *AddUserToGroupOutput) {
@@ -280,18 +279,19 @@ func (c *IAM) AddUserToGroupRequest(input *AddUserToGroupInput) (req *request.Re
 // API operation AddUserToGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/AddUserToGroup
 func (c *IAM) AddUserToGroup(input *AddUserToGroupInput) (*AddUserToGroupOutput, error) {
@@ -331,14 +331,13 @@ const opAttachGroupPolicy = "AttachGroupPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AttachGroupPolicyRequest method.
+//	req, resp := client.AttachGroupPolicyRequest(params)
 //
-//    // Example sending a request using the AttachGroupPolicyRequest method.
-//    req, resp := client.AttachGroupPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/AttachGroupPolicy
 func (c *IAM) AttachGroupPolicyRequest(input *AttachGroupPolicyInput) (req *request.Request, output *AttachGroupPolicyOutput) {
@@ -381,26 +380,27 @@ func (c *IAM) AttachGroupPolicyRequest(input *AttachGroupPolicyInput) (req *requ
 // API operation AttachGroupPolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodePolicyNotAttachableException "PolicyNotAttachable"
-//   The request failed because Amazon Web Services service role policies can
-//   only be attached to the service-linked role for that service.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodePolicyNotAttachableException "PolicyNotAttachable"
+//     The request failed because Amazon Web Services service role policies can
+//     only be attached to the service-linked role for that service.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/AttachGroupPolicy
 func (c *IAM) AttachGroupPolicy(input *AttachGroupPolicyInput) (*AttachGroupPolicyOutput, error) {
@@ -440,14 +440,13 @@ const opAttachRolePolicy = "AttachRolePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AttachRolePolicyRequest method.
+//	req, resp := client.AttachRolePolicyRequest(params)
 //
-//    // Example sending a request using the AttachRolePolicyRequest method.
-//    req, resp := client.AttachRolePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/AttachRolePolicy
 func (c *IAM) AttachRolePolicyRequest(input *AttachRolePolicyInput) (req *request.Request, output *AttachRolePolicyOutput) {
@@ -494,32 +493,33 @@ func (c *IAM) AttachRolePolicyRequest(input *AttachRolePolicyInput) (req *reques
 // API operation AttachRolePolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
-//   The request was rejected because only the service that depends on the service-linked
-//   role can modify or delete the role on your behalf. The error message includes
-//   the name of the service that depends on this service-linked role. You must
-//   request the change through that service.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodePolicyNotAttachableException "PolicyNotAttachable"
-//   The request failed because Amazon Web Services service role policies can
-//   only be attached to the service-linked role for that service.
+//   - ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
+//     The request was rejected because only the service that depends on the service-linked
+//     role can modify or delete the role on your behalf. The error message includes
+//     the name of the service that depends on this service-linked role. You must
+//     request the change through that service.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodePolicyNotAttachableException "PolicyNotAttachable"
+//     The request failed because Amazon Web Services service role policies can
+//     only be attached to the service-linked role for that service.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/AttachRolePolicy
 func (c *IAM) AttachRolePolicy(input *AttachRolePolicyInput) (*AttachRolePolicyOutput, error) {
@@ -559,14 +559,13 @@ const opAttachUserPolicy = "AttachUserPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AttachUserPolicyRequest method.
+//	req, resp := client.AttachUserPolicyRequest(params)
 //
-//    // Example sending a request using the AttachUserPolicyRequest method.
-//    req, resp := client.AttachUserPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/AttachUserPolicy
 func (c *IAM) AttachUserPolicyRequest(input *AttachUserPolicyInput) (req *request.Request, output *AttachUserPolicyOutput) {
@@ -609,26 +608,27 @@ func (c *IAM) AttachUserPolicyRequest(input *AttachUserPolicyInput) (req *reques
 // API operation AttachUserPolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodePolicyNotAttachableException "PolicyNotAttachable"
-//   The request failed because Amazon Web Services service role policies can
-//   only be attached to the service-linked role for that service.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodePolicyNotAttachableException "PolicyNotAttachable"
+//     The request failed because Amazon Web Services service role policies can
+//     only be attached to the service-linked role for that service.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/AttachUserPolicy
 func (c *IAM) AttachUserPolicy(input *AttachUserPolicyInput) (*AttachUserPolicyOutput, error) {
@@ -668,14 +668,13 @@ const opChangePassword = "ChangePassword"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ChangePasswordRequest method.
+//	req, resp := client.ChangePasswordRequest(params)
 //
-//    // Example sending a request using the ChangePasswordRequest method.
-//    req, resp := client.ChangePasswordRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ChangePassword
 func (c *IAM) ChangePasswordRequest(input *ChangePasswordInput) (req *request.Request, output *ChangePasswordOutput) {
@@ -716,32 +715,33 @@ func (c *IAM) ChangePasswordRequest(input *ChangePasswordInput) (req *request.Re
 // API operation ChangePassword for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidUserTypeException "InvalidUserType"
-//   The request was rejected because the type of user for the transaction was
-//   incorrect.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeInvalidUserTypeException "InvalidUserType"
+//     The request was rejected because the type of user for the transaction was
+//     incorrect.
 //
-//   * ErrCodeEntityTemporarilyUnmodifiableException "EntityTemporarilyUnmodifiable"
-//   The request was rejected because it referenced an entity that is temporarily
-//   unmodifiable, such as a user name that was deleted and then recreated. The
-//   error indicates that the request is likely to succeed if you try again after
-//   waiting several minutes. The error message describes the entity.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodePasswordPolicyViolationException "PasswordPolicyViolation"
-//   The request was rejected because the provided password did not meet the requirements
-//   imposed by the account password policy.
+//   - ErrCodeEntityTemporarilyUnmodifiableException "EntityTemporarilyUnmodifiable"
+//     The request was rejected because it referenced an entity that is temporarily
+//     unmodifiable, such as a user name that was deleted and then recreated. The
+//     error indicates that the request is likely to succeed if you try again after
+//     waiting several minutes. The error message describes the entity.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodePasswordPolicyViolationException "PasswordPolicyViolation"
+//     The request was rejected because the provided password did not meet the requirements
+//     imposed by the account password policy.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ChangePassword
 func (c *IAM) ChangePassword(input *ChangePasswordInput) (*ChangePasswordOutput, error) {
@@ -781,14 +781,13 @@ const opCreateAccessKey = "CreateAccessKey"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAccessKeyRequest method.
+//	req, resp := client.CreateAccessKeyRequest(params)
 //
-//    // Example sending a request using the CreateAccessKeyRequest method.
-//    req, resp := client.CreateAccessKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/CreateAccessKey
 func (c *IAM) CreateAccessKeyRequest(input *CreateAccessKeyInput) (req *request.Request, output *CreateAccessKeyOutput) {
@@ -838,18 +837,19 @@ func (c *IAM) CreateAccessKeyRequest(input *CreateAccessKeyInput) (req *request.
 // API operation CreateAccessKey for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/CreateAccessKey
 func (c *IAM) CreateAccessKey(input *CreateAccessKeyInput) (*CreateAccessKeyOutput, error) {
@@ -889,14 +889,13 @@ const opCreateAccountAlias = "CreateAccountAlias"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAccountAliasRequest method.
+//	req, resp := client.CreateAccountAliasRequest(params)
 //
-//    // Example sending a request using the CreateAccountAliasRequest method.
-//    req, resp := client.CreateAccountAliasRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/CreateAccountAlias
 func (c *IAM) CreateAccountAliasRequest(input *CreateAccountAliasInput) (req *request.Request, output *CreateAccountAliasOutput) {
@@ -931,18 +930,19 @@ func (c *IAM) CreateAccountAliasRequest(input *CreateAccountAliasInput) (req *re
 // API operation CreateAccountAlias for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
-//   The request was rejected because it attempted to create a resource that already
-//   exists.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
+//     The request was rejected because it attempted to create a resource that already
+//     exists.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/CreateAccountAlias
 func (c *IAM) CreateAccountAlias(input *CreateAccountAliasInput) (*CreateAccountAliasOutput, error) {
@@ -982,14 +982,13 @@ const opCreateGroup = "CreateGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateGroupRequest method.
+//	req, resp := client.CreateGroupRequest(params)
 //
-//    // Example sending a request using the CreateGroupRequest method.
-//    req, resp := client.CreateGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/CreateGroup
 func (c *IAM) CreateGroupRequest(input *CreateGroupInput) (req *request.Request, output *CreateGroupOutput) {
@@ -1024,22 +1023,23 @@ func (c *IAM) CreateGroupRequest(input *CreateGroupInput) (req *request.Request,
 // API operation CreateGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
 //
-//   * ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
-//   The request was rejected because it attempted to create a resource that already
-//   exists.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
+//   - ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
+//     The request was rejected because it attempted to create a resource that already
+//     exists.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/CreateGroup
 func (c *IAM) CreateGroup(input *CreateGroupInput) (*CreateGroupOutput, error) {
@@ -1079,14 +1079,13 @@ const opCreateInstanceProfile = "CreateInstanceProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateInstanceProfileRequest method.
+//	req, resp := client.CreateInstanceProfileRequest(params)
 //
-//    // Example sending a request using the CreateInstanceProfileRequest method.
-//    req, resp := client.CreateInstanceProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/CreateInstanceProfile
 func (c *IAM) CreateInstanceProfileRequest(input *CreateInstanceProfileInput) (req *request.Request, output *CreateInstanceProfileOutput) {
@@ -1124,27 +1123,28 @@ func (c *IAM) CreateInstanceProfileRequest(input *CreateInstanceProfileInput) (r
 // API operation CreateInstanceProfile for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
-//   The request was rejected because it attempted to create a resource that already
-//   exists.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
+//     The request was rejected because it attempted to create a resource that already
+//     exists.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeConcurrentModificationException "ConcurrentModification"
-//   The request was rejected because multiple requests to change this object
-//   were submitted simultaneously. Wait a few minutes and submit your request
-//   again.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/CreateInstanceProfile
 func (c *IAM) CreateInstanceProfile(input *CreateInstanceProfileInput) (*CreateInstanceProfileOutput, error) {
@@ -1184,14 +1184,13 @@ const opCreateLoginProfile = "CreateLoginProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateLoginProfileRequest method.
+//	req, resp := client.CreateLoginProfileRequest(params)
 //
-//    // Example sending a request using the CreateLoginProfileRequest method.
-//    req, resp := client.CreateLoginProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/CreateLoginProfile
 func (c *IAM) CreateLoginProfileRequest(input *CreateLoginProfileInput) (req *request.Request, output *CreateLoginProfileOutput) {
@@ -1232,26 +1231,27 @@ func (c *IAM) CreateLoginProfileRequest(input *CreateLoginProfileInput) (req *re
 // API operation CreateLoginProfile for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
-//   The request was rejected because it attempted to create a resource that already
-//   exists.
 //
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
+//   - ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
+//     The request was rejected because it attempted to create a resource that already
+//     exists.
 //
-//   * ErrCodePasswordPolicyViolationException "PasswordPolicyViolation"
-//   The request was rejected because the provided password did not meet the requirements
-//   imposed by the account password policy.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodePasswordPolicyViolationException "PasswordPolicyViolation"
+//     The request was rejected because the provided password did not meet the requirements
+//     imposed by the account password policy.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/CreateLoginProfile
 func (c *IAM) CreateLoginProfile(input *CreateLoginProfileInput) (*CreateLoginProfileOutput, error) {
@@ -1291,14 +1291,13 @@ const opCreateOpenIDConnectProvider = "CreateOpenIDConnectProvider"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateOpenIDConnectProviderRequest method.
+//	req, resp := client.CreateOpenIDConnectProviderRequest(params)
 //
-//    // Example sending a request using the CreateOpenIDConnectProviderRequest method.
-//    req, resp := client.CreateOpenIDConnectProviderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/CreateOpenIDConnectProvider
 func (c *IAM) CreateOpenIDConnectProviderRequest(input *CreateOpenIDConnectProviderInput) (req *request.Request, output *CreateOpenIDConnectProviderOutput) {
@@ -1336,13 +1335,13 @@ func (c *IAM) CreateOpenIDConnectProviderRequest(input *CreateOpenIDConnectProvi
 //
 // When you create the IAM OIDC provider, you specify the following:
 //
-//    * The URL of the OIDC identity provider (IdP) to trust
+//   - The URL of the OIDC identity provider (IdP) to trust
 //
-//    * A list of client IDs (also known as audiences) that identify the application
-//    or applications allowed to authenticate using the OIDC provider
+//   - A list of client IDs (also known as audiences) that identify the application
+//     or applications allowed to authenticate using the OIDC provider
 //
-//    * A list of thumbprints of one or more server certificates that the IdP
-//    uses
+//   - A list of thumbprints of one or more server certificates that the IdP
+//     uses
 //
 // You get all of this information from the OIDC IdP you want to use to access
 // Amazon Web Services.
@@ -1366,27 +1365,28 @@ func (c *IAM) CreateOpenIDConnectProviderRequest(input *CreateOpenIDConnectProvi
 // API operation CreateOpenIDConnectProvider for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
 //
-//   * ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
-//   The request was rejected because it attempted to create a resource that already
-//   exists.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
+//     The request was rejected because it attempted to create a resource that already
+//     exists.
 //
-//   * ErrCodeConcurrentModificationException "ConcurrentModification"
-//   The request was rejected because multiple requests to change this object
-//   were submitted simultaneously. Wait a few minutes and submit your request
-//   again.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/CreateOpenIDConnectProvider
 func (c *IAM) CreateOpenIDConnectProvider(input *CreateOpenIDConnectProviderInput) (*CreateOpenIDConnectProviderOutput, error) {
@@ -1426,14 +1426,13 @@ const opCreatePolicy = "CreatePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePolicyRequest method.
+//	req, resp := client.CreatePolicyRequest(params)
 //
-//    // Example sending a request using the CreatePolicyRequest method.
-//    req, resp := client.CreatePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/CreatePolicy
 func (c *IAM) CreatePolicyRequest(input *CreatePolicyInput) (req *request.Request, output *CreatePolicyOutput) {
@@ -1477,31 +1476,32 @@ func (c *IAM) CreatePolicyRequest(input *CreatePolicyInput) (req *request.Reques
 // API operation CreatePolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
-//   The request was rejected because it attempted to create a resource that already
-//   exists.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeMalformedPolicyDocumentException "MalformedPolicyDocument"
-//   The request was rejected because the policy document was malformed. The error
-//   message describes the specific error.
+//   - ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
+//     The request was rejected because it attempted to create a resource that already
+//     exists.
 //
-//   * ErrCodeConcurrentModificationException "ConcurrentModification"
-//   The request was rejected because multiple requests to change this object
-//   were submitted simultaneously. Wait a few minutes and submit your request
-//   again.
+//   - ErrCodeMalformedPolicyDocumentException "MalformedPolicyDocument"
+//     The request was rejected because the policy document was malformed. The error
+//     message describes the specific error.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/CreatePolicy
 func (c *IAM) CreatePolicy(input *CreatePolicyInput) (*CreatePolicyOutput, error) {
@@ -1541,14 +1541,13 @@ const opCreatePolicyVersion = "CreatePolicyVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePolicyVersionRequest method.
+//	req, resp := client.CreatePolicyVersionRequest(params)
 //
-//    // Example sending a request using the CreatePolicyVersionRequest method.
-//    req, resp := client.CreatePolicyVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/CreatePolicyVersion
 func (c *IAM) CreatePolicyVersionRequest(input *CreatePolicyVersionInput) (req *request.Request, output *CreatePolicyVersionOutput) {
@@ -1590,26 +1589,27 @@ func (c *IAM) CreatePolicyVersionRequest(input *CreatePolicyVersionInput) (req *
 // API operation CreatePolicyVersion for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeMalformedPolicyDocumentException "MalformedPolicyDocument"
-//   The request was rejected because the policy document was malformed. The error
-//   message describes the specific error.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeMalformedPolicyDocumentException "MalformedPolicyDocument"
+//     The request was rejected because the policy document was malformed. The error
+//     message describes the specific error.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/CreatePolicyVersion
 func (c *IAM) CreatePolicyVersion(input *CreatePolicyVersionInput) (*CreatePolicyVersionOutput, error) {
@@ -1649,14 +1649,13 @@ const opCreateRole = "CreateRole"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateRoleRequest method.
+//	req, resp := client.CreateRoleRequest(params)
 //
-//    // Example sending a request using the CreateRoleRequest method.
-//    req, resp := client.CreateRoleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/CreateRole
 func (c *IAM) CreateRoleRequest(input *CreateRoleInput) (req *request.Request, output *CreateRoleOutput) {
@@ -1691,31 +1690,32 @@ func (c *IAM) CreateRoleRequest(input *CreateRoleInput) (req *request.Request, o
 // API operation CreateRole for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
-//   The request was rejected because it attempted to create a resource that already
-//   exists.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeMalformedPolicyDocumentException "MalformedPolicyDocument"
-//   The request was rejected because the policy document was malformed. The error
-//   message describes the specific error.
+//   - ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
+//     The request was rejected because it attempted to create a resource that already
+//     exists.
 //
-//   * ErrCodeConcurrentModificationException "ConcurrentModification"
-//   The request was rejected because multiple requests to change this object
-//   were submitted simultaneously. Wait a few minutes and submit your request
-//   again.
+//   - ErrCodeMalformedPolicyDocumentException "MalformedPolicyDocument"
+//     The request was rejected because the policy document was malformed. The error
+//     message describes the specific error.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/CreateRole
 func (c *IAM) CreateRole(input *CreateRoleInput) (*CreateRoleOutput, error) {
@@ -1755,14 +1755,13 @@ const opCreateSAMLProvider = "CreateSAMLProvider"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSAMLProviderRequest method.
+//	req, resp := client.CreateSAMLProviderRequest(params)
 //
-//    // Example sending a request using the CreateSAMLProviderRequest method.
-//    req, resp := client.CreateSAMLProviderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/CreateSAMLProvider
 func (c *IAM) CreateSAMLProviderRequest(input *CreateSAMLProviderInput) (req *request.Request, output *CreateSAMLProviderOutput) {
@@ -1814,27 +1813,28 @@ func (c *IAM) CreateSAMLProviderRequest(input *CreateSAMLProviderInput) (req *re
 // API operation CreateSAMLProvider for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
 //
-//   * ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
-//   The request was rejected because it attempted to create a resource that already
-//   exists.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
+//     The request was rejected because it attempted to create a resource that already
+//     exists.
 //
-//   * ErrCodeConcurrentModificationException "ConcurrentModification"
-//   The request was rejected because multiple requests to change this object
-//   were submitted simultaneously. Wait a few minutes and submit your request
-//   again.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/CreateSAMLProvider
 func (c *IAM) CreateSAMLProvider(input *CreateSAMLProviderInput) (*CreateSAMLProviderOutput, error) {
@@ -1874,14 +1874,13 @@ const opCreateServiceLinkedRole = "CreateServiceLinkedRole"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateServiceLinkedRoleRequest method.
+//	req, resp := client.CreateServiceLinkedRoleRequest(params)
 //
-//    // Example sending a request using the CreateServiceLinkedRoleRequest method.
-//    req, resp := client.CreateServiceLinkedRoleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/CreateServiceLinkedRole
 func (c *IAM) CreateServiceLinkedRoleRequest(input *CreateServiceLinkedRoleInput) (req *request.Request, output *CreateServiceLinkedRoleOutput) {
@@ -1922,22 +1921,23 @@ func (c *IAM) CreateServiceLinkedRoleRequest(input *CreateServiceLinkedRoleInput
 // API operation CreateServiceLinkedRole for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/CreateServiceLinkedRole
 func (c *IAM) CreateServiceLinkedRole(input *CreateServiceLinkedRoleInput) (*CreateServiceLinkedRoleOutput, error) {
@@ -1977,14 +1977,13 @@ const opCreateServiceSpecificCredential = "CreateServiceSpecificCredential"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateServiceSpecificCredentialRequest method.
+//	req, resp := client.CreateServiceSpecificCredentialRequest(params)
 //
-//    // Example sending a request using the CreateServiceSpecificCredentialRequest method.
-//    req, resp := client.CreateServiceSpecificCredentialRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/CreateServiceSpecificCredential
 func (c *IAM) CreateServiceSpecificCredentialRequest(input *CreateServiceSpecificCredentialInput) (req *request.Request, output *CreateServiceSpecificCredentialOutput) {
@@ -2030,17 +2029,18 @@ func (c *IAM) CreateServiceSpecificCredentialRequest(input *CreateServiceSpecifi
 // API operation CreateServiceSpecificCredential for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
 //
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeServiceNotSupportedException "NotSupportedService"
-//   The specified service does not support service-specific credentials.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceNotSupportedException "NotSupportedService"
+//     The specified service does not support service-specific credentials.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/CreateServiceSpecificCredential
 func (c *IAM) CreateServiceSpecificCredential(input *CreateServiceSpecificCredentialInput) (*CreateServiceSpecificCredentialOutput, error) {
@@ -2080,14 +2080,13 @@ const opCreateUser = "CreateUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateUserRequest method.
+//	req, resp := client.CreateUserRequest(params)
 //
-//    // Example sending a request using the CreateUserRequest method.
-//    req, resp := client.CreateUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/CreateUser
 func (c *IAM) CreateUserRequest(input *CreateUserInput) (req *request.Request, output *CreateUserOutput) {
@@ -2122,31 +2121,32 @@ func (c *IAM) CreateUserRequest(input *CreateUserInput) (req *request.Request, o
 // API operation CreateUser for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
 //
-//   * ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
-//   The request was rejected because it attempted to create a resource that already
-//   exists.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
+//   - ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
+//     The request was rejected because it attempted to create a resource that already
+//     exists.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeConcurrentModificationException "ConcurrentModification"
-//   The request was rejected because multiple requests to change this object
-//   were submitted simultaneously. Wait a few minutes and submit your request
-//   again.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/CreateUser
 func (c *IAM) CreateUser(input *CreateUserInput) (*CreateUserOutput, error) {
@@ -2186,14 +2186,13 @@ const opCreateVirtualMFADevice = "CreateVirtualMFADevice"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateVirtualMFADeviceRequest method.
+//	req, resp := client.CreateVirtualMFADeviceRequest(params)
 //
-//    // Example sending a request using the CreateVirtualMFADeviceRequest method.
-//    req, resp := client.CreateVirtualMFADeviceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/CreateVirtualMFADevice
 func (c *IAM) CreateVirtualMFADeviceRequest(input *CreateVirtualMFADeviceInput) (req *request.Request, output *CreateVirtualMFADeviceOutput) {
@@ -2238,27 +2237,28 @@ func (c *IAM) CreateVirtualMFADeviceRequest(input *CreateVirtualMFADeviceInput) 
 // API operation CreateVirtualMFADevice for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
-//   The request was rejected because it attempted to create a resource that already
-//   exists.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeConcurrentModificationException "ConcurrentModification"
-//   The request was rejected because multiple requests to change this object
-//   were submitted simultaneously. Wait a few minutes and submit your request
-//   again.
+//   - ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
+//     The request was rejected because it attempted to create a resource that already
+//     exists.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/CreateVirtualMFADevice
 func (c *IAM) CreateVirtualMFADevice(input *CreateVirtualMFADeviceInput) (*CreateVirtualMFADeviceOutput, error) {
@@ -2298,14 +2298,13 @@ const opDeactivateMFADevice = "DeactivateMFADevice"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeactivateMFADeviceRequest method.
+//	req, resp := client.DeactivateMFADeviceRequest(params)
 //
-//    // Example sending a request using the DeactivateMFADeviceRequest method.
-//    req, resp := client.DeactivateMFADeviceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeactivateMFADevice
 func (c *IAM) DeactivateMFADeviceRequest(input *DeactivateMFADeviceInput) (req *request.Request, output *DeactivateMFADeviceOutput) {
@@ -2342,24 +2341,25 @@ func (c *IAM) DeactivateMFADeviceRequest(input *DeactivateMFADeviceInput) (req *
 // API operation DeactivateMFADevice for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeEntityTemporarilyUnmodifiableException "EntityTemporarilyUnmodifiable"
-//   The request was rejected because it referenced an entity that is temporarily
-//   unmodifiable, such as a user name that was deleted and then recreated. The
-//   error indicates that the request is likely to succeed if you try again after
-//   waiting several minutes. The error message describes the entity.
 //
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
+//   - ErrCodeEntityTemporarilyUnmodifiableException "EntityTemporarilyUnmodifiable"
+//     The request was rejected because it referenced an entity that is temporarily
+//     unmodifiable, such as a user name that was deleted and then recreated. The
+//     error indicates that the request is likely to succeed if you try again after
+//     waiting several minutes. The error message describes the entity.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeactivateMFADevice
 func (c *IAM) DeactivateMFADevice(input *DeactivateMFADeviceInput) (*DeactivateMFADeviceOutput, error) {
@@ -2399,14 +2399,13 @@ const opDeleteAccessKey = "DeleteAccessKey"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAccessKeyRequest method.
+//	req, resp := client.DeleteAccessKeyRequest(params)
 //
-//    // Example sending a request using the DeleteAccessKeyRequest method.
-//    req, resp := client.DeleteAccessKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteAccessKey
 func (c *IAM) DeleteAccessKeyRequest(input *DeleteAccessKeyInput) (req *request.Request, output *DeleteAccessKeyOutput) {
@@ -2444,18 +2443,19 @@ func (c *IAM) DeleteAccessKeyRequest(input *DeleteAccessKeyInput) (req *request.
 // API operation DeleteAccessKey for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteAccessKey
 func (c *IAM) DeleteAccessKey(input *DeleteAccessKeyInput) (*DeleteAccessKeyOutput, error) {
@@ -2495,14 +2495,13 @@ const opDeleteAccountAlias = "DeleteAccountAlias"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAccountAliasRequest method.
+//	req, resp := client.DeleteAccountAliasRequest(params)
 //
-//    // Example sending a request using the DeleteAccountAliasRequest method.
-//    req, resp := client.DeleteAccountAliasRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteAccountAlias
 func (c *IAM) DeleteAccountAliasRequest(input *DeleteAccountAliasInput) (req *request.Request, output *DeleteAccountAliasOutput) {
@@ -2537,18 +2536,19 @@ func (c *IAM) DeleteAccountAliasRequest(input *DeleteAccountAliasInput) (req *re
 // API operation DeleteAccountAlias for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteAccountAlias
 func (c *IAM) DeleteAccountAlias(input *DeleteAccountAliasInput) (*DeleteAccountAliasOutput, error) {
@@ -2588,14 +2588,13 @@ const opDeleteAccountPasswordPolicy = "DeleteAccountPasswordPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAccountPasswordPolicyRequest method.
+//	req, resp := client.DeleteAccountPasswordPolicyRequest(params)
 //
-//    // Example sending a request using the DeleteAccountPasswordPolicyRequest method.
-//    req, resp := client.DeleteAccountPasswordPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteAccountPasswordPolicy
 func (c *IAM) DeleteAccountPasswordPolicyRequest(input *DeleteAccountPasswordPolicyInput) (req *request.Request, output *DeleteAccountPasswordPolicyOutput) {
@@ -2628,18 +2627,19 @@ func (c *IAM) DeleteAccountPasswordPolicyRequest(input *DeleteAccountPasswordPol
 // API operation DeleteAccountPasswordPolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteAccountPasswordPolicy
 func (c *IAM) DeleteAccountPasswordPolicy(input *DeleteAccountPasswordPolicyInput) (*DeleteAccountPasswordPolicyOutput, error) {
@@ -2679,14 +2679,13 @@ const opDeleteGroup = "DeleteGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteGroupRequest method.
+//	req, resp := client.DeleteGroupRequest(params)
 //
-//    // Example sending a request using the DeleteGroupRequest method.
-//    req, resp := client.DeleteGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteGroup
 func (c *IAM) DeleteGroupRequest(input *DeleteGroupInput) (req *request.Request, output *DeleteGroupOutput) {
@@ -2719,22 +2718,23 @@ func (c *IAM) DeleteGroupRequest(input *DeleteGroupInput) (req *request.Request,
 // API operation DeleteGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeDeleteConflictException "DeleteConflict"
-//   The request was rejected because it attempted to delete a resource that has
-//   attached subordinate entities. The error message describes these entities.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeDeleteConflictException "DeleteConflict"
+//     The request was rejected because it attempted to delete a resource that has
+//     attached subordinate entities. The error message describes these entities.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteGroup
 func (c *IAM) DeleteGroup(input *DeleteGroupInput) (*DeleteGroupOutput, error) {
@@ -2774,14 +2774,13 @@ const opDeleteGroupPolicy = "DeleteGroupPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteGroupPolicyRequest method.
+//	req, resp := client.DeleteGroupPolicyRequest(params)
 //
-//    // Example sending a request using the DeleteGroupPolicyRequest method.
-//    req, resp := client.DeleteGroupPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteGroupPolicy
 func (c *IAM) DeleteGroupPolicyRequest(input *DeleteGroupPolicyInput) (req *request.Request, output *DeleteGroupPolicyOutput) {
@@ -2819,18 +2818,19 @@ func (c *IAM) DeleteGroupPolicyRequest(input *DeleteGroupPolicyInput) (req *requ
 // API operation DeleteGroupPolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteGroupPolicy
 func (c *IAM) DeleteGroupPolicy(input *DeleteGroupPolicyInput) (*DeleteGroupPolicyOutput, error) {
@@ -2870,14 +2870,13 @@ const opDeleteInstanceProfile = "DeleteInstanceProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteInstanceProfileRequest method.
+//	req, resp := client.DeleteInstanceProfileRequest(params)
 //
-//    // Example sending a request using the DeleteInstanceProfileRequest method.
-//    req, resp := client.DeleteInstanceProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteInstanceProfile
 func (c *IAM) DeleteInstanceProfileRequest(input *DeleteInstanceProfileInput) (req *request.Request, output *DeleteInstanceProfileOutput) {
@@ -2918,22 +2917,23 @@ func (c *IAM) DeleteInstanceProfileRequest(input *DeleteInstanceProfileInput) (r
 // API operation DeleteInstanceProfile for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeDeleteConflictException "DeleteConflict"
-//   The request was rejected because it attempted to delete a resource that has
-//   attached subordinate entities. The error message describes these entities.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeDeleteConflictException "DeleteConflict"
+//     The request was rejected because it attempted to delete a resource that has
+//     attached subordinate entities. The error message describes these entities.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteInstanceProfile
 func (c *IAM) DeleteInstanceProfile(input *DeleteInstanceProfileInput) (*DeleteInstanceProfileOutput, error) {
@@ -2973,14 +2973,13 @@ const opDeleteLoginProfile = "DeleteLoginProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteLoginProfileRequest method.
+//	req, resp := client.DeleteLoginProfileRequest(params)
 //
-//    // Example sending a request using the DeleteLoginProfileRequest method.
-//    req, resp := client.DeleteLoginProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteLoginProfile
 func (c *IAM) DeleteLoginProfileRequest(input *DeleteLoginProfileInput) (req *request.Request, output *DeleteLoginProfileOutput) {
@@ -3025,24 +3024,25 @@ func (c *IAM) DeleteLoginProfileRequest(input *DeleteLoginProfileInput) (req *re
 // API operation DeleteLoginProfile for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeEntityTemporarilyUnmodifiableException "EntityTemporarilyUnmodifiable"
-//   The request was rejected because it referenced an entity that is temporarily
-//   unmodifiable, such as a user name that was deleted and then recreated. The
-//   error indicates that the request is likely to succeed if you try again after
-//   waiting several minutes. The error message describes the entity.
 //
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
+//   - ErrCodeEntityTemporarilyUnmodifiableException "EntityTemporarilyUnmodifiable"
+//     The request was rejected because it referenced an entity that is temporarily
+//     unmodifiable, such as a user name that was deleted and then recreated. The
+//     error indicates that the request is likely to succeed if you try again after
+//     waiting several minutes. The error message describes the entity.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteLoginProfile
 func (c *IAM) DeleteLoginProfile(input *DeleteLoginProfileInput) (*DeleteLoginProfileOutput, error) {
@@ -3082,14 +3082,13 @@ const opDeleteOpenIDConnectProvider = "DeleteOpenIDConnectProvider"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteOpenIDConnectProviderRequest method.
+//	req, resp := client.DeleteOpenIDConnectProviderRequest(params)
 //
-//    // Example sending a request using the DeleteOpenIDConnectProviderRequest method.
-//    req, resp := client.DeleteOpenIDConnectProviderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteOpenIDConnectProvider
 func (c *IAM) DeleteOpenIDConnectProviderRequest(input *DeleteOpenIDConnectProviderInput) (req *request.Request, output *DeleteOpenIDConnectProviderOutput) {
@@ -3128,17 +3127,18 @@ func (c *IAM) DeleteOpenIDConnectProviderRequest(input *DeleteOpenIDConnectProvi
 // API operation DeleteOpenIDConnectProvider for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
 //
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteOpenIDConnectProvider
 func (c *IAM) DeleteOpenIDConnectProvider(input *DeleteOpenIDConnectProviderInput) (*DeleteOpenIDConnectProviderOutput, error) {
@@ -3178,14 +3178,13 @@ const opDeletePolicy = "DeletePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePolicyRequest method.
+//	req, resp := client.DeletePolicyRequest(params)
 //
-//    // Example sending a request using the DeletePolicyRequest method.
-//    req, resp := client.DeletePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeletePolicy
 func (c *IAM) DeletePolicyRequest(input *DeletePolicyInput) (req *request.Request, output *DeletePolicyOutput) {
@@ -3214,18 +3213,18 @@ func (c *IAM) DeletePolicyRequest(input *DeletePolicyInput) (req *request.Reques
 // must delete all the policy's versions. The following steps describe the process
 // for deleting a managed policy:
 //
-//    * Detach the policy from all users, groups, and roles that the policy
-//    is attached to, using DetachUserPolicy, DetachGroupPolicy, or DetachRolePolicy.
-//    To list all the users, groups, and roles that a policy is attached to,
-//    use ListEntitiesForPolicy.
+//   - Detach the policy from all users, groups, and roles that the policy
+//     is attached to, using DetachUserPolicy, DetachGroupPolicy, or DetachRolePolicy.
+//     To list all the users, groups, and roles that a policy is attached to,
+//     use ListEntitiesForPolicy.
 //
-//    * Delete all versions of the policy using DeletePolicyVersion. To list
-//    the policy's versions, use ListPolicyVersions. You cannot use DeletePolicyVersion
-//    to delete the version that is marked as the default version. You delete
-//    the policy's default version in the next step of the process.
+//   - Delete all versions of the policy using DeletePolicyVersion. To list
+//     the policy's versions, use ListPolicyVersions. You cannot use DeletePolicyVersion
+//     to delete the version that is marked as the default version. You delete
+//     the policy's default version in the next step of the process.
 //
-//    * Delete the policy (this automatically deletes the policy's default version)
-//    using this operation.
+//   - Delete the policy (this automatically deletes the policy's default version)
+//     using this operation.
 //
 // For information about managed policies, see Managed policies and inline policies
 // (https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html)
@@ -3239,26 +3238,27 @@ func (c *IAM) DeletePolicyRequest(input *DeletePolicyInput) (req *request.Reques
 // API operation DeletePolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeDeleteConflictException "DeleteConflict"
-//   The request was rejected because it attempted to delete a resource that has
-//   attached subordinate entities. The error message describes these entities.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeDeleteConflictException "DeleteConflict"
+//     The request was rejected because it attempted to delete a resource that has
+//     attached subordinate entities. The error message describes these entities.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeletePolicy
 func (c *IAM) DeletePolicy(input *DeletePolicyInput) (*DeletePolicyOutput, error) {
@@ -3298,14 +3298,13 @@ const opDeletePolicyVersion = "DeletePolicyVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePolicyVersionRequest method.
+//	req, resp := client.DeletePolicyVersionRequest(params)
 //
-//    // Example sending a request using the DeletePolicyVersionRequest method.
-//    req, resp := client.DeletePolicyVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeletePolicyVersion
 func (c *IAM) DeletePolicyVersionRequest(input *DeletePolicyVersionInput) (req *request.Request, output *DeletePolicyVersionOutput) {
@@ -3345,26 +3344,27 @@ func (c *IAM) DeletePolicyVersionRequest(input *DeletePolicyVersionInput) (req *
 // API operation DeletePolicyVersion for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeDeleteConflictException "DeleteConflict"
-//   The request was rejected because it attempted to delete a resource that has
-//   attached subordinate entities. The error message describes these entities.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeDeleteConflictException "DeleteConflict"
+//     The request was rejected because it attempted to delete a resource that has
+//     attached subordinate entities. The error message describes these entities.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeletePolicyVersion
 func (c *IAM) DeletePolicyVersion(input *DeletePolicyVersionInput) (*DeletePolicyVersionOutput, error) {
@@ -3404,14 +3404,13 @@ const opDeleteRole = "DeleteRole"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRoleRequest method.
+//	req, resp := client.DeleteRoleRequest(params)
 //
-//    // Example sending a request using the DeleteRoleRequest method.
-//    req, resp := client.DeleteRoleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteRole
 func (c *IAM) DeleteRoleRequest(input *DeleteRoleInput) (req *request.Request, output *DeleteRoleOutput) {
@@ -3449,33 +3448,34 @@ func (c *IAM) DeleteRoleRequest(input *DeleteRoleInput) (req *request.Request, o
 // API operation DeleteRole for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeDeleteConflictException "DeleteConflict"
-//   The request was rejected because it attempted to delete a resource that has
-//   attached subordinate entities. The error message describes these entities.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeDeleteConflictException "DeleteConflict"
+//     The request was rejected because it attempted to delete a resource that has
+//     attached subordinate entities. The error message describes these entities.
 //
-//   * ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
-//   The request was rejected because only the service that depends on the service-linked
-//   role can modify or delete the role on your behalf. The error message includes
-//   the name of the service that depends on this service-linked role. You must
-//   request the change through that service.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeConcurrentModificationException "ConcurrentModification"
-//   The request was rejected because multiple requests to change this object
-//   were submitted simultaneously. Wait a few minutes and submit your request
-//   again.
+//   - ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
+//     The request was rejected because only the service that depends on the service-linked
+//     role can modify or delete the role on your behalf. The error message includes
+//     the name of the service that depends on this service-linked role. You must
+//     request the change through that service.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteRole
 func (c *IAM) DeleteRole(input *DeleteRoleInput) (*DeleteRoleOutput, error) {
@@ -3515,14 +3515,13 @@ const opDeleteRolePermissionsBoundary = "DeleteRolePermissionsBoundary"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRolePermissionsBoundaryRequest method.
+//	req, resp := client.DeleteRolePermissionsBoundaryRequest(params)
 //
-//    // Example sending a request using the DeleteRolePermissionsBoundaryRequest method.
-//    req, resp := client.DeleteRolePermissionsBoundaryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteRolePermissionsBoundary
 func (c *IAM) DeleteRolePermissionsBoundaryRequest(input *DeleteRolePermissionsBoundaryInput) (req *request.Request, output *DeleteRolePermissionsBoundaryOutput) {
@@ -3558,19 +3557,20 @@ func (c *IAM) DeleteRolePermissionsBoundaryRequest(input *DeleteRolePermissionsB
 // API operation DeleteRolePermissionsBoundary for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
-//   The request was rejected because only the service that depends on the service-linked
-//   role can modify or delete the role on your behalf. The error message includes
-//   the name of the service that depends on this service-linked role. You must
-//   request the change through that service.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
+//     The request was rejected because only the service that depends on the service-linked
+//     role can modify or delete the role on your behalf. The error message includes
+//     the name of the service that depends on this service-linked role. You must
+//     request the change through that service.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteRolePermissionsBoundary
 func (c *IAM) DeleteRolePermissionsBoundary(input *DeleteRolePermissionsBoundaryInput) (*DeleteRolePermissionsBoundaryOutput, error) {
@@ -3610,14 +3610,13 @@ const opDeleteRolePolicy = "DeleteRolePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRolePolicyRequest method.
+//	req, resp := client.DeleteRolePolicyRequest(params)
 //
-//    // Example sending a request using the DeleteRolePolicyRequest method.
-//    req, resp := client.DeleteRolePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteRolePolicy
 func (c *IAM) DeleteRolePolicyRequest(input *DeleteRolePolicyInput) (req *request.Request, output *DeleteRolePolicyOutput) {
@@ -3655,24 +3654,25 @@ func (c *IAM) DeleteRolePolicyRequest(input *DeleteRolePolicyInput) (req *reques
 // API operation DeleteRolePolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
-//   The request was rejected because only the service that depends on the service-linked
-//   role can modify or delete the role on your behalf. The error message includes
-//   the name of the service that depends on this service-linked role. You must
-//   request the change through that service.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
+//     The request was rejected because only the service that depends on the service-linked
+//     role can modify or delete the role on your behalf. The error message includes
+//     the name of the service that depends on this service-linked role. You must
+//     request the change through that service.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteRolePolicy
 func (c *IAM) DeleteRolePolicy(input *DeleteRolePolicyInput) (*DeleteRolePolicyOutput, error) {
@@ -3712,14 +3712,13 @@ const opDeleteSAMLProvider = "DeleteSAMLProvider"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSAMLProviderRequest method.
+//	req, resp := client.DeleteSAMLProviderRequest(params)
 //
-//    // Example sending a request using the DeleteSAMLProviderRequest method.
-//    req, resp := client.DeleteSAMLProviderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteSAMLProvider
 func (c *IAM) DeleteSAMLProviderRequest(input *DeleteSAMLProviderInput) (req *request.Request, output *DeleteSAMLProviderOutput) {
@@ -3758,22 +3757,23 @@ func (c *IAM) DeleteSAMLProviderRequest(input *DeleteSAMLProviderInput) (req *re
 // API operation DeleteSAMLProvider for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteSAMLProvider
 func (c *IAM) DeleteSAMLProvider(input *DeleteSAMLProviderInput) (*DeleteSAMLProviderOutput, error) {
@@ -3813,14 +3813,13 @@ const opDeleteSSHPublicKey = "DeleteSSHPublicKey"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSSHPublicKeyRequest method.
+//	req, resp := client.DeleteSSHPublicKeyRequest(params)
 //
-//    // Example sending a request using the DeleteSSHPublicKeyRequest method.
-//    req, resp := client.DeleteSSHPublicKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteSSHPublicKey
 func (c *IAM) DeleteSSHPublicKeyRequest(input *DeleteSSHPublicKeyInput) (req *request.Request, output *DeleteSSHPublicKeyOutput) {
@@ -3858,9 +3857,9 @@ func (c *IAM) DeleteSSHPublicKeyRequest(input *DeleteSSHPublicKeyInput) (req *re
 // API operation DeleteSSHPublicKey for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteSSHPublicKey
 func (c *IAM) DeleteSSHPublicKey(input *DeleteSSHPublicKeyInput) (*DeleteSSHPublicKeyOutput, error) {
@@ -3900,14 +3899,13 @@ const opDeleteServerCertificate = "DeleteServerCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteServerCertificateRequest method.
+//	req, resp := client.DeleteServerCertificateRequest(params)
 //
-//    // Example sending a request using the DeleteServerCertificateRequest method.
-//    req, resp := client.DeleteServerCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteServerCertificate
 func (c *IAM) DeleteServerCertificateRequest(input *DeleteServerCertificateInput) (req *request.Request, output *DeleteServerCertificateOutput) {
@@ -3954,22 +3952,23 @@ func (c *IAM) DeleteServerCertificateRequest(input *DeleteServerCertificateInput
 // API operation DeleteServerCertificate for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeDeleteConflictException "DeleteConflict"
-//   The request was rejected because it attempted to delete a resource that has
-//   attached subordinate entities. The error message describes these entities.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeDeleteConflictException "DeleteConflict"
+//     The request was rejected because it attempted to delete a resource that has
+//     attached subordinate entities. The error message describes these entities.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteServerCertificate
 func (c *IAM) DeleteServerCertificate(input *DeleteServerCertificateInput) (*DeleteServerCertificateOutput, error) {
@@ -4009,14 +4008,13 @@ const opDeleteServiceLinkedRole = "DeleteServiceLinkedRole"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteServiceLinkedRoleRequest method.
+//	req, resp := client.DeleteServiceLinkedRoleRequest(params)
 //
-//    // Example sending a request using the DeleteServiceLinkedRoleRequest method.
-//    req, resp := client.DeleteServiceLinkedRoleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteServiceLinkedRole
 func (c *IAM) DeleteServiceLinkedRoleRequest(input *DeleteServiceLinkedRoleInput) (req *request.Request, output *DeleteServiceLinkedRoleOutput) {
@@ -4066,18 +4064,19 @@ func (c *IAM) DeleteServiceLinkedRoleRequest(input *DeleteServiceLinkedRoleInput
 // API operation DeleteServiceLinkedRole for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteServiceLinkedRole
 func (c *IAM) DeleteServiceLinkedRole(input *DeleteServiceLinkedRoleInput) (*DeleteServiceLinkedRoleOutput, error) {
@@ -4117,14 +4116,13 @@ const opDeleteServiceSpecificCredential = "DeleteServiceSpecificCredential"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteServiceSpecificCredentialRequest method.
+//	req, resp := client.DeleteServiceSpecificCredentialRequest(params)
 //
-//    // Example sending a request using the DeleteServiceSpecificCredentialRequest method.
-//    req, resp := client.DeleteServiceSpecificCredentialRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteServiceSpecificCredential
 func (c *IAM) DeleteServiceSpecificCredentialRequest(input *DeleteServiceSpecificCredentialInput) (req *request.Request, output *DeleteServiceSpecificCredentialOutput) {
@@ -4156,9 +4154,9 @@ func (c *IAM) DeleteServiceSpecificCredentialRequest(input *DeleteServiceSpecifi
 // API operation DeleteServiceSpecificCredential for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteServiceSpecificCredential
 func (c *IAM) DeleteServiceSpecificCredential(input *DeleteServiceSpecificCredentialInput) (*DeleteServiceSpecificCredentialOutput, error) {
@@ -4198,14 +4196,13 @@ const opDeleteSigningCertificate = "DeleteSigningCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSigningCertificateRequest method.
+//	req, resp := client.DeleteSigningCertificateRequest(params)
 //
-//    // Example sending a request using the DeleteSigningCertificateRequest method.
-//    req, resp := client.DeleteSigningCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteSigningCertificate
 func (c *IAM) DeleteSigningCertificateRequest(input *DeleteSigningCertificateInput) (req *request.Request, output *DeleteSigningCertificateOutput) {
@@ -4244,18 +4241,19 @@ func (c *IAM) DeleteSigningCertificateRequest(input *DeleteSigningCertificateInp
 // API operation DeleteSigningCertificate for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteSigningCertificate
 func (c *IAM) DeleteSigningCertificate(input *DeleteSigningCertificateInput) (*DeleteSigningCertificateOutput, error) {
@@ -4295,14 +4293,13 @@ const opDeleteUser = "DeleteUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteUserRequest method.
+//	req, resp := client.DeleteUserRequest(params)
 //
-//    // Example sending a request using the DeleteUserRequest method.
-//    req, resp := client.DeleteUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteUser
 func (c *IAM) DeleteUserRequest(input *DeleteUserInput) (req *request.Request, output *DeleteUserOutput) {
@@ -4330,23 +4327,23 @@ func (c *IAM) DeleteUserRequest(input *DeleteUserInput) (req *request.Request, o
 // see Deleting an IAM user (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_users_manage.html#id_users_deleting_cli).
 // Before attempting to delete a user, remove the following items:
 //
-//    * Password (DeleteLoginProfile)
+//   - Password (DeleteLoginProfile)
 //
-//    * Access keys (DeleteAccessKey)
+//   - Access keys (DeleteAccessKey)
 //
-//    * Signing certificate (DeleteSigningCertificate)
+//   - Signing certificate (DeleteSigningCertificate)
 //
-//    * SSH public key (DeleteSSHPublicKey)
+//   - SSH public key (DeleteSSHPublicKey)
 //
-//    * Git credentials (DeleteServiceSpecificCredential)
+//   - Git credentials (DeleteServiceSpecificCredential)
 //
-//    * Multi-factor authentication (MFA) device (DeactivateMFADevice, DeleteVirtualMFADevice)
+//   - Multi-factor authentication (MFA) device (DeactivateMFADevice, DeleteVirtualMFADevice)
 //
-//    * Inline policies (DeleteUserPolicy)
+//   - Inline policies (DeleteUserPolicy)
 //
-//    * Attached managed policies (DetachUserPolicy)
+//   - Attached managed policies (DetachUserPolicy)
 //
-//    * Group memberships (RemoveUserFromGroup)
+//   - Group memberships (RemoveUserFromGroup)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4356,27 +4353,28 @@ func (c *IAM) DeleteUserRequest(input *DeleteUserInput) (req *request.Request, o
 // API operation DeleteUser for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
 //
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeDeleteConflictException "DeleteConflict"
-//   The request was rejected because it attempted to delete a resource that has
-//   attached subordinate entities. The error message describes these entities.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeConcurrentModificationException "ConcurrentModification"
-//   The request was rejected because multiple requests to change this object
-//   were submitted simultaneously. Wait a few minutes and submit your request
-//   again.
+//   - ErrCodeDeleteConflictException "DeleteConflict"
+//     The request was rejected because it attempted to delete a resource that has
+//     attached subordinate entities. The error message describes these entities.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteUser
 func (c *IAM) DeleteUser(input *DeleteUserInput) (*DeleteUserOutput, error) {
@@ -4416,14 +4414,13 @@ const opDeleteUserPermissionsBoundary = "DeleteUserPermissionsBoundary"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteUserPermissionsBoundaryRequest method.
+//	req, resp := client.DeleteUserPermissionsBoundaryRequest(params)
 //
-//    // Example sending a request using the DeleteUserPermissionsBoundaryRequest method.
-//    req, resp := client.DeleteUserPermissionsBoundaryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteUserPermissionsBoundary
 func (c *IAM) DeleteUserPermissionsBoundaryRequest(input *DeleteUserPermissionsBoundaryInput) (req *request.Request, output *DeleteUserPermissionsBoundaryOutput) {
@@ -4459,13 +4456,14 @@ func (c *IAM) DeleteUserPermissionsBoundaryRequest(input *DeleteUserPermissionsB
 // API operation DeleteUserPermissionsBoundary for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteUserPermissionsBoundary
 func (c *IAM) DeleteUserPermissionsBoundary(input *DeleteUserPermissionsBoundaryInput) (*DeleteUserPermissionsBoundaryOutput, error) {
@@ -4505,14 +4503,13 @@ const opDeleteUserPolicy = "DeleteUserPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteUserPolicyRequest method.
+//	req, resp := client.DeleteUserPolicyRequest(params)
 //
-//    // Example sending a request using the DeleteUserPolicyRequest method.
-//    req, resp := client.DeleteUserPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteUserPolicy
 func (c *IAM) DeleteUserPolicyRequest(input *DeleteUserPolicyInput) (req *request.Request, output *DeleteUserPolicyOutput) {
@@ -4550,18 +4547,19 @@ func (c *IAM) DeleteUserPolicyRequest(input *DeleteUserPolicyInput) (req *reques
 // API operation DeleteUserPolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteUserPolicy
 func (c *IAM) DeleteUserPolicy(input *DeleteUserPolicyInput) (*DeleteUserPolicyOutput, error) {
@@ -4601,14 +4599,13 @@ const opDeleteVirtualMFADevice = "DeleteVirtualMFADevice"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteVirtualMFADeviceRequest method.
+//	req, resp := client.DeleteVirtualMFADeviceRequest(params)
 //
-//    // Example sending a request using the DeleteVirtualMFADeviceRequest method.
-//    req, resp := client.DeleteVirtualMFADeviceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteVirtualMFADevice
 func (c *IAM) DeleteVirtualMFADeviceRequest(input *DeleteVirtualMFADeviceInput) (req *request.Request, output *DeleteVirtualMFADeviceOutput) {
@@ -4643,22 +4640,23 @@ func (c *IAM) DeleteVirtualMFADeviceRequest(input *DeleteVirtualMFADeviceInput) 
 // API operation DeleteVirtualMFADevice for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeDeleteConflictException "DeleteConflict"
-//   The request was rejected because it attempted to delete a resource that has
-//   attached subordinate entities. The error message describes these entities.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeDeleteConflictException "DeleteConflict"
+//     The request was rejected because it attempted to delete a resource that has
+//     attached subordinate entities. The error message describes these entities.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DeleteVirtualMFADevice
 func (c *IAM) DeleteVirtualMFADevice(input *DeleteVirtualMFADeviceInput) (*DeleteVirtualMFADeviceOutput, error) {
@@ -4698,14 +4696,13 @@ const opDetachGroupPolicy = "DetachGroupPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DetachGroupPolicyRequest method.
+//	req, resp := client.DetachGroupPolicyRequest(params)
 //
-//    // Example sending a request using the DetachGroupPolicyRequest method.
-//    req, resp := client.DetachGroupPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DetachGroupPolicy
 func (c *IAM) DetachGroupPolicyRequest(input *DetachGroupPolicyInput) (req *request.Request, output *DetachGroupPolicyOutput) {
@@ -4742,22 +4739,23 @@ func (c *IAM) DetachGroupPolicyRequest(input *DetachGroupPolicyInput) (req *requ
 // API operation DetachGroupPolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DetachGroupPolicy
 func (c *IAM) DetachGroupPolicy(input *DetachGroupPolicyInput) (*DetachGroupPolicyOutput, error) {
@@ -4797,14 +4795,13 @@ const opDetachRolePolicy = "DetachRolePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DetachRolePolicyRequest method.
+//	req, resp := client.DetachRolePolicyRequest(params)
 //
-//    // Example sending a request using the DetachRolePolicyRequest method.
-//    req, resp := client.DetachRolePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DetachRolePolicy
 func (c *IAM) DetachRolePolicyRequest(input *DetachRolePolicyInput) (req *request.Request, output *DetachRolePolicyOutput) {
@@ -4841,28 +4838,29 @@ func (c *IAM) DetachRolePolicyRequest(input *DetachRolePolicyInput) (req *reques
 // API operation DetachRolePolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
-//   The request was rejected because only the service that depends on the service-linked
-//   role can modify or delete the role on your behalf. The error message includes
-//   the name of the service that depends on this service-linked role. You must
-//   request the change through that service.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
+//     The request was rejected because only the service that depends on the service-linked
+//     role can modify or delete the role on your behalf. The error message includes
+//     the name of the service that depends on this service-linked role. You must
+//     request the change through that service.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DetachRolePolicy
 func (c *IAM) DetachRolePolicy(input *DetachRolePolicyInput) (*DetachRolePolicyOutput, error) {
@@ -4902,14 +4900,13 @@ const opDetachUserPolicy = "DetachUserPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DetachUserPolicyRequest method.
+//	req, resp := client.DetachUserPolicyRequest(params)
 //
-//    // Example sending a request using the DetachUserPolicyRequest method.
-//    req, resp := client.DetachUserPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DetachUserPolicy
 func (c *IAM) DetachUserPolicyRequest(input *DetachUserPolicyInput) (req *request.Request, output *DetachUserPolicyOutput) {
@@ -4946,22 +4943,23 @@ func (c *IAM) DetachUserPolicyRequest(input *DetachUserPolicyInput) (req *reques
 // API operation DetachUserPolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/DetachUserPolicy
 func (c *IAM) DetachUserPolicy(input *DetachUserPolicyInput) (*DetachUserPolicyOutput, error) {
@@ -5001,14 +4999,13 @@ const opEnableMFADevice = "EnableMFADevice"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableMFADeviceRequest method.
+//	req, resp := client.EnableMFADeviceRequest(params)
 //
-//    // Example sending a request using the EnableMFADeviceRequest method.
-//    req, resp := client.EnableMFADeviceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/EnableMFADevice
 func (c *IAM) EnableMFADeviceRequest(input *EnableMFADeviceInput) (req *request.Request, output *EnableMFADeviceOutput) {
@@ -5042,32 +5039,33 @@ func (c *IAM) EnableMFADeviceRequest(input *EnableMFADeviceInput) (req *request.
 // API operation EnableMFADevice for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
-//   The request was rejected because it attempted to create a resource that already
-//   exists.
 //
-//   * ErrCodeEntityTemporarilyUnmodifiableException "EntityTemporarilyUnmodifiable"
-//   The request was rejected because it referenced an entity that is temporarily
-//   unmodifiable, such as a user name that was deleted and then recreated. The
-//   error indicates that the request is likely to succeed if you try again after
-//   waiting several minutes. The error message describes the entity.
+//   - ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
+//     The request was rejected because it attempted to create a resource that already
+//     exists.
 //
-//   * ErrCodeInvalidAuthenticationCodeException "InvalidAuthenticationCode"
-//   The request was rejected because the authentication code was not recognized.
-//   The error message describes the specific error.
+//   - ErrCodeEntityTemporarilyUnmodifiableException "EntityTemporarilyUnmodifiable"
+//     The request was rejected because it referenced an entity that is temporarily
+//     unmodifiable, such as a user name that was deleted and then recreated. The
+//     error indicates that the request is likely to succeed if you try again after
+//     waiting several minutes. The error message describes the entity.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeInvalidAuthenticationCodeException "InvalidAuthenticationCode"
+//     The request was rejected because the authentication code was not recognized.
+//     The error message describes the specific error.
 //
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/EnableMFADevice
 func (c *IAM) EnableMFADevice(input *EnableMFADeviceInput) (*EnableMFADeviceOutput, error) {
@@ -5107,14 +5105,13 @@ const opGenerateCredentialReport = "GenerateCredentialReport"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GenerateCredentialReportRequest method.
+//	req, resp := client.GenerateCredentialReportRequest(params)
 //
-//    // Example sending a request using the GenerateCredentialReportRequest method.
-//    req, resp := client.GenerateCredentialReportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GenerateCredentialReport
 func (c *IAM) GenerateCredentialReportRequest(input *GenerateCredentialReportInput) (req *request.Request, output *GenerateCredentialReportOutput) {
@@ -5147,14 +5144,15 @@ func (c *IAM) GenerateCredentialReportRequest(input *GenerateCredentialReportInp
 // API operation GenerateCredentialReport for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GenerateCredentialReport
 func (c *IAM) GenerateCredentialReport(input *GenerateCredentialReportInput) (*GenerateCredentialReportOutput, error) {
@@ -5194,14 +5192,13 @@ const opGenerateOrganizationsAccessReport = "GenerateOrganizationsAccessReport"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GenerateOrganizationsAccessReportRequest method.
+//	req, resp := client.GenerateOrganizationsAccessReportRequest(params)
 //
-//    // Example sending a request using the GenerateOrganizationsAccessReportRequest method.
-//    req, resp := client.GenerateOrganizationsAccessReportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GenerateOrganizationsAccessReport
 func (c *IAM) GenerateOrganizationsAccessReportRequest(input *GenerateOrganizationsAccessReportInput) (req *request.Request, output *GenerateOrganizationsAccessReportOutput) {
@@ -5270,63 +5267,63 @@ func (c *IAM) GenerateOrganizationsAccessReportRequest(input *GenerateOrganizati
 // entity path without specifying the optional Organizations policy ID. The
 // type of entity that you specify determines the data returned in the report.
 //
-//    * Root – When you specify the organizations root as the entity, the
-//    resulting report lists all of the services allowed by SCPs that are attached
-//    to your root. For each service, the report includes data for all accounts
-//    in your organization except the management account, because the management
-//    account is not limited by SCPs.
+//   - Root – When you specify the organizations root as the entity, the
+//     resulting report lists all of the services allowed by SCPs that are attached
+//     to your root. For each service, the report includes data for all accounts
+//     in your organization except the management account, because the management
+//     account is not limited by SCPs.
 //
-//    * OU – When you specify an organizational unit (OU) as the entity, the
-//    resulting report lists all of the services allowed by SCPs that are attached
-//    to the OU and its parents. For each service, the report includes data
-//    for all accounts in the OU or its children. This data excludes the management
-//    account, because the management account is not limited by SCPs.
+//   - OU – When you specify an organizational unit (OU) as the entity, the
+//     resulting report lists all of the services allowed by SCPs that are attached
+//     to the OU and its parents. For each service, the report includes data
+//     for all accounts in the OU or its children. This data excludes the management
+//     account, because the management account is not limited by SCPs.
 //
-//    * management account – When you specify the management account, the
-//    resulting report lists all Amazon Web Services services, because the management
-//    account is not limited by SCPs. For each service, the report includes
-//    data for only the management account.
+//   - management account – When you specify the management account, the
+//     resulting report lists all Amazon Web Services services, because the management
+//     account is not limited by SCPs. For each service, the report includes
+//     data for only the management account.
 //
-//    * Account – When you specify another account as the entity, the resulting
-//    report lists all of the services allowed by SCPs that are attached to
-//    the account and its parents. For each service, the report includes data
-//    for only the specified account.
+//   - Account – When you specify another account as the entity, the resulting
+//     report lists all of the services allowed by SCPs that are attached to
+//     the account and its parents. For each service, the report includes data
+//     for only the specified account.
 //
 // To generate a service last accessed data report for policies, specify an
 // entity path and the optional Organizations policy ID. The type of entity
 // that you specify determines the data returned for each service.
 //
-//    * Root – When you specify the root entity and a policy ID, the resulting
-//    report lists all of the services that are allowed by the specified SCP.
-//    For each service, the report includes data for all accounts in your organization
-//    to which the SCP applies. This data excludes the management account, because
-//    the management account is not limited by SCPs. If the SCP is not attached
-//    to any entities in the organization, then the report will return a list
-//    of services with no data.
+//   - Root – When you specify the root entity and a policy ID, the resulting
+//     report lists all of the services that are allowed by the specified SCP.
+//     For each service, the report includes data for all accounts in your organization
+//     to which the SCP applies. This data excludes the management account, because
+//     the management account is not limited by SCPs. If the SCP is not attached
+//     to any entities in the organization, then the report will return a list
+//     of services with no data.
 //
-//    * OU – When you specify an OU entity and a policy ID, the resulting
-//    report lists all of the services that are allowed by the specified SCP.
-//    For each service, the report includes data for all accounts in the OU
-//    or its children to which the SCP applies. This means that other accounts
-//    outside the OU that are affected by the SCP might not be included in the
-//    data. This data excludes the management account, because the management
-//    account is not limited by SCPs. If the SCP is not attached to the OU or
-//    one of its children, the report will return a list of services with no
-//    data.
+//   - OU – When you specify an OU entity and a policy ID, the resulting
+//     report lists all of the services that are allowed by the specified SCP.
+//     For each service, the report includes data for all accounts in the OU
+//     or its children to which the SCP applies. This means that other accounts
+//     outside the OU that are affected by the SCP might not be included in the
+//     data. This data excludes the management account, because the management
+//     account is not limited by SCPs. If the SCP is not attached to the OU or
+//     one of its children, the report will return a list of services with no
+//     data.
 //
-//    * management account – When you specify the management account, the
-//    resulting report lists all Amazon Web Services services, because the management
-//    account is not limited by SCPs. If you specify a policy ID in the CLI
-//    or API, the policy is ignored. For each service, the report includes data
-//    for only the management account.
+//   - management account – When you specify the management account, the
+//     resulting report lists all Amazon Web Services services, because the management
+//     account is not limited by SCPs. If you specify a policy ID in the CLI
+//     or API, the policy is ignored. For each service, the report includes data
+//     for only the management account.
 //
-//    * Account – When you specify another account entity and a policy ID,
-//    the resulting report lists all of the services that are allowed by the
-//    specified SCP. For each service, the report includes data for only the
-//    specified account. This means that other accounts in the organization
-//    that are affected by the SCP might not be included in the data. If the
-//    SCP is not attached to the account, the report will return a list of services
-//    with no data.
+//   - Account – When you specify another account entity and a policy ID,
+//     the resulting report lists all of the services that are allowed by the
+//     specified SCP. For each service, the report includes data for only the
+//     specified account. This means that other accounts in the organization
+//     that are affected by the SCP might not be included in the data. If the
+//     SCP is not attached to the account, the report will return a list of services
+//     with no data.
 //
 // Service last accessed data does not use other policy types when determining
 // whether a principal could access a service. These other policy types include
@@ -5348,9 +5345,9 @@ func (c *IAM) GenerateOrganizationsAccessReportRequest(input *GenerateOrganizati
 // API operation GenerateOrganizationsAccessReport for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeReportGenerationLimitExceededException "ReportGenerationLimitExceeded"
-//   The request failed because the maximum number of concurrent requests for
-//   this account are already running.
+//   - ErrCodeReportGenerationLimitExceededException "ReportGenerationLimitExceeded"
+//     The request failed because the maximum number of concurrent requests for
+//     this account are already running.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GenerateOrganizationsAccessReport
 func (c *IAM) GenerateOrganizationsAccessReport(input *GenerateOrganizationsAccessReportInput) (*GenerateOrganizationsAccessReportOutput, error) {
@@ -5390,14 +5387,13 @@ const opGenerateServiceLastAccessedDetails = "GenerateServiceLastAccessedDetails
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GenerateServiceLastAccessedDetailsRequest method.
+//	req, resp := client.GenerateServiceLastAccessedDetailsRequest(params)
 //
-//    // Example sending a request using the GenerateServiceLastAccessedDetailsRequest method.
-//    req, resp := client.GenerateServiceLastAccessedDetailsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GenerateServiceLastAccessedDetails
 func (c *IAM) GenerateServiceLastAccessedDetailsRequest(input *GenerateServiceLastAccessedDetailsInput) (req *request.Request, output *GenerateServiceLastAccessedDetailsOutput) {
@@ -5440,17 +5436,17 @@ func (c *IAM) GenerateServiceLastAccessedDetailsRequest(input *GenerateServiceLa
 // parameter in the following operations to retrieve the following details from
 // your report:
 //
-//    * GetServiceLastAccessedDetails – Use this operation for users, groups,
-//    roles, or policies to list every Amazon Web Services service that the
-//    resource could access using permissions policies. For each service, the
-//    response includes information about the most recent access attempt. The
-//    JobId returned by GenerateServiceLastAccessedDetail must be used by the
-//    same role within a session, or by the same user when used to call GetServiceLastAccessedDetail.
+//   - GetServiceLastAccessedDetails – Use this operation for users, groups,
+//     roles, or policies to list every Amazon Web Services service that the
+//     resource could access using permissions policies. For each service, the
+//     response includes information about the most recent access attempt. The
+//     JobId returned by GenerateServiceLastAccessedDetail must be used by the
+//     same role within a session, or by the same user when used to call GetServiceLastAccessedDetail.
 //
-//    * GetServiceLastAccessedDetailsWithEntities – Use this operation for
-//    groups and policies to list information about the associated entities
-//    (users or roles) that attempted to access a specific Amazon Web Services
-//    service.
+//   - GetServiceLastAccessedDetailsWithEntities – Use this operation for
+//     groups and policies to list information about the associated entities
+//     (users or roles) that attempted to access a specific Amazon Web Services
+//     service.
 //
 // To check the status of the GenerateServiceLastAccessedDetails request, use
 // the JobId parameter in the same operations and test the JobStatus response
@@ -5480,13 +5476,14 @@ func (c *IAM) GenerateServiceLastAccessedDetailsRequest(input *GenerateServiceLa
 // API operation GenerateServiceLastAccessedDetails for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GenerateServiceLastAccessedDetails
 func (c *IAM) GenerateServiceLastAccessedDetails(input *GenerateServiceLastAccessedDetailsInput) (*GenerateServiceLastAccessedDetailsOutput, error) {
@@ -5526,14 +5523,13 @@ const opGetAccessKeyLastUsed = "GetAccessKeyLastUsed"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAccessKeyLastUsedRequest method.
+//	req, resp := client.GetAccessKeyLastUsedRequest(params)
 //
-//    // Example sending a request using the GetAccessKeyLastUsedRequest method.
-//    req, resp := client.GetAccessKeyLastUsedRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetAccessKeyLastUsed
 func (c *IAM) GetAccessKeyLastUsedRequest(input *GetAccessKeyLastUsedInput) (req *request.Request, output *GetAccessKeyLastUsedOutput) {
@@ -5567,9 +5563,9 @@ func (c *IAM) GetAccessKeyLastUsedRequest(input *GetAccessKeyLastUsedInput) (req
 // API operation GetAccessKeyLastUsed for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetAccessKeyLastUsed
 func (c *IAM) GetAccessKeyLastUsed(input *GetAccessKeyLastUsedInput) (*GetAccessKeyLastUsedOutput, error) {
@@ -5609,14 +5605,13 @@ const opGetAccountAuthorizationDetails = "GetAccountAuthorizationDetails"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAccountAuthorizationDetailsRequest method.
+//	req, resp := client.GetAccountAuthorizationDetailsRequest(params)
 //
-//    // Example sending a request using the GetAccountAuthorizationDetailsRequest method.
-//    req, resp := client.GetAccountAuthorizationDetailsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetAccountAuthorizationDetails
 func (c *IAM) GetAccountAuthorizationDetailsRequest(input *GetAccountAuthorizationDetailsInput) (req *request.Request, output *GetAccountAuthorizationDetailsOutput) {
@@ -5665,9 +5660,9 @@ func (c *IAM) GetAccountAuthorizationDetailsRequest(input *GetAccountAuthorizati
 // API operation GetAccountAuthorizationDetails for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetAccountAuthorizationDetails
 func (c *IAM) GetAccountAuthorizationDetails(input *GetAccountAuthorizationDetailsInput) (*GetAccountAuthorizationDetailsOutput, error) {
@@ -5699,15 +5694,14 @@ func (c *IAM) GetAccountAuthorizationDetailsWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetAccountAuthorizationDetails operation.
-//    pageNum := 0
-//    err := client.GetAccountAuthorizationDetailsPages(params,
-//        func(page *iam.GetAccountAuthorizationDetailsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetAccountAuthorizationDetails operation.
+//	pageNum := 0
+//	err := client.GetAccountAuthorizationDetailsPages(params,
+//	    func(page *iam.GetAccountAuthorizationDetailsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IAM) GetAccountAuthorizationDetailsPages(input *GetAccountAuthorizationDetailsInput, fn func(*GetAccountAuthorizationDetailsOutput, bool) bool) error {
 	return c.GetAccountAuthorizationDetailsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5759,14 +5753,13 @@ const opGetAccountPasswordPolicy = "GetAccountPasswordPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAccountPasswordPolicyRequest method.
+//	req, resp := client.GetAccountPasswordPolicyRequest(params)
 //
-//    // Example sending a request using the GetAccountPasswordPolicyRequest method.
-//    req, resp := client.GetAccountPasswordPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetAccountPasswordPolicy
 func (c *IAM) GetAccountPasswordPolicyRequest(input *GetAccountPasswordPolicyInput) (req *request.Request, output *GetAccountPasswordPolicyOutput) {
@@ -5800,13 +5793,14 @@ func (c *IAM) GetAccountPasswordPolicyRequest(input *GetAccountPasswordPolicyInp
 // API operation GetAccountPasswordPolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetAccountPasswordPolicy
 func (c *IAM) GetAccountPasswordPolicy(input *GetAccountPasswordPolicyInput) (*GetAccountPasswordPolicyOutput, error) {
@@ -5846,14 +5840,13 @@ const opGetAccountSummary = "GetAccountSummary"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAccountSummaryRequest method.
+//	req, resp := client.GetAccountSummaryRequest(params)
 //
-//    // Example sending a request using the GetAccountSummaryRequest method.
-//    req, resp := client.GetAccountSummaryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetAccountSummary
 func (c *IAM) GetAccountSummaryRequest(input *GetAccountSummaryInput) (req *request.Request, output *GetAccountSummaryOutput) {
@@ -5888,9 +5881,9 @@ func (c *IAM) GetAccountSummaryRequest(input *GetAccountSummaryInput) (req *requ
 // API operation GetAccountSummary for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetAccountSummary
 func (c *IAM) GetAccountSummary(input *GetAccountSummaryInput) (*GetAccountSummaryOutput, error) {
@@ -5930,14 +5923,13 @@ const opGetContextKeysForCustomPolicy = "GetContextKeysForCustomPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetContextKeysForCustomPolicyRequest method.
+//	req, resp := client.GetContextKeysForCustomPolicyRequest(params)
 //
-//    // Example sending a request using the GetContextKeysForCustomPolicyRequest method.
-//    req, resp := client.GetContextKeysForCustomPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetContextKeysForCustomPolicy
 func (c *IAM) GetContextKeysForCustomPolicyRequest(input *GetContextKeysForCustomPolicyInput) (req *request.Request, output *GetContextKeysForPolicyResponse) {
@@ -5978,9 +5970,9 @@ func (c *IAM) GetContextKeysForCustomPolicyRequest(input *GetContextKeysForCusto
 // API operation GetContextKeysForCustomPolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetContextKeysForCustomPolicy
 func (c *IAM) GetContextKeysForCustomPolicy(input *GetContextKeysForCustomPolicyInput) (*GetContextKeysForPolicyResponse, error) {
@@ -6020,14 +6012,13 @@ const opGetContextKeysForPrincipalPolicy = "GetContextKeysForPrincipalPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetContextKeysForPrincipalPolicyRequest method.
+//	req, resp := client.GetContextKeysForPrincipalPolicyRequest(params)
 //
-//    // Example sending a request using the GetContextKeysForPrincipalPolicyRequest method.
-//    req, resp := client.GetContextKeysForPrincipalPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetContextKeysForPrincipalPolicy
 func (c *IAM) GetContextKeysForPrincipalPolicyRequest(input *GetContextKeysForPrincipalPolicyInput) (req *request.Request, output *GetContextKeysForPolicyResponse) {
@@ -6074,13 +6065,14 @@ func (c *IAM) GetContextKeysForPrincipalPolicyRequest(input *GetContextKeysForPr
 // API operation GetContextKeysForPrincipalPolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetContextKeysForPrincipalPolicy
 func (c *IAM) GetContextKeysForPrincipalPolicy(input *GetContextKeysForPrincipalPolicyInput) (*GetContextKeysForPolicyResponse, error) {
@@ -6120,14 +6112,13 @@ const opGetCredentialReport = "GetCredentialReport"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCredentialReportRequest method.
+//	req, resp := client.GetCredentialReportRequest(params)
 //
-//    // Example sending a request using the GetCredentialReportRequest method.
-//    req, resp := client.GetCredentialReportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetCredentialReport
 func (c *IAM) GetCredentialReportRequest(input *GetCredentialReportInput) (req *request.Request, output *GetCredentialReportOutput) {
@@ -6160,23 +6151,24 @@ func (c *IAM) GetCredentialReportRequest(input *GetCredentialReportInput) (req *
 // API operation GetCredentialReport for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeCredentialReportNotPresentException "ReportNotPresent"
-//   The request was rejected because the credential report does not exist. To
-//   generate a credential report, use GenerateCredentialReport.
 //
-//   * ErrCodeCredentialReportExpiredException "ReportExpired"
-//   The request was rejected because the most recent credential report has expired.
-//   To generate a new credential report, use GenerateCredentialReport. For more
-//   information about credential report expiration, see Getting credential reports
-//   (https://docs.aws.amazon.com/IAM/latest/UserGuide/credential-reports.html)
-//   in the IAM User Guide.
+//   - ErrCodeCredentialReportNotPresentException "ReportNotPresent"
+//     The request was rejected because the credential report does not exist. To
+//     generate a credential report, use GenerateCredentialReport.
 //
-//   * ErrCodeCredentialReportNotReadyException "ReportInProgress"
-//   The request was rejected because the credential report is still being generated.
+//   - ErrCodeCredentialReportExpiredException "ReportExpired"
+//     The request was rejected because the most recent credential report has expired.
+//     To generate a new credential report, use GenerateCredentialReport. For more
+//     information about credential report expiration, see Getting credential reports
+//     (https://docs.aws.amazon.com/IAM/latest/UserGuide/credential-reports.html)
+//     in the IAM User Guide.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeCredentialReportNotReadyException "ReportInProgress"
+//     The request was rejected because the credential report is still being generated.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetCredentialReport
 func (c *IAM) GetCredentialReport(input *GetCredentialReportInput) (*GetCredentialReportOutput, error) {
@@ -6216,14 +6208,13 @@ const opGetGroup = "GetGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetGroupRequest method.
+//	req, resp := client.GetGroupRequest(params)
 //
-//    // Example sending a request using the GetGroupRequest method.
-//    req, resp := client.GetGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetGroup
 func (c *IAM) GetGroupRequest(input *GetGroupInput) (req *request.Request, output *GetGroupOutput) {
@@ -6261,13 +6252,14 @@ func (c *IAM) GetGroupRequest(input *GetGroupInput) (req *request.Request, outpu
 // API operation GetGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetGroup
 func (c *IAM) GetGroup(input *GetGroupInput) (*GetGroupOutput, error) {
@@ -6299,15 +6291,14 @@ func (c *IAM) GetGroupWithContext(ctx aws.Context, input *GetGroupInput, opts ..
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetGroup operation.
-//    pageNum := 0
-//    err := client.GetGroupPages(params,
-//        func(page *iam.GetGroupOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetGroup operation.
+//	pageNum := 0
+//	err := client.GetGroupPages(params,
+//	    func(page *iam.GetGroupOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IAM) GetGroupPages(input *GetGroupInput, fn func(*GetGroupOutput, bool) bool) error {
 	return c.GetGroupPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6359,14 +6350,13 @@ const opGetGroupPolicy = "GetGroupPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetGroupPolicyRequest method.
+//	req, resp := client.GetGroupPolicyRequest(params)
 //
-//    // Example sending a request using the GetGroupPolicyRequest method.
-//    req, resp := client.GetGroupPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetGroupPolicy
 func (c *IAM) GetGroupPolicyRequest(input *GetGroupPolicyInput) (req *request.Request, output *GetGroupPolicyOutput) {
@@ -6413,13 +6403,14 @@ func (c *IAM) GetGroupPolicyRequest(input *GetGroupPolicyInput) (req *request.Re
 // API operation GetGroupPolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetGroupPolicy
 func (c *IAM) GetGroupPolicy(input *GetGroupPolicyInput) (*GetGroupPolicyOutput, error) {
@@ -6459,14 +6450,13 @@ const opGetInstanceProfile = "GetInstanceProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetInstanceProfileRequest method.
+//	req, resp := client.GetInstanceProfileRequest(params)
 //
-//    // Example sending a request using the GetInstanceProfileRequest method.
-//    req, resp := client.GetInstanceProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetInstanceProfile
 func (c *IAM) GetInstanceProfileRequest(input *GetInstanceProfileInput) (req *request.Request, output *GetInstanceProfileOutput) {
@@ -6500,13 +6490,14 @@ func (c *IAM) GetInstanceProfileRequest(input *GetInstanceProfileInput) (req *re
 // API operation GetInstanceProfile for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetInstanceProfile
 func (c *IAM) GetInstanceProfile(input *GetInstanceProfileInput) (*GetInstanceProfileOutput, error) {
@@ -6546,14 +6537,13 @@ const opGetLoginProfile = "GetLoginProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetLoginProfileRequest method.
+//	req, resp := client.GetLoginProfileRequest(params)
 //
-//    // Example sending a request using the GetLoginProfileRequest method.
-//    req, resp := client.GetLoginProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetLoginProfile
 func (c *IAM) GetLoginProfileRequest(input *GetLoginProfileInput) (req *request.Request, output *GetLoginProfileOutput) {
@@ -6596,13 +6586,14 @@ func (c *IAM) GetLoginProfileRequest(input *GetLoginProfileInput) (req *request.
 // API operation GetLoginProfile for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetLoginProfile
 func (c *IAM) GetLoginProfile(input *GetLoginProfileInput) (*GetLoginProfileOutput, error) {
@@ -6642,14 +6633,13 @@ const opGetOpenIDConnectProvider = "GetOpenIDConnectProvider"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetOpenIDConnectProviderRequest method.
+//	req, resp := client.GetOpenIDConnectProviderRequest(params)
 //
-//    // Example sending a request using the GetOpenIDConnectProviderRequest method.
-//    req, resp := client.GetOpenIDConnectProviderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetOpenIDConnectProvider
 func (c *IAM) GetOpenIDConnectProviderRequest(input *GetOpenIDConnectProviderInput) (req *request.Request, output *GetOpenIDConnectProviderOutput) {
@@ -6681,17 +6671,18 @@ func (c *IAM) GetOpenIDConnectProviderRequest(input *GetOpenIDConnectProviderInp
 // API operation GetOpenIDConnectProvider for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
 //
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetOpenIDConnectProvider
 func (c *IAM) GetOpenIDConnectProvider(input *GetOpenIDConnectProviderInput) (*GetOpenIDConnectProviderOutput, error) {
@@ -6731,14 +6722,13 @@ const opGetOrganizationsAccessReport = "GetOrganizationsAccessReport"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetOrganizationsAccessReportRequest method.
+//	req, resp := client.GetOrganizationsAccessReportRequest(params)
 //
-//    // Example sending a request using the GetOrganizationsAccessReportRequest method.
-//    req, resp := client.GetOrganizationsAccessReportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetOrganizationsAccessReport
 func (c *IAM) GetOrganizationsAccessReportRequest(input *GetOrganizationsAccessReportInput) (req *request.Request, output *GetOrganizationsAccessReportOutput) {
@@ -6788,9 +6778,9 @@ func (c *IAM) GetOrganizationsAccessReportRequest(input *GetOrganizationsAccessR
 // API operation GetOrganizationsAccessReport for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetOrganizationsAccessReport
 func (c *IAM) GetOrganizationsAccessReport(input *GetOrganizationsAccessReportInput) (*GetOrganizationsAccessReportOutput, error) {
@@ -6830,14 +6820,13 @@ const opGetPolicy = "GetPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPolicyRequest method.
+//	req, resp := client.GetPolicyRequest(params)
 //
-//    // Example sending a request using the GetPolicyRequest method.
-//    req, resp := client.GetPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetPolicy
 func (c *IAM) GetPolicyRequest(input *GetPolicyInput) (req *request.Request, output *GetPolicyOutput) {
@@ -6881,17 +6870,18 @@ func (c *IAM) GetPolicyRequest(input *GetPolicyInput) (req *request.Request, out
 // API operation GetPolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetPolicy
 func (c *IAM) GetPolicy(input *GetPolicyInput) (*GetPolicyOutput, error) {
@@ -6931,14 +6921,13 @@ const opGetPolicyVersion = "GetPolicyVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPolicyVersionRequest method.
+//	req, resp := client.GetPolicyVersionRequest(params)
 //
-//    // Example sending a request using the GetPolicyVersionRequest method.
-//    req, resp := client.GetPolicyVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetPolicyVersion
 func (c *IAM) GetPolicyVersionRequest(input *GetPolicyVersionInput) (req *request.Request, output *GetPolicyVersionOutput) {
@@ -6990,17 +6979,18 @@ func (c *IAM) GetPolicyVersionRequest(input *GetPolicyVersionInput) (req *reques
 // API operation GetPolicyVersion for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetPolicyVersion
 func (c *IAM) GetPolicyVersion(input *GetPolicyVersionInput) (*GetPolicyVersionOutput, error) {
@@ -7040,14 +7030,13 @@ const opGetRole = "GetRole"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRoleRequest method.
+//	req, resp := client.GetRoleRequest(params)
 //
-//    // Example sending a request using the GetRoleRequest method.
-//    req, resp := client.GetRoleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetRole
 func (c *IAM) GetRoleRequest(input *GetRoleInput) (req *request.Request, output *GetRoleOutput) {
@@ -7086,13 +7075,14 @@ func (c *IAM) GetRoleRequest(input *GetRoleInput) (req *request.Request, output 
 // API operation GetRole for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetRole
 func (c *IAM) GetRole(input *GetRoleInput) (*GetRoleOutput, error) {
@@ -7132,14 +7122,13 @@ const opGetRolePolicy = "GetRolePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRolePolicyRequest method.
+//	req, resp := client.GetRolePolicyRequest(params)
 //
-//    // Example sending a request using the GetRolePolicyRequest method.
-//    req, resp := client.GetRolePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetRolePolicy
 func (c *IAM) GetRolePolicyRequest(input *GetRolePolicyInput) (req *request.Request, output *GetRolePolicyOutput) {
@@ -7189,13 +7178,14 @@ func (c *IAM) GetRolePolicyRequest(input *GetRolePolicyInput) (req *request.Requ
 // API operation GetRolePolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetRolePolicy
 func (c *IAM) GetRolePolicy(input *GetRolePolicyInput) (*GetRolePolicyOutput, error) {
@@ -7235,14 +7225,13 @@ const opGetSAMLProvider = "GetSAMLProvider"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSAMLProviderRequest method.
+//	req, resp := client.GetSAMLProviderRequest(params)
 //
-//    // Example sending a request using the GetSAMLProviderRequest method.
-//    req, resp := client.GetSAMLProviderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetSAMLProvider
 func (c *IAM) GetSAMLProviderRequest(input *GetSAMLProviderInput) (req *request.Request, output *GetSAMLProviderOutput) {
@@ -7276,17 +7265,18 @@ func (c *IAM) GetSAMLProviderRequest(input *GetSAMLProviderInput) (req *request.
 // API operation GetSAMLProvider for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetSAMLProvider
 func (c *IAM) GetSAMLProvider(input *GetSAMLProviderInput) (*GetSAMLProviderOutput, error) {
@@ -7326,14 +7316,13 @@ const opGetSSHPublicKey = "GetSSHPublicKey"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSSHPublicKeyRequest method.
+//	req, resp := client.GetSSHPublicKeyRequest(params)
 //
-//    // Example sending a request using the GetSSHPublicKeyRequest method.
-//    req, resp := client.GetSSHPublicKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetSSHPublicKey
 func (c *IAM) GetSSHPublicKeyRequest(input *GetSSHPublicKeyInput) (req *request.Request, output *GetSSHPublicKeyOutput) {
@@ -7370,13 +7359,14 @@ func (c *IAM) GetSSHPublicKeyRequest(input *GetSSHPublicKeyInput) (req *request.
 // API operation GetSSHPublicKey for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeUnrecognizedPublicKeyEncodingException "UnrecognizedPublicKeyEncoding"
-//   The request was rejected because the public key encoding format is unsupported
-//   or unrecognized.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeUnrecognizedPublicKeyEncodingException "UnrecognizedPublicKeyEncoding"
+//     The request was rejected because the public key encoding format is unsupported
+//     or unrecognized.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetSSHPublicKey
 func (c *IAM) GetSSHPublicKey(input *GetSSHPublicKeyInput) (*GetSSHPublicKeyOutput, error) {
@@ -7416,14 +7406,13 @@ const opGetServerCertificate = "GetServerCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetServerCertificateRequest method.
+//	req, resp := client.GetServerCertificateRequest(params)
 //
-//    // Example sending a request using the GetServerCertificateRequest method.
-//    req, resp := client.GetServerCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetServerCertificate
 func (c *IAM) GetServerCertificateRequest(input *GetServerCertificateInput) (req *request.Request, output *GetServerCertificateOutput) {
@@ -7459,13 +7448,14 @@ func (c *IAM) GetServerCertificateRequest(input *GetServerCertificateInput) (req
 // API operation GetServerCertificate for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetServerCertificate
 func (c *IAM) GetServerCertificate(input *GetServerCertificateInput) (*GetServerCertificateOutput, error) {
@@ -7505,14 +7495,13 @@ const opGetServiceLastAccessedDetails = "GetServiceLastAccessedDetails"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetServiceLastAccessedDetailsRequest method.
+//	req, resp := client.GetServiceLastAccessedDetailsRequest(params)
 //
-//    // Example sending a request using the GetServiceLastAccessedDetailsRequest method.
-//    req, resp := client.GetServiceLastAccessedDetailsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetServiceLastAccessedDetails
 func (c *IAM) GetServiceLastAccessedDetailsRequest(input *GetServiceLastAccessedDetailsInput) (req *request.Request, output *GetServiceLastAccessedDetailsOutput) {
@@ -7560,15 +7549,15 @@ func (c *IAM) GetServiceLastAccessedDetailsRequest(input *GetServiceLastAccessed
 // following entity, depending on the resource ARN that you used to generate
 // the report:
 //
-//    * User – Returns the user ARN that you used to generate the report
+//   - User – Returns the user ARN that you used to generate the report
 //
-//    * Group – Returns the ARN of the group member (user) that last attempted
-//    to access the service
+//   - Group – Returns the ARN of the group member (user) that last attempted
+//     to access the service
 //
-//    * Role – Returns the role ARN that you used to generate the report
+//   - Role – Returns the role ARN that you used to generate the report
 //
-//    * Policy – Returns the ARN of the user or role that last used the policy
-//    to attempt to access the service
+//   - Policy – Returns the ARN of the user or role that last used the policy
+//     to attempt to access the service
 //
 // By default, the list is sorted by service namespace.
 //
@@ -7589,13 +7578,14 @@ func (c *IAM) GetServiceLastAccessedDetailsRequest(input *GetServiceLastAccessed
 // API operation GetServiceLastAccessedDetails for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetServiceLastAccessedDetails
 func (c *IAM) GetServiceLastAccessedDetails(input *GetServiceLastAccessedDetailsInput) (*GetServiceLastAccessedDetailsOutput, error) {
@@ -7635,14 +7625,13 @@ const opGetServiceLastAccessedDetailsWithEntities = "GetServiceLastAccessedDetai
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetServiceLastAccessedDetailsWithEntitiesRequest method.
+//	req, resp := client.GetServiceLastAccessedDetailsWithEntitiesRequest(params)
 //
-//    // Example sending a request using the GetServiceLastAccessedDetailsWithEntitiesRequest method.
-//    req, resp := client.GetServiceLastAccessedDetailsWithEntitiesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetServiceLastAccessedDetailsWithEntities
 func (c *IAM) GetServiceLastAccessedDetailsWithEntitiesRequest(input *GetServiceLastAccessedDetailsWithEntitiesInput) (req *request.Request, output *GetServiceLastAccessedDetailsWithEntitiesOutput) {
@@ -7669,13 +7658,13 @@ func (c *IAM) GetServiceLastAccessedDetailsWithEntitiesRequest(input *GetService
 // that could have used group or policy permissions to access the specified
 // service.
 //
-//    * Group – For a group report, this operation returns a list of users
-//    in the group that could have used the group’s policies in an attempt
-//    to access the service.
+//   - Group – For a group report, this operation returns a list of users
+//     in the group that could have used the group’s policies in an attempt
+//     to access the service.
 //
-//    * Policy – For a policy report, this operation returns a list of entities
-//    (users or roles) that could have used the policy in an attempt to access
-//    the service.
+//   - Policy – For a policy report, this operation returns a list of entities
+//     (users or roles) that could have used the policy in an attempt to access
+//     the service.
 //
 // You can also use this operation for user or role reports to retrieve details
 // about those entities.
@@ -7694,13 +7683,14 @@ func (c *IAM) GetServiceLastAccessedDetailsWithEntitiesRequest(input *GetService
 // API operation GetServiceLastAccessedDetailsWithEntities for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetServiceLastAccessedDetailsWithEntities
 func (c *IAM) GetServiceLastAccessedDetailsWithEntities(input *GetServiceLastAccessedDetailsWithEntitiesInput) (*GetServiceLastAccessedDetailsWithEntitiesOutput, error) {
@@ -7740,14 +7730,13 @@ const opGetServiceLinkedRoleDeletionStatus = "GetServiceLinkedRoleDeletionStatus
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetServiceLinkedRoleDeletionStatusRequest method.
+//	req, resp := client.GetServiceLinkedRoleDeletionStatusRequest(params)
 //
-//    // Example sending a request using the GetServiceLinkedRoleDeletionStatusRequest method.
-//    req, resp := client.GetServiceLinkedRoleDeletionStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetServiceLinkedRoleDeletionStatus
 func (c *IAM) GetServiceLinkedRoleDeletionStatusRequest(input *GetServiceLinkedRoleDeletionStatusInput) (req *request.Request, output *GetServiceLinkedRoleDeletionStatusOutput) {
@@ -7783,17 +7772,18 @@ func (c *IAM) GetServiceLinkedRoleDeletionStatusRequest(input *GetServiceLinkedR
 // API operation GetServiceLinkedRoleDeletionStatus for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetServiceLinkedRoleDeletionStatus
 func (c *IAM) GetServiceLinkedRoleDeletionStatus(input *GetServiceLinkedRoleDeletionStatusInput) (*GetServiceLinkedRoleDeletionStatusOutput, error) {
@@ -7833,14 +7823,13 @@ const opGetUser = "GetUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetUserRequest method.
+//	req, resp := client.GetUserRequest(params)
 //
-//    // Example sending a request using the GetUserRequest method.
-//    req, resp := client.GetUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetUser
 func (c *IAM) GetUserRequest(input *GetUserInput) (req *request.Request, output *GetUserOutput) {
@@ -7876,13 +7865,14 @@ func (c *IAM) GetUserRequest(input *GetUserInput) (req *request.Request, output 
 // API operation GetUser for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetUser
 func (c *IAM) GetUser(input *GetUserInput) (*GetUserOutput, error) {
@@ -7922,14 +7912,13 @@ const opGetUserPolicy = "GetUserPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetUserPolicyRequest method.
+//	req, resp := client.GetUserPolicyRequest(params)
 //
-//    // Example sending a request using the GetUserPolicyRequest method.
-//    req, resp := client.GetUserPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetUserPolicy
 func (c *IAM) GetUserPolicyRequest(input *GetUserPolicyInput) (req *request.Request, output *GetUserPolicyOutput) {
@@ -7976,13 +7965,14 @@ func (c *IAM) GetUserPolicyRequest(input *GetUserPolicyInput) (req *request.Requ
 // API operation GetUserPolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetUserPolicy
 func (c *IAM) GetUserPolicy(input *GetUserPolicyInput) (*GetUserPolicyOutput, error) {
@@ -8022,14 +8012,13 @@ const opListAccessKeys = "ListAccessKeys"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAccessKeysRequest method.
+//	req, resp := client.ListAccessKeysRequest(params)
 //
-//    // Example sending a request using the ListAccessKeysRequest method.
-//    req, resp := client.ListAccessKeysRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListAccessKeys
 func (c *IAM) ListAccessKeysRequest(input *ListAccessKeysInput) (req *request.Request, output *ListAccessKeysOutput) {
@@ -8080,13 +8069,14 @@ func (c *IAM) ListAccessKeysRequest(input *ListAccessKeysInput) (req *request.Re
 // API operation ListAccessKeys for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListAccessKeys
 func (c *IAM) ListAccessKeys(input *ListAccessKeysInput) (*ListAccessKeysOutput, error) {
@@ -8118,15 +8108,14 @@ func (c *IAM) ListAccessKeysWithContext(ctx aws.Context, input *ListAccessKeysIn
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAccessKeys operation.
-//    pageNum := 0
-//    err := client.ListAccessKeysPages(params,
-//        func(page *iam.ListAccessKeysOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAccessKeys operation.
+//	pageNum := 0
+//	err := client.ListAccessKeysPages(params,
+//	    func(page *iam.ListAccessKeysOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IAM) ListAccessKeysPages(input *ListAccessKeysInput, fn func(*ListAccessKeysOutput, bool) bool) error {
 	return c.ListAccessKeysPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -8178,14 +8167,13 @@ const opListAccountAliases = "ListAccountAliases"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAccountAliasesRequest method.
+//	req, resp := client.ListAccountAliasesRequest(params)
 //
-//    // Example sending a request using the ListAccountAliasesRequest method.
-//    req, resp := client.ListAccountAliasesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListAccountAliases
 func (c *IAM) ListAccountAliasesRequest(input *ListAccountAliasesInput) (req *request.Request, output *ListAccountAliasesOutput) {
@@ -8226,9 +8214,9 @@ func (c *IAM) ListAccountAliasesRequest(input *ListAccountAliasesInput) (req *re
 // API operation ListAccountAliases for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListAccountAliases
 func (c *IAM) ListAccountAliases(input *ListAccountAliasesInput) (*ListAccountAliasesOutput, error) {
@@ -8260,15 +8248,14 @@ func (c *IAM) ListAccountAliasesWithContext(ctx aws.Context, input *ListAccountA
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAccountAliases operation.
-//    pageNum := 0
-//    err := client.ListAccountAliasesPages(params,
-//        func(page *iam.ListAccountAliasesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAccountAliases operation.
+//	pageNum := 0
+//	err := client.ListAccountAliasesPages(params,
+//	    func(page *iam.ListAccountAliasesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IAM) ListAccountAliasesPages(input *ListAccountAliasesInput, fn func(*ListAccountAliasesOutput, bool) bool) error {
 	return c.ListAccountAliasesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -8320,14 +8307,13 @@ const opListAttachedGroupPolicies = "ListAttachedGroupPolicies"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAttachedGroupPoliciesRequest method.
+//	req, resp := client.ListAttachedGroupPoliciesRequest(params)
 //
-//    // Example sending a request using the ListAttachedGroupPoliciesRequest method.
-//    req, resp := client.ListAttachedGroupPoliciesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListAttachedGroupPolicies
 func (c *IAM) ListAttachedGroupPoliciesRequest(input *ListAttachedGroupPoliciesInput) (req *request.Request, output *ListAttachedGroupPoliciesOutput) {
@@ -8375,17 +8361,18 @@ func (c *IAM) ListAttachedGroupPoliciesRequest(input *ListAttachedGroupPoliciesI
 // API operation ListAttachedGroupPolicies for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListAttachedGroupPolicies
 func (c *IAM) ListAttachedGroupPolicies(input *ListAttachedGroupPoliciesInput) (*ListAttachedGroupPoliciesOutput, error) {
@@ -8417,15 +8404,14 @@ func (c *IAM) ListAttachedGroupPoliciesWithContext(ctx aws.Context, input *ListA
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAttachedGroupPolicies operation.
-//    pageNum := 0
-//    err := client.ListAttachedGroupPoliciesPages(params,
-//        func(page *iam.ListAttachedGroupPoliciesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAttachedGroupPolicies operation.
+//	pageNum := 0
+//	err := client.ListAttachedGroupPoliciesPages(params,
+//	    func(page *iam.ListAttachedGroupPoliciesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IAM) ListAttachedGroupPoliciesPages(input *ListAttachedGroupPoliciesInput, fn func(*ListAttachedGroupPoliciesOutput, bool) bool) error {
 	return c.ListAttachedGroupPoliciesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -8477,14 +8463,13 @@ const opListAttachedRolePolicies = "ListAttachedRolePolicies"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAttachedRolePoliciesRequest method.
+//	req, resp := client.ListAttachedRolePoliciesRequest(params)
 //
-//    // Example sending a request using the ListAttachedRolePoliciesRequest method.
-//    req, resp := client.ListAttachedRolePoliciesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListAttachedRolePolicies
 func (c *IAM) ListAttachedRolePoliciesRequest(input *ListAttachedRolePoliciesInput) (req *request.Request, output *ListAttachedRolePoliciesOutput) {
@@ -8532,17 +8517,18 @@ func (c *IAM) ListAttachedRolePoliciesRequest(input *ListAttachedRolePoliciesInp
 // API operation ListAttachedRolePolicies for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListAttachedRolePolicies
 func (c *IAM) ListAttachedRolePolicies(input *ListAttachedRolePoliciesInput) (*ListAttachedRolePoliciesOutput, error) {
@@ -8574,15 +8560,14 @@ func (c *IAM) ListAttachedRolePoliciesWithContext(ctx aws.Context, input *ListAt
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAttachedRolePolicies operation.
-//    pageNum := 0
-//    err := client.ListAttachedRolePoliciesPages(params,
-//        func(page *iam.ListAttachedRolePoliciesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAttachedRolePolicies operation.
+//	pageNum := 0
+//	err := client.ListAttachedRolePoliciesPages(params,
+//	    func(page *iam.ListAttachedRolePoliciesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IAM) ListAttachedRolePoliciesPages(input *ListAttachedRolePoliciesInput, fn func(*ListAttachedRolePoliciesOutput, bool) bool) error {
 	return c.ListAttachedRolePoliciesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -8634,14 +8619,13 @@ const opListAttachedUserPolicies = "ListAttachedUserPolicies"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAttachedUserPoliciesRequest method.
+//	req, resp := client.ListAttachedUserPoliciesRequest(params)
 //
-//    // Example sending a request using the ListAttachedUserPoliciesRequest method.
-//    req, resp := client.ListAttachedUserPoliciesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListAttachedUserPolicies
 func (c *IAM) ListAttachedUserPoliciesRequest(input *ListAttachedUserPoliciesInput) (req *request.Request, output *ListAttachedUserPoliciesOutput) {
@@ -8689,17 +8673,18 @@ func (c *IAM) ListAttachedUserPoliciesRequest(input *ListAttachedUserPoliciesInp
 // API operation ListAttachedUserPolicies for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListAttachedUserPolicies
 func (c *IAM) ListAttachedUserPolicies(input *ListAttachedUserPoliciesInput) (*ListAttachedUserPoliciesOutput, error) {
@@ -8731,15 +8716,14 @@ func (c *IAM) ListAttachedUserPoliciesWithContext(ctx aws.Context, input *ListAt
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAttachedUserPolicies operation.
-//    pageNum := 0
-//    err := client.ListAttachedUserPoliciesPages(params,
-//        func(page *iam.ListAttachedUserPoliciesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAttachedUserPolicies operation.
+//	pageNum := 0
+//	err := client.ListAttachedUserPoliciesPages(params,
+//	    func(page *iam.ListAttachedUserPoliciesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IAM) ListAttachedUserPoliciesPages(input *ListAttachedUserPoliciesInput, fn func(*ListAttachedUserPoliciesOutput, bool) bool) error {
 	return c.ListAttachedUserPoliciesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -8791,14 +8775,13 @@ const opListEntitiesForPolicy = "ListEntitiesForPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEntitiesForPolicyRequest method.
+//	req, resp := client.ListEntitiesForPolicyRequest(params)
 //
-//    // Example sending a request using the ListEntitiesForPolicyRequest method.
-//    req, resp := client.ListEntitiesForPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListEntitiesForPolicy
 func (c *IAM) ListEntitiesForPolicyRequest(input *ListEntitiesForPolicyInput) (req *request.Request, output *ListEntitiesForPolicyOutput) {
@@ -8843,17 +8826,18 @@ func (c *IAM) ListEntitiesForPolicyRequest(input *ListEntitiesForPolicyInput) (r
 // API operation ListEntitiesForPolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListEntitiesForPolicy
 func (c *IAM) ListEntitiesForPolicy(input *ListEntitiesForPolicyInput) (*ListEntitiesForPolicyOutput, error) {
@@ -8885,15 +8869,14 @@ func (c *IAM) ListEntitiesForPolicyWithContext(ctx aws.Context, input *ListEntit
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListEntitiesForPolicy operation.
-//    pageNum := 0
-//    err := client.ListEntitiesForPolicyPages(params,
-//        func(page *iam.ListEntitiesForPolicyOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListEntitiesForPolicy operation.
+//	pageNum := 0
+//	err := client.ListEntitiesForPolicyPages(params,
+//	    func(page *iam.ListEntitiesForPolicyOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IAM) ListEntitiesForPolicyPages(input *ListEntitiesForPolicyInput, fn func(*ListEntitiesForPolicyOutput, bool) bool) error {
 	return c.ListEntitiesForPolicyPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -8945,14 +8928,13 @@ const opListGroupPolicies = "ListGroupPolicies"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListGroupPoliciesRequest method.
+//	req, resp := client.ListGroupPoliciesRequest(params)
 //
-//    // Example sending a request using the ListGroupPoliciesRequest method.
-//    req, resp := client.ListGroupPoliciesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListGroupPolicies
 func (c *IAM) ListGroupPoliciesRequest(input *ListGroupPoliciesInput) (req *request.Request, output *ListGroupPoliciesOutput) {
@@ -9000,13 +8982,14 @@ func (c *IAM) ListGroupPoliciesRequest(input *ListGroupPoliciesInput) (req *requ
 // API operation ListGroupPolicies for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListGroupPolicies
 func (c *IAM) ListGroupPolicies(input *ListGroupPoliciesInput) (*ListGroupPoliciesOutput, error) {
@@ -9038,15 +9021,14 @@ func (c *IAM) ListGroupPoliciesWithContext(ctx aws.Context, input *ListGroupPoli
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListGroupPolicies operation.
-//    pageNum := 0
-//    err := client.ListGroupPoliciesPages(params,
-//        func(page *iam.ListGroupPoliciesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListGroupPolicies operation.
+//	pageNum := 0
+//	err := client.ListGroupPoliciesPages(params,
+//	    func(page *iam.ListGroupPoliciesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IAM) ListGroupPoliciesPages(input *ListGroupPoliciesInput, fn func(*ListGroupPoliciesOutput, bool) bool) error {
 	return c.ListGroupPoliciesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -9098,14 +9080,13 @@ const opListGroups = "ListGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListGroupsRequest method.
+//	req, resp := client.ListGroupsRequest(params)
 //
-//    // Example sending a request using the ListGroupsRequest method.
-//    req, resp := client.ListGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListGroups
 func (c *IAM) ListGroupsRequest(input *ListGroupsInput) (req *request.Request, output *ListGroupsOutput) {
@@ -9144,9 +9125,9 @@ func (c *IAM) ListGroupsRequest(input *ListGroupsInput) (req *request.Request, o
 // API operation ListGroups for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListGroups
 func (c *IAM) ListGroups(input *ListGroupsInput) (*ListGroupsOutput, error) {
@@ -9178,15 +9159,14 @@ func (c *IAM) ListGroupsWithContext(ctx aws.Context, input *ListGroupsInput, opt
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListGroups operation.
-//    pageNum := 0
-//    err := client.ListGroupsPages(params,
-//        func(page *iam.ListGroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListGroups operation.
+//	pageNum := 0
+//	err := client.ListGroupsPages(params,
+//	    func(page *iam.ListGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IAM) ListGroupsPages(input *ListGroupsInput, fn func(*ListGroupsOutput, bool) bool) error {
 	return c.ListGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -9238,14 +9218,13 @@ const opListGroupsForUser = "ListGroupsForUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListGroupsForUserRequest method.
+//	req, resp := client.ListGroupsForUserRequest(params)
 //
-//    // Example sending a request using the ListGroupsForUserRequest method.
-//    req, resp := client.ListGroupsForUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListGroupsForUser
 func (c *IAM) ListGroupsForUserRequest(input *ListGroupsForUserInput) (req *request.Request, output *ListGroupsForUserOutput) {
@@ -9284,13 +9263,14 @@ func (c *IAM) ListGroupsForUserRequest(input *ListGroupsForUserInput) (req *requ
 // API operation ListGroupsForUser for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListGroupsForUser
 func (c *IAM) ListGroupsForUser(input *ListGroupsForUserInput) (*ListGroupsForUserOutput, error) {
@@ -9322,15 +9302,14 @@ func (c *IAM) ListGroupsForUserWithContext(ctx aws.Context, input *ListGroupsFor
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListGroupsForUser operation.
-//    pageNum := 0
-//    err := client.ListGroupsForUserPages(params,
-//        func(page *iam.ListGroupsForUserOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListGroupsForUser operation.
+//	pageNum := 0
+//	err := client.ListGroupsForUserPages(params,
+//	    func(page *iam.ListGroupsForUserOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IAM) ListGroupsForUserPages(input *ListGroupsForUserInput, fn func(*ListGroupsForUserOutput, bool) bool) error {
 	return c.ListGroupsForUserPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -9382,14 +9361,13 @@ const opListInstanceProfileTags = "ListInstanceProfileTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListInstanceProfileTagsRequest method.
+//	req, resp := client.ListInstanceProfileTagsRequest(params)
 //
-//    // Example sending a request using the ListInstanceProfileTagsRequest method.
-//    req, resp := client.ListInstanceProfileTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListInstanceProfileTags
 func (c *IAM) ListInstanceProfileTagsRequest(input *ListInstanceProfileTagsInput) (req *request.Request, output *ListInstanceProfileTagsOutput) {
@@ -9423,13 +9401,14 @@ func (c *IAM) ListInstanceProfileTagsRequest(input *ListInstanceProfileTagsInput
 // API operation ListInstanceProfileTags for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListInstanceProfileTags
 func (c *IAM) ListInstanceProfileTags(input *ListInstanceProfileTagsInput) (*ListInstanceProfileTagsOutput, error) {
@@ -9469,14 +9448,13 @@ const opListInstanceProfiles = "ListInstanceProfiles"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListInstanceProfilesRequest method.
+//	req, resp := client.ListInstanceProfilesRequest(params)
 //
-//    // Example sending a request using the ListInstanceProfilesRequest method.
-//    req, resp := client.ListInstanceProfilesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListInstanceProfiles
 func (c *IAM) ListInstanceProfilesRequest(input *ListInstanceProfilesInput) (req *request.Request, output *ListInstanceProfilesOutput) {
@@ -9522,9 +9500,9 @@ func (c *IAM) ListInstanceProfilesRequest(input *ListInstanceProfilesInput) (req
 // API operation ListInstanceProfiles for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListInstanceProfiles
 func (c *IAM) ListInstanceProfiles(input *ListInstanceProfilesInput) (*ListInstanceProfilesOutput, error) {
@@ -9556,15 +9534,14 @@ func (c *IAM) ListInstanceProfilesWithContext(ctx aws.Context, input *ListInstan
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListInstanceProfiles operation.
-//    pageNum := 0
-//    err := client.ListInstanceProfilesPages(params,
-//        func(page *iam.ListInstanceProfilesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListInstanceProfiles operation.
+//	pageNum := 0
+//	err := client.ListInstanceProfilesPages(params,
+//	    func(page *iam.ListInstanceProfilesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IAM) ListInstanceProfilesPages(input *ListInstanceProfilesInput, fn func(*ListInstanceProfilesOutput, bool) bool) error {
 	return c.ListInstanceProfilesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -9616,14 +9593,13 @@ const opListInstanceProfilesForRole = "ListInstanceProfilesForRole"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListInstanceProfilesForRoleRequest method.
+//	req, resp := client.ListInstanceProfilesForRoleRequest(params)
 //
-//    // Example sending a request using the ListInstanceProfilesForRoleRequest method.
-//    req, resp := client.ListInstanceProfilesForRoleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListInstanceProfilesForRole
 func (c *IAM) ListInstanceProfilesForRoleRequest(input *ListInstanceProfilesForRoleInput) (req *request.Request, output *ListInstanceProfilesForRoleOutput) {
@@ -9664,13 +9640,14 @@ func (c *IAM) ListInstanceProfilesForRoleRequest(input *ListInstanceProfilesForR
 // API operation ListInstanceProfilesForRole for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListInstanceProfilesForRole
 func (c *IAM) ListInstanceProfilesForRole(input *ListInstanceProfilesForRoleInput) (*ListInstanceProfilesForRoleOutput, error) {
@@ -9702,15 +9679,14 @@ func (c *IAM) ListInstanceProfilesForRoleWithContext(ctx aws.Context, input *Lis
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListInstanceProfilesForRole operation.
-//    pageNum := 0
-//    err := client.ListInstanceProfilesForRolePages(params,
-//        func(page *iam.ListInstanceProfilesForRoleOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListInstanceProfilesForRole operation.
+//	pageNum := 0
+//	err := client.ListInstanceProfilesForRolePages(params,
+//	    func(page *iam.ListInstanceProfilesForRoleOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IAM) ListInstanceProfilesForRolePages(input *ListInstanceProfilesForRoleInput, fn func(*ListInstanceProfilesForRoleOutput, bool) bool) error {
 	return c.ListInstanceProfilesForRolePagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -9762,14 +9738,13 @@ const opListMFADeviceTags = "ListMFADeviceTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListMFADeviceTagsRequest method.
+//	req, resp := client.ListMFADeviceTagsRequest(params)
 //
-//    // Example sending a request using the ListMFADeviceTagsRequest method.
-//    req, resp := client.ListMFADeviceTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListMFADeviceTags
 func (c *IAM) ListMFADeviceTagsRequest(input *ListMFADeviceTagsInput) (req *request.Request, output *ListMFADeviceTagsOutput) {
@@ -9803,17 +9778,18 @@ func (c *IAM) ListMFADeviceTagsRequest(input *ListMFADeviceTagsInput) (req *requ
 // API operation ListMFADeviceTags for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListMFADeviceTags
 func (c *IAM) ListMFADeviceTags(input *ListMFADeviceTagsInput) (*ListMFADeviceTagsOutput, error) {
@@ -9853,14 +9829,13 @@ const opListMFADevices = "ListMFADevices"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListMFADevicesRequest method.
+//	req, resp := client.ListMFADevicesRequest(params)
 //
-//    // Example sending a request using the ListMFADevicesRequest method.
-//    req, resp := client.ListMFADevicesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListMFADevices
 func (c *IAM) ListMFADevicesRequest(input *ListMFADevicesInput) (req *request.Request, output *ListMFADevicesOutput) {
@@ -9903,13 +9878,14 @@ func (c *IAM) ListMFADevicesRequest(input *ListMFADevicesInput) (req *request.Re
 // API operation ListMFADevices for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListMFADevices
 func (c *IAM) ListMFADevices(input *ListMFADevicesInput) (*ListMFADevicesOutput, error) {
@@ -9941,15 +9917,14 @@ func (c *IAM) ListMFADevicesWithContext(ctx aws.Context, input *ListMFADevicesIn
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListMFADevices operation.
-//    pageNum := 0
-//    err := client.ListMFADevicesPages(params,
-//        func(page *iam.ListMFADevicesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListMFADevices operation.
+//	pageNum := 0
+//	err := client.ListMFADevicesPages(params,
+//	    func(page *iam.ListMFADevicesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IAM) ListMFADevicesPages(input *ListMFADevicesInput, fn func(*ListMFADevicesOutput, bool) bool) error {
 	return c.ListMFADevicesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -10001,14 +9976,13 @@ const opListOpenIDConnectProviderTags = "ListOpenIDConnectProviderTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListOpenIDConnectProviderTagsRequest method.
+//	req, resp := client.ListOpenIDConnectProviderTagsRequest(params)
 //
-//    // Example sending a request using the ListOpenIDConnectProviderTagsRequest method.
-//    req, resp := client.ListOpenIDConnectProviderTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListOpenIDConnectProviderTags
 func (c *IAM) ListOpenIDConnectProviderTagsRequest(input *ListOpenIDConnectProviderTagsInput) (req *request.Request, output *ListOpenIDConnectProviderTagsOutput) {
@@ -10044,17 +10018,18 @@ func (c *IAM) ListOpenIDConnectProviderTagsRequest(input *ListOpenIDConnectProvi
 // API operation ListOpenIDConnectProviderTags for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
+//
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListOpenIDConnectProviderTags
 func (c *IAM) ListOpenIDConnectProviderTags(input *ListOpenIDConnectProviderTagsInput) (*ListOpenIDConnectProviderTagsOutput, error) {
@@ -10094,14 +10069,13 @@ const opListOpenIDConnectProviders = "ListOpenIDConnectProviders"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListOpenIDConnectProvidersRequest method.
+//	req, resp := client.ListOpenIDConnectProvidersRequest(params)
 //
-//    // Example sending a request using the ListOpenIDConnectProvidersRequest method.
-//    req, resp := client.ListOpenIDConnectProvidersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListOpenIDConnectProviders
 func (c *IAM) ListOpenIDConnectProvidersRequest(input *ListOpenIDConnectProvidersInput) (req *request.Request, output *ListOpenIDConnectProvidersOutput) {
@@ -10138,9 +10112,9 @@ func (c *IAM) ListOpenIDConnectProvidersRequest(input *ListOpenIDConnectProvider
 // API operation ListOpenIDConnectProviders for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListOpenIDConnectProviders
 func (c *IAM) ListOpenIDConnectProviders(input *ListOpenIDConnectProvidersInput) (*ListOpenIDConnectProvidersOutput, error) {
@@ -10180,14 +10154,13 @@ const opListPolicies = "ListPolicies"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPoliciesRequest method.
+//	req, resp := client.ListPoliciesRequest(params)
 //
-//    // Example sending a request using the ListPoliciesRequest method.
-//    req, resp := client.ListPoliciesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListPolicies
 func (c *IAM) ListPoliciesRequest(input *ListPoliciesInput) (req *request.Request, output *ListPoliciesOutput) {
@@ -10242,9 +10215,9 @@ func (c *IAM) ListPoliciesRequest(input *ListPoliciesInput) (req *request.Reques
 // API operation ListPolicies for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListPolicies
 func (c *IAM) ListPolicies(input *ListPoliciesInput) (*ListPoliciesOutput, error) {
@@ -10276,15 +10249,14 @@ func (c *IAM) ListPoliciesWithContext(ctx aws.Context, input *ListPoliciesInput,
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPolicies operation.
-//    pageNum := 0
-//    err := client.ListPoliciesPages(params,
-//        func(page *iam.ListPoliciesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPolicies operation.
+//	pageNum := 0
+//	err := client.ListPoliciesPages(params,
+//	    func(page *iam.ListPoliciesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IAM) ListPoliciesPages(input *ListPoliciesInput, fn func(*ListPoliciesOutput, bool) bool) error {
 	return c.ListPoliciesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -10336,14 +10308,13 @@ const opListPoliciesGrantingServiceAccess = "ListPoliciesGrantingServiceAccess"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPoliciesGrantingServiceAccessRequest method.
+//	req, resp := client.ListPoliciesGrantingServiceAccessRequest(params)
 //
-//    // Example sending a request using the ListPoliciesGrantingServiceAccessRequest method.
-//    req, resp := client.ListPoliciesGrantingServiceAccessRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListPoliciesGrantingServiceAccess
 func (c *IAM) ListPoliciesGrantingServiceAccessRequest(input *ListPoliciesGrantingServiceAccessInput) (req *request.Request, output *ListPoliciesGrantingServiceAccessOutput) {
@@ -10377,17 +10348,17 @@ func (c *IAM) ListPoliciesGrantingServiceAccessRequest(input *ListPoliciesGranti
 // The list of policies returned by the operation depends on the ARN of the
 // identity that you provide.
 //
-//    * User – The list of policies includes the managed and inline policies
-//    that are attached to the user directly. The list also includes any additional
-//    managed and inline policies that are attached to the group to which the
-//    user belongs.
+//   - User – The list of policies includes the managed and inline policies
+//     that are attached to the user directly. The list also includes any additional
+//     managed and inline policies that are attached to the group to which the
+//     user belongs.
 //
-//    * Group – The list of policies includes only the managed and inline
-//    policies that are attached to the group directly. Policies that are attached
-//    to the group’s user are not included.
+//   - Group – The list of policies includes only the managed and inline
+//     policies that are attached to the group directly. Policies that are attached
+//     to the group’s user are not included.
 //
-//    * Role – The list of policies includes only the managed and inline policies
-//    that are attached to the role.
+//   - Role – The list of policies includes only the managed and inline policies
+//     that are attached to the role.
 //
 // For each managed policy, this operation returns the ARN and policy name.
 // For each inline policy, it returns the policy name and the entity to which
@@ -10407,13 +10378,14 @@ func (c *IAM) ListPoliciesGrantingServiceAccessRequest(input *ListPoliciesGranti
 // API operation ListPoliciesGrantingServiceAccess for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListPoliciesGrantingServiceAccess
 func (c *IAM) ListPoliciesGrantingServiceAccess(input *ListPoliciesGrantingServiceAccessInput) (*ListPoliciesGrantingServiceAccessOutput, error) {
@@ -10453,14 +10425,13 @@ const opListPolicyTags = "ListPolicyTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPolicyTagsRequest method.
+//	req, resp := client.ListPolicyTagsRequest(params)
 //
-//    // Example sending a request using the ListPolicyTagsRequest method.
-//    req, resp := client.ListPolicyTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListPolicyTags
 func (c *IAM) ListPolicyTagsRequest(input *ListPolicyTagsInput) (req *request.Request, output *ListPolicyTagsOutput) {
@@ -10494,17 +10465,18 @@ func (c *IAM) ListPolicyTagsRequest(input *ListPolicyTagsInput) (req *request.Re
 // API operation ListPolicyTags for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
+//
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListPolicyTags
 func (c *IAM) ListPolicyTags(input *ListPolicyTagsInput) (*ListPolicyTagsOutput, error) {
@@ -10544,14 +10516,13 @@ const opListPolicyVersions = "ListPolicyVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPolicyVersionsRequest method.
+//	req, resp := client.ListPolicyVersionsRequest(params)
 //
-//    // Example sending a request using the ListPolicyVersionsRequest method.
-//    req, resp := client.ListPolicyVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListPolicyVersions
 func (c *IAM) ListPolicyVersionsRequest(input *ListPolicyVersionsInput) (req *request.Request, output *ListPolicyVersionsOutput) {
@@ -10593,17 +10564,18 @@ func (c *IAM) ListPolicyVersionsRequest(input *ListPolicyVersionsInput) (req *re
 // API operation ListPolicyVersions for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListPolicyVersions
 func (c *IAM) ListPolicyVersions(input *ListPolicyVersionsInput) (*ListPolicyVersionsOutput, error) {
@@ -10635,15 +10607,14 @@ func (c *IAM) ListPolicyVersionsWithContext(ctx aws.Context, input *ListPolicyVe
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPolicyVersions operation.
-//    pageNum := 0
-//    err := client.ListPolicyVersionsPages(params,
-//        func(page *iam.ListPolicyVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPolicyVersions operation.
+//	pageNum := 0
+//	err := client.ListPolicyVersionsPages(params,
+//	    func(page *iam.ListPolicyVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IAM) ListPolicyVersionsPages(input *ListPolicyVersionsInput, fn func(*ListPolicyVersionsOutput, bool) bool) error {
 	return c.ListPolicyVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -10695,14 +10666,13 @@ const opListRolePolicies = "ListRolePolicies"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRolePoliciesRequest method.
+//	req, resp := client.ListRolePoliciesRequest(params)
 //
-//    // Example sending a request using the ListRolePoliciesRequest method.
-//    req, resp := client.ListRolePoliciesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListRolePolicies
 func (c *IAM) ListRolePoliciesRequest(input *ListRolePoliciesInput) (req *request.Request, output *ListRolePoliciesOutput) {
@@ -10749,13 +10719,14 @@ func (c *IAM) ListRolePoliciesRequest(input *ListRolePoliciesInput) (req *reques
 // API operation ListRolePolicies for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListRolePolicies
 func (c *IAM) ListRolePolicies(input *ListRolePoliciesInput) (*ListRolePoliciesOutput, error) {
@@ -10787,15 +10758,14 @@ func (c *IAM) ListRolePoliciesWithContext(ctx aws.Context, input *ListRolePolici
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRolePolicies operation.
-//    pageNum := 0
-//    err := client.ListRolePoliciesPages(params,
-//        func(page *iam.ListRolePoliciesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRolePolicies operation.
+//	pageNum := 0
+//	err := client.ListRolePoliciesPages(params,
+//	    func(page *iam.ListRolePoliciesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IAM) ListRolePoliciesPages(input *ListRolePoliciesInput, fn func(*ListRolePoliciesOutput, bool) bool) error {
 	return c.ListRolePoliciesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -10847,14 +10817,13 @@ const opListRoleTags = "ListRoleTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRoleTagsRequest method.
+//	req, resp := client.ListRoleTagsRequest(params)
 //
-//    // Example sending a request using the ListRoleTagsRequest method.
-//    req, resp := client.ListRoleTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListRoleTags
 func (c *IAM) ListRoleTagsRequest(input *ListRoleTagsInput) (req *request.Request, output *ListRoleTagsOutput) {
@@ -10888,13 +10857,14 @@ func (c *IAM) ListRoleTagsRequest(input *ListRoleTagsInput) (req *request.Reques
 // API operation ListRoleTags for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListRoleTags
 func (c *IAM) ListRoleTags(input *ListRoleTagsInput) (*ListRoleTagsOutput, error) {
@@ -10934,14 +10904,13 @@ const opListRoles = "ListRoles"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRolesRequest method.
+//	req, resp := client.ListRolesRequest(params)
 //
-//    // Example sending a request using the ListRolesRequest method.
-//    req, resp := client.ListRolesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListRoles
 func (c *IAM) ListRolesRequest(input *ListRolesInput) (req *request.Request, output *ListRolesOutput) {
@@ -10987,9 +10956,9 @@ func (c *IAM) ListRolesRequest(input *ListRolesInput) (req *request.Request, out
 // API operation ListRoles for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListRoles
 func (c *IAM) ListRoles(input *ListRolesInput) (*ListRolesOutput, error) {
@@ -11021,15 +10990,14 @@ func (c *IAM) ListRolesWithContext(ctx aws.Context, input *ListRolesInput, opts 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRoles operation.
-//    pageNum := 0
-//    err := client.ListRolesPages(params,
-//        func(page *iam.ListRolesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRoles operation.
+//	pageNum := 0
+//	err := client.ListRolesPages(params,
+//	    func(page *iam.ListRolesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IAM) ListRolesPages(input *ListRolesInput, fn func(*ListRolesOutput, bool) bool) error {
 	return c.ListRolesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -11081,14 +11049,13 @@ const opListSAMLProviderTags = "ListSAMLProviderTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSAMLProviderTagsRequest method.
+//	req, resp := client.ListSAMLProviderTagsRequest(params)
 //
-//    // Example sending a request using the ListSAMLProviderTagsRequest method.
-//    req, resp := client.ListSAMLProviderTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListSAMLProviderTags
 func (c *IAM) ListSAMLProviderTagsRequest(input *ListSAMLProviderTagsInput) (req *request.Request, output *ListSAMLProviderTagsOutput) {
@@ -11124,17 +11091,18 @@ func (c *IAM) ListSAMLProviderTagsRequest(input *ListSAMLProviderTagsInput) (req
 // API operation ListSAMLProviderTags for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
+//
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListSAMLProviderTags
 func (c *IAM) ListSAMLProviderTags(input *ListSAMLProviderTagsInput) (*ListSAMLProviderTagsOutput, error) {
@@ -11174,14 +11142,13 @@ const opListSAMLProviders = "ListSAMLProviders"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSAMLProvidersRequest method.
+//	req, resp := client.ListSAMLProvidersRequest(params)
 //
-//    // Example sending a request using the ListSAMLProvidersRequest method.
-//    req, resp := client.ListSAMLProvidersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListSAMLProviders
 func (c *IAM) ListSAMLProvidersRequest(input *ListSAMLProvidersInput) (req *request.Request, output *ListSAMLProvidersOutput) {
@@ -11218,9 +11185,9 @@ func (c *IAM) ListSAMLProvidersRequest(input *ListSAMLProvidersInput) (req *requ
 // API operation ListSAMLProviders for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListSAMLProviders
 func (c *IAM) ListSAMLProviders(input *ListSAMLProvidersInput) (*ListSAMLProvidersOutput, error) {
@@ -11260,14 +11227,13 @@ const opListSSHPublicKeys = "ListSSHPublicKeys"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSSHPublicKeysRequest method.
+//	req, resp := client.ListSSHPublicKeysRequest(params)
 //
-//    // Example sending a request using the ListSSHPublicKeysRequest method.
-//    req, resp := client.ListSSHPublicKeysRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListSSHPublicKeys
 func (c *IAM) ListSSHPublicKeysRequest(input *ListSSHPublicKeysInput) (req *request.Request, output *ListSSHPublicKeysOutput) {
@@ -11314,9 +11280,9 @@ func (c *IAM) ListSSHPublicKeysRequest(input *ListSSHPublicKeysInput) (req *requ
 // API operation ListSSHPublicKeys for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListSSHPublicKeys
 func (c *IAM) ListSSHPublicKeys(input *ListSSHPublicKeysInput) (*ListSSHPublicKeysOutput, error) {
@@ -11348,15 +11314,14 @@ func (c *IAM) ListSSHPublicKeysWithContext(ctx aws.Context, input *ListSSHPublic
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSSHPublicKeys operation.
-//    pageNum := 0
-//    err := client.ListSSHPublicKeysPages(params,
-//        func(page *iam.ListSSHPublicKeysOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSSHPublicKeys operation.
+//	pageNum := 0
+//	err := client.ListSSHPublicKeysPages(params,
+//	    func(page *iam.ListSSHPublicKeysOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IAM) ListSSHPublicKeysPages(input *ListSSHPublicKeysInput, fn func(*ListSSHPublicKeysOutput, bool) bool) error {
 	return c.ListSSHPublicKeysPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -11408,14 +11373,13 @@ const opListServerCertificateTags = "ListServerCertificateTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListServerCertificateTagsRequest method.
+//	req, resp := client.ListServerCertificateTagsRequest(params)
 //
-//    // Example sending a request using the ListServerCertificateTagsRequest method.
-//    req, resp := client.ListServerCertificateTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListServerCertificateTags
 func (c *IAM) ListServerCertificateTagsRequest(input *ListServerCertificateTagsInput) (req *request.Request, output *ListServerCertificateTagsOutput) {
@@ -11455,13 +11419,14 @@ func (c *IAM) ListServerCertificateTagsRequest(input *ListServerCertificateTagsI
 // API operation ListServerCertificateTags for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListServerCertificateTags
 func (c *IAM) ListServerCertificateTags(input *ListServerCertificateTagsInput) (*ListServerCertificateTagsOutput, error) {
@@ -11501,14 +11466,13 @@ const opListServerCertificates = "ListServerCertificates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListServerCertificatesRequest method.
+//	req, resp := client.ListServerCertificatesRequest(params)
 //
-//    // Example sending a request using the ListServerCertificatesRequest method.
-//    req, resp := client.ListServerCertificatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListServerCertificates
 func (c *IAM) ListServerCertificatesRequest(input *ListServerCertificatesInput) (req *request.Request, output *ListServerCertificatesOutput) {
@@ -11558,9 +11522,9 @@ func (c *IAM) ListServerCertificatesRequest(input *ListServerCertificatesInput) 
 // API operation ListServerCertificates for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListServerCertificates
 func (c *IAM) ListServerCertificates(input *ListServerCertificatesInput) (*ListServerCertificatesOutput, error) {
@@ -11592,15 +11556,14 @@ func (c *IAM) ListServerCertificatesWithContext(ctx aws.Context, input *ListServ
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListServerCertificates operation.
-//    pageNum := 0
-//    err := client.ListServerCertificatesPages(params,
-//        func(page *iam.ListServerCertificatesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListServerCertificates operation.
+//	pageNum := 0
+//	err := client.ListServerCertificatesPages(params,
+//	    func(page *iam.ListServerCertificatesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IAM) ListServerCertificatesPages(input *ListServerCertificatesInput, fn func(*ListServerCertificatesOutput, bool) bool) error {
 	return c.ListServerCertificatesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -11652,14 +11615,13 @@ const opListServiceSpecificCredentials = "ListServiceSpecificCredentials"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListServiceSpecificCredentialsRequest method.
+//	req, resp := client.ListServiceSpecificCredentialsRequest(params)
 //
-//    // Example sending a request using the ListServiceSpecificCredentialsRequest method.
-//    req, resp := client.ListServiceSpecificCredentialsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListServiceSpecificCredentials
 func (c *IAM) ListServiceSpecificCredentialsRequest(input *ListServiceSpecificCredentialsInput) (req *request.Request, output *ListServiceSpecificCredentialsOutput) {
@@ -11696,12 +11658,13 @@ func (c *IAM) ListServiceSpecificCredentialsRequest(input *ListServiceSpecificCr
 // API operation ListServiceSpecificCredentials for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceNotSupportedException "NotSupportedService"
-//   The specified service does not support service-specific credentials.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceNotSupportedException "NotSupportedService"
+//     The specified service does not support service-specific credentials.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListServiceSpecificCredentials
 func (c *IAM) ListServiceSpecificCredentials(input *ListServiceSpecificCredentialsInput) (*ListServiceSpecificCredentialsOutput, error) {
@@ -11741,14 +11704,13 @@ const opListSigningCertificates = "ListSigningCertificates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSigningCertificatesRequest method.
+//	req, resp := client.ListSigningCertificatesRequest(params)
 //
-//    // Example sending a request using the ListSigningCertificatesRequest method.
-//    req, resp := client.ListSigningCertificatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListSigningCertificates
 func (c *IAM) ListSigningCertificatesRequest(input *ListSigningCertificatesInput) (req *request.Request, output *ListSigningCertificatesOutput) {
@@ -11796,13 +11758,14 @@ func (c *IAM) ListSigningCertificatesRequest(input *ListSigningCertificatesInput
 // API operation ListSigningCertificates for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListSigningCertificates
 func (c *IAM) ListSigningCertificates(input *ListSigningCertificatesInput) (*ListSigningCertificatesOutput, error) {
@@ -11834,15 +11797,14 @@ func (c *IAM) ListSigningCertificatesWithContext(ctx aws.Context, input *ListSig
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSigningCertificates operation.
-//    pageNum := 0
-//    err := client.ListSigningCertificatesPages(params,
-//        func(page *iam.ListSigningCertificatesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSigningCertificates operation.
+//	pageNum := 0
+//	err := client.ListSigningCertificatesPages(params,
+//	    func(page *iam.ListSigningCertificatesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IAM) ListSigningCertificatesPages(input *ListSigningCertificatesInput, fn func(*ListSigningCertificatesOutput, bool) bool) error {
 	return c.ListSigningCertificatesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -11894,14 +11856,13 @@ const opListUserPolicies = "ListUserPolicies"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListUserPoliciesRequest method.
+//	req, resp := client.ListUserPoliciesRequest(params)
 //
-//    // Example sending a request using the ListUserPoliciesRequest method.
-//    req, resp := client.ListUserPoliciesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListUserPolicies
 func (c *IAM) ListUserPoliciesRequest(input *ListUserPoliciesInput) (req *request.Request, output *ListUserPoliciesOutput) {
@@ -11947,13 +11908,14 @@ func (c *IAM) ListUserPoliciesRequest(input *ListUserPoliciesInput) (req *reques
 // API operation ListUserPolicies for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListUserPolicies
 func (c *IAM) ListUserPolicies(input *ListUserPoliciesInput) (*ListUserPoliciesOutput, error) {
@@ -11985,15 +11947,14 @@ func (c *IAM) ListUserPoliciesWithContext(ctx aws.Context, input *ListUserPolici
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListUserPolicies operation.
-//    pageNum := 0
-//    err := client.ListUserPoliciesPages(params,
-//        func(page *iam.ListUserPoliciesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListUserPolicies operation.
+//	pageNum := 0
+//	err := client.ListUserPoliciesPages(params,
+//	    func(page *iam.ListUserPoliciesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IAM) ListUserPoliciesPages(input *ListUserPoliciesInput, fn func(*ListUserPoliciesOutput, bool) bool) error {
 	return c.ListUserPoliciesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -12045,14 +12006,13 @@ const opListUserTags = "ListUserTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListUserTagsRequest method.
+//	req, resp := client.ListUserTagsRequest(params)
 //
-//    // Example sending a request using the ListUserTagsRequest method.
-//    req, resp := client.ListUserTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListUserTags
 func (c *IAM) ListUserTagsRequest(input *ListUserTagsInput) (req *request.Request, output *ListUserTagsOutput) {
@@ -12092,13 +12052,14 @@ func (c *IAM) ListUserTagsRequest(input *ListUserTagsInput) (req *request.Reques
 // API operation ListUserTags for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListUserTags
 func (c *IAM) ListUserTags(input *ListUserTagsInput) (*ListUserTagsOutput, error) {
@@ -12130,15 +12091,14 @@ func (c *IAM) ListUserTagsWithContext(ctx aws.Context, input *ListUserTagsInput,
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListUserTags operation.
-//    pageNum := 0
-//    err := client.ListUserTagsPages(params,
-//        func(page *iam.ListUserTagsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListUserTags operation.
+//	pageNum := 0
+//	err := client.ListUserTagsPages(params,
+//	    func(page *iam.ListUserTagsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IAM) ListUserTagsPages(input *ListUserTagsInput, fn func(*ListUserTagsOutput, bool) bool) error {
 	return c.ListUserTagsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -12190,14 +12150,13 @@ const opListUsers = "ListUsers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListUsersRequest method.
+//	req, resp := client.ListUsersRequest(params)
 //
-//    // Example sending a request using the ListUsersRequest method.
-//    req, resp := client.ListUsersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListUsers
 func (c *IAM) ListUsersRequest(input *ListUsersInput) (req *request.Request, output *ListUsersOutput) {
@@ -12243,9 +12202,9 @@ func (c *IAM) ListUsersRequest(input *ListUsersInput) (req *request.Request, out
 // API operation ListUsers for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListUsers
 func (c *IAM) ListUsers(input *ListUsersInput) (*ListUsersOutput, error) {
@@ -12277,15 +12236,14 @@ func (c *IAM) ListUsersWithContext(ctx aws.Context, input *ListUsersInput, opts 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListUsers operation.
-//    pageNum := 0
-//    err := client.ListUsersPages(params,
-//        func(page *iam.ListUsersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListUsers operation.
+//	pageNum := 0
+//	err := client.ListUsersPages(params,
+//	    func(page *iam.ListUsersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IAM) ListUsersPages(input *ListUsersInput, fn func(*ListUsersOutput, bool) bool) error {
 	return c.ListUsersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -12337,14 +12295,13 @@ const opListVirtualMFADevices = "ListVirtualMFADevices"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListVirtualMFADevicesRequest method.
+//	req, resp := client.ListVirtualMFADevicesRequest(params)
 //
-//    // Example sending a request using the ListVirtualMFADevicesRequest method.
-//    req, resp := client.ListVirtualMFADevicesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListVirtualMFADevices
 func (c *IAM) ListVirtualMFADevicesRequest(input *ListVirtualMFADevicesInput) (req *request.Request, output *ListVirtualMFADevicesOutput) {
@@ -12419,15 +12376,14 @@ func (c *IAM) ListVirtualMFADevicesWithContext(ctx aws.Context, input *ListVirtu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListVirtualMFADevices operation.
-//    pageNum := 0
-//    err := client.ListVirtualMFADevicesPages(params,
-//        func(page *iam.ListVirtualMFADevicesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListVirtualMFADevices operation.
+//	pageNum := 0
+//	err := client.ListVirtualMFADevicesPages(params,
+//	    func(page *iam.ListVirtualMFADevicesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IAM) ListVirtualMFADevicesPages(input *ListVirtualMFADevicesInput, fn func(*ListVirtualMFADevicesOutput, bool) bool) error {
 	return c.ListVirtualMFADevicesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -12479,14 +12435,13 @@ const opPutGroupPolicy = "PutGroupPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutGroupPolicyRequest method.
+//	req, resp := client.PutGroupPolicyRequest(params)
 //
-//    // Example sending a request using the PutGroupPolicyRequest method.
-//    req, resp := client.PutGroupPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/PutGroupPolicy
 func (c *IAM) PutGroupPolicyRequest(input *PutGroupPolicyInput) (req *request.Request, output *PutGroupPolicyOutput) {
@@ -12534,22 +12489,23 @@ func (c *IAM) PutGroupPolicyRequest(input *PutGroupPolicyInput) (req *request.Re
 // API operation PutGroupPolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
 //
-//   * ErrCodeMalformedPolicyDocumentException "MalformedPolicyDocument"
-//   The request was rejected because the policy document was malformed. The error
-//   message describes the specific error.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
+//   - ErrCodeMalformedPolicyDocumentException "MalformedPolicyDocument"
+//     The request was rejected because the policy document was malformed. The error
+//     message describes the specific error.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/PutGroupPolicy
 func (c *IAM) PutGroupPolicy(input *PutGroupPolicyInput) (*PutGroupPolicyOutput, error) {
@@ -12589,14 +12545,13 @@ const opPutRolePermissionsBoundary = "PutRolePermissionsBoundary"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutRolePermissionsBoundaryRequest method.
+//	req, resp := client.PutRolePermissionsBoundaryRequest(params)
 //
-//    // Example sending a request using the PutRolePermissionsBoundaryRequest method.
-//    req, resp := client.PutRolePermissionsBoundaryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/PutRolePermissionsBoundary
 func (c *IAM) PutRolePermissionsBoundaryRequest(input *PutRolePermissionsBoundaryInput) (req *request.Request, output *PutRolePermissionsBoundaryOutput) {
@@ -12640,27 +12595,28 @@ func (c *IAM) PutRolePermissionsBoundaryRequest(input *PutRolePermissionsBoundar
 // API operation PutRolePermissionsBoundary for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
-//   The request was rejected because only the service that depends on the service-linked
-//   role can modify or delete the role on your behalf. The error message includes
-//   the name of the service that depends on this service-linked role. You must
-//   request the change through that service.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodePolicyNotAttachableException "PolicyNotAttachable"
-//   The request failed because Amazon Web Services service role policies can
-//   only be attached to the service-linked role for that service.
+//   - ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
+//     The request was rejected because only the service that depends on the service-linked
+//     role can modify or delete the role on your behalf. The error message includes
+//     the name of the service that depends on this service-linked role. You must
+//     request the change through that service.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodePolicyNotAttachableException "PolicyNotAttachable"
+//     The request failed because Amazon Web Services service role policies can
+//     only be attached to the service-linked role for that service.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/PutRolePermissionsBoundary
 func (c *IAM) PutRolePermissionsBoundary(input *PutRolePermissionsBoundaryInput) (*PutRolePermissionsBoundaryOutput, error) {
@@ -12700,14 +12656,13 @@ const opPutRolePolicy = "PutRolePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutRolePolicyRequest method.
+//	req, resp := client.PutRolePolicyRequest(params)
 //
-//    // Example sending a request using the PutRolePolicyRequest method.
-//    req, resp := client.PutRolePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/PutRolePolicy
 func (c *IAM) PutRolePolicyRequest(input *PutRolePolicyInput) (req *request.Request, output *PutRolePolicyOutput) {
@@ -12761,28 +12716,29 @@ func (c *IAM) PutRolePolicyRequest(input *PutRolePolicyInput) (req *request.Requ
 // API operation PutRolePolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
 //
-//   * ErrCodeMalformedPolicyDocumentException "MalformedPolicyDocument"
-//   The request was rejected because the policy document was malformed. The error
-//   message describes the specific error.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
+//   - ErrCodeMalformedPolicyDocumentException "MalformedPolicyDocument"
+//     The request was rejected because the policy document was malformed. The error
+//     message describes the specific error.
 //
-//   * ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
-//   The request was rejected because only the service that depends on the service-linked
-//   role can modify or delete the role on your behalf. The error message includes
-//   the name of the service that depends on this service-linked role. You must
-//   request the change through that service.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
+//     The request was rejected because only the service that depends on the service-linked
+//     role can modify or delete the role on your behalf. The error message includes
+//     the name of the service that depends on this service-linked role. You must
+//     request the change through that service.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/PutRolePolicy
 func (c *IAM) PutRolePolicy(input *PutRolePolicyInput) (*PutRolePolicyOutput, error) {
@@ -12822,14 +12778,13 @@ const opPutUserPermissionsBoundary = "PutUserPermissionsBoundary"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutUserPermissionsBoundaryRequest method.
+//	req, resp := client.PutUserPermissionsBoundaryRequest(params)
 //
-//    // Example sending a request using the PutUserPermissionsBoundaryRequest method.
-//    req, resp := client.PutUserPermissionsBoundaryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/PutUserPermissionsBoundary
 func (c *IAM) PutUserPermissionsBoundaryRequest(input *PutUserPermissionsBoundaryInput) (req *request.Request, output *PutUserPermissionsBoundaryOutput) {
@@ -12871,21 +12826,22 @@ func (c *IAM) PutUserPermissionsBoundaryRequest(input *PutUserPermissionsBoundar
 // API operation PutUserPermissionsBoundary for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodePolicyNotAttachableException "PolicyNotAttachable"
-//   The request failed because Amazon Web Services service role policies can
-//   only be attached to the service-linked role for that service.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodePolicyNotAttachableException "PolicyNotAttachable"
+//     The request failed because Amazon Web Services service role policies can
+//     only be attached to the service-linked role for that service.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/PutUserPermissionsBoundary
 func (c *IAM) PutUserPermissionsBoundary(input *PutUserPermissionsBoundaryInput) (*PutUserPermissionsBoundaryOutput, error) {
@@ -12925,14 +12881,13 @@ const opPutUserPolicy = "PutUserPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutUserPolicyRequest method.
+//	req, resp := client.PutUserPolicyRequest(params)
 //
-//    // Example sending a request using the PutUserPolicyRequest method.
-//    req, resp := client.PutUserPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/PutUserPolicy
 func (c *IAM) PutUserPolicyRequest(input *PutUserPolicyInput) (req *request.Request, output *PutUserPolicyOutput) {
@@ -12980,22 +12935,23 @@ func (c *IAM) PutUserPolicyRequest(input *PutUserPolicyInput) (req *request.Requ
 // API operation PutUserPolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
 //
-//   * ErrCodeMalformedPolicyDocumentException "MalformedPolicyDocument"
-//   The request was rejected because the policy document was malformed. The error
-//   message describes the specific error.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
+//   - ErrCodeMalformedPolicyDocumentException "MalformedPolicyDocument"
+//     The request was rejected because the policy document was malformed. The error
+//     message describes the specific error.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/PutUserPolicy
 func (c *IAM) PutUserPolicy(input *PutUserPolicyInput) (*PutUserPolicyOutput, error) {
@@ -13035,14 +12991,13 @@ const opRemoveClientIDFromOpenIDConnectProvider = "RemoveClientIDFromOpenIDConne
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveClientIDFromOpenIDConnectProviderRequest method.
+//	req, resp := client.RemoveClientIDFromOpenIDConnectProviderRequest(params)
 //
-//    // Example sending a request using the RemoveClientIDFromOpenIDConnectProviderRequest method.
-//    req, resp := client.RemoveClientIDFromOpenIDConnectProviderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/RemoveClientIDFromOpenIDConnectProvider
 func (c *IAM) RemoveClientIDFromOpenIDConnectProviderRequest(input *RemoveClientIDFromOpenIDConnectProviderInput) (req *request.Request, output *RemoveClientIDFromOpenIDConnectProviderOutput) {
@@ -13079,17 +13034,18 @@ func (c *IAM) RemoveClientIDFromOpenIDConnectProviderRequest(input *RemoveClient
 // API operation RemoveClientIDFromOpenIDConnectProvider for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
 //
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/RemoveClientIDFromOpenIDConnectProvider
 func (c *IAM) RemoveClientIDFromOpenIDConnectProvider(input *RemoveClientIDFromOpenIDConnectProviderInput) (*RemoveClientIDFromOpenIDConnectProviderOutput, error) {
@@ -13129,14 +13085,13 @@ const opRemoveRoleFromInstanceProfile = "RemoveRoleFromInstanceProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveRoleFromInstanceProfileRequest method.
+//	req, resp := client.RemoveRoleFromInstanceProfileRequest(params)
 //
-//    // Example sending a request using the RemoveRoleFromInstanceProfileRequest method.
-//    req, resp := client.RemoveRoleFromInstanceProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/RemoveRoleFromInstanceProfile
 func (c *IAM) RemoveRoleFromInstanceProfileRequest(input *RemoveRoleFromInstanceProfileInput) (req *request.Request, output *RemoveRoleFromInstanceProfileOutput) {
@@ -13177,24 +13132,25 @@ func (c *IAM) RemoveRoleFromInstanceProfileRequest(input *RemoveRoleFromInstance
 // API operation RemoveRoleFromInstanceProfile for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
-//   The request was rejected because only the service that depends on the service-linked
-//   role can modify or delete the role on your behalf. The error message includes
-//   the name of the service that depends on this service-linked role. You must
-//   request the change through that service.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
+//     The request was rejected because only the service that depends on the service-linked
+//     role can modify or delete the role on your behalf. The error message includes
+//     the name of the service that depends on this service-linked role. You must
+//     request the change through that service.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/RemoveRoleFromInstanceProfile
 func (c *IAM) RemoveRoleFromInstanceProfile(input *RemoveRoleFromInstanceProfileInput) (*RemoveRoleFromInstanceProfileOutput, error) {
@@ -13234,14 +13190,13 @@ const opRemoveUserFromGroup = "RemoveUserFromGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveUserFromGroupRequest method.
+//	req, resp := client.RemoveUserFromGroupRequest(params)
 //
-//    // Example sending a request using the RemoveUserFromGroupRequest method.
-//    req, resp := client.RemoveUserFromGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/RemoveUserFromGroup
 func (c *IAM) RemoveUserFromGroupRequest(input *RemoveUserFromGroupInput) (req *request.Request, output *RemoveUserFromGroupOutput) {
@@ -13273,18 +13228,19 @@ func (c *IAM) RemoveUserFromGroupRequest(input *RemoveUserFromGroupInput) (req *
 // API operation RemoveUserFromGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/RemoveUserFromGroup
 func (c *IAM) RemoveUserFromGroup(input *RemoveUserFromGroupInput) (*RemoveUserFromGroupOutput, error) {
@@ -13324,14 +13280,13 @@ const opResetServiceSpecificCredential = "ResetServiceSpecificCredential"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ResetServiceSpecificCredentialRequest method.
+//	req, resp := client.ResetServiceSpecificCredentialRequest(params)
 //
-//    // Example sending a request using the ResetServiceSpecificCredentialRequest method.
-//    req, resp := client.ResetServiceSpecificCredentialRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ResetServiceSpecificCredential
 func (c *IAM) ResetServiceSpecificCredentialRequest(input *ResetServiceSpecificCredentialInput) (req *request.Request, output *ResetServiceSpecificCredentialOutput) {
@@ -13365,9 +13320,9 @@ func (c *IAM) ResetServiceSpecificCredentialRequest(input *ResetServiceSpecificC
 // API operation ResetServiceSpecificCredential for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ResetServiceSpecificCredential
 func (c *IAM) ResetServiceSpecificCredential(input *ResetServiceSpecificCredentialInput) (*ResetServiceSpecificCredentialOutput, error) {
@@ -13407,14 +13362,13 @@ const opResyncMFADevice = "ResyncMFADevice"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ResyncMFADeviceRequest method.
+//	req, resp := client.ResyncMFADeviceRequest(params)
 //
-//    // Example sending a request using the ResyncMFADeviceRequest method.
-//    req, resp := client.ResyncMFADeviceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ResyncMFADevice
 func (c *IAM) ResyncMFADeviceRequest(input *ResyncMFADeviceInput) (req *request.Request, output *ResyncMFADeviceOutput) {
@@ -13451,22 +13405,23 @@ func (c *IAM) ResyncMFADeviceRequest(input *ResyncMFADeviceInput) (req *request.
 // API operation ResyncMFADevice for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidAuthenticationCodeException "InvalidAuthenticationCode"
-//   The request was rejected because the authentication code was not recognized.
-//   The error message describes the specific error.
 //
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
+//   - ErrCodeInvalidAuthenticationCodeException "InvalidAuthenticationCode"
+//     The request was rejected because the authentication code was not recognized.
+//     The error message describes the specific error.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ResyncMFADevice
 func (c *IAM) ResyncMFADevice(input *ResyncMFADeviceInput) (*ResyncMFADeviceOutput, error) {
@@ -13506,14 +13461,13 @@ const opSetDefaultPolicyVersion = "SetDefaultPolicyVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SetDefaultPolicyVersionRequest method.
+//	req, resp := client.SetDefaultPolicyVersionRequest(params)
 //
-//    // Example sending a request using the SetDefaultPolicyVersionRequest method.
-//    req, resp := client.SetDefaultPolicyVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/SetDefaultPolicyVersion
 func (c *IAM) SetDefaultPolicyVersionRequest(input *SetDefaultPolicyVersionInput) (req *request.Request, output *SetDefaultPolicyVersionOutput) {
@@ -13554,22 +13508,23 @@ func (c *IAM) SetDefaultPolicyVersionRequest(input *SetDefaultPolicyVersionInput
 // API operation SetDefaultPolicyVersion for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/SetDefaultPolicyVersion
 func (c *IAM) SetDefaultPolicyVersion(input *SetDefaultPolicyVersionInput) (*SetDefaultPolicyVersionOutput, error) {
@@ -13609,14 +13564,13 @@ const opSetSecurityTokenServicePreferences = "SetSecurityTokenServicePreferences
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SetSecurityTokenServicePreferencesRequest method.
+//	req, resp := client.SetSecurityTokenServicePreferencesRequest(params)
 //
-//    // Example sending a request using the SetSecurityTokenServicePreferencesRequest method.
-//    req, resp := client.SetSecurityTokenServicePreferencesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/SetSecurityTokenServicePreferences
 func (c *IAM) SetSecurityTokenServicePreferencesRequest(input *SetSecurityTokenServicePreferencesInput) (req *request.Request, output *SetSecurityTokenServicePreferencesOutput) {
@@ -13670,9 +13624,9 @@ func (c *IAM) SetSecurityTokenServicePreferencesRequest(input *SetSecurityTokenS
 // API operation SetSecurityTokenServicePreferences for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/SetSecurityTokenServicePreferences
 func (c *IAM) SetSecurityTokenServicePreferences(input *SetSecurityTokenServicePreferencesInput) (*SetSecurityTokenServicePreferencesOutput, error) {
@@ -13712,14 +13666,13 @@ const opSimulateCustomPolicy = "SimulateCustomPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SimulateCustomPolicyRequest method.
+//	req, resp := client.SimulateCustomPolicyRequest(params)
 //
-//    // Example sending a request using the SimulateCustomPolicyRequest method.
-//    req, resp := client.SimulateCustomPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/SimulateCustomPolicy
 func (c *IAM) SimulateCustomPolicyRequest(input *SimulateCustomPolicyInput) (req *request.Request, output *SimulatePolicyResponse) {
@@ -13779,13 +13732,14 @@ func (c *IAM) SimulateCustomPolicyRequest(input *SimulateCustomPolicyInput) (req
 // API operation SimulateCustomPolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
 //
-//   * ErrCodePolicyEvaluationException "PolicyEvaluation"
-//   The request failed because a provided policy could not be successfully evaluated.
-//   An additional detailed message indicates the source of the failure.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
+//
+//   - ErrCodePolicyEvaluationException "PolicyEvaluation"
+//     The request failed because a provided policy could not be successfully evaluated.
+//     An additional detailed message indicates the source of the failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/SimulateCustomPolicy
 func (c *IAM) SimulateCustomPolicy(input *SimulateCustomPolicyInput) (*SimulatePolicyResponse, error) {
@@ -13817,15 +13771,14 @@ func (c *IAM) SimulateCustomPolicyWithContext(ctx aws.Context, input *SimulateCu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a SimulateCustomPolicy operation.
-//    pageNum := 0
-//    err := client.SimulateCustomPolicyPages(params,
-//        func(page *iam.SimulatePolicyResponse, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a SimulateCustomPolicy operation.
+//	pageNum := 0
+//	err := client.SimulateCustomPolicyPages(params,
+//	    func(page *iam.SimulatePolicyResponse, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IAM) SimulateCustomPolicyPages(input *SimulateCustomPolicyInput, fn func(*SimulatePolicyResponse, bool) bool) error {
 	return c.SimulateCustomPolicyPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -13877,14 +13830,13 @@ const opSimulatePrincipalPolicy = "SimulatePrincipalPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SimulatePrincipalPolicyRequest method.
+//	req, resp := client.SimulatePrincipalPolicyRequest(params)
 //
-//    // Example sending a request using the SimulatePrincipalPolicyRequest method.
-//    req, resp := client.SimulatePrincipalPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/SimulatePrincipalPolicy
 func (c *IAM) SimulatePrincipalPolicyRequest(input *SimulatePrincipalPolicyInput) (req *request.Request, output *SimulatePolicyResponse) {
@@ -13953,17 +13905,18 @@ func (c *IAM) SimulatePrincipalPolicyRequest(input *SimulatePrincipalPolicyInput
 // API operation SimulatePrincipalPolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodePolicyEvaluationException "PolicyEvaluation"
-//   The request failed because a provided policy could not be successfully evaluated.
-//   An additional detailed message indicates the source of the failure.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
+//
+//   - ErrCodePolicyEvaluationException "PolicyEvaluation"
+//     The request failed because a provided policy could not be successfully evaluated.
+//     An additional detailed message indicates the source of the failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/SimulatePrincipalPolicy
 func (c *IAM) SimulatePrincipalPolicy(input *SimulatePrincipalPolicyInput) (*SimulatePolicyResponse, error) {
@@ -13995,15 +13948,14 @@ func (c *IAM) SimulatePrincipalPolicyWithContext(ctx aws.Context, input *Simulat
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a SimulatePrincipalPolicy operation.
-//    pageNum := 0
-//    err := client.SimulatePrincipalPolicyPages(params,
-//        func(page *iam.SimulatePolicyResponse, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a SimulatePrincipalPolicy operation.
+//	pageNum := 0
+//	err := client.SimulatePrincipalPolicyPages(params,
+//	    func(page *iam.SimulatePolicyResponse, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IAM) SimulatePrincipalPolicyPages(input *SimulatePrincipalPolicyInput, fn func(*SimulatePolicyResponse, bool) bool) error {
 	return c.SimulatePrincipalPolicyPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -14055,14 +14007,13 @@ const opTagInstanceProfile = "TagInstanceProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagInstanceProfileRequest method.
+//	req, resp := client.TagInstanceProfileRequest(params)
 //
-//    // Example sending a request using the TagInstanceProfileRequest method.
-//    req, resp := client.TagInstanceProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/TagInstanceProfile
 func (c *IAM) TagInstanceProfileRequest(input *TagInstanceProfileInput) (req *request.Request, output *TagInstanceProfileOutput) {
@@ -14090,27 +14041,27 @@ func (c *IAM) TagInstanceProfileRequest(input *TagInstanceProfileInput) (req *re
 // Each tag consists of a key name and an associated value. By assigning tags
 // to your resources, you can do the following:
 //
-//    * Administrative grouping and discovery - Attach tags to resources to
-//    aid in organization and search. For example, you could search for all
-//    resources with the key name Project and the value MyImportantProject.
-//    Or search for all resources with the key name Cost Center and the value
-//    41200.
+//   - Administrative grouping and discovery - Attach tags to resources to
+//     aid in organization and search. For example, you could search for all
+//     resources with the key name Project and the value MyImportantProject.
+//     Or search for all resources with the key name Cost Center and the value
+//     41200.
 //
-//    * Access control - Include tags in IAM user-based and resource-based policies.
-//    You can use tags to restrict access to only an IAM instance profile that
-//    has a specified tag attached. For examples of policies that show how to
-//    use tags to control access, see Control access using IAM tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html)
-//    in the IAM User Guide.
+//   - Access control - Include tags in IAM user-based and resource-based policies.
+//     You can use tags to restrict access to only an IAM instance profile that
+//     has a specified tag attached. For examples of policies that show how to
+//     use tags to control access, see Control access using IAM tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html)
+//     in the IAM User Guide.
 //
-//    * If any one of the tags is invalid or if you exceed the allowed maximum
-//    number of tags, then the entire request fails and the resource is not
-//    created. For more information about tagging, see Tagging IAM resources
-//    (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html) in the
-//    IAM User Guide.
+//   - If any one of the tags is invalid or if you exceed the allowed maximum
+//     number of tags, then the entire request fails and the resource is not
+//     created. For more information about tagging, see Tagging IAM resources
+//     (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html) in the
+//     IAM User Guide.
 //
-//    * Amazon Web Services always interprets the tag Value as a single string.
-//    If you need to store an array, you can store comma-separated values in
-//    the string. However, you must interpret the value in your code.
+//   - Amazon Web Services always interprets the tag Value as a single string.
+//     If you need to store an array, you can store comma-separated values in
+//     the string. However, you must interpret the value in your code.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -14120,27 +14071,28 @@ func (c *IAM) TagInstanceProfileRequest(input *TagInstanceProfileInput) (req *re
 // API operation TagInstanceProfile for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeConcurrentModificationException "ConcurrentModification"
-//   The request was rejected because multiple requests to change this object
-//   were submitted simultaneously. Wait a few minutes and submit your request
-//   again.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/TagInstanceProfile
 func (c *IAM) TagInstanceProfile(input *TagInstanceProfileInput) (*TagInstanceProfileOutput, error) {
@@ -14180,14 +14132,13 @@ const opTagMFADevice = "TagMFADevice"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagMFADeviceRequest method.
+//	req, resp := client.TagMFADeviceRequest(params)
 //
-//    // Example sending a request using the TagMFADeviceRequest method.
-//    req, resp := client.TagMFADeviceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/TagMFADevice
 func (c *IAM) TagMFADeviceRequest(input *TagMFADeviceInput) (req *request.Request, output *TagMFADeviceOutput) {
@@ -14216,27 +14167,27 @@ func (c *IAM) TagMFADeviceRequest(input *TagMFADeviceInput) (req *request.Reques
 // A tag consists of a key name and an associated value. By assigning tags to
 // your resources, you can do the following:
 //
-//    * Administrative grouping and discovery - Attach tags to resources to
-//    aid in organization and search. For example, you could search for all
-//    resources with the key name Project and the value MyImportantProject.
-//    Or search for all resources with the key name Cost Center and the value
-//    41200.
+//   - Administrative grouping and discovery - Attach tags to resources to
+//     aid in organization and search. For example, you could search for all
+//     resources with the key name Project and the value MyImportantProject.
+//     Or search for all resources with the key name Cost Center and the value
+//     41200.
 //
-//    * Access control - Include tags in IAM user-based and resource-based policies.
-//    You can use tags to restrict access to only an IAM virtual MFA device
-//    that has a specified tag attached. For examples of policies that show
-//    how to use tags to control access, see Control access using IAM tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html)
-//    in the IAM User Guide.
+//   - Access control - Include tags in IAM user-based and resource-based policies.
+//     You can use tags to restrict access to only an IAM virtual MFA device
+//     that has a specified tag attached. For examples of policies that show
+//     how to use tags to control access, see Control access using IAM tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html)
+//     in the IAM User Guide.
 //
-//    * If any one of the tags is invalid or if you exceed the allowed maximum
-//    number of tags, then the entire request fails and the resource is not
-//    created. For more information about tagging, see Tagging IAM resources
-//    (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html) in the
-//    IAM User Guide.
+//   - If any one of the tags is invalid or if you exceed the allowed maximum
+//     number of tags, then the entire request fails and the resource is not
+//     created. For more information about tagging, see Tagging IAM resources
+//     (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html) in the
+//     IAM User Guide.
 //
-//    * Amazon Web Services always interprets the tag Value as a single string.
-//    If you need to store an array, you can store comma-separated values in
-//    the string. However, you must interpret the value in your code.
+//   - Amazon Web Services always interprets the tag Value as a single string.
+//     If you need to store an array, you can store comma-separated values in
+//     the string. However, you must interpret the value in your code.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -14246,27 +14197,28 @@ func (c *IAM) TagMFADeviceRequest(input *TagMFADeviceInput) (req *request.Reques
 // API operation TagMFADevice for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
 //
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeConcurrentModificationException "ConcurrentModification"
-//   The request was rejected because multiple requests to change this object
-//   were submitted simultaneously. Wait a few minutes and submit your request
-//   again.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/TagMFADevice
 func (c *IAM) TagMFADevice(input *TagMFADeviceInput) (*TagMFADeviceOutput, error) {
@@ -14306,14 +14258,13 @@ const opTagOpenIDConnectProvider = "TagOpenIDConnectProvider"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagOpenIDConnectProviderRequest method.
+//	req, resp := client.TagOpenIDConnectProviderRequest(params)
 //
-//    // Example sending a request using the TagOpenIDConnectProviderRequest method.
-//    req, resp := client.TagOpenIDConnectProviderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/TagOpenIDConnectProvider
 func (c *IAM) TagOpenIDConnectProviderRequest(input *TagOpenIDConnectProviderInput) (req *request.Request, output *TagOpenIDConnectProviderOutput) {
@@ -14344,27 +14295,27 @@ func (c *IAM) TagOpenIDConnectProviderRequest(input *TagOpenIDConnectProviderInp
 // A tag consists of a key name and an associated value. By assigning tags to
 // your resources, you can do the following:
 //
-//    * Administrative grouping and discovery - Attach tags to resources to
-//    aid in organization and search. For example, you could search for all
-//    resources with the key name Project and the value MyImportantProject.
-//    Or search for all resources with the key name Cost Center and the value
-//    41200.
+//   - Administrative grouping and discovery - Attach tags to resources to
+//     aid in organization and search. For example, you could search for all
+//     resources with the key name Project and the value MyImportantProject.
+//     Or search for all resources with the key name Cost Center and the value
+//     41200.
 //
-//    * Access control - Include tags in IAM user-based and resource-based policies.
-//    You can use tags to restrict access to only an OIDC provider that has
-//    a specified tag attached. For examples of policies that show how to use
-//    tags to control access, see Control access using IAM tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html)
-//    in the IAM User Guide.
+//   - Access control - Include tags in IAM user-based and resource-based policies.
+//     You can use tags to restrict access to only an OIDC provider that has
+//     a specified tag attached. For examples of policies that show how to use
+//     tags to control access, see Control access using IAM tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html)
+//     in the IAM User Guide.
 //
-//    * If any one of the tags is invalid or if you exceed the allowed maximum
-//    number of tags, then the entire request fails and the resource is not
-//    created. For more information about tagging, see Tagging IAM resources
-//    (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html) in the
-//    IAM User Guide.
+//   - If any one of the tags is invalid or if you exceed the allowed maximum
+//     number of tags, then the entire request fails and the resource is not
+//     created. For more information about tagging, see Tagging IAM resources
+//     (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html) in the
+//     IAM User Guide.
 //
-//    * Amazon Web Services always interprets the tag Value as a single string.
-//    If you need to store an array, you can store comma-separated values in
-//    the string. However, you must interpret the value in your code.
+//   - Amazon Web Services always interprets the tag Value as a single string.
+//     If you need to store an array, you can store comma-separated values in
+//     the string. However, you must interpret the value in your code.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -14374,27 +14325,28 @@ func (c *IAM) TagOpenIDConnectProviderRequest(input *TagOpenIDConnectProviderInp
 // API operation TagOpenIDConnectProvider for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeConcurrentModificationException "ConcurrentModification"
-//   The request was rejected because multiple requests to change this object
-//   were submitted simultaneously. Wait a few minutes and submit your request
-//   again.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/TagOpenIDConnectProvider
 func (c *IAM) TagOpenIDConnectProvider(input *TagOpenIDConnectProviderInput) (*TagOpenIDConnectProviderOutput, error) {
@@ -14434,14 +14386,13 @@ const opTagPolicy = "TagPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagPolicyRequest method.
+//	req, resp := client.TagPolicyRequest(params)
 //
-//    // Example sending a request using the TagPolicyRequest method.
-//    req, resp := client.TagPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/TagPolicy
 func (c *IAM) TagPolicyRequest(input *TagPolicyInput) (req *request.Request, output *TagPolicyOutput) {
@@ -14469,27 +14420,27 @@ func (c *IAM) TagPolicyRequest(input *TagPolicyInput) (req *request.Request, out
 // A tag consists of a key name and an associated value. By assigning tags to
 // your resources, you can do the following:
 //
-//    * Administrative grouping and discovery - Attach tags to resources to
-//    aid in organization and search. For example, you could search for all
-//    resources with the key name Project and the value MyImportantProject.
-//    Or search for all resources with the key name Cost Center and the value
-//    41200.
+//   - Administrative grouping and discovery - Attach tags to resources to
+//     aid in organization and search. For example, you could search for all
+//     resources with the key name Project and the value MyImportantProject.
+//     Or search for all resources with the key name Cost Center and the value
+//     41200.
 //
-//    * Access control - Include tags in IAM user-based and resource-based policies.
-//    You can use tags to restrict access to only an IAM customer managed policy
-//    that has a specified tag attached. For examples of policies that show
-//    how to use tags to control access, see Control access using IAM tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html)
-//    in the IAM User Guide.
+//   - Access control - Include tags in IAM user-based and resource-based policies.
+//     You can use tags to restrict access to only an IAM customer managed policy
+//     that has a specified tag attached. For examples of policies that show
+//     how to use tags to control access, see Control access using IAM tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html)
+//     in the IAM User Guide.
 //
-//    * If any one of the tags is invalid or if you exceed the allowed maximum
-//    number of tags, then the entire request fails and the resource is not
-//    created. For more information about tagging, see Tagging IAM resources
-//    (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html) in the
-//    IAM User Guide.
+//   - If any one of the tags is invalid or if you exceed the allowed maximum
+//     number of tags, then the entire request fails and the resource is not
+//     created. For more information about tagging, see Tagging IAM resources
+//     (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html) in the
+//     IAM User Guide.
 //
-//    * Amazon Web Services always interprets the tag Value as a single string.
-//    If you need to store an array, you can store comma-separated values in
-//    the string. However, you must interpret the value in your code.
+//   - Amazon Web Services always interprets the tag Value as a single string.
+//     If you need to store an array, you can store comma-separated values in
+//     the string. However, you must interpret the value in your code.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -14499,27 +14450,28 @@ func (c *IAM) TagPolicyRequest(input *TagPolicyInput) (req *request.Request, out
 // API operation TagPolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeConcurrentModificationException "ConcurrentModification"
-//   The request was rejected because multiple requests to change this object
-//   were submitted simultaneously. Wait a few minutes and submit your request
-//   again.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/TagPolicy
 func (c *IAM) TagPolicy(input *TagPolicyInput) (*TagPolicyOutput, error) {
@@ -14559,14 +14511,13 @@ const opTagRole = "TagRole"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagRoleRequest method.
+//	req, resp := client.TagRoleRequest(params)
 //
-//    // Example sending a request using the TagRoleRequest method.
-//    req, resp := client.TagRoleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/TagRole
 func (c *IAM) TagRoleRequest(input *TagRoleInput) (req *request.Request, output *TagRoleOutput) {
@@ -14595,31 +14546,31 @@ func (c *IAM) TagRoleRequest(input *TagRoleInput) (req *request.Request, output 
 // A tag consists of a key name and an associated value. By assigning tags to
 // your resources, you can do the following:
 //
-//    * Administrative grouping and discovery - Attach tags to resources to
-//    aid in organization and search. For example, you could search for all
-//    resources with the key name Project and the value MyImportantProject.
-//    Or search for all resources with the key name Cost Center and the value
-//    41200.
+//   - Administrative grouping and discovery - Attach tags to resources to
+//     aid in organization and search. For example, you could search for all
+//     resources with the key name Project and the value MyImportantProject.
+//     Or search for all resources with the key name Cost Center and the value
+//     41200.
 //
-//    * Access control - Include tags in IAM user-based and resource-based policies.
-//    You can use tags to restrict access to only an IAM role that has a specified
-//    tag attached. You can also restrict access to only those resources that
-//    have a certain tag attached. For examples of policies that show how to
-//    use tags to control access, see Control access using IAM tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html)
-//    in the IAM User Guide.
+//   - Access control - Include tags in IAM user-based and resource-based policies.
+//     You can use tags to restrict access to only an IAM role that has a specified
+//     tag attached. You can also restrict access to only those resources that
+//     have a certain tag attached. For examples of policies that show how to
+//     use tags to control access, see Control access using IAM tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html)
+//     in the IAM User Guide.
 //
-//    * Cost allocation - Use tags to help track which individuals and teams
-//    are using which Amazon Web Services resources.
+//   - Cost allocation - Use tags to help track which individuals and teams
+//     are using which Amazon Web Services resources.
 //
-//    * If any one of the tags is invalid or if you exceed the allowed maximum
-//    number of tags, then the entire request fails and the resource is not
-//    created. For more information about tagging, see Tagging IAM resources
-//    (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html) in the
-//    IAM User Guide.
+//   - If any one of the tags is invalid or if you exceed the allowed maximum
+//     number of tags, then the entire request fails and the resource is not
+//     created. For more information about tagging, see Tagging IAM resources
+//     (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html) in the
+//     IAM User Guide.
 //
-//    * Amazon Web Services always interprets the tag Value as a single string.
-//    If you need to store an array, you can store comma-separated values in
-//    the string. However, you must interpret the value in your code.
+//   - Amazon Web Services always interprets the tag Value as a single string.
+//     If you need to store an array, you can store comma-separated values in
+//     the string. However, you must interpret the value in your code.
 //
 // For more information about tagging, see Tagging IAM identities (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html)
 // in the IAM User Guide.
@@ -14632,27 +14583,28 @@ func (c *IAM) TagRoleRequest(input *TagRoleInput) (req *request.Request, output 
 // API operation TagRole for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeConcurrentModificationException "ConcurrentModification"
-//   The request was rejected because multiple requests to change this object
-//   were submitted simultaneously. Wait a few minutes and submit your request
-//   again.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/TagRole
 func (c *IAM) TagRole(input *TagRoleInput) (*TagRoleOutput, error) {
@@ -14692,14 +14644,13 @@ const opTagSAMLProvider = "TagSAMLProvider"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagSAMLProviderRequest method.
+//	req, resp := client.TagSAMLProviderRequest(params)
 //
-//    // Example sending a request using the TagSAMLProviderRequest method.
-//    req, resp := client.TagSAMLProviderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/TagSAMLProvider
 func (c *IAM) TagSAMLProviderRequest(input *TagSAMLProviderInput) (req *request.Request, output *TagSAMLProviderOutput) {
@@ -14730,27 +14681,27 @@ func (c *IAM) TagSAMLProviderRequest(input *TagSAMLProviderInput) (req *request.
 // A tag consists of a key name and an associated value. By assigning tags to
 // your resources, you can do the following:
 //
-//    * Administrative grouping and discovery - Attach tags to resources to
-//    aid in organization and search. For example, you could search for all
-//    resources with the key name Project and the value MyImportantProject.
-//    Or search for all resources with the key name Cost Center and the value
-//    41200.
+//   - Administrative grouping and discovery - Attach tags to resources to
+//     aid in organization and search. For example, you could search for all
+//     resources with the key name Project and the value MyImportantProject.
+//     Or search for all resources with the key name Cost Center and the value
+//     41200.
 //
-//    * Access control - Include tags in IAM user-based and resource-based policies.
-//    You can use tags to restrict access to only a SAML identity provider that
-//    has a specified tag attached. For examples of policies that show how to
-//    use tags to control access, see Control access using IAM tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html)
-//    in the IAM User Guide.
+//   - Access control - Include tags in IAM user-based and resource-based policies.
+//     You can use tags to restrict access to only a SAML identity provider that
+//     has a specified tag attached. For examples of policies that show how to
+//     use tags to control access, see Control access using IAM tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html)
+//     in the IAM User Guide.
 //
-//    * If any one of the tags is invalid or if you exceed the allowed maximum
-//    number of tags, then the entire request fails and the resource is not
-//    created. For more information about tagging, see Tagging IAM resources
-//    (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html) in the
-//    IAM User Guide.
+//   - If any one of the tags is invalid or if you exceed the allowed maximum
+//     number of tags, then the entire request fails and the resource is not
+//     created. For more information about tagging, see Tagging IAM resources
+//     (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html) in the
+//     IAM User Guide.
 //
-//    * Amazon Web Services always interprets the tag Value as a single string.
-//    If you need to store an array, you can store comma-separated values in
-//    the string. However, you must interpret the value in your code.
+//   - Amazon Web Services always interprets the tag Value as a single string.
+//     If you need to store an array, you can store comma-separated values in
+//     the string. However, you must interpret the value in your code.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -14760,27 +14711,28 @@ func (c *IAM) TagSAMLProviderRequest(input *TagSAMLProviderInput) (req *request.
 // API operation TagSAMLProvider for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeConcurrentModificationException "ConcurrentModification"
-//   The request was rejected because multiple requests to change this object
-//   were submitted simultaneously. Wait a few minutes and submit your request
-//   again.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/TagSAMLProvider
 func (c *IAM) TagSAMLProvider(input *TagSAMLProviderInput) (*TagSAMLProviderOutput, error) {
@@ -14820,14 +14772,13 @@ const opTagServerCertificate = "TagServerCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagServerCertificateRequest method.
+//	req, resp := client.TagServerCertificateRequest(params)
 //
-//    // Example sending a request using the TagServerCertificateRequest method.
-//    req, resp := client.TagServerCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/TagServerCertificate
 func (c *IAM) TagServerCertificateRequest(input *TagServerCertificateInput) (req *request.Request, output *TagServerCertificateOutput) {
@@ -14861,30 +14812,30 @@ func (c *IAM) TagServerCertificateRequest(input *TagServerCertificateInput) (req
 // A tag consists of a key name and an associated value. By assigning tags to
 // your resources, you can do the following:
 //
-//    * Administrative grouping and discovery - Attach tags to resources to
-//    aid in organization and search. For example, you could search for all
-//    resources with the key name Project and the value MyImportantProject.
-//    Or search for all resources with the key name Cost Center and the value
-//    41200.
+//   - Administrative grouping and discovery - Attach tags to resources to
+//     aid in organization and search. For example, you could search for all
+//     resources with the key name Project and the value MyImportantProject.
+//     Or search for all resources with the key name Cost Center and the value
+//     41200.
 //
-//    * Access control - Include tags in IAM user-based and resource-based policies.
-//    You can use tags to restrict access to only a server certificate that
-//    has a specified tag attached. For examples of policies that show how to
-//    use tags to control access, see Control access using IAM tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html)
-//    in the IAM User Guide.
+//   - Access control - Include tags in IAM user-based and resource-based policies.
+//     You can use tags to restrict access to only a server certificate that
+//     has a specified tag attached. For examples of policies that show how to
+//     use tags to control access, see Control access using IAM tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html)
+//     in the IAM User Guide.
 //
-//    * Cost allocation - Use tags to help track which individuals and teams
-//    are using which Amazon Web Services resources.
+//   - Cost allocation - Use tags to help track which individuals and teams
+//     are using which Amazon Web Services resources.
 //
-//    * If any one of the tags is invalid or if you exceed the allowed maximum
-//    number of tags, then the entire request fails and the resource is not
-//    created. For more information about tagging, see Tagging IAM resources
-//    (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html) in the
-//    IAM User Guide.
+//   - If any one of the tags is invalid or if you exceed the allowed maximum
+//     number of tags, then the entire request fails and the resource is not
+//     created. For more information about tagging, see Tagging IAM resources
+//     (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html) in the
+//     IAM User Guide.
 //
-//    * Amazon Web Services always interprets the tag Value as a single string.
-//    If you need to store an array, you can store comma-separated values in
-//    the string. However, you must interpret the value in your code.
+//   - Amazon Web Services always interprets the tag Value as a single string.
+//     If you need to store an array, you can store comma-separated values in
+//     the string. However, you must interpret the value in your code.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -14894,27 +14845,28 @@ func (c *IAM) TagServerCertificateRequest(input *TagServerCertificateInput) (req
 // API operation TagServerCertificate for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeConcurrentModificationException "ConcurrentModification"
-//   The request was rejected because multiple requests to change this object
-//   were submitted simultaneously. Wait a few minutes and submit your request
-//   again.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/TagServerCertificate
 func (c *IAM) TagServerCertificate(input *TagServerCertificateInput) (*TagServerCertificateOutput, error) {
@@ -14954,14 +14906,13 @@ const opTagUser = "TagUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagUserRequest method.
+//	req, resp := client.TagUserRequest(params)
 //
-//    // Example sending a request using the TagUserRequest method.
-//    req, resp := client.TagUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/TagUser
 func (c *IAM) TagUserRequest(input *TagUserInput) (req *request.Request, output *TagUserOutput) {
@@ -14989,32 +14940,32 @@ func (c *IAM) TagUserRequest(input *TagUserInput) (req *request.Request, output 
 // A tag consists of a key name and an associated value. By assigning tags to
 // your resources, you can do the following:
 //
-//    * Administrative grouping and discovery - Attach tags to resources to
-//    aid in organization and search. For example, you could search for all
-//    resources with the key name Project and the value MyImportantProject.
-//    Or search for all resources with the key name Cost Center and the value
-//    41200.
+//   - Administrative grouping and discovery - Attach tags to resources to
+//     aid in organization and search. For example, you could search for all
+//     resources with the key name Project and the value MyImportantProject.
+//     Or search for all resources with the key name Cost Center and the value
+//     41200.
 //
-//    * Access control - Include tags in IAM user-based and resource-based policies.
-//    You can use tags to restrict access to only an IAM requesting user that
-//    has a specified tag attached. You can also restrict access to only those
-//    resources that have a certain tag attached. For examples of policies that
-//    show how to use tags to control access, see Control access using IAM tags
-//    (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html) in
-//    the IAM User Guide.
+//   - Access control - Include tags in IAM user-based and resource-based policies.
+//     You can use tags to restrict access to only an IAM requesting user that
+//     has a specified tag attached. You can also restrict access to only those
+//     resources that have a certain tag attached. For examples of policies that
+//     show how to use tags to control access, see Control access using IAM tags
+//     (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html) in
+//     the IAM User Guide.
 //
-//    * Cost allocation - Use tags to help track which individuals and teams
-//    are using which Amazon Web Services resources.
+//   - Cost allocation - Use tags to help track which individuals and teams
+//     are using which Amazon Web Services resources.
 //
-//    * If any one of the tags is invalid or if you exceed the allowed maximum
-//    number of tags, then the entire request fails and the resource is not
-//    created. For more information about tagging, see Tagging IAM resources
-//    (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html) in the
-//    IAM User Guide.
+//   - If any one of the tags is invalid or if you exceed the allowed maximum
+//     number of tags, then the entire request fails and the resource is not
+//     created. For more information about tagging, see Tagging IAM resources
+//     (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html) in the
+//     IAM User Guide.
 //
-//    * Amazon Web Services always interprets the tag Value as a single string.
-//    If you need to store an array, you can store comma-separated values in
-//    the string. However, you must interpret the value in your code.
+//   - Amazon Web Services always interprets the tag Value as a single string.
+//     If you need to store an array, you can store comma-separated values in
+//     the string. However, you must interpret the value in your code.
 //
 // For more information about tagging, see Tagging IAM identities (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html)
 // in the IAM User Guide.
@@ -15027,27 +14978,28 @@ func (c *IAM) TagUserRequest(input *TagUserInput) (req *request.Request, output 
 // API operation TagUser for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeConcurrentModificationException "ConcurrentModification"
-//   The request was rejected because multiple requests to change this object
-//   were submitted simultaneously. Wait a few minutes and submit your request
-//   again.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/TagUser
 func (c *IAM) TagUser(input *TagUserInput) (*TagUserOutput, error) {
@@ -15087,14 +15039,13 @@ const opUntagInstanceProfile = "UntagInstanceProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagInstanceProfileRequest method.
+//	req, resp := client.UntagInstanceProfileRequest(params)
 //
-//    // Example sending a request using the UntagInstanceProfileRequest method.
-//    req, resp := client.UntagInstanceProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UntagInstanceProfile
 func (c *IAM) UntagInstanceProfileRequest(input *UntagInstanceProfileInput) (req *request.Request, output *UntagInstanceProfileOutput) {
@@ -15128,22 +15079,23 @@ func (c *IAM) UntagInstanceProfileRequest(input *UntagInstanceProfileInput) (req
 // API operation UntagInstanceProfile for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeConcurrentModificationException "ConcurrentModification"
-//   The request was rejected because multiple requests to change this object
-//   were submitted simultaneously. Wait a few minutes and submit your request
-//   again.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UntagInstanceProfile
 func (c *IAM) UntagInstanceProfile(input *UntagInstanceProfileInput) (*UntagInstanceProfileOutput, error) {
@@ -15183,14 +15135,13 @@ const opUntagMFADevice = "UntagMFADevice"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagMFADeviceRequest method.
+//	req, resp := client.UntagMFADeviceRequest(params)
 //
-//    // Example sending a request using the UntagMFADeviceRequest method.
-//    req, resp := client.UntagMFADeviceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UntagMFADevice
 func (c *IAM) UntagMFADeviceRequest(input *UntagMFADeviceInput) (req *request.Request, output *UntagMFADeviceOutput) {
@@ -15225,22 +15176,23 @@ func (c *IAM) UntagMFADeviceRequest(input *UntagMFADeviceInput) (req *request.Re
 // API operation UntagMFADevice for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeConcurrentModificationException "ConcurrentModification"
-//   The request was rejected because multiple requests to change this object
-//   were submitted simultaneously. Wait a few minutes and submit your request
-//   again.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UntagMFADevice
 func (c *IAM) UntagMFADevice(input *UntagMFADeviceInput) (*UntagMFADeviceOutput, error) {
@@ -15280,14 +15232,13 @@ const opUntagOpenIDConnectProvider = "UntagOpenIDConnectProvider"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagOpenIDConnectProviderRequest method.
+//	req, resp := client.UntagOpenIDConnectProviderRequest(params)
 //
-//    // Example sending a request using the UntagOpenIDConnectProviderRequest method.
-//    req, resp := client.UntagOpenIDConnectProviderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UntagOpenIDConnectProvider
 func (c *IAM) UntagOpenIDConnectProviderRequest(input *UntagOpenIDConnectProviderInput) (req *request.Request, output *UntagOpenIDConnectProviderOutput) {
@@ -15323,22 +15274,23 @@ func (c *IAM) UntagOpenIDConnectProviderRequest(input *UntagOpenIDConnectProvide
 // API operation UntagOpenIDConnectProvider for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeConcurrentModificationException "ConcurrentModification"
-//   The request was rejected because multiple requests to change this object
-//   were submitted simultaneously. Wait a few minutes and submit your request
-//   again.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UntagOpenIDConnectProvider
 func (c *IAM) UntagOpenIDConnectProvider(input *UntagOpenIDConnectProviderInput) (*UntagOpenIDConnectProviderOutput, error) {
@@ -15378,14 +15330,13 @@ const opUntagPolicy = "UntagPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagPolicyRequest method.
+//	req, resp := client.UntagPolicyRequest(params)
 //
-//    // Example sending a request using the UntagPolicyRequest method.
-//    req, resp := client.UntagPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UntagPolicy
 func (c *IAM) UntagPolicyRequest(input *UntagPolicyInput) (req *request.Request, output *UntagPolicyOutput) {
@@ -15419,22 +15370,23 @@ func (c *IAM) UntagPolicyRequest(input *UntagPolicyInput) (req *request.Request,
 // API operation UntagPolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeConcurrentModificationException "ConcurrentModification"
-//   The request was rejected because multiple requests to change this object
-//   were submitted simultaneously. Wait a few minutes and submit your request
-//   again.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UntagPolicy
 func (c *IAM) UntagPolicy(input *UntagPolicyInput) (*UntagPolicyOutput, error) {
@@ -15474,14 +15426,13 @@ const opUntagRole = "UntagRole"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagRoleRequest method.
+//	req, resp := client.UntagRoleRequest(params)
 //
-//    // Example sending a request using the UntagRoleRequest method.
-//    req, resp := client.UntagRoleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UntagRole
 func (c *IAM) UntagRoleRequest(input *UntagRoleInput) (req *request.Request, output *UntagRoleOutput) {
@@ -15515,18 +15466,19 @@ func (c *IAM) UntagRoleRequest(input *UntagRoleInput) (req *request.Request, out
 // API operation UntagRole for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeConcurrentModificationException "ConcurrentModification"
-//   The request was rejected because multiple requests to change this object
-//   were submitted simultaneously. Wait a few minutes and submit your request
-//   again.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UntagRole
 func (c *IAM) UntagRole(input *UntagRoleInput) (*UntagRoleOutput, error) {
@@ -15566,14 +15518,13 @@ const opUntagSAMLProvider = "UntagSAMLProvider"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagSAMLProviderRequest method.
+//	req, resp := client.UntagSAMLProviderRequest(params)
 //
-//    // Example sending a request using the UntagSAMLProviderRequest method.
-//    req, resp := client.UntagSAMLProviderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UntagSAMLProvider
 func (c *IAM) UntagSAMLProviderRequest(input *UntagSAMLProviderInput) (req *request.Request, output *UntagSAMLProviderOutput) {
@@ -15609,22 +15560,23 @@ func (c *IAM) UntagSAMLProviderRequest(input *UntagSAMLProviderInput) (req *requ
 // API operation UntagSAMLProvider for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeConcurrentModificationException "ConcurrentModification"
-//   The request was rejected because multiple requests to change this object
-//   were submitted simultaneously. Wait a few minutes and submit your request
-//   again.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UntagSAMLProvider
 func (c *IAM) UntagSAMLProvider(input *UntagSAMLProviderInput) (*UntagSAMLProviderOutput, error) {
@@ -15664,14 +15616,13 @@ const opUntagServerCertificate = "UntagServerCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagServerCertificateRequest method.
+//	req, resp := client.UntagServerCertificateRequest(params)
 //
-//    // Example sending a request using the UntagServerCertificateRequest method.
-//    req, resp := client.UntagServerCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UntagServerCertificate
 func (c *IAM) UntagServerCertificateRequest(input *UntagServerCertificateInput) (req *request.Request, output *UntagServerCertificateOutput) {
@@ -15711,22 +15662,23 @@ func (c *IAM) UntagServerCertificateRequest(input *UntagServerCertificateInput) 
 // API operation UntagServerCertificate for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeConcurrentModificationException "ConcurrentModification"
-//   The request was rejected because multiple requests to change this object
-//   were submitted simultaneously. Wait a few minutes and submit your request
-//   again.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UntagServerCertificate
 func (c *IAM) UntagServerCertificate(input *UntagServerCertificateInput) (*UntagServerCertificateOutput, error) {
@@ -15766,14 +15718,13 @@ const opUntagUser = "UntagUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagUserRequest method.
+//	req, resp := client.UntagUserRequest(params)
 //
-//    // Example sending a request using the UntagUserRequest method.
-//    req, resp := client.UntagUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UntagUser
 func (c *IAM) UntagUserRequest(input *UntagUserInput) (req *request.Request, output *UntagUserOutput) {
@@ -15807,18 +15758,19 @@ func (c *IAM) UntagUserRequest(input *UntagUserInput) (req *request.Request, out
 // API operation UntagUser for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeConcurrentModificationException "ConcurrentModification"
-//   The request was rejected because multiple requests to change this object
-//   were submitted simultaneously. Wait a few minutes and submit your request
-//   again.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UntagUser
 func (c *IAM) UntagUser(input *UntagUserInput) (*UntagUserOutput, error) {
@@ -15858,14 +15810,13 @@ const opUpdateAccessKey = "UpdateAccessKey"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAccessKeyRequest method.
+//	req, resp := client.UpdateAccessKeyRequest(params)
 //
-//    // Example sending a request using the UpdateAccessKeyRequest method.
-//    req, resp := client.UpdateAccessKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UpdateAccessKey
 func (c *IAM) UpdateAccessKeyRequest(input *UpdateAccessKeyInput) (req *request.Request, output *UpdateAccessKeyOutput) {
@@ -15909,18 +15860,19 @@ func (c *IAM) UpdateAccessKeyRequest(input *UpdateAccessKeyInput) (req *request.
 // API operation UpdateAccessKey for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UpdateAccessKey
 func (c *IAM) UpdateAccessKey(input *UpdateAccessKeyInput) (*UpdateAccessKeyOutput, error) {
@@ -15960,14 +15912,13 @@ const opUpdateAccountPasswordPolicy = "UpdateAccountPasswordPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAccountPasswordPolicyRequest method.
+//	req, resp := client.UpdateAccountPasswordPolicyRequest(params)
 //
-//    // Example sending a request using the UpdateAccountPasswordPolicyRequest method.
-//    req, resp := client.UpdateAccountPasswordPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UpdateAccountPasswordPolicy
 func (c *IAM) UpdateAccountPasswordPolicyRequest(input *UpdateAccountPasswordPolicyInput) (req *request.Request, output *UpdateAccountPasswordPolicyOutput) {
@@ -16010,22 +15961,23 @@ func (c *IAM) UpdateAccountPasswordPolicyRequest(input *UpdateAccountPasswordPol
 // API operation UpdateAccountPasswordPolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeMalformedPolicyDocumentException "MalformedPolicyDocument"
-//   The request was rejected because the policy document was malformed. The error
-//   message describes the specific error.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeMalformedPolicyDocumentException "MalformedPolicyDocument"
+//     The request was rejected because the policy document was malformed. The error
+//     message describes the specific error.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UpdateAccountPasswordPolicy
 func (c *IAM) UpdateAccountPasswordPolicy(input *UpdateAccountPasswordPolicyInput) (*UpdateAccountPasswordPolicyOutput, error) {
@@ -16065,14 +16017,13 @@ const opUpdateAssumeRolePolicy = "UpdateAssumeRolePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAssumeRolePolicyRequest method.
+//	req, resp := client.UpdateAssumeRolePolicyRequest(params)
 //
-//    // Example sending a request using the UpdateAssumeRolePolicyRequest method.
-//    req, resp := client.UpdateAssumeRolePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UpdateAssumeRolePolicy
 func (c *IAM) UpdateAssumeRolePolicyRequest(input *UpdateAssumeRolePolicyInput) (req *request.Request, output *UpdateAssumeRolePolicyOutput) {
@@ -16107,28 +16058,29 @@ func (c *IAM) UpdateAssumeRolePolicyRequest(input *UpdateAssumeRolePolicyInput) 
 // API operation UpdateAssumeRolePolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeMalformedPolicyDocumentException "MalformedPolicyDocument"
-//   The request was rejected because the policy document was malformed. The error
-//   message describes the specific error.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeMalformedPolicyDocumentException "MalformedPolicyDocument"
+//     The request was rejected because the policy document was malformed. The error
+//     message describes the specific error.
 //
-//   * ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
-//   The request was rejected because only the service that depends on the service-linked
-//   role can modify or delete the role on your behalf. The error message includes
-//   the name of the service that depends on this service-linked role. You must
-//   request the change through that service.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
+//     The request was rejected because only the service that depends on the service-linked
+//     role can modify or delete the role on your behalf. The error message includes
+//     the name of the service that depends on this service-linked role. You must
+//     request the change through that service.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UpdateAssumeRolePolicy
 func (c *IAM) UpdateAssumeRolePolicy(input *UpdateAssumeRolePolicyInput) (*UpdateAssumeRolePolicyOutput, error) {
@@ -16168,14 +16120,13 @@ const opUpdateGroup = "UpdateGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateGroupRequest method.
+//	req, resp := client.UpdateGroupRequest(params)
 //
-//    // Example sending a request using the UpdateGroupRequest method.
-//    req, resp := client.UpdateGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UpdateGroup
 func (c *IAM) UpdateGroupRequest(input *UpdateGroupInput) (req *request.Request, output *UpdateGroupOutput) {
@@ -16218,22 +16169,23 @@ func (c *IAM) UpdateGroupRequest(input *UpdateGroupInput) (req *request.Request,
 // API operation UpdateGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
-//   The request was rejected because it attempted to create a resource that already
-//   exists.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
+//     The request was rejected because it attempted to create a resource that already
+//     exists.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UpdateGroup
 func (c *IAM) UpdateGroup(input *UpdateGroupInput) (*UpdateGroupOutput, error) {
@@ -16273,14 +16225,13 @@ const opUpdateLoginProfile = "UpdateLoginProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateLoginProfileRequest method.
+//	req, resp := client.UpdateLoginProfileRequest(params)
 //
-//    // Example sending a request using the UpdateLoginProfileRequest method.
-//    req, resp := client.UpdateLoginProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UpdateLoginProfile
 func (c *IAM) UpdateLoginProfileRequest(input *UpdateLoginProfileInput) (req *request.Request, output *UpdateLoginProfileOutput) {
@@ -16319,28 +16270,29 @@ func (c *IAM) UpdateLoginProfileRequest(input *UpdateLoginProfileInput) (req *re
 // API operation UpdateLoginProfile for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeEntityTemporarilyUnmodifiableException "EntityTemporarilyUnmodifiable"
-//   The request was rejected because it referenced an entity that is temporarily
-//   unmodifiable, such as a user name that was deleted and then recreated. The
-//   error indicates that the request is likely to succeed if you try again after
-//   waiting several minutes. The error message describes the entity.
 //
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
+//   - ErrCodeEntityTemporarilyUnmodifiableException "EntityTemporarilyUnmodifiable"
+//     The request was rejected because it referenced an entity that is temporarily
+//     unmodifiable, such as a user name that was deleted and then recreated. The
+//     error indicates that the request is likely to succeed if you try again after
+//     waiting several minutes. The error message describes the entity.
 //
-//   * ErrCodePasswordPolicyViolationException "PasswordPolicyViolation"
-//   The request was rejected because the provided password did not meet the requirements
-//   imposed by the account password policy.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodePasswordPolicyViolationException "PasswordPolicyViolation"
+//     The request was rejected because the provided password did not meet the requirements
+//     imposed by the account password policy.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UpdateLoginProfile
 func (c *IAM) UpdateLoginProfile(input *UpdateLoginProfileInput) (*UpdateLoginProfileOutput, error) {
@@ -16380,14 +16332,13 @@ const opUpdateOpenIDConnectProviderThumbprint = "UpdateOpenIDConnectProviderThum
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateOpenIDConnectProviderThumbprintRequest method.
+//	req, resp := client.UpdateOpenIDConnectProviderThumbprintRequest(params)
 //
-//    // Example sending a request using the UpdateOpenIDConnectProviderThumbprintRequest method.
-//    req, resp := client.UpdateOpenIDConnectProviderThumbprintRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UpdateOpenIDConnectProviderThumbprint
 func (c *IAM) UpdateOpenIDConnectProviderThumbprintRequest(input *UpdateOpenIDConnectProviderThumbprintInput) (req *request.Request, output *UpdateOpenIDConnectProviderThumbprintOutput) {
@@ -16440,17 +16391,18 @@ func (c *IAM) UpdateOpenIDConnectProviderThumbprintRequest(input *UpdateOpenIDCo
 // API operation UpdateOpenIDConnectProviderThumbprint for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
 //
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UpdateOpenIDConnectProviderThumbprint
 func (c *IAM) UpdateOpenIDConnectProviderThumbprint(input *UpdateOpenIDConnectProviderThumbprintInput) (*UpdateOpenIDConnectProviderThumbprintOutput, error) {
@@ -16490,14 +16442,13 @@ const opUpdateRole = "UpdateRole"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRoleRequest method.
+//	req, resp := client.UpdateRoleRequest(params)
 //
-//    // Example sending a request using the UpdateRoleRequest method.
-//    req, resp := client.UpdateRoleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UpdateRole
 func (c *IAM) UpdateRoleRequest(input *UpdateRoleInput) (req *request.Request, output *UpdateRoleOutput) {
@@ -16529,19 +16480,20 @@ func (c *IAM) UpdateRoleRequest(input *UpdateRoleInput) (req *request.Request, o
 // API operation UpdateRole for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
-//   The request was rejected because only the service that depends on the service-linked
-//   role can modify or delete the role on your behalf. The error message includes
-//   the name of the service that depends on this service-linked role. You must
-//   request the change through that service.
 //
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
+//   - ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
+//     The request was rejected because only the service that depends on the service-linked
+//     role can modify or delete the role on your behalf. The error message includes
+//     the name of the service that depends on this service-linked role. You must
+//     request the change through that service.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UpdateRole
 func (c *IAM) UpdateRole(input *UpdateRoleInput) (*UpdateRoleOutput, error) {
@@ -16581,14 +16533,13 @@ const opUpdateRoleDescription = "UpdateRoleDescription"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRoleDescriptionRequest method.
+//	req, resp := client.UpdateRoleDescriptionRequest(params)
 //
-//    // Example sending a request using the UpdateRoleDescriptionRequest method.
-//    req, resp := client.UpdateRoleDescriptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UpdateRoleDescription
 func (c *IAM) UpdateRoleDescriptionRequest(input *UpdateRoleDescriptionInput) (req *request.Request, output *UpdateRoleDescriptionOutput) {
@@ -16622,19 +16573,20 @@ func (c *IAM) UpdateRoleDescriptionRequest(input *UpdateRoleDescriptionInput) (r
 // API operation UpdateRoleDescription for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
-//   The request was rejected because only the service that depends on the service-linked
-//   role can modify or delete the role on your behalf. The error message includes
-//   the name of the service that depends on this service-linked role. You must
-//   request the change through that service.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeUnmodifiableEntityException "UnmodifiableEntity"
+//     The request was rejected because only the service that depends on the service-linked
+//     role can modify or delete the role on your behalf. The error message includes
+//     the name of the service that depends on this service-linked role. You must
+//     request the change through that service.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UpdateRoleDescription
 func (c *IAM) UpdateRoleDescription(input *UpdateRoleDescriptionInput) (*UpdateRoleDescriptionOutput, error) {
@@ -16674,14 +16626,13 @@ const opUpdateSAMLProvider = "UpdateSAMLProvider"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateSAMLProviderRequest method.
+//	req, resp := client.UpdateSAMLProviderRequest(params)
 //
-//    // Example sending a request using the UpdateSAMLProviderRequest method.
-//    req, resp := client.UpdateSAMLProviderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UpdateSAMLProvider
 func (c *IAM) UpdateSAMLProviderRequest(input *UpdateSAMLProviderInput) (req *request.Request, output *UpdateSAMLProviderOutput) {
@@ -16714,22 +16665,23 @@ func (c *IAM) UpdateSAMLProviderRequest(input *UpdateSAMLProviderInput) (req *re
 // API operation UpdateSAMLProvider for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UpdateSAMLProvider
 func (c *IAM) UpdateSAMLProvider(input *UpdateSAMLProviderInput) (*UpdateSAMLProviderOutput, error) {
@@ -16769,14 +16721,13 @@ const opUpdateSSHPublicKey = "UpdateSSHPublicKey"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateSSHPublicKeyRequest method.
+//	req, resp := client.UpdateSSHPublicKeyRequest(params)
 //
-//    // Example sending a request using the UpdateSSHPublicKeyRequest method.
-//    req, resp := client.UpdateSSHPublicKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UpdateSSHPublicKey
 func (c *IAM) UpdateSSHPublicKeyRequest(input *UpdateSSHPublicKeyInput) (req *request.Request, output *UpdateSSHPublicKeyOutput) {
@@ -16817,9 +16768,9 @@ func (c *IAM) UpdateSSHPublicKeyRequest(input *UpdateSSHPublicKeyInput) (req *re
 // API operation UpdateSSHPublicKey for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UpdateSSHPublicKey
 func (c *IAM) UpdateSSHPublicKey(input *UpdateSSHPublicKeyInput) (*UpdateSSHPublicKeyOutput, error) {
@@ -16859,14 +16810,13 @@ const opUpdateServerCertificate = "UpdateServerCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateServerCertificateRequest method.
+//	req, resp := client.UpdateServerCertificateRequest(params)
 //
-//    // Example sending a request using the UpdateServerCertificateRequest method.
-//    req, resp := client.UpdateServerCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UpdateServerCertificate
 func (c *IAM) UpdateServerCertificateRequest(input *UpdateServerCertificateInput) (req *request.Request, output *UpdateServerCertificateOutput) {
@@ -16917,22 +16867,23 @@ func (c *IAM) UpdateServerCertificateRequest(input *UpdateServerCertificateInput
 // API operation UpdateServerCertificate for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
-//   The request was rejected because it attempted to create a resource that already
-//   exists.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
+//     The request was rejected because it attempted to create a resource that already
+//     exists.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UpdateServerCertificate
 func (c *IAM) UpdateServerCertificate(input *UpdateServerCertificateInput) (*UpdateServerCertificateOutput, error) {
@@ -16972,14 +16923,13 @@ const opUpdateServiceSpecificCredential = "UpdateServiceSpecificCredential"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateServiceSpecificCredentialRequest method.
+//	req, resp := client.UpdateServiceSpecificCredentialRequest(params)
 //
-//    // Example sending a request using the UpdateServiceSpecificCredentialRequest method.
-//    req, resp := client.UpdateServiceSpecificCredentialRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UpdateServiceSpecificCredential
 func (c *IAM) UpdateServiceSpecificCredentialRequest(input *UpdateServiceSpecificCredentialInput) (req *request.Request, output *UpdateServiceSpecificCredentialOutput) {
@@ -17014,9 +16964,9 @@ func (c *IAM) UpdateServiceSpecificCredentialRequest(input *UpdateServiceSpecifi
 // API operation UpdateServiceSpecificCredential for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UpdateServiceSpecificCredential
 func (c *IAM) UpdateServiceSpecificCredential(input *UpdateServiceSpecificCredentialInput) (*UpdateServiceSpecificCredentialOutput, error) {
@@ -17056,14 +17006,13 @@ const opUpdateSigningCertificate = "UpdateSigningCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateSigningCertificateRequest method.
+//	req, resp := client.UpdateSigningCertificateRequest(params)
 //
-//    // Example sending a request using the UpdateSigningCertificateRequest method.
-//    req, resp := client.UpdateSigningCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UpdateSigningCertificate
 func (c *IAM) UpdateSigningCertificateRequest(input *UpdateSigningCertificateInput) (req *request.Request, output *UpdateSigningCertificateOutput) {
@@ -17104,18 +17053,19 @@ func (c *IAM) UpdateSigningCertificateRequest(input *UpdateSigningCertificateInp
 // API operation UpdateSigningCertificate for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UpdateSigningCertificate
 func (c *IAM) UpdateSigningCertificate(input *UpdateSigningCertificateInput) (*UpdateSigningCertificateOutput, error) {
@@ -17155,14 +17105,13 @@ const opUpdateUser = "UpdateUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateUserRequest method.
+//	req, resp := client.UpdateUserRequest(params)
 //
-//    // Example sending a request using the UpdateUserRequest method.
-//    req, resp := client.UpdateUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UpdateUser
 func (c *IAM) UpdateUserRequest(input *UpdateUserInput) (req *request.Request, output *UpdateUserOutput) {
@@ -17205,33 +17154,34 @@ func (c *IAM) UpdateUserRequest(input *UpdateUserInput) (req *request.Request, o
 // API operation UpdateUser for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
 //
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
-//   The request was rejected because it attempted to create a resource that already
-//   exists.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeEntityTemporarilyUnmodifiableException "EntityTemporarilyUnmodifiable"
-//   The request was rejected because it referenced an entity that is temporarily
-//   unmodifiable, such as a user name that was deleted and then recreated. The
-//   error indicates that the request is likely to succeed if you try again after
-//   waiting several minutes. The error message describes the entity.
+//   - ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
+//     The request was rejected because it attempted to create a resource that already
+//     exists.
 //
-//   * ErrCodeConcurrentModificationException "ConcurrentModification"
-//   The request was rejected because multiple requests to change this object
-//   were submitted simultaneously. Wait a few minutes and submit your request
-//   again.
+//   - ErrCodeEntityTemporarilyUnmodifiableException "EntityTemporarilyUnmodifiable"
+//     The request was rejected because it referenced an entity that is temporarily
+//     unmodifiable, such as a user name that was deleted and then recreated. The
+//     error indicates that the request is likely to succeed if you try again after
+//     waiting several minutes. The error message describes the entity.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UpdateUser
 func (c *IAM) UpdateUser(input *UpdateUserInput) (*UpdateUserOutput, error) {
@@ -17271,14 +17221,13 @@ const opUploadSSHPublicKey = "UploadSSHPublicKey"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UploadSSHPublicKeyRequest method.
+//	req, resp := client.UploadSSHPublicKeyRequest(params)
 //
-//    // Example sending a request using the UploadSSHPublicKeyRequest method.
-//    req, resp := client.UploadSSHPublicKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UploadSSHPublicKey
 func (c *IAM) UploadSSHPublicKeyRequest(input *UploadSSHPublicKeyInput) (req *request.Request, output *UploadSSHPublicKeyOutput) {
@@ -17315,26 +17264,27 @@ func (c *IAM) UploadSSHPublicKeyRequest(input *UploadSSHPublicKeyInput) (req *re
 // API operation UploadSSHPublicKey for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
 //
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeInvalidPublicKeyException "InvalidPublicKey"
-//   The request was rejected because the public key is malformed or otherwise
-//   invalid.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
 //
-//   * ErrCodeDuplicateSSHPublicKeyException "DuplicateSSHPublicKey"
-//   The request was rejected because the SSH public key is already associated
-//   with the specified IAM user.
+//   - ErrCodeInvalidPublicKeyException "InvalidPublicKey"
+//     The request was rejected because the public key is malformed or otherwise
+//     invalid.
 //
-//   * ErrCodeUnrecognizedPublicKeyEncodingException "UnrecognizedPublicKeyEncoding"
-//   The request was rejected because the public key encoding format is unsupported
-//   or unrecognized.
+//   - ErrCodeDuplicateSSHPublicKeyException "DuplicateSSHPublicKey"
+//     The request was rejected because the SSH public key is already associated
+//     with the specified IAM user.
+//
+//   - ErrCodeUnrecognizedPublicKeyEncodingException "UnrecognizedPublicKeyEncoding"
+//     The request was rejected because the public key encoding format is unsupported
+//     or unrecognized.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UploadSSHPublicKey
 func (c *IAM) UploadSSHPublicKey(input *UploadSSHPublicKeyInput) (*UploadSSHPublicKeyOutput, error) {
@@ -17374,14 +17324,13 @@ const opUploadServerCertificate = "UploadServerCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UploadServerCertificateRequest method.
+//	req, resp := client.UploadServerCertificateRequest(params)
 //
-//    // Example sending a request using the UploadServerCertificateRequest method.
-//    req, resp := client.UploadServerCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UploadServerCertificate
 func (c *IAM) UploadServerCertificateRequest(input *UploadServerCertificateInput) (req *request.Request, output *UploadServerCertificateOutput) {
@@ -17439,35 +17388,36 @@ func (c *IAM) UploadServerCertificateRequest(input *UploadServerCertificateInput
 // API operation UploadServerCertificate for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
 //
-//   * ErrCodeInvalidInputException "InvalidInput"
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
-//   The request was rejected because it attempted to create a resource that already
-//   exists.
+//   - ErrCodeInvalidInputException "InvalidInput"
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * ErrCodeMalformedCertificateException "MalformedCertificate"
-//   The request was rejected because the certificate was malformed or expired.
-//   The error message describes the specific error.
+//   - ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
+//     The request was rejected because it attempted to create a resource that already
+//     exists.
 //
-//   * ErrCodeKeyPairMismatchException "KeyPairMismatch"
-//   The request was rejected because the public key certificate and the private
-//   key do not match.
+//   - ErrCodeMalformedCertificateException "MalformedCertificate"
+//     The request was rejected because the certificate was malformed or expired.
+//     The error message describes the specific error.
 //
-//   * ErrCodeConcurrentModificationException "ConcurrentModification"
-//   The request was rejected because multiple requests to change this object
-//   were submitted simultaneously. Wait a few minutes and submit your request
-//   again.
+//   - ErrCodeKeyPairMismatchException "KeyPairMismatch"
+//     The request was rejected because the public key certificate and the private
+//     key do not match.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeConcurrentModificationException "ConcurrentModification"
+//     The request was rejected because multiple requests to change this object
+//     were submitted simultaneously. Wait a few minutes and submit your request
+//     again.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UploadServerCertificate
 func (c *IAM) UploadServerCertificate(input *UploadServerCertificateInput) (*UploadServerCertificateOutput, error) {
@@ -17507,14 +17457,13 @@ const opUploadSigningCertificate = "UploadSigningCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UploadSigningCertificateRequest method.
+//	req, resp := client.UploadSigningCertificateRequest(params)
 //
-//    // Example sending a request using the UploadSigningCertificateRequest method.
-//    req, resp := client.UploadSigningCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UploadSigningCertificate
 func (c *IAM) UploadSigningCertificateRequest(input *UploadSigningCertificateInput) (req *request.Request, output *UploadSigningCertificateOutput) {
@@ -17567,33 +17516,34 @@ func (c *IAM) UploadSigningCertificateRequest(input *UploadSigningCertificateInp
 // API operation UploadSigningCertificate for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeLimitExceededException "LimitExceeded"
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account limits. The error message describes
-//   the limit exceeded.
 //
-//   * ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
-//   The request was rejected because it attempted to create a resource that already
-//   exists.
+//   - ErrCodeLimitExceededException "LimitExceeded"
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account limits. The error message describes
+//     the limit exceeded.
 //
-//   * ErrCodeMalformedCertificateException "MalformedCertificate"
-//   The request was rejected because the certificate was malformed or expired.
-//   The error message describes the specific error.
+//   - ErrCodeEntityAlreadyExistsException "EntityAlreadyExists"
+//     The request was rejected because it attempted to create a resource that already
+//     exists.
 //
-//   * ErrCodeInvalidCertificateException "InvalidCertificate"
-//   The request was rejected because the certificate is invalid.
+//   - ErrCodeMalformedCertificateException "MalformedCertificate"
+//     The request was rejected because the certificate was malformed or expired.
+//     The error message describes the specific error.
 //
-//   * ErrCodeDuplicateCertificateException "DuplicateCertificate"
-//   The request was rejected because the same certificate is associated with
-//   an IAM user in the account.
+//   - ErrCodeInvalidCertificateException "InvalidCertificate"
+//     The request was rejected because the certificate is invalid.
 //
-//   * ErrCodeNoSuchEntityException "NoSuchEntity"
-//   The request was rejected because it referenced a resource entity that does
-//   not exist. The error message describes the resource.
+//   - ErrCodeDuplicateCertificateException "DuplicateCertificate"
+//     The request was rejected because the same certificate is associated with
+//     an IAM user in the account.
 //
-//   * ErrCodeServiceFailureException "ServiceFailure"
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ErrCodeNoSuchEntityException "NoSuchEntity"
+//     The request was rejected because it referenced a resource entity that does
+//     not exist. The error message describes the resource.
+//
+//   - ErrCodeServiceFailureException "ServiceFailure"
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/UploadSigningCertificate
 func (c *IAM) UploadSigningCertificate(input *UploadSigningCertificateInput) (*UploadSigningCertificateOutput, error) {
@@ -26685,11 +26635,11 @@ func (s *GetUserPolicyOutput) SetUserName(v string) *GetUserPolicyOutput {
 //
 // This data type is used as a response element in the following operations:
 //
-//    * CreateGroup
+//   - CreateGroup
 //
-//    * GetGroup
+//   - GetGroup
 //
-//    * ListGroups
+//   - ListGroups
 type Group struct {
 	_ struct{} `type:"structure"`
 
@@ -26876,13 +26826,13 @@ func (s *GroupDetail) SetPath(v string) *GroupDetail {
 //
 // This data type is used as a response element in the following operations:
 //
-//    * CreateInstanceProfile
+//   - CreateInstanceProfile
 //
-//    * GetInstanceProfile
+//   - GetInstanceProfile
 //
-//    * ListInstanceProfiles
+//   - ListInstanceProfiles
 //
-//    * ListInstanceProfilesForRole
+//   - ListInstanceProfilesForRole
 type InstanceProfile struct {
 	_ struct{} `type:"structure"`
 
@@ -40071,11 +40021,11 @@ func (s *UploadSigningCertificateOutput) SetCertificate(v *SigningCertificate) *
 //
 // This data type is used as a response element in the following operations:
 //
-//    * CreateUser
+//   - CreateUser
 //
-//    * GetUser
+//   - GetUser
 //
-//    * ListUsers
+//   - ListUsers
 type User struct {
 	_ struct{} `type:"structure"`
 
