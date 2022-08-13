@@ -18,7 +18,6 @@ package tester
 
 import (
 	"regexp"
-	"strings"
 
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
@@ -57,8 +56,7 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|external.IP.is.not.assigned.to.a.node"
 		// https://github.com/cilium/cilium/issues/14287
 		skipRegex += "|same.port.number.but.different.protocols|same.hostPort.but.different.hostIP.and.protocol"
-		if strings.Contains(cluster.Spec.KubernetesVersion, "v1.23") || strings.Contains(cluster.Spec.KubernetesVersion, "v1.24") || strings.Contains(cluster.Spec.KubernetesVersion, "v1.25") {
-			// Reassess after https://github.com/kubernetes/kubernetes/pull/102643 is merged
+		if k8sVersion.Minor >= 22 {
 			// ref:
 			// https://github.com/kubernetes/kubernetes/issues/96717
 			// https://github.com/cilium/cilium/issues/5719
@@ -87,7 +85,7 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|In-tree.Volumes.\\[Driver:.gcepd\\].*topology.should.provision.a.volume.and.schedule.a.pod.with.AllowedTopologies"
 	}
 
-	if k8sVersion.Minor <= 22 {
+	if k8sVersion.Minor <= 23 {
 		// this tests assumes a custom config for containerd:
 		// https://github.com/kubernetes/test-infra/blob/578d86a7be187214be6ccd60e6ea7317b51aeb15/jobs/e2e_node/containerd/config.toml#L19-L21
 		// ref: https://github.com/kubernetes/kubernetes/pull/104803
@@ -104,9 +102,10 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|Topology.Hints"
 	}
 
-	if k8sVersion.Minor == 25 {
+	if k8sVersion.Minor >= 22 {
 		// this test was being skipped automatically because it isn't applicable with CSIMigration=true which is default
 		// but skipping logic has been changed and now the test is planned for removal
+		// Should be skipped on all versions we enable CSI drivers on
 		// ref: https://github.com/kubernetes/kubernetes/pull/109649#issuecomment-1108574843
 		skipRegex += "|should.verify.that.all.nodes.have.volume.limits"
 	}
