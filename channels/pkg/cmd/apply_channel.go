@@ -167,10 +167,13 @@ func applyMenu(ctx context.Context, menu *channels.AddonMenu, k8sClient kubernet
 		RESTMapper: restMapper,
 	}
 
-	applier := &channels.Applier{
-		Client:     dynamicClient,
-		RESTMapper: restMapper,
-	}
+	/*
+		applier := &channels.ClientApplier{
+			Client:     dynamicClient,
+			RESTMapper: restMapper,
+		}
+	*/
+	applier := &channels.KubectlApplier{}
 
 	var merr error
 

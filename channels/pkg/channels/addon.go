@@ -41,6 +41,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+type Applier interface {
+	Apply(ctx context.Context, data []byte) error
+}
+
 // Addon is a wrapper around a single version of an addon
 type Addon struct {
 	Name            string
@@ -153,7 +157,7 @@ func (a *Addon) GetManifestFullUrl() (*url.URL, error) {
 	return manifestURL, nil
 }
 
-func (a *Addon) EnsureUpdated(ctx context.Context, k8sClient kubernetes.Interface, cmClient certmanager.Interface, pruner *Pruner, applier *Applier, existingVersion *ChannelVersion) (*AddonUpdate, error) {
+func (a *Addon) EnsureUpdated(ctx context.Context, k8sClient kubernetes.Interface, cmClient certmanager.Interface, pruner *Pruner, applier Applier, existingVersion *ChannelVersion) (*AddonUpdate, error) {
 	required, err := a.GetRequiredUpdates(ctx, k8sClient, cmClient, existingVersion)
 	if err != nil {
 		return nil, err
@@ -179,7 +183,7 @@ func (a *Addon) EnsureUpdated(ctx context.Context, k8sClient kubernetes.Interfac
 	return required, merr
 }
 
-func (a *Addon) updateAddon(ctx context.Context, k8sClient kubernetes.Interface, pruner *Pruner, applier *Applier, required *AddonUpdate) error {
+func (a *Addon) updateAddon(ctx context.Context, k8sClient kubernetes.Interface, pruner *Pruner, applier Applier, required *AddonUpdate) error {
 	manifestURL, err := a.GetManifestFullUrl()
 	if err != nil {
 		return err
