@@ -261,7 +261,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersdockerexamplecom.Properties.L
   ConfigBase: memfs://clusters.example.com/docker.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: 6+RfHRaHBGzfRMV2FB+jrP0rl3CBdUyYt8ZWDcR4jpo=
+  NodeupConfigHash: obI1drS5n6JAFTXVeIKmBfsyCXmvLIPSWztEjacLETE=
 
   __EOF_KUBE_ENV
 
