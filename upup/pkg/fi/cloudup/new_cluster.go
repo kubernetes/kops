@@ -23,6 +23,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/blang/semver/v4"
 	"k8s.io/apimachinery/pkg/api/resource"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -30,7 +31,9 @@ import (
 
 	"k8s.io/kops"
 	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
+	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
@@ -40,6 +43,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
+	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -150,6 +154,10 @@ type NewClusterOptions struct {
 
 	// InstanceManager specifies which manager to use for managing instances.
 	InstanceManager string
+
+	Image       string
+	NodeImage   string
+	MasterImage string
 }
 
 func (o *NewClusterOptions) InitDefaults() {
@@ -260,9 +268,18 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 			return nil, fmt.Errorf("unable to infer cloud provider from zones. pass in the cloud provider explicitly using --cloud")
 		}
 	}
+
+	var cloud fi.Cloud
+
 	switch api.CloudProviderID(opt.CloudProvider) {
 	case api.CloudProviderAWS:
 		cluster.Spec.CloudProvider.AWS = &api.AWSSpec{}
+		cloudTags := map[string]string{}
+		awsCloud, err := awsup.NewAWSCloud(opt.Zones[0][:len(opt.Zones[0])-1], cloudTags)
+		if err != nil {
+			return nil, err
+		}
+		cloud = awsCloud
 	case api.CloudProviderAzure:
 		cluster.Spec.CloudProvider.Azure = &api.AzureSpec{
 			SubscriptionID:    opt.AzureSubscriptionID,
@@ -310,7 +327,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		}
 	}
 
-	err = setupVPC(opt, &cluster)
+	err = setupVPC(opt, &cluster, cloud)
 	if err != nil {
 		return nil, err
 	}
@@ -373,6 +390,96 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 	instanceGroups = append(instanceGroups, nodes...)
 	instanceGroups = append(instanceGroups, bastions...)
 
+	for _, instanceGroup := range instanceGroups {
+		g := instanceGroup
+		ig := g
+		if instanceGroup.Spec.Image == "" {
+			if opt.Image != "" {
+				instanceGroup.Spec.Image = opt.Image
+			} else {
+				architecture, err := MachineArchitecture(cloud, instanceGroup.Spec.MachineType)
+				if err != nil {
+					return nil, err
+				}
+				instanceGroup.Spec.Image = defaultImage(&cluster, channel, architecture)
+			}
+		}
+
+		// TODO: Clean up
+		if g.IsMaster() {
+			if g.Spec.MachineType == "" {
+				g.Spec.MachineType, err = defaultMachineType(cloud, &cluster, ig)
+				if err != nil {
+					return nil, fmt.Errorf("error assigning default machine type for masters: %v", err)
+				}
+
+			}
+		} else if g.Spec.Role == kopsapi.InstanceGroupRoleBastion {
+			if g.Spec.MachineType == "" {
+				g.Spec.MachineType, err = defaultMachineType(cloud, &cluster, g)
+				if err != nil {
+					return nil, fmt.Errorf("error assigning default machine type for bastions: %v", err)
+				}
+			}
+		} else {
+			if g.IsAPIServerOnly() && !featureflag.APIServerNodes.Enabled() {
+				return nil, fmt.Errorf("apiserver nodes requires the APIServerNodes feature flag to be enabled")
+			}
+			if g.Spec.MachineType == "" {
+				g.Spec.MachineType, err = defaultMachineType(cloud, &cluster, g)
+				if err != nil {
+					return nil, fmt.Errorf("error assigning default machine type for nodes: %v", err)
+				}
+			}
+
+		}
+
+		if ig.Spec.Tenancy != "" && ig.Spec.Tenancy != "default" {
+			switch cluster.Spec.GetCloudProvider() {
+			case kopsapi.CloudProviderAWS:
+				if _, ok := awsDedicatedInstanceExceptions[g.Spec.MachineType]; ok {
+					return nil, fmt.Errorf("invalid dedicated instance type: %s", g.Spec.MachineType)
+				}
+			default:
+				klog.Warning("Trying to set tenancy on non-AWS environment")
+			}
+		}
+
+		if ig.IsMaster() {
+			if len(ig.Spec.Subnets) == 0 {
+				return nil, fmt.Errorf("master InstanceGroup %s did not specify any Subnets", g.ObjectMeta.Name)
+			}
+		} else if ig.IsAPIServerOnly() && cluster.Spec.IsIPv6Only() {
+			if len(ig.Spec.Subnets) == 0 {
+				for _, subnet := range cluster.Spec.Subnets {
+					if subnet.Type != kopsapi.SubnetTypePrivate && subnet.Type != kopsapi.SubnetTypeUtility {
+						ig.Spec.Subnets = append(g.Spec.Subnets, subnet.Name)
+					}
+				}
+			}
+		} else {
+			if len(ig.Spec.Subnets) == 0 {
+				for _, subnet := range cluster.Spec.Subnets {
+					if subnet.Type != kopsapi.SubnetTypeDualStack && subnet.Type != kopsapi.SubnetTypeUtility {
+						g.Spec.Subnets = append(g.Spec.Subnets, subnet.Name)
+					}
+				}
+			}
+
+			if len(g.Spec.Subnets) == 0 {
+				for _, subnet := range cluster.Spec.Subnets {
+					if subnet.Type != kopsapi.SubnetTypeUtility {
+						g.Spec.Subnets = append(g.Spec.Subnets, subnet.Name)
+					}
+				}
+			}
+		}
+
+		if len(g.Spec.Subnets) == 0 {
+			return nil, fmt.Errorf("unable to infer any Subnets for InstanceGroup %s ", g.ObjectMeta.Name)
+		}
+	}
+
 	result := NewClusterResult{
 		Cluster:        &cluster,
 		InstanceGroups: instanceGroups,
@@ -381,17 +488,13 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 	return &result, nil
 }
 
-func setupVPC(opt *NewClusterOptions, cluster *api.Cluster) error {
+func setupVPC(opt *NewClusterOptions, cluster *api.Cluster, cloud fi.Cloud) error {
 	cluster.Spec.NetworkID = opt.NetworkID
 
 	switch cluster.Spec.GetCloudProvider() {
 	case api.CloudProviderAWS:
 		if cluster.Spec.NetworkID == "" && len(opt.SubnetIDs) > 0 {
-			cloudTags := map[string]string{}
-			awsCloud, err := awsup.NewAWSCloud(opt.Zones[0][:len(opt.Zones[0])-1], cloudTags)
-			if err != nil {
-				return fmt.Errorf("error loading cloud: %v", err)
-			}
+			awsCloud := cloud.(awsup.AWSCloud)
 			res, err := awsCloud.EC2().DescribeSubnets(&ec2.DescribeSubnetsInput{
 				SubnetIds: []*string{aws.String(opt.SubnetIDs[0])},
 			})
@@ -755,6 +858,8 @@ func setupMasters(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap 
 				}
 			}
 
+			g.Spec.Image = opt.MasterImage
+
 			masters = append(masters, g)
 		}
 	}
@@ -879,6 +984,8 @@ func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap ma
 				}
 			}
 		}
+
+		g.Spec.Image = opt.NodeImage
 
 		nodes = append(nodes, g)
 	}
@@ -1114,6 +1221,8 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 			bastionGroup := &api.InstanceGroup{}
 			bastionGroup.Spec.Role = api.InstanceGroupRoleBastion
 			bastionGroup.ObjectMeta.Name = "bastions"
+			bastionGroup.Spec.MaxSize = fi.Int32(1)
+			bastionGroup.Spec.MinSize = fi.Int32(1)
 			bastions = append(bastions, bastionGroup)
 
 			if !dns.IsGossipHostname(cluster.Name) {
@@ -1320,4 +1429,64 @@ func addCiliumNetwork(cluster *api.Cluster) {
 	}
 	enabled := false
 	cluster.Spec.KubeProxy.Enabled = &enabled
+}
+
+// defaultImage returns the default Image, based on the cloudprovider
+func defaultImage(cluster *kopsapi.Cluster, channel *kopsapi.Channel, architecture architectures.Architecture) string {
+	if channel != nil {
+		var kubernetesVersion *semver.Version
+		if cluster.Spec.KubernetesVersion != "" {
+			var err error
+			kubernetesVersion, err = util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
+			if err != nil {
+				klog.Warningf("cannot parse KubernetesVersion %q in cluster", cluster.Spec.KubernetesVersion)
+			}
+		}
+		if kubernetesVersion != nil {
+			image := channel.FindImage(cluster.Spec.GetCloudProvider(), *kubernetesVersion, architecture)
+			if image != nil {
+				return image.Name
+			}
+		}
+	}
+
+	switch cluster.Spec.GetCloudProvider() {
+	case kopsapi.CloudProviderDO:
+		return defaultDONodeImage
+	}
+	klog.Infof("Cannot set default Image for CloudProvider=%q", cluster.Spec.GetCloudProvider())
+	return ""
+}
+
+func MachineArchitecture(cloud fi.Cloud, machineType string) (architectures.Architecture, error) {
+	if machineType == "" {
+		return architectures.ArchitectureAmd64, nil
+	}
+
+	switch cloud.ProviderID() {
+	case kopsapi.CloudProviderAWS:
+		info, err := cloud.(awsup.AWSCloud).DescribeInstanceType(machineType)
+		if err != nil {
+			return "", fmt.Errorf("error finding instance info for instance type %q: %v", machineType, err)
+		}
+		if info.ProcessorInfo == nil || len(info.ProcessorInfo.SupportedArchitectures) == 0 {
+			return "", fmt.Errorf("error finding architecture info for instance type %q", machineType)
+		}
+		var unsupported []string
+		for _, arch := range info.ProcessorInfo.SupportedArchitectures {
+			// Return the first found supported architecture, in order of popularity
+			switch fi.StringValue(arch) {
+			case ec2.ArchitectureTypeX8664:
+				return architectures.ArchitectureAmd64, nil
+			case ec2.ArchitectureTypeArm64:
+				return architectures.ArchitectureArm64, nil
+			default:
+				unsupported = append(unsupported, fi.StringValue(arch))
+			}
+		}
+		return "", fmt.Errorf("unsupported architecture for instance type %q: %v", machineType, unsupported)
+	default:
+		// No other clouds are known to support any other architectures at this time
+		return architectures.ArchitectureAmd64, nil
+	}
 }
