@@ -1135,7 +1135,7 @@ type nodeUpConfigBuilder struct {
 	channels                   []string
 	configBase                 vfs.Path
 	cluster                    *kops.Cluster
-	etcdManifests              map[kops.InstanceGroupRole][]string
+	etcdManifests              map[string][]string
 	images                     map[kops.InstanceGroupRole]map[architectures.Architecture][]*nodeup.Image
 	protokubeAsset             map[architectures.Architecture][]*mirrors.MirroredAsset
 	channelsAsset              map[architectures.Architecture][]*mirrors.MirroredAsset
@@ -1156,7 +1156,7 @@ func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 		channels = append(channels, cluster.Spec.Addons[i].Manifest)
 	}
 
-	etcdManifests := map[kops.InstanceGroupRole][]string{}
+	etcdManifests := map[string][]string{}
 	images := map[kops.InstanceGroupRole]map[architectures.Architecture][]*nodeup.Image{}
 	protokubeAsset := map[architectures.Architecture][]*mirrors.MirroredAsset{}
 	channelsAsset := map[architectures.Architecture][]*mirrors.MirroredAsset{}
@@ -1266,8 +1266,11 @@ func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 
 		if isMaster {
 			for _, etcdCluster := range cluster.Spec.EtcdClusters {
-				p := configBase.Join("manifests/etcd/" + etcdCluster.Name + ".yaml").Path()
-				etcdManifests[role] = append(etcdManifests[role], p)
+				for _, member := range etcdCluster.Members {
+					instanceGroup := fi.StringValue(member.InstanceGroup)
+					etcdManifest := fmt.Sprintf("manifests/etcd/%s-%s.yaml", etcdCluster.Name, instanceGroup)
+					etcdManifests[instanceGroup] = append(etcdManifests[instanceGroup], configBase.Join(etcdManifest).Path())
+				}
 			}
 		}
 	}
@@ -1451,7 +1454,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 
 	config.Images = n.images[role]
 	config.Channels = n.channels
-	config.EtcdManifests = n.etcdManifests[role]
+	config.EtcdManifests = n.etcdManifests[ig.Name]
 
 	if ig.Spec.Containerd != nil || cluster.Spec.ContainerRuntime == "containerd" {
 		config.ContainerdConfig = n.buildContainerdConfig(ig)
