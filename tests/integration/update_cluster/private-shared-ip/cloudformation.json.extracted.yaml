@@ -246,7 +246,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivatesharedipexamplecom.Pro
   ConfigBase: memfs://clusters.example.com/private-shared-ip.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: fpmQAsaCFDuTC2tMcxj98U4ClH2lthWB4CKDJXDhzew=
+  NodeupConfigHash: /QQ+EsYZkveuMia2Nh4Ok9+WNbllcn0QB5ZhNqRpCds=
 
   __EOF_KUBE_ENV
 
