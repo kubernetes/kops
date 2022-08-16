@@ -385,7 +385,7 @@ func TestIGUpdatePolicy(t *testing.T) {
 func TestValidInstanceGroup(t *testing.T) {
 	grid := []struct {
 		IG             *kops.InstanceGroup
-		ExpectedErrors int
+		ExpectedErrors []string
 		Description    string
 	}{
 		{
@@ -401,7 +401,7 @@ func TestValidInstanceGroup(t *testing.T) {
 					Image:   "my-image",
 				},
 			},
-			ExpectedErrors: 0,
+			ExpectedErrors: []string{},
 			Description:    "Valid master instance group failed to validate",
 		},
 		{
@@ -417,7 +417,7 @@ func TestValidInstanceGroup(t *testing.T) {
 					Image:   "my-image",
 				},
 			},
-			ExpectedErrors: 0,
+			ExpectedErrors: []string{},
 			Description:    "Valid API Server instance group failed to validate",
 		},
 		{
@@ -433,7 +433,7 @@ func TestValidInstanceGroup(t *testing.T) {
 					Image:   "my-image",
 				},
 			},
-			ExpectedErrors: 0,
+			ExpectedErrors: []string{},
 			Description:    "Valid node instance group failed to validate",
 		},
 		{
@@ -449,13 +449,28 @@ func TestValidInstanceGroup(t *testing.T) {
 					Image:   "my-image",
 				},
 			},
-			ExpectedErrors: 0,
+			ExpectedErrors: []string{},
 			Description:    "Valid bastion instance group failed to validate",
+		},
+		{
+			IG: &kops.InstanceGroup{
+				ObjectMeta: v1.ObjectMeta{
+					Name: "eu-central-1a",
+				},
+				Spec: kops.InstanceGroupSpec{
+					Role:    kops.InstanceGroupRoleBastion,
+					Subnets: []string{"eu-central-1a"},
+					MaxSize: fi.Int32(1),
+					MinSize: fi.Int32(1),
+				},
+			},
+			ExpectedErrors: []string{"Forbidden::spec.image"},
+			Description:    "Valid instance group must have image set",
 		},
 	}
 	for _, g := range grid {
 		errList := ValidateInstanceGroup(g.IG, nil, true)
-		testErrors(t, g.Description, errList, []string{})
+		testErrors(t, g.Description, errList, g.ExpectedErrors)
 	}
 }
 
