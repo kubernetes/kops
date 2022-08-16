@@ -70,16 +70,6 @@ func TestPopulateInstanceGroup_Role_Required(t *testing.T) {
 	expectErrorFromPopulateInstanceGroup(t, cluster, g, channel, "spec.role")
 }
 
-func TestPopulateInstanceGroup_Image_Required(t *testing.T) {
-	_, cluster := buildMinimalCluster()
-	g := buildMinimalNodeInstanceGroup()
-	g.Spec.Image = ""
-
-	channel := &kopsapi.Channel{}
-
-	expectErrorFromPopulateInstanceGroup(t, cluster, g, channel, "unable to determine default image for InstanceGroup nodes")
-}
-
 func TestPopulateInstanceGroup_AddTaintsCollision(t *testing.T) {
 	_, cluster := buildMinimalCluster()
 	input := buildMinimalNodeInstanceGroup()
