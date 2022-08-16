@@ -78,11 +78,8 @@ metadata:
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220615
   machineType: m3.medium
-  manager: CloudGroup
   maxSize: 1
   minSize: 1
-  nodeLabels:
-    kops.k8s.io/instancegroup: master-us-test-1a-1
   role: Master
   subnets:
   - us-test-1a
@@ -99,11 +96,8 @@ metadata:
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220615
   machineType: m3.medium
-  manager: CloudGroup
   maxSize: 1
   minSize: 1
-  nodeLabels:
-    kops.k8s.io/instancegroup: master-us-test-1a-2
   role: Master
   subnets:
   - us-test-1a
@@ -120,11 +114,8 @@ metadata:
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220615
   machineType: m3.medium
-  manager: CloudGroup
   maxSize: 1
   minSize: 1
-  nodeLabels:
-    kops.k8s.io/instancegroup: master-us-test-1a-3
   role: Master
   subnets:
   - us-test-1a
@@ -141,11 +132,8 @@ metadata:
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220615
   machineType: t2.medium
-  manager: CloudGroup
   maxSize: 1
   minSize: 1
-  nodeLabels:
-    kops.k8s.io/instancegroup: nodes-us-test-1a
   role: Node
   subnets:
   - us-test-1a

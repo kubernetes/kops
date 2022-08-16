@@ -83,11 +83,8 @@ spec:
     httpPutResponseHopLimit: 3
     httpTokens: required
   machineType: m3.medium
-  manager: CloudGroup
   maxSize: 1
   minSize: 1
-  nodeLabels:
-    kops.k8s.io/instancegroup: master-us-test-1a
   role: Master
   subnets:
   - us-test-1a
@@ -107,10 +104,6 @@ spec:
     httpPutResponseHopLimit: 1
     httpTokens: required
   manager: Karpenter
-  maxSize: 2
-  minSize: 2
-  nodeLabels:
-    kops.k8s.io/instancegroup: nodes
   role: Node
   subnets:
   - us-test-1a
