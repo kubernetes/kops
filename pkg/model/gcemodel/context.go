@@ -20,6 +20,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/truncate"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
@@ -34,7 +35,8 @@ type GCEModelContext struct {
 // LinkToNetwork returns the GCE Network object the cluster is located in
 func (c *GCEModelContext) LinkToNetwork() (*gcetasks.Network, error) {
 	if c.Cluster.Spec.NetworkID == "" {
-		return &gcetasks.Network{Name: s(c.SafeClusterName())}, nil
+		safeName := truncate.TruncateString(c.SafeClusterName(), truncate.TruncateStringOptions{MaxLength: 61})
+		return &gcetasks.Network{Name: &safeName}, nil
 	}
 	name, project, err := gce.ParseNameAndProjectFromNetworkID(c.Cluster.Spec.NetworkID)
 	if err != nil {

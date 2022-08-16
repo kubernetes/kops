@@ -209,7 +209,7 @@ resource "google_compute_firewall" "kubernetes-master-https-ipv6-minimal-gce-wit
   }
   disabled      = true
   name          = "kubernetes-master-https-ipv6-minimal-gce-with-a-very-ver-96dqvi"
-  network       = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-example-com.name
+  network       = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name--96dqvi.name
   source_ranges = ["::/0"]
   target_tags   = ["minimal-gce-with-a-very-very-very-ver-96dqvi-k8s-io-role-master"]
 }
@@ -221,7 +221,7 @@ resource "google_compute_firewall" "kubernetes-master-https-minimal-gce-with-a-v
   }
   disabled      = false
   name          = "kubernetes-master-https-minimal-gce-with-a-very-very-ver-96dqvi"
-  network       = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-example-com.name
+  network       = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name--96dqvi.name
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["minimal-gce-with-a-very-very-very-ver-96dqvi-k8s-io-role-master"]
 }
@@ -247,7 +247,7 @@ resource "google_compute_firewall" "master-to-master-minimal-gce-with-a-very-ver
   }
   disabled    = false
   name        = "master-to-master-minimal-gce-with-a-very-very-very-very--96dqvi"
-  network     = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-example-com.name
+  network     = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name--96dqvi.name
   source_tags = ["minimal-gce-with-a-very-very-very-ver-96dqvi-k8s-io-role-master"]
   target_tags = ["minimal-gce-with-a-very-very-very-ver-96dqvi-k8s-io-role-master"]
 }
@@ -273,7 +273,7 @@ resource "google_compute_firewall" "master-to-node-minimal-gce-with-a-very-very-
   }
   disabled    = false
   name        = "master-to-node-minimal-gce-with-a-very-very-very-very-ve-96dqvi"
-  network     = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-example-com.name
+  network     = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name--96dqvi.name
   source_tags = ["minimal-gce-with-a-very-very-very-ver-96dqvi-k8s-io-role-master"]
   target_tags = ["minimal-gce-with-a-very-very-very-very--96dqvi-k8s-io-role-node"]
 }
@@ -289,7 +289,7 @@ resource "google_compute_firewall" "node-to-master-minimal-gce-with-a-very-very-
   }
   disabled    = false
   name        = "node-to-master-minimal-gce-with-a-very-very-very-very-ve-96dqvi"
-  network     = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-example-com.name
+  network     = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name--96dqvi.name
   source_tags = ["minimal-gce-with-a-very-very-very-very--96dqvi-k8s-io-role-node"]
   target_tags = ["minimal-gce-with-a-very-very-very-ver-96dqvi-k8s-io-role-master"]
 }
@@ -315,7 +315,7 @@ resource "google_compute_firewall" "node-to-node-minimal-gce-with-a-very-very-ve
   }
   disabled    = false
   name        = "node-to-node-minimal-gce-with-a-very-very-very-very-very-96dqvi"
-  network     = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-example-com.name
+  network     = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name--96dqvi.name
   source_tags = ["minimal-gce-with-a-very-very-very-very--96dqvi-k8s-io-role-node"]
   target_tags = ["minimal-gce-with-a-very-very-very-very--96dqvi-k8s-io-role-node"]
 }
@@ -331,7 +331,7 @@ resource "google_compute_firewall" "nodeport-external-to-node-ipv6-minimal-gce-w
   }
   disabled      = true
   name          = "nodeport-external-to-node-ipv6-minimal-gce-with-a-very-v-96dqvi"
-  network       = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-example-com.name
+  network       = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name--96dqvi.name
   source_ranges = ["::/0"]
   target_tags   = ["minimal-gce-with-a-very-very-very-very--96dqvi-k8s-io-role-node"]
 }
@@ -347,7 +347,7 @@ resource "google_compute_firewall" "nodeport-external-to-node-minimal-gce-with-a
   }
   disabled      = true
   name          = "nodeport-external-to-node-minimal-gce-with-a-very-very-v-96dqvi"
-  network       = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-example-com.name
+  network       = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name--96dqvi.name
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["minimal-gce-with-a-very-very-very-very--96dqvi-k8s-io-role-node"]
 }
@@ -359,7 +359,7 @@ resource "google_compute_firewall" "ssh-external-to-master-ipv6-minimal-gce-with
   }
   disabled      = true
   name          = "ssh-external-to-master-ipv6-minimal-gce-with-a-very-very-96dqvi"
-  network       = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-example-com.name
+  network       = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name--96dqvi.name
   source_ranges = ["::/0"]
   target_tags   = ["minimal-gce-with-a-very-very-very-ver-96dqvi-k8s-io-role-master"]
 }
@@ -371,7 +371,7 @@ resource "google_compute_firewall" "ssh-external-to-master-minimal-gce-with-a-ve
   }
   disabled      = false
   name          = "ssh-external-to-master-minimal-gce-with-a-very-very-very-96dqvi"
-  network       = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-example-com.name
+  network       = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name--96dqvi.name
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["minimal-gce-with-a-very-very-very-ver-96dqvi-k8s-io-role-master"]
 }
@@ -383,7 +383,7 @@ resource "google_compute_firewall" "ssh-external-to-node-ipv6-minimal-gce-with-a
   }
   disabled      = true
   name          = "ssh-external-to-node-ipv6-minimal-gce-with-a-very-very-v-96dqvi"
-  network       = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-example-com.name
+  network       = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name--96dqvi.name
   source_ranges = ["::/0"]
   target_tags   = ["minimal-gce-with-a-very-very-very-very--96dqvi-k8s-io-role-node"]
 }
@@ -395,7 +395,7 @@ resource "google_compute_firewall" "ssh-external-to-node-minimal-gce-with-a-very
   }
   disabled      = false
   name          = "ssh-external-to-node-minimal-gce-with-a-very-very-very-v-96dqvi"
-  network       = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-example-com.name
+  network       = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name--96dqvi.name
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["minimal-gce-with-a-very-very-very-very--96dqvi-k8s-io-role-node"]
 }
@@ -451,7 +451,7 @@ resource "google_compute_instance_template" "master-us-test1-a-minimal-gce-with-
   network_interface {
     access_config {
     }
-    network    = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-example-com.name
+    network    = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name--96dqvi.name
     subnetwork = google_compute_subnetwork.us-test1-minimal-gce-with-a-very-very-very-very-very-lon-96dqvi.name
   }
   scheduling {
@@ -498,7 +498,7 @@ resource "google_compute_instance_template" "nodes-minimal-gce-with-a-very-very-
   network_interface {
     access_config {
     }
-    network    = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-example-com.name
+    network    = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name--96dqvi.name
     subnetwork = google_compute_subnetwork.us-test1-minimal-gce-with-a-very-very-very-very-very-lon-96dqvi.name
   }
   scheduling {
@@ -514,15 +514,15 @@ resource "google_compute_instance_template" "nodes-minimal-gce-with-a-very-very-
   tags = ["minimal-gce-with-a-very-very-very-very--96dqvi-k8s-io-role-node"]
 }
 
-resource "google_compute_network" "minimal-gce-with-a-very-very-very-very-very-long-name-example-com" {
+resource "google_compute_network" "minimal-gce-with-a-very-very-very-very-very-long-name--96dqvi" {
   auto_create_subnetworks = false
-  name                    = "minimal-gce-with-a-very-very-very-very-very-long-name-example-com"
+  name                    = "minimal-gce-with-a-very-very-very-very-very-long-name--96dqvi"
 }
 
 resource "google_compute_subnetwork" "us-test1-minimal-gce-with-a-very-very-very-very-very-lon-96dqvi" {
   ip_cidr_range = "10.0.16.0/20"
   name          = "us-test1-minimal-gce-with-a-very-very-very-very-very-lon-96dqvi"
-  network       = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-example-com.name
+  network       = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name--96dqvi.name
   region        = "us-test1"
 }
 
