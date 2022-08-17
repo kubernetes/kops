@@ -1166,7 +1166,7 @@ func (d *clusterDiscoveryGCE) listNetworks() ([]*resources.Resource, error) {
 	}
 
 	for _, o := range networks.Items {
-		if o.Name != gce.SafeClusterName(d.clusterName) {
+		if o.Name != gce.SafeTruncatedClusterName(d.clusterName, 63) {
 			klog.V(8).Infof("skipping network with name %q", o.Name)
 			continue
 		}

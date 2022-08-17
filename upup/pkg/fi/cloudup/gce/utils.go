@@ -92,12 +92,27 @@ func ClusterSuffixedName(objectName string, clusterName string, maxLength int) s
 	return prefix + suffix
 }
 
-// SafeClusterName returns a cluster-suffixed name
+// SafeClusterName returns a safe cluster name
 // deprecated: prefer ClusterSuffixedName
 func SafeClusterName(clusterName string) string {
 	// GCE does not support . in tags / names
 	safeClusterName := strings.Replace(clusterName, ".", "-", -1)
 	return safeClusterName
+}
+
+// SafeTruncatedClusterName returns a safe and truncated cluster name
+func SafeTruncatedClusterName(clusterName string, maxLength int) string {
+	// GCE does not support . in tags / names
+	safeClusterName := strings.Replace(clusterName, ".", "-", -1)
+
+	opt := truncate.TruncateStringOptions{
+		MaxLength:     maxLength,
+		AlwaysAddHash: false,
+		HashLength:    6,
+	}
+	truncatedClusterName := truncate.TruncateString(safeClusterName, opt)
+
+	return truncatedClusterName
 }
 
 // SafeObjectName returns the object name and cluster name escaped for GCE
