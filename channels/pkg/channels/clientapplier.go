@@ -33,13 +33,13 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-type Applier struct {
+type ClientApplier struct {
 	Client     dynamic.Interface
 	RESTMapper *restmapper.DeferredDiscoveryRESTMapper
 }
 
 // Apply applies the manifest to the cluster.
-func (p *Applier) Apply(ctx context.Context, manifest []byte) error {
+func (p *ClientApplier) Apply(ctx context.Context, manifest []byte) error {
 	objects, err := kubemanifest.LoadObjectsFrom(manifest)
 	if err != nil {
 		return fmt.Errorf("failed to parse objects: %w", err)
@@ -70,7 +70,7 @@ func (p *Applier) Apply(ctx context.Context, manifest []byte) error {
 	return applyErrors
 }
 
-func (p *Applier) applyObjectsOfKind(ctx context.Context, gvk schema.GroupVersionKind, expectedObjects []*kubemanifest.Object) error {
+func (p *ClientApplier) applyObjectsOfKind(ctx context.Context, gvk schema.GroupVersionKind, expectedObjects []*kubemanifest.Object) error {
 	klog.V(2).Infof("applying objects of kind: %v", gvk)
 
 	restMapping, err := p.RESTMapper.RESTMapping(gvk.GroupKind(), gvk.Version)
@@ -85,7 +85,7 @@ func (p *Applier) applyObjectsOfKind(ctx context.Context, gvk schema.GroupVersio
 	return nil
 }
 
-func (p *Applier) applyObjects(ctx context.Context, restMapping *meta.RESTMapping, expectedObjects []*kubemanifest.Object) error {
+func (p *ClientApplier) applyObjects(ctx context.Context, restMapping *meta.RESTMapping, expectedObjects []*kubemanifest.Object) error {
 	var merr error
 
 	for _, expectedObject := range expectedObjects {
@@ -96,7 +96,7 @@ func (p *Applier) applyObjects(ctx context.Context, restMapping *meta.RESTMappin
 	return merr
 }
 
-func (p *Applier) patchObject(ctx context.Context, restMapping *meta.RESTMapping, expectedObject *kubemanifest.Object) error {
+func (p *ClientApplier) patchObject(ctx context.Context, restMapping *meta.RESTMapping, expectedObject *kubemanifest.Object) error {
 	gvr := restMapping.Resource
 	name := expectedObject.GetName()
 	namespace := expectedObject.GetNamespace()
