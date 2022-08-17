@@ -64,9 +64,10 @@ func (b *FirewallModelBuilder) getOctaviaProvider() string {
 }
 
 // addDirectionalGroupRule - create a rule on the source group to the dest group provided a securityGroupRuleTask
-//  Example
-//  Create an Ingress rule on source allowing traffic from dest with the options in the SecurityGroupRule
-//  Create an Egress rule on source allowing traffic to dest with the options in the SecurityGroupRule
+//
+//	Example
+//	Create an Ingress rule on source allowing traffic from dest with the options in the SecurityGroupRule
+//	Create an Egress rule on source allowing traffic to dest with the options in the SecurityGroupRule
 func (b *FirewallModelBuilder) addDirectionalGroupRule(c *fi.ModelBuilderContext, source, dest *openstacktasks.SecurityGroup, sgr *openstacktasks.SecurityGroupRule) {
 	t := &openstacktasks.SecurityGroupRule{
 		Direction:      sgr.Direction,
