@@ -34,7 +34,7 @@ type GCEModelContext struct {
 // LinkToNetwork returns the GCE Network object the cluster is located in
 func (c *GCEModelContext) LinkToNetwork() (*gcetasks.Network, error) {
 	if c.Cluster.Spec.NetworkID == "" {
-		return &gcetasks.Network{Name: s(c.SafeClusterName())}, nil
+		return &gcetasks.Network{Name: s(c.SafeTruncatedClusterName())}, nil
 	}
 	name, project, err := gce.ParseNameAndProjectFromNetworkID(c.Cluster.Spec.NetworkID)
 	if err != nil {
@@ -80,6 +80,11 @@ func (c *GCEModelContext) SafeSuffixedObjectName(name string) string {
 // SafeClusterName returns the cluster name escaped for use as a GCE resource name
 func (c *GCEModelContext) SafeClusterName() string {
 	return gce.SafeClusterName(c.Cluster.ObjectMeta.Name)
+}
+
+// SafeClusterName returns the cluster name escaped and truncated for use as a GCE resource name
+func (c *GCEModelContext) SafeTruncatedClusterName() string {
+	return gce.SafeTruncatedClusterName(c.Cluster.ObjectMeta.Name, 63)
 }
 
 // GCETagForRole returns the (network) tag for GCE instances in the given instance group role.
