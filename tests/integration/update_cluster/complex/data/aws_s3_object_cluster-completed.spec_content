@@ -38,7 +38,7 @@ spec:
     clusterName: complex.example.com
     configureCloudRoutes: false
     enableLeaderMigration: true
-    image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.24.0
+    image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.24.1
     leaderElection:
       leaderElect: true
   cloudLabels:
