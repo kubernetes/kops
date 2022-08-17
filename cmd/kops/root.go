@@ -261,8 +261,9 @@ func (c *RootCmd) clusterNameArgsAllowNoCluster(clusterName *string) func(cmd *c
 }
 
 // ProcessArgs will parse the positional args.  It assumes one of these formats:
-//  * <no arguments at all>
-//  * <clustername> (and --name not specified)
+//   - <no arguments at all>
+//   - <clustername> (and --name not specified)
+//
 // Everything else is an error.
 func (c *RootCmd) ProcessArgs(args []string) error {
 	if len(args) > 0 {
