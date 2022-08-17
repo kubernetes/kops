@@ -85,7 +85,7 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|In-tree.Volumes.\\[Driver:.gcepd\\].*topology.should.provision.a.volume.and.schedule.a.pod.with.AllowedTopologies"
 	}
 
-	if k8sVersion.Minor <= 23 {
+	if cluster.Spec.LegacyCloudProvider == "gce" || k8sVersion.Minor <= 23 {
 		// this tests assumes a custom config for containerd:
 		// https://github.com/kubernetes/test-infra/blob/578d86a7be187214be6ccd60e6ea7317b51aeb15/jobs/e2e_node/containerd/config.toml#L19-L21
 		// ref: https://github.com/kubernetes/kubernetes/pull/104803
