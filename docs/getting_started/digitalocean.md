@@ -30,6 +30,8 @@ export S3_SECRET_ACCESS_KEY=<secret-key>  # where <secret-key> is the Spaces API
 In the following examples, `example.com` should be replaced with the DigitalOcean domain you created when going through the [Requirements](#requirements).
 Note that you kOps will only be able to successfully provision clusters in regions that support block storage (AMS3, BLR1, FRA1, LON1, NYC1, NYC3, SFO3, SGP1 and TOR1).
 
+**IMPORTANT**: When specifying a Digital Ocean region/zone, you **must** use lowercase (ie. `sfo3` instead of `SFO3`). If you use uppercase, you will receive an error message similar to `failed to load volumes for user: invalid region name`.
+
 ```bash
 # debian (the default) + flannel overlay cluster in tor1
 kops create cluster --cloud=digitalocean --name=my-cluster.example.com --networking=flannel --zones=tor1 --ssh-public-key=~/.ssh/id_rsa.pub
