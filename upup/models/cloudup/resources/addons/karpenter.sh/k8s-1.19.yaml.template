@@ -42,6 +42,13 @@ spec:
               Node properties are determined from a combination of provisioner and
               pod scheduling constraints.
             properties:
+              consolidation:
+                description: Consolidation are the consolidation parameters
+                properties:
+                  enabled:
+                    description: Enabled enables consolidation if it has been set
+                    type: boolean
+                type: object
               kubeletConfiguration:
                 description: KubeletConfiguration are options passed to the kubelet
                   when provisioning nodes
@@ -209,8 +216,8 @@ spec:
                   will wait before attempting to delete a node, measured from when
                   the node is detected to be empty. A Node is considered to be empty
                   when it does not have pods scheduled to it, excluding daemonsets.
-                  \n Termination due to underutilization is disabled if this field
-                  is not set."
+                  \n Termination due to no utilization is disabled if this field is
+                  not set."
                 format: int64
                 type: integer
               ttlSecondsUntilExpired:
@@ -594,14 +601,17 @@ rules:
   resources: ["awsnodetemplates"]
   verbs: ["get", "list", "watch"]
 - apiGroups: [""]
-  resources: ["pods", "nodes", "namespaces", "persistentvolumes", "persistentvolumeclaims"]
+  resources: ["pods", "nodes", "namespaces", "persistentvolumes", "persistentvolumeclaims", "replicationcontrollers"]
   verbs: ["get", "list", "watch"]
 - apiGroups: ["storage.k8s.io"]
   resources: ["storageclasses", "csinodes"]
   verbs: ["get", "watch", "list"]
 - apiGroups: ["apps"]
-  resources: ["daemonsets"]
+  resources: ["daemonsets", "replicasets", "statefulsets"]
   verbs: ["list", "watch"]
+- apiGroups: [ "policy" ]
+  resources: [ "poddisruptionbudgets" ]
+  verbs: [ "get", "list", "watch" ]
 # Write
 - apiGroups: ["karpenter.sh"]
   resources: ["provisioners/status"]
@@ -812,7 +822,7 @@ spec:
       dnsPolicy: Default
       containers:
         - name: controller
-          image: public.ecr.aws/karpenter/controller:v0.14.0
+          image: public.ecr.aws/karpenter/controller:v0.15.0
           imagePullPolicy: IfNotPresent
           resources:
             limits:
@@ -915,7 +925,7 @@ spec:
       dnsPolicy: Default
       containers:
         - name: webhook
-          image: public.ecr.aws/karpenter/webhook:v0.14.0
+          image: public.ecr.aws/karpenter/webhook:v0.15.0
           imagePullPolicy: IfNotPresent
           args:
             - -port=8443
@@ -1120,6 +1130,8 @@ kind: Provisioner
 metadata:
   name: {{ $name }}
 spec:
+  consolidation:
+    enabled: true
   requirements:
     - key: karpenter.sh/capacity-type
       operator: In
@@ -1155,6 +1167,5 @@ spec:
     subnetSelector:
       kops.k8s.io/instance-group/{{ $name }}: "*"
       kubernetes.io/cluster/{{ ClusterName }}: "*"
-  ttlSecondsAfterEmpty: 300
 {{ end }}
 {{ end }}
