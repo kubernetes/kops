@@ -41,8 +41,9 @@ type Channel struct {
 
 // CurrentSystemGeneration holds our current SystemGeneration value.
 // Version history:
-//   0  Pre-history (and the default value); versions prior to prune.
-//   1  Prune functionality introduced.
+//
+//	0  Pre-history (and the default value); versions prior to prune.
+//	1  Prune functionality introduced.
 const CurrentSystemGeneration = 1
 
 type ChannelVersion struct {
