@@ -169,10 +169,11 @@ func writeLiteralList(body *hclwrite.Body, key string, literals []*terraformWrit
 
 // writeMap writes a map's key-value pairs to a body spready across multiple lines.
 // Example:
-// key = {
-//   "key1" = "value1"
-//   "key2" = "value2"
-// }
+//
+//	key = {
+//	  "key1" = "value1"
+//	  "key2" = "value2"
+//	}
 //
 // The HCL2 library does not support this natively. See https://github.com/hashicorp/hcl/issues/356
 func writeMap(body *hclwrite.Body, key string, values map[string]cty.Value) {
