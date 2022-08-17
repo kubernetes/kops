@@ -301,6 +301,9 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		if !featureflag.Karpenter.Enabled() {
 			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("karpenter", "enabled"), "karpenter requires the Karpenter feature flag"))
 		}
+		if c.IsKubernetesLT("1.21") {
+			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("karpenter", "enabled"), "karpenter requires Kubernetes 1.21 or greater"))
+		}
 	}
 
 	if spec.PodIdentityWebhook != nil && spec.PodIdentityWebhook.Enabled {
