@@ -17,7 +17,7 @@ This command changes the desired cluster configuration in the registry.
 kops edit does not update the cloud resources; to apply the changes use `kops update cluster`.
 
 ```
-kops edit cluster [flags]
+kops edit cluster [CLUSTER] [flags]
 ```
 
 ### Examples
