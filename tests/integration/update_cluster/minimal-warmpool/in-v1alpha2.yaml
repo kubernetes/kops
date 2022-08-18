@@ -43,6 +43,7 @@ spec:
     zone: us-test-1a
   warmPool:
     enableLifecycleHook: true
+    maxSize: 1
 
 ---
 
