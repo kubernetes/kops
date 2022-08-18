@@ -66,7 +66,7 @@ func NewCmdUpgradeCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &UpgradeClusterOptions{}
 
 	cmd := &cobra.Command{
-		Use:               "cluster",
+		Use:               "cluster [CLUSTER]",
 		Short:             upgradeClusterShort,
 		Long:              upgradeClusterLong,
 		Example:           upgradeClusterExample,

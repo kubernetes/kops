@@ -46,7 +46,7 @@ func NewCmdDeleteSSHPublicKey(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &DeleteSSHPublicKeyOptions{}
 
 	cmd := &cobra.Command{
-		Use:               "sshpublickey",
+		Use:               "sshpublickey [CLUSTER]",
 		Short:             deleteSSHPublicKeyShort,
 		Example:           deleteSSHPublicKeyExample,
 		Args:              rootCommand.clusterNameArgs(&options.ClusterName),

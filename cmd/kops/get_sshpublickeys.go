@@ -50,7 +50,7 @@ func NewCmdGetSSHPublicKeys(f *util.Factory, out io.Writer, getOptions *GetOptio
 		GetOptions: getOptions,
 	}
 	cmd := &cobra.Command{
-		Use:               "sshpublickeys",
+		Use:               "sshpublickeys [CLUSTER]",
 		Aliases:           []string{"sshpublickey", "ssh"},
 		Short:             getSSHPublicKeysShort,
 		Example:           getSSHPublicKeysExample,

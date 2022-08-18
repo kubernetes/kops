@@ -22,7 +22,7 @@ Note: terraform users will need to run all of the following commands from the sa
 `terraform apply` prior to running `kops rolling-update cluster`.
 
 ```
-kops rolling-update cluster [flags]
+kops rolling-update cluster [CLUSTER] [flags]
 ```
 
 ### Examples
