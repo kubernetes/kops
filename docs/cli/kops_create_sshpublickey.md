@@ -10,7 +10,7 @@ Create an SSH public key.
 Create a new SSH public key, and store the key in the state store.  The key is not updated by this command.
 
 ```
-kops create sshpublickey [flags]
+kops create sshpublickey [CLUSTER] [flags]
 ```
 
 ### Examples

@@ -75,7 +75,7 @@ func NewCmdToolboxDump(f commandutils.Factory, out io.Writer) *cobra.Command {
 	options.InitDefaults()
 
 	cmd := &cobra.Command{
-		Use:               "dump",
+		Use:               "dump [CLUSTER]",
 		Short:             toolboxDumpShort,
 		Long:              toolboxDumpLong,
 		Example:           toolboxDumpExample,

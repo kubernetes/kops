@@ -6,7 +6,7 @@
 Display cluster instances.
 
 ```
-kops get instances [flags]
+kops get instances [CLUSTER] [flags]
 ```
 
 ### Examples

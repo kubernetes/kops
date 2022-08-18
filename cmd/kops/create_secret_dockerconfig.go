@@ -69,7 +69,7 @@ func NewCmdCreateSecretDockerConfig(f *util.Factory, out io.Writer) *cobra.Comma
 	options := &CreateSecretDockerConfigOptions{}
 
 	cmd := &cobra.Command{
-		Use:               "dockerconfig -f FILENAME",
+		Use:               "dockerconfig [CLUSTER] -f FILENAME",
 		Short:             createSecretDockerConfigShort,
 		Long:              createSecretDockerConfigLong,
 		Example:           createSecretDockerConfigExample,

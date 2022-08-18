@@ -101,7 +101,7 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	options.InitDefaults()
 
 	cmd := &cobra.Command{
-		Use:               "cluster",
+		Use:               "cluster [CLUSTER]",
 		Short:             updateClusterShort,
 		Long:              updateClusterLong,
 		Example:           updateClusterExample,
