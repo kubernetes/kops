@@ -112,6 +112,7 @@ func (b *NodeTerminationHandlerBuilder) configureASG(c *fi.ModelBuilderContext, 
 		DefaultResult:       aws.String("CONTINUE"),
 		HeartbeatTimeout:    aws.Int64(DefaultMessageRetentionPeriod),
 		LifecycleTransition: aws.String("autoscaling:EC2_INSTANCE_TERMINATING"),
+		Enabled:             aws.Bool(true),
 	}
 
 	c.AddTask(lifecyleTask)

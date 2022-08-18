@@ -88,10 +88,9 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 			tsk.LaunchTemplate = task
 			c.AddTask(tsk)
-		}
 
-		warmPool := b.Cluster.Spec.WarmPool.ResolveDefaults(ig)
-		{
+			warmPool := b.Cluster.Spec.WarmPool.ResolveDefaults(ig)
+
 			enabled := fi.Bool(warmPool.IsEnabled())
 			warmPoolTask := &awstasks.WarmPool{
 				Name:      &name,
@@ -102,29 +101,29 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				warmPoolTask.MinSize = warmPool.MinSize
 				warmPoolTask.MaxSize = warmPool.MaxSize
 
-				if warmPool.EnableLifecycleHook {
-					hookName := "kops-warmpool"
-					name := fmt.Sprintf("%s-%s", hookName, ig.GetName())
-
-					lifecyleTask := &awstasks.AutoscalingLifecycleHook{
-						ID:               aws.String(name),
-						Name:             aws.String(name),
-						HookName:         aws.String(hookName),
-						Lifecycle:        b.Lifecycle,
-						AutoscalingGroup: b.LinkToAutoscalingGroup(ig),
-						DefaultResult:    aws.String("ABANDON"),
-						// We let nodeup have 10 min to complete. Normally this should happen much faster,
-						// but CP nodes need 5 min or so to start on new clusters, and we need to wait for that.
-						HeartbeatTimeout:    aws.Int64(600),
-						LifecycleTransition: aws.String("autoscaling:EC2_INSTANCE_LAUNCHING"),
-					}
-
-					c.AddTask(lifecyleTask)
-
-				}
-
 			}
 			c.AddTask(warmPoolTask)
+
+			hookName := "kops-warmpool"
+			name := fmt.Sprintf("%s-%s", hookName, ig.GetName())
+			enableHook := warmPool.IsEnabled() && warmPool.EnableLifecycleHook
+
+			lifecyleTask := &awstasks.AutoscalingLifecycleHook{
+				ID:               aws.String(name),
+				Name:             aws.String(name),
+				HookName:         aws.String(hookName),
+				AutoscalingGroup: b.LinkToAutoscalingGroup(ig),
+				Lifecycle:        b.Lifecycle,
+				DefaultResult:    aws.String("ABANDON"),
+				// We let nodeup have 10 min to complete. Normally this should happen much faster,
+				// but CP nodes need 5 min or so to start on new clusters, and we need to wait for that.
+				HeartbeatTimeout:    aws.Int64(600),
+				LifecycleTransition: aws.String("autoscaling:EC2_INSTANCE_LAUNCHING"),
+				Enabled:             &enableHook,
+			}
+
+			c.AddTask(lifecyleTask)
+
 		}
 	}
 
