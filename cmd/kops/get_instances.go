@@ -67,7 +67,7 @@ type renderableCloudInstance struct {
 
 func NewCmdGetInstances(f *util.Factory, out io.Writer, options *GetOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:               "instances",
+		Use:               "instances [CLUSTER]",
 		Short:             getInstancesShort,
 		Example:           getInstancesExample,
 		Args:              rootCommand.clusterNameArgs(&options.ClusterName),

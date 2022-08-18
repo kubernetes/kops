@@ -10,7 +10,7 @@ Dump cluster information
 Displays cluster information.  Includes information about cloud and Kubernetes resources.
 
 ```
-kops toolbox dump [flags]
+kops toolbox dump [CLUSTER] [flags]
 ```
 
 ### Examples

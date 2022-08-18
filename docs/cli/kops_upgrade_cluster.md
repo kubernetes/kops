@@ -12,7 +12,7 @@ production ready Kubernetes version. After this command is run, use `kops update
 to finish a cluster upgrade.
 
 ```
-kops upgrade cluster [flags]
+kops upgrade cluster [CLUSTER] [flags]
 ```
 
 ### Examples

@@ -63,7 +63,7 @@ func NewCmdCreateSecretEncryptionConfig(f *util.Factory, out io.Writer) *cobra.C
 	options := &CreateSecretEncryptionConfigOptions{}
 
 	cmd := &cobra.Command{
-		Use:               "encryptionconfig -f FILENAME",
+		Use:               "encryptionconfig [CLUSTER] -f FILENAME",
 		Short:             createSecretEncryptionConfigShort,
 		Long:              createSecretEncryptionConfigLong,
 		Example:           createSecretEncryptionConfigExample,

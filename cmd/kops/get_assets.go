@@ -84,7 +84,7 @@ func NewCmdGetAssets(f *util.Factory, out io.Writer, getOptions *GetOptions) *co
 	}
 
 	cmd := &cobra.Command{
-		Use:               "assets",
+		Use:               "assets [CLUSTER]",
 		Short:             getAssetsShort,
 		Long:              getAssetsLong,
 		Example:           getAssetsExample,
