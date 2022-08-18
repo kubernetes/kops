@@ -71,7 +71,7 @@ func NewCmdCreateSecretWeavePassword(f *util.Factory, out io.Writer) *cobra.Comm
 	options := &CreateSecretWeavePasswordOptions{}
 
 	cmd := &cobra.Command{
-		Use:               "weavepassword",
+		Use:               "weavepassword [CLUSTER]",
 		Short:             createSecretWeavePasswordShort,
 		Long:              createSecretWeavePasswordLong,
 		Example:           createSecretWeavePasswordExample,

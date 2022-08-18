@@ -6,7 +6,7 @@
 Delete an SSH public key.
 
 ```
-kops delete sshpublickey [flags]
+kops delete sshpublickey [CLUSTER] [flags]
 ```
 
 ### Examples

@@ -10,7 +10,7 @@ Generate cluster.yaml from template
 Generate cluster.yaml from values input yaml file and apply template.
 
 ```
-kops toolbox template [flags]
+kops toolbox template [CLUSTER] [flags]
 ```
 
 ### Examples

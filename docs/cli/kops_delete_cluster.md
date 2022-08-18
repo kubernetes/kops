@@ -10,7 +10,7 @@ Delete a cluster.
 Deletes a Kubernetes cluster and all associated resources.  Resources include instancegroups, secrets, and the state store.  There is no "UNDO" for this command.
 
 ```
-kops delete cluster [flags]
+kops delete cluster [CLUSTER] [flags]
 ```
 
 ### Examples
