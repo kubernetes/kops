@@ -176,6 +176,14 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 			"")
 	}
 
+	if b.Cluster.Spec.Networking.Cilium != nil {
+		sysctls = append(sysctls,
+			"# Depending on systemd version, cloud and distro, rp_filters may be enabled.",
+			"# Cilium requires this to be disabled. See https://github.com/cilium/cilium/issues/10645",
+			"net.ipv4.conf.all.rp_filter=0",
+			"")
+	}
+
 	if params := b.NodeupConfig.SysctlParameters; len(params) > 0 {
 		sysctls = append(sysctls,
 			"# Custom sysctl parameters from instance group spec",
