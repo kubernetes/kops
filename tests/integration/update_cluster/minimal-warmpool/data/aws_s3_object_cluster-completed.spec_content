@@ -225,3 +225,4 @@ spec:
     nodes: public
   warmPool:
     enableLifecycleHook: true
+    maxSize: 1

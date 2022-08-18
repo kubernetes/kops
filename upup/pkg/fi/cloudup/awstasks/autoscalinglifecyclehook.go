@@ -43,6 +43,8 @@ type AutoscalingLifecycleHook struct {
 	DefaultResult       *string
 	HeartbeatTimeout    *int64
 	LifecycleTransition *string
+
+	Enabled *bool
 }
 
 var _ fi.CompareWithID = &AutoscalingLifecycleHook{}
@@ -64,6 +66,10 @@ func (h *AutoscalingLifecycleHook) Find(c *fi.Context) (*AutoscalingLifecycleHoo
 		return nil, fmt.Errorf("error listing ASG Lifecycle Hooks: %v", err)
 	}
 	if response == nil || len(response.LifecycleHooks) == 0 {
+		if !fi.BoolValue(h.Enabled) {
+			return h, nil
+		}
+
 		return nil, nil
 	}
 	if len(response.LifecycleHooks) > 1 {
@@ -80,6 +86,7 @@ func (h *AutoscalingLifecycleHook) Find(c *fi.Context) (*AutoscalingLifecycleHoo
 		DefaultResult:       hook.DefaultResult,
 		HeartbeatTimeout:    hook.HeartbeatTimeout,
 		LifecycleTransition: hook.LifecycleTransition,
+		Enabled:             fi.Bool(true),
 	}
 
 	return actual, nil
@@ -104,16 +111,27 @@ func (_ *AutoscalingLifecycleHook) CheckChanges(a, e, changes *AutoscalingLifecy
 
 func (*AutoscalingLifecycleHook) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *AutoscalingLifecycleHook) error {
 	if changes != nil {
-		request := &autoscaling.PutLifecycleHookInput{
-			AutoScalingGroupName: e.AutoscalingGroup.Name,
-			DefaultResult:        e.DefaultResult,
-			HeartbeatTimeout:     e.HeartbeatTimeout,
-			LifecycleHookName:    e.GetHookName(),
-			LifecycleTransition:  e.LifecycleTransition,
-		}
-		_, err := t.Cloud.Autoscaling().PutLifecycleHook(request)
-		if err != nil {
-			return err
+		if fi.BoolValue(e.Enabled) {
+			request := &autoscaling.PutLifecycleHookInput{
+				AutoScalingGroupName: e.AutoscalingGroup.Name,
+				DefaultResult:        e.DefaultResult,
+				HeartbeatTimeout:     e.HeartbeatTimeout,
+				LifecycleHookName:    e.GetHookName(),
+				LifecycleTransition:  e.LifecycleTransition,
+			}
+			_, err := t.Cloud.Autoscaling().PutLifecycleHook(request)
+			if err != nil {
+				return err
+			}
+		} else {
+			request := &autoscaling.DeleteLifecycleHookInput{
+				AutoScalingGroupName: e.AutoscalingGroup.Name,
+				LifecycleHookName:    e.GetHookName(),
+			}
+			_, err := t.Cloud.Autoscaling().DeleteLifecycleHook(request)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -129,6 +147,9 @@ type terraformASGLifecycleHook struct {
 }
 
 func (_ *AutoscalingLifecycleHook) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *AutoscalingLifecycleHook) error {
+	if !fi.BoolValue(e.Enabled) {
+		return nil
+	}
 	tf := &terraformASGLifecycleHook{
 		Name:                 e.GetHookName(),
 		AutoScalingGroupName: e.AutoscalingGroup.TerraformLink(),
@@ -149,6 +170,9 @@ type cloudformationASGLifecycleHook struct {
 }
 
 func (_ *AutoscalingLifecycleHook) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *AutoscalingLifecycleHook) error {
+	if !fi.BoolValue(e.Enabled) {
+		return nil
+	}
 	tf := &cloudformationASGLifecycleHook{
 		LifecycleHookName:    e.GetHookName(),
 		AutoScalingGroupName: e.AutoscalingGroup.CloudformationLink(),
