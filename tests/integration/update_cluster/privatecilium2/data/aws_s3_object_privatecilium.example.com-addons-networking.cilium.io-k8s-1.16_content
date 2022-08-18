@@ -477,7 +477,7 @@ spec:
           value: api.internal.privatecilium.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/cilium:v1.11.6
+        image: quay.io/cilium/cilium:v1.11.8
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -576,7 +576,7 @@ spec:
               key: clean-cilium-bpf-state
               name: cilium-config
               optional: true
-        image: quay.io/cilium/cilium:v1.11.6
+        image: quay.io/cilium/cilium:v1.11.8
         imagePullPolicy: IfNotPresent
         name: clean-cilium-state
         resources:
@@ -716,7 +716,7 @@ spec:
           value: api.internal.privatecilium.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/operator:v1.11.6
+        image: quay.io/cilium/operator:v1.11.8
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -803,7 +803,7 @@ spec:
         env:
         - name: GODEBUG
           value: x509ignoreCN=0
-        image: quay.io/cilium/hubble-relay:v1.11.6
+        image: quay.io/cilium/hubble-relay:v1.11.8
         imagePullPolicy: IfNotPresent
         livenessProbe:
           tcpSocket:
