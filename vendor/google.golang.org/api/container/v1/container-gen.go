@@ -564,9 +564,9 @@ type AutoprovisioningNodePoolDefaults struct {
 	// platform
 	// (https://cloud.google.com/compute/docs/instances/specify-min-cpu-platform)
 	// This field is deprecated, min_cpu_platform should be specified using
-	// cloud.google.com/requested-min-cpu-platform label selector on the
-	// pod. To unset the min cpu platform field pass "automatic" as field
-	// value.
+	// https://cloud.google.com/requested-min-cpu-platform label selector on
+	// the pod. To unset the min cpu platform field pass "automatic" as
+	// field value.
 	MinCpuPlatform string `json:"minCpuPlatform,omitempty"`
 
 	// OauthScopes: Scopes that are used by NAP when creating node pools.
@@ -638,8 +638,10 @@ func (s *BigQueryDestination) MarshalJSON() ([]byte, error) {
 
 // BinaryAuthorization: Configuration for Binary Authorization.
 type BinaryAuthorization struct {
-	// Enabled: Enable Binary Authorization for this cluster. If enabled,
-	// all container images will be validated by Binary Authorization.
+	// Enabled: This field is deprecated. Leave this unset and instead
+	// configure BinaryAuthorization using evaluation_mode. If
+	// evaluation_mode is set to anything other than
+	// EVALUATION_MODE_UNSPECIFIED, this field is ignored.
 	Enabled bool `json:"enabled,omitempty"`
 
 	// EvaluationMode: Mode of operation for binauthz policy evaluation.
@@ -3748,8 +3750,8 @@ func (s *NodeConfig) MarshalJSON() ([]byte, error) {
 
 // NodeConfigDefaults: Subset of NodeConfig message that has defaults.
 type NodeConfigDefaults struct {
-	// GcfsConfig: GCFS (Google Container File System, a.k.a. Riptide)
-	// options.
+	// GcfsConfig: GCFS (Google Container File System, also known as
+	// Riptide) options.
 	GcfsConfig *GcfsConfig `json:"gcfsConfig,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "GcfsConfig") to
@@ -9946,7 +9948,7 @@ type ProjectsLocationsClustersNodePoolsCompleteUpgradeCall struct {
 //
 //   - name: The name (project, location, cluster, node pool id) of the
 //     node pool to complete upgrade. Specified in the format
-//     'projects/*/locations/*/clusters/*/nodePools/*'.
+//     `projects/*/locations/*/clusters/*/nodePools/*`.
 func (r *ProjectsLocationsClustersNodePoolsService) CompleteUpgrade(name string, completenodepoolupgraderequest *CompleteNodePoolUpgradeRequest) *ProjectsLocationsClustersNodePoolsCompleteUpgradeCall {
 	c := &ProjectsLocationsClustersNodePoolsCompleteUpgradeCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -10054,7 +10056,7 @@ func (c *ProjectsLocationsClustersNodePoolsCompleteUpgradeCall) Do(opts ...googl
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "The name (project, location, cluster, node pool id) of the node pool to complete upgrade. Specified in the format 'projects/*/locations/*/clusters/*/nodePools/*'.",
+	//       "description": "The name (project, location, cluster, node pool id) of the node pool to complete upgrade. Specified in the format `projects/*/locations/*/clusters/*/nodePools/*`.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+/locations/[^/]+/clusters/[^/]+/nodePools/[^/]+$",
 	//       "required": true,
