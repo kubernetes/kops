@@ -42,6 +42,13 @@ spec:
               Node properties are determined from a combination of provisioner and
               pod scheduling constraints.
             properties:
+              consolidation:
+                description: Consolidation are the consolidation parameters
+                properties:
+                  enabled:
+                    description: Enabled enables consolidation if it has been set
+                    type: boolean
+                type: object
               kubeletConfiguration:
                 description: KubeletConfiguration are options passed to the kubelet
                   when provisioning nodes
@@ -56,6 +63,22 @@ spec:
                     description: ContainerRuntime is the container runtime to be used
                       with your worker nodes.
                     type: string
+                  maxPods:
+                    description: MaxPods is an override for the maximum number of
+                      pods that can run on a worker node instance.
+                    format: int32
+                    type: integer
+                  systemReserved:
+                    additionalProperties:
+                      anyOf:
+                      - type: integer
+                      - type: string
+                      pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                      x-kubernetes-int-or-string: true
+                    description: SystemReserved contains resources reserved for OS
+                      system daemons and kernel memory.
+                    type: object
+
                 type: object
               labels:
                 additionalProperties:
@@ -193,8 +216,8 @@ spec:
                   will wait before attempting to delete a node, measured from when
                   the node is detected to be empty. A Node is considered to be empty
                   when it does not have pods scheduled to it, excluding daemonsets.
-                  \n Termination due to underutilization is disabled if this field
-                  is not set."
+                  \n Termination due to no utilization is disabled if this field is
+                  not set."
                 format: int64
                 type: integer
               ttlSecondsUntilExpired:
@@ -316,6 +339,11 @@ spec:
               amiFamily:
                 description: AMIFamily is the AMI family that instances use.
                 type: string
+              amiSelector:
+                additionalProperties:
+                  type: string
+                description: AMISelector discovers AMIs to be used by Amazon EC2 tags.
+                type: object
               apiVersion:
                 description: 'APIVersion defines the versioned schema of this representation
                   of an object. Servers should convert recognized schemas to the latest
@@ -573,14 +601,17 @@ rules:
   resources: ["awsnodetemplates"]
   verbs: ["get", "list", "watch"]
 - apiGroups: [""]
-  resources: ["pods", "nodes", "namespaces", "persistentvolumes", "persistentvolumeclaims"]
+  resources: ["pods", "nodes", "namespaces", "persistentvolumes", "persistentvolumeclaims", "replicationcontrollers"]
   verbs: ["get", "list", "watch"]
 - apiGroups: ["storage.k8s.io"]
   resources: ["storageclasses", "csinodes"]
   verbs: ["get", "watch", "list"]
 - apiGroups: ["apps"]
-  resources: ["daemonsets"]
+  resources: ["daemonsets", "replicasets", "statefulsets"]
   verbs: ["list", "watch"]
+- apiGroups: [ "policy" ]
+  resources: [ "poddisruptionbudgets" ]
+  verbs: [ "get", "list", "watch" ]
 # Write
 - apiGroups: ["karpenter.sh"]
   resources: ["provisioners/status"]
@@ -594,9 +625,6 @@ rules:
 - apiGroups: [""]
   resources: ["pods/eviction"]
   verbs: ["create"]
-- apiGroups: [""]
-  resources: ["persistentvolumeclaims"]
-  verbs: ["update"]
 ---
 # Source: karpenter/templates/webhook/rbac.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -794,7 +822,7 @@ spec:
       dnsPolicy: Default
       containers:
         - name: controller
-          image: public.ecr.aws/karpenter/controller:v0.13.1
+          image: public.ecr.aws/karpenter/controller:v0.15.0
           imagePullPolicy: IfNotPresent
           resources:
             limits:
@@ -810,6 +838,7 @@ spec:
               containerPort: 8081
               protocol: TCP
           livenessProbe:
+            initialDelaySeconds: 30
             httpGet:
               path: /healthz
               port: http
@@ -896,7 +925,7 @@ spec:
       dnsPolicy: Default
       containers:
         - name: webhook
-          image: public.ecr.aws/karpenter/webhook:v0.13.1
+          image: public.ecr.aws/karpenter/webhook:v0.15.0
           imagePullPolicy: IfNotPresent
           args:
             - -port=8443
@@ -912,6 +941,7 @@ spec:
               containerPort: 8443
               protocol: TCP
           livenessProbe:
+            initialDelaySeconds: 30
             httpGet:
               scheme: HTTPS
               port: https-webhook
@@ -1100,6 +1130,8 @@ kind: Provisioner
 metadata:
   name: {{ $name }}
 spec:
+  consolidation:
+    enabled: true
   requirements:
     - key: karpenter.sh/capacity-type
       operator: In
@@ -1135,6 +1167,5 @@ spec:
     subnetSelector:
       kops.k8s.io/instance-group/{{ $name }}: "*"
       kubernetes.io/cluster/{{ ClusterName }}: "*"
-  ttlSecondsAfterEmpty: 300
 {{ end }}
 {{ end }}
