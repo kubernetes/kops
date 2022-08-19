@@ -116,7 +116,9 @@ func (q *SQS) Find(c *fi.Context) (*SQS, error) {
 		if reflect.DeepEqual(actualJson, expectedJson) {
 			klog.V(2).Infof("actual Policy was json-equal to expected; returning expected value")
 			actualPolicy = expectedPolicy
+			q.Policy = fi.NewStringResource(expectedPolicy)
 		}
+
 	}
 
 	actual := &SQS{

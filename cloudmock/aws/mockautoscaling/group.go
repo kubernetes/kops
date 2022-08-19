@@ -358,7 +358,8 @@ func (m *MockAutoscaling) PutLifecycleHook(input *autoscaling.PutLifecycleHookIn
 	if m.LifecycleHooks == nil {
 		m.LifecycleHooks = make(map[string]*autoscaling.LifecycleHook)
 	}
-	m.LifecycleHooks[*hook.AutoScalingGroupName] = hook
+	name := *input.AutoScalingGroupName + "::" + *input.LifecycleHookName
+	m.LifecycleHooks[name] = hook
 
 	return &autoscaling.PutLifecycleHookOutput{}, nil
 }
@@ -367,13 +368,14 @@ func (m *MockAutoscaling) DescribeLifecycleHooks(input *autoscaling.DescribeLife
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	name := *input.AutoScalingGroupName
 	response := &autoscaling.DescribeLifecycleHooksOutput{}
+	for _, lifecycleHookName := range input.LifecycleHookNames {
+		name := *input.AutoScalingGroupName + "::" + *lifecycleHookName
 
-	hook := m.LifecycleHooks[name]
-	if hook == nil {
-		return response, nil
+		hook := m.LifecycleHooks[name]
+		if hook != nil {
+			response.LifecycleHooks = append(response.LifecycleHooks, hook)
+		}
 	}
-	response.LifecycleHooks = []*autoscaling.LifecycleHook{hook}
 	return response, nil
 }
