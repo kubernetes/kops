@@ -3,7 +3,7 @@
     "oauth2": {
       "scopes": {
         "https://www.googleapis.com/auth/userinfo.email": {
-          "description": "View your email address"
+          "description": "See your primary Google Account email address"
         },
         "https://www.googleapis.com/auth/userinfo.profile": {
           "description": "See your personal info, including any personal info you've made publicly available"

@@ -35452,7 +35452,7 @@
       }
     }
   },
-  "revision": "20220726",
+  "revision": "20220809",
   "rootUrl": "https://compute.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -39178,7 +39178,7 @@
           "description": "The condition that is associated with this binding. If the condition evaluates to `true`, then this binding applies to the current request. If the condition evaluates to `false`, then this binding does not apply to the current request. However, a different role binding might grant the same role to one or more of the principals in this binding. To learn which resources support conditions in their IAM policies, see the [IAM documentation](https://cloud.google.com/iam/help/conditions/resource-policies)."
         },
         "members": {
-          "description": "Specifies the principals requesting access for a Google Cloud resource. `members` can have the following values: * `allUsers`: A special identifier that represents anyone who is on the internet; with or without a Google account. * `allAuthenticatedUsers`: A special identifier that represents anyone who is authenticated with a Google account or a service account. * `user:{emailid}`: An email address that represents a specific Google account. For example, `alice@example.com` . * `serviceAccount:{emailid}`: An email address that represents a service account. For example, `my-other-app@appspot.gserviceaccount.com`. * `group:{emailid}`: An email address that represents a Google group. For example, `admins@example.com`. * `deleted:user:{emailid}?uid={uniqueid}`: An email address (plus unique identifier) representing a user that has been recently deleted. For example, `alice@example.com?uid=123456789012345678901`. If the user is recovered, this value reverts to `user:{emailid}` and the recovered user retains the role in the binding. * `deleted:serviceAccount:{emailid}?uid={uniqueid}`: An email address (plus unique identifier) representing a service account that has been recently deleted. For example, `my-other-app@appspot.gserviceaccount.com?uid=123456789012345678901`. If the service account is undeleted, this value reverts to `serviceAccount:{emailid}` and the undeleted service account retains the role in the binding. * `deleted:group:{emailid}?uid={uniqueid}`: An email address (plus unique identifier) representing a Google group that has been recently deleted. For example, `admins@example.com?uid=123456789012345678901`. If the group is recovered, this value reverts to `group:{emailid}` and the recovered group retains the role in the binding. * `domain:{domain}`: The G Suite domain (primary) that represents all the users of that domain. For example, `google.com` or `example.com`. ",
+          "description": "Specifies the principals requesting access for a Google Cloud resource. `members` can have the following values: * `allUsers`: A special identifier that represents anyone who is on the internet; with or without a Google account. * `allAuthenticatedUsers`: A special identifier that represents anyone who is authenticated with a Google account or a service account. * `user:{emailid}`: An email address that represents a specific Google account. For example, `alice@example.com` . * `serviceAccount:{emailid}`: An email address that represents a Google service account. For example, `my-other-app@appspot.gserviceaccount.com`. * `serviceAccount:{projectid}.svc.id.goog[{namespace}/{kubernetes-sa}]`: An identifier for a [Kubernetes service account](https://cloud.google.com/kubernetes-engine/docs/how-to/kubernetes-service-accounts). For example, `my-project.svc.id.goog[my-namespace/my-kubernetes-sa]`. * `group:{emailid}`: An email address that represents a Google group. For example, `admins@example.com`. * `deleted:user:{emailid}?uid={uniqueid}`: An email address (plus unique identifier) representing a user that has been recently deleted. For example, `alice@example.com?uid=123456789012345678901`. If the user is recovered, this value reverts to `user:{emailid}` and the recovered user retains the role in the binding. * `deleted:serviceAccount:{emailid}?uid={uniqueid}`: An email address (plus unique identifier) representing a service account that has been recently deleted. For example, `my-other-app@appspot.gserviceaccount.com?uid=123456789012345678901`. If the service account is undeleted, this value reverts to `serviceAccount:{emailid}` and the undeleted service account retains the role in the binding. * `deleted:group:{emailid}?uid={uniqueid}`: An email address (plus unique identifier) representing a Google group that has been recently deleted. For example, `admins@example.com?uid=123456789012345678901`. If the group is recovered, this value reverts to `group:{emailid}` and the recovered group retains the role in the binding. * `domain:{domain}`: The G Suite domain (primary) that represents all the users of that domain. For example, `google.com` or `example.com`. ",
           "items": {
             "type": "string"
           },
@@ -52130,6 +52130,9 @@
           ],
           "type": "string"
         },
+        "pscData": {
+          "$ref": "NetworkEndpointGroupPscData"
+        },
         "pscTargetService": {
           "description": "The target service url used to set up private service connection to a Google API or a PSC Producer Service Attachment. An example value is: \"asia-northeast3-cloudkms.googleapis.com\"",
           "type": "string"
@@ -52481,6 +52484,42 @@
             }
           },
           "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "NetworkEndpointGroupPscData": {
+      "description": "All data that is specifically relevant to only network endpoint groups of type PRIVATE_SERVICE_CONNECT.",
+      "id": "NetworkEndpointGroupPscData",
+      "properties": {
+        "consumerPscAddress": {
+          "description": "[Output Only] Address allocated from given subnetwork for PSC. This IP address acts as a VIP for a PSC NEG, allowing it to act as an endpoint in L7 PSC-XLB.",
+          "type": "string"
+        },
+        "pscConnectionId": {
+          "description": "[Output Only] The PSC connection id of the PSC Network Endpoint Group Consumer.",
+          "format": "uint64",
+          "type": "string"
+        },
+        "pscConnectionStatus": {
+          "description": "[Output Only] The connection status of the PSC Forwarding Rule.",
+          "enum": [
+            "ACCEPTED",
+            "CLOSED",
+            "NEEDS_ATTENTION",
+            "PENDING",
+            "REJECTED",
+            "STATUS_UNSPECIFIED"
+          ],
+          "enumDescriptions": [
+            "The connection has been accepted by the producer.",
+            "The connection has been closed by the producer and will not serve traffic going forward.",
+            "The connection has been accepted by the producer, but the producer needs to take further action before the forwarding rule can serve traffic.",
+            "The connection is pending acceptance by the producer.",
+            "The connection has been rejected by the producer.",
+            ""
+          ],
+          "type": "string"
         }
       },
       "type": "object"
@@ -59189,6 +59228,13 @@
           "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
           "type": "string"
         },
+        "resourcePolicies": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Resource policies to be added to this reservation. The key is defined by user, and the value is resource policy url. This is to define placement policy with reservation.",
+          "type": "object"
+        },
         "satisfiesPzs": {
           "description": "[Output Only] Reserved for future use.",
           "type": "boolean"
@@ -63124,6 +63170,10 @@
           "$ref": "SecurityPolicyRuleMatcher",
           "description": "A match condition that incoming traffic is evaluated against. If it evaluates to true, the corresponding 'action' is enforced."
         },
+        "preconfiguredWafConfig": {
+          "$ref": "SecurityPolicyRulePreconfiguredWafConfig",
+          "description": "Preconfigured WAF configuration to be applied for the rule. If the rule does not evaluate preconfigured WAF rules, i.e., if evaluatePreconfiguredWaf() is not used, this field will have no effect."
+        },
         "preview": {
           "description": "If set to true, the specified action is not enforced.",
           "type": "boolean"
@@ -63262,6 +63312,92 @@
             "type": "string"
           },
           "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "SecurityPolicyRulePreconfiguredWafConfig": {
+      "id": "SecurityPolicyRulePreconfiguredWafConfig",
+      "properties": {
+        "exclusions": {
+          "description": "A list of exclusions to apply during preconfigured WAF evaluation.",
+          "items": {
+            "$ref": "SecurityPolicyRulePreconfiguredWafConfigExclusion"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "SecurityPolicyRulePreconfiguredWafConfigExclusion": {
+      "id": "SecurityPolicyRulePreconfiguredWafConfigExclusion",
+      "properties": {
+        "requestCookiesToExclude": {
+          "description": "A list of request cookie names whose value will be excluded from inspection during preconfigured WAF evaluation.",
+          "items": {
+            "$ref": "SecurityPolicyRulePreconfiguredWafConfigExclusionFieldParams"
+          },
+          "type": "array"
+        },
+        "requestHeadersToExclude": {
+          "description": "A list of request header names whose value will be excluded from inspection during preconfigured WAF evaluation.",
+          "items": {
+            "$ref": "SecurityPolicyRulePreconfiguredWafConfigExclusionFieldParams"
+          },
+          "type": "array"
+        },
+        "requestQueryParamsToExclude": {
+          "description": "A list of request query parameter names whose value will be excluded from inspection during preconfigured WAF evaluation. Note that the parameter can be in the query string or in the POST body.",
+          "items": {
+            "$ref": "SecurityPolicyRulePreconfiguredWafConfigExclusionFieldParams"
+          },
+          "type": "array"
+        },
+        "requestUrisToExclude": {
+          "description": "A list of request URIs from the request line to be excluded from inspection during preconfigured WAF evaluation. When specifying this field, the query or fragment part should be excluded.",
+          "items": {
+            "$ref": "SecurityPolicyRulePreconfiguredWafConfigExclusionFieldParams"
+          },
+          "type": "array"
+        },
+        "targetRuleIds": {
+          "description": "A list of target rule IDs under the WAF rule set to apply the preconfigured WAF exclusion. If omitted, it refers to all the rule IDs under the WAF rule set.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "targetRuleSet": {
+          "description": "Target WAF rule set to apply the preconfigured WAF exclusion.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "SecurityPolicyRulePreconfiguredWafConfigExclusionFieldParams": {
+      "id": "SecurityPolicyRulePreconfiguredWafConfigExclusionFieldParams",
+      "properties": {
+        "op": {
+          "description": "The match operator for the field.",
+          "enum": [
+            "CONTAINS",
+            "ENDS_WITH",
+            "EQUALS",
+            "EQUALS_ANY",
+            "STARTS_WITH"
+          ],
+          "enumDescriptions": [
+            "The operator matches if the field value contains the specified value.",
+            "The operator matches if the field value ends with the specified value.",
+            "The operator matches if the field value equals the specified value.",
+            "The operator matches if the field value is any value.",
+            "The operator matches if the field value starts with the specified value."
+          ],
+          "type": "string"
+        },
+        "val": {
+          "description": "The value of the field.",
+          "type": "string"
         }
       },
       "type": "object"
