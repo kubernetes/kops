@@ -25,7 +25,7 @@ APIServerConfig:
     featureGates:
       CSIMigrationAWS: "true"
       InTreePluginAWSUnregister: "true"
-    image: registry.k8s.io/kube-apiserver:v1.24.0-alpha.1
+    image: registry.k8s.io/kube-apiserver:v1.24.3
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
@@ -55,16 +55,16 @@ APIServerConfig:
     -----END RSA PUBLIC KEY-----
 Assets:
   amd64:
-  - ba0685edd32a41cbf256ea6ba4957e1381c1a924cd2d8278ff86d2d88b901e3f@https://storage.googleapis.com/kubernetes-release/release/v1.24.0-alpha.1/bin/linux/amd64/kubelet
-  - d36c259706f15424c3b6afef38e724333fca0f1f5c44fcba5263a3b8da133ffd@https://storage.googleapis.com/kubernetes-release/release/v1.24.0-alpha.1/bin/linux/amd64/kubectl
+  - da575ceb7c44fddbe7d2514c16798f39f8c10e54b5dbef3bcee5ac547637db11@https://storage.googleapis.com/kubernetes-release/release/v1.24.3/bin/linux/amd64/kubelet
+  - 8a45348bdaf81d46caf1706c8bf95b3f431150554f47d444ffde89e8cdd712c1@https://storage.googleapis.com/kubernetes-release/release/v1.24.3/bin/linux/amd64/kubectl
   - 962100bbc4baeaaa5748cdbfce941f756b1531c2eadb290129401498bfac21e7@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz
   - 3a1322c18ee5ff4b9bd5af6b7b30c923a3eab8af1df05554f530ef8e2b24ac5e@https://github.com/containerd/containerd/releases/download/v1.6.8/containerd-1.6.8-linux-amd64.tar.gz
   - 6e8b24be90fffce6b025d254846da9d2ca6d65125f9139b6354bab0272253d01@https://github.com/opencontainers/runc/releases/download/v1.1.3/runc.amd64
   - f90ed6dcef534e6d1ae17907dc7eb40614b8945ad4af7f0e98d2be7cde8165c6@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/amd64/protokube,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/protokube-linux-amd64
   - 9992e7eb2a2e93f799e5a9e98eb718637433524bc65f630357201a79f49b13d0@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/amd64/channels,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/channels-linux-amd64
   arm64:
-  - c0e578be05655e0ecb364fea3834809d9b940c9bcd6b6f99b319beed002cb4b2@https://storage.googleapis.com/kubernetes-release/release/v1.24.0-alpha.1/bin/linux/arm64/kubelet
-  - d57a24ecd03e56c13791549186669c5fc60e3e13faa3c08b7a12a02f42d9c646@https://storage.googleapis.com/kubernetes-release/release/v1.24.0-alpha.1/bin/linux/arm64/kubectl
+  - 6c04ae25ee9b434f40e0d2466eb4ef5604dc43f306ddf1e5f165fc9d3c521e12@https://storage.googleapis.com/kubernetes-release/release/v1.24.3/bin/linux/arm64/kubelet
+  - bdad4d3063ddb7bfa5ecf17fb8b029d5d81d7d4ea1650e4369aafa13ed97149a@https://storage.googleapis.com/kubernetes-release/release/v1.24.3/bin/linux/arm64/kubectl
   - ef17764ffd6cdcb16d76401bac1db6acc050c9b088f1be5efa0e094ea3b01df0@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-arm64-v0.9.1.tgz
   - b114e36ecce78cef9d611416c01b784a420928c82766d6df7dc02b10d9da94cd@https://github.com/containerd/containerd/releases/download/v1.6.8/containerd-1.6.8-linux-arm64.tar.gz
   - 00c9ad161a77a01d9dcbd25b1d76fa9822e57d8e4abf26ba8907c98f6bcfcd0f@https://github.com/opencontainers/runc/releases/download/v1.1.3/runc.arm64

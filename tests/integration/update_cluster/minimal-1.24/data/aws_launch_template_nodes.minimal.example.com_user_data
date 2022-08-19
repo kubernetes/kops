@@ -139,7 +139,7 @@ docker:
 kubeProxy:
   clusterCIDR: 100.96.0.0/11
   cpuRequest: 100m
-  image: registry.k8s.io/kube-proxy:v1.24.0-alpha.1
+  image: registry.k8s.io/kube-proxy:v1.24.3
   logLevel: 2
 kubelet:
   anonymousAuth: false
@@ -168,7 +168,7 @@ CloudProvider: aws
 ConfigBase: memfs://tests/minimal.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: EBNw0oi7LCUNV8Xjpjs40wyDIcKC7Up3hUOR2nBiQso=
+NodeupConfigHash: OOke59BUA+zUSsMkaOCS705RPlgg1JrLTVWwW+G+eW8=
 
 __EOF_KUBE_ENV
 
