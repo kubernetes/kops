@@ -33,7 +33,7 @@ spec:
     balanceSimilarNodeGroups: false
     enabled: true
     expander: random
-    image: registry.k8s.io/autoscaling/cluster-autoscaler:latest
+    image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.24.0
     maxNodeProvisionTime: 15m0s
     newPodScaleUpDelay: 0s
     scaleDownDelayAfterAdd: 10m0s
