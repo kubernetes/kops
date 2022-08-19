@@ -23,6 +23,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -43,6 +44,7 @@ type SpotPricing struct {
 	DirectoryPath  string
 	cache          *cache.Cache
 	ec2Client      ec2iface.EC2API
+	sync.RWMutex
 }
 
 type spotPricingEntry struct {
@@ -98,7 +100,9 @@ func loadSpotCacheFrom(itemTTL time.Duration, region string, expandedDirPath str
 	if err := decoder.Decode(spotTimeSeries); err != nil {
 		return nil, err
 	}
-	return cache.NewFrom(itemTTL, itemTTL, *spotTimeSeries), nil
+	c := cache.NewFrom(itemTTL, itemTTL, *spotTimeSeries)
+	c.DeleteExpired()
+	return c, nil
 }
 
 func getSpotCacheFilePath(region string, directoryPath string) string {
@@ -118,6 +122,8 @@ func spotCacheRefreshJob(spotPricing *SpotPricing, days int) {
 }
 
 func (c *SpotPricing) Refresh(days int) error {
+	c.Lock()
+	defer c.Unlock()
 	spotInstanceTypeCosts, err := c.fetchSpotPricingTimeSeries("", days)
 	if err != nil {
 		return fmt.Errorf("there was a problem refreshing the spot instance type pricing cache: %v", err)
@@ -139,6 +145,8 @@ func (c *SpotPricing) Get(instanceType string, zone string, days int) (float64, 
 		}
 	}
 	if !ok {
+		c.RLock()
+		defer c.RUnlock()
 		zonalSpotPricing, err := c.fetchSpotPricingTimeSeries(instanceType, days)
 		if err != nil {
 			return -1, fmt.Errorf("there was a problem fetching spot instance type pricing for %s: %v", instanceType, err)
@@ -224,6 +232,8 @@ func (c *SpotPricing) Save() error {
 }
 
 func (c *SpotPricing) Clear() error {
+	c.Lock()
+	defer c.Unlock()
 	c.cache.Flush()
 	return os.Remove(getSpotCacheFilePath(c.Region, c.DirectoryPath))
 }
