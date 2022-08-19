@@ -138,6 +138,11 @@ func TestCreateClusterIPv6(t *testing.T) {
 
 // TestCreateClusterDifferentAMIs runs kops create cluster with different AMI inputs
 func TestCreateClusterDifferentAMIs(t *testing.T) {
+	featureflag.ParseFlags("+APIServerNodes")
+	unsetFeatureFlags := func() {
+		featureflag.ParseFlags("-APIServerNodes")
+	}
+	defer unsetFeatureFlags()
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/different-amis", "v1alpha2")
 }
 
