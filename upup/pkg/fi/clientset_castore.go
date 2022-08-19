@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"strings"
 
 	"golang.org/x/crypto/ssh"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -290,7 +291,7 @@ func (c *ClientsetCAStore) AddSSHPublicKey(pubkey []byte) error {
 		return fmt.Errorf("error parsing SSH public key: %v", err)
 	}
 
-	return c.addSSHCredential(ctx, string(pubkey))
+	return c.addSSHCredential(ctx, strings.TrimSpace(string(pubkey)))
 }
 
 // FindSSHPublicKeys implements CAStore::FindSSHPublicKeys
@@ -304,6 +305,7 @@ func (c *ClientsetCAStore) FindSSHPublicKeys() ([]*kops.SSHCredential, error) {
 		}
 		return nil, fmt.Errorf("error reading SSHCredential: %v", err)
 	}
+	o.Spec.PublicKey = strings.TrimSpace(o.Spec.PublicKey)
 
 	items := []*kops.SSHCredential{o}
 	return items, nil

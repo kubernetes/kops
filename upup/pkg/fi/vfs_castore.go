@@ -394,7 +394,7 @@ func (c *VFSCAStore) findPrivateKeyset(id string) (*Keyset, error) {
 
 // AddSSHPublicKey stores an SSH public key
 func (c *VFSCAStore) AddSSHPublicKey(pubkey []byte) error {
-	id, err := sshcredentials.Fingerprint(string(pubkey))
+	id, err := sshcredentials.Fingerprint(strings.TrimSpace(string(pubkey)))
 	if err != nil {
 		return fmt.Errorf("error fingerprinting SSH public key: %v", err)
 	}
@@ -440,7 +440,7 @@ func (c *VFSCAStore) FindSSHPublicKeys() ([]*kops.SSHCredential, error) {
 
 		item := &kops.SSHCredential{}
 		item.Name = "admin"
-		item.Spec.PublicKey = string(data)
+		item.Spec.PublicKey = strings.TrimSpace(string(data))
 		items = append(items, item)
 	}
 

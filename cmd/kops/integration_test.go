@@ -1328,7 +1328,6 @@ func (i *integrationTest) runTestTerraformGCE(t *testing.T) {
 
 	expectedFilenames = append(expectedFilenames,
 		"google_compute_instance_template_nodes-"+gce.SafeClusterName(i.clusterName)+"_metadata_startup-script",
-		"google_compute_instance_template_nodes-"+gce.SafeClusterName(i.clusterName)+"_metadata_ssh-keys",
 		"aws_s3_object_cluster-completed.spec_content",
 		"aws_s3_object_etcd-cluster-spec-events_content",
 		"aws_s3_object_etcd-cluster-spec-main_content",
@@ -1351,7 +1350,6 @@ func (i *integrationTest) runTestTerraformGCE(t *testing.T) {
 		expectedFilenames = append(expectedFilenames, "aws_s3_object_manifests-etcdmanager-main-master-"+zone+"_content")
 		expectedFilenames = append(expectedFilenames, "aws_s3_object_nodeupconfig-master-"+zone+"_content")
 		expectedFilenames = append(expectedFilenames, prefix+"startup-script")
-		expectedFilenames = append(expectedFilenames, prefix+"ssh-keys")
 	}
 
 	i.runTest(t, h, expectedFilenames, "", "", nil)
