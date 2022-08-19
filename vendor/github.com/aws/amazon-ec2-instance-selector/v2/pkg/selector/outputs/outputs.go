@@ -19,12 +19,34 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"reflect"
 	"strconv"
 	"strings"
 	"text/tabwriter"
 
 	"github.com/aws/amazon-ec2-instance-selector/v2/pkg/instancetypes"
 )
+
+const columnTag = "column"
+
+// wideColumnsData stores the data that should be displayed on each column
+// of a wide output row
+type wideColumnsData struct {
+	instanceName       string `column:"Instance Type"`
+	vcpu               int64  `column:"VCPUs"`
+	memory             string `column:"Mem (GiB)"`
+	hypervisor         string `column:"Hypervisor"`
+	currentGen         bool   `column:"Current Gen"`
+	hibernationSupport bool   `column:"Hibernation Support"`
+	cpuArch            string `column:"CPU Arch"`
+	networkPerformance string `column:"Network Performance"`
+	eni                int64  `column:"ENIs"`
+	gpu                int64  `column:"GPUs"`
+	gpuMemory          string `column:"GPU Mem (GiB)"`
+	gpuInfo            string `column:"GPU Info"`
+	odPrice            string `column:"On-Demand Price/Hr"`
+	spotPrice          string `column:"Spot Price/Hr (30d avg)"`
+}
 
 // SimpleInstanceTypeOutput is an OutputFn which outputs a slice of instance type names
 func SimpleInstanceTypeOutput(instanceTypeInfoSlice []*instancetypes.Details) []string {
@@ -91,28 +113,15 @@ func TableOutputWide(instanceTypeInfoSlice []*instancetypes.Details) []string {
 	}
 	w := new(tabwriter.Writer)
 	buf := new(bytes.Buffer)
-	none := "none"
 	w.Init(buf, 8, 8, 2, ' ', 0)
 	defer w.Flush()
 
-	onDemandPricePerHourHeader := "On-Demand Price/Hr"
-	spotPricePerHourHeader := "Spot Price/Hr (30d avg)"
-
-	headers := []interface{}{
-		"Instance Type",
-		"VCPUs",
-		"Mem (GiB)",
-		"Hypervisor",
-		"Current Gen",
-		"Hibernation Support",
-		"CPU Arch",
-		"Network Performance",
-		"ENIs",
-		"GPUs",
-		"GPU Mem (GiB)",
-		"GPU Info",
-		onDemandPricePerHourHeader,
-		spotPricePerHourHeader,
+	columnDataStruct := wideColumnsData{}
+	headers := []interface{}{}
+	structType := reflect.TypeOf(columnDataStruct)
+	for i := 0; i < structType.NumField(); i++ {
+		columnHeader := structType.Field(i).Tag.Get(columnTag)
+		headers = append(headers, columnHeader)
 	}
 	separators := make([]interface{}, 0)
 
@@ -124,50 +133,24 @@ func TableOutputWide(instanceTypeInfoSlice []*instancetypes.Details) []string {
 	fmt.Fprintf(w, headerFormat, headers...)
 	fmt.Fprintf(w, "\n"+headerFormat, separators...)
 
-	for _, instanceTypeInfo := range instanceTypeInfoSlice {
-		hypervisor := instanceTypeInfo.Hypervisor
-		if hypervisor == nil {
-			hypervisor = &none
-		}
-		cpuArchitectures := []string{}
-		for _, cpuArch := range instanceTypeInfo.ProcessorInfo.SupportedArchitectures {
-			cpuArchitectures = append(cpuArchitectures, *cpuArch)
-		}
-		gpus := int64(0)
-		gpuMemory := int64(0)
-		gpuType := []string{}
-		if instanceTypeInfo.GpuInfo != nil {
-			gpuMemory = *instanceTypeInfo.GpuInfo.TotalGpuMemoryInMiB
-			for _, gpuInfo := range instanceTypeInfo.GpuInfo.Gpus {
-				gpus = gpus + *gpuInfo.Count
-				gpuType = append(gpuType, *gpuInfo.Manufacturer+" "+*gpuInfo.Name)
-			}
-		}
+	columnsData := getWideColumnsData(instanceTypeInfoSlice)
 
-		onDemandPricePerHourStr := "-Not Fetched-"
-		spotPricePerHourStr := "-Not Fetched-"
-		if instanceTypeInfo.OndemandPricePerHour != nil {
-			onDemandPricePerHourStr = fmt.Sprintf("$%s", formatFloat(*instanceTypeInfo.OndemandPricePerHour))
-		}
-		if instanceTypeInfo.SpotPrice != nil {
-			spotPricePerHourStr = fmt.Sprintf("$%s", formatFloat(*instanceTypeInfo.SpotPrice))
-		}
-
+	for _, data := range columnsData {
 		fmt.Fprintf(w, "\n%s\t%d\t%s\t%s\t%t\t%t\t%s\t%s\t%d\t%d\t%s\t%s\t%s\t%s\t",
-			*instanceTypeInfo.InstanceType,
-			*instanceTypeInfo.VCpuInfo.DefaultVCpus,
-			formatFloat(float64(*instanceTypeInfo.MemoryInfo.SizeInMiB)/1024.0),
-			*hypervisor,
-			*instanceTypeInfo.CurrentGeneration,
-			*instanceTypeInfo.HibernationSupported,
-			strings.Join(cpuArchitectures, ", "),
-			*instanceTypeInfo.NetworkInfo.NetworkPerformance,
-			*instanceTypeInfo.NetworkInfo.MaximumNetworkInterfaces,
-			gpus,
-			formatFloat(float64(gpuMemory)/1024.0),
-			strings.Join(gpuType, ", "),
-			onDemandPricePerHourStr,
-			spotPricePerHourStr,
+			data.instanceName,
+			data.vcpu,
+			data.memory,
+			data.hypervisor,
+			data.currentGen,
+			data.hibernationSupport,
+			data.cpuArch,
+			data.networkPerformance,
+			data.eni,
+			data.gpu,
+			data.gpuMemory,
+			data.gpuInfo,
+			data.odPrice,
+			data.spotPrice,
 		)
 	}
 	w.Flush()
@@ -210,4 +193,97 @@ func reverse(s string) string {
 		runes[i], runes[j] = runes[j], runes[i]
 	}
 	return string(runes)
+}
+
+// getWideColumnsData returns the column data necessary for a wide output for each of
+// the given instance types
+func getWideColumnsData(instanceTypes []*instancetypes.Details) []*wideColumnsData {
+	columnsData := []*wideColumnsData{}
+
+	for _, instanceType := range instanceTypes {
+		none := "none"
+		hyperisor := instanceType.Hypervisor
+		if hyperisor == nil {
+			hyperisor = &none
+		}
+
+		cpuArchitectures := []string{}
+		for _, cpuArch := range instanceType.ProcessorInfo.SupportedArchitectures {
+			cpuArchitectures = append(cpuArchitectures, *cpuArch)
+		}
+
+		gpus := int64(0)
+		gpuMemory := int64(0)
+		gpuType := []string{}
+		if instanceType.GpuInfo != nil {
+			gpuMemory = *instanceType.GpuInfo.TotalGpuMemoryInMiB
+			for _, gpuInfo := range instanceType.GpuInfo.Gpus {
+				gpus = gpus + *gpuInfo.Count
+				gpuType = append(gpuType, *gpuInfo.Manufacturer+" "+*gpuInfo.Name)
+			}
+		} else {
+			gpuType = append(gpuType, none)
+		}
+
+		onDemandPricePerHourStr := "-Not Fetched-"
+		spotPricePerHourStr := "-Not Fetched-"
+		if instanceType.OndemandPricePerHour != nil {
+			onDemandPricePerHourStr = "$" + formatFloat(*instanceType.OndemandPricePerHour)
+		}
+		if instanceType.SpotPrice != nil {
+			spotPricePerHourStr = "$" + formatFloat(*instanceType.SpotPrice)
+		}
+
+		newColumn := wideColumnsData{
+			instanceName:       *instanceType.InstanceType,
+			vcpu:               *instanceType.VCpuInfo.DefaultVCpus,
+			memory:             formatFloat(float64(*instanceType.MemoryInfo.SizeInMiB) / 1024.0),
+			hypervisor:         *hyperisor,
+			currentGen:         *instanceType.CurrentGeneration,
+			hibernationSupport: *instanceType.HibernationSupported,
+			cpuArch:            strings.Join(cpuArchitectures, ", "),
+			networkPerformance: *instanceType.NetworkInfo.NetworkPerformance,
+			eni:                *instanceType.NetworkInfo.MaximumNetworkInterfaces,
+			gpu:                gpus,
+			gpuMemory:          formatFloat(float64(gpuMemory) / 1024.0),
+			gpuInfo:            strings.Join(gpuType, ", "),
+			odPrice:            onDemandPricePerHourStr,
+			spotPrice:          spotPricePerHourStr,
+		}
+
+		columnsData = append(columnsData, &newColumn)
+	}
+
+	return columnsData
+}
+
+// getUnderlyingValue returns the underlying value of the given
+// reflect.Value type
+func getUnderlyingValue(value reflect.Value) interface{} {
+	var val interface{}
+
+	switch value.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		val = value.Int()
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		val = value.Uint()
+	case reflect.Float32, reflect.Float64:
+		val = value.Float()
+	case reflect.String:
+		val = value.String()
+	case reflect.Pointer:
+		val = value.Pointer()
+	case reflect.Bool:
+		val = value.Bool()
+	case reflect.Complex128, reflect.Complex64:
+		val = value.Complex()
+	case reflect.Interface:
+		val = value.Interface()
+	case reflect.UnsafePointer:
+		val = value.UnsafePointer()
+	default:
+		val = nil
+	}
+
+	return val
 }

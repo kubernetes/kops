@@ -261,7 +261,7 @@ func (itf Selector) prepareFilter(filters Filters, instanceTypeInfo instancetype
 	if itf.EC2Pricing.OnDemandCacheCount() > 0 {
 		price, err := itf.EC2Pricing.GetOnDemandInstanceTypeCost(instanceTypeName)
 		if err != nil {
-			log.Printf("Could not retrieve instantaneous hourly on-demand price for instance type %s\n", instanceTypeName)
+			log.Printf("Could not retrieve instantaneous hourly on-demand price for instance type %s - %s\n", instanceTypeName, err)
 		} else {
 			instanceTypeHourlyPriceOnDemand = &price
 			instanceTypeInfo.OndemandPricePerHour = instanceTypeHourlyPriceOnDemand
