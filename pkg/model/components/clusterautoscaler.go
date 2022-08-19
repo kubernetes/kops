@@ -39,7 +39,7 @@ func (b *ClusterAutoscalerOptionsBuilder) BuildOptions(o interface{}) error {
 
 	if cas.Image == nil {
 
-		image := "registry.k8s.io/autoscaling/cluster-autoscaler:latest"
+		image := ""
 		v, err := util.ParseKubernetesVersion(clusterSpec.KubernetesVersion)
 		if err == nil {
 			switch v.Minor {
@@ -55,6 +55,8 @@ func (b *ClusterAutoscalerOptionsBuilder) BuildOptions(o interface{}) error {
 				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.21.2"
 			case 20:
 				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.20.1"
+			default:
+				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.24.0"
 			}
 		}
 		cas.Image = fi.String(image)
