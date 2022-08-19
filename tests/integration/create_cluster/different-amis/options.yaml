@@ -9,3 +9,4 @@ MasterImage: ami-control-plane
 NodeImage: ami-worker-image
 Bastion: true
 Topology: private
+APIServerCount: 1
