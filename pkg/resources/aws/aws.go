@@ -2084,9 +2084,6 @@ func ListIAMInstanceProfiles(cloud fi.Cloud, clusterName string) ([]*resources.R
 	err := c.IAM().ListInstanceProfilesPages(request, func(p *iam.ListInstanceProfilesOutput, lastPage bool) bool {
 		for _, p := range p.InstanceProfiles {
 			name := aws.StringValue(p.InstanceProfileName)
-			if !strings.HasSuffix(name, "."+clusterName) {
-				continue
-			}
 
 			getRequest := &iam.GetInstanceProfileInput{InstanceProfileName: p.InstanceProfileName}
 			profileOutput, err := c.IAM().GetInstanceProfile(getRequest)
