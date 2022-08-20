@@ -819,6 +819,7 @@ func (c *ApplyClusterCmd) upgradeSpecs(assetBuilder *assets.AssetBuilder) error 
 	}
 	c.Cluster = fullCluster
 
+	klog.Infof("Populating instance group from upgradeSpecs")
 	for i, g := range c.InstanceGroups {
 		fullGroup, err := PopulateInstanceGroupSpec(fullCluster, g, c.Cloud, c.channel)
 		if err != nil {
