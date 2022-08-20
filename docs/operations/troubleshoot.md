@@ -40,34 +40,7 @@ Often the issue is obvious such as passing incorrect CLI flags.
 After resizing an etcd cluster or restoring backup, the kubernetes API can contain too many endpoints.
 You can confirm this by running `kubectl get endpoints -n default kubernetes`. This command should list exactly as many IPs as you have control plane nodes.
 
-[This bug](https://github.com/kubernetes/kubernetes/issues/86812) causes old apiserver leases to get stuck. In order to recover from this you need to remove the leases from etcd directly:
-
-```
-CONTAINER=$(kubectl get pods -n kube-system | grep etcd-manager-main | head -n 1 | awk '{print $1}')
-kubectl exec -it -n kube-system $CONTAINER -- sh
-```
-etcd and etcdctl are installed into directories in /opt - look for the latest version eg 3.5.1 
-
-```
-# DIRNAME=/opt/etcd-v3.5.1-linux-amd64
-# ETCDCTL_API=3
-# alias etcdctl='$DIRNAME/etcdctl --cacert=/etc/kubernetes/pki/etcd-manager/etcd-clients-ca.crt --cert=/etc/kubernetes/pki/etcd-manager/etcd-clients-ca.crt --key=/etc/kubernetes/pki/etcd-manager/etcd-clients-ca.key --endpoints=https://127.0.0.1:4001'
-```
-You can get a list of the leases eg:
-```
-etcdctl get --prefix /registry/masterleases
-```
-And delete with:
-```
-etcdctl del /registry/masterleases/$IP_ADDRESS
-```
-
-Also you can delete all of the leases in one go... 
-```
-./etcdctl --cacert=/etc/kubernetes/pki/etcd-manager/etcd-clients-ca.crt --cert=/etc/kubernetes/pki/etcd-manager/etcd-clients-ca.key --key=/etc/kubernetes/pki/etcd-manager/etcd-clients-ca.key --cert=/rootfs/etc/kubernetes/pki/kube-apiserver/etcd-client.crt  --endpoints=https://127.0.0.1:4001 del --prefix /registry/masterleases/
-```
-
-The remaining api servers will immediately recreate their own leases.
+Check the [backup and restore documentation](etcd_backup_restore_encryption.md) for more details about this problem.
 
 ## etcd
 
