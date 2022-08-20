@@ -15,8 +15,6 @@ result in six volumes for etcd data (one in each AZ). An EBS volume is designed
 to have a [failure rate](https://aws.amazon.com/ebs/details/#AvailabilityandDurability)
 of 0.1%-0.2% per year.
 
-## Backup and restore using etcd-manager
-
 ## Taking backups
 
 Backups are done periodically and before cluster modifications using [etcd-manager](etcd_administration.md)
@@ -67,32 +65,30 @@ You can follow the progress by reading the etcd logs (`/var/log/etcd(-events).lo
 on the master that is the leader of the cluster (you can find this out by checking the etcd logs on all masters).
 Note that the leader might be different for the `main` and `events` clusters.
 
-After the restore, you will probably face an intermittent connection to apiserver.
-If you look at your kubernetes endpoint, you should have more addresses than masters. The restore brings back the addresses of the old masters and you should clean this up.
+## Verify master lease consistency
 
-To verify this, check the endpoints resource of the kubernetes apiserver, like this:
+[This bug](https://github.com/kubernetes/kubernetes/issues/86812) causes old apiserver leases to get stuck. In order to recover from this you need to remove the leases from etcd directly. 
+
+To verify if you are affect by this bug, check the endpoints resource of the kubernetes apiserver, like this:
 ```
 kubectl get endpoints/kubernetes -o yaml
 ```
 
-If you see more address than masters, you will need to remove it manually inside the etcd.
+If you see more address than masters, you will need to remove it manually inside the etcd cluster.
 
-Check again (this time inside the etcd) if you have more IPs than masters at the `/registry/masterleases/` path, e.g.:
+See [etcd administation](etcd-administration.md) how to obtain access to the etcd cluster.
+
+Once you have a working etcd client, run the following:
 ```
-ETCDCTL_API=3 etcdctl --cacert=/etc/kubernetes/pki/kube-apiserver/etcd-ca.crt --cert=/etc/kubernetes/pki/kube-apiserver/etcd-client.crt --key=/etc/kubernetes/pki/kube-apiserver/etcd-client.key --endpoints=https://127.0.0.1:4001 get --prefix --keys-only /registry/masterleases
+etcdctl get --prefix --keys-only /registry/masterleases
 ```
 
-To restore the stability within cluster you should delete the old master records and keep only the running ones:
+Also you can delete all of the leases in one go... 
 ```
-ETCDCTL_API=3 etcdctl --cacert=/etc/kubernetes/pki/kube-apiserver/etcd-ca.crt --cert=/etc/kubernetes/pki/kube-apiserver/etcd-client.crt --key=/etc/kubernetes/pki/kube-apiserver/etcd-client.key --endpoints=https://127.0.0.1:4001 del /registry/masterleases/<OLD-IP>
+etcdctl del --prefix /registry/masterleases/
 ```
-NOTE: You will need to run it multiple times for each old IP, regarding the size of your master pool.
 
-After that, you can check again the endpoint and everything should be fixed.
-
-After the restore is complete, api server should come back up, and you should have a working cluster.
-Note that the api server might be very busy for a while as it changes the cluster back to the state of the backup. 
-You might consider temporarily increasing the instance size of your control plane.
+The remaining api servers will immediately recreate their own leases. Check again the above-mentioned endpoint to verify the problem has been solved.
 
 Because the state on each of the Nodes may differ from the state in etcd, it is also a good idea to do a rolling-update of the entire cluster:
 
@@ -100,42 +96,7 @@ Because the state on each of the Nodes may differ from the state in etcd, it is 
 kops rolling-update cluster --force --yes
 ```
 
-For more information and troubleshooting, please check the [etcd-manager documentation](https://github.com/kopeio/etcd-manager).
-
-## Backup and restore using legacy etcd
-
-### Volume backups
-
-If you are running your cluster in legacy etcd mode (without etcd-manager),
-backups can be done through snapshots of the etcd volumes.
-
-You can for example use CloudWatch to trigger an AWS Lambda with a defined schedule (e.g. once per
-hour). The Lambda will then create a new snapshot of all etcd volumes. A complete
-guide on how to setup automated snapshots can be found [here](https://serverlesscode.com/post/lambda-schedule-ebs-snapshot-backups/).
-
-Note: this is one of many examples on how to do scheduled snapshots.
-
-### Restore volume backups
-
-If you're using legacy etcd (without etcd-manager), it is possible to restore the volume from a snapshot we created
-earlier. Details about creating a volume from a snapshot can be found in the
-[AWS documentation](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-restoring-volume.html).
-
-Kubernetes uses protokube to identify the right volumes for etcd. Therefore it
-is important to tag the EBS volumes with the correct tags after restoring them
-from a EBS snapshot.
-
-protokube will look for the following tags:
-
-* `KubernetesCluster` containing the cluster name (e.g. `k8s.mycompany.tld`)
-* `Name` containing the volume name (e.g. `eu-central-1a.etcd-main.k8s.mycompany.tld`)
-* `k8s.io/etcd/main` containing the availability zone of the volume (e.g. `eu-central-1a/eu-central-1a`)
-* `k8s.io/role/master` with the value `1`
-
-After fully restoring the volume ensure that the old volume is no longer there,
-or you've removed the tags from the old volume. After restarting the master node
-Kubernetes should pick up the new volume and start running again.
-
+For more information and troubleshooting, please check the [etcd-manager documentation](https://github.com/kubernetes-sigs/etcdadm/etcd-manager).
 
 ## Etcd Volume Encryption
 
