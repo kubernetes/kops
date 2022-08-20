@@ -40,6 +40,7 @@ import (
 
 	kopsbase "k8s.io/kops"
 	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/pkg/apis/kops"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	kopsutil "k8s.io/kops/pkg/apis/kops/util"
@@ -68,9 +69,6 @@ type CreateClusterOptions struct {
 	NodeVolumeSize       int32
 	ContainerRuntime     string
 	OutDir               string
-	Image                string
-	NodeImage            string
-	MasterImage          string
 	DisableSubnetTags    bool
 	NetworkCIDR          string
 	DNSZone              string
@@ -549,22 +547,6 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		}
 	}
 
-	if c.Image != "" {
-		for _, group := range instanceGroups {
-			group.Spec.Image = c.Image
-		}
-	}
-	if c.MasterImage != "" {
-		for _, group := range masters {
-			group.Spec.Image = c.MasterImage
-		}
-	}
-	if c.NodeImage != "" {
-		for _, group := range nodes {
-			group.Spec.Image = c.NodeImage
-		}
-	}
-
 	if c.AssociatePublicIP != nil {
 		for _, group := range instanceGroups {
 			group.Spec.AssociatePublicIP = c.AssociatePublicIP
@@ -662,19 +644,6 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		return err
 	}
 
-	var fullInstanceGroups []*api.InstanceGroup
-	for _, group := range instanceGroups {
-		fullGroup, err := cloudup.PopulateInstanceGroupSpec(fullCluster, group, cloud, clusterResult.Channel)
-		if err != nil {
-			return err
-		}
-		fullGroup.AddInstanceGroupNodeLabel()
-		if cluster.Spec.GetCloudProvider() == api.CloudProviderGCE {
-			fullGroup.Spec.NodeLabels["cloud.google.com/metadata-proxy-ready"] = "true"
-		}
-		fullInstanceGroups = append(fullInstanceGroups, fullGroup)
-	}
-
 	kubernetesVersion, err := kopsutil.ParseKubernetesVersion(clusterResult.Cluster.Spec.KubernetesVersion)
 	if err != nil {
 		return fmt.Errorf("cannot parse KubernetesVersion %q in cluster: %w", clusterResult.Cluster.Spec.KubernetesVersion, err)
@@ -693,16 +662,28 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		addons = append(addons, addon.Objects...)
 	}
 
-	err = validation.DeepValidate(fullCluster, fullInstanceGroups, true, nil)
-	if err != nil {
-		return err
+	{
+		// Build full IG spec to ensure we end up with a valid IG
+		fullInstanceGroups := []*kops.InstanceGroup{}
+		for _, group := range instanceGroups {
+			fullGroup, err := cloudup.PopulateInstanceGroupSpec(cluster, group, cloud, clusterResult.Channel)
+			if err != nil {
+				return err
+			}
+			fullInstanceGroups = append(fullInstanceGroups, fullGroup)
+		}
+
+		err = validation.DeepValidate(fullCluster, fullInstanceGroups, true, nil)
+		if err != nil {
+			return fmt.Errorf("validation of the full cluster and instance group specs failed: %w", err)
+		}
 	}
 
 	if c.DryRun {
 		var obj []runtime.Object
 		obj = append(obj, cluster)
 
-		for _, group := range fullInstanceGroups {
+		for _, group := range instanceGroups {
 			// Cluster name is not populated, and we need it
 			group.ObjectMeta.Labels = make(map[string]string)
 			group.ObjectMeta.Labels[api.LabelClusterName] = cluster.ObjectMeta.Name
@@ -730,7 +711,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	}
 
 	// Note we perform as much validation as we can, before writing a bad config
-	err = registry.CreateClusterConfig(ctx, clientset, cluster, fullInstanceGroups, addons)
+	err = registry.CreateClusterConfig(ctx, clientset, cluster, instanceGroups, addons)
 	if err != nil {
 		return fmt.Errorf("error writing updated configuration: %v", err)
 	}
