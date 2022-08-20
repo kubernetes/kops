@@ -50,6 +50,9 @@ func TestCreateClusterMinimal(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-1.21", "v1alpha2")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-1.22", "v1alpha2")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-1.23", "v1alpha2")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-1.24", "v1alpha2")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-1.25", "v1alpha2")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-1.26", "v1alpha2")
 }
 
 // TestCreateClusterOverride tests the override flag
@@ -131,6 +134,16 @@ func TestCreateClusterPrivateSharedSubnets(t *testing.T) {
 // TestCreateClusterIPv6 runs kops create cluster --zones us-test-1a --master-zones us-test-1a --ipv6
 func TestCreateClusterIPv6(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ipv6", "v1alpha2")
+}
+
+// TestCreateClusterDifferentAMIs runs kops create cluster with different AMI inputs
+func TestCreateClusterDifferentAMIs(t *testing.T) {
+	featureflag.ParseFlags("+APIServerNodes")
+	unsetFeatureFlags := func() {
+		featureflag.ParseFlags("-APIServerNodes")
+	}
+	defer unsetFeatureFlags()
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/different-amis", "v1alpha2")
 }
 
 // TestCreateClusterKarpenter runs kops create cluster --instance-manager=karpenter
