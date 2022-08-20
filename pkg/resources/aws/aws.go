@@ -1998,9 +1998,6 @@ func ListIAMRoles(cloud fi.Cloud, clusterName string) ([]*resources.Resource, er
 		err := c.IAM().ListRolesPages(request, func(p *iam.ListRolesOutput, lastPage bool) bool {
 			for _, r := range p.Roles {
 				name := aws.StringValue(r.RoleName)
-				if !strings.HasSuffix(name, "."+clusterName) {
-					continue
-				}
 
 				getRequest := &iam.GetRoleInput{RoleName: r.RoleName}
 				roleOutput, err := c.IAM().GetRole(getRequest)
