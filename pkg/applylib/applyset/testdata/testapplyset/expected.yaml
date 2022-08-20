@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    kubernetes.io/metadata.name: test-applyset
+  name: test-applyset
+spec:
+  finalizers:
+  - kubernetes
+status:
+  phase: Active
+
+---
+apiVersion: v1
+data:
+  foo: bar
+kind: ConfigMap
+metadata:
+  name: foo
+  namespace: test-applyset
