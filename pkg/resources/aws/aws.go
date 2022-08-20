@@ -23,6 +23,7 @@ import (
 	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -2002,8 +2003,14 @@ func ListIAMRoles(cloud fi.Cloud, clusterName string) ([]*resources.Resource, er
 				getRequest := &iam.GetRoleInput{RoleName: r.RoleName}
 				roleOutput, err := c.IAM().GetRole(getRequest)
 				if err != nil {
-					getRoleErr = fmt.Errorf("calling IAM GetRole on %s: %w", name, err)
-					return false
+					if awserror, ok := err.(awserr.RequestFailure); ok && awserror.StatusCode() == 403 {
+						klog.Warningf("failed to determine ownership of %q: %v", *r.RoleName, awserror)
+
+						return true
+					} else {
+						getRoleErr = fmt.Errorf("calling IAM GetRole on %s: %w", name, err)
+						return false
+					}
 				}
 				for _, tag := range roleOutput.Role.Tags {
 					if fi.StringValue(tag.Key) == ownershipTag && fi.StringValue(tag.Value) == "owned" {
