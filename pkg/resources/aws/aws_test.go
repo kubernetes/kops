@@ -24,7 +24,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elb"
+	"github.com/aws/aws-sdk-go/service/iam"
 	"k8s.io/kops/cloudmock/aws/mockec2"
+	"k8s.io/kops/cloudmock/aws/mockiam"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -89,6 +91,72 @@ func TestAddUntaggedRouteTables(t *testing.T) {
 	expected := []string{"route-table:rtb-1234", "vpc:vpc-1234"}
 	if !reflect.DeepEqual(expected, keys) {
 		t.Fatalf("expected=%q, actual=%q", expected, keys)
+	}
+}
+
+func TestListIAMRoles(t *testing.T) {
+	cloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
+	// resources := make(map[string]*Resource)
+	clusterName := "me.example.com"
+	ownershipTagKey := "kubernetes.io/cluster/" + clusterName
+
+	c := &mockiam.MockIAM{
+		Roles: make(map[string]*iam.Role),
+	}
+	cloud.MockIAM = c
+
+	tags := []*iam.Tag{
+		{
+			Key:   &ownershipTagKey,
+			Value: fi.String("owned"),
+		},
+	}
+
+	{
+		name := "prefixed." + clusterName
+
+		c.Roles[name] = &iam.Role{
+			RoleName: &name,
+			Tags:     tags,
+		}
+	}
+	{
+
+		name := clusterName + ".not-prefixed"
+
+		c.Roles[name] = &iam.Role{
+			RoleName: &name,
+			Tags:     tags,
+		}
+	}
+	{
+		name := "prefixed2." + clusterName
+		owner := "kubernetes.io/cluster/foo." + clusterName
+		c.Roles[name] = &iam.Role{
+			RoleName: &name,
+			Tags: []*iam.Tag{
+				{
+					Key:   &owner,
+					Value: fi.String("owned"),
+				},
+			},
+		}
+	}
+
+	{
+		name := "prefixed3." + clusterName
+		c.Roles[name] = &iam.Role{
+			RoleName: &name,
+		}
+	}
+
+	resourceTrackers, err := ListIAMRoles(cloud, clusterName)
+	if err != nil {
+		t.Fatalf("error listing IAM roles: %v", err)
+	}
+
+	if len(resourceTrackers) != 2 {
+		t.Errorf("Unexpected number of resources to delete. Expected 2, got %d", len(resourceTrackers))
 	}
 }
 
