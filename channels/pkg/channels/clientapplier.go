@@ -18,19 +18,13 @@ package channels
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
-	"go.uber.org/multierr"
-	"k8s.io/apimachinery/pkg/api/meta"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/types"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/restmapper"
-	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/applylib/applyset"
 	"k8s.io/kops/pkg/kubemanifest"
-	"k8s.io/kops/upup/pkg/fi"
 )
 
 type ClientApplier struct {
@@ -45,89 +39,51 @@ func (p *ClientApplier) Apply(ctx context.Context, manifest []byte) error {
 		return fmt.Errorf("failed to parse objects: %w", err)
 	}
 
-	objectsByGVK := make(map[schema.GroupVersionKind][]*kubemanifest.Object)
-	for _, object := range objects {
-		key := object.GetNamespace() + "/" + object.GetName()
-		gv, err := schema.ParseGroupVersion(object.APIVersion())
-		if err != nil || gv.Version == "" {
-			return fmt.Errorf("failed to parse apiVersion %q in object %s", object.APIVersion(), key)
-		}
-		kind := object.Kind()
-		if kind == "" {
-			return fmt.Errorf("failed to find kind in object %s", key)
-		}
-
-		gvk := gv.WithKind(kind)
-		objectsByGVK[gvk] = append(objectsByGVK[gvk], object)
+	// TODO: Cache applyset for more efficient applying
+	patchOptions := metav1.PatchOptions{
+		FieldManager: "kops",
 	}
 
-	var applyErrors error
-	for gvk := range objectsByGVK {
-		if err := p.applyObjectsOfKind(ctx, gvk, objectsByGVK[gvk]); err != nil {
-			applyErrors = multierr.Append(applyErrors, fmt.Errorf("failed to apply objects of kind %s: %w", gvk, err))
-		}
-	}
-	return applyErrors
-}
+	// We force to overcome errors like: Apply failed with 1 conflict: conflict with "kubectl-client-side-apply" using apps/v1: .spec.template.spec.containers[name="foo"].image
+	// TODO: How to handle this better?   In a controller we don't have a choice and have to force eventually.
+	// But we could do something like try first without forcing, log the conflict if there is one, and then force.
+	// This would mean that if there was a loop we could log/detect it.
+	// We could even do things like back-off on the force apply.
+	force := true
+	patchOptions.Force = &force
 
-func (p *ClientApplier) applyObjectsOfKind(ctx context.Context, gvk schema.GroupVersionKind, expectedObjects []*kubemanifest.Object) error {
-	klog.V(2).Infof("applying objects of kind: %v", gvk)
-
-	restMapping, err := p.RESTMapper.RESTMapping(gvk.GroupKind(), gvk.Version)
+	s, err := applyset.New(applyset.Options{
+		RESTMapper:   p.RESTMapper,
+		Client:       p.Client,
+		PatchOptions: patchOptions,
+	})
 	if err != nil {
-		return fmt.Errorf("unable to find resource for %s: %w", gvk, err)
-	}
-
-	if err := p.applyObjects(ctx, restMapping, expectedObjects); err != nil {
 		return err
 	}
 
-	return nil
-}
-
-func (p *ClientApplier) applyObjects(ctx context.Context, restMapping *meta.RESTMapping, expectedObjects []*kubemanifest.Object) error {
-	var merr error
-
-	for _, expectedObject := range expectedObjects {
-		err := p.patchObject(ctx, restMapping, expectedObject)
-		merr = multierr.Append(merr, err)
+	var applyableObjects []applyset.ApplyableObject
+	for _, object := range objects {
+		applyableObjects = append(applyableObjects, object)
+	}
+	if err := s.SetDesiredObjects(applyableObjects); err != nil {
+		return err
 	}
 
-	return merr
-}
-
-func (p *ClientApplier) patchObject(ctx context.Context, restMapping *meta.RESTMapping, expectedObject *kubemanifest.Object) error {
-	gvr := restMapping.Resource
-	name := expectedObject.GetName()
-	namespace := expectedObject.GetNamespace()
-	key := namespace + "/" + name
-
-	var resource dynamic.ResourceInterface
-
-	if restMapping.Scope.Name() == meta.RESTScopeNameNamespace {
-		if namespace == "" {
-			return fmt.Errorf("namespace not set for namespace-scoped object %q", key)
-		}
-		resource = p.Client.Resource(gvr).Namespace(namespace)
-	} else {
-		if namespace != "" {
-			return fmt.Errorf("namespace was set for cluster-scoped object %q", key)
-		}
-		resource = p.Client.Resource(gvr)
-	}
-
-	obj := expectedObject.ToUnstructured()
-
-	jsonData, err := json.Marshal(obj)
+	results, err := s.ApplyOnce(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to marsal %q into json: %w", obj.GetName(), err)
+		return fmt.Errorf("failed to apply objects: %w", err)
 	}
 
-	{
-		_, err := resource.Patch(ctx, obj.GetName(), types.ApplyPatchType, jsonData, v1.PatchOptions{FieldManager: "kops", Force: fi.Bool(true)})
-		if err != nil {
-			return fmt.Errorf("failed to patch object %q: %w", obj.GetName(), err)
-		}
+	// TODO: Implement pruning
+
+	if !results.AllApplied() {
+		return fmt.Errorf("not all objects were applied")
 	}
+
+	// TODO: Check object health status
+	if !results.AllHealthy() {
+		return fmt.Errorf("not all objects were healthy")
+	}
+
 	return nil
 }
