@@ -23,6 +23,7 @@ import (
 	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -1998,15 +1999,18 @@ func ListIAMRoles(cloud fi.Cloud, clusterName string) ([]*resources.Resource, er
 		err := c.IAM().ListRolesPages(request, func(p *iam.ListRolesOutput, lastPage bool) bool {
 			for _, r := range p.Roles {
 				name := aws.StringValue(r.RoleName)
-				if !strings.HasSuffix(name, "."+clusterName) {
-					continue
-				}
 
 				getRequest := &iam.GetRoleInput{RoleName: r.RoleName}
 				roleOutput, err := c.IAM().GetRole(getRequest)
 				if err != nil {
-					getRoleErr = fmt.Errorf("calling IAM GetRole on %s: %w", name, err)
-					return false
+					if awserror, ok := err.(awserr.RequestFailure); ok && awserror.StatusCode() == 403 {
+						klog.Warningf("failed to determine ownership of %q: %v", *r.RoleName, awserror)
+
+						return true
+					} else {
+						getRoleErr = fmt.Errorf("calling IAM GetRole on %s: %w", name, err)
+						return false
+					}
 				}
 				for _, tag := range roleOutput.Role.Tags {
 					if fi.StringValue(tag.Key) == ownershipTag && fi.StringValue(tag.Value) == "owned" {
@@ -2080,9 +2084,6 @@ func ListIAMInstanceProfiles(cloud fi.Cloud, clusterName string) ([]*resources.R
 	err := c.IAM().ListInstanceProfilesPages(request, func(p *iam.ListInstanceProfilesOutput, lastPage bool) bool {
 		for _, p := range p.InstanceProfiles {
 			name := aws.StringValue(p.InstanceProfileName)
-			if !strings.HasSuffix(name, "."+clusterName) {
-				continue
-			}
 
 			getRequest := &iam.GetInstanceProfileInput{InstanceProfileName: p.InstanceProfileName}
 			profileOutput, err := c.IAM().GetInstanceProfile(getRequest)
