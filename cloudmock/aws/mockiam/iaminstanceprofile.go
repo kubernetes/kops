@@ -18,6 +18,7 @@ package mockiam
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -31,7 +32,7 @@ func (m *MockIAM) GetInstanceProfile(request *iam.GetInstanceProfileInput) (*iam
 	defer m.mutex.Unlock()
 
 	ip := m.InstanceProfiles[aws.StringValue(request.InstanceProfileName)]
-	if ip == nil {
+	if ip == nil || strings.Contains(aws.StringValue(ip.InstanceProfileName), "__no_entity__") {
 		return nil, awserr.New(iam.ErrCodeNoSuchEntityException, "No such entity", nil)
 	}
 	response := &iam.GetInstanceProfileOutput{
