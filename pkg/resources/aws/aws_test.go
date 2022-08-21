@@ -94,6 +94,80 @@ func TestAddUntaggedRouteTables(t *testing.T) {
 	}
 }
 
+func TestListIAMInstanceProfiles(t *testing.T) {
+	cloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
+	// resources := make(map[string]*Resource)
+	clusterName := "me.example.com"
+	ownershipTagKey := "kubernetes.io/cluster/" + clusterName
+
+	c := &mockiam.MockIAM{
+		InstanceProfiles: make(map[string]*iam.InstanceProfile),
+	}
+	cloud.MockIAM = c
+
+	tags := []*iam.Tag{
+		{
+			Key:   &ownershipTagKey,
+			Value: fi.String("owned"),
+		},
+	}
+
+	{
+		name := "prefixed." + clusterName
+
+		c.InstanceProfiles[name] = &iam.InstanceProfile{
+			InstanceProfileName: &name,
+			Tags:                tags,
+		}
+	}
+	{
+
+		name := clusterName + ".not-prefixed"
+
+		c.InstanceProfiles[name] = &iam.InstanceProfile{
+			InstanceProfileName: &name,
+			Tags:                tags,
+		}
+	}
+	{
+		name := "prefixed2." + clusterName
+		owner := "kubernetes.io/cluster/foo." + clusterName
+		c.InstanceProfiles[name] = &iam.InstanceProfile{
+			InstanceProfileName: &name,
+			Tags: []*iam.Tag{
+				{
+					Key:   &owner,
+					Value: fi.String("owned"),
+				},
+			},
+		}
+	}
+
+	{
+		name := "prefixed3." + clusterName
+		c.InstanceProfiles[name] = &iam.InstanceProfile{
+			InstanceProfileName: &name,
+		}
+	}
+
+	// This is a special entity that will appear in list, but not in get
+	{
+		name := "__no_entity__." + clusterName
+		c.InstanceProfiles[name] = &iam.InstanceProfile{
+			InstanceProfileName: &name,
+		}
+	}
+
+	resourceTrackers, err := ListIAMInstanceProfiles(cloud, clusterName)
+	if err != nil {
+		t.Fatalf("error listing IAM roles: %v", err)
+	}
+
+	if len(resourceTrackers) != 2 {
+		t.Errorf("Unexpected number of resources to delete. Expected 2, got %d", len(resourceTrackers))
+	}
+}
+
 func TestListIAMRoles(t *testing.T) {
 	cloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
 	// resources := make(map[string]*Resource)
