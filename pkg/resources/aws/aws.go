@@ -2007,10 +2007,10 @@ func ListIAMRoles(cloud fi.Cloud, clusterName string) ([]*resources.Resource, er
 						if awserror.StatusCode() == 403 {
 							klog.Warningf("failed to determine ownership of %q: %v", *r.RoleName, awserror)
 
-							return true
+							continue
 						} else if awsup.AWSErrorCode(err) == iam.ErrCodeNoSuchEntityException {
 							klog.Warningf("could not find instance profile %q. Resource may already have been deleted: %v", name, awserror)
-							return true
+							continue
 						}
 					} else {
 						getRoleErr = fmt.Errorf("calling IAM GetRole on %s: %w", name, err)
@@ -2096,6 +2096,7 @@ func ListIAMInstanceProfiles(cloud fi.Cloud, clusterName string) ([]*resources.R
 				if awserror, ok := err.(awserr.Error); ok {
 					if awserror.Code() == iam.ErrCodeNoSuchEntityException {
 						klog.Warningf("could not find instance profile %q. Resource may already have been deleted: %v", *p.InstanceProfileName, awserror)
+						continue
 					}
 				}
 				getProfileErr = fmt.Errorf("calling IAM GetInstanceProfile on %s: %w", name, err)
