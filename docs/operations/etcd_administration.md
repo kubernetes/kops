@@ -18,7 +18,7 @@ It's not typically necessary to view or manipulate the data inside of etcd direc
 1\. Determine which version of etcd is running
 
 ```bash
-kubectl get cluster --full -o yaml
+kops get cluster --full -o yaml
 ```
 
 Look at the `etcdCluster` configuration's `version` for the given cluster.
