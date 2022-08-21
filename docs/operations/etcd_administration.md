@@ -2,17 +2,10 @@
 
 ## etcd-manager
 
-etcd-manager is a kubernetes-associated project that kOps uses to manage
+[etcd-manager](https://github.com/kubernetes-sigs/etcdadm/tree/master/etcd-manager) is a kubernetes-sigs project that kOps uses to manage
 etcd.
 
-etcd-manager uses many of the same ideas as the existing etcd implementation
-built into kOps, but it addresses some limitations also:
-
-* separate from kOps - can be used by other projects
-* allows etcd2 -> etcd3 upgrade (along with minor upgrades)
-* allows cluster resizing (e.g. going from 1 to 3 nodes)
-
-When using kubernetes >= 1.12 etcd-manager will be used by default. See [etcd3-migration.md](../etcd3-migration.md) for upgrades from older clusters.
+It handles graceful upgrades of etcd, TLS, and backups. If a Kubernetes cluster needs more redundant control plane, it also takes care of resizing the etcd cluster.
 
 ## Backups
 
@@ -22,89 +15,37 @@ Backups and restores of etcd on kOps are covered in [etcd_backup_restore_encrypt
 
 It's not typically necessary to view or manipulate the data inside of etcd directly with etcdctl, because all operations usually go through kubectl commands. However, it can be informative during troubleshooting, or just to understand kubernetes better. Here are the steps to accomplish that on kOps.
 
-1\. Connect to an etcd-manager pod
+1\. Determine which version of etcd is running
+
+```bash
+kops get cluster --full -o yaml
+```
+
+Look at the `etcdCluster` configuration's `version` for the given cluster.
+
+
+2\. Connect to an etcd-manager pod
 
 ```bash
 CONTAINER=$(kubectl get pods -n kube-system | grep etcd-manager-main | head -n 1 | awk '{print $1}')
-kubectl exec -it -n kube-system $CONTAINER bash
+kubectl exec -it -n kube-system $CONTAINER -- sh
 ```
 
-2\. Determine which version of etcd is running
-
-```bash
-DIRNAME=$(ps -ef | grep --color=never /opt/etcd | head -n 1 | awk '{print $8}' | xargs dirname)
-echo $DIRNAME
-```
+``
 
 3\. Run etcdctl
 
 ```bash
-ETCDCTL_API=3 $DIRNAME/etcdctl --cacert=/rootfs/etc/kubernetes/pki/kube-apiserver/etcd-ca.crt --cert=/rootfs/etc/kubernetes/pki/kube-apiserver/etcd-client.crt --key=/rootfs/etc/kubernetes/pki/kube-apiserver/etcd-client.key --endpoints=https://127.0.0.1:4001 get --prefix / | tee output.txt
+ETCD_VERSION=3.5.1
+ETCDDIR=/opt/etcd-v$ETCD_VERSION-linux-amd64 # Replace with arm64 if you are running an arm control plane
+CERTDIR=/rootfs/srv/kubernetes/kube-apiserver/
+alias etcdctl="ETCDCTL_API=3 $ETCDDIR/etcdctl --cacert=$CERTDIR/etcd-ca.crt --cert=$CERTDIR/etcd-client.crt --key=$CERTDIR/etcd-client.key --endpoints=https://127.0.0.1:4001"
 ```
 
-The contents of etcd are now in output.txt. 
-
-You may run any other etcdctl commands by replacing the "get --prefix /" with a different command.
-
-The contents of the etcd dump are often garbled. See the next section for a better way to view the results.
-
-## Dump etcd contents in clear text
-
-Openshift's etcdhelper is a good way of exporting the contents of etcd in a readable format. Here are the steps.
-
-1\. SSH into a master node
-
-You can view the IP addresses of the nodes
-
-```
-kubectl get nodes -o wide
-```
-
-and then
-
-```
-ssh admin@<IP-of-master-node>
-```
-
-2\. Install golang
-
-in whatever manner you prefer. Here is one example.
+Test the client by running the following:
 
 ```bash
-cd /usr/local
-sudo wget https://dl.google.com/go/go1.13.3.linux-amd64.tar.gz
-sudo tar -xvf go1.13.3.linux-amd64.tar.gz
-cat <<EOT >> $HOME/.profile
-export GOROOT=/usr/local/go
-export GOPATH=\$HOME/go
-export PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH
-EOT
-source $HOME/.profile
-which go
+etcdctl member list
 ```
 
-3\. Install etcdhelper
-
-```bash
-mkdir -p ~/go/src/github.com/
-cd ~/go/src/github.com/
-git clone https://github.com/openshift/origin openshift
-cd openshift/tools/etcdhelper
-go build .
-sudo cp etcdhelper /usr/local/bin/etcdhelper
-which etcdhelper
-```
-
-4\. Run etcdhelper
-
-```
-sudo etcdhelper -key /etc/kubernetes/pki/kube-apiserver/etcd-client.key -cert /etc/kubernetes/pki/kube-apiserver/etcd-client.crt  -cacert /etc/kubernetes/pki/kube-apiserver/etcd-ca.crt -endpoint https://127.0.0.1:4001 dump | tee output.txt
-```
-
-The output of the command is now available in output.txt
-
-Other etcdhelper commands are possible, like "ls":
-
-```
-sudo etcdhelper -key /etc/kubernetes/pki/kube-apiserver/etcd-client.key -cert /etc/kubernetes/pki/kube-apiserver/etcd-client.crt  -cacert /etc/kubernetes/pki/kube-apiserver/etcd-ca.crt -endpoint https://127.0.0.1:4001 ls
-```
+If successful, this should output the members of the etcd cluster.
