@@ -134,11 +134,11 @@ fi
 
 
 test_package_args="--parallel 25"
-test_package_args+=" --test-package-dir=${TEST_PACKAGE_DIR-}"
-test_package_args+=" --test-package-bucket=${TEST_PACKAGE_BUCKET-}"
 
 if [[ -n ${TEST_PACKAGE_MARKER-} ]]; then
   test_package_args+=" --test-package-marker=${TEST_PACKAGE_MARKER}"
+  test_package_args+=" --test-package-dir=${TEST_PACKAGE_DIR-}"
+  test_package_args+=" --test-package-bucket=${TEST_PACKAGE_BUCKET-}"
 else
   test_package_args+=" --test-package-version=${TEST_PACKAGE_VERSION}"
 fi
