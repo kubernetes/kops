@@ -90,6 +90,8 @@ func (t *Tester) setSkipRegexFlag() error {
 		// https://github.com/kubernetes/test-infra/blob/578d86a7be187214be6ccd60e6ea7317b51aeb15/jobs/e2e_node/containerd/config.toml#L19-L21
 		// ref: https://github.com/kubernetes/kubernetes/pull/104803
 		skipRegex += "|RuntimeClass.should.run"
+		// https://github.com/kubernetes/kubernetes/pull/108694
+		skipRegex += "|Metadata.Concealment"
 	}
 
 	if k8sVersion.Minor == 23 && cluster.Spec.LegacyCloudProvider == "aws" && utils.IsIPv6CIDR(cluster.Spec.NonMasqueradeCIDR) {
