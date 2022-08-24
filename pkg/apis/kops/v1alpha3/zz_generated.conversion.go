@@ -1317,6 +1317,7 @@ func Convert_kops_AWSAuthenticationSpec_To_v1alpha3_AWSAuthenticationSpec(in *ko
 
 func autoConvert_v1alpha3_AWSEBSCSIDriver_To_kops_AWSEBSCSIDriver(in *AWSEBSCSIDriver, out *kops.AWSEBSCSIDriver, s conversion.Scope) error {
 	out.Enabled = in.Enabled
+	out.Managed = in.Managed
 	out.Version = in.Version
 	out.VolumeAttachLimit = in.VolumeAttachLimit
 	out.PodAnnotations = in.PodAnnotations
@@ -1330,6 +1331,7 @@ func Convert_v1alpha3_AWSEBSCSIDriver_To_kops_AWSEBSCSIDriver(in *AWSEBSCSIDrive
 
 func autoConvert_kops_AWSEBSCSIDriver_To_v1alpha3_AWSEBSCSIDriver(in *kops.AWSEBSCSIDriver, out *AWSEBSCSIDriver, s conversion.Scope) error {
 	out.Enabled = in.Enabled
+	out.Managed = in.Managed
 	out.Version = in.Version
 	out.VolumeAttachLimit = in.VolumeAttachLimit
 	out.PodAnnotations = in.PodAnnotations
