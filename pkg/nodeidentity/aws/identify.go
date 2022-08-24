@@ -147,18 +147,11 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 		Labels:     labels,
 	}
 
-	isKarpenterManaged := false
 	for _, tag := range instance.Tags {
 		key := aws.StringValue(tag.Key)
 		if strings.HasPrefix(key, ClusterAutoscalerNodeTemplateLabel) {
 			info.Labels[strings.TrimPrefix(aws.StringValue(tag.Key), ClusterAutoscalerNodeTemplateLabel)] = aws.StringValue(tag.Value)
 		}
-		if strings.HasPrefix(key, KarpenterNodeLabel) {
-			isKarpenterManaged = true
-		}
-	}
-	if isKarpenterManaged {
-		info.Labels["karpenter.sh/provisioner-name"] = info.Labels[CloudTagInstanceGroupName]
 	}
 
 	// If caching is enabled add the nodeidentity.Info to cache.
