@@ -883,6 +883,10 @@ type AWSEBSCSIDriver struct {
 	// Default: false
 	Enabled *bool `json:"enabled,omitempty"`
 
+	// Managed controls if aws-ebs-csi-driver is manged and deployed by kOps.
+	// The deployment of aws-ebs-csi-driver is skipped if this is set to false.
+	Managed *bool `json:"managed,omitempty"`
+
 	// Version is the container image tag used.
 	// Default: The latest stable release which is compatible with your Kubernetes version
 	Version *string `json:"version,omitempty"`

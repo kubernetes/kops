@@ -1102,7 +1102,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 				serviceAccountRoles = append(serviceAccountRoles, &awscloudcontrollermanager.ServiceAccount{})
 			}
 		}
-		if b.Cluster.Spec.CloudConfig != nil && b.Cluster.Spec.CloudConfig.AWSEBSCSIDriver != nil && fi.BoolValue(b.Cluster.Spec.CloudConfig.AWSEBSCSIDriver.Enabled) {
+		if b.Cluster.Spec.CloudConfig != nil && b.Cluster.Spec.CloudConfig.AWSEBSCSIDriver != nil &&
+			fi.BoolValue(b.Cluster.Spec.CloudConfig.AWSEBSCSIDriver.Enabled) &&
+			(b.Cluster.Spec.CloudConfig.AWSEBSCSIDriver.Managed == nil || fi.BoolValue(b.Cluster.Spec.CloudConfig.AWSEBSCSIDriver.Managed)) {
 			key := "aws-ebs-csi-driver.addons.k8s.io"
 
 			{
