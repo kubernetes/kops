@@ -101,6 +101,11 @@ func (in *AWSEBSCSIDriver) DeepCopyInto(out *AWSEBSCSIDriver) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.Managed != nil {
+		in, out := &in.Managed, &out.Managed
+		*out = new(bool)
+		**out = **in
+	}
 	if in.Version != nil {
 		in, out := &in.Version, &out.Version
 		*out = new(string)

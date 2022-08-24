@@ -322,6 +322,22 @@ spec:
       enabled: true
 ```
 
+##### Self-managed aws-ebs-csi-driver
+
+{{ kops_feature_table(kops_added_default='1.25') }}
+
+The following configuration allows for a self-managed aws-ebs-csi-driver. Please note that if you’re using Amazon EBS volumes, you must install the Amazon EBS CSI driver. If the Amazon EBS CSI plugin is not installed, then volume operations will fail. 
+
+If IRSA is not enabled, the control plane will have the permissions to provision nodes, and the self-managed controllers should run on the control plane. If IRSA is enabled, kOps will create the respective AWS IAM Role, assign the policy, and establish a trust relationship allowing the ServiceAccount to assume the IAM Role. To configure Pods to assume the given IAM roles, enable the [Pod Identity Webhook](https://kops.sigs.k8s.io/addons/#pod-identity-webhook). Without this webhook, you need to modify your Pod specs yourself for your Pod to assume the defined roles.
+
+```yaml
+spec:
+  cloudConfig:
+    awsEBSCSIDriver:
+      enabled: true
+      managed: false
+```
+
 ## Custom addons
 
 The command `kops create cluster` does not support specifying addons to be added to the cluster when it is created. Instead they can be added after cluster creation using kubectl. Alternatively when creating a cluster from a yaml manifest, addons can be specified using `spec.addons`.
