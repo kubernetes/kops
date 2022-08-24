@@ -953,7 +953,12 @@ spec:
     kind: IngressClassParams
     name: alb
 ---
+{{ if IsKubernetesGTE "1.23" }}
+apiVersion: policy/v1
+{{ else }}
 apiVersion: policy/v1beta1
+{{ end }}
+
 kind: PodDisruptionBudget
 metadata:
   name: aws-load-balancer-controller
