@@ -934,6 +934,8 @@ type NodeTerminationHandlerConfig struct {
 	EnableSQSTerminationDraining *bool `json:"enableSQSTerminationDraining,omitempty"`
 
 	// ManagedASGTag is the tag used to determine which nodes NTH can take action on
+	// This field has kept its name even though it now maps to the --managed-tag flag due to keeping the API stable.
+	// Node termination handler does no longer check the ASG for this tag, but the actual EC2 instances.
 	ManagedASGTag *string `json:"managedASGTag,omitempty"`
 
 	// ExcludeFromLoadBalancers makes node termination handler will mark for exclusion from load balancers before node are cordoned.

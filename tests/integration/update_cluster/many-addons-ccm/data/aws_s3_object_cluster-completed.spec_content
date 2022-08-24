@@ -215,7 +215,7 @@ spec:
     managedASGTag: aws-node-termination-handler/managed
     memoryRequest: 64Mi
     prometheusEnable: false
-    version: v1.16.5
+    version: v1.17.1
   nonMasqueradeCIDR: 172.20.0.0/16
   podCIDR: 172.20.128.0/17
   secretStore: memfs://clusters.example.com/minimal.example.com/secrets
