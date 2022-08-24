@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"k8s.io/kops/upup/pkg/fi"
@@ -56,6 +57,11 @@ func (e *LoadBalancer) IsForAPIServer() bool {
 }
 
 func (v *LoadBalancer) FindAddresses(c *fi.Context) ([]string, error) {
+	// TODO(hakman): Use mock to handle this more gracefully
+	if strings.HasPrefix(c.ClusterConfigBase.Path(), "memfs://tests/") {
+		return nil, nil
+	}
+
 	ctx := context.TODO()
 	cloud := c.Cloud.(hetzner.HetznerCloud)
 	client := cloud.LoadBalancerClient()
