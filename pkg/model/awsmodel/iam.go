@@ -202,15 +202,19 @@ func (b *IAMModelBuilder) buildIAMRole(role iam.Subject, iamName string, c *fi.M
 		Lifecycle: b.Lifecycle,
 
 		RolePolicyDocument: rolePolicy,
-		Tags:               b.CloudTags(iamName, false),
 	}
 
 	if isServiceAccount {
 		// e.g. kube-system-dns-controller
 		iamRole.ExportWithID = fi.String(roleKey)
+		sa, ok := role.ServiceAccount()
+		if ok {
+			iamRole.Tags = b.CloudTagsForServiceAccount(iamName, sa)
+		}
 	} else {
 		// e.g. nodes
 		iamRole.ExportWithID = fi.String(roleKey + "s")
+		iamRole.Tags = b.CloudTags(iamName, false)
 	}
 
 	if b.Cluster.Spec.IAM != nil && b.Cluster.Spec.IAM.PermissionsBoundary != nil {
