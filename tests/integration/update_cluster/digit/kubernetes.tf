@@ -310,6 +310,8 @@ resource "aws_iam_role" "myotherserviceaccount-myapp-sa-123-example-com" {
     "KubernetesCluster"                     = "123.example.com"
     "Name"                                  = "myotherserviceaccount.myapp.sa.123.example.com"
     "kubernetes.io/cluster/123.example.com" = "owned"
+    "service-account.kops.k8s.io/name"      = "myotherserviceaccount"
+    "service-account.kops.k8s.io/namespace" = "myapp"
   }
 }
 
@@ -320,6 +322,8 @@ resource "aws_iam_role" "myserviceaccount-default-sa-123-example-com" {
     "KubernetesCluster"                     = "123.example.com"
     "Name"                                  = "myserviceaccount.default.sa.123.example.com"
     "kubernetes.io/cluster/123.example.com" = "owned"
+    "service-account.kops.k8s.io/name"      = "myserviceaccount"
+    "service-account.kops.k8s.io/namespace" = "default"
   }
 }
 
