@@ -248,7 +248,11 @@ spec:
             app.kubernetes.io/instance: aws-node-termination-handler
             kops.k8s.io/nth-mode: sqs
 ---
+{{ if IsKubernetesGTE "1.23" }}
+apiVersion: policy/v1
+{{ else }}
 apiVersion: policy/v1beta1
+{{ end }}
 kind: PodDisruptionBudget
 metadata:
   name: aws-node-termination-handler
