@@ -229,6 +229,16 @@ spec:
                   is not set."
                 format: int64
                 type: integer
+              weight:
+                description: Weight is the priority given to the provisioner during
+                  scheduling. A higher numerical weight indicates that this provisioner
+                  will be ordered ahead of other provisioners with lower weights.
+                  A provisioner with no weight will be treated as if it is a provisioner
+                  with a weight of 0.
+                format: int32
+                maximum: 100
+                minimum: 1
+                type: integer
             type: object
           status:
             description: ProvisionerStatus defines the observed state of Provisioner
@@ -822,7 +832,7 @@ spec:
       dnsPolicy: Default
       containers:
         - name: controller
-          image: public.ecr.aws/karpenter/controller:v0.15.0
+          image: public.ecr.aws/karpenter/controller:v0.16.0
           imagePullPolicy: IfNotPresent
           resources:
             limits:
@@ -925,7 +935,7 @@ spec:
       dnsPolicy: Default
       containers:
         - name: webhook
-          image: public.ecr.aws/karpenter/webhook:v0.15.0
+          image: public.ecr.aws/karpenter/webhook:v0.16.0
           imagePullPolicy: IfNotPresent
           args:
             - -port=8443
