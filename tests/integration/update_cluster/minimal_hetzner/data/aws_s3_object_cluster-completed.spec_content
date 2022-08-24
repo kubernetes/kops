@@ -1,0 +1,187 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  name: minimal.k8s.local
+spec:
+  api:
+    loadBalancer:
+      type: Public
+  authorization:
+    rbac: {}
+  channel: stable
+  cloudConfig:
+    manageStorageClasses: true
+  cloudProvider: hetzner
+  clusterDNSDomain: cluster.local
+  configBase: memfs://tests/minimal.k8s.local
+  configStore: memfs://tests/minimal.k8s.local
+  containerRuntime: containerd
+  containerd:
+    logLevel: info
+    runc:
+      version: 1.1.3
+    version: 1.6.8
+  docker:
+    skipInstall: true
+  etcdClusters:
+  - backups:
+      backupStore: memfs://tests/minimal.k8s.local/backups/etcd/main
+    cpuRequest: 200m
+    etcdMembers:
+    - instanceGroup: master-fsn1
+      name: etcd-1
+    memoryRequest: 100Mi
+    name: main
+    version: 3.5.4
+  - backups:
+      backupStore: memfs://tests/minimal.k8s.local/backups/etcd/events
+    cpuRequest: 100m
+    etcdMembers:
+    - instanceGroup: master-fsn1
+      name: etcd-1
+    memoryRequest: 100Mi
+    name: events
+    version: 3.5.4
+  externalDns:
+    provider: dns-controller
+  iam:
+    allowContainerRegistry: true
+    legacy: false
+  keyStore: memfs://tests/minimal.k8s.local/pki
+  kubeAPIServer:
+    allowPrivileged: true
+    anonymousAuth: false
+    apiAudiences:
+    - kubernetes.svc.default
+    apiServerCount: 1
+    authorizationMode: Node,RBAC
+    bindAddress: 0.0.0.0
+    cloudProvider: external
+    enableAdmissionPlugins:
+    - NamespaceLifecycle
+    - LimitRanger
+    - ServiceAccount
+    - DefaultStorageClass
+    - DefaultTolerationSeconds
+    - MutatingAdmissionWebhook
+    - ValidatingAdmissionWebhook
+    - NodeRestriction
+    - ResourceQuota
+    etcdServers:
+    - https://127.0.0.1:4001
+    etcdServersOverrides:
+    - /events#https://127.0.0.1:4002
+    image: registry.k8s.io/kube-apiserver:v1.25.0
+    kubeletPreferredAddressTypes:
+    - InternalIP
+    - Hostname
+    - ExternalIP
+    logLevel: 2
+    requestheaderAllowedNames:
+    - aggregator
+    requestheaderExtraHeaderPrefixes:
+    - X-Remote-Extra-
+    requestheaderGroupHeaders:
+    - X-Remote-Group
+    requestheaderUsernameHeaders:
+    - X-Remote-User
+    securePort: 443
+    serviceAccountIssuer: https://api.internal.minimal.k8s.local
+    serviceAccountJWKSURI: https://api.internal.minimal.k8s.local/openid/v1/jwks
+    serviceClusterIPRange: 100.64.0.0/13
+    storageBackend: etcd3
+  kubeControllerManager:
+    allocateNodeCIDRs: true
+    attachDetachReconcileSyncPeriod: 1m0s
+    cloudProvider: external
+    clusterCIDR: 100.96.0.0/11
+    clusterName: minimal.k8s.local
+    configureCloudRoutes: false
+    image: registry.k8s.io/kube-controller-manager:v1.25.0
+    leaderElection:
+      leaderElect: true
+    logLevel: 2
+    useServiceAccountCredentials: true
+  kubeDNS:
+    cacheMaxConcurrent: 150
+    cacheMaxSize: 1000
+    cpuRequest: 100m
+    domain: cluster.local
+    memoryLimit: 170Mi
+    memoryRequest: 70Mi
+    nodeLocalDNS:
+      cpuRequest: 25m
+      enabled: false
+      image: registry.k8s.io/dns/k8s-dns-node-cache:1.21.3
+      memoryRequest: 5Mi
+    provider: CoreDNS
+    serverIP: 100.64.0.10
+  kubeProxy:
+    clusterCIDR: 100.96.0.0/11
+    cpuRequest: 100m
+    image: registry.k8s.io/kube-proxy:v1.25.0
+    logLevel: 2
+  kubeScheduler:
+    image: registry.k8s.io/kube-scheduler:v1.25.0
+    leaderElection:
+      leaderElect: true
+    logLevel: 2
+  kubelet:
+    anonymousAuth: false
+    cgroupDriver: systemd
+    cgroupRoot: /
+    cloudProvider: external
+    clusterDNS: 100.64.0.10
+    clusterDomain: cluster.local
+    enableDebuggingHandlers: true
+    evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+    kubeconfigPath: /var/lib/kubelet/kubeconfig
+    logLevel: 2
+    podInfraContainerImage: registry.k8s.io/pause:3.6
+    podManifestPath: /etc/kubernetes/manifests
+    protectKernelDefaults: true
+    shutdownGracePeriod: 30s
+    shutdownGracePeriodCriticalPods: 10s
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  - ::/0
+  kubernetesVersion: 1.25.0
+  masterInternalName: api.internal.minimal.k8s.local
+  masterKubelet:
+    anonymousAuth: false
+    cgroupDriver: systemd
+    cgroupRoot: /
+    cloudProvider: external
+    clusterDNS: 100.64.0.10
+    clusterDomain: cluster.local
+    enableDebuggingHandlers: true
+    evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+    kubeconfigPath: /var/lib/kubelet/kubeconfig
+    logLevel: 2
+    podInfraContainerImage: registry.k8s.io/pause:3.6
+    podManifestPath: /etc/kubernetes/manifests
+    protectKernelDefaults: true
+    registerSchedulable: false
+    shutdownGracePeriod: 30s
+    shutdownGracePeriodCriticalPods: 10s
+  masterPublicName: api.minimal.k8s.local
+  networkCIDR: 10.0.0.0/16
+  networking:
+    cni: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  podCIDR: 100.96.0.0/11
+  secretStore: memfs://tests/minimal.k8s.local/secrets
+  serviceClusterIPRange: 100.64.0.0/13
+  sshAccess:
+  - 0.0.0.0/0
+  - ::/0
+  subnets:
+  - name: fsn1
+    type: Public
+    zone: fsn1
+  topology:
+    dns:
+      type: Public
+    masters: public
+    nodes: public
