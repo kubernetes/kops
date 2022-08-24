@@ -34,6 +34,12 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
+// CloudTagServiceAccountName is a tag that defines the service account's name
+const CloudTagServiceAccountName = "service-account.kops.k8s.io/name"
+
+// CloudTagServiceAccountNamespace is a tag that defines the service account's namespace
+const CloudTagServiceAccountNamespace = "service-account.kops.k8s.io/namespace"
+
 // +kops:fitask
 type IAMRole struct {
 	ID        *string

@@ -300,6 +300,8 @@ resource "aws_iam_role" "aws-load-balancer-controller-kube-system-sa-minimal-exa
     "KubernetesCluster"                         = "minimal.example.com"
     "Name"                                      = "aws-load-balancer-controller.kube-system.sa.minimal.example.com"
     "kubernetes.io/cluster/minimal.example.com" = "owned"
+    "service-account.kops.k8s.io/name"          = "aws-load-balancer-controller"
+    "service-account.kops.k8s.io/namespace"     = "kube-system"
   }
 }
 
@@ -310,6 +312,8 @@ resource "aws_iam_role" "dns-controller-kube-system-sa-minimal-example-com" {
     "KubernetesCluster"                         = "minimal.example.com"
     "Name"                                      = "dns-controller.kube-system.sa.minimal.example.com"
     "kubernetes.io/cluster/minimal.example.com" = "owned"
+    "service-account.kops.k8s.io/name"          = "dns-controller"
+    "service-account.kops.k8s.io/namespace"     = "kube-system"
   }
 }
 

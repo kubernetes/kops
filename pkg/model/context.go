@@ -21,6 +21,7 @@ import (
 	"net"
 	"strings"
 
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/util"
@@ -187,6 +188,13 @@ func (b *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 	labels[nodeidentityaws.CloudTagInstanceGroupName] = ig.Name
 
 	return labels, nil
+}
+
+func (b *KopsModelContext) CloudTagsForServiceAccount(name string, sa types.NamespacedName) map[string]string {
+	tags := b.CloudTags(name, false)
+	tags[awstasks.CloudTagServiceAccountName] = sa.Name
+	tags[awstasks.CloudTagServiceAccountNamespace] = sa.Namespace
+	return tags
 }
 
 // CloudTags computes the tags to apply to a normal cloud resource with the specified name
