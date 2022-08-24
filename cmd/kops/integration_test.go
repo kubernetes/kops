@@ -267,6 +267,19 @@ func TestMinimal_v1_26(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "minimal").runTestCloudformation(t)
 }
 
+// TestHetzner runs the test on a minimum configuration
+func TestHetzner(t *testing.T) {
+	t.Setenv("HCLOUD_TOKEN", "REDACTED")
+	featureflag.ParseFlags("+Hetzner")
+	unsetFeatureFlags := func() {
+		featureflag.ParseFlags("-Hetzner")
+	}
+	defer unsetFeatureFlags()
+
+	newIntegrationTest("minimal.k8s.local", "minimal_hetzner").
+		runTestTerraformHetzner(t)
+}
+
 func TestNvidia(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "nvidia").
 		withAddons(
@@ -1426,6 +1439,40 @@ func (i *integrationTest) runTestTerraformGCE(t *testing.T) {
 		expectedFilenames = append(expectedFilenames, "aws_s3_object_nodeupconfig-master-"+zone+"_content")
 		expectedFilenames = append(expectedFilenames, prefix+"startup-script")
 	}
+
+	i.runTest(t, h, expectedFilenames, "", "", nil)
+}
+
+func (i *integrationTest) runTestTerraformHetzner(t *testing.T) {
+	h := testutils.NewIntegrationTestHarness(t)
+	defer h.Close()
+
+	h.MockKopsVersion("1.21.0-alpha.1")
+
+	expectedFilenames := i.expectTerraformFilenames
+
+	expectedFilenames = append(expectedFilenames,
+		"aws_s3_object_cluster-completed.spec_content",
+		"aws_s3_object_etcd-cluster-spec-events_content",
+		"aws_s3_object_etcd-cluster-spec-main_content",
+		"aws_s3_object_kops-version.txt_content",
+		"aws_s3_object_manifests-etcdmanager-events-master-fsn1_content",
+		"aws_s3_object_manifests-etcdmanager-main-master-fsn1_content",
+		"aws_s3_object_manifests-static-kube-apiserver-healthcheck_content",
+		"aws_s3_object_nodeupconfig-master-fsn1_content",
+		"aws_s3_object_nodeupconfig-nodes-fsn1_content",
+		"aws_s3_object_"+i.clusterName+"-addons-bootstrap_content",
+		"aws_s3_object_"+i.clusterName+"-addons-coredns.addons.k8s.io-k8s-1.12_content",
+		"aws_s3_object_"+i.clusterName+"-addons-dns-controller.addons.k8s.io-k8s-1.12_content",
+		"aws_s3_object_"+i.clusterName+"-addons-hcloud-cloud-controller.addons.k8s.io-k8s-1.22_content",
+		"aws_s3_object_"+i.clusterName+"-addons-hcloud-csi-driver.addons.k8s.io-k8s-1.22_content",
+		"aws_s3_object_"+i.clusterName+"-addons-kops-controller.addons.k8s.io-k8s-1.16_content",
+		"aws_s3_object_"+i.clusterName+"-addons-kubelet-api.rbac.addons.k8s.io-k8s-1.9_content",
+		"aws_s3_object_"+i.clusterName+"-addons-limit-range.addons.k8s.io_content",
+		"aws_s3_object_"+i.clusterName+"-addons-rbac.addons.k8s.io-k8s-1.8_content",
+		"hcloud_server_master-fsn1_user_data",
+		"hcloud_server_nodes-fsn1_user_data",
+	)
 
 	i.runTest(t, h, expectedFilenames, "", "", nil)
 }
