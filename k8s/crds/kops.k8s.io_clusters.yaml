@@ -322,6 +322,11 @@ spec:
                         description: 'Enabled enables the AWS EBS CSI driver Default:
                           false'
                         type: boolean
+                      managed:
+                        description: Managed controls if aws-ebs-csi-driver is manged
+                          and deployed by kOps. The deployment of aws-ebs-csi-driver
+                          is skipped if this is set to false.
+                        type: boolean
                       podAnnotations:
                         additionalProperties:
                           type: string
