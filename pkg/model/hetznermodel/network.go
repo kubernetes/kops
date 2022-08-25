@@ -33,7 +33,7 @@ var _ fi.ModelBuilder = &NetworkModelBuilder{}
 func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	if b.Cluster.Spec.NetworkID != "" {
 		network := &hetznertasks.Network{
-			ID: fi.String(b.Cluster.Spec.NetworkID),
+			ID:        fi.String(b.Cluster.Spec.NetworkID),
 			Lifecycle: b.Lifecycle,
 			Region:    b.Region,
 			IPRange:   b.Cluster.Spec.NetworkCIDR,
