@@ -171,9 +171,9 @@ spec:
           value: "{{ WithDefaultBool .EnablePrometheusMetrics false }}"
         - name: PROMETHEUS_SERVER_PORT
           value: "9092"
-        - name: CHECK_ASG_TAG_BEFORE_DRAINING
+        - name: CHECK_TAG_BEFORE_DRAINING
           value: "true"
-        - name: MANAGED_ASG_TAG
+        - name: MANAGED_TAG
           value: "{{ .ManagedASGTag }}"
         - name: ASSUME_ASG_TAG_PROPAGATION
           value: "false"
