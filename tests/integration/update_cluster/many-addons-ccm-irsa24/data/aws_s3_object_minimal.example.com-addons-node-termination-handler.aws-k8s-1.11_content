@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node-termination-handler
     app.kubernetes.io/part-of: aws-node-termination-handler
-    app.kubernetes.io/version: v1.16.5
+    app.kubernetes.io/version: v1.17.1
     k8s-addon: node-termination-handler.aws
     k8s-app: aws-node-termination-handler
   name: aws-node-termination-handler
@@ -28,7 +28,7 @@ metadata:
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node-termination-handler
     app.kubernetes.io/part-of: aws-node-termination-handler
-    app.kubernetes.io/version: v1.16.5
+    app.kubernetes.io/version: v1.17.1
     k8s-addon: node-termination-handler.aws
   name: aws-node-termination-handler
 rules:
@@ -87,7 +87,7 @@ metadata:
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node-termination-handler
     app.kubernetes.io/part-of: aws-node-termination-handler
-    app.kubernetes.io/version: v1.16.5
+    app.kubernetes.io/version: v1.17.1
     k8s-addon: node-termination-handler.aws
   name: aws-node-termination-handler
 roleRef:
@@ -110,7 +110,7 @@ metadata:
     app.kubernetes.io/instance: aws-node-termination-handler
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node-termination-handler
-    app.kubernetes.io/version: v1.16.5
+    app.kubernetes.io/version: v1.17.1
     k8s-addon: node-termination-handler.aws
     k8s-app: aws-node-termination-handler
   name: aws-node-termination-handler
@@ -195,7 +195,7 @@ spec:
           value: arn:aws-test:iam::123456789012:role/aws-node-termination-handler.kube-system.sa.minimal.example.com
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
-        image: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.16.5
+        image: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.17.1
         imagePullPolicy: IfNotPresent
         name: aws-node-termination-handler
         resources:
