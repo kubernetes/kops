@@ -22,7 +22,7 @@ spec:
       containers:
       - args:
         - --fail-on-init-error=false
-        image: nvcr.io/nvidia/k8s-device-plugin:v0.12.0
+        image: nvcr.io/nvidia/k8s-device-plugin:v0.12.2
         name: nvidia-device-plugin-ctr
         securityContext:
           allowPrivilegeEscalation: false
