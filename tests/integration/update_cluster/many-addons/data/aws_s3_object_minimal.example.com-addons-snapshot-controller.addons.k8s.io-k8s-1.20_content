@@ -1089,14 +1089,6 @@ rules:
   - watch
   - update
 - apiGroups:
-  - storage.k8s.io
-  resources:
-  - storageclasses
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
   - ""
   resources:
   - events
@@ -1119,11 +1111,9 @@ rules:
   resources:
   - volumesnapshotcontents
   verbs:
-  - create
   - get
   - list
   - watch
-  - update
   - delete
   - patch
 - apiGroups:
@@ -1224,10 +1214,10 @@ spec:
       - args:
         - --v=5
         - --leader-election=true
-        image: gcr.io/k8s-staging-sig-storage/snapshot-controller:v5.0.0
+        image: registry.k8s.io/sig-storage/snapshot-controller:v6.0.1
         imagePullPolicy: IfNotPresent
         name: snapshot-controller
-      serviceAccount: snapshot-controller
+      serviceAccountName: snapshot-controller
       topologySpreadConstraints:
       - labelSelector:
           matchLabels:
@@ -1271,7 +1261,7 @@ spec:
       - args:
         - --tls-cert-file=/etc/snapshot-validation-webhook/certs/tls.crt
         - --tls-private-key-file=/etc/snapshot-validation-webhook/certs/tls.key
-        image: registry.k8s.io/sig-storage/snapshot-validation-webhook:v5.0.0
+        image: registry.k8s.io/sig-storage/snapshot-validation-webhook:v6.0.1
         imagePullPolicy: IfNotPresent
         name: snapshot-validation
         ports:
