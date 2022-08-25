@@ -23,6 +23,7 @@ import (
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
 // +kops:fitask
@@ -118,14 +119,14 @@ func (_ *Volume) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *Volum
 		}
 
 	} else {
-		sshkey, _, err := client.Get(context.TODO(), strconv.Itoa(fi.IntValue(a.ID)))
+		volume, _, err := client.Get(context.TODO(), strconv.Itoa(fi.IntValue(a.ID)))
 		if err != nil {
 			return err
 		}
 
 		// Update the labels
 		if changes.Name != nil || len(changes.Labels) != 0 {
-			_, _, err := client.Update(context.TODO(), sshkey, hcloud.VolumeUpdateOpts{
+			_, _, err := client.Update(context.TODO(), volume, hcloud.VolumeUpdateOpts{
 				Name:   fi.StringValue(e.Name),
 				Labels: e.Labels,
 			})
@@ -136,4 +137,22 @@ func (_ *Volume) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *Volum
 	}
 
 	return nil
+}
+
+type terraformVolume struct {
+	Name     *string           `cty:"name"`
+	Size     *int              `cty:"size"`
+	Location *string           `cty:"location"`
+	Labels   map[string]string `cty:"labels"`
+}
+
+func (_ *Volume) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Volume) error {
+	tf := &terraformVolume{
+		Name:     e.Name,
+		Size:     fi.Int(e.Size),
+		Location: fi.String(e.Location),
+		Labels:   e.Labels,
+	}
+
+	return t.RenderResource("hcloud_volume", *e.Name, tf)
 }

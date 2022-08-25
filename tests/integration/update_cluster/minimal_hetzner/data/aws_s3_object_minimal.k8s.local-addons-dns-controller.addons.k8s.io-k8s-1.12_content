@@ -1,0 +1,141 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: dns-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: dns-controller.addons.k8s.io
+    k8s-app: dns-controller
+    version: v1.25.0-alpha.2
+  name: dns-controller
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: dns-controller
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        k8s-addon: dns-controller.addons.k8s.io
+        k8s-app: dns-controller
+        kops.k8s.io/managed-by: kops
+        version: v1.25.0-alpha.2
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
+      containers:
+      - args:
+        - --watch-ingress=false
+        - --dns=gossip
+        - --gossip-seed=127.0.0.1:3999
+        - --gossip-protocol-secondary=memberlist
+        - --gossip-listen-secondary=0.0.0.0:3993
+        - --gossip-seed-secondary=127.0.0.1:4000
+        - --internal-ipv4
+        - --zone=*/*
+        - -v=2
+        command: null
+        env:
+        - name: KUBERNETES_SERVICE_HOST
+          value: 127.0.0.1
+        image: registry.k8s.io/kops/dns-controller:1.25.0-alpha.2
+        name: dns-controller
+        resources:
+          requests:
+            cpu: 50m
+            memory: 50Mi
+        securityContext:
+          runAsNonRoot: true
+      dnsPolicy: Default
+      hostNetwork: true
+      nodeSelector: null
+      priorityClassName: system-cluster-critical
+      serviceAccount: dns-controller
+      tolerations:
+      - key: node.cloudprovider.kubernetes.io/uninitialized
+        operator: Exists
+      - key: node.kubernetes.io/not-ready
+        operator: Exists
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: dns-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: dns-controller.addons.k8s.io
+  name: dns-controller
+  namespace: kube-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: dns-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: dns-controller.addons.k8s.io
+  name: kops:dns-controller
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - endpoints
+  - services
+  - pods
+  - ingress
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingresses
+  verbs:
+  - get
+  - list
+  - watch
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: dns-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: dns-controller.addons.k8s.io
+  name: kops:dns-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kops:dns-controller
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: system:serviceaccount:kube-system:dns-controller
