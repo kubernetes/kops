@@ -1,4 +1,4 @@
-# Pulled and modified from: https://raw.githubusercontent.com/hetznercloud/csi-driver/v1.6.0/deploy/kubernetes/hcloud-csi.yml
+# Pulled and modified from: https://raw.githubusercontent.com/hetznercloud/csi-driver/main/deploy/kubernetes/hcloud-csi.yml
 ---
 apiVersion: v1
 kind: Secret
@@ -22,13 +22,13 @@ volumeBindingMode: WaitForFirstConsumer
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: hcloud-csi
+  name: hcloud-csi-controller
   namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: hcloud-csi
+  name: hcloud-csi-controller
 rules:
 - apiGroups:
   - ""
@@ -164,14 +164,14 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: hcloud-csi
+  name: hcloud-csi-controller
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: hcloud-csi
+  name: hcloud-csi-controller
 subjects:
 - kind: ServiceAccount
-  name: hcloud-csi
+  name: hcloud-csi-controller
   namespace: kube-system
 ---
 apiVersion: v1
@@ -205,7 +205,7 @@ spec:
     app: hcloud-csi
 ---
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: hcloud-csi-controller
   namespace: kube-system
@@ -214,7 +214,6 @@ spec:
   selector:
     matchLabels:
       app: hcloud-csi-controller
-  serviceName: hcloud-csi-controller
   template:
     metadata:
       labels:
@@ -223,23 +222,11 @@ spec:
       containers:
       - image: k8s.gcr.io/sig-storage/csi-attacher:v3.2.1
         name: csi-attacher
-        securityContext:
-          allowPrivilegeEscalation: true
-          capabilities:
-            add:
-            - SYS_ADMIN
-          privileged: true
         volumeMounts:
         - mountPath: /run/csi
           name: socket-dir
       - image: k8s.gcr.io/sig-storage/csi-resizer:v1.2.0
         name: csi-resizer
-        securityContext:
-          allowPrivilegeEscalation: true
-          capabilities:
-            add:
-            - SYS_ADMIN
-          privileged: true
         volumeMounts:
         - mountPath: /run/csi
           name: socket-dir
@@ -248,16 +235,12 @@ spec:
         - --default-fstype=ext4
         image: k8s.gcr.io/sig-storage/csi-provisioner:v2.2.2
         name: csi-provisioner
-        securityContext:
-          allowPrivilegeEscalation: true
-          capabilities:
-            add:
-            - SYS_ADMIN
-          privileged: true
         volumeMounts:
         - mountPath: /run/csi
           name: socket-dir
-      - env:
+      - command:
+        - /bin/hcloud-csi-driver-controller
+        env:
         - name: CSI_ENDPOINT
           value: unix:///run/csi/socket
         - name: METRICS_ENDPOINT
@@ -274,7 +257,7 @@ spec:
             secretKeyRef:
               key: token
               name: hcloud-csi
-        image: hetznercloud/hcloud-csi-driver:1.6.0
+        image: hetznercloud/hcloud-csi-driver:latest
         imagePullPolicy: Always
         livenessProbe:
           failureThreshold: 5
@@ -291,12 +274,6 @@ spec:
         - containerPort: 9808
           name: healthz
           protocol: TCP
-        securityContext:
-          allowPrivilegeEscalation: true
-          capabilities:
-            add:
-            - SYS_ADMIN
-          privileged: true
         volumeMounts:
         - mountPath: /run/csi
           name: socket-dir
@@ -306,7 +283,7 @@ spec:
         volumeMounts:
         - mountPath: /run/csi
           name: socket-dir
-      serviceAccount: hcloud-csi
+      serviceAccountName: hcloud-csi-controller
       volumes:
       - emptyDir: {}
         name: socket-dir
@@ -339,39 +316,23 @@ spec:
       containers:
       - args:
         - --kubelet-registration-path=/var/lib/kubelet/plugins/csi.hetzner.cloud/socket
-        env:
-        - name: KUBE_NODE_NAME
-          valueFrom:
-            fieldRef:
-              apiVersion: v1
-              fieldPath: spec.nodeName
         image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.2.0
         name: csi-node-driver-registrar
-        securityContext:
-          privileged: true
         volumeMounts:
         - mountPath: /run/csi
           name: plugin-dir
         - mountPath: /registration
           name: registration-dir
-      - env:
+      - command:
+        - /bin/hcloud-csi-driver-node
+        env:
         - name: CSI_ENDPOINT
           value: unix:///run/csi/socket
         - name: METRICS_ENDPOINT
           value: 0.0.0.0:9189
         - name: ENABLE_METRICS
           value: "true"
-        - name: HCLOUD_TOKEN
-          valueFrom:
-            secretKeyRef:
-              key: token
-              name: hcloud-csi
-        - name: KUBE_NODE_NAME
-          valueFrom:
-            fieldRef:
-              apiVersion: v1
-              fieldPath: spec.nodeName
-        image: hetznercloud/hcloud-csi-driver:1.6.0
+        image: hetznercloud/hcloud-csi-driver:latest
         imagePullPolicy: Always
         livenessProbe:
           failureThreshold: 5
@@ -404,7 +365,6 @@ spec:
         volumeMounts:
         - mountPath: /run/csi
           name: plugin-dir
-      serviceAccount: hcloud-csi
       tolerations:
       - effect: NoExecute
         operator: Exists
@@ -436,6 +396,7 @@ metadata:
   name: csi.hetzner.cloud
 spec:
   attachRequired: true
+  fsGroupPolicy: File
   podInfoOnMount: true
   volumeLifecycleModes:
   - Persistent
