@@ -1038,6 +1038,8 @@ spec:
       - env:
         - name: AWS_ENI_LIMITED_POD_DENSITY
           value: "true"
+        - name: AWS_NODE_NAME_CONVENTION
+          value: resource-name
         - name: AWS_REGION
           value: us-test-1
         - name: CLUSTER_NAME
@@ -1373,7 +1375,7 @@ webhooks:
 
 ---
 
-apiVersion: policy/v1beta1
+apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   creationTimestamp: null
