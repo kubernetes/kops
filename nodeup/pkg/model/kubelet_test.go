@@ -92,7 +92,13 @@ func TestTaintsApplied(t *testing.T) {
 
 	for _, g := range tests {
 		cluster := &kops.Cluster{Spec: kops.ClusterSpec{KubernetesVersion: g.version}}
-		ig := &kops.InstanceGroup{Spec: kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleMaster, Taints: g.taints}}
+		input := testutils.BuildMinimalMasterInstanceGroup("eu-central-1a")
+		input.Spec.Taints = g.taints
+
+		ig, err := cloudup.PopulateInstanceGroupSpec(cluster, &input, nil, nil)
+		if err != nil {
+			t.Fatalf("failed to populate ig: %v", err)
+		}
 
 		config, bootConfig := nodeup.NewConfig(cluster, ig)
 		b := &KubeletBuilder{
@@ -218,7 +224,7 @@ func runKubeletBuilder(t *testing.T, context *fi.ModelBuilderContext, nodeupMode
 
 	builder := KubeletBuilder{NodeupModelContext: nodeupModelContext}
 
-	kubeletConfig, err := builder.buildKubeletConfig()
+	kubeletConfig, err := builder.buildKubeletConfigSpec()
 	if err != nil {
 		t.Fatalf("error from KubeletBuilder buildKubeletConfig: %v", err)
 		return
@@ -314,6 +320,8 @@ func BuildNodeupModelContext(model *testutils.Model) (*NodeupModelContext, error
 		updatePolicy = fi.String(kops.UpdatePolicyAutomatic)
 	}
 	nodeupModelContext.NodeupConfig.UpdatePolicy = *updatePolicy
+
+	nodeupModelContext.NodeupConfig.KubeletConfig.PodManifestPath = "/etc/kubernetes/manifests"
 
 	return nodeupModelContext, nil
 }

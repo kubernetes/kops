@@ -20,10 +20,8 @@ import (
 	"strings"
 
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/nodelabels"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/architectures"
-	"k8s.io/kops/util/pkg/reflectutils"
 )
 
 // Config is the configuration for the nodeup binary
@@ -139,7 +137,6 @@ type APIServerConfig struct {
 
 func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Config, *BootConfig) {
 	role := instanceGroup.Spec.Role
-	isMaster := role == kops.InstanceGroupRoleMaster
 
 	clusterHooks := filterHooks(cluster.Spec.Hooks, instanceGroup.Spec.Role)
 	igHooks := filterHooks(instanceGroup.Spec.Hooks, instanceGroup.Spec.Role)
@@ -165,39 +162,6 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		config.EnableLifecycleHook = true
 	}
 
-	if isMaster {
-		reflectutils.JSONMergeStruct(&config.KubeletConfig, cluster.Spec.MasterKubelet)
-
-		// A few settings in Kubelet override those in MasterKubelet. I'm not sure why.
-		if cluster.Spec.Kubelet != nil && cluster.Spec.Kubelet.AnonymousAuth != nil && !*cluster.Spec.Kubelet.AnonymousAuth {
-			config.KubeletConfig.AnonymousAuth = fi.Bool(false)
-		}
-	} else {
-		reflectutils.JSONMergeStruct(&config.KubeletConfig, cluster.Spec.Kubelet)
-	}
-
-	if isMaster || role == kops.InstanceGroupRoleAPIServer {
-		config.APIServerConfig = &APIServerConfig{
-			KubeAPIServer: cluster.Spec.KubeAPIServer,
-		}
-	}
-
-	if instanceGroup.Spec.Kubelet != nil {
-		useSecureKubelet := config.KubeletConfig.AnonymousAuth != nil && !*config.KubeletConfig.AnonymousAuth
-
-		reflectutils.JSONMergeStruct(&config.KubeletConfig, instanceGroup.Spec.Kubelet)
-
-		if useSecureKubelet {
-			config.KubeletConfig.AnonymousAuth = fi.Bool(false)
-		}
-	}
-
-	// We include the NodeLabels in the userdata even for Kubernetes 1.16 and later so that
-	// rolling update will still replace nodes when they change.
-	config.KubeletConfig.NodeLabels = nodelabels.BuildNodeLabels(cluster, instanceGroup)
-
-	config.KubeletConfig.Taints = append(config.KubeletConfig.Taints, instanceGroup.Spec.Taints...)
-
 	if instanceGroup.Spec.UpdatePolicy != nil {
 		config.UpdatePolicy = *instanceGroup.Spec.UpdatePolicy
 	} else if cluster.Spec.UpdatePolicy != nil {
@@ -212,6 +176,16 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 
 	if UsesInstanceIDForNodeName(cluster) {
 		config.UseInstanceIDForNodeName = true
+	}
+
+	if instanceGroup.Spec.Kubelet != nil {
+		config.KubeletConfig = *instanceGroup.Spec.Kubelet
+	}
+
+	if instanceGroup.HasAPIServer() {
+		config.APIServerConfig = &APIServerConfig{
+			KubeAPIServer: cluster.Spec.KubeAPIServer,
+		}
 	}
 
 	return &config, &bootConfig

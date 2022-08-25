@@ -3,7 +3,7 @@ path: /etc/kubernetes/manifests
 type: directory
 ---
 contents: |
-  DAEMON_ARGS="--authentication-token-webhook=true --authorization-mode=Webhook --cgroup-driver=systemd --cgroup-root=/ --client-ca-file=/srv/kubernetes/ca.crt --cloud-provider=external --cluster-dns=100.64.0.10 --cluster-domain=cluster.local --enable-debugging-handlers=true --eviction-hard=memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5% --feature-gates=AllowExtTrafficLocalEndpoints=false,CSIMigrationAWS=true,ExperimentalCriticalPodAnnotation=true,InTreePluginAWSUnregister=true --kubeconfig=/var/lib/kubelet/kubeconfig --pod-infra-container-image=registry.k8s.io/pause:3.6 --pod-manifest-path=/etc/kubernetes/manifests --protect-kernel-defaults=true --register-schedulable=true --v=2 --volume-plugin-dir=/usr/libexec/kubernetes/kubelet-plugins/volume/exec/ --cloud-config=/etc/kubernetes/in-tree-cloud.config --runtime-request-timeout=15m --container-runtime-endpoint=unix:///run/containerd/containerd.sock --tls-cert-file=/srv/kubernetes/kubelet-server.crt --tls-private-key-file=/srv/kubernetes/kubelet-server.key --config=/var/lib/kubelet/kubelet.conf"
+  DAEMON_ARGS="--authentication-token-webhook=true --authorization-mode=Webhook --client-ca-file=/srv/kubernetes/ca.crt --pod-manifest-path=/etc/kubernetes/manifests --register-schedulable=true --volume-plugin-dir=/usr/libexec/kubernetes/kubelet-plugins/volume/exec/ --cloud-config=/etc/kubernetes/in-tree-cloud.config --runtime-request-timeout=15m --container-runtime-endpoint=unix:///run/containerd/containerd.sock --tls-cert-file=/srv/kubernetes/kubelet-server.crt --tls-private-key-file=/srv/kubernetes/kubelet-server.key --config=/var/lib/kubelet/kubelet.conf"
   HOME="/root"
 path: /etc/sysconfig/kubelet
 type: file
@@ -37,8 +37,8 @@ contents: |
   nodeStatusReportFrequency: 0s
   nodeStatusUpdateFrequency: 0s
   runtimeRequestTimeout: 0s
-  shutdownGracePeriod: 30s
-  shutdownGracePeriodCriticalPods: 10s
+  shutdownGracePeriod: 0s
+  shutdownGracePeriodCriticalPods: 0s
   streamingConnectionIdleTimeout: 0s
   syncFrequency: 0s
   volumeStatsAggPeriod: 0s
