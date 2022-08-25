@@ -61,7 +61,7 @@ KubeletConfig:
   - nvidia.com/gpu:NoSchedule
 NvidiaGPU:
   enabled: true
-  package: nvidia-headless-510-server
+  package: nvidia-headless-515-server
 UpdatePolicy: automatic
 channels:
 - memfs://clusters.example.com/minimal.example.com/addons/bootstrap-channel.yaml
@@ -69,5 +69,5 @@ containerdConfig:
   logLevel: info
   nvidiaGPU:
     enabled: true
-    package: nvidia-headless-510-server
+    package: nvidia-headless-515-server
   version: 1.4.13
