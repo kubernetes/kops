@@ -1,0 +1,89 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  name: minimal.k8s.local
+spec:
+  api:
+    loadBalancer:
+      type: Public
+  authorization:
+    rbac: {}
+  channel: stable
+  cloudProvider: hetzner
+  configBase: memfs://tests/minimal.k8s.local
+  etcdClusters:
+  - cpuRequest: 200m
+    etcdMembers:
+    - instanceGroup: master-fsn1
+      name: etcd-1
+    memoryRequest: 100Mi
+    name: main
+  - cpuRequest: 100m
+    etcdMembers:
+    - instanceGroup: master-fsn1
+      name: etcd-1
+    memoryRequest: 100Mi
+    name: events
+  iam:
+    allowContainerRegistry: true
+    legacy: false
+  kubelet:
+    anonymousAuth: false
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  - ::/0
+  kubernetesVersion: v1.25.0
+  masterPublicName: api.minimal.k8s.local
+  networkCIDR: 10.0.0.0/16
+  networking:
+    cni: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  sshAccess:
+  - 0.0.0.0/0
+  - ::/0
+  subnets:
+  - name: fsn1
+    type: Public
+    zone: fsn1
+  topology:
+    dns:
+      type: Public
+    masters: public
+    nodes: public
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: minimal.k8s.local
+  name: master-fsn1
+spec:
+  image: ubuntu-20.04
+  machineType: cx21
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - fsn1
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: minimal.k8s.local
+  name: nodes-fsn1
+spec:
+  image: ubuntu-20.04
+  machineType: cx21
+  maxSize: 1
+  minSize: 1
+  role: Node
+  subnets:
+  - fsn1

@@ -20,10 +20,13 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // +kops:fitask
@@ -54,6 +57,11 @@ func (e *LoadBalancer) IsForAPIServer() bool {
 }
 
 func (v *LoadBalancer) FindAddresses(c *fi.Context) ([]string, error) {
+	// TODO(hakman): Use mock to handle this more gracefully
+	if strings.HasPrefix(c.ClusterConfigBase.Path(), "memfs://tests/") {
+		return nil, nil
+	}
+
 	ctx := context.TODO()
 	cloud := c.Cloud.(hetzner.HetznerCloud)
 	client := cloud.LoadBalancerClient()
@@ -203,13 +211,6 @@ func (_ *LoadBalancer) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes 
 				Name: e.Location,
 			},
 			Labels: e.Labels,
-			Services: []hcloud.LoadBalancerCreateOptsService{
-				{
-					Protocol:        hcloud.LoadBalancerServiceProtocolTCP,
-					ListenPort:      fi.Int(443),
-					DestinationPort: fi.Int(443),
-				},
-			},
 			Targets: []hcloud.LoadBalancerCreateOptsTarget{
 				{
 					Type: hcloud.LoadBalancerTargetTypeLabelSelector,
@@ -223,6 +224,15 @@ func (_ *LoadBalancer) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes 
 				ID: fi.IntValue(e.Network.ID),
 			},
 		}
+
+		for _, service := range e.Services {
+			opts.Services = append(opts.Services, hcloud.LoadBalancerCreateOptsService{
+				Protocol:        hcloud.LoadBalancerServiceProtocol(service.Protocol),
+				ListenPort:      service.ListenerPort,
+				DestinationPort: service.DestinationPort,
+			})
+		}
+
 		result, _, err := client.Create(ctx, opts)
 		if err != nil {
 			return err
@@ -300,4 +310,94 @@ var _ fi.HasDependencies = &LoadBalancerService{}
 
 func (e *LoadBalancerService) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	return nil
+}
+
+type terraformLoadBalancer struct {
+	Name     *string                      `cty:"name"`
+	Type     *string                      `cty:"load_balancer_type"`
+	Location *string                      `cty:"location"`
+	Target   *terraformLoadBalancerTarget `cty:"target"`
+	Network  *terraformWriter.Literal     `cty:"network"`
+	Labels   map[string]string            `cty:"labels"`
+}
+
+type terraformLoadBalancerNetwork struct {
+	LoadBalancerID *terraformWriter.Literal `cty:"load_balancer_id"`
+	NetworkID      *terraformWriter.Literal `cty:"network_id"`
+}
+
+type terraformLoadBalancerService struct {
+	LoadBalancerID  *terraformWriter.Literal `cty:"load_balancer_id"`
+	Protocol        *string                  `cty:"protocol"`
+	ListenPort      *int                     `cty:"listen_port"`
+	DestinationPort *int                     `cty:"destination_port"`
+}
+
+type terraformLoadBalancerTarget struct {
+	LoadBalancerID *terraformWriter.Literal `cty:"load_balancer_id"`
+	Type           *string                  `cty:"type"`
+	LabelSelector  *string                  `cty:"label_selector"`
+	UsePrivateIP   *bool                    `cty:"use_private_ip"`
+}
+
+func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LoadBalancer) error {
+	{
+		tf := &terraformLoadBalancer{
+			Name:     e.Name,
+			Type:     &e.Type,
+			Location: &e.Location,
+			Labels:   e.Labels,
+		}
+
+		err := t.RenderResource("hcloud_load_balancer", *e.Name, tf)
+		if err != nil {
+			return err
+		}
+	}
+
+	{
+		tf := &terraformLoadBalancerNetwork{
+			LoadBalancerID: e.TerraformLink(),
+			NetworkID:      e.Network.TerraformLink(),
+		}
+
+		err := t.RenderResource("hcloud_load_balancer_network", *e.Name, tf)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, service := range e.Services {
+		tf := &terraformLoadBalancerService{
+			LoadBalancerID:  e.TerraformLink(),
+			Protocol:        fi.String(service.Protocol),
+			ListenPort:      service.ListenerPort,
+			DestinationPort: service.DestinationPort,
+		}
+
+		err := t.RenderResource("hcloud_load_balancer_service", *e.Name, tf)
+		if err != nil {
+			return err
+		}
+	}
+
+	{
+		tf := &terraformLoadBalancerTarget{
+			LoadBalancerID: e.TerraformLink(),
+			Type:           fi.String(string(hcloud.LoadBalancerTargetTypeLabelSelector)),
+			LabelSelector:  fi.String(e.Target),
+			UsePrivateIP:   fi.Bool(true),
+		}
+
+		err := t.RenderResource("hcloud_load_balancer_target", *e.Name, tf)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (e *LoadBalancer) TerraformLink() *terraformWriter.Literal {
+	return terraformWriter.LiteralProperty("hcloud_load_balancer", *e.Name, "id")
 }

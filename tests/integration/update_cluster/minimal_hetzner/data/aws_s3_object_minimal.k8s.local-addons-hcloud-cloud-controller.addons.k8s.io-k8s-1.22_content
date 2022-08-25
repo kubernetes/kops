@@ -1,0 +1,117 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: hcloud-cloud-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: hcloud-cloud-controller.addons.k8s.io
+  name: hcloud
+  namespace: kube-system
+stringData:
+  network: minimal.k8s.local
+  token: REDACTED
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: hcloud-cloud-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: hcloud-cloud-controller.addons.k8s.io
+  name: cloud-controller-manager
+  namespace: kube-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: hcloud-cloud-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: hcloud-cloud-controller.addons.k8s.io
+  name: system:cloud-controller-manager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: cloud-controller-manager
+  namespace: kube-system
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: hcloud-cloud-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: hcloud-cloud-controller.addons.k8s.io
+  name: hcloud-cloud-controller-manager
+  namespace: kube-system
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: hcloud-cloud-controller-manager
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: hcloud-cloud-controller-manager
+        kops.k8s.io/managed-by: kops
+    spec:
+      containers:
+      - command:
+        - /bin/hcloud-cloud-controller-manager
+        - --cloud-provider=hcloud
+        - --leader-elect=false
+        - --allow-untagged-cloud
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: HCLOUD_TOKEN
+          valueFrom:
+            secretKeyRef:
+              key: token
+              name: hcloud
+        - name: HCLOUD_NETWORK
+          valueFrom:
+            secretKeyRef:
+              key: network
+              name: hcloud
+        image: hetznercloud/hcloud-cloud-controller-manager:v1.12.1
+        name: hcloud-cloud-controller-manager
+        resources:
+          requests:
+            cpu: 100m
+            memory: 50Mi
+      dnsPolicy: Default
+      hostNetwork: true
+      priorityClassName: system-node-critical
+      serviceAccountName: cloud-controller-manager
+      tolerations:
+      - effect: NoSchedule
+        key: node.cloudprovider.kubernetes.io/uninitialized
+        value: "true"
+      - key: CriticalAddonsOnly
+        operator: Exists
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+        operator: Exists
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/control-plane
+        operator: Exists
+      - effect: NoSchedule
+        key: node.kubernetes.io/not-ready

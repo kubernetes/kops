@@ -27,8 +27,10 @@ import (
 
 // Literal represents a literal in terraform syntax
 type Literal struct {
-	// Value is used to support Terraform's "${}" interpolation
+	// Value is used to support Terraform's "${}" interpolation.
 	Value string `cty:"value"`
+	// Index to support the index of the count meta-argument.
+	Index bool `cty:"index"`
 
 	// Tokens are portions of a literal reference joined by periods.
 	// example: {"aws_vpc", "foo", "id"}
@@ -78,6 +80,10 @@ func LiteralTokens(tokens ...string) *Literal {
 
 func LiteralFromStringValue(s string) *Literal {
 	return &Literal{Value: s}
+}
+
+func LiteralWithIndex(s string) *Literal {
+	return &Literal{Value: s, Index: true}
 }
 
 type literalWithJSON struct {

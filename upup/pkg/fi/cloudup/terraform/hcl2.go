@@ -112,6 +112,42 @@ func writeLiteral(body *hclwrite.Body, key string, literal *terraformWriter.Lite
 			},
 		}
 		body.SetAttributeRaw(key, tokens)
+	} else if literal.Index {
+		tokens := hclwrite.Tokens{
+			{
+				Type:  hclsyntax.TokenOQuote,
+				Bytes: []byte(`"`),
+			},
+			{
+				Type:  hclsyntax.TokenQuotedLit,
+				Bytes: []byte(literal.Value),
+			},
+			{
+				Type:  hclsyntax.TokenQuotedLit,
+				Bytes: []byte(`-`),
+			},
+			{
+				Type:  hclsyntax.TokenTemplateInterp,
+				Bytes: []byte(`${`),
+			},
+			{
+				Type:  hclsyntax.TokenQuotedLit,
+				Bytes: []byte(`count.index`),
+			},
+			{
+				Type:  hclsyntax.TokenTemplateSeqEnd,
+				Bytes: []byte(`}`),
+			},
+			{
+				Type:  hclsyntax.TokenCQuote,
+				Bytes: []byte(`"`),
+			},
+			{
+				Type:  hclsyntax.TokenEOF,
+				Bytes: []byte{},
+			},
+		}
+		body.SetAttributeRaw(key, tokens)
 	} else if len(literal.Tokens) == 0 {
 		body.SetAttributeValue(key, cty.StringVal(literal.Value))
 	} else {
