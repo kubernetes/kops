@@ -42,12 +42,17 @@ func (t *TerraformTarget) finishHCL2() error {
 	if t.Cloud.ProviderID() == kops.CloudProviderGCE {
 		providerName = "google"
 	}
+	if t.Cloud.ProviderID() == kops.CloudProviderHetzner {
+		providerName = "hcloud"
+	}
 	providerBlock := rootBody.AppendNewBlock("provider", []string{providerName})
 	providerBody := providerBlock.Body()
 	if t.Cloud.ProviderID() == kops.CloudProviderGCE {
 		providerBody.SetAttributeValue("project", cty.StringVal(t.Project))
 	}
-	providerBody.SetAttributeValue("region", cty.StringVal(t.Cloud.Region()))
+	if t.Cloud.ProviderID() != kops.CloudProviderHetzner {
+		providerBody.SetAttributeValue("region", cty.StringVal(t.Cloud.Region()))
+	}
 	for k, v := range tfGetProviderExtraConfig(t.clusterSpecTarget) {
 		providerBody.SetAttributeValue(k, cty.StringVal(v))
 	}
@@ -109,6 +114,11 @@ func (t *TerraformTarget) finishHCL2() error {
 		writeMap(requiredProvidersBody, "google", map[string]cty.Value{
 			"source":  cty.StringVal("hashicorp/google"),
 			"version": cty.StringVal(">= 2.19.0"),
+		})
+	} else if t.Cloud.ProviderID() == kops.CloudProviderHetzner {
+		writeMap(requiredProvidersBody, "hcloud", map[string]cty.Value{
+			"source":  cty.StringVal("hetznercloud/hcloud"),
+			"version": cty.StringVal(">= 1.35.1"),
 		})
 	} else if t.Cloud.ProviderID() == kops.CloudProviderAWS {
 		configurationAliases := []*terraformWriter.Literal{terraformWriter.LiteralTokens("aws", "files")}
