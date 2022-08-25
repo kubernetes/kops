@@ -17,7 +17,7 @@ limitations under the License.
 package kops
 
 // NvidiaDefaultDriverPackage is the nvidia driver default version
-const NvidiaDefaultDriverPackage = "nvidia-headless-510-server"
+const NvidiaDefaultDriverPackage = "nvidia-headless-515-server"
 
 // ContainerdConfig is the configuration for containerd
 type ContainerdConfig struct {
