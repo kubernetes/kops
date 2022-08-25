@@ -53,6 +53,7 @@ KubeletConfig:
     InTreePluginAWSUnregister: "true"
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
+  maxPods: 50
   nodeLabels:
     karpenter.sh/provisioner-name: karpenter-nodes-default
     node-role.kubernetes.io/node: ""
@@ -61,6 +62,9 @@ KubeletConfig:
   protectKernelDefaults: true
   shutdownGracePeriod: 30s
   shutdownGracePeriodCriticalPods: 10s
+  systemReserved:
+    cpu: 500m
+    memory: 1G
 UpdatePolicy: automatic
 channels:
 - memfs://clusters.example.com/minimal.example.com/addons/bootstrap-channel.yaml
