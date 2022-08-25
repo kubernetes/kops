@@ -894,7 +894,7 @@ spec:
           value: arn:aws-test:iam::123456789012:role/aws-load-balancer-controller.kube-system.sa.minimal.example.com
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
-        image: amazon/aws-alb-ingress-controller:v2.4.1
+        image: amazon/aws-alb-ingress-controller:v2.4.3
         livenessProbe:
           failureThreshold: 2
           httpGet:
