@@ -69,7 +69,7 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 		return fmt.Errorf("error building kubelet server cert: %v", err)
 	}
 
-	kubeletConfig, err := b.buildKubeletConfig()
+	kubeletConfig, err := b.buildKubeletConfigSpec()
 	if err != nil {
 		return fmt.Errorf("error building kubelet config: %v", err)
 	}
@@ -261,6 +261,9 @@ func (b *KubeletBuilder) kubeletPath() string {
 
 // buildManifestDirectory creates the directory where kubelet expects static manifests to reside
 func (b *KubeletBuilder) buildManifestDirectory(kubeletConfig *kops.KubeletConfigSpec) (*nodetasks.File, error) {
+	if kubeletConfig.PodManifestPath == "" {
+		return nil, fmt.Errorf("failed to build manifest path. Path was empty")
+	}
 	directory := &nodetasks.File{
 		Path: kubeletConfig.PodManifestPath,
 		Type: nodetasks.FileType_Directory,
@@ -407,17 +410,6 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	}
 
 	return service
-}
-
-// buildKubeletConfig is responsible for creating the kubelet configuration
-func (b *KubeletBuilder) buildKubeletConfig() (*kops.KubeletConfigSpec, error) {
-	kubeletConfigSpec, err := b.buildKubeletConfigSpec()
-	if err != nil {
-		return nil, fmt.Errorf("error building kubelet config: %v", err)
-	}
-
-	// TODO: Memoize if we reuse this
-	return kubeletConfigSpec, nil
 }
 
 // usesContainerizedMounter returns true if we use the containerized mounter
