@@ -132,7 +132,7 @@ containerd:
   logLevel: info
   nvidiaGPU:
     enabled: true
-    package: nvidia-headless-510-server
+    package: nvidia-headless-515-server
   version: 1.4.13
 docker:
   skipInstall: true
@@ -165,7 +165,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: oJ2gP2GI0JmkePKVPaP8+ynFcX6hNDMzDcyKNpoFwQ8=
+NodeupConfigHash: EAEwJUexP/I3DTt0PlHGNNMkB0rQ2nxp30KWEX24Ti8=
 
 __EOF_KUBE_ENV
 
