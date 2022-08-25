@@ -156,7 +156,9 @@ spec:
           - -upstreamsvc=kube-dns-upstream
           - -setupiptables=false
         securityContext:
-          privileged: true
+          capabilities:
+            add:
+            - NET_ADMIN
         ports:
         - containerPort: 53
           name: dns
