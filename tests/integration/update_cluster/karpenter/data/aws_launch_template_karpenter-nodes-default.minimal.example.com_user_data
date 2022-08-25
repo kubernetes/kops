@@ -168,7 +168,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: karpenter-nodes-default
 InstanceGroupRole: Node
-NodeupConfigHash: 1FfgFY6VB5afH7KFhehAAy3hUBSDD/zXVUA23C/ojJY=
+NodeupConfigHash: IsrI1UToKBMNZ5BZejHeUUKJ2lszE+TvvFeYc9UOlwA=
 
 __EOF_KUBE_ENV
 
