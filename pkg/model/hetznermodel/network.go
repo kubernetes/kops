@@ -27,22 +27,26 @@ type NetworkModelBuilder struct {
 	*HetznerModelContext
 	Lifecycle fi.Lifecycle
 }
-
+ 
 var _ fi.ModelBuilder = &NetworkModelBuilder{}
 
 func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
-	network := &hetznertasks.Network{
-		Name:      fi.String(b.ClusterName()),
-		Lifecycle: b.Lifecycle,
-		Region:    b.Region,
-		IPRange:   b.Cluster.Spec.NetworkCIDR,
-		// TODO(hakman): Add support for additional subnets?
-		Subnets: []string{
-			b.Cluster.Spec.NetworkCIDR,
-		},
-		Labels: map[string]string{
-			hetzner.TagKubernetesClusterName: b.ClusterName(),
-		},
+	if b.Cluster.Spec.NetworkID != "" {
+		network = fi.String(b.Cluster.Spec.NetworkID)
+	} else {
+    	network := &hetznertasks.Network{
+    		Name:      fi.String(b.ClusterName()),
+    		Lifecycle: b.Lifecycle,
+    		Region:    b.Region,
+    		IPRange:   b.Cluster.Spec.NetworkCIDR,
+    		// TODO(hakman): Add support for additional subnets?
+    		Subnets: []string{
+    			b.Cluster.Spec.NetworkCIDR,
+    		},
+    		Labels: map[string]string{
+    			hetzner.TagKubernetesClusterName: b.ClusterName(),
+    		},
+    	}
 	}
 	c.AddTask(network)
 
