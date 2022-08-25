@@ -1404,6 +1404,11 @@ metadata:
 spec:
   consolidation:
     enabled: true
+  kubeletConfiguration:
+    maxPods: 50
+    systemReserved:
+      cpu: 500m
+      memory: 1G
   provider:
     launchTemplate: karpenter-nodes-default.minimal.example.com
     subnetSelector:
@@ -1422,6 +1427,9 @@ spec:
     operator: In
     values:
     - c5.large
+  startupTaints:
+  - effect: NoSchedule
+    key: node.cloudprovider.kubernetes.io/uninitialized
 
 ---
 
@@ -1455,3 +1463,6 @@ spec:
     operator: In
     values:
     - t2.medium
+  startupTaints:
+  - effect: NoSchedule
+    key: node.cloudprovider.kubernetes.io/uninitialized
