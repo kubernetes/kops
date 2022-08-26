@@ -49,6 +49,18 @@ type CapsuleOps struct {
 	// pointer identity of the encapsulated value.
 	RawEquals func(a, b interface{}) bool
 
+	// HashKey provides a hashing function for values of the corresponding
+	// capsule type. If defined, cty will use the resulting hashes as part
+	// of the implementation of sets whose element type is or contains the
+	// corresponding capsule type.
+	//
+	// If a capsule type defines HashValue then the function _must_ return
+	// an equal hash value for any two values that would cause Equals or
+	// RawEquals to return true when given those values. If a given type
+	// does not uphold that assumption then sets including this type will
+	// not behave correctly.
+	HashKey func(v interface{}) string
+
 	// ConversionFrom can provide conversions from the corresponding type to
 	// some other type when values of the corresponding type are used with
 	// the "convert" package. (The main cty package does not use this operation.)

@@ -525,6 +525,7 @@ func flattener(flattenList cty.Value) ([]cty.Value, []cty.ValueMarks, bool) {
 	if len(flattenListMarks) > 0 {
 		markses = append(markses, flattenListMarks)
 	}
+
 	if !flattenList.Length().IsKnown() {
 		// If we don't know the length of what we're flattening then we can't
 		// predict the length of our result yet either.
@@ -542,7 +543,7 @@ func flattener(flattenList cty.Value) ([]cty.Value, []cty.ValueMarks, bool) {
 			isKnown = false
 		}
 
-		if val.Type().IsListType() || val.Type().IsSetType() || val.Type().IsTupleType() {
+		if !val.IsNull() && (val.Type().IsListType() || val.Type().IsSetType() || val.Type().IsTupleType()) {
 			if !val.IsKnown() {
 				isKnown = false
 				_, unknownMarks := val.Unmark()
