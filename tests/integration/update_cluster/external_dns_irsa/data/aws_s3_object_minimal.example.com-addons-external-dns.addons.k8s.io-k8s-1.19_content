@@ -7,7 +7,7 @@ metadata:
     app.kubernetes.io/managed-by: kops
     k8s-addon: external-dns.addons.k8s.io
     k8s-app: external-dns
-    version: v0.11.0
+    version: v0.12.2
   name: external-dns
   namespace: kube-system
 spec:
@@ -22,7 +22,7 @@ spec:
         k8s-addon: external-dns.addons.k8s.io
         k8s-app: external-dns
         kops.k8s.io/managed-by: kops
-        version: v0.11.0
+        version: v0.12.2
     spec:
       affinity:
         nodeAffinity:
@@ -54,7 +54,7 @@ spec:
           value: arn:aws-test:iam::123456789012:role/external-dns.kube-system.sa.minimal.example.com
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
-        image: registry.k8s.io/external-dns/external-dns:v0.11.0
+        image: registry.k8s.io/external-dns/external-dns:v0.12.2
         livenessProbe:
           failureThreshold: 2
           httpGet:
