@@ -30,16 +30,16 @@ kops rolling-update cluster [CLUSTER] [flags]
 ```
   # Preview a rolling update.
   kops rolling-update cluster
-  
+
   # Update the currently selected kOps cluster with defaults.
   # Nodes will be drained and the cluster will be validated between node replacement.
   kops rolling-update cluster --yes
-  
+
   # Update the k8s-cluster.example.com kOps cluster.
   # Do not fail if the cluster does not validate.
   kops rolling-update cluster k8s-cluster.example.com --yes \
   --fail-on-validate-error="false"
-  
+
   # Update the k8s-cluster.example.com kOps cluster.
   # Do not validate the cluster.
   # Force the entire cluster to update, even if rolling update
@@ -47,7 +47,7 @@ kops rolling-update cluster [CLUSTER] [flags]
   kops rolling-update cluster k8s-cluster.example.com --yes \
   --cloudonly \
   --force
-  
+
   # Update only the "nodes-1a" instance group of the k8s-cluster.example.com kOps cluster.
   kops rolling-update cluster k8s-cluster.example.com --yes \
   --instance-group nodes-1a
@@ -58,6 +58,7 @@ kops rolling-update cluster [CLUSTER] [flags]
 ```
       --bastion-interval duration         Time to wait between restarting bastions (default 15s)
       --cloudonly                         Perform rolling update without confirming progress with Kubernetes
+      --exit-on-first-error               Exit on the first node or apiserver instancegroup error
       --control-plane-interval duration   Time to wait between restarting control plane nodes (default 15s)
       --drain-timeout duration            Maximum time to wait for a node to drain (default 15m0s)
       --fail-on-drain-error               Fail if draining a node fails (default true)
