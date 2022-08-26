@@ -49,7 +49,7 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o interface{}) error {
 			if b.IsKubernetesGTE("1.23") {
 				containerd.Version = fi.String("1.6.8")
 				containerd.Runc = &kops.Runc{
-					Version: fi.String("1.1.3"),
+					Version: fi.String("1.1.4"),
 				}
 			} else {
 				containerd.Version = fi.String("1.4.13")
