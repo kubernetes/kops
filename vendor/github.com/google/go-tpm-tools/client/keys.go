@@ -19,6 +19,8 @@ import (
 // Key wraps an active asymmetric TPM2 key. This can either be a signing key or
 // an encryption key. Users of Key should be sure to call Close() when the Key
 // is no longer needed, so that the underlying TPM handle can be freed.
+// Concurrent accesses on Key are not safe, with the exception of the
+// Sign method called on the crypto.Signer returned by Key.GetSigner.
 type Key struct {
 	rw      io.ReadWriter
 	handle  tpmutil.Handle
