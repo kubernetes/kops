@@ -51,7 +51,7 @@ func (t typeMap) GoString() string {
 	return fmt.Sprintf("cty.Map(%#v)", t.ElementTypeT)
 }
 
-// IsMapType returns true if the given type is a list type, regardless of its
+// IsMapType returns true if the given type is a map type, regardless of its
 // element type.
 func (t Type) IsMapType() bool {
 	_, ok := t.typeImpl.(typeMap)

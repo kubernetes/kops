@@ -268,7 +268,7 @@ func toCtySet(val reflect.Value, ety cty.Type, path cty.Path) (cty.Value, error)
 			return cty.NilVal, path.NewErrorf("can't convert Go %s to %#v", val.Type(), cty.Set(ety))
 		}
 
-		rawSet := val.Interface().(set.Set)
+		rawSet := val.Interface().(set.Set[interface{}])
 		inVals := rawSet.Values()
 
 		if len(inVals) == 0 {

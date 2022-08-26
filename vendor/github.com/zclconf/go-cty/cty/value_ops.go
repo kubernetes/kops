@@ -47,6 +47,9 @@ func (val Value) GoString() string {
 		}
 		return "cty.False"
 	case Number:
+		if f, ok := val.v.(big.Float); ok {
+			panic(fmt.Sprintf("number value contains big.Float value %s, rather than pointer to big.Float", f.Text('g', -1)))
+		}
 		fv := val.v.(*big.Float)
 		// We'll try to use NumberIntVal or NumberFloatVal if we can, since
 		// the fully-general initializer call is pretty ugly-looking.
@@ -265,8 +268,8 @@ func (val Value) Equals(other Value) Value {
 			}
 		}
 	case ty.IsSetType():
-		s1 := val.v.(set.Set)
-		s2 := other.v.(set.Set)
+		s1 := val.v.(set.Set[interface{}])
+		s2 := other.v.(set.Set[interface{}])
 		equal := true
 
 		// Two sets are equal if all of their values are known and all values
@@ -983,7 +986,7 @@ func (val Value) HasElement(elem Value) Value {
 		return False
 	}
 
-	s := val.v.(set.Set)
+	s := val.v.(set.Set[interface{}])
 	return BoolVal(s.Has(elem.v))
 }
 
@@ -1017,7 +1020,7 @@ func (val Value) Length() Value {
 		// may or may not be equal to other elements in the set, and thus they
 		// may or may not coalesce with other elements and produce fewer
 		// items in the resulting set.
-		storeLength := int64(val.v.(set.Set).Length())
+		storeLength := int64(val.v.(set.Set[interface{}]).Length())
 		if storeLength == 1 || val.IsWhollyKnown() {
 			// If our set is wholly known then we know its length.
 			//
@@ -1078,7 +1081,7 @@ func (val Value) LengthInt() int {
 		// compatibility with callers that were relying on LengthInt rather
 		// than calling Length. Instead of panicking when a set contains an
 		// unknown value, LengthInt returns the largest possible length.
-		return val.v.(set.Set).Length()
+		return val.v.(set.Set[interface{}]).Length()
 
 	case val.ty.IsMapType():
 		return len(val.v.(map[string]interface{}))
