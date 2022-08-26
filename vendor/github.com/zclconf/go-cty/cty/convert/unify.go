@@ -447,7 +447,6 @@ func unifyTupleTypes(types []cty.Type, unsafe bool, hasDynamic bool) (cty.Type, 
 			conversions[i] = GetConversion(ty, retTy)
 		}
 		if conversions[i] == nil {
-			// Shouldn't be reachable, since we were able to unify
 			return unifyTupleTypesToList(types, unsafe)
 		}
 	}
@@ -483,8 +482,8 @@ func unifyTupleTypesToList(types []cty.Type, unsafe bool) (cty.Type, []Conversio
 			conversions[i] = GetConversion(ty, retTy)
 		}
 		if conversions[i] == nil {
-			// Shouldn't be reachable, since we were able to unify
-			return unifyObjectTypesToMap(types, unsafe)
+			// no conversion was found
+			return cty.NilType, nil
 		}
 	}
 	return retTy, conversions
