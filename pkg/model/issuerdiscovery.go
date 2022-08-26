@@ -130,6 +130,9 @@ func (o *OIDCKeys) Open() (io.Reader, error) {
 		if item.DistrustTimestamp != nil {
 			continue
 		}
+		if item.Certificate == nil || item.Certificate.Subject.CommonName != "service-account" {
+			continue
+		}
 
 		publicKey := item.Certificate.PublicKey
 		publicKeyDERBytes, err := x509.MarshalPKIXPublicKey(publicKey)
