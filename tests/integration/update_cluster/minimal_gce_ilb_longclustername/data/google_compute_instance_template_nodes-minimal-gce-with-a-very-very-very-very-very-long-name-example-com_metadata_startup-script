@@ -132,7 +132,7 @@ containerRuntime: containerd
 containerd:
   logLevel: info
   runc:
-    version: 1.1.3
+    version: 1.1.4
   version: 1.6.8
 docker:
   skipInstall: true
@@ -167,7 +167,7 @@ CloudProvider: gce
 ConfigBase: memfs://tests/minimal-gce-with-a-very-very-very-very-very-long-name.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: 9c4Zt+MIdhQYlSy0U2VZyvjBGaDTKJ7rWfR0WWvCZY0=
+NodeupConfigHash: ZbffG+iWzZTP/g3gsRIhDw0Dqu1ABZj58svzc+5gYY0=
 
 __EOF_KUBE_ENV
 
