@@ -11,7 +11,7 @@ import (
 var valueType = reflect.TypeOf(cty.Value{})
 var typeType = reflect.TypeOf(cty.Type{})
 
-var setType = reflect.TypeOf(set.Set{})
+var setType = reflect.TypeOf(set.Set[interface{}]{})
 
 var bigFloatType = reflect.TypeOf(big.Float{})
 var bigIntType = reflect.TypeOf(big.Int{})

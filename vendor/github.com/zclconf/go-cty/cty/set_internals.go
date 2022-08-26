@@ -21,7 +21,11 @@ type setRules struct {
 	Type Type
 }
 
-var _ set.OrderedRules = setRules{}
+var _ set.OrderedRules[interface{}] = setRules{}
+
+func newSetRules(ety Type) set.Rules[interface{}] {
+	return setRules{ety}
+}
 
 // Hash returns a hash value for the receiver that can be used for equality
 // checks where some inaccuracy is tolerable.
@@ -67,7 +71,7 @@ func (r setRules) Equivalent(v1 interface{}, v2 interface{}) bool {
 
 // SameRules is only true if the other Rules instance is also a setRules struct,
 // and the types are considered equal.
-func (r setRules) SameRules(other set.Rules) bool {
+func (r setRules) SameRules(other set.Rules[interface{}]) bool {
 	rules, ok := other.(setRules)
 	if !ok {
 		return false
@@ -250,6 +254,25 @@ func appendSetHashBytes(val Value, buf *bytes.Buffer, marks ValueMarks) {
 		return
 	}
 
+	if val.ty.IsCapsuleType() {
+		buf.WriteRune('«')
+		ops := val.ty.CapsuleOps()
+		if ops != nil && ops.HashKey != nil {
+			key := ops.HashKey(val.EncapsulatedValue())
+			buf.WriteString(fmt.Sprintf("%q", key))
+		} else {
+			// If there isn't an explicit hash implementation then we'll
+			// just generate the same hash value for every value of this
+			// type, which is logically fine but less efficient for
+			// larger sets because we'll have to bucket all values
+			// together and scan over them with Equals to determine
+			// set membership.
+			buf.WriteRune('?')
+		}
+		buf.WriteRune('»')
+		return
+	}
+
 	// should never get down here
-	panic("unsupported type in set hash")
+	panic(fmt.Sprintf("unsupported type %#v in set hash", val.ty))
 }

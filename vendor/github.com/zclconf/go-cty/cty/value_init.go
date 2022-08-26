@@ -287,7 +287,7 @@ func SetVal(vals []Value) Value {
 		rawList[i] = val.v
 	}
 
-	rawVal := set.NewSetFromSlice(setRules{elementType}, rawList)
+	rawVal := set.NewSetFromSlice(set.Rules[interface{}](setRules{elementType}), rawList)
 
 	return Value{
 		ty: Set(elementType),
@@ -334,7 +334,7 @@ func SetValFromValueSet(s ValueSet) Value {
 func SetValEmpty(element Type) Value {
 	return Value{
 		ty: Set(element),
-		v:  set.NewSet(setRules{element}),
+		v:  set.NewSet(set.Rules[interface{}](setRules{element})),
 	}
 }
 

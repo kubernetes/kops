@@ -74,6 +74,8 @@ func rawNumberEqual(a, b *big.Float) bool {
 		return false
 	case a == nil: // b == nil too then, due to previous case
 		return true
+	case a.Sign() != b.Sign():
+		return false
 	default:
 		// This format and precision matches that used by cty/json.Marshal,
 		// and thus achieves our definition of "two numbers are equal if
