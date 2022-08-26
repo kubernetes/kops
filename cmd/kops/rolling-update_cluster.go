@@ -107,6 +107,10 @@ type RollingUpdateOptions struct {
 	// does not validate, after a validation period.
 	FailOnValidate bool
 
+	// ExitOnFirstError exits the rolling update when a single instancegroup's
+	// rolling update experiences an error instead of retrying all instancegroups.
+	ExitOnFirstError bool
+
 	// DrainTimeout is the maximum time to wait while draining a node.
 	DrainTimeout time.Duration
 
@@ -151,6 +155,7 @@ func (o *RollingUpdateOptions) InitDefaults() {
 	o.CloudOnly = false
 	o.FailOnDrainError = false
 	o.FailOnValidate = true
+	o.ExitOnFirstError = false
 
 	o.ControlPlaneInterval = 15 * time.Second
 	o.NodeInterval = 15 * time.Second
@@ -208,6 +213,7 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().BoolVar(&options.FailOnDrainError, "fail-on-drain-error", true, "Fail if draining a node fails")
 	cmd.Flags().BoolVar(&options.FailOnValidate, "fail-on-validate-error", true, "Fail if the cluster fails to validate")
+	cmd.Flags().BoolVar(&options.ExitOnFirstError, "exit-on-first-error", false, "Exit on the first node or apiserver instancegroup error")
 
 	cmd.Flags().SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {
 		switch name {
@@ -362,6 +368,7 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 		ValidationTimeout: options.ValidationTimeout,
 		ValidateCount:     int(options.ValidateCount),
 		DrainTimeout:      options.DrainTimeout,
+		ExitOnFirstError:  options.ExitOnFirstError,
 		// TODO should we expose this to the UI?
 		ValidateTickDuration:    30 * time.Second,
 		ValidateSuccessDuration: 10 * time.Second,

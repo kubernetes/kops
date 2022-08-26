@@ -82,6 +82,11 @@ type RollingUpdateCluster struct {
 	// DrainTimeout is the maximum amount of time to wait while draining a node.
 	DrainTimeout time.Duration
 
+	// ExitOnFirstError ensures the rolling update stops on the first error returned by any
+	// node or apiserver instancegroup. The default is `false` which will try to roll every instance
+	// group in serial and then return any errors.
+	ExitOnFirstError bool
+
 	// Options holds user-specified options
 	Options RollingUpdateOptions
 }
@@ -187,11 +192,11 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 
 		for _, k := range sortGroups(apiServerGroups) {
 			err := c.rollingUpdateInstanceGroup(apiServerGroups[k], c.NodeInterval)
-			results[k] = err
-			if err != nil {
-				klog.Errorf("failed to roll InstanceGroup %q: %v", k, err)
+			if err != nil && c.ExitOnFirstError {
+				return err
 			}
-			// TODO: Bail on error?
+
+			results[k] = err
 		}
 	}
 
@@ -209,11 +214,11 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 
 		for _, k := range sortGroups(nodeGroups) {
 			err := c.rollingUpdateInstanceGroup(nodeGroups[k], c.NodeInterval)
-			results[k] = err
-			if err != nil {
-				klog.Errorf("failed to roll InstanceGroup %q: %v", k, err)
+			if err != nil && c.ExitOnFirstError {
+				return err
 			}
-			// TODO: Bail on error?
+
+			results[k] = err
 		}
 	}
 
