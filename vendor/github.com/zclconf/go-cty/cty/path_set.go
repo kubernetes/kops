@@ -11,14 +11,14 @@ import (
 // to talk about a subset of paths within a value that meet some criteria,
 // without directly modifying the values at those paths.
 type PathSet struct {
-	set set.Set
+	set set.Set[Path]
 }
 
 // NewPathSet creates and returns a PathSet, with initial contents optionally
 // set by the given arguments.
 func NewPathSet(paths ...Path) PathSet {
 	ret := PathSet{
-		set: set.NewSet(pathSetRules{}),
+		set: set.NewSet(set.Rules[Path](pathSetRules{})),
 	}
 
 	for _, path := range paths {
@@ -61,7 +61,7 @@ func (s PathSet) List() []Path {
 	}
 	ret := make([]Path, 0, s.set.Length())
 	for it := s.set.Iterator(); it.Next(); {
-		ret = append(ret, it.Value().(Path))
+		ret = append(ret, it.Value())
 	}
 	return ret
 }
@@ -134,8 +134,7 @@ var indexStepPlaceholder = []byte("#")
 type pathSetRules struct {
 }
 
-func (r pathSetRules) Hash(v interface{}) int {
-	path := v.(Path)
+func (r pathSetRules) Hash(path Path) int {
 	hash := crc64.New(crc64Table)
 
 	for _, rawStep := range path {
@@ -159,10 +158,7 @@ func (r pathSetRules) Hash(v interface{}) int {
 	return int(hash.Sum64())
 }
 
-func (r pathSetRules) Equivalent(a, b interface{}) bool {
-	aPath := a.(Path)
-	bPath := b.(Path)
-
+func (r pathSetRules) Equivalent(aPath, bPath Path) bool {
 	if len(aPath) != len(bPath) {
 		return false
 	}
@@ -198,7 +194,7 @@ func (r pathSetRules) Equivalent(a, b interface{}) bool {
 }
 
 // SameRules is true if both Rules instances are pathSetRules structs.
-func (r pathSetRules) SameRules(other set.Rules) bool {
+func (r pathSetRules) SameRules(other set.Rules[Path]) bool {
 	_, ok := other.(pathSetRules)
 	return ok
 }
