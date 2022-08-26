@@ -135,7 +135,7 @@ containerRuntime: containerd
 containerd:
   logLevel: info
   runc:
-    version: 1.1.3
+    version: 1.1.4
   version: 1.6.8
 docker:
   skipInstall: true
@@ -170,7 +170,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal-ipv6.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: RBiMb6U6OpYXFTU8SbRacJwq5vl0D1zicQG1sPx076Y=
+NodeupConfigHash: j9LyBJ0pLkBXA4Oyd8fhmpHRKlMprTsFGYNtM6Nk7Gw=
 
 __EOF_KUBE_ENV
 
