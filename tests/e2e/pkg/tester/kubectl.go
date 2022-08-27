@@ -21,20 +21,26 @@ import (
 	"compress/gzip"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"os"
-	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
 
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/kubetest2/pkg/artifacts"
 	"sigs.k8s.io/kubetest2/pkg/exec"
 )
 
-// AcquireKubectl obtains kubectl and places it in a temporary directory
-func (t *Tester) AcquireKubectl() (string, error) {
+// AcquireKubectl obtains kubectl and places it in rundir
+// If a kubectl already exists in rundir, it will be reused.
+func (t *Tester) AcquireKubectl() error {
+	if _, err := os.Stat(KubectlPath()); errors.Is(err, os.ErrNotExist) {
+		klog.Infof("found kubectl in %s. Will reuse it.", KubectlPath())
+	}
+
 	// first, get the name of the latest release (e.g. v1.20.0-alpha.0)
 	if t.TestPackageVersion == "" {
 		cmd := exec.Command(
@@ -44,10 +50,10 @@ func (t *Tester) AcquireKubectl() (string, error) {
 		)
 		lines, err := exec.OutputLines(cmd)
 		if err != nil {
-			return "", fmt.Errorf("failed to get latest release name: %s", err)
+			return fmt.Errorf("failed to get latest release name: %w", err)
 		}
 		if len(lines) == 0 {
-			return "", fmt.Errorf("getting latest release name had no output")
+			return fmt.Errorf("getting latest release name had no output")
 		}
 		t.TestPackageVersion = lines[0]
 
@@ -58,35 +64,30 @@ func (t *Tester) AcquireKubectl() (string, error) {
 
 	downloadDir, err := os.UserCacheDir()
 	if err != nil {
-		return "", fmt.Errorf("failed to get user cache directory: %v", err)
+		return fmt.Errorf("failed to get user cache directory: %w", err)
 	}
 
 	downloadPath := filepath.Join(downloadDir, clientTar)
 
 	if err := t.ensureClientTar(downloadPath, clientTar); err != nil {
-		return "", err
+		return err
 	}
 
 	return t.extractBinaries(downloadPath)
 }
 
-func (t *Tester) extractBinaries(downloadPath string) (string, error) {
+func (t *Tester) extractBinaries(downloadPath string) error {
 	// finally, search for the client package and extract it
 	f, err := os.Open(downloadPath)
 	if err != nil {
-		return "", fmt.Errorf("failed to open downloaded tar at %s: %s", downloadPath, err)
+		return fmt.Errorf("failed to open downloaded tar at %s: %w", downloadPath, err)
 	}
 	defer f.Close()
 	gzf, err := gzip.NewReader(f)
 	if err != nil {
-		return "", fmt.Errorf("failed to create gzip reader: %s", err)
+		return fmt.Errorf("failed to create gzip reader: %w", err)
 	}
 	tarReader := tar.NewReader(gzf)
-
-	kubectlDir, err := os.MkdirTemp("", "kubectl")
-	if err != nil {
-		return "", err
-	}
 
 	// this is the expected path of the package inside the tar
 	// it will be extracted to kubectlDir in the loop
@@ -97,28 +98,27 @@ func (t *Tester) extractBinaries(downloadPath string) (string, error) {
 			break
 		}
 		if err != nil {
-			return "", fmt.Errorf("error during tar read: %s", err)
+			return fmt.Errorf("error during tar read: %w", err)
 		}
-
 		if header.Name == kubectlPackagePath {
-			kubectlPath := path.Join(kubectlDir, "kubectl")
+			kubectlPath := KubectlPath()
 			outFile, err := os.Create(kubectlPath)
 			if err != nil {
-				return "", fmt.Errorf("error creating file at %s: %s", kubectlPath, err)
+				return fmt.Errorf("error creating file at %s: %w", kubectlPath, err)
 			}
 			defer outFile.Close()
 
 			if err := outFile.Chmod(0o700); err != nil {
-				return "", fmt.Errorf("failed to make %s executable: %s", kubectlPath, err)
+				return fmt.Errorf("failed to make %s executable: %w", kubectlPath, err)
 			}
 
 			if _, err := io.Copy(outFile, tarReader); err != nil {
-				return "", fmt.Errorf("error reading data from tar with header name %s: %s", header.Name, err)
+				return fmt.Errorf("error reading data from tar with header name %s: %w", header.Name, err)
 			}
-			return kubectlPath, nil
+			return nil
 		}
 	}
-	return "", fmt.Errorf("failed to find %s in %s", kubectlPackagePath, downloadPath)
+	return fmt.Errorf("failed to find %s in %s", kubectlPackagePath, downloadPath)
 }
 
 // ensureClientTar checks if the kubernetes client tarball already exists
@@ -192,4 +192,8 @@ func sha256sum(path string) (string, error) {
 		return "", err
 	}
 	return hex.EncodeToString(h.Sum(nil)), nil
+}
+
+func KubectlPath() string {
+	return artifacts.RunDir() + "/kubectl"
 }
