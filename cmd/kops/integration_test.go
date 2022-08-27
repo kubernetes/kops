@@ -196,6 +196,10 @@ func (i integrationTest) withDefaultAddons24() *integrationTest {
 	)
 }
 
+func (i integrationTest) withDefaults24() *integrationTest {
+	return i.withDefaultAddons24().withDefaultServiceAccountRoles24()
+}
+
 const (
 	awsAuthenticatorAddon = "authentication.aws-k8s-1.12"
 	awsCCMAddon           = "aws-cloud-controller.addons.k8s.io-k8s-1.18"
@@ -797,8 +801,7 @@ func TestKarpenter(t *testing.T) {
 
 	test := newIntegrationTest("minimal.example.com", "karpenter").
 		withOIDCDiscovery().
-		withAddons(dnsControllerAddon).
-		withServiceAccountRole("dns-controller.kube-system", true).
+		withDefaults24().
 		withAddons("karpenter.sh-k8s-1.19").
 		withServiceAccountRole("karpenter.kube-system", true)
 	test.expectTerraformFilenames = append(test.expectTerraformFilenames,

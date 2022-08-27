@@ -1038,6 +1038,8 @@ spec:
       - env:
         - name: AWS_ENI_LIMITED_POD_DENSITY
           value: "true"
+        - name: AWS_NODE_NAME_CONVENTION
+          value: resource-name
         - name: AWS_REGION
           value: us-test-1
         - name: CLUSTER_NAME
@@ -1373,7 +1375,7 @@ webhooks:
 
 ---
 
-apiVersion: policy/v1beta1
+apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   creationTimestamp: null
@@ -1402,6 +1404,11 @@ metadata:
 spec:
   consolidation:
     enabled: true
+  kubeletConfiguration:
+    maxPods: 50
+    systemReserved:
+      cpu: 500m
+      memory: 1G
   provider:
     launchTemplate: karpenter-nodes-default.minimal.example.com
     subnetSelector:
@@ -1420,6 +1427,9 @@ spec:
     operator: In
     values:
     - c5.large
+  startupTaints:
+  - effect: NoSchedule
+    key: node.cloudprovider.kubernetes.io/uninitialized
 
 ---
 
@@ -1453,3 +1463,6 @@ spec:
     operator: In
     values:
     - t2.medium
+  startupTaints:
+  - effect: NoSchedule
+    key: node.cloudprovider.kubernetes.io/uninitialized

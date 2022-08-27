@@ -1142,6 +1142,20 @@ metadata:
 spec:
   consolidation:
     enabled: true
+{{ with $spec.Kubelet }}
+{{ if or .MaxPods .SystemReserved }}
+  kubeletConfiguration:
+    {{ if .MaxPods }}
+    maxPods: {{ .MaxPods }}
+    {{ end }}
+    {{ if .SystemReserved }}
+    systemReserved:
+      {{ range $key, $val := .SystemReserved}}
+      {{ $key }}: "{{ $val }}"
+      {{ end }}
+    {{ end }}
+{{ end }}
+{{ end }}
   requirements:
     - key: karpenter.sh/capacity-type
       operator: In
@@ -1164,7 +1178,12 @@ spec:
     {{ if $taint.value }}
     value: "{{ $taint.value }}"
     {{ end }}
+    {{ end }}
 {{ end }}
+{{ if $.ExternalCloudControllerManager }}
+  startupTaints:
+    - key: node.cloudprovider.kubernetes.io/uninitialized
+      effect: NoSchedule
 {{ end }}
 {{ with $spec.NodeLabels }}
   labels:
