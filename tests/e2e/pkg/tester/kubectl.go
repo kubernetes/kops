@@ -17,24 +17,23 @@ limitations under the License.
 package tester
 
 import (
-	"archive/tar"
-	"compress/gzip"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
 	"io"
 	"os"
-	"path"
-	"path/filepath"
 	"runtime"
 	"strings"
 
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/kubetest2/pkg/artifacts"
 	"sigs.k8s.io/kubetest2/pkg/exec"
 )
 
-// AcquireKubectl obtains kubectl and places it in a temporary directory
-func (t *Tester) AcquireKubectl() (string, error) {
+// AcquireKubectl obtains kubectl and places it in rundir
+// If a kubectl already exists in rundir, it will be reused.
+func (t *Tester) AcquireKubectl() error {
+
 	// first, get the name of the latest release (e.g. v1.20.0-alpha.0)
 	if t.TestPackageVersion == "" {
 		cmd := exec.Command(
@@ -44,91 +43,29 @@ func (t *Tester) AcquireKubectl() (string, error) {
 		)
 		lines, err := exec.OutputLines(cmd)
 		if err != nil {
-			return "", fmt.Errorf("failed to get latest release name: %s", err)
+			return fmt.Errorf("failed to get latest release name: %w", err)
 		}
 		if len(lines) == 0 {
-			return "", fmt.Errorf("getting latest release name had no output")
+			return fmt.Errorf("getting latest release name had no output")
 		}
 		t.TestPackageVersion = lines[0]
 
 		klog.Infof("Kubectl package version was not specified. Defaulting to version from %s: %s", t.TestPackageMarker, t.TestPackageVersion)
 	}
 
-	clientTar := fmt.Sprintf("kubernetes-client-%s-%s.tar.gz", runtime.GOOS, runtime.GOARCH)
-
-	downloadDir, err := os.UserCacheDir()
-	if err != nil {
-		return "", fmt.Errorf("failed to get user cache directory: %v", err)
+	if err := t.ensureKubectl(); err != nil {
+		return err
 	}
-
-	downloadPath := filepath.Join(downloadDir, clientTar)
-
-	if err := t.ensureClientTar(downloadPath, clientTar); err != nil {
-		return "", err
-	}
-
-	return t.extractBinaries(downloadPath)
+	return nil
 }
 
-func (t *Tester) extractBinaries(downloadPath string) (string, error) {
-	// finally, search for the client package and extract it
-	f, err := os.Open(downloadPath)
-	if err != nil {
-		return "", fmt.Errorf("failed to open downloaded tar at %s: %s", downloadPath, err)
-	}
-	defer f.Close()
-	gzf, err := gzip.NewReader(f)
-	if err != nil {
-		return "", fmt.Errorf("failed to create gzip reader: %s", err)
-	}
-	tarReader := tar.NewReader(gzf)
-
-	kubectlDir, err := os.MkdirTemp("", "kubectl")
-	if err != nil {
-		return "", err
-	}
-
-	// this is the expected path of the package inside the tar
-	// it will be extracted to kubectlDir in the loop
-	kubectlPackagePath := "kubernetes/client/bin/kubectl"
-	for {
-		header, err := tarReader.Next()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return "", fmt.Errorf("error during tar read: %s", err)
-		}
-
-		if header.Name == kubectlPackagePath {
-			kubectlPath := path.Join(kubectlDir, "kubectl")
-			outFile, err := os.Create(kubectlPath)
-			if err != nil {
-				return "", fmt.Errorf("error creating file at %s: %s", kubectlPath, err)
-			}
-			defer outFile.Close()
-
-			if err := outFile.Chmod(0o700); err != nil {
-				return "", fmt.Errorf("failed to make %s executable: %s", kubectlPath, err)
-			}
-
-			if _, err := io.Copy(outFile, tarReader); err != nil {
-				return "", fmt.Errorf("error reading data from tar with header name %s: %s", header.Name, err)
-			}
-			return kubectlPath, nil
-		}
-	}
-	return "", fmt.Errorf("failed to find %s in %s", kubectlPackagePath, downloadPath)
-}
-
-// ensureClientTar checks if the kubernetes client tarball already exists
-// and verifies the hashes
-// else downloads it from GCS
-func (t *Tester) ensureClientTar(downloadPath, clientTar string) error {
-	if _, err := os.Stat(downloadPath); err == nil {
-		klog.V(0).Infof("Found existing tar at %v", downloadPath)
-		if err := t.compareSHA(downloadPath, clientTar); err == nil {
-			klog.V(0).Infof("Validated hash for existing tar at %v", downloadPath)
+// ensureKubectl checks if the kubectl binary already exists
+// and verifies the hashes else downloads it from GCS
+func (t *Tester) ensureKubectl() error {
+	if _, err := os.Stat(KubectlPath()); err == nil {
+		klog.V(0).Infof("Found existing kubectl at %s", KubectlPath())
+		if err := t.compareSHA(); err == nil {
+			klog.V(0).Infof("Validated hash for existing kubectl binary at %v", KubectlPath())
 			return nil
 		}
 		klog.Warning(err)
@@ -136,48 +73,46 @@ func (t *Tester) ensureClientTar(downloadPath, clientTar string) error {
 
 	args := []string{
 		"gsutil", "cp",
-		fmt.Sprintf(
-			"gs://%s/%s/%s/%s",
-			t.TestPackageBucket,
-			t.TestPackageDir,
-			t.TestPackageVersion,
-			clientTar,
-		),
-		downloadPath,
+		t.kubectlGSLocation(),
+		KubectlPath(),
 	}
 	klog.Info(strings.Join(args, " "))
 
 	cmd := exec.Command(args[0], args[1:]...)
 	exec.InheritOutput(cmd)
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed to download release tar %s for release %s: %s", clientTar, t.TestPackageVersion, err)
+		return fmt.Errorf("failed to download kubectl binary for release %s: %s", t.TestPackageVersion, err)
 	}
+	os.Chmod(KubectlPath(), os.FileMode(0o700))
 	return nil
 }
 
-func (t *Tester) compareSHA(downloadPath string, clientTar string) error {
-	cmd := exec.Command("gsutil", "cat",
-		fmt.Sprintf(
-			"gs://%s/%s/%s/%s",
-			t.TestPackageBucket,
-			t.TestPackageDir,
-			t.TestPackageVersion,
-			clientTar+".sha256",
-		),
-	)
+func (t *Tester) compareSHA() error {
+	cmd := exec.Command("gsutil", "cat", t.kubectlGSLocation()+".sha256")
 	expectedSHABytes, err := exec.Output(cmd)
 	if err != nil {
-		return fmt.Errorf("failed to get sha256 for release tar %s for release %s: %s", clientTar, t.TestPackageVersion, err)
+		return fmt.Errorf("failed to get sha256 for kubectl binary for release %s: %s", t.TestPackageVersion, err)
 	}
 	expectedSHA := strings.TrimSuffix(string(expectedSHABytes), "\n")
-	actualSHA, err := sha256sum(downloadPath)
+	actualSHA, err := sha256sum(KubectlPath())
 	if err != nil {
-		return fmt.Errorf("failed to compute sha256 for %q: %v", downloadPath, err)
+		return fmt.Errorf("failed to compute sha256 for %q: %v", KubectlPath(), err)
 	}
 	if actualSHA != expectedSHA {
 		return fmt.Errorf("sha256 does not match")
 	}
 	return nil
+}
+
+func (t *Tester) kubectlGSLocation() string {
+	return fmt.Sprintf(
+		"gs://%s/%s/%s/bin/%s/%s/kubectl",
+		t.TestPackageBucket,
+		t.TestPackageDir,
+		t.TestPackageVersion,
+		runtime.GOOS,
+		runtime.GOARCH,
+	)
 }
 
 func sha256sum(path string) (string, error) {
@@ -192,4 +127,8 @@ func sha256sum(path string) (string, error) {
 		return "", err
 	}
 	return hex.EncodeToString(h.Sum(nil)), nil
+}
+
+func KubectlPath() string {
+	return artifacts.RunDir() + "/kubectl"
 }

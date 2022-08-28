@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 
 	"github.com/octago/sflags/gen/gpflag"
@@ -42,15 +41,11 @@ type Tester struct {
 }
 
 func (t *Tester) pretestSetup() error {
-	kubectlPath, err := t.AcquireKubectl()
+	err := t.AcquireKubectl()
 	if err != nil {
 		return fmt.Errorf("failed to get kubectl package from published releases: %s", err)
 	}
-
-	existingPath := os.Getenv("PATH")
-	newPath := fmt.Sprintf("%v:%v", filepath.Dir(kubectlPath), existingPath)
-	klog.Info("Setting PATH=", newPath)
-	return os.Setenv("PATH", newPath)
+	return nil
 }
 
 // parseKubeconfig will get the current kubeconfig, and extract the specified field by jsonpath.
