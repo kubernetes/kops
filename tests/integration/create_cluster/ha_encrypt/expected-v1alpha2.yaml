@@ -84,7 +84,7 @@ metadata:
     kops.k8s.io/cluster: ha.example.com
   name: master-us-test-1a
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220615
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220810
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -102,7 +102,7 @@ metadata:
     kops.k8s.io/cluster: ha.example.com
   name: master-us-test-1b
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220615
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220810
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -120,7 +120,7 @@ metadata:
     kops.k8s.io/cluster: ha.example.com
   name: master-us-test-1c
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220615
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220810
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -138,7 +138,7 @@ metadata:
     kops.k8s.io/cluster: ha.example.com
   name: nodes-us-test-1a
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220615
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220810
   machineType: t2.medium
   maxSize: 1
   minSize: 1
@@ -156,7 +156,7 @@ metadata:
     kops.k8s.io/cluster: ha.example.com
   name: nodes-us-test-1b
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220615
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220810
   machineType: t2.medium
   maxSize: 1
   minSize: 1
@@ -174,7 +174,7 @@ metadata:
     kops.k8s.io/cluster: ha.example.com
   name: nodes-us-test-1c
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220615
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220810
   machineType: t2.medium
   maxSize: 1
   minSize: 1
