@@ -130,7 +130,7 @@ func getCustomS3Config(endpoint string, region string) (*aws.Config, error) {
 	return s3Config, nil
 }
 
-func (s *S3Context) getDetailsForBucket(bucket string) (*S3BucketDetails, error) {
+func (s *S3Context) getDetailsForBucket(bucket string, expectedBucketOwner string) (*S3BucketDetails, error) {
 	s.mutex.Lock()
 	bucketDetails := s.bucketDetails[bucket]
 	s.mutex.Unlock()
@@ -181,6 +181,9 @@ func (s *S3Context) getDetailsForBucket(bucket string) (*S3BucketDetails, error)
 
 	request := &s3.GetBucketLocationInput{
 		Bucket: &bucket,
+	}
+	if expectedBucketOwner != "" {
+		request.ExpectedBucketOwner = &expectedBucketOwner
 	}
 	var response *s3.GetBucketLocationOutput
 

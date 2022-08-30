@@ -42,11 +42,14 @@ type S3Path struct {
 	key           string
 	etag          *string
 
-	// scheme is configurable in case an S3 compatible custom
+	// scheme is configurable in case an S3-compatible custom
 	// endpoint is specified
 	scheme string
-	// sse specifies if server side encryption should be enabled
+	// sse specifies if server-side encryption should be enabled
 	sse bool
+	// expectedBucketOwner is the AWS account ID that owns the S3 bucket, if different from the
+	// account to which we're authenticated
+	expectedBucketOwner string
 }
 
 var (
@@ -60,16 +63,17 @@ type S3Acl struct {
 	RequestACL *string
 }
 
-func newS3Path(s3Context *S3Context, scheme string, bucket string, key string, sse bool) *S3Path {
+func newS3Path(s3Context *S3Context, scheme string, bucket string, key string, sse bool, expectedBucketOwner string) *S3Path {
 	bucket = strings.TrimSuffix(bucket, "/")
 	key = strings.TrimPrefix(key, "/")
 
 	return &S3Path{
-		s3Context: s3Context,
-		bucket:    bucket,
-		key:       key,
-		scheme:    scheme,
-		sse:       sse,
+		s3Context:           s3Context,
+		bucket:              bucket,
+		key:                 key,
+		scheme:              scheme,
+		sse:                 sse,
+		expectedBucketOwner: expectedBucketOwner,
 	}
 }
 
@@ -115,6 +119,9 @@ func (p *S3Path) Remove() error {
 	request := &s3.DeleteObjectInput{}
 	request.Bucket = aws.String(p.bucket)
 	request.Key = aws.String(p.key)
+	if p.expectedBucketOwner != "" {
+		request.ExpectedBucketOwner = &p.expectedBucketOwner
+	}
 
 	_, err = client.DeleteObject(request)
 	if err != nil {
@@ -137,6 +144,9 @@ func (p *S3Path) RemoveAllVersions() error {
 	request := &s3.ListObjectVersionsInput{
 		Bucket: aws.String(p.bucket),
 		Prefix: aws.String(p.key),
+	}
+	if p.expectedBucketOwner != "" {
+		request.ExpectedBucketOwner = &p.expectedBucketOwner
 	}
 
 	var versions []*s3.ObjectVersion
@@ -176,6 +186,9 @@ func (p *S3Path) RemoveAllVersions() error {
 			Bucket: aws.String(p.bucket),
 			Delete: &s3.Delete{},
 		}
+		if p.expectedBucketOwner != "" {
+			request.ExpectedBucketOwner = &p.expectedBucketOwner
+		}
 
 		// DeleteObjects can only process 1000 objects per call
 		if len(objects) > 1000 {
@@ -202,11 +215,12 @@ func (p *S3Path) Join(relativePath ...string) Path {
 	args = append(args, relativePath...)
 	joined := path.Join(args...)
 	return &S3Path{
-		s3Context: p.s3Context,
-		bucket:    p.bucket,
-		key:       joined,
-		scheme:    p.scheme,
-		sse:       p.sse,
+		s3Context:           p.s3Context,
+		bucket:              p.bucket,
+		key:                 joined,
+		scheme:              p.scheme,
+		sse:                 p.sse,
+		expectedBucketOwner: p.expectedBucketOwner,
 	}
 }
 
@@ -262,6 +276,9 @@ func (p *S3Path) WriteFile(data io.ReadSeeker, aclObj ACL) error {
 	request.Body = data
 	request.Bucket = aws.String(p.bucket)
 	request.Key = aws.String(p.key)
+	if p.expectedBucketOwner != "" {
+		request.ExpectedBucketOwner = &p.expectedBucketOwner
+	}
 
 	var sseLog string
 	request.ServerSideEncryption, sseLog, _ = p.getServerSideEncryption()
@@ -331,6 +348,9 @@ func (p *S3Path) WriteTo(out io.Writer) (int64, error) {
 	request := &s3.GetObjectInput{}
 	request.Bucket = aws.String(p.bucket)
 	request.Key = aws.String(p.key)
+	if p.expectedBucketOwner != "" {
+		request.ExpectedBucketOwner = &p.expectedBucketOwner
+	}
 
 	response, err := client.GetObject(request)
 	if err != nil {
@@ -362,6 +382,9 @@ func (p *S3Path) ReadDir() ([]Path, error) {
 	request.Bucket = aws.String(p.bucket)
 	request.Prefix = aws.String(prefix)
 	request.Delimiter = aws.String("/")
+	if p.expectedBucketOwner != "" {
+		request.ExpectedBucketOwner = &p.expectedBucketOwner
+	}
 
 	klog.V(4).Infof("Listing objects in S3 bucket %q with prefix %q", p.bucket, prefix)
 	var paths []Path
@@ -377,12 +400,13 @@ func (p *S3Path) ReadDir() ([]Path, error) {
 				continue
 			}
 			child := &S3Path{
-				s3Context: p.s3Context,
-				bucket:    p.bucket,
-				key:       key,
-				etag:      o.ETag,
-				scheme:    p.scheme,
-				sse:       p.sse,
+				s3Context:           p.s3Context,
+				bucket:              p.bucket,
+				key:                 key,
+				etag:                o.ETag,
+				scheme:              p.scheme,
+				sse:                 p.sse,
+				expectedBucketOwner: p.expectedBucketOwner,
 			}
 			paths = append(paths, child)
 		}
@@ -409,18 +433,22 @@ func (p *S3Path) ReadTree() ([]Path, error) {
 	}
 	request.Prefix = aws.String(prefix)
 	// No delimiter for recursive search
+	if p.expectedBucketOwner != "" {
+		request.ExpectedBucketOwner = &p.expectedBucketOwner
+	}
 
 	var paths []Path
 	err = client.ListObjectsPages(request, func(page *s3.ListObjectsOutput, lastPage bool) bool {
 		for _, o := range page.Contents {
 			key := aws.StringValue(o.Key)
 			child := &S3Path{
-				s3Context: p.s3Context,
-				bucket:    p.bucket,
-				key:       key,
-				etag:      o.ETag,
-				scheme:    p.scheme,
-				sse:       p.sse,
+				s3Context:           p.s3Context,
+				bucket:              p.bucket,
+				key:                 key,
+				etag:                o.ETag,
+				scheme:              p.scheme,
+				sse:                 p.sse,
+				expectedBucketOwner: p.expectedBucketOwner,
 			}
 			paths = append(paths, child)
 		}
@@ -434,7 +462,7 @@ func (p *S3Path) ReadTree() ([]Path, error) {
 
 func (p *S3Path) ensureBucketDetails() error {
 	if p.bucketDetails == nil || p.bucketDetails.region == "" {
-		bucketDetails, err := p.s3Context.getDetailsForBucket(p.bucket)
+		bucketDetails, err := p.s3Context.getDetailsForBucket(p.bucket, p.expectedBucketOwner)
 
 		p.bucketDetails = bucketDetails
 		if err != nil {
@@ -488,7 +516,7 @@ func (p *S3Path) Hash(a hashing.HashAlgorithm) (*hashing.Hash, error) {
 
 func (p *S3Path) GetHTTPsUrl(dualstack bool) (string, error) {
 	if p.bucketDetails == nil {
-		bucketDetails, err := p.s3Context.getDetailsForBucket(p.bucket)
+		bucketDetails, err := p.s3Context.getDetailsForBucket(p.bucket, p.expectedBucketOwner)
 		if err != nil {
 			return "", fmt.Errorf("failed to get bucket details for %q: %w", p.String(), err)
 		}
@@ -508,10 +536,14 @@ func (p *S3Path) IsPublic() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	acl, err := client.GetObjectAcl(&s3.GetObjectAclInput{
+	request := &s3.GetObjectAclInput{
 		Bucket: &p.bucket,
 		Key:    &p.key,
-	})
+	}
+	if p.expectedBucketOwner != "" {
+		request.ExpectedBucketOwner = &p.expectedBucketOwner
+	}
+	acl, err := client.GetObjectAcl(request)
 	if err != nil {
 		return false, fmt.Errorf("failed to get grant for key %q in bucket %q: %w", p.key, p.bucket, err)
 	}

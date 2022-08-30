@@ -21,6 +21,57 @@ import (
 	"testing"
 )
 
+func TestBuildS3Path(t *testing.T) {
+	grid := []struct {
+		description         string
+		url                 string
+		scheme              string
+		bucket              string
+		expectedBucketOwner string
+	}{
+		{
+			description:         "S3 URL with no expected bucket owner",
+			url:                 "s3://kops-oidc/my-cluster",
+			scheme:              "s3",
+			bucket:              "kops-oidc",
+			expectedBucketOwner: "",
+		},
+		{
+			description:         "S3 URL with single expected bucket owner",
+			url:                 "s3://kops-oidc/my-cluster?x-amz-expected-bucket-owner=123456789012",
+			scheme:              "s3",
+			bucket:              "kops-oidc",
+			expectedBucketOwner: "123456789012",
+		},
+		{
+			description:         "S3 URL with multiple expected bucket owners",
+			url:                 "s3://kops-oidc/my-cluster?x-amz-expected-bucket-owner=123456789012&x-amz-expected-bucket-owner=234567890123",
+			scheme:              "s3",
+			bucket:              "kops-oidc",
+			expectedBucketOwner: "123456789012",
+		},
+	}
+
+	for _, g := range grid {
+		t.Run(g.description, func(t *testing.T) {
+			context := &VFSContext{}
+			p, err := context.buildS3Path(g.url)
+			if err != nil {
+				t.Fatalf("Unexepcted error for %q: %v", g.url, err)
+			}
+			if want, got := g.bucket, p.bucket; want != got {
+				t.Errorf("Unexpected S3 bucket: expected %q, actual %q", want, got)
+			}
+			if want, got := g.scheme, p.scheme; want != got {
+				t.Errorf("Unexpected S3 URL scheme: expected %q, actual %q", want, got)
+			}
+			if want, got := g.expectedBucketOwner, p.expectedBucketOwner; want != got {
+				t.Errorf("Unexpected S3 bucket owner: expected %q, actual %q", want, got)
+			}
+		})
+	}
+}
+
 func TestBuildVaultPath(t *testing.T) {
 	token := os.Getenv("VAULT_DEV_ROOT_TOKEN_ID")
 	if token == "" {
