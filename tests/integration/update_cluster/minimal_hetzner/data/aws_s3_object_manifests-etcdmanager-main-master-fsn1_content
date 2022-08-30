@@ -15,8 +15,9 @@ spec:
       --backup-store=memfs://tests/minimal.k8s.local/backups/etcd/main --client-urls=https://__name__:4001
       --cluster-name=etcd --containerized=true --dns-suffix=internal.minimal.k8s.local
       --grpc-port=3996 --peer-urls=https://__name__:2380 --quarantine-client-urls=https://__name__:3994
-      --v=6 --volume-provider=hetzner --volume-tag=kops.k8s.io/cluster=minimal.k8s.local
-      --volume-tag=kops.k8s.io/volume-role=main > /tmp/pipe 2>&1
+      --v=6 --volume-name-tag=kops.k8s.io/instance-group=master-fsn1 --volume-provider=hetzner
+      --volume-tag=kops.k8s.io/cluster=minimal.k8s.local --volume-tag=kops.k8s.io/volume-role=main
+      > /tmp/pipe 2>&1
     env:
     - name: HCLOUD_TOKEN
       value: REDACTED
