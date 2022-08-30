@@ -429,6 +429,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 				fmt.Sprintf("%s=%s", hetzner.TagKubernetesClusterName, b.Cluster.Name),
 				fmt.Sprintf("%s=%s", hetzner.TagKubernetesVolumeRole, etcdCluster.Name),
 			}
+			config.VolumeNameTag = fmt.Sprintf("%s=%s", hetzner.TagKubernetesInstanceGroup, instanceGroupName)
 
 		case kops.CloudProviderOpenstack:
 			config.VolumeProvider = "openstack"
