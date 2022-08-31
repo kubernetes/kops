@@ -4705,6 +4705,12 @@ spec:
             # Controls the log level used by the BPF programs
             - name: FELIX_BPFLOGLEVEL
               value: "{{- or .Networking.Calico.BPFLogLevel "Off" }}"
+            # Temporary workaround for https://github.com/projectcalico/calico/issues/6522,
+            # allowing reply packets from containers using host ports to flow through DNAT reversal properly.
+            {{- if .Networking.Calico.BPFEnabled }}
+            - name: FELIX_BPFHostConntrackBypass
+              value: "false"
+            {{- end }}
             # Controls whether Felix inserts rules to the top of iptables chains, or appends to the bottom
             - name: FELIX_CHAININSERTMODE
               value: "{{- or .Networking.Calico.ChainInsertMode "insert" }}"
