@@ -168,7 +168,7 @@ func awsValidateInstanceTypeAndImage(instanceTypeFieldPath *field.Path, imageFie
 	imageInfo, err := cloud.ResolveImage(image)
 	if err != nil {
 		return append(allErrs, field.Invalid(imageFieldPath, image,
-			fmt.Sprintf("image specified is invalid: %q", image)))
+			fmt.Sprintf("specified image %q is invalid: %s", image, err)))
 	}
 	imageArch := fi.StringValue(imageInfo.Architecture)
 
