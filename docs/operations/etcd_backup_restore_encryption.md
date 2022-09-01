@@ -76,7 +76,7 @@ kubectl get endpoints/kubernetes -o yaml
 
 If you see more address than masters, you will need to remove it manually inside the etcd cluster.
 
-See [etcd administation](etcd-administration.md) how to obtain access to the etcd cluster.
+See [etcd administation](/operations/etcd_administration) how to obtain access to the etcd cluster.
 
 Once you have a working etcd client, run the following:
 ```
