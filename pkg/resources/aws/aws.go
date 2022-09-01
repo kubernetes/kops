@@ -2012,10 +2012,9 @@ func ListIAMRoles(cloud fi.Cloud, clusterName string) ([]*resources.Resource, er
 							klog.Warningf("could not find instance profile %q. Resource may already have been deleted: %v", name, awserror)
 							continue
 						}
-					} else {
-						getRoleErr = fmt.Errorf("calling IAM GetRole on %s: %w", name, err)
-						return false
 					}
+					getRoleErr = fmt.Errorf("calling IAM GetRole on %s: %w", name, err)
+					return false
 				}
 				for _, tag := range roleOutput.Role.Tags {
 					if fi.StringValue(tag.Key) == ownershipTag && fi.StringValue(tag.Value) == "owned" {
