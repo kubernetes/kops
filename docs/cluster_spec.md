@@ -1506,6 +1506,8 @@ spec:
 
 {{ kops_feature_table(kops_added_default='1.21') }}
 
+**Warning**: Enabling the following configuration on an existing cluster can be disruptive due to the control plane provisioning tokens with different issuers. The symptom is that Pods are unable to authenticate to the Kubernetes API. To resolve this, delete Service Account token secrets that exists in the cluster and kill all pods unable to authenticate.
+
 kOps can publish the Kubernetes service account token issuer and configure AWS to trust it
 to authenticate Kubernetes service accounts:
 
