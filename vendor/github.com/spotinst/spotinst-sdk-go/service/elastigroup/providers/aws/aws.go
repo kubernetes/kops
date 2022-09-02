@@ -645,6 +645,7 @@ type LaunchSpecification struct {
 	HealthCheckType                               *string                   `json:"healthCheckType,omitempty"`
 	HealthCheckGracePeriod                        *int                      `json:"healthCheckGracePeriod,omitempty"`
 	HealthCheckUnhealthyDurationBeforeReplacement *int                      `json:"healthCheckUnhealthyDurationBeforeReplacement,omitempty"`
+	Images                                        []*Image                  `json:"images,omitempty"`
 	ImageID                                       *string                   `json:"imageId,omitempty"`
 	KeyPair                                       *string                   `json:"keyPair,omitempty"`
 	UserData                                      *string                   `json:"userData,omitempty"`
@@ -777,6 +778,13 @@ type ENIs struct {
 
 type AMIs struct {
 	ShouldTag *bool `json:"shouldTag,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type Image struct {
+	Id *string `json:"id,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -3955,9 +3963,17 @@ func (o *LaunchSpecification) SetHealthCheckUnhealthyDurationBeforeReplacement(v
 	return o
 }
 
+func (o *LaunchSpecification) SetImages(v []*Image) *LaunchSpecification {
+	if o.Images = v; o.Images == nil {
+		o.nullFields = append(o.nullFields, "Images")
+	}
+	return o
+}
+
 func (o *LaunchSpecification) SetImageId(v *string) *LaunchSpecification {
 	if o.ImageID = v; o.ImageID == nil {
 		o.nullFields = append(o.nullFields, "ImageID")
+
 	}
 	return o
 }
@@ -4310,6 +4326,23 @@ func (o *TargetGroupConfig) SetMatcher(v *Matcher) *TargetGroupConfig {
 func (o *TargetGroupConfig) SetTags(v []*Tag) *TargetGroupConfig {
 	if o.Tags = v; o.Tags == nil {
 		o.nullFields = append(o.nullFields, "Tags")
+	}
+	return o
+}
+
+// endregion
+
+// region Image
+
+func (o Image) MarshalJSON() ([]byte, error) {
+	type noMethod Image
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *Image) SetId(v *string) *Image {
+	if o.Id = v; o.Id == nil {
+		o.nullFields = append(o.nullFields, "Id")
 	}
 	return o
 }
