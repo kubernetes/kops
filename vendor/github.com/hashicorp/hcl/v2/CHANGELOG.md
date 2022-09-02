@@ -1,10 +1,17 @@
 # HCL Changelog
 
+## v2.14.0 (September 1, 2022)
+
+### Enhancements
+
+* ext/typeexpr: Added support for optional object attributes to `TypeConstraint`. Attributes can be wrapped in the special `optional(…)` modifier, allowing the attribute to be omitted while still meeting the type constraint. For more information, [cty's documentation on conversion between object types](https://github.com/zclconf/go-cty/blob/main/docs/convert.md#conversion-between-object-types). ([#549](https://github.com/hashicorp/hcl/pull/549))
+* ext/typeexpr: New function: `TypeConstraintWithDefaults`. In this mode, the `optional(…)` modifier accepts a second argument which can be used as the default value for omitted object attributes. The function returns both a `cty.Type` and associated `Defaults`, the latter of which has an `Apply` method to apply defaults to a given value. ([#549](https://github.com/hashicorp/hcl/pull/549))
+
 ## v2.13.0 (June 22, 2022)
 
 ### Enhancements
 
-* hcl: `hcl.Diagnostic` how has an additional field `Extra` which is intended for carrying arbitrary supporting data ("extra information") related to the diagnostic message, intended to allow diagnostic renderers to optionally tailor the presentation of messages for particular situations. ([#539](https://github.com/hashicorp/hcl/pull/539))
+* hcl: `hcl.Diagnostic` now has an additional field `Extra` which is intended for carrying arbitrary supporting data ("extra information") related to the diagnostic message, intended to allow diagnostic renderers to optionally tailor the presentation of messages for particular situations. ([#539](https://github.com/hashicorp/hcl/pull/539))
 * hclsyntax: When an error occurs during a function call, the returned diagnostics will include _extra information_ (as described in the previous point) about which function was being called and, if the message is about an error returned by the function itself, that raw `error` value without any post-processing. ([#539](https://github.com/hashicorp/hcl/pull/539))
 
 ### Bugs Fixed

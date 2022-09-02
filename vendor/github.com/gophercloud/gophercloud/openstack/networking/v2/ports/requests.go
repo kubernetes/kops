@@ -158,6 +158,11 @@ type UpdateOpts struct {
 	DeviceOwner         *string        `json:"device_owner,omitempty"`
 	SecurityGroups      *[]string      `json:"security_groups,omitempty"`
 	AllowedAddressPairs *[]AddressPair `json:"allowed_address_pairs,omitempty"`
+
+	// RevisionNumber implements extension:standard-attr-revisions. If != "" it
+	// will set revision_number=%s. If the revision number does not match, the
+	// update will fail.
+	RevisionNumber *int `json:"-" h:"If-Match"`
 }
 
 // ToPortUpdateMap builds a request body from UpdateOpts.
@@ -173,8 +178,19 @@ func Update(c *gophercloud.ServiceClient, id string, opts UpdateOptsBuilder) (r 
 		r.Err = err
 		return
 	}
+	h, err := gophercloud.BuildHeaders(opts)
+	if err != nil {
+		r.Err = err
+		return
+	}
+	for k := range h {
+		if k == "If-Match" {
+			h[k] = fmt.Sprintf("revision_number=%s", h[k])
+		}
+	}
 	resp, err := c.Put(updateURL(c, id), b, &r.Body, &gophercloud.RequestOpts{
-		OkCodes: []int{200, 201},
+		MoreHeaders: h,
+		OkCodes:     []int{200, 201},
 	})
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return

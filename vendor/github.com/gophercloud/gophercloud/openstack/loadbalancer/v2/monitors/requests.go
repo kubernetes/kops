@@ -149,19 +149,19 @@ func (opts CreateOpts) ToMonitorCreateMap() (map[string]interface{}, error) {
 }
 
 /*
- Create is an operation which provisions a new Health Monitor. There are
- different types of Monitor you can provision: PING, TCP or HTTP(S). Below
- are examples of how to create each one.
+Create is an operation which provisions a new Health Monitor. There are
+different types of Monitor you can provision: PING, TCP or HTTP(S). Below
+are examples of how to create each one.
 
- Here is an example config struct to use when creating a PING or TCP Monitor:
+Here is an example config struct to use when creating a PING or TCP Monitor:
 
- CreateOpts{Type: TypePING, Delay: 20, Timeout: 10, MaxRetries: 3}
- CreateOpts{Type: TypeTCP, Delay: 20, Timeout: 10, MaxRetries: 3}
+CreateOpts{Type: TypePING, Delay: 20, Timeout: 10, MaxRetries: 3}
+CreateOpts{Type: TypeTCP, Delay: 20, Timeout: 10, MaxRetries: 3}
 
- Here is an example config struct to use when creating a HTTP(S) Monitor:
+Here is an example config struct to use when creating a HTTP(S) Monitor:
 
- CreateOpts{Type: TypeHTTP, Delay: 20, Timeout: 10, MaxRetries: 3,
- HttpMethod: "HEAD", ExpectedCodes: "200", PoolID: "2c946bfc-1804-43ab-a2ff-58f6a762b505"}
+CreateOpts{Type: TypeHTTP, Delay: 20, Timeout: 10, MaxRetries: 3,
+HttpMethod: "HEAD", ExpectedCodes: "200", PoolID: "2c946bfc-1804-43ab-a2ff-58f6a762b505"}
 */
 func Create(c *gophercloud.ServiceClient, opts CreateOptsBuilder) (r CreateResult) {
 	b, err := opts.ToMonitorCreateMap()

@@ -7824,9 +7824,6 @@ func (s *AlarmIdentifier) SetRegion(v string) *AlarmIdentifier {
 //
 // When creating resource record sets for a private hosted zone, note the following:
 //
-//   - Creating geolocation alias resource record sets or latency alias resource
-//     record sets in a private hosted zone is unsupported.
-//
 //   - For information about creating failover resource record sets in a private
 //     hosted zone, see Configuring Failover in a Private Hosted Zone (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-private-hosted-zones.html).
 type AliasTarget struct {
@@ -18052,9 +18049,6 @@ type ResourceRecordSet struct {
 	//
 	//    * You can't create an alias resource record set in a private hosted zone
 	//    to route traffic to a CloudFront distribution.
-	//
-	//    * Creating geolocation alias resource record sets or latency alias resource
-	//    record sets in a private hosted zone is unsupported.
 	//
 	//    * For information about creating failover resource record sets in a private
 	//    hosted zone, see Configuring Failover in a Private Hosted Zone (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-private-hosted-zones.html)
