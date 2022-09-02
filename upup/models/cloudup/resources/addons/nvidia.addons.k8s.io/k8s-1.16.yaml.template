@@ -57,3 +57,229 @@ scheduling:
   - key: nvidia.com/gpu
     operator: Exists
     effect: NoSchedule   
+
+{{ with .Containerd.NvidiaGPU.DCGMExporter }}
+{{ if .Enabled }}
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: dcgm-exporter
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: dcgm-exporter
+    app.kubernetes.io/version: "2.6.10"
+    app.kubernetes.io/component: "dcgm-exporter"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: exporter-metrics-config-map
+  namespace: kube-system
+data:
+  metrics: |
+      # Format
+      # If line starts with a '#' it is considered a comment
+      # DCGM FIELD, Prometheus metric type, help message
+      
+      # Clocks
+      DCGM_FI_DEV_SM_CLOCK,  gauge, SM clock frequency (in MHz).
+      DCGM_FI_DEV_MEM_CLOCK, gauge, Memory clock frequency (in MHz).
+      
+      # Temperature
+      DCGM_FI_DEV_MEMORY_TEMP, gauge, Memory temperature (in C).
+      DCGM_FI_DEV_GPU_TEMP,    gauge, GPU temperature (in C).
+      
+      # Power
+      DCGM_FI_DEV_POWER_USAGE,              gauge, Power draw (in W).
+      DCGM_FI_DEV_TOTAL_ENERGY_CONSUMPTION, counter, Total energy consumption since boot (in mJ).
+      
+      # PCIE
+      # DCGM_FI_DEV_PCIE_TX_THROUGHPUT,  counter, Total number of bytes transmitted through PCIe TX (in KB) via NVML.
+      # DCGM_FI_DEV_PCIE_RX_THROUGHPUT,  counter, Total number of bytes received through PCIe RX (in KB) via NVML.
+      DCGM_FI_DEV_PCIE_REPLAY_COUNTER, counter, Total number of PCIe retries.
+      
+      # Utilization (the sample period varies depending on the product)
+      DCGM_FI_DEV_GPU_UTIL,      gauge, GPU utilization (in %).
+      DCGM_FI_DEV_MEM_COPY_UTIL, gauge, Memory utilization (in %).
+      DCGM_FI_DEV_ENC_UTIL,      gauge, Encoder utilization (in %).
+      DCGM_FI_DEV_DEC_UTIL ,     gauge, Decoder utilization (in %).
+      
+      # Errors and violations
+      DCGM_FI_DEV_XID_ERRORS,            gauge,   Value of the last XID error encountered.
+      # DCGM_FI_DEV_POWER_VIOLATION,       counter, Throttling duration due to power constraints (in us).
+      # DCGM_FI_DEV_THERMAL_VIOLATION,     counter, Throttling duration due to thermal constraints (in us).
+      # DCGM_FI_DEV_SYNC_BOOST_VIOLATION,  counter, Throttling duration due to sync-boost constraints (in us).
+      # DCGM_FI_DEV_BOARD_LIMIT_VIOLATION, counter, Throttling duration due to board limit constraints (in us).
+      # DCGM_FI_DEV_LOW_UTIL_VIOLATION,    counter, Throttling duration due to low utilization (in us).
+      # DCGM_FI_DEV_RELIABILITY_VIOLATION, counter, Throttling duration due to reliability constraints (in us).
+      
+      # Memory usage
+      DCGM_FI_DEV_FB_FREE, gauge, Framebuffer memory free (in MiB).
+      DCGM_FI_DEV_FB_USED, gauge, Framebuffer memory used (in MiB).
+      
+      # ECC
+      # DCGM_FI_DEV_ECC_SBE_VOL_TOTAL, counter, Total number of single-bit volatile ECC errors.
+      # DCGM_FI_DEV_ECC_DBE_VOL_TOTAL, counter, Total number of double-bit volatile ECC errors.
+      # DCGM_FI_DEV_ECC_SBE_AGG_TOTAL, counter, Total number of single-bit persistent ECC errors.
+      # DCGM_FI_DEV_ECC_DBE_AGG_TOTAL, counter, Total number of double-bit persistent ECC errors.
+      
+      # Retired pages
+      # DCGM_FI_DEV_RETIRED_SBE,     counter, Total number of retired pages due to single-bit errors.
+      # DCGM_FI_DEV_RETIRED_DBE,     counter, Total number of retired pages due to double-bit errors.
+      # DCGM_FI_DEV_RETIRED_PENDING, counter, Total number of pages pending retirement.
+      
+      # NVLink
+      # DCGM_FI_DEV_NVLINK_CRC_FLIT_ERROR_COUNT_TOTAL, counter, Total number of NVLink flow-control CRC errors.
+      # DCGM_FI_DEV_NVLINK_CRC_DATA_ERROR_COUNT_TOTAL, counter, Total number of NVLink data CRC errors.
+      # DCGM_FI_DEV_NVLINK_REPLAY_ERROR_COUNT_TOTAL,   counter, Total number of NVLink retries.
+      # DCGM_FI_DEV_NVLINK_RECOVERY_ERROR_COUNT_TOTAL, counter, Total number of NVLink recovery errors.
+      DCGM_FI_DEV_NVLINK_BANDWIDTH_TOTAL,            counter, Total number of NVLink bandwidth counters for all lanes.
+      # DCGM_FI_DEV_NVLINK_BANDWIDTH_L0,               counter, The number of bytes of active NVLink rx or tx data including both header and payload.
+      
+      # VGPU License status
+      DCGM_FI_DEV_VGPU_LICENSE_STATUS, gauge, vGPU License status
+      
+      # Remapped rows
+      DCGM_FI_DEV_UNCORRECTABLE_REMAPPED_ROWS, counter, Number of remapped rows for uncorrectable errors
+      DCGM_FI_DEV_CORRECTABLE_REMAPPED_ROWS,   counter, Number of remapped rows for correctable errors
+      DCGM_FI_DEV_ROW_REMAP_FAILURE,           gauge,   Whether remapping of rows has failed
+      
+      # DCP metrics
+      DCGM_FI_PROF_GR_ENGINE_ACTIVE,   gauge, Ratio of time the graphics engine is active (in %).
+      # DCGM_FI_PROF_SM_ACTIVE,          gauge, The ratio of cycles an SM has at least 1 warp assigned (in %).
+      # DCGM_FI_PROF_SM_OCCUPANCY,       gauge, The ratio of number of warps resident on an SM (in %).
+      DCGM_FI_PROF_PIPE_TENSOR_ACTIVE, gauge, Ratio of cycles the tensor (HMMA) pipe is active (in %).
+      DCGM_FI_PROF_DRAM_ACTIVE,        gauge, Ratio of cycles the device memory interface is active sending or receiving data (in %).
+      # DCGM_FI_PROF_PIPE_FP64_ACTIVE,   gauge, Ratio of cycles the fp64 pipes are active (in %).
+      # DCGM_FI_PROF_PIPE_FP32_ACTIVE,   gauge, Ratio of cycles the fp32 pipes are active (in %).
+      # DCGM_FI_PROF_PIPE_FP16_ACTIVE,   gauge, Ratio of cycles the fp16 pipes are active (in %).
+      DCGM_FI_PROF_PCIE_TX_BYTES,      counter, The number of bytes of active pcie tx data including both header and payload.
+      DCGM_FI_PROF_PCIE_RX_BYTES,      counter, The number of bytes of active pcie rx data including both header and payload.
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: dcgm-exporter-read-cm
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: dcgm-exporter
+    app.kubernetes.io/version: "2.6.10"
+    app.kubernetes.io/component: "dcgm-exporter"
+rules:
+- apiGroups: [""]
+  resources: ["configmaps"]
+  resourceNames: ["exporter-metrics-config-map"]
+  verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: dcgm-exporter
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: dcgm-exporter
+    app.kubernetes.io/version: "2.6.10"
+    app.kubernetes.io/component: "dcgm-exporter"
+subjects:
+- kind: ServiceAccount
+  name: dcgm-exporter
+  namespace: kube-system
+roleRef:
+  kind: Role 
+  name: dcgm-exporter-read-cm
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dcgm-exporter
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: dcgm-exporter
+    app.kubernetes.io/version: "2.6.10"
+    app.kubernetes.io/component: "dcgm-exporter"
+spec:
+  type: ClusterIP
+  ports:
+  - name: "metrics"
+    port: 9400
+    targetPort: 9400
+    protocol: TCP
+  selector:
+    app.kubernetes.io/name: dcgm-exporter
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: dcgm-exporter
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: dcgm-exporter
+    app.kubernetes.io/version: "2.6.10"
+    app.kubernetes.io/component: "dcgm-exporter"
+spec:
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: dcgm-exporter
+      app.kubernetes.io/component: "dcgm-exporter"
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: dcgm-exporter
+        app.kubernetes.io/component: "dcgm-exporter"
+    spec:
+      serviceAccountName: dcgm-exporter
+      volumes:
+      - name: "pod-gpu-resources"
+        hostPath:
+          path: /var/lib/kubelet/pod-resources
+      nodeSelector:
+        kops.k8s.io/gpu: "1"
+      runtimeClassName: "nvidia"
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
+      containers:
+      - name: exporter
+        securityContext:
+          capabilities:
+            add:
+            - SYS_ADMIN
+          runAsNonRoot: false
+          runAsUser: 0
+        image: "nvcr.io/nvidia/k8s/dcgm-exporter:2.4.6-2.6.10-ubuntu20.04"
+        imagePullPolicy: "IfNotPresent"
+        args: 
+        - -f 
+        - /etc/dcgm-exporter/dcp-metrics-included.csv
+        env:
+        - name: "DCGM_EXPORTER_KUBERNETES"
+          value: "true"
+        - name: "DCGM_EXPORTER_LISTEN"
+          value: ":9400"
+        ports:
+        - name: "metrics"
+          containerPort: 9400
+        volumeMounts:
+        - name: "pod-gpu-resources"
+          readOnly: true
+          mountPath: "/var/lib/kubelet/pod-resources"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 9400
+          initialDelaySeconds: 45
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 9400
+          initialDelaySeconds: 45
+
+{{ end }}
+{{ end }}
