@@ -14,7 +14,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/apparentlymart/go-cidr v1.1.0
 	github.com/aws/amazon-ec2-instance-selector/v2 v2.4.0
-	github.com/aws/aws-sdk-go v1.44.85
+	github.com/aws/aws-sdk-go v1.44.90
 	github.com/blang/semver/v4 v4.0.0
 	github.com/cert-manager/cert-manager v1.9.1
 	github.com/digitalocean/godo v1.83.0
@@ -26,8 +26,8 @@ require (
 	github.com/google/go-tpm v0.3.3
 	github.com/google/go-tpm-tools v0.3.9
 	github.com/google/uuid v1.3.0
-	github.com/gophercloud/gophercloud v0.25.0
-	github.com/hashicorp/hcl/v2 v2.13.0
+	github.com/gophercloud/gophercloud v1.0.0
+	github.com/hashicorp/hcl/v2 v2.14.0
 	github.com/hashicorp/vault/api v1.7.2
 	github.com/hetznercloud/hcloud-go v1.35.2
 	github.com/jacksontj/memberlistmesh v0.0.0-20190905163944-93462b9d2bb7
@@ -39,16 +39,16 @@ require (
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.12.0
-	github.com/spotinst/spotinst-sdk-go v1.126.0
+	github.com/spotinst/spotinst-sdk-go v1.127.0
 	github.com/stretchr/testify v1.8.0
 	github.com/weaveworks/mesh v0.0.0-20191105120815-58dbcc3e8e63
 	github.com/zclconf/go-cty v1.11.0
 	go.uber.org/multierr v1.8.0
-	golang.org/x/crypto v0.0.0-20220824171710-5757bc0c5503
-	golang.org/x/net v0.0.0-20220822230855-b0a4917ee28c
+	golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90
+	golang.org/x/net v0.0.0-20220826154423-83b083e8dc8b
 	golang.org/x/oauth2 v0.0.0-20220822191816-0ebed06d0094
 	golang.org/x/sync v0.0.0-20220819030929-7fc1605a5dde
-	golang.org/x/sys v0.0.0-20220825204002-c680a09ffe64
+	golang.org/x/sys v0.0.0-20220829200755-d48e67d00261
 	google.golang.org/api v0.94.0
 	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/inf.v0 v0.9.1
@@ -58,10 +58,10 @@ require (
 	k8s.io/apimachinery v0.25.0
 	k8s.io/cli-runtime v0.25.0
 	k8s.io/client-go v0.25.0
-	k8s.io/cloud-provider-aws v1.24.1
+	k8s.io/cloud-provider-aws v1.25.0
 	k8s.io/component-base v0.25.0
 	k8s.io/gengo v0.0.0-20220613173612-397b4ae3bce7
-	k8s.io/klog/v2 v2.70.1
+	k8s.io/klog/v2 v2.80.0
 	k8s.io/kubectl v0.25.0
 	k8s.io/kubelet v0.25.0
 	k8s.io/legacy-cloud-providers v0.25.0

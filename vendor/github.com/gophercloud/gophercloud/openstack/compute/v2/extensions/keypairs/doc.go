@@ -115,6 +115,5 @@ Example to Get a Key Pair owned by a certain user using microversion 2.10 or gre
 	if err != nil {
 		panic(err)
 	}
-
 */
 package keypairs

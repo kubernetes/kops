@@ -46,10 +46,10 @@ func (i InstanceID) awsString() *string {
 
 // KubernetesInstanceID represents the id for an instance in the kubernetes API;
 // the following form
-//  * aws:///<zone>/<awsInstanceId>
-//  * aws:////<awsInstanceId>
-//  * aws:///<zone>/fargate-<eni-ip-address>
-//  * <awsInstanceId>
+//   - aws:///<zone>/<awsInstanceId>
+//   - aws:////<awsInstanceId>
+//   - aws:///<zone>/fargate-<eni-ip-address>
+//   - <awsInstanceId>
 type KubernetesInstanceID string
 
 // MapToAWSInstanceID extracts the InstanceID from the KubernetesInstanceID
