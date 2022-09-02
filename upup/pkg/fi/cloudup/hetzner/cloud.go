@@ -422,10 +422,8 @@ func (c *hetznerCloudImplementation) FindVPCInfo(id string) (*fi.VPCInfo, error)
 	return nil, errors.New("hetzner cloud provider does not implement FindVPCInfo at this time")
 }
 
-// FindClusterStatus is not implemented
+// FindClusterStatus was used before etcd-manager to check the etcd cluster status and prevent unsupported changes.
 func (c *hetznerCloudImplementation) FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error) {
-	// TODO(hakman): Implement me
-	klog.Warning("hetzner cloud provider does not implement FindClusterStatus at this time")
 	return nil, nil
 }
 
