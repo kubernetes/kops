@@ -7,12 +7,12 @@ See https://developer.openstack.org/api-ref/network/v2/#standard-attributes-tag-
 
 Example to ReplaceAll Resource Tags
 
-    network, err := networks.Create(conn, createOpts).Extract()
+	network, err := networks.Create(conn, createOpts).Extract()
 
-    tagReplaceAllOpts := attributestags.ReplaceAllOpts{
-        Tags:         []string{"abc", "123"},
-    }
-    attributestags.ReplaceAll(conn, "networks", network.ID, tagReplaceAllOpts)
+	tagReplaceAllOpts := attributestags.ReplaceAllOpts{
+	    Tags:         []string{"abc", "123"},
+	}
+	attributestags.ReplaceAll(conn, "networks", network.ID, tagReplaceAllOpts)
 
 Example to List all Resource Tags
 
@@ -24,11 +24,11 @@ Example to Delete all Resource Tags
 
 Example to Add a tag to a Resource
 
-    err = attributestags.Add(client, "networks", network.ID, "atag").ExtractErr()
+	err = attributestags.Add(client, "networks", network.ID, "atag").ExtractErr()
 
 Example to Delete a tag from a Resource
 
-    err = attributestags.Delete(client, "networks", network.ID, "atag").ExtractErr()
+	err = attributestags.Delete(client, "networks", network.ID, "atag").ExtractErr()
 
 Example to confirm if a tag exists on a resource
 
