@@ -49,6 +49,15 @@ type NvidiaGPUConfig struct {
 	// Enabled determines if kOps will install the Nvidia GPU runtime and drivers.
 	// They will only be installed on intances that has an Nvidia GPU.
 	Enabled *bool `json:"enabled,omitempty"`
+	// DCGMExporterConfig configures the DCGM exporter
+	DCGMExporter *DCGMExporterConfig `json:"dcgmExporter,omitempty"`
+}
+
+// DCGMExporterConfig configures the DCGM exporter.
+// Only the DCGMExporterConfig in the cluster level takes effect. Configurations on the Instance Group are ignored.
+type DCGMExporterConfig struct {
+	// Enabled determines if kOps will install the DCGM exporter
+	Enabled bool `json:"enabled,omitempty"`
 }
 
 type Runc struct {
