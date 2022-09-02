@@ -31,21 +31,21 @@ Example to Create a Server Group
 
 Example to Create a Server Group with additional microversion 2.64 fields
 
-	createOpts := servergroups.CreateOpts{
-		Name:   "my_sg",
-		Policy: "anti-affinity",
-        	Rules: &servergroups.Rules{
-            		MaxServerPerHost: 3,
-        	},
-	}
+		createOpts := servergroups.CreateOpts{
+			Name:   "my_sg",
+			Policy: "anti-affinity",
+	        	Rules: &servergroups.Rules{
+	            		MaxServerPerHost: 3,
+	        	},
+		}
 
-	computeClient.Microversion = "2.64"
-	result := servergroups.Create(computeClient, createOpts)
+		computeClient.Microversion = "2.64"
+		result := servergroups.Create(computeClient, createOpts)
 
-	serverGroup, err := result.Extract()
-	if err != nil {
-		panic(err)
-	}
+		serverGroup, err := result.Extract()
+		if err != nil {
+			panic(err)
+		}
 
 Example to Delete a Server Group
 
