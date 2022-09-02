@@ -15,15 +15,20 @@ import (
 // types of persistence are supported:
 //
 // SOURCE_IP:   With this mode, all connections originating from the same source
-//              IP address, will be handled by the same Member of the Pool.
+//
+//	IP address, will be handled by the same Member of the Pool.
+//
 // HTTP_COOKIE: With this persistence mode, the load balancing function will
-//              create a cookie on the first request from a client. Subsequent
-//              requests containing the same cookie value will be handled by
-//              the same Member of the Pool.
+//
+//	create a cookie on the first request from a client. Subsequent
+//	requests containing the same cookie value will be handled by
+//	the same Member of the Pool.
+//
 // APP_COOKIE:  With this persistence mode, the load balancing function will
-//              rely on a cookie established by the backend application. All
-//              requests carrying the same cookie value will be handled by the
-//              same Member of the Pool.
+//
+//	rely on a cookie established by the backend application. All
+//	requests carrying the same cookie value will be handled by the
+//	same Member of the Pool.
 type SessionPersistence struct {
 	// The type of persistence mode.
 	Type string `json:"type"`
