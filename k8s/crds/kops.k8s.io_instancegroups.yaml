@@ -119,6 +119,14 @@ spec:
                   nvidiaGPU:
                     description: NvidiaGPU configures the Nvidia GPU runtime.
                     properties:
+                      dcgmExporter:
+                        description: DCGMExporterConfig configures the DCGM exporter
+                        properties:
+                          enabled:
+                            description: Enabled determines if kOps will install the
+                              DCGM exporter
+                            type: boolean
+                        type: object
                       enabled:
                         description: Enabled determines if kOps will install the Nvidia
                           GPU runtime and drivers. They will only be installed on
