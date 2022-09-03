@@ -208,6 +208,7 @@ const (
 	certManagerAddon      = "certmanager.io-k8s-1.16"
 	ciliumAddon           = "networking.cilium.io-k8s-1.16"
 	dnsControllerAddon    = "dns-controller.addons.k8s.io-k8s-1.12"
+	flannelAddon          = "networking.flannel-k8s-1.25"
 	leaderElectionAddon   = "leader-migration.rbac.addons.k8s.io-k8s-1.23"
 )
 
@@ -490,7 +491,8 @@ func TestPrivateWeave(t *testing.T) {
 func TestPrivateFlannel(t *testing.T) {
 	newIntegrationTest("privateflannel.example.com", "privateflannel").
 		withPrivate().
-		withAddons("networking.flannel-k8s-1.12", dnsControllerAddon).
+		withDefaultAddons24().
+		withAddons(flannelAddon).
 		runTestTerraformAWS(t)
 }
 

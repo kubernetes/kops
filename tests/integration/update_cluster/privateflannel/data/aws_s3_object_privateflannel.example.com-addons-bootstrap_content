@@ -6,7 +6,7 @@ spec:
   addons:
   - id: k8s-1.16
     manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: 3de75ed2bea6a0076e6e7a310cb74fdd696dac51fb0fd0b899732835fdb4ab58
+    manifestHash: 15f1202c0fbd8b3065c87b0409464ebbbe7185b38983e0baf1ce272054ff9fb4
     name: kops-controller.addons.k8s.io
     needsRollingUpdate: control-plane
     selector:
@@ -14,7 +14,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: coredns.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: cd1e8f47fe52b13fee5536b0d4b4429ef256829d87a51cbc189fa0f21ff3503b
+    manifestHash: 6a1db11adb764a3138401cf615c57780df760e7688d4d0d94bd434d6a6b9d370
     name: coredns.addons.k8s.io
     selector:
       k8s-addon: coredns.addons.k8s.io
@@ -25,6 +25,13 @@ spec:
     name: kubelet-api.rbac.addons.k8s.io
     selector:
       k8s-addon: kubelet-api.rbac.addons.k8s.io
+    version: 9.99.0
+  - id: k8s-1.23
+    manifest: leader-migration.rbac.addons.k8s.io/k8s-1.23.yaml
+    manifestHash: b9c91e09c0f28c9b74ff140b8395d611834c627d698846d625c10975a74a48c4
+    name: leader-migration.rbac.addons.k8s.io
+    selector:
+      k8s-addon: leader-migration.rbac.addons.k8s.io
     version: 9.99.0
   - manifest: limit-range.addons.k8s.io/v1.5.0.yaml
     manifestHash: 2d55c3bc5e354e84a3730a65b42f39aba630a59dc8d32b30859fcce3d3178bc2
@@ -41,15 +48,67 @@ spec:
     version: 9.99.0
   - id: v1.15.0
     manifest: storage-aws.addons.k8s.io/v1.15.0.yaml
-    manifestHash: 065ae832ddac8d0931e9992d6a76f43a33a36975a38003b34f4c5d86a7d42780
+    manifestHash: 4e2cda50cd5048133aad1b5e28becb60f4629d3f9e09c514a2757c27998b4200
     name: storage-aws.addons.k8s.io
     selector:
       k8s-addon: storage-aws.addons.k8s.io
     version: 9.99.0
-  - id: k8s-1.12
-    manifest: networking.flannel/k8s-1.12.yaml
-    manifestHash: 9a1dce09e6c31f0da54c1a7f593f3bb111cd9b50453f6f31a382215290794571
+  - id: k8s-1.25
+    manifest: networking.flannel/k8s-1.25.yaml
+    manifestHash: 0b0d13083ea6ee5196f49234a338d9d96e21684a622d2320bd4d9241f7b2e2d7
     name: networking.flannel
+    prune:
+      kinds:
+      - kind: ConfigMap
+        labelSelector: addon.kops.k8s.io/name=networking.flannel,app.kubernetes.io/managed-by=kops
+        namespaces:
+        - kube-flannel
+      - kind: Service
+        labelSelector: addon.kops.k8s.io/name=networking.flannel,app.kubernetes.io/managed-by=kops
+      - kind: ServiceAccount
+        labelSelector: addon.kops.k8s.io/name=networking.flannel,app.kubernetes.io/managed-by=kops
+        namespaces:
+        - kube-flannel
+      - group: apps
+        kind: DaemonSet
+        labelSelector: addon.kops.k8s.io/name=networking.flannel,app.kubernetes.io/managed-by=kops
+        namespaces:
+        - kube-flannel
+      - group: apps
+        kind: Deployment
+        labelSelector: addon.kops.k8s.io/name=networking.flannel,app.kubernetes.io/managed-by=kops
+      - group: apps
+        kind: StatefulSet
+        labelSelector: addon.kops.k8s.io/name=networking.flannel,app.kubernetes.io/managed-by=kops
+      - group: policy
+        kind: PodDisruptionBudget
+        labelSelector: addon.kops.k8s.io/name=networking.flannel,app.kubernetes.io/managed-by=kops
+      - group: rbac.authorization.k8s.io
+        kind: ClusterRole
+        labelSelector: addon.kops.k8s.io/name=networking.flannel,app.kubernetes.io/managed-by=kops
+      - group: rbac.authorization.k8s.io
+        kind: ClusterRoleBinding
+        labelSelector: addon.kops.k8s.io/name=networking.flannel,app.kubernetes.io/managed-by=kops
+      - group: rbac.authorization.k8s.io
+        kind: Role
+        labelSelector: addon.kops.k8s.io/name=networking.flannel,app.kubernetes.io/managed-by=kops
+      - group: rbac.authorization.k8s.io
+        kind: RoleBinding
+        labelSelector: addon.kops.k8s.io/name=networking.flannel,app.kubernetes.io/managed-by=kops
     selector:
       role.kubernetes.io/networking: "1"
+    version: 9.99.0
+  - id: k8s-1.18
+    manifest: aws-cloud-controller.addons.k8s.io/k8s-1.18.yaml
+    manifestHash: 2991b9b59bbca24f083a9e6106120a0954d25d47b747c4b785a4f4c341440203
+    name: aws-cloud-controller.addons.k8s.io
+    selector:
+      k8s-addon: aws-cloud-controller.addons.k8s.io
+    version: 9.99.0
+  - id: k8s-1.17
+    manifest: aws-ebs-csi-driver.addons.k8s.io/k8s-1.17.yaml
+    manifestHash: 41a7b8bd924e91ac42d61a71908578205d6292c973f53062f055ffbc3cbf8ba9
+    name: aws-ebs-csi-driver.addons.k8s.io
+    selector:
+      k8s-addon: aws-ebs-csi-driver.addons.k8s.io
     version: 9.99.0
