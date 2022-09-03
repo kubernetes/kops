@@ -1,51 +1,13 @@
-apiVersion: policy/v1beta1
-kind: PodSecurityPolicy
+apiVersion: v1
+kind: Namespace
 metadata:
-  annotations:
-    apparmor.security.beta.kubernetes.io/allowedProfileNames: runtime/default
-    apparmor.security.beta.kubernetes.io/defaultProfileName: runtime/default
-    seccomp.security.alpha.kubernetes.io/allowedProfileNames: docker/default
-    seccomp.security.alpha.kubernetes.io/defaultProfileName: docker/default
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.flannel
     app.kubernetes.io/managed-by: kops
+    pod-security.kubernetes.io/enforce: privileged
     role.kubernetes.io/networking: "1"
-  name: psp.flannel.unprivileged
-spec:
-  allowPrivilegeEscalation: false
-  allowedCapabilities:
-  - NET_ADMIN
-  - NET_RAW
-  allowedHostPaths:
-  - pathPrefix: /dev/net
-  - pathPrefix: /etc/cni/net.d
-  - pathPrefix: /etc/kube-flannel
-  - pathPrefix: /run/flannel
-  defaultAddCapabilities: []
-  defaultAllowPrivilegeEscalation: false
-  fsGroup:
-    rule: RunAsAny
-  hostIPC: false
-  hostNetwork: true
-  hostPID: false
-  hostPorts:
-  - max: 65535
-    min: 0
-  privileged: false
-  readOnlyRootFilesystem: false
-  requiredDropCapabilities: []
-  runAsUser:
-    rule: RunAsAny
-  seLinux:
-    rule: RunAsAny
-  supplementalGroups:
-    rule: RunAsAny
-  volumes:
-  - configMap
-  - secret
-  - emptyDir
-  - hostPath
+  name: kube-flannel
 
 ---
 
@@ -59,14 +21,6 @@ metadata:
     role.kubernetes.io/networking: "1"
   name: flannel
 rules:
-- apiGroups:
-  - extensions
-  resourceNames:
-  - psp.flannel.unprivileged
-  resources:
-  - podsecuritypolicies
-  verbs:
-  - use
 - apiGroups:
   - ""
   resources:
@@ -105,7 +59,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: flannel
-  namespace: kube-system
+  namespace: kube-flannel
 
 ---
 
@@ -118,7 +72,7 @@ metadata:
     app.kubernetes.io/managed-by: kops
     role.kubernetes.io/networking: "1"
   name: flannel
-  namespace: kube-system
+  namespace: kube-flannel
 
 ---
 
@@ -158,11 +112,10 @@ metadata:
     addon.kops.k8s.io/name: networking.flannel
     app: flannel
     app.kubernetes.io/managed-by: kops
-    k8s-app: flannel
     role.kubernetes.io/networking: "1"
     tier: node
   name: kube-flannel-cfg
-  namespace: kube-system
+  namespace: kube-flannel
 
 ---
 
@@ -174,11 +127,10 @@ metadata:
     addon.kops.k8s.io/name: networking.flannel
     app: flannel
     app.kubernetes.io/managed-by: kops
-    k8s-app: flannel
     role.kubernetes.io/networking: "1"
     tier: node
   name: kube-flannel-ds
-  namespace: kube-system
+  namespace: kube-flannel
 spec:
   selector:
     matchLabels:
@@ -217,14 +169,17 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: rancher/mirrored-flannelcni-flannel:v0.17.0
+        - name: EVENT_QUEUE_DEPTH
+          value: "5000"
+        image: docker.io/rancher/mirrored-flannelcni-flannel:v0.19.2
         name: kube-flannel
         resources:
           limits:
-            memory: 100Mi
+            cpu: 100m
+            memory: 50Mi
           requests:
             cpu: 100m
-            memory: 100Mi
+            memory: 50Mi
         securityContext:
           capabilities:
             add:
@@ -234,8 +189,6 @@ spec:
         volumeMounts:
         - mountPath: /run/flannel
           name: run
-        - mountPath: /dev/net
-          name: dev-net
         - mountPath: /etc/kube-flannel/
           name: flannel-cfg
         - mountPath: /run/xtables.lock
@@ -248,7 +201,7 @@ spec:
         - /opt/cni/bin/flannel
         command:
         - cp
-        image: rancher/mirrored-flannelcni-flannel-cni-plugin:v1.0.1
+        image: docker.io/rancher/mirrored-flannelcni-flannel-cni-plugin:v1.1.0
         name: install-cni-plugin
         volumeMounts:
         - mountPath: /opt/cni/bin
@@ -259,7 +212,7 @@ spec:
         - /etc/cni/net.d/10-flannel.conflist
         command:
         - cp
-        image: rancher/mirrored-flannelcni-flannel:v0.17.0
+        image: docker.io/rancher/mirrored-flannelcni-flannel:v0.19.2
         name: install-cni
         volumeMounts:
         - mountPath: /etc/cni/net.d
@@ -269,14 +222,12 @@ spec:
       priorityClassName: system-node-critical
       serviceAccountName: flannel
       tolerations:
-      - operator: Exists
+      - effect: NoSchedule
+        operator: Exists
       volumes:
       - hostPath:
           path: /run/flannel
         name: run
-      - hostPath:
-          path: /dev/net
-        name: dev-net
       - hostPath:
           path: /opt/cni/bin
         name: cni-plugin
