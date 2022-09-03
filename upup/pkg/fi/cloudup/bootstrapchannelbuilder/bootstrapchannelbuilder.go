@@ -34,6 +34,7 @@ import (
 	"k8s.io/kops/pkg/model/components/addonmanifests/awscloudcontrollermanager"
 	"k8s.io/kops/pkg/model/components/addonmanifests/awsebscsidriver"
 	"k8s.io/kops/pkg/model/components/addonmanifests/awsloadbalancercontroller"
+	"k8s.io/kops/pkg/model/components/addonmanifests/certmanager"
 	"k8s.io/kops/pkg/model/components/addonmanifests/clusterautoscaler"
 	"k8s.io/kops/pkg/model/components/addonmanifests/dnscontroller"
 	"k8s.io/kops/pkg/model/components/addonmanifests/externaldns"
@@ -602,6 +603,10 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 					Id:       id,
 				})
 			}
+		}
+
+		if len(b.Cluster.Spec.CertManager.HostedZoneIDs) > 0 {
+			serviceAccountRoles = append(serviceAccountRoles, &certmanager.ServiceAccount{})
 		}
 	}
 
