@@ -1,6 +1,51 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.projectcalico.org
+    app.kubernetes.io/managed-by: kops
+    k8s-app: calico-kube-controllers
+    role.kubernetes.io/networking: "1"
+  name: calico-kube-controllers
+  namespace: kube-system
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      k8s-app: calico-kube-controllers
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.projectcalico.org
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/networking: "1"
+  name: calico-kube-controllers
+  namespace: kube-system
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.projectcalico.org
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/networking: "1"
+  name: calico-node
+  namespace: kube-system
+
+---
+
 apiVersion: v1
 data:
-  canal_iface: ""
+  calico_backend: bird
   cni_network_config: |-
     {
       "name": "k8s-pod-network",
@@ -14,8 +59,9 @@ data:
           "nodename": "__KUBERNETES_NODE_NAME__",
           "mtu": __CNI_MTU__,
           "ipam": {
-              "type": "host-local",
-              "subnet": "usePodCidr"
+              "assign_ipv4": "true",
+              "assign_ipv6": "false",
+              "type": "calico-ipam"
           },
           "policy": {
               "type": "k8s"
@@ -35,24 +81,16 @@ data:
         }
       ]
     }
-  masquerade: "true"
-  net-conf.json: |
-    {
-      "Network": "100.64.0.0/10",
-      "Backend": {
-        "Type": "vxlan"
-      }
-    }
   typha_service_name: none
   veth_mtu: "0"
 kind: ConfigMap
 metadata:
   creationTimestamp: null
   labels:
-    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
     role.kubernetes.io/networking: "1"
-  name: canal-config
+  name: calico-config
   namespace: kube-system
 
 ---
@@ -62,7 +100,7 @@ kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   labels:
-    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
     role.kubernetes.io/networking: "1"
   name: bgpconfigurations.crd.projectcalico.org
@@ -73,6 +111,7 @@ spec:
     listKind: BGPConfigurationList
     plural: bgpconfigurations
     singular: bgpconfiguration
+  preserveUnknownFields: false
   scope: Cluster
   versions:
   - name: v1
@@ -248,7 +287,7 @@ kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   labels:
-    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
     role.kubernetes.io/networking: "1"
   name: bgppeers.crd.projectcalico.org
@@ -259,6 +298,7 @@ spec:
     listKind: BGPPeerList
     plural: bgppeers
     singular: bgppeer
+  preserveUnknownFields: false
   scope: Cluster
   versions:
   - name: v1
@@ -373,7 +413,7 @@ kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   labels:
-    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
     role.kubernetes.io/networking: "1"
   name: blockaffinities.crd.projectcalico.org
@@ -384,6 +424,7 @@ spec:
     listKind: BlockAffinityList
     plural: blockaffinities
     singular: blockaffinity
+  preserveUnknownFields: false
   scope: Cluster
   versions:
   - name: v1
@@ -442,7 +483,7 @@ metadata:
     controller-gen.kubebuilder.io/version: (devel)
   creationTimestamp: null
   labels:
-    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
     role.kubernetes.io/networking: "1"
   name: caliconodestatuses.crd.projectcalico.org
@@ -453,6 +494,7 @@ spec:
     listKind: CalicoNodeStatusList
     plural: caliconodestatuses
     singular: caliconodestatus
+  preserveUnknownFields: false
   scope: Cluster
   versions:
   - name: v1
@@ -708,7 +750,7 @@ kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   labels:
-    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
     role.kubernetes.io/networking: "1"
   name: clusterinformations.crd.projectcalico.org
@@ -719,6 +761,7 @@ spec:
     listKind: ClusterInformationList
     plural: clusterinformations
     singular: clusterinformation
+  preserveUnknownFields: false
   scope: Cluster
   versions:
   - name: v1
@@ -778,7 +821,7 @@ kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   labels:
-    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
     role.kubernetes.io/networking: "1"
   name: felixconfigurations.crd.projectcalico.org
@@ -789,6 +832,7 @@ spec:
     listKind: FelixConfigurationList
     plural: felixconfigurations
     singular: felixconfiguration
+  preserveUnknownFields: false
   scope: Cluster
   versions:
   - name: v1
@@ -866,7 +910,7 @@ spec:
                 description: 'BPFExtToServiceConnmark in BPF mode, control a 32bit
                   mark that is set on connections from an external client to a local
                   service. This mark allows us to control how packets of that connection
-                  are routed within the host and how is routing intepreted by RPF
+                  are routed within the host and how is routing interpreted by RPF
                   check. [Default: 0]'
                 type: integer
               bpfExternalServiceMode:
@@ -914,6 +958,11 @@ spec:
                   policy.  Selectors such as "all()" can result in large numbers of
                   entries (one entry per endpoint in that case).
                 type: integer
+              bpfMapSizeIfState:
+                description: BPFMapSizeIfState sets the size for ifstate map.  The
+                  ifstate map must be large enough to hold an entry for each device
+                  (host + workloads) on a host.
+                type: integer
               bpfMapSizeNATAffinity:
                 type: integer
               bpfMapSizeNATBackend:
@@ -946,6 +995,11 @@ spec:
                   are inclusive. [Default: 20000:29999]'
                 pattern: ^.*
                 x-kubernetes-int-or-string: true
+              bpfPolicyDebugEnabled:
+                description: BPFPolicyDebugEnabled when true, Felix records detailed
+                  information about the BPF policy programs, which can be examined
+                  with the calico-bpf command-line tool.
+                type: boolean
               chainInsertMode:
                 description: 'ChainInsertMode controls whether Felix hooks the kernel''s
                   top-level iptables chains by inserting a rule at the top of the
@@ -1075,7 +1129,6 @@ spec:
                   are auto-detected.
                 type: string
               floatingIPs:
-                default: Disabled
                 description: FloatingIPs configures whether or not Felix will program
                   floating IP addresses.
                 enum:
@@ -1337,6 +1390,10 @@ spec:
                   information. - WorkloadIPs: use workload endpoints to construct
                   routes. - CalicoIPAM: the default - use IPAM data to construct routes.'
                 type: string
+              routeSyncDisabled:
+                description: RouteSyncDisabled will disable all operations performed
+                  on the route table. Set to true to run in network-policy mode only.
+                type: boolean
               routeTableRange:
                 description: Deprecated in favor of RouteTableRanges. Calico programs
                   additional Linux route tables for various purposes. RouteTableRange
@@ -1414,7 +1471,13 @@ spec:
               vxlanVNI:
                 type: integer
               wireguardEnabled:
-                description: 'WireguardEnabled controls whether Wireguard is enabled.
+                description: 'WireguardEnabled controls whether Wireguard is enabled
+                  for IPv4 (encapsulating IPv4 traffic over an IPv4 underlay network).
+                  [Default: false]'
+                type: boolean
+              wireguardEnabledV6:
+                description: 'WireguardEnabledV6 controls whether Wireguard is enabled
+                  for IPv6 (encapsulating IPv6 traffic over an IPv6 underlay network).
                   [Default: false]'
                 type: boolean
               wireguardHostEncryptionEnabled:
@@ -1423,7 +1486,11 @@ spec:
                 type: boolean
               wireguardInterfaceName:
                 description: 'WireguardInterfaceName specifies the name to use for
-                  the Wireguard interface. [Default: wg.calico]'
+                  the IPv4 Wireguard interface. [Default: wireguard.cali]'
+                type: string
+              wireguardInterfaceNameV6:
+                description: 'WireguardInterfaceNameV6 specifies the name to use for
+                  the IPv6 Wireguard interface. [Default: wg-v6.cali]'
                 type: string
               wireguardKeepAlive:
                 description: 'WireguardKeepAlive controls Wireguard PersistentKeepalive
@@ -1431,11 +1498,19 @@ spec:
                 type: string
               wireguardListeningPort:
                 description: 'WireguardListeningPort controls the listening port used
-                  by Wireguard. [Default: 51820]'
+                  by IPv4 Wireguard. [Default: 51820]'
+                type: integer
+              wireguardListeningPortV6:
+                description: 'WireguardListeningPortV6 controls the listening port
+                  used by IPv6 Wireguard. [Default: 51821]'
                 type: integer
               wireguardMTU:
-                description: 'WireguardMTU controls the MTU on the Wireguard interface.
-                  See Configuring MTU [Default: 1420]'
+                description: 'WireguardMTU controls the MTU on the IPv4 Wireguard
+                  interface. See Configuring MTU [Default: 1440]'
+                type: integer
+              wireguardMTUV6:
+                description: 'WireguardMTUV6 controls the MTU on the IPv6 Wireguard
+                  interface. See Configuring MTU [Default: 1420]'
                 type: integer
               wireguardRoutingRulePriority:
                 description: 'WireguardRoutingRulePriority controls the priority value
@@ -1475,7 +1550,7 @@ kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   labels:
-    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
     role.kubernetes.io/networking: "1"
   name: globalnetworkpolicies.crd.projectcalico.org
@@ -1486,6 +1561,7 @@ spec:
     listKind: GlobalNetworkPolicyList
     plural: globalnetworkpolicies
     singular: globalnetworkpolicy
+  preserveUnknownFields: false
   scope: Cluster
   versions:
   - name: v1
@@ -2336,7 +2412,7 @@ kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   labels:
-    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
     role.kubernetes.io/networking: "1"
   name: globalnetworksets.crd.projectcalico.org
@@ -2347,6 +2423,7 @@ spec:
     listKind: GlobalNetworkSetList
     plural: globalnetworksets
     singular: globalnetworkset
+  preserveUnknownFields: false
   scope: Cluster
   versions:
   - name: v1
@@ -2395,7 +2472,7 @@ kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   labels:
-    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
     role.kubernetes.io/networking: "1"
   name: hostendpoints.crd.projectcalico.org
@@ -2406,6 +2483,7 @@ spec:
     listKind: HostEndpointList
     plural: hostendpoints
     singular: hostendpoint
+  preserveUnknownFields: false
   scope: Cluster
   versions:
   - name: v1
@@ -2509,7 +2587,7 @@ kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   labels:
-    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
     role.kubernetes.io/networking: "1"
   name: ipamblocks.crd.projectcalico.org
@@ -2520,6 +2598,7 @@ spec:
     listKind: IPAMBlockList
     plural: ipamblocks
     singular: ipamblock
+  preserveUnknownFields: false
   scope: Cluster
   versions:
   - name: v1
@@ -2632,7 +2711,7 @@ kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   labels:
-    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
     role.kubernetes.io/networking: "1"
   name: ipamconfigs.crd.projectcalico.org
@@ -2643,6 +2722,7 @@ spec:
     listKind: IPAMConfigList
     plural: ipamconfigs
     singular: ipamconfig
+  preserveUnknownFields: false
   scope: Cluster
   versions:
   - name: v1
@@ -2670,6 +2750,8 @@ spec:
               maxBlocksPerHost:
                 description: MaxBlocksPerHost, if non-zero, is the max number of blocks
                   that can be affine to each host.
+                maximum: 2147483647
+                minimum: 0
                 type: integer
               strictAffinity:
                 type: boolean
@@ -2694,7 +2776,7 @@ kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   labels:
-    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
     role.kubernetes.io/networking: "1"
   name: ipamhandles.crd.projectcalico.org
@@ -2705,6 +2787,7 @@ spec:
     listKind: IPAMHandleList
     plural: ipamhandles
     singular: ipamhandle
+  preserveUnknownFields: false
   scope: Cluster
   versions:
   - name: v1
@@ -2756,7 +2839,7 @@ kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   labels:
-    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
     role.kubernetes.io/networking: "1"
   name: ippools.crd.projectcalico.org
@@ -2767,6 +2850,7 @@ spec:
     listKind: IPPoolList
     plural: ippools
     singular: ippool
+  preserveUnknownFields: false
   scope: Cluster
   versions:
   - name: v1
@@ -2873,7 +2957,7 @@ metadata:
     controller-gen.kubebuilder.io/version: (devel)
   creationTimestamp: null
   labels:
-    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
     role.kubernetes.io/networking: "1"
   name: ipreservations.crd.projectcalico.org
@@ -2884,6 +2968,7 @@ spec:
     listKind: IPReservationList
     plural: ipreservations
     singular: ipreservation
+  preserveUnknownFields: false
   scope: Cluster
   versions:
   - name: v1
@@ -2930,7 +3015,7 @@ kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   labels:
-    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
     role.kubernetes.io/networking: "1"
   name: kubecontrollersconfigurations.crd.projectcalico.org
@@ -2941,6 +3026,7 @@ spec:
     listKind: KubeControllersConfigurationList
     plural: kubecontrollersconfigurations
     singular: kubecontrollersconfiguration
+  preserveUnknownFields: false
   scope: Cluster
   versions:
   - name: v1
@@ -3189,7 +3275,7 @@ kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   labels:
-    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
     role.kubernetes.io/networking: "1"
   name: networkpolicies.crd.projectcalico.org
@@ -3200,6 +3286,7 @@ spec:
     listKind: NetworkPolicyList
     plural: networkpolicies
     singular: networkpolicy
+  preserveUnknownFields: false
   scope: Namespaced
   versions:
   - name: v1
@@ -4031,7 +4118,7 @@ kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   labels:
-    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
     role.kubernetes.io/networking: "1"
   name: networksets.crd.projectcalico.org
@@ -4042,6 +4129,7 @@ spec:
     listKind: NetworkSetList
     plural: networksets
     singular: networkset
+  preserveUnknownFields: false
   scope: Namespaced
   versions:
   - name: v1
@@ -4088,7 +4176,7 @@ kind: ClusterRole
 metadata:
   creationTimestamp: null
   labels:
-    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
     role.kubernetes.io/networking: "1"
   name: calico-kube-controllers
@@ -4168,39 +4256,19 @@ rules:
 ---
 
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  creationTimestamp: null
-  labels:
-    addon.kops.k8s.io/name: networking.projectcalico.org.canal
-    app.kubernetes.io/managed-by: kops
-    role.kubernetes.io/networking: "1"
-  name: calico-kube-controllers
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: calico-kube-controllers
-subjects:
-- kind: ServiceAccount
-  name: calico-kube-controllers
-  namespace: kube-system
-
----
-
-apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   creationTimestamp: null
   labels:
-    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
     role.kubernetes.io/networking: "1"
-  name: calico
+  name: calico-node
 rules:
 - apiGroups:
   - ""
   resourceNames:
-  - canal
+  - calico-node
   resources:
   - serviceaccounts/token
   verbs:
@@ -4318,38 +4386,37 @@ rules:
   verbs:
   - create
   - update
-
----
-
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  creationTimestamp: null
-  labels:
-    addon.kops.k8s.io/name: networking.projectcalico.org.canal
-    app.kubernetes.io/managed-by: kops
-    role.kubernetes.io/networking: "1"
-  name: flannel
-rules:
 - apiGroups:
-  - ""
+  - crd.projectcalico.org
   resources:
-  - pods
+  - blockaffinities
+  - ipamblocks
+  - ipamhandles
   verbs:
   - get
-- apiGroups:
-  - ""
-  resources:
-  - nodes
-  verbs:
   - list
+  - create
+  - update
+  - delete
+- apiGroups:
+  - crd.projectcalico.org
+  resources:
+  - ipamconfigs
+  verbs:
+  - get
+  - create
+- apiGroups:
+  - crd.projectcalico.org
+  resources:
+  - blockaffinities
+  verbs:
   - watch
 - apiGroups:
-  - ""
+  - apps
   resources:
-  - nodes/status
+  - daemonsets
   verbs:
-  - patch
+  - get
 
 ---
 
@@ -4358,17 +4425,17 @@ kind: ClusterRoleBinding
 metadata:
   creationTimestamp: null
   labels:
-    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
     role.kubernetes.io/networking: "1"
-  name: canal-flannel
+  name: calico-kube-controllers
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: flannel
+  name: calico-kube-controllers
 subjects:
 - kind: ServiceAccount
-  name: canal
+  name: calico-kube-controllers
   namespace: kube-system
 
 ---
@@ -4378,17 +4445,17 @@ kind: ClusterRoleBinding
 metadata:
   creationTimestamp: null
   labels:
-    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
     role.kubernetes.io/networking: "1"
-  name: canal-calico
+  name: calico-node
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: calico
+  name: calico-node
 subjects:
 - kind: ServiceAccount
-  name: canal
+  name: calico-node
   namespace: kube-system
 
 ---
@@ -4398,52 +4465,69 @@ kind: DaemonSet
 metadata:
   creationTimestamp: null
   labels:
-    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
-    k8s-app: canal
+    k8s-app: calico-node
     role.kubernetes.io/networking: "1"
-  name: canal
+  name: calico-node
   namespace: kube-system
 spec:
   selector:
     matchLabels:
-      k8s-app: canal
+      k8s-app: calico-node
   template:
     metadata:
       creationTimestamp: null
       labels:
-        k8s-app: canal
+        k8s-app: calico-node
         kops.k8s.io/managed-by: kops
     spec:
       containers:
       - env:
         - name: DATASTORE_TYPE
           value: kubernetes
-        - name: USE_POD_CIDR
-          value: "true"
         - name: WAIT_FOR_DATASTORE
           value: "true"
         - name: NODENAME
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        - name: CALICO_CNI_SERVICE_ACCOUNT
-          valueFrom:
-            fieldRef:
-              fieldPath: spec.serviceAccountName
         - name: CALICO_NETWORKING_BACKEND
-          value: none
+          valueFrom:
+            configMapKeyRef:
+              key: calico_backend
+              name: calico-config
         - name: CLUSTER_TYPE
-          value: k8s,canal
-        - name: FELIX_IPTABLESREFRESHINTERVAL
-          value: "60"
+          value: kops,bgp
         - name: IP
-          value: ""
+          value: autodetect
+        - name: IP6
+          value: none
+        - name: IP_AUTODETECTION_METHOD
+          value: first-found
+        - name: IP6_AUTODETECTION_METHOD
+          value: none
+        - name: CALICO_IPV4POOL_IPIP
+          value: CrossSubnet
+        - name: CALICO_IPV4POOL_VXLAN
+          value: Never
         - name: FELIX_IPINIPMTU
           valueFrom:
             configMapKeyRef:
               key: veth_mtu
-              name: canal-config
+              name: calico-config
+        - name: FELIX_VXLANMTU
+          valueFrom:
+            configMapKeyRef:
+              key: veth_mtu
+              name: calico-config
+        - name: FELIX_WIREGUARDMTU
+          valueFrom:
+            configMapKeyRef:
+              key: veth_mtu
+              name: calico-config
+        - name: CALICO_IPV4POOL_CIDR
+          value: 100.96.0.0/11
         - name: CALICO_DISABLE_FILE_LOGGING
           value: "true"
         - name: FELIX_DEFAULTENDPOINTTOHOSTACTION
@@ -4452,6 +4536,16 @@ spec:
           value: "false"
         - name: FELIX_HEALTHENABLED
           value: "true"
+        - name: FELIX_AWSSRCDSTCHECK
+          value: Disable
+        - name: FELIX_BPFENABLED
+          value: "false"
+        - name: FELIX_BPFEXTERNALSERVICEMODE
+          value: Tunnel
+        - name: FELIX_BPFKUBEPROXYIPTABLESCLEANUPENABLED
+          value: "false"
+        - name: FELIX_BPFLOGLEVEL
+          value: "Off"
         - name: FELIX_CHAININSERTMODE
           value: insert
         - name: FELIX_IPTABLESBACKEND
@@ -4466,11 +4560,14 @@ spec:
           value: "false"
         - name: FELIX_PROMETHEUSPROCESSMETRICSENABLED
           value: "false"
+        - name: FELIX_WIREGUARDENABLED
+          value: "false"
         envFrom:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/node:v3.23.3
+        image: docker.io/calico/node:v3.24.1
+        imagePullPolicy: IfNotPresent
         lifecycle:
           preStop:
             exec:
@@ -4482,16 +4579,18 @@ spec:
             command:
             - /bin/calico-node
             - -felix-live
+            - -bird-live
           failureThreshold: 6
           initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 10
         name: calico-node
         readinessProbe:
-          httpGet:
-            host: localhost
-            path: /readiness
-            port: 9099
+          exec:
+            command:
+            - /bin/calico-node
+            - -felix-ready
+            - -bird-ready
           periodSeconds: 10
           timeoutSeconds: 10
         resources:
@@ -4522,55 +4621,45 @@ spec:
         - mountPath: /var/log/calico/cni
           name: cni-log-dir
           readOnly: true
-      - command:
-        - /opt/bin/flanneld
-        - --ip-masq
-        - --kube-subnet-mgr
-        env:
-        - name: POD_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
-        - name: POD_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-        - name: FLANNELD_IFACE
-          valueFrom:
-            configMapKeyRef:
-              key: canal_iface
-              name: canal-config
-        - name: FLANNELD_IP_MASQ
-          valueFrom:
-            configMapKeyRef:
-              key: masquerade
-              name: canal-config
-        image: quay.io/coreos/flannel:v0.15.1
-        name: kube-flannel
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /run/xtables.lock
-          name: xtables-lock
-          readOnly: false
-        - mountPath: /etc/kube-flannel/
-          name: flannel-cfg
       hostNetwork: true
       initContainers:
       - command:
-        - /opt/cni/bin/install
+        - /opt/cni/bin/calico-ipam
+        - -upgrade
         env:
-        - name: CALICO_CNI_SERVICE_ACCOUNT
+        - name: KUBERNETES_NODE_NAME
           valueFrom:
             fieldRef:
-              fieldPath: spec.serviceAccountName
+              fieldPath: spec.nodeName
+        - name: CALICO_NETWORKING_BACKEND
+          valueFrom:
+            configMapKeyRef:
+              key: calico_backend
+              name: calico-config
+        envFrom:
+        - configMapRef:
+            name: kubernetes-services-endpoint
+            optional: true
+        image: docker.io/calico/cni:v3.24.1
+        imagePullPolicy: IfNotPresent
+        name: upgrade-ipam
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /var/lib/cni/networks
+          name: host-local-net-dir
+        - mountPath: /host/opt/cni/bin
+          name: cni-bin-dir
+      - command:
+        - /opt/cni/bin/install
+        env:
         - name: CNI_CONF_NAME
-          value: 10-canal.conflist
+          value: 10-calico.conflist
         - name: CNI_NETWORK_CONFIG
           valueFrom:
             configMapKeyRef:
               key: cni_network_config
-              name: canal-config
+              name: calico-config
         - name: KUBERNETES_NODE_NAME
           valueFrom:
             fieldRef:
@@ -4579,14 +4668,15 @@ spec:
           valueFrom:
             configMapKeyRef:
               key: veth_mtu
-              name: canal-config
+              name: calico-config
         - name: SLEEP
           value: "false"
         envFrom:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/cni:v3.23.3
+        image: docker.io/calico/cni:v3.24.1
+        imagePullPolicy: IfNotPresent
         name: install-cni
         securityContext:
           privileged: true
@@ -4599,7 +4689,8 @@ spec:
         - calico-node
         - -init
         - -best-effort
-        image: docker.io/calico/node:v3.23.3
+        image: docker.io/calico/node:v3.24.1
+        imagePullPolicy: IfNotPresent
         name: mount-bpffs
         securityContext:
           privileged: true
@@ -4616,7 +4707,7 @@ spec:
       nodeSelector:
         kubernetes.io/os: linux
       priorityClassName: system-node-critical
-      serviceAccountName: canal
+      serviceAccountName: calico-node
       terminationGracePeriodSeconds: 0
       tolerations:
       - effect: NoSchedule
@@ -4650,9 +4741,6 @@ spec:
       - hostPath:
           path: /proc
         name: nodeproc
-      - configMap:
-          name: canal-config
-        name: flannel-cfg
       - hostPath:
           path: /opt/cni/bin
         name: cni-bin-dir
@@ -4662,6 +4750,9 @@ spec:
       - hostPath:
           path: /var/log/calico/cni
         name: cni-log-dir
+      - hostPath:
+          path: /var/lib/cni/networks
+        name: host-local-net-dir
       - hostPath:
           path: /var/run/nodeagent
           type: DirectoryOrCreate
@@ -4673,25 +4764,12 @@ spec:
 
 ---
 
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  creationTimestamp: null
-  labels:
-    addon.kops.k8s.io/name: networking.projectcalico.org.canal
-    app.kubernetes.io/managed-by: kops
-    role.kubernetes.io/networking: "1"
-  name: canal
-  namespace: kube-system
-
----
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   creationTimestamp: null
   labels:
-    addon.kops.k8s.io/name: networking.projectcalico.org.canal
+    addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
     k8s-app: calico-kube-controllers
     role.kubernetes.io/networking: "1"
@@ -4737,7 +4815,8 @@ spec:
           value: node
         - name: DATASTORE_TYPE
           value: kubernetes
-        image: docker.io/calico/kube-controllers:v3.23.3
+        image: docker.io/calico/kube-controllers:v3.24.1
+        imagePullPolicy: IfNotPresent
         livenessProbe:
           exec:
             command:
@@ -4763,35 +4842,3 @@ spec:
         key: node-role.kubernetes.io/master
       - effect: NoSchedule
         key: node-role.kubernetes.io/control-plane
-
----
-
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  creationTimestamp: null
-  labels:
-    addon.kops.k8s.io/name: networking.projectcalico.org.canal
-    app.kubernetes.io/managed-by: kops
-    role.kubernetes.io/networking: "1"
-  name: calico-kube-controllers
-  namespace: kube-system
-
----
-
-apiVersion: policy/v1beta1
-kind: PodDisruptionBudget
-metadata:
-  creationTimestamp: null
-  labels:
-    addon.kops.k8s.io/name: networking.projectcalico.org.canal
-    app.kubernetes.io/managed-by: kops
-    k8s-app: calico-kube-controllers
-    role.kubernetes.io/networking: "1"
-  name: calico-kube-controllers
-  namespace: kube-system
-spec:
-  maxUnavailable: 1
-  selector:
-    matchLabels:
-      k8s-app: calico-kube-controllers
