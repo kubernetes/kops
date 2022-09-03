@@ -139,7 +139,7 @@ docker:
 kubeProxy:
   clusterCIDR: 100.96.0.0/11
   cpuRequest: 100m
-  image: registry.k8s.io/kube-proxy:v1.24.0
+  image: registry.k8s.io/kube-proxy:v1.25.0
   logLevel: 2
 kubelet:
   anonymousAuth: false
@@ -168,7 +168,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privatecalico.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: 5LJ/q7tMyYX+GpAQHQHO43QU4AN9au1mhhcqOCciRjM=
+NodeupConfigHash: Uarnz56elSadYxbHZheGGO9/oH8CAvBVeRKdq77Qxz8=
 
 __EOF_KUBE_ENV
 

@@ -24,8 +24,7 @@ spec:
     clusterCIDR: ::/0
     clusterName: minimal-ipv6.example.com
     configureCloudRoutes: false
-    enableLeaderMigration: true
-    image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.24.1
+    image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.25.0
     leaderElection:
       leaderElect: true
   cloudProvider: aws
@@ -88,7 +87,7 @@ spec:
     featureGates:
       CSIMigrationAWS: "true"
       InTreePluginAWSUnregister: "true"
-    image: registry.k8s.io/kube-apiserver:v1.24.0
+    image: registry.k8s.io/kube-apiserver:v1.25.0
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
@@ -119,7 +118,7 @@ spec:
     featureGates:
       CSIMigrationAWS: "true"
       InTreePluginAWSUnregister: "true"
-    image: registry.k8s.io/kube-controller-manager:v1.24.0
+    image: registry.k8s.io/kube-controller-manager:v1.25.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -142,13 +141,13 @@ spec:
     - fd00:ec2::253
   kubeProxy:
     cpuRequest: 100m
-    image: registry.k8s.io/kube-proxy:v1.24.0
+    image: registry.k8s.io/kube-proxy:v1.25.0
     logLevel: 2
   kubeScheduler:
     featureGates:
       CSIMigrationAWS: "true"
       InTreePluginAWSUnregister: "true"
-    image: registry.k8s.io/kube-scheduler:v1.24.0
+    image: registry.k8s.io/kube-scheduler:v1.25.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -174,7 +173,7 @@ spec:
   kubernetesApiAccess:
   - 0.0.0.0/0
   - ::/0
-  kubernetesVersion: 1.24.0
+  kubernetesVersion: 1.25.0
   masterInternalName: api.internal.minimal-ipv6.example.com
   masterKubelet:
     anonymousAuth: false
