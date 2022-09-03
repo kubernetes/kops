@@ -562,6 +562,11 @@ func (in *CertManagerConfig) DeepCopyInto(out *CertManagerConfig) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.HostedZoneIDs != nil {
+		in, out := &in.HostedZoneIDs, &out.HostedZoneIDs
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 

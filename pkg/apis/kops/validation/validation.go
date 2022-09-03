@@ -309,6 +309,9 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 	if spec.PodIdentityWebhook != nil && spec.PodIdentityWebhook.Enabled {
 		allErrs = append(allErrs, validatePodIdentityWebhook(c, spec.PodIdentityWebhook, fieldPath.Child("podIdentityWebhook"))...)
 	}
+	if spec.CertManager != nil && fi.BoolValue(spec.CertManager.Enabled) {
+		allErrs = append(allErrs, validateCertManager(c, spec.CertManager, fieldPath.Child("certManager"))...)
+	}
 
 	return allErrs
 }
@@ -1700,5 +1703,14 @@ func validatePodIdentityWebhook(cluster *kops.Cluster, spec *kops.PodIdentityWeb
 		}
 	}
 
+	return allErrs
+}
+
+func validateCertManager(cluster *kops.Cluster, spec *kops.CertManagerConfig, fldPath *field.Path) (allErrs field.ErrorList) {
+	if len(spec.HostedZoneIDs) > 0 {
+		if !fi.BoolValue(cluster.Spec.IAM.UseServiceAccountExternalPermissions) {
+			allErrs = append(allErrs, field.Forbidden(fldPath, "Cert Manager requires that service accounts use external permissions in order to do dns-01 validation"))
+		}
+	}
 	return allErrs
 }
