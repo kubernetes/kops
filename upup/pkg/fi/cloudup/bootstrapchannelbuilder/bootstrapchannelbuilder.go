@@ -100,7 +100,7 @@ func NewBootstrapChannelBuilder(modelContext *model.KopsModelContext,
 
 // Build is responsible for adding the addons to the channel
 func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
-	addons, err := b.buildAddons(c)
+	addons, serviceAccounts, err := b.buildAddons(c)
 	if err != nil {
 		return err
 	}
@@ -130,7 +130,7 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		// Go through any transforms that are best expressed as code
-		remapped, err := addonmanifests.RemapAddonManifest(a.Spec, b.KopsModelContext, b.assetBuilder, manifestBytes)
+		remapped, err := addonmanifests.RemapAddonManifest(a.Spec, b.KopsModelContext, b.assetBuilder, manifestBytes, serviceAccounts)
 		if err != nil {
 			klog.Infof("invalid manifest: %s", string(manifestBytes))
 			return fmt.Errorf("error remapping manifest %s: %v", manifestPath, err)
@@ -180,7 +180,7 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 			manifestPath := "addons/" + *a.Spec.Manifest
 
 			// Go through any transforms that are best expressed as code
-			manifestBytes, err := addonmanifests.RemapAddonManifest(&a.Spec, b.KopsModelContext, b.assetBuilder, a.Manifest)
+			manifestBytes, err := addonmanifests.RemapAddonManifest(&a.Spec, b.KopsModelContext, b.assetBuilder, a.Manifest, serviceAccounts)
 			if err != nil {
 				klog.Infof("invalid manifest: %s", string(a.Manifest))
 				return fmt.Errorf("error remapping manifest %s: %v", manifestPath, err)
@@ -324,7 +324,7 @@ type Addon struct {
 	BuildPrune bool
 }
 
-func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*AddonList, error) {
+func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*AddonList, map[string]iam.Subject, error) {
 	addons := &AddonList{}
 
 	serviceAccountRoles := []iam.Subject{}
@@ -1016,7 +1016,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 
 	err := addCiliumAddon(b, addons)
 	if err != nil {
-		return nil, fmt.Errorf("failed to add cilium addon: %w", err)
+		return nil, nil, fmt.Errorf("failed to add cilium addon: %w", err)
 	}
 
 	authenticationSelector := map[string]string{"role.kubernetes.io/authentication": "1"}
@@ -1173,6 +1173,8 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 		})
 	}
 
+	serviceAccounts := make(map[string]iam.Subject)
+
 	if b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderAWS && b.Cluster.Spec.KubeAPIServer.ServiceAccountIssuer != nil {
 		awsModelContext := &awsmodel.AWSModelContext{
 			KopsModelContext: b.KopsModelContext,
@@ -1183,9 +1185,11 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 
 			_, err := iamModelBuilder.BuildServiceAccountRoleTasks(serviceAccountRole, c)
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
+			sa, _ := serviceAccountRole.ServiceAccount()
+			serviceAccounts[sa.Name] = serviceAccountRole
 		}
 	}
-	return addons, nil
+	return addons, serviceAccounts, nil
 }

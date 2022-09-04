@@ -9553,10 +9553,6 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        - name: AWS_ROLE_ARN
-          value: arn:aws-test:iam::123456789012:role/cert-manager.kube-system.sa.minimal.example.com
-        - name: AWS_WEB_IDENTITY_TOKEN_FILE
-          value: /var/run/secrets/amazonaws.com/token
         image: quay.io/jetstack/cert-manager-controller:v1.9.1
         imagePullPolicy: IfNotPresent
         name: cert-manager
@@ -9567,13 +9563,9 @@ spec:
         resources: {}
         securityContext:
           allowPrivilegeEscalation: false
-        volumeMounts:
-        - mountPath: /var/run/secrets/amazonaws.com/
-          name: token-amazonaws-com
-          readOnly: true
+      nodeSelector: null
       priorityClassName: system-cluster-critical
       securityContext:
-        fsGroup: 10001
         runAsNonRoot: true
       serviceAccountName: cert-manager
       tolerations:
@@ -9581,15 +9573,6 @@ spec:
         operator: Exists
       - key: node-role.kubernetes.io/master
         operator: Exists
-      volumes:
-      - name: token-amazonaws-com
-        projected:
-          defaultMode: 420
-          sources:
-          - serviceAccountToken:
-              audience: amazonaws.com
-              expirationSeconds: 86400
-              path: token
 
 ---
 
