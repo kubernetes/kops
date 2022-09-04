@@ -34,6 +34,11 @@ API_OPTIONS?=
 GCFLAGS?=
 OSARCH=$(shell go env GOOS)/$(shell go env GOARCH)
 
+GOBIN=$(shell go env GOBIN)
+ifeq ($(GOBIN),)
+GOBIN := $(shell go env GOPATH)/bin
+endif
+
 # CODEGEN_VERSION is the version of k8s.io/code-generator to use
 CODEGEN_VERSION=v0.24.0
 
@@ -91,7 +96,7 @@ endif
 
 .PHONY: kops-install # Install kops to local $GOPATH/bin
 kops-install: kops
-	cp ${DIST}/$(shell go env GOOS)/$(shell go env GOARCH)/kops* $(shell go env GOBIN)
+	cp ${DIST}/$(shell go env GOOS)/$(shell go env GOARCH)/kops* ${GOBIN}
 
 .phony: channels-install # install channels to local $gopath/bin
 channels-install: channels
