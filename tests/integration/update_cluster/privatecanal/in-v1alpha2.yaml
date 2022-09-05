@@ -21,7 +21,7 @@ spec:
   iam: {}
   kubelet:
     anonymousAuth: false
-  kubernetesVersion: v1.22.0
+  kubernetesVersion: v1.25.0
   masterInternalName: api.internal.privatecanal.example.com
   masterPublicName: api.privatecanal.example.com
   networkCIDR: 172.20.0.0/16

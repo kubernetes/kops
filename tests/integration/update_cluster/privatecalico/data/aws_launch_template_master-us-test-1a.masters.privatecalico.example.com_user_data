@@ -168,7 +168,7 @@ kubeAPIServer:
   featureGates:
     CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
-  image: registry.k8s.io/kube-apiserver:v1.24.0
+  image: registry.k8s.io/kube-apiserver:v1.25.0
   kubeletPreferredAddressTypes:
   - InternalIP
   - Hostname
@@ -197,7 +197,7 @@ kubeControllerManager:
   featureGates:
     CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
-  image: registry.k8s.io/kube-controller-manager:v1.24.0
+  image: registry.k8s.io/kube-controller-manager:v1.25.0
   leaderElection:
     leaderElect: true
   logLevel: 2
@@ -205,13 +205,13 @@ kubeControllerManager:
 kubeProxy:
   clusterCIDR: 100.96.0.0/11
   cpuRequest: 100m
-  image: registry.k8s.io/kube-proxy:v1.24.0
+  image: registry.k8s.io/kube-proxy:v1.25.0
   logLevel: 2
 kubeScheduler:
   featureGates:
     CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
-  image: registry.k8s.io/kube-scheduler:v1.24.0
+  image: registry.k8s.io/kube-scheduler:v1.25.0
   leaderElection:
     leaderElect: true
   logLevel: 2
@@ -262,7 +262,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privatecalico.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: ZZ7iN/nn1HloHenP2fdsifkzba2jDBpGKeUDjzNAivI=
+NodeupConfigHash: oEhiOuOgn2yqMkc7o3p/qkKNbEf9nfI0WQK66/ivueI=
 
 __EOF_KUBE_ENV
 

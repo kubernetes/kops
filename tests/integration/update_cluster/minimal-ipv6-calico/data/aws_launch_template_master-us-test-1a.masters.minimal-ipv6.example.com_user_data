@@ -171,7 +171,7 @@ kubeAPIServer:
   featureGates:
     CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
-  image: registry.k8s.io/kube-apiserver:v1.24.0
+  image: registry.k8s.io/kube-apiserver:v1.25.0
   kubeletPreferredAddressTypes:
   - InternalIP
   - Hostname
@@ -202,20 +202,20 @@ kubeControllerManager:
   featureGates:
     CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
-  image: registry.k8s.io/kube-controller-manager:v1.24.0
+  image: registry.k8s.io/kube-controller-manager:v1.25.0
   leaderElection:
     leaderElect: true
   logLevel: 2
   useServiceAccountCredentials: true
 kubeProxy:
   cpuRequest: 100m
-  image: registry.k8s.io/kube-proxy:v1.24.0
+  image: registry.k8s.io/kube-proxy:v1.25.0
   logLevel: 2
 kubeScheduler:
   featureGates:
     CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
-  image: registry.k8s.io/kube-scheduler:v1.24.0
+  image: registry.k8s.io/kube-scheduler:v1.25.0
   leaderElection:
     leaderElect: true
   logLevel: 2
@@ -266,7 +266,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal-ipv6.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: 3AjR/Eh5fJrpMtFcRBuUesx2BAHxz6zCDf3yH5mGVnE=
+NodeupConfigHash: 48kdi42qgv9NwUp6S4Dbhen/a4kzgvw5LRpK7e3j8mk=
 
 __EOF_KUBE_ENV
 
