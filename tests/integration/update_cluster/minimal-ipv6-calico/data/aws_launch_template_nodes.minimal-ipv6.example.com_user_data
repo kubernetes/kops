@@ -141,7 +141,7 @@ docker:
   skipInstall: true
 kubeProxy:
   cpuRequest: 100m
-  image: registry.k8s.io/kube-proxy:v1.24.0
+  image: registry.k8s.io/kube-proxy:v1.25.0
   logLevel: 2
 kubelet:
   anonymousAuth: false
@@ -170,7 +170,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal-ipv6.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: j9LyBJ0pLkBXA4Oyd8fhmpHRKlMprTsFGYNtM6Nk7Gw=
+NodeupConfigHash: /6Vm+FbrJlMLJ6mdXhsVB5ydm8S+Xx9NIht1t5MRfVA=
 
 __EOF_KUBE_ENV
 

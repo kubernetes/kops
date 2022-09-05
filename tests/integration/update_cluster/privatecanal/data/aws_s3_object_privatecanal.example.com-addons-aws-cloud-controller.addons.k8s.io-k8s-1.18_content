@@ -33,8 +33,8 @@ spec:
       containers:
       - args:
         - --allocate-node-cidrs=true
-        - --cluster-cidr=::/0
-        - --cluster-name=minimal-ipv6.example.com
+        - --cluster-cidr=100.64.0.0/10
+        - --cluster-name=privatecanal.example.com
         - --configure-cloud-routes=false
         - --leader-elect=true
         - --v=2
