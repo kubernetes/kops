@@ -906,16 +906,28 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 	if b.Cluster.Spec.Networking.Flannel != nil {
 		key := "networking.flannel"
 
-		{
-			location := key + "/k8s-1.12.yaml"
-			id := "k8s-1.12"
+		if b.IsKubernetesGTE("v1.25.0") {
+			id := "k8s-1.25"
+			location := key + "/" + id + ".yaml"
 
-			addons.Add(&channelsapi.AddonSpec{
+			addon := addons.Add(&channelsapi.AddonSpec{
 				Name:     fi.String(key),
 				Selector: networkingSelector(),
 				Manifest: fi.String(location),
 				Id:       id,
 			})
+			addon.BuildPrune = true
+		} else {
+			id := "k8s-1.12"
+			location := key + "/" + id + ".yaml"
+
+			addon := addons.Add(&channelsapi.AddonSpec{
+				Name:     fi.String(key),
+				Selector: networkingSelector(),
+				Manifest: fi.String(location),
+				Id:       id,
+			})
+			addon.BuildPrune = true
 		}
 	}
 
