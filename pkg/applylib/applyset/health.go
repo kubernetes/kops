@@ -18,19 +18,47 @@ package applyset
 
 import (
 	"encoding/json"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/klog/v2"
 )
 
 // isHealthy reports whether the object should be considered "healthy"
 // TODO: Replace with kstatus library
 func isHealthy(u *unstructured.Unstructured) bool {
-	ready := true
+	// Check if the resource is scheduled for deletion
+	deletionTimestamp := u.GetDeletionTimestamp()
+	if deletionTimestamp != nil {
+		klog.Infof("object %s is scheduled for deletion", humanName(u))
+		return false
+	}
 
+	gvk := u.GroupVersionKind()
+	switch gvk {
+	case schema.GroupVersionKind{Group: "", Version: "v1", Kind: "ConfigMap"},
+		schema.GroupVersionKind{Group: "", Version: "v1", Kind: "ServiceAccount"}:
+		// No ready signal; assume ready
+		return true
+	case schema.GroupVersionKind{Group: "rbac.authorization.k8s.io", Version: "v1", Kind: "ClusterRole"},
+		schema.GroupVersionKind{Group: "rbac.authorization.k8s.io", Version: "v1", Kind: "ClusterRoleBinding"},
+		schema.GroupVersionKind{Group: "rbac.authorization.k8s.io", Version: "v1", Kind: "Role"},
+		schema.GroupVersionKind{Group: "rbac.authorization.k8s.io", Version: "v1", Kind: "RoleBinding"}:
+		// No ready signal; assume ready
+		return true
+	case schema.GroupVersionKind{Group: "scheduling.k8s.io", Version: "v1", Kind: "PriorityClass"}:
+		// No ready signal; assume ready
+		return true
+	case schema.GroupVersionKind{Group: "storage.k8s.io", Version: "v1", Kind: "StorageClass"}:
+		// No ready signal; assume ready
+		return true
+	}
+
+	ready := true
 	statusConditions, found, err := unstructured.NestedFieldNoCopy(u.Object, "status", "conditions")
 	if err != nil || !found {
-		klog.Infof("status conditions not found for %s", u.GroupVersionKind())
+		klog.Infof("status conditions not found for %s", humanName(u))
 		return true
 	}
 
@@ -76,7 +104,7 @@ func isHealthy(u *unstructured.Unstructured) bool {
 
 		case "False":
 			j, _ := json.Marshal(condition)
-			klog.Infof("status.conditions indicates object is not ready: %v", string(j))
+			klog.Infof("status.conditions indicates object %s is not ready: %v", humanName(u), string(j))
 			ready = false
 
 		case "":
@@ -84,6 +112,30 @@ func isHealthy(u *unstructured.Unstructured) bool {
 		}
 	}
 
-	klog.Infof("isHealthy %s %s/%s => %v", u.GroupVersionKind(), u.GetNamespace(), u.GetName(), ready)
+	if !ready {
+		klog.Infof("object %s is not ready", humanName(u))
+	}
 	return ready
+}
+
+// humanName returns an identifier for the object suitable for printing in log messages
+func humanName(u *unstructured.Unstructured) string {
+	gvk := u.GroupVersionKind()
+	var s strings.Builder
+	s.WriteString(gvk.Kind)
+	if gvk.Group != "" {
+		s.WriteString(".")
+		s.WriteString(gvk.Group)
+	}
+	s.WriteString(":")
+	namespace := u.GetNamespace()
+	name := u.GetName()
+	if namespace != "" {
+		s.WriteString(namespace)
+		s.WriteString("/")
+		s.WriteString(name)
+	} else {
+		s.WriteString(name)
+	}
+	return s.String()
 }
