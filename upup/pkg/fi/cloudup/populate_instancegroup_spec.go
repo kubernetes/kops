@@ -43,7 +43,7 @@ const (
 	defaultBastionMachineTypeAzure   = "Standard_B2ms"
 	defaultBastionMachineTypeHetzner = "cx11"
 
-	defaultMasterMachineTypeGCE     = "n1-standard-1"
+	defaultMasterMachineTypeGCE     = "e2-medium"
 	defaultMasterMachineTypeDO      = "s-2vcpu-4gb"
 	defaultMasterMachineTypeAzure   = "Standard_B2ms"
 	defaultMasterMachineTypeHetzner = "cx21"
