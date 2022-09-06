@@ -144,6 +144,22 @@ spec:
       - 8.8.8.8
 ```
 
+##### Enabling dns-01 challenges
+
+{{ kops_feature_table(kops_added_default='1.25.0') }}
+
+Cert Manager may be granted the necessary IAM privileges to solve dns-01 challenges by adding a list of hostedzone IDs.
+This requires [external permissions for service accounts](/cluster_spec/#service-account-issuer-discovery-and-aws-iam-roles-for-service-accounts-irsa) to be enabled.
+
+```yaml
+spec:
+  certManager:
+    enabled: true
+    hostedZoneIDs:
+    - ZONEID
+  iam:
+    useServiceAccountsExternalPermissions: true
+```
 
 Read more about cert-manager in the [official documentation](https://cert-manager.io/docs/)
 

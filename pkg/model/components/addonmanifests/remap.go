@@ -26,20 +26,12 @@ import (
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model"
-	"k8s.io/kops/pkg/model/components/addonmanifests/awscloudcontrollermanager"
-	"k8s.io/kops/pkg/model/components/addonmanifests/awsebscsidriver"
-	"k8s.io/kops/pkg/model/components/addonmanifests/awsloadbalancercontroller"
-	"k8s.io/kops/pkg/model/components/addonmanifests/clusterautoscaler"
 	"k8s.io/kops/pkg/model/components/addonmanifests/dnscontroller"
-	"k8s.io/kops/pkg/model/components/addonmanifests/externaldns"
-	"k8s.io/kops/pkg/model/components/addonmanifests/karpenter"
-	"k8s.io/kops/pkg/model/components/addonmanifests/kuberouter"
-	"k8s.io/kops/pkg/model/components/addonmanifests/nodeterminationhandler"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-func RemapAddonManifest(addon *addonsapi.AddonSpec, context *model.KopsModelContext, assetBuilder *assets.AssetBuilder, manifest []byte) ([]byte, error) {
+func RemapAddonManifest(addon *addonsapi.AddonSpec, context *model.KopsModelContext, assetBuilder *assets.AssetBuilder, manifest []byte, serviceAccounts map[string]iam.Subject) ([]byte, error) {
 	name := fi.StringValue(addon.Name)
 
 	{
@@ -59,7 +51,7 @@ func RemapAddonManifest(addon *addonsapi.AddonSpec, context *model.KopsModelCont
 			return nil, fmt.Errorf("failed to annotate %q: %w", name, err)
 		}
 
-		err = addServiceAccountRole(context, objects)
+		err = addServiceAccountRole(context, objects, serviceAccounts)
 		if err != nil {
 			return nil, fmt.Errorf("failed to add service account for %q: %w", name, err)
 		}
@@ -82,7 +74,7 @@ func RemapAddonManifest(addon *addonsapi.AddonSpec, context *model.KopsModelCont
 	return manifest, nil
 }
 
-func addServiceAccountRole(context *model.KopsModelContext, objects kubemanifest.ObjectList) error {
+func addServiceAccountRole(context *model.KopsModelContext, objects kubemanifest.ObjectList, serviceAccounts map[string]iam.Subject) error {
 	if !context.UseServiceAccountExternalPermissions() {
 		return nil
 	}
@@ -97,7 +89,7 @@ func addServiceAccountRole(context *model.KopsModelContext, objects kubemanifest
 			return fmt.Errorf("failed to parse spec.template.spec from Deployment: %v", err)
 		}
 		sa := podSpec.ServiceAccountName
-		subject := getWellknownServiceAccount(sa)
+		subject := serviceAccounts[sa]
 		if subject == nil {
 			continue
 		}
@@ -112,29 +104,6 @@ func addServiceAccountRole(context *model.KopsModelContext, objects kubemanifest
 
 	}
 	return nil
-}
-
-func getWellknownServiceAccount(name string) iam.Subject {
-	switch name {
-	case "aws-load-balancer-controller":
-		return &awsloadbalancercontroller.ServiceAccount{}
-	case "cluster-autoscaler":
-		return &clusterautoscaler.ServiceAccount{}
-	case "ebs-csi-controller-sa":
-		return &awsebscsidriver.ServiceAccount{}
-	case "aws-node-termination-handler":
-		return &nodeterminationhandler.ServiceAccount{}
-	case "aws-cloud-controller-manager":
-		return &awscloudcontrollermanager.ServiceAccount{}
-	case "external-dns":
-		return &externaldns.ServiceAccount{}
-	case "karpenter":
-		return &karpenter.ServiceAccount{}
-	case "kube-router":
-		return &kuberouter.ServiceAccount{}
-	default:
-		return nil
-	}
 }
 
 func addLabels(addon *addonsapi.AddonSpec, objects kubemanifest.ObjectList) error {
