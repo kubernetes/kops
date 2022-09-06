@@ -95,7 +95,7 @@ spec:
   - sg-exampleid3
   - sg-exampleid4
   image: ubuntu-os-cloud/ubuntu-2004-focal-v20220118
-  machineType: n1-standard-1
+  machineType: e2-medium
   maxSize: 1
   minSize: 1
   role: Master
