@@ -1003,6 +1003,11 @@ func (in *ClusterAutoscalerConfig) DeepCopyInto(out *ClusterAutoscalerConfig) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.CordonNodeBeforeTerminating != nil {
+		in, out := &in.CordonNodeBeforeTerminating, &out.CordonNodeBeforeTerminating
+		*out = new(bool)
+		**out = **in
+	}
 	if in.Image != nil {
 		in, out := &in.Image, &out.Image
 		*out = new(string)
