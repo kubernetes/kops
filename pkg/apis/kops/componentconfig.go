@@ -1063,6 +1063,9 @@ type CertManagerConfig struct {
 	// nameservers is a list of nameserver IP addresses to use instead of the pod defaults.
 	// Default: none
 	Nameservers []string `json:"nameservers,omitempty"`
+
+	// HostedZoneIDs is a list of route53 hostedzone IDs that cert-manager will be allowed to do dns-01 validation for
+	HostedZoneIDs []string `json:"hostedZoneIDs,omitempty"`
 }
 
 // AWSLoadBalancerControllerConfig determines the AWS LB controller configuration.
