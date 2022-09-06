@@ -1933,6 +1933,7 @@ func autoConvert_v1alpha2_CertManagerConfig_To_kops_CertManagerConfig(in *CertMa
 	out.Image = in.Image
 	out.DefaultIssuer = in.DefaultIssuer
 	out.Nameservers = in.Nameservers
+	out.HostedZoneIDs = in.HostedZoneIDs
 	return nil
 }
 
@@ -1947,6 +1948,7 @@ func autoConvert_kops_CertManagerConfig_To_v1alpha2_CertManagerConfig(in *kops.C
 	out.Image = in.Image
 	out.DefaultIssuer = in.DefaultIssuer
 	out.Nameservers = in.Nameservers
+	out.HostedZoneIDs = in.HostedZoneIDs
 	return nil
 }
 

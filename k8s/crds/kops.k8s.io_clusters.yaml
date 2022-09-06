@@ -292,6 +292,12 @@ spec:
                   enabled:
                     description: 'Enabled enables the cert manager. Default: false'
                     type: boolean
+                  hostedZoneIDs:
+                    description: HostedZoneIDs is a list of route53 hostedzone IDs
+                      that cert-manager will be allowed to do dns-01 validation for
+                    items:
+                      type: string
+                    type: array
                   image:
                     description: 'Image is the docker container used. Default: the
                       latest supported image for the specified kubernetes version.'
