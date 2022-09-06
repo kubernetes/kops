@@ -204,7 +204,8 @@ const (
 	awsAuthenticatorAddon = "authentication.aws-k8s-1.12"
 	awsCCMAddon           = "aws-cloud-controller.addons.k8s.io-k8s-1.18"
 	awsEBSCSIAddon        = "aws-ebs-csi-driver.addons.k8s.io-k8s-1.17"
-	calicoAddon           = "networking.projectcalico.org-k8s-1.22"
+	calicoAddon           = "networking.projectcalico.org-k8s-1.25"
+	canalAddon            = "networking.projectcalico.org.canal-k8s-1.25"
 	certManagerAddon      = "certmanager.io-k8s-1.16"
 	ciliumAddon           = "networking.cilium.io-k8s-1.16"
 	dnsControllerAddon    = "dns-controller.addons.k8s.io-k8s-1.12"
@@ -415,9 +416,9 @@ func TestMinimalIPv6Private(t *testing.T) {
 // TestMinimalIPv6Calico runs the test on a minimum IPv6 configuration with Calico
 func TestMinimalIPv6Calico(t *testing.T) {
 	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6-calico").
-		withAddons(calicoAddon, awsCCMAddon, awsEBSCSIAddon, dnsControllerAddon, leaderElectionAddon).
+		withDefaultAddons24().
+		withAddons(calicoAddon).
 		runTestTerraformAWS(t)
-	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6-calico").runTestCloudformation(t)
 }
 
 // TestMinimalIPv6Calico runs the test on a minimum IPv6 configuration with Cilium
@@ -500,11 +501,9 @@ func TestPrivateFlannel(t *testing.T) {
 func TestPrivateCalico(t *testing.T) {
 	newIntegrationTest("privatecalico.example.com", "privatecalico").
 		withPrivate().
-		withAddons(calicoAddon, awsCCMAddon, awsEBSCSIAddon, dnsControllerAddon, leaderElectionAddon).
+		withDefaultAddons24().
+		withAddons(calicoAddon).
 		runTestTerraformAWS(t)
-	newIntegrationTest("privatecalico.example.com", "privatecalico").
-		withPrivate().
-		runTestCloudformation(t)
 }
 
 func TestPrivateCilium(t *testing.T) {
@@ -546,7 +545,8 @@ func TestPrivateCiliumAdvanced(t *testing.T) {
 func TestPrivateCanal(t *testing.T) {
 	newIntegrationTest("privatecanal.example.com", "privatecanal").
 		withPrivate().
-		withAddons("networking.projectcalico.org.canal-k8s-1.22", "aws-ebs-csi-driver.addons.k8s.io-k8s-1.17", dnsControllerAddon).
+		withDefaultAddons24().
+		withAddons(canalAddon).
 		runTestTerraformAWS(t)
 }
 
