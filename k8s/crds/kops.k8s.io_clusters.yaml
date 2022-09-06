@@ -666,6 +666,10 @@ spec:
                     description: 'BalanceSimilarNodeGroups makes cluster autoscaler
                       treat similar node groups as one. Default: false'
                     type: boolean
+                  cordonNodeBeforeTerminating:
+                    description: 'CordonNodeBeforeTerminating should CA cordon nodes
+                      before terminating during downscale process Default: false'
+                    type: boolean
                   cpuRequest:
                     anyOf:
                     - type: integer
