@@ -1010,6 +1010,9 @@ type ClusterAutoscalerConfig struct {
 	// ScaleDownDelayAfterAdd determines the time after scale up that scale down evaluation resumes
 	// Default: 10m0s
 	ScaleDownDelayAfterAdd *string `json:"scaleDownDelayAfterAdd,omitempty"`
+	// CordonNodeBeforeTerminating should CA cordon nodes before terminating during downscale process
+	// Default: false
+	CordonNodeBeforeTerminating *bool `json:"cordonNodeBeforeTerminating,omitempty"`
 	// Image is the docker container used.
 	// Default: the latest supported image for the specified kubernetes version.
 	Image *string `json:"image,omitempty"`
