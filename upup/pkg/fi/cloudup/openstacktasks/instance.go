@@ -29,6 +29,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/schedulerhints"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/truncate"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
@@ -61,6 +62,15 @@ var (
 	_ fi.HasAddress      = &Instance{}
 	_ fi.HasDependencies = &Instance{}
 )
+
+// Constants for truncating Tags
+const MAX_TAG_LENGTH_OPENSTACK = 60
+
+var TRUNCATE_OPT = truncate.TruncateStringOptions{
+	MaxLength:     MAX_TAG_LENGTH_OPENSTACK,
+	AlwaysAddHash: false,
+	HashLength:    6,
+}
 
 // GetDependencies returns the dependencies of the Instance task
 func (e *Instance) GetDependencies(tasks map[string]fi.Task) []fi.Task {
@@ -119,7 +129,7 @@ func (e *Instance) FindAddresses(context *fi.Context) ([]string, error) {
 // filterInstancePorts tries to get all ports of an instance tagged with the cluster name.
 // If no tagged ports are found it will return all ports of the instance, to not change the legacy behavior when there weren't tagged ports
 func filterInstancePorts(allPorts []ports.Port, clusterName string) []ports.Port {
-	clusterNameTag := fmt.Sprintf("%s=%s", openstack.TagClusterName, clusterName)
+	clusterNameTag := truncate.TruncateString(fmt.Sprintf("%s=%s", openstack.TagClusterName, clusterName), TRUNCATE_OPT)
 
 	var taggedPorts []ports.Port
 
