@@ -329,6 +329,10 @@ spec:
             - --scale-down-delay-after-add={{ .ScaleDownDelayAfterAdd }}
             - --new-pod-scale-up-delay={{ .NewPodScaleUpDelay }}
             - --max-node-provision-time={{ .MaxNodeProvisionTime }}
+            # This flag does not exist before CAS 1.21
+            {{ if IsKubernetesGTE "1.21" }}
+            - --cordon-node-before-terminating="{{ WithDefaultBool .CordonNodeBeforeTerminating true }}"
+            {{ end }}
             - --logtostderr=true
             - --stderrthreshold=info
             - --v=4
