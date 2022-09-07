@@ -177,6 +177,8 @@ spec:
           value: "{{ .ManagedASGTag }}"
         - name: ASSUME_ASG_TAG_PROPAGATION
           value: "false"
+        - name: USE_PROVIDER_ID
+          value: "true"
         - name: DRY_RUN
           value: "false"
         - name: CORDON_ONLY
