@@ -116,7 +116,7 @@ func (mc *metadataClient) Patch(ctx context.Context, obj Object, patch Patch, op
 }
 
 // Get implements client.Client.
-func (mc *metadataClient) Get(ctx context.Context, key ObjectKey, obj Object) error {
+func (mc *metadataClient) Get(ctx context.Context, key ObjectKey, obj Object, opts ...GetOption) error {
 	metadata, ok := obj.(*metav1.PartialObjectMetadata)
 	if !ok {
 		return fmt.Errorf("metadata client did not understand object: %T", obj)
@@ -124,12 +124,15 @@ func (mc *metadataClient) Get(ctx context.Context, key ObjectKey, obj Object) er
 
 	gvk := metadata.GroupVersionKind()
 
+	getOpts := GetOptions{}
+	getOpts.ApplyOptions(opts)
+
 	resInt, err := mc.getResourceInterface(gvk, key.Namespace)
 	if err != nil {
 		return err
 	}
 
-	res, err := resInt.Get(ctx, key.Name, metav1.GetOptions{})
+	res, err := resInt.Get(ctx, key.Name, *getOpts.AsGetOptions())
 	if err != nil {
 		return err
 	}

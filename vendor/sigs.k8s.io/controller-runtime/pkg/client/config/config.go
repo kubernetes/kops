@@ -47,7 +47,7 @@ func init() {
 // It also applies saner defaults for QPS and burst based on the Kubernetes
 // controller manager defaults (20 QPS, 30 burst)
 //
-// Config precedence
+// Config precedence:
 //
 // * --kubeconfig flag pointing at a file
 //
@@ -67,7 +67,7 @@ func GetConfig() (*rest.Config, error) {
 // It also applies saner defaults for QPS and burst based on the Kubernetes
 // controller manager defaults (20 QPS, 30 burst)
 //
-// Config precedence
+// Config precedence:
 //
 // * --kubeconfig flag pointing at a file
 //

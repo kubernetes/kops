@@ -19,6 +19,7 @@ package admission
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/go-logr/logr"
@@ -27,6 +28,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/json"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 
 	logf "sigs.k8s.io/controller-runtime/pkg/internal/log"
@@ -121,6 +123,9 @@ type Webhook struct {
 	// and potentially patches to apply to the handler.
 	Handler Handler
 
+	// RecoverPanic indicates whether the panic caused by webhook should be recovered.
+	RecoverPanic bool
+
 	// WithContextFunc will allow you to take the http.Request.Context() and
 	// add any additional information such as passing the request path or
 	// headers thus allowing you to read them from within the handler
@@ -138,11 +143,29 @@ func (wh *Webhook) InjectLogger(l logr.Logger) error {
 	return nil
 }
 
+// WithRecoverPanic takes a bool flag which indicates whether the panic caused by webhook should be recovered.
+func (wh *Webhook) WithRecoverPanic(recoverPanic bool) *Webhook {
+	wh.RecoverPanic = recoverPanic
+	return wh
+}
+
 // Handle processes AdmissionRequest.
 // If the webhook is mutating type, it delegates the AdmissionRequest to each handler and merge the patches.
 // If the webhook is validating type, it delegates the AdmissionRequest to each handler and
 // deny the request if anyone denies.
-func (wh *Webhook) Handle(ctx context.Context, req Request) Response {
+func (wh *Webhook) Handle(ctx context.Context, req Request) (response Response) {
+	if wh.RecoverPanic {
+		defer func() {
+			if r := recover(); r != nil {
+				for _, fn := range utilruntime.PanicHandlers {
+					fn(r)
+				}
+				response = Errored(http.StatusInternalServerError, fmt.Errorf("panic: %v [recovered]", r))
+				return
+			}
+		}()
+	}
+
 	resp := wh.Handler.Handle(ctx, req)
 	if err := resp.Complete(req); err != nil {
 		wh.log.Error(err, "unable to encode response")

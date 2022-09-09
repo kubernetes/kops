@@ -52,7 +52,7 @@ func (n *namespacedClient) RESTMapper() meta.RESTMapper {
 	return n.client.RESTMapper()
 }
 
-// Create implements clinet.Client.
+// Create implements client.Client.
 func (n *namespacedClient) Create(ctx context.Context, obj Object, opts ...CreateOption) error {
 	isNamespaceScoped, err := objectutil.IsAPINamespaced(obj, n.Scheme(), n.RESTMapper())
 	if err != nil {
@@ -138,18 +138,18 @@ func (n *namespacedClient) Patch(ctx context.Context, obj Object, patch Patch, o
 }
 
 // Get implements client.Client.
-func (n *namespacedClient) Get(ctx context.Context, key ObjectKey, obj Object) error {
+func (n *namespacedClient) Get(ctx context.Context, key ObjectKey, obj Object, opts ...GetOption) error {
 	isNamespaceScoped, err := objectutil.IsAPINamespaced(obj, n.Scheme(), n.RESTMapper())
 	if err != nil {
 		return fmt.Errorf("error finding the scope of the object: %w", err)
 	}
 	if isNamespaceScoped {
 		if key.Namespace != "" && key.Namespace != n.namespace {
-			return fmt.Errorf("namespace %s provided for the object %s does not match the namesapce %s on the client", key.Namespace, obj.GetName(), n.namespace)
+			return fmt.Errorf("namespace %s provided for the object %s does not match the namespace %s on the client", key.Namespace, obj.GetName(), n.namespace)
 		}
 		key.Namespace = n.namespace
 	}
-	return n.client.Get(ctx, key, obj)
+	return n.client.Get(ctx, key, obj, opts...)
 }
 
 // List implements client.Client.

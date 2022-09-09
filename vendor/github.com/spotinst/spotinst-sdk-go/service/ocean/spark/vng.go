@@ -6,13 +6,13 @@ type DedicatedVirtualNodeGroup struct {
 	VngID               *string `json:"vngId,omitempty"`
 }
 
-type AttacheVirtualNodeGroupRequest struct {
+type AttachVirtualNodeGroupRequest struct {
 	VngID *string `json:"id,omitempty"`
 }
 
 type AttachVngInput struct {
-	ClusterID        *string                         `json:"-"`
-	VirtualNodeGroup *AttacheVirtualNodeGroupRequest `json:"virtualNodeGroup,omitempty"`
+	ClusterID        *string                        `json:"-"`
+	VirtualNodeGroup *AttachVirtualNodeGroupRequest `json:"virtualNodeGroup,omitempty"`
 }
 
 type AttachVngOutput struct {
