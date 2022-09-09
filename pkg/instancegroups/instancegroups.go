@@ -105,26 +105,6 @@ func (c *RollingUpdateCluster) rollingUpdateInstanceGroup(group *cloudinstances.
 		}
 	}
 
-	settings := resolveSettings(c.Cluster, group.InstanceGroup, numInstances)
-
-	runningDrains := 0
-	maxSurge := settings.MaxSurge.IntValue()
-	if maxSurge > len(update) {
-		maxSurge = len(update)
-	}
-	maxConcurrency := maxSurge + settings.MaxUnavailable.IntValue()
-
-	if group.InstanceGroup.Spec.Role == api.InstanceGroupRoleMaster && maxSurge != 0 {
-		// Masters are incapable of surging because they rely on registering themselves through
-		// the local apiserver. That apiserver depends on the local etcd, which relies on being
-		// joined to the etcd cluster.
-		maxSurge = 0
-		maxConcurrency = settings.MaxUnavailable.IntValue()
-		if maxConcurrency == 0 {
-			maxConcurrency = 1
-		}
-	}
-
 	nonWarmPool := []*cloudinstances.CloudInstance{}
 	// Run through the warm pool and delete all instances directly
 	for _, instance := range update {
@@ -139,6 +119,28 @@ func (c *RollingUpdateCluster) rollingUpdateInstanceGroup(group *cloudinstances.
 		}
 	}
 	update = nonWarmPool
+
+	settings := resolveSettings(c.Cluster, group.InstanceGroup, numInstances)
+
+	runningDrains := 0
+	maxSurge := settings.MaxSurge.IntValue()
+
+	if maxSurge > len(update) {
+		maxSurge = len(update)
+	}
+
+	maxConcurrency := maxSurge + settings.MaxUnavailable.IntValue()
+
+	if group.InstanceGroup.Spec.Role == api.InstanceGroupRoleMaster && maxSurge != 0 {
+		// Masters are incapable of surging because they rely on registering themselves through
+		// the local apiserver. That apiserver depends on the local etcd, which relies on being
+		// joined to the etcd cluster.
+		maxSurge = 0
+		maxConcurrency = settings.MaxUnavailable.IntValue()
+		if maxConcurrency == 0 {
+			maxConcurrency = 1
+		}
+	}
 
 	if c.Interactive {
 		if maxSurge > 1 {
