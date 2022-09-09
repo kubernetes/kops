@@ -72,8 +72,8 @@ func (c *dryRunClient) Patch(ctx context.Context, obj Object, patch Patch, opts 
 }
 
 // Get implements client.Client.
-func (c *dryRunClient) Get(ctx context.Context, key ObjectKey, obj Object) error {
-	return c.client.Get(ctx, key, obj)
+func (c *dryRunClient) Get(ctx context.Context, key ObjectKey, obj Object, opts ...GetOption) error {
+	return c.client.Get(ctx, key, obj, opts...)
 }
 
 // List implements client.Client.
