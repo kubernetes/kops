@@ -165,13 +165,16 @@ func (uc *unstructuredClient) Patch(ctx context.Context, obj Object, patch Patch
 }
 
 // Get implements client.Client.
-func (uc *unstructuredClient) Get(ctx context.Context, key ObjectKey, obj Object) error {
+func (uc *unstructuredClient) Get(ctx context.Context, key ObjectKey, obj Object, opts ...GetOption) error {
 	u, ok := obj.(*unstructured.Unstructured)
 	if !ok {
 		return fmt.Errorf("unstructured client did not understand object: %T", obj)
 	}
 
 	gvk := u.GroupVersionKind()
+
+	getOpts := GetOptions{}
+	getOpts.ApplyOptions(opts)
 
 	r, err := uc.cache.getResource(obj)
 	if err != nil {
@@ -181,6 +184,7 @@ func (uc *unstructuredClient) Get(ctx context.Context, key ObjectKey, obj Object
 	result := r.Get().
 		NamespaceIfScoped(key.Namespace, r.isNamespaced()).
 		Resource(r.resource()).
+		VersionedParams(getOpts.AsGetOptions(), uc.paramCodec).
 		Name(key.Name).
 		Do(ctx).
 		Into(obj)
