@@ -874,6 +874,8 @@ func AddLegacyCCMPermissions(p *Policy) {
 		"elasticloadbalancing:AddTags",
 		"elasticloadbalancing:RegisterTargets",
 		"elasticloadbalancing:CreateListener",
+		"elasticloadbalancing:DeleteListener",
+		"elasticloadbalancing:ModifyListener",
 		"ec2:DescribeVolumes",
 		"ec2:ModifyInstanceAttribute",
 		"ec2:ModifyVolume",
