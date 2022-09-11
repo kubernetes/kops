@@ -63,7 +63,7 @@ var awsDedicatedInstanceExceptions = map[string]bool{
 
 // PopulateInstanceGroupSpec sets default values in the InstanceGroup
 func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup, cloud fi.Cloud, channel *kops.Channel) (*kops.InstanceGroup, error) {
-	klog.Infof("Populating instance group spec for %q", input.GetName())
+	klog.V(2).Infof("Populating instance group spec for %q", input.GetName())
 
 	var err error
 	err = validation.ValidateInstanceGroup(input, nil, false).ToAggregate()
