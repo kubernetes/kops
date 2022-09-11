@@ -483,7 +483,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 
 	if etcdCluster.Manager != nil && len(etcdCluster.Manager.Env) > 0 {
 		for _, envVar := range etcdCluster.Manager.Env {
-			klog.Warningf("overloading ENV var in manifest %s with %s=%s", bundle, envVar.Name, envVar.Value)
+			klog.V(2).Infof("overloading ENV var in manifest %s with %s=%s", bundle, envVar.Name, envVar.Value)
 			configOverwrite := v1.EnvVar{
 				Name:  envVar.Name,
 				Value: envVar.Value,
