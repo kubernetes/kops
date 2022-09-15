@@ -80,6 +80,19 @@ type RollingUpdateCluster struct {
 
 	// DrainTimeout is the maximum amount of time to wait while draining a node.
 	DrainTimeout time.Duration
+
+	// Options holds user-specified options
+	Options RollingUpdateOptions
+}
+
+type RollingUpdateOptions struct {
+	// DeregisterControlPlaneNodes controls if we deregister control plane instances from load balacners etc before draining/terminating.
+	// When a cluster only has a single apiserver, we don't want to do this, as we can't drain after deregistering it.
+	DeregisterControlPlaneNodes bool
+}
+
+func (o *RollingUpdateOptions) InitDefaults() {
+	o.DeregisterControlPlaneNodes = true
 }
 
 // AdjustNeedUpdate adjusts the set of instances that need updating, using factors outside those known by the cloud implementation

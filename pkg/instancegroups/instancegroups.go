@@ -647,8 +647,22 @@ func (c *RollingUpdateCluster) drainNode(u *cloudinstances.CloudInstance) error 
 		return fmt.Errorf("error excluding node from load balancer: %v", err)
 	}
 
-	if err := c.Cloud.DeregisterInstance(u); err != nil {
-		return fmt.Errorf("error deregistering instance %q, node %q: %v", u.ID, u.Node.Name, err)
+	shouldDeregister := true
+	if !c.Options.DeregisterControlPlaneNodes {
+		if u.CloudInstanceGroup != nil && u.CloudInstanceGroup.InstanceGroup != nil {
+			role := u.CloudInstanceGroup.InstanceGroup.Spec.Role
+			switch role {
+			case api.InstanceGroupRoleAPIServer, api.InstanceGroupRoleMaster:
+				klog.Infof("skipping deregistration of instance %q, as part of instancegroup with role %q", u.ID, role)
+				shouldDeregister = false
+			}
+		}
+	}
+
+	if shouldDeregister {
+		if err := c.Cloud.DeregisterInstance(u); err != nil {
+			return fmt.Errorf("error deregistering instance %q, node %q: %w", u.ID, u.Node.Name, err)
+		}
 	}
 
 	if err := drain.RunNodeDrain(helper, u.Node.Name); err != nil {
