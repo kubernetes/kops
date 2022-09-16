@@ -26,6 +26,7 @@ type ECSLaunchSpec struct {
 	BlockDeviceMappings  []*ECSBlockDeviceMapping `json:"blockDeviceMappings,omitempty"`
 	Tags                 []*Tag                   `json:"tags,omitempty"`
 	InstanceTypes        []string                 `json:"instanceTypes,omitempty"`
+	PreferredSpotTypes   []string                 `json:"preferredSpotTypes,omitempty"`
 	RestrictScaleDown    *bool                    `json:"restrictScaleDown,omitempty"`
 	SubnetIDs            []string                 `json:"subnetIds,omitempty"`
 	LaunchSpecScheduling *ECSLaunchSpecScheduling `json:"scheduling,omitempty"`
@@ -429,6 +430,13 @@ func (o *ECSLaunchSpec) SetTags(v []*Tag) *ECSLaunchSpec {
 func (o *ECSLaunchSpec) SetInstanceTypes(v []string) *ECSLaunchSpec {
 	if o.InstanceTypes = v; o.InstanceTypes == nil {
 		o.nullFields = append(o.nullFields, "InstanceTypes")
+	}
+	return o
+}
+
+func (o *ECSLaunchSpec) SetPreferredSpotTypes(v []string) *ECSLaunchSpec {
+	if o.PreferredSpotTypes = v; o.PreferredSpotTypes == nil {
+		o.nullFields = append(o.nullFields, "PreferredSpotTypes")
 	}
 	return o
 }
