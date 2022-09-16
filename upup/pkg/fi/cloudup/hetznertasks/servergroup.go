@@ -88,9 +88,15 @@ func (v *ServerGroup) Find(c *fi.Context) (*ServerGroup, error) {
 	actual.Count = len(servers)
 
 	// Find servers that need to be updated
-	for _, server := range servers {
+	for i, server := range servers {
 		// Ignore servers that are already labeled as needing update
 		if _, ok := server.Labels[hetzner.TagKubernetesInstanceNeedsUpdate]; ok {
+			continue
+		}
+
+		// Check if server index is higher than desired count
+		if i >= v.Count {
+			actual.NeedUpdate = append(actual.NeedUpdate, server.Name)
 			continue
 		}
 
