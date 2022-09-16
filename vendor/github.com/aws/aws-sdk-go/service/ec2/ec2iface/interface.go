@@ -272,6 +272,14 @@ type EC2API interface {
 	CreateClientVpnRouteWithContext(aws.Context, *ec2.CreateClientVpnRouteInput, ...request.Option) (*ec2.CreateClientVpnRouteOutput, error)
 	CreateClientVpnRouteRequest(*ec2.CreateClientVpnRouteInput) (*request.Request, *ec2.CreateClientVpnRouteOutput)
 
+	CreateCoipCidr(*ec2.CreateCoipCidrInput) (*ec2.CreateCoipCidrOutput, error)
+	CreateCoipCidrWithContext(aws.Context, *ec2.CreateCoipCidrInput, ...request.Option) (*ec2.CreateCoipCidrOutput, error)
+	CreateCoipCidrRequest(*ec2.CreateCoipCidrInput) (*request.Request, *ec2.CreateCoipCidrOutput)
+
+	CreateCoipPool(*ec2.CreateCoipPoolInput) (*ec2.CreateCoipPoolOutput, error)
+	CreateCoipPoolWithContext(aws.Context, *ec2.CreateCoipPoolInput, ...request.Option) (*ec2.CreateCoipPoolOutput, error)
+	CreateCoipPoolRequest(*ec2.CreateCoipPoolInput) (*request.Request, *ec2.CreateCoipPoolOutput)
+
 	CreateCustomerGateway(*ec2.CreateCustomerGatewayInput) (*ec2.CreateCustomerGatewayOutput, error)
 	CreateCustomerGatewayWithContext(aws.Context, *ec2.CreateCustomerGatewayInput, ...request.Option) (*ec2.CreateCustomerGatewayOutput, error)
 	CreateCustomerGatewayRequest(*ec2.CreateCustomerGatewayInput) (*request.Request, *ec2.CreateCustomerGatewayOutput)
@@ -347,6 +355,14 @@ type EC2API interface {
 	CreateLocalGatewayRoute(*ec2.CreateLocalGatewayRouteInput) (*ec2.CreateLocalGatewayRouteOutput, error)
 	CreateLocalGatewayRouteWithContext(aws.Context, *ec2.CreateLocalGatewayRouteInput, ...request.Option) (*ec2.CreateLocalGatewayRouteOutput, error)
 	CreateLocalGatewayRouteRequest(*ec2.CreateLocalGatewayRouteInput) (*request.Request, *ec2.CreateLocalGatewayRouteOutput)
+
+	CreateLocalGatewayRouteTable(*ec2.CreateLocalGatewayRouteTableInput) (*ec2.CreateLocalGatewayRouteTableOutput, error)
+	CreateLocalGatewayRouteTableWithContext(aws.Context, *ec2.CreateLocalGatewayRouteTableInput, ...request.Option) (*ec2.CreateLocalGatewayRouteTableOutput, error)
+	CreateLocalGatewayRouteTableRequest(*ec2.CreateLocalGatewayRouteTableInput) (*request.Request, *ec2.CreateLocalGatewayRouteTableOutput)
+
+	CreateLocalGatewayRouteTableVirtualInterfaceGroupAssociation(*ec2.CreateLocalGatewayRouteTableVirtualInterfaceGroupAssociationInput) (*ec2.CreateLocalGatewayRouteTableVirtualInterfaceGroupAssociationOutput, error)
+	CreateLocalGatewayRouteTableVirtualInterfaceGroupAssociationWithContext(aws.Context, *ec2.CreateLocalGatewayRouteTableVirtualInterfaceGroupAssociationInput, ...request.Option) (*ec2.CreateLocalGatewayRouteTableVirtualInterfaceGroupAssociationOutput, error)
+	CreateLocalGatewayRouteTableVirtualInterfaceGroupAssociationRequest(*ec2.CreateLocalGatewayRouteTableVirtualInterfaceGroupAssociationInput) (*request.Request, *ec2.CreateLocalGatewayRouteTableVirtualInterfaceGroupAssociationOutput)
 
 	CreateLocalGatewayRouteTableVpcAssociation(*ec2.CreateLocalGatewayRouteTableVpcAssociationInput) (*ec2.CreateLocalGatewayRouteTableVpcAssociationOutput, error)
 	CreateLocalGatewayRouteTableVpcAssociationWithContext(aws.Context, *ec2.CreateLocalGatewayRouteTableVpcAssociationInput, ...request.Option) (*ec2.CreateLocalGatewayRouteTableVpcAssociationOutput, error)
@@ -552,6 +568,14 @@ type EC2API interface {
 	DeleteClientVpnRouteWithContext(aws.Context, *ec2.DeleteClientVpnRouteInput, ...request.Option) (*ec2.DeleteClientVpnRouteOutput, error)
 	DeleteClientVpnRouteRequest(*ec2.DeleteClientVpnRouteInput) (*request.Request, *ec2.DeleteClientVpnRouteOutput)
 
+	DeleteCoipCidr(*ec2.DeleteCoipCidrInput) (*ec2.DeleteCoipCidrOutput, error)
+	DeleteCoipCidrWithContext(aws.Context, *ec2.DeleteCoipCidrInput, ...request.Option) (*ec2.DeleteCoipCidrOutput, error)
+	DeleteCoipCidrRequest(*ec2.DeleteCoipCidrInput) (*request.Request, *ec2.DeleteCoipCidrOutput)
+
+	DeleteCoipPool(*ec2.DeleteCoipPoolInput) (*ec2.DeleteCoipPoolOutput, error)
+	DeleteCoipPoolWithContext(aws.Context, *ec2.DeleteCoipPoolInput, ...request.Option) (*ec2.DeleteCoipPoolOutput, error)
+	DeleteCoipPoolRequest(*ec2.DeleteCoipPoolInput) (*request.Request, *ec2.DeleteCoipPoolOutput)
+
 	DeleteCustomerGateway(*ec2.DeleteCustomerGatewayInput) (*ec2.DeleteCustomerGatewayOutput, error)
 	DeleteCustomerGatewayWithContext(aws.Context, *ec2.DeleteCustomerGatewayInput, ...request.Option) (*ec2.DeleteCustomerGatewayOutput, error)
 	DeleteCustomerGatewayRequest(*ec2.DeleteCustomerGatewayInput) (*request.Request, *ec2.DeleteCustomerGatewayOutput)
@@ -611,6 +635,14 @@ type EC2API interface {
 	DeleteLocalGatewayRoute(*ec2.DeleteLocalGatewayRouteInput) (*ec2.DeleteLocalGatewayRouteOutput, error)
 	DeleteLocalGatewayRouteWithContext(aws.Context, *ec2.DeleteLocalGatewayRouteInput, ...request.Option) (*ec2.DeleteLocalGatewayRouteOutput, error)
 	DeleteLocalGatewayRouteRequest(*ec2.DeleteLocalGatewayRouteInput) (*request.Request, *ec2.DeleteLocalGatewayRouteOutput)
+
+	DeleteLocalGatewayRouteTable(*ec2.DeleteLocalGatewayRouteTableInput) (*ec2.DeleteLocalGatewayRouteTableOutput, error)
+	DeleteLocalGatewayRouteTableWithContext(aws.Context, *ec2.DeleteLocalGatewayRouteTableInput, ...request.Option) (*ec2.DeleteLocalGatewayRouteTableOutput, error)
+	DeleteLocalGatewayRouteTableRequest(*ec2.DeleteLocalGatewayRouteTableInput) (*request.Request, *ec2.DeleteLocalGatewayRouteTableOutput)
+
+	DeleteLocalGatewayRouteTableVirtualInterfaceGroupAssociation(*ec2.DeleteLocalGatewayRouteTableVirtualInterfaceGroupAssociationInput) (*ec2.DeleteLocalGatewayRouteTableVirtualInterfaceGroupAssociationOutput, error)
+	DeleteLocalGatewayRouteTableVirtualInterfaceGroupAssociationWithContext(aws.Context, *ec2.DeleteLocalGatewayRouteTableVirtualInterfaceGroupAssociationInput, ...request.Option) (*ec2.DeleteLocalGatewayRouteTableVirtualInterfaceGroupAssociationOutput, error)
+	DeleteLocalGatewayRouteTableVirtualInterfaceGroupAssociationRequest(*ec2.DeleteLocalGatewayRouteTableVirtualInterfaceGroupAssociationInput) (*request.Request, *ec2.DeleteLocalGatewayRouteTableVirtualInterfaceGroupAssociationOutput)
 
 	DeleteLocalGatewayRouteTableVpcAssociation(*ec2.DeleteLocalGatewayRouteTableVpcAssociationInput) (*ec2.DeleteLocalGatewayRouteTableVpcAssociationOutput, error)
 	DeleteLocalGatewayRouteTableVpcAssociationWithContext(aws.Context, *ec2.DeleteLocalGatewayRouteTableVpcAssociationInput, ...request.Option) (*ec2.DeleteLocalGatewayRouteTableVpcAssociationOutput, error)
@@ -2172,6 +2204,10 @@ type EC2API interface {
 	ModifyLaunchTemplate(*ec2.ModifyLaunchTemplateInput) (*ec2.ModifyLaunchTemplateOutput, error)
 	ModifyLaunchTemplateWithContext(aws.Context, *ec2.ModifyLaunchTemplateInput, ...request.Option) (*ec2.ModifyLaunchTemplateOutput, error)
 	ModifyLaunchTemplateRequest(*ec2.ModifyLaunchTemplateInput) (*request.Request, *ec2.ModifyLaunchTemplateOutput)
+
+	ModifyLocalGatewayRoute(*ec2.ModifyLocalGatewayRouteInput) (*ec2.ModifyLocalGatewayRouteOutput, error)
+	ModifyLocalGatewayRouteWithContext(aws.Context, *ec2.ModifyLocalGatewayRouteInput, ...request.Option) (*ec2.ModifyLocalGatewayRouteOutput, error)
+	ModifyLocalGatewayRouteRequest(*ec2.ModifyLocalGatewayRouteInput) (*request.Request, *ec2.ModifyLocalGatewayRouteOutput)
 
 	ModifyManagedPrefixList(*ec2.ModifyManagedPrefixListInput) (*ec2.ModifyManagedPrefixListOutput, error)
 	ModifyManagedPrefixListWithContext(aws.Context, *ec2.ModifyManagedPrefixListInput, ...request.Option) (*ec2.ModifyManagedPrefixListOutput, error)
