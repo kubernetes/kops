@@ -50,7 +50,7 @@ func buildNodeInstanceGroup(subnets ...string) *kops.InstanceGroup {
 // Tests that RootVolumeOptimization flag gets added to the awstasks
 func TestRootVolumeOptimizationFlag(t *testing.T) {
 	cluster := buildMinimalCluster()
-	ig := buildNodeInstanceGroup("subnet-us-mock-1a")
+	ig := buildNodeInstanceGroup("subnet-us-test-1a")
 	ig.Spec.RootVolumeOptimization = fi.Bool(true)
 
 	k := [][]byte{}
