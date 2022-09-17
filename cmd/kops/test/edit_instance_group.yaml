@@ -7,7 +7,6 @@ metadata:
     kops.k8s.io/cluster: test.k8s.io
   name: nodes
 spec:
-  image: ami-xyz
   maxSize: 10
   role: Node
   subnets:
