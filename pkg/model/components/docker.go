@@ -72,7 +72,7 @@ func (b *DockerOptionsBuilder) BuildOptions(o interface{}) error {
 	docker.Storage = fi.String("overlay2,overlay,aufs")
 
 	// Set systemd as the default cgroup driver in docker from k8s 1.20.
-	if b.IsKubernetesGTE("1.20") && getDockerCgroupDriver(docker.ExecOpt) == "" {
+	if getDockerCgroupDriver(docker.ExecOpt) == "" {
 		docker.ExecOpt = append(docker.ExecOpt, "native.cgroupdriver=systemd")
 	}
 

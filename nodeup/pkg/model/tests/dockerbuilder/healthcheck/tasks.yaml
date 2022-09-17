@@ -2,7 +2,7 @@ file: /usr/bin/docker-runc
 mode: +i
 ---
 contents: |-
-  DOCKER_OPTS=--ip-masq=false --iptables=false --log-driver=json-file --log-level=info --log-opt=max-file=5 --log-opt=max-size=10m --storage-driver=overlay2,overlay,aufs
+  DOCKER_OPTS=--exec-opt=native.cgroupdriver=systemd --ip-masq=false --iptables=false --log-driver=json-file --log-level=info --log-opt=max-file=5 --log-opt=max-size=10m --storage-driver=overlay2,overlay,aufs
   DOCKER_NOFILE=1000000
 path: /etc/sysconfig/docker
 type: file
