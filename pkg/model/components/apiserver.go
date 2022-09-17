@@ -165,11 +165,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 
 	// We query via the kube-apiserver-healthcheck proxy, which listens on port 3990
 	c.InsecureBindAddress = ""
-	if b.IsKubernetesGTE("1.20") {
-		c.InsecurePort = nil
-	} else {
-		c.InsecurePort = fi.Int32(0)
-	}
+	c.InsecurePort = nil
 
 	// If metrics-server is enabled, we want aggregator routing enabled so that requests are load balanced.
 	metricsServer := clusterSpec.MetricsServer

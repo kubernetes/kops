@@ -204,8 +204,8 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 	}
 
-	// Set systemd as the default cgroup driver for kubelet from k8s 1.20
-	if b.IsKubernetesGTE("1.20") && clusterSpec.Kubelet.CgroupDriver == "" {
+	// Set systemd as the default cgroup driver for kubelet
+	if clusterSpec.Kubelet.CgroupDriver == "" {
 		clusterSpec.Kubelet.CgroupDriver = "systemd"
 	}
 
