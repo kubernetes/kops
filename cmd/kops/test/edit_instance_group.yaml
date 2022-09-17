@@ -8,16 +8,7 @@ metadata:
   name: nodes
 spec:
   image: ami-xyz
-  kubelet:
-    nodeLabels:
-      kubernetes.io/role: node
-      node-role.kubernetes.io/node: ""
-    taints:
-    - e2etest:NoSchedule
-  machineType: t2.medium
-  manager: CloudGroup
   maxSize: 10
-  minSize: 2
   role: Node
   subnets:
   - subnet-us-test-1a

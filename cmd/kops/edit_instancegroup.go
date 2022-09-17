@@ -157,7 +157,7 @@ func RunEditInstanceGroup(ctx context.Context, f *util.Factory, out io.Writer, o
 			return err
 		}
 
-		failure, err := updateInstanceGroup(ctx, clientset, channel, cluster, oldGroup, newGroup)
+		failure, err := updateInstanceGroup(ctx, clientset, channel, cluster, newGroup)
 		if err != nil {
 			return err
 		}
@@ -263,7 +263,7 @@ func RunEditInstanceGroup(ctx context.Context, f *util.Factory, out io.Writer, o
 			continue
 		}
 
-		failure, err := updateInstanceGroup(ctx, clientset, channel, cluster, oldGroup, newGroup)
+		failure, err := updateInstanceGroup(ctx, clientset, channel, cluster, newGroup)
 		if err != nil {
 			return preservedFile(err, file, out)
 		}
@@ -280,7 +280,7 @@ func RunEditInstanceGroup(ctx context.Context, f *util.Factory, out io.Writer, o
 	}
 }
 
-func updateInstanceGroup(ctx context.Context, clientset simple.Clientset, channel *api.Channel, cluster *api.Cluster, oldGroup, newGroup *api.InstanceGroup) (string, error) {
+func updateInstanceGroup(ctx context.Context, clientset simple.Clientset, channel *api.Channel, cluster *api.Cluster, newGroup *api.InstanceGroup) (string, error) {
 	cloud, err := cloudup.BuildCloud(cluster)
 	if err != nil {
 		return "", err
@@ -310,6 +310,6 @@ func updateInstanceGroup(ctx context.Context, clientset simple.Clientset, channe
 	}
 
 	// Note we perform as much validation as we can, before writing a bad config
-	_, err = clientset.InstanceGroupsFor(cluster).Update(ctx, fullGroup, metav1.UpdateOptions{})
+	_, err = clientset.InstanceGroupsFor(cluster).Update(ctx, newGroup, metav1.UpdateOptions{})
 	return "", err
 }
