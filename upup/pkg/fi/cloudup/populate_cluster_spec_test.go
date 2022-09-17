@@ -34,7 +34,7 @@ import (
 )
 
 func buildMinimalCluster() (*awsup.MockAWSCloud, *kopsapi.Cluster) {
-	cloud := awsup.InstallMockAWSCloud(MockAWSRegion, "abcd")
+	cloud := awsup.InstallMockAWSCloud(testAWSRegion, "abcd")
 
 	c := testutils.BuildMinimalCluster("testcluster.test.com")
 
@@ -199,9 +199,9 @@ func TestPopulateCluster_Custom_CIDR(t *testing.T) {
 	cloud, c := buildMinimalCluster()
 	c.Spec.NetworkCIDR = "172.20.2.0/24"
 	c.Spec.Subnets = []kopsapi.ClusterSubnetSpec{
-		{Name: "subnet-us-mock-1a", Zone: "us-mock-1a", CIDR: "172.20.2.0/27", Type: kopsapi.SubnetTypePublic},
-		{Name: "subnet-us-mock-1b", Zone: "us-mock-1b", CIDR: "172.20.2.32/27", Type: kopsapi.SubnetTypePublic},
-		{Name: "subnet-us-mock-1c", Zone: "us-mock-1c", CIDR: "172.20.2.64/27", Type: kopsapi.SubnetTypePublic},
+		{Name: "subnet-us-test-1a", Zone: "us-test-1a", CIDR: "172.20.2.0/27", Type: kopsapi.SubnetTypePublic},
+		{Name: "subnet-us-test-1b", Zone: "us-test-1b", CIDR: "172.20.2.32/27", Type: kopsapi.SubnetTypePublic},
+		{Name: "subnet-us-test-1c", Zone: "us-test-1c", CIDR: "172.20.2.64/27", Type: kopsapi.SubnetTypePublic},
 	}
 
 	err := PerformAssignments(c, cloud)
