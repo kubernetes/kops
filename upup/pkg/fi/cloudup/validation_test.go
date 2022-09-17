@@ -27,7 +27,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-const MockAWSRegion = "us-mock-1"
+const testAWSRegion = "us-test-1"
 
 func buildDefaultCluster(t *testing.T) *api.Cluster {
 	cloud, c := buildMinimalCluster()
@@ -46,8 +46,8 @@ func buildDefaultCluster(t *testing.T) *api.Cluster {
 	//c.Cluster = &api.Cluster{}
 	//c.Cluster.Name = "testcluster.mydomain.com"
 
-	//c.InstanceGroups = append(c.InstanceGroups, buildNodeInstanceGroup("us-mock-1a"))
-	//c.InstanceGroups = append(c.InstanceGroups, buildMasterInstanceGroup("us-mock-1a"))
+	//c.InstanceGroups = append(c.InstanceGroups, buildNodeInstanceGroup("us-test-1a"))
+	//c.InstanceGroups = append(c.InstanceGroups, buildMasterInstanceGroup("us-test-1a"))
 	//c.SSHPublicKey = path.Join(os.Getenv("HOME"), ".ssh", "id_rsa.pub")
 	//
 	//c.Cluster.Spec.Kubelet = &api.KubeletConfig{}
