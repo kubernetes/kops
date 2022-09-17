@@ -38,7 +38,6 @@ func TestEditInstanceGroup(t *testing.T) {
 
 	cluster := testutils.BuildMinimalCluster(clusterName)
 	nodes := testutils.BuildMinimalNodeInstanceGroup("nodes", "subnet-us-test-1a")
-	nodes.Spec.Image = "ami-xyz"
 	nodes.Spec.Taints = []string{"e2etest:NoSchedule"}
 
 	testutils.NewIntegrationTestHarness(t).SetupMockAWS()

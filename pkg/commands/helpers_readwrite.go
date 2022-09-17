@@ -84,7 +84,7 @@ func UpdateInstanceGroup(ctx context.Context, clientset simple.Clientset, cluste
 		return err
 	}
 
-	err = validation.CrossValidateInstanceGroup(instanceGroupToUpdate, fullCluster, cloud, true).ToAggregate()
+	err = validation.CrossValidateInstanceGroup(instanceGroupToUpdate, fullCluster, cloud, false).ToAggregate()
 	if err != nil {
 		return err
 	}
