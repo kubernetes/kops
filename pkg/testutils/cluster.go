@@ -30,7 +30,7 @@ func BuildMinimalCluster(clusterName string) *kops.Cluster {
 	c.ObjectMeta.Name = clusterName
 	c.Spec.KubernetesVersion = "1.14.6"
 	c.Spec.Subnets = []kops.ClusterSubnetSpec{
-		{Name: "subnet-us-mock-1a", Zone: "us-mock-1a", CIDR: "172.20.1.0/24", Type: kops.SubnetTypePrivate},
+		{Name: "subnet-us-test-1a", Zone: "us-test-1a", CIDR: "172.20.1.0/24", Type: kops.SubnetTypePrivate},
 	}
 
 	c.Spec.ContainerRuntime = "containerd"
@@ -54,9 +54,9 @@ func BuildMinimalCluster(clusterName string) *kops.Cluster {
 
 	c.Spec.NetworkCIDR = "172.20.0.0/16"
 	c.Spec.Subnets = []kops.ClusterSubnetSpec{
-		{Name: "subnet-us-mock-1a", Zone: "us-mock-1a", CIDR: "172.20.1.0/24", Type: kops.SubnetTypePublic},
-		{Name: "subnet-us-mock-1b", Zone: "us-mock-1b", CIDR: "172.20.2.0/24", Type: kops.SubnetTypePublic},
-		{Name: "subnet-us-mock-1c", Zone: "us-mock-1c", CIDR: "172.20.3.0/24", Type: kops.SubnetTypePublic},
+		{Name: "subnet-us-test-1a", Zone: "us-test-1a", CIDR: "172.20.1.0/24", Type: kops.SubnetTypePublic},
+		{Name: "subnet-us-test-1b", Zone: "us-test-1b", CIDR: "172.20.2.0/24", Type: kops.SubnetTypePublic},
+		{Name: "subnet-us-test-1c", Zone: "us-test-1c", CIDR: "172.20.3.0/24", Type: kops.SubnetTypePublic},
 	}
 
 	c.Spec.NonMasqueradeCIDR = "100.64.0.0/10"

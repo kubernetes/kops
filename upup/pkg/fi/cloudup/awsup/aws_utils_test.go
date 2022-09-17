@@ -28,13 +28,13 @@ import (
 func TestValidateRegion(t *testing.T) {
 	allRegions = []*ec2.Region{
 		{
-			RegionName: aws.String("us-mock-1"),
+			RegionName: aws.String("us-test-1"),
 		},
 		{
-			RegionName: aws.String("us-mock-2"),
+			RegionName: aws.String("us-test-2"),
 		},
 	}
-	for _, region := range []string{"us-mock-1", "us-mock-2"} {
+	for _, region := range []string{"us-test-1", "us-test-2"} {
 		err := ValidateRegion(region)
 		if err != nil {
 			t.Fatalf("unexpected error validating region %q: %v", region, err)
