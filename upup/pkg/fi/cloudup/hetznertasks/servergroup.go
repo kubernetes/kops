@@ -22,6 +22,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"math/rand"
+	"strconv"
 	"strings"
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -205,6 +206,11 @@ func (_ *ServerGroup) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *
 	}
 	userDataHash := safeBytesHash(userDataBytes)
 
+	networkID, err := strconv.Atoi(fi.StringValue(e.Network.ID))
+	if err != nil {
+		return fmt.Errorf("failed to convert network ID %q to int: %w", fi.StringValue(e.Network.ID), err)
+	}
+
 	for i := 1; i <= expectedCount-actualCount; i++ {
 		// Append a random/unique ID to the node name
 		name := fmt.Sprintf("%s-%x", fi.StringValue(e.Name), rand.Int63())
@@ -214,7 +220,7 @@ func (_ *ServerGroup) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *
 			StartAfterCreate: fi.Bool(true),
 			Networks: []*hcloud.Network{
 				{
-					ID: fi.IntValue(e.Network.ID),
+					ID: networkID,
 				},
 			},
 			Location: &hcloud.Location{
