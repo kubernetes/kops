@@ -70,6 +70,7 @@ func TestPopulateInstanceGroup_Role_Required(t *testing.T) {
 	expectErrorFromPopulateInstanceGroup(t, cluster, g, channel, "spec.role")
 }
 
+// TestPopulateInstanceGroup_AddTaintsCollision ensures we handle IGs with a user configured taint that kOps also adds by default
 func TestPopulateInstanceGroup_AddTaintsCollision(t *testing.T) {
 	_, cluster := buildMinimalCluster()
 	input := buildMinimalNodeInstanceGroup()
@@ -87,8 +88,38 @@ func TestPopulateInstanceGroup_AddTaintsCollision(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error from PopulateInstanceGroupSpec: %v", err)
 	}
-	if len(output.Spec.Taints) != 1 {
+	if len(output.Spec.Kubelet.Taints) != 1 {
 		t.Errorf("Expected only 1 taint, got %d", len(output.Spec.Taints))
+	}
+}
+
+// TestPopulateInstanceGroup_AddTaintsCollision2 ensures we handle taints that are configured in multiple parts of the spec and multiple resources.
+// This one also adds a second taint that we should see in the final result
+func TestPopulateInstanceGroup_AddTaintsCollision3(t *testing.T) {
+	taint := "e2etest:NoSchedule"
+	taint2 := "e2etest:NoExecute"
+	_, cluster := buildMinimalCluster()
+	cluster.Spec.Kubelet = &kopsapi.KubeletConfigSpec{
+		Taints: []string{taint, taint2},
+	}
+	input := buildMinimalNodeInstanceGroup()
+	input.Spec.Taints = []string{taint}
+	input.Spec.Kubelet = &kopsapi.KubeletConfigSpec{
+		Taints: []string{taint},
+	}
+
+	channel := &kopsapi.Channel{}
+
+	cloud, err := BuildCloud(cluster)
+	if err != nil {
+		t.Fatalf("error from BuildCloud: %v", err)
+	}
+	output, err := PopulateInstanceGroupSpec(cluster, input, cloud, channel)
+	if err != nil {
+		t.Fatalf("error from PopulateInstanceGroupSpec: %v", err)
+	}
+	if len(output.Spec.Kubelet.Taints) != 2 {
+		t.Errorf("Expected only 2 taints, got %d", len(output.Spec.Kubelet.Taints))
 	}
 }
 
