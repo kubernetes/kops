@@ -1,0 +1,25 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  generation: 1
+  labels:
+    kops.k8s.io/cluster: test.k8s.io
+  name: nodes
+spec:
+  image: ami-xyz
+  kubelet:
+    nodeLabels:
+      kubernetes.io/role: node
+      node-role.kubernetes.io/node: ""
+    taints:
+    - e2etest:NoSchedule
+  machineType: t2.medium
+  manager: CloudGroup
+  maxSize: 10
+  minSize: 2
+  role: Node
+  subnets:
+  - subnet-us-test-1a
+  taints:
+  - e2etest:NoSchedule
