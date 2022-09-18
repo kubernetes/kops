@@ -164,7 +164,7 @@
     - https://127.0.0.1:4001
     etcdServersOverrides:
     - /events#https://127.0.0.1:4002
-    image: registry.k8s.io/kube-apiserver:v1.20.0
+    image: registry.k8s.io/kube-apiserver:v1.21.0
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
@@ -190,7 +190,7 @@
     clusterCIDR: 100.96.0.0/11
     clusterName: nthsqsresources.longclustername.example.com
     configureCloudRoutes: false
-    image: registry.k8s.io/kube-controller-manager:v1.20.0
+    image: registry.k8s.io/kube-controller-manager:v1.21.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -198,10 +198,10 @@
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    image: registry.k8s.io/kube-proxy:v1.20.0
+    image: registry.k8s.io/kube-proxy:v1.21.0
     logLevel: 2
   kubeScheduler:
-    image: registry.k8s.io/kube-scheduler:v1.20.0
+    image: registry.k8s.io/kube-scheduler:v1.21.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -219,6 +219,8 @@
     networkPluginName: cni
     podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
+    shutdownGracePeriod: 30s
+    shutdownGracePeriodCriticalPods: 10s
   masterKubelet:
     anonymousAuth: false
     cgroupDriver: systemd
@@ -234,6 +236,8 @@
     podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
+    shutdownGracePeriod: 30s
+    shutdownGracePeriodCriticalPods: 10s
 
   __EOF_CLUSTER_SPEC
 
@@ -242,7 +246,7 @@
   ConfigBase: memfs://clusters.example.com/nthsqsresources.longclustername.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: NdAmLKXAsP2RbDGxPLKM/Tcd9mcFcyoSf8qua+HQKK0=
+  NodeupConfigHash: LQD6qMgsWOVM+0tA3geiunASTnTax7BwZ7Z9KTsFcBI=
 
   __EOF_KUBE_ENV
 
@@ -387,7 +391,7 @@ Resources.AWSEC2LaunchTemplatenodesnthsqsresourceslongclusternameexamplecom.Prop
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    image: registry.k8s.io/kube-proxy:v1.20.0
+    image: registry.k8s.io/kube-proxy:v1.21.0
     logLevel: 2
   kubelet:
     anonymousAuth: false
@@ -403,6 +407,8 @@ Resources.AWSEC2LaunchTemplatenodesnthsqsresourceslongclusternameexamplecom.Prop
     networkPluginName: cni
     podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
+    shutdownGracePeriod: 30s
+    shutdownGracePeriodCriticalPods: 10s
 
   __EOF_CLUSTER_SPEC
 
@@ -411,7 +417,7 @@ Resources.AWSEC2LaunchTemplatenodesnthsqsresourceslongclusternameexamplecom.Prop
   ConfigBase: memfs://clusters.example.com/nthsqsresources.longclustername.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: lj7GUK6xNNZJHof3qUNRaie+W+e6N8TcjXlLmHX5bpE=
+  NodeupConfigHash: zvQ5qxOmSlo/WXfoktauDA6U573u5L25Jh0At+ERVnM=
 
   __EOF_KUBE_ENV
 
