@@ -51,7 +51,6 @@ contents: |
       - --etcd-keyfile=/srv/kubernetes/kube-apiserver/etcd-client.key
       - --etcd-servers-overrides=/events#https://127.0.0.1:4002
       - --etcd-servers=https://127.0.0.1:4001
-      - --insecure-port=0
       - --kubelet-client-certificate=/srv/kubernetes/kube-apiserver/kubelet-api.crt
       - --kubelet-client-key=/srv/kubernetes/kube-apiserver/kubelet-api.key
       - --kubelet-preferred-address-types=InternalIP,Hostname,ExternalIP
@@ -77,7 +76,7 @@ contents: |
       - --log-file=/var/log/kube-apiserver.log
       command:
       - /usr/local/bin/kube-apiserver
-      image: registry.k8s.io/kube-apiserver:v1.18.0
+      image: registry.k8s.io/kube-apiserver:v1.20.0
       livenessProbe:
         httpGet:
           host: 127.0.0.1
