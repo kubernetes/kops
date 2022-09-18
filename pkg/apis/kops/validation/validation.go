@@ -660,11 +660,10 @@ func validateKubeAPIServer(v *kops.KubeAPIServerConfig, c *kops.Cluster, fldPath
 
 	if v.InsecurePort != nil {
 		insecurePort := *v.InsecurePort
-		if c.IsKubernetesGTE("1.20") && insecurePort != 0 {
-			field.Forbidden(fldPath.Child("insecurePort"), "insecurePort can only be 0 as of Kubernetes 1.20")
-		}
 		if c.IsKubernetesGTE("1.24") {
 			field.Forbidden(fldPath.Child("insecurePort"), "insecurePort must not be set as of Kubernetes 1.24")
+		} else if insecurePort != 0 {
+			field.Forbidden(fldPath.Child("insecurePort"), "insecurePort can only be 0 or nil")
 		}
 	}
 
@@ -748,9 +747,7 @@ func validateKubelet(k *kops.KubeletConfigSpec, c *kops.Cluster, kubeletPath *fi
 		}
 
 		if k.CPUCFSQuotaPeriod != nil {
-			if c.IsKubernetesGTE("1.20") {
-				allErrs = append(allErrs, field.Forbidden(kubeletPath.Child("cpuCFSQuotaPeriod"), "cpuCFSQuotaPeriod has been removed on Kubernetes >=1.20"))
-			}
+			allErrs = append(allErrs, field.Forbidden(kubeletPath.Child("cpuCFSQuotaPeriod"), "cpuCFSQuotaPeriod has been removed on Kubernetes >=1.20"))
 		}
 
 		if c.IsKubernetesGTE("1.24") {
@@ -1683,9 +1680,6 @@ func validateWarmPool(warmPool *kops.WarmPoolSpec, fldPath *field.Path) (allErrs
 
 func validateSnapshotController(cluster *kops.Cluster, spec *kops.SnapshotControllerConfig, fldPath *field.Path) (allErrs field.ErrorList) {
 	if spec != nil && fi.BoolValue(spec.Enabled) {
-		if !cluster.IsKubernetesGTE("1.20") {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("enabled"), "Snapshot controller requires kubernetes 1.20+"))
-		}
 		if !components.IsCertManagerEnabled(cluster) {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("enabled"), "Snapshot controller requires that cert manager is enabled"))
 		}
