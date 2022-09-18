@@ -193,14 +193,8 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 			clusterSpec.Kubelet.FeatureGates["CSIMigrationAWS"] = "true"
 		}
 
-		if b.IsKubernetesLT("1.21.0") {
-			if _, found := clusterSpec.Kubelet.FeatureGates["CSIMigrationAWSComplete"]; !found {
-				clusterSpec.Kubelet.FeatureGates["CSIMigrationAWSComplete"] = "true"
-			}
-		} else {
-			if _, found := clusterSpec.Kubelet.FeatureGates["InTreePluginAWSUnregister"]; !found {
-				clusterSpec.Kubelet.FeatureGates["InTreePluginAWSUnregister"] = "true"
-			}
+		if _, found := clusterSpec.Kubelet.FeatureGates["InTreePluginAWSUnregister"]; !found {
+			clusterSpec.Kubelet.FeatureGates["InTreePluginAWSUnregister"] = "true"
 		}
 	}
 
@@ -215,7 +209,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 
 	// We do not enable graceful shutdown when using amazonaws due to leaking ENIs.
 	// Graceful shutdown is also not available by default on k8s < 1.21
-	if b.IsKubernetesGTE("1.21") && clusterSpec.Kubelet.ShutdownGracePeriod == nil && clusterSpec.Networking.AmazonVPC == nil {
+	if clusterSpec.Kubelet.ShutdownGracePeriod == nil && clusterSpec.Networking.AmazonVPC == nil {
 		clusterSpec.Kubelet.ShutdownGracePeriod = &metav1.Duration{Duration: time.Duration(30 * time.Second)}
 		clusterSpec.Kubelet.ShutdownGracePeriodCriticalPods = &metav1.Duration{Duration: time.Duration(10 * time.Second)}
 	} else if clusterSpec.Networking.AmazonVPC != nil {

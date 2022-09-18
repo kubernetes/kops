@@ -19,7 +19,7 @@ spec:
       name: master-us-test-1a
     name: events
   iam: {}
-  kubernetesVersion: v1.20.0
+  kubernetesVersion: v1.21.0
   kubeDNS:
     provider: CoreDNS
     tolerations:

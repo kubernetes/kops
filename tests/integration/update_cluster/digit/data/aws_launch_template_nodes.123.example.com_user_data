@@ -136,7 +136,7 @@ docker:
 kubeProxy:
   clusterCIDR: 100.96.0.0/11
   cpuRequest: 100m
-  image: registry.k8s.io/kube-proxy:v1.20.0
+  image: registry.k8s.io/kube-proxy:v1.21.0
   logLevel: 2
 kubelet:
   anonymousAuth: false
@@ -152,6 +152,8 @@ kubelet:
   networkPluginName: cni
   podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
+  shutdownGracePeriod: 30s
+  shutdownGracePeriodCriticalPods: 10s
 
 __EOF_CLUSTER_SPEC
 
@@ -160,7 +162,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/123.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: PIKG704Lt9sBVVcL/8u7Lx9XR2dlyOvbkb6mhuQ4lNw=
+NodeupConfigHash: ZM3qqfbnaMyrGlV3MCLq3YHy/Zd1EvS3mLaYZ+F3N8s=
 
 __EOF_KUBE_ENV
 
