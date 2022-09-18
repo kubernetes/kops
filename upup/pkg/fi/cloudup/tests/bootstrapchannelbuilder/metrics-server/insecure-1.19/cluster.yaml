@@ -23,7 +23,7 @@ spec:
     version: 3.1.12
     name: events
   iam: {}
-  kubernetesVersion: 1.20.0
+  kubernetesVersion: 1.22.0
   masterInternalName: api.internal.minimal.example.com
   masterPublicName: api.minimal.example.com
   metricsServer:
