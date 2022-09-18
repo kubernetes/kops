@@ -173,6 +173,12 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["HCLOUD_TOKEN"] = func() string {
 		return os.Getenv("HCLOUD_TOKEN")
 	}
+	dest["HCLOUD_NETWORK"] = func() string {
+		if cluster.Spec.NetworkID != "" {
+			return cluster.Spec.NetworkID
+		}
+		return cluster.Name
+	}
 
 	if featureflag.Spotinst.Enabled() {
 		if creds, err := spotinst.LoadCredentials(); err == nil {
