@@ -280,8 +280,10 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().Int32Var(&options.MasterVolumeSize, "master-volume-size", options.MasterVolumeSize, "Instance volume size (in GB) for masters")
 	cmd.Flags().Int32Var(&options.NodeVolumeSize, "node-volume-size", options.NodeVolumeSize, "Instance volume size (in GB) for worker nodes")
 
-	cmd.Flags().StringVar(&options.NetworkID, "vpc", options.NetworkID, "Shared VPC to use")
+	cmd.Flags().StringVar(&options.NetworkID, "vpc", options.NetworkID, "Shared Network or VPC to use")
 	cmd.RegisterFlagCompletionFunc("vpc", completeNetworkID)
+	cmd.Flags().StringVar(&options.NetworkID, "network-id", options.NetworkID, "Shared Network or VPC to use")
+	cmd.RegisterFlagCompletionFunc("network-id", completeNetworkID)
 	cmd.Flags().StringSliceVar(&options.SubnetIDs, "subnets", options.SubnetIDs, "Shared subnets to use")
 	cmd.RegisterFlagCompletionFunc("subnets", completeSubnetID(options))
 	cmd.Flags().StringSliceVar(&options.UtilitySubnetIDs, "utility-subnets", options.UtilitySubnetIDs, "Shared utility subnets to use")
