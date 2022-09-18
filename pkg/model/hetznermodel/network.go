@@ -34,16 +34,21 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	network := &hetznertasks.Network{
 		Name:      fi.String(b.ClusterName()),
 		Lifecycle: b.Lifecycle,
-		Region:    b.Region,
-		IPRange:   b.Cluster.Spec.NetworkCIDR,
-		// TODO(hakman): Add support for additional subnets?
-		Subnets: []string{
-			b.Cluster.Spec.NetworkCIDR,
-		},
-		Labels: map[string]string{
-			hetzner.TagKubernetesClusterName: b.ClusterName(),
-		},
 	}
+
+	if b.Cluster.Spec.NetworkID == "" {
+		network.IPRange = b.Cluster.Spec.NetworkCIDR
+		network.Region = b.Region
+		network.Subnets = []string{
+			b.Cluster.Spec.NetworkCIDR,
+		}
+		network.Labels = map[string]string{
+			hetzner.TagKubernetesClusterName: b.ClusterName(),
+		}
+	} else {
+		network.ID = fi.String(b.Cluster.Spec.NetworkID)
+	}
+
 	c.AddTask(network)
 
 	return nil

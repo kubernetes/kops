@@ -199,6 +199,11 @@ func (_ *LoadBalancer) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes 
 			return fmt.Errorf("failed to find network for loadbalancer %q", fi.StringValue(e.Name))
 		}
 
+		networkID, err := strconv.Atoi(fi.StringValue(e.Network.ID))
+		if err != nil {
+			return fmt.Errorf("failed to convert network ID %q to int: %w", fi.StringValue(e.Network.ID), err)
+		}
+
 		opts := hcloud.LoadBalancerCreateOpts{
 			Name: fi.StringValue(e.Name),
 			LoadBalancerType: &hcloud.LoadBalancerType{
@@ -221,7 +226,7 @@ func (_ *LoadBalancer) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes 
 				},
 			},
 			Network: &hcloud.Network{
-				ID: fi.IntValue(e.Network.ID),
+				ID: networkID,
 			},
 		}
 

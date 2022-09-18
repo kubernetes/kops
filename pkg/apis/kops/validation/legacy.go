@@ -92,6 +92,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("hetzner"), "only one cloudProvider option permitted"))
 		}
 		optionTaken = true
+		requiresNetworkCIDR = false
 		requiresSubnets = false
 		requiresSubnetCIDR = false
 	}
