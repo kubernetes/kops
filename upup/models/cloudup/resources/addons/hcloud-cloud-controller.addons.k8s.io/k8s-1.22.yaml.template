@@ -6,8 +6,8 @@ metadata:
   name: hcloud
   namespace: kube-system
 stringData:
-  token: {{ HCLOUD_TOKEN }}
-  network: {{ ClusterName }}
+  token: "{{ HCLOUD_TOKEN }}"
+  network: "{{ HCLOUD_NETWORK }}"
 ---
 apiVersion: v1
 kind: ServiceAccount
