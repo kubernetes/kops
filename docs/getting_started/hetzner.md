@@ -1,7 +1,7 @@
 # Getting Started with kOps on Hetzner Cloud
 
-**WARNING**: Hetzner Cloud support on kOps is currently in **alpha**, meaning it is subject to change, so please use with caution.
-The original issue ticket is [#8983](https://github.com/kubernetes/kops/issues/8983).
+**WARNING**: Hetzner Cloud support on kOps is currently in **beta**, which means it is in good shape and could be used for production.
+However, it is not as rigorously tested as the stable cloud providers and there are some features that might be missing.
 
 ## Requirements
 * kOps version >= 1.24
@@ -15,7 +15,6 @@ The original issue ticket is [#8983](https://github.com/kubernetes/kops/issues/8
 
 It is important to set the following environment variables:
 ```bash
-export KOPS_FEATURE_FLAGS=Hetzner
 export HCLOUD_TOKEN=<token>
 export S3_ENDPOINT=<endpoint>
 export S3_ACCESS_KEY_ID=<acces-key>
@@ -46,10 +45,17 @@ kops create cluster --name=my-cluster.example.k8s.local \
   --node-size cpx31
 kops update cluster --name=my-cluster.example.k8s.local --yes
 
+# update a cluster
+kops update cluster --name=my-cluster.example.k8s.local
+kops update cluster --name=my-cluster.example.k8s.local --yes
+kops rolling-update cluster --name=my-cluster.example.k8s.local
+kops rolling-update cluster --name=my-cluster.example.k8s.local --yes
+
 # validate a cluster
 kops validate cluster --name=my-cluster.example.k8s.local
 
 # delete a cluster
+kops delete cluster --name=my-cluster.example.k8s.local
 kops delete cluster --name=my-cluster.example.k8s.local --yes
 
 # export kubecfg
@@ -63,10 +69,9 @@ kops delete cluster --name=my-cluster.example.k8s.local --yes
 
 kOps for Hetzner Cloud currently does not support the following features:
 
-* Multiple SSH keys
 * Autoscaling using [Cluster Autoscaler](https://github.com/hetznercloud/autoscaler)
-* [Terraform](https://github.com/hetznercloud/terraform-provider-hcloud) support
+* Terraform support using [terraform-provider-hcloud](https://github.com/hetznercloud/terraform-provider-hcloud) 
 
-# Next steps
+## Next steps
 
 Now that you have a working kOps cluster, read through the recommendations for [production setups guide](production.md) to learn more about how to configure kOps for production workloads.

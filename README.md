@@ -15,7 +15,7 @@ We like to think of it as `kubectl` for clusters.
 `kops` will not only help you create, destroy, upgrade and maintain production-grade, highly
 available, Kubernetes cluster, but it will also provision the necessary cloud infrastructure.
 
-AWS (Amazon Web Services) is currently officially supported, with DigitalOcean, GCE, and OpenStack in beta support, and Azure and AliCloud in alpha.
+AWS (Amazon Web Services) and GCE (Google Cloud Platform) are currently officially supported, with DigitalOcean, Hetzner and OpenStack in beta support, and Azure in alpha.
 
 ## Can I see it in action?
 
@@ -26,7 +26,7 @@ AWS (Amazon Web Services) is currently officially supported, with DigitalOcean, 
 </p>
 
 
-## Installing and launching a Kubernetes cluster hosted on AWS, GCE, DigitalOcean or OpenStack
+## Installing and launching a Kubernetes cluster hosted on AWS, GCE, DigitalOcean, Hetzner, OpenStack, Azure
 
 See [Getting Started](https://kops.sigs.k8s.io/getting_started/install/)
 
