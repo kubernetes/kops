@@ -276,12 +276,6 @@ func TestMinimal_v1_26(t *testing.T) {
 // TestHetzner runs the test on a minimum configuration
 func TestHetzner(t *testing.T) {
 	t.Setenv("HCLOUD_TOKEN", "REDACTED")
-	featureflag.ParseFlags("+Hetzner")
-	unsetFeatureFlags := func() {
-		featureflag.ParseFlags("-Hetzner")
-	}
-	defer unsetFeatureFlags()
-
 	newIntegrationTest("minimal.k8s.local", "minimal_hetzner").
 		runTestTerraformHetzner(t)
 }

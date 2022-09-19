@@ -427,9 +427,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 	case kops.CloudProviderHetzner:
 		{
-			if !featureflag.Hetzner.Enabled() {
-				return fmt.Errorf("Hetzner Cloud support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=Hetzner")
-			}
+			// Hetzner Cloud support is currently in beta
 		}
 
 	case kops.CloudProviderDO:
