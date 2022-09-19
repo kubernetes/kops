@@ -1,6 +1,7 @@
 # Getting Started with kOps on DigitalOcean
 
-**WARNING**: digitalocean support on kOps promoted to **beta** currently meaning it is subject to change, so please use with caution.
+**WARNING**: digitalocean support on kOps promoted to **beta**, which means it is in good shape and could be used for production.
+However, it is not as rigorously tested as the stable cloud providers and there are some features that might be missing.
 
 ## Requirements
 
@@ -94,6 +95,6 @@ kOps for DigitalOcean currently does not support these features:
 
 * kops terraform support for DO
 
-# Next steps
+## Next steps
 
 Now that you have a working kOps cluster, read through the [recommendations for production setups guide](production.md) to learn more about how to configure kOps for production workloads.
