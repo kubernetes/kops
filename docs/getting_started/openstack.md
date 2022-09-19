@@ -218,6 +218,6 @@ spec:
       insecureSkipVerify: true
 ```
 
-# Next steps
+## Next steps
 
 Now that you have a working kOps cluster, read through the [recommendations for production setups guide](production.md) to learn more about how to configure kOps for production workloads.
