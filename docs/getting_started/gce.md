@@ -185,6 +185,6 @@ the command.  When run without `--yes` it shows a preview of the objects it will
 
 After you've double-checked you're deleting exactly what you want to delete, run `kops delete cluster simple.k8s.local --yes`.
 
-# Next steps
+## Next steps
 
 Now that you have a working kOps cluster, read through the [recommendations for production setups guide](production.md) to learn more about how to configure kOps for production workloads.
