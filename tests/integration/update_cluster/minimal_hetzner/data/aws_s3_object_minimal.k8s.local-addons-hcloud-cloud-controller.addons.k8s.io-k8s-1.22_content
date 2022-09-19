@@ -91,7 +91,7 @@ spec:
             secretKeyRef:
               key: network
               name: hcloud
-        image: hetznercloud/hcloud-cloud-controller-manager:v1.12.1
+        image: hetznercloud/hcloud-cloud-controller-manager:v1.13.0
         name: hcloud-cloud-controller-manager
         resources:
           requests:
@@ -99,7 +99,7 @@ spec:
             memory: 50Mi
       dnsPolicy: Default
       hostNetwork: true
-      priorityClassName: system-node-critical
+      priorityClassName: system-cluster-critical
       serviceAccountName: cloud-controller-manager
       tolerations:
       - effect: NoSchedule

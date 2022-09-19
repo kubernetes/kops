@@ -46,7 +46,6 @@ spec:
     spec:
       serviceAccountName: cloud-controller-manager
       dnsPolicy: Default
-      priorityClassName: system-node-critical
       tolerations:
         # this taint is set by all kubelets running `--cloud-provider=external`
         # so we should tolerate it to schedule the cloud controller manager
@@ -66,7 +65,7 @@ spec:
           effect: "NoSchedule"
       hostNetwork: true
       containers:
-        - image: hetznercloud/hcloud-cloud-controller-manager:v1.12.1
+        - image: hetznercloud/hcloud-cloud-controller-manager:v1.13.0
           name: hcloud-cloud-controller-manager
           command:
             - "/bin/hcloud-cloud-controller-manager"
@@ -92,3 +91,4 @@ spec:
                 secretKeyRef:
                   name: hcloud
                   key: network
+      priorityClassName: system-cluster-critical
