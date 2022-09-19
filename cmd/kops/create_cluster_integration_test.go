@@ -58,12 +58,6 @@ func TestCreateClusterMinimal(t *testing.T) {
 // TestCreateClusterHetzner runs kops create cluster minimal.k8s.local --zones fsn1
 func TestCreateClusterHetzner(t *testing.T) {
 	t.Setenv("HCLOUD_TOKEN", "REDACTED")
-	featureflag.ParseFlags("+Hetzner")
-	unsetFeatureFlags := func() {
-		featureflag.ParseFlags("-Hetzner")
-	}
-	defer unsetFeatureFlags()
-
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_hetzner", "v1alpha2")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal_hetzner", "v1alpha2")
 }
