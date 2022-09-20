@@ -162,7 +162,7 @@ kubeAPIServer:
   - https://127.0.0.1:4001
   etcdServersOverrides:
   - /events#https://127.0.0.1:4002
-  image: registry.k8s.io/kube-apiserver:v1.20.0
+  image: registry.k8s.io/kube-apiserver:v1.21.0
   kubeletPreferredAddressTypes:
   - InternalIP
   - Hostname
@@ -188,7 +188,7 @@ kubeControllerManager:
   clusterCIDR: 100.96.0.0/11
   clusterName: 123.example.com
   configureCloudRoutes: false
-  image: registry.k8s.io/kube-controller-manager:v1.20.0
+  image: registry.k8s.io/kube-controller-manager:v1.21.0
   leaderElection:
     leaderElect: true
   logLevel: 2
@@ -196,10 +196,10 @@ kubeControllerManager:
 kubeProxy:
   clusterCIDR: 100.96.0.0/11
   cpuRequest: 100m
-  image: registry.k8s.io/kube-proxy:v1.20.0
+  image: registry.k8s.io/kube-proxy:v1.21.0
   logLevel: 2
 kubeScheduler:
-  image: registry.k8s.io/kube-scheduler:v1.20.0
+  image: registry.k8s.io/kube-scheduler:v1.21.0
   leaderElection:
     leaderElect: true
   logLevel: 2
@@ -217,6 +217,8 @@ kubelet:
   networkPluginName: cni
   podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
+  shutdownGracePeriod: 30s
+  shutdownGracePeriodCriticalPods: 10s
 masterKubelet:
   anonymousAuth: false
   cgroupDriver: systemd
@@ -232,6 +234,8 @@ masterKubelet:
   podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   registerSchedulable: false
+  shutdownGracePeriod: 30s
+  shutdownGracePeriodCriticalPods: 10s
 
 __EOF_CLUSTER_SPEC
 
@@ -240,7 +244,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/123.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: aSESxiNkzlEteRXSMSUwAliHhnaD+t1LL/hwlA+tiO8=
+NodeupConfigHash: irccjKkFGJLvUyf0gpEE516RAgTCdIIdKm5+djS8Zwk=
 
 __EOF_KUBE_ENV
 

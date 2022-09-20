@@ -43,21 +43,7 @@ func (b *MiscUtilsBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	var packages []string
-	if b.Distribution.IsDebianFamily() {
-		if b.IsKubernetesLT("1.20") {
-			packages = append(packages, "curl")
-			packages = append(packages, "wget")
-			packages = append(packages, "perl")
-			packages = append(packages, "apt-transport-https")
-
-			// TODO: Do we really need python-apt?
-			if (b.Distribution.IsUbuntu() && b.Distribution.Version() >= 20.10) || (!b.Distribution.IsUbuntu() && b.Distribution.Version() >= 11) {
-				// python-apt not available (though python3-apt is)
-			} else {
-				packages = append(packages, "python-apt")
-			}
-		}
-	} else if b.Distribution.IsRHELFamily() {
+	if b.Distribution.IsRHELFamily() {
 		// TODO: These packages have been auto-installed for a long time, and likely we don't need all of them any longer
 		packages = append(packages, "curl")
 		packages = append(packages, "wget")
@@ -66,11 +52,6 @@ func (b *MiscUtilsBuilder) Build(c *fi.ModelBuilderContext) error {
 	} else {
 		klog.Warningf("unknown distribution, skipping misc utils install: %v", b.Distribution)
 		return nil
-	}
-
-	if b.Distribution.IsUbuntu() && b.IsKubernetesLT("1.20") {
-		packages = append(packages, "netcat-traditional")
-		packages = append(packages, "git")
 	}
 
 	for _, p := range packages {
