@@ -43,7 +43,7 @@ spec:
             ]
   kubelet:
     anonymousAuth: false
-  kubernetesVersion: v1.20.0
+  kubernetesVersion: v1.21.0
   masterInternalName: api.internal.123.example.com
   masterPublicName: api.123.example.com
   networkCIDR: 172.20.0.0/16
