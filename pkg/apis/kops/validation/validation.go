@@ -298,9 +298,6 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		if !featureflag.Karpenter.Enabled() {
 			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("karpenter", "enabled"), "karpenter requires the Karpenter feature flag"))
 		}
-		if c.IsKubernetesLT("1.21") {
-			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("karpenter", "enabled"), "karpenter requires Kubernetes 1.21 or greater"))
-		}
 	}
 
 	if spec.PodIdentityWebhook != nil && spec.PodIdentityWebhook.Enabled {
@@ -737,9 +734,7 @@ func validateKubelet(k *kops.KubeletConfigSpec, c *kops.Cluster, kubeletPath *fi
 		}
 
 		if k.EnableCadvisorJsonEndpoints != nil {
-			if c.IsKubernetesGTE("1.21") {
-				allErrs = append(allErrs, field.Forbidden(kubeletPath.Child("enableCadvisorJsonEndpoints"), "enableCadvisorJsonEndpoints requires Kubernetes 1.18-1.20"))
-			}
+			allErrs = append(allErrs, field.Forbidden(kubeletPath.Child("enableCadvisorJsonEndpoints"), "enableCadvisorJsonEndpoints requires Kubernetes 1.18-1.20"))
 		}
 
 		if k.LogFormat != "" {

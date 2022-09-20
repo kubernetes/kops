@@ -37,7 +37,7 @@ func (b *DefaultsOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if options.ContainerRuntime == "" {
-		if b.Context.IsKubernetesLT("1.20") || options.Docker != nil {
+		if options.Docker != nil {
 			options.ContainerRuntime = "docker"
 		} else {
 			options.ContainerRuntime = "containerd"

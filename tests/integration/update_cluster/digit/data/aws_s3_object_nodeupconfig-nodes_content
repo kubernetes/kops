@@ -1,12 +1,12 @@
 Assets:
   amd64:
-  - ff2422571c4c1e9696e367f5f25466b96fb6e501f28aed29f414b1524a52dea0@https://storage.googleapis.com/kubernetes-release/release/v1.20.0/bin/linux/amd64/kubelet
-  - a5895007f331f08d2e082eb12458764949559f30bcc5beae26c38f3e2724262c@https://storage.googleapis.com/kubernetes-release/release/v1.20.0/bin/linux/amd64/kubectl
+  - 681c81b7934ae2bf38b9f12d891683972d1fbbf6d7d97e50940a47b139d41b35@https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kubelet
+  - 9f74f2fa7ee32ad07e17211725992248470310ca1988214518806b39b1dad9f0@https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kubectl
   - 977824932d5667c7a37aa6a3cbba40100a6873e7bd97e83e8be837e3e7afd0a8@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-amd64-v0.8.7.tgz
   - 29ef1e8635795c2a49a20a56e778f45ff163c5400a5428ca33999ed53d44e3d8@https://github.com/containerd/containerd/releases/download/v1.4.13/cri-containerd-cni-1.4.13-linux-amd64.tar.gz
   arm64:
-  - 47ab6c4273fc3bb0cb8ec9517271d915890c5a6b0e54b2991e7a8fbbe77b06e4@https://storage.googleapis.com/kubernetes-release/release/v1.20.0/bin/linux/arm64/kubelet
-  - 25e4465870c99167e6c466623ed8f05a1d20fbcb48cab6688109389b52d87623@https://storage.googleapis.com/kubernetes-release/release/v1.20.0/bin/linux/arm64/kubectl
+  - 17832b192be5ea314714f7e16efd5e5f65347974bbbf41def6b02f68931380c4@https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/arm64/kubelet
+  - a4dd7100f547a40d3e2f83850d0bab75c6ea5eb553f0a80adcf73155bef1fd0d@https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/arm64/kubectl
   - ae13d7b5c05bd180ea9b5b68f44bdaa7bfb41034a2ef1d68fd8e1259797d642f@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-arm64-v0.8.7.tgz
   - debed306ed9a4e70dcbcb228a0b3898f9730099e324f34bb0e76abbaddf7a6a7@https://download.docker.com/linux/static/stable/aarch64/docker-20.10.13.tgz
 CAs:
@@ -54,6 +54,8 @@ KubeletConfig:
     node-role.kubernetes.io/node: ""
   podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
+  shutdownGracePeriod: 30s
+  shutdownGracePeriodCriticalPods: 10s
 UpdatePolicy: automatic
 channels:
 - memfs://clusters.example.com/123.example.com/addons/bootstrap-channel.yaml
