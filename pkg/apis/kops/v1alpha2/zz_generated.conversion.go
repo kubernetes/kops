@@ -2240,6 +2240,7 @@ func autoConvert_v1alpha2_CloudControllerManagerConfig_To_kops_CloudControllerMa
 	out.Image = in.Image
 	out.CloudProvider = in.CloudProvider
 	out.ClusterName = in.ClusterName
+	out.AllowUntaggedCloud = in.AllowUntaggedCloud
 	out.ClusterCIDR = in.ClusterCIDR
 	out.AllocateNodeCIDRs = in.AllocateNodeCIDRs
 	out.ConfigureCloudRoutes = in.ConfigureCloudRoutes
@@ -2271,6 +2272,7 @@ func autoConvert_kops_CloudControllerManagerConfig_To_v1alpha2_CloudControllerMa
 	out.Image = in.Image
 	out.CloudProvider = in.CloudProvider
 	out.ClusterName = in.ClusterName
+	out.AllowUntaggedCloud = in.AllowUntaggedCloud
 	out.ClusterCIDR = in.ClusterCIDR
 	out.AllocateNodeCIDRs = in.AllocateNodeCIDRs
 	out.ConfigureCloudRoutes = in.ConfigureCloudRoutes

@@ -674,6 +674,8 @@ type CloudControllerManagerConfig struct {
 	CloudProvider string `json:"cloudProvider,omitempty" flag:"cloud-provider"`
 	// ClusterName is the instance prefix for the cluster.
 	ClusterName string `json:"clusterName,omitempty" flag:"cluster-name"`
+	// Allow the cluster to run without the cluster-id on cloud instances
+	AllowUntaggedCloud *bool `json:"allowUntaggedCloud,omitempty" flag:"allow-untagged-cloud"`
 	// ClusterCIDR is CIDR Range for Pods in cluster.
 	ClusterCIDR string `json:"clusterCIDR,omitempty" flag:"cluster-cidr"`
 	// AllocateNodeCIDRs enables CIDRs for Pods to be allocated and, if

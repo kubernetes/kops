@@ -282,6 +282,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 			codeModels = append(codeModels, &components.AWSCloudControllerManagerOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.GCPCloudControllerManagerOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.GCPPDCSIDriverOptionsBuilder{OptionsContext: optionsContext})
+			codeModels = append(codeModels, &components.HetznerCloudControllerManagerOptionsBuilder{OptionsContext: optionsContext})
 		}
 	}
 
