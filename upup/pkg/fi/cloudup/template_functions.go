@@ -450,7 +450,9 @@ func (tf *TemplateFunctions) CloudControllerConfigArgv() ([]string, error) {
 		argv = append(argv, fmt.Sprintf("--use-service-account-credentials=%t", true))
 	}
 
-	argv = append(argv, "--cloud-config=/etc/kubernetes/cloud.config")
+	if cluster.Spec.GetCloudProvider() != kops.CloudProviderHetzner {
+		argv = append(argv, "--cloud-config=/etc/kubernetes/cloud.config")
+	}
 
 	return argv, nil
 }
