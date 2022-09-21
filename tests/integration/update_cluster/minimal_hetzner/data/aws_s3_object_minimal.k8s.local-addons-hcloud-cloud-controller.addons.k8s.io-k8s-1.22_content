@@ -73,9 +73,14 @@ spec:
       containers:
       - command:
         - /bin/hcloud-cloud-controller-manager
+        - --allocate-node-cidrs=true
+        - --allow-untagged-cloud=true
         - --cloud-provider=hcloud
+        - --cluster-cidr=100.64.0.0/10
+        - --configure-cloud-routes=false
         - --leader-elect=false
-        - --allow-untagged-cloud
+        - --v=2
+        - --use-service-account-credentials=true
         env:
         - name: NODE_NAME
           valueFrom:
@@ -91,7 +96,7 @@ spec:
             secretKeyRef:
               key: network
               name: hcloud
-        image: hetznercloud/hcloud-cloud-controller-manager:v1.13.0
+        image: hetznercloud/hcloud-cloud-controller-manager:v1.13.1
         name: hcloud-cloud-controller-manager
         resources:
           requests:
