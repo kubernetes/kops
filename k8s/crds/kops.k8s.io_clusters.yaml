@@ -552,6 +552,10 @@ spec:
                       and, if ConfigureCloudRoutes is true, to be set on the cloud
                       provider.
                     type: boolean
+                  allowUntaggedCloud:
+                    description: Allow the cluster to run without the cluster-id on
+                      cloud instances
+                    type: boolean
                   cidrAllocatorType:
                     description: CIDRAllocatorType specifies the type of CIDR allocator
                       to use.
