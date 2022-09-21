@@ -12,6 +12,15 @@ spec:
   channel: stable
   cloudConfig:
     manageStorageClasses: true
+  cloudControllerManager:
+    allocateNodeCIDRs: true
+    allowUntaggedCloud: true
+    cloudProvider: hcloud
+    clusterCIDR: 100.64.0.0/10
+    configureCloudRoutes: false
+    image: hetznercloud/hcloud-cloud-controller-manager:v1.13.1
+    leaderElection:
+      leaderElect: false
   cloudProvider: hetzner
   clusterDNSDomain: cluster.local
   configBase: memfs://tests/minimal.k8s.local
