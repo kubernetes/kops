@@ -65,13 +65,13 @@ spec:
           effect: "NoSchedule"
       hostNetwork: true
       containers:
-        - image: hetznercloud/hcloud-cloud-controller-manager:v1.13.0
+        - image: "{{ .ExternalCloudControllerManager.Image }}"
           name: hcloud-cloud-controller-manager
           command:
             - "/bin/hcloud-cloud-controller-manager"
-            - "--cloud-provider=hcloud"
-            - "--leader-elect=false"
-            - "--allow-untagged-cloud"
+            {{- range $arg := CloudControllerConfigArgv }}
+            - "{{ $arg }}"
+            {{- end }}
           resources:
             requests:
               cpu: 100m
