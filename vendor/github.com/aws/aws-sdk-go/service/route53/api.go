@@ -7824,9 +7824,6 @@ func (s *AlarmIdentifier) SetRegion(v string) *AlarmIdentifier {
 //
 // When creating resource record sets for a private hosted zone, note the following:
 //
-//   - Creating geolocation alias resource record sets or latency alias resource
-//     record sets in a private hosted zone is unsupported.
-//
 //   - For information about creating failover resource record sets in a private
 //     hosted zone, see Configuring Failover in a Private Hosted Zone (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-private-hosted-zones.html).
 type AliasTarget struct {
@@ -18053,9 +18050,6 @@ type ResourceRecordSet struct {
 	//    * You can't create an alias resource record set in a private hosted zone
 	//    to route traffic to a CloudFront distribution.
 	//
-	//    * Creating geolocation alias resource record sets or latency alias resource
-	//    record sets in a private hosted zone is unsupported.
-	//
 	//    * For information about creating failover resource record sets in a private
 	//    hosted zone, see Configuring Failover in a Private Hosted Zone (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-private-hosted-zones.html)
 	//    in the Amazon Route 53 Developer Guide.
@@ -20364,6 +20358,9 @@ const (
 	// CloudWatchRegionMeSouth1 is a CloudWatchRegion enum value
 	CloudWatchRegionMeSouth1 = "me-south-1"
 
+	// CloudWatchRegionMeCentral1 is a CloudWatchRegion enum value
+	CloudWatchRegionMeCentral1 = "me-central-1"
+
 	// CloudWatchRegionApSouth1 is a CloudWatchRegion enum value
 	CloudWatchRegionApSouth1 = "ap-south-1"
 
@@ -20433,6 +20430,7 @@ func CloudWatchRegion_Values() []string {
 		CloudWatchRegionEuWest3,
 		CloudWatchRegionApEast1,
 		CloudWatchRegionMeSouth1,
+		CloudWatchRegionMeCentral1,
 		CloudWatchRegionApSouth1,
 		CloudWatchRegionApSoutheast1,
 		CloudWatchRegionApSoutheast2,
@@ -20900,6 +20898,9 @@ const (
 	// VPCRegionUsIsobEast1 is a VPCRegion enum value
 	VPCRegionUsIsobEast1 = "us-isob-east-1"
 
+	// VPCRegionMeCentral1 is a VPCRegion enum value
+	VPCRegionMeCentral1 = "me-central-1"
+
 	// VPCRegionApSoutheast1 is a VPCRegion enum value
 	VPCRegionApSoutheast1 = "ap-southeast-1"
 
@@ -20958,6 +20959,7 @@ func VPCRegion_Values() []string {
 		VPCRegionUsIsoEast1,
 		VPCRegionUsIsoWest1,
 		VPCRegionUsIsobEast1,
+		VPCRegionMeCentral1,
 		VPCRegionApSoutheast1,
 		VPCRegionApSoutheast2,
 		VPCRegionApSoutheast3,

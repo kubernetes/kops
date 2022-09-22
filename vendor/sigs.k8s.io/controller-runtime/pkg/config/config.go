@@ -50,8 +50,8 @@ type DeferredFileLoader struct {
 // this will also configure the defaults for the loader if nothing is
 //
 // Defaults:
-//   Path: "./config.yaml"
-//   Kind: GenericControllerManagerConfiguration
+// * Path: "./config.yaml"
+// * Kind: GenericControllerManagerConfiguration
 func File() *DeferredFileLoader {
 	scheme := runtime.NewScheme()
 	utilruntime.Must(v1alpha1.AddToScheme(scheme))

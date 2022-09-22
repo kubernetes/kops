@@ -268,6 +268,7 @@ type DatabaseDB struct {
 
 // DatabaseReplica represents a read-only replica of a particular database
 type DatabaseReplica struct {
+	ID                 string              `json:"id"`
 	Name               string              `json:"name"`
 	Connection         *DatabaseConnection `json:"connection"`
 	PrivateConnection  *DatabaseConnection `json:"private_connection,omitempty"`

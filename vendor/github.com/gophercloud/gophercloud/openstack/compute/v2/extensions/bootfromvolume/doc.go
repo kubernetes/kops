@@ -10,7 +10,7 @@ https://docs.openstack.org/nova/latest/user/block-device-mapping.html
 
 Note that this package implements `block_device_mapping_v2`.
 
-Example of Creating a Server From an Image
+# Example of Creating a Server From an Image
 
 This example will boot a server from an image and use a standard ephemeral
 disk as the server's root disk. This is virtually no different than creating
@@ -42,7 +42,7 @@ a server without using block device mappings.
 		panic(err)
 	}
 
-Example of Creating a Server From a New Volume
+# Example of Creating a Server From a New Volume
 
 This example will create a block storage volume based on the given Image. The
 server will use this volume as its root disk.
@@ -72,7 +72,7 @@ server will use this volume as its root disk.
 		panic(err)
 	}
 
-Example of Creating a Server From an Existing Volume
+# Example of Creating a Server From an Existing Volume
 
 This example will create a server with an existing volume as its root disk.
 
@@ -100,7 +100,7 @@ This example will create a server with an existing volume as its root disk.
 		panic(err)
 	}
 
-Example of Creating a Server with Multiple Ephemeral Disks
+# Example of Creating a Server with Multiple Ephemeral Disks
 
 This example will create a server with multiple ephemeral disks. The first
 block device will be based off of an existing Image. Each additional
