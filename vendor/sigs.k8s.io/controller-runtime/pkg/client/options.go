@@ -37,6 +37,12 @@ type DeleteOption interface {
 	ApplyToDelete(*DeleteOptions)
 }
 
+// GetOption is some configuration that modifies options for a get request.
+type GetOption interface {
+	// ApplyToGet applies this configuration to the given get options.
+	ApplyToGet(*GetOptions)
+}
+
 // ListOption is some configuration that modifies options for a list request.
 type ListOption interface {
 	// ApplyToList applies this configuration to the given list options.
@@ -307,6 +313,45 @@ func (p PropagationPolicy) ApplyToDelete(opts *DeleteOptions) {
 // ApplyToDeleteAllOf applies this configuration to the given an List options.
 func (p PropagationPolicy) ApplyToDeleteAllOf(opts *DeleteAllOfOptions) {
 	p.ApplyToDelete(&opts.DeleteOptions)
+}
+
+// }}}
+
+// {{{ Get Options
+
+// GetOptions contains options for get operation.
+// Now it only has a Raw field, with support for specific resourceVersion.
+type GetOptions struct {
+	// Raw represents raw GetOptions, as passed to the API server.  Note
+	// that these may not be respected by all implementations of interface.
+	Raw *metav1.GetOptions
+}
+
+var _ GetOption = &GetOptions{}
+
+// ApplyToGet implements GetOption for GetOptions.
+func (o *GetOptions) ApplyToGet(lo *GetOptions) {
+	if o.Raw != nil {
+		lo.Raw = o.Raw
+	}
+}
+
+// AsGetOptions returns these options as a flattened metav1.GetOptions.
+// This may mutate the Raw field.
+func (o *GetOptions) AsGetOptions() *metav1.GetOptions {
+	if o == nil || o.Raw == nil {
+		return &metav1.GetOptions{}
+	}
+	return o.Raw
+}
+
+// ApplyOptions applies the given get options on these options,
+// and then returns itself (for convenient chaining).
+func (o *GetOptions) ApplyOptions(opts []GetOption) *GetOptions {
+	for _, opt := range opts {
+		opt.ApplyToGet(o)
+	}
+	return o
 }
 
 // }}}

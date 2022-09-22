@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elb"
@@ -269,6 +270,10 @@ func (ec2i *FakeEC2Impl) CreateTags(input *ec2.CreateTagsInput) (*ec2.CreateTags
 		if *id == "i-error" {
 			return nil, errors.New("Unable to tag")
 		}
+
+		if *id == "i-not-found" {
+			return nil, awserr.New("InvalidInstanceID.NotFound", "Instance not found", nil)
+		}
 	}
 	return &ec2.CreateTagsOutput{}, nil
 }
@@ -278,6 +283,10 @@ func (ec2i *FakeEC2Impl) DeleteTags(input *ec2.DeleteTagsInput) (*ec2.DeleteTags
 	for _, id := range input.Resources {
 		if *id == "i-error" {
 			return nil, errors.New("Unable to remove tag")
+		}
+
+		if *id == "i-not-found" {
+			return nil, awserr.New("InvalidInstanceID.NotFound", "Instance not found", nil)
 		}
 	}
 	return &ec2.DeleteTagsOutput{}, nil
@@ -716,7 +725,7 @@ func (ec2i *FakeEC2Impl) DescribeNetworkInterfaces(input *ec2.DescribeNetworkInt
 			return &ec2.DescribeNetworkInterfacesOutput{}, nil
 		}
 
-		if *filter.Name == "private-dns-name" {
+		if *filter.Values[0] == "return.private.dns.name" {
 			networkInterface[0].PrivateDnsName = aws.String("ip-1-2-3-4.compute.amazon.com")
 		}
 	}

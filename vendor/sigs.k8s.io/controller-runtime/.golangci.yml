@@ -12,7 +12,6 @@ linters:
   - goconst
   - gocritic
   - gocyclo
-  - godot
   - gofmt
   - goimports
   - goprintffuncname
@@ -61,9 +60,9 @@ linters-settings:
       - pkg: sigs.k8s.io/controller-runtime
         alias: ctrl
   staticcheck:
-    go: "1.18"
+    go: "1.19"
   stylecheck:
-    go: "1.18"
+    go: "1.19"
   depguard:
     include-go-root: true
     packages:
@@ -132,6 +131,9 @@ issues:
   - linters:
     - gosec
     text: "G304: Potential file inclusion via variable"
+  - linters:
+    - revive
+    text: "package-comments: should have a package comment"
 
 run:
   timeout: 10m

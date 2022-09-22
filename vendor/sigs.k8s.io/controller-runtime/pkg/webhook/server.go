@@ -299,7 +299,7 @@ func (s *Server) Start(ctx context.Context) error {
 // server has been started.
 func (s *Server) StartedChecker() healthz.Checker {
 	config := &tls.Config{
-		InsecureSkipVerify: true, // nolint:gosec // config is used to connect to our own webhook port.
+		InsecureSkipVerify: true, //nolint:gosec // config is used to connect to our own webhook port.
 	}
 	return func(req *http.Request) error {
 		s.mu.Lock()
