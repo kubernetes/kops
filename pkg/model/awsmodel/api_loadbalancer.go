@@ -245,13 +245,13 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			clb.AccessLog = &awstasks.ClassicLoadBalancerAccessLog{
 				EmitInterval:   fi.Int64(int64(lbSpec.AccessLog.Interval)),
 				Enabled:        fi.Bool(true),
-				S3BucketName:   fi.String(lbSpec.AccessLog.Bucket),
-				S3BucketPrefix: fi.String(lbSpec.AccessLog.BucketPrefix),
+				S3BucketName:   lbSpec.AccessLog.Bucket,
+				S3BucketPrefix: lbSpec.AccessLog.BucketPrefix,
 			}
 			nlb.AccessLog = &awstasks.NetworkLoadBalancerAccessLog{
 				Enabled:        fi.Bool(true),
-				S3BucketName:   fi.String(lbSpec.AccessLog.Bucket),
-				S3BucketPrefix: fi.String(lbSpec.AccessLog.BucketPrefix),
+				S3BucketName:   lbSpec.AccessLog.Bucket,
+				S3BucketPrefix: lbSpec.AccessLog.BucketPrefix,
 			}
 		} else {
 			clb.AccessLog = &awstasks.ClassicLoadBalancerAccessLog{
