@@ -310,6 +310,14 @@ func (t *ProtokubeBuilder) buildEnvFile() (*nodetasks.File, error) {
 		envVars["AZURE_STORAGE_ACCOUNT"] = os.Getenv("AZURE_STORAGE_ACCOUNT")
 	}
 
+	if t.CloudProvider == kops.CloudProviderScaleway {
+		envVars["SCW_ACCESS_KEY"] = os.Getenv("SCW_ACCESS_KEY")
+		envVars["SCW_SECRET_KEY"] = os.Getenv("SCW_SECRET_KEY")
+		envVars["SCW_DEFAULT_PROJECT_ID"] = os.Getenv("SCW_DEFAULT_PROJECT_ID")
+		envVars["SCW_DEFAULT_REGION"] = os.Getenv("SCW_DEFAULT_REGION")
+		envVars["SCW_DEFAULT_ZONE"] = os.Getenv("SCW_DEFAULT_ZONE")
+	}
+
 	for _, envVar := range proxy.GetProxyEnvVars(t.Cluster.Spec.EgressProxy) {
 		envVars[envVar.Name] = envVar.Value
 	}

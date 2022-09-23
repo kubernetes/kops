@@ -32,6 +32,9 @@ func SupportedClouds() []kops.CloudProviderID {
 	if featureflag.Azure.Enabled() {
 		clouds = append(clouds, kops.CloudProviderAzure)
 	}
+	if featureflag.Scaleway.Enabled() {
+		clouds = append(clouds, kops.CloudProviderScaleway)
+	}
 
 	return clouds
 }
