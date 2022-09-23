@@ -98,6 +98,8 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 				return err
 			}
 		}
+	case kops.CloudProviderScaleway:
+		out.CloudProvider.Scaleway = &kops.ScalewaySpec{}
 	case "":
 	default:
 		return field.NotSupported(field.NewPath("spec").Child("cloudProvider"), in.LegacyCloudProvider, []string{
@@ -107,6 +109,7 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 			string(kops.CloudProviderAWS),
 			string(kops.CloudProviderHetzner),
 			string(kops.CloudProviderOpenstack),
+			string(kops.CloudProviderScaleway),
 		})
 	}
 	if in.TagSubnets != nil {
