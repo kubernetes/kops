@@ -376,12 +376,16 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 				if actual.AccessLog == nil {
 					actual.AccessLog = &NetworkLoadBalancerAccessLog{}
 				}
-				actual.AccessLog.S3BucketName = value
+				if fi.StringValue(value) != "" {
+					actual.AccessLog.S3BucketName = value
+				}
 			case "access_logs.s3.prefix":
 				if actual.AccessLog == nil {
 					actual.AccessLog = &NetworkLoadBalancerAccessLog{}
 				}
-				actual.AccessLog.S3BucketPrefix = value
+				if fi.StringValue(value) != "" {
+					actual.AccessLog.S3BucketPrefix = value
+				}
 			default:
 				klog.V(2).Infof("unsupported key -- ignoring, %v.\n", key)
 			}
