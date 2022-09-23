@@ -245,7 +245,7 @@ func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.ModelBuilderContext, ig *k
 
 		// Bastions can have AdditionalUserData, but if there isn't any skip this part
 		if len(ig.Spec.AdditionalUserData) == 0 {
-			return fi.NewStringResource(""), nil
+			return nil, nil
 		}
 	}
 
