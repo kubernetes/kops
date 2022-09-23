@@ -1766,6 +1766,7 @@
                 "autoscaling:DescribeAutoScalingGroups",
                 "autoscaling:DescribeAutoScalingInstances",
                 "autoscaling:DescribeLaunchConfigurations",
+                "autoscaling:DescribeScalingActivities",
                 "autoscaling:DescribeTags",
                 "ec2:DescribeAccountAttributes",
                 "ec2:DescribeInstanceTypes",
