@@ -513,7 +513,6 @@ resource "aws_lb" "api-complex-example-com" {
   access_logs {
     bucket  = "access-log-example"
     enabled = true
-    prefix  = ""
   }
   enable_cross_zone_load_balancing = true
   internal                         = false
