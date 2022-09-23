@@ -562,7 +562,7 @@ type AutoprovisioningNodePoolDefaults struct {
 	// platforms, such as minCpuPlatform: Intel Haswell or minCpuPlatform:
 	// Intel Sandy Bridge. For more information, read how to specify min CPU
 	// platform
-	// (https://cloud.google.com/compute/docs/instances/specify-min-cpu-platform)
+	// (https://cloud.google.com/compute/docs/instances/specify-min-cpu-platform).
 	// This field is deprecated, min_cpu_platform should be specified using
 	// https://cloud.google.com/requested-min-cpu-platform label selector on
 	// the pod. To unset the min cpu platform field pass "automatic" as
@@ -1465,6 +1465,10 @@ type ClusterUpdate struct {
 	// "desired_node_pool_autoscaling" is specified and there is more than
 	// one node pool on the cluster.
 	DesiredNodePoolId string `json:"desiredNodePoolId,omitempty"`
+
+	// DesiredNodePoolLoggingConfig: The desired node pool logging
+	// configuration defaults for the cluster.
+	DesiredNodePoolLoggingConfig *NodePoolLoggingConfig `json:"desiredNodePoolLoggingConfig,omitempty"`
 
 	// DesiredNodeVersion: The Kubernetes version to change the nodes to
 	// (typically an upgrade). Users may specify either explicit versions
@@ -2906,6 +2910,40 @@ func (s *LoggingConfig) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// LoggingVariantConfig: LoggingVariantConfig specifies the behaviour of
+// the logging component.
+type LoggingVariantConfig struct {
+	// Variant: Logging variant deployed on nodes.
+	//
+	// Possible values:
+	//   "VARIANT_UNSPECIFIED" - Default value. This shouldn't be used.
+	//   "DEFAULT" - default logging variant.
+	//   "MAX_THROUGHPUT" - maximum logging throughput variant.
+	Variant string `json:"variant,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Variant") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Variant") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *LoggingVariantConfig) MarshalJSON() ([]byte, error) {
+	type NoMethod LoggingVariantConfig
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // MaintenanceExclusionOptions: Represents the Maintenance exclusion
 // option.
 type MaintenanceExclusionOptions struct {
@@ -3633,6 +3671,9 @@ type NodeConfig struct {
 	// information.
 	LocalSsdCount int64 `json:"localSsdCount,omitempty"`
 
+	// LoggingConfig: Logging configuration.
+	LoggingConfig *NodePoolLoggingConfig `json:"loggingConfig,omitempty"`
+
 	// MachineType: The name of a Google Compute Engine machine type
 	// (https://cloud.google.com/compute/docs/machine-types) If unspecified,
 	// the default machine type is `e2-medium`.
@@ -3753,6 +3794,9 @@ type NodeConfigDefaults struct {
 	// GcfsConfig: GCFS (Google Container File System, also known as
 	// Riptide) options.
 	GcfsConfig *GcfsConfig `json:"gcfsConfig,omitempty"`
+
+	// LoggingConfig: Logging configuration for node pools.
+	LoggingConfig *NodePoolLoggingConfig `json:"loggingConfig,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "GcfsConfig") to
 	// unconditionally include in API requests. By default, fields with
@@ -4208,6 +4252,35 @@ type NodePoolDefaults struct {
 
 func (s *NodePoolDefaults) MarshalJSON() ([]byte, error) {
 	type NoMethod NodePoolDefaults
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// NodePoolLoggingConfig: NodePoolLoggingConfig specifies logging
+// configuration for nodepools.
+type NodePoolLoggingConfig struct {
+	// VariantConfig: Logging variant configuration.
+	VariantConfig *LoggingVariantConfig `json:"variantConfig,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "VariantConfig") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "VariantConfig") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NodePoolLoggingConfig) MarshalJSON() ([]byte, error) {
+	type NoMethod NodePoolLoggingConfig
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -4765,8 +4838,8 @@ type ReservationAffinity struct {
 
 	// Key: Corresponds to the label key of a reservation resource. To
 	// target a SPECIFIC_RESERVATION by name, specify
-	// "googleapis.com/reservation-name" as the key and specify the name of
-	// your reservation as its value.
+	// "compute.googleapis.com/reservation-name" as the key and specify the
+	// name of your reservation as its value.
 	Key string `json:"key,omitempty"`
 
 	// Values: Corresponds to the label value(s) of reservation resource(s).
@@ -6330,6 +6403,9 @@ type UpdateNodePoolRequest struct {
 	// the node pool, depending on whether locations are being added or
 	// removed.
 	Locations []string `json:"locations,omitempty"`
+
+	// LoggingConfig: Logging configuration.
+	LoggingConfig *NodePoolLoggingConfig `json:"loggingConfig,omitempty"`
 
 	// Name: The name (project, location, cluster, node pool) of the node
 	// pool to update. Specified in the format

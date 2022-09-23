@@ -29,9 +29,11 @@ var _ ReservedIPsService = &ReservedIPsServiceOp{}
 
 // ReservedIP represents a Digital Ocean reserved IP.
 type ReservedIP struct {
-	Region  *Region  `json:"region"`
-	Droplet *Droplet `json:"droplet"`
-	IP      string   `json:"ip"`
+	Region    *Region  `json:"region"`
+	Droplet   *Droplet `json:"droplet"`
+	IP        string   `json:"ip"`
+	ProjectID string   `json:"project_id"`
+	Locked    bool     `json:"locked"`
 }
 
 func (f ReservedIP) String() string {
@@ -60,6 +62,7 @@ type reservedIPRoot struct {
 type ReservedIPCreateRequest struct {
 	Region    string `json:"region,omitempty"`
 	DropletID int    `json:"droplet_id,omitempty"`
+	ProjectID string `json:"project_id,omitempty"`
 }
 
 // List all reserved IPs.

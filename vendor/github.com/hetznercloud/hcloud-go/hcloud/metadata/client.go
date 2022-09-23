@@ -2,7 +2,7 @@ package metadata
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"strconv"
@@ -73,7 +73,7 @@ func (c *Client) get(path string) (string, error) {
 		return "", err
 	}
 	defer resp.Body.Close()
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}
