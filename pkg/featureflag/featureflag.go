@@ -90,6 +90,8 @@ var (
 	Karpenter = new("Karpenter", Bool(false))
 	// ImageDigest remaps all manifests with image digests
 	ImageDigest = new("ImageDigest", Bool(true))
+	// Scaleway toggles the Scaleway Cloud support.
+	Scaleway = new("Scaleway", Bool(false))
 )
 
 // FeatureFlag defines a feature flag
