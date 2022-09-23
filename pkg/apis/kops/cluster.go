@@ -242,7 +242,7 @@ type CloudProviderSpec struct {
 	// Openstack configures the Openstack cloud provider.
 	Openstack *OpenstackSpec `json:"openstack,omitempty"`
 	// Scaleway configures the Scaleway cloud provider.
-	Scaleway *ScalewaySpec `json:scaleway,omitempty`
+	Scaleway *ScalewaySpec `json:"scaleway,omitempty"`
 }
 
 // AWSSpec configures the AWS cloud provider.
