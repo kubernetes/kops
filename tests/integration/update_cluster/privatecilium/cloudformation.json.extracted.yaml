@@ -1,4 +1,3 @@
-Resources.AWSEC2LaunchTemplatebastionprivateciliumexamplecom.Properties.LaunchTemplateData.UserData: ""
 Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumexamplecom.Properties.LaunchTemplateData.UserData: |
   #!/bin/bash
   set -o errexit
