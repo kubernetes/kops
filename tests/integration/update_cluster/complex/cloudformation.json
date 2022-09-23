@@ -1488,8 +1488,7 @@
             "Value": "access-log-example"
           },
           {
-            "Key": "access_logs.s3.prefix",
-            "Value": ""
+            "Key": "access_logs.s3.prefix"
           }
         ]
       }
