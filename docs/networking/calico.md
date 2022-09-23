@@ -121,6 +121,8 @@ It is possible to configure Calico to use Typha by editing a cluster and adding 
       typhaReplicas: 3
 ```
 
+**Warning:** On completing the above configuration, it will be automatically applied to your cluster. Calico-typha pods will come online, the service will be created, and the calico-config will be changed. Using the `kops update` command is not supported by the `typhaReplicas` attribute. If you have a workflow built around using the `kops update` command to apply the changes to your cluster in a standard way, this process will *NOT* be followed when adding this attribute to your cluster configuration.
+
 ### Configuring the eBPF dataplane
 {{ kops_feature_table(kops_added_default='1.19', k8s_min='1.16') }}
 
