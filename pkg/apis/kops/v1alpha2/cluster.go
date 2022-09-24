@@ -446,9 +446,9 @@ type AccessLogSpec struct {
 	// Interval is publishing interval in minutes. This parameter is only used with classic load balancer.
 	Interval int `json:"interval,omitempty"`
 	// Bucket is S3 bucket name to store the logs in
-	Bucket string `json:"bucket,omitempty"`
+	Bucket *string `json:"bucket,omitempty"`
 	// BucketPrefix is S3 bucket prefix. Logs are stored in the root if not configured.
-	BucketPrefix string `json:"bucketPrefix,omitempty"`
+	BucketPrefix *string `json:"bucketPrefix,omitempty"`
 }
 
 var SupportedLoadBalancerClasses = []string{
