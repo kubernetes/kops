@@ -97,6 +97,7 @@ kops create cluster [CLUSTER] [flags]
       --master-volume-size int32         Instance volume size (in GB) for masters
       --master-zones strings             Zones in which to run masters (must be an odd number)
       --network-cidr string              Network CIDR to use
+      --network-id string                Shared Network or VPC to use
       --networking string                Networking mode.  kubenet, external, weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, amazonvpc, cilium, cilium-etcd, cni. (default "kubenet")
       --node-count int32                 Total number of worker nodes. Defaults to one node per zone
       --node-image string                Machine image for worker nodes. Takes precedence over --image
@@ -121,7 +122,7 @@ kops create cluster [CLUSTER] [flags]
       --target string                    Valid targets: direct, terraform, cloudformation. Set this flag to terraform if you want kOps to generate terraform (default "direct")
   -t, --topology string                  Network topology for the cluster: public or private (default "public")
       --utility-subnets strings          Shared utility subnets to use
-      --vpc string                       Shared VPC to use
+      --vpc string                       Shared Network or VPC to use
   -y, --yes                              Specify --yes to immediately create the cluster
       --zones strings                    Zones in which to run the cluster
 ```
