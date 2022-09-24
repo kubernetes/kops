@@ -178,6 +178,7 @@
         "autoscaling:DescribeAutoScalingGroups",
         "autoscaling:DescribeAutoScalingInstances",
         "autoscaling:DescribeLaunchConfigurations",
+        "autoscaling:DescribeScalingActivities",
         "autoscaling:DescribeTags",
         "ec2:AssignPrivateIpAddresses",
         "ec2:AttachNetworkInterface",

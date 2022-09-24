@@ -5,6 +5,7 @@
         "autoscaling:DescribeAutoScalingGroups",
         "autoscaling:DescribeAutoScalingInstances",
         "autoscaling:DescribeLaunchConfigurations",
+        "autoscaling:DescribeScalingActivities",
         "ec2:DescribeInstanceTypes",
         "ec2:DescribeLaunchTemplateVersions"
       ],
