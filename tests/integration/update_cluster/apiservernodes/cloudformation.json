@@ -1386,6 +1386,7 @@
                 "autoscaling:DescribeAutoScalingGroups",
                 "autoscaling:DescribeAutoScalingInstances",
                 "autoscaling:DescribeLaunchConfigurations",
+                "autoscaling:DescribeScalingActivities",
                 "autoscaling:DescribeTags",
                 "ec2:AttachVolume",
                 "ec2:AuthorizeSecurityGroupIngress",
