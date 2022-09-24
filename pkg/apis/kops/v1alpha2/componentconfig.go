@@ -963,9 +963,11 @@ type NodeTerminationHandlerConfig struct {
 	EnableRebalanceDraining *bool `json:"enableRebalanceDraining,omitempty"`
 
 	// EnablePrometheusMetrics enables the "/metrics" endpoint.
+	// Default: false
 	EnablePrometheusMetrics *bool `json:"prometheusEnable,omitempty"`
 
 	// EnableSQSTerminationDraining enables queue-processor mode which drains nodes when an SQS termination event is received.
+	// Default: false
 	EnableSQSTerminationDraining *bool `json:"enableSQSTerminationDraining,omitempty"`
 
 	// ExcludeFromLoadBalancers makes node termination handler will mark for exclusion from load balancers before node are cordoned.
