@@ -5331,8 +5331,9 @@ spec:
                       is received Default: false'
                     type: boolean
                   enableSQSTerminationDraining:
-                    description: EnableSQSTerminationDraining enables queue-processor
+                    description: 'EnableSQSTerminationDraining enables queue-processor
                       mode which drains nodes when an SQS termination event is received.
+                      Default: false'
                     type: boolean
                   enableScheduledEventDraining:
                     description: 'EnableScheduledEventDraining makes node termination
@@ -5369,7 +5370,8 @@ spec:
                     pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                     x-kubernetes-int-or-string: true
                   prometheusEnable:
-                    description: EnablePrometheusMetrics enables the "/metrics" endpoint.
+                    description: 'EnablePrometheusMetrics enables the "/metrics" endpoint.
+                      Default: false'
                     type: boolean
                   version:
                     description: Version is the container image tag used.
