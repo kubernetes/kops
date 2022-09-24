@@ -1415,6 +1415,7 @@
                 "autoscaling:DescribeAutoScalingGroups",
                 "autoscaling:DescribeAutoScalingInstances",
                 "autoscaling:DescribeLaunchConfigurations",
+                "autoscaling:DescribeScalingActivities",
                 "autoscaling:DescribeTags",
                 "ec2:AssignIpv6Addresses",
                 "ec2:AttachVolume",
