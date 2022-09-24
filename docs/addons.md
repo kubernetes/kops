@@ -238,8 +238,10 @@ spec:
   nodeTerminationHandler:
     cpuRequest: 200m
     enabled: true
+    enableRebalanceMonitoring: true
     enableSQSTerminationDraining: true
     managedASGTag: "aws-node-termination-handler/managed"
+    prometheusEnable: true
 ```
 
 ##### Queue Processor Mode
