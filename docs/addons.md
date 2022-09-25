@@ -158,7 +158,7 @@ spec:
     hostedZoneIDs:
     - ZONEID
   iam:
-    useServiceAccountsExternalPermissions: true
+    useServiceAccountExternalPermissions: true
 ```
 
 Read more about cert-manager in the [official documentation](https://cert-manager.io/docs/)
