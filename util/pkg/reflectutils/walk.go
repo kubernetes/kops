@@ -44,6 +44,7 @@ func IsMethodNotFound(err error) bool {
 
 // JSONMergeStruct merges src into dest
 // It uses a JSON marshal & unmarshal, so only fields that are JSON-visible will be copied
+// If both source and destination has a value for a field, source takes presedence
 func JSONMergeStruct(dest, src interface{}) {
 	// Not the most efficient approach, but simple & relatively well defined
 	j, err := json.Marshal(src)
