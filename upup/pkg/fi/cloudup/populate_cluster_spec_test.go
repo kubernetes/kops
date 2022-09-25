@@ -177,6 +177,28 @@ func TestPopulateCluster_StorageDefault(t *testing.T) {
 	}
 }
 
+func TestPopulateCluster_EvictionHard(t *testing.T) {
+	cloud, c := buildMinimalCluster()
+
+	err := PerformAssignments(c, cloud)
+	if err != nil {
+		t.Fatalf("error from PerformAssignments: %v", err)
+	}
+
+	c.Spec.Kubelet = &kopsapi.KubeletConfigSpec{
+		EvictionHard: fi.String("memory.available<250Mi"),
+	}
+
+	full, err := mockedPopulateClusterSpec(c, cloud)
+	if err != nil {
+		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
+	}
+
+	if fi.StringValue(full.Spec.Kubelet.EvictionHard) != "memory.available<250Mi" {
+		t.Fatalf("Unexpected StorageBackend: %v", *full.Spec.Kubelet.EvictionHard)
+	}
+}
+
 func build(c *kopsapi.Cluster) (*kopsapi.Cluster, error) {
 	cloud, err := BuildCloud(c)
 	if err != nil {

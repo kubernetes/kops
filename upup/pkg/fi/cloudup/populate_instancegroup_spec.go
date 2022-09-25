@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"strings"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -74,7 +75,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 	ig := &kops.InstanceGroup{}
 	reflectutils.JSONMergeStruct(ig, input)
 
-	spec := &ig.Spec
+	igSpec := &ig.Spec
 
 	// TODO: Clean up
 	if ig.IsMaster() {
@@ -223,38 +224,56 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 		ig.Spec.Manager = kops.InstanceManagerCloudGroup
 	}
 
-	if spec.Kubelet == nil {
-		spec.Kubelet = &kops.KubeletConfigSpec{}
+	if igSpec.Kubelet == nil {
+		igSpec.Kubelet = &kops.KubeletConfigSpec{}
 	}
 
-	kubeletConfig := spec.Kubelet
+	var igKubeletConfig *kops.KubeletConfigSpec
+	// Start with the cluster kubelet config
+	if ig.IsMaster() {
+		if cluster.Spec.MasterKubelet != nil {
+			igKubeletConfig = cluster.Spec.MasterKubelet.DeepCopy()
+		} else {
+			igKubeletConfig = &kops.KubeletConfigSpec{}
+		}
+		// A few settings in Kubelet override those in MasterKubelet. I'm not sure why.
+		if cluster.Spec.Kubelet != nil && cluster.Spec.Kubelet.AnonymousAuth != nil && !*cluster.Spec.Kubelet.AnonymousAuth {
+			igKubeletConfig.AnonymousAuth = fi.Bool(false)
+		}
+	} else {
+		if cluster.Spec.Kubelet != nil {
+			igKubeletConfig = cluster.Spec.Kubelet.DeepCopy()
+		} else {
+			igKubeletConfig = &kops.KubeletConfigSpec{}
+		}
+	}
 
 	// We include the NodeLabels in the userdata even for Kubernetes 1.16 and later so that
 	// rolling update will still replace nodes when they change.
-	kubeletConfig.NodeLabels = nodelabels.BuildNodeLabels(cluster, ig)
+	igKubeletConfig.NodeLabels = nodelabels.BuildNodeLabels(cluster, ig)
 
-	kubeletConfig.Taints = append(kubeletConfig.Taints, spec.Taints...)
+	useSecureKubelet := fi.BoolValue(igKubeletConfig.AnonymousAuth)
 
-	if ig.IsMaster() {
-		reflectutils.JSONMergeStruct(kubeletConfig, cluster.Spec.MasterKubelet)
-
-		// A few settings in Kubelet override those in MasterKubelet. I'm not sure why.
-		if cluster.Spec.Kubelet != nil && cluster.Spec.Kubelet.AnonymousAuth != nil && !*cluster.Spec.Kubelet.AnonymousAuth {
-			kubeletConfig.AnonymousAuth = fi.Bool(false)
-		}
-	} else {
-		reflectutils.JSONMergeStruct(kubeletConfig, cluster.Spec.Kubelet)
-	}
-
+	// While slices are overridden in most cases, taints are explicitly merged
+	taints := sets.NewString(igKubeletConfig.Taints...)
+	taints.Insert(igSpec.Taints...)
 	if ig.Spec.Kubelet != nil {
-		useSecureKubelet := fi.BoolValue(kubeletConfig.AnonymousAuth)
-
-		reflectutils.JSONMergeStruct(kubeletConfig, spec.Kubelet)
-
-		if useSecureKubelet {
-			kubeletConfig.AnonymousAuth = fi.Bool(false)
-		}
+		taints.Insert(igSpec.Kubelet.Taints...)
 	}
+	if cluster.Spec.Kubelet != nil {
+		taints.Insert(cluster.Spec.Kubelet.Taints...)
+	}
+	if ig.Spec.Kubelet != nil {
+		reflectutils.JSONMergeStruct(igKubeletConfig, ig.Spec.Kubelet)
+	}
+
+	igKubeletConfig.Taints = taints.List()
+
+	if useSecureKubelet {
+		igKubeletConfig.AnonymousAuth = fi.Bool(false)
+	}
+
+	ig.Spec.Kubelet = igKubeletConfig
 
 	return ig, nil
 }
