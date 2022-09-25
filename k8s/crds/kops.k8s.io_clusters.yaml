@@ -3489,7 +3489,9 @@ spec:
                     type: boolean
                 type: object
               kubelet:
-                description: KubeletConfigSpec defines the kubelet configuration
+                description: Kubelet is the kubelet configuration for nodes not belonging
+                  to the control plane. It can be overridden by the kubelet configuration
+                  specified in the instance group.
                 properties:
                   allowPrivileged:
                     description: AllowPrivileged enables containers to request privileged
@@ -3917,7 +3919,9 @@ spec:
                   nodes
                 type: string
               masterKubelet:
-                description: KubeletConfigSpec defines the kubelet configuration
+                description: MasterKubelet is the kubelet configuration for nodes
+                  belonging to the control plane It can be overridden by the kubelet
+                  configuration specified in the instance group.
                 properties:
                   allowPrivileged:
                     description: AllowPrivileged enables containers to request privileged
