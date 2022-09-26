@@ -170,7 +170,7 @@ spec:
         - --secure-port=4443
         - --kubelet-use-node-status-port
         - --metric-resolution=15s
-        - --kubelet-preferred-address-types=Hostname
+        - --kubelet-preferred-address-types=InternalIP
         - --cert-dir=/tmp
         - --kubelet-insecure-tls
         image: registry.k8s.io/metrics-server/metrics-server:v0.6.1
