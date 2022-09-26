@@ -240,7 +240,7 @@ func (c *NodeupModelContext) BuildIssuedKubeconfig(name string, subject nodetask
 		// @note: use https even for local connections, so we can turn off the insecure port
 		kubeConfig.ServerURL = "https://127.0.0.1"
 	} else {
-		kubeConfig.ServerURL = "https://" + c.Cluster.Spec.MasterInternalName
+		kubeConfig.ServerURL = "https://" + c.BootConfig.MasterInternalName
 	}
 	ctx.AddTask(kubeConfig)
 	return kubeConfig.GetConfig()
@@ -284,7 +284,7 @@ func (c *NodeupModelContext) BuildBootstrapKubeconfig(name string, ctx *fi.Model
 			// @note: use https even for local connections, so we can turn off the insecure port
 			kubeConfig.ServerURL = "https://127.0.0.1"
 		} else {
-			kubeConfig.ServerURL = "https://" + c.Cluster.Spec.MasterInternalName
+			kubeConfig.ServerURL = "https://" + c.BootConfig.MasterInternalName
 		}
 
 		err = ctx.EnsureTask(kubeConfig)
@@ -329,7 +329,7 @@ func (c *NodeupModelContext) BuildBootstrapKubeconfig(name string, ctx *fi.Model
 			// This code path is used for the kubelet cert in Kubernetes 1.18 and earlier.
 			kubeConfig.ServerURL = "https://127.0.0.1"
 		} else {
-			kubeConfig.ServerURL = "https://" + c.Cluster.Spec.MasterInternalName
+			kubeConfig.ServerURL = "https://" + c.BootConfig.MasterInternalName
 		}
 
 		err = kubeConfig.Run(nil)

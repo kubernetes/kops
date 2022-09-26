@@ -367,8 +367,12 @@ func (b *KubeAPIServerBuilder) writeServerCertificate(c *fi.ModelBuilderContext,
 		}
 
 		// Names specified in the cluster spec
-		alternateNames = append(alternateNames, b.Cluster.Spec.MasterPublicName)
-		alternateNames = append(alternateNames, b.Cluster.Spec.MasterInternalName)
+		if b.Cluster.Spec.MasterPublicName != "" {
+			alternateNames = append(alternateNames, b.Cluster.Spec.MasterPublicName)
+		}
+		if b.Cluster.Spec.MasterInternalName != "" {
+			alternateNames = append(alternateNames, b.Cluster.Spec.MasterInternalName)
+		}
 		alternateNames = append(alternateNames, b.Cluster.Spec.AdditionalSANs...)
 
 		// Load balancer IPs passed in through NodeupConfig

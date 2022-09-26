@@ -20,16 +20,16 @@ import (
 	"reflect"
 	"testing"
 
-	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/flagbuilder"
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/util/pkg/architectures"
-	"k8s.io/kops/util/pkg/exec"
-
 	"github.com/blang/semver/v4"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/nodeup"
+	"k8s.io/kops/pkg/flagbuilder"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/architectures"
+	"k8s.io/kops/util/pkg/exec"
 )
 
 func TestKubeProxyBuilder_buildPod(t *testing.T) {
@@ -38,7 +38,6 @@ func TestKubeProxyBuilder_buildPod(t *testing.T) {
 	// https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#KubeProxyConfig
 
 	cluster := &kops.Cluster{}
-	cluster.Spec.MasterInternalName = "dev-cluster"
 
 	cluster.Spec.KubeProxy = &kops.KubeProxyConfig{}
 	cluster.Spec.KubeProxy.Image = "kube-proxy:1.2"
@@ -105,6 +104,9 @@ func TestKubeProxyBuilder_buildPod(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			b := &KubeProxyBuilder{
 				NodeupModelContext: tt.fields.NodeupModelContext,
+			}
+			b.BootConfig = &nodeup.BootConfig{
+				MasterInternalName: "dev-cluster",
 			}
 			got, err := b.buildPod()
 			if (err != nil) != tt.wantErr {

@@ -797,14 +797,6 @@ func (c *Cluster) FillDefaults() error {
 		return fmt.Errorf("cluster Name not set in FillDefaults")
 	}
 
-	if c.Spec.MasterInternalName == "" {
-		c.Spec.MasterInternalName = "api.internal." + c.ObjectMeta.Name
-	}
-
-	if c.Spec.MasterPublicName == "" {
-		c.Spec.MasterPublicName = "api." + c.ObjectMeta.Name
-	}
-
 	return nil
 }
 

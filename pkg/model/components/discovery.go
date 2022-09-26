@@ -72,14 +72,22 @@ func (b *DiscoveryOptionsBuilder) BuildOptions(o interface{}) error {
 			}
 		} else {
 			if supportsPublicJWKS(clusterSpec) {
-				serviceAccountIssuer = "https://" + clusterSpec.MasterPublicName
+				if clusterSpec.MasterPublicName != "" {
+					serviceAccountIssuer = "https://" + clusterSpec.MasterPublicName
+				}
 			} else {
-				serviceAccountIssuer = "https://" + clusterSpec.MasterInternalName
+				if clusterSpec.MasterInternalName != "" {
+					serviceAccountIssuer = "https://" + clusterSpec.MasterInternalName
+				}
 			}
 		}
-		kubeAPIServer.ServiceAccountIssuer = &serviceAccountIssuer
+		if serviceAccountIssuer != "" {
+			kubeAPIServer.ServiceAccountIssuer = &serviceAccountIssuer
+		}
 	}
-	kubeAPIServer.ServiceAccountJWKSURI = fi.String(*kubeAPIServer.ServiceAccountIssuer + "/openid/v1/jwks")
+	if fi.StringValue(kubeAPIServer.ServiceAccountIssuer) != "" {
+		kubeAPIServer.ServiceAccountJWKSURI = fi.String(*kubeAPIServer.ServiceAccountIssuer + "/openid/v1/jwks")
+	}
 	// We set apiserver ServiceAccountKey and ServiceAccountSigningKeyFile in nodeup
 
 	return nil

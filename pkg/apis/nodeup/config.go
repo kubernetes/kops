@@ -90,6 +90,8 @@ type BootConfig struct {
 	ConfigBase *string `json:",omitempty"`
 	// ConfigServer holds the configuration for the configuration server.
 	ConfigServer *ConfigServerOptions `json:",omitempty"`
+	// MasterInternalName is the API server name/address.
+	MasterInternalName string
 	// InstanceGroupName is the name of the instance group.
 	InstanceGroupName string `json:",omitempty"`
 	// InstanceGroupRole is the instance group role.

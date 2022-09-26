@@ -302,9 +302,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	if cluster.Spec.KubernetesVersion == "" {
 		return fmt.Errorf("KubernetesVersion not set")
 	}
-	if cluster.Spec.DNSZone == "" && !dns.IsGossipHostname(cluster.ObjectMeta.Name) {
-		return fmt.Errorf("DNSZone not set")
-	}
 
 	l := &Loader{}
 	l.Init()
@@ -483,12 +480,14 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	modelContext.SSHPublicKeys = sshPublicKeys
 	modelContext.Region = cloud.Region()
 
-	if dns.IsGossipHostname(cluster.ObjectMeta.Name) {
-		klog.V(2).Infof("Gossip DNS: skipping DNS validation")
-	} else {
-		err = validateDNS(cluster, cloud)
-		if err != nil {
-			return err
+	if cluster.Spec.DNSZone != "" {
+		if dns.IsGossipHostname(cluster.ObjectMeta.Name) {
+			klog.V(2).Infof("Gossip DNS: skipping DNS validation")
+		} else {
+			err = validateDNS(cluster, cloud)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -1416,6 +1415,24 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 
 	if isMaster {
 		config.ApiserverAdditionalIPs = apiserverAdditionalIPs
+	}
+
+	bootConfig.MasterInternalName = cluster.Spec.MasterInternalName
+	if bootConfig.MasterInternalName == "" {
+		for _, addr := range apiserverAdditionalIPs {
+			if net.ParseIP(addr).IsPrivate() {
+				bootConfig.MasterInternalName = addr
+				break
+			}
+		}
+	}
+
+	if hasAPIServer && bootConfig.MasterInternalName != "" {
+		kubeAPIServer := config.APIServerConfig.KubeAPIServer
+		if kubeAPIServer != nil && fi.StringValue(kubeAPIServer.ServiceAccountIssuer) == "" {
+			kubeAPIServer.ServiceAccountIssuer = fi.String("https://" + bootConfig.MasterInternalName)
+			kubeAPIServer.ServiceAccountJWKSURI = fi.String("https://" + bootConfig.MasterInternalName + "/openid/v1/jwks")
+		}
 	}
 
 	for _, manifest := range n.assetBuilder.StaticManifests {

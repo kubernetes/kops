@@ -55,6 +55,9 @@ func findZone(cluster *kops.Cluster, cloud fi.Cloud) (dnsprovider.Zone, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error building DNS provider: %v", err)
 	}
+	if dns == nil {
+		return nil, nil
+	}
 
 	zonesProvider, ok := dns.Zones()
 	if !ok {
@@ -106,6 +109,9 @@ func validateDNS(cluster *kops.Cluster, cloud fi.Cloud) error {
 	zone, err := findZone(cluster, cloud)
 	if err != nil {
 		return err
+	}
+	if zone == nil {
+		return nil
 	}
 	dnsName := strings.TrimSuffix(zone.Name(), ".")
 
@@ -160,6 +166,9 @@ func precreateDNS(ctx context.Context, cluster *kops.Cluster, cloud fi.Cloud) er
 	zone, err := findZone(cluster, cloud)
 	if err != nil {
 		return err
+	}
+	if zone == nil {
+		return nil
 	}
 
 	rrs, ok := zone.ResourceRecordSets()

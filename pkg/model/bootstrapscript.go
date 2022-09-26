@@ -27,18 +27,18 @@ import (
 	"strings"
 
 	"k8s.io/klog/v2"
-	"k8s.io/kops/pkg/apis/kops/model"
-	"k8s.io/kops/upup/pkg/fi/utils"
-	"sigs.k8s.io/yaml"
-
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/nodeup"
+	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
+	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/mirrors"
+	"sigs.k8s.io/yaml"
 )
 
 type NodeUpConfigBuilder interface {
@@ -186,7 +186,7 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 		}
 	}
 
-	if cluster.Spec.GetCloudProvider() == kops.CloudProviderHetzner {
+	if cluster.Spec.GetCloudProvider() == kops.CloudProviderHetzner && (b.ig.IsMaster() || dns.IsGossipHostname(cluster.Name)) {
 		hcloudToken := os.Getenv("HCLOUD_TOKEN")
 		if hcloudToken != "" {
 			env["HCLOUD_TOKEN"] = hcloudToken

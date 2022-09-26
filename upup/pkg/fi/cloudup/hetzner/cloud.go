@@ -239,8 +239,8 @@ func (c *hetznerCloudImplementation) GetVolumes(clusterName string) ([]*hcloud.V
 }
 
 func (c *hetznerCloudImplementation) DNS() (dnsprovider.Interface, error) {
-	// TODO(hakman): implement me
-	panic("implement me")
+	// Hetzner LB has a stable internal IP and can use that instead of creating a record for api.internal.
+	return nil, nil
 }
 
 func (c *hetznerCloudImplementation) DeleteInstance(instance *cloudinstances.CloudInstance) error {
