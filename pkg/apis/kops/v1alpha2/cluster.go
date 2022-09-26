@@ -218,6 +218,12 @@ type ClusterSpec struct {
 	Karpenter *KarpenterConfig `json:"karpenter,omitempty"`
 	// PodIdentityWebhook determines the EKS Pod Identity Webhook configuration.
 	PodIdentityWebhook *PodIdentityWebhookConfig `json:"podIdentityWebhook,omitempty"`
+	// Scaleway configures the Scaleway cloud provider.
+	Scaleway *ScalewaySpec `json:"scaleway,omitempty"`
+}
+
+// ScalewaySpec configures the Scaleway cloud provider
+type ScalewaySpec struct {
 }
 
 // PodIdentityWebhookConfig configures an EKS Pod Identity Webhook.
