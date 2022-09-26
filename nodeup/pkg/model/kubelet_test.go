@@ -19,6 +19,7 @@ package model
 import (
 	"fmt"
 	"path/filepath"
+	"sort"
 	"testing"
 	"time"
 
@@ -137,6 +138,8 @@ func TestTaintsApplied(t *testing.T) {
 }
 
 func stringSlicesEqual(exp, other []string) bool {
+	sort.Sort(sort.StringSlice(exp))
+	sort.Sort(sort.StringSlice(other))
 	if exp == nil && other != nil {
 		return false
 	}
