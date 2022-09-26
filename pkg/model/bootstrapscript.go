@@ -31,6 +31,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"sigs.k8s.io/yaml"
 
+	"github.com/scaleway/scaleway-sdk-go/scw"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/model/resources"
@@ -211,6 +212,39 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 		if azureEnv != "" {
 			env["AZURE_ENVIRONMENT"] = os.Getenv("AZURE_ENVIRONMENT")
 		}
+	}
+
+	if cluster.Spec.GetCloudProvider() == kops.CloudProviderScaleway {
+
+		region, err := scw.ParseRegion(os.Getenv("SCW_DEFAULT_REGION"))
+		if err != nil {
+			return nil, fmt.Errorf("error parsing SCW_DEFAULT_REGION: %w", err)
+		}
+		env["SCW_DEFAULT_REGION"] = string(region)
+
+		zone, err := scw.ParseZone(os.Getenv("SCW_DEFAULT_ZONE"))
+		if err != nil {
+			return nil, fmt.Errorf("error parsing SCW_DEFAULT_ZONE: %w", err)
+		}
+		env["SCW_DEFAULT_ZONE"] = string(zone)
+
+		scwAccessKey := os.Getenv("SCW_ACCESS_KEY")
+		if scwAccessKey == "" {
+			return nil, fmt.Errorf("SCW_ACCESS_KEY has to be set as an environment variable")
+		}
+		env["SCW_ACCESS_KEY"] = scwAccessKey
+
+		scwSecretKey := os.Getenv("SCW_SECRET_KEY")
+		if scwSecretKey != "" {
+			return nil, fmt.Errorf("SCW_SECRET_KEY has to be set as an environment variable")
+		}
+		env["SCW_SECRET_KEY"] = scwSecretKey
+
+		scwProjectID := os.Getenv("SCW_DEFAULT_PROJECT_ID")
+		if scwProjectID != "" {
+			return nil, fmt.Errorf("SCW_DEFAULT_PROJECT_ID has to be set as an environment variable")
+		}
+		env["SCW_DEFAULT_PROJECT_ID"] = scwProjectID
 	}
 
 	return env, nil

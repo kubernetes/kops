@@ -72,6 +72,13 @@ func BuildSystemComponentEnvVars(spec *kops.ClusterSpec) EnvVars {
 	// Azure related values.
 	vars.addEnvVariableIfExist("AZURE_STORAGE_ACCOUNT")
 
+	// Scaleway related values.
+	vars.addEnvVariableIfExist("SCW_ACCESS_KEY")
+	vars.addEnvVariableIfExist("SCW_SECRET_KEY")
+	vars.addEnvVariableIfExist("SCW_DEFAULT_PROJECT_ID")
+	vars.addEnvVariableIfExist("SCW_DEFAULT_REGION")
+	vars.addEnvVariableIfExist("SCW_DEFAULT_ZONE")
+
 	return vars
 }
 
