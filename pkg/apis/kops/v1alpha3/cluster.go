@@ -238,6 +238,8 @@ type CloudProviderSpec struct {
 	Hetzner *HetznerSpec `json:"hetzner,omitempty"`
 	// Openstack configures the Openstack cloud provider.
 	Openstack *OpenstackSpec `json:"openstack,omitempty"`
+	// Scaleway configures the Scaleway cloud provider.
+	Scaleway *ScalewaySpec `json:"scaleway,omitempty"`
 }
 
 // AWSSpec configures the AWS cloud provider.
@@ -254,6 +256,10 @@ type GCESpec struct {
 
 // HetznerSpec configures the Hetzner cloud provider.
 type HetznerSpec struct {
+}
+
+// ScalewaySpec configures the Scaleway cloud provider
+type ScalewaySpec struct {
 }
 
 type KarpenterConfig struct {

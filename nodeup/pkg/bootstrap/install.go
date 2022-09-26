@@ -153,7 +153,7 @@ func (i *Installation) buildEnvFile() *nodetasks.File {
 		envVars["AZURE_STORAGE_ACCOUNT"] = os.Getenv("AZURE_STORAGE_ACCOUNT")
 	}
 
-	if os.Getenv("SCW_ACCESS_KEY") != "" {
+	if os.Getenv("SCW_SECRET_KEY") != "" {
 		envVars["SCW_ACCESS_KEY"] = os.Getenv("SCW_ACCESS_KEY")
 		envVars["SCW_SECRET_KEY"] = os.Getenv("SCW_SECRET_KEY")
 		envVars["SCW_DEFAULT_PROJECT_ID"] = os.Getenv("SCW_DEFAULT_PROJECT_ID")
