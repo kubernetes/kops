@@ -1,32 +1,10 @@
 
 # kOps Releases & Versioning
 
-kOps intends to be backward compatible.  It is always recommended using the
-latest version of kOps with whatever version of Kubernetes you are using.  We suggest
-kOps users run one of the [3 minor versions](https://kubernetes.io/releases/version-skew-policy/#supported-versions) Kubernetes is supporting however we
-do our best to support previous releases for some period.
+kOps supports the latest minor version and latest-1. E.g if kOps' latest version is 1.25, also 1.24 is supported and will receive bugfixes and minor feature additions. kOps intends to be backward compatible.  It is always recommended using the
+latest version of kOps that supports the Kubernetes version you are using.  
 
-kOps does not, however, support Kubernetes releases that have either a greater major
-release number or greater minor release number than it.
-(The numbers before the first and second dots are the major and minor release numbers, respectively.)
-For example, kOps 1.20.0 does not support Kubernetes 1.21.0, but does
-support Kubernetes 1.20.5, 1.19.2, and several previous Kubernetes versions.
-
-## Compatibility Matrix
-
-| kOps version  | k8s 1.19.x | k8s 1.20.x | k8s 1.21.x | k8s 1.22.x | k8s 1.23.x |
-|---------------|------------|------------|------------|------------|------------|
-| 1.23.x        | ✔          | ✔          | ✔          | ✔          | ✔          |
-| 1.22.x        | ✔          | ✔          | ✔          | ✔          | ⚫         |
-| ~~1.21.x~~    | ✔          | ✔          | ✔          | ⚫         | ⚫         |
-| ~~1.20.x~~    | ✔          | ✔          | ⚫         | ⚫         | ⚫         |
-| ~~1.19.x~~    | ✔          | ⚫         | ⚫         | ⚫         | ⚫         |
-
-
-Use the latest version of kOps for all releases of Kubernetes, with the caveat
-that higher versions of Kubernetes are not _officially_ supported by kOps.
-Releases which are ~~crossed out~~ _should_ work, but are unlikely to get security or other fixes.
-We suggest they be upgraded soon.
+The latest Kubernetes minor version supported by a kOps release is the one matching the kOps version. E.g for kOps 1.25, the highest supported Kubernetes version is 1.25. From that version, kOps additionally support Kubernetes two additional minor versions. In this case 1.24 and 1.23. To ease migration, kOps also supports two more minor versions that are considered deprecated. Bugs isolated to deprecated Kubernetes versions will not be fixed unless they prohibit upgrades to supported versions. kOps users are advised to run one of the [3 minor versions](https://kubernetes.io/releases/version-skew-policy/#supported-versions) Kubernetes supports. 
 
 ## Release Schedule
 
