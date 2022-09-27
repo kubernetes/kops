@@ -141,6 +141,14 @@ func run() error {
 		}
 		cloudProvider = azureVolumes
 
+	} else if cloud == "scaleway" {
+		scwCloudProvider, err := protokube.NewScwCloudProvider()
+		if err != nil {
+			klog.Errorf("Error initializing Scaleway: %q", err)
+			os.Exit(1)
+		}
+		cloudProvider = scwCloudProvider
+
 	} else {
 		klog.Errorf("Unknown cloud %q", cloud)
 		os.Exit(1)
