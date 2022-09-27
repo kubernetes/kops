@@ -28,7 +28,6 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
-
 	"k8s.io/kops"
 	api "k8s.io/kops/pkg/apis/kops"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
@@ -248,6 +247,9 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		cluster.Spec.SSHAccess = opt.AdminAccess
 	}
 
+	if len(opt.Zones) == 0 {
+		return nil, fmt.Errorf("must specify at least one zone for the cluster (use --zones)")
+	}
 	allZones := sets.NewString()
 	allZones.Insert(opt.Zones...)
 	allZones.Insert(opt.MasterZones...)
@@ -582,10 +584,6 @@ func setupVPC(opt *NewClusterOptions, cluster *api.Cluster, cloud fi.Cloud) erro
 func setupZones(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.String) (map[string]*api.ClusterSubnetSpec, error) {
 	var err error
 	zoneToSubnetMap := make(map[string]*api.ClusterSubnetSpec)
-
-	if len(opt.Zones) == 0 {
-		return nil, fmt.Errorf("must specify at least one zone for the cluster (use --zones)")
-	}
 
 	var zoneToSubnetProviderID map[string]string
 
