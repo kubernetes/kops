@@ -157,6 +157,8 @@ type NewClusterOptions struct {
 	Image       string
 	NodeImage   string
 	MasterImage string
+	MasterSize  string
+	NodeSize    string
 }
 
 func (o *NewClusterOptions) InitDefaults() {
@@ -856,6 +858,7 @@ func setupMasters(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap 
 				}
 			}
 
+			g.Spec.MachineType = opt.MasterSize
 			g.Spec.Image = opt.MasterImage
 
 			masters = append(masters, g)
@@ -983,6 +986,7 @@ func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap ma
 			}
 		}
 
+		g.Spec.MachineType = opt.NodeSize
 		g.Spec.Image = opt.NodeImage
 
 		nodes = append(nodes, g)
@@ -1465,7 +1469,7 @@ func MachineArchitecture(cloud fi.Cloud, machineType string) (architectures.Arch
 	case kopsapi.CloudProviderAWS:
 		info, err := cloud.(awsup.AWSCloud).DescribeInstanceType(machineType)
 		if err != nil {
-			return "", fmt.Errorf("error finding instance info for instance type %q: %v", machineType, err)
+			return "", fmt.Errorf("error finding instance info for instance type %q: %w", machineType, err)
 		}
 		if info.ProcessorInfo == nil || len(info.ProcessorInfo.SupportedArchitectures) == 0 {
 			return "", fmt.Errorf("error finding architecture info for instance type %q", machineType)

@@ -63,8 +63,6 @@ type CreateClusterOptions struct {
 	cloudup.NewClusterOptions
 	Yes                  bool
 	Target               string
-	NodeSize             string
-	MasterSize           string
 	MasterVolumeSize     int32
 	NodeVolumeSize       int32
 	ContainerRuntime     string
@@ -543,12 +541,6 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		cluster.Spec.CloudLabels = cloudLabels
 	}
 
-	if c.NodeSize != "" {
-		for _, group := range nodes {
-			group.Spec.MachineType = c.NodeSize
-		}
-	}
-
 	if c.AssociatePublicIP != nil {
 		for _, group := range instanceGroups {
 			group.Spec.AssociatePublicIP = c.AssociatePublicIP
@@ -576,12 +568,6 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	if len(c.MasterSecurityGroups) > 0 {
 		for _, group := range masters {
 			group.Spec.AdditionalSecurityGroups = c.MasterSecurityGroups
-		}
-	}
-
-	if c.MasterSize != "" {
-		for _, group := range masters {
-			group.Spec.MachineType = c.MasterSize
 		}
 	}
 
