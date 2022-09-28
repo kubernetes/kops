@@ -358,7 +358,7 @@ func (c *MockAWSCloud) DescribeInstanceType(instanceType string) (*ec2.InstanceT
 				aws.String(ec2.ArchitectureTypeX8664),
 			},
 		}
-	case "a1.large":
+	case "a1.large", "m6g.xlarge":
 		info.ProcessorInfo = &ec2.ProcessorInfo{
 			SupportedArchitectures: []*string{
 				aws.String(ec2.ArchitectureTypeArm64),
