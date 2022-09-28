@@ -132,7 +132,7 @@ spec:
           - --secure-port=4443
           - --kubelet-use-node-status-port
           - --metric-resolution=15s
-          - --kubelet-preferred-address-types={{ if IsIPv6Only }}InternalIP{{ else }}Hostname{{ end }}
+          - --kubelet-preferred-address-types={{ if or IsIPv6Only (eq GetCloudProvider "hetzner")}}InternalIP{{ else }}Hostname{{ end }}
 {{ if not (WithDefaultBool .MetricsServer.Insecure true) }}
           - --tls-cert-file=/srv/tls.crt
           - --tls-private-key-file=/srv/tls.key
