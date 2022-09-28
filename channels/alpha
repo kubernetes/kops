@@ -58,11 +58,11 @@ spec:
       providerID: aws
       architectureID: amd64
       kubernetesVersion: ">=1.17.0 <1.18.0"
-    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220810
+    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220927
       providerID: aws
       architectureID: amd64
       kubernetesVersion: ">=1.18.0"
-    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20220810
+    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20220927
       providerID: aws
       architectureID: arm64
       kubernetesVersion: ">=1.20.0"
@@ -74,11 +74,11 @@ spec:
       providerID: gce
       architectureID: amd64
       kubernetesVersion: ">=1.16.0 <1.18.0"
-    - name: ubuntu-os-cloud/ubuntu-2004-focal-v20220118
+    - name: ubuntu-os-cloud/ubuntu-2004-focal-v20220927
       providerID: gce
       architectureID: amd64
       kubernetesVersion: ">=1.18.0"
-    - name: Canonical:0001-com-ubuntu-server-focal:20_04-lts-gen2:20.04.202110010
+    - name: Canonical:0001-com-ubuntu-server-focal:20_04-lts-gen2:20.04.202209200
       providerID: azure
       architectureID: amd64
       kubernetesVersion: ">=1.20.0"
