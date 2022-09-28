@@ -1465,6 +1465,11 @@ func MachineArchitecture(cloud fi.Cloud, machineType string) (architectures.Arch
 		return architectures.ArchitectureAmd64, nil
 	}
 
+	// Some calls only have AWS initialised at this point and in other cases pass in nil as cloud.
+	if cloud == nil {
+		return architectures.ArchitectureAmd64, nil
+	}
+
 	switch cloud.ProviderID() {
 	case kopsapi.CloudProviderAWS:
 		info, err := cloud.(awsup.AWSCloud).DescribeInstanceType(machineType)
