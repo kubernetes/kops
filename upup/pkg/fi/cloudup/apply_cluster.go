@@ -484,7 +484,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	modelContext.Region = cloud.Region()
 
 	if dns.IsGossipHostname(cluster.ObjectMeta.Name) {
-		klog.Infof("Gossip DNS: skipping DNS validation")
+		klog.V(2).Infof("Gossip DNS: skipping DNS validation")
 	} else {
 		err = validateDNS(cluster, cloud)
 		if err != nil {
