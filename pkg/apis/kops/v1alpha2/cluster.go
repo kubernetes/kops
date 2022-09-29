@@ -156,11 +156,15 @@ type ClusterSpec struct {
 	ExternalCloudControllerManager *CloudControllerManagerConfig `json:"cloudControllerManager,omitempty"`
 	KubeScheduler                  *KubeSchedulerConfig          `json:"kubeScheduler,omitempty"`
 	KubeProxy                      *KubeProxyConfig              `json:"kubeProxy,omitempty"`
-	Kubelet                        *KubeletConfigSpec            `json:"kubelet,omitempty"`
-	MasterKubelet                  *KubeletConfigSpec            `json:"masterKubelet,omitempty"`
-	CloudConfig                    *CloudConfiguration           `json:"cloudConfig,omitempty"`
-	ExternalDNS                    *ExternalDNSConfig            `json:"externalDns,omitempty"`
-	NTP                            *NTPConfig                    `json:"ntp,omitempty"`
+	// Kubelet is the kubelet configuration for nodes not belonging to the control plane.
+	// It can be overridden by the kubelet configuration specified in the instance group.
+	Kubelet *KubeletConfigSpec `json:"kubelet,omitempty"`
+	// MasterKubelet is the kubelet configuration for nodes belonging to the control plane
+	// It can be overridden by the kubelet configuration specified in the instance group.
+	MasterKubelet *KubeletConfigSpec  `json:"masterKubelet,omitempty"`
+	CloudConfig   *CloudConfiguration `json:"cloudConfig,omitempty"`
+	ExternalDNS   *ExternalDNSConfig  `json:"externalDns,omitempty"`
+	NTP           *NTPConfig          `json:"ntp,omitempty"`
 
 	// NodeTerminationHandler determines the cluster autoscaler configuration.
 	NodeTerminationHandler *NodeTerminationHandlerConfig `json:"nodeTerminationHandler,omitempty"`
