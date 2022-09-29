@@ -109,7 +109,6 @@ func TestPopulateInstanceGroup_AddTaintsCollision3(t *testing.T) {
 	}
 
 	channel := &kopsapi.Channel{}
-
 	cloud, err := BuildCloud(cluster)
 	if err != nil {
 		t.Fatalf("error from BuildCloud: %v", err)
@@ -119,7 +118,99 @@ func TestPopulateInstanceGroup_AddTaintsCollision3(t *testing.T) {
 		t.Fatalf("error from PopulateInstanceGroupSpec: %v", err)
 	}
 	if len(output.Spec.Kubelet.Taints) != 2 {
-		t.Errorf("Expected only 2 taints, got %d", len(output.Spec.Kubelet.Taints))
+		t.Errorf("Expected 2 taints, got %d", len(output.Spec.Kubelet.Taints))
+	}
+}
+
+func TestPopulateInstanceGroup_EvictionHard(t *testing.T) {
+	_, cluster := buildMinimalCluster()
+	cluster.Spec.Kubelet = &kopsapi.KubeletConfigSpec{
+		EvictionHard: fi.String("memory.available<350Mi"),
+	}
+	input := buildMinimalNodeInstanceGroup()
+	input.Spec.Kubelet = &kopsapi.KubeletConfigSpec{
+		EvictionHard: fi.String("memory.available<250Mi"),
+	}
+
+	channel := &kopsapi.Channel{}
+
+	cloud, err := BuildCloud(cluster)
+	if err != nil {
+		t.Fatalf("error from BuildCloud: %v", err)
+	}
+	output, err := PopulateInstanceGroupSpec(cluster, input, cloud, channel)
+	if err != nil {
+		t.Fatalf("error from PopulateInstanceGroupSpec: %v", err)
+	}
+	if fi.StringValue(output.Spec.Kubelet.EvictionHard) != "memory.available<250Mi" {
+		t.Errorf("Unexpected value %v", fi.StringValue(output.Spec.Kubelet.EvictionHard))
+	}
+}
+
+func TestPopulateInstanceGroup_EvictionHard3(t *testing.T) {
+	_, cluster := buildMinimalCluster()
+	cluster.Spec.Kubelet = &kopsapi.KubeletConfigSpec{
+		EvictionHard: fi.String("memory.available<350Mi"),
+	}
+	input := buildMinimalMasterInstanceGroup("us-test-1")
+
+	channel := &kopsapi.Channel{}
+
+	cloud, err := BuildCloud(cluster)
+	if err != nil {
+		t.Fatalf("error from BuildCloud: %v", err)
+	}
+	output, err := PopulateInstanceGroupSpec(cluster, input, cloud, channel)
+	if err != nil {
+		t.Fatalf("error from PopulateInstanceGroupSpec: %v", err)
+	}
+	// There is no default EvictionHard
+	if fi.StringValue(output.Spec.Kubelet.EvictionHard) != "" {
+		t.Errorf("Unexpected value %v", fi.StringValue(output.Spec.Kubelet.EvictionHard))
+	}
+}
+
+func TestPopulateInstanceGroup_EvictionHard4(t *testing.T) {
+	_, cluster := buildMinimalCluster()
+	cluster.Spec.MasterKubelet = &kopsapi.KubeletConfigSpec{
+		EvictionHard: fi.String("memory.available<350Mi"),
+	}
+	input := buildMinimalMasterInstanceGroup("us-test-1")
+
+	channel := &kopsapi.Channel{}
+
+	cloud, err := BuildCloud(cluster)
+	if err != nil {
+		t.Fatalf("error from BuildCloud: %v", err)
+	}
+	output, err := PopulateInstanceGroupSpec(cluster, input, cloud, channel)
+	if err != nil {
+		t.Fatalf("error from PopulateInstanceGroupSpec: %v", err)
+	}
+	if fi.StringValue(output.Spec.Kubelet.EvictionHard) != "memory.available<350Mi" {
+		t.Errorf("Unexpected value %v", fi.StringValue(output.Spec.Kubelet.EvictionHard))
+	}
+}
+
+func TestPopulateInstanceGroup_EvictionHard2(t *testing.T) {
+	_, cluster := buildMinimalCluster()
+	input := buildMinimalNodeInstanceGroup()
+	input.Spec.Kubelet = &kopsapi.KubeletConfigSpec{
+		EvictionHard: fi.String("memory.available<250Mi"),
+	}
+
+	channel := &kopsapi.Channel{}
+
+	cloud, err := BuildCloud(cluster)
+	if err != nil {
+		t.Fatalf("error from BuildCloud: %v", err)
+	}
+	output, err := PopulateInstanceGroupSpec(cluster, input, cloud, channel)
+	if err != nil {
+		t.Fatalf("error from PopulateInstanceGroupSpec: %v", err)
+	}
+	if fi.StringValue(output.Spec.Kubelet.EvictionHard) != "memory.available<250Mi" {
+		t.Errorf("Unexpected value %v", fi.StringValue(output.Spec.Kubelet.EvictionHard))
 	}
 }
 
