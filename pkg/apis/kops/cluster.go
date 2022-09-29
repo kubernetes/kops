@@ -157,11 +157,15 @@ type ClusterSpec struct {
 	ExternalCloudControllerManager *CloudControllerManagerConfig `json:"cloudControllerManager,omitempty"`
 	KubeScheduler                  *KubeSchedulerConfig          `json:"kubeScheduler,omitempty"`
 	KubeProxy                      *KubeProxyConfig              `json:"kubeProxy,omitempty"`
-	Kubelet                        *KubeletConfigSpec            `json:"kubelet,omitempty"`
-	MasterKubelet                  *KubeletConfigSpec            `json:"masterKubelet,omitempty"`
-	CloudConfig                    *CloudConfiguration           `json:"cloudConfig,omitempty"`
-	ExternalDNS                    *ExternalDNSConfig            `json:"externalDNS,omitempty"`
-	NTP                            *NTPConfig                    `json:"ntp,omitempty"`
+	// Kubelet is the kubelet configuration for nodes not belonging to the control plane.
+	// It can be overridden by the kubelet configuration specified in the instance group.
+	Kubelet *KubeletConfigSpec `json:"kubelet,omitempty"`
+	// MasterKubelet is the kubelet configuration for nodes belonging to the control plane
+	// It can be overridden by the kubelet configuration specified in the instance group.
+	MasterKubelet *KubeletConfigSpec  `json:"masterKubelet,omitempty"`
+	CloudConfig   *CloudConfiguration `json:"cloudConfig,omitempty"`
+	ExternalDNS   *ExternalDNSConfig  `json:"externalDNS,omitempty"`
+	NTP           *NTPConfig          `json:"ntp,omitempty"`
 
 	// NodeTerminationHandler determines the node termination handler configuration.
 	NodeTerminationHandler *NodeTerminationHandlerConfig `json:"nodeTerminationHandler,omitempty"`
@@ -244,20 +248,16 @@ type CloudProviderSpec struct {
 }
 
 // AWSSpec configures the AWS cloud provider.
-type AWSSpec struct {
-}
+type AWSSpec struct{}
 
 // DOSpec configures the Digital Ocean cloud provider.
-type DOSpec struct {
-}
+type DOSpec struct{}
 
 // GCESpec configures the GCE cloud provider.
-type GCESpec struct {
-}
+type GCESpec struct{}
 
 // HetznerSpec configures the Hetzner cloud provider.
-type HetznerSpec struct {
-}
+type HetznerSpec struct{}
 
 type KarpenterConfig struct {
 	Enabled bool `json:"enabled,omitempty"`
