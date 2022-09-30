@@ -2954,6 +2954,9 @@ type ResponsePolicy struct {
 
 	Kind string `json:"kind,omitempty"`
 
+	// Labels: User labels.
+	Labels map[string]string `json:"labels,omitempty"`
+
 	// Networks: List of network names specifying networks to which this
 	// policy is applied.
 	Networks []*ResponsePolicyNetwork `json:"networks,omitempty"`
