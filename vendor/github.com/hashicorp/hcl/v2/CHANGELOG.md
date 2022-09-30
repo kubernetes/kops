@@ -1,5 +1,11 @@
 # HCL Changelog
 
+## v2.14.1 (September 23, 2022)
+
+### Bugs Fixed
+
+* ext/typeexpr: Type convert defaults for optional object attributes when applying them. This prevents crashes in certain cases when the objects in question are part of a collection. ([#555](https://github.com/hashicorp/hcl/pull/555))
+
 ## v2.14.0 (September 1, 2022)
 
 ### Enhancements
