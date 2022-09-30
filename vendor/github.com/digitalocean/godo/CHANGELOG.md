@@ -1,5 +1,9 @@
 # Change Log
 
+## [v1.86.0] - 2022-09-23
+
+- #561 - @jonfriesen - apps: add docr image deploy on push
+
 ## [v1.85.0] - 2022-09-21
 
 - #560 - @andrewsomething - Bump golang.org/x/net (fixes: #557).

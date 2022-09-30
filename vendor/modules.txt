@@ -103,7 +103,7 @@ github.com/aws/amazon-ec2-instance-selector/v2/pkg/instancetypes
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector/outputs
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/sorter
-# github.com/aws/aws-sdk-go v1.44.104
+# github.com/aws/aws-sdk-go v1.44.108
 ## explicit; go 1.11
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/arn
@@ -254,7 +254,7 @@ github.com/cpuguy83/go-md2man/v2/md2man
 # github.com/davecgh/go-spew v1.1.1
 ## explicit
 github.com/davecgh/go-spew/spew
-# github.com/digitalocean/godo v1.85.0
+# github.com/digitalocean/godo v1.86.0
 ## explicit; go 1.18
 github.com/digitalocean/godo
 github.com/digitalocean/godo/metrics
@@ -568,7 +568,7 @@ github.com/hashicorp/hcl/hcl/token
 github.com/hashicorp/hcl/json/parser
 github.com/hashicorp/hcl/json/scanner
 github.com/hashicorp/hcl/json/token
-# github.com/hashicorp/hcl/v2 v2.14.0
+# github.com/hashicorp/hcl/v2 v2.14.1
 ## explicit; go 1.18
 github.com/hashicorp/hcl/v2
 github.com/hashicorp/hcl/v2/ext/customdecode
@@ -949,7 +949,7 @@ go.uber.org/atomic
 # go.uber.org/multierr v1.8.0
 ## explicit; go 1.14
 go.uber.org/multierr
-# golang.org/x/crypto v0.0.0-20220919173607-35f4265a4bc0
+# golang.org/x/crypto v0.0.0-20220926161630-eccd6366d1be
 ## explicit; go 1.17
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blake2b
@@ -976,7 +976,7 @@ golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 golang.org/x/mod/internal/lazyregexp
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20220921203646-d300de134e69
+# golang.org/x/net v0.0.0-20220927171203-f486391704dc
 ## explicit; go 1.17
 golang.org/x/net/bpf
 golang.org/x/net/context
@@ -1003,11 +1003,11 @@ golang.org/x/oauth2/google/internal/externalaccount
 golang.org/x/oauth2/internal
 golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
-# golang.org/x/sync v0.0.0-20220907140024-f12130a52804
+# golang.org/x/sync v0.0.0-20220929204114-8fcdb60fdcc0
 ## explicit
 golang.org/x/sync/errgroup
 golang.org/x/sync/semaphore
-# golang.org/x/sys v0.0.0-20220919091848-fb04ddd9f9c8
+# golang.org/x/sys v0.0.0-20220928140112-f11e5e49a4ec
 ## explicit; go 1.17
 golang.org/x/sys/cpu
 golang.org/x/sys/execabs
@@ -1058,7 +1058,7 @@ golang.org/x/tools/internal/typesinternal
 # gomodules.xyz/jsonpatch/v2 v2.2.0
 ## explicit; go 1.12
 gomodules.xyz/jsonpatch/v2
-# google.golang.org/api v0.97.0
+# google.golang.org/api v0.98.0
 ## explicit; go 1.15
 google.golang.org/api/cloudresourcemanager/v1
 google.golang.org/api/compute/v0.alpha
