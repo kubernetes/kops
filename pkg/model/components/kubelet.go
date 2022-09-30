@@ -159,6 +159,10 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.Kubelet.CloudProvider = "azure"
 	}
 
+	if cloudProvider == kops.CloudProviderYandex {
+		clusterSpec.Kubelet.CloudProvider = "external"
+	}
+
 	if clusterSpec.ExternalCloudControllerManager != nil {
 		clusterSpec.Kubelet.CloudProvider = "external"
 	}

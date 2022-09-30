@@ -79,6 +79,9 @@ func BuildSystemComponentEnvVars(spec *kops.ClusterSpec) EnvVars {
 	vars.addEnvVariableIfExist("SCW_DEFAULT_REGION")
 	vars.addEnvVariableIfExist("SCW_DEFAULT_ZONE")
 
+	// Yandex Cloud related values.
+	vars.addEnvVariableIfExist("YANDEX_CLOUD_CREDENTIAL_FILE")
+
 	return vars
 }
 

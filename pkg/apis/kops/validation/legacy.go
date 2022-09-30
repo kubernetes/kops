@@ -103,6 +103,14 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 		requiresNetworkCIDR = false
 		requiresSubnetCIDR = false
 	}
+	if c.Spec.CloudProvider.Yandex != nil {
+		if optionTaken {
+			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("yandex"), "only one cloudProvider option permitted"))
+		}
+		optionTaken = true
+		requiresNetworkCIDR = false
+		requiresSubnetCIDR = false
+	}
 	if !optionTaken {
 		allErrs = append(allErrs, field.Required(fieldSpec.Child("cloudProvider"), ""))
 		requiresSubnets = false

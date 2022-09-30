@@ -92,6 +92,8 @@ var (
 	ImageDigest = new("ImageDigest", Bool(true))
 	// Scaleway toggles the Scaleway Cloud support.
 	Scaleway = new("Scaleway", Bool(false))
+	// Yandex toggles the Yandex Cloud support.
+	Yandex = new("Yandex", Bool(false))
 )
 
 // FeatureFlag defines a feature flag

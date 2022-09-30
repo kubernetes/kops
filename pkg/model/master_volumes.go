@@ -21,6 +21,9 @@ import (
 	"sort"
 	"strings"
 
+	"k8s.io/kops/upup/pkg/fi/cloudup/yandex"
+	"k8s.io/kops/upup/pkg/fi/cloudup/yandextasks"
+
 	"github.com/aws/aws-sdk-go/service/ec2"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -47,6 +50,9 @@ const (
 	DefaultAWSEtcdVolumeGp3Iops       = 3000
 	DefaultAWSEtcdVolumeGp3Throughput = 125
 	DefaultGCEEtcdVolumeType          = "pd-ssd"
+
+	// DefaultYandexVolumeType YandexCloud disk types are network-hdd, network-ssd, network-ssd-nonreplicated
+	DefaultYandexVolumeType = "network-ssd"
 )
 
 // MasterVolumeBuilder builds master EBS volumes
@@ -115,6 +121,8 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 				}
 			case kops.CloudProviderAzure:
 				b.addAzureVolume(c, name, volumeSize, zone, etcd, m, allMembers)
+			case kops.CloudProviderYandex:
+				b.addYandexVolume(c, name, volumeSize, zone, etcd, m, allMembers)
 			default:
 				return fmt.Errorf("unknown cloudprovider %q", b.Cluster.Spec.GetCloudProvider())
 			}
@@ -375,6 +383,44 @@ func (b *MasterVolumeBuilder) addAzureVolume(
 		},
 		SizeGB: fi.Int32(volumeSize),
 		Tags:   tags,
+	}
+	c.AddTask(t)
+}
+
+func (b *MasterVolumeBuilder) addYandexVolume(
+	c *fi.ModelBuilderContext,
+	name string,
+	volumeSize int32,
+	zone string,
+	etcd kops.EtcdClusterSpec,
+	m kops.EtcdMemberSpec,
+	allMembers []string,
+) {
+	//TODO(YuraBeznos): yandex implement volume for etcd
+	volumeType := fi.StringValue(m.VolumeType)
+	if volumeType == "" {
+		volumeType = DefaultYandexVolumeType
+	}
+
+	// This is the configuration of the etcd cluster
+	//clusterSpec := m.Name + "/" + strings.Join(allMembers, ",")
+
+	// The tags are how etcd-manager knows to mount the volume and use it for etcd
+	tags := make(map[string]string)
+	tags[yandex.TagKubernetesClusterName] = b.ClusterName()
+	tags[yandex.TagKubernetesInstanceRole] = "master" // Can't start with a number
+	tags[yandex.TagKubernetesVolumeRole] = etcd.Name
+	//tags[yandex.TagKubernetesInstanceGroup] =
+	volumeSizeBytes := int64(volumeSize) * 1024 * 1024 * 1024
+	t := &yandextasks.Disk{
+		Name:      fi.String(name),
+		Lifecycle: b.Lifecycle,
+
+		FolderId: &b.Cluster.Spec.Project,
+		ZoneId:   fi.String(zone),
+		Size:     fi.Int64(volumeSizeBytes),
+		TypeId:   fi.String(volumeType),
+		Labels:   tags,
 	}
 	c.AddTask(t)
 }

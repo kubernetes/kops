@@ -149,6 +149,13 @@ func run() error {
 		}
 		cloudProvider = scwCloudProvider
 
+	} else if cloud == "yandex" {
+		yandexCloudProvider, err := protokube.NewYandexCloudProvider()
+		if err != nil {
+			klog.Errorf("error initializing Yandex Cloud: %q", err)
+			os.Exit(1)
+		}
+		cloudProvider = yandexCloudProvider
 	} else {
 		klog.Errorf("Unknown cloud %q", cloud)
 		os.Exit(1)

@@ -100,6 +100,8 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 		}
 	case kops.CloudProviderScaleway:
 		out.CloudProvider.Scaleway = &kops.ScalewaySpec{}
+	case kops.CloudProviderYandex:
+		out.CloudProvider.Yandex = &kops.YandexSpec{}
 	case "":
 	default:
 		return field.NotSupported(field.NewPath("spec").Child("cloudProvider"), in.LegacyCloudProvider, []string{

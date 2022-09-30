@@ -313,6 +313,8 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 				MaxRetries: fi.Int(3),
 			},
 		}
+	case api.CloudProviderYandex:
+		cluster.Spec.CloudProvider.Yandex = &api.YandexSpec{}
 	default:
 		return nil, fmt.Errorf("unsupported cloud provider %s", opt.CloudProvider)
 	}
@@ -691,6 +693,13 @@ func setupZones(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.Stri
 				return nil, err
 			}
 		}
+
+	case api.CloudProviderYandex:
+		if len(opt.Zones) > 1 {
+			klog.Warningf(strings.Join(opt.Zones[:], ","))
+			return nil, fmt.Errorf("yandex cloud provider currently supports only one zone")
+		}
+		// TODO(YuraBeznos): yandex Add customizations for Yandex Cloud and more zones
 	}
 
 	for _, zoneName := range allZones.List() {

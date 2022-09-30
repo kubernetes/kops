@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/pkg/resources/gce"
 	"k8s.io/kops/pkg/resources/hetzner"
 	"k8s.io/kops/pkg/resources/openstack"
+	"k8s.io/kops/pkg/resources/yandex"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	cloudazure "k8s.io/kops/upup/pkg/fi/cloudup/azure"
@@ -34,6 +35,7 @@ import (
 	cloudgce "k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	cloudhetzner "k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	cloudopenstack "k8s.io/kops/upup/pkg/fi/cloudup/openstack"
+	cloudyandex "k8s.io/kops/upup/pkg/fi/cloudup/yandex"
 )
 
 // ListResources collects the resources from the specified cloud
@@ -52,6 +54,8 @@ func ListResources(cloud fi.Cloud, cluster *kops.Cluster, region string) (map[st
 		return openstack.ListResources(cloud.(cloudopenstack.OpenstackCloud), clusterName)
 	case kops.CloudProviderAzure:
 		return azure.ListResourcesAzure(cloud.(cloudazure.AzureCloud), cluster)
+	case kops.CloudProviderYandex:
+		return yandex.ListResources(cloud.(cloudyandex.YandexCloud), clusterName)
 	default:
 		return nil, fmt.Errorf("delete on clusters on %q not (yet) supported", cloud.ProviderID())
 	}

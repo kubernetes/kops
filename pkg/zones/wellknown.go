@@ -361,6 +361,13 @@ var azureZones = []string{
 	"westusstage",
 }
 
+var yandexZones = []string{
+	"ru-central1-a",
+	"ru-central1-b",
+	"ru-central1-c",
+	// "ru-central1-d", after Q3 2023
+}
+
 // GuessCloudForZone tries to infer the cloudprovider from the zone name
 // Ali has the same zoneNames as AWS in the regions outside China, so if use AliCloud to install k8s in the regions outside China,
 // the users need to provide parameter "--cloud". But the regions inside China can be easily identified.
@@ -398,6 +405,8 @@ func WellKnownZonesForCloud(matchCloud kops.CloudProviderID) []string {
 		return gceZones
 	case kops.CloudProviderHetzner:
 		return hetznerZones
+	case kops.CloudProviderYandex:
+		return yandexZones
 
 	default:
 		return nil

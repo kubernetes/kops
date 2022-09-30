@@ -21,6 +21,8 @@ import (
 	"fmt"
 	"strings"
 
+	"k8s.io/kops/upup/pkg/fi/cloudup/yandex"
+
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/klog/v2"
@@ -440,6 +442,16 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 				fmt.Sprintf("%s=%s", openstack.TagClusterName, b.Cluster.Name),
 			}
 			config.VolumeNameTag = openstack.TagNameEtcdClusterPrefix + etcdCluster.Name
+
+		case kops.CloudProviderYandex:
+			// TODO(YuraBeznos): add yandex volume provider into https://github.com/kubernetes-sigs/etcdadm
+			// config.VolumeProvider = "yandex"
+			config.VolumeProvider = "external"
+			// TODO(YuraBeznos): yandex implement volume tags
+			config.VolumeTag = []string{
+				fmt.Sprintf("%s=%s", yandex.TagKubernetesClusterName, etcdCluster.Name),
+				//fmt.Sprintf("%s=%s", yandex.TagKubernetesVolumeRole, etcdCluster.Name),
+			}
 
 		default:
 			return nil, fmt.Errorf("CloudProvider %q not supported with etcd-manager", b.Cluster.Spec.GetCloudProvider())

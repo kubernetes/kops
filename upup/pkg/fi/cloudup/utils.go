@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"strings"
 
+	"k8s.io/kops/upup/pkg/fi/cloudup/yandex"
+
 	"k8s.io/klog/v2"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53"
@@ -160,6 +162,18 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 			}
 
 			cloud = azureCloud
+		}
+	case kops.CloudProviderYandex:
+		{
+			region, err := yandex.FindRegion(cluster)
+			if err != nil {
+				return nil, err
+			}
+			yandexCloud, err := yandex.NewYandexCloud(region)
+			if err != nil {
+				return nil, err
+			}
+			cloud = yandexCloud
 		}
 	default:
 		return nil, fmt.Errorf("unknown CloudProvider %q", cluster.Spec.GetCloudProvider())

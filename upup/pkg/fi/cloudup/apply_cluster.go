@@ -30,6 +30,9 @@ import (
 	"strconv"
 	"strings"
 
+	"k8s.io/kops/pkg/model/yandexmodel"
+	"k8s.io/kops/upup/pkg/fi/cloudup/yandex"
+
 	"github.com/blang/semver/v4"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
@@ -476,6 +479,12 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				return fmt.Errorf("exactly one 'admin' SSH public key can be specified when running with Openstack; please delete a key using `kops delete secret`")
 			}
 		}
+	case kops.CloudProviderYandex:
+		{
+			if !featureflag.Yandex.Enabled() {
+				return fmt.Errorf("yandex support is currently alpha, and is feature-gated. Please export KOPS_FEATURE_FLAGS=Yandex")
+			}
+		}
 	default:
 		return fmt.Errorf("unknown CloudProvider %q", cluster.Spec.GetCloudProvider())
 	}
@@ -671,7 +680,16 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				&openstackmodel.FirewallModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: securityLifecycle},
 				&openstackmodel.ServerGroupModelBuilder{OpenstackModelContext: openstackModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: clusterLifecycle},
 			)
-
+		case kops.CloudProviderYandex:
+			yandexModelContext := &yandexmodel.YandexModelContext{
+				KopsModelContext: modelContext,
+			}
+			l.Builders = append(l.Builders,
+				&yandexmodel.NetworkModelBuilder{YandexModelContext: yandexModelContext, Lifecycle: networkLifecycle},
+				&yandexmodel.SubnetModelBuilder{YandexModelContext: yandexModelContext, Lifecycle: networkLifecycle},
+				&yandexmodel.InstanceModelBuilder{YandexModelContext: yandexModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: clusterLifecycle},
+				&yandexmodel.APILoadBalancerModelBuilder{YandexModelContext: yandexModelContext, Lifecycle: networkLifecycle},
+			)
 		default:
 			return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.GetCloudProvider())
 		}
@@ -699,6 +717,8 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			target = openstack.NewOpenstackAPITarget(cloud.(openstack.OpenstackCloud))
 		case kops.CloudProviderAzure:
 			target = azure.NewAzureAPITarget(cloud.(azure.AzureCloud))
+		case kops.CloudProviderYandex:
+			target = yandex.NewYandexAPITarget(cloud.(yandex.YandexCloud))
 		default:
 			return fmt.Errorf("direct configuration not supported with CloudProvider:%q", cluster.Spec.GetCloudProvider())
 		}

@@ -247,6 +247,8 @@ type CloudProviderSpec struct {
 	Openstack *OpenstackSpec `json:"openstack,omitempty"`
 	// Scaleway configures the Scaleway cloud provider.
 	Scaleway *ScalewaySpec `json:"scaleway,omitempty"`
+	// Yandex configures the Yandex cloud provider.
+	Yandex *YandexSpec `json:"yandex,omitempty"`
 }
 
 // AWSSpec configures the AWS cloud provider.
@@ -263,6 +265,10 @@ type HetznerSpec struct{}
 
 // ScalewaySpec configures the Scaleway cloud provider
 type ScalewaySpec struct {
+}
+
+// YandexSpec configures the Yandex cloud provider.
+type YandexSpec struct {
 }
 
 type KarpenterConfig struct {
@@ -919,6 +925,8 @@ func (c *ClusterSpec) GetCloudProvider() CloudProviderID {
 		return CloudProviderOpenstack
 	} else if c.CloudProvider.Scaleway != nil {
 		return CloudProviderScaleway
+	} else if c.CloudProvider.Yandex != nil {
+		return CloudProviderYandex
 	}
 	return ""
 }

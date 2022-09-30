@@ -39,17 +39,21 @@ const (
 	defaultNodeMachineTypeDO      = "s-2vcpu-4gb"
 	defaultNodeMachineTypeAzure   = "Standard_B2ms"
 	defaultNodeMachineTypeHetzner = "cx21"
+	defaultNodeMachineTypeYandex  = "standard-v1"
 
 	defaultBastionMachineTypeGCE     = "f1-micro"
 	defaultBastionMachineTypeAzure   = "Standard_B2ms"
 	defaultBastionMachineTypeHetzner = "cx11"
+	defaultBastionMachineTypeYandex  = "standard-v1"
 
 	defaultMasterMachineTypeGCE     = "e2-medium"
 	defaultMasterMachineTypeDO      = "s-2vcpu-4gb"
 	defaultMasterMachineTypeAzure   = "Standard_B2ms"
 	defaultMasterMachineTypeHetzner = "cx21"
+	defaultMasterMachineTypeYandex  = "standard-v1"
 
 	defaultDONodeImage = "ubuntu-20-04-x64"
+	defaultYandexNodeImage = "ubuntu-2004-lts"
 )
 
 // TODO: this hardcoded list can be replaced with DescribeInstanceTypes' DedicatedHostsSupported field
@@ -343,6 +347,18 @@ func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.Instance
 
 		case kops.InstanceGroupRoleBastion:
 			return defaultBastionMachineTypeAzure, nil
+		}
+
+	case kops.CloudProviderYandex:
+		switch ig.Spec.Role {
+		case kops.InstanceGroupRoleMaster:
+			return defaultMasterMachineTypeYandex, nil
+
+		case kops.InstanceGroupRoleNode:
+			return defaultNodeMachineTypeYandex, nil
+
+		case kops.InstanceGroupRoleBastion:
+			return defaultBastionMachineTypeYandex, nil
 		}
 	}
 

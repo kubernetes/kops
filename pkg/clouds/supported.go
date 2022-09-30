@@ -35,6 +35,9 @@ func SupportedClouds() []kops.CloudProviderID {
 	if featureflag.Scaleway.Enabled() {
 		clouds = append(clouds, kops.CloudProviderScaleway)
 	}
+	if featureflag.Yandex.Enabled() {
+		clouds = append(clouds, kops.CloudProviderYandex)
+	}
 
 	return clouds
 }
