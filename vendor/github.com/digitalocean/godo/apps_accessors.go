@@ -2110,6 +2110,14 @@ func (d *DeploymentCauseDetails) GetDigitalOceanUserAction() *DeploymentCauseDet
 	return d.DigitalOceanUserAction
 }
 
+// GetDOCRPush returns the DOCRPush field.
+func (d *DeploymentCauseDetails) GetDOCRPush() *DeploymentCauseDetailsDOCRPush {
+	if d == nil {
+		return nil
+	}
+	return d.DOCRPush
+}
+
 // GetGitPush returns the GitPush field.
 func (d *DeploymentCauseDetails) GetGitPush() *DeploymentCauseDetailsGitPush {
 	if d == nil {
@@ -2172,6 +2180,38 @@ func (d *DeploymentCauseDetailsDigitalOceanUserAction) GetUser() *DeploymentCaus
 		return nil
 	}
 	return d.User
+}
+
+// GetImageDigest returns the ImageDigest field.
+func (d *DeploymentCauseDetailsDOCRPush) GetImageDigest() string {
+	if d == nil {
+		return ""
+	}
+	return d.ImageDigest
+}
+
+// GetRegistry returns the Registry field.
+func (d *DeploymentCauseDetailsDOCRPush) GetRegistry() string {
+	if d == nil {
+		return ""
+	}
+	return d.Registry
+}
+
+// GetRepository returns the Repository field.
+func (d *DeploymentCauseDetailsDOCRPush) GetRepository() string {
+	if d == nil {
+		return ""
+	}
+	return d.Repository
+}
+
+// GetTag returns the Tag field.
+func (d *DeploymentCauseDetailsDOCRPush) GetTag() string {
+	if d == nil {
+		return ""
+	}
+	return d.Tag
 }
 
 // GetCommitAuthor returns the CommitAuthor field.
@@ -2782,6 +2822,14 @@ func (g *GitSourceSpec) GetRepoCloneURL() string {
 	return g.RepoCloneURL
 }
 
+// GetDeployOnPush returns the DeployOnPush field.
+func (i *ImageSourceSpec) GetDeployOnPush() *ImageSourceSpecDeployOnPush {
+	if i == nil {
+		return nil
+	}
+	return i.DeployOnPush
+}
+
 // GetRegistry returns the Registry field.
 func (i *ImageSourceSpec) GetRegistry() string {
 	if i == nil {
@@ -2812,6 +2860,14 @@ func (i *ImageSourceSpec) GetTag() string {
 		return ""
 	}
 	return i.Tag
+}
+
+// GetEnabled returns the Enabled field.
+func (i *ImageSourceSpecDeployOnPush) GetEnabled() bool {
+	if i == nil {
+		return false
+	}
+	return i.Enabled
 }
 
 // GetAppID returns the AppID field.
