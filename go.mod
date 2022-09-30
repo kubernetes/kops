@@ -21,9 +21,8 @@ require (
 	github.com/go-ini/ini v1.67.0
 	github.com/go-logr/logr v1.2.3
 	github.com/gogo/protobuf v1.3.2
-	github.com/google/go-cmp v0.5.9
 	github.com/golang-jwt/jwt/v4 v4.2.0
-	github.com/google/go-cmp v0.5.8
+	github.com/google/go-cmp v0.5.9
 	github.com/google/go-containerregistry v0.11.0
 	github.com/google/go-tpm v0.3.3
 	github.com/google/go-tpm-tools v0.3.9
@@ -45,10 +44,9 @@ require (
 	github.com/spotinst/spotinst-sdk-go v1.129.0
 	github.com/stretchr/testify v1.8.0
 	github.com/weaveworks/mesh v0.0.0-20191105120815-58dbcc3e8e63
-	github.com/zclconf/go-cty v1.11.0
 	github.com/yandex-cloud/go-genproto v0.0.0-20220926085246-3a5ad834cdba
 	github.com/yandex-cloud/go-sdk v0.0.0-20220926085905-49c5cf6c6f20
-	github.com/zclconf/go-cty v1.10.0
+	github.com/zclconf/go-cty v1.11.0
 	go.uber.org/multierr v1.8.0
 	golang.org/x/crypto v0.0.0-20220926161630-eccd6366d1be
 	golang.org/x/net v0.0.0-20220927171203-f486391704dc

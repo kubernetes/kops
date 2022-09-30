@@ -52,7 +52,7 @@ const (
 	defaultMasterMachineTypeHetzner = "cx21"
 	defaultMasterMachineTypeYandex  = "standard-v1"
 
-	defaultDONodeImage = "ubuntu-20-04-x64"
+	defaultDONodeImage     = "ubuntu-20-04-x64"
 	defaultYandexNodeImage = "ubuntu-2004-lts"
 )
 

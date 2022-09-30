@@ -911,8 +911,6 @@ github.com/weaveworks/mesh
 # github.com/xlab/treeprint v1.1.0
 ## explicit; go 1.13
 github.com/xlab/treeprint
-# github.com/zclconf/go-cty v1.11.0
-## explicit; go 1.18
 # github.com/yandex-cloud/go-genproto v0.0.0-20220926085246-3a5ad834cdba
 ## explicit
 github.com/yandex-cloud/go-genproto/yandex/cloud
@@ -1037,8 +1035,8 @@ github.com/yandex-cloud/go-sdk/operation
 github.com/yandex-cloud/go-sdk/pkg/grpcclient
 github.com/yandex-cloud/go-sdk/pkg/sdkerrors
 github.com/yandex-cloud/go-sdk/pkg/singleflight
-# github.com/zclconf/go-cty v1.10.0
-## explicit; go 1.12
+# github.com/zclconf/go-cty v1.11.0
+## explicit; go 1.18
 github.com/zclconf/go-cty/cty
 github.com/zclconf/go-cty/cty/convert
 github.com/zclconf/go-cty/cty/function
@@ -1225,16 +1223,13 @@ google.golang.org/appengine/internal/urlfetch
 google.golang.org/appengine/urlfetch
 # google.golang.org/genproto v0.0.0-20220915135415-7fd63a7952de
 ## explicit; go 1.19
-# google.golang.org/genproto v0.0.0-20220624142145-8cd45d7dbd1f
-## explicit; go 1.15
 google.golang.org/genproto/googleapis/api/annotations
 google.golang.org/genproto/googleapis/rpc/code
 google.golang.org/genproto/googleapis/rpc/errdetails
 google.golang.org/genproto/googleapis/rpc/status
-# google.golang.org/grpc v1.48.0
 google.golang.org/genproto/googleapis/type/dayofweek
 google.golang.org/genproto/googleapis/type/timeofday
-# google.golang.org/grpc v1.47.0
+# google.golang.org/grpc v1.48.0
 ## explicit; go 1.14
 google.golang.org/grpc
 google.golang.org/grpc/attributes
