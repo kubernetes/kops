@@ -14,10 +14,10 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/apparentlymart/go-cidr v1.1.0
 	github.com/aws/amazon-ec2-instance-selector/v2 v2.4.0
-	github.com/aws/aws-sdk-go v1.44.104
+	github.com/aws/aws-sdk-go v1.44.108
 	github.com/blang/semver/v4 v4.0.0
 	github.com/cert-manager/cert-manager v1.9.1
-	github.com/digitalocean/godo v1.85.0
+	github.com/digitalocean/godo v1.86.0
 	github.com/go-ini/ini v1.67.0
 	github.com/go-logr/logr v1.2.3
 	github.com/gogo/protobuf v1.3.2
@@ -27,7 +27,7 @@ require (
 	github.com/google/go-tpm-tools v0.3.9
 	github.com/google/uuid v1.3.0
 	github.com/gophercloud/gophercloud v1.0.0
-	github.com/hashicorp/hcl/v2 v2.14.0
+	github.com/hashicorp/hcl/v2 v2.14.1
 	github.com/hashicorp/vault/api v1.8.0
 	github.com/hetznercloud/hcloud-go v1.35.3
 	github.com/jacksontj/memberlistmesh v0.0.0-20190905163944-93462b9d2bb7
@@ -45,12 +45,12 @@ require (
 	github.com/weaveworks/mesh v0.0.0-20191105120815-58dbcc3e8e63
 	github.com/zclconf/go-cty v1.11.0
 	go.uber.org/multierr v1.8.0
-	golang.org/x/crypto v0.0.0-20220919173607-35f4265a4bc0
-	golang.org/x/net v0.0.0-20220921203646-d300de134e69
+	golang.org/x/crypto v0.0.0-20220926161630-eccd6366d1be
+	golang.org/x/net v0.0.0-20220927171203-f486391704dc
 	golang.org/x/oauth2 v0.0.0-20220909003341-f21342109be1
-	golang.org/x/sync v0.0.0-20220907140024-f12130a52804
-	golang.org/x/sys v0.0.0-20220919091848-fb04ddd9f9c8
-	google.golang.org/api v0.97.0
+	golang.org/x/sync v0.0.0-20220929204114-8fcdb60fdcc0
+	golang.org/x/sys v0.0.0-20220928140112-f11e5e49a4ec
+	google.golang.org/api v0.98.0
 	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/inf.v0 v0.9.1
 	gopkg.in/square/go-jose.v2 v2.6.0

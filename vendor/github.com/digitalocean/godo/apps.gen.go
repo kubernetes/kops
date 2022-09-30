@@ -522,6 +522,18 @@ type DeploymentCauseDetailsDigitalOceanUserAction struct {
 	Name DeploymentCauseDetailsDigitalOceanUserActionName `json:"name,omitempty"`
 }
 
+// DeploymentCauseDetailsDOCRPush struct for DeploymentCauseDetailsDOCRPush
+type DeploymentCauseDetailsDOCRPush struct {
+	// The registry name.
+	Registry string `json:"registry,omitempty"`
+	// The repository name.
+	Repository string `json:"repository,omitempty"`
+	// The repository tag.
+	Tag string `json:"tag,omitempty"`
+	// OCI Image digest.
+	ImageDigest string `json:"image_digest,omitempty"`
+}
+
 // DeploymentCauseDetailsGitPush struct for DeploymentCauseDetailsGitPush
 type DeploymentCauseDetailsGitPush struct {
 	GitHub        *GitHubSourceSpec `json:"github,omitempty"`
@@ -584,6 +596,7 @@ type Deployment struct {
 type DeploymentCauseDetails struct {
 	DigitalOceanUserAction *DeploymentCauseDetailsDigitalOceanUserAction `json:"digitalocean_user_action,omitempty"`
 	GitPush                *DeploymentCauseDetailsGitPush                `json:"git_push,omitempty"`
+	DOCRPush               *DeploymentCauseDetailsDOCRPush               `json:"docr_push,omitempty"`
 	Internal               bool                                          `json:"internal,omitempty"`
 	Type                   DeploymentCauseDetailsType                    `json:"type,omitempty"`
 }
@@ -886,7 +899,14 @@ type ImageSourceSpec struct {
 	// The repository name.
 	Repository string `json:"repository,omitempty"`
 	// The repository tag. Defaults to `latest` if not provided.
-	Tag string `json:"tag,omitempty"`
+	Tag          string                       `json:"tag,omitempty"`
+	DeployOnPush *ImageSourceSpecDeployOnPush `json:"deploy_on_push,omitempty"`
+}
+
+// ImageSourceSpecDeployOnPush struct for ImageSourceSpecDeployOnPush
+type ImageSourceSpecDeployOnPush struct {
+	// Automatically deploy new images. Only for DOCR images.
+	Enabled bool `json:"enabled,omitempty"`
 }
 
 // ImageSourceSpecRegistryType  - DOCR: The DigitalOcean container registry type.  - DOCKER_HUB: The DockerHub container registry type.
