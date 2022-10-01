@@ -14,7 +14,7 @@
 It is important to set the following environment variables:
 ```bash
 export KOPS_FEATURE_FLAGS=Yandex
-export YANDEX_CREDENTIAL_FILE=<path to iam json file>
+export YANDEX_CLOUD_CREDENTIAL_FILE=<path to iam json file>
 export S3_ENDPOINT=https://storage.yandexcloud.net
 export S3_ACCESS_KEY_ID=<access-key>
 export S3_SECRET_ACCESS_KEY=<secret-key>
