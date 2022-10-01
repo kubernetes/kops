@@ -18,21 +18,21 @@ package yandex
 
 import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/yandex"
-	// TODO: yandex impement resources
-	"k8s.io/klog/v2"
+
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
+// TODO(YuraBeznos): implement Yandex.Cloud resource management (deletion)
 const (
-	/*
-		resourceTypeSSHKey       = "ssh-key"
-		resourceTypeNetwork      = "network"
-		resourceTypeFirewall     = "firewall"
-		resourceTypeLoadBalancer = "load-balancer"
-		resourceTypeServer       = "server"
-	*/
-	resourceTypeVolume = "volume"
+/*
+resourceTypeSSHKey       = "ssh-key"
+resourceTypeNetwork      = "network"
+resourceTypeFirewall     = "firewall"
+resourceTypeLoadBalancer = "load-balancer"
+resourceTypeServer       = "server"
+resourceTypeVolume = "volume"
+*/
 )
 
 type listFn func(fi.Cloud, string) ([]*resources.Resource, error)
@@ -45,8 +45,8 @@ func ListResources(cloud yandex.YandexCloud, clusterName string) (map[string]*re
 			listNetworks,
 			listFirewalls,
 			listLoadBalancers,
-			listServers, */
-		listVolumes,
+			listServers,
+			listVolumes, */
 	}
 
 	for _, fn := range listFunctions {
@@ -62,6 +62,7 @@ func ListResources(cloud yandex.YandexCloud, clusterName string) (map[string]*re
 	return resourceTrackers, nil
 }
 
+/*
 func listVolumes(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
 	var resourceTrackers []*resources.Resource
 	return resourceTrackers, nil
@@ -71,3 +72,4 @@ func deleteVolume(cloud fi.Cloud, r *resources.Resource) error {
 	klog.Infof("Deleting Volume: %s(%s)", r.Name, r.ID)
 	return nil
 }
+*/
