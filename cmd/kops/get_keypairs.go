@@ -89,12 +89,12 @@ type keypairItem struct {
 	ID                string     `json:"id"`
 	DistrustTimestamp *time.Time `json:"distrustTimestamp,omitempty"`
 	IsPrimary         bool       `json:"isPrimary,omitempty"`
-	Subject           string     `json:"subject"`
-	Issuer            string     `json:"issuer"`
+	Subject           string     `json:"subject,omitempty"`
+	Issuer            string     `json:"issuer,omitempty"`
 	AlternateNames    []string   `json:"alternateNames,omitempty"`
 	IsCA              bool       `json:"isCA,omitempty"`
-	NotBefore         time.Time  `json:"notBefore"`
-	NotAfter          time.Time  `json:"notAfter"`
+	NotBefore         *time.Time `json:"notBefore,omitempty"`
+	NotAfter          *time.Time `json:"notAfter,omitempty"`
 	KeyLength         *int       `json:"keyLength,omitempty"`
 	HasPrivateKey     bool       `json:"hasPrivateKey,omitempty"`
 }
@@ -122,30 +122,39 @@ func listKeypairs(keyStore fi.CAStore, names []string, includeDistrusted bool) (
 		}
 
 		for _, item := range keyset.Items {
-			if includeDistrusted || item.DistrustTimestamp == nil {
-				var alternateNames []string
-				alternateNames = append(alternateNames, item.Certificate.Certificate.DNSNames...)
-				alternateNames = append(alternateNames, item.Certificate.Certificate.EmailAddresses...)
-				for _, ip := range item.Certificate.Certificate.IPAddresses {
-					alternateNames = append(alternateNames, ip.String())
-				}
-				sort.Strings(alternateNames)
-
+			if includeDistrusted || (item.DistrustTimestamp == nil && item.Certificate != nil) {
 				keypair := keypairItem{
 					Name:              name,
 					ID:                item.Id,
 					DistrustTimestamp: item.DistrustTimestamp,
 					IsPrimary:         item.Id == keyset.Primary.Id,
-					Subject:           item.Certificate.Subject.String(),
-					Issuer:            item.Certificate.Certificate.Issuer.String(),
-					AlternateNames:    alternateNames,
-					IsCA:              item.Certificate.IsCA,
-					NotBefore:         item.Certificate.Certificate.NotBefore.UTC(),
-					NotAfter:          item.Certificate.Certificate.NotAfter.UTC(),
 					HasPrivateKey:     item.PrivateKey != nil,
 				}
-				if rsaKey, ok := item.Certificate.PublicKey.(*rsa.PublicKey); ok {
-					keypair.KeyLength = fi.Int(rsaKey.N.BitLen())
+				if cert := item.Certificate; cert != nil {
+					keypair.Subject = cert.Subject.String()
+					keypair.Issuer = cert.Certificate.Issuer.String()
+					keypair.IsCA = cert.IsCA
+					{
+						t := cert.Certificate.NotBefore.UTC()
+						keypair.NotBefore = &t
+					}
+					{
+						t := cert.Certificate.NotAfter.UTC()
+						keypair.NotAfter = &t
+					}
+					{
+						var alternateNames []string
+						alternateNames = append(alternateNames, item.Certificate.Certificate.DNSNames...)
+						alternateNames = append(alternateNames, item.Certificate.Certificate.EmailAddresses...)
+						for _, ip := range item.Certificate.Certificate.IPAddresses {
+							alternateNames = append(alternateNames, ip.String())
+						}
+						sort.Strings(alternateNames)
+						keypair.AlternateNames = alternateNames
+					}
+					if rsaKey, ok := cert.PublicKey.(*rsa.PublicKey); ok {
+						keypair.KeyLength = fi.Int(rsaKey.N.BitLen())
+					}
 				}
 				items = append(items, &keypair)
 			}
@@ -196,10 +205,16 @@ func RunGetKeypairs(ctx context.Context, f commandutils.Factory, out io.Writer, 
 			return ""
 		})
 		t.AddColumn("ISSUED", func(i *keypairItem) string {
-			return i.NotBefore.Local().Format("2006-01-02")
+			if t := i.NotBefore; t != nil {
+				return t.Local().Format("2006-01-02")
+			}
+			return ""
 		})
 		t.AddColumn("EXPIRES", func(i *keypairItem) string {
-			return i.NotAfter.Local().Format("2006-01-02")
+			if t := i.NotAfter; t != nil {
+				return t.Local().Format("2006-01-02")
+			}
+			return ""
 		})
 		t.AddColumn("PRIMARY", func(i *keypairItem) string {
 			if i.IsPrimary {
