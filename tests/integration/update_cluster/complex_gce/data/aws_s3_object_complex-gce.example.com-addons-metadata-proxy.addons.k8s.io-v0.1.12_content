@@ -1,0 +1,127 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: metadata-proxy.addons.k8s.io
+    addonmanager.kubernetes.io/mode: Reconcile
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: metadata-proxy.addons.k8s.io
+    k8s-app: metadata-proxy
+    kubernetes.io/cluster-service: "true"
+  name: metadata-proxy
+  namespace: kube-system
+
+---
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: metadata-proxy.addons.k8s.io
+    addonmanager.kubernetes.io/mode: Reconcile
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: metadata-proxy.addons.k8s.io
+    k8s-app: metadata-proxy
+    kubernetes.io/cluster-service: "true"
+    version: v0.12
+  name: metadata-proxy-v0.12
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      k8s-app: metadata-proxy
+      version: v0.12
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        k8s-app: metadata-proxy
+        kops.k8s.io/managed-by: kops
+        kubernetes.io/cluster-service: "true"
+        version: v0.12
+    spec:
+      containers:
+      - args:
+        - -addr=169.254.169.252:988
+        image: k8s.gcr.io/metadata-proxy:v0.1.12
+        name: metadata-proxy
+        resources:
+          limits:
+            cpu: 30m
+            memory: 25Mi
+          requests:
+            cpu: 30m
+            memory: 25Mi
+        securityContext:
+          privileged: true
+      - command:
+        - /monitor
+        - --stackdriver-prefix=custom.googleapis.com/addons
+        - --source=metadata_proxy:http://127.0.0.1:989?whitelisted=request_count
+        - --pod-id=$(POD_NAME)
+        - --namespace-id=$(POD_NAMESPACE)
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        image: k8s.gcr.io/prometheus-to-sd:v0.5.0
+        name: prometheus-to-sd-exporter
+        resources:
+          limits:
+            cpu: 2m
+            memory: 20Mi
+          requests:
+            cpu: 2m
+            memory: 20Mi
+      dnsPolicy: Default
+      hostNetwork: true
+      initContainers:
+      - command:
+        - /bin/sh
+        - -c
+        - |
+          set -e
+          set -x
+
+          if (ip link show ens4); then
+            PRIMARY_DEV=ens4
+          else
+            PRIMARY_DEV=eth0
+          fi
+
+          ip addr add dev lo 169.254.169.252/32
+          iptables -w -t nat -I PREROUTING -p tcp -d 169.254.169.254 ! -i "${PRIMARY_DEV}" --dport 80 -m comment --comment "metadata-concealment: bridge traffic to metadata server goes to metadata proxy" -j DNAT --to-destination 169.254.169.252:988
+          iptables -w -t nat -I PREROUTING -p tcp -d 169.254.169.254 ! -i "${PRIMARY_DEV}" --dport 8080 -m comment --comment "metadata-concealment: bridge traffic to metadata server goes to metadata proxy" -j DNAT --to-destination 169.254.169.252:987
+        image: k8s.gcr.io/k8s-custom-iptables:1.0
+        imagePullPolicy: Always
+        name: update-ipdtables
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /host
+          name: host
+      nodeSelector:
+        beta.kubernetes.io/os: linux
+        cloud.google.com/metadata-proxy-ready: "true"
+      priorityClassName: system-node-critical
+      serviceAccountName: metadata-proxy
+      terminationGracePeriodSeconds: 30
+      tolerations:
+      - effect: NoExecute
+        operator: Exists
+      - effect: NoSchedule
+        operator: Exists
+      volumes:
+      - hostPath:
+          path: /
+          type: Directory
+        name: host
+  updateStrategy:
+    type: RollingUpdate

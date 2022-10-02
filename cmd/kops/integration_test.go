@@ -355,6 +355,13 @@ func TestHighAvailabilityGCE(t *testing.T) {
 		runTestTerraformGCE(t)
 }
 
+// TestComplexGCE runs the test on a more complex GCE configuration, aiming to test more edge cases and new features.
+func TestComplexGCE(t *testing.T) {
+	newIntegrationTest("complex-gce.example.com", "complex_gce").withZones(1).
+		withAddons(dnsControllerAddon, "rbac.addons.k8s.io-k8s-1.8").
+		runTestTerraformGCE(t)
+}
+
 // TestComplex runs the test on a more complex configuration, intended to hit more of the edge cases
 func TestComplex(t *testing.T) {
 	newIntegrationTest("complex.example.com", "complex").withoutSSHKey().
