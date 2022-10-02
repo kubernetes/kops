@@ -28,7 +28,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
-	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks/dnstasks"
 	"k8s.io/kops/util/pkg/distributions"
 )
 
@@ -74,7 +73,7 @@ func (p *Service) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 		// launching a custom Kubernetes build), they all depend on
 		// the "docker.service" Service task.
 		switch v := v.(type) {
-		case *Package, *UpdatePackages, *UserTask, *GroupTask, *Chattr, *BindMount, *Archive, *Prefix, *dnstasks.UpdateEtcHostsTask:
+		case *Package, *UpdatePackages, *UserTask, *GroupTask, *Chattr, *BindMount, *Archive, *Prefix, *UpdateEtcHostsTask:
 			deps = append(deps, v)
 		case *Service, *LoadImageTask, *PullImageTask, *IssueCert, *BootstrapClientTask, *KubeConfig:
 			// ignore
