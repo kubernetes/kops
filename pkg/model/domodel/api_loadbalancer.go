@@ -78,7 +78,7 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	c.AddTask(loadbalancer)
 
 	// Temporarily do not know the role of the following function
-	if dns.IsGossipHostname(b.Cluster.Name) || b.UsePrivateDNS() {
+	if dns.IsGossipCluster(b.Cluster) || b.UsePrivateDNS() {
 		// Ensure the LB hostname is included in the TLS certificate,
 		// if we're not going to use an alias for it
 		loadbalancer.ForAPIServer = true

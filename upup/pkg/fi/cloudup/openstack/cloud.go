@@ -398,7 +398,7 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec, uagent st
 	}
 
 	var dnsClient *gophercloud.ServiceClient
-	if !dns.IsGossipHostname(tags[TagClusterName]) {
+	if !dns.IsGossipClusterName(tags[TagClusterName]) {
 		// TODO: This should be replaced with the environment variable methods as done above
 		endpointOpt, err := config.GetServiceConfig("Designate")
 		if err != nil {
