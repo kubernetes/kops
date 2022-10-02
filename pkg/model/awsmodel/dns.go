@@ -35,7 +35,7 @@ type DNSModelBuilder struct {
 var _ fi.ModelBuilder = &DNSModelBuilder{}
 
 func (b *DNSModelBuilder) ensureDNSZone(c *fi.ModelBuilderContext) error {
-	if dns.IsGossipHostname(b.Cluster.Name) {
+	if dns.IsGossipCluster(b.Cluster) {
 		return nil
 	}
 
@@ -84,7 +84,7 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// We now create the DNS Zone for AWS even in the case of public zones;
 		// it has to exist for the IAM record anyway.
 		// TODO: We can now rationalize the code paths
-		if !dns.IsGossipHostname(b.Cluster.Name) {
+		if !dns.IsGossipCluster(b.Cluster) {
 			if err := b.ensureDNSZone(c); err != nil {
 				return err
 			}
@@ -107,7 +107,7 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// This will point our external DNS record to the load balancer, and put the
 		// pieces together for kubectl to work
 
-		if !dns.IsGossipHostname(b.Cluster.Name) {
+		if !dns.IsGossipCluster(b.Cluster) {
 			if err := b.ensureDNSZone(c); err != nil {
 				return err
 			}
@@ -137,7 +137,7 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// This will point the internal API DNS record to the load balancer.
 		// This means kubelet connections go via the load balancer and are more HA.
 
-		if !dns.IsGossipHostname(b.Cluster.Name) {
+		if !dns.IsGossipCluster(b.Cluster) {
 			if err := b.ensureDNSZone(c); err != nil {
 				return err
 			}

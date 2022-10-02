@@ -502,7 +502,7 @@ func (b *FirewallModelBuilder) addCNIRules(c *fi.ModelBuilderContext, sgMap map[
 
 // addProtokubeRules - Add rules for protokube if gossip DNS is enabled
 func (b *FirewallModelBuilder) addProtokubeRules(c *fi.ModelBuilderContext, sgMap map[string]*openstacktasks.SecurityGroup) error {
-	if dns.IsGossipHostname(b.ClusterName()) {
+	if dns.IsGossipCluster(b.Cluster) {
 		masterName := b.SecurityGroupName(kops.InstanceGroupRoleMaster)
 		nodeName := b.SecurityGroupName(kops.InstanceGroupRoleNode)
 		masterSG := sgMap[masterName]
