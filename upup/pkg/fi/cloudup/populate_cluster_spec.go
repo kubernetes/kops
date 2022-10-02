@@ -220,7 +220,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 		klog.V(2).Infof("Normalizing kubernetes version: %q -> %q", cluster.Spec.KubernetesVersion, versionWithoutV)
 		cluster.Spec.KubernetesVersion = versionWithoutV
 	}
-	if cluster.Spec.DNSZone == "" && !dns.IsGossipHostname(cluster.ObjectMeta.Name) {
+	if cluster.Spec.DNSZone == "" && !dns.IsGossipCluster(cluster) {
 		dns, err := cloud.DNS()
 		if err != nil {
 			return err

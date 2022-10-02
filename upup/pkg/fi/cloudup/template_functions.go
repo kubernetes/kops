@@ -127,7 +127,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["GossipDomains"] = func() []string {
 		var names []string
 
-		if dns.IsGossipHostname(cluster.Spec.MasterInternalName) {
+		if dns.IsGossipCluster(cluster) {
 			names = append(names, "k8s.local")
 		}
 
@@ -485,7 +485,7 @@ func (tf *TemplateFunctions) DNSControllerArgv() ([]string, error) {
 		}
 	}
 
-	if dns.IsGossipHostname(cluster.Spec.MasterInternalName) {
+	if dns.IsGossipCluster(cluster) {
 		argv = append(argv, "--dns=gossip")
 
 		// Configuration specifically for the DNS controller gossip
@@ -665,7 +665,7 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 		config.EnableCloudIPAM = true
 	}
 
-	if dns.IsGossipHostname(cluster.Spec.MasterInternalName) {
+	if dns.IsGossipCluster(cluster) {
 		config.Discovery = &kopscontrollerconfig.DiscoveryOptions{
 			Enabled: true,
 		}

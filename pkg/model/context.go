@@ -421,5 +421,5 @@ func (b *KopsModelContext) NetworkingIsCilium() bool {
 
 // IsGossip returns true if we are using gossip instead of "real" DNS
 func (b *KopsModelContext) IsGossip() bool {
-	return dns.IsGossipHostname(b.Cluster.Name)
+	return dns.IsGossipCluster(b.Cluster)
 }
