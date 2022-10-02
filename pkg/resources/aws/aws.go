@@ -1808,7 +1808,7 @@ func deleteRoute53Records(cloud fi.Cloud, zone *route53.HostedZone, resourceTrac
 func ListRoute53Records(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
 	var resourceTrackers []*resources.Resource
 
-	if dns.IsGossipHostname(clusterName) {
+	if dns.IsGossipClusterName(clusterName) {
 		return resourceTrackers, nil
 	}
 

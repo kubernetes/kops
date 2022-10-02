@@ -55,7 +55,7 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 	useELBName := false
 
 	// If the master DNS is a gossip DNS name; there's no way that name can resolve outside the cluster
-	if dns.IsGossipHostname(master) {
+	if dns.IsGossipCluster(cluster) {
 		useELBName = true
 	}
 

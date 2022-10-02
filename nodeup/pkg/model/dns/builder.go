@@ -32,7 +32,7 @@ var _ fi.ModelBuilder = &GossipBuilder{}
 
 // Build is responsible for configuring the gossip DNS tasks.
 func (b *GossipBuilder) Build(c *fi.ModelBuilderContext) error {
-	useGossip := dns.IsGossipHostname(b.Cluster.Spec.MasterInternalName)
+	useGossip := dns.IsGossipCluster(b.Cluster)
 	if !useGossip {
 		return nil
 	}
