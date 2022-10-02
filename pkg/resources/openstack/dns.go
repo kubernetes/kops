@@ -34,7 +34,7 @@ const (
 
 func (os *clusterDiscoveryOS) ListDNSRecordsets() ([]*resources.Resource, error) {
 	// if dnsclient does not exist (designate disabled) or using gossip DNS
-	if os.osCloud.DNSClient() == nil || dns.IsGossipHostname(os.clusterName) {
+	if os.osCloud.DNSClient() == nil || dns.IsGossipClusterName(os.clusterName) {
 		return nil, nil
 	}
 

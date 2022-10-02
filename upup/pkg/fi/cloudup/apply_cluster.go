@@ -302,7 +302,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	if cluster.Spec.KubernetesVersion == "" {
 		return fmt.Errorf("KubernetesVersion not set")
 	}
-	if cluster.Spec.DNSZone == "" && !dns.IsGossipHostname(cluster.ObjectMeta.Name) {
+	if cluster.Spec.DNSZone == "" && !dns.IsGossipCluster(cluster) {
 		return fmt.Errorf("DNSZone not set")
 	}
 
@@ -483,7 +483,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	modelContext.SSHPublicKeys = sshPublicKeys
 	modelContext.Region = cloud.Region()
 
-	if dns.IsGossipHostname(cluster.ObjectMeta.Name) {
+	if dns.IsGossipCluster(cluster) {
 		klog.V(2).Infof("Gossip DNS: skipping DNS validation")
 	} else {
 		err = validateDNS(cluster, cloud)
@@ -792,7 +792,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		return fmt.Errorf("error running tasks: %v", err)
 	}
 
-	if dns.IsGossipHostname(cluster.Name) {
+	if dns.IsGossipCluster(cluster) {
 		shouldPrecreateDNS = false
 	}
 
@@ -1306,7 +1306,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 		return nil, nil, fmt.Errorf("cannot determine role for instance group: %v", ig.ObjectMeta.Name)
 	}
 
-	useGossip := dns.IsGossipHostname(cluster.Spec.MasterInternalName)
+	useGossip := dns.IsGossipCluster(cluster)
 	isMaster := role == kops.InstanceGroupRoleMaster
 	hasAPIServer := isMaster || role == kops.InstanceGroupRoleAPIServer
 

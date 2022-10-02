@@ -1282,7 +1282,7 @@ func (d *clusterDiscoveryGCE) isKopsManagedDNSName(name string) bool {
 }
 
 func (d *clusterDiscoveryGCE) listGCEDNSZone() ([]*resources.Resource, error) {
-	if dns.IsGossipHostname(d.clusterName) {
+	if dns.IsGossipClusterName(d.clusterName) {
 		return nil, nil
 	}
 

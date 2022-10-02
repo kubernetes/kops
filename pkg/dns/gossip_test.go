@@ -22,29 +22,29 @@ import (
 
 func TestIsGossipHostname(t *testing.T) {
 	tests := []struct {
-		hostname string
-		expected bool
+		clusterName string
+		expected    bool
 	}{
 		{
-			hostname: "mycluster.k8s.local",
-			expected: true,
+			clusterName: "mycluster.k8s.local",
+			expected:    true,
 		},
 		{
-			hostname: "mycluster.k8s.io",
-			expected: false,
+			clusterName: "mycluster.k8s.io",
+			expected:    false,
 		},
 		{
-			hostname: "mycluster.k8s.local.",
-			expected: true,
+			clusterName: "mycluster.k8s.local.",
+			expected:    true,
 		},
 		{
-			hostname: "k8s.local",
-			expected: true,
+			clusterName: "k8s.local",
+			expected:    false,
 		},
 	}
 
 	for _, test := range tests {
-		result := IsGossipHostname(test.hostname)
+		result := IsGossipClusterName(test.clusterName)
 		if result != test.expected {
 			t.Errorf("Actual result %v, expected %v", result, test.expected)
 		}
