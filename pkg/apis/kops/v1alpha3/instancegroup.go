@@ -167,6 +167,8 @@ type InstanceGroupSpec struct {
 	//   'STANDARD': (default) standard provisioning with user controlled run time, no discounts
 	//   'SPOT': heavily discounted, no guaranteed run time.
 	GCPProvisioningModel *string `json:"gcpProvisioningModel,omitempty"`
+	// GCPNestedVirtualization: Specifies if VMs will support accelerated virtualization.
+	GCPNestedVirtualization *bool `json:"gcpNestedVirtualization,omitempty"`
 }
 
 // InstanceMetadataOptions defines the EC2 instance metadata service options (AWS Only)

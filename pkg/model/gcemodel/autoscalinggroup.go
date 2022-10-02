@@ -92,6 +92,8 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderC
 				Preemptible:          fi.Bool(fi.StringValue(ig.Spec.GCPProvisioningModel) == "SPOT"),
 				GCPProvisioningModel: ig.Spec.GCPProvisioningModel,
 
+				GCPNestedVirtualization: fi.BoolValue(ig.Spec.GCPNestedVirtualization),
+
 				HasExternalIP: fi.Bool(b.Cluster.Spec.Topology.Masters == kops.TopologyPublic),
 
 				Scopes: []string{

@@ -57,6 +57,9 @@ type InstanceTemplate struct {
 	Preemptible          *bool
 	GCPProvisioningModel *string
 
+	// GCPNestedVirtualization: Specifies if VMs will support accelerated virtualization.
+	GCPNestedVirtualization bool
+
 	BootDiskImage  *string
 	BootDiskSizeGB *int64
 	BootDiskType   *string
@@ -135,6 +138,11 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 			actual.Preemptible = &p.Scheduling.Preemptible
 			actual.GCPProvisioningModel = &p.Scheduling.ProvisioningModel
 		}
+
+		if p.AdvancedMachineFeatures != nil {
+			actual.GCPNestedVirtualization = p.AdvancedMachineFeatures.EnableNestedVirtualization
+		}
+
 		if len(p.NetworkInterfaces) != 0 {
 			ni := p.NetworkInterfaces[0]
 			actual.Network = &Network{Name: fi.String(lastComponent(ni.Network))}
@@ -365,10 +373,14 @@ func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.Ins
 		}
 	}
 
+	advancedMachineFeatures := &compute.AdvancedMachineFeatures{}
+	advancedMachineFeatures.EnableNestedVirtualization = e.GCPNestedVirtualization
+
 	i := &compute.InstanceTemplate{
 		Kind: "compute#instanceTemplate",
 		Properties: &compute.InstanceProperties{
-			CanIpForward: *e.CanIPForward,
+			AdvancedMachineFeatures: advancedMachineFeatures,
+			CanIpForward:            *e.CanIPForward,
 
 			Disks: disks,
 
@@ -480,18 +492,19 @@ func (_ *InstanceTemplate) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Instanc
 }
 
 type terraformInstanceTemplate struct {
-	NamePrefix            string                                   `cty:"name_prefix"`
-	CanIPForward          bool                                     `cty:"can_ip_forward"`
-	MachineType           string                                   `cty:"machine_type"`
-	ServiceAccounts       []*terraformTemplateServiceAccount       `cty:"service_account"`
-	Scheduling            *terraformScheduling                     `cty:"scheduling"`
-	Disks                 []*terraformInstanceTemplateAttachedDisk `cty:"disk"`
-	Labels                map[string]string                        `cty:"labels"`
-	NetworkInterfaces     []*terraformNetworkInterface             `cty:"network_interface"`
-	Metadata              map[string]*terraformWriter.Literal      `cty:"metadata"`
-	MetadataStartupScript *terraformWriter.Literal                 `cty:"metadata_startup_script"`
-	Tags                  []string                                 `cty:"tags"`
-	GuestAccelerator      []*terraformGuestAccelerator             `cty:"guest_accelerator"`
+	NamePrefix              string                                   `cty:"name_prefix"`
+	CanIPForward            bool                                     `cty:"can_ip_forward"`
+	MachineType             string                                   `cty:"machine_type"`
+	ServiceAccounts         []*terraformTemplateServiceAccount       `cty:"service_account"`
+	Scheduling              *terraformScheduling                     `cty:"scheduling"`
+	Disks                   []*terraformInstanceTemplateAttachedDisk `cty:"disk"`
+	Labels                  map[string]string                        `cty:"labels"`
+	NetworkInterfaces       []*terraformNetworkInterface             `cty:"network_interface"`
+	Metadata                map[string]*terraformWriter.Literal      `cty:"metadata"`
+	MetadataStartupScript   *terraformWriter.Literal                 `cty:"metadata_startup_script"`
+	Tags                    []string                                 `cty:"tags"`
+	GuestAccelerator        []*terraformGuestAccelerator             `cty:"guest_accelerator"`
+	AdvancedMachineFeatures *terraformAdvancedMachineFeatures        `cty:"advanced_machine_features"`
 }
 
 type terraformTemplateServiceAccount struct {
@@ -535,6 +548,10 @@ type terraformAccessConfig struct {
 type terraformGuestAccelerator struct {
 	Type  string `cty:"type"`
 	Count int64  `cty:"count"`
+}
+
+type terraformAdvancedMachineFeatures struct {
+	EnableNestedVirtualization *bool `cty:"enable_nested_virtualization"`
 }
 
 func addNetworks(network *Network, subnet *Subnet, networkInterfaces []*compute.NetworkInterface) []*terraformNetworkInterface {
@@ -653,6 +670,12 @@ func (_ *InstanceTemplate) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 			OnHostMaintenance: i.Properties.Scheduling.OnHostMaintenance,
 			Preemptible:       i.Properties.Scheduling.Preemptible,
 			ProvisioningModel: i.Properties.Scheduling.ProvisioningModel,
+		}
+	}
+
+	if i.Properties.AdvancedMachineFeatures != nil {
+		tf.AdvancedMachineFeatures = &terraformAdvancedMachineFeatures{
+			EnableNestedVirtualization: &i.Properties.AdvancedMachineFeatures.EnableNestedVirtualization,
 		}
 	}
 
