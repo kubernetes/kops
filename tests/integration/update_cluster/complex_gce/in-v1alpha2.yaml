@@ -64,6 +64,7 @@ spec:
   - us-test1
   zones:
   - us-test1-a
+  gcpNestedVirtualization: false
 
 ---
 
@@ -84,3 +85,4 @@ spec:
   - us-test1
   zones:
   - us-test1-a
+  gcpNestedVirtualization: true

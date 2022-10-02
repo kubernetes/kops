@@ -421,6 +421,9 @@ resource "google_compute_instance_group_manager" "a-nodes-complex-gce-example-co
 }
 
 resource "google_compute_instance_template" "master-us-test1-a-complex-gce-example-com" {
+  advanced_machine_features {
+    enable_nested_virtualization = false
+  }
   can_ip_forward = true
   disk {
     auto_delete  = true
@@ -468,6 +471,9 @@ resource "google_compute_instance_template" "master-us-test1-a-complex-gce-examp
 }
 
 resource "google_compute_instance_template" "nodes-complex-gce-example-com" {
+  advanced_machine_features {
+    enable_nested_virtualization = true
+  }
   can_ip_forward = true
   disk {
     auto_delete  = true
