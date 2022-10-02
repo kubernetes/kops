@@ -14,42 +14,41 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package dns
+package model
 
 import (
-	"k8s.io/kops/nodeup/pkg/model"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks/dnstasks"
+	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
-// GossipBuilder seeds some hostnames into /etc/hosts, avoiding some circular dependencies.
-type GossipBuilder struct {
-	*model.NodeupModelContext
+// EtcHostsBuilder seeds some hostnames into /etc/hosts, avoiding some circular dependencies.
+type EtcHostsBuilder struct {
+	*NodeupModelContext
 }
 
-var _ fi.ModelBuilder = &GossipBuilder{}
+var _ fi.ModelBuilder = &EtcHostsBuilder{}
 
 // Build is responsible for configuring the gossip DNS tasks.
-func (b *GossipBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *EtcHostsBuilder) Build(c *fi.ModelBuilderContext) error {
 	useGossip := dns.IsGossipCluster(b.Cluster)
 	if !useGossip {
 		return nil
 	}
 
 	if b.IsMaster {
-		task := &dnstasks.UpdateEtcHostsTask{
+		task := &nodetasks.UpdateEtcHostsTask{
 			Name: "control-plane-bootstrap",
 		}
 
 		if b.Cluster.Spec.MasterInternalName != "" {
-			task.Records = append(task.Records, dnstasks.HostRecord{
+			task.Records = append(task.Records, nodetasks.HostRecord{
 				Hostname:  b.Cluster.Spec.MasterInternalName,
 				Addresses: []string{"127.0.0.1"},
 			})
 		}
 		if b.Cluster.Spec.MasterPublicName != "" {
-			task.Records = append(task.Records, dnstasks.HostRecord{
+			task.Records = append(task.Records, nodetasks.HostRecord{
 				Hostname:  b.Cluster.Spec.MasterPublicName,
 				Addresses: []string{"127.0.0.1"},
 			})
