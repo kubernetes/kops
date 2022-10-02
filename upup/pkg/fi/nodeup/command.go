@@ -39,7 +39,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/kms"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/nodeup/pkg/model"
-	"k8s.io/kops/nodeup/pkg/model/dns"
 	"k8s.io/kops/nodeup/pkg/model/networking"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
@@ -313,7 +312,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	}
 
 	loader := &Loader{}
-	loader.Builders = append(loader.Builders, &dns.GossipBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.EtcHostsBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.NTPBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.MiscUtilsBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.DirectoryBuilder{NodeupModelContext: modelContext})
