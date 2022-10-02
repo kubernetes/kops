@@ -257,6 +257,10 @@ spec:
                       type: array
                   type: object
                 type: array
+              gcpNestedVirtualization:
+                description: 'GCPNestedVirtualization: Specifies if VMs will support
+                  accelerated virtualization.'
+                type: boolean
               gcpProvisioningModel:
                 description: 'GCPProvisioningModel: Specifies the provisioning model
                   of the GCP instance. Valid values:   ''STANDARD'': (default) standard

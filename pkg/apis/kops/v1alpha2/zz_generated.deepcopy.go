@@ -2610,6 +2610,11 @@ func (in *InstanceGroupSpec) DeepCopyInto(out *InstanceGroupSpec) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.GCPNestedVirtualization != nil {
+		in, out := &in.GCPNestedVirtualization, &out.GCPNestedVirtualization
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 
