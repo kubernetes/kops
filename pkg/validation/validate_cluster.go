@@ -134,7 +134,7 @@ func (v *clusterValidatorImpl) Validate() (*ValidationCluster, error) {
 	validation := &ValidationCluster{}
 
 	// Do not use if we are running gossip
-	if !dns.IsGossipHostname(clusterName) {
+	if !dns.IsGossipCluster(v.cluster) {
 		hasPlaceHolderIPAddress, err := hasPlaceHolderIP(v.host)
 		if err != nil {
 			return nil, err

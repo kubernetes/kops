@@ -237,7 +237,7 @@ func (b *IAMModelBuilder) buildIAMRolePolicy(role iam.Subject, iamName string, i
 		},
 	}
 
-	if !dns.IsGossipHostname(b.Cluster.ObjectMeta.Name) {
+	if !dns.IsGossipCluster(b.Cluster) {
 		// This is slightly tricky; we need to know the hosted zone id,
 		// but we might be creating the hosted zone dynamically.
 		// We create a stub-reference which will be combined by the execution engine.

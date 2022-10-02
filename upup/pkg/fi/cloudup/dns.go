@@ -138,25 +138,18 @@ func precreateDNS(ctx context.Context, cluster *kops.Cluster, cloud fi.Cloud) er
 	// This avoids hitting negative TTL on DNS lookups, which tend to be very long
 	// If we get the names wrong here, it doesn't really matter (extra DNS name, slower boot)
 
-	recordKeys := buildPrecreateDNSHostnames(cluster)
-
-	{
-		var filtered []recordKey
-		for _, recordKey := range recordKeys {
-			if !kopsdns.IsGossipHostname(recordKey.hostname) {
-				filtered = append(filtered, recordKey)
-			}
-		}
-		recordKeys = filtered
+	// Nothing to do for Gossip clusters
+	if !kopsdns.IsGossipCluster(cluster) {
+		return nil
 	}
 
+	recordKeys := buildPrecreateDNSHostnames(cluster)
 	if len(recordKeys) == 0 {
 		klog.V(2).Infof("No DNS records to pre-create")
 		return nil
 	}
 
 	klog.V(2).Infof("Checking DNS records")
-
 	zone, err := findZone(cluster, cloud)
 	if err != nil {
 		return err

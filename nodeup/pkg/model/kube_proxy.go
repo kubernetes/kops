@@ -228,7 +228,7 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 		sslCertsHost.VolumeMount.MountPath = "/etc/ssl/certs"
 	}
 
-	if dns.IsGossipHostname(b.Cluster.Name) {
+	if dns.IsGossipCluster(b.Cluster) {
 		// Map /etc/hosts from host, so that we see the updates that are made by protokube
 		kubemanifest.AddHostPathMapping(pod, container, "etchosts", "/etc/hosts")
 	}

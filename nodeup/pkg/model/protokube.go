@@ -48,7 +48,7 @@ var _ fi.ModelBuilder = &ProtokubeBuilder{}
 
 // Build is responsible for generating the options for protokube
 func (t *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
-	useGossip := dns.IsGossipHostname(t.Cluster.Spec.MasterInternalName)
+	useGossip := dns.IsGossipCluster(t.Cluster)
 
 	// check is not a master and we are not using gossip (https://github.com/kubernetes/kops/pull/3091)
 	if !t.IsMaster && !useGossip {
@@ -209,8 +209,8 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 		// argv = append(argv, "--zone=*/*")
 	}
 
-	if dns.IsGossipHostname(t.Cluster.Spec.MasterInternalName) {
-		klog.Warningf("MasterInternalName %q implies gossip DNS", t.Cluster.Spec.MasterInternalName)
+	if dns.IsGossipCluster(t.Cluster) {
+		klog.Warningf("Cluster name %q implies gossip DNS", t.Cluster.Name)
 		f.Gossip = fi.Bool(true)
 		if t.Cluster.Spec.GossipConfig != nil {
 			f.GossipProtocol = t.Cluster.Spec.GossipConfig.Protocol

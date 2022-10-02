@@ -81,7 +81,7 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	c.AddTask(lb)
 
-	if dns.IsGossipHostname(b.Cluster.Name) || b.UsePrivateDNS() {
+	if dns.IsGossipCluster(b.Cluster) || b.UsePrivateDNS() {
 		lb.ForAPIServer = true
 	}
 
