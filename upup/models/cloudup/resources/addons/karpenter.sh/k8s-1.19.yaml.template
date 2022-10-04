@@ -1159,7 +1159,7 @@ spec:
   requirements:
     - key: karpenter.sh/capacity-type
       operator: In
-      values: ["spot"]
+      values: ["spot", "ondemand"]
     - key: kubernetes.io/arch
       operator: In
       values: ["{{ ArchitectureOfAMI $spec.Image }}"]
