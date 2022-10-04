@@ -19,16 +19,19 @@ package dns
 import (
 	"strings"
 
+	"k8s.io/klog/v2"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 )
 
 // TODO: Are .local names necessarily invalid for "real DNS"? Do we need more qualification here?
 func IsGossipClusterName(name string) bool {
+	klog.Infof("IsGossip: Cluster name is %q and result is: %v", name, strings.HasSuffix(strings.TrimSuffix(name, "."), ".k8s.local"))
 	return strings.HasSuffix(strings.TrimSuffix(name, "."), ".k8s.local")
 }
 
 func IsGossipCluster(cluster *kopsapi.Cluster) bool {
 	if cluster == nil {
+		klog.Info("IsGossip: Cluster is <nil>")
 		return false
 	}
 	return IsGossipClusterName(cluster.Name)
