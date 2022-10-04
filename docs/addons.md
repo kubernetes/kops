@@ -77,6 +77,8 @@ spec:
     skipNodesWithSystemPods: true
     newPodScaleUpDelay: 0s
     scaleDownDelayAfterAdd: 10m0s
+    scaleDownUnneededTime: 10m0s
+    scaleDownUnreadyTime: 20m0s
     image: <the latest supported image for the specified kubernetes version>
     cpuRequest: "100m"
     memoryRequest: "300Mi"

@@ -724,6 +724,16 @@ spec:
                     description: 'ScaleDownDelayAfterAdd determines the time after
                       scale up that scale down evaluation resumes Default: 10m0s'
                     type: string
+                  scaleDownUnneededTime:
+                    description: 'scaleDownUnneededTime determines the time a node
+                      should be unneeded before it is eligible for scale down Default:
+                      10m0s'
+                    type: string
+                  scaleDownUnreadyTime:
+                    description: 'ScaleDownUnreadyTime determines the time an unready
+                      node should be unneeded before it is eligible for scale down
+                      Default: 20m0s'
+                    type: string
                   scaleDownUtilizationThreshold:
                     description: 'ScaleDownUtilizationThreshold determines the utilization
                       threshold for node scale-down. Default: 0.5'
