@@ -332,6 +332,8 @@ spec:
         - --skip-nodes-with-local-storage=true
         - --skip-nodes-with-system-pods=true
         - --scale-down-delay-after-add=10m0s
+        - --scale-down-unneeded-time=10m0s
+        - --scale-down-unready-time=20m0s
         - --new-pod-scale-up-delay=0s
         - --max-node-provision-time=15m0s
         - --cordon-node-before-terminating=true
