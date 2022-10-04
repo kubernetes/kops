@@ -2445,6 +2445,8 @@ func autoConvert_v1alpha3_ClusterAutoscalerConfig_To_kops_ClusterAutoscalerConfi
 	out.SkipNodesWithLocalStorage = in.SkipNodesWithLocalStorage
 	out.NewPodScaleUpDelay = in.NewPodScaleUpDelay
 	out.ScaleDownDelayAfterAdd = in.ScaleDownDelayAfterAdd
+	out.ScaleDownUnneededTime = in.ScaleDownUnneededTime
+	out.ScaleDownUnreadyTime = in.ScaleDownUnreadyTime
 	out.CordonNodeBeforeTerminating = in.CordonNodeBeforeTerminating
 	out.Image = in.Image
 	out.MemoryRequest = in.MemoryRequest
@@ -2469,6 +2471,8 @@ func autoConvert_kops_ClusterAutoscalerConfig_To_v1alpha3_ClusterAutoscalerConfi
 	out.SkipNodesWithLocalStorage = in.SkipNodesWithLocalStorage
 	out.NewPodScaleUpDelay = in.NewPodScaleUpDelay
 	out.ScaleDownDelayAfterAdd = in.ScaleDownDelayAfterAdd
+	out.ScaleDownUnneededTime = in.ScaleDownUnneededTime
+	out.ScaleDownUnreadyTime = in.ScaleDownUnreadyTime
 	out.CordonNodeBeforeTerminating = in.CordonNodeBeforeTerminating
 	out.Image = in.Image
 	out.MemoryRequest = in.MemoryRequest
