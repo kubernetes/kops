@@ -1043,6 +1043,12 @@ type ClusterAutoscalerConfig struct {
 	// ScaleDownDelayAfterAdd determines the time after scale up that scale down evaluation resumes
 	// Default: 10m0s
 	ScaleDownDelayAfterAdd *string `json:"scaleDownDelayAfterAdd,omitempty"`
+	// scaleDownUnneededTime determines the time a node should be unneeded before it is eligible for scale down
+	// Default: 10m0s
+	ScaleDownUnneededTime *string `json:"scaleDownUnneededTime,omitempty"`
+	// ScaleDownUnreadyTime determines the time an unready node should be unneeded before it is eligible for scale down
+	// Default: 20m0s
+	ScaleDownUnreadyTime *string `json:"scaleDownUnreadyTime,omitempty"`
 	// CordonNodeBeforeTerminating should CA cordon nodes before terminating during downscale process
 	// Default: false
 	CordonNodeBeforeTerminating *bool `json:"cordonNodeBeforeTerminating,omitempty"`

@@ -30,6 +30,8 @@ spec:
     podAnnotations:
       testAnnotation: testAnnotation
     scaleDownDelayAfterAdd: 10m0s
+    scaleDownUnneededTime: 10m0s
+    scaleDownUnreadyTime: 20m0s
     scaleDownUtilizationThreshold: "0.5"
     skipNodesWithLocalStorage: true
     skipNodesWithSystemPods: true
