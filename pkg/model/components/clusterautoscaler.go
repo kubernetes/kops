@@ -86,6 +86,12 @@ func (b *ClusterAutoscalerOptionsBuilder) BuildOptions(o interface{}) error {
 	if cas.ScaleDownDelayAfterAdd == nil {
 		cas.ScaleDownDelayAfterAdd = fi.String("10m0s")
 	}
+	if cas.ScaleDownUnneededTime == nil {
+		cas.ScaleDownUnneededTime = fi.String("10m0s")
+	}
+	if cas.ScaleDownUnreadyTime == nil {
+		cas.ScaleDownUnreadyTime = fi.String("20m0s")
+	}
 	if cas.MaxNodeProvisionTime == "" {
 		cas.MaxNodeProvisionTime = "15m0s"
 	}
