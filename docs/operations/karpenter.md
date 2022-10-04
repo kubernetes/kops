@@ -66,6 +66,6 @@ As mentioned above, kOps will manage a Provisioner resource per InstanceGroup. I
 ### Other minor limitations
 
 * Control plane nodes must be provisioned with an ASG, not Karpenter.
-* Provisioners will unconditionally use spot instances
+* Provisioners will unconditionally use spot with a fallback on ondemand instances.
 * Provisioners will unconditionally include burstable instance groups such as the T3 instance family.
 * kOps will not allow mixing arm64 and amd64 instances in the same Provider.

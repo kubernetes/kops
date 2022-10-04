@@ -1419,6 +1419,7 @@ spec:
     operator: In
     values:
     - spot
+    - ondemand
   - key: kubernetes.io/arch
     operator: In
     values:
@@ -1455,6 +1456,7 @@ spec:
     operator: In
     values:
     - spot
+    - ondemand
   - key: kubernetes.io/arch
     operator: In
     values:
