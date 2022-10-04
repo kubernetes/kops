@@ -327,6 +327,8 @@ spec:
             - --skip-nodes-with-local-storage={{ .SkipNodesWithLocalStorage }}
             - --skip-nodes-with-system-pods={{ .SkipNodesWithSystemPods }}
             - --scale-down-delay-after-add={{ .ScaleDownDelayAfterAdd }}
+            - --scale-down-unneeded-time={{ .ScaleDownUnneededTime }}
+            - --scale-down-unready-time={{ .ScaleDownUnreadyTime }}
             - --new-pod-scale-up-delay={{ .NewPodScaleUpDelay }}
             - --max-node-provision-time={{ .MaxNodeProvisionTime }}
             # This flag does not exist before CAS 1.21
