@@ -53,7 +53,7 @@ func (b *HetznerCloudControllerManagerOptionsBuilder) BuildOptions(o interface{}
 	eccm.ConfigureCloudRoutes = fi.Bool(false)
 
 	if eccm.Image == "" {
-		eccm.Image = "hetznercloud/hcloud-cloud-controller-manager:v1.13.1"
+		eccm.Image = "hetznercloud/hcloud-cloud-controller-manager:v1.13.2"
 	}
 
 	return nil
