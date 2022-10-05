@@ -858,7 +858,6 @@ metadata:
   name: ebs.csi.aws.com
 spec:
   attachRequired: true
-  fsGroupPolicy: File
   podInfoOnMount: false
 
 ---
