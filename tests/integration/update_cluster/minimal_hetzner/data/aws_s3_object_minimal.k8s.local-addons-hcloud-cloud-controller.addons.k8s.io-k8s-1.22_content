@@ -96,7 +96,7 @@ spec:
             secretKeyRef:
               key: network
               name: hcloud
-        image: hetznercloud/hcloud-cloud-controller-manager:v1.13.1
+        image: hetznercloud/hcloud-cloud-controller-manager:v1.13.2
         name: hcloud-cloud-controller-manager
         resources:
           requests:
