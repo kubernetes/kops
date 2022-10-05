@@ -136,7 +136,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscomplexexamplecom.Properties.
   cloudConfig:
     awsEBSCSIDriver:
       enabled: true
-      version: v1.8.0
+      version: v1.12.0
     manageStorageClasses: true
   containerRuntime: containerd
   containerd:
@@ -433,7 +433,7 @@ Resources.AWSEC2LaunchTemplatenodescomplexexamplecom.Properties.LaunchTemplateDa
   cloudConfig:
     awsEBSCSIDriver:
       enabled: true
-      version: v1.8.0
+      version: v1.12.0
     manageStorageClasses: true
   containerRuntime: containerd
   containerd:
