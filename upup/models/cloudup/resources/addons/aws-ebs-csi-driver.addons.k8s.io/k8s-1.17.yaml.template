@@ -283,12 +283,18 @@ spec:
         kubernetes.io/os: linux
       serviceAccountName: ebs-csi-node-sa
       priorityClassName: system-node-critical
+      securityContext:
+        runAsNonRoot: false
+        runAsUser: 0
+        runAsGroup: 0
+        fsGroup: 0
       tolerations:
         - operator: Exists
       containers:
         - name: ebs-plugin
           securityContext:
             privileged: true
+            readOnlyRootFilesystem: true
           image: registry.k8s.io/provider-aws/aws-ebs-csi-driver:{{ .Version }}
           imagePullPolicy: IfNotPresent
           args:
@@ -347,11 +353,17 @@ spec:
               mountPath: /csi
             - name: registration-dir
               mountPath: /registration
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false 
         - name: liveness-probe
-          image: registry.k8s.io/sig-storage/livenessprobe:v2.5.0
+          image: registry.k8s.io/sig-storage/livenessprobe:v2.6.0
           imagePullPolicy: IfNotPresent
           args:
             - --csi-address=/csi/csi.sock
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
           volumeMounts:
             - name: plugin-dir
               mountPath: /csi
@@ -442,6 +454,11 @@ spec:
             app: ebs-csi-controller
             app.kubernetes.io/name: aws-ebs-csi-driver
             app.kubernetes.io/instance: aws-ebs-csi-driver
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
       serviceAccountName: ebs-csi-controller-sa
       priorityClassName: system-cluster-critical
       nodeSelector: null
@@ -459,6 +476,7 @@ spec:
             - --logtostderr
             - --k8s-tag-cluster-id={{ ClusterName }}
             - "--extra-tags={{ CloudLabels }}"
+            - --http-endpoint=0.0.0.0:3301
             - --v=5
           env:
             {{- if IsIPv6Only }}
@@ -491,6 +509,9 @@ spec:
             - name: healthz
               containerPort: 9808
               protocol: TCP
+            - name: metrics
+              containerPort: 3301
+              protocol: TCP
           livenessProbe:
             httpGet:
               path: /healthz
@@ -507,6 +528,9 @@ spec:
             timeoutSeconds: 3
             periodSeconds: 10
             failureThreshold: 5
+          securityContext:   
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
         - name: csi-provisioner
           image: registry.k8s.io/sig-storage/csi-provisioner:v3.1.0
           imagePullPolicy: IfNotPresent
@@ -523,6 +547,9 @@ spec:
           volumeMounts:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false 
         - name: csi-attacher
           image: registry.k8s.io/sig-storage/csi-attacher:v3.4.0
           imagePullPolicy: IfNotPresent
@@ -536,6 +563,9 @@ spec:
           volumeMounts:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false 
         {{ if HasSnapshotController }}
         - name: csi-snapshotter
           image: registry.k8s.io/sig-storage/csi-snapshotter:v6.0.1
@@ -549,6 +579,9 @@ spec:
           volumeMounts:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false 
         {{ end }}
         - name: csi-resizer
           image: registry.k8s.io/sig-storage/csi-resizer:v1.4.0
@@ -562,8 +595,11 @@ spec:
           volumeMounts:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false 
         - name: liveness-probe
-          image: registry.k8s.io/sig-storage/livenessprobe:v2.5.0
+          image: registry.k8s.io/sig-storage/livenessprobe:v2.6.0
           imagePullPolicy: IfNotPresent
           args:
             - --csi-address=/csi/csi.sock
@@ -586,6 +622,7 @@ metadata:
 spec:
   attachRequired: true
   podInfoOnMount: false
+  fsGroupPolicy: File
 ---
 {{ if IsKubernetesGTE "1.23" }}
 apiVersion: policy/v1
