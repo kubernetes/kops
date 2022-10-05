@@ -341,30 +341,34 @@ func (b *SpotInstanceGroupModelBuilder) buildOcean(c *fi.ModelBuilderContext, ig
 		ocean.UseAsTemplateOnly = fi.Bool(true)
 	}
 
-	ig := igs[0].DeepCopy()
-	if len(igs) > 1 {
-		for _, g := range igs {
-			for k, v := range g.ObjectMeta.Labels {
-				if k == SpotInstanceGroupLabelOceanDefaultLaunchSpec {
-					defaultLaunchSpec, err := parseBool(v)
-					if err != nil {
-						continue
+	if len(igs) == 0 {
+		return nil
+	}
+	var ig *kops.InstanceGroup
+	for _, g := range igs {
+		for k, v := range g.ObjectMeta.Labels {
+			if k == SpotInstanceGroupLabelOceanDefaultLaunchSpec {
+				defaultLaunchSpec, err := parseBool(v)
+				if err != nil {
+					continue
+				}
+				if fi.BoolValue(defaultLaunchSpec) {
+					if ig != nil {
+						return fmt.Errorf("unable to detect default launch spec: "+
+							"multiple instance groups labeled with `%s: \"true\"`",
+							SpotInstanceGroupLabelOceanDefaultLaunchSpec)
 					}
-					if fi.BoolValue(defaultLaunchSpec) {
-						if ig != nil {
-							return fmt.Errorf("unable to detect default launch spec: "+
-								"multiple instance groups labeled with `%s: \"true\"`",
-								SpotInstanceGroupLabelOceanDefaultLaunchSpec)
-						}
-						ig = g.DeepCopy()
-						break
-					}
+					ig = g.DeepCopy()
+					break
 				}
 			}
 		}
-
-		klog.V(4).Infof("Detected default launch spec: %q", b.AutoscalingGroupName(ig))
 	}
+	if ig == nil {
+		ig = igs[0].DeepCopy()
+	}
+
+	klog.V(4).Infof("Detected default launch spec: %q", b.AutoscalingGroupName(ig))
 
 	// Image.
 	ocean.ImageID = fi.String(ig.Spec.Image)
