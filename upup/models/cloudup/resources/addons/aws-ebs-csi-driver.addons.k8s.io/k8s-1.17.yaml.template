@@ -622,7 +622,6 @@ metadata:
 spec:
   attachRequired: true
   podInfoOnMount: false
-  fsGroupPolicy: File
 ---
 {{ if IsKubernetesGTE "1.23" }}
 apiVersion: policy/v1
