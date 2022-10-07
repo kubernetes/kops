@@ -103,7 +103,7 @@ github.com/aws/amazon-ec2-instance-selector/v2/pkg/instancetypes
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector/outputs
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/sorter
-# github.com/aws/aws-sdk-go v1.44.108
+# github.com/aws/aws-sdk-go v1.44.113
 ## explicit; go 1.11
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/arn
@@ -949,7 +949,7 @@ go.uber.org/atomic
 # go.uber.org/multierr v1.8.0
 ## explicit; go 1.14
 go.uber.org/multierr
-# golang.org/x/crypto v0.0.0-20220926161630-eccd6366d1be
+# golang.org/x/crypto v0.0.0-20221005025214-4161e89ecf1b
 ## explicit; go 1.17
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blake2b
@@ -976,7 +976,7 @@ golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 golang.org/x/mod/internal/lazyregexp
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20220927171203-f486391704dc
+# golang.org/x/net v0.0.0-20221004154528-8021a29435af
 ## explicit; go 1.17
 golang.org/x/net/bpf
 golang.org/x/net/context
@@ -994,7 +994,7 @@ golang.org/x/net/ipv4
 golang.org/x/net/ipv6
 golang.org/x/net/proxy
 golang.org/x/net/trace
-# golang.org/x/oauth2 v0.0.0-20220909003341-f21342109be1
+# golang.org/x/oauth2 v0.0.0-20221006150949-b44042a4b9c1
 ## explicit; go 1.17
 golang.org/x/oauth2
 golang.org/x/oauth2/authhandler
@@ -1007,7 +1007,7 @@ golang.org/x/oauth2/jwt
 ## explicit
 golang.org/x/sync/errgroup
 golang.org/x/sync/semaphore
-# golang.org/x/sys v0.0.0-20220928140112-f11e5e49a4ec
+# golang.org/x/sys v0.0.0-20221006211917-84dc82d7e875
 ## explicit; go 1.17
 golang.org/x/sys/cpu
 golang.org/x/sys/execabs
@@ -1678,7 +1678,7 @@ k8s.io/component-base/version
 # k8s.io/csi-translation-lib v0.25.2
 ## explicit; go 1.19
 k8s.io/csi-translation-lib/plugins
-# k8s.io/gengo v0.0.0-20220913193501-391367153a38
+# k8s.io/gengo v0.0.0-20221003092416-e83a76d3209c
 ## explicit; go 1.13
 k8s.io/gengo/args
 k8s.io/gengo/generator
