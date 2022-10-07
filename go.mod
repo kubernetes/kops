@@ -14,7 +14,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/apparentlymart/go-cidr v1.1.0
 	github.com/aws/amazon-ec2-instance-selector/v2 v2.4.0
-	github.com/aws/aws-sdk-go v1.44.108
+	github.com/aws/aws-sdk-go v1.44.113
 	github.com/blang/semver/v4 v4.0.0
 	github.com/cert-manager/cert-manager v1.9.1
 	github.com/digitalocean/godo v1.86.0
@@ -45,11 +45,11 @@ require (
 	github.com/weaveworks/mesh v0.0.0-20191105120815-58dbcc3e8e63
 	github.com/zclconf/go-cty v1.11.0
 	go.uber.org/multierr v1.8.0
-	golang.org/x/crypto v0.0.0-20220926161630-eccd6366d1be
-	golang.org/x/net v0.0.0-20220927171203-f486391704dc
-	golang.org/x/oauth2 v0.0.0-20220909003341-f21342109be1
+	golang.org/x/crypto v0.0.0-20221005025214-4161e89ecf1b
+	golang.org/x/net v0.0.0-20221004154528-8021a29435af
+	golang.org/x/oauth2 v0.0.0-20221006150949-b44042a4b9c1
 	golang.org/x/sync v0.0.0-20220929204114-8fcdb60fdcc0
-	golang.org/x/sys v0.0.0-20220928140112-f11e5e49a4ec
+	golang.org/x/sys v0.0.0-20221006211917-84dc82d7e875
 	google.golang.org/api v0.98.0
 	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/inf.v0 v0.9.1
@@ -61,7 +61,7 @@ require (
 	k8s.io/client-go v0.25.2
 	k8s.io/cloud-provider-aws v1.25.0
 	k8s.io/component-base v0.25.2
-	k8s.io/gengo v0.0.0-20220913193501-391367153a38
+	k8s.io/gengo v0.0.0-20221003092416-e83a76d3209c
 	k8s.io/klog/v2 v2.80.1
 	k8s.io/kubectl v0.25.2
 	k8s.io/kubelet v0.25.2
