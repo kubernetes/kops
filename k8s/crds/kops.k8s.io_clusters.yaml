@@ -1669,6 +1669,10 @@ spec:
                   disableBasicAuth:
                     description: DisableBasicAuth removes the --basic-auth-file flag
                     type: boolean
+                  egressSelectorConfigFile:
+                    description: EgressSelectorConfigFile is the file path with api-server
+                      egress selector configuration.
+                    type: string
                   enableAdmissionPlugins:
                     description: EnableAdmissionPlugins is a list of enabled admission
                       plugins
