@@ -190,7 +190,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 	}
 
-	c.EgressSelectorConfigFile = "/etc/kubernetes/konnectivity-server/egress-selector-configuration.yaml"
+	// c.EgressSelectorConfigFile = "/etc/kubernetes/konnectivity-server/egress-selector-configuration.yaml"
 
 	return nil
 }
