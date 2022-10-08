@@ -346,7 +346,7 @@ func findServerGroups(c *hetznerCloudImplementation, clusterName string) (map[st
 	for _, server := range servers {
 		instanceGroupNameLabel, ok := server.Labels[TagKubernetesInstanceGroup]
 		if !ok {
-			klog.Warning("failed to find instance group name for server %s(%d)", server.Name, server.ID)
+			klog.Warningf("failed to find instance group name for server %s(%d)", server.Name, server.ID)
 			continue
 		}
 
