@@ -32,7 +32,6 @@ func IsNotFound(err error) bool {
 	}
 
 	// We could also check for Errors[].Resource == "notFound"
-	// klog.Info("apiErr: %v", apiErr)
 
 	return apiErr.Code == 404
 }
