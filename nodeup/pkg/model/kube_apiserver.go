@@ -66,6 +66,8 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		kubeAPIServer = *b.NodeupConfig.APIServerConfig.KubeAPIServer
 	}
 
+	var additionalOptions AdditionalOptions
+
 	if b.CloudProvider == kops.CloudProviderHetzner {
 		localIP, err := b.GetMetadataLocalIP()
 		if err != nil {
@@ -212,8 +214,12 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		return err
 	}
 
+	if b.UseKonnectivity() {
+		additionalOptions.EgressSelectorConfigFile = KonnectivityConfigPath
+	}
+
 	{
-		pod, err := b.buildPod(&kubeAPIServer)
+		pod, err := b.buildPod(&kubeAPIServer, additionalOptions)
 		if err != nil {
 			return fmt.Errorf("error building kube-apiserver manifest: %v", err)
 		}
@@ -536,8 +542,15 @@ func (b *KubeAPIServerBuilder) allAuthTokens() (map[string]string, error) {
 	return tokens, nil
 }
 
+// AdditionalOptions holds some flags that are not managed through the API
+// See discussion in https://github.com/kubernetes/kops/pull/13063
+type AdditionalOptions struct {
+	// EgressSelectorConfigFile is the file path with api-server egress selector configuration.
+	EgressSelectorConfigFile string `json:"egressSelectorConfigFile,omitempty" flag:"egress-selector-config-file"`
+}
+
 // buildPod is responsible for generating the kube-apiserver pod and thus manifest file
-func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig) (*v1.Pod, error) {
+func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig, additionalOptions AdditionalOptions) (*v1.Pod, error) {
 	// we need to replace 127.0.0.1 for etcd urls with the dns names in case this apiserver is not
 	// running on master nodes
 	if !b.IsMaster {
@@ -578,6 +591,12 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 	if b.Cluster.Spec.CloudConfig != nil {
 		flags = append(flags, fmt.Sprintf("--cloud-config=%s", InTreeCloudConfigFilePath))
 	}
+
+	additionalFlags, err := flagbuilder.BuildFlagsList(additionalOptions)
+	if err != nil {
+		return nil, fmt.Errorf("error building kube-apiserver additional flags: %w", err)
+	}
+	flags = append(flags, additionalFlags...)
 
 	pod := &v1.Pod{
 		TypeMeta: metav1.TypeMeta{
@@ -740,9 +759,9 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 		}
 	}
 
-	if kubeAPIServer.EgressSelectorConfigFile != "" {
+	if additionalOptions.EgressSelectorConfigFile != "" {
 		// Add volume mounts for egress selector config file and konnectivity UDS path
-		konnectivityDir := filepath.Dir(kubeAPIServer.EgressSelectorConfigFile)
+		konnectivityDir := filepath.Dir(additionalOptions.EgressSelectorConfigFile)
 		kubemanifest.AddHostPathMapping(pod, container, "konnectivity", konnectivityDir).WithType(v1.HostPathDirectoryOrCreate)
 	}
 

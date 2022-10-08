@@ -21,6 +21,9 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
+// KonnectivityConfigPath is the path where we store the kube-apiserver egress-selector-configuration file when using konnectivity
+const KonnectivityConfigPath = "/etc/kubernetes/konnectivity-server/egress-selector-configuration.yaml"
+
 // KonnectivityServerBuilder installs konnectivity-agent
 type KonnectivityServerBuilder struct {
 	*NodeupModelContext
@@ -66,7 +69,7 @@ func (b *KonnectivityServerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	if b.UseKonnectivity() {
 		c.AddTask(&nodetasks.File{
-			Path:     "/etc/kubernetes/konnectivity-server/egress-selector-configuration.yaml",
+			Path:     KonnectivityConfigPath,
 			Contents: fi.NewStringResource(EgressSelectorConfiguration),
 			Type:     nodetasks.FileType_File,
 		})
