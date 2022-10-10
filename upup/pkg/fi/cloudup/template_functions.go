@@ -764,7 +764,7 @@ func (tf *TemplateFunctions) OpenStackCCMTag() string {
 		if parsed.Minor == 23 {
 			tag = "v1.23.1"
 		} else if parsed.Minor == 24 {
-			tag = "v1.24.4"
+			tag = "v1.24.5"
 		} else if parsed.Minor == 25 {
 			tag = "v1.25.1"
 		} else {
@@ -784,7 +784,7 @@ func (tf *TemplateFunctions) OpenStackCSITag() string {
 		tag = "latest"
 	} else {
 		if parsed.Minor == 24 {
-			tag = "v1.24.4"
+			tag = "v1.24.5"
 		} else if parsed.Minor == 25 {
 			tag = "v1.25.1"
 		} else {
