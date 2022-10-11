@@ -1457,6 +1457,9 @@ spec:
   consolidation:
     enabled: true
   kubeletConfiguration:
+    kubeReserved:
+      cpu: 500m
+      memory: 1G
     maxPods: 50
     systemReserved:
       cpu: 500m

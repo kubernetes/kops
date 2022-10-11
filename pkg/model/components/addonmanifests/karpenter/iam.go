@@ -56,7 +56,6 @@ func addKarpenterPermissions(p *iam.Policy) {
 		"ec2:DescribeAvailabilityZones",
 		"ec2:DescribeInstanceTypeOfferings",
 		"ec2:DescribeInstanceTypes",
-		"ec2:DescribeImages",
 		"ec2:DescribeInstances",
 		"ec2:DescribeLaunchTemplates",
 		"ec2:DescribeSecurityGroups",
