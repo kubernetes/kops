@@ -5,7 +5,6 @@
         "ec2:CreateFleet",
         "ec2:CreateTags",
         "ec2:DescribeAvailabilityZones",
-        "ec2:DescribeImages",
         "ec2:DescribeInstanceTypeOfferings",
         "ec2:DescribeInstanceTypes",
         "ec2:DescribeInstances",
