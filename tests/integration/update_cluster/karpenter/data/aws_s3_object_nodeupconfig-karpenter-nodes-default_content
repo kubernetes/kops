@@ -51,6 +51,9 @@ KubeletConfig:
   featureGates:
     CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
+  kubeReserved:
+    cpu: 500m
+    memory: 1G
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   maxPods: 50
