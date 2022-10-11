@@ -1205,7 +1205,7 @@ spec:
       {{ end }}
     {{ end }}
     {{ if .KubeReserved }}
-    systemReserved:
+    kubeReserved:
       {{ range $key, $val := .KubeReserved}}
       {{ $key }}: "{{ $val }}"
       {{ end }}
