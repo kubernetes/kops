@@ -69,7 +69,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.19
     manifest: karpenter.sh/k8s-1.19.yaml
-    manifestHash: a6856c8b9223d9ff50fa4f68cc01a44b52163fc5319f4e551f6aa6eda432d56f
+    manifestHash: b6cd8f0b7dcdf48fc658eb95d9948900665562de99e317c565fdfbfbdc4481bb
     name: karpenter.sh
     selector:
       k8s-addon: karpenter.sh
