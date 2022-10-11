@@ -116,6 +116,9 @@ spec:
     systemReserved:
       cpu: 500m
       memory: 1G
+    kubeReserved:
+      cpu: 500m
+      memory: 1G
   associatePublicIp: true
   image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
   role: Node
