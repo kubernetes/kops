@@ -65,10 +65,53 @@ spec:
                     description: ContainerRuntime is the container runtime to be used
                       with your worker nodes.
                     type: string
+                  evictionHard:
+                    additionalProperties:
+                      type: string
+                    description: EvictionHard is the map of signal names to quantities
+                      that define hard eviction thresholds
+                    type: object
+                  evictionMaxPodGracePeriod:
+                    description: EvictionMaxPodGracePeriod is the maximum allowed
+                      grace period (in seconds) to use when terminating pods in response
+                      to soft eviction thresholds being met.
+                    format: int32
+                    type: integer
+                  evictionSoft:
+                    additionalProperties:
+                      type: string
+                    description: EvictionSoft is the map of signal names to quantities
+                      that define soft eviction thresholds
+                    type: object
+                  evictionSoftGracePeriod:
+                    additionalProperties:
+                      type: string
+                    description: EvictionSoftGracePeriod is the map of signal names
+                      to quantities that define grace periods for each eviction signal
+                    type: object
+                  kubeReserved:
+                    additionalProperties:
+                      anyOf:
+                      - type: integer
+                      - type: string
+                      pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                      x-kubernetes-int-or-string: true
+                    description: KubeReserved contains resources reserved for Kubernetes
+                      system components.
+                    type: object
                   maxPods:
                     description: MaxPods is an override for the maximum number of
                       pods that can run on a worker node instance.
                     format: int32
+                    minimum: 0
+                    type: integer
+                  podsPerCore:
+                    description: PodsPerCore is an override for the number of pods
+                      that can run on a worker node instance based on the number of
+                      cpu cores. This value cannot exceed MaxPods, so, if MaxPods
+                      is a lower value, that value will be used.
+                    format: int32
+                    minimum: 0
                     type: integer
                   systemReserved:
                     additionalProperties:
@@ -679,6 +722,7 @@ rules:
   - apps
   resources:
   - daemonsets
+  - deployments
   - replicasets
   - statefulsets
   verbs:
@@ -1054,17 +1098,24 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        - name: MEMORY_LIMIT
+          valueFrom:
+            resourceFieldRef:
+              containerName: controller
+              divisor: "0"
+              resource: limits.memory
         - name: AWS_ROLE_ARN
           value: arn:aws-test:iam::123456789012:role/karpenter.kube-system.sa.minimal.example.com
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
-        image: public.ecr.aws/karpenter/controller:v0.16.0
+        image: public.ecr.aws/karpenter/controller:v0.16.3
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
             path: /healthz
             port: http
           initialDelaySeconds: 30
+          timeoutSeconds: 30
         name: controller
         ports:
         - containerPort: 8080
@@ -1077,6 +1128,7 @@ spec:
           httpGet:
             path: /readyz
             port: http
+          timeoutSeconds: 30
         resources:
           limits:
             memory: 1Gi
@@ -1193,7 +1245,7 @@ spec:
           value: arn:aws-test:iam::123456789012:role/karpenter.kube-system.sa.minimal.example.com
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
-        image: public.ecr.aws/karpenter/webhook:v0.16.0
+        image: public.ecr.aws/karpenter/webhook:v0.16.3
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:

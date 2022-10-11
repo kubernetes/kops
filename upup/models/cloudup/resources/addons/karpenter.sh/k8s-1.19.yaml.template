@@ -63,10 +63,53 @@ spec:
                     description: ContainerRuntime is the container runtime to be used
                       with your worker nodes.
                     type: string
+                  evictionHard:
+                    additionalProperties:
+                      type: string
+                    description: EvictionHard is the map of signal names to quantities
+                      that define hard eviction thresholds
+                    type: object
+                  evictionMaxPodGracePeriod:
+                    description: EvictionMaxPodGracePeriod is the maximum allowed
+                      grace period (in seconds) to use when terminating pods in response
+                      to soft eviction thresholds being met.
+                    format: int32
+                    type: integer
+                  evictionSoft:
+                    additionalProperties:
+                      type: string
+                    description: EvictionSoft is the map of signal names to quantities
+                      that define soft eviction thresholds
+                    type: object
+                  evictionSoftGracePeriod:
+                    additionalProperties:
+                      type: string
+                    description: EvictionSoftGracePeriod is the map of signal names
+                      to quantities that define grace periods for each eviction signal
+                    type: object
+                  kubeReserved:
+                    additionalProperties:
+                      anyOf:
+                      - type: integer
+                      - type: string
+                      pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                      x-kubernetes-int-or-string: true
+                    description: KubeReserved contains resources reserved for Kubernetes
+                      system components.
+                    type: object
                   maxPods:
                     description: MaxPods is an override for the maximum number of
                       pods that can run on a worker node instance.
                     format: int32
+                    minimum: 0
+                    type: integer
+                  podsPerCore:
+                    description: PodsPerCore is an override for the number of pods
+                      that can run on a worker node instance based on the number of
+                      cpu cores. This value cannot exceed MaxPods, so, if MaxPods
+                      is a lower value, that value will be used.
+                    format: int32
+                    minimum: 0
                     type: integer
                   systemReserved:
                     additionalProperties:
@@ -78,7 +121,6 @@ spec:
                     description: SystemReserved contains resources reserved for OS
                       system daemons and kernel memory.
                     type: object
-
                 type: object
               labels:
                 additionalProperties:
@@ -617,7 +659,7 @@ rules:
   resources: ["storageclasses", "csinodes"]
   verbs: ["get", "watch", "list"]
 - apiGroups: ["apps"]
-  resources: ["daemonsets", "replicasets", "statefulsets"]
+  resources: ["daemonsets", "deployments", "replicasets", "statefulsets"]
   verbs: ["list", "watch"]
 - apiGroups: [ "policy" ]
   resources: [ "poddisruptionbudgets" ]
@@ -832,7 +874,7 @@ spec:
       dnsPolicy: Default
       containers:
         - name: controller
-          image: public.ecr.aws/karpenter/controller:v0.16.0
+          image: public.ecr.aws/karpenter/controller:v0.16.3
           imagePullPolicy: IfNotPresent
           resources:
             limits:
@@ -849,10 +891,12 @@ spec:
               protocol: TCP
           livenessProbe:
             initialDelaySeconds: 30
+            timeoutSeconds: 30
             httpGet:
               path: /healthz
               port: http
           readinessProbe:
+            timeoutSeconds: 30
             httpGet:
               path: /readyz
               port: http
@@ -879,6 +923,12 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+            - name: MEMORY_LIMIT
+              valueFrom:
+                resourceFieldRef:
+                  containerName: controller
+                  divisor: "0"
+                  resource: limits.memory
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -935,7 +985,7 @@ spec:
       dnsPolicy: Default
       containers:
         - name: webhook
-          image: public.ecr.aws/karpenter/webhook:v0.16.0
+          image: public.ecr.aws/karpenter/webhook:v0.16.3
           imagePullPolicy: IfNotPresent
           args:
             - -port=8443
@@ -1143,7 +1193,7 @@ spec:
   consolidation:
     enabled: true
 {{ with $spec.Kubelet }}
-{{ if or .MaxPods .SystemReserved }}
+{{ if or .MaxPods .SystemReserved .KubeReserved }}
   kubeletConfiguration:
     {{ if .MaxPods }}
     maxPods: {{ .MaxPods }}
@@ -1151,6 +1201,12 @@ spec:
     {{ if .SystemReserved }}
     systemReserved:
       {{ range $key, $val := .SystemReserved}}
+      {{ $key }}: "{{ $val }}"
+      {{ end }}
+    {{ end }}
+    {{ if .KubeReserved }}
+    systemReserved:
+      {{ range $key, $val := .KubeReserved}}
       {{ $key }}: "{{ $val }}"
       {{ end }}
     {{ end }}
