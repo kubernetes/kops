@@ -90,9 +90,9 @@ spec:
 
 {{ kops_feature_table(kops_added_default='1.19') }}
 
-You can choose to have a Network Load Balancer instead of a Classic Load Balancer. The `class` field should be either `Network` or `Classic` (default).
+You can choose to have either a Network Load Balancer (NLB) or a Classic Load Balancer (CLB). The `class` field should be either `Network` (default) or `Classic` (deprecated).
 
-**Note**: changing the class of load balancer in an existing cluster is a disruptive operation for the control plane. Until the masters have gone through a rolling update, new connections to the apiserver will fail due to the old masters' TLS certificates containing the old load balancer's IP addresses.
+**Note**: Changing the class of load balancer in an existing cluster is a disruptive operation for the control plane and the old load balancer must be manually removed. Until the masters have gone through a rolling update, new connections to the apiserver will fail due to the old masters' TLS certificates containing the old load balancer's IP addresses.
 ```yaml
 spec:
   api:
