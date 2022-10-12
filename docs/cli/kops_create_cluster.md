@@ -66,9 +66,8 @@ kops create cluster [CLUSTER] [flags]
 
 ```
       --admin-access strings             Restrict API access to this CIDR.  If not set, access will not be restricted by IP. (default [0.0.0.0/0,::/0])
-      --api-loadbalancer-class string    Class of loadbalancer for the Kubernetes API (AWS only): classic or network
-      --api-loadbalancer-type string     Type of loadbalancer for the Kubernetes API: public or internal
-      --api-ssl-certificate string       ARN of the SSL Certificate to use for the Kubernetes API loadbalancer (AWS only)
+      --api-loadbalancer-type string     Type of load balancer for the Kubernetes API: public or internal
+      --api-ssl-certificate string       ARN of the SSL Certificate to use for the Kubernetes API load balancer (AWS only)
       --associate-public-ip              Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'.
       --authorization string             Authorization mode: AlwaysAllow or RBAC (default "RBAC")
       --bastion                          Enable a bastion instance group. Only applies to private topology.
@@ -111,7 +110,7 @@ kops create cluster [CLUSTER] [flags]
       --os-kubelet-ignore-az             Attach volumes across availability zones
       --os-lb-floating-subnet string     External subnet to use with the kubernetes api
       --os-network string                ID of the existing OpenStack network to use
-      --os-octavia                       Use octavia loadbalancer API
+      --os-octavia                       Use octavia load balancer API
       --os-octavia-provider string       Octavia provider to use
       --out string                       Path to write any local output
   -o, --output string                    Output format. One of json or yaml. Used with the --dry-run flag.
