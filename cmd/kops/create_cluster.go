@@ -357,15 +357,16 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.NodeTenancy, "node-tenancy", options.NodeTenancy, "Tenancy of the node group (AWS only): default or dedicated")
 	cmd.RegisterFlagCompletionFunc("node-tenancy", completeTenancy)
 
-	cmd.Flags().StringVar(&options.APILoadBalancerClass, "api-loadbalancer-class", options.APILoadBalancerClass, "Class of loadbalancer for the Kubernetes API (AWS only): classic or network")
+	cmd.Flags().StringVar(&options.APILoadBalancerClass, "api-loadbalancer-class", options.APILoadBalancerClass, "Class of load balancer for the Kubernetes API (AWS only): classic or network")
+	cmd.Flags().MarkDeprecated("api-loadbalancer-class", "network load balancer should be used for all newly created clusters")
 	cmd.RegisterFlagCompletionFunc("api-loadbalancer-class", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return []string{"classic", "network"}, cobra.ShellCompDirectiveNoFileComp
 	})
-	cmd.Flags().StringVar(&options.APILoadBalancerType, "api-loadbalancer-type", options.APILoadBalancerType, "Type of loadbalancer for the Kubernetes API: public or internal")
+	cmd.Flags().StringVar(&options.APILoadBalancerType, "api-loadbalancer-type", options.APILoadBalancerType, "Type of load balancer for the Kubernetes API: public or internal")
 	cmd.RegisterFlagCompletionFunc("api-loadbalancer-type", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return []string{"public", "internal"}, cobra.ShellCompDirectiveNoFileComp
 	})
-	cmd.Flags().StringVar(&options.APISSLCertificate, "api-ssl-certificate", options.APISSLCertificate, "ARN of the SSL Certificate to use for the Kubernetes API loadbalancer (AWS only)")
+	cmd.Flags().StringVar(&options.APISSLCertificate, "api-ssl-certificate", options.APISSLCertificate, "ARN of the SSL Certificate to use for the Kubernetes API load balancer (AWS only)")
 	cmd.RegisterFlagCompletionFunc("api-ssl-certificate", completeSSLCertificate)
 
 	// Allow custom public master name
@@ -431,7 +432,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.OpenstackLBSubnet, "os-lb-floating-subnet", options.OpenstackLBSubnet, "External subnet to use with the kubernetes api")
 	cmd.RegisterFlagCompletionFunc("os-lb-floating-subnet", completeOpenstackLBSubnet)
 	cmd.Flags().BoolVar(&options.OpenstackStorageIgnoreAZ, "os-kubelet-ignore-az", options.OpenstackStorageIgnoreAZ, "Attach volumes across availability zones")
-	cmd.Flags().BoolVar(&options.OpenstackLBOctavia, "os-octavia", options.OpenstackLBOctavia, "Use octavia loadbalancer API")
+	cmd.Flags().BoolVar(&options.OpenstackLBOctavia, "os-octavia", options.OpenstackLBOctavia, "Use octavia load balancer API")
 	cmd.Flags().StringVar(&options.OpenstackOctaviaProvider, "os-octavia-provider", options.OpenstackOctaviaProvider, "Octavia provider to use")
 	cmd.RegisterFlagCompletionFunc("os-octavia-provider", completeOpenstackOctaviaProvider)
 	cmd.Flags().StringVar(&options.OpenstackDNSServers, "os-dns-servers", options.OpenstackDNSServers, "comma separated list of DNS Servers which is used in network")
