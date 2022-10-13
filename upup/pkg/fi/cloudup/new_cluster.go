@@ -1323,9 +1323,10 @@ func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
 
 	if cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.Class == "" && cluster.Spec.GetCloudProvider() == api.CloudProviderAWS {
 		switch opt.APILoadBalancerClass {
-		case "", "classic":
+		case "classic":
+			klog.Warning("AWS Classic Load Balancer support for API is deprecated and should not be used for newly created clusters")
 			cluster.Spec.API.LoadBalancer.Class = api.LoadBalancerClassClassic
-		case "network":
+		case "", "network":
 			cluster.Spec.API.LoadBalancer.Class = api.LoadBalancerClassNetwork
 		default:
 			return fmt.Errorf("unknown api-loadbalancer-class: %q", opt.APILoadBalancerClass)
