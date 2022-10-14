@@ -4,7 +4,7 @@ cloud.google.com/go/compute/metadata
 # github.com/Azure/azure-pipeline-go v0.2.3
 ## explicit; go 1.14
 github.com/Azure/azure-pipeline-go/pipeline
-# github.com/Azure/azure-sdk-for-go v66.0.0+incompatible
+# github.com/Azure/azure-sdk-for-go v67.0.0+incompatible
 ## explicit
 github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-06-01/compute
 github.com/Azure/azure-sdk-for-go/services/network/mgmt/2020-06-01/network
@@ -103,7 +103,7 @@ github.com/aws/amazon-ec2-instance-selector/v2/pkg/instancetypes
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector/outputs
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/sorter
-# github.com/aws/aws-sdk-go v1.44.113
+# github.com/aws/aws-sdk-go v1.44.115
 ## explicit; go 1.11
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/arn
@@ -254,7 +254,7 @@ github.com/cpuguy83/go-md2man/v2/md2man
 # github.com/davecgh/go-spew v1.1.1
 ## explicit
 github.com/davecgh/go-spew/spew
-# github.com/digitalocean/godo v1.86.0
+# github.com/digitalocean/godo v1.87.0
 ## explicit; go 1.18
 github.com/digitalocean/godo
 github.com/digitalocean/godo/metrics
@@ -577,7 +577,7 @@ github.com/hashicorp/hcl/v2/hclwrite
 # github.com/hashicorp/memberlist v0.3.1
 ## explicit; go 1.12
 github.com/hashicorp/memberlist
-# github.com/hashicorp/vault/api v1.8.0
+# github.com/hashicorp/vault/api v1.8.1
 ## explicit; go 1.17
 github.com/hashicorp/vault/api
 # github.com/hashicorp/vault/sdk v0.6.0
@@ -615,8 +615,8 @@ github.com/huandu/xstrings
 # github.com/imdario/mergo v0.3.12
 ## explicit; go 1.13
 github.com/imdario/mergo
-# github.com/inconshreveable/mousetrap v1.0.0
-## explicit
+# github.com/inconshreveable/mousetrap v1.0.1
+## explicit; go 1.18
 github.com/inconshreveable/mousetrap
 # github.com/jacksontj/memberlistmesh v0.0.0-20190905163944-93462b9d2bb7
 ## explicit; go 1.12
@@ -849,7 +849,7 @@ github.com/spf13/afero/mem
 # github.com/spf13/cast v1.5.0
 ## explicit; go 1.18
 github.com/spf13/cast
-# github.com/spf13/cobra v1.5.0
+# github.com/spf13/cobra v1.6.0
 ## explicit; go 1.15
 github.com/spf13/cobra
 github.com/spf13/cobra/doc
@@ -870,7 +870,7 @@ github.com/spf13/viper/internal/encoding/javaproperties
 github.com/spf13/viper/internal/encoding/json
 github.com/spf13/viper/internal/encoding/toml
 github.com/spf13/viper/internal/encoding/yaml
-# github.com/spotinst/spotinst-sdk-go v1.129.0
+# github.com/spotinst/spotinst-sdk-go v1.130.0
 ## explicit; go 1.16
 github.com/spotinst/spotinst-sdk-go/service/elastigroup
 github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/aws
@@ -949,7 +949,7 @@ go.uber.org/atomic
 # go.uber.org/multierr v1.8.0
 ## explicit; go 1.14
 go.uber.org/multierr
-# golang.org/x/crypto v0.0.0-20221005025214-4161e89ecf1b
+# golang.org/x/crypto v0.0.0-20221012134737-56aed061732a
 ## explicit; go 1.17
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blake2b
@@ -976,7 +976,7 @@ golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 golang.org/x/mod/internal/lazyregexp
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20221004154528-8021a29435af
+# golang.org/x/net v0.0.0-20221012135044-0b7e1fb9d458
 ## explicit; go 1.17
 golang.org/x/net/bpf
 golang.org/x/net/context
@@ -1007,7 +1007,7 @@ golang.org/x/oauth2/jwt
 ## explicit
 golang.org/x/sync/errgroup
 golang.org/x/sync/semaphore
-# golang.org/x/sys v0.0.0-20221006211917-84dc82d7e875
+# golang.org/x/sys v0.0.0-20221013171732-95e765b1cc43
 ## explicit; go 1.17
 golang.org/x/sys/cpu
 golang.org/x/sys/execabs
@@ -1032,7 +1032,7 @@ golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 golang.org/x/text/width
-# golang.org/x/time v0.0.0-20220609170525-579cf78fd858
+# golang.org/x/time v0.0.0-20220922220347-f3bd1da661af
 ## explicit
 golang.org/x/time/rate
 # golang.org/x/tools v0.1.12
@@ -1215,7 +1215,7 @@ gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.1
 ## explicit
 gopkg.in/yaml.v3
-# helm.sh/helm/v3 v3.10.0
+# helm.sh/helm/v3 v3.10.1
 ## explicit; go 1.18
 helm.sh/helm/v3/internal/ignore
 helm.sh/helm/v3/internal/sympath
@@ -1232,7 +1232,7 @@ helm.sh/helm/v3/pkg/helmpath/xdg
 helm.sh/helm/v3/pkg/plugin
 helm.sh/helm/v3/pkg/registry
 helm.sh/helm/v3/pkg/strvals
-# k8s.io/api v0.25.2
+# k8s.io/api v0.25.3
 ## explicit; go 1.19
 k8s.io/api/admission/v1
 k8s.io/api/admission/v1beta1
@@ -1283,11 +1283,11 @@ k8s.io/api/scheduling/v1beta1
 k8s.io/api/storage/v1
 k8s.io/api/storage/v1alpha1
 k8s.io/api/storage/v1beta1
-# k8s.io/apiextensions-apiserver v0.25.0
+# k8s.io/apiextensions-apiserver v0.25.2
 ## explicit; go 1.19
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1
-# k8s.io/apimachinery v0.25.2
+# k8s.io/apimachinery v0.25.3
 ## explicit; go 1.19
 k8s.io/apimachinery/pkg/api/equality
 k8s.io/apimachinery/pkg/api/errors
@@ -1344,12 +1344,12 @@ k8s.io/apimachinery/pkg/watch
 k8s.io/apimachinery/third_party/forked/golang/json
 k8s.io/apimachinery/third_party/forked/golang/netutil
 k8s.io/apimachinery/third_party/forked/golang/reflect
-# k8s.io/cli-runtime v0.25.2
+# k8s.io/cli-runtime v0.25.3
 ## explicit; go 1.19
 k8s.io/cli-runtime/pkg/genericclioptions
 k8s.io/cli-runtime/pkg/printers
 k8s.io/cli-runtime/pkg/resource
-# k8s.io/client-go v0.25.2
+# k8s.io/client-go v0.25.3
 ## explicit; go 1.19
 k8s.io/client-go/applyconfigurations/admissionregistration/v1
 k8s.io/client-go/applyconfigurations/admissionregistration/v1beta1
@@ -1651,7 +1651,7 @@ k8s.io/client-go/util/jsonpath
 k8s.io/client-go/util/keyutil
 k8s.io/client-go/util/retry
 k8s.io/client-go/util/workqueue
-# k8s.io/cloud-provider v0.25.2
+# k8s.io/cloud-provider v0.25.3
 ## explicit; go 1.19
 k8s.io/cloud-provider
 k8s.io/cloud-provider/node/helpers
@@ -1662,7 +1662,7 @@ k8s.io/cloud-provider/volume/helpers
 # k8s.io/cloud-provider-aws v1.25.0
 ## explicit; go 1.19
 k8s.io/cloud-provider-aws/pkg/providers/v1
-# k8s.io/component-base v0.25.2
+# k8s.io/component-base v0.25.3
 ## explicit; go 1.19
 k8s.io/component-base/cli/flag
 k8s.io/component-base/config
@@ -1675,10 +1675,10 @@ k8s.io/component-base/metrics/prometheus/restclient
 k8s.io/component-base/metrics/prometheusextension
 k8s.io/component-base/tracing/api/v1
 k8s.io/component-base/version
-# k8s.io/csi-translation-lib v0.25.2
+# k8s.io/csi-translation-lib v0.25.3
 ## explicit; go 1.19
 k8s.io/csi-translation-lib/plugins
-# k8s.io/gengo v0.0.0-20221003092416-e83a76d3209c
+# k8s.io/gengo v0.0.0-20221011193443-fad74ee6edd9
 ## explicit; go 1.13
 k8s.io/gengo/args
 k8s.io/gengo/generator
@@ -1710,7 +1710,7 @@ k8s.io/kube-openapi/pkg/spec3
 k8s.io/kube-openapi/pkg/util/proto
 k8s.io/kube-openapi/pkg/util/proto/validation
 k8s.io/kube-openapi/pkg/validation/spec
-# k8s.io/kubectl v0.25.2
+# k8s.io/kubectl v0.25.3
 ## explicit; go 1.19
 k8s.io/kubectl/pkg/cmd/util
 k8s.io/kubectl/pkg/cmd/util/editor
@@ -1726,16 +1726,16 @@ k8s.io/kubectl/pkg/util/slice
 k8s.io/kubectl/pkg/util/templates
 k8s.io/kubectl/pkg/util/term
 k8s.io/kubectl/pkg/validation
-# k8s.io/kubelet v0.25.2
+# k8s.io/kubelet v0.25.3
 ## explicit; go 1.19
 k8s.io/kubelet/config/v1beta1
-# k8s.io/legacy-cloud-providers v0.25.2
+# k8s.io/legacy-cloud-providers v0.25.3
 ## explicit; go 1.19
 k8s.io/legacy-cloud-providers/gce
-# k8s.io/mount-utils v0.25.2
+# k8s.io/mount-utils v0.25.3
 ## explicit; go 1.19
 k8s.io/mount-utils
-# k8s.io/utils v0.0.0-20220922133306-665eaaec4324
+# k8s.io/utils v0.0.0-20221012122500-cfd413dd9e85
 ## explicit; go 1.18
 k8s.io/utils/buffer
 k8s.io/utils/clock
