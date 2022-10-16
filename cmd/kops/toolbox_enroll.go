@@ -86,6 +86,7 @@ func NewCmdToolboxEnroll(f commandutils.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.InstanceGroup, "instance-group", options.InstanceGroup, "Name of instance-group to join")
 
 	cmd.Flags().StringVar(&options.Host, "host", options.Host, "IP/hostname for machine to add")
+	cmd.Flags().StringVar(&options.SSHUser, "ssh-user", options.SSHUser, "user for ssh")
 
 	return cmd
 }
@@ -252,7 +253,6 @@ func enrollHost(ctx context.Context, options *ToolboxEnrollOptions, nodeupScript
 
 		b, err := host.readFile(ctx, publicKeyPath)
 		if err != nil {
-
 			return fmt.Errorf("error reading public key %q (after creation): %w", publicKeyPath, err)
 		}
 		publicKeyBytes = b
