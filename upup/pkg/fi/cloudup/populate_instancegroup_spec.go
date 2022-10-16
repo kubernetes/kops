@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"strings"
 
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 
@@ -265,6 +266,21 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 	}
 	if ig.Spec.Kubelet != nil {
 		reflectutils.JSONMergeStruct(igKubeletConfig, ig.Spec.Kubelet)
+	}
+
+	{
+		if ig.IsMaster() {
+			// (Even though the value is empty, we still expect <Key>=<Value>:<Effect>)
+			if cluster.IsKubernetesLT("1.24") {
+				taints.Insert(nodelabels.RoleLabelMaster16 + "=:" + string(v1.TaintEffectNoSchedule))
+			} else {
+				taints.Insert(nodelabels.RoleLabelControlPlane20 + "=:" + string(v1.TaintEffectNoSchedule))
+			}
+		}
+		if ig.IsAPIServerOnly() {
+			// (Even though the value is empty, we still expect <Key>=<Value>:<Effect>)
+			taints.Insert(nodelabels.RoleLabelAPIServer16 + "=:" + string(v1.TaintEffectNoSchedule))
+		}
 	}
 
 	igKubeletConfig.Taints = taints.List()

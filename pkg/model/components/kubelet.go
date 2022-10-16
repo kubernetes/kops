@@ -217,5 +217,8 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.Kubelet.ShutdownGracePeriodCriticalPods = &metav1.Duration{Duration: 0}
 	}
 
+	clusterSpec.Kubelet.RegisterSchedulable = fi.Bool(true)
+	clusterSpec.MasterKubelet.RegisterSchedulable = fi.Bool(true)
+
 	return nil
 }

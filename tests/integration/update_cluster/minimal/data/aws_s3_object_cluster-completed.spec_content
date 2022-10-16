@@ -133,6 +133,7 @@ spec:
     networkPluginName: cni
     podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
+    registerSchedulable: true
     shutdownGracePeriod: 30s
     shutdownGracePeriodCriticalPods: 10s
   kubernetesApiAccess:
@@ -152,7 +153,7 @@ spec:
     networkPluginName: cni
     podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
-    registerSchedulable: false
+    registerSchedulable: true
     shutdownGracePeriod: 30s
     shutdownGracePeriodCriticalPods: 10s
   masterPublicName: api.minimal.example.com
