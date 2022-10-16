@@ -234,6 +234,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersdockerexamplecom.Properties.L
     networkPluginName: cni
     podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
+    registerSchedulable: true
     shutdownGracePeriod: 30s
     shutdownGracePeriodCriticalPods: 10s
   masterKubelet:
@@ -250,7 +251,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersdockerexamplecom.Properties.L
     networkPluginName: cni
     podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
-    registerSchedulable: false
+    registerSchedulable: true
     shutdownGracePeriod: 30s
     shutdownGracePeriodCriticalPods: 10s
 
@@ -261,7 +262,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersdockerexamplecom.Properties.L
   ConfigBase: memfs://clusters.example.com/docker.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: obI1drS5n6JAFTXVeIKmBfsyCXmvLIPSWztEjacLETE=
+  NodeupConfigHash: dQoLRGMD60cy0GlQpNjoFxN+Z4ZOHecktBvo2KFfzxE=
 
   __EOF_KUBE_ENV
 
@@ -438,6 +439,7 @@ Resources.AWSEC2LaunchTemplatenodesdockerexamplecom.Properties.LaunchTemplateDat
     networkPluginName: cni
     podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
+    registerSchedulable: true
     shutdownGracePeriod: 30s
     shutdownGracePeriodCriticalPods: 10s
 
@@ -448,7 +450,7 @@ Resources.AWSEC2LaunchTemplatenodesdockerexamplecom.Properties.LaunchTemplateDat
   ConfigBase: memfs://clusters.example.com/docker.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: hQbYSisfjTmEKl0BZRts+YZao5uRXpgDQR3jJT1AzHQ=
+  NodeupConfigHash: AKLoDq+/WYq2tyJtfeDMVSyOdg/dpviA4B5BgYMKkg4=
 
   __EOF_KUBE_ENV
 

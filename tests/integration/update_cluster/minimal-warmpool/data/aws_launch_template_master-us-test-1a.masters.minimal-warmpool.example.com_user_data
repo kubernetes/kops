@@ -230,6 +230,7 @@ kubelet:
   networkPluginName: cni
   podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
+  registerSchedulable: true
   shutdownGracePeriod: 30s
   shutdownGracePeriodCriticalPods: 10s
 masterKubelet:
@@ -249,7 +250,7 @@ masterKubelet:
   networkPluginName: cni
   podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
-  registerSchedulable: false
+  registerSchedulable: true
   shutdownGracePeriod: 30s
   shutdownGracePeriodCriticalPods: 10s
 
@@ -260,7 +261,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal-warmpool.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: xIMo20LICbLc357Xdda8+hr7KaeE0I2NZiKXDKBtB1s=
+NodeupConfigHash: 1/5pTF0nS08hbu5SaV/xHYNyDj2uEPTP5wyGOjGzorc=
 
 __EOF_KUBE_ENV
 

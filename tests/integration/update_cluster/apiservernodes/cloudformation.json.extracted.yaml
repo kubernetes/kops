@@ -158,6 +158,7 @@ Resources.AWSEC2LaunchTemplateapiserverapiserversminimalexamplecom.Properties.La
     podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
+    registerSchedulable: true
     shutdownGracePeriod: 30s
     shutdownGracePeriodCriticalPods: 10s
 
@@ -168,7 +169,7 @@ Resources.AWSEC2LaunchTemplateapiserverapiserversminimalexamplecom.Properties.La
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: apiserver
   InstanceGroupRole: APIServer
-  NodeupConfigHash: /2u+8fnQiJudwTlY5qtY0iJkpEFJ93GcquluTAOsPtQ=
+  NodeupConfigHash: vMi9Desod9xbuTf+IOVqaO3/VqrVtrOHP20EojREMJU=
 
   __EOF_KUBE_ENV
 
@@ -408,6 +409,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
     podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
+    registerSchedulable: true
     shutdownGracePeriod: 30s
     shutdownGracePeriodCriticalPods: 10s
   masterKubelet:
@@ -428,7 +430,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
     podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
-    registerSchedulable: false
+    registerSchedulable: true
     shutdownGracePeriod: 30s
     shutdownGracePeriodCriticalPods: 10s
 
@@ -439,7 +441,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: o14f+FINvjAsuxKdAZ0TjAfBMvJ2DDjSLodwewNgm2w=
+  NodeupConfigHash: 5riiUtWaXLjbfRaTO/R7YcCfdXNmNtRfKdFQOEA+xAU=
 
   __EOF_KUBE_ENV
 
@@ -605,6 +607,7 @@ Resources.AWSEC2LaunchTemplatenodesminimalexamplecom.Properties.LaunchTemplateDa
     podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
+    registerSchedulable: true
     shutdownGracePeriod: 30s
     shutdownGracePeriodCriticalPods: 10s
 
@@ -615,7 +618,7 @@ Resources.AWSEC2LaunchTemplatenodesminimalexamplecom.Properties.LaunchTemplateDa
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: loNyJuRcOIlS5l6W6VX0xSHt5O2FE8KprqhQCFj6ngo=
+  NodeupConfigHash: gcRcWSAh7rzz3bsa8Pb1mdifQHGYWtlje1HKlAAGZNc=
 
   __EOF_KUBE_ENV
 

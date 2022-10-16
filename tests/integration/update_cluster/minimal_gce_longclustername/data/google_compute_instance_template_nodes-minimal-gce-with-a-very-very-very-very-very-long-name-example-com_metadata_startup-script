@@ -157,6 +157,7 @@ kubelet:
   podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
+  registerSchedulable: true
   shutdownGracePeriod: 30s
   shutdownGracePeriodCriticalPods: 10s
 
@@ -167,7 +168,7 @@ CloudProvider: gce
 ConfigBase: memfs://tests/minimal-gce-with-a-very-very-very-very-very-long-name.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: ZbffG+iWzZTP/g3gsRIhDw0Dqu1ABZj58svzc+5gYY0=
+NodeupConfigHash: 3zOwURIE+AECO966wSmKqrkliiAVjb/twnOEjt0ONNY=
 
 __EOF_KUBE_ENV
 
