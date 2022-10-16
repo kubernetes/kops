@@ -198,13 +198,7 @@ func (c *NodeupModelContext) PathSrvSshproxy() string {
 
 // KubeletBootstrapKubeconfig is the path the bootstrap config file
 func (c *NodeupModelContext) KubeletBootstrapKubeconfig() string {
-	path := c.Cluster.Spec.Kubelet.BootstrapKubeconfig
-
-	if c.IsMaster {
-		if c.Cluster.Spec.MasterKubelet != nil && c.Cluster.Spec.MasterKubelet.BootstrapKubeconfig != "" {
-			path = c.Cluster.Spec.MasterKubelet.BootstrapKubeconfig
-		}
-	}
+	path := c.NodeupConfig.KubeletConfig.BootstrapKubeconfig
 
 	if path != "" {
 		return path
@@ -387,7 +381,7 @@ func (c *NodeupModelContext) UseBootstrapTokens() bool {
 		return fi.BoolValue(c.NodeupConfig.APIServerConfig.KubeAPIServer.EnableBootstrapAuthToken)
 	}
 
-	return c.Cluster.Spec.Kubelet != nil && c.Cluster.Spec.Kubelet.BootstrapKubeconfig != ""
+	return c.NodeupConfig.KubeletConfig.BootstrapKubeconfig != ""
 }
 
 // KubectlPath returns distro based path for kubectl
@@ -545,11 +539,7 @@ func (c *NodeupModelContext) BuildLegacyPrivateKeyTask(ctx *fi.ModelBuilderConte
 // NodeName returns the name of the local Node, as it will be created in k8s
 func (c *NodeupModelContext) NodeName() (string, error) {
 	// This mirrors nodeutil.GetHostName
-	nodeName := c.Cluster.Spec.Kubelet.HostnameOverride
-
-	if c.IsMaster && c.Cluster.Spec.MasterKubelet.HostnameOverride != "" {
-		nodeName = c.Cluster.Spec.MasterKubelet.HostnameOverride
-	}
+	nodeName := c.NodeupConfig.KubeletConfig.HostnameOverride
 
 	if nodeName == "" {
 		hostname, err := os.Hostname()

@@ -387,8 +387,8 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 
 	manifest.Set("Install", "WantedBy", "multi-user.target")
 
-	if b.Cluster.Spec.Kubelet.CgroupDriver == "systemd" && b.Cluster.Spec.ContainerRuntime == "containerd" {
-		cgroup := b.Cluster.Spec.Kubelet.KubeletCgroups
+	if b.NodeupConfig.KubeletConfig.CgroupDriver == "systemd" && b.Cluster.Spec.ContainerRuntime == "containerd" {
+		cgroup := b.NodeupConfig.KubeletConfig.KubeletCgroups
 		if cgroup != "" {
 			manifest.Set("Service", "Slice", strings.Trim(cgroup, "/")+".slice")
 		}

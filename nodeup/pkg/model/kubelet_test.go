@@ -264,8 +264,14 @@ func BuildNodeupModelContext(model *testutils.Model) (*NodeupModelContext, error
 
 	if len(model.InstanceGroups) == 0 {
 		// We tolerate this - not all tests need an instance group
+		// we then use the cluser kubelet config directly
+		nodeupModelContext.NodeupConfig.KubeletConfig = *nodeupModelContext.Cluster.Spec.Kubelet
 	} else if len(model.InstanceGroups) == 1 {
-		nodeupModelContext.NodeupConfig, nodeupModelContext.BootConfig = nodeup.NewConfig(nodeupModelContext.Cluster, model.InstanceGroups[0])
+		ig := model.InstanceGroups[0]
+		nodeupModelContext.NodeupConfig, nodeupModelContext.BootConfig = nodeup.NewConfig(nodeupModelContext.Cluster, ig)
+		if ig.Spec.Kubelet == nil {
+			nodeupModelContext.NodeupConfig.KubeletConfig = *nodeupModelContext.Cluster.Spec.Kubelet
+		}
 	} else {
 		return nil, fmt.Errorf("unexpected number of instance groups: found %d", len(model.InstanceGroups))
 	}
