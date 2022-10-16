@@ -40,17 +40,15 @@ import (
 
 func TestTaintsApplied(t *testing.T) {
 	tests := []struct {
-		version           string
-		taints            []string
-		expectError       bool
-		expectSchedulable bool
-		expectTaints      []string
+		version      string
+		taints       []string
+		expectError  bool
+		expectTaints []string
 	}{
 		{
-			version:           "1.9.0",
-			taints:            []string{"foo", "bar", "baz"},
-			expectTaints:      []string{"foo", "bar", "baz"},
-			expectSchedulable: true,
+			version:      "1.9.0",
+			taints:       []string{"foo", "bar", "baz"},
+			expectTaints: []string{"foo", "bar", "baz", "node-role.kubernetes.io/master=:NoSchedule"},
 		},
 	}
 
@@ -88,10 +86,6 @@ func TestTaintsApplied(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Unexpected error for version %q: %v", g.version, err)
 			}
-		}
-
-		if fi.BoolValue(c.RegisterSchedulable) != g.expectSchedulable {
-			t.Fatalf("Expected RegisterSchedulable == %v, got %v (for %v)", g.expectSchedulable, fi.BoolValue(c.RegisterSchedulable), g.version)
 		}
 
 		if !stringSlicesEqual(g.expectTaints, c.Taints) {

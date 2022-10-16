@@ -257,9 +257,11 @@ KubeletConfig:
   podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
-  registerSchedulable: false
+  registerSchedulable: true
   shutdownGracePeriod: 30s
   shutdownGracePeriodCriticalPods: 10s
+  taints:
+  - node-role.kubernetes.io/control-plane=:NoSchedule
 UpdatePolicy: automatic
 channels:
 - memfs://tests/minimal.k8s.local/addons/bootstrap-channel.yaml

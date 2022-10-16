@@ -257,9 +257,11 @@ KubeletConfig:
     node.kubernetes.io/exclude-from-external-load-balancers: ""
   podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
-  registerSchedulable: false
+  registerSchedulable: true
   shutdownGracePeriod: 30s
   shutdownGracePeriodCriticalPods: 10s
+  taints:
+  - node-role.kubernetes.io/master=:NoSchedule
 UpdatePolicy: automatic
 channels:
 - memfs://clusters.example.com/unmanaged.example.com/addons/bootstrap-channel.yaml

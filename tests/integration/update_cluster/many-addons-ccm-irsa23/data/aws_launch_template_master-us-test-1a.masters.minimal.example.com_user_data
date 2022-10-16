@@ -232,6 +232,7 @@ kubelet:
   podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
+  registerSchedulable: true
   shutdownGracePeriod: 0s
   shutdownGracePeriodCriticalPods: 0s
 masterKubelet:
@@ -252,7 +253,7 @@ masterKubelet:
   podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
-  registerSchedulable: false
+  registerSchedulable: true
   shutdownGracePeriod: 0s
   shutdownGracePeriodCriticalPods: 0s
 
@@ -263,7 +264,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
-NodeupConfigHash: jbbrOXHMpcOrAfK55Fg6XXrmjOqWBRl1P2GRMd5fytQ=
+NodeupConfigHash: ClfOnncu2q9aVLGGWVgZgdOuYcGSx2MWchP9EZXwU1s=
 
 __EOF_KUBE_ENV
 

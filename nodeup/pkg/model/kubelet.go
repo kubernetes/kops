@@ -28,14 +28,12 @@ import (
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/model/components"
-	"k8s.io/kops/pkg/nodelabels"
 	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
@@ -522,7 +520,6 @@ func (b *KubeletBuilder) addContainerizedMounter(c *fi.ModelBuilderContext) erro
 // buildKubeletConfigSpec returns the kubeletconfig for the specified instanceGroup
 func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, error) {
 	isMaster := b.IsMaster
-	isAPIServer := b.BootConfig.InstanceGroupRole == kops.InstanceGroupRoleAPIServer
 
 	// Merge KubeletConfig for NodeLabels
 	c := b.NodeupConfig.KubeletConfig
@@ -570,25 +567,6 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 			// Write back values that could have changed
 			c.MaxPods = fi.Int32(int32(maxPods))
 		}
-	}
-
-	// Use --register-with-taints
-	{
-		if len(c.Taints) == 0 && isMaster {
-			// (Even though the value is empty, we still expect <Key>=<Value>:<Effect>)
-			if b.IsKubernetesLT("1.24") {
-				c.Taints = append(c.Taints, nodelabels.RoleLabelMaster16+"=:"+string(v1.TaintEffectNoSchedule))
-			} else {
-				c.Taints = append(c.Taints, nodelabels.RoleLabelControlPlane20+"=:"+string(v1.TaintEffectNoSchedule))
-			}
-		}
-		if len(c.Taints) == 0 && isAPIServer {
-			// (Even though the value is empty, we still expect <Key>=<Value>:<Effect>)
-			c.Taints = append(c.Taints, nodelabels.RoleLabelAPIServer16+"=:"+string(v1.TaintEffectNoSchedule))
-		}
-
-		// Enable scheduling since it can be controlled via taints.
-		c.RegisterSchedulable = fi.Bool(true)
 	}
 
 	if c.VolumePluginDirectory == "" {
