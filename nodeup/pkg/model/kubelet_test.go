@@ -38,43 +38,6 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
-func Test_InstanceGroupKubeletMerge(t *testing.T) {
-	cluster := &kops.Cluster{}
-	cluster.Spec.Kubelet = &kops.KubeletConfigSpec{}
-	cluster.Spec.Kubelet.NvidiaGPUs = 0
-	cluster.Spec.KubernetesVersion = "1.6.0"
-
-	instanceGroup := &kops.InstanceGroup{}
-	instanceGroup.Spec.Kubelet = &kops.KubeletConfigSpec{}
-	instanceGroup.Spec.Kubelet.NvidiaGPUs = 1
-	instanceGroup.Spec.Role = kops.InstanceGroupRoleNode
-
-	config, bootConfig := nodeup.NewConfig(cluster, instanceGroup)
-	b := &KubeletBuilder{
-		&NodeupModelContext{
-			Cluster:      cluster,
-			BootConfig:   bootConfig,
-			NodeupConfig: config,
-		},
-	}
-	if err := b.Init(); err != nil {
-		t.Error(err)
-	}
-
-	mergedKubeletSpec, err := b.buildKubeletConfigSpec()
-	if err != nil {
-		t.Error(err)
-	}
-	if mergedKubeletSpec == nil {
-		t.Error("Returned nil kubelet spec")
-		t.FailNow()
-	}
-
-	if mergedKubeletSpec.NvidiaGPUs != instanceGroup.Spec.Kubelet.NvidiaGPUs {
-		t.Errorf("InstanceGroup kubelet value (%d) should be reflected in merged output", instanceGroup.Spec.Kubelet.NvidiaGPUs)
-	}
-}
-
 func TestTaintsApplied(t *testing.T) {
 	tests := []struct {
 		version           string
