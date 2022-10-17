@@ -131,6 +131,11 @@ func (c *RollingUpdateCluster) rollingUpdateInstanceGroup(group *cloudinstances.
 
 	maxConcurrency := maxSurge + settings.MaxUnavailable.IntValue()
 
+	// Karpenter cannot surge
+	if group.InstanceGroup.Spec.Manager == api.InstanceManagerKarpenter {
+		maxSurge = 0
+	}
+
 	if group.InstanceGroup.Spec.Role == api.InstanceGroupRoleMaster && maxSurge != 0 {
 		// Masters are incapable of surging because they rely on registering themselves through
 		// the local apiserver. That apiserver depends on the local etcd, which relies on being
