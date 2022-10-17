@@ -1111,6 +1111,7 @@ rules:
   resources:
   - volumesnapshotcontents
   verbs:
+  - create
   - get
   - list
   - watch
