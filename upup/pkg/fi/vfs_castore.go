@@ -347,6 +347,9 @@ func (c *VFSCAStore) StoreKeyset(name string, keyset *Keyset) error {
 	if keyset.Items[primaryId].PrivateKey == nil {
 		return fmt.Errorf("keyset's primary id %q must have a private key", primaryId)
 	}
+	if keyset.Items[primaryId].Certificate == nil {
+		return fmt.Errorf("keyset's primary id %q must have a certificate", primaryId)
+	}
 
 	{
 		p := c.buildPrivateKeyPoolPath(name)
