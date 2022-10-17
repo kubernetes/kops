@@ -56,6 +56,7 @@ import (
 	"k8s.io/kops/pkg/model/hetznermodel"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/model/openstackmodel"
+	"k8s.io/kops/pkg/model/scalewaymodel"
 	"k8s.io/kops/pkg/templates"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/models"
@@ -68,6 +69,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
+	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 	"k8s.io/kops/util/pkg/architectures"
@@ -475,6 +477,22 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				return fmt.Errorf("exactly one 'admin' SSH public key can be specified when running with Openstack; please delete a key using `kops delete secret`")
 			}
 		}
+
+	case kops.CloudProviderScaleway:
+		{
+			if !featureflag.Scaleway.Enabled() {
+				return fmt.Errorf("Scaleway support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=Scaleway")
+			}
+
+			if len(sshPublicKeys) == 0 {
+				return fmt.Errorf("SSH public key must be specified when running with Scaleway (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
+			}
+
+			if len(sshPublicKeys) != 1 {
+				return fmt.Errorf("exactly one 'admin' SSH public key can be specified when running with Scaleway; please delete a key using `kops delete secret`")
+			}
+		}
+
 	default:
 		return fmt.Errorf("unknown CloudProvider %q", cluster.Spec.GetCloudProvider())
 	}
@@ -669,6 +687,15 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				&openstackmodel.ServerGroupModelBuilder{OpenstackModelContext: openstackModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: clusterLifecycle},
 			)
 
+		case kops.CloudProviderScaleway:
+			scwModelContext := &scalewaymodel.ScwModelContext{
+				KopsModelContext: modelContext,
+			}
+			l.Builders = append(l.Builders,
+				&scalewaymodel.InstanceModelBuilder{ScwModelContext: scwModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: clusterLifecycle},
+				&scalewaymodel.SSHKeyModelBuilder{ScwModelContext: scwModelContext, Lifecycle: securityLifecycle},
+			)
+
 		default:
 			return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.GetCloudProvider())
 		}
@@ -696,6 +723,8 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			target = openstack.NewOpenstackAPITarget(cloud.(openstack.OpenstackCloud))
 		case kops.CloudProviderAzure:
 			target = azure.NewAzureAPITarget(cloud.(azure.AzureCloud))
+		case kops.CloudProviderScaleway:
+			target = scaleway.NewScwAPITarget(cloud.(scaleway.ScwCloud))
 		default:
 			return fmt.Errorf("direct configuration not supported with CloudProvider:%q", cluster.Spec.GetCloudProvider())
 		}
