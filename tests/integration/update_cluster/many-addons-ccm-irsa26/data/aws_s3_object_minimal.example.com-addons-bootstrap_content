@@ -134,7 +134,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.20
     manifest: snapshot-controller.addons.k8s.io/k8s-1.20.yaml
-    manifestHash: afddd701326e01eeb49e71ac389d8f31925bdd618f1767bcf112104338f0264f
+    manifestHash: 0ee38c110ae8012a720b23bf9f4f99a977ff813643739f67cc7d9c99d5a66fef
     name: snapshot-controller.addons.k8s.io
     needsPKI: true
     selector:
