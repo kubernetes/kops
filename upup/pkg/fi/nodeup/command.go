@@ -464,9 +464,6 @@ func evaluateSpec(c *NodeUpCommand, nodeupConfig *nodeup.Config, cloudProvider a
 		return err
 	}
 
-	c.cluster.Spec.Kubelet.HostnameOverride = hostnameOverride
-	c.cluster.Spec.MasterKubelet.HostnameOverride = hostnameOverride
-
 	nodeupConfig.KubeletConfig.HostnameOverride = hostnameOverride
 
 	if c.cluster.Spec.KubeProxy == nil {

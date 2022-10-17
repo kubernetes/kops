@@ -229,8 +229,8 @@ func (b *ContainerdBuilder) buildSystemdService(sv semver.Version) *nodetasks.Se
 
 	manifest.Set("Install", "WantedBy", "multi-user.target")
 
-	if b.Cluster.Spec.Kubelet.CgroupDriver == "systemd" {
-		cgroup := b.Cluster.Spec.Kubelet.RuntimeCgroups
+	if b.NodeupConfig.KubeletConfig.CgroupDriver == "systemd" {
+		cgroup := b.NodeupConfig.KubeletConfig.RuntimeCgroups
 		if cgroup != "" {
 			manifest.Set("Service", "Slice", strings.Trim(cgroup, "/")+".slice")
 		}
@@ -491,8 +491,8 @@ func (b *ContainerdBuilder) buildContainerdConfig() (string, error) {
 
 	config, _ := toml.Load("")
 	config.SetPath([]string{"version"}, int64(2))
-	if cluster.Spec.Kubelet != nil && cluster.Spec.Kubelet.PodInfraContainerImage != "" {
-		config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "sandbox_image"}, cluster.Spec.Kubelet.PodInfraContainerImage)
+	if b.NodeupConfig.KubeletConfig.PodInfraContainerImage != "" {
+		config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "sandbox_image"}, b.NodeupConfig.KubeletConfig.PodInfraContainerImage)
 	}
 	for name, endpoints := range containerd.RegistryMirrors {
 		config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "registry", "mirrors", name, "endpoint"}, endpoints)

@@ -186,7 +186,7 @@ func (b *KubeControllerManagerBuilder) buildPod(kcm *kops.KubeControllerManagerC
 		},
 	}
 
-	volumePluginDir := b.Cluster.Spec.Kubelet.VolumePluginDirectory
+	volumePluginDir := b.NodeupConfig.KubeletConfig.VolumePluginDirectory
 
 	// Ensure the Volume Plugin dir is mounted on the same path as the host machine so DaemonSet deployment is possible
 	if volumePluginDir == "" {
