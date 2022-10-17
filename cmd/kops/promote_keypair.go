@@ -162,17 +162,17 @@ func promoteKeypair(out io.Writer, name string, keypairID string, keyStore fi.CA
 	}
 
 	if keypairID == "" {
-		highestTrustedId := big.NewInt(0)
+		highestCandidateId := big.NewInt(0)
 		for id, item := range keyset.Items {
-			if item.PrivateKey != nil && item.DistrustTimestamp == nil {
+			if item.PrivateKey != nil && item.DistrustTimestamp == nil && item.Certificate != nil {
 				itemId, ok := big.NewInt(0).SetString(id, 10)
-				if ok && highestTrustedId.Cmp(itemId) < 0 {
-					highestTrustedId = itemId
+				if ok && highestCandidateId.Cmp(itemId) < 0 {
+					highestCandidateId = itemId
 				}
 			}
 		}
 
-		keypairID = highestTrustedId.String()
+		keypairID = highestCandidateId.String()
 		if keypairID == keyset.Primary.Id {
 			fmt.Fprintf(out, "No %s keypair newer than current primary %s\n", name, keypairID)
 			return nil
@@ -183,6 +183,9 @@ func promoteKeypair(out io.Writer, name string, keypairID string, keyStore fi.CA
 		}
 		if item.PrivateKey == nil {
 			return fmt.Errorf("keypair has no private key")
+		}
+		if item.Certificate == nil {
+			return fmt.Errorf("keypair has no certificate")
 		}
 	} else {
 		return fmt.Errorf("keypair not found")
