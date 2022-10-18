@@ -101,11 +101,11 @@ func NewScwCloud(tags map[string]string) (ScwCloud, error) {
 		return nil, fmt.Errorf("SCW_ACCESS_KEY has to be set as an environment variable")
 	}
 	scwSecretKey := os.Getenv("SCW_SECRET_KEY")
-	if scwSecretKey != "" {
+	if scwSecretKey == "" {
 		return nil, fmt.Errorf("SCW_SECRET_KEY has to be set as an environment variable")
 	}
 	scwProjectID := os.Getenv("SCW_DEFAULT_PROJECT_ID")
-	if scwProjectID != "" {
+	if scwProjectID == "" {
 		return nil, fmt.Errorf("SCW_DEFAULT_PROJECT_ID has to be set as an environment variable")
 	}
 
