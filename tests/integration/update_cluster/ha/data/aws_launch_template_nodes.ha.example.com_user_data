@@ -152,6 +152,7 @@ kubelet:
   networkPluginName: cni
   podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
+  registerSchedulable: true
   shutdownGracePeriod: 30s
   shutdownGracePeriodCriticalPods: 10s
 
@@ -162,7 +163,7 @@ CloudProvider: aws
 ConfigBase: memfs://tests/ha.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: +iaw87B4L/+K+mi4c5PQEgnz+u6w/JAtM0FozHk9rhA=
+NodeupConfigHash: i6T0miP5ErwJkvRgXJsEIkoXsFnwSi2smVKlmj3ghI8=
 
 __EOF_KUBE_ENV
 

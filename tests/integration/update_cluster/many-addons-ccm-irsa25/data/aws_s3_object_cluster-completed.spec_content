@@ -178,6 +178,7 @@ spec:
     podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
+    registerSchedulable: true
     shutdownGracePeriod: 0s
     shutdownGracePeriodCriticalPods: 0s
   kubernetesApiAccess:
@@ -201,7 +202,7 @@ spec:
     podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
-    registerSchedulable: false
+    registerSchedulable: true
     shutdownGracePeriod: 0s
     shutdownGracePeriodCriticalPods: 0s
   masterPublicName: api.minimal.example.com
