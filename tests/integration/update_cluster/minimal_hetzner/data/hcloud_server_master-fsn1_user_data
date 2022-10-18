@@ -221,6 +221,7 @@ kubelet:
   podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
+  registerSchedulable: true
   shutdownGracePeriod: 30s
   shutdownGracePeriodCriticalPods: 10s
 masterKubelet:
@@ -237,7 +238,7 @@ masterKubelet:
   podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
-  registerSchedulable: false
+  registerSchedulable: true
   shutdownGracePeriod: 30s
   shutdownGracePeriodCriticalPods: 10s
 
@@ -248,7 +249,7 @@ CloudProvider: hetzner
 ConfigBase: memfs://tests/minimal.k8s.local
 InstanceGroupName: master-fsn1
 InstanceGroupRole: Master
-NodeupConfigHash: KH+2Md3kNvqxeh1MomGIMS6ktrIvnW4N/DnKPhrrs+A=
+NodeupConfigHash: NMCuP4As360lakFohS19ift3j3kRKDw1374ItjaQZ5w=
 
 __EOF_KUBE_ENV
 

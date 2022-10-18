@@ -219,6 +219,7 @@ kubelet:
   networkPluginName: cni
   podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
+  registerSchedulable: true
   shutdownGracePeriod: 30s
   shutdownGracePeriodCriticalPods: 10s
 masterKubelet:
@@ -236,7 +237,7 @@ masterKubelet:
   networkPluginName: cni
   podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
-  registerSchedulable: false
+  registerSchedulable: true
   shutdownGracePeriod: 30s
   shutdownGracePeriodCriticalPods: 10s
 
@@ -247,7 +248,7 @@ CloudProvider: gce
 ConfigBase: memfs://tests/ha-gce.example.com
 InstanceGroupName: master-us-test1-c
 InstanceGroupRole: Master
-NodeupConfigHash: MffYCbZGvr1ICRGTtmp7xufkJWNV76HB8/MEUki23LY=
+NodeupConfigHash: xkfxhC6aZkvQ+EnLao0pg/ZCuTYS/Pj5//sVeTUwV4M=
 
 __EOF_KUBE_ENV
 
