@@ -157,6 +157,7 @@ kubelet:
   podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
+  registerSchedulable: true
   shutdownGracePeriod: 30s
   shutdownGracePeriodCriticalPods: 10s
 
@@ -167,7 +168,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: apiserver
 InstanceGroupRole: APIServer
-NodeupConfigHash: /2u+8fnQiJudwTlY5qtY0iJkpEFJ93GcquluTAOsPtQ=
+NodeupConfigHash: vMi9Desod9xbuTf+IOVqaO3/VqrVtrOHP20EojREMJU=
 
 __EOF_KUBE_ENV
 

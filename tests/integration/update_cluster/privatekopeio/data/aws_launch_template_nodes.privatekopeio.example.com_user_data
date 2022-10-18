@@ -151,6 +151,7 @@ kubelet:
   logLevel: 2
   podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
+  registerSchedulable: true
   shutdownGracePeriod: 30s
   shutdownGracePeriodCriticalPods: 10s
 
@@ -161,7 +162,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privatekopeio.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: S0PVqIbIa08PwKY+cIBiwQzxdjnvNoM+eptkH/eDglo=
+NodeupConfigHash: oaN1h0dag/hCcCqzQUsayFSb8O0iHifTB4SHxfVHin8=
 
 __EOF_KUBE_ENV
 

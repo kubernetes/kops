@@ -158,6 +158,7 @@ kubelet:
   podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
+  registerSchedulable: true
   shutdownGracePeriod: 30s
   shutdownGracePeriodCriticalPods: 10s
 
@@ -168,7 +169,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privatecilium.example.com
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: kF5C2gkd8GQnmB8IFGulAF4h5DS2vl4II01JeVNAaFk=
+NodeupConfigHash: 5yzak/7sN/v0eYUfQ0c4NxkwTx0hC7Pqx69EILkqkTc=
 
 __EOF_KUBE_ENV
 
