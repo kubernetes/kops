@@ -48,6 +48,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
+	"github.com/aws/aws-sdk-go/service/ssm"
+	"github.com/aws/aws-sdk-go/service/ssm/ssmiface"
 	"github.com/aws/aws-sdk-go/service/sts"
 	"k8s.io/klog/v2"
 
@@ -135,6 +137,7 @@ type AWSCloud interface {
 	Spotinst() spotinst.Cloud
 	SQS() sqsiface.SQSAPI
 	EventBridge() eventbridgeiface.EventBridgeAPI
+	SSM() ssmiface.SSMAPI
 
 	// TODO: Document and rationalize these tags/filters methods
 	AddTags(name *string, tags map[string]string)
@@ -204,6 +207,7 @@ type awsCloudImplementation struct {
 	sts         *sts.STS
 	sqs         *sqs.SQS
 	eventbridge *eventbridge.EventBridge
+	ssm         *ssm.SSM
 
 	region string
 
@@ -382,6 +386,17 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 		c.eventbridge = eventbridge.New(sess, config)
 		c.eventbridge.Handlers.Send.PushFront(requestLogger)
 		c.addHandlers(region, &c.eventbridge.Handlers)
+
+		sess, err = session.NewSessionWithOptions(session.Options{
+			Config:            *config,
+			SharedConfigState: session.SharedConfigEnable,
+		})
+		if err != nil {
+			return c, err
+		}
+		c.ssm = ssm.New(sess, config)
+		c.ssm.Handlers.Send.PushFront(requestLogger)
+		c.addHandlers(region, &c.ssm.Handlers)
 
 		awsCloudInstances[region] = c
 		raw = c
@@ -1971,10 +1986,24 @@ func describeVPC(c AWSCloud, vpcID string) (*ec2.Vpc, error) {
 // owner/name in which case we find the image with the specified name, owned by owner
 // name in which case we find the image with the specified name, with the current owner
 func (c *awsCloudImplementation) ResolveImage(name string) (*ec2.Image, error) {
-	return resolveImage(c.ec2, name)
+	return resolveImage(c.ssm, c.ec2, name)
 }
 
-func resolveImage(ec2Client ec2iface.EC2API, name string) (*ec2.Image, error) {
+func resolveSSMParameter(ssmClient ssmiface.SSMAPI, name string) (string, error) {
+	klog.V(2).Infof("Resolving SSM parameter %q", name)
+	request := &ssm.GetParameterInput{
+		Name: aws.String(name),
+	}
+
+	response, err := ssmClient.GetParameter(request)
+	if err != nil {
+		return "", fmt.Errorf("failed to get value for SSM Parameter %q", name)
+	}
+
+	return aws.StringValue(response.Parameter.Value), nil
+}
+
+func resolveImage(ssmClient ssmiface.SSMAPI, ec2Client ec2iface.EC2API, name string) (*ec2.Image, error) {
 	// TODO: Cache this result during a single execution (we get called multiple times)
 	klog.V(2).Infof("Calling DescribeImages to resolve name %q", name)
 	request := &ec2.DescribeImagesInput{}
@@ -1982,6 +2011,15 @@ func resolveImage(ec2Client ec2iface.EC2API, name string) (*ec2.Image, error) {
 	if strings.HasPrefix(name, "ami-") {
 		// ami-xxxxxxxx
 		request.ImageIds = []*string{&name}
+	} else if strings.HasPrefix(name, "ssm:") {
+		parameter := strings.TrimPrefix(name, "ssm:")
+
+		image, err := resolveSSMParameter(ssmClient, parameter)
+		if err != nil {
+			return nil, err
+		}
+
+		request.ImageIds = []*string{&image}
 	} else {
 		// Either <imagename> or <owner>/<imagename>
 		tokens := strings.SplitN(name, "/", 2)
@@ -2139,6 +2177,10 @@ func (c *awsCloudImplementation) SQS() sqsiface.SQSAPI {
 
 func (c *awsCloudImplementation) EventBridge() eventbridgeiface.EventBridgeAPI {
 	return c.eventbridge
+}
+
+func (c *awsCloudImplementation) SSM() ssmiface.SSMAPI {
+	return c.ssm
 }
 
 func (c *awsCloudImplementation) FindVPCInfo(vpcID string) (*fi.VPCInfo, error) {
