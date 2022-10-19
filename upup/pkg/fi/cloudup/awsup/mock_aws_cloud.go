@@ -32,6 +32,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
+	"github.com/aws/aws-sdk-go/service/ssm/ssmiface"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
@@ -86,6 +87,7 @@ type MockCloud struct {
 	MockSpotinst       spotinst.Cloud
 	MockSQS            sqsiface.SQSAPI
 	MockEventBridge    eventbridgeiface.EventBridgeAPI
+	MockSSM            ssmiface.SSMAPI
 }
 
 func (c *MockAWSCloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
@@ -221,7 +223,7 @@ func (c *MockAWSCloud) DescribeVPC(vpcID string) (*ec2.Vpc, error) {
 }
 
 func (c *MockAWSCloud) ResolveImage(name string) (*ec2.Image, error) {
-	return resolveImage(c.MockEC2, name)
+	return resolveImage(c.MockSSM, c.MockEC2, name)
 }
 
 func (c *MockAWSCloud) WithTags(tags map[string]string) AWSCloud {
@@ -299,6 +301,13 @@ func (c *MockAWSCloud) EventBridge() eventbridgeiface.EventBridgeAPI {
 		klog.Fatalf("MockEventBridgess not set")
 	}
 	return c.MockEventBridge
+}
+
+func (c *MockAWSCloud) SSM() ssmiface.SSMAPI {
+	if c.MockSSM == nil {
+		klog.Fatalf("MockSSM not set")
+	}
+	return c.MockSSM
 }
 
 func (c *MockAWSCloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
