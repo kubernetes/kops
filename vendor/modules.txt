@@ -174,6 +174,8 @@ github.com/aws/aws-sdk-go/service/route53/route53iface
 github.com/aws/aws-sdk-go/service/s3
 github.com/aws/aws-sdk-go/service/sqs
 github.com/aws/aws-sdk-go/service/sqs/sqsiface
+github.com/aws/aws-sdk-go/service/ssm
+github.com/aws/aws-sdk-go/service/ssm/ssmiface
 github.com/aws/aws-sdk-go/service/sso
 github.com/aws/aws-sdk-go/service/sso/ssoiface
 github.com/aws/aws-sdk-go/service/sts
