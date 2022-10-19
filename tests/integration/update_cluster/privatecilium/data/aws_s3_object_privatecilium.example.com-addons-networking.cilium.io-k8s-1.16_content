@@ -578,7 +578,7 @@ spec:
       - args:
         - --config-dir=/tmp/cilium/config-map
         - --debug=$(CILIUM_DEBUG)
-        - --eni-tags=KubernetesCluster=privatecilium.example.com
+        - --eni-tags={"KubernetesCluster":"privatecilium.example.com"}
         command:
         - cilium-operator
         env:

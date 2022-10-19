@@ -100,6 +100,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["nindent"] = sprigTxtFuncMap["nindent"]
 	dest["indent"] = sprigTxtFuncMap["indent"]
 	dest["contains"] = sprigTxtFuncMap["contains"]
+	dest["quote"] = sprigTxtFuncMap["quote"]
 	dest["trimPrefix"] = sprigTxtFuncMap["trimPrefix"]
 	dest["semverCompare"] = sprigTxtFuncMap["semverCompare"]
 	dest["ternary"] = sprigTxtFuncMap["ternary"]
@@ -303,6 +304,17 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		// ensure stable sorting of tags
 		sort.Strings(labels)
 		return strings.Join(labels, ",")
+	}
+	dest["CloudLabelsJSON"] = func() string {
+		labels := map[string]string{
+			"KubernetesCluster": cluster.ObjectMeta.Name,
+		}
+		for n, v := range cluster.Spec.CloudLabels {
+			labels[n] = v
+		}
+		j, _ := json.Marshal(labels)
+
+		return string(j)
 	}
 
 	dest["IsIPv6Only"] = tf.IsIPv6Only

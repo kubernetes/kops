@@ -926,7 +926,7 @@ spec:
       - args:
         - "--config-dir=/tmp/cilium/config-map"
         - "--debug=$(CILIUM_DEBUG)"
-        - "--eni-tags={{ CloudLabels }}"
+        - {{ CloudLabelsJSON | printf "--eni-tags=%s" | quote }}
         command:
         - cilium-operator
         env:

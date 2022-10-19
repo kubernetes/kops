@@ -574,7 +574,7 @@ spec:
       - args:
         - --config-dir=/tmp/cilium/config-map
         - --debug=$(CILIUM_DEBUG)
-        - --eni-tags=KubernetesCluster=minimal-warmpool.example.com
+        - --eni-tags={"KubernetesCluster":"minimal-warmpool.example.com"}
         command:
         - cilium-operator
         env:
