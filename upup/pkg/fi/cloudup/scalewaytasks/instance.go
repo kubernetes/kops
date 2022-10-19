@@ -1,3 +1,19 @@
+/*
+Copyright 2022 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package scalewaytasks
 
 import (
@@ -59,59 +75,37 @@ func (s *Instance) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(s, c)
 }
 
-func (_ *Instance) RenderScw(c *fi.Context, a, e, changes *Instance) error {
+func (_ *Instance) RenderScw(c *fi.Context, actual, expected, changes *Instance) error {
 	cloud := c.Cloud.(scaleway.ScwCloud)
 	instanceService := cloud.InstanceService()
-	zone := scw.Zone(fi.StringValue(e.Zone))
+	zone := scw.Zone(fi.StringValue(expected.Zone))
 
-	userData, err := fi.ResourceAsBytes(*e.UserData)
+	userData, err := fi.ResourceAsBytes(*expected.UserData)
 	if err != nil {
 		return fmt.Errorf("error rendering instances: %w", err)
 	}
 
-	var newInstanceCount int
-	if a == nil {
-		newInstanceCount = e.Count
-	} else {
-		expectedCount := e.Count
-		actualCount := a.Count
-
-		if expectedCount == actualCount {
+	newInstanceCount := expected.Count
+	if actual != nil {
+		if expected.Count == actual.Count {
 			return nil
 		}
-
-		if actualCount > expectedCount {
-			igInstances, err := cloud.GetClusterServers(cloud.ClusterName(a.Tags), a.Name)
-			if err != nil {
-				return fmt.Errorf("error deleting instance: %w", err)
-			}
-			for _, igInstance := range igInstances {
-				err = cloud.DeleteServer(igInstance)
-				if err != nil {
-					return fmt.Errorf("error deleting instance of group %s: %w", igInstance.Name, err)
-				}
-				actualCount--
-				if expectedCount == actualCount {
-					break
-				}
-			}
-		}
-
-		newInstanceCount = expectedCount - actualCount
+		newInstanceCount = expected.Count - actual.Count
 	}
 
+	// If newInstanceCount > 0, we need to create new instances for this group
 	for i := 0; i < newInstanceCount; i++ {
 
 		// We create the instance
 		srv, err := instanceService.CreateServer(&instance.CreateServerRequest{
 			Zone:           zone,
-			Name:           fi.StringValue(e.Name),
-			CommercialType: fi.StringValue(e.CommercialType),
-			Image:          fi.StringValue(e.Image),
-			Tags:           e.Tags,
+			Name:           fi.StringValue(expected.Name),
+			CommercialType: fi.StringValue(expected.CommercialType),
+			Image:          fi.StringValue(expected.Image),
+			Tags:           expected.Tags,
 		})
 		if err != nil {
-			return fmt.Errorf("error creating instance of group %q: %w", fi.StringValue(e.Name), err)
+			return fmt.Errorf("error creating instance of group %q: %w", fi.StringValue(expected.Name), err)
 		}
 
 		// We wait for the instance to be ready
@@ -120,7 +114,7 @@ func (_ *Instance) RenderScw(c *fi.Context, a, e, changes *Instance) error {
 			Zone:     zone,
 		})
 		if err != nil {
-			return fmt.Errorf("error waiting for instance %s of group %q: %w", srv.Server.ID, fi.StringValue(e.Name), err)
+			return fmt.Errorf("error waiting for instance %s of group %q: %w", srv.Server.ID, fi.StringValue(expected.Name), err)
 		}
 
 		// We load the cloud-init script in the instance user data
@@ -131,7 +125,7 @@ func (_ *Instance) RenderScw(c *fi.Context, a, e, changes *Instance) error {
 			Content:  bytes.NewBuffer(userData),
 		})
 		if err != nil {
-			return fmt.Errorf("error setting 'cloud-init' in user-data for instance %s of group %q: %w", srv.Server.ID, fi.StringValue(e.Name), err)
+			return fmt.Errorf("error setting 'cloud-init' in user-data for instance %s of group %q: %w", srv.Server.ID, fi.StringValue(expected.Name), err)
 		}
 
 		// We start the instance
@@ -141,7 +135,7 @@ func (_ *Instance) RenderScw(c *fi.Context, a, e, changes *Instance) error {
 			Action:   instance.ServerActionPoweron,
 		})
 		if err != nil {
-			return fmt.Errorf("error powering on instance %s of group %q: %w", srv.Server.ID, fi.StringValue(e.Name), err)
+			return fmt.Errorf("error powering on instance %s of group %q: %w", srv.Server.ID, fi.StringValue(expected.Name), err)
 		}
 
 		// We wait for the instance to be ready
@@ -150,15 +144,31 @@ func (_ *Instance) RenderScw(c *fi.Context, a, e, changes *Instance) error {
 			Zone:     zone,
 		})
 		if err != nil {
-			return fmt.Errorf("error waiting for instance %s of group %q: %w", srv.Server.ID, fi.StringValue(e.Name), err)
+			return fmt.Errorf("error waiting for instance %s of group %q: %w", srv.Server.ID, fi.StringValue(expected.Name), err)
+		}
+	}
+
+	// If newInstanceCount < 0, we need to delete instances of this group
+	for i := 0; i > expected.Count; i-- {
+
+		igInstances, err := cloud.GetClusterServers(cloud.ClusterName(actual.Tags), actual.Name)
+		if err != nil {
+			return fmt.Errorf("error deleting instance: %w", err)
+		}
+
+		for _, igInstance := range igInstances {
+			err = cloud.DeleteServer(igInstance)
+			if err != nil {
+				return fmt.Errorf("error deleting instance of group %s: %w", igInstance.Name, err)
+			}
 		}
 	}
 
 	return nil
 }
 
-func (_ *Instance) CheckChanges(a, e, changes *Instance) error {
-	if a != nil {
+func (_ *Instance) CheckChanges(actual, expected, changes *Instance) error {
+	if actual != nil {
 		if changes.Name != nil {
 			return fi.CannotChangeField("Name")
 		}
@@ -172,16 +182,16 @@ func (_ *Instance) CheckChanges(a, e, changes *Instance) error {
 			return fi.CannotChangeField("Image")
 		}
 	} else {
-		if e.Name == nil {
+		if expected.Name == nil {
 			return fi.RequiredField("Name")
 		}
-		if e.Zone == nil {
+		if expected.Zone == nil {
 			return fi.RequiredField("Zone")
 		}
-		if e.CommercialType == nil {
+		if expected.CommercialType == nil {
 			return fi.RequiredField("CommercialType")
 		}
-		if e.Image == nil {
+		if expected.Image == nil {
 			return fi.RequiredField("Image")
 		}
 	}
