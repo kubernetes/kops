@@ -1,3 +1,19 @@
+/*
+Copyright 2022 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package scalewaytasks
 
 import (
@@ -46,25 +62,25 @@ func (s *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
 
 	klog.V(2).Infof("found matching SSH key named %q", *s.Name)
 	k := keysResp.SSHKeys[0]
-	actual := &SSHKey{
+	sshKey := &SSHKey{
 		ID:                 fi.String(k.ID),
 		Name:               fi.String(k.Name),
 		KeyPairFingerPrint: fi.String(k.Fingerprint),
 	}
 
 	// Avoid spurious changes
-	if strings.Contains(fi.StringValue(actual.KeyPairFingerPrint), fi.StringValue(s.KeyPairFingerPrint)) {
+	if strings.Contains(fi.StringValue(sshKey.KeyPairFingerPrint), fi.StringValue(s.KeyPairFingerPrint)) {
 		klog.V(2).Infof("SSH key fingerprints match; assuming public keys match")
-		actual.PublicKey = s.PublicKey
-		actual.KeyPairFingerPrint = s.KeyPairFingerPrint
+		sshKey.PublicKey = s.PublicKey
+		sshKey.KeyPairFingerPrint = s.KeyPairFingerPrint
 	} else {
-		klog.V(2).Infof("Computed SSH key fingerprint mismatch: %q %q", fi.StringValue(s.KeyPairFingerPrint), fi.StringValue(actual.KeyPairFingerPrint))
+		klog.V(2).Infof("Computed SSH key fingerprint mismatch: %q %q", fi.StringValue(s.KeyPairFingerPrint), fi.StringValue(sshKey.KeyPairFingerPrint))
 	}
 
 	// Ignore "system" fields
-	actual.Lifecycle = s.Lifecycle
+	sshKey.Lifecycle = s.Lifecycle
 
-	return actual, nil
+	return sshKey, nil
 }
 
 func (s *SSHKey) Run(c *fi.Context) error {
@@ -84,8 +100,8 @@ func (s *SSHKey) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(s, c)
 }
 
-func (s *SSHKey) CheckChanges(a, e, changes *SSHKey) error {
-	if a != nil {
+func (s *SSHKey) CheckChanges(actual, expected, changes *SSHKey) error {
+	if actual != nil {
 		if changes.Name != nil {
 			return fi.CannotChangeField("Name")
 		}
@@ -93,12 +109,12 @@ func (s *SSHKey) CheckChanges(a, e, changes *SSHKey) error {
 	return nil
 }
 
-func (*SSHKey) RenderScw(c *fi.Context, a, e, changes *SSHKey) error {
+func (*SSHKey) RenderScw(c *fi.Context, actual, expected, changes *SSHKey) error {
 	cloud := c.Cloud.(scaleway.ScwCloud)
 
-	if a == nil {
+	if actual == nil {
 
-		name := fi.StringValue(e.Name)
+		name := fi.StringValue(expected.Name)
 		if name == "" {
 			return fi.RequiredField("Name")
 		}
@@ -107,8 +123,8 @@ func (*SSHKey) RenderScw(c *fi.Context, a, e, changes *SSHKey) error {
 		keyArgs := &account.CreateSSHKeyRequest{
 			Name: name,
 		}
-		if e.PublicKey != nil {
-			d, err := fi.ResourceAsString(*e.PublicKey)
+		if expected.PublicKey != nil {
+			d, err := fi.ResourceAsString(*expected.PublicKey)
 			if err != nil {
 				return fmt.Errorf("error rendering SSH public key: %w", err)
 			}
@@ -119,14 +135,14 @@ func (*SSHKey) RenderScw(c *fi.Context, a, e, changes *SSHKey) error {
 		if err != nil {
 			return fmt.Errorf("error creating SSH keypair: %w", err)
 		}
-		e.KeyPairFingerPrint = fi.String(key.Fingerprint)
+		expected.KeyPairFingerPrint = fi.String(key.Fingerprint)
 		klog.V(2).Infof("Created a new SSH keypair, id=%q fingerprint=%q", key.ID, key.Fingerprint)
 
 		return nil
 	}
 
-	e.KeyPairFingerPrint = a.KeyPairFingerPrint
-	klog.V(2).Infof("Using an existing SSH keypair, fingerprint=%q", fi.StringValue(e.KeyPairFingerPrint))
+	expected.KeyPairFingerPrint = actual.KeyPairFingerPrint
+	klog.V(2).Infof("Using an existing SSH keypair, fingerprint=%q", fi.StringValue(expected.KeyPairFingerPrint))
 
 	return nil
 }
