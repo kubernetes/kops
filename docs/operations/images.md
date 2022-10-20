@@ -7,13 +7,15 @@ You can choose a different image for an instance group by editing it with `kops 
 * `ami-abcdef` - specifies an AMI by id directly
 * `<owner>/<name>` specifies an AMI by its owner's account ID  and name properties
 * `<alias>/<name>` specifies an AMI by its [owner's alias](#owner-aliases) and name properties
+* `ssm:<ssm_parameter>` specifies an AMI through an SSM parameter
 
-Using the AMI id is precise, but ids vary by region. It is often more convenient to use the `<owner/alias>/<name>` if equivalent images with the same name have been copied to other regions. 
+Using the AMI id is precise, but ids vary by region. It is often more convenient to use the `<owner/alias>/<name>` if equivalent images with the same name have been copied to other regions.
 
 ```yaml
 image: ami-00579fbb15b954340
 image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
 image: ubuntu/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
+image: ssm:/aws/service/canonical/ubuntu/server/20.04/stable/current/amd64/hvm/ebs-gp2/ami-id
 ```
 
 You can find the name for an image using:
@@ -31,9 +33,9 @@ spec:
 
 ## Distros Support Matrix
 
-The following table provides the support status for various distros with regards to kOps version: 
+The following table provides the support status for various distros with regards to kOps version:
 
-| Distro                              | Experimental | Stable | Deprecated | Removed | 
+| Distro                              | Experimental | Stable | Deprecated | Removed |
 |-------------------------------------|-------------:|-------:|-----------:|--------:|
 | [Amazon Linux 2](#amazon-linux-2)   |         1.10 |   1.18 |          - |       - |
 | [CentOS 7](#centos-7)               |            - |    1.5 |       1.21 |       - |
@@ -246,7 +248,7 @@ aws ec2 describe-images --region us-east-1 --output table \
 
 ### Kope.io
 
-Support for _kope.io_ images is deprecated. These images were the default until Kubernetes 1.18, when they were replaced by the [official Ubuntu 20.04](#ubuntu-2004-focal) images. 
+Support for _kope.io_ images is deprecated. These images were the default until Kubernetes 1.18, when they were replaced by the [official Ubuntu 20.04](#ubuntu-2004-focal) images.
 
 The _kope.io_ images were based on [Debian 9 (Stretch)](#debian-9-stretch) and had all packages required by kOps pre-installed. Other than that, the changes to the official Debian images were [minimal](https://github.com/kubernetes-sigs/image-builder/blob/master/images/kube-deploy/imagebuilder/templates/1.18-stretch.yml#L174-L198).
 
@@ -266,7 +268,7 @@ aws ec2 describe-images --region us-east-1 --output table \
   --filters "Name=name,Values=RHEL-7.*x86_64*"
 ```
 
-## Owner aliases 
+## Owner aliases
 
 kOps supports owner aliases for the official accounts of supported distros:
 
