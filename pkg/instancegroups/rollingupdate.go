@@ -23,6 +23,7 @@ import (
 	"sync"
 	"time"
 
+	"k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/kops/pkg/client/simple"
 
 	"k8s.io/client-go/kubernetes"
@@ -186,9 +187,10 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 
 		for _, k := range sortGroups(apiServerGroups) {
 			err := c.rollingUpdateInstanceGroup(apiServerGroups[k], c.NodeInterval)
-
 			results[k] = err
-
+			if err != nil {
+				klog.Errorf("failed to roll InstanceGroup %q: %v", k, err)
+			}
 			// TODO: Bail on error?
 		}
 	}
@@ -207,21 +209,23 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 
 		for _, k := range sortGroups(nodeGroups) {
 			err := c.rollingUpdateInstanceGroup(nodeGroups[k], c.NodeInterval)
-
 			results[k] = err
-
+			if err != nil {
+				klog.Errorf("failed to roll InstanceGroup %q: %v", k, err)
+			}
 			// TODO: Bail on error?
 		}
 	}
 
+	errs := []error{}
 	for _, err := range results {
 		if err != nil {
-			return err
+			errs = append(errs, err)
 		}
 	}
 
 	klog.Infof("Rolling update completed for cluster %q!", c.ClusterName)
-	return nil
+	return errors.NewAggregate(errs)
 }
 
 func sortGroups(groupMap map[string]*cloudinstances.CloudInstanceGroup) []string {
