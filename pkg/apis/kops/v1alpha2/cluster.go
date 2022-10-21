@@ -68,6 +68,7 @@ type ClusterSpec struct {
 	// Configuration of subnets we are targeting
 	Subnets []ClusterSubnetSpec `json:"subnets,omitempty"`
 	// Project is the cloud project we should use, required on GCE
+	// +k8s:conversion-gen=false
 	Project string `json:"project,omitempty"`
 	// MasterPublicName is the external DNS name for the master nodes
 	MasterPublicName string `json:"masterPublicName,omitempty"`

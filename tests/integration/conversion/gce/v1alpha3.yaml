@@ -12,7 +12,8 @@ spec:
     alwaysAllow: {}
   channel: stable
   cloudProvider:
-    gce: {}
+    gce:
+      project: testProject
   configBase: memfs://clusters.example.com/minimal.example.com
   etcdClusters:
   - cpuRequest: 200m
