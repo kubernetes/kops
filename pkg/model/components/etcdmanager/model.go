@@ -26,7 +26,6 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
-	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/k8scodecs"
@@ -293,7 +292,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 	// The dns suffix logic mirrors the existing logic, so we should be compatible with existing clusters
 	// (etcd makes it difficult to change peer urls, treating it as a cluster event, for reasons unknown)
 	dnsInternalSuffix := ""
-	if dns.IsGossipCluster(b.Cluster) {
+	if b.Cluster.IsGossip() {
 		// @TODO: This is hacky, but we want it so that we can have a different internal & external name
 		dnsInternalSuffix = b.Cluster.Spec.MasterInternalName
 		dnsInternalSuffix = strings.TrimPrefix(dnsInternalSuffix, "api.")

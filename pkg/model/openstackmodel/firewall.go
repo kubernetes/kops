@@ -24,7 +24,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks"
 
 	"k8s.io/klog/v2"
-	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/utils/net"
 
@@ -502,7 +501,7 @@ func (b *FirewallModelBuilder) addCNIRules(c *fi.ModelBuilderContext, sgMap map[
 
 // addProtokubeRules - Add rules for protokube if gossip DNS is enabled
 func (b *FirewallModelBuilder) addProtokubeRules(c *fi.ModelBuilderContext, sgMap map[string]*openstacktasks.SecurityGroup) error {
-	if dns.IsGossipCluster(b.Cluster) {
+	if b.Cluster.IsGossip() {
 		masterName := b.SecurityGroupName(kops.InstanceGroupRoleMaster)
 		nodeName := b.SecurityGroupName(kops.InstanceGroupRoleNode)
 		masterSG := sgMap[masterName]

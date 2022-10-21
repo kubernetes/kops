@@ -35,7 +35,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/cloudinstances"
-	"k8s.io/kops/pkg/dns"
 )
 
 // ValidationCluster uses a cluster to validate.
@@ -134,7 +133,7 @@ func (v *clusterValidatorImpl) Validate() (*ValidationCluster, error) {
 	validation := &ValidationCluster{}
 
 	// Do not use if we are running gossip
-	if !dns.IsGossipCluster(v.cluster) {
+	if !v.cluster.IsGossip() {
 		hasPlaceHolderIPAddress, err := hasPlaceHolderIP(v.host)
 		if err != nil {
 			return nil, err

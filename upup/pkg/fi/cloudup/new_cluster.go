@@ -34,7 +34,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/client/simple"
-	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/zones"
 	"k8s.io/kops/upup/pkg/fi"
@@ -1227,7 +1226,7 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 			bastionGroup.Spec.MinSize = fi.Int32(1)
 			bastions = append(bastions, bastionGroup)
 
-			if !dns.IsGossipCluster(cluster) {
+			if !cluster.IsGossip() {
 				cluster.Spec.Topology.Bastion = &api.BastionSpec{
 					PublicName: "bastion." + cluster.Name,
 				}
@@ -1291,7 +1290,7 @@ func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
 	} else {
 		switch cluster.Spec.Topology.Masters {
 		case api.TopologyPublic:
-			if dns.IsGossipCluster(cluster) {
+			if cluster.IsGossip() {
 				// gossip DNS names don't work outside the cluster, so we use a LoadBalancer instead
 				cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
 			} else {

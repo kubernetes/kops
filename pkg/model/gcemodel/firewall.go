@@ -113,7 +113,7 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				fmt.Sprintf("tcp:%d", wellknownports.KopsControllerPort),
 			},
 		}
-		if b.IsGossip() {
+		if b.Cluster.IsGossip() {
 			t.Allowed = append(t.Allowed, fmt.Sprintf("udp:%d", wellknownports.DNSControllerGossipMemberlist))
 			t.Allowed = append(t.Allowed, fmt.Sprintf("tcp:%d", wellknownports.DNSControllerGossipMemberlist))
 			t.Allowed = append(t.Allowed, fmt.Sprintf("udp:%d", wellknownports.ProtokubeGossipMemberlist))
