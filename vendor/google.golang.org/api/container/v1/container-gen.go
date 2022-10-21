@@ -346,6 +346,10 @@ type AddonsConfig struct {
 	// driver.
 	GcpFilestoreCsiDriverConfig *GcpFilestoreCsiDriverConfig `json:"gcpFilestoreCsiDriverConfig,omitempty"`
 
+	// GkeBackupAgentConfig: Configuration for the Backup for GKE agent
+	// addon.
+	GkeBackupAgentConfig *GkeBackupAgentConfig `json:"gkeBackupAgentConfig,omitempty"`
+
 	// HorizontalPodAutoscaling: Configuration for the horizontal pod
 	// autoscaling feature, which increases or decreases the number of
 	// replica pods a replication controller has based on the resource usage
@@ -957,6 +961,10 @@ type Cluster struct {
 	// in the cluster will be Confidential VM once enabled.
 	ConfidentialNodes *ConfidentialNodes `json:"confidentialNodes,omitempty"`
 
+	// CostManagementConfig: Configuration for the fine-grained cost
+	// management feature.
+	CostManagementConfig *CostManagementConfig `json:"costManagementConfig,omitempty"`
+
 	// CreateTime: [Output only] The time the cluster was created, in
 	// RFC3339 (https://www.ietf.org/rfc/rfc3339.txt) text format.
 	CreateTime string `json:"createTime,omitempty"`
@@ -1353,6 +1361,10 @@ type ClusterUpdate struct {
 	// DesiredClusterAutoscaling: Cluster-level autoscaling configuration.
 	DesiredClusterAutoscaling *ClusterAutoscaling `json:"desiredClusterAutoscaling,omitempty"`
 
+	// DesiredCostManagementConfig: The desired configuration for the
+	// fine-grained cost management feature.
+	DesiredCostManagementConfig *CostManagementConfig `json:"desiredCostManagementConfig,omitempty"`
+
 	// DesiredDatabaseEncryption: Configuration of etcd encryption.
 	DesiredDatabaseEncryption *DatabaseEncryption `json:"desiredDatabaseEncryption,omitempty"`
 
@@ -1684,6 +1696,35 @@ type ConsumptionMeteringConfig struct {
 
 func (s *ConsumptionMeteringConfig) MarshalJSON() ([]byte, error) {
 	type NoMethod ConsumptionMeteringConfig
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// CostManagementConfig: Configuration for fine-grained cost management
+// feature.
+type CostManagementConfig struct {
+	// Enabled: Whether the feature is enabled or not.
+	Enabled bool `json:"enabled,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Enabled") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Enabled") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *CostManagementConfig) MarshalJSON() ([]byte, error) {
+	type NoMethod CostManagementConfig
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -2240,6 +2281,35 @@ func (s *GetOpenIDConfigResponse) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// GkeBackupAgentConfig: Configuration for the Backup for GKE Agent.
+type GkeBackupAgentConfig struct {
+	// Enabled: Whether the Backup for GKE agent is enabled for this
+	// cluster.
+	Enabled bool `json:"enabled,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Enabled") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Enabled") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *GkeBackupAgentConfig) MarshalJSON() ([]byte, error) {
+	type NoMethod GkeBackupAgentConfig
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // HorizontalPodAutoscaling: Configuration options for the horizontal
 // pod autoscaling feature, which increases or decreases the number of
 // replica pods a replication controller has based on the resource usage
@@ -2400,6 +2470,18 @@ type IPAllocationPolicy struct {
 	// `use_ip_aliases` is true.
 	CreateSubnetwork bool `json:"createSubnetwork,omitempty"`
 
+	// Ipv6AccessType: The ipv6 access type (internal or external) when
+	// create_subnetwork is true
+	//
+	// Possible values:
+	//   "IPV6_ACCESS_TYPE_UNSPECIFIED" - Default value, will be defaulted
+	// as type external.
+	//   "INTERNAL" - Access type internal (all v6 addresses are internal
+	// IPs)
+	//   "EXTERNAL" - Access type external (all v6 addresses are external
+	// IPs)
+	Ipv6AccessType string `json:"ipv6AccessType,omitempty"`
+
 	// NodeIpv4Cidr: This field is deprecated, use node_ipv4_cidr_block.
 	NodeIpv4Cidr string `json:"nodeIpv4Cidr,omitempty"`
 
@@ -2436,6 +2518,15 @@ type IPAllocationPolicy struct {
 	// associated with the cluster subnetwork. This field is only applicable
 	// with use_ip_aliases is true and create_subnetwork is false.
 	ServicesSecondaryRangeName string `json:"servicesSecondaryRangeName,omitempty"`
+
+	// StackType: The IP stack type of the cluster
+	//
+	// Possible values:
+	//   "STACK_TYPE_UNSPECIFIED" - Default value, will be defaulted as IPV4
+	// only
+	//   "IPV4" - Cluster is IPV4 only
+	//   "IPV4_IPV6" - Cluster can use both IPv4 and IPv6
+	StackType string `json:"stackType,omitempty"`
 
 	// SubnetworkName: A custom subnetwork name to be used if
 	// `create_subnetwork` is true. If this field is empty, then an
@@ -6061,7 +6152,7 @@ type StatusCondition struct {
 	// CanonicalCode: Canonical code of the condition.
 	//
 	// Possible values:
-	//   "OK" - Not an error; returned on success HTTP Mapping: 200 OK
+	//   "OK" - Not an error; returned on success. HTTP Mapping: 200 OK
 	//   "CANCELLED" - The operation was cancelled, typically by the caller.
 	// HTTP Mapping: 499 Client Closed Request
 	//   "UNKNOWN" - Unknown error. For example, this error may be returned

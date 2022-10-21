@@ -2487,7 +2487,7 @@
       }
     }
   },
-  "revision": "20220826",
+  "revision": "20220923",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -2537,6 +2537,10 @@
         "gcpFilestoreCsiDriverConfig": {
           "$ref": "GcpFilestoreCsiDriverConfig",
           "description": "Configuration for the GCP Filestore CSI driver."
+        },
+        "gkeBackupAgentConfig": {
+          "$ref": "GkeBackupAgentConfig",
+          "description": "Configuration for the Backup for GKE agent addon."
         },
         "horizontalPodAutoscaling": {
           "$ref": "HorizontalPodAutoscaling",
@@ -2879,6 +2883,10 @@
           "$ref": "ConfidentialNodes",
           "description": "Configuration of Confidential Nodes. All the nodes in the cluster will be Confidential VM once enabled."
         },
+        "costManagementConfig": {
+          "$ref": "CostManagementConfig",
+          "description": "Configuration for the fine-grained cost management feature."
+        },
         "createTime": {
           "description": "[Output only] The time the cluster was created, in [RFC3339](https://www.ietf.org/rfc/rfc3339.txt) text format.",
           "type": "string"
@@ -3191,6 +3199,10 @@
           "$ref": "ClusterAutoscaling",
           "description": "Cluster-level autoscaling configuration."
         },
+        "desiredCostManagementConfig": {
+          "$ref": "CostManagementConfig",
+          "description": "The desired configuration for the fine-grained cost management feature."
+        },
         "desiredDatabaseEncryption": {
           "$ref": "DatabaseEncryption",
           "description": "Configuration of etcd encryption."
@@ -3400,6 +3412,17 @@
       "properties": {
         "enabled": {
           "description": "Whether to enable consumption metering for this cluster. If enabled, a second BigQuery table will be created to hold resource consumption records.",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "CostManagementConfig": {
+      "description": "Configuration for fine-grained cost management feature.",
+      "id": "CostManagementConfig",
+      "properties": {
+        "enabled": {
+          "description": "Whether the feature is enabled or not.",
           "type": "boolean"
         }
       },
@@ -3715,6 +3738,17 @@
       },
       "type": "object"
     },
+    "GkeBackupAgentConfig": {
+      "description": "Configuration for the Backup for GKE Agent.",
+      "id": "GkeBackupAgentConfig",
+      "properties": {
+        "enabled": {
+          "description": "Whether the Backup for GKE agent is enabled for this cluster.",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
     "HorizontalPodAutoscaling": {
       "description": "Configuration options for the horizontal pod autoscaling feature, which increases or decreases the number of replica pods a replication controller has based on the resource usage of the existing pods.",
       "id": "HorizontalPodAutoscaling",
@@ -3788,6 +3822,20 @@
           "description": "Whether a new subnetwork will be created automatically for the cluster. This field is only applicable when `use_ip_aliases` is true.",
           "type": "boolean"
         },
+        "ipv6AccessType": {
+          "description": "The ipv6 access type (internal or external) when create_subnetwork is true",
+          "enum": [
+            "IPV6_ACCESS_TYPE_UNSPECIFIED",
+            "INTERNAL",
+            "EXTERNAL"
+          ],
+          "enumDescriptions": [
+            "Default value, will be defaulted as type external.",
+            "Access type internal (all v6 addresses are internal IPs)",
+            "Access type external (all v6 addresses are external IPs)"
+          ],
+          "type": "string"
+        },
         "nodeIpv4Cidr": {
           "description": "This field is deprecated, use node_ipv4_cidr_block.",
           "type": "string"
@@ -3806,6 +3854,20 @@
         },
         "servicesSecondaryRangeName": {
           "description": "The name of the secondary range to be used as for the services CIDR block. The secondary range will be used for service ClusterIPs. This must be an existing secondary range associated with the cluster subnetwork. This field is only applicable with use_ip_aliases is true and create_subnetwork is false.",
+          "type": "string"
+        },
+        "stackType": {
+          "description": "The IP stack type of the cluster",
+          "enum": [
+            "STACK_TYPE_UNSPECIFIED",
+            "IPV4",
+            "IPV4_IPV6"
+          ],
+          "enumDescriptions": [
+            "Default value, will be defaulted as IPV4 only",
+            "Cluster is IPV4 only",
+            "Cluster can use both IPv4 and IPv6"
+          ],
           "type": "string"
         },
         "subnetworkName": {
@@ -5908,7 +5970,7 @@
             "DATA_LOSS"
           ],
           "enumDescriptions": [
-            "Not an error; returned on success HTTP Mapping: 200 OK",
+            "Not an error; returned on success. HTTP Mapping: 200 OK",
             "The operation was cancelled, typically by the caller. HTTP Mapping: 499 Client Closed Request",
             "Unknown error. For example, this error may be returned when a `Status` value received from another address space belongs to an error space that is not known in this address space. Also errors raised by APIs that do not return enough error information may be converted to this error. HTTP Mapping: 500 Internal Server Error",
             "The client specified an invalid argument. Note that this differs from `FAILED_PRECONDITION`. `INVALID_ARGUMENT` indicates arguments that are problematic regardless of the state of the system (e.g., a malformed file name). HTTP Mapping: 400 Bad Request",
