@@ -36,7 +36,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/model/iam"
@@ -1614,7 +1613,7 @@ func validateExternalDNS(cluster *kops.Cluster, spec *kops.ExternalDNSConfig, fl
 	}
 
 	if spec.Provider == kops.ExternalDNSProviderExternalDNS {
-		if dns.IsGossipCluster(cluster) {
+		if cluster.IsGossip() {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("provider"), "external-dns does not support gossip clusters"))
 		}
 	}

@@ -25,7 +25,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -520,7 +519,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	if dns.IsGossipCluster(b.Cluster) || b.UsePrivateDNS() {
+	if b.Cluster.IsGossip() || b.UsePrivateDNS() {
 		// Ensure the LB hostname is included in the TLS certificate,
 		// if we're not going to use an alias for it
 		clb.ForAPIServer = true

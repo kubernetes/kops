@@ -28,7 +28,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/client/simple"
-	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/model/components/etcdmanager"
 	"k8s.io/kops/upup/pkg/fi"
@@ -220,7 +219,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 		klog.V(2).Infof("Normalizing kubernetes version: %q -> %q", cluster.Spec.KubernetesVersion, versionWithoutV)
 		cluster.Spec.KubernetesVersion = versionWithoutV
 	}
-	if cluster.Spec.DNSZone == "" && !dns.IsGossipCluster(cluster) {
+	if cluster.Spec.DNSZone == "" && !cluster.IsGossip() {
 		dns, err := cloud.DNS()
 		if err != nil {
 			return err

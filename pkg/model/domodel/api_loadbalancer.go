@@ -20,7 +20,6 @@ import (
 	"fmt"
 
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/dotasks"
@@ -78,7 +77,7 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	c.AddTask(loadbalancer)
 
 	// Temporarily do not know the role of the following function
-	if dns.IsGossipCluster(b.Cluster) || b.UsePrivateDNS() {
+	if b.Cluster.IsGossip() || b.UsePrivateDNS() {
 		// Ensure the LB hostname is included in the TLS certificate,
 		// if we're not going to use an alias for it
 		loadbalancer.ForAPIServer = true

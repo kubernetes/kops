@@ -53,7 +53,6 @@ import (
 	apiModel "k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/nodeup"
-	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model"
@@ -127,7 +126,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["GossipDomains"] = func() []string {
 		var names []string
 
-		if dns.IsGossipCluster(cluster) {
+		if cluster.IsGossip() {
 			names = append(names, "k8s.local")
 		}
 
@@ -485,7 +484,7 @@ func (tf *TemplateFunctions) DNSControllerArgv() ([]string, error) {
 		}
 	}
 
-	if dns.IsGossipCluster(cluster) {
+	if cluster.IsGossip() {
 		argv = append(argv, "--dns=gossip")
 
 		// Configuration specifically for the DNS controller gossip
@@ -665,7 +664,7 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 		config.EnableCloudIPAM = true
 	}
 
-	if dns.IsGossipCluster(cluster) {
+	if cluster.IsGossip() {
 		config.Discovery = &kopscontrollerconfig.DiscoveryOptions{
 			Enabled: true,
 		}

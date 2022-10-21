@@ -29,7 +29,6 @@ import (
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype"
 	"k8s.io/kops/pkg/apis/kops"
 	apimodel "k8s.io/kops/pkg/apis/kops/model"
-	kopsdns "k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
@@ -139,7 +138,7 @@ func precreateDNS(ctx context.Context, cluster *kops.Cluster, cloud fi.Cloud) er
 	// If we get the names wrong here, it doesn't really matter (extra DNS name, slower boot)
 
 	// Nothing to do for Gossip clusters
-	if kopsdns.IsGossipCluster(cluster) {
+	if cluster.IsGossip() {
 		return nil
 	}
 
