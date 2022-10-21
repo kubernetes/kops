@@ -26,6 +26,7 @@ fails so that the full request can be attempted again. See the
 details.
 
 Version 0.6.0 and before are compatible with Go prior to 1.12. From 0.6.1 onward, Go 1.12+ is required.
+From 0.6.7 onward, Go 1.13+ is required.
 
 Example Use
 ===========
@@ -43,6 +44,25 @@ if err != nil {
 The returned response object is an `*http.Response`, the same thing you would
 usually get from `net/http`. Had the request failed one or more times, the above
 call would block and retry with exponential backoff.
+
+## Retrying cases that fail after a seeming success
+
+It's possible for a request to succeed in the sense that the expected response headers are received, but then to encounter network-level errors while reading the response body. In go-retryablehttp's most basic usage, this error would not be retryable, due to the out-of-band handling of the response body. In some cases it may be desirable to handle the response body as part of the retryable operation.
+
+A toy example (which will retry the full request and succeed on the second attempt) is shown below:
+
+```go
+c := retryablehttp.NewClient()
+r := retryablehttp.NewRequest("GET", "://foo", nil)
+handlerShouldRetry := true
+r.SetResponseHandler(func(*http.Response) error {
+    if !handlerShouldRetry {
+        return nil
+    }
+    handlerShouldRetry = false
+    return errors.New("retryable error")
+})
+```
 
 ## Getting a stdlib `*http.Client` with retries
 

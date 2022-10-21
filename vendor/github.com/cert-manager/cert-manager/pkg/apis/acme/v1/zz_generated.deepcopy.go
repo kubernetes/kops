@@ -202,7 +202,7 @@ func (in *ACMEChallengeSolverHTTP01GatewayHTTPRoute) DeepCopyInto(out *ACMEChall
 	}
 	if in.ParentRefs != nil {
 		in, out := &in.ParentRefs, &out.ParentRefs
-		*out = make([]v1alpha2.ParentRef, len(*in))
+		*out = make([]v1alpha2.ParentReference, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}

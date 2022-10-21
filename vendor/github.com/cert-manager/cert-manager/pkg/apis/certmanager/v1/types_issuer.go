@@ -207,8 +207,18 @@ type VaultIssuer struct {
 	// certificate. Only used if the Server URL is using HTTPS protocol. This
 	// parameter is ignored for plain HTTP protocol connection. If not set the
 	// system root certificates are used to validate the TLS connection.
+	// Mutually exclusive with CABundleSecretRef. If neither CABundle nor CABundleSecretRef are defined,
+	// the cert-manager controller system root certificates are used to validate the TLS connection.
 	// +optional
 	CABundle []byte `json:"caBundle,omitempty"`
+
+	// CABundleSecretRef is a reference to a Secret which contains the CABundle which will be used when
+	// connecting to Vault when using HTTPS.
+	// Mutually exclusive with CABundle. If neither CABundleSecretRef nor CABundle are defined, the cert-manager
+	// controller system root certificates are used to validate the TLS connection.
+	// If no key for the Secret is specified, cert-manager will default to 'ca.crt'.
+	// +optional
+	CABundleSecretRef *cmmeta.SecretKeySelector `json:"caBundleSecretRef,omitempty"`
 }
 
 // Configuration used to authenticate with a Vault server.
