@@ -59,7 +59,7 @@ type Backoff = retry.Backoff
 var defaultRetryPredicate retry.Predicate = func(err error) bool {
 	// Various failure modes here, as we're often reading from and writing to
 	// the network.
-	if retry.IsTemporary(err) || errors.Is(err, io.ErrUnexpectedEOF) || errors.Is(err, io.EOF) || errors.Is(err, syscall.EPIPE) {
+	if retry.IsTemporary(err) || errors.Is(err, io.ErrUnexpectedEOF) || errors.Is(err, io.EOF) || errors.Is(err, syscall.EPIPE) || errors.Is(err, syscall.ECONNRESET) {
 		logs.Warn.Printf("retrying %v", err)
 		return true
 	}
@@ -84,7 +84,7 @@ const (
 
 // DefaultTransport is based on http.DefaultTransport with modifications
 // documented inline below.
-var DefaultTransport = &http.Transport{
+var DefaultTransport http.RoundTripper = &http.Transport{
 	Proxy: http.ProxyFromEnvironment,
 	DialContext: (&net.Dialer{
 		// By default we wrap the transport in retries, so reduce the
