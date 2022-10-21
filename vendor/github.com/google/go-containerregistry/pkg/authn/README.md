@@ -110,8 +110,8 @@ For example:
 kc := authn.NewMultiKeychain(
     authn.DefaultKeychain,
     google.Keychain,
-    authn.NewFromHelper(ecr.ECRHelper{ClientFactory: api.DefaultClientFactory{}}),
-    authn.NewFromHelper(acr.ACRCredHelper{}),
+    authn.NewKeychainFromHelper(ecr.ECRHelper{ClientFactory: api.DefaultClientFactory{}}),
+    authn.NewKeychainFromHelper(acr.ACRCredHelper{}),
 )
 ```
 
