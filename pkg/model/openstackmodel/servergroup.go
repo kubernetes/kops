@@ -24,7 +24,6 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/truncate"
 	"k8s.io/kops/upup/pkg/fi"
@@ -305,7 +304,7 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		c.AddTask(lbfipTask)
 
-		if dns.IsGossipCluster(b.Cluster) || b.UsePrivateDNS() {
+		if b.Cluster.IsGossip() || b.UsePrivateDNS() {
 			b.associateFIPToKeypair(lbfipTask)
 		}
 

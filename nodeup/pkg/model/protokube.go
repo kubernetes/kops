@@ -25,7 +25,6 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
-	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/pkg/systemd"
@@ -48,7 +47,7 @@ var _ fi.ModelBuilder = &ProtokubeBuilder{}
 
 // Build is responsible for generating the options for protokube
 func (t *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
-	useGossip := dns.IsGossipCluster(t.Cluster)
+	useGossip := t.Cluster.IsGossip()
 
 	// check is not a master and we are not using gossip (https://github.com/kubernetes/kops/pull/3091)
 	if !t.IsMaster && !useGossip {
@@ -209,7 +208,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 		// argv = append(argv, "--zone=*/*")
 	}
 
-	if dns.IsGossipCluster(t.Cluster) {
+	if t.Cluster.IsGossip() {
 		klog.Warningf("Cluster name %q implies gossip DNS", t.Cluster.Name)
 		f.Gossip = fi.Bool(true)
 		if t.Cluster.Spec.GossipConfig != nil {

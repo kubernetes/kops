@@ -23,7 +23,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/components/etcdmanager"
 	"k8s.io/kops/pkg/wellknownports"
@@ -46,7 +45,7 @@ type templateFunctions struct {
 
 // KopsControllerConfig returns the yaml configuration for kops-controller
 func (t *templateFunctions) GossipServices() ([]*corev1.Service, error) {
-	if !dns.IsGossipCluster(t.Cluster) {
+	if !t.Cluster.IsGossip() {
 		return nil, nil
 	}
 

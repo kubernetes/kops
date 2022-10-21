@@ -26,7 +26,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/util/stringorslice"
@@ -237,7 +236,7 @@ func (b *IAMModelBuilder) buildIAMRolePolicy(role iam.Subject, iamName string, i
 		},
 	}
 
-	if !dns.IsGossipCluster(b.Cluster) {
+	if !b.Cluster.IsGossip() {
 		// This is slightly tricky; we need to know the hosted zone id,
 		// but we might be creating the hosted zone dynamically.
 		// We create a stub-reference which will be combined by the execution engine.
