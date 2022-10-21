@@ -50,7 +50,7 @@ func conversionCollectionToList(ety cty.Type, conv conversion) conversion {
 			if ety == cty.DynamicPseudoType {
 				return cty.ListValEmpty(val.Type().ElementType()), nil
 			}
-			return cty.ListValEmpty(ety), nil
+			return cty.ListValEmpty(ety.WithoutOptionalAttributesDeep()), nil
 		}
 
 		if !cty.CanListVal(elems) {
@@ -99,7 +99,7 @@ func conversionCollectionToSet(ety cty.Type, conv conversion) conversion {
 			if ety == cty.DynamicPseudoType {
 				return cty.SetValEmpty(val.Type().ElementType()), nil
 			}
-			return cty.SetValEmpty(ety), nil
+			return cty.SetValEmpty(ety.WithoutOptionalAttributesDeep()), nil
 		}
 
 		if !cty.CanSetVal(elems) {
