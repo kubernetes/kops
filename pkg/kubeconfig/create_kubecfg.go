@@ -25,7 +25,6 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/upup/pkg/fi"
@@ -55,7 +54,7 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 	useELBName := false
 
 	// If the master DNS is a gossip DNS name; there's no way that name can resolve outside the cluster
-	if dns.IsGossipCluster(cluster) {
+	if cluster.IsGossip() {
 		useELBName = true
 	}
 

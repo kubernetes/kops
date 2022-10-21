@@ -23,8 +23,8 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
@@ -894,6 +894,13 @@ func (c *Cluster) AzureResourceGroupName() string {
 // IsSharedAzureRouteTable returns true if the route table is shared.
 func (c *Cluster) IsSharedAzureRouteTable() bool {
 	return c.Spec.CloudProvider.Azure.RouteTableName != ""
+}
+
+func (c *Cluster) IsGossip() bool {
+	if dns.IsGossipClusterName(c.Name) {
+		return true
+	}
+	return false
 }
 
 func (c *ClusterSpec) IsIPv6Only() bool {

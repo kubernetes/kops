@@ -502,7 +502,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 
 		// Generate dns-controller ServiceAccount IAM permissions.
 		// Gossip clsuters do not require any cloud permissions.
-		if b.UseServiceAccountExternalPermissions() && !b.IsGossip() {
+		if b.UseServiceAccountExternalPermissions() && !b.Cluster.IsGossip() {
 			serviceAccountRoles = append(serviceAccountRoles, &dnscontroller.ServiceAccount{})
 		}
 	} else if b.Cluster.Spec.ExternalDNS.Provider == kops.ExternalDNSProviderExternalDNS {
