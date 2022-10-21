@@ -51,7 +51,7 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 				return nil, fmt.Errorf("on GCE, subnets must include Regions")
 			}
 
-			project = cluster.Spec.Project
+			project = cluster.Spec.CloudProvider.GCE.Project
 			if project == "" {
 				return nil, fmt.Errorf("project is required for GCE - try gcloud config get-value project")
 			}

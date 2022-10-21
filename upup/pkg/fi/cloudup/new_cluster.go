@@ -514,8 +514,8 @@ func setupVPC(opt *NewClusterOptions, cluster *api.Cluster, cloud fi.Cloud) erro
 		if cluster.Spec.CloudConfig == nil {
 			cluster.Spec.CloudConfig = &api.CloudConfiguration{}
 		}
-		cluster.Spec.Project = opt.Project
-		if cluster.Spec.Project == "" {
+		cluster.Spec.CloudProvider.GCE.Project = opt.Project
+		if cluster.Spec.CloudProvider.GCE.Project == "" {
 			project, err := gce.DefaultProject()
 			if err != nil {
 				klog.Warningf("unable to get default google cloud project: %v", err)
@@ -524,7 +524,7 @@ func setupVPC(opt *NewClusterOptions, cluster *api.Cluster, cloud fi.Cloud) erro
 			} else {
 				klog.Infof("using google cloud project: %s", project)
 			}
-			cluster.Spec.Project = project
+			cluster.Spec.CloudProvider.GCE.Project = project
 		}
 		if opt.GCEServiceAccount != "" {
 			// TODO remove this logging?
