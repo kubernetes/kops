@@ -12,7 +12,7 @@ By default, a cluster has:
   because we need to force the cloud to run an instance in every zone, so we can mount the master volumes - we
   cannot do that across zones.
 
-This page explains some common instance group operations. For more detailed documentation of the various configuration keys, see the [InstanceGroup Resource](../instance_groups.md). 
+This page explains some common instance group operations. For more detailed documentation of the various configuration keys, see the [InstanceGroup Resource](../instance_groups.md).
 
 
 ## Instance Groups Disclaimer
@@ -191,6 +191,23 @@ can perform a rolling update to minimize disruption, but even so you might not w
 you might want to make more changes or you might want to wait for off-peak hours. You might just want to wait for
 the instances to terminate naturally - new instances will come up with the new configuration - though if you're not
 using preemptible/spot instances you might be waiting for a long time.
+
+## Fetching images via AWS SSM (AWS Only)
+
+If you are using AWS, you can dynamically fetch instance group images from an AWS SSM Parameter. kOps will automatically fetch SSM Parameter and lookup the AMI ID on every `kops update cluster` run. This is useful if you often update your images and don't want to update your instance group configuration every time. Your SSM Parameter must start with `ssm:` and contain the full path of the SSM Parameter.
+
+An example spec looks like this:
+```yaml
+metadata:
+  name: nodes-us-west-2a
+spec:
+  image: ssm:/aws/service/canonical/ubuntu/server/18.04/stable/current/amd64/hvm/ebs-gp2/ami-id
+  machineType: t3.medium
+  maxSize: 1
+  minSize: 1
+  role: Node
+```
+
 
 ## Changing the root volume size or type
 
