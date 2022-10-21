@@ -17,7 +17,6 @@ limitations under the License.
 package model
 
 import (
-	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
@@ -31,7 +30,7 @@ var _ fi.ModelBuilder = &EtcHostsBuilder{}
 
 // Build is responsible for configuring the gossip DNS tasks.
 func (b *EtcHostsBuilder) Build(c *fi.ModelBuilderContext) error {
-	useGossip := dns.IsGossipCluster(b.Cluster)
+	useGossip := b.Cluster.IsGossip()
 	if !useGossip {
 		return nil
 	}

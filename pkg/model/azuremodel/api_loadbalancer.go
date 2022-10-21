@@ -21,7 +21,6 @@ import (
 
 	"github.com/Azure/go-autorest/autorest/to"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azuretasks"
 )
@@ -81,7 +80,7 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	c.AddTask(lb)
 
-	if dns.IsGossipCluster(b.Cluster) || b.UsePrivateDNS() {
+	if b.Cluster.IsGossip() || b.UsePrivateDNS() {
 		lb.ForAPIServer = true
 	}
 

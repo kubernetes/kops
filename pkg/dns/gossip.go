@@ -18,18 +18,9 @@ package dns
 
 import (
 	"strings"
-
-	kopsapi "k8s.io/kops/pkg/apis/kops"
 )
 
 // TODO: Are .local names necessarily invalid for "real DNS"? Do we need more qualification here?
 func IsGossipClusterName(name string) bool {
 	return strings.HasSuffix(strings.TrimSuffix(name, "."), ".k8s.local")
-}
-
-func IsGossipCluster(cluster *kopsapi.Cluster) bool {
-	if cluster == nil {
-		return false
-	}
-	return IsGossipClusterName(cluster.Name)
 }

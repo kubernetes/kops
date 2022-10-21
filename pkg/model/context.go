@@ -25,7 +25,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/util"
-	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/model/iam"
@@ -417,9 +416,4 @@ func (b *KopsModelContext) NetworkingIsCalico() bool {
 // NetworkingIsCilium returns true if we are using cilium networking
 func (b *KopsModelContext) NetworkingIsCilium() bool {
 	return b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Cilium != nil
-}
-
-// IsGossip returns true if we are using gossip instead of "real" DNS
-func (b *KopsModelContext) IsGossip() bool {
-	return dns.IsGossipCluster(b.Cluster)
 }
