@@ -23,7 +23,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
-	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/pkg/kubemanifest"
@@ -228,7 +227,7 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 		sslCertsHost.VolumeMount.MountPath = "/etc/ssl/certs"
 	}
 
-	if dns.IsGossipCluster(b.Cluster) {
+	if b.Cluster.IsGossip() {
 		// Map /etc/hosts from host, so that we see the updates that are made by protokube
 		kubemanifest.AddHostPathMapping(pod, container, "etchosts", "/etc/hosts")
 	}
