@@ -205,7 +205,6 @@ metadata:
     app.kubernetes.io/managed-by: kops
     k8s-addon: eks-pod-identity-webhook.addons.k8s.io
   name: pod-identity-webhook
-  namespace: kube-system
 webhooks:
 - admissionReviewVersions:
   - v1beta1
