@@ -70,8 +70,6 @@ type ClusterSpec struct {
 	KubernetesVersion string `json:"kubernetesVersion,omitempty"`
 	// Configuration of subnets we are targeting
 	Subnets []ClusterSubnetSpec `json:"subnets,omitempty"`
-	// Project is the cloud project we should use, required on GCE
-	Project string `json:"project,omitempty"`
 	// MasterPublicName is the external DNS name for the master nodes
 	MasterPublicName string `json:"masterPublicName,omitempty"`
 	// MasterInternalName is the internal DNS name for the master nodes
@@ -256,7 +254,10 @@ type AWSSpec struct{}
 type DOSpec struct{}
 
 // GCESpec configures the GCE cloud provider.
-type GCESpec struct{}
+type GCESpec struct {
+	// Project is the cloud project we should use.
+	Project string `json:"project"`
+}
 
 // HetznerSpec configures the Hetzner cloud provider.
 type HetznerSpec struct{}

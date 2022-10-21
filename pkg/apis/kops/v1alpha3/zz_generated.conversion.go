@@ -2568,7 +2568,6 @@ func autoConvert_v1alpha3_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	} else {
 		out.Subnets = nil
 	}
-	out.Project = in.Project
 	out.MasterPublicName = in.MasterPublicName
 	out.MasterInternalName = in.MasterInternalName
 	out.NetworkCIDR = in.NetworkCIDR
@@ -2992,7 +2991,6 @@ func autoConvert_kops_ClusterSpec_To_v1alpha3_ClusterSpec(in *kops.ClusterSpec, 
 	} else {
 		out.Subnets = nil
 	}
-	out.Project = in.Project
 	out.MasterPublicName = in.MasterPublicName
 	out.MasterInternalName = in.MasterInternalName
 	out.NetworkCIDR = in.NetworkCIDR
@@ -4168,6 +4166,7 @@ func Convert_kops_GCENetworkingSpec_To_v1alpha3_GCENetworkingSpec(in *kops.GCENe
 }
 
 func autoConvert_v1alpha3_GCESpec_To_kops_GCESpec(in *GCESpec, out *kops.GCESpec, s conversion.Scope) error {
+	out.Project = in.Project
 	return nil
 }
 
@@ -4177,6 +4176,7 @@ func Convert_v1alpha3_GCESpec_To_kops_GCESpec(in *GCESpec, out *kops.GCESpec, s 
 }
 
 func autoConvert_kops_GCESpec_To_v1alpha3_GCESpec(in *kops.GCESpec, out *GCESpec, s conversion.Scope) error {
+	out.Project = in.Project
 	return nil
 }
 
