@@ -137,8 +137,8 @@ func TestBootstrapUserData(t *testing.T) {
 	for i, x := range cs {
 		cluster := makeTestCluster(x.HookSpecRoles, x.FileAssetSpecRoles)
 		group := makeTestInstanceGroup(x.Role, x.HookSpecRoles, x.FileAssetSpecRoles)
-		c := &fi.ModelBuilderContext{
-			Tasks: make(map[string]fi.Task),
+		c := &fi.CloudupModelBuilderContext{
+			Tasks: make(map[string]fi.CloudupTask),
 		}
 
 		caTask := &fitasks.Keypair{
@@ -190,7 +190,7 @@ func TestBootstrapUserData(t *testing.T) {
 		}
 
 		require.Contains(t, c.Tasks, "BootstrapScript/testIG")
-		err = c.Tasks["BootstrapScript/testIG"].Run(&fi.Context{Cluster: cluster})
+		err = c.Tasks["BootstrapScript/testIG"].Run(&fi.CloudupContext{Cluster: cluster})
 		require.NoError(t, err, "running task")
 
 		actual, err := fi.ResourceAsString(res)

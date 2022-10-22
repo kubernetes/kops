@@ -53,7 +53,7 @@ func (s *SecurityGroup) CompareWithID() *string {
 	return s.ID
 }
 
-func (s *SecurityGroup) Find(context *fi.Context) (*SecurityGroup, error) {
+func (s *SecurityGroup) Find(context *fi.CloudupContext) (*SecurityGroup, error) {
 	cloud := context.Cloud.(openstack.OpenstackCloud)
 	// avoid creating new group if it has removegroup flag
 	if s.RemoveGroup {
@@ -89,8 +89,8 @@ func getSecurityGroupByName(s *SecurityGroup, cloud openstack.OpenstackCloud) (*
 	return actual, nil
 }
 
-func (s *SecurityGroup) Run(context *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(s, context)
+func (s *SecurityGroup) Run(context *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(s, context)
 }
 
 func (_ *SecurityGroup) CheckChanges(a, e, changes *SecurityGroup) error {
@@ -131,8 +131,8 @@ func (_ *SecurityGroup) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, c
 	return nil
 }
 
-func (s *SecurityGroup) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
-	var removals []fi.Deletion
+func (s *SecurityGroup) FindDeletions(c *fi.CloudupContext) ([]fi.CloudupDeletion, error) {
+	var removals []fi.CloudupDeletion
 
 	if len(s.RemoveExtraRules) == 0 && !s.RemoveGroup {
 		return nil, nil
@@ -234,9 +234,9 @@ type deleteSecurityGroup struct {
 	securityGroup *SecurityGroup
 }
 
-var _ fi.Deletion = &deleteSecurityGroup{}
+var _ fi.CloudupDeletion = &deleteSecurityGroup{}
 
-func (d *deleteSecurityGroup) Delete(t fi.Target) error {
+func (d *deleteSecurityGroup) Delete(t fi.CloudupTarget) error {
 	klog.V(2).Infof("deleting security group: %v", fi.DebugAsJsonString(d.securityGroup.Name))
 
 	os, ok := t.(*openstack.OpenstackAPITarget)
@@ -264,9 +264,9 @@ type deleteSecurityGroupRule struct {
 	securityGroup *SecurityGroup
 }
 
-var _ fi.Deletion = &deleteSecurityGroupRule{}
+var _ fi.CloudupDeletion = &deleteSecurityGroupRule{}
 
-func (d *deleteSecurityGroupRule) Delete(t fi.Target) error {
+func (d *deleteSecurityGroupRule) Delete(t fi.CloudupTarget) error {
 	klog.V(2).Infof("deleting security group permission: %v", fi.DebugAsJsonString(d.rule))
 
 	os, ok := t.(*openstack.OpenstackAPITarget)

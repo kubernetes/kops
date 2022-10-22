@@ -36,8 +36,8 @@ type RouterInterface struct {
 }
 
 // GetDependencies returns the dependencies of the RouterInterface task
-func (e *RouterInterface) GetDependencies(tasks map[string]fi.Task) []fi.Task {
-	var deps []fi.Task
+func (e *RouterInterface) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
+	var deps []fi.CloudupTask
 	for _, task := range tasks {
 		if _, ok := task.(*Router); ok {
 			deps = append(deps, task)
@@ -55,7 +55,7 @@ func (i *RouterInterface) CompareWithID() *string {
 	return i.ID
 }
 
-func (i *RouterInterface) Find(context *fi.Context) (*RouterInterface, error) {
+func (i *RouterInterface) Find(context *fi.CloudupContext) (*RouterInterface, error) {
 	cloud := context.Cloud.(openstack.OpenstackCloud)
 	opt := ports.ListOpts{
 		NetworkID: fi.ValueOf(i.Subnet.Network.ID),
@@ -93,8 +93,8 @@ func (i *RouterInterface) Find(context *fi.Context) (*RouterInterface, error) {
 	return actual, nil
 }
 
-func (i *RouterInterface) Run(context *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(i, context)
+func (i *RouterInterface) Run(context *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(i, context)
 }
 
 func (*RouterInterface) CheckChanges(a, e, changes *RouterInterface) error {

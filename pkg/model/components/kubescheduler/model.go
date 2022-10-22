@@ -47,10 +47,10 @@ type KubeSchedulerBuilder struct {
 	AssetBuilder *assets.AssetBuilder
 }
 
-var _ fi.ModelBuilder = &KubeSchedulerBuilder{}
+var _ fi.CloudupModelBuilder = &KubeSchedulerBuilder{}
 
 // Build creates the tasks relating to kube-scheduler
-func (b *KubeSchedulerBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *KubeSchedulerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	configYAML, err := b.buildSchedulerConfig()
 	if err != nil {
 		return err

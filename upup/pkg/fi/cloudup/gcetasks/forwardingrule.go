@@ -55,7 +55,7 @@ func (e *ForwardingRule) CompareWithID() *string {
 	return e.Name
 }
 
-func (e *ForwardingRule) Find(c *fi.Context) (*ForwardingRule, error) {
+func (e *ForwardingRule) Find(c *fi.CloudupContext) (*ForwardingRule, error) {
 	cloud := c.Cloud.(gce.GCECloud)
 	name := fi.ValueOf(e.Name)
 
@@ -97,8 +97,8 @@ func (e *ForwardingRule) Find(c *fi.Context) (*ForwardingRule, error) {
 	return actual, nil
 }
 
-func (e *ForwardingRule) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
+func (e *ForwardingRule) Run(c *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(e, c)
 }
 
 func (_ *ForwardingRule) CheckChanges(a, e, changes *ForwardingRule) error {

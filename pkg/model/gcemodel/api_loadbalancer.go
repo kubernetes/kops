@@ -33,11 +33,11 @@ type APILoadBalancerBuilder struct {
 	Lifecycle fi.Lifecycle
 }
 
-var _ fi.ModelBuilder = &APILoadBalancerBuilder{}
+var _ fi.CloudupModelBuilder = &APILoadBalancerBuilder{}
 
 // createPublicLB validates the existence of a target pool with the given name,
 // and creates an IP address and forwarding rule pointing to that target pool.
-func createPublicLB(b *APILoadBalancerBuilder, c *fi.ModelBuilderContext) error {
+func createPublicLB(b *APILoadBalancerBuilder, c *fi.CloudupModelBuilderContext) error {
 	// TODO: point target pool to instance group managers, as done in internal LB.
 	targetPool := &gcetasks.TargetPool{
 		Name:      s(b.NameForTargetPool("api")),
@@ -116,7 +116,7 @@ func createPublicLB(b *APILoadBalancerBuilder, c *fi.ModelBuilderContext) error 
 // createInternalLB creates an internal load balancer for the cluster.  In
 // GCP this entails creating a health check, backend service, and one forwarding rule
 // per specified subnet pointing to that backend service.
-func createInternalLB(b *APILoadBalancerBuilder, c *fi.ModelBuilderContext) error {
+func createInternalLB(b *APILoadBalancerBuilder, c *fi.CloudupModelBuilderContext) error {
 	lbSpec := b.Cluster.Spec.API.LoadBalancer
 	hc := &gcetasks.HealthCheck{
 		Name:      s(b.NameForHealthCheck("api")),
@@ -194,7 +194,7 @@ func createInternalLB(b *APILoadBalancerBuilder, c *fi.ModelBuilderContext) erro
 	return nil
 }
 
-func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	if !b.UseLoadBalancerForAPI() {
 		return nil
 	}

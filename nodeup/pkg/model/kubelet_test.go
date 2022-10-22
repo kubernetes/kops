@@ -127,8 +127,8 @@ func Test_RunKubeletBuilder(t *testing.T) {
 
 	basedir := "tests/kubelet/featuregates"
 
-	context := &fi.ModelBuilderContext{
-		Tasks: make(map[string]fi.Task),
+	context := &fi.NodeupModelBuilderContext{
+		Tasks: make(map[string]fi.NodeupTask),
 	}
 
 	model, err := testutils.LoadModel(basedir)
@@ -155,8 +155,8 @@ func Test_RunKubeletBuilderWarmPool(t *testing.T) {
 
 	basedir := "tests/kubelet/warmpool"
 
-	context := &fi.ModelBuilderContext{
-		Tasks: make(map[string]fi.Task),
+	context := &fi.NodeupModelBuilderContext{
+		Tasks: make(map[string]fi.NodeupTask),
 	}
 
 	model, err := testutils.LoadModel(basedir)
@@ -177,7 +177,7 @@ func Test_RunKubeletBuilderWarmPool(t *testing.T) {
 	testutils.ValidateTasks(t, filepath.Join(basedir, "tasks.yaml"), context)
 }
 
-func runKubeletBuilder(t *testing.T, context *fi.ModelBuilderContext, nodeupModelContext *NodeupModelContext) {
+func runKubeletBuilder(t *testing.T, context *fi.NodeupModelBuilderContext, nodeupModelContext *NodeupModelContext) {
 	if err := nodeupModelContext.Init(); err != nil {
 		t.Fatalf("error from nodeupModelContext.Init(): %v", err)
 	}
@@ -354,15 +354,15 @@ func mustParseKey(s string) *pki.PrivateKey {
 	return k
 }
 
-func RunGoldenTest(t *testing.T, basedir string, key string, builder func(*NodeupModelContext, *fi.ModelBuilderContext) error) {
+func RunGoldenTest(t *testing.T, basedir string, key string, builder func(*NodeupModelContext, *fi.NodeupModelBuilderContext) error) {
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
 	h.MockKopsVersion("1.18.0")
 	h.SetupMockAWS()
 
-	context := &fi.ModelBuilderContext{
-		Tasks: make(map[string]fi.Task),
+	context := &fi.NodeupModelBuilderContext{
+		Tasks: make(map[string]fi.NodeupTask),
 	}
 
 	model, err := testutils.LoadModel(basedir)

@@ -42,15 +42,15 @@ type LoadImageTask struct {
 }
 
 var (
-	_ fi.Task            = &LoadImageTask{}
-	_ fi.HasDependencies = &LoadImageTask{}
+	_ fi.NodeupTask            = &LoadImageTask{}
+	_ fi.NodeupHasDependencies = &LoadImageTask{}
 )
 
-func (t *LoadImageTask) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+func (t *LoadImageTask) GetDependencies(tasks map[string]fi.NodeupTask) []fi.NodeupTask {
 	// LoadImageTask depends on the docker service to ensure we
 	// sideload images after docker is completely updated and
 	// configured.
-	var deps []fi.Task
+	var deps []fi.NodeupTask
 	for _, v := range tasks {
 		if svc, ok := v.(*Service); ok && svc.Name == containerdService {
 			deps = append(deps, v)
@@ -75,13 +75,13 @@ func (t *LoadImageTask) String() string {
 	return fmt.Sprintf("LoadImageTask: %v", t.Sources)
 }
 
-func (e *LoadImageTask) Find(c *fi.Context) (*LoadImageTask, error) {
+func (e *LoadImageTask) Find(c *fi.NodeupContext) (*LoadImageTask, error) {
 	klog.Warningf("LoadImageTask checking if image present not yet implemented")
 	return nil, nil
 }
 
-func (e *LoadImageTask) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
+func (e *LoadImageTask) Run(c *fi.NodeupContext) error {
+	return fi.NodeupDefaultDeltaRunMethod(e, c)
 }
 
 func (_ *LoadImageTask) CheckChanges(a, e, changes *LoadImageTask) error {

@@ -120,7 +120,7 @@ type VMScaleSet struct {
 	PrincipalID *string
 }
 
-var _ fi.TaskNormalize = &VMScaleSet{}
+var _ fi.CloudupTaskNormalize = &VMScaleSet{}
 
 // VMScaleSetStorageProfile wraps *compute.VirtualMachineScaleSetStorageProfile
 // and implements fi.HasDependencies.
@@ -133,15 +133,15 @@ type VMScaleSetStorageProfile struct {
 	*compute.VirtualMachineScaleSetStorageProfile
 }
 
-var _ fi.HasDependencies = &VMScaleSetStorageProfile{}
+var _ fi.CloudupHasDependencies = &VMScaleSetStorageProfile{}
 
 // GetDependencies returns a slice of tasks on which the tasks depends on.
-func (p *VMScaleSetStorageProfile) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+func (p *VMScaleSetStorageProfile) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
 	return nil
 }
 
 var (
-	_ fi.Task          = &VMScaleSet{}
+	_ fi.CloudupTask   = &VMScaleSet{}
 	_ fi.CompareWithID = &VMScaleSet{}
 )
 
@@ -151,7 +151,7 @@ func (s *VMScaleSet) CompareWithID() *string {
 }
 
 // Find discovers the VMScaleSet in the cloud provider.
-func (s *VMScaleSet) Find(c *fi.Context) (*VMScaleSet, error) {
+func (s *VMScaleSet) Find(c *fi.CloudupContext) (*VMScaleSet, error) {
 	cloud := c.Cloud.(azure.AzureCloud)
 	found, err := cloud.VMScaleSet().Get(context.TODO(), *s.ResourceGroup.Name, *s.Name)
 	if err != nil && !strings.Contains(err.Error(), "ResourceNotFound") {
@@ -239,14 +239,14 @@ func (s *VMScaleSet) Find(c *fi.Context) (*VMScaleSet, error) {
 	return vmss, nil
 }
 
-func (s *VMScaleSet) Normalize(c *fi.Context) error {
+func (s *VMScaleSet) Normalize(c *fi.CloudupContext) error {
 	c.Cloud.(azure.AzureCloud).AddClusterTags(s.Tags)
 	return nil
 }
 
 // Run implements fi.Task.Run.
-func (s *VMScaleSet) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(s, c)
+func (s *VMScaleSet) Run(c *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(s, c)
 }
 
 // CheckChanges returns an error if a change is not allowed.

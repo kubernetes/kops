@@ -27,10 +27,10 @@ type NetworkModelBuilder struct {
 	Lifecycle fi.Lifecycle
 }
 
-var _ fi.ModelBuilder = &NetworkModelBuilder{}
+var _ fi.CloudupModelBuilder = &NetworkModelBuilder{}
 
 // Build builds tasks for creating a virtual network and subnets.
-func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	networkTask := &azuretasks.VirtualNetwork{
 		Name:          fi.PtrTo(b.NameForVirtualNetwork()),
 		Lifecycle:     b.Lifecycle,

@@ -48,7 +48,7 @@ func (e *RouteTable) CompareWithID() *string {
 	return e.ID
 }
 
-func (e *RouteTable) Find(c *fi.Context) (*RouteTable, error) {
+func (e *RouteTable) Find(c *fi.CloudupContext) (*RouteTable, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	var rt *ec2.RouteTable
@@ -146,8 +146,8 @@ func findRouteTableByFilters(cloud awsup.AWSCloud, filters []*ec2.Filter) (*ec2.
 	return rt, nil
 }
 
-func (e *RouteTable) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
+func (e *RouteTable) Run(c *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(e, c)
 }
 
 func (s *RouteTable) CheckChanges(a, e, changes *RouteTable) error {

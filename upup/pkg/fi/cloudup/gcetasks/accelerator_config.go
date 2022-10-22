@@ -29,10 +29,10 @@ type AcceleratorConfig struct {
 }
 
 var (
-	_ fi.HasDependencies = &AcceleratorConfig{}
+	_ fi.CloudupHasDependencies = &AcceleratorConfig{}
 )
 
-func (a *AcceleratorConfig) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+func (a *AcceleratorConfig) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
 	return nil
 }
 

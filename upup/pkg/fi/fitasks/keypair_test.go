@@ -32,7 +32,7 @@ func TestKeypairDeps(t *testing.T) {
 		Signer: ca,
 	}
 
-	tasks := make(map[string]fi.Task)
+	tasks := make(map[string]fi.CloudupTask)
 	tasks["ca"] = ca
 	tasks["cert"] = cert
 

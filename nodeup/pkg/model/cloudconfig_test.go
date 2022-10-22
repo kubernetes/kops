@@ -68,8 +68,8 @@ func TestBuildAzure(t *testing.T) {
 			Cluster:       cluster,
 		},
 	}
-	ctx := &fi.ModelBuilderContext{
-		Tasks: map[string]fi.Task{},
+	ctx := &fi.NodeupModelBuilderContext{
+		Tasks: map[string]fi.NodeupTask{},
 	}
 	if err := b.Build(ctx); err != nil {
 		t.Fatalf("unexpected error from Build(): %v", err)
@@ -141,8 +141,8 @@ func TestBuildAWSCustomNodeIPFamilies(t *testing.T) {
 			Cluster:       cluster,
 		},
 	}
-	ctx := &fi.ModelBuilderContext{
-		Tasks: map[string]fi.Task{},
+	ctx := &fi.NodeupModelBuilderContext{
+		Tasks: map[string]fi.NodeupTask{},
 	}
 	if err := b.Build(ctx); err != nil {
 		t.Fatalf("unexpected error from Build(): %v", err)

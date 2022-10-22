@@ -34,9 +34,9 @@ type ExternalAccessModelBuilder struct {
 	Lifecycle fi.Lifecycle
 }
 
-var _ fi.ModelBuilder = &ExternalAccessModelBuilder{}
+var _ fi.CloudupModelBuilder = &ExternalAccessModelBuilder{}
 
-func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	var sshAccess []net.IPNet
 	for _, cidr := range b.Cluster.Spec.SSHAccess {
 		_, ipNet, err := net.ParseCIDR(cidr)

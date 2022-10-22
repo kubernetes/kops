@@ -60,7 +60,7 @@ func (e *IAMRole) CompareWithID() *string {
 	return e.ID
 }
 
-func (e *IAMRole) Find(c *fi.Context) (*IAMRole, error) {
+func (e *IAMRole) Find(c *fi.CloudupContext) (*IAMRole, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	request := &iam.GetRoleInput{RoleName: e.Name}
@@ -128,8 +128,8 @@ func (e *IAMRole) Find(c *fi.Context) (*IAMRole, error) {
 	return actual, nil
 }
 
-func (e *IAMRole) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
+func (e *IAMRole) Run(c *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(e, c)
 }
 
 func (s *IAMRole) ShouldCreate(a, e, changes *IAMRole) (bool, error) {

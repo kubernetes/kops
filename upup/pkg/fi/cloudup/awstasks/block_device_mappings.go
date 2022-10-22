@@ -181,9 +181,9 @@ func (i *BlockDeviceMapping) ToLaunchTemplateBootDeviceRequest(deviceName string
 	return o
 }
 
-var _ fi.HasDependencies = &BlockDeviceMapping{}
+var _ fi.CloudupHasDependencies = &BlockDeviceMapping{}
 
 // GetDependencies is for future use
-func (i *BlockDeviceMapping) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+func (i *BlockDeviceMapping) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
 	return nil
 }

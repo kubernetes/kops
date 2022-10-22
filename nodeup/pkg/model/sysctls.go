@@ -32,10 +32,10 @@ type SysctlBuilder struct {
 	*NodeupModelContext
 }
 
-var _ fi.ModelBuilder = &SysctlBuilder{}
+var _ fi.NodeupModelBuilder = &SysctlBuilder{}
 
 // Build is responsible for configuring sysctl settings
-func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *SysctlBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	var sysctls []string
 
 	// Common settings

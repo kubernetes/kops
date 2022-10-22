@@ -23,14 +23,14 @@ import (
 )
 
 func TestContainerdHooksBuilder(t *testing.T) {
-	RunGoldenTest(t, "tests/golden/hooks-containerd-exec", "hooks", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
+	RunGoldenTest(t, "tests/golden/hooks-containerd-exec", "hooks", func(nodeupModelContext *NodeupModelContext, target *fi.NodeupModelBuilderContext) error {
 		builder := HookBuilder{NodeupModelContext: nodeupModelContext}
 		return builder.Build(target)
 	})
 }
 
 func TestDockerHooksBuilder(t *testing.T) {
-	RunGoldenTest(t, "tests/golden/hooks-docker-exec", "hooks", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
+	RunGoldenTest(t, "tests/golden/hooks-docker-exec", "hooks", func(nodeupModelContext *NodeupModelContext, target *fi.NodeupModelBuilderContext) error {
 		builder := HookBuilder{NodeupModelContext: nodeupModelContext}
 		return builder.Build(target)
 	})

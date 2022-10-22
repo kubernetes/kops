@@ -737,13 +737,13 @@ type PolicyResource struct {
 }
 
 var (
-	_ fi.Resource        = &PolicyResource{}
-	_ fi.HasDependencies = &PolicyResource{}
+	_ fi.Resource               = &PolicyResource{}
+	_ fi.CloudupHasDependencies = &PolicyResource{}
 )
 
 // GetDependencies adds the DNSZone task to the list of dependencies if set
-func (b *PolicyResource) GetDependencies(tasks map[string]fi.Task) []fi.Task {
-	var deps []fi.Task
+func (b *PolicyResource) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
+	var deps []fi.CloudupTask
 	if b.DNSZone != nil {
 		deps = append(deps, b.DNSZone)
 	}

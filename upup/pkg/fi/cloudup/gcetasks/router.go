@@ -42,9 +42,8 @@ const (
 	subnetNatAllIPRanges = "ALL_IP_RANGES"
 )
 
-// +kops:fitask
-
 // Router is a Router task.
+// +kops:fitask
 type Router struct {
 	Name      *string
 	Lifecycle fi.Lifecycle
@@ -66,7 +65,7 @@ func (r *Router) CompareWithID() *string {
 }
 
 // Find discovers the Router in the cloud provider.
-func (r *Router) Find(c *fi.Context) (*Router, error) {
+func (r *Router) Find(c *fi.CloudupContext) (*Router, error) {
 	cloud := c.Cloud.(gce.GCECloud)
 
 	found, err := cloud.Compute().Routers().Get(cloud.Project(), *r.Region, *r.Name)
@@ -119,8 +118,8 @@ func (r *Router) url(project string) string {
 }
 
 // Run implements fi.Task.Run.
-func (r *Router) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(r, c)
+func (r *Router) Run(c *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(r, c)
 }
 
 // CheckChanges returns an error if a change is not allowed.

@@ -37,13 +37,13 @@ type Volume struct {
 }
 
 var _ fi.CompareWithID = &Volume{}
-var _ fi.TaskNormalize = &Volume{}
+var _ fi.CloudupTaskNormalize = &Volume{}
 
 func (c *Volume) CompareWithID() *string {
 	return c.ID
 }
 
-func (c *Volume) Find(context *fi.Context) (*Volume, error) {
+func (c *Volume) Find(context *fi.CloudupContext) (*Volume, error) {
 	cloud := context.Cloud.(openstack.OpenstackCloud)
 	opt := cinderv3.ListOpts{
 		Name:     fi.ValueOf(c.Name),
@@ -78,7 +78,7 @@ func (c *Volume) Find(context *fi.Context) (*Volume, error) {
 	return actual, nil
 }
 
-func (c *Volume) Normalize(context *fi.Context) error {
+func (c *Volume) Normalize(context *fi.CloudupContext) error {
 	cloud := context.Cloud.(openstack.OpenstackCloud)
 	for k, v := range cloud.GetCloudTags() {
 		c.Tags[k] = v
@@ -86,8 +86,8 @@ func (c *Volume) Normalize(context *fi.Context) error {
 	return nil
 }
 
-func (c *Volume) Run(context *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(c, context)
+func (c *Volume) Run(context *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(c, context)
 }
 
 func (_ *Volume) CheckChanges(a, e, changes *Volume) error {

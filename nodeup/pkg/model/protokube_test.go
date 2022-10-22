@@ -23,7 +23,7 @@ import (
 )
 
 func TestProtokubeBuilder(t *testing.T) {
-	RunGoldenTest(t, "tests/protokube/", "protokube", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
+	RunGoldenTest(t, "tests/protokube/", "protokube", func(nodeupModelContext *NodeupModelContext, target *fi.NodeupModelBuilderContext) error {
 		builder := ProtokubeBuilder{NodeupModelContext: nodeupModelContext}
 		populateAssets(nodeupModelContext)
 		return builder.Build(target)

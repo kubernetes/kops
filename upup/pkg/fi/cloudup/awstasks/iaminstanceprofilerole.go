@@ -38,7 +38,7 @@ type IAMInstanceProfileRole struct {
 	Role            *IAMRole
 }
 
-func (e *IAMInstanceProfileRole) Find(c *fi.Context) (*IAMInstanceProfileRole, error) {
+func (e *IAMInstanceProfileRole) Find(c *fi.CloudupContext) (*IAMInstanceProfileRole, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	if e.Role == nil || e.Role.ID == nil {
@@ -78,8 +78,8 @@ func (e *IAMInstanceProfileRole) Find(c *fi.Context) (*IAMInstanceProfileRole, e
 	return nil, nil
 }
 
-func (e *IAMInstanceProfileRole) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
+func (e *IAMInstanceProfileRole) Run(c *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(e, c)
 }
 
 func (s *IAMInstanceProfileRole) CheckChanges(a, e, changes *IAMInstanceProfileRole) error {
