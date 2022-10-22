@@ -48,13 +48,13 @@ type FirewallRule struct {
 }
 
 var _ fi.CompareWithID = &FirewallRule{}
-var _ fi.TaskNormalize = &FirewallRule{}
+var _ fi.CloudupTaskNormalize = &FirewallRule{}
 
 func (e *FirewallRule) CompareWithID() *string {
 	return e.Name
 }
 
-func (e *FirewallRule) Find(c *fi.Context) (*FirewallRule, error) {
+func (e *FirewallRule) Find(c *fi.CloudupContext) (*FirewallRule, error) {
 	cloud := c.Cloud.(gce.GCECloud)
 
 	r, err := cloud.Compute().Firewalls().Get(cloud.Project(), *e.Name)
@@ -82,13 +82,13 @@ func (e *FirewallRule) Find(c *fi.Context) (*FirewallRule, error) {
 	return actual, nil
 }
 
-func (e *FirewallRule) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
+func (e *FirewallRule) Run(c *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(e, c)
 }
 
 // Normalize applies some validation that isn't technically required,
 // but avoids some problems with surprising behaviours.
-func (e *FirewallRule) Normalize(c *fi.Context) error {
+func (e *FirewallRule) Normalize(c *fi.CloudupContext) error {
 	if !e.Disabled {
 		// Treat it as an error if SourceRanges _and_ SourceTags empty with Disabled=false
 		// this is interpreted as SourceRanges="0.0.0.0/0", which is likely not what was intended.

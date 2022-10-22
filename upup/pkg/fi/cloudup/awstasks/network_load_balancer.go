@@ -74,8 +74,8 @@ type NetworkLoadBalancer struct {
 }
 
 var _ fi.CompareWithID = &NetworkLoadBalancer{}
-var _ fi.TaskNormalize = &NetworkLoadBalancer{}
-var _ fi.ProducesDeletions = &NetworkLoadBalancer{}
+var _ fi.CloudupTaskNormalize = &NetworkLoadBalancer{}
+var _ fi.CloudupProducesDeletions = &NetworkLoadBalancer{}
 
 func (e *NetworkLoadBalancer) CompareWithID() *string {
 	return e.Name
@@ -126,9 +126,9 @@ func (e *NetworkLoadBalancerListener) mapToAWS(targetGroups []*TargetGroup, load
 	return l, nil
 }
 
-var _ fi.HasDependencies = &NetworkLoadBalancerListener{}
+var _ fi.CloudupHasDependencies = &NetworkLoadBalancerListener{}
 
-func (e *NetworkLoadBalancerListener) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+func (e *NetworkLoadBalancerListener) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
 	return nil
 }
 
@@ -241,7 +241,7 @@ func (e *NetworkLoadBalancer) getHostedZoneId() *string {
 	return e.HostedZoneId
 }
 
-func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) {
+func (e *NetworkLoadBalancer) Find(c *fi.CloudupContext) (*NetworkLoadBalancer, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	lb, err := cloud.FindELBV2ByNameTag(e.Tags["Name"])
@@ -437,7 +437,7 @@ func (e *NetworkLoadBalancer) IsForAPIServer() bool {
 	return e.ForAPIServer
 }
 
-func (e *NetworkLoadBalancer) FindAddresses(context *fi.Context) ([]string, error) {
+func (e *NetworkLoadBalancer) FindAddresses(context *fi.CloudupContext) ([]string, error) {
 	var addresses []string
 
 	cloud := context.Cloud.(awsup.AWSCloud)
@@ -470,11 +470,11 @@ func (e *NetworkLoadBalancer) FindAddresses(context *fi.Context) ([]string, erro
 	return addresses, nil
 }
 
-func (e *NetworkLoadBalancer) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
+func (e *NetworkLoadBalancer) Run(c *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(e, c)
 }
 
-func (e *NetworkLoadBalancer) Normalize(c *fi.Context) error {
+func (e *NetworkLoadBalancer) Normalize(c *fi.CloudupContext) error {
 	// We need to sort our arrays consistently, so we don't get spurious changes
 	sort.Stable(OrderSubnetMappingsByName(e.SubnetMappings))
 	sort.Stable(OrderListenersByPort(e.Listeners))
@@ -839,7 +839,7 @@ func (e *NetworkLoadBalancer) TerraformLink(params ...string) *terraformWriter.L
 }
 
 // FindDeletions schedules deletion of the corresponding legacy classic load balancer when it no longer has targets.
-func (e *NetworkLoadBalancer) FindDeletions(context *fi.Context) ([]fi.Deletion, error) {
+func (e *NetworkLoadBalancer) FindDeletions(context *fi.CloudupContext) ([]fi.CloudupDeletion, error) {
 	if e.CLBName == nil {
 		return nil, nil
 	}
@@ -866,7 +866,7 @@ func (e *NetworkLoadBalancer) FindDeletions(context *fi.Context) ([]fi.Deletion,
 
 	klog.V(4).Infof("Found CLB %+v", actual)
 
-	return []fi.Deletion{actual}, nil
+	return []fi.CloudupDeletion{actual}, nil
 }
 
 type deleteClassicLoadBalancer struct {
@@ -875,7 +875,7 @@ type deleteClassicLoadBalancer struct {
 	LoadBalancerName *string
 }
 
-func (d deleteClassicLoadBalancer) Delete(t fi.Target) error {
+func (d deleteClassicLoadBalancer) Delete(t fi.CloudupTarget) error {
 	awsTarget, ok := t.(*awsup.AWSAPITarget)
 	if !ok {
 		return fmt.Errorf("unexpected target type for deletion: %T", t)

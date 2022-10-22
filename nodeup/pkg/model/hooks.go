@@ -34,10 +34,10 @@ type HookBuilder struct {
 	*NodeupModelContext
 }
 
-var _ fi.ModelBuilder = &HookBuilder{}
+var _ fi.NodeupModelBuilder = &HookBuilder{}
 
 // Build is responsible for implementing the cluster hook
-func (h *HookBuilder) Build(c *fi.ModelBuilderContext) error {
+func (h *HookBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	// we keep a list of hooks name so we can allow local instanceGroup hooks override the cluster ones
 	hookNames := make(map[string]bool)
 	for i, spec := range h.NodeupConfig.Hooks {

@@ -142,42 +142,42 @@ func Test_KubeAPIServer_BuildFlags(t *testing.T) {
 }
 
 func TestKubeAPIServerBuilder(t *testing.T) {
-	RunGoldenTest(t, "tests/golden/minimal", "kube-apiserver", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
+	RunGoldenTest(t, "tests/golden/minimal", "kube-apiserver", func(nodeupModelContext *NodeupModelContext, target *fi.NodeupModelBuilderContext) error {
 		builder := KubeAPIServerBuilder{NodeupModelContext: nodeupModelContext}
 		return builder.Build(target)
 	})
 }
 
 func TestDeddicatedAPIServerBuilder(t *testing.T) {
-	RunGoldenTest(t, "tests/golden/dedicated-apiserver", "kube-apiserver", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
+	RunGoldenTest(t, "tests/golden/dedicated-apiserver", "kube-apiserver", func(nodeupModelContext *NodeupModelContext, target *fi.NodeupModelBuilderContext) error {
 		builder := KubeAPIServerBuilder{NodeupModelContext: nodeupModelContext}
 		return builder.Build(target)
 	})
 }
 
 func TestWithoutEtcdEventsAPIServerBuilder(t *testing.T) {
-	RunGoldenTest(t, "tests/golden/without-etcd-events", "kube-apiserver", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
+	RunGoldenTest(t, "tests/golden/without-etcd-events", "kube-apiserver", func(nodeupModelContext *NodeupModelContext, target *fi.NodeupModelBuilderContext) error {
 		builder := KubeAPIServerBuilder{NodeupModelContext: nodeupModelContext}
 		return builder.Build(target)
 	})
 }
 
 func TestAwsIamAuthenticator(t *testing.T) {
-	RunGoldenTest(t, "tests/golden/awsiam", "kube-apiserver", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
+	RunGoldenTest(t, "tests/golden/awsiam", "kube-apiserver", func(nodeupModelContext *NodeupModelContext, target *fi.NodeupModelBuilderContext) error {
 		builder := KubeAPIServerBuilder{NodeupModelContext: nodeupModelContext}
 		return builder.Build(target)
 	})
 }
 
 func TestKubeAPIServerBuilderAMD64(t *testing.T) {
-	RunGoldenTest(t, "tests/golden/side-loading", "kube-apiserver-amd64", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
+	RunGoldenTest(t, "tests/golden/side-loading", "kube-apiserver-amd64", func(nodeupModelContext *NodeupModelContext, target *fi.NodeupModelBuilderContext) error {
 		builder := KubeAPIServerBuilder{NodeupModelContext: nodeupModelContext}
 		return builder.Build(target)
 	})
 }
 
 func TestKubeAPIServerBuilderARM64(t *testing.T) {
-	RunGoldenTest(t, "tests/golden/side-loading", "kube-apiserver-arm64", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
+	RunGoldenTest(t, "tests/golden/side-loading", "kube-apiserver-arm64", func(nodeupModelContext *NodeupModelContext, target *fi.NodeupModelBuilderContext) error {
 		builder := KubeAPIServerBuilder{NodeupModelContext: nodeupModelContext}
 		builder.Architecture = architectures.ArchitectureArm64
 		return builder.Build(target)

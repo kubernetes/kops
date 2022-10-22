@@ -45,11 +45,11 @@ type AutoscalingGroupModelBuilder struct {
 	Lifecycle              fi.Lifecycle
 }
 
-var _ fi.ModelBuilder = &AutoscalingGroupModelBuilder{}
+var _ fi.CloudupModelBuilder = &AutoscalingGroupModelBuilder{}
 
 // Build the GCE instance template object for an InstanceGroup
 // We are then able to extract out the fields when running with the clusterapi.
-func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderContext, ig *kops.InstanceGroup, subnet *kops.ClusterSubnetSpec) (*gcetasks.InstanceTemplate, error) {
+func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelBuilderContext, ig *kops.InstanceGroup, subnet *kops.ClusterSubnetSpec) (*gcetasks.InstanceTemplate, error) {
 	// Indented to keep diff manageable
 	// TODO: Remove spurious indent
 	{
@@ -245,7 +245,7 @@ func (b *AutoscalingGroupModelBuilder) splitToZones(ig *kops.InstanceGroup) (map
 	}
 }
 
-func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	for _, ig := range b.InstanceGroups {
 		subnets, err := b.GatherSubnets(ig)
 		if err != nil {

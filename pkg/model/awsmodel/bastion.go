@@ -41,9 +41,9 @@ type BastionModelBuilder struct {
 	SecurityLifecycle fi.Lifecycle
 }
 
-var _ fi.ModelBuilder = &BastionModelBuilder{}
+var _ fi.CloudupModelBuilder = &BastionModelBuilder{}
 
-func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *BastionModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	var bastionInstanceGroups []*kops.InstanceGroup
 	for _, ig := range b.InstanceGroups {
 		if ig.Spec.Role == kops.InstanceGroupRoleBastion {

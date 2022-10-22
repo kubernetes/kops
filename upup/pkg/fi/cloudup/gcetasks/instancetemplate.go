@@ -81,7 +81,7 @@ type InstanceTemplate struct {
 }
 
 var (
-	_ fi.Task          = &InstanceTemplate{}
+	_ fi.CloudupTask   = &InstanceTemplate{}
 	_ fi.CompareWithID = &InstanceTemplate{}
 )
 
@@ -89,7 +89,7 @@ func (e *InstanceTemplate) CompareWithID() *string {
 	return e.ID
 }
 
-func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
+func (e *InstanceTemplate) Find(c *fi.CloudupContext) (*InstanceTemplate, error) {
 	cloud := c.Cloud.(gce.GCECloud)
 
 	templates, err := cloud.Compute().InstanceTemplates().List(context.Background(), cloud.Project())
@@ -229,8 +229,8 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 	return nil, nil
 }
 
-func (e *InstanceTemplate) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
+func (e *InstanceTemplate) Run(c *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(e, c)
 }
 
 func (_ *InstanceTemplate) CheckChanges(a, e, changes *InstanceTemplate) error {

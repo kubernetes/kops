@@ -31,10 +31,10 @@ type NTPBuilder struct {
 	*NodeupModelContext
 }
 
-var _ fi.ModelBuilder = &NTPBuilder{}
+var _ fi.NodeupModelBuilder = &NTPBuilder{}
 
 // Build is responsible for configuring NTP
-func (b *NTPBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *NTPBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	if !b.managed() {
 		klog.Infof("Managed is set to false; won't install NTP")
 		return nil

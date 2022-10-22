@@ -23,14 +23,14 @@ import (
 )
 
 func TestUpdateServiceBuilderAutomaticUpgrade(t *testing.T) {
-	RunGoldenTest(t, "tests/updateservicebuilder/automatic", "updateservice", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
+	RunGoldenTest(t, "tests/updateservicebuilder/automatic", "updateservice", func(nodeupModelContext *NodeupModelContext, target *fi.NodeupModelBuilderContext) error {
 		builder := UpdateServiceBuilder{NodeupModelContext: nodeupModelContext}
 		return builder.Build(target)
 	})
 }
 
 func TestUpdateServiceBuilderExternal(t *testing.T) {
-	RunGoldenTest(t, "tests/updateservicebuilder/external", "updateservice", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
+	RunGoldenTest(t, "tests/updateservicebuilder/external", "updateservice", func(nodeupModelContext *NodeupModelContext, target *fi.NodeupModelBuilderContext) error {
 		builder := UpdateServiceBuilder{NodeupModelContext: nodeupModelContext}
 		return builder.Build(target)
 	})

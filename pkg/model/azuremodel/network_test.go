@@ -26,8 +26,8 @@ func TestNetworkModelBuilder_Build(t *testing.T) {
 	b := NetworkModelBuilder{
 		AzureModelContext: newTestAzureModelContext(),
 	}
-	c := &fi.ModelBuilderContext{
-		Tasks: make(map[string]fi.Task),
+	c := &fi.CloudupModelBuilderContext{
+		Tasks: make(map[string]fi.CloudupTask),
 	}
 	err := b.Build(c)
 	if err != nil {

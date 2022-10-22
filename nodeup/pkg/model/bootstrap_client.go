@@ -37,7 +37,7 @@ type BootstrapClientBuilder struct {
 	*NodeupModelContext
 }
 
-func (b BootstrapClientBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b BootstrapClientBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	if b.IsMaster || !b.UseKopsControllerForNodeBootstrap() {
 		return nil
 	}
@@ -89,4 +89,4 @@ func (b BootstrapClientBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
-var _ fi.ModelBuilder = &BootstrapClientBuilder{}
+var _ fi.NodeupModelBuilder = &BootstrapClientBuilder{}

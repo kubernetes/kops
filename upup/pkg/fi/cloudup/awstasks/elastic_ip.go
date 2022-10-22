@@ -59,7 +59,7 @@ func (e *ElasticIP) CompareWithID() *string {
 }
 
 // Find returns the actual ElasticIP state, or nil if not found
-func (e *ElasticIP) Find(context *fi.Context) (*ElasticIP, error) {
+func (e *ElasticIP) Find(context *fi.CloudupContext) (*ElasticIP, error) {
 	return e.find(context.Cloud.(awsup.AWSCloud))
 }
 
@@ -189,8 +189,8 @@ func (e *ElasticIP) find(cloud awsup.AWSCloud) (*ElasticIP, error) {
 // This is the main entry point of the task, and will actually
 // connect our internal resource representation to an actual
 // resource in AWS
-func (e *ElasticIP) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
+func (e *ElasticIP) Run(c *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(e, c)
 }
 
 // CheckChanges validates the resource. EIPs are simple, so virtually no

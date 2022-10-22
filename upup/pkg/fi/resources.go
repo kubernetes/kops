@@ -199,30 +199,33 @@ func (r *VFSResource) Open() (io.Reader, error) {
 	return b, err
 }
 
-type TaskDependentResource struct {
+type TaskDependentResource[T SubContext] struct {
 	Resource Resource `json:"resource,omitempty"`
-	Task     Task     `json:"task,omitempty"`
+	Task     Task[T]  `json:"task,omitempty"`
 }
 
+type CloudupTaskDependentResource = TaskDependentResource[CloudupSubContext]
+type NodeupTaskDependentResource = TaskDependentResource[NodeupSubContext]
+
 var (
-	_ Resource        = &TaskDependentResource{}
-	_ HasDependencies = &TaskDependentResource{}
-	_ HasIsReady      = &TaskDependentResource{}
+	_ Resource                           = &TaskDependentResource[CloudupSubContext]{}
+	_ HasDependencies[CloudupSubContext] = &TaskDependentResource[CloudupSubContext]{}
+	_ HasIsReady                         = &TaskDependentResource[CloudupSubContext]{}
 )
 
-func (r *TaskDependentResource) Open() (io.Reader, error) {
+func (r *TaskDependentResource[T]) Open() (io.Reader, error) {
 	if r.Resource == nil {
 		return nil, fmt.Errorf("resource opened before it is ready (task=%v)", r.Task)
 	}
 	return r.Resource.Open()
 }
 
-func (r *TaskDependentResource) GetDependencies(tasks map[string]Task) []Task {
-	return []Task{r.Task}
+func (r *TaskDependentResource[T]) GetDependencies(tasks map[string]Task[T]) []Task[T] {
+	return []Task[T]{r.Task}
 }
 
 // IsReady implements HasIsReady::IsReady
-func (r *TaskDependentResource) IsReady() bool {
+func (r *TaskDependentResource[T]) IsReady() bool {
 	return r.Resource != nil
 }
 

@@ -54,7 +54,7 @@ func NewTerraformTarget(cloud fi.Cloud, project string, filesProvider *vfs.Terra
 	return &target
 }
 
-var _ fi.Target = &TerraformTarget{}
+var _ fi.CloudupTarget = &TerraformTarget{}
 
 func (t *TerraformTarget) AddFileResource(resourceType string, resourceName string, key string, r fi.Resource, base64 bool) (*terraformWriter.Literal, error) {
 	d, err := fi.ResourceAsBytes(r)
@@ -91,7 +91,7 @@ func tfGetFilesProviderExtraConfig(c *kops.TargetSpec) map[string]string {
 	return nil
 }
 
-func (t *TerraformTarget) Finish(taskMap map[string]fi.Task) error {
+func (t *TerraformTarget) Finish(taskMap map[string]fi.CloudupTask) error {
 	if err := t.finishHCL2(); err != nil {
 		return err
 	}

@@ -67,7 +67,7 @@ func (e *TargetGroup) CompareWithID() *string {
 	return e.ARN
 }
 
-func (e *TargetGroup) Find(c *fi.Context) (*TargetGroup, error) {
+func (e *TargetGroup) Find(c *fi.CloudupContext) (*TargetGroup, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	request := &elbv2.DescribeTargetGroupsInput{}
@@ -147,8 +147,8 @@ func (e *TargetGroup) Find(c *fi.Context) (*TargetGroup, error) {
 	return actual, nil
 }
 
-func (e *TargetGroup) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
+func (e *TargetGroup) Run(c *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(e, c)
 }
 
 func (_ *TargetGroup) ShouldCreate(a, e, changes *TargetGroup) (bool, error) {

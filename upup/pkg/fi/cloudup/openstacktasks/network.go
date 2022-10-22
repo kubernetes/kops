@@ -56,7 +56,7 @@ func NewNetworkTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecy
 	return task, nil
 }
 
-func (n *Network) Find(context *fi.Context) (*Network, error) {
+func (n *Network) Find(context *fi.CloudupContext) (*Network, error) {
 	if n.Name == nil && n.ID == nil {
 		return nil, nil
 	}
@@ -84,8 +84,8 @@ func (n *Network) Find(context *fi.Context) (*Network, error) {
 	return actual, nil
 }
 
-func (c *Network) Run(context *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(c, context)
+func (c *Network) Run(context *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(c, context)
 }
 
 func (_ *Network) CheckChanges(a, e, changes *Network) error {

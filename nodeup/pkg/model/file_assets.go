@@ -31,10 +31,10 @@ type FileAssetsBuilder struct {
 	*NodeupModelContext
 }
 
-var _ fi.ModelBuilder = &FileAssetsBuilder{}
+var _ fi.NodeupModelBuilder = &FileAssetsBuilder{}
 
 // Build is responsible for writing out the file assets from cluster and instanceGroup
-func (f *FileAssetsBuilder) Build(c *fi.ModelBuilderContext) error {
+func (f *FileAssetsBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	// used to keep track of previous file, so a instanceGroup can override a cluster wide one
 	tracker := make(map[string]bool)
 
@@ -49,7 +49,7 @@ func (f *FileAssetsBuilder) Build(c *fi.ModelBuilderContext) error {
 }
 
 // buildFileAssets is responsible for rendering the file assets to disk
-func (f *FileAssetsBuilder) buildFileAssets(c *fi.ModelBuilderContext, assets []kops.FileAssetSpec, tracker map[string]bool) error {
+func (f *FileAssetsBuilder) buildFileAssets(c *fi.NodeupModelBuilderContext, assets []kops.FileAssetSpec, tracker map[string]bool) error {
 	for _, asset := range assets {
 		// @check if e have a path and if not use the default path
 		assetPath := asset.Path

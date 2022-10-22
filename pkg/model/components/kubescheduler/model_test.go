@@ -39,8 +39,8 @@ func Test_RunKubeSchedulerBuilder(t *testing.T) {
 		basedir := basedir
 
 		t.Run(fmt.Sprintf("basedir=%s", basedir), func(t *testing.T) {
-			context := &fi.ModelBuilderContext{
-				Tasks: make(map[string]fi.Task),
+			context := &fi.CloudupModelBuilderContext{
+				Tasks: make(map[string]fi.CloudupTask),
 			}
 			kopsModelContext, err := LoadKopsModelContext(basedir)
 			if err != nil {

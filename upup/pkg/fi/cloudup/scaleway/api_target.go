@@ -22,7 +22,7 @@ type ScwAPITarget struct {
 	Cloud ScwCloud
 }
 
-var _ fi.Target = &ScwAPITarget{}
+var _ fi.CloudupTarget = &ScwAPITarget{}
 
 func NewScwAPITarget(cloud ScwCloud) *ScwAPITarget {
 	return &ScwAPITarget{
@@ -30,7 +30,7 @@ func NewScwAPITarget(cloud ScwCloud) *ScwAPITarget {
 	}
 }
 
-func (s ScwAPITarget) Finish(taskMap map[string]fi.Task) error {
+func (s ScwAPITarget) Finish(taskMap map[string]fi.CloudupTask) error {
 	return nil
 }
 

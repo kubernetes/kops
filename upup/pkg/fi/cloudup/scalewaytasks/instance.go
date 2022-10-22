@@ -39,14 +39,14 @@ type Instance struct {
 	UserData       *fi.Resource
 }
 
-var _ fi.Task = &Instance{}
+var _ fi.CloudupTask = &Instance{}
 var _ fi.CompareWithID = &Instance{}
 
 func (s *Instance) CompareWithID() *string {
 	return s.Name
 }
 
-func (s *Instance) Find(c *fi.Context) (*Instance, error) {
+func (s *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 	cloud := c.Cloud.(scaleway.ScwCloud)
 
 	servers, err := cloud.GetClusterServers(cloud.ClusterName(s.Tags), s.Name)
@@ -71,8 +71,8 @@ func (s *Instance) Find(c *fi.Context) (*Instance, error) {
 	}, nil
 }
 
-func (s *Instance) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(s, c)
+func (s *Instance) Run(c *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(s, c)
 }
 
 func (_ *Instance) CheckChanges(actual, expected, changes *Instance) error {
@@ -106,7 +106,7 @@ func (_ *Instance) CheckChanges(actual, expected, changes *Instance) error {
 	return nil
 }
 
-func (_ *Instance) RenderScw(c *fi.Context, actual, expected, changes *Instance) error {
+func (_ *Instance) RenderScw(c *fi.CloudupContext, actual, expected, changes *Instance) error {
 	cloud := c.Cloud.(scaleway.ScwCloud)
 	instanceService := cloud.InstanceService()
 	zone := scw.Zone(fi.ValueOf(expected.Zone))

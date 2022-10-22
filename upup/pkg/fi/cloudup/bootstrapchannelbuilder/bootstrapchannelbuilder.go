@@ -58,7 +58,7 @@ type BootstrapChannelBuilder struct {
 	assetBuilder  *assets.AssetBuilder
 }
 
-var _ fi.ModelBuilder = &BootstrapChannelBuilder{}
+var _ fi.CloudupModelBuilder = &BootstrapChannelBuilder{}
 
 // networkSelector is the labels set on networking addons
 //
@@ -99,7 +99,7 @@ func NewBootstrapChannelBuilder(modelContext *model.KopsModelContext,
 }
 
 // Build is responsible for adding the addons to the channel
-func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *BootstrapChannelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	addons, serviceAccounts, err := b.buildAddons(c)
 	if err != nil {
 		return err
@@ -324,7 +324,7 @@ type Addon struct {
 	BuildPrune bool
 }
 
-func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*AddonList, map[string]iam.Subject, error) {
+func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) (*AddonList, map[string]iam.Subject, error) {
 	addons := &AddonList{}
 
 	serviceAccountRoles := []iam.Subject{}

@@ -85,7 +85,7 @@ func LoadModel(basedir string) (*Model, error) {
 	return spec, nil
 }
 
-func ValidateTasks(t *testing.T, expectedFile string, context *fi.ModelBuilderContext) {
+func ValidateTasks[T fi.SubContext](t *testing.T, expectedFile string, context *fi.ModelBuilderContext[T]) {
 	var keys []string
 	for key := range context.Tasks {
 		keys = append(keys, key)

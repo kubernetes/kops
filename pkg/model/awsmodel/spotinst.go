@@ -137,9 +137,9 @@ type SpotInstanceGroupModelBuilder struct {
 	SecurityLifecycle      fi.Lifecycle
 }
 
-var _ fi.ModelBuilder = &SpotInstanceGroupModelBuilder{}
+var _ fi.CloudupModelBuilder = &SpotInstanceGroupModelBuilder{}
 
-func (b *SpotInstanceGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *SpotInstanceGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	var nodeSpotInstanceGroups []*kops.InstanceGroup
 	var err error
 
@@ -187,7 +187,7 @@ func (b *SpotInstanceGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
-func (b *SpotInstanceGroupModelBuilder) buildElastigroup(c *fi.ModelBuilderContext, ig *kops.InstanceGroup) (err error) {
+func (b *SpotInstanceGroupModelBuilder) buildElastigroup(c *fi.CloudupModelBuilderContext, ig *kops.InstanceGroup) (err error) {
 	klog.V(4).Infof("Building instance group as Elastigroup: %q", b.AutoscalingGroupName(ig))
 	group := &spotinsttasks.Elastigroup{
 		Lifecycle:            b.Lifecycle,
@@ -330,7 +330,7 @@ func (b *SpotInstanceGroupModelBuilder) buildElastigroup(c *fi.ModelBuilderConte
 	return nil
 }
 
-func (b *SpotInstanceGroupModelBuilder) buildOcean(c *fi.ModelBuilderContext, igs ...*kops.InstanceGroup) (err error) {
+func (b *SpotInstanceGroupModelBuilder) buildOcean(c *fi.CloudupModelBuilderContext, igs ...*kops.InstanceGroup) (err error) {
 	klog.V(4).Infof("Building instance group as Ocean: %q", "nodes."+b.ClusterName())
 	ocean := &spotinsttasks.Ocean{
 		Lifecycle: b.Lifecycle,
@@ -505,7 +505,7 @@ func (b *SpotInstanceGroupModelBuilder) buildOcean(c *fi.ModelBuilderContext, ig
 	return nil
 }
 
-func (b *SpotInstanceGroupModelBuilder) buildLaunchSpec(c *fi.ModelBuilderContext,
+func (b *SpotInstanceGroupModelBuilder) buildLaunchSpec(c *fi.CloudupModelBuilderContext,
 	ig, igOcean *kops.InstanceGroup, ocean *spotinsttasks.Ocean) (err error) {
 	klog.V(4).Infof("Building instance group as LaunchSpec: %q", b.AutoscalingGroupName(ig))
 	launchSpec := &spotinsttasks.LaunchSpec{
@@ -627,7 +627,7 @@ func (b *SpotInstanceGroupModelBuilder) buildLaunchSpec(c *fi.ModelBuilderContex
 	return nil
 }
 
-func (b *SpotInstanceGroupModelBuilder) buildSecurityGroups(c *fi.ModelBuilderContext,
+func (b *SpotInstanceGroupModelBuilder) buildSecurityGroups(c *fi.CloudupModelBuilderContext,
 	ig *kops.InstanceGroup) ([]*awstasks.SecurityGroup, error) {
 	securityGroups := []*awstasks.SecurityGroup{
 		b.LinkToSecurityGroup(ig.Spec.Role),
@@ -782,7 +782,7 @@ func (b *SpotInstanceGroupModelBuilder) buildCapacity(ig *kops.InstanceGroup) (*
 	return fi.PtrTo(int64(minSize)), fi.PtrTo(int64(maxSize))
 }
 
-func (b *SpotInstanceGroupModelBuilder) buildLoadBalancers(c *fi.ModelBuilderContext,
+func (b *SpotInstanceGroupModelBuilder) buildLoadBalancers(c *fi.CloudupModelBuilderContext,
 	ig *kops.InstanceGroup) ([]*awstasks.ClassicLoadBalancer, []*awstasks.TargetGroup, error) {
 	var loadBalancers []*awstasks.ClassicLoadBalancer
 	var targetGroups []*awstasks.TargetGroup

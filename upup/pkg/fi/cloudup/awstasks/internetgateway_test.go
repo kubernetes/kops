@@ -82,7 +82,7 @@ func TestSharedInternetGatewayDoesNotRename(t *testing.T) {
 	}
 
 	// We define a function so we can rebuild the tasks, because we modify in-place when running
-	buildTasks := func() map[string]fi.Task {
+	buildTasks := func() map[string]fi.CloudupTask {
 		vpc1 := &VPC{
 			Name:      s("vpc1"),
 			Lifecycle: fi.LifecycleSync,
@@ -100,7 +100,7 @@ func TestSharedInternetGatewayDoesNotRename(t *testing.T) {
 			Tags:      make(map[string]string),
 		}
 
-		return map[string]fi.Task{
+		return map[string]fi.CloudupTask{
 			"igw1": igw1,
 			"vpc1": vpc1,
 		}
@@ -114,7 +114,7 @@ func TestSharedInternetGatewayDoesNotRename(t *testing.T) {
 			Cloud: cloud,
 		}
 
-		context, err := fi.NewContext(ctx, target, nil, cloud, nil, nil, nil, true, allTasks)
+		context, err := fi.NewCloudupContext(ctx, target, nil, cloud, nil, nil, nil, true, allTasks)
 		if err != nil {
 			t.Fatalf("error building context: %v", err)
 		}

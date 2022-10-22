@@ -34,8 +34,8 @@ func runInstallBuilderTest(t *testing.T, basedir string) {
 	installation := Installation{
 		Command: []string{"/opt/kops/bin/nodeup", "--conf=/opt/kops/conf/kube_env.yaml", "--v=8"},
 	}
-	tasks := make(map[string]fi.Task)
-	buildContext := &fi.ModelBuilderContext{
+	tasks := make(map[string]fi.NodeupTask)
+	buildContext := &fi.NodeupModelBuilderContext{
 		Tasks: tasks,
 	}
 	installation.Build(buildContext)

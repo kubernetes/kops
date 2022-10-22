@@ -41,8 +41,8 @@ type PoolAssociation struct {
 }
 
 // GetDependencies returns the dependencies of the Instance task
-func (e *PoolAssociation) GetDependencies(tasks map[string]fi.Task) []fi.Task {
-	var deps []fi.Task
+func (e *PoolAssociation) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
+	var deps []fi.CloudupTask
 	for _, task := range tasks {
 		if _, ok := task.(*LB); ok {
 			deps = append(deps, task)
@@ -63,7 +63,7 @@ func (s *PoolAssociation) CompareWithID() *string {
 	return s.ID
 }
 
-func (p *PoolAssociation) Find(context *fi.Context) (*PoolAssociation, error) {
+func (p *PoolAssociation) Find(context *fi.CloudupContext) (*PoolAssociation, error) {
 	cloud := context.Cloud.(openstack.OpenstackCloud)
 
 	opt := v2pools.ListOpts{
@@ -118,8 +118,8 @@ func (p *PoolAssociation) Find(context *fi.Context) (*PoolAssociation, error) {
 	return actual, nil
 }
 
-func (s *PoolAssociation) Run(context *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(s, context)
+func (s *PoolAssociation) Run(context *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(s, context)
 }
 
 func (_ *PoolAssociation) CheckChanges(a, e, changes *PoolAssociation) error {

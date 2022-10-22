@@ -45,7 +45,7 @@ func (e *Disk) CompareWithID() *string {
 	return e.Name
 }
 
-func (e *Disk) Find(c *fi.Context) (*Disk, error) {
+func (e *Disk) Find(c *fi.CloudupContext) (*Disk, error) {
 	cloud := c.Cloud.(gce.GCECloud)
 
 	r, err := cloud.Compute().Disks().Get(cloud.Project(), *e.Zone, *e.Name)
@@ -80,8 +80,8 @@ func (e *Disk) URL(project string) string {
 	return u.BuildURL()
 }
 
-func (e *Disk) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
+func (e *Disk) Run(c *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(e, c)
 }
 
 func (_ *Disk) CheckChanges(a, e, changes *Disk) error {

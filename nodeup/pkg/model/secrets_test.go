@@ -23,7 +23,7 @@ import (
 )
 
 func TestSecretBuilder(t *testing.T) {
-	RunGoldenTest(t, "tests/golden/minimal", "secret", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
+	RunGoldenTest(t, "tests/golden/minimal", "secret", func(nodeupModelContext *NodeupModelContext, target *fi.NodeupModelBuilderContext) error {
 		builder := SecretBuilder{NodeupModelContext: nodeupModelContext}
 		return builder.Build(target)
 	})

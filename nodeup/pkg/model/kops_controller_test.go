@@ -23,7 +23,7 @@ import (
 )
 
 func TestKopsControllerBuilder(t *testing.T) {
-	RunGoldenTest(t, "tests/golden/minimal", "kops-controller", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
+	RunGoldenTest(t, "tests/golden/minimal", "kops-controller", func(nodeupModelContext *NodeupModelContext, target *fi.NodeupModelBuilderContext) error {
 		builder := KopsControllerBuilder{NodeupModelContext: nodeupModelContext}
 		return builder.Build(target)
 	})
