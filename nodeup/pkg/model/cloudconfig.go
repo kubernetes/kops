@@ -70,9 +70,9 @@ type CloudConfigBuilder struct {
 	*NodeupModelContext
 }
 
-var _ fi.ModelBuilder = &CloudConfigBuilder{}
+var _ fi.NodeupModelBuilder = &CloudConfigBuilder{}
 
-func (b *CloudConfigBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *CloudConfigBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	if err := b.build(c, true); err != nil {
 		return err
 	}
@@ -82,7 +82,7 @@ func (b *CloudConfigBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
-func (b *CloudConfigBuilder) build(c *fi.ModelBuilderContext, inTree bool) error {
+func (b *CloudConfigBuilder) build(c *fi.NodeupModelBuilderContext, inTree bool) error {
 	// Add cloud config file if needed
 	var lines []string
 

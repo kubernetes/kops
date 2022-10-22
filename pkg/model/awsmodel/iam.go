@@ -42,8 +42,8 @@ type IAMModelBuilder struct {
 }
 
 var (
-	_ fi.ModelBuilder = &IAMModelBuilder{}
-	_ fi.HasDeletions = &IAMModelBuilder{}
+	_ fi.CloudupModelBuilder = &IAMModelBuilder{}
+	_ fi.HasDeletions        = &IAMModelBuilder{}
 )
 
 const NodeRolePolicyTemplate = `{
@@ -57,7 +57,7 @@ const NodeRolePolicyTemplate = `{
   ]
 }`
 
-func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *IAMModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	// Collect managed Instance Group roles
 	managedRoles := make(map[kops.InstanceGroupRole]bool)
 
@@ -170,7 +170,7 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 }
 
 // BuildServiceAccountRoleTasks build tasks specifically for the ServiceAccount role.
-func (b *IAMModelBuilder) BuildServiceAccountRoleTasks(role iam.Subject, c *fi.ModelBuilderContext) (*awstasks.IAMRole, error) {
+func (b *IAMModelBuilder) BuildServiceAccountRoleTasks(role iam.Subject, c *fi.CloudupModelBuilderContext) (*awstasks.IAMRole, error) {
 	iamName, err := b.IAMNameForServiceAccountRole(role)
 	if err != nil {
 		return nil, err
@@ -188,7 +188,7 @@ func (b *IAMModelBuilder) BuildServiceAccountRoleTasks(role iam.Subject, c *fi.M
 	return iamRole, nil
 }
 
-func (b *IAMModelBuilder) buildIAMRole(role iam.Subject, iamName string, c *fi.ModelBuilderContext) (*awstasks.IAMRole, error) {
+func (b *IAMModelBuilder) buildIAMRole(role iam.Subject, iamName string, c *fi.CloudupModelBuilderContext) (*awstasks.IAMRole, error) {
 	roleKey, isServiceAccount := b.roleKey(role)
 
 	rolePolicy, err := b.buildAWSIAMRolePolicy(role)
@@ -225,7 +225,7 @@ func (b *IAMModelBuilder) buildIAMRole(role iam.Subject, iamName string, c *fi.M
 	return iamRole, nil
 }
 
-func (b *IAMModelBuilder) buildIAMRolePolicy(role iam.Subject, iamName string, iamRole *awstasks.IAMRole, c *fi.ModelBuilderContext) error {
+func (b *IAMModelBuilder) buildIAMRolePolicy(role iam.Subject, iamName string, iamRole *awstasks.IAMRole, c *fi.CloudupModelBuilderContext) error {
 	iamPolicy := &iam.PolicyResource{
 		Builder: &iam.PolicyBuilder{
 			Cluster:                               b.Cluster,
@@ -281,7 +281,7 @@ func (b *IAMModelBuilder) roleKey(role iam.Subject) (string, bool) {
 	}
 }
 
-func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, c *fi.ModelBuilderContext, shared bool) error {
+func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, c *fi.CloudupModelBuilderContext, shared bool) error {
 	roleKey, _ := b.roleKey(role)
 
 	{
@@ -471,7 +471,7 @@ func (b *IAMModelBuilder) buildAWSIAMRolePolicy(role iam.Subject) (fi.Resource, 
 	return fi.NewStringResource(policy), nil
 }
 
-func (b *IAMModelBuilder) FindDeletions(context *fi.ModelBuilderContext, cloud fi.Cloud) error {
+func (b *IAMModelBuilder) FindDeletions(context *fi.CloudupModelBuilderContext, cloud fi.Cloud) error {
 	iamapi := cloud.(awsup.AWSCloud).IAM()
 	ownershipTag := "kubernetes.io/cluster/" + b.Cluster.ObjectMeta.Name
 	request := &awsIam.ListRolesInput{}

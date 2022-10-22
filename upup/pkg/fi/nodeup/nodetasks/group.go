@@ -35,7 +35,7 @@ type GroupTask struct {
 	System bool
 }
 
-var _ fi.Task = &GroupTask{}
+var _ fi.NodeupTask = &GroupTask{}
 
 func (e *GroupTask) String() string {
 	return fmt.Sprintf("Group: %s", e.Name)
@@ -47,7 +47,7 @@ func (f *GroupTask) GetName() *string {
 	return &f.Name
 }
 
-func (e *GroupTask) Find(c *fi.Context) (*GroupTask, error) {
+func (e *GroupTask) Find(c *fi.NodeupContext) (*GroupTask, error) {
 	info, err := fi.LookupGroup(e.Name)
 	if err != nil {
 		return nil, err
@@ -68,8 +68,8 @@ func (e *GroupTask) Find(c *fi.Context) (*GroupTask, error) {
 	return actual, nil
 }
 
-func (e *GroupTask) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
+func (e *GroupTask) Run(c *fi.NodeupContext) error {
+	return fi.NodeupDefaultDeltaRunMethod(e, c)
 }
 
 func (_ *GroupTask) CheckChanges(a, e, changes *GroupTask) error {

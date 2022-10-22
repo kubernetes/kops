@@ -50,8 +50,8 @@ type event struct {
 }
 
 var (
-	_ fi.ModelBuilder = &NodeTerminationHandlerBuilder{}
-	_ fi.HasDeletions = &NodeTerminationHandlerBuilder{}
+	_ fi.CloudupModelBuilder = &NodeTerminationHandlerBuilder{}
+	_ fi.HasDeletions        = &NodeTerminationHandlerBuilder{}
 
 	fixedEvents = []event{
 		{
@@ -84,7 +84,7 @@ type NodeTerminationHandlerBuilder struct {
 	Lifecycle fi.Lifecycle
 }
 
-func (b *NodeTerminationHandlerBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *NodeTerminationHandlerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	for _, ig := range b.InstanceGroups {
 		if ig.Spec.Manager == kops.InstanceManagerCloudGroup {
 			err := b.configureASG(c, ig)
@@ -102,7 +102,7 @@ func (b *NodeTerminationHandlerBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
-func (b *NodeTerminationHandlerBuilder) configureASG(c *fi.ModelBuilderContext, ig *kops.InstanceGroup) error {
+func (b *NodeTerminationHandlerBuilder) configureASG(c *fi.CloudupModelBuilderContext, ig *kops.InstanceGroup) error {
 	name := ig.Name + "-NTHLifecycleHook"
 
 	lifecyleTask := &awstasks.AutoscalingLifecycleHook{
@@ -121,7 +121,7 @@ func (b *NodeTerminationHandlerBuilder) configureASG(c *fi.ModelBuilderContext, 
 	return nil
 }
 
-func (b *NodeTerminationHandlerBuilder) build(c *fi.ModelBuilderContext) error {
+func (b *NodeTerminationHandlerBuilder) build(c *fi.CloudupModelBuilderContext) error {
 	queueName := model.QueueNamePrefix(b.ClusterName()) + "-nth"
 	policy := strings.ReplaceAll(NTHTemplate, "{{ AWS_REGION }}", b.Region)
 	policy = strings.ReplaceAll(policy, "{{ AWS_PARTITION }}", b.AWSPartition)
@@ -178,7 +178,7 @@ func (b *NodeTerminationHandlerBuilder) build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
-func (b *NodeTerminationHandlerBuilder) FindDeletions(c *fi.ModelBuilderContext, cloud fi.Cloud) error {
+func (b *NodeTerminationHandlerBuilder) FindDeletions(c *fi.CloudupModelBuilderContext, cloud fi.Cloud) error {
 	if b.Cluster.Spec.NodeTerminationHandler != nil && fi.ValueOf(b.Cluster.Spec.NodeTerminationHandler.EnableRebalanceDraining) {
 		return nil
 	}

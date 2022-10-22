@@ -42,8 +42,8 @@ func TestVMScaleSetModelBuilder_Build(t *testing.T) {
 			},
 		},
 	}
-	c := &fi.ModelBuilderContext{
-		Tasks: make(map[string]fi.Task),
+	c := &fi.CloudupModelBuilderContext{
+		Tasks: make(map[string]fi.CloudupTask),
 	}
 
 	caTask := &fitasks.Keypair{

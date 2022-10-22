@@ -34,9 +34,9 @@ type DropletBuilder struct {
 	Lifecycle              fi.Lifecycle
 }
 
-var _ fi.ModelBuilder = &DropletBuilder{}
+var _ fi.CloudupModelBuilder = &DropletBuilder{}
 
-func (d *DropletBuilder) Build(c *fi.ModelBuilderContext) error {
+func (d *DropletBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	sshKeyName, err := d.SSHKeyName()
 	if err != nil {
 		return err

@@ -56,7 +56,7 @@ func (b *KubeAPIServerBuilder) addHealthcheckSidecar(pod *corev1.Pod) error {
 	return nil
 }
 
-func (b *KubeAPIServerBuilder) addHealthcheckSidecarTasks(c *fi.ModelBuilderContext) error {
+func (b *KubeAPIServerBuilder) addHealthcheckSidecarTasks(c *fi.NodeupModelBuilderContext) error {
 	id := "kube-apiserver-healthcheck"
 	secretsDir := "/etc/kubernetes/" + id + "/secrets"
 	userID := wellknownusers.KubeApiserverHealthcheckID

@@ -36,7 +36,7 @@ type VPCDHCPOptionsAssociation struct {
 	DHCPOptions *DHCPOptions
 }
 
-func (e *VPCDHCPOptionsAssociation) Find(c *fi.Context) (*VPCDHCPOptionsAssociation, error) {
+func (e *VPCDHCPOptionsAssociation) Find(c *fi.CloudupContext) (*VPCDHCPOptionsAssociation, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	vpcID := e.VPC.ID
@@ -62,8 +62,8 @@ func (e *VPCDHCPOptionsAssociation) Find(c *fi.Context) (*VPCDHCPOptionsAssociat
 	return actual, nil
 }
 
-func (e *VPCDHCPOptionsAssociation) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
+func (e *VPCDHCPOptionsAssociation) Run(c *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(e, c)
 }
 
 func (s *VPCDHCPOptionsAssociation) CheckChanges(a, e, changes *VPCDHCPOptionsAssociation) error {

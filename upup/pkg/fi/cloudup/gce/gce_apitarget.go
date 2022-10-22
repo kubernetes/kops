@@ -24,7 +24,7 @@ type GCEAPITarget struct {
 	Cloud GCECloud
 }
 
-var _ fi.Target = &GCEAPITarget{}
+var _ fi.CloudupTarget = &GCEAPITarget{}
 
 func NewGCEAPITarget(cloud GCECloud) *GCEAPITarget {
 	return &GCEAPITarget{
@@ -32,7 +32,7 @@ func NewGCEAPITarget(cloud GCECloud) *GCEAPITarget {
 	}
 }
 
-func (t *GCEAPITarget) Finish(taskMap map[string]fi.Task) error {
+func (t *GCEAPITarget) Finish(taskMap map[string]fi.CloudupTask) error {
 	return nil
 }
 

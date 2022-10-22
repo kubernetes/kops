@@ -34,7 +34,7 @@ type ConfigBuilder struct {
 	Lifecycle fi.Lifecycle
 }
 
-func (b *ConfigBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *ConfigBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	c.AddTask(&fitasks.ManagedFile{
 		Name:      fi.PtrTo(registry.PathKopsVersionUpdated),
 		Lifecycle: b.Lifecycle,

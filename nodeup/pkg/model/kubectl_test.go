@@ -24,7 +24,7 @@ import (
 )
 
 func TestKubectlBuilder(t *testing.T) {
-	RunGoldenTest(t, "tests/golden/minimal", "kubectl", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
+	RunGoldenTest(t, "tests/golden/minimal", "kubectl", func(nodeupModelContext *NodeupModelContext, target *fi.NodeupModelBuilderContext) error {
 		nodeupModelContext.Assets = fi.NewAssetStore("")
 		nodeupModelContext.Assets.AddForTest("kubectl", "/path/to/kubectl/asset", "testing kubectl content")
 		// NodeUp looks for the default user and group on the machine running the tests.

@@ -34,8 +34,8 @@ type PoolMonitor struct {
 }
 
 // GetDependencies returns the dependencies of the Instance task
-func (p *PoolMonitor) GetDependencies(tasks map[string]fi.Task) []fi.Task {
-	var deps []fi.Task
+func (p *PoolMonitor) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
+	var deps []fi.CloudupTask
 	for _, task := range tasks {
 		if _, ok := task.(*LBPool); ok {
 			deps = append(deps, task)
@@ -50,7 +50,7 @@ func (p *PoolMonitor) CompareWithID() *string {
 	return p.ID
 }
 
-func (p *PoolMonitor) Find(context *fi.Context) (*PoolMonitor, error) {
+func (p *PoolMonitor) Find(context *fi.CloudupContext) (*PoolMonitor, error) {
 	cloud := context.Cloud.(openstack.OpenstackCloud)
 
 	opt := monitors.ListOpts{
@@ -78,8 +78,8 @@ func (p *PoolMonitor) Find(context *fi.Context) (*PoolMonitor, error) {
 	return actual, nil
 }
 
-func (p *PoolMonitor) Run(context *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(p, context)
+func (p *PoolMonitor) Run(context *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(p, context)
 }
 
 func (_ *PoolMonitor) CheckChanges(a, e, changes *PoolMonitor) error {

@@ -42,7 +42,7 @@ func (e *Address) CompareWithID() *string {
 	return e.Name
 }
 
-func (e *Address) Find(c *fi.Context) (*Address, error) {
+func (e *Address) Find(c *fi.CloudupContext) (*Address, error) {
 	actual, err := e.find(c.Cloud.(gce.GCECloud))
 	if actual != nil && err == nil {
 		if e.IPAddress == nil {
@@ -100,7 +100,7 @@ func (e *Address) IsForAPIServer() bool {
 	return e.ForAPIServer
 }
 
-func (e *Address) FindAddresses(context *fi.Context) ([]string, error) {
+func (e *Address) FindAddresses(context *fi.CloudupContext) ([]string, error) {
 	actual, err := e.find(context.Cloud.(gce.GCECloud))
 	if err != nil {
 		return nil, fmt.Errorf("error querying for IP Address: %v", err)
@@ -111,8 +111,8 @@ func (e *Address) FindAddresses(context *fi.Context) ([]string, error) {
 	return []string{fi.ValueOf(actual.IPAddress)}, nil
 }
 
-func (e *Address) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
+func (e *Address) Run(c *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(e, c)
 }
 
 func (_ *Address) CheckChanges(a, e, changes *Address) error {

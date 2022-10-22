@@ -24,21 +24,21 @@ import (
 )
 
 func TestKubeControllerManagerBuilder(t *testing.T) {
-	RunGoldenTest(t, "tests/golden/minimal", "kube-controller-manager", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
+	RunGoldenTest(t, "tests/golden/minimal", "kube-controller-manager", func(nodeupModelContext *NodeupModelContext, target *fi.NodeupModelBuilderContext) error {
 		builder := KubeControllerManagerBuilder{NodeupModelContext: nodeupModelContext}
 		return builder.Build(target)
 	})
 }
 
 func TestKubeControllerManagerBuilderAMD64(t *testing.T) {
-	RunGoldenTest(t, "tests/golden/side-loading", "kube-controller-manager-amd64", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
+	RunGoldenTest(t, "tests/golden/side-loading", "kube-controller-manager-amd64", func(nodeupModelContext *NodeupModelContext, target *fi.NodeupModelBuilderContext) error {
 		builder := KubeControllerManagerBuilder{NodeupModelContext: nodeupModelContext}
 		return builder.Build(target)
 	})
 }
 
 func TestKubeControllerManagerBuilderARM64(t *testing.T) {
-	RunGoldenTest(t, "tests/golden/side-loading", "kube-controller-manager-arm64", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
+	RunGoldenTest(t, "tests/golden/side-loading", "kube-controller-manager-arm64", func(nodeupModelContext *NodeupModelContext, target *fi.NodeupModelBuilderContext) error {
 		builder := KubeControllerManagerBuilder{NodeupModelContext: nodeupModelContext}
 		builder.Architecture = architectures.ArchitectureArm64
 		return builder.Build(target)

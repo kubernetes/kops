@@ -30,7 +30,7 @@ type AWSAPITarget struct {
 	Cloud AWSCloud
 }
 
-var _ fi.Target = &AWSAPITarget{}
+var _ fi.CloudupTarget = &AWSAPITarget{}
 
 func NewAWSAPITarget(cloud AWSCloud) *AWSAPITarget {
 	return &AWSAPITarget{
@@ -42,7 +42,7 @@ func (t *AWSAPITarget) ProcessDeletions() bool {
 	return true
 }
 
-func (t *AWSAPITarget) Finish(taskMap map[string]fi.Task) error {
+func (t *AWSAPITarget) Finish(taskMap map[string]fi.CloudupTask) error {
 	return nil
 }
 

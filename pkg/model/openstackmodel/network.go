@@ -29,9 +29,9 @@ type NetworkModelBuilder struct {
 	Lifecycle fi.Lifecycle
 }
 
-var _ fi.ModelBuilder = &NetworkModelBuilder{}
+var _ fi.CloudupModelBuilder = &NetworkModelBuilder{}
 
-func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	clusterName := b.ClusterName()
 
 	osSpec := b.Cluster.Spec.CloudProvider.Openstack

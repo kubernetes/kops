@@ -32,10 +32,10 @@ type PKIModelBuilder struct {
 	Lifecycle fi.Lifecycle
 }
 
-var _ fi.ModelBuilder = &PKIModelBuilder{}
+var _ fi.CloudupModelBuilder = &PKIModelBuilder{}
 
 // Build is responsible for generating the various pki assets.
-func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *PKIModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	// TODO: Only create the CA via this task
 	defaultCA := &fitasks.Keypair{
 		Name:      fi.PtrTo(fi.CertificateIDCA),

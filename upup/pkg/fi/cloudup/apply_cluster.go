@@ -107,7 +107,7 @@ type ApplyClusterCmd struct {
 	TargetName string
 
 	// Target is the fi.Target we will operate against
-	Target fi.Target
+	Target fi.CloudupTarget
 
 	// OutDir is a local directory in which we place output, can cache files etc
 	OutDir string
@@ -144,7 +144,7 @@ type ApplyClusterCmd struct {
 	GetAssets bool
 
 	// TaskMap is the map of tasks that we built (output)
-	TaskMap map[string]fi.Task
+	TaskMap map[string]fi.CloudupTask
 
 	// ImageAssets are the image assets we use (output).
 	ImageAssets []*assets.ImageAsset
@@ -704,7 +704,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		return fmt.Errorf("error building tasks: %v", err)
 	}
 
-	var target fi.Target
+	var target fi.CloudupTarget
 	shouldPrecreateDNS := true
 
 	switch c.TargetName {
@@ -766,7 +766,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		if c.GetAssets {
 			out = io.Discard
 		}
-		target = fi.NewDryRunTarget(assetBuilder, out)
+		target = fi.NewCloudupDryRunTarget(assetBuilder, out)
 
 		// Avoid making changes on a dry-run
 		shouldPrecreateDNS = false
@@ -783,7 +783,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		}
 	}
 
-	context, err := fi.NewContext(ctx, target, cluster, cloud, keyStore, secretStore, configBase, checkExisting, c.TaskMap)
+	context, err := fi.NewCloudupContext(ctx, target, cluster, cloud, keyStore, secretStore, configBase, checkExisting, c.TaskMap)
 	if err != nil {
 		return fmt.Errorf("error building context: %v", err)
 	}

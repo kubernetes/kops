@@ -181,8 +181,8 @@ func runDockerBuilderTest(t *testing.T, key string) {
 	if err := nodeUpModelContext.Init(); err != nil {
 		t.Fatalf("error from nodeUpModelContext.Init(): %v", err)
 	}
-	context := &fi.ModelBuilderContext{
-		Tasks: make(map[string]fi.Task),
+	context := &fi.NodeupModelBuilderContext{
+		Tasks: make(map[string]fi.NodeupTask),
 	}
 
 	builder := DockerBuilder{NodeupModelContext: nodeUpModelContext}

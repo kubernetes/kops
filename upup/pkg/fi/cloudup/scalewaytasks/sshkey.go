@@ -44,7 +44,7 @@ func (s *SSHKey) CompareWithID() *string {
 	return s.Name
 }
 
-func (s *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
+func (s *SSHKey) Find(c *fi.CloudupContext) (*SSHKey, error) {
 	cloud := c.Cloud.(scaleway.ScwCloud)
 
 	keysResp, err := cloud.IamService().ListSSHKeys(&iam.ListSSHKeysRequest{
@@ -81,7 +81,7 @@ func (s *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
 	return sshKey, nil
 }
 
-func (s *SSHKey) Run(c *fi.Context) error {
+func (s *SSHKey) Run(c *fi.CloudupContext) error {
 	if s.KeyPairFingerPrint == nil && s.PublicKey != nil {
 		publicKey, err := fi.ResourceAsString(*s.PublicKey)
 		if err != nil {
@@ -95,7 +95,7 @@ func (s *SSHKey) Run(c *fi.Context) error {
 		klog.V(2).Infof("Computed SSH key fingerprint as %q", keyPairFingerPrint)
 		s.KeyPairFingerPrint = &keyPairFingerPrint
 	}
-	return fi.DefaultDeltaRunMethod(s, c)
+	return fi.CloudupDefaultDeltaRunMethod(s, c)
 }
 
 func (s *SSHKey) CheckChanges(actual, expected, changes *SSHKey) error {
@@ -107,7 +107,7 @@ func (s *SSHKey) CheckChanges(actual, expected, changes *SSHKey) error {
 	return nil
 }
 
-func (*SSHKey) RenderScw(c *fi.Context, actual, expected, changes *SSHKey) error {
+func (*SSHKey) RenderScw(c *fi.CloudupContext, actual, expected, changes *SSHKey) error {
 	if actual != nil {
 		klog.Infof("Scaleway does not support changes to ssh keys for the moment")
 		return nil

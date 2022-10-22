@@ -39,7 +39,7 @@ type ServerGroupModelBuilder struct {
 	Lifecycle              fi.Lifecycle
 }
 
-var _ fi.ModelBuilder = &ServerGroupModelBuilder{}
+var _ fi.CloudupModelBuilder = &ServerGroupModelBuilder{}
 
 // See https://specs.openstack.org/openstack/nova-specs/specs/newton/approved/lowercase-metadata-keys.html for details
 var instanceMetadataNotAllowedCharacters = regexp.MustCompile("[^a-zA-Z0-9-_:. ]")
@@ -53,7 +53,7 @@ var TRUNCATE_OPT = truncate.TruncateStringOptions{
 	HashLength:    6,
 }
 
-func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *openstacktasks.ServerGroup, ig *kops.InstanceGroup) error {
+func (b *ServerGroupModelBuilder) buildInstances(c *fi.CloudupModelBuilderContext, sg *openstacktasks.ServerGroup, ig *kops.InstanceGroup) error {
 	sshKeyNameFull, err := b.SSHKeyName()
 	if err != nil {
 		return err
@@ -237,7 +237,7 @@ func (b *ServerGroupModelBuilder) associateFIPToKeypair(fipTask *openstacktasks.
 	fipTask.ForAPIServer = true
 }
 
-func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *ServerGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	clusterName := b.ClusterName()
 
 	var masters []*openstacktasks.ServerGroup

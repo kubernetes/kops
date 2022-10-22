@@ -48,5 +48,5 @@ func (o *Route) GetName() *string {
 
 // String is the stringer function for the task, producing readable output using fi.TaskAsString
 func (o *Route) String() string {
-	return fi.TaskAsString(o)
+	return fi.CloudupTaskAsString(o)
 }

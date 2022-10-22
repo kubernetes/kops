@@ -48,5 +48,5 @@ func (o *DHCPOptions) GetName() *string {
 
 // String is the stringer function for the task, producing readable output using fi.TaskAsString
 func (o *DHCPOptions) String() string {
-	return fi.TaskAsString(o)
+	return fi.CloudupTaskAsString(o)
 }

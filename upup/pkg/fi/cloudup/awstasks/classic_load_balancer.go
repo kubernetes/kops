@@ -75,7 +75,7 @@ type ClassicLoadBalancer struct {
 }
 
 var _ fi.CompareWithID = &ClassicLoadBalancer{}
-var _ fi.TaskNormalize = &ClassicLoadBalancer{}
+var _ fi.CloudupTaskNormalize = &ClassicLoadBalancer{}
 
 func (e *ClassicLoadBalancer) CompareWithID() *string {
 	return e.Name
@@ -104,9 +104,9 @@ func (e *ClassicLoadBalancerListener) mapToAWS(loadBalancerPort int64) *elb.List
 	return l
 }
 
-var _ fi.HasDependencies = &ClassicLoadBalancerListener{}
+var _ fi.CloudupHasDependencies = &ClassicLoadBalancerListener{}
 
-func (e *ClassicLoadBalancerListener) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+func (e *ClassicLoadBalancerListener) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
 	return nil
 }
 
@@ -209,7 +209,7 @@ func (e *ClassicLoadBalancer) getHostedZoneId() *string {
 	return e.HostedZoneId
 }
 
-func (e *ClassicLoadBalancer) Find(c *fi.Context) (*ClassicLoadBalancer, error) {
+func (e *ClassicLoadBalancer) Find(c *fi.CloudupContext) (*ClassicLoadBalancer, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	lb, err := cloud.FindELBByNameTag(fi.ValueOf(e.Name))
@@ -345,7 +345,7 @@ func (e *ClassicLoadBalancer) IsForAPIServer() bool {
 	return e.ForAPIServer
 }
 
-func (e *ClassicLoadBalancer) FindAddresses(context *fi.Context) ([]string, error) {
+func (e *ClassicLoadBalancer) FindAddresses(context *fi.CloudupContext) ([]string, error) {
 	cloud := context.Cloud.(awsup.AWSCloud)
 
 	lb, err := cloud.FindELBByNameTag(fi.ValueOf(e.Name))
@@ -363,8 +363,8 @@ func (e *ClassicLoadBalancer) FindAddresses(context *fi.Context) ([]string, erro
 	return []string{lbDnsName}, nil
 }
 
-func (e *ClassicLoadBalancer) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
+func (e *ClassicLoadBalancer) Run(c *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(e, c)
 }
 
 func (_ *ClassicLoadBalancer) ShouldCreate(a, e, changes *ClassicLoadBalancer) (bool, error) {
@@ -374,7 +374,7 @@ func (_ *ClassicLoadBalancer) ShouldCreate(a, e, changes *ClassicLoadBalancer) (
 	return true, nil
 }
 
-func (e *ClassicLoadBalancer) Normalize(c *fi.Context) error {
+func (e *ClassicLoadBalancer) Normalize(c *fi.CloudupContext) error {
 	// We need to sort our arrays consistently, so we don't get spurious changes
 	sort.Stable(OrderSubnetsById(e.Subnets))
 	sort.Stable(OrderSecurityGroupsById(e.SecurityGroups))

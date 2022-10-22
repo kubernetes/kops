@@ -49,7 +49,7 @@ func (v *Network) CompareWithID() *string {
 	return v.ID
 }
 
-func (v *Network) Find(c *fi.Context) (*Network, error) {
+func (v *Network) Find(c *fi.CloudupContext) (*Network, error) {
 	cloud := c.Cloud.(hetzner.HetznerCloud)
 	client := cloud.NetworkClient()
 
@@ -95,8 +95,8 @@ func (v *Network) Find(c *fi.Context) (*Network, error) {
 	return matches, nil
 }
 
-func (v *Network) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(v, c)
+func (v *Network) Run(c *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(v, c)
 }
 
 func (_ *Network) CheckChanges(a, e, changes *Network) error {
