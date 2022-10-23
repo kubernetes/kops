@@ -26,7 +26,7 @@ spec:
               memory: 100Mi
           securityContext:
             privileged: true
-          image: kopeio/networking-agent:1.0.20181028
+          image: kopeio/networking-agent:1.0.20210815
           name: networking-agent
           volumeMounts:
             - name: lib-modules
