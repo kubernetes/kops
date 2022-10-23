@@ -80,10 +80,6 @@ data:
           fallthrough in-addr.arpa ip6.arpa
           ttl 30
         }
-        hosts /rootfs/etc/hosts k8s.local {
-          ttl 30
-          fallthrough
-        }
         prometheus :9153
         forward . /etc/resolv.conf {
           max_concurrent 1000
@@ -184,9 +180,6 @@ spec:
         - mountPath: /etc/coredns
           name: config-volume
           readOnly: true
-        - mountPath: /rootfs/etc/hosts
-          name: etc-hosts
-          readOnly: true
       dnsPolicy: Default
       nodeSelector:
         kubernetes.io/os: linux
@@ -212,10 +205,6 @@ spec:
       - configMap:
           name: coredns
         name: config-volume
-      - hostPath:
-          path: /etc/hosts
-          type: File
-        name: etc-hosts
 
 ---
 
