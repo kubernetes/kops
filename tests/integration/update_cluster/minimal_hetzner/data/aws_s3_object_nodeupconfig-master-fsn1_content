@@ -37,8 +37,8 @@ APIServerConfig:
     requestheaderUsernameHeaders:
     - X-Remote-User
     securePort: 443
-    serviceAccountIssuer: https://api.internal.minimal.k8s.local
-    serviceAccountJWKSURI: https://api.internal.minimal.k8s.local/openid/v1/jwks
+    serviceAccountIssuer: https://api.internal.minimal.example.com
+    serviceAccountJWKSURI: https://api.internal.minimal.example.com/openid/v1/jwks
     serviceClusterIPRange: 100.64.0.0/13
     storageBackend: etcd3
   ServiceAccountPublicKeys: |
@@ -219,7 +219,7 @@ CAs:
     MA0GCSqGSIb3DQEBCwUAA0EAVQVx5MUtuAIeePuP9o51xtpT2S6Fvfi8J4ICxnlA
     9B7UD2ushcVFPtaeoL9Gfu8aY4KJBeqqg5ojl4qmRnThjw==
     -----END CERTIFICATE-----
-ClusterName: minimal.k8s.local
+ClusterName: minimal.example.com
 FileAssets:
 - content: |
     apiVersion: kubescheduler.config.k8s.io/v1beta2
@@ -264,15 +264,15 @@ KubeletConfig:
   - node-role.kubernetes.io/control-plane=:NoSchedule
 UpdatePolicy: automatic
 channels:
-- memfs://tests/minimal.k8s.local/addons/bootstrap-channel.yaml
+- memfs://tests/minimal.example.com/addons/bootstrap-channel.yaml
 containerdConfig:
   logLevel: info
   runc:
     version: 1.1.4
   version: 1.6.9
 etcdManifests:
-- memfs://tests/minimal.k8s.local/manifests/etcd/main-master-fsn1.yaml
-- memfs://tests/minimal.k8s.local/manifests/etcd/events-master-fsn1.yaml
+- memfs://tests/minimal.example.com/manifests/etcd/main-master-fsn1.yaml
+- memfs://tests/minimal.example.com/manifests/etcd/events-master-fsn1.yaml
 staticManifests:
 - key: kube-apiserver-healthcheck
   path: manifests/static/kube-apiserver-healthcheck.yaml
