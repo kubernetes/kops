@@ -441,9 +441,6 @@ func validateServiceAccountIssuerDiscovery(c *kops.Cluster, said *kops.ServiceAc
 	}
 	if said.EnableAWSOIDCProvider {
 		enableOIDCField := fieldSpec.Child("serviceAccountIssuerDiscovery", "enableAWSOIDCProvider")
-		if c.IsKubernetesLT("1.18") {
-			allErrs = append(allErrs, field.Forbidden(enableOIDCField, "AWS OIDC Provider requires kubernetes 1.18 or greates"))
-		}
 		if saidStore == "" {
 			allErrs = append(allErrs, field.Forbidden(enableOIDCField, "AWS OIDC Provider requires a discovery store"))
 		}
