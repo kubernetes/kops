@@ -226,6 +226,9 @@ func enrollHost(ctx context.Context, options *ToolboxEnrollOptions, nodeupScript
 	}
 
 	sudo := true
+	if options.SSHUser == "root" {
+		sudo = false
+	}
 
 	host, err := NewSSHHost(ctx, options.Host, options.SSHUser, sudo)
 	if err != nil {
