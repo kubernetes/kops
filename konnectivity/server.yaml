@@ -21,14 +21,14 @@ spec:
         operator: Exists
       - key: node.kubernetes.io/not-ready
         operator: Exists
-      - key: node-role.kubernetes.io/master
+      - key: node-role.kubernetes.io/control-plane
         operator: Exists
       - key: node.kubernetes.io/network-unavailable
         operator: Exists
       hostNetwork: true
       containers:
       - name: konnectivity-server-container
-        image: us.gcr.io/k8s-artifacts-prod/kas-network-proxy/proxy-server:v0.0.16
+        image: registry.k8s.io/kas-network-proxy/proxy-server:v0.0.33
         command: ["/proxy-server"]
         args: [
                 "--logtostderr=true",
