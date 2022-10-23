@@ -83,7 +83,11 @@ func (p *SSHPath) newClient() (*sftp.Client, error) {
 		return nil, fmt.Errorf("error creating sftp client (executing 'sudo /usr/lib/openssh/sftp-server'): %v", err)
 	}
 
-	return sftp.NewClientPipe(stdout, stdin)
+	c, err := sftp.NewClientPipe(stdout, stdin)
+	if err != nil {
+		return nil, fmt.Errorf("error starting sftp (executing 'sudo /usr/lib/openssh/sftp-server'): %v", err)
+	}
+	return c, nil
 }
 
 func (p *SSHPath) Path() string {
@@ -95,7 +99,7 @@ func (p *SSHPath) String() string {
 }
 
 func (p *SSHPath) Remove() error {
-	sftpClient, err := p.newClient()
+	sftpClient, err := p.newSFTPClient()
 	if err != nil {
 		return err
 	}
@@ -151,7 +155,7 @@ func mkdirAll(sftpClient *sftp.Client, dir string) error {
 }
 
 func (p *SSHPath) WriteFile(data io.ReadSeeker, acl ACL) error {
-	sftpClient, err := p.newClient()
+	sftpClient, err := p.newSFTPClient()
 	if err != nil {
 		return err
 	}
@@ -193,25 +197,32 @@ func (p *SSHPath) WriteFile(data io.ReadSeeker, acl ACL) error {
 	}
 
 	if err == nil {
-		var session *ssh.Session
-		session, err = p.client.NewSession()
-		if err != nil {
-			err = fmt.Errorf("error creating session for rename: %v", err)
-		} else {
-			cmd := "mv " + tempfile + " " + p.path
-			if p.sudo {
-				cmd = "sudo " + cmd
-			}
-			err = session.Run(cmd)
+		// posix rename will replace the destination (normal sftp rename does not)
+		usePosixRename := true
+		if usePosixRename {
+			err = sftpClient.Rename(tempfile, p.path)
 			if err != nil {
-				err = fmt.Errorf("error renaming file %q -> %q: %v", tempfile, p.path, err)
+				err = fmt.Errorf("error renaming file %q -> %q (with posix rename): %w", tempfile, p.path, err)
+			}
+		} else {
+			var session *ssh.Session
+			session, err = p.client.NewSession()
+			if err != nil {
+				err = fmt.Errorf("error creating session for rename: %v", err)
+			} else {
+				defer session.Close()
+
+				cmd := "mv " + tempfile + " " + p.path
+				if p.sudo {
+					cmd = "sudo " + cmd
+				}
+				err = session.Run(cmd)
+				if err != nil {
+					err = fmt.Errorf("error renaming file %q -> %q (with %q): %w", tempfile, p.path, cmd, err)
+				}
 			}
 		}
-		// sftp rename seems to fail if dest file exists
-		//err = sftpClient.Rename(tempfile, p.path)
-		//if err != nil {
-		//	err = fmt.Errorf("error during file write of %q: rename failed: %v", p.path, err)
-		//}
+
 	}
 
 	if err == nil {
@@ -258,11 +269,22 @@ func (p *SSHPath) ReadFile() ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-// WriteTo implements io.WriterTo
+// WriteTo reads the file (in a streaming way)
+// This implements io.WriterTo
 func (p *SSHPath) WriteTo(out io.Writer) (int64, error) {
-	sftpClient, err := p.newClient()
+	// if true {
+	// 	// scpClient, err := p.newSCPClient()
+	// 	// if err != nil {
+	// 	// 	return 0, err
+	// 	// }
+	// 	// defer scpClient.Close()
+
+	// 	scpClient := &scpClient{}
+	// 	return scpClient.ReadFile(context.TODO(), p.client, p.path, out)
+	// }
+	sftpClient, err := p.newSFTPClient()
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("error creating sftp client: %w", err)
 	}
 	defer sftpClient.Close()
 
@@ -276,7 +298,7 @@ func (p *SSHPath) WriteTo(out io.Writer) (int64, error) {
 }
 
 func (p *SSHPath) ReadDir() ([]Path, error) {
-	sftpClient, err := p.newClient()
+	sftpClient, err := p.newSFTPClient()
 	if err != nil {
 		return nil, err
 	}
@@ -296,7 +318,7 @@ func (p *SSHPath) ReadDir() ([]Path, error) {
 }
 
 func (p *SSHPath) ReadTree() ([]Path, error) {
-	sftpClient, err := p.newClient()
+	sftpClient, err := p.newSFTPClient()
 	if err != nil {
 		return nil, err
 	}
