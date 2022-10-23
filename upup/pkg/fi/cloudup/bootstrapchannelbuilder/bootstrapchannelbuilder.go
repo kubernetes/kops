@@ -486,32 +486,12 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 		})
 	}
 
-	if b.Cluster.Spec.ExternalDNS == nil || b.Cluster.Spec.ExternalDNS.Provider == kops.ExternalDNSProviderDNSController {
-		{
-			key := "dns-controller.addons.k8s.io"
-			location := key + "/k8s-1.12.yaml"
-			id := "k8s-1.12"
-
-			addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.String(key),
-				Selector: map[string]string{"k8s-addon": key},
-				Manifest: fi.String(location),
-				Id:       id,
-			})
-		}
-
-		// Generate dns-controller ServiceAccount IAM permissions.
-		// Gossip clsuters do not require any cloud permissions.
-		if b.UseServiceAccountExternalPermissions() && !b.Cluster.IsGossip() {
-			serviceAccountRoles = append(serviceAccountRoles, &dnscontroller.ServiceAccount{})
-		}
-	} else if b.Cluster.Spec.ExternalDNS.Provider == kops.ExternalDNSProviderExternalDNS {
-		{
-			key := "external-dns.addons.k8s.io"
-
+	if !b.Cluster.UsesNoneDNS() {
+		if b.Cluster.Spec.ExternalDNS == nil || b.Cluster.Spec.ExternalDNS.Provider == kops.ExternalDNSProviderDNSController {
 			{
-				location := key + "/k8s-1.19.yaml"
-				id := "k8s-1.19"
+				key := "dns-controller.addons.k8s.io"
+				location := key + "/k8s-1.12.yaml"
+				id := "k8s-1.12"
 
 				addons.Add(&channelsapi.AddonSpec{
 					Name:     fi.String(key),
@@ -521,8 +501,30 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 				})
 			}
 
-			if b.UseServiceAccountExternalPermissions() {
-				serviceAccountRoles = append(serviceAccountRoles, &externaldns.ServiceAccount{})
+			// Generate dns-controller ServiceAccount IAM permissions.
+			// Gossip clsuters do not require any cloud permissions.
+			if b.UseServiceAccountExternalPermissions() && !b.Cluster.IsGossip() {
+				serviceAccountRoles = append(serviceAccountRoles, &dnscontroller.ServiceAccount{})
+			}
+		} else if b.Cluster.Spec.ExternalDNS.Provider == kops.ExternalDNSProviderExternalDNS {
+			{
+				key := "external-dns.addons.k8s.io"
+
+				{
+					location := key + "/k8s-1.19.yaml"
+					id := "k8s-1.19"
+
+					addons.Add(&channelsapi.AddonSpec{
+						Name:     fi.String(key),
+						Selector: map[string]string{"k8s-addon": key},
+						Manifest: fi.String(location),
+						Id:       id,
+					})
+				}
+
+				if b.UseServiceAccountExternalPermissions() {
+					serviceAccountRoles = append(serviceAccountRoles, &externaldns.ServiceAccount{})
+				}
 			}
 		}
 	}

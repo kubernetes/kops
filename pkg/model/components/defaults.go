@@ -44,13 +44,5 @@ func (b *DefaultsOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 	}
 
-	if options.ExternalDNS == nil {
-		options.ExternalDNS = &kops.ExternalDNSConfig{}
-	}
-
-	if options.ExternalDNS.Provider == "" {
-		options.ExternalDNS.Provider = kops.ExternalDNSProviderDNSController
-	}
-
 	return nil
 }

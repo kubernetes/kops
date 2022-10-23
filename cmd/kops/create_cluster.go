@@ -337,9 +337,10 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	})
 
 	// DNS
-	cmd.Flags().StringVar(&options.DNSType, "dns", options.DNSType, "DNS type to use: public or private")
+	supportedDnsTypes := []string{"public", "private", "none"}
+	cmd.Flags().StringVar(&options.DNSType, "dns", options.DNSType, "DNS type to use: "+strings.Join(supportedDnsTypes, ", "))
 	cmd.RegisterFlagCompletionFunc("dns", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return []string{"public", "private"}, cobra.ShellCompDirectiveNoFileComp
+		return supportedDnsTypes, cobra.ShellCompDirectiveNoFileComp
 	})
 
 	// Bastion
