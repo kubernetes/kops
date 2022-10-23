@@ -182,7 +182,7 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 		}
 	}
 
-	if cluster.Spec.GetCloudProvider() == kops.CloudProviderHetzner {
+	if cluster.Spec.GetCloudProvider() == kops.CloudProviderHetzner && (b.ig.IsMaster() || cluster.IsGossip()) {
 		hcloudToken := os.Getenv("HCLOUD_TOKEN")
 		if hcloudToken != "" {
 			env["HCLOUD_TOKEN"] = hcloudToken

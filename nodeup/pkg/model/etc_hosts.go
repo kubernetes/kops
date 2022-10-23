@@ -30,32 +30,31 @@ var _ fi.ModelBuilder = &EtcHostsBuilder{}
 
 // Build is responsible for configuring the gossip DNS tasks.
 func (b *EtcHostsBuilder) Build(c *fi.ModelBuilderContext) error {
-	useGossip := b.Cluster.IsGossip()
-	if !useGossip {
-		return nil
+
+	task := &nodetasks.UpdateEtcHostsTask{
+		Name: "control-plane-address",
 	}
 
-	if b.IsMaster {
-		task := &nodetasks.UpdateEtcHostsTask{
-			Name: "control-plane-bootstrap",
-		}
-
-		if b.Cluster.Spec.MasterInternalName != "" {
-			task.Records = append(task.Records, nodetasks.HostRecord{
-				Hostname:  b.Cluster.Spec.MasterInternalName,
-				Addresses: []string{"127.0.0.1"},
-			})
-		}
+	if b.IsMaster && b.Cluster.IsGossip() {
+		task.Records = append(task.Records, nodetasks.HostRecord{
+			Hostname:  b.Cluster.Spec.MasterInternalName,
+			Addresses: []string{"127.0.0.1"},
+		})
 		if b.Cluster.Spec.MasterPublicName != "" {
 			task.Records = append(task.Records, nodetasks.HostRecord{
 				Hostname:  b.Cluster.Spec.MasterPublicName,
 				Addresses: []string{"127.0.0.1"},
 			})
 		}
+	} else if b.Cluster.UsesNoneDNS() {
+		task.Records = append(task.Records, nodetasks.HostRecord{
+			Hostname:  b.Cluster.Spec.MasterInternalName,
+			Addresses: []string{b.BootConfig.APIServer},
+		})
+	}
 
-		if len(task.Records) != 0 {
-			c.AddTask(task)
-		}
+	if len(task.Records) != 0 {
+		c.AddTask(task)
 	}
 
 	return nil

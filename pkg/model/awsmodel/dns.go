@@ -34,7 +34,7 @@ type DNSModelBuilder struct {
 var _ fi.ModelBuilder = &DNSModelBuilder{}
 
 func (b *DNSModelBuilder) ensureDNSZone(c *fi.ModelBuilderContext) error {
-	if b.Cluster.IsGossip() {
+	if b.Cluster.IsGossip() || b.Cluster.UsesNoneDNS() {
 		return nil
 	}
 
@@ -72,21 +72,9 @@ func (b *DNSModelBuilder) ensureDNSZone(c *fi.ModelBuilderContext) error {
 
 func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Add a HostedZone if we are going to publish a dns record that depends on it
-	if b.UsePrivateDNS() {
-		// Check to see if we are using a bastion DNS record that points to the hosted zone
-		// If we are, we need to make sure we include the hosted zone as a task
-
+	if !b.Cluster.IsGossip() && !b.Cluster.UsesNoneDNS() {
 		if err := b.ensureDNSZone(c); err != nil {
 			return err
-		}
-	} else {
-		// We now create the DNS Zone for AWS even in the case of public zones;
-		// it has to exist for the IAM record anyway.
-		// TODO: We can now rationalize the code paths
-		if !b.Cluster.IsGossip() {
-			if err := b.ensureDNSZone(c); err != nil {
-				return err
-			}
 		}
 	}
 
@@ -106,7 +94,7 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// This will point our external DNS record to the load balancer, and put the
 		// pieces together for kubectl to work
 
-		if !b.Cluster.IsGossip() {
+		if !b.Cluster.IsGossip() && !b.Cluster.UsesNoneDNS() {
 			if err := b.ensureDNSZone(c); err != nil {
 				return err
 			}
@@ -136,7 +124,7 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// This will point the internal API DNS record to the load balancer.
 		// This means kubelet connections go via the load balancer and are more HA.
 
-		if !b.Cluster.IsGossip() {
+		if !b.Cluster.IsGossip() && !b.Cluster.UsesNoneDNS() {
 			if err := b.ensureDNSZone(c); err != nil {
 				return err
 			}
@@ -176,8 +164,10 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// is similar to others, but I would like to keep it on it's own in case we need
 		// to change anything.
 
-		if err := b.ensureDNSZone(c); err != nil {
-			return err
+		if !b.Cluster.IsGossip() && !b.Cluster.UsesNoneDNS() {
+			if err := b.ensureDNSZone(c); err != nil {
+				return err
+			}
 		}
 	}
 
