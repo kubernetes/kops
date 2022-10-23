@@ -17,6 +17,8 @@ limitations under the License.
 package components
 
 import (
+	"fmt"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
@@ -53,7 +55,33 @@ func (b *GCPCloudControllerManagerOptionsBuilder) BuildOptions(options interface
 	// CCM interacts directly with the GCP API, use the name safe for GCP
 	ccmConfig.ClusterName = gce.SafeClusterName(b.ClusterName)
 	ccmConfig.AllocateNodeCIDRs = fi.Bool(true)
-	ccmConfig.CIDRAllocatorType = fi.String("CloudAllocator")
+
+	ccmConfig.ConfigureCloudRoutes = fi.Bool(false)
+
+	// TODO: we want to consolidate this with the logic from KCM
+	networking := clusterSpec.Networking
+	if networking == nil {
+		ccmConfig.ConfigureCloudRoutes = fi.Bool(true)
+	} else if networking.Kubenet != nil {
+		ccmConfig.ConfigureCloudRoutes = fi.Bool(true)
+	} else if networking.GCE != nil {
+		ccmConfig.ConfigureCloudRoutes = fi.Bool(false)
+		ccmConfig.CIDRAllocatorType = fi.String("CloudAllocator")
+
+		if ccmConfig.ClusterCIDR == "" {
+			ccmConfig.ClusterCIDR = clusterSpec.PodCIDR
+		}
+	} else if networking.External != nil {
+		ccmConfig.ConfigureCloudRoutes = fi.Bool(false)
+	} else if UsesCNI(networking) {
+		ccmConfig.ConfigureCloudRoutes = fi.Bool(false)
+	} else if networking.Kopeio != nil {
+		// Kopeio is based on kubenet / external
+		ccmConfig.ConfigureCloudRoutes = fi.Bool(false)
+	} else {
+		return fmt.Errorf("no networking mode set")
+	}
+
 	if ccmConfig.ClusterCIDR == "" {
 		ccmConfig.ClusterCIDR = clusterSpec.PodCIDR
 	}
