@@ -237,15 +237,13 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 		f.DNSInternalSuffix = fi.String(".internal." + t.Cluster.ObjectMeta.Name)
 	}
 
-	if k8sVersion.Major == 1 && k8sVersion.Minor >= 16 {
-		f.BootstrapMasterNodeLabels = true
+	f.BootstrapMasterNodeLabels = true
 
-		nodeName, err := t.NodeName()
-		if err != nil {
-			return nil, fmt.Errorf("error getting NodeName: %v", err)
-		}
-		f.NodeName = nodeName
+	nodeName, err := t.NodeName()
+	if err != nil {
+		return nil, fmt.Errorf("error getting NodeName: %v", err)
 	}
+	f.NodeName = nodeName
 
 	return f, nil
 }
