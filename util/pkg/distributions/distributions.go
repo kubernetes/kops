@@ -18,6 +18,9 @@ package distributions
 
 import (
 	"fmt"
+	"os"
+
+	"k8s.io/klog/v2"
 )
 
 // Distribution represents a particular version of an operating system.
@@ -102,7 +105,19 @@ func (d *Distribution) HasLoopbackEtcResolvConf() bool {
 	if d.project == "flatcar" {
 		return true
 	}
-	return false
+
+	resolvConfPath := "/etc/resolv.conf"
+	dest, err := os.Readlink(resolvConfPath)
+	if err != nil {
+		klog.Warningf("error from ReadLink(%q): %v", resolvConfPath, err)
+		return false
+	} else if dest == "/run/systemd/resolve/stub-resolv.conf" {
+		klog.Warningf("detected symlink from %q => %q; will workaround", resolvConfPath, dest)
+		return true
+	} else {
+		klog.Warningf("detected symlink for %q => %q; not known so will not work around", resolvConfPath, dest)
+		return false
+	}
 }
 
 // Version returns the (project scoped) numeric version
