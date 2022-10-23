@@ -22,7 +22,6 @@ import (
 	"os/exec"
 	"path"
 	"strings"
-	"syscall"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
@@ -76,7 +75,7 @@ func (f *AptSource) RenderLocal(t *local.LocalTarget, a, e, changes *AptSource) 
 	klog.Infof("running command %s", args)
 	cmd := exec.Command(args[0], args[1:]...)
 	output, err := cmd.CombinedOutput()
-	if exitCode := cmd.ProcessState.Sys().(syscall.WaitStatus).ExitStatus(); err != nil && exitCode != 100 {
+	if err != nil {
 		return fmt.Errorf("error adding key: %v: %s", err, string(output))
 	}
 

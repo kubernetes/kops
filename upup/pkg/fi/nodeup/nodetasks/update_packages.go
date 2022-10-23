@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"syscall"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
@@ -88,7 +87,7 @@ func (_ *UpdatePackages) RenderLocal(t *local.LocalTarget, a, e, changes *Update
 	cmd := exec.Command(args[0], args[1:]...)
 	output, err := cmd.CombinedOutput()
 	// 'yum check-update' exits with 100 if it finds updates; treat it like a success
-	if exitCode := cmd.ProcessState.Sys().(syscall.WaitStatus).ExitStatus(); err != nil && exitCode != 100 {
+	if err != nil && getExitCode(err) != 100 {
 		return fmt.Errorf("error update packages: %v: %s", err, string(output))
 	}
 
@@ -98,4 +97,12 @@ func (_ *UpdatePackages) RenderLocal(t *local.LocalTarget, a, e, changes *Update
 func (_ *UpdatePackages) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *UpdatePackages) error {
 	t.Config.PackageUpdate = true
 	return nil
+}
+
+func getExitCode(err error) int {
+	if exiterr, ok := err.(*exec.ExitError); ok {
+		return exiterr.ExitCode()
+	} else {
+		return 0
+	}
 }
