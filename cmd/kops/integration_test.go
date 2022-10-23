@@ -276,7 +276,7 @@ func TestMinimal_v1_26(t *testing.T) {
 // TestHetzner runs the test on a minimum configuration
 func TestHetzner(t *testing.T) {
 	t.Setenv("HCLOUD_TOKEN", "REDACTED")
-	newIntegrationTest("minimal.k8s.local", "minimal_hetzner").
+	newIntegrationTest("minimal.example.com", "minimal_hetzner").
 		runTestTerraformHetzner(t)
 }
 
@@ -1462,7 +1462,6 @@ func (i *integrationTest) runTestTerraformHetzner(t *testing.T) {
 		"aws_s3_object_nodeupconfig-nodes-fsn1_content",
 		"aws_s3_object_"+i.clusterName+"-addons-bootstrap_content",
 		"aws_s3_object_"+i.clusterName+"-addons-coredns.addons.k8s.io-k8s-1.12_content",
-		"aws_s3_object_"+i.clusterName+"-addons-dns-controller.addons.k8s.io-k8s-1.12_content",
 		"aws_s3_object_"+i.clusterName+"-addons-hcloud-cloud-controller.addons.k8s.io-k8s-1.22_content",
 		"aws_s3_object_"+i.clusterName+"-addons-hcloud-csi-driver.addons.k8s.io-k8s-1.22_content",
 		"aws_s3_object_"+i.clusterName+"-addons-kops-controller.addons.k8s.io-k8s-1.16_content",
