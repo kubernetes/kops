@@ -280,7 +280,6 @@ func TestMinimal_NoneDNS(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "minimal-dns-none").
 		withAddons(
 			awsEBSCSIAddon,
-			dnsControllerAddon,
 			awsCCMAddon,
 		).
 		runTestTerraformAWS(t)
