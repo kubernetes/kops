@@ -34,7 +34,6 @@ spec:
     runc:
       version: 1.1.4
     version: 1.6.9
-  dnsZone: Z1AFAKE1ZON3YO
   docker:
     skipInstall: true
   etcdClusters:
@@ -58,8 +57,6 @@ spec:
     memoryRequest: 100Mi
     name: events
     version: 3.5.4
-  externalDns:
-    provider: dns-controller
   iam:
     allowContainerRegistry: true
     legacy: false
@@ -214,6 +211,6 @@ spec:
     zone: us-test-1a
   topology:
     dns:
-      type: Public
+      type: None
     masters: public
     nodes: public

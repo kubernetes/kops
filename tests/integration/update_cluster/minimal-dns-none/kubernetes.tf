@@ -142,7 +142,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-minimal-example-com"
     propagate_at_launch = true
     value               = "owned"
   }
-  target_group_arns   = [aws_lb_target_group.tcp-minimal-example-com-5905t8.id]
+  target_group_arns   = [aws_lb_target_group.kops-controller-minimal-e-uvauf3.id, aws_lb_target_group.tcp-minimal-example-com-5905t8.id]
   vpc_zone_identifier = [aws_subnet.us-test-1a-minimal-example-com.id]
 }
 
@@ -456,7 +456,7 @@ resource "aws_launch_template" "nodes-minimal-example-com" {
 }
 
 resource "aws_lb" "api-minimal-example-com" {
-  enable_cross_zone_load_balancing = false
+  enable_cross_zone_load_balancing = true
   internal                         = false
   load_balancer_type               = "network"
   name                             = "api-minimal-example-com-gecgf7"
@@ -470,6 +470,16 @@ resource "aws_lb" "api-minimal-example-com" {
   }
 }
 
+resource "aws_lb_listener" "api-minimal-example-com-3988" {
+  default_action {
+    target_group_arn = aws_lb_target_group.kops-controller-minimal-e-uvauf3.id
+    type             = "forward"
+  }
+  load_balancer_arn = aws_lb.api-minimal-example-com.id
+  port              = 3988
+  protocol          = "TCP"
+}
+
 resource "aws_lb_listener" "api-minimal-example-com-443" {
   default_action {
     target_group_arn = aws_lb_target_group.tcp-minimal-example-com-5905t8.id
@@ -478,6 +488,24 @@ resource "aws_lb_listener" "api-minimal-example-com-443" {
   load_balancer_arn = aws_lb.api-minimal-example-com.id
   port              = 443
   protocol          = "TCP"
+}
+
+resource "aws_lb_target_group" "kops-controller-minimal-e-uvauf3" {
+  health_check {
+    healthy_threshold   = 2
+    interval            = 10
+    protocol            = "TCP"
+    unhealthy_threshold = 2
+  }
+  name     = "kops-controller-minimal-e-uvauf3"
+  port     = 3988
+  protocol = "TCP"
+  tags = {
+    "KubernetesCluster"                         = "minimal.example.com"
+    "Name"                                      = "kops-controller-minimal-e-uvauf3"
+    "kubernetes.io/cluster/minimal.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.minimal-example-com.id
 }
 
 resource "aws_lb_target_group" "tcp-minimal-example-com-5905t8" {
@@ -508,17 +536,6 @@ resource "aws_route" "route-__--0" {
   destination_ipv6_cidr_block = "::/0"
   gateway_id                  = aws_internet_gateway.minimal-example-com.id
   route_table_id              = aws_route_table.minimal-example-com.id
-}
-
-resource "aws_route53_record" "api-minimal-example-com" {
-  alias {
-    evaluate_target_health = false
-    name                   = aws_lb.api-minimal-example-com.dns_name
-    zone_id                = aws_lb.api-minimal-example-com.zone_id
-  }
-  name    = "api.minimal.example.com"
-  type    = "A"
-  zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
 }
 
 resource "aws_route_table" "minimal-example-com" {
@@ -620,14 +637,6 @@ resource "aws_s3_object" "minimal-example-com-addons-coredns-addons-k8s-io-k8s-1
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_minimal.example.com-addons-coredns.addons.k8s.io-k8s-1.12_content")
   key                    = "tests/minimal.example.com/addons/coredns.addons.k8s.io/k8s-1.12.yaml"
-  provider               = aws.files
-  server_side_encryption = "AES256"
-}
-
-resource "aws_s3_object" "minimal-example-com-addons-dns-controller-addons-k8s-io-k8s-1-12" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_object_minimal.example.com-addons-dns-controller.addons.k8s.io-k8s-1.12_content")
-  key                    = "tests/minimal.example.com/addons/dns-controller.addons.k8s.io/k8s-1.12.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
@@ -890,6 +899,15 @@ resource "aws_security_group_rule" "icmpv6-pmtu-api-elb-__--0" {
   protocol          = "icmpv6"
   security_group_id = aws_security_group.masters-minimal-example-com.id
   to_port           = -1
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "kops-controller-lb-to-master" {
+  cidr_blocks       = ["172.20.0.0/16"]
+  from_port         = 3988
+  protocol          = "tcp"
+  security_group_id = aws_security_group.masters-minimal-example-com.id
+  to_port           = 3988
   type              = "ingress"
 }
 
