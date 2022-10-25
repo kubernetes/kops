@@ -435,21 +435,36 @@ func (e *NetworkLoadBalancer) IsForAPIServer() bool {
 }
 
 func (e *NetworkLoadBalancer) FindAddresses(context *fi.Context) ([]string, error) {
+	var addresses []string
+
 	cloud := context.Cloud.(awsup.AWSCloud)
+	cluster := context.Cluster
 
-	lb, err := cloud.FindELBV2ByNameTag(e.Tags["Name"])
-	if err != nil {
-		return nil, err
-	}
-	if lb == nil {
-		return nil, nil
+	{
+		lb, err := cloud.FindELBV2ByNameTag(e.Tags["Name"])
+		if err != nil {
+			return nil, fmt.Errorf("failed to find load balancer matching %q: %w", e.Tags["Name"], err)
+		}
+		if lb != nil && fi.StringValue(lb.DNSName) != "" {
+			addresses = append(addresses, fi.StringValue(lb.DNSName))
+		}
 	}
 
-	lbDnsName := fi.StringValue(lb.DNSName)
-	if lbDnsName == "" {
-		return nil, nil
+	if cluster.UsesNoneDNS() {
+		nis, err := cloud.FindELBV2NetworkInterfacesByName(fi.StringValue(e.VPC.ID), fi.StringValue(e.LoadBalancerName))
+		if err != nil {
+			return nil, fmt.Errorf("failed to find network interfaces matching %q: %w", fi.StringValue(e.LoadBalancerName), err)
+		}
+		for _, ni := range nis {
+			if fi.StringValue(ni.PrivateIpAddress) != "" {
+				addresses = append(addresses, fi.StringValue(ni.PrivateIpAddress))
+			}
+		}
 	}
-	return []string{lbDnsName}, nil
+
+	sort.Strings(addresses)
+
+	return addresses, nil
 }
 
 func (e *NetworkLoadBalancer) Run(c *fi.Context) error {
@@ -536,37 +551,53 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 
 		loadBalancerName = *e.LoadBalancerName
 
-		request := &elbv2.CreateLoadBalancerInput{}
-		request.Name = e.LoadBalancerName
-		request.Scheme = e.Scheme
-		request.Type = e.Type
-		request.IpAddressType = e.IpAddressType
-		request.Tags = awsup.ELBv2Tags(e.Tags)
-
-		for _, subnetMapping := range e.SubnetMappings {
-			request.SubnetMappings = append(request.SubnetMappings, &elbv2.SubnetMapping{
-				SubnetId:           subnetMapping.Subnet.ID,
-				AllocationId:       subnetMapping.AllocationID,
-				PrivateIPv4Address: subnetMapping.PrivateIPv4Address,
-			})
-		}
-
 		{
-			klog.V(2).Infof("Creating NLB with Name:%q", loadBalancerName)
+			request := &elbv2.CreateLoadBalancerInput{}
+			request.Name = e.LoadBalancerName
+			request.Scheme = e.Scheme
+			request.Type = e.Type
+			request.IpAddressType = e.IpAddressType
+			request.Tags = awsup.ELBv2Tags(e.Tags)
+
+			for _, subnetMapping := range e.SubnetMappings {
+				request.SubnetMappings = append(request.SubnetMappings, &elbv2.SubnetMapping{
+					SubnetId:           subnetMapping.Subnet.ID,
+					AllocationId:       subnetMapping.AllocationID,
+					PrivateIPv4Address: subnetMapping.PrivateIPv4Address,
+				})
+			}
+
+			klog.V(2).Infof("Creating NLB %q", loadBalancerName)
 
 			response, err := t.Cloud.ELBV2().CreateLoadBalancer(request)
 			if err != nil {
-				return fmt.Errorf("error creating NLB: %v", err)
+				return fmt.Errorf("error creating NLB %q: %w", loadBalancerName, err)
+			}
+			if len(response.LoadBalancers) != 1 {
+				return fmt.Errorf("error creating NLB %q: found %d", loadBalancerName, len(response.LoadBalancers))
 			}
 
-			if len(response.LoadBalancers) != 1 {
-				return fmt.Errorf("Either too many or too few NLBs were created, wanted to find %q", loadBalancerName)
-			} else {
-				lb := response.LoadBalancers[0]
-				e.DNSName = lb.DNSName
-				e.HostedZoneId = lb.CanonicalHostedZoneId
-				e.VPC = &VPC{ID: lb.VpcId}
-				loadBalancerArn = fi.StringValue(lb.LoadBalancerArn)
+			lb := response.LoadBalancers[0]
+			e.DNSName = lb.DNSName
+			e.HostedZoneId = lb.CanonicalHostedZoneId
+			e.VPC = &VPC{ID: lb.VpcId}
+			loadBalancerArn = fi.StringValue(lb.LoadBalancerArn)
+
+		}
+
+		// Wait for all load balancer components to be created (including network interfaces needed for NoneDNS).
+		// Limiting this to clusters using NoneDNS because load balancer creation is quite slow.
+		for _, tg := range e.TargetGroups {
+			if strings.HasPrefix(fi.StringValue(tg.Name), "kops-controller") {
+				klog.Infof("Waiting for load balancer %q to be created...", loadBalancerName)
+				request := &elbv2.DescribeLoadBalancersInput{
+					Names: []*string{&loadBalancerName},
+				}
+				err := t.Cloud.ELBV2().WaitUntilLoadBalancerAvailable(request)
+				if err != nil {
+					return fmt.Errorf("error waiting for NLB %q: %w", loadBalancerName, err)
+				}
+				break
 			}
 		}
 
