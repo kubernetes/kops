@@ -19,15 +19,12 @@ package gcetasks
 import (
 	"context"
 	"fmt"
-	"reflect"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
 
 	compute "google.golang.org/api/compute/v1"
 	"k8s.io/klog/v2"
-	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -92,10 +89,15 @@ func (e *InstanceTemplate) CompareWithID() *string {
 	return e.ID
 }
 
-func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
-	cloud := c.Cloud.(gce.GCECloud)
+// findLatestVersion returns the latest InstanceTemplate version, matching by name
+func (e *InstanceTemplate) findLatestVersion(ctx context.Context, c *fi.Context) (*compute.InstanceTemplate, error) {
+	cloud, ok := c.Cloud.(gce.GCECloud)
+	if !ok {
+		return nil, fmt.Errorf("invalid cloud provider: %v, expected: gce.GCECloud", c.Cloud)
+	}
 
-	templates, err := cloud.Compute().InstanceTemplates().List(context.Background(), cloud.Project())
+	// TODO: Name prefix?
+	templates, err := cloud.Compute().InstanceTemplates().List(ctx, cloud.Project())
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
@@ -103,20 +105,40 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 		return nil, fmt.Errorf("error listing InstanceTemplates: %v", err)
 	}
 
-	expected, err := e.mapToGCE(cloud.Project(), cloud.Region())
-	if err != nil {
-		return nil, err
+	var latestVersion int64
+	var latest *compute.InstanceTemplate
+	for _, template := range templates {
+		if !strings.HasPrefix(template.Name, fi.StringValue(e.NamePrefix)+"-") {
+			continue
+		}
+
+		suffix := strings.TrimPrefix(template.Name, fi.StringValue(e.NamePrefix)+"-")
+		version, err := strconv.ParseInt(suffix, 10, 64)
+		if err != nil {
+			klog.Infof("unable to parse timestamp from instance template name %q", template.Name)
+			continue
+		}
+
+		if latestVersion < version {
+			latest = template
+			latestVersion = version
+		}
 	}
 
-	for _, r := range templates {
-		if !strings.HasPrefix(r.Name, fi.StringValue(e.NamePrefix)+"-") {
-			continue
-		}
+	return latest, nil
+}
 
-		if !matches(expected, r) {
-			continue
-		}
+func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
+	ctx := context.TODO()
 
+	cloud := c.Cloud.(gce.GCECloud)
+
+	r, err := e.findLatestVersion(ctx, c)
+	if err != nil {
+		return nil, fmt.Errorf("error listing InstanceTemplates: %v", err)
+	}
+
+	if r != nil {
 		actual := &InstanceTemplate{}
 
 		p := r.Properties
@@ -218,6 +240,9 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 		actual.ID = &r.Name
 		if e.ID == nil {
 			e.ID = actual.ID
+		}
+		if e.GCPProvisioningModel == nil && actual.GCPProvisioningModel != nil {
+			e.GCPProvisioningModel = actual.GCPProvisioningModel
 		}
 
 		// System fields
@@ -413,46 +438,6 @@ func (a ByKey) Len() int           { return len(a) }
 func (a ByKey) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByKey) Less(i, j int) bool { return a[i].Key < a[j].Key }
 
-func matches(l, r *compute.InstanceTemplate) bool {
-	normalizeInstanceProperties := func(v *compute.InstanceProperties) *compute.InstanceProperties {
-		c := *v
-		if c.Metadata != nil {
-			cm := *c.Metadata
-			c.Metadata = &cm
-			c.Metadata.Fingerprint = ""
-			sort.Sort(ByKey(c.Metadata.Items))
-		}
-		// Ignore output fields
-		for _, ni := range c.NetworkInterfaces {
-			ni.Name = ""
-		}
-		return &c
-	}
-	normalize := func(v *compute.InstanceTemplate) *compute.InstanceTemplate {
-		c := *v
-		c.SelfLink = ""
-		c.CreationTimestamp = ""
-		c.Id = 0
-		c.Name = ""
-		c.Properties = normalizeInstanceProperties(c.Properties)
-		return &c
-	}
-	normalizedL := normalize(l)
-	normalizedR := normalize(r)
-
-	if !reflect.DeepEqual(normalizedL, normalizedR) {
-		if klog.V(10).Enabled() {
-			ls := fi.DebugAsJsonStringIndent(normalizedL)
-			rs := fi.DebugAsJsonStringIndent(normalizedR)
-			klog.V(10).Infof("Not equal")
-			klog.V(10).Infof(diff.FormatDiff(ls, rs))
-		}
-		return false
-	}
-
-	return true
-}
-
 func (e *InstanceTemplate) URL(project string) (string, error) {
 	if e.ID == nil {
 		return "", fmt.Errorf("InstanceTemplate not yet built; ID is not yet known")
@@ -471,21 +456,21 @@ func (_ *InstanceTemplate) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Instanc
 
 	if a == nil {
 		klog.V(4).Infof("Creating InstanceTemplate %v", i)
-
-		name := fi.StringValue(e.NamePrefix) + "-" + strconv.FormatInt(time.Now().Unix(), 10)
-		e.ID = &name
-		i.Name = name
-
-		op, err := t.Cloud.Compute().InstanceTemplates().Insert(t.Cloud.Project(), i)
-		if err != nil {
-			return fmt.Errorf("error creating InstanceTemplate: %v", err)
-		}
-
-		if err := t.Cloud.WaitForOp(op); err != nil {
-			return fmt.Errorf("error creating InstanceTemplate: %v", err)
-		}
 	} else {
-		return fmt.Errorf("Cannot apply changes to InstanceTemplate: %v", changes)
+		klog.V(4).Infof("Creating new InstanceTemplate %v", i)
+	}
+
+	name := fi.StringValue(e.NamePrefix) + "-" + strconv.FormatInt(time.Now().Unix(), 10)
+	e.ID = &name
+	i.Name = name
+
+	op, err := t.Cloud.Compute().InstanceTemplates().Insert(t.Cloud.Project(), i)
+	if err != nil {
+		return fmt.Errorf("error creating InstanceTemplate: %v", err)
+	}
+
+	if err := t.Cloud.WaitForOp(op); err != nil {
+		return fmt.Errorf("error creating InstanceTemplate: %v", err)
 	}
 
 	return nil
