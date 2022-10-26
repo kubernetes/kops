@@ -340,6 +340,16 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		return nil, err
 	}
 
+	err = setupNetworking(opt, &cluster)
+	if err != nil {
+		return nil, err
+	}
+
+	bastions, err := setupTopology(opt, &cluster, allZones)
+	if err != nil {
+		return nil, err
+	}
+
 	masters, err := setupMasters(opt, &cluster, zoneToSubnetMap)
 	if err != nil {
 		return nil, err
@@ -369,16 +379,6 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 	}
 
 	apiservers, err := setupAPIServers(opt, &cluster, zoneToSubnetMap)
-	if err != nil {
-		return nil, err
-	}
-
-	err = setupNetworking(opt, &cluster)
-	if err != nil {
-		return nil, err
-	}
-
-	bastions, err := setupTopology(opt, &cluster, allZones)
 	if err != nil {
 		return nil, err
 	}
