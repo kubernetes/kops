@@ -413,6 +413,9 @@ resource "google_compute_instance_group_manager" "a-nodes-minimal-gce-private-ex
 }
 
 resource "google_compute_instance_template" "master-us-test1-a-minimal-gce-private-example-com" {
+  advanced_machine_features {
+    enable_nested_virtualization = false
+  }
   can_ip_forward = true
   disk {
     auto_delete  = true
@@ -458,6 +461,9 @@ resource "google_compute_instance_template" "master-us-test1-a-minimal-gce-priva
 }
 
 resource "google_compute_instance_template" "nodes-minimal-gce-private-example-com" {
+  advanced_machine_features {
+    enable_nested_virtualization = false
+  }
   can_ip_forward = true
   disk {
     auto_delete  = true

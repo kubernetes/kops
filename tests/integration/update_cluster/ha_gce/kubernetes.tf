@@ -549,6 +549,9 @@ resource "google_compute_instance_group_manager" "c-nodes-ha-gce-example-com" {
 }
 
 resource "google_compute_instance_template" "master-us-test1-a-ha-gce-example-com" {
+  advanced_machine_features {
+    enable_nested_virtualization = false
+  }
   can_ip_forward = true
   disk {
     auto_delete  = true
@@ -596,6 +599,9 @@ resource "google_compute_instance_template" "master-us-test1-a-ha-gce-example-co
 }
 
 resource "google_compute_instance_template" "master-us-test1-b-ha-gce-example-com" {
+  advanced_machine_features {
+    enable_nested_virtualization = false
+  }
   can_ip_forward = true
   disk {
     auto_delete  = true
@@ -643,6 +649,9 @@ resource "google_compute_instance_template" "master-us-test1-b-ha-gce-example-co
 }
 
 resource "google_compute_instance_template" "master-us-test1-c-ha-gce-example-com" {
+  advanced_machine_features {
+    enable_nested_virtualization = false
+  }
   can_ip_forward = true
   disk {
     auto_delete  = true
@@ -690,6 +699,9 @@ resource "google_compute_instance_template" "master-us-test1-c-ha-gce-example-co
 }
 
 resource "google_compute_instance_template" "nodes-ha-gce-example-com" {
+  advanced_machine_features {
+    enable_nested_virtualization = false
+  }
   can_ip_forward = true
   disk {
     auto_delete  = true
