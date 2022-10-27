@@ -131,14 +131,6 @@ resource "aws_s3_object" "minimal-example-com-addons-limit-range-addons-k8s-io" 
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_object" "minimal-example-com-addons-rbac-addons-k8s-io-k8s-1-8" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_object_minimal.example.com-addons-rbac.addons.k8s.io-k8s-1.8_content")
-  key                    = "tests/minimal.example.com/addons/rbac.addons.k8s.io/k8s-1.8.yaml"
-  provider               = aws.files
-  server_side_encryption = "AES256"
-}
-
 resource "aws_s3_object" "nodeupconfig-master-fsn1" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_nodeupconfig-master-fsn1_content")
