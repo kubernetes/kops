@@ -139,7 +139,7 @@ func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
 	cloud.MockRoute53 = mockRoute53
 	mockELB := &mockelb.MockELB{}
 	cloud.MockELB = mockELB
-	mockELBV2 := &mockelbv2.MockELBV2{}
+	mockELBV2 := &mockelbv2.MockELBV2{EC2: mockEC2}
 	cloud.MockELBV2 = mockELBV2
 	mockIAM := &mockiam.MockIAM{}
 	cloud.MockIAM = mockIAM

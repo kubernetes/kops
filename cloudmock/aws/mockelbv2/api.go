@@ -19,6 +19,8 @@ package mockelbv2
 import (
 	"sync"
 
+	"k8s.io/kops/cloudmock/aws/mockec2"
+
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/elbv2/elbv2iface"
 )
@@ -28,6 +30,7 @@ type MockELBV2 struct {
 
 	mutex sync.Mutex
 
+	EC2           *mockec2.MockEC2
 	LoadBalancers map[string]*loadBalancer
 	lbCount       int
 	TargetGroups  map[string]*targetGroup
