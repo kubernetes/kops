@@ -211,9 +211,11 @@ func findNatGatewayFromRouteTable(cloud awsup.AWSCloud, routeTable *RouteTable) 
 
 		if rt != nil {
 			var natGatewayIDs []*string
+			natGatewayIDsSeen := map[string]bool{}
 			for _, route := range rt.Routes {
-				if route.NatGatewayId != nil {
+				if route.NatGatewayId != nil && !natGatewayIDsSeen[*route.NatGatewayId] {
 					natGatewayIDs = append(natGatewayIDs, route.NatGatewayId)
+					natGatewayIDsSeen[*route.NatGatewayId] = true
 				}
 			}
 
