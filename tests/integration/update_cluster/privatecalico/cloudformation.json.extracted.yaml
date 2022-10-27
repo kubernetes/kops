@@ -134,7 +134,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivatecalicoexamplecom.Prope
     logLevel: info
     runc:
       version: 1.1.4
-    version: 1.6.8
+    version: 1.6.9
   docker:
     skipInstall: true
   encryptionConfig: null
@@ -263,7 +263,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivatecalicoexamplecom.Prope
   ConfigBase: memfs://clusters.example.com/privatecalico.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
-  NodeupConfigHash: Wi3YZogz6WVBDPLV+jFYwdAD2yaiMoVXm286uErMPjg=
+  NodeupConfigHash: z9IrGZk+qmNNbte7aUvwMfCTav7cp8g5hQAocBT8VYQ=
 
   __EOF_KUBE_ENV
 
@@ -405,7 +405,7 @@ Resources.AWSEC2LaunchTemplatenodesprivatecalicoexamplecom.Properties.LaunchTemp
     logLevel: info
     runc:
       version: 1.1.4
-    version: 1.6.8
+    version: 1.6.9
   docker:
     skipInstall: true
   kubeProxy:
@@ -440,7 +440,7 @@ Resources.AWSEC2LaunchTemplatenodesprivatecalicoexamplecom.Properties.LaunchTemp
   ConfigBase: memfs://clusters.example.com/privatecalico.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: 5LJ/q7tMyYX+GpAQHQHO43QU4AN9au1mhhcqOCciRjM=
+  NodeupConfigHash: pN8r8ntZquiYontCxQojN/hhimKwFskA5m8HXgxGfIo=
 
   __EOF_KUBE_ENV
 
