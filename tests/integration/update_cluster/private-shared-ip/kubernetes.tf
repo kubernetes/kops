@@ -116,7 +116,6 @@ resource "aws_autoscaling_group" "bastion-private-shared-ip-example-com" {
     id      = aws_launch_template.bastion-private-shared-ip-example-com.id
     version = aws_launch_template.bastion-private-shared-ip-example-com.latest_version
   }
-  load_balancers        = [aws_elb.bastion-private-shared-ip-example-com.id]
   max_instance_lifetime = 0
   max_size              = 1
   metrics_granularity   = "1Minute"
@@ -158,6 +157,7 @@ resource "aws_autoscaling_group" "bastion-private-shared-ip-example-com" {
     propagate_at_launch = true
     value               = "owned"
   }
+  target_group_arns   = [aws_lb_target_group.bastion-private-shared-ip-eepmph.id]
   vpc_zone_identifier = [aws_subnet.utility-us-test-1a-private-shared-ip-example-com.id]
 }
 
@@ -333,31 +333,6 @@ resource "aws_elb" "api-private-shared-ip-example-com" {
   tags = {
     "KubernetesCluster"                                   = "private-shared-ip.example.com"
     "Name"                                                = "api.private-shared-ip.example.com"
-    "kubernetes.io/cluster/private-shared-ip.example.com" = "owned"
-  }
-}
-
-resource "aws_elb" "bastion-private-shared-ip-example-com" {
-  health_check {
-    healthy_threshold   = 2
-    interval            = 10
-    target              = "TCP:22"
-    timeout             = 5
-    unhealthy_threshold = 2
-  }
-  idle_timeout = 300
-  listener {
-    instance_port     = 22
-    instance_protocol = "TCP"
-    lb_port           = 22
-    lb_protocol       = "TCP"
-  }
-  name            = "bastion-private-shared-ip-eepmph"
-  security_groups = [aws_security_group.bastion-elb-private-shared-ip-example-com.id]
-  subnets         = [aws_subnet.utility-us-test-1a-private-shared-ip-example-com.id]
-  tags = {
-    "KubernetesCluster"                                   = "private-shared-ip.example.com"
-    "Name"                                                = "bastion.private-shared-ip.example.com"
     "kubernetes.io/cluster/private-shared-ip.example.com" = "owned"
   }
 }
@@ -681,6 +656,49 @@ resource "aws_launch_template" "nodes-private-shared-ip-example-com" {
   user_data = filebase64("${path.module}/data/aws_launch_template_nodes.private-shared-ip.example.com_user_data")
 }
 
+resource "aws_lb" "bastion-private-shared-ip-example-com" {
+  enable_cross_zone_load_balancing = false
+  internal                         = false
+  load_balancer_type               = "network"
+  name                             = "bastion-private-shared-ip-eepmph"
+  subnet_mapping {
+    subnet_id = aws_subnet.utility-us-test-1a-private-shared-ip-example-com.id
+  }
+  tags = {
+    "KubernetesCluster"                                   = "private-shared-ip.example.com"
+    "Name"                                                = "bastion.private-shared-ip.example.com"
+    "kubernetes.io/cluster/private-shared-ip.example.com" = "owned"
+  }
+}
+
+resource "aws_lb_listener" "bastion-private-shared-ip-example-com-22" {
+  default_action {
+    target_group_arn = aws_lb_target_group.bastion-private-shared-ip-eepmph.id
+    type             = "forward"
+  }
+  load_balancer_arn = aws_lb.bastion-private-shared-ip-example-com.id
+  port              = 22
+  protocol          = "TCP"
+}
+
+resource "aws_lb_target_group" "bastion-private-shared-ip-eepmph" {
+  health_check {
+    healthy_threshold   = 2
+    interval            = 10
+    protocol            = "TCP"
+    unhealthy_threshold = 2
+  }
+  name     = "bastion-private-shared-ip-eepmph"
+  port     = 22
+  protocol = "TCP"
+  tags = {
+    "KubernetesCluster"                                   = "private-shared-ip.example.com"
+    "Name"                                                = "bastion-private-shared-ip-eepmph"
+    "kubernetes.io/cluster/private-shared-ip.example.com" = "owned"
+  }
+  vpc_id = "vpc-12345678"
+}
+
 resource "aws_nat_gateway" "us-test-1a-private-shared-ip-example-com" {
   allocation_id = "eipalloc-12345678"
   subnet_id     = aws_subnet.utility-us-test-1a-private-shared-ip-example-com.id
@@ -889,17 +907,6 @@ resource "aws_security_group" "api-elb-private-shared-ip-example-com" {
   vpc_id = "vpc-12345678"
 }
 
-resource "aws_security_group" "bastion-elb-private-shared-ip-example-com" {
-  description = "Security group for bastion ELB"
-  name        = "bastion-elb.private-shared-ip.example.com"
-  tags = {
-    "KubernetesCluster"                                   = "private-shared-ip.example.com"
-    "Name"                                                = "bastion-elb.private-shared-ip.example.com"
-    "kubernetes.io/cluster/private-shared-ip.example.com" = "owned"
-  }
-  vpc_id = "vpc-12345678"
-}
-
 resource "aws_security_group" "bastion-private-shared-ip-example-com" {
   description = "Security group for bastion"
   name        = "bastion.private-shared-ip.example.com"
@@ -933,11 +940,11 @@ resource "aws_security_group" "nodes-private-shared-ip-example-com" {
   vpc_id = "vpc-12345678"
 }
 
-resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-bastion-elb-private-shared-ip-example-com" {
+resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-bastion-private-shared-ip-example-com" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 22
   protocol          = "tcp"
-  security_group_id = aws_security_group.bastion-elb-private-shared-ip-example-com.id
+  security_group_id = aws_security_group.bastion-private-shared-ip-example-com.id
   to_port           = 22
   type              = "ingress"
 }
@@ -948,6 +955,15 @@ resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-443to443-api-elb
   protocol          = "tcp"
   security_group_id = aws_security_group.api-elb-private-shared-ip-example-com.id
   to_port           = 443
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "from-172-20-4-0--22-ingress-tcp-22to22-bastion-private-shared-ip-example-com" {
+  cidr_blocks       = ["172.20.4.0/22"]
+  from_port         = 22
+  protocol          = "tcp"
+  security_group_id = aws_security_group.bastion-private-shared-ip-example-com.id
+  to_port           = 22
   type              = "ingress"
 }
 
@@ -967,33 +983,6 @@ resource "aws_security_group_rule" "from-api-elb-private-shared-ip-example-com-e
   security_group_id = aws_security_group.api-elb-private-shared-ip-example-com.id
   to_port           = 0
   type              = "egress"
-}
-
-resource "aws_security_group_rule" "from-bastion-elb-private-shared-ip-example-com-egress-all-0to0-0-0-0-0--0" {
-  cidr_blocks       = ["0.0.0.0/0"]
-  from_port         = 0
-  protocol          = "-1"
-  security_group_id = aws_security_group.bastion-elb-private-shared-ip-example-com.id
-  to_port           = 0
-  type              = "egress"
-}
-
-resource "aws_security_group_rule" "from-bastion-elb-private-shared-ip-example-com-egress-all-0to0-__--0" {
-  from_port         = 0
-  ipv6_cidr_blocks  = ["::/0"]
-  protocol          = "-1"
-  security_group_id = aws_security_group.bastion-elb-private-shared-ip-example-com.id
-  to_port           = 0
-  type              = "egress"
-}
-
-resource "aws_security_group_rule" "from-bastion-elb-private-shared-ip-example-com-ingress-tcp-22to22-bastion-private-shared-ip-example-com" {
-  from_port                = 22
-  protocol                 = "tcp"
-  security_group_id        = aws_security_group.bastion-private-shared-ip-example-com.id
-  source_security_group_id = aws_security_group.bastion-elb-private-shared-ip-example-com.id
-  to_port                  = 22
-  type                     = "ingress"
 }
 
 resource "aws_security_group_rule" "from-bastion-private-shared-ip-example-com-egress-all-0to0-0-0-0-0--0" {
@@ -1145,6 +1134,24 @@ resource "aws_security_group_rule" "icmp-pmtu-api-elb-0-0-0-0--0" {
   from_port         = 3
   protocol          = "icmp"
   security_group_id = aws_security_group.api-elb-private-shared-ip-example-com.id
+  to_port           = 4
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "icmp-pmtu-ssh-nlb-0-0-0-0--0" {
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 3
+  protocol          = "icmp"
+  security_group_id = aws_security_group.bastion-private-shared-ip-example-com.id
+  to_port           = 4
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "icmp-pmtu-ssh-nlb-172-20-4-0--22" {
+  cidr_blocks       = ["172.20.4.0/22"]
+  from_port         = 3
+  protocol          = "icmp"
+  security_group_id = aws_security_group.bastion-private-shared-ip-example-com.id
   to_port           = 4
   type              = "ingress"
 }

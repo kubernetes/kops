@@ -345,16 +345,6 @@ func TestPopulateCluster_BastionInvalidMatchingValues_Required(t *testing.T) {
 	expectErrorFromPopulateCluster(t, c, cloud, "bastion")
 }
 
-func TestPopulateCluster_BastionIdleTimeoutInvalidNegative_Required(t *testing.T) {
-	cloud, c := buildMinimalCluster()
-
-	c.Spec.Topology.Masters = kopsapi.TopologyPrivate
-	c.Spec.Topology.Nodes = kopsapi.TopologyPrivate
-	c.Spec.Topology.Bastion = &kopsapi.BastionSpec{}
-	c.Spec.Topology.Bastion.IdleTimeoutSeconds = fi.Int64(-1)
-	expectErrorFromPopulateCluster(t, c, cloud, "bastion")
-}
-
 func expectErrorFromPopulateCluster(t *testing.T, c *kopsapi.Cluster, cloud fi.Cloud, message string) {
 	_, err := mockedPopulateClusterSpec(c, cloud)
 	if err == nil {

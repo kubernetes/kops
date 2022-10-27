@@ -460,7 +460,7 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 		}
 
 		if ig.Spec.Role == kops.InstanceGroupRoleBastion {
-			t.LoadBalancers = append(t.LoadBalancers, b.LinkToCLB("bastion"))
+			t.TargetGroups = append(t.TargetGroups, b.LinkToTargetGroup("bastion"))
 		}
 	}
 
