@@ -2009,7 +2009,7 @@ func ListIAMRoles(cloud fi.Cloud, clusterName string) ([]*resources.Resource, er
 
 							continue
 						} else if awsup.AWSErrorCode(err) == iam.ErrCodeNoSuchEntityException {
-							klog.Warningf("could not find instance profile %q. Resource may already have been deleted: %v", name, awserror)
+							klog.Warningf("could not find role %q. Resource may already have been deleted: %v", name, awserror)
 							continue
 						}
 					}
