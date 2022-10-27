@@ -46,7 +46,7 @@ func (eb *EventBridgeTarget) CompareWithID() *string {
 	return eb.Name
 }
 
-func (eb *EventBridgeTarget) Find(c *fi.Context) (*EventBridgeTarget, error) {
+func (eb *EventBridgeTarget) Find(c *fi.CloudContext) (*EventBridgeTarget, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	if eb.Rule == nil || eb.SQSQueue == nil {
@@ -89,7 +89,7 @@ func (eb *EventBridgeTarget) Find(c *fi.Context) (*EventBridgeTarget, error) {
 	return nil, nil
 }
 
-func (eb *EventBridgeTarget) Run(c *fi.Context) error {
+func (eb *EventBridgeTarget) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(eb, c)
 }
 

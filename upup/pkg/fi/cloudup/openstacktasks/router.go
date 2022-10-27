@@ -53,7 +53,7 @@ func NewRouterTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecyc
 	return actual, nil
 }
 
-func (n *Router) Find(context *fi.Context) (*Router, error) {
+func (n *Router) Find(context *fi.CloudContext) (*Router, error) {
 	cloud := context.Cloud.(openstack.OpenstackCloud)
 	opt := routers.ListOpts{
 		Name: fi.StringValue(n.Name),
@@ -71,7 +71,7 @@ func (n *Router) Find(context *fi.Context) (*Router, error) {
 	return NewRouterTaskFromCloud(cloud, n.Lifecycle, &rs[0], n)
 }
 
-func (c *Router) Run(context *fi.Context) error {
+func (c *Router) Run(context *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(c, context)
 }
 

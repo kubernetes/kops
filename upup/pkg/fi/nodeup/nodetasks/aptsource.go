@@ -47,7 +47,7 @@ func (f *AptSource) String() string {
 	return f.Name
 }
 
-func (f *AptSource) Run(c *fi.Context) error {
+func (f *AptSource) Run(c *fi.NodeContext) error {
 	return fi.DefaultDeltaRunMethod(f, c)
 }
 

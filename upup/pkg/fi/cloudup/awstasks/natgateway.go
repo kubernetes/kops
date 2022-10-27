@@ -59,7 +59,7 @@ func (e *NatGateway) CompareWithID() *string {
 	return e.ID
 }
 
-func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
+func (e *NatGateway) Find(c *fi.CloudContext) (*NatGateway, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 	var ngw *ec2.NatGateway
 	actual := &NatGateway{}
@@ -127,7 +127,7 @@ func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
 	return actual, nil
 }
 
-func (e *NatGateway) findNatGateway(c *fi.Context) (*ec2.NatGateway, error) {
+func (e *NatGateway) findNatGateway(c *fi.CloudContext) (*ec2.NatGateway, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	id := e.ID
@@ -290,7 +290,7 @@ func (s *NatGateway) CheckChanges(a, e, changes *NatGateway) error {
 	return nil
 }
 
-func (e *NatGateway) Run(c *fi.Context) error {
+func (e *NatGateway) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

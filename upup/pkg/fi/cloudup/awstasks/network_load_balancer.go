@@ -238,7 +238,7 @@ func (e *NetworkLoadBalancer) getHostedZoneId() *string {
 	return e.HostedZoneId
 }
 
-func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) {
+func (e *NetworkLoadBalancer) Find(c *fi.CloudContext) (*NetworkLoadBalancer, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	lb, err := cloud.FindELBV2ByNameTag(e.Tags["Name"])
@@ -434,7 +434,7 @@ func (e *NetworkLoadBalancer) IsForAPIServer() bool {
 	return e.ForAPIServer
 }
 
-func (e *NetworkLoadBalancer) FindAddresses(context *fi.Context) ([]string, error) {
+func (e *NetworkLoadBalancer) FindAddresses(context *fi.CloudContext) ([]string, error) {
 	cloud := context.Cloud.(awsup.AWSCloud)
 
 	lb, err := cloud.FindELBV2ByNameTag(e.Tags["Name"])
@@ -452,7 +452,7 @@ func (e *NetworkLoadBalancer) FindAddresses(context *fi.Context) ([]string, erro
 	return []string{lbDnsName}, nil
 }
 
-func (e *NetworkLoadBalancer) Run(c *fi.Context) error {
+func (e *NetworkLoadBalancer) Run(c *fi.CloudContext) error {
 	// TODO: Make Normalize a standard method
 	e.Normalize()
 

@@ -47,7 +47,7 @@ func (p *PublicIPAddress) CompareWithID() *string {
 }
 
 // Find discovers the Public IP Address in the cloud provider
-func (p *PublicIPAddress) Find(c *fi.Context) (*PublicIPAddress, error) {
+func (p *PublicIPAddress) Find(c *fi.CloudContext) (*PublicIPAddress, error) {
 	cloud := c.Cloud.(azure.AzureCloud)
 	l, err := cloud.PublicIPAddress().List(context.TODO(), *p.ResourceGroup.Name)
 	if err != nil {
@@ -76,7 +76,7 @@ func (p *PublicIPAddress) Find(c *fi.Context) (*PublicIPAddress, error) {
 }
 
 // Run implements fi.Task.Run.
-func (p *PublicIPAddress) Run(c *fi.Context) error {
+func (p *PublicIPAddress) Run(c *fi.CloudContext) error {
 	c.Cloud.(azure.AzureCloud).AddClusterTags(p.Tags)
 	return fi.DefaultDeltaRunMethod(p, c)
 }

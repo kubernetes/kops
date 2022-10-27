@@ -40,7 +40,7 @@ func (e *TargetPool) CompareWithID() *string {
 	return e.Name
 }
 
-func (e *TargetPool) Find(c *fi.Context) (*TargetPool, error) {
+func (e *TargetPool) Find(c *fi.CloudContext) (*TargetPool, error) {
 	cloud := c.Cloud.(gce.GCECloud)
 	name := fi.StringValue(e.Name)
 
@@ -61,7 +61,7 @@ func (e *TargetPool) Find(c *fi.Context) (*TargetPool, error) {
 	return actual, nil
 }
 
-func (e *TargetPool) Run(c *fi.Context) error {
+func (e *TargetPool) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

@@ -124,7 +124,7 @@ func (e *Archive) Find(c *fi.Context) (*Archive, error) {
 }
 
 // Run implements fi.Task::Run
-func (e *Archive) Run(c *fi.Context) error {
+func (e *Archive) Run(c *fi.NodeContext) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

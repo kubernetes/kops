@@ -63,7 +63,7 @@ func (lb *LoadBalancer) CompareWithID() *string {
 	return lb.ID
 }
 
-func (lb *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
+func (lb *LoadBalancer) Find(c *fi.CloudContext) (*LoadBalancer, error) {
 	klog.V(10).Infof("load balancer FIND - ID=%s, name=%s", fi.StringValue(lb.ID), fi.StringValue(lb.Name))
 	if fi.StringValue(lb.ID) == "" {
 		// Loadbalancer = nil if not found
@@ -89,7 +89,7 @@ func (lb *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 	}, nil
 }
 
-func (lb *LoadBalancer) Run(c *fi.Context) error {
+func (lb *LoadBalancer) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(lb, c)
 }
 
@@ -193,7 +193,7 @@ func (lb *LoadBalancer) IsForAPIServer() bool {
 	return lb.ForAPIServer
 }
 
-func (lb *LoadBalancer) FindAddresses(c *fi.Context) ([]string, error) {
+func (lb *LoadBalancer) FindAddresses(c *fi.CloudContext) ([]string, error) {
 	cloud := c.Cloud.(do.DOCloud)
 	loadBalancerService := cloud.LoadBalancersService()
 	address := ""

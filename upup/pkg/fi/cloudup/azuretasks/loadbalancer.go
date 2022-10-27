@@ -58,7 +58,7 @@ func (lb *LoadBalancer) IsForAPIServer() bool {
 }
 
 // Find discovers the LoadBalancer in the cloud provider
-func (lb *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
+func (lb *LoadBalancer) Find(c *fi.CloudContext) (*LoadBalancer, error) {
 	cloud := c.Cloud.(azure.AzureCloud)
 	l, err := cloud.LoadBalancer().List(context.TODO(), *lb.ResourceGroup.Name)
 	if err != nil {
@@ -99,7 +99,7 @@ func (lb *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 }
 
 // Run implements fi.Task.Run.
-func (lb *LoadBalancer) Run(c *fi.Context) error {
+func (lb *LoadBalancer) Run(c *fi.CloudContext) error {
 	c.Cloud.(azure.AzureCloud).AddClusterTags(lb.Tags)
 	return fi.DefaultDeltaRunMethod(lb, c)
 }

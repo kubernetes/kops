@@ -52,7 +52,7 @@ type DNSTarget interface {
 	TerraformLink(...string) *terraformWriter.Literal
 }
 
-func (e *DNSName) Find(c *fi.Context) (*DNSName, error) {
+func (e *DNSName) Find(c *fi.CloudContext) (*DNSName, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	if e.Zone == nil || e.Zone.ZoneID == nil {
@@ -190,7 +190,7 @@ func findDNSTargetELB(cloud awsup.AWSCloud, aliasTarget *route53.AliasTarget, dn
 	return nil, nil
 }
 
-func (e *DNSName) Run(c *fi.Context) error {
+func (e *DNSName) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

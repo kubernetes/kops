@@ -77,7 +77,7 @@ func (e *FloatingIP) IsForAPIServer() bool {
 	return e.ForAPIServer
 }
 
-func (e *FloatingIP) FindAddresses(context *fi.Context) ([]string, error) {
+func (e *FloatingIP) FindAddresses(context *fi.CloudContext) ([]string, error) {
 	if e.ID == nil {
 		if e.LB != nil && e.LB.ID == nil {
 			return nil, nil
@@ -128,7 +128,7 @@ func (e *FloatingIP) CompareWithID() *string {
 	return e.ID
 }
 
-func (e *FloatingIP) Find(c *fi.Context) (*FloatingIP, error) {
+func (e *FloatingIP) Find(c *fi.CloudContext) (*FloatingIP, error) {
 	if e == nil {
 		return nil, nil
 	}
@@ -222,7 +222,7 @@ func findFipByPortID(cloud openstack.OpenstackCloud, id string) (fip *l3floating
 	return &fips[0], nil
 }
 
-func (e *FloatingIP) Run(c *fi.Context) error {
+func (e *FloatingIP) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

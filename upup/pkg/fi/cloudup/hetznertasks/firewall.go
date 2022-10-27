@@ -45,7 +45,7 @@ func (v *Firewall) CompareWithID() *string {
 	return fi.String(strconv.Itoa(fi.IntValue(v.ID)))
 }
 
-func (v *Firewall) Find(c *fi.Context) (*Firewall, error) {
+func (v *Firewall) Find(c *fi.CloudContext) (*Firewall, error) {
 	cloud := c.Cloud.(hetzner.HetznerCloud)
 	client := cloud.FirewallClient()
 
@@ -85,7 +85,7 @@ func (v *Firewall) Find(c *fi.Context) (*Firewall, error) {
 	return nil, nil
 }
 
-func (v *Firewall) Run(c *fi.Context) error {
+func (v *Firewall) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(v, c)
 }
 

@@ -29,12 +29,10 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
-type Context struct {
+type ContextBase struct {
 	Tmpdir string
 
-	Target            Target
 	DNS               dnsprovider.Interface
-	Cloud             Cloud
 	Cluster           *kops.Cluster
 	Keystore          Keystore
 	SecretStore       SecretStore
@@ -47,22 +45,43 @@ type Context struct {
 	warnings []*Warning
 }
 
+type CloudContext struct {
+	ContextBase
+
+	Cloud  Cloud
+	Target Target
+}
+
+type NodeContext struct {
+	ContextBase
+
+	Cloud  Cloud
+	Target Target
+}
+
+type Context interface {
+	GetTarget() Target
+	GetCloud() Cloud
+}
+
 // Warning holds the details of a warning encountered during validation/creation
 type Warning struct {
 	Task    Task
 	Message string
 }
 
-func NewContext(target Target, cluster *kops.Cluster, cloud Cloud, keystore Keystore, secretStore SecretStore, clusterConfigBase vfs.Path, checkExisting bool, tasks map[string]Task) (*Context, error) {
-	c := &Context{
-		Cloud:             cloud,
-		Cluster:           cluster,
-		Target:            target,
-		Keystore:          keystore,
-		SecretStore:       secretStore,
-		ClusterConfigBase: clusterConfigBase,
-		CheckExisting:     checkExisting,
-		tasks:             tasks,
+func NewCloudContext(target Target, cluster *kops.Cluster, cloud Cloud, keystore Keystore, secretStore SecretStore, clusterConfigBase vfs.Path, checkExisting bool, tasks map[string]Task) (*CloudContext, error) {
+	c := &CloudContext{
+		Cloud:  cloud,
+		Target: target,
+		ContextBase: ContextBase{
+			Cluster:           cluster,
+			Keystore:          keystore,
+			SecretStore:       secretStore,
+			ClusterConfigBase: clusterConfigBase,
+			CheckExisting:     checkExisting,
+			tasks:             tasks,
+		},
 	}
 
 	t, err := os.MkdirTemp("", "deploy")
@@ -74,11 +93,49 @@ func NewContext(target Target, cluster *kops.Cluster, cloud Cloud, keystore Keys
 	return c, nil
 }
 
-func (c *Context) AllTasks() map[string]Task {
+func NewNodeContext(target Target, cluster *kops.Cluster, cloud Cloud, keystore Keystore, secretStore SecretStore, clusterConfigBase vfs.Path, checkExisting bool, tasks map[string]Task) (*NodeContext, error) {
+	c := &NodeContext{
+		Cloud:  cloud,
+		Target: target,
+		ContextBase: ContextBase{
+			Cluster:           cluster,
+			Keystore:          keystore,
+			SecretStore:       secretStore,
+			ClusterConfigBase: clusterConfigBase,
+			CheckExisting:     checkExisting,
+			tasks:             tasks,
+		},
+	}
+
+	t, err := os.MkdirTemp("", "deploy")
+	if err != nil {
+		return nil, fmt.Errorf("error creating temporary directory: %v", err)
+	}
+	c.Tmpdir = t
+
+	return c, nil
+}
+
+func (c *ContextBase) AllTasks() map[string]Task {
 	return c.tasks
 }
 
-func (c *Context) RunTasks(options RunTasksOptions) error {
+func (c *CloudContext) GetCloud() Cloud {
+	return c.Cloud
+}
+
+func (c *NodeContext) GetCloud() Cloud {
+	return c.Cloud
+}
+func (c *CloudContext) GetTarget() Target {
+	return c.Target
+}
+
+func (c *NodeContext) GetTarget() Target {
+	return c.Target
+}
+
+func (c *NodeContext) RunTasks(options RunTasksOptions) error {
 	e := &executor{
 		context: c,
 		options: options,
@@ -86,7 +143,15 @@ func (c *Context) RunTasks(options RunTasksOptions) error {
 	return e.RunTasks(c.tasks)
 }
 
-func (c *Context) Close() {
+func (c *CloudContext) RunTasks(options RunTasksOptions) error {
+	e := &executor{
+		context: c,
+		options: options,
+	}
+	return e.RunTasks(c.tasks)
+}
+
+func (c *ContextBase) Close() {
 	klog.V(2).Infof("deleting temp dir: %q", c.Tmpdir)
 	if c.Tmpdir != "" {
 		err := os.RemoveAll(c.Tmpdir)
@@ -100,7 +165,7 @@ func (c *Context) Close() {
 //	return c.Options.Merge(options)
 //}
 
-func (c *Context) NewTempDir(prefix string) (string, error) {
+func (c *ContextBase) NewTempDir(prefix string) (string, error) {
 	t, err := os.MkdirTemp(c.Tmpdir, prefix)
 	if err != nil {
 		return "", fmt.Errorf("error creating temporary directory: %v", err)
@@ -108,12 +173,13 @@ func (c *Context) NewTempDir(prefix string) (string, error) {
 	return t, nil
 }
 
-var typeContextPtr = reflect.TypeOf((*Context)(nil))
+var typeNodeContextPtr = reflect.TypeOf((*NodeContext)(nil))
+var typeCloudContextPtr = reflect.TypeOf((*CloudContext)(nil))
 
 // Render dispatches the creation of an object to the appropriate handler defined on the Task,
 // it is typically called after we have checked the existing state of the Task and determined that is different
 // from the desired state.
-func (c *Context) Render(a, e, changes Task) error {
+func invokeRender(c Context, a, e, changes Task) error {
 	var lifecycle Lifecycle
 	if hl, ok := e.(HasLifecycle); ok {
 		lifecycle = hl.GetLifecycle()
@@ -164,14 +230,16 @@ func (c *Context) Render(a, e, changes Task) error {
 		}
 	}
 
-	if _, ok := c.Target.(*DryRunTarget); ok {
-		return c.Target.(*DryRunTarget).Render(a, e, changes)
+	target := c.GetTarget()
+
+	if _, ok := target.(*DryRunTarget); ok {
+		return target.(*DryRunTarget).Render(a, e, changes)
 	}
 
 	v := reflect.ValueOf(e)
 	vType := v.Type()
 
-	targetType := reflect.ValueOf(c.Target).Type()
+	targetType := reflect.ValueOf(target).Type()
 
 	var renderer *reflect.Method
 	var rendererArgs []reflect.Value
@@ -189,12 +257,24 @@ func (c *Context) Render(a, e, changes Task) error {
 			if arg.ConvertibleTo(vType) {
 				continue
 			}
-			if arg.ConvertibleTo(typeContextPtr) {
-				args = append(args, reflect.ValueOf(c))
+			if typeNodeContextPtr.AssignableTo(arg) {
+				nodeContext, ok := c.(*NodeContext)
+				if !ok {
+					return fmt.Errorf("unexpected type for %T::%s: got %T, want *NodeContext", e, method.Name, c)
+				}
+				args = append(args, reflect.ValueOf(nodeContext))
+				continue
+			}
+			if typeCloudContextPtr.AssignableTo(arg) {
+				cloudContext, ok := c.(*CloudContext)
+				if !ok {
+					return fmt.Errorf("unexpected type for %T::%s: got %T, want *CloudContext", e, method.Name, c)
+				}
+				args = append(args, reflect.ValueOf(cloudContext))
 				continue
 			}
 			if arg.ConvertibleTo(targetType) {
-				args = append(args, reflect.ValueOf(c.Target))
+				args = append(args, reflect.ValueOf(target))
 				continue
 			}
 			match = false
@@ -215,7 +295,7 @@ func (c *Context) Render(a, e, changes Task) error {
 
 	}
 	if renderer == nil {
-		return fmt.Errorf("could not find Render method on type %T (target %T)", e, c.Target)
+		return fmt.Errorf("could not find Render method on type %T (target %T)", e, target)
 	}
 	rendererArgs = append(rendererArgs, reflect.ValueOf(a))
 	rendererArgs = append(rendererArgs, reflect.ValueOf(e))
@@ -232,7 +312,7 @@ func (c *Context) Render(a, e, changes Task) error {
 
 // AddWarning records a warning encountered during validation / creation.
 // Typically this will be an error that we choose to ignore because of Lifecycle.
-func (c *Context) AddWarning(task Task, message string) {
+func (c *ContextBase) AddWarning(task Task, message string) {
 	warning := &Warning{
 		Task:    task,
 		Message: message,

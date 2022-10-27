@@ -53,7 +53,7 @@ func (s *SecurityGroup) CompareWithID() *string {
 	return s.ID
 }
 
-func (s *SecurityGroup) Find(context *fi.Context) (*SecurityGroup, error) {
+func (s *SecurityGroup) Find(context *fi.CloudContext) (*SecurityGroup, error) {
 	cloud := context.Cloud.(openstack.OpenstackCloud)
 	// avoid creating new group if it has removegroup flag
 	if s.RemoveGroup {
@@ -89,7 +89,7 @@ func getSecurityGroupByName(s *SecurityGroup, cloud openstack.OpenstackCloud) (*
 	return actual, nil
 }
 
-func (s *SecurityGroup) Run(context *fi.Context) error {
+func (s *SecurityGroup) Run(context *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(s, context)
 }
 
@@ -131,7 +131,9 @@ func (_ *SecurityGroup) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, c
 	return nil
 }
 
-func (s *SecurityGroup) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
+var _ fi.ProducesDeletions = &SecurityGroup{}
+
+func (s *SecurityGroup) FindDeletions(c *fi.CloudContext) ([]fi.Deletion, error) {
 	var removals []fi.Deletion
 
 	if len(s.RemoveExtraRules) == 0 && !s.RemoveGroup {

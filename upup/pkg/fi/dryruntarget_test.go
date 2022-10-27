@@ -62,6 +62,10 @@ type testTask struct {
 
 var _ Task = &testTask{}
 
+func (t *testTask) GetName() *string {
+	return t.Name
+}
+
 func (*testTask) Run(_ *Context) error {
 	panic("not implemented")
 }

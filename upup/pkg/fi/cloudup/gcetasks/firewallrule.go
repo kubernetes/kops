@@ -53,7 +53,7 @@ func (e *FirewallRule) CompareWithID() *string {
 	return e.Name
 }
 
-func (e *FirewallRule) Find(c *fi.Context) (*FirewallRule, error) {
+func (e *FirewallRule) Find(c *fi.CloudContext) (*FirewallRule, error) {
 	cloud := c.Cloud.(gce.GCECloud)
 
 	r, err := cloud.Compute().Firewalls().Get(cloud.Project(), *e.Name)
@@ -81,7 +81,7 @@ func (e *FirewallRule) Find(c *fi.Context) (*FirewallRule, error) {
 	return actual, nil
 }
 
-func (e *FirewallRule) Run(c *fi.Context) error {
+func (e *FirewallRule) Run(c *fi.CloudContext) error {
 	if err := e.sanityCheck(); err != nil {
 		return err
 	}

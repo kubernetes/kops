@@ -59,7 +59,7 @@ func (t *PullImageTask) GetName() *string {
 	return &t.Name
 }
 
-func (e *PullImageTask) Run(c *fi.Context) error {
+func (e *PullImageTask) Run(c *fi.NodeContext) error {
 	runtime := e.Runtime
 	if runtime != "docker" && runtime != "containerd" {
 		return fmt.Errorf("no runtime specified")

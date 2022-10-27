@@ -56,7 +56,7 @@ func (d *Droplet) CompareWithID() *string {
 	return d.Name
 }
 
-func (d *Droplet) Find(c *fi.Context) (*Droplet, error) {
+func (d *Droplet) Find(c *fi.CloudContext) (*Droplet, error) {
 	cloud := c.Cloud.(do.DOCloud)
 
 	droplets, err := listDroplets(cloud)
@@ -120,7 +120,7 @@ func listDroplets(cloud do.DOCloud) ([]godo.Droplet, error) {
 	return allDroplets, nil
 }
 
-func (d *Droplet) Run(c *fi.Context) error {
+func (d *Droplet) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(d, c)
 }
 

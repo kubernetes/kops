@@ -360,17 +360,19 @@ func Test_NewPortTaskFromCloud(t *testing.T) {
 func Test_Port_Find(t *testing.T) {
 	tests := []struct {
 		desc             string
-		context          *fi.Context
+		context          *fi.CloudContext
 		port             *Port
 		expectedPortTask *Port
 		expectedError    error
 	}{
 		{
 			desc: "nothing found",
-			context: &fi.Context{
-				Cluster: &kops.Cluster{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: "clusterName",
+			context: &fi.CloudContext{
+				ContextBase: fi.ContextBase{
+					Cluster: &kops.Cluster{
+						ObjectMeta: metav1.ObjectMeta{
+							Name: "clusterName",
+						},
 					},
 				},
 				Cloud: &portCloud{},
@@ -384,10 +386,12 @@ func Test_Port_Find(t *testing.T) {
 		},
 		{
 			desc: "port found no tags",
-			context: &fi.Context{
-				Cluster: &kops.Cluster{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: "clusterName",
+			context: &fi.CloudContext{
+				ContextBase: fi.ContextBase{
+					Cluster: &kops.Cluster{
+						ObjectMeta: metav1.ObjectMeta{
+							Name: "clusterName",
+						},
 					},
 				},
 				Cloud: &portCloud{
@@ -431,10 +435,12 @@ func Test_Port_Find(t *testing.T) {
 		},
 		{
 			desc: "port found with tags",
-			context: &fi.Context{
-				Cluster: &kops.Cluster{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: "clusterName",
+			context: &fi.CloudContext{
+				ContextBase: fi.ContextBase{
+					Cluster: &kops.Cluster{
+						ObjectMeta: metav1.ObjectMeta{
+							Name: "clusterName",
+						},
 					},
 				},
 				Cloud: &portCloud{
@@ -480,10 +486,12 @@ func Test_Port_Find(t *testing.T) {
 		},
 		{
 			desc: "multiple ports found",
-			context: &fi.Context{
-				Cluster: &kops.Cluster{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: "clusterName",
+			context: &fi.CloudContext{
+				ContextBase: fi.ContextBase{
+					Cluster: &kops.Cluster{
+						ObjectMeta: metav1.ObjectMeta{
+							Name: "clusterName",
+						},
 					},
 				},
 				Cloud: &portCloud{
@@ -510,10 +518,12 @@ func Test_Port_Find(t *testing.T) {
 		},
 		{
 			desc: "error listing ports",
-			context: &fi.Context{
-				Cluster: &kops.Cluster{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: "clusterName",
+			context: &fi.CloudContext{
+				ContextBase: fi.ContextBase{
+					Cluster: &kops.Cluster{
+						ObjectMeta: metav1.ObjectMeta{
+							Name: "clusterName",
+						},
 					},
 				},
 				Cloud: &portCloud{

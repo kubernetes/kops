@@ -58,7 +58,7 @@ func (e *Chattr) Find(c *fi.Context) (*Chattr, error) {
 	return nil, nil
 }
 
-func (e *Chattr) Run(c *fi.Context) error {
+func (e *Chattr) Run(c *fi.NodeContext) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

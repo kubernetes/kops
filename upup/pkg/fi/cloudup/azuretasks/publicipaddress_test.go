@@ -61,7 +61,7 @@ func TestPublicIPAddressRenderAzure(t *testing.T) {
 
 func TestPublicIPAddressFind(t *testing.T) {
 	cloud := NewMockAzureCloud("eastus")
-	ctx := &fi.Context{
+	ctx := &fi.CloudContext{
 		Cloud: cloud,
 	}
 
@@ -111,7 +111,7 @@ func TestPublicIPAddressFind(t *testing.T) {
 
 func TestPublicIPAddressRun(t *testing.T) {
 	cloud := NewMockAzureCloud("eastus")
-	ctx := &fi.Context{
+	ctx := &fi.CloudContext{
 		Cloud:  cloud,
 		Target: azure.NewAzureAPITarget(cloud),
 	}

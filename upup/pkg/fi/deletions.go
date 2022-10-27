@@ -17,7 +17,7 @@ limitations under the License.
 package fi
 
 type ProducesDeletions interface {
-	FindDeletions(*Context) ([]Deletion, error)
+	FindDeletions(*CloudContext) ([]Deletion, error)
 }
 
 type Deletion interface {

@@ -47,7 +47,7 @@ func (v *SSHKey) CompareWithID() *string {
 	return fi.String(strconv.Itoa(fi.IntValue(v.ID)))
 }
 
-func (v *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
+func (v *SSHKey) Find(c *fi.CloudContext) (*SSHKey, error) {
 	cloud := c.Cloud.(hetzner.HetznerCloud)
 	client := cloud.SSHKeyClient()
 
@@ -77,7 +77,7 @@ func (v *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
 	return nil, nil
 }
 
-func (v *SSHKey) Run(c *fi.Context) error {
+func (v *SSHKey) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(v, c)
 }
 

@@ -40,6 +40,11 @@ func NewUpdatePackages() *UpdatePackages {
 	return &UpdatePackages{Updated: true}
 }
 
+func (p *UpdatePackages) GetName() *string {
+	name := "UpdatePackages"
+	return &name
+}
+
 func (p *UpdatePackages) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	deps := []fi.Task{}
 	for _, v := range tasks {
@@ -58,7 +63,7 @@ func (e *UpdatePackages) Find(c *fi.Context) (*UpdatePackages, error) {
 	return nil, nil
 }
 
-func (e *UpdatePackages) Run(c *fi.Context) error {
+func (e *UpdatePackages) Run(c *fi.NodeContext) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

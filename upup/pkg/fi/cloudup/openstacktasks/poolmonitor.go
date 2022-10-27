@@ -50,7 +50,7 @@ func (p *PoolMonitor) CompareWithID() *string {
 	return p.ID
 }
 
-func (p *PoolMonitor) Find(context *fi.Context) (*PoolMonitor, error) {
+func (p *PoolMonitor) Find(context *fi.CloudContext) (*PoolMonitor, error) {
 	cloud := context.Cloud.(openstack.OpenstackCloud)
 
 	opt := monitors.ListOpts{
@@ -78,7 +78,7 @@ func (p *PoolMonitor) Find(context *fi.Context) (*PoolMonitor, error) {
 	return actual, nil
 }
 
-func (p *PoolMonitor) Run(context *fi.Context) error {
+func (p *PoolMonitor) Run(context *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(p, context)
 }
 

@@ -130,7 +130,7 @@ func (o *Ocean) find(svc spotinst.InstanceGroupService) (*aws.Cluster, error) {
 
 var _ fi.HasCheckExisting = &Ocean{}
 
-func (o *Ocean) Find(c *fi.Context) (*Ocean, error) {
+func (o *Ocean) Find(c *fi.CloudContext) (*Ocean, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	ocean, err := o.find(cloud.Spotinst().Ocean())
@@ -326,13 +326,15 @@ func (o *Ocean) Find(c *fi.Context) (*Ocean, error) {
 	return actual, nil
 }
 
-func (o *Ocean) CheckExisting(c *fi.Context) bool {
+var _ fi.HasCheckExisting = &Ocean{}
+
+func (o *Ocean) CheckExisting(c *fi.CloudContext) bool {
 	cloud := c.Cloud.(awsup.AWSCloud)
 	ocean, err := o.find(cloud.Spotinst().Ocean())
 	return err == nil && ocean != nil
 }
 
-func (o *Ocean) Run(c *fi.Context) error {
+func (o *Ocean) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(o, c)
 }
 

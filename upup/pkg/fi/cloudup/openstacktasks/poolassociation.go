@@ -63,7 +63,7 @@ func (s *PoolAssociation) CompareWithID() *string {
 	return s.ID
 }
 
-func (p *PoolAssociation) Find(context *fi.Context) (*PoolAssociation, error) {
+func (p *PoolAssociation) Find(context *fi.CloudContext) (*PoolAssociation, error) {
 	cloud := context.Cloud.(openstack.OpenstackCloud)
 
 	opt := v2pools.ListOpts{
@@ -118,7 +118,7 @@ func (p *PoolAssociation) Find(context *fi.Context) (*PoolAssociation, error) {
 	return actual, nil
 }
 
-func (s *PoolAssociation) Run(context *fi.Context) error {
+func (s *PoolAssociation) Run(context *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(s, context)
 }
 

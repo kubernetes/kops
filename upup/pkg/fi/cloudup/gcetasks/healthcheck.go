@@ -44,7 +44,7 @@ func (e *HealthCheck) CompareWithID() *string {
 	return e.Name
 }
 
-func (e *HealthCheck) Find(c *fi.Context) (*HealthCheck, error) {
+func (e *HealthCheck) Find(c *fi.CloudContext) (*HealthCheck, error) {
 	actual, err := e.find(c.Cloud.(gce.GCECloud))
 	if actual != nil && err == nil {
 		// Ignore system fields
@@ -79,7 +79,7 @@ func (e *HealthCheck) find(cloud gce.GCECloud) (*HealthCheck, error) {
 	return actual, nil
 }
 
-func (e *HealthCheck) Run(c *fi.Context) error {
+func (e *HealthCheck) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

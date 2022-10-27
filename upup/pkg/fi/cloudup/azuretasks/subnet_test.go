@@ -56,7 +56,7 @@ func TestSubnetRenderAzure(t *testing.T) {
 
 func TestSubnetFind(t *testing.T) {
 	cloud := NewMockAzureCloud("eastus")
-	ctx := &fi.Context{
+	ctx := &fi.CloudContext{
 		Cloud: cloud,
 	}
 

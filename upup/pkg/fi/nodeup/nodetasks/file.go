@@ -186,7 +186,7 @@ func (e *File) Find(c *fi.Context) (*File, error) {
 	return actual, nil
 }
 
-func (e *File) Run(c *fi.Context) error {
+func (e *File) Run(c *fi.NodeContext) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

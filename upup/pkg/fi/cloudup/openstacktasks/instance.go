@@ -108,7 +108,7 @@ func (e *Instance) IsForAPIServer() bool {
 	return e.ForAPIServer
 }
 
-func (e *Instance) FindAddresses(context *fi.Context) ([]string, error) {
+func (e *Instance) FindAddresses(context *fi.CloudContext) ([]string, error) {
 	cloud := context.Cloud.(openstack.OpenstackCloud)
 	if e.Port == nil {
 		return nil, nil
@@ -149,7 +149,7 @@ func filterInstancePorts(allPorts []ports.Port, clusterName string) []ports.Port
 	return taggedPorts
 }
 
-func (e *Instance) Find(c *fi.Context) (*Instance, error) {
+func (e *Instance) Find(c *fi.CloudContext) (*Instance, error) {
 	if e == nil || e.Name == nil {
 		return nil, nil
 	}
@@ -261,7 +261,7 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 	return actual, nil
 }
 
-func (e *Instance) Run(c *fi.Context) error {
+func (e *Instance) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

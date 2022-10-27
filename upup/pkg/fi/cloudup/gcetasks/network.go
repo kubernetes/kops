@@ -46,7 +46,7 @@ func (e *Network) CompareWithID() *string {
 	return e.Name
 }
 
-func (e *Network) Find(c *fi.Context) (*Network, error) {
+func (e *Network) Find(c *fi.CloudContext) (*Network, error) {
 	cloud := c.Cloud.(gce.GCECloud)
 	project := cloud.Project()
 	if e.Project != nil {
@@ -100,7 +100,7 @@ func (e *Network) URL(project string) string {
 	return u.BuildURL()
 }
 
-func (e *Network) Run(c *fi.Context) error {
+func (e *Network) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

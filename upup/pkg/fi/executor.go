@@ -26,7 +26,7 @@ import (
 )
 
 type executor struct {
-	context *Context
+	context Context
 
 	options RunTasksOptions
 }
@@ -184,7 +184,12 @@ func (e *executor) forkJoin(tasks []*taskState) []error {
 			results[index] = fmt.Errorf("function panic")
 			defer wg.Done()
 			klog.V(2).Infof("Executing task %q: %v\n", ts.key, ts.task)
-			results[index] = ts.task.Run(e.context)
+			if nodeTask, ok := ts.task.(NodeTask); ok {
+				results[index] = nodeTask.Run(e.context.(*NodeContext))
+			} else {
+				cloudTask := ts.task.(CloudTask)
+				results[index] = cloudTask.Run(e.context.(*CloudContext))
+			}
 		}(tasks[i], i)
 	}
 

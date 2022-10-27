@@ -136,7 +136,7 @@ func (t *LaunchTemplate) buildRootDevice(cloud awsup.AWSCloud) (map[string]*Bloc
 }
 
 // Run is responsible for
-func (t *LaunchTemplate) Run(c *fi.Context) error {
+func (t *LaunchTemplate) Run(c *fi.CloudContext) error {
 	t.Normalize()
 
 	return fi.DefaultDeltaRunMethod(t, c)
@@ -161,8 +161,10 @@ func (t *LaunchTemplate) CheckChanges(a, e, changes *LaunchTemplate) error {
 	return nil
 }
 
+var _ fi.ProducesDeletions = &LaunchTemplate{}
+
 // FindDeletions is responsible for finding launch templates which can be deleted
-func (t *LaunchTemplate) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
+func (t *LaunchTemplate) FindDeletions(c *fi.CloudContext) ([]fi.Deletion, error) {
 	var removals []fi.Deletion
 
 	list, err := t.findAllLaunchTemplates(c)

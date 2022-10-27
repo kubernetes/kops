@@ -55,7 +55,7 @@ func (i *RouterInterface) CompareWithID() *string {
 	return i.ID
 }
 
-func (i *RouterInterface) Find(context *fi.Context) (*RouterInterface, error) {
+func (i *RouterInterface) Find(context *fi.CloudContext) (*RouterInterface, error) {
 	cloud := context.Cloud.(openstack.OpenstackCloud)
 	opt := ports.ListOpts{
 		NetworkID: fi.StringValue(i.Subnet.Network.ID),
@@ -93,7 +93,7 @@ func (i *RouterInterface) Find(context *fi.Context) (*RouterInterface, error) {
 	return actual, nil
 }
 
-func (i *RouterInterface) Run(context *fi.Context) error {
+func (i *RouterInterface) Run(context *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(i, context)
 }
 

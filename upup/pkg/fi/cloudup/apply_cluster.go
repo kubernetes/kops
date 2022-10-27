@@ -773,7 +773,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		}
 	}
 
-	context, err := fi.NewContext(target, cluster, cloud, keyStore, secretStore, configBase, checkExisting, c.TaskMap)
+	context, err := fi.NewCloudContext(target, cluster, cloud, keyStore, secretStore, configBase, checkExisting, c.TaskMap)
 	if err != nil {
 		return fmt.Errorf("error building context: %v", err)
 	}

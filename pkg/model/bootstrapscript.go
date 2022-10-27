@@ -78,7 +78,7 @@ var (
 )
 
 // kubeEnv returns the boot config for the instance group
-func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.Context) (*nodeup.BootConfig, error) {
+func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.CloudContext) (*nodeup.BootConfig, error) {
 	var alternateNames []string
 
 	for _, hasAddress := range b.alternateNameTasks {
@@ -328,7 +328,7 @@ func (b *BootstrapScript) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	return deps
 }
 
-func (b *BootstrapScript) Run(c *fi.Context) error {
+func (b *BootstrapScript) Run(c *fi.CloudContext) error {
 	if b.Lifecycle == fi.LifecycleIgnore {
 		return nil
 	}

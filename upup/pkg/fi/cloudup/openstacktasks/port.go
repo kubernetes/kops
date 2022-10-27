@@ -146,7 +146,7 @@ func newPortTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle
 	return actual, nil
 }
 
-func (s *Port) Find(context *fi.Context) (*Port, error) {
+func (s *Port) Find(context *fi.CloudContext) (*Port, error) {
 	cloud := context.Cloud.(openstack.OpenstackCloud)
 	opt := ports.ListOpts{
 		Name: fi.StringValue(s.Name),
@@ -167,7 +167,7 @@ func (s *Port) Find(context *fi.Context) (*Port, error) {
 	return newPortTaskFromCloud(cloud, s.Lifecycle, &rs[0], s)
 }
 
-func (s *Port) Run(context *fi.Context) error {
+func (s *Port) Run(context *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(s, context)
 }
 

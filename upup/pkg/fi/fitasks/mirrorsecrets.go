@@ -45,7 +45,7 @@ func (e *MirrorSecrets) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 }
 
 // Find implements fi.Task::Find
-func (e *MirrorSecrets) Find(c *fi.Context) (*MirrorSecrets, error) {
+func (e *MirrorSecrets) Find(c *fi.CloudContext) (*MirrorSecrets, error) {
 	if vfsSecretStore, ok := c.SecretStore.(*secrets.VFSSecretStore); ok {
 		if vfsSecretStore.VFSPath().Path() == e.MirrorPath.Path() {
 			return e, nil
@@ -58,7 +58,7 @@ func (e *MirrorSecrets) Find(c *fi.Context) (*MirrorSecrets, error) {
 }
 
 // Run implements fi.Task::Run
-func (e *MirrorSecrets) Run(c *fi.Context) error {
+func (e *MirrorSecrets) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
@@ -73,7 +73,7 @@ func (s *MirrorSecrets) CheckChanges(a, e, changes *MirrorSecrets) error {
 }
 
 // Render implements fi.Task::Render
-func (_ *MirrorSecrets) Render(c *fi.Context, a, e, changes *MirrorSecrets) error {
+func (_ *MirrorSecrets) Render(c *fi.CloudContext, a, e, changes *MirrorSecrets) error {
 	secrets := c.SecretStore
 	return secrets.MirrorTo(e.MirrorPath)
 }

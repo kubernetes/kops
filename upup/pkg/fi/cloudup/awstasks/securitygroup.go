@@ -66,7 +66,7 @@ func (a OrderSecurityGroupsById) Less(i, j int) bool {
 	return fi.StringValue(a[i].ID) < fi.StringValue(a[j].ID)
 }
 
-func (e *SecurityGroup) Find(c *fi.Context) (*SecurityGroup, error) {
+func (e *SecurityGroup) Find(c *fi.CloudContext) (*SecurityGroup, error) {
 	sg, err := e.findEc2(c)
 	if err != nil {
 		return nil, err
@@ -97,7 +97,7 @@ func (e *SecurityGroup) Find(c *fi.Context) (*SecurityGroup, error) {
 	return actual, nil
 }
 
-func (e *SecurityGroup) findEc2(c *fi.Context) (*ec2.SecurityGroup, error) {
+func (e *SecurityGroup) findEc2(c *fi.CloudContext) (*ec2.SecurityGroup, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 	request := &ec2.DescribeSecurityGroupsInput{}
 
@@ -131,7 +131,7 @@ func (e *SecurityGroup) findEc2(c *fi.Context) (*ec2.SecurityGroup, error) {
 	return sg, nil
 }
 
-func (e *SecurityGroup) Run(c *fi.Context) error {
+func (e *SecurityGroup) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
@@ -329,7 +329,9 @@ func (d *deleteSecurityGroupRule) Item() string {
 	return s
 }
 
-func (e *SecurityGroup) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
+var _ fi.ProducesDeletions = &SecurityGroup{}
+
+func (e *SecurityGroup) FindDeletions(c *fi.CloudContext) ([]fi.Deletion, error) {
 	var removals []fi.Deletion
 
 	if len(e.RemoveExtraRules) == 0 {

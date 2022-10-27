@@ -44,7 +44,7 @@ func (e *SSHKey) CompareWithID() *string {
 	return e.Name
 }
 
-func (e *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
+func (e *SSHKey) Find(c *fi.CloudContext) (*SSHKey, error) {
 	cloud := c.Cloud.(openstack.OpenstackCloud)
 	rs, err := cloud.GetKeypair(openstackKeyPairName(fi.StringValue(e.Name)))
 	if err != nil {
@@ -69,7 +69,7 @@ func (e *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
 	return actual, nil
 }
 
-func (e *SSHKey) Run(c *fi.Context) error {
+func (e *SSHKey) Run(c *fi.CloudContext) error {
 	if e.KeyFingerprint == nil && e.PublicKey != nil {
 		publicKey, err := fi.ResourceAsString(e.PublicKey)
 		if err != nil {

@@ -42,7 +42,7 @@ func (c *Volume) CompareWithID() *string {
 	return c.ID
 }
 
-func (c *Volume) Find(context *fi.Context) (*Volume, error) {
+func (c *Volume) Find(context *fi.CloudContext) (*Volume, error) {
 	cloud := context.Cloud.(openstack.OpenstackCloud)
 	opt := cinderv3.ListOpts{
 		Name:     fi.StringValue(c.Name),
@@ -77,7 +77,7 @@ func (c *Volume) Find(context *fi.Context) (*Volume, error) {
 	return actual, nil
 }
 
-func (c *Volume) Run(context *fi.Context) error {
+func (c *Volume) Run(context *fi.CloudContext) error {
 	cloud := context.Cloud.(openstack.OpenstackCloud)
 	for k, v := range cloud.GetCloudTags() {
 		c.Tags[k] = v

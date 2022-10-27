@@ -53,7 +53,7 @@ func (q *SQS) CompareWithID() *string {
 	return q.ARN
 }
 
-func (q *SQS) Find(c *fi.Context) (*SQS, error) {
+func (q *SQS) Find(c *fi.CloudContext) (*SQS, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	if q.Name == nil {
@@ -137,7 +137,7 @@ func (q *SQS) Find(c *fi.Context) (*SQS, error) {
 	return actual, nil
 }
 
-func (q *SQS) Run(c *fi.Context) error {
+func (q *SQS) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(q, c)
 }
 

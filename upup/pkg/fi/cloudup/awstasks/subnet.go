@@ -70,7 +70,7 @@ func (a OrderSubnetsById) Less(i, j int) bool {
 	return fi.StringValue(a[i].ID) < fi.StringValue(a[j].ID)
 }
 
-func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
+func (e *Subnet) Find(c *fi.CloudContext) (*Subnet, error) {
 	subnet, err := e.findEc2Subnet(c)
 	if err != nil {
 		return nil, err
@@ -136,7 +136,7 @@ func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
 	return actual, nil
 }
 
-func (e *Subnet) findEc2Subnet(c *fi.Context) (*ec2.Subnet, error) {
+func (e *Subnet) findEc2Subnet(c *fi.CloudContext) (*ec2.Subnet, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	request := &ec2.DescribeSubnetsInput{}
@@ -162,7 +162,7 @@ func (e *Subnet) findEc2Subnet(c *fi.Context) (*ec2.Subnet, error) {
 	return subnet, nil
 }
 
-func (e *Subnet) Run(c *fi.Context) error {
+func (e *Subnet) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
@@ -481,7 +481,9 @@ func (e *Subnet) CloudformationLink() *cloudformation.Literal {
 	return cloudformation.Ref("AWS::EC2::Subnet", *e.Name)
 }
 
-func (e *Subnet) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
+var _ fi.ProducesDeletions = &Subnet{}
+
+func (e *Subnet) FindDeletions(c *fi.CloudContext) ([]fi.Deletion, error) {
 	if e.ID == nil || aws.BoolValue(e.Shared) {
 		return nil, nil
 	}

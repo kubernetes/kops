@@ -48,7 +48,7 @@ func (d *Disk) CompareWithID() *string {
 }
 
 // Find discovers the Disk in the cloud provider.
-func (d *Disk) Find(c *fi.Context) (*Disk, error) {
+func (d *Disk) Find(c *fi.CloudContext) (*Disk, error) {
 	cloud := c.Cloud.(azure.AzureCloud)
 	l, err := cloud.Disk().List(context.TODO(), *d.ResourceGroup.Name)
 	if err != nil {
@@ -77,7 +77,7 @@ func (d *Disk) Find(c *fi.Context) (*Disk, error) {
 }
 
 // Run implements fi.Task.Run.
-func (d *Disk) Run(c *fi.Context) error {
+func (d *Disk) Run(c *fi.CloudContext) error {
 	c.Cloud.(azure.AzureCloud).AddClusterTags(d.Tags)
 	return fi.DefaultDeltaRunMethod(d, c)
 }

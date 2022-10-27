@@ -80,7 +80,7 @@ func NewLBPoolTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecyc
 	return a, nil
 }
 
-func (p *LBPool) Find(context *fi.Context) (*LBPool, error) {
+func (p *LBPool) Find(context *fi.CloudContext) (*LBPool, error) {
 	if p.Name == nil && p.ID == nil {
 		return nil, nil
 	}
@@ -103,7 +103,7 @@ func (p *LBPool) Find(context *fi.Context) (*LBPool, error) {
 	return NewLBPoolTaskFromCloud(cloud, p.Lifecycle, &poolList[0], p)
 }
 
-func (s *LBPool) Run(context *fi.Context) error {
+func (s *LBPool) Run(context *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(s, context)
 }
 

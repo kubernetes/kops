@@ -56,7 +56,7 @@ func (e *LoadBalancer) IsForAPIServer() bool {
 	return true
 }
 
-func (v *LoadBalancer) FindAddresses(c *fi.Context) ([]string, error) {
+func (v *LoadBalancer) FindAddresses(c *fi.CloudContext) ([]string, error) {
 	// TODO(hakman): Use mock to handle this more gracefully
 	if strings.HasPrefix(c.ClusterConfigBase.Path(), "memfs://tests/") {
 		return nil, nil
@@ -92,7 +92,7 @@ func (v *LoadBalancer) FindAddresses(c *fi.Context) ([]string, error) {
 	return nil, nil
 }
 
-func (v *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
+func (v *LoadBalancer) Find(c *fi.CloudContext) (*LoadBalancer, error) {
 	ctx := context.TODO()
 	cloud := c.Cloud.(hetzner.HetznerCloud)
 	client := cloud.LoadBalancerClient()
@@ -145,7 +145,7 @@ func (v *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 	return nil, nil
 }
 
-func (v *LoadBalancer) Run(c *fi.Context) error {
+func (v *LoadBalancer) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(v, c)
 }
 

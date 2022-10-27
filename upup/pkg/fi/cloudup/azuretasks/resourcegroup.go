@@ -49,7 +49,7 @@ func (r *ResourceGroup) CompareWithID() *string {
 }
 
 // Find discovers the ResourceGroup in the cloud provider.
-func (r *ResourceGroup) Find(c *fi.Context) (*ResourceGroup, error) {
+func (r *ResourceGroup) Find(c *fi.CloudContext) (*ResourceGroup, error) {
 	cloud := c.Cloud.(azure.AzureCloud)
 	l, err := cloud.ResourceGroup().List(context.TODO(), "" /* filter*/)
 	if err != nil {
@@ -75,7 +75,7 @@ func (r *ResourceGroup) Find(c *fi.Context) (*ResourceGroup, error) {
 }
 
 // Run implements fi.Task.Run.
-func (r *ResourceGroup) Run(c *fi.Context) error {
+func (r *ResourceGroup) Run(c *fi.CloudContext) error {
 	c.Cloud.(azure.AzureCloud).AddClusterTags(r.Tags)
 	return fi.DefaultDeltaRunMethod(r, c)
 }

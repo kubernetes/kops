@@ -128,7 +128,7 @@ func (p *Package) String() string {
 	return fmt.Sprintf("Package: %s", p.Name)
 }
 
-func (e *Package) Find(c *fi.Context) (*Package, error) {
+func (e *Package) Find(c *fi.NodeContext) (*Package, error) {
 	d, err := distributions.FindDistribution("/")
 	if err != nil {
 		return nil, fmt.Errorf("unknown or unsupported distro: %v", err)
@@ -145,7 +145,7 @@ func (e *Package) Find(c *fi.Context) (*Package, error) {
 	return nil, fmt.Errorf("unsupported package system")
 }
 
-func (e *Package) findDpkg(c *fi.Context) (*Package, error) {
+func (e *Package) findDpkg(c *fi.NodeContext) (*Package, error) {
 	args := []string{"dpkg-query", "-f", "${db:Status-Abbrev}${Version}\\n", "-W", e.Name}
 	human := strings.Join(args, " ")
 
@@ -212,7 +212,7 @@ func (e *Package) findDpkg(c *fi.Context) (*Package, error) {
 	}, nil
 }
 
-func (e *Package) findYum(c *fi.Context) (*Package, error) {
+func (e *Package) findYum(c *fi.NodeContext) (*Package, error) {
 	args := []string{"/usr/bin/rpm", "-q", e.Name, "--queryformat", "%{NAME} %{VERSION}"}
 	human := strings.Join(args, " ")
 
@@ -263,7 +263,7 @@ func (e *Package) findYum(c *fi.Context) (*Package, error) {
 	}, nil
 }
 
-func (e *Package) Run(c *fi.Context) error {
+func (e *Package) Run(c *fi.NodeContext) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

@@ -70,7 +70,7 @@ func TestLoadBalancerRenderAzure(t *testing.T) {
 
 func TestLoadBalancerFind(t *testing.T) {
 	cloud := NewMockAzureCloud("eastus")
-	ctx := &fi.Context{
+	ctx := &fi.CloudContext{
 		Cloud: cloud,
 	}
 
@@ -139,7 +139,7 @@ func TestLoadBalancerFind(t *testing.T) {
 
 func TestLoadBalancerRun(t *testing.T) {
 	cloud := NewMockAzureCloud("eastus")
-	ctx := &fi.Context{
+	ctx := &fi.CloudContext{
 		Cloud:  cloud,
 		Target: azure.NewAzureAPITarget(cloud),
 	}

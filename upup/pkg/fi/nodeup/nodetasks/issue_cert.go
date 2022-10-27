@@ -129,7 +129,7 @@ func (i *IssueCert) AddFileTasks(c *fi.ModelBuilderContext, dir string, name str
 	return nil
 }
 
-func (e *IssueCert) Run(c *fi.Context) error {
+func (e *IssueCert) Run(c *fi.NodeContext) error {
 	// Skew the certificate lifetime by up to 30 days based on information about the generating node.
 	// This is so that different nodes created at the same time have the certificates they generated
 	// expire at different times, but all certificates on a given node expire around the same time.

@@ -53,7 +53,7 @@ func (e *PoolHealthCheck) CompareWithID() *string {
 	return e.Name
 }
 
-func (e *PoolHealthCheck) Find(c *fi.Context) (*PoolHealthCheck, error) {
+func (e *PoolHealthCheck) Find(c *fi.CloudContext) (*PoolHealthCheck, error) {
 	cloud := c.Cloud.(gce.GCECloud)
 	name := fi.StringValue(e.Pool.Name)
 	r, err := cloud.Compute().TargetPools().Get(cloud.Project(), cloud.Region(), name)
@@ -76,7 +76,7 @@ func (e *PoolHealthCheck) Find(c *fi.Context) (*PoolHealthCheck, error) {
 	return nil, nil
 }
 
-func (e *PoolHealthCheck) Run(c *fi.Context) error {
+func (e *PoolHealthCheck) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

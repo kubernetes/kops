@@ -64,7 +64,7 @@ func findInternetGateway(cloud awsup.AWSCloud, request *ec2.DescribeInternetGate
 	return igw, nil
 }
 
-func (e *InternetGateway) Find(c *fi.Context) (*InternetGateway, error) {
+func (e *InternetGateway) Find(c *fi.CloudContext) (*InternetGateway, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	request := &ec2.DescribeInternetGatewaysInput{}
@@ -121,7 +121,7 @@ func (e *InternetGateway) Find(c *fi.Context) (*InternetGateway, error) {
 	return actual, nil
 }
 
-func (e *InternetGateway) Run(c *fi.Context) error {
+func (e *InternetGateway) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

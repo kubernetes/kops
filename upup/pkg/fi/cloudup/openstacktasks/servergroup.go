@@ -55,7 +55,7 @@ func (s *ServerGroup) CompareWithID() *string {
 	return s.ID
 }
 
-func (s *ServerGroup) Find(context *fi.Context) (*ServerGroup, error) {
+func (s *ServerGroup) Find(context *fi.CloudContext) (*ServerGroup, error) {
 	if s == nil || s.Name == nil {
 		return nil, nil
 	}
@@ -102,7 +102,7 @@ func (s *ServerGroup) Find(context *fi.Context) (*ServerGroup, error) {
 	return actual, nil
 }
 
-func (s *ServerGroup) Run(context *fi.Context) error {
+func (s *ServerGroup) Run(context *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(s, context)
 }
 

@@ -47,7 +47,7 @@ func (e *BackendService) CompareWithID() *string {
 	return e.Name
 }
 
-func (e *BackendService) Find(c *fi.Context) (*BackendService, error) {
+func (e *BackendService) Find(c *fi.CloudContext) (*BackendService, error) {
 	actual, err := e.find(c.Cloud.(gce.GCECloud))
 	if actual != nil && err == nil {
 		// Ignore system fields
@@ -90,7 +90,7 @@ func (e *BackendService) find(cloud gce.GCECloud) (*BackendService, error) {
 	return actual, nil
 }
 
-func (e *BackendService) Run(c *fi.Context) error {
+func (e *BackendService) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

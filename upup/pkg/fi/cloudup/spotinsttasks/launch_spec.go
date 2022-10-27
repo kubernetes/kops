@@ -126,7 +126,7 @@ func (o *LaunchSpec) find(svc spotinst.LaunchSpecService, oceanID string) (*aws.
 
 var _ fi.HasCheckExisting = &LaunchSpec{}
 
-func (o *LaunchSpec) Find(c *fi.Context) (*LaunchSpec, error) {
+func (o *LaunchSpec) Find(c *fi.CloudContext) (*LaunchSpec, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	ocean, err := o.Ocean.find(cloud.Spotinst().Ocean())
@@ -333,12 +333,14 @@ func (o *LaunchSpec) Find(c *fi.Context) (*LaunchSpec, error) {
 	return actual, nil
 }
 
-func (o *LaunchSpec) CheckExisting(c *fi.Context) bool {
+var _ fi.HasCheckExisting = &LaunchSpec{}
+
+func (o *LaunchSpec) CheckExisting(c *fi.CloudContext) bool {
 	spec, err := o.Find(c)
 	return err == nil && spec != nil
 }
 
-func (o *LaunchSpec) Run(c *fi.Context) error {
+func (o *LaunchSpec) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(o, c)
 }
 

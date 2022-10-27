@@ -111,7 +111,7 @@ func TestSharedInternetGatewayDoesNotRename(t *testing.T) {
 			Cloud: cloud,
 		}
 
-		context, err := fi.NewContext(target, nil, cloud, nil, nil, nil, true, allTasks)
+		context, err := fi.NewCloudContext(target, nil, cloud, nil, nil, nil, true, allTasks)
 		if err != nil {
 			t.Fatalf("error building context: %v", err)
 		}

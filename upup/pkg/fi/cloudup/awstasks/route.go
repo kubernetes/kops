@@ -48,7 +48,7 @@ type Route struct {
 	VPCPeeringConnectionID    *string
 }
 
-func (e *Route) Find(c *fi.Context) (*Route, error) {
+func (e *Route) Find(c *fi.CloudContext) (*Route, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	if e.RouteTable == nil || (e.CIDR == nil && e.IPv6CIDR == nil) {
@@ -124,7 +124,7 @@ func (e *Route) Find(c *fi.Context) (*Route, error) {
 	return nil, nil
 }
 
-func (e *Route) Run(c *fi.Context) error {
+func (e *Route) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

@@ -250,7 +250,7 @@ func getSystemdDependencies(serviceName string, definition string) ([]string, er
 	return dependencies, nil
 }
 
-func (e *Service) Run(c *fi.Context) error {
+func (e *Service) Run(c *fi.NodeContext) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

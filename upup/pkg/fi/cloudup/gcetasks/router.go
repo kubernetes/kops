@@ -66,7 +66,7 @@ func (r *Router) CompareWithID() *string {
 }
 
 // Find discovers the Router in the cloud provider.
-func (r *Router) Find(c *fi.Context) (*Router, error) {
+func (r *Router) Find(c *fi.CloudContext) (*Router, error) {
 	cloud := c.Cloud.(gce.GCECloud)
 
 	found, err := cloud.Compute().Routers().Get(cloud.Project(), *r.Region, *r.Name)
@@ -119,7 +119,7 @@ func (r *Router) url(project string) string {
 }
 
 // Run implements fi.Task.Run.
-func (r *Router) Run(c *fi.Context) error {
+func (r *Router) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(r, c)
 }
 

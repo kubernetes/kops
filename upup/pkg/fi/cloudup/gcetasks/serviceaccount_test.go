@@ -97,7 +97,7 @@ func checkHasChanges(t *testing.T, cloud fi.Cloud, allTasks map[string]fi.Task) 
 func runTasks(t *testing.T, cloud gce.GCECloud, allTasks map[string]fi.Task) {
 	target := gce.NewGCEAPITarget(cloud)
 
-	context, err := fi.NewContext(target, nil, cloud, nil, nil, nil, true, allTasks)
+	context, err := fi.NewCloudContext(target, nil, cloud, nil, nil, nil, true, allTasks)
 	if err != nil {
 		t.Fatalf("error building context: %v", err)
 	}
@@ -116,7 +116,7 @@ func doDryRun(t *testing.T, cloud fi.Cloud, allTasks map[string]fi.Task) *fi.Dry
 	}
 	assetBuilder := assets.NewAssetBuilder(cluster, false)
 	target := fi.NewDryRunTarget(assetBuilder, os.Stderr)
-	context, err := fi.NewContext(target, nil, cloud, nil, nil, nil, true, allTasks)
+	context, err := fi.NewCloudContext(target, nil, cloud, nil, nil, nil, true, allTasks)
 	if err != nil {
 		t.Fatalf("error building context: %v", err)
 	}

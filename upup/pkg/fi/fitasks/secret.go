@@ -31,11 +31,11 @@ type Secret struct {
 var _ fi.HasCheckExisting = &Secret{}
 
 // It's important always to check for the existing Secret, so we don't regenerate tokens e.g. on terraform
-func (e *Secret) CheckExisting(c *fi.Context) bool {
+func (e *Secret) CheckExisting(c *fi.CloudContext) bool {
 	return true
 }
 
-func (e *Secret) Find(c *fi.Context) (*Secret, error) {
+func (e *Secret) Find(c *fi.CloudContext) (*Secret, error) {
 	secrets := c.SecretStore
 
 	name := fi.StringValue(e.Name)
@@ -61,7 +61,7 @@ func (e *Secret) Find(c *fi.Context) (*Secret, error) {
 	return actual, nil
 }
 
-func (e *Secret) Run(c *fi.Context) error {
+func (e *Secret) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
@@ -74,7 +74,7 @@ func (s *Secret) CheckChanges(a, e, changes *Secret) error {
 	return nil
 }
 
-func (_ *Secret) Render(c *fi.Context, a, e, changes *Secret) error {
+func (_ *Secret) Render(c *fi.CloudContext, a, e, changes *Secret) error {
 	name := fi.StringValue(e.Name)
 	if name == "" {
 		return fi.RequiredField("Name")

@@ -209,7 +209,7 @@ func (e *ClassicLoadBalancer) getHostedZoneId() *string {
 	return e.HostedZoneId
 }
 
-func (e *ClassicLoadBalancer) Find(c *fi.Context) (*ClassicLoadBalancer, error) {
+func (e *ClassicLoadBalancer) Find(c *fi.CloudContext) (*ClassicLoadBalancer, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	lb, err := cloud.FindELBByNameTag(fi.StringValue(e.Name))
@@ -346,7 +346,7 @@ func (e *ClassicLoadBalancer) IsForAPIServer() bool {
 	return e.ForAPIServer
 }
 
-func (e *ClassicLoadBalancer) FindAddresses(context *fi.Context) ([]string, error) {
+func (e *ClassicLoadBalancer) FindAddresses(context *fi.CloudContext) ([]string, error) {
 	cloud := context.Cloud.(awsup.AWSCloud)
 
 	lb, err := cloud.FindELBByNameTag(fi.StringValue(e.Name))
@@ -364,7 +364,7 @@ func (e *ClassicLoadBalancer) FindAddresses(context *fi.Context) ([]string, erro
 	return []string{lbDnsName}, nil
 }
 
-func (e *ClassicLoadBalancer) Run(c *fi.Context) error {
+func (e *ClassicLoadBalancer) Run(c *fi.CloudContext) error {
 	// TODO: Make Normalize a standard method
 	e.Normalize()
 

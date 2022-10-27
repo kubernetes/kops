@@ -144,7 +144,7 @@ func NewLBTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle, 
 	return actual, nil
 }
 
-func (s *LB) Find(context *fi.Context) (*LB, error) {
+func (s *LB) Find(context *fi.CloudContext) (*LB, error) {
 	if s.Name == nil {
 		return nil, nil
 	}
@@ -170,7 +170,7 @@ func (s *LB) Find(context *fi.Context) (*LB, error) {
 	return NewLBTaskFromCloud(cloud, s.Lifecycle, &lbs[0], s)
 }
 
-func (s *LB) Run(context *fi.Context) error {
+func (s *LB) Run(context *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(s, context)
 }
 

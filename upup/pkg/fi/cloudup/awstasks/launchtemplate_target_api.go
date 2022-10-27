@@ -192,7 +192,7 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchT
 }
 
 // Find is responsible for finding the launch template for us
-func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
+func (t *LaunchTemplate) Find(c *fi.CloudContext) (*LaunchTemplate, error) {
 	cloud, ok := c.Cloud.(awsup.AWSCloud)
 	if !ok {
 		return nil, fmt.Errorf("invalid cloud provider: %v, expected: %s", c.Cloud, "awsup.AWSCloud")
@@ -341,7 +341,7 @@ func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
 }
 
 // findAllLaunchTemplates returns all the launch templates for us
-func (t *LaunchTemplate) findAllLaunchTemplates(c *fi.Context) ([]*ec2.LaunchTemplate, error) {
+func (t *LaunchTemplate) findAllLaunchTemplates(c *fi.CloudContext) ([]*ec2.LaunchTemplate, error) {
 	cloud, ok := c.Cloud.(awsup.AWSCloud)
 	if !ok {
 		return nil, fmt.Errorf("invalid cloud provider: %v, expected: %s", c.Cloud, "awsup.AWSCloud")
@@ -369,7 +369,7 @@ func (t *LaunchTemplate) findAllLaunchTemplates(c *fi.Context) ([]*ec2.LaunchTem
 }
 
 // findLatestLaunchTemplateVersion returns the latest template version
-func (t *LaunchTemplate) findLatestLaunchTemplateVersion(c *fi.Context) (*ec2.LaunchTemplateVersion, error) {
+func (t *LaunchTemplate) findLatestLaunchTemplateVersion(c *fi.CloudContext) (*ec2.LaunchTemplateVersion, error) {
 	cloud, ok := c.Cloud.(awsup.AWSCloud)
 	if !ok {
 		return nil, fmt.Errorf("invalid cloud provider: %v, expected: awsup.AWSCloud", c.Cloud)

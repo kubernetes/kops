@@ -89,7 +89,7 @@ func (e *InstanceTemplate) CompareWithID() *string {
 	return e.ID
 }
 
-func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
+func (e *InstanceTemplate) Find(c *fi.CloudContext) (*InstanceTemplate, error) {
 	cloud := c.Cloud.(gce.GCECloud)
 
 	templates, err := cloud.Compute().InstanceTemplates().List(context.Background(), cloud.Project())
@@ -229,7 +229,7 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 	return nil, nil
 }
 
-func (e *InstanceTemplate) Run(c *fi.Context) error {
+func (e *InstanceTemplate) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

@@ -189,7 +189,7 @@ func (e *Elastigroup) find(svc spotinst.InstanceGroupService) (*aws.Group, error
 
 var _ fi.HasCheckExisting = &Elastigroup{}
 
-func (e *Elastigroup) Find(c *fi.Context) (*Elastigroup, error) {
+func (e *Elastigroup) Find(c *fi.CloudContext) (*Elastigroup, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	group, err := e.find(cloud.Spotinst().Elastigroup())
@@ -479,13 +479,15 @@ func (e *Elastigroup) Find(c *fi.Context) (*Elastigroup, error) {
 	return actual, nil
 }
 
-func (e *Elastigroup) CheckExisting(c *fi.Context) bool {
+var _ fi.HasCheckExisting = &Elastigroup{}
+
+func (e *Elastigroup) CheckExisting(c *fi.CloudContext) bool {
 	cloud := c.Cloud.(awsup.AWSCloud)
 	group, err := e.find(cloud.Spotinst().Elastigroup())
 	return err == nil && group != nil
 }
 
-func (e *Elastigroup) Run(c *fi.Context) error {
+func (e *Elastigroup) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

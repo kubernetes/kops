@@ -43,6 +43,10 @@ func (t *FakeTask) Run(*fi.Context) error {
 	panic("not implemented")
 }
 
+func (t *FakeTask) GetName() *string {
+	panic("not implemented")
+}
+
 func TestServiceTask_UnknownTypes(t *testing.T) {
 	s := &Service{}
 

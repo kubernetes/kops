@@ -84,7 +84,7 @@ func (b *BootstrapClientTask) String() string {
 	return "BootstrapClientTask"
 }
 
-func (b *BootstrapClientTask) Run(c *fi.Context) error {
+func (b *BootstrapClientTask) Run(c *fi.NodeContext) error {
 	ctx := context.TODO()
 
 	req := nodeup.BootstrapRequest{

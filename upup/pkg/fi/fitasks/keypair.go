@@ -56,8 +56,10 @@ var (
 	_ fi.HasName          = &Keypair{}
 )
 
+var _ fi.HasCheckExisting = &Keypair{}
+
 // It's important always to check for the existing key, so we don't regenerate keys e.g. on terraform
-func (e *Keypair) CheckExisting(c *fi.Context) bool {
+func (e *Keypair) CheckExisting(c *fi.CloudContext) bool {
 	return true
 }
 
@@ -67,7 +69,7 @@ func (e *Keypair) CompareWithID() *string {
 	return &e.Subject
 }
 
-func (e *Keypair) Find(c *fi.Context) (*Keypair, error) {
+func (e *Keypair) Find(c *fi.CloudContext) (*Keypair, error) {
 	name := fi.StringValue(e.Name)
 	if name == "" {
 		return nil, nil
@@ -114,7 +116,7 @@ func (e *Keypair) Find(c *fi.Context) (*Keypair, error) {
 	return actual, nil
 }
 
-func (e *Keypair) Run(c *fi.Context) error {
+func (e *Keypair) Run(c *fi.CloudContext) error {
 	err := e.normalize()
 	if err != nil {
 		return err
@@ -161,7 +163,8 @@ func (_ *Keypair) ShouldCreate(a, e, changes *Keypair) (bool, error) {
 	return true, nil
 }
 
-func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
+func (_ *Keypair) Render(f fi.Context, a, e, changes *Keypair) error {
+	c := f.(*fi.CloudContext)
 	name := fi.StringValue(e.Name)
 	if name == "" {
 		return fi.RequiredField("Name")

@@ -25,9 +25,11 @@ import (
 
 // DefaultDeltaRunMethod implements the standard change-based run procedure:
 // find the existing item; compare properties; call render with (actual, expected, changes)
-func DefaultDeltaRunMethod(e Task, c *Context) error {
+func DefaultDeltaRunMethod(e Task, c Context) error {
 	var a Task
 	var err error
+
+	target := c.GetTarget()
 
 	lifecycle := LifecycleSync
 	if hl, ok := e.(HasLifecycle); ok {
@@ -41,9 +43,19 @@ func DefaultDeltaRunMethod(e Task, c *Context) error {
 		return nil
 	}
 
-	checkExisting := c.CheckExisting
+	var contextBase *ContextBase
+	switch c := c.(type) {
+	case *NodeContext:
+		contextBase = &c.ContextBase
+	case *CloudContext:
+		contextBase = &c.ContextBase
+	default:
+		return fmt.Errorf("unhandled context type %T", c)
+	}
+
+	checkExisting := contextBase.CheckExisting
 	if hce, ok := e.(HasCheckExisting); ok {
-		checkExisting = hce.CheckExisting(c)
+		checkExisting = hce.CheckExisting(c.(*CloudContext))
 	}
 
 	if checkExisting {
@@ -52,7 +64,7 @@ func DefaultDeltaRunMethod(e Task, c *Context) error {
 			if lifecycle == LifecycleWarnIfInsufficientAccess {
 				// For now we assume all errors are permissions problems
 				// TODO: bounded retry?
-				c.AddWarning(e, fmt.Sprintf("error checking if task exists; assuming it is correctly configured: %v", err))
+				contextBase.AddWarning(e, fmt.Sprintf("error checking if task exists; assuming it is correctly configured: %v", err))
 				return nil
 			}
 			return err
@@ -79,26 +91,27 @@ func DefaultDeltaRunMethod(e Task, c *Context) error {
 		}
 
 		if shouldCreate {
-			err = c.Render(a, e, changes)
+			err = invokeRender(c, a, e, changes)
 			if err != nil {
 				return err
 			}
 		}
 	}
 
-	if producesDeletions, ok := e.(ProducesDeletions); ok && c.Target.ProcessDeletions() {
+	if producesDeletions, ok := e.(ProducesDeletions); ok && target.ProcessDeletions() {
 		var deletions []Deletion
-		deletions, err = producesDeletions.FindDeletions(c)
+		deletions, err = producesDeletions.FindDeletions(c.(*CloudContext))
 		if err != nil {
 			return err
 		}
+		target := c.GetTarget()
 		for _, deletion := range deletions {
-			if _, ok := c.Target.(*DryRunTarget); ok {
-				err = c.Target.(*DryRunTarget).Delete(deletion)
-			} else if _, ok := c.Target.(*DryRunTarget); ok {
-				err = c.Target.(*DryRunTarget).Delete(deletion)
+			if _, ok := target.(*DryRunTarget); ok {
+				err = target.(*DryRunTarget).Delete(deletion)
+			} else if _, ok := target.(*DryRunTarget); ok {
+				err = target.(*DryRunTarget).Delete(deletion)
 			} else {
-				err = deletion.Delete(c.Target)
+				err = deletion.Delete(target)
 			}
 			if err != nil {
 				return err
@@ -122,8 +135,18 @@ func invokeCheckChanges(a, e, changes Task) error {
 }
 
 // invokeFind calls the find method by reflection
-func invokeFind(e Task, c *Context) (Task, error) {
-	rv, err := reflectutils.InvokeMethod(e, "Find", c)
+func invokeFind(e Task, c Context) (Task, error) {
+	var args []interface{}
+	switch c := c.(type) {
+	case *NodeContext:
+		args = append(args, c)
+	case *CloudContext:
+		args = append(args, c)
+	default:
+		return nil, fmt.Errorf("unhandled context type %T", c)
+	}
+
+	rv, err := reflectutils.InvokeMethod(e, "Find", args...)
 	if err != nil {
 		return nil, err
 	}

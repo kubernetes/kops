@@ -47,7 +47,7 @@ func (r *RouteTable) CompareWithID() *string {
 }
 
 // Find discovers the RouteTable in the cloud provider.
-func (r *RouteTable) Find(c *fi.Context) (*RouteTable, error) {
+func (r *RouteTable) Find(c *fi.CloudContext) (*RouteTable, error) {
 	cloud := c.Cloud.(azure.AzureCloud)
 	l, err := cloud.RouteTable().List(context.TODO(), *r.ResourceGroup.Name)
 	if err != nil {
@@ -74,7 +74,7 @@ func (r *RouteTable) Find(c *fi.Context) (*RouteTable, error) {
 }
 
 // Run implements fi.Task.Run.
-func (r *RouteTable) Run(c *fi.Context) error {
+func (r *RouteTable) Run(c *fi.CloudContext) error {
 	c.Cloud.(azure.AzureCloud).AddClusterTags(r.Tags)
 	return fi.DefaultDeltaRunMethod(r, c)
 }

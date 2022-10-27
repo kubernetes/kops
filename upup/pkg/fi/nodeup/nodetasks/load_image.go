@@ -79,7 +79,7 @@ func (e *LoadImageTask) Find(c *fi.Context) (*LoadImageTask, error) {
 	return nil, nil
 }
 
-func (e *LoadImageTask) Run(c *fi.Context) error {
+func (e *LoadImageTask) Run(c *fi.NodeContext) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

@@ -45,7 +45,7 @@ func (v *Volume) CompareWithID() *string {
 	return v.ID
 }
 
-func (v *Volume) Find(c *fi.Context) (*Volume, error) {
+func (v *Volume) Find(c *fi.CloudContext) (*Volume, error) {
 	cloud := c.Cloud.(do.DOCloud)
 	volService := cloud.VolumeService()
 
@@ -73,7 +73,7 @@ func (v *Volume) Find(c *fi.Context) (*Volume, error) {
 	return nil, nil
 }
 
-func (v *Volume) Run(c *fi.Context) error {
+func (v *Volume) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(v, c)
 }
 

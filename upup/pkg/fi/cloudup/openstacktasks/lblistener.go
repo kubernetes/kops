@@ -96,7 +96,7 @@ func NewLBListenerTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lif
 	return listenerTask, nil
 }
 
-func (s *LBListener) Find(context *fi.Context) (*LBListener, error) {
+func (s *LBListener) Find(context *fi.CloudContext) (*LBListener, error) {
 	if s.Name == nil {
 		return nil, nil
 	}
@@ -119,7 +119,7 @@ func (s *LBListener) Find(context *fi.Context) (*LBListener, error) {
 	return NewLBListenerTaskFromCloud(cloud, s.Lifecycle, &listenerList[0], s)
 }
 
-func (s *LBListener) Run(context *fi.Context) error {
+func (s *LBListener) Run(context *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(s, context)
 }
 

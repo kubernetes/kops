@@ -44,7 +44,7 @@ func (e *MirrorKeystore) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 }
 
 // Find implements fi.Task::Find
-func (e *MirrorKeystore) Find(c *fi.Context) (*MirrorKeystore, error) {
+func (e *MirrorKeystore) Find(c *fi.CloudContext) (*MirrorKeystore, error) {
 	if vfsKeystore, ok := c.Keystore.(*fi.VFSCAStore); ok {
 		if vfsKeystore.VFSPath().Path() == e.MirrorPath.Path() {
 			return e, nil
@@ -57,7 +57,7 @@ func (e *MirrorKeystore) Find(c *fi.Context) (*MirrorKeystore, error) {
 }
 
 // Run implements fi.Task::Run
-func (e *MirrorKeystore) Run(c *fi.Context) error {
+func (e *MirrorKeystore) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
@@ -72,7 +72,7 @@ func (s *MirrorKeystore) CheckChanges(a, e, changes *MirrorKeystore) error {
 }
 
 // Render implements fi.Task::Render
-func (_ *MirrorKeystore) Render(c *fi.Context, a, e, changes *MirrorKeystore) error {
+func (_ *MirrorKeystore) Render(c *fi.CloudContext, a, e, changes *MirrorKeystore) error {
 	keystore := c.Keystore
 
 	return keystore.MirrorTo(e.MirrorPath)

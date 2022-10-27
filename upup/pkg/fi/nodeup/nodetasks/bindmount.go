@@ -172,7 +172,7 @@ func (e *BindMount) Find(c *fi.Context) (*BindMount, error) {
 	return nil, nil
 }
 
-func (e *BindMount) Run(c *fi.Context) error {
+func (e *BindMount) Run(c *fi.NodeContext) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

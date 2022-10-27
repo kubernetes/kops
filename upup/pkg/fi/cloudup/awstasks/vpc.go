@@ -67,7 +67,7 @@ func (e *VPC) CompareWithID() *string {
 	return e.ID
 }
 
-func (e *VPC) Find(c *fi.Context) (*VPC, error) {
+func (e *VPC) Find(c *fi.CloudContext) (*VPC, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	request := &ec2.DescribeVpcsInput{}
@@ -168,7 +168,7 @@ func (s *VPC) CheckChanges(a, e, changes *VPC) error {
 	return nil
 }
 
-func (e *VPC) Run(c *fi.Context) error {
+func (e *VPC) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
@@ -233,7 +233,9 @@ func (_ *VPC) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPC) error {
 	return t.AddAWSTags(*e.ID, e.Tags)
 }
 
-func (e *VPC) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
+var _ fi.ProducesDeletions = &VPC{}
+
+func (e *VPC) FindDeletions(c *fi.CloudContext) ([]fi.Deletion, error) {
 	if fi.IsNilOrEmpty(e.ID) || fi.BoolValue(e.Shared) {
 		return nil, nil
 	}

@@ -38,7 +38,7 @@ type VPCAmazonIPv6CIDRBlock struct {
 	Shared *bool
 }
 
-func (e *VPCAmazonIPv6CIDRBlock) Find(c *fi.Context) (*VPCAmazonIPv6CIDRBlock, error) {
+func (e *VPCAmazonIPv6CIDRBlock) Find(c *fi.CloudContext) (*VPCAmazonIPv6CIDRBlock, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	// If the VPC doesn't (yet) exist, there is no association
@@ -66,7 +66,7 @@ func (e *VPCAmazonIPv6CIDRBlock) Find(c *fi.Context) (*VPCAmazonIPv6CIDRBlock, e
 	return actual, nil
 }
 
-func (e *VPCAmazonIPv6CIDRBlock) Run(c *fi.Context) error {
+func (e *VPCAmazonIPv6CIDRBlock) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

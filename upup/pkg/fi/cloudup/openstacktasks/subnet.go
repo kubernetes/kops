@@ -89,7 +89,7 @@ func NewSubnetTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecyc
 	return actual, nil
 }
 
-func (s *Subnet) Find(context *fi.Context) (*Subnet, error) {
+func (s *Subnet) Find(context *fi.CloudContext) (*Subnet, error) {
 	cloud := context.Cloud.(openstack.OpenstackCloud)
 	opt := subnets.ListOpts{
 		ID:         fi.StringValue(s.ID),
@@ -111,7 +111,7 @@ func (s *Subnet) Find(context *fi.Context) (*Subnet, error) {
 	return NewSubnetTaskFromCloud(cloud, s.Lifecycle, &rs[0], s)
 }
 
-func (s *Subnet) Run(context *fi.Context) error {
+func (s *Subnet) Run(context *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(s, context)
 }
 

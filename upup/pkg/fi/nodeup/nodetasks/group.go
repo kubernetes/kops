@@ -68,7 +68,7 @@ func (e *GroupTask) Find(c *fi.Context) (*GroupTask, error) {
 	return actual, nil
 }
 
-func (e *GroupTask) Run(c *fi.Context) error {
+func (e *GroupTask) Run(c *fi.NodeContext) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

@@ -41,7 +41,7 @@ func (e *HTTPHealthcheck) CompareWithID() *string {
 	return e.Name
 }
 
-func (e *HTTPHealthcheck) Find(c *fi.Context) (*HTTPHealthcheck, error) {
+func (e *HTTPHealthcheck) Find(c *fi.CloudContext) (*HTTPHealthcheck, error) {
 	cloud := c.Cloud.(gce.GCECloud)
 	name := fi.StringValue(e.Name)
 	r, err := cloud.Compute().HTTPHealthChecks().Get(cloud.Project(), name)
@@ -62,7 +62,7 @@ func (e *HTTPHealthcheck) Find(c *fi.Context) (*HTTPHealthcheck, error) {
 	return actual, nil
 }
 
-func (e *HTTPHealthcheck) Run(c *fi.Context) error {
+func (e *HTTPHealthcheck) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

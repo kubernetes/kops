@@ -100,7 +100,7 @@ func (e *AutoscalingGroup) CompareWithID() *string {
 }
 
 // Find is used to discover the ASG in the cloud provider
-func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
+func (e *AutoscalingGroup) Find(c *fi.CloudContext) (*AutoscalingGroup, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	g, err := findAutoscalingGroup(cloud, fi.StringValue(e.Name))
@@ -311,14 +311,14 @@ func findAutoscalingGroup(cloud awsup.AWSCloud, name string) (*autoscaling.Group
 	return nil, fmt.Errorf("found multiple AutoscalingGroups with name: %q", name)
 }
 
-func (e *AutoscalingGroup) normalize(c *fi.Context) error {
+func (e *AutoscalingGroup) normalize(c *fi.CloudContext) error {
 	sort.Strings(e.Metrics)
 
 	return nil
 }
 
 // Run is responsible for running the task
-func (e *AutoscalingGroup) Run(c *fi.Context) error {
+func (e *AutoscalingGroup) Run(c *fi.CloudContext) error {
 	err := e.normalize(c)
 	if err != nil {
 		return err

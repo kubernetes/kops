@@ -73,7 +73,7 @@ func TestDiskRenderAzure(t *testing.T) {
 
 func TestDiskFind(t *testing.T) {
 	cloud := NewMockAzureCloud("eastus")
-	ctx := &fi.Context{
+	ctx := &fi.CloudContext{
 		Cloud: cloud,
 	}
 
@@ -132,7 +132,7 @@ func TestDiskFind(t *testing.T) {
 
 func TestDiskRun(t *testing.T) {
 	cloud := NewMockAzureCloud("eastus")
-	ctx := &fi.Context{
+	ctx := &fi.CloudContext{
 		Cloud:  cloud,
 		Target: azure.NewAzureAPITarget(cloud),
 	}

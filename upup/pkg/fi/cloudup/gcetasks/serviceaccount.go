@@ -47,7 +47,7 @@ func (e *ServiceAccount) CompareWithID() *string {
 	return e.Email
 }
 
-func (e *ServiceAccount) Find(c *fi.Context) (*ServiceAccount, error) {
+func (e *ServiceAccount) Find(c *fi.CloudContext) (*ServiceAccount, error) {
 	cloud := c.Cloud.(gce.GCECloud)
 
 	ctx := context.TODO()
@@ -90,7 +90,7 @@ func (e *ServiceAccount) Find(c *fi.Context) (*ServiceAccount, error) {
 	return actual, nil
 }
 
-func (e *ServiceAccount) Run(c *fi.Context) error {
+func (e *ServiceAccount) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

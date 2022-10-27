@@ -64,7 +64,7 @@ func (e *UpdateEtcHostsTask) Find(c *fi.Context) (*UpdateEtcHostsTask, error) {
 	return nil, nil
 }
 
-func (e *UpdateEtcHostsTask) Run(c *fi.Context) error {
+func (e *UpdateEtcHostsTask) Run(c *fi.NodeContext) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

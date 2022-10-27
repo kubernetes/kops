@@ -51,7 +51,7 @@ func (n *VirtualNetwork) CompareWithID() *string {
 }
 
 // Find discovers the VirtualNetwork in the cloud provider.
-func (n *VirtualNetwork) Find(c *fi.Context) (*VirtualNetwork, error) {
+func (n *VirtualNetwork) Find(c *fi.CloudContext) (*VirtualNetwork, error) {
 	cloud := c.Cloud.(azure.AzureCloud)
 	l, err := cloud.VirtualNetwork().List(context.TODO(), *n.ResourceGroup.Name)
 	if err != nil {
@@ -85,7 +85,7 @@ func (n *VirtualNetwork) Find(c *fi.Context) (*VirtualNetwork, error) {
 }
 
 // Run implements fi.Task.Run.
-func (n *VirtualNetwork) Run(c *fi.Context) error {
+func (n *VirtualNetwork) Run(c *fi.CloudContext) error {
 	c.Cloud.(azure.AzureCloud).AddClusterTags(n.Tags)
 	return fi.DefaultDeltaRunMethod(n, c)
 }

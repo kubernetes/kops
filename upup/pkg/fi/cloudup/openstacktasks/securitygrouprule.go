@@ -69,7 +69,7 @@ func (r *SecurityGroupRule) CompareWithID() *string {
 	return r.ID
 }
 
-func (r *SecurityGroupRule) Find(context *fi.Context) (*SecurityGroupRule, error) {
+func (r *SecurityGroupRule) Find(context *fi.CloudContext) (*SecurityGroupRule, error) {
 	if r.SecGroup == nil || r.SecGroup.ID == nil {
 		return nil, nil
 	}
@@ -117,7 +117,7 @@ func (r *SecurityGroupRule) Find(context *fi.Context) (*SecurityGroupRule, error
 	return actual, nil
 }
 
-func (r *SecurityGroupRule) Run(context *fi.Context) error {
+func (r *SecurityGroupRule) Run(context *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(r, context)
 }
 
@@ -227,7 +227,9 @@ func (o *SecurityGroupRule) String() string {
 		proto, fi.StringValue(o.SecGroup.Name), dst, fi.IntValue(o.PortRangeMin), fi.IntValue(o.PortRangeMax))
 }
 
-func (o *SecurityGroupRule) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
+var _ fi.ProducesDeletions = &SecurityGroupRule{}
+
+func (o *SecurityGroupRule) FindDeletions(c *fi.CloudContext) ([]fi.Deletion, error) {
 	if !fi.BoolValue(o.Delete) {
 		return nil, nil
 	}

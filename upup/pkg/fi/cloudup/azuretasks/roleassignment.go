@@ -63,7 +63,7 @@ func (r *RoleAssignment) CompareWithID() *string {
 }
 
 // Find discovers the RoleAssignment in the cloud provider.
-func (r *RoleAssignment) Find(c *fi.Context) (*RoleAssignment, error) {
+func (r *RoleAssignment) Find(c *fi.CloudContext) (*RoleAssignment, error) {
 	if r.VMScaleSet.PrincipalID == nil {
 		// PrincipalID of the VM Scale Set hasn't yet been
 		// populated. No corresponding Role Assignment
@@ -127,7 +127,7 @@ func (r *RoleAssignment) Find(c *fi.Context) (*RoleAssignment, error) {
 }
 
 // Run implements fi.Task.Run.
-func (r *RoleAssignment) Run(c *fi.Context) error {
+func (r *RoleAssignment) Run(c *fi.CloudContext) error {
 	return fi.DefaultDeltaRunMethod(r, c)
 }
 

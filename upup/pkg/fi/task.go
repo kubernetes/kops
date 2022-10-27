@@ -25,13 +25,23 @@ import (
 )
 
 type Task interface {
-	Run(*Context) error
+	HasName
+}
+
+type CloudTask interface {
+	Task
+	Run(*CloudContext) error
+}
+
+type NodeTask interface {
+	Task
+	Run(*NodeContext) error
 }
 
 // TaskPreRun is implemented by tasks that perform some initial validation.
 type TaskPreRun interface {
 	// PreRun will be run for all TaskPreRuns, before any Run functions are invoked.
-	PreRun(*Context) error
+	PreRun(Context) error
 }
 
 // TaskAsString renders the task for debug output
@@ -42,7 +52,7 @@ func TaskAsString(t Task) string {
 }
 
 type HasCheckExisting interface {
-	CheckExisting(c *Context) bool
+	CheckExisting(c *CloudContext) bool
 }
 
 // ModelBuilder allows for plugins that configure an aspect of the model, based on the configuration

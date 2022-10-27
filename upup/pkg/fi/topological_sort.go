@@ -60,7 +60,7 @@ func FindTaskDependencies(tasks map[string]Task) map[string][]string {
 		for _, dep := range dependencies {
 			dependencyKey, found := taskToId[dep]
 			if !found {
-				klog.Fatalf("dependency not found: %v", dep)
+				klog.Fatalf("dependency not found: %T %#v", dep, dep)
 			}
 			dependencyKeys = append(dependencyKeys, dependencyKey)
 		}

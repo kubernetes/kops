@@ -149,7 +149,7 @@ func (s *VMScaleSet) CompareWithID() *string {
 }
 
 // Find discovers the VMScaleSet in the cloud provider.
-func (s *VMScaleSet) Find(c *fi.Context) (*VMScaleSet, error) {
+func (s *VMScaleSet) Find(c *fi.CloudContext) (*VMScaleSet, error) {
 	cloud := c.Cloud.(azure.AzureCloud)
 	l, err := cloud.VMScaleSet().List(context.TODO(), *s.ResourceGroup.Name)
 	if err != nil {
@@ -241,7 +241,7 @@ func (s *VMScaleSet) Find(c *fi.Context) (*VMScaleSet, error) {
 }
 
 // Run implements fi.Task.Run.
-func (s *VMScaleSet) Run(c *fi.Context) error {
+func (s *VMScaleSet) Run(c *fi.CloudContext) error {
 	c.Cloud.(azure.AzureCloud).AddClusterTags(s.Tags)
 	return fi.DefaultDeltaRunMethod(s, c)
 }
