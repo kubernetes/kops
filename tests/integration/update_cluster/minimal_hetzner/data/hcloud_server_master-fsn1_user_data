@@ -130,7 +130,7 @@ containerd:
   logLevel: info
   runc:
     version: 1.1.4
-  version: 1.6.8
+  version: 1.6.9
 docker:
   skipInstall: true
 encryptionConfig: null
@@ -249,7 +249,7 @@ CloudProvider: hetzner
 ConfigBase: memfs://tests/minimal.k8s.local
 InstanceGroupName: master-fsn1
 InstanceGroupRole: Master
-NodeupConfigHash: NMCuP4As360lakFohS19ift3j3kRKDw1374ItjaQZ5w=
+NodeupConfigHash: 1tDhVHjdqDjbxWBtM4GROvB72iZ+xB6vYDKe6EM9pAc=
 
 __EOF_KUBE_ENV
 
