@@ -64,6 +64,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	gcetpm "k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm"
+	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/util/pkg/env"
 )
 
@@ -655,6 +656,10 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 				Region:      tf.Region,
 				MaxTimeSkew: 300,
 			}
+
+		case kops.CloudProviderHetzner:
+			config.Server.Provider.Hetzner = &hetzner.HetznerVerifierOptions{}
+
 		default:
 			return "", fmt.Errorf("unsupported cloud provider %s", cluster.Spec.GetCloudProvider())
 		}
