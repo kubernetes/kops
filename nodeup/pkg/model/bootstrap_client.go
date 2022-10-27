@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm/gcetpmsigner"
+	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
@@ -50,6 +51,8 @@ func (b BootstrapClientBuilder) Build(c *fi.ModelBuilderContext) error {
 		authenticator, err = gcetpmsigner.NewTPMAuthenticator()
 		// We don't use the custom resolver here in gossip mode (though we could);
 		// instead we use this as a check that protokube has now started.
+	case kops.CloudProviderHetzner:
+		authenticator, err = hetzner.NewHetznerAuthenticator()
 
 	default:
 		return fmt.Errorf("unsupported cloud provider for authenticator %q", b.CloudProvider)
