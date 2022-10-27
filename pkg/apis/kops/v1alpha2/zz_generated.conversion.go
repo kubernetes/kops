@@ -1746,7 +1746,7 @@ func Convert_kops_AzureSpec_To_v1alpha2_AzureSpec(in *kops.AzureSpec, out *Azure
 }
 
 func autoConvert_v1alpha2_BastionLoadBalancerSpec_To_kops_BastionLoadBalancerSpec(in *BastionLoadBalancerSpec, out *kops.BastionLoadBalancerSpec, s conversion.Scope) error {
-	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
+	// INFO: in.AdditionalSecurityGroups opted out of conversion generation
 	out.Type = kops.LoadBalancerType(in.Type)
 	return nil
 }
@@ -1757,7 +1757,6 @@ func Convert_v1alpha2_BastionLoadBalancerSpec_To_kops_BastionLoadBalancerSpec(in
 }
 
 func autoConvert_kops_BastionLoadBalancerSpec_To_v1alpha2_BastionLoadBalancerSpec(in *kops.BastionLoadBalancerSpec, out *BastionLoadBalancerSpec, s conversion.Scope) error {
-	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
 	out.Type = LoadBalancerType(in.Type)
 	return nil
 }
@@ -1769,7 +1768,7 @@ func Convert_kops_BastionLoadBalancerSpec_To_v1alpha2_BastionLoadBalancerSpec(in
 
 func autoConvert_v1alpha2_BastionSpec_To_kops_BastionSpec(in *BastionSpec, out *kops.BastionSpec, s conversion.Scope) error {
 	out.PublicName = in.PublicName
-	out.IdleTimeoutSeconds = in.IdleTimeoutSeconds
+	// INFO: in.IdleTimeoutSeconds opted out of conversion generation
 	if in.LoadBalancer != nil {
 		in, out := &in.LoadBalancer, &out.LoadBalancer
 		*out = new(kops.BastionLoadBalancerSpec)
@@ -1789,7 +1788,6 @@ func Convert_v1alpha2_BastionSpec_To_kops_BastionSpec(in *BastionSpec, out *kops
 
 func autoConvert_kops_BastionSpec_To_v1alpha2_BastionSpec(in *kops.BastionSpec, out *BastionSpec, s conversion.Scope) error {
 	out.PublicName = in.PublicName
-	out.IdleTimeoutSeconds = in.IdleTimeoutSeconds
 	if in.LoadBalancer != nil {
 		in, out := &in.LoadBalancer, &out.LoadBalancer
 		*out = new(BastionLoadBalancerSpec)

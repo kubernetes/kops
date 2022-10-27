@@ -74,9 +74,9 @@
             ]
           }
         ],
-        "LoadBalancerNames": [
+        "TargetGroupARNs": [
           {
-            "Ref": "AWSElasticLoadBalancingLoadBalancerbastionprivatesharedipexamplecom"
+            "Ref": "AWSElasticLoadBalancingV2TargetGroupbastionprivatesharedipeepmph"
           }
         ]
       }
@@ -761,30 +761,6 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupEgressfrombastionelbprivatesharedipexamplecomegressall0to00": {
-      "Type": "AWS::EC2::SecurityGroupEgress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupbastionelbprivatesharedipexamplecom"
-        },
-        "FromPort": 0,
-        "ToPort": 0,
-        "IpProtocol": "-1",
-        "CidrIpv6": "::/0"
-      }
-    },
-    "AWSEC2SecurityGroupEgressfrombastionelbprivatesharedipexamplecomegressall0to000000": {
-      "Type": "AWS::EC2::SecurityGroupEgress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupbastionelbprivatesharedipexamplecom"
-        },
-        "FromPort": 0,
-        "ToPort": 0,
-        "IpProtocol": "-1",
-        "CidrIp": "0.0.0.0/0"
-      }
-    },
     "AWSEC2SecurityGroupEgressfrombastionprivatesharedipexamplecomegressall0to00": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
@@ -857,11 +833,11 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupIngressfrom00000ingresstcp22to22bastionelbprivatesharedipexamplecom": {
+    "AWSEC2SecurityGroupIngressfrom00000ingresstcp22to22bastionprivatesharedipexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupbastionelbprivatesharedipexamplecom"
+          "Ref": "AWSEC2SecurityGroupbastionprivatesharedipexamplecom"
         },
         "FromPort": 22,
         "ToPort": 22,
@@ -881,18 +857,16 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupIngressfrombastionelbprivatesharedipexamplecomingresstcp22to22bastionprivatesharedipexamplecom": {
+    "AWSEC2SecurityGroupIngressfrom172204022ingresstcp22to22bastionprivatesharedipexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
           "Ref": "AWSEC2SecurityGroupbastionprivatesharedipexamplecom"
         },
-        "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupbastionelbprivatesharedipexamplecom"
-        },
         "FromPort": 22,
         "ToPort": 22,
-        "IpProtocol": "tcp"
+        "IpProtocol": "tcp",
+        "CidrIp": "172.20.4.0/22"
       }
     },
     "AWSEC2SecurityGroupIngressfrombastionprivatesharedipexamplecomingresstcp22to22mastersprivatesharedipexamplecom": {
@@ -1047,6 +1021,30 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
+    "AWSEC2SecurityGroupIngressicmppmtusshnlb00000": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupbastionprivatesharedipexamplecom"
+        },
+        "FromPort": 3,
+        "ToPort": 4,
+        "IpProtocol": "icmp",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressicmppmtusshnlb172204022": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupbastionprivatesharedipexamplecom"
+        },
+        "FromPort": 3,
+        "ToPort": 4,
+        "IpProtocol": "icmp",
+        "CidrIp": "172.20.4.0/22"
+      }
+    },
     "AWSEC2SecurityGroupapielbprivatesharedipexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
@@ -1061,28 +1059,6 @@
           {
             "Key": "Name",
             "Value": "api-elb.private-shared-ip.example.com"
-          },
-          {
-            "Key": "kubernetes.io/cluster/private-shared-ip.example.com",
-            "Value": "owned"
-          }
-        ]
-      }
-    },
-    "AWSEC2SecurityGroupbastionelbprivatesharedipexamplecom": {
-      "Type": "AWS::EC2::SecurityGroup",
-      "Properties": {
-        "GroupName": "bastion-elb.private-shared-ip.example.com",
-        "VpcId": "vpc-12345678",
-        "GroupDescription": "Security group for bastion ELB",
-        "Tags": [
-          {
-            "Key": "KubernetesCluster",
-            "Value": "private-shared-ip.example.com"
-          },
-          {
-            "Key": "Name",
-            "Value": "bastion-elb.private-shared-ip.example.com"
           },
           {
             "Key": "kubernetes.io/cluster/private-shared-ip.example.com",
@@ -1370,38 +1346,37 @@
         ]
       }
     },
-    "AWSElasticLoadBalancingLoadBalancerbastionprivatesharedipexamplecom": {
-      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+    "AWSElasticLoadBalancingV2Listenerbastionprivatesharedipexamplecom22": {
+      "Type": "AWS::ElasticLoadBalancingV2::Listener",
       "Properties": {
-        "LoadBalancerName": "bastion-private-shared-ip-eepmph",
-        "Listeners": [
+        "DefaultActions": [
           {
-            "InstancePort": "22",
-            "InstanceProtocol": "TCP",
-            "LoadBalancerPort": "22",
-            "Protocol": "TCP"
+            "Type": "forward",
+            "TargetGroupArn": {
+              "Ref": "AWSElasticLoadBalancingV2TargetGroupbastionprivatesharedipeepmph"
+            }
           }
         ],
-        "SecurityGroups": [
-          {
-            "Ref": "AWSEC2SecurityGroupbastionelbprivatesharedipexamplecom"
-          }
-        ],
-        "Subnets": [
-          {
-            "Ref": "AWSEC2Subnetutilityustest1aprivatesharedipexamplecom"
-          }
-        ],
-        "HealthCheck": {
-          "Target": "TCP:22",
-          "HealthyThreshold": "2",
-          "UnhealthyThreshold": "2",
-          "Interval": "10",
-          "Timeout": "5"
+        "LoadBalancerArn": {
+          "Ref": "AWSElasticLoadBalancingV2LoadBalancerbastionprivatesharedipexamplecom"
         },
-        "ConnectionSettings": {
-          "IdleTimeout": 300
-        },
+        "Port": 22,
+        "Protocol": "TCP"
+      }
+    },
+    "AWSElasticLoadBalancingV2LoadBalancerbastionprivatesharedipexamplecom": {
+      "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+      "Properties": {
+        "Name": "bastion-private-shared-ip-eepmph",
+        "Scheme": "internet-facing",
+        "SubnetMappings": [
+          {
+            "SubnetId": {
+              "Ref": "AWSEC2Subnetutilityustest1aprivatesharedipexamplecom"
+            }
+          }
+        ],
+        "Type": "network",
         "Tags": [
           {
             "Key": "KubernetesCluster",
@@ -1416,6 +1391,32 @@
             "Value": "owned"
           }
         ]
+      }
+    },
+    "AWSElasticLoadBalancingV2TargetGroupbastionprivatesharedipeepmph": {
+      "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+      "Properties": {
+        "Name": "bastion-private-shared-ip-eepmph",
+        "Port": 22,
+        "Protocol": "TCP",
+        "VpcId": "vpc-12345678",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "private-shared-ip.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "bastion-private-shared-ip-eepmph"
+          },
+          {
+            "Key": "kubernetes.io/cluster/private-shared-ip.example.com",
+            "Value": "owned"
+          }
+        ],
+        "HealthCheckProtocol": "TCP",
+        "HealthyThresholdCount": 2,
+        "UnhealthyThresholdCount": 2
       }
     },
     "AWSIAMInstanceProfilebastionsprivatesharedipexamplecom": {
