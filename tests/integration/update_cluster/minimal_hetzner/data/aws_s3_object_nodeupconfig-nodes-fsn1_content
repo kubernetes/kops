@@ -38,8 +38,6 @@ Hooks:
 - null
 - null
 KeypairIDs:
-  kube-proxy: "6986354184403674830529235586"
-  kubelet: "6986354184404014133128804066"
   kubernetes-ca: "6982820025135291416230495506"
 KubeletConfig:
   anonymousAuth: false
