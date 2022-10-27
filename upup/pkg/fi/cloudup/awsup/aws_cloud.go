@@ -2271,13 +2271,18 @@ func (c *awsCloudImplementation) DefaultInstanceType(cluster *kops.Cluster, ig *
 	case kops.InstanceGroupRoleMaster, kops.InstanceGroupRoleNode, kops.InstanceGroupRoleAPIServer:
 		// t3.medium is the cheapest instance with 4GB of mem, unlimited by default, fast and has decent network
 		// c5.large and c4.large are a good second option in case t3.medium is not available in the AZ
-		candidates = []string{"t3.medium", "c5.large", "c4.large"}
+		candidates = []string{"t3.medium", "c5.large", "c4.large", "t4g.medium"}
 
 	case kops.InstanceGroupRoleBastion:
-		candidates = []string{"t3.micro", "t2.micro"}
+		candidates = []string{"t3.micro", "t2.micro", "t4g.micro"}
 
 	default:
 		return "", fmt.Errorf("unhandled role %q", ig.Spec.Role)
+	}
+
+	imageArch := "x86_64"
+	if imageInfo, err := c.ResolveImage(ig.Spec.Image); err == nil {
+		imageArch = fi.StringValue(imageInfo.Architecture)
 	}
 
 	// Find the AZs the InstanceGroup targets
@@ -2289,6 +2294,16 @@ func (c *awsCloudImplementation) DefaultInstanceType(cluster *kops.Cluster, ig *
 
 	// TODO: Validate that instance type exists in all AZs, but skip AZs that don't support any VPC stuff
 	for _, instanceType := range candidates {
+		if strings.HasPrefix(instanceType, "t4g") {
+			if imageArch != "arm64" {
+				continue
+			}
+		} else {
+			if imageArch == "arm64" {
+				continue
+			}
+		}
+
 		zones, err := c.zonesWithInstanceType(instanceType)
 		if err != nil {
 			return "", err
