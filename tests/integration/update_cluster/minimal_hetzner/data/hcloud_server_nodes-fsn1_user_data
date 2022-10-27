@@ -162,7 +162,7 @@ CloudProvider: hetzner
 ConfigBase: memfs://tests/minimal.example.com
 InstanceGroupName: nodes-fsn1
 InstanceGroupRole: Node
-NodeupConfigHash: PWu9ALIVbND2iz1ciF+yjlTyJJFqCSux2yGwXKoPjUw=
+NodeupConfigHash: 2sOyCik6Vx/z8LXTIydiop+WbTq7ndCUfhQFvGQ/Ki0=
 
 __EOF_KUBE_ENV
 
