@@ -108,8 +108,8 @@ spec:
         - mountPath: /host
           name: host
       nodeSelector:
-        beta.kubernetes.io/os: linux
         cloud.google.com/metadata-proxy-ready: "true"
+        kubernetes.io/os: linux
       priorityClassName: system-node-critical
       serviceAccountName: metadata-proxy
       terminationGracePeriodSeconds: 30

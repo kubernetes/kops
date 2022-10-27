@@ -5425,7 +5425,7 @@ spec:
             cpu: 100m
             memory: 50Mi
       nodeSelector:
-        beta.kubernetes.io/os: linux
+        kubernetes.io/os: linux
       securityContext:
         runAsNonRoot: true
         runAsUser: 65534
@@ -5463,7 +5463,7 @@ metadata:
 spec:
   baseImage: quay.io/prometheus/alertmanager
   nodeSelector:
-    beta.kubernetes.io/os: linux
+    kubernetes.io/os: linux
   replicas: 3
   serviceAccountName: alertmanager-main
   version: v0.14.0
@@ -12693,7 +12693,7 @@ spec:
             cpu: 10m
             memory: 30Mi
       nodeSelector:
-        beta.kubernetes.io/os: linux
+        kubernetes.io/os: linux
       securityContext:
         runAsNonRoot: true
         runAsUser: 65534
@@ -12873,7 +12873,7 @@ spec:
             cpu: 10m
             memory: 20Mi
       nodeSelector:
-        beta.kubernetes.io/os: linux
+        kubernetes.io/os: linux
       securityContext:
         runAsNonRoot: true
         runAsUser: 65534
@@ -12982,7 +12982,7 @@ spec:
       port: web
   baseImage: quay.io/prometheus/prometheus
   nodeSelector:
-    beta.kubernetes.io/os: linux
+    kubernetes.io/os: linux
   replicas: 2
   resources:
     requests:
