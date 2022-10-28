@@ -1,4 +1,4 @@
-# Pulled and modified from: https://raw.githubusercontent.com/projectcalico/calico/v3.24.1/manifests/canal.yaml
+# Pulled and modified from: https://projectcalico.docs.tigera.io/archive/v3.24/manifests/canal.yaml
 ---
 # Source: calico/templates/calico-kube-controllers.yaml
 # This manifest creates a Pod Disruption Budget for Controller to allow K8s Cluster Autoscaler to evict
@@ -914,6 +914,11 @@ spec:
                   node appears to use the IP of the ingress node; this requires a
                   permissive L2 network.  [Default: Tunnel]'
                 type: string
+              bpfHostConntrackBypass:
+                description: 'BPFHostConntrackBypass Controls whether to bypass Linux
+                  conntrack in BPF mode for workloads and services. [Default: true
+                  - bypass Linux conntrack]'
+                type: boolean
               bpfKubeProxyEndpointSlicesEnabled:
                 description: BPFKubeProxyEndpointSlicesEnabled in BPF mode, controls
                   whether Felix's embedded kube-proxy accepts EndpointSlices or not.
@@ -1446,8 +1451,8 @@ spec:
                 type: boolean
               vxlanEnabled:
                 description: 'VXLANEnabled overrides whether Felix should create the
-                  VXLAN tunnel device for VXLAN networking. Optional as Felix determines
-                  this based on the existing IP pools. [Default: nil (unset)]'
+                  VXLAN tunnel device for IPv4 VXLAN networking. Optional as Felix
+                  determines this based on the existing IP pools. [Default: nil (unset)]'
                 type: boolean
               vxlanMTU:
                 description: 'VXLANMTU is the MTU to set on the IPv4 VXLAN tunnel
@@ -2873,7 +2878,7 @@ spec:
                   for internal use only.'
                 type: boolean
               natOutgoing:
-                description: When nat-outgoing is true, packets sent from Calico networked
+                description: When natOutgoing is true, packets sent from Calico networked
                   containers in this pool to destinations outside of this pool will
                   be masqueraded.
                 type: boolean
@@ -4449,7 +4454,7 @@ spec:
         # This container installs the CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: docker.io/calico/cni:v3.24.1
+          image: docker.io/calico/cni:v3.24.3
           imagePullPolicy: IfNotPresent
           command: ["/opt/cni/bin/install"]
           envFrom:
@@ -4498,7 +4503,8 @@ spec:
         # i.e. bpf at /sys/fs/bpf and cgroup2 at /run/calico/cgroup. Calico-node initialisation is executed
         # in best effort fashion, i.e. no failure for errors, to not disrupt pod creation in iptable mode.
         - name: "mount-bpffs"
-          image: docker.io/calico/node:v3.23.3
+          image: docker.io/calico/node:v3.24.3
+          imagePullPolicy: IfNotPresent
           command: ["calico-node", "-init", "-best-effort"]
           volumeMounts:
             - mountPath: /sys/fs
@@ -4523,7 +4529,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: docker.io/calico/node:v3.24.1
+          image: docker.io/calico/node:v3.24.3
           imagePullPolicy: IfNotPresent
           envFrom:
           - configMapRef:
@@ -4808,7 +4814,7 @@ spec:
       priorityClassName: system-cluster-critical
       containers:
         - name: calico-kube-controllers
-          image: docker.io/calico/kube-controllers:v3.24.1
+          image: docker.io/calico/kube-controllers:v3.24.3
           imagePullPolicy: IfNotPresent
           env:
             # Choose which controllers to run.
@@ -4885,7 +4891,7 @@ spec:
       securityContext:
         fsGroup: 65534
       containers:
-      - image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/typha:{{ or .Networking.Calico.Version "v3.24.1" }}
+      - image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/typha:{{ or .Networking.Calico.Version "v3.24.3" }}
         imagePullPolicy: IfNotPresent
         name: calico-typha
         ports:
