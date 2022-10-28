@@ -923,6 +923,11 @@ spec:
                   node appears to use the IP of the ingress node; this requires a
                   permissive L2 network.  [Default: Tunnel]'
                 type: string
+              bpfHostConntrackBypass:
+                description: 'BPFHostConntrackBypass Controls whether to bypass Linux
+                  conntrack in BPF mode for workloads and services. [Default: true
+                  - bypass Linux conntrack]'
+                type: boolean
               bpfKubeProxyEndpointSlicesEnabled:
                 description: BPFKubeProxyEndpointSlicesEnabled in BPF mode, controls
                   whether Felix's embedded kube-proxy accepts EndpointSlices or not.
@@ -1455,8 +1460,8 @@ spec:
                 type: boolean
               vxlanEnabled:
                 description: 'VXLANEnabled overrides whether Felix should create the
-                  VXLAN tunnel device for VXLAN networking. Optional as Felix determines
-                  this based on the existing IP pools. [Default: nil (unset)]'
+                  VXLAN tunnel device for IPv4 VXLAN networking. Optional as Felix
+                  determines this based on the existing IP pools. [Default: nil (unset)]'
                 type: boolean
               vxlanMTU:
                 description: 'VXLANMTU is the MTU to set on the IPv4 VXLAN tunnel
@@ -2922,7 +2927,7 @@ spec:
                   for internal use only.'
                 type: boolean
               natOutgoing:
-                description: When nat-outgoing is true, packets sent from Calico networked
+                description: When natOutgoing is true, packets sent from Calico networked
                   containers in this pool to destinations outside of this pool will
                   be masqueraded.
                 type: boolean
@@ -4566,7 +4571,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/node:v3.24.1
+        image: docker.io/calico/node:v3.24.3
         imagePullPolicy: IfNotPresent
         lifecycle:
           preStop:
@@ -4640,7 +4645,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/cni:v3.24.1
+        image: docker.io/calico/cni:v3.24.3
         imagePullPolicy: IfNotPresent
         name: upgrade-ipam
         securityContext:
@@ -4675,7 +4680,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/cni:v3.24.1
+        image: docker.io/calico/cni:v3.24.3
         imagePullPolicy: IfNotPresent
         name: install-cni
         securityContext:
@@ -4689,7 +4694,7 @@ spec:
         - calico-node
         - -init
         - -best-effort
-        image: docker.io/calico/node:v3.24.1
+        image: docker.io/calico/node:v3.24.3
         imagePullPolicy: IfNotPresent
         name: mount-bpffs
         securityContext:
@@ -4815,7 +4820,7 @@ spec:
           value: node
         - name: DATASTORE_TYPE
           value: kubernetes
-        image: docker.io/calico/kube-controllers:v3.24.1
+        image: docker.io/calico/kube-controllers:v3.24.3
         imagePullPolicy: IfNotPresent
         livenessProbe:
           exec:
