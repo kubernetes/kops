@@ -10,6 +10,7 @@ import (
 )
 
 var RegexFunc = function.New(&function.Spec{
+	Description: `Applies the given regular expression pattern to the given string and returns information about a single match, or raises an error if there is no match.`,
 	Params: []function.Parameter{
 		{
 			Name: "pattern",
@@ -54,6 +55,7 @@ var RegexFunc = function.New(&function.Spec{
 })
 
 var RegexAllFunc = function.New(&function.Spec{
+	Description: `Applies the given regular expression pattern to the given string and returns a list of information about all non-overlapping matches, or an empty list if there are no matches.`,
 	Params: []function.Parameter{
 		{
 			Name: "pattern",

@@ -18,6 +18,7 @@ import (
 //go:generate gofmt -w format_fsm.go
 
 var FormatFunc = function.New(&function.Spec{
+	Description: `Constructs a string by applying formatting verbs to a series of arguments, using a similar syntax to the C function \"printf\".`,
 	Params: []function.Parameter{
 		{
 			Name: "format",
@@ -45,6 +46,7 @@ var FormatFunc = function.New(&function.Spec{
 })
 
 var FormatListFunc = function.New(&function.Spec{
+	Description: `Constructs a list of strings by applying formatting verbs to a series of arguments, using a similar syntax to the C function \"printf\".`,
 	Params: []function.Parameter{
 		{
 			Name: "format",

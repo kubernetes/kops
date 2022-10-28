@@ -10,6 +10,9 @@ type Parameter struct {
 	// value, but callers may use it for documentation, etc.
 	Name string
 
+	// Description is an optional description for the argument.
+	Description string
+
 	// A type that any argument for this parameter must conform to.
 	// cty.DynamicPseudoType can be used, either at top-level or nested
 	// in a parameterized type, to indicate that any type should be
