@@ -14,6 +14,7 @@ import (
 )
 
 var UpperFunc = function.New(&function.Spec{
+	Description: "Returns the given string with all Unicode letters translated to their uppercase equivalents.",
 	Params: []function.Parameter{
 		{
 			Name:             "str",
@@ -30,6 +31,7 @@ var UpperFunc = function.New(&function.Spec{
 })
 
 var LowerFunc = function.New(&function.Spec{
+	Description: "Returns the given string with all Unicode letters translated to their lowercase equivalents.",
 	Params: []function.Parameter{
 		{
 			Name:             "str",
@@ -46,6 +48,7 @@ var LowerFunc = function.New(&function.Spec{
 })
 
 var ReverseFunc = function.New(&function.Spec{
+	Description: "Returns the given string with all of its Unicode characters in reverse order.",
 	Params: []function.Parameter{
 		{
 			Name:             "str",
@@ -73,6 +76,7 @@ var ReverseFunc = function.New(&function.Spec{
 })
 
 var StrlenFunc = function.New(&function.Spec{
+	Description: "Returns the number of Unicode characters (technically: grapheme clusters) in the given string.",
 	Params: []function.Parameter{
 		{
 			Name:             "str",
@@ -97,19 +101,23 @@ var StrlenFunc = function.New(&function.Spec{
 })
 
 var SubstrFunc = function.New(&function.Spec{
+	Description: "Extracts a substring from the given string.",
 	Params: []function.Parameter{
 		{
 			Name:             "str",
+			Description:      "The input string.",
 			Type:             cty.String,
 			AllowDynamicType: true,
 		},
 		{
 			Name:             "offset",
+			Description:      "The starting offset in Unicode characters.",
 			Type:             cty.Number,
 			AllowDynamicType: true,
 		},
 		{
 			Name:             "length",
+			Description:      "The maximum length of the result in Unicode characters.",
 			Type:             cty.Number,
 			AllowDynamicType: true,
 		},
@@ -197,15 +205,18 @@ var SubstrFunc = function.New(&function.Spec{
 })
 
 var JoinFunc = function.New(&function.Spec{
+	Description: "Concatenates together the elements of all given lists with a delimiter, producing a single string.",
 	Params: []function.Parameter{
 		{
-			Name: "separator",
-			Type: cty.String,
+			Name:        "separator",
+			Description: "Delimiter to insert between the given strings.",
+			Type:        cty.String,
 		},
 	},
 	VarParam: &function.Parameter{
-		Name: "lists",
-		Type: cty.List(cty.String),
+		Name:        "lists",
+		Description: "One or more lists of strings to join.",
+		Type:        cty.List(cty.String),
 	},
 	Type: function.StaticReturnType(cty.String),
 	Impl: func(args []cty.Value, retType cty.Type) (cty.Value, error) {
@@ -244,6 +255,7 @@ var JoinFunc = function.New(&function.Spec{
 })
 
 var SortFunc = function.New(&function.Spec{
+	Description: "Applies a lexicographic sort to the elements of the given list.",
 	Params: []function.Parameter{
 		{
 			Name: "list",
@@ -282,14 +294,17 @@ var SortFunc = function.New(&function.Spec{
 })
 
 var SplitFunc = function.New(&function.Spec{
+	Description: "Produces a list of one or more strings by splitting the given string at all instances of a given separator substring.",
 	Params: []function.Parameter{
 		{
-			Name: "separator",
-			Type: cty.String,
+			Name:        "separator",
+			Description: "The substring that delimits the result strings.",
+			Type:        cty.String,
 		},
 		{
-			Name: "str",
-			Type: cty.String,
+			Name:        "str",
+			Description: "The string to split.",
+			Type:        cty.String,
 		},
 	},
 	Type: function.StaticReturnType(cty.List(cty.String)),
@@ -311,6 +326,7 @@ var SplitFunc = function.New(&function.Spec{
 // ChompFunc is a function that removes newline characters at the end of a
 // string.
 var ChompFunc = function.New(&function.Spec{
+	Description: "Removes one or more newline characters from the end of the given string.",
 	Params: []function.Parameter{
 		{
 			Name: "str",
@@ -327,14 +343,17 @@ var ChompFunc = function.New(&function.Spec{
 // IndentFunc is a function that adds a given number of spaces to the
 // beginnings of all but the first line in a given multi-line string.
 var IndentFunc = function.New(&function.Spec{
+	Description: "Adds a given number of spaces after each newline character in the given string.",
 	Params: []function.Parameter{
 		{
-			Name: "spaces",
-			Type: cty.Number,
+			Name:        "spaces",
+			Description: "Number of spaces to add after each newline character.",
+			Type:        cty.Number,
 		},
 		{
-			Name: "str",
-			Type: cty.String,
+			Name:        "str",
+			Description: "The string to transform.",
+			Type:        cty.String,
 		},
 	},
 	Type: function.StaticReturnType(cty.String),
@@ -352,6 +371,7 @@ var IndentFunc = function.New(&function.Spec{
 // TitleFunc is a function that converts the first letter of each word in the
 // given string to uppercase.
 var TitleFunc = function.New(&function.Spec{
+	Description: "Replaces one letter after each non-letter and non-digit character with its uppercase equivalent.",
 	Params: []function.Parameter{
 		{
 			Name: "str",
@@ -367,6 +387,7 @@ var TitleFunc = function.New(&function.Spec{
 // TrimSpaceFunc is a function that removes any space characters from the start
 // and end of the given string.
 var TrimSpaceFunc = function.New(&function.Spec{
+	Description: "Removes any consecutive space characters (as defined by Unicode) from the start and end of the given string.",
 	Params: []function.Parameter{
 		{
 			Name: "str",
@@ -382,20 +403,26 @@ var TrimSpaceFunc = function.New(&function.Spec{
 // TrimFunc is a function that removes the specified characters from the start
 // and end of the given string.
 var TrimFunc = function.New(&function.Spec{
+	Description: "Removes consecutive sequences of characters in \"cutset\" from the start and end of the given string.",
 	Params: []function.Parameter{
 		{
-			Name: "str",
-			Type: cty.String,
+			Name:        "str",
+			Description: "The string to trim.",
+			Type:        cty.String,
 		},
 		{
-			Name: "cutset",
-			Type: cty.String,
+			Name:        "cutset",
+			Description: "A string containing all of the characters to trim. Each character is taken separately, so the order of characters is insignificant.",
+			Type:        cty.String,
 		},
 	},
 	Type: function.StaticReturnType(cty.String),
 	Impl: func(args []cty.Value, retType cty.Type) (cty.Value, error) {
 		str := args[0].AsString()
 		cutset := args[1].AsString()
+		// NOTE: This doesn't properly handle any character that is encoded
+		// with multiple sequential code units, such as letters with
+		// combining diacritics and emoji modifier sequences.
 		return cty.StringVal(strings.Trim(str, cutset)), nil
 	},
 })
@@ -403,14 +430,17 @@ var TrimFunc = function.New(&function.Spec{
 // TrimPrefixFunc is a function that removes the specified characters from the
 // start the given string.
 var TrimPrefixFunc = function.New(&function.Spec{
+	Description: "Removes the given prefix from the start of the given string, if present.",
 	Params: []function.Parameter{
 		{
-			Name: "str",
-			Type: cty.String,
+			Name:        "str",
+			Description: "The string to trim.",
+			Type:        cty.String,
 		},
 		{
-			Name: "prefix",
-			Type: cty.String,
+			Name:        "prefix",
+			Description: "The prefix to remove, if present.",
+			Type:        cty.String,
 		},
 	},
 	Type: function.StaticReturnType(cty.String),
@@ -424,14 +454,17 @@ var TrimPrefixFunc = function.New(&function.Spec{
 // TrimSuffixFunc is a function that removes the specified characters from the
 // end of the given string.
 var TrimSuffixFunc = function.New(&function.Spec{
+	Description: "Removes the given suffix from the start of the given string, if present.",
 	Params: []function.Parameter{
 		{
-			Name: "str",
-			Type: cty.String,
+			Name:        "str",
+			Description: "The string to trim.",
+			Type:        cty.String,
 		},
 		{
-			Name: "suffix",
-			Type: cty.String,
+			Name:        "suffix",
+			Description: "The suffix to remove, if present.",
+			Type:        cty.String,
 		},
 	},
 	Type: function.StaticReturnType(cty.String),

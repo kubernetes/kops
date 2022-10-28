@@ -2006,7 +2006,7 @@ type Saml struct {
 	// constraints: 1) Must contain an Identity Provider Entity ID. 2) Must
 	// contain at least one non-expired signing key certificate. 3) For each
 	// signing key: a) Valid from should be no more than 7 days from now. b)
-	// Valid to should be no more than 10 years in the future. 4) Upto 3 IdP
+	// Valid to should be no more than 14 years in the future. 4) Upto 3 IdP
 	// signing keys are allowed in the metadata xml. When updating the
 	// provider's metadata xml, at lease one non-expired signing key must
 	// overlap with the existing metadata. This requirement is skipped if
@@ -2046,7 +2046,7 @@ func (s *Saml) MarshalJSON() ([]byte, error) {
 // you create a service account, you specify the project ID that owns
 // the service account, as well as a name that must be unique within the
 // project. IAM uses these values to create an email address that
-// identifies the service account.
+// identifies the service //
 type ServiceAccount struct {
 	// Description: Optional. A user-specified, human-readable description
 	// of the service account. The maximum length is 256 UTF-8 bytes.
