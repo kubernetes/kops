@@ -1231,6 +1231,13 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 					PublicName: "bastion." + cluster.Name,
 				}
 			}
+			if opt.IPv6 {
+				for _, s := range cluster.Spec.Subnets {
+					if s.Type == kopsapi.SubnetTypeDualStack {
+						bastionGroup.Spec.Subnets = append(bastionGroup.Spec.Subnets, s.Name)
+					}
+				}
+			}
 			if cluster.Spec.GetCloudProvider() == api.CloudProviderGCE {
 				bastionGroup.Spec.Zones = allZones.List()
 			}
