@@ -30,6 +30,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/json"
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
@@ -622,6 +623,38 @@ func (c *RollingUpdateCluster) drainNode(u *cloudinstances.CloudInstance) error 
 
 	if u.Node.Name == "" {
 		return fmt.Errorf("node name not set")
+	}
+
+	hasAPIServer := u.CloudInstanceGroup.InstanceGroup.HasAPIServer()
+
+	if hasAPIServer {
+		pods, err := c.K8sClient.CoreV1().Pods(metav1.NamespaceSystem).List(context.Background(), metav1.ListOptions{
+			FieldSelector: fields.SelectorFromSet(
+				fields.Set{"spec.nodeName": u.Node.Name},
+			).String(),
+		})
+
+		if err != nil {
+			return fmt.Errorf("error listing pods on node %q: %v", u.Node.Name, err)
+		}
+
+		for _, pod := range pods.Items {
+			if pod.Annotations["dns.alpha.kubernetes.io/internal"] != "" {
+
+				patchBody := []byte(`{"metadata":{"annotations":{"dns.alpha.kubernetes.io/internal":null}}}`)
+
+				_, err := c.K8sClient.CoreV1().
+					Pods(metav1.NamespaceSystem).
+					Patch(context.Background(), pod.Name, types.StrategicMergePatchType, patchBody, metav1.PatchOptions{})
+
+				if err != nil {
+					return fmt.Errorf("error removing dns.alpha.kubernetes.io/internal annotation from pod %q: %v", pod.Name, err)
+				}
+			}
+		}
+
+		// Sleep for twice the default DNS record TTL to ensure that downstream clients have refreshed their DNS caches before we delete the node.
+		time.Sleep(2 * time.Minute)
 	}
 
 	helper := &drain.Helper{
