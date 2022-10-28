@@ -2105,7 +2105,7 @@ type PolicyAlternativeNameServerConfigTargetNameServer struct {
 	// VPC.
 	ForwardingPath string `json:"forwardingPath,omitempty"`
 
-	// Ipv4Address: IPv4 address to forward to.
+	// Ipv4Address: IPv4 address to forward queries to.
 	Ipv4Address string `json:"ipv4Address,omitempty"`
 
 	Kind string `json:"kind,omitempty"`
@@ -2832,11 +2832,11 @@ func (s *ResponseHeader) MarshalJSON() ([]byte, error) {
 type ResponsePoliciesListResponse struct {
 	Header *ResponseHeader `json:"header,omitempty"`
 
-	// NextPageToken: The presence of this field indicates that there exist
-	// more results following your last page of results in pagination order.
-	// To fetch them, make another list request using this value as your
-	// page token. This lets you the complete contents of even very large
-	// collections one page at a time. However, if the contents of the
+	// NextPageToken: The presence of this field indicates that more results
+	// exist following your last page of results in pagination order. To
+	// fetch them, make another list request by using this value as your
+	// page token. This lets you view the complete contents of even very
+	// large collections one page at a time. However, if the contents of the
 	// collection change between the first and last paginated list request,
 	// the set of all elements returned are an inconsistent view of the
 	// collection. You cannot retrieve a consistent snapshot of a collection
@@ -5845,8 +5845,8 @@ type ManagedZonesTestIamPermissionsCall struct {
 }
 
 // TestIamPermissions: Returns permissions that a caller has on the
-// specified resource. If the resource does not exist, this will return
-// an empty set of permissions, not a `NOT_FOUND` error. Note: This
+// specified resource. If the resource does not exist, this returns an
+// empty set of permissions, not a `NOT_FOUND` error. Note: This
 // operation is designed to be used for building permission-aware UIs
 // and command-line tools, not for authorization checking. This
 // operation may "fail open" without warning.
@@ -5954,7 +5954,7 @@ func (c *ManagedZonesTestIamPermissionsCall) Do(opts ...googleapi.CallOption) (*
 	}
 	return ret, nil
 	// {
-	//   "description": "Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error. Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may \"fail open\" without warning.",
+	//   "description": "Returns permissions that a caller has on the specified resource. If the resource does not exist, this returns an empty set of permissions, not a `NOT_FOUND` error. Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may \"fail open\" without warning.",
 	//   "flatPath": "dns/v1/projects/{projectsId}/managedZones/{managedZonesId}:testIamPermissions",
 	//   "httpMethod": "POST",
 	//   "id": "dns.managedZones.testIamPermissions",
@@ -8950,7 +8950,7 @@ type ResponsePoliciesPatchCall struct {
 // Patch: Applies a partial update to an existing Response Policy.
 //
 //   - project: Identifies the project addressed by this request.
-//   - responsePolicy: User assigned name of the Respones Policy addressed
+//   - responsePolicy: User assigned name of the response policy addressed
 //     by this request.
 func (r *ResponsePoliciesService) Patch(project string, responsePolicy string, responsepolicy *ResponsePolicy) *ResponsePoliciesPatchCall {
 	c := &ResponsePoliciesPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
@@ -9082,7 +9082,7 @@ func (c *ResponsePoliciesPatchCall) Do(opts ...googleapi.CallOption) (*ResponseP
 	//       "type": "string"
 	//     },
 	//     "responsePolicy": {
-	//       "description": "User assigned name of the Respones Policy addressed by this request.",
+	//       "description": "User assigned name of the response policy addressed by this request.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
