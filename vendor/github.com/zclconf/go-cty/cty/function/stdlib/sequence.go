@@ -9,7 +9,8 @@ import (
 )
 
 var ConcatFunc = function.New(&function.Spec{
-	Params: []function.Parameter{},
+	Description: `Concatenates together all of the given lists or tuples into a single sequence, preserving the input order.`,
+	Params:      []function.Parameter{},
 	VarParam: &function.Parameter{
 		Name:        "seqs",
 		Type:        cty.DynamicPseudoType,
@@ -137,6 +138,7 @@ var ConcatFunc = function.New(&function.Spec{
 })
 
 var RangeFunc = function.New(&function.Spec{
+	Description: `Returns a list of numbers spread evenly over a particular range.`,
 	VarParam: &function.Parameter{
 		Name: "params",
 		Type: cty.Number,

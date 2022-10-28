@@ -10,6 +10,7 @@ import (
 )
 
 var SetHasElementFunc = function.New(&function.Spec{
+	Description: `Returns true if the given set contains the given element, or false otherwise.`,
 	Params: []function.Parameter{
 		{
 			Name:             "set",
@@ -29,6 +30,7 @@ var SetHasElementFunc = function.New(&function.Spec{
 })
 
 var SetUnionFunc = function.New(&function.Spec{
+	Description: `Returns the union of all given sets.`,
 	Params: []function.Parameter{
 		{
 			Name:             "first_set",
@@ -48,6 +50,7 @@ var SetUnionFunc = function.New(&function.Spec{
 })
 
 var SetIntersectionFunc = function.New(&function.Spec{
+	Description: `Returns the intersection of all given sets.`,
 	Params: []function.Parameter{
 		{
 			Name:             "first_set",
@@ -67,6 +70,7 @@ var SetIntersectionFunc = function.New(&function.Spec{
 })
 
 var SetSubtractFunc = function.New(&function.Spec{
+	Description: `Returns the relative complement of the two given sets.`,
 	Params: []function.Parameter{
 		{
 			Name:             "a",
@@ -86,6 +90,7 @@ var SetSubtractFunc = function.New(&function.Spec{
 })
 
 var SetSymmetricDifferenceFunc = function.New(&function.Spec{
+	Description: `Returns the symmetric difference of the two given sets.`,
 	Params: []function.Parameter{
 		{
 			Name:             "first_set",

@@ -14,6 +14,9 @@ type Function struct {
 // Spec is the specification of a function, used to instantiate
 // a new Function.
 type Spec struct {
+	// Description is an optional description for the function specification.
+	Description string
+
 	// Params is a description of the positional parameters for the function.
 	// The standard checking logic rejects any calls that do not provide
 	// arguments conforming to this definition, freeing the function
@@ -343,4 +346,63 @@ func (f Function) VarParam() *Parameter {
 
 	ret := *f.spec.VarParam
 	return &ret
+}
+
+// Description returns a human-readable description of the function.
+func (f Function) Description() string {
+	return f.spec.Description
+}
+
+// WithNewDescriptions returns a new function that has the same signature
+// and implementation as the receiver but has the function description and
+// the parameter descriptions replaced with those given in the arguments.
+//
+// All descriptions may be given as an empty string to specify that there
+// should be no description at all.
+//
+// The paramDescs argument must match the number of parameters
+// the reciever expects, or this function will panic. If the function has a
+// VarParam then that counts as one parameter for the sake of this rule. The
+// given descriptions will be assigned in order starting with the positional
+// arguments in their declared order, followed by the variadic parameter if
+// any.
+//
+// As a special case, WithNewDescriptions will accept a paramDescs which
+// does not cover the reciever's variadic parameter (if any), so that it's
+// possible to add a variadic parameter to a function which didn't previously
+// have one without that being a breaking change for an existing caller using
+// WithNewDescriptions against that function. In this case the base description
+// of the variadic parameter will be preserved.
+func (f Function) WithNewDescriptions(funcDesc string, paramDescs []string) Function {
+	retSpec := *f.spec // shallow copy of the reciever
+	retSpec.Description = funcDesc
+
+	retSpec.Params = make([]Parameter, len(f.spec.Params))
+	copy(retSpec.Params, f.spec.Params) // shallow copy of positional parameters
+	if f.spec.VarParam != nil {
+		retVarParam := *f.spec.VarParam // shallow copy of variadic parameter
+		retSpec.VarParam = &retVarParam
+	}
+
+	if retSpec.VarParam != nil {
+		if with, without := len(retSpec.Params)+1, len(retSpec.Params); len(paramDescs) != with && len(paramDescs) != without {
+			panic(fmt.Sprintf("paramDescs must have length of either %d or %d", with, without))
+		}
+	} else {
+		if want := len(retSpec.Params); len(paramDescs) != want {
+			panic(fmt.Sprintf("paramDescs must have length %d", want))
+		}
+	}
+
+	posParamDescs := paramDescs[:len(retSpec.Params)]
+	varParamDescs := paramDescs[len(retSpec.Params):] // guaranteed to be zero or one elements because of the rules above
+
+	for i, desc := range posParamDescs {
+		retSpec.Params[i].Description = desc
+	}
+	for _, desc := range varParamDescs {
+		retSpec.VarParam.Description = desc
+	}
+
+	return New(&retSpec)
 }
