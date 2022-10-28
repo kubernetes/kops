@@ -732,7 +732,7 @@
           ]
         },
         "testIamPermissions": {
-          "description": "Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error. Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may \"fail open\" without warning.",
+          "description": "Returns permissions that a caller has on the specified resource. If the resource does not exist, this returns an empty set of permissions, not a `NOT_FOUND` error. Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may \"fail open\" without warning.",
           "flatPath": "dns/v1/projects/{projectsId}/managedZones/{managedZonesId}:testIamPermissions",
           "httpMethod": "POST",
           "id": "dns.managedZones.testIamPermissions",
@@ -1493,7 +1493,7 @@
               "type": "string"
             },
             "responsePolicy": {
-              "description": "User assigned name of the Respones Policy addressed by this request.",
+              "description": "User assigned name of the response policy addressed by this request.",
               "location": "path",
               "required": true,
               "type": "string"
@@ -1824,7 +1824,7 @@
       }
     }
   },
-  "revision": "20220915",
+  "revision": "20221013",
   "rootUrl": "https://dns.googleapis.com/",
   "schemas": {
     "Change": {
@@ -2834,7 +2834,7 @@
           "type": "string"
         },
         "ipv4Address": {
-          "description": "IPv4 address to forward to.",
+          "description": "IPv4 address to forward queries to.",
           "type": "string"
         },
         "kind": {
@@ -3314,7 +3314,7 @@
           "$ref": "ResponseHeader"
         },
         "nextPageToken": {
-          "description": "The presence of this field indicates that there exist more results following your last page of results in pagination order. To fetch them, make another list request using this value as your page token. This lets you the complete contents of even very large collections one page at a time. However, if the contents of the collection change between the first and last paginated list request, the set of all elements returned are an inconsistent view of the collection. You cannot retrieve a consistent snapshot of a collection larger than the maximum page size.",
+          "description": "The presence of this field indicates that more results exist following your last page of results in pagination order. To fetch them, make another list request by using this value as your page token. This lets you view the complete contents of even very large collections one page at a time. However, if the contents of the collection change between the first and last paginated list request, the set of all elements returned are an inconsistent view of the collection. You cannot retrieve a consistent snapshot of a collection larger than the maximum page size.",
           "type": "string"
         },
         "responsePolicies": {

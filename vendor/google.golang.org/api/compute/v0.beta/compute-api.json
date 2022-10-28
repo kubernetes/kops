@@ -24520,7 +24520,7 @@
           ]
         },
         "patch": {
-          "description": "Patches the specified policy with the data included in the request.",
+          "description": "Patches the specified policy with the data included in the request. To clear fields in the rule, leave the fields empty and specify them in the updateMask. This cannot be used to be update the rules in the policy. Please use the per rule methods like addRule, patchRule, and removeRule instead.",
           "flatPath": "projects/{project}/regions/{region}/securityPolicies/{securityPolicy}",
           "httpMethod": "PATCH",
           "id": "compute.regionSecurityPolicies.patch",
@@ -28693,7 +28693,7 @@
           ]
         },
         "patch": {
-          "description": "Patches the specified policy with the data included in the request. This cannot be used to be update the rules in the policy. Please use the per rule methods like addRule, patchRule, and removeRule instead.",
+          "description": "Patches the specified policy with the data included in the request. To clear fields in the rule, leave the fields empty and specify them in the updateMask. This cannot be used to be update the rules in the policy. Please use the per rule methods like addRule, patchRule, and removeRule instead.",
           "flatPath": "projects/{project}/global/securityPolicies/{securityPolicy}",
           "httpMethod": "PATCH",
           "id": "compute.securityPolicies.patch",
@@ -35512,7 +35512,7 @@
       }
     }
   },
-  "revision": "20220918",
+  "revision": "20221011",
   "rootUrl": "https://compute.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -36610,7 +36610,7 @@
           "type": "integer"
         },
         "maintenanceInterval": {
-          "description": "For more information about maintenance intervals, see Setting maintenance intervals.",
+          "description": "Specifies the frequency of planned maintenance events. The accepted values are: `PERIODIC`.",
           "enum": [
             "PERIODIC"
           ],
@@ -38250,7 +38250,7 @@
         },
         "outlierDetection": {
           "$ref": "OutlierDetection",
-          "description": "Settings controlling the eviction of unhealthy hosts from the load balancing pool for the backend service. If not set, this feature is considered disabled. This field is applicable to either: - A regional backend service with the service_protocol set to HTTP, HTTPS, or HTTP2, and load_balancing_scheme set to INTERNAL_MANAGED. - A global backend service with the load_balancing_scheme set to INTERNAL_SELF_MANAGED. Not supported when the backend service is referenced by a URL map that is bound to target gRPC proxy that has validateForProxyless field set to true."
+          "description": "Settings controlling the eviction of unhealthy hosts from the load balancing pool for the backend service. If not set, this feature is considered disabled. This field is applicable to either: - A regional backend service with the service_protocol set to HTTP, HTTPS, HTTP2, or GRPC, and load_balancing_scheme set to INTERNAL_MANAGED. - A global backend service with the load_balancing_scheme set to INTERNAL_SELF_MANAGED. "
         },
         "port": {
           "description": "Deprecated in favor of portName. The TCP port to connect on the backend. The default value is 80. For Internal TCP/UDP Load Balancing and Network Load Balancing, omit port.",
@@ -41356,11 +41356,13 @@
           "description": "The distribution shape to which the group converges either proactively or on resize events (depending on the value set in updatePolicy.instanceRedistributionType).",
           "enum": [
             "ANY",
+            "ANY_SINGLE_ZONE",
             "BALANCED",
             "EVEN"
           ],
           "enumDescriptions": [
             "The group picks zones for creating VM instances to fulfill the requested number of VMs within present resource constraints and to maximize utilization of unused zonal reservations. Recommended for batch workloads that do not require high availability.",
+            "The group creates all VM instances within a single zone. The zone is selected based on the present resource constraints and to maximize utilization of unused zonal reservations. Recommended for batch workloads with heavy interprocess communication.",
             "The group prioritizes acquisition of resources, scheduling VMs in zones where resources are available while distributing VMs as evenly as possible across selected zones to minimize the impact of zonal failure. Recommended for highly available serving workloads.",
             "The group schedules VM instance creation and deletion to achieve and maintain an even number of managed instances across the selected zones. The distribution is even when the number of managed instances does not differ by more than 1 between any two zones. Recommended for highly available serving workloads."
           ],
@@ -46423,6 +46425,10 @@
           "description": "[Output Only] The URL of the Instance Group resource.",
           "type": "string"
         },
+        "instanceLifecyclePolicy": {
+          "$ref": "InstanceGroupManagerInstanceLifecyclePolicy",
+          "description": "The repair policy for this managed instance group."
+        },
         "instanceTemplate": {
           "description": "The URL of the instance template that is specified for this managed instance group. The group uses this template to create all new instances in the managed instance group. The templates for existing instances in the group do not change unless you run recreateInstances, run applyUpdatesToInstances, or set the group's updatePolicy.type to PROACTIVE.",
           "type": "string"
@@ -46737,6 +46743,24 @@
           "description": "The number of seconds that the managed instance group waits before it applies autohealing policies to new instances or recently recreated instances. This initial delay allows instances to initialize and run their startup scripts before the instance group determines that they are UNHEALTHY. This prevents the managed instance group from recreating its instances prematurely. This value must be from range [0, 3600].",
           "format": "int32",
           "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "InstanceGroupManagerInstanceLifecyclePolicy": {
+      "id": "InstanceGroupManagerInstanceLifecyclePolicy",
+      "properties": {
+        "forceUpdateOnRepair": {
+          "description": "A bit indicating whether to forcefully apply the group's latest configuration when repairing a VM. Valid options are: - NO (default): If configuration updates are available, they are not forcefully applied during repair. Instead, configuration updates are applied according to the group's update policy. - YES: If configuration updates are available, they are applied during repair. ",
+          "enum": [
+            "NO",
+            "YES"
+          ],
+          "enumDescriptions": [
+            "",
+            ""
+          ],
+          "type": "string"
         }
       },
       "type": "object"
@@ -51611,6 +51635,9 @@
                         },
                         "localizedMessage": {
                           "$ref": "LocalizedMessage"
+                        },
+                        "quotaInfo": {
+                          "$ref": "QuotaExceededInfo"
                         }
                       },
                       "type": "object"
@@ -55277,6 +55304,9 @@
                         },
                         "localizedMessage": {
                           "$ref": "LocalizedMessage"
+                        },
+                        "quotaInfo": {
+                          "$ref": "QuotaExceededInfo"
                         }
                       },
                       "type": "object"
@@ -55857,22 +55887,22 @@
           "description": "The base time that a host is ejected for. The real ejection time is equal to the base ejection time multiplied by the number of times the host has been ejected. Defaults to 30000ms or 30s."
         },
         "consecutiveErrors": {
-          "description": "Number of errors before a host is ejected from the connection pool. When the backend host is accessed over HTTP, a 5xx return code qualifies as an error. Defaults to 5.",
+          "description": "Number of errors before a host is ejected from the connection pool. When the backend host is accessed over HTTP, a 5xx return code qualifies as an error. Defaults to 5. Not supported when the backend service is referenced by a URL map that is bound to target gRPC proxy that has validateForProxyless field set to true.",
           "format": "int32",
           "type": "integer"
         },
         "consecutiveGatewayFailure": {
-          "description": "The number of consecutive gateway failures (502, 503, 504 status or connection errors that are mapped to one of those status codes) before a consecutive gateway failure ejection occurs. Defaults to 3.",
+          "description": "The number of consecutive gateway failures (502, 503, 504 status or connection errors that are mapped to one of those status codes) before a consecutive gateway failure ejection occurs. Defaults to 3. Not supported when the backend service is referenced by a URL map that is bound to target gRPC proxy that has validateForProxyless field set to true.",
           "format": "int32",
           "type": "integer"
         },
         "enforcingConsecutiveErrors": {
-          "description": "The percentage chance that a host will be actually ejected when an outlier status is detected through consecutive 5xx. This setting can be used to disable ejection or to ramp it up slowly. Defaults to 0.",
+          "description": "The percentage chance that a host will be actually ejected when an outlier status is detected through consecutive 5xx. This setting can be used to disable ejection or to ramp it up slowly. Defaults to 0. Not supported when the backend service is referenced by a URL map that is bound to target gRPC proxy that has validateForProxyless field set to true.",
           "format": "int32",
           "type": "integer"
         },
         "enforcingConsecutiveGatewayFailure": {
-          "description": "The percentage chance that a host will be actually ejected when an outlier status is detected through consecutive gateway failures. This setting can be used to disable ejection or to ramp it up slowly. Defaults to 100.",
+          "description": "The percentage chance that a host will be actually ejected when an outlier status is detected through consecutive gateway failures. This setting can be used to disable ejection or to ramp it up slowly. Defaults to 100. Not supported when the backend service is referenced by a URL map that is bound to target gRPC proxy that has validateForProxyless field set to true.",
           "format": "int32",
           "type": "integer"
         },
@@ -57778,6 +57808,7 @@
             "SSL_CERTIFICATES",
             "STATIC_ADDRESSES",
             "STATIC_BYOIP_ADDRESSES",
+            "STATIC_EXTERNAL_IPV6_ADDRESS_RANGES",
             "SUBNETWORKS",
             "T2A_CPUS",
             "T2D_CPUS",
@@ -57926,6 +57957,7 @@
             "",
             "",
             "",
+            "",
             ""
           ],
           "type": "string"
@@ -57938,6 +57970,33 @@
           "description": "[Output Only] Current usage of this metric.",
           "format": "double",
           "type": "number"
+        }
+      },
+      "type": "object"
+    },
+    "QuotaExceededInfo": {
+      "description": "Additional details for quota exceeded error for resource quota.",
+      "id": "QuotaExceededInfo",
+      "properties": {
+        "dimensions": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "The map holding related quota dimensions.",
+          "type": "object"
+        },
+        "limit": {
+          "description": "Current effective quota limit. The limit's unit depends on the quota type or metric.",
+          "format": "double",
+          "type": "number"
+        },
+        "limitName": {
+          "description": "The name of the quota limit.",
+          "type": "string"
+        },
+        "metricName": {
+          "description": "The Compute Engine quota metric name.",
+          "type": "string"
         }
       },
       "type": "object"
@@ -62534,7 +62593,7 @@
           "type": "integer"
         },
         "maintenanceInterval": {
-          "description": "For more information about maintenance intervals, see Setting maintenance intervals.",
+          "description": "Specifies the frequency of planned maintenance events. The accepted values are: `PERIODIC`.",
           "enum": [
             "PERIODIC"
           ],
@@ -62542,6 +62601,10 @@
             "VMs receive infrastructure and hypervisor updates on a periodic basis, minimizing the number of maintenance operations (live migrations or terminations) on an individual VM. This may mean a VM will take longer to receive an update than if it was configured for AS_NEEDED. Security updates will still be applied as soon as they are available."
           ],
           "type": "string"
+        },
+        "maxRunDuration": {
+          "$ref": "Duration",
+          "description": "Specifies the max run duration for the given instance. If specified, the instance termination action will be performed at the end of the run duration."
         },
         "minNodeCpus": {
           "description": "The minimum number of virtual CPUs this instance will consume when running on a sole-tenant node.",
@@ -62581,6 +62644,10 @@
             "Heavily discounted, no guaranteed runtime.",
             "Standard provisioning with user controlled runtime, no discounts."
           ],
+          "type": "string"
+        },
+        "terminationTime": {
+          "description": "Specifies the timestamp, when the instance will be terminated, in RFC3339 text format. If specified, the instance termination action will be performed at the termination time.",
           "type": "string"
         }
       },
@@ -62966,7 +63033,7 @@
           "type": "integer"
         },
         "rules": {
-          "description": "A list of rules that belong to this policy. There must always be a default rule (rule with priority 2147483647 and match \"*\"). If no rules are provided when creating a security policy, a default rule with action \"allow\" will be added.",
+          "description": "A list of rules that belong to this policy. There must always be a default rule which is a rule with priority 2147483647 and match all condition (for the match condition this means match \"*\" for srcIpRanges and for the networkMatch condition every field must be either match \"*\" or not set). If no rules are provided when creating a security policy, a default rule with action \"allow\" will be added.",
           "items": {
             "$ref": "SecurityPolicyRule"
           },
@@ -63567,16 +63634,22 @@
           "type": "string"
         },
         "enforceOnKey": {
-          "description": "Determines the key to enforce the rate_limit_threshold on. Possible values are: - ALL: A single rate limit threshold is applied to all the requests matching this rule. This is the default value if this field 'enforce_on_key' is not configured. - IP: The source IP address of the request is the key. Each IP has this limit enforced separately. - HTTP_HEADER: The value of the HTTP header whose name is configured under \"enforce_on_key_name\". The key value is truncated to the first 128 bytes of the header value. If no such header is present in the request, the key type defaults to ALL. - XFF_IP: The first IP address (i.e. the originating client IP address) specified in the list of IPs under X-Forwarded-For HTTP header. If no such header is present or the value is not a valid IP, the key defaults to the source IP address of the request i.e. key type IP. - HTTP_COOKIE: The value of the HTTP cookie whose name is configured under \"enforce_on_key_name\". The key value is truncated to the first 128 bytes of the cookie value. If no such cookie is present in the request, the key type defaults to ALL. ",
+          "description": "Determines the key to enforce the rate_limit_threshold on. Possible values are: - ALL: A single rate limit threshold is applied to all the requests matching this rule. This is the default value if this field 'enforce_on_key' is not configured. - IP: The source IP address of the request is the key. Each IP has this limit enforced separately. - HTTP_HEADER: The value of the HTTP header whose name is configured under \"enforce_on_key_name\". The key value is truncated to the first 128 bytes of the header value. If no such header is present in the request, the key type defaults to ALL. - XFF_IP: The first IP address (i.e. the originating client IP address) specified in the list of IPs under X-Forwarded-For HTTP header. If no such header is present or the value is not a valid IP, the key defaults to the source IP address of the request i.e. key type IP. - HTTP_COOKIE: The value of the HTTP cookie whose name is configured under \"enforce_on_key_name\". The key value is truncated to the first 128 bytes of the cookie value. If no such cookie is present in the request, the key type defaults to ALL. - HTTP_PATH: The URL path of the HTTP request. The key value is truncated to the first 128 bytes. - SNI: Server name indication in the TLS session of the HTTPS request. The key value is truncated to the first 128 bytes. The key type defaults to ALL on a HTTP session. - REGION_CODE: The country/region from which the request originates. ",
           "enum": [
             "ALL",
             "ALL_IPS",
             "HTTP_COOKIE",
             "HTTP_HEADER",
+            "HTTP_PATH",
             "IP",
+            "REGION_CODE",
+            "SNI",
             "XFF_IP"
           ],
           "enumDescriptions": [
+            "",
+            "",
+            "",
             "",
             "",
             "",
@@ -66136,6 +66209,10 @@
           "description": "URL of the region where the Subnetwork resides. This field can be set only at resource creation time.",
           "type": "string"
         },
+        "reservedInternalRange": {
+          "description": "The URL of the reserved internal range.",
+          "type": "string"
+        },
         "role": {
           "description": "The role of subnetwork. Currently, this field is only used when purpose = INTERNAL_HTTPS_LOAD_BALANCER. The value can be set to ACTIVE or BACKUP. An ACTIVE subnetwork is one that is currently being used for Internal HTTP(S) Load Balancing. A BACKUP subnetwork is one that is ready to be promoted to ACTIVE or is currently draining. This field can be updated with a patch request.",
           "enum": [
@@ -66504,6 +66581,10 @@
         },
         "rangeName": {
           "description": "The name associated with this subnetwork secondary range, used when adding an alias IP range to a VM instance. The name must be 1-63 characters long, and comply with RFC1035. The name must be unique within the subnetwork.",
+          "type": "string"
+        },
+        "reservedInternalRange": {
+          "description": "The URL of the reserved internal range.",
           "type": "string"
         }
       },

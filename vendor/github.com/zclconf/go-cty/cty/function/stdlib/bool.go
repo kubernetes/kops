@@ -6,6 +6,7 @@ import (
 )
 
 var NotFunc = function.New(&function.Spec{
+	Description: `Applies the logical NOT operation to the given boolean value.`,
 	Params: []function.Parameter{
 		{
 			Name:             "val",
@@ -21,6 +22,7 @@ var NotFunc = function.New(&function.Spec{
 })
 
 var AndFunc = function.New(&function.Spec{
+	Description: `Applies the logical AND operation to the given boolean values.`,
 	Params: []function.Parameter{
 		{
 			Name:             "a",
@@ -42,6 +44,7 @@ var AndFunc = function.New(&function.Spec{
 })
 
 var OrFunc = function.New(&function.Spec{
+	Description: `Applies the logical OR operation to the given boolean values.`,
 	Params: []function.Parameter{
 		{
 			Name:             "a",
