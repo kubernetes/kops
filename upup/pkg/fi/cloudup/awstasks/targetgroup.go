@@ -45,6 +45,7 @@ type TargetGroup struct {
 	// Shared is set if this is an external LB (one we don't create or own)
 	Shared *bool
 
+	Interval           *int64
 	HealthyThreshold   *int64
 	UnhealthyThreshold *int64
 }
@@ -88,10 +89,14 @@ func (e *TargetGroup) Find(c *fi.Context) (*TargetGroup, error) {
 		Port:               tg.Port,
 		Protocol:           tg.Protocol,
 		ARN:                tg.TargetGroupArn,
+		Interval:           tg.HealthCheckIntervalSeconds,
 		HealthyThreshold:   tg.HealthyThresholdCount,
 		UnhealthyThreshold: tg.UnhealthyThresholdCount,
 		VPC:                &VPC{ID: tg.VpcId},
 	}
+	// Interval cannot be changed after TargetGroup creation
+	e.Interval = actual.Interval
+
 	e.ARN = tg.TargetGroupArn
 
 	tagsResp, err := cloud.ELBV2().DescribeTags(&elbv2.DescribeTagsInput{
@@ -215,6 +220,7 @@ type terraformTargetGroup struct {
 }
 
 type terraformTargetGroupHealthCheck struct {
+	Interval           int64  `cty:"interval"`
 	HealthyThreshold   int64  `cty:"healthy_threshold"`
 	UnhealthyThreshold int64  `cty:"unhealthy_threshold"`
 	Protocol           string `cty:"protocol"`
@@ -237,6 +243,7 @@ func (_ *TargetGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 		VPCID:    *e.VPC.TerraformLink(),
 		Tags:     e.Tags,
 		HealthCheck: terraformTargetGroupHealthCheck{
+			Interval:           *e.Interval,
 			HealthyThreshold:   *e.HealthyThreshold,
 			UnhealthyThreshold: *e.UnhealthyThreshold,
 			Protocol:           elbv2.ProtocolEnumTcp,
