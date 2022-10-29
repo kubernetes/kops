@@ -2432,7 +2432,9 @@ func GetInstanceCertificateNames(instances *ec2.DescribeInstancesOutput, useInst
 		addrs = append(addrs, *instance.InstanceId)
 	}
 
-	addrs = append(addrs, *instance.PrivateDnsName)
+	if instance.PrivateDnsName != nil {
+		addrs = append(addrs, *instance.PrivateDnsName)
+	}
 
 	// We only use data for the first interface, and only the first IP
 	for _, iface := range instance.NetworkInterfaces {
@@ -2442,7 +2444,9 @@ func GetInstanceCertificateNames(instances *ec2.DescribeInstancesOutput, useInst
 		if *iface.Attachment.DeviceIndex != 0 {
 			continue
 		}
-		addrs = append(addrs, *iface.PrivateIpAddress)
+		if iface.PrivateIpAddress != nil {
+			addrs = append(addrs, *iface.PrivateIpAddress)
+		}
 		if iface.Ipv6Addresses != nil && len(iface.Ipv6Addresses) > 0 {
 			addrs = append(addrs, *iface.Ipv6Addresses[0].Ipv6Address)
 		}
