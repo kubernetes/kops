@@ -556,6 +556,7 @@ resource "aws_lb_listener" "api-complex-example-com-8443" {
 resource "aws_lb_target_group" "tcp-complex-example-com-vpjolq" {
   health_check {
     healthy_threshold   = 2
+    interval            = 10
     protocol            = "TCP"
     unhealthy_threshold = 2
   }
@@ -575,6 +576,7 @@ resource "aws_lb_target_group" "tcp-complex-example-com-vpjolq" {
 resource "aws_lb_target_group" "tls-complex-example-com-5nursn" {
   health_check {
     healthy_threshold   = 2
+    interval            = 10
     protocol            = "TCP"
     unhealthy_threshold = 2
   }
