@@ -141,7 +141,11 @@ func TestVirtualNetworkRun(t *testing.T) {
 			key: to.StringPtr(val),
 		},
 	}
-	err := vnet.Run(ctx)
+	err := vnet.Normalize(ctx)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+	err = vnet.Run(ctx)
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}

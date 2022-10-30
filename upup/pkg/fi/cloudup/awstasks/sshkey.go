@@ -47,6 +47,7 @@ type SSHKey struct {
 }
 
 var _ fi.CompareWithID = &SSHKey{}
+var _ fi.TaskNormalize = &SSHKey{}
 
 func (e *SSHKey) CompareWithID() *string {
 	return e.Name
@@ -120,7 +121,7 @@ func (e *SSHKey) find(cloud awsup.AWSCloud) (*SSHKey, error) {
 	return actual, nil
 }
 
-func (e *SSHKey) Run(c *fi.Context) error {
+func (e *SSHKey) Normalize(c *fi.Context) error {
 	if e.KeyFingerprint == nil && e.PublicKey != nil {
 		publicKey, err := fi.ResourceAsString(e.PublicKey)
 		if err != nil {
@@ -135,6 +136,10 @@ func (e *SSHKey) Run(c *fi.Context) error {
 		e.KeyFingerprint = &keyFingerprint
 	}
 
+	return nil
+}
+
+func (e *SSHKey) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

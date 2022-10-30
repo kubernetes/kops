@@ -39,6 +39,7 @@ type RouteTable struct {
 var (
 	_ fi.Task          = &RouteTable{}
 	_ fi.CompareWithID = &RouteTable{}
+	_ fi.TaskNormalize = &RouteTable{}
 )
 
 // CompareWithID returns the Name of the VM Scale Set.
@@ -73,9 +74,13 @@ func (r *RouteTable) Find(c *fi.Context) (*RouteTable, error) {
 	}, nil
 }
 
+func (r *RouteTable) Normalize(c *fi.Context) error {
+	c.Cloud.(azure.AzureCloud).AddClusterTags(r.Tags)
+	return nil
+}
+
 // Run implements fi.Task.Run.
 func (r *RouteTable) Run(c *fi.Context) error {
-	c.Cloud.(azure.AzureCloud).AddClusterTags(r.Tags)
 	return fi.DefaultDeltaRunMethod(r, c)
 }
 
