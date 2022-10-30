@@ -40,6 +40,7 @@ type Disk struct {
 var (
 	_ fi.Task          = &Disk{}
 	_ fi.CompareWithID = &Disk{}
+	_ fi.TaskNormalize = &Disk{}
 )
 
 // CompareWithID returns the Name of the Disk.
@@ -76,9 +77,13 @@ func (d *Disk) Find(c *fi.Context) (*Disk, error) {
 	}, nil
 }
 
+func (d *Disk) Normalize(c *fi.Context) error {
+	c.Cloud.(azure.AzureCloud).AddClusterTags(d.Tags)
+	return nil
+}
+
 // Run implements fi.Task.Run.
 func (d *Disk) Run(c *fi.Context) error {
-	c.Cloud.(azure.AzureCloud).AddClusterTags(d.Tags)
 	return fi.DefaultDeltaRunMethod(d, c)
 }
 
