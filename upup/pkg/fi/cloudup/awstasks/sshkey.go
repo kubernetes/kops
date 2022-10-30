@@ -66,7 +66,7 @@ func (e *SSHKey) find(cloud awsup.AWSCloud) (*SSHKey, error) {
 	response, err := cloud.EC2().DescribeKeyPairs(request)
 	if awsErr, ok := err.(awserr.Error); ok {
 		if awsErr.Code() == "InvalidKeyPair.NotFound" {
-			return nil, nil
+			err = nil
 		}
 	}
 	if err != nil {
@@ -74,6 +74,9 @@ func (e *SSHKey) find(cloud awsup.AWSCloud) (*SSHKey, error) {
 	}
 
 	if response == nil || len(response.KeyPairs) == 0 {
+		if e.IsExistingKey() && *e.Name != "" {
+			return nil, fmt.Errorf("unable to find specified SSH key %q", *e.Name)
+		}
 		return nil, nil
 	}
 
@@ -109,6 +112,11 @@ func (e *SSHKey) find(cloud awsup.AWSCloud) (*SSHKey, error) {
 		// Don't report tag changes on shared keys
 		actual.Tags = e.Tags
 	}
+
+	e.ID = actual.ID
+	if e.IsExistingKey() && *e.Name != "" {
+		e.KeyFingerprint = actual.KeyFingerprint
+	}
 	return actual, nil
 }
 
@@ -126,19 +134,7 @@ func (e *SSHKey) Run(c *fi.Context) error {
 		klog.V(2).Infof("Computed SSH key fingerprint as %q", keyFingerprint)
 		e.KeyFingerprint = &keyFingerprint
 	}
-	a, err := e.Find(c)
-	if err != nil {
-		return err
-	}
-	if e.IsExistingKey() && *e.Name != "" {
-		if a == nil {
-			return fmt.Errorf("unable to find specified SSH key %q", *e.Name)
-		}
-		e.KeyFingerprint = a.KeyFingerprint
-	}
-	if a != nil {
-		e.ID = a.ID
-	}
+
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
