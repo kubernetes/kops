@@ -47,39 +47,15 @@ type EBSVolume struct {
 }
 
 var _ fi.CompareWithID = &EBSVolume{}
+var _ fi.TaskNormalize = &EBSVolume{}
 
 func (e *EBSVolume) CompareWithID() *string {
 	return e.ID
 }
 
-type TaggableResource interface {
-	FindResourceID(c fi.Cloud) (*string, error)
-}
-
-var _ TaggableResource = &EBSVolume{}
-
-func (e *EBSVolume) FindResourceID(c fi.Cloud) (*string, error) {
-	actual, err := e.find(c.(awsup.AWSCloud))
-	if err != nil {
-		return nil, fmt.Errorf("error querying for EBSVolume: %v", err)
-	}
-	if actual == nil {
-		return nil, nil
-	}
-
-	return actual.ID, nil
-}
-
 func (e *EBSVolume) Find(context *fi.Context) (*EBSVolume, error) {
-	actual, err := e.find(context.Cloud.(awsup.AWSCloud))
-	if actual != nil && err == nil {
-		e.ID = actual.ID
-	}
+	cloud := context.Cloud.(awsup.AWSCloud)
 
-	return actual, err
-}
-
-func (e *EBSVolume) find(cloud awsup.AWSCloud) (*EBSVolume, error) {
 	filters := cloud.BuildFilters(e.Name)
 	request := &ec2.DescribeVolumesInput{
 		Filters: filters,
@@ -116,11 +92,17 @@ func (e *EBSVolume) find(cloud awsup.AWSCloud) (*EBSVolume, error) {
 	// Avoid spurious changes
 	actual.Lifecycle = e.Lifecycle
 
+	e.ID = actual.ID
+
 	return actual, nil
 }
 
-func (e *EBSVolume) Run(c *fi.Context) error {
+func (e *EBSVolume) Normalize(c *fi.Context) error {
 	c.Cloud.(awsup.AWSCloud).AddTags(e.Name, e.Tags)
+	return nil
+}
+
+func (e *EBSVolume) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

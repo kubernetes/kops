@@ -37,6 +37,7 @@ type Volume struct {
 }
 
 var _ fi.CompareWithID = &Volume{}
+var _ fi.TaskNormalize = &Volume{}
 
 func (c *Volume) CompareWithID() *string {
 	return c.ID
@@ -77,12 +78,15 @@ func (c *Volume) Find(context *fi.Context) (*Volume, error) {
 	return actual, nil
 }
 
-func (c *Volume) Run(context *fi.Context) error {
+func (c *Volume) Normalize(context *fi.Context) error {
 	cloud := context.Cloud.(openstack.OpenstackCloud)
 	for k, v := range cloud.GetCloudTags() {
 		c.Tags[k] = v
 	}
+	return nil
+}
 
+func (c *Volume) Run(context *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(c, context)
 }
 

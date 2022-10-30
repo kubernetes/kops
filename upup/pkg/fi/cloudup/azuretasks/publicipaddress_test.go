@@ -117,7 +117,11 @@ func TestPublicIPAddressRun(t *testing.T) {
 	}
 
 	lb := newTestPublicIPAddress()
-	err := lb.Run(ctx)
+	err := lb.Normalize(ctx)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+	err = lb.Run(ctx)
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}

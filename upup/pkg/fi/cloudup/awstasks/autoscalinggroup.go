@@ -93,6 +93,7 @@ type AutoscalingGroup struct {
 }
 
 var _ fi.CompareWithID = &AutoscalingGroup{}
+var _ fi.TaskNormalize = &AutoscalingGroup{}
 
 // CompareWithID returns the ID of the ASG
 func (e *AutoscalingGroup) CompareWithID() *string {
@@ -311,20 +312,15 @@ func findAutoscalingGroup(cloud awsup.AWSCloud, name string) (*autoscaling.Group
 	return nil, fmt.Errorf("found multiple AutoscalingGroups with name: %q", name)
 }
 
-func (e *AutoscalingGroup) normalize(c *fi.Context) error {
+func (e *AutoscalingGroup) Normalize(c *fi.Context) error {
 	sort.Strings(e.Metrics)
+	c.Cloud.(awsup.AWSCloud).AddTags(e.Name, e.Tags)
 
 	return nil
 }
 
 // Run is responsible for running the task
 func (e *AutoscalingGroup) Run(c *fi.Context) error {
-	err := e.normalize(c)
-	if err != nil {
-		return err
-	}
-	c.Cloud.(awsup.AWSCloud).AddTags(e.Name, e.Tags)
-
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

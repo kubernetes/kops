@@ -138,7 +138,11 @@ func TestDiskRun(t *testing.T) {
 	}
 
 	vmss := newTestDisk()
-	err := vmss.Run(ctx)
+	err := vmss.Normalize(ctx)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+	err = vmss.Run(ctx)
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}

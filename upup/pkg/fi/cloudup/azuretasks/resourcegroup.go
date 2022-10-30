@@ -41,6 +41,7 @@ type ResourceGroup struct {
 var (
 	_ fi.Task          = &ResourceGroup{}
 	_ fi.CompareWithID = &ResourceGroup{}
+	_ fi.TaskNormalize = &ResourceGroup{}
 )
 
 // CompareWithID returns the Name of the VM Scale Set.
@@ -74,9 +75,13 @@ func (r *ResourceGroup) Find(c *fi.Context) (*ResourceGroup, error) {
 	}, nil
 }
 
+func (r *ResourceGroup) Normalize(c *fi.Context) error {
+	c.Cloud.(azure.AzureCloud).AddClusterTags(r.Tags)
+	return nil
+}
+
 // Run implements fi.Task.Run.
 func (r *ResourceGroup) Run(c *fi.Context) error {
-	c.Cloud.(azure.AzureCloud).AddClusterTags(r.Tags)
 	return fi.DefaultDeltaRunMethod(r, c)
 }
 

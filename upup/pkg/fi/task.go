@@ -30,8 +30,18 @@ type Task interface {
 
 // TaskPreRun is implemented by tasks that perform some initial validation.
 type TaskPreRun interface {
-	// PreRun will be run for all TaskPreRuns, before any Run functions are invoked.
+	Task
+	// PreRun will be run for all TaskPreRuns, before the Run function of any Task is invoked.
+	// Invocation order does not pay attention to Task dependencies.
 	PreRun(*Context) error
+}
+
+// TaskNormalize is implemented by tasks that perform some initial normalization.
+type TaskNormalize interface {
+	Task
+	// Normalize will be run for all TaskNormalizes, before the Run function of
+	// the TaskNormalize and after the Run function of any Task it is dependent on.
+	Normalize(*Context) error
 }
 
 // TaskAsString renders the task for debug output
@@ -42,6 +52,7 @@ func TaskAsString(t Task) string {
 }
 
 type HasCheckExisting interface {
+	Task
 	CheckExisting(c *Context) bool
 }
 
