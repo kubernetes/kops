@@ -879,6 +879,11 @@ spec:
                   node appears to use the IP of the ingress node; this requires a
                   permissive L2 network.  [Default: Tunnel]'
                 type: string
+              bpfHostConntrackBypass:
+                description: 'BPFHostConntrackBypass Controls whether to bypass Linux
+                  conntrack in BPF mode for workloads and services. [Default: true
+                  - bypass Linux conntrack]'
+                type: boolean
               bpfKubeProxyEndpointSlicesEnabled:
                 description: BPFKubeProxyEndpointSlicesEnabled in BPF mode, controls
                   whether Felix's embedded kube-proxy accepts EndpointSlices or not.
@@ -1075,7 +1080,6 @@ spec:
                   are auto-detected.
                 type: string
               floatingIPs:
-                default: Disabled
                 description: FloatingIPs configures whether or not Felix will program
                   floating IP addresses.
                 enum:
@@ -1398,8 +1402,8 @@ spec:
                 type: boolean
               vxlanEnabled:
                 description: 'VXLANEnabled overrides whether Felix should create the
-                  VXLAN tunnel device for VXLAN networking. Optional as Felix determines
-                  this based on the existing IP pools. [Default: nil (unset)]'
+                  VXLAN tunnel device for IPv4 VXLAN networking. Optional as Felix
+                  determines this based on the existing IP pools. [Default: nil (unset)]'
                 type: boolean
               vxlanMTU:
                 description: 'VXLANMTU is the MTU to set on the IPv4 VXLAN tunnel
@@ -4470,7 +4474,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/node:v3.23.3
+        image: docker.io/calico/node:v3.23.4
         lifecycle:
           preStop:
             exec:
@@ -4586,7 +4590,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/cni:v3.23.3
+        image: docker.io/calico/cni:v3.23.4
         name: install-cni
         securityContext:
           privileged: true
@@ -4599,7 +4603,7 @@ spec:
         - calico-node
         - -init
         - -best-effort
-        image: docker.io/calico/node:v3.23.3
+        image: docker.io/calico/node:v3.23.4
         name: mount-bpffs
         securityContext:
           privileged: true
@@ -4737,7 +4741,7 @@ spec:
           value: node
         - name: DATASTORE_TYPE
           value: kubernetes
-        image: docker.io/calico/kube-controllers:v3.23.3
+        image: docker.io/calico/kube-controllers:v3.23.4
         livenessProbe:
           exec:
             command:
