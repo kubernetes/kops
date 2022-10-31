@@ -93,6 +93,7 @@ type LaunchTemplate struct {
 var (
 	_ fi.CompareWithID     = &LaunchTemplate{}
 	_ fi.ProducesDeletions = &LaunchTemplate{}
+	_ fi.TaskNormalize     = &LaunchTemplate{}
 	_ fi.Deletion          = &deleteLaunchTemplate{}
 )
 
@@ -135,16 +136,14 @@ func (t *LaunchTemplate) buildRootDevice(cloud awsup.AWSCloud) (map[string]*Bloc
 	return bm, nil
 }
 
-// Run is responsible for
-func (t *LaunchTemplate) Run(c *fi.Context) error {
-	t.Normalize()
-
-	return fi.DefaultDeltaRunMethod(t, c)
+func (t *LaunchTemplate) Normalize(c *fi.Context) error {
+	sort.Stable(OrderSecurityGroupsById(t.SecurityGroups))
+	return nil
 }
 
-// Normalize is responsible for normalizing any data within the resource
-func (t *LaunchTemplate) Normalize() {
-	sort.Stable(OrderSecurityGroupsById(t.SecurityGroups))
+// Run is responsible for
+func (t *LaunchTemplate) Run(c *fi.Context) error {
+	return fi.DefaultDeltaRunMethod(t, c)
 }
 
 // CheckChanges is responsible for ensuring certains fields

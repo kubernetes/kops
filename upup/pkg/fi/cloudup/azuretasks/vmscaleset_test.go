@@ -307,7 +307,11 @@ func TestVMScaleSetRun(t *testing.T) {
 	}
 
 	vmss := newTestVMScaleSet()
-	err := vmss.Run(ctx)
+	err := vmss.Normalize(ctx)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+	err = vmss.Run(ctx)
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}

@@ -73,6 +73,7 @@ type NetworkLoadBalancer struct {
 }
 
 var _ fi.CompareWithID = &NetworkLoadBalancer{}
+var _ fi.TaskNormalize = &NetworkLoadBalancer{}
 
 func (e *NetworkLoadBalancer) CompareWithID() *string {
 	return e.Name
@@ -418,8 +419,7 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 		e.LoadBalancerName = actual.LoadBalancerName
 	}
 
-	// TODO: Make Normalize a standard method
-	actual.Normalize()
+	_ = actual.Normalize(c)
 	actual.ForAPIServer = e.ForAPIServer
 	actual.Lifecycle = e.Lifecycle
 
@@ -453,17 +453,15 @@ func (e *NetworkLoadBalancer) FindAddresses(context *fi.Context) ([]string, erro
 }
 
 func (e *NetworkLoadBalancer) Run(c *fi.Context) error {
-	// TODO: Make Normalize a standard method
-	e.Normalize()
-
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
-func (e *NetworkLoadBalancer) Normalize() {
+func (e *NetworkLoadBalancer) Normalize(c *fi.Context) error {
 	// We need to sort our arrays consistently, so we don't get spurious changes
 	sort.Stable(OrderSubnetMappingsByName(e.SubnetMappings))
 	sort.Stable(OrderListenersByPort(e.Listeners))
 	sort.Stable(OrderTargetGroupsByName(e.TargetGroups))
+	return nil
 }
 
 func (*NetworkLoadBalancer) CheckChanges(a, e, changes *NetworkLoadBalancer) error {

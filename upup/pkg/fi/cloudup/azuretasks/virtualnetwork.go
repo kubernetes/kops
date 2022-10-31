@@ -43,6 +43,7 @@ type VirtualNetwork struct {
 var (
 	_ fi.Task          = &VirtualNetwork{}
 	_ fi.CompareWithID = &VirtualNetwork{}
+	_ fi.TaskNormalize = &VirtualNetwork{}
 )
 
 // CompareWithID returns the Name of the VM Scale Set.
@@ -84,9 +85,13 @@ func (n *VirtualNetwork) Find(c *fi.Context) (*VirtualNetwork, error) {
 	}, nil
 }
 
+func (n *VirtualNetwork) Normalize(c *fi.Context) error {
+	c.Cloud.(azure.AzureCloud).AddClusterTags(n.Tags)
+	return nil
+}
+
 // Run implements fi.Task.Run.
 func (n *VirtualNetwork) Run(c *fi.Context) error {
-	c.Cloud.(azure.AzureCloud).AddClusterTags(n.Tags)
 	return fi.DefaultDeltaRunMethod(n, c)
 }
 
