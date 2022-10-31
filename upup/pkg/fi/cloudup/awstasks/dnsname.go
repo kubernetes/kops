@@ -19,6 +19,7 @@ package awstasks
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/route53"
@@ -216,6 +217,7 @@ func (_ *DNSName) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSName) error
 	rrs := &route53.ResourceRecordSet{
 		Name: e.ResourceName,
 		Type: e.ResourceType,
+		TTL:  aws.Int64(int64(5 * time.Minute)),
 	}
 
 	if e.TargetLoadBalancer != nil {
