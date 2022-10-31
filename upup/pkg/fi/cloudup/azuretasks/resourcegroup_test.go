@@ -156,7 +156,11 @@ func TestResourceGroupRun(t *testing.T) {
 			key: to.StringPtr(val),
 		},
 	}
-	err := rg.Run(ctx)
+	err := rg.Normalize(ctx)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+	err = rg.Run(ctx)
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}

@@ -48,6 +48,7 @@ type FirewallRule struct {
 }
 
 var _ fi.CompareWithID = &FirewallRule{}
+var _ fi.TaskNormalize = &FirewallRule{}
 
 func (e *FirewallRule) CompareWithID() *string {
 	return e.Name
@@ -82,15 +83,12 @@ func (e *FirewallRule) Find(c *fi.Context) (*FirewallRule, error) {
 }
 
 func (e *FirewallRule) Run(c *fi.Context) error {
-	if err := e.sanityCheck(); err != nil {
-		return err
-	}
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
-// sanityCheck applies some validation that isn't technically required,
+// Normalize applies some validation that isn't technically required,
 // but avoids some problems with surprising behaviours.
-func (e *FirewallRule) sanityCheck() error {
+func (e *FirewallRule) Normalize(c *fi.Context) error {
 	if !e.Disabled {
 		// Treat it as an error if SourceRanges _and_ SourceTags empty with Disabled=false
 		// this is interpreted as SourceRanges="0.0.0.0/0", which is likely not what was intended.

@@ -45,6 +45,7 @@ type LoadBalancer struct {
 var (
 	_ fi.Task          = &LoadBalancer{}
 	_ fi.CompareWithID = &LoadBalancer{}
+	_ fi.TaskNormalize = &LoadBalancer{}
 )
 
 // CompareWithID returns the Name of the LoadBalancer
@@ -98,9 +99,13 @@ func (lb *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 	}, nil
 }
 
+func (lb *LoadBalancer) Normalize(c *fi.Context) error {
+	c.Cloud.(azure.AzureCloud).AddClusterTags(lb.Tags)
+	return nil
+}
+
 // Run implements fi.Task.Run.
 func (lb *LoadBalancer) Run(c *fi.Context) error {
-	c.Cloud.(azure.AzureCloud).AddClusterTags(lb.Tags)
 	return fi.DefaultDeltaRunMethod(lb, c)
 }
 

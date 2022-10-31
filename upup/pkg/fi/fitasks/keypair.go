@@ -54,6 +54,7 @@ type Keypair struct {
 var (
 	_ fi.HasCheckExisting = &Keypair{}
 	_ fi.HasName          = &Keypair{}
+	_ fi.TaskNormalize    = &Keypair{}
 )
 
 // It's important always to check for the existing key, so we don't regenerate keys e.g. on terraform
@@ -115,14 +116,10 @@ func (e *Keypair) Find(c *fi.Context) (*Keypair, error) {
 }
 
 func (e *Keypair) Run(c *fi.Context) error {
-	err := e.normalize()
-	if err != nil {
-		return err
-	}
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
-func (e *Keypair) normalize() error {
+func (e *Keypair) Normalize(c *fi.Context) error {
 	var alternateNames []string
 
 	for _, s := range e.AlternateNames {

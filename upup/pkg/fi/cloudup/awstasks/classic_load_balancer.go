@@ -76,6 +76,7 @@ type ClassicLoadBalancer struct {
 }
 
 var _ fi.CompareWithID = &ClassicLoadBalancer{}
+var _ fi.TaskNormalize = &ClassicLoadBalancer{}
 
 func (e *ClassicLoadBalancer) CompareWithID() *string {
 	return e.Name
@@ -332,8 +333,7 @@ func (e *ClassicLoadBalancer) Find(c *fi.Context) (*ClassicLoadBalancer, error) 
 		e.LoadBalancerName = actual.LoadBalancerName
 	}
 
-	// TODO: Make Normalize a standard method
-	actual.Normalize()
+	_ = actual.Normalize(c)
 
 	klog.V(4).Infof("Found ELB %+v", actual)
 
@@ -365,9 +365,6 @@ func (e *ClassicLoadBalancer) FindAddresses(context *fi.Context) ([]string, erro
 }
 
 func (e *ClassicLoadBalancer) Run(c *fi.Context) error {
-	// TODO: Make Normalize a standard method
-	e.Normalize()
-
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
@@ -378,10 +375,11 @@ func (_ *ClassicLoadBalancer) ShouldCreate(a, e, changes *ClassicLoadBalancer) (
 	return true, nil
 }
 
-func (e *ClassicLoadBalancer) Normalize() {
+func (e *ClassicLoadBalancer) Normalize(c *fi.Context) error {
 	// We need to sort our arrays consistently, so we don't get spurious changes
 	sort.Stable(OrderSubnetsById(e.Subnets))
 	sort.Stable(OrderSecurityGroupsById(e.SecurityGroups))
+	return nil
 }
 
 func (s *ClassicLoadBalancer) CheckChanges(a, e, changes *ClassicLoadBalancer) error {
