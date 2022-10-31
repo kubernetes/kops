@@ -638,6 +638,8 @@ func (c *RollingUpdateCluster) drainNode(u *cloudinstances.CloudInstance) error 
 			return fmt.Errorf("error listing pods on node %q: %v", u.Node.Name, err)
 		}
 
+		removedDnsAnnotations := false
+
 		for _, pod := range pods.Items {
 			if pod.Annotations["dns.alpha.kubernetes.io/internal"] != "" {
 
@@ -650,11 +652,16 @@ func (c *RollingUpdateCluster) drainNode(u *cloudinstances.CloudInstance) error 
 				if err != nil {
 					return fmt.Errorf("error removing dns.alpha.kubernetes.io/internal annotation from pod %q: %v", pod.Name, err)
 				}
+
+				removedDnsAnnotations = true
 			}
 		}
 
-		// Sleep for twice the default DNS record TTL to ensure that downstream clients have refreshed their DNS caches before we delete the node.
-		time.Sleep(2 * time.Minute)
+		if removedDnsAnnotations {
+			klog.Infof("Removed DNS entries for pods on node %q. Waiting for client DNS caches to refresh.", u.Node.Name)
+			// Sleep for twice the default DNS record TTL to ensure that downstream clients have refreshed their DNS caches before we delete the node.
+			time.Sleep(2 * time.Minute)
+		}
 	}
 
 	helper := &drain.Helper{
