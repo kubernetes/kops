@@ -145,7 +145,11 @@ func TestLoadBalancerRun(t *testing.T) {
 	}
 
 	lb := newTestLoadBalancer()
-	err := lb.Run(ctx)
+	err := lb.Normalize(ctx)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+	err = lb.Run(ctx)
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}

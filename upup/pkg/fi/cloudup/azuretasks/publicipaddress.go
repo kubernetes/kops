@@ -39,6 +39,7 @@ type PublicIPAddress struct {
 var (
 	_ fi.Task          = &PublicIPAddress{}
 	_ fi.CompareWithID = &PublicIPAddress{}
+	_ fi.TaskNormalize = &PublicIPAddress{}
 )
 
 // CompareWithID returns the Name of the Public IP Address
@@ -75,9 +76,13 @@ func (p *PublicIPAddress) Find(c *fi.Context) (*PublicIPAddress, error) {
 	}, nil
 }
 
+func (p *PublicIPAddress) Normalize(c *fi.Context) error {
+	c.Cloud.(azure.AzureCloud).AddClusterTags(p.Tags)
+	return nil
+}
+
 // Run implements fi.Task.Run.
 func (p *PublicIPAddress) Run(c *fi.Context) error {
-	c.Cloud.(azure.AzureCloud).AddClusterTags(p.Tags)
 	return fi.DefaultDeltaRunMethod(p, c)
 }
 

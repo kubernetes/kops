@@ -120,6 +120,8 @@ type VMScaleSet struct {
 	PrincipalID *string
 }
 
+var _ fi.TaskNormalize = &VMScaleSet{}
+
 // VMScaleSetStorageProfile wraps *compute.VirtualMachineScaleSetStorageProfile
 // and implements fi.HasDependencies.
 //
@@ -240,9 +242,13 @@ func (s *VMScaleSet) Find(c *fi.Context) (*VMScaleSet, error) {
 	return vmss, nil
 }
 
+func (s *VMScaleSet) Normalize(c *fi.Context) error {
+	c.Cloud.(azure.AzureCloud).AddClusterTags(s.Tags)
+	return nil
+}
+
 // Run implements fi.Task.Run.
 func (s *VMScaleSet) Run(c *fi.Context) error {
-	c.Cloud.(azure.AzureCloud).AddClusterTags(s.Tags)
 	return fi.DefaultDeltaRunMethod(s, c)
 }
 

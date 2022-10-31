@@ -184,6 +184,14 @@ func (e *executor) forkJoin(tasks []*taskState) []error {
 			results[index] = fmt.Errorf("function panic")
 			defer wg.Done()
 			klog.V(2).Infof("Executing task %q: %v\n", ts.key, ts.task)
+
+			if taskNormalize, ok := ts.task.(TaskNormalize); ok {
+				if err := taskNormalize.Normalize(e.context); err != nil {
+					results[index] = err
+					return
+				}
+			}
+
 			results[index] = ts.task.Run(e.context)
 		}(tasks[i], i)
 	}
