@@ -703,7 +703,7 @@ func (tf *TemplateFunctions) ExternalDNSArgv() ([]string, error) {
 	case kops.CloudProviderAWS:
 		argv = append(argv, "--provider=aws")
 	case kops.CloudProviderGCE:
-		project := cluster.Spec.Project
+		project := cluster.Spec.CloudProvider.GCE.Project
 		argv = append(argv, "--provider=google")
 		argv = append(argv, "--google-project="+project)
 	default:

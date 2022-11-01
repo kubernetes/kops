@@ -38,6 +38,7 @@ spec:
   networking:
     kubenet: {}
   nonMasqueradeCIDR: 100.64.0.0/10
+  project: testProject
   sshAccess:
   - 0.0.0.0/0
   subnets:
