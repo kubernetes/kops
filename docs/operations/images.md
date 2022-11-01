@@ -38,16 +38,16 @@ The following table provides the support status for various distros with regards
 | Distro                              | Experimental | Stable | Deprecated | Removed |
 |-------------------------------------|-------------:|-------:|-----------:|--------:|
 | [Amazon Linux 2](#amazon-linux-2)   |         1.10 |   1.18 |          - |       - |
-| [CentOS 7](#centos-7)               |            - |    1.5 |       1.21 |       - |
-| [CentOS 8](#centos-8)               |         1.15 |      - |       1.21 |       - |
+| CentOS 7                            |            - |    1.5 |       1.21 |    1.23 |
+| CentOS 8                            |         1.15 |      - |       1.21 |    1.23 |
 | CoreOS                              |          1.6 |    1.9 |       1.17 |    1.18 |
 | Debian 8                            |            - |    1.5 |       1.17 |    1.18 |
-| [Debian 9](#debian-9-stretch)       |          1.8 |   1.10 |       1.21 |       - |
+| Debian 9                            |          1.8 |   1.10 |       1.21 |    1.23 |
 | [Debian 10](#debian-10-buster)      |         1.13 |   1.17 |          - |       - |
 | [Debian 11](#debian-11-bullseye)    |       1.21.1 |      - |          - |       - |
 | [Flatcar](#flatcar)                 |       1.15.1 |   1.17 |          - |       - |
-| [Kope.io](#kopeio)                  |            - |      - |       1.18 |       - |
-| [RHEL 7](#rhel-7)                   |            - |    1.5 |       1.21 |       - |
+| Kope.io                             |            - |      - |       1.18 |    1.23 |
+| RHEL 7                              |            - |    1.5 |       1.21 |    1.23 |
 | [RHEL 8](#rhel-8)                   |         1.15 |   1.18 |          - |       - |
 | [Rocky 8](#rocky-8)                 |       1.23.2 |   1.24 |          - |       - |
 | Ubuntu 16.04                        |          1.5 |   1.10 |       1.17 |    1.20 |
@@ -195,87 +195,13 @@ aws ec2 describe-images --region us-east-1 --output table \
 
 ## Deprecated Distros
 
-### CentOS 7
-
-CentOS 7 is based on Kernel version **3.10** which has a considerable number of known bugs that affect it and may be noticed in production clusters:
-
-* [kubernetes/kubernetes#56903](https://github.com/kubernetes/kubernetes/issues/56903)
-* [kubernetes/kubernetes#67577](https://github.com/kubernetes/kubernetes/issues/67577)
-
-The minimum supported version is **7.4**. Available images can be listed using:
-
-```bash
-aws ec2 describe-images --region us-east-1 --output table \
-  --owners 125523088429 \
-  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
-  --filters "Name=name,Values=CentOS 7.*x86_64"
-```
-
-### CentOS 8
-
-CentOS 8 has announced its End Of Life is December 31, 2021.
-
-CentOS 8 is based on Kernel version **4.18** which fixes some of the bugs present in RHEL/CentOS 7 and effects are less visible.
-
-One notable change is the addition of `iptables` NFT, which is the only iptables backend available. This may not be supported by some CNI plugins and should be used with care.
-
-Available images can be listed using:
-
-```bash
-aws ec2 describe-images --region us-east-1 --output table \
-  --owners 125523088429 \
-  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
-  --filters "Name=name,Values=CentOS 8.*x86_64"
-```
-
-### Debian 9 (Stretch)
-
-Debian 9 is based on Kernel version **4.9** which has a number of known bugs that affect it and which may be noticed with larger clusters:
-
-This release is **EOL**, which means that the Debian Security Team no longer handles security fixes. That is now the responsibility/purview of the LTS team, which is a group of volunteers who are paid by donations to Debian LTS.
-
-* [kubernetes/kubernetes#56903](https://github.com/kubernetes/kubernetes/issues/56903)
-* [kubernetes/kubernetes#67577](https://github.com/kubernetes/kubernetes/issues/67577)
-
-Available images can be listed using:
-
-```bash
-aws ec2 describe-images --region us-east-1 --output table \
-  --owners 379101102735 \
-  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
-  --filters "Name=name,Values=debian-stretch-hvm-x86_64-gp2-*"
-```
-
-### Kope.io
-
-Support for _kope.io_ images is deprecated. These images were the default until Kubernetes 1.18, when they were replaced by the [official Ubuntu 20.04](#ubuntu-2004-focal) images.
-
-The _kope.io_ images were based on [Debian 9 (Stretch)](#debian-9-stretch) and had all packages required by kOps pre-installed. Other than that, the changes to the official Debian images were [minimal](https://github.com/kubernetes-sigs/image-builder/blob/master/images/kube-deploy/imagebuilder/templates/1.18-stretch.yml#L174-L198).
-
-### RHEL 7
-
-RHEL 7 is based on Kernel version **3.10** which has a considerable number of known bugs that affect it and may be noticed in production clusters:
-
-* [kubernetes/kubernetes#56903](https://github.com/kubernetes/kubernetes/issues/56903)
-* [kubernetes/kubernetes#67577](https://github.com/kubernetes/kubernetes/issues/67577)
-
-The minimum supported version is **7.4**. Available images can be listed using:
-
-```bash
-aws ec2 describe-images --region us-east-1 --output table \
-  --owners 309956199498 \
-  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
-  --filters "Name=name,Values=RHEL-7.*x86_64*"
-```
+There are currently no deprecated distros.
 
 ## Owner aliases
 
 kOps supports owner aliases for the official accounts of supported distros:
 
-* `kope.io` => `383156758163`
 * `amazon` => `137112412989`
-* `centos` => `125523088429`
-* `debian9` => `379101102735`
 * `debian10` => `136693071363`
 * `debian11` => `136693071363`
 * `flatcar` => `075585003325`
