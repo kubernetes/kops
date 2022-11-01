@@ -52,7 +52,7 @@ spec:
   associatePublicIp: true
   iam:
     profile: arn:aws-test:iam::422917490108:instance-profile/kops-custom-node-role
-  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
+  image: ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404
   machineType: t2.medium
   maxSize: 2
   minSize: 2
@@ -73,7 +73,7 @@ spec:
   associatePublicIp: true
   iam:
     profile: arn:aws-test:iam::422917490108:instance-profile/kops-custom-master-role
-  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
+  image: ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404
   machineType: m3.medium
   maxSize: 1
   minSize: 1
