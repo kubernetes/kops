@@ -64,7 +64,7 @@ metadata:
     kops.k8s.io/cluster: privatekopeio.example.com
 spec:
   associatePublicIp: true
-  image: kope.io/k8s-1.14-debian-stretch-amd64-hvm-ebs-2019-08-16
+  image: ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -83,7 +83,7 @@ metadata:
     kops.k8s.io/cluster: privatekopeio.example.com
 spec:
   associatePublicIp: true
-  image: kope.io/k8s-1.14-debian-stretch-amd64-hvm-ebs-2019-08-16
+  image: ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404
   machineType: t2.medium
   maxSize: 2
   minSize: 2
@@ -104,7 +104,7 @@ metadata:
     kops.k8s.io/cluster: privatekopeio.example.com
 spec:
   associatePublicIp: true
-  image: kope.io/k8s-1.14-debian-stretch-amd64-hvm-ebs-2019-08-16
+  image: ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404
   machineType: t2.micro
   maxSize: 1
   minSize: 1
