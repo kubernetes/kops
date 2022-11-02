@@ -37,7 +37,7 @@ metadata:
   name: bastions
 spec:
   associatePublicIp: true
-  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
+  image: ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404
   machineType: t2.micro
   maxSize: 1
   minSize: 1

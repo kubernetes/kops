@@ -465,7 +465,7 @@ resource "aws_launch_template" "bastion-private-shared-ip-example-com" {
   iam_instance_profile {
     name = aws_iam_instance_profile.bastions-private-shared-ip-example-com.id
   }
-  image_id      = "ami-11400000"
+  image_id      = "ami-12345678"
   instance_type = "t2.micro"
   key_name      = aws_key_pair.kubernetes-private-shared-ip-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {
@@ -541,7 +541,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-private-shared-ip-exam
   iam_instance_profile {
     name = aws_iam_instance_profile.masters-private-shared-ip-example-com.id
   }
-  image_id      = "ami-11400000"
+  image_id      = "ami-12345678"
   instance_type = "m3.medium"
   key_name      = aws_key_pair.kubernetes-private-shared-ip-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {
@@ -623,7 +623,7 @@ resource "aws_launch_template" "nodes-private-shared-ip-example-com" {
   iam_instance_profile {
     name = aws_iam_instance_profile.nodes-private-shared-ip-example-com.id
   }
-  image_id      = "ami-11400000"
+  image_id      = "ami-12345678"
   instance_type = "t2.medium"
   key_name      = aws_key_pair.kubernetes-private-shared-ip-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {

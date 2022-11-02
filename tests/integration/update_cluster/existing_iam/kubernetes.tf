@@ -454,7 +454,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-existing-iam-example-c
   iam_instance_profile {
     name = "kops-custom-master-role"
   }
-  image_id      = "ami-11400000"
+  image_id      = "ami-12345678"
   instance_type = "m3.medium"
   key_name      = aws_key_pair.kubernetes-existing-iam-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {
@@ -540,7 +540,7 @@ resource "aws_launch_template" "master-us-test-1b-masters-existing-iam-example-c
   iam_instance_profile {
     name = "kops-custom-master-role"
   }
-  image_id      = "ami-11400000"
+  image_id      = "ami-12345678"
   instance_type = "m3.medium"
   key_name      = aws_key_pair.kubernetes-existing-iam-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {
@@ -626,7 +626,7 @@ resource "aws_launch_template" "master-us-test-1c-masters-existing-iam-example-c
   iam_instance_profile {
     name = "kops-custom-master-role"
   }
-  image_id      = "ami-11400000"
+  image_id      = "ami-12345678"
   instance_type = "m3.medium"
   key_name      = aws_key_pair.kubernetes-existing-iam-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {
@@ -708,7 +708,7 @@ resource "aws_launch_template" "nodes-existing-iam-example-com" {
   iam_instance_profile {
     name = "kops-custom-node-role"
   }
-  image_id      = "ami-11400000"
+  image_id      = "ami-12345678"
   instance_type = "t2.medium"
   key_name      = aws_key_pair.kubernetes-existing-iam-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {

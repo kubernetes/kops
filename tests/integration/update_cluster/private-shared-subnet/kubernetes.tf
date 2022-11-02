@@ -460,7 +460,7 @@ resource "aws_launch_template" "bastion-private-shared-subnet-example-com" {
   iam_instance_profile {
     name = aws_iam_instance_profile.bastions-private-shared-subnet-example-com.id
   }
-  image_id      = "ami-11400000"
+  image_id      = "ami-12345678"
   instance_type = "t2.micro"
   key_name      = aws_key_pair.kubernetes-private-shared-subnet-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {
@@ -536,7 +536,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-private-shared-subnet-
   iam_instance_profile {
     name = aws_iam_instance_profile.masters-private-shared-subnet-example-com.id
   }
-  image_id      = "ami-11400000"
+  image_id      = "ami-12345678"
   instance_type = "m3.medium"
   key_name      = aws_key_pair.kubernetes-private-shared-subnet-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {
@@ -618,7 +618,7 @@ resource "aws_launch_template" "nodes-private-shared-subnet-example-com" {
   iam_instance_profile {
     name = aws_iam_instance_profile.nodes-private-shared-subnet-example-com.id
   }
-  image_id      = "ami-11400000"
+  image_id      = "ami-12345678"
   instance_type = "t2.medium"
   key_name      = aws_key_pair.kubernetes-private-shared-subnet-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {
