@@ -58,6 +58,11 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 		useELBName = true
 	}
 
+	// If the cluster has DNS disabled, must use the load balancer name
+	if cluster.UsesNoneDNS() {
+		useELBName = true
+	}
+
 	// If the DNS is set up as a private HostedZone, but here we have to be
 	// careful that we aren't accessing the API over DirectConnect (or a VPN).
 	// We differentiate using the heuristic that if we have an internal ELB
@@ -86,7 +91,7 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 
 		sort.Strings(targets)
 		if len(targets) == 0 {
-			klog.Warningf("Did not find API endpoint for gossip hostname; may not be able to reach cluster")
+			klog.Warningf("Did not find API endpoint; may not be able to reach cluster")
 		} else {
 			if len(targets) != 1 {
 				klog.Warningf("Found multiple API endpoints (%v), choosing arbitrarily", targets)

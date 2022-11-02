@@ -34,7 +34,6 @@ spec:
   - 0.0.0.0/0
   - ::/0
   kubernetesVersion: v1.25.0
-  masterPublicName: api.minimal.k8s.local
   networkCIDR: 10.0.0.0/16
   networking:
     cni: {}
@@ -48,7 +47,7 @@ spec:
     zone: fsn1
   topology:
     dns:
-      type: Public
+      type: Private
     masters: public
     nodes: public
 

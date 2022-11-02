@@ -429,6 +429,9 @@ func validateTopology(c *kops.Cluster, topology *kops.TopologySpec, fieldPath *f
 	if topology.DNS != nil {
 		value := string(topology.DNS.Type)
 		allErrs = append(allErrs, IsValidValue(fieldPath.Child("dns", "type"), &value, kops.SupportedDnsTypes)...)
+		if value == string(kops.DNSTypeNone) && c.Spec.GetCloudProvider() != kops.CloudProviderHetzner {
+			allErrs = append(allErrs, field.Invalid(fieldPath.Child("dns", "type"), &value, fmt.Sprintf("not supported for %q", c.Spec.GetCloudProvider())))
+		}
 	}
 
 	return allErrs
@@ -1613,8 +1616,8 @@ func validateExternalDNS(cluster *kops.Cluster, spec *kops.ExternalDNSConfig, fl
 	}
 
 	if spec.Provider == kops.ExternalDNSProviderExternalDNS {
-		if cluster.IsGossip() {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("provider"), "external-dns does not support gossip clusters"))
+		if cluster.IsGossip() || cluster.UsesNoneDNS() {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("provider"), "external-dns requires public or private DNS topology"))
 		}
 	}
 

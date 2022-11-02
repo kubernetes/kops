@@ -9,7 +9,7 @@ metadata:
   name: hcloud
   namespace: kube-system
 stringData:
-  network: minimal.k8s.local
+  network: minimal.example.com
   token: REDACTED
 
 ---

@@ -301,7 +301,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	if cluster.Spec.KubernetesVersion == "" {
 		return fmt.Errorf("KubernetesVersion not set")
 	}
-	if cluster.Spec.DNSZone == "" && !cluster.IsGossip() {
+	if cluster.Spec.DNSZone == "" && !cluster.IsGossip() && !cluster.UsesNoneDNS() {
 		return fmt.Errorf("DNSZone not set")
 	}
 
@@ -482,9 +482,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	modelContext.SSHPublicKeys = sshPublicKeys
 	modelContext.Region = cloud.Region()
 
-	if cluster.IsGossip() {
-		klog.V(2).Infof("Gossip DNS: skipping DNS validation")
-	} else {
+	if !cluster.IsGossip() && !cluster.UsesNoneDNS() {
 		err = validateDNS(cluster, cloud)
 		if err != nil {
 			return err
@@ -791,7 +789,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		return fmt.Errorf("error running tasks: %v", err)
 	}
 
-	if cluster.IsGossip() {
+	if cluster.IsGossip() || cluster.UsesNoneDNS() {
 		shouldPrecreateDNS = false
 	}
 
@@ -1415,6 +1413,25 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 
 	if isMaster {
 		config.ApiserverAdditionalIPs = apiserverAdditionalIPs
+	}
+
+	// Set API server address to an IP from the cluster network CIDR
+	if cluster.UsesNoneDNS() {
+		for _, networkCIDR := range append(cluster.Spec.AdditionalNetworkCIDRs, cluster.Spec.NetworkCIDR) {
+			_, cidr, err := net.ParseCIDR(networkCIDR)
+			if err != nil {
+				return nil, nil, fmt.Errorf("failed to parse network CIDR %q: %w", networkCIDR, err)
+			}
+			for _, additionalIP := range apiserverAdditionalIPs {
+				if cidr.Contains(net.ParseIP(additionalIP)) {
+					bootConfig.APIServer = additionalIP
+					break
+				}
+			}
+			if bootConfig.APIServer != "" {
+				break
+			}
+		}
 	}
 
 	for _, manifest := range n.assetBuilder.StaticManifests {

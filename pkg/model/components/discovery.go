@@ -71,7 +71,7 @@ func (b *DiscoveryOptionsBuilder) BuildOptions(o interface{}) error {
 				return fmt.Errorf("locationStore=%q is of unexpected type %T", store, base)
 			}
 		} else {
-			if supportsPublicJWKS(clusterSpec) {
+			if supportsPublicJWKS(clusterSpec) && clusterSpec.MasterPublicName != "" {
 				serviceAccountIssuer = "https://" + clusterSpec.MasterPublicName
 			} else {
 				serviceAccountIssuer = "https://" + clusterSpec.MasterInternalName

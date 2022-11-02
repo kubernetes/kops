@@ -239,8 +239,8 @@ func (c *hetznerCloudImplementation) GetVolumes(clusterName string) ([]*hcloud.V
 }
 
 func (c *hetznerCloudImplementation) DNS() (dnsprovider.Interface, error) {
-	// TODO(hakman): implement me
-	panic("implement me")
+	// Hetzner LB has a stable internal IP and can use that instead of creating a record for api.internal.
+	return nil, nil
 }
 
 func (c *hetznerCloudImplementation) DeleteInstance(instance *cloudinstances.CloudInstance) error {
@@ -428,14 +428,9 @@ func (c *hetznerCloudImplementation) FindClusterStatus(cluster *kops.Cluster) (*
 }
 
 func (c *hetznerCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
-	if cluster.Spec.MasterPublicName == "" {
-		return nil, nil
-	}
-
 	lbName := "api." + cluster.Name
 
 	client := c.LoadBalancerClient()
-	// TODO(hakman): Get load balancer info using label selector instead instead of name?
 	lb, _, err := client.GetByName(context.TODO(), lbName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get info for load balancer %q: %w", lbName, err)

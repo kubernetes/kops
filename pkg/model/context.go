@@ -292,25 +292,6 @@ func (b *KopsModelContext) APILoadBalancerClass() kops.LoadBalancerClass {
 	return kops.LoadBalancerClassClassic
 }
 
-// UsePrivateDNS checks if we are using private DNS
-func (b *KopsModelContext) UsePrivateDNS() bool {
-	topology := b.Cluster.Spec.Topology
-	if topology != nil && topology.DNS != nil {
-		switch topology.DNS.Type {
-		case kops.DNSTypePublic:
-			return false
-		case kops.DNSTypePrivate:
-			return true
-
-		default:
-			klog.Warningf("Unknown DNS type %q", topology.DNS.Type)
-			return false
-		}
-	}
-
-	return false
-}
-
 // UseClassicLoadBalancer checks if we are using Classic LoadBalancer
 func (b *KopsModelContext) UseClassicLoadBalancer() bool {
 	return b.Cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassClassic
