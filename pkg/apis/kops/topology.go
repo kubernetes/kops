@@ -29,6 +29,7 @@ var SupportedTopologies = []string{
 var SupportedDnsTypes = []string{
 	string(DNSTypePublic),
 	string(DNSTypePrivate),
+	string(DNSTypeNone),
 }
 
 type TopologySpec struct {
@@ -58,4 +59,5 @@ type DNSType string
 const (
 	DNSTypePublic  DNSType = "Public"
 	DNSTypePrivate DNSType = "Private"
+	DNSTypeNone    DNSType = "None"
 )

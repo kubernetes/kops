@@ -124,16 +124,15 @@ func NewClusterValidator(cluster *kops.Cluster, cloud fi.Cloud, instanceGroupLis
 func (v *clusterValidatorImpl) Validate() (*ValidationCluster, error) {
 	ctx := context.TODO()
 
-	clusterName := v.cluster.Name
-	dnsProvider := kops.ExternalDNSProviderDNSController
-	if v.cluster.Spec.ExternalDNS != nil && v.cluster.Spec.ExternalDNS.Provider == kops.ExternalDNSProviderExternalDNS {
-		dnsProvider = kops.ExternalDNSProviderExternalDNS
-	}
-
 	validation := &ValidationCluster{}
 
-	// Do not use if we are running gossip
-	if !v.cluster.IsGossip() {
+	// Do not use if we are running gossip or without dns
+	if !v.cluster.IsGossip() && !v.cluster.UsesNoneDNS() {
+		dnsProvider := kops.ExternalDNSProviderDNSController
+		if v.cluster.Spec.ExternalDNS != nil && v.cluster.Spec.ExternalDNS.Provider == kops.ExternalDNSProviderExternalDNS {
+			dnsProvider = kops.ExternalDNSProviderExternalDNS
+		}
+
 		hasPlaceHolderIPAddress, err := hasPlaceHolderIP(v.host)
 		if err != nil {
 			return nil, err
@@ -168,7 +167,7 @@ func (v *clusterValidatorImpl) Validate() (*ValidationCluster, error) {
 	readyNodes, nodeInstanceGroupMapping := validation.validateNodes(cloudGroups, v.instanceGroups)
 
 	if err := validation.collectPodFailures(ctx, v.k8sClient, readyNodes, nodeInstanceGroupMapping); err != nil {
-		return nil, fmt.Errorf("cannot get pod health for %q: %v", clusterName, err)
+		return nil, fmt.Errorf("cannot get pod health for %q: %v", v.cluster.Name, err)
 	}
 
 	return validation, nil

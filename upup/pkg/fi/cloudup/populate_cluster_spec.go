@@ -219,24 +219,36 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 		klog.V(2).Infof("Normalizing kubernetes version: %q -> %q", cluster.Spec.KubernetesVersion, versionWithoutV)
 		cluster.Spec.KubernetesVersion = versionWithoutV
 	}
-	if cluster.Spec.DNSZone == "" && !cluster.IsGossip() {
+	if cluster.Spec.DNSZone == "" && !cluster.IsGossip() && !cluster.UsesNoneDNS() {
 		dns, err := cloud.DNS()
 		if err != nil {
 			return err
 		}
+		if dns != nil {
+			dnsType := kopsapi.DNSTypePublic
+			if cluster.Spec.Topology != nil && cluster.Spec.Topology.DNS != nil && cluster.Spec.Topology.DNS.Type != "" {
+				dnsType = cluster.Spec.Topology.DNS.Type
+			}
 
-		dnsType := kopsapi.DNSTypePublic
-		if cluster.Spec.Topology != nil && cluster.Spec.Topology.DNS != nil && cluster.Spec.Topology.DNS.Type != "" {
-			dnsType = cluster.Spec.Topology.DNS.Type
+			dnsZone, err := FindDNSHostedZone(dns, cluster.ObjectMeta.Name, dnsType)
+			if err != nil {
+				return fmt.Errorf("error determining default DNS zone: %v", err)
+			}
+
+			klog.V(2).Infof("Defaulting DNS zone to: %s", dnsZone)
+			cluster.Spec.DNSZone = dnsZone
 		}
+	}
 
-		dnsZone, err := FindDNSHostedZone(dns, cluster.ObjectMeta.Name, dnsType)
-		if err != nil {
-			return fmt.Errorf("error determining default DNS zone: %v", err)
+	if !cluster.UsesNoneDNS() {
+		if cluster.Spec.DNSZone != "" && cluster.Spec.MasterPublicName == "" {
+			cluster.Spec.MasterPublicName = "api." + cluster.Name
 		}
-
-		klog.V(2).Infof("Defaulting DNS zone to: %s", dnsZone)
-		cluster.Spec.DNSZone = dnsZone
+		if cluster.Spec.ExternalDNS == nil {
+			cluster.Spec.ExternalDNS = &kopsapi.ExternalDNSConfig{
+				Provider: kopsapi.ExternalDNSProviderDNSController,
+			}
+		}
 	}
 
 	if cluster.Spec.KubernetesVersion == "" {

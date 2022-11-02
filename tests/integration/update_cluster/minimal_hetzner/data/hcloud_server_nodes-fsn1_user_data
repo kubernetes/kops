@@ -8,7 +8,6 @@ NODEUP_HASH_AMD64=585fbda0f0a43184656b4bfc0cc5f0c0b85612faf43b8816acca1f99d422c9
 NODEUP_URL_ARM64=https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/arm64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/nodeup-linux-arm64
 NODEUP_HASH_ARM64=7603675379699105a9b9915ff97718ea99b1bbb01a4c184e2f827c8a96e8e865
 
-export HCLOUD_TOKEN=REDACTED
 
 
 
@@ -160,10 +159,10 @@ __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: hetzner
-ConfigBase: memfs://tests/minimal.k8s.local
+ConfigBase: memfs://tests/minimal.example.com
 InstanceGroupName: nodes-fsn1
 InstanceGroupRole: Node
-NodeupConfigHash: eGEJwCWIaUvGEKFOh+yUoHcReInMlufyGjtiudZU8V8=
+NodeupConfigHash: PWu9ALIVbND2iz1ciF+yjlTyJJFqCSux2yGwXKoPjUw=
 
 __EOF_KUBE_ENV
 

@@ -113,7 +113,9 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			"localhost",
 			serviceName,
 			strings.Join([]string{serviceName, b.Cluster.Name}, "."),
-			strings.Join([]string{serviceName, b.Cluster.Spec.DNSZone}, "."),
+		}
+		if b.Cluster.Spec.DNSZone != "" {
+			alternateNames = append(alternateNames, strings.Join([]string{serviceName, b.Cluster.Spec.DNSZone}, "."))
 		}
 
 		// @note: the certificate used by the node authorizers

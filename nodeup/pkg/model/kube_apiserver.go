@@ -367,7 +367,9 @@ func (b *KubeAPIServerBuilder) writeServerCertificate(c *fi.ModelBuilderContext,
 		}
 
 		// Names specified in the cluster spec
-		alternateNames = append(alternateNames, b.Cluster.Spec.MasterPublicName)
+		if b.Cluster.Spec.MasterPublicName != "" {
+			alternateNames = append(alternateNames, b.Cluster.Spec.MasterPublicName)
+		}
 		alternateNames = append(alternateNames, b.Cluster.Spec.MasterInternalName)
 		alternateNames = append(alternateNames, b.Cluster.Spec.AdditionalSANs...)
 
@@ -726,12 +728,16 @@ func (b *KubeAPIServerBuilder) buildAnnotations() map[string]string {
 	annotations := make(map[string]string)
 	annotations["kubectl.kubernetes.io/default-container"] = "kube-apiserver"
 
+	if b.Cluster.UsesNoneDNS() {
+		return annotations
+	}
+
 	if b.Cluster.Spec.API != nil {
 		if b.Cluster.Spec.API.LoadBalancer == nil || !b.Cluster.Spec.API.LoadBalancer.UseForInternalAPI {
 			annotations["dns.alpha.kubernetes.io/internal"] = b.Cluster.Spec.MasterInternalName
 		}
 
-		if b.Cluster.Spec.API.DNS != nil {
+		if b.Cluster.Spec.API.DNS != nil && b.Cluster.Spec.MasterPublicName != "" {
 			annotations["dns.alpha.kubernetes.io/external"] = b.Cluster.Spec.MasterPublicName
 		}
 	}

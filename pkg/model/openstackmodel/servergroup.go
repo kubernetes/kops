@@ -304,7 +304,7 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		c.AddTask(lbfipTask)
 
-		if b.Cluster.IsGossip() || b.UsePrivateDNS() {
+		if b.Cluster.IsGossip() || b.Cluster.UsesPrivateDNS() || b.Cluster.UsesNoneDNS() {
 			b.associateFIPToKeypair(lbfipTask)
 		}
 

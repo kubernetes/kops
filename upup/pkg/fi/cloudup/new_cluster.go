@@ -166,7 +166,6 @@ func (o *NewClusterOptions) InitDefaults() {
 	o.AdminAccess = []string{"0.0.0.0/0", "::/0"}
 	o.Networking = "kubenet"
 	o.Topology = api.TopologyPublic
-	o.DNSType = string(api.DNSTypePublic)
 	o.InstanceManager = "cloudgroups"
 }
 
@@ -1226,7 +1225,7 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 			bastionGroup.Spec.MinSize = fi.Int32(1)
 			bastions = append(bastions, bastionGroup)
 
-			if !cluster.IsGossip() {
+			if !cluster.IsGossip() && !cluster.UsesNoneDNS() {
 				cluster.Spec.Topology.Bastion = &api.BastionSpec{
 					PublicName: "bastion." + cluster.Name,
 				}
@@ -1269,10 +1268,20 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 
 	cluster.Spec.Topology.DNS = &api.DNSSpec{}
 	switch strings.ToLower(opt.DNSType) {
-	case "public", "":
+	case "":
+		if cluster.IsGossip() {
+			cluster.Spec.Topology.DNS.Type = api.DNSTypePrivate
+		} else if cluster.Spec.GetCloudProvider() == api.CloudProviderHetzner {
+			cluster.Spec.Topology.DNS.Type = api.DNSTypeNone
+		} else {
+			cluster.Spec.Topology.DNS.Type = api.DNSTypePublic
+		}
+	case "public":
 		cluster.Spec.Topology.DNS.Type = api.DNSTypePublic
 	case "private":
 		cluster.Spec.Topology.DNS.Type = api.DNSTypePrivate
+	case "none":
+		cluster.Spec.Topology.DNS.Type = api.DNSTypeNone
 	default:
 		return nil, fmt.Errorf("unknown DNSType: %q", opt.DNSType)
 	}
@@ -1297,7 +1306,7 @@ func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
 	} else {
 		switch cluster.Spec.Topology.Masters {
 		case api.TopologyPublic:
-			if cluster.IsGossip() {
+			if cluster.IsGossip() || cluster.UsesNoneDNS() {
 				// gossip DNS names don't work outside the cluster, so we use a LoadBalancer instead
 				cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
 			} else {

@@ -808,10 +808,6 @@ func (c *Cluster) FillDefaults() error {
 		c.Spec.MasterInternalName = "api.internal." + c.ObjectMeta.Name
 	}
 
-	if c.Spec.MasterPublicName == "" {
-		c.Spec.MasterPublicName = "api." + c.ObjectMeta.Name
-	}
-
 	return nil
 }
 
@@ -899,6 +895,27 @@ func (c *Cluster) IsSharedAzureRouteTable() bool {
 
 func (c *Cluster) IsGossip() bool {
 	if dns.IsGossipClusterName(c.Name) {
+		return true
+	}
+	return false
+}
+
+func (c *Cluster) UsesPublicDNS() bool {
+	if c.Spec.Topology == nil || c.Spec.Topology.DNS == nil || c.Spec.Topology.DNS.Type == DNSTypePublic {
+		return true
+	}
+	return false
+}
+
+func (c *Cluster) UsesPrivateDNS() bool {
+	if c.Spec.Topology != nil && c.Spec.Topology.DNS != nil && c.Spec.Topology.DNS.Type == DNSTypePrivate {
+		return true
+	}
+	return false
+}
+
+func (c *Cluster) UsesNoneDNS() bool {
+	if c.Spec.Topology != nil && c.Spec.Topology.DNS != nil && c.Spec.Topology.DNS.Type == DNSTypeNone {
 		return true
 	}
 	return false
