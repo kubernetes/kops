@@ -368,7 +368,7 @@ while.  Once it finishes you'll have to wait longer while the booted instances
 finish downloading Kubernetes components and reach a "ready" state.
 
 ```bash
-kops update cluster --name ${NAME} --yes
+kops update cluster --name ${NAME} --yes --admin
 ```
 
 ### Use the Cluster
