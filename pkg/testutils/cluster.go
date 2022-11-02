@@ -28,7 +28,7 @@ import (
 func BuildMinimalCluster(clusterName string) *kops.Cluster {
 	c := &kops.Cluster{}
 	c.ObjectMeta.Name = clusterName
-	c.Spec.KubernetesVersion = "1.14.6"
+	c.Spec.KubernetesVersion = "1.23.2"
 	c.Spec.Subnets = []kops.ClusterSubnetSpec{
 		{Name: "subnet-us-test-1a", Zone: "us-test-1a", CIDR: "172.20.1.0/24", Type: kops.SubnetTypePrivate},
 	}
@@ -97,6 +97,7 @@ func BuildMinimalNodeInstanceGroup(name string, subnets ...string) kops.Instance
 	g := kops.InstanceGroup{}
 	g.ObjectMeta.Name = name
 	g.Spec.Role = kops.InstanceGroupRoleNode
+	g.Spec.Image = "ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404"
 	g.Spec.Subnets = subnets
 
 	return g
@@ -106,6 +107,7 @@ func BuildMinimalBastionInstanceGroup(name string, subnets ...string) kops.Insta
 	g := kops.InstanceGroup{}
 	g.ObjectMeta.Name = name
 	g.Spec.Role = kops.InstanceGroupRoleNode
+	g.Spec.Image = "ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404"
 	g.Spec.Subnets = subnets
 
 	return g

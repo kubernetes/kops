@@ -497,13 +497,11 @@ func guessSSHUser(image *ec2.Image) string {
 	switch owner {
 	case awsup.WellKnownAccountAmazonLinux2, awsup.WellKnownAccountRedhat:
 		return "ec2-user"
-	case awsup.WellKnownAccountCentOS:
-		return "centos"
-	case awsup.WellKnownAccountDebian, awsup.WellKnownAccountDebian9, awsup.WellKnownAccountKopeio:
+	case awsup.WellKnownAccountDebian:
 		return "admin"
 	case awsup.WellKnownAccountUbuntu:
 		return "ubuntu"
-	case awsup.WellKnownAccountCoreOS, awsup.WellKnownAccountFlatcar:
+	case awsup.WellKnownAccountFlatcar:
 		return "core"
 	}
 
