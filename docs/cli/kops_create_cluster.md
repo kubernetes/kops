@@ -77,7 +77,7 @@ kops create cluster [CLUSTER] [flags]
       --container-runtime string         Container runtime to use: containerd, docker
       --disable-subnet-tags              Disable automatic subnet tagging
       --discovery-store string           A public location where we publish OIDC-compatible discovery information under a cluster-specific directory. Enables IRSA in AWS.
-      --dns string                       DNS type to use: public or private (default "Public")
+      --dns string                       DNS type to use: public, private, none
       --dns-zone string                  DNS hosted zone (defaults to longest matching zone)
       --dry-run                          If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.
       --encrypt-etcd-storage             Generate key in AWS KMS and use it for encrypt etcd volumes

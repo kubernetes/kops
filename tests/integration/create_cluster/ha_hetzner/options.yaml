@@ -1,5 +1,5 @@
 CloudProvider: hetzner
-ClusterName: minimal.k8s.local
+ClusterName: ha.example.com
 Image: ubuntu-20.04
 KubernetesVersion: v1.25.0
 MasterCount: 3

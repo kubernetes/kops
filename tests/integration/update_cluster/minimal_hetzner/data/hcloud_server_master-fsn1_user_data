@@ -181,8 +181,8 @@ kubeAPIServer:
   requestheaderUsernameHeaders:
   - X-Remote-User
   securePort: 443
-  serviceAccountIssuer: https://api.internal.minimal.k8s.local
-  serviceAccountJWKSURI: https://api.internal.minimal.k8s.local/openid/v1/jwks
+  serviceAccountIssuer: https://api.internal.minimal.example.com
+  serviceAccountJWKSURI: https://api.internal.minimal.example.com/openid/v1/jwks
   serviceClusterIPRange: 100.64.0.0/13
   storageBackend: etcd3
 kubeControllerManager:
@@ -190,7 +190,7 @@ kubeControllerManager:
   attachDetachReconcileSyncPeriod: 1m0s
   cloudProvider: external
   clusterCIDR: 100.96.0.0/11
-  clusterName: minimal.k8s.local
+  clusterName: minimal.example.com
   configureCloudRoutes: false
   image: registry.k8s.io/kube-controller-manager:v1.25.0
   leaderElection:
@@ -246,10 +246,10 @@ __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: hetzner
-ConfigBase: memfs://tests/minimal.k8s.local
+ConfigBase: memfs://tests/minimal.example.com
 InstanceGroupName: master-fsn1
 InstanceGroupRole: Master
-NodeupConfigHash: 1tDhVHjdqDjbxWBtM4GROvB72iZ+xB6vYDKe6EM9pAc=
+NodeupConfigHash: pPDt88eh2jsyngQx8UCDaeyJfdF1xae0mtsI3ivB720=
 
 __EOF_KUBE_ENV
 

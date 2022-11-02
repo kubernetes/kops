@@ -107,7 +107,7 @@ func PerformAssignments(c *kops.Cluster, cloud fi.Cloud) error {
 	}
 
 	// TODO: Unclear this should be here - it isn't too hard to change
-	if c.Spec.MasterPublicName == "" && c.ObjectMeta.Name != "" {
+	if c.UsesPublicDNS() && c.Spec.MasterPublicName == "" && c.ObjectMeta.Name != "" {
 		c.Spec.MasterPublicName = "api." + c.ObjectMeta.Name
 	}
 
