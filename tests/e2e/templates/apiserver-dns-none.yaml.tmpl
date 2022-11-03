@@ -6,6 +6,10 @@ metadata:
 spec:
   kubernetesApiAccess:
   - {{.publicIP}}
+  api:
+    loadBalancer:
+      type: Public
+      class: Network
   channel: stable
   cloudProvider: {{.cloudProvider}}
   configBase: "{{.stateStore}}/{{.clusterName}}"
@@ -23,7 +27,6 @@ spec:
     anonymousAuth: false
   kubernetesVersion: {{.kubernetesVersion}}
   masterInternalName: api.internal.{{.clusterName}}
-  masterPublicName: api.{{.clusterName}}
   networkCIDR: 172.20.0.0/16
   networking:
     calico: {}
@@ -33,6 +36,8 @@ spec:
   sshAccess:
     - {{.publicIP}}
   topology:
+    dns:
+      type: None
     masters: public
     nodes: public
   subnets:
