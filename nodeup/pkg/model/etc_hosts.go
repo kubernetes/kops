@@ -51,6 +51,12 @@ func (b *EtcHostsBuilder) Build(c *fi.ModelBuilderContext) error {
 			Hostname:  b.Cluster.Spec.MasterInternalName,
 			Addresses: []string{b.BootConfig.APIServer},
 		})
+		if b.UseKopsControllerForNodeBootstrap() {
+			task.Records = append(task.Records, nodetasks.HostRecord{
+				Hostname:  "kops-controller.internal." + b.Cluster.Name,
+				Addresses: []string{b.BootConfig.APIServer},
+			})
+		}
 	}
 
 	if len(task.Records) != 0 {

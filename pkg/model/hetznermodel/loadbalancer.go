@@ -22,6 +22,7 @@ import (
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetznertasks"
@@ -40,7 +41,7 @@ func (b *LoadBalancerModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		fmt.Sprintf("%s=%s", hetzner.TagKubernetesClusterName, b.ClusterName()),
 		fmt.Sprintf("%s=%s", hetzner.TagKubernetesInstanceRole, string(kops.InstanceGroupRoleMaster)),
 	}
-	server := hetznertasks.LoadBalancer{
+	loadbalancer := hetznertasks.LoadBalancer{
 		Name:      fi.String("api." + b.ClusterName()),
 		Lifecycle: b.Lifecycle,
 		Network:   b.LinkToNetwork(),
@@ -49,8 +50,8 @@ func (b *LoadBalancerModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		Services: []*hetznertasks.LoadBalancerService{
 			{
 				Protocol:        string(hcloud.LoadBalancerServiceProtocolTCP),
-				ListenerPort:    fi.Int(443),
-				DestinationPort: fi.Int(443),
+				ListenerPort:    fi.Int(wellknownports.KubeAPIServer),
+				DestinationPort: fi.Int(wellknownports.KubeAPIServer),
 			},
 		},
 		Target: strings.Join(controlPlaneLabelSelector, ","),
@@ -59,7 +60,15 @@ func (b *LoadBalancerModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		},
 	}
 
-	c.AddTask(&server)
+	if b.Cluster.UsesNoneDNS() {
+		loadbalancer.Services = append(loadbalancer.Services, &hetznertasks.LoadBalancerService{
+			Protocol:        string(hcloud.LoadBalancerServiceProtocolTCP),
+			ListenerPort:    fi.Int(wellknownports.KopsControllerPort),
+			DestinationPort: fi.Int(wellknownports.KopsControllerPort),
+		})
+	}
+
+	c.AddTask(&loadbalancer)
 
 	return nil
 }
