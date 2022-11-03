@@ -228,7 +228,7 @@ spec:
               fieldPath: spec.nodeName
         - name: CLUSTER_NAME
           value: minimal.example.com
-        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.12.0
+        image: olemarkus/amazon-k8s-cni@sha256:7aa202c3003f99efea6c6619913dd9949b0645925e342ce24c51c251f0229048
         livenessProbe:
           exec:
             command:
