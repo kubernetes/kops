@@ -195,7 +195,14 @@ resource "hcloud_load_balancer_network" "api-minimal-example-com" {
   network_id       = hcloud_network.minimal-example-com.id
 }
 
-resource "hcloud_load_balancer_service" "api-minimal-example-com" {
+resource "hcloud_load_balancer_service" "api-minimal-example-com-tcp-3988" {
+  destination_port = 3988
+  listen_port      = 3988
+  load_balancer_id = hcloud_load_balancer.api-minimal-example-com.id
+  protocol         = "tcp"
+}
+
+resource "hcloud_load_balancer_service" "api-minimal-example-com-tcp-443" {
   destination_port = 443
   listen_port      = 443
   load_balancer_id = hcloud_load_balancer.api-minimal-example-com.id
