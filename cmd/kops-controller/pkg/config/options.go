@@ -19,6 +19,7 @@ package config
 import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	gcetpm "k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm"
+	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 )
 
 type Options struct {
@@ -61,8 +62,9 @@ type ServerOptions struct {
 }
 
 type ServerProviderOptions struct {
-	AWS *awsup.AWSVerifierOptions  `json:"aws,omitempty"`
-	GCE *gcetpm.TPMVerifierOptions `json:"gce,omitempty"`
+	AWS     *awsup.AWSVerifierOptions       `json:"aws,omitempty"`
+	GCE     *gcetpm.TPMVerifierOptions      `json:"gce,omitempty"`
+	Hetzner *hetzner.HetznerVerifierOptions `json:"hetzner,omitempty"`
 }
 
 // DiscoveryOptions configures our support for discovery, particularly gossip DNS (i.e. k8s.local)
