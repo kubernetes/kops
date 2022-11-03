@@ -380,7 +380,7 @@ func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, chang
 			DestinationPort: service.DestinationPort,
 		}
 
-		err := t.RenderResource("hcloud_load_balancer_service", *e.Name, tf)
+		err := t.RenderResource("hcloud_load_balancer_service", fmt.Sprintf("%s-%s-%d", *e.Name, service.Protocol, *service.ListenerPort), tf)
 		if err != nil {
 			return err
 		}
