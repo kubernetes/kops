@@ -6180,8 +6180,8 @@ func (c *CloudFormation) TestTypeRequest(input *TestTypeInput) (req *request.Req
 // To perform testing, CloudFormation assumes the execution role specified when
 // the type was registered. For more information, see RegisterType (AWSCloudFormation/latest/APIReference/API_RegisterType.html).
 //
-// Once you've initiated testing on an extension using TestType, you can use
-// DescribeType (https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_DescribeType.html)
+// Once you've initiated testing on an extension using TestType, you can pass
+// the returned TypeVersionArn into DescribeType (https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_DescribeType.html)
 // to monitor the current test status and test status description for the extension.
 //
 // An extension must have a test status of PASSED before it can be published.
@@ -9797,10 +9797,10 @@ type DeploymentTargets struct {
 	//    This enables user to avoid certain accounts within an OU such as suspended
 	//    accounts.
 	//
-	//    * UNION: (default value) StackSets includes additional accounts deployment
-	//    targets. This is the default value if AccountFilterType is not provided.
-	//    This enables user to update an entire OU and individual accounts from
-	//    a different OU in one request, which used to be two separate requests.
+	//    * UNION: StackSets includes additional accounts deployment targets. This
+	//    is the default value if AccountFilterType is not provided. This enables
+	//    user to update an entire OU and individual accounts from a different OU
+	//    in one request, which used to be two separate requests.
 	//
 	//    * NONE: Deploys to all the accounts in specified organizational units
 	//    (OU).
@@ -13873,7 +13873,7 @@ type ListStackInstancesInput struct {
 	//    in the CloudFormation User Guide.
 	CallAs *string `type:"string" enum:"CallAs"`
 
-	// The status that stack instances are filtered by.
+	// The filter to apply to stack instances
 	Filters []*StackInstanceFilter `type:"list"`
 
 	// The maximum number of results to be returned with a single call. If the number
@@ -14165,6 +14165,9 @@ type ListStackSetOperationResultsInput struct {
 	//    in the CloudFormation User Guide.
 	CallAs *string `type:"string" enum:"CallAs"`
 
+	// The filter to apply to operation results.
+	Filters []*OperationResultFilter `type:"list"`
+
 	// The maximum number of results to be returned with a single call. If the number
 	// of available results exceeds this maximum, the response includes a NextToken
 	// value that you can assign to the NextToken request parameter to get the next
@@ -14226,6 +14229,16 @@ func (s *ListStackSetOperationResultsInput) Validate() error {
 	if s.StackSetName == nil {
 		invalidParams.Add(request.NewErrParamRequired("StackSetName"))
 	}
+	if s.Filters != nil {
+		for i, v := range s.Filters {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Filters", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -14236,6 +14249,12 @@ func (s *ListStackSetOperationResultsInput) Validate() error {
 // SetCallAs sets the CallAs field's value.
 func (s *ListStackSetOperationResultsInput) SetCallAs(v string) *ListStackSetOperationResultsInput {
 	s.CallAs = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *ListStackSetOperationResultsInput) SetFilters(v []*OperationResultFilter) *ListStackSetOperationResultsInput {
+	s.Filters = v
 	return s
 }
 
@@ -15396,6 +15415,60 @@ func (s *ModuleInfo) SetLogicalIdHierarchy(v string) *ModuleInfo {
 // SetTypeHierarchy sets the TypeHierarchy field's value.
 func (s *ModuleInfo) SetTypeHierarchy(v string) *ModuleInfo {
 	s.TypeHierarchy = &v
+	return s
+}
+
+// The status that operation results are filtered by.
+type OperationResultFilter struct {
+	_ struct{} `type:"structure"`
+
+	// The type of filter to apply.
+	Name *string `type:"string" enum:"OperationResultFilterName"`
+
+	// The value to filter by.
+	Values *string `min:"6" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s OperationResultFilter) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s OperationResultFilter) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *OperationResultFilter) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "OperationResultFilter"}
+	if s.Values != nil && len(*s.Values) < 6 {
+		invalidParams.Add(request.NewErrParamMinLen("Values", 6))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetName sets the Name field's value.
+func (s *OperationResultFilter) SetName(v string) *OperationResultFilter {
+	s.Name = &v
+	return s
+}
+
+// SetValues sets the Values field's value.
+func (s *OperationResultFilter) SetValues(v string) *OperationResultFilter {
+	s.Values = &v
 	return s
 }
 
@@ -18173,6 +18246,9 @@ type StackInstance struct {
 	// which drift detection hasn't yet been performed.
 	LastDriftCheckTimestamp *time.Time `type:"timestamp"`
 
+	// The last unique ID of a StackSet operation performed on a stack instance.
+	LastOperationId *string `min:"1" type:"string"`
+
 	// [Service-managed permissions] The organization root ID or organizational
 	// unit (OU) IDs that you specified for DeploymentTargets (https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_DeploymentTargets.html).
 	OrganizationalUnitId *string `type:"string"`
@@ -18250,6 +18326,12 @@ func (s *StackInstance) SetDriftStatus(v string) *StackInstance {
 // SetLastDriftCheckTimestamp sets the LastDriftCheckTimestamp field's value.
 func (s *StackInstance) SetLastDriftCheckTimestamp(v time.Time) *StackInstance {
 	s.LastDriftCheckTimestamp = &v
+	return s
+}
+
+// SetLastOperationId sets the LastOperationId field's value.
+func (s *StackInstance) SetLastOperationId(v string) *StackInstance {
+	s.LastOperationId = &v
 	return s
 }
 
@@ -18354,7 +18436,7 @@ func (s *StackInstanceComprehensiveStatus) SetDetailedStatus(v string) *StackIns
 	return s
 }
 
-// The status that stack instances are filtered by.
+// The filter to apply to stack instances
 type StackInstanceFilter struct {
 	_ struct{} `type:"structure"`
 
@@ -18362,7 +18444,7 @@ type StackInstanceFilter struct {
 	Name *string `type:"string" enum:"StackInstanceFilterName"`
 
 	// The status to filter by.
-	Values *string `min:"6" type:"string"`
+	Values *string `min:"1" type:"string"`
 }
 
 // String returns the string representation.
@@ -18386,8 +18468,8 @@ func (s StackInstanceFilter) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *StackInstanceFilter) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "StackInstanceFilter"}
-	if s.Values != nil && len(*s.Values) < 6 {
-		invalidParams.Add(request.NewErrParamMinLen("Values", 6))
+	if s.Values != nil && len(*s.Values) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Values", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -18437,6 +18519,9 @@ type StackInstanceSummary struct {
 	// on the stack instance. This value will be NULL for any stack instance on
 	// which drift detection hasn't yet been performed.
 	LastDriftCheckTimestamp *time.Time `type:"timestamp"`
+
+	// The last unique ID of a StackSet operation performed on a stack instance.
+	LastOperationId *string `min:"1" type:"string"`
 
 	// [Service-managed permissions] The organization root ID or organizational
 	// unit (OU) IDs that you specified for DeploymentTargets (https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_DeploymentTargets.html).
@@ -18510,6 +18595,12 @@ func (s *StackInstanceSummary) SetDriftStatus(v string) *StackInstanceSummary {
 // SetLastDriftCheckTimestamp sets the LastDriftCheckTimestamp field's value.
 func (s *StackInstanceSummary) SetLastDriftCheckTimestamp(v time.Time) *StackInstanceSummary {
 	s.LastDriftCheckTimestamp = &v
+	return s
+}
+
+// SetLastOperationId sets the LastOperationId field's value.
+func (s *StackInstanceSummary) SetLastOperationId(v string) *StackInstanceSummary {
+	s.LastOperationId = &v
 	return s
 }
 
@@ -19681,6 +19772,9 @@ type StackSetOperation struct {
 	//    stacks without exceeding the failure tolerance for the operation.
 	Status *string `type:"string" enum:"StackSetOperationStatus"`
 
+	// Detailed information about the StackSet operation.
+	StatusDetails *StackSetOperationStatusDetails `type:"structure"`
+
 	// The status of the operation in details.
 	StatusReason *string `type:"string"`
 }
@@ -19772,6 +19866,12 @@ func (s *StackSetOperation) SetStackSetId(v string) *StackSetOperation {
 // SetStatus sets the Status field's value.
 func (s *StackSetOperation) SetStatus(v string) *StackSetOperation {
 	s.Status = &v
+	return s
+}
+
+// SetStatusDetails sets the StatusDetails field's value.
+func (s *StackSetOperation) SetStatusDetails(v *StackSetOperationStatusDetails) *StackSetOperation {
+	s.StatusDetails = v
 	return s
 }
 
@@ -20023,6 +20123,38 @@ func (s *StackSetOperationResultSummary) SetStatusReason(v string) *StackSetOper
 	return s
 }
 
+// Detailed information about the StackSet operation.
+type StackSetOperationStatusDetails struct {
+	_ struct{} `type:"structure"`
+
+	// The number of stack instances for which the StackSet operation failed.
+	FailedStackInstancesCount *int64 `type:"integer"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StackSetOperationStatusDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StackSetOperationStatusDetails) GoString() string {
+	return s.String()
+}
+
+// SetFailedStackInstancesCount sets the FailedStackInstancesCount field's value.
+func (s *StackSetOperationStatusDetails) SetFailedStackInstancesCount(v int64) *StackSetOperationStatusDetails {
+	s.FailedStackInstancesCount = &v
+	return s
+}
+
 // The structures that contain summary information about the specified operation.
 type StackSetOperationSummary struct {
 	_ struct{} `type:"structure"`
@@ -20048,6 +20180,13 @@ type StackSetOperationSummary struct {
 	// The unique ID of the stack set operation.
 	OperationId *string `min:"1" type:"string"`
 
+	// The user-specified preferences for how CloudFormation performs a stack set
+	// operation.
+	//
+	// For more information about maximum concurrent accounts and failure tolerance,
+	// see Stack set operation options (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-concepts.html#stackset-ops-options).
+	OperationPreferences *StackSetOperationPreferences `type:"structure"`
+
 	// The overall status of the operation.
 	//
 	//    * FAILED: The operation exceeded the specified failure tolerance. The
@@ -20072,6 +20211,9 @@ type StackSetOperationSummary struct {
 	//    * SUCCEEDED: The operation completed creating or updating all the specified
 	//    stacks without exceeding the failure tolerance for the operation.
 	Status *string `type:"string" enum:"StackSetOperationStatus"`
+
+	// Detailed information about the stack set operation.
+	StatusDetails *StackSetOperationStatusDetails `type:"structure"`
 
 	// The status of the operation in details.
 	StatusReason *string `type:"string"`
@@ -20119,9 +20261,21 @@ func (s *StackSetOperationSummary) SetOperationId(v string) *StackSetOperationSu
 	return s
 }
 
+// SetOperationPreferences sets the OperationPreferences field's value.
+func (s *StackSetOperationSummary) SetOperationPreferences(v *StackSetOperationPreferences) *StackSetOperationSummary {
+	s.OperationPreferences = v
+	return s
+}
+
 // SetStatus sets the Status field's value.
 func (s *StackSetOperationSummary) SetStatus(v string) *StackSetOperationSummary {
 	s.Status = &v
+	return s
+}
+
+// SetStatusDetails sets the StatusDetails field's value.
+func (s *StackSetOperationSummary) SetStatusDetails(v *StackSetOperationStatusDetails) *StackSetOperationSummary {
+	s.StatusDetails = v
 	return s
 }
 
@@ -23198,6 +23352,18 @@ func OnFailure_Values() []string {
 }
 
 const (
+	// OperationResultFilterNameOperationResultStatus is a OperationResultFilterName enum value
+	OperationResultFilterNameOperationResultStatus = "OPERATION_RESULT_STATUS"
+)
+
+// OperationResultFilterName_Values returns all elements of the OperationResultFilterName enum
+func OperationResultFilterName_Values() []string {
+	return []string{
+		OperationResultFilterNameOperationResultStatus,
+	}
+}
+
+const (
 	// OperationStatusPending is a OperationStatus enum value
 	OperationStatusPending = "PENDING"
 
@@ -23592,12 +23758,16 @@ func StackInstanceDetailedStatus_Values() []string {
 const (
 	// StackInstanceFilterNameDetailedStatus is a StackInstanceFilterName enum value
 	StackInstanceFilterNameDetailedStatus = "DETAILED_STATUS"
+
+	// StackInstanceFilterNameLastOperationId is a StackInstanceFilterName enum value
+	StackInstanceFilterNameLastOperationId = "LAST_OPERATION_ID"
 )
 
 // StackInstanceFilterName_Values returns all elements of the StackInstanceFilterName enum
 func StackInstanceFilterName_Values() []string {
 	return []string{
 		StackInstanceFilterNameDetailedStatus,
+		StackInstanceFilterNameLastOperationId,
 	}
 }
 
