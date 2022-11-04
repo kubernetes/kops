@@ -51,6 +51,9 @@ type AppsService interface {
 	UpdateAlertDestinations(ctx context.Context, appID, alertID string, update *AlertDestinationUpdateRequest) (*AppAlert, *Response, error)
 
 	Detect(ctx context.Context, detect *DetectRequest) (*DetectResponse, *Response, error)
+
+	ListBuildpacks(ctx context.Context) ([]*Buildpack, *Response, error)
+	UpgradeBuildpack(ctx context.Context, appID string, opts UpgradeBuildpackOptions) (*UpgradeBuildpackResponse, *Response, error)
 }
 
 // AppLogs represent app logs.
@@ -73,6 +76,16 @@ type DeploymentCreateRequest struct {
 type AlertDestinationUpdateRequest struct {
 	Emails        []string                `json:"emails"`
 	SlackWebhooks []*AppAlertSlackWebhook `json:"slack_webhooks"`
+}
+
+// UpgradeBuildpackOptions struct for UpgradeBuildpackOptions
+type UpgradeBuildpackOptions struct {
+	// The ID of the buildpack to upgrade.
+	BuildpackID string `json:"buildpack_id,omitempty"`
+	// The Major Version to upgrade the buildpack to. If omitted, the latest available major version will be used.
+	MajorVersion int32 `json:"major_version,omitempty"`
+	// Whether or not to trigger a deployment for the app after upgrading the buildpack.
+	TriggerDeployment bool `json:"trigger_deployment,omitempty"`
 }
 
 type appRoot struct {
@@ -121,6 +134,10 @@ type appAlertsRoot struct {
 
 type appAlertRoot struct {
 	Alert *AppAlert `json:"alert"`
+}
+
+type buildpacksRoot struct {
+	Buildpacks []*Buildpack `json:"buildpacks,omitempty"`
 }
 
 // AppsServiceOp handles communication with Apps methods of the DigitalOcean API.
@@ -442,6 +459,36 @@ func (s *AppsServiceOp) Detect(ctx context.Context, detect *DetectRequest) (*Det
 		return nil, resp, err
 	}
 	return res, resp, nil
+}
+
+// ListBuildpacks lists the available buildpacks on App Platform.
+func (s *AppsServiceOp) ListBuildpacks(ctx context.Context) ([]*Buildpack, *Response, error) {
+	path := fmt.Sprintf("%s/buildpacks", appsBasePath)
+	req, err := s.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	root := new(buildpacksRoot)
+	resp, err := s.client.Do(ctx, req, root)
+	if err != nil {
+		return nil, resp, err
+	}
+	return root.Buildpacks, resp, nil
+}
+
+// UpgradeBuildpack upgrades a buildpack for an app.
+func (s *AppsServiceOp) UpgradeBuildpack(ctx context.Context, appID string, opts UpgradeBuildpackOptions) (*UpgradeBuildpackResponse, *Response, error) {
+	path := fmt.Sprintf("%s/%s/upgrade_buildpack", appsBasePath, appID)
+	req, err := s.client.NewRequest(ctx, http.MethodPost, path, opts)
+	if err != nil {
+		return nil, nil, err
+	}
+	root := new(UpgradeBuildpackResponse)
+	resp, err := s.client.Do(ctx, req, root)
+	if err != nil {
+		return nil, resp, err
+	}
+	return root, resp, nil
 }
 
 // AppComponentType is an app component type.
