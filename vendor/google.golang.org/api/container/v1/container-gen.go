@@ -1389,6 +1389,14 @@ type ClusterUpdate struct {
 	// cluster.
 	DesiredDnsConfig *DNSConfig `json:"desiredDnsConfig,omitempty"`
 
+	// DesiredEnablePrivateEndpoint: Enable/Disable private endpoint for the
+	// cluster's master.
+	DesiredEnablePrivateEndpoint bool `json:"desiredEnablePrivateEndpoint,omitempty"`
+
+	// DesiredGatewayApiConfig: The desired config of Gateway API on this
+	// cluster.
+	DesiredGatewayApiConfig *GatewayAPIConfig `json:"desiredGatewayApiConfig,omitempty"`
+
 	// DesiredGcfsConfig: The desired GCFS config for the cluster
 	DesiredGcfsConfig *GcfsConfig `json:"desiredGcfsConfig,omitempty"`
 
@@ -2097,6 +2105,43 @@ func (s *GPUSharingConfig) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// GatewayAPIConfig: GatewayAPIConfig contains the desired config of
+// Gateway API on this cluster.
+type GatewayAPIConfig struct {
+	// Channel: The Gateway API release channel to use for Gateway API.
+	//
+	// Possible values:
+	//   "CHANNEL_UNSPECIFIED" - Default value.
+	//   "CHANNEL_DISABLED" - Gateway API support is disabled
+	//   "CHANNEL_EXPERIMENTAL" - Gateway API support is enabled,
+	// experimental CRDs are installed
+	//   "CHANNEL_STANDARD" - Gateway API support is enabled, standard CRDs
+	// are installed
+	Channel string `json:"channel,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Channel") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Channel") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *GatewayAPIConfig) MarshalJSON() ([]byte, error) {
+	type NoMethod GatewayAPIConfig
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // GcePersistentDiskCsiDriverConfig: Configuration for the Compute
 // Engine PD CSI driver.
 type GcePersistentDiskCsiDriverConfig struct {
@@ -2755,6 +2800,19 @@ func (s *LegacyAbac) MarshalJSON() ([]byte, error) {
 
 // LinuxNodeConfig: Parameters that can be configured on Linux nodes.
 type LinuxNodeConfig struct {
+	// CgroupMode: cgroup_mode specifies the cgroup mode to be used on the
+	// node.
+	//
+	// Possible values:
+	//   "CGROUP_MODE_UNSPECIFIED" - CGROUP_MODE_UNSPECIFIED is when
+	// unspecified cgroup configuration is used. The default for the GKE
+	// node OS image will be used.
+	//   "CGROUP_MODE_V1" - CGROUP_MODE_V1 specifies to use cgroupv1 for the
+	// cgroup configuration on the node image.
+	//   "CGROUP_MODE_V2" - CGROUP_MODE_V2 specifies to use cgroupv2 for the
+	// cgroup configuration on the node image.
+	CgroupMode string `json:"cgroupMode,omitempty"`
+
 	// Sysctls: The Linux kernel parameters to be applied to the nodes and
 	// all pods running on the nodes. The following parameters are
 	// supported. net.core.busy_poll net.core.busy_read
@@ -2763,7 +2821,7 @@ type LinuxNodeConfig struct {
 	// net.ipv4.tcp_rmem net.ipv4.tcp_wmem net.ipv4.tcp_tw_reuse
 	Sysctls map[string]string `json:"sysctls,omitempty"`
 
-	// ForceSendFields is a list of field names (e.g. "Sysctls") to
+	// ForceSendFields is a list of field names (e.g. "CgroupMode") to
 	// unconditionally include in API requests. By default, fields with
 	// empty or default values are omitted from API requests. However, any
 	// non-pointer, non-interface field appearing in ForceSendFields will be
@@ -2771,7 +2829,7 @@ type LinuxNodeConfig struct {
 	// This may be used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
-	// NullFields is a list of field names (e.g. "Sysctls") to include in
+	// NullFields is a list of field names (e.g. "CgroupMode") to include in
 	// API requests with the JSON null value. By default, fields with empty
 	// values are omitted from API requests. However, any field with an
 	// empty value appearing in NullFields will be sent to the server as
@@ -2946,6 +3004,9 @@ type LoggingComponentConfig struct {
 	//   "COMPONENT_UNSPECIFIED" - Default value. This shouldn't be used.
 	//   "SYSTEM_COMPONENTS" - system components
 	//   "WORKLOADS" - workloads
+	//   "APISERVER" - kube-apiserver
+	//   "SCHEDULER" - kube-scheduler
+	//   "CONTROLLER_MANAGER" - kube-controller-manager
 	EnableComponents []string `json:"enableComponents,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "EnableComponents") to
@@ -3262,6 +3323,10 @@ type MasterAuthorizedNetworksConfig struct {
 	// Enabled: Whether or not master authorized networks is enabled.
 	Enabled bool `json:"enabled,omitempty"`
 
+	// GcpPublicCidrsAccessEnabled: Whether master is accessbile via Google
+	// Compute Engine Public IP addresses.
+	GcpPublicCidrsAccessEnabled bool `json:"gcpPublicCidrsAccessEnabled,omitempty"`
+
 	// ForceSendFields is a list of field names (e.g. "CidrBlocks") to
 	// unconditionally include in API requests. By default, fields with
 	// empty or default values are omitted from API requests. However, any
@@ -3507,6 +3572,10 @@ type NetworkConfig struct {
 	// EnableL4ilbSubsetting: Whether L4ILB Subsetting is enabled for this
 	// cluster.
 	EnableL4ilbSubsetting bool `json:"enableL4ilbSubsetting,omitempty"`
+
+	// GatewayApiConfig: GatewayAPIConfig contains the desired config of
+	// Gateway API on this cluster.
+	GatewayApiConfig *GatewayAPIConfig `json:"gatewayApiConfig,omitempty"`
 
 	// Network: Output only. The relative name of the Google Compute Engine
 	// network(https://cloud.google.com/compute/docs/networks-and-firewalls#n
@@ -3826,6 +3895,10 @@ type NodeConfig struct {
 	// to this node pool.
 	ReservationAffinity *ReservationAffinity `json:"reservationAffinity,omitempty"`
 
+	// ResourceLabels: The resource labels for the node pool to use to
+	// annotate any related Google Compute Engine resources.
+	ResourceLabels map[string]string `json:"resourceLabels,omitempty"`
+
 	// SandboxConfig: Sandbox configuration for this node.
 	SandboxConfig *SandboxConfig `json:"sandboxConfig,omitempty"`
 
@@ -4050,6 +4123,11 @@ type NodeNetworkConfig struct {
 	// Only applicable if `ip_allocation_policy.use_ip_aliases` is true.
 	// This field cannot be changed after the node pool has been created.
 	CreatePodRange bool `json:"createPodRange,omitempty"`
+
+	// EnablePrivateNodes: Whether nodes have internal IP addresses only. If
+	// enable_private_nodes is not specified, then the value is derived from
+	// cluster.privateClusterConfig.enablePrivateNodes
+	EnablePrivateNodes bool `json:"enablePrivateNodes,omitempty"`
 
 	// NetworkPerformanceConfig: Network bandwidth tier configuration.
 	NetworkPerformanceConfig *NetworkPerformanceConfig `json:"networkPerformanceConfig,omitempty"`
@@ -4673,6 +4751,11 @@ type PrivateClusterConfig struct {
 	// cluster's master endpoint.
 	PrivateEndpoint string `json:"privateEndpoint,omitempty"`
 
+	// PrivateEndpointSubnetwork: Subnet to provision the master's private
+	// endpoint during cluster creation. Specified in
+	// projects/*/regions/*/subnetworks/* format.
+	PrivateEndpointSubnetwork string `json:"privateEndpointSubnetwork,omitempty"`
+
 	// PublicEndpoint: Output only. The external IP address of this
 	// cluster's master endpoint.
 	PublicEndpoint string `json:"publicEndpoint,omitempty"`
@@ -4957,6 +5040,35 @@ type ReservationAffinity struct {
 
 func (s *ReservationAffinity) MarshalJSON() ([]byte, error) {
 	type NoMethod ReservationAffinity
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ResourceLabels: Collection of GCP labels
+// (https://cloud.google.com/resource-manager/docs/creating-managing-labels).
+type ResourceLabels struct {
+	// Labels: Map of node label keys and node label values.
+	Labels map[string]string `json:"labels,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Labels") to
+	// unconditionally include in API requests. By default, fields with
+	// empty or default values are omitted from API requests. However, any
+	// non-pointer, non-interface field appearing in ForceSendFields will be
+	// sent to the server regardless of whether the field is empty or not.
+	// This may be used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Labels") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ResourceLabels) MarshalJSON() ([]byte, error) {
+	type NoMethod ResourceLabels
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -6005,7 +6117,7 @@ type StandardRolloutPolicy struct {
 	// BatchNodeCount: Number of blue nodes to drain in a batch.
 	BatchNodeCount int64 `json:"batchNodeCount,omitempty"`
 
-	// BatchPercentage: Percentage of the bool pool nodes to drain in a
+	// BatchPercentage: Percentage of the blue pool nodes to drain in a
 	// batch. The range of this field should be (0.0, 1.0].
 	BatchPercentage float64 `json:"batchPercentage,omitempty"`
 
@@ -6525,6 +6637,10 @@ type UpdateNodePoolRequest struct {
 	// (https://cloud.google.com/resource-manager/docs/creating-managing-projects).
 	// This field has been deprecated and replaced by the name field.
 	ProjectId string `json:"projectId,omitempty"`
+
+	// ResourceLabels: The resource labels for the node pool to use to
+	// annotate any related Google Compute Engine resources.
+	ResourceLabels *ResourceLabels `json:"resourceLabels,omitempty"`
 
 	// Tags: The desired network tags to be applied to all nodes in the node
 	// pool. If this field is not present, the tags will not be changed.
