@@ -18,6 +18,7 @@ package manager
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"net"
 	"net/http"
@@ -241,6 +242,9 @@ type Options struct {
 	// It is used to set webhook.Server.CertDir if WebhookServer is not set.
 	CertDir string
 
+	// TLSOpts is used to allow configuring the TLS config used for the webhook server.
+	TLSOpts []func(*tls.Config)
+
 	// WebhookServer is an externally configured webhook.Server. By default,
 	// a Manager will create a default server using Port, Host, and CertDir;
 	// if this is set, the Manager will use this server instead.
@@ -421,6 +425,7 @@ func New(config *rest.Config, options Options) (Manager, error) {
 		port:                          options.Port,
 		host:                          options.Host,
 		certDir:                       options.CertDir,
+		tlsOpts:                       options.TLSOpts,
 		webhookServer:                 options.WebhookServer,
 		leaseDuration:                 *options.LeaseDuration,
 		renewDeadline:                 *options.RenewDeadline,

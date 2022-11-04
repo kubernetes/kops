@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	libraryVersion = "1.87.0"
+	libraryVersion = "1.89.0"
 	defaultBaseURL = "https://api.digitalocean.com/"
 	userAgent      = "godo/" + libraryVersion
 	mediaType      = "application/json"
@@ -103,6 +103,9 @@ type ListOptions struct {
 
 	// For paginated result sets, the number of results to include per page.
 	PerPage int `url:"per_page,omitempty"`
+
+	// Whether App responses should include project_id fields. The field will be empty if false or if omitted. (ListApps)
+	WithProjects bool `url:"with_projects,omitempty"`
 }
 
 // TokenListOptions specifies the optional parameters to various List methods that support token pagination.

@@ -26,7 +26,7 @@ import (
 //	// myFunc uses an SDK service client to make a request to
 //	// Amazon Elastic Compute Cloud.
 //	func myFunc(svc ec2iface.EC2API) bool {
-//	    // Make svc.AcceptReservedInstancesExchangeQuote request
+//	    // Make svc.AcceptAddressTransfer request
 //	}
 //
 //	func main() {
@@ -42,7 +42,7 @@ import (
 //	type mockEC2Client struct {
 //	    ec2iface.EC2API
 //	}
-//	func (m *mockEC2Client) AcceptReservedInstancesExchangeQuote(input *ec2.AcceptReservedInstancesExchangeQuoteInput) (*ec2.AcceptReservedInstancesExchangeQuoteOutput, error) {
+//	func (m *mockEC2Client) AcceptAddressTransfer(input *ec2.AcceptAddressTransferInput) (*ec2.AcceptAddressTransferOutput, error) {
 //	    // mock response/functionality
 //	}
 //
@@ -60,6 +60,10 @@ import (
 // and waiters. Its suggested to use the pattern above for testing, or using
 // tooling to generate mocks to satisfy the interfaces.
 type EC2API interface {
+	AcceptAddressTransfer(*ec2.AcceptAddressTransferInput) (*ec2.AcceptAddressTransferOutput, error)
+	AcceptAddressTransferWithContext(aws.Context, *ec2.AcceptAddressTransferInput, ...request.Option) (*ec2.AcceptAddressTransferOutput, error)
+	AcceptAddressTransferRequest(*ec2.AcceptAddressTransferInput) (*request.Request, *ec2.AcceptAddressTransferOutput)
+
 	AcceptReservedInstancesExchangeQuote(*ec2.AcceptReservedInstancesExchangeQuoteInput) (*ec2.AcceptReservedInstancesExchangeQuoteOutput, error)
 	AcceptReservedInstancesExchangeQuoteWithContext(aws.Context, *ec2.AcceptReservedInstancesExchangeQuoteInput, ...request.Option) (*ec2.AcceptReservedInstancesExchangeQuoteOutput, error)
 	AcceptReservedInstancesExchangeQuoteRequest(*ec2.AcceptReservedInstancesExchangeQuoteInput) (*request.Request, *ec2.AcceptReservedInstancesExchangeQuoteOutput)
@@ -859,6 +863,13 @@ type EC2API interface {
 	DescribeAccountAttributes(*ec2.DescribeAccountAttributesInput) (*ec2.DescribeAccountAttributesOutput, error)
 	DescribeAccountAttributesWithContext(aws.Context, *ec2.DescribeAccountAttributesInput, ...request.Option) (*ec2.DescribeAccountAttributesOutput, error)
 	DescribeAccountAttributesRequest(*ec2.DescribeAccountAttributesInput) (*request.Request, *ec2.DescribeAccountAttributesOutput)
+
+	DescribeAddressTransfers(*ec2.DescribeAddressTransfersInput) (*ec2.DescribeAddressTransfersOutput, error)
+	DescribeAddressTransfersWithContext(aws.Context, *ec2.DescribeAddressTransfersInput, ...request.Option) (*ec2.DescribeAddressTransfersOutput, error)
+	DescribeAddressTransfersRequest(*ec2.DescribeAddressTransfersInput) (*request.Request, *ec2.DescribeAddressTransfersOutput)
+
+	DescribeAddressTransfersPages(*ec2.DescribeAddressTransfersInput, func(*ec2.DescribeAddressTransfersOutput, bool) bool) error
+	DescribeAddressTransfersPagesWithContext(aws.Context, *ec2.DescribeAddressTransfersInput, func(*ec2.DescribeAddressTransfersOutput, bool) bool, ...request.Option) error
 
 	DescribeAddresses(*ec2.DescribeAddressesInput) (*ec2.DescribeAddressesOutput, error)
 	DescribeAddressesWithContext(aws.Context, *ec2.DescribeAddressesInput, ...request.Option) (*ec2.DescribeAddressesOutput, error)
@@ -1716,6 +1727,10 @@ type EC2API interface {
 	DetachVpnGatewayWithContext(aws.Context, *ec2.DetachVpnGatewayInput, ...request.Option) (*ec2.DetachVpnGatewayOutput, error)
 	DetachVpnGatewayRequest(*ec2.DetachVpnGatewayInput) (*request.Request, *ec2.DetachVpnGatewayOutput)
 
+	DisableAddressTransfer(*ec2.DisableAddressTransferInput) (*ec2.DisableAddressTransferOutput, error)
+	DisableAddressTransferWithContext(aws.Context, *ec2.DisableAddressTransferInput, ...request.Option) (*ec2.DisableAddressTransferOutput, error)
+	DisableAddressTransferRequest(*ec2.DisableAddressTransferInput) (*request.Request, *ec2.DisableAddressTransferOutput)
+
 	DisableEbsEncryptionByDefault(*ec2.DisableEbsEncryptionByDefaultInput) (*ec2.DisableEbsEncryptionByDefaultOutput, error)
 	DisableEbsEncryptionByDefaultWithContext(aws.Context, *ec2.DisableEbsEncryptionByDefaultInput, ...request.Option) (*ec2.DisableEbsEncryptionByDefaultOutput, error)
 	DisableEbsEncryptionByDefaultRequest(*ec2.DisableEbsEncryptionByDefaultInput) (*request.Request, *ec2.DisableEbsEncryptionByDefaultOutput)
@@ -1803,6 +1818,10 @@ type EC2API interface {
 	DisassociateVpcCidrBlock(*ec2.DisassociateVpcCidrBlockInput) (*ec2.DisassociateVpcCidrBlockOutput, error)
 	DisassociateVpcCidrBlockWithContext(aws.Context, *ec2.DisassociateVpcCidrBlockInput, ...request.Option) (*ec2.DisassociateVpcCidrBlockOutput, error)
 	DisassociateVpcCidrBlockRequest(*ec2.DisassociateVpcCidrBlockInput) (*request.Request, *ec2.DisassociateVpcCidrBlockOutput)
+
+	EnableAddressTransfer(*ec2.EnableAddressTransferInput) (*ec2.EnableAddressTransferOutput, error)
+	EnableAddressTransferWithContext(aws.Context, *ec2.EnableAddressTransferInput, ...request.Option) (*ec2.EnableAddressTransferOutput, error)
+	EnableAddressTransferRequest(*ec2.EnableAddressTransferInput) (*request.Request, *ec2.EnableAddressTransferOutput)
 
 	EnableEbsEncryptionByDefault(*ec2.EnableEbsEncryptionByDefaultInput) (*ec2.EnableEbsEncryptionByDefaultOutput, error)
 	EnableEbsEncryptionByDefaultWithContext(aws.Context, *ec2.EnableEbsEncryptionByDefaultInput, ...request.Option) (*ec2.EnableEbsEncryptionByDefaultOutput, error)

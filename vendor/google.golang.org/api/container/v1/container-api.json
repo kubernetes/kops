@@ -2487,7 +2487,7 @@
       }
     }
   },
-  "revision": "20220923",
+  "revision": "20221017",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -3229,6 +3229,14 @@
           "$ref": "DNSConfig",
           "description": "DNSConfig contains clusterDNS config for this cluster."
         },
+        "desiredEnablePrivateEndpoint": {
+          "description": "Enable/Disable private endpoint for the cluster's master.",
+          "type": "boolean"
+        },
+        "desiredGatewayApiConfig": {
+          "$ref": "GatewayAPIConfig",
+          "description": "The desired config of Gateway API on this cluster."
+        },
         "desiredGcfsConfig": {
           "$ref": "GcfsConfig",
           "description": "The desired GCFS config for the cluster"
@@ -3633,6 +3641,29 @@
       },
       "type": "object"
     },
+    "GatewayAPIConfig": {
+      "description": "GatewayAPIConfig contains the desired config of Gateway API on this cluster.",
+      "id": "GatewayAPIConfig",
+      "properties": {
+        "channel": {
+          "description": "The Gateway API release channel to use for Gateway API.",
+          "enum": [
+            "CHANNEL_UNSPECIFIED",
+            "CHANNEL_DISABLED",
+            "CHANNEL_EXPERIMENTAL",
+            "CHANNEL_STANDARD"
+          ],
+          "enumDescriptions": [
+            "Default value.",
+            "Gateway API support is disabled",
+            "Gateway API support is enabled, experimental CRDs are installed",
+            "Gateway API support is enabled, standard CRDs are installed"
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "GcePersistentDiskCsiDriverConfig": {
       "description": "Configuration for the Compute Engine PD CSI driver.",
       "id": "GcePersistentDiskCsiDriverConfig",
@@ -3980,6 +4011,20 @@
       "description": "Parameters that can be configured on Linux nodes.",
       "id": "LinuxNodeConfig",
       "properties": {
+        "cgroupMode": {
+          "description": "cgroup_mode specifies the cgroup mode to be used on the node.",
+          "enum": [
+            "CGROUP_MODE_UNSPECIFIED",
+            "CGROUP_MODE_V1",
+            "CGROUP_MODE_V2"
+          ],
+          "enumDescriptions": [
+            "CGROUP_MODE_UNSPECIFIED is when unspecified cgroup configuration is used. The default for the GKE node OS image will be used.",
+            "CGROUP_MODE_V1 specifies to use cgroupv1 for the cgroup configuration on the node image.",
+            "CGROUP_MODE_V2 specifies to use cgroupv2 for the cgroup configuration on the node image."
+          ],
+          "type": "string"
+        },
         "sysctls": {
           "additionalProperties": {
             "type": "string"
@@ -4074,12 +4119,18 @@
             "enum": [
               "COMPONENT_UNSPECIFIED",
               "SYSTEM_COMPONENTS",
-              "WORKLOADS"
+              "WORKLOADS",
+              "APISERVER",
+              "SCHEDULER",
+              "CONTROLLER_MANAGER"
             ],
             "enumDescriptions": [
               "Default value. This shouldn't be used.",
               "system components",
-              "workloads"
+              "workloads",
+              "kube-apiserver",
+              "kube-scheduler",
+              "kube-controller-manager"
             ],
             "type": "string"
           },
@@ -4234,6 +4285,10 @@
         "enabled": {
           "description": "Whether or not master authorized networks is enabled.",
           "type": "boolean"
+        },
+        "gcpPublicCidrsAccessEnabled": {
+          "description": "Whether master is accessbile via Google Compute Engine Public IP addresses.",
+          "type": "boolean"
         }
       },
       "type": "object"
@@ -4362,6 +4417,10 @@
         "enableL4ilbSubsetting": {
           "description": "Whether L4ILB Subsetting is enabled for this cluster.",
           "type": "boolean"
+        },
+        "gatewayApiConfig": {
+          "$ref": "GatewayAPIConfig",
+          "description": "GatewayAPIConfig contains the desired config of Gateway API on this cluster."
         },
         "network": {
           "description": "Output only. The relative name of the Google Compute Engine network(https://cloud.google.com/compute/docs/networks-and-firewalls#networks) to which the cluster is connected. Example: projects/my-project/global/networks/my-network",
@@ -4563,6 +4622,13 @@
           "$ref": "ReservationAffinity",
           "description": "The optional reservation affinity. Setting this field will apply the specified [Zonal Compute Reservation](https://cloud.google.com/compute/docs/instances/reserving-zonal-resources) to this node pool."
         },
+        "resourceLabels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "The resource labels for the node pool to use to annotate any related Google Compute Engine resources.",
+          "type": "object"
+        },
         "sandboxConfig": {
           "$ref": "SandboxConfig",
           "description": "Sandbox configuration for this node."
@@ -4678,6 +4744,10 @@
       "properties": {
         "createPodRange": {
           "description": "Input only. Whether to create a new range for pod IPs in this node pool. Defaults are provided for `pod_range` and `pod_ipv4_cidr_block` if they are not specified. If neither `create_pod_range` or `pod_range` are specified, the cluster-level default (`ip_allocation_policy.cluster_ipv4_cidr_block`) is used. Only applicable if `ip_allocation_policy.use_ip_aliases` is true. This field cannot be changed after the node pool has been created.",
+          "type": "boolean"
+        },
+        "enablePrivateNodes": {
+          "description": "Whether nodes have internal IP addresses only. If enable_private_nodes is not specified, then the value is derived from cluster.privateClusterConfig.enablePrivateNodes",
           "type": "boolean"
         },
         "networkPerformanceConfig": {
@@ -5136,6 +5206,10 @@
           "description": "Output only. The internal IP address of this cluster's master endpoint.",
           "type": "string"
         },
+        "privateEndpointSubnetwork": {
+          "description": "Subnet to provision the master's private endpoint during cluster creation. Specified in projects/*/regions/*/subnetworks/* format.",
+          "type": "string"
+        },
         "publicEndpoint": {
           "description": "Output only. The external IP address of this cluster's master endpoint.",
           "type": "string"
@@ -5275,6 +5349,20 @@
             "type": "string"
           },
           "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "ResourceLabels": {
+      "description": "Collection of [GCP labels](https://cloud.google.com/resource-manager/docs/creating-managing-labels).",
+      "id": "ResourceLabels",
+      "properties": {
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Map of node label keys and node label values.",
+          "type": "object"
         }
       },
       "type": "object"
@@ -5878,7 +5966,7 @@
           "type": "integer"
         },
         "batchPercentage": {
-          "description": "Percentage of the bool pool nodes to drain in a batch. The range of this field should be (0.0, 1.0].",
+          "description": "Percentage of the blue pool nodes to drain in a batch. The range of this field should be (0.0, 1.0].",
           "format": "float",
           "type": "number"
         },
@@ -6171,6 +6259,10 @@
         "projectId": {
           "description": "Deprecated. The Google Developers Console [project ID or project number](https://cloud.google.com/resource-manager/docs/creating-managing-projects). This field has been deprecated and replaced by the name field.",
           "type": "string"
+        },
+        "resourceLabels": {
+          "$ref": "ResourceLabels",
+          "description": "The resource labels for the node pool to use to annotate any related Google Compute Engine resources."
         },
         "tags": {
           "$ref": "NetworkTags",

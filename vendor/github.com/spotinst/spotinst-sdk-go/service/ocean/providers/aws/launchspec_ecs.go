@@ -470,6 +470,13 @@ func (o *ECSLaunchSpec) SetScheduling(v *ECSLaunchSpecScheduling) *ECSLaunchSpec
 	return o
 }
 
+func (o *ECSLaunchSpec) SetStrategy(v *ECSLaunchSpecStrategy) *ECSLaunchSpec {
+	if o.Strategy = v; o.Strategy == nil {
+		o.nullFields = append(o.nullFields, "ECSLaunchSpecStrategy")
+	}
+	return o
+}
+
 // endregion
 
 // region Attributes
