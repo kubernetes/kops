@@ -534,6 +534,9 @@ func DumpInstance(op *resources.DumpOperation, r *resources.Resource) error {
 			}
 		}
 	}
+	if len(i.PublicAddresses) == 0 && ec2Instance.Ipv6Address != nil {
+		i.PublicAddresses = append(i.PublicAddresses, *ec2Instance.Ipv6Address)
+	}
 	for _, tag := range ec2Instance.Tags {
 		key := aws.StringValue(tag.Key)
 		if !strings.HasPrefix(key, awsup.TagNameRolePrefix) {
