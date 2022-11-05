@@ -393,6 +393,9 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 	instanceGroups = append(instanceGroups, nodes...)
 	instanceGroups = append(instanceGroups, bastions...)
 
+	// forcing image for the pre-submit
+	opt.Image = "099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20221014"
+
 	for _, instanceGroup := range instanceGroups {
 		g := instanceGroup
 		ig := g

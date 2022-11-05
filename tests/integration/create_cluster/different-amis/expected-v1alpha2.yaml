@@ -72,7 +72,7 @@ metadata:
     kops.k8s.io/cluster: amis.example.com
   name: apiserver-us-test-1a
 spec:
-  image: ami-image
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20221014
   instanceMetadata:
     httpPutResponseHopLimit: 1
     httpTokens: required
@@ -93,7 +93,7 @@ metadata:
     kops.k8s.io/cluster: amis.example.com
   name: bastions
 spec:
-  image: ami-image
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20221014
   instanceMetadata:
     httpPutResponseHopLimit: 1
     httpTokens: required
