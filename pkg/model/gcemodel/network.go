@@ -46,7 +46,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// As we're creating the network, we're also creating the subnets.
 		// We therefore use custom mode, for a few reasons:
 		// 1) We aren't going to use the auto-allocated subnets anyway
-		// 2) The GCE docs recommend that production usage plan CIDR allocation by using custom mode
+		// 2) The GCP docs recommend that production usage plan CIDR allocation by using custom mode
 		network.Mode = "custom"
 	}
 	c.AddTask(network)
@@ -77,7 +77,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		if gce.UsesIPAliases(b.Cluster) {
 			// The primary CIDR is used by the nodes,
 			// services and pods draw from the secondary IP ranges.
-			// All the CIDRs must be valid RFC1918 IP addresses, which makes conversion from the "pure kubenet" 100.64.0.0 GCE range difficult
+			// All the CIDRs must be valid RFC1918 IP addresses, which makes conversion from the "pure kubenet" 100.64.0.0 GCP range difficult
 
 			t.CIDR = s(subnet.CIDR)
 			t.SecondaryIpRanges[b.NameForIPAliasRange("pods")] = b.Cluster.Spec.PodCIDR

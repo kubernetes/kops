@@ -41,7 +41,7 @@ const (
 	accessConfigOneToOneNAT = "ONE_TO_ONE_NAT"
 )
 
-// InstanceTemplate represents a GCE InstanceTemplate
+// InstanceTemplate represents a GCP InstanceTemplate
 // +kops:fitask
 type InstanceTemplate struct {
 	Name *string
@@ -588,7 +588,7 @@ func mapServiceAccountsToTerraform(serviceAccounts []*ServiceAccount, saScopes [
 		s = scopeToLongForm(s)
 		scopes = append(scopes, s)
 	}
-	// Note that GCE currently only allows one service account per VM,
+	// Note that GCP currently only allows one service account per VM,
 	// but the model in both the API and terraform allows more.
 	var out []*terraformTemplateServiceAccount
 	for _, serviceAccount := range serviceAccounts {

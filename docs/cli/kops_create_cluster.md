@@ -82,7 +82,7 @@ kops create cluster [CLUSTER] [flags]
       --dry-run                          If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.
       --encrypt-etcd-storage             Generate key in AWS KMS and use it for encrypt etcd volumes
       --etcd-storage-type string         The default storage type for etcd members
-      --gce-service-account string       Service account with which the GCE VM runs. Warning: if not set, VMs will run as default compute service account.
+      --gce-service-account string       Service account with which the GCP VM runs. Warning: if not set, VMs will run as default compute service account.
   -h, --help                             help for cluster
       --image string                     Machine image for all instances
       --ipv6                             Use IPv6 for the pod network (AWS only)
@@ -114,7 +114,7 @@ kops create cluster [CLUSTER] [flags]
       --os-octavia-provider string       Octavia provider to use
       --out string                       Path to write any local output
   -o, --output string                    Output format. One of json or yaml. Used with the --dry-run flag.
-      --project string                   Project to use (must be set on GCE)
+      --project string                   Project to use (must be set on GCP)
       --set strings                      Directly set values in the spec
       --ssh-access strings               Restrict SSH access to this CIDR.  If not set, uses the value of the admin-access flag.
       --ssh-public-key string            SSH public key to use

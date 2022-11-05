@@ -75,7 +75,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 		requiresSubnetCIDR = false
 		requiresNetworkCIDR = false
 	}
-	if c.Spec.CloudProvider.GCE != nil {
+	if c.Spec.CloudProvider.GCP != nil {
 		if optionTaken {
 			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("gce"), "only one cloudProvider option permitted"))
 		}
@@ -83,7 +83,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 		requiresNetworkCIDR = false
 		requiresSubnetCIDR = false
 		if c.Spec.NetworkCIDR != "" {
-			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("networkCIDR"), "networkCIDR should not be set on GCE"))
+			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("networkCIDR"), "networkCIDR should not be set on GCP"))
 		}
 	}
 	if c.Spec.CloudProvider.Hetzner != nil {

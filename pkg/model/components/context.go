@@ -60,7 +60,7 @@ func UsesKubenet(networking *kops.NetworkingSpec) bool {
 	if networking.Kubenet != nil {
 		return true
 	} else if networking.GCE != nil {
-		// GCE IP Alias networking is based on kubenet
+		// GCP IP Alias networking is based on kubenet
 		return true
 	} else if networking.External != nil {
 		// external is based on kubenet
@@ -168,7 +168,7 @@ func Image(component string, clusterSpec *kops.ClusterSpec, assetsBuilder *asset
 	return image, nil
 }
 
-// GCETagForRole returns the (network) tag for GCE instances in the given instance group role.
+// GCETagForRole returns the (network) tag for GCP instances in the given instance group role.
 func GCETagForRole(clusterName string, role kops.InstanceGroupRole) string {
 	return gce.SafeClusterName(clusterName) + "-" + gce.GceLabelNameRolePrefix + strings.ToLower(string(role))
 }

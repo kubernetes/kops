@@ -57,7 +57,7 @@ func ClusterPrefixedName(objectName string, clusterName string, maxLength int) s
 		klog.Fatalf("cannot construct a reasonable object name of length %d with a suffix of length %d (%q)", maxLength, len(suffix), suffix)
 	}
 
-	// GCE does not support . in tags / names
+	// GCP does not support . in tags / names
 	safeClusterName := strings.Replace(clusterName, ".", "-", -1)
 
 	opt := truncate.TruncateStringOptions{
@@ -78,7 +78,7 @@ func ClusterSuffixedName(objectName string, clusterName string, maxLength int) s
 		klog.Fatalf("cannot construct a reasonable object name of length %d with a prefix of length %d (%q)", maxLength, len(prefix), prefix)
 	}
 
-	// GCE does not support . in tags / names
+	// GCP does not support . in tags / names
 	safeClusterName := strings.Replace(clusterName, ".", "-", -1)
 
 	opt := truncate.TruncateStringOptions{
@@ -94,14 +94,14 @@ func ClusterSuffixedName(objectName string, clusterName string, maxLength int) s
 // SafeClusterName returns a safe cluster name
 // deprecated: prefer ClusterSuffixedName
 func SafeClusterName(clusterName string) string {
-	// GCE does not support . in tags / names
+	// GCP does not support . in tags / names
 	safeClusterName := strings.Replace(clusterName, ".", "-", -1)
 	return safeClusterName
 }
 
 // SafeTruncatedClusterName returns a safe and truncated cluster name
 func SafeTruncatedClusterName(clusterName string, maxLength int) string {
-	// GCE does not support . in tags / names
+	// GCP does not support . in tags / names
 	safeClusterName := strings.Replace(clusterName, ".", "-", -1)
 
 	opt := truncate.TruncateStringOptions{
@@ -114,7 +114,7 @@ func SafeTruncatedClusterName(clusterName string, maxLength int) string {
 	return truncatedClusterName
 }
 
-// SafeObjectName returns the object name and cluster name escaped for GCE
+// SafeObjectName returns the object name and cluster name escaped for GCP
 func SafeObjectName(name string, clusterName string) string {
 	gceName := name + "-" + clusterName
 
@@ -137,11 +137,11 @@ func LastComponent(s string) string {
 	return s
 }
 
-// ZoneToRegion maps a GCE zone name to a GCE region name, returning an error if it cannot be mapped
+// ZoneToRegion maps a GCP zone name to a GCP region name, returning an error if it cannot be mapped
 func ZoneToRegion(zone string) (string, error) {
 	tokens := strings.Split(zone, "-")
 	if len(tokens) <= 2 {
-		return "", fmt.Errorf("invalid GCE Zone: %v", zone)
+		return "", fmt.Errorf("invalid GCP Zone: %v", zone)
 	}
 	region := tokens[0] + "-" + tokens[1]
 	return region, nil

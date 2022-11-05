@@ -99,7 +99,7 @@ func (c *VFSCAStore) parseKeysetYaml(data []byte) (*kops.Keyset, bool, error) {
 
 // loadKeyset loads a Keyset from the path.
 // Returns (nil, nil) if the file is not found
-// Bundles avoid the need for a list-files permission, which can be tricky on e.g. GCE
+// Bundles avoid the need for a list-files permission, which can be tricky on e.g. GCP
 func (c *VFSCAStore) loadKeyset(p vfs.Path) (*Keyset, error) {
 	bundlePath := p.Join("keyset.yaml")
 	data, err := bundlePath.ReadFile()

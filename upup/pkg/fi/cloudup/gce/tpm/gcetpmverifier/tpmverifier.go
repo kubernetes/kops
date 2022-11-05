@@ -47,7 +47,7 @@ type tpmVerifier struct {
 	computeClient *compute.Service
 }
 
-// NewTPMVerifier constructs a new TPM verifier for GCE.
+// NewTPMVerifier constructs a new TPM verifier for GCP.
 func NewTPMVerifier(opt *gcetpm.TPMVerifierOptions) (bootstrap.Verifier, error) {
 	ctx := context.Background()
 
@@ -66,7 +66,7 @@ var _ bootstrap.Verifier = &tpmVerifier{}
 
 func (v *tpmVerifier) VerifyToken(ctx context.Context, authToken string, body []byte, useInstanceIDForNodeName bool) (*bootstrap.VerifyResult, error) {
 	// Reminder: we shouldn't trust any data we get from the client until we've checked the signature (and even then...)
-	// Thankfully the GCE SDK does seem to escape the parameters correctly, for example.
+	// Thankfully the GCP SDK does seem to escape the parameters correctly, for example.
 
 	if !strings.HasPrefix(authToken, gcetpm.GCETPMAuthenticationTokenPrefix) {
 		return nil, fmt.Errorf("incorrect authorization type")
@@ -153,9 +153,9 @@ func (v *tpmVerifier) VerifyToken(ctx context.Context, authToken string, body []
 		return nil, fmt.Errorf("could not determine instance group for instance %s", instance.SelfLink)
 	}
 
-	// Verify the token has a valid GCE TPM signature.
+	// Verify the token has a valid GCP TPM signature.
 	{
-		// Note - we might be able to avoid this call by including the attestation certificate (signed by GCE) in the claim.
+		// Note - we might be able to avoid this call by including the attestation certificate (signed by GCP) in the claim.
 		tpmSigningKey, err := v.getTPMSigningKey(ctx, &tokenData)
 		if err != nil {
 			return nil, err

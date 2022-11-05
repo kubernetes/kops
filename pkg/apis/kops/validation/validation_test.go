@@ -884,7 +884,7 @@ func Test_Validate_Cilium(t *testing.T) {
 			},
 			Spec: kops.ClusterSpec{
 				CloudProvider: kops.CloudProviderSpec{
-					GCE: &kops.GCESpec{},
+					GCP: &kops.GCPSpec{},
 				},
 			},
 			ExpectedErrors: []string{"Forbidden::cilium.ipam"},
@@ -1413,7 +1413,7 @@ func Test_Validate_Nvidia_Cluster(t *testing.T) {
 					},
 				},
 				CloudProvider: kops.CloudProviderSpec{
-					GCE: &kops.GCESpec{},
+					GCP: &kops.GCPSpec{},
 				},
 				ContainerRuntime: "containerd",
 			},
@@ -1479,7 +1479,7 @@ func Test_Validate_Nvidia_Ig(t *testing.T) {
 					},
 				},
 				CloudProvider: kops.CloudProviderSpec{
-					GCE: &kops.GCESpec{},
+					GCP: &kops.GCPSpec{},
 				},
 				ContainerRuntime: "containerd",
 			},

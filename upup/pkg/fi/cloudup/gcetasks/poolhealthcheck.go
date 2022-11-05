@@ -24,7 +24,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 )
 
-// PoolHealthCheck represents a GCE target pool HealthCheck
+// PoolHealthCheck represents a GCP target pool HealthCheck
 // +kops:fitask
 type PoolHealthCheck struct {
 	Name        *string

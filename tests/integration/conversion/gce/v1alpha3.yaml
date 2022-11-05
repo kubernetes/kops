@@ -12,7 +12,7 @@ spec:
     alwaysAllow: {}
   channel: stable
   cloudProvider:
-    gce:
+    gcp:
       project: testProject
   configBase: memfs://clusters.example.com/minimal.example.com
   etcdClusters:

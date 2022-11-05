@@ -58,7 +58,7 @@ const (
 // Example: nodeport-external-to-node-ipv6
 const maxPrefixTokens = 5
 
-// Maximum length of a GCE route name
+// Maximum length of a GCP route name
 const maxGCERouteNameLength = 63
 
 func ListResourcesGCE(gceCloud gce.GCECloud, clusterName string, region string) (map[string]*resources.Resource, error) {
@@ -364,7 +364,7 @@ func deleteGCEDisk(cloud fi.Cloud, r *resources.Resource) error {
 	c := cloud.(gce.GCECloud)
 	t := r.Obj.(*compute.Disk)
 
-	klog.V(2).Infof("Deleting GCE Disk %s", t.SelfLink)
+	klog.V(2).Infof("Deleting GCP Disk %s", t.SelfLink)
 	u, err := gce.ParseGoogleCloudURL(t.SelfLink)
 	if err != nil {
 		return err
@@ -437,7 +437,7 @@ func deleteTargetPool(cloud fi.Cloud, r *resources.Resource) error {
 	c := cloud.(gce.GCECloud)
 	t := r.Obj.(*compute.TargetPool)
 
-	klog.V(2).Infof("Deleting GCE TargetPool %s", t.SelfLink)
+	klog.V(2).Infof("Deleting GCP TargetPool %s", t.SelfLink)
 	u, err := gce.ParseGoogleCloudURL(t.SelfLink)
 	if err != nil {
 		return err
@@ -499,7 +499,7 @@ func deleteForwardingRule(cloud fi.Cloud, r *resources.Resource) error {
 	c := cloud.(gce.GCECloud)
 	t := r.Obj.(*compute.ForwardingRule)
 
-	klog.V(2).Infof("Deleting GCE ForwardingRule %s", t.SelfLink)
+	klog.V(2).Infof("Deleting GCP ForwardingRule %s", t.SelfLink)
 	u, err := gce.ParseGoogleCloudURL(t.SelfLink)
 	if err != nil {
 		return err
@@ -682,7 +682,7 @@ func deleteHTTPHealthCheck(cloud fi.Cloud, r *resources.Resource) error {
 	c := cloud.(gce.GCECloud)
 	t := r.Obj.(*compute.HttpHealthCheck)
 
-	klog.V(2).Infof("Deleting GCE HTTP HealthCheck %s", t.SelfLink)
+	klog.V(2).Infof("Deleting GCP HTTP HealthCheck %s", t.SelfLink)
 	u, err := gce.ParseGoogleCloudURL(t.SelfLink)
 	if err != nil {
 		return err
@@ -705,7 +705,7 @@ func deleteFirewallRule(cloud fi.Cloud, r *resources.Resource) error {
 	c := cloud.(gce.GCECloud)
 	t := r.Obj.(*compute.Firewall)
 
-	klog.V(2).Infof("Deleting GCE FirewallRule %s", t.SelfLink)
+	klog.V(2).Infof("Deleting GCP FirewallRule %s", t.SelfLink)
 	u, err := gce.ParseGoogleCloudURL(t.SelfLink)
 	if err != nil {
 		return err
@@ -792,7 +792,7 @@ func deleteRoute(cloud fi.Cloud, r *resources.Resource) error {
 	c := cloud.(gce.GCECloud)
 	t := r.Obj.(*compute.Route)
 
-	klog.V(2).Infof("Deleting GCE Route %s", t.SelfLink)
+	klog.V(2).Infof("Deleting GCP Route %s", t.SelfLink)
 	u, err := gce.ParseGoogleCloudURL(t.SelfLink)
 	if err != nil {
 		return err
@@ -847,7 +847,7 @@ func deleteAddress(cloud fi.Cloud, r *resources.Resource) error {
 	c := cloud.(gce.GCECloud)
 	t := r.Obj.(*compute.Address)
 
-	klog.V(2).Infof("Deleting GCE Address %s", t.SelfLink)
+	klog.V(2).Infof("Deleting GCP Address %s", t.SelfLink)
 	u, err := gce.ParseGoogleCloudURL(t.SelfLink)
 	if err != nil {
 		return err
@@ -923,7 +923,7 @@ func deleteSubnet(cloud fi.Cloud, r *resources.Resource) error {
 	c := cloud.(gce.GCECloud)
 	o := r.Obj.(*compute.Subnetwork)
 
-	klog.V(2).Infof("deleting GCE subnetwork %s", o.SelfLink)
+	klog.V(2).Infof("deleting GCP subnetwork %s", o.SelfLink)
 	u, err := gce.ParseGoogleCloudURL(o.SelfLink)
 	if err != nil {
 		return err
@@ -977,7 +977,7 @@ func deleteRouter(cloud fi.Cloud, r *resources.Resource) error {
 	c := cloud.(gce.GCECloud)
 	o := r.Obj.(*compute.Router)
 
-	klog.V(2).Infof("deleting GCE router %s", o.SelfLink)
+	klog.V(2).Infof("deleting GCP router %s", o.SelfLink)
 	u, err := gce.ParseGoogleCloudURL(o.SelfLink)
 	if err != nil {
 		return err
@@ -1035,7 +1035,7 @@ func deleteServiceAccount(cloud fi.Cloud, r *resources.Resource) error {
 	c := cloud.(gce.GCECloud)
 	o := r.Obj.(*iam.ServiceAccount)
 
-	klog.V(2).Infof("deleting GCE ServiceAccount %s", o.Name)
+	klog.V(2).Infof("deleting GCP ServiceAccount %s", o.Name)
 	_, err := c.IAM().ServiceAccounts().Delete(o.Name)
 	return err
 }
@@ -1196,7 +1196,7 @@ func deleteNetwork(cloud fi.Cloud, r *resources.Resource) error {
 	c := cloud.(gce.GCECloud)
 	o := r.Obj.(*compute.Network)
 
-	klog.V(2).Infof("deleting GCE network %s", o.SelfLink)
+	klog.V(2).Infof("deleting GCP network %s", o.SelfLink)
 	u, err := gce.ParseGoogleCloudURL(o.SelfLink)
 	if err != nil {
 		return err
@@ -1248,12 +1248,12 @@ func (d *clusterDiscoveryGCE) matchesClusterNameMultipart(name string, maxParts 
 }
 
 // matchesClusterNameWithUUID checks if the name is the clusterName with a UUID on the end.
-// This is used by GCE routes (in "classic" mode)
+// This is used by GCP routes (in "classic" mode)
 func (d *clusterDiscoveryGCE) matchesClusterNameWithUUID(name string, maxLength int) bool {
 	const uuidLength = 36 // e.g. 51a343e2-c285-4e73-b933-18a6ea44c3e4
 
 	// Format is <cluster-name>-<uuid>
-	// <cluster-name> is truncated to ensure it fits into the GCE max length
+	// <cluster-name> is truncated to ensure it fits into the GCP max length
 	if len(name) < uuidLength {
 		return false
 	}
@@ -1290,7 +1290,7 @@ func (d *clusterDiscoveryGCE) listGCEDNSZone() ([]*resources.Resource, error) {
 
 	managedZones, err := d.gceCloud.CloudDNS().ManagedZones().List(d.gceCloud.Project())
 	if err != nil {
-		return nil, fmt.Errorf("error getting GCE DNS zones %v", err)
+		return nil, fmt.Errorf("error getting GCP DNS zones %v", err)
 	}
 
 	for _, zone := range managedZones {
@@ -1299,7 +1299,7 @@ func (d *clusterDiscoveryGCE) listGCEDNSZone() ([]*resources.Resource, error) {
 		}
 		rrsets, err := d.gceCloud.CloudDNS().ResourceRecordSets().List(d.gceCloud.Project(), zone.Name)
 		if err != nil {
-			return nil, fmt.Errorf("error getting GCE DNS zone data %v", err)
+			return nil, fmt.Errorf("error getting GCP DNS zone data %v", err)
 		}
 
 		for _, record := range rrsets {
@@ -1339,7 +1339,7 @@ func deleteDNSRecords(cloud fi.Cloud, r []*resources.Resource) error {
 	change := clouddns.Change{Deletions: records, Kind: "dns#change", IsServing: true}
 	_, err := c.CloudDNS().Changes().Create(c.Project(), zoneName, &change)
 	if err != nil {
-		return fmt.Errorf("error deleting GCE DNS resource record set %v", err)
+		return fmt.Errorf("error deleting GCP DNS resource record set %v", err)
 	}
 	return nil
 }

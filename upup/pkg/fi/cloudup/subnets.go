@@ -104,7 +104,7 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 	// But we then reserve the lowest one for the private block
 	// (and we split _that_ into 8 further subnets, leaving the first one unused/for future use)
 	// Note that this limits us to 7 zones
-	// TODO: Does this make sense on GCE?
+	// TODO: Does this make sense on GCP?
 	// TODO: Should we limit this to say 1000 IPs per subnet? (any reason to?)
 
 	bigCIDRs, err := subnet.SplitInto8(cidr)

@@ -16,7 +16,7 @@ limitations under the License.
 
 package gcetpm
 
-// TPMVerifierOptions describes how we authenticate instances with GCE TPM authentication.
+// TPMVerifierOptions describes how we authenticate instances with GCP TPM authentication.
 type TPMVerifierOptions struct {
 	// ProjectID is the GCP project we require
 	ProjectID string `json:"projectID,omitempty"`

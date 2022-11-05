@@ -28,7 +28,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
-// FirewallRule represents a GCE firewall rules
+// FirewallRule represents a GCP firewall rules
 // +kops:fitask
 type FirewallRule struct {
 	Name      *string

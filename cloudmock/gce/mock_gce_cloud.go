@@ -174,7 +174,7 @@ func (c *MockGCECloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
 	//	return deleteCloudInstanceGroup(c, g)
 }
 
-// DeleteInstance deletes a GCE instance
+// DeleteInstance deletes a GCP instance
 func (c *MockGCECloud) DeleteInstance(i *cloudinstances.CloudInstance) error {
 	return nil
 	//	return recreateCloudInstance(c, i)

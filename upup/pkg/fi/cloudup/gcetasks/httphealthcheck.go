@@ -25,7 +25,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 )
 
-// HTTPHealthcheck represents a GCE Healthcheck
+// HTTPHealthcheck represents a GCP Healthcheck
 // +kops:fitask
 type HTTPHealthcheck struct {
 	Name      *string

@@ -49,7 +49,7 @@ var allZones = []string{
 }
 
 // ErrNoEligibleRegion indicates the requested number of zones is not available in any region
-var ErrNoEligibleRegion = errors.New("No eligible GCE region found with enough zones")
+var ErrNoEligibleRegion = errors.New("No eligible GCP region found with enough zones")
 
 // RandomZones returns a random set of availability zones within a region
 func RandomZones(count int) ([]string, error) {

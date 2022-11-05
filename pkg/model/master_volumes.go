@@ -249,7 +249,7 @@ func (b *MasterVolumeBuilder) addGCEVolume(c *fi.ModelBuilderContext, prefix str
 	}
 
 	// TODO: Should no longer be needed because we trim prefixes
-	//// On GCE we are close to the length limits.  So,we remove the dashes from the keys
+	//// On GCP we are close to the length limits.  So,we remove the dashes from the keys
 	//// The name is normally something like "us-east1-a", and the dashes are particularly expensive
 	//// because of the escaping needed (3 characters for each dash)
 	//switch tf.cluster.Spec.CloudProvider {
@@ -270,7 +270,7 @@ func (b *MasterVolumeBuilder) addGCEVolume(c *fi.ModelBuilderContext, prefix str
 	tags[gce.GceLabelNameRolePrefix+"master"] = "master" // Can't start with a number
 	tags[gce.GceLabelNameEtcdClusterPrefix+etcd.Name] = gce.EncodeGCELabel(clusterSpec)
 
-	// GCE disk names must match the following regular expression: '[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?'
+	// GCP disk names must match the following regular expression: '[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?'
 	prefix = strings.Replace(prefix, ".", "-", -1)
 	if strings.IndexByte("0123456789-", prefix[0]) != -1 {
 		prefix = "d" + prefix

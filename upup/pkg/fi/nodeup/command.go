@@ -535,7 +535,7 @@ func evaluateHostnameOverride(cloudProvider api.CloudProviderID, useInstanceIDFo
 		// This lets us tolerate broken hostnames (i.e. systemd)
 		b, err := vfs.Context.ReadFile("metadata://gce/instance/hostname")
 		if err != nil {
-			return "", fmt.Errorf("error reading hostname from GCE metadata: %v", err)
+			return "", fmt.Errorf("error reading hostname from GCP metadata: %v", err)
 		}
 
 		// We only want to use the first portion of the fully-qualified name

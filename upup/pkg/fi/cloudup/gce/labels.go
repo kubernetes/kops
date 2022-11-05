@@ -36,7 +36,7 @@ const (
 	Node                          = "node"
 )
 
-// EncodeGCELabel encodes a string into an RFC1035 compatible value, suitable for use as GCE label key or value
+// EncodeGCELabel encodes a string into an RFC1035 compatible value, suitable for use as GCP label key or value
 // We use a URI inspired escaping, but with - instead of %.
 func EncodeGCELabel(s string) string {
 	var b bytes.Buffer
@@ -60,7 +60,7 @@ func DecodeGCELabel(s string) (string, error) {
 	uriForm := strings.Replace(s, "-", "%", -1)
 	v, err := url.QueryUnescape(uriForm)
 	if err != nil {
-		return "", fmt.Errorf("cannot decode GCE label: %q", s)
+		return "", fmt.Errorf("cannot decode GCP label: %q", s)
 	}
 	return v, nil
 }

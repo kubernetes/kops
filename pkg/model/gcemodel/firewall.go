@@ -37,7 +37,7 @@ type FirewallModelBuilder struct {
 var _ fi.ModelBuilder = &FirewallModelBuilder{}
 
 func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
-	klog.Warningf("TODO: Harmonize gcemodel with awsmodel for firewall - GCE model is way too open")
+	klog.Warningf("TODO: Harmonize gcemodel with awsmodel for firewall - GCP model is way too open")
 
 	allProtocols := []string{"tcp", "udp", "icmp", "esp", "ah", "sctp"}
 
@@ -153,7 +153,7 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 }
 
 // AddFirewallRulesTasks creates and adds ipv4 and ipv6 gcetasks.FirewallRule Tasks.
-// GCE does not allow us to mix ipv4 and ipv6 in the same firewall rule, so we must create separate rules.
+// GCP does not allow us to mix ipv4 and ipv6 in the same firewall rule, so we must create separate rules.
 // Furthermore, an empty SourceRange with empty SourceTags is interpreted as allow-everything,
 // but we intend for it to block everything; so we can Disabled to achieve the desired blocking.
 func (b *GCEModelContext) AddFirewallRulesTasks(c *fi.ModelBuilderContext, name string, rule *gcetasks.FirewallRule) {

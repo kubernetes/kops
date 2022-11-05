@@ -70,7 +70,7 @@ func TestPopulateClusterSpec_Proxy(t *testing.T) {
 	c.Spec.NonMasqueradeCIDR = "172.16.0.5/12"
 	c.Spec.NetworkCIDR = "192.168.0.0/20"
 	c.Spec.CloudProvider = kops.CloudProviderSpec{
-		GCE: &kops.GCESpec{},
+		GCP: &kops.GCPSpec{},
 	}
 	c.Spec.EgressProxy.ProxyExcludes = ""
 	c.Spec.EgressProxy, err = assignProxy(c)

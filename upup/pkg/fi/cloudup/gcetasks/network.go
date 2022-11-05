@@ -111,7 +111,7 @@ func (_ *Network) CheckChanges(a, e, changes *Network) error {
 		if cidr == "" {
 			return fmt.Errorf("CIDR must specified for networks where mode=legacy")
 		}
-		klog.Warningf("using legacy mode for GCE network %q", fi.StringValue(e.Name))
+		klog.Warningf("using legacy mode for GCP network %q", fi.StringValue(e.Name))
 	default:
 		if cidr != "" {
 			return fmt.Errorf("CIDR cannot specified for networks where mode=%s", e.Mode)
@@ -181,7 +181,7 @@ func (_ *Network) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Network) error {
 		}
 	} else {
 		if a.Mode == "legacy" {
-			return fmt.Errorf("GCE networks in legacy mode are not supported.  Please convert to auto mode or specify a different network.")
+			return fmt.Errorf("GCP networks in legacy mode are not supported.  Please convert to auto mode or specify a different network.")
 		}
 		empty := &Network{}
 		if !reflect.DeepEqual(empty, changes) {

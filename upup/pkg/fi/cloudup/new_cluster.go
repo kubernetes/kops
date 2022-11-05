@@ -76,9 +76,9 @@ type NewClusterOptions struct {
 	// MasterZones are the availability zones in which to run the masters. Defaults to the list in the Zones field.
 	MasterZones []string
 
-	// Project is the cluster's GCE project.
+	// Project is the cluster's GCP project.
 	Project string
-	// GCEServiceAccount specifies the service account with which the GCE VM runs.
+	// GCEServiceAccount specifies the service account with which the GCP VM runs.
 	GCEServiceAccount string
 
 	// Spotinst options
@@ -293,7 +293,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 	case api.CloudProviderDO:
 		cluster.Spec.CloudProvider.DO = &api.DOSpec{}
 	case api.CloudProviderGCE:
-		cluster.Spec.CloudProvider.GCE = &api.GCESpec{}
+		cluster.Spec.CloudProvider.GCP = &api.GCPSpec{}
 	case api.CloudProviderHetzner:
 		cluster.Spec.CloudProvider.Hetzner = &api.HetznerSpec{}
 	case api.CloudProviderOpenstack:
@@ -513,8 +513,8 @@ func setupVPC(opt *NewClusterOptions, cluster *api.Cluster, cloud fi.Cloud) erro
 		if cluster.Spec.CloudConfig == nil {
 			cluster.Spec.CloudConfig = &api.CloudConfiguration{}
 		}
-		cluster.Spec.CloudProvider.GCE.Project = opt.Project
-		if cluster.Spec.CloudProvider.GCE.Project == "" {
+		cluster.Spec.CloudProvider.GCP.Project = opt.Project
+		if cluster.Spec.CloudProvider.GCP.Project == "" {
 			project, err := gce.DefaultProject()
 			if err != nil {
 				klog.Warningf("unable to get default google cloud project: %v", err)
@@ -523,7 +523,7 @@ func setupVPC(opt *NewClusterOptions, cluster *api.Cluster, cloud fi.Cloud) erro
 			} else {
 				klog.Infof("using google cloud project: %s", project)
 			}
-			cluster.Spec.CloudProvider.GCE.Project = project
+			cluster.Spec.CloudProvider.GCP.Project = project
 		}
 		if opt.GCEServiceAccount != "" {
 			// TODO remove this logging?
@@ -589,7 +589,7 @@ func setupZones(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.Stri
 
 	switch cluster.Spec.GetCloudProvider() {
 	case api.CloudProviderGCE:
-		// On GCE, subnets are regional - we create one per region, not per zone
+		// On GCP, subnets are regional - we create one per region, not per zone
 		for _, zoneName := range allZones.List() {
 			region, err := gce.ZoneToRegion(zoneName)
 			if err != nil {
@@ -608,7 +608,7 @@ func setupZones(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.Stri
 				if len(opt.SubnetIDs) != 0 {
 					// We don't support multi-region clusters, so we can't have more than one subnet
 					if len(opt.SubnetIDs) != 1 {
-						return nil, fmt.Errorf("expected exactly one subnet for GCE, got %d", len(opt.SubnetIDs))
+						return nil, fmt.Errorf("expected exactly one subnet for GCP, got %d", len(opt.SubnetIDs))
 					}
 					providerID := opt.SubnetIDs[0]
 					subnet.ProviderID = providerID
@@ -1192,7 +1192,7 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 		addUtilitySubnets := true
 		switch cluster.Spec.GetCloudProvider() {
 		case api.CloudProviderGCE:
-			// GCE does not need utility subnets
+			// GCP does not need utility subnets
 			addUtilitySubnets = false
 		}
 

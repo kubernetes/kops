@@ -48,12 +48,12 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 				}
 			}
 			if region == "" {
-				return nil, fmt.Errorf("on GCE, subnets must include Regions")
+				return nil, fmt.Errorf("on GCP, subnets must include Regions")
 			}
 
-			project = cluster.Spec.CloudProvider.GCE.Project
+			project = cluster.Spec.CloudProvider.GCP.Project
 			if project == "" {
-				return nil, fmt.Errorf("project is required for GCE - try gcloud config get-value project")
+				return nil, fmt.Errorf("project is required for GCP - try gcloud config get-value project")
 			}
 
 			labels := map[string]string{gce.GceLabelNameKubernetesCluster: gce.SafeClusterName(cluster.ObjectMeta.Name)}

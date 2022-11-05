@@ -27,9 +27,9 @@ import (
 	gce "k8s.io/kops/upup/pkg/fi/cloudup/gce"
 )
 
-// dumpState holds state for use during a GCE dump operation
+// dumpState holds state for use during a GCP dump operation
 type dumpState struct {
-	// cloud is the a reference to the GCE cloud we are dumping
+	// cloud is the a reference to the GCP cloud we are dumping
 	cloud gce.GCECloud
 
 	// mutex protects the follow resources

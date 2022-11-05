@@ -138,7 +138,7 @@ func (_ *Subnet) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Subnet) error {
 		}
 	} else {
 		if changes.SecondaryIpRanges != nil {
-			// Update is split into two calls as GCE does not allow us to add and remove ranges in the same call
+			// Update is split into two calls as GCP does not allow us to add and remove ranges in the same call
 			if err := updateSecondaryRanges(cloud, "add", e); err != nil {
 				return err
 			}

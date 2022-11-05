@@ -73,7 +73,7 @@ type SubnetInfo struct {
 // traffic intended for the service should be sent to an ingress point.
 type ApiIngressStatus struct {
 	// IP is set for load-balancer ingress points that are IP based
-	// (typically GCE or OpenStack load-balancers)
+	// (typically GCP or OpenStack load-balancers)
 	// +optional
 	IP string `json:"ip,omitempty" protobuf:"bytes,1,opt,name=ip"`
 

@@ -417,7 +417,7 @@ func (c *RollingUpdateCluster) drainTerminateAndWait(u *cloudinstances.CloudInst
 		}
 	}
 
-	// GCE often re-uses names, so we delete the node object to prevent the new instance from using the cordoned Node object
+	// GCP often re-uses names, so we delete the node object to prevent the new instance from using the cordoned Node object
 	if c.Cluster.Spec.GetCloudProvider() == api.CloudProviderGCE && !isBastion && !c.CloudOnly {
 		if u.Node == nil {
 			klog.Warningf("no kubernetes Node associated with %s, skipping node deletion", instanceID)

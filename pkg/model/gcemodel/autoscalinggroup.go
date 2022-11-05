@@ -36,7 +36,7 @@ const (
 	DefaultVolumeType = "pd-standard"
 )
 
-// TODO: rework these parts to be more GCE native. ie: Managed Instance Groups > ASGs
+// TODO: rework these parts to be more GCP native. ie: Managed Instance Groups > ASGs
 // AutoscalingGroupModelBuilder configures AutoscalingGroup objects
 type AutoscalingGroupModelBuilder struct {
 	*GCEModelContext
@@ -47,7 +47,7 @@ type AutoscalingGroupModelBuilder struct {
 
 var _ fi.ModelBuilder = &AutoscalingGroupModelBuilder{}
 
-// Build the GCE instance template object for an InstanceGroup
+// Build the GCP instance template object for an InstanceGroup
 // We are then able to extract out the fields when running with the clusterapi.
 func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderContext, ig *kops.InstanceGroup, subnet *kops.ClusterSubnetSpec) (*gcetasks.InstanceTemplate, error) {
 	// Indented to keep diff manageable
@@ -240,8 +240,8 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			return err
 		}
 
-		// On GCE, instance groups cannot have multiple subnets.
-		// Because subnets are regional on GCE, this should not be limiting.
+		// On GCP, instance groups cannot have multiple subnets.
+		// Because subnets are regional on GCP, this should not be limiting.
 		// (IGs can in theory support multiple zones, but in practice we don't recommend this)
 		if len(subnets) != 1 {
 			return fmt.Errorf("instanceGroup %q has multiple subnets", ig.Name)

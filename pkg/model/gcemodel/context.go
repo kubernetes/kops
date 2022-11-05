@@ -31,7 +31,7 @@ type GCEModelContext struct {
 	*model.KopsModelContext
 }
 
-// LinkToNetwork returns the GCE Network object the cluster is located in
+// LinkToNetwork returns the GCP Network object the cluster is located in
 func (c *GCEModelContext) LinkToNetwork() (*gcetasks.Network, error) {
 	if c.Cluster.Spec.NetworkID == "" {
 		return &gcetasks.Network{Name: s(c.SafeTruncatedClusterName())}, nil
@@ -57,7 +57,7 @@ func (c *GCEModelContext) NameForIPAliasRange(key string) string {
 	return c.SafeObjectName(key)
 }
 
-// LinkToSubnet returns a link to the GCE subnet object
+// LinkToSubnet returns a link to the GCP subnet object
 func (c *GCEModelContext) LinkToSubnet(subnet *kops.ClusterSubnetSpec) *gcetasks.Subnet {
 	name := subnet.ProviderID
 	if name == "" {
@@ -67,27 +67,27 @@ func (c *GCEModelContext) LinkToSubnet(subnet *kops.ClusterSubnetSpec) *gcetasks
 	return &gcetasks.Subnet{Name: s(name)}
 }
 
-// SafeObjectName returns the object name and cluster name escaped for GCE
+// SafeObjectName returns the object name and cluster name escaped for GCP
 func (c *GCEModelContext) SafeObjectName(name string) string {
 	return gce.SafeObjectName(name, c.Cluster.ObjectMeta.Name)
 }
 
-// SafeSuffixedObjectName returns the object name and cluster name escaped for GCE, limited to 63 chars
+// SafeSuffixedObjectName returns the object name and cluster name escaped for GCP, limited to 63 chars
 func (c *GCEModelContext) SafeSuffixedObjectName(name string) string {
 	return gce.ClusterSuffixedName(name, c.Cluster.ObjectMeta.Name, 63)
 }
 
-// SafeClusterName returns the cluster name escaped for use as a GCE resource name
+// SafeClusterName returns the cluster name escaped for use as a GCP resource name
 func (c *GCEModelContext) SafeClusterName() string {
 	return gce.SafeClusterName(c.Cluster.ObjectMeta.Name)
 }
 
-// SafeClusterName returns the cluster name escaped and truncated for use as a GCE resource name
+// SafeClusterName returns the cluster name escaped and truncated for use as a GCP resource name
 func (c *GCEModelContext) SafeTruncatedClusterName() string {
 	return gce.SafeTruncatedClusterName(c.Cluster.ObjectMeta.Name, 63)
 }
 
-// GCETagForRole returns the (network) tag for GCE instances in the given instance group role.
+// GCETagForRole returns the (network) tag for GCP instances in the given instance group role.
 func (c *GCEModelContext) GCETagForRole(role kops.InstanceGroupRole) string {
 	return gce.TagForRole(c.Cluster.ObjectMeta.Name, role)
 }
@@ -140,7 +140,7 @@ func (c *GCEModelContext) NetworkingIsGCERoutes() bool {
 	return c.Cluster.Spec.Networking != nil && c.Cluster.Spec.Networking.Kubenet != nil
 }
 
-// LinkToServiceAccount returns a link to the GCE ServiceAccount object for VMs in the given role
+// LinkToServiceAccount returns a link to the GCP ServiceAccount object for VMs in the given role
 func (c *GCEModelContext) LinkToServiceAccount(ig *kops.InstanceGroup) *gcetasks.ServiceAccount {
 	if c.Cluster.Spec.CloudConfig.GCEServiceAccount != "" {
 		// This is a legacy setting because the nodes & control-plane run under the same serviceaccount

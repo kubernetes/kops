@@ -70,9 +70,9 @@ type ClusterSpec struct {
 	MasterPublicName string `json:"masterPublicName,omitempty"`
 	// MasterInternalName is the internal DNS name for the master nodes
 	MasterInternalName string `json:"masterInternalName,omitempty"`
-	// NetworkCIDR is the CIDR used for the AWS VPC / GCE Network, or otherwise allocated to k8s
+	// NetworkCIDR is the CIDR used for the AWS VPC / GCP Network, or otherwise allocated to k8s
 	// This is a real CIDR, not the internal k8s network
-	// On AWS, it maps to the VPC CIDR.  It is not required on GCE.
+	// On AWS, it maps to the VPC CIDR.  It is not required on GCP.
 	NetworkCIDR string `json:"networkCIDR,omitempty"`
 	// AdditionalNetworkCIDRs is a list of additional CIDR used for the AWS VPC
 	// or otherwise allocated to k8s. This is a real CIDR, not the internal k8s network
@@ -82,7 +82,7 @@ type ClusterSpec struct {
 	NetworkID string `json:"networkID,omitempty"`
 	// Topology defines the type of network topology to use on the cluster - default public
 	// This is heavily weighted towards AWS for the time being, but should also be agnostic enough
-	// to port out to GCE later if needed
+	// to port out to GCP later if needed
 	Topology *TopologySpec `json:"topology,omitempty"`
 	// SecretStore is the VFS path to where secrets are stored
 	SecretStore string `json:"secretStore,omitempty"`
@@ -234,8 +234,8 @@ type CloudProviderSpec struct {
 	Azure *AzureSpec `json:"azure,omitempty"`
 	// DO configures the Digital Ocean cloud provider.
 	DO *DOSpec `json:"do,omitempty"`
-	// GCE configures the GCE cloud provider.
-	GCE *GCESpec `json:"gce,omitempty"`
+	// GCP configures the GCP cloud provider.
+	GCP *GCPSpec `json:"gcp,omitempty"`
 	// Hetzner configures the Hetzner cloud provider.
 	Hetzner *HetznerSpec `json:"hetzner,omitempty"`
 	// Openstack configures the Openstack cloud provider.
@@ -250,8 +250,8 @@ type AWSSpec struct{}
 // DOSpec configures the Digital Ocean cloud provider.
 type DOSpec struct{}
 
-// GCESpec configures the GCE cloud provider.
-type GCESpec struct {
+// GCPSpec configures the GCP cloud provider.
+type GCPSpec struct {
 	// Project is the cloud project we should use.
 	Project string `json:"project"`
 }

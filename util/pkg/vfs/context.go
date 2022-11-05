@@ -76,7 +76,7 @@ func WithBackoff(backoff wait.Backoff) VFSOption {
 // ReadFile reads a file from a vfs URL
 // It supports additional schemes which don't (yet) have full VFS implementations:
 //
-//	metadata: reads from instance metadata on GCE/AWS
+//	metadata: reads from instance metadata on GCP/AWS
 //	http / https: reads from HTTP
 func (c *VFSContext) ReadFile(location string, options ...VFSOption) ([]byte, error) {
 	ctx := context.TODO()

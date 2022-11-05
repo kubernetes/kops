@@ -150,7 +150,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["DnsControllerArgv"] = tf.DNSControllerArgv
 	dest["ExternalDnsArgv"] = tf.ExternalDNSArgv
 	dest["CloudControllerConfigArgv"] = tf.CloudControllerConfigArgv
-	// TODO: Only for GCE?
+	// TODO: Only for GCP?
 	dest["EncodeGCELabel"] = gce.EncodeGCELabel
 	dest["Region"] = func() string {
 		return tf.Region
@@ -708,7 +708,7 @@ func (tf *TemplateFunctions) ExternalDNSArgv() ([]string, error) {
 	case kops.CloudProviderAWS:
 		argv = append(argv, "--provider=aws")
 	case kops.CloudProviderGCE:
-		project := cluster.Spec.CloudProvider.GCE.Project
+		project := cluster.Spec.CloudProvider.GCP.Project
 		argv = append(argv, "--provider=google")
 		argv = append(argv, "--google-project="+project)
 	default:

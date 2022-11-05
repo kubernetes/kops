@@ -76,7 +76,7 @@ func (a *tpmAuthenticator) CreateToken(body []byte) (string, error) {
 
 	key, err := client.GceAttestationKeyRSA(tpmDevice)
 	if err != nil {
-		return "", fmt.Errorf("failed to get GCE RSA attestation key from TPM: %w", err)
+		return "", fmt.Errorf("failed to get GCP RSA attestation key from TPM: %w", err)
 	}
 	defer key.Close()
 

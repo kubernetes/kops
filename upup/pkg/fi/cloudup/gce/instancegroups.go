@@ -46,13 +46,13 @@ func deleteCloudInstanceGroup(c GCECloud, g *cloudinstances.CloudInstanceGroup) 
 	return DeleteInstanceTemplate(c, mig.InstanceTemplate)
 }
 
-// DeleteInstance deletes a GCE instance
+// DeleteInstance deletes a GCP instance
 func (c *gceCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstance) error {
 	return recreateCloudInstance(c, i)
 }
 
 func (c *gceCloudImplementation) DeregisterInstance(i *cloudinstances.CloudInstance) error {
-	klog.V(8).Info("GCE DeregisterInstance not implemented")
+	klog.V(8).Info("GCP DeregisterInstance not implemented")
 	return nil
 }
 
@@ -66,7 +66,7 @@ func (c *gceCloudImplementation) DetachInstance(i *cloudinstances.CloudInstance)
 func recreateCloudInstance(c GCECloud, i *cloudinstances.CloudInstance) error {
 	mig := i.CloudInstanceGroup.Raw.(*compute.InstanceGroupManager)
 
-	klog.V(2).Infof("Recreating GCE Instance %s in MIG %s", i.ID, mig.Name)
+	klog.V(2).Infof("Recreating GCP Instance %s in MIG %s", i.ID, mig.Name)
 
 	migURL, err := ParseGoogleCloudURL(mig.SelfLink)
 	if err != nil {

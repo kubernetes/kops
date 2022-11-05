@@ -102,7 +102,7 @@ type ApplyClusterCmd struct {
 	// NodeUpAssets are the assets for downloading nodeup
 	NodeUpAssets map[architectures.Architecture]*mirrors.MirroredAsset
 
-	// TargetName specifies how we are operating e.g. direct to GCE, or AWS, or dry-run, or terraform
+	// TargetName specifies how we are operating e.g. direct to GCP, or AWS, or dry-run, or terraform
 	TargetName string
 
 	// Target is the fi.Target we will operate against
@@ -1112,7 +1112,7 @@ func ChannelForCluster(c *kops.Cluster) (*kops.Channel, error) {
 }
 
 // needsMounterAsset checks if we need the mounter program
-// This is only needed currently on ContainerOS i.e. GCE, but we don't have a nice way to detect it yet
+// This is only needed currently on ContainerOS i.e. GCP, but we don't have a nice way to detect it yet
 func needsMounterAsset(c *kops.Cluster, instanceGroups []*kops.InstanceGroup) bool {
 	// TODO: Do real detection of ContainerOS (but this has to work with image names, and maybe even forked images)
 	switch c.Spec.GetCloudProvider() {

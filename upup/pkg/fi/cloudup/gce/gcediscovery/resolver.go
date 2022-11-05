@@ -164,7 +164,7 @@ func New() (*Discovery, error) {
 
 	zones, err := computeService.Zones.List(projectID).Do()
 	if err != nil {
-		return nil, fmt.Errorf("error querying for GCE zones: %w", err)
+		return nil, fmt.Errorf("error querying for GCP zones: %w", err)
 	}
 
 	// Find our zone
@@ -192,7 +192,7 @@ func New() (*Discovery, error) {
 
 	clusterName, err := metadata.InstanceAttributeValue(gcemetadata.MetadataKeyClusterName)
 	if err != nil {
-		return nil, fmt.Errorf("error reading cluster-name attribute from GCE: %w", err)
+		return nil, fmt.Errorf("error reading cluster-name attribute from GCP: %w", err)
 	}
 	clusterName = strings.TrimSpace(clusterName)
 	if clusterName == "" {
@@ -222,7 +222,7 @@ func lastComponent(s string) string {
 
 var _ resolver.Resolver = &Discovery{}
 
-// Resolve implements resolver.Resolve, providing name -> address resolution using GCE discovery.
+// Resolve implements resolver.Resolve, providing name -> address resolution using GCP discovery.
 func (r *Discovery) Resolve(ctx context.Context, name string) ([]string, error) {
 	var records []string
 	klog.Infof("trying to resolve %q using GCEResolver", name)

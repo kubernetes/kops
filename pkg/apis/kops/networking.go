@@ -435,5 +435,5 @@ type LyftVPCNetworkingSpec struct {
 	SubnetTags map[string]string `json:"subnetTags,omitempty"`
 }
 
-// GCENetworkingSpec is the specification of GCE's native networking mode, using IP aliases
+// GCENetworkingSpec is the specification of GCP's native networking mode, using IP aliases
 type GCENetworkingSpec struct{}

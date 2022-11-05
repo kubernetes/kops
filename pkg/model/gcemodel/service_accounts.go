@@ -114,7 +114,7 @@ func (b *ServiceAccountsBuilder) addInstanceGroupServiceAccountPermissions(c *fi
 		//  * compute.zones.list (to find out region; we could replace this with string manipulation)
 		//  * compute.instances.list (for discovery; we don't need in the case of a load balancer or DNS)
 
-		// We use the GCE viewer role
+		// We use the GCP viewer role
 
 		c.AddTask(&gcetasks.ProjectIAMBinding{
 			Name:      s("serviceaccount-nodes"),

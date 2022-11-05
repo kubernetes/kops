@@ -24,9 +24,9 @@ import (
 	"k8s.io/klog/v2"
 )
 
-// DeleteInstanceGroupManager deletes the specified InstanceGroupManager in GCE
+// DeleteInstanceGroupManager deletes the specified InstanceGroupManager in GCP
 func DeleteInstanceGroupManager(c GCECloud, t *compute.InstanceGroupManager) error {
-	klog.V(2).Infof("Deleting GCE InstanceGroupManager %s", t.SelfLink)
+	klog.V(2).Infof("Deleting GCP InstanceGroupManager %s", t.SelfLink)
 	u, err := ParseGoogleCloudURL(t.SelfLink)
 	if err != nil {
 		return err
@@ -44,9 +44,9 @@ func DeleteInstanceGroupManager(c GCECloud, t *compute.InstanceGroupManager) err
 	return c.WaitForOp(op)
 }
 
-// DeleteInstanceTemplate deletes the specified InstanceTemplate (by URL) in GCE
+// DeleteInstanceTemplate deletes the specified InstanceTemplate (by URL) in GCP
 func DeleteInstanceTemplate(c GCECloud, selfLink string) error {
-	klog.V(2).Infof("Deleting GCE InstanceTemplate %s", selfLink)
+	klog.V(2).Infof("Deleting GCP InstanceTemplate %s", selfLink)
 	u, err := ParseGoogleCloudURL(selfLink)
 	if err != nil {
 		return err
@@ -64,9 +64,9 @@ func DeleteInstanceTemplate(c GCECloud, selfLink string) error {
 	return c.WaitForOp(op)
 }
 
-// DeleteInstance deletes the specified instance (by URL) in GCE
+// DeleteInstance deletes the specified instance (by URL) in GCP
 func DeleteInstance(c GCECloud, instanceSelfLink string) error {
-	klog.V(2).Infof("Deleting GCE Instance %s", instanceSelfLink)
+	klog.V(2).Infof("Deleting GCP Instance %s", instanceSelfLink)
 	u, err := ParseGoogleCloudURL(instanceSelfLink)
 	if err != nil {
 		return err
@@ -84,7 +84,7 @@ func DeleteInstance(c GCECloud, instanceSelfLink string) error {
 	return c.WaitForOp(op)
 }
 
-// ListManagedInstances lists the specified InstanceGroupManagers in GCE
+// ListManagedInstances lists the specified InstanceGroupManagers in GCP
 func ListManagedInstances(c GCECloud, igm *compute.InstanceGroupManager) ([]*compute.ManagedInstance, error) {
 	ctx := context.Background()
 	project := c.Project()

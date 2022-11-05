@@ -413,5 +413,5 @@ type HubbleSpec struct {
 	Metrics []string `json:"metrics,omitempty"`
 }
 
-// GCENetworkingSpec is the specification of GCE's native networking mode, using IP aliases
+// GCENetworkingSpec is the specification of GCP's native networking mode, using IP aliases
 type GCENetworkingSpec struct{}

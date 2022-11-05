@@ -1058,11 +1058,11 @@ func validateNetworkingGCE(c *kops.ClusterSpec, v *kops.GCENetworkingSpec, fldPa
 	allErrs := field.ErrorList{}
 
 	if c.GetCloudProvider() != kops.CloudProviderGCE {
-		allErrs = append(allErrs, field.Forbidden(fldPath, "GCE networking is supported only when on GCP"))
+		allErrs = append(allErrs, field.Forbidden(fldPath, "GCP networking is supported only when on GCP"))
 	}
 
 	if c.IsIPv6Only() {
-		allErrs = append(allErrs, field.Forbidden(fldPath, "GCE networking does not support IPv6"))
+		allErrs = append(allErrs, field.Forbidden(fldPath, "GCP networking does not support IPv6"))
 	}
 
 	return allErrs
@@ -1589,8 +1589,8 @@ func validateNodeLocalDNS(spec *kops.ClusterSpec, fldpath *field.Path) field.Err
 func validateClusterAutoscaler(cluster *kops.Cluster, spec *kops.ClusterAutoscalerConfig, fldPath *field.Path) (allErrs field.ErrorList) {
 	allErrs = append(allErrs, IsValidValue(fldPath.Child("expander"), spec.Expander, []string{"least-waste", "random", "most-pods", "price", "priority"})...)
 
-	if fi.StringValue(spec.Expander) == "price" && cluster.Spec.CloudProvider.GCE == nil {
-		allErrs = append(allErrs, field.Forbidden(fldPath.Child("expander"), "Cluster autoscaler price expander is only supported on GCE"))
+	if fi.StringValue(spec.Expander) == "price" && cluster.Spec.CloudProvider.GCP == nil {
+		allErrs = append(allErrs, field.Forbidden(fldPath.Child("expander"), "Cluster autoscaler price expander is only supported on GCP"))
 	}
 
 	if cluster.Spec.GetCloudProvider() == kops.CloudProviderOpenstack {

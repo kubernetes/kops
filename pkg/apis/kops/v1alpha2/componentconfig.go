@@ -858,13 +858,13 @@ type CloudConfiguration struct {
 	// StorageClasses, one of which it nominates as the default class for the cluster.
 	ManageStorageClasses *bool `json:"manageStorageClasses,omitempty"`
 
-	// GCE cloud-config options
+	// GCP cloud-config options
 	Multizone          *bool   `json:"multizone,omitempty"`
 	NodeTags           *string `json:"nodeTags,omitempty"`
 	NodeInstancePrefix *string `json:"nodeInstancePrefix,omitempty"`
 	// NodeIPFamilies controls the IP families reported for each node (AWS only).
 	NodeIPFamilies []string `json:"nodeIPFamilies,omitempty"`
-	// GCEServiceAccount specifies the service account with which the GCE VM runs
+	// GCEServiceAccount specifies the service account with which the GCP VM runs
 	GCEServiceAccount string `json:"gceServiceAccount,omitempty"`
 	// AWS cloud-config options
 	DisableSecurityGroupIngress *bool   `json:"disableSecurityGroupIngress,omitempty"`
@@ -1018,7 +1018,7 @@ type ClusterAutoscalerConfig struct {
 	Enabled *bool `json:"enabled,omitempty"`
 	// Expander determines the strategy for which instance group gets expanded.
 	// Supported values: least-waste, most-pods, random, price, priority.
-	// The price expander is only supported on GCE.
+	// The price expander is only supported on GCP.
 	// The priority expander requires additional configuration via a ConfigMap.
 	// Default: least-waste
 	Expander *string `json:"expander,omitempty"`

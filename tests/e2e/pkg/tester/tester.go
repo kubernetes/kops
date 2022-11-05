@@ -278,7 +278,7 @@ func (t *Tester) getZonesForInstanceGroups(igs []*api.InstanceGroup) ([]string, 
 
 	zones := sets.NewString()
 	for _, ig := range igs {
-		// Gather zones on GCE
+		// Gather zones on GCP
 		for _, zone := range ig.Spec.Zones {
 			zones.Insert(zone)
 		}

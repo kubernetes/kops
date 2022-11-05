@@ -388,7 +388,7 @@ spec:
                     type: string
                   gceServiceAccount:
                     description: GCEServiceAccount specifies the service account with
-                      which the GCE VM runs
+                      which the GCP VM runs
                     type: string
                   gcpPDCSIDriver:
                     description: GCPPDCSIDriver is the config for the GCP PD CSI driver
@@ -403,7 +403,7 @@ spec:
                       nominates as the default class for the cluster.
                     type: boolean
                   multizone:
-                    description: GCE cloud-config options
+                    description: GCP cloud-config options
                     type: boolean
                   nodeIPFamilies:
                     description: NodeIPFamilies controls the IP families reported
@@ -690,7 +690,7 @@ spec:
                     description: 'Expander determines the strategy for which instance
                       group gets expanded. Supported values: least-waste, most-pods,
                       random, price, priority. The price expander is only supported
-                      on GCE. The priority expander requires additional configuration
+                      on GCP. The priority expander requires additional configuration
                       via a ConfigMap. Default: least-waste'
                     type: string
                   image:
@@ -4371,10 +4371,10 @@ spec:
                     type: boolean
                 type: object
               networkCIDR:
-                description: NetworkCIDR is the CIDR used for the AWS VPC / GCE Network,
+                description: NetworkCIDR is the CIDR used for the AWS VPC / GCP Network,
                   or otherwise allocated to k8s This is a real CIDR, not the internal
                   k8s network On AWS, it maps to the VPC CIDR.  It is not required
-                  on GCE.
+                  on GCP.
                 type: string
               networkID:
                 description: NetworkID is an identifier of a network, if we want to
@@ -5105,7 +5105,7 @@ spec:
                         type: integer
                     type: object
                   gce:
-                    description: GCENetworkingSpec is the specification of GCE's native
+                    description: GCENetworkingSpec is the specification of GCP's native
                       networking mode, using IP aliases
                     type: object
                   kopeio:
@@ -5419,7 +5419,7 @@ spec:
                 type: object
               project:
                 description: Project is the cloud project we should use, required
-                  on GCE
+                  on GCP
                 type: string
               rollingUpdate:
                 description: RollingUpdate defines the default rolling-update settings
@@ -5592,7 +5592,7 @@ spec:
                 description: Topology defines the type of network topology to use
                   on the cluster - default public This is heavily weighted towards
                   AWS for the time being, but should also be agnostic enough to port
-                  out to GCE later if needed
+                  out to GCP later if needed
                 properties:
                   bastion:
                     description: Bastion provide an external facing point of entry

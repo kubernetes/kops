@@ -28,7 +28,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
-// BackendService represents a GCE's backend service type, part of a load balancer.
+// BackendService represents a GCP's backend service type, part of a load balancer.
 // +kops:fitask
 type BackendService struct {
 	Name                  *string
@@ -124,7 +124,7 @@ func (_ *BackendService) RenderGCE(t *gce.GCEAPITarget, a, e, changes *BackendSe
 	}
 
 	if a == nil {
-		klog.Infof("GCE creating backend service: %q", bs.Name)
+		klog.Infof("GCP creating backend service: %q", bs.Name)
 
 		op, err := cloud.Compute().RegionBackendServices().Insert(cloud.Project(), cloud.Region(), bs)
 		if err != nil {

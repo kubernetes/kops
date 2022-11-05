@@ -28,7 +28,7 @@ import (
 )
 
 // +kops:fitask
-// HealthCheck represents a GCE "healthcheck" type - this is the
+// HealthCheck represents a GCP "healthcheck" type - this is the
 // non-deprecated new-style HC, which combines the deprecated HTTPHealthCheck
 // and HTTPSHealthCheck.  Those HCs are still needed for some types, so both
 // are implemented in kops, but this one should be preferred when possible.
@@ -108,7 +108,7 @@ func (_ *HealthCheck) RenderGCE(t *gce.GCEAPITarget, a, e, changes *HealthCheck)
 	}
 
 	if a == nil {
-		klog.Infof("GCE creating healthcheck: %q", hc.Name)
+		klog.Infof("GCP creating healthcheck: %q", hc.Name)
 
 		op, err := cloud.Compute().RegionHealthChecks().Insert(cloud.Project(), cloud.Region(), hc)
 		if err != nil {

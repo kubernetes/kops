@@ -16,8 +16,8 @@ limitations under the License.
 
 package gce
 
-// Extracted from the k8s GCE cloud provider
-// The file contains functions that deal with waiting for GCE operations to complete
+// Extracted from the k8s GCP cloud provider
+// The file contains functions that deal with waiting for GCP operations to complete
 
 import (
 	"fmt"
@@ -108,7 +108,7 @@ func waitForOp(op *compute.Operation, getOperation func(operationName string) (*
 		}
 		pollOp, err := getOperation(opName)
 		if err != nil {
-			klog.Warningf("GCE poll operation %s failed: pollOp: [%v] err: [%v] getErrorFromOp: [%v]", opName, pollOp, err, getErrorFromOp(pollOp))
+			klog.Warningf("GCP poll operation %s failed: pollOp: [%v] err: [%v] getErrorFromOp: [%v]", opName, pollOp, err, getErrorFromOp(pollOp))
 		}
 		done := opIsDone(pollOp)
 		if done {
@@ -133,7 +133,7 @@ func getErrorFromOp(op *compute.Operation) error {
 			Code:    int(op.HttpErrorStatusCode),
 			Message: op.Error.Errors[0].Message,
 		}
-		klog.Errorf("GCE operation failed: %v", err)
+		klog.Errorf("GCP operation failed: %v", err)
 		return err
 	}
 

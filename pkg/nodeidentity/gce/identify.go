@@ -34,16 +34,16 @@ import (
 // This is used by the gce nodeidentifier to securely identify the node instancegroup
 const MetadataKeyInstanceGroupName = "kops-k8s-io-instance-group-name"
 
-// nodeIdentifier identifies a node from GCE
+// nodeIdentifier identifies a node from GCP
 type nodeIdentifier struct {
-	// computeService is the GCE client
+	// computeService is the GCP client
 	computeService *compute.Service
 
-	// project is our GCE project; we require that instances be in this project
+	// project is our GCP project; we require that instances be in this project
 	project string
 }
 
-// New creates and returns a nodeidentity.LegacyIdentifier for Nodes running on GCE
+// New creates and returns a nodeidentity.LegacyIdentifier for Nodes running on GCP
 func New() (nodeidentity.LegacyIdentifier, error) {
 	ctx := context.Background()
 
@@ -59,7 +59,7 @@ func New() (nodeidentity.LegacyIdentifier, error) {
 	} else {
 		project, err = metadata.ProjectID()
 		if err != nil {
-			return nil, fmt.Errorf("error reading project from GCE: %v", err)
+			return nil, fmt.Errorf("error reading project from GCP: %v", err)
 		}
 		project = strings.TrimSpace(project)
 		if project == "" {
@@ -74,7 +74,7 @@ func New() (nodeidentity.LegacyIdentifier, error) {
 	}, nil
 }
 
-// IdentifyNode queries GCE for the node identity information
+// IdentifyNode queries GCP for the node identity information
 func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*nodeidentity.LegacyInfo, error) {
 	providerID := node.Spec.ProviderID
 	if providerID == "" {
@@ -123,7 +123,7 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 	}
 
 	// We now double check that the instance is indeed managed by the MIG
-	// this can't be spoofed without GCE API access
+	// this can't be spoofed without GCP API access
 	migMember, err := i.getManagedInstance(ctx, mig, instance.Id)
 	if err != nil {
 		return nil, err
@@ -148,37 +148,37 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 	return info, nil
 }
 
-// getInstance queries GCE for the instance with the specified name, returning an error if not found
+// getInstance queries GCP for the instance with the specified name, returning an error if not found
 func (i *nodeIdentifier) getInstance(zone string, instanceName string) (*compute.Instance, error) {
 	instance, err := i.computeService.Instances.Get(i.project, zone, instanceName).Do()
 	if err != nil {
-		return nil, fmt.Errorf("error fetching GCE instance: %v", err)
+		return nil, fmt.Errorf("error fetching GCP instance: %v", err)
 	}
 
 	return instance, nil
 }
 
-// getInstanceTemplate queries GCE for the IG Template with the specified name, returning an error if not found
+// getInstanceTemplate queries GCP for the IG Template with the specified name, returning an error if not found
 func (i *nodeIdentifier) getInstanceTemplate(name string) (*compute.InstanceTemplate, error) {
 	t, err := i.computeService.InstanceTemplates.Get(i.project, name).Do()
 	if err != nil {
-		return nil, fmt.Errorf("error fetching GCE instance group template %q: %v", name, err)
+		return nil, fmt.Errorf("error fetching GCP instance group template %q: %v", name, err)
 	}
 
 	return t, nil
 }
 
-// getMIG queries GCE for the MIG with the specified name, returning an error if not found
+// getMIG queries GCP for the MIG with the specified name, returning an error if not found
 func (i *nodeIdentifier) getMIG(zone string, migName string) (*compute.InstanceGroupManager, error) {
 	mig, err := i.computeService.InstanceGroupManagers.Get(i.project, zone, migName).Do()
 	if err != nil {
-		return nil, fmt.Errorf("error fetching GCE managed instance group %q: %v", migName, err)
+		return nil, fmt.Errorf("error fetching GCP managed instance group %q: %v", migName, err)
 	}
 
 	return mig, nil
 }
 
-// getMIGMember queries GCE for the instance from the MIG
+// getMIGMember queries GCP for the instance from the MIG
 func (i *nodeIdentifier) getManagedInstance(ctx context.Context, mig *compute.InstanceGroupManager, instanceID uint64) (*compute.ManagedInstance, error) {
 	var matches []*compute.ManagedInstance
 
@@ -194,7 +194,7 @@ func (i *nodeIdentifier) getManagedInstance(ctx context.Context, mig *compute.In
 		}
 		return nil
 	}); err != nil {
-		return nil, fmt.Errorf("error fetching GCE managed instance group members for %q: %v", mig.Name, err)
+		return nil, fmt.Errorf("error fetching GCP managed instance group members for %q: %v", mig.Name, err)
 	}
 
 	if len(matches) == 0 {

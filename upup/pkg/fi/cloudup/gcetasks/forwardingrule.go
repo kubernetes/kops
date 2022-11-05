@@ -27,7 +27,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
-// ForwardingRule represents a GCE ForwardingRule
+// ForwardingRule represents a GCP ForwardingRule
 // +kops:fitask
 type ForwardingRule struct {
 	Name      *string

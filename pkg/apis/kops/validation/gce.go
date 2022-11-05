@@ -31,15 +31,15 @@ func gceValidateCluster(c *kops.Cluster) field.ErrorList {
 	for i, subnet := range c.Spec.Subnets {
 		f := fieldSpec.Child("subnets").Index(i)
 		if subnet.Zone != "" {
-			allErrs = append(allErrs, field.Invalid(f.Child("zone"), subnet.Zone, "zones should not be specified for GCE subnets, as GCE subnets are regional"))
+			allErrs = append(allErrs, field.Invalid(f.Child("zone"), subnet.Zone, "zones should not be specified for GCP subnets, as GCP subnets are regional"))
 		}
 		if subnet.Region == "" {
-			allErrs = append(allErrs, field.Required(f.Child("region"), "region must be specified for GCE subnets"))
+			allErrs = append(allErrs, field.Required(f.Child("region"), "region must be specified for GCP subnets"))
 		} else {
 			if region == "" {
 				region = subnet.Region
 			} else if region != subnet.Region {
-				allErrs = append(allErrs, field.Forbidden(f.Child("region"), "clusters cannot span GCE regions"))
+				allErrs = append(allErrs, field.Forbidden(f.Child("region"), "clusters cannot span GCP regions"))
 			}
 		}
 	}

@@ -1117,7 +1117,7 @@ spec:
               zones:
                 description: Zones is the names of the Zones where machines in this
                   instance group should be placed This is needed for regional subnets
-                  (e.g. GCE), to restrict placement to particular zones
+                  (e.g. GCP), to restrict placement to particular zones
                 items:
                   type: string
                 type: array

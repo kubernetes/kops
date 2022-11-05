@@ -37,7 +37,7 @@ func UsesIPAliases(c *kops.Cluster) bool {
 	return false
 }
 
-// PerformNetworkAssignments assigns suitable pod and service assignments for GCE,
+// PerformNetworkAssignments assigns suitable pod and service assignments for GCP,
 // in particular for IP alias support.
 func PerformNetworkAssignments(ctx context.Context, c *kops.Cluster, cloudObj fi.Cloud) error {
 	if UsesIPAliases(c) {
@@ -47,7 +47,7 @@ func PerformNetworkAssignments(ctx context.Context, c *kops.Cluster, cloudObj fi
 	}
 }
 
-// ParseNameAndProjectFromNetworkID will take in the GCE-flavored network ID,
+// ParseNameAndProjectFromNetworkID will take in the GCP-flavored network ID,
 // and return the project and name of the resource.  The permitted formats are
 // "network-name", or "project-id/network-name".  Empty string is also accepted.
 func ParseNameAndProjectFromNetworkID(networkID string) (string, string, error) {
@@ -146,7 +146,7 @@ func buildUsed(ctx context.Context, c *kops.Cluster, cloudObj fi.Cloud) (*subnet
 
 func performNetworkAssignmentsIPAliases(ctx context.Context, c *kops.Cluster, cloudObj fi.Cloud) error {
 	if len(c.Spec.Subnets) != 1 {
-		return fmt.Errorf("expected exactly one subnet with GCE IP Aliases")
+		return fmt.Errorf("expected exactly one subnet with GCP IP Aliases")
 	}
 	nodeSubnet := &c.Spec.Subnets[0]
 

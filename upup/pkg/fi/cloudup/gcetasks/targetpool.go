@@ -27,7 +27,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
-// TargetPool represents a GCE TargetPool
+// TargetPool represents a GCP TargetPool
 // +kops:fitask
 type TargetPool struct {
 	Name      *string

@@ -28,7 +28,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/gcediscovery"
 )
 
-// GCECloudProvider is the CloudProvider implementation for GCE
+// GCECloudProvider is the CloudProvider implementation for GCP
 type GCECloudProvider struct {
 	compute   *compute.Service
 	discovery *gcediscovery.Discovery
@@ -63,7 +63,7 @@ func NewGCECloudProvider() (*GCECloudProvider, error) {
 	return a, nil
 }
 
-// Project returns the current GCE project
+// Project returns the current GCP project
 func (a *GCECloudProvider) Project() string {
 	return a.project
 }
@@ -107,7 +107,7 @@ func (a *GCECloudProvider) discoverTags() error {
 	{
 		instanceName, err := metadata.InstanceName()
 		if err != nil {
-			return fmt.Errorf("error reading instance name from GCE: %v", err)
+			return fmt.Errorf("error reading instance name from GCP: %v", err)
 		}
 		a.instanceName = strings.TrimSpace(instanceName)
 		if a.instanceName == "" {
@@ -120,7 +120,7 @@ func (a *GCECloudProvider) discoverTags() error {
 	{
 		internalIP, err := metadata.InternalIP()
 		if err != nil {
-			return fmt.Errorf("error querying InternalIP from GCE: %v", err)
+			return fmt.Errorf("error querying InternalIP from GCP: %v", err)
 		}
 		if internalIP == "" {
 			return fmt.Errorf("InternalIP from metadata was empty")

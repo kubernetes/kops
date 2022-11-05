@@ -136,7 +136,7 @@ func (_ *Address) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Address) error {
 	}
 
 	if a == nil {
-		klog.Infof("GCE creating address: %q", addr.Name)
+		klog.Infof("GCP creating address: %q", addr.Name)
 
 		op, err := cloud.Compute().Addresses().Insert(cloud.Project(), cloud.Region(), addr)
 		if err != nil {

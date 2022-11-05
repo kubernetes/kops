@@ -27,7 +27,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
-// Disk represents a GCE PD
+// Disk represents a GCP PD
 // +kops:fitask
 type Disk struct {
 	Name      *string

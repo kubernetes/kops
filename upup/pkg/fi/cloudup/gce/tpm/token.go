@@ -16,7 +16,7 @@ limitations under the License.
 
 package gcetpm
 
-// AuthToken describes the authentication header data when using GCE TPM authentication.
+// AuthToken describes the authentication header data when using GCP TPM authentication.
 type AuthToken struct {
 	// Signature is the TPM signature for data
 	Signature []byte `json:"signature,omitempty"`
@@ -47,7 +47,7 @@ type AuthTokenData struct {
 	Audience string `json:"audience,omitempty"`
 }
 
-// GCETPMAuthenticationTokenPrefix is the prefix used for authentication using the GCE TPM
+// GCETPMAuthenticationTokenPrefix is the prefix used for authentication using the GCP TPM
 const GCETPMAuthenticationTokenPrefix = "x-gce-tpm "
 
 // AudienceNodeAuthentication is used in case we have multiple audiences using the TPM in future

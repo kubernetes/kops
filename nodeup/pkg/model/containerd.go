@@ -393,11 +393,11 @@ func (b *ContainerdBuilder) buildIPMasqueradeRules(c *fi.ModelBuilderContext) er
 
 	// This is based on rules from gce/cos/configure-helper.sh and the old logic in kubenet_linux.go
 
-	// We stick closer to the logic in kubenet_linux, both for compatibility, and because the GCE logic
-	// skips masquerading for all private CIDR ranges, but this depends on an assumption that is likely GCE-specific.
-	// On GCE custom routes are at the network level, on AWS they are at the route-table / subnet level.
+	// We stick closer to the logic in kubenet_linux, both for compatibility, and because the GCP logic
+	// skips masquerading for all private CIDR ranges, but this depends on an assumption that is likely GCP-specific.
+	// On GCP custom routes are at the network level, on AWS they are at the route-table / subnet level.
 	// We cannot generally assume that because something is in the private network space, that it can reach us.
-	// If we adopt "native" pod IPs (GCE ip-alias, AWS VPC CNI, etc) we can likely move to rules closer to the upstream ones.
+	// If we adopt "native" pod IPs (GCP ip-alias, AWS VPC CNI, etc) we can likely move to rules closer to the upstream ones.
 	script := `#!/bin/bash
 # Built by kOps - do not edit
 

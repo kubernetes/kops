@@ -74,7 +74,7 @@ type CreateClusterOptions struct {
 	MasterSecurityGroups []string
 	AssociatePublicIP    *bool
 
-	// SSHPublicKeys is a map of the SSH public keys we should configure; required on AWS, not required on GCE
+	// SSHPublicKeys is a map of the SSH public keys we should configure; required on AWS, not required on GCP
 	SSHPublicKeys map[string][]byte
 
 	// Sets allows setting values directly in the spec.
@@ -394,10 +394,10 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		})
 	}
 
-	// GCE flags
-	cmd.Flags().StringVar(&options.Project, "project", options.Project, "Project to use (must be set on GCE)")
+	// GCP flags
+	cmd.Flags().StringVar(&options.Project, "project", options.Project, "Project to use (must be set on GCP)")
 	cmd.RegisterFlagCompletionFunc("project", completeProject)
-	cmd.Flags().StringVar(&options.GCEServiceAccount, "gce-service-account", options.GCEServiceAccount, "Service account with which the GCE VM runs. Warning: if not set, VMs will run as default compute service account.")
+	cmd.Flags().StringVar(&options.GCEServiceAccount, "gce-service-account", options.GCEServiceAccount, "Service account with which the GCP VM runs. Warning: if not set, VMs will run as default compute service account.")
 	cmd.RegisterFlagCompletionFunc("gce-service-account", completeGCEServiceAccount)
 
 	if featureflag.Azure.Enabled() {

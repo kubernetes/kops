@@ -159,13 +159,13 @@ func NewGCECloud(region string, project string, labels map[string]string) (GCECl
 	CacheGCECloudInstance(region, project, c)
 
 	{
-		// Attempt to log the current GCE service account in user, for diagnostic purposes
+		// Attempt to log the current GCP service account in user, for diagnostic purposes
 		// At least until we get e2e running, we're doing this always
 		tokenInfo, err := c.getTokenInfo(ctx)
 		if err != nil {
 			klog.Infof("unable to get token info: %v", err)
 		} else {
-			klog.V(2).Infof("running with GCE credentials: email=%s, scope=%s", tokenInfo.Email, tokenInfo.Scope)
+			klog.V(2).Infof("running with GCP credentials: email=%s, scope=%s", tokenInfo.Email, tokenInfo.Scope)
 		}
 	}
 
@@ -254,7 +254,7 @@ func (c *gceCloudImplementation) DNS() (dnsprovider.Interface, error) {
 }
 
 func (c *gceCloudImplementation) FindVPCInfo(id string) (*fi.VPCInfo, error) {
-	klog.Warningf("FindVPCInfo not (yet) implemented on GCE")
+	klog.Warningf("FindVPCInfo not (yet) implemented on GCP")
 	return nil, nil
 }
 
@@ -306,7 +306,7 @@ func (c *gceCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]f
 	// Note that this must match GCEModelContext::NameForForwardingRule
 	name := ClusterSuffixedName("api", cluster.ObjectMeta.Name, 63)
 
-	klog.V(2).Infof("Querying GCE to find ForwardingRules for API (%q)", name)
+	klog.V(2).Infof("Querying GCP to find ForwardingRules for API (%q)", name)
 	// These are the ingress rules, so we search for them in the network project.
 	_, project, err := ParseNameAndProjectFromNetworkID(cluster.Spec.NetworkID)
 	if err != nil {
