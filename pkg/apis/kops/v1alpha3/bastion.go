@@ -19,14 +19,11 @@ package v1alpha3
 type BastionSpec struct {
 	// PublicName is the domain name for the bastion load balancer.
 	PublicName string `json:"publicName,omitempty"`
-	// IdleTimeoutSeconds is the bastion's load balancer idle timeout.
-	IdleTimeoutSeconds *int64 `json:"idleTimeoutSeconds,omitempty"`
 	// LoadBalancer contains settings for the load balancer fronting bastion instances.
 	LoadBalancer *BastionLoadBalancerSpec `json:"loadBalancer,omitempty"`
 }
 
 type BastionLoadBalancerSpec struct {
-	AdditionalSecurityGroups []string `json:"additionalSecurityGroups,omitempty"`
 	// Type of load balancer to create, it can be Public or Internal.
 	Type LoadBalancerType `json:"type,omitempty"`
 }

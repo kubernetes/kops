@@ -5604,13 +5604,13 @@ spec:
                       bastionPublicName:
                         type: string
                       idleTimeoutSeconds:
-                        description: IdleTimeoutSeconds is the bastion's Loadbalancer
-                          idle timeout
+                        description: IdleTimeoutSeconds is unused
                         format: int64
                         type: integer
                       loadBalancer:
                         properties:
                           additionalSecurityGroups:
+                            description: AdditionalSecurityGroups is unused
                             items:
                               type: string
                             type: array

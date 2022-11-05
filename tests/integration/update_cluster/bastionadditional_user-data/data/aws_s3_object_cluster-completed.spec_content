@@ -183,9 +183,7 @@ spec:
     zone: us-test-1a
   topology:
     bastion:
-      loadBalancer:
-        additionalSecurityGroups:
-        - sg-exampleid
+      loadBalancer: {}
     dns:
       type: Public
     masters: private
