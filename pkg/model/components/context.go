@@ -59,7 +59,7 @@ func UsesKubenet(networking *kops.NetworkingSpec) bool {
 	}
 	if networking.Kubenet != nil {
 		return true
-	} else if networking.GCE != nil {
+	} else if networking.GCP != nil {
 		// GCP IP Alias networking is based on kubenet
 		return true
 	} else if networking.External != nil {

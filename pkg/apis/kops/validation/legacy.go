@@ -183,7 +183,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 	// nonMasqueradeCIDR is essentially deprecated, and we're moving to cluster-cidr instead (which is better named pod-cidr)
 	nonMasqueradeCIDRRequired := true
 	serviceClusterMustBeSubnetOfNonMasqueradeCIDR := true
-	if c.Spec.Networking != nil && c.Spec.Networking.GCE != nil {
+	if c.Spec.Networking != nil && c.Spec.Networking.GCP != nil {
 		nonMasqueradeCIDRRequired = false
 		serviceClusterMustBeSubnetOfNonMasqueradeCIDR = false
 	}

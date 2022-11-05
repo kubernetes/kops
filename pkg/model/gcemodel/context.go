@@ -133,7 +133,7 @@ func (c *GCEModelContext) NameForFirewallRule(id string) string {
 }
 
 func (c *GCEModelContext) NetworkingIsIPAlias() bool {
-	return c.Cluster.Spec.Networking != nil && c.Cluster.Spec.Networking.GCE != nil
+	return c.Cluster.Spec.Networking != nil && c.Cluster.Spec.Networking.GCP != nil
 }
 
 func (c *GCEModelContext) NetworkingIsGCERoutes() bool {

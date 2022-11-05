@@ -34,7 +34,7 @@ type NetworkingSpec struct {
 	AmazonVPC  *AmazonVPCNetworkingSpec  `json:"amazonvpc,omitempty"`
 	Cilium     *CiliumNetworkingSpec     `json:"cilium,omitempty"`
 	LyftVPC    *LyftVPCNetworkingSpec    `json:"lyftvpc,omitempty"`
-	GCE        *GCENetworkingSpec        `json:"gce,omitempty"`
+	GCP        *GCPNetworkingSpec        `json:"gcp,omitempty"`
 }
 
 // ClassicNetworkingSpec is the specification of classic networking mode, integrated into kubernetes.
@@ -435,5 +435,5 @@ type LyftVPCNetworkingSpec struct {
 	SubnetTags map[string]string `json:"subnetTags,omitempty"`
 }
 
-// GCENetworkingSpec is the specification of GCP's native networking mode, using IP aliases
-type GCENetworkingSpec struct{}
+// GCPNetworkingSpec is the specification of GCP's native networking mode, using IP aliases
+type GCPNetworkingSpec struct{}

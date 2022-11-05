@@ -1107,7 +1107,7 @@ func setupNetworking(opt *NewClusterOptions, cluster *api.Cluster) error {
 		addCiliumNetwork(cluster)
 		cluster.Spec.Networking.Cilium.EtcdManaged = true
 	case "gce":
-		cluster.Spec.Networking.GCE = &api.GCENetworkingSpec{}
+		cluster.Spec.Networking.GCP = &api.GCPNetworkingSpec{}
 	default:
 		return fmt.Errorf("unknown networking mode %q", opt.Networking)
 	}

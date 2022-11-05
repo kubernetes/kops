@@ -31,7 +31,7 @@ import (
 
 // UsesIPAliases checks if the cluster uses IP aliases for network connectivity
 func UsesIPAliases(c *kops.Cluster) bool {
-	if c.Spec.Networking != nil && c.Spec.Networking.GCE != nil {
+	if c.Spec.Networking != nil && c.Spec.Networking.GCP != nil {
 		return true
 	}
 	return false

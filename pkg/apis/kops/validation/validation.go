@@ -889,12 +889,12 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 		allErrs = append(allErrs, field.Forbidden(fldPath.Child("lyftvp"), "support for LyftVPC has been removed"))
 	}
 
-	if v.GCE != nil {
+	if v.GCP != nil {
 		if optionTaken {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("gce"), "only one networking option permitted"))
 		}
 
-		allErrs = append(allErrs, validateNetworkingGCE(c, v.GCE, fldPath.Child("gce"))...)
+		allErrs = append(allErrs, validateNetworkingGCE(c, v.GCP, fldPath.Child("gce"))...)
 	}
 
 	return allErrs
@@ -1054,7 +1054,7 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 	return allErrs
 }
 
-func validateNetworkingGCE(c *kops.ClusterSpec, v *kops.GCENetworkingSpec, fldPath *field.Path) field.ErrorList {
+func validateNetworkingGCE(c *kops.ClusterSpec, v *kops.GCPNetworkingSpec, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	if c.GetCloudProvider() != kops.CloudProviderGCE {

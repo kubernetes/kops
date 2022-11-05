@@ -36,7 +36,7 @@ spec:
   masterPublicName: api.minimal.example.com
   networkCIDR: 172.20.0.0/16
   networking:
-    kubenet: {}
+    gce: {}
   nonMasqueradeCIDR: 100.64.0.0/10
   project: testProject
   sshAccess:

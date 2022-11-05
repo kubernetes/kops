@@ -834,7 +834,7 @@ func (c *Cluster) fillClusterSpecNetworkingSpec() {
 		// OK
 	} else if c.Spec.Networking.Cilium != nil {
 		// OK
-	} else if c.Spec.Networking.GCE != nil {
+	} else if c.Spec.Networking.GCP != nil {
 		// OK
 	} else {
 		// No networking model selected; choose Kubenet

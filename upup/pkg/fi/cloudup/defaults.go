@@ -99,7 +99,7 @@ func PerformAssignments(c *kops.Cluster, cloud fi.Cloud) error {
 	}
 
 	if c.Spec.NonMasqueradeCIDR == "" {
-		if c.Spec.Networking != nil && c.Spec.Networking.GCE != nil {
+		if c.Spec.Networking != nil && c.Spec.Networking.GCP != nil {
 			// Don't set NonMasqueradeCIDR
 		} else {
 			c.Spec.NonMasqueradeCIDR = "100.64.0.0/10"
