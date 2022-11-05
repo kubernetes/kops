@@ -38,16 +38,12 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 		obj.Topology = &TopologySpec{}
 	}
 
-	rebindIfEmpty(&obj.Topology.Masters, TopologyPublic)
+	rebindIfEmpty(&obj.Topology.ControlPlane, TopologyPublic)
 
 	rebindIfEmpty(&obj.Topology.Nodes, TopologyPublic)
 
-	if obj.Topology.DNS == nil {
-		obj.Topology.DNS = &DNSSpec{}
-	}
-
-	if obj.Topology.DNS.Type == "" {
-		obj.Topology.DNS.Type = DNSTypePublic
+	if obj.Topology.DNS == "" {
+		obj.Topology.DNS = DNSTypePublic
 	}
 
 	if obj.CloudProvider.Openstack == nil {
@@ -56,7 +52,7 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 		}
 
 		if obj.API.IsEmpty() {
-			switch obj.Topology.Masters {
+			switch obj.Topology.ControlPlane {
 			case TopologyPublic:
 				obj.API.DNS = &DNSAccessSpec{}
 
@@ -64,7 +60,7 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 				obj.API.LoadBalancer = &LoadBalancerAccessSpec{}
 
 			default:
-				klog.Infof("unknown master topology type: %q", obj.Topology.Masters)
+				klog.Infof("unknown controlPlane topology type: %q", obj.Topology.ControlPlane)
 			}
 		}
 

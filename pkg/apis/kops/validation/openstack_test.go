@@ -37,7 +37,7 @@ func Test_ValidateTopology(t *testing.T) {
 			},
 			ExpectedErrors: []string{
 				"Forbidden::spec.topology.nodes",
-				"Forbidden::spec.topology.masters",
+				"Forbidden::spec.topology.controlPlane",
 			},
 		},
 		{
@@ -50,7 +50,7 @@ func Test_ValidateTopology(t *testing.T) {
 			},
 			ExpectedErrors: []string{
 				"Forbidden::spec.topology.nodes",
-				"Forbidden::spec.topology.masters",
+				"Forbidden::spec.topology.controlPlane",
 			},
 		},
 		{
@@ -59,8 +59,8 @@ func Test_ValidateTopology(t *testing.T) {
 					Openstack: &kops.OpenstackSpec{},
 				},
 				Topology: &kops.TopologySpec{
-					Masters: kops.TopologyPrivate,
-					Nodes:   kops.TopologyPrivate,
+					ControlPlane: kops.TopologyPrivate,
+					Nodes:        kops.TopologyPrivate,
 				},
 			},
 			ExpectedErrors: []string{},
