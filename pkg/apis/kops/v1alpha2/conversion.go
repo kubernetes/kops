@@ -185,3 +185,23 @@ func Convert_kops_ExternalDNSConfig_To_v1alpha2_ExternalDNSConfig(in *kops.Exter
 	}
 	return nil
 }
+
+func Convert_v1alpha2_TopologySpec_To_kops_TopologySpec(in *TopologySpec, out *kops.TopologySpec, s conversion.Scope) error {
+	if err := autoConvert_v1alpha2_TopologySpec_To_kops_TopologySpec(in, out, s); err != nil {
+		return err
+	}
+	if in.LegacyDNS != nil {
+		out.DNS = kops.DNSType(in.LegacyDNS.Type)
+	}
+	return nil
+}
+
+func Convert_kops_TopologySpec_To_v1alpha2_TopologySpec(in *kops.TopologySpec, out *TopologySpec, s conversion.Scope) error {
+	if err := autoConvert_kops_TopologySpec_To_v1alpha2_TopologySpec(in, out, s); err != nil {
+		return err
+	}
+	if in.DNS != "" {
+		out.LegacyDNS = &DNSSpec{Type: DNSType(in.DNS)}
+	}
+	return nil
+}

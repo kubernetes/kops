@@ -22,25 +22,21 @@ const (
 )
 
 type TopologySpec struct {
-	// The environment to launch the Kubernetes masters in public|private
-	Masters string `json:"masters,omitempty"`
+	// ControlPlane specifies the environment for launching the control plane nodes. (public, private)
+	ControlPlane string `json:"controlPlane,omitempty"`
 
-	// The environment to launch the Kubernetes nodes in public|private
+	// Nodes specifies the environment for launching the worker nodes. (public, private)
 	Nodes string `json:"nodes,omitempty"`
 
 	// Bastion provide an external facing point of entry into a network
 	// containing private network instances. This host can provide a single
 	// point of fortification or audit and can be started and stopped to enable
-	// or disable inbound SSH communication from the Internet, some call bastion
-	// as the "jump server".
+	// or disable inbound SSH communication from the Internet. Some call the bastion
+	// the "jump server".
 	Bastion *BastionSpec `json:"bastion,omitempty"`
 
-	// DNS configures options relating to DNS, in particular whether we use a public or a private hosted zone
-	DNS *DNSSpec `json:"dns,omitempty"`
-}
-
-type DNSSpec struct {
-	Type DNSType `json:"type,omitempty"`
+	// DNS specifies the environment for hosted DNS zones. (Public, Private, None)
+	DNS DNSType `json:"dns,omitempty"`
 }
 
 type DNSType string
@@ -48,4 +44,5 @@ type DNSType string
 const (
 	DNSTypePublic  DNSType = "Public"
 	DNSTypePrivate DNSType = "Private"
+	DNSTypeNone    DNSType = "None"
 )

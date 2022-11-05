@@ -50,7 +50,7 @@ func getTestSetupOS(t *testing.T) (*RollingUpdateCluster, *openstack.MockCloud) 
 	inCluster.Spec.CloudProvider.Openstack = &kopsapi.OpenstackSpec{}
 	inCluster.Name = "test.k8s.local"
 
-	inCluster.Spec.Topology.Masters = kopsapi.TopologyPrivate
+	inCluster.Spec.Topology.ControlPlane = kopsapi.TopologyPrivate
 	inCluster.Spec.Topology.Nodes = kopsapi.TopologyPrivate
 
 	err := cloudup.PerformAssignments(inCluster, mockcloud)
