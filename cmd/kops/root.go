@@ -265,12 +265,6 @@ func (c *RootCmd) clusterNameArgsAllowNoCluster(clusterName *string) func(cmd *c
 //
 // Everything else is an error.
 func (c *RootCmd) ProcessArgs(args []string) error {
-	if len(args) > 0 {
-		fmt.Fprintf(os.Stderr, "\n")
-		fmt.Fprintf(os.Stderr, "\nClusterName as positional argument is deprecated and will be removed in a future version\n")
-		fmt.Fprintf(os.Stderr, "\n")
-	}
-
 	if len(args) == 0 {
 		return nil
 	}
