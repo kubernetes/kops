@@ -43,11 +43,9 @@ func BuildMinimalCluster(clusterName string) *kops.Cluster {
 
 	// Default to public topology
 	c.Spec.Topology = &kops.TopologySpec{
-		Masters: kops.TopologyPublic,
-		Nodes:   kops.TopologyPublic,
-		DNS: &kops.DNSSpec{
-			Type: kops.DNSTypePublic,
-		},
+		ControlPlane: kops.TopologyPublic,
+		Nodes:        kops.TopologyPublic,
+		DNS:          kops.DNSTypePublic,
 	}
 
 	c.Spec.Networking = &kops.NetworkingSpec{}

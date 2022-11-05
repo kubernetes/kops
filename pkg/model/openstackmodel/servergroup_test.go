@@ -386,7 +386,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						},
 					},
 					Topology: &kops.TopologySpec{
-						Masters: kops.TopologyPrivate,
+						ControlPlane: kops.TopologyPrivate,
 					},
 					KubernetesVersion: "1.24.0",
 					Subnets: []kops.ClusterSubnetSpec{

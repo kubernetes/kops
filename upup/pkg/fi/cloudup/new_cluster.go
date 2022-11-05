@@ -1123,8 +1123,8 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 	switch opt.Topology {
 	case api.TopologyPublic, "":
 		cluster.Spec.Topology = &api.TopologySpec{
-			Masters: api.TopologyPublic,
-			Nodes:   api.TopologyPublic,
+			ControlPlane: api.TopologyPublic,
+			Nodes:        api.TopologyPublic,
 			// Bastion: &api.BastionSpec{Enable: c.Bastion},
 		}
 
@@ -1141,8 +1141,8 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 			return nil, fmt.Errorf("invalid networking option %s. Kubenet does not support private topology", opt.Networking)
 		}
 		cluster.Spec.Topology = &api.TopologySpec{
-			Masters: api.TopologyPrivate,
-			Nodes:   api.TopologyPrivate,
+			ControlPlane: api.TopologyPrivate,
+			Nodes:        api.TopologyPrivate,
 		}
 
 		for i := range cluster.Spec.Subnets {
@@ -1266,22 +1266,21 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 		}
 	}
 
-	cluster.Spec.Topology.DNS = &api.DNSSpec{}
 	switch strings.ToLower(opt.DNSType) {
 	case "":
 		if cluster.IsGossip() {
-			cluster.Spec.Topology.DNS.Type = api.DNSTypePrivate
+			cluster.Spec.Topology.DNS = api.DNSTypePrivate
 		} else if cluster.Spec.GetCloudProvider() == api.CloudProviderHetzner {
-			cluster.Spec.Topology.DNS.Type = api.DNSTypeNone
+			cluster.Spec.Topology.DNS = api.DNSTypeNone
 		} else {
-			cluster.Spec.Topology.DNS.Type = api.DNSTypePublic
+			cluster.Spec.Topology.DNS = api.DNSTypePublic
 		}
 	case "public":
-		cluster.Spec.Topology.DNS.Type = api.DNSTypePublic
+		cluster.Spec.Topology.DNS = api.DNSTypePublic
 	case "private":
-		cluster.Spec.Topology.DNS.Type = api.DNSTypePrivate
+		cluster.Spec.Topology.DNS = api.DNSTypePrivate
 	case "none":
-		cluster.Spec.Topology.DNS.Type = api.DNSTypeNone
+		cluster.Spec.Topology.DNS = api.DNSTypeNone
 	default:
 		return nil, fmt.Errorf("unknown DNSType: %q", opt.DNSType)
 	}
@@ -1304,7 +1303,7 @@ func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
 	} else if opt.APILoadBalancerType != "" || opt.APISSLCertificate != "" {
 		cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
 	} else {
-		switch cluster.Spec.Topology.Masters {
+		switch cluster.Spec.Topology.ControlPlane {
 		case api.TopologyPublic:
 			if cluster.IsGossip() || cluster.UsesNoneDNS() {
 				// gossip DNS names don't work outside the cluster, so we use a LoadBalancer instead
@@ -1317,7 +1316,7 @@ func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
 			cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
 
 		default:
-			return fmt.Errorf("unknown master topology type: %q", cluster.Spec.Topology.Masters)
+			return fmt.Errorf("unknown master topology type: %q", cluster.Spec.Topology.ControlPlane)
 		}
 	}
 

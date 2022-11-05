@@ -5290,8 +5290,8 @@ func (in *TopologySpec) DeepCopyInto(out *TopologySpec) {
 		*out = new(BastionSpec)
 		(*in).DeepCopyInto(*out)
 	}
-	if in.DNS != nil {
-		in, out := &in.DNS, &out.DNS
+	if in.LegacyDNS != nil {
+		in, out := &in.LegacyDNS, &out.LegacyDNS
 		*out = new(DNSSpec)
 		**out = **in
 	}

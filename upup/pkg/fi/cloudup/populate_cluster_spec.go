@@ -226,8 +226,8 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 		}
 		if dns != nil {
 			dnsType := kopsapi.DNSTypePublic
-			if cluster.Spec.Topology != nil && cluster.Spec.Topology.DNS != nil && cluster.Spec.Topology.DNS.Type != "" {
-				dnsType = cluster.Spec.Topology.DNS.Type
+			if cluster.Spec.Topology != nil && cluster.Spec.Topology.DNS != "" {
+				dnsType = cluster.Spec.Topology.DNS
 			}
 
 			dnsZone, err := FindDNSHostedZone(dns, cluster.ObjectMeta.Name, dnsType)

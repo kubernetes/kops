@@ -42,7 +42,7 @@ func up(ctx context.Context) error {
 		ConfigBase: registryBase.Join(cluster.ObjectMeta.Name).Path(),
 		Topology:   &api.TopologySpec{},
 	}
-	cluster.Spec.Topology.Masters = api.TopologyPublic
+	cluster.Spec.Topology.ControlPlane = api.TopologyPublic
 	cluster.Spec.Topology.Nodes = api.TopologyPublic
 
 	for _, z := range nodeZones {
