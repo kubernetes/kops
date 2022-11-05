@@ -24,6 +24,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"k8s.io/klog/v2"
@@ -48,6 +49,7 @@ type NetworkLoadBalancer struct {
 	// (NLB is restricted as to names, so we have limited choices!)
 	// We use the Name tag to find the existing NLB.
 	LoadBalancerName *string
+	CLBName          *string
 
 	DNSName      *string
 	HostedZoneId *string
@@ -74,6 +76,7 @@ type NetworkLoadBalancer struct {
 
 var _ fi.CompareWithID = &NetworkLoadBalancer{}
 var _ fi.TaskNormalize = &NetworkLoadBalancer{}
+var _ fi.ProducesDeletions = &NetworkLoadBalancer{}
 
 func (e *NetworkLoadBalancer) CompareWithID() *string {
 	return e.Name
@@ -254,6 +257,7 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 
 	actual := &NetworkLoadBalancer{}
 	actual.Name = e.Name
+	actual.CLBName = e.CLBName
 	actual.LoadBalancerName = lb.LoadBalancerName
 	actual.DNSName = lb.DNSName
 	actual.HostedZoneId = lb.CanonicalHostedZoneId // CanonicalHostedZoneNameID
@@ -936,4 +940,65 @@ func (e *NetworkLoadBalancer) CloudformationAttrCanonicalHostedZoneNameID() *clo
 
 func (e *NetworkLoadBalancer) CloudformationAttrDNSName() *cloudformation.Literal {
 	return cloudformation.GetAtt("AWS::ElasticLoadBalancingV2::LoadBalancer", *e.Name, "DNSName")
+}
+
+// FindDeletions schedules deletion of the corresponding legacy classic load balancer when it no longer has targets.
+func (e *NetworkLoadBalancer) FindDeletions(context *fi.Context) ([]fi.Deletion, error) {
+	if e.CLBName == nil {
+		return nil, nil
+	}
+
+	cloud := context.Cloud.(awsup.AWSCloud)
+
+	lb, err := cloud.FindELBByNameTag(fi.StringValue(e.CLBName))
+	if err != nil {
+		return nil, err
+	}
+	if lb == nil {
+		return nil, nil
+	}
+
+	// Testing shows that the instances are deregistered immediately after the apply_cluster.
+	// TODO: Figure out how to delay deregistration until instances are terminated.
+	//if len(lb.Instances) > 0 {
+	//	klog.V(2).Infof("CLB %s has targets; not scheduling deletion", *lb.LoadBalancerName)
+	//	return nil, nil
+	//}
+
+	actual := &deleteClassicLoadBalancer{}
+	actual.LoadBalancerName = lb.LoadBalancerName
+
+	klog.V(4).Infof("Found CLB %+v", actual)
+
+	return []fi.Deletion{actual}, nil
+}
+
+type deleteClassicLoadBalancer struct {
+	// LoadBalancerName is the name in ELB, possibly different from our name
+	// (ELB is restricted as to names, so we have limited choices!)
+	LoadBalancerName *string
+}
+
+func (d deleteClassicLoadBalancer) Delete(t fi.Target) error {
+	awsTarget, ok := t.(*awsup.AWSAPITarget)
+	if !ok {
+		return fmt.Errorf("unexpected target type for deletion: %T", t)
+	}
+
+	_, err := awsTarget.Cloud.ELB().DeleteLoadBalancer(&elb.DeleteLoadBalancerInput{
+		LoadBalancerName: d.LoadBalancerName,
+	})
+	if err != nil {
+		return fmt.Errorf("deleting classic LoadBalancer: %w", err)
+	}
+
+	return nil
+}
+
+func (d deleteClassicLoadBalancer) TaskName() string {
+	return "ClassicLoadBalancer"
+}
+
+func (d deleteClassicLoadBalancer) Item() string {
+	return *d.LoadBalancerName
 }
