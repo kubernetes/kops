@@ -109,13 +109,19 @@ func (d *logDumper) DumpAllNodes(ctx context.Context, nodes corev1.NodeList, add
 		node := &nodes.Items[i]
 
 		ip := ""
+		ipv6 := ""
 		for _, address := range node.Status.Addresses {
 			if address.Type == "ExternalIP" {
 				ip = address.Address
 				break
+			} else if address.Type == "InternalIP" && strings.Contains(address.Address, ":") {
+				ipv6 = address.Address
 			}
 		}
 
+		if ip == "" {
+			ip = ipv6
+		}
 		err := d.dumpNode(ctx, node.Name, ip)
 		if err != nil {
 			log.Printf("could not dump node %s (%s): %v", node.Name, ip, err)
@@ -420,7 +426,7 @@ var _ sshClientFactory = &sshClientFactoryImplementation{}
 
 // Dial implements sshClientFactory::Dial
 func (f *sshClientFactoryImplementation) Dial(ctx context.Context, host string) (sshClient, error) {
-	addr := host + ":22"
+	addr := net.JoinHostPort(host, "22")
 	d := net.Dialer{
 		Timeout: 15 * time.Second,
 	}
