@@ -18,12 +18,15 @@ package v1alpha2
 
 type BastionSpec struct {
 	PublicName string `json:"bastionPublicName,omitempty"`
-	// IdleTimeoutSeconds is the bastion's Loadbalancer idle timeout
+	// IdleTimeoutSeconds is unused
+	// +k8s:conversion-gen=false
 	IdleTimeoutSeconds *int64                   `json:"idleTimeoutSeconds,omitempty"`
 	LoadBalancer       *BastionLoadBalancerSpec `json:"loadBalancer,omitempty"`
 }
 
 type BastionLoadBalancerSpec struct {
+	// AdditionalSecurityGroups is unused
+	// +k8s:conversion-gen=false
 	AdditionalSecurityGroups []string `json:"additionalSecurityGroups,omitempty"`
 	// Type of load balancer to create, it can be Public or Internal.
 	Type LoadBalancerType `json:"type,omitempty"`

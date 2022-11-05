@@ -414,15 +414,8 @@ func validateTopology(c *kops.Cluster, topology *kops.TopologySpec, fieldPath *f
 	}
 
 	if topology.Bastion != nil {
-		bastion := topology.Bastion
 		if topology.Masters == kops.TopologyPublic || topology.Nodes == kops.TopologyPublic {
 			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("bastion"), "bastion requires masters and nodes to have private topology"))
-		}
-		if bastion.IdleTimeoutSeconds != nil && *bastion.IdleTimeoutSeconds <= 0 {
-			allErrs = append(allErrs, field.Invalid(fieldPath.Child("bastion", "idleTimeoutSeconds"), *bastion.IdleTimeoutSeconds, "bastion idleTimeoutSeconds should be greater than zero"))
-		}
-		if bastion.IdleTimeoutSeconds != nil && *bastion.IdleTimeoutSeconds > 3600 {
-			allErrs = append(allErrs, field.Invalid(fieldPath.Child("bastion", "idleTimeoutSeconds"), *bastion.IdleTimeoutSeconds, "bastion idleTimeoutSeconds cannot be greater than one hour"))
 		}
 	}
 

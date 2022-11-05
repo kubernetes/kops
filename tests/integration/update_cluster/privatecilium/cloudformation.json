@@ -74,9 +74,9 @@
             ]
           }
         ],
-        "LoadBalancerNames": [
+        "TargetGroupARNs": [
           {
-            "Ref": "AWSElasticLoadBalancingLoadBalancerbastionprivateciliumexamplecom"
+            "Ref": "AWSElasticLoadBalancingV2TargetGroupbastionprivateciliumexal2ms01"
           }
         ]
       }
@@ -836,30 +836,6 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupEgressfrombastionelbprivateciliumexamplecomegressall0to00": {
-      "Type": "AWS::EC2::SecurityGroupEgress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupbastionelbprivateciliumexamplecom"
-        },
-        "FromPort": 0,
-        "ToPort": 0,
-        "IpProtocol": "-1",
-        "CidrIpv6": "::/0"
-      }
-    },
-    "AWSEC2SecurityGroupEgressfrombastionelbprivateciliumexamplecomegressall0to000000": {
-      "Type": "AWS::EC2::SecurityGroupEgress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupbastionelbprivateciliumexamplecom"
-        },
-        "FromPort": 0,
-        "ToPort": 0,
-        "IpProtocol": "-1",
-        "CidrIp": "0.0.0.0/0"
-      }
-    },
     "AWSEC2SecurityGroupEgressfrombastionprivateciliumexamplecomegressall0to00": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
@@ -932,11 +908,11 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupIngressfrom00000ingresstcp22to22bastionelbprivateciliumexamplecom": {
+    "AWSEC2SecurityGroupIngressfrom00000ingresstcp22to22bastionprivateciliumexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupbastionelbprivateciliumexamplecom"
+          "Ref": "AWSEC2SecurityGroupbastionprivateciliumexamplecom"
         },
         "FromPort": 22,
         "ToPort": 22,
@@ -956,18 +932,16 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupIngressfrombastionelbprivateciliumexamplecomingresstcp22to22bastionprivateciliumexamplecom": {
+    "AWSEC2SecurityGroupIngressfrom172204022ingresstcp22to22bastionprivateciliumexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
           "Ref": "AWSEC2SecurityGroupbastionprivateciliumexamplecom"
         },
-        "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupbastionelbprivateciliumexamplecom"
-        },
         "FromPort": 22,
         "ToPort": 22,
-        "IpProtocol": "tcp"
+        "IpProtocol": "tcp",
+        "CidrIp": "172.20.4.0/22"
       }
     },
     "AWSEC2SecurityGroupIngressfrombastionprivateciliumexamplecomingresstcp22to22mastersprivateciliumexamplecom": {
@@ -1122,6 +1096,30 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
+    "AWSEC2SecurityGroupIngressicmppmtusshnlb00000": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupbastionprivateciliumexamplecom"
+        },
+        "FromPort": 3,
+        "ToPort": 4,
+        "IpProtocol": "icmp",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressicmppmtusshnlb172204022": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupbastionprivateciliumexamplecom"
+        },
+        "FromPort": 3,
+        "ToPort": 4,
+        "IpProtocol": "icmp",
+        "CidrIp": "172.20.4.0/22"
+      }
+    },
     "AWSEC2SecurityGroupapielbprivateciliumexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
@@ -1138,30 +1136,6 @@
           {
             "Key": "Name",
             "Value": "api-elb.privatecilium.example.com"
-          },
-          {
-            "Key": "kubernetes.io/cluster/privatecilium.example.com",
-            "Value": "owned"
-          }
-        ]
-      }
-    },
-    "AWSEC2SecurityGroupbastionelbprivateciliumexamplecom": {
-      "Type": "AWS::EC2::SecurityGroup",
-      "Properties": {
-        "GroupName": "bastion-elb.privatecilium.example.com",
-        "VpcId": {
-          "Ref": "AWSEC2VPCprivateciliumexamplecom"
-        },
-        "GroupDescription": "Security group for bastion ELB",
-        "Tags": [
-          {
-            "Key": "KubernetesCluster",
-            "Value": "privatecilium.example.com"
-          },
-          {
-            "Key": "Name",
-            "Value": "bastion-elb.privatecilium.example.com"
           },
           {
             "Key": "kubernetes.io/cluster/privatecilium.example.com",
@@ -1512,38 +1486,37 @@
         ]
       }
     },
-    "AWSElasticLoadBalancingLoadBalancerbastionprivateciliumexamplecom": {
-      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+    "AWSElasticLoadBalancingV2Listenerbastionprivateciliumexamplecom22": {
+      "Type": "AWS::ElasticLoadBalancingV2::Listener",
       "Properties": {
-        "LoadBalancerName": "bastion-privatecilium-exa-l2ms01",
-        "Listeners": [
+        "DefaultActions": [
           {
-            "InstancePort": "22",
-            "InstanceProtocol": "TCP",
-            "LoadBalancerPort": "22",
-            "Protocol": "TCP"
+            "Type": "forward",
+            "TargetGroupArn": {
+              "Ref": "AWSElasticLoadBalancingV2TargetGroupbastionprivateciliumexal2ms01"
+            }
           }
         ],
-        "SecurityGroups": [
-          {
-            "Ref": "AWSEC2SecurityGroupbastionelbprivateciliumexamplecom"
-          }
-        ],
-        "Subnets": [
-          {
-            "Ref": "AWSEC2Subnetutilityustest1aprivateciliumexamplecom"
-          }
-        ],
-        "HealthCheck": {
-          "Target": "TCP:22",
-          "HealthyThreshold": "2",
-          "UnhealthyThreshold": "2",
-          "Interval": "10",
-          "Timeout": "5"
+        "LoadBalancerArn": {
+          "Ref": "AWSElasticLoadBalancingV2LoadBalancerbastionprivateciliumexamplecom"
         },
-        "ConnectionSettings": {
-          "IdleTimeout": 300
-        },
+        "Port": 22,
+        "Protocol": "TCP"
+      }
+    },
+    "AWSElasticLoadBalancingV2LoadBalancerbastionprivateciliumexamplecom": {
+      "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+      "Properties": {
+        "Name": "bastion-privatecilium-exa-l2ms01",
+        "Scheme": "internet-facing",
+        "SubnetMappings": [
+          {
+            "SubnetId": {
+              "Ref": "AWSEC2Subnetutilityustest1aprivateciliumexamplecom"
+            }
+          }
+        ],
+        "Type": "network",
         "Tags": [
           {
             "Key": "KubernetesCluster",
@@ -1558,6 +1531,34 @@
             "Value": "owned"
           }
         ]
+      }
+    },
+    "AWSElasticLoadBalancingV2TargetGroupbastionprivateciliumexal2ms01": {
+      "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+      "Properties": {
+        "Name": "bastion-privatecilium-exa-l2ms01",
+        "Port": 22,
+        "Protocol": "TCP",
+        "VpcId": {
+          "Ref": "AWSEC2VPCprivateciliumexamplecom"
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privatecilium.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "bastion-privatecilium-exa-l2ms01"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privatecilium.example.com",
+            "Value": "owned"
+          }
+        ],
+        "HealthCheckProtocol": "TCP",
+        "HealthyThresholdCount": 2,
+        "UnhealthyThresholdCount": 2
       }
     },
     "AWSIAMInstanceProfilebastionsprivateciliumexamplecom": {

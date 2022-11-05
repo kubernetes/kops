@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"k8s.io/klog/v2"
 )
@@ -88,10 +89,17 @@ func (m *MockELBV2) CreateLoadBalancer(request *elbv2.CreateLoadBalancerInput) (
 		CanonicalHostedZoneId: aws.String("HZ123456"),
 	}
 	zones := make([]*elbv2.AvailabilityZone, 0)
+	vpc := "vpc-1"
 	for _, subnet := range request.Subnets {
 		zones = append(zones, &elbv2.AvailabilityZone{
 			SubnetId: subnet,
 		})
+		subnetsOutput, err := m.EC2.DescribeSubnets(&ec2.DescribeSubnetsInput{
+			SubnetIds: []*string{subnet},
+		})
+		if err == nil {
+			vpc = *subnetsOutput.Subnets[0].VpcId
+		}
 	}
 	for _, subnetMapping := range request.SubnetMappings {
 		var lbAddrs []*elbv2.LoadBalancerAddress
@@ -105,12 +113,16 @@ func (m *MockELBV2) CreateLoadBalancer(request *elbv2.CreateLoadBalancerInput) (
 			SubnetId:              subnetMapping.SubnetId,
 			LoadBalancerAddresses: lbAddrs,
 		})
+		subnetsOutput, err := m.EC2.DescribeSubnets(&ec2.DescribeSubnetsInput{
+			SubnetIds: []*string{subnetMapping.SubnetId},
+		})
+		if err == nil {
+			vpc = *subnetsOutput.Subnets[0].VpcId
+		}
 	}
 	lb.AvailabilityZones = zones
 
-	// This is hardcoded because AWS derives it from the subnets above
-	// But we don'y rely on the NLB's VPC ID at all in awstasks
-	lb.VpcId = aws.String("vpc-1")
+	lb.VpcId = aws.String(vpc)
 
 	m.lbCount++
 	arn := fmt.Sprintf("arn:aws-test:elasticloadbalancing:us-test-1:000000000000:loadbalancer/net/%v/%v", aws.StringValue(request.Name), m.lbCount)
