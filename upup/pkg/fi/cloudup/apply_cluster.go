@@ -1392,25 +1392,6 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 		}
 	}
 
-	useConfigServer := featureflag.KopsControllerStateStore.Enabled() && (role != kops.InstanceGroupRoleMaster)
-	if useConfigServer {
-		baseURL := url.URL{
-			Scheme: "https",
-			Host:   net.JoinHostPort("kops-controller.internal."+cluster.ObjectMeta.Name, strconv.Itoa(wellknownports.KopsControllerPort)),
-			Path:   "/",
-		}
-
-		configServer := &nodeup.ConfigServerOptions{
-			Server:         baseURL.String(),
-			CACertificates: config.CAs[fi.CertificateIDCA],
-		}
-
-		bootConfig.ConfigServer = configServer
-		delete(config.CAs, fi.CertificateIDCA)
-	} else {
-		bootConfig.ConfigBase = fi.String(n.configBase.Path())
-	}
-
 	if isMaster {
 		config.ApiserverAdditionalIPs = apiserverAdditionalIPs
 	}
@@ -1432,6 +1413,29 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 				break
 			}
 		}
+	}
+
+	useConfigServer := apiModel.UseKopsControllerForNodeBootstrap(cluster) && (role != kops.InstanceGroupRoleMaster)
+	if useConfigServer {
+		host := "kops-controller.internal." + cluster.ObjectMeta.Name
+		if cluster.UsesNoneDNS() {
+			host = bootConfig.APIServerIP
+		}
+		baseURL := url.URL{
+			Scheme: "https",
+			Host:   net.JoinHostPort(host, strconv.Itoa(wellknownports.KopsControllerPort)),
+			Path:   "/",
+		}
+
+		configServer := &nodeup.ConfigServerOptions{
+			Server:         baseURL.String(),
+			CACertificates: config.CAs[fi.CertificateIDCA],
+		}
+
+		bootConfig.ConfigServer = configServer
+		delete(config.CAs, fi.CertificateIDCA)
+	} else {
+		bootConfig.ConfigBase = fi.String(n.configBase.Path())
 	}
 
 	for _, manifest := range n.assetBuilder.StaticManifests {
