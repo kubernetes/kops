@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
   config.yaml: |
-    {"cloud":"gce","configBase":"memfs://tests/ha-gce.example.com"}
+    {"cloud":"gcp","configBase":"memfs://tests/ha-gce.example.com"}
 kind: ConfigMap
 metadata:
   creationTimestamp: null
