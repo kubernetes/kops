@@ -181,6 +181,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Lifecycle: b.Lifecycle,
 
 			LoadBalancerName: fi.String(loadBalancerName),
+			CLBName:          fi.String("api." + b.ClusterName()),
 			SubnetMappings:   nlbSubnetMappings,
 			Listeners:        nlbListeners,
 			TargetGroups:     make([]*awstasks.TargetGroup, 0),
