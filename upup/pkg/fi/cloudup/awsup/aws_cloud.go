@@ -163,6 +163,7 @@ type AWSCloud interface {
 	DescribeELBTags(loadBalancerNames []string) (map[string][]*elb.Tag, error)
 	FindELBV2ByNameTag(findNameTag string) (*elbv2.LoadBalancer, error)
 	DescribeELBV2Tags(loadBalancerNames []string) (map[string][]*elbv2.Tag, error)
+	FindELBV2NetworkInterfacesByName(vpcID string, loadBalancerName string) ([]*ec2.NetworkInterface, error)
 
 	// DescribeInstance is a helper that queries for the specified instance by id
 	DescribeInstance(instanceID string) (*ec2.Instance, error)
@@ -1869,6 +1870,35 @@ func findELBV2ByNameTag(c AWSCloud, findNameTag string) (*elbv2.LoadBalancer, er
 	}
 
 	return found[0], nil
+}
+
+func (c *awsCloudImplementation) FindELBV2NetworkInterfacesByName(vpcID string, loadBalancerName string) ([]*ec2.NetworkInterface, error) {
+	return findELBV2NetworkInterfaces(c, vpcID, loadBalancerName)
+}
+
+func findELBV2NetworkInterfaces(c AWSCloud, vpcID, lbName string) ([]*ec2.NetworkInterface, error) {
+	klog.V(2).Infof("Listing all NLB network interfaces")
+
+	request := &ec2.DescribeNetworkInterfacesInput{
+		Filters: []*ec2.Filter{
+			NewEC2Filter("vpc-id", vpcID),
+			NewEC2Filter("interface-type", "network_load_balancer"),
+		},
+	}
+
+	response, err := c.EC2().DescribeNetworkInterfaces(request)
+	if err != nil {
+		return nil, fmt.Errorf("error describing network interfaces: %w", err)
+	}
+
+	var found []*ec2.NetworkInterface
+	for _, ni := range response.NetworkInterfaces {
+		if strings.HasPrefix(aws.StringValue(ni.Description), "ELB net/"+lbName+"/") {
+			found = append(found, ni)
+		}
+	}
+
+	return found, nil
 }
 
 func (c *awsCloudImplementation) DescribeELBV2Tags(loadBalancerArns []string) (map[string][]*elbv2.Tag, error) {

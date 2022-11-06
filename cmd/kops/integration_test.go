@@ -273,6 +273,19 @@ func TestMinimal_v1_26(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "minimal").runTestCloudformation(t)
 }
 
+// TestMinimal_NoneDNS runs the test on a minimum configuration with --dns=none
+func TestMinimal_NoneDNS(t *testing.T) {
+	t.Setenv("KOPS_RUN_TOO_NEW_VERSION", "1")
+
+	newIntegrationTest("minimal.example.com", "minimal-dns-none").
+		withAddons(
+			awsEBSCSIAddon,
+			awsCCMAddon,
+		).
+		runTestTerraformAWS(t)
+	newIntegrationTest("minimal.example.com", "minimal").runTestCloudformation(t)
+}
+
 // TestHetzner runs the test on a minimum configuration
 func TestHetzner(t *testing.T) {
 	t.Setenv("HCLOUD_TOKEN", "REDACTED")
