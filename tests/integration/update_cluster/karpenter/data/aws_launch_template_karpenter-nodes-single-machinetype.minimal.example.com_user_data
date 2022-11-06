@@ -122,48 +122,6 @@ function download-release() {
 echo "== nodeup node config starting =="
 ensure-install-dir
 
-cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
-cloudConfig:
-  awsEBSCSIDriver:
-    enabled: true
-    version: v1.12.0
-  manageStorageClasses: true
-containerRuntime: containerd
-containerd:
-  logLevel: info
-  runc:
-    version: 1.1.4
-  version: 1.6.9
-docker:
-  skipInstall: true
-kubeProxy:
-  clusterCIDR: 100.96.0.0/11
-  cpuRequest: 100m
-  image: registry.k8s.io/kube-proxy:v1.25.0
-  logLevel: 2
-kubelet:
-  anonymousAuth: false
-  cgroupDriver: systemd
-  cgroupRoot: /
-  cloudProvider: external
-  clusterDNS: 100.64.0.10
-  clusterDomain: cluster.local
-  enableDebuggingHandlers: true
-  evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-  featureGates:
-    CSIMigrationAWS: "true"
-    InTreePluginAWSUnregister: "true"
-  kubeconfigPath: /var/lib/kubelet/kubeconfig
-  logLevel: 2
-  podInfraContainerImage: registry.k8s.io/pause:3.6
-  podManifestPath: /etc/kubernetes/manifests
-  protectKernelDefaults: true
-  registerSchedulable: true
-  shutdownGracePeriod: 30s
-  shutdownGracePeriodCriticalPods: 10s
-
-__EOF_CLUSTER_SPEC
-
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.example.com

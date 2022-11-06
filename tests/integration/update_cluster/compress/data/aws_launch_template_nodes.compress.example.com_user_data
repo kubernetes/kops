@@ -131,8 +131,6 @@ function download-release() {
 echo "== nodeup node config starting =="
 ensure-install-dir
 
-echo "H4sIAAAAAAAA/2ySz27bMAzG734KXnrrZLvtik3oZUu2NcBaBMkTMBbjEpHFTJSc5e0HO3Gzbj0Z/j6Kf35k4yW7mYQtt7YAwIN++7qerRfzyD3FQQKggBtPzsIWvVIB0GHAltZJIrY086hKaiHFTEUjISEHiqscEndk4VVxF9MNib20P6knb4HDVgqAnqKyBAu1uTP1beGk2Z160B3vF0ETen+us8sbWkb5fRzsxmdNFGeL+cpCXVXm872pTFXW9WDu84p+ZdI0el0BwB22ZCFSy5ri0ew+qWEph5wf9mPSvjY3tanedHkzFvWURlBBwrGTrF9yermQadooeX+GB3rURJ171VciyUI5dizZLaP07IZAPOhljPnz+jTF/Z2pTF395UiHHOz0a7w06ItpQXPa5Lbl0D5icJ7itBIA6rlJLOERo7PQUSfxaLBH9sO7h7qqnvg6iKOtvpGvJpGHr36PRA8fr65HfP+FTuqb2AJggNaMB7bEAVXZYyw9b8ozzfIS8A9ugEDpIHG39Lnl8IzjOQUuAPbiFmEbcTZd1OL9le4xK9lbc39684SBt6Tp3AmlZqweAyXSsju7wy5OiSiumxdyeZzyFae+5OTkEH5EbGhJkcVZuK30fWsWOXGDfilOh71q8QcAAP//AQAA//9u6M/pdAMAAA==" | base64 -d | gzip -d > conf/cluster_spec.yaml
-
 echo "H4sIAAAAAAAA/1SNPWuFMBRA9/yK7IKBDg6BDm3sJ0XFpdAt3lyrJckNuab6/v3j8SaXM5wzHOOpuCHT/+owa2l3FobivP4+W0YtA4aZtVLgC2+YucbDhuSxBgoKKKSMfJLiI/JmI+BbppI6G1DLSA75HEbyqGVHDsUNJd2n75YXLUtzfP3B5zIY7OfpoUJl26kHbL4v+3CYl3asXn36gfUJHsUVAAD//wEAAP//9eL7IMEAAAA=" | base64 -d | gzip -d > conf/kube_env.yaml
 
 download-release
