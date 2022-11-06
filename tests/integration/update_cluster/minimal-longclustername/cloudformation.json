@@ -1253,18 +1253,6 @@
           "Statement": [
             {
               "Action": [
-                "s3:Get*"
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                "arn:aws-test:s3:::placeholder-read-bucket/clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com/addons/*",
-                "arn:aws-test:s3:::placeholder-read-bucket/clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com/cluster-completed.spec",
-                "arn:aws-test:s3:::placeholder-read-bucket/clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com/igconfig/node/*",
-                "arn:aws-test:s3:::placeholder-read-bucket/clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com/secrets/dockerconfig"
-              ]
-            },
-            {
-              "Action": [
                 "s3:GetBucketLocation",
                 "s3:GetEncryptionConfiguration",
                 "s3:ListBucket",

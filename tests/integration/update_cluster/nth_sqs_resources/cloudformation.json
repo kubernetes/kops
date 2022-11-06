@@ -1424,18 +1424,6 @@
           "Statement": [
             {
               "Action": [
-                "s3:Get*"
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                "arn:aws-test:s3:::placeholder-read-bucket/clusters.example.com/nthsqsresources.longclustername.example.com/addons/*",
-                "arn:aws-test:s3:::placeholder-read-bucket/clusters.example.com/nthsqsresources.longclustername.example.com/cluster-completed.spec",
-                "arn:aws-test:s3:::placeholder-read-bucket/clusters.example.com/nthsqsresources.longclustername.example.com/igconfig/node/*",
-                "arn:aws-test:s3:::placeholder-read-bucket/clusters.example.com/nthsqsresources.longclustername.example.com/secrets/dockerconfig"
-              ]
-            },
-            {
-              "Action": [
                 "s3:GetBucketLocation",
                 "s3:GetEncryptionConfiguration",
                 "s3:ListBucket",
