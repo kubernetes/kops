@@ -451,6 +451,9 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 		if b.UseLoadBalancerForAPI() && ig.HasAPIServer() {
 			if b.UseNetworkLoadBalancer() {
 				t.TargetGroups = append(t.TargetGroups, b.LinkToTargetGroup("tcp"))
+				if b.Cluster.UsesNoneDNS() && ig.IsMaster() {
+					t.TargetGroups = append(t.TargetGroups, b.LinkToTargetGroup("kops-controller"))
+				}
 				if b.Cluster.Spec.API.LoadBalancer.SSLCertificate != "" {
 					t.TargetGroups = append(t.TargetGroups, b.LinkToTargetGroup("tls"))
 				}

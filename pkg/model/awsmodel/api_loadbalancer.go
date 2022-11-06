@@ -25,6 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -141,6 +142,12 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				TargetGroupName: b.NLBTargetGroupName("tcp"),
 			},
 		}
+		if b.Cluster.UsesNoneDNS() {
+			nlbListeners = append(nlbListeners, &awstasks.NetworkLoadBalancerListener{
+				Port:            wellknownports.KopsControllerPort,
+				TargetGroupName: b.NLBTargetGroupName("kops-controller"),
+			})
+		}
 
 		if lbSpec.SSLCertificate != "" {
 			listeners["443"].SSLCertificateID = lbSpec.SSLCertificate
@@ -219,7 +226,9 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Tags: tags,
 		}
 
-		if lbSpec.CrossZoneLoadBalancing == nil {
+		if b.Cluster.UsesNoneDNS() {
+			lbSpec.CrossZoneLoadBalancing = fi.Bool(true)
+		} else if lbSpec.CrossZoneLoadBalancing == nil {
 			lbSpec.CrossZoneLoadBalancing = fi.Bool(false)
 		}
 
@@ -265,28 +274,55 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			c.AddTask(clb)
 		} else if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
 
-			tcpGroupName := b.NLBTargetGroupName("tcp")
-			tcpGroupTags := b.CloudTags(tcpGroupName, false)
+			{
+				groupName := b.NLBTargetGroupName("tcp")
+				groupTags := b.CloudTags(groupName, false)
 
-			// Override the returned name to be the expected NLB TG name
-			tcpGroupTags["Name"] = tcpGroupName
+				// Override the returned name to be the expected NLB TG name
+				groupTags["Name"] = groupName
 
-			tg := &awstasks.TargetGroup{
-				Name:               fi.String(tcpGroupName),
-				Lifecycle:          b.Lifecycle,
-				VPC:                b.LinkToVPC(),
-				Tags:               tcpGroupTags,
-				Protocol:           fi.String("TCP"),
-				Port:               fi.Int64(443),
-				Interval:           fi.Int64(10),
-				HealthyThreshold:   fi.Int64(2),
-				UnhealthyThreshold: fi.Int64(2),
-				Shared:             fi.Bool(false),
+				tg := &awstasks.TargetGroup{
+					Name:               fi.String(groupName),
+					Lifecycle:          b.Lifecycle,
+					VPC:                b.LinkToVPC(),
+					Tags:               groupTags,
+					Protocol:           fi.String("TCP"),
+					Port:               fi.Int64(443),
+					Interval:           fi.Int64(10),
+					HealthyThreshold:   fi.Int64(2),
+					UnhealthyThreshold: fi.Int64(2),
+					Shared:             fi.Bool(false),
+				}
+
+				c.AddTask(tg)
+
+				nlb.TargetGroups = append(nlb.TargetGroups, tg)
 			}
 
-			c.AddTask(tg)
+			if b.Cluster.UsesNoneDNS() {
+				groupName := b.NLBTargetGroupName("kops-controller")
+				groupTags := b.CloudTags(groupName, false)
 
-			nlb.TargetGroups = append(nlb.TargetGroups, tg)
+				// Override the returned name to be the expected NLB TG name
+				groupTags["Name"] = groupName
+
+				tg := &awstasks.TargetGroup{
+					Name:               fi.String(groupName),
+					Lifecycle:          b.Lifecycle,
+					VPC:                b.LinkToVPC(),
+					Tags:               groupTags,
+					Protocol:           fi.String("TCP"),
+					Port:               fi.Int64(wellknownports.KopsControllerPort),
+					Interval:           fi.Int64(10),
+					HealthyThreshold:   fi.Int64(2),
+					UnhealthyThreshold: fi.Int64(2),
+					Shared:             fi.Bool(false),
+				}
+
+				c.AddTask(tg)
+
+				nlb.TargetGroups = append(nlb.TargetGroups, tg)
+			}
 
 			if lbSpec.SSLCertificate != "" {
 				tlsGroupName := b.NLBTargetGroupName("tls")
@@ -515,6 +551,33 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 					Protocol:      fi.String("tcp"),
 					SecurityGroup: masterGroup.Task,
 					ToPort:        fi.Int64(443),
+					CIDR:          fi.String(cidr),
+				})
+			}
+		}
+	}
+
+	// Allow kops-controller to the master instances from the ELB
+	if b.Cluster.UsesNoneDNS() && b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
+		for _, masterGroup := range masterGroups {
+			suffix := masterGroup.Suffix
+			c.AddTask(&awstasks.SecurityGroupRule{
+				Name:          fi.String(fmt.Sprintf("kops-controller-lb-to-master%s", suffix)),
+				Lifecycle:     b.SecurityLifecycle,
+				FromPort:      fi.Int64(wellknownports.KopsControllerPort),
+				Protocol:      fi.String("tcp"),
+				SecurityGroup: masterGroup.Task,
+				ToPort:        fi.Int64(wellknownports.KopsControllerPort),
+				CIDR:          fi.String(b.Cluster.Spec.NetworkCIDR),
+			})
+			for _, cidr := range b.Cluster.Spec.AdditionalNetworkCIDRs {
+				c.AddTask(&awstasks.SecurityGroupRule{
+					Name:          fi.String(fmt.Sprintf("kops-controller-lb-to-master%s-%s", suffix, cidr)),
+					Lifecycle:     b.SecurityLifecycle,
+					FromPort:      fi.Int64(wellknownports.KopsControllerPort),
+					Protocol:      fi.String("tcp"),
+					SecurityGroup: masterGroup.Task,
+					ToPort:        fi.Int64(wellknownports.KopsControllerPort),
 					CIDR:          fi.String(cidr),
 				})
 			}
