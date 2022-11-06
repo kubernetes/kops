@@ -206,7 +206,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 				instanceTask.FloatingIP = t
 			case kops.InstanceGroupRoleMaster:
 
-				if b.Cluster.Spec.Topology == nil || b.Cluster.Spec.Topology.Masters != kops.TopologyPrivate {
+				if b.Cluster.Spec.Topology == nil || b.Cluster.Spec.Topology.ControlPlane != kops.TopologyPrivate {
 					t := &openstacktasks.FloatingIP{
 						Name:      fi.String(fmt.Sprintf("%s-%s", "fip", *instanceTask.Name)),
 						Lifecycle: b.Lifecycle,

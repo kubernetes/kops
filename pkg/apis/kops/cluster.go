@@ -786,8 +786,7 @@ func (t *TerraformSpec) IsEmpty() bool {
 func (c *Cluster) FillDefaults() error {
 	// Topology support
 	if c.Spec.Topology == nil {
-		c.Spec.Topology = &TopologySpec{Masters: TopologyPublic, Nodes: TopologyPublic}
-		c.Spec.Topology.DNS = &DNSSpec{Type: DNSTypePublic}
+		c.Spec.Topology = &TopologySpec{ControlPlane: TopologyPublic, Nodes: TopologyPublic, DNS: DNSTypePublic}
 	}
 
 	if c.Spec.Networking == nil {
@@ -901,21 +900,21 @@ func (c *Cluster) IsGossip() bool {
 }
 
 func (c *Cluster) UsesPublicDNS() bool {
-	if c.Spec.Topology == nil || c.Spec.Topology.DNS == nil || c.Spec.Topology.DNS.Type == DNSTypePublic {
+	if c.Spec.Topology == nil || c.Spec.Topology.DNS == "" || c.Spec.Topology.DNS == DNSTypePublic {
 		return true
 	}
 	return false
 }
 
 func (c *Cluster) UsesPrivateDNS() bool {
-	if c.Spec.Topology != nil && c.Spec.Topology.DNS != nil && c.Spec.Topology.DNS.Type == DNSTypePrivate {
+	if c.Spec.Topology != nil && c.Spec.Topology.DNS == DNSTypePrivate {
 		return true
 	}
 	return false
 }
 
 func (c *Cluster) UsesNoneDNS() bool {
-	if c.Spec.Topology != nil && c.Spec.Topology.DNS != nil && c.Spec.Topology.DNS.Type == DNSTypeNone {
+	if c.Spec.Topology != nil && c.Spec.Topology.DNS == DNSTypeNone {
 		return true
 	}
 	return false

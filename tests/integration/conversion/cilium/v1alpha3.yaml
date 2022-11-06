@@ -49,10 +49,9 @@ spec:
     type: Public
     zone: us-test-1a
   topology:
-    dns:
-      type: Public
-    masters: public
-    nodes: public
+    controlPlane: public
+    dns: None
+    nodes: private
 
 ---
 
