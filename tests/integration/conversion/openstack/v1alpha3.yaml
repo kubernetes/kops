@@ -61,10 +61,9 @@ spec:
     zone: us-test-1a
   tagSubnets: false
   topology:
-    dns:
-      type: Public
-    masters: public
-    nodes: public
+    controlPlane: public
+    dns: None
+    nodes: private
 
 ---
 

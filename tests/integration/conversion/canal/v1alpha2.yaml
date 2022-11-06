@@ -49,9 +49,9 @@ spec:
     zone: us-test-1a
   topology:
     dns:
-      type: Public
+      type: None
     masters: public
-    nodes: public
+    nodes: private
 
 ---
 

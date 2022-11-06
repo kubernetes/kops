@@ -92,7 +92,7 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderC
 				Preemptible:          fi.Bool(fi.StringValue(ig.Spec.GCPProvisioningModel) == "SPOT"),
 				GCPProvisioningModel: ig.Spec.GCPProvisioningModel,
 
-				HasExternalIP: fi.Bool(b.Cluster.Spec.Topology.Masters == kops.TopologyPublic),
+				HasExternalIP: fi.Bool(b.Cluster.Spec.Topology.ControlPlane == kops.TopologyPublic),
 
 				Scopes: []string{
 					"compute-rw",

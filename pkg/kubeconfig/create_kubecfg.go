@@ -67,7 +67,7 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 	// careful that we aren't accessing the API over DirectConnect (or a VPN).
 	// We differentiate using the heuristic that if we have an internal ELB
 	// we are likely connected directly to the VPC.
-	privateDNS := cluster.Spec.Topology != nil && cluster.Spec.Topology.DNS.Type == kops.DNSTypePrivate
+	privateDNS := cluster.Spec.Topology != nil && cluster.Spec.Topology.DNS == kops.DNSTypePrivate
 	internalELB := cluster.Spec.API != nil && cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.Type == kops.LoadBalancerTypeInternal
 	if privateDNS && !internalELB {
 		useELBName = true

@@ -30,8 +30,8 @@ func openstackValidateCluster(c *kops.Cluster) (errList field.ErrorList) {
 		if topology == nil || topology.Nodes == kops.TopologyPublic {
 			errList = append(errList, field.Forbidden(field.NewPath("spec", "topology", "nodes"), "Public topology requires an external network"))
 		}
-		if topology == nil || topology.Masters == kops.TopologyPublic {
-			errList = append(errList, field.Forbidden(field.NewPath("spec", "topology", "masters"), "Public topology requires an external network"))
+		if topology == nil || topology.ControlPlane == kops.TopologyPublic {
+			errList = append(errList, field.Forbidden(field.NewPath("spec", "topology", "controlPlane"), "Public topology requires an external network"))
 		}
 	}
 	return errList

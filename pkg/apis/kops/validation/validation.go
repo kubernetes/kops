@@ -397,10 +397,10 @@ func validateIPv6CIDR(cidr string, fieldPath *field.Path) field.ErrorList {
 func validateTopology(c *kops.Cluster, topology *kops.TopologySpec, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	if topology.Masters == "" {
-		allErrs = append(allErrs, field.Required(fieldPath.Child("masters"), ""))
+	if topology.ControlPlane == "" {
+		allErrs = append(allErrs, field.Required(fieldPath.Child("controlPlane"), ""))
 	} else {
-		allErrs = append(allErrs, IsValidValue(fieldPath.Child("masters"), &topology.Masters, kops.SupportedTopologies)...)
+		allErrs = append(allErrs, IsValidValue(fieldPath.Child("controlPlane"), &topology.ControlPlane, kops.SupportedTopologies)...)
 	}
 
 	if topology.Nodes == "" {
@@ -414,14 +414,14 @@ func validateTopology(c *kops.Cluster, topology *kops.TopologySpec, fieldPath *f
 	}
 
 	if topology.Bastion != nil {
-		if topology.Masters == kops.TopologyPublic || topology.Nodes == kops.TopologyPublic {
-			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("bastion"), "bastion requires masters and nodes to have private topology"))
+		if topology.ControlPlane == kops.TopologyPublic || topology.Nodes == kops.TopologyPublic {
+			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("bastion"), "bastion requires control plane and nodes to have private topology"))
 		}
 	}
 
-	if topology.DNS != nil {
+	if topology.DNS != "" {
 		cloud := c.Spec.GetCloudProvider()
-		value := string(topology.DNS.Type)
+		value := string(topology.DNS)
 		allErrs = append(allErrs, IsValidValue(fieldPath.Child("dns", "type"), &value, kops.SupportedDnsTypes)...)
 		if value == string(kops.DNSTypeNone) && cloud != kops.CloudProviderHetzner && cloud != kops.CloudProviderAWS {
 			allErrs = append(allErrs, field.Invalid(fieldPath.Child("dns", "type"), &value, fmt.Sprintf("not supported for %q", c.Spec.GetCloudProvider())))
