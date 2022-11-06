@@ -254,6 +254,9 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 	allZones.Insert(opt.Zones...)
 	allZones.Insert(opt.MasterZones...)
 
+	if opt.CloudProvider == "gce" {
+		opt.CloudProvider = "gcp"
+	}
 	if opt.CloudProvider == "" {
 		for _, zone := range allZones.List() {
 			cloud, known := zones.GuessCloudForZone(zone)
@@ -292,7 +295,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		}
 	case api.CloudProviderDO:
 		cluster.Spec.CloudProvider.DO = &api.DOSpec{}
-	case api.CloudProviderGCE:
+	case api.CloudProviderGCP:
 		cluster.Spec.CloudProvider.GCP = &api.GCPSpec{}
 	case api.CloudProviderHetzner:
 		cluster.Spec.CloudProvider.Hetzner = &api.HetznerSpec{}
@@ -339,6 +342,9 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		return nil, err
 	}
 
+	if opt.Networking == "gce" {
+		opt.Networking = "gcp"
+	}
 	err = setupNetworking(opt, &cluster)
 	if err != nil {
 		return nil, err
@@ -509,7 +515,7 @@ func setupVPC(opt *NewClusterOptions, cluster *api.Cluster, cloud fi.Cloud) erro
 			cluster.Spec.NetworkID = *res.Subnets[0].VpcId
 		}
 
-	case api.CloudProviderGCE:
+	case api.CloudProviderGCP:
 		if cluster.Spec.CloudConfig == nil {
 			cluster.Spec.CloudConfig = &api.CloudConfiguration{}
 		}
@@ -588,7 +594,7 @@ func setupZones(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.Stri
 	var zoneToSubnetProviderID map[string]string
 
 	switch cluster.Spec.GetCloudProvider() {
-	case api.CloudProviderGCE:
+	case api.CloudProviderGCP:
 		// On GCP, subnets are regional - we create one per region, not per zone
 		for _, zoneName := range allZones.List() {
 			region, err := gce.ZoneToRegion(zoneName)
@@ -843,7 +849,7 @@ func setupMasters(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap 
 			if opt.IPv6 && opt.Topology == api.TopologyPrivate {
 				g.Spec.Subnets = []string{"dualstack-" + subnet.Name}
 			}
-			if cloudProvider == api.CloudProviderGCE || cloudProvider == api.CloudProviderAzure {
+			if cloudProvider == api.CloudProviderGCP || cloudProvider == api.CloudProviderAzure {
 				g.Spec.Zones = []string{zone}
 			}
 
@@ -971,7 +977,7 @@ func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap ma
 		}
 
 		g.Spec.Subnets = []string{subnet.Name}
-		if cloudProvider == api.CloudProviderGCE || cloudProvider == api.CloudProviderAzure {
+		if cloudProvider == api.CloudProviderGCP || cloudProvider == api.CloudProviderAzure {
 			g.Spec.Zones = []string{zone}
 		}
 
@@ -1040,7 +1046,7 @@ func setupAPIServers(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetM
 		}
 
 		g.Spec.Subnets = []string{subnet.Name}
-		if cloudProvider == api.CloudProviderGCE || cloudProvider == api.CloudProviderAzure {
+		if cloudProvider == api.CloudProviderGCP || cloudProvider == api.CloudProviderAzure {
 			g.Spec.Zones = []string{zone}
 		}
 
@@ -1106,7 +1112,7 @@ func setupNetworking(opt *NewClusterOptions, cluster *api.Cluster) error {
 	case "cilium-etcd":
 		addCiliumNetwork(cluster)
 		cluster.Spec.Networking.Cilium.EtcdManaged = true
-	case "gce":
+	case "gcp":
 		cluster.Spec.Networking.GCP = &api.GCPNetworkingSpec{}
 	default:
 		return fmt.Errorf("unknown networking mode %q", opt.Networking)
@@ -1191,7 +1197,7 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 
 		addUtilitySubnets := true
 		switch cluster.Spec.GetCloudProvider() {
-		case api.CloudProviderGCE:
+		case api.CloudProviderGCP:
 			// GCP does not need utility subnets
 			addUtilitySubnets = false
 		}
@@ -1237,7 +1243,7 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 					}
 				}
 			}
-			if cluster.Spec.GetCloudProvider() == api.CloudProviderGCE {
+			if cluster.Spec.GetCloudProvider() == api.CloudProviderGCP {
 				bastionGroup.Spec.Zones = allZones.List()
 			}
 

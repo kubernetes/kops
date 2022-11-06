@@ -39,7 +39,7 @@ func (t *TerraformTarget) finishHCL2() error {
 	writeLocalsOutputs(rootBody, outputs)
 
 	providerName := string(t.Cloud.ProviderID())
-	if t.Cloud.ProviderID() == kops.CloudProviderGCE {
+	if t.Cloud.ProviderID() == kops.CloudProviderGCP {
 		providerName = "google"
 	}
 	if t.Cloud.ProviderID() == kops.CloudProviderHetzner {
@@ -47,7 +47,7 @@ func (t *TerraformTarget) finishHCL2() error {
 	}
 	providerBlock := rootBody.AppendNewBlock("provider", []string{providerName})
 	providerBody := providerBlock.Body()
-	if t.Cloud.ProviderID() == kops.CloudProviderGCE {
+	if t.Cloud.ProviderID() == kops.CloudProviderGCP {
 		providerBody.SetAttributeValue("project", cty.StringVal(t.Project))
 	}
 	if t.Cloud.ProviderID() != kops.CloudProviderHetzner {
@@ -110,7 +110,7 @@ func (t *TerraformTarget) finishHCL2() error {
 	requiredProvidersBlock := terraformBody.AppendNewBlock("required_providers", []string{})
 	requiredProvidersBody := requiredProvidersBlock.Body()
 
-	if t.Cloud.ProviderID() == kops.CloudProviderGCE {
+	if t.Cloud.ProviderID() == kops.CloudProviderGCP {
 		writeMap(requiredProvidersBody, "google", map[string]cty.Value{
 			"source":  cty.StringVal("hashicorp/google"),
 			"version": cty.StringVal(">= 2.19.0"),

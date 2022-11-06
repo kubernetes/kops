@@ -610,7 +610,7 @@ func (c *NodeupModelContext) InstallNvidiaRuntime() bool {
 
 // RunningOnGCE returns true if we are running on GCP
 func (c *NodeupModelContext) RunningOnGCE() bool {
-	return c.CloudProvider == kops.CloudProviderGCE
+	return c.CloudProvider == kops.CloudProviderGCP
 }
 
 // GetMetadataLocalIP returns the local IP address read from metadata

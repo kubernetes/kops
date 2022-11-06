@@ -77,7 +77,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 	}
 	if c.Spec.CloudProvider.GCP != nil {
 		if optionTaken {
-			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("gce"), "only one cloudProvider option permitted"))
+			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("gcp"), "only one cloudProvider option permitted"))
 		}
 		optionTaken = true
 		requiresNetworkCIDR = false
@@ -323,7 +323,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 		switch c.Spec.GetCloudProvider() {
 		case kops.CloudProviderAWS:
 			k8sCloudProvider = "aws"
-		case kops.CloudProviderGCE:
+		case kops.CloudProviderGCP:
 			k8sCloudProvider = "gce"
 		case kops.CloudProviderDO:
 			k8sCloudProvider = "external"

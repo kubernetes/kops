@@ -116,7 +116,7 @@ func run() error {
 		}
 		cloudProvider = hetznerCloudProvider
 
-	} else if cloud == "gce" {
+	} else if cloud == "gcp" {
 		gceCloudProvider, err := protokube.NewGCECloudProvider()
 		if err != nil {
 			klog.Errorf("Error initializing GCP: %q", err)

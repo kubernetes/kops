@@ -40,7 +40,7 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 	project := ""
 
 	switch cluster.Spec.GetCloudProvider() {
-	case kops.CloudProviderGCE:
+	case kops.CloudProviderGCP:
 		{
 			for _, subnet := range cluster.Spec.Subnets {
 				if subnet.Region != "" {

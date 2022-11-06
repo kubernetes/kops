@@ -53,7 +53,7 @@ func (b *NTPBuilder) Build(c *fi.ModelBuilderContext) error {
 	switch b.CloudProvider {
 	case kops.CloudProviderAWS:
 		ntpHost = "169.254.169.123"
-	case kops.CloudProviderGCE:
+	case kops.CloudProviderGCP:
 		ntpHost = "time.google.com"
 	default:
 		ntpHost = ""

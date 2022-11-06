@@ -196,7 +196,7 @@ func addNodeController(mgr manager.Manager, opt *config.Options) error {
 			return fmt.Errorf("error building identifier: %v", err)
 		}
 
-	case "gce":
+	case "gcp":
 		legacyIdentifier, err = nodeidentitygce.New()
 		if err != nil {
 			return fmt.Errorf("error building identifier: %v", err)

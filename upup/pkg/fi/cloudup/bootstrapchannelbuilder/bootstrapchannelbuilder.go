@@ -457,7 +457,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 
 	if b.IsKubernetesGTE("1.23") && b.IsKubernetesLT("1.26") &&
 		(b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderAWS ||
-			b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderGCE) {
+			b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderGCP) {
 		// AWS and GCP KCM-to-CCM leader migration
 		key := "leader-migration.rbac.addons.k8s.io"
 
@@ -795,7 +795,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 		}
 	}
 
-	if b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderGCE {
+	if b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderGCP {
 		key := "storage-gce.addons.k8s.io"
 
 		{
@@ -843,7 +843,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 
 	// The metadata-proxy daemonset conceals node metadata endpoints in GCP.
 	// It will land on nodes labeled cloud.google.com/metadata-proxy-ready=true
-	if b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderGCE {
+	if b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderGCP {
 		key := "metadata-proxy.addons.k8s.io"
 
 		{
@@ -858,7 +858,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 			})
 		}
 
-		if b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderGCE {
+		if b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderGCP {
 			if b.Cluster.Spec.ExternalCloudControllerManager != nil {
 				key := "gcp-cloud-controller.addons.k8s.io"
 				{

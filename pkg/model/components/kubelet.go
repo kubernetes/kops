@@ -135,7 +135,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.Kubelet.CloudProvider = "external"
 	}
 
-	if cloudProvider == kops.CloudProviderGCE {
+	if cloudProvider == kops.CloudProviderGCP {
 		clusterSpec.Kubelet.CloudProvider = "gce"
 		clusterSpec.Kubelet.HairpinMode = "promiscuous-bridge"
 

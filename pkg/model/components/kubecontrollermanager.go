@@ -83,7 +83,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		case kops.CloudProviderAWS:
 			kcm.CloudProvider = "aws"
 
-		case kops.CloudProviderGCE:
+		case kops.CloudProviderGCP:
 			kcm.CloudProvider = "gce"
 			kcm.ClusterName = gce.SafeClusterName(b.ClusterName)
 

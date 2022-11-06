@@ -68,7 +68,7 @@ func newValidateCluster(cluster *kops.Cluster) field.ErrorList {
 	switch cluster.Spec.GetCloudProvider() {
 	case kops.CloudProviderAWS:
 		allErrs = append(allErrs, awsValidateCluster(cluster)...)
-	case kops.CloudProviderGCE:
+	case kops.CloudProviderGCP:
 		allErrs = append(allErrs, gceValidateCluster(cluster)...)
 	case kops.CloudProviderOpenstack:
 		allErrs = append(allErrs, openstackValidateCluster(cluster)...)
@@ -891,10 +891,10 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 
 	if v.GCP != nil {
 		if optionTaken {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("gce"), "only one networking option permitted"))
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("gcp"), "only one networking option permitted"))
 		}
 
-		allErrs = append(allErrs, validateNetworkingGCE(c, v.GCP, fldPath.Child("gce"))...)
+		allErrs = append(allErrs, validateNetworkingGCP(c, v.GCP, fldPath.Child("gcp"))...)
 	}
 
 	return allErrs
@@ -1054,10 +1054,10 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 	return allErrs
 }
 
-func validateNetworkingGCE(c *kops.ClusterSpec, v *kops.GCPNetworkingSpec, fldPath *field.Path) field.ErrorList {
+func validateNetworkingGCP(c *kops.ClusterSpec, v *kops.GCPNetworkingSpec, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	if c.GetCloudProvider() != kops.CloudProviderGCE {
+	if c.GetCloudProvider() != kops.CloudProviderGCP {
 		allErrs = append(allErrs, field.Forbidden(fldPath, "GCP networking is supported only when on GCP"))
 	}
 

@@ -710,7 +710,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	if len(c.SSHPublicKeys) == 0 {
 		autoloadSSHPublicKeys := true
 		switch c.CloudProvider {
-		case "gce", "aws":
+		case "gcp", "aws":
 			autoloadSSHPublicKeys = false
 		}
 
@@ -957,8 +957,8 @@ func completeNetworking(options *CreateClusterOptions) func(cmd *cobra.Command, 
 				completions = append(completions, "amazonvpc")
 			}
 
-			if options.CloudProvider == "gce" || options.CloudProvider == "" {
-				completions = append(completions, "gce")
+			if options.CloudProvider == "gcp" || options.CloudProvider == "" {
+				completions = append(completions, "gcp")
 			}
 		}
 

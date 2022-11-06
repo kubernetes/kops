@@ -96,7 +96,7 @@ func (b *CloudConfigBuilder) build(c *fi.ModelBuilderContext, inTree bool) error
 	var config string
 	requireGlobal := true
 	switch cloudProvider {
-	case "gce":
+	case "gcp":
 		if cloudConfig.NodeTags != nil {
 			lines = append(lines, "node-tags = "+*cloudConfig.NodeTags)
 		}

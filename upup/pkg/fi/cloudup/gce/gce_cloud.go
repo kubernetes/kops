@@ -76,7 +76,7 @@ type gceCloudImplementation struct {
 var _ fi.Cloud = &gceCloudImplementation{}
 
 func (c *gceCloudImplementation) ProviderID() kops.CloudProviderID {
-	return kops.CloudProviderGCE
+	return kops.CloudProviderGCP
 }
 
 var gceCloudInstances map[string]GCECloud = make(map[string]GCECloud)

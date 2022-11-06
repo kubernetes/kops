@@ -539,7 +539,7 @@ func (tf *TemplateFunctions) DNSControllerArgv() ([]string, error) {
 			} else {
 				argv = append(argv, "--dns=aws-route53")
 			}
-		case kops.CloudProviderGCE:
+		case kops.CloudProviderGCP:
 			argv = append(argv, "--dns=google-clouddns")
 		case kops.CloudProviderDO:
 			argv = append(argv, "--dns=digitalocean")
@@ -647,7 +647,7 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 				config.Server.UseInstanceIDForNodeName = true
 			}
 
-		case kops.CloudProviderGCE:
+		case kops.CloudProviderGCP:
 			c := tf.cloud.(gce.GCECloud)
 
 			config.Server.Provider.GCE = &gcetpm.TPMVerifierOptions{
@@ -707,7 +707,7 @@ func (tf *TemplateFunctions) ExternalDNSArgv() ([]string, error) {
 	switch cloudProvider {
 	case kops.CloudProviderAWS:
 		argv = append(argv, "--provider=aws")
-	case kops.CloudProviderGCE:
+	case kops.CloudProviderGCP:
 		project := cluster.Spec.CloudProvider.GCP.Project
 		argv = append(argv, "--provider=google")
 		argv = append(argv, "--google-project="+project)

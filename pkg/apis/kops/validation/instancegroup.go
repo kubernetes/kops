@@ -152,7 +152,7 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud, strict bool) f
 		switch cloud.ProviderID() {
 		case kops.CloudProviderAWS:
 			allErrs = append(allErrs, awsValidateInstanceGroup(g, cloud.(awsup.AWSCloud))...)
-		case kops.CloudProviderGCE:
+		case kops.CloudProviderGCP:
 			allErrs = append(allErrs, gceValidateInstanceGroup(g, cloud.(gce.GCECloud))...)
 		}
 	}

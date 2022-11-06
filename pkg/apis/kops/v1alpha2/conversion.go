@@ -87,7 +87,7 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 		}
 	case kops.CloudProviderDO:
 		out.CloudProvider.DO = &kops.DOSpec{}
-	case kops.CloudProviderGCE:
+	case kops.CloudProviderID("gce"):
 		out.CloudProvider.GCP = &kops.GCPSpec{
 			Project: in.Project,
 		}
@@ -105,7 +105,7 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 	case "":
 	default:
 		return field.NotSupported(field.NewPath("spec").Child("cloudProvider"), in.LegacyCloudProvider, []string{
-			string(kops.CloudProviderGCE),
+			"gce",
 			string(kops.CloudProviderDO),
 			string(kops.CloudProviderAzure),
 			string(kops.CloudProviderAWS),
@@ -141,7 +141,8 @@ func Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, out 
 		if err := autoConvert_kops_AzureSpec_To_v1alpha2_AzureSpec(in.CloudProvider.Azure, out.CloudConfig.Azure, s); err != nil {
 			return err
 		}
-	case kops.CloudProviderGCE:
+	case kops.CloudProviderGCP:
+		out.LegacyCloudProvider = "gce"
 		out.Project = in.CloudProvider.GCP.Project
 	case kops.CloudProviderOpenstack:
 		if out.CloudConfig == nil {

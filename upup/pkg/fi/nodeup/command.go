@@ -531,7 +531,7 @@ func evaluateHostnameOverride(cloudProvider api.CloudProviderID, useInstanceIDFo
 
 		return *(result.Reservations[0].Instances[0].PrivateDnsName), nil
 
-	case api.CloudProviderGCE:
+	case api.CloudProviderGCP:
 		// This lets us tolerate broken hostnames (i.e. systemd)
 		b, err := vfs.Context.ReadFile("metadata://gce/instance/hostname")
 		if err != nil {
@@ -746,7 +746,7 @@ func getNodeConfigFromServer(ctx context.Context, bootConfig *nodeup.BootConfig,
 			return nil, err
 		}
 		authenticator = a
-	case api.CloudProviderGCE:
+	case api.CloudProviderGCP:
 		a, err := gcetpmsigner.NewTPMAuthenticator()
 		if err != nil {
 			return nil, err

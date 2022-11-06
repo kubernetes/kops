@@ -302,7 +302,7 @@ func TestSetupNetworking(t *testing.T) {
 		},
 		{
 			options: NewClusterOptions{
-				Networking: "gce",
+				Networking: "gcp",
 			},
 			expected: api.Cluster{
 				Spec: api.ClusterSpec{

@@ -92,7 +92,7 @@ func (c *MockGCECloud) WithLabels(labels map[string]string) gce.GCECloud {
 
 // ProviderID implements fi.Cloud::ProviderID
 func (c *MockGCECloud) ProviderID() kops.CloudProviderID {
-	return kops.CloudProviderGCE
+	return kops.CloudProviderGCP
 }
 
 // FindVPCInfo implements fi.Cloud::FindVPCInfo

@@ -936,7 +936,7 @@ func (c *ClusterSpec) GetCloudProvider() CloudProviderID {
 	} else if c.CloudProvider.DO != nil {
 		return CloudProviderDO
 	} else if c.CloudProvider.GCP != nil {
-		return CloudProviderGCE
+		return CloudProviderGCP
 	} else if c.CloudProvider.Hetzner != nil {
 		return CloudProviderHetzner
 	} else if c.CloudProvider.Openstack != nil {

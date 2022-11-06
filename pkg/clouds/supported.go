@@ -25,7 +25,7 @@ func SupportedClouds() []kops.CloudProviderID {
 	clouds := []kops.CloudProviderID{
 		kops.CloudProviderAWS,
 		kops.CloudProviderDO,
-		kops.CloudProviderGCE,
+		kops.CloudProviderGCP,
 		kops.CloudProviderHetzner,
 		kops.CloudProviderOpenstack,
 	}

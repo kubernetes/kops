@@ -100,7 +100,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	switch clusterSpec.GetCloudProvider() {
 	case kops.CloudProviderAWS:
 		c.CloudProvider = "aws"
-	case kops.CloudProviderGCE:
+	case kops.CloudProviderGCP:
 		c.CloudProvider = "gce"
 	case kops.CloudProviderDO:
 		c.CloudProvider = "external"

@@ -159,7 +159,7 @@ var awsZones = []string{
 	"eu-south-1c",
 }
 
-var gceZones = []string{
+var gcpZones = []string{
 	"asia-east1-a",
 	"asia-east1-b",
 	"asia-east1-c",
@@ -394,8 +394,8 @@ func WellKnownZonesForCloud(matchCloud kops.CloudProviderID) []string {
 		return azureZones
 	case kops.CloudProviderDO:
 		return doZones
-	case kops.CloudProviderGCE:
-		return gceZones
+	case kops.CloudProviderGCP:
+		return gcpZones
 	case kops.CloudProviderHetzner:
 		return hetznerZones
 

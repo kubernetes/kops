@@ -399,7 +399,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 			}
 			config.VolumeNameTag = azure.TagNameEtcdClusterPrefix + etcdCluster.Name
 
-		case kops.CloudProviderGCE:
+		case kops.CloudProviderGCP:
 			config.VolumeProvider = "gce"
 
 			config.VolumeTag = []string{

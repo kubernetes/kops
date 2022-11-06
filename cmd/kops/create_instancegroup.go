@@ -199,7 +199,7 @@ func RunCreateInstanceGroup(ctx context.Context, f *util.Factory, out io.Writer,
 	}
 
 	ig.AddInstanceGroupNodeLabel()
-	if cluster.Spec.GetCloudProvider() == kopsapi.CloudProviderGCE {
+	if cluster.Spec.GetCloudProvider() == kopsapi.CloudProviderGCP {
 		fmt.Println("detected a GCP cluster; labeling nodes to receive metadata-proxy.")
 		ig.Spec.NodeLabels["cloud.google.com/metadata-proxy-ready"] = "true"
 	}

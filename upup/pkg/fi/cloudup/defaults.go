@@ -53,7 +53,7 @@ func PerformAssignments(c *kops.Cluster, cloud fi.Cloud) error {
 		return fmt.Errorf("cloud cannot be nil")
 	}
 
-	if cloud.ProviderID() == kops.CloudProviderGCE {
+	if cloud.ProviderID() == kops.CloudProviderGCP {
 		if err := gce.PerformNetworkAssignments(ctx, c, cloud); err != nil {
 			return err
 		}

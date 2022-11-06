@@ -89,7 +89,7 @@ const (
 // TerraformCloudProviders is the list of cloud providers with terraform target support
 var TerraformCloudProviders = []kops.CloudProviderID{
 	kops.CloudProviderAWS,
-	kops.CloudProviderGCE,
+	kops.CloudProviderGCP,
 	kops.CloudProviderHetzner,
 }
 
@@ -418,7 +418,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	}
 
 	switch cluster.Spec.GetCloudProvider() {
-	case kops.CloudProviderGCE:
+	case kops.CloudProviderGCP:
 		{
 			gceCloud := cloud.(gce.GCECloud)
 			project = gceCloud.Project()
@@ -624,7 +624,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				&hetznermodel.LoadBalancerModelBuilder{HetznerModelContext: hetznerModelContext, Lifecycle: networkLifecycle},
 				&hetznermodel.ServerGroupModelBuilder{HetznerModelContext: hetznerModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: clusterLifecycle},
 			)
-		case kops.CloudProviderGCE:
+		case kops.CloudProviderGCP:
 			gceModelContext := &gcemodel.GCEModelContext{
 				ProjectID:        project,
 				KopsModelContext: modelContext,
@@ -684,7 +684,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	switch c.TargetName {
 	case TargetDirect:
 		switch cluster.Spec.GetCloudProvider() {
-		case kops.CloudProviderGCE:
+		case kops.CloudProviderGCP:
 			target = gce.NewGCEAPITarget(cloud.(gce.GCECloud))
 		case kops.CloudProviderAWS:
 			target = awsup.NewAWSAPITarget(cloud.(awsup.AWSCloud))
@@ -1116,7 +1116,7 @@ func ChannelForCluster(c *kops.Cluster) (*kops.Channel, error) {
 func needsMounterAsset(c *kops.Cluster, instanceGroups []*kops.InstanceGroup) bool {
 	// TODO: Do real detection of ContainerOS (but this has to work with image names, and maybe even forked images)
 	switch c.Spec.GetCloudProvider() {
-	case kops.CloudProviderGCE:
+	case kops.CloudProviderGCP:
 		return true
 	default:
 		return false

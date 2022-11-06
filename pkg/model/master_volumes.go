@@ -104,7 +104,7 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 				}
 			case kops.CloudProviderDO:
 				b.addDOVolume(c, name, volumeSize, zone, etcd, m, allMembers)
-			case kops.CloudProviderGCE:
+			case kops.CloudProviderGCP:
 				b.addGCEVolume(c, prefix, volumeSize, zone, etcd, m, allMembers)
 			case kops.CloudProviderHetzner:
 				b.addHetznerVolume(c, name, volumeSize, zone, etcd, m, allMembers)
@@ -253,7 +253,7 @@ func (b *MasterVolumeBuilder) addGCEVolume(c *fi.ModelBuilderContext, prefix str
 	//// The name is normally something like "us-east1-a", and the dashes are particularly expensive
 	//// because of the escaping needed (3 characters for each dash)
 	//switch tf.cluster.Spec.CloudProvider {
-	//case string(kops.CloudProviderGCE):
+	//case string(kops.CloudProviderGCP):
 	//	// TODO: If we're still struggling for size, we don't need to put ourselves in the allmembers list
 	//	for i := range allMembers {
 	//		allMembers[i] = strings.Replace(allMembers[i], "-", "", -1)

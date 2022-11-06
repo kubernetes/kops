@@ -288,7 +288,7 @@ type CloudProviderID string
 const (
 	CloudProviderAWS       CloudProviderID = "aws"
 	CloudProviderDO        CloudProviderID = "digitalocean"
-	CloudProviderGCE       CloudProviderID = "gce"
+	CloudProviderGCP       CloudProviderID = "gcp"
 	CloudProviderHetzner   CloudProviderID = "hetzner"
 	CloudProviderOpenstack CloudProviderID = "openstack"
 	CloudProviderAzure     CloudProviderID = "azure"
@@ -300,7 +300,7 @@ func (c *Channel) FindImage(provider CloudProviderID, kubernetesVersion semver.V
 	var matches []*ChannelImageSpec
 
 	for _, image := range c.Spec.Images {
-		if image.ProviderID != string(provider) {
+		if image.ProviderID != string(provider) && (image.ProviderID != "gce" || provider != CloudProviderGCP) {
 			continue
 		}
 		if image.ArchitectureID != "" && image.ArchitectureID != string(architecture) {
