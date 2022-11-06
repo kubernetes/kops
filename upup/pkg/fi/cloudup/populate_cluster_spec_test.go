@@ -316,14 +316,14 @@ func TestPopulateCluster_CloudProvider_Required(t *testing.T) {
 
 func TestPopulateCluster_TopologyInvalidNil_Required(t *testing.T) {
 	cloud, c := buildMinimalCluster()
-	c.Spec.Topology.Masters = ""
+	c.Spec.Topology.ControlPlane = ""
 	c.Spec.Topology.Nodes = ""
 	expectErrorFromPopulateCluster(t, c, cloud, "topology")
 }
 
 func TestPopulateCluster_TopologyInvalidValue_Required(t *testing.T) {
 	cloud, c := buildMinimalCluster()
-	c.Spec.Topology.Masters = "123"
+	c.Spec.Topology.ControlPlane = "123"
 	c.Spec.Topology.Nodes = "abc"
 	expectErrorFromPopulateCluster(t, c, cloud, "topology")
 }
@@ -331,7 +331,7 @@ func TestPopulateCluster_TopologyInvalidValue_Required(t *testing.T) {
 //func TestPopulateCluster_TopologyInvalidMatchingValues_Required(t *testing.T) {
 //	// We can't have a bastion with public masters / nodes
 //	c := buildMinimalCluster()
-//	c.Spec.Topology.Masters = api.TopologyPublic
+//	c.Spec.Topology.ControlPlane = api.TopologyPublic
 //	c.Spec.Topology.Nodes = api.TopologyPrivate
 //	expectErrorFromPopulateCluster(t, c, "Topology")
 //}
@@ -339,7 +339,7 @@ func TestPopulateCluster_TopologyInvalidValue_Required(t *testing.T) {
 func TestPopulateCluster_BastionInvalidMatchingValues_Required(t *testing.T) {
 	// We can't have a bastion with public masters / nodes
 	cloud, c := buildMinimalCluster()
-	c.Spec.Topology.Masters = kopsapi.TopologyPublic
+	c.Spec.Topology.ControlPlane = kopsapi.TopologyPublic
 	c.Spec.Topology.Nodes = kopsapi.TopologyPublic
 	c.Spec.Topology.Bastion = &kopsapi.BastionSpec{}
 	expectErrorFromPopulateCluster(t, c, cloud, "bastion")

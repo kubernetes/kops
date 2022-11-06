@@ -46,7 +46,7 @@ func PerformAssignments(c *kops.Cluster, cloud fi.Cloud) error {
 	// Topology support
 	// TODO Kris: Unsure if this needs to be here, or if the API conversion code will handle it
 	if c.Spec.Topology == nil {
-		c.Spec.Topology = &kops.TopologySpec{Masters: kops.TopologyPublic, Nodes: kops.TopologyPublic}
+		c.Spec.Topology = &kops.TopologySpec{ControlPlane: kops.TopologyPublic, Nodes: kops.TopologyPublic}
 	}
 
 	if cloud == nil {

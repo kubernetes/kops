@@ -398,7 +398,7 @@ func (b *KubeAPIServerBuilder) writeServerCertificate(c *fi.ModelBuilderContext,
 			}
 		}
 		if b.CloudProvider == kops.CloudProviderOpenstack {
-			if b.Cluster.Spec.Topology != nil && b.Cluster.Spec.Topology.Masters == kops.TopologyPrivate {
+			if b.Cluster.Spec.Topology != nil && b.Cluster.Spec.Topology.ControlPlane == kops.TopologyPrivate {
 				instanceAddress, err := getInstanceAddress()
 				if err != nil {
 					return err
