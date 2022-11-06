@@ -46,7 +46,7 @@ func (b *EtcHostsBuilder) Build(c *fi.ModelBuilderContext) error {
 				Addresses: []string{"127.0.0.1"},
 			})
 		}
-	} else if b.Cluster.UsesNoneDNS() {
+	} else if b.BootConfig.APIServerIP != "" {
 		task.Records = append(task.Records, nodetasks.HostRecord{
 			Hostname:  b.Cluster.Spec.MasterInternalName,
 			Addresses: []string{b.BootConfig.APIServerIP},

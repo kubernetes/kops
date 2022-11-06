@@ -78,8 +78,6 @@ var (
 	ClusterAddons = new("ClusterAddons", Bool(false))
 	// Azure toggles the Azure support.
 	Azure = new("Azure", Bool(false))
-	// KopsControllerStateStore enables fetching the kops state from kops-controller, instead of requiring access to S3/GCS/etc.
-	KopsControllerStateStore = new("KopsControllerStateStore", Bool(false))
 	// APIServerNodes enables ability to provision nodes that only run the kube-apiserver.
 	APIServerNodes = new("APIServerNodes", Bool(false))
 	// UseAddonOperators activates experimental addon operator support
