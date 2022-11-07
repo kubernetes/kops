@@ -49,12 +49,12 @@ func (b *EtcHostsBuilder) Build(c *fi.ModelBuilderContext) error {
 	} else if b.Cluster.UsesNoneDNS() {
 		task.Records = append(task.Records, nodetasks.HostRecord{
 			Hostname:  b.Cluster.Spec.MasterInternalName,
-			Addresses: []string{b.BootConfig.APIServer},
+			Addresses: []string{b.BootConfig.APIServerIP},
 		})
 		if b.UseKopsControllerForNodeBootstrap() {
 			task.Records = append(task.Records, nodetasks.HostRecord{
 				Hostname:  "kops-controller.internal." + b.Cluster.Name,
-				Addresses: []string{b.BootConfig.APIServer},
+				Addresses: []string{b.BootConfig.APIServerIP},
 			})
 		}
 	}
