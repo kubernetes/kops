@@ -1424,11 +1424,11 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 			}
 			for _, additionalIP := range apiserverAdditionalIPs {
 				if cidr.Contains(net.ParseIP(additionalIP)) {
-					bootConfig.APIServer = additionalIP
+					bootConfig.APIServerIP = additionalIP
 					break
 				}
 			}
-			if bootConfig.APIServer != "" {
+			if bootConfig.APIServerIP != "" {
 				break
 			}
 		}

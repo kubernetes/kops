@@ -90,9 +90,9 @@ type BootConfig struct {
 	ConfigBase *string `json:",omitempty"`
 	// ConfigServer holds the configuration for the configuration server.
 	ConfigServer *ConfigServerOptions `json:",omitempty"`
-	// APIServer is the API server IP address.
+	// APIServerIP is the API server IP address.
 	// This field is used for adding an alias for api.internal. in /etc/hosts, when Topology.DNS.Type == DNSTypeNone.
-	APIServer string `json:",omitempty"`
+	APIServerIP string `json:",omitempty"`
 	// InstanceGroupName is the name of the instance group.
 	InstanceGroupName string `json:",omitempty"`
 	// InstanceGroupRole is the instance group role.
