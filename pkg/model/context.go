@@ -270,9 +270,6 @@ func (b *KopsModelContext) UsesSSHBastion() bool {
 
 // UseLoadBalancerForAPI checks if we are using a load balancer for the kubeapi
 func (b *KopsModelContext) UseLoadBalancerForAPI() bool {
-	if b.Cluster.Spec.API == nil {
-		return false
-	}
 	return b.Cluster.Spec.API.LoadBalancer != nil
 }
 
@@ -286,7 +283,7 @@ func (b *KopsModelContext) UseLoadBalancerForInternalAPI() bool {
 
 // APILoadBalancerClass returns which type of load balancer to use for the api
 func (b *KopsModelContext) APILoadBalancerClass() kops.LoadBalancerClass {
-	if b.Cluster.Spec.API != nil && b.Cluster.Spec.API.LoadBalancer != nil {
+	if b.Cluster.Spec.API.LoadBalancer != nil {
 		return b.Cluster.Spec.API.LoadBalancer.Class
 	}
 	return kops.LoadBalancerClassClassic

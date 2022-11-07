@@ -75,6 +75,11 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 	if err := autoConvert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in, out, s); err != nil {
 		return err
 	}
+	if in.LegacyAPI != nil {
+		if err := autoConvert_v1alpha2_APISpec_To_kops_APISpec(in.LegacyAPI, &out.API, s); err != nil {
+			return err
+		}
+	}
 	switch kops.CloudProviderID(in.LegacyCloudProvider) {
 	case kops.CloudProviderAWS:
 		out.CloudProvider.AWS = &kops.AWSSpec{}
@@ -122,12 +127,22 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 			out.Hooks[i].Enabled = values.Bool(!*hook.Enabled)
 		}
 	}
+	out.API.PublicName = in.MasterPublicName
+	out.API.AdditionalSANs = in.AdditionalSANs
+	out.API.Access = in.KubernetesAPIAccess
 	return nil
 }
 
 func Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, out *ClusterSpec, s conversion.Scope) error {
 	if err := autoConvert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in, out, s); err != nil {
 		return err
+	}
+	out.LegacyAPI = &APISpec{}
+	if err := autoConvert_kops_APISpec_To_v1alpha2_APISpec(&in.API, out.LegacyAPI, s); err != nil {
+		return err
+	}
+	if out.API.IsEmpty() {
+		out.LegacyAPI = nil
 	}
 	out.LegacyCloudProvider = string(in.GetCloudProvider())
 	switch kops.CloudProviderID(out.LegacyCloudProvider) {
@@ -162,6 +177,9 @@ func Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, out 
 			out.Hooks[i].Enabled = values.Bool(!*hook.Enabled)
 		}
 	}
+	out.MasterPublicName = in.API.PublicName
+	out.AdditionalSANs = in.API.AdditionalSANs
+	out.KubernetesAPIAccess = in.API.Access
 	return nil
 }
 

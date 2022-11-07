@@ -119,7 +119,7 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 	const sgIDAPIServer = "sg-01234567890abcdef"
 
 	cluster := buildMinimalCluster()
-	cluster.Spec.API = &kops.AccessSpec{
+	cluster.Spec.API = kops.APISpec{
 		LoadBalancer: &kops.LoadBalancerAccessSpec{
 			Class:                    kops.LoadBalancerClassNetwork,
 			AdditionalSecurityGroups: []string{sgIDAPIServer},

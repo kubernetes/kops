@@ -107,8 +107,8 @@ func PerformAssignments(c *kops.Cluster, cloud fi.Cloud) error {
 	}
 
 	// TODO: Unclear this should be here - it isn't too hard to change
-	if c.UsesPublicDNS() && c.Spec.MasterPublicName == "" && c.ObjectMeta.Name != "" {
-		c.Spec.MasterPublicName = "api." + c.ObjectMeta.Name
+	if c.UsesPublicDNS() && c.Spec.API.PublicName == "" && c.ObjectMeta.Name != "" {
+		c.Spec.API.PublicName = "api." + c.ObjectMeta.Name
 	}
 
 	// We only assign subnet CIDRs on AWS, OpenStack, and Azure.
@@ -201,7 +201,7 @@ func assignProxy(cluster *kops.Cluster) (*kops.EgressProxySpec, error) {
 			"127.0.0.1",
 			"localhost",
 			cluster.Spec.ClusterDNSDomain, // TODO we may want this for public loadbalancers
-			cluster.Spec.MasterPublicName,
+			cluster.Spec.API.PublicName,
 			cluster.ObjectMeta.Name,
 			firstIP,
 			cluster.Spec.NonMasqueradeCIDR,

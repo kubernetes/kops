@@ -605,7 +605,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	}
 
 	if c.MasterPublicName != "" {
-		cluster.Spec.MasterPublicName = c.MasterPublicName
+		cluster.Spec.API.PublicName = c.MasterPublicName
 	}
 
 	if err := commands.UnsetClusterFields(c.Unsets, cluster); err != nil {

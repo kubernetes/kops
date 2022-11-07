@@ -47,11 +47,7 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 	}
 
 	if obj.CloudProvider.Openstack == nil {
-		if obj.API == nil {
-			obj.API = &AccessSpec{}
-		}
-
-		if obj.API.IsEmpty() {
+		if obj.API.DNS == nil && obj.API.LoadBalancer == nil {
 			switch obj.Topology.ControlPlane {
 			case TopologyPublic:
 				obj.API.DNS = &DNSAccessSpec{}
