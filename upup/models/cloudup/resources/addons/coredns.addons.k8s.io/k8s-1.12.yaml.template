@@ -348,9 +348,17 @@ spec:
           - --v=2
       priorityClassName: system-cluster-critical
       tolerations:
-      - key: "CriticalAddonsOnly"
-        operator: "Exists"
+        {{- if KubeDNS.Tolerations }}
+{{ ToYAML .KubeDNS.Tolerations | indent 8 }}
+        {{- else }}
+        - key: "CriticalAddonsOnly"
+          operator: "Exists"
+        {{- end }}
       serviceAccountName: coredns-autoscaler
       nodeSelector:
         kubernetes.io/os: linux
+{{- if .KubeDNS.Affinity }}
+      affinity:
+{{ ToYAML .KubeDNS.Affinity | indent 8 }}
+{{- end }}
 ---
