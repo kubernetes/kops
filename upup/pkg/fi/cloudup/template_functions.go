@@ -438,7 +438,9 @@ func (tf *TemplateFunctions) CloudControllerConfigArgv() ([]string, error) {
 
 	// take the cloud provider value from clusterSpec if unset
 	if cluster.Spec.ExternalCloudControllerManager.CloudProvider == "" {
-		if cluster.Spec.GetCloudProvider() != "" {
+		if cluster.Spec.GetCloudProvider() == kops.CloudProviderGCP {
+			argv = append(argv, "--cloud-provider=gce")
+		} else if cluster.Spec.GetCloudProvider() != "" {
 			argv = append(argv, fmt.Sprintf("--cloud-provider=%s", cluster.Spec.GetCloudProvider()))
 		} else {
 			return nil, fmt.Errorf("Cloud Provider is not set")
