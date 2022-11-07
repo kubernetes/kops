@@ -380,6 +380,27 @@ spec:
         k8s-app: coredns-autoscaler
         kops.k8s.io/managed-by: kops
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kops.k8s.io/instancegroup
+                operator: In
+                values:
+                - master
+                - ondemand-nodes
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: k8s-app
+                  operator: In
+                  values:
+                  - kube-dns
+              topologyKey: kubernetes.io/hostname
+            weight: 100
       containers:
       - command:
         - /cluster-proportional-autoscaler
@@ -400,5 +421,5 @@ spec:
       priorityClassName: system-cluster-critical
       serviceAccountName: coredns-autoscaler
       tolerations:
-      - key: CriticalAddonsOnly
+      - effect: NoSchedule
         operator: Exists
