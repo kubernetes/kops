@@ -71,8 +71,8 @@ func (b *DiscoveryOptionsBuilder) BuildOptions(o interface{}) error {
 				return fmt.Errorf("locationStore=%q is of unexpected type %T", store, base)
 			}
 		} else {
-			if supportsPublicJWKS(clusterSpec) && clusterSpec.MasterPublicName != "" {
-				serviceAccountIssuer = "https://" + clusterSpec.MasterPublicName
+			if supportsPublicJWKS(clusterSpec) && clusterSpec.API.PublicName != "" {
+				serviceAccountIssuer = "https://" + clusterSpec.API.PublicName
 			} else {
 				serviceAccountIssuer = "https://api.internal." + b.ClusterName
 			}
@@ -89,7 +89,7 @@ func supportsPublicJWKS(clusterSpec *kops.ClusterSpec) bool {
 	if !fi.ValueOf(clusterSpec.KubeAPIServer.AnonymousAuth) {
 		return false
 	}
-	for _, cidr := range clusterSpec.KubernetesAPIAccess {
+	for _, cidr := range clusterSpec.API.Access {
 		if cidr == "0.0.0.0/0" || cidr == "::/0" {
 			return true
 		}

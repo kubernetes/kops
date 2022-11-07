@@ -240,7 +240,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 	if len(opt.AdminAccess) == 0 {
 		opt.AdminAccess = []string{"0.0.0.0/0", "::/0"}
 	}
-	cluster.Spec.KubernetesAPIAccess = opt.AdminAccess
+	cluster.Spec.API.Access = opt.AdminAccess
 	if len(opt.SSHAccess) != 0 {
 		cluster.Spec.SSHAccess = opt.SSHAccess
 	} else {
@@ -1302,14 +1302,13 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
 	// Populate the API access, so that it can be discoverable
 	klog.Infof(" Cloud Provider ID = %s", cluster.Spec.GetCloudProvider())
-	cluster.Spec.API = &api.AccessSpec{}
 	if cluster.Spec.GetCloudProvider() == api.CloudProviderOpenstack {
 		initializeOpenstackAPI(opt, cluster)
 	} else if cluster.Spec.GetCloudProvider() == api.CloudProviderAzure {
 		// Do nothing to disable the use of loadbalancer for the k8s API server.
 		// TODO(kenji): Remove this condition once we support the loadbalancer
 		// in pkg/model/azuremodel/api_loadbalancer.go.
-		cluster.Spec.API = nil
+		cluster.Spec.API.LoadBalancer = nil
 		return nil
 	} else if opt.APILoadBalancerType != "" || opt.APISSLCertificate != "" {
 		cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}

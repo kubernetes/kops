@@ -233,7 +233,7 @@ func (b *FirewallModelBuilder) addNodePortRules(c *fi.ModelBuilderContext, sgMap
 func (b *FirewallModelBuilder) addHTTPSRules(c *fi.ModelBuilderContext, sgMap map[string]*openstacktasks.SecurityGroup, useVIPACL bool) error {
 	masterName := b.SecurityGroupName(kops.InstanceGroupRoleMaster)
 	nodeName := b.SecurityGroupName(kops.InstanceGroupRoleNode)
-	lbSGName := b.Cluster.Spec.MasterPublicName
+	lbSGName := b.Cluster.Spec.API.PublicName
 	lbSG := sgMap[lbSGName]
 	masterSG := sgMap[masterName]
 	nodeSG := sgMap[nodeName]
@@ -254,7 +254,7 @@ func (b *FirewallModelBuilder) addHTTPSRules(c *fi.ModelBuilderContext, sgMap ma
 	if b.UseLoadBalancerForAPI() {
 		if !useVIPACL {
 			// Allow API Access to the lb sg
-			for _, apiAccess := range b.Cluster.Spec.KubernetesAPIAccess {
+			for _, apiAccess := range b.Cluster.Spec.API.Access {
 				etherType := IPV4
 				if !net.IsIPv4CIDRString(apiAccess) {
 					etherType = IPV6
@@ -276,7 +276,7 @@ func (b *FirewallModelBuilder) addHTTPSRules(c *fi.ModelBuilderContext, sgMap ma
 		// FIXME: Octavia port traffic appears to be denied though its port is in lbSG
 		if b.usesOctavia() {
 			if b.getOctaviaProvider() == "ovn" {
-				for _, apiAccess := range b.Cluster.Spec.KubernetesAPIAccess {
+				for _, apiAccess := range b.Cluster.Spec.API.Access {
 					etherType := IPV4
 					if !net.IsIPv4CIDRString(apiAccess) {
 						etherType = IPV6
@@ -306,7 +306,7 @@ func (b *FirewallModelBuilder) addHTTPSRules(c *fi.ModelBuilderContext, sgMap ma
 
 	} else {
 		// Allow the masters to receive connections from KubernetesAPIAccess
-		for _, apiAccess := range b.Cluster.Spec.KubernetesAPIAccess {
+		for _, apiAccess := range b.Cluster.Spec.API.Access {
 			etherType := IPV4
 			if !net.IsIPv4CIDRString(apiAccess) {
 				etherType = IPV6
@@ -581,7 +581,7 @@ func (b *FirewallModelBuilder) getExistingRules(sgMap map[string]*openstacktasks
 
 func (b *FirewallModelBuilder) addDefaultEgress(c *fi.ModelBuilderContext, sgMap map[string]*openstacktasks.SecurityGroup, useVIPACL bool) {
 	for name, sg := range sgMap {
-		if useVIPACL && name == b.Cluster.Spec.MasterPublicName {
+		if useVIPACL && name == b.Cluster.Spec.API.PublicName {
 			continue
 		}
 		t := &openstacktasks.SecurityGroupRule{
@@ -618,7 +618,7 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		useVIPACL = true
 	}
 	sg := &openstacktasks.SecurityGroup{
-		Name:             s(b.Cluster.Spec.MasterPublicName),
+		Name:             s(b.Cluster.Spec.API.PublicName),
 		Lifecycle:        b.Lifecycle,
 		RemoveExtraRules: []string{"port=443"},
 	}
@@ -626,7 +626,7 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		sg.RemoveGroup = true
 	}
 	c.AddTask(sg)
-	sgMap[b.Cluster.Spec.MasterPublicName] = sg
+	sgMap[b.Cluster.Spec.API.PublicName] = sg
 	for _, role := range roles {
 
 		// Create Security Group for Role

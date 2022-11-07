@@ -51,31 +51,31 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 	}
 
 	if obj.LegacyCloudProvider != "openstack" {
-		if obj.API == nil {
-			obj.API = &AccessSpec{}
+		if obj.LegacyAPI == nil {
+			obj.LegacyAPI = &APISpec{}
 		}
 
-		if obj.API.IsEmpty() {
+		if obj.LegacyAPI.IsEmpty() {
 			switch obj.Topology.ControlPlane {
 			case TopologyPublic:
-				obj.API.DNS = &DNSAccessSpec{}
+				obj.LegacyAPI.DNS = &DNSAccessSpec{}
 
 			case TopologyPrivate:
-				obj.API.LoadBalancer = &LoadBalancerAccessSpec{}
+				obj.LegacyAPI.LoadBalancer = &LoadBalancerAccessSpec{}
 
 			default:
 				klog.Infof("unknown master topology type: %q", obj.Topology.ControlPlane)
 			}
 		}
 
-		if obj.API.LoadBalancer != nil && obj.API.LoadBalancer.Type == "" {
-			obj.API.LoadBalancer.Type = LoadBalancerTypePublic
+		if obj.LegacyAPI.LoadBalancer != nil && obj.LegacyAPI.LoadBalancer.Type == "" {
+			obj.LegacyAPI.LoadBalancer.Type = LoadBalancerTypePublic
 		}
 
 	}
 
-	if obj.API.LoadBalancer != nil && obj.API.LoadBalancer.Class == "" && obj.LegacyCloudProvider == "aws" {
-		obj.API.LoadBalancer.Class = LoadBalancerClassClassic
+	if obj.LegacyAPI.LoadBalancer != nil && obj.LegacyAPI.LoadBalancer.Class == "" && obj.LegacyCloudProvider == "aws" {
+		obj.LegacyAPI.LoadBalancer.Class = LoadBalancerClassClassic
 	}
 
 	if obj.Authorization == nil {

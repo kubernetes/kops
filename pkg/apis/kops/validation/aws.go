@@ -35,13 +35,11 @@ import (
 func awsValidateCluster(c *kops.Cluster) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	if c.Spec.API != nil {
-		if c.Spec.API.LoadBalancer != nil {
-			allErrs = append(allErrs, awsValidateAdditionalSecurityGroups(field.NewPath("spec", "api", "loadBalancer", "additionalSecurityGroups"), c.Spec.API.LoadBalancer.AdditionalSecurityGroups)...)
-			allErrs = append(allErrs, awsValidateSSLPolicy(field.NewPath("spec", "api", "loadBalancer", "sslPolicy"), c.Spec.API.LoadBalancer)...)
-			allErrs = append(allErrs, awsValidateLoadBalancerSubnets(field.NewPath("spec", "api", "loadBalancer", "subnets"), c.Spec)...)
-			allErrs = append(allErrs, awsValidateTopologyDNS(field.NewPath("spec", "api", "loadBalancer", "type"), c)...)
-		}
+	if c.Spec.API.LoadBalancer != nil {
+		allErrs = append(allErrs, awsValidateAdditionalSecurityGroups(field.NewPath("spec", "api", "loadBalancer", "additionalSecurityGroups"), c.Spec.API.LoadBalancer.AdditionalSecurityGroups)...)
+		allErrs = append(allErrs, awsValidateSSLPolicy(field.NewPath("spec", "api", "loadBalancer", "sslPolicy"), c.Spec.API.LoadBalancer)...)
+		allErrs = append(allErrs, awsValidateLoadBalancerSubnets(field.NewPath("spec", "api", "loadBalancer", "subnets"), c.Spec)...)
+		allErrs = append(allErrs, awsValidateTopologyDNS(field.NewPath("spec", "api", "loadBalancer", "type"), c)...)
 	}
 
 	allErrs = append(allErrs, awsValidateExternalCloudControllerManager(c)...)
@@ -277,7 +275,7 @@ func awsValidateMixedInstancesPolicy(path *field.Path, spec *kops.MixedInstances
 func awsValidateTopologyDNS(fieldPath *field.Path, c *kops.Cluster) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	if c.UsesNoneDNS() && c.Spec.API != nil && c.Spec.API.LoadBalancer != nil && c.Spec.API.LoadBalancer.Class != kops.LoadBalancerClassNetwork {
+	if c.UsesNoneDNS() && c.Spec.API.LoadBalancer != nil && c.Spec.API.LoadBalancer.Class != kops.LoadBalancerClassNetwork {
 		allErrs = append(allErrs, field.Forbidden(fieldPath, "topology.dns.type=none requires Network Load Balancer"))
 	}
 

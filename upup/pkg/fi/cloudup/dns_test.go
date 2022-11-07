@@ -52,7 +52,7 @@ func TestPrecreateDNSNames(t *testing.T) {
 		{
 			cluster: &kops.Cluster{
 				Spec: kops.ClusterSpec{
-					API: &kops.AccessSpec{
+					API: kops.APISpec{
 						LoadBalancer: &kops.LoadBalancerAccessSpec{},
 					},
 				},
@@ -64,7 +64,7 @@ func TestPrecreateDNSNames(t *testing.T) {
 		{
 			cluster: &kops.Cluster{
 				Spec: kops.ClusterSpec{
-					API: &kops.AccessSpec{
+					API: kops.APISpec{
 						LoadBalancer: &kops.LoadBalancerAccessSpec{},
 					},
 					NonMasqueradeCIDR: "::/0",
@@ -77,7 +77,7 @@ func TestPrecreateDNSNames(t *testing.T) {
 		{
 			cluster: &kops.Cluster{
 				Spec: kops.ClusterSpec{
-					API: &kops.AccessSpec{
+					API: kops.APISpec{
 						LoadBalancer: &kops.LoadBalancerAccessSpec{
 							UseForInternalAPI: true,
 						},
@@ -124,7 +124,7 @@ func TestPrecreateDNSNames(t *testing.T) {
 		cluster := g.cluster
 
 		cluster.ObjectMeta.Name = "cluster1.example.com"
-		cluster.Spec.MasterPublicName = "api." + cluster.ObjectMeta.Name
+		cluster.Spec.API.PublicName = "api." + cluster.ObjectMeta.Name
 		cluster.Spec.EtcdClusters = []kops.EtcdClusterSpec{
 			{
 				Name: "main",

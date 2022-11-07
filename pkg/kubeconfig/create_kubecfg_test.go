@@ -119,11 +119,9 @@ func (f fakeKeyStore) MirrorTo(basedir vfs.Path) error {
 // build a generic minimal cluster
 func buildMinimalCluster(clusterName string, masterPublicName string, lbCert bool, nlb bool) *kops.Cluster {
 	cluster := testutils.BuildMinimalCluster(clusterName)
-	cluster.Spec.MasterPublicName = masterPublicName
+	cluster.Spec.API.PublicName = masterPublicName
 	cluster.Spec.KubernetesVersion = "1.24.0"
-	cluster.Spec.API = &kops.AccessSpec{
-		LoadBalancer: &kops.LoadBalancerAccessSpec{},
-	}
+	cluster.Spec.API.LoadBalancer = &kops.LoadBalancerAccessSpec{}
 	if lbCert {
 		cluster.Spec.API.LoadBalancer.SSLCertificate = "cert-arn"
 	}

@@ -34,7 +34,7 @@ var _ fi.ModelBuilder = &ExternalAccessModelBuilder{}
 
 func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	klog.Warningf("TODO: Harmonize gcemodel ExternalAccessModelBuilder with awsmodel")
-	if len(b.Cluster.Spec.KubernetesAPIAccess) == 0 {
+	if len(b.Cluster.Spec.API.Access) == 0 {
 		klog.Warningf("KubernetesAPIAccess is empty")
 	}
 
@@ -109,7 +109,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Lifecycle:    b.Lifecycle,
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
 			Allowed:      []string{"tcp:443"},
-			SourceRanges: b.Cluster.Spec.KubernetesAPIAccess,
+			SourceRanges: b.Cluster.Spec.API.Access,
 			Network:      network,
 		})
 	}

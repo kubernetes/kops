@@ -49,7 +49,9 @@ func Test_OpenstackCloud_GetApiIngressStatus(t *testing.T) {
 			desc: "Loadbalancer configured master public name set",
 			cluster: &kops.Cluster{
 				Spec: kops.ClusterSpec{
-					MasterPublicName: "master.k8s.local",
+					API: kops.APISpec{
+						PublicName: "master.k8s.local",
+					},
 					CloudProvider: kops.CloudProviderSpec{
 						Openstack: &kops.OpenstackSpec{
 							Loadbalancer: &kops.OpenstackLoadbalancerConfig{},
@@ -85,7 +87,9 @@ func Test_OpenstackCloud_GetApiIngressStatus(t *testing.T) {
 			desc: "Loadbalancer configured master public name set multiple IPs match",
 			cluster: &kops.Cluster{
 				Spec: kops.ClusterSpec{
-					MasterPublicName: "master.k8s.local",
+					API: kops.APISpec{
+						PublicName: "master.k8s.local",
+					},
 					CloudProvider: kops.CloudProviderSpec{
 						Openstack: &kops.OpenstackSpec{
 							Loadbalancer: &kops.OpenstackLoadbalancerConfig{},
