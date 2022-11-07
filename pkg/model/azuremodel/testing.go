@@ -44,7 +44,7 @@ func newTestCluster() *kops.Cluster {
 			Name: "testcluster.test.com",
 		},
 		Spec: kops.ClusterSpec{
-			API: &kops.AccessSpec{
+			API: kops.APISpec{
 				LoadBalancer: &kops.LoadBalancerAccessSpec{
 					Type: kops.LoadBalancerTypeInternal,
 				},

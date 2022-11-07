@@ -571,7 +571,7 @@ func TestLoadBalancerSubnets(t *testing.T) {
 	for _, test := range tests {
 		cluster := kops.Cluster{
 			Spec: kops.ClusterSpec{
-				API: &kops.AccessSpec{
+				API: kops.APISpec{
 					LoadBalancer: &kops.LoadBalancerAccessSpec{
 						Class: kops.LoadBalancerClassNetwork,
 						Type:  kops.LoadBalancerTypeInternal,

@@ -241,8 +241,8 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 	}
 
 	if !cluster.UsesNoneDNS() {
-		if cluster.Spec.DNSZone != "" && cluster.Spec.MasterPublicName == "" {
-			cluster.Spec.MasterPublicName = "api." + cluster.Name
+		if cluster.Spec.DNSZone != "" && cluster.Spec.API.PublicName == "" {
+			cluster.Spec.API.PublicName = "api." + cluster.Name
 		}
 		if cluster.Spec.ExternalDNS == nil {
 			cluster.Spec.ExternalDNS = &kopsapi.ExternalDNSConfig{

@@ -35,7 +35,7 @@ type ExternalAccessModelBuilder struct {
 var _ fi.ModelBuilder = &ExternalAccessModelBuilder{}
 
 func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
-	if len(b.Cluster.Spec.KubernetesAPIAccess) == 0 {
+	if len(b.Cluster.Spec.API.Access) == 0 {
 		klog.Warningf("KubernetesAPIAccess is empty")
 	}
 
@@ -131,7 +131,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// We need to open security groups directly to the master nodes (instead of via the ELB)
 
 		// HTTPS to the master is allowed (for API access)
-		for _, apiAccess := range b.Cluster.Spec.KubernetesAPIAccess {
+		for _, apiAccess := range b.Cluster.Spec.API.Access {
 			for _, masterGroup := range masterGroups {
 				suffix := masterGroup.Suffix
 				t := &awstasks.SecurityGroupRule{

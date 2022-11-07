@@ -36,8 +36,8 @@ func BuildMinimalCluster(clusterName string) *kops.Cluster {
 	c.Spec.ContainerRuntime = "containerd"
 	c.Spec.Containerd = &kops.ContainerdConfig{}
 
-	c.Spec.MasterPublicName = fmt.Sprintf("api.%v", clusterName)
-	c.Spec.KubernetesAPIAccess = []string{"0.0.0.0/0"}
+	c.Spec.API.PublicName = fmt.Sprintf("api.%v", clusterName)
+	c.Spec.API.Access = []string{"0.0.0.0/0"}
 	c.Spec.SSHAccess = []string{"0.0.0.0/0"}
 
 	// Default to public topology

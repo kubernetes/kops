@@ -71,6 +71,7 @@ type ClusterSpec struct {
 	// +k8s:conversion-gen=false
 	Project string `json:"project,omitempty"`
 	// MasterPublicName is the external DNS name for the master nodes
+	// +k8s:conversion-gen=false
 	MasterPublicName string `json:"masterPublicName,omitempty"`
 	// MasterInternalName is unused.
 	// +k8s:conversion-gen=false
@@ -105,6 +106,7 @@ type ClusterSpec struct {
 	// DNSControllerGossipConfig for the cluster assuming the use of gossip DNS
 	DNSControllerGossipConfig *DNSControllerGossipConfig `json:"dnsControllerGossipConfig,omitempty"`
 	// AdditionalSANs adds additional Subject Alternate Names to apiserver cert that kops generates
+	// +k8s:conversion-gen=false
 	AdditionalSANs []string `json:"additionalSans,omitempty"`
 	// ClusterDNSDomain is the suffix we use for internal DNS names (normally cluster.local)
 	ClusterDNSDomain string `json:"clusterDNSDomain,omitempty"`
@@ -127,6 +129,7 @@ type ClusterSpec struct {
 	SSHKeyName *string `json:"sshKeyName,omitempty"`
 	// KubernetesAPIAccess determines the permitted access to the API endpoints (master HTTPS)
 	// Currently only a single CIDR is supported (though a richer grammar could be added in future)
+	// +k8s:conversion-gen=false
 	KubernetesAPIAccess []string `json:"kubernetesApiAccess,omitempty"`
 	// IsolateMasters determines whether we should lock down masters so that they are not on the pod network.
 	// true is the kube-up behaviour, but it is very surprising: it means that daemonsets only work on the master
@@ -182,7 +185,9 @@ type ClusterSpec struct {
 	// Networking configuration
 	Networking *NetworkingSpec `json:"networking,omitempty"`
 	// API field controls how the API is exposed outside the cluster
-	API *AccessSpec `json:"api,omitempty"`
+	// +k8s:conversion-gen=false
+	LegacyAPI *APISpec `json:"api,omitempty"`
+	API       APISpec  `json:"-"`
 	// Authentication field controls how the cluster is configured for authentication
 	Authentication *AuthenticationSpec `json:"authentication,omitempty"`
 	// Authorization field controls how the cluster is configured for authorization
@@ -418,15 +423,18 @@ type RBACAuthorizationSpec struct{}
 
 type AlwaysAllowAuthorizationSpec struct{}
 
-// AccessSpec provides configuration details related to kubeapi dns and ELB access
-type AccessSpec struct {
+// APISpec provides configuration details related to kubeapi dns and ELB access
+type APISpec struct {
 	// DNS will be used to provide config on kube-apiserver ELB DNS
 	DNS *DNSAccessSpec `json:"dns,omitempty"`
 	// LoadBalancer is the configuration for the kube-apiserver ELB
-	LoadBalancer *LoadBalancerAccessSpec `json:"loadBalancer,omitempty"`
+	LoadBalancer   *LoadBalancerAccessSpec `json:"loadBalancer,omitempty"`
+	PublicName     string                  `json:"-"`
+	AdditionalSANs []string                `json:"-"`
+	Access         []string                `json:"-"`
 }
 
-func (s *AccessSpec) IsEmpty() bool {
+func (s *APISpec) IsEmpty() bool {
 	return s.DNS == nil && s.LoadBalancer == nil
 }
 

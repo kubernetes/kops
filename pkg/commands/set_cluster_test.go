@@ -71,7 +71,7 @@ func TestSetClusterFields(t *testing.T) {
 			},
 			Output: kops.Cluster{
 				Spec: kops.ClusterSpec{
-					API: &kops.AccessSpec{
+					API: kops.APISpec{
 						DNS: &kops.DNSAccessSpec{},
 					},
 				},
@@ -116,10 +116,12 @@ func TestSetClusterFields(t *testing.T) {
 			},
 		},
 		{
-			Fields: []string{"spec.masterPublicName=api.example.com"},
+			Fields: []string{"spec.api.publicName=api.example.com"},
 			Output: kops.Cluster{
 				Spec: kops.ClusterSpec{
-					MasterPublicName: "api.example.com",
+					API: kops.APISpec{
+						PublicName: "api.example.com",
+					},
 				},
 			},
 		},

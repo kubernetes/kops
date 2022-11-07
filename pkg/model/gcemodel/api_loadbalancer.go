@@ -91,7 +91,7 @@ func createPublicLB(b *APILoadBalancerBuilder, c *fi.ModelBuilderContext) error 
 		b.AddFirewallRulesTasks(c, "https-api", &gcetasks.FirewallRule{
 			Lifecycle:    b.Lifecycle,
 			Network:      network,
-			SourceRanges: b.Cluster.Spec.KubernetesAPIAccess,
+			SourceRanges: b.Cluster.Spec.API.Access,
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
 			Allowed:      []string{"tcp:443"},
 		})

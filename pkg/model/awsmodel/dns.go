@@ -100,8 +100,8 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 
 			c.AddTask(&awstasks.DNSName{
-				Name:               fi.PtrTo(b.Cluster.Spec.MasterPublicName),
-				ResourceName:       fi.PtrTo(b.Cluster.Spec.MasterPublicName),
+				Name:               fi.PtrTo(b.Cluster.Spec.API.PublicName),
+				ResourceName:       fi.PtrTo(b.Cluster.Spec.API.PublicName),
 				Lifecycle:          b.Lifecycle,
 				Zone:               b.LinkToDNSZone(),
 				ResourceType:       fi.PtrTo("A"),
@@ -109,8 +109,8 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			})
 			if b.UseIPv6ForAPI() {
 				c.AddTask(&awstasks.DNSName{
-					Name:               fi.PtrTo(b.Cluster.Spec.MasterPublicName + "-AAAA"),
-					ResourceName:       fi.PtrTo(b.Cluster.Spec.MasterPublicName),
+					Name:               fi.PtrTo(b.Cluster.Spec.API.PublicName + "-AAAA"),
+					ResourceName:       fi.PtrTo(b.Cluster.Spec.API.PublicName),
 					Lifecycle:          b.Lifecycle,
 					Zone:               b.LinkToDNSZone(),
 					ResourceType:       fi.PtrTo("AAAA"),

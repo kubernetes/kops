@@ -106,7 +106,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 	securityGroups = append(securityGroups, b.LinkToSecurityGroup(securityGroupName))
 
 	if b.Cluster.Spec.CloudProvider.Openstack.Loadbalancer == nil && ig.Spec.Role == kops.InstanceGroupRoleMaster {
-		securityGroups = append(securityGroups, b.LinkToSecurityGroup(b.Cluster.Spec.MasterPublicName))
+		securityGroups = append(securityGroups, b.LinkToSecurityGroup(b.Cluster.Spec.API.PublicName))
 	}
 
 	r := strings.NewReplacer("_", "-", ".", "-")
@@ -285,14 +285,14 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			return fmt.Errorf("could not find subnet for master loadbalancer")
 		}
 		lbTask := &openstacktasks.LB{
-			Name:      fi.PtrTo(b.Cluster.Spec.MasterPublicName),
+			Name:      fi.PtrTo(b.Cluster.Spec.API.PublicName),
 			Subnet:    fi.PtrTo(lbSubnetName),
 			Lifecycle: b.Lifecycle,
 		}
 
 		useVIPACL := b.UseVIPACL()
 		if !useVIPACL {
-			lbTask.SecurityGroup = b.LinkToSecurityGroup(b.Cluster.Spec.MasterPublicName)
+			lbTask.SecurityGroup = b.LinkToSecurityGroup(b.Cluster.Spec.API.PublicName)
 		}
 
 		c.AddTask(lbTask)
@@ -323,7 +323,7 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		if useVIPACL {
 			var AllowedCIDRs []string
 			// currently kOps openstack supports only ipv4 addresses
-			for _, CIDR := range b.Cluster.Spec.KubernetesAPIAccess {
+			for _, CIDR := range b.Cluster.Spec.API.Access {
 				if net.IsIPv4CIDRString(CIDR) {
 					AllowedCIDRs = append(AllowedCIDRs, CIDR)
 				}
