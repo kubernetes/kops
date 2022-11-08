@@ -1,0 +1,11 @@
+{
+  "commit": "dad644cc6d0c88991f291eda37e18f27c16739b2",
+  "readme": "/_/azure-rest-api-specs/specification/compute/resource-manager/readme.md",
+  "tag": "package-2022-08-01",
+  "use": "@microsoft.azure/autorest.go@2.1.188",
+  "repository_url": "https://github.com/Azure/azure-rest-api-specs.git",
+  "autorest_command": "autorest --use=@microsoft.azure/autorest.go@2.1.188 --tag=package-2022-08-01 --go-sdk-folder=/_/azure-sdk-for-go --go --verbose --use-onever --version=2.0.4421 --go.license-header=MICROSOFT_MIT_NO_VERSION --debug /_/azure-rest-api-specs/specification/compute/resource-manager/readme.md",
+  "additional_properties": {
+    "additional_options": "--go --verbose --use-onever --version=2.0.4421 --go.license-header=MICROSOFT_MIT_NO_VERSION --debug"
+  }
+}
