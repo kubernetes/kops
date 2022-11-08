@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"k8s.io/kops/upup/pkg/fi"
@@ -112,6 +113,7 @@ func (r *RoleAssignment) Find(c *fi.Context) (*RoleAssignment, error) {
 		return nil, fmt.Errorf("corresponding VM Scale Set not found for Role Assignment: %s", *found.ID)
 	}
 
+	r.ID = found.ID
 	return &RoleAssignment{
 		Name:      r.Name,
 		Lifecycle: r.Lifecycle,
@@ -122,7 +124,7 @@ func (r *RoleAssignment) Find(c *fi.Context) (*RoleAssignment, error) {
 			Name: foundVMSS.Name,
 		},
 		ID:        found.ID,
-		RoleDefID: found.RoleDefinitionID,
+		RoleDefID: fi.String(filepath.Base(fi.StringValue(found.RoleDefinitionID))),
 	}, nil
 }
 
