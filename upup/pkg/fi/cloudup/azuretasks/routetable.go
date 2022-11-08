@@ -67,6 +67,7 @@ func (r *RouteTable) Find(c *fi.Context) (*RouteTable, error) {
 	return &RouteTable{
 		Name:      r.Name,
 		Lifecycle: r.Lifecycle,
+		Shared:    r.Shared,
 		ResourceGroup: &ResourceGroup{
 			Name: r.ResourceGroup.Name,
 		},
