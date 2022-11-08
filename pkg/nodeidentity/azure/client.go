@@ -23,7 +23,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-06-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 )
 
@@ -71,7 +71,7 @@ func newClient() (*client, error) {
 
 // getVMScaleSet returns the specified VM ScaleSet.
 func (c *client) getVMScaleSet(ctx context.Context, vmssName string) (compute.VirtualMachineScaleSet, error) {
-	return c.vmssesClient.Get(ctx, c.metadata.Compute.ResourceGroupName, vmssName)
+	return c.vmssesClient.Get(ctx, c.metadata.Compute.ResourceGroupName, vmssName, compute.UserData)
 }
 
 // queryInstanceMetadata queries Azure Instance Metadata documented in
