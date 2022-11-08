@@ -258,6 +258,22 @@ spec:
     app.kubernetes.io/name: "cluster-autoscaler"
   type: "ClusterIP"
 ---
+{{- if and (eq .Expander "priority") CreateClusterAutoscalerPriorityConfig }}
+# Source: cluster-autoscaler/templates/priotity-expander-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-autoscaler-priority-expander
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: "cluster-autoscaler"
+    k8s-addon: cluster-autoscaler.addons.k8s.io
+    k8s-app: cluster-autoscaler
+data:
+  priorities: |-
+    {{- ClusterAutoscalerPriorities | ToYAML | nindent 4 }}
+{{ end }}
+---
 # Source: cluster-autoscaler/templates/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
