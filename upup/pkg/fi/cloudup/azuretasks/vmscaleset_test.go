@@ -84,7 +84,7 @@ func newTestVMScaleSet() *VMScaleSet {
 		ComputerNamePrefix: to.StringPtr("cprefix"),
 		AdminUser:          to.StringPtr("admin"),
 		SSHPublicKey:       to.StringPtr("ssh"),
-		CustomData:         fi.NewStringResource("custom"),
+		UserData:           fi.NewStringResource("custom"),
 		Tags:               map[string]*string{},
 		Zones:              []string{"zone1"},
 	}
@@ -113,17 +113,17 @@ func TestVMScaleSetRenderAzure(t *testing.T) {
 	if a, e := *actual.Sku.Capacity, *expected.Capacity; a != e {
 		t.Errorf("unexpected SKU Capacity: expected %d, but got %d", e, a)
 	}
-	actualCData, err := base64.StdEncoding.DecodeString(
-		*actual.VirtualMachineProfile.OsProfile.CustomData)
+	actualUserData, err := base64.StdEncoding.DecodeString(
+		*actual.VirtualMachineProfile.UserData)
 	if err != nil {
-		t.Fatalf("failed to decode custom data: %s", err)
+		t.Fatalf("failed to decode user data: %s", err)
 	}
-	expectedCData, err := fi.ResourceAsBytes(expected.CustomData)
+	expectedUserData, err := fi.ResourceAsBytes(expected.UserData)
 	if err != nil {
-		t.Fatalf("failed to get custom data: %s", err)
+		t.Fatalf("failed to get user data: %s", err)
 	}
-	if !bytes.Equal(actualCData, expectedCData) {
-		t.Errorf("unexpected custom data: expected %v, but got %v", expectedCData, actualCData)
+	if !bytes.Equal(actualUserData, expectedUserData) {
+		t.Errorf("unexpected user data: expected %v, but got %v", expectedUserData, actualUserData)
 	}
 
 	if expected.PrincipalID == nil {
@@ -158,11 +158,10 @@ func TestVMScaleSetFind(t *testing.T) {
 	}
 
 	// Create a VM ScaleSet.
-	customData := []byte("custom")
+	userData := []byte("custom")
 	osProfile := &compute.VirtualMachineScaleSetOSProfile{
 		ComputerNamePrefix: to.StringPtr("prefix"),
 		AdminUsername:      to.StringPtr("admin"),
-		CustomData:         to.StringPtr(base64.RawStdEncoding.EncodeToString(customData)),
 		LinuxConfiguration: &compute.LinuxConfiguration{
 			SSH: &compute.SSHConfiguration{
 				PublicKeys: &[]compute.SSHPublicKey{
@@ -248,6 +247,7 @@ func TestVMScaleSetFind(t *testing.T) {
 			VirtualMachineProfile: &compute.VirtualMachineScaleSetVMProfile{
 				OsProfile:      osProfile,
 				StorageProfile: storageProfile,
+				UserData:       to.StringPtr(base64.RawStdEncoding.EncodeToString(userData)),
 				NetworkProfile: &compute.VirtualMachineScaleSetNetworkProfile{
 					NetworkInterfaceConfigurations: &[]compute.VirtualMachineScaleSetNetworkConfiguration{
 						networkConfig,
