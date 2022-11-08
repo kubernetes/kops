@@ -786,6 +786,10 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 		if optionTaken {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("external"), "only one networking option permitted"))
 		}
+
+		if cluster.IsKubernetesGTE("1.26") {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("external"), "external is not supported for Kubernetes >= 1.26"))
+		}
 		optionTaken = true
 	}
 
