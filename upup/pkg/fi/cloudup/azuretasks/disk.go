@@ -35,6 +35,7 @@ type Disk struct {
 	ResourceGroup *ResourceGroup
 	SizeGB        *int32
 	Tags          map[string]*string
+	Zones         *[]string
 }
 
 var (
@@ -74,6 +75,7 @@ func (d *Disk) Find(c *fi.Context) (*Disk, error) {
 		},
 		SizeGB: found.DiskSizeGB,
 		Tags:   found.Tags,
+		Zones:  found.Zones,
 	}, nil
 }
 
@@ -121,7 +123,8 @@ func (*Disk) RenderAzure(t *azure.AzureAPITarget, a, e, changes *Disk) error {
 			},
 			DiskSizeGB: e.SizeGB,
 		},
-		Tags: e.Tags,
+		Tags:  e.Tags,
+		Zones: e.Zones,
 	}
 
 	return t.Cloud.Disk().CreateOrUpdate(
