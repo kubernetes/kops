@@ -25,12 +25,12 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-06-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	// Use 2018-01-01-preview API as we need the version to create
 	// a role assignment with Data Actions (https://github.com/Azure/azure-sdk-for-go/issues/1895).
 	// The non-preview version of the authorization API (2015-07-01)
 	// doesn't support Data Actions.q
-	authz "github.com/Azure/azure-sdk-for-go/services/preview/authorization/mgmt/2018-01-01-preview/authorization"
+	authz "github.com/Azure/azure-sdk-for-go/services/preview/authorization/mgmt/2020-04-01-preview/authorization"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/google/uuid"
 )
