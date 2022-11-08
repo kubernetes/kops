@@ -23,7 +23,6 @@ spec:
   iam:
     legacy: false
   kubernetesVersion: v1.21.0
-  masterInternalName: api.internal.logflags.example.com
   masterPublicName: api.logflags.example.com
   networkCIDR: 172.20.0.0/16
   networking:

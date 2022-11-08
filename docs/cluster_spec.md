@@ -66,7 +66,7 @@ spec:
 
 *Openstack only*
 As of kOps 1.12.0 it is possible to use the load balancer internally by setting the `useForInternalApi: true`.
-This will point both `masterPublicName` and `masterInternalName` to the load balancer. You can therefore set both of these to the same value in this configuration.
+This will point `masterPublicName` to the load balancer.
 
 ```yaml
 spec:

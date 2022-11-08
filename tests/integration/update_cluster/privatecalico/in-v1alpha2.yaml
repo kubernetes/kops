@@ -29,7 +29,6 @@ spec:
   - 0.0.0.0/0
   - ::/0
   kubernetesVersion: v1.25.0
-  masterInternalName: api.internal.privatecalico.example.com
   masterPublicName: api.privatecalico.example.com
   networkCIDR: 172.20.0.0/16
   networking:

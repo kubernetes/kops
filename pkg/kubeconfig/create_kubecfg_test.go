@@ -17,7 +17,6 @@ limitations under the License.
 package kubeconfig
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -121,7 +120,6 @@ func (f fakeKeyStore) MirrorTo(basedir vfs.Path) error {
 func buildMinimalCluster(clusterName string, masterPublicName string, lbCert bool, nlb bool) *kops.Cluster {
 	cluster := testutils.BuildMinimalCluster(clusterName)
 	cluster.Spec.MasterPublicName = masterPublicName
-	cluster.Spec.MasterInternalName = fmt.Sprintf("internal.%v", masterPublicName)
 	cluster.Spec.KubernetesVersion = "1.24.0"
 	cluster.Spec.API = &kops.AccessSpec{
 		LoadBalancer: &kops.LoadBalancerAccessSpec{},
@@ -324,7 +322,7 @@ func TestBuildKubecfg(t *testing.T) {
 			},
 			want: &KubeconfigBuilder{
 				Context: "testcluster",
-				Server:  "https://internal.testcluster.test.com",
+				Server:  "https://api.internal.testcluster",
 				CACerts: []byte(nextCertificate + certData),
 				User:    "testcluster",
 			},

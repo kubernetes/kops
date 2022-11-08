@@ -30,7 +30,6 @@ spec:
   kubelet:
     anonymousAuth: false
   kubernetesVersion: v1.21.0
-  masterInternalName: api.internal.mixedinstances.example.com
   masterPublicName: api.mixedinstances.example.com
   networkCIDR: 10.0.0.0/16
   networking:

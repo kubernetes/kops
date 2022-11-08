@@ -45,7 +45,6 @@ spec:
   kubernetesApiAccess:
   - 0.0.0.0/0
   kubernetesVersion: 1.17.2
-  masterInternalName: api.internal.simple.k8s.local
   masterPublicName: api.simple.k8s.local
   networking:
     kubenet: {}
