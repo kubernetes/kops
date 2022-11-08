@@ -189,7 +189,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 			envVars := map[string]string{
 				// Use defaults from the official AWS VPC CNI Helm chart:
 				// https://github.com/aws/amazon-vpc-cni-k8s/blob/master/charts/aws-vpc-cni/values.yaml
-				"ADDITIONAL_ENI_TAGS": 	                 "{}",
+				"ADDITIONAL_ENI_TAGS":                   "{}",
 				"AWS_VPC_CNI_NODE_PORT_SUPPORT":         "true",
 				"AWS_VPC_ENI_MTU":                       "9001",
 				"AWS_VPC_K8S_CNI_CONFIGURE_RPFILTER":    "false",
