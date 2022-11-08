@@ -110,6 +110,10 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		return defaultValue
 	}
 
+	dest["ClusterAutoscalerAutoDiscovery"] = func() bool {
+		return fi.BoolValue(cluster.Spec.ClusterAutoscaler.AutoDiscovery)
+	}
+
 	dest["GetCloudProvider"] = cluster.Spec.GetCloudProvider
 	dest["GetInstanceGroup"] = tf.GetInstanceGroup
 	dest["GetNodeInstanceGroups"] = tf.GetNodeInstanceGroups

@@ -1060,6 +1060,11 @@ func (in *ClusterAutoscalerConfig) DeepCopyInto(out *ClusterAutoscalerConfig) {
 			(*out)[key] = val
 		}
 	}
+	if in.AutoDiscovery != nil {
+		in, out := &in.AutoDiscovery, &out.AutoDiscovery
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 

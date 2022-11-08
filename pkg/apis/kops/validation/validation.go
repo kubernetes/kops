@@ -1605,6 +1605,10 @@ func validateClusterAutoscaler(cluster *kops.Cluster, spec *kops.ClusterAutoscal
 		allErrs = append(allErrs, field.Forbidden(fldPath, "Cluster autoscaler is not supported on OpenStack"))
 	}
 
+	if fi.BoolValue(spec.AutoDiscovery) && cluster.Spec.CloudProvider.AWS == nil {
+		allErrs = append(allErrs, field.Forbidden(fldPath.Child("autoDiscovery"), "Cluster autoscaler autodiscovery have been implemented only for AWS"))
+	}
+
 	return allErrs
 }
 

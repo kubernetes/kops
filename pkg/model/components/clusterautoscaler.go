@@ -93,6 +93,9 @@ func (b *ClusterAutoscalerOptionsBuilder) BuildOptions(o interface{}) error {
 	if cas.MaxNodeProvisionTime == "" {
 		cas.MaxNodeProvisionTime = "15m0s"
 	}
+	if cas.AutoDiscovery == nil {
+		cas.AutoDiscovery = fi.Bool(false)
+	}
 
 	return nil
 }

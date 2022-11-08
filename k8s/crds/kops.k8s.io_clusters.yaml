@@ -661,6 +661,11 @@ spec:
               clusterAutoscaler:
                 description: ClusterAutoscaler defines the cluaster autoscaler configuration.
                 properties:
+                  autoDiscovery:
+                    description: 'Autodiscovery make cluster autoscaler auto discover
+                      nodes group Default: false Only available for AWS, need to be
+                      implemented for other cloud providers'
+                    type: boolean
                   awsUseStaticInstanceList:
                     description: 'AWSUseStaticInstanceList makes cluster autoscaler
                       to use statically defined set of AWS EC2 Instance List. Default:

@@ -1066,6 +1066,10 @@ type ClusterAutoscalerConfig struct {
 	// PodAnnotations are the annotations added to cluster autoscaler pod when they are created.
 	// Default: none
 	PodAnnotations map[string]string `json:"podAnnotations,omitempty"`
+	// Autodiscovery make cluster autoscaler auto discover nodes group
+	// Default: false
+	// Only available for AWS, need to be implemented for other cloud providers
+	AutoDiscovery *bool `json:"autoDiscovery,omitempty"`
 }
 
 // MetricsServerConfig determines the metrics server configuration.

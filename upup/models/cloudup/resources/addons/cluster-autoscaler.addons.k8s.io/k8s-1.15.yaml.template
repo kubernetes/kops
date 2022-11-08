@@ -318,9 +318,16 @@ spec:
             - --aws-use-static-instance-list={{ .AWSUseStaticInstanceList }}
             {{ end }}
             - --expander={{ .Expander }}
+            - --autodiscovery {{ .AutoDiscovery }}
+            {{ if ClusterAutoscalerAutoDiscovery }}
+            {{ if (eq GetCloudProvider "aws") }}
+            - --node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/{{ ClusterName }}
+            {{ end }}
+            {{ else }}
             {{ range $name, $spec := GetNodeInstanceGroups }}
             {{ if WithDefaultBool $spec.Autoscale true }}
             - --nodes={{ $spec.MinSize }}:{{ $spec.MaxSize }}:{{ $name }}{{- if not (eq GetCloudProvider "gce") }}.{{ ClusterName }}{{ end -}}
+            {{ end }}
             {{ end }}
             {{ end }}
             - --scale-down-utilization-threshold={{ .ScaleDownUtilizationThreshold }}
