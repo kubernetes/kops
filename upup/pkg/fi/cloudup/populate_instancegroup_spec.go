@@ -38,16 +38,16 @@ import (
 const (
 	defaultNodeMachineTypeGCE     = "n1-standard-2"
 	defaultNodeMachineTypeDO      = "s-2vcpu-4gb"
-	defaultNodeMachineTypeAzure   = "Standard_B2ms"
+	defaultNodeMachineTypeAzure   = "Standard_B2s"
 	defaultNodeMachineTypeHetzner = "cx21"
 
 	defaultBastionMachineTypeGCE     = "f1-micro"
-	defaultBastionMachineTypeAzure   = "Standard_B2ms"
+	defaultBastionMachineTypeAzure   = "Standard_B2s"
 	defaultBastionMachineTypeHetzner = "cx11"
 
 	defaultMasterMachineTypeGCE     = "e2-medium"
 	defaultMasterMachineTypeDO      = "s-2vcpu-4gb"
-	defaultMasterMachineTypeAzure   = "Standard_B2ms"
+	defaultMasterMachineTypeAzure   = "Standard_B2s"
 	defaultMasterMachineTypeHetzner = "cx21"
 
 	defaultDONodeImage = "ubuntu-20-04-x64"
