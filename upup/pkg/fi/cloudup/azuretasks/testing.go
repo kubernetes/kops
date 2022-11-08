@@ -21,15 +21,15 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-06-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2020-06-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-05-01/network"
 
 	// Use 2018-01-01-preview API as we need the version to create
 	// a role assignment with Data Actions (https://github.com/Azure/azure-sdk-for-go/issues/1895).
 	// The non-preview version of the authorization API (2015-07-01)
 	// doesn't support Data Actions.
-	authz "github.com/Azure/azure-sdk-for-go/services/preview/authorization/mgmt/2018-01-01-preview/authorization"
-	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2020-06-01/resources"
+	authz "github.com/Azure/azure-sdk-for-go/services/preview/authorization/mgmt/2020-04-01-preview/authorization"
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2021-04-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/google/uuid"
 	v1 "k8s.io/api/core/v1"

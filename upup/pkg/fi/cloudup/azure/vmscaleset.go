@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-06-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/go-autorest/autorest"
 )
 
@@ -64,7 +64,7 @@ func (c *vmScaleSetsClientImpl) List(ctx context.Context, resourceGroupName stri
 }
 
 func (c *vmScaleSetsClientImpl) Delete(ctx context.Context, resourceGroupName, vmssName string) error {
-	future, err := c.c.Delete(ctx, resourceGroupName, vmssName)
+	future, err := c.c.Delete(ctx, resourceGroupName, vmssName, nil)
 	if err != nil {
 		return fmt.Errorf("error deleting VM Scale Set: %s", err)
 	}
