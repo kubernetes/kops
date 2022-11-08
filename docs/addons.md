@@ -89,7 +89,42 @@ Read more about cluster autoscaler in the [official documentation](https://githu
 ##### Expander strategies
 Cluster autoscaler supports several different [expander strategies](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#what-are-expanders).
 
-Note that the `priority` expander requires additional configuration through a ConfigMap as described in [its documentation](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/expander/priority/readme.md) - you will need to create this ConfigMap in your cluster before selecting this expander.
+###### Priority Expander configuration
+{{ kops_feature_table(kops_added_default='1.26') }}
+
+The `priority` expander requires additional configuration through a ConfigMap as described in [its documentation](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/expander/priority/readme.md)
+
+When `expander: priority` is defined kOps will create this ConfigMap based on the InstanceGroup spec. You can change priority of each instance group by adding the followig to the InstanceGroup spec.
+
+```yaml
+spec:
+  autoscale: true
+  autoscalePriority: 100
+```
+
+If `autoscalePriority` is not set, it will default to 0.
+
+If you need a more complex configuration, eg use regex for matching the InstanceGoup, you can provide your own custom configuration. If this is configured, the priority set on the InstanceGroup specs are ignored.
+
+```yaml
+clusterAutoscaler:
+  customPriorityExpanderConfig:
+    100:
+    - .*foo.*
+    50:
+    - .*bar.*
+    0:
+    - .*
+```
+
+###### Disable
+
+If you want to manage the priority expander ConfigMap outside of kOps, you can disable the ConfigMap creation by adding the following to the Cluster spec:
+
+```yaml
+clusterAutoscaler:
+  createPriorityExpanderConfig: false
+```
 
 ##### Disabling cluster autoscaler for a given instance group
 {{ kops_feature_table(kops_added_default='1.20') }}
@@ -346,7 +381,7 @@ spec:
 
 {{ kops_feature_table(kops_added_default='1.25') }}
 
-The following configuration allows for a self-managed aws-ebs-csi-driver. Please note that if you’re using Amazon EBS volumes, you must install the Amazon EBS CSI driver. If the Amazon EBS CSI plugin is not installed, then volume operations will fail. 
+The following configuration allows for a self-managed aws-ebs-csi-driver. Please note that if you’re using Amazon EBS volumes, you must install the Amazon EBS CSI driver. If the Amazon EBS CSI plugin is not installed, then volume operations will fail.
 
 If IRSA is not enabled, the control plane will have the permissions to provision nodes, and the self-managed controllers should run on the control plane. If IRSA is enabled, kOps will create the respective AWS IAM Role, assign the policy, and establish a trust relationship allowing the ServiceAccount to assume the IAM Role. To configure Pods to assume the given IAM roles, enable the [Pod Identity Webhook](https://kops.sigs.k8s.io/addons/#pod-identity-webhook). Without this webhook, you need to modify your Pod specs yourself for your Pod to assume the defined roles.
 
