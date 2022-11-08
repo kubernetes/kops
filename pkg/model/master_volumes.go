@@ -114,7 +114,10 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 					return err
 				}
 			case kops.CloudProviderAzure:
-				b.addAzureVolume(c, name, volumeSize, zone, etcd, m, allMembers)
+				err = b.addAzureVolume(c, name, volumeSize, zone, etcd, m, allMembers)
+				if err != nil {
+					return err
+				}
 			default:
 				return fmt.Errorf("unknown cloudprovider %q", b.Cluster.Spec.GetCloudProvider())
 			}
@@ -347,7 +350,7 @@ func (b *MasterVolumeBuilder) addAzureVolume(
 	etcd kops.EtcdClusterSpec,
 	m kops.EtcdMemberSpec,
 	allMembers []string,
-) {
+) error {
 	// The tags are use by Protokube to mount the volume and use it for etcd.
 	tags := map[string]*string{
 		// This is the configuration of the etcd cluster.
@@ -365,7 +368,12 @@ func (b *MasterVolumeBuilder) addAzureVolume(
 		tags[k] = fi.String(v)
 	}
 
-	// TODO(kenji): Respect zone and m.EncryptedVolume.
+	zoneNumber, err := azure.ZoneToAvailabilityZoneNumber(zone)
+	if err != nil {
+		return err
+	}
+
+	// TODO(kenji): Respect m.EncryptedVolume.
 	t := &azuretasks.Disk{
 		Name:      fi.String(name),
 		Lifecycle: b.Lifecycle,
@@ -375,6 +383,9 @@ func (b *MasterVolumeBuilder) addAzureVolume(
 		},
 		SizeGB: fi.Int32(volumeSize),
 		Tags:   tags,
+		Zones:  &[]string{zoneNumber},
 	}
 	c.AddTask(t)
+
+	return nil
 }
