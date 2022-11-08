@@ -172,7 +172,6 @@ spec:
   - 0.0.0.0/0
   - ::/0
   kubernetesVersion: 1.21.0
-  masterInternalName: api.internal.minimal-ipv6.example.com
   masterKubelet:
     anonymousAuth: false
     cgroupDriver: systemd

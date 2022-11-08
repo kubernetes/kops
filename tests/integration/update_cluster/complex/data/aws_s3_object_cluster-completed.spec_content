@@ -195,7 +195,6 @@ spec:
   - 1.1.1.0/24
   - pl-44444444
   kubernetesVersion: 1.24.0
-  masterInternalName: api.internal.complex.example.com
   masterKubelet:
     anonymousAuth: false
     cgroupDriver: systemd
