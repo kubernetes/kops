@@ -110,7 +110,7 @@ func (b *VMScaleSetModelBuilder) buildVMScaleSetTask(
 		t.SSHPublicKey = fi.String(string(b.SSHPublicKeys[0]))
 	}
 
-	if t.CustomData, err = b.BootstrapScriptBuilder.ResourceNodeUp(c, ig); err != nil {
+	if t.UserData, err = b.BootstrapScriptBuilder.ResourceNodeUp(c, ig); err != nil {
 		return nil, err
 	}
 

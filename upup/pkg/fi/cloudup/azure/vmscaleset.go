@@ -28,6 +28,7 @@ import (
 type VMScaleSetsClient interface {
 	CreateOrUpdate(ctx context.Context, resourceGroupName, vmScaleSetName string, parameters compute.VirtualMachineScaleSet) (*compute.VirtualMachineScaleSet, error)
 	List(ctx context.Context, resourceGroupName string) ([]compute.VirtualMachineScaleSet, error)
+	Get(ctx context.Context, resourceGroupName string, vmssName string) (*compute.VirtualMachineScaleSet, error)
 	Delete(ctx context.Context, resourceGroupName, vmssName string) error
 }
 
@@ -61,6 +62,14 @@ func (c *vmScaleSetsClientImpl) List(ctx context.Context, resourceGroupName stri
 		l = append(l, iter.Value())
 	}
 	return l, nil
+}
+
+func (c *vmScaleSetsClientImpl) Get(ctx context.Context, resourceGroupName string, vmssName string) (*compute.VirtualMachineScaleSet, error) {
+	vmss, err := c.c.Get(ctx, resourceGroupName, vmssName, compute.UserData)
+	if err != nil {
+		return nil, err
+	}
+	return &vmss, nil
 }
 
 func (c *vmScaleSetsClientImpl) Delete(ctx context.Context, resourceGroupName, vmssName string) error {
