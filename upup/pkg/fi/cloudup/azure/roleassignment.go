@@ -23,7 +23,7 @@ import (
 	// a role assignment with Data Actions (https://github.com/Azure/azure-sdk-for-go/issues/1895).
 	// The non-preview version of the authorization API (2015-07-01)
 	// doesn't support Data Actions.
-	authz "github.com/Azure/azure-sdk-for-go/services/preview/authorization/mgmt/2018-01-01-preview/authorization"
+	authz "github.com/Azure/azure-sdk-for-go/services/preview/authorization/mgmt/2020-04-01-preview/authorization"
 	"github.com/Azure/go-autorest/autorest"
 )
 
@@ -52,7 +52,7 @@ func (c *roleAssignmentsClientImpl) Create(
 
 func (c *roleAssignmentsClientImpl) List(ctx context.Context, resourceGroupName string) ([]authz.RoleAssignment, error) {
 	var l []authz.RoleAssignment
-	for iter, err := c.c.ListForResourceGroupComplete(ctx, resourceGroupName, "" /* filter */); iter.NotDone(); err = iter.Next() {
+	for iter, err := c.c.ListForResourceGroupComplete(ctx, resourceGroupName, "", ""); iter.NotDone(); err = iter.Next() {
 		if err != nil {
 			return nil, err
 		}
@@ -62,7 +62,7 @@ func (c *roleAssignmentsClientImpl) List(ctx context.Context, resourceGroupName 
 }
 
 func (c *roleAssignmentsClientImpl) Delete(ctx context.Context, scope, raName string) error {
-	_, err := c.c.Delete(ctx, scope, raName)
+	_, err := c.c.Delete(ctx, scope, raName, "")
 	return err
 }
 
