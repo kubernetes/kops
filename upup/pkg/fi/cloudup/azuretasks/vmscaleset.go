@@ -239,6 +239,7 @@ func (s *VMScaleSet) Find(c *fi.Context) (*VMScaleSet, error) {
 	if found.Zones != nil {
 		vmss.Zones = *found.Zones
 	}
+	s.PrincipalID = found.Identity.PrincipalID
 	return vmss, nil
 }
 
