@@ -237,7 +237,7 @@ func (c *azureCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([
 			return nil, fmt.Errorf("error getting Master Scale Set Network Interfaces for API Ingress Status: %s", err)
 		}
 		for _, ni := range nis {
-			if !*ni.Primary {
+			if ni.Primary == nil || !*ni.Primary {
 				continue
 			}
 			for _, i := range *ni.IPConfigurations {
