@@ -129,11 +129,11 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				return err
 			}
 
-			// Using EnsureTask as MasterInternalName and MasterPublicName could be the same
+			// Using EnsureTask as APIInternalName() and MasterPublicName could be the same
 			{
 				err := c.EnsureTask(&awstasks.DNSName{
-					Name:               fi.String(b.Cluster.Spec.MasterInternalName),
-					ResourceName:       fi.String(b.Cluster.Spec.MasterInternalName),
+					Name:               fi.String(b.Cluster.APIInternalName()),
+					ResourceName:       fi.String(b.Cluster.APIInternalName()),
 					Lifecycle:          b.Lifecycle,
 					Zone:               b.LinkToDNSZone(),
 					ResourceType:       fi.String("A"),
@@ -145,8 +145,8 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 			if b.UseIPv6ForAPI() {
 				err := c.EnsureTask(&awstasks.DNSName{
-					Name:               fi.String(b.Cluster.Spec.MasterInternalName + "-AAAA"),
-					ResourceName:       fi.String(b.Cluster.Spec.MasterInternalName),
+					Name:               fi.String(b.Cluster.APIInternalName() + "-AAAA"),
+					ResourceName:       fi.String(b.Cluster.APIInternalName()),
 					Lifecycle:          b.Lifecycle,
 					Zone:               b.LinkToDNSZone(),
 					ResourceType:       fi.String("AAAA"),

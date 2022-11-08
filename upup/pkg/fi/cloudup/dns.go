@@ -265,9 +265,9 @@ func buildPrecreateDNSHostnames(cluster *kops.Cluster) []recordKey {
 		}
 	}
 
-	if cluster.Spec.MasterInternalName != "" && !useLBForInternalAPI {
+	if !useLBForInternalAPI {
 		recordKeys = append(recordKeys, recordKey{
-			hostname: cluster.Spec.MasterInternalName,
+			hostname: cluster.APIInternalName(),
 			rrsType:  internalType,
 		})
 	}

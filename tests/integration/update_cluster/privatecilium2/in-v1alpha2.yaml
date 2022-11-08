@@ -24,7 +24,6 @@ spec:
   kubelet:
     anonymousAuth: false
   kubernetesVersion: v1.24.0
-  masterInternalName: api.internal.privatecilium.example.com
   masterPublicName: api.privatecilium.example.com
   networkCIDR: 172.20.0.0/16
   networking:

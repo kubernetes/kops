@@ -72,8 +72,6 @@ type ClusterSpec struct {
 	Subnets []ClusterSubnetSpec `json:"subnets,omitempty"`
 	// MasterPublicName is the external DNS name for the master nodes
 	MasterPublicName string `json:"masterPublicName,omitempty"`
-	// MasterInternalName is the internal DNS name for the master nodes
-	MasterInternalName string `json:"masterInternalName,omitempty"`
 	// NetworkCIDR is the CIDR used for the AWS VPC / DO/ GCE Network, or otherwise allocated to k8s
 	// This is a real CIDR, not the internal k8s network
 	// On AWS, it maps to the VPC CIDR.  It is not required on GCE.
@@ -98,7 +96,7 @@ type ClusterSpec struct {
 	// DNSZone is the DNS zone we should use when configuring DNS
 	// This is because some clouds let us define a managed zone foo.bar, and then have
 	// kubernetes.dev.foo.bar, without needing to define dev.foo.bar as a hosted zone.
-	// DNSZone will probably be a suffix of the MasterPublicName and MasterInternalName
+	// DNSZone will probably be a suffix of the MasterPublicName.
 	// Note that DNSZone can either by the host name of the zone (containing dots),
 	// or can be an identifier for the zone.
 	DNSZone string `json:"dnsZone,omitempty"`
@@ -803,10 +801,6 @@ func (c *Cluster) FillDefaults() error {
 		return fmt.Errorf("cluster Name not set in FillDefaults")
 	}
 
-	if c.Spec.MasterInternalName == "" {
-		c.Spec.MasterInternalName = "api.internal." + c.ObjectMeta.Name
-	}
-
 	return nil
 }
 
@@ -918,6 +912,10 @@ func (c *Cluster) UsesNoneDNS() bool {
 		return true
 	}
 	return false
+}
+
+func (c *Cluster) APIInternalName() string {
+	return "api.internal." + c.ObjectMeta.Name
 }
 
 func (c *ClusterSpec) IsIPv6Only() bool {

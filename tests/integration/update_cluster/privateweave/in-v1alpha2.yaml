@@ -22,7 +22,6 @@ spec:
   kubelet:
     anonymousAuth: false
   kubernetesVersion: v1.21.0
-  masterInternalName: api.internal.privateweave.example.com
   masterPublicName: api.privateweave.example.com
   networkCIDR: 172.20.0.0/16
   networking:

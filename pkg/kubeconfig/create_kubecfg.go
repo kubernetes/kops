@@ -37,10 +37,7 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 
 	var master string
 	if internal {
-		master = cluster.Spec.MasterInternalName
-		if master == "" {
-			master = "api.internal." + clusterName
-		}
+		master = cluster.APIInternalName()
 	} else {
 		master = cluster.Spec.MasterPublicName
 		if master == "" {
