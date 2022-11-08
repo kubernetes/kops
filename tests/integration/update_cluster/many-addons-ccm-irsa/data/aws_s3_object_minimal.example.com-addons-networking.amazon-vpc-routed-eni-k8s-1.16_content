@@ -220,7 +220,11 @@ spec:
           value: "false"
         - name: ENABLE_POD_ENI
           value: "false"
+        - name: ENABLE_PREFIX_DELEGATION
+          value: "false"
         - name: WARM_ENI_TARGET
+          value: "1"
+        - name: WARM_PREFIX_TARGET
           value: "1"
         - name: MY_NODE_NAME
           valueFrom:
