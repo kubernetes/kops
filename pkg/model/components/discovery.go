@@ -74,7 +74,7 @@ func (b *DiscoveryOptionsBuilder) BuildOptions(o interface{}) error {
 			if supportsPublicJWKS(clusterSpec) && clusterSpec.MasterPublicName != "" {
 				serviceAccountIssuer = "https://" + clusterSpec.MasterPublicName
 			} else {
-				serviceAccountIssuer = "https://" + clusterSpec.MasterInternalName
+				serviceAccountIssuer = "https://api.internal." + b.ClusterName
 			}
 		}
 		kubeAPIServer.ServiceAccountIssuer = &serviceAccountIssuer

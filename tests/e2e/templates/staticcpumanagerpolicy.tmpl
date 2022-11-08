@@ -32,7 +32,6 @@ spec:
       ephemeral-storage: 1Gi
       memory: 120Mi
   kubernetesVersion: {{.kubernetesVersion}}
-  masterInternalName: api.internal.{{.clusterName}}
   masterPublicName: api.{{.clusterName}}
   networkCIDR: 172.20.0.0/16
   networking:
