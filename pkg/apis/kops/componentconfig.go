@@ -981,7 +981,7 @@ type ClusterAutoscalerConfig struct {
 	// Expander determines the strategy for which instance group gets expanded.
 	// Supported values: least-waste, most-pods, random, price, priority.
 	// The price expander is only supported on GCE.
-	// The priority expander requires additional configuration via a ConfigMap.
+	// By default, kOps will generate the priority expander ConfigMap based on the `autoscale` and `autoscalePriority` fields in the InstanceGroup specs.
 	// Default: least-waste
 	Expander string `json:"expander,omitempty"`
 	// BalanceSimilarNodeGroups makes cluster autoscaler treat similar node groups as one.
@@ -1028,6 +1028,12 @@ type ClusterAutoscalerConfig struct {
 	// PodAnnotations are the annotations added to cluster autoscaler pods when they are created.
 	// Default: none
 	PodAnnotations map[string]string `json:"podAnnotations,omitempty"`
+	// CreatePriorityExpenderConfig makes kOps create the priority-expander ConfigMap
+	// Default: true
+	CreatePriorityExpenderConfig *bool `json:"createPriorityExpanderConfig,omitempty"`
+	// CustomPriorityExpanderConfig overides the priority-expander ConfigMap with the provided configuration. Any InstanceGroup configuration will be ignored if this is set.
+	// This could be useful in order to use regex on priorities configuration
+	CustomPriorityExpanderConfig map[string][]string `json:"customPriorityExpanderConfig,omitempty"`
 }
 
 // MetricsServerConfig determines the metrics server configuration.
