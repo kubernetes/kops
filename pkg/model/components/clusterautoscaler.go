@@ -95,6 +95,9 @@ func (b *ClusterAutoscalerOptionsBuilder) BuildOptions(o interface{}) error {
 	if cas.MaxNodeProvisionTime == "" {
 		cas.MaxNodeProvisionTime = "15m0s"
 	}
+	if cas.Expander == "priority" {
+		cas.CreatePriorityExpenderConfig = fi.PtrTo(true)
+	}
 
 	return nil
 }

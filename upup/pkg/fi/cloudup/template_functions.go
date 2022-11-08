@@ -314,6 +314,26 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["IsIPv6Only"] = tf.IsIPv6Only
 	dest["UseServiceAccountExternalPermissions"] = tf.UseServiceAccountExternalPermissions
 
+	if cluster.Spec.ClusterAutoscaler != nil {
+		dest["ClusterAutoscalerPriorities"] = func() map[string][]string {
+			priorities := make(map[string][]string)
+			if cluster.Spec.ClusterAutoscaler.CustomPriorityExpanderConfig != nil {
+				priorities = cluster.Spec.ClusterAutoscaler.CustomPriorityExpanderConfig
+			} else {
+				for name, spec := range tf.GetNodeInstanceGroups() {
+
+					if spec.Autoscale != nil {
+						priorities[fmt.Sprint(spec.AutoscalePriority)] = append(priorities[fmt.Sprint(spec.AutoscalePriority)], fmt.Sprintf("%s.%s", name, tf.ClusterName()))
+					}
+				}
+			}
+			return priorities
+		}
+		dest["CreateClusterAutoscalerPriorityConfig"] = func() bool {
+			return fi.ValueOf(cluster.Spec.ClusterAutoscaler.CreatePriorityExpenderConfig)
+		}
+	}
+
 	if cluster.Spec.CloudProvider.AWS != nil && cluster.Spec.CloudProvider.AWS.NodeTerminationHandler != nil {
 		dest["DefaultQueueName"] = func() string {
 			s := strings.Replace(tf.ClusterName(), ".", "-", -1)
