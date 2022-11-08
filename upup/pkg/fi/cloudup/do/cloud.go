@@ -282,28 +282,26 @@ func (c *doCloudImplementation) GetVPCUUID(networkCIDR string, vpcName string) (
 func (c *doCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
 	var ingresses []fi.ApiIngressStatus
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		if cluster.Spec.MasterPublicName != "" {
-			// Note that this must match Digital Ocean's lb name
-			klog.V(2).Infof("Querying DO to find Loadbalancers for API (%q)", cluster.Name)
+		// Note that this must match Digital Ocean's lb name
+		klog.V(2).Infof("Querying DO to find Loadbalancers for API (%q)", cluster.Name)
 
-			loadBalancers, err := c.GetAllLoadBalancers()
-			if err != nil {
-				return false, fmt.Errorf("LoadBalancers.List returned error: %v", err)
-			}
+		loadBalancers, err := c.GetAllLoadBalancers()
+		if err != nil {
+			return false, fmt.Errorf("LoadBalancers.List returned error: %v", err)
+		}
 
-			lbName := "api-" + strings.Replace(cluster.Name, ".", "-", -1)
+		lbName := "api-" + strings.Replace(cluster.Name, ".", "-", -1)
 
-			for _, lb := range loadBalancers {
-				if lb.Name == lbName {
-					klog.V(10).Infof("Matching LB name found for API (%q)", cluster.Name)
+		for _, lb := range loadBalancers {
+			if lb.Name == lbName {
+				klog.V(10).Infof("Matching LB name found for API (%q)", cluster.Name)
 
-					if lb.Status != "active" {
-						return false, fmt.Errorf("load-balancer is not yet active (current status: %s)", lb.Status)
-					}
-
-					address := lb.IP
-					ingresses = append(ingresses, fi.ApiIngressStatus{IP: address})
+				if lb.Status != "active" {
+					return false, fmt.Errorf("load-balancer is not yet active (current status: %s)", lb.Status)
 				}
+
+				address := lb.IP
+				ingresses = append(ingresses, fi.ApiIngressStatus{IP: address})
 			}
 		}
 		return true, nil
