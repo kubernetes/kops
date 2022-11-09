@@ -9,8 +9,6 @@
         "arn:aws-test:s3:::kops-tests/iam-builder-test.k8s.local/addons/*",
         "arn:aws-test:s3:::kops-tests/iam-builder-test.k8s.local/cluster-completed.spec",
         "arn:aws-test:s3:::kops-tests/iam-builder-test.k8s.local/igconfig/node/*",
-        "arn:aws-test:s3:::kops-tests/iam-builder-test.k8s.local/pki/private/kube-proxy/*",
-        "arn:aws-test:s3:::kops-tests/iam-builder-test.k8s.local/pki/private/kubelet/*",
         "arn:aws-test:s3:::kops-tests/iam-builder-test.k8s.local/secrets/dockerconfig"
       ]
     },
