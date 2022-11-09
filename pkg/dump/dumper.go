@@ -29,6 +29,7 @@ import (
 	"time"
 
 	"golang.org/x/crypto/ssh"
+	"golang.org/x/crypto/ssh/agent"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
 )
@@ -45,8 +46,10 @@ type logDumper struct {
 }
 
 // NewLogDumper is the constructor for a logDumper
-func NewLogDumper(sshConfig *ssh.ClientConfig, artifactsDir string) *logDumper {
+func NewLogDumper(clusterName string, sshConfig *ssh.ClientConfig, keyRing agent.Agent, artifactsDir string) *logDumper {
 	sshClientFactory := &sshClientFactoryImplementation{
+		bastion:   "bastion." + clusterName,
+		keyRing:   keyRing,
 		sshConfig: sshConfig,
 	}
 
@@ -97,7 +100,7 @@ func NewLogDumper(sshConfig *ssh.ClientConfig, artifactsDir string) *logDumper {
 // if the IPs are not found from kubectl get nodes, then these will be dumped also.
 // This allows for dumping log on nodes even if they don't register as a kubernetes
 // node, or if a node fails to register, or if the whole cluster fails to start.
-func (d *logDumper) DumpAllNodes(ctx context.Context, nodes corev1.NodeList, additionalIPs []string) error {
+func (d *logDumper) DumpAllNodes(ctx context.Context, nodes corev1.NodeList, additionalIPs, additionalPrivateIPs []string) error {
 	var dumped []*corev1.Node
 
 	for i := range nodes.Items {
@@ -109,20 +112,24 @@ func (d *logDumper) DumpAllNodes(ctx context.Context, nodes corev1.NodeList, add
 		node := &nodes.Items[i]
 
 		ip := ""
-		ipv6 := ""
+		privateIP := ""
 		for _, address := range node.Status.Addresses {
 			if address.Type == "ExternalIP" {
 				ip = address.Address
 				break
-			} else if address.Type == "InternalIP" && strings.Contains(address.Address, ":") {
-				ipv6 = address.Address
+			} else if address.Type == "InternalIP" {
+				if privateIP == "" {
+					privateIP = address.Address
+				}
 			}
 		}
 
-		if ip == "" {
-			ip = ipv6
+		var err error
+		if ip != "" {
+			err = d.dumpNode(ctx, node.Name, ip, false)
+		} else {
+			err = d.dumpNode(ctx, node.Name, privateIP, true)
 		}
-		err := d.dumpNode(ctx, node.Name, ip)
 		if err != nil {
 			log.Printf("could not dump node %s (%s): %v", node.Name, ip, err)
 		} else {
@@ -132,18 +139,34 @@ func (d *logDumper) DumpAllNodes(ctx context.Context, nodes corev1.NodeList, add
 
 	notDumped := findInstancesNotDumped(additionalIPs, dumped)
 	for _, ip := range notDumped {
-		if ctx.Err() != nil {
-			log.Printf("stopping dumping nodes: %v", ctx.Err())
-			return ctx.Err()
-		}
-
-		log.Printf("dumping node not registered in kubernetes: %s", ip)
-		err := d.dumpNode(ctx, ip, ip)
+		err := d.dumpNotRegistered(ctx, ip, false)
 		if err != nil {
-			log.Printf("error dumping node %s: %v", ip, err)
+			return err
 		}
 	}
 
+	notDumped = findInstancesNotDumped(additionalPrivateIPs, dumped)
+	for _, ip := range notDumped {
+		err := d.dumpNotRegistered(ctx, ip, true)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (d *logDumper) dumpNotRegistered(ctx context.Context, ip string, useBastion bool) error {
+	if ctx.Err() != nil {
+		log.Printf("stopping dumping nodes: %v", ctx.Err())
+		return ctx.Err()
+	}
+
+	log.Printf("dumping node not registered in kubernetes: %s", ip)
+	err := d.dumpNode(ctx, ip, ip, useBastion)
+	if err != nil {
+		log.Printf("error dumping node %s: %v", ip, err)
+	}
 	return nil
 }
 
@@ -166,14 +189,14 @@ func findInstancesNotDumped(ips []string, dumped []*corev1.Node) []string {
 }
 
 // DumpNode connects to a node and dumps the logs.
-func (d *logDumper) dumpNode(ctx context.Context, name string, ip string) error {
+func (d *logDumper) dumpNode(ctx context.Context, name string, ip string, useBastion bool) error {
 	if ip == "" {
 		return fmt.Errorf("could not find address for %v, ", name)
 	}
 
 	log.Printf("Dumping node %s", name)
 
-	n, err := d.connectToNode(ctx, name, ip)
+	n, err := d.connectToNode(ctx, name, ip, useBastion)
 	if err != nil {
 		return fmt.Errorf("could not connect: %v", err)
 	}
@@ -204,7 +227,7 @@ type sshClient interface {
 
 // sshClientFactory is an interface abstracting to a node over SSH
 type sshClientFactory interface {
-	Dial(ctx context.Context, host string) (sshClient, error)
+	Dial(ctx context.Context, host string, useBastion bool) (sshClient, error)
 }
 
 // logDumperNode holds state for a particular node we are dumping
@@ -216,8 +239,8 @@ type logDumperNode struct {
 }
 
 // connectToNode makes an SSH connection to the node and returns a logDumperNode
-func (d *logDumper) connectToNode(ctx context.Context, nodeName string, host string) (*logDumperNode, error) {
-	client, err := d.sshClientFactory.Dial(ctx, host)
+func (d *logDumper) connectToNode(ctx context.Context, nodeName string, host string, useBastion bool) (*logDumperNode, error) {
+	client, err := d.sshClientFactory.Dial(ctx, host, useBastion)
 	if err != nil {
 		return nil, fmt.Errorf("unable to SSH to %q: %v", host, err)
 	}
@@ -366,7 +389,8 @@ func (n *logDumperNode) shellToFile(ctx context.Context, command string, destPat
 
 // sshClientImplementation is the default implementation of sshClient, binding to a *ssh.Client
 type sshClientImplementation struct {
-	client *ssh.Client
+	client    *ssh.Client
+	forwardTo string
 }
 
 var _ sshClient = &sshClientImplementation{}
@@ -386,10 +410,20 @@ func (s *sshClientImplementation) ExecPiped(ctx context.Context, cmd string, std
 		}
 		defer session.Close()
 
-		klog.V(2).Infof("running SSH command: %v", cmd)
-
 		session.Stdout = stdout
 		session.Stderr = stderr
+
+		if s.forwardTo != "" {
+			err = agent.RequestAgentForwarding(session)
+			if err != nil {
+				finished <- fmt.Errorf("requesting agent forwarding: %w", err)
+				return
+			}
+
+			cmd = fmt.Sprintf("ssh -o 'StrictHostKeyChecking no' %s %s", quoteShell(s.forwardTo), quoteShell(cmd))
+		}
+
+		klog.V(2).Infof("running SSH command: %v", cmd)
 
 		finished <- session.Run(cmd)
 	}()
@@ -412,6 +446,22 @@ func (s *sshClientImplementation) ExecPiped(ctx context.Context, cmd string, std
 	}
 }
 
+func quoteShell(s string) string {
+	var q strings.Builder
+	q.WriteString("'")
+	for _, c := range s {
+		if c == '\'' || c == '\\' {
+			q.WriteString("'\\")
+		}
+		q.WriteRune(c)
+		if c == '\'' || c == '\\' {
+			q.WriteRune('\'')
+		}
+	}
+	q.WriteString("'")
+	return q.String()
+}
+
 // Close implements sshClientImplementation::Close
 func (s *sshClientImplementation) Close() error {
 	return s.client.Close()
@@ -419,14 +469,22 @@ func (s *sshClientImplementation) Close() error {
 
 // sshClientFactoryImplementation is the default implementation of sshClientFactory
 type sshClientFactoryImplementation struct {
+	bastion   string
 	sshConfig *ssh.ClientConfig
+	keyRing   agent.Agent
 }
 
 var _ sshClientFactory = &sshClientFactoryImplementation{}
 
 // Dial implements sshClientFactory::Dial
-func (f *sshClientFactoryImplementation) Dial(ctx context.Context, host string) (sshClient, error) {
-	addr := net.JoinHostPort(host, "22")
+func (f *sshClientFactoryImplementation) Dial(ctx context.Context, host string, useBastion bool) (sshClient, error) {
+	var addr string
+	if useBastion {
+		addr = f.bastion
+	} else {
+		addr = host
+	}
+	addr = net.JoinHostPort(addr, "22")
 	d := net.Dialer{
 		Timeout: 15 * time.Second,
 	}
@@ -443,6 +501,12 @@ func (f *sshClientFactoryImplementation) Dial(ctx context.Context, host string) 
 		c, chans, reqs, err := ssh.NewClientConn(conn, addr, f.sshConfig)
 		if err == nil {
 			client = ssh.NewClient(c, chans, reqs)
+			if useBastion {
+				err = agent.ForwardToAgent(client, f.keyRing)
+				if err != nil {
+					err = fmt.Errorf("forwarding ssh auth to keyring: %w", err)
+				}
+			}
 		}
 		finished <- err
 	}()
@@ -457,8 +521,12 @@ func (f *sshClientFactoryImplementation) Dial(ctx context.Context, host string) 
 		if err != nil {
 			return nil, err
 		}
+		if !useBastion {
+			host = ""
+		}
 		return &sshClientImplementation{
-			client: client,
+			client:    client,
+			forwardTo: host,
 		}, nil
 	}
 }
