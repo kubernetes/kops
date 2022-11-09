@@ -59,10 +59,17 @@ rules:
     resources:
       - namespaces
     verbs: ["list", "watch", "get"]
+{{- if AmazonVpcEnvVars.ANNOTATE_POD_IP }}
+  - apiGroups: [""]
+    resources:
+      - pods
+    verbs: ["list", "watch", "get", "patch"]
+{{- else }}
   - apiGroups: [""]
     resources:
       - pods
     verbs: ["list", "watch", "get"]
+{{- end }}
   - apiGroups: [""]
     resources:
       - nodes

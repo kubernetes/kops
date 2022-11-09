@@ -48,7 +48,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.16
     manifest: networking.amazon-vpc-routed-eni/k8s-1.16.yaml
-    manifestHash: a9de2acf0395378a11c61c053493ec621229d6bd585dbd0afff99cc0d659242a
+    manifestHash: 876c86936ef5b28bb3ca35e6532d18066fed8188cd1f5bf4b70e2b03369b4393
     name: networking.amazon-vpc-routed-eni
     needsRollingUpdate: all
     selector:
