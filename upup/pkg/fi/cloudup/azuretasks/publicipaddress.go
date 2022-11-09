@@ -116,7 +116,10 @@ func (*PublicIPAddress) RenderAzure(t *azure.AzureAPITarget, a, e, changes *Publ
 		Name:     to.StringPtr(*e.Name),
 		PublicIPAddressPropertiesFormat: &network.PublicIPAddressPropertiesFormat{
 			PublicIPAddressVersion:   network.IPv4,
-			PublicIPAllocationMethod: network.Dynamic,
+			PublicIPAllocationMethod: network.Static,
+		},
+		Sku: &network.PublicIPAddressSku{
+			Name: network.PublicIPAddressSkuNameStandard,
 		},
 		Tags: e.Tags,
 	}
