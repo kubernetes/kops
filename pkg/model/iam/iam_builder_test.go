@@ -163,6 +163,9 @@ func TestPolicyGeneration(t *testing.T) {
 							},
 						},
 					},
+					CloudProvider: kops.CloudProviderSpec{
+						AWS: &kops.AWSSpec{},
+					},
 					CloudConfig: &kops.CloudConfiguration{
 						AWSEBSCSIDriver: &kops.AWSEBSCSIDriver{
 							Enabled: fi.Bool(true),
