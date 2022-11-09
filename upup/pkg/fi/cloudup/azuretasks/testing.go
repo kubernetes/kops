@@ -403,6 +403,15 @@ func (c *MockVMScaleSetsClient) List(ctx context.Context, resourceGroupName stri
 	return l, nil
 }
 
+// Get Returns a specified VM Scale Set.
+func (c *MockVMScaleSetsClient) Get(ctx context.Context, resourceGroupName string, vmssName string) (*compute.VirtualMachineScaleSet, error) {
+	vmss, ok := c.VMSSes[vmssName]
+	if !ok {
+		return nil, nil
+	}
+	return &vmss, nil
+}
+
 // Delete deletes a specified VM Scale Set.
 func (c *MockVMScaleSetsClient) Delete(ctx context.Context, resourceGroupName, vmssName string) error {
 	// Ignore resourceGroupName for simplicity.

@@ -59,7 +59,7 @@ func (b *NTPBuilder) Build(c *fi.ModelBuilderContext) error {
 		ntpHost = ""
 	}
 
-	if !b.RunningOnGCE() && b.Distribution.IsUbuntu() && b.Distribution.Version() <= 20.04 {
+	if !b.RunningOnGCE() && !b.RunningOnAzure() && b.Distribution.IsUbuntu() && b.Distribution.Version() <= 20.04 {
 		if ntpHost != "" {
 			c.AddTask(b.buildTimesyncdConf("/etc/systemd/timesyncd.conf", ntpHost))
 		}

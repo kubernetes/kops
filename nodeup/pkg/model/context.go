@@ -613,6 +613,11 @@ func (c *NodeupModelContext) RunningOnGCE() bool {
 	return c.CloudProvider == kops.CloudProviderGCE
 }
 
+// RunningOnAzure returns true if we are running on Azure
+func (c *NodeupModelContext) RunningOnAzure() bool {
+	return c.CloudProvider == kops.CloudProviderAzure
+}
+
 // GetMetadataLocalIP returns the local IP address read from metadata
 func (c *NodeupModelContext) GetMetadataLocalIP() (string, error) {
 	var internalIP string
