@@ -76,6 +76,7 @@ func (n *VirtualNetwork) Find(c *fi.Context) (*VirtualNetwork, error) {
 	return &VirtualNetwork{
 		Name:      n.Name,
 		Lifecycle: n.Lifecycle,
+		Shared:    n.Shared,
 		ResourceGroup: &ResourceGroup{
 			Name: n.ResourceGroup.Name,
 		},

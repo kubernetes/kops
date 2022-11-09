@@ -113,8 +113,8 @@ type VMScaleSet struct {
 	// AdmnUser specifies the name of the administrative account.
 	AdminUser    *string
 	SSHPublicKey *string
-	// CustomData is the user data configuration
-	CustomData  fi.Resource
+	// UserData is the user data configuration
+	UserData    fi.Resource
 	Tags        map[string]*string
 	Zones       []string
 	PrincipalID *string
@@ -153,16 +153,9 @@ func (s *VMScaleSet) CompareWithID() *string {
 // Find discovers the VMScaleSet in the cloud provider.
 func (s *VMScaleSet) Find(c *fi.Context) (*VMScaleSet, error) {
 	cloud := c.Cloud.(azure.AzureCloud)
-	l, err := cloud.VMScaleSet().List(context.TODO(), *s.ResourceGroup.Name)
-	if err != nil {
+	found, err := cloud.VMScaleSet().Get(context.TODO(), *s.ResourceGroup.Name, *s.Name)
+	if err != nil && !strings.Contains(err.Error(), "ResourceNotFound") {
 		return nil, err
-	}
-	var found *compute.VirtualMachineScaleSet
-	for _, v := range l {
-		if *v.Name == *s.Name {
-			found = &v
-			break
-		}
 	}
 	if found == nil {
 		return nil, nil
@@ -204,9 +197,11 @@ func (s *VMScaleSet) Find(c *fi.Context) (*VMScaleSet, error) {
 		return nil, fmt.Errorf("unexpected number of SSH keys found for VM ScaleSet %s: %d", *s.Name, len(sshKeys))
 	}
 
-	// TODO(kenji): Do not check custom data as Azure doesn't
-	// populate (https://github.com/Azure/azure-cli/issues/5866).
-	// Find a way to work around this.
+	userData, err := base64.StdEncoding.DecodeString(*profile.UserData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode user data: %w", err)
+	}
+
 	vmss := &VMScaleSet{
 		Name:      s.Name,
 		Lifecycle: s.Lifecycle,
@@ -228,6 +223,7 @@ func (s *VMScaleSet) Find(c *fi.Context) (*VMScaleSet, error) {
 		ComputerNamePrefix: osProfile.ComputerNamePrefix,
 		AdminUser:          osProfile.AdminUsername,
 		SSHPublicKey:       sshKeys[0].KeyData,
+		UserData:           fi.NewBytesResource(userData),
 		Tags:               found.Tags,
 		PrincipalID:        found.Identity.PrincipalID,
 	}
@@ -239,6 +235,7 @@ func (s *VMScaleSet) Find(c *fi.Context) (*VMScaleSet, error) {
 	if found.Zones != nil {
 		vmss.Zones = *found.Zones
 	}
+	s.PrincipalID = found.Identity.PrincipalID
 	return vmss, nil
 }
 
@@ -280,10 +277,10 @@ func (s *VMScaleSet) RenderAzure(t *azure.AzureAPITarget, a, e, changes *VMScale
 	name := *e.Name
 
 	var customData *string
-	if e.CustomData != nil {
-		d, err := fi.ResourceAsBytes(e.CustomData)
+	if e.UserData != nil {
+		d, err := fi.ResourceAsBytes(e.UserData)
 		if err != nil {
-			return fmt.Errorf("error rendering CustomData: %s", err)
+			return fmt.Errorf("error rendering UserData: %s", err)
 		}
 		customData = to.StringPtr(base64.StdEncoding.EncodeToString(d))
 	}
@@ -291,7 +288,6 @@ func (s *VMScaleSet) RenderAzure(t *azure.AzureAPITarget, a, e, changes *VMScale
 	osProfile := &compute.VirtualMachineScaleSetOSProfile{
 		ComputerNamePrefix: e.ComputerNamePrefix,
 		AdminUsername:      e.AdminUser,
-		CustomData:         customData,
 		LinuxConfiguration: &compute.LinuxConfiguration{
 			SSH: &compute.SSHConfiguration{
 				PublicKeys: &[]compute.SSHPublicKey{
@@ -366,6 +362,7 @@ func (s *VMScaleSet) RenderAzure(t *azure.AzureAPITarget, a, e, changes *VMScale
 			VirtualMachineProfile: &compute.VirtualMachineScaleSetVMProfile{
 				OsProfile:      osProfile,
 				StorageProfile: e.StorageProfile.VirtualMachineScaleSetStorageProfile,
+				UserData:       customData,
 				NetworkProfile: &compute.VirtualMachineScaleSetNetworkProfile{
 					NetworkInterfaceConfigurations: &[]compute.VirtualMachineScaleSetNetworkConfiguration{
 						networkConfig,
