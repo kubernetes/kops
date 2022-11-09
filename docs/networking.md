@@ -12,20 +12,20 @@ listed below, are available which implement and manage this abstraction.
 
 The following table provides the support status for various networking providers with regards to kOps version:
 
-| Network provider | Experimental | Stable | Deprecated | Removed |
-| ------------ | -----------: | -----: | ---------: | ------: |
-| AWS VPC | 1.9 | 1.21 | - | - |
-| Calico | 1.6 | 1.11 | - | - |
-| Canal  | 1.12 | - | - | - |
-| Cilium | 1.9 | 1.15 | - | - |
-| Flannel udp | 1.5.2 | - | - | - |
-| Flannel vxlan | 1.8.0 | - | - | - |
-| Kopeio | 1.5 | - | - | - |
-| Kube-router | 1.6.2 | - | - | - |
-| Kubenet | 1.5 | 1.5 | - | - |
-| Lyft VPC | 1.11 | - | 1.22 | 1.23 |
-| Romana | 1.8 | - | 1.18 | 1.19 |
-| Weave | 1.5 | - | 1.23 | Kubernetes 1.23 |
+| Network provider | Experimental | Stable | Deprecated |         Removed |
+|------------------|-------------:|-------:|-----------:|----------------:|
+| AWS VPC          |          1.9 |   1.21 |          - |               - |
+| Calico           |          1.6 |   1.11 |          - |               - |
+| Canal            |         1.12 |      - |          - |               - |
+| Cilium           |          1.9 |   1.15 |          - |               - |
+| Flannel udp      |        1.5.2 |      - |          - |               - |
+| Flannel vxlan    |        1.8.0 |      - |          - |               - |
+| Kopeio           |          1.5 |      - |          - |               - |
+| Kube-router      |        1.6.2 |      - |          - |               - |
+| Kubenet          |          1.5 |    1.5 |          - |               - |
+| Lyft VPC         |         1.11 |      - |       1.22 |            1.23 |
+| Romana           |          1.8 |      - |       1.18 |            1.19 |
+| Weave            |          1.5 |      - |       1.23 | Kubernetes 1.23 |
 
 ### Which networking provider should you use?
 
@@ -59,8 +59,6 @@ and as NAT gateways are single AZ, multiple route tables are needed to use each 
 Kubenet is the default networking option because of its simplicity, however, it should not be used in
 production clusters which expect a gradual increase in traffic and/or workload over time. Such clusters
 will eventually "out-grow" the `kubenet` networking provider.
-
-For more on the `kubenet` networking provider, please see the [`kubenet` section of the Kubernetes documentation](https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/#kubenet).
 
 ### CNI
 
@@ -111,7 +109,6 @@ You will notice that `kube-dns` and similar pods that depend on pod networks fai
 
 Here are some steps items that will confirm a good CNI install:
 
-- `kubelet` is running with the with `--network-plugin=cni` option.
 - The CNS provider started without errors.
 - `kube-dns` daemonset starts.
 - Logging on a node will display messages on pod create and delete.
