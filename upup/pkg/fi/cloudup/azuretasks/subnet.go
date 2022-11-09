@@ -68,6 +68,7 @@ func (s *Subnet) Find(c *fi.Context) (*Subnet, error) {
 	return &Subnet{
 		Name:      s.Name,
 		Lifecycle: s.Lifecycle,
+		Shared:    s.Shared,
 		ResourceGroup: &ResourceGroup{
 			Name: s.ResourceGroup.Name,
 		},

@@ -44,6 +44,15 @@ func (c *mockVMScaleSetsClient) List(ctx context.Context, resourceGroupName stri
 	return c.vmsses, nil
 }
 
+func (c *mockVMScaleSetsClient) Get(ctx context.Context, resourceGroupName string, vmssName string) (*compute.VirtualMachineScaleSet, error) {
+	for _, vmss := range c.vmsses {
+		if *vmss.Name == vmssName {
+			return &vmss, nil
+		}
+	}
+	return nil, nil
+}
+
 func (c *mockVMScaleSetsClient) Delete(ctx context.Context, resourceGroupName, vmssName string) error {
 	return fmt.Errorf("unimplemented")
 }
