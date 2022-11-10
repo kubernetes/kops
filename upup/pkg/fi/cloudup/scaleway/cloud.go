@@ -281,9 +281,9 @@ func buildCloudGroup(ig *kops.InstanceGroup, sg []*instance.Server, nodeMap map[
 		HumanName:     ig.Name,
 		InstanceGroup: ig,
 		Raw:           sg,
-		MinSize:       int(fi.Int32Value(ig.Spec.MinSize)),
-		TargetSize:    int(fi.Int32Value(ig.Spec.MinSize)),
-		MaxSize:       int(fi.Int32Value(ig.Spec.MaxSize)),
+		MinSize:       int(fi.ValueOf(ig.Spec.MinSize)),
+		TargetSize:    int(fi.ValueOf(ig.Spec.MinSize)),
+		MaxSize:       int(fi.ValueOf(ig.Spec.MaxSize)),
 	}
 
 	for _, server := range sg {
