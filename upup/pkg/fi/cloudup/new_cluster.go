@@ -164,7 +164,7 @@ func (o *NewClusterOptions) InitDefaults() {
 	o.Channel = api.DefaultChannel
 	o.Authorization = AuthorizationFlagRBAC
 	o.AdminAccess = []string{"0.0.0.0/0", "::/0"}
-	o.Networking = "kubenet"
+	o.Networking = "cilium"
 	o.Topology = api.TopologyPublic
 	o.InstanceManager = "cloudgroups"
 }

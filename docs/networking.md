@@ -12,6 +12,8 @@ listed below, are available which implement and manage this abstraction.
 
 The following table provides the support status for various networking providers with regards to kOps version:
 
+As of kOps 1.26 the default network provider is Cilium. Prior to that the default is Kubenet.
+
 | Network provider | Experimental | Stable | Deprecated |         Removed |
 |------------------|-------------:|-------:|-----------:|----------------:|
 | AWS VPC          |          1.9 |   1.21 |          - |               - |
@@ -27,27 +29,20 @@ The following table provides the support status for various networking providers
 | Romana           |          1.8 |      - |       1.18 |            1.19 |
 | Weave            |          1.5 |      - |       1.23 | Kubernetes 1.23 |
 
-### Which networking provider should you use?
-
-kOps maintainers have no bias over the CNI provider that you run, we only aim to be flexible and provide a working setup of the CNIs.
-
-We do recommended something other than `kubenet` for production clusters due to `kubenet`'s limitations, as explained [below](#kubenet-default).
-
 ### Specifying network option for cluster creation
 
 You can specify the network provider via the `--networking` command line switch. However, this will only give a default configuration of the provider. Typically you would often modify the `spec.networking` section of the cluster spec to configure the provider further.
 
-### Kubenet (default)
+### Kubenet
 
-Kubernetes Operations (kOps) uses `kubenet` networking by default. This sets up networking on AWS using VPC
-networking, where the master allocates a /24 CIDR to each Node, drawing from the Node network.
-Using `kubenet` mode routes for each node are then configured in the AWS VPC routing tables.
+The "kubenet" option has the control plane allocate a /24 CIDR to each Node, drawing from the Node network.
+Routes for each node are then configured in the cloud provider network's routing tables.
 
-One important limitation when using `kubenet` networking is that an AWS routing table cannot have more than
+One important limitation when using `kubenet` networking on AWS is that an AWS routing table cannot have more than
 50 entries, which sets a limit of 50 nodes per cluster. AWS support will sometimes raise the limit to 100,
 but their documentation notes that routing tables over 50 may take a performance hit.
 
-Because k8s modifies the AWS routing table, this means that realistically Kubernetes needs to own the
+Because kubernetes modifies the AWS routing table, this means that, realistically, Kubernetes needs to own the
 routing table, and thus it requires its own subnet.  It is theoretically possible to share a routing table
 with other infrastructure (but not a second cluster!), but this is not really recommended.  Certain
 `cni` networking solutions claim to address these problems.
@@ -56,7 +51,7 @@ Users running `--topology private` will not be able to choose `kubenet` networki
 requires a single routing table. These advanced users are usually running in multiple availability zones
 and as NAT gateways are single AZ, multiple route tables are needed to use each NAT gateway.
 
-Kubenet is the default networking option because of its simplicity, however, it should not be used in
+Kubenet is simple, however, it should not be used in
 production clusters which expect a gradual increase in traffic and/or workload over time. Such clusters
 will eventually "out-grow" the `kubenet` networking provider.
 
