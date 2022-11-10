@@ -60,10 +60,10 @@ func (s *Instance) Find(c *fi.Context) (*Instance, error) {
 	server := servers[0]
 
 	return &Instance{
-		Name:           fi.String(server.Name),
+		Name:           fi.PtrTo(server.Name),
 		Count:          len(servers),
-		Zone:           fi.String(server.Zone.String()),
-		CommercialType: fi.String(server.CommercialType),
+		Zone:           fi.PtrTo(server.Zone.String()),
+		CommercialType: fi.PtrTo(server.CommercialType),
 		Image:          s.Image,
 		Tags:           server.Tags,
 		UserData:       s.UserData,
@@ -78,7 +78,7 @@ func (s *Instance) Run(c *fi.Context) error {
 func (_ *Instance) RenderScw(c *fi.Context, actual, expected, changes *Instance) error {
 	cloud := c.Cloud.(scaleway.ScwCloud)
 	instanceService := cloud.InstanceService()
-	zone := scw.Zone(fi.StringValue(expected.Zone))
+	zone := scw.Zone(fi.ValueOf(expected.Zone))
 
 	userData, err := fi.ResourceAsBytes(*expected.UserData)
 	if err != nil {
@@ -99,13 +99,13 @@ func (_ *Instance) RenderScw(c *fi.Context, actual, expected, changes *Instance)
 		// We create the instance
 		srv, err := instanceService.CreateServer(&instance.CreateServerRequest{
 			Zone:           zone,
-			Name:           fi.StringValue(expected.Name),
-			CommercialType: fi.StringValue(expected.CommercialType),
-			Image:          fi.StringValue(expected.Image),
+			Name:           fi.ValueOf(expected.Name),
+			CommercialType: fi.ValueOf(expected.CommercialType),
+			Image:          fi.ValueOf(expected.Image),
 			Tags:           expected.Tags,
 		})
 		if err != nil {
-			return fmt.Errorf("error creating instance of group %q: %w", fi.StringValue(expected.Name), err)
+			return fmt.Errorf("error creating instance of group %q: %w", fi.ValueOf(expected.Name), err)
 		}
 
 		// We wait for the instance to be ready
@@ -114,7 +114,7 @@ func (_ *Instance) RenderScw(c *fi.Context, actual, expected, changes *Instance)
 			Zone:     zone,
 		})
 		if err != nil {
-			return fmt.Errorf("error waiting for instance %s of group %q: %w", srv.Server.ID, fi.StringValue(expected.Name), err)
+			return fmt.Errorf("error waiting for instance %s of group %q: %w", srv.Server.ID, fi.ValueOf(expected.Name), err)
 		}
 
 		// We load the cloud-init script in the instance user data
@@ -125,7 +125,7 @@ func (_ *Instance) RenderScw(c *fi.Context, actual, expected, changes *Instance)
 			Content:  bytes.NewBuffer(userData),
 		})
 		if err != nil {
-			return fmt.Errorf("error setting 'cloud-init' in user-data for instance %s of group %q: %w", srv.Server.ID, fi.StringValue(expected.Name), err)
+			return fmt.Errorf("error setting 'cloud-init' in user-data for instance %s of group %q: %w", srv.Server.ID, fi.ValueOf(expected.Name), err)
 		}
 
 		// We start the instance
@@ -135,7 +135,7 @@ func (_ *Instance) RenderScw(c *fi.Context, actual, expected, changes *Instance)
 			Action:   instance.ServerActionPoweron,
 		})
 		if err != nil {
-			return fmt.Errorf("error powering on instance %s of group %q: %w", srv.Server.ID, fi.StringValue(expected.Name), err)
+			return fmt.Errorf("error powering on instance %s of group %q: %w", srv.Server.ID, fi.ValueOf(expected.Name), err)
 		}
 
 		// We wait for the instance to be ready
@@ -144,22 +144,23 @@ func (_ *Instance) RenderScw(c *fi.Context, actual, expected, changes *Instance)
 			Zone:     zone,
 		})
 		if err != nil {
-			return fmt.Errorf("error waiting for instance %s of group %q: %w", srv.Server.ID, fi.StringValue(expected.Name), err)
+			return fmt.Errorf("error waiting for instance %s of group %q: %w", srv.Server.ID, fi.ValueOf(expected.Name), err)
 		}
 	}
 
 	// If newInstanceCount < 0, we need to delete instances of this group
-	for i := 0; i > expected.Count; i-- {
+	if newInstanceCount < 0 {
 
 		igInstances, err := cloud.GetClusterServers(cloud.ClusterName(actual.Tags), actual.Name)
 		if err != nil {
 			return fmt.Errorf("error deleting instance: %w", err)
 		}
 
-		for _, igInstance := range igInstances {
-			err = cloud.DeleteServer(igInstance)
+		for i := 0; i > newInstanceCount; i-- {
+			toDelete := igInstances[i*-1]
+			err = cloud.DeleteServer(toDelete)
 			if err != nil {
-				return fmt.Errorf("error deleting instance of group %s: %w", igInstance.Name, err)
+				return fmt.Errorf("error deleting instance of group %s: %w", toDelete.Name, err)
 			}
 		}
 	}

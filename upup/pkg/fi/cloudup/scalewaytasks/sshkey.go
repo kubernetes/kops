@@ -63,22 +63,20 @@ func (s *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
 	klog.V(2).Infof("found matching SSH key named %q", *s.Name)
 	k := keysResp.SSHKeys[0]
 	sshKey := &SSHKey{
-		ID:                 fi.String(k.ID),
-		Name:               fi.String(k.Name),
-		KeyPairFingerPrint: fi.String(k.Fingerprint),
+		ID:                 fi.PtrTo(k.ID),
+		Name:               fi.PtrTo(k.Name),
+		KeyPairFingerPrint: fi.PtrTo(k.Fingerprint),
+		Lifecycle:          s.Lifecycle,
 	}
 
 	// Avoid spurious changes
-	if strings.Contains(fi.StringValue(sshKey.KeyPairFingerPrint), fi.StringValue(s.KeyPairFingerPrint)) {
-		klog.V(2).Infof("SSH key fingerprints match; assuming public keys match")
-		sshKey.PublicKey = s.PublicKey
-		sshKey.KeyPairFingerPrint = s.KeyPairFingerPrint
-	} else {
-		klog.V(2).Infof("Computed SSH key fingerprint mismatch: %q %q", fi.StringValue(s.KeyPairFingerPrint), fi.StringValue(sshKey.KeyPairFingerPrint))
+	if !strings.Contains(fi.ValueOf(sshKey.KeyPairFingerPrint), fi.ValueOf(s.KeyPairFingerPrint)) {
+		return nil, fmt.Errorf("computed SSH key fingerprint mismatch: %q %q", fi.ValueOf(s.KeyPairFingerPrint), fi.ValueOf(sshKey.KeyPairFingerPrint))
 	}
 
-	// Ignore "system" fields
-	sshKey.Lifecycle = s.Lifecycle
+	klog.V(2).Infof("SSH key fingerprints match; assuming public keys match")
+	sshKey.PublicKey = s.PublicKey
+	sshKey.KeyPairFingerPrint = s.KeyPairFingerPrint
 
 	return sshKey, nil
 }
@@ -114,7 +112,7 @@ func (*SSHKey) RenderScw(c *fi.Context, actual, expected, changes *SSHKey) error
 
 	if actual == nil {
 
-		name := fi.StringValue(expected.Name)
+		name := fi.ValueOf(expected.Name)
 		if name == "" {
 			return fi.RequiredField("Name")
 		}
@@ -135,14 +133,11 @@ func (*SSHKey) RenderScw(c *fi.Context, actual, expected, changes *SSHKey) error
 		if err != nil {
 			return fmt.Errorf("error creating SSH keypair: %w", err)
 		}
-		expected.KeyPairFingerPrint = fi.String(key.Fingerprint)
+		expected.KeyPairFingerPrint = fi.PtrTo(key.Fingerprint)
 		klog.V(2).Infof("Created a new SSH keypair, id=%q fingerprint=%q", key.ID, key.Fingerprint)
 
 		return nil
 	}
-
-	expected.KeyPairFingerPrint = actual.KeyPairFingerPrint
-	klog.V(2).Infof("Using an existing SSH keypair, fingerprint=%q", fi.StringValue(expected.KeyPairFingerPrint))
 
 	return nil
 }

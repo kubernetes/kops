@@ -39,7 +39,7 @@ func (b *SSHKeyModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	sshKeyResource := fi.Resource(fi.NewStringResource(string(b.SSHPublicKeys[0])))
 
 	t := &scalewaytasks.SSHKey{
-		Name:      fi.String(name),
+		Name:      fi.PtrTo(name),
 		Lifecycle: b.Lifecycle,
 		PublicKey: &sshKeyResource,
 	}

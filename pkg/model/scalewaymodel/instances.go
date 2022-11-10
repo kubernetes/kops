@@ -18,8 +18,8 @@ package scalewaymodel
 
 import (
 	"fmt"
-	"os"
 
+	"github.com/scaleway/scaleway-sdk-go/scw"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
@@ -39,26 +39,29 @@ var _ fi.ModelBuilder = &InstanceModelBuilder{}
 func (d *InstanceModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	for _, ig := range d.InstanceGroups {
 		name := d.AutoscalingGroupName(ig)
-		zone := os.Getenv("SCW_DEFAULT_ZONE")
+		zone, err := scw.ParseZone(ig.Spec.Subnets[0])
+		if err != nil {
+			return fmt.Errorf("error building instance task for %q: %w", name, err)
+		}
+
+		userData, err := d.BootstrapScriptBuilder.ResourceNodeUp(c, ig)
+		if err != nil {
+			return fmt.Errorf("error building bootstrap script for %q: %w", name, err)
+		}
 
 		instance := scalewaytasks.Instance{
-			Count:          int(fi.Int32Value(ig.Spec.MinSize)),
-			Name:           fi.String(name),
+			Count:          int(fi.ValueOf(ig.Spec.MinSize)),
+			Name:           fi.PtrTo(name),
 			Lifecycle:      d.Lifecycle,
-			Zone:           fi.String(zone),
-			CommercialType: fi.String(ig.Spec.MachineType),
-			Image:          fi.String(ig.Spec.Image),
+			Zone:           fi.PtrTo(string(zone)),
+			CommercialType: fi.PtrTo(ig.Spec.MachineType),
+			Image:          fi.PtrTo(ig.Spec.Image),
+			UserData:       &userData,
 			Tags: []string{
 				scaleway.TagInstanceGroup + "=" + ig.Name,
 				scaleway.TagClusterName + "=" + d.Cluster.Name,
 			},
 		}
-
-		userData, err := d.BootstrapScriptBuilder.ResourceNodeUp(c, ig)
-		if err != nil {
-			return fmt.Errorf("error building instance task: %w", err)
-		}
-		instance.UserData = &userData
 
 		c.AddTask(&instance)
 	}
