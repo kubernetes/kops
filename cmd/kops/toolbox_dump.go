@@ -27,6 +27,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
+	"golang.org/x/crypto/ssh/agent"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
@@ -137,12 +138,17 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 		}
 		key, err := os.ReadFile(privateKeyPath)
 		if err != nil {
-			return fmt.Errorf("error reading private key %q: %v", privateKeyPath, err)
+			return fmt.Errorf("reading private key %q: %v", privateKeyPath, err)
 		}
 
-		signer, err := ssh.ParsePrivateKey(key)
+		parsedKey, err := ssh.ParseRawPrivateKey(key)
 		if err != nil {
-			return fmt.Errorf("error parsing private key %q: %v", privateKeyPath, err)
+			return fmt.Errorf("parsing private key %q: %v", privateKeyPath, err)
+		}
+
+		signer, err := ssh.NewSignerFromKey(parsedKey)
+		if err != nil {
+			return fmt.Errorf("creating signer for private key %q: %v", privateKeyPath, err)
 		}
 
 		contextName := cluster.ObjectMeta.Name
@@ -178,19 +184,32 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 			HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		}
 
-		dumper := dump.NewLogDumper(sshConfig, options.Dir)
+		keyRing := agent.NewKeyring()
+		defer func(keyRing agent.Agent) {
+			_ = keyRing.RemoveAll()
+		}(keyRing)
+		err = keyRing.Add(agent.AddedKey{
+			PrivateKey: parsedKey,
+		})
+		if err != nil {
+			return fmt.Errorf("adding key to SSH agent: %w", err)
+		}
+
+		dumper := dump.NewLogDumper(cluster.ObjectMeta.Name, sshConfig, keyRing, options.Dir)
 
 		var additionalIPs []string
+		var additionalPrivateIPs []string
 		for _, instance := range d.Instances {
 			if len(instance.PublicAddresses) != 0 {
 				additionalIPs = append(additionalIPs, instance.PublicAddresses[0])
-				continue
+			} else if len(instance.PrivateAddresses) != 0 {
+				additionalPrivateIPs = append(additionalPrivateIPs, instance.PrivateAddresses[0])
+			} else {
+				klog.Warningf("no IP for instance %q", instance.Name)
 			}
-
-			klog.Warningf("no public IP for node %q", instance.Name)
 		}
 
-		if err := dumper.DumpAllNodes(ctx, nodes, additionalIPs); err != nil {
+		if err := dumper.DumpAllNodes(ctx, nodes, additionalIPs, additionalPrivateIPs); err != nil {
 			return fmt.Errorf("error dumping nodes: %v", err)
 		}
 	}
