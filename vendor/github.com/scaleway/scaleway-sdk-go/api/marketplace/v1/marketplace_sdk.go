@@ -55,14 +55,6 @@ type GetImageResponse struct {
 	Image *Image `json:"image"`
 }
 
-type GetServiceInfoResponse struct {
-	API string `json:"api"`
-
-	Description string `json:"description"`
-
-	Version string `json:"version"`
-}
-
 type GetVersionResponse struct {
 	Version *Version `json:"version"`
 }
@@ -86,6 +78,8 @@ type Image struct {
 	// ValidUntil: expiration date of this image
 	ValidUntil *time.Time `json:"valid_until"`
 	// Label: label of this image
+	//
+	// Typically an identifier for a distribution (ex. "ubuntu_focal").
 	Label string `json:"label"`
 	// Versions: list of versions of this image
 	Versions []*Version `json:"versions"`
@@ -110,6 +104,8 @@ type ListVersionsResponse struct {
 // LocalImage: local image
 type LocalImage struct {
 	// ID: UUID of this local image
+	//
+	// Version you will typically use to define an image in an API call.
 	ID string `json:"id"`
 	// CompatibleCommercialTypes: list of all commercial types that are compatible with this local image
 	CompatibleCommercialTypes []string `json:"compatible_commercial_types"`
@@ -140,27 +136,6 @@ type Version struct {
 }
 
 // Service API
-
-type GetServiceInfoRequest struct {
-}
-
-func (s *API) GetServiceInfo(req *GetServiceInfoRequest, opts ...scw.RequestOption) (*GetServiceInfoResponse, error) {
-	var err error
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "GET",
-		Path:    "/marketplace/v1",
-		Headers: http.Header{},
-	}
-
-	var resp GetServiceInfoResponse
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
 
 type ListImagesRequest struct {
 	// PerPage: a positive integer lower or equal to 100 to select the number of items to display

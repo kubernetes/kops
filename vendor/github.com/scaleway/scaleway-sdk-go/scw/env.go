@@ -21,6 +21,7 @@ const (
 	ScwDefaultProjectIDEnv      = "SCW_DEFAULT_PROJECT_ID"
 	ScwDefaultRegionEnv         = "SCW_DEFAULT_REGION"
 	ScwDefaultZoneEnv           = "SCW_DEFAULT_ZONE"
+	ScwEnableBeta               = "SCW_ENABLE_BETA"
 	DebugEnv                    = logger.DebugEnv
 
 	// All deprecated (cli&terraform)

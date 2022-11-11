@@ -24,6 +24,8 @@ type ScalewayRequest struct {
 	ctx      context.Context
 	auth     auth.Auth
 	allPages bool
+	zones    []Zone
+	regions  []Region
 }
 
 // getAllHeaders constructs a http.Header object and aggregates all headers into the object.
@@ -101,4 +103,20 @@ func (req *ScalewayRequest) apply(opts []RequestOption) {
 func (req *ScalewayRequest) validate() error {
 	// nothing so far
 	return nil
+}
+
+func (req *ScalewayRequest) clone() *ScalewayRequest {
+	clonedReq := &ScalewayRequest{
+		Method:   req.Method,
+		Path:     req.Path,
+		Headers:  req.Headers.Clone(),
+		ctx:      req.ctx,
+		auth:     req.auth,
+		allPages: req.allPages,
+		zones:    req.zones,
+	}
+	if req.Query != nil {
+		clonedReq.Query = url.Values(http.Header(req.Query).Clone())
+	}
+	return clonedReq
 }

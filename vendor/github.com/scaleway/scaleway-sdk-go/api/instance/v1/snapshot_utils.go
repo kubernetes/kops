@@ -59,7 +59,8 @@ func (s *API) WaitForSnapshot(req *WaitForSnapshotRequest, opts ...scw.RequestOp
 type UpdateSnapshotRequest struct {
 	Zone       scw.Zone
 	SnapshotID string
-	Name       *string `json:"name,omitempty"`
+	Name       *string   `json:"name,omitempty"`
+	Tags       *[]string `json:"tags,omitempty"`
 }
 
 type UpdateSnapshotResponse struct {
@@ -104,6 +105,10 @@ func (s *API) UpdateSnapshot(req *UpdateSnapshotRequest, opts ...scw.RequestOpti
 	// Override the values that need to be updated
 	if req.Name != nil {
 		setRequest.Name = *req.Name
+	}
+
+	if req.Tags != nil {
+		setRequest.Tags = req.Tags
 	}
 
 	setRes, err := s.setSnapshot(setRequest, opts...)

@@ -18,6 +18,7 @@ package retry
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/google/go-containerregistry/internal/retry/wait"
@@ -36,7 +37,7 @@ type temporary interface {
 
 // IsTemporary returns true if err implements Temporary() and it returns true.
 func IsTemporary(err error) bool {
-	if err == context.DeadlineExceeded {
+	if errors.Is(err, context.DeadlineExceeded) {
 		return false
 	}
 	if te, ok := err.(temporary); ok && te.Temporary() {

@@ -2,6 +2,7 @@ package parameter
 
 import (
 	"fmt"
+	"net"
 	"net/url"
 	"reflect"
 	"time"
@@ -21,6 +22,8 @@ func AddToQuery(query url.Values, key string, value interface{}) {
 
 	elemType := elemValue.Type()
 	switch {
+	case elemType == reflect.TypeOf(net.IP{}):
+		query.Add(key, value.(*net.IP).String())
 	case elemType.Kind() == reflect.Slice:
 		for i := 0; i < elemValue.Len(); i++ {
 			query.Add(key, fmt.Sprint(elemValue.Index(i).Interface()))
