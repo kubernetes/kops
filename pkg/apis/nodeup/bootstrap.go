@@ -35,7 +35,7 @@ type BootstrapRequest struct {
 // BootstrapResponse is a response to a BootstrapRequest.
 type BootstrapResponse struct {
 	// Certs are the issued certificates.
-	Certs map[string]string
+	Certs map[string]string `json:"Certs,omitempty"`
 
 	// NodeConfig contains the node configuration, if IncludeNodeConfig is set.
 	NodeConfig *NodeConfig `json:"nodeConfig,omitempty"`
@@ -48,6 +48,9 @@ type NodeConfig struct {
 
 	// NodeupConfig holds the nodeup.Config for the node's instance group.
 	NodeupConfig string `json:"nodeupConfig,omitempty"`
+
+	// NodeSecrets holds the secrets for the node (like `dockerconfig`).
+	NodeSecrets map[string][]byte `json:"nodeSecrets,omitempty"`
 }
 
 // NodeConfigCertificate holds a certificate that the node needs to boot.

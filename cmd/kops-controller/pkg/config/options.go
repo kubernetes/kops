@@ -25,6 +25,7 @@ import (
 type Options struct {
 	Cloud                 string         `json:"cloud,omitempty"`
 	ConfigBase            string         `json:"configBase,omitempty"`
+	SecretStore           string         `json:"secretStore,omitempty"`
 	Server                *ServerOptions `json:"server,omitempty"`
 	CacheNodeidentityInfo bool           `json:"cacheNodeidentityInfo,omitempty"`
 
