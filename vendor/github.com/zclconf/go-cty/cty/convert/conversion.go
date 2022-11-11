@@ -43,14 +43,14 @@ func getConversion(in cty.Type, out cty.Type, unsafe bool) conversion {
 			out = out.WithoutOptionalAttributesDeep()
 
 			if !isKnown {
-				return cty.UnknownVal(out), nil
+				return cty.UnknownVal(dynamicReplace(in.Type(), out)), nil
 			}
 
 			if isNull {
 				// We'll pass through nulls, albeit type converted, and let
 				// the caller deal with whatever handling they want to do in
 				// case null values are considered valid in some applications.
-				return cty.NullVal(out), nil
+				return cty.NullVal(dynamicReplace(in.Type(), out)), nil
 			}
 		}
 

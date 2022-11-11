@@ -346,7 +346,7 @@ func (e *QuotasExceededError) IsScwSdkError() {}
 func (e *QuotasExceededError) Error() string {
 	invalidArgs := make([]string, len(e.Details))
 	for i, d := range e.Details {
-		invalidArgs[i] = fmt.Sprintf("%s has reached its quota (%d/%d)", d.Resource, d.Current, d.Current)
+		invalidArgs[i] = fmt.Sprintf("%s has reached its quota (%d/%d)", d.Resource, d.Current, d.Quota)
 	}
 
 	return "scaleway-sdk-go: quota exceeded(s): " + strings.Join(invalidArgs, "; ")
@@ -525,7 +525,7 @@ func (r DeniedAuthenticationError) IsScwSdkError() {}
 
 // PreconditionFailedError implements the SdkError interface
 type PreconditionFailedError struct {
-	Precondition string `json:"method"`
+	Precondition string `json:"precondition"`
 	HelpMessage  string `json:"help_message"`
 
 	RawBody json.RawMessage `json:"-"`

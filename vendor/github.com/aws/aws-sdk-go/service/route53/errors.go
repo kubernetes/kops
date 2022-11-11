@@ -192,6 +192,10 @@ const (
 	//    * The Key management service (KMS) key you specified doesn’t exist or
 	//    it can’t be used with the log group associated with query log. Update
 	//    or provide a resource policy to grant permissions for the KMS key.
+	//
+	//    * The Key management service (KMS) key you specified is marked as disabled
+	//    for the log group associated with query log. Update or provide a resource
+	//    policy to grant permissions for the KMS key.
 	ErrCodeInsufficientCloudWatchLogsResourcePolicy = "InsufficientCloudWatchLogsResourcePolicy"
 
 	// ErrCodeInvalidArgument for service response error code

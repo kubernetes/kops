@@ -3,7 +3,9 @@ package instance
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/scaleway/scaleway-sdk-go/internal/async"
 	"sync"
+	"time"
 
 	"github.com/scaleway/scaleway-sdk-go/internal/errors"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -329,4 +331,101 @@ func (v *NullableStringValue) MarshalJSON() ([]byte, error) {
 		return []byte("null"), nil
 	}
 	return json.Marshal(v.Value)
+}
+
+// WaitForPrivateNICRequest is used by WaitForPrivateNIC method.
+type WaitForPrivateNICRequest struct {
+	ServerID      string
+	PrivateNicID  string
+	Zone          scw.Zone
+	Timeout       *time.Duration
+	RetryInterval *time.Duration
+}
+
+// WaitForPrivateNIC wait for the private network to be in a "terminal state" before returning.
+// This function can be used to wait for the private network to be attached for example.
+func (s *API) WaitForPrivateNIC(req *WaitForPrivateNICRequest, opts ...scw.RequestOption) (*PrivateNIC, error) {
+	timeout := defaultTimeout
+	if req.Timeout != nil {
+		timeout = *req.Timeout
+	}
+	retryInterval := defaultRetryInterval
+	if req.RetryInterval != nil {
+		retryInterval = *req.RetryInterval
+	}
+
+	terminalStatus := map[PrivateNICState]struct{}{
+		PrivateNICStateAvailable:    {},
+		PrivateNICStateSyncingError: {},
+	}
+
+	pn, err := async.WaitSync(&async.WaitSyncConfig{
+		Get: func() (interface{}, bool, error) {
+			res, err := s.GetPrivateNIC(&GetPrivateNICRequest{
+				ServerID:     req.ServerID,
+				Zone:         req.Zone,
+				PrivateNicID: req.PrivateNicID,
+			}, opts...)
+
+			if err != nil {
+				return nil, false, err
+			}
+			_, isTerminal := terminalStatus[res.PrivateNic.State]
+
+			return res.PrivateNic, isTerminal, err
+		},
+		Timeout:          timeout,
+		IntervalStrategy: async.LinearIntervalStrategy(retryInterval),
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "waiting for server failed")
+	}
+	return pn.(*PrivateNIC), nil
+}
+
+// WaitForMACAddressRequest is used by WaitForMACAddress method.
+type WaitForMACAddressRequest struct {
+	ServerID      string
+	PrivateNicID  string
+	Zone          scw.Zone
+	Timeout       *time.Duration
+	RetryInterval *time.Duration
+}
+
+// WaitForMACAddress wait for the MAC address be assigned on instance before returning.
+// This function can be used to wait for the private network to be attached for example.
+func (s *API) WaitForMACAddress(req *WaitForMACAddressRequest, opts ...scw.RequestOption) (*PrivateNIC, error) {
+	timeout := defaultTimeout
+	if req.Timeout != nil {
+		timeout = *req.Timeout
+	}
+	retryInterval := defaultRetryInterval
+	if req.RetryInterval != nil {
+		retryInterval = *req.RetryInterval
+	}
+
+	pn, err := async.WaitSync(&async.WaitSyncConfig{
+		Get: func() (interface{}, bool, error) {
+			res, err := s.GetPrivateNIC(&GetPrivateNICRequest{
+				ServerID:     req.ServerID,
+				Zone:         req.Zone,
+				PrivateNicID: req.PrivateNicID,
+			}, opts...)
+			if err != nil {
+				return nil, false, err
+			}
+
+			if len(res.PrivateNic.MacAddress) > 0 {
+				return res.PrivateNic, true, err
+			}
+
+			return res.PrivateNic, false, err
+		},
+		Timeout:          timeout,
+		IntervalStrategy: async.LinearIntervalStrategy(retryInterval),
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "waiting for server failed")
+	}
+	return pn.(*PrivateNIC), nil
 }
