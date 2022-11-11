@@ -224,6 +224,10 @@ type EC2API interface {
 	CancelExportTaskWithContext(aws.Context, *ec2.CancelExportTaskInput, ...request.Option) (*ec2.CancelExportTaskOutput, error)
 	CancelExportTaskRequest(*ec2.CancelExportTaskInput) (*request.Request, *ec2.CancelExportTaskOutput)
 
+	CancelImageLaunchPermission(*ec2.CancelImageLaunchPermissionInput) (*ec2.CancelImageLaunchPermissionOutput, error)
+	CancelImageLaunchPermissionWithContext(aws.Context, *ec2.CancelImageLaunchPermissionInput, ...request.Option) (*ec2.CancelImageLaunchPermissionOutput, error)
+	CancelImageLaunchPermissionRequest(*ec2.CancelImageLaunchPermissionInput) (*request.Request, *ec2.CancelImageLaunchPermissionOutput)
+
 	CancelImportTask(*ec2.CancelImportTaskInput) (*ec2.CancelImportTaskOutput, error)
 	CancelImportTaskWithContext(aws.Context, *ec2.CancelImportTaskInput, ...request.Option) (*ec2.CancelImportTaskOutput, error)
 	CancelImportTaskRequest(*ec2.CancelImportTaskInput) (*request.Request, *ec2.CancelImportTaskOutput)

@@ -458,13 +458,34 @@ func (c *ServerClient) Create(ctx context.Context, opts ServerCreateOpts) (Serve
 	return result, resp, nil
 }
 
+// ServerDeleteResult is the result of a delete server call.
+type ServerDeleteResult struct {
+	Action *Action
+}
+
 // Delete deletes a server.
+// This method is deprecated, use ServerClient.DeleteWithResult instead.
 func (c *ServerClient) Delete(ctx context.Context, server *Server) (*Response, error) {
+	_, resp, err := c.DeleteWithResult(ctx, server)
+	return resp, err
+}
+
+// Delete deletes a server and returns the parsed response containing the action.
+func (c *ServerClient) DeleteWithResult(ctx context.Context, server *Server) (*ServerDeleteResult, *Response, error) {
 	req, err := c.client.NewRequest(ctx, "DELETE", fmt.Sprintf("/servers/%d", server.ID), nil)
 	if err != nil {
-		return nil, err
+		return &ServerDeleteResult{}, nil, err
 	}
-	return c.client.Do(req, nil)
+
+	var respBody schema.ServerDeleteResponse
+	resp, err := c.client.Do(req, &respBody)
+	if err != nil {
+		return &ServerDeleteResult{}, resp, err
+	}
+
+	return &ServerDeleteResult{
+		Action: ActionFromSchema(respBody.Action),
+	}, resp, nil
 }
 
 // ServerUpdateOpts specifies options for updating a server.
