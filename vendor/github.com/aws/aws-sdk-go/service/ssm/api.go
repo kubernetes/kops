@@ -54061,6 +54061,9 @@ type StepExecution struct {
 	// The timeout seconds of the step.
 	TimeoutSeconds *int64 `type:"long"`
 
+	// The CloudWatch alarms that were invoked by the automation.
+	TriggeredAlarms []*AlarmStateInformation `min:"1" type:"list"`
+
 	// Strategies used when step fails, we support Continue and Abort. Abort will
 	// fail the automation when the step fails. Continue will ignore the failure
 	// of current step and allow automation to run the next step. With conditional
@@ -54210,6 +54213,12 @@ func (s *StepExecution) SetTargets(v []*Target) *StepExecution {
 // SetTimeoutSeconds sets the TimeoutSeconds field's value.
 func (s *StepExecution) SetTimeoutSeconds(v int64) *StepExecution {
 	s.TimeoutSeconds = &v
+	return s
+}
+
+// SetTriggeredAlarms sets the TriggeredAlarms field's value.
+func (s *StepExecution) SetTriggeredAlarms(v []*AlarmStateInformation) *StepExecution {
+	s.TriggeredAlarms = v
 	return s
 }
 
@@ -54690,6 +54699,10 @@ type TargetLocation struct {
 	// The Amazon Web Services Regions targeted by the current Automation execution.
 	Regions []*string `min:"1" type:"list"`
 
+	// The details for the CloudWatch alarm you want to apply to an automation or
+	// command.
+	TargetLocationAlarmConfiguration *AlarmConfiguration `type:"structure"`
+
 	// The maximum number of Amazon Web Services Regions and Amazon Web Services
 	// accounts allowed to run the Automation concurrently.
 	TargetLocationMaxConcurrency *string `min:"1" type:"string"`
@@ -54735,6 +54748,11 @@ func (s *TargetLocation) Validate() error {
 	if s.TargetLocationMaxErrors != nil && len(*s.TargetLocationMaxErrors) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("TargetLocationMaxErrors", 1))
 	}
+	if s.TargetLocationAlarmConfiguration != nil {
+		if err := s.TargetLocationAlarmConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("TargetLocationAlarmConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -54757,6 +54775,12 @@ func (s *TargetLocation) SetExecutionRoleName(v string) *TargetLocation {
 // SetRegions sets the Regions field's value.
 func (s *TargetLocation) SetRegions(v []*string) *TargetLocation {
 	s.Regions = v
+	return s
+}
+
+// SetTargetLocationAlarmConfiguration sets the TargetLocationAlarmConfiguration field's value.
+func (s *TargetLocation) SetTargetLocationAlarmConfiguration(v *AlarmConfiguration) *TargetLocation {
+	s.TargetLocationAlarmConfiguration = v
 	return s
 }
 

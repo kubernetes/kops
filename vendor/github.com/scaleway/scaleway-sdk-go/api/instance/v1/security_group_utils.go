@@ -20,6 +20,7 @@ type UpdateSecurityGroupRequest struct {
 	OrganizationDefault   *bool                `json:"organization_default,omitempty"`
 	ProjectDefault        *bool                `json:"project_default,omitempty"`
 	EnableDefaultSecurity *bool                `json:"enable_default_security,omitempty"`
+	Tags                  *[]string            `json:"tags,omitempty"`
 }
 
 type UpdateSecurityGroupResponse struct {
@@ -86,13 +87,16 @@ func (s *API) UpdateSecurityGroup(req *UpdateSecurityGroupRequest, opts ...scw.R
 		setRequest.Stateful = *req.Stateful
 	}
 	if req.OrganizationDefault != nil {
-		setRequest.OrganizationDefault = *req.OrganizationDefault
+		setRequest.OrganizationDefault = req.OrganizationDefault
 	}
 	if req.ProjectDefault != nil {
 		setRequest.ProjectDefault = *req.ProjectDefault
 	}
 	if req.EnableDefaultSecurity != nil {
 		setRequest.EnableDefaultSecurity = *req.EnableDefaultSecurity
+	}
+	if req.Tags != nil {
+		setRequest.Tags = req.Tags
 	}
 
 	setRes, err := s.setSecurityGroup(setRequest, opts...)
