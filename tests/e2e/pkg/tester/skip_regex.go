@@ -19,6 +19,7 @@ package tester
 import (
 	"regexp"
 
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -114,6 +115,10 @@ func (t *Tester) setSkipRegexFlag() error {
 
 	if cluster.Spec.CloudConfig != nil && cluster.Spec.CloudConfig.AWSEBSCSIDriver != nil && fi.BoolValue(cluster.Spec.CloudConfig.AWSEBSCSIDriver.Enabled) {
 		skipRegex += "|In-tree.Volumes.\\[Driver:.aws\\]"
+	}
+
+	if cluster.Spec.Topology != nil && cluster.Spec.Topology.Nodes == kops.TopologyPrivate {
+		skipRegex += "|SSH.should.SSH.to.all.nodes.and.run.commands"
 	}
 
 	// Ensure it is valid regex
