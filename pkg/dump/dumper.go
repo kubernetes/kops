@@ -198,7 +198,7 @@ func (d *logDumper) dumpNode(ctx context.Context, name string, ip string, useBas
 
 	n, err := d.connectToNode(ctx, name, ip, useBastion)
 	if err != nil {
-		return fmt.Errorf("could not connect: %v", err)
+		return fmt.Errorf("connecting: %w", err)
 	}
 
 	// As long as we connect to the node we will not return an error;
@@ -414,12 +414,6 @@ func (s *sshClientImplementation) ExecPiped(ctx context.Context, cmd string, std
 		session.Stderr = stderr
 
 		if s.forwardTo != "" {
-			err = agent.RequestAgentForwarding(session)
-			if err != nil {
-				finished <- fmt.Errorf("requesting agent forwarding: %w", err)
-				return
-			}
-
 			cmd = fmt.Sprintf("ssh -o 'StrictHostKeyChecking no' %s %s", quoteShell(s.forwardTo), quoteShell(cmd))
 		}
 
@@ -508,6 +502,22 @@ func (f *sshClientFactoryImplementation) Dial(ctx context.Context, host string, 
 				}
 			}
 		}
+
+		if err == nil && useBastion {
+			session, err := client.NewSession()
+			if err != nil {
+				finished <- fmt.Errorf("creating ssh session: %w", err)
+				return
+			}
+			defer session.Close()
+
+			err = agent.RequestAgentForwarding(session)
+			if err != nil {
+				finished <- fmt.Errorf("requesting agent forwarding: %w", err)
+				return
+			}
+		}
+
 		finished <- err
 	}()
 
