@@ -190,7 +190,7 @@ func conversionTupleToSet(tupleType cty.Type, setEty cty.Type, unsafe bool) conv
 	if len(tupleEtys) == 0 {
 		// Empty tuple short-circuit
 		return func(val cty.Value, path cty.Path) (cty.Value, error) {
-			return cty.SetValEmpty(setEty), nil
+			return cty.SetValEmpty(setEty.WithoutOptionalAttributesDeep()), nil
 		}
 	}
 
@@ -280,7 +280,7 @@ func conversionTupleToList(tupleType cty.Type, listEty cty.Type, unsafe bool) co
 	if len(tupleEtys) == 0 {
 		// Empty tuple short-circuit
 		return func(val cty.Value, path cty.Path) (cty.Value, error) {
-			return cty.ListValEmpty(listEty), nil
+			return cty.ListValEmpty(listEty.WithoutOptionalAttributesDeep()), nil
 		}
 	}
 
@@ -372,7 +372,7 @@ func conversionObjectToMap(objectType cty.Type, mapEty cty.Type, unsafe bool) co
 	if len(objectAtys) == 0 {
 		// Empty object short-circuit
 		return func(val cty.Value, path cty.Path) (cty.Value, error) {
-			return cty.MapValEmpty(mapEty), nil
+			return cty.MapValEmpty(mapEty.WithoutOptionalAttributesDeep()), nil
 		}
 	}
 

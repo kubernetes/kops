@@ -84,7 +84,7 @@ Comments serve as program documentation and come in two forms:
   sequence, and may have any characters within except the ending sequence.
   An inline comments is considered equivalent to a whitespace sequence.
 
-Comments and whitespace cannot begin within within other comments, or within
+Comments and whitespace cannot begin within other comments, or within
 template literals except inside an interpolation sequence or template directive.
 
 ### Identifiers

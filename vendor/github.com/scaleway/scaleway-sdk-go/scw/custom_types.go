@@ -2,6 +2,7 @@ package scw
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -337,4 +338,82 @@ func splitFloatString(input string) (units int64, nanos int32, err error) {
 	}
 
 	return units, nanos, nil
+}
+
+// JSONObject represent any JSON object. See struct.proto.
+// It will be marshaled into a json string.
+// This type can be used just like any other map.
+//
+//	Example:
+//
+//	values := scw.JSONValue{
+//		"Foo": "Bar",
+//	}
+//	values["Baz"] = "Qux"
+type JSONObject map[string]interface{}
+
+// EscapeMode is the mode that should be use for escaping a value
+type EscapeMode uint
+
+// The modes for escaping a value before it is marshaled, and unmarshalled.
+const (
+	NoEscape EscapeMode = iota
+	Base64Escape
+	QuotedEscape
+)
+
+// DecodeJSONObject will attempt to decode the string input as a JSONValue.
+// Optionally decoding base64 the value first before JSON unmarshalling.
+//
+// Will panic if the escape mode is unknown.
+func DecodeJSONObject(v string, escape EscapeMode) (JSONObject, error) {
+	var b []byte
+	var err error
+
+	switch escape {
+	case NoEscape:
+		b = []byte(v)
+	case Base64Escape:
+		b, err = base64.StdEncoding.DecodeString(v)
+	case QuotedEscape:
+		var u string
+		u, err = strconv.Unquote(v)
+		b = []byte(u)
+	default:
+		panic(fmt.Sprintf("DecodeJSONObject called with unknown EscapeMode, %v", escape))
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	m := JSONObject{}
+	err = json.Unmarshal(b, &m)
+	if err != nil {
+		return nil, err
+	}
+
+	return m, nil
+}
+
+// EncodeJSONObject marshals the value into a JSON string, and optionally base64
+// encodes the string before returning it.
+//
+// Will panic if the escape mode is unknown.
+func EncodeJSONObject(v JSONObject, escape EscapeMode) (string, error) {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return "", err
+	}
+
+	switch escape {
+	case NoEscape:
+		return string(b), nil
+	case Base64Escape:
+		return base64.StdEncoding.EncodeToString(b), nil
+	case QuotedEscape:
+		return strconv.Quote(string(b)), nil
+	}
+
+	panic(fmt.Sprintf("EncodeJSONObject called with unknown EscapeMode, %v", escape))
 }
