@@ -153,11 +153,12 @@ type NewClusterOptions struct {
 	// InstanceManager specifies which manager to use for managing instances.
 	InstanceManager string
 
-	Image       string
-	NodeImage   string
-	MasterImage string
-	MasterSize  string
-	NodeSize    string
+	Image        string
+	NodeImage    string
+	MasterImage  string
+	BastionImage string
+	MasterSize   string
+	NodeSize     string
 }
 
 func (o *NewClusterOptions) InitDefaults() {
@@ -1125,7 +1126,6 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 		cluster.Spec.Topology = &api.TopologySpec{
 			ControlPlane: api.TopologyPublic,
 			Nodes:        api.TopologyPublic,
-			// Bastion: &api.BastionSpec{Enable: c.Bastion},
 		}
 
 		if opt.Bastion {
@@ -1248,6 +1248,7 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 				}
 			}
 
+			bastionGroup.Spec.Image = opt.BastionImage
 		}
 
 	default:
