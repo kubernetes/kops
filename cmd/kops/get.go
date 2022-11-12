@@ -20,36 +20,14 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"os"
 
 	"github.com/spf13/cobra"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/cmd/kops/util"
-	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kubectl/pkg/util/i18n"
-	"k8s.io/kubectl/pkg/util/templates"
-)
-
-var (
-	getLong = templates.LongDesc(i18n.T(`
-	Display one or many resources.` + validResources))
-
-	getExample = templates.Examples(i18n.T(`
-	# Get a cluster and its instance groups
-	kops get k8s-cluster.example.com
-
-	# Get a cluster and its instancegroups' YAML desired configuration
-	kops get k8s-cluster.example.com -o yaml
-
-	# Save a cluster and its instancegroups' desired configuration to YAML file
-	kops get k8s-cluster.example.com -o yaml > cluster-desired-config.yaml
-	`))
-
-	getShort = i18n.T(`Get one or many resources.`)
 )
 
 type GetOptions struct {
@@ -69,13 +47,10 @@ func NewCmdGet(f *util.Factory, out io.Writer) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:               "get",
-		SuggestFor:        []string{"list"},
-		Short:             getShort,
-		Long:              getLong,
-		Example:           getExample,
-		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
-		ValidArgsFunction: commandutils.CompleteClusterName(f, true, false),
+		Use:        "get",
+		SuggestFor: []string{"list"},
+		Short:      i18n.T(`Get one or many resources.`),
+		Args:       rootCommand.clusterNameArgs(&options.ClusterName),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return RunGet(context.TODO(), f, out, options)
 		},
@@ -87,6 +62,7 @@ func NewCmdGet(f *util.Factory, out io.Writer) *cobra.Command {
 	})
 
 	// create subcommands
+	cmd.AddCommand(NewCmdGetAll(f, out, options))
 	cmd.AddCommand(NewCmdGetAssets(f, out, options))
 	cmd.AddCommand(NewCmdGetCluster(f, out, options))
 	cmd.AddCommand(NewCmdGetInstanceGroups(f, out, options))
@@ -99,94 +75,8 @@ func NewCmdGet(f *util.Factory, out io.Writer) *cobra.Command {
 }
 
 func RunGet(ctx context.Context, f commandutils.Factory, out io.Writer, options *GetOptions) error {
-	client, err := f.KopsClient()
-	if err != nil {
-		return err
-	}
-
-	cluster, err := client.GetCluster(ctx, options.ClusterName)
-	if err != nil {
-		return err
-	}
-
-	if cluster == nil {
-		return fmt.Errorf("No cluster found")
-	}
-
-	igList, err := client.InstanceGroupsFor(cluster).List(ctx, metav1.ListOptions{})
-	if err != nil {
-		return err
-	}
-
-	if igList == nil || igList.Items == nil || len(igList.Items) == 0 {
-		fmt.Fprintf(os.Stderr, "No instance groups found\n")
-	}
-
-	var instancegroups []*api.InstanceGroup
-	for i := range igList.Items {
-		instancegroups = append(instancegroups, &igList.Items[i])
-	}
-
-	var addonObjects []*unstructured.Unstructured
-	{
-		addons, err := client.AddonsFor(cluster).List()
-		if err != nil {
-			return err
-		}
-		for _, addon := range addons {
-			addonObjects = append(addonObjects, addon.ToUnstructured())
-		}
-	}
-
-	var allObjects []runtime.Object
-	if options.Output != OutputTable {
-		allObjects = append(allObjects, cluster)
-		for _, group := range instancegroups {
-			allObjects = append(allObjects, group)
-		}
-		for _, additionalObject := range addonObjects {
-			allObjects = append(allObjects, additionalObject)
-		}
-	}
-
-	switch options.Output {
-	case OutputYaml:
-		if err := fullOutputYAML(out, allObjects...); err != nil {
-			return fmt.Errorf("error writing yaml to stdout: %v", err)
-		}
-
-		return nil
-
-	case OutputJSON:
-		if err := fullOutputJSON(out, false, allObjects...); err != nil {
-			return fmt.Errorf("error writing json to stdout: %v", err)
-		}
-		return nil
-
-	case OutputTable:
-		fmt.Fprintf(out, "Cluster\n")
-		err = clusterOutputTable([]*api.Cluster{cluster}, out)
-		if err != nil {
-			return err
-		}
-		fmt.Fprintf(out, "\nInstance Groups\n")
-		err = igOutputTable(cluster, instancegroups, out)
-		if err != nil {
-			return err
-		}
-		if len(addonObjects) != 0 {
-			fmt.Fprintf(out, "\nAddon Objects\n")
-			err = addonsOutputTable(cluster, addonObjects, out)
-			if err != nil {
-				return err
-			}
-		}
-
-	default:
-		return fmt.Errorf("Unknown output format: %q", options.Output)
-	}
-
-	return nil
+	klog.Warning("`kops get [CLUSTER]` is deprecated: use `kops get all [CLUSTER]`")
+	return RunGetAll(ctx, f, out, &GetAllOptions{options})
 }
 
 func writeYAMLSep(out io.Writer) error {
