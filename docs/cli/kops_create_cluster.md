@@ -121,7 +121,7 @@ kops create cluster [CLUSTER] [flags]
       --ssh-public-key string            SSH public key to use
       --subnets strings                  Shared subnets to use
       --target string                    Valid targets: direct, terraform, cloudformation. Set this flag to terraform if you want kOps to generate terraform (default "direct")
-  -t, --topology string                  Network topology for the cluster: public or private (default "public")
+  -t, --topology string                  Network topology for the cluster: 'public' or 'private'. Defaults to 'public' for IPv4 clusters and 'private' for IPv6 clusters.
       --unset strings                    Directly unset values in the spec
       --utility-subnets strings          Shared utility subnets to use
   -y, --yes                              Specify --yes to immediately create the cluster
