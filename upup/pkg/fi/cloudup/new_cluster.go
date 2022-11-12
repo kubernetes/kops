@@ -136,7 +136,7 @@ type NewClusterOptions struct {
 
 	// Networking is the networking provider/node to use.
 	Networking string
-	// Topology is the network topology to use. Defaults to "public".
+	// Topology is the network topology to use. Defaults to "public" for IPv4 clusters and "private" for IPv6 clusters.
 	Topology string
 	// DNSType is the DNS type to use; "public" or "private". Defaults to "public".
 	DNSType string
@@ -166,7 +166,6 @@ func (o *NewClusterOptions) InitDefaults() {
 	o.Authorization = AuthorizationFlagRBAC
 	o.AdminAccess = []string{"0.0.0.0/0", "::/0"}
 	o.Networking = "cilium"
-	o.Topology = api.TopologyPublic
 	o.InstanceManager = "cloudgroups"
 }
 
@@ -1124,8 +1123,16 @@ func setupNetworking(opt *NewClusterOptions, cluster *api.Cluster) error {
 func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.String) ([]*api.InstanceGroup, error) {
 	var bastions []*api.InstanceGroup
 
+	if opt.Topology == "" {
+		if opt.IPv6 {
+			opt.Topology = kopsapi.TopologyPrivate
+		} else {
+			opt.Topology = kopsapi.TopologyPublic
+		}
+	}
+
 	switch opt.Topology {
-	case api.TopologyPublic, "":
+	case api.TopologyPublic:
 		cluster.Spec.Topology = &api.TopologySpec{
 			ControlPlane: api.TopologyPublic,
 			Nodes:        api.TopologyPublic,
