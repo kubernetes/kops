@@ -160,10 +160,18 @@ Ubuntu 20.04 is based on Kernel version **5.4** which fixes all the known major 
 Available images can be listed using:
 
 ```bash
+# Amazon Web Services (AWS)
 aws ec2 describe-images --region us-east-1 --output table \
   --owners 099720109477 \
   --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
   --filters "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-*"
+  
+# Google Cloud Platform (GCP)
+gcloud compute images list --filter ubuntu-2004-focal-v
+
+# Microsoft Azure
+az vm image list --all --output table \
+  --publisher Canonical --offer 0001-com-ubuntu-server-focal --sku 20_04-lts-gen2
 ```
 
 ### Ubuntu 22.04 (Jammy)
@@ -173,10 +181,18 @@ Ubuntu 22.04 is based on Kernel version **5.15** which fixes all the known major
 Available images can be listed using:
 
 ```bash
+# Amazon Web Services (AWS)
 aws ec2 describe-images --region us-east-1 --output table \
   --owners 099720109477 \
   --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
   --filters "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-*"
+
+# Google Cloud Platform (GCP)
+gcloud compute images list --filter ubuntu-2204-jammy-v
+
+# Microsoft Azure
+az vm image list --all --output table \
+  --publisher Canonical --offer 0001-com-ubuntu-server-jammy --sku 22_04-lts-gen2
 ```
 
 ## Deprecated Distros
