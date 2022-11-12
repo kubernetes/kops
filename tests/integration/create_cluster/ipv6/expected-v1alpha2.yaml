@@ -5,7 +5,9 @@ metadata:
   name: ipv6.example.com
 spec:
   api:
-    dns: {}
+    loadBalancer:
+      class: Network
+      type: Public
   authorization:
     rbac: {}
   channel: stable
@@ -45,16 +47,25 @@ spec:
   - 0.0.0.0/0
   - ::/0
   subnets:
-  - cidr: 172.20.32.0/19
-    ipv6CIDR: /64#0
+  - ipv6CIDR: /64#0
     name: us-test-1a
-    type: Public
+    type: Private
+    zone: us-test-1a
+  - cidr: 172.20.32.0/19
+    ipv6CIDR: /64#1
+    name: dualstack-us-test-1a
+    type: DualStack
+    zone: us-test-1a
+  - cidr: 172.20.0.0/22
+    ipv6CIDR: /64#2
+    name: utility-us-test-1a
+    type: Utility
     zone: us-test-1a
   topology:
     dns:
       type: Public
-    masters: public
-    nodes: public
+    masters: private
+    nodes: private
 
 ---
 
@@ -75,7 +86,7 @@ spec:
   minSize: 1
   role: Master
   subnets:
-  - us-test-1a
+  - dualstack-us-test-1a
 
 ---
 
