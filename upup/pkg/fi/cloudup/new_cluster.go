@@ -1062,7 +1062,7 @@ func setupAPIServers(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetM
 func setupNetworking(opt *NewClusterOptions, cluster *api.Cluster) error {
 	cluster.Spec.Networking = &api.NetworkingSpec{}
 	switch opt.Networking {
-	case "kubenet", "":
+	case "kubenet":
 		cluster.Spec.Networking.Kubenet = &api.KubenetNetworkingSpec{}
 	case "external":
 		cluster.Spec.Networking.External = &api.ExternalNetworkingSpec{}
@@ -1101,7 +1101,7 @@ func setupNetworking(opt *NewClusterOptions, cluster *api.Cluster) error {
 		cluster.Spec.KubeProxy.Enabled = &enabled
 	case "amazonvpc", "amazon-vpc-routed-eni":
 		cluster.Spec.Networking.AmazonVPC = &api.AmazonVPCNetworkingSpec{}
-	case "cilium":
+	case "cilium", "":
 		addCiliumNetwork(cluster)
 	case "cilium-etcd":
 		addCiliumNetwork(cluster)
