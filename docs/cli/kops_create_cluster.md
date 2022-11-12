@@ -71,6 +71,7 @@ kops create cluster [CLUSTER] [flags]
       --associate-public-ip              Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'.
       --authorization string             Authorization mode: AlwaysAllow or RBAC (default "RBAC")
       --bastion                          Enable a bastion instance group. Only applies to private topology.
+      --bastion-image string             Machine image for bastions. Takes precedence over --image
       --channel string                   Channel for default versions and configuration to use (default "stable")
       --cloud string                     Cloud provider to use - aws, digitalocean, gce, hetzner, openstack
       --cloud-labels string              A list of key/value pairs used to tag all instance groups (for example "Owner=John Doe,Team=Some Team").
