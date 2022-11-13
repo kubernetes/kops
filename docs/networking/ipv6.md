@@ -47,7 +47,7 @@ CNIs must not masquerade IPv6 addresses.
 
 ### Calico
 
-Running IPv6 with Calico requires a Debian 11, Ubuntu 22.04, or Flatcar based AMI.
+Running IPv6 with Calico requires a Ubuntu 22.04, Debian 11, or Flatcar based AMI.
 
 ## Future work
 
