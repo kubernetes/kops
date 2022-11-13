@@ -35,7 +35,7 @@ func (b *EtcHostsBuilder) Build(c *fi.ModelBuilderContext) error {
 		Name: "control-plane-address",
 	}
 
-	if b.IsMaster && b.Cluster.IsGossip() {
+	if b.IsMaster && (b.Cluster.IsGossip() || b.Cluster.UsesNoneDNS()) {
 		task.Records = append(task.Records, nodetasks.HostRecord{
 			Hostname:  b.Cluster.Spec.MasterInternalName,
 			Addresses: []string{"127.0.0.1"},
