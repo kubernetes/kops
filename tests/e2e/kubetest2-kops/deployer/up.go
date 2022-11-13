@@ -122,7 +122,11 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		args = append(args, "--yes")
 	}
 
+	isArm := false
 	if d.CreateArgs != "" {
+		if strings.Contains(d.CreateArgs, "arm64") {
+			isArm = true
+		}
 		createArgs, err := shlex.Split(d.CreateArgs)
 		if err != nil {
 			return err
@@ -139,7 +143,11 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 
 	switch d.CloudProvider {
 	case "aws":
-		args = appendIfUnset(args, "--master-size", "c5.large")
+		if isArm {
+			args = appendIfUnset(args, "--master-size", "c7g.large")
+		} else {
+			args = appendIfUnset(args, "--master-size", "c5.large")
+		}
 	case "gce":
 		args = appendIfUnset(args, "--master-size", "e2-standard-2")
 		if d.GCPProject != "" {
