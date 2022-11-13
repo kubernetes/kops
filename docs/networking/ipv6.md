@@ -2,7 +2,7 @@
 
 {{ kops_feature_table(kops_added_ff='1.23') }}
 
-kOps has experimental support for configuring clusters with IPv6-only pods and dual-stack nodes.
+kOps has experimental support for configuring clusters with IPv6-only pods and IPv6-only or dual-stack nodes.
 
 IPv6 mode is specified by setting `nonMasqueradeCIDR: "::/0"` in the cluster spec.
 The `--ipv6` flag of `kops create cluster` sets this field, among others.
@@ -47,7 +47,7 @@ CNIs must not masquerade IPv6 addresses.
 
 ### Calico
 
-Running IPv6 with Calico requires a Debian 11 or Ubuntu 22.04 based AMI.
+Running IPv6 with Calico requires a Ubuntu 22.04, Debian 11, or Flatcar based AMI.
 
 ## Future work
 
