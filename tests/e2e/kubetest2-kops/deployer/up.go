@@ -144,7 +144,7 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 	switch d.CloudProvider {
 	case "aws":
 		if isArm {
-			args = appendIfUnset(args, "--master-size", "c7g.large")
+			args = appendIfUnset(args, "--master-size", "c6g.large")
 		} else {
 			args = appendIfUnset(args, "--master-size", "c5.large")
 		}
