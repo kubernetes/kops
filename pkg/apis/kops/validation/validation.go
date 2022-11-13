@@ -294,8 +294,12 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 	}
 
 	if spec.Karpenter != nil && spec.Karpenter.Enabled {
+		fldPath := fieldPath.Child("karpenter", "enabled")
+		if !fi.BoolValue(spec.IAM.UseServiceAccountExternalPermissions) {
+			allErrs = append(allErrs, field.Forbidden(fldPath, "Karpenter requires that service accounts use external permissions"))
+		}
 		if !featureflag.Karpenter.Enabled() {
-			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("karpenter", "enabled"), "karpenter requires the Karpenter feature flag"))
+			allErrs = append(allErrs, field.Forbidden(fldPath, "karpenter requires the Karpenter feature flag"))
 		}
 	}
 
