@@ -38,7 +38,7 @@ func (b *KopsModelContext) SecurityGroupName(role kops.InstanceGroupRole) string
 		return "bastion." + b.ClusterName()
 	case kops.InstanceGroupRoleNode:
 		return "nodes." + b.ClusterName()
-	case kops.InstanceGroupRoleMaster, kops.InstanceGroupRoleAPIServer:
+	case kops.InstanceGroupRoleControlPlane, kops.InstanceGroupRoleAPIServer:
 		return "masters." + b.ClusterName()
 	default:
 		klog.Fatalf("unknown role: %v", role)
@@ -55,7 +55,7 @@ func (b *KopsModelContext) LinkToSecurityGroup(role kops.InstanceGroupRole) *aws
 // AutoscalingGroupName derives the autoscaling group name for us
 func (b *KopsModelContext) AutoscalingGroupName(ig *kops.InstanceGroup) string {
 	switch ig.Spec.Role {
-	case kops.InstanceGroupRoleMaster:
+	case kops.InstanceGroupRoleControlPlane:
 		// We need to keep this back-compatible, so we introduce the masters name,
 		// though the IG name suffices for uniqueness, and with sensible naming masters
 		// should be redundant...
@@ -143,7 +143,7 @@ func (b *KopsModelContext) NameForDNSZone() string {
 func (b *KopsModelContext) IAMName(role kops.InstanceGroupRole) string {
 	var rolename string
 	switch role {
-	case kops.InstanceGroupRoleMaster:
+	case kops.InstanceGroupRoleControlPlane:
 		rolename = "masters." + b.ClusterName()
 	case kops.InstanceGroupRoleAPIServer:
 		rolename = "apiservers." + b.ClusterName()

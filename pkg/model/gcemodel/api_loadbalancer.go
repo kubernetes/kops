@@ -92,7 +92,7 @@ func createPublicLB(b *APILoadBalancerBuilder, c *fi.ModelBuilderContext) error 
 			Lifecycle:    b.Lifecycle,
 			Network:      network,
 			SourceRanges: b.Cluster.Spec.API.Access,
-			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
+			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleControlPlane)},
 			Allowed:      []string{"tcp:443"},
 		})
 	}
@@ -113,7 +113,7 @@ func createInternalLB(b *APILoadBalancerBuilder, c *fi.ModelBuilderContext) erro
 	c.AddTask(hc)
 	var igms []*gcetasks.InstanceGroupManager
 	for _, ig := range b.InstanceGroups {
-		if ig.Spec.Role != kops.InstanceGroupRoleMaster {
+		if ig.Spec.Role != kops.InstanceGroupRoleControlPlane {
 			continue
 		}
 		if len(ig.Spec.Zones) > 1 {

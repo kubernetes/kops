@@ -63,7 +63,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	if err != nil {
 		return err
 	}
-	masterGroups, err := b.GetSecurityGroups(kops.InstanceGroupRoleMaster)
+	masterGroups, err := b.GetSecurityGroups(kops.InstanceGroupRoleControlPlane)
 	if err != nil {
 		return err
 	}

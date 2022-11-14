@@ -136,8 +136,8 @@ func (c *RollingUpdateCluster) rollingUpdateInstanceGroup(group *cloudinstances.
 		maxSurge = 0
 	}
 
-	if group.InstanceGroup.Spec.Role == api.InstanceGroupRoleMaster && maxSurge != 0 {
-		// Masters are incapable of surging because they rely on registering themselves through
+	if group.InstanceGroup.Spec.Role == api.InstanceGroupRoleControlPlane && maxSurge != 0 {
+		// Control plane nodes are incapable of surging because they rely on registering themselves through
 		// the local apiserver. That apiserver depends on the local etcd, which relies on being
 		// joined to the etcd cluster.
 		maxSurge = 0
@@ -556,7 +556,7 @@ func hasFailureRelevantToGroup(failures []*validation.ValidationError, group *cl
 		}
 
 		// if there is a failure in the same instance group or a failure which has cluster wide impact
-		if (failure.InstanceGroup.IsMaster()) || (failure.InstanceGroup == group.InstanceGroup) {
+		if (failure.InstanceGroup.IsControlPlane()) || (failure.InstanceGroup == group.InstanceGroup) {
 			return true
 		}
 	}
@@ -657,7 +657,7 @@ func (c *RollingUpdateCluster) drainNode(u *cloudinstances.CloudInstance) error 
 		if u.CloudInstanceGroup != nil && u.CloudInstanceGroup.InstanceGroup != nil {
 			role := u.CloudInstanceGroup.InstanceGroup.Spec.Role
 			switch role {
-			case api.InstanceGroupRoleAPIServer, api.InstanceGroupRoleMaster:
+			case api.InstanceGroupRoleAPIServer, api.InstanceGroupRoleControlPlane:
 				klog.Infof("skipping deregistration of instance %q, as part of instancegroup with role %q", u.ID, role)
 				shouldDeregister = false
 			}
@@ -703,7 +703,7 @@ func (c *RollingUpdateCluster) deleteNode(node *corev1.Node) error {
 // UpdateSingleInstance performs a rolling update on a single instance
 func (c *RollingUpdateCluster) UpdateSingleInstance(cloudMember *cloudinstances.CloudInstance, detach bool) error {
 	if detach {
-		if cloudMember.CloudInstanceGroup.InstanceGroup.IsMaster() {
+		if cloudMember.CloudInstanceGroup.InstanceGroup.IsControlPlane() {
 			klog.Warning("cannot detach master instances. Assuming --surge=false")
 		} else if cloudMember.CloudInstanceGroup.InstanceGroup.Spec.Manager != api.InstanceManagerKarpenter {
 			err := c.detachInstance(cloudMember)

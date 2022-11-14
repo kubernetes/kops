@@ -29,7 +29,7 @@ func matchInstanceGroup(name string, clusterName string, instancegroups []*kops.
 	for _, g := range instancegroups {
 		var groupName string
 		switch g.Spec.Role {
-		case kops.InstanceGroupRoleMaster:
+		case kops.InstanceGroupRoleControlPlane:
 			groupName = g.ObjectMeta.Name + ".masters." + clusterName
 		case kops.InstanceGroupRoleAPIServer:
 			groupName = g.ObjectMeta.Name + ".apiservers." + clusterName

@@ -326,7 +326,7 @@ func (c *MockAWSCloud) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngre
 // DefaultInstanceType determines an instance type for the specified cluster & instance group
 func (c *MockAWSCloud) DefaultInstanceType(cluster *kops.Cluster, ig *kops.InstanceGroup) (string, error) {
 	switch ig.Spec.Role {
-	case kops.InstanceGroupRoleMaster, kops.InstanceGroupRoleAPIServer:
+	case kops.InstanceGroupRoleControlPlane, kops.InstanceGroupRoleAPIServer:
 		return "m3.medium", nil
 	case kops.InstanceGroupRoleNode:
 		return "t2.medium", nil

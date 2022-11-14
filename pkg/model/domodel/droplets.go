@@ -69,7 +69,7 @@ func (d *DropletBuilder) Build(c *fi.ModelBuilderContext) error {
 			Tags:   []string{clusterTag},
 		}
 
-		if ig.IsMaster() {
+		if ig.IsControlPlane() {
 			masterIndexCount++
 			// create tag based on etcd name. etcd name is now prefixed with etcd-
 			// Ref: https://github.com/kubernetes/kops/commit/31f8cbd571964f19d3c31024ddba918998d29929

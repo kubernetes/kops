@@ -133,20 +133,24 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderC
 			}
 
 			switch ig.Spec.Role {
-			case kops.InstanceGroupRoleMaster:
+			case kops.InstanceGroupRoleControlPlane:
 				// Grant DNS permissions
 				// TODO: migrate to IAM permissions instead of oldschool scopes?
 				t.Scopes = append(t.Scopes, "https://www.googleapis.com/auth/ndev.clouddns.readwrite")
-				t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleMaster))
+				t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleControlPlane))
+				t.Tags = append(t.Tags, b.GCETagForRole("master"))
 
 			case kops.InstanceGroupRoleNode:
 				t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleNode))
 			}
-			roleLabel := gce.GceLabelNameRolePrefix + gce.EncodeGCELabel(strings.ToLower(string(ig.Spec.Role)))
+			roleLabel := gce.GceLabelNameRolePrefix + ig.Spec.Role.ToLowerString()
 			t.Labels = map[string]string{
 				gce.GceLabelNameKubernetesCluster: gce.SafeClusterName(b.ClusterName()),
 				roleLabel:                         "",
 				gce.GceLabelNameInstanceGroup:     ig.ObjectMeta.Name,
+			}
+			if ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
+				t.Labels[gce.GceLabelNameRolePrefix+"master"] = ""
 			}
 
 			if gce.UsesIPAliases(b.Cluster) {
@@ -273,7 +277,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			// Attach masters to load balancer if we're using one
 			switch ig.Spec.Role {
-			case kops.InstanceGroupRoleMaster:
+			case kops.InstanceGroupRoleControlPlane:
 				if b.UseLoadBalancerForAPI() {
 					lbSpec := b.Cluster.Spec.API.LoadBalancer
 					if lbSpec != nil {
