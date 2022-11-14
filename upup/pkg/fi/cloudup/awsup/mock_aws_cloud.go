@@ -339,7 +339,7 @@ func (c *MockAWSCloud) DefaultInstanceType(cluster *kops.Cluster, ig *kops.Insta
 // DescribeInstanceType calls ec2.DescribeInstanceType to get information for a particular instance type
 func (c *MockAWSCloud) DescribeInstanceType(instanceType string) (*ec2.InstanceTypeInfo, error) {
 	if instanceType == "t2.invalidType" {
-		return nil, fmt.Errorf("invalid instance type specified: t2.invalidType")
+		return nil, fmt.Errorf("invalid instance type %q specified", "t2.invalidType")
 	}
 	info := &ec2.InstanceTypeInfo{
 		NetworkInfo: &ec2.NetworkInfo{

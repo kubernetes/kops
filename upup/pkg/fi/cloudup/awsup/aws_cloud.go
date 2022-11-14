@@ -2387,10 +2387,10 @@ func describeInstanceType(c AWSCloud, instanceType string) (*ec2.InstanceTypeInf
 	}
 	resp, err := c.EC2().DescribeInstanceTypes(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("describing instance type %q in region %q: %w", instanceType, c.Region(), err)
 	}
 	if len(resp.InstanceTypes) != 1 {
-		return nil, fmt.Errorf("invalid instance type specified: %v", instanceType)
+		return nil, fmt.Errorf("instance type %q not found in region %q", instanceType, c.Region())
 	}
 	return resp.InstanceTypes[0], nil
 }
