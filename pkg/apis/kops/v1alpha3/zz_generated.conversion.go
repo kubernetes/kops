@@ -1331,6 +1331,7 @@ func autoConvert_v1alpha3_AWSEBSCSIDriver_To_kops_AWSEBSCSIDriver(in *AWSEBSCSID
 	out.Version = in.Version
 	out.VolumeAttachLimit = in.VolumeAttachLimit
 	out.PodAnnotations = in.PodAnnotations
+	out.ExtraVolumeTags = in.ExtraVolumeTags
 	return nil
 }
 
@@ -1345,6 +1346,7 @@ func autoConvert_kops_AWSEBSCSIDriver_To_v1alpha3_AWSEBSCSIDriver(in *kops.AWSEB
 	out.Version = in.Version
 	out.VolumeAttachLimit = in.VolumeAttachLimit
 	out.PodAnnotations = in.PodAnnotations
+	out.ExtraVolumeTags = in.ExtraVolumeTags
 	return nil
 }
 

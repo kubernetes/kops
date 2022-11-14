@@ -355,7 +355,7 @@ spec:
               mountPath: /registration
           securityContext:
             readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false 
+            allowPrivilegeEscalation: false
         - name: liveness-probe
           image: registry.k8s.io/sig-storage/livenessprobe:v2.6.0
           imagePullPolicy: IfNotPresent
@@ -478,6 +478,13 @@ spec:
             - "--extra-tags={{ CloudLabels }}"
             - --http-endpoint=0.0.0.0:3301
             - --v=5
+            {{- $tags := list }}
+            {{- range $key, $value := .ExtraVolumeTags }}
+            {{- $tags = append $tags (printf "%s=%v" $key $value) }}
+            {{- end }}
+            {{- if gt (len $tags) 0 }}
+            {{ printf "- \"--extra-tags=%s\"" (join "," $tags) }}
+            {{- end }}
           env:
             {{- if IsIPv6Only }}
             - name: AWS_EC2_METADATA_SERVICE_ENDPOINT_MODE
@@ -528,7 +535,7 @@ spec:
             timeoutSeconds: 3
             periodSeconds: 10
             failureThreshold: 5
-          securityContext:   
+          securityContext:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
         - name: csi-provisioner
@@ -549,7 +556,7 @@ spec:
               mountPath: /var/lib/csi/sockets/pluginproxy/
           securityContext:
             readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false 
+            allowPrivilegeEscalation: false
         - name: csi-attacher
           image: registry.k8s.io/sig-storage/csi-attacher:v3.4.0
           imagePullPolicy: IfNotPresent
@@ -565,7 +572,7 @@ spec:
               mountPath: /var/lib/csi/sockets/pluginproxy/
           securityContext:
             readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false 
+            allowPrivilegeEscalation: false
         {{ if HasSnapshotController }}
         - name: csi-snapshotter
           image: registry.k8s.io/sig-storage/csi-snapshotter:v6.0.1
@@ -581,7 +588,7 @@ spec:
               mountPath: /var/lib/csi/sockets/pluginproxy/
           securityContext:
             readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false 
+            allowPrivilegeEscalation: false
         {{ end }}
         - name: csi-resizer
           image: registry.k8s.io/sig-storage/csi-resizer:v1.4.0
@@ -597,7 +604,7 @@ spec:
               mountPath: /var/lib/csi/sockets/pluginproxy/
           securityContext:
             readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false 
+            allowPrivilegeEscalation: false
         - name: liveness-probe
           image: registry.k8s.io/sig-storage/livenessprobe:v2.6.0
           imagePullPolicy: IfNotPresent

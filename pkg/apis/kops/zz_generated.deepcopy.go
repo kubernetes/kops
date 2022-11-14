@@ -122,6 +122,13 @@ func (in *AWSEBSCSIDriver) DeepCopyInto(out *AWSEBSCSIDriver) {
 			(*out)[key] = val
 		}
 	}
+	if in.ExtraVolumeTags != nil {
+		in, out := &in.ExtraVolumeTags, &out.ExtraVolumeTags
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	return
 }
 

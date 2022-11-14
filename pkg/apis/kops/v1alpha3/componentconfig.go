@@ -899,6 +899,10 @@ type AWSEBSCSIDriver struct {
 	// PodAnnotations are the annotations added to AWS EBS CSI node and controller Pods.
 	// Default: none
 	PodAnnotations map[string]string `json:"podAnnotations,omitempty"`
+
+	//ExtraVolumeTags are additional tags added to EBS volumes created by the CSI driver.
+	// Default: none
+	ExtraVolumeTags map[string]string `json:"extraVolumeTags,omitempty"`
 }
 
 // GCPPDCSIDriver is the config for the GCP PD CSI driver

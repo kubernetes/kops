@@ -328,6 +328,12 @@ spec:
                         description: 'Enabled enables the AWS EBS CSI driver Default:
                           false'
                         type: boolean
+                      extraVolumeTags:
+                        additionalProperties:
+                          type: string
+                        description: 'ExtraVolumeTags are additional tags added to
+                          EBS volumes created by the CSI driver. Default: none'
+                        type: object
                       managed:
                         description: Managed controls if aws-ebs-csi-driver is manged
                           and deployed by kOps. The deployment of aws-ebs-csi-driver
