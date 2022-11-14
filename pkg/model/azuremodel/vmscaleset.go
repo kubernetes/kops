@@ -136,7 +136,7 @@ func (b *VMScaleSetModelBuilder) buildVMScaleSetTask(
 		return nil, fmt.Errorf("unexpected subnet type: for InstanceGroup %q; type was %s", ig.Name, subnet.Type)
 	}
 
-	if ig.Spec.Role == kops.InstanceGroupRoleMaster && b.Cluster.Spec.API.LoadBalancer != nil {
+	if ig.Spec.Role == kops.InstanceGroupRoleControlPlane && b.Cluster.Spec.API.LoadBalancer != nil {
 		t.LoadBalancer = &azuretasks.LoadBalancer{
 			Name: to.StringPtr(b.NameForLoadBalancer()),
 		}

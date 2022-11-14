@@ -86,6 +86,6 @@ spec:
   machineType: m3.medium
   maxSize: 1
   minSize: 1
-  role: Master
+  role: ControlPlane
   subnets:
   - us-test-1a

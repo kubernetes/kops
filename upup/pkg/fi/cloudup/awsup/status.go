@@ -90,7 +90,7 @@ func findEtcdStatus(c AWSCloud, cluster *kops.Cluster) ([]kops.EtcdClusterStatus
 				if err != nil {
 					return nil, fmt.Errorf("error parsing etcd cluster tag %q on volume %q: %v", v, volumeID, err)
 				}
-			} else if k == TagNameRolePrefix+TagRoleMaster {
+			} else if k == TagNameRolePrefix+TagRoleMaster || k == TagNameRolePrefix+TagRoleControlPlane {
 				master = true
 			}
 		}

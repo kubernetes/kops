@@ -1052,7 +1052,7 @@ func (in *WarmPoolSpec) IsEnabled() bool {
 func (in *WarmPoolSpec) ResolveDefaults(ig *InstanceGroup) *WarmPoolSpec {
 	igWarmPool := ig.Spec.WarmPool
 	if igWarmPool == nil {
-		if in == nil || (ig.Spec.Role == InstanceGroupRoleMaster || ig.Spec.Role == InstanceGroupRoleBastion) {
+		if in == nil || (ig.Spec.Role == InstanceGroupRoleControlPlane || ig.Spec.Role == InstanceGroupRoleBastion) {
 			var zero int64
 			return &WarmPoolSpec{
 				MaxSize: &zero,
@@ -1061,7 +1061,7 @@ func (in *WarmPoolSpec) ResolveDefaults(ig *InstanceGroup) *WarmPoolSpec {
 		return in
 	}
 
-	if in == nil || (ig.Spec.Role == InstanceGroupRoleMaster || ig.Spec.Role == InstanceGroupRoleBastion) {
+	if in == nil || (ig.Spec.Role == InstanceGroupRoleControlPlane || ig.Spec.Role == InstanceGroupRoleBastion) {
 		return igWarmPool
 	}
 

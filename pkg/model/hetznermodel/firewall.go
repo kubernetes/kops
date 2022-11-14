@@ -47,7 +47,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 	controlPlaneLabelSelector := []string{
 		fmt.Sprintf("%s=%s", hetzner.TagKubernetesClusterName, b.ClusterName()),
-		fmt.Sprintf("%s=%s", hetzner.TagKubernetesInstanceRole, string(kops.InstanceGroupRoleMaster)),
+		fmt.Sprintf("%s=%s", hetzner.TagKubernetesInstanceRole, string(kops.InstanceGroupRoleControlPlane)),
 	}
 	controlPlaneFirewall := &hetznertasks.Firewall{
 		Name:      fi.PtrTo("control-plane." + b.ClusterName()),

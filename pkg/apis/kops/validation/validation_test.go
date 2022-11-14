@@ -405,7 +405,7 @@ func Test_Validate_AdditionalPolicies(t *testing.T) {
 		},
 		{
 			Input: map[string]string{
-				"master": `[ { "Action": [ "s3:GetObject" ], "Resource": [ "*" ], "Effect": "Allow" } ]`,
+				"control-plane": `[ { "Action": [ "s3:GetObject" ], "Resource": [ "*" ], "Effect": "Allow" } ]`,
 			},
 		},
 		{
@@ -416,21 +416,21 @@ func Test_Validate_AdditionalPolicies(t *testing.T) {
 		},
 		{
 			Input: map[string]string{
-				"master": `badjson`,
+				"control-plane": `badjson`,
 			},
-			ExpectedErrors: []string{"Invalid value::spec.additionalPolicies[master]"},
+			ExpectedErrors: []string{"Invalid value::spec.additionalPolicies[control-plane]"},
 		},
 		{
 			Input: map[string]string{
-				"master": `[ { "Action": [ "s3:GetObject" ], "Resource": [ "*" ] } ]`,
+				"control-plane": `[ { "Action": [ "s3:GetObject" ], "Resource": [ "*" ] } ]`,
 			},
-			ExpectedErrors: []string{"Required value::spec.additionalPolicies[master][0].Effect"},
+			ExpectedErrors: []string{"Required value::spec.additionalPolicies[control-plane][0].Effect"},
 		},
 		{
 			Input: map[string]string{
-				"master": `[ { "Action": [ "s3:GetObject" ], "Resource": [ "*" ], "Effect": "allow" } ]`,
+				"control-plane": `[ { "Action": [ "s3:GetObject" ], "Resource": [ "*" ], "Effect": "allow" } ]`,
 			},
-			ExpectedErrors: []string{"Unsupported value::spec.additionalPolicies[master][0].Effect"},
+			ExpectedErrors: []string{"Unsupported value::spec.additionalPolicies[control-plane][0].Effect"},
 		},
 	}
 	for _, g := range grid {

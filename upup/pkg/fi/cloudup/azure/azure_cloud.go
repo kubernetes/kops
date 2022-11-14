@@ -34,6 +34,7 @@ const (
 	// Use dash (_) as a splitter. Other CSPs use slash (/), but slash is not
 	// allowed as a tag key in Azure.
 	TagNameRolePrefix        = "k8s.io_role_"
+	TagRoleControlPlane      = "control_plane"
 	TagRoleMaster            = "master"
 	TagNameEtcdClusterPrefix = "k8s.io_etcd_"
 )
@@ -221,8 +222,9 @@ func (c *azureCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([
 		var vmssName string
 		for _, scaleSet := range scaleSets {
 			val, ok := scaleSet.Tags[TagClusterName]
-			val2, ok2 := scaleSet.Tags[TagNameRolePrefix+TagRoleMaster]
-			if ok && *val == cluster.Name && ok2 && *val2 == "1" {
+			val2, ok2 := scaleSet.Tags[TagNameRolePrefix+TagRoleControlPlane]
+			val3, ok3 := scaleSet.Tags[TagNameRolePrefix+TagRoleMaster]
+			if ok && *val == cluster.Name && (ok2 && *val2 == "1" || ok3 && *val3 == "1") {
 				vmssName = *scaleSet.Name
 				break
 			}

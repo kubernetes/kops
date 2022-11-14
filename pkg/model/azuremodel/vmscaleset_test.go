@@ -84,7 +84,7 @@ func TestGetCapacity(t *testing.T) {
 	}{
 		{
 			spec: kops.InstanceGroupSpec{
-				Role:    kops.InstanceGroupRoleMaster,
+				Role:    kops.InstanceGroupRoleControlPlane,
 				MinSize: fi.PtrTo(int32(3)),
 				MaxSize: fi.PtrTo(int32(3)),
 			},
@@ -93,7 +93,7 @@ func TestGetCapacity(t *testing.T) {
 		},
 		{
 			spec: kops.InstanceGroupSpec{
-				Role: kops.InstanceGroupRoleMaster,
+				Role: kops.InstanceGroupRoleControlPlane,
 			},
 			success:  true,
 			capacity: 1,
@@ -107,7 +107,7 @@ func TestGetCapacity(t *testing.T) {
 		},
 		{
 			spec: kops.InstanceGroupSpec{
-				Role:    kops.InstanceGroupRoleMaster,
+				Role:    kops.InstanceGroupRoleControlPlane,
 				MinSize: fi.PtrTo(int32(1)),
 				MaxSize: fi.PtrTo(int32(2)),
 			},
@@ -167,7 +167,7 @@ func TestGetStorageProfile(t *testing.T) {
 		{
 			spec: kops.InstanceGroupSpec{
 				Image: "Canonical:UbuntuServer:18.04-LTS:latest",
-				Role:  kops.InstanceGroupRoleMaster,
+				Role:  kops.InstanceGroupRoleControlPlane,
 			},
 			profile: &compute.VirtualMachineScaleSetStorageProfile{
 				ImageReference: &compute.ImageReference{

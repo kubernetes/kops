@@ -184,7 +184,7 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	allRoles := make([]string, 0, len(kopsapi.AllInstanceGroupRoles))
 	for _, r := range kopsapi.AllInstanceGroupRoles {
-		allRoles = append(allRoles, strings.ToLower(string(r)))
+		allRoles = append(allRoles, r.ToLowerString())
 	}
 
 	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", options.Yes, "Perform rolling update immediately; without --yes rolling-update executes a dry-run")
@@ -279,7 +279,7 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 		}
 		countByRole[instanceGroup.Spec.Role] = countByRole[instanceGroup.Spec.Role] + minSize
 	}
-	if countByRole[kopsapi.InstanceGroupRoleAPIServer]+countByRole[kopsapi.InstanceGroupRoleMaster] <= 1 {
+	if countByRole[kopsapi.InstanceGroupRoleAPIServer]+countByRole[kopsapi.InstanceGroupRoleControlPlane] <= 1 {
 		fmt.Fprintf(out, "Detected single-control-plane cluster; won't detach before draining\n")
 		options.DeregisterControlPlaneNodes = false
 	}

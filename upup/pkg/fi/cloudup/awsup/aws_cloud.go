@@ -98,6 +98,7 @@ const (
 	TagNameEtcdClusterPrefix = "k8s.io/etcd/"
 )
 
+const TagRoleControlPlane = "control-plane"
 const TagRoleMaster = "master"
 
 // TagNameKopsRole is the AWS tag used to identify the role an object plays for a cluster
@@ -1232,13 +1233,22 @@ func buildCloudInstance(i *autoscaling.Instance, instances map[string]*ec2.Insta
 
 func addCloudInstanceData(cm *cloudinstances.CloudInstance, instance *ec2.Instance) {
 	cm.MachineType = aws.StringValue(instance.InstanceType)
+	isControlPlane := false
 	for _, tag := range instance.Tags {
 		key := aws.StringValue(tag.Key)
 		if !strings.HasPrefix(key, TagNameRolePrefix) {
 			continue
 		}
 		role := strings.TrimPrefix(key, TagNameRolePrefix)
-		cm.Roles = append(cm.Roles, role)
+		if role == "master" || role == "control-plane" {
+			isControlPlane = true
+		} else {
+			cm.Roles = append(cm.Roles, role)
+			cm.PrivateIP = aws.StringValue(instance.PrivateIpAddress)
+		}
+	}
+	if isControlPlane {
+		cm.Roles = append(cm.Roles, "control-plane")
 		cm.PrivateIP = aws.StringValue(instance.PrivateIpAddress)
 	}
 }
@@ -2303,7 +2313,7 @@ func (c *awsCloudImplementation) DefaultInstanceType(cluster *kops.Cluster, ig *
 	var candidates []string
 
 	switch ig.Spec.Role {
-	case kops.InstanceGroupRoleMaster, kops.InstanceGroupRoleNode, kops.InstanceGroupRoleAPIServer:
+	case kops.InstanceGroupRoleControlPlane, kops.InstanceGroupRoleNode, kops.InstanceGroupRoleAPIServer:
 		// t3.medium is the cheapest instance with 4GB of mem, unlimited by default, fast and has decent network
 		// c5.large and c4.large are a good second option in case t3.medium is not available in the AZ
 		candidates = []string{"t3.medium", "c5.large", "c4.large", "t4g.medium"}

@@ -534,7 +534,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	var nodes []*api.InstanceGroup
 	for _, ig := range instanceGroups {
 		switch ig.Spec.Role {
-		case api.InstanceGroupRoleMaster:
+		case api.InstanceGroupRoleControlPlane:
 			masters = append(masters, ig)
 		case api.InstanceGroupRoleNode:
 			nodes = append(nodes, ig)

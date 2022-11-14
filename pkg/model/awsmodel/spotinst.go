@@ -157,7 +157,7 @@ func (b *SpotInstanceGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		switch ig.Spec.Role {
 
 		// Create both Master and Bastion instance groups as Elastigroups.
-		case kops.InstanceGroupRoleMaster, kops.InstanceGroupRoleBastion:
+		case kops.InstanceGroupRoleControlPlane, kops.InstanceGroupRoleBastion:
 			err = b.buildElastigroup(c, ig)
 
 		// Create Node instance groups as Elastigroups or a single Ocean with
@@ -844,7 +844,7 @@ func (b *SpotInstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig
 	}
 
 	switch ig.Spec.Role {
-	case kops.InstanceGroupRoleMaster:
+	case kops.InstanceGroupRoleControlPlane:
 		return opts, nil
 
 	case kops.InstanceGroupRoleBastion:
@@ -1110,7 +1110,7 @@ func defaultSpotPercentage(ig *kops.InstanceGroup) *float64 {
 	var percentage float64
 
 	switch ig.Spec.Role {
-	case kops.InstanceGroupRoleMaster, kops.InstanceGroupRoleBastion:
+	case kops.InstanceGroupRoleControlPlane, kops.InstanceGroupRoleBastion:
 		percentage = 0
 	case kops.InstanceGroupRoleNode:
 		percentage = 100

@@ -82,7 +82,7 @@ var (
 // NewCmdCreateInstanceGroup create a new cobra command object for creating a instancegroup.
 func NewCmdCreateInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &CreateInstanceGroupOptions{
-		Role: string(kopsapi.InstanceGroupRoleNode),
+		Role: kopsapi.InstanceGroupRoleNode.ToLowerString(),
 		Edit: true,
 	}
 
@@ -128,7 +128,7 @@ func NewCmdCreateInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 		if r == kopsapi.InstanceGroupRoleAPIServer && !featureflag.APIServerNodes.Enabled() {
 			continue
 		}
-		allRoles = append(allRoles, strings.ToLower(string(r)))
+		allRoles = append(allRoles, r.ToLowerString())
 	}
 
 	cmd.Flags().StringVar(&options.Role, "role", options.Role, "Type of instance group to create ("+strings.Join(allRoles, ",")+")")

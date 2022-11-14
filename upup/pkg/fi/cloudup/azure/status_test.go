@@ -81,6 +81,7 @@ func TestFindEtcdStatus(t *testing.T) {
 			Name: to.StringPtr("d0"),
 			Tags: map[string]*string{
 				TagClusterName:                             to.StringPtr(clusterName),
+				TagNameRolePrefix + TagRoleControlPlane:    to.StringPtr("1"),
 				TagNameRolePrefix + TagRoleMaster:          to.StringPtr("1"),
 				TagNameEtcdClusterPrefix + etcdClusterName: to.StringPtr("a/a,b,c"),
 			},
@@ -89,6 +90,7 @@ func TestFindEtcdStatus(t *testing.T) {
 			Name: to.StringPtr("d1"),
 			Tags: map[string]*string{
 				TagClusterName:                             to.StringPtr(clusterName),
+				TagNameRolePrefix + TagRoleControlPlane:    to.StringPtr("1"),
 				TagNameRolePrefix + TagRoleMaster:          to.StringPtr("1"),
 				TagNameEtcdClusterPrefix + etcdClusterName: to.StringPtr("b/a,b,c"),
 			},
@@ -97,6 +99,7 @@ func TestFindEtcdStatus(t *testing.T) {
 			Name: to.StringPtr("d2"),
 			Tags: map[string]*string{
 				TagClusterName:                             to.StringPtr(clusterName),
+				TagNameRolePrefix + TagRoleControlPlane:    to.StringPtr("1"),
 				TagNameRolePrefix + TagRoleMaster:          to.StringPtr("1"),
 				TagNameEtcdClusterPrefix + etcdClusterName: to.StringPtr("c/a,b,c"),
 			},
@@ -228,7 +231,7 @@ func TestGetCloudGroups(t *testing.T) {
 				Name: masterIG,
 			},
 			Spec: kops.InstanceGroupSpec{
-				Role: kops.InstanceGroupRoleMaster,
+				Role: kops.InstanceGroupRoleControlPlane,
 			},
 		},
 		{

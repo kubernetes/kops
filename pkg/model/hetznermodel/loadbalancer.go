@@ -39,7 +39,7 @@ var _ fi.ModelBuilder = &LoadBalancerModelBuilder{}
 func (b *LoadBalancerModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	controlPlaneLabelSelector := []string{
 		fmt.Sprintf("%s=%s", hetzner.TagKubernetesClusterName, b.ClusterName()),
-		fmt.Sprintf("%s=%s", hetzner.TagKubernetesInstanceRole, string(kops.InstanceGroupRoleMaster)),
+		fmt.Sprintf("%s=%s", hetzner.TagKubernetesInstanceRole, string(kops.InstanceGroupRoleControlPlane)),
 	}
 	loadbalancer := hetznertasks.LoadBalancer{
 		Name:      fi.PtrTo("api." + b.ClusterName()),

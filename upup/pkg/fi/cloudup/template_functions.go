@@ -410,7 +410,7 @@ func (tf *TemplateFunctions) APIServerNodeRole() string {
 func (tf *TemplateFunctions) HasHighlyAvailableControlPlane() bool {
 	cp := 0
 	for _, ig := range tf.InstanceGroups {
-		if ig.Spec.Role == kops.InstanceGroupRoleMaster {
+		if ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
 			cp++
 			if cp > 1 {
 				return true
