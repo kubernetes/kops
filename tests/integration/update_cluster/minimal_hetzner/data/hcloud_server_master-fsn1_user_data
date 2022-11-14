@@ -248,7 +248,7 @@ cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: hetzner
 ConfigBase: memfs://tests/minimal.example.com
 InstanceGroupName: master-fsn1
-InstanceGroupRole: Master
+InstanceGroupRole: ControlPlane
 NodeupConfigHash: AIyOkmDVxSuoycFQx4v5QH8cm/fd/bWzJtr4tWnJP9k=
 
 __EOF_KUBE_ENV

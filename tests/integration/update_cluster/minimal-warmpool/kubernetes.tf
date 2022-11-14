@@ -133,6 +133,11 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-minimal-warmpool-exa
     value               = ""
   }
   tag {
+    key                 = "k8s.io/role/control-plane"
+    propagate_at_launch = true
+    value               = "1"
+  }
+  tag {
     key                 = "k8s.io/role/master"
     propagate_at_launch = true
     value               = "1"
@@ -217,6 +222,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-minimal-warmpool-example-com" 
     "KubernetesCluster"                                  = "minimal-warmpool.example.com"
     "Name"                                               = "us-test-1a.etcd-events.minimal-warmpool.example.com"
     "k8s.io/etcd/events"                                 = "us-test-1a/us-test-1a"
+    "k8s.io/role/control-plane"                          = "1"
     "k8s.io/role/master"                                 = "1"
     "kubernetes.io/cluster/minimal-warmpool.example.com" = "owned"
   }
@@ -233,6 +239,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-minimal-warmpool-example-com" {
     "KubernetesCluster"                                  = "minimal-warmpool.example.com"
     "Name"                                               = "us-test-1a.etcd-main.minimal-warmpool.example.com"
     "k8s.io/etcd/main"                                   = "us-test-1a/us-test-1a"
+    "k8s.io/role/control-plane"                          = "1"
     "k8s.io/role/master"                                 = "1"
     "kubernetes.io/cluster/minimal-warmpool.example.com" = "owned"
   }
@@ -362,6 +369,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-warmpool-examp
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
+      "k8s.io/role/control-plane"                                                                             = "1"
       "k8s.io/role/master"                                                                                    = "1"
       "kops.k8s.io/instancegroup"                                                                             = "master-us-test-1a"
       "kubernetes.io/cluster/minimal-warmpool.example.com"                                                    = "owned"
@@ -377,6 +385,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-warmpool-examp
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
+      "k8s.io/role/control-plane"                                                                             = "1"
       "k8s.io/role/master"                                                                                    = "1"
       "kops.k8s.io/instancegroup"                                                                             = "master-us-test-1a"
       "kubernetes.io/cluster/minimal-warmpool.example.com"                                                    = "owned"
@@ -390,6 +399,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-warmpool-examp
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
     "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
+    "k8s.io/role/control-plane"                                                                             = "1"
     "k8s.io/role/master"                                                                                    = "1"
     "kops.k8s.io/instancegroup"                                                                             = "master-us-test-1a"
     "kubernetes.io/cluster/minimal-warmpool.example.com"                                                    = "owned"
@@ -628,7 +638,7 @@ resource "aws_s3_object" "minimal-warmpool-example-com-addons-storage-aws-addons
 resource "aws_s3_object" "nodeupconfig-master-us-test-1a" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_nodeupconfig-master-us-test-1a_content")
-  key                    = "clusters.example.com/minimal-warmpool.example.com/igconfig/master/master-us-test-1a/nodeupconfig.yaml"
+  key                    = "clusters.example.com/minimal-warmpool.example.com/igconfig/control-plane/master-us-test-1a/nodeupconfig.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
