@@ -189,7 +189,7 @@ resource "aws_s3_object" "manifests-static-kube-apiserver-healthcheck" {
 resource "aws_s3_object" "nodeupconfig-master-us-test1-a" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_nodeupconfig-master-us-test1-a_content")
-  key                    = "tests/ha-gce.example.com/igconfig/master/master-us-test1-a/nodeupconfig.yaml"
+  key                    = "tests/ha-gce.example.com/igconfig/control-plane/master-us-test1-a/nodeupconfig.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
@@ -197,7 +197,7 @@ resource "aws_s3_object" "nodeupconfig-master-us-test1-a" {
 resource "aws_s3_object" "nodeupconfig-master-us-test1-b" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_nodeupconfig-master-us-test1-b_content")
-  key                    = "tests/ha-gce.example.com/igconfig/master/master-us-test1-b/nodeupconfig.yaml"
+  key                    = "tests/ha-gce.example.com/igconfig/control-plane/master-us-test1-b/nodeupconfig.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
@@ -205,7 +205,7 @@ resource "aws_s3_object" "nodeupconfig-master-us-test1-b" {
 resource "aws_s3_object" "nodeupconfig-master-us-test1-c" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_nodeupconfig-master-us-test1-c_content")
-  key                    = "tests/ha-gce.example.com/igconfig/master/master-us-test1-c/nodeupconfig.yaml"
+  key                    = "tests/ha-gce.example.com/igconfig/control-plane/master-us-test1-c/nodeupconfig.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
@@ -299,7 +299,7 @@ resource "google_compute_firewall" "kubernetes-master-https-ha-gce-example-com" 
   name          = "kubernetes-master-https-ha-gce-example-com"
   network       = google_compute_network.ha-gce-example-com.name
   source_ranges = ["0.0.0.0/0"]
-  target_tags   = ["ha-gce-example-com-k8s-io-role-master"]
+  target_tags   = ["ha-gce-example-com-k8s-io-role-control-plane", "ha-gce-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "kubernetes-master-https-ipv6-ha-gce-example-com" {
@@ -311,7 +311,7 @@ resource "google_compute_firewall" "kubernetes-master-https-ipv6-ha-gce-example-
   name          = "kubernetes-master-https-ipv6-ha-gce-example-com"
   network       = google_compute_network.ha-gce-example-com.name
   source_ranges = ["::/0"]
-  target_tags   = ["ha-gce-example-com-k8s-io-role-master"]
+  target_tags   = ["ha-gce-example-com-k8s-io-role-control-plane", "ha-gce-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "master-to-master-ha-gce-example-com" {
@@ -336,8 +336,8 @@ resource "google_compute_firewall" "master-to-master-ha-gce-example-com" {
   disabled    = false
   name        = "master-to-master-ha-gce-example-com"
   network     = google_compute_network.ha-gce-example-com.name
-  source_tags = ["ha-gce-example-com-k8s-io-role-master"]
-  target_tags = ["ha-gce-example-com-k8s-io-role-master"]
+  source_tags = ["ha-gce-example-com-k8s-io-role-control-plane", "ha-gce-example-com-k8s-io-role-master"]
+  target_tags = ["ha-gce-example-com-k8s-io-role-control-plane", "ha-gce-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "master-to-node-ha-gce-example-com" {
@@ -362,7 +362,7 @@ resource "google_compute_firewall" "master-to-node-ha-gce-example-com" {
   disabled    = false
   name        = "master-to-node-ha-gce-example-com"
   network     = google_compute_network.ha-gce-example-com.name
-  source_tags = ["ha-gce-example-com-k8s-io-role-master"]
+  source_tags = ["ha-gce-example-com-k8s-io-role-control-plane", "ha-gce-example-com-k8s-io-role-master"]
   target_tags = ["ha-gce-example-com-k8s-io-role-node"]
 }
 
@@ -379,7 +379,7 @@ resource "google_compute_firewall" "node-to-master-ha-gce-example-com" {
   name        = "node-to-master-ha-gce-example-com"
   network     = google_compute_network.ha-gce-example-com.name
   source_tags = ["ha-gce-example-com-k8s-io-role-node"]
-  target_tags = ["ha-gce-example-com-k8s-io-role-master"]
+  target_tags = ["ha-gce-example-com-k8s-io-role-control-plane", "ha-gce-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "node-to-node-ha-gce-example-com" {
@@ -449,7 +449,7 @@ resource "google_compute_firewall" "ssh-external-to-master-ha-gce-example-com" {
   name          = "ssh-external-to-master-ha-gce-example-com"
   network       = google_compute_network.ha-gce-example-com.name
   source_ranges = ["0.0.0.0/0"]
-  target_tags   = ["ha-gce-example-com-k8s-io-role-master"]
+  target_tags   = ["ha-gce-example-com-k8s-io-role-control-plane", "ha-gce-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "ssh-external-to-master-ipv6-ha-gce-example-com" {
@@ -461,7 +461,7 @@ resource "google_compute_firewall" "ssh-external-to-master-ipv6-ha-gce-example-c
   name          = "ssh-external-to-master-ipv6-ha-gce-example-com"
   network       = google_compute_network.ha-gce-example-com.name
   source_ranges = ["::/0"]
-  target_tags   = ["ha-gce-example-com-k8s-io-role-master"]
+  target_tags   = ["ha-gce-example-com-k8s-io-role-control-plane", "ha-gce-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "ssh-external-to-node-ha-gce-example-com" {
@@ -564,9 +564,10 @@ resource "google_compute_instance_template" "master-us-test1-a-ha-gce-example-co
     type         = "PERSISTENT"
   }
   labels = {
-    "k8s-io-cluster-name"   = "ha-gce-example-com"
-    "k8s-io-instance-group" = "master-us-test1-a"
-    "k8s-io-role-master"    = ""
+    "k8s-io-cluster-name"       = "ha-gce-example-com"
+    "k8s-io-instance-group"     = "master-us-test1-a"
+    "k8s-io-role-control-plane" = ""
+    "k8s-io-role-master"        = ""
   }
   machine_type = "n1-standard-1"
   metadata = {
@@ -592,7 +593,7 @@ resource "google_compute_instance_template" "master-us-test1-a-ha-gce-example-co
     email  = google_service_account.control-plane.email
     scopes = ["https://www.googleapis.com/auth/compute", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/devstorage.read_write", "https://www.googleapis.com/auth/ndev.clouddns.readwrite"]
   }
-  tags = ["ha-gce-example-com-k8s-io-role-master"]
+  tags = ["ha-gce-example-com-k8s-io-role-control-plane", "ha-gce-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_instance_template" "master-us-test1-b-ha-gce-example-com" {
@@ -611,9 +612,10 @@ resource "google_compute_instance_template" "master-us-test1-b-ha-gce-example-co
     type         = "PERSISTENT"
   }
   labels = {
-    "k8s-io-cluster-name"   = "ha-gce-example-com"
-    "k8s-io-instance-group" = "master-us-test1-b"
-    "k8s-io-role-master"    = ""
+    "k8s-io-cluster-name"       = "ha-gce-example-com"
+    "k8s-io-instance-group"     = "master-us-test1-b"
+    "k8s-io-role-control-plane" = ""
+    "k8s-io-role-master"        = ""
   }
   machine_type = "n1-standard-1"
   metadata = {
@@ -639,7 +641,7 @@ resource "google_compute_instance_template" "master-us-test1-b-ha-gce-example-co
     email  = google_service_account.control-plane.email
     scopes = ["https://www.googleapis.com/auth/compute", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/devstorage.read_write", "https://www.googleapis.com/auth/ndev.clouddns.readwrite"]
   }
-  tags = ["ha-gce-example-com-k8s-io-role-master"]
+  tags = ["ha-gce-example-com-k8s-io-role-control-plane", "ha-gce-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_instance_template" "master-us-test1-c-ha-gce-example-com" {
@@ -658,9 +660,10 @@ resource "google_compute_instance_template" "master-us-test1-c-ha-gce-example-co
     type         = "PERSISTENT"
   }
   labels = {
-    "k8s-io-cluster-name"   = "ha-gce-example-com"
-    "k8s-io-instance-group" = "master-us-test1-c"
-    "k8s-io-role-master"    = ""
+    "k8s-io-cluster-name"       = "ha-gce-example-com"
+    "k8s-io-instance-group"     = "master-us-test1-c"
+    "k8s-io-role-control-plane" = ""
+    "k8s-io-role-master"        = ""
   }
   machine_type = "n1-standard-1"
   metadata = {
@@ -686,7 +689,7 @@ resource "google_compute_instance_template" "master-us-test1-c-ha-gce-example-co
     email  = google_service_account.control-plane.email
     scopes = ["https://www.googleapis.com/auth/compute", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/devstorage.read_write", "https://www.googleapis.com/auth/ndev.clouddns.readwrite"]
   }
-  tags = ["ha-gce-example-com-k8s-io-role-master"]
+  tags = ["ha-gce-example-com-k8s-io-role-control-plane", "ha-gce-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_instance_template" "nodes-ha-gce-example-com" {
