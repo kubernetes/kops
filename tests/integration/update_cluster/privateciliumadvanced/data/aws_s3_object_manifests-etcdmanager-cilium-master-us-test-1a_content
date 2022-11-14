@@ -17,7 +17,7 @@ spec:
       --containerized=true --dns-suffix=.internal.privateciliumadvanced.example.com
       --grpc-port=3991 --peer-urls=https://__name__:2382 --quarantine-client-urls=https://__name__:3992
       --v=6 --volume-name-tag=k8s.io/etcd/cilium --volume-provider=aws --volume-tag=k8s.io/etcd/cilium
-      --volume-tag=k8s.io/role/master=1 --volume-tag=kubernetes.io/cluster/privateciliumadvanced.example.com=owned
+      --volume-tag=k8s.io/role/control-plane=1 --volume-tag=kubernetes.io/cluster/privateciliumadvanced.example.com=owned
       > /tmp/pipe 2>&1
     image: registry.k8s.io/etcdadm/etcd-manager:v3.0.20220831
     name: etcd-manager

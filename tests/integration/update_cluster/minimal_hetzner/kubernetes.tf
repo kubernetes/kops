@@ -134,7 +134,7 @@ resource "aws_s3_object" "minimal-example-com-addons-limit-range-addons-k8s-io" 
 resource "aws_s3_object" "nodeupconfig-master-fsn1" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_nodeupconfig-master-fsn1_content")
-  key                    = "tests/minimal.example.com/igconfig/master/master-fsn1/nodeupconfig.yaml"
+  key                    = "tests/minimal.example.com/igconfig/control-plane/master-fsn1/nodeupconfig.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
@@ -149,7 +149,7 @@ resource "aws_s3_object" "nodeupconfig-nodes-fsn1" {
 
 resource "hcloud_firewall" "control-plane-minimal-example-com" {
   apply_to {
-    label_selector = "kops.k8s.io/cluster=minimal.example.com,kops.k8s.io/instance-role=Master"
+    label_selector = "kops.k8s.io/cluster=minimal.example.com,kops.k8s.io/instance-role=ControlPlane"
   }
   labels = {
     "kops.k8s.io/cluster"       = "minimal.example.com"
@@ -210,7 +210,7 @@ resource "hcloud_load_balancer_service" "api-minimal-example-com-tcp-443" {
 }
 
 resource "hcloud_load_balancer_target" "api-minimal-example-com" {
-  label_selector   = "kops.k8s.io/cluster=minimal.example.com,kops.k8s.io/instance-role=Master"
+  label_selector   = "kops.k8s.io/cluster=minimal.example.com,kops.k8s.io/instance-role=ControlPlane"
   load_balancer_id = hcloud_load_balancer.api-minimal-example-com.id
   type             = "label_selector"
   use_private_ip   = true
@@ -237,7 +237,7 @@ resource "hcloud_server" "master-fsn1" {
   labels = {
     "kops.k8s.io/cluster"        = "minimal.example.com"
     "kops.k8s.io/instance-group" = "master-fsn1"
-    "kops.k8s.io/instance-role"  = "Master"
+    "kops.k8s.io/instance-role"  = "ControlPlane"
   }
   location = "fsn1"
   name     = "master-fsn1-${count.index}"

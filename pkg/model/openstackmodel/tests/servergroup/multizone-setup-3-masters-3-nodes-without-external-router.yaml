@@ -29,7 +29,7 @@ Metadata:
   KopsInstanceGroup: master-a
   KopsName: master-a-1-cluster
   KopsNetwork: cluster
-  KopsRole: Master
+  KopsRole: ControlPlane
   KubernetesCluster: cluster
   cluster_generation: "0"
   ig_generation: "0"
@@ -37,6 +37,7 @@ Metadata:
   k8s.io_cluster-autoscaler_node-template_label_kops.k8s.io_kops-controller-pki: ""
   k8s.io_cluster-autoscaler_node-template_label_node-role.kubernetes.io_control-plane: ""
   k8s.io_cluster-autoscaler_node-template_label_node.kubernetes.io_exclude-from-external-load-balancers: ""
+  k8s.io_role_control-plane: "1"
   k8s.io_role_master: "1"
   kops.k8s.io_instancegroup: master-a
 Name: master-a-1-cluster
@@ -78,7 +79,7 @@ Port:
   - KopsName=port-master-a-1
   - KubernetesCluster=cluster
 Region: region
-Role: Master
+Role: ControlPlane
 SSHKey: kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
 SecurityGroups: null
 ServerGroup:
@@ -108,7 +109,7 @@ Metadata:
   KopsInstanceGroup: master-b
   KopsName: master-b-1-cluster
   KopsNetwork: cluster
-  KopsRole: Master
+  KopsRole: ControlPlane
   KubernetesCluster: cluster
   cluster_generation: "0"
   ig_generation: "0"
@@ -116,6 +117,7 @@ Metadata:
   k8s.io_cluster-autoscaler_node-template_label_kops.k8s.io_kops-controller-pki: ""
   k8s.io_cluster-autoscaler_node-template_label_node-role.kubernetes.io_control-plane: ""
   k8s.io_cluster-autoscaler_node-template_label_node.kubernetes.io_exclude-from-external-load-balancers: ""
+  k8s.io_role_control-plane: "1"
   k8s.io_role_master: "1"
   kops.k8s.io_instancegroup: master-b
 Name: master-b-1-cluster
@@ -157,7 +159,7 @@ Port:
   - KopsName=port-master-b-1
   - KubernetesCluster=cluster
 Region: region
-Role: Master
+Role: ControlPlane
 SSHKey: kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
 SecurityGroups: null
 ServerGroup:
@@ -187,7 +189,7 @@ Metadata:
   KopsInstanceGroup: master-c
   KopsName: master-c-1-cluster
   KopsNetwork: cluster
-  KopsRole: Master
+  KopsRole: ControlPlane
   KubernetesCluster: cluster
   cluster_generation: "0"
   ig_generation: "0"
@@ -195,6 +197,7 @@ Metadata:
   k8s.io_cluster-autoscaler_node-template_label_kops.k8s.io_kops-controller-pki: ""
   k8s.io_cluster-autoscaler_node-template_label_node-role.kubernetes.io_control-plane: ""
   k8s.io_cluster-autoscaler_node-template_label_node.kubernetes.io_exclude-from-external-load-balancers: ""
+  k8s.io_role_control-plane: "1"
   k8s.io_role_master: "1"
   kops.k8s.io_instancegroup: master-c
 Name: master-c-1-cluster
@@ -236,7 +239,7 @@ Port:
   - KopsName=port-master-c-1
   - KubernetesCluster=cluster
 Region: region
-Role: Master
+Role: ControlPlane
 SSHKey: kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
 SecurityGroups: null
 ServerGroup:
@@ -578,7 +581,7 @@ Contents:
     Lifecycle: ""
     Name: master-a
 Lifecycle: ""
-Location: igconfig/master/master-a/nodeupconfig.yaml
+Location: igconfig/control-plane/master-a/nodeupconfig.yaml
 Name: nodeupconfig-master-a
 Public: null
 ---
@@ -588,7 +591,7 @@ Contents:
     Lifecycle: ""
     Name: master-b
 Lifecycle: ""
-Location: igconfig/master/master-b/nodeupconfig.yaml
+Location: igconfig/control-plane/master-b/nodeupconfig.yaml
 Name: nodeupconfig-master-b
 Public: null
 ---
@@ -598,7 +601,7 @@ Contents:
     Lifecycle: ""
     Name: master-c
 Lifecycle: ""
-Location: igconfig/master/master-c/nodeupconfig.yaml
+Location: igconfig/control-plane/master-c/nodeupconfig.yaml
 Name: nodeupconfig-master-c
 Public: null
 ---

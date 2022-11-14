@@ -144,6 +144,11 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-existingsg-example-c
     value               = ""
   }
   tag {
+    key                 = "k8s.io/role/control-plane"
+    propagate_at_launch = true
+    value               = "1"
+  }
+  tag {
     key                 = "k8s.io/role/master"
     propagate_at_launch = true
     value               = "1"
@@ -210,6 +215,11 @@ resource "aws_autoscaling_group" "master-us-test-1b-masters-existingsg-example-c
     value               = ""
   }
   tag {
+    key                 = "k8s.io/role/control-plane"
+    propagate_at_launch = true
+    value               = "1"
+  }
+  tag {
     key                 = "k8s.io/role/master"
     propagate_at_launch = true
     value               = "1"
@@ -274,6 +284,11 @@ resource "aws_autoscaling_group" "master-us-test-1c-masters-existingsg-example-c
     key                 = "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers"
     propagate_at_launch = true
     value               = ""
+  }
+  tag {
+    key                 = "k8s.io/role/control-plane"
+    propagate_at_launch = true
+    value               = "1"
   }
   tag {
     key                 = "k8s.io/role/master"
@@ -352,6 +367,7 @@ resource "aws_ebs_volume" "a-etcd-events-existingsg-example-com" {
     "KubernetesCluster"                            = "existingsg.example.com"
     "Name"                                         = "a.etcd-events.existingsg.example.com"
     "k8s.io/etcd/events"                           = "a/a,b,c"
+    "k8s.io/role/control-plane"                    = "1"
     "k8s.io/role/master"                           = "1"
     "kubernetes.io/cluster/existingsg.example.com" = "owned"
   }
@@ -368,6 +384,7 @@ resource "aws_ebs_volume" "a-etcd-main-existingsg-example-com" {
     "KubernetesCluster"                            = "existingsg.example.com"
     "Name"                                         = "a.etcd-main.existingsg.example.com"
     "k8s.io/etcd/main"                             = "a/a,b,c"
+    "k8s.io/role/control-plane"                    = "1"
     "k8s.io/role/master"                           = "1"
     "kubernetes.io/cluster/existingsg.example.com" = "owned"
   }
@@ -384,6 +401,7 @@ resource "aws_ebs_volume" "b-etcd-events-existingsg-example-com" {
     "KubernetesCluster"                            = "existingsg.example.com"
     "Name"                                         = "b.etcd-events.existingsg.example.com"
     "k8s.io/etcd/events"                           = "b/a,b,c"
+    "k8s.io/role/control-plane"                    = "1"
     "k8s.io/role/master"                           = "1"
     "kubernetes.io/cluster/existingsg.example.com" = "owned"
   }
@@ -400,6 +418,7 @@ resource "aws_ebs_volume" "b-etcd-main-existingsg-example-com" {
     "KubernetesCluster"                            = "existingsg.example.com"
     "Name"                                         = "b.etcd-main.existingsg.example.com"
     "k8s.io/etcd/main"                             = "b/a,b,c"
+    "k8s.io/role/control-plane"                    = "1"
     "k8s.io/role/master"                           = "1"
     "kubernetes.io/cluster/existingsg.example.com" = "owned"
   }
@@ -416,6 +435,7 @@ resource "aws_ebs_volume" "c-etcd-events-existingsg-example-com" {
     "KubernetesCluster"                            = "existingsg.example.com"
     "Name"                                         = "c.etcd-events.existingsg.example.com"
     "k8s.io/etcd/events"                           = "c/a,b,c"
+    "k8s.io/role/control-plane"                    = "1"
     "k8s.io/role/master"                           = "1"
     "kubernetes.io/cluster/existingsg.example.com" = "owned"
   }
@@ -432,6 +452,7 @@ resource "aws_ebs_volume" "c-etcd-main-existingsg-example-com" {
     "KubernetesCluster"                            = "existingsg.example.com"
     "Name"                                         = "c.etcd-main.existingsg.example.com"
     "k8s.io/etcd/main"                             = "c/a,b,c"
+    "k8s.io/role/control-plane"                    = "1"
     "k8s.io/role/master"                           = "1"
     "kubernetes.io/cluster/existingsg.example.com" = "owned"
   }
@@ -589,6 +610,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-existingsg-example-com
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
+      "k8s.io/role/control-plane"                                                                             = "1"
       "k8s.io/role/master"                                                                                    = "1"
       "kops.k8s.io/instancegroup"                                                                             = "master-us-test-1a"
       "kubernetes.io/cluster/existingsg.example.com"                                                          = "owned"
@@ -604,6 +626,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-existingsg-example-com
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
+      "k8s.io/role/control-plane"                                                                             = "1"
       "k8s.io/role/master"                                                                                    = "1"
       "kops.k8s.io/instancegroup"                                                                             = "master-us-test-1a"
       "kubernetes.io/cluster/existingsg.example.com"                                                          = "owned"
@@ -617,6 +640,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-existingsg-example-com
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
     "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
+    "k8s.io/role/control-plane"                                                                             = "1"
     "k8s.io/role/master"                                                                                    = "1"
     "kops.k8s.io/instancegroup"                                                                             = "master-us-test-1a"
     "kubernetes.io/cluster/existingsg.example.com"                                                          = "owned"
@@ -675,6 +699,7 @@ resource "aws_launch_template" "master-us-test-1b-masters-existingsg-example-com
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
+      "k8s.io/role/control-plane"                                                                             = "1"
       "k8s.io/role/master"                                                                                    = "1"
       "kops.k8s.io/instancegroup"                                                                             = "master-us-test-1b"
       "kubernetes.io/cluster/existingsg.example.com"                                                          = "owned"
@@ -690,6 +715,7 @@ resource "aws_launch_template" "master-us-test-1b-masters-existingsg-example-com
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
+      "k8s.io/role/control-plane"                                                                             = "1"
       "k8s.io/role/master"                                                                                    = "1"
       "kops.k8s.io/instancegroup"                                                                             = "master-us-test-1b"
       "kubernetes.io/cluster/existingsg.example.com"                                                          = "owned"
@@ -703,6 +729,7 @@ resource "aws_launch_template" "master-us-test-1b-masters-existingsg-example-com
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
     "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
+    "k8s.io/role/control-plane"                                                                             = "1"
     "k8s.io/role/master"                                                                                    = "1"
     "kops.k8s.io/instancegroup"                                                                             = "master-us-test-1b"
     "kubernetes.io/cluster/existingsg.example.com"                                                          = "owned"
@@ -761,6 +788,7 @@ resource "aws_launch_template" "master-us-test-1c-masters-existingsg-example-com
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
+      "k8s.io/role/control-plane"                                                                             = "1"
       "k8s.io/role/master"                                                                                    = "1"
       "kops.k8s.io/instancegroup"                                                                             = "master-us-test-1c"
       "kubernetes.io/cluster/existingsg.example.com"                                                          = "owned"
@@ -776,6 +804,7 @@ resource "aws_launch_template" "master-us-test-1c-masters-existingsg-example-com
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
+      "k8s.io/role/control-plane"                                                                             = "1"
       "k8s.io/role/master"                                                                                    = "1"
       "kops.k8s.io/instancegroup"                                                                             = "master-us-test-1c"
       "kubernetes.io/cluster/existingsg.example.com"                                                          = "owned"
@@ -789,6 +818,7 @@ resource "aws_launch_template" "master-us-test-1c-masters-existingsg-example-com
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
     "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
+    "k8s.io/role/control-plane"                                                                             = "1"
     "k8s.io/role/master"                                                                                    = "1"
     "kops.k8s.io/instancegroup"                                                                             = "master-us-test-1c"
     "kubernetes.io/cluster/existingsg.example.com"                                                          = "owned"
@@ -1064,7 +1094,7 @@ resource "aws_s3_object" "manifests-static-kube-apiserver-healthcheck" {
 resource "aws_s3_object" "nodeupconfig-master-us-test-1a" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_nodeupconfig-master-us-test-1a_content")
-  key                    = "clusters.example.com/existingsg.example.com/igconfig/master/master-us-test-1a/nodeupconfig.yaml"
+  key                    = "clusters.example.com/existingsg.example.com/igconfig/control-plane/master-us-test-1a/nodeupconfig.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
@@ -1072,7 +1102,7 @@ resource "aws_s3_object" "nodeupconfig-master-us-test-1a" {
 resource "aws_s3_object" "nodeupconfig-master-us-test-1b" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_nodeupconfig-master-us-test-1b_content")
-  key                    = "clusters.example.com/existingsg.example.com/igconfig/master/master-us-test-1b/nodeupconfig.yaml"
+  key                    = "clusters.example.com/existingsg.example.com/igconfig/control-plane/master-us-test-1b/nodeupconfig.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
@@ -1080,7 +1110,7 @@ resource "aws_s3_object" "nodeupconfig-master-us-test-1b" {
 resource "aws_s3_object" "nodeupconfig-master-us-test-1c" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_nodeupconfig-master-us-test-1c_content")
-  key                    = "clusters.example.com/existingsg.example.com/igconfig/master/master-us-test-1c/nodeupconfig.yaml"
+  key                    = "clusters.example.com/existingsg.example.com/igconfig/control-plane/master-us-test-1c/nodeupconfig.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
@@ -1113,7 +1143,7 @@ resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-masters-e
   type              = "ingress"
 }
 
-resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-sg-master-1a-Master" {
+resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-sg-master-1a-ControlPlane" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 22
   protocol          = "tcp"
@@ -1122,7 +1152,7 @@ resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-sg-master
   type              = "ingress"
 }
 
-resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-sg-master-1b-Master" {
+resource "aws_security_group_rule" "from-0-0-0-0--0-ingress-tcp-22to22-sg-master-1b-ControlPlane" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 22
   protocol          = "tcp"
@@ -1194,7 +1224,7 @@ resource "aws_security_group_rule" "from-masters-existingsg-example-com-ingress-
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "from-masters-existingsg-example-com-ingress-all-0to0-sg-master-1a-Master" {
+resource "aws_security_group_rule" "from-masters-existingsg-example-com-ingress-all-0to0-sg-master-1a-ControlPlane" {
   from_port                = 0
   protocol                 = "-1"
   security_group_id        = "sg-master-1a"
@@ -1203,7 +1233,7 @@ resource "aws_security_group_rule" "from-masters-existingsg-example-com-ingress-
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "from-masters-existingsg-example-com-ingress-all-0to0-sg-master-1b-Master" {
+resource "aws_security_group_rule" "from-masters-existingsg-example-com-ingress-all-0to0-sg-master-1b-ControlPlane" {
   from_port                = 0
   protocol                 = "-1"
   security_group_id        = "sg-master-1b"
@@ -1221,7 +1251,7 @@ resource "aws_security_group_rule" "from-masters-existingsg-example-com-ingress-
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "from-sg-master-1a-Master-egress-all-0to0-0-0-0-0--0" {
+resource "aws_security_group_rule" "from-sg-master-1a-ControlPlane-egress-all-0to0-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
   protocol          = "-1"
@@ -1230,7 +1260,7 @@ resource "aws_security_group_rule" "from-sg-master-1a-Master-egress-all-0to0-0-0
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "from-sg-master-1a-Master-egress-all-0to0-__--0" {
+resource "aws_security_group_rule" "from-sg-master-1a-ControlPlane-egress-all-0to0-__--0" {
   from_port         = 0
   ipv6_cidr_blocks  = ["::/0"]
   protocol          = "-1"
@@ -1239,7 +1269,7 @@ resource "aws_security_group_rule" "from-sg-master-1a-Master-egress-all-0to0-__-
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "from-sg-master-1a-Master-ingress-all-0to0-masters-existingsg-example-com" {
+resource "aws_security_group_rule" "from-sg-master-1a-ControlPlane-ingress-all-0to0-masters-existingsg-example-com" {
   from_port                = 0
   protocol                 = "-1"
   security_group_id        = aws_security_group.masters-existingsg-example-com.id
@@ -1248,7 +1278,7 @@ resource "aws_security_group_rule" "from-sg-master-1a-Master-ingress-all-0to0-ma
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "from-sg-master-1a-Master-ingress-all-0to0-sg-master-1a-Master" {
+resource "aws_security_group_rule" "from-sg-master-1a-ControlPlane-ingress-all-0to0-sg-master-1a-ControlPlane" {
   from_port                = 0
   protocol                 = "-1"
   security_group_id        = "sg-master-1a"
@@ -1257,7 +1287,7 @@ resource "aws_security_group_rule" "from-sg-master-1a-Master-ingress-all-0to0-sg
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "from-sg-master-1a-Master-ingress-all-0to0-sg-master-1b-Master" {
+resource "aws_security_group_rule" "from-sg-master-1a-ControlPlane-ingress-all-0to0-sg-master-1b-ControlPlane" {
   from_port                = 0
   protocol                 = "-1"
   security_group_id        = "sg-master-1b"
@@ -1266,7 +1296,7 @@ resource "aws_security_group_rule" "from-sg-master-1a-Master-ingress-all-0to0-sg
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "from-sg-master-1a-Master-ingress-all-0to0-sg-nodes-Node" {
+resource "aws_security_group_rule" "from-sg-master-1a-ControlPlane-ingress-all-0to0-sg-nodes-Node" {
   from_port                = 0
   protocol                 = "-1"
   security_group_id        = "sg-nodes"
@@ -1275,7 +1305,7 @@ resource "aws_security_group_rule" "from-sg-master-1a-Master-ingress-all-0to0-sg
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "from-sg-master-1b-Master-egress-all-0to0-0-0-0-0--0" {
+resource "aws_security_group_rule" "from-sg-master-1b-ControlPlane-egress-all-0to0-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
   protocol          = "-1"
@@ -1284,7 +1314,7 @@ resource "aws_security_group_rule" "from-sg-master-1b-Master-egress-all-0to0-0-0
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "from-sg-master-1b-Master-egress-all-0to0-__--0" {
+resource "aws_security_group_rule" "from-sg-master-1b-ControlPlane-egress-all-0to0-__--0" {
   from_port         = 0
   ipv6_cidr_blocks  = ["::/0"]
   protocol          = "-1"
@@ -1293,7 +1323,7 @@ resource "aws_security_group_rule" "from-sg-master-1b-Master-egress-all-0to0-__-
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "from-sg-master-1b-Master-ingress-all-0to0-masters-existingsg-example-com" {
+resource "aws_security_group_rule" "from-sg-master-1b-ControlPlane-ingress-all-0to0-masters-existingsg-example-com" {
   from_port                = 0
   protocol                 = "-1"
   security_group_id        = aws_security_group.masters-existingsg-example-com.id
@@ -1302,7 +1332,7 @@ resource "aws_security_group_rule" "from-sg-master-1b-Master-ingress-all-0to0-ma
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "from-sg-master-1b-Master-ingress-all-0to0-sg-master-1a-Master" {
+resource "aws_security_group_rule" "from-sg-master-1b-ControlPlane-ingress-all-0to0-sg-master-1a-ControlPlane" {
   from_port                = 0
   protocol                 = "-1"
   security_group_id        = "sg-master-1a"
@@ -1311,7 +1341,7 @@ resource "aws_security_group_rule" "from-sg-master-1b-Master-ingress-all-0to0-sg
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "from-sg-master-1b-Master-ingress-all-0to0-sg-master-1b-Master" {
+resource "aws_security_group_rule" "from-sg-master-1b-ControlPlane-ingress-all-0to0-sg-master-1b-ControlPlane" {
   from_port                = 0
   protocol                 = "-1"
   security_group_id        = "sg-master-1b"
@@ -1320,7 +1350,7 @@ resource "aws_security_group_rule" "from-sg-master-1b-Master-ingress-all-0to0-sg
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "from-sg-master-1b-Master-ingress-all-0to0-sg-nodes-Node" {
+resource "aws_security_group_rule" "from-sg-master-1b-ControlPlane-ingress-all-0to0-sg-nodes-Node" {
   from_port                = 0
   protocol                 = "-1"
   security_group_id        = "sg-nodes"
@@ -1365,7 +1395,7 @@ resource "aws_security_group_rule" "from-sg-nodes-Node-ingress-tcp-1to2379-maste
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "from-sg-nodes-Node-ingress-tcp-1to2379-sg-master-1a-Master" {
+resource "aws_security_group_rule" "from-sg-nodes-Node-ingress-tcp-1to2379-sg-master-1a-ControlPlane" {
   from_port                = 1
   protocol                 = "tcp"
   security_group_id        = "sg-master-1a"
@@ -1374,7 +1404,7 @@ resource "aws_security_group_rule" "from-sg-nodes-Node-ingress-tcp-1to2379-sg-ma
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "from-sg-nodes-Node-ingress-tcp-1to2379-sg-master-1b-Master" {
+resource "aws_security_group_rule" "from-sg-nodes-Node-ingress-tcp-1to2379-sg-master-1b-ControlPlane" {
   from_port                = 1
   protocol                 = "tcp"
   security_group_id        = "sg-master-1b"
@@ -1392,7 +1422,7 @@ resource "aws_security_group_rule" "from-sg-nodes-Node-ingress-tcp-2382to4000-ma
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "from-sg-nodes-Node-ingress-tcp-2382to4000-sg-master-1a-Master" {
+resource "aws_security_group_rule" "from-sg-nodes-Node-ingress-tcp-2382to4000-sg-master-1a-ControlPlane" {
   from_port                = 2382
   protocol                 = "tcp"
   security_group_id        = "sg-master-1a"
@@ -1401,7 +1431,7 @@ resource "aws_security_group_rule" "from-sg-nodes-Node-ingress-tcp-2382to4000-sg
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "from-sg-nodes-Node-ingress-tcp-2382to4000-sg-master-1b-Master" {
+resource "aws_security_group_rule" "from-sg-nodes-Node-ingress-tcp-2382to4000-sg-master-1b-ControlPlane" {
   from_port                = 2382
   protocol                 = "tcp"
   security_group_id        = "sg-master-1b"
@@ -1419,7 +1449,7 @@ resource "aws_security_group_rule" "from-sg-nodes-Node-ingress-tcp-4003to65535-m
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "from-sg-nodes-Node-ingress-tcp-4003to65535-sg-master-1a-Master" {
+resource "aws_security_group_rule" "from-sg-nodes-Node-ingress-tcp-4003to65535-sg-master-1a-ControlPlane" {
   from_port                = 4003
   protocol                 = "tcp"
   security_group_id        = "sg-master-1a"
@@ -1428,7 +1458,7 @@ resource "aws_security_group_rule" "from-sg-nodes-Node-ingress-tcp-4003to65535-s
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "from-sg-nodes-Node-ingress-tcp-4003to65535-sg-master-1b-Master" {
+resource "aws_security_group_rule" "from-sg-nodes-Node-ingress-tcp-4003to65535-sg-master-1b-ControlPlane" {
   from_port                = 4003
   protocol                 = "tcp"
   security_group_id        = "sg-master-1b"
@@ -1446,7 +1476,7 @@ resource "aws_security_group_rule" "from-sg-nodes-Node-ingress-udp-1to65535-mast
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "from-sg-nodes-Node-ingress-udp-1to65535-sg-master-1a-Master" {
+resource "aws_security_group_rule" "from-sg-nodes-Node-ingress-udp-1to65535-sg-master-1a-ControlPlane" {
   from_port                = 1
   protocol                 = "udp"
   security_group_id        = "sg-master-1a"
@@ -1455,7 +1485,7 @@ resource "aws_security_group_rule" "from-sg-nodes-Node-ingress-udp-1to65535-sg-m
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "from-sg-nodes-Node-ingress-udp-1to65535-sg-master-1b-Master" {
+resource "aws_security_group_rule" "from-sg-nodes-Node-ingress-udp-1to65535-sg-master-1b-ControlPlane" {
   from_port                = 1
   protocol                 = "udp"
   security_group_id        = "sg-master-1b"
