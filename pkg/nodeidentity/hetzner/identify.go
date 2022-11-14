@@ -99,7 +99,7 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 	for key, value := range server.Labels {
 		if key == hetzner.TagKubernetesInstanceRole {
 			switch kops.InstanceGroupRole(value) {
-			case kops.InstanceGroupRoleMaster:
+			case kops.InstanceGroupRoleControlPlane:
 				labels[nodelabels.RoleLabelControlPlane20] = ""
 			case kops.InstanceGroupRoleNode:
 				labels[nodelabels.RoleLabelNode16] = ""

@@ -79,7 +79,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 	igSpec := &ig.Spec
 
 	// TODO: Clean up
-	if ig.IsMaster() {
+	if ig.IsControlPlane() {
 		if ig.Spec.MachineType == "" {
 			ig.Spec.MachineType, err = defaultMachineType(cloud, cluster, ig)
 			if err != nil {
@@ -146,7 +146,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 		}
 	}
 
-	if ig.IsMaster() {
+	if ig.IsControlPlane() {
 		if len(ig.Spec.Subnets) == 0 {
 			return nil, fmt.Errorf("master InstanceGroup %s did not specify any Subnets", ig.ObjectMeta.Name)
 		}
@@ -231,7 +231,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 
 	var igKubeletConfig *kops.KubeletConfigSpec
 	// Start with the cluster kubelet config
-	if ig.IsMaster() {
+	if ig.IsControlPlane() {
 		if cluster.Spec.MasterKubelet != nil {
 			igKubeletConfig = cluster.Spec.MasterKubelet.DeepCopy()
 		} else {
@@ -269,7 +269,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 	}
 
 	{
-		if ig.IsMaster() {
+		if ig.IsControlPlane() {
 			// (Even though the value is empty, we still expect <Key>=<Value>:<Effect>)
 			if cluster.IsKubernetesLT("1.24") {
 				taints.Insert(nodelabels.RoleLabelMaster16 + "=:" + string(v1.TaintEffectNoSchedule))
@@ -310,7 +310,7 @@ func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.Instance
 
 	case kops.CloudProviderGCE:
 		switch ig.Spec.Role {
-		case kops.InstanceGroupRoleMaster:
+		case kops.InstanceGroupRoleControlPlane:
 			return defaultMasterMachineTypeGCE, nil
 
 		case kops.InstanceGroupRoleNode:
@@ -322,7 +322,7 @@ func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.Instance
 
 	case kops.CloudProviderDO:
 		switch ig.Spec.Role {
-		case kops.InstanceGroupRoleMaster:
+		case kops.InstanceGroupRoleControlPlane:
 			return defaultMasterMachineTypeDO, nil
 
 		case kops.InstanceGroupRoleNode:
@@ -332,7 +332,7 @@ func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.Instance
 
 	case kops.CloudProviderHetzner:
 		switch ig.Spec.Role {
-		case kops.InstanceGroupRoleMaster:
+		case kops.InstanceGroupRoleControlPlane:
 			return defaultMasterMachineTypeHetzner, nil
 
 		case kops.InstanceGroupRoleNode:
@@ -351,7 +351,7 @@ func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.Instance
 
 	case kops.CloudProviderAzure:
 		switch ig.Spec.Role {
-		case kops.InstanceGroupRoleMaster:
+		case kops.InstanceGroupRoleControlPlane:
 			return defaultMasterMachineTypeAzure, nil
 
 		case kops.InstanceGroupRoleNode:

@@ -327,7 +327,7 @@ func (t *Tester) getSchedulableZones() ([]string, error) {
 
 	var schedulable []*api.InstanceGroup
 	for _, ig := range igs {
-		if unversioned.InstanceGroupRole(ig.Spec.Role) == unversioned.InstanceGroupRoleMaster {
+		if unversioned.InstanceGroupRole(ig.Spec.Role) == unversioned.InstanceGroupRoleControlPlane {
 			continue
 		}
 		if unversioned.InstanceGroupRole(ig.Spec.Role) == unversioned.InstanceGroupRoleAPIServer {

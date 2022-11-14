@@ -67,5 +67,5 @@ func DecodeGCELabel(s string) (string, error) {
 
 // TagForRole return the instance (network) tag used for instances with the given role.
 func TagForRole(clusterName string, role kops.InstanceGroupRole) string {
-	return ClusterPrefixedName(GceLabelNameRolePrefix+strings.ToLower(string(role)), clusterName, 63)
+	return ClusterPrefixedName(GceLabelNameRolePrefix+role.ToLowerString(), clusterName, 63)
 }

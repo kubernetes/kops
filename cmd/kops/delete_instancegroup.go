@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strings"
 
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -85,7 +84,7 @@ func NewCmdDeleteInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 
 			return nil
 		},
-		ValidArgsFunction: completeInstanceGroup(f, nil, &[]string{strings.ToLower(string(kops.InstanceGroupRoleMaster))}),
+		ValidArgsFunction: completeInstanceGroup(f, nil, &[]string{kops.InstanceGroupRoleControlPlane.ToLowerString()}),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.TODO()
 
@@ -148,7 +147,7 @@ func RunDeleteInstanceGroup(ctx context.Context, f *util.Factory, out io.Writer,
 
 	fmt.Fprintf(out, "InstanceGroup %q found for deletion\n", groupName)
 
-	if group.Spec.Role == kops.InstanceGroupRoleMaster {
+	if group.Spec.Role == kops.InstanceGroupRoleControlPlane {
 		groups, err := clientset.InstanceGroupsFor(cluster).List(ctx, metav1.ListOptions{})
 		if err != nil {
 			return fmt.Errorf("listing InstanceGroups: %v", err)
@@ -156,7 +155,7 @@ func RunDeleteInstanceGroup(ctx context.Context, f *util.Factory, out io.Writer,
 
 		onlyMaster := true
 		for _, ig := range groups.Items {
-			if ig.Name != groupName && ig.Spec.Role == kops.InstanceGroupRoleMaster {
+			if ig.Name != groupName && ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
 				onlyMaster = false
 				break
 			}

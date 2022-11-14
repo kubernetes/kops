@@ -64,6 +64,7 @@ const (
 	TagNameEtcdClusterPrefix = "k8s.io/etcd/"
 	TagNameRolePrefix        = "k8s.io/role/"
 	TagClusterName           = "KubernetesCluster"
+	TagRoleControlPlane      = "control-plane"
 	TagRoleMaster            = "master"
 	TagKopsInstanceGroup     = "KopsInstanceGroup"
 	TagKopsNetwork           = "KopsNetwork"
@@ -726,14 +727,14 @@ func getIPIngressStatus(c OpenstackCloud, cluster *kops.Cluster) (ingresses []fi
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
 		instances, err := c.ListInstances(servers.ListOpts{})
 		if err != nil {
-			return false, fmt.Errorf("GetApiIngressStatus: Failed to list master nodes: %v", err)
+			return false, fmt.Errorf("GetApiIngressStatus: Failed to list control plane nodes: %v", err)
 		}
 		for _, instance := range instances {
 			val, ok := instance.Metadata["k8s"]
 			val2, ok2 := instance.Metadata["KopsRole"]
 			if ok && val == cluster.Name && ok2 {
 				role, success := kops.ParseInstanceGroupRole(val2, false)
-				if success && role == kops.InstanceGroupRoleMaster {
+				if success && role == kops.InstanceGroupRoleControlPlane {
 					if cluster.Spec.Topology != nil && cluster.Spec.Topology.ControlPlane == kops.TopologyPrivate {
 						ifName := instance.Metadata[TagKopsNetwork]
 						address, err := GetServerFixedIP(&instance, ifName)

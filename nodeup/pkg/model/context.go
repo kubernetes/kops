@@ -91,11 +91,11 @@ func (c *NodeupModelContext) Init() error {
 
 	role := c.BootConfig.InstanceGroupRole
 
-	if role == kops.InstanceGroupRoleMaster {
+	if role == kops.InstanceGroupRoleControlPlane {
 		c.IsMaster = true
 	}
 
-	if role == kops.InstanceGroupRoleMaster || role == kops.InstanceGroupRoleAPIServer {
+	if role == kops.InstanceGroupRoleControlPlane || role == kops.InstanceGroupRoleAPIServer {
 		c.HasAPIServer = true
 	}
 	return nil

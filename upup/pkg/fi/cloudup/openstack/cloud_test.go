@@ -161,7 +161,7 @@ func Test_OpenstackCloud_GetApiIngressStatus(t *testing.T) {
 					ID: "master1_no_lb_no_floating",
 					Metadata: map[string]string{
 						"k8s":      "cluster.k8s.local",
-						"KopsRole": "Master",
+						"KopsRole": "ControlPlane",
 					},
 					Addresses: map[string]interface{}{
 						"1": []Address{
@@ -178,7 +178,7 @@ func Test_OpenstackCloud_GetApiIngressStatus(t *testing.T) {
 					ID: "master2_no_lb_no_floating",
 					Metadata: map[string]string{
 						"k8s":      "cluster.k8s.local",
-						"KopsRole": "Master",
+						"KopsRole": "ControlPlane",
 					},
 					Addresses: map[string]interface{}{
 						"1": []Address{
@@ -233,7 +233,7 @@ func Test_OpenstackCloud_GetApiIngressStatus(t *testing.T) {
 					ID: "master1_no_lb_floating",
 					Metadata: map[string]string{
 						"k8s":      "cluster.k8s.local",
-						"KopsRole": "Master",
+						"KopsRole": "ControlPlane",
 					},
 					Addresses: map[string]interface{}{
 						"1": []map[string]interface{}{
@@ -250,7 +250,7 @@ func Test_OpenstackCloud_GetApiIngressStatus(t *testing.T) {
 					ID: "master2_no_lb_floating",
 					Metadata: map[string]string{
 						"k8s":      "cluster.k8s.local",
-						"KopsRole": "Master",
+						"KopsRole": "ControlPlane",
 					},
 					Addresses: map[string]interface{}{
 						"1": []map[string]string{

@@ -28,7 +28,6 @@ import (
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/k8sversion"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/util/pkg/vfs"
 
 	"github.com/blang/semver/v4"
@@ -166,11 +165,6 @@ func Image(component string, clusterSpec *kops.ClusterSpec, assetsBuilder *asset
 	image := "registry.k8s.io/" + imageName + ":" + tag
 
 	return image, nil
-}
-
-// GCETagForRole returns the (network) tag for GCE instances in the given instance group role.
-func GCETagForRole(clusterName string, role kops.InstanceGroupRole) string {
-	return gce.SafeClusterName(clusterName) + "-" + gce.GceLabelNameRolePrefix + strings.ToLower(string(role))
 }
 
 // IsCertManagerEnabled returns true if the cluster has the capability to handle cert-manager PKI

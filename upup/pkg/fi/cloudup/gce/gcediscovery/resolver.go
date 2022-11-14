@@ -230,7 +230,7 @@ func (r *Discovery) Resolve(ctx context.Context, name string) ([]string, error) 
 	var requiredTags []string
 
 	// We assume we are trying to resolve a component that runs on the control plane
-	requiredTags = append(requiredTags, gce.TagForRole(r.clusterName, kops.InstanceGroupRoleMaster))
+	requiredTags = append(requiredTags, gce.TagForRole(r.clusterName, kops.InstanceGroupRoleControlPlane))
 
 	if err := r.findInstances(ctx, func(i *compute.Instance) (bool, error) {
 		// Make sure the instance has any required tags

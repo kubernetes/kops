@@ -113,7 +113,7 @@ func BuildMinimalBastionInstanceGroup(name string, subnets ...string) kops.Insta
 func BuildMinimalMasterInstanceGroup(subnet string) kops.InstanceGroup {
 	g := kops.InstanceGroup{}
 	g.ObjectMeta.Name = "master-" + subnet
-	g.Spec.Role = kops.InstanceGroupRoleMaster
+	g.Spec.Role = kops.InstanceGroupRoleControlPlane
 	g.Spec.Subnets = []string{subnet}
 	g.Spec.Image = "ami-1234abcd"
 

@@ -86,7 +86,7 @@ func testValidate(t *testing.T, groups map[string]*cloudinstances.CloudInstanceG
 					Name: "master-1",
 				},
 				Spec: kopsapi.InstanceGroupSpec{
-					Role: kopsapi.InstanceGroupRoleMaster,
+					Role: kopsapi.InstanceGroupRoleControlPlane,
 				},
 			},
 			MinSize: 1,
@@ -342,7 +342,7 @@ func Test_ValidateMastersNotEnough(t *testing.T) {
 				Name: "master-1",
 			},
 			Spec: kopsapi.InstanceGroupSpec{
-				Role: kopsapi.InstanceGroupRoleMaster,
+				Role: kopsapi.InstanceGroupRoleControlPlane,
 			},
 		},
 		MinSize:    2,
@@ -396,7 +396,7 @@ func Test_ValidateMasterNotReady(t *testing.T) {
 				Name: "master-1",
 			},
 			Spec: kopsapi.InstanceGroupSpec{
-				Role: kopsapi.InstanceGroupRoleMaster,
+				Role: kopsapi.InstanceGroupRoleControlPlane,
 			},
 		},
 		MinSize:    2,
@@ -435,7 +435,7 @@ func Test_ValidateMasterNotReady(t *testing.T) {
 		!assert.Equal(t, &ValidationError{
 			Kind:          "Node",
 			Name:          "master-1b",
-			Message:       "node \"master-1b\" of role \"master\" is not ready",
+			Message:       "node \"master-1b\" of role \"control-plane\" is not ready",
 			InstanceGroup: groups["node-1"].InstanceGroup,
 		}, v.Failures[0]) {
 		printDebug(t, v)
@@ -450,7 +450,7 @@ func Test_ValidateMasterStaticPods(t *testing.T) {
 				Name: "master-1",
 			},
 			Spec: kopsapi.InstanceGroupSpec{
-				Role: kopsapi.InstanceGroupRoleMaster,
+				Role: kopsapi.InstanceGroupRoleControlPlane,
 			},
 		},
 		MinSize:    1,
@@ -523,7 +523,7 @@ func Test_ValidateMasterStaticPods(t *testing.T) {
 		{
 			Kind:          "Node",
 			Name:          "master-1c",
-			Message:       "node \"master-1c\" of role \"master\" is not ready",
+			Message:       "node \"master-1c\" of role \"control-plane\" is not ready",
 			InstanceGroup: groups["node-1"].InstanceGroup,
 		},
 	}

@@ -112,7 +112,7 @@ func (c *gceCloudImplementation) findEtcdStatus(cluster *kops.Cluster) ([]kops.E
 				etcdClusterSpec = spec
 			} else if strings.HasPrefix(k, GceLabelNameRolePrefix) {
 				roleName := strings.TrimPrefix(k, GceLabelNameRolePrefix)
-				if roleName == "master" {
+				if roleName == "master" || roleName == "control-plane" {
 					master = true
 				}
 			}

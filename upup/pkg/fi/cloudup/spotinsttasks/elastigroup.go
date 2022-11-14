@@ -1499,6 +1499,9 @@ func (_ *Elastigroup) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 	for key := range e.Tags {
 		if strings.HasPrefix(key, awstasks.CloudTagInstanceGroupRolePrefix) {
 			suffix := strings.TrimPrefix(key, awstasks.CloudTagInstanceGroupRolePrefix)
+			if suffix == "master" {
+				suffix = "control-plane"
+			}
 			if role != "" && role != suffix {
 				return fmt.Errorf("spotinst: found multiple role tags %q vs %q", role, suffix)
 			}

@@ -64,7 +64,7 @@ func (b *KubeApiserverBuilder) Build(c *fi.ModelBuilderContext) error {
 	b.AssetBuilder.StaticManifests = append(b.AssetBuilder.StaticManifests, &assets.StaticManifest{
 		Key:   key,
 		Path:  location,
-		Roles: []kops.InstanceGroupRole{kops.InstanceGroupRoleMaster, kops.InstanceGroupRoleAPIServer},
+		Roles: []kops.InstanceGroupRole{kops.InstanceGroupRoleControlPlane, kops.InstanceGroupRoleAPIServer},
 	})
 	return nil
 }

@@ -41,7 +41,7 @@ func buildMinimalNodeInstanceGroup(subnets ...string) *kopsapi.InstanceGroup {
 func buildMinimalMasterInstanceGroup(subnet string) *kopsapi.InstanceGroup {
 	g := &kopsapi.InstanceGroup{}
 	g.ObjectMeta.Name = "master-" + subnet
-	g.Spec.Role = kopsapi.InstanceGroupRoleMaster
+	g.Spec.Role = kopsapi.InstanceGroupRoleControlPlane
 	g.Spec.MinSize = fi.PtrTo(int32(1))
 	g.Spec.MaxSize = fi.PtrTo(int32(1))
 	g.Spec.Image = "my-image"

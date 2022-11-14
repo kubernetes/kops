@@ -62,7 +62,7 @@ func (c *azureCloudImplementation) findEtcdStatus(disks []compute.Disk) ([]kops.
 			master          bool
 		)
 		for k, v := range disk.Tags {
-			if k == TagNameRolePrefix+TagRoleMaster {
+			if k == TagNameRolePrefix+TagRoleControlPlane || k == TagNameRolePrefix+TagRoleMaster {
 				master = true
 				continue
 			}
@@ -208,7 +208,7 @@ func keyedByName(instancegroups []*kops.InstanceGroup, clusterName string) (map[
 	for _, ig := range instancegroups {
 		var name string
 		switch ig.Spec.Role {
-		case kops.InstanceGroupRoleMaster:
+		case kops.InstanceGroupRoleControlPlane:
 			name = ig.Name + ".masters." + clusterName
 		case kops.InstanceGroupRoleNode, kops.InstanceGroupRoleBastion:
 			name = ig.Name + "." + clusterName

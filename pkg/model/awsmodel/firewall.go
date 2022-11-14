@@ -232,7 +232,7 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 }
 
 func (b *FirewallModelBuilder) buildMasterRules(c *fi.ModelBuilderContext, nodeGroups []SecurityGroupInfo) ([]SecurityGroupInfo, error) {
-	masterGroups, err := b.GetSecurityGroups(kops.InstanceGroupRoleMaster)
+	masterGroups, err := b.GetSecurityGroups(kops.InstanceGroupRoleControlPlane)
 	if err != nil {
 		return nil, err
 	}
@@ -303,7 +303,7 @@ type SecurityGroupInfo struct {
 
 func (b *AWSModelContext) GetSecurityGroups(role kops.InstanceGroupRole) ([]SecurityGroupInfo, error) {
 	var baseGroup *awstasks.SecurityGroup
-	if role == kops.InstanceGroupRoleMaster {
+	if role == kops.InstanceGroupRoleControlPlane {
 		name := b.SecurityGroupName(role)
 		baseGroup = &awstasks.SecurityGroup{
 			Name:        fi.PtrTo(name),
