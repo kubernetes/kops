@@ -20,6 +20,7 @@ spec:
     manageStorageClasses: true
   cloudProvider: aws
   clusterAutoscaler:
+    autoDiscovery: false
     awsUseStaticInstanceList: false
     balanceSimilarNodeGroups: false
     enabled: true
