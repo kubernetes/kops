@@ -927,6 +927,18 @@ func TestClusterNameDigit(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
+// TestClusterAutoscalerAutoDiscovery runs the test on a simple configuration, with cluster autoscaler autodiscovery
+func TestClusterAutoscalerAutoDiscovery(t *testing.T) {
+	newIntegrationTest("cas-autodiscovery.example.com", "cluster-autoscaler-autodiscovery").
+		withAddons(
+			awsEBSCSIAddon,
+			dnsControllerAddon,
+			awsCCMAddon,
+			"cluster-autoscaler.addons.k8s.io-k8s-1.15",
+		).
+		runTestTerraformAWS(t)
+}
+
 func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarness, expectedDataFilenames []string, tfFileName string, expectedTfFileName string, phase *cloudup.Phase) {
 	ctx := context.Background()
 
