@@ -1493,7 +1493,7 @@ func MachineArchitecture(cloud fi.Cloud, machineType string) (architectures.Arch
 			return "", fmt.Errorf("error finding instance info for instance type %q: %w", machineType, err)
 		}
 		if info.ProcessorInfo == nil || len(info.ProcessorInfo.SupportedArchitectures) == 0 {
-			return "", fmt.Errorf("error finding architecture info for instance type %q", machineType)
+			return "", fmt.Errorf("unable to determine architecture info for instance type %q", machineType)
 		}
 		var unsupported []string
 		for _, arch := range info.ProcessorInfo.SupportedArchitectures {
