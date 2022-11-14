@@ -177,7 +177,7 @@ func awsValidateInstanceTypeAndImage(instanceTypeFieldPath *field.Path, imageFie
 	for _, instanceType := range strings.Split(instanceTypes, ",") {
 		machineInfo, err := cloud.DescribeInstanceType(instanceType)
 		if err != nil {
-			allErrs = append(allErrs, field.Invalid(instanceTypeFieldPath, instanceTypes, fmt.Sprintf("machine type specified is invalid: %q", instanceType)))
+			allErrs = append(allErrs, field.Invalid(instanceTypeFieldPath, instanceTypes, fmt.Sprintf("machine type %q is invalid: %v", instanceType, err)))
 			continue
 		}
 
@@ -195,7 +195,7 @@ func awsValidateInstanceTypeAndImage(instanceTypeFieldPath *field.Path, imageFie
 				machineArch = fi.StringSliceValue(machineInfo.ProcessorInfo.SupportedArchitectures)
 			}
 			allErrs = append(allErrs, field.Invalid(instanceTypeFieldPath, instanceTypes,
-				fmt.Sprintf("machine type architecture does not match image architecture: %q - %q", strings.Join(machineArch, ","), imageArch)))
+				fmt.Sprintf("machine type architecture %q does not match image architecture %q", strings.Join(machineArch, ","), imageArch)))
 		}
 	}
 
