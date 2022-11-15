@@ -4479,7 +4479,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/node:v3.23.4
+        image: docker.io/calico/node:v3.23.5
         lifecycle:
           preStop:
             exec:
@@ -4550,7 +4550,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/cni:v3.23.4
+        image: docker.io/calico/cni:v3.23.5
         name: upgrade-ipam
         securityContext:
           privileged: true
@@ -4584,7 +4584,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/cni:v3.23.4
+        image: docker.io/calico/cni:v3.23.5
         name: install-cni
         securityContext:
           privileged: true
@@ -4597,7 +4597,7 @@ spec:
         - calico-node
         - -init
         - -best-effort
-        image: docker.io/calico/node:v3.23.4
+        image: docker.io/calico/node:v3.23.5
         name: mount-bpffs
         securityContext:
           privileged: true
@@ -4723,7 +4723,7 @@ spec:
           value: node
         - name: DATASTORE_TYPE
           value: kubernetes
-        image: docker.io/calico/kube-controllers:v3.23.4
+        image: docker.io/calico/kube-controllers:v3.23.5
         livenessProbe:
           exec:
             command:
