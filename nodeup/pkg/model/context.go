@@ -581,16 +581,6 @@ func (b *NodeupModelContext) addCNIBinAsset(c *fi.ModelBuilderContext, assetPath
 	return nil
 }
 
-// UsesCNI checks if the cluster has CNI configured
-func (c *NodeupModelContext) UsesCNI() bool {
-	networking := c.Cluster.Spec.Networking
-	if networking == nil || networking.Classic != nil {
-		return false
-	}
-
-	return true
-}
-
 // CNIBinDir returns the path for the CNI binaries
 func (c *NodeupModelContext) CNIBinDir() string {
 	// We used to map this on a per-distro basis, but this can require CNI manifests to be distro aware
