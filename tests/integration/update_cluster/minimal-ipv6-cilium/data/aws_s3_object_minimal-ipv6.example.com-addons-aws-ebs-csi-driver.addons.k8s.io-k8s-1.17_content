@@ -487,6 +487,8 @@ spec:
         env:
         - name: AWS_EC2_METADATA_SERVICE_ENDPOINT_MODE
           value: IPv6
+        - name: AWS_REGION
+          value: us-test-1
         - name: CSI_ENDPOINT
           value: unix:/csi/csi.sock
         - name: CSI_NODE_NAME
@@ -641,6 +643,8 @@ spec:
         env:
         - name: AWS_EC2_METADATA_SERVICE_ENDPOINT_MODE
           value: IPv6
+        - name: AWS_REGION
+          value: us-test-1
         - name: CSI_ENDPOINT
           value: unix:///var/lib/csi/sockets/pluginproxy/csi.sock
         - name: CSI_NODE_NAME
