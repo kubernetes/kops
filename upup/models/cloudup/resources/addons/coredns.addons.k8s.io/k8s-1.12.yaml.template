@@ -77,13 +77,13 @@ data:
           ttl 30
         }
     {{- if GossipDomains }}
-        hosts /rootfs/etc/hosts {{ join GossipDomains " " }} {
+        hosts /rootfs/etc/hosts {{ join " " GossipDomains }} {
           ttl 30
           fallthrough
         }
     {{- end }}
         prometheus :9153
-        forward . {{ or (join KubeDNS.UpstreamNameservers " ") "/etc/resolv.conf" }} {
+        forward . {{ or (join " " KubeDNS.UpstreamNameservers) "/etc/resolv.conf" }} {
           max_concurrent 1000
         }
         cache 30
