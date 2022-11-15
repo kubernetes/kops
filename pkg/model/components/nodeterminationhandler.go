@@ -82,5 +82,9 @@ func (b *NodeTerminationHandlerOptionsBuilder) BuildOptions(o interface{}) error
 		nth.Version = fi.String("v1.17.1")
 	}
 
+	if nth.WebhookURL == nil {
+		nth.WebhookURL = fi.String("")
+	}
+
 	return nil
 }

@@ -4582,6 +4582,11 @@ func (in *NodeTerminationHandlerConfig) DeepCopyInto(out *NodeTerminationHandler
 		*out = new(string)
 		**out = **in
 	}
+	if in.WebhookURL != nil {
+		in, out := &in.WebhookURL, &out.WebhookURL
+		*out = new(string)
+		**out = **in
+	}
 	return
 }
 

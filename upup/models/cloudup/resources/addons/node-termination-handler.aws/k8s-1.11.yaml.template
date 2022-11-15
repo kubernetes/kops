@@ -211,6 +211,8 @@ spec:
           value: "{{ DefaultQueueName }}"
         - name: WORKERS
           value: "10"
+        - name: WEBHOOK_URL
+          value: {{ .WebhookURL }}
         ports:
         - name: liveness-probe
           protocol: TCP
@@ -381,6 +383,8 @@ spec:
           value: "false"
         - name: UPTIME_FROM_FILE
           value: "/proc/uptime"
+        - name: WEBHOOK_URL
+          value: {{ .WebhookURL }}
         resources:
           requests:
             cpu: {{ .CPURequest }}
