@@ -25,6 +25,7 @@ NETWORKING="amazonvpc"
 
 OVERRIDES="${OVERRIDES-} --set=cluster.spec.awsLoadBalancerController.enabled=true"
 OVERRIDES="${OVERRIDES} --set=cluster.spec.certManager.enabled=true"
+OVERRIDES="${OVERRIDES} --master-size=t4g.medium --node-size=t4g.medium"
 
 # shellcheck disable=SC2034
 ZONES="eu-west-1a,eu-west-1b,eu-west-1c"
