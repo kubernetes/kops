@@ -91,9 +91,6 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["replace"] = func(s, find, replace string) string {
 		return strings.Replace(s, find, replace, -1)
 	}
-	dest["join"] = func(a []string, sep string) string {
-		return strings.Join(a, sep)
-	}
 	dest["joinHostPort"] = net.JoinHostPort
 
 	sprigTxtFuncMap := sprig.TxtFuncMap()
@@ -103,6 +100,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["trimPrefix"] = sprigTxtFuncMap["trimPrefix"]
 	dest["semverCompare"] = sprigTxtFuncMap["semverCompare"]
 	dest["ternary"] = sprigTxtFuncMap["ternary"]
+	dest["join"] = sprigTxtFuncMap["join"]
 
 	dest["ClusterName"] = tf.ClusterName
 	dest["WithDefaultBool"] = func(v *bool, defaultValue bool) bool {
