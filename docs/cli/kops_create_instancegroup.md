@@ -36,7 +36,7 @@ kops create instancegroup INSTANCE_GROUP [flags]
       --edit             Open an editor to edit default values (default true)
   -h, --help             help for instancegroup
   -o, --output string    Output format. One of json or yaml
-      --role string      Type of instance group to create (master,node,bastion) (default "Node")
+      --role string      Type of instance group to create (control-plane,node,bastion) (default "node")
       --subnet strings   Subnet in which to create instance group. One of Availability Zone like eu-west-1a or a comma-separated list of multiple Availability Zones.
 ```
 
