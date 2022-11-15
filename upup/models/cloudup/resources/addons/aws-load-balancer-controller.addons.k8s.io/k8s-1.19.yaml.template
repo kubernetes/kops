@@ -717,7 +717,7 @@ metadata:
   name: aws-load-balancer-controller
   namespace: kube-system
 spec:
-  replicas: {{ ControlPlaneControllerReplicas false }}
+  replicas: {{ ControlPlaneControllerReplicas (IsKubernetesGTE "1.24") }}
   selector:
     matchLabels:
       app.kubernetes.io/component: controller
@@ -729,6 +729,7 @@ spec:
         app.kubernetes.io/name: aws-load-balancer-controller
     spec:
       nodeSelector: null
+      {{ if not (and UseServiceAccountExternalPermissions (IsKubernetesGTE "1.24")) }}
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -739,6 +740,7 @@ spec:
             - matchExpressions:
               - key: node-role.kubernetes.io/master
                 operator: Exists
+      {{ end }}
       containers:
       - args:
         - --cluster-name={{ ClusterName }}
@@ -748,7 +750,13 @@ spec:
         - --ingress-class=alb
         - "--default-tags={{ CloudLabels }}"
         - --aws-region={{ Region }}
-        image: amazon/aws-alb-ingress-controller:{{ or .AWSLoadBalancerController.Version "v2.4.3" }}
+        env:
+        - name: NODENAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        image: amazon/aws-alb-ingress-controller:{{ or .AWSLoadBalancerController.Version "v2.4.5" }}
         livenessProbe:
           failureThreshold: 2
           httpGet:
@@ -779,11 +787,13 @@ spec:
         fsGroup: 1337
       serviceAccountName: aws-load-balancer-controller
       terminationGracePeriodSeconds: 10
+      {{ if not (and UseServiceAccountExternalPermissions (IsKubernetesGTE "1.24")) }}
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
         - key: node-role.kubernetes.io/master
           operator: Exists
+      {{ end }}
       topologySpreadConstraints:
       - maxSkew: 1
         topologyKey: "topology.kubernetes.io/zone"
