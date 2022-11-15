@@ -3,13 +3,13 @@ Assets:
   - da575ceb7c44fddbe7d2514c16798f39f8c10e54b5dbef3bcee5ac547637db11@https://storage.googleapis.com/kubernetes-release/release/v1.24.3/bin/linux/amd64/kubelet
   - 8a45348bdaf81d46caf1706c8bf95b3f431150554f47d444ffde89e8cdd712c1@https://storage.googleapis.com/kubernetes-release/release/v1.24.3/bin/linux/amd64/kubectl
   - 962100bbc4baeaaa5748cdbfce941f756b1531c2eadb290129401498bfac21e7@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz
-  - 9ee2644bfb95b23123f96b564df2035ec94a46f64060ae12322e09a8ec3c2b53@https://github.com/containerd/containerd/releases/download/v1.6.9/containerd-1.6.9-linux-amd64.tar.gz
+  - dd1f4730daf728822aea3ba35a440e14b1dfa8f1db97288a59a8666676a13637@https://github.com/containerd/containerd/releases/download/v1.6.10/containerd-1.6.10-linux-amd64.tar.gz
   - db772be63147a4e747b4fe286c7c16a2edc4a8458bd3092ea46aaee77750e8ce@https://github.com/opencontainers/runc/releases/download/v1.1.4/runc.amd64
   arm64:
   - 6c04ae25ee9b434f40e0d2466eb4ef5604dc43f306ddf1e5f165fc9d3c521e12@https://storage.googleapis.com/kubernetes-release/release/v1.24.3/bin/linux/arm64/kubelet
   - bdad4d3063ddb7bfa5ecf17fb8b029d5d81d7d4ea1650e4369aafa13ed97149a@https://storage.googleapis.com/kubernetes-release/release/v1.24.3/bin/linux/arm64/kubectl
   - ef17764ffd6cdcb16d76401bac1db6acc050c9b088f1be5efa0e094ea3b01df0@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-arm64-v0.9.1.tgz
-  - 140197aee930a8bd8a69ff8e0161e56305751be66e899dccd833c27d139f4f47@https://github.com/containerd/containerd/releases/download/v1.6.9/containerd-1.6.9-linux-arm64.tar.gz
+  - 6d655e80a843f480e1c1cead18479185251581ff2d4a2e2e5eb88ad5b5e3d937@https://github.com/containerd/containerd/releases/download/v1.6.10/containerd-1.6.10-linux-arm64.tar.gz
   - dbb71e737eaef454a406ce21fd021bd8f1b35afb7635016745992bbd7c17a223@https://github.com/opencontainers/runc/releases/download/v1.1.4/runc.arm64
 CAs:
   kubernetes-ca: |
@@ -69,5 +69,5 @@ containerdConfig:
   logLevel: info
   runc:
     version: 1.1.4
-  version: 1.6.9
+  version: 1.6.10
 useInstanceIDForNodeName: true
