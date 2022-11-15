@@ -5391,7 +5391,8 @@ spec:
                     description: Version is the container image tag used.
                     type: string
                   webhookURL:
-                    description: If specified, posts event data to URL upon instance interruption action.
+                    description: If specified, posts event data to URL upon instance
+                      interruption action.
                     type: string
                 type: object
               nonMasqueradeCIDR:
