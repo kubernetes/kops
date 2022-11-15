@@ -1528,7 +1528,19 @@ The `enableAWSOIDCProvider` configures AWS to trust the service account issuer t
 authenticate service accounts for IAM Roles for Service Accounts (IRSA). In order for this to work,
 the service account issuer discovery URL must be publicly readable.
 
-kOps can provision AWS permissions for use by service accounts:
+### IAM roles for addons
+
+Most kOps addons that interact with the AWS API can use dedicated IAM roles. To enable this, add the following:
+
+```
+spec:
+  iam:
+    useServiceAccountExternalPermissions: true
+```
+
+### IAM roles for user-managed ServiceAccounts
+
+kOps can provision AWS permissions for use by arbitrary service accounts:
 
 ```yaml
 spec:
