@@ -133,7 +133,7 @@ containerd:
   logLevel: info
   runc:
     version: 1.1.4
-  version: 1.6.9
+  version: 1.6.10
 docker:
   skipInstall: true
 kubeProxy:
@@ -169,7 +169,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: karpenter-nodes-single-machinetype
 InstanceGroupRole: Node
-NodeupConfigHash: q+JGGLQS3dQxg4xeG3Pi6GLoaS7aSVF5BKuJSmmL0CE=
+NodeupConfigHash: vjbomPdL1ga8tvneQDBe9Yu/a2b+Juj5cGNE+SzDBaM=
 
 __EOF_KUBE_ENV
 
