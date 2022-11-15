@@ -1212,6 +1212,7 @@ func addCiliumEniPermissions(p *Policy) {
 		"ec2:DeleteNetworkInterface",
 		"ec2:ModifyNetworkInterfaceAttribute",
 		"ec2:DescribeVpcs",
+		"ec2:CreateTags",
 	)
 }
 
