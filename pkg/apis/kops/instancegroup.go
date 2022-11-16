@@ -215,6 +215,8 @@ const (
 	SpotAllocationStrategyCapacityOptimized = "capacity-optimized"
 	// SpotAllocationStrategyCapacityOptimizedPrioritized indicates a capacity optimized prioritized strategy
 	SpotAllocationStrategyCapacityOptimizedPrioritized = "capacity-optimized-prioritized"
+	// SpotAllocationStrategyPriceCapacityOptimized indicates a price/capacity optimized strategy
+	SpotAllocationStrategyPriceCapacityOptimized = "price-capacity-optimized"
 )
 
 // SpotAllocationStrategies is a collection of supported strategies
@@ -223,6 +225,7 @@ var SpotAllocationStrategies = []string{
 	SpotAllocationStrategyDiversified,
 	SpotAllocationStrategyCapacityOptimized,
 	SpotAllocationStrategyCapacityOptimizedPrioritized,
+	SpotAllocationStrategyPriceCapacityOptimized,
 }
 
 // InstanceMetadataOptions defines the EC2 instance metadata service options (AWS Only)
