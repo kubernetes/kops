@@ -2,18 +2,6 @@
   "Statement": [
     {
       "Action": [
-        "s3:Get*"
-      ],
-      "Effect": "Allow",
-      "Resource": [
-        "arn:aws-test:s3:::kops-tests/iam-builder-test.k8s.local/addons/*",
-        "arn:aws-test:s3:::kops-tests/iam-builder-test.k8s.local/cluster-completed.spec",
-        "arn:aws-test:s3:::kops-tests/iam-builder-test.k8s.local/igconfig/node/*",
-        "arn:aws-test:s3:::kops-tests/iam-builder-test.k8s.local/secrets/dockerconfig"
-      ]
-    },
-    {
-      "Action": [
         "s3:GetBucketLocation",
         "s3:GetEncryptionConfiguration",
         "s3:ListBucket",

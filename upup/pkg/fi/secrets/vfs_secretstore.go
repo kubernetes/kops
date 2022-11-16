@@ -133,7 +133,7 @@ func (c *VFSSecretStore) Secret(id string) (*fi.Secret, error) {
 		return nil, err
 	}
 	if s == nil {
-		return nil, fmt.Errorf("Secret not found: %q", id)
+		return nil, fmt.Errorf("secret %q not found", id)
 	}
 	return s, nil
 }

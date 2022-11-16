@@ -61,5 +61,21 @@ func (s *Server) getNodeConfig(ctx context.Context, req *nodeup.BootstrapRequest
 		nodeConfig.NodeupConfig = string(b)
 	}
 
+	{
+		secretIDs := []string{
+			"dockerconfig",
+		}
+		nodeConfig.NodeSecrets = make(map[string][]byte)
+		for _, id := range secretIDs {
+			secret, err := s.secretStore.FindSecret(id)
+			if err != nil {
+				return nil, fmt.Errorf("error loading secret %q: %w", id, err)
+			}
+			if secret != nil && secret.Data != nil {
+				nodeConfig.NodeSecrets[id] = secret.Data
+			}
+		}
+	}
+
 	return nodeConfig, nil
 }
