@@ -21,6 +21,7 @@ kops-acquire-latest
 
 OVERRIDES="${OVERRIDES-} --override=cluster.spec.metricsServer.enabled=true"
 OVERRIDES="$OVERRIDES --override=cluster.spec.certManager.enabled=true"
+OVERRIDES="${OVERRIDES} --master-size=t4g.medium --node-size=t4g.medium"
 
 kops-up
 
