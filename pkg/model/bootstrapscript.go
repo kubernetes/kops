@@ -131,7 +131,7 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 		env["GOSSIP_DNS_CONN_LIMIT"] = os.Getenv("GOSSIP_DNS_CONN_LIMIT")
 	}
 
-	if os.Getenv("S3_ENDPOINT") != "" {
+	if os.Getenv("S3_ENDPOINT") != "" && (!model.UseKopsControllerForNodeBootstrap(cluster) || b.ig.IsMaster()) {
 		env["S3_ENDPOINT"] = os.Getenv("S3_ENDPOINT")
 		env["S3_REGION"] = os.Getenv("S3_REGION")
 		env["S3_ACCESS_KEY_ID"] = os.Getenv("S3_ACCESS_KEY_ID")

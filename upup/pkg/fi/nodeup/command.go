@@ -235,7 +235,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	var secretStore fi.SecretStore
 	var keyStore fi.Keystore
 	if nodeConfig != nil {
-		modelContext.SecretStore = configserver.NewSecretStore(nodeConfig)
+		modelContext.SecretStore = configserver.NewSecretStore(nodeConfig.NodeSecrets)
 	} else if c.cluster.Spec.SecretStore != "" {
 		klog.Infof("Building SecretStore at %q", c.cluster.Spec.SecretStore)
 		p, err := vfs.Context.BuildVfsPath(c.cluster.Spec.SecretStore)

@@ -431,10 +431,32 @@ Resources.AWSEC2LaunchTemplatenodesminimaletcdexamplecom.Properties.LaunchTempla
 
   cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
   CloudProvider: aws
-  ConfigBase: memfs://clusters.example.com/minimal-etcd.example.com
+  ConfigServer:
+    CACertificates: |
+      -----BEGIN CERTIFICATE-----
+      MIIBbjCCARigAwIBAgIMFpANqBD8NSD82AUSMA0GCSqGSIb3DQEBCwUAMBgxFjAU
+      BgNVBAMTDWt1YmVybmV0ZXMtY2EwHhcNMjEwNzA3MDcwODAwWhcNMzEwNzA3MDcw
+      ODAwWjAYMRYwFAYDVQQDEw1rdWJlcm5ldGVzLWNhMFwwDQYJKoZIhvcNAQEBBQAD
+      SwAwSAJBANFI3zr0Tk8krsW8vwjfMpzJOlWQ8616vG3YPa2qAgI7V4oKwfV0yIg1
+      jt+H6f4P/wkPAPTPTfRp9Iy8oHEEFw0CAwEAAaNCMEAwDgYDVR0PAQH/BAQDAgEG
+      MA8GA1UdEwEB/wQFMAMBAf8wHQYDVR0OBBYEFNG3zVjTcLlJwDsJ4/K9DV7KohUA
+      MA0GCSqGSIb3DQEBCwUAA0EAB8d03fY2w7WKpfO29qI295pu2C4ca9AiVGOpgSc8
+      tmQsq6rcxt3T+rb589PVtz0mw/cKTxOk6gH2CCC+yHfy2w==
+      -----END CERTIFICATE-----
+      -----BEGIN CERTIFICATE-----
+      MIIBbjCCARigAwIBAgIMFpANvmSa0OAlYmXKMA0GCSqGSIb3DQEBCwUAMBgxFjAU
+      BgNVBAMTDWt1YmVybmV0ZXMtY2EwHhcNMjEwNzA3MDcwOTM2WhcNMzEwNzA3MDcw
+      OTM2WjAYMRYwFAYDVQQDEw1rdWJlcm5ldGVzLWNhMFwwDQYJKoZIhvcNAQEBBQAD
+      SwAwSAJBAMF6F4aZdpe0RUpyykaBpWwZCnwbffhYGOw+fs6RdLuUq7QCNmJm/Eq7
+      WWOziMYDiI9SbclpD+6QiJ0N3EqppVUCAwEAAaNCMEAwDgYDVR0PAQH/BAQDAgEG
+      MA8GA1UdEwEB/wQFMAMBAf8wHQYDVR0OBBYEFLImp6ARjPDAH6nhI+scWVt3Q9bn
+      MA0GCSqGSIb3DQEBCwUAA0EAVQVx5MUtuAIeePuP9o51xtpT2S6Fvfi8J4ICxnlA
+      9B7UD2ushcVFPtaeoL9Gfu8aY4KJBeqqg5ojl4qmRnThjw==
+      -----END CERTIFICATE-----
+    server: https://kops-controller.internal.minimal-etcd.example.com:3988/
   InstanceGroupName: nodes
   InstanceGroupRole: Node
-  NodeupConfigHash: HIGaV70QIgtvHqX6A152cDyZI1WRNEx6RDtX8kjcbGI=
+  NodeupConfigHash: ukThrd8BJM+6ERw5+e6WgG9jB4sh9VuLOfx+xd/cnzI=
 
   __EOF_KUBE_ENV
 

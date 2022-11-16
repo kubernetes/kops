@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
   config.yaml: |
-    {"cloud":"hetzner","configBase":"memfs://tests/minimal.example.com","server":{"Listen":":3988","provider":{"hetzner":{}},"serverKeyPath":"/etc/kubernetes/kops-controller/pki/kops-controller.key","serverCertificatePath":"/etc/kubernetes/kops-controller/pki/kops-controller.crt","caBasePath":"/etc/kubernetes/kops-controller/pki","signingCAs":["kubernetes-ca"],"certNames":["kubelet","kubelet-server","kube-proxy"]}}
+    {"cloud":"hetzner","configBase":"memfs://tests/minimal.example.com","secretStore":"memfs://tests/minimal.example.com/secrets","server":{"Listen":":3988","provider":{"hetzner":{}},"serverKeyPath":"/etc/kubernetes/kops-controller/pki/kops-controller.key","serverCertificatePath":"/etc/kubernetes/kops-controller/pki/kops-controller.crt","caBasePath":"/etc/kubernetes/kops-controller/pki","signingCAs":["kubernetes-ca"],"certNames":["kubelet","kubelet-server","kube-proxy"]}}
 kind: ConfigMap
 metadata:
   creationTimestamp: null

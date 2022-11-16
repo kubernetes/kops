@@ -580,8 +580,9 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 	cluster := tf.Cluster
 
 	config := &kopscontrollerconfig.Options{
-		Cloud:      string(cluster.Spec.GetCloudProvider()),
-		ConfigBase: cluster.Spec.ConfigBase,
+		Cloud:       string(cluster.Spec.GetCloudProvider()),
+		ConfigBase:  cluster.Spec.ConfigBase,
+		SecretStore: cluster.Spec.SecretStore,
 	}
 
 	if featureflag.CacheNodeidentityInfo.Enabled() {

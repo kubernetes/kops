@@ -245,6 +245,9 @@ func addNodeController(mgr manager.Manager, opt *config.Options) error {
 		if opt.ConfigBase == "" {
 			return fmt.Errorf("must specify configBase")
 		}
+		if opt.SecretStore == "" {
+			return fmt.Errorf("must specify secretStore")
+		}
 
 		nodeController, err := controllers.NewLegacyNodeReconciler(mgr, opt.ConfigBase, legacyIdentifier)
 		if err != nil {
