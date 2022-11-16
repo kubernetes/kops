@@ -19,25 +19,31 @@ package configserver
 import (
 	"fmt"
 
-	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
 // configserverSecretStore is a SecretStore backed by the config server.
 type configserverSecretStore struct {
-	nodeConfig *nodeup.NodeConfig
+	nodeSecrets map[string][]byte
 }
 
-func NewSecretStore(nodeConfig *nodeup.NodeConfig) fi.SecretStore {
+func NewSecretStore(nodeSecrets map[string][]byte) fi.SecretStore {
 	return &configserverSecretStore{
-		nodeConfig: nodeConfig,
+		nodeSecrets: nodeSecrets,
 	}
 }
 
 // Secret implements fi.SecretStore
 func (s *configserverSecretStore) Secret(id string) (*fi.Secret, error) {
-	return nil, fmt.Errorf("Secret not supported by configserverSecretStore")
+	secret, err := s.FindSecret(id)
+	if err != nil {
+		return nil, err
+	}
+	if secret == nil {
+		return nil, fmt.Errorf("secret %q not found", id)
+	}
+	return secret, nil
 }
 
 // DeleteSecret implements fi.SecretStore
@@ -47,7 +53,14 @@ func (s *configserverSecretStore) DeleteSecret(id string) error {
 
 // FindSecret implements fi.SecretStore
 func (s *configserverSecretStore) FindSecret(id string) (*fi.Secret, error) {
-	return nil, fmt.Errorf("FindSecret not supported by configserverSecretStore")
+	secretBytes, ok := s.nodeSecrets[id]
+	if !ok {
+		return nil, nil
+	}
+	secret := &fi.Secret{
+		Data: secretBytes,
+	}
+	return secret, nil
 }
 
 // GetOrCreateSecret implements fi.SecretStore

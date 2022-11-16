@@ -68,7 +68,7 @@ func BaseURL() (*url.URL, error) {
 		if err != nil {
 			return nil, fmt.Errorf("unable to parse env var KOPS_BASE_URL %q as a url: %v", baseURLString, err)
 		}
-		klog.Warningf("Using base url from KOPS_BASE_URL env var: %q", baseURLString)
+		klog.Warningf("Using base url from env var: KOPS_BASE_URL=%q", baseURLString)
 	}
 
 	return copyBaseURL(kopsBaseURL)

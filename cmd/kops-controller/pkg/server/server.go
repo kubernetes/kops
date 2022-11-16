@@ -38,16 +38,18 @@ import (
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/secrets"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
 type Server struct {
-	opt        *config.Options
-	certNames  sets.String
-	keypairIDs map[string]string
-	server     *http.Server
-	verifier   bootstrap.Verifier
-	keystore   pki.Keystore
+	opt         *config.Options
+	certNames   sets.String
+	keypairIDs  map[string]string
+	server      *http.Server
+	verifier    bootstrap.Verifier
+	keystore    pki.Keystore
+	secretStore fi.SecretStore
 
 	// configBase is the base of the configuration storage.
 	configBase vfs.Path
@@ -71,9 +73,15 @@ func NewServer(opt *config.Options, verifier bootstrap.Verifier) (*Server, error
 
 	configBase, err := vfs.Context.BuildVfsPath(opt.ConfigBase)
 	if err != nil {
-		return nil, fmt.Errorf("cannot parse ConfigBase %q: %v", opt.ConfigBase, err)
+		return nil, fmt.Errorf("cannot parse ConfigBase %q: %w", opt.ConfigBase, err)
 	}
 	s.configBase = configBase
+
+	p, err := vfs.Context.BuildVfsPath(opt.SecretStore)
+	if err != nil {
+		return nil, fmt.Errorf("cannot parse SecretStore %q: %w", opt.SecretStore, err)
+	}
+	s.secretStore = secrets.NewVFSSecretStore(nil, p)
 
 	r := http.NewServeMux()
 	r.Handle("/bootstrap", http.HandlerFunc(s.bootstrap))

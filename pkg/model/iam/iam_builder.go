@@ -700,16 +700,14 @@ func ReadableStatePaths(cluster *kops.Cluster, role Subject) ([]string, error) {
 		paths = append(paths, "/*")
 
 	case *NodeRoleNode:
-		paths = append(paths,
-			"/addons/*",
-			"/cluster-completed.spec",
-			"/igconfig/node/*",
-			"/secrets/dockerconfig",
-		)
-
 		// Give access to keys for client certificates as needed.
 		if !model.UseKopsControllerForNodeBootstrap(cluster) {
-			paths = append(paths, "/pki/private/kube-proxy/*")
+			paths = append(paths,
+				"/cluster-completed.spec",
+				"/igconfig/node/*",
+				"/secrets/dockerconfig",
+				"/pki/private/kube-proxy/*",
+			)
 
 			if useBootstrapTokens(cluster) {
 				paths = append(paths, "/pki/private/node-authorizer-client/*")
