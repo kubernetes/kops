@@ -271,9 +271,11 @@ func RunToolboxInstanceSelector(ctx context.Context, f commandutils.Factory, out
 		return fmt.Errorf("error initializing AWS client: %v", err)
 	}
 
-	instanceSelector := selector.Selector{
-		EC2: cloud.EC2(),
+	sess, err := cloud.Session()
+	if err != nil {
+		return err
 	}
+	instanceSelector := selector.New(sess)
 
 	igCount := options.InstanceGroupCount
 	filters := getFilters(commandline, region, zones)
