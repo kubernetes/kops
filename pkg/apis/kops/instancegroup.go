@@ -215,7 +215,7 @@ const (
 	SpotAllocationStrategyCapacityOptimized = "capacity-optimized"
 	// SpotAllocationStrategyCapacityOptimizedPrioritized indicates a capacity optimized prioritized strategy
 	SpotAllocationStrategyCapacityOptimizedPrioritized = "capacity-optimized-prioritized"
-	// SpotAllocationStrategyPriceCap indicates a price capacity optimized strategy
+	// SpotAllocationStrategyPriceCapacityOptimized indicates a price capacity optimized strategy
 	SpotAllocationStrategyPriceCapacityOptimized = "price-capacity-optimized"
 )
 
