@@ -245,8 +245,11 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		// TODO complete VFS paths
 	}
 
-	cmd.Flags().StringVar(&options.KubernetesVersion, "kubernetes-version", options.KubernetesVersion, "Version of kubernetes to run (defaults to version in channel)")
+	cmd.Flags().StringVar(&options.KubernetesVersion, "kubernetes-version", options.KubernetesVersion, "Version of Kubernetes to run (defaults to version in channel)")
 	cmd.RegisterFlagCompletionFunc("kubernetes-version", completeKubernetesVersion)
+
+	cmd.Flags().StringSliceVar(&options.KubernetesFeatureGates, "kubernetes-feature-gates", options.KubernetesFeatureGates, "List of Kubernetes feature gates to enable/disable")
+	cmd.RegisterFlagCompletionFunc("kubernetes-version", completeKubernetesFeatureGates)
 
 	cmd.Flags().StringVar(&options.ContainerRuntime, "container-runtime", options.ContainerRuntime, "Container runtime to use: containerd, docker")
 	cmd.RegisterFlagCompletionFunc("container-runtime", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -432,7 +435,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.RegisterFlagCompletionFunc("os-ext-net", completeOpenstackExternalNet)
 	cmd.Flags().StringVar(&options.OpenstackExternalSubnet, "os-ext-subnet", options.OpenstackExternalSubnet, "External floating subnet to use with the openstack router")
 	cmd.RegisterFlagCompletionFunc("os-ext-subnet", completeOpenstackExternalSubnet)
-	cmd.Flags().StringVar(&options.OpenstackLBSubnet, "os-lb-floating-subnet", options.OpenstackLBSubnet, "External subnet to use with the kubernetes api")
+	cmd.Flags().StringVar(&options.OpenstackLBSubnet, "os-lb-floating-subnet", options.OpenstackLBSubnet, "External subnet to use with the Kubernetes API")
 	cmd.RegisterFlagCompletionFunc("os-lb-floating-subnet", completeOpenstackLBSubnet)
 	cmd.Flags().BoolVar(&options.OpenstackStorageIgnoreAZ, "os-kubelet-ignore-az", options.OpenstackStorageIgnoreAZ, "Attach volumes across availability zones")
 	cmd.Flags().BoolVar(&options.OpenstackLBOctavia, "os-octavia", options.OpenstackLBOctavia, "Use octavia load balancer API")
@@ -906,6 +909,11 @@ func completeKubernetesVersion(cmd *cobra.Command, args []string, toComplete str
 	}
 
 	return versions.List(), cobra.ShellCompDirectiveNoFileComp
+}
+
+func completeKubernetesFeatureGates(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	// TODO check if there's a way to get the full list of feature gates from k8s libs
+	return nil, cobra.ShellCompDirectiveNoFileComp
 }
 
 func completeInstanceImage(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

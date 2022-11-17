@@ -63,6 +63,8 @@ type NewClusterOptions struct {
 	DiscoveryStore string
 	// KubernetesVersion is the version of Kubernetes to deploy. It defaults to the version recommended by the channel.
 	KubernetesVersion string
+	// KubernetesFeatureGates is the list of Kubernetes feature gates to enable/disable.
+	KubernetesFeatureGates []string
 	// AdminAccess is the set of CIDR blocks permitted to connect to the Kubernetes API. It defaults to "0.0.0.0/0" and "::/0".
 	AdminAccess []string
 	// SSHAccess is the set of CIDR blocks permitted to connect to SSH on the nodes. It defaults to the value of AdminAccess.
@@ -234,6 +236,38 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 	}
 	cluster.Spec.Kubelet = &api.KubeletConfigSpec{
 		AnonymousAuth: fi.PtrTo(false),
+	}
+
+	if len(opt.KubernetesFeatureGates) > 0 {
+		cluster.Spec.Kubelet.FeatureGates = make(map[string]string)
+		cluster.Spec.KubeAPIServer = &api.KubeAPIServerConfig{
+			FeatureGates: make(map[string]string),
+		}
+		cluster.Spec.KubeControllerManager = &api.KubeControllerManagerConfig{
+			FeatureGates: make(map[string]string),
+		}
+		cluster.Spec.KubeProxy = &api.KubeProxyConfig{
+			FeatureGates: make(map[string]string),
+		}
+		cluster.Spec.KubeScheduler = &api.KubeSchedulerConfig{
+			FeatureGates: make(map[string]string),
+		}
+
+		for _, featureGate := range opt.KubernetesFeatureGates {
+			enabled := true
+			if featureGate[0] == '+' {
+				featureGate = featureGate[1:]
+			}
+			if featureGate[0] == '-' {
+				enabled = false
+				featureGate = featureGate[1:]
+			}
+			cluster.Spec.Kubelet.FeatureGates[featureGate] = strconv.FormatBool(enabled)
+			cluster.Spec.KubeAPIServer.FeatureGates[featureGate] = strconv.FormatBool(enabled)
+			cluster.Spec.KubeControllerManager.FeatureGates[featureGate] = strconv.FormatBool(enabled)
+			cluster.Spec.KubeProxy.FeatureGates[featureGate] = strconv.FormatBool(enabled)
+			cluster.Spec.KubeScheduler.FeatureGates[featureGate] = strconv.FormatBool(enabled)
+		}
 	}
 
 	if len(opt.AdminAccess) == 0 {
