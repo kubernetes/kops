@@ -65,67 +65,68 @@ kops create cluster [CLUSTER] [flags]
 ### Options
 
 ```
-      --admin-access strings             Restrict API access to this CIDR.  If not set, access will not be restricted by IP. (default [0.0.0.0/0,::/0])
-      --api-loadbalancer-type string     Type of load balancer for the Kubernetes API: public or internal
-      --api-ssl-certificate string       ARN of the SSL Certificate to use for the Kubernetes API load balancer (AWS only)
-      --associate-public-ip              Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'.
-      --authorization string             Authorization mode: AlwaysAllow or RBAC (default "RBAC")
-      --bastion                          Enable a bastion instance group. Only applies to private topology.
-      --bastion-image string             Machine image for bastions. Takes precedence over --image
-      --channel string                   Channel for default versions and configuration to use (default "stable")
-      --cloud string                     Cloud provider to use - aws, digitalocean, gce, hetzner, openstack
-      --cloud-labels string              A list of key/value pairs used to tag all instance groups (for example "Owner=John Doe,Team=Some Team").
-      --container-runtime string         Container runtime to use: containerd, docker
-      --disable-subnet-tags              Disable automatic subnet tagging
-      --discovery-store string           A public location where we publish OIDC-compatible discovery information under a cluster-specific directory. Enables IRSA in AWS.
-      --dns string                       DNS type to use: public, private, none
-      --dns-zone string                  DNS hosted zone (defaults to longest matching zone)
-      --dry-run                          If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.
-      --encrypt-etcd-storage             Generate key in AWS KMS and use it for encrypt etcd volumes
-      --etcd-storage-type string         The default storage type for etcd members
-      --gce-service-account string       Service account with which the GCE VM runs. Warning: if not set, VMs will run as default compute service account.
-  -h, --help                             help for cluster
-      --image string                     Machine image for all instances
-      --ipv6                             Use IPv6 for the pod network (AWS only)
-      --kubernetes-version string        Version of kubernetes to run (defaults to version in channel)
-      --master-count int32               Number of masters. Defaults to one master per master-zone
-      --master-image string              Machine image for masters. Takes precedence over --image
-      --master-public-name string        Domain name of the public Kubernetes API
-      --master-security-groups strings   Additional precreated security groups to add to masters.
-      --master-size string               Machine type for masters
-      --master-tenancy string            Tenancy of the master group (AWS only): default or dedicated
-      --master-volume-size int32         Instance volume size (in GB) for masters
-      --master-zones strings             Zones in which to run masters (must be an odd number)
-      --network-cidr string              Network CIDR to use
-      --network-id string                Shared Network or VPC to use
-      --networking string                Networking mode.  kubenet, external, weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, amazonvpc, cilium, cilium-etcd, cni. (default "cilium")
-      --node-count int32                 Total number of worker nodes. Defaults to one node per zone
-      --node-image string                Machine image for worker nodes. Takes precedence over --image
-      --node-security-groups strings     Additional precreated security groups to add to worker nodes.
-      --node-size string                 Machine type for worker nodes
-      --node-tenancy string              Tenancy of the node group (AWS only): default or dedicated
-      --node-volume-size int32           Instance volume size (in GB) for worker nodes
-      --os-dns-servers string            comma separated list of DNS Servers which is used in network
-      --os-ext-net string                External network to use with the openstack router
-      --os-ext-subnet string             External floating subnet to use with the openstack router
-      --os-kubelet-ignore-az             Attach volumes across availability zones
-      --os-lb-floating-subnet string     External subnet to use with the kubernetes api
-      --os-network string                ID of the existing OpenStack network to use
-      --os-octavia                       Use octavia load balancer API
-      --os-octavia-provider string       Octavia provider to use
-      --out string                       Path to write any local output
-  -o, --output string                    Output format. One of json or yaml. Used with the --dry-run flag.
-      --project string                   Project to use (must be set on GCE)
-      --set strings                      Directly set values in the spec
-      --ssh-access strings               Restrict SSH access to this CIDR.  If not set, uses the value of the admin-access flag.
-      --ssh-public-key string            SSH public key to use
-      --subnets strings                  Shared subnets to use
-      --target string                    Valid targets: direct, terraform, cloudformation. Set this flag to terraform if you want kOps to generate terraform (default "direct")
-  -t, --topology string                  Network topology for the cluster: 'public' or 'private'. Defaults to 'public' for IPv4 clusters and 'private' for IPv6 clusters.
-      --unset strings                    Directly unset values in the spec
-      --utility-subnets strings          Shared utility subnets to use
-  -y, --yes                              Specify --yes to immediately create the cluster
-      --zones strings                    Zones in which to run the cluster
+      --admin-access strings               Restrict API access to this CIDR.  If not set, access will not be restricted by IP. (default [0.0.0.0/0,::/0])
+      --api-loadbalancer-type string       Type of load balancer for the Kubernetes API: public or internal
+      --api-ssl-certificate string         ARN of the SSL Certificate to use for the Kubernetes API load balancer (AWS only)
+      --associate-public-ip                Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'.
+      --authorization string               Authorization mode: AlwaysAllow or RBAC (default "RBAC")
+      --bastion                            Enable a bastion instance group. Only applies to private topology.
+      --bastion-image string               Machine image for bastions. Takes precedence over --image
+      --channel string                     Channel for default versions and configuration to use (default "stable")
+      --cloud string                       Cloud provider to use - aws, digitalocean, gce, hetzner, openstack
+      --cloud-labels string                A list of key/value pairs used to tag all instance groups (for example "Owner=John Doe,Team=Some Team").
+      --container-runtime string           Container runtime to use: containerd, docker
+      --disable-subnet-tags                Disable automatic subnet tagging
+      --discovery-store string             A public location where we publish OIDC-compatible discovery information under a cluster-specific directory. Enables IRSA in AWS.
+      --dns string                         DNS type to use: public, private, none
+      --dns-zone string                    DNS hosted zone (defaults to longest matching zone)
+      --dry-run                            If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.
+      --encrypt-etcd-storage               Generate key in AWS KMS and use it for encrypt etcd volumes
+      --etcd-storage-type string           The default storage type for etcd members
+      --gce-service-account string         Service account with which the GCE VM runs. Warning: if not set, VMs will run as default compute service account.
+  -h, --help                               help for cluster
+      --image string                       Machine image for all instances
+      --ipv6                               Use IPv6 for the pod network (AWS only)
+      --kubernetes-feature-gates strings   List of Kubernetes feature gates to enable/disable
+      --kubernetes-version string          Version of Kubernetes to run (defaults to version in channel)
+      --master-count int32                 Number of masters. Defaults to one master per master-zone
+      --master-image string                Machine image for masters. Takes precedence over --image
+      --master-public-name string          Domain name of the public Kubernetes API
+      --master-security-groups strings     Additional precreated security groups to add to masters.
+      --master-size string                 Machine type for masters
+      --master-tenancy string              Tenancy of the master group (AWS only): default or dedicated
+      --master-volume-size int32           Instance volume size (in GB) for masters
+      --master-zones strings               Zones in which to run masters (must be an odd number)
+      --network-cidr string                Network CIDR to use
+      --network-id string                  Shared Network or VPC to use
+      --networking string                  Networking mode.  kubenet, external, weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, amazonvpc, cilium, cilium-etcd, cni. (default "cilium")
+      --node-count int32                   Total number of worker nodes. Defaults to one node per zone
+      --node-image string                  Machine image for worker nodes. Takes precedence over --image
+      --node-security-groups strings       Additional precreated security groups to add to worker nodes.
+      --node-size string                   Machine type for worker nodes
+      --node-tenancy string                Tenancy of the node group (AWS only): default or dedicated
+      --node-volume-size int32             Instance volume size (in GB) for worker nodes
+      --os-dns-servers string              comma separated list of DNS Servers which is used in network
+      --os-ext-net string                  External network to use with the openstack router
+      --os-ext-subnet string               External floating subnet to use with the openstack router
+      --os-kubelet-ignore-az               Attach volumes across availability zones
+      --os-lb-floating-subnet string       External subnet to use with the Kubernetes API
+      --os-network string                  ID of the existing OpenStack network to use
+      --os-octavia                         Use octavia load balancer API
+      --os-octavia-provider string         Octavia provider to use
+      --out string                         Path to write any local output
+  -o, --output string                      Output format. One of json or yaml. Used with the --dry-run flag.
+      --project string                     Project to use (must be set on GCE)
+      --set strings                        Directly set values in the spec
+      --ssh-access strings                 Restrict SSH access to this CIDR.  If not set, uses the value of the admin-access flag.
+      --ssh-public-key string              SSH public key to use
+      --subnets strings                    Shared subnets to use
+      --target string                      Valid targets: direct, terraform, cloudformation. Set this flag to terraform if you want kOps to generate terraform (default "direct")
+  -t, --topology string                    Network topology for the cluster: 'public' or 'private'. Defaults to 'public' for IPv4 clusters and 'private' for IPv6 clusters.
+      --unset strings                      Directly unset values in the spec
+      --utility-subnets strings            Shared utility subnets to use
+  -y, --yes                                Specify --yes to immediately create the cluster
+      --zones strings                      Zones in which to run the cluster
 ```
 
 ### Options inherited from parent commands
