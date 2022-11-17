@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -386,4 +387,8 @@ func (c *MockAWSCloud) DescribeInstanceType(instanceType string) (*ec2.InstanceT
 // AccountInfo returns the AWS account ID and AWS partition that we are deploying into
 func (c *MockAWSCloud) AccountInfo() (string, string, error) {
 	return "123456789012", "aws-test", nil
+}
+
+func (c *MockAWSCloud) Session() (*session.Session, error) {
+	return nil, nil
 }

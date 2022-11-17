@@ -126,6 +126,7 @@ const AWSErrCodeInvalidAction = "InvalidAction"
 type AWSCloud interface {
 	fi.Cloud
 	CloudFormation() *cloudformation.CloudFormation
+	Session() (*session.Session, error)
 	EC2() ec2iface.EC2API
 	IAM() iamiface.IAMAPI
 	ELB() elbiface.ELBAPI
@@ -390,6 +391,22 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 	i := raw.WithTags(tags)
 
 	return i, nil
+}
+
+func (c *awsCloudImplementation) Session() (*session.Session, error) {
+	config := aws.NewConfig().WithRegion(c.region)
+	config = config.WithCredentialsChainVerboseErrors(true)
+	config = request.WithRetryer(config, newLoggingRetryer(ClientMaxRetries))
+
+	sess, err := session.NewSessionWithOptions(session.Options{
+		Config:            *config,
+		SharedConfigState: session.SharedConfigEnable,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to create session: %w", err)
+	}
+
+	return sess, err
 }
 
 func (c *awsCloudImplementation) addHandlers(regionName string, h *request.Handlers) {
