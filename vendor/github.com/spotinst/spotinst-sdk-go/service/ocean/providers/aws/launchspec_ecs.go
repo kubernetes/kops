@@ -27,6 +27,7 @@ type ECSLaunchSpec struct {
 	Tags                 []*Tag                   `json:"tags,omitempty"`
 	InstanceTypes        []string                 `json:"instanceTypes,omitempty"`
 	PreferredSpotTypes   []string                 `json:"preferredSpotTypes,omitempty"`
+	Strategy             *ECSLaunchSpecStrategy   `json:"strategy,omitempty"`
 	RestrictScaleDown    *bool                    `json:"restrictScaleDown,omitempty"`
 	SubnetIDs            []string                 `json:"subnetIds,omitempty"`
 	LaunchSpecScheduling *ECSLaunchSpecScheduling `json:"scheduling,omitempty"`
@@ -105,6 +106,13 @@ type ECSDynamicVolumeSize struct {
 	BaseSize            *int    `json:"baseSize,omitempty"`
 	SizePerResourceUnit *int    `json:"sizePerResourceUnit,omitempty"`
 	Resource            *string `json:"resource,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ECSLaunchSpecStrategy struct {
+	SpotPercentage *int `json:"spotPercentage,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -462,6 +470,13 @@ func (o *ECSLaunchSpec) SetScheduling(v *ECSLaunchSpecScheduling) *ECSLaunchSpec
 	return o
 }
 
+func (o *ECSLaunchSpec) SetStrategy(v *ECSLaunchSpecStrategy) *ECSLaunchSpec {
+	if o.Strategy = v; o.Strategy == nil {
+		o.nullFields = append(o.nullFields, "ECSLaunchSpecStrategy")
+	}
+	return o
+}
+
 // endregion
 
 // region Attributes
@@ -672,6 +687,23 @@ func (o *ECSDynamicVolumeSize) SetResource(v *string) *ECSDynamicVolumeSize {
 func (o *ECSDynamicVolumeSize) SetSizePerResourceUnit(v *int) *ECSDynamicVolumeSize {
 	if o.SizePerResourceUnit = v; o.SizePerResourceUnit == nil {
 		o.nullFields = append(o.nullFields, "SizePerResourceUnit")
+	}
+	return o
+}
+
+// endregion
+
+// region LaunchSpecStrategy
+
+func (o ECSLaunchSpecStrategy) MarshalJSON() ([]byte, error) {
+	type noMethod ECSLaunchSpecStrategy
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ECSLaunchSpecStrategy) SetSpotPercentage(v *int) *ECSLaunchSpecStrategy {
+	if o.SpotPercentage = v; o.SpotPercentage == nil {
+		o.nullFields = append(o.nullFields, "SpotPercentage")
 	}
 	return o
 }

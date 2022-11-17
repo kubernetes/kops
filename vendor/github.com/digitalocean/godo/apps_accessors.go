@@ -118,6 +118,14 @@ func (a *App) GetPinnedDeployment() *Deployment {
 	return a.PinnedDeployment
 }
 
+// GetProjectID returns the ProjectID field.
+func (a *App) GetProjectID() string {
+	if a == nil {
+		return ""
+	}
+	return a.ProjectID
+}
+
 // GetRegion returns the Region field.
 func (a *App) GetRegion() *AppRegion {
 	if a == nil {
@@ -396,6 +404,14 @@ func (a *AppCORSPolicy) GetMaxAge() string {
 		return ""
 	}
 	return a.MaxAge
+}
+
+// GetProjectID returns the ProjectID field.
+func (a *AppCreateRequest) GetProjectID() string {
+	if a == nil {
+		return ""
+	}
+	return a.ProjectID
 }
 
 // GetSpec returns the Spec field.
@@ -2110,6 +2126,14 @@ func (d *DeploymentCauseDetails) GetDigitalOceanUserAction() *DeploymentCauseDet
 	return d.DigitalOceanUserAction
 }
 
+// GetDOCRPush returns the DOCRPush field.
+func (d *DeploymentCauseDetails) GetDOCRPush() *DeploymentCauseDetailsDOCRPush {
+	if d == nil {
+		return nil
+	}
+	return d.DOCRPush
+}
+
 // GetGitPush returns the GitPush field.
 func (d *DeploymentCauseDetails) GetGitPush() *DeploymentCauseDetailsGitPush {
 	if d == nil {
@@ -2172,6 +2196,38 @@ func (d *DeploymentCauseDetailsDigitalOceanUserAction) GetUser() *DeploymentCaus
 		return nil
 	}
 	return d.User
+}
+
+// GetImageDigest returns the ImageDigest field.
+func (d *DeploymentCauseDetailsDOCRPush) GetImageDigest() string {
+	if d == nil {
+		return ""
+	}
+	return d.ImageDigest
+}
+
+// GetRegistry returns the Registry field.
+func (d *DeploymentCauseDetailsDOCRPush) GetRegistry() string {
+	if d == nil {
+		return ""
+	}
+	return d.Registry
+}
+
+// GetRepository returns the Repository field.
+func (d *DeploymentCauseDetailsDOCRPush) GetRepository() string {
+	if d == nil {
+		return ""
+	}
+	return d.Repository
+}
+
+// GetTag returns the Tag field.
+func (d *DeploymentCauseDetailsDOCRPush) GetTag() string {
+	if d == nil {
+		return ""
+	}
+	return d.Tag
 }
 
 // GetCommitAuthor returns the CommitAuthor field.
@@ -2782,6 +2838,14 @@ func (g *GitSourceSpec) GetRepoCloneURL() string {
 	return g.RepoCloneURL
 }
 
+// GetDeployOnPush returns the DeployOnPush field.
+func (i *ImageSourceSpec) GetDeployOnPush() *ImageSourceSpecDeployOnPush {
+	if i == nil {
+		return nil
+	}
+	return i.DeployOnPush
+}
+
 // GetRegistry returns the Registry field.
 func (i *ImageSourceSpec) GetRegistry() string {
 	if i == nil {
@@ -2814,36 +2878,12 @@ func (i *ImageSourceSpec) GetTag() string {
 	return i.Tag
 }
 
-// GetAppID returns the AppID field.
-func (u *UpgradeBuildpackRequest) GetAppID() string {
-	if u == nil {
-		return ""
-	}
-	return u.AppID
-}
-
-// GetBuildpackID returns the BuildpackID field.
-func (u *UpgradeBuildpackRequest) GetBuildpackID() string {
-	if u == nil {
-		return ""
-	}
-	return u.BuildpackID
-}
-
-// GetMajorVersion returns the MajorVersion field.
-func (u *UpgradeBuildpackRequest) GetMajorVersion() int32 {
-	if u == nil {
-		return 0
-	}
-	return u.MajorVersion
-}
-
-// GetTriggerDeployment returns the TriggerDeployment field.
-func (u *UpgradeBuildpackRequest) GetTriggerDeployment() bool {
-	if u == nil {
+// GetEnabled returns the Enabled field.
+func (i *ImageSourceSpecDeployOnPush) GetEnabled() bool {
+	if i == nil {
 		return false
 	}
-	return u.TriggerDeployment
+	return i.Enabled
 }
 
 // GetAffectedComponents returns the AffectedComponents field.

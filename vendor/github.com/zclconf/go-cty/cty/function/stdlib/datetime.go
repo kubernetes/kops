@@ -12,6 +12,7 @@ import (
 )
 
 var FormatDateFunc = function.New(&function.Spec{
+	Description: `Formats a timestamp given in RFC 3339 syntax into another timestamp in some other machine-oriented time syntax, as described in the format string.`,
 	Params: []function.Parameter{
 		{
 			Name: "format",
@@ -205,6 +206,7 @@ var FormatDateFunc = function.New(&function.Spec{
 
 // TimeAddFunc is a function that adds a duration to a timestamp, returning a new timestamp.
 var TimeAddFunc = function.New(&function.Spec{
+	Description: `Adds the duration represented by the given duration string to the given RFC 3339 timestamp string, returning another RFC 3339 timestamp.`,
 	Params: []function.Parameter{
 		{
 			Name: "timestamp",

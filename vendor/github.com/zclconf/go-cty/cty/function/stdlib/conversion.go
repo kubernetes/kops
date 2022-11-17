@@ -1,6 +1,7 @@
 package stdlib
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/zclconf/go-cty/cty"
@@ -18,6 +19,7 @@ import (
 // a tuple.
 func MakeToFunc(wantTy cty.Type) function.Function {
 	return function.New(&function.Spec{
+		Description: fmt.Sprintf("Converts the given value to %s, or raises an error if that conversion is impossible.", wantTy.FriendlyName()),
 		Params: []function.Parameter{
 			{
 				Name: "v",
