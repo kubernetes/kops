@@ -34,12 +34,12 @@ package scalewaymodel
 //		// Here we implement the bastion CNAME logic
 //		// By default bastions will create a CNAME that follows the `bastion-$clustername` formula
 //		t := &scalewaytasks.DNSName{
-//			Name:      fi.String(publicName),
+//			Name:      fi.PtrTo(publicName),
 //			Lifecycle: b.Lifecycle,
 //
 //			Zone:               b.LinkToDNSZone(),
-//			ResourceName:       fi.String(publicName),
-//			ResourceType:       fi.String("A"),
+//			ResourceName:       fi.PtrTo(publicName),
+//			ResourceType:       fi.PtrTo("A"),
 //			TargetLoadBalancer: elb,
 //		}
 //		c.AddTask(t)

@@ -15,22 +15,14 @@ spec:
   etcdClusters:
   - cpuRequest: 200m
     etcdMembers:
-    - instanceGroup: master-fr-par-1
+    - instanceGroup: control-plane-fr-par-1
       name: etcd-1
-    - instanceGroup: master2
-      name: etcd-2
-    - instanceGroup: master3
-      name: etcd-3
     memoryRequest: 100Mi
     name: main
   - cpuRequest: 100m
     etcdMembers:
-    - instanceGroup: master-fr-par-1
+    - instanceGroup: control-plane-fr-par-1
       name: etcd-1
-    - instanceGroup: master2
-      name: etcd-2
-    - instanceGroup: master3
-      name: etcd-3
     memoryRequest: 100Mi
     name: events
   iam:
@@ -58,3 +50,39 @@ spec:
       type: Public
     masters: public
     nodes: public
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  name: master-{{$zone}}
+  labels:
+    kops.k8s.io/cluster: {{.clusterName}}
+spec:
+  associatePublicIp: true
+  #  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201112.1
+  #  machineType: t3.medium
+  maxSize: 3
+  minSize: 3
+  role: Master
+  subnets:
+    - {{$zone}}
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  name: nodes-{{$zone}}
+  labels:
+    kops.k8s.io/cluster: {{.clusterName}}
+spec:
+  associatePublicIp: true
+  #  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201112.1
+  #  machineType: t3.medium
+  maxSize: 2
+  minSize: 2
+  role: Node
+  subnets:
+    - {{$zone}}

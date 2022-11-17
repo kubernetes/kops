@@ -45,9 +45,10 @@ const (
 	TagInstanceGroup         = "instance-group"
 	TagNameRolePrefix        = "k8s.io/role"
 	TagNameEtcdClusterPrefix = "k8s.io/etcd"
-	TagRoleControlPlane      = "control-plane"
+	TagRoleControlPlane      = "ControlPlane" // changed from 'control-plane' to match kops.InstanceGroupRoleControlPlane
 	TagRoleWorker            = "worker"
 	TagRoleLoadBalancer      = "load-balancer"
+	TagNeedsUpdate           = "kops.k8s.io-needs-update"
 )
 
 // ScwCloud exposes all the interfaces required to operate on Scaleway resources
@@ -79,7 +80,7 @@ type ScwCloud interface {
 	GetClusterGatewayNetworks(clusterName string) ([]*vpcgw.GatewayNetwork, error)
 	GetClusterGateways(clusterName string) ([]*vpcgw.Gateway, error)
 	GetClusterLoadBalancers(clusterName string) ([]*lb.LB, error)
-	GetClusterServers(clusterName string, serverName *string) ([]*instance.Server, error)
+	GetClusterServers(clusterName string, instanceGroupName *string) ([]*instance.Server, error)
 	GetClusterSSHKeys(clusterName string) ([]*iam.SSHKey, error)
 	GetClusterVolumes(clusterName string) ([]*instance.Volume, error)
 	GetClusterVPCs(clusterName string) ([]*vpc.PrivateNetwork, error)
@@ -221,6 +222,7 @@ func (s *scwCloudImplementation) VPCService() *vpc.API {
 	return s.vpcAPI
 }
 
+// DeleteGroup deletes the cloud resources that make up a CloudInstanceGroup, including the instances.
 func (s *scwCloudImplementation) DeleteGroup(group *cloudinstances.CloudInstanceGroup) error {
 	toDelete := append(group.NeedUpdate, group.Ready...)
 	for _, cloudInstance := range toDelete {
@@ -400,6 +402,12 @@ func buildCloudGroup(ig *kops.InstanceGroup, sg []*instance.Server, nodeMap map[
 
 	for _, server := range sg {
 		status := cloudinstances.CloudInstanceStatusUpToDate
+		for _, tag := range server.Tags {
+			if tag == TagNeedsUpdate {
+				status = cloudinstances.CloudInstanceStatusNeedsUpdate
+			}
+		}
+
 		cloudInstance, err := cloudInstanceGroup.NewCloudInstance(server.ID, status, nodeMap[server.ID])
 		if err != nil {
 			return nil, fmt.Errorf("failed to create cloud instance for server %s(%s): %w", server.Name, server.ID, err)
@@ -408,7 +416,7 @@ func buildCloudGroup(ig *kops.InstanceGroup, sg []*instance.Server, nodeMap map[
 		cloudInstance.MachineType = server.CommercialType
 		for _, tag := range server.Tags {
 			if strings.HasPrefix(tag, TagNameRolePrefix) {
-				cloudInstance.Roles = append(cloudInstance.Roles, strings.TrimPrefix(tag, TagNameRolePrefix))
+				cloudInstance.Roles = append(cloudInstance.Roles, strings.TrimPrefix(tag, TagNameRolePrefix+"="))
 			}
 		}
 		if server.PrivateIP != nil {
@@ -453,16 +461,19 @@ func (s *scwCloudImplementation) GetClusterLoadBalancers(clusterName string) ([]
 	return lbs.LBs, nil
 }
 
-func (s *scwCloudImplementation) GetClusterServers(clusterName string, serverName *string) ([]*instance.Server, error) {
+func (s *scwCloudImplementation) GetClusterServers(clusterName string, instanceGroupName *string) ([]*instance.Server, error) {
+	tags := []string{TagClusterName + "=" + clusterName}
+	if instanceGroupName != nil {
+		tags = append(tags, fmt.Sprintf("%s=%s", TagInstanceGroup, *instanceGroupName))
+	}
 	request := &instance.ListServersRequest{
 		Zone: s.zone,
-		Name: serverName,
-		Tags: []string{TagClusterName + "=" + clusterName},
+		Tags: tags,
 	}
 	servers, err := s.instanceAPI.ListServers(request, scw.WithAllPages())
 	if err != nil {
-		if serverName != nil {
-			return nil, fmt.Errorf("failed to list cluster servers named %q: %w", *serverName, err)
+		if instanceGroupName != nil {
+			return nil, fmt.Errorf("failed to list cluster servers named %q: %w", *instanceGroupName, err)
 		}
 		return nil, fmt.Errorf("failed to list cluster servers: %w", err)
 	}

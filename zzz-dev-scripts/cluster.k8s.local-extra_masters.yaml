@@ -1,0 +1,134 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  name: cluster.k8s.local
+spec:
+  api:
+    loadBalancer:
+      type: Public
+  authorization:
+    rbac: {}
+  channel: stable
+  cloudProvider: scaleway
+  configBase: scw://kops-state-store/cluster.k8s.local
+  etcdClusters:
+  - cpuRequest: 200m
+    etcdMembers:
+    - instanceGroup: control-plane-fr-par-1
+      name: etcd-1
+    - instanceGroup: master2
+      name: etcd-2
+    - instanceGroup: master3
+      name: etcd-3
+    memoryRequest: 100Mi
+    name: main
+  - cpuRequest: 100m
+    etcdMembers:
+    - instanceGroup: control-plane-fr-par-1
+      name: etcd-1
+    - instanceGroup: master2
+      name: etcd-2
+    - instanceGroup: master3
+      name: etcd-3
+    memoryRequest: 100Mi
+    name: events
+  iam:
+    allowContainerRegistry: true
+    legacy: false
+  kubeProxy:
+    enabled: false
+  kubelet:
+    anonymousAuth: false
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  - ::/0
+  kubernetesVersion: 1.25.3
+  masterPublicName: api.cluster.k8s.local
+  networking:
+    cilium:
+      enableNodePort: true
+  nonMasqueradeCIDR: 100.64.0.0/10
+  sshAccess:
+  - 0.0.0.0/0
+  - ::/0
+  subnets:
+  - name: fr-par-1
+    type: Public
+    zone: fr-par-1
+  topology:
+    dns:
+      type: Public
+    masters: public
+    nodes: public
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  name: master-{{$zone}}
+  labels:
+    kops.k8s.io/cluster: {{.clusterName}}
+spec:
+  associatePublicIp: true
+#  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201112.1
+#  machineType: t3.medium
+  maxSize: 2
+  minSize: 2
+  role: Master
+  subnets:
+  - {{$zone}}
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  name: nodes-{{$zone}}
+  labels:
+    kops.k8s.io/cluster: {{.clusterName}}
+spec:
+  associatePublicIp: true
+#  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201112.1
+#  machineType: t3.medium
+  maxSize: 1
+  minSize: 1
+  role: Node
+  subnets:
+    - {{$zone}}
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  name: master2
+  labels:
+    kops.k8s.io/cluster: {{.clusterName}}
+spec:
+  associatePublicIp: true
+  #  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201112.1
+  #  machineType: t3.medium
+  maxSize: 2
+  minSize: 2
+  role: Master
+  subnets:
+    - {{$zone}}
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  name: master3
+  labels:
+    kops.k8s.io/cluster: {{.clusterName}}
+spec:
+  associatePublicIp: true
+  #  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201112.1
+  #  machineType: t3.medium
+  maxSize: 3
+  minSize: 3
+  role: Master
+  subnets:
+    - {{$zone}}

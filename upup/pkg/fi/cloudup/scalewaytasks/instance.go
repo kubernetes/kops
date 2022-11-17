@@ -42,6 +42,7 @@ type Instance struct {
 	UserData     *fi.Resource
 	LoadBalancer *LoadBalancer
 	//Network        *Network
+	NeedsUpdate []string
 }
 
 var _ fi.CloudupTask = &Instance{}
@@ -61,6 +62,24 @@ func (s *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 	if len(servers) == 0 {
 		return nil, nil
 	}
+
+	// Check if servers have been added to the instance group, therefore an update is needed
+	if len(servers) > s.Count {
+		for _, server := range servers {
+			alreadyTagged := false
+			for _, tag := range server.Tags {
+				if tag == scaleway.TagNeedsUpdate {
+					alreadyTagged = true
+				}
+			}
+			if alreadyTagged == true {
+				continue
+			}
+			s.NeedsUpdate = append(s.NeedsUpdate, server.ID)
+		}
+	}
+	//TODO(Mia-Cross): handle other changes like image, commercial type, userdata
+
 	server := servers[0]
 
 	role := scaleway.TagRoleWorker
@@ -136,8 +155,28 @@ func (_ *Instance) RenderScw(c *fi.CloudupContext, actual, expected, changes *In
 			return nil
 		}
 		newInstanceCount = expected.Count - actual.Count
+
+		// Add "kops.k8s.io/needs-update" label to servers needing update
+		for _, serverID := range actual.NeedsUpdate {
+			server, err := instanceService.GetServer(&instance.GetServerRequest{
+				Zone:     zone,
+				ServerID: serverID,
+			})
+			if err != nil {
+				return fmt.Errorf("error rendering server group: error listing existing servers: %w", err)
+			}
+			_, err = instanceService.UpdateServer(&instance.UpdateServerRequest{
+				Zone:     zone,
+				ServerID: serverID,
+				Tags:     scw.StringsPtr(append(server.Server.Tags, scaleway.TagNeedsUpdate)),
+			})
+			if err != nil {
+				return fmt.Errorf("error rendering server group: error adding update tag to server %q (%s): %w", server.Server.Name, serverID, err)
+			}
+		}
 	}
 
+	// We get the private network to associate it with new instances
 	//pn, err := cloud.GetClusterVPCs(c.Cluster.Name)
 	//if err != nil {
 	//	return fmt.Errorf("error listing private networks: %v", err)
@@ -315,12 +354,11 @@ func (_ *Instance) RenderScw(c *fi.CloudupContext, actual, expected, changes *In
 		}
 	}
 
+	// We create NAT rules linking the gateway to our instances in order to be able to connect via SSH
+	// TODO(Mia-Cross): This part is for dev purposes only, remove when done
 	//gwService := cloud.GatewayService()
 	//rules := []*vpcgw.SetPATRulesRequestRule(nil)
 	//port := uint32(2022)
-
-	// We create NAT rules linking the gateway to our instances in order to be able to connect via SSH
-	//// TODO(Mia-Cross): This part is for dev purposes only, remove when done
 	//gwNetwork, err := cloud.GetClusterGatewayNetworks(pn[0].ID)
 	//if err != nil {
 	//	return err

@@ -12,18 +12,18 @@ type NetworkModelBuilder struct {
 	Lifecycle fi.Lifecycle
 }
 
-func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 
-	ipRange := b.Cluster.Spec.NetworkCIDR
+	ipRange := b.Cluster.Spec.Networking.NetworkCIDR
 	if ipRange == "" {
 		ipRange = "192.168.1.0/24"
 	}
 
 	network := &scalewaytasks.Network{
-		Name:      fi.String(b.ClusterName()),
-		Zone:      fi.String(b.Cluster.Spec.Subnets[0].Zone),
+		Name:      fi.PtrTo(b.ClusterName()),
+		Zone:      fi.PtrTo(b.Cluster.Spec.Networking.Subnets[0].Zone),
 		Lifecycle: b.Lifecycle,
-		IPRange:   fi.String(ipRange),
+		IPRange:   fi.PtrTo(ipRange),
 		Tags:      []string{scaleway.TagClusterName + "=" + b.ClusterName()},
 	}
 	c.AddTask(network)

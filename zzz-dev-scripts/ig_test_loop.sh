@@ -14,7 +14,7 @@ if [ $? != 0 ]; then
   echo "ERROR CREATING CLUSTER"
   exit
 fi
-go run -v ./cmd/kops go run -v ./cmd/kops edit ig master-fr-par-1
+go run -v ./cmd/kops go run -v ./cmd/kops edit ig control-plane-fr-par-1
 if [ $? != 0 ]; then
   echo "ERROR GROWING INSTANCE GROUP"
   exit
@@ -24,7 +24,7 @@ if [ $? != 0 ]; then
   echo "ERROR UPDATING CLUSTER"
   exit
 fi
-go run -v ./cmd/kops go run -v ./cmd/kops edit ig master-fr-par-1
+go run -v ./cmd/kops go run -v ./cmd/kops edit ig control-plane-fr-par-1
 if [ $? != 0 ]; then
   echo "ERROR SHRINKING INSTANCE GROUP"
   exit

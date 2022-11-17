@@ -15,14 +15,22 @@ spec:
   etcdClusters:
   - cpuRequest: 200m
     etcdMembers:
-    - instanceGroup: master-fr-par-1
+    - instanceGroup: control-plane-fr-par-1
       name: etcd-1
+    - instanceGroup: master2
+      name: etcd-2
+    - instanceGroup: master3
+      name: etcd-3
     memoryRequest: 100Mi
     name: main
   - cpuRequest: 100m
     etcdMembers:
-    - instanceGroup: master-fr-par-1
+    - instanceGroup: control-plane-fr-par-1
       name: etcd-1
+    - instanceGroup: master2
+      name: etcd-2
+    - instanceGroup: master3
+      name: etcd-3
     memoryRequest: 100Mi
     name: events
   iam:

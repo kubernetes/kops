@@ -18,7 +18,6 @@ package ops
 
 import (
 	"fmt"
-	"strings"
 	"sync"
 	"time"
 
@@ -73,12 +72,7 @@ func DeleteResources(cloud fi.Cloud, resourceMap map[string]*resources.Resource)
 				}
 
 				ready := true
-
-				resourceType := strings.Split(k, ":")
-
-				for _, dep := range depMap[resourceType[0]] {
-					// TODO(Mia-Cross): checking for dependencies the following way doesn't work for me so instead i use the line above
-					//for _, dep := range depMap[k] {
+				for _, dep := range depMap[k] {
 					if _, d := done[dep]; !d {
 						klog.V(4).Infof("dependency %q of %q not deleted; skipping", dep, k)
 						ready = false
