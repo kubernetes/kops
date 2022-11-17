@@ -5,29 +5,8 @@
 
 Get one or many resources.
 
-### Synopsis
-
-Display one or many resources.
-
-  *  cluster
-  *  instancegroup
-  *  secret
-
 ```
 kops get [flags]
-```
-
-### Examples
-
-```
-  # Get a cluster and its instance groups
-  kops get k8s-cluster.example.com
-  
-  # Get a cluster and its instancegroups' YAML desired configuration
-  kops get k8s-cluster.example.com -o yaml
-  
-  # Save a cluster and its instancegroups' desired configuration to YAML file
-  kops get k8s-cluster.example.com -o yaml > cluster-desired-config.yaml
 ```
 
 ### Options
@@ -49,6 +28,7 @@ kops get [flags]
 ### SEE ALSO
 
 * [kops](kops.md)	 - kOps is Kubernetes Operations.
+* [kops get all](kops_get_all.md)	 - Display all resources for a cluster.
 * [kops get assets](kops_get_assets.md)	 - Display assets for cluster.
 * [kops get clusters](kops_get_clusters.md)	 - Get one or many clusters.
 * [kops get instancegroups](kops_get_instancegroups.md)	 - Get one or many instance groups.
