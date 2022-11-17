@@ -30,7 +30,6 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops"
 	api "k8s.io/kops/pkg/apis/kops"
-	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/client/simple"
@@ -416,7 +415,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 				}
 
 			}
-		} else if g.Spec.Role == kopsapi.InstanceGroupRoleBastion {
+		} else if g.Spec.Role == api.InstanceGroupRoleBastion {
 			if g.Spec.MachineType == "" {
 				g.Spec.MachineType, err = defaultMachineType(cloud, &cluster, g)
 				if err != nil {
@@ -438,7 +437,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 
 		if ig.Spec.Tenancy != "" && ig.Spec.Tenancy != "default" {
 			switch cluster.Spec.GetCloudProvider() {
-			case kopsapi.CloudProviderAWS:
+			case api.CloudProviderAWS:
 				if _, ok := awsDedicatedInstanceExceptions[g.Spec.MachineType]; ok {
 					return nil, fmt.Errorf("invalid dedicated instance type: %s", g.Spec.MachineType)
 				}
@@ -454,7 +453,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		} else if ig.IsAPIServerOnly() && cluster.Spec.IsIPv6Only() {
 			if len(ig.Spec.Subnets) == 0 {
 				for _, subnet := range cluster.Spec.Subnets {
-					if subnet.Type != kopsapi.SubnetTypePrivate && subnet.Type != kopsapi.SubnetTypeUtility {
+					if subnet.Type != api.SubnetTypePrivate && subnet.Type != api.SubnetTypeUtility {
 						ig.Spec.Subnets = append(g.Spec.Subnets, subnet.Name)
 					}
 				}
@@ -462,7 +461,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		} else {
 			if len(ig.Spec.Subnets) == 0 {
 				for _, subnet := range cluster.Spec.Subnets {
-					if subnet.Type != kopsapi.SubnetTypeDualStack && subnet.Type != kopsapi.SubnetTypeUtility {
+					if subnet.Type != api.SubnetTypeDualStack && subnet.Type != api.SubnetTypeUtility {
 						g.Spec.Subnets = append(g.Spec.Subnets, subnet.Name)
 					}
 				}
@@ -470,7 +469,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 
 			if len(g.Spec.Subnets) == 0 {
 				for _, subnet := range cluster.Spec.Subnets {
-					if subnet.Type != kopsapi.SubnetTypeUtility {
+					if subnet.Type != api.SubnetTypeUtility {
 						g.Spec.Subnets = append(g.Spec.Subnets, subnet.Name)
 					}
 				}
@@ -1125,9 +1124,9 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 
 	if opt.Topology == "" {
 		if opt.IPv6 {
-			opt.Topology = kopsapi.TopologyPrivate
+			opt.Topology = api.TopologyPrivate
 		} else {
-			opt.Topology = kopsapi.TopologyPublic
+			opt.Topology = api.TopologyPublic
 		}
 	}
 
@@ -1242,7 +1241,7 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 			}
 			if opt.IPv6 {
 				for _, s := range cluster.Spec.Subnets {
-					if s.Type == kopsapi.SubnetTypeDualStack {
+					if s.Type == api.SubnetTypeDualStack {
 						bastionGroup.Spec.Subnets = append(bastionGroup.Spec.Subnets, s.Name)
 					}
 				}
@@ -1460,7 +1459,7 @@ func addCiliumNetwork(cluster *api.Cluster) {
 }
 
 // defaultImage returns the default Image, based on the cloudprovider
-func defaultImage(cluster *kopsapi.Cluster, channel *kopsapi.Channel, architecture architectures.Architecture) string {
+func defaultImage(cluster *api.Cluster, channel *api.Channel, architecture architectures.Architecture) string {
 	if channel != nil {
 		var kubernetesVersion *semver.Version
 		if cluster.Spec.KubernetesVersion != "" {
@@ -1479,7 +1478,7 @@ func defaultImage(cluster *kopsapi.Cluster, channel *kopsapi.Channel, architectu
 	}
 
 	switch cluster.Spec.GetCloudProvider() {
-	case kopsapi.CloudProviderDO:
+	case api.CloudProviderDO:
 		return defaultDONodeImage
 	}
 	klog.Infof("Cannot set default Image for CloudProvider=%q", cluster.Spec.GetCloudProvider())
@@ -1497,7 +1496,7 @@ func MachineArchitecture(cloud fi.Cloud, machineType string) (architectures.Arch
 	}
 
 	switch cloud.ProviderID() {
-	case kopsapi.CloudProviderAWS:
+	case api.CloudProviderAWS:
 		info, err := cloud.(awsup.AWSCloud).DescribeInstanceType(machineType)
 		if err != nil {
 			return "", fmt.Errorf("error finding instance info for instance type %q: %w", machineType, err)
