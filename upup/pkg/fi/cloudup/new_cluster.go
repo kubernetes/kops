@@ -855,6 +855,9 @@ func setupMasters(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap 
 						HTTPTokens:              fi.String("required"),
 					}
 				}
+				if cluster.IsKubernetesGTE("1.26") && fi.BoolValue(cluster.Spec.IAM.UseServiceAccountExternalPermissions) {
+					g.Spec.InstanceMetadata.HTTPPutResponseHopLimit = fi.Int64(1)
+				}
 			}
 
 			g.Spec.MachineType = opt.MasterSize
