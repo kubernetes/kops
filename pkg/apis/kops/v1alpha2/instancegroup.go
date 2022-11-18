@@ -121,7 +121,7 @@ type InstanceGroupSpec struct {
 	Taints []string `json:"taints,omitempty"`
 	// MixedInstancesPolicy defined a optional backing of an AWS ASG by a EC2 Fleet (AWS Only)
 	MixedInstancesPolicy *MixedInstancesPolicySpec `json:"mixedInstancesPolicy,omitempty"`
-	// CapacityRebalance configures capacity rebalancing for an AWS ASG (AWS Only)
+	// CapacityRebalance makes ASGs proactively replace spot instances when the ASG receives a rebalance recommendation (AWS Only).
 	CapacityRebalance *bool `json:"capacityRebalance,omitempty"`
 	// AdditionalUserData is any additional user-data to be passed to the host
 	AdditionalUserData []UserData `json:"additionalUserData,omitempty"`
