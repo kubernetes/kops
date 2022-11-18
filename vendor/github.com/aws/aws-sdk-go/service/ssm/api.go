@@ -1076,6 +1076,11 @@ func (c *SSM) CreateOpsItemRequest(input *CreateOpsItemInput) (req *request.Requ
 //     A specified parameter argument isn't valid. Verify the available arguments
 //     and try again.
 //
+//   - OpsItemAccessDeniedException
+//     You don't have permission to view OpsItems in the specified account. Verify
+//     that your account is configured either as a Systems Manager delegated administrator
+//     or that you are logged into the Organizations management account.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-2014-11-06/CreateOpsItem
 func (c *SSM) CreateOpsItem(input *CreateOpsItemInput) (*CreateOpsItemOutput, error) {
 	req, out := c.CreateOpsItemRequest(input)
@@ -2293,6 +2298,100 @@ func (c *SSM) DeleteResourceDataSync(input *DeleteResourceDataSyncInput) (*Delet
 // for more information on using Contexts.
 func (c *SSM) DeleteResourceDataSyncWithContext(ctx aws.Context, input *DeleteResourceDataSyncInput, opts ...request.Option) (*DeleteResourceDataSyncOutput, error) {
 	req, out := c.DeleteResourceDataSyncRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteResourcePolicy = "DeleteResourcePolicy"
+
+// DeleteResourcePolicyRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteResourcePolicy operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteResourcePolicy for more information on using the DeleteResourcePolicy
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteResourcePolicyRequest method.
+//	req, resp := client.DeleteResourcePolicyRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-2014-11-06/DeleteResourcePolicy
+func (c *SSM) DeleteResourcePolicyRequest(input *DeleteResourcePolicyInput) (req *request.Request, output *DeleteResourcePolicyOutput) {
+	op := &request.Operation{
+		Name:       opDeleteResourcePolicy,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteResourcePolicyInput{}
+	}
+
+	output = &DeleteResourcePolicyOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteResourcePolicy API operation for Amazon Simple Systems Manager (SSM).
+//
+// Deletes a Systems Manager resource policy. A resource policy helps you to
+// define the IAM entity (for example, an Amazon Web Services account) that
+// can manage your Systems Manager resources. Currently, OpsItemGroup is the
+// only resource that supports Systems Manager resource policies. The resource
+// policy for OpsItemGroup enables Amazon Web Services accounts to view and
+// interact with OpsCenter operational work items (OpsItems).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Systems Manager (SSM)'s
+// API operation DeleteResourcePolicy for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerError
+//     An error occurred on the server side.
+//
+//   - ResourcePolicyInvalidParameterException
+//     One or more parameters specified for the call aren't valid. Verify the parameters
+//     and their values and try again.
+//
+//   - ResourcePolicyConflictException
+//     The hash provided in the call doesn't match the stored hash. This exception
+//     is thrown when trying to update an obsolete policy version or when multiple
+//     requests to update a policy are sent.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-2014-11-06/DeleteResourcePolicy
+func (c *SSM) DeleteResourcePolicy(input *DeleteResourcePolicyInput) (*DeleteResourcePolicyOutput, error) {
+	req, out := c.DeleteResourcePolicyRequest(input)
+	return out, req.Send()
+}
+
+// DeleteResourcePolicyWithContext is the same as DeleteResourcePolicy with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteResourcePolicy for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSM) DeleteResourcePolicyWithContext(ctx aws.Context, input *DeleteResourcePolicyInput, opts ...request.Option) (*DeleteResourcePolicyOutput, error) {
+	req, out := c.DeleteResourcePolicyRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -8686,6 +8785,11 @@ func (c *SSM) GetOpsItemRequest(input *GetOpsItemInput) (req *request.Request, o
 //   - OpsItemNotFoundException
 //     The specified OpsItem ID doesn't exist. Verify the ID and try again.
 //
+//   - OpsItemAccessDeniedException
+//     You don't have permission to view OpsItems in the specified account. Verify
+//     that your account is configured either as a Systems Manager delegated administrator
+//     or that you are logged into the Organizations management account.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-2014-11-06/GetOpsItem
 func (c *SSM) GetOpsItem(input *GetOpsItemInput) (*GetOpsItemOutput, error) {
 	req, out := c.GetOpsItemRequest(input)
@@ -9606,6 +9710,146 @@ func (c *SSM) GetPatchBaselineForPatchGroupWithContext(ctx aws.Context, input *G
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+const opGetResourcePolicies = "GetResourcePolicies"
+
+// GetResourcePoliciesRequest generates a "aws/request.Request" representing the
+// client's request for the GetResourcePolicies operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetResourcePolicies for more information on using the GetResourcePolicies
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetResourcePoliciesRequest method.
+//	req, resp := client.GetResourcePoliciesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-2014-11-06/GetResourcePolicies
+func (c *SSM) GetResourcePoliciesRequest(input *GetResourcePoliciesInput) (req *request.Request, output *GetResourcePoliciesOutput) {
+	op := &request.Operation{
+		Name:       opGetResourcePolicies,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &GetResourcePoliciesInput{}
+	}
+
+	output = &GetResourcePoliciesOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetResourcePolicies API operation for Amazon Simple Systems Manager (SSM).
+//
+// Returns an array of the Policy object.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Systems Manager (SSM)'s
+// API operation GetResourcePolicies for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerError
+//     An error occurred on the server side.
+//
+//   - ResourcePolicyInvalidParameterException
+//     One or more parameters specified for the call aren't valid. Verify the parameters
+//     and their values and try again.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-2014-11-06/GetResourcePolicies
+func (c *SSM) GetResourcePolicies(input *GetResourcePoliciesInput) (*GetResourcePoliciesOutput, error) {
+	req, out := c.GetResourcePoliciesRequest(input)
+	return out, req.Send()
+}
+
+// GetResourcePoliciesWithContext is the same as GetResourcePolicies with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetResourcePolicies for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSM) GetResourcePoliciesWithContext(ctx aws.Context, input *GetResourcePoliciesInput, opts ...request.Option) (*GetResourcePoliciesOutput, error) {
+	req, out := c.GetResourcePoliciesRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// GetResourcePoliciesPages iterates over the pages of a GetResourcePolicies operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See GetResourcePolicies method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a GetResourcePolicies operation.
+//	pageNum := 0
+//	err := client.GetResourcePoliciesPages(params,
+//	    func(page *ssm.GetResourcePoliciesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *SSM) GetResourcePoliciesPages(input *GetResourcePoliciesInput, fn func(*GetResourcePoliciesOutput, bool) bool) error {
+	return c.GetResourcePoliciesPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// GetResourcePoliciesPagesWithContext same as GetResourcePoliciesPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSM) GetResourcePoliciesPagesWithContext(ctx aws.Context, input *GetResourcePoliciesInput, fn func(*GetResourcePoliciesOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *GetResourcePoliciesInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.GetResourcePoliciesRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*GetResourcePoliciesOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opGetServiceSetting = "GetServiceSetting"
@@ -12554,6 +12798,104 @@ func (c *SSM) PutParameterWithContext(ctx aws.Context, input *PutParameterInput,
 	return out, req.Send()
 }
 
+const opPutResourcePolicy = "PutResourcePolicy"
+
+// PutResourcePolicyRequest generates a "aws/request.Request" representing the
+// client's request for the PutResourcePolicy operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See PutResourcePolicy for more information on using the PutResourcePolicy
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the PutResourcePolicyRequest method.
+//	req, resp := client.PutResourcePolicyRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-2014-11-06/PutResourcePolicy
+func (c *SSM) PutResourcePolicyRequest(input *PutResourcePolicyInput) (req *request.Request, output *PutResourcePolicyOutput) {
+	op := &request.Operation{
+		Name:       opPutResourcePolicy,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &PutResourcePolicyInput{}
+	}
+
+	output = &PutResourcePolicyOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// PutResourcePolicy API operation for Amazon Simple Systems Manager (SSM).
+//
+// Creates or updates a Systems Manager resource policy. A resource policy helps
+// you to define the IAM entity (for example, an Amazon Web Services account)
+// that can manage your Systems Manager resources. Currently, OpsItemGroup is
+// the only resource that supports Systems Manager resource policies. The resource
+// policy for OpsItemGroup enables Amazon Web Services accounts to view and
+// interact with OpsCenter operational work items (OpsItems).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Systems Manager (SSM)'s
+// API operation PutResourcePolicy for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerError
+//     An error occurred on the server side.
+//
+//   - ResourcePolicyInvalidParameterException
+//     One or more parameters specified for the call aren't valid. Verify the parameters
+//     and their values and try again.
+//
+//   - ResourcePolicyLimitExceededException
+//     The PutResourcePolicy API action enforces two limits. A policy can't be greater
+//     than 1024 bytes in size. And only one policy can be attached to OpsItemGroup.
+//     Verify these limits and try again.
+//
+//   - ResourcePolicyConflictException
+//     The hash provided in the call doesn't match the stored hash. This exception
+//     is thrown when trying to update an obsolete policy version or when multiple
+//     requests to update a policy are sent.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-2014-11-06/PutResourcePolicy
+func (c *SSM) PutResourcePolicy(input *PutResourcePolicyInput) (*PutResourcePolicyOutput, error) {
+	req, out := c.PutResourcePolicyRequest(input)
+	return out, req.Send()
+}
+
+// PutResourcePolicyWithContext is the same as PutResourcePolicy with the addition of
+// the ability to pass a context and additional request options.
+//
+// See PutResourcePolicy for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSM) PutResourcePolicyWithContext(ctx aws.Context, input *PutResourcePolicyInput, opts ...request.Option) (*PutResourcePolicyOutput, error) {
+	req, out := c.PutResourcePolicyRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opRegisterDefaultPatchBaseline = "RegisterDefaultPatchBaseline"
 
 // RegisterDefaultPatchBaselineRequest generates a "aws/request.Request" representing the
@@ -15153,6 +15495,11 @@ func (c *SSM) UpdateOpsItemRequest(input *UpdateOpsItemInput) (req *request.Requ
 //   - OpsItemInvalidParameterException
 //     A specified parameter argument isn't valid. Verify the available arguments
 //     and try again.
+//
+//   - OpsItemAccessDeniedException
+//     You don't have permission to view OpsItems in the specified account. Verify
+//     that your account is configured either as a Systems Manager delegated administrator
+//     or that you are logged into the Organizations management account.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-2014-11-06/UpdateOpsItem
 func (c *SSM) UpdateOpsItem(input *UpdateOpsItemInput) (*UpdateOpsItemOutput, error) {
@@ -20913,6 +21260,9 @@ type CreateActivationInput struct {
 	// (https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-service-role.html)
 	// in the Amazon Web Services Systems Manager User Guide.
 	//
+	// You can't specify an IAM service-linked role for this parameter. You must
+	// create a unique role.
+	//
 	// IamRole is a required field
 	IamRole *string `type:"string" required:"true"`
 
@@ -22440,6 +22790,13 @@ func (s *CreateMaintenanceWindowOutput) SetWindowId(v string) *CreateMaintenance
 type CreateOpsItemInput struct {
 	_ struct{} `type:"structure"`
 
+	// The target Amazon Web Services account where you want to create an OpsItem.
+	// To make this call, your account must be configured to work with OpsItems
+	// across accounts. For more information, see Setting up OpsCenter to work with
+	// OpsItems across accounts (https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-OpsCenter-multiple-accounts.html)
+	// in the Amazon Web Services Systems Manager User Guide.
+	AccountId *string `type:"string"`
+
 	// The time a runbook workflow ended. Currently reported only for the OpsItem
 	// type /aws/changerequest.
 	ActualEndTime *time.Time `type:"timestamp"`
@@ -22483,8 +22840,17 @@ type CreateOpsItemInput struct {
 	// in the Amazon Web Services Systems Manager User Guide.
 	OperationalData map[string]*OpsItemDataValue `type:"map"`
 
-	// The type of OpsItem to create. Currently, the only valid values are /aws/changerequest
-	// and /aws/issue.
+	// The type of OpsItem to create. Systems Manager supports the following types
+	// of OpsItems:
+	//
+	//    * /aws/issue This type of OpsItem is used for default OpsItems created
+	//    by OpsCenter.
+	//
+	//    * /aws/changerequest This type of OpsItem is used by Change Manager for
+	//    reviewing and approving or rejecting change requests.
+	//
+	//    * /aws/insights This type of OpsItem is used by OpsCenter for aggregating
+	//    and reporting on duplicate OpsItems.
 	OpsItemType *string `type:"string"`
 
 	// The time specified in a change request for a runbook workflow to end. Currently
@@ -22609,6 +22975,12 @@ func (s *CreateOpsItemInput) Validate() error {
 	return nil
 }
 
+// SetAccountId sets the AccountId field's value.
+func (s *CreateOpsItemInput) SetAccountId(v string) *CreateOpsItemInput {
+	s.AccountId = &v
+	return s
+}
+
 // SetActualEndTime sets the ActualEndTime field's value.
 func (s *CreateOpsItemInput) SetActualEndTime(v time.Time) *CreateOpsItemInput {
 	s.ActualEndTime = &v
@@ -22702,6 +23074,9 @@ func (s *CreateOpsItemInput) SetTitle(v string) *CreateOpsItemInput {
 type CreateOpsItemOutput struct {
 	_ struct{} `type:"structure"`
 
+	// The OpsItem Amazon Resource Name (ARN).
+	OpsItemArn *string `min:"20" type:"string"`
+
 	// The ID of the OpsItem.
 	OpsItemId *string `type:"string"`
 }
@@ -22722,6 +23097,12 @@ func (s CreateOpsItemOutput) String() string {
 // value will be replaced with "sensitive".
 func (s CreateOpsItemOutput) GoString() string {
 	return s.String()
+}
+
+// SetOpsItemArn sets the OpsItemArn field's value.
+func (s *CreateOpsItemOutput) SetOpsItemArn(v string) *CreateOpsItemOutput {
+	s.OpsItemArn = &v
+	return s
 }
 
 // SetOpsItemId sets the OpsItemId field's value.
@@ -24174,6 +24555,106 @@ func (s DeleteResourceDataSyncOutput) String() string {
 // be included in the string output. The member name will be present, but the
 // value will be replaced with "sensitive".
 func (s DeleteResourceDataSyncOutput) GoString() string {
+	return s.String()
+}
+
+type DeleteResourcePolicyInput struct {
+	_ struct{} `type:"structure"`
+
+	// ID of the current policy version. The hash helps to prevent multiple calls
+	// from attempting to overwrite a policy.
+	//
+	// PolicyHash is a required field
+	PolicyHash *string `type:"string" required:"true"`
+
+	// The policy ID.
+	//
+	// PolicyId is a required field
+	PolicyId *string `type:"string" required:"true"`
+
+	// Amazon Resource Name (ARN) of the resource to which the policies are attached.
+	//
+	// ResourceArn is a required field
+	ResourceArn *string `min:"20" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteResourcePolicyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteResourcePolicyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteResourcePolicyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteResourcePolicyInput"}
+	if s.PolicyHash == nil {
+		invalidParams.Add(request.NewErrParamRequired("PolicyHash"))
+	}
+	if s.PolicyId == nil {
+		invalidParams.Add(request.NewErrParamRequired("PolicyId"))
+	}
+	if s.ResourceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceArn"))
+	}
+	if s.ResourceArn != nil && len(*s.ResourceArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceArn", 20))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetPolicyHash sets the PolicyHash field's value.
+func (s *DeleteResourcePolicyInput) SetPolicyHash(v string) *DeleteResourcePolicyInput {
+	s.PolicyHash = &v
+	return s
+}
+
+// SetPolicyId sets the PolicyId field's value.
+func (s *DeleteResourcePolicyInput) SetPolicyId(v string) *DeleteResourcePolicyInput {
+	s.PolicyId = &v
+	return s
+}
+
+// SetResourceArn sets the ResourceArn field's value.
+func (s *DeleteResourcePolicyInput) SetResourceArn(v string) *DeleteResourcePolicyInput {
+	s.ResourceArn = &v
+	return s
+}
+
+type DeleteResourcePolicyOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteResourcePolicyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteResourcePolicyOutput) GoString() string {
 	return s.String()
 }
 
@@ -33316,6 +33797,9 @@ func (s *GetMaintenanceWindowTaskOutput) SetWindowTaskId(v string) *GetMaintenan
 type GetOpsItemInput struct {
 	_ struct{} `type:"structure"`
 
+	// The OpsItem Amazon Resource Name (ARN).
+	OpsItemArn *string `min:"20" type:"string"`
+
 	// The ID of the OpsItem that you want to get.
 	//
 	// OpsItemId is a required field
@@ -33343,6 +33827,9 @@ func (s GetOpsItemInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *GetOpsItemInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "GetOpsItemInput"}
+	if s.OpsItemArn != nil && len(*s.OpsItemArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("OpsItemArn", 20))
+	}
 	if s.OpsItemId == nil {
 		invalidParams.Add(request.NewErrParamRequired("OpsItemId"))
 	}
@@ -33351,6 +33838,12 @@ func (s *GetOpsItemInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetOpsItemArn sets the OpsItemArn field's value.
+func (s *GetOpsItemInput) SetOpsItemArn(v string) *GetOpsItemInput {
+	s.OpsItemArn = &v
+	return s
 }
 
 // SetOpsItemId sets the OpsItemId field's value.
@@ -34496,6 +34989,179 @@ func (s *GetPatchBaselineOutput) SetRejectedPatchesAction(v string) *GetPatchBas
 // SetSources sets the Sources field's value.
 func (s *GetPatchBaselineOutput) SetSources(v []*PatchSource) *GetPatchBaselineOutput {
 	s.Sources = v
+	return s
+}
+
+type GetResourcePoliciesInput struct {
+	_ struct{} `type:"structure"`
+
+	// The maximum number of items to return for this call. The call also returns
+	// a token that you can specify in a subsequent call to get the next set of
+	// results.
+	MaxResults *int64 `min:"1" type:"integer"`
+
+	// A token to start the list. Use this token to get the next set of results.
+	NextToken *string `type:"string"`
+
+	// Amazon Resource Name (ARN) of the resource to which the policies are attached.
+	//
+	// ResourceArn is a required field
+	ResourceArn *string `min:"20" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetResourcePoliciesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetResourcePoliciesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetResourcePoliciesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetResourcePoliciesInput"}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.ResourceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceArn"))
+	}
+	if s.ResourceArn != nil && len(*s.ResourceArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceArn", 20))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *GetResourcePoliciesInput) SetMaxResults(v int64) *GetResourcePoliciesInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *GetResourcePoliciesInput) SetNextToken(v string) *GetResourcePoliciesInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetResourceArn sets the ResourceArn field's value.
+func (s *GetResourcePoliciesInput) SetResourceArn(v string) *GetResourcePoliciesInput {
+	s.ResourceArn = &v
+	return s
+}
+
+type GetResourcePoliciesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The token for the next set of items to return. Use this token to get the
+	// next set of results.
+	NextToken *string `type:"string"`
+
+	// An array of the Policy object.
+	Policies []*GetResourcePoliciesResponseEntry `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetResourcePoliciesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetResourcePoliciesOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *GetResourcePoliciesOutput) SetNextToken(v string) *GetResourcePoliciesOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetPolicies sets the Policies field's value.
+func (s *GetResourcePoliciesOutput) SetPolicies(v []*GetResourcePoliciesResponseEntry) *GetResourcePoliciesOutput {
+	s.Policies = v
+	return s
+}
+
+// A resource policy helps you to define the IAM entity (for example, an Amazon
+// Web Services account) that can manage your Systems Manager resources. Currently,
+// OpsItemGroup is the only resource that supports Systems Manager resource
+// policies. The resource policy for OpsItemGroup enables Amazon Web Services
+// accounts to view and interact with OpsCenter operational work items (OpsItems).
+type GetResourcePoliciesResponseEntry struct {
+	_ struct{} `type:"structure"`
+
+	// A resource policy helps you to define the IAM entity (for example, an Amazon
+	// Web Services account) that can manage your Systems Manager resources. Currently,
+	// OpsItemGroup is the only resource that supports Systems Manager resource
+	// policies. The resource policy for OpsItemGroup enables Amazon Web Services
+	// accounts to view and interact with OpsCenter operational work items (OpsItems).
+	Policy *string `type:"string"`
+
+	// ID of the current policy version. The hash helps to prevent a situation where
+	// multiple users attempt to overwrite a policy. You must provide this hash
+	// when updating or deleting a policy.
+	PolicyHash *string `type:"string"`
+
+	// A policy ID.
+	PolicyId *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetResourcePoliciesResponseEntry) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetResourcePoliciesResponseEntry) GoString() string {
+	return s.String()
+}
+
+// SetPolicy sets the Policy field's value.
+func (s *GetResourcePoliciesResponseEntry) SetPolicy(v string) *GetResourcePoliciesResponseEntry {
+	s.Policy = &v
+	return s
+}
+
+// SetPolicyHash sets the PolicyHash field's value.
+func (s *GetResourcePoliciesResponseEntry) SetPolicyHash(v string) *GetResourcePoliciesResponseEntry {
+	s.PolicyHash = &v
+	return s
+}
+
+// SetPolicyId sets the PolicyId field's value.
+func (s *GetResourcePoliciesResponseEntry) SetPolicyId(v string) *GetResourcePoliciesResponseEntry {
+	s.PolicyId = &v
 	return s
 }
 
@@ -44604,11 +45270,22 @@ type OpsItem struct {
 	// in the Amazon Web Services Systems Manager User Guide.
 	OperationalData map[string]*OpsItemDataValue `type:"map"`
 
+	// The OpsItem Amazon Resource Name (ARN).
+	OpsItemArn *string `min:"20" type:"string"`
+
 	// The ID of the OpsItem.
 	OpsItemId *string `type:"string"`
 
-	// The type of OpsItem. Currently, the only valid values are /aws/changerequest
-	// and /aws/issue.
+	// The type of OpsItem. Systems Manager supports the following types of OpsItems:
+	//
+	//    * /aws/issue This type of OpsItem is used for default OpsItems created
+	//    by OpsCenter.
+	//
+	//    * /aws/changerequest This type of OpsItem is used by Change Manager for
+	//    reviewing and approving or rejecting change requests.
+	//
+	//    * /aws/insights This type of OpsItem is used by OpsCenter for aggregating
+	//    and reporting on duplicate OpsItems.
 	OpsItemType *string `type:"string"`
 
 	// The time specified in a change request for a runbook workflow to end. Currently
@@ -44726,6 +45403,12 @@ func (s *OpsItem) SetOperationalData(v map[string]*OpsItemDataValue) *OpsItem {
 	return s
 }
 
+// SetOpsItemArn sets the OpsItemArn field's value.
+func (s *OpsItem) SetOpsItemArn(v string) *OpsItem {
+	s.OpsItemArn = &v
+	return s
+}
+
 // SetOpsItemId sets the OpsItemId field's value.
 func (s *OpsItem) SetOpsItemId(v string) *OpsItem {
 	s.OpsItemId = &v
@@ -44790,6 +45473,72 @@ func (s *OpsItem) SetTitle(v string) *OpsItem {
 func (s *OpsItem) SetVersion(v string) *OpsItem {
 	s.Version = &v
 	return s
+}
+
+// You don't have permission to view OpsItems in the specified account. Verify
+// that your account is configured either as a Systems Manager delegated administrator
+// or that you are logged into the Organizations management account.
+type OpsItemAccessDeniedException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"Message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s OpsItemAccessDeniedException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s OpsItemAccessDeniedException) GoString() string {
+	return s.String()
+}
+
+func newErrorOpsItemAccessDeniedException(v protocol.ResponseMetadata) error {
+	return &OpsItemAccessDeniedException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *OpsItemAccessDeniedException) Code() string {
+	return "OpsItemAccessDeniedException"
+}
+
+// Message returns the exception's message.
+func (s *OpsItemAccessDeniedException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *OpsItemAccessDeniedException) OrigErr() error {
+	return nil
+}
+
+func (s *OpsItemAccessDeniedException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *OpsItemAccessDeniedException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *OpsItemAccessDeniedException) RequestID() string {
+	return s.RespMetadata.RequestID
 }
 
 // The OpsItem already exists.
@@ -45755,8 +46504,16 @@ type OpsItemSummary struct {
 	// The ID of the OpsItem.
 	OpsItemId *string `type:"string"`
 
-	// The type of OpsItem. Currently, the only valid values are /aws/changerequest
-	// and /aws/issue.
+	// The type of OpsItem. Systems Manager supports the following types of OpsItems:
+	//
+	//    * /aws/issue This type of OpsItem is used for default OpsItems created
+	//    by OpsCenter.
+	//
+	//    * /aws/changerequest This type of OpsItem is used by Change Manager for
+	//    reviewing and approving or rejecting change requests.
+	//
+	//    * /aws/insights This type of OpsItem is used by OpsCenter for aggregating
+	//    and reporting on duplicate OpsItems.
 	OpsItemType *string `type:"string"`
 
 	// The time specified in a change request for a runbook workflow to end. Currently
@@ -49395,6 +50152,130 @@ func (s *PutParameterOutput) SetVersion(v int64) *PutParameterOutput {
 	return s
 }
 
+type PutResourcePolicyInput struct {
+	_ struct{} `type:"structure"`
+
+	// A policy you want to associate with a resource.
+	//
+	// Policy is a required field
+	Policy *string `type:"string" required:"true"`
+
+	// ID of the current policy version. The hash helps to prevent a situation where
+	// multiple users attempt to overwrite a policy.
+	PolicyHash *string `type:"string"`
+
+	// The policy ID.
+	PolicyId *string `type:"string"`
+
+	// Amazon Resource Name (ARN) of the resource to which the policies are attached.
+	//
+	// ResourceArn is a required field
+	ResourceArn *string `min:"20" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutResourcePolicyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutResourcePolicyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutResourcePolicyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutResourcePolicyInput"}
+	if s.Policy == nil {
+		invalidParams.Add(request.NewErrParamRequired("Policy"))
+	}
+	if s.ResourceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceArn"))
+	}
+	if s.ResourceArn != nil && len(*s.ResourceArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceArn", 20))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetPolicy sets the Policy field's value.
+func (s *PutResourcePolicyInput) SetPolicy(v string) *PutResourcePolicyInput {
+	s.Policy = &v
+	return s
+}
+
+// SetPolicyHash sets the PolicyHash field's value.
+func (s *PutResourcePolicyInput) SetPolicyHash(v string) *PutResourcePolicyInput {
+	s.PolicyHash = &v
+	return s
+}
+
+// SetPolicyId sets the PolicyId field's value.
+func (s *PutResourcePolicyInput) SetPolicyId(v string) *PutResourcePolicyInput {
+	s.PolicyId = &v
+	return s
+}
+
+// SetResourceArn sets the ResourceArn field's value.
+func (s *PutResourcePolicyInput) SetResourceArn(v string) *PutResourcePolicyInput {
+	s.ResourceArn = &v
+	return s
+}
+
+type PutResourcePolicyOutput struct {
+	_ struct{} `type:"structure"`
+
+	// ID of the current policy version. The hash helps to prevent a situation where
+	// multiple users attempt to overwrite a policy. You must provide this hash
+	// when updating or deleting a policy.
+	PolicyHash *string `type:"string"`
+
+	// The policy ID. To update a policy, you must specify PolicyId and PolicyHash.
+	PolicyId *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutResourcePolicyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutResourcePolicyOutput) GoString() string {
+	return s.String()
+}
+
+// SetPolicyHash sets the PolicyHash field's value.
+func (s *PutResourcePolicyOutput) SetPolicyHash(v string) *PutResourcePolicyOutput {
+	s.PolicyHash = &v
+	return s
+}
+
+// SetPolicyId sets the PolicyId field's value.
+func (s *PutResourcePolicyOutput) SetPolicyId(v string) *PutResourcePolicyOutput {
+	s.PolicyId = &v
+	return s
+}
+
 type RegisterDefaultPatchBaselineInput struct {
 	_ struct{} `type:"structure"`
 
@@ -51697,6 +52578,209 @@ func (s *ResourceLimitExceededException) StatusCode() int {
 
 // RequestID returns the service's response RequestID for request.
 func (s *ResourceLimitExceededException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
+// The hash provided in the call doesn't match the stored hash. This exception
+// is thrown when trying to update an obsolete policy version or when multiple
+// requests to update a policy are sent.
+type ResourcePolicyConflictException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"Message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourcePolicyConflictException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourcePolicyConflictException) GoString() string {
+	return s.String()
+}
+
+func newErrorResourcePolicyConflictException(v protocol.ResponseMetadata) error {
+	return &ResourcePolicyConflictException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *ResourcePolicyConflictException) Code() string {
+	return "ResourcePolicyConflictException"
+}
+
+// Message returns the exception's message.
+func (s *ResourcePolicyConflictException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *ResourcePolicyConflictException) OrigErr() error {
+	return nil
+}
+
+func (s *ResourcePolicyConflictException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *ResourcePolicyConflictException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *ResourcePolicyConflictException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
+// One or more parameters specified for the call aren't valid. Verify the parameters
+// and their values and try again.
+type ResourcePolicyInvalidParameterException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"Message" type:"string"`
+
+	ParameterNames []*string `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourcePolicyInvalidParameterException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourcePolicyInvalidParameterException) GoString() string {
+	return s.String()
+}
+
+func newErrorResourcePolicyInvalidParameterException(v protocol.ResponseMetadata) error {
+	return &ResourcePolicyInvalidParameterException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *ResourcePolicyInvalidParameterException) Code() string {
+	return "ResourcePolicyInvalidParameterException"
+}
+
+// Message returns the exception's message.
+func (s *ResourcePolicyInvalidParameterException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *ResourcePolicyInvalidParameterException) OrigErr() error {
+	return nil
+}
+
+func (s *ResourcePolicyInvalidParameterException) Error() string {
+	return fmt.Sprintf("%s: %s\n%s", s.Code(), s.Message(), s.String())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *ResourcePolicyInvalidParameterException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *ResourcePolicyInvalidParameterException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
+// The PutResourcePolicy API action enforces two limits. A policy can't be greater
+// than 1024 bytes in size. And only one policy can be attached to OpsItemGroup.
+// Verify these limits and try again.
+type ResourcePolicyLimitExceededException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Limit *int64 `type:"integer"`
+
+	LimitType *string `type:"string"`
+
+	Message_ *string `locationName:"Message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourcePolicyLimitExceededException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourcePolicyLimitExceededException) GoString() string {
+	return s.String()
+}
+
+func newErrorResourcePolicyLimitExceededException(v protocol.ResponseMetadata) error {
+	return &ResourcePolicyLimitExceededException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *ResourcePolicyLimitExceededException) Code() string {
+	return "ResourcePolicyLimitExceededException"
+}
+
+// Message returns the exception's message.
+func (s *ResourcePolicyLimitExceededException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *ResourcePolicyLimitExceededException) OrigErr() error {
+	return nil
+}
+
+func (s *ResourcePolicyLimitExceededException) Error() string {
+	return fmt.Sprintf("%s: %s\n%s", s.Code(), s.Message(), s.String())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *ResourcePolicyLimitExceededException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *ResourcePolicyLimitExceededException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
@@ -57654,7 +58738,15 @@ func (s *UpdateMaintenanceWindowTaskOutput) SetWindowTaskId(v string) *UpdateMai
 type UpdateManagedInstanceRoleInput struct {
 	_ struct{} `type:"structure"`
 
-	// The IAM role you want to assign or change.
+	// The name of the Identity and Access Management (IAM) role that you want to
+	// assign to the managed node. This IAM role must provide AssumeRole permissions
+	// for the Amazon Web Services Systems Manager service principal ssm.amazonaws.com.
+	// For more information, see Create an IAM service role for a hybrid environment
+	// (https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-service-role.html)
+	// in the Amazon Web Services Systems Manager User Guide.
+	//
+	// You can't specify an IAM service-linked role for this parameter. You must
+	// create a unique role.
 	//
 	// IamRole is a required field
 	IamRole *string `type:"string" required:"true"`
@@ -57787,6 +58879,9 @@ type UpdateOpsItemInput struct {
 	// Keys that you want to remove from the OperationalData map.
 	OperationalDataToDelete []*string `type:"list"`
 
+	// The OpsItem Amazon Resource Name (ARN).
+	OpsItemArn *string `min:"20" type:"string"`
+
 	// The ID of the OpsItem.
 	//
 	// OpsItemId is a required field
@@ -57847,6 +58942,9 @@ func (s *UpdateOpsItemInput) Validate() error {
 	}
 	if s.Description != nil && len(*s.Description) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Description", 1))
+	}
+	if s.OpsItemArn != nil && len(*s.OpsItemArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("OpsItemArn", 20))
 	}
 	if s.OpsItemId == nil {
 		invalidParams.Add(request.NewErrParamRequired("OpsItemId"))
@@ -57916,6 +59014,12 @@ func (s *UpdateOpsItemInput) SetOperationalData(v map[string]*OpsItemDataValue) 
 // SetOperationalDataToDelete sets the OperationalDataToDelete field's value.
 func (s *UpdateOpsItemInput) SetOperationalDataToDelete(v []*string) *UpdateOpsItemInput {
 	s.OperationalDataToDelete = v
+	return s
+}
+
+// SetOpsItemArn sets the OpsItemArn field's value.
+func (s *UpdateOpsItemInput) SetOpsItemArn(v string) *UpdateOpsItemInput {
+	s.OpsItemArn = &v
 	return s
 }
 
@@ -60131,6 +61235,9 @@ const (
 
 	// OpsItemFilterKeyInsightByType is a OpsItemFilterKey enum value
 	OpsItemFilterKeyInsightByType = "InsightByType"
+
+	// OpsItemFilterKeyAccountId is a OpsItemFilterKey enum value
+	OpsItemFilterKeyAccountId = "AccountId"
 )
 
 // OpsItemFilterKey_Values returns all elements of the OpsItemFilterKey enum
@@ -60163,6 +61270,7 @@ func OpsItemFilterKey_Values() []string {
 		OpsItemFilterKeyChangeRequestByTemplate,
 		OpsItemFilterKeyChangeRequestByTargetsResourceGroup,
 		OpsItemFilterKeyInsightByType,
+		OpsItemFilterKeyAccountId,
 	}
 }
 
