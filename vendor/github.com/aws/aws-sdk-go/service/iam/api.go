@@ -3001,9 +3001,8 @@ func (c *IAM) DeleteLoginProfileRequest(input *DeleteLoginProfileInput) (req *re
 
 // DeleteLoginProfile API operation for AWS Identity and Access Management.
 //
-// Deletes the password for the specified IAM user, which terminates the user's
-// ability to access Amazon Web Services services through the Amazon Web Services
-// Management Console.
+// Deletes the password for the specified IAM user, For more information, see
+// Managing passwords for IAM users (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_passwords_admin-change-user.html).
 //
 // You can use the CLI, the Amazon Web Services API, or the Users page in the
 // IAM console to delete a password for any IAM user. You can use ChangePassword
@@ -17585,7 +17584,7 @@ type AccessDetail struct {
 	//
 	// This field is null if no principals (IAM users, IAM roles, or root users)
 	// in the reported Organizations entity attempted to access the service within
-	// the reporting period (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period).
+	// the tracking period (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period).
 	EntityPath *string `min:"19" type:"string"`
 
 	// The date and time, in ISO 8601 date-time format (http://www.iso.org/iso/iso8601),
@@ -17593,13 +17592,13 @@ type AccessDetail struct {
 	// Amazon Web Services does not report unauthenticated requests.
 	//
 	// This field is null if no principals in the reported Organizations entity
-	// attempted to access the service within the reporting period (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period).
+	// attempted to access the service within the tracking period (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period).
 	LastAuthenticatedTime *time.Time `type:"timestamp"`
 
 	// The Region where the last service access attempt occurred.
 	//
 	// This field is null if no principals in the reported Organizations entity
-	// attempted to access the service within the reporting period (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period).
+	// attempted to access the service within the tracking period (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period).
 	Region *string `type:"string"`
 
 	// The name of the service in which access was attempted.
@@ -17621,7 +17620,7 @@ type AccessDetail struct {
 	ServiceNamespace *string `min:"1" type:"string" required:"true"`
 
 	// The number of accounts with authenticated principals (root users, IAM users,
-	// and IAM roles) that attempted to access the service in the reporting period.
+	// and IAM roles) that attempted to access the service in the tracking period.
 	TotalAuthenticatedEntities *int64 `type:"integer"`
 }
 
@@ -19856,8 +19855,8 @@ type CreateRoleInput struct {
 	// role. If you do not specify a value for this setting, the default value of
 	// one hour is applied. This setting can have a value from 1 hour to 12 hours.
 	//
-	// Anyone who assumes the role from the or API can use the DurationSeconds API
-	// parameter or the duration-seconds CLI parameter to request a longer session.
+	// Anyone who assumes the role from the CLI or API can use the DurationSeconds
+	// API parameter or the duration-seconds CLI parameter to request a longer session.
 	// The MaxSessionDuration setting determines the maximum duration that can be
 	// requested using the DurationSeconds parameter. If users don't specify a value
 	// for the DurationSeconds parameter, their security credentials are valid for
@@ -23147,7 +23146,7 @@ type EntityDetails struct {
 	// Amazon Web Services does not report unauthenticated requests.
 	//
 	// This field is null if no IAM entities attempted to access the service within
-	// the reporting period (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period).
+	// the tracking period (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period).
 	LastAuthenticated *time.Time `type:"timestamp"`
 }
 
@@ -34957,14 +34956,14 @@ type ServiceLastAccessed struct {
 	// Amazon Web Services does not report unauthenticated requests.
 	//
 	// This field is null if no IAM entities attempted to access the service within
-	// the reporting period (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period).
+	// the tracking period (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period).
 	LastAuthenticated *time.Time `type:"timestamp"`
 
 	// The ARN of the authenticated entity (user or role) that last attempted to
 	// access the service. Amazon Web Services does not report unauthenticated requests.
 	//
 	// This field is null if no IAM entities attempted to access the service within
-	// the reporting period (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period).
+	// the tracking period (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period).
 	LastAuthenticatedEntity *string `min:"20" type:"string"`
 
 	// The Region from which the authenticated entity (user or role) last attempted
@@ -34972,7 +34971,7 @@ type ServiceLastAccessed struct {
 	// requests.
 	//
 	// This field is null if no IAM entities attempted to access the service within
-	// the reporting period (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period).
+	// the tracking period (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period).
 	LastAuthenticatedRegion *string `type:"string"`
 
 	// The name of the service in which access was attempted.
@@ -34997,14 +34996,14 @@ type ServiceLastAccessed struct {
 	// roles) that have attempted to access the service.
 	//
 	// This field is null if no principals attempted to access the service within
-	// the reporting period (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period).
+	// the tracking period (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period).
 	TotalAuthenticatedEntities *int64 `type:"integer"`
 
 	// An object that contains details about the most recent attempt to access a
 	// tracked action within the service.
 	//
 	// This field is null if there no tracked actions or if the principal did not
-	// use the tracked actions within the reporting period (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period).
+	// use the tracked actions within the tracking period (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period).
 	// This field is also null if the report was generated at the service level
 	// and not the action level. For more information, see the Granularity field
 	// in GenerateServiceLastAccessedDetails.
@@ -37177,7 +37176,7 @@ type TrackedActionLastAccessed struct {
 	// requests.
 	//
 	// This field is null if no IAM entities attempted to access the service within
-	// the reporting period (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period).
+	// the tracking period (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period).
 	LastAccessedRegion *string `type:"string"`
 
 	// The date and time, in ISO 8601 date-time format (http://www.iso.org/iso/iso8601),
@@ -37185,7 +37184,7 @@ type TrackedActionLastAccessed struct {
 	// service. Amazon Web Services does not report unauthenticated requests.
 	//
 	// This field is null if no IAM entities attempted to access the service within
-	// the reporting period (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period).
+	// the tracking period (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period).
 	LastAccessedTime *time.Time `type:"timestamp"`
 }
 

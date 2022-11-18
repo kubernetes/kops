@@ -1941,6 +1941,10 @@ func isAWSErrorInstanceNotFound(err error) bool {
 		if awsError.Code() == ec2.UnsuccessfulInstanceCreditSpecificationErrorCodeInvalidInstanceIdNotFound {
 			return true
 		}
+	} else if strings.Contains(err.Error(), ec2.UnsuccessfulInstanceCreditSpecificationErrorCodeInvalidInstanceIdNotFound) {
+		// In places like https://github.com/kubernetes/cloud-provider-aws/blob/1c6194aad0122ab44504de64187e3d1a7415b198/pkg/providers/v1/aws.go#L1007,
+		// the error has been transformed into something else so check the error string to see if it contains the error code we're looking for.
+		return true
 	}
 
 	return false

@@ -40,7 +40,7 @@ func GetConversionUnsafe(in cty.Type, out cty.Type) Conversion {
 // This is a convenience wrapper around calling GetConversionUnsafe and then
 // immediately passing the given value to the resulting function.
 func Convert(in cty.Value, want cty.Type) (cty.Value, error) {
-	if in.Type().Equals(want) {
+	if in.Type().Equals(want.WithoutOptionalAttributesDeep()) {
 		return in, nil
 	}
 

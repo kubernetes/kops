@@ -47,3 +47,9 @@ type PrimaryIPGetResult struct {
 type PrimaryIPListResult struct {
 	PrimaryIPs []PrimaryIP `json:"primary_ips"`
 }
+
+// PrimaryIPUpdateResult defines the response
+// when updating a Primary IP.
+type PrimaryIPUpdateResult struct {
+	PrimaryIP PrimaryIP `json:"primary_ip"`
+}

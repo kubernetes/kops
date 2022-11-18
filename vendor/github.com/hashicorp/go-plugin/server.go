@@ -304,13 +304,13 @@ func Serve(opts *ServeConfig) {
 
 		certPEM, keyPEM, err := generateCert()
 		if err != nil {
-			logger.Error("failed to generate client certificate", "error", err)
+			logger.Error("failed to generate server certificate", "error", err)
 			panic(err)
 		}
 
 		cert, err := tls.X509KeyPair(certPEM, keyPEM)
 		if err != nil {
-			logger.Error("failed to parse client certificate", "error", err)
+			logger.Error("failed to parse server certificate", "error", err)
 			panic(err)
 		}
 
@@ -319,6 +319,8 @@ func Serve(opts *ServeConfig) {
 			ClientAuth:   tls.RequireAndVerifyClientCert,
 			ClientCAs:    clientCertPool,
 			MinVersion:   tls.VersionTLS12,
+			RootCAs:      clientCertPool,
+			ServerName:   "localhost",
 		}
 
 		// We send back the raw leaf cert data for the client rather than the

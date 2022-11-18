@@ -136,6 +136,12 @@ type ServerCreateResponse struct {
 	NextActions  []Action `json:"next_actions"`
 }
 
+// ServerDeleteResponse defines the schema of the response when
+// deleting a server.
+type ServerDeleteResponse struct {
+	Action Action `json:"action"`
+}
+
 // ServerUpdateRequest defines the schema of the request to update a server.
 type ServerUpdateRequest struct {
 	Name   string             `json:"name,omitempty"`

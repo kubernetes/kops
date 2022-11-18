@@ -94,6 +94,8 @@ type App struct {
 	Domains                 []*AppDomain    `json:"domains,omitempty"`
 	PinnedDeployment        *Deployment     `json:"pinned_deployment,omitempty"`
 	BuildConfig             *AppBuildConfig `json:"build_config,omitempty"`
+	// The id of the project for the app. This will be empty if there is a lookup failure.
+	ProjectID string `json:"project_id,omitempty"`
 }
 
 // AppAlertSpec Configuration of an alert for the app or a individual component.
@@ -522,6 +524,18 @@ type DeploymentCauseDetailsDigitalOceanUserAction struct {
 	Name DeploymentCauseDetailsDigitalOceanUserActionName `json:"name,omitempty"`
 }
 
+// DeploymentCauseDetailsDOCRPush struct for DeploymentCauseDetailsDOCRPush
+type DeploymentCauseDetailsDOCRPush struct {
+	// The registry name.
+	Registry string `json:"registry,omitempty"`
+	// The repository name.
+	Repository string `json:"repository,omitempty"`
+	// The repository tag.
+	Tag string `json:"tag,omitempty"`
+	// OCI Image digest.
+	ImageDigest string `json:"image_digest,omitempty"`
+}
+
 // DeploymentCauseDetailsGitPush struct for DeploymentCauseDetailsGitPush
 type DeploymentCauseDetailsGitPush struct {
 	GitHub        *GitHubSourceSpec `json:"github,omitempty"`
@@ -551,6 +565,8 @@ type AppCORSPolicy struct {
 // AppCreateRequest struct for AppCreateRequest
 type AppCreateRequest struct {
 	Spec *AppSpec `json:"spec"`
+	// Optional. The UUID of the project the app should be assigned.
+	ProjectID string `json:"project_id,omitempty"`
 }
 
 // DeployTemplate struct for DeployTemplate
@@ -584,6 +600,7 @@ type Deployment struct {
 type DeploymentCauseDetails struct {
 	DigitalOceanUserAction *DeploymentCauseDetailsDigitalOceanUserAction `json:"digitalocean_user_action,omitempty"`
 	GitPush                *DeploymentCauseDetailsGitPush                `json:"git_push,omitempty"`
+	DOCRPush               *DeploymentCauseDetailsDOCRPush               `json:"docr_push,omitempty"`
 	Internal               bool                                          `json:"internal,omitempty"`
 	Type                   DeploymentCauseDetailsType                    `json:"type,omitempty"`
 }
@@ -886,7 +903,14 @@ type ImageSourceSpec struct {
 	// The repository name.
 	Repository string `json:"repository,omitempty"`
 	// The repository tag. Defaults to `latest` if not provided.
-	Tag string `json:"tag,omitempty"`
+	Tag          string                       `json:"tag,omitempty"`
+	DeployOnPush *ImageSourceSpecDeployOnPush `json:"deploy_on_push,omitempty"`
+}
+
+// ImageSourceSpecDeployOnPush struct for ImageSourceSpecDeployOnPush
+type ImageSourceSpecDeployOnPush struct {
+	// Automatically deploy new images. Only for DOCR images.
+	Enabled bool `json:"enabled,omitempty"`
 }
 
 // ImageSourceSpecRegistryType  - DOCR: The DigitalOcean container registry type.  - DOCKER_HUB: The DockerHub container registry type.
@@ -985,18 +1009,6 @@ type AppTier struct {
 	Slug                 string `json:"slug,omitempty"`
 	EgressBandwidthBytes string `json:"egress_bandwidth_bytes,omitempty"`
 	BuildSeconds         string `json:"build_seconds,omitempty"`
-}
-
-// UpgradeBuildpackRequest struct for UpgradeBuildpackRequest
-type UpgradeBuildpackRequest struct {
-	// The ID of the app to upgrade buildpack versions for.
-	AppID string `json:"app_id,omitempty"`
-	// The ID of the buildpack to upgrade.
-	BuildpackID string `json:"buildpack_id,omitempty"`
-	// The Major Version to upgrade the buildpack to. If omitted, the latest available major version will be used.
-	MajorVersion int32 `json:"major_version,omitempty"`
-	// Whether or not to trigger a deployment for the app after upgrading the buildpack.
-	TriggerDeployment bool `json:"trigger_deployment,omitempty"`
 }
 
 // UpgradeBuildpackResponse struct for UpgradeBuildpackResponse

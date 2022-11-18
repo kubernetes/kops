@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"strings"
 	"sync"
 
 	_ "crypto/sha1"
@@ -118,6 +119,20 @@ func algorithmsForKeyFormat(keyFormat string) []string {
 	}
 }
 
+// supportedPubKeyAuthAlgos specifies the supported client public key
+// authentication algorithms. Note that this doesn't include certificate types
+// since those use the underlying algorithm. This list is sent to the client if
+// it supports the server-sig-algs extension. Order is irrelevant.
+var supportedPubKeyAuthAlgos = []string{
+	KeyAlgoED25519,
+	KeyAlgoSKED25519, KeyAlgoSKECDSA256,
+	KeyAlgoECDSA256, KeyAlgoECDSA384, KeyAlgoECDSA521,
+	KeyAlgoRSASHA256, KeyAlgoRSASHA512, KeyAlgoRSA,
+	KeyAlgoDSA,
+}
+
+var supportedPubKeyAuthAlgosList = strings.Join(supportedPubKeyAuthAlgos, ",")
+
 // unexpectedMessageError results when the SSH message that we received didn't
 // match what we wanted.
 func unexpectedMessageError(expected, got uint8) error {
@@ -149,7 +164,7 @@ type directionAlgorithms struct {
 
 // rekeyBytes returns a rekeying intervals in bytes.
 func (a *directionAlgorithms) rekeyBytes() int64 {
-	// According to RFC4344 block ciphers should rekey after
+	// According to RFC 4344 block ciphers should rekey after
 	// 2^(BLOCKSIZE/4) blocks. For all AES flavors BLOCKSIZE is
 	// 128.
 	switch a.Cipher {
@@ -158,7 +173,7 @@ func (a *directionAlgorithms) rekeyBytes() int64 {
 
 	}
 
-	// For others, stick with RFC4253 recommendation to rekey after 1 Gb of data.
+	// For others, stick with RFC 4253 recommendation to rekey after 1 Gb of data.
 	return 1 << 30
 }
 
