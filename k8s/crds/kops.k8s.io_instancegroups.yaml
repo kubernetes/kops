@@ -92,8 +92,9 @@ spec:
                   this instance group if cluster autoscaler is enabled
                 type: boolean
               capacityRebalance:
-                description: CapacityRebalance configures capacity rebalancing for
-                  an AWS ASG (AWS Only)
+                description: CapacityRebalance makes ASGs proactively replace spot
+                  instances when the ASG receives a rebalance recommendation (AWS
+                  Only).
                 type: boolean
               cloudLabels:
                 additionalProperties:
