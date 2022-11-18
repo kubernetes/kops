@@ -265,7 +265,7 @@ func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) e
 	} else {
 		// TODO: Figure out what we can do.  We're sort of stuck between wanting to have one code-path with
 		// terraform, and having a bigger "window of loss" here before we create the NATGateway
-		klog.V(2).Infof("ElasticIP %q not tagged on subnet; risk of leaking", fi.StringValue(publicIp))
+		klog.V(2).Infof("ElasticIP %q not tagged on subnet; risk of leaking", fi.ValueOf(publicIp))
 	}
 
 	return nil
@@ -277,7 +277,7 @@ type terraformElasticIP struct {
 }
 
 func (_ *ElasticIP) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ElasticIP) error {
-	if fi.BoolValue(e.Shared) {
+	if fi.ValueOf(e.Shared) {
 		if e.ID == nil {
 			return fmt.Errorf("ID must be set, if ElasticIP is shared: %v", e)
 		}
@@ -294,7 +294,7 @@ func (_ *ElasticIP) RenderTerraform(t *terraform.TerraformTarget, a, e, changes 
 }
 
 func (e *ElasticIP) TerraformLink() *terraformWriter.Literal {
-	if fi.BoolValue(e.Shared) {
+	if fi.ValueOf(e.Shared) {
 		if e.ID == nil {
 			klog.Fatalf("ID must be set, if ElasticIP is shared: %v", e)
 		}
@@ -310,7 +310,7 @@ type cloudformationElasticIP struct {
 }
 
 func (_ *ElasticIP) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *ElasticIP) error {
-	if fi.BoolValue(e.Shared) {
+	if fi.ValueOf(e.Shared) {
 		if e.ID == nil {
 			return fmt.Errorf("ID must be set, if ElasticIP is shared: %v", e)
 		}
@@ -332,7 +332,7 @@ func (_ *ElasticIP) RenderCloudformation(t *cloudformation.CloudformationTarget,
 //}
 
 func (e *ElasticIP) CloudformationAllocationID() *cloudformation.Literal {
-	if fi.BoolValue(e.Shared) {
+	if fi.ValueOf(e.Shared) {
 		if e.ID == nil {
 			klog.Fatalf("ID must be set, if ElasticIP is shared: %v", e)
 		}

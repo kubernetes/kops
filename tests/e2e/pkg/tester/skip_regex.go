@@ -120,7 +120,7 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|should.verify.that.all.nodes.have.volume.limits"
 	}
 
-	if cluster.Spec.CloudConfig != nil && cluster.Spec.CloudConfig.AWSEBSCSIDriver != nil && fi.BoolValue(cluster.Spec.CloudConfig.AWSEBSCSIDriver.Enabled) {
+	if cluster.Spec.CloudConfig != nil && cluster.Spec.CloudConfig.AWSEBSCSIDriver != nil && fi.ValueOf(cluster.Spec.CloudConfig.AWSEBSCSIDriver.Enabled) {
 		skipRegex += "|In-tree.Volumes.\\[Driver:.aws\\]"
 	}
 

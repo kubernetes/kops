@@ -378,7 +378,7 @@ func (c *NodeupModelContext) UsesSecondaryIP() bool {
 // UseBootstrapTokens checks if we are using bootstrap tokens
 func (c *NodeupModelContext) UseBootstrapTokens() bool {
 	if c.HasAPIServer {
-		return fi.BoolValue(c.NodeupConfig.APIServerConfig.KubeAPIServer.EnableBootstrapAuthToken)
+		return fi.ValueOf(c.NodeupConfig.APIServerConfig.KubeAPIServer.EnableBootstrapAuthToken)
 	}
 
 	return c.NodeupConfig.KubeletConfig.BootstrapKubeconfig != ""
@@ -594,7 +594,7 @@ func (c *NodeupModelContext) CNIConfDir() string {
 
 func (c *NodeupModelContext) InstallNvidiaRuntime() bool {
 	return c.NodeupConfig.NvidiaGPU != nil &&
-		fi.BoolValue(c.NodeupConfig.NvidiaGPU.Enabled) &&
+		fi.ValueOf(c.NodeupConfig.NvidiaGPU.Enabled) &&
 		c.GPUVendor == architectures.GPUVendorNvidia
 }
 

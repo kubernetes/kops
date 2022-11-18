@@ -67,8 +67,8 @@ func (p *PoolAssociation) Find(context *fi.Context) (*PoolAssociation, error) {
 	cloud := context.Cloud.(openstack.OpenstackCloud)
 
 	opt := v2pools.ListOpts{
-		Name: fi.StringValue(p.Pool.Name),
-		ID:   fi.StringValue(p.Pool.ID),
+		Name: fi.ValueOf(p.Pool.Name),
+		ID:   fi.ValueOf(p.Pool.ID),
 	}
 
 	rs, err := cloud.ListPools(opt)
@@ -78,7 +78,7 @@ func (p *PoolAssociation) Find(context *fi.Context) (*PoolAssociation, error) {
 	if rs == nil {
 		return nil, nil
 	} else if len(rs) != 1 {
-		return nil, fmt.Errorf("found multiple pools with name: %s", fi.StringValue(p.Pool.Name))
+		return nil, fmt.Errorf("found multiple pools with name: %s", fi.ValueOf(p.Pool.Name))
 	}
 
 	a := rs[0]
@@ -89,7 +89,7 @@ func (p *PoolAssociation) Find(context *fi.Context) (*PoolAssociation, error) {
 		if err != nil {
 			return nil, err
 		}
-		if fi.StringValue(p.Name) == poolMember.Name {
+		if fi.ValueOf(p.Name) == poolMember.Name {
 			found = poolMember
 			break
 		}
@@ -101,7 +101,7 @@ func (p *PoolAssociation) Find(context *fi.Context) (*PoolAssociation, error) {
 	}
 	pool, err := NewLBPoolTaskFromCloud(cloud, p.Lifecycle, &a, nil)
 	if err != nil {
-		return nil, fmt.Errorf("NewLBListenerTaskFromCloud: failed to fetch pool %s: %v", fi.StringValue(pool.Name), err)
+		return nil, fmt.Errorf("NewLBListenerTaskFromCloud: failed to fetch pool %s: %v", fi.ValueOf(pool.Name), err)
 	}
 
 	actual := &PoolAssociation{
@@ -162,15 +162,15 @@ func (_ *PoolAssociation) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e,
 	if a == nil {
 
 		for _, serverID := range e.ServerGroup.GetMembers() {
-			server, memberAddress, err := GetServerFixedIP(t.Cloud.ComputeClient(), serverID, fi.StringValue(e.InterfaceName))
+			server, memberAddress, err := GetServerFixedIP(t.Cloud.ComputeClient(), serverID, fi.ValueOf(e.InterfaceName))
 			if err != nil {
 				return err
 			}
 
-			member, err := t.Cloud.AssociateToPool(server, fi.StringValue(e.Pool.ID), v2pools.CreateMemberOpts{
-				Name:         fi.StringValue(e.Name),
-				ProtocolPort: fi.IntValue(e.ProtocolPort),
-				SubnetID:     fi.StringValue(e.Pool.Loadbalancer.VipSubnet),
+			member, err := t.Cloud.AssociateToPool(server, fi.ValueOf(e.Pool.ID), v2pools.CreateMemberOpts{
+				Name:         fi.ValueOf(e.Name),
+				ProtocolPort: fi.ValueOf(e.ProtocolPort),
+				SubnetID:     fi.ValueOf(e.Pool.Loadbalancer.VipSubnet),
 				Address:      memberAddress,
 			})
 			if err != nil {
@@ -179,7 +179,7 @@ func (_ *PoolAssociation) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e,
 			e.ID = fi.PtrTo(member.ID)
 		}
 	} else {
-		_, err := t.Cloud.UpdateMemberInPool(fi.StringValue(a.Pool.ID), fi.StringValue(a.ID), v2pools.UpdateMemberOpts{
+		_, err := t.Cloud.UpdateMemberInPool(fi.ValueOf(a.Pool.ID), fi.ValueOf(a.ID), v2pools.UpdateMemberOpts{
 			Weight: e.Weight,
 		})
 		if err != nil {

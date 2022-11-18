@@ -77,16 +77,16 @@ func (r *SecurityGroupRule) Find(context *fi.Context) (*SecurityGroupRule, error
 	cloud := context.Cloud.(openstack.OpenstackCloud)
 
 	opt := sgr.ListOpts{
-		Direction:      fi.StringValue(r.Direction),
-		EtherType:      fi.StringValue(r.EtherType),
+		Direction:      fi.ValueOf(r.Direction),
+		EtherType:      fi.ValueOf(r.EtherType),
 		PortRangeMax:   IntValue(r.PortRangeMax),
 		PortRangeMin:   IntValue(r.PortRangeMin),
-		Protocol:       fi.StringValue(r.Protocol),
-		RemoteIPPrefix: fi.StringValue(r.RemoteIPPrefix),
-		SecGroupID:     fi.StringValue(r.SecGroup.ID),
+		Protocol:       fi.ValueOf(r.Protocol),
+		RemoteIPPrefix: fi.ValueOf(r.RemoteIPPrefix),
+		SecGroupID:     fi.ValueOf(r.SecGroup.ID),
 	}
 	if r.RemoteGroup != nil {
-		opt.RemoteGroupID = fi.StringValue(r.RemoteGroup.ID)
+		opt.RemoteGroupID = fi.ValueOf(r.RemoteGroup.ID)
 	}
 	rs, err := cloud.ListSecurityGroupRules(opt)
 	if err != nil {
@@ -152,7 +152,7 @@ func (*SecurityGroupRule) CheckChanges(a, e, changes *SecurityGroupRule) error {
 func (*SecurityGroupRule) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *SecurityGroupRule) error {
 	if a == nil {
 		klog.V(2).Infof("Creating SecurityGroupRule")
-		etherType := fi.StringValue(e.EtherType)
+		etherType := fi.ValueOf(e.EtherType)
 		if e.RemoteIPPrefix != nil {
 			if net.IsIPv4CIDRString(*e.RemoteIPPrefix) {
 				etherType = "IPv4"
@@ -161,21 +161,21 @@ func (*SecurityGroupRule) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e,
 			}
 		}
 		opt := sgr.CreateOpts{
-			Direction:      sgr.RuleDirection(fi.StringValue(e.Direction)),
+			Direction:      sgr.RuleDirection(fi.ValueOf(e.Direction)),
 			EtherType:      sgr.RuleEtherType(etherType),
-			SecGroupID:     fi.StringValue(e.SecGroup.ID),
+			SecGroupID:     fi.ValueOf(e.SecGroup.ID),
 			PortRangeMax:   IntValue(e.PortRangeMax),
 			PortRangeMin:   IntValue(e.PortRangeMin),
-			Protocol:       sgr.RuleProtocol(fi.StringValue(e.Protocol)),
-			RemoteIPPrefix: fi.StringValue(e.RemoteIPPrefix),
+			Protocol:       sgr.RuleProtocol(fi.ValueOf(e.Protocol)),
+			RemoteIPPrefix: fi.ValueOf(e.RemoteIPPrefix),
 		}
 		if e.RemoteGroup != nil {
-			opt.RemoteGroupID = fi.StringValue(e.RemoteGroup.ID)
+			opt.RemoteGroupID = fi.ValueOf(e.RemoteGroup.ID)
 		}
 
 		r, err := t.Cloud.CreateSecurityGroupRule(opt)
 		if err != nil {
-			return fmt.Errorf("error creating SecurityGroupRule in SG %s: %v", fi.StringValue(e.SecGroup.GetName()), err)
+			return fmt.Errorf("error creating SecurityGroupRule in SG %s: %v", fi.ValueOf(e.SecGroup.GetName()), err)
 		}
 
 		e.ID = fi.PtrTo(r.ID)
@@ -210,29 +210,29 @@ func (o *SecurityGroupRule) GetName() *string {
 func (o *SecurityGroupRule) String() string {
 	var dst string
 	if o.RemoteGroup != nil {
-		dst = fi.StringValue(o.RemoteGroup.Name)
-	} else if o.RemoteIPPrefix != nil && fi.StringValue(o.RemoteIPPrefix) != "" {
-		dst = fi.StringValue(o.RemoteIPPrefix)
+		dst = fi.ValueOf(o.RemoteGroup.Name)
+	} else if o.RemoteIPPrefix != nil && fi.ValueOf(o.RemoteIPPrefix) != "" {
+		dst = fi.ValueOf(o.RemoteIPPrefix)
 	} else {
 		dst = "ANY"
 	}
 	var proto string
-	if o.Protocol == nil || fi.StringValue(o.Protocol) == "" {
+	if o.Protocol == nil || fi.ValueOf(o.Protocol) == "" {
 		proto = "AllProtos"
 	} else {
-		proto = fi.StringValue(o.Protocol)
+		proto = fi.ValueOf(o.Protocol)
 	}
 
-	return fmt.Sprintf("%v-%v-%v-from-%v-to-%v-%v-%v", fi.StringValue(o.EtherType), fi.StringValue(o.Direction),
-		proto, fi.StringValue(o.SecGroup.Name), dst, fi.IntValue(o.PortRangeMin), fi.IntValue(o.PortRangeMax))
+	return fmt.Sprintf("%v-%v-%v-from-%v-to-%v-%v-%v", fi.ValueOf(o.EtherType), fi.ValueOf(o.Direction),
+		proto, fi.ValueOf(o.SecGroup.Name), dst, fi.ValueOf(o.PortRangeMin), fi.ValueOf(o.PortRangeMax))
 }
 
 func (o *SecurityGroupRule) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
-	if !fi.BoolValue(o.Delete) {
+	if !fi.ValueOf(o.Delete) {
 		return nil, nil
 	}
 	cloud := c.Cloud.(openstack.OpenstackCloud)
-	rule, err := sgr.Get(cloud.NetworkingClient(), fi.StringValue(o.ID)).Extract()
+	rule, err := sgr.Get(cloud.NetworkingClient(), fi.ValueOf(o.ID)).Extract()
 	if err != nil {
 		return nil, err
 	}

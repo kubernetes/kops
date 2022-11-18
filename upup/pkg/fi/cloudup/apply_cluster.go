@@ -362,7 +362,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	}
 
 	encryptionConfigSecretHash := ""
-	if fi.BoolValue(c.Cluster.Spec.EncryptionConfig) {
+	if fi.ValueOf(c.Cluster.Spec.EncryptionConfig) {
 		secret, err := secretStore.FindSecret("encryptionconfig")
 		if err != nil {
 			return fmt.Errorf("could not load encryptionconfig secret: %v", err)
@@ -598,7 +598,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			}
 
 			nth := c.Cluster.Spec.NodeTerminationHandler
-			if nth != nil && fi.BoolValue(nth.Enabled) && fi.BoolValue(nth.EnableSQSTerminationDraining) {
+			if nth != nil && fi.ValueOf(nth.Enabled) && fi.ValueOf(nth.EnableSQSTerminationDraining) {
 				l.Builders = append(l.Builders, &awsmodel.NodeTerminationHandlerBuilder{
 					AWSModelContext: awsModelContext,
 					Lifecycle:       clusterLifecycle,
@@ -1266,7 +1266,7 @@ func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 		if isMaster {
 			for _, etcdCluster := range cluster.Spec.EtcdClusters {
 				for _, member := range etcdCluster.Members {
-					instanceGroup := fi.StringValue(member.InstanceGroup)
+					instanceGroup := fi.ValueOf(member.InstanceGroup)
 					etcdManifest := fmt.Sprintf("manifests/etcd/%s-%s.yaml", etcdCluster.Name, instanceGroup)
 					etcdManifests[instanceGroup] = append(etcdManifests[instanceGroup], configBase.Join(etcdManifest).Path())
 				}

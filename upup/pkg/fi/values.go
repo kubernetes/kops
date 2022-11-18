@@ -36,13 +36,6 @@ func ValueOf[T any](v *T) T {
 	return *v
 }
 
-func StringValue(s *string) string {
-	if s == nil {
-		return ""
-	}
-	return *s
-}
-
 // StringSliceValue takes a slice of string pointers and returns a slice of strings
 func StringSliceValue(stringSlice []*string) []string {
 	var newSlice []string
@@ -68,60 +61,6 @@ func StringSlice(stringSlice []string) []*string {
 		newSlice = append(newSlice, &stringSlice[i])
 	}
 	return newSlice
-}
-
-// Float32Value returns the value of the float
-func Float32Value(v *float32) float32 {
-	if v == nil {
-		return 0.0
-	}
-
-	return *v
-}
-
-// Float64Value returns the value of the float
-func Float64Value(v *float64) float64 {
-	if v == nil {
-		return 0.0
-	}
-
-	return *v
-}
-
-// BoolValue returns the value of bool pointer or false
-func BoolValue(v *bool) bool {
-	if v == nil {
-		return false
-	}
-	return *v
-}
-
-func Int32Value(v *int32) int32 {
-	if v == nil {
-		return 0
-	}
-	return *v
-}
-
-func Int64Value(v *int64) int64 {
-	if v == nil {
-		return 0
-	}
-	return *v
-}
-
-func IntValue(v *int) int {
-	if v == nil {
-		return 0
-	}
-	return *v
-}
-
-func Uint64Value(v *uint64) uint64 {
-	if v == nil {
-		return 0
-	}
-	return *v
 }
 
 // ArrayContains is checking does array contain single word

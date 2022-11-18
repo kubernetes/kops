@@ -575,7 +575,7 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 		Port: intstr.FromInt(wellknownports.KubeAPIServerHealthCheck),
 	}
 
-	insecurePort := fi.Int32Value(kubeAPIServer.InsecurePort)
+	insecurePort := fi.ValueOf(kubeAPIServer.InsecurePort)
 	if useHealthcheckProxy {
 		// kube-apiserver-healthcheck sidecar container runs on port 3990
 	} else if insecurePort != 0 {

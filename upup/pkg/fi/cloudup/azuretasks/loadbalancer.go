@@ -129,9 +129,9 @@ func (*LoadBalancer) CheckChanges(a, e, changes *LoadBalancer) error {
 // RenderAzure creates or updates a Loadbalancer.
 func (*LoadBalancer) RenderAzure(t *azure.AzureAPITarget, a, e, changes *LoadBalancer) error {
 	if a == nil {
-		klog.Infof("Creating a new Loadbalancer with name: %s", fi.StringValue(e.Name))
+		klog.Infof("Creating a new Loadbalancer with name: %s", fi.ValueOf(e.Name))
 	} else {
-		klog.Infof("Updating a Loadbalancer with name: %s", fi.StringValue(e.Name))
+		klog.Infof("Updating a Loadbalancer with name: %s", fi.ValueOf(e.Name))
 	}
 
 	idPrefix := fmt.Sprintf("subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network", t.Cloud.SubscriptionID(), *e.ResourceGroup.Name)

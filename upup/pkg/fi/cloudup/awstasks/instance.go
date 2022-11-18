@@ -66,7 +66,7 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 	var request *ec2.DescribeInstancesInput
 
-	if fi.BoolValue(e.Shared) {
+	if fi.ValueOf(e.Shared) {
 		var instanceIds []*string
 		instanceIds = append(instanceIds, e.ID)
 		request = &ec2.DescribeInstancesInput{
@@ -200,7 +200,7 @@ func (e *Instance) Run(c *fi.Context) error {
 
 func (_ *Instance) CheckChanges(a, e, changes *Instance) error {
 	if a != nil {
-		if !fi.BoolValue(e.Shared) && e.Name == nil {
+		if !fi.ValueOf(e.Shared) && e.Name == nil {
 			return fi.RequiredField("Name")
 		}
 	}
@@ -210,19 +210,19 @@ func (_ *Instance) CheckChanges(a, e, changes *Instance) error {
 func (_ *Instance) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Instance) error {
 	if a == nil {
 
-		if fi.BoolValue(e.Shared) {
-			return fmt.Errorf("NAT EC2 Instance %q not found", fi.StringValue(e.ID))
+		if fi.ValueOf(e.Shared) {
+			return fmt.Errorf("NAT EC2 Instance %q not found", fi.ValueOf(e.ID))
 		}
 
 		if e.ImageID == nil {
 			return fi.RequiredField("ImageID")
 		}
-		image, err := t.Cloud.ResolveImage(fi.StringValue(e.ImageID))
+		image, err := t.Cloud.ResolveImage(fi.ValueOf(e.ImageID))
 		if err != nil {
 			return err
 		}
 
-		klog.V(2).Infof("Creating Instance with Name:%q", fi.StringValue(e.Name))
+		klog.V(2).Infof("Creating Instance with Name:%q", fi.ValueOf(e.Name))
 		request := &ec2.RunInstancesInput{
 			ImageId:      image.ImageId,
 			InstanceType: e.InstanceType,
@@ -250,7 +250,7 @@ func (_ *Instance) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Instance) err
 
 		// Build up the actual block device mappings
 		// TODO: Support RootVolumeType & RootVolumeSize (see launchconfiguration)
-		blockDeviceMappings, err := buildEphemeralDevices(t.Cloud, fi.StringValue(e.InstanceType))
+		blockDeviceMappings, err := buildEphemeralDevices(t.Cloud, fi.ValueOf(e.InstanceType))
 		if err != nil {
 			return err
 		}
@@ -297,7 +297,7 @@ func (_ *Instance) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Instance) err
 }
 
 func (e *Instance) TerraformLink() *terraformWriter.Literal {
-	if fi.BoolValue(e.Shared) {
+	if fi.ValueOf(e.Shared) {
 		if e.ID == nil {
 			klog.Fatalf("ID must be set, if NAT Instance is shared: %s", e)
 		}

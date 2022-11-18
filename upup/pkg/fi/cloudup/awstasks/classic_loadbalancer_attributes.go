@@ -110,7 +110,7 @@ func (_ *ClassicLoadBalancer) modifyLoadBalancerAttributes(t *awsup.AWSAPITarget
 		return nil
 	}
 
-	loadBalancerName := fi.StringValue(e.LoadBalancerName)
+	loadBalancerName := fi.ValueOf(e.LoadBalancerName)
 
 	request := &elb.ModifyLoadBalancerAttributesInput{}
 	request.LoadBalancerName = e.LoadBalancerName

@@ -167,12 +167,12 @@ type terraformLaunchTemplate struct {
 
 // TerraformLink returns the terraform reference
 func (t *LaunchTemplate) TerraformLink() *terraformWriter.Literal {
-	return terraformWriter.LiteralProperty("aws_launch_template", fi.StringValue(t.Name), "id")
+	return terraformWriter.LiteralProperty("aws_launch_template", fi.ValueOf(t.Name), "id")
 }
 
 // VersionLink returns the terraform version reference
 func (t *LaunchTemplate) VersionLink() *terraformWriter.Literal {
-	return terraformWriter.LiteralProperty("aws_launch_template", fi.StringValue(t.Name), "latest_version")
+	return terraformWriter.LiteralProperty("aws_launch_template", fi.ValueOf(t.Name), "latest_version")
 }
 
 // RenderTerraform is responsible for rendering the terraform json
@@ -183,7 +183,7 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 
 	var image *string
 	if e.ImageID != nil {
-		im, err := cloud.ResolveImage(fi.StringValue(e.ImageID))
+		im, err := cloud.ResolveImage(fi.ValueOf(e.ImageID))
 		if err != nil {
 			return err
 		}
@@ -212,7 +212,7 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 		},
 	}
 
-	if fi.StringValue(e.SpotPrice) != "" {
+	if fi.ValueOf(e.SpotPrice) != "" {
 		marketSpotOptions := terraformLaunchTemplateMarketOptionsSpotOptions{MaxPrice: e.SpotPrice}
 		if e.SpotDurationInMinutes != nil {
 			marketSpotOptions.BlockDurationMinutes = e.SpotDurationInMinutes
@@ -227,7 +227,7 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 			},
 		}
 	}
-	if fi.StringValue(e.CPUCredits) != "" {
+	if fi.ValueOf(e.CPUCredits) != "" {
 		tf.CreditSpecification = &terraformLaunchTemplateCreditSpecification{
 			CPUCredits: e.CPUCredits,
 		}
@@ -257,7 +257,7 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 			return err
 		}
 		if d != nil {
-			tf.UserData, err = target.AddFileBytes("aws_launch_template", fi.StringValue(e.Name), "user_data", d, true)
+			tf.UserData, err = target.AddFileBytes("aws_launch_template", fi.ValueOf(e.Name), "user_data", d, true)
 			if err != nil {
 				return err
 			}
@@ -304,7 +304,7 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 		})
 	}
 
-	devices, err = buildEphemeralDevices(cloud, fi.StringValue(e.InstanceType))
+	devices, err = buildEphemeralDevices(cloud, fi.ValueOf(e.InstanceType))
 	if err != nil {
 		return err
 	}
@@ -327,5 +327,5 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 		tf.Tags = e.Tags
 	}
 
-	return target.RenderResource("aws_launch_template", fi.StringValue(e.Name), tf)
+	return target.RenderResource("aws_launch_template", fi.ValueOf(e.Name), tf)
 }

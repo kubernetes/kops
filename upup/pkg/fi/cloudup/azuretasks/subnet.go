@@ -104,9 +104,9 @@ func (*Subnet) CheckChanges(a, e, changes *Subnet) error {
 // RenderAzure creates or updates a subnet.
 func (*Subnet) RenderAzure(t *azure.AzureAPITarget, a, e, changes *Subnet) error {
 	if a == nil {
-		klog.Infof("Creating a new Subnet with name: %s", fi.StringValue(e.Name))
+		klog.Infof("Creating a new Subnet with name: %s", fi.ValueOf(e.Name))
 	} else {
-		klog.Infof("Updating a Subnet with name: %s", fi.StringValue(e.Name))
+		klog.Infof("Updating a Subnet with name: %s", fi.ValueOf(e.Name))
 	}
 
 	// TODO(kenji): Be able to specify security groups.

@@ -57,7 +57,7 @@ func (d *DropletBuilder) Build(c *fi.ModelBuilderContext) error {
 		name := d.AutoscalingGroupName(ig)
 
 		droplet := dotasks.Droplet{
-			Count:     int(fi.Int32Value(ig.Spec.MinSize)),
+			Count:     int(fi.ValueOf(ig.Spec.MinSize)),
 			Name:      fi.PtrTo(name),
 			Lifecycle: d.Lifecycle,
 

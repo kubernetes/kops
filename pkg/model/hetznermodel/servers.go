@@ -53,7 +53,7 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	for _, ig := range b.InstanceGroups {
-		igSize := fi.Int32Value(ig.Spec.MinSize)
+		igSize := fi.ValueOf(ig.Spec.MinSize)
 
 		labels := make(map[string]string)
 		labels[hetzner.TagKubernetesClusterName] = b.ClusterName()

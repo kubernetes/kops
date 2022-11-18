@@ -141,7 +141,7 @@ func buildTaskKey(task Task) string {
 		klog.Fatalf("task %T does not implement HasName", task)
 	}
 
-	name := StringValue(hasName.GetName())
+	name := ValueOf(hasName.GetName())
 	if name == "" {
 		klog.Fatalf("task %T (%v) did not have a Name", task, task)
 	}

@@ -116,7 +116,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			return fmt.Errorf("failed to get node config from server: %w", err)
 		}
 		nodeConfig = response.NodeConfig
-	} else if fi.StringValue(bootConfig.ConfigBase) != "" {
+	} else if fi.ValueOf(bootConfig.ConfigBase) != "" {
 		var err error
 		configBase, err = vfs.Context.BuildVfsPath(*bootConfig.ConfigBase)
 		if err != nil {
@@ -287,7 +287,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 
 		// If Nvidia is enabled in the cluster, check if this instance has support for it.
 		nvidia := c.cluster.Spec.Containerd.NvidiaGPU
-		if nvidia != nil && fi.BoolValue(nvidia.Enabled) {
+		if nvidia != nil && fi.ValueOf(nvidia.Enabled) {
 			awsCloud := cloud.(awsup.AWSCloud)
 			// Get the instance type's detailed information.
 			instanceType, err := awsup.GetMachineTypeInfo(awsCloud, modelContext.MachineType)
@@ -302,7 +302,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		}
 	} else if cloudProvider == api.CloudProviderOpenstack {
 		// NvidiaGPU possible to enable only in instance group level in OpenStack. When we assume that GPU is supported
-		if nodeupConfig.NvidiaGPU != nil && fi.BoolValue(nodeupConfig.NvidiaGPU.Enabled) {
+		if nodeupConfig.NvidiaGPU != nil && fi.ValueOf(nodeupConfig.NvidiaGPU.Enabled) {
 			klog.Info("instance supports GPU acceleration")
 			modelContext.GPUVendor = architectures.GPUVendorNvidia
 		}
@@ -592,8 +592,8 @@ func evaluateBindAddress(bindAddress string) (string, error) {
 
 // evaluateDockerSpec selects the first supported storage mode, if it is a list
 func evaluateDockerSpecStorage(spec *api.DockerConfig) error {
-	storage := fi.StringValue(spec.Storage)
-	if strings.Contains(fi.StringValue(spec.Storage), ",") {
+	storage := fi.ValueOf(spec.Storage)
+	if strings.Contains(fi.ValueOf(spec.Storage), ",") {
 		precedence := strings.Split(storage, ",")
 		for _, opt := range precedence {
 			fs := opt
@@ -807,7 +807,7 @@ func getAWSConfigurationMode(c *model.NodeupModelContext) (string, error) {
 	if len(result.AutoScalingInstances) < 1 {
 		return "", nil
 	}
-	lifecycle := fi.StringValue(result.AutoScalingInstances[0].LifecycleState)
+	lifecycle := fi.ValueOf(result.AutoScalingInstances[0].LifecycleState)
 	if strings.HasPrefix(lifecycle, "Warmed:") {
 		klog.Info("instance is entering warm pool")
 		return model.ConfigurationModeWarming, nil

@@ -175,7 +175,7 @@ func FindCustomAuthNameFromArn(arn string) (string, error) {
 
 func (b *KopsModelContext) LinkToIAMInstanceProfile(ig *kops.InstanceGroup) (*awstasks.IAMInstanceProfile, error) {
 	if ig.Spec.IAM != nil && ig.Spec.IAM.Profile != nil {
-		name, err := FindCustomAuthNameFromArn(fi.StringValue(ig.Spec.IAM.Profile))
+		name, err := FindCustomAuthNameFromArn(fi.ValueOf(ig.Spec.IAM.Profile))
 		return &awstasks.IAMInstanceProfile{Name: &name}, err
 	}
 	name := b.IAMName(ig.Spec.Role)

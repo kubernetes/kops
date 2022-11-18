@@ -251,7 +251,7 @@ func (_ *SQS) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e,
 		return fmt.Errorf("error parsing SQS PolicyDocument: %v", err)
 	}
 
-	cfQueueRef := cloudformation.Ref("AWS::SQS::Queue", fi.StringValue(e.Name))
+	cfQueueRef := cloudformation.Ref("AWS::SQS::Queue", fi.ValueOf(e.Name))
 
 	cfQueuePolicy := &cloudformationSQSQueuePolicy{
 		Queues:         []*cloudformation.Literal{cfQueueRef},

@@ -213,7 +213,7 @@ func (e *ClassicLoadBalancer) getHostedZoneId() *string {
 func (e *ClassicLoadBalancer) Find(c *fi.Context) (*ClassicLoadBalancer, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
-	lb, err := cloud.FindELBByNameTag(fi.StringValue(e.Name))
+	lb, err := cloud.FindELBByNameTag(fi.ValueOf(e.Name))
 	if err != nil {
 		return nil, err
 	}
@@ -328,7 +328,7 @@ func (e *ClassicLoadBalancer) Find(c *fi.Context) (*ClassicLoadBalancer, error) 
 	// We allow for the LoadBalancerName to be wrong:
 	// 1. We don't want to force a rename of the ELB, because that is a destructive operation
 	// 2. We were creating ELBs with insufficiently qualified names previously
-	if fi.StringValue(e.LoadBalancerName) != fi.StringValue(actual.LoadBalancerName) {
+	if fi.ValueOf(e.LoadBalancerName) != fi.ValueOf(actual.LoadBalancerName) {
 		klog.V(2).Infof("Reusing existing load balancer with name: %q", aws.StringValue(actual.LoadBalancerName))
 		e.LoadBalancerName = actual.LoadBalancerName
 	}
@@ -349,7 +349,7 @@ func (e *ClassicLoadBalancer) IsForAPIServer() bool {
 func (e *ClassicLoadBalancer) FindAddresses(context *fi.Context) ([]string, error) {
 	cloud := context.Cloud.(awsup.AWSCloud)
 
-	lb, err := cloud.FindELBByNameTag(fi.StringValue(e.Name))
+	lb, err := cloud.FindELBByNameTag(fi.ValueOf(e.Name))
 	if err != nil {
 		return nil, err
 	}
@@ -357,7 +357,7 @@ func (e *ClassicLoadBalancer) FindAddresses(context *fi.Context) ([]string, erro
 		return nil, nil
 	}
 
-	lbDnsName := fi.StringValue(lb.DNSName)
+	lbDnsName := fi.ValueOf(lb.DNSName)
 	if lbDnsName == "" {
 		return nil, nil
 	}
@@ -369,7 +369,7 @@ func (e *ClassicLoadBalancer) Run(c *fi.Context) error {
 }
 
 func (_ *ClassicLoadBalancer) ShouldCreate(a, e, changes *ClassicLoadBalancer) (bool, error) {
-	if fi.BoolValue(e.Shared) {
+	if fi.ValueOf(e.Shared) {
 		return false, nil
 	}
 	return true, nil
@@ -384,11 +384,11 @@ func (e *ClassicLoadBalancer) Normalize(c *fi.Context) error {
 
 func (s *ClassicLoadBalancer) CheckChanges(a, e, changes *ClassicLoadBalancer) error {
 	if a == nil {
-		if fi.StringValue(e.Name) == "" {
+		if fi.ValueOf(e.Name) == "" {
 			return fi.RequiredField("Name")
 		}
 
-		shared := fi.BoolValue(e.Shared)
+		shared := fi.ValueOf(e.Shared)
 		if !shared {
 			if len(e.SecurityGroups) == 0 {
 				return fi.RequiredField("SecurityGroups")
@@ -425,7 +425,7 @@ func (s *ClassicLoadBalancer) CheckChanges(a, e, changes *ClassicLoadBalancer) e
 }
 
 func (_ *ClassicLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ClassicLoadBalancer) error {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		return nil
 	}
@@ -480,17 +480,17 @@ func (_ *ClassicLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Cl
 		}
 		e.HostedZoneId = lb.CanonicalHostedZoneNameID
 	} else {
-		loadBalancerName = fi.StringValue(a.LoadBalancerName)
+		loadBalancerName = fi.ValueOf(a.LoadBalancerName)
 
 		if changes.Subnets != nil {
 			var expectedSubnets []string
 			for _, s := range e.Subnets {
-				expectedSubnets = append(expectedSubnets, fi.StringValue(s.ID))
+				expectedSubnets = append(expectedSubnets, fi.ValueOf(s.ID))
 			}
 
 			var actualSubnets []string
 			for _, s := range a.Subnets {
-				actualSubnets = append(actualSubnets, fi.StringValue(s.ID))
+				actualSubnets = append(actualSubnets, fi.ValueOf(s.ID))
 			}
 
 			oldSubnetIDs := slice.GetUniqueStrings(expectedSubnets, actualSubnets)
@@ -608,7 +608,7 @@ type OrderLoadBalancersByName []*ClassicLoadBalancer
 func (a OrderLoadBalancersByName) Len() int      { return len(a) }
 func (a OrderLoadBalancersByName) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 func (a OrderLoadBalancersByName) Less(i, j int) bool {
-	return fi.StringValue(a[i].Name) < fi.StringValue(a[j].Name)
+	return fi.ValueOf(a[i].Name) < fi.ValueOf(a[j].Name)
 }
 
 type terraformLoadBalancer struct {
@@ -648,7 +648,7 @@ type terraformLoadBalancerHealthCheck struct {
 }
 
 func (_ *ClassicLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ClassicLoadBalancer) error {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		return nil
 	}
@@ -662,7 +662,7 @@ func (_ *ClassicLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e
 	tf := &terraformLoadBalancer{
 		LoadBalancerName: e.LoadBalancerName,
 	}
-	if fi.StringValue(e.Scheme) == "internal" {
+	if fi.ValueOf(e.Scheme) == "internal" {
 		tf.Internal = fi.PtrTo(true)
 	}
 
@@ -711,7 +711,7 @@ func (_ *ClassicLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e
 		}
 	}
 
-	if e.AccessLog != nil && fi.BoolValue(e.AccessLog.Enabled) {
+	if e.AccessLog != nil && fi.ValueOf(e.AccessLog.Enabled) {
 		tf.AccessLog = &terraformLoadBalancerAccessLog{
 			EmitInterval:   e.AccessLog.EmitInterval,
 			Enabled:        e.AccessLog.Enabled,
@@ -743,7 +743,7 @@ func (_ *ClassicLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e
 }
 
 func (e *ClassicLoadBalancer) TerraformLink(params ...string) *terraformWriter.Literal {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		if e.LoadBalancerName == nil {
 			klog.Fatalf("Name must be set, if LB is shared: %s", e)
@@ -807,7 +807,7 @@ func (_ *ClassicLoadBalancer) RenderCloudformation(t *cloudformation.Cloudformat
 	// If this resource has a public IP address and is also in a VPC that is defined in the same template,
 	// you must use the DependsOn attribute to declare a dependency on the VPC-gateway attachment.
 
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		return nil
 	}
@@ -850,7 +850,7 @@ func (_ *ClassicLoadBalancer) RenderCloudformation(t *cloudformation.Cloudformat
 		}
 	}
 
-	if e.AccessLog != nil && fi.BoolValue(e.AccessLog.Enabled) {
+	if e.AccessLog != nil && fi.ValueOf(e.AccessLog.Enabled) {
 		tf.AccessLog = &cloudformationClassicLoadBalancerAccessLog{
 			EmitInterval:   e.AccessLog.EmitInterval,
 			Enabled:        e.AccessLog.Enabled,
@@ -887,7 +887,7 @@ func (_ *ClassicLoadBalancer) RenderCloudformation(t *cloudformation.Cloudformat
 }
 
 func (e *ClassicLoadBalancer) CloudformationLink() *cloudformation.Literal {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		if e.LoadBalancerName == nil {
 			klog.Fatalf("Name must be set, if LB is shared: %s", e)

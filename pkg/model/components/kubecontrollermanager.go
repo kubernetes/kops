@@ -169,7 +169,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		var changes []string
 		// @check if the node authorization is enabled and if so enable the tokencleaner controller (disabled by default)
 		// This is responsible for cleaning up bootstrap tokens which have expired
-		if fi.BoolValue(clusterSpec.KubeAPIServer.EnableBootstrapAuthToken) {
+		if fi.ValueOf(clusterSpec.KubeAPIServer.EnableBootstrapAuthToken) {
 			changes = append(changes, "tokencleaner")
 		}
 		if clusterSpec.IsKopsControllerIPAM() {
@@ -180,7 +180,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		}
 	}
 
-	if clusterSpec.CloudConfig != nil && clusterSpec.CloudConfig.AWSEBSCSIDriver != nil && fi.BoolValue(clusterSpec.CloudConfig.AWSEBSCSIDriver.Enabled) {
+	if clusterSpec.CloudConfig != nil && clusterSpec.CloudConfig.AWSEBSCSIDriver != nil && fi.ValueOf(clusterSpec.CloudConfig.AWSEBSCSIDriver.Enabled) {
 
 		if kcm.FeatureGates == nil {
 			kcm.FeatureGates = make(map[string]string)

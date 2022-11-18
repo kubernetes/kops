@@ -106,9 +106,9 @@ func (*PublicIPAddress) CheckChanges(a, e, changes *PublicIPAddress) error {
 // RenderAzure creates or updates a Public IP Address.
 func (*PublicIPAddress) RenderAzure(t *azure.AzureAPITarget, a, e, changes *PublicIPAddress) error {
 	if a == nil {
-		klog.Infof("Creating a new Public IP Address with name: %s", fi.StringValue(e.Name))
+		klog.Infof("Creating a new Public IP Address with name: %s", fi.ValueOf(e.Name))
 	} else {
-		klog.Infof("Updating a Public IP Address with name: %s", fi.StringValue(e.Name))
+		klog.Infof("Updating a Public IP Address with name: %s", fi.ValueOf(e.Name))
 	}
 
 	p := network.PublicIPAddress{

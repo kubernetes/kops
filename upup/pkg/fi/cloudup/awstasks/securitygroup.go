@@ -63,7 +63,7 @@ type OrderSecurityGroupsById []*SecurityGroup
 func (a OrderSecurityGroupsById) Len() int      { return len(a) }
 func (a OrderSecurityGroupsById) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 func (a OrderSecurityGroupsById) Less(i, j int) bool {
-	return fi.StringValue(a[i].ID) < fi.StringValue(a[j].ID)
+	return fi.ValueOf(a[i].ID) < fi.ValueOf(a[j].ID)
 }
 
 func (e *SecurityGroup) Find(c *fi.Context) (*SecurityGroup, error) {
@@ -101,10 +101,10 @@ func (e *SecurityGroup) findEc2(c *fi.Context) (*ec2.SecurityGroup, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 	request := &ec2.DescribeSecurityGroupsInput{}
 
-	if fi.StringValue(e.ID) != "" {
+	if fi.ValueOf(e.ID) != "" {
 		// Find by ID.
 		request.GroupIds = []*string{e.ID}
-	} else if fi.StringValue(e.Name) != "" && e.VPC != nil && e.VPC.ID != nil {
+	} else if fi.ValueOf(e.Name) != "" && e.VPC != nil && e.VPC.ID != nil {
 		// Find by filters (name and VPC ID).
 		filters := cloud.BuildFilters(e.Name)
 		filters = append(filters, awsup.NewEC2Filter("vpc-id", *e.VPC.ID))
@@ -136,7 +136,7 @@ func (e *SecurityGroup) Run(c *fi.Context) error {
 }
 
 func (_ *SecurityGroup) ShouldCreate(a, e, changes *SecurityGroup) (bool, error) {
-	if fi.BoolValue(e.Shared) {
+	if fi.ValueOf(e.Shared) {
 		return false, nil
 	}
 	return true, nil
@@ -147,7 +147,7 @@ func (_ *SecurityGroup) CheckChanges(a, e, changes *SecurityGroup) error {
 		if changes.ID != nil {
 			return fi.CannotChangeField("ID")
 		}
-		if changes.Name != nil && !fi.BoolValue(e.Shared) {
+		if changes.Name != nil && !fi.ValueOf(e.Shared) {
 			return fi.CannotChangeField("Name")
 		}
 		if changes.VPC != nil {
@@ -158,7 +158,7 @@ func (_ *SecurityGroup) CheckChanges(a, e, changes *SecurityGroup) error {
 }
 
 func (_ *SecurityGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *SecurityGroup) error {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Do we want to do any verification of the security group?
 		return nil
@@ -193,7 +193,7 @@ type terraformSecurityGroup struct {
 }
 
 func (_ *SecurityGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SecurityGroup) error {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Not terraform owned / managed
 		return nil
@@ -210,7 +210,7 @@ func (_ *SecurityGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, chan
 }
 
 func (e *SecurityGroup) TerraformLink() *terraformWriter.Literal {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Not terraform owned / managed
 		if e.ID != nil {
@@ -231,7 +231,7 @@ type cloudformationSecurityGroup struct {
 }
 
 func (_ *SecurityGroup) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *SecurityGroup) error {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Not cloudformation owned / managed
 		return nil
@@ -248,7 +248,7 @@ func (_ *SecurityGroup) RenderCloudformation(t *cloudformation.CloudformationTar
 }
 
 func (e *SecurityGroup) CloudformationLink() *cloudformation.Literal {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Not cloudformation owned / managed
 		if e.ID != nil {
@@ -275,7 +275,7 @@ func (d *deleteSecurityGroupRule) Delete(t fi.Target) error {
 		return fmt.Errorf("unexpected target type for deletion: %T", t)
 	}
 
-	if fi.BoolValue(d.rule.IsEgress) {
+	if fi.ValueOf(d.rule.IsEgress) {
 		request := &ec2.RevokeSecurityGroupEgressInput{
 			GroupId:              d.rule.GroupId,
 			SecurityGroupRuleIds: []*string{d.rule.SecurityGroupRuleId},
@@ -307,7 +307,7 @@ func (d *deleteSecurityGroupRule) TaskName() string {
 }
 
 func (d *deleteSecurityGroupRule) Item() string {
-	s := fi.StringValue(d.rule.GroupId) + ":"
+	s := fi.ValueOf(d.rule.GroupId) + ":"
 	p := d.rule
 	if aws.Int64Value(p.FromPort) != 0 {
 		s += fmt.Sprintf(" port=%d", aws.Int64Value(p.FromPort))
@@ -390,7 +390,7 @@ func (e *SecurityGroup) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
 			}
 
 			if er.SourceGroup != nil && er.SourceGroup.ID == nil {
-				klog.V(4).Infof("Deletion skipping find of SecurityGroupRule %s, because SourceGroup was not found", fi.StringValue(er.Name))
+				klog.V(4).Infof("Deletion skipping find of SecurityGroupRule %s, because SourceGroup was not found", fi.ValueOf(er.Name))
 				return nil, nil
 			}
 

@@ -188,7 +188,7 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 							if field.CanInterface() {
 								hasName, ok := field.Interface().(HasName)
 								if ok {
-									name = StringValue(hasName.GetName())
+									name = ValueOf(hasName.GetName())
 								}
 							}
 							if name != "" {

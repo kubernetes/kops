@@ -45,7 +45,7 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o interface{}) error {
 
 	if clusterSpec.ContainerRuntime == "containerd" {
 		// Set version based on Kubernetes version
-		if fi.StringValue(containerd.Version) == "" {
+		if fi.ValueOf(containerd.Version) == "" {
 			if b.IsKubernetesGTE("1.23") {
 				containerd.Version = fi.PtrTo("1.6.10")
 				containerd.Runc = &kops.Runc{
@@ -60,7 +60,7 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o interface{}) error {
 
 	} else if clusterSpec.ContainerRuntime == "docker" {
 		// Docker version should always be available
-		dockerVersion := fi.StringValue(clusterSpec.Docker.Version)
+		dockerVersion := fi.ValueOf(clusterSpec.Docker.Version)
 		if dockerVersion == "" {
 			return fmt.Errorf("docker version is required")
 		} else {
@@ -86,7 +86,7 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o interface{}) error {
 		containerd.SkipInstall = true
 	}
 
-	if containerd.NvidiaGPU != nil && fi.BoolValue(containerd.NvidiaGPU.Enabled) && containerd.NvidiaGPU.DriverPackage == "" {
+	if containerd.NvidiaGPU != nil && fi.ValueOf(containerd.NvidiaGPU.Enabled) && containerd.NvidiaGPU.DriverPackage == "" {
 		containerd.NvidiaGPU.DriverPackage = kops.NvidiaDefaultDriverPackage
 	}
 

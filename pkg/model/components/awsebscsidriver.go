@@ -43,7 +43,7 @@ func (b *AWSEBSCSIDriverOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 	c := cc.AWSEBSCSIDriver
 
-	if !fi.BoolValue(c.Enabled) {
+	if !fi.ValueOf(c.Enabled) {
 		return nil
 	}
 

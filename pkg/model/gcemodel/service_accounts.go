@@ -48,7 +48,7 @@ func (b *ServiceAccountsBuilder) Build(c *fi.ModelBuilderContext) error {
 	doneEmails := make(map[string]bool)
 	for _, ig := range b.InstanceGroups {
 		link := b.LinkToServiceAccount(ig)
-		if fi.BoolValue(link.Shared) {
+		if fi.ValueOf(link.Shared) {
 			c.EnsureTask(link)
 			continue
 		}

@@ -2317,7 +2317,7 @@ func (c *awsCloudImplementation) DefaultInstanceType(cluster *kops.Cluster, ig *
 
 	imageArch := "x86_64"
 	if imageInfo, err := c.ResolveImage(ig.Spec.Image); err == nil {
-		imageArch = fi.StringValue(imageInfo.Architecture)
+		imageArch = fi.ValueOf(imageInfo.Architecture)
 	}
 
 	// Find the AZs the InstanceGroup targets

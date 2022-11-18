@@ -33,7 +33,7 @@ import (
 // RenderAWS is responsible for performing creating / updating the launch template
 func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchTemplate) error {
 	// @step: resolve the image id to an AMI for us
-	image, err := c.Cloud.ResolveImage(fi.StringValue(t.ImageID))
+	image, err := c.Cloud.ResolveImage(fi.ValueOf(t.ImageID))
 	if err != nil {
 		return err
 	}
@@ -64,7 +64,7 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchT
 	if err != nil {
 		return fmt.Errorf("failed to build root device: %w", err)
 	}
-	ephemeralDevices, err := buildEphemeralDevices(c.Cloud, fi.StringValue(t.InstanceType))
+	ephemeralDevices, err := buildEphemeralDevices(c.Cloud, fi.ValueOf(t.InstanceType))
 	if err != nil {
 		return fmt.Errorf("failed to build ephemeral devices: %w", err)
 	}
@@ -128,7 +128,7 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchT
 		data.UserData = aws.String(base64.StdEncoding.EncodeToString(d))
 	}
 	// @step: add market options
-	if fi.StringValue(t.SpotPrice) != "" {
+	if fi.ValueOf(t.SpotPrice) != "" {
 		s := &ec2.LaunchTemplateSpotMarketOptionsRequest{
 			BlockDurationMinutes:         t.SpotDurationInMinutes,
 			InstanceInterruptionBehavior: t.InstanceInterruptionBehavior,
@@ -139,7 +139,7 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchT
 			SpotOptions: s,
 		}
 	}
-	if fi.StringValue(t.CPUCredits) != "" {
+	if fi.ValueOf(t.CPUCredits) != "" {
 		data.CreditSpecification = &ec2.CreditSpecificationRequest{
 			CpuCredits: t.CPUCredits,
 		}
@@ -158,7 +158,7 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchT
 		}
 		output, err := c.Cloud.EC2().CreateLaunchTemplate(input)
 		if err != nil || output.LaunchTemplate == nil {
-			return fmt.Errorf("error creating LaunchTemplate %q: %v", fi.StringValue(t.Name), err)
+			return fmt.Errorf("error creating LaunchTemplate %q: %v", fi.ValueOf(t.Name), err)
 		}
 		e.ID = output.LaunchTemplate.LaunchTemplateId
 	} else {
@@ -179,7 +179,7 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchT
 			}
 		}
 		if changes.Tags != nil {
-			err = c.UpdateTags(fi.StringValue(a.ID), e.Tags)
+			err = c.UpdateTags(fi.ValueOf(a.ID), e.Tags)
 			if err != nil {
 				return fmt.Errorf("error updating LaunchTemplate tags: %v", err)
 			}
@@ -207,7 +207,7 @@ func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
 		return nil, nil
 	}
 
-	klog.V(3).Infof("found existing LaunchTemplate: %s", fi.StringValue(lt.LaunchTemplateName))
+	klog.V(3).Infof("found existing LaunchTemplate: %s", fi.ValueOf(lt.LaunchTemplateName))
 
 	actual := &LaunchTemplate{
 		AssociatePublicIP:      fi.PtrTo(false),
@@ -269,7 +269,7 @@ func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
 
 	// @step: get the image is order to find out the root device name as using the index
 	// is not variable, under conditions they move
-	image, err := cloud.ResolveImage(fi.StringValue(t.ImageID))
+	image, err := cloud.ResolveImage(fi.ValueOf(t.ImageID))
 	if err != nil {
 		return nil, err
 	}
@@ -279,7 +279,7 @@ func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
 		if b.Ebs == nil {
 			continue
 		}
-		if b.DeviceName != nil && fi.StringValue(b.DeviceName) == fi.StringValue(image.RootDeviceName) {
+		if b.DeviceName != nil && fi.ValueOf(b.DeviceName) == fi.ValueOf(image.RootDeviceName) {
 			actual.RootVolumeSize = b.Ebs.VolumeSize
 			actual.RootVolumeType = b.Ebs.VolumeType
 			actual.RootVolumeIops = b.Ebs.Iops
@@ -412,7 +412,7 @@ func (d *deleteLaunchTemplate) TaskName() string {
 
 // Item returns the launch template name
 func (d *deleteLaunchTemplate) Item() string {
-	return fi.StringValue(d.lc.LaunchTemplateName)
+	return fi.ValueOf(d.lc.LaunchTemplateName)
 }
 
 func (d *deleteLaunchTemplate) Delete(t fi.Target) error {

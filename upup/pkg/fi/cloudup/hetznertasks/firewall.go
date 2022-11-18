@@ -42,7 +42,7 @@ type Firewall struct {
 var _ fi.CompareWithID = &Firewall{}
 
 func (v *Firewall) CompareWithID() *string {
-	return fi.PtrTo(strconv.Itoa(fi.IntValue(v.ID)))
+	return fi.PtrTo(strconv.Itoa(fi.ValueOf(v.ID)))
 }
 
 func (v *Firewall) Find(c *fi.Context) (*Firewall, error) {
@@ -56,7 +56,7 @@ func (v *Firewall) Find(c *fi.Context) (*Firewall, error) {
 	}
 
 	for _, firewall := range firewalls {
-		if firewall.Name == fi.StringValue(v.Name) {
+		if firewall.Name == fi.ValueOf(v.Name) {
 			matches := &Firewall{
 				Lifecycle: v.Lifecycle,
 				Name:      fi.PtrTo(firewall.Name),
@@ -115,7 +115,7 @@ func (_ *Firewall) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *Fir
 	client := t.Cloud.FirewallClient()
 	if a == nil {
 		opts := hcloud.FirewallCreateOpts{
-			Name: fi.StringValue(e.Name),
+			Name: fi.ValueOf(e.Name),
 			ApplyTo: []hcloud.FirewallResource{
 				{
 					Type:          hcloud.FirewallResourceTypeLabelSelector,
@@ -139,7 +139,7 @@ func (_ *Firewall) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *Fir
 		}
 
 	} else {
-		firewall, _, err := client.Get(context.TODO(), fi.StringValue(e.Name))
+		firewall, _, err := client.Get(context.TODO(), fi.ValueOf(e.Name))
 		if err != nil {
 			return err
 		}
@@ -147,7 +147,7 @@ func (_ *Firewall) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *Fir
 		// Update the labels
 		if changes.Name != nil || len(changes.Labels) != 0 {
 			_, _, err := client.Update(context.TODO(), firewall, hcloud.FirewallUpdateOpts{
-				Name:   fi.StringValue(e.Name),
+				Name:   fi.ValueOf(e.Name),
 				Labels: e.Labels,
 			})
 			if err != nil {

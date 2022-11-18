@@ -63,7 +63,7 @@ func TestVPCCreate(t *testing.T) {
 			t.Fatalf("unexpected error during Run: %v", err)
 		}
 
-		if fi.StringValue(vpc1.ID) == "" {
+		if fi.ValueOf(vpc1.ID) == "" {
 			t.Fatalf("ID not set after create")
 		}
 
@@ -187,7 +187,7 @@ func TestSharedVPCAdditionalCIDR(t *testing.T) {
 			t.Fatalf("unexpected error during Run: %v", err)
 		}
 
-		if fi.StringValue(vpc1.ID) == "" {
+		if fi.ValueOf(vpc1.ID) == "" {
 			t.Fatalf("ID not set")
 		}
 

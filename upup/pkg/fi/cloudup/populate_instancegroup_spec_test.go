@@ -142,8 +142,8 @@ func TestPopulateInstanceGroup_EvictionHard(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error from PopulateInstanceGroupSpec: %v", err)
 	}
-	if fi.StringValue(output.Spec.Kubelet.EvictionHard) != "memory.available<250Mi" {
-		t.Errorf("Unexpected value %v", fi.StringValue(output.Spec.Kubelet.EvictionHard))
+	if fi.ValueOf(output.Spec.Kubelet.EvictionHard) != "memory.available<250Mi" {
+		t.Errorf("Unexpected value %v", fi.ValueOf(output.Spec.Kubelet.EvictionHard))
 	}
 }
 
@@ -165,8 +165,8 @@ func TestPopulateInstanceGroup_EvictionHard3(t *testing.T) {
 		t.Fatalf("error from PopulateInstanceGroupSpec: %v", err)
 	}
 	// There is no default EvictionHard
-	if fi.StringValue(output.Spec.Kubelet.EvictionHard) != "" {
-		t.Errorf("Unexpected value %v", fi.StringValue(output.Spec.Kubelet.EvictionHard))
+	if fi.ValueOf(output.Spec.Kubelet.EvictionHard) != "" {
+		t.Errorf("Unexpected value %v", fi.ValueOf(output.Spec.Kubelet.EvictionHard))
 	}
 }
 
@@ -187,8 +187,8 @@ func TestPopulateInstanceGroup_EvictionHard4(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error from PopulateInstanceGroupSpec: %v", err)
 	}
-	if fi.StringValue(output.Spec.Kubelet.EvictionHard) != "memory.available<350Mi" {
-		t.Errorf("Unexpected value %v", fi.StringValue(output.Spec.Kubelet.EvictionHard))
+	if fi.ValueOf(output.Spec.Kubelet.EvictionHard) != "memory.available<350Mi" {
+		t.Errorf("Unexpected value %v", fi.ValueOf(output.Spec.Kubelet.EvictionHard))
 	}
 }
 
@@ -209,8 +209,8 @@ func TestPopulateInstanceGroup_EvictionHard2(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error from PopulateInstanceGroupSpec: %v", err)
 	}
-	if fi.StringValue(output.Spec.Kubelet.EvictionHard) != "memory.available<250Mi" {
-		t.Errorf("Unexpected value %v", fi.StringValue(output.Spec.Kubelet.EvictionHard))
+	if fi.ValueOf(output.Spec.Kubelet.EvictionHard) != "memory.available<250Mi" {
+		t.Errorf("Unexpected value %v", fi.ValueOf(output.Spec.Kubelet.EvictionHard))
 	}
 }
 

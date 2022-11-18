@@ -152,7 +152,7 @@ func getCapacity(spec *kops.InstanceGroupSpec) (*int64, error) {
 	minSize := int32(1)
 	maxSize := int32(1)
 	if spec.MinSize != nil {
-		minSize = fi.Int32Value(spec.MinSize)
+		minSize = fi.ValueOf(spec.MinSize)
 	} else if spec.Role == kops.InstanceGroupRoleNode {
 		minSize = 2
 	}

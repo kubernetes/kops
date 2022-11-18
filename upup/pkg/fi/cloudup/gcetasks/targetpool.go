@@ -42,7 +42,7 @@ func (e *TargetPool) CompareWithID() *string {
 
 func (e *TargetPool) Find(c *fi.Context) (*TargetPool, error) {
 	cloud := c.Cloud.(gce.GCECloud)
-	name := fi.StringValue(e.Name)
+	name := fi.ValueOf(e.Name)
 
 	r, err := cloud.Compute().TargetPools().Get(cloud.Project(), cloud.Region(), name)
 	if err != nil {
@@ -66,20 +66,20 @@ func (e *TargetPool) Run(c *fi.Context) error {
 }
 
 func (_ *TargetPool) CheckChanges(a, e, changes *TargetPool) error {
-	if fi.StringValue(e.Name) == "" {
+	if fi.ValueOf(e.Name) == "" {
 		return fi.RequiredField("Name")
 	}
 	return nil
 }
 
 func (e *TargetPool) URL(cloud gce.GCECloud) string {
-	name := fi.StringValue(e.Name)
+	name := fi.ValueOf(e.Name)
 
 	return fmt.Sprintf("https://www.googleapis.com/compute/v1/projects/%s/regions/%s/targetPools/%s", cloud.Project(), cloud.Region(), name)
 }
 
 func (_ *TargetPool) RenderGCE(t *gce.GCEAPITarget, a, e, changes *TargetPool) error {
-	name := fi.StringValue(e.Name)
+	name := fi.ValueOf(e.Name)
 
 	o := &compute.TargetPool{
 		Name: name,
@@ -112,7 +112,7 @@ type terraformTargetPool struct {
 }
 
 func (_ *TargetPool) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *TargetPool) error {
-	name := fi.StringValue(e.Name)
+	name := fi.ValueOf(e.Name)
 
 	tf := &terraformTargetPool{
 		Name: name,
@@ -122,7 +122,7 @@ func (_ *TargetPool) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 }
 
 func (e *TargetPool) TerraformLink() *terraformWriter.Literal {
-	name := fi.StringValue(e.Name)
+	name := fi.ValueOf(e.Name)
 
 	return terraformWriter.LiteralSelfLink("google_compute_target_pool", name)
 }

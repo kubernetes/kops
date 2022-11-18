@@ -53,7 +53,7 @@ func (e *ManagedFile) Find(c *fi.Context) (*ManagedFile, error) {
 		return nil, err
 	}
 
-	location := fi.StringValue(e.Location)
+	location := fi.ValueOf(e.Location)
 	if location == "" {
 		return nil, nil
 	}
@@ -123,7 +123,7 @@ func (s *ManagedFile) CheckChanges(a, e, changes *ManagedFile) error {
 
 func (e *ManagedFile) getACL(c *fi.Context, p vfs.Path) (vfs.ACL, error) {
 	var acl vfs.ACL
-	if fi.BoolValue(e.Public) {
+	if fi.ValueOf(e.Public) {
 		switch p := p.(type) {
 		case *vfs.S3Path:
 			acl = &vfs.S3Acl{
@@ -146,7 +146,7 @@ func (e *ManagedFile) getACL(c *fi.Context, p vfs.Path) (vfs.ACL, error) {
 }
 
 func (_ *ManagedFile) Render(c *fi.Context, a, e, changes *ManagedFile) error {
-	location := fi.StringValue(e.Location)
+	location := fi.ValueOf(e.Location)
 	if location == "" {
 		return fi.RequiredField("Location")
 	}
@@ -176,7 +176,7 @@ func (_ *ManagedFile) Render(c *fi.Context, a, e, changes *ManagedFile) error {
 }
 
 func getBasePath(c *fi.Context, e *ManagedFile) (vfs.Path, error) {
-	base := fi.StringValue(e.Base)
+	base := fi.ValueOf(e.Base)
 	if base != "" {
 		p, err := vfs.Context.BuildVfsPath(base)
 		if err != nil {
@@ -194,7 +194,7 @@ func (f *ManagedFile) RenderTerraform(c *fi.Context, t *terraform.TerraformTarge
 		return f.Render(c, a, e, changes)
 	}
 
-	location := fi.StringValue(e.Location)
+	location := fi.ValueOf(e.Location)
 	if location == "" {
 		return fi.RequiredField("Location")
 	}
