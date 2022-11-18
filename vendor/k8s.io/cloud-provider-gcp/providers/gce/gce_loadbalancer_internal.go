@@ -31,7 +31,7 @@ import (
 	"github.com/GoogleCloudPlatform/k8s-cloud-provider/pkg/cloud/meta"
 	"github.com/google/go-cmp/cmp"
 	compute "google.golang.org/api/compute/v1"
-	v1 "k8s.io/api/core/v1"
+	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	cloudprovider "k8s.io/cloud-provider"
@@ -53,20 +53,18 @@ const (
 )
 
 func (g *Cloud) ensureInternalLoadBalancer(clusterName, clusterID string, svc *v1.Service, existingFwdRule *compute.ForwardingRule, nodes []*v1.Node) (*v1.LoadBalancerStatus, error) {
-	if existingFwdRule == nil && !hasFinalizer(svc, ILBFinalizerV1) {
-		// Neither the forwarding rule nor the V1 finalizer exists. This is most likely a new service.
-		if g.AlphaFeatureGate.Enabled(AlphaFeatureILBSubsets) {
-			// When ILBSubsets is enabled, new ILB services will not be processed here.
-			// Services that have existing GCE resources created by this controller or the v1 finalizer
-			// will continue to update.
-			klog.V(2).Infof("Skipped ensureInternalLoadBalancer for service %s/%s, since %s feature is enabled.", svc.Namespace, svc.Name, AlphaFeatureILBSubsets)
-			return nil, cloudprovider.ImplementedElsewhere
-		}
-		if hasFinalizer(svc, ILBFinalizerV2) {
-			// No V1 resources present - Another controller is handling the resources for this service.
-			klog.V(2).Infof("Skipped ensureInternalLoadBalancer for service %s/%s, as service contains %q finalizer.", svc.Namespace, svc.Name, ILBFinalizerV2)
-			return nil, cloudprovider.ImplementedElsewhere
-		}
+	if g.AlphaFeatureGate.Enabled(AlphaFeatureILBSubsets) && existingFwdRule == nil {
+		// When ILBSubsets is enabled, new ILB services will not be processed here.
+		// Services that have existing GCE resources created by this controller will continue to update.
+		g.eventRecorder.Eventf(svc, v1.EventTypeNormal, "SkippingEnsureInternalLoadBalancer",
+			"Skipped ensureInternalLoadBalancer since %s feature is enabled.", AlphaFeatureILBSubsets)
+		return nil, cloudprovider.ImplementedElsewhere
+	}
+	if hasFinalizer(svc, ILBFinalizerV2) {
+		// Another controller is handling the resources for this service.
+		g.eventRecorder.Eventf(svc, v1.EventTypeNormal, "SkippingEnsureInternalLoadBalancer",
+			"Skipped ensureInternalLoadBalancer as service contains '%s' finalizer.", ILBFinalizerV2)
+		return nil, cloudprovider.ImplementedElsewhere
 	}
 
 	nm := types.NamespacedName{Name: svc.Name, Namespace: svc.Namespace}
@@ -166,6 +164,11 @@ func (g *Cloud) ensureInternalLoadBalancer(clusterName, clusterID string, svc *v
 		}()
 	}
 
+	// Ensure firewall rules if necessary
+	if err = g.ensureInternalFirewalls(loadBalancerName, ipToUse, clusterID, nm, svc, strconv.Itoa(int(hcPort)), sharedHealthCheck, nodes); err != nil {
+		return nil, err
+	}
+
 	fwdRuleDescription := &forwardingRuleDescription{ServiceName: nm.String()}
 	fwdRuleDescriptionString, err := fwdRuleDescription.marshal()
 	if err != nil {
@@ -197,10 +200,8 @@ func (g *Cloud) ensureInternalLoadBalancer(clusterName, clusterID string, svc *v
 		// Delete existing forwarding rule before making changes to the backend service. For example - changing protocol
 		// of backend service without first deleting forwarding rule will throw an error since the linked forwarding
 		// rule would show the old protocol.
-		if klogV := klog.V(2); klogV.Enabled() {
-			frDiff := cmp.Diff(existingFwdRule, newFwdRule)
-			klogV.Infof("ensureInternalLoadBalancer(%v): forwarding rule changed - Existing - %+v\n, New - %+v\n, Diff(-existing, +new) - %s\n. Deleting existing forwarding rule.", loadBalancerName, existingFwdRule, newFwdRule, frDiff)
-		}
+		frDiff := cmp.Diff(existingFwdRule, newFwdRule)
+		klog.V(2).Infof("ensureInternalLoadBalancer(%v): forwarding rule changed - Existing - %+v\n, New - %+v\n, Diff(-existing, +new) - %s\n. Deleting existing forwarding rule.", loadBalancerName, existingFwdRule, newFwdRule, frDiff)
 		if err = ignoreNotFound(g.DeleteRegionForwardingRule(loadBalancerName, g.region)); err != nil {
 			return nil, err
 		}
@@ -220,21 +221,15 @@ func (g *Cloud) ensureInternalLoadBalancer(clusterName, clusterID string, svc *v
 		}
 	}
 
+	// Delete the previous internal load balancer resources if necessary
+	if existingBackendService != nil {
+		g.clearPreviousInternalResources(svc, loadBalancerName, existingBackendService, backendServiceName, hcName)
+	}
+
 	// Get the most recent forwarding rule for the address.
 	updatedFwdRule, err := g.GetRegionForwardingRule(loadBalancerName, g.region)
 	if err != nil {
 		return nil, err
-	}
-
-	ipToUse = updatedFwdRule.IPAddress
-	// Ensure firewall rules if necessary
-	if err = g.ensureInternalFirewalls(loadBalancerName, ipToUse, clusterID, nm, svc, strconv.Itoa(int(hcPort)), sharedHealthCheck, nodes); err != nil {
-		return nil, err
-	}
-
-	// Delete the previous internal load balancer resources if necessary
-	if existingBackendService != nil {
-		g.clearPreviousInternalResources(svc, loadBalancerName, existingBackendService, backendServiceName, hcName)
 	}
 
 	serviceState.InSuccess = true
@@ -280,8 +275,7 @@ func (g *Cloud) clearPreviousInternalResources(svc *v1.Service, loadBalancerName
 // updateInternalLoadBalancer is called when the list of nodes has changed. Therefore, only the instance groups
 // and possibly the backend service need to be updated.
 func (g *Cloud) updateInternalLoadBalancer(clusterName, clusterID string, svc *v1.Service, nodes []*v1.Node) error {
-	if g.AlphaFeatureGate.Enabled(AlphaFeatureILBSubsets) && !hasFinalizer(svc, ILBFinalizerV1) {
-		klog.V(2).Infof("Skipped updateInternalLoadBalancer for service %s/%s since it does not contain %q finalizer.", svc.Namespace, svc.Name, ILBFinalizerV1)
+	if g.AlphaFeatureGate.Enabled(AlphaFeatureILBSubsets) {
 		return cloudprovider.ImplementedElsewhere
 	}
 	g.sharedResourceLock.Lock()
@@ -417,7 +411,7 @@ func (g *Cloud) teardownInternalHealthCheckAndFirewall(svc *v1.Service, hcName s
 	return nil
 }
 
-func (g *Cloud) ensureInternalFirewall(svc *v1.Service, fwName, fwDesc, destinationIP string, sourceRanges []string, portRanges []string, protocol v1.Protocol, nodes []*v1.Node, legacyFwName string) error {
+func (g *Cloud) ensureInternalFirewall(svc *v1.Service, fwName, fwDesc string, sourceRanges []string, portRanges []string, protocol v1.Protocol, nodes []*v1.Node, legacyFwName string) error {
 	klog.V(2).Infof("ensureInternalFirewall(%v): checking existing firewall", fwName)
 	targetTags, err := g.GetNodeTags(nodeNames(nodes))
 	if err != nil {
@@ -466,10 +460,6 @@ func (g *Cloud) ensureInternalFirewall(svc *v1.Service, fwName, fwDesc, destinat
 		},
 	}
 
-	if destinationIP != "" {
-		expectedFirewall.DestinationRanges = []string{destinationIP}
-	}
-
 	if existingFirewall == nil {
 		klog.V(2).Infof("ensureInternalFirewall(%v): creating firewall", fwName)
 		err = g.CreateFirewall(expectedFirewall)
@@ -486,7 +476,7 @@ func (g *Cloud) ensureInternalFirewall(svc *v1.Service, fwName, fwDesc, destinat
 	}
 
 	klog.V(2).Infof("ensureInternalFirewall(%v): updating firewall", fwName)
-	err = g.PatchFirewall(expectedFirewall)
+	err = g.UpdateFirewall(expectedFirewall)
 	if err != nil && isForbidden(err) && g.OnXPN() {
 		klog.V(2).Infof("ensureInternalFirewall(%v): do not have permission to update firewall rule (on XPN). Raising event.", fwName)
 		g.raiseFirewallChangeNeededEvent(svc, FirewallToGCloudUpdateCmd(expectedFirewall, g.NetworkProjectID()))
@@ -503,7 +493,7 @@ func (g *Cloud) ensureInternalFirewalls(loadBalancerName, ipAddress, clusterID s
 	if err != nil {
 		return err
 	}
-	err = g.ensureInternalFirewall(svc, MakeFirewallName(loadBalancerName), fwDesc, ipAddress, sourceRanges.StringSlice(), portRanges, protocol, nodes, loadBalancerName)
+	err = g.ensureInternalFirewall(svc, MakeFirewallName(loadBalancerName), fwDesc, sourceRanges.StringSlice(), portRanges, protocol, nodes, loadBalancerName)
 	if err != nil {
 		return err
 	}
@@ -511,7 +501,7 @@ func (g *Cloud) ensureInternalFirewalls(loadBalancerName, ipAddress, clusterID s
 	// Second firewall is for health checking nodes / services
 	fwHCName := makeHealthCheckFirewallName(loadBalancerName, clusterID, sharedHealthCheck)
 	hcSrcRanges := L4LoadBalancerSrcRanges()
-	return g.ensureInternalFirewall(svc, fwHCName, "", "", hcSrcRanges, []string{healthCheckPort}, v1.ProtocolTCP, nodes, "")
+	return g.ensureInternalFirewall(svc, fwHCName, "", hcSrcRanges, []string{healthCheckPort}, v1.ProtocolTCP, nodes, "")
 }
 
 func (g *Cloud) ensureInternalHealthCheck(name string, svcName types.NamespacedName, shared bool, path string, port int32) (*compute.HealthCheck, error) {
@@ -630,21 +620,11 @@ func (g *Cloud) ensureInternalInstanceGroups(name string, nodes []*v1.Node) ([]s
 	klog.V(2).Infof("ensureInternalInstanceGroups(%v): %d nodes over %d zones in region %v", name, len(nodes), len(zonedNodes), g.region)
 	var igLinks []string
 	for zone, nodes := range zonedNodes {
-		if g.AlphaFeatureGate.Enabled(AlphaFeatureSkipIGsManagement) {
-			igs, err := g.FilterInstanceGroupsByNamePrefix(name, zone)
-			if err != nil {
-				return nil, err
-			}
-			for _, ig := range igs {
-				igLinks = append(igLinks, ig.SelfLink)
-			}
-		} else {
-			igLink, err := g.ensureInternalInstanceGroup(name, zone, nodes)
-			if err != nil {
-				return nil, err
-			}
-			igLinks = append(igLinks, igLink)
+		igLink, err := g.ensureInternalInstanceGroup(name, zone, nodes)
+		if err != nil {
+			return []string{}, err
 		}
+		igLinks = append(igLinks, igLink)
 	}
 
 	return igLinks, nil
@@ -657,13 +637,10 @@ func (g *Cloud) ensureInternalInstanceGroupsDeleted(name string) error {
 		return err
 	}
 
-	// Skip Instance Group deletion if IG management was moved out of k/k code
-	if !g.AlphaFeatureGate.Enabled(AlphaFeatureSkipIGsManagement) {
-		klog.V(2).Infof("ensureInternalInstanceGroupsDeleted(%v): attempting delete instance group in all %d zones", name, len(zones))
-		for _, z := range zones {
-			if err := g.DeleteInstanceGroup(name, z.Name); err != nil && !isNotFoundOrInUse(err) {
-				return err
-			}
+	klog.V(2).Infof("ensureInternalInstanceGroupsDeleted(%v): attempting delete instance group in all %d zones", name, len(zones))
+	for _, z := range zones {
+		if err := g.DeleteInstanceGroup(name, z.Name); err != nil && !isNotFoundOrInUse(err) {
+			return err
 		}
 	}
 	return nil
@@ -776,7 +753,6 @@ func firewallRuleEqual(a, b *compute.Firewall) bool {
 		a.Allowed[0].IPProtocol == b.Allowed[0].IPProtocol &&
 		equalStringSets(a.Allowed[0].Ports, b.Allowed[0].Ports) &&
 		equalStringSets(a.SourceRanges, b.SourceRanges) &&
-		equalStringSets(a.DestinationRanges, b.DestinationRanges) &&
 		equalStringSets(a.TargetTags, b.TargetTags)
 }
 
@@ -908,7 +884,7 @@ func getPortRanges(ports []int) (ranges []string) {
 }
 
 func (g *Cloud) getBackendServiceLink(name string) string {
-	return g.projectsBasePath + strings.Join([]string{g.projectID, "regions", g.region, "backendServices", name}, "/")
+	return g.service.BasePath + strings.Join([]string{g.projectID, "regions", g.region, "backendServices", name}, "/")
 }
 
 func getNameFromLink(link string) string {
