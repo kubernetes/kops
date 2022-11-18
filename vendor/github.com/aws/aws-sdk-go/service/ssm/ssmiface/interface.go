@@ -152,6 +152,10 @@ type SSMAPI interface {
 	DeleteResourceDataSyncWithContext(aws.Context, *ssm.DeleteResourceDataSyncInput, ...request.Option) (*ssm.DeleteResourceDataSyncOutput, error)
 	DeleteResourceDataSyncRequest(*ssm.DeleteResourceDataSyncInput) (*request.Request, *ssm.DeleteResourceDataSyncOutput)
 
+	DeleteResourcePolicy(*ssm.DeleteResourcePolicyInput) (*ssm.DeleteResourcePolicyOutput, error)
+	DeleteResourcePolicyWithContext(aws.Context, *ssm.DeleteResourcePolicyInput, ...request.Option) (*ssm.DeleteResourcePolicyOutput, error)
+	DeleteResourcePolicyRequest(*ssm.DeleteResourcePolicyInput) (*request.Request, *ssm.DeleteResourcePolicyOutput)
+
 	DeregisterManagedInstance(*ssm.DeregisterManagedInstanceInput) (*ssm.DeregisterManagedInstanceOutput, error)
 	DeregisterManagedInstanceWithContext(aws.Context, *ssm.DeregisterManagedInstanceInput, ...request.Option) (*ssm.DeregisterManagedInstanceOutput, error)
 	DeregisterManagedInstanceRequest(*ssm.DeregisterManagedInstanceInput) (*request.Request, *ssm.DeregisterManagedInstanceOutput)
@@ -491,6 +495,13 @@ type SSMAPI interface {
 	GetPatchBaselineForPatchGroupWithContext(aws.Context, *ssm.GetPatchBaselineForPatchGroupInput, ...request.Option) (*ssm.GetPatchBaselineForPatchGroupOutput, error)
 	GetPatchBaselineForPatchGroupRequest(*ssm.GetPatchBaselineForPatchGroupInput) (*request.Request, *ssm.GetPatchBaselineForPatchGroupOutput)
 
+	GetResourcePolicies(*ssm.GetResourcePoliciesInput) (*ssm.GetResourcePoliciesOutput, error)
+	GetResourcePoliciesWithContext(aws.Context, *ssm.GetResourcePoliciesInput, ...request.Option) (*ssm.GetResourcePoliciesOutput, error)
+	GetResourcePoliciesRequest(*ssm.GetResourcePoliciesInput) (*request.Request, *ssm.GetResourcePoliciesOutput)
+
+	GetResourcePoliciesPages(*ssm.GetResourcePoliciesInput, func(*ssm.GetResourcePoliciesOutput, bool) bool) error
+	GetResourcePoliciesPagesWithContext(aws.Context, *ssm.GetResourcePoliciesInput, func(*ssm.GetResourcePoliciesOutput, bool) bool, ...request.Option) error
+
 	GetServiceSetting(*ssm.GetServiceSettingInput) (*ssm.GetServiceSettingOutput, error)
 	GetServiceSettingWithContext(aws.Context, *ssm.GetServiceSettingInput, ...request.Option) (*ssm.GetServiceSettingOutput, error)
 	GetServiceSettingRequest(*ssm.GetServiceSettingInput) (*request.Request, *ssm.GetServiceSettingOutput)
@@ -617,6 +628,10 @@ type SSMAPI interface {
 	PutParameter(*ssm.PutParameterInput) (*ssm.PutParameterOutput, error)
 	PutParameterWithContext(aws.Context, *ssm.PutParameterInput, ...request.Option) (*ssm.PutParameterOutput, error)
 	PutParameterRequest(*ssm.PutParameterInput) (*request.Request, *ssm.PutParameterOutput)
+
+	PutResourcePolicy(*ssm.PutResourcePolicyInput) (*ssm.PutResourcePolicyOutput, error)
+	PutResourcePolicyWithContext(aws.Context, *ssm.PutResourcePolicyInput, ...request.Option) (*ssm.PutResourcePolicyOutput, error)
+	PutResourcePolicyRequest(*ssm.PutResourcePolicyInput) (*request.Request, *ssm.PutResourcePolicyOutput)
 
 	RegisterDefaultPatchBaseline(*ssm.RegisterDefaultPatchBaselineInput) (*ssm.RegisterDefaultPatchBaselineOutput, error)
 	RegisterDefaultPatchBaselineWithContext(aws.Context, *ssm.RegisterDefaultPatchBaselineInput, ...request.Option) (*ssm.RegisterDefaultPatchBaselineOutput, error)
