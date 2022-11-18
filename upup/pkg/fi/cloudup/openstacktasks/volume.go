@@ -61,11 +61,11 @@ func (c *Volume) Find(context *fi.Context) (*Volume, error) {
 	}
 	v := volumes[0]
 	actual := &Volume{
-		ID:               fi.String(v.ID),
-		Name:             fi.String(v.Name),
-		AvailabilityZone: fi.String(v.AvailabilityZone),
-		VolumeType:       fi.String(v.VolumeType),
-		SizeGB:           fi.Int64(int64(v.Size)),
+		ID:               fi.PtrTo(v.ID),
+		Name:             fi.PtrTo(v.Name),
+		AvailabilityZone: fi.PtrTo(v.AvailabilityZone),
+		VolumeType:       fi.PtrTo(v.VolumeType),
+		SizeGB:           fi.PtrTo(int64(v.Size)),
 		Tags:             v.Metadata,
 		Lifecycle:        c.Lifecycle,
 	}
@@ -143,8 +143,8 @@ func (_ *Volume) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes 
 			return fmt.Errorf("error creating PersistentVolume: %v", err)
 		}
 
-		e.ID = fi.String(v.ID)
-		e.AvailabilityZone = fi.String(v.AvailabilityZone)
+		e.ID = fi.PtrTo(v.ID)
+		e.AvailabilityZone = fi.PtrTo(v.AvailabilityZone)
 		return nil
 	}
 

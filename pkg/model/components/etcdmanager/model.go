@@ -80,8 +80,8 @@ func (b *EtcdManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 			c.AddTask(&fitasks.ManagedFile{
 				Contents:  fi.NewBytesResource(manifestYAML),
 				Lifecycle: b.Lifecycle,
-				Location:  fi.String("manifests/etcd/" + name + ".yaml"),
-				Name:      fi.String("manifests-etcdmanager-" + name),
+				Location:  fi.PtrTo("manifests/etcd/" + name + ".yaml"),
+				Name:      fi.PtrTo("manifests-etcdmanager-" + name),
 			})
 		}
 
@@ -105,15 +105,15 @@ func (b *EtcdManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(&fitasks.ManagedFile{
 			Contents:  fi.NewBytesResource(d),
 			Lifecycle: b.Lifecycle,
-			Base:      fi.String(backupStore),
+			Base:      fi.PtrTo(backupStore),
 			// TODO: We need this to match the backup base (currently)
-			Location: fi.String(location + "/control/etcd-cluster-spec"),
-			Name:     fi.String("etcd-cluster-spec-" + etcdCluster.Name),
+			Location: fi.PtrTo(location + "/control/etcd-cluster-spec"),
+			Name:     fi.PtrTo("etcd-cluster-spec-" + etcdCluster.Name),
 		})
 
 		// We create a CA keypair to enable secure communication
 		c.AddTask(&fitasks.Keypair{
-			Name:      fi.String("etcd-manager-ca-" + etcdCluster.Name),
+			Name:      fi.PtrTo("etcd-manager-ca-" + etcdCluster.Name),
 			Lifecycle: b.Lifecycle,
 			Subject:   "cn=etcd-manager-ca-" + etcdCluster.Name,
 			Type:      "ca",
@@ -121,7 +121,7 @@ func (b *EtcdManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		// We create a CA for etcd peers and a separate one for clients
 		c.AddTask(&fitasks.Keypair{
-			Name:      fi.String("etcd-peers-ca-" + etcdCluster.Name),
+			Name:      fi.PtrTo("etcd-peers-ca-" + etcdCluster.Name),
 			Lifecycle: b.Lifecycle,
 			Subject:   "cn=etcd-peers-ca-" + etcdCluster.Name,
 			Type:      "ca",
@@ -129,7 +129,7 @@ func (b *EtcdManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		// Because API server can only have a single client-cert, we need to share a client CA
 		if err := c.EnsureTask(&fitasks.Keypair{
-			Name:      fi.String("etcd-clients-ca"),
+			Name:      fi.PtrTo("etcd-clients-ca"),
 			Lifecycle: b.Lifecycle,
 			Subject:   "cn=etcd-clients-ca",
 			Type:      "ca",
@@ -139,7 +139,7 @@ func (b *EtcdManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		if etcdCluster.Name == "cilium" {
 			clientsCaCilium := &fitasks.Keypair{
-				Name:      fi.String("etcd-clients-ca-cilium"),
+				Name:      fi.PtrTo("etcd-clients-ca-cilium"),
 				Lifecycle: b.Lifecycle,
 				Subject:   "cn=etcd-clients-ca-cilium",
 				Type:      "ca",
@@ -148,7 +148,7 @@ func (b *EtcdManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			if !b.UseKopsControllerForNodeBootstrap() {
 				c.AddTask(&fitasks.Keypair{
-					Name:      fi.String("etcd-client-cilium"),
+					Name:      fi.PtrTo("etcd-client-cilium"),
 					Lifecycle: b.Lifecycle,
 					Subject:   "cn=cilium",
 					Type:      "client",
@@ -349,11 +349,11 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 	}
 
 	if etcdCluster.Manager != nil && etcdCluster.Manager.BackupInterval != nil {
-		config.BackupInterval = fi.String(etcdCluster.Manager.BackupInterval.Duration.String())
+		config.BackupInterval = fi.PtrTo(etcdCluster.Manager.BackupInterval.Duration.String())
 	}
 
 	if etcdCluster.Manager != nil && etcdCluster.Manager.DiscoveryPollInterval != nil {
-		config.DiscoveryPollInterval = fi.String(etcdCluster.Manager.DiscoveryPollInterval.Duration.String())
+		config.DiscoveryPollInterval = fi.PtrTo(etcdCluster.Manager.DiscoveryPollInterval.Duration.String())
 	}
 
 	{

@@ -53,7 +53,7 @@ func (e *TargetPool) Find(c *fi.Context) (*TargetPool, error) {
 	}
 
 	actual := &TargetPool{}
-	actual.Name = fi.String(r.Name)
+	actual.Name = fi.PtrTo(r.Name)
 
 	// Avoid spurious changes
 	actual.Lifecycle = e.Lifecycle

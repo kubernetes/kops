@@ -34,9 +34,9 @@ func TestProjectIAMBinding(t *testing.T) {
 		binding := &ProjectIAMBinding{
 			Lifecycle: fi.LifecycleSync,
 
-			Project: fi.String("testproject"),
-			Member:  fi.String("serviceAccount:foo@testproject.iam.gserviceaccount.com"),
-			Role:    fi.String("roles/owner"),
+			Project: fi.PtrTo("testproject"),
+			Member:  fi.PtrTo("serviceAccount:foo@testproject.iam.gserviceaccount.com"),
+			Role:    fi.PtrTo("roles/owner"),
 		}
 
 		return map[string]fi.Task{

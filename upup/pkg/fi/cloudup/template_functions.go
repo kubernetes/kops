@@ -898,8 +898,8 @@ func karpenterInstanceTypes(cloud awsup.AWSCloud, ig kops.InstanceGroupSpec) ([]
 			ir := &ec2.InstanceRequirementsRequest{
 				VCpuCount:            &ec2.VCpuCountRangeRequest{},
 				MemoryMiB:            &ec2.MemoryMiBRequest{},
-				BurstablePerformance: fi.String("included"),
-				InstanceGenerations:  []*string{fi.String("current")},
+				BurstablePerformance: fi.PtrTo("included"),
+				InstanceGenerations:  []*string{fi.PtrTo("current")},
 			}
 			cpu := instanceRequirements.CPU
 			if cpu != nil {
@@ -918,7 +918,7 @@ func karpenterInstanceTypes(cloud awsup.AWSCloud, ig kops.InstanceGroupSpec) ([]
 						ir.VCpuCount.Min = &cpuMin
 					}
 				} else {
-					ir.VCpuCount.Min = fi.Int64(0)
+					ir.VCpuCount.Min = fi.PtrTo(int64(0))
 				}
 
 				memory := instanceRequirements.Memory
@@ -932,12 +932,12 @@ func karpenterInstanceTypes(cloud awsup.AWSCloud, ig kops.InstanceGroupSpec) ([]
 						ir.MemoryMiB.Min = &memoryMin
 					}
 				} else {
-					ir.MemoryMiB.Min = fi.Int64(0)
+					ir.MemoryMiB.Min = fi.PtrTo(int64(0))
 				}
 
 				ir.AcceleratorCount = &ec2.AcceleratorCountRequest{
-					Min: fi.Int64(0),
-					Max: fi.Int64(0),
+					Min: fi.PtrTo(int64(0)),
+					Max: fi.PtrTo(int64(0)),
 				}
 
 				response, err := cloud.EC2().GetInstanceTypesFromInstanceRequirements(

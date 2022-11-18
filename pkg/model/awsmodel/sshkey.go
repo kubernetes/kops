@@ -39,7 +39,7 @@ func (b *SSHKeyModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		return err
 	}
 	t := &awstasks.SSHKey{
-		Name:      fi.String(name),
+		Name:      fi.PtrTo(name),
 		Lifecycle: b.Lifecycle,
 		Tags:      b.CloudTags(b.ClusterName(), false),
 		Shared:    fi.StringValue(b.Cluster.Spec.SSHKeyName) != "",

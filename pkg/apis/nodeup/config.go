@@ -174,7 +174,7 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 	}
 
 	if cluster.Spec.Networking != nil && cluster.Spec.Networking.AmazonVPC != nil {
-		config.DefaultMachineType = fi.String(strings.Split(instanceGroup.Spec.MachineType, ",")[0])
+		config.DefaultMachineType = fi.PtrTo(strings.Split(instanceGroup.Spec.MachineType, ",")[0])
 	}
 
 	if UsesInstanceIDForNodeName(cluster) {

@@ -47,16 +47,16 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o interface{}) error {
 		// Set version based on Kubernetes version
 		if fi.StringValue(containerd.Version) == "" {
 			if b.IsKubernetesGTE("1.23") {
-				containerd.Version = fi.String("1.6.10")
+				containerd.Version = fi.PtrTo("1.6.10")
 				containerd.Runc = &kops.Runc{
-					Version: fi.String("1.1.4"),
+					Version: fi.PtrTo("1.1.4"),
 				}
 			} else {
-				containerd.Version = fi.String("1.4.13")
+				containerd.Version = fi.PtrTo("1.4.13")
 			}
 		}
 		// Set default log level to INFO
-		containerd.LogLevel = fi.String("info")
+		containerd.LogLevel = fi.PtrTo("info")
 
 	} else if clusterSpec.ContainerRuntime == "docker" {
 		// Docker version should always be available
@@ -75,11 +75,11 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o interface{}) error {
 			}
 		}
 		// Set default log level to INFO
-		containerd.LogLevel = fi.String("info")
+		containerd.LogLevel = fi.PtrTo("info")
 		// Build config file for containerd running in Docker mode
 		config, _ := toml.Load("")
 		config.SetPath([]string{"disabled_plugins"}, []string{"cri"})
-		containerd.ConfigOverride = fi.String(config.String())
+		containerd.ConfigOverride = fi.PtrTo(config.String())
 
 	} else {
 		// Unknown container runtime, should not install containerd

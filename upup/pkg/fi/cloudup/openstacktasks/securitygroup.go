@@ -78,9 +78,9 @@ func getSecurityGroupByName(s *SecurityGroup, cloud openstack.OpenstackCloud) (*
 	}
 	g := gs[0]
 	actual := &SecurityGroup{
-		ID:          fi.String(g.ID),
-		Name:        fi.String(g.Name),
-		Description: fi.String(g.Description),
+		ID:          fi.PtrTo(g.ID),
+		Name:        fi.PtrTo(g.Name),
+		Description: fi.PtrTo(g.Description),
 		Lifecycle:   s.Lifecycle,
 	}
 	actual.RemoveExtraRules = s.RemoveExtraRules
@@ -123,7 +123,7 @@ func (_ *SecurityGroup) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, c
 			return fmt.Errorf("error creating SecurityGroup: %v", err)
 		}
 
-		e.ID = fi.String(g.ID)
+		e.ID = fi.PtrTo(g.ID)
 		return nil
 	}
 

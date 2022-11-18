@@ -28,7 +28,7 @@ import (
 )
 
 func s(v string) *string {
-	return fi.String(v)
+	return fi.PtrTo(v)
 }
 
 func TestValidateInstanceProfile(t *testing.T) {
@@ -111,15 +111,15 @@ func TestValidMasterInstanceGroup(t *testing.T) {
 							Members: []kops.EtcdMemberSpec{
 								{
 									Name:          "a",
-									InstanceGroup: fi.String("eu-central-1a"),
+									InstanceGroup: fi.PtrTo("eu-central-1a"),
 								},
 								{
 									Name:          "b",
-									InstanceGroup: fi.String("eu-central-1b"),
+									InstanceGroup: fi.PtrTo("eu-central-1b"),
 								},
 								{
 									Name:          "c",
-									InstanceGroup: fi.String("eu-central-1c"),
+									InstanceGroup: fi.PtrTo("eu-central-1c"),
 								},
 							},
 						},
@@ -146,15 +146,15 @@ func TestValidMasterInstanceGroup(t *testing.T) {
 							Members: []kops.EtcdMemberSpec{
 								{
 									Name:          "a",
-									InstanceGroup: fi.String("eu-central-1a"),
+									InstanceGroup: fi.PtrTo("eu-central-1a"),
 								},
 								{
 									Name:          "b",
-									InstanceGroup: fi.String("eu-central-1b"),
+									InstanceGroup: fi.PtrTo("eu-central-1b"),
 								},
 								{
 									Name:          "c",
-									InstanceGroup: fi.String("eu-central-1c"),
+									InstanceGroup: fi.PtrTo("eu-central-1c"),
 								},
 							},
 						},
@@ -221,7 +221,7 @@ func TestValidBootDevice(t *testing.T) {
 
 	for _, g := range grid {
 		ig := createMinimalInstanceGroup()
-		ig.Spec.RootVolumeType = fi.String(g.volumeType)
+		ig.Spec.RootVolumeType = fi.PtrTo(g.volumeType)
 		errs := CrossValidateInstanceGroup(ig, cluster, nil, true)
 		testErrors(t, g.volumeType, errs, g.expected)
 	}
@@ -355,20 +355,20 @@ func TestIGUpdatePolicy(t *testing.T) {
 		},
 		{
 			label:  "automatic",
-			policy: fi.String(kops.UpdatePolicyAutomatic),
+			policy: fi.PtrTo(kops.UpdatePolicyAutomatic),
 		},
 		{
 			label:  "external",
-			policy: fi.String(kops.UpdatePolicyExternal),
+			policy: fi.PtrTo(kops.UpdatePolicyExternal),
 		},
 		{
 			label:    "empty",
-			policy:   fi.String(""),
+			policy:   fi.PtrTo(""),
 			expected: []string{unsupportedValueError},
 		},
 		{
 			label:    "unknown",
-			policy:   fi.String("something-else"),
+			policy:   fi.PtrTo("something-else"),
 			expected: []string{unsupportedValueError},
 		},
 	} {
@@ -396,8 +396,8 @@ func TestValidInstanceGroup(t *testing.T) {
 				Spec: kops.InstanceGroupSpec{
 					Role:    kops.InstanceGroupRoleMaster,
 					Subnets: []string{"eu-central-1a"},
-					MaxSize: fi.Int32(1),
-					MinSize: fi.Int32(1),
+					MaxSize: fi.PtrTo(int32(1)),
+					MinSize: fi.PtrTo(int32(1)),
 					Image:   "my-image",
 				},
 			},
@@ -412,8 +412,8 @@ func TestValidInstanceGroup(t *testing.T) {
 				Spec: kops.InstanceGroupSpec{
 					Role:    kops.InstanceGroupRoleAPIServer,
 					Subnets: []string{"eu-central-1a"},
-					MaxSize: fi.Int32(1),
-					MinSize: fi.Int32(1),
+					MaxSize: fi.PtrTo(int32(1)),
+					MinSize: fi.PtrTo(int32(1)),
 					Image:   "my-image",
 				},
 			},
@@ -428,8 +428,8 @@ func TestValidInstanceGroup(t *testing.T) {
 				Spec: kops.InstanceGroupSpec{
 					Role:    kops.InstanceGroupRoleNode,
 					Subnets: []string{"eu-central-1a"},
-					MaxSize: fi.Int32(1),
-					MinSize: fi.Int32(1),
+					MaxSize: fi.PtrTo(int32(1)),
+					MinSize: fi.PtrTo(int32(1)),
 					Image:   "my-image",
 				},
 			},
@@ -444,8 +444,8 @@ func TestValidInstanceGroup(t *testing.T) {
 				Spec: kops.InstanceGroupSpec{
 					Role:    kops.InstanceGroupRoleBastion,
 					Subnets: []string{"eu-central-1a"},
-					MaxSize: fi.Int32(1),
-					MinSize: fi.Int32(1),
+					MaxSize: fi.PtrTo(int32(1)),
+					MinSize: fi.PtrTo(int32(1)),
 					Image:   "my-image",
 				},
 			},
@@ -460,8 +460,8 @@ func TestValidInstanceGroup(t *testing.T) {
 				Spec: kops.InstanceGroupSpec{
 					Role:    kops.InstanceGroupRoleBastion,
 					Subnets: []string{"eu-central-1a"},
-					MaxSize: fi.Int32(1),
-					MinSize: fi.Int32(1),
+					MaxSize: fi.PtrTo(int32(1)),
+					MinSize: fi.PtrTo(int32(1)),
 				},
 			},
 			ExpectedErrors: []string{"Forbidden::spec.image"},
@@ -482,8 +482,8 @@ func createMinimalInstanceGroup() *kops.InstanceGroup {
 		Spec: kops.InstanceGroupSpec{
 			CloudLabels: make(map[string]string),
 			Role:        "Node",
-			MaxSize:     fi.Int32(1),
-			MinSize:     fi.Int32(1),
+			MaxSize:     fi.PtrTo(int32(1)),
+			MinSize:     fi.PtrTo(int32(1)),
 			Image:       "my-image",
 		},
 	}

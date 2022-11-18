@@ -76,12 +76,12 @@ func Test_DryrunTarget_PrintReport(t *testing.T) {
 	target := NewDryRunTarget(builder, &stdout)
 	tasks := map[string]Task{}
 	a := &testTask{
-		Name:      String("TestName"),
+		Name:      PtrTo("TestName"),
 		Lifecycle: LifecycleSync,
 		Tags:      map[string]string{"key": "value"},
 	}
 	e := &testTask{
-		Name:      String("TestName"),
+		Name:      PtrTo("TestName"),
 		Lifecycle: LifecycleSync,
 		Tags:      map[string]string{"key": "value"},
 	}

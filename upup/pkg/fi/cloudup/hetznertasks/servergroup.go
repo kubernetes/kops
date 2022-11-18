@@ -217,7 +217,7 @@ func (_ *ServerGroup) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *
 
 		opts := hcloud.ServerCreateOpts{
 			Name:             name,
-			StartAfterCreate: fi.Bool(true),
+			StartAfterCreate: fi.PtrTo(true),
 			Networks: []*hcloud.Network{
 				{
 					ID: networkID,
@@ -300,19 +300,19 @@ type terraformServerPublicNet struct {
 func (_ *ServerGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ServerGroup) error {
 	name := terraformWriter.LiteralWithIndex(fi.StringValue(e.Name))
 	tf := &terraformServer{
-		Count:      fi.Int(e.Count),
+		Count:      fi.PtrTo(e.Count),
 		Name:       name,
-		Location:   fi.String(e.Location),
-		ServerType: fi.String(e.Size),
-		Image:      fi.String(e.Image),
+		Location:   fi.PtrTo(e.Location),
+		ServerType: fi.PtrTo(e.Size),
+		Image:      fi.PtrTo(e.Image),
 		Network: []*terraformServerNetwork{
 			{
 				ID: e.Network.TerraformLink(),
 			},
 		},
 		PublicNet: &terraformServerPublicNet{
-			EnableIPv4: fi.Bool(e.EnableIPv4),
-			EnableIPv6: fi.Bool(e.EnableIPv6),
+			EnableIPv4: fi.PtrTo(e.EnableIPv4),
+			EnableIPv6: fi.PtrTo(e.EnableIPv6),
 		},
 		Labels: e.Labels,
 	}

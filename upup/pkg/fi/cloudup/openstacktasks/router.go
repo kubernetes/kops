@@ -42,8 +42,8 @@ func (n *Router) CompareWithID() *string {
 // NewRouterTaskFromCloud initializes and returns a new Router
 func NewRouterTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle, router *routers.Router, find *Router) (*Router, error) {
 	actual := &Router{
-		ID:                    fi.String(router.ID),
-		Name:                  fi.String(router.Name),
+		ID:                    fi.PtrTo(router.ID),
+		Name:                  fi.PtrTo(router.Name),
 		Lifecycle:             lifecycle,
 		AvailabilityZoneHints: fi.StringSlice(router.AvailabilityZoneHints),
 	}
@@ -97,7 +97,7 @@ func (_ *Router) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes 
 
 		opt := routers.CreateOpts{
 			Name:                  fi.StringValue(e.Name),
-			AdminStateUp:          fi.Bool(true),
+			AdminStateUp:          fi.PtrTo(true),
 			AvailabilityZoneHints: fi.StringSliceValue(e.AvailabilityZoneHints),
 		}
 		floatingNet, err := t.Cloud.GetExternalNetwork()
@@ -125,7 +125,7 @@ func (_ *Router) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes 
 		if err != nil {
 			return fmt.Errorf("Error creating router: %v", err)
 		}
-		e.ID = fi.String(v.ID)
+		e.ID = fi.PtrTo(v.ID)
 		klog.V(2).Infof("Creating a new Openstack router, id=%s", v.ID)
 		return nil
 	}

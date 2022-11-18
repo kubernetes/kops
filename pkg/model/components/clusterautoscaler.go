@@ -57,38 +57,38 @@ func (b *ClusterAutoscalerOptionsBuilder) BuildOptions(o interface{}) error {
 				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.25.0"
 			}
 		}
-		cas.Image = fi.String(image)
+		cas.Image = fi.PtrTo(image)
 	}
 
 	if cas.Expander == nil {
-		cas.Expander = fi.String("random")
+		cas.Expander = fi.PtrTo("random")
 	}
 	if cas.ScaleDownUtilizationThreshold == nil {
-		cas.ScaleDownUtilizationThreshold = fi.String("0.5")
+		cas.ScaleDownUtilizationThreshold = fi.PtrTo("0.5")
 	}
 	if cas.SkipNodesWithLocalStorage == nil {
-		cas.SkipNodesWithLocalStorage = fi.Bool(true)
+		cas.SkipNodesWithLocalStorage = fi.PtrTo(true)
 	}
 	if cas.SkipNodesWithSystemPods == nil {
-		cas.SkipNodesWithSystemPods = fi.Bool(true)
+		cas.SkipNodesWithSystemPods = fi.PtrTo(true)
 	}
 	if cas.BalanceSimilarNodeGroups == nil {
-		cas.BalanceSimilarNodeGroups = fi.Bool(false)
+		cas.BalanceSimilarNodeGroups = fi.PtrTo(false)
 	}
 	if cas.AWSUseStaticInstanceList == nil {
-		cas.AWSUseStaticInstanceList = fi.Bool(false)
+		cas.AWSUseStaticInstanceList = fi.PtrTo(false)
 	}
 	if cas.NewPodScaleUpDelay == nil {
-		cas.NewPodScaleUpDelay = fi.String("0s")
+		cas.NewPodScaleUpDelay = fi.PtrTo("0s")
 	}
 	if cas.ScaleDownDelayAfterAdd == nil {
-		cas.ScaleDownDelayAfterAdd = fi.String("10m0s")
+		cas.ScaleDownDelayAfterAdd = fi.PtrTo("10m0s")
 	}
 	if cas.ScaleDownUnneededTime == nil {
-		cas.ScaleDownUnneededTime = fi.String("10m0s")
+		cas.ScaleDownUnneededTime = fi.PtrTo("10m0s")
 	}
 	if cas.ScaleDownUnreadyTime == nil {
-		cas.ScaleDownUnreadyTime = fi.String("20m0s")
+		cas.ScaleDownUnreadyTime = fi.PtrTo("20m0s")
 	}
 	if cas.MaxNodeProvisionTime == "" {
 		cas.MaxNodeProvisionTime = "15m0s"

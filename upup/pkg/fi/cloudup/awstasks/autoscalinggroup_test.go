@@ -201,16 +201,16 @@ func TestAutoscalingGroupTerraformRender(t *testing.T) {
 	cases := []*renderTest{
 		{
 			Resource: &AutoscalingGroup{
-				Name:           fi.String("test"),
-				Granularity:    fi.String("5min"),
-				LaunchTemplate: &LaunchTemplate{Name: fi.String("test_lc")},
-				MaxSize:        fi.Int64(10),
+				Name:           fi.PtrTo("test"),
+				Granularity:    fi.PtrTo("5min"),
+				LaunchTemplate: &LaunchTemplate{Name: fi.PtrTo("test_lc")},
+				MaxSize:        fi.PtrTo(int64(10)),
 				Metrics:        []string{"test"},
-				MinSize:        fi.Int64(1),
+				MinSize:        fi.PtrTo(int64(1)),
 				Subnets: []*Subnet{
 					{
-						Name: fi.String("test-sg"),
-						ID:   fi.String("sg-1111"),
+						Name: fi.PtrTo("test-sg"),
+						ID:   fi.PtrTo("sg-1111"),
 					},
 				},
 				Tags: map[string]string{
@@ -259,19 +259,19 @@ terraform {
 		},
 		{
 			Resource: &AutoscalingGroup{
-				Name:                        fi.String("test1"),
-				LaunchTemplate:              &LaunchTemplate{Name: fi.String("test_lt")},
-				MaxSize:                     fi.Int64(10),
+				Name:                        fi.PtrTo("test1"),
+				LaunchTemplate:              &LaunchTemplate{Name: fi.PtrTo("test_lt")},
+				MaxSize:                     fi.PtrTo(int64(10)),
 				Metrics:                     []string{"test"},
-				MinSize:                     fi.Int64(5),
+				MinSize:                     fi.PtrTo(int64(5)),
 				MixedInstanceOverrides:      []string{"t2.medium", "t2.large"},
-				MixedOnDemandBase:           fi.Int64(4),
-				MixedOnDemandAboveBase:      fi.Int64(30),
-				MixedSpotAllocationStrategy: fi.String("capacity-optimized"),
+				MixedOnDemandBase:           fi.PtrTo(int64(4)),
+				MixedOnDemandAboveBase:      fi.PtrTo(int64(30)),
+				MixedSpotAllocationStrategy: fi.PtrTo("capacity-optimized"),
 				Subnets: []*Subnet{
 					{
-						Name: fi.String("test-sg"),
-						ID:   fi.String("sg-1111"),
+						Name: fi.PtrTo("test-sg"),
+						ID:   fi.PtrTo("sg-1111"),
 					},
 				},
 				Tags: map[string]string{
@@ -341,18 +341,18 @@ func TestAutoscalingGroupCloudformationRender(t *testing.T) {
 	cases := []*renderTest{
 		{
 			Resource: &AutoscalingGroup{
-				Name:                   fi.String("test1"),
-				LaunchTemplate:         &LaunchTemplate{Name: fi.String("test_lt")},
-				MaxSize:                fi.Int64(10),
+				Name:                   fi.PtrTo("test1"),
+				LaunchTemplate:         &LaunchTemplate{Name: fi.PtrTo("test_lt")},
+				MaxSize:                fi.PtrTo(int64(10)),
 				Metrics:                []string{"test"},
-				MinSize:                fi.Int64(5),
+				MinSize:                fi.PtrTo(int64(5)),
 				MixedInstanceOverrides: []string{"t2.medium", "t2.large"},
-				MixedOnDemandBase:      fi.Int64(4),
-				MixedOnDemandAboveBase: fi.Int64(30),
+				MixedOnDemandBase:      fi.PtrTo(int64(4)),
+				MixedOnDemandAboveBase: fi.PtrTo(int64(30)),
 				Subnets: []*Subnet{
 					{
-						Name: fi.String("test-sg"),
-						ID:   fi.String("sg-1111"),
+						Name: fi.PtrTo("test-sg"),
+						ID:   fi.PtrTo("sg-1111"),
 					},
 				},
 				Tags: map[string]string{

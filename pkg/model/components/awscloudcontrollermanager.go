@@ -51,35 +51,35 @@ func (b *AWSCloudControllerManagerOptionsBuilder) BuildOptions(o interface{}) er
 
 	// No significant downside to always doing a leader election.
 	// Also, having multiple control plane nodes requires leader election.
-	eccm.LeaderElection = &kops.LeaderElectionConfiguration{LeaderElect: fi.Bool(true)}
+	eccm.LeaderElection = &kops.LeaderElectionConfiguration{LeaderElect: fi.PtrTo(true)}
 
 	eccm.ClusterName = b.ClusterName
 
 	eccm.ClusterCIDR = clusterSpec.NonMasqueradeCIDR
 
-	eccm.AllocateNodeCIDRs = fi.Bool(true)
-	eccm.ConfigureCloudRoutes = fi.Bool(false)
+	eccm.AllocateNodeCIDRs = fi.PtrTo(true)
+	eccm.ConfigureCloudRoutes = fi.PtrTo(false)
 
 	// TODO: we want to consolidate this with the logic from KCM
 	networking := clusterSpec.Networking
 	if networking == nil {
-		eccm.ConfigureCloudRoutes = fi.Bool(true)
+		eccm.ConfigureCloudRoutes = fi.PtrTo(true)
 	} else if networking.Kubenet != nil {
-		eccm.ConfigureCloudRoutes = fi.Bool(true)
+		eccm.ConfigureCloudRoutes = fi.PtrTo(true)
 	} else if networking.GCE != nil {
-		eccm.ConfigureCloudRoutes = fi.Bool(false)
-		eccm.CIDRAllocatorType = fi.String("CloudAllocator")
+		eccm.ConfigureCloudRoutes = fi.PtrTo(false)
+		eccm.CIDRAllocatorType = fi.PtrTo("CloudAllocator")
 
 		if eccm.ClusterCIDR == "" {
 			eccm.ClusterCIDR = clusterSpec.PodCIDR
 		}
 	} else if networking.External != nil {
-		eccm.ConfigureCloudRoutes = fi.Bool(false)
+		eccm.ConfigureCloudRoutes = fi.PtrTo(false)
 	} else if UsesCNI(networking) {
-		eccm.ConfigureCloudRoutes = fi.Bool(false)
+		eccm.ConfigureCloudRoutes = fi.PtrTo(false)
 	} else if networking.Kopeio != nil {
 		// Kopeio is based on kubenet / external
-		eccm.ConfigureCloudRoutes = fi.Bool(false)
+		eccm.ConfigureCloudRoutes = fi.PtrTo(false)
 	} else {
 		return fmt.Errorf("no networking mode set")
 	}
@@ -103,7 +103,7 @@ func (b *AWSCloudControllerManagerOptionsBuilder) BuildOptions(o interface{}) er
 	}
 
 	if b.IsKubernetesGTE("1.24") && b.IsKubernetesLT("1.25") {
-		eccm.EnableLeaderMigration = fi.Bool(true)
+		eccm.EnableLeaderMigration = fi.PtrTo(true)
 	}
 
 	return nil

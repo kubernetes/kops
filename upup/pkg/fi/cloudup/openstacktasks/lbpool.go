@@ -56,8 +56,8 @@ func NewLBPoolTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecyc
 	}
 
 	a := &LBPool{
-		ID:        fi.String(pool.ID),
-		Name:      fi.String(pool.Name),
+		ID:        fi.PtrTo(pool.ID),
+		Name:      fi.PtrTo(pool.Name),
 		Lifecycle: lifecycle,
 	}
 	if len(pool.Loadbalancers) == 1 {
@@ -146,7 +146,7 @@ func (_ *LBPool) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes 
 		if err != nil {
 			return fmt.Errorf("error creating LB pool: %v", err)
 		}
-		e.ID = fi.String(pool.ID)
+		e.ID = fi.PtrTo(pool.ID)
 
 		return nil
 	}

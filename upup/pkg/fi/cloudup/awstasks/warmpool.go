@@ -61,14 +61,14 @@ func (e *WarmPool) Find(c *fi.Context) (*WarmPool, error) {
 		return &WarmPool{
 			Name:      e.Name,
 			Lifecycle: e.Lifecycle,
-			Enabled:   fi.Bool(false),
+			Enabled:   fi.PtrTo(false),
 		}, nil
 	}
 
 	actual := &WarmPool{
 		Name:      e.Name,
 		Lifecycle: e.Lifecycle,
-		Enabled:   fi.Bool(true),
+		Enabled:   fi.PtrTo(true),
 		MaxSize:   warmPool.WarmPoolConfiguration.MaxGroupPreparedCapacity,
 		MinSize:   fi.Int64Value(warmPool.WarmPoolConfiguration.MinSize),
 	}
@@ -90,12 +90,12 @@ func (*WarmPool) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *WarmPool) error
 			minSize := e.MinSize
 			maxSize := e.MaxSize
 			if maxSize == nil {
-				maxSize = fi.Int64(-1)
+				maxSize = fi.PtrTo(int64(-1))
 			}
 			request := &autoscaling.PutWarmPoolInput{
 				AutoScalingGroupName:     e.Name,
 				MaxGroupPreparedCapacity: maxSize,
-				MinSize:                  fi.Int64(minSize),
+				MinSize:                  fi.PtrTo(minSize),
 			}
 
 			_, err := svc.PutWarmPool(request)
@@ -109,7 +109,7 @@ func (*WarmPool) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *WarmPool) error
 			_, err := svc.DeleteWarmPool(&autoscaling.DeleteWarmPoolInput{
 				AutoScalingGroupName: e.Name,
 				// We don't need to do any cleanup so, the faster the better
-				ForceDelete: fi.Bool(true),
+				ForceDelete: fi.PtrTo(true),
 			})
 			if err != nil {
 				return fmt.Errorf("error deleting warm pool: %w", err)

@@ -60,11 +60,11 @@ func (v *Volume) Find(c *fi.Context) (*Volume, error) {
 	for _, volume := range volumes {
 		if volume.Name == fi.StringValue(v.Name) {
 			return &Volume{
-				Name:      fi.String(volume.Name),
-				ID:        fi.String(volume.ID),
+				Name:      fi.PtrTo(volume.Name),
+				ID:        fi.PtrTo(volume.ID),
 				Lifecycle: v.Lifecycle,
-				SizeGB:    fi.Int64(volume.SizeGigaBytes),
-				Region:    fi.String(volume.Region.Slug),
+				SizeGB:    fi.PtrTo(volume.SizeGigaBytes),
+				Region:    fi.PtrTo(volume.Region.Slug),
 			}, nil
 		}
 	}

@@ -172,22 +172,22 @@ func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name strin
 	encrypted := fi.BoolValue(m.EncryptedVolume)
 
 	t := &awstasks.EBSVolume{
-		Name:      fi.String(name),
+		Name:      fi.PtrTo(name),
 		Lifecycle: b.Lifecycle,
 
-		AvailabilityZone: fi.String(zone),
-		SizeGB:           fi.Int64(int64(volumeSize)),
-		VolumeType:       fi.String(volumeType),
+		AvailabilityZone: fi.PtrTo(zone),
+		SizeGB:           fi.PtrTo(int64(volumeSize)),
+		VolumeType:       fi.PtrTo(volumeType),
 		KmsKeyId:         m.KmsKeyID,
-		Encrypted:        fi.Bool(encrypted),
+		Encrypted:        fi.PtrTo(encrypted),
 		Tags:             tags,
 	}
 	switch volumeType {
 	case ec2.VolumeTypeGp3:
-		t.VolumeThroughput = fi.Int64(int64(volumeThroughput))
+		t.VolumeThroughput = fi.PtrTo(int64(volumeThroughput))
 		fallthrough
 	case ec2.VolumeTypeIo1, ec2.VolumeTypeIo2:
-		t.VolumeIops = fi.Int64(int64(volumeIops))
+		t.VolumeIops = fi.PtrTo(int64(volumeIops))
 	}
 
 	c.AddTask(t)
@@ -235,10 +235,10 @@ func (b *MasterVolumeBuilder) addDOVolume(c *fi.ModelBuilderContext, name string
 	tags[do.TagKubernetesClusterNamePrefix] = do.SafeClusterName(b.Cluster.ObjectMeta.Name)
 
 	t := &dotasks.Volume{
-		Name:      fi.String(name),
+		Name:      fi.PtrTo(name),
 		Lifecycle: b.Lifecycle,
-		SizeGB:    fi.Int64(int64(volumeSize)),
-		Region:    fi.String(zone),
+		SizeGB:    fi.PtrTo(int64(volumeSize)),
+		Region:    fi.PtrTo(zone),
 		Tags:      tags,
 	}
 
@@ -281,12 +281,12 @@ func (b *MasterVolumeBuilder) addGCEVolume(c *fi.ModelBuilderContext, prefix str
 	name := gce.ClusterSuffixedName(prefix, b.Cluster.ObjectMeta.Name, 63)
 
 	t := &gcetasks.Disk{
-		Name:      fi.String(name),
+		Name:      fi.PtrTo(name),
 		Lifecycle: b.Lifecycle,
 
-		Zone:       fi.String(zone),
-		SizeGB:     fi.Int64(int64(volumeSize)),
-		VolumeType: fi.String(volumeType),
+		Zone:       fi.PtrTo(zone),
+		SizeGB:     fi.PtrTo(int64(volumeSize)),
+		VolumeType: fi.PtrTo(volumeType),
 		Labels:     tags,
 	}
 
@@ -300,7 +300,7 @@ func (b *MasterVolumeBuilder) addHetznerVolume(c *fi.ModelBuilderContext, name s
 	tags[hetzner.TagKubernetesVolumeRole] = etcd.Name
 
 	t := &hetznertasks.Volume{
-		Name:      fi.String(name),
+		Name:      fi.PtrTo(name),
 		Lifecycle: b.Lifecycle,
 		Size:      int(volumeSize),
 		Location:  zone,
@@ -330,10 +330,10 @@ func (b *MasterVolumeBuilder) addOpenstackVolume(c *fi.ModelBuilderContext, name
 		zone = fi.StringValue(b.Cluster.Spec.CloudProvider.Openstack.BlockStorage.OverrideAZ)
 	}
 	t := &openstacktasks.Volume{
-		Name:             fi.String(name),
-		AvailabilityZone: fi.String(zone),
-		VolumeType:       fi.String(volumeType),
-		SizeGB:           fi.Int64(int64(volumeSize)),
+		Name:             fi.PtrTo(name),
+		AvailabilityZone: fi.PtrTo(zone),
+		VolumeType:       fi.PtrTo(volumeType),
+		SizeGB:           fi.PtrTo(int64(volumeSize)),
 		Tags:             tags,
 		Lifecycle:        b.Lifecycle,
 	}
@@ -354,18 +354,18 @@ func (b *MasterVolumeBuilder) addAzureVolume(
 	// The tags are use by Protokube to mount the volume and use it for etcd.
 	tags := map[string]*string{
 		// This is the configuration of the etcd cluster.
-		azure.TagNameEtcdClusterPrefix + etcd.Name: fi.String(m.Name + "/" + strings.Join(allMembers, ",")),
+		azure.TagNameEtcdClusterPrefix + etcd.Name: fi.PtrTo(m.Name + "/" + strings.Join(allMembers, ",")),
 		// This says "only mount on a master".
-		azure.TagNameRolePrefix + azure.TagRoleMaster: fi.String("1"),
+		azure.TagNameRolePrefix + azure.TagRoleMaster: fi.PtrTo("1"),
 		// We always add an owned tags (these can't be shared).
 		// Use dash (_) as a splitter. Other CSPs use slash (/), but slash is not
 		// allowed as a tag key in Azure.
-		"kubernetes.io_cluster_" + b.Cluster.ObjectMeta.Name: fi.String("owned"),
+		"kubernetes.io_cluster_" + b.Cluster.ObjectMeta.Name: fi.PtrTo("owned"),
 	}
 
 	// Apply all user defined labels on the volumes.
 	for k, v := range b.Cluster.Spec.CloudLabels {
-		tags[k] = fi.String(v)
+		tags[k] = fi.PtrTo(v)
 	}
 
 	zoneNumber, err := azure.ZoneToAvailabilityZoneNumber(zone)
@@ -375,13 +375,13 @@ func (b *MasterVolumeBuilder) addAzureVolume(
 
 	// TODO(kenji): Respect m.EncryptedVolume.
 	t := &azuretasks.Disk{
-		Name:      fi.String(name),
+		Name:      fi.PtrTo(name),
 		Lifecycle: b.Lifecycle,
 		// We cannot use AzureModelContext.LinkToResourceGroup() here because of cyclic dependency.
 		ResourceGroup: &azuretasks.ResourceGroup{
-			Name: fi.String(b.Cluster.AzureResourceGroupName()),
+			Name: fi.PtrTo(b.Cluster.AzureResourceGroupName()),
 		},
-		SizeGB: fi.Int32(volumeSize),
+		SizeGB: fi.PtrTo(volumeSize),
 		Tags:   tags,
 		Zones:  &[]string{zoneNumber},
 	}

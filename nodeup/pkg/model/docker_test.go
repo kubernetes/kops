@@ -82,11 +82,11 @@ func TestDockerBuilder_BuildFlags(t *testing.T) {
 			"",
 		},
 		{
-			kops.DockerConfig{Bridge: fi.String("")},
+			kops.DockerConfig{Bridge: fi.PtrTo("")},
 			"",
 		},
 		{
-			kops.DockerConfig{Bridge: fi.String("br0")},
+			kops.DockerConfig{Bridge: fi.PtrTo("br0")},
 			"--bridge=br0",
 		},
 		{

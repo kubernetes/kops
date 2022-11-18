@@ -56,7 +56,7 @@ func (e *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
 	}
 	actual := &SSHKey{
 		Name:           e.Name,
-		KeyFingerprint: fi.String(rs.Fingerprint),
+		KeyFingerprint: fi.PtrTo(rs.Fingerprint),
 	}
 
 	// Avoid spurious changes
@@ -134,7 +134,7 @@ func (_ *SSHKey) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes 
 			return fmt.Errorf("Error creating keypair: %v", err)
 		}
 
-		e.KeyFingerprint = fi.String(v.Fingerprint)
+		e.KeyFingerprint = fi.PtrTo(v.Fingerprint)
 		klog.V(2).Infof("Creating a new Openstack keypair, id=%s", v.Fingerprint)
 		return nil
 	}

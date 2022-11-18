@@ -191,7 +191,7 @@ func (_ *TargetGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *TargetGrou
 		}
 
 		targetGroupArn := *response.TargetGroups[0].TargetGroupArn
-		e.ARN = fi.String(targetGroupArn)
+		e.ARN = fi.PtrTo(targetGroupArn)
 	} else {
 		if a.ARN != nil {
 			if err := t.AddELBV2Tags(fi.StringValue(a.ARN), e.Tags); err != nil {

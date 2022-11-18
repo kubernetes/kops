@@ -42,7 +42,7 @@ func (b *LoadBalancerModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		fmt.Sprintf("%s=%s", hetzner.TagKubernetesInstanceRole, string(kops.InstanceGroupRoleMaster)),
 	}
 	loadbalancer := hetznertasks.LoadBalancer{
-		Name:      fi.String("api." + b.ClusterName()),
+		Name:      fi.PtrTo("api." + b.ClusterName()),
 		Lifecycle: b.Lifecycle,
 		Network:   b.LinkToNetwork(),
 		Location:  b.InstanceGroups[0].Spec.Subnets[0],
@@ -50,8 +50,8 @@ func (b *LoadBalancerModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		Services: []*hetznertasks.LoadBalancerService{
 			{
 				Protocol:        string(hcloud.LoadBalancerServiceProtocolTCP),
-				ListenerPort:    fi.Int(wellknownports.KubeAPIServer),
-				DestinationPort: fi.Int(wellknownports.KubeAPIServer),
+				ListenerPort:    fi.PtrTo(wellknownports.KubeAPIServer),
+				DestinationPort: fi.PtrTo(wellknownports.KubeAPIServer),
 			},
 		},
 		Target: strings.Join(controlPlaneLabelSelector, ","),
@@ -63,8 +63,8 @@ func (b *LoadBalancerModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	if b.Cluster.UsesNoneDNS() {
 		loadbalancer.Services = append(loadbalancer.Services, &hetznertasks.LoadBalancerService{
 			Protocol:        string(hcloud.LoadBalancerServiceProtocolTCP),
-			ListenerPort:    fi.Int(wellknownports.KopsControllerPort),
-			DestinationPort: fi.Int(wellknownports.KopsControllerPort),
+			ListenerPort:    fi.PtrTo(wellknownports.KopsControllerPort),
+			DestinationPort: fi.PtrTo(wellknownports.KopsControllerPort),
 		})
 	}
 

@@ -100,17 +100,17 @@ func (r *SecurityGroupRule) Find(context *fi.Context) (*SecurityGroupRule, error
 	}
 	rule := rs[0]
 	actual := &SecurityGroupRule{
-		ID:             fi.String(rule.ID),
-		Direction:      fi.String(rule.Direction),
-		EtherType:      fi.String(rule.EtherType),
+		ID:             fi.PtrTo(rule.ID),
+		Direction:      fi.PtrTo(rule.Direction),
+		EtherType:      fi.PtrTo(rule.EtherType),
 		PortRangeMax:   Int(rule.PortRangeMax),
 		PortRangeMin:   Int(rule.PortRangeMin),
-		Protocol:       fi.String(rule.Protocol),
-		RemoteIPPrefix: fi.String(rule.RemoteIPPrefix),
+		Protocol:       fi.PtrTo(rule.Protocol),
+		RemoteIPPrefix: fi.PtrTo(rule.RemoteIPPrefix),
 		RemoteGroup:    r.RemoteGroup,
 		SecGroup:       r.SecGroup,
 		Lifecycle:      r.Lifecycle,
-		Delete:         fi.Bool(false),
+		Delete:         fi.PtrTo(false),
 	}
 
 	r.ID = actual.ID
@@ -178,7 +178,7 @@ func (*SecurityGroupRule) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e,
 			return fmt.Errorf("error creating SecurityGroupRule in SG %s: %v", fi.StringValue(e.SecGroup.GetName()), err)
 		}
 
-		e.ID = fi.String(r.ID)
+		e.ID = fi.PtrTo(r.ID)
 		return nil
 	}
 

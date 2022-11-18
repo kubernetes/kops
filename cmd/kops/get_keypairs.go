@@ -153,7 +153,7 @@ func listKeypairs(keyStore fi.CAStore, names []string, includeDistrusted bool) (
 						keypair.AlternateNames = alternateNames
 					}
 					if rsaKey, ok := cert.PublicKey.(*rsa.PublicKey); ok {
-						keypair.KeyLength = fi.Int(rsaKey.N.BitLen())
+						keypair.KeyLength = fi.PtrTo(rsaKey.N.BitLen())
 					}
 				}
 				items = append(items, &keypair)

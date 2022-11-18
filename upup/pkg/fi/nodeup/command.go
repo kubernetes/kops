@@ -447,7 +447,7 @@ func completeWarmingLifecycleAction(cloud awsup.AWSCloud, modelContext *model.No
 			AutoScalingGroupName:  &asgName,
 			InstanceId:            &modelContext.InstanceID,
 			LifecycleHookName:     &hookName,
-			LifecycleActionResult: fi.String("CONTINUE"),
+			LifecycleActionResult: fi.PtrTo("CONTINUE"),
 		})
 		if err != nil {
 			return fmt.Errorf("failed to complete lifecycle hook %q for %q: %v", hookName, modelContext.InstanceID, err)
@@ -623,7 +623,7 @@ func evaluateDockerSpecStorage(spec *api.DockerConfig) error {
 
 			if supported {
 				klog.Infof("Using supported docker storage %q", opt)
-				spec.Storage = fi.String(opt)
+				spec.Storage = fi.PtrTo(opt)
 				return nil
 			}
 
@@ -633,7 +633,7 @@ func evaluateDockerSpecStorage(spec *api.DockerConfig) error {
 		// Just in case we don't recognize the driver?
 		// TODO: Is this the best behaviour
 		klog.Warningf("No storage module was supported from %q, will default to %q", storage, precedence[0])
-		spec.Storage = fi.String(precedence[0])
+		spec.Storage = fi.PtrTo(precedence[0])
 		return nil
 	}
 

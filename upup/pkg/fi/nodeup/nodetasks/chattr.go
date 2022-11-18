@@ -43,7 +43,7 @@ func (s *Chattr) String() string {
 var _ fi.HasName = &Archive{}
 
 func (e *Chattr) GetName() *string {
-	return fi.String("Chattr-" + e.File)
+	return fi.PtrTo("Chattr-" + e.File)
 }
 
 var _ fi.HasDependencies = &Chattr{}

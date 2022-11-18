@@ -47,7 +47,7 @@ func (b *DockerOptionsBuilder) BuildOptions(o interface{}) error {
 
 	// Set the Docker version for known Kubernetes versions
 	if fi.StringValue(clusterSpec.Docker.Version) == "" {
-		docker.Version = fi.String("20.10.17")
+		docker.Version = fi.PtrTo("20.10.17")
 	}
 
 	if len(clusterSpec.Docker.LogOpt) == 0 && clusterSpec.Docker.LogDriver == nil {
@@ -58,14 +58,14 @@ func (b *DockerOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.Docker.LogOpt = append(clusterSpec.Docker.LogOpt, "max-file=5")
 	}
 
-	docker.LogLevel = fi.String("info")
-	docker.IPTables = fi.Bool(false)
-	docker.IPMasq = fi.Bool(false)
+	docker.LogLevel = fi.PtrTo("info")
+	docker.IPTables = fi.PtrTo(false)
+	docker.IPMasq = fi.PtrTo(false)
 
 	// Note the alternative syntax... with a comma nodeup will try each of the filesystems in turn
 	// TODO(justinsb): The ContainerOS image now has docker configured to use overlay2 out-of-the-box
 	// and it is an error to specify the flag twice.
-	docker.Storage = fi.String("overlay2,overlay,aufs")
+	docker.Storage = fi.PtrTo("overlay2,overlay,aufs")
 
 	// Set systemd as the default cgroup driver in docker from k8s 1.20.
 	if getDockerCgroupDriver(docker.ExecOpt) == "" {

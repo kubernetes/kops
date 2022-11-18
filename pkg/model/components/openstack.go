@@ -46,21 +46,21 @@ func (b *OpenStackOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if openstack.BlockStorage.CreateStorageClass == nil {
-		openstack.BlockStorage.CreateStorageClass = fi.Bool(true)
+		openstack.BlockStorage.CreateStorageClass = fi.PtrTo(true)
 	}
 
 	if openstack.Metadata == nil {
 		openstack.Metadata = &kops.OpenstackMetadata{}
 	}
 	if openstack.Metadata.ConfigDrive == nil {
-		openstack.Metadata.ConfigDrive = fi.Bool(false)
+		openstack.Metadata.ConfigDrive = fi.PtrTo(false)
 	}
 
 	if clusterSpec.ExternalCloudControllerManager == nil {
 		clusterSpec.ExternalCloudControllerManager = &kops.CloudControllerManagerConfig{
 			// No significant downside to always doing a leader election.
 			// Also, having a replicated (HA) control plane requires leader election.
-			LeaderElection: &kops.LeaderElectionConfiguration{LeaderElect: fi.Bool(true)},
+			LeaderElection: &kops.LeaderElectionConfiguration{LeaderElect: fi.PtrTo(true)},
 		}
 	}
 

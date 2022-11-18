@@ -66,8 +66,8 @@ func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
 
 	actual := &Subnet{}
 	actual.Name = &s.Name
-	actual.Network = &Network{Name: fi.String(lastComponent(s.Network))}
-	actual.Region = fi.String(lastComponent(s.Region))
+	actual.Network = &Network{Name: fi.PtrTo(lastComponent(s.Network))}
+	actual.Region = fi.PtrTo(lastComponent(s.Region))
 	actual.CIDR = &s.IpCidrRange
 
 	shared := fi.BoolValue(e.Shared)

@@ -86,7 +86,7 @@ func (h *AutoscalingLifecycleHook) Find(c *fi.Context) (*AutoscalingLifecycleHoo
 		DefaultResult:       hook.DefaultResult,
 		HeartbeatTimeout:    hook.HeartbeatTimeout,
 		LifecycleTransition: hook.LifecycleTransition,
-		Enabled:             fi.Bool(true),
+		Enabled:             fi.PtrTo(true),
 	}
 
 	return actual, nil

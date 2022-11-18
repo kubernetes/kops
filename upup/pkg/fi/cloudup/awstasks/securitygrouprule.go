@@ -356,29 +356,29 @@ type terraformSecurityGroupIngress struct {
 
 func (_ *SecurityGroupRule) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SecurityGroupRule) error {
 	tf := &terraformSecurityGroupIngress{
-		Type:          fi.String("ingress"),
+		Type:          fi.PtrTo("ingress"),
 		SecurityGroup: e.SecurityGroup.TerraformLink(),
 		FromPort:      e.FromPort,
 		ToPort:        e.ToPort,
 		Protocol:      e.Protocol,
 	}
 	if fi.BoolValue(e.Egress) {
-		tf.Type = fi.String("egress")
+		tf.Type = fi.PtrTo("egress")
 	}
 
 	if e.Protocol == nil {
-		tf.Protocol = fi.String("-1")
-		tf.FromPort = fi.Int64(0)
-		tf.ToPort = fi.Int64(0)
+		tf.Protocol = fi.PtrTo("-1")
+		tf.FromPort = fi.PtrTo(int64(0))
+		tf.ToPort = fi.PtrTo(int64(0))
 	}
 
 	if tf.FromPort == nil {
 		// FromPort is required by tf
-		tf.FromPort = fi.Int64(0)
+		tf.FromPort = fi.PtrTo(int64(0))
 	}
 	if tf.ToPort == nil {
 		// ToPort is required by tf
-		tf.ToPort = fi.Int64(65535)
+		tf.ToPort = fi.PtrTo(int64(65535))
 	}
 
 	if e.SourceGroup != nil {
@@ -425,18 +425,18 @@ func (_ *SecurityGroupRule) RenderCloudformation(t *cloudformation.Cloudformatio
 	}
 
 	if e.Protocol == nil {
-		tf.Protocol = fi.String("-1")
-		tf.FromPort = fi.Int64(0)
-		tf.ToPort = fi.Int64(0)
+		tf.Protocol = fi.PtrTo("-1")
+		tf.FromPort = fi.PtrTo(int64(0))
+		tf.ToPort = fi.PtrTo(int64(0))
 	}
 
 	if tf.FromPort == nil {
 		// FromPort is required by tf
-		tf.FromPort = fi.Int64(0)
+		tf.FromPort = fi.PtrTo(int64(0))
 	}
 	if tf.ToPort == nil {
 		// ToPort is required by tf
-		tf.ToPort = fi.Int64(65535)
+		tf.ToPort = fi.PtrTo(int64(65535))
 	}
 
 	if e.SourceGroup != nil {

@@ -80,7 +80,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			dnsSplitted := strings.Split(fi.StringValue(osSpec.Router.DNSServers), ",")
 			dnsNameSrv := make([]*string, len(dnsSplitted))
 			for i, ns := range dnsSplitted {
-				dnsNameSrv[i] = fi.String(ns)
+				dnsNameSrv[i] = fi.PtrTo(ns)
 			}
 			t.DNSServers = dnsNameSrv
 		}

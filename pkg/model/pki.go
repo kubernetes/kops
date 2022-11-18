@@ -38,7 +38,7 @@ var _ fi.ModelBuilder = &PKIModelBuilder{}
 func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// TODO: Only create the CA via this task
 	defaultCA := &fitasks.Keypair{
-		Name:      fi.String(fi.CertificateIDCA),
+		Name:      fi.PtrTo(fi.CertificateIDCA),
 		Lifecycle: b.Lifecycle,
 		Subject:   "cn=kubernetes-ca",
 		Type:      "ca",
@@ -50,7 +50,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// block at the IAM level for AWS cluster for pre-existing clusters.
 		if !b.UseKopsControllerForNodeBootstrap() && !b.UseBootstrapTokens() {
 			c.AddTask(&fitasks.Keypair{
-				Name:      fi.String("kubelet"),
+				Name:      fi.PtrTo("kubelet"),
 				Lifecycle: b.Lifecycle,
 				Subject:   "o=" + rbac.NodesGroup + ",cn=kubelet",
 				Type:      "client",
@@ -61,7 +61,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	if !b.UseKopsControllerForNodeBootstrap() {
 		t := &fitasks.Keypair{
-			Name:      fi.String("kube-proxy"),
+			Name:      fi.PtrTo("kube-proxy"),
 			Lifecycle: b.Lifecycle,
 			Subject:   "cn=" + rbac.KubeProxy,
 			Type:      "client",
@@ -72,7 +72,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	if b.KopsModelContext.Cluster.Spec.Networking.Kuberouter != nil && !b.UseKopsControllerForNodeBootstrap() {
 		t := &fitasks.Keypair{
-			Name:      fi.String("kube-router"),
+			Name:      fi.PtrTo("kube-router"),
 			Lifecycle: b.Lifecycle,
 			Subject:   "cn=" + rbac.KubeRouter,
 			Type:      "client",
@@ -83,7 +83,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	{
 		aggregatorCA := &fitasks.Keypair{
-			Name:      fi.String("apiserver-aggregator-ca"),
+			Name:      fi.PtrTo("apiserver-aggregator-ca"),
 			Lifecycle: b.Lifecycle,
 			Subject:   "cn=apiserver-aggregator-ca",
 			Type:      "ca",
@@ -94,7 +94,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	{
 		serviceAccount := &fitasks.Keypair{
 			// We only need the private key, but it's easier to create a certificate as well.
-			Name:      fi.String("service-account"),
+			Name:      fi.PtrTo("service-account"),
 			Lifecycle: b.Lifecycle,
 			Subject:   "cn=service-account",
 			Type:      "ca",
@@ -120,7 +120,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		// @note: the certificate used by the node authorizers
 		c.AddTask(&fitasks.Keypair{
-			Name:           fi.String("node-authorizer"),
+			Name:           fi.PtrTo("node-authorizer"),
 			Lifecycle:      b.Lifecycle,
 			Subject:        "cn=node-authorizaer",
 			Type:           "server",
@@ -130,7 +130,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		// @note: we use this for mutual tls between node and authorizer
 		c.AddTask(&fitasks.Keypair{
-			Name:      fi.String("node-authorizer-client"),
+			Name:      fi.PtrTo("node-authorizer-client"),
 			Lifecycle: b.Lifecycle,
 			Subject:   "cn=node-authorizer-client",
 			Type:      "client",
@@ -140,7 +140,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Create auth tokens (though this is deprecated)
 	for _, x := range tokens.GetKubernetesAuthTokens_Deprecated() {
-		c.AddTask(&fitasks.Secret{Name: fi.String(x), Lifecycle: b.Lifecycle})
+		c.AddTask(&fitasks.Secret{Name: fi.PtrTo(x), Lifecycle: b.Lifecycle})
 	}
 
 	{
@@ -150,7 +150,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		t := &fitasks.MirrorSecrets{
-			Name:       fi.String("mirror-secrets"),
+			Name:       fi.PtrTo("mirror-secrets"),
 			Lifecycle:  b.Lifecycle,
 			MirrorPath: mirrorPath,
 		}
@@ -165,7 +165,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		// Keypair used by the kubelet
 		t := &fitasks.MirrorKeystore{
-			Name:       fi.String("mirror-keystore"),
+			Name:       fi.PtrTo("mirror-keystore"),
 			Lifecycle:  b.Lifecycle,
 			MirrorPath: mirrorPath,
 		}

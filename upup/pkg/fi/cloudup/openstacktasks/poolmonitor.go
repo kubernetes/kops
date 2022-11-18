@@ -69,8 +69,8 @@ func (p *PoolMonitor) Find(context *fi.Context) (*PoolMonitor, error) {
 	}
 	found := rs[0]
 	actual := &PoolMonitor{
-		ID:        fi.String(found.ID),
-		Name:      fi.String(found.Name),
+		ID:        fi.PtrTo(found.ID),
+		Name:      fi.PtrTo(found.Name),
 		Pool:      p.Pool,
 		Lifecycle: p.Lifecycle,
 	}
@@ -114,7 +114,7 @@ func (_ *PoolMonitor) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, cha
 		if err != nil {
 			return fmt.Errorf("error creating PoolMonitor: %v", err)
 		}
-		e.ID = fi.String(poolMonitor.ID)
+		e.ID = fi.PtrTo(poolMonitor.ID)
 	}
 	return nil
 }

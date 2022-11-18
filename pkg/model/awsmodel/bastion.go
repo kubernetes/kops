@@ -78,21 +78,21 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// Allow traffic from bastion instances to egress freely
 		{
 			t := &awstasks.SecurityGroupRule{
-				Name:          fi.String("ipv4-bastion-egress" + src.Suffix),
+				Name:          fi.PtrTo("ipv4-bastion-egress" + src.Suffix),
 				Lifecycle:     b.SecurityLifecycle,
 				SecurityGroup: src.Task,
-				Egress:        fi.Bool(true),
-				CIDR:          fi.String("0.0.0.0/0"),
+				Egress:        fi.PtrTo(true),
+				CIDR:          fi.PtrTo("0.0.0.0/0"),
 			}
 			AddDirectionalGroupRule(c, t)
 		}
 		{
 			t := &awstasks.SecurityGroupRule{
-				Name:          fi.String("ipv6-bastion-egress" + src.Suffix),
+				Name:          fi.PtrTo("ipv6-bastion-egress" + src.Suffix),
 				Lifecycle:     b.SecurityLifecycle,
 				SecurityGroup: src.Task,
-				Egress:        fi.Bool(true),
-				IPv6CIDR:      fi.String("::/0"),
+				Egress:        fi.PtrTo(true),
+				IPv6CIDR:      fi.PtrTo("::/0"),
 			}
 			AddDirectionalGroupRule(c, t)
 		}
@@ -126,13 +126,13 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	for _, src := range bastionGroups {
 		for _, dest := range masterGroups {
 			t := &awstasks.SecurityGroupRule{
-				Name:          fi.String("bastion-to-master-ssh" + JoinSuffixes(src, dest)),
+				Name:          fi.PtrTo("bastion-to-master-ssh" + JoinSuffixes(src, dest)),
 				Lifecycle:     b.SecurityLifecycle,
 				SecurityGroup: dest.Task,
 				SourceGroup:   src.Task,
-				Protocol:      fi.String("tcp"),
-				FromPort:      fi.Int64(22),
-				ToPort:        fi.Int64(22),
+				Protocol:      fi.PtrTo("tcp"),
+				FromPort:      fi.PtrTo(int64(22)),
+				ToPort:        fi.PtrTo(int64(22)),
 			}
 			AddDirectionalGroupRule(c, t)
 		}
@@ -142,13 +142,13 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	for _, src := range bastionGroups {
 		for _, dest := range nodeGroups {
 			t := &awstasks.SecurityGroupRule{
-				Name:          fi.String("bastion-to-node-ssh" + JoinSuffixes(src, dest)),
+				Name:          fi.PtrTo("bastion-to-node-ssh" + JoinSuffixes(src, dest)),
 				Lifecycle:     b.SecurityLifecycle,
 				SecurityGroup: dest.Task,
 				SourceGroup:   src.Task,
-				Protocol:      fi.String("tcp"),
-				FromPort:      fi.Int64(22),
-				ToPort:        fi.Int64(22),
+				Protocol:      fi.PtrTo("tcp"),
+				FromPort:      fi.PtrTo(int64(22)),
+				ToPort:        fi.PtrTo(int64(22)),
 			}
 			AddDirectionalGroupRule(c, t)
 		}
@@ -196,12 +196,12 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		for _, bastionGroup := range bastionGroups {
 			{
 				t := &awstasks.SecurityGroupRule{
-					Name:          fi.String(fmt.Sprintf("ssh-nlb-%s", cidr)),
+					Name:          fi.PtrTo(fmt.Sprintf("ssh-nlb-%s", cidr)),
 					Lifecycle:     b.SecurityLifecycle,
 					SecurityGroup: bastionGroup.Task,
-					Protocol:      fi.String("tcp"),
-					FromPort:      fi.Int64(22),
-					ToPort:        fi.Int64(22),
+					Protocol:      fi.PtrTo("tcp"),
+					FromPort:      fi.PtrTo(int64(22)),
+					ToPort:        fi.PtrTo(int64(22)),
 				}
 				t.SetCidrOrPrefix(cidr)
 				AddDirectionalGroupRule(c, t)
@@ -213,23 +213,23 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			} else if utils.IsIPv6CIDR(cidr) {
 				// Allow ICMP traffic required for PMTU discovery
 				t := &awstasks.SecurityGroupRule{
-					Name:          fi.String("icmpv6-pmtu-ssh-nlb-" + cidr),
+					Name:          fi.PtrTo("icmpv6-pmtu-ssh-nlb-" + cidr),
 					Lifecycle:     b.SecurityLifecycle,
-					FromPort:      fi.Int64(-1),
-					Protocol:      fi.String("icmpv6"),
+					FromPort:      fi.PtrTo(int64(-1)),
+					Protocol:      fi.PtrTo("icmpv6"),
 					SecurityGroup: bastionGroup.Task,
-					ToPort:        fi.Int64(-1),
+					ToPort:        fi.PtrTo(int64(-1)),
 				}
 				t.SetCidrOrPrefix(cidr)
 				c.AddTask(t)
 			} else {
 				t := &awstasks.SecurityGroupRule{
-					Name:          fi.String("icmp-pmtu-ssh-nlb-" + cidr),
+					Name:          fi.PtrTo("icmp-pmtu-ssh-nlb-" + cidr),
 					Lifecycle:     b.SecurityLifecycle,
-					FromPort:      fi.Int64(3),
-					Protocol:      fi.String("icmp"),
+					FromPort:      fi.PtrTo(int64(3)),
+					Protocol:      fi.PtrTo("icmp"),
 					SecurityGroup: bastionGroup.Task,
-					ToPort:        fi.Int64(4),
+					ToPort:        fi.PtrTo(int64(4)),
 				}
 				t.SetCidrOrPrefix(cidr)
 				c.AddTask(t)
@@ -256,27 +256,27 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			},
 		}
 		nlb = &awstasks.NetworkLoadBalancer{
-			Name:      fi.String(b.NLBName("bastion")),
+			Name:      fi.PtrTo(b.NLBName("bastion")),
 			Lifecycle: b.Lifecycle,
 
-			LoadBalancerName: fi.String(loadBalancerName),
-			CLBName:          fi.String("bastion." + b.ClusterName()),
+			LoadBalancerName: fi.PtrTo(loadBalancerName),
+			CLBName:          fi.PtrTo("bastion." + b.ClusterName()),
 			SubnetMappings:   nlbSubnetMappings,
 			Listeners:        nlbListeners,
 			TargetGroups:     make([]*awstasks.TargetGroup, 0),
 
 			Tags:          tags,
 			VPC:           b.LinkToVPC(),
-			Type:          fi.String("network"),
-			IpAddressType: fi.String("ipv4"),
+			Type:          fi.PtrTo("network"),
+			IpAddressType: fi.PtrTo("ipv4"),
 		}
 		if useIPv6ForBastion(b) {
-			nlb.IpAddressType = fi.String("dualstack")
+			nlb.IpAddressType = fi.PtrTo("dualstack")
 		}
 		// Set the NLB Scheme according to load balancer Type
 		switch bastionLoadBalancerType {
 		case kops.LoadBalancerTypeInternal:
-			nlb.Scheme = fi.String("internal")
+			nlb.Scheme = fi.PtrTo("internal")
 		case kops.LoadBalancerTypePublic:
 			nlb.Scheme = nil
 		default:
@@ -290,16 +290,16 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		sshGroupTags["Name"] = sshGroupName
 
 		tg := &awstasks.TargetGroup{
-			Name:               fi.String(sshGroupName),
+			Name:               fi.PtrTo(sshGroupName),
 			Lifecycle:          b.Lifecycle,
 			VPC:                b.LinkToVPC(),
 			Tags:               sshGroupTags,
-			Protocol:           fi.String("TCP"),
-			Port:               fi.Int64(22),
-			Interval:           fi.Int64(10),
-			HealthyThreshold:   fi.Int64(2),
-			UnhealthyThreshold: fi.Int64(2),
-			Shared:             fi.Bool(false),
+			Protocol:           fi.PtrTo("TCP"),
+			Port:               fi.PtrTo(int64(22)),
+			Interval:           fi.PtrTo(int64(10)),
+			HealthyThreshold:   fi.PtrTo(int64(2)),
+			UnhealthyThreshold: fi.PtrTo(int64(2)),
+			Shared:             fi.PtrTo(false),
 		}
 
 		c.AddTask(tg)
@@ -318,23 +318,23 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// Here we implement the bastion CNAME logic
 		// By default bastions will create a CNAME that follows the `bastion-$clustername` formula
 		t := &awstasks.DNSName{
-			Name:      fi.String(publicName),
+			Name:      fi.PtrTo(publicName),
 			Lifecycle: b.Lifecycle,
 
 			Zone:               b.LinkToDNSZone(),
-			ResourceName:       fi.String(publicName),
-			ResourceType:       fi.String("A"),
+			ResourceName:       fi.PtrTo(publicName),
+			ResourceType:       fi.PtrTo("A"),
 			TargetLoadBalancer: b.LinkToNLB("bastion"),
 		}
 		c.AddTask(t)
 		if *nlb.IpAddressType == "dualstack" {
 			t := &awstasks.DNSName{
-				Name:      fi.String(publicName + "-AAAA"),
+				Name:      fi.PtrTo(publicName + "-AAAA"),
 				Lifecycle: b.Lifecycle,
 
 				Zone:               b.LinkToDNSZone(),
-				ResourceName:       fi.String(publicName),
-				ResourceType:       fi.String("AAAA"),
+				ResourceName:       fi.PtrTo(publicName),
+				ResourceType:       fi.PtrTo("AAAA"),
 				TargetLoadBalancer: b.LinkToNLB("bastion"),
 			}
 			c.AddTask(t)

@@ -121,7 +121,7 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 
 	// Use 0 as default value when api returns nil (same as model)
 	if g.MaxInstanceLifetime == nil {
-		actual.MaxInstanceLifetime = fi.Int64(0)
+		actual.MaxInstanceLifetime = fi.PtrTo(int64(0))
 	} else {
 		actual.MaxInstanceLifetime = g.MaxInstanceLifetime
 	}
@@ -231,7 +231,7 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 			actual.MixedSpotMaxPrice = mpd.SpotMaxPrice
 			// MixedSpotMaxPrice must be set to "" in order to unset.
 			if mpd.SpotMaxPrice == nil {
-				actual.MixedSpotMaxPrice = fi.String("")
+				actual.MixedSpotMaxPrice = fi.PtrTo("")
 			}
 		}
 
@@ -347,7 +347,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			MaxSize:                          e.MaxSize,
 			NewInstancesProtectedFromScaleIn: e.InstanceProtection,
 			Tags:                             v.AutoscalingGroupTags(),
-			VPCZoneIdentifier:                fi.String(strings.Join(e.AutoscalingGroupSubnets(), ",")),
+			VPCZoneIdentifier:                fi.PtrTo(strings.Join(e.AutoscalingGroupSubnets(), ",")),
 		}
 
 		//On ASG creation 0 value is forbidden
@@ -396,7 +396,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			p := request.MixedInstancesPolicy.LaunchTemplate
 			for _, x := range e.MixedInstanceOverrides {
 				p.Overrides = append(p.Overrides, &autoscaling.LaunchTemplateOverrides{
-					InstanceType: fi.String(x),
+					InstanceType: fi.PtrTo(x),
 				},
 				)
 			}
@@ -510,7 +510,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			if changes.MixedInstanceOverrides != nil {
 				p := request.MixedInstancesPolicy.LaunchTemplate
 				for _, x := range changes.MixedInstanceOverrides {
-					p.Overrides = append(p.Overrides, &autoscaling.LaunchTemplateOverrides{InstanceType: fi.String(x)})
+					p.Overrides = append(p.Overrides, &autoscaling.LaunchTemplateOverrides{InstanceType: fi.PtrTo(x)})
 				}
 				changes.MixedInstanceOverrides = nil
 			}
@@ -540,7 +540,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			request.MaxInstanceLifetime = e.MaxInstanceLifetime
 			changes.MaxInstanceLifetime = nil
 		} else {
-			request.MaxInstanceLifetime = fi.Int64(0)
+			request.MaxInstanceLifetime = fi.PtrTo(int64(0))
 		}
 
 		var updateTagsRequest *autoscaling.CreateOrUpdateTagsInput
@@ -933,9 +933,9 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 	for _, k := range maps.SortedKeys(e.Tags) {
 		v := e.Tags[k]
 		tf.Tags = append(tf.Tags, &terraformASGTag{
-			Key:               fi.String(k),
-			Value:             fi.String(v),
-			PropagateAtLaunch: fi.Bool(true),
+			Key:               fi.PtrTo(k),
+			Value:             fi.PtrTo(v),
+			PropagateAtLaunch: fi.PtrTo(true),
 		})
 	}
 
@@ -951,7 +951,7 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 
 	if e.UseMixedInstancesPolicy() {
 		// Temporary warning until https://github.com/terraform-providers/terraform-provider-aws/issues/9750 is resolved
-		if e.MixedSpotAllocationStrategy == fi.String("capacity-optimized") {
+		if e.MixedSpotAllocationStrategy == fi.PtrTo("capacity-optimized") {
 			fmt.Print("Terraform does not currently support a capacity optimized strategy - please see https://github.com/terraform-providers/terraform-provider-aws/issues/9750")
 		}
 
@@ -981,7 +981,7 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 		}
 
 		for _, x := range e.MixedInstanceOverrides {
-			tf.MixedInstancesPolicy[0].LaunchTemplate[0].Override = append(tf.MixedInstancesPolicy[0].LaunchTemplate[0].Override, &terraformAutoscalingMixedInstancesPolicyLaunchTemplateOverride{InstanceType: fi.String(x)})
+			tf.MixedInstancesPolicy[0].LaunchTemplate[0].Override = append(tf.MixedInstancesPolicy[0].LaunchTemplate[0].Override, &terraformAutoscalingMixedInstancesPolicyLaunchTemplateOverride{InstanceType: fi.PtrTo(x)})
 		}
 	} else if e.LaunchTemplate != nil {
 		tf.LaunchTemplate = &terraformAutoscalingLaunchTemplateSpecification{
@@ -1026,7 +1026,7 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 	var processes []*string
 	if e.SuspendProcesses != nil {
 		for _, p := range *e.SuspendProcesses {
-			processes = append(processes, fi.String(p))
+			processes = append(processes, fi.PtrTo(p))
 		}
 	}
 	tf.SuspendedProcesses = processes
@@ -1138,7 +1138,7 @@ func (_ *AutoscalingGroup) RenderCloudformation(t *cloudformation.Cloudformation
 		}
 
 		for _, x := range e.MixedInstanceOverrides {
-			cf.MixedInstancesPolicy.LaunchTemplate.Overrides = append(cf.MixedInstancesPolicy.LaunchTemplate.Overrides, &cloudformationAutoscalingLaunchTemplateOverride{InstanceType: fi.String(x)})
+			cf.MixedInstancesPolicy.LaunchTemplate.Overrides = append(cf.MixedInstancesPolicy.LaunchTemplate.Overrides, &cloudformationAutoscalingLaunchTemplateOverride{InstanceType: fi.PtrTo(x)})
 		}
 	} else if e.LaunchTemplate != nil {
 		cf.LaunchTemplate = &cloudformationAutoscalingLaunchTemplateSpecification{
@@ -1156,9 +1156,9 @@ func (_ *AutoscalingGroup) RenderCloudformation(t *cloudformation.Cloudformation
 	for _, k := range maps.SortedKeys(e.Tags) {
 		v := e.Tags[k]
 		cf.Tags = append(cf.Tags, &cloudformationASGTag{
-			Key:               fi.String(k),
-			Value:             fi.String(v),
-			PropagateAtLaunch: fi.Bool(true),
+			Key:               fi.PtrTo(k),
+			Value:             fi.PtrTo(v),
+			PropagateAtLaunch: fi.PtrTo(true),
 		})
 	}
 

@@ -119,17 +119,17 @@ func NewLBTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle, 
 	}
 
 	actual := &LB{
-		ID:        fi.String(lb.ID),
-		Name:      fi.String(lb.Name),
+		ID:        fi.PtrTo(lb.ID),
+		Name:      fi.PtrTo(lb.Name),
 		Lifecycle: lifecycle,
-		PortID:    fi.String(lb.VipPortID),
-		Subnet:    fi.String(sub.Name),
-		VipSubnet: fi.String(lb.VipSubnetID),
-		Provider:  fi.String(lb.Provider),
+		PortID:    fi.PtrTo(lb.VipPortID),
+		Subnet:    fi.PtrTo(sub.Name),
+		VipSubnet: fi.PtrTo(lb.VipSubnetID),
+		Provider:  fi.PtrTo(lb.Provider),
 	}
 
 	if secGroup {
-		sg, err := getSecurityGroupByName(&SecurityGroup{Name: fi.String(lb.Name)}, osCloud)
+		sg, err := getSecurityGroupByName(&SecurityGroup{Name: fi.PtrTo(lb.Name)}, osCloud)
 		if err != nil {
 			return nil, err
 		}
@@ -212,10 +212,10 @@ func (_ *LB) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *LB)
 		if err != nil {
 			return fmt.Errorf("error creating LB: %v", err)
 		}
-		e.ID = fi.String(lb.ID)
-		e.PortID = fi.String(lb.VipPortID)
-		e.VipSubnet = fi.String(lb.VipSubnetID)
-		e.Provider = fi.String(lb.Provider)
+		e.ID = fi.PtrTo(lb.ID)
+		e.PortID = fi.PtrTo(lb.VipPortID)
+		e.VipSubnet = fi.PtrTo(lb.VipSubnetID)
+		e.Provider = fi.PtrTo(lb.Provider)
 
 		if e.SecurityGroup != nil {
 			opts := ports.UpdateOpts{

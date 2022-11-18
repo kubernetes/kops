@@ -60,7 +60,7 @@ func up(ctx context.Context) error {
 		for _, masterZone := range masterZones {
 			etcdMember := api.EtcdMemberSpec{
 				Name:          masterZone,
-				InstanceGroup: fi.String(masterZone),
+				InstanceGroup: fi.PtrTo(masterZone),
 			}
 			etcdCluster.Members = append(etcdCluster.Members, etcdMember)
 		}

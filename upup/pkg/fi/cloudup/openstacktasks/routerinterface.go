@@ -80,7 +80,7 @@ func (i *RouterInterface) Find(context *fi.Context) (*RouterInterface, error) {
 					return nil, fmt.Errorf("found multiple interfaces which subnet:%s attach to", subnetID)
 				}
 				actual = &RouterInterface{
-					ID:        fi.String(p.ID),
+					ID:        fi.PtrTo(p.ID),
 					Name:      i.Name,
 					Router:    i.Router,
 					Subnet:    i.Subnet,
@@ -131,7 +131,7 @@ func (_ *RouterInterface) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e,
 			return fmt.Errorf("Error creating router interface: %v", err)
 		}
 
-		e.ID = fi.String(v.PortID)
+		e.ID = fi.PtrTo(v.PortID)
 		klog.V(2).Infof("Creating a new Openstack router interface, id=%s", v.PortID)
 		return nil
 	}

@@ -89,10 +89,10 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderC
 				BootDiskSizeGB: i64(int64(volumeSize)),
 				BootDiskImage:  s(ig.Spec.Image),
 
-				Preemptible:          fi.Bool(fi.StringValue(ig.Spec.GCPProvisioningModel) == "SPOT"),
+				Preemptible:          fi.PtrTo(fi.StringValue(ig.Spec.GCPProvisioningModel) == "SPOT"),
 				GCPProvisioningModel: ig.Spec.GCPProvisioningModel,
 
-				HasExternalIP: fi.Bool(b.Cluster.Spec.Topology.ControlPlane == kops.TopologyPublic),
+				HasExternalIP: fi.PtrTo(b.Cluster.Spec.Topology.ControlPlane == kops.TopologyPublic),
 
 				Scopes: []string{
 					"compute-rw",
@@ -150,13 +150,13 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderC
 			}
 
 			if gce.UsesIPAliases(b.Cluster) {
-				t.CanIPForward = fi.Bool(false)
+				t.CanIPForward = fi.PtrTo(false)
 
 				t.AliasIPRanges = map[string]string{
 					b.NameForIPAliasRange("pods"): "/24",
 				}
 			} else {
-				t.CanIPForward = fi.Bool(true)
+				t.CanIPForward = fi.PtrTo(true)
 			}
 			t.Subnet = b.LinkToSubnet(subnet)
 
@@ -266,7 +266,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				Name:             s(name),
 				Lifecycle:        b.Lifecycle,
 				Zone:             s(zone),
-				TargetSize:       fi.Int64(int64(targetSize)),
+				TargetSize:       fi.PtrTo(int64(targetSize)),
 				BaseInstanceName: s(ig.ObjectMeta.Name),
 				InstanceTemplate: instanceTemplate,
 			}

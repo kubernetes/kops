@@ -127,7 +127,7 @@ func (r *AWSIPAMReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		eni, err := r.ec2Client.DescribeNetworkInterfaces(&ec2.DescribeNetworkInterfacesInput{
 			Filters: []*ec2.Filter{
 				{
-					Name: fi.String("attachment.instance-id"),
+					Name: fi.PtrTo("attachment.instance-id"),
 					Values: []*string{
 						&instanceID,
 					},
