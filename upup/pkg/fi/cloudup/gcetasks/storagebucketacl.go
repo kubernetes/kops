@@ -47,8 +47,8 @@ func (e *StorageBucketAcl) CompareWithID() *string {
 func (e *StorageBucketAcl) Find(c *fi.Context) (*StorageBucketAcl, error) {
 	cloud := c.Cloud.(gce.GCECloud)
 
-	bucket := fi.StringValue(e.Bucket)
-	entity := fi.StringValue(e.Entity)
+	bucket := fi.ValueOf(e.Bucket)
+	entity := fi.ValueOf(e.Entity)
 
 	klog.V(2).Infof("Checking GCS bucket ACL for gs://%s for %s", bucket, entity)
 	r, err := cloud.Storage().BucketAccessControls.Get(bucket, entity).Do()
@@ -77,19 +77,19 @@ func (e *StorageBucketAcl) Run(c *fi.Context) error {
 }
 
 func (_ *StorageBucketAcl) CheckChanges(a, e, changes *StorageBucketAcl) error {
-	if fi.StringValue(e.Bucket) == "" {
+	if fi.ValueOf(e.Bucket) == "" {
 		return fi.RequiredField("Bucket")
 	}
-	if fi.StringValue(e.Entity) == "" {
+	if fi.ValueOf(e.Entity) == "" {
 		return fi.RequiredField("Entity")
 	}
 	return nil
 }
 
 func (_ *StorageBucketAcl) RenderGCE(t *gce.GCEAPITarget, a, e, changes *StorageBucketAcl) error {
-	bucket := fi.StringValue(e.Bucket)
-	entity := fi.StringValue(e.Entity)
-	role := fi.StringValue(e.Role)
+	bucket := fi.ValueOf(e.Bucket)
+	entity := fi.ValueOf(e.Entity)
+	role := fi.ValueOf(e.Role)
 
 	acl := &storage.BucketAccessControl{
 		Entity: entity,
@@ -123,9 +123,9 @@ type terraformStorageBucketAcl struct {
 
 func (_ *StorageBucketAcl) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *StorageBucketAcl) error {
 	var roleEntities []string
-	roleEntities = append(roleEntities, fi.StringValue(e.Role)+":"+fi.StringValue(e.Entity))
+	roleEntities = append(roleEntities, fi.ValueOf(e.Role)+":"+fi.ValueOf(e.Entity))
 	tf := &terraformStorageBucketAcl{
-		Bucket:     fi.StringValue(e.Bucket),
+		Bucket:     fi.ValueOf(e.Bucket),
 		RoleEntity: roleEntities,
 	}
 

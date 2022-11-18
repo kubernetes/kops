@@ -234,7 +234,7 @@ func (e *EBSVolume) TerraformLink() *terraformWriter.Literal {
 // TerraformName returns the terraform-safe name, along with a boolean indicating of whether name-prefixing was needed.
 func (e *EBSVolume) TerraformName() (string, bool) {
 	usedPrefix := false
-	name := fi.StringValue(e.Name)
+	name := fi.ValueOf(e.Name)
 	if name[0] >= '0' && name[0] <= '9' {
 		usedPrefix = true
 		return fmt.Sprintf("ebs-%v", name), usedPrefix

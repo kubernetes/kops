@@ -182,11 +182,11 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 
 	hasGPU := false
 	clusterNvidia := false
-	if cluster.Spec.Containerd != nil && cluster.Spec.Containerd.NvidiaGPU != nil && fi.BoolValue(cluster.Spec.Containerd.NvidiaGPU.Enabled) {
+	if cluster.Spec.Containerd != nil && cluster.Spec.Containerd.NvidiaGPU != nil && fi.ValueOf(cluster.Spec.Containerd.NvidiaGPU.Enabled) {
 		clusterNvidia = true
 	}
 	igNvidia := false
-	if ig.Spec.Containerd != nil && ig.Spec.Containerd.NvidiaGPU != nil && fi.BoolValue(ig.Spec.Containerd.NvidiaGPU.Enabled) {
+	if ig.Spec.Containerd != nil && ig.Spec.Containerd.NvidiaGPU != nil && fi.ValueOf(ig.Spec.Containerd.NvidiaGPU.Enabled) {
 		igNvidia = true
 	}
 
@@ -253,7 +253,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 	// rolling update will still replace nodes when they change.
 	igKubeletConfig.NodeLabels = nodelabels.BuildNodeLabels(cluster, ig)
 
-	useSecureKubelet := fi.BoolValue(igKubeletConfig.AnonymousAuth)
+	useSecureKubelet := fi.ValueOf(igKubeletConfig.AnonymousAuth)
 
 	// While slices are overridden in most cases, taints are explicitly merged
 	taints := sets.NewString(igKubeletConfig.Taints...)

@@ -58,9 +58,9 @@ func (i *RouterInterface) CompareWithID() *string {
 func (i *RouterInterface) Find(context *fi.Context) (*RouterInterface, error) {
 	cloud := context.Cloud.(openstack.OpenstackCloud)
 	opt := ports.ListOpts{
-		NetworkID: fi.StringValue(i.Subnet.Network.ID),
-		DeviceID:  fi.StringValue(i.Router.ID),
-		ID:        fi.StringValue(i.ID),
+		NetworkID: fi.ValueOf(i.Subnet.Network.ID),
+		DeviceID:  fi.ValueOf(i.Router.ID),
+		ID:        fi.ValueOf(i.ID),
 	}
 	ps, err := cloud.ListPorts(opt)
 	if err != nil {
@@ -72,7 +72,7 @@ func (i *RouterInterface) Find(context *fi.Context) (*RouterInterface, error) {
 
 	var actual *RouterInterface
 
-	subnetID := fi.StringValue(i.Subnet.ID)
+	subnetID := fi.ValueOf(i.Subnet.ID)
 	for _, p := range ps {
 		for _, ip := range p.FixedIPs {
 			if ip.SubnetID == subnetID {
@@ -121,8 +121,8 @@ func (*RouterInterface) CheckChanges(a, e, changes *RouterInterface) error {
 
 func (_ *RouterInterface) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *RouterInterface) error {
 	if a == nil {
-		routerID := fi.StringValue(e.Router.ID)
-		subnetID := fi.StringValue(e.Subnet.ID)
+		routerID := fi.ValueOf(e.Router.ID)
+		subnetID := fi.ValueOf(e.Subnet.ID)
 		klog.V(2).Infof("Creating RouterInterface for router:%s and subnet:%s", routerID, subnetID)
 
 		opt := routers.AddInterfaceOpts{SubnetID: subnetID}
@@ -136,6 +136,6 @@ func (_ *RouterInterface) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e,
 		return nil
 	}
 	e.ID = a.ID
-	klog.V(2).Infof("Using an existing Openstack router interface, id=%s", fi.StringValue(e.ID))
+	klog.V(2).Infof("Using an existing Openstack router interface, id=%s", fi.ValueOf(e.ID))
 	return nil
 }

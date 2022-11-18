@@ -268,8 +268,8 @@ func (_ *Service) RenderLocal(t *local.LocalTarget, a, e, changes *Service) erro
 
 	action := ""
 
-	if changes.Running != nil && fi.BoolValue(e.ManageState) {
-		if fi.BoolValue(e.Running) {
+	if changes.Running != nil && fi.ValueOf(e.ManageState) {
+		if fi.ValueOf(e.Running) {
 			action = "restart"
 		} else {
 			action = "stop"
@@ -292,13 +292,13 @@ func (_ *Service) RenderLocal(t *local.LocalTarget, a, e, changes *Service) erro
 	}
 
 	// "SmartRestart" - look at the obvious dependencies in the systemd service, restart if start time older
-	if fi.BoolValue(e.ManageState) && fi.BoolValue(e.SmartRestart) {
-		definition := fi.StringValue(e.Definition)
+	if fi.ValueOf(e.ManageState) && fi.ValueOf(e.SmartRestart) {
+		definition := fi.ValueOf(e.Definition)
 		if definition == "" && a != nil {
-			definition = fi.StringValue(a.Definition)
+			definition = fi.ValueOf(a.Definition)
 		}
 
-		if action == "" && fi.BoolValue(e.Running) && definition != "" {
+		if action == "" && fi.ValueOf(e.Running) && definition != "" {
 			dependencies, err := getSystemdDependencies(serviceName, definition)
 			if err != nil {
 				return err
@@ -345,7 +345,7 @@ func (_ *Service) RenderLocal(t *local.LocalTarget, a, e, changes *Service) erro
 		}
 	}
 
-	if action != "" && fi.BoolValue(e.ManageState) {
+	if action != "" && fi.ValueOf(e.ManageState) {
 		klog.Infof("Restarting service %q", serviceName)
 		cmd := exec.Command("systemctl", action, serviceName)
 		output, err := cmd.CombinedOutput()
@@ -354,9 +354,9 @@ func (_ *Service) RenderLocal(t *local.LocalTarget, a, e, changes *Service) erro
 		}
 	}
 
-	if changes.Enabled != nil && fi.BoolValue(e.ManageState) {
+	if changes.Enabled != nil && fi.ValueOf(e.ManageState) {
 		var args []string
-		if fi.BoolValue(e.Enabled) {
+		if fi.ValueOf(e.Enabled) {
 			klog.Infof("Enabling service %q", serviceName)
 			args = []string{"enable", serviceName}
 		} else {
@@ -388,7 +388,7 @@ func (_ *Service) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *S
 		return err
 	}
 
-	if fi.BoolValue(e.ManageState) {
+	if fi.ValueOf(e.ManageState) {
 		t.AddCommand(cloudinit.Once, "systemctl", "daemon-reload")
 		t.AddCommand(cloudinit.Once, "systemctl", "start", "--no-block", serviceName)
 	}

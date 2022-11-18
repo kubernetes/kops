@@ -70,8 +70,8 @@ func NewSubnetTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecyc
 	}
 
 	tag := ""
-	if find != nil && fi.ArrayContains(subnet.Tags, fi.StringValue(find.Tag)) {
-		tag = fi.StringValue(find.Tag)
+	if find != nil && fi.ArrayContains(subnet.Tags, fi.ValueOf(find.Tag)) {
+		tag = fi.ValueOf(find.Tag)
 	}
 
 	actual := &Subnet{
@@ -92,10 +92,10 @@ func NewSubnetTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecyc
 func (s *Subnet) Find(context *fi.Context) (*Subnet, error) {
 	cloud := context.Cloud.(openstack.OpenstackCloud)
 	opt := subnets.ListOpts{
-		ID:         fi.StringValue(s.ID),
-		Name:       fi.StringValue(s.Name),
-		NetworkID:  fi.StringValue(s.Network.ID),
-		CIDR:       fi.StringValue(s.CIDR),
+		ID:         fi.ValueOf(s.ID),
+		Name:       fi.ValueOf(s.Name),
+		NetworkID:  fi.ValueOf(s.Network.ID),
+		CIDR:       fi.ValueOf(s.CIDR),
 		EnableDHCP: fi.PtrTo(true),
 		IPVersion:  4,
 	}
@@ -106,7 +106,7 @@ func (s *Subnet) Find(context *fi.Context) (*Subnet, error) {
 	if rs == nil {
 		return nil, nil
 	} else if len(rs) != 1 {
-		return nil, fmt.Errorf("found multiple subnets with name: %s", fi.StringValue(s.Name))
+		return nil, fmt.Errorf("found multiple subnets with name: %s", fi.ValueOf(s.Name))
 	}
 	return NewSubnetTaskFromCloud(cloud, s.Lifecycle, &rs[0], s)
 }
@@ -142,20 +142,20 @@ func (*Subnet) CheckChanges(a, e, changes *Subnet) error {
 
 func (*Subnet) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Subnet) error {
 	if a == nil {
-		klog.V(2).Infof("Creating Subnet with name:%q", fi.StringValue(e.Name))
+		klog.V(2).Infof("Creating Subnet with name:%q", fi.ValueOf(e.Name))
 
 		opt := subnets.CreateOpts{
-			Name:       fi.StringValue(e.Name),
-			NetworkID:  fi.StringValue(e.Network.ID),
+			Name:       fi.ValueOf(e.Name),
+			NetworkID:  fi.ValueOf(e.Network.ID),
 			IPVersion:  gophercloud.IPv4,
-			CIDR:       fi.StringValue(e.CIDR),
+			CIDR:       fi.ValueOf(e.CIDR),
 			EnableDHCP: fi.PtrTo(true),
 		}
 
 		if len(e.DNSServers) > 0 {
 			dnsNameSrv := make([]string, len(e.DNSServers))
 			for i, ns := range e.DNSServers {
-				dnsNameSrv[i] = fi.StringValue(ns)
+				dnsNameSrv[i] = fi.ValueOf(ns)
 			}
 			opt.DNSNameservers = dnsNameSrv
 		}
@@ -164,7 +164,7 @@ func (*Subnet) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *S
 			return fmt.Errorf("Error creating subnet: %v", err)
 		}
 
-		err = t.Cloud.AppendTag(openstack.ResourceTypeSubnet, v.ID, fi.StringValue(e.Tag))
+		err = t.Cloud.AppendTag(openstack.ResourceTypeSubnet, v.ID, fi.ValueOf(e.Tag))
 		if err != nil {
 			return fmt.Errorf("Error appending tag to subnet: %v", err)
 		}
@@ -174,7 +174,7 @@ func (*Subnet) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *S
 		return nil
 	} else {
 		if changes.Tag != nil {
-			err := t.Cloud.AppendTag(openstack.ResourceTypeSubnet, fi.StringValue(a.ID), fi.StringValue(changes.Tag))
+			err := t.Cloud.AppendTag(openstack.ResourceTypeSubnet, fi.ValueOf(a.ID), fi.ValueOf(changes.Tag))
 			if err != nil {
 				return fmt.Errorf("error appending tag to subnet: %v", err)
 			}
@@ -186,17 +186,17 @@ func (*Subnet) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *S
 		if changes.DNSServers != nil {
 			dnsNameSrv := make([]string, len(e.DNSServers))
 			for i, ns := range e.DNSServers {
-				dnsNameSrv[i] = fi.StringValue(ns)
+				dnsNameSrv[i] = fi.ValueOf(ns)
 			}
 			opt.DNSNameservers = &dnsNameSrv
 		}
-		result := subnets.Update(client, fi.StringValue(a.ID), opt)
+		result := subnets.Update(client, fi.ValueOf(a.ID), opt)
 		klog.Infof("Updated %v", opt)
 		if result.Err != nil {
 			return fmt.Errorf("error updating subnet %v: %v", a.ID, result.Err)
 		}
 	}
 	e.ID = a.ID
-	klog.V(2).Infof("Using an existing Openstack subnet, id=%s", fi.StringValue(e.ID))
+	klog.V(2).Infof("Using an existing Openstack subnet, id=%s", fi.ValueOf(e.ID))
 	return nil
 }

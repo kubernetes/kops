@@ -66,7 +66,7 @@ func (x *awsElastigroupService) Create(ctx context.Context, group InstanceGroup)
 		return "", err
 	}
 
-	return fi.StringValue(output.Group.ID), nil
+	return fi.ValueOf(output.Group.ID), nil
 }
 
 // Read returns an existing InstanceGroup by ID.
@@ -165,7 +165,7 @@ func (x *awsOceanService) Create(ctx context.Context, group InstanceGroup) (stri
 		return "", err
 	}
 
-	return fi.StringValue(output.Cluster.ID), nil
+	return fi.ValueOf(output.Cluster.ID), nil
 }
 
 // Read returns an existing InstanceGroup by ID.
@@ -268,7 +268,7 @@ func (x *awsOceanLaunchSpecService) Create(ctx context.Context, spec LaunchSpec)
 		return "", err
 	}
 
-	return fi.StringValue(output.LaunchSpec.ID), nil
+	return fi.ValueOf(output.LaunchSpec.ID), nil
 }
 
 // Read returns an existing LaunchSpec by ID.
@@ -311,7 +311,7 @@ type awsElastigroupInstanceGroup struct {
 
 // Id returns the ID of the InstanceGroup.
 func (x *awsElastigroupInstanceGroup) Id() string {
-	return fi.StringValue(x.obj.ID)
+	return fi.ValueOf(x.obj.ID)
 }
 
 // Type returns the type of the InstanceGroup.
@@ -321,17 +321,17 @@ func (x *awsElastigroupInstanceGroup) Type() InstanceGroupType {
 
 // Name returns the name of the InstanceGroup.
 func (x *awsElastigroupInstanceGroup) Name() string {
-	return fi.StringValue(x.obj.Name)
+	return fi.ValueOf(x.obj.Name)
 }
 
 // MinSize returns the minimum size of the InstanceGroup.
 func (x *awsElastigroupInstanceGroup) MinSize() int {
-	return fi.IntValue(x.obj.Capacity.Minimum)
+	return fi.ValueOf(x.obj.Capacity.Minimum)
 }
 
 // MaxSize returns the maximum size of the InstanceGroup.
 func (x *awsElastigroupInstanceGroup) MaxSize() int {
-	return fi.IntValue(x.obj.Capacity.Maximum)
+	return fi.ValueOf(x.obj.Capacity.Maximum)
 }
 
 // CreatedAt returns the timestamp when the InstanceGroup has been created.
@@ -355,7 +355,7 @@ type awsElastigroupInstance struct {
 
 // Id returns the ID of the instance.
 func (x *awsElastigroupInstance) Id() string {
-	return fi.StringValue(x.obj.ID)
+	return fi.ValueOf(x.obj.ID)
 }
 
 // CreatedAt returns the timestamp when the Instance has been created.
@@ -374,7 +374,7 @@ type awsOceanInstanceGroup struct {
 
 // Id returns the ID of the InstanceGroup.
 func (x *awsOceanInstanceGroup) Id() string {
-	return fi.StringValue(x.obj.ID)
+	return fi.ValueOf(x.obj.ID)
 }
 
 // Type returns the type of the InstanceGroup.
@@ -384,17 +384,17 @@ func (x *awsOceanInstanceGroup) Type() InstanceGroupType {
 
 // Name returns the name of the InstanceGroup.
 func (x *awsOceanInstanceGroup) Name() string {
-	return fi.StringValue(x.obj.Name)
+	return fi.ValueOf(x.obj.Name)
 }
 
 // MinSize returns the minimum size of the InstanceGroup.
 func (x *awsOceanInstanceGroup) MinSize() int {
-	return fi.IntValue(x.obj.Capacity.Minimum)
+	return fi.ValueOf(x.obj.Capacity.Minimum)
 }
 
 // MaxSize returns the maximum size of the InstanceGroup.
 func (x *awsOceanInstanceGroup) MaxSize() int {
-	return fi.IntValue(x.obj.Capacity.Maximum)
+	return fi.ValueOf(x.obj.Capacity.Maximum)
 }
 
 // CreatedAt returns the timestamp when the InstanceGroup has been created.
@@ -418,7 +418,7 @@ type awsOceanInstance struct {
 
 // Id returns the ID of the instance.
 func (x *awsOceanInstance) Id() string {
-	return fi.StringValue(x.obj.ID)
+	return fi.ValueOf(x.obj.ID)
 }
 
 // CreatedAt returns the timestamp when the Instance has been created.
@@ -437,17 +437,17 @@ type awsOceanLaunchSpec struct {
 
 // Id returns the ID of the LaunchSpec.
 func (x *awsOceanLaunchSpec) Id() string {
-	return fi.StringValue(x.obj.ID)
+	return fi.ValueOf(x.obj.ID)
 }
 
 // Name returns the name of the LaunchSpec.
 func (x *awsOceanLaunchSpec) Name() string {
-	return fi.StringValue(x.obj.Name)
+	return fi.ValueOf(x.obj.Name)
 }
 
 // OceanId returns the ID of the Ocean instance group.
 func (x *awsOceanLaunchSpec) OceanId() string {
-	return fi.StringValue(x.obj.OceanID)
+	return fi.ValueOf(x.obj.OceanID)
 }
 
 // CreatedAt returns the timestamp when the LaunchSpec has been created.

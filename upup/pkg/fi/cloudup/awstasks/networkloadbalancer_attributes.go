@@ -72,7 +72,7 @@ func (_ *NetworkLoadBalancer) modifyLoadBalancerAttributes(t *awsup.AWSAPITarget
 		return nil
 	}
 
-	loadBalancerName := fi.StringValue(e.LoadBalancerName)
+	loadBalancerName := fi.ValueOf(e.LoadBalancerName)
 
 	request := &elbv2.ModifyLoadBalancerAttributesInput{
 		LoadBalancerArn: aws.String(loadBalancerArn),

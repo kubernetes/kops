@@ -47,7 +47,7 @@ type LoadBalancer struct {
 var _ fi.CompareWithID = &LoadBalancer{}
 
 func (v *LoadBalancer) CompareWithID() *string {
-	return fi.PtrTo(strconv.Itoa(fi.IntValue(v.ID)))
+	return fi.PtrTo(strconv.Itoa(fi.ValueOf(v.ID)))
 }
 
 var _ fi.HasAddress = &LoadBalancer{}
@@ -73,15 +73,15 @@ func (v *LoadBalancer) FindAddresses(c *fi.Context) ([]string, error) {
 	}
 
 	for _, loadbalancer := range loadbalancers {
-		if loadbalancer.Name == fi.StringValue(v.Name) {
+		if loadbalancer.Name == fi.ValueOf(v.Name) {
 			var addresses []string
 			if loadbalancer.PublicNet.IPv4.IP == nil {
-				return nil, fmt.Errorf("failed to find load-balancer %q public address", fi.StringValue(v.Name))
+				return nil, fmt.Errorf("failed to find load-balancer %q public address", fi.ValueOf(v.Name))
 			}
 			addresses = append(addresses, loadbalancer.PublicNet.IPv4.IP.String())
 			for _, privateNetwork := range loadbalancer.PrivateNet {
 				if privateNetwork.IP == nil {
-					return nil, fmt.Errorf("failed to find load-balancer %q private address", fi.StringValue(v.Name))
+					return nil, fmt.Errorf("failed to find load-balancer %q private address", fi.ValueOf(v.Name))
 				}
 				addresses = append(addresses, privateNetwork.IP.String())
 			}
@@ -104,7 +104,7 @@ func (v *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 	}
 
 	for _, loadbalancer := range loadbalancers {
-		if loadbalancer.Name == fi.StringValue(v.Name) {
+		if loadbalancer.Name == fi.ValueOf(v.Name) {
 			matches := &LoadBalancer{
 				Lifecycle: v.Lifecycle,
 				Name:      fi.PtrTo(loadbalancer.Name),
@@ -196,16 +196,16 @@ func (_ *LoadBalancer) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes 
 
 	if a == nil {
 		if e.Network == nil {
-			return fmt.Errorf("failed to find network for loadbalancer %q", fi.StringValue(e.Name))
+			return fmt.Errorf("failed to find network for loadbalancer %q", fi.ValueOf(e.Name))
 		}
 
-		networkID, err := strconv.Atoi(fi.StringValue(e.Network.ID))
+		networkID, err := strconv.Atoi(fi.ValueOf(e.Network.ID))
 		if err != nil {
-			return fmt.Errorf("failed to convert network ID %q to int: %w", fi.StringValue(e.Network.ID), err)
+			return fmt.Errorf("failed to convert network ID %q to int: %w", fi.ValueOf(e.Network.ID), err)
 		}
 
 		opts := hcloud.LoadBalancerCreateOpts{
-			Name: fi.StringValue(e.Name),
+			Name: fi.ValueOf(e.Name),
 			LoadBalancerType: &hcloud.LoadBalancerType{
 				Name: e.Type,
 			},
@@ -249,7 +249,7 @@ func (_ *LoadBalancer) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes 
 
 	} else {
 		var err error
-		loadbalancer, _, err := client.Get(ctx, strconv.Itoa(fi.IntValue(a.ID)))
+		loadbalancer, _, err := client.Get(ctx, strconv.Itoa(fi.ValueOf(a.ID)))
 		if err != nil {
 			return err
 		}
@@ -257,7 +257,7 @@ func (_ *LoadBalancer) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes 
 		// Update the labels
 		if changes.Name != nil || len(changes.Labels) != 0 {
 			_, _, err := client.Update(ctx, loadbalancer, hcloud.LoadBalancerUpdateOpts{
-				Name:   fi.StringValue(e.Name),
+				Name:   fi.ValueOf(e.Name),
 				Labels: e.Labels,
 			})
 			if err != nil {

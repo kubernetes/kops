@@ -69,7 +69,7 @@ func (e *TargetGroup) Find(c *fi.Context) (*TargetGroup, error) {
 	response, err := cloud.ELBV2().DescribeTargetGroups(request)
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == elbv2.ErrCodeTargetGroupNotFoundException {
-			if !fi.BoolValue(e.Shared) {
+			if !fi.ValueOf(e.Shared) {
 				return nil, nil
 			}
 		}
@@ -77,7 +77,7 @@ func (e *TargetGroup) Find(c *fi.Context) (*TargetGroup, error) {
 	}
 
 	if len(response.TargetGroups) > 1 {
-		return nil, fmt.Errorf("found %d TargetGroups with ID %q, expected 1", len(response.TargetGroups), fi.StringValue(e.Name))
+		return nil, fmt.Errorf("found %d TargetGroups with ID %q, expected 1", len(response.TargetGroups), fi.ValueOf(e.Name))
 	} else if len(response.TargetGroups) == 0 {
 		return nil, nil
 	}
@@ -108,7 +108,7 @@ func (e *TargetGroup) Find(c *fi.Context) (*TargetGroup, error) {
 	tags := make(map[string]string)
 	for _, tagDesc := range tagsResp.TagDescriptions {
 		for _, tag := range tagDesc.Tags {
-			tags[fi.StringValue(tag.Key)] = fi.StringValue(tag.Value)
+			tags[fi.ValueOf(tag.Key)] = fi.ValueOf(tag.Value)
 		}
 	}
 	actual.Tags = tags
@@ -152,7 +152,7 @@ func (e *TargetGroup) Run(c *fi.Context) error {
 }
 
 func (_ *TargetGroup) ShouldCreate(a, e, changes *TargetGroup) (bool, error) {
-	if fi.BoolValue(e.Shared) {
+	if fi.ValueOf(e.Shared) {
 		return false, nil
 	}
 	return true, nil
@@ -163,7 +163,7 @@ func (s *TargetGroup) CheckChanges(a, e, changes *TargetGroup) error {
 }
 
 func (_ *TargetGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *TargetGroup) error {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		return nil
 	}
@@ -194,7 +194,7 @@ func (_ *TargetGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *TargetGrou
 		e.ARN = fi.PtrTo(targetGroupArn)
 	} else {
 		if a.ARN != nil {
-			if err := t.AddELBV2Tags(fi.StringValue(a.ARN), e.Tags); err != nil {
+			if err := t.AddELBV2Tags(fi.ValueOf(a.ARN), e.Tags); err != nil {
 				return err
 			}
 		}
@@ -208,7 +208,7 @@ type OrderTargetGroupsByName []*TargetGroup
 func (a OrderTargetGroupsByName) Len() int      { return len(a) }
 func (a OrderTargetGroupsByName) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 func (a OrderTargetGroupsByName) Less(i, j int) bool {
-	return fi.StringValue(a[i].Name) < fi.StringValue(a[j].Name)
+	return fi.ValueOf(a[i].Name) < fi.ValueOf(a[j].Name)
 }
 
 type terraformTargetGroup struct {
@@ -228,7 +228,7 @@ type terraformTargetGroupHealthCheck struct {
 }
 
 func (_ *TargetGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *TargetGroup) error {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		return nil
 	}
@@ -255,7 +255,7 @@ func (_ *TargetGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 }
 
 func (e *TargetGroup) TerraformLink(params ...string) *terraformWriter.Literal {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		if e.ARN != nil {
 			return terraformWriter.LiteralFromStringValue(*e.ARN)
@@ -279,7 +279,7 @@ type cloudformationTargetGroup struct {
 }
 
 func (_ *TargetGroup) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *TargetGroup) error {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		return nil
 	}
@@ -298,7 +298,7 @@ func (_ *TargetGroup) RenderCloudformation(t *cloudformation.CloudformationTarge
 }
 
 func (e *TargetGroup) CloudformationLink() *cloudformation.Literal {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		if e.ARN != nil {
 			return cloudformation.LiteralString(*e.ARN)

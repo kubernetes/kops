@@ -109,9 +109,9 @@ func (*Disk) CheckChanges(a, e, changes *Disk) error {
 // RenderAzure creates or updates a Disk.
 func (*Disk) RenderAzure(t *azure.AzureAPITarget, a, e, changes *Disk) error {
 	if a == nil {
-		klog.Infof("Creating a new Disk with name: %s", fi.StringValue(e.Name))
+		klog.Infof("Creating a new Disk with name: %s", fi.ValueOf(e.Name))
 	} else {
-		klog.Infof("Updating a Disk with name: %s", fi.StringValue(e.Name))
+		klog.Infof("Updating a Disk with name: %s", fi.ValueOf(e.Name))
 	}
 	name := *e.Name
 

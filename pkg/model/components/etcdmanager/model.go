@@ -65,7 +65,7 @@ func (b *EtcdManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		for _, member := range etcdCluster.Members {
-			instanceGroupName := fi.StringValue(member.InstanceGroup)
+			instanceGroupName := fi.ValueOf(member.InstanceGroup)
 			manifest, err := b.buildManifest(etcdCluster, instanceGroupName)
 			if err != nil {
 				return err
@@ -471,7 +471,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 
 		kubemanifest.AddHostPathMapping(pod, container, "varlogetcd", "/var/log/etcd.log").WithReadWrite().WithType(v1.HostPathFileOrCreate).WithHostPath(logFile)
 
-		if fi.BoolValue(b.Cluster.Spec.UseHostCertificates) {
+		if fi.ValueOf(b.Cluster.Spec.UseHostCertificates) {
 			kubemanifest.AddHostPathMapping(pod, container, "etc-ssl-certs", "/etc/ssl/certs").WithType(v1.HostPathDirectoryOrCreate)
 		}
 	}

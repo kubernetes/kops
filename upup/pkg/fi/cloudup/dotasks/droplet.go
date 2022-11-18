@@ -68,7 +68,7 @@ func (d *Droplet) Find(c *fi.Context) (*Droplet, error) {
 	count := 0
 	var foundDroplet godo.Droplet
 	for _, droplet := range droplets {
-		if droplet.Name == fi.StringValue(d.Name) {
+		if droplet.Name == fi.ValueOf(d.Name) {
 			found = true
 			count++
 			foundDroplet = droplet
@@ -151,29 +151,29 @@ func (_ *Droplet) RenderDO(t *do.DOAPITarget, a, e, changes *Droplet) error {
 
 	// associate vpcuuid to the droplet if set.
 	vpcUUID := ""
-	if fi.StringValue(e.NetworkCIDR) != "" {
-		vpcUUID, err = t.Cloud.GetVPCUUID(fi.StringValue(e.NetworkCIDR), fi.StringValue(e.VPCName))
+	if fi.ValueOf(e.NetworkCIDR) != "" {
+		vpcUUID, err = t.Cloud.GetVPCUUID(fi.ValueOf(e.NetworkCIDR), fi.ValueOf(e.VPCName))
 		if err != nil {
-			return fmt.Errorf("Error fetching vpcUUID from network cidr=%s", fi.StringValue(e.NetworkCIDR))
+			return fmt.Errorf("Error fetching vpcUUID from network cidr=%s", fi.ValueOf(e.NetworkCIDR))
 		}
-	} else if fi.StringValue(e.VPCUUID) != "" {
-		vpcUUID = fi.StringValue(e.VPCUUID)
+	} else if fi.ValueOf(e.VPCUUID) != "" {
+		vpcUUID = fi.ValueOf(e.VPCUUID)
 	}
 
 	for i := 0; i < newDropletCount; i++ {
 		_, _, err = t.Cloud.DropletsService().Create(context.TODO(), &godo.DropletCreateRequest{
-			Name:     fi.StringValue(e.Name),
-			Region:   fi.StringValue(e.Region),
-			Size:     fi.StringValue(e.Size),
-			Image:    godo.DropletCreateImage{Slug: fi.StringValue(e.Image)},
+			Name:     fi.ValueOf(e.Name),
+			Region:   fi.ValueOf(e.Region),
+			Size:     fi.ValueOf(e.Size),
+			Image:    godo.DropletCreateImage{Slug: fi.ValueOf(e.Image)},
 			Tags:     e.Tags,
 			VPCUUID:  vpcUUID,
 			UserData: userData,
-			SSHKeys:  []godo.DropletCreateSSHKey{{Fingerprint: fi.StringValue(e.SSHKey)}},
+			SSHKeys:  []godo.DropletCreateSSHKey{{Fingerprint: fi.ValueOf(e.SSHKey)}},
 		})
 
 		if err != nil {
-			return fmt.Errorf("Error creating droplet with Name=%s", fi.StringValue(e.Name))
+			return fmt.Errorf("Error creating droplet with Name=%s", fi.ValueOf(e.Name))
 		}
 	}
 

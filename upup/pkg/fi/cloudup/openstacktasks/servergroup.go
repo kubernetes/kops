@@ -74,7 +74,7 @@ func (s *ServerGroup) Find(context *fi.Context) (*ServerGroup, error) {
 	for _, serverGroup := range serverGroups {
 		if serverGroup.Name == *s.Name {
 			if actual != nil {
-				return nil, fmt.Errorf("Found multiple server groups with name %s", fi.StringValue(s.Name))
+				return nil, fmt.Errorf("Found multiple server groups with name %s", fi.ValueOf(s.Name))
 			}
 			actual = &ServerGroup{
 				Name:        fi.PtrTo(serverGroup.Name),
@@ -93,7 +93,7 @@ func (s *ServerGroup) Find(context *fi.Context) (*ServerGroup, error) {
 	}
 
 	// ignore if IG is scaled up, this is handled in instancetasks
-	if fi.Int32Value(actual.MaxSize) < fi.Int32Value(s.MaxSize) {
+	if fi.ValueOf(actual.MaxSize) < fi.ValueOf(s.MaxSize) {
 		s.MaxSize = actual.MaxSize
 	}
 
@@ -124,10 +124,10 @@ func (_ *ServerGroup) CheckChanges(a, e, changes *ServerGroup) error {
 
 func (_ *ServerGroup) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *ServerGroup) error {
 	if a == nil {
-		klog.V(2).Infof("Creating ServerGroup with Name:%q", fi.StringValue(e.Name))
+		klog.V(2).Infof("Creating ServerGroup with Name:%q", fi.ValueOf(e.Name))
 
 		opt := servergroups.CreateOpts{
-			Name:     fi.StringValue(e.Name),
+			Name:     fi.ValueOf(e.Name),
 			Policies: e.Policies,
 		}
 
@@ -137,14 +137,14 @@ func (_ *ServerGroup) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, cha
 		}
 		e.ID = fi.PtrTo(g.ID)
 		return nil
-	} else if changes.MaxSize != nil && fi.Int32Value(a.MaxSize) > fi.Int32Value(changes.MaxSize) {
-		currentLastIndex := fi.Int32Value(a.MaxSize)
+	} else if changes.MaxSize != nil && fi.ValueOf(a.MaxSize) > fi.ValueOf(changes.MaxSize) {
+		currentLastIndex := fi.ValueOf(a.MaxSize)
 
-		for currentLastIndex > fi.Int32Value(changes.MaxSize) {
-			iName := strings.ToLower(fmt.Sprintf("%s-%d.%s", fi.StringValue(a.IGName), currentLastIndex, fi.StringValue(a.ClusterName)))
+		for currentLastIndex > fi.ValueOf(changes.MaxSize) {
+			iName := strings.ToLower(fmt.Sprintf("%s-%d.%s", fi.ValueOf(a.IGName), currentLastIndex, fi.ValueOf(a.ClusterName)))
 			instanceName := strings.Replace(iName, ".", "-", -1)
 			opts := servers.ListOpts{
-				Name: fmt.Sprintf("^%s", fi.StringValue(a.IGName)),
+				Name: fmt.Sprintf("^%s", fi.ValueOf(a.IGName)),
 			}
 			allInstances, err := t.Cloud.ListInstances(opts)
 			if err != nil {
@@ -154,7 +154,7 @@ func (_ *ServerGroup) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, cha
 			instances := []servers.Server{}
 			for _, server := range allInstances {
 				val, ok := server.Metadata["k8s"]
-				if !ok || val != fi.StringValue(a.ClusterName) {
+				if !ok || val != fi.ValueOf(a.ClusterName) {
 					continue
 				}
 				metadataName := ""

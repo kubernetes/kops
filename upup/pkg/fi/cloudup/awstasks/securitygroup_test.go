@@ -139,7 +139,7 @@ func TestSecurityGroupCreate(t *testing.T) {
 			t.Fatalf("unexpected error during Run: %v", err)
 		}
 
-		if fi.StringValue(sg1.ID) == "" {
+		if fi.ValueOf(sg1.ID) == "" {
 			t.Fatalf("ID not set after create")
 		}
 

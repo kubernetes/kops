@@ -78,14 +78,14 @@ func (i *BlockDeviceMapping) ToEC2(deviceName string) *ec2.BlockDeviceMapping {
 			VolumeSize:          i.EbsVolumeSize,
 			VolumeType:          i.EbsVolumeType,
 		}
-		switch fi.StringValue(i.EbsVolumeType) {
+		switch fi.ValueOf(i.EbsVolumeType) {
 		case ec2.VolumeTypeGp3:
 			o.Ebs.Throughput = i.EbsVolumeThroughput
 			fallthrough
 		case ec2.VolumeTypeIo1, ec2.VolumeTypeIo2:
 			o.Ebs.Iops = i.EbsVolumeIops
 		}
-		if fi.BoolValue(o.Ebs.Encrypted) {
+		if fi.ValueOf(o.Ebs.Encrypted) {
 			o.Ebs.KmsKeyId = i.EbsKmsKey
 		}
 	}
@@ -105,7 +105,7 @@ func BlockDeviceMappingFromAutoscaling(i *autoscaling.BlockDeviceMapping) (strin
 		o.EbsVolumeSize = i.Ebs.VolumeSize
 		o.EbsVolumeType = i.Ebs.VolumeType
 
-		if fi.StringValue(o.EbsVolumeType) == ec2.VolumeTypeIo1 || fi.StringValue(o.EbsVolumeType) == ec2.VolumeTypeIo2 {
+		if fi.ValueOf(o.EbsVolumeType) == ec2.VolumeTypeIo1 || fi.ValueOf(o.EbsVolumeType) == ec2.VolumeTypeIo2 {
 			o.EbsVolumeIops = i.Ebs.Iops
 		}
 	}
@@ -126,7 +126,7 @@ func (i *BlockDeviceMapping) ToAutoscaling(deviceName string) *autoscaling.Block
 			VolumeSize:          i.EbsVolumeSize,
 			VolumeType:          i.EbsVolumeType,
 		}
-		if fi.StringValue(o.Ebs.VolumeType) == ec2.VolumeTypeIo1 || fi.StringValue(o.Ebs.VolumeType) == ec2.VolumeTypeIo2 {
+		if fi.ValueOf(o.Ebs.VolumeType) == ec2.VolumeTypeIo1 || fi.ValueOf(o.Ebs.VolumeType) == ec2.VolumeTypeIo2 {
 			o.Ebs.Iops = i.EbsVolumeIops
 		}
 	}
@@ -167,14 +167,14 @@ func (i *BlockDeviceMapping) ToLaunchTemplateBootDeviceRequest(deviceName string
 			VolumeType:          i.EbsVolumeType,
 		}
 	}
-	switch fi.StringValue(i.EbsVolumeType) {
+	switch fi.ValueOf(i.EbsVolumeType) {
 	case ec2.VolumeTypeGp3:
 		o.Ebs.Throughput = i.EbsVolumeThroughput
 		fallthrough
 	case ec2.VolumeTypeIo1, ec2.VolumeTypeIo2:
 		o.Ebs.Iops = i.EbsVolumeIops
 	}
-	if fi.BoolValue(i.EbsEncrypted) {
+	if fi.ValueOf(i.EbsEncrypted) {
 		o.Ebs.KmsKeyId = i.EbsKmsKey
 	}
 

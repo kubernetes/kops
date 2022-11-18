@@ -86,7 +86,7 @@ func (b *DiscoveryOptionsBuilder) BuildOptions(o interface{}) error {
 }
 
 func supportsPublicJWKS(clusterSpec *kops.ClusterSpec) bool {
-	if !fi.BoolValue(clusterSpec.KubeAPIServer.AnonymousAuth) {
+	if !fi.ValueOf(clusterSpec.KubeAPIServer.AnonymousAuth) {
 		return false
 	}
 	for _, cidr := range clusterSpec.KubernetesAPIAccess {

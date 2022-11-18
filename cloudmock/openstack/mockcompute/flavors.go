@@ -129,7 +129,7 @@ func (m *MockClient) createFlavor(w http.ResponseWriter, r *http.Request) {
 		Name:  create.Flavor.Name,
 		RAM:   create.Flavor.RAM,
 		VCPUs: create.Flavor.VCPUs,
-		Disk:  fi.IntValue(create.Flavor.Disk),
+		Disk:  fi.ValueOf(create.Flavor.Disk),
 	}
 	m.flavors[flavor.ID] = flavor
 

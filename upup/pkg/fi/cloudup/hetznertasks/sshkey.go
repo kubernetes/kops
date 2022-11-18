@@ -44,7 +44,7 @@ type SSHKey struct {
 var _ fi.CompareWithID = &SSHKey{}
 
 func (v *SSHKey) CompareWithID() *string {
-	return fi.PtrTo(strconv.Itoa(fi.IntValue(v.ID)))
+	return fi.PtrTo(strconv.Itoa(fi.ValueOf(v.ID)))
 }
 
 func (v *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
@@ -106,7 +106,7 @@ func (_ *SSHKey) CheckChanges(a, e, changes *SSHKey) error {
 func (_ *SSHKey) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *SSHKey) error {
 	client := t.Cloud.SSHKeyClient()
 	if a == nil {
-		name := fi.StringValue(e.Name)
+		name := fi.ValueOf(e.Name)
 		tokens := strings.Fields(e.PublicKey)
 		if len(tokens) == 3 {
 			sshkeyComment := tokens[2]

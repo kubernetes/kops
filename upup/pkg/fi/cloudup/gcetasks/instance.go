@@ -140,7 +140,7 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 	if r.Metadata != nil {
 		actual.Metadata = make(map[string]fi.Resource)
 		for _, i := range r.Metadata.Items {
-			actual.Metadata[i.Key] = fi.NewStringResource(fi.StringValue(i.Value))
+			actual.Metadata[i.Key] = fi.NewStringResource(fi.ValueOf(i.Value))
 		}
 		actual.metadataFingerprint = r.Metadata.Fingerprint
 	}
@@ -189,7 +189,7 @@ func (e *Instance) mapToGCE(project string, ipAddressResolver func(*Address) (*s
 	zone := *e.Zone
 
 	var scheduling *compute.Scheduling
-	if fi.BoolValue(e.Preemptible) {
+	if fi.ValueOf(e.Preemptible) {
 		scheduling = &compute.Scheduling{
 			OnHostMaintenance: "TERMINATE",
 			Preemptible:       true,
@@ -263,7 +263,7 @@ func (e *Instance) mapToGCE(project string, ipAddressResolver func(*Address) (*s
 				scopes = append(scopes, s)
 			}
 			serviceAccounts = append(serviceAccounts, &compute.ServiceAccount{
-				Email:  fi.StringValue(e.ServiceAccount.Email),
+				Email:  fi.ValueOf(e.ServiceAccount.Email),
 				Scopes: scopes,
 			})
 		}
@@ -485,7 +485,7 @@ func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *
 
 	if i.Scheduling != nil {
 		tf.Scheduling = &terraformScheduling{
-			AutomaticRestart:  fi.BoolValue(i.Scheduling.AutomaticRestart),
+			AutomaticRestart:  fi.ValueOf(i.Scheduling.AutomaticRestart),
 			OnHostMaintenance: i.Scheduling.OnHostMaintenance,
 			Preemptible:       i.Scheduling.Preemptible,
 		}

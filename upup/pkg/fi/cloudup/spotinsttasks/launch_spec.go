@@ -99,11 +99,11 @@ func (o *LaunchSpec) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 }
 
 func (o *LaunchSpec) find(svc spotinst.LaunchSpecService, oceanID string) (*aws.LaunchSpec, error) {
-	klog.V(4).Infof("Attempting to find LaunchSpec: %q", fi.StringValue(o.Name))
+	klog.V(4).Infof("Attempting to find LaunchSpec: %q", fi.ValueOf(o.Name))
 
 	specs, err := svc.List(context.Background(), oceanID)
 	if err != nil {
-		return nil, fmt.Errorf("spotinst: failed to find launch spec %q: %v", fi.StringValue(o.Name), err)
+		return nil, fmt.Errorf("spotinst: failed to find launch spec %q: %v", fi.ValueOf(o.Name), err)
 	}
 	if len(specs) == 0 {
 		return nil, fmt.Errorf("spotinst: no launch specs associated with ocean %q", oceanID)
@@ -111,16 +111,16 @@ func (o *LaunchSpec) find(svc spotinst.LaunchSpecService, oceanID string) (*aws.
 
 	var out *aws.LaunchSpec
 	for _, spec := range specs {
-		if spec.Name() == fi.StringValue(o.Name) {
+		if spec.Name() == fi.ValueOf(o.Name) {
 			out = spec.Obj().(*aws.LaunchSpec)
 			break
 		}
 	}
 	if out == nil {
-		return nil, fmt.Errorf("spotinst: failed to find launch spec %q", fi.StringValue(o.Name))
+		return nil, fmt.Errorf("spotinst: failed to find launch spec %q", fi.ValueOf(o.Name))
 	}
 
-	klog.V(4).Infof("LaunchSpec/%s: %s", fi.StringValue(o.Name), stringutil.Stringify(out))
+	klog.V(4).Infof("LaunchSpec/%s: %s", fi.ValueOf(o.Name), stringutil.Stringify(out))
 	return out, nil
 }
 
@@ -149,8 +149,8 @@ func (o *LaunchSpec) Find(c *fi.Context) (*LaunchSpec, error) {
 	// Capacity.
 	{
 		if spec.ResourceLimits != nil {
-			actual.MinSize = fi.PtrTo(int64(fi.IntValue(spec.ResourceLimits.MinInstanceCount)))
-			actual.MaxSize = fi.PtrTo(int64(fi.IntValue(spec.ResourceLimits.MaxInstanceCount)))
+			actual.MinSize = fi.PtrTo(int64(fi.ValueOf(spec.ResourceLimits.MinInstanceCount)))
+			actual.MaxSize = fi.PtrTo(int64(fi.ValueOf(spec.ResourceLimits.MaxInstanceCount)))
 		}
 	}
 
@@ -159,12 +159,12 @@ func (o *LaunchSpec) Find(c *fi.Context) (*LaunchSpec, error) {
 		actual.ImageID = spec.ImageID
 
 		if o.ImageID != nil && actual.ImageID != nil &&
-			fi.StringValue(actual.ImageID) != fi.StringValue(o.ImageID) {
-			image, err := resolveImage(cloud, fi.StringValue(o.ImageID))
+			fi.ValueOf(actual.ImageID) != fi.ValueOf(o.ImageID) {
+			image, err := resolveImage(cloud, fi.ValueOf(o.ImageID))
 			if err != nil {
 				return nil, err
 			}
-			if fi.StringValue(image.ImageId) == fi.StringValue(spec.ImageID) {
+			if fi.ValueOf(image.ImageId) == fi.ValueOf(spec.ImageID) {
 				actual.ImageID = o.ImageID
 			}
 		}
@@ -173,7 +173,7 @@ func (o *LaunchSpec) Find(c *fi.Context) (*LaunchSpec, error) {
 	// User data.
 	{
 		if spec.UserData != nil {
-			userData, err := base64.StdEncoding.DecodeString(fi.StringValue(spec.UserData))
+			userData, err := base64.StdEncoding.DecodeString(fi.ValueOf(spec.UserData))
 			if err != nil {
 				return nil, err
 			}
@@ -209,16 +209,16 @@ func (o *LaunchSpec) Find(c *fi.Context) (*LaunchSpec, error) {
 						actual.RootVolumeOpts = new(RootVolumeOpts)
 					}
 					if b.EBS.VolumeType != nil {
-						actual.RootVolumeOpts.Type = fi.PtrTo(strings.ToLower(fi.StringValue(b.EBS.VolumeType)))
+						actual.RootVolumeOpts.Type = fi.PtrTo(strings.ToLower(fi.ValueOf(b.EBS.VolumeType)))
 					}
 					if b.EBS.VolumeSize != nil {
-						actual.RootVolumeOpts.Size = fi.PtrTo(int64(fi.IntValue(b.EBS.VolumeSize)))
+						actual.RootVolumeOpts.Size = fi.PtrTo(int64(fi.ValueOf(b.EBS.VolumeSize)))
 					}
 					if b.EBS.IOPS != nil {
-						actual.RootVolumeOpts.IOPS = fi.PtrTo(int64(fi.IntValue(b.EBS.IOPS)))
+						actual.RootVolumeOpts.IOPS = fi.PtrTo(int64(fi.ValueOf(b.EBS.IOPS)))
 					}
 					if b.EBS.Throughput != nil {
-						actual.RootVolumeOpts.Throughput = fi.PtrTo(int64(fi.IntValue(b.EBS.Throughput)))
+						actual.RootVolumeOpts.Throughput = fi.PtrTo(int64(fi.ValueOf(b.EBS.Throughput)))
 					}
 					if b.EBS.Encrypted != nil {
 						actual.RootVolumeOpts.Encryption = b.EBS.Encrypted
@@ -268,7 +268,7 @@ func (o *LaunchSpec) Find(c *fi.Context) (*LaunchSpec, error) {
 		if len(spec.Tags) > 0 {
 			actual.Tags = make(map[string]string)
 			for _, tag := range spec.Tags {
-				actual.Tags[fi.StringValue(tag.Key)] = fi.StringValue(tag.Value)
+				actual.Tags[fi.ValueOf(tag.Key)] = fi.ValueOf(tag.Value)
 			}
 		}
 	}
@@ -298,7 +298,7 @@ func (o *LaunchSpec) Find(c *fi.Context) (*LaunchSpec, error) {
 
 		actual.AutoScalerOpts.Labels = make(map[string]string)
 		for _, label := range spec.Labels {
-			actual.AutoScalerOpts.Labels[fi.StringValue(label.Key)] = fi.StringValue(label.Value)
+			actual.AutoScalerOpts.Labels[fi.ValueOf(label.Key)] = fi.ValueOf(label.Value)
 		}
 	}
 
@@ -311,9 +311,9 @@ func (o *LaunchSpec) Find(c *fi.Context) (*LaunchSpec, error) {
 		actual.AutoScalerOpts.Taints = make([]*corev1.Taint, len(spec.Taints))
 		for i, taint := range spec.Taints {
 			actual.AutoScalerOpts.Taints[i] = &corev1.Taint{
-				Key:    fi.StringValue(taint.Key),
-				Value:  fi.StringValue(taint.Value),
-				Effect: corev1.TaintEffect(fi.StringValue(taint.Effect)),
+				Key:    fi.ValueOf(taint.Key),
+				Value:  fi.ValueOf(taint.Value),
+				Effect: corev1.TaintEffect(fi.ValueOf(taint.Effect)),
 			}
 		}
 	}
@@ -322,7 +322,7 @@ func (o *LaunchSpec) Find(c *fi.Context) (*LaunchSpec, error) {
 	{
 		if strategy := spec.Strategy; strategy != nil {
 			if strategy.SpotPercentage != nil {
-				actual.SpotPercentage = fi.PtrTo(int64(fi.IntValue(strategy.SpotPercentage)))
+				actual.SpotPercentage = fi.PtrTo(int64(fi.ValueOf(strategy.SpotPercentage)))
 			}
 		}
 	}
@@ -388,7 +388,7 @@ func (_ *LaunchSpec) create(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 	// Image.
 	{
 		if e.ImageID != nil {
-			image, err := resolveImage(cloud, fi.StringValue(e.ImageID))
+			image, err := resolveImage(cloud, fi.ValueOf(e.ImageID))
 			if err != nil {
 				return err
 			}
@@ -450,7 +450,7 @@ func (_ *LaunchSpec) create(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 		if e.Subnets != nil {
 			subnetIDs := make([]string, len(e.Subnets))
 			for i, subnet := range e.Subnets {
-				subnetIDs[i] = fi.StringValue(subnet.ID)
+				subnetIDs[i] = fi.ValueOf(subnet.ID)
 			}
 			spec.SetSubnetIDs(subnetIDs)
 		}
@@ -530,7 +530,7 @@ func (_ *LaunchSpec) create(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 
 	// Restrictions.
 	{
-		if fi.BoolValue(e.RestrictScaleDown) {
+		if fi.ValueOf(e.RestrictScaleDown) {
 			spec.SetRestrictScaleDown(e.RestrictScaleDown)
 		}
 	}
@@ -594,12 +594,12 @@ func (_ *LaunchSpec) update(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 	// Image.
 	{
 		if changes.ImageID != nil {
-			image, err := resolveImage(cloud, fi.StringValue(e.ImageID))
+			image, err := resolveImage(cloud, fi.ValueOf(e.ImageID))
 			if err != nil {
 				return err
 			}
 
-			if fi.StringValue(actual.ImageID) != fi.StringValue(image.ImageId) {
+			if fi.ValueOf(actual.ImageID) != fi.ValueOf(image.ImageId) {
 				spec.SetImageId(image.ImageId)
 			}
 
@@ -674,7 +674,7 @@ func (_ *LaunchSpec) update(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 		if changes.Subnets != nil {
 			subnetIDs := make([]string, len(e.Subnets))
 			for i, subnet := range e.Subnets {
-				subnetIDs[i] = fi.StringValue(subnet.ID)
+				subnetIDs[i] = fi.ValueOf(subnet.ID)
 			}
 
 			spec.SetSubnetIDs(subnetIDs)
@@ -773,7 +773,7 @@ func (_ *LaunchSpec) update(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 				spec.Strategy = new(aws.LaunchSpecStrategy)
 			}
 
-			spec.Strategy.SetSpotPercentage(fi.PtrTo(int(fi.Int64Value(e.SpotPercentage))))
+			spec.Strategy.SetSpotPercentage(fi.PtrTo(int(fi.ValueOf(e.SpotPercentage))))
 			changes.SpotPercentage = nil
 			changed = true
 		}
@@ -906,7 +906,7 @@ func (_ *LaunchSpec) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 	// Image.
 	{
 		if e.ImageID != nil {
-			image, err := resolveImage(cloud, fi.StringValue(e.ImageID))
+			image, err := resolveImage(cloud, fi.ValueOf(e.ImageID))
 			if err != nil {
 				return err
 			}
@@ -1057,7 +1057,7 @@ func (_ *LaunchSpec) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 
 	// Restrictions.
 	{
-		if fi.BoolValue(e.RestrictScaleDown) {
+		if fi.ValueOf(e.RestrictScaleDown) {
 			tf.RestrictScaleDown = e.RestrictScaleDown
 		}
 	}
@@ -1091,18 +1091,18 @@ func (o *LaunchSpec) convertBlockDeviceMapping(in *awstasks.BlockDeviceMapping) 
 	if in.EbsDeleteOnTermination != nil || in.EbsVolumeSize != nil || in.EbsVolumeType != nil {
 		out.EBS = &aws.EBS{
 			VolumeType:          in.EbsVolumeType,
-			VolumeSize:          fi.PtrTo(int(fi.Int64Value(in.EbsVolumeSize))),
+			VolumeSize:          fi.PtrTo(int(fi.ValueOf(in.EbsVolumeSize))),
 			DeleteOnTermination: in.EbsDeleteOnTermination,
 		}
 
 		// IOPS is not valid for gp2 volumes.
-		if in.EbsVolumeIops != nil && fi.StringValue(in.EbsVolumeType) != "gp2" {
-			out.EBS.IOPS = fi.PtrTo(int(fi.Int64Value(in.EbsVolumeIops)))
+		if in.EbsVolumeIops != nil && fi.ValueOf(in.EbsVolumeType) != "gp2" {
+			out.EBS.IOPS = fi.PtrTo(int(fi.ValueOf(in.EbsVolumeIops)))
 		}
 
 		// Throughput is only valid for gp3 volumes.
-		if in.EbsVolumeThroughput != nil && fi.StringValue(in.EbsVolumeType) == "gp3" {
-			out.EBS.Throughput = fi.PtrTo(int(fi.Int64Value(in.EbsVolumeThroughput)))
+		if in.EbsVolumeThroughput != nil && fi.ValueOf(in.EbsVolumeType) == "gp3" {
+			out.EBS.Throughput = fi.PtrTo(int(fi.ValueOf(in.EbsVolumeThroughput)))
 		}
 	}
 

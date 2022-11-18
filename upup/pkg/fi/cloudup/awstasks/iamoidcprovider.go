@@ -75,7 +75,7 @@ func (e *IAMOIDCProvider) Find(c *fi.Context) (*IAMOIDCProvider, error) {
 			actualURL = "https://" + actualURL
 		}
 
-		if actualURL == fi.StringValue(e.URL) {
+		if actualURL == fi.ValueOf(e.URL) {
 
 			actual := &IAMOIDCProvider{
 				ClientIDs:   descResp.ClientIDList,
@@ -139,7 +139,7 @@ func (p *IAMOIDCProvider) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMOID
 		e.arn = response.OpenIDConnectProviderArn
 	} else {
 		if changes.Thumbprints != nil {
-			klog.V(2).Infof("Updating IAMOIDCProvider Thumbprints %q", fi.StringValue(e.arn))
+			klog.V(2).Infof("Updating IAMOIDCProvider Thumbprints %q", fi.ValueOf(e.arn))
 
 			request := &iam.UpdateOpenIDConnectProviderThumbprintInput{}
 			request.OpenIDConnectProviderArn = a.arn

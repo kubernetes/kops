@@ -105,13 +105,13 @@ func (e *Network) Run(c *fi.Context) error {
 }
 
 func (_ *Network) CheckChanges(a, e, changes *Network) error {
-	cidr := fi.StringValue(e.CIDR)
+	cidr := fi.ValueOf(e.CIDR)
 	switch e.Mode {
 	case "legacy":
 		if cidr == "" {
 			return fmt.Errorf("CIDR must specified for networks where mode=legacy")
 		}
-		klog.Warningf("using legacy mode for GCE network %q", fi.StringValue(e.Name))
+		klog.Warningf("using legacy mode for GCE network %q", fi.ValueOf(e.Name))
 	default:
 		if cidr != "" {
 			return fmt.Errorf("CIDR cannot specified for networks where mode=%s", e.Mode)
@@ -126,7 +126,7 @@ func (_ *Network) CheckChanges(a, e, changes *Network) error {
 
 	case "":
 		// Treated as "keep existing", only allowed for shared mode
-		if !fi.BoolValue(e.Shared) {
+		if !fi.ValueOf(e.Shared) {
 			return fmt.Errorf("must specify mode for (non-shared) Network")
 		}
 
@@ -138,16 +138,16 @@ func (_ *Network) CheckChanges(a, e, changes *Network) error {
 }
 
 func (_ *Network) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Network) error {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Verify the network was found
 		if a == nil {
-			return fmt.Errorf("Network with name %q not found", fi.StringValue(e.Name))
+			return fmt.Errorf("Network with name %q not found", fi.ValueOf(e.Name))
 		}
 	}
 
 	if a == nil {
-		klog.V(2).Infof("Creating Network with CIDR: %q", fi.StringValue(e.CIDR))
+		klog.V(2).Infof("Creating Network with CIDR: %q", fi.ValueOf(e.CIDR))
 
 		network := &compute.Network{
 			Name: *e.Name,
@@ -155,7 +155,7 @@ func (_ *Network) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Network) error {
 
 		switch e.Mode {
 		case "legacy":
-			network.IPv4Range = fi.StringValue(e.CIDR)
+			network.IPv4Range = fi.ValueOf(e.CIDR)
 
 		case "auto":
 			network.AutoCreateSubnetworks = true
@@ -200,7 +200,7 @@ type terraformNetwork struct {
 }
 
 func (_ *Network) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Network) error {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Not terraform owned / managed
 		return nil
@@ -226,7 +226,7 @@ func (_ *Network) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *N
 }
 
 func (e *Network) TerraformLink() *terraformWriter.Literal {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		if e.Name == nil {
 			klog.Fatalf("Name must be set, if network is shared: %#v", e)

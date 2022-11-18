@@ -363,7 +363,7 @@ func (b *AWSModelContext) GetSecurityGroups(role kops.InstanceGroupRole) ([]Secu
 			continue
 		}
 
-		name := fi.StringValue(ig.Spec.SecurityGroupOverride)
+		name := fi.ValueOf(ig.Spec.SecurityGroupOverride)
 
 		// De-duplicate security groups
 		if done[name] {
@@ -371,7 +371,7 @@ func (b *AWSModelContext) GetSecurityGroups(role kops.InstanceGroupRole) ([]Secu
 		}
 		done[name] = true
 
-		sgName := fmt.Sprintf("%v-%v", fi.StringValue(ig.Spec.SecurityGroupOverride), role)
+		sgName := fmt.Sprintf("%v-%v", fi.ValueOf(ig.Spec.SecurityGroupOverride), role)
 		t := &awstasks.SecurityGroup{
 			Name:        &sgName,
 			ID:          ig.Spec.SecurityGroupOverride,
@@ -394,7 +394,7 @@ func (b *AWSModelContext) GetSecurityGroups(role kops.InstanceGroupRole) ([]Secu
 	// Add the default SecurityGroup, if any InstanceGroups are using the default
 	if !allOverrides {
 		groups = append(groups, SecurityGroupInfo{
-			Name: fi.StringValue(baseGroup.Name),
+			Name: fi.ValueOf(baseGroup.Name),
 			Task: baseGroup,
 		})
 	}
@@ -440,31 +440,31 @@ func AddDirectionalGroupRule(c *fi.ModelBuilderContext, t *awstasks.SecurityGrou
 func generateName(o *awstasks.SecurityGroupRule) string {
 	var target, dst, src, direction, proto string
 	if o.SourceGroup != nil {
-		target = fi.StringValue(o.SourceGroup.Name)
+		target = fi.ValueOf(o.SourceGroup.Name)
 	} else if o.CIDR != nil {
-		target = fi.StringValue(o.CIDR)
+		target = fi.ValueOf(o.CIDR)
 	} else if o.IPv6CIDR != nil {
-		target = fi.StringValue(o.IPv6CIDR)
+		target = fi.ValueOf(o.IPv6CIDR)
 	} else {
 		target = "0.0.0.0/0"
 	}
 
-	if o.Protocol == nil || fi.StringValue(o.Protocol) == "" {
+	if o.Protocol == nil || fi.ValueOf(o.Protocol) == "" {
 		proto = "all"
 	} else {
-		proto = fi.StringValue(o.Protocol)
+		proto = fi.ValueOf(o.Protocol)
 	}
 
-	if o.Egress == nil || !fi.BoolValue(o.Egress) {
+	if o.Egress == nil || !fi.ValueOf(o.Egress) {
 		direction = "ingress"
 		src = target
-		dst = fi.StringValue(o.SecurityGroup.Name)
+		dst = fi.ValueOf(o.SecurityGroup.Name)
 	} else {
 		direction = "egress"
 		dst = target
-		src = fi.StringValue(o.SecurityGroup.Name)
+		src = fi.ValueOf(o.SecurityGroup.Name)
 	}
 
 	return fmt.Sprintf("from-%s-%s-%s-%dto%d-%s", src, direction,
-		proto, fi.Int64Value(o.FromPort), fi.Int64Value(o.ToPort), dst)
+		proto, fi.ValueOf(o.FromPort), fi.ValueOf(o.ToPort), dst)
 }

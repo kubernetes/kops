@@ -37,7 +37,7 @@ func addCiliumAddon(b *BootstrapChannelBuilder, addons *AddonList) error {
 				Id:                 id,
 				NeedsRollingUpdate: "all",
 			}
-			if cilium.Hubble != nil && fi.BoolValue(cilium.Hubble.Enabled) {
+			if cilium.Hubble != nil && fi.ValueOf(cilium.Hubble.Enabled) {
 				addon.NeedsPKI = true
 			}
 			addons.Add(addon)

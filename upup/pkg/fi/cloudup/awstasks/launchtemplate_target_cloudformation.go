@@ -166,12 +166,12 @@ type cloudformationLaunchTemplate struct {
 
 // CloudformationLink returns the cloudformation link for us
 func (t *LaunchTemplate) CloudformationLink() *cloudformation.Literal {
-	return cloudformation.Ref("AWS::EC2::LaunchTemplate", fi.StringValue(t.Name))
+	return cloudformation.Ref("AWS::EC2::LaunchTemplate", fi.ValueOf(t.Name))
 }
 
 // CloudformationLink returns the cloudformation version.
 func (t *LaunchTemplate) CloudformationVersion() *cloudformation.Literal {
-	return cloudformation.GetAtt("AWS::EC2::LaunchTemplate", fi.StringValue(t.Name), "LatestVersionNumber")
+	return cloudformation.GetAtt("AWS::EC2::LaunchTemplate", fi.ValueOf(t.Name), "LatestVersionNumber")
 }
 
 // RenderCloudformation is responsible for rendering the cloudformation json
@@ -182,7 +182,7 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 
 	var image *string
 	if e.ImageID != nil {
-		im, err := cloud.ResolveImage(fi.StringValue(e.ImageID))
+		im, err := cloud.ResolveImage(fi.ValueOf(e.ImageID))
 		if err != nil {
 			return err
 		}
@@ -207,7 +207,7 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 		},
 	}
 
-	if fi.StringValue(e.SpotPrice) != "" {
+	if fi.ValueOf(e.SpotPrice) != "" {
 		marketSpotOptions := cloudformationLaunchTemplateMarketOptionsSpotOptions{MaxPrice: e.SpotPrice}
 		if e.SpotDurationInMinutes != nil {
 			marketSpotOptions.BlockDurationMinutes = e.SpotDurationInMinutes
@@ -218,14 +218,14 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 		launchTemplateData.MarketOptions = &cloudformationLaunchTemplateMarketOptions{MarketType: fi.PtrTo("spot"), SpotOptions: &marketSpotOptions}
 	}
 
-	if fi.StringValue(e.CPUCredits) != "" {
+	if fi.ValueOf(e.CPUCredits) != "" {
 		launchTemplateData.CreditSpecification = &cloudformationLaunchTemplateCreditSpecification{
 			CPUCredits: e.CPUCredits,
 		}
 	}
 
 	cf := &cloudformationLaunchTemplate{
-		LaunchTemplateName: fi.PtrTo(fi.StringValue(e.Name)),
+		LaunchTemplateName: fi.PtrTo(fi.ValueOf(e.Name)),
 		LaunchTemplateData: launchTemplateData,
 	}
 	data := cf.LaunchTemplateData
@@ -293,7 +293,7 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 		})
 	}
 
-	devices, err = buildEphemeralDevices(cloud, fi.StringValue(e.InstanceType))
+	devices, err = buildEphemeralDevices(cloud, fi.ValueOf(e.InstanceType))
 	if err != nil {
 		return err
 	}
@@ -316,5 +316,5 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 		})
 	}
 
-	return target.RenderResource("AWS::EC2::LaunchTemplate", fi.StringValue(e.Name), cf)
+	return target.RenderResource("AWS::EC2::LaunchTemplate", fi.ValueOf(e.Name), cf)
 }

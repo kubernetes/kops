@@ -136,9 +136,9 @@ func (v *tpmVerifier) VerifyToken(ctx context.Context, authToken string, body []
 	for _, item := range instance.Metadata.Items {
 		switch item.Key {
 		case gce.MetadataKeyInstanceGroupName:
-			instanceGroupName = fi.StringValue(item.Value)
+			instanceGroupName = fi.ValueOf(item.Value)
 		case gcemetadata.MetadataKeyClusterName:
-			clusterName = fi.StringValue(item.Value)
+			clusterName = fi.ValueOf(item.Value)
 		}
 	}
 

@@ -104,7 +104,7 @@ func (e *AutoscalingGroup) CompareWithID() *string {
 func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
-	g, err := findAutoscalingGroup(cloud, fi.StringValue(e.Name))
+	g, err := findAutoscalingGroup(cloud, fi.ValueOf(e.Name))
 	if err != nil {
 		return nil, err
 	}
@@ -152,12 +152,12 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 		for _, lb := range e.LoadBalancers {
 			// All external ELBs have their Shared field set to true. The API ELB does not.
 			// Note that Shared is set by the kops model rather than AWS tags.
-			if !fi.BoolValue(lb.Shared) {
+			if !fi.ValueOf(lb.Shared) {
 				apiLBTask = lb
 			}
 		}
 		if apiLBTask != nil && len(actual.LoadBalancers) > 0 {
-			apiLBDesc, err := c.Cloud.(awsup.AWSCloud).FindELBByNameTag(fi.StringValue(apiLBTask.Name))
+			apiLBDesc, err := c.Cloud.(awsup.AWSCloud).FindELBByNameTag(fi.ValueOf(apiLBTask.Name))
 			if err != nil {
 				return nil, err
 			}
@@ -176,14 +176,14 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 	actual.TargetGroups = []*TargetGroup{}
 	if len(g.TargetGroupARNs) > 0 {
 		for _, tg := range g.TargetGroupARNs {
-			targetGroupName, err := awsup.GetTargetGroupNameFromARN(fi.StringValue(tg))
+			targetGroupName, err := awsup.GetTargetGroupNameFromARN(fi.ValueOf(tg))
 			if err != nil {
 				return nil, err
 			}
 			if targetGroupName != awsup.GetResourceName32(c.Cluster.Name, "tcp") && targetGroupName != awsup.GetResourceName32(c.Cluster.Name, "tls") {
 				actual.TargetGroups = append(actual.TargetGroups, &TargetGroup{ARN: aws.String(*tg), Name: aws.String(targetGroupName)})
 			} else {
-				actual.TargetGroups = append(actual.TargetGroups, &TargetGroup{ARN: aws.String(*tg), Name: aws.String(fi.StringValue(g.AutoScalingGroupName) + "-" + targetGroupName)})
+				actual.TargetGroups = append(actual.TargetGroups, &TargetGroup{ARN: aws.String(*tg), Name: aws.String(fi.ValueOf(g.AutoScalingGroupName) + "-" + targetGroupName)})
 			}
 		}
 	}
@@ -244,7 +244,7 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 			}
 
 			for _, n := range g.MixedInstancesPolicy.LaunchTemplate.Overrides {
-				actual.MixedInstanceOverrides = append(actual.MixedInstanceOverrides, fi.StringValue(n.InstanceType))
+				actual.MixedInstanceOverrides = append(actual.MixedInstanceOverrides, fi.ValueOf(n.InstanceType))
 			}
 		}
 	}
@@ -285,14 +285,14 @@ func findAutoscalingGroup(cloud awsup.AWSCloud, name string) (*autoscaling.Group
 			// Check for "Delete in progress" (the only use .Status). We won't be able to update or create while
 			// this is true, but filtering it out here makes the messages slightly clearer.
 			if g.Status != nil {
-				klog.Warningf("Skipping AutoScalingGroup %v: %v", fi.StringValue(g.AutoScalingGroupName), fi.StringValue(g.Status))
+				klog.Warningf("Skipping AutoScalingGroup %v: %v", fi.ValueOf(g.AutoScalingGroupName), fi.ValueOf(g.Status))
 				continue
 			}
 
 			if aws.StringValue(g.AutoScalingGroupName) == name {
 				found = append(found, g)
 			} else {
-				klog.Warningf("Got ASG with unexpected name %q", fi.StringValue(g.AutoScalingGroupName))
+				klog.Warningf("Got ASG with unexpected name %q", fi.ValueOf(g.AutoScalingGroupName))
 			}
 		}
 
@@ -339,7 +339,7 @@ func (e *AutoscalingGroup) CheckChanges(a, ex, changes *AutoscalingGroup) error 
 func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *AutoscalingGroup) error {
 	// @step: did we find an autoscaling group?
 	if a == nil {
-		klog.V(2).Infof("Creating autoscaling group with name: %s", fi.StringValue(e.Name))
+		klog.V(2).Infof("Creating autoscaling group with name: %s", fi.ValueOf(e.Name))
 
 		request := &autoscaling.CreateAutoScalingGroupInput{
 			AutoScalingGroupName:             e.Name,
@@ -351,7 +351,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		}
 
 		//On ASG creation 0 value is forbidden
-		if fi.Int64Value(e.MaxInstanceLifetime) == 0 {
+		if fi.ValueOf(e.MaxInstanceLifetime) == 0 {
 			request.MaxInstanceLifetime = nil
 		} else {
 			request.MaxInstanceLifetime = e.MaxInstanceLifetime
@@ -359,7 +359,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 
 		for _, k := range e.LoadBalancers {
 			if k.LoadBalancerName == nil {
-				lbDesc, err := t.Cloud.FindELBByNameTag(fi.StringValue(k.GetName()))
+				lbDesc, err := t.Cloud.FindELBByNameTag(fi.ValueOf(k.GetName()))
 				if err != nil {
 					return err
 				}
@@ -646,7 +646,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			klog.Warningf("cannot apply changes to AutoScalingGroup: %v", changes)
 		}
 
-		klog.V(2).Infof("Updating autoscaling group %s", fi.StringValue(e.Name))
+		klog.V(2).Infof("Updating autoscaling group %s", fi.ValueOf(e.Name))
 
 		if _, err := t.Cloud.Autoscaling().UpdateAutoScalingGroup(request); err != nil {
 			return fmt.Errorf("error updating AutoscalingGroup: %v", err)
@@ -741,7 +741,7 @@ func (e *AutoscalingGroup) AutoscalingGroupSubnets() []string {
 	var list []string
 
 	for _, x := range e.Subnets {
-		list = append(list, fi.StringValue(x.ID))
+		list = append(list, fi.ValueOf(x.ID))
 	}
 
 	return list
@@ -1036,7 +1036,7 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 
 // TerraformLink fills in the property
 func (e *AutoscalingGroup) TerraformLink() *terraformWriter.Literal {
-	return terraformWriter.LiteralProperty("aws_autoscaling_group", fi.StringValue(e.Name), "id")
+	return terraformWriter.LiteralProperty("aws_autoscaling_group", fi.ValueOf(e.Name), "id")
 }
 
 type cloudformationASGTag struct {
@@ -1170,10 +1170,10 @@ func (_ *AutoscalingGroup) RenderCloudformation(t *cloudformation.Cloudformation
 		cf.TargetGroupARNs = append(cf.TargetGroupARNs, tg.CloudformationLink())
 	}
 
-	return t.RenderResource("AWS::AutoScaling::AutoScalingGroup", fi.StringValue(e.Name), cf)
+	return t.RenderResource("AWS::AutoScaling::AutoScalingGroup", fi.ValueOf(e.Name), cf)
 }
 
 // CloudformationLink is adds a reference
 func (e *AutoscalingGroup) CloudformationLink() *cloudformation.Literal {
-	return cloudformation.Ref("AWS::AutoScaling::AutoScalingGroup", fi.StringValue(e.Name))
+	return cloudformation.Ref("AWS::AutoScaling::AutoScalingGroup", fi.ValueOf(e.Name))
 }

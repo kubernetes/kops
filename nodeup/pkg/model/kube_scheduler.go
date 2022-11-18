@@ -201,7 +201,7 @@ func (b *KubeSchedulerBuilder) buildPod(kubeScheduler *kops.KubeSchedulerConfig)
 		flags = append(flags, "--"+flag+"kubeconfig="+kubescheduler.KubeConfigPath)
 	}
 
-	if fi.BoolValue(kubeScheduler.UsePolicyConfigMap) {
+	if fi.ValueOf(kubeScheduler.UsePolicyConfigMap) {
 		flags = append(flags, "--policy-configmap=scheduler-policy", "--policy-configmap-namespace=kube-system")
 	}
 

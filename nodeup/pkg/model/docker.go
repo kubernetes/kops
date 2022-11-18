@@ -46,7 +46,7 @@ var _ fi.ModelBuilder = &DockerBuilder{}
 func (b *DockerBuilder) dockerVersion() (string, error) {
 	dockerVersion := ""
 	if b.Cluster.Spec.Docker != nil {
-		dockerVersion = fi.StringValue(b.Cluster.Spec.Docker.Version)
+		dockerVersion = fi.ValueOf(b.Cluster.Spec.Docker.Version)
 	}
 	if dockerVersion == "" {
 		return "", fmt.Errorf("error finding Docker version")
@@ -201,7 +201,7 @@ func (b *DockerBuilder) buildSystemdService(dockerVersion semver.Version) *nodet
 
 	manifest.Set("Service", "Type", "notify")
 	// Restore the default SELinux security contexts for the Docker binaries
-	if b.Distribution.IsRHELFamily() && b.Cluster.Spec.Docker != nil && fi.BoolValue(b.Cluster.Spec.Docker.SelinuxEnabled) {
+	if b.Distribution.IsRHELFamily() && b.Cluster.Spec.Docker != nil && fi.ValueOf(b.Cluster.Spec.Docker.SelinuxEnabled) {
 		manifest.Set("Service", "ExecStartPre", "/bin/sh -c 'restorecon -v /usr/bin/docker*'")
 	}
 	// the default is not to use systemd for cgroups because the delegate issues still

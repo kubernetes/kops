@@ -57,7 +57,7 @@ func (e *ForwardingRule) CompareWithID() *string {
 
 func (e *ForwardingRule) Find(c *fi.Context) (*ForwardingRule, error) {
 	cloud := c.Cloud.(gce.GCECloud)
-	name := fi.StringValue(e.Name)
+	name := fi.ValueOf(e.Name)
 
 	r, err := cloud.Compute().ForwardingRules().Get(cloud.Project(), cloud.Region(), name)
 	if err != nil {
@@ -102,14 +102,14 @@ func (e *ForwardingRule) Run(c *fi.Context) error {
 }
 
 func (_ *ForwardingRule) CheckChanges(a, e, changes *ForwardingRule) error {
-	if fi.StringValue(e.Name) == "" {
+	if fi.ValueOf(e.Name) == "" {
 		return fi.RequiredField("Name")
 	}
 	return nil
 }
 
 func (_ *ForwardingRule) RenderGCE(t *gce.GCEAPITarget, a, e, changes *ForwardingRule) error {
-	name := fi.StringValue(e.Name)
+	name := fi.ValueOf(e.Name)
 
 	o := &compute.ForwardingRule{
 		Name:       name,
@@ -138,7 +138,7 @@ func (_ *ForwardingRule) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Forwardin
 	}
 
 	if e.IPAddress != nil {
-		o.IPAddress = fi.StringValue(e.IPAddress.IPAddress)
+		o.IPAddress = fi.ValueOf(e.IPAddress.IPAddress)
 		if o.IPAddress == "" {
 			addr, err := e.IPAddress.find(t.Cloud)
 			if err != nil {
@@ -148,7 +148,7 @@ func (_ *ForwardingRule) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Forwardin
 				return fmt.Errorf("Address %q was not found", e.IPAddress)
 			}
 
-			o.IPAddress = fi.StringValue(addr.IPAddress)
+			o.IPAddress = fi.ValueOf(addr.IPAddress)
 			if o.IPAddress == "" {
 				return fmt.Errorf("Address had no IP: %v", e.IPAddress)
 			}
@@ -210,7 +210,7 @@ type terraformForwardingRule struct {
 }
 
 func (_ *ForwardingRule) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ForwardingRule) error {
-	name := fi.StringValue(e.Name)
+	name := fi.ValueOf(e.Name)
 
 	tf := &terraformForwardingRule{
 		Name:                name,
@@ -246,7 +246,7 @@ func (_ *ForwardingRule) RenderTerraform(t *terraform.TerraformTarget, a, e, cha
 }
 
 func (e *ForwardingRule) TerraformLink() *terraformWriter.Literal {
-	name := fi.StringValue(e.Name)
+	name := fi.ValueOf(e.Name)
 
 	return terraformWriter.LiteralSelfLink("google_compute_forwarding_rule", name)
 }

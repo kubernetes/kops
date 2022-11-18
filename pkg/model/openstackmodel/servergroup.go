@@ -170,7 +170,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		for k, v := range igMeta {
 			metaWithName[k] = v
 		}
-		metaWithName[openstack.TagKopsName] = fi.StringValue(instanceName)
+		metaWithName[openstack.TagKopsName] = fi.ValueOf(instanceName)
 		instanceTask := &openstacktasks.Instance{
 			Name:             instanceName,
 			Lifecycle:        b.Lifecycle,
@@ -193,7 +193,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		// Associate a floating IP to the instances if we have external network in router
 		// and respective topology is "public"
 		if b.Cluster.Spec.CloudProvider.Openstack.Router != nil {
-			if ig.Spec.AssociatePublicIP != nil && !fi.BoolValue(ig.Spec.AssociatePublicIP) {
+			if ig.Spec.AssociatePublicIP != nil && !fi.ValueOf(ig.Spec.AssociatePublicIP) {
 				continue
 			}
 			switch ig.Spec.Role {
@@ -309,7 +309,7 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		poolTask := &openstacktasks.LBPool{
-			Name:         fi.PtrTo(fmt.Sprintf("%s-https", fi.StringValue(lbTask.Name))),
+			Name:         fi.PtrTo(fmt.Sprintf("%s-https", fi.ValueOf(lbTask.Name))),
 			Loadbalancer: lbTask,
 			Lifecycle:    b.Lifecycle,
 		}

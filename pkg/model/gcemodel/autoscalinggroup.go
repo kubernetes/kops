@@ -62,14 +62,14 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderC
 		}
 
 		{
-			volumeSize := fi.Int32Value(ig.Spec.RootVolumeSize)
+			volumeSize := fi.ValueOf(ig.Spec.RootVolumeSize)
 			if volumeSize == 0 {
 				volumeSize, err = defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
 				if err != nil {
 					return nil, err
 				}
 			}
-			volumeType := fi.StringValue(ig.Spec.RootVolumeType)
+			volumeType := fi.ValueOf(ig.Spec.RootVolumeType)
 			if volumeType == "" {
 				volumeType = DefaultVolumeType
 			}
@@ -89,7 +89,7 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderC
 				BootDiskSizeGB: i64(int64(volumeSize)),
 				BootDiskImage:  s(ig.Spec.Image),
 
-				Preemptible:          fi.PtrTo(fi.StringValue(ig.Spec.GCPProvisioningModel) == "SPOT"),
+				Preemptible:          fi.PtrTo(fi.ValueOf(ig.Spec.GCPProvisioningModel) == "SPOT"),
 				GCPProvisioningModel: ig.Spec.GCPProvisioningModel,
 
 				HasExternalIP: fi.PtrTo(b.Cluster.Spec.Topology.ControlPlane == kops.TopologyPublic),
@@ -194,7 +194,7 @@ func (b *AutoscalingGroupModelBuilder) splitToZones(ig *kops.InstanceGroup) (map
 		// TODO: Duplicated from aws - move to defaults?
 		minSize := 1
 		if ig.Spec.MinSize != nil {
-			minSize = int(fi.Int32Value(ig.Spec.MinSize))
+			minSize = int(fi.ValueOf(ig.Spec.MinSize))
 		} else if ig.Spec.Role == kops.InstanceGroupRoleNode {
 			minSize = 2
 		}

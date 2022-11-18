@@ -50,14 +50,14 @@ var _ fi.ModelBuilder = &FirewallModelBuilder{}
 
 func (b *FirewallModelBuilder) usesOctavia() bool {
 	if b.Cluster.Spec.CloudProvider.Openstack.Loadbalancer != nil {
-		return fi.BoolValue(b.Cluster.Spec.CloudProvider.Openstack.Loadbalancer.UseOctavia)
+		return fi.ValueOf(b.Cluster.Spec.CloudProvider.Openstack.Loadbalancer.UseOctavia)
 	}
 	return false
 }
 
 func (b *FirewallModelBuilder) getOctaviaProvider() string {
 	if b.Cluster.Spec.CloudProvider.Openstack.Loadbalancer != nil {
-		return fi.StringValue(b.Cluster.Spec.CloudProvider.Openstack.Loadbalancer.Provider)
+		return fi.ValueOf(b.Cluster.Spec.CloudProvider.Openstack.Loadbalancer.Provider)
 	}
 	return ""
 }
@@ -81,8 +81,8 @@ func (b *FirewallModelBuilder) addDirectionalGroupRule(c *fi.ModelBuilderContext
 		Delete:         fi.PtrTo(false),
 	}
 
-	klog.V(8).Infof("Adding rule %v", fi.StringValue(t.GetName()))
-	b.Rules[fi.StringValue(t.GetName())] = t
+	klog.V(8).Infof("Adding rule %v", fi.ValueOf(t.GetName()))
+	b.Rules[fi.ValueOf(t.GetName())] = t
 }
 
 // addSSHRules - sets the ssh rules based on the presence of a bastion
@@ -573,7 +573,7 @@ func (b *FirewallModelBuilder) getExistingRules(sgMap map[string]*openstacktasks
 				Delete:         fi.PtrTo(true),
 			}
 			klog.V(8).Infof("Adding existing rule %v", t)
-			b.Rules[fi.StringValue(t.GetName())] = t
+			b.Rules[fi.ValueOf(t.GetName())] = t
 		}
 	}
 	return nil

@@ -349,7 +349,7 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec, uagent st
 
 	if spec != nil && spec.CloudProvider.Openstack != nil && spec.CloudProvider.Openstack.InsecureSkipVerify != nil {
 		tlsconfig := &tls.Config{}
-		tlsconfig.InsecureSkipVerify = fi.BoolValue(spec.CloudProvider.Openstack.InsecureSkipVerify)
+		tlsconfig.InsecureSkipVerify = fi.ValueOf(spec.CloudProvider.Openstack.InsecureSkipVerify)
 		transport := &http.Transport{TLSClientConfig: tlsconfig}
 		provider.HTTPClient = http.Client{
 			Transport: transport,
@@ -439,7 +439,7 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec, uagent st
 			spec.CloudProvider.Openstack.Loadbalancer.FloatingNetwork != nil {
 			// This field is derived
 			lbNet, err := c.ListNetworks(networks.ListOpts{
-				Name: fi.StringValue(spec.CloudProvider.Openstack.Loadbalancer.FloatingNetwork),
+				Name: fi.ValueOf(spec.CloudProvider.Openstack.Loadbalancer.FloatingNetwork),
 			})
 			if err != nil || len(lbNet) != 1 {
 				return c, fmt.Errorf("could not establish floating network id")
@@ -448,7 +448,7 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec, uagent st
 		}
 		if spec.CloudProvider.Openstack.Loadbalancer != nil {
 			if spec.CloudProvider.Openstack.Loadbalancer.UseOctavia != nil {
-				octavia = fi.BoolValue(spec.CloudProvider.Openstack.Loadbalancer.UseOctavia)
+				octavia = fi.ValueOf(spec.CloudProvider.Openstack.Loadbalancer.UseOctavia)
 			}
 			if spec.CloudProvider.Openstack.Loadbalancer.FloatingSubnet != nil {
 				c.floatingSubnet = spec.CloudProvider.Openstack.Loadbalancer.FloatingSubnet
@@ -750,7 +750,7 @@ func getIPIngressStatus(c OpenstackCloud, cluster *kops.Cluster) (ingresses []fi
 						}
 						for _, ip := range ips {
 							ingresses = append(ingresses, fi.ApiIngressStatus{
-								IP: fi.StringValue(ip),
+								IP: fi.ValueOf(ip),
 							})
 						}
 					}

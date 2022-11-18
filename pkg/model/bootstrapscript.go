@@ -401,7 +401,7 @@ func (b *BootstrapScript) Run(c *fi.Context) error {
 						MemoryRequest: etcdCluster.MemoryRequest,
 					}
 					for _, etcdMember := range etcdCluster.Members {
-						if fi.StringValue(etcdMember.InstanceGroup) == b.ig.Name && etcdMember.VolumeSize != nil {
+						if fi.ValueOf(etcdMember.InstanceGroup) == b.ig.Name && etcdMember.VolumeSize != nil {
 							m := kops.EtcdMemberSpec{
 								Name:       etcdMember.Name,
 								VolumeSize: etcdMember.VolumeSize,
@@ -421,7 +421,7 @@ func (b *BootstrapScript) Run(c *fi.Context) error {
 		}
 	}
 
-	nodeupScript.CompressUserData = fi.BoolValue(b.ig.Spec.CompressUserData)
+	nodeupScript.CompressUserData = fi.ValueOf(b.ig.Spec.CompressUserData)
 
 	// By setting some sysctls early, we avoid broken configurations that prevent nodeup download.
 	// See https://github.com/kubernetes/kops/issues/10206 for details.

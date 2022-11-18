@@ -38,7 +38,7 @@ func (e *Secret) CheckExisting(c *fi.Context) bool {
 func (e *Secret) Find(c *fi.Context) (*Secret, error) {
 	secrets := c.SecretStore
 
-	name := fi.StringValue(e.Name)
+	name := fi.ValueOf(e.Name)
 	if name == "" {
 		return nil, nil
 	}
@@ -75,7 +75,7 @@ func (s *Secret) CheckChanges(a, e, changes *Secret) error {
 }
 
 func (_ *Secret) Render(c *fi.Context, a, e, changes *Secret) error {
-	name := fi.StringValue(e.Name)
+	name := fi.ValueOf(e.Name)
 	if name == "" {
 		return fi.RequiredField("Name")
 	}

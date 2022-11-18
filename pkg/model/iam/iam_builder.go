@@ -413,7 +413,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 
 	if !b.UseServiceAccountExternalPermisssions {
 		esc := b.Cluster.Spec.SnapshotController != nil &&
-			fi.BoolValue(b.Cluster.Spec.SnapshotController.Enabled)
+			fi.ValueOf(b.Cluster.Spec.SnapshotController.Enabled)
 		AddAWSEBSCSIDriverPermissions(p, esc)
 
 		if b.Cluster.Spec.ExternalCloudControllerManager != nil {
@@ -424,18 +424,18 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 			}
 		}
 
-		if c := b.Cluster.Spec.AWSLoadBalancerController; c != nil && fi.BoolValue(b.Cluster.Spec.AWSLoadBalancerController.Enabled) {
+		if c := b.Cluster.Spec.AWSLoadBalancerController; c != nil && fi.ValueOf(b.Cluster.Spec.AWSLoadBalancerController.Enabled) {
 			AddAWSLoadbalancerControllerPermissions(p, c.EnableWAF, c.EnableWAFv2, c.EnableShield)
 		}
 
 		var useStaticInstanceList bool
-		if ca := b.Cluster.Spec.ClusterAutoscaler; ca != nil && fi.BoolValue(ca.AWSUseStaticInstanceList) {
+		if ca := b.Cluster.Spec.ClusterAutoscaler; ca != nil && fi.ValueOf(ca.AWSUseStaticInstanceList) {
 			useStaticInstanceList = true
 		}
 		AddClusterAutoscalerPermissions(p, useStaticInstanceList)
 
 		nth := b.Cluster.Spec.NodeTerminationHandler
-		if nth != nil && fi.BoolValue(nth.Enabled) && fi.BoolValue(nth.EnableSQSTerminationDraining) {
+		if nth != nil && fi.ValueOf(nth.Enabled) && fi.ValueOf(nth.EnableSQSTerminationDraining) {
 			AddNodeTerminationHandlerSQSPermissions(p)
 		}
 	}
@@ -761,7 +761,7 @@ func (b *PolicyResource) Open() (io.Reader, error) {
 	pb := *b.Builder
 
 	if b.DNSZone != nil {
-		hostedZoneID := fi.StringValue(b.DNSZone.ZoneID)
+		hostedZoneID := fi.ValueOf(b.DNSZone.ZoneID)
 		if hostedZoneID == "" {
 			// Dependency analysis failure?
 			return nil, fmt.Errorf("DNS ZoneID not set")
@@ -790,7 +790,7 @@ func useBootstrapTokens(cluster *kops.Cluster) bool {
 		return false
 	}
 
-	return fi.BoolValue(cluster.Spec.KubeAPIServer.EnableBootstrapAuthToken)
+	return fi.ValueOf(cluster.Spec.KubeAPIServer.EnableBootstrapAuthToken)
 }
 
 func addECRPermissions(p *Policy) {

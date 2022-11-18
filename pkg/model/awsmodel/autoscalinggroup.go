@@ -142,22 +142,22 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 	if err != nil {
 		return nil, err
 	}
-	if fi.Int32Value(ig.Spec.RootVolumeSize) > 0 {
-		rootVolumeSize = fi.Int32Value(ig.Spec.RootVolumeSize)
+	if fi.ValueOf(ig.Spec.RootVolumeSize) > 0 {
+		rootVolumeSize = fi.ValueOf(ig.Spec.RootVolumeSize)
 	}
 
-	rootVolumeType := fi.StringValue(ig.Spec.RootVolumeType)
+	rootVolumeType := fi.ValueOf(ig.Spec.RootVolumeType)
 	if rootVolumeType == "" {
 		rootVolumeType = DefaultVolumeType
 	}
 
 	rootVolumeEncryption := DefaultVolumeEncryption
 	if ig.Spec.RootVolumeEncryption != nil {
-		rootVolumeEncryption = fi.BoolValue(ig.Spec.RootVolumeEncryption)
+		rootVolumeEncryption = fi.ValueOf(ig.Spec.RootVolumeEncryption)
 	}
 
 	rootVolumeKmsKey := ""
-	if fi.BoolValue(ig.Spec.RootVolumeEncryption) && ig.Spec.RootVolumeEncryptionKey != nil {
+	if fi.ValueOf(ig.Spec.RootVolumeEncryption) && ig.Spec.RootVolumeEncryptionKey != nil {
 		rootVolumeKmsKey = *ig.Spec.RootVolumeEncryptionKey
 	}
 
@@ -179,7 +179,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 	lt := &awstasks.LaunchTemplate{
 		Name:                         fi.PtrTo(name),
 		Lifecycle:                    b.Lifecycle,
-		CPUCredits:                   fi.PtrTo(fi.StringValue(ig.Spec.CPUCredits)),
+		CPUCredits:                   fi.PtrTo(fi.ValueOf(ig.Spec.CPUCredits)),
 		HTTPPutResponseHopLimit:      fi.PtrTo(int64(1)),
 		HTTPTokens:                   fi.PtrTo(ec2.LaunchTemplateHttpTokensStateOptional),
 		HTTPProtocolIPv6:             fi.PtrTo(ec2.LaunchTemplateInstanceMetadataProtocolIpv6Disabled),
@@ -188,7 +188,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		InstanceInterruptionBehavior: ig.Spec.InstanceInterruptionBehavior,
 		InstanceMonitoring:           fi.PtrTo(false),
 		IPv6AddressCount:             fi.PtrTo(int64(0)),
-		RootVolumeIops:               fi.PtrTo(int64(fi.Int32Value(ig.Spec.RootVolumeIOPS))),
+		RootVolumeIops:               fi.PtrTo(int64(fi.ValueOf(ig.Spec.RootVolumeIOPS))),
 		RootVolumeOptimization:       ig.Spec.RootVolumeOptimization,
 		RootVolumeSize:               fi.PtrTo(int64(rootVolumeSize)),
 		RootVolumeType:               fi.PtrTo(rootVolumeType),
@@ -257,11 +257,11 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		}
 		deleteOnTermination := DefaultVolumeDeleteOnTermination
 		if x.DeleteOnTermination != nil {
-			deleteOnTermination = fi.BoolValue(x.DeleteOnTermination)
+			deleteOnTermination = fi.ValueOf(x.DeleteOnTermination)
 		}
 		encryption := DefaultVolumeEncryption
 		if x.Encrypted != nil {
-			encryption = fi.BoolValue(x.Encrypted)
+			encryption = fi.ValueOf(x.Encrypted)
 		}
 		lt.BlockDeviceMappings = append(lt.BlockDeviceMappings, &awstasks.BlockDeviceMapping{
 			DeviceName:             fi.PtrTo(x.Device),
@@ -288,17 +288,17 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 	}
 
 	if rootVolumeType == ec2.VolumeTypeIo1 || rootVolumeType == ec2.VolumeTypeIo2 {
-		if fi.Int32Value(ig.Spec.RootVolumeIOPS) < 100 {
+		if fi.ValueOf(ig.Spec.RootVolumeIOPS) < 100 {
 			lt.RootVolumeIops = fi.PtrTo(int64(DefaultVolumeIonIops))
 		}
 	} else if rootVolumeType == ec2.VolumeTypeGp3 {
-		if fi.Int32Value(ig.Spec.RootVolumeIOPS) < 3000 {
+		if fi.ValueOf(ig.Spec.RootVolumeIOPS) < 3000 {
 			lt.RootVolumeIops = fi.PtrTo(int64(DefaultVolumeGp3Iops))
 		}
-		if fi.Int32Value(ig.Spec.RootVolumeThroughput) < 125 {
+		if fi.ValueOf(ig.Spec.RootVolumeThroughput) < 125 {
 			lt.RootVolumeThroughput = fi.PtrTo(int64(DefaultVolumeGp3Throughput))
 		} else {
-			lt.RootVolumeThroughput = fi.PtrTo(int64(fi.Int32Value(ig.Spec.RootVolumeThroughput)))
+			lt.RootVolumeThroughput = fi.PtrTo(int64(fi.ValueOf(ig.Spec.RootVolumeThroughput)))
 		}
 	} else {
 		lt.RootVolumeIops = nil
@@ -335,7 +335,7 @@ func (b *AutoscalingGroupModelBuilder) buildSecurityGroups(c *fi.ModelBuilderCon
 	// @step: if required we add the override for the security group for this instancegroup
 	sgLink := b.LinkToSecurityGroup(ig.Spec.Role)
 	if ig.Spec.SecurityGroupOverride != nil {
-		sgName := fmt.Sprintf("%v-%v", fi.StringValue(ig.Spec.SecurityGroupOverride), ig.Spec.Role)
+		sgName := fmt.Sprintf("%v-%v", fi.ValueOf(ig.Spec.SecurityGroupOverride), ig.Spec.Role)
 		sgLink = &awstasks.SecurityGroup{
 			ID:     ig.Spec.SecurityGroupOverride,
 			Name:   &sgName,
@@ -480,7 +480,7 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 		}
 
 		if extLB.TargetGroupARN != nil {
-			targetGroupName, err := awsup.GetTargetGroupNameFromARN(fi.StringValue(extLB.TargetGroupARN))
+			targetGroupName, err := awsup.GetTargetGroupNameFromARN(fi.ValueOf(extLB.TargetGroupARN))
 			if err != nil {
 				return nil, err
 			}
