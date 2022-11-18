@@ -23221,6 +23221,9 @@ const (
 
 	// HandlerErrorCodeUnknown is a HandlerErrorCode enum value
 	HandlerErrorCodeUnknown = "Unknown"
+
+	// HandlerErrorCodeUnsupportedTarget is a HandlerErrorCode enum value
+	HandlerErrorCodeUnsupportedTarget = "UnsupportedTarget"
 )
 
 // HandlerErrorCode_Values returns all elements of the HandlerErrorCode enum
@@ -23244,6 +23247,7 @@ func HandlerErrorCode_Values() []string {
 		HandlerErrorCodeHandlerInternalFailure,
 		HandlerErrorCodeNonCompliant,
 		HandlerErrorCodeUnknown,
+		HandlerErrorCodeUnsupportedTarget,
 	}
 }
 
