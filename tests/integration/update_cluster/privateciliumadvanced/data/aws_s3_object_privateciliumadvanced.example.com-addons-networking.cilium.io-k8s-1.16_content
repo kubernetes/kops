@@ -380,7 +380,7 @@ spec:
           value: api.internal.privateciliumadvanced.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/cilium:v1.11.8
+        image: quay.io/cilium/cilium:v1.11.11
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -438,6 +438,7 @@ spec:
             scheme: HTTP
           periodSeconds: 2
           successThreshold: null
+        terminationMessagePolicy: FallbackToLogsOnError
         volumeMounts:
         - mountPath: /sys/fs/bpf
           mountPropagation: Bidirectional
@@ -482,7 +483,7 @@ spec:
               key: clean-cilium-bpf-state
               name: cilium-config
               optional: true
-        image: quay.io/cilium/cilium:v1.11.8
+        image: quay.io/cilium/cilium:v1.11.11
         imagePullPolicy: IfNotPresent
         name: clean-cilium-state
         resources:
@@ -493,6 +494,7 @@ spec:
             memory: 100Mi
         securityContext:
           privileged: true
+        terminationMessagePolicy: FallbackToLogsOnError
         volumeMounts:
         - mountPath: /sys/fs/bpf
           name: bpf-maps
@@ -629,7 +631,7 @@ spec:
           value: api.internal.privateciliumadvanced.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/operator:v1.11.8
+        image: quay.io/cilium/operator:v1.11.11
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -645,6 +647,7 @@ spec:
           requests:
             cpu: 25m
             memory: 128Mi
+        terminationMessagePolicy: FallbackToLogsOnError
         volumeMounts:
         - mountPath: /tmp/cilium/config-map
           name: cilium-config-path
