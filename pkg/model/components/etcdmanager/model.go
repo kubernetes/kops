@@ -294,7 +294,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 	dnsInternalSuffix := ""
 	if b.Cluster.IsGossip() {
 		// @TODO: This is hacky, but we want it so that we can have a different internal & external name
-		dnsInternalSuffix = b.Cluster.Spec.MasterInternalName
+		dnsInternalSuffix = b.Cluster.APIInternalName()
 		dnsInternalSuffix = strings.TrimPrefix(dnsInternalSuffix, "api.")
 	}
 
@@ -316,7 +316,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 
 	case "cilium":
 		if !featureflag.APIServerNodes.Enabled() {
-			clientHost = b.Cluster.Spec.MasterInternalName
+			clientHost = b.Cluster.APIInternalName()
 		}
 	default:
 		return nil, fmt.Errorf("unknown etcd cluster key %q", etcdCluster.Name)

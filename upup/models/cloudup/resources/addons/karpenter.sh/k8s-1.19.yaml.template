@@ -914,7 +914,7 @@ spec:
             - name: CLUSTER_NAME
               value: {{ ClusterName }}
             - name: CLUSTER_ENDPOINT
-              value: https://{{ .MasterInternalName }}
+              value: https://{{ APIInternalName }}
             - name: CONFIG_LOGGING_NAME
               value: "karpenter-config-logging"
             - name: KARPENTER_SERVICE
@@ -1022,7 +1022,7 @@ spec:
             - name: KUBERNETES_MIN_VERSION
               value: "1.19.0-0"
             - name: CLUSTER_ENDPOINT
-              value: https://{{ .MasterInternalName }}
+              value: https://{{ APIInternalName }}
             - name: CONFIG_LOGGING_NAME
               value: "karpenter-config-logging"
             - name: KARPENTER_SERVICE

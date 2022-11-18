@@ -2446,7 +2446,7 @@ func autoConvert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	}
 	// INFO: in.Project opted out of conversion generation
 	out.MasterPublicName = in.MasterPublicName
-	out.MasterInternalName = in.MasterInternalName
+	// INFO: in.MasterInternalName opted out of conversion generation
 	out.NetworkCIDR = in.NetworkCIDR
 	out.AdditionalNetworkCIDRs = in.AdditionalNetworkCIDRs
 	out.NetworkID = in.NetworkID
@@ -2870,7 +2870,6 @@ func autoConvert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, 
 		out.Subnets = nil
 	}
 	out.MasterPublicName = in.MasterPublicName
-	out.MasterInternalName = in.MasterInternalName
 	out.NetworkCIDR = in.NetworkCIDR
 	out.AdditionalNetworkCIDRs = in.AdditionalNetworkCIDRs
 	out.NetworkID = in.NetworkID

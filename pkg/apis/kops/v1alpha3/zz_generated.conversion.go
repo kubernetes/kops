@@ -2555,7 +2555,6 @@ func autoConvert_v1alpha3_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 		out.Subnets = nil
 	}
 	out.MasterPublicName = in.MasterPublicName
-	out.MasterInternalName = in.MasterInternalName
 	out.NetworkCIDR = in.NetworkCIDR
 	out.AdditionalNetworkCIDRs = in.AdditionalNetworkCIDRs
 	out.NetworkID = in.NetworkID
@@ -2978,7 +2977,6 @@ func autoConvert_kops_ClusterSpec_To_v1alpha3_ClusterSpec(in *kops.ClusterSpec, 
 		out.Subnets = nil
 	}
 	out.MasterPublicName = in.MasterPublicName
-	out.MasterInternalName = in.MasterInternalName
 	out.NetworkCIDR = in.NetworkCIDR
 	out.AdditionalNetworkCIDRs = in.AdditionalNetworkCIDRs
 	out.NetworkID = in.NetworkID

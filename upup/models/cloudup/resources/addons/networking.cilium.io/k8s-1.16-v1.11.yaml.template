@@ -46,7 +46,7 @@ data:
   etcd-config: |-
     ---
     endpoints:
-      - https://{{ $.MasterInternalName }}:4003
+      - https://{{ APIInternalName }}:4003
 
     trusted-ca-file: '/var/lib/etcd-secrets/etcd-ca.crt'
     key-file: '/var/lib/etcd-secrets/etcd-client-cilium.key'
@@ -681,7 +681,7 @@ spec:
               name: cilium-config
               optional: true
         - name: KUBERNETES_SERVICE_HOST
-          value: "{{ $.MasterInternalName }}"
+          value: "{{ APIInternalName }}"
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
         {{ with .EnablePolicy }}
@@ -948,7 +948,7 @@ spec:
               name: cilium-config
               optional: true
         - name: KUBERNETES_SERVICE_HOST
-          value: "{{ $.MasterInternalName }}"
+          value: "{{ APIInternalName }}"
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
         image: "quay.io/cilium/operator:{{ .Version }}"

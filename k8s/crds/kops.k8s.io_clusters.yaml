@@ -895,9 +895,9 @@ spec:
                   DNS This is because some clouds let us define a managed zone foo.bar,
                   and then have kubernetes.dev.foo.bar, without needing to define
                   dev.foo.bar as a hosted zone. DNSZone will probably be a suffix
-                  of the MasterPublicName and MasterInternalName Note that DNSZone
-                  can either by the host name of the zone (containing dots), or can
-                  be an identifier for the zone.
+                  of the MasterPublicName. Note that DNSZone can either by the host
+                  name of the zone (containing dots), or can be an identifier for
+                  the zone.
                 type: string
               docker:
                 description: DockerConfig is the configuration for docker
@@ -3933,8 +3933,7 @@ spec:
                   be a "spec" like stable)
                 type: string
               masterInternalName:
-                description: MasterInternalName is the internal DNS name for the master
-                  nodes
+                description: MasterInternalName is unused.
                 type: string
               masterKubelet:
                 description: MasterKubelet is the kubelet configuration for nodes

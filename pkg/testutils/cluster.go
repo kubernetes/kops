@@ -37,7 +37,6 @@ func BuildMinimalCluster(clusterName string) *kops.Cluster {
 	c.Spec.Containerd = &kops.ContainerdConfig{}
 
 	c.Spec.MasterPublicName = fmt.Sprintf("api.%v", clusterName)
-	c.Spec.MasterInternalName = fmt.Sprintf("internal.api.%v", clusterName)
 	c.Spec.KubernetesAPIAccess = []string{"0.0.0.0/0"}
 	c.Spec.SSHAccess = []string{"0.0.0.0/0"}
 

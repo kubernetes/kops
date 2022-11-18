@@ -24,7 +24,6 @@ spec:
     name: events
   iam: {}
   kubernetesVersion: 1.22.0
-  masterInternalName: api.internal.minimal.example.com
   masterPublicName: api.minimal.example.com
   additionalSans:
   - proxy.api.minimal.example.com
