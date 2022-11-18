@@ -722,20 +722,23 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 		}
 	}
 
-	if b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderAWS {
-		key := "storage-aws.addons.k8s.io"
+	if fi.BoolValue(b.Cluster.Spec.CloudConfig.ManageStorageClasses) {
+		if b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderAWS {
+			key := "storage-aws.addons.k8s.io"
 
-		{
-			id := "v1.15.0"
-			location := key + "/" + id + ".yaml"
+			{
+				id := "v1.15.0"
+				location := key + "/" + id + ".yaml"
 
-			addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.String(key),
-				Selector: map[string]string{"k8s-addon": key},
-				Manifest: fi.String(location),
-				Id:       id,
-			})
+				addons.Add(&channelsapi.AddonSpec{
+					Name:     fi.String(key),
+					Selector: map[string]string{"k8s-addon": key},
+					Manifest: fi.String(location),
+					Id:       id,
+				})
+			}
 		}
+
 	}
 
 	if b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderDO {
@@ -796,20 +799,21 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 	}
 
 	if b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderGCE {
-		key := "storage-gce.addons.k8s.io"
+		if fi.BoolValue(b.Cluster.Spec.CloudConfig.ManageStorageClasses) {
+			key := "storage-gce.addons.k8s.io"
 
-		{
-			id := "v1.7.0"
-			location := key + "/" + id + ".yaml"
+			{
+				id := "v1.7.0"
+				location := key + "/" + id + ".yaml"
 
-			addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.String(key),
-				Selector: map[string]string{"k8s-addon": key},
-				Manifest: fi.String(location),
-				Id:       id,
-			})
+				addons.Add(&channelsapi.AddonSpec{
+					Name:     fi.String(key),
+					Selector: map[string]string{"k8s-addon": key},
+					Manifest: fi.String(location),
+					Id:       id,
+				})
+			}
 		}
-
 		if b.Cluster.Spec.CloudConfig != nil && b.Cluster.Spec.CloudConfig.GCPPDCSIDriver != nil && fi.BoolValue(b.Cluster.Spec.CloudConfig.GCPPDCSIDriver.Enabled) {
 			key := "gcp-pd-csi-driver.addons.k8s.io"
 			{
