@@ -2524,6 +2524,11 @@ func (in *InstanceGroupSpec) DeepCopyInto(out *InstanceGroupSpec) {
 		*out = new(MixedInstancesPolicySpec)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.CapacityRebalance != nil {
+		in, out := &in.CapacityRebalance, &out.CapacityRebalance
+		*out = new(bool)
+		**out = **in
+	}
 	if in.AdditionalUserData != nil {
 		in, out := &in.AdditionalUserData, &out.AdditionalUserData
 		*out = make([]UserData, len(*in))
