@@ -70,7 +70,7 @@ func Test_ValidateTopology(t *testing.T) {
 				CloudProvider: kops.CloudProviderSpec{
 					Openstack: &kops.OpenstackSpec{
 						Router: &kops.OpenstackRouter{
-							ExternalNetwork: fi.String("foo"),
+							ExternalNetwork: fi.PtrTo("foo"),
 						},
 					},
 				},

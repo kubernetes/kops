@@ -108,7 +108,7 @@ func TestListIAMInstanceProfiles(t *testing.T) {
 	tags := []*iam.Tag{
 		{
 			Key:   &ownershipTagKey,
-			Value: fi.String("owned"),
+			Value: fi.PtrTo("owned"),
 		},
 	}
 
@@ -137,7 +137,7 @@ func TestListIAMInstanceProfiles(t *testing.T) {
 			Tags: []*iam.Tag{
 				{
 					Key:   &owner,
-					Value: fi.String("owned"),
+					Value: fi.PtrTo("owned"),
 				},
 			},
 		}
@@ -182,7 +182,7 @@ func TestListIAMRoles(t *testing.T) {
 	tags := []*iam.Tag{
 		{
 			Key:   &ownershipTagKey,
-			Value: fi.String("owned"),
+			Value: fi.PtrTo("owned"),
 		},
 	}
 
@@ -211,7 +211,7 @@ func TestListIAMRoles(t *testing.T) {
 			Tags: []*iam.Tag{
 				{
 					Key:   &owner,
-					Value: fi.String("owned"),
+					Value: fi.PtrTo("owned"),
 				},
 			},
 		}
@@ -352,12 +352,12 @@ func TestMatchesElbTags(t *testing.T) {
 			tags: map[string]string{"tagkey1": "tagvalue1"},
 			actual: []*elb.Tag{
 				{
-					Key:   fi.String("tagkey1"),
-					Value: fi.String("tagvalue1"),
+					Key:   fi.PtrTo("tagkey1"),
+					Value: fi.PtrTo("tagvalue1"),
 				},
 				{
-					Key:   fi.String("tagkey2"),
-					Value: fi.String("tagvalue2"),
+					Key:   fi.PtrTo("tagkey2"),
+					Value: fi.PtrTo("tagvalue2"),
 				},
 			},
 			expected: true,
@@ -366,12 +366,12 @@ func TestMatchesElbTags(t *testing.T) {
 			tags: map[string]string{"tagkey2": "tagvalue2"},
 			actual: []*elb.Tag{
 				{
-					Key:   fi.String("tagkey1"),
-					Value: fi.String("tagvalue1"),
+					Key:   fi.PtrTo("tagkey1"),
+					Value: fi.PtrTo("tagvalue1"),
 				},
 				{
-					Key:   fi.String("tagkey2"),
-					Value: fi.String("tagvalue2"),
+					Key:   fi.PtrTo("tagkey2"),
+					Value: fi.PtrTo("tagvalue2"),
 				},
 			},
 			expected: true,
@@ -380,12 +380,12 @@ func TestMatchesElbTags(t *testing.T) {
 			tags: map[string]string{"tagkey3": "tagvalue3"},
 			actual: []*elb.Tag{
 				{
-					Key:   fi.String("tagkey1"),
-					Value: fi.String("tagvalue1"),
+					Key:   fi.PtrTo("tagkey1"),
+					Value: fi.PtrTo("tagvalue1"),
 				},
 				{
-					Key:   fi.String("tagkey2"),
-					Value: fi.String("tagvalue2"),
+					Key:   fi.PtrTo("tagkey2"),
+					Value: fi.PtrTo("tagvalue2"),
 				},
 			},
 			expected: false,

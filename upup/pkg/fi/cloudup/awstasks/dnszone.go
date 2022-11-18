@@ -67,10 +67,10 @@ func (e *DNSZone) Find(c *fi.Context) (*DNSZone, error) {
 	actual := &DNSZone{}
 	actual.Name = e.Name
 	if z.HostedZone.Name != nil {
-		actual.DNSName = fi.String(strings.TrimSuffix(*z.HostedZone.Name, "."))
+		actual.DNSName = fi.PtrTo(strings.TrimSuffix(*z.HostedZone.Name, "."))
 	}
 	if z.HostedZone.Id != nil {
-		actual.ZoneID = fi.String(strings.TrimPrefix(*z.HostedZone.Id, "/hostedzone/"))
+		actual.ZoneID = fi.PtrTo(strings.TrimPrefix(*z.HostedZone.Id, "/hostedzone/"))
 	}
 	actual.Private = z.HostedZone.Config.PrivateZone
 

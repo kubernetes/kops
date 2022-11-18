@@ -20,15 +20,15 @@ import "k8s.io/kops/upup/pkg/fi"
 
 // s is a helper that builds a *string from a string value
 func s(v string) *string {
-	return fi.String(v)
+	return fi.PtrTo(v)
 }
 
 // i32 is a helper that builds a *int32 from an int32 value
 func i32(v int32) *int32 {
-	return fi.Int32(v)
+	return fi.PtrTo(v)
 }
 
 // i is a helper that builds a *int from an int value
 func i(v int) *int {
-	return fi.Int(v)
+	return fi.PtrTo(v)
 }

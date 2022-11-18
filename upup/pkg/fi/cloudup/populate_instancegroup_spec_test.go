@@ -30,8 +30,8 @@ func buildMinimalNodeInstanceGroup(subnets ...string) *kopsapi.InstanceGroup {
 	g := &kopsapi.InstanceGroup{}
 	g.ObjectMeta.Name = "nodes"
 	g.Spec.Role = kopsapi.InstanceGroupRoleNode
-	g.Spec.MinSize = fi.Int32(1)
-	g.Spec.MaxSize = fi.Int32(1)
+	g.Spec.MinSize = fi.PtrTo(int32(1))
+	g.Spec.MaxSize = fi.PtrTo(int32(1))
 	g.Spec.Image = "my-image"
 	g.Spec.Subnets = subnets
 
@@ -42,8 +42,8 @@ func buildMinimalMasterInstanceGroup(subnet string) *kopsapi.InstanceGroup {
 	g := &kopsapi.InstanceGroup{}
 	g.ObjectMeta.Name = "master-" + subnet
 	g.Spec.Role = kopsapi.InstanceGroupRoleMaster
-	g.Spec.MinSize = fi.Int32(1)
-	g.Spec.MaxSize = fi.Int32(1)
+	g.Spec.MinSize = fi.PtrTo(int32(1))
+	g.Spec.MaxSize = fi.PtrTo(int32(1))
 	g.Spec.Image = "my-image"
 	g.Spec.Subnets = []string{subnet}
 
@@ -76,7 +76,7 @@ func TestPopulateInstanceGroup_AddTaintsCollision(t *testing.T) {
 	input := buildMinimalNodeInstanceGroup()
 	input.Spec.Taints = []string{"nvidia.com/gpu:NoSchedule"}
 	input.Spec.MachineType = "g4dn.xlarge"
-	cluster.Spec.Containerd.NvidiaGPU = &kopsapi.NvidiaGPUConfig{Enabled: fi.Bool(true)}
+	cluster.Spec.Containerd.NvidiaGPU = &kopsapi.NvidiaGPUConfig{Enabled: fi.PtrTo(true)}
 
 	channel := &kopsapi.Channel{}
 
@@ -125,11 +125,11 @@ func TestPopulateInstanceGroup_AddTaintsCollision3(t *testing.T) {
 func TestPopulateInstanceGroup_EvictionHard(t *testing.T) {
 	_, cluster := buildMinimalCluster()
 	cluster.Spec.Kubelet = &kopsapi.KubeletConfigSpec{
-		EvictionHard: fi.String("memory.available<350Mi"),
+		EvictionHard: fi.PtrTo("memory.available<350Mi"),
 	}
 	input := buildMinimalNodeInstanceGroup()
 	input.Spec.Kubelet = &kopsapi.KubeletConfigSpec{
-		EvictionHard: fi.String("memory.available<250Mi"),
+		EvictionHard: fi.PtrTo("memory.available<250Mi"),
 	}
 
 	channel := &kopsapi.Channel{}
@@ -150,7 +150,7 @@ func TestPopulateInstanceGroup_EvictionHard(t *testing.T) {
 func TestPopulateInstanceGroup_EvictionHard3(t *testing.T) {
 	_, cluster := buildMinimalCluster()
 	cluster.Spec.Kubelet = &kopsapi.KubeletConfigSpec{
-		EvictionHard: fi.String("memory.available<350Mi"),
+		EvictionHard: fi.PtrTo("memory.available<350Mi"),
 	}
 	input := buildMinimalMasterInstanceGroup("us-test-1")
 
@@ -173,7 +173,7 @@ func TestPopulateInstanceGroup_EvictionHard3(t *testing.T) {
 func TestPopulateInstanceGroup_EvictionHard4(t *testing.T) {
 	_, cluster := buildMinimalCluster()
 	cluster.Spec.MasterKubelet = &kopsapi.KubeletConfigSpec{
-		EvictionHard: fi.String("memory.available<350Mi"),
+		EvictionHard: fi.PtrTo("memory.available<350Mi"),
 	}
 	input := buildMinimalMasterInstanceGroup("us-test-1")
 
@@ -196,7 +196,7 @@ func TestPopulateInstanceGroup_EvictionHard2(t *testing.T) {
 	_, cluster := buildMinimalCluster()
 	input := buildMinimalNodeInstanceGroup()
 	input.Spec.Kubelet = &kopsapi.KubeletConfigSpec{
-		EvictionHard: fi.String("memory.available<250Mi"),
+		EvictionHard: fi.PtrTo("memory.available<250Mi"),
 	}
 
 	channel := &kopsapi.Channel{}
@@ -218,7 +218,7 @@ func TestPopulateInstanceGroup_AddTaints(t *testing.T) {
 	_, cluster := buildMinimalCluster()
 	input := buildMinimalNodeInstanceGroup()
 	input.Spec.MachineType = "g4dn.xlarge"
-	cluster.Spec.Containerd.NvidiaGPU = &kopsapi.NvidiaGPUConfig{Enabled: fi.Bool(true)}
+	cluster.Spec.Containerd.NvidiaGPU = &kopsapi.NvidiaGPUConfig{Enabled: fi.PtrTo(true)}
 
 	channel := &kopsapi.Channel{}
 

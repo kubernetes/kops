@@ -142,8 +142,8 @@ func (e *FloatingIP) Find(c *fi.Context) (*FloatingIP, error) {
 			return nil, nil
 		}
 		actual := &FloatingIP{
-			Name:      fi.String(fip.Description),
-			ID:        fi.String(fip.ID),
+			Name:      fi.PtrTo(fip.Description),
+			ID:        fi.PtrTo(fip.ID),
 			LB:        e.LB,
 			Lifecycle: e.Lifecycle,
 		}
@@ -161,9 +161,9 @@ func (e *FloatingIP) Find(c *fi.Context) (*FloatingIP, error) {
 	for _, fip := range fips {
 		if fip.Description == fi.StringValue(e.Name) {
 			actual := &FloatingIP{
-				ID:        fi.String(fips[0].ID),
+				ID:        fi.PtrTo(fips[0].ID),
 				Name:      e.Name,
-				IP:        fi.String(fip.FloatingIP),
+				IP:        fi.PtrTo(fip.FloatingIP),
 				Lifecycle: e.Lifecycle,
 			}
 			e.ID = actual.ID
@@ -194,8 +194,8 @@ func (e *FloatingIP) Find(c *fi.Context) (*FloatingIP, error) {
 				return nil, nil
 			}
 			actual := &FloatingIP{
-				Name:      fi.String(fip.Description),
-				ID:        fi.String(fip.ID),
+				Name:      fi.PtrTo(fip.Description),
+				ID:        fi.PtrTo(fip.ID),
 				Lifecycle: e.Lifecycle,
 			}
 			e.ID = actual.ID
@@ -286,8 +286,8 @@ func (f *FloatingIP) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, chan
 			return fmt.Errorf("Failed to create floating IP: %v", err)
 		}
 
-		e.ID = fi.String(fip.ID)
-		e.IP = fi.String(fip.FloatingIP)
+		e.ID = fi.PtrTo(fip.ID)
+		e.IP = fi.PtrTo(fip.FloatingIP)
 
 		return nil
 	}

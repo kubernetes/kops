@@ -38,7 +38,7 @@ func (b *AWSEBSCSIDriverOptionsBuilder) BuildOptions(o interface{}) error {
 	cc := clusterSpec.CloudConfig
 	if cc.AWSEBSCSIDriver == nil {
 		cc.AWSEBSCSIDriver = &kops.AWSEBSCSIDriver{
-			Enabled: fi.Bool(b.IsKubernetesGTE("1.22")),
+			Enabled: fi.PtrTo(b.IsKubernetesGTE("1.22")),
 		}
 	}
 	c := cc.AWSEBSCSIDriver
@@ -49,7 +49,7 @@ func (b *AWSEBSCSIDriverOptionsBuilder) BuildOptions(o interface{}) error {
 
 	if c.Version == nil {
 		version := "v1.12.0"
-		c.Version = fi.String(version)
+		c.Version = fi.PtrTo(version)
 	}
 
 	return nil

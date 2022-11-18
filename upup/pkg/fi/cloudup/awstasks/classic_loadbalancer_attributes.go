@@ -119,22 +119,22 @@ func (_ *ClassicLoadBalancer) modifyLoadBalancerAttributes(t *awsup.AWSAPITarget
 	// Setting mandatory attributes to default values if empty
 	request.LoadBalancerAttributes.AccessLog = &elb.AccessLog{}
 	if e.AccessLog == nil || e.AccessLog.Enabled == nil {
-		request.LoadBalancerAttributes.AccessLog.Enabled = fi.Bool(false)
+		request.LoadBalancerAttributes.AccessLog.Enabled = fi.PtrTo(false)
 	}
 	request.LoadBalancerAttributes.ConnectionDraining = &elb.ConnectionDraining{}
 	if e.ConnectionDraining == nil || e.ConnectionDraining.Enabled == nil {
-		request.LoadBalancerAttributes.ConnectionDraining.Enabled = fi.Bool(false)
+		request.LoadBalancerAttributes.ConnectionDraining.Enabled = fi.PtrTo(false)
 	}
 	if e.ConnectionDraining == nil || e.ConnectionDraining.Timeout == nil {
-		request.LoadBalancerAttributes.ConnectionDraining.Timeout = fi.Int64(300)
+		request.LoadBalancerAttributes.ConnectionDraining.Timeout = fi.PtrTo(int64(300))
 	}
 	request.LoadBalancerAttributes.ConnectionSettings = &elb.ConnectionSettings{}
 	if e.ConnectionSettings == nil || e.ConnectionSettings.IdleTimeout == nil {
-		request.LoadBalancerAttributes.ConnectionSettings.IdleTimeout = fi.Int64(60)
+		request.LoadBalancerAttributes.ConnectionSettings.IdleTimeout = fi.PtrTo(int64(60))
 	}
 	request.LoadBalancerAttributes.CrossZoneLoadBalancing = &elb.CrossZoneLoadBalancing{}
 	if e.CrossZoneLoadBalancing == nil || e.CrossZoneLoadBalancing.Enabled == nil {
-		request.LoadBalancerAttributes.CrossZoneLoadBalancing.Enabled = fi.Bool(false)
+		request.LoadBalancerAttributes.CrossZoneLoadBalancing.Enabled = fi.PtrTo(false)
 	} else {
 		request.LoadBalancerAttributes.CrossZoneLoadBalancing.Enabled = e.CrossZoneLoadBalancing.Enabled
 	}

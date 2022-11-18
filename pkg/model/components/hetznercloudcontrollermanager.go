@@ -43,14 +43,14 @@ func (b *HetznerCloudControllerManagerOptionsBuilder) BuildOptions(o interface{}
 
 	eccm := clusterSpec.ExternalCloudControllerManager
 	eccm.CloudProvider = "hcloud"
-	eccm.AllowUntaggedCloud = fi.Bool(true)
+	eccm.AllowUntaggedCloud = fi.PtrTo(true)
 	eccm.LeaderElection = &kops.LeaderElectionConfiguration{
-		LeaderElect: fi.Bool(false),
+		LeaderElect: fi.PtrTo(false),
 	}
 
 	eccm.ClusterCIDR = clusterSpec.NonMasqueradeCIDR
-	eccm.AllocateNodeCIDRs = fi.Bool(true)
-	eccm.ConfigureCloudRoutes = fi.Bool(false)
+	eccm.AllocateNodeCIDRs = fi.PtrTo(true)
+	eccm.ConfigureCloudRoutes = fi.PtrTo(false)
 
 	if eccm.Image == "" {
 		eccm.Image = "hetznercloud/hcloud-cloud-controller-manager:v1.13.2"

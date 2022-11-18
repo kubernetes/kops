@@ -67,7 +67,7 @@ func overridesFromInstanceRequirements(ir *InstanceRequirements) *autoscaling.La
 				Max: ir.MemoryMax,
 				Min: ir.MemoryMin,
 			},
-			BurstablePerformance: fi.String("included"),
+			BurstablePerformance: fi.PtrTo("included"),
 		},
 	}
 }

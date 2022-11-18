@@ -32,7 +32,7 @@ var _ fi.ModelBuilder = &NetworkModelBuilder{}
 
 func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	network := &hetznertasks.Network{
-		Name:      fi.String(b.ClusterName()),
+		Name:      fi.PtrTo(b.ClusterName()),
 		Lifecycle: b.Lifecycle,
 	}
 
@@ -46,7 +46,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			hetzner.TagKubernetesClusterName: b.ClusterName(),
 		}
 	} else {
-		network.ID = fi.String(b.Cluster.Spec.NetworkID)
+		network.ID = fi.PtrTo(b.Cluster.Spec.NetworkID)
 	}
 
 	c.AddTask(network)

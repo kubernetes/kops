@@ -126,7 +126,7 @@ func (b *KopsModelContext) LinkToVPC() *awstasks.VPC {
 }
 
 func (b *KopsModelContext) LinkToAmazonVPCIPv6CIDR() *awstasks.VPCAmazonIPv6CIDRBlock {
-	return &awstasks.VPCAmazonIPv6CIDRBlock{Name: fi.String("AmazonIPv6")}
+	return &awstasks.VPCAmazonIPv6CIDRBlock{Name: fi.PtrTo("AmazonIPv6")}
 }
 
 func (b *KopsModelContext) LinkToDNSZone() *awstasks.DNSZone {
@@ -214,7 +214,7 @@ func (b *KopsModelContext) NamePublicRouteTableInZone(zoneName string) string {
 }
 
 func (b *KopsModelContext) LinkToPublicRouteTableInZone(zoneName string) *awstasks.RouteTable {
-	return &awstasks.RouteTable{Name: fi.String(b.NamePublicRouteTableInZone(zoneName))}
+	return &awstasks.RouteTable{Name: fi.PtrTo(b.NamePublicRouteTableInZone(zoneName))}
 }
 
 func (b *KopsModelContext) NamePrivateRouteTableInZone(zoneName string) string {
@@ -222,7 +222,7 @@ func (b *KopsModelContext) NamePrivateRouteTableInZone(zoneName string) string {
 }
 
 func (b *KopsModelContext) LinkToPrivateRouteTableInZone(zoneName string) *awstasks.RouteTable {
-	return &awstasks.RouteTable{Name: fi.String(b.NamePrivateRouteTableInZone(zoneName))}
+	return &awstasks.RouteTable{Name: fi.PtrTo(b.NamePrivateRouteTableInZone(zoneName))}
 }
 
 func (b *KopsModelContext) InstanceName(ig *kops.InstanceGroup, suffix string) string {

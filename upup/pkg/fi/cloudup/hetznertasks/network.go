@@ -72,7 +72,7 @@ func (v *Network) Find(c *fi.Context) (*Network, error) {
 	matches := &Network{
 		Name:      v.Name,
 		Lifecycle: v.Lifecycle,
-		ID:        fi.String(strconv.Itoa(network.ID)),
+		ID:        fi.PtrTo(strconv.Itoa(network.ID)),
 	}
 
 	if v.ID == nil {
@@ -151,7 +151,7 @@ func (_ *Network) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *Netw
 		if err != nil {
 			return err
 		}
-		e.ID = fi.String(strconv.Itoa(network.ID))
+		e.ID = fi.PtrTo(strconv.Itoa(network.ID))
 
 	} else {
 		var err error
@@ -221,7 +221,7 @@ func (_ *Network) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *N
 	{
 		tf := &terraformNetwork{
 			Name:    e.Name,
-			IPRange: fi.String(e.IPRange),
+			IPRange: fi.PtrTo(e.IPRange),
 			Labels:  e.Labels,
 		}
 
@@ -239,9 +239,9 @@ func (_ *Network) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *N
 
 		tf := &terraformNetworkSubnet{
 			NetworkID:   e.TerraformLink(),
-			Type:        fi.String(string(hcloud.NetworkSubnetTypeCloud)),
-			IPRange:     fi.String(subnetIpRange.String()),
-			NetworkZone: fi.String(e.Region),
+			Type:        fi.PtrTo(string(hcloud.NetworkSubnetTypeCloud)),
+			IPRange:     fi.PtrTo(subnetIpRange.String()),
+			NetworkZone: fi.PtrTo(e.Region),
 		}
 
 		err = t.RenderResource("hcloud_network_subnet", *e.Name+"-"+subnet, tf)

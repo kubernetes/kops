@@ -81,7 +81,7 @@ func createInstance(c OpenstackCloud, opt servers.CreateOptsBuilder, portID stri
 				if port.DeviceID != "" && port.DeviceOwner == "" {
 					klog.Warningf("Port %s is attached to Device that does not exist anymore, reseting the status of DeviceID", portID)
 					_, err := c.UpdatePort(portID, ports.UpdateOpts{
-						DeviceID: fi.String(""),
+						DeviceID: fi.PtrTo(""),
 					})
 					if err != nil {
 						return false, fmt.Errorf("error updating port %s deviceid: %v", portID, err)
@@ -124,10 +124,10 @@ func listServerFloatingIPs(c OpenstackCloud, instanceID string, floatingEnabled 
 			for _, props := range addrList {
 				if floatingEnabled {
 					if props.IPType == "floating" {
-						result = append(result, fi.String(props.Addr))
+						result = append(result, fi.PtrTo(props.Addr))
 					}
 				} else {
-					result = append(result, fi.String(props.Addr))
+					result = append(result, fi.PtrTo(props.Addr))
 				}
 			}
 		}
@@ -242,7 +242,7 @@ func drainSingleLB(c OpenstackCloud, lb loadbalancers.LoadBalancer, instanceName
 				// Setting the member weight to 0 means that the member will not receive new requests but will finish any existing connections.
 				// This “drains” the backend member of active connections.
 				_, err := c.UpdateMemberInPool(pool.ID, member.ID, v2pools.UpdateMemberOpts{
-					Weight: fi.Int(0),
+					Weight: fi.PtrTo(0),
 				})
 				if err != nil {
 					return err

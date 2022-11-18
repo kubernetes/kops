@@ -120,14 +120,14 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 
 		actual.Tags = append(actual.Tags, p.Tags.Items...)
 		actual.Labels = p.Labels
-		actual.MachineType = fi.String(lastComponent(p.MachineType))
+		actual.MachineType = fi.PtrTo(lastComponent(p.MachineType))
 		actual.CanIPForward = &p.CanIpForward
 
 		bootDiskImage, err := ShortenImageURL(cloud.Project(), p.Disks[0].InitializeParams.SourceImage)
 		if err != nil {
 			return nil, fmt.Errorf("error parsing source image URL: %v", err)
 		}
-		actual.BootDiskImage = fi.String(bootDiskImage)
+		actual.BootDiskImage = fi.PtrTo(bootDiskImage)
 		actual.BootDiskType = &p.Disks[0].InitializeParams.DiskType
 		actual.BootDiskSizeGB = &p.Disks[0].InitializeParams.DiskSizeGb
 
@@ -137,7 +137,7 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 		}
 		if len(p.NetworkInterfaces) != 0 {
 			ni := p.NetworkInterfaces[0]
-			actual.Network = &Network{Name: fi.String(lastComponent(ni.Network))}
+			actual.Network = &Network{Name: fi.PtrTo(lastComponent(ni.Network))}
 
 			if len(ni.AliasIpRanges) != 0 {
 				actual.AliasIPRanges = make(map[string]string)
@@ -147,7 +147,7 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 			}
 
 			if ni.Subnetwork != "" {
-				actual.Subnet = &Subnet{Name: fi.String(lastComponent(ni.Subnetwork))}
+				actual.Subnet = &Subnet{Name: fi.PtrTo(lastComponent(ni.Subnetwork))}
 			}
 
 			acs := ni.AccessConfigs
@@ -158,9 +158,9 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 				if acs[0].Type != accessConfigOneToOneNAT {
 					return nil, fmt.Errorf("unexpected access type in template %q: %s", *actual.Name, acs[0].Type)
 				}
-				actual.HasExternalIP = fi.Bool(true)
+				actual.HasExternalIP = fi.PtrTo(true)
 			} else {
-				actual.HasExternalIP = fi.Bool(false)
+				actual.HasExternalIP = fi.PtrTo(false)
 			}
 		}
 
@@ -191,7 +191,7 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 		//			if err != nil {
 		//				return nil, fmt.Errorf("unable to parse image URL: %q", d.SourceImage)
 		//			}
-		//			actual.Image = fi.String(imageURL.Project + "/" + imageURL.Name)
+		//			actual.Image = fi.PtrTo(imageURL.Project + "/" + imageURL.Name)
 		//		}
 		//	}
 		//}
@@ -249,14 +249,14 @@ func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.Ins
 
 	if fi.BoolValue(e.Preemptible) {
 		scheduling = &compute.Scheduling{
-			AutomaticRestart:  fi.Bool(false),
+			AutomaticRestart:  fi.PtrTo(false),
 			OnHostMaintenance: "TERMINATE",
 			ProvisioningModel: fi.StringValue(e.GCPProvisioningModel),
 			Preemptible:       true,
 		}
 	} else {
 		scheduling = &compute.Scheduling{
-			AutomaticRestart: fi.Bool(true),
+			AutomaticRestart: fi.PtrTo(true),
 			// TODO: Migrate or terminate?
 			OnHostMaintenance: "MIGRATE",
 			ProvisioningModel: "STANDARD",
@@ -350,7 +350,7 @@ func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.Ins
 		}
 		metadataItems = append(metadataItems, &compute.MetadataItems{
 			Key:   key,
-			Value: fi.String(v),
+			Value: fi.PtrTo(v),
 		})
 	}
 

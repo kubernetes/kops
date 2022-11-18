@@ -283,7 +283,7 @@ func BuildNodeupModelContext(model *testutils.Model) (*NodeupModelContext, error
 	nodeupModelContext.NodeupConfig.ContainerdConfig = nodeupModelContext.Cluster.Spec.Containerd
 	updatePolicy := nodeupModelContext.Cluster.Spec.UpdatePolicy
 	if updatePolicy == nil {
-		updatePolicy = fi.String(kops.UpdatePolicyAutomatic)
+		updatePolicy = fi.PtrTo(kops.UpdatePolicyAutomatic)
 	}
 	nodeupModelContext.NodeupConfig.UpdatePolicy = *updatePolicy
 

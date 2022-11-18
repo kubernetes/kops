@@ -80,13 +80,13 @@ func (b *VMScaleSetModelBuilder) buildVMScaleSetTask(
 		azNumbers = append(azNumbers, az)
 	}
 	t := &azuretasks.VMScaleSet{
-		Name:               fi.String(name),
+		Name:               fi.PtrTo(name),
 		Lifecycle:          b.Lifecycle,
 		ResourceGroup:      b.LinkToResourceGroup(),
 		VirtualNetwork:     b.LinkToVirtualNetwork(),
-		SKUName:            fi.String(ig.Spec.MachineType),
-		ComputerNamePrefix: fi.String(ig.Name),
-		AdminUser:          fi.String(b.Cluster.Spec.CloudProvider.Azure.AdminUser),
+		SKUName:            fi.PtrTo(ig.Spec.MachineType),
+		ComputerNamePrefix: fi.PtrTo(ig.Name),
+		AdminUser:          fi.PtrTo(b.Cluster.Spec.CloudProvider.Azure.AdminUser),
 		Zones:              azNumbers,
 	}
 
@@ -107,7 +107,7 @@ func (b *VMScaleSetModelBuilder) buildVMScaleSetTask(
 		if n > 1 {
 			return nil, fmt.Errorf("expected at most one SSH public key; found %d keys", n)
 		}
-		t.SSHPublicKey = fi.String(string(b.SSHPublicKeys[0]))
+		t.SSHPublicKey = fi.PtrTo(string(b.SSHPublicKeys[0]))
 	}
 
 	if t.UserData, err = b.BootstrapScriptBuilder.ResourceNodeUp(c, ig); err != nil {
@@ -126,12 +126,12 @@ func (b *VMScaleSetModelBuilder) buildVMScaleSetTask(
 
 	switch subnet.Type {
 	case kops.SubnetTypePublic, kops.SubnetTypeUtility:
-		t.RequirePublicIP = fi.Bool(true)
+		t.RequirePublicIP = fi.PtrTo(true)
 		if ig.Spec.AssociatePublicIP != nil {
 			t.RequirePublicIP = ig.Spec.AssociatePublicIP
 		}
 	case kops.SubnetTypeDualStack, kops.SubnetTypePrivate:
-		t.RequirePublicIP = fi.Bool(false)
+		t.RequirePublicIP = fi.PtrTo(false)
 	default:
 		return nil, fmt.Errorf("unexpected subnet type: for InstanceGroup %q; type was %s", ig.Name, subnet.Type)
 	}
@@ -164,7 +164,7 @@ func getCapacity(spec *kops.InstanceGroupSpec) (*int64, error) {
 	if minSize != maxSize {
 		return nil, fmt.Errorf("instance group must have the same min and max size in Azure, but got %d and %d", minSize, maxSize)
 	}
-	return fi.Int64(int64(minSize)), nil
+	return fi.PtrTo(int64(minSize)), nil
 }
 
 func getStorageProfile(spec *kops.InstanceGroupSpec) (*compute.VirtualMachineScaleSetStorageProfile, error) {

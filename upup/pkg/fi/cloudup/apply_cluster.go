@@ -1435,7 +1435,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 		bootConfig.ConfigServer = configServer
 		delete(config.CAs, fi.CertificateIDCA)
 	} else {
-		bootConfig.ConfigBase = fi.String(n.configBase.Path())
+		bootConfig.ConfigBase = fi.PtrTo(n.configBase.Path())
 	}
 
 	for _, manifest := range n.assetBuilder.StaticManifests {

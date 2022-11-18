@@ -328,7 +328,7 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 					if err != nil {
 						return nil, err
 					}
-					actual.TargetGroups = append(actual.TargetGroups, &TargetGroup{ARN: targetGroupARN, Name: fi.String(targetGroupName)})
+					actual.TargetGroups = append(actual.TargetGroups, &TargetGroup{ARN: targetGroupARN, Name: fi.PtrTo(targetGroupName)})
 
 					cloud := c.Cloud.(awsup.AWSCloud)
 					descResp, err := cloud.ELBV2().DescribeTargetGroups(&elbv2.DescribeTargetGroupsInput{
@@ -367,7 +367,7 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 				if err != nil {
 					return nil, err
 				}
-				actual.CrossZoneLoadBalancing = fi.Bool(b)
+				actual.CrossZoneLoadBalancing = fi.PtrTo(b)
 			case "access_logs.s3.enabled":
 				b, err := strconv.ParseBool(*value)
 				if err != nil {
@@ -376,7 +376,7 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 				if actual.AccessLog == nil {
 					actual.AccessLog = &NetworkLoadBalancerAccessLog{}
 				}
-				actual.AccessLog.Enabled = fi.Bool(b)
+				actual.AccessLog.Enabled = fi.PtrTo(b)
 			case "access_logs.s3.bucket":
 				if actual.AccessLog == nil {
 					actual.AccessLog = &NetworkLoadBalancerAccessLog{}

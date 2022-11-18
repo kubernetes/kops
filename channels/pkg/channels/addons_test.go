@@ -145,7 +145,7 @@ func Test_GetRequiredUpdates(t *testing.T) {
 	addon := &Addon{
 		Name: "test",
 		Spec: &api.AddonSpec{
-			Name:     fi.String("test"),
+			Name:     fi.PtrTo("test"),
 			NeedsPKI: true,
 		},
 	}
@@ -173,7 +173,7 @@ func Test_NeedsRollingUpdate(t *testing.T) {
 			newAddon: &Addon{
 				Name: "test",
 				Spec: &api.AddonSpec{
-					Name:               fi.String("test"),
+					Name:               fi.PtrTo("test"),
 					ManifestHash:       "originalHash",
 					NeedsRollingUpdate: "all",
 				},
@@ -183,7 +183,7 @@ func Test_NeedsRollingUpdate(t *testing.T) {
 			newAddon: &Addon{
 				Name: "test",
 				Spec: &api.AddonSpec{
-					Name:               fi.String("test"),
+					Name:               fi.PtrTo("test"),
 					ManifestHash:       "newHash",
 					NeedsRollingUpdate: "all",
 				},
@@ -195,7 +195,7 @@ func Test_NeedsRollingUpdate(t *testing.T) {
 			newAddon: &Addon{
 				Name: "test",
 				Spec: &api.AddonSpec{
-					Name:               fi.String("test"),
+					Name:               fi.PtrTo("test"),
 					ManifestHash:       "newHash",
 					NeedsRollingUpdate: "worker",
 				},
@@ -207,7 +207,7 @@ func Test_NeedsRollingUpdate(t *testing.T) {
 			newAddon: &Addon{
 				Name: "test",
 				Spec: &api.AddonSpec{
-					Name:               fi.String("test"),
+					Name:               fi.PtrTo("test"),
 					ManifestHash:       "newHash",
 					NeedsRollingUpdate: "control-plane",
 				},
@@ -219,7 +219,7 @@ func Test_NeedsRollingUpdate(t *testing.T) {
 			newAddon: &Addon{
 				Name: "test",
 				Spec: &api.AddonSpec{
-					Name:               fi.String("test"),
+					Name:               fi.PtrTo("test"),
 					ManifestHash:       "newHash",
 					NeedsRollingUpdate: "all",
 				},
@@ -338,7 +338,7 @@ func Test_InstallPKI(t *testing.T) {
 	addon := &Addon{
 		Name: "test",
 		Spec: &api.AddonSpec{
-			Name:     fi.String("test"),
+			Name:     fi.PtrTo("test"),
 			NeedsPKI: true,
 		},
 	}

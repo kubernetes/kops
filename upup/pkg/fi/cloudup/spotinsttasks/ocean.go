@@ -144,8 +144,8 @@ func (o *Ocean) Find(c *fi.Context) (*Ocean, error) {
 	// Capacity.
 	{
 		if !fi.BoolValue(ocean.Compute.LaunchSpecification.UseAsTemplateOnly) {
-			actual.MinSize = fi.Int64(int64(fi.IntValue(ocean.Capacity.Minimum)))
-			actual.MaxSize = fi.Int64(int64(fi.IntValue(ocean.Capacity.Maximum)))
+			actual.MinSize = fi.PtrTo(int64(fi.IntValue(ocean.Capacity.Minimum)))
+			actual.MaxSize = fi.PtrTo(int64(fi.IntValue(ocean.Capacity.Maximum)))
 		}
 	}
 
@@ -157,11 +157,11 @@ func (o *Ocean) Find(c *fi.Context) (*Ocean, error) {
 			actual.UtilizeCommitments = strategy.UtilizeCommitments
 
 			if strategy.DrainingTimeout != nil {
-				actual.DrainingTimeout = fi.Int64(int64(fi.IntValue(strategy.DrainingTimeout)))
+				actual.DrainingTimeout = fi.PtrTo(int64(fi.IntValue(strategy.DrainingTimeout)))
 			}
 
 			if strategy.GracePeriod != nil {
-				actual.GracePeriod = fi.Int64(int64(fi.IntValue(strategy.GracePeriod)))
+				actual.GracePeriod = fi.PtrTo(int64(fi.IntValue(strategy.GracePeriod)))
 			}
 		}
 	}
@@ -175,7 +175,7 @@ func (o *Ocean) Find(c *fi.Context) (*Ocean, error) {
 			if subnets := compute.SubnetIDs; subnets != nil {
 				for _, subnetID := range subnets {
 					actual.Subnets = append(actual.Subnets,
-						&awstasks.Subnet{ID: fi.String(subnetID)})
+						&awstasks.Subnet{ID: fi.PtrTo(subnetID)})
 				}
 				if subnetSlicesEqualIgnoreOrder(actual.Subnets, o.Subnets) {
 					actual.Subnets = o.Subnets
@@ -234,7 +234,7 @@ func (o *Ocean) Find(c *fi.Context) (*Ocean, error) {
 			if lc.SecurityGroupIDs != nil {
 				for _, sgID := range lc.SecurityGroupIDs {
 					actual.SecurityGroups = append(actual.SecurityGroups,
-						&awstasks.SecurityGroup{ID: fi.String(sgID)})
+						&awstasks.SecurityGroup{ID: fi.PtrTo(sgID)})
 				}
 			}
 		}
@@ -278,7 +278,7 @@ func (o *Ocean) Find(c *fi.Context) (*Ocean, error) {
 		// Root volume options.
 		if lc.RootVolumeSize != nil {
 			actual.RootVolumeOpts = new(RootVolumeOpts)
-			actual.RootVolumeOpts.Size = fi.Int64(int64(*lc.RootVolumeSize))
+			actual.RootVolumeOpts.Size = fi.PtrTo(int64(*lc.RootVolumeSize))
 		}
 
 		// Monitoring.
@@ -369,15 +369,15 @@ func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 	// General.
 	{
 		ocean.SetName(e.Name)
-		ocean.SetRegion(fi.String(cloud.Region()))
+		ocean.SetRegion(fi.PtrTo(cloud.Region()))
 	}
 
 	// Capacity.
 	{
 		if !fi.BoolValue(e.UseAsTemplateOnly) {
-			ocean.Capacity.SetTarget(fi.Int(int(*e.MinSize)))
-			ocean.Capacity.SetMinimum(fi.Int(int(*e.MinSize)))
-			ocean.Capacity.SetMaximum(fi.Int(int(*e.MaxSize)))
+			ocean.Capacity.SetTarget(fi.PtrTo(int(*e.MinSize)))
+			ocean.Capacity.SetMinimum(fi.PtrTo(int(*e.MinSize)))
+			ocean.Capacity.SetMaximum(fi.PtrTo(int(*e.MaxSize)))
 		}
 	}
 
@@ -388,11 +388,11 @@ func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 		ocean.Strategy.SetUtilizeCommitments(e.UtilizeCommitments)
 
 		if e.DrainingTimeout != nil {
-			ocean.Strategy.SetDrainingTimeout(fi.Int(int(*e.DrainingTimeout)))
+			ocean.Strategy.SetDrainingTimeout(fi.PtrTo(int(*e.DrainingTimeout)))
 		}
 
 		if e.GracePeriod != nil {
-			ocean.Strategy.SetGracePeriod(fi.Int(int(*e.GracePeriod)))
+			ocean.Strategy.SetGracePeriod(fi.PtrTo(int(*e.GracePeriod)))
 		}
 	}
 
@@ -467,7 +467,7 @@ func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 
 						if len(userData) > 0 {
 							encoded := base64.StdEncoding.EncodeToString([]byte(userData))
-							ocean.Compute.LaunchSpecification.SetUserData(fi.String(encoded))
+							ocean.Compute.LaunchSpecification.SetUserData(fi.PtrTo(encoded))
 						}
 					}
 				}
@@ -487,7 +487,7 @@ func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 
 						// Volume size.
 						if opts.Size != nil {
-							ocean.Compute.LaunchSpecification.SetRootVolumeSize(fi.Int(int(*opts.Size)))
+							ocean.Compute.LaunchSpecification.SetRootVolumeSize(fi.PtrTo(int(*opts.Size)))
 						}
 
 						// EBS optimization.
@@ -646,7 +646,7 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 				ocean.Strategy = new(aws.Strategy)
 			}
 
-			ocean.Strategy.SetDrainingTimeout(fi.Int(int(*e.DrainingTimeout)))
+			ocean.Strategy.SetDrainingTimeout(fi.PtrTo(int(*e.DrainingTimeout)))
 			changes.DrainingTimeout = nil
 			changed = true
 		}
@@ -657,7 +657,7 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 				ocean.Strategy = new(aws.Strategy)
 			}
 
-			ocean.Strategy.SetGracePeriod(fi.Int(int(*e.GracePeriod)))
+			ocean.Strategy.SetGracePeriod(fi.PtrTo(int(*e.GracePeriod)))
 			changes.GracePeriod = nil
 			changed = true
 		}
@@ -831,7 +831,7 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 							}
 
 							encoded := base64.StdEncoding.EncodeToString([]byte(userData))
-							ocean.Compute.LaunchSpecification.SetUserData(fi.String(encoded))
+							ocean.Compute.LaunchSpecification.SetUserData(fi.PtrTo(encoded))
 							changed = true
 						}
 
@@ -903,7 +903,7 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 								ocean.Compute.LaunchSpecification = new(aws.LaunchSpecification)
 							}
 
-							ocean.Compute.LaunchSpecification.SetRootVolumeSize(fi.Int(int(*opts.Size)))
+							ocean.Compute.LaunchSpecification.SetRootVolumeSize(fi.PtrTo(int(*opts.Size)))
 							changed = true
 						}
 
@@ -935,13 +935,13 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 					ocean.Capacity = new(aws.Capacity)
 				}
 
-				ocean.Capacity.SetMinimum(fi.Int(int(*e.MinSize)))
+				ocean.Capacity.SetMinimum(fi.PtrTo(int(*e.MinSize)))
 				changes.MinSize = nil
 				changed = true
 
 				// Scale up the target capacity, if needed.
 				if int64(*actual.Capacity.Target) < *e.MinSize {
-					ocean.Capacity.SetTarget(fi.Int(int(*e.MinSize)))
+					ocean.Capacity.SetTarget(fi.PtrTo(int(*e.MinSize)))
 				}
 			}
 			if changes.MaxSize != nil {
@@ -949,7 +949,7 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 					ocean.Capacity = new(aws.Capacity)
 				}
 
-				ocean.Capacity.SetMaximum(fi.Int(int(*e.MaxSize)))
+				ocean.Capacity.SetMaximum(fi.PtrTo(int(*e.MaxSize)))
 				changes.MaxSize = nil
 				changed = true
 			}
@@ -1057,7 +1057,7 @@ func (_ *Ocean) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Oce
 
 	tf := &terraformOcean{
 		Name:                     e.Name,
-		Region:                   fi.String(cloud.Region()),
+		Region:                   fi.PtrTo(cloud.Region()),
 		UseAsTemplateOnly:        e.UseAsTemplateOnly,
 		FallbackToOnDemand:       e.FallbackToOnDemand,
 		UtilizeReservedInstances: e.UtilizeReservedInstances,
@@ -1227,8 +1227,8 @@ func (o *Ocean) buildTags() []*aws.Tag {
 
 	for key, value := range o.Tags {
 		tags = append(tags, &aws.Tag{
-			Key:   fi.String(key),
-			Value: fi.String(value),
+			Key:   fi.PtrTo(key),
+			Value: fi.PtrTo(value),
 		})
 	}
 

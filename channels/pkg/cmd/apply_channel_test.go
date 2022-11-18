@@ -59,7 +59,7 @@ func TestGetUpdates(t *testing.T) {
 		"aws-ebs-csi-driver.addons.k8s.io": {
 			Name: "aws-ebs-csi-driver.addons.k8s.io",
 			Spec: &api.AddonSpec{
-				Name:         fi.String("aws-ebs-csi-driver.addons.k8s.io"),
+				Name:         fi.PtrTo("aws-ebs-csi-driver.addons.k8s.io"),
 				Id:           "k8s-1.17",
 				ManifestHash: "abc",
 			},

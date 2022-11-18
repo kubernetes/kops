@@ -193,12 +193,12 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 
 	server := filteredList[0]
 	actual := &Instance{
-		ID:               fi.String(server.ID),
+		ID:               fi.PtrTo(server.ID),
 		Name:             e.Name,
-		SSHKey:           fi.String(server.KeyName),
+		SSHKey:           fi.PtrTo(server.KeyName),
 		Lifecycle:        e.Lifecycle,
 		Metadata:         server.Metadata,
-		Role:             fi.String(server.Metadata["KopsRole"]),
+		Role:             fi.PtrTo(server.Metadata["KopsRole"]),
 		AvailabilityZone: e.AvailabilityZone,
 		GroupName:        e.GroupName,
 		ConfigDrive:      e.ConfigDrive,
@@ -236,8 +236,8 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 		if len(fips) == 1 {
 			fip := fips[0]
 			fipTask := &FloatingIP{
-				ID:   fi.String(fip.ID),
-				Name: fi.String(fip.Description),
+				ID:   fi.PtrTo(fip.ID),
+				Name: fi.PtrTo(fip.Description),
 			}
 
 			actual.FloatingIP = fipTask
@@ -376,7 +376,7 @@ func (_ *Instance) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, change
 		if err != nil {
 			return fmt.Errorf("Error creating instance: %v", err)
 		}
-		e.ID = fi.String(v.ID)
+		e.ID = fi.PtrTo(v.ID)
 		e.ServerGroup.AddNewMember(fi.StringValue(e.ID))
 
 		if e.FloatingIP != nil {

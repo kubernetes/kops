@@ -103,40 +103,40 @@ func Test_Build_KCM_Builder_CIDR_Mask_Size(t *testing.T) {
 		},
 		{
 			PodCIDR:          "2001:DB8::/32",
-			ExpectedMaskSize: fi.Int32(48),
+			ExpectedMaskSize: fi.PtrTo(int32(48)),
 		},
 		{
 			PodCIDR:          "2001:DB8::/65",
-			ExpectedMaskSize: fi.Int32(81),
+			ExpectedMaskSize: fi.PtrTo(int32(81)),
 		},
 		{
 			PodCIDR:          "2001:DB8::/32",
 			ClusterCIDR:      "2001:DB8::/65",
-			ExpectedMaskSize: fi.Int32(81),
+			ExpectedMaskSize: fi.PtrTo(int32(81)),
 		},
 		{
 			PodCIDR:          "2001:DB8::/95",
-			ExpectedMaskSize: fi.Int32(111),
+			ExpectedMaskSize: fi.PtrTo(int32(111)),
 		},
 		{
 			PodCIDR:          "2001:DB8::/96",
-			ExpectedMaskSize: fi.Int32(112),
+			ExpectedMaskSize: fi.PtrTo(int32(112)),
 		},
 		{
 			PodCIDR:          "2001:DB8::/97",
-			ExpectedMaskSize: fi.Int32(112),
+			ExpectedMaskSize: fi.PtrTo(int32(112)),
 		},
 		{
 			PodCIDR:          "2001:DB8::/98",
-			ExpectedMaskSize: fi.Int32(113),
+			ExpectedMaskSize: fi.PtrTo(int32(113)),
 		},
 		{
 			PodCIDR:          "2001:DB8::/99",
-			ExpectedMaskSize: fi.Int32(113),
+			ExpectedMaskSize: fi.PtrTo(int32(113)),
 		},
 		{
 			PodCIDR:          "2001:DB8::/100",
-			ExpectedMaskSize: fi.Int32(114),
+			ExpectedMaskSize: fi.PtrTo(int32(114)),
 		},
 	}
 	for _, tc := range grid {

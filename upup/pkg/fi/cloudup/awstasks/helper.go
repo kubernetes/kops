@@ -37,7 +37,7 @@ func buildEphemeralDevices(cloud awsup.AWSCloud, machineType string) (map[string
 	blockDeviceMappings := make(map[string]*BlockDeviceMapping)
 
 	for _, ed := range mt.EphemeralDevices() {
-		blockDeviceMappings[ed.DeviceName] = &BlockDeviceMapping{VirtualName: fi.String(ed.VirtualName)}
+		blockDeviceMappings[ed.DeviceName] = &BlockDeviceMapping{VirtualName: fi.PtrTo(ed.VirtualName)}
 	}
 
 	return blockDeviceMappings, nil

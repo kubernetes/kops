@@ -49,7 +49,7 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Create LoadBalancer for API ELB
 	lb := &azuretasks.LoadBalancer{
-		Name:          fi.String(b.NameForLoadBalancer()),
+		Name:          fi.PtrTo(b.NameForLoadBalancer()),
 		Lifecycle:     b.Lifecycle,
 		ResourceGroup: b.LinkToResourceGroup(),
 		Tags:          map[string]*string{},
@@ -68,7 +68,7 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		// Create Public IP Address for Public Loadbalacer
 		p := &azuretasks.PublicIPAddress{
-			Name:          fi.String(b.NameForLoadBalancer()),
+			Name:          fi.PtrTo(b.NameForLoadBalancer()),
 			Lifecycle:     b.Lifecycle,
 			ResourceGroup: b.LinkToResourceGroup(),
 			Tags:          map[string]*string{},

@@ -142,7 +142,7 @@ func TestBootstrapUserData(t *testing.T) {
 		}
 
 		caTask := &fitasks.Keypair{
-			Name:    fi.String(fi.CertificateIDCA),
+			Name:    fi.PtrTo(fi.CertificateIDCA),
 			Subject: "cn=kubernetes",
 			Type:    "ca",
 		}
@@ -157,7 +157,7 @@ func TestBootstrapUserData(t *testing.T) {
 			"service-account",
 		} {
 			task := &fitasks.Keypair{
-				Name:    fi.String(keypair),
+				Name:    fi.PtrTo(keypair),
 				Subject: "cn=" + keypair,
 				Type:    "ca",
 			}
@@ -229,7 +229,7 @@ func makeTestCluster(hookSpecRoles []kops.InstanceGroupRole, fileAssetSpecRoles 
 					Members: []kops.EtcdMemberSpec{
 						{
 							Name:          "test",
-							InstanceGroup: fi.String("ig-1"),
+							InstanceGroup: fi.PtrTo("ig-1"),
 						},
 					},
 					Version: "3.1.11",
@@ -239,7 +239,7 @@ func makeTestCluster(hookSpecRoles []kops.InstanceGroupRole, fileAssetSpecRoles 
 					Members: []kops.EtcdMemberSpec{
 						{
 							Name:          "test",
-							InstanceGroup: fi.String("ig-1"),
+							InstanceGroup: fi.PtrTo("ig-1"),
 						},
 					},
 					Version: "3.1.11",
@@ -248,14 +248,14 @@ func makeTestCluster(hookSpecRoles []kops.InstanceGroupRole, fileAssetSpecRoles 
 			},
 			NetworkCIDR: "10.79.0.0/24",
 			CloudConfig: &kops.CloudConfiguration{
-				NodeTags: fi.String("something"),
+				NodeTags: fi.PtrTo("something"),
 			},
 			ContainerRuntime: "docker",
 			Containerd: &kops.ContainerdConfig{
-				LogLevel: fi.String("info"),
+				LogLevel: fi.PtrTo("info"),
 			},
 			Docker: &kops.DockerConfig{
-				LogLevel: fi.String("INFO"),
+				LogLevel: fi.PtrTo("INFO"),
 			},
 			KubeAPIServer: &kops.KubeAPIServerConfig{
 				Image: "CoreOS",

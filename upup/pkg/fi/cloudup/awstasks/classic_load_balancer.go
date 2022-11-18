@@ -663,7 +663,7 @@ func (_ *ClassicLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e
 		LoadBalancerName: e.LoadBalancerName,
 	}
 	if fi.StringValue(e.Scheme) == "internal" {
-		tf.Internal = fi.Bool(true)
+		tf.Internal = fi.PtrTo(true)
 	}
 
 	for _, subnet := range e.Subnets {
