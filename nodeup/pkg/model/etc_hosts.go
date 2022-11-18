@@ -37,7 +37,7 @@ func (b *EtcHostsBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	if b.IsMaster && (b.Cluster.IsGossip() || b.Cluster.UsesNoneDNS()) {
 		task.Records = append(task.Records, nodetasks.HostRecord{
-			Hostname:  b.Cluster.Spec.MasterInternalName,
+			Hostname:  b.Cluster.APIInternalName(),
 			Addresses: []string{"127.0.0.1"},
 		})
 		if b.Cluster.Spec.MasterPublicName != "" {
@@ -48,7 +48,7 @@ func (b *EtcHostsBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	} else if b.BootConfig.APIServerIP != "" {
 		task.Records = append(task.Records, nodetasks.HostRecord{
-			Hostname:  b.Cluster.Spec.MasterInternalName,
+			Hostname:  b.Cluster.APIInternalName(),
 			Addresses: []string{b.BootConfig.APIServerIP},
 		})
 		if b.UseKopsControllerForNodeBootstrap() {

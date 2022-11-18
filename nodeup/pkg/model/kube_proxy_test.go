@@ -38,7 +38,6 @@ func TestKubeProxyBuilder_buildPod(t *testing.T) {
 	// https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#KubeProxyConfig
 
 	cluster := &kops.Cluster{}
-	cluster.Spec.MasterInternalName = "dev-cluster"
 
 	cluster.Spec.KubeProxy = &kops.KubeProxyConfig{}
 	cluster.Spec.KubeProxy.Image = "kube-proxy:1.2"

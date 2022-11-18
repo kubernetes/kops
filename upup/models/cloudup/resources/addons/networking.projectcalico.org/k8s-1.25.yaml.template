@@ -9,7 +9,7 @@ metadata:
   name: kubernetes-services-endpoint
   namespace: kube-system
 data:
-  KUBERNETES_SERVICE_HOST: "{{ .MasterInternalName }}"
+  KUBERNETES_SERVICE_HOST: "{{ APIInternalName }}"
   KUBERNETES_SERVICE_PORT: "443"
 {{- end }}
 ---

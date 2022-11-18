@@ -22,7 +22,6 @@ spec:
   kubelet:
     anonymousAuth: false
   kubernetesVersion: v1.25.0
-  masterInternalName: api.internal.privateflannel.example.com
   masterPublicName: api.privateflannel.example.com
   networkCIDR: 172.20.0.0/16
   networking:

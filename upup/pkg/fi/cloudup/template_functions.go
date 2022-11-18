@@ -116,6 +116,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["HasHighlyAvailableControlPlane"] = tf.HasHighlyAvailableControlPlane
 	dest["ControlPlaneControllerReplicas"] = tf.ControlPlaneControllerReplicas
 	dest["APIServerNodeRole"] = tf.APIServerNodeRole
+	dest["APIInternalName"] = tf.Cluster.APIInternalName
 
 	dest["CloudTags"] = tf.CloudTagsForInstanceGroup
 	dest["KubeDNS"] = func() *kops.KubeDNSConfig {
