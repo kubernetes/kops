@@ -23,19 +23,20 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"net"
 	"sort"
 	"strings"
 
-	v1 "k8s.io/api/core/v1"
+	"k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
 
 	"github.com/GoogleCloudPlatform/k8s-cloud-provider/pkg/cloud"
 	cloudprovider "k8s.io/cloud-provider"
-	netutils "k8s.io/utils/net"
+	utilnet "k8s.io/utils/net"
 )
 
 type cidrs struct {
-	ipn   netutils.IPNetSet
+	ipn   utilnet.IPNetSet
 	isSet bool
 }
 
@@ -47,12 +48,12 @@ var (
 func init() {
 	var err error
 	// L3/4 health checkers have client addresses within these known CIDRs.
-	l4LbSrcRngsFlag.ipn, err = netutils.ParseIPNets([]string{"130.211.0.0/22", "35.191.0.0/16", "209.85.152.0/22", "209.85.204.0/22"}...)
+	l4LbSrcRngsFlag.ipn, err = utilnet.ParseIPNets([]string{"130.211.0.0/22", "35.191.0.0/16", "209.85.152.0/22", "209.85.204.0/22"}...)
 	if err != nil {
 		panic("Incorrect default GCE L3/4 source ranges")
 	}
 	// L7 health checkers have client addresses within these known CIDRs.
-	l7lbSrcRngsFlag.ipn, err = netutils.ParseIPNets([]string{"130.211.0.0/22", "35.191.0.0/16"}...)
+	l7lbSrcRngsFlag.ipn, err = utilnet.ParseIPNets([]string{"130.211.0.0/22", "35.191.0.0/16"}...)
 	if err != nil {
 		panic("Incorrect default GCE L7 source ranges")
 	}
@@ -73,13 +74,13 @@ func (c *cidrs) Set(value string) error {
 	// On first Set(), clear the original defaults
 	if !c.isSet {
 		c.isSet = true
-		c.ipn = make(netutils.IPNetSet)
+		c.ipn = make(utilnet.IPNetSet)
 	} else {
 		return fmt.Errorf("GCE LB CIDRs have already been set")
 	}
 
 	for _, cidr := range strings.Split(value, ",") {
-		_, ipnet, err := netutils.ParseCIDRSloppy(cidr)
+		_, ipnet, err := net.ParseCIDR(cidr)
 		if err != nil {
 			return err
 		}

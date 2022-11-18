@@ -60,12 +60,12 @@ require (
 	k8s.io/cli-runtime v0.25.4
 	k8s.io/client-go v0.25.4
 	k8s.io/cloud-provider-aws v1.25.1
+	k8s.io/cloud-provider-gcp/providers v0.25.3
 	k8s.io/component-base v0.25.4
 	k8s.io/gengo v0.0.0-20221011193443-fad74ee6edd9
 	k8s.io/klog/v2 v2.80.1
 	k8s.io/kubectl v0.25.4
 	k8s.io/kubelet v0.25.4
-	k8s.io/legacy-cloud-providers v0.25.4
 	k8s.io/mount-utils v0.25.4
 	k8s.io/utils v0.0.0-20221108210102-8e77b1f39fe2
 	sigs.k8s.io/controller-runtime v0.13.1
