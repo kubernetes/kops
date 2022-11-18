@@ -4,3 +4,4 @@ Zones:
 CloudProvider: aws
 Networking: cni
 KubernetesVersion: v1.26.0
+DiscoveryStore: memfs://tests/minimal.example.com/discovery
