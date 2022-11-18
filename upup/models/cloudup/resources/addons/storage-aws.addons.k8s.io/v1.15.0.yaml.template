@@ -1,4 +1,3 @@
-{{ if WithDefaultBool .CloudConfig.ManageStorageClasses true }}
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
@@ -98,5 +97,3 @@ subjects:
 - kind: ServiceAccount
   name: aws-cloud-provider
   namespace: kube-system
-
-{{ end }}
