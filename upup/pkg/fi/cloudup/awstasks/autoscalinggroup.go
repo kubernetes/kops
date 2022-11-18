@@ -920,6 +920,7 @@ type terraformAutoscalingGroup struct {
 	LoadBalancers           []*terraformWriter.Literal                       `cty:"load_balancers"`
 	TargetGroupARNs         []*terraformWriter.Literal                       `cty:"target_group_arns"`
 	MaxInstanceLifetime     *int64                                           `cty:"max_instance_lifetime"`
+	CapacityRebalance       *bool                                            `cty:"capacity_rebalance"`
 }
 
 // RenderTerraform is responsible for rendering the terraform codebase
@@ -932,6 +933,7 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 		EnabledMetrics:      aws.StringSlice(e.Metrics),
 		InstanceProtection:  e.InstanceProtection,
 		MaxInstanceLifetime: e.MaxInstanceLifetime,
+		CapacityRebalance:   e.CapacityRebalance,
 	}
 
 	for _, s := range e.Subnets {
