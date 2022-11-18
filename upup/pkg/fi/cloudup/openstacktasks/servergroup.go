@@ -77,13 +77,13 @@ func (s *ServerGroup) Find(context *fi.Context) (*ServerGroup, error) {
 				return nil, fmt.Errorf("Found multiple server groups with name %s", fi.StringValue(s.Name))
 			}
 			actual = &ServerGroup{
-				Name:        fi.String(serverGroup.Name),
+				Name:        fi.PtrTo(serverGroup.Name),
 				ClusterName: s.ClusterName,
 				IGName:      s.IGName,
-				ID:          fi.String(serverGroup.ID),
+				ID:          fi.PtrTo(serverGroup.ID),
 				Lifecycle:   s.Lifecycle,
 				Policies:    serverGroup.Policies,
-				MaxSize:     fi.Int32(int32(len(serverGroup.Members))),
+				MaxSize:     fi.PtrTo(int32(len(serverGroup.Members))),
 				members:     serverGroup.Members,
 			}
 		}
@@ -135,7 +135,7 @@ func (_ *ServerGroup) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, cha
 		if err != nil {
 			return fmt.Errorf("error creating ServerGroup: %v", err)
 		}
-		e.ID = fi.String(g.ID)
+		e.ID = fi.PtrTo(g.ID)
 		return nil
 	} else if changes.MaxSize != nil && fi.Int32Value(a.MaxSize) > fi.Int32Value(changes.MaxSize) {
 		currentLastIndex := fi.Int32Value(a.MaxSize)

@@ -80,13 +80,13 @@ func Test_KubeAPIServer_BuildFlags(t *testing.T) {
 		},
 		{
 			kops.KubeAPIServerConfig{
-				ExperimentalEncryptionProviderConfig: fi.String("/srv/kubernetes/encryptionconfig.yaml"),
+				ExperimentalEncryptionProviderConfig: fi.PtrTo("/srv/kubernetes/encryptionconfig.yaml"),
 			},
 			"--experimental-encryption-provider-config=/srv/kubernetes/encryptionconfig.yaml --secure-port=0",
 		},
 		{
 			kops.KubeAPIServerConfig{
-				EncryptionProviderConfig: fi.String("/srv/kubernetes/encryptionconfig.yaml"),
+				EncryptionProviderConfig: fi.PtrTo("/srv/kubernetes/encryptionconfig.yaml"),
 			},
 			"--encryption-provider-config=/srv/kubernetes/encryptionconfig.yaml --secure-port=0",
 		},

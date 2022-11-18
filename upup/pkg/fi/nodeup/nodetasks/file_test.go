@@ -40,7 +40,7 @@ func TestFileDependencies(t *testing.T) {
 				Home:  "/home/owner",
 			},
 			child: &File{
-				Owner:    fi.String("owner"),
+				Owner:    fi.PtrTo("owner"),
 				Path:     childFileName,
 				Contents: fi.NewStringResource("I depend on an owner"),
 				Type:     FileType_File,

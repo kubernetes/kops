@@ -200,8 +200,8 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 		NetworkInterfaces: []*cloudformationLaunchTemplateNetworkInterface{
 			{
 				AssociatePublicIPAddress: e.AssociatePublicIP,
-				DeleteOnTermination:      fi.Bool(true),
-				DeviceIndex:              fi.Int(0),
+				DeleteOnTermination:      fi.PtrTo(true),
+				DeviceIndex:              fi.PtrTo(0),
 				Ipv6AddressCount:         e.IPv6AddressCount,
 			},
 		},
@@ -215,7 +215,7 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 		if e.InstanceInterruptionBehavior != nil {
 			marketSpotOptions.InstanceInterruptionBehavior = e.InstanceInterruptionBehavior
 		}
-		launchTemplateData.MarketOptions = &cloudformationLaunchTemplateMarketOptions{MarketType: fi.String("spot"), SpotOptions: &marketSpotOptions}
+		launchTemplateData.MarketOptions = &cloudformationLaunchTemplateMarketOptions{MarketType: fi.PtrTo("spot"), SpotOptions: &marketSpotOptions}
 	}
 
 	if fi.StringValue(e.CPUCredits) != "" {
@@ -225,7 +225,7 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 	}
 
 	cf := &cloudformationLaunchTemplate{
-		LaunchTemplateName: fi.String(fi.StringValue(e.Name)),
+		LaunchTemplateName: fi.PtrTo(fi.StringValue(e.Name)),
 		LaunchTemplateData: launchTemplateData,
 	}
 	data := cf.LaunchTemplateData
@@ -266,9 +266,9 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 	}
 	for name, x := range devices {
 		data.BlockDeviceMappings = append(data.BlockDeviceMappings, &cloudformationLaunchTemplateBlockDevice{
-			DeviceName: fi.String(name),
+			DeviceName: fi.PtrTo(name),
 			EBS: &cloudformationLaunchTemplateBlockDeviceEBS{
-				DeleteOnTermination: fi.Bool(true),
+				DeleteOnTermination: fi.PtrTo(true),
 				IOPS:                x.EbsVolumeIops,
 				Throughput:          x.EbsVolumeThroughput,
 				VolumeSize:          x.EbsVolumeSize,
@@ -280,9 +280,9 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 	}
 	for name, x := range additionals {
 		data.BlockDeviceMappings = append(data.BlockDeviceMappings, &cloudformationLaunchTemplateBlockDevice{
-			DeviceName: fi.String(name),
+			DeviceName: fi.PtrTo(name),
 			EBS: &cloudformationLaunchTemplateBlockDeviceEBS{
-				DeleteOnTermination: fi.Bool(true),
+				DeleteOnTermination: fi.PtrTo(true),
 				IOPS:                x.EbsVolumeIops,
 				VolumeSize:          x.EbsVolumeSize,
 				Throughput:          x.EbsVolumeThroughput,
@@ -300,18 +300,18 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 	for n, x := range devices {
 		data.BlockDeviceMappings = append(data.BlockDeviceMappings, &cloudformationLaunchTemplateBlockDevice{
 			VirtualName: x.VirtualName,
-			DeviceName:  fi.String(n),
+			DeviceName:  fi.PtrTo(n),
 		})
 	}
 
 	if e.Tags != nil {
 		tags := buildCloudformationTags(t.Tags)
 		data.TagSpecifications = append(data.TagSpecifications, &cloudformationLaunchTemplateTagSpecification{
-			ResourceType: fi.String("instance"),
+			ResourceType: fi.PtrTo("instance"),
 			Tags:         tags,
 		})
 		data.TagSpecifications = append(data.TagSpecifications, &cloudformationLaunchTemplateTagSpecification{
-			ResourceType: fi.String("volume"),
+			ResourceType: fi.PtrTo("volume"),
 			Tags:         tags,
 		})
 	}

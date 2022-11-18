@@ -83,7 +83,7 @@ func (e *ManagedFile) Find(c *fi.Context) (*ManagedFile, error) {
 		actual.Public = &public
 
 		if e.Public == nil {
-			e.Public = fi.Bool(false)
+			e.Public = fi.PtrTo(false)
 		}
 	}
 
@@ -95,7 +95,7 @@ func (e *ManagedFile) Find(c *fi.Context) (*ManagedFile, error) {
 		actual.Public = &public
 
 		if e.Public == nil {
-			e.Public = fi.Bool(false)
+			e.Public = fi.PtrTo(false)
 		}
 	}
 
@@ -127,14 +127,14 @@ func (e *ManagedFile) getACL(c *fi.Context, p vfs.Path) (vfs.ACL, error) {
 		switch p := p.(type) {
 		case *vfs.S3Path:
 			acl = &vfs.S3Acl{
-				RequestACL: fi.String("public-read"),
+				RequestACL: fi.PtrTo("public-read"),
 			}
 		case *vfs.MemFSPath:
 			if !p.IsClusterReadable() {
 				return nil, fmt.Errorf("the %q path is intended for use in tests", p.Path())
 			}
 			acl = &vfs.S3Acl{
-				RequestACL: fi.String("public-read"),
+				RequestACL: fi.PtrTo("public-read"),
 			}
 		default:
 			return nil, fmt.Errorf("the %q path does not support public ACL", p.Path())

@@ -59,8 +59,8 @@ func NewLBListenerTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lif
 	// sort for consistent comparison
 	sort.Strings(listener.AllowedCIDRs)
 	listenerTask := &LBListener{
-		ID:           fi.String(listener.ID),
-		Name:         fi.String(listener.Name),
+		ID:           fi.PtrTo(listener.ID),
+		Name:         fi.PtrTo(listener.Name),
 		AllowedCIDRs: listener.AllowedCIDRs,
 		Lifecycle:    lifecycle,
 	}
@@ -163,7 +163,7 @@ func (_ *LBListener) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, chan
 		if err != nil {
 			return fmt.Errorf("error creating LB listener: %v", err)
 		}
-		e.ID = fi.String(listener.ID)
+		e.ID = fi.PtrTo(listener.ID)
 		return nil
 	} else if len(changes.AllowedCIDRs) > 0 {
 		if useVIPACL && (fi.StringValue(a.Pool.Loadbalancer.Provider) != "ovn") {

@@ -511,7 +511,7 @@ func validateSubnet(subnet *kops.ClusterSubnetSpec, c *kops.ClusterSpec, fieldPa
 		}
 	}
 
-	allErrs = append(allErrs, IsValidValue(fieldPath.Child("type"), fi.String(string(subnet.Type)), []string{
+	allErrs = append(allErrs, IsValidValue(fieldPath.Child("type"), fi.PtrTo(string(subnet.Type)), []string{
 		string(kops.SubnetTypePublic),
 		string(kops.SubnetTypePrivate),
 		string(kops.SubnetTypeDualStack),

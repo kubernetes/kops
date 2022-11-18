@@ -178,11 +178,11 @@ func (e *Package) findDpkg(c *fi.Context) (*Package, error) {
 		case "ii":
 			installed = true
 			installedVersion = version
-			healthy = fi.Bool(true)
+			healthy = fi.PtrTo(true)
 		case "iF", "iU":
 			installed = true
 			installedVersion = version
-			healthy = fi.Bool(false)
+			healthy = fi.PtrTo(false)
 		case "rc":
 			// removed
 			installed = false
@@ -207,7 +207,7 @@ func (e *Package) findDpkg(c *fi.Context) (*Package, error) {
 
 	return &Package{
 		Name:    e.Name,
-		Version: fi.String(installedVersion),
+		Version: fi.PtrTo(installedVersion),
 		Healthy: healthy,
 	}, nil
 }
@@ -246,7 +246,7 @@ func (e *Package) findYum(c *fi.Context) (*Package, error) {
 		installed = true
 		installedVersion = tokens[1]
 		// If we implement unhealthy; be sure to implement repair in Render
-		healthy = fi.Bool(true)
+		healthy = fi.PtrTo(true)
 	}
 
 	// TODO: Take InstanceGroup-level overriding of the Cluster-level update policy into account
@@ -258,7 +258,7 @@ func (e *Package) findYum(c *fi.Context) (*Package, error) {
 
 	return &Package{
 		Name:    e.Name,
-		Version: fi.String(installedVersion),
+		Version: fi.PtrTo(installedVersion),
 		Healthy: healthy,
 	}, nil
 }

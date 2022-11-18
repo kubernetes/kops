@@ -61,12 +61,6 @@ func IsNilOrEmpty(s *string) bool {
 	return *s == ""
 }
 
-// String is a helper that builds a *string from a string value
-// This is similar to aws.String, except that we use it for non-AWS values
-func String(s string) *string {
-	return &s
-}
-
 // StringSlice is a helper that builds a []*string from a slice of strings
 func StringSlice(stringSlice []string) []*string {
 	var newSlice []*string
@@ -74,11 +68,6 @@ func StringSlice(stringSlice []string) []*string {
 		newSlice = append(newSlice, &stringSlice[i])
 	}
 	return newSlice
-}
-
-// Float32 returns a point to a float32
-func Float32(v float32) *float32 {
-	return &v
 }
 
 // Float32Value returns the value of the float
@@ -90,11 +79,6 @@ func Float32Value(v *float32) float32 {
 	return *v
 }
 
-// Float64 returns a point to a float64
-func Float64(v float64) *float64 {
-	return &v
-}
-
 // Float64Value returns the value of the float
 func Float64Value(v *float64) float64 {
 	if v == nil {
@@ -102,11 +86,6 @@ func Float64Value(v *float64) float64 {
 	}
 
 	return *v
-}
-
-// Bool returns a pointer to a bool
-func Bool(v bool) *bool {
-	return &v
 }
 
 // BoolValue returns the value of bool pointer or false
@@ -117,10 +96,6 @@ func BoolValue(v *bool) bool {
 	return *v
 }
 
-func Int32(v int32) *int32 {
-	return &v
-}
-
 func Int32Value(v *int32) int32 {
 	if v == nil {
 		return 0
@@ -128,21 +103,11 @@ func Int32Value(v *int32) int32 {
 	return *v
 }
 
-// Int64 is a helper that builds a *int64 from an int64 value
-// This is similar to aws.Int64, except that we use it for non-AWS values
-func Int64(v int64) *int64 {
-	return &v
-}
-
 func Int64Value(v *int64) int64 {
 	if v == nil {
 		return 0
 	}
 	return *v
-}
-
-func Int(v int) *int {
-	return &v
 }
 
 func IntValue(v *int) int {

@@ -314,11 +314,11 @@ func SetupMockOpenstack() *openstack.MockCloud {
 	extNetworkName := "external"
 	networkCreateOpts := networks.CreateOpts{
 		Name:         extNetworkName,
-		AdminStateUp: fi.Bool(true),
+		AdminStateUp: fi.PtrTo(true),
 	}
 	extNetwork := external.CreateOptsExt{
 		CreateOptsBuilder: networkCreateOpts,
-		External:          fi.Bool(true),
+		External:          fi.PtrTo(true),
 	}
 	c.CreateNetwork(extNetwork)
 	c.SetExternalNetwork(&extNetworkName)
@@ -327,12 +327,12 @@ func SetupMockOpenstack() *openstack.MockCloud {
 	extSubnet := subnets.CreateOpts{
 		Name:       extSubnetName,
 		NetworkID:  extNetworkName,
-		EnableDHCP: fi.Bool(true),
+		EnableDHCP: fi.PtrTo(true),
 		CIDR:       "172.20.0.0/22",
 	}
 	c.CreateSubnet(extSubnet)
-	c.SetExternalSubnet(fi.String(extSubnetName))
-	c.SetLBFloatingSubnet(fi.String(extSubnetName))
+	c.SetExternalSubnet(fi.PtrTo(extSubnetName))
+	c.SetLBFloatingSubnet(fi.PtrTo(extSubnetName))
 	images.Create(c.MockImageClient.ServiceClient(), images.CreateOpts{
 		Name:    "Ubuntu-20.04",
 		MinDisk: 12,
@@ -341,13 +341,13 @@ func SetupMockOpenstack() *openstack.MockCloud {
 		Name:  "n1-standard-2",
 		RAM:   8192,
 		VCPUs: 4,
-		Disk:  fi.Int(16),
+		Disk:  fi.PtrTo(16),
 	})
 	flavors.Create(c.MockNovaClient.ServiceClient(), flavors.CreateOpts{
 		Name:  "n1-standard-1",
 		RAM:   8192,
 		VCPUs: 4,
-		Disk:  fi.Int(16),
+		Disk:  fi.PtrTo(16),
 	})
 	zones.Create(c.MockDNSClient.ServiceClient(), zones.CreateOpts{
 		Name: "minimal-openstack.k8s.local",

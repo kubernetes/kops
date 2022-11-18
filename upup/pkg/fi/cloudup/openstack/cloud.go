@@ -444,7 +444,7 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec, uagent st
 			if err != nil || len(lbNet) != 1 {
 				return c, fmt.Errorf("could not establish floating network id")
 			}
-			spec.CloudProvider.Openstack.Loadbalancer.FloatingNetworkID = fi.String(lbNet[0].ID)
+			spec.CloudProvider.Openstack.Loadbalancer.FloatingNetworkID = fi.PtrTo(lbNet[0].ID)
 		}
 		if spec.CloudProvider.Openstack.Loadbalancer != nil {
 			if spec.CloudProvider.Openstack.Loadbalancer.UseOctavia != nil {

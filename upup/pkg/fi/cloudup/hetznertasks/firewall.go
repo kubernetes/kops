@@ -42,7 +42,7 @@ type Firewall struct {
 var _ fi.CompareWithID = &Firewall{}
 
 func (v *Firewall) CompareWithID() *string {
-	return fi.String(strconv.Itoa(fi.IntValue(v.ID)))
+	return fi.PtrTo(strconv.Itoa(fi.IntValue(v.ID)))
 }
 
 func (v *Firewall) Find(c *fi.Context) (*Firewall, error) {
@@ -59,8 +59,8 @@ func (v *Firewall) Find(c *fi.Context) (*Firewall, error) {
 		if firewall.Name == fi.StringValue(v.Name) {
 			matches := &Firewall{
 				Lifecycle: v.Lifecycle,
-				Name:      fi.String(firewall.Name),
-				ID:        fi.Int(firewall.ID),
+				Name:      fi.PtrTo(firewall.Name),
+				ID:        fi.PtrTo(firewall.ID),
 				Labels:    firewall.Labels,
 			}
 			for _, rule := range firewall.Rules {
@@ -231,19 +231,19 @@ func (_ *Firewall) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *
 			Name: e.Name,
 			ApplyTo: []*terraformFirewallApplyTo{
 				{
-					LabelSelector: fi.String(e.Selector),
+					LabelSelector: fi.PtrTo(e.Selector),
 				},
 			},
 			Labels: e.Labels,
 		}
 		for _, rule := range e.Rules {
 			tfr := &terraformFirewallRule{
-				Direction: fi.String(string(rule.Direction)),
-				Protocol:  fi.String(string(rule.Protocol)),
+				Direction: fi.PtrTo(string(rule.Direction)),
+				Protocol:  fi.PtrTo(string(rule.Protocol)),
 				Port:      rule.Port,
 			}
 			for _, ip := range rule.SourceIPs {
-				tfr.SourceIPs = append(tfr.SourceIPs, fi.String(ip.String()))
+				tfr.SourceIPs = append(tfr.SourceIPs, fi.PtrTo(ip.String()))
 			}
 			tf.Rules = append(tf.Rules, tfr)
 		}

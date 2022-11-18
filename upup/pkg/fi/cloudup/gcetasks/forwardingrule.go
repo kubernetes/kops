@@ -68,7 +68,7 @@ func (e *ForwardingRule) Find(c *fi.Context) (*ForwardingRule, error) {
 	}
 
 	actual := &ForwardingRule{
-		Name:       fi.String(r.Name),
+		Name:       fi.PtrTo(r.Name),
 		IPProtocol: r.IPProtocol,
 	}
 	if r.PortRange != "" {
@@ -80,7 +80,7 @@ func (e *ForwardingRule) Find(c *fi.Context) (*ForwardingRule, error) {
 
 	if r.Target != "" {
 		actual.TargetPool = &TargetPool{
-			Name: fi.String(lastComponent(r.Target)),
+			Name: fi.PtrTo(lastComponent(r.Target)),
 		}
 	}
 	if r.IPAddress != "" {

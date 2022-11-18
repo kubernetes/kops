@@ -40,7 +40,7 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchT
 
 	// @step: lets build the launch template data
 	data := &ec2.RequestLaunchTemplateData{
-		DisableApiTermination: fi.Bool(false),
+		DisableApiTermination: fi.PtrTo(false),
 		EbsOptimized:          t.RootVolumeOptimization,
 		ImageId:               image.ImageId,
 		InstanceType:          t.InstanceType,
@@ -53,7 +53,7 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchT
 			{
 				AssociatePublicIpAddress: t.AssociatePublicIP,
 				DeleteOnTermination:      aws.Bool(true),
-				DeviceIndex:              fi.Int64(0),
+				DeviceIndex:              fi.PtrTo(int64(0)),
 				Ipv6AddressCount:         t.IPv6AddressCount,
 			},
 		},
@@ -91,7 +91,7 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchT
 		data.Placement = &ec2.LaunchTemplatePlacementRequest{Tenancy: t.Tenancy}
 	}
 	// @step: set the instance monitoring
-	data.Monitoring = &ec2.LaunchTemplatesMonitoringRequest{Enabled: fi.Bool(false)}
+	data.Monitoring = &ec2.LaunchTemplatesMonitoringRequest{Enabled: fi.PtrTo(false)}
 	if t.InstanceMonitoring != nil {
 		data.Monitoring = &ec2.LaunchTemplatesMonitoringRequest{Enabled: t.InstanceMonitoring}
 	}
@@ -135,7 +135,7 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchT
 			MaxPrice:                     t.SpotPrice,
 		}
 		data.InstanceMarketOptions = &ec2.LaunchTemplateInstanceMarketOptionsRequest{
-			MarketType:  fi.String("spot"),
+			MarketType:  fi.PtrTo("spot"),
 			SpotOptions: s,
 		}
 	}
@@ -210,10 +210,10 @@ func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
 	klog.V(3).Infof("found existing LaunchTemplate: %s", fi.StringValue(lt.LaunchTemplateName))
 
 	actual := &LaunchTemplate{
-		AssociatePublicIP:      fi.Bool(false),
+		AssociatePublicIP:      fi.PtrTo(false),
 		ID:                     lt.LaunchTemplateId,
 		ImageID:                lt.LaunchTemplateData.ImageId,
-		InstanceMonitoring:     fi.Bool(false),
+		InstanceMonitoring:     fi.PtrTo(false),
 		InstanceType:           lt.LaunchTemplateData.InstanceType,
 		Lifecycle:              t.Lifecycle,
 		Name:                   t.Name,
@@ -223,7 +223,7 @@ func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
 	// @step: check if any of the interfaces are public facing
 	for _, x := range lt.LaunchTemplateData.NetworkInterfaces {
 		if aws.BoolValue(x.AssociatePublicIpAddress) {
-			actual.AssociatePublicIP = fi.Bool(true)
+			actual.AssociatePublicIP = fi.PtrTo(true)
 		}
 		for _, id := range x.Groups {
 			actual.SecurityGroups = append(actual.SecurityGroups, &SecurityGroup{ID: id})
@@ -232,7 +232,7 @@ func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
 	}
 	// In older Kops versions, security groups were added to LaunchTemplateData.SecurityGroupIds
 	for _, id := range lt.LaunchTemplateData.SecurityGroupIds {
-		actual.SecurityGroups = append(actual.SecurityGroups, &SecurityGroup{ID: fi.String("legacy-" + *id)})
+		actual.SecurityGroups = append(actual.SecurityGroups, &SecurityGroup{ID: fi.PtrTo("legacy-" + *id)})
 	}
 	sort.Sort(OrderSecurityGroupsById(actual.SecurityGroups))
 
@@ -288,7 +288,7 @@ func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
 			if b.Ebs.KmsKeyId != nil {
 				actual.RootVolumeKmsKey = b.Ebs.KmsKeyId
 			} else {
-				actual.RootVolumeKmsKey = fi.String("")
+				actual.RootVolumeKmsKey = fi.PtrTo("")
 			}
 		} else {
 			_, d := BlockDeviceMappingFromLaunchTemplateBootDeviceRequest(b)

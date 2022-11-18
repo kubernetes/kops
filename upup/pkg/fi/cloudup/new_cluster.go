@@ -235,7 +235,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		AllowContainerRegistry: true,
 	}
 	cluster.Spec.Kubelet = &api.KubeletConfigSpec{
-		AnonymousAuth: fi.Bool(false),
+		AnonymousAuth: fi.PtrTo(false),
 	}
 
 	if len(opt.AdminAccess) == 0 {
@@ -300,16 +300,16 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 	case api.CloudProviderOpenstack:
 		cluster.Spec.CloudProvider.Openstack = &api.OpenstackSpec{
 			Router: &api.OpenstackRouter{
-				ExternalNetwork: fi.String(opt.OpenstackExternalNet),
+				ExternalNetwork: fi.PtrTo(opt.OpenstackExternalNet),
 			},
 			BlockStorage: &api.OpenstackBlockStorageConfig{
-				Version:  fi.String("v3"),
-				IgnoreAZ: fi.Bool(opt.OpenstackStorageIgnoreAZ),
+				Version:  fi.PtrTo("v3"),
+				IgnoreAZ: fi.PtrTo(opt.OpenstackStorageIgnoreAZ),
 			},
 			Monitor: &api.OpenstackMonitor{
-				Delay:      fi.String("15s"),
-				Timeout:    fi.String("10s"),
-				MaxRetries: fi.Int(3),
+				Delay:      fi.PtrTo("15s"),
+				Timeout:    fi.PtrTo("10s"),
+				MaxRetries: fi.PtrTo(3),
 			},
 		}
 	default:
@@ -326,7 +326,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		}
 		if cluster.Spec.GetCloudProvider() == api.CloudProviderAWS {
 			cluster.Spec.ServiceAccountIssuerDiscovery.EnableAWSOIDCProvider = true
-			cluster.Spec.IAM.UseServiceAccountExternalPermissions = fi.Bool(true)
+			cluster.Spec.IAM.UseServiceAccountExternalPermissions = fi.PtrTo(true)
 		}
 	}
 
@@ -553,10 +553,10 @@ func setupVPC(opt *NewClusterOptions, cluster *api.Cluster, cloud fi.Cloud) erro
 		}
 
 		if opt.OpenstackDNSServers != "" {
-			cluster.Spec.CloudProvider.Openstack.Router.DNSServers = fi.String(opt.OpenstackDNSServers)
+			cluster.Spec.CloudProvider.Openstack.Router.DNSServers = fi.PtrTo(opt.OpenstackDNSServers)
 		}
 		if opt.OpenstackExternalSubnet != "" {
-			cluster.Spec.CloudProvider.Openstack.Router.ExternalSubnet = fi.String(opt.OpenstackExternalSubnet)
+			cluster.Spec.CloudProvider.Openstack.Router.ExternalSubnet = fi.PtrTo(opt.OpenstackExternalSubnet)
 		}
 	case api.CloudProviderAzure:
 		// TODO(kenji): Find a right place for this.
@@ -572,10 +572,10 @@ func setupVPC(opt *NewClusterOptions, cluster *api.Cluster, cloud fi.Cloud) erro
 			cluster.Spec.CloudConfig = &api.CloudConfiguration{}
 		}
 		if opt.SpotinstProduct != "" {
-			cluster.Spec.CloudConfig.SpotinstProduct = fi.String(opt.SpotinstProduct)
+			cluster.Spec.CloudConfig.SpotinstProduct = fi.PtrTo(opt.SpotinstProduct)
 		}
 		if opt.SpotinstOrientation != "" {
-			cluster.Spec.CloudConfig.SpotinstOrientation = fi.String(opt.SpotinstOrientation)
+			cluster.Spec.CloudConfig.SpotinstOrientation = fi.PtrTo(opt.SpotinstOrientation)
 		}
 	}
 
@@ -831,8 +831,8 @@ func setupMasters(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap 
 
 			g := &api.InstanceGroup{}
 			g.Spec.Role = api.InstanceGroupRoleMaster
-			g.Spec.MinSize = fi.Int32(1)
-			g.Spec.MaxSize = fi.Int32(1)
+			g.Spec.MinSize = fi.PtrTo(int32(1))
+			g.Spec.MaxSize = fi.PtrTo(int32(1))
 			g.ObjectMeta.Name = "master-" + name
 
 			subnet := zoneToSubnetMap[zone]
@@ -851,12 +851,12 @@ func setupMasters(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap 
 			if cluster.IsKubernetesGTE("1.22") {
 				if cloudProvider == api.CloudProviderAWS {
 					g.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
-						HTTPPutResponseHopLimit: fi.Int64(3),
-						HTTPTokens:              fi.String("required"),
+						HTTPPutResponseHopLimit: fi.PtrTo(int64(3)),
+						HTTPTokens:              fi.PtrTo("required"),
 					}
 				}
 				if cluster.IsKubernetesGTE("1.26") && fi.BoolValue(cluster.Spec.IAM.UseServiceAccountExternalPermissions) {
-					g.Spec.InstanceMetadata.HTTPPutResponseHopLimit = fi.Int64(1)
+					g.Spec.InstanceMetadata.HTTPPutResponseHopLimit = fi.PtrTo(int64(1))
 				}
 			}
 
@@ -965,8 +965,8 @@ func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap ma
 
 		g := &api.InstanceGroup{}
 		g.Spec.Role = api.InstanceGroupRoleNode
-		g.Spec.MinSize = fi.Int32(count)
-		g.Spec.MaxSize = fi.Int32(count)
+		g.Spec.MinSize = fi.PtrTo(count)
+		g.Spec.MaxSize = fi.PtrTo(count)
 		g.ObjectMeta.Name = "nodes-" + zone
 
 		subnet := zoneToSubnetMap[zone]
@@ -982,8 +982,8 @@ func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap ma
 		if cluster.IsKubernetesGTE("1.22") {
 			if cloudProvider == api.CloudProviderAWS {
 				g.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
-					HTTPPutResponseHopLimit: fi.Int64(1),
-					HTTPTokens:              fi.String("required"),
+					HTTPPutResponseHopLimit: fi.PtrTo(int64(1)),
+					HTTPTokens:              fi.PtrTo("required"),
 				}
 			}
 		}
@@ -1004,8 +1004,8 @@ func setupKarpenterNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSub
 	g.ObjectMeta.Name = "nodes"
 
 	g.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
-		HTTPPutResponseHopLimit: fi.Int64(1),
-		HTTPTokens:              fi.String("required"),
+		HTTPPutResponseHopLimit: fi.PtrTo(int64(1)),
+		HTTPTokens:              fi.PtrTo("required"),
 	}
 
 	return []*api.InstanceGroup{g}, nil
@@ -1034,8 +1034,8 @@ func setupAPIServers(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetM
 
 		g := &api.InstanceGroup{}
 		g.Spec.Role = api.InstanceGroupRoleAPIServer
-		g.Spec.MinSize = fi.Int32(count)
-		g.Spec.MaxSize = fi.Int32(count)
+		g.Spec.MinSize = fi.PtrTo(count)
+		g.Spec.MaxSize = fi.PtrTo(count)
 		g.ObjectMeta.Name = "apiserver-" + zone
 
 		subnet := zoneToSubnetMap[zone]
@@ -1051,8 +1051,8 @@ func setupAPIServers(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetM
 		if cluster.IsKubernetesGTE("1.22") {
 			if cloudProvider == api.CloudProviderAWS {
 				g.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
-					HTTPPutResponseHopLimit: fi.Int64(1),
-					HTTPTokens:              fi.String("required"),
+					HTTPPutResponseHopLimit: fi.PtrTo(int64(1)),
+					HTTPTokens:              fi.PtrTo("required"),
 				}
 			}
 		}
@@ -1224,8 +1224,8 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 			bastionGroup := &api.InstanceGroup{}
 			bastionGroup.Spec.Role = api.InstanceGroupRoleBastion
 			bastionGroup.ObjectMeta.Name = "bastions"
-			bastionGroup.Spec.MaxSize = fi.Int32(1)
-			bastionGroup.Spec.MinSize = fi.Int32(1)
+			bastionGroup.Spec.MaxSize = fi.PtrTo(int32(1))
+			bastionGroup.Spec.MinSize = fi.PtrTo(int32(1))
 			bastions = append(bastions, bastionGroup)
 
 			if !cluster.IsGossip() && !cluster.UsesNoneDNS() {
@@ -1246,8 +1246,8 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 
 			if cluster.IsKubernetesGTE("1.22") {
 				bastionGroup.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
-					HTTPPutResponseHopLimit: fi.Int64(1),
-					HTTPTokens:              fi.String("required"),
+					HTTPPutResponseHopLimit: fi.PtrTo(int64(1)),
+					HTTPTokens:              fi.PtrTo("required"),
 				}
 			}
 
@@ -1371,14 +1371,14 @@ func initializeOpenstackAPI(opt *NewClusterOptions, cluster *api.Cluster) {
 			LbMethod = "SOURCE_IP_PORT"
 		}
 		cluster.Spec.CloudProvider.Openstack.Loadbalancer = &api.OpenstackLoadbalancerConfig{
-			FloatingNetwork: fi.String(opt.OpenstackExternalNet),
-			Method:          fi.String(LbMethod),
-			Provider:        fi.String(provider),
-			UseOctavia:      fi.Bool(opt.OpenstackLBOctavia),
+			FloatingNetwork: fi.PtrTo(opt.OpenstackExternalNet),
+			Method:          fi.PtrTo(LbMethod),
+			Provider:        fi.PtrTo(provider),
+			UseOctavia:      fi.PtrTo(opt.OpenstackLBOctavia),
 		}
 
 		if opt.OpenstackLBSubnet != "" {
-			cluster.Spec.CloudProvider.Openstack.Loadbalancer.FloatingSubnet = fi.String(opt.OpenstackLBSubnet)
+			cluster.Spec.CloudProvider.Openstack.Loadbalancer.FloatingSubnet = fi.PtrTo(opt.OpenstackLBSubnet)
 		}
 	}
 }
@@ -1418,11 +1418,11 @@ func createEtcdCluster(etcdCluster string, masters []*api.InstanceGroup, encrypt
 			m.EncryptedVolume = &encryptEtcdStorage
 		}
 		if len(etcdStorageType) > 0 {
-			m.VolumeType = fi.String(etcdStorageType)
+			m.VolumeType = fi.PtrTo(etcdStorageType)
 		}
 		m.Name = names[i]
 
-		m.InstanceGroup = fi.String(ig.ObjectMeta.Name)
+		m.InstanceGroup = fi.PtrTo(ig.ObjectMeta.Name)
 		etcd.Members = append(etcd.Members, m)
 	}
 

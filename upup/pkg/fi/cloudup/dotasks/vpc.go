@@ -53,11 +53,11 @@ func (v *VPC) Find(c *fi.Context) (*VPC, error) {
 	for _, vpc := range vpcs {
 		if vpc.Name == fi.StringValue(v.Name) {
 			return &VPC{
-				Name:      fi.String(vpc.Name),
-				ID:        fi.String(vpc.ID),
+				Name:      fi.PtrTo(vpc.Name),
+				ID:        fi.PtrTo(vpc.ID),
 				Lifecycle: v.Lifecycle,
-				IPRange:   fi.String(vpc.IPRange),
-				Region:    fi.String(vpc.RegionSlug),
+				IPRange:   fi.PtrTo(vpc.IPRange),
+				Region:    fi.PtrTo(vpc.RegionSlug),
 			}, nil
 		}
 	}

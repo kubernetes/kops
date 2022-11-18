@@ -52,7 +52,7 @@ func (e *BindMount) Dir() string {
 var _ fi.HasName = &Archive{}
 
 func (e *BindMount) GetName() *string {
-	return fi.String("BindMount-" + e.Mountpoint)
+	return fi.PtrTo("BindMount-" + e.Mountpoint)
 }
 
 var _ fi.HasDependencies = &BindMount{}

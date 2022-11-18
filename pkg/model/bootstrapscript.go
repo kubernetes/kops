@@ -299,9 +299,9 @@ func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.ModelBuilderContext, ig *k
 	c.AddTask(task)
 
 	c.AddTask(&fitasks.ManagedFile{
-		Name:      fi.String("nodeupconfig-" + ig.Name),
+		Name:      fi.PtrTo("nodeupconfig-" + ig.Name),
 		Lifecycle: b.Lifecycle,
-		Location:  fi.String("igconfig/" + strings.ToLower(string(ig.Spec.Role)) + "/" + ig.Name + "/nodeupconfig.yaml"),
+		Location:  fi.PtrTo("igconfig/" + strings.ToLower(string(ig.Spec.Role)) + "/" + ig.Name + "/nodeupconfig.yaml"),
 		Contents:  &task.nodeupConfig,
 	})
 	return &task.resource, nil

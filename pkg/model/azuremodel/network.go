@@ -32,33 +32,33 @@ var _ fi.ModelBuilder = &NetworkModelBuilder{}
 // Build builds tasks for creating a virtual network and subnets.
 func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	networkTask := &azuretasks.VirtualNetwork{
-		Name:          fi.String(b.NameForVirtualNetwork()),
+		Name:          fi.PtrTo(b.NameForVirtualNetwork()),
 		Lifecycle:     b.Lifecycle,
 		ResourceGroup: b.LinkToResourceGroup(),
-		CIDR:          fi.String(b.Cluster.Spec.NetworkCIDR),
+		CIDR:          fi.PtrTo(b.Cluster.Spec.NetworkCIDR),
 		Tags:          map[string]*string{},
-		Shared:        fi.Bool(b.Cluster.SharedVPC()),
+		Shared:        fi.PtrTo(b.Cluster.SharedVPC()),
 	}
 	c.AddTask(networkTask)
 
 	for _, subnetSpec := range b.Cluster.Spec.Subnets {
 		subnetTask := &azuretasks.Subnet{
-			Name:           fi.String(subnetSpec.Name),
+			Name:           fi.PtrTo(subnetSpec.Name),
 			Lifecycle:      b.Lifecycle,
 			ResourceGroup:  b.LinkToResourceGroup(),
 			VirtualNetwork: b.LinkToVirtualNetwork(),
-			CIDR:           fi.String(subnetSpec.CIDR),
-			Shared:         fi.Bool(b.Cluster.SharedVPC()),
+			CIDR:           fi.PtrTo(subnetSpec.CIDR),
+			Shared:         fi.PtrTo(b.Cluster.SharedVPC()),
 		}
 		c.AddTask(subnetTask)
 	}
 
 	rtTask := &azuretasks.RouteTable{
-		Name:          fi.String(b.NameForRouteTable()),
+		Name:          fi.PtrTo(b.NameForRouteTable()),
 		Lifecycle:     b.Lifecycle,
 		ResourceGroup: b.LinkToResourceGroup(),
 		Tags:          map[string]*string{},
-		Shared:        fi.Bool(b.Cluster.IsSharedAzureRouteTable()),
+		Shared:        fi.PtrTo(b.Cluster.IsSharedAzureRouteTable()),
 	}
 	c.AddTask(rtTask)
 

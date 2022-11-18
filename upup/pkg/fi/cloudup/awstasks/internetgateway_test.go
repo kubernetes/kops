@@ -85,14 +85,14 @@ func TestSharedInternetGatewayDoesNotRename(t *testing.T) {
 			Lifecycle: fi.LifecycleSync,
 			CIDR:      s("172.20.0.0/16"),
 			Tags:      map[string]string{"kubernetes.io/cluster/cluster.example.com": "shared"},
-			Shared:    fi.Bool(true),
+			Shared:    fi.PtrTo(true),
 			ID:        vpc.Vpc.VpcId,
 		}
 		igw1 := &InternetGateway{
 			Name:      s("igw1"),
 			Lifecycle: fi.LifecycleSync,
 			VPC:       vpc1,
-			Shared:    fi.Bool(true),
+			Shared:    fi.PtrTo(true),
 			ID:        internetGateway.InternetGateway.InternetGatewayId,
 			Tags:      make(map[string]string),
 		}

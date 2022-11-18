@@ -80,15 +80,15 @@ func (d *Droplet) Find(c *fi.Context) (*Droplet, error) {
 	}
 
 	return &Droplet{
-		Name:      fi.String(foundDroplet.Name),
+		Name:      fi.PtrTo(foundDroplet.Name),
 		Count:     count,
-		Region:    fi.String(foundDroplet.Region.Slug),
-		Size:      fi.String(foundDroplet.Size.Slug),
+		Region:    fi.PtrTo(foundDroplet.Region.Slug),
+		Size:      fi.PtrTo(foundDroplet.Size.Slug),
 		Image:     d.Image, //Image should not change so we keep it as-is
 		Tags:      foundDroplet.Tags,
 		SSHKey:    d.SSHKey,   // TODO: get from droplet or ignore change
 		UserData:  d.UserData, // TODO: get from droplet or ignore change
-		VPCUUID:   fi.String(foundDroplet.VPCUUID),
+		VPCUUID:   fi.PtrTo(foundDroplet.VPCUUID),
 		Lifecycle: d.Lifecycle,
 	}, nil
 }

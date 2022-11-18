@@ -76,8 +76,8 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 	actual := &Instance{}
 	actual.Name = &r.Name
 	actual.Tags = append(actual.Tags, r.Tags.Items...)
-	actual.Zone = fi.String(lastComponent(r.Zone))
-	actual.MachineType = fi.String(lastComponent(r.MachineType))
+	actual.Zone = fi.PtrTo(lastComponent(r.Zone))
+	actual.MachineType = fi.PtrTo(lastComponent(r.MachineType))
 	actual.CanIPForward = &r.CanIpForward
 
 	if r.Scheduling != nil {
@@ -85,7 +85,7 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 	}
 	if len(r.NetworkInterfaces) != 0 {
 		ni := r.NetworkInterfaces[0]
-		actual.Network = &Network{Name: fi.String(lastComponent(ni.Network))}
+		actual.Network = &Network{Name: fi.PtrTo(lastComponent(ni.Network))}
 		if len(ni.AccessConfigs) != 0 {
 			ac := ni.AccessConfigs[0]
 			if ac.NatIP != "" {
@@ -126,7 +126,7 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 			if err != nil {
 				return nil, fmt.Errorf("error parsing source image URL: %v", err)
 			}
-			actual.Image = fi.String(image)
+			actual.Image = fi.PtrTo(image)
 		} else {
 			url, err := gce.ParseGoogleCloudURL(disk.Source)
 			if err != nil {
@@ -196,7 +196,7 @@ func (e *Instance) mapToGCE(project string, ipAddressResolver func(*Address) (*s
 		}
 	} else {
 		scheduling = &compute.Scheduling{
-			AutomaticRestart: fi.Bool(true),
+			AutomaticRestart: fi.PtrTo(true),
 			// TODO: Migrate or terminate?
 			OnHostMaintenance: "MIGRATE",
 			Preemptible:       false,
@@ -277,7 +277,7 @@ func (e *Instance) mapToGCE(project string, ipAddressResolver func(*Address) (*s
 		}
 		metadataItems = append(metadataItems, &compute.MetadataItems{
 			Key:   key,
-			Value: fi.String(v),
+			Value: fi.PtrTo(v),
 		})
 	}
 

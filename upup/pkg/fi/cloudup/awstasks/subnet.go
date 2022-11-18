@@ -104,7 +104,7 @@ func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
 		break
 	}
 
-	actual.ResourceBasedNaming = fi.Bool(aws.StringValue(subnet.PrivateDnsNameOptionsOnLaunch.HostnameType) == ec2.HostnameTypeResourceName)
+	actual.ResourceBasedNaming = fi.PtrTo(aws.StringValue(subnet.PrivateDnsNameOptionsOnLaunch.HostnameType) == ec2.HostnameTypeResourceName)
 	if *actual.ResourceBasedNaming {
 		if fi.StringValue(actual.CIDR) != "" && !aws.BoolValue(subnet.PrivateDnsNameOptionsOnLaunch.EnableResourceNameDnsARecord) {
 			actual.ResourceBasedNaming = nil
@@ -400,15 +400,15 @@ func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Su
 		Tags:             e.Tags,
 	}
 	if fi.StringValue(e.CIDR) == "" {
-		tf.EnableDNS64 = fi.Bool(true)
-		tf.IPv6Native = fi.Bool(true)
+		tf.EnableDNS64 = fi.PtrTo(true)
+		tf.IPv6Native = fi.PtrTo(true)
 	}
 	if e.ResourceBasedNaming != nil {
 		hostnameType := ec2.HostnameTypeIpName
 		if *e.ResourceBasedNaming {
 			hostnameType = ec2.HostnameTypeResourceName
 		}
-		tf.PrivateDNSHostnameTypeOnLaunch = fi.String(hostnameType)
+		tf.PrivateDNSHostnameTypeOnLaunch = fi.PtrTo(hostnameType)
 		if fi.StringValue(e.CIDR) != "" {
 			tf.EnableResourceNameDNSARecordOnLaunch = e.ResourceBasedNaming
 		}

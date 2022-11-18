@@ -41,7 +41,7 @@ type Volume struct {
 var _ fi.CompareWithID = &Volume{}
 
 func (v *Volume) CompareWithID() *string {
-	return fi.String(strconv.Itoa(fi.IntValue(v.ID)))
+	return fi.PtrTo(strconv.Itoa(fi.IntValue(v.ID)))
 }
 
 func (v *Volume) Find(c *fi.Context) (*Volume, error) {
@@ -57,8 +57,8 @@ func (v *Volume) Find(c *fi.Context) (*Volume, error) {
 		if volume.Name == fi.StringValue(v.Name) {
 			matches := &Volume{
 				Lifecycle: v.Lifecycle,
-				Name:      fi.String(volume.Name),
-				ID:        fi.Int(volume.ID),
+				Name:      fi.PtrTo(volume.Name),
+				ID:        fi.PtrTo(volume.ID),
 				Size:      volume.Size,
 				Labels:    volume.Labels,
 			}
@@ -149,8 +149,8 @@ type terraformVolume struct {
 func (_ *Volume) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Volume) error {
 	tf := &terraformVolume{
 		Name:     e.Name,
-		Size:     fi.Int(e.Size),
-		Location: fi.String(e.Location),
+		Size:     fi.PtrTo(e.Size),
+		Location: fi.PtrTo(e.Location),
 		Labels:   e.Labels,
 	}
 

@@ -52,8 +52,8 @@ func (e *HTTPHealthcheck) Find(c *fi.Context) (*HTTPHealthcheck, error) {
 		return nil, fmt.Errorf("error getting HealthCheck %q: %v", name, err)
 	}
 	actual := &HTTPHealthcheck{
-		Name:     fi.String(r.Name),
-		Port:     fi.Int64(r.Port),
+		Name:     fi.PtrTo(r.Name),
+		Port:     fi.PtrTo(r.Port),
 		SelfLink: r.SelfLink,
 	}
 	// System fields

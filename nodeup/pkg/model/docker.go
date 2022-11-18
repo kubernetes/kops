@@ -104,7 +104,7 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 				Path:     filepath.Join("/usr/bin", k),
 				Contents: v,
 				Type:     nodetasks.FileType_File,
-				Mode:     fi.String("0755"),
+				Mode:     fi.PtrTo("0755"),
 			}
 			c.AddTask(fileTask)
 

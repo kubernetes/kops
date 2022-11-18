@@ -46,9 +46,9 @@ func (b *NetworkingOptionsBuilder) BuildOptions(o interface{}) error {
 
 	if b.Context.IsKubernetesLT("1.24") {
 		if UsesCNI(networking) {
-			options.Kubelet.NetworkPluginName = fi.String("cni")
+			options.Kubelet.NetworkPluginName = fi.PtrTo("cni")
 		} else if networking.GCE != nil {
-			options.Kubelet.NetworkPluginName = fi.String("kubenet")
+			options.Kubelet.NetworkPluginName = fi.PtrTo("kubenet")
 		}
 	}
 

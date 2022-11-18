@@ -90,7 +90,7 @@ func TestPopulateCluster_Subnets(t *testing.T) {
 			c.Spec.ExternalCloudControllerManager = &kopsapi.CloudControllerManagerConfig{}
 			c.Spec.CloudConfig = &kopsapi.CloudConfiguration{
 				AWSEBSCSIDriver: &kopsapi.AWSEBSCSIDriver{
-					Enabled: fi.Bool(true),
+					Enabled: fi.PtrTo(true),
 				},
 			}
 
@@ -121,8 +121,8 @@ func mockedPopulateClusterSpec(c *kopsapi.Cluster, cloud fi.Cloud) (*kopsapi.Clu
 func TestPopulateCluster_Docker_Spec(t *testing.T) {
 	cloud, c := buildMinimalCluster()
 	c.Spec.Docker = &kopsapi.DockerConfig{
-		MTU:                fi.Int32(5678),
-		InsecureRegistry:   fi.String("myregistry.com:1234"),
+		MTU:                fi.PtrTo(int32(5678)),
+		InsecureRegistry:   fi.PtrTo("myregistry.com:1234"),
 		InsecureRegistries: []string{"myregistry.com:1234", "myregistry2.com:1234"},
 		RegistryMirrors:    []string{"https://registry.example.com"},
 		LogOpt:             []string{"env=FOO"},
@@ -186,7 +186,7 @@ func TestPopulateCluster_EvictionHard(t *testing.T) {
 	}
 
 	c.Spec.Kubelet = &kopsapi.KubeletConfigSpec{
-		EvictionHard: fi.String("memory.available<250Mi"),
+		EvictionHard: fi.PtrTo("memory.available<250Mi"),
 	}
 
 	full, err := mockedPopulateClusterSpec(c, cloud)
@@ -242,7 +242,7 @@ func TestPopulateCluster_Custom_CIDR(t *testing.T) {
 
 func TestPopulateCluster_IsolateMasters(t *testing.T) {
 	cloud, c := buildMinimalCluster()
-	c.Spec.IsolateMasters = fi.Bool(true)
+	c.Spec.IsolateMasters = fi.PtrTo(true)
 
 	err := PerformAssignments(c, cloud)
 	if err != nil {
@@ -263,7 +263,7 @@ func TestPopulateCluster_IsolateMasters(t *testing.T) {
 
 func TestPopulateCluster_IsolateMastersFalse(t *testing.T) {
 	cloud, c := buildMinimalCluster()
-	// default: c.Spec.IsolateMasters = fi.Bool(false)
+	// default: c.Spec.IsolateMasters = fi.PtrTo(false)
 
 	err := PerformAssignments(c, cloud)
 	if err != nil {

@@ -195,10 +195,10 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 		EBSOptimized: e.RootVolumeOptimization,
 		ImageID:      image,
 		InstanceType: e.InstanceType,
-		Lifecycle:    &terraform.Lifecycle{CreateBeforeDestroy: fi.Bool(true)},
+		Lifecycle:    &terraform.Lifecycle{CreateBeforeDestroy: fi.PtrTo(true)},
 		MetadataOptions: &terraformLaunchTemplateInstanceMetadata{
 			// See issue https://github.com/hashicorp/terraform-provider-aws/issues/12564.
-			HTTPEndpoint:            fi.String("enabled"),
+			HTTPEndpoint:            fi.PtrTo("enabled"),
 			HTTPTokens:              e.HTTPTokens,
 			HTTPPutResponseHopLimit: e.HTTPPutResponseHopLimit,
 			HTTPProtocolIPv6:        e.HTTPProtocolIPv6,
@@ -206,7 +206,7 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 		NetworkInterfaces: []*terraformLaunchTemplateNetworkInterface{
 			{
 				AssociatePublicIPAddress: e.AssociatePublicIP,
-				DeleteOnTermination:      fi.Bool(true),
+				DeleteOnTermination:      fi.PtrTo(true),
 				Ipv6AddressCount:         e.IPv6AddressCount,
 			},
 		},
@@ -222,7 +222,7 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 		}
 		tf.MarketOptions = []*terraformLaunchTemplateMarketOptions{
 			{
-				MarketType:  fi.String("spot"),
+				MarketType:  fi.PtrTo("spot"),
 				SpotOptions: []*terraformLaunchTemplateMarketOptionsSpotOptions{&marketSpotOptions},
 			},
 		}
@@ -269,10 +269,10 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 	}
 	for n, x := range devices {
 		tf.BlockDeviceMappings = append(tf.BlockDeviceMappings, &terraformLaunchTemplateBlockDevice{
-			DeviceName: fi.String(n),
+			DeviceName: fi.PtrTo(n),
 			EBS: []*terraformLaunchTemplateBlockDeviceEBS{
 				{
-					DeleteOnTermination: fi.Bool(true),
+					DeleteOnTermination: fi.PtrTo(true),
 					Encrypted:           x.EbsEncrypted,
 					KmsKeyID:            x.EbsKmsKey,
 					IOPS:                x.EbsVolumeIops,
@@ -289,10 +289,10 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 	}
 	for n, x := range additionals {
 		tf.BlockDeviceMappings = append(tf.BlockDeviceMappings, &terraformLaunchTemplateBlockDevice{
-			DeviceName: fi.String(n),
+			DeviceName: fi.PtrTo(n),
 			EBS: []*terraformLaunchTemplateBlockDeviceEBS{
 				{
-					DeleteOnTermination: fi.Bool(true),
+					DeleteOnTermination: fi.PtrTo(true),
 					Encrypted:           x.EbsEncrypted,
 					IOPS:                x.EbsVolumeIops,
 					Throughput:          x.EbsVolumeThroughput,
@@ -311,17 +311,17 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 	for n, x := range devices {
 		tf.BlockDeviceMappings = append(tf.BlockDeviceMappings, &terraformLaunchTemplateBlockDevice{
 			VirtualName: x.VirtualName,
-			DeviceName:  fi.String(n),
+			DeviceName:  fi.PtrTo(n),
 		})
 	}
 
 	if e.Tags != nil {
 		tf.TagSpecifications = append(tf.TagSpecifications, &terraformLaunchTemplateTagSpecification{
-			ResourceType: fi.String("instance"),
+			ResourceType: fi.PtrTo("instance"),
 			Tags:         e.Tags,
 		})
 		tf.TagSpecifications = append(tf.TagSpecifications, &terraformLaunchTemplateTagSpecification{
-			ResourceType: fi.String("volume"),
+			ResourceType: fi.PtrTo("volume"),
 			Tags:         e.Tags,
 		})
 		tf.Tags = e.Tags

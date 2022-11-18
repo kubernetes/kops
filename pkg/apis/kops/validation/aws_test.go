@@ -42,7 +42,7 @@ func TestAWSValidateExternalCloudConfig(t *testing.T) {
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{},
 				CloudConfig: &kops.CloudConfiguration{
 					AWSEBSCSIDriver: &kops.AWSEBSCSIDriver{
-						Enabled: fi.Bool(false),
+						Enabled: fi.PtrTo(false),
 					},
 				},
 			},
@@ -53,7 +53,7 @@ func TestAWSValidateExternalCloudConfig(t *testing.T) {
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{},
 				CloudConfig: &kops.CloudConfiguration{
 					AWSEBSCSIDriver: &kops.AWSEBSCSIDriver{
-						Enabled: fi.Bool(true),
+						Enabled: fi.PtrTo(true),
 					},
 				},
 			},
@@ -152,7 +152,7 @@ func TestValidateInstanceGroupSpec(t *testing.T) {
 		},
 		{
 			Input: kops.InstanceGroupSpec{
-				SpotDurationInMinutes: fi.Int64(55),
+				SpotDurationInMinutes: fi.PtrTo(int64(55)),
 			},
 			ExpectedErrors: []string{
 				"Unsupported value::test-nodes.spec.spotDurationInMinutes",
@@ -160,7 +160,7 @@ func TestValidateInstanceGroupSpec(t *testing.T) {
 		},
 		{
 			Input: kops.InstanceGroupSpec{
-				SpotDurationInMinutes: fi.Int64(380),
+				SpotDurationInMinutes: fi.PtrTo(int64(380)),
 			},
 			ExpectedErrors: []string{
 				"Unsupported value::test-nodes.spec.spotDurationInMinutes",
@@ -168,7 +168,7 @@ func TestValidateInstanceGroupSpec(t *testing.T) {
 		},
 		{
 			Input: kops.InstanceGroupSpec{
-				SpotDurationInMinutes: fi.Int64(125),
+				SpotDurationInMinutes: fi.PtrTo(int64(125)),
 			},
 			ExpectedErrors: []string{
 				"Unsupported value::test-nodes.spec.spotDurationInMinutes",
@@ -176,13 +176,13 @@ func TestValidateInstanceGroupSpec(t *testing.T) {
 		},
 		{
 			Input: kops.InstanceGroupSpec{
-				SpotDurationInMinutes: fi.Int64(120),
+				SpotDurationInMinutes: fi.PtrTo(int64(120)),
 			},
 			ExpectedErrors: []string{},
 		},
 		{
 			Input: kops.InstanceGroupSpec{
-				InstanceInterruptionBehavior: fi.String("invalidValue"),
+				InstanceInterruptionBehavior: fi.PtrTo("invalidValue"),
 			},
 			ExpectedErrors: []string{
 				"Unsupported value::test-nodes.spec.instanceInterruptionBehavior",
@@ -190,19 +190,19 @@ func TestValidateInstanceGroupSpec(t *testing.T) {
 		},
 		{
 			Input: kops.InstanceGroupSpec{
-				InstanceInterruptionBehavior: fi.String("terminate"),
+				InstanceInterruptionBehavior: fi.PtrTo("terminate"),
 			},
 			ExpectedErrors: []string{},
 		},
 		{
 			Input: kops.InstanceGroupSpec{
-				InstanceInterruptionBehavior: fi.String("hibernate"),
+				InstanceInterruptionBehavior: fi.PtrTo("hibernate"),
 			},
 			ExpectedErrors: []string{},
 		},
 		{
 			Input: kops.InstanceGroupSpec{
-				InstanceInterruptionBehavior: fi.String("stop"),
+				InstanceInterruptionBehavior: fi.PtrTo("stop"),
 			},
 			ExpectedErrors: []string{},
 		},
@@ -322,7 +322,7 @@ func TestMixedInstancePolicies(t *testing.T) {
 						"c4.large",
 						"c5.large",
 					},
-					OnDemandAboveBase: fi.Int64(231),
+					OnDemandAboveBase: fi.PtrTo(int64(231)),
 				},
 			},
 			ExpectedErrors: []string{"Invalid value::spec.mixedInstancesPolicy.onDemandAboveBase"},
@@ -381,8 +381,8 @@ func TestInstanceMetadataOptions(t *testing.T) {
 				Spec: kops.InstanceGroupSpec{
 					Role: "Node",
 					InstanceMetadata: &kops.InstanceMetadataOptions{
-						HTTPPutResponseHopLimit: fi.Int64(1),
-						HTTPTokens:              fi.String("abc"),
+						HTTPPutResponseHopLimit: fi.PtrTo(int64(1)),
+						HTTPTokens:              fi.PtrTo("abc"),
 					},
 					MachineType: "t3.medium",
 				},
@@ -397,8 +397,8 @@ func TestInstanceMetadataOptions(t *testing.T) {
 				Spec: kops.InstanceGroupSpec{
 					Role: "Node",
 					InstanceMetadata: &kops.InstanceMetadataOptions{
-						HTTPPutResponseHopLimit: fi.Int64(-1),
-						HTTPTokens:              fi.String("required"),
+						HTTPPutResponseHopLimit: fi.PtrTo(int64(-1)),
+						HTTPTokens:              fi.PtrTo("required"),
 					},
 					MachineType: "t3.medium",
 				},
@@ -442,7 +442,7 @@ func TestLoadBalancerSubnets(t *testing.T) {
 			lbSubnets: []kops.LoadBalancerSubnetSpec{
 				{
 					Name:               "a",
-					PrivateIPv4Address: fi.String("10.0.0.10"),
+					PrivateIPv4Address: fi.PtrTo("10.0.0.10"),
 					AllocationID:       nil,
 				},
 				{
@@ -479,7 +479,7 @@ func TestLoadBalancerSubnets(t *testing.T) {
 			lbSubnets: []kops.LoadBalancerSubnetSpec{
 				{
 					Name:               "a",
-					PrivateIPv4Address: fi.String(""),
+					PrivateIPv4Address: fi.PtrTo(""),
 					AllocationID:       nil,
 				},
 			},
@@ -491,7 +491,7 @@ func TestLoadBalancerSubnets(t *testing.T) {
 				{
 					Name:               "a",
 					PrivateIPv4Address: nil,
-					AllocationID:       fi.String(""),
+					AllocationID:       fi.PtrTo(""),
 				},
 			},
 			expected: []string{"Required value::spec.api.loadBalancer.subnets[0].allocationID"},
@@ -501,7 +501,7 @@ func TestLoadBalancerSubnets(t *testing.T) {
 			lbSubnets: []kops.LoadBalancerSubnetSpec{
 				{
 					Name:               "a",
-					PrivateIPv4Address: fi.String("invalidip"),
+					PrivateIPv4Address: fi.PtrTo("invalidip"),
 					AllocationID:       nil,
 				},
 			},
@@ -512,56 +512,56 @@ func TestLoadBalancerSubnets(t *testing.T) {
 			lbSubnets: []kops.LoadBalancerSubnetSpec{
 				{
 					Name:               "a",
-					PrivateIPv4Address: fi.String("11.0.0.10"),
+					PrivateIPv4Address: fi.PtrTo("11.0.0.10"),
 					AllocationID:       nil,
 				},
 			},
 			expected: []string{"Invalid value::spec.api.loadBalancer.subnets[0].privateIPv4Address"},
 		},
 		{ // invalid class - with privateIPv4Address, no allocationID
-			class:          fi.String(string(kops.LoadBalancerClassClassic)),
+			class:          fi.PtrTo(string(kops.LoadBalancerClassClassic)),
 			clusterSubnets: []string{"a", "b", "c"},
 			lbSubnets: []kops.LoadBalancerSubnetSpec{
 				{
 					Name:               "a",
-					PrivateIPv4Address: fi.String("10.0.0.10"),
+					PrivateIPv4Address: fi.PtrTo("10.0.0.10"),
 					AllocationID:       nil,
 				},
 			},
 			expected: []string{"Forbidden::spec.api.loadBalancer.subnets[0].privateIPv4Address"},
 		},
 		{ // invalid class - no privateIPv4Address, with allocationID
-			class:          fi.String(string(kops.LoadBalancerClassClassic)),
+			class:          fi.PtrTo(string(kops.LoadBalancerClassClassic)),
 			clusterSubnets: []string{"a", "b", "c"},
 			lbSubnets: []kops.LoadBalancerSubnetSpec{
 				{
 					Name:               "a",
 					PrivateIPv4Address: nil,
-					AllocationID:       fi.String("eipalloc-222ghi789"),
+					AllocationID:       fi.PtrTo("eipalloc-222ghi789"),
 				},
 			},
 			expected: []string{"Forbidden::spec.api.loadBalancer.subnets[0].allocationID"},
 		},
 		{ // invalid type external for private IP
-			lbType:         fi.String(string(kops.LoadBalancerTypePublic)),
+			lbType:         fi.PtrTo(string(kops.LoadBalancerTypePublic)),
 			clusterSubnets: []string{"a", "b", "c"},
 			lbSubnets: []kops.LoadBalancerSubnetSpec{
 				{
 					Name:               "a",
-					PrivateIPv4Address: fi.String("10.0.0.10"),
+					PrivateIPv4Address: fi.PtrTo("10.0.0.10"),
 					AllocationID:       nil,
 				},
 			},
 			expected: []string{"Forbidden::spec.api.loadBalancer.subnets[0].privateIPv4Address"},
 		},
 		{ // invalid type Internal for public IP
-			lbType:         fi.String(string(kops.LoadBalancerTypeInternal)),
+			lbType:         fi.PtrTo(string(kops.LoadBalancerTypeInternal)),
 			clusterSubnets: []string{"a", "b", "c"},
 			lbSubnets: []kops.LoadBalancerSubnetSpec{
 				{
 					Name:               "a",
 					PrivateIPv4Address: nil,
-					AllocationID:       fi.String("eipalloc-222ghi789"),
+					AllocationID:       fi.PtrTo("eipalloc-222ghi789"),
 				},
 			},
 			expected: []string{"Forbidden::spec.api.loadBalancer.subnets[0].allocationID"},

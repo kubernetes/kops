@@ -47,10 +47,10 @@ func NewNetworkTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecy
 	}
 
 	task := &Network{
-		ID:                    fi.String(network.ID),
-		Name:                  fi.String(network.Name),
+		ID:                    fi.PtrTo(network.ID),
+		Name:                  fi.PtrTo(network.Name),
 		Lifecycle:             lifecycle,
-		Tag:                   fi.String(tag),
+		Tag:                   fi.PtrTo(tag),
 		AvailabilityZoneHints: fi.StringSlice(network.AvailabilityZoneHints),
 	}
 	return task, nil
@@ -120,7 +120,7 @@ func (_ *Network) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes
 
 		opt := networks.CreateOpts{
 			Name:                  fi.StringValue(e.Name),
-			AdminStateUp:          fi.Bool(true),
+			AdminStateUp:          fi.PtrTo(true),
 			AvailabilityZoneHints: fi.StringSliceValue(e.AvailabilityZoneHints),
 		}
 
@@ -134,7 +134,7 @@ func (_ *Network) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes
 			return fmt.Errorf("Error appending tag to network: %v", err)
 		}
 
-		e.ID = fi.String(v.ID)
+		e.ID = fi.PtrTo(v.ID)
 		klog.V(2).Infof("Creating a new Openstack network, id=%s", v.ID)
 		return nil
 	} else {

@@ -58,8 +58,8 @@ func (e *Disk) Find(c *fi.Context) (*Disk, error) {
 
 	actual := &Disk{}
 	actual.Name = &r.Name
-	actual.VolumeType = fi.String(gce.LastComponent(r.Type))
-	actual.Zone = fi.String(gce.LastComponent(r.Zone))
+	actual.VolumeType = fi.PtrTo(gce.LastComponent(r.Type))
+	actual.Zone = fi.PtrTo(gce.LastComponent(r.Zone))
 	actual.SizeGB = &r.SizeGb
 
 	actual.Labels = r.Labels
