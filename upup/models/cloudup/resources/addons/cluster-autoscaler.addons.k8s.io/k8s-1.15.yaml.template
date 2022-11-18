@@ -292,18 +292,12 @@ spec:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
-            {{ if not UseServiceAccountExternalPermissions }}
             - matchExpressions:
               - key: node-role.kubernetes.io/control-plane
                 operator: Exists
             - matchExpressions:
               - key: node-role.kubernetes.io/master
                 operator: Exists
-            {{ else }}
-            - matchExpressions:
-              - key: node-role.kubernetes.io/spot-worker
-                operator: DoesNotExist
-            {{ end }}
       priorityClassName: "system-cluster-critical"
       dnsPolicy: "ClusterFirst"
       containers:
@@ -356,13 +350,11 @@ spec:
               cpu: {{ or .CPURequest "100m"}}
               memory: {{ or .MemoryRequest "300Mi"}}
       serviceAccountName: cluster-autoscaler
-      {{ if not UseServiceAccountExternalPermissions }}
       tolerations:
       - operator: "Exists"
         key: node-role.kubernetes.io/control-plane
       - operator: "Exists"
         key: node-role.kubernetes.io/master
-      {{ end }}
       topologySpreadConstraints:
       - maxSkew: 1
         topologyKey: "topology.kubernetes.io/zone"

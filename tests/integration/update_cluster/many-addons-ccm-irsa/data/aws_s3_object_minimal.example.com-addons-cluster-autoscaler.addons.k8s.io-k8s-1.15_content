@@ -314,8 +314,11 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: node-role.kubernetes.io/spot-worker
-                operator: DoesNotExist
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
       containers:
       - command:
         - ./cluster-autoscaler
@@ -372,6 +375,11 @@ spec:
       securityContext:
         fsGroup: 10001
       serviceAccountName: cluster-autoscaler
+      tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+      - key: node-role.kubernetes.io/master
+        operator: Exists
       topologySpreadConstraints:
       - labelSelector:
           matchLabels:
