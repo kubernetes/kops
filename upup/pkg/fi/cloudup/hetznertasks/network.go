@@ -53,9 +53,9 @@ func (v *Network) Find(c *fi.Context) (*Network, error) {
 	cloud := c.Cloud.(hetzner.HetznerCloud)
 	client := cloud.NetworkClient()
 
-	idOrName := fi.StringValue(v.Name)
+	idOrName := fi.ValueOf(v.Name)
 	if v.ID != nil {
-		idOrName = fi.StringValue(v.ID)
+		idOrName = fi.ValueOf(v.ID)
 	}
 
 	network, _, err := client.Get(context.TODO(), idOrName)
@@ -143,7 +143,7 @@ func (_ *Network) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *Netw
 			return err
 		}
 		opts := hcloud.NetworkCreateOpts{
-			Name:    fi.StringValue(e.Name),
+			Name:    fi.ValueOf(e.Name),
 			IPRange: ipRange,
 			Labels:  e.Labels,
 		}
@@ -155,7 +155,7 @@ func (_ *Network) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *Netw
 
 	} else {
 		var err error
-		network, _, err = client.Get(context.TODO(), fi.StringValue(e.Name))
+		network, _, err = client.Get(context.TODO(), fi.ValueOf(e.Name))
 		if err != nil {
 			return err
 		}
@@ -163,7 +163,7 @@ func (_ *Network) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *Netw
 		// Update the labels
 		if changes.Name != nil || len(changes.Labels) != 0 {
 			_, _, err := client.Update(context.TODO(), network, hcloud.NetworkUpdateOpts{
-				Name:   fi.StringValue(e.Name),
+				Name:   fi.ValueOf(e.Name),
 				Labels: e.Labels,
 			})
 			if err != nil {

@@ -63,7 +63,7 @@ func (e *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
 	}
 
 	if e.SourceGroup != nil && e.SourceGroup.ID == nil {
-		klog.V(4).Infof("Skipping find of SecurityGroupRule %s, because SourceGroup was not found", fi.StringValue(e.Name))
+		klog.V(4).Infof("Skipping find of SecurityGroupRule %s, because SourceGroup was not found", fi.ValueOf(e.Name))
 		return nil, nil
 	}
 
@@ -108,11 +108,11 @@ func (e *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
 			actual.Protocol = nil
 		}
 
-		if fi.StringValue(actual.Protocol) != "icmpv6" {
-			if fi.Int64Value(actual.FromPort) == int64(-1) {
+		if fi.ValueOf(actual.Protocol) != "icmpv6" {
+			if fi.ValueOf(actual.FromPort) == int64(-1) {
 				actual.FromPort = nil
 			}
-			if fi.Int64Value(actual.ToPort) == int64(-1) {
+			if fi.ValueOf(actual.ToPort) == int64(-1) {
 				actual.ToPort = nil
 			}
 		}
@@ -175,15 +175,15 @@ func (e *SecurityGroupRule) matches(rule *ec2.SecurityGroupRule) bool {
 		return false
 	}
 
-	if fi.StringValue(e.CIDR) != fi.StringValue(rule.CidrIpv4) {
+	if fi.ValueOf(e.CIDR) != fi.ValueOf(rule.CidrIpv4) {
 		return false
 	}
 
-	if fi.StringValue(e.IPv6CIDR) != fi.StringValue(rule.CidrIpv6) {
+	if fi.ValueOf(e.IPv6CIDR) != fi.ValueOf(rule.CidrIpv6) {
 		return false
 	}
 
-	if fi.StringValue(e.PrefixList) != fi.StringValue(rule.PrefixListId) {
+	if fi.ValueOf(e.PrefixList) != fi.ValueOf(rule.PrefixListId) {
 		return false
 	}
 
@@ -191,7 +191,7 @@ func (e *SecurityGroupRule) matches(rule *ec2.SecurityGroupRule) bool {
 		if e.SourceGroup == nil || rule.ReferencedGroupInfo == nil {
 			return false
 		}
-		if fi.StringValue(e.SourceGroup.ID) != fi.StringValue(rule.ReferencedGroupInfo.GroupId) {
+		if fi.ValueOf(e.SourceGroup.ID) != fi.ValueOf(rule.ReferencedGroupInfo.GroupId) {
 			return false
 		}
 	}
@@ -242,7 +242,7 @@ func (e *SecurityGroupRule) Description() string {
 	}
 
 	if e.SourceGroup != nil {
-		description = append(description, fmt.Sprintf("sourceGroup=%s", fi.StringValue(e.SourceGroup.ID)))
+		description = append(description, fmt.Sprintf("sourceGroup=%s", fi.ValueOf(e.SourceGroup.ID)))
 	}
 
 	if e.CIDR != nil {
@@ -261,7 +261,7 @@ func (e *SecurityGroupRule) Description() string {
 }
 
 func (_ *SecurityGroupRule) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *SecurityGroupRule) error {
-	name := fi.StringValue(e.Name)
+	name := fi.ValueOf(e.Name)
 
 	if a == nil {
 		protocol := e.Protocol
@@ -304,7 +304,7 @@ func (_ *SecurityGroupRule) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Secu
 
 		description := e.Description()
 
-		if fi.BoolValue(e.Egress) {
+		if fi.ValueOf(e.Egress) {
 			request := &ec2.AuthorizeSecurityGroupEgressInput{
 				GroupId: e.SecurityGroup.ID,
 			}
@@ -362,7 +362,7 @@ func (_ *SecurityGroupRule) RenderTerraform(t *terraform.TerraformTarget, a, e, 
 		ToPort:        e.ToPort,
 		Protocol:      e.Protocol,
 	}
-	if fi.BoolValue(e.Egress) {
+	if fi.ValueOf(e.Egress) {
 		tf.Type = fi.PtrTo("egress")
 	}
 
@@ -413,7 +413,7 @@ type cloudformationSecurityGroupIngress struct {
 
 func (_ *SecurityGroupRule) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *SecurityGroupRule) error {
 	cfType := "AWS::EC2::SecurityGroupIngress"
-	if fi.BoolValue(e.Egress) {
+	if fi.ValueOf(e.Egress) {
 		cfType = "AWS::EC2::SecurityGroupEgress"
 	}
 

@@ -120,7 +120,7 @@ func (f *Package) GetName() *string {
 
 // isOSPackage returns true if this is an OS provided package (as opposed to a bare .deb, for example)
 func (p *Package) isOSPackage() bool {
-	return fi.StringValue(p.Source) == ""
+	return fi.ValueOf(p.Source) == ""
 }
 
 // String returns a string representation, implementing the Stringer interface
@@ -201,7 +201,7 @@ func (e *Package) findDpkg(c *fi.Context) (*Package, error) {
 	// TODO: Take InstanceGroup-level overriding of the Cluster-level update policy into account
 	// here. Doing so requires that we make the current InstanceGroup available within Package's
 	// methods.
-	if fi.StringValue(c.Cluster.Spec.UpdatePolicy) != kops.UpdatePolicyExternal || !installed {
+	if fi.ValueOf(c.Cluster.Spec.UpdatePolicy) != kops.UpdatePolicyExternal || !installed {
 		return nil, nil
 	}
 
@@ -252,7 +252,7 @@ func (e *Package) findYum(c *fi.Context) (*Package, error) {
 	// TODO: Take InstanceGroup-level overriding of the Cluster-level update policy into account
 	// here. Doing so requires that we make the current InstanceGroup available within Package's
 	// methods.
-	if fi.StringValue(c.Cluster.Spec.UpdatePolicy) != kops.UpdatePolicyExternal || !installed {
+	if fi.ValueOf(c.Cluster.Spec.UpdatePolicy) != kops.UpdatePolicyExternal || !installed {
 		return nil, nil
 	}
 
@@ -311,14 +311,14 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 				local := path.Join(localPackageDir, pkg.Name+ext)
 				pkgs[i] = local
 				var hash *hashing.Hash
-				if fi.StringValue(pkg.Hash) != "" {
-					parsed, err := hashing.FromString(fi.StringValue(pkg.Hash))
+				if fi.ValueOf(pkg.Hash) != "" {
+					parsed, err := hashing.FromString(fi.ValueOf(pkg.Hash))
 					if err != nil {
 						return fmt.Errorf("error parsing hash: %v", err)
 					}
 					hash = parsed
 				}
-				_, err = fi.DownloadURL(fi.StringValue(pkg.Source), local, hash)
+				_, err = fi.DownloadURL(fi.ValueOf(pkg.Source), local, hash)
 				if err != nil {
 					return err
 				}

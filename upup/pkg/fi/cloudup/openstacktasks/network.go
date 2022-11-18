@@ -42,8 +42,8 @@ func (n *Network) CompareWithID() *string {
 
 func NewNetworkTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle, network *networks.Network, networkName *string) (*Network, error) {
 	tag := ""
-	if networkName != nil && fi.ArrayContains(network.Tags, fi.StringValue(networkName)) {
-		tag = fi.StringValue(networkName)
+	if networkName != nil && fi.ArrayContains(network.Tags, fi.ValueOf(networkName)) {
+		tag = fi.ValueOf(networkName)
 	}
 
 	task := &Network{
@@ -63,8 +63,8 @@ func (n *Network) Find(context *fi.Context) (*Network, error) {
 
 	cloud := context.Cloud.(openstack.OpenstackCloud)
 	opt := networks.ListOpts{
-		ID:   fi.StringValue(n.ID),
-		Name: fi.StringValue(n.Name),
+		ID:   fi.ValueOf(n.ID),
+		Name: fi.ValueOf(n.Name),
 	}
 	ns, err := cloud.ListNetworks(opt)
 	if err != nil {
@@ -73,7 +73,7 @@ func (n *Network) Find(context *fi.Context) (*Network, error) {
 	if ns == nil {
 		return nil, nil
 	} else if len(ns) != 1 {
-		return nil, fmt.Errorf("found multiple networks with name: %s", fi.StringValue(n.Name))
+		return nil, fmt.Errorf("found multiple networks with name: %s", fi.ValueOf(n.Name))
 	}
 	v := ns[0]
 	actual, err := NewNetworkTaskFromCloud(cloud, n.Lifecycle, &v, n.Tag)
@@ -116,10 +116,10 @@ func (_ *Network) ShouldCreate(a, e, changes *Network) (bool, error) {
 
 func (_ *Network) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Network) error {
 	if a == nil {
-		klog.V(2).Infof("Creating Network with name:%q", fi.StringValue(e.Name))
+		klog.V(2).Infof("Creating Network with name:%q", fi.ValueOf(e.Name))
 
 		opt := networks.CreateOpts{
-			Name:                  fi.StringValue(e.Name),
+			Name:                  fi.ValueOf(e.Name),
 			AdminStateUp:          fi.PtrTo(true),
 			AvailabilityZoneHints: fi.StringSliceValue(e.AvailabilityZoneHints),
 		}
@@ -129,7 +129,7 @@ func (_ *Network) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes
 			return fmt.Errorf("Error creating network: %v", err)
 		}
 
-		err = t.Cloud.AppendTag(openstack.ResourceTypeNetwork, v.ID, fi.StringValue(e.Tag))
+		err = t.Cloud.AppendTag(openstack.ResourceTypeNetwork, v.ID, fi.ValueOf(e.Tag))
 		if err != nil {
 			return fmt.Errorf("Error appending tag to network: %v", err)
 		}
@@ -138,12 +138,12 @@ func (_ *Network) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes
 		klog.V(2).Infof("Creating a new Openstack network, id=%s", v.ID)
 		return nil
 	} else {
-		err := t.Cloud.AppendTag(openstack.ResourceTypeNetwork, fi.StringValue(a.ID), fi.StringValue(changes.Tag))
+		err := t.Cloud.AppendTag(openstack.ResourceTypeNetwork, fi.ValueOf(a.ID), fi.ValueOf(changes.Tag))
 		if err != nil {
 			return fmt.Errorf("Error appending tag to network: %v", err)
 		}
 	}
 	e.ID = a.ID
-	klog.V(2).Infof("Using an existing Openstack network, id=%s", fi.StringValue(e.ID))
+	klog.V(2).Infof("Using an existing Openstack network, id=%s", fi.ValueOf(e.ID))
 	return nil
 }

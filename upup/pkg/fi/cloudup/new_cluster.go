@@ -855,7 +855,7 @@ func setupMasters(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap 
 						HTTPTokens:              fi.PtrTo("required"),
 					}
 				}
-				if cluster.IsKubernetesGTE("1.26") && fi.BoolValue(cluster.Spec.IAM.UseServiceAccountExternalPermissions) {
+				if cluster.IsKubernetesGTE("1.26") && fi.ValueOf(cluster.Spec.IAM.UseServiceAccountExternalPermissions) {
 					g.Spec.InstanceMetadata.HTTPPutResponseHopLimit = fi.PtrTo(int64(1))
 				}
 			}
@@ -897,7 +897,7 @@ func setupMasters(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap 
 
 		encryptEtcdStorage := false
 		if opt.EncryptEtcdStorage != nil {
-			encryptEtcdStorage = fi.BoolValue(opt.EncryptEtcdStorage)
+			encryptEtcdStorage = fi.ValueOf(opt.EncryptEtcdStorage)
 		} else if cloudProvider == api.CloudProviderAWS {
 			encryptEtcdStorage = true
 		}
@@ -1501,13 +1501,13 @@ func MachineArchitecture(cloud fi.Cloud, machineType string) (architectures.Arch
 		var unsupported []string
 		for _, arch := range info.ProcessorInfo.SupportedArchitectures {
 			// Return the first found supported architecture, in order of popularity
-			switch fi.StringValue(arch) {
+			switch fi.ValueOf(arch) {
 			case ec2.ArchitectureTypeX8664:
 				return architectures.ArchitectureAmd64, nil
 			case ec2.ArchitectureTypeArm64:
 				return architectures.ArchitectureArm64, nil
 			default:
-				unsupported = append(unsupported, fi.StringValue(arch))
+				unsupported = append(unsupported, fi.ValueOf(arch))
 			}
 		}
 		return "", fmt.Errorf("unsupported architecture for instance type %q: %v", machineType, unsupported)

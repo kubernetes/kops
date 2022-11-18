@@ -75,7 +75,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if clusterSpec.Kubelet.ClusterDNS == "" {
-		if clusterSpec.KubeDNS != nil && clusterSpec.KubeDNS.NodeLocalDNS != nil && fi.BoolValue(clusterSpec.KubeDNS.NodeLocalDNS.Enabled) {
+		if clusterSpec.KubeDNS != nil && clusterSpec.KubeDNS.NodeLocalDNS != nil && fi.ValueOf(clusterSpec.KubeDNS.NodeLocalDNS.Enabled) {
 			clusterSpec.Kubelet.ClusterDNS = clusterSpec.KubeDNS.NodeLocalDNS.LocalIP
 		} else {
 			ip, err := WellKnownServiceIP(clusterSpec, 10)
@@ -117,7 +117,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 
 	// IsolateMasters enables the legacy behaviour, where master pods on a separate network
 	// In newer versions of kubernetes, most of that functionality has been removed though
-	if fi.BoolValue(clusterSpec.IsolateMasters) {
+	if fi.ValueOf(clusterSpec.IsolateMasters) {
 		clusterSpec.MasterKubelet.EnableDebuggingHandlers = fi.PtrTo(false)
 		clusterSpec.MasterKubelet.HairpinMode = "none"
 	}
@@ -188,7 +188,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.Kubelet.FeatureGates = make(map[string]string)
 	}
 
-	if clusterSpec.CloudConfig != nil && clusterSpec.CloudConfig.AWSEBSCSIDriver != nil && fi.BoolValue(clusterSpec.CloudConfig.AWSEBSCSIDriver.Enabled) {
+	if clusterSpec.CloudConfig != nil && clusterSpec.CloudConfig.AWSEBSCSIDriver != nil && fi.ValueOf(clusterSpec.CloudConfig.AWSEBSCSIDriver.Enabled) {
 		if _, found := clusterSpec.Kubelet.FeatureGates["CSIMigrationAWS"]; !found {
 			clusterSpec.Kubelet.FeatureGates["CSIMigrationAWS"] = "true"
 		}

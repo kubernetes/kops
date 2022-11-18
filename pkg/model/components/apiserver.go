@@ -169,7 +169,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 
 	// If metrics-server is enabled, we want aggregator routing enabled so that requests are load balanced.
 	metricsServer := clusterSpec.MetricsServer
-	if metricsServer != nil && fi.BoolValue(metricsServer.Enabled) {
+	if metricsServer != nil && fi.ValueOf(metricsServer.Enabled) {
 		if c.EnableAggregatorRouting == nil {
 			c.EnableAggregatorRouting = fi.PtrTo(true)
 		}
@@ -179,7 +179,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		c.FeatureGates = make(map[string]string)
 	}
 
-	if clusterSpec.CloudConfig != nil && clusterSpec.CloudConfig.AWSEBSCSIDriver != nil && fi.BoolValue(clusterSpec.CloudConfig.AWSEBSCSIDriver.Enabled) {
+	if clusterSpec.CloudConfig != nil && clusterSpec.CloudConfig.AWSEBSCSIDriver != nil && fi.ValueOf(clusterSpec.CloudConfig.AWSEBSCSIDriver.Enabled) {
 
 		if _, found := c.FeatureGates["InTreePluginAWSUnregister"]; !found {
 			c.FeatureGates["InTreePluginAWSUnregister"] = "true"
@@ -204,9 +204,9 @@ func (b *KubeAPIServerOptionsBuilder) buildAPIServerCount(clusterSpec *kops.Clus
 	//	if !ig.IsMaster() {
 	//		continue
 	//	}
-	//	size := fi.IntValue(ig.Spec.MaxSize)
+	//	size := fi.ValueOf(ig.Spec.MaxSize)
 	//	if size == 0 {
-	//		size = fi.IntValue(ig.Spec.MinSize)
+	//		size = fi.ValueOf(ig.Spec.MinSize)
 	//	}
 	//	count += size
 	//}

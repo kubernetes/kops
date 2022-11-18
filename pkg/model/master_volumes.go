@@ -64,7 +64,7 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 			prefix := m.Name + ".etcd-" + etcd.Name
 			name := prefix + "." + b.ClusterName()
 
-			igName := fi.StringValue(m.InstanceGroup)
+			igName := fi.ValueOf(m.InstanceGroup)
 			if igName == "" {
 				return fmt.Errorf("InstanceGroup not set on etcd %s/%s", m.Name, etcd.Name)
 			}
@@ -85,7 +85,7 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 			zone := zones[0]
 
-			volumeSize := fi.Int32Value(m.VolumeSize)
+			volumeSize := fi.ValueOf(m.VolumeSize)
 			if volumeSize == 0 {
 				volumeSize = DefaultEtcdVolumeSize
 			}
@@ -128,12 +128,12 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 
 func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, zone string, etcd kops.EtcdClusterSpec, m kops.EtcdMemberSpec, allMembers []string) error {
 	// https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html
-	volumeType := fi.StringValue(m.VolumeType)
+	volumeType := fi.ValueOf(m.VolumeType)
 	if volumeType == "" {
 		volumeType = DefaultAWSEtcdVolumeType
 	}
-	volumeIops := fi.Int32Value(m.VolumeIOPS)
-	volumeThroughput := fi.Int32Value(m.VolumeThroughput)
+	volumeIops := fi.ValueOf(m.VolumeIOPS)
+	volumeThroughput := fi.ValueOf(m.VolumeThroughput)
 	switch volumeType {
 	case ec2.VolumeTypeIo1, ec2.VolumeTypeIo2:
 		if volumeIops < 100 {
@@ -169,7 +169,7 @@ func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name strin
 	// We always add an owned tags (these can't be shared)
 	tags["kubernetes.io/cluster/"+b.Cluster.ObjectMeta.Name] = "owned"
 
-	encrypted := fi.BoolValue(m.EncryptedVolume)
+	encrypted := fi.ValueOf(m.EncryptedVolume)
 
 	t := &awstasks.EBSVolume{
 		Name:      fi.PtrTo(name),
@@ -246,7 +246,7 @@ func (b *MasterVolumeBuilder) addDOVolume(c *fi.ModelBuilderContext, name string
 }
 
 func (b *MasterVolumeBuilder) addGCEVolume(c *fi.ModelBuilderContext, prefix string, volumeSize int32, zone string, etcd kops.EtcdClusterSpec, m kops.EtcdMemberSpec, allMembers []string) {
-	volumeType := fi.StringValue(m.VolumeType)
+	volumeType := fi.ValueOf(m.VolumeType)
 	if volumeType == "" {
 		volumeType = DefaultGCEEtcdVolumeType
 	}
@@ -296,7 +296,7 @@ func (b *MasterVolumeBuilder) addGCEVolume(c *fi.ModelBuilderContext, prefix str
 func (b *MasterVolumeBuilder) addHetznerVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, zone string, etcd kops.EtcdClusterSpec, m kops.EtcdMemberSpec, allMembers []string) {
 	tags := make(map[string]string)
 	tags[hetzner.TagKubernetesClusterName] = b.Cluster.ObjectMeta.Name
-	tags[hetzner.TagKubernetesInstanceGroup] = fi.StringValue(m.InstanceGroup)
+	tags[hetzner.TagKubernetesInstanceGroup] = fi.ValueOf(m.InstanceGroup)
 	tags[hetzner.TagKubernetesVolumeRole] = etcd.Name
 
 	t := &hetznertasks.Volume{
@@ -312,7 +312,7 @@ func (b *MasterVolumeBuilder) addHetznerVolume(c *fi.ModelBuilderContext, name s
 }
 
 func (b *MasterVolumeBuilder) addOpenstackVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, zone string, etcd kops.EtcdClusterSpec, m kops.EtcdMemberSpec, allMembers []string) error {
-	volumeType := fi.StringValue(m.VolumeType)
+	volumeType := fi.ValueOf(m.VolumeType)
 
 	// The tags are how protokube knows to mount the volume and use it for etcd
 	tags := make(map[string]string)
@@ -327,7 +327,7 @@ func (b *MasterVolumeBuilder) addOpenstackVolume(c *fi.ModelBuilderContext, name
 
 	// override zone
 	if b.Cluster.Spec.CloudProvider.Openstack.BlockStorage != nil && b.Cluster.Spec.CloudProvider.Openstack.BlockStorage.OverrideAZ != nil {
-		zone = fi.StringValue(b.Cluster.Spec.CloudProvider.Openstack.BlockStorage.OverrideAZ)
+		zone = fi.ValueOf(b.Cluster.Spec.CloudProvider.Openstack.BlockStorage.OverrideAZ)
 	}
 	t := &openstacktasks.Volume{
 		Name:             fi.PtrTo(name),

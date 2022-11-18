@@ -49,18 +49,18 @@ func findContainerdAsset(c *kops.Cluster, assetBuilder *assets.AssetBuilder, arc
 
 	if containerd.Packages != nil {
 		if arch == architectures.ArchitectureAmd64 && containerd.Packages.UrlAmd64 != nil && containerd.Packages.HashAmd64 != nil {
-			assetUrl := fi.StringValue(containerd.Packages.UrlAmd64)
-			assetHash := fi.StringValue(containerd.Packages.HashAmd64)
+			assetUrl := fi.ValueOf(containerd.Packages.UrlAmd64)
+			assetHash := fi.ValueOf(containerd.Packages.HashAmd64)
 			return findAssetsUrlHash(assetBuilder, assetUrl, assetHash)
 		}
 		if arch == architectures.ArchitectureArm64 && containerd.Packages.UrlArm64 != nil && containerd.Packages.HashArm64 != nil {
-			assetUrl := fi.StringValue(containerd.Packages.UrlArm64)
-			assetHash := fi.StringValue(containerd.Packages.HashArm64)
+			assetUrl := fi.ValueOf(containerd.Packages.UrlArm64)
+			assetHash := fi.ValueOf(containerd.Packages.HashArm64)
 			return findAssetsUrlHash(assetBuilder, assetUrl, assetHash)
 		}
 	}
 
-	version := fi.StringValue(containerd.Version)
+	version := fi.ValueOf(containerd.Version)
 	if version == "" {
 		return nil, nil, fmt.Errorf("unable to find containerd version")
 	}

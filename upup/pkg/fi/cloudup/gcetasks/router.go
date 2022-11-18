@@ -147,7 +147,7 @@ func (*Router) CheckChanges(a, e, changes *Router) error {
 func (*Router) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Router) error {
 	cloud := t.Cloud
 	project := cloud.Project()
-	region := fi.StringValue(e.Region)
+	region := fi.ValueOf(e.Region)
 
 	if a == nil {
 		klog.V(2).Infof("Creating Cloud NAT Gateway %v", e.Name)

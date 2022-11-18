@@ -360,7 +360,7 @@ func (_ *IAMRole) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *I
 		tf.PermissionsBoundary = e.PermissionsBoundary
 	}
 
-	if fi.StringValue(e.ExportWithID) != "" {
+	if fi.ValueOf(e.ExportWithID) != "" {
 		t.AddOutputVariable(*e.ExportWithID+"_role_arn", terraformWriter.LiteralProperty("aws_iam_role", *e.Name, "arn"))
 		t.AddOutputVariable(*e.ExportWithID+"_role_name", e.TerraformLink())
 	}

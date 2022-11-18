@@ -340,7 +340,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 
 	dest["HasSnapshotController"] = func() bool {
 		sc := cluster.Spec.SnapshotController
-		return sc != nil && fi.BoolValue(sc.Enabled)
+		return sc != nil && fi.ValueOf(sc.Enabled)
 	}
 
 	dest["IsKubernetesGTE"] = tf.IsKubernetesGTE
@@ -388,7 +388,7 @@ func (tf *TemplateFunctions) GetInstanceGroup(name string) (*kops.InstanceGroup,
 // deployOnWorkersIfExternalPermissons should be true if a controller runs on worker nodes when external IAM permissions is enabled for the cluster.
 // In this case it is assumed that it can run 2 replicas.
 func (tf *TemplateFunctions) ControlPlaneControllerReplicas(deployOnWorkersIfExternalPermissions bool) int {
-	if deployOnWorkersIfExternalPermissions && tf.Cluster.Spec.IAM != nil && fi.BoolValue(tf.Cluster.Spec.IAM.UseServiceAccountExternalPermissions) {
+	if deployOnWorkersIfExternalPermissions && tf.Cluster.Spec.IAM != nil && fi.ValueOf(tf.Cluster.Spec.IAM.UseServiceAccountExternalPermissions) {
 		return 2
 	}
 	if tf.HasHighlyAvailableControlPlane() {
@@ -474,7 +474,7 @@ func (tf *TemplateFunctions) DNSControllerArgv() ([]string, error) {
 		// @check if the watch ingress is set
 		var watchIngress bool
 		if cluster.Spec.ExternalDNS.WatchIngress != nil {
-			watchIngress = fi.BoolValue(cluster.Spec.ExternalDNS.WatchIngress)
+			watchIngress = fi.ValueOf(cluster.Spec.ExternalDNS.WatchIngress)
 		}
 
 		if watchIngress {

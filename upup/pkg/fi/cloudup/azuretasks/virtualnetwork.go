@@ -119,13 +119,13 @@ func (*VirtualNetwork) CheckChanges(a, e, changes *VirtualNetwork) error {
 // RenderAzure creates or updates a Virtual Network.
 func (*VirtualNetwork) RenderAzure(t *azure.AzureAPITarget, a, e, changes *VirtualNetwork) error {
 	if a == nil {
-		klog.Infof("Creating a new Virtual Network with name: %s", fi.StringValue(e.Name))
+		klog.Infof("Creating a new Virtual Network with name: %s", fi.ValueOf(e.Name))
 	} else {
 		// Only allow tags to be updated.
 		if changes.Tags == nil {
 			return nil
 		}
-		klog.Infof("Updating a Virtual Network with name: %s", fi.StringValue(e.Name))
+		klog.Infof("Updating a Virtual Network with name: %s", fi.ValueOf(e.Name))
 	}
 
 	vnet := network.VirtualNetwork{

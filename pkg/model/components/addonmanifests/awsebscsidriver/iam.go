@@ -33,7 +33,7 @@ func (r *ServiceAccount) BuildAWSPolicy(b *iam.PolicyBuilder) (*iam.Policy, erro
 	clusterName := b.Cluster.ObjectMeta.Name
 	p := iam.NewPolicy(clusterName, b.Partition)
 
-	addSnapshotControllerPermissions := b.Cluster.Spec.SnapshotController != nil && fi.BoolValue(b.Cluster.Spec.SnapshotController.Enabled)
+	addSnapshotControllerPermissions := b.Cluster.Spec.SnapshotController != nil && fi.ValueOf(b.Cluster.Spec.SnapshotController.Enabled)
 	iam.AddAWSEBSCSIDriverPermissions(p, addSnapshotControllerPermissions)
 
 	return p, nil

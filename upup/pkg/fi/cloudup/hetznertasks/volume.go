@@ -41,7 +41,7 @@ type Volume struct {
 var _ fi.CompareWithID = &Volume{}
 
 func (v *Volume) CompareWithID() *string {
-	return fi.PtrTo(strconv.Itoa(fi.IntValue(v.ID)))
+	return fi.PtrTo(strconv.Itoa(fi.ValueOf(v.ID)))
 }
 
 func (v *Volume) Find(c *fi.Context) (*Volume, error) {
@@ -54,7 +54,7 @@ func (v *Volume) Find(c *fi.Context) (*Volume, error) {
 	}
 
 	for _, volume := range volumes {
-		if volume.Name == fi.StringValue(v.Name) {
+		if volume.Name == fi.ValueOf(v.Name) {
 			matches := &Volume{
 				Lifecycle: v.Lifecycle,
 				Name:      fi.PtrTo(volume.Name),
@@ -106,7 +106,7 @@ func (_ *Volume) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *Volum
 
 	if a == nil {
 		opts := hcloud.VolumeCreateOpts{
-			Name: fi.StringValue(e.Name),
+			Name: fi.ValueOf(e.Name),
 			Location: &hcloud.Location{
 				Name: e.Location,
 			},
@@ -119,7 +119,7 @@ func (_ *Volume) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *Volum
 		}
 
 	} else {
-		volume, _, err := client.Get(context.TODO(), strconv.Itoa(fi.IntValue(a.ID)))
+		volume, _, err := client.Get(context.TODO(), strconv.Itoa(fi.ValueOf(a.ID)))
 		if err != nil {
 			return err
 		}
@@ -127,7 +127,7 @@ func (_ *Volume) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *Volum
 		// Update the labels
 		if changes.Name != nil || len(changes.Labels) != 0 {
 			_, _, err := client.Update(context.TODO(), volume, hcloud.VolumeUpdateOpts{
-				Name:   fi.StringValue(e.Name),
+				Name:   fi.ValueOf(e.Name),
 				Labels: e.Labels,
 			})
 			if err != nil {

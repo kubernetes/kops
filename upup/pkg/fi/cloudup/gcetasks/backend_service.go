@@ -189,7 +189,7 @@ func (_ *BackendService) RenderTerraform(t *terraform.TerraformTarget, a, e, cha
 }
 
 func (e *BackendService) TerraformAddress() *terraformWriter.Literal {
-	name := fi.StringValue(e.Name)
+	name := fi.ValueOf(e.Name)
 
 	return terraformWriter.LiteralProperty("google_compute_backend_service", name, "id")
 }

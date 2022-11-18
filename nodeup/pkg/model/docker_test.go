@@ -150,7 +150,7 @@ func runDockerBuilderTest(t *testing.T, key string) {
 			t.Fatalf("error finding Docker version")
 			return
 		}
-		dv := fi.StringValue(nodeUpModelContext.Cluster.Spec.Docker.Version)
+		dv := fi.ValueOf(nodeUpModelContext.Cluster.Spec.Docker.Version)
 		sv, err := semver.ParseTolerant(dv)
 		if err != nil {
 			t.Fatalf("error parsing Docker version %q: %v", dv, err)

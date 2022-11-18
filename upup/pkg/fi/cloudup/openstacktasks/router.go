@@ -56,8 +56,8 @@ func NewRouterTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecyc
 func (n *Router) Find(context *fi.Context) (*Router, error) {
 	cloud := context.Cloud.(openstack.OpenstackCloud)
 	opt := routers.ListOpts{
-		Name: fi.StringValue(n.Name),
-		ID:   fi.StringValue(n.ID),
+		Name: fi.ValueOf(n.Name),
+		ID:   fi.ValueOf(n.ID),
 	}
 	rs, err := cloud.ListRouters(opt)
 	if err != nil {
@@ -66,7 +66,7 @@ func (n *Router) Find(context *fi.Context) (*Router, error) {
 	if rs == nil {
 		return nil, nil
 	} else if len(rs) != 1 {
-		return nil, fmt.Errorf("found multiple routers with name: %s", fi.StringValue(n.Name))
+		return nil, fmt.Errorf("found multiple routers with name: %s", fi.ValueOf(n.Name))
 	}
 	return NewRouterTaskFromCloud(cloud, n.Lifecycle, &rs[0], n)
 }
@@ -93,10 +93,10 @@ func (_ *Router) CheckChanges(a, e, changes *Router) error {
 
 func (_ *Router) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Router) error {
 	if a == nil {
-		klog.V(2).Infof("Creating Router with name:%q", fi.StringValue(e.Name))
+		klog.V(2).Infof("Creating Router with name:%q", fi.ValueOf(e.Name))
 
 		opt := routers.CreateOpts{
-			Name:                  fi.StringValue(e.Name),
+			Name:                  fi.ValueOf(e.Name),
 			AdminStateUp:          fi.PtrTo(true),
 			AvailabilityZoneHints: fi.StringSliceValue(e.AvailabilityZoneHints),
 		}
@@ -130,6 +130,6 @@ func (_ *Router) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes 
 		return nil
 	}
 	e.ID = a.ID
-	klog.V(2).Infof("Using an existing Openstack router, id=%s", fi.StringValue(e.ID))
+	klog.V(2).Infof("Using an existing Openstack router, id=%s", fi.ValueOf(e.ID))
 	return nil
 }

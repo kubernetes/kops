@@ -109,7 +109,7 @@ func TestSubnetCreate(t *testing.T) {
 			t.Fatalf("unexpected error during Run: %v", err)
 		}
 
-		if fi.StringValue(subnet1.ID) == "" {
+		if fi.ValueOf(subnet1.ID) == "" {
 			t.Fatalf("ID not set after create")
 		}
 
@@ -199,7 +199,7 @@ func TestSubnetCreateIPv6(t *testing.T) {
 			t.Fatalf("unexpected error during Run: %v", err)
 		}
 
-		if fi.StringValue(subnet1.ID) == "" {
+		if fi.ValueOf(subnet1.ID) == "" {
 			t.Fatalf("ID not set after create")
 		}
 
@@ -297,7 +297,7 @@ func TestSubnetCreateIPv6NetNum(t *testing.T) {
 			t.Fatalf("unexpected error during Run: %v", err)
 		}
 
-		if fi.StringValue(subnet1.ID) == "" {
+		if fi.ValueOf(subnet1.ID) == "" {
 			t.Fatalf("ID not set after create")
 		}
 
@@ -429,7 +429,7 @@ func TestSharedSubnetCreateDoesNotCreateNew(t *testing.T) {
 			t.Fatalf("unexpected error during Run: %v", err)
 		}
 
-		if fi.StringValue(subnet1.ID) == "" {
+		if fi.ValueOf(subnet1.ID) == "" {
 			t.Fatalf("ID not set after create")
 		}
 

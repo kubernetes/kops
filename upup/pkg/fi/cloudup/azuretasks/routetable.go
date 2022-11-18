@@ -105,9 +105,9 @@ func (*RouteTable) CheckChanges(a, e, changes *RouteTable) error {
 // RenderAzure creates or updates a Route Table.
 func (*RouteTable) RenderAzure(t *azure.AzureAPITarget, a, e, changes *RouteTable) error {
 	if a == nil {
-		klog.Infof("Creating a new Route Table with name: %s", fi.StringValue(e.Name))
+		klog.Infof("Creating a new Route Table with name: %s", fi.ValueOf(e.Name))
 	} else {
-		klog.Infof("Updating a Route Table with name: %s", fi.StringValue(e.Name))
+		klog.Infof("Updating a Route Table with name: %s", fi.ValueOf(e.Name))
 	}
 
 	rt := network.RouteTable{

@@ -48,9 +48,9 @@ func (e *StorageObjectAcl) CompareWithID() *string {
 func (e *StorageObjectAcl) Find(c *fi.Context) (*StorageObjectAcl, error) {
 	cloud := c.Cloud.(gce.GCECloud)
 
-	bucket := fi.StringValue(e.Bucket)
-	object := fi.StringValue(e.Object)
-	entity := fi.StringValue(e.Entity)
+	bucket := fi.ValueOf(e.Bucket)
+	object := fi.ValueOf(e.Object)
+	entity := fi.ValueOf(e.Entity)
 
 	klog.V(2).Infof("Checking GCS object ACL for gs://%s/%s for %s", bucket, object, entity)
 	r, err := cloud.Storage().ObjectAccessControls.Get(bucket, object, entity).Do()
@@ -80,23 +80,23 @@ func (e *StorageObjectAcl) Run(c *fi.Context) error {
 }
 
 func (_ *StorageObjectAcl) CheckChanges(a, e, changes *StorageObjectAcl) error {
-	if fi.StringValue(e.Bucket) == "" {
+	if fi.ValueOf(e.Bucket) == "" {
 		return fi.RequiredField("Bucket")
 	}
-	if fi.StringValue(e.Object) == "" {
+	if fi.ValueOf(e.Object) == "" {
 		return fi.RequiredField("Object")
 	}
-	if fi.StringValue(e.Entity) == "" {
+	if fi.ValueOf(e.Entity) == "" {
 		return fi.RequiredField("Entity")
 	}
 	return nil
 }
 
 func (_ *StorageObjectAcl) RenderGCE(t *gce.GCEAPITarget, a, e, changes *StorageObjectAcl) error {
-	bucket := fi.StringValue(e.Bucket)
-	object := fi.StringValue(e.Object)
-	entity := fi.StringValue(e.Entity)
-	role := fi.StringValue(e.Role)
+	bucket := fi.ValueOf(e.Bucket)
+	object := fi.ValueOf(e.Object)
+	entity := fi.ValueOf(e.Entity)
+	role := fi.ValueOf(e.Role)
 
 	acl := &storage.ObjectAccessControl{
 		Entity: entity,
@@ -131,10 +131,10 @@ type terraformStorageObjectAcl struct {
 
 func (_ *StorageObjectAcl) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *StorageObjectAcl) error {
 	var roleEntities []string
-	roleEntities = append(roleEntities, fi.StringValue(e.Role)+":"+fi.StringValue(e.Name))
+	roleEntities = append(roleEntities, fi.ValueOf(e.Role)+":"+fi.ValueOf(e.Name))
 	tf := &terraformStorageObjectAcl{
-		Bucket:     fi.StringValue(e.Bucket),
-		Object:     fi.StringValue(e.Object),
+		Bucket:     fi.ValueOf(e.Bucket),
+		Object:     fi.ValueOf(e.Object),
 		RoleEntity: roleEntities,
 	}
 

@@ -56,17 +56,17 @@ func (e *DNSName) Find(c *fi.Context) (*DNSName, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	if e.Zone == nil || e.Zone.ZoneID == nil {
-		klog.V(4).Infof("Zone / ZoneID not found for %s, skipping Find", fi.StringValue(e.ResourceName))
+		klog.V(4).Infof("Zone / ZoneID not found for %s, skipping Find", fi.ValueOf(e.ResourceName))
 		return nil, nil
 	}
 
-	findName := fi.StringValue(e.ResourceName)
+	findName := fi.ValueOf(e.ResourceName)
 	if findName == "" {
 		return nil, nil
 	}
 	findName = strings.TrimSuffix(findName, ".")
 
-	findType := fi.StringValue(e.ResourceType)
+	findType := fi.ValueOf(e.ResourceType)
 	if findType == "" {
 		return nil, nil
 	}
@@ -161,7 +161,7 @@ func findDNSTargetNLB(cloud awsup.AWSCloud, aliasTarget *route53.AliasTarget, dn
 		tags := tagMap[loadBalancerArn]
 		nameTag, _ := awsup.FindELBV2Tag(tags, "Name")
 		if nameTag == "" {
-			return nil, fmt.Errorf("Found NLB %q linked to DNS name %q, but it did not have a Name tag", loadBalancerName, fi.StringValue(targetDNSName))
+			return nil, fmt.Errorf("Found NLB %q linked to DNS name %q, but it did not have a Name tag", loadBalancerName, fi.ValueOf(targetDNSName))
 		}
 		nameTag = strings.Replace(nameTag, ".", "-", -1)
 		return &NetworkLoadBalancer{Name: fi.PtrTo(nameTag)}, nil
@@ -183,7 +183,7 @@ func findDNSTargetELB(cloud awsup.AWSCloud, aliasTarget *route53.AliasTarget, dn
 		tags := tagMap[loadBalancerName]
 		nameTag, _ := awsup.FindELBTag(tags, "Name")
 		if nameTag == "" {
-			return nil, fmt.Errorf("Found ELB %q linked to DNS name %q, but it did not have a Name tag", loadBalancerName, fi.StringValue(targetDNSName))
+			return nil, fmt.Errorf("Found ELB %q linked to DNS name %q, but it did not have a Name tag", loadBalancerName, fi.ValueOf(targetDNSName))
 		}
 		return &ClassicLoadBalancer{Name: fi.PtrTo(nameTag)}, nil
 	}
@@ -196,13 +196,13 @@ func (e *DNSName) Run(c *fi.Context) error {
 
 func (s *DNSName) CheckChanges(a, e, changes *DNSName) error {
 	if a == nil {
-		if fi.StringValue(e.Name) == "" {
+		if fi.ValueOf(e.Name) == "" {
 			return fi.RequiredField("Name")
 		}
-		if fi.StringValue(e.ResourceName) == "" {
+		if fi.ValueOf(e.ResourceName) == "" {
 			return fi.RequiredField("ResourceName")
 		}
-		if fi.StringValue(e.ResourceType) == "" {
+		if fi.ValueOf(e.ResourceType) == "" {
 			return fi.RequiredField("ResourceType")
 		}
 		if e.Zone == nil {

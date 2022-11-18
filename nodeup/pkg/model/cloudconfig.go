@@ -155,18 +155,18 @@ func (b *CloudConfigBuilder) build(c *fi.ModelBuilderContext, inTree bool) error
 
 		if lb := osc.Loadbalancer; lb != nil {
 			ingressHostnameSuffix := "nip.io"
-			if fi.StringValue(lb.IngressHostnameSuffix) != "" {
-				ingressHostnameSuffix = fi.StringValue(lb.IngressHostnameSuffix)
+			if fi.ValueOf(lb.IngressHostnameSuffix) != "" {
+				ingressHostnameSuffix = fi.ValueOf(lb.IngressHostnameSuffix)
 			}
 
 			lines = append(lines,
 				"[LoadBalancer]",
-				fmt.Sprintf("floating-network-id=%s", fi.StringValue(lb.FloatingNetworkID)),
-				fmt.Sprintf("lb-method=%s", fi.StringValue(lb.Method)),
-				fmt.Sprintf("lb-provider=%s", fi.StringValue(lb.Provider)),
-				fmt.Sprintf("use-octavia=%t", fi.BoolValue(lb.UseOctavia)),
-				fmt.Sprintf("manage-security-groups=%t", fi.BoolValue(lb.ManageSecGroups)),
-				fmt.Sprintf("enable-ingress-hostname=%t", fi.BoolValue(lb.EnableIngressHostname)),
+				fmt.Sprintf("floating-network-id=%s", fi.ValueOf(lb.FloatingNetworkID)),
+				fmt.Sprintf("lb-method=%s", fi.ValueOf(lb.Method)),
+				fmt.Sprintf("lb-provider=%s", fi.ValueOf(lb.Provider)),
+				fmt.Sprintf("use-octavia=%t", fi.ValueOf(lb.UseOctavia)),
+				fmt.Sprintf("manage-security-groups=%t", fi.ValueOf(lb.ManageSecGroups)),
+				fmt.Sprintf("enable-ingress-hostname=%t", fi.ValueOf(lb.EnableIngressHostname)),
 				fmt.Sprintf("ingress-hostname-suffix=%s", ingressHostnameSuffix),
 				"",
 			)
@@ -174,9 +174,9 @@ func (b *CloudConfigBuilder) build(c *fi.ModelBuilderContext, inTree bool) error
 			if monitor := osc.Monitor; monitor != nil {
 				lines = append(lines,
 					"create-monitor=yes",
-					fmt.Sprintf("monitor-delay=%s", fi.StringValue(monitor.Delay)),
-					fmt.Sprintf("monitor-timeout=%s", fi.StringValue(monitor.Timeout)),
-					fmt.Sprintf("monitor-max-retries=%d", fi.IntValue(monitor.MaxRetries)),
+					fmt.Sprintf("monitor-delay=%s", fi.ValueOf(monitor.Delay)),
+					fmt.Sprintf("monitor-timeout=%s", fi.ValueOf(monitor.Timeout)),
+					fmt.Sprintf("monitor-max-retries=%d", fi.ValueOf(monitor.MaxRetries)),
 					"",
 				)
 			}
@@ -186,8 +186,8 @@ func (b *CloudConfigBuilder) build(c *fi.ModelBuilderContext, inTree bool) error
 			// Block Storage Config
 			lines = append(lines,
 				"[BlockStorage]",
-				fmt.Sprintf("bs-version=%s", fi.StringValue(bs.Version)),
-				fmt.Sprintf("ignore-volume-az=%t", fi.BoolValue(bs.IgnoreAZ)),
+				fmt.Sprintf("bs-version=%s", fi.ValueOf(bs.Version)),
+				fmt.Sprintf("ignore-volume-az=%t", fi.ValueOf(bs.IgnoreAZ)),
 				"")
 		}
 
@@ -197,13 +197,13 @@ func (b *CloudConfigBuilder) build(c *fi.ModelBuilderContext, inTree bool) error
 			var networkingLines []string
 
 			if networking.IPv6SupportDisabled != nil {
-				networkingLines = append(networkingLines, fmt.Sprintf("ipv6-support-disabled=%t", fi.BoolValue(networking.IPv6SupportDisabled)))
+				networkingLines = append(networkingLines, fmt.Sprintf("ipv6-support-disabled=%t", fi.ValueOf(networking.IPv6SupportDisabled)))
 			}
 			for _, name := range networking.PublicNetworkNames {
-				networkingLines = append(networkingLines, fmt.Sprintf("public-network-name=%s", fi.StringValue(name)))
+				networkingLines = append(networkingLines, fmt.Sprintf("public-network-name=%s", fi.ValueOf(name)))
 			}
 			for _, name := range networking.InternalNetworkNames {
-				networkingLines = append(networkingLines, fmt.Sprintf("internal-network-name=%s", fi.StringValue(name)))
+				networkingLines = append(networkingLines, fmt.Sprintf("internal-network-name=%s", fi.ValueOf(name)))
 			}
 
 			if len(networkingLines) > 0 {

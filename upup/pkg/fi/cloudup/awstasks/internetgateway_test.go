@@ -121,7 +121,7 @@ func TestSharedInternetGatewayDoesNotRename(t *testing.T) {
 			t.Fatalf("unexpected error during Run: %v", err)
 		}
 
-		if fi.StringValue(igw1.ID) == "" {
+		if fi.ValueOf(igw1.ID) == "" {
 			t.Fatalf("ID not set after create")
 		}
 

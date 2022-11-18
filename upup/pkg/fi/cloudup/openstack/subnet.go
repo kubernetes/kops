@@ -135,7 +135,7 @@ func getExternalSubnet(c OpenstackCloud, subnetName *string) (subnet *subnets.Su
 	}
 
 	subnets, err := c.ListSubnets(subnets.ListOpts{
-		Name: fi.StringValue(subnetName),
+		Name: fi.ValueOf(subnetName),
 	})
 	if err != nil {
 		return nil, err
@@ -157,7 +157,7 @@ func getLBFloatingSubnet(c OpenstackCloud, floatingSubnet *string) (subnet *subn
 	}
 
 	subnets, err := c.ListSubnets(subnets.ListOpts{
-		Name: fi.StringValue(floatingSubnet),
+		Name: fi.ValueOf(floatingSubnet),
 	})
 	if err != nil {
 		return nil, err

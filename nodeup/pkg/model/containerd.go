@@ -163,13 +163,13 @@ func (b *ContainerdBuilder) installContainerd(c *fi.ModelBuilderContext) error {
 	var containerRuntimeVersion string
 	if b.Cluster.Spec.ContainerRuntime == "containerd" {
 		if b.Cluster.Spec.Containerd != nil {
-			containerRuntimeVersion = fi.StringValue(b.NodeupConfig.ContainerdConfig.Version)
+			containerRuntimeVersion = fi.ValueOf(b.NodeupConfig.ContainerdConfig.Version)
 		} else {
 			return fmt.Errorf("error finding contained version")
 		}
 	} else {
 		if b.Cluster.Spec.Docker != nil {
-			containerRuntimeVersion = fi.StringValue(b.Cluster.Spec.Docker.Version)
+			containerRuntimeVersion = fi.ValueOf(b.Cluster.Spec.Docker.Version)
 		} else {
 			return fmt.Errorf("error finding Docker version")
 		}
@@ -196,7 +196,7 @@ func (b *ContainerdBuilder) buildSystemdService(sv semver.Version) *nodetasks.Se
 	manifest.Set("Unit", "After", "network.target local-fs.target")
 
 	// Restore the default SELinux security contexts for the containerd and runc binaries
-	if b.Distribution.IsRHELFamily() && b.Cluster.Spec.Docker != nil && fi.BoolValue(b.Cluster.Spec.Docker.SelinuxEnabled) {
+	if b.Distribution.IsRHELFamily() && b.Cluster.Spec.Docker != nil && fi.ValueOf(b.Cluster.Spec.Docker.SelinuxEnabled) {
 		manifest.Set("Service", "ExecStartPre", "/bin/sh -c 'restorecon -v /usr/bin/runc'")
 		manifest.Set("Service", "ExecStartPre", "/bin/sh -c 'restorecon -v /usr/bin/containerd*'")
 	}
@@ -345,7 +345,7 @@ func (b *ContainerdBuilder) buildConfigFile(c *fi.ModelBuilderContext) error {
 	var config string
 
 	if b.NodeupConfig.ContainerdConfig != nil && b.NodeupConfig.ContainerdConfig.ConfigOverride != nil {
-		config = fi.StringValue(b.NodeupConfig.ContainerdConfig.ConfigOverride)
+		config = fi.ValueOf(b.NodeupConfig.ContainerdConfig.ConfigOverride)
 	} else {
 		if cc, err := b.buildContainerdConfig(); err != nil {
 			return err
@@ -483,7 +483,7 @@ func (b *ContainerdBuilder) buildContainerdConfig() (string, error) {
 	}
 
 	containerd := b.NodeupConfig.ContainerdConfig
-	if fi.StringValue(containerd.ConfigOverride) != "" {
+	if fi.ValueOf(containerd.ConfigOverride) != "" {
 		return *containerd.ConfigOverride, nil
 	}
 

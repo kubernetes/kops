@@ -33,7 +33,7 @@ var _ loader.OptionsBuilder = &ClusterAutoscalerOptionsBuilder{}
 func (b *ClusterAutoscalerOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 	cas := clusterSpec.ClusterAutoscaler
-	if cas == nil || !fi.BoolValue(cas.Enabled) {
+	if cas == nil || !fi.ValueOf(cas.Enabled) {
 		return nil
 	}
 

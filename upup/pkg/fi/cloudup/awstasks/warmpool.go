@@ -70,7 +70,7 @@ func (e *WarmPool) Find(c *fi.Context) (*WarmPool, error) {
 		Lifecycle: e.Lifecycle,
 		Enabled:   fi.PtrTo(true),
 		MaxSize:   warmPool.WarmPoolConfiguration.MaxGroupPreparedCapacity,
-		MinSize:   fi.Int64Value(warmPool.WarmPoolConfiguration.MinSize),
+		MinSize:   fi.ValueOf(warmPool.WarmPoolConfiguration.MinSize),
 	}
 	return actual, nil
 }
@@ -86,7 +86,7 @@ func (*WarmPool) CheckChanges(a, e, changes *WarmPool) error {
 func (*WarmPool) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *WarmPool) error {
 	svc := t.Cloud.Autoscaling()
 	if changes != nil {
-		if fi.BoolValue(e.Enabled) {
+		if fi.ValueOf(e.Enabled) {
 			minSize := e.MinSize
 			maxSize := e.MaxSize
 			if maxSize == nil {

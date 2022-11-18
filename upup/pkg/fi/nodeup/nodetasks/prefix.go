@@ -100,7 +100,7 @@ func (_ *Prefix) RenderLocal(t *local.LocalTarget, a, e, changes *Prefix) error 
 	if err != nil {
 		return fmt.Errorf("failed to assign prefix: %w", err)
 	}
-	klog.V(2).Infof("assigned prefix to primary network interface: %q", fi.StringValue(response.AssignedIpv6Prefixes[0]))
+	klog.V(2).Infof("assigned prefix to primary network interface: %q", fi.ValueOf(response.AssignedIpv6Prefixes[0]))
 
 	return nil
 }
