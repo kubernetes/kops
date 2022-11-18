@@ -45,6 +45,13 @@ func (t *Tester) setSkipRegexFlag() error {
 
 	skipRegex := skipRegexBase
 
+	// All the loadbalancer tests in the suite fail on IPv6, however,
+	// they were skipped because they were tagged as [Slow]
+	// skip these tests temporary since they fail always on IPv6
+	// TODO: aojea
+	// https://github.com/kubernetes/kubernetes/issues/113964
+	skipRegex += "|LoadBalancers.should.be.able.to.preserve.UDP.traffic"
+
 	networking := cluster.Spec.Networking
 	switch {
 	case networking.Kubenet != nil, networking.Canal != nil, networking.Weave != nil, networking.Cilium != nil:
