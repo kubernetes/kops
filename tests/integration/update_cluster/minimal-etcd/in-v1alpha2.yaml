@@ -34,7 +34,6 @@ spec:
   kubelet:
     anonymousAuth: false
   kubernetesVersion: v1.21.0
-  masterInternalName: api.internal.minimal-etcd.example.com
   masterPublicName: api.minimal-etcd.example.com
   networkCIDR: 172.20.0.0/16
   networking:

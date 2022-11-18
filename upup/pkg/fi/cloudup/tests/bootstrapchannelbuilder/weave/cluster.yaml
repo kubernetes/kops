@@ -20,7 +20,6 @@ spec:
     name: events
   iam: {}
   kubernetesVersion: v1.21.0
-  masterInternalName: api.internal.minimal.example.com
   masterPublicName: api.minimal.example.com
   networkCIDR: 172.20.0.0/16
   networking:

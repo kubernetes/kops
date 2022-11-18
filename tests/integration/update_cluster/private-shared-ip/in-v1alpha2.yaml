@@ -22,7 +22,6 @@ spec:
   kubelet:
     anonymousAuth: false
   kubernetesVersion: v1.21.0
-  masterInternalName: api.internal.private-shared-ip.example.com
   masterPublicName: api.private-shared-ip.example.com
   networkCIDR: 172.20.0.0/16
   networkID: vpc-12345678

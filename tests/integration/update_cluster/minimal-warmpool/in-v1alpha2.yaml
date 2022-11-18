@@ -25,7 +25,6 @@ spec:
   kubelet:
     anonymousAuth: false
   kubernetesVersion: v1.21.0
-  masterInternalName: api.internal.minimal-warmpool.example.com
   masterPublicName: api.minimal-warmpool.example.com
   networkCIDR: 172.20.0.0/16
   networking:

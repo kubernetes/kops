@@ -153,7 +153,6 @@ spec:
   kubernetesApiAccess:
   - 0.0.0.0/0
   kubernetesVersion: 1.21.0
-  masterInternalName: api.internal.existingsg.example.com
   masterKubelet:
     anonymousAuth: false
     cgroupDriver: systemd
