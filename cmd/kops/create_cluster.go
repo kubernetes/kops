@@ -205,7 +205,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	}
 
 	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", options.Yes, "Specify --yes to immediately create the cluster")
-	cmd.Flags().StringVar(&options.Target, "target", options.Target, fmt.Sprintf("Valid targets: %s, %s, %s. Set this flag to %s if you want kOps to generate terraform", cloudup.TargetDirect, cloudup.TargetTerraform, cloudup.TargetCloudformation, cloudup.TargetTerraform))
+	cmd.Flags().StringVar(&options.Target, "target", options.Target, fmt.Sprintf("Valid targets: %s, %s. Set this flag to %s if you want kOps to generate terraform", cloudup.TargetDirect, cloudup.TargetTerraform, cloudup.TargetTerraform))
 	cmd.RegisterFlagCompletionFunc("target", completeCreateClusterTarget(options))
 
 	// Configuration / state location
@@ -487,8 +487,6 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	if c.OutDir == "" {
 		if c.Target == cloudup.TargetTerraform {
 			c.OutDir = "out/terraform"
-		} else if c.Target == cloudup.TargetCloudformation {
-			c.OutDir = "out/cloudformation"
 		} else {
 			c.OutDir = "out"
 		}
@@ -986,9 +984,6 @@ func completeCreateClusterTarget(options *CreateClusterOptions) func(cmd *cobra.
 			if options.CloudProvider == string(cp) {
 				completions = append(completions, cloudup.TargetTerraform)
 			}
-		}
-		if options.CloudProvider == string(api.CloudProviderAWS) {
-			completions = append(completions, cloudup.TargetCloudformation)
 		}
 		return completions, cobra.ShellCompDirectiveNoFileComp
 	}

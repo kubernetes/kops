@@ -25,7 +25,6 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
@@ -124,19 +123,4 @@ func (_ *IAMInstanceProfileRole) RenderTerraform(t *terraform.TerraformTarget, a
 	}
 
 	return t.RenderResource("aws_iam_instance_profile", *e.InstanceProfile.Name, tf)
-}
-
-type cloudformationIAMInstanceProfile struct {
-	InstanceProfileName *string                   `json:"InstanceProfileName"`
-	Roles               []*cloudformation.Literal `json:"Roles"`
-	// TODO: Add tags when Cloudformation supports them
-}
-
-func (_ *IAMInstanceProfileRole) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *IAMInstanceProfileRole) error {
-	cf := &cloudformationIAMInstanceProfile{
-		InstanceProfileName: e.InstanceProfile.Name,
-		Roles:               []*cloudformation.Literal{e.Role.CloudformationLink()},
-	}
-
-	return t.RenderResource("AWS::IAM::InstanceProfile", *e.InstanceProfile.Name, cf)
 }

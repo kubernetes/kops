@@ -23,7 +23,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
@@ -159,29 +158,6 @@ func (_ *AutoscalingLifecycleHook) RenderTerraform(t *terraform.TerraformTarget,
 	}
 
 	return t.RenderResource("aws_autoscaling_lifecycle_hook", *e.Name, tf)
-}
-
-type cloudformationASGLifecycleHook struct {
-	LifecycleHookName    *string
-	AutoScalingGroupName *cloudformation.Literal
-	DefaultResult        *string
-	HeartbeatTimeout     *int64
-	LifecycleTransition  *string
-}
-
-func (_ *AutoscalingLifecycleHook) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *AutoscalingLifecycleHook) error {
-	if !fi.ValueOf(e.Enabled) {
-		return nil
-	}
-	tf := &cloudformationASGLifecycleHook{
-		LifecycleHookName:    e.GetHookName(),
-		AutoScalingGroupName: e.AutoscalingGroup.CloudformationLink(),
-		DefaultResult:        e.DefaultResult,
-		HeartbeatTimeout:     e.HeartbeatTimeout,
-		LifecycleTransition:  e.LifecycleTransition,
-	}
-
-	return t.RenderResource("AWS::AutoScaling::LifecycleHook", *e.Name, tf)
 }
 
 func (h *AutoscalingLifecycleHook) GetHookName() *string {

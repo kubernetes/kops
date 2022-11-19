@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -114,7 +113,7 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	}
 
 	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", options.Yes, "Create cloud resources, without --yes update is in dry run mode")
-	cmd.Flags().StringVar(&options.Target, "target", options.Target, "Target - direct, terraform, cloudformation")
+	cmd.Flags().StringVar(&options.Target, "target", options.Target, "Target - direct, terraform")
 	cmd.RegisterFlagCompletionFunc("target", completeUpdateClusterTarget(f, options))
 	cmd.Flags().StringVar(&options.SSHPublicKey, "ssh-public-key", options.SSHPublicKey, "SSH public key to use (deprecated: use kops create secret instead)")
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
@@ -193,8 +192,6 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Up
 	if c.OutDir == "" {
 		if c.Target == cloudup.TargetTerraform {
 			c.OutDir = "out/terraform"
-		} else if c.Target == cloudup.TargetCloudformation {
-			c.OutDir = "out/cloudformation"
 		} else {
 			c.OutDir = "out"
 		}
@@ -365,17 +362,6 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Up
 				fmt.Fprintf(sb, "   terraform apply\n")
 				fmt.Fprintf(sb, "\n")
 			}
-		} else if c.Target == cloudup.TargetCloudformation {
-			fmt.Fprintf(sb, "\n")
-			fmt.Fprintf(sb, "Cloudformation output has been placed into %s\n", c.OutDir)
-
-			if firstRun {
-				cfName := "kubernetes-" + strings.Replace(c.ClusterName, ".", "-", -1)
-				cfPath := filepath.Join(c.OutDir, "kubernetes.json")
-				fmt.Fprintf(sb, "Run this command to apply the configuration:\n")
-				fmt.Fprintf(sb, "   aws cloudformation create-stack --capabilities CAPABILITY_NAMED_IAM --stack-name %s --template-body file://%s\n", cfName, cfPath)
-				fmt.Fprintf(sb, "\n")
-			}
 		} else if firstRun {
 			fmt.Fprintf(sb, "\n")
 			fmt.Fprintf(sb, "Cluster is starting.  It should be ready in a few minutes.\n")
@@ -478,7 +464,6 @@ func completeUpdateClusterTarget(f commandutils.Factory, options *UpdateClusterO
 			return []string{
 				cloudup.TargetDirect,
 				cloudup.TargetDryRun,
-				cloudup.TargetCloudformation,
 				cloudup.TargetTerraform,
 			}, directive
 		}
@@ -491,9 +476,6 @@ func completeUpdateClusterTarget(f commandutils.Factory, options *UpdateClusterO
 			if cluster.Spec.GetCloudProvider() == cp {
 				completions = append(completions, cloudup.TargetTerraform)
 			}
-		}
-		if cluster.Spec.GetCloudProvider() == kops.CloudProviderAWS {
-			completions = append(completions, cloudup.TargetCloudformation)
 		}
 		return completions, cobra.ShellCompDirectiveNoFileComp
 	}

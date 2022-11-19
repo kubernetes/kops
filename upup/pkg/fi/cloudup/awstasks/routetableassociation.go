@@ -24,7 +24,6 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
@@ -203,22 +202,4 @@ func (_ *RouteTableAssociation) RenderTerraform(t *terraform.TerraformTarget, a,
 
 func (e *RouteTableAssociation) TerraformLink() *terraformWriter.Literal {
 	return terraformWriter.LiteralSelfLink("aws_route_table_association", *e.Name)
-}
-
-type cloudformationRouteTableAssociation struct {
-	SubnetID     *cloudformation.Literal `json:"SubnetId,omitempty"`
-	RouteTableID *cloudformation.Literal `json:"RouteTableId,omitempty"`
-}
-
-func (_ *RouteTableAssociation) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *RouteTableAssociation) error {
-	cf := &cloudformationRouteTableAssociation{
-		SubnetID:     e.Subnet.CloudformationLink(),
-		RouteTableID: e.RouteTable.CloudformationLink(),
-	}
-
-	return t.RenderResource("AWS::EC2::SubnetRouteTableAssociation", *e.Name, cf)
-}
-
-func (e *RouteTableAssociation) CloudformationLink() *cloudformation.Literal {
-	return cloudformation.Ref("AWS::EC2::SubnetRouteTableAssociation", *e.Name)
 }
