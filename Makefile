@@ -385,10 +385,6 @@ verify-shellcheck:
 verify-terraform:
 	hack/verify-terraform.sh
 
-.PHONE: verify-cloudformation
-verify-cloudformation:
-	hack/verify-cloudformation.sh
-
 .PHONY: verify-hashes
 verify-hashes:
 	hack/verify-hashes.sh
