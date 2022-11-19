@@ -1451,6 +1451,9 @@ spec:
                 properties:
                   enabled:
                     type: boolean
+                  version:
+                    description: Version is the version of karpenter to run.
+                    type: string
                 type: object
               keyStore:
                 description: KeyStore is the VFS path to where SSL keys and certificates
