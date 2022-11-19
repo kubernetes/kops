@@ -22,11 +22,8 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
-	"encoding/base64"
-	"encoding/json"
 	"encoding/pem"
 	"fmt"
-	"io"
 	"os"
 	"path"
 	"path/filepath"
@@ -37,13 +34,10 @@ import (
 	"time"
 
 	"golang.org/x/crypto/ssh"
-	"sigs.k8s.io/yaml"
-
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/pkg/featureflag"
-	"k8s.io/kops/pkg/jsonutils"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/pkg/testutils"
@@ -218,7 +212,6 @@ func TestMinimal(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "minimal").
 		withAddons(dnsControllerAddon).
 		runTestTerraformAWS(t)
-	newIntegrationTest("minimal.example.com", "minimal").runTestCloudformation(t)
 }
 
 // TestMinimal runs the test on a minimum configuration
@@ -230,7 +223,6 @@ func TestMinimal_v1_23(t *testing.T) {
 			leaderElectionAddon,
 		).
 		runTestTerraformAWS(t)
-	newIntegrationTest("minimal.example.com", "minimal").runTestCloudformation(t)
 }
 
 // TestMinimal runs the test on a minimum configuration
@@ -243,7 +235,6 @@ func TestMinimal_v1_24(t *testing.T) {
 			leaderElectionAddon,
 		).
 		runTestTerraformAWS(t)
-	newIntegrationTest("minimal.example.com", "minimal").runTestCloudformation(t)
 }
 
 // TestMinimal runs the test on a minimum configuration
@@ -256,7 +247,6 @@ func TestMinimal_v1_25(t *testing.T) {
 			leaderElectionAddon,
 		).
 		runTestTerraformAWS(t)
-	newIntegrationTest("minimal.example.com", "minimal").runTestCloudformation(t)
 }
 
 // TestMinimal runs the test on a minimum configuration
@@ -270,7 +260,6 @@ func TestMinimal_v1_26(t *testing.T) {
 			awsCCMAddon,
 		).
 		runTestTerraformAWS(t)
-	newIntegrationTest("minimal.example.com", "minimal").runTestCloudformation(t)
 }
 
 // TestMinimal_NoneDNS runs the test on a minimum configuration with --dns=none
@@ -283,7 +272,6 @@ func TestMinimal_NoneDNS(t *testing.T) {
 			awsCCMAddon,
 		).
 		runTestTerraformAWS(t)
-	newIntegrationTest("minimal.example.com", "minimal").runTestCloudformation(t)
 }
 
 // TestHetzner runs the test on a minimum configuration
@@ -300,7 +288,6 @@ func TestNvidia(t *testing.T) {
 			"nvidia.addons.k8s.io-k8s-1.16",
 		).
 		runTestTerraformAWS(t)
-	newIntegrationTest("minimal.example.com", "nvidia").runTestCloudformation(t)
 }
 
 // TestMinimal runs the test on a minimum gossip configuration
@@ -379,7 +366,6 @@ func TestComplex(t *testing.T) {
 			awsAuthenticatorAddon,
 		).
 		runTestTerraformAWS(t)
-	newIntegrationTest("complex.example.com", "complex").withoutSSHKey().runTestCloudformation(t)
 	newIntegrationTest("complex.example.com", "complex").withoutSSHKey().withVersion("legacy-v1alpha2").
 		withAddons(
 			awsEBSCSIAddon,
@@ -410,7 +396,6 @@ func TestMinimalIPv6(t *testing.T) {
 	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6").
 		withAddons(awsCCMAddon, awsEBSCSIAddon, dnsControllerAddon).
 		runTestTerraformAWS(t)
-	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6").runTestCloudformation(t)
 }
 
 // TestMinimalIPv6 runs the test on a minimum IPv6 configuration
@@ -433,7 +418,6 @@ func TestMinimalIPv6Cilium(t *testing.T) {
 	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6-cilium").
 		withAddons(awsCCMAddon, awsEBSCSIAddon, ciliumAddon, dnsControllerAddon).
 		runTestTerraformAWS(t)
-	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6-cilium").runTestCloudformation(t)
 }
 
 // TestMinimalWarmPool runs the test on a minimum Warm Pool configuration
@@ -445,7 +429,9 @@ func TestMinimalWarmPool(t *testing.T) {
 
 // TestMinimalEtcd runs the test on a minimum configuration using custom etcd config, similar to kops create cluster minimal.example.com --zones us-west-1a
 func TestMinimalEtcd(t *testing.T) {
-	newIntegrationTest("minimal-etcd.example.com", "minimal-etcd").runTestCloudformation(t)
+	newIntegrationTest("minimal-etcd.example.com", "minimal-etcd").
+		withAddons(dnsControllerAddon).
+		runTestTerraformAWS(t)
 }
 
 // TestMinimalGp3 runs the test on a minimum configuration using gp3 volumes, similar to kops create cluster minimal.example.com --zones us-west-1a
@@ -453,7 +439,6 @@ func TestMinimalGp3(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "minimal-gp3").
 		withAddons(dnsControllerAddon).
 		runTestTerraformAWS(t)
-	newIntegrationTest("minimal.example.com", "minimal-gp3").runTestCloudformation(t)
 }
 
 // TestMinimal runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
@@ -461,13 +446,6 @@ func TestMinimalLongClusterName(t *testing.T) {
 	newIntegrationTest("this.is.truly.a.really.really.long.cluster-name.minimal.example.com", "minimal-longclustername").
 		withAddons(dnsControllerAddon).
 		runTestTerraformAWS(t)
-	newIntegrationTest("this.is.truly.a.really.really.long.cluster-name.minimal.example.com", "minimal-longclustername").runTestCloudformation(t)
-}
-
-// TestExistingIAMCloudformation runs the test with existing IAM instance profiles, similar to kops create cluster minimal.example.com --zones us-west-1a
-func TestExistingIAMCloudformation(t *testing.T) {
-	lifecycleOverrides := []string{"IAMRole=ExistsAndWarnIfChanges", "IAMRolePolicy=ExistsAndWarnIfChanges", "IAMInstanceProfileRole=ExistsAndWarnIfChanges"}
-	newIntegrationTest("minimal.example.com", "existing_iam_cloudformation").withLifecycleOverrides(lifecycleOverrides).runTestCloudformation(t)
 }
 
 // TestExistingSG runs the test with existing Security Group, similar to kops create cluster minimal.example.com --zones us-west-1a
@@ -518,9 +496,6 @@ func TestPrivateCilium(t *testing.T) {
 		withPrivate().
 		withAddons(ciliumAddon, dnsControllerAddon).
 		runTestTerraformAWS(t)
-	newIntegrationTest("privatecilium.example.com", "privatecilium").
-		withPrivate().
-		runTestCloudformation(t)
 }
 
 func TestPrivateCilium2(t *testing.T) {
@@ -530,9 +505,6 @@ func TestPrivateCilium2(t *testing.T) {
 		withAddons("networking.cilium.io-k8s-1.16").
 		withAddons(certManagerAddon).
 		runTestTerraformAWS(t)
-	newIntegrationTest("privatecilium.example.com", "privatecilium2").
-		withPrivate().
-		runTestCloudformation(t)
 }
 
 func TestPrivateCiliumAdvanced(t *testing.T) {
@@ -542,10 +514,6 @@ func TestPrivateCiliumAdvanced(t *testing.T) {
 		withManagedFiles("etcd-cluster-spec-cilium", "manifests-etcdmanager-cilium-master-us-test-1a").
 		withAddons(ciliumAddon, dnsControllerAddon).
 		runTestTerraformAWS(t)
-	newIntegrationTest("privateciliumadvanced.example.com", "privateciliumadvanced").
-		withPrivate().
-		withCiliumEtcd().
-		runTestCloudformation(t)
 }
 
 // TestPrivateCanal runs the test on a configuration with private topology, canal networking
@@ -589,9 +557,6 @@ func TestPrivateSharedIP(t *testing.T) {
 		withAddons(dnsControllerAddon).
 		withPrivate().
 		runTestTerraformAWS(t)
-	newIntegrationTest("private-shared-ip.example.com", "private-shared-ip").
-		withPrivate().
-		runTestCloudformation(t)
 }
 
 // TestPrivateDns1 runs the test on a configuration with private topology, private dns
@@ -790,7 +755,6 @@ func TestExternalDNS(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "external_dns").
 		withAddons("external-dns.addons.k8s.io-k8s-1.19").
 		runTestTerraformAWS(t)
-	newIntegrationTest("minimal.example.com", "external_dns").runTestCloudformation(t)
 }
 
 func TestExternalDNSIRSA(t *testing.T) {
@@ -857,8 +821,6 @@ func TestExternalLoadBalancer(t *testing.T) {
 	newIntegrationTest("externallb.example.com", "externallb").
 		withAddons(dnsControllerAddon).
 		runTestTerraformAWS(t)
-	newIntegrationTest("externallb.example.com", "externallb").
-		runTestCloudformation(t)
 }
 
 // TestPhaseIAM tests the output of tf for the iam phase
@@ -882,9 +844,6 @@ func TestMixedInstancesASG(t *testing.T) {
 		withZones(3).
 		withAddons(dnsControllerAddon).
 		runTestTerraformAWS(t)
-	newIntegrationTest("mixedinstances.example.com", "mixed_instances").
-		withZones(3).
-		runTestCloudformation(t)
 }
 
 // TestMixedInstancesSpotASG tests ASGs using a mixed instance policy and spot instances
@@ -893,9 +852,6 @@ func TestMixedInstancesSpotASG(t *testing.T) {
 		withZones(3).
 		withAddons(dnsControllerAddon).
 		runTestTerraformAWS(t)
-	newIntegrationTest("mixedinstances.example.com", "mixed_instances_spot").
-		withZones(3).
-		runTestCloudformation(t)
 }
 
 // TestAdditionalObjects runs the test on a configuration that includes additional objects
@@ -908,19 +864,22 @@ func TestAdditionalObjects(t *testing.T) {
 // TestContainerd runs the test on a containerd configuration
 func TestContainerd(t *testing.T) {
 	newIntegrationTest("containerd.example.com", "containerd").
-		runTestCloudformation(t)
+		withAddons(dnsControllerAddon).
+		runTestTerraformAWS(t)
 }
 
 // TestContainerdCustom runs the test on a custom containerd URL configuration
 func TestContainerdCustom(t *testing.T) {
 	newIntegrationTest("containerd.example.com", "containerd-custom").
-		runTestCloudformation(t)
+		withAddons(dnsControllerAddon).
+		runTestTerraformAWS(t)
 }
 
 // TestDockerCustom runs the test on a custom Docker URL configuration
 func TestDockerCustom(t *testing.T) {
 	newIntegrationTest("docker.example.com", "docker-custom").
-		runTestCloudformation(t)
+		withAddons(dnsControllerAddon).
+		runTestTerraformAWS(t)
 }
 
 // TestAPIServerNodes runs a simple configuration with dedicated apiserver nodes
@@ -931,8 +890,6 @@ func TestAPIServerNodes(t *testing.T) {
 	}
 	defer unsetFeatureFlags()
 
-	newIntegrationTest("minimal.example.com", "apiservernodes").
-		runTestCloudformation(t)
 	newIntegrationTest("minimal.example.com", "apiservernodes").
 		withAddons(dnsControllerAddon, awsEBSCSIAddon).
 		withDedicatedAPIServer().
@@ -945,8 +902,6 @@ func TestNTHQueueProcessor(t *testing.T) {
 		withNTH().
 		withAddons(dnsControllerAddon).
 		runTestTerraformAWS(t)
-	newIntegrationTest("nthsqsresources.longclustername.example.com", "nth_sqs_resources").
-		runTestCloudformation(t)
 }
 
 // TestCustomIRSA runs a simple configuration, but with some additional IAM roles for ServiceAccounts
@@ -1485,125 +1440,6 @@ func (i *integrationTest) runTestTerraformHetzner(t *testing.T) {
 	)
 
 	i.runTest(t, h, expectedFilenames, "", "", nil)
-}
-
-func (i *integrationTest) runTestCloudformation(t *testing.T) {
-	ctx := context.Background()
-
-	i.srcDir = updateClusterTestBase + i.srcDir
-	var stdout bytes.Buffer
-
-	inputYAML := "in-" + i.version + ".yaml"
-	expectedCfPath := "cloudformation.json"
-
-	h := testutils.NewIntegrationTestHarness(t)
-	defer h.Close()
-
-	h.MockKopsVersion("1.21.0-alpha.1")
-	h.SetupMockAWS()
-
-	factory := i.setupCluster(t, inputYAML, ctx, stdout)
-
-	{
-		options := &UpdateClusterOptions{}
-		options.InitDefaults()
-		options.Target = "cloudformation"
-		options.OutDir = path.Join(h.TempDir, "out")
-		options.RunTasksOptions.MaxTaskDuration = 30 * time.Second
-
-		// We don't test it here, and it adds a dependency on kubectl
-		options.CreateKubecfg = false
-		options.ClusterName = i.clusterName
-		options.LifecycleOverrides = i.lifecycleOverrides
-
-		_, err := RunUpdateCluster(ctx, factory, &stdout, options)
-		if err != nil {
-			t.Fatalf("error running update cluster %q: %v", i.clusterName, err)
-		}
-	}
-
-	// Compare main files
-	{
-		files, err := os.ReadDir(path.Join(h.TempDir, "out"))
-		if err != nil {
-			t.Fatalf("failed to read dir: %v", err)
-		}
-
-		var fileNames []string
-		for _, f := range files {
-			fileNames = append(fileNames, f.Name())
-		}
-		sort.Strings(fileNames)
-
-		actualFilenames := strings.Join(fileNames, ",")
-		expectedFilenames := "kubernetes.json"
-		if actualFilenames != expectedFilenames {
-			t.Fatalf("unexpected files.  actual=%q, expected=%q", actualFilenames, expectedFilenames)
-		}
-
-		actualPath := path.Join(h.TempDir, "out", "kubernetes.json")
-		actualCF, err := os.ReadFile(actualPath)
-		if err != nil {
-			t.Fatalf("unexpected error reading actual cloudformation output: %v", err)
-		}
-
-		// Expand out the UserData base64 blob, as otherwise testing is painful
-		extracted := make(map[string]string)
-		var buf bytes.Buffer
-		out := jsonutils.NewJSONStreamWriter(&buf)
-		in := json.NewDecoder(bytes.NewReader(actualCF))
-		for {
-			token, err := in.Token()
-			if err != nil {
-				if err == io.EOF {
-					break
-				} else {
-					t.Fatalf("unexpected error parsing cloudformation output: %v", err)
-				}
-			}
-
-			if strings.HasSuffix(out.Path(), ".UserData") {
-				if s, ok := token.(string); ok {
-					vBytes, err := base64.StdEncoding.DecodeString(s)
-					if err != nil {
-						t.Fatalf("error decoding UserData: %v", err)
-					} else {
-						extracted[out.Path()] = string(vBytes)
-						token = json.Token("extracted")
-					}
-				}
-			}
-
-			if err := out.WriteToken(token); err != nil {
-				t.Fatalf("error writing json: %v", err)
-			}
-		}
-		actualCF = buf.Bytes()
-
-		golden.AssertMatchesFile(t, string(actualCF), path.Join(i.srcDir, expectedCfPath))
-
-		// test extracted values
-		{
-			actual := make(map[string]string)
-
-			for k, v := range extracted {
-				// Strip carriage return as expectedValue is stored in a yaml string literal
-				// and yaml block quoting doesn't seem to support \r in a string
-				v = strings.Replace(v, "\r", "", -1)
-
-				actual[k] = v
-			}
-
-			actualExtracted, err := yaml.Marshal(actual)
-			if err != nil {
-				t.Fatalf("error serializing yaml: %v", err)
-			}
-
-			golden.AssertMatchesFile(t, string(actualExtracted), path.Join(i.srcDir, expectedCfPath+".extracted.yaml"))
-		}
-
-		golden.AssertMatchesFile(t, string(actualCF), path.Join(i.srcDir, expectedCfPath))
-	}
 }
 
 func MakeSSHKeyPair(publicKeyPath string, privateKeyPath string) error {
