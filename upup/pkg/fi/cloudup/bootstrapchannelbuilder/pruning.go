@@ -71,6 +71,8 @@ func (b *BootstrapChannelBuilder) addPruneDirectivesForAddon(addon *Addon) error
 		{Group: "rbac.authorization.k8s.io", Kind: "Role"},
 		{Group: "rbac.authorization.k8s.io", Kind: "RoleBinding"},
 		{Group: "policy", Kind: "PodDisruptionBudget"},
+		{Group: "admissionregistration.k8s.io/v1", Kind: "ValidatingWebhookConfiguration"},
+		{Group: "admissionregistration.k8s.io/v1", Kind: "MutatingWebhookConfiguration"},
 	}
 	pruneGroupKind := make(map[schema.GroupKind]bool)
 	for _, gk := range alwaysPruneGroupKinds {

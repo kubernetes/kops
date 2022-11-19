@@ -69,6 +69,12 @@ spec:
         labelSelector: addon.kops.k8s.io/name=networking.flannel,app.kubernetes.io/managed-by=kops
         namespaces:
         - kube-flannel
+      - group: admissionregistration.k8s.io/v1
+        kind: MutatingWebhookConfiguration
+        labelSelector: addon.kops.k8s.io/name=networking.flannel,app.kubernetes.io/managed-by=kops
+      - group: admissionregistration.k8s.io/v1
+        kind: ValidatingWebhookConfiguration
+        labelSelector: addon.kops.k8s.io/name=networking.flannel,app.kubernetes.io/managed-by=kops
       - group: apps
         kind: DaemonSet
         labelSelector: addon.kops.k8s.io/name=networking.flannel,app.kubernetes.io/managed-by=kops

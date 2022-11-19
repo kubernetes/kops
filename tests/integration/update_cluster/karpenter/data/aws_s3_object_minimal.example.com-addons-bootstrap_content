@@ -69,8 +69,58 @@ spec:
     version: 9.99.0
   - id: k8s-1.19
     manifest: karpenter.sh/k8s-1.19.yaml
-    manifestHash: b6cd8f0b7dcdf48fc658eb95d9948900665562de99e317c565fdfbfbdc4481bb
+    manifestHash: 48698a907d19d00706c7a400395ed771d1cabfd921288184975cb47d7d2a2fff
     name: karpenter.sh
+    prune:
+      kinds:
+      - kind: ConfigMap
+        labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
+        namespaces:
+        - kube-system
+      - kind: Service
+        labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
+        namespaces:
+        - kube-system
+      - kind: ServiceAccount
+        labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
+        namespaces:
+        - kube-system
+      - group: admissionregistration.k8s.io/v1
+        kind: MutatingWebhookConfiguration
+        labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
+      - group: admissionregistration.k8s.io/v1
+        kind: ValidatingWebhookConfiguration
+        labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
+      - group: apps
+        kind: DaemonSet
+        labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
+      - group: apps
+        kind: Deployment
+        labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
+        namespaces:
+        - kube-system
+      - group: apps
+        kind: StatefulSet
+        labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
+      - group: policy
+        kind: PodDisruptionBudget
+        labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
+      - group: rbac.authorization.k8s.io
+        kind: ClusterRole
+        labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
+      - group: rbac.authorization.k8s.io
+        kind: ClusterRoleBinding
+        labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
+      - group: rbac.authorization.k8s.io
+        kind: Role
+        labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
+        namespaces:
+        - kube-system
+      - group: rbac.authorization.k8s.io
+        kind: RoleBinding
+        labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
+        namespaces:
+        - kube-system
     selector:
       k8s-addon: karpenter.sh
     version: 9.99.0

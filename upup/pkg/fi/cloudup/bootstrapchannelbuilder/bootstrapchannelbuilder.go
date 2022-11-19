@@ -1193,7 +1193,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 		{
 			id := "k8s-1.19"
 			location := key + "/" + id + ".yaml"
-			addons.Add(&channelsapi.AddonSpec{
+			addon := addons.Add(&channelsapi.AddonSpec{
 				Name:     fi.String(key),
 				Manifest: fi.String(location),
 				Selector: map[string]string{"k8s-addon": key},
@@ -1202,6 +1202,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 			if b.UseServiceAccountExternalPermissions() {
 				serviceAccountRoles = append(serviceAccountRoles, &karpenter.ServiceAccount{})
 			}
+
+			addon.BuildPrune = true
+
 		}
 	}
 

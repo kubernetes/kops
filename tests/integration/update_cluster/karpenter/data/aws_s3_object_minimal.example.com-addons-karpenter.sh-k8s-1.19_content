@@ -590,23 +590,12 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: karpenter.sh
+    app.kubernetes.io/instance: karpenter
     app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: karpenter
+    app.kubernetes.io/version: 0.19.1
     k8s-addon: karpenter.sh
   name: karpenter
-  namespace: kube-system
-
----
-
-apiVersion: v1
-data: {}
-kind: Secret
-metadata:
-  creationTimestamp: null
-  labels:
-    addon.kops.k8s.io/name: karpenter.sh
-    app.kubernetes.io/managed-by: kops
-    k8s-addon: karpenter.sh
-  name: karpenter-webhook-cert
   namespace: kube-system
 
 ---
@@ -654,6 +643,15 @@ metadata:
 
 apiVersion: v1
 data:
+  aws.clusterEndpoint: https://api.internal.minimal.example.com
+  aws.clusterName: minimal.example.com
+  aws.defaultInstanceProfile: ""
+  aws.enableENILimitedPodDensity: "true"
+  aws.enablePodENI: "false"
+  aws.interruptionQueueName: ""
+  aws.isolatedVPC: "false"
+  aws.nodeNameConvention: resource-name
+  aws.vmMemoryOverheadPercent: "0.075"
   batchIdleDuration: 1s
   batchMaxDuration: 10s
 kind: ConfigMap
@@ -661,8 +659,10 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: karpenter.sh
+    app.kubernetes.io/instance: karpenter
     app.kubernetes.io/managed-by: kops
-    app.kubernetes.io/part-of: karpenter
+    app.kubernetes.io/name: karpenter
+    app.kubernetes.io/version: 0.19.1
     k8s-addon: karpenter.sh
   name: karpenter-global-settings
   namespace: kube-system
@@ -675,9 +675,52 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: karpenter.sh
+    app.kubernetes.io/instance: karpenter
     app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: karpenter
+    app.kubernetes.io/version: 0.19.1
     k8s-addon: karpenter.sh
-  name: karpenter-controller
+    rbac.authorization.k8s.io/aggregate-to-admin: "true"
+  name: karpenter-admin
+rules:
+- apiGroups:
+  - karpenter.sh
+  resources:
+  - provisioners
+  - provisioners/status
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - delete
+  - patch
+- apiGroups:
+  - karpenter.k8s.aws
+  resources:
+  - awsnodetemplates
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - delete
+  - patch
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: karpenter.sh
+    app.kubernetes.io/instance: karpenter
+    app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: karpenter
+    app.kubernetes.io/version: 0.19.1
+    k8s-addon: karpenter.sh
+  name: karpenter-core
 rules:
 - apiGroups:
   - karpenter.sh
@@ -689,22 +732,14 @@ rules:
   - list
   - watch
 - apiGroups:
-  - karpenter.k8s.aws
-  resources:
-  - awsnodetemplates
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
   - ""
   resources:
   - pods
   - nodes
-  - namespaces
   - persistentvolumes
   - persistentvolumeclaims
   - replicationcontrollers
+  - namespaces
   verbs:
   - get
   - list
@@ -728,6 +763,15 @@ rules:
   verbs:
   - list
   - watch
+- apiGroups:
+  - admissionregistration.k8s.io
+  resources:
+  - validatingwebhookconfigurations
+  - mutatingwebhookconfigurations
+  verbs:
+  - get
+  - watch
+  - list
 - apiGroups:
   - policy
   resources:
@@ -765,6 +809,23 @@ rules:
   - pods/eviction
   verbs:
   - create
+- apiGroups:
+  - admissionregistration.k8s.io
+  resourceNames:
+  - validation.webhook.karpenter.sh
+  - validation.webhook.config.karpenter.sh
+  resources:
+  - validatingwebhookconfigurations
+  verbs:
+  - update
+- apiGroups:
+  - admissionregistration.k8s.io
+  resourceNames:
+  - defaulting.webhook.karpenter.sh
+  resources:
+  - mutatingwebhookconfigurations
+  verbs:
+  - update
 
 ---
 
@@ -774,24 +835,26 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: karpenter.sh
+    app.kubernetes.io/instance: karpenter
     app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: karpenter
+    app.kubernetes.io/version: 0.19.1
     k8s-addon: karpenter.sh
-  name: karpenter-webhook
+  name: karpenter
 rules:
 - apiGroups:
-  - admissionregistration.k8s.io
+  - karpenter.k8s.aws
   resources:
-  - validatingwebhookconfigurations
-  - mutatingwebhookconfigurations
+  - awsnodetemplates
   verbs:
   - get
-  - watch
   - list
+  - watch
+  - patch
 - apiGroups:
   - admissionregistration.k8s.io
   resourceNames:
-  - validation.webhook.provisioners.karpenter.sh
-  - validation.webhook.config.karpenter.sh
+  - validation.webhook.karpenter.k8s.aws
   resources:
   - validatingwebhookconfigurations
   verbs:
@@ -799,7 +862,7 @@ rules:
 - apiGroups:
   - admissionregistration.k8s.io
   resourceNames:
-  - defaulting.webhook.provisioners.karpenter.sh
+  - defaulting.webhook.karpenter.k8s.aws
   resources:
   - mutatingwebhookconfigurations
   verbs:
@@ -813,13 +876,16 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: karpenter.sh
+    app.kubernetes.io/instance: karpenter
     app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: karpenter
+    app.kubernetes.io/version: 0.19.1
     k8s-addon: karpenter.sh
-  name: karpenter-controller
+  name: karpenter-core
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: karpenter-controller
+  name: karpenter-core
 subjects:
 - kind: ServiceAccount
   name: karpenter
@@ -833,13 +899,16 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: karpenter.sh
+    app.kubernetes.io/instance: karpenter
     app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: karpenter
+    app.kubernetes.io/version: 0.19.1
     k8s-addon: karpenter.sh
-  name: karpenter-webhook
+  name: karpenter
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: karpenter-webhook
+  name: karpenter
 subjects:
 - kind: ServiceAccount
   name: karpenter
@@ -853,9 +922,12 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: karpenter.sh
+    app.kubernetes.io/instance: karpenter
     app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: karpenter
+    app.kubernetes.io/version: 0.19.1
     k8s-addon: karpenter.sh
-  name: karpenter-controller
+  name: karpenter
   namespace: kube-system
 rules:
 - apiGroups:
@@ -878,7 +950,7 @@ rules:
 - apiGroups:
   - ""
   resourceNames:
-  - karpenter-webhook-cert
+  - karpenter-cert
   resources:
   - secrets
   verbs:
@@ -887,7 +959,7 @@ rules:
   - ""
   resourceNames:
   - karpenter-global-settings
-  - karpenter-config-logging
+  - config-logging
   resources:
   - configmaps
   verbs:
@@ -928,37 +1000,22 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: karpenter.sh
+    app.kubernetes.io/instance: karpenter
     app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: karpenter
+    app.kubernetes.io/version: 0.19.1
     k8s-addon: karpenter.sh
-  name: karpenter-webhook
+  name: karpenter-dns
   namespace: kube-system
 rules:
 - apiGroups:
   - ""
+  resourceNames:
+  - kube-dns
   resources:
-  - namespaces
+  - services
   verbs:
   - get
-  - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - secrets
-  verbs:
-  - get
-  - list
-  - watch
-  - update
-- apiGroups:
-  - coordination.k8s.io
-  resources:
-  - leases
-  verbs:
-  - get
-  - watch
-  - create
-  - update
 
 ---
 
@@ -968,14 +1025,17 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: karpenter.sh
+    app.kubernetes.io/instance: karpenter
     app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: karpenter
+    app.kubernetes.io/version: 0.19.1
     k8s-addon: karpenter.sh
-  name: karpenter-controller
+  name: karpenter
   namespace: kube-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: karpenter-controller
+  name: karpenter
 subjects:
 - kind: ServiceAccount
   name: karpenter
@@ -989,14 +1049,17 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: karpenter.sh
+    app.kubernetes.io/instance: karpenter
     app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: karpenter
+    app.kubernetes.io/version: 0.19.1
     k8s-addon: karpenter.sh
-  name: karpenter-webhook
+  name: karpenter-dns
   namespace: kube-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: karpenter-webhook
+  name: karpenter-dns
 subjects:
 - kind: ServiceAccount
   name: karpenter
@@ -1010,35 +1073,28 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: karpenter.sh
+    app.kubernetes.io/instance: karpenter
     app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: karpenter
+    app.kubernetes.io/version: 0.19.1
+    helm.sh/chart: karpenter-0.19.1
     k8s-addon: karpenter.sh
-  name: karpenter-metrics
+  name: karpenter
   namespace: kube-system
 spec:
   ports:
-  - port: 8080
+  - name: http-metrics
+    port: 8080
+    protocol: TCP
     targetPort: http-metrics
-  selector:
-    karpenter: controller
-
----
-
-apiVersion: v1
-kind: Service
-metadata:
-  creationTimestamp: null
-  labels:
-    addon.kops.k8s.io/name: karpenter.sh
-    app.kubernetes.io/managed-by: kops
-    k8s-addon: karpenter.sh
-  name: karpenter-webhook
-  namespace: kube-system
-spec:
-  ports:
-  - port: 443
+  - name: https-webhook
+    port: 443
+    protocol: TCP
     targetPort: https-webhook
   selector:
-    karpenter: webhook
+    app.kubernetes.io/instance: karpenter
+    app.kubernetes.io/name: karpenter
+  type: ClusterIP
 
 ---
 
@@ -1048,23 +1104,29 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: karpenter.sh
+    app.kubernetes.io/instance: karpenter
     app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: karpenter
+    app.kubernetes.io/version: 0.19.1
     k8s-addon: karpenter.sh
-  name: karpenter-controller
+  name: karpenter
   namespace: kube-system
 spec:
   replicas: 1
+  revisionHistoryLimit: 10
   selector:
     matchLabels:
-      karpenter: controller
+      app.kubernetes.io/instance: karpenter
+      app.kubernetes.io/name: karpenter
   strategy:
-    type: Recreate
+    rollingUpdate:
+      maxUnavailable: 1
   template:
     metadata:
       creationTimestamp: null
       labels:
+        app.kubernetes.io/instance: karpenter
         app.kubernetes.io/name: karpenter
-        karpenter: controller
         kops.k8s.io/managed-by: kops
     spec:
       affinity:
@@ -1072,28 +1134,19 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: kubernetes.io/os
-                operator: In
-                values:
-                - linux
-              - key: karpenter.sh/provisioner-name
-                operator: DoesNotExist
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
       containers:
       - env:
-        - name: AWS_ENI_LIMITED_POD_DENSITY
-          value: "true"
-        - name: AWS_NODE_NAME_CONVENTION
-          value: resource-name
-        - name: AWS_REGION
-          value: us-test-1
-        - name: CLUSTER_NAME
-          value: minimal.example.com
-        - name: CLUSTER_ENDPOINT
-          value: https://api.internal.minimal.example.com
-        - name: CONFIG_LOGGING_NAME
-          value: karpenter-config-logging
+        - name: KUBERNETES_MIN_VERSION
+          value: 1.19.0-0
         - name: KARPENTER_SERVICE
-          value: karpenter-webhook
+          value: karpenter
+        - name: WEBHOOK_PORT
+          value: "8443"
         - name: SYSTEM_NAMESPACE
           valueFrom:
             fieldRef:
@@ -1108,7 +1161,7 @@ spec:
           value: arn:aws-test:iam::123456789012:role/karpenter.kube-system.sa.minimal.example.com
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
-        image: public.ecr.aws/karpenter/controller:v0.16.3
+        image: public.ecr.aws/karpenter/controller:v0.19.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -1124,6 +1177,9 @@ spec:
         - containerPort: 8081
           name: http
           protocol: TCP
+        - containerPort: 8443
+          name: https-webhook
+          protocol: TCP
         readinessProbe:
           httpGet:
             path: /readyz
@@ -1133,18 +1189,22 @@ spec:
           limits:
             memory: 1Gi
           requests:
-            cpu: 500m
+            cpu: "1"
             memory: 1Gi
         volumeMounts:
         - mountPath: /var/run/secrets/amazonaws.com/
           name: token-amazonaws-com
           readOnly: true
       dnsPolicy: Default
+      nodeSelector:
+        kubernetes.io/os: linux
       priorityClassName: system-cluster-critical
       securityContext:
-        fsGroup: 10001
+        fsGroup: 1000
       serviceAccountName: karpenter
       tolerations:
+      - key: CriticalAddonsOnly
+        operator: Exists
       - key: node-role.kubernetes.io/master
         operator: Exists
       - key: node-role.kubernetes.io/control-plane
@@ -1152,151 +1212,13 @@ spec:
       topologySpreadConstraints:
       - labelSelector:
           matchLabels:
-            karpenter: webhook
+            app.kubernetes.io/name: karpenter
         maxSkew: 1
         topologyKey: topology.kubernetes.io/zone
         whenUnsatisfiable: ScheduleAnyway
       - labelSelector:
           matchLabels:
-            karpenter: webhook
-        maxSkew: 1
-        topologyKey: kubernetes.io/hostname
-        whenUnsatisfiable: DoNotSchedule
-      volumes:
-      - name: token-amazonaws-com
-        projected:
-          defaultMode: 420
-          sources:
-          - serviceAccountToken:
-              audience: amazonaws.com
-              expirationSeconds: 86400
-              path: token
-
----
-
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  creationTimestamp: null
-  labels:
-    addon.kops.k8s.io/name: karpenter.sh
-    app.kubernetes.io/managed-by: kops
-    k8s-addon: karpenter.sh
-  name: karpenter-webhook
-  namespace: kube-system
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      karpenter: webhook
-  strategy:
-    type: Recreate
-  template:
-    metadata:
-      creationTimestamp: null
-      labels:
-        app.kubernetes.io/name: karpenter
-        karpenter: webhook
-        kops.k8s.io/managed-by: kops
-    spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: kubernetes.io/os
-                operator: In
-                values:
-                - linux
-              - key: karpenter.sh/provisioner-name
-                operator: DoesNotExist
-              - key: node-role.kubernetes.io/control-plane
-                operator: Exists
-            - matchExpressions:
-              - key: kubernetes.io/os
-                operator: In
-                values:
-                - linux
-              - key: karpenter.sh/provisioner-name
-                operator: DoesNotExist
-              - key: node-role.kubernetes.io/master
-                operator: Exists
-      containers:
-      - args:
-        - -port=8443
-        env:
-        - name: AWS_REGION
-          value: us-test-1
-        - name: CLUSTER_NAME
-          value: minimal.example.com
-        - name: KUBERNETES_MIN_VERSION
-          value: 1.19.0-0
-        - name: CLUSTER_ENDPOINT
-          value: https://api.internal.minimal.example.com
-        - name: CONFIG_LOGGING_NAME
-          value: karpenter-config-logging
-        - name: KARPENTER_SERVICE
-          value: karpenter-webhook
-        - name: SYSTEM_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-        - name: AWS_ROLE_ARN
-          value: arn:aws-test:iam::123456789012:role/karpenter.kube-system.sa.minimal.example.com
-        - name: AWS_WEB_IDENTITY_TOKEN_FILE
-          value: /var/run/secrets/amazonaws.com/token
-        image: public.ecr.aws/karpenter/webhook:v0.16.3
-        imagePullPolicy: IfNotPresent
-        livenessProbe:
-          httpGet:
-            port: https-webhook
-            scheme: HTTPS
-          initialDelaySeconds: 30
-        name: webhook
-        ports:
-        - containerPort: 8443
-          name: https-webhook
-          protocol: TCP
-        readinessProbe:
-          httpGet:
-            port: https-webhook
-            scheme: HTTPS
-        resources:
-          limits:
-            cpu: 100m
-            memory: 50Mi
-          requests:
-            cpu: 100m
-            memory: 50Mi
-        startupProbe:
-          failureThreshold: 6
-          httpGet:
-            port: https-webhook
-            scheme: HTTPS
-        volumeMounts:
-        - mountPath: /var/run/secrets/amazonaws.com/
-          name: token-amazonaws-com
-          readOnly: true
-      dnsPolicy: Default
-      priorityClassName: system-cluster-critical
-      securityContext:
-        fsGroup: 10001
-      serviceAccountName: karpenter
-      tolerations:
-      - key: node-role.kubernetes.io/master
-        operator: Exists
-      - key: node-role.kubernetes.io/control-plane
-        operator: Exists
-      topologySpreadConstraints:
-      - labelSelector:
-          matchLabels:
-            karpenter: webhook
-        maxSkew: 1
-        topologyKey: topology.kubernetes.io/zone
-        whenUnsatisfiable: ScheduleAnyway
-      - labelSelector:
-          matchLabels:
-            karpenter: webhook
+            app.kubernetes.io/name: karpenter
         maxSkew: 1
         topologyKey: kubernetes.io/hostname
         whenUnsatisfiable: DoNotSchedule
@@ -1318,18 +1240,21 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: karpenter.sh
+    app.kubernetes.io/instance: karpenter
     app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: karpenter
+    app.kubernetes.io/version: 0.19.1
     k8s-addon: karpenter.sh
-  name: defaulting.webhook.provisioners.karpenter.sh
+  name: defaulting.webhook.karpenter.k8s.aws
 webhooks:
 - admissionReviewVersions:
   - v1
   clientConfig:
     service:
-      name: karpenter-webhook
+      name: karpenter
       namespace: kube-system
   failurePolicy: Fail
-  name: defaulting.webhook.provisioners.karpenter.sh
+  name: defaulting.webhook.karpenter.k8s.aws
   rules:
   - apiGroups:
     - karpenter.k8s.aws
@@ -1362,31 +1287,22 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: karpenter.sh
+    app.kubernetes.io/instance: karpenter
     app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: karpenter
+    app.kubernetes.io/version: 0.19.1
     k8s-addon: karpenter.sh
-  name: validation.webhook.provisioners.karpenter.sh
+  name: validation.webhook.karpenter.sh
 webhooks:
 - admissionReviewVersions:
   - v1
   clientConfig:
     service:
-      name: karpenter-webhook
+      name: karpenter
       namespace: kube-system
   failurePolicy: Fail
-  name: validation.webhook.provisioners.karpenter.sh
+  name: validation.webhook.karpenter.sh
   rules:
-  - apiGroups:
-    - karpenter.k8s.aws
-    apiVersions:
-    - v1alpha1
-    operations:
-    - CREATE
-    - UPDATE
-    - DELETE
-    resources:
-    - awsnodetemplates
-    - awsnodetemplates/status
-    scope: '*'
   - apiGroups:
     - karpenter.sh
     apiVersions:
@@ -1408,7 +1324,10 @@ metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: karpenter.sh
+    app.kubernetes.io/instance: karpenter
     app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: karpenter
+    app.kubernetes.io/version: 0.19.1
     k8s-addon: karpenter.sh
   name: validation.webhook.config.karpenter.sh
 webhooks:
@@ -1416,13 +1335,62 @@ webhooks:
   - v1
   clientConfig:
     service:
-      name: karpenter-webhook
+      name: karpenter
       namespace: kube-system
   failurePolicy: Fail
   name: validation.webhook.config.karpenter.sh
   objectSelector:
     matchLabels:
       app.kubernetes.io/part-of: karpenter
+  sideEffects: None
+
+---
+
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: karpenter.sh
+    app.kubernetes.io/instance: karpenter
+    app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: karpenter
+    app.kubernetes.io/version: 0.19.1
+    helm.sh/chart: karpenter-0.19.1
+    k8s-addon: karpenter.sh
+  name: validation.webhook.karpenter.k8s.aws
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: karpenter
+      namespace: kube-system
+  failurePolicy: Fail
+  name: validation.webhook.karpenter.k8s.aws
+  rules:
+  - apiGroups:
+    - karpenter.k8s.aws
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - awsnodetemplates
+    - awsnodetemplates/status
+    scope: '*'
+  - apiGroups:
+    - karpenter.sh
+    apiVersions:
+    - v1alpha5
+    operations:
+    - CREATE
+    - UPDATE
+    - DELETE
+    resources:
+    - provisioners
+    - provisioners/status
   sideEffects: None
 
 ---
