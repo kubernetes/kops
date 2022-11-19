@@ -1261,4 +1261,3 @@ spec:
     name: {{ $name }}
 {{ end }}
 {{ end }}
-{{ end }}
