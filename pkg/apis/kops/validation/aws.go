@@ -128,7 +128,7 @@ func awsValidateInstanceMetadata(fieldPath *field.Path, instanceMetadata *kops.I
 	}
 
 	if instanceMetadata.HTTPPutResponseHopLimit != nil {
-		httpPutResponseHopLimit := fi.Int64Value(instanceMetadata.HTTPPutResponseHopLimit)
+		httpPutResponseHopLimit := fi.ValueOf(instanceMetadata.HTTPPutResponseHopLimit)
 		if httpPutResponseHopLimit < 1 || httpPutResponseHopLimit > 64 {
 			allErrs = append(allErrs, field.Invalid(fieldPath.Child("httpPutResponseHopLimit"), instanceMetadata.HTTPPutResponseHopLimit,
 				"HTTPPutResponseLimit must be a value between 1 and 64"))
@@ -171,7 +171,7 @@ func awsValidateInstanceTypeAndImage(instanceTypeFieldPath *field.Path, imageFie
 		return append(allErrs, field.Invalid(imageFieldPath, image,
 			fmt.Sprintf("specified image %q is invalid: %s", image, err)))
 	}
-	imageArch := fi.StringValue(imageInfo.Architecture)
+	imageArch := fi.ValueOf(imageInfo.Architecture)
 
 	// Spotinst uses the instance type field to keep a "," separated list of instance types
 	for _, instanceType := range strings.Split(instanceTypes, ",") {
@@ -184,7 +184,7 @@ func awsValidateInstanceTypeAndImage(instanceTypeFieldPath *field.Path, imageFie
 		found := false
 		if machineInfo != nil && machineInfo.ProcessorInfo != nil {
 			for _, machineArch := range machineInfo.ProcessorInfo.SupportedArchitectures {
-				if imageArch == fi.StringValue(machineArch) {
+				if imageArch == fi.ValueOf(machineArch) {
 					found = true
 				}
 			}
@@ -252,19 +252,19 @@ func awsValidateMixedInstancesPolicy(path *field.Path, spec *kops.MixedInstances
 	}
 
 	if spec.OnDemandBase != nil {
-		if fi.Int64Value(spec.OnDemandBase) < 0 {
+		if fi.ValueOf(spec.OnDemandBase) < 0 {
 			errs = append(errs, field.Invalid(path.Child("onDemandBase"), spec.OnDemandBase, "cannot be less than zero"))
 		}
-		if fi.Int64Value(spec.OnDemandBase) > int64(fi.Int32Value(ig.Spec.MaxSize)) {
+		if fi.ValueOf(spec.OnDemandBase) > int64(fi.ValueOf(ig.Spec.MaxSize)) {
 			errs = append(errs, field.Invalid(path.Child("onDemandBase"), spec.OnDemandBase, "cannot be greater than max size"))
 		}
 	}
 
 	if spec.OnDemandAboveBase != nil {
-		if fi.Int64Value(spec.OnDemandAboveBase) < 0 {
+		if fi.ValueOf(spec.OnDemandAboveBase) < 0 {
 			errs = append(errs, field.Invalid(path.Child("onDemandAboveBase"), spec.OnDemandAboveBase, "cannot be less than 0"))
 		}
-		if fi.Int64Value(spec.OnDemandAboveBase) > 100 {
+		if fi.ValueOf(spec.OnDemandAboveBase) > 100 {
 			errs = append(errs, field.Invalid(path.Child("onDemandAboveBase"), spec.OnDemandAboveBase, "cannot be greater than 100"))
 		}
 	}

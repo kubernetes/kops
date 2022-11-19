@@ -127,7 +127,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 						return fmt.Errorf("EtcdMember #%d of etcd-cluster %s did not specify a Name", i, etcd.Name)
 					}
 
-					if fi.StringValue(m.InstanceGroup) == "" {
+					if fi.ValueOf(m.InstanceGroup) == "" {
 						return fmt.Errorf("EtcdMember %s:%s did not specify a InstanceGroup", etcd.Name, m.Name)
 					}
 				}
@@ -140,7 +140,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 						return fmt.Errorf("EtcdMembers found with same name %q in etcd-cluster %q", m.Name, etcd.Name)
 					}
 
-					instanceGroupName := fi.StringValue(m.InstanceGroup)
+					instanceGroupName := fi.ValueOf(m.InstanceGroup)
 
 					if _, ok := etcdInstanceGroups[instanceGroupName]; ok {
 						klog.Warningf("EtcdMembers are in the same InstanceGroup %q in etcd-cluster %q (fault-tolerance may be reduced)", instanceGroupName, etcd.Name)

@@ -47,13 +47,13 @@ func TestVMScaleSetModelBuilder_Build(t *testing.T) {
 	}
 
 	caTask := &fitasks.Keypair{
-		Name:    fi.String(fi.CertificateIDCA),
+		Name:    fi.PtrTo(fi.CertificateIDCA),
 		Subject: "cn=kubernetes",
 		Type:    "ca",
 	}
 	c.AddTask(caTask)
 	etcdCaTask := &fitasks.Keypair{
-		Name:    fi.String("etcd-clients-ca"),
+		Name:    fi.PtrTo("etcd-clients-ca"),
 		Subject: "cn=etcd-clients-ca",
 		Type:    "ca",
 	}
@@ -63,7 +63,7 @@ func TestVMScaleSetModelBuilder_Build(t *testing.T) {
 		"kube-proxy",
 	} {
 		c.AddTask(&fitasks.Keypair{
-			Name:    fi.String(cert),
+			Name:    fi.PtrTo(cert),
 			Subject: "cn=" + cert,
 			Signer:  caTask,
 			Type:    "client",
@@ -85,8 +85,8 @@ func TestGetCapacity(t *testing.T) {
 		{
 			spec: kops.InstanceGroupSpec{
 				Role:    kops.InstanceGroupRoleMaster,
-				MinSize: fi.Int32(3),
-				MaxSize: fi.Int32(3),
+				MinSize: fi.PtrTo(int32(3)),
+				MaxSize: fi.PtrTo(int32(3)),
 			},
 			success:  true,
 			capacity: 3,
@@ -108,8 +108,8 @@ func TestGetCapacity(t *testing.T) {
 		{
 			spec: kops.InstanceGroupSpec{
 				Role:    kops.InstanceGroupRoleMaster,
-				MinSize: fi.Int32(1),
-				MaxSize: fi.Int32(2),
+				MinSize: fi.PtrTo(int32(1)),
+				MaxSize: fi.PtrTo(int32(2)),
 			},
 			success: false,
 		},
@@ -143,8 +143,8 @@ func TestGetStorageProfile(t *testing.T) {
 		{
 			spec: kops.InstanceGroupSpec{
 				Image:          "Canonical:UbuntuServer:18.04-LTS:latest",
-				RootVolumeType: fi.String(string(compute.StorageAccountTypesStandardLRS)),
-				RootVolumeSize: fi.Int32(128),
+				RootVolumeType: fi.PtrTo(string(compute.StorageAccountTypesStandardLRS)),
+				RootVolumeSize: fi.PtrTo(int32(128)),
 			},
 			profile: &compute.VirtualMachineScaleSetStorageProfile{
 				ImageReference: &compute.ImageReference{

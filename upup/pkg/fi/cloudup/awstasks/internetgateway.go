@@ -69,9 +69,9 @@ func (e *InternetGateway) Find(c *fi.Context) (*InternetGateway, error) {
 
 	request := &ec2.DescribeInternetGatewaysInput{}
 
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
-		if fi.StringValue(e.VPC.ID) == "" {
+		if fi.ValueOf(e.VPC.ID) == "" {
 			return nil, fmt.Errorf("VPC ID is required when InternetGateway is shared")
 		}
 
@@ -114,7 +114,7 @@ func (e *InternetGateway) Find(c *fi.Context) (*InternetGateway, error) {
 	}
 
 	// We don't set the tags for a shared IGW
-	if fi.BoolValue(e.Shared) {
+	if fi.ValueOf(e.Shared) {
 		actual.Tags = e.Tags
 	}
 
@@ -137,7 +137,7 @@ func (s *InternetGateway) CheckChanges(a, e, changes *InternetGateway) error {
 }
 
 func (_ *InternetGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *InternetGateway) error {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Verify the InternetGateway was found and matches our required settings
 		if a == nil {
@@ -185,14 +185,14 @@ type terraformInternetGateway struct {
 }
 
 func (_ *InternetGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *InternetGateway) error {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Not terraform owned / managed
 
 		// But ... attempt to discover the ID so TerraformLink works
 		if e.ID == nil {
 			request := &ec2.DescribeInternetGatewaysInput{}
-			vpcID := fi.StringValue(e.VPC.ID)
+			vpcID := fi.ValueOf(e.VPC.ID)
 			if vpcID == "" {
 				return fmt.Errorf("VPC ID is required when InternetGateway is shared")
 			}
@@ -220,7 +220,7 @@ func (_ *InternetGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, ch
 }
 
 func (e *InternetGateway) TerraformLink() *terraformWriter.Literal {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		if e.ID == nil {
 			klog.Fatalf("ID must be set, if InternetGateway is shared: %s", e)
@@ -243,14 +243,14 @@ type cloudformationVpcGatewayAttachment struct {
 }
 
 func (_ *InternetGateway) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *InternetGateway) error {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Not cloudformation owned / managed
 
 		// But ... attempt to discover the ID so CloudformationLink works
 		if e.ID == nil {
 			request := &ec2.DescribeInternetGatewaysInput{}
-			vpcID := fi.StringValue(e.VPC.ID)
+			vpcID := fi.ValueOf(e.VPC.ID)
 			if vpcID == "" {
 				return fmt.Errorf("VPC ID is required when InternetGateway is shared")
 			}
@@ -296,7 +296,7 @@ func (_ *InternetGateway) RenderCloudformation(t *cloudformation.CloudformationT
 }
 
 func (e *InternetGateway) CloudformationLink() *cloudformation.Literal {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		if e.ID == nil {
 			klog.Fatalf("ID must be set, if InternetGateway is shared: %s", e)

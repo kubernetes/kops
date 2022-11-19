@@ -79,14 +79,14 @@ func (b *DiscoveryOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 		kubeAPIServer.ServiceAccountIssuer = &serviceAccountIssuer
 	}
-	kubeAPIServer.ServiceAccountJWKSURI = fi.String(*kubeAPIServer.ServiceAccountIssuer + "/openid/v1/jwks")
+	kubeAPIServer.ServiceAccountJWKSURI = fi.PtrTo(*kubeAPIServer.ServiceAccountIssuer + "/openid/v1/jwks")
 	// We set apiserver ServiceAccountKey and ServiceAccountSigningKeyFile in nodeup
 
 	return nil
 }
 
 func supportsPublicJWKS(clusterSpec *kops.ClusterSpec) bool {
-	if !fi.BoolValue(clusterSpec.KubeAPIServer.AnonymousAuth) {
+	if !fi.ValueOf(clusterSpec.KubeAPIServer.AnonymousAuth) {
 		return false
 	}
 	for _, cidr := range clusterSpec.KubernetesAPIAccess {

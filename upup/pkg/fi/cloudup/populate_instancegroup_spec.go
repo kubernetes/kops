@@ -88,10 +88,10 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 
 		}
 		if ig.Spec.MinSize == nil {
-			ig.Spec.MinSize = fi.Int32(1)
+			ig.Spec.MinSize = fi.PtrTo(int32(1))
 		}
 		if ig.Spec.MaxSize == nil {
-			ig.Spec.MaxSize = fi.Int32(1)
+			ig.Spec.MaxSize = fi.PtrTo(int32(1))
 		}
 	} else if ig.Spec.Role == kops.InstanceGroupRoleBastion {
 		if ig.Spec.MachineType == "" {
@@ -101,10 +101,10 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 			}
 		}
 		if ig.Spec.MinSize == nil {
-			ig.Spec.MinSize = fi.Int32(1)
+			ig.Spec.MinSize = fi.PtrTo(int32(1))
 		}
 		if ig.Spec.MaxSize == nil {
-			ig.Spec.MaxSize = fi.Int32(1)
+			ig.Spec.MaxSize = fi.PtrTo(int32(1))
 		}
 	} else {
 		if ig.IsAPIServerOnly() && !featureflag.APIServerNodes.Enabled() {
@@ -117,10 +117,10 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 			}
 		}
 		if ig.Spec.MinSize == nil {
-			ig.Spec.MinSize = fi.Int32(2)
+			ig.Spec.MinSize = fi.PtrTo(int32(2))
 		}
 		if ig.Spec.MaxSize == nil {
-			ig.Spec.MaxSize = fi.Int32(2)
+			ig.Spec.MaxSize = fi.PtrTo(int32(2))
 		}
 	}
 
@@ -182,11 +182,11 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 
 	hasGPU := false
 	clusterNvidia := false
-	if cluster.Spec.Containerd != nil && cluster.Spec.Containerd.NvidiaGPU != nil && fi.BoolValue(cluster.Spec.Containerd.NvidiaGPU.Enabled) {
+	if cluster.Spec.Containerd != nil && cluster.Spec.Containerd.NvidiaGPU != nil && fi.ValueOf(cluster.Spec.Containerd.NvidiaGPU.Enabled) {
 		clusterNvidia = true
 	}
 	igNvidia := false
-	if ig.Spec.Containerd != nil && ig.Spec.Containerd.NvidiaGPU != nil && fi.BoolValue(ig.Spec.Containerd.NvidiaGPU.Enabled) {
+	if ig.Spec.Containerd != nil && ig.Spec.Containerd.NvidiaGPU != nil && fi.ValueOf(ig.Spec.Containerd.NvidiaGPU.Enabled) {
 		igNvidia = true
 	}
 
@@ -239,7 +239,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 		}
 		// A few settings in Kubelet override those in MasterKubelet. I'm not sure why.
 		if cluster.Spec.Kubelet != nil && cluster.Spec.Kubelet.AnonymousAuth != nil && !*cluster.Spec.Kubelet.AnonymousAuth {
-			igKubeletConfig.AnonymousAuth = fi.Bool(false)
+			igKubeletConfig.AnonymousAuth = fi.PtrTo(false)
 		}
 	} else {
 		if cluster.Spec.Kubelet != nil {
@@ -253,7 +253,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 	// rolling update will still replace nodes when they change.
 	igKubeletConfig.NodeLabels = nodelabels.BuildNodeLabels(cluster, ig)
 
-	useSecureKubelet := fi.BoolValue(igKubeletConfig.AnonymousAuth)
+	useSecureKubelet := fi.ValueOf(igKubeletConfig.AnonymousAuth)
 
 	// While slices are overridden in most cases, taints are explicitly merged
 	taints := sets.NewString(igKubeletConfig.Taints...)
@@ -286,7 +286,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 	igKubeletConfig.Taints = taints.List()
 
 	if useSecureKubelet {
-		igKubeletConfig.AnonymousAuth = fi.Bool(false)
+		igKubeletConfig.AnonymousAuth = fi.PtrTo(false)
 	}
 
 	ig.Spec.Kubelet = igKubeletConfig

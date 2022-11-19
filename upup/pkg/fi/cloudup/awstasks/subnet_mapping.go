@@ -36,14 +36,14 @@ type OrderSubnetMappingsByID []*SubnetMapping
 func (a OrderSubnetMappingsByID) Len() int      { return len(a) }
 func (a OrderSubnetMappingsByID) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 func (a OrderSubnetMappingsByID) Less(i, j int) bool {
-	v1 := fi.StringValue(a[i].Subnet.ID)
-	v2 := fi.StringValue(a[j].Subnet.ID)
+	v1 := fi.ValueOf(a[i].Subnet.ID)
+	v2 := fi.ValueOf(a[j].Subnet.ID)
 	if v1 == v2 {
 		if a[i].PrivateIPv4Address != nil && a[j].PrivateIPv4Address != nil {
-			return fi.StringValue(a[i].PrivateIPv4Address) < fi.StringValue(a[j].PrivateIPv4Address)
+			return fi.ValueOf(a[i].PrivateIPv4Address) < fi.ValueOf(a[j].PrivateIPv4Address)
 		}
 		if a[i].AllocationID != nil && a[j].AllocationID != nil {
-			return fi.StringValue(a[i].AllocationID) < fi.StringValue(a[j].AllocationID)
+			return fi.ValueOf(a[i].AllocationID) < fi.ValueOf(a[j].AllocationID)
 		}
 	}
 	return v1 < v2
@@ -55,8 +55,8 @@ type OrderSubnetMappingsByName []*SubnetMapping
 func (a OrderSubnetMappingsByName) Len() int      { return len(a) }
 func (a OrderSubnetMappingsByName) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 func (a OrderSubnetMappingsByName) Less(i, j int) bool {
-	v1 := fi.StringValue(a[i].Subnet.Name)
-	v2 := fi.StringValue(a[j].Subnet.Name)
+	v1 := fi.ValueOf(a[i].Subnet.Name)
+	v2 := fi.ValueOf(a[j].Subnet.Name)
 	return v1 < v2
 }
 
@@ -82,10 +82,10 @@ func subnetMappingSlicesEqualIgnoreOrder(l, r []*SubnetMapping) bool {
 		if !ok {
 			return false
 		}
-		if fi.StringValue(s.PrivateIPv4Address) != fi.StringValue(s2.PrivateIPv4Address) {
+		if fi.ValueOf(s.PrivateIPv4Address) != fi.ValueOf(s2.PrivateIPv4Address) {
 			return false
 		}
-		if fi.StringValue(s.AllocationID) != fi.StringValue(s2.AllocationID) {
+		if fi.ValueOf(s.AllocationID) != fi.ValueOf(s2.AllocationID) {
 			return false
 		}
 	}

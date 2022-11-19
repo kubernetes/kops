@@ -148,7 +148,7 @@ func (c *GCEModelContext) LinkToServiceAccount(ig *kops.InstanceGroup) *gcetasks
 		return &gcetasks.ServiceAccount{
 			Name:   s("shared"),
 			Email:  &c.Cluster.Spec.CloudConfig.GCEServiceAccount,
-			Shared: fi.Bool(true),
+			Shared: fi.PtrTo(true),
 		}
 	}
 

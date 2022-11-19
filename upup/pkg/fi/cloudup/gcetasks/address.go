@@ -108,7 +108,7 @@ func (e *Address) FindAddresses(context *fi.Context) ([]string, error) {
 	if actual == nil {
 		return nil, nil
 	}
-	return []string{fi.StringValue(actual.IPAddress)}, nil
+	return []string{fi.ValueOf(actual.IPAddress)}, nil
 }
 
 func (e *Address) Run(c *fi.Context) error {
@@ -131,7 +131,7 @@ func (_ *Address) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Address) error {
 	cloud := t.Cloud
 	addr := &compute.Address{
 		Name:    *e.Name,
-		Address: fi.StringValue(e.IPAddress),
+		Address: fi.ValueOf(e.IPAddress),
 		Region:  cloud.Region(),
 	}
 
@@ -165,7 +165,7 @@ func (_ *Address) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *A
 }
 
 func (e *Address) TerraformAddress() *terraformWriter.Literal {
-	name := fi.StringValue(e.Name)
+	name := fi.ValueOf(e.Name)
 
 	return terraformWriter.LiteralProperty("google_compute_address", name, "address")
 }

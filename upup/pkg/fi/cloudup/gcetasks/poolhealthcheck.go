@@ -55,7 +55,7 @@ func (e *PoolHealthCheck) CompareWithID() *string {
 
 func (e *PoolHealthCheck) Find(c *fi.Context) (*PoolHealthCheck, error) {
 	cloud := c.Cloud.(gce.GCECloud)
-	name := fi.StringValue(e.Pool.Name)
+	name := fi.ValueOf(e.Pool.Name)
 	r, err := cloud.Compute().TargetPools().Get(cloud.Project(), cloud.Region(), name)
 	if err != nil {
 		if gce.IsNotFound(err) {
@@ -86,7 +86,7 @@ func (_ *PoolHealthCheck) CheckChanges(a, e, changes *PoolHealthCheck) error {
 
 func (p *PoolHealthCheck) RenderGCE(t *gce.GCEAPITarget, a, e, changes *PoolHealthCheck) error {
 	if a == nil {
-		targetPool := fi.StringValue(p.Pool.Name)
+		targetPool := fi.ValueOf(p.Pool.Name)
 		req := &compute.TargetPoolsAddHealthCheckRequest{
 			HealthChecks: []*compute.HealthCheckReference{
 				{

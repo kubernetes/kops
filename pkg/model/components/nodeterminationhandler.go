@@ -37,35 +37,35 @@ func (b *NodeTerminationHandlerOptionsBuilder) BuildOptions(o interface{}) error
 	}
 	nth := clusterSpec.NodeTerminationHandler
 	if nth.Enabled == nil {
-		nth.Enabled = fi.Bool(true)
+		nth.Enabled = fi.PtrTo(true)
 	}
 	if nth.EnableSpotInterruptionDraining == nil {
-		nth.EnableSpotInterruptionDraining = fi.Bool(true)
+		nth.EnableSpotInterruptionDraining = fi.PtrTo(true)
 	}
 	if nth.EnableScheduledEventDraining == nil {
-		nth.EnableScheduledEventDraining = fi.Bool(false)
+		nth.EnableScheduledEventDraining = fi.PtrTo(false)
 	}
 	if nth.EnableRebalanceMonitoring == nil {
-		nth.EnableRebalanceMonitoring = fi.Bool(false)
+		nth.EnableRebalanceMonitoring = fi.PtrTo(false)
 	}
 	if nth.EnableRebalanceDraining == nil {
-		nth.EnableRebalanceDraining = fi.Bool(false)
+		nth.EnableRebalanceDraining = fi.PtrTo(false)
 	}
 
 	if nth.EnablePrometheusMetrics == nil {
-		nth.EnablePrometheusMetrics = fi.Bool(false)
+		nth.EnablePrometheusMetrics = fi.PtrTo(false)
 	}
 
 	if nth.EnableSQSTerminationDraining == nil {
-		nth.EnableSQSTerminationDraining = fi.Bool(false)
+		nth.EnableSQSTerminationDraining = fi.PtrTo(false)
 	}
 
 	if nth.ExcludeFromLoadBalancers == nil {
-		nth.ExcludeFromLoadBalancers = fi.Bool(true)
+		nth.ExcludeFromLoadBalancers = fi.PtrTo(true)
 	}
 
 	if nth.ManagedASGTag == nil {
-		nth.ManagedASGTag = fi.String("aws-node-termination-handler/managed")
+		nth.ManagedASGTag = fi.PtrTo("aws-node-termination-handler/managed")
 	}
 
 	if nth.CPURequest == nil {
@@ -79,7 +79,7 @@ func (b *NodeTerminationHandlerOptionsBuilder) BuildOptions(o interface{}) error
 	}
 
 	if nth.Version == nil {
-		nth.Version = fi.String("v1.17.1")
+		nth.Version = fi.PtrTo("v1.17.1")
 	}
 
 	return nil

@@ -48,12 +48,12 @@ func (b *GCPCloudControllerManagerOptionsBuilder) BuildOptions(options interface
 
 	// No significant downside to always doing a leader election.
 	// Also, having multiple control plane nodes requires leader election.
-	ccmConfig.LeaderElection = &kops.LeaderElectionConfiguration{LeaderElect: fi.Bool(true)}
+	ccmConfig.LeaderElection = &kops.LeaderElectionConfiguration{LeaderElect: fi.PtrTo(true)}
 
 	// CCM interacts directly with the GCP API, use the name safe for GCP
 	ccmConfig.ClusterName = gce.SafeClusterName(b.ClusterName)
-	ccmConfig.AllocateNodeCIDRs = fi.Bool(true)
-	ccmConfig.CIDRAllocatorType = fi.String("CloudAllocator")
+	ccmConfig.AllocateNodeCIDRs = fi.PtrTo(true)
+	ccmConfig.CIDRAllocatorType = fi.PtrTo("CloudAllocator")
 	if ccmConfig.ClusterCIDR == "" {
 		ccmConfig.ClusterCIDR = clusterSpec.PodCIDR
 	}
@@ -68,7 +68,7 @@ func (b *GCPCloudControllerManagerOptionsBuilder) BuildOptions(options interface
 	}
 
 	if b.IsKubernetesGTE("1.24") && b.IsKubernetesLT("1.25") {
-		ccmConfig.EnableLeaderMigration = fi.Bool(true)
+		ccmConfig.EnableLeaderMigration = fi.PtrTo(true)
 	}
 
 	return nil

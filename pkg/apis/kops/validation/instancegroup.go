@@ -83,11 +83,11 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud, strict bool) f
 		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "image"), "image must be specified."))
 	}
 
-	if fi.Int32Value(g.Spec.RootVolumeIOPS) < 0 {
+	if fi.ValueOf(g.Spec.RootVolumeIOPS) < 0 {
 		allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "rootVolumeIops"), g.Spec.RootVolumeIOPS, "RootVolumeIOPS must be greater than 0"))
 	}
 
-	if fi.Int32Value(g.Spec.RootVolumeThroughput) < 0 {
+	if fi.ValueOf(g.Spec.RootVolumeThroughput) < 0 {
 		allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "rootVolumeThroughput"), g.Spec.RootVolumeThroughput, "RootVolumeThroughput must be greater than 0"))
 	}
 
@@ -294,7 +294,7 @@ func ValidateMasterInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster) f
 	for _, etcd := range cluster.Spec.EtcdClusters {
 		hasEtcd := false
 		for _, m := range etcd.Members {
-			if fi.StringValue(m.InstanceGroup) == g.ObjectMeta.Name {
+			if fi.ValueOf(m.InstanceGroup) == g.ObjectMeta.Name {
 				hasEtcd = true
 				break
 			}
@@ -389,7 +389,7 @@ func validateExternalLoadBalancer(lb *kops.LoadBalancer, fldPath *field.Path) fi
 	}
 
 	if lb.LoadBalancerName != nil {
-		name := fi.StringValue(lb.LoadBalancerName)
+		name := fi.ValueOf(lb.LoadBalancerName)
 		if len(name) > 32 {
 			allErrs = append(allErrs, field.Invalid(fldPath.Child("loadBalancerName"), name,
 				"Load Balancer name must have at most 32 characters"))
@@ -397,7 +397,7 @@ func validateExternalLoadBalancer(lb *kops.LoadBalancer, fldPath *field.Path) fi
 	}
 
 	if lb.TargetGroupARN != nil {
-		actual := fi.StringValue(lb.TargetGroupARN)
+		actual := fi.ValueOf(lb.TargetGroupARN)
 
 		parsed, err := arn.Parse(actual)
 		if err != nil {

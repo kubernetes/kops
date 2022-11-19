@@ -137,7 +137,7 @@ func (b *KubeControllerManagerBuilder) writeServerCertificate(c *fi.ModelBuilder
 			return err
 		}
 
-		kcm.TLSCertFile = fi.String(filepath.Join(pathSrvKCM, "server.crt"))
+		kcm.TLSCertFile = fi.PtrTo(filepath.Join(pathSrvKCM, "server.crt"))
 		kcm.TLSPrivateKeyFile = filepath.Join(pathSrvKCM, "server.key")
 	}
 

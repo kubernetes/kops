@@ -32,10 +32,10 @@ var _ fi.ModelBuilder = &ResourceGroupModelBuilder{}
 // Build builds a task for creating a Resource Group.
 func (b *ResourceGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	t := &azuretasks.ResourceGroup{
-		Name:      fi.String(b.NameForResourceGroup()),
+		Name:      fi.PtrTo(b.NameForResourceGroup()),
 		Lifecycle: b.Lifecycle,
 		Tags:      map[string]*string{},
-		Shared:    fi.Bool(b.Cluster.IsSharedAzureResourceGroup()),
+		Shared:    fi.PtrTo(b.Cluster.IsSharedAzureResourceGroup()),
 	}
 	c.AddTask(t)
 	return nil

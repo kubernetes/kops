@@ -148,7 +148,7 @@ func (_ *EventBridgeRule) RenderTerraform(t *terraform.TerraformTarget, a, e, ch
 }
 
 func (eb *EventBridgeRule) TerraformLink() *terraformWriter.Literal {
-	return terraformWriter.LiteralProperty("aws_cloudwatch_event_rule", fi.StringValue(eb.Name), "id")
+	return terraformWriter.LiteralProperty("aws_cloudwatch_event_rule", fi.ValueOf(eb.Name), "id")
 }
 
 type cloudformationTarget struct {

@@ -56,8 +56,8 @@ func NewLBPoolTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecyc
 	}
 
 	a := &LBPool{
-		ID:        fi.String(pool.ID),
-		Name:      fi.String(pool.Name),
+		ID:        fi.PtrTo(pool.ID),
+		Name:      fi.PtrTo(pool.Name),
 		Lifecycle: lifecycle,
 	}
 	if len(pool.Loadbalancers) == 1 {
@@ -87,8 +87,8 @@ func (p *LBPool) Find(context *fi.Context) (*LBPool, error) {
 
 	cloud := context.Cloud.(openstack.OpenstackCloud)
 	poolList, err := cloud.ListPools(v2pools.ListOpts{
-		ID:   fi.StringValue(p.ID),
-		Name: fi.StringValue(p.Name),
+		ID:   fi.ValueOf(p.ID),
+		Name: fi.ValueOf(p.Name),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("Failed to list pools: %v", err)
@@ -97,7 +97,7 @@ func (p *LBPool) Find(context *fi.Context) (*LBPool, error) {
 		return nil, nil
 	}
 	if len(poolList) > 1 {
-		return nil, fmt.Errorf("Multiple pools found for name %s", fi.StringValue(p.Name))
+		return nil, fmt.Errorf("Multiple pools found for name %s", fi.ValueOf(p.Name))
 	}
 
 	return NewLBPoolTaskFromCloud(cloud, p.Lifecycle, &poolList[0], p)
@@ -127,26 +127,26 @@ func (_ *LBPool) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes 
 	if a == nil {
 
 		// wait that lb is in ACTIVE state
-		provisioningStatus, err := waitLoadbalancerActiveProvisioningStatus(t.Cloud.LoadBalancerClient(), fi.StringValue(e.Loadbalancer.ID))
+		provisioningStatus, err := waitLoadbalancerActiveProvisioningStatus(t.Cloud.LoadBalancerClient(), fi.ValueOf(e.Loadbalancer.ID))
 		if err != nil {
 			return fmt.Errorf("failed to loadbalancer ACTIVE provisioning status %v: %v", provisioningStatus, err)
 		}
 
 		LbMethod := v2pools.LBMethodRoundRobin
-		if fi.StringValue(e.Loadbalancer.Provider) == "ovn" {
+		if fi.ValueOf(e.Loadbalancer.Provider) == "ovn" {
 			LbMethod = v2pools.LBMethodSourceIpPort
 		}
 		poolopts := v2pools.CreateOpts{
-			Name:           fi.StringValue(e.Name),
+			Name:           fi.ValueOf(e.Name),
 			LBMethod:       LbMethod,
 			Protocol:       v2pools.ProtocolTCP,
-			LoadbalancerID: fi.StringValue(e.Loadbalancer.ID),
+			LoadbalancerID: fi.ValueOf(e.Loadbalancer.ID),
 		}
 		pool, err := t.Cloud.CreatePool(poolopts)
 		if err != nil {
 			return fmt.Errorf("error creating LB pool: %v", err)
 		}
-		e.ID = fi.String(pool.ID)
+		e.ID = fi.PtrTo(pool.ID)
 
 		return nil
 	}

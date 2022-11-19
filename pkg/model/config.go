@@ -36,10 +36,10 @@ type ConfigBuilder struct {
 
 func (b *ConfigBuilder) Build(c *fi.ModelBuilderContext) error {
 	c.AddTask(&fitasks.ManagedFile{
-		Name:      fi.String(registry.PathKopsVersionUpdated),
+		Name:      fi.PtrTo(registry.PathKopsVersionUpdated),
 		Lifecycle: b.Lifecycle,
-		Base:      fi.String(b.Cluster.Spec.ConfigBase),
-		Location:  fi.String(registry.PathKopsVersionUpdated),
+		Base:      fi.PtrTo(b.Cluster.Spec.ConfigBase),
+		Location:  fi.PtrTo(registry.PathKopsVersionUpdated),
 		Contents:  fi.NewStringResource(kopsbase.Version),
 	})
 
@@ -48,10 +48,10 @@ func (b *ConfigBuilder) Build(c *fi.ModelBuilderContext) error {
 		return fmt.Errorf("serializing completed cluster spec: %w", err)
 	}
 	c.AddTask(&fitasks.ManagedFile{
-		Name:      fi.String(registry.PathClusterCompleted),
+		Name:      fi.PtrTo(registry.PathClusterCompleted),
 		Lifecycle: b.Lifecycle,
-		Base:      fi.String(b.Cluster.Spec.ConfigBase),
-		Location:  fi.String(registry.PathClusterCompleted),
+		Base:      fi.PtrTo(b.Cluster.Spec.ConfigBase),
+		Location:  fi.PtrTo(registry.PathClusterCompleted),
 		Contents:  fi.NewBytesResource(versionedYaml),
 	})
 

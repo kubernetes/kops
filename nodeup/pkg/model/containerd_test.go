@@ -64,56 +64,56 @@ func TestContainerdBuilder_BuildFlags(t *testing.T) {
 		{
 			kops.ContainerdConfig{
 				SkipInstall:    false,
-				ConfigOverride: fi.String("test"),
-				Version:        fi.String("test"),
+				ConfigOverride: fi.PtrTo("test"),
+				Version:        fi.PtrTo("test"),
 			},
 			"",
 		},
 		{
 			kops.ContainerdConfig{
-				Address: fi.String("/run/containerd/containerd.sock"),
+				Address: fi.PtrTo("/run/containerd/containerd.sock"),
 			},
 			"--address=/run/containerd/containerd.sock",
 		},
 		{
 			kops.ContainerdConfig{
-				LogLevel: fi.String("info"),
+				LogLevel: fi.PtrTo("info"),
 			},
 			"--log-level=info",
 		},
 		{
 			kops.ContainerdConfig{
-				Root: fi.String("/var/lib/containerd"),
+				Root: fi.PtrTo("/var/lib/containerd"),
 			},
 			"--root=/var/lib/containerd",
 		},
 		{
 			kops.ContainerdConfig{
-				State: fi.String("/run/containerd"),
+				State: fi.PtrTo("/run/containerd"),
 			},
 			"--state=/run/containerd",
 		},
 		{
 			kops.ContainerdConfig{
 				SkipInstall:    false,
-				Address:        fi.String("/run/containerd/containerd.sock"),
-				ConfigOverride: fi.String("test"),
-				LogLevel:       fi.String("info"),
-				Root:           fi.String("/var/lib/containerd"),
-				State:          fi.String("/run/containerd"),
-				Version:        fi.String("test"),
+				Address:        fi.PtrTo("/run/containerd/containerd.sock"),
+				ConfigOverride: fi.PtrTo("test"),
+				LogLevel:       fi.PtrTo("info"),
+				Root:           fi.PtrTo("/var/lib/containerd"),
+				State:          fi.PtrTo("/run/containerd"),
+				Version:        fi.PtrTo("test"),
 			},
 			"--address=/run/containerd/containerd.sock --log-level=info --root=/var/lib/containerd --state=/run/containerd",
 		},
 		{
 			kops.ContainerdConfig{
 				SkipInstall:    true,
-				Address:        fi.String("/run/containerd/containerd.sock"),
-				ConfigOverride: fi.String("test"),
-				LogLevel:       fi.String("info"),
-				Root:           fi.String("/var/lib/containerd"),
-				State:          fi.String("/run/containerd"),
-				Version:        fi.String("test"),
+				Address:        fi.PtrTo("/run/containerd/containerd.sock"),
+				ConfigOverride: fi.PtrTo("test"),
+				LogLevel:       fi.PtrTo("info"),
+				Root:           fi.PtrTo("/var/lib/containerd"),
+				State:          fi.PtrTo("/run/containerd"),
+				Version:        fi.PtrTo("test"),
 			},
 			"--address=/run/containerd/containerd.sock --log-level=info --root=/var/lib/containerd --state=/run/containerd",
 		},

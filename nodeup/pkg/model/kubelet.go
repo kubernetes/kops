@@ -322,7 +322,7 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 		if b.Cluster.Spec.Containerd == nil || b.Cluster.Spec.Containerd.Address == nil {
 			flags += " --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
 		} else {
-			flags += " --container-runtime-endpoint=unix://" + fi.StringValue(b.Cluster.Spec.Containerd.Address)
+			flags += " --container-runtime-endpoint=unix://" + fi.ValueOf(b.Cluster.Spec.Containerd.Address)
 		}
 	}
 
@@ -404,7 +404,7 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	service.InitDefaults()
 
 	if b.ConfigurationMode == "Warming" {
-		service.Running = fi.Bool(false)
+		service.Running = fi.PtrTo(false)
 	}
 
 	return service
@@ -565,7 +565,7 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 			}
 
 			// Write back values that could have changed
-			c.MaxPods = fi.Int32(int32(maxPods))
+			c.MaxPods = fi.PtrTo(int32(maxPods))
 		}
 	}
 
@@ -602,7 +602,7 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 	}
 
 	if c.AuthenticationTokenWebhook == nil {
-		c.AuthenticationTokenWebhook = fi.Bool(true)
+		c.AuthenticationTokenWebhook = fi.PtrTo(true)
 	}
 
 	return &c, nil
@@ -642,7 +642,7 @@ func (b *KubeletBuilder) buildKubeletServingCertificate(c *fi.ModelBuilderContex
 				Path:           filepath.Join(dir, name+".crt"),
 				Contents:       cert,
 				Type:           nodetasks.FileType_File,
-				Mode:           fi.String("0644"),
+				Mode:           fi.PtrTo("0644"),
 				BeforeServices: []string{"kubelet.service"},
 			})
 
@@ -650,7 +650,7 @@ func (b *KubeletBuilder) buildKubeletServingCertificate(c *fi.ModelBuilderContex
 				Path:           filepath.Join(dir, name+".key"),
 				Contents:       key,
 				Type:           nodetasks.FileType_File,
-				Mode:           fi.String("0400"),
+				Mode:           fi.PtrTo("0400"),
 				BeforeServices: []string{"kubelet.service"},
 			})
 

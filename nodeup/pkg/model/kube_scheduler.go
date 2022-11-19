@@ -178,7 +178,7 @@ func (b *KubeSchedulerBuilder) writeServerCertificate(c *fi.ModelBuilderContext,
 			return err
 		}
 
-		kubeScheduler.TLSCertFile = fi.String(filepath.Join(pathSrvScheduler, "server.crt"))
+		kubeScheduler.TLSCertFile = fi.PtrTo(filepath.Join(pathSrvScheduler, "server.crt"))
 		kubeScheduler.TLSPrivateKeyFile = filepath.Join(pathSrvScheduler, "server.key")
 	}
 
@@ -201,7 +201,7 @@ func (b *KubeSchedulerBuilder) buildPod(kubeScheduler *kops.KubeSchedulerConfig)
 		flags = append(flags, "--"+flag+"kubeconfig="+kubescheduler.KubeConfigPath)
 	}
 
-	if fi.BoolValue(kubeScheduler.UsePolicyConfigMap) {
+	if fi.ValueOf(kubeScheduler.UsePolicyConfigMap) {
 		flags = append(flags, "--policy-configmap=scheduler-policy", "--policy-configmap-namespace=kube-system")
 	}
 

@@ -117,7 +117,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		// FIXME: Must ensure 63 or less characters
 		// replace all dots and _ with -, this is needed to get external cloudprovider working
 		iName := strings.Replace(strings.ToLower(fmt.Sprintf("%s-%d.%s", ig.Name, i+1, b.ClusterName())), "_", "-", -1)
-		instanceName := fi.String(strings.Replace(iName, ".", "-", -1))
+		instanceName := fi.PtrTo(strings.Replace(iName, ".", "-", -1))
 
 		var az *string
 		var subnets []*openstacktasks.Subnet
@@ -125,9 +125,9 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 			subnet := ig.Spec.Subnets[int(i)%len(ig.Spec.Subnets)]
 			// bastion subnet name might contain a "utility-" prefix
 			if ig.Spec.Role == kops.InstanceGroupRoleBastion {
-				az = fi.String(strings.Replace(subnet, "utility-", "", 1))
+				az = fi.PtrTo(strings.Replace(subnet, "utility-", "", 1))
 			} else {
-				az = fi.String(subnet)
+				az = fi.PtrTo(subnet)
 			}
 
 			subnetName, err := b.findSubnetClusterSpec(subnet)
@@ -138,7 +138,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		}
 		if len(ig.Spec.Zones) > 0 {
 			zone := ig.Spec.Zones[int(i)%len(ig.Spec.Zones)]
-			az = fi.String(zone)
+			az = fi.PtrTo(zone)
 		}
 		// Create instance port task
 		portName := fmt.Sprintf("%s-%s", "port", *instanceName)
@@ -151,7 +151,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 			), ".", "-", -1,
 		)
 		portTask := &openstacktasks.Port{
-			Name:              fi.String(portName),
+			Name:              fi.PtrTo(portName),
 			InstanceGroupName: &groupName,
 			Network:           b.LinkToNetwork(),
 			Tags: []string{
@@ -170,17 +170,17 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		for k, v := range igMeta {
 			metaWithName[k] = v
 		}
-		metaWithName[openstack.TagKopsName] = fi.StringValue(instanceName)
+		metaWithName[openstack.TagKopsName] = fi.ValueOf(instanceName)
 		instanceTask := &openstacktasks.Instance{
 			Name:             instanceName,
 			Lifecycle:        b.Lifecycle,
 			GroupName:        s(groupName),
-			Region:           fi.String(b.Cluster.Spec.Subnets[0].Region),
-			Flavor:           fi.String(ig.Spec.MachineType),
-			Image:            fi.String(ig.Spec.Image),
-			SSHKey:           fi.String(sshKeyName),
+			Region:           fi.PtrTo(b.Cluster.Spec.Subnets[0].Region),
+			Flavor:           fi.PtrTo(ig.Spec.MachineType),
+			Image:            fi.PtrTo(ig.Spec.Image),
+			SSHKey:           fi.PtrTo(sshKeyName),
 			ServerGroup:      sg,
-			Role:             fi.String(string(ig.Spec.Role)),
+			Role:             fi.PtrTo(string(ig.Spec.Role)),
 			Port:             portTask,
 			UserData:         startupScript,
 			Metadata:         metaWithName,
@@ -193,13 +193,13 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		// Associate a floating IP to the instances if we have external network in router
 		// and respective topology is "public"
 		if b.Cluster.Spec.CloudProvider.Openstack.Router != nil {
-			if ig.Spec.AssociatePublicIP != nil && !fi.BoolValue(ig.Spec.AssociatePublicIP) {
+			if ig.Spec.AssociatePublicIP != nil && !fi.ValueOf(ig.Spec.AssociatePublicIP) {
 				continue
 			}
 			switch ig.Spec.Role {
 			case kops.InstanceGroupRoleBastion:
 				t := &openstacktasks.FloatingIP{
-					Name:      fi.String(fmt.Sprintf("%s-%s", "fip", *instanceTask.Name)),
+					Name:      fi.PtrTo(fmt.Sprintf("%s-%s", "fip", *instanceTask.Name)),
 					Lifecycle: b.Lifecycle,
 				}
 				c.AddTask(t)
@@ -208,7 +208,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 
 				if b.Cluster.Spec.Topology == nil || b.Cluster.Spec.Topology.ControlPlane != kops.TopologyPrivate {
 					t := &openstacktasks.FloatingIP{
-						Name:      fi.String(fmt.Sprintf("%s-%s", "fip", *instanceTask.Name)),
+						Name:      fi.PtrTo(fmt.Sprintf("%s-%s", "fip", *instanceTask.Name)),
 						Lifecycle: b.Lifecycle,
 					}
 					c.AddTask(t)
@@ -218,7 +218,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 			default:
 				if b.Cluster.Spec.Topology == nil || b.Cluster.Spec.Topology.Nodes != kops.TopologyPrivate {
 					t := &openstacktasks.FloatingIP{
-						Name:      fi.String(fmt.Sprintf("%s-%s", "fip", *instanceTask.Name)),
+						Name:      fi.PtrTo(fmt.Sprintf("%s-%s", "fip", *instanceTask.Name)),
 						Lifecycle: b.Lifecycle,
 					}
 					c.AddTask(t)
@@ -285,8 +285,8 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			return fmt.Errorf("could not find subnet for master loadbalancer")
 		}
 		lbTask := &openstacktasks.LB{
-			Name:      fi.String(b.Cluster.Spec.MasterPublicName),
-			Subnet:    fi.String(lbSubnetName),
+			Name:      fi.PtrTo(b.Cluster.Spec.MasterPublicName),
+			Subnet:    fi.PtrTo(lbSubnetName),
 			Lifecycle: b.Lifecycle,
 		}
 
@@ -298,7 +298,7 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(lbTask)
 
 		lbfipTask := &openstacktasks.FloatingIP{
-			Name:      fi.String(fmt.Sprintf("%s-%s", "fip", *lbTask.Name)),
+			Name:      fi.PtrTo(fmt.Sprintf("%s-%s", "fip", *lbTask.Name)),
 			LB:        lbTask,
 			Lifecycle: b.Lifecycle,
 		}
@@ -309,7 +309,7 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		poolTask := &openstacktasks.LBPool{
-			Name:         fi.String(fmt.Sprintf("%s-https", fi.StringValue(lbTask.Name))),
+			Name:         fi.PtrTo(fmt.Sprintf("%s-https", fi.ValueOf(lbTask.Name))),
 			Loadbalancer: lbTask,
 			Lifecycle:    b.Lifecycle,
 		}
@@ -349,10 +349,10 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				Name:          mastersg.Name,
 				Pool:          poolTask,
 				ServerGroup:   mastersg,
-				InterfaceName: fi.String(ifName),
-				ProtocolPort:  fi.Int(443),
+				InterfaceName: fi.PtrTo(ifName),
+				ProtocolPort:  fi.PtrTo(443),
 				Lifecycle:     b.Lifecycle,
-				Weight:        fi.Int(1),
+				Weight:        fi.PtrTo(1),
 			}
 
 			c.AddTask(associateTask)

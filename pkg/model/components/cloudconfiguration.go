@@ -47,7 +47,7 @@ func (b *CloudConfigurationOptionsBuilder) BuildOptions(o interface{}) error {
 			// adopting that more particular setting generally.
 			manage = clusterSpec.CloudProvider.Openstack.BlockStorage.CreateStorageClass
 		} else {
-			manage = fi.Bool(true)
+			manage = fi.PtrTo(true)
 		}
 		c.ManageStorageClasses = manage
 	}

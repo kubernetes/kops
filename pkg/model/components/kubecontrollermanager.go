@@ -106,7 +106,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 
 	if clusterSpec.ExternalCloudControllerManager == nil {
 		if b.IsKubernetesGTE("1.23") && (kcm.CloudProvider == "aws" || kcm.CloudProvider == "gce") {
-			kcm.EnableLeaderMigration = fi.Bool(true)
+			kcm.EnableLeaderMigration = fi.PtrTo(true)
 		}
 	} else {
 		kcm.CloudProvider = "external"
@@ -123,9 +123,9 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 	kcm.Image = image
 
 	// Doesn't seem to be any real downside to always doing a leader election
-	kcm.LeaderElection = &kops.LeaderElectionConfiguration{LeaderElect: fi.Bool(true)}
+	kcm.LeaderElection = &kops.LeaderElectionConfiguration{LeaderElect: fi.PtrTo(true)}
 
-	kcm.AllocateNodeCIDRs = fi.Bool(!clusterSpec.IsKopsControllerIPAM())
+	kcm.AllocateNodeCIDRs = fi.PtrTo(!clusterSpec.IsKopsControllerIPAM())
 
 	if kcm.ClusterCIDR == "" && !clusterSpec.IsKopsControllerIPAM() {
 		kcm.ClusterCIDR = clusterSpec.PodCIDR
@@ -139,37 +139,37 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 			// Kubernetes limitation
 			nodeSize = 16
 		}
-		kcm.NodeCIDRMaskSize = fi.Int32(int32(clusterSize + nodeSize))
+		kcm.NodeCIDRMaskSize = fi.PtrTo(int32(clusterSize + nodeSize))
 	}
 
 	networking := clusterSpec.Networking
 	if networking == nil {
-		kcm.ConfigureCloudRoutes = fi.Bool(true)
+		kcm.ConfigureCloudRoutes = fi.PtrTo(true)
 	} else if networking.Kubenet != nil {
-		kcm.ConfigureCloudRoutes = fi.Bool(true)
+		kcm.ConfigureCloudRoutes = fi.PtrTo(true)
 	} else if networking.GCE != nil {
-		kcm.ConfigureCloudRoutes = fi.Bool(false)
-		kcm.CIDRAllocatorType = fi.String("CloudAllocator")
+		kcm.ConfigureCloudRoutes = fi.PtrTo(false)
+		kcm.CIDRAllocatorType = fi.PtrTo("CloudAllocator")
 	} else if networking.External != nil {
-		kcm.ConfigureCloudRoutes = fi.Bool(false)
+		kcm.ConfigureCloudRoutes = fi.PtrTo(false)
 	} else if UsesCNI(networking) {
-		kcm.ConfigureCloudRoutes = fi.Bool(false)
+		kcm.ConfigureCloudRoutes = fi.PtrTo(false)
 	} else if networking.Kopeio != nil {
 		// Kopeio is based on kubenet / external
-		kcm.ConfigureCloudRoutes = fi.Bool(false)
+		kcm.ConfigureCloudRoutes = fi.PtrTo(false)
 	} else {
 		return fmt.Errorf("no networking mode set")
 	}
 
 	if kcm.UseServiceAccountCredentials == nil {
-		kcm.UseServiceAccountCredentials = fi.Bool(true)
+		kcm.UseServiceAccountCredentials = fi.PtrTo(true)
 	}
 
 	if len(kcm.Controllers) == 0 {
 		var changes []string
 		// @check if the node authorization is enabled and if so enable the tokencleaner controller (disabled by default)
 		// This is responsible for cleaning up bootstrap tokens which have expired
-		if fi.BoolValue(clusterSpec.KubeAPIServer.EnableBootstrapAuthToken) {
+		if fi.ValueOf(clusterSpec.KubeAPIServer.EnableBootstrapAuthToken) {
 			changes = append(changes, "tokencleaner")
 		}
 		if clusterSpec.IsKopsControllerIPAM() {
@@ -180,7 +180,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		}
 	}
 
-	if clusterSpec.CloudConfig != nil && clusterSpec.CloudConfig.AWSEBSCSIDriver != nil && fi.BoolValue(clusterSpec.CloudConfig.AWSEBSCSIDriver.Enabled) {
+	if clusterSpec.CloudConfig != nil && clusterSpec.CloudConfig.AWSEBSCSIDriver != nil && fi.ValueOf(clusterSpec.CloudConfig.AWSEBSCSIDriver.Enabled) {
 
 		if kcm.FeatureGates == nil {
 			kcm.FeatureGates = make(map[string]string)

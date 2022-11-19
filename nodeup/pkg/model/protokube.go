@@ -65,7 +65,7 @@ func (t *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
 			Path:     filepath.Join("/opt/kops/bin", name),
 			Contents: res,
 			Type:     nodetasks.FileType_File,
-			Mode:     fi.String("0755"),
+			Mode:     fi.PtrTo("0755"),
 		})
 	}
 
@@ -79,7 +79,7 @@ func (t *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
 			Path:     filepath.Join("/opt/kops/bin", name),
 			Contents: res,
 			Type:     nodetasks.FileType_File,
-			Mode:     fi.String("0755"),
+			Mode:     fi.PtrTo("0755"),
 		})
 	}
 
@@ -186,12 +186,12 @@ type ProtokubeFlags struct {
 func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*ProtokubeFlags, error) {
 	f := &ProtokubeFlags{
 		Channels:      t.NodeupConfig.Channels,
-		Containerized: fi.Bool(false),
-		LogLevel:      fi.Int32(4),
+		Containerized: fi.PtrTo(false),
+		LogLevel:      fi.PtrTo(int32(4)),
 		Master:        b(t.IsMaster),
 	}
 
-	f.ClusterID = fi.String(t.Cluster.ObjectMeta.Name)
+	f.ClusterID = fi.PtrTo(t.Cluster.ObjectMeta.Name)
 
 	zone := t.Cluster.Spec.DNSZone
 	if zone != "" {
@@ -210,7 +210,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 
 	if t.Cluster.IsGossip() {
 		klog.Warningf("Cluster name %q implies gossip DNS", t.Cluster.Name)
-		f.Gossip = fi.Bool(true)
+		f.Gossip = fi.PtrTo(true)
 		if t.Cluster.Spec.GossipConfig != nil {
 			f.GossipProtocol = t.Cluster.Spec.GossipConfig.Protocol
 			f.GossipListen = t.Cluster.Spec.GossipConfig.Listen
@@ -226,15 +226,15 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 		// @TODO: This is hacky, but we want it so that we can have a different internal & external name
 		internalSuffix := t.Cluster.APIInternalName()
 		internalSuffix = strings.TrimPrefix(internalSuffix, "api.")
-		f.DNSInternalSuffix = fi.String(internalSuffix)
+		f.DNSInternalSuffix = fi.PtrTo(internalSuffix)
 	}
 
 	if t.CloudProvider != "" {
-		f.Cloud = fi.String(string(t.CloudProvider))
+		f.Cloud = fi.PtrTo(string(t.CloudProvider))
 	}
 
 	if f.DNSInternalSuffix == nil {
-		f.DNSInternalSuffix = fi.String(".internal." + t.Cluster.ObjectMeta.Name)
+		f.DNSInternalSuffix = fi.PtrTo(".internal." + t.Cluster.ObjectMeta.Name)
 	}
 
 	f.BootstrapMasterNodeLabels = true

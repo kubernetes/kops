@@ -66,7 +66,7 @@ func (h *AutoscalingLifecycleHook) Find(c *fi.Context) (*AutoscalingLifecycleHoo
 		return nil, fmt.Errorf("error listing ASG Lifecycle Hooks: %v", err)
 	}
 	if response == nil || len(response.LifecycleHooks) == 0 {
-		if !fi.BoolValue(h.Enabled) {
+		if !fi.ValueOf(h.Enabled) {
 			return h, nil
 		}
 
@@ -86,7 +86,7 @@ func (h *AutoscalingLifecycleHook) Find(c *fi.Context) (*AutoscalingLifecycleHoo
 		DefaultResult:       hook.DefaultResult,
 		HeartbeatTimeout:    hook.HeartbeatTimeout,
 		LifecycleTransition: hook.LifecycleTransition,
-		Enabled:             fi.Bool(true),
+		Enabled:             fi.PtrTo(true),
 	}
 
 	return actual, nil
@@ -111,7 +111,7 @@ func (_ *AutoscalingLifecycleHook) CheckChanges(a, e, changes *AutoscalingLifecy
 
 func (*AutoscalingLifecycleHook) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *AutoscalingLifecycleHook) error {
 	if changes != nil {
-		if fi.BoolValue(e.Enabled) {
+		if fi.ValueOf(e.Enabled) {
 			request := &autoscaling.PutLifecycleHookInput{
 				AutoScalingGroupName: e.AutoscalingGroup.Name,
 				DefaultResult:        e.DefaultResult,
@@ -147,7 +147,7 @@ type terraformASGLifecycleHook struct {
 }
 
 func (_ *AutoscalingLifecycleHook) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *AutoscalingLifecycleHook) error {
-	if !fi.BoolValue(e.Enabled) {
+	if !fi.ValueOf(e.Enabled) {
 		return nil
 	}
 	tf := &terraformASGLifecycleHook{
@@ -170,7 +170,7 @@ type cloudformationASGLifecycleHook struct {
 }
 
 func (_ *AutoscalingLifecycleHook) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *AutoscalingLifecycleHook) error {
-	if !fi.BoolValue(e.Enabled) {
+	if !fi.ValueOf(e.Enabled) {
 		return nil
 	}
 	tf := &cloudformationASGLifecycleHook{

@@ -41,7 +41,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 	network.Lifecycle = b.Lifecycle
-	network.Shared = fi.Bool(sharedNetwork)
+	network.Shared = fi.PtrTo(sharedNetwork)
 	if !sharedNetwork {
 		// As we're creating the network, we're also creating the subnets.
 		// We therefore use custom mode, for a few reasons:
@@ -65,7 +65,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Network:           network,
 			Lifecycle:         b.Lifecycle,
 			Region:            s(b.Region),
-			Shared:            fi.Bool(sharedSubnet),
+			Shared:            fi.PtrTo(sharedSubnet),
 			SecondaryIpRanges: make(map[string]string),
 		}
 

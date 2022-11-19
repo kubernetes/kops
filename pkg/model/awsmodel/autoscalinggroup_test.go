@@ -51,7 +51,7 @@ func buildNodeInstanceGroup(subnets ...string) *kops.InstanceGroup {
 func TestRootVolumeOptimizationFlag(t *testing.T) {
 	cluster := buildMinimalCluster()
 	ig := buildNodeInstanceGroup("subnet-us-test-1a")
-	ig.Spec.RootVolumeOptimization = fi.Bool(true)
+	ig.Spec.RootVolumeOptimization = fi.PtrTo(true)
 
 	k := [][]byte{}
 	k = append(k, []byte(sshPublicKeyEntry))
@@ -88,7 +88,7 @@ func TestRootVolumeOptimizationFlag(t *testing.T) {
 
 	// We need the CA for the bootstrap script
 	caTask := &fitasks.Keypair{
-		Name:    fi.String(fi.CertificateIDCA),
+		Name:    fi.PtrTo(fi.CertificateIDCA),
 		Subject: "cn=kubernetes",
 		Type:    "ca",
 	}
@@ -97,7 +97,7 @@ func TestRootVolumeOptimizationFlag(t *testing.T) {
 		"etcd-clients-ca",
 	} {
 		task := &fitasks.Keypair{
-			Name:    fi.String(keypair),
+			Name:    fi.PtrTo(keypair),
 			Subject: "cn=" + keypair,
 			Type:    "ca",
 		}
@@ -192,7 +192,7 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 
 	// We need the CA for the bootstrap script
 	caTask := &fitasks.Keypair{
-		Name:    fi.String(fi.CertificateIDCA),
+		Name:    fi.PtrTo(fi.CertificateIDCA),
 		Subject: "cn=kubernetes",
 		Type:    "ca",
 	}
@@ -207,7 +207,7 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 		"service-account",
 	} {
 		task := &fitasks.Keypair{
-			Name:    fi.String(keypair),
+			Name:    fi.PtrTo(keypair),
 			Subject: "cn=" + keypair,
 			Type:    "ca",
 		}
@@ -218,7 +218,7 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 		"kube-proxy",
 	} {
 		task := &fitasks.Keypair{
-			Name:    fi.String(keypair),
+			Name:    fi.PtrTo(keypair),
 			Subject: "cn=" + keypair,
 			Signer:  caTask,
 			Type:    "client",

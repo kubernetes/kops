@@ -51,20 +51,20 @@ func (v *Volume) Find(c *fi.Context) (*Volume, error) {
 
 	volumes, _, err := volService.ListVolumes(context.TODO(), &godo.ListVolumeParams{
 		Region: cloud.Region(),
-		Name:   fi.StringValue(v.Name),
+		Name:   fi.ValueOf(v.Name),
 	})
 	if err != nil {
 		return nil, err
 	}
 
 	for _, volume := range volumes {
-		if volume.Name == fi.StringValue(v.Name) {
+		if volume.Name == fi.ValueOf(v.Name) {
 			return &Volume{
-				Name:      fi.String(volume.Name),
-				ID:        fi.String(volume.ID),
+				Name:      fi.PtrTo(volume.Name),
+				ID:        fi.PtrTo(volume.ID),
 				Lifecycle: v.Lifecycle,
-				SizeGB:    fi.Int64(volume.SizeGigaBytes),
-				Region:    fi.String(volume.Region.Slug),
+				SizeGB:    fi.PtrTo(volume.SizeGigaBytes),
+				Region:    fi.PtrTo(volume.Region.Slug),
 			}, nil
 		}
 	}
@@ -120,9 +120,9 @@ func (_ *Volume) RenderDO(t *do.DOAPITarget, a, e, changes *Volume) error {
 
 	volService := t.Cloud.VolumeService()
 	_, _, err := volService.CreateVolume(context.TODO(), &godo.VolumeCreateRequest{
-		Name:          fi.StringValue(e.Name),
-		Region:        fi.StringValue(e.Region),
-		SizeGigaBytes: fi.Int64Value(e.SizeGB),
+		Name:          fi.ValueOf(e.Name),
+		Region:        fi.ValueOf(e.Region),
+		SizeGigaBytes: fi.ValueOf(e.SizeGB),
 		Tags:          tagArray,
 	})
 

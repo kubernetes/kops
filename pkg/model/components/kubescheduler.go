@@ -53,11 +53,11 @@ func (b *KubeSchedulerOptionsBuilder) BuildOptions(o interface{}) error {
 	if config.LeaderElection == nil {
 		//  Doesn't seem to be any real downside to always doing a leader election
 		config.LeaderElection = &kops.LeaderElectionConfiguration{
-			LeaderElect: fi.Bool(true),
+			LeaderElect: fi.PtrTo(true),
 		}
 	}
 
-	if clusterSpec.CloudConfig != nil && clusterSpec.CloudConfig.AWSEBSCSIDriver != nil && fi.BoolValue(clusterSpec.CloudConfig.AWSEBSCSIDriver.Enabled) {
+	if clusterSpec.CloudConfig != nil && clusterSpec.CloudConfig.AWSEBSCSIDriver != nil && fi.ValueOf(clusterSpec.CloudConfig.AWSEBSCSIDriver.Enabled) {
 
 		if config.FeatureGates == nil {
 			config.FeatureGates = make(map[string]string)

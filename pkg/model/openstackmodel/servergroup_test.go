@@ -53,10 +53,10 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 					CloudProvider: kops.CloudProviderSpec{
 						Openstack: &kops.OpenstackSpec{
 							Router: &kops.OpenstackRouter{
-								ExternalNetwork: fi.String("test"),
+								ExternalNetwork: fi.PtrTo("test"),
 							},
 							Metadata: &kops.OpenstackMetadata{
-								ConfigDrive: fi.Bool(false),
+								ConfigDrive: fi.PtrTo(false),
 							},
 						},
 					},
@@ -111,10 +111,10 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 					CloudProvider: kops.CloudProviderSpec{
 						Openstack: &kops.OpenstackSpec{
 							Router: &kops.OpenstackRouter{
-								ExternalNetwork: fi.String("test"),
+								ExternalNetwork: fi.PtrTo("test"),
 							},
 							Metadata: &kops.OpenstackMetadata{
-								ConfigDrive: fi.Bool(false),
+								ConfigDrive: fi.PtrTo(false),
 							},
 						},
 					},
@@ -197,10 +197,10 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 					CloudProvider: kops.CloudProviderSpec{
 						Openstack: &kops.OpenstackSpec{
 							Router: &kops.OpenstackRouter{
-								ExternalNetwork: fi.String("test"),
+								ExternalNetwork: fi.PtrTo("test"),
 							},
 							Metadata: &kops.OpenstackMetadata{
-								ConfigDrive: fi.Bool(false),
+								ConfigDrive: fi.PtrTo(false),
 							},
 						},
 					},
@@ -319,10 +319,10 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 					CloudProvider: kops.CloudProviderSpec{
 						Openstack: &kops.OpenstackSpec{
 							Router: &kops.OpenstackRouter{
-								ExternalNetwork: fi.String("test"),
+								ExternalNetwork: fi.PtrTo("test"),
 							},
 							Metadata: &kops.OpenstackMetadata{
-								ConfigDrive: fi.Bool(false),
+								ConfigDrive: fi.PtrTo(false),
 							},
 						},
 					},
@@ -378,10 +378,10 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						Openstack: &kops.OpenstackSpec{
 							Loadbalancer: &kops.OpenstackLoadbalancerConfig{},
 							Router: &kops.OpenstackRouter{
-								ExternalNetwork: fi.String("test"),
+								ExternalNetwork: fi.PtrTo("test"),
 							},
 							Metadata: &kops.OpenstackMetadata{
-								ConfigDrive: fi.Bool(false),
+								ConfigDrive: fi.PtrTo(false),
 							},
 						},
 					},
@@ -506,7 +506,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 					CloudProvider: kops.CloudProviderSpec{
 						Openstack: &kops.OpenstackSpec{
 							Metadata: &kops.OpenstackMetadata{
-								ConfigDrive: fi.Bool(false),
+								ConfigDrive: fi.PtrTo(false),
 							},
 						},
 					},
@@ -625,10 +625,10 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 					CloudProvider: kops.CloudProviderSpec{
 						Openstack: &kops.OpenstackSpec{
 							Router: &kops.OpenstackRouter{
-								ExternalNetwork: fi.String("test"),
+								ExternalNetwork: fi.PtrTo("test"),
 							},
 							Metadata: &kops.OpenstackMetadata{
-								ConfigDrive: fi.Bool(false),
+								ConfigDrive: fi.PtrTo(false),
 							},
 						},
 					},
@@ -707,10 +707,10 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 					CloudProvider: kops.CloudProviderSpec{
 						Openstack: &kops.OpenstackSpec{
 							Router: &kops.OpenstackRouter{
-								ExternalNetwork: fi.String("test"),
+								ExternalNetwork: fi.PtrTo("test"),
 							},
 							Metadata: &kops.OpenstackMetadata{
-								ConfigDrive: fi.Bool(false),
+								ConfigDrive: fi.PtrTo(false),
 							},
 						},
 					},
@@ -736,7 +736,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						MachineType:       "blc.1-2",
 						Subnets:           []string{"subnet"},
 						Zones:             []string{"zone-1"},
-						AssociatePublicIP: fi.Bool(false),
+						AssociatePublicIP: fi.PtrTo(false),
 					},
 				},
 				{
@@ -751,7 +751,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						MachineType:       "blc.2-4",
 						Subnets:           []string{"subnet"},
 						Zones:             []string{"zone-1"},
-						AssociatePublicIP: fi.Bool(false),
+						AssociatePublicIP: fi.PtrTo(false),
 					},
 				},
 			},
@@ -767,10 +767,10 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 					CloudProvider: kops.CloudProviderSpec{
 						Openstack: &kops.OpenstackSpec{
 							Router: &kops.OpenstackRouter{
-								ExternalNetwork: fi.String("test"),
+								ExternalNetwork: fi.PtrTo("test"),
 							},
 							Metadata: &kops.OpenstackMetadata{
-								ConfigDrive: fi.Bool(false),
+								ConfigDrive: fi.PtrTo(false),
 							},
 						},
 					},
@@ -800,7 +800,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						MachineType:       "blc.1-2",
 						Subnets:           []string{"subnet"},
 						Zones:             []string{"zone-1"},
-						AssociatePublicIP: fi.Bool(false),
+						AssociatePublicIP: fi.PtrTo(false),
 					},
 				},
 				{
@@ -815,7 +815,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						MachineType:       "blc.1-2",
 						Subnets:           []string{"subnet"},
 						Zones:             []string{"zone-1"},
-						AssociatePublicIP: fi.Bool(false),
+						AssociatePublicIP: fi.PtrTo(false),
 					},
 				},
 				{
@@ -837,7 +837,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						MachineType:       "blc.1-2",
 						Subnets:           []string{"utility-subnet"},
 						Zones:             []string{"zone-1"},
-						AssociatePublicIP: fi.Bool(false),
+						AssociatePublicIP: fi.PtrTo(false),
 					},
 				},
 			},
@@ -853,7 +853,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 					CloudProvider: kops.CloudProviderSpec{
 						Openstack: &kops.OpenstackSpec{
 							Metadata: &kops.OpenstackMetadata{
-								ConfigDrive: fi.Bool(false),
+								ConfigDrive: fi.PtrTo(false),
 							},
 						},
 					},
@@ -897,7 +897,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 					CloudProvider: kops.CloudProviderSpec{
 						Openstack: &kops.OpenstackSpec{
 							Metadata: &kops.OpenstackMetadata{
-								ConfigDrive: fi.Bool(false),
+								ConfigDrive: fi.PtrTo(false),
 							},
 						},
 					},
@@ -943,7 +943,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 					CloudProvider: kops.CloudProviderSpec{
 						Openstack: &kops.OpenstackSpec{
 							Metadata: &kops.OpenstackMetadata{
-								ConfigDrive: fi.Bool(false),
+								ConfigDrive: fi.PtrTo(false),
 							},
 						},
 					},
@@ -987,7 +987,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 					CloudProvider: kops.CloudProviderSpec{
 						Openstack: &kops.OpenstackSpec{
 							Metadata: &kops.OpenstackMetadata{
-								ConfigDrive: fi.Bool(false),
+								ConfigDrive: fi.PtrTo(false),
 							},
 						},
 					},
@@ -1031,7 +1031,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 					CloudProvider: kops.CloudProviderSpec{
 						Openstack: &kops.OpenstackSpec{
 							Metadata: &kops.OpenstackMetadata{
-								ConfigDrive: fi.Bool(false),
+								ConfigDrive: fi.PtrTo(false),
 							},
 						},
 					},
@@ -1075,7 +1075,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 					CloudProvider: kops.CloudProviderSpec{
 						Openstack: &kops.OpenstackSpec{
 							Metadata: &kops.OpenstackMetadata{
-								ConfigDrive: fi.Bool(false),
+								ConfigDrive: fi.PtrTo(false),
 							},
 						},
 					},
@@ -1182,7 +1182,7 @@ func RunGoldenTest(t *testing.T, basedir string, testCase serverGroupModelBuilde
 
 	// We need the CA and service-account for the bootstrap script
 	caTask := &fitasks.Keypair{
-		Name:    fi.String(fi.CertificateIDCA),
+		Name:    fi.PtrTo(fi.CertificateIDCA),
 		Subject: "cn=kubernetes",
 		Type:    "ca",
 	}
@@ -1197,7 +1197,7 @@ func RunGoldenTest(t *testing.T, basedir string, testCase serverGroupModelBuilde
 		"service-account",
 	} {
 		task := &fitasks.Keypair{
-			Name:    fi.String(keypair),
+			Name:    fi.PtrTo(keypair),
 			Subject: "cn=" + keypair,
 			Type:    "ca",
 		}
@@ -1208,7 +1208,7 @@ func RunGoldenTest(t *testing.T, basedir string, testCase serverGroupModelBuilde
 		"kube-proxy",
 	} {
 		task := &fitasks.Keypair{
-			Name:    fi.String(keypair),
+			Name:    fi.PtrTo(keypair),
 			Subject: "cn=" + keypair,
 			Signer:  caTask,
 			Type:    "client",

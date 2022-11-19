@@ -67,7 +67,7 @@ type OrderSubnetsById []*Subnet
 func (a OrderSubnetsById) Len() int      { return len(a) }
 func (a OrderSubnetsById) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 func (a OrderSubnetsById) Less(i, j int) bool {
-	return fi.StringValue(a[i].ID) < fi.StringValue(a[j].ID)
+	return fi.ValueOf(a[i].ID) < fi.ValueOf(a[j].ID)
 }
 
 func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
@@ -104,12 +104,12 @@ func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
 		break
 	}
 
-	actual.ResourceBasedNaming = fi.Bool(aws.StringValue(subnet.PrivateDnsNameOptionsOnLaunch.HostnameType) == ec2.HostnameTypeResourceName)
+	actual.ResourceBasedNaming = fi.PtrTo(aws.StringValue(subnet.PrivateDnsNameOptionsOnLaunch.HostnameType) == ec2.HostnameTypeResourceName)
 	if *actual.ResourceBasedNaming {
-		if fi.StringValue(actual.CIDR) != "" && !aws.BoolValue(subnet.PrivateDnsNameOptionsOnLaunch.EnableResourceNameDnsARecord) {
+		if fi.ValueOf(actual.CIDR) != "" && !aws.BoolValue(subnet.PrivateDnsNameOptionsOnLaunch.EnableResourceNameDnsARecord) {
 			actual.ResourceBasedNaming = nil
 		}
-		if fi.StringValue(actual.IPv6CIDR) != "" && !aws.BoolValue(subnet.PrivateDnsNameOptionsOnLaunch.EnableResourceNameDnsAAAARecord) {
+		if fi.ValueOf(actual.IPv6CIDR) != "" && !aws.BoolValue(subnet.PrivateDnsNameOptionsOnLaunch.EnableResourceNameDnsAAAARecord) {
 			actual.ResourceBasedNaming = nil
 		}
 	}
@@ -203,7 +203,7 @@ func (s *Subnet) CheckChanges(a, e, changes *Subnet) error {
 			errors = append(errors, fi.FieldIsImmutable(e.IPv6CIDR, a.IPv6CIDR, fieldPath.Child("IPv6CIDR")))
 		}
 
-		if fi.BoolValue(e.Shared) {
+		if fi.ValueOf(e.Shared) {
 			if changes.IPv6CIDR != nil && a.IPv6CIDR == nil {
 				errors = append(errors, field.Forbidden(fieldPath.Child("IPv6CIDR"), "field cannot be set on shared subnet"))
 			}
@@ -218,7 +218,7 @@ func (s *Subnet) CheckChanges(a, e, changes *Subnet) error {
 }
 
 func (_ *Subnet) ShouldCreate(a, e, changes *Subnet) (bool, error) {
-	if fi.BoolValue(e.Shared) {
+	if fi.ValueOf(e.Shared) {
 		changes.ResourceBasedNaming = nil
 		return changes.Tags != nil, nil
 	}
@@ -226,11 +226,11 @@ func (_ *Subnet) ShouldCreate(a, e, changes *Subnet) (bool, error) {
 }
 
 func (_ *Subnet) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Subnet) error {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Verify the subnet was found
 		if a == nil {
-			return fmt.Errorf("subnet with id %q not found", fi.StringValue(e.ID))
+			return fmt.Errorf("subnet with id %q not found", fi.ValueOf(e.ID))
 		}
 	}
 
@@ -255,7 +255,7 @@ func (_ *Subnet) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Subnet) error {
 	}
 
 	if a == nil {
-		klog.V(2).Infof("Creating Subnet with CIDR: %q IPv6CIDR: %q", fi.StringValue(e.CIDR), fi.StringValue(e.IPv6CIDR))
+		klog.V(2).Infof("Creating Subnet with CIDR: %q IPv6CIDR: %q", fi.ValueOf(e.CIDR), fi.ValueOf(e.IPv6CIDR))
 
 		request := &ec2.CreateSubnetInput{
 			CidrBlock:         e.CIDR,
@@ -303,7 +303,7 @@ func (_ *Subnet) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Subnet) error {
 			return fmt.Errorf("error modifying hostname type: %w", err)
 		}
 
-		if fi.StringValue(e.CIDR) == "" {
+		if fi.ValueOf(e.CIDR) == "" {
 			request = &ec2.ModifySubnetAttributeInput{
 				SubnetId:    e.ID,
 				EnableDns64: &ec2.AttributeBooleanValue{Value: aws.Bool(true)},
@@ -323,7 +323,7 @@ func (_ *Subnet) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Subnet) error {
 			}
 		}
 
-		if fi.StringValue(e.IPv6CIDR) != "" {
+		if fi.ValueOf(e.IPv6CIDR) != "" {
 			request = &ec2.ModifySubnetAttributeInput{
 				SubnetId:                                e.ID,
 				EnableResourceNameDnsAAAARecordOnLaunch: &ec2.AttributeBooleanValue{Value: changes.ResourceBasedNaming},
@@ -368,14 +368,14 @@ type terraformSubnet struct {
 }
 
 func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Subnet) error {
-	if fi.StringValue(e.ShortName) != "" {
-		name := fi.StringValue(e.ShortName)
+	if fi.ValueOf(e.ShortName) != "" {
+		name := fi.ValueOf(e.ShortName)
 		if err := t.AddOutputVariable("subnet_"+name+"_id", e.TerraformLink()); err != nil {
 			return err
 		}
 	}
 
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Not terraform owned / managed
 		// We won't apply changes, but our validation (kops update) will still warn
@@ -399,20 +399,20 @@ func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Su
 		AvailabilityZone: e.AvailabilityZone,
 		Tags:             e.Tags,
 	}
-	if fi.StringValue(e.CIDR) == "" {
-		tf.EnableDNS64 = fi.Bool(true)
-		tf.IPv6Native = fi.Bool(true)
+	if fi.ValueOf(e.CIDR) == "" {
+		tf.EnableDNS64 = fi.PtrTo(true)
+		tf.IPv6Native = fi.PtrTo(true)
 	}
 	if e.ResourceBasedNaming != nil {
 		hostnameType := ec2.HostnameTypeIpName
 		if *e.ResourceBasedNaming {
 			hostnameType = ec2.HostnameTypeResourceName
 		}
-		tf.PrivateDNSHostnameTypeOnLaunch = fi.String(hostnameType)
-		if fi.StringValue(e.CIDR) != "" {
+		tf.PrivateDNSHostnameTypeOnLaunch = fi.PtrTo(hostnameType)
+		if fi.ValueOf(e.CIDR) != "" {
 			tf.EnableResourceNameDNSARecordOnLaunch = e.ResourceBasedNaming
 		}
-		if fi.StringValue(e.IPv6CIDR) != "" {
+		if fi.ValueOf(e.IPv6CIDR) != "" {
 			tf.EnableResourceNameDNSAAAARecordOnLaunch = e.ResourceBasedNaming
 		}
 	}
@@ -421,7 +421,7 @@ func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Su
 }
 
 func (e *Subnet) TerraformLink() *terraformWriter.Literal {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		if e.ID == nil {
 			klog.Fatalf("ID must be set, if subnet is shared: %s", e)
@@ -443,7 +443,7 @@ type cloudformationSubnet struct {
 }
 
 func (_ *Subnet) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *Subnet) error {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Not cloudformation owned / managed
 		// We won't apply changes, but our validation (kops update) will still warn
@@ -468,7 +468,7 @@ func (_ *Subnet) RenderCloudformation(t *cloudformation.CloudformationTarget, a,
 }
 
 func (e *Subnet) CloudformationLink() *cloudformation.Literal {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		if e.ID == nil {
 			klog.Fatalf("ID must be set, if subnet is shared: %s", e)

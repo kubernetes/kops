@@ -209,13 +209,13 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 					allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("nonMasqueradeCIDR"), fmt.Sprintf("nonMasqueradeCIDR %q cannot overlap with networkCIDR %q", nonMasqueradeCIDRString, c.Spec.NetworkCIDR)))
 				}
 
-				if c.Spec.ContainerRuntime == "docker" && c.Spec.Kubelet != nil && fi.StringValue(c.Spec.Kubelet.NetworkPluginName) == "kubenet" {
-					if fi.StringValue(c.Spec.Kubelet.NonMasqueradeCIDR) != nonMasqueradeCIDRString {
+				if c.Spec.ContainerRuntime == "docker" && c.Spec.Kubelet != nil && fi.ValueOf(c.Spec.Kubelet.NetworkPluginName) == "kubenet" {
+					if fi.ValueOf(c.Spec.Kubelet.NonMasqueradeCIDR) != nonMasqueradeCIDRString {
 						if strict || c.Spec.Kubelet.NonMasqueradeCIDR != nil {
 							allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubelet", "nonMasqueradeCIDR"), "kubelet nonMasqueradeCIDR did not match cluster nonMasqueradeCIDR"))
 						}
 					}
-					if fi.StringValue(c.Spec.MasterKubelet.NonMasqueradeCIDR) != nonMasqueradeCIDRString {
+					if fi.ValueOf(c.Spec.MasterKubelet.NonMasqueradeCIDR) != nonMasqueradeCIDRString {
 						if strict || c.Spec.MasterKubelet.NonMasqueradeCIDR != nil {
 							allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("masterKubelet", "nonMasqueradeCIDR"), "masterKubelet nonMasqueradeCIDR did not match cluster nonMasqueradeCIDR"))
 						}
@@ -287,7 +287,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 			}
 
 			// @ check that NodeLocalDNS addon is configured correctly
-			if c.Spec.KubeDNS.NodeLocalDNS != nil && fi.BoolValue(c.Spec.KubeDNS.NodeLocalDNS.Enabled) {
+			if c.Spec.KubeDNS.NodeLocalDNS != nil && fi.ValueOf(c.Spec.KubeDNS.NodeLocalDNS.Enabled) {
 				if c.Spec.KubeDNS.Provider != "CoreDNS" && c.Spec.KubeDNS.Provider != "" {
 					allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubeDNS", "provider"), "KubeDNS provider must be set to CoreDNS if NodeLocalDNS addon is enabled"))
 				}

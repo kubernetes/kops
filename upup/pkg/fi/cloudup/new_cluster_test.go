@@ -233,7 +233,7 @@ func TestSetupNetworking(t *testing.T) {
 			expected: api.Cluster{
 				Spec: api.ClusterSpec{
 					KubeProxy: &api.KubeProxyConfig{
-						Enabled: fi.Bool(false),
+						Enabled: fi.PtrTo(false),
 					},
 					Networking: &api.NetworkingSpec{
 						Kuberouter: &api.KuberouterNetworkingSpec{},
@@ -272,7 +272,7 @@ func TestSetupNetworking(t *testing.T) {
 			expected: api.Cluster{
 				Spec: api.ClusterSpec{
 					KubeProxy: &api.KubeProxyConfig{
-						Enabled: fi.Bool(false),
+						Enabled: fi.PtrTo(false),
 					},
 					Networking: &api.NetworkingSpec{
 						Cilium: &api.CiliumNetworkingSpec{
@@ -289,7 +289,7 @@ func TestSetupNetworking(t *testing.T) {
 			expected: api.Cluster{
 				Spec: api.ClusterSpec{
 					KubeProxy: &api.KubeProxyConfig{
-						Enabled: fi.Bool(false),
+						Enabled: fi.PtrTo(false),
 					},
 					Networking: &api.NetworkingSpec{
 						Cilium: &api.CiliumNetworkingSpec{

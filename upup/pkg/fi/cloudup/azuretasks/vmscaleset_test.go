@@ -316,7 +316,7 @@ func TestVMScaleSetRun(t *testing.T) {
 		t.Fatalf("unexpected error: %s", err)
 	}
 	expectedTags := map[string]*string{
-		azure.TagClusterName: fi.String(testClusterName),
+		azure.TagClusterName: fi.PtrTo(testClusterName),
 	}
 	if a, e := vmss.Tags, expectedTags; !reflect.DeepEqual(a, e) {
 		t.Errorf("unexpected tags: expected %+v, but got %+v", e, a)

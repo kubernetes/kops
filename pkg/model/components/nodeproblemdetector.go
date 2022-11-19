@@ -38,7 +38,7 @@ func (b *NodeProblemDetectorOptionsBuilder) BuildOptions(o interface{}) error {
 	npd := clusterSpec.NodeProblemDetector
 
 	if npd.Enabled == nil {
-		npd.Enabled = fi.Bool(false)
+		npd.Enabled = fi.PtrTo(false)
 	}
 
 	if npd.CPURequest == nil {
@@ -62,7 +62,7 @@ func (b *NodeProblemDetectorOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if npd.Image == nil {
-		npd.Image = fi.String("registry.k8s.io/node-problem-detector/node-problem-detector:v0.8.12")
+		npd.Image = fi.PtrTo("registry.k8s.io/node-problem-detector/node-problem-detector:v0.8.12")
 	}
 
 	return nil

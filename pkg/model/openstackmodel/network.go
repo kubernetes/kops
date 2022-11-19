@@ -77,10 +77,10 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Tag:        s(clusterName),
 		}
 		if osSpec.Router != nil && osSpec.Router.DNSServers != nil {
-			dnsSplitted := strings.Split(fi.StringValue(osSpec.Router.DNSServers), ",")
+			dnsSplitted := strings.Split(fi.ValueOf(osSpec.Router.DNSServers), ",")
 			dnsNameSrv := make([]*string, len(dnsSplitted))
 			for i, ns := range dnsSplitted {
-				dnsNameSrv[i] = fi.String(ns)
+				dnsNameSrv[i] = fi.PtrTo(ns)
 			}
 			t.DNSServers = dnsNameSrv
 		}

@@ -608,7 +608,7 @@ func ListVolumes(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 		}
 
 		var blocks []string
-		// blocks = append(blocks, "vpc:" + aws.StringValue(rt.VpcId))
+		// blocks = append(blocks, "vpc:" + aws.ValueOf(rt.VpcId))
 
 		resourceTracker.Blocks = blocks
 
@@ -1398,7 +1398,7 @@ func DeleteAutoScalingGroupLaunchTemplate(cloud fi.Cloud, r *resources.Resource)
 	klog.V(2).Infof("Deleting EC2 LaunchTemplate %q", r.ID)
 
 	if _, err := c.EC2().DeleteLaunchTemplate(&ec2.DeleteLaunchTemplateInput{
-		LaunchTemplateId: fi.String(r.ID),
+		LaunchTemplateId: fi.PtrTo(r.ID),
 	}); err != nil {
 		return fmt.Errorf("error deleting ec2 LaunchTemplate %q: %v", r.ID, err)
 	}
@@ -2022,7 +2022,7 @@ func ListIAMRoles(cloud fi.Cloud, clusterName string) ([]*resources.Resource, er
 					return false
 				}
 				for _, tag := range roleOutput.Role.Tags {
-					if fi.StringValue(tag.Key) == ownershipTag && fi.StringValue(tag.Value) == "owned" {
+					if fi.ValueOf(tag.Key) == ownershipTag && fi.ValueOf(tag.Value) == "owned" {
 						resourceTracker := &resources.Resource{
 							Name:    name,
 							ID:      name,
@@ -2107,7 +2107,7 @@ func ListIAMInstanceProfiles(cloud fi.Cloud, clusterName string) ([]*resources.R
 				return false
 			}
 			for _, tag := range profileOutput.InstanceProfile.Tags {
-				if fi.StringValue(tag.Key) == ownershipTag && fi.StringValue(tag.Value) == "owned" {
+				if fi.ValueOf(tag.Key) == ownershipTag && fi.ValueOf(tag.Value) == "owned" {
 					profiles = append(profiles, p)
 				}
 			}
@@ -2186,7 +2186,7 @@ func ListIAMOIDCProviders(cloud fi.Cloud, clusterName string) ([]*resources.Reso
 
 func DeleteIAMOIDCProvider(cloud fi.Cloud, r *resources.Resource) error {
 	c := cloud.(awsup.AWSCloud)
-	arn := fi.String(r.ID)
+	arn := fi.PtrTo(r.ID)
 	{
 		klog.V(2).Infof("Deleting IAM OIDC Provider %v", arn)
 		request := &iam.DeleteOpenIDConnectProviderInput{

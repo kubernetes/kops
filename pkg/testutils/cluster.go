@@ -63,7 +63,7 @@ func BuildMinimalCluster(clusterName string) *kops.Cluster {
 
 	c.Spec.DNSZone = "test.com"
 
-	c.Spec.SSHKeyName = fi.String("test")
+	c.Spec.SSHKeyName = fi.PtrTo("test")
 
 	addEtcdClusters(c)
 
@@ -83,7 +83,7 @@ func addEtcdClusters(c *kops.Cluster) {
 		for _, zone := range etcdZones {
 			m := kops.EtcdMemberSpec{}
 			m.Name = zone
-			m.InstanceGroup = fi.String("master-" + zone)
+			m.InstanceGroup = fi.PtrTo("master-" + zone)
 			etcd.Members = append(etcd.Members, m)
 		}
 		c.Spec.EtcdClusters = append(c.Spec.EtcdClusters, etcd)

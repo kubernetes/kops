@@ -106,7 +106,7 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 	}
 
 	for _, r := range templates {
-		if !strings.HasPrefix(r.Name, fi.StringValue(e.NamePrefix)+"-") {
+		if !strings.HasPrefix(r.Name, fi.ValueOf(e.NamePrefix)+"-") {
 			continue
 		}
 
@@ -120,14 +120,14 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 
 		actual.Tags = append(actual.Tags, p.Tags.Items...)
 		actual.Labels = p.Labels
-		actual.MachineType = fi.String(lastComponent(p.MachineType))
+		actual.MachineType = fi.PtrTo(lastComponent(p.MachineType))
 		actual.CanIPForward = &p.CanIpForward
 
 		bootDiskImage, err := ShortenImageURL(cloud.Project(), p.Disks[0].InitializeParams.SourceImage)
 		if err != nil {
 			return nil, fmt.Errorf("error parsing source image URL: %v", err)
 		}
-		actual.BootDiskImage = fi.String(bootDiskImage)
+		actual.BootDiskImage = fi.PtrTo(bootDiskImage)
 		actual.BootDiskType = &p.Disks[0].InitializeParams.DiskType
 		actual.BootDiskSizeGB = &p.Disks[0].InitializeParams.DiskSizeGb
 
@@ -137,7 +137,7 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 		}
 		if len(p.NetworkInterfaces) != 0 {
 			ni := p.NetworkInterfaces[0]
-			actual.Network = &Network{Name: fi.String(lastComponent(ni.Network))}
+			actual.Network = &Network{Name: fi.PtrTo(lastComponent(ni.Network))}
 
 			if len(ni.AliasIpRanges) != 0 {
 				actual.AliasIPRanges = make(map[string]string)
@@ -147,7 +147,7 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 			}
 
 			if ni.Subnetwork != "" {
-				actual.Subnet = &Subnet{Name: fi.String(lastComponent(ni.Subnetwork))}
+				actual.Subnet = &Subnet{Name: fi.PtrTo(lastComponent(ni.Subnetwork))}
 			}
 
 			acs := ni.AccessConfigs
@@ -158,9 +158,9 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 				if acs[0].Type != accessConfigOneToOneNAT {
 					return nil, fmt.Errorf("unexpected access type in template %q: %s", *actual.Name, acs[0].Type)
 				}
-				actual.HasExternalIP = fi.Bool(true)
+				actual.HasExternalIP = fi.PtrTo(true)
 			} else {
-				actual.HasExternalIP = fi.Bool(false)
+				actual.HasExternalIP = fi.PtrTo(false)
 			}
 		}
 
@@ -191,7 +191,7 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 		//			if err != nil {
 		//				return nil, fmt.Errorf("unable to parse image URL: %q", d.SourceImage)
 		//			}
-		//			actual.Image = fi.String(imageURL.Project + "/" + imageURL.Name)
+		//			actual.Image = fi.PtrTo(imageURL.Project + "/" + imageURL.Name)
 		//		}
 		//	}
 		//}
@@ -199,7 +199,7 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 		if p.Metadata != nil {
 			actual.Metadata = make(map[string]fi.Resource)
 			for _, meta := range p.Metadata.Items {
-				actual.Metadata[meta.Key] = fi.NewStringResource(fi.StringValue(meta.Value))
+				actual.Metadata[meta.Key] = fi.NewStringResource(fi.ValueOf(meta.Value))
 			}
 		}
 
@@ -234,10 +234,10 @@ func (e *InstanceTemplate) Run(c *fi.Context) error {
 }
 
 func (_ *InstanceTemplate) CheckChanges(a, e, changes *InstanceTemplate) error {
-	if fi.StringValue(e.BootDiskImage) == "" {
+	if fi.ValueOf(e.BootDiskImage) == "" {
 		return fi.RequiredField("BootDiskImage")
 	}
-	if fi.StringValue(e.MachineType) == "" {
+	if fi.ValueOf(e.MachineType) == "" {
 		return fi.RequiredField("MachineType")
 	}
 	return nil
@@ -247,16 +247,16 @@ func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.Ins
 	// TODO: This is similar to Instance...
 	var scheduling *compute.Scheduling
 
-	if fi.BoolValue(e.Preemptible) {
+	if fi.ValueOf(e.Preemptible) {
 		scheduling = &compute.Scheduling{
-			AutomaticRestart:  fi.Bool(false),
+			AutomaticRestart:  fi.PtrTo(false),
 			OnHostMaintenance: "TERMINATE",
-			ProvisioningModel: fi.StringValue(e.GCPProvisioningModel),
+			ProvisioningModel: fi.ValueOf(e.GCPProvisioningModel),
 			Preemptible:       true,
 		}
 	} else {
 		scheduling = &compute.Scheduling{
-			AutomaticRestart: fi.Bool(true),
+			AutomaticRestart: fi.PtrTo(true),
 			// TODO: Migrate or terminate?
 			OnHostMaintenance: "MIGRATE",
 			ProvisioningModel: "STANDARD",
@@ -303,7 +303,7 @@ func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.Ins
 		Kind:    "compute#networkInterface",
 		Network: e.Network.URL(networkProject),
 	}
-	if fi.BoolValue(e.HasExternalIP) {
+	if fi.ValueOf(e.HasExternalIP) {
 		ni.AccessConfigs = []*compute.AccessConfig{
 			{
 				Kind:        "compute#accessConfig",
@@ -337,7 +337,7 @@ func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.Ins
 	var serviceAccounts []*compute.ServiceAccount
 	for _, sa := range e.ServiceAccounts {
 		serviceAccounts = append(serviceAccounts, &compute.ServiceAccount{
-			Email:  fi.StringValue(sa.Email),
+			Email:  fi.ValueOf(sa.Email),
 			Scopes: scopes,
 		})
 	}
@@ -350,7 +350,7 @@ func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.Ins
 		}
 		metadataItems = append(metadataItems, &compute.MetadataItems{
 			Key:   key,
-			Value: fi.String(v),
+			Value: fi.PtrTo(v),
 		})
 	}
 
@@ -460,7 +460,7 @@ func (_ *InstanceTemplate) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Instanc
 	if a == nil {
 		klog.V(4).Infof("Creating InstanceTemplate %v", i)
 
-		name := fi.StringValue(e.NamePrefix) + "-" + strconv.FormatInt(time.Now().Unix(), 10)
+		name := fi.ValueOf(e.NamePrefix) + "-" + strconv.FormatInt(time.Now().Unix(), 10)
 		e.ID = &name
 		i.Name = name
 
@@ -568,7 +568,7 @@ func addMetadata(target *terraform.TerraformTarget, name string, metadata *compu
 	}
 	m := make(map[string]*terraformWriter.Literal)
 	for _, g := range metadata.Items {
-		val := fi.StringValue(g.Value)
+		val := fi.ValueOf(g.Value)
 		if strings.Contains(val, "\n") {
 			tfResource, err := target.AddFileBytes("google_compute_instance_template", name, "metadata_"+g.Key, []byte(val), false)
 			if err != nil {
@@ -609,10 +609,10 @@ func (_ *InstanceTemplate) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 		return err
 	}
 
-	name := fi.StringValue(e.Name)
+	name := fi.ValueOf(e.Name)
 
 	tf := &terraformInstanceTemplate{
-		NamePrefix: fi.StringValue(e.NamePrefix) + "-",
+		NamePrefix: fi.ValueOf(e.NamePrefix) + "-",
 	}
 
 	tf.CanIPForward = i.Properties.CanIpForward
@@ -649,7 +649,7 @@ func (_ *InstanceTemplate) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 
 	if i.Properties.Scheduling != nil {
 		tf.Scheduling = &terraformScheduling{
-			AutomaticRestart:  fi.BoolValue(i.Properties.Scheduling.AutomaticRestart),
+			AutomaticRestart:  fi.ValueOf(i.Properties.Scheduling.AutomaticRestart),
 			OnHostMaintenance: i.Properties.Scheduling.OnHostMaintenance,
 			Preemptible:       i.Properties.Scheduling.Preemptible,
 			ProvisioningModel: i.Properties.Scheduling.ProvisioningModel,

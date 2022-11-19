@@ -44,7 +44,7 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if c.EnableEndpointHealthChecking == nil {
-		c.EnableEndpointHealthChecking = fi.Bool(true)
+		c.EnableEndpointHealthChecking = fi.PtrTo(true)
 	}
 
 	if c.IdentityAllocationMode == "" {
@@ -112,7 +112,7 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if c.Masquerade == nil {
-		c.Masquerade = fi.Bool(!clusterSpec.IsIPv6Only() && c.IPAM != "eni")
+		c.Masquerade = fi.PtrTo(!clusterSpec.IsIPv6Only() && c.IPAM != "eni")
 	}
 
 	if c.Tunnel == "" {
@@ -124,19 +124,19 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if c.EnableRemoteNodeIdentity == nil {
-		c.EnableRemoteNodeIdentity = fi.Bool(true)
+		c.EnableRemoteNodeIdentity = fi.PtrTo(true)
 	}
 
 	if c.EnableBPFMasquerade == nil {
-		c.EnableBPFMasquerade = fi.Bool(false)
+		c.EnableBPFMasquerade = fi.PtrTo(false)
 	}
 
 	if c.EnableL7Proxy == nil {
-		c.EnableL7Proxy = fi.Bool(true)
+		c.EnableL7Proxy = fi.PtrTo(true)
 	}
 
 	if c.DisableCNPStatusUpdates == nil {
-		c.DisableCNPStatusUpdates = fi.Bool(true)
+		c.DisableCNPStatusUpdates = fi.PtrTo(true)
 	}
 
 	if c.CPURequest == nil {
@@ -156,11 +156,11 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 	hubble := c.Hubble
 	if hubble != nil {
 		if hubble.Enabled == nil {
-			hubble.Enabled = fi.Bool(true)
+			hubble.Enabled = fi.PtrTo(true)
 		}
 	} else {
 		c.Hubble = &kops.HubbleSpec{
-			Enabled: fi.Bool(false),
+			Enabled: fi.PtrTo(false),
 		}
 	}
 

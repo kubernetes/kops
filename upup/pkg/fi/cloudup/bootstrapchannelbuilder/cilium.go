@@ -31,13 +31,13 @@ func addCiliumAddon(b *BootstrapChannelBuilder, addons *AddonList) error {
 			location := key + "/" + id + "-v1.11.yaml"
 
 			addon := &api.AddonSpec{
-				Name:               fi.String(key),
+				Name:               fi.PtrTo(key),
 				Selector:           networkingSelector(),
-				Manifest:           fi.String(location),
+				Manifest:           fi.PtrTo(location),
 				Id:                 id,
 				NeedsRollingUpdate: "all",
 			}
-			if cilium.Hubble != nil && fi.BoolValue(cilium.Hubble.Enabled) {
+			if cilium.Hubble != nil && fi.ValueOf(cilium.Hubble.Enabled) {
 				addon.NeedsPKI = true
 			}
 			addons.Add(addon)

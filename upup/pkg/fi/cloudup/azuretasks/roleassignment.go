@@ -124,7 +124,7 @@ func (r *RoleAssignment) Find(c *fi.Context) (*RoleAssignment, error) {
 			Name: foundVMSS.Name,
 		},
 		ID:        found.ID,
-		RoleDefID: fi.String(filepath.Base(fi.StringValue(found.RoleDefinitionID))),
+		RoleDefID: fi.PtrTo(filepath.Base(fi.ValueOf(found.RoleDefinitionID))),
 	}, nil
 }
 

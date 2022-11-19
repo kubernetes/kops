@@ -49,9 +49,9 @@ func (e *ProjectIAMBinding) Find(c *fi.Context) (*ProjectIAMBinding, error) {
 
 	cloud := c.Cloud.(gce.GCECloud)
 
-	projectID := fi.StringValue(e.Project)
-	member := fi.StringValue(e.Member)
-	role := fi.StringValue(e.Role)
+	projectID := fi.ValueOf(e.Project)
+	member := fi.ValueOf(e.Member)
+	role := fi.ValueOf(e.Role)
 
 	klog.V(2).Infof("Checking IAM for project %q", projectID)
 	options := &cloudresourcemanager.GetIamPolicyRequest{Options: &cloudresourcemanager.GetPolicyOptions{RequestedPolicyVersion: 3}}
@@ -85,13 +85,13 @@ func (e *ProjectIAMBinding) Run(c *fi.Context) error {
 }
 
 func (_ *ProjectIAMBinding) CheckChanges(a, e, changes *ProjectIAMBinding) error {
-	if fi.StringValue(e.Project) == "" {
+	if fi.ValueOf(e.Project) == "" {
 		return fi.RequiredField("Project")
 	}
-	if fi.StringValue(e.Member) == "" {
+	if fi.ValueOf(e.Member) == "" {
 		return fi.RequiredField("Member")
 	}
-	if fi.StringValue(e.Role) == "" {
+	if fi.ValueOf(e.Role) == "" {
 		return fi.RequiredField("Role")
 	}
 	return nil
@@ -100,9 +100,9 @@ func (_ *ProjectIAMBinding) CheckChanges(a, e, changes *ProjectIAMBinding) error
 func (_ *ProjectIAMBinding) RenderGCE(t *gce.GCEAPITarget, a, e, changes *ProjectIAMBinding) error {
 	ctx := context.TODO()
 
-	projectID := fi.StringValue(e.Project)
-	member := fi.StringValue(e.Member)
-	role := fi.StringValue(e.Role)
+	projectID := fi.ValueOf(e.Project)
+	member := fi.ValueOf(e.Member)
+	role := fi.ValueOf(e.Role)
 
 	request := &cloudresourcemanager.GetIamPolicyRequest{}
 	policy, err := t.Cloud.CloudResourceManager().Projects.GetIamPolicy(projectID, request).Context(ctx).Do()
@@ -134,9 +134,9 @@ type terraformProjectIAMBinding struct {
 
 func (_ *ProjectIAMBinding) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ProjectIAMBinding) error {
 	tf := &terraformProjectIAMBinding{
-		Project: fi.StringValue(e.Project),
-		Role:    fi.StringValue(e.Role),
-		Members: []string{fi.StringValue(e.Member)},
+		Project: fi.ValueOf(e.Project),
+		Role:    fi.ValueOf(e.Role),
+		Members: []string{fi.ValueOf(e.Member)},
 	}
 
 	return t.RenderResource("google_project_iam_binding", *e.Name, tf)
