@@ -19,7 +19,7 @@ source "${REPO_ROOT}"/tests/e2e/scenarios/lib/common.sh
 
 kops-acquire-latest
 
-OVERRIDES="${OVERRIDES} --master-size=t4g.medium --node-size=t4g.medium"
+OVERRIDES="${OVERRIDES-} --master-size=t4g.medium --node-size=t4g.medium"
 
 kops-up
 
