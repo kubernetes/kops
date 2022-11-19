@@ -25,7 +25,6 @@ import (
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
@@ -47,9 +46,6 @@ func doRenderTests(t *testing.T, method string, cases []*renderTest) {
 		case "RenderTerraform":
 			target = terraform.NewTerraformTarget(cloud, "test", nil, outdir, nil)
 			filename = "kubernetes.tf"
-		case "RenderCloudformation":
-			target = cloudformation.NewCloudformationTarget(cloud, "test", outdir)
-			filename = "kubernetes.json"
 		default:
 			t.Errorf("unknown render method: %s", method)
 			t.FailNow()
