@@ -24,7 +24,6 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
@@ -322,42 +321,4 @@ func (_ *Route) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Rou
 	// and https://www.terraform.io/upgrade-guides/0-12.html#pre-upgrade-checklist
 	name := fmt.Sprintf("route-%v", *e.Name)
 	return t.RenderResource("aws_route", name, tf)
-}
-
-type cloudformationRoute struct {
-	RouteTableID           *cloudformation.Literal `json:"RouteTableId"`
-	CIDR                   *string                 `json:"DestinationCidrBlock,omitempty"`
-	IPv6CIDR               *string                 `json:"DestinationIpv6CidrBlock,omitempty"`
-	InternetGatewayID      *cloudformation.Literal `json:"GatewayId,omitempty"`
-	NATGatewayID           *cloudformation.Literal `json:"NatGatewayId,omitempty"`
-	TransitGatewayID       *string                 `json:"TransitGatewayId,omitempty"`
-	InstanceID             *cloudformation.Literal `json:"InstanceId,omitempty"`
-	VPCPeeringConnectionID *string                 `json:"VpcPeeringConnectionId,omitempty"`
-}
-
-func (_ *Route) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *Route) error {
-	tf := &cloudformationRoute{
-		RouteTableID: e.RouteTable.CloudformationLink(),
-		CIDR:         e.CIDR,
-		IPv6CIDR:     e.IPv6CIDR,
-	}
-
-	if e.InternetGateway == nil && e.NatGateway == nil && e.TransitGatewayID == nil && e.VPCPeeringConnectionID == nil {
-		return fmt.Errorf("missing target for route")
-	} else if e.InternetGateway != nil {
-		tf.InternetGatewayID = e.InternetGateway.CloudformationLink()
-	} else if e.NatGateway != nil {
-		tf.NATGatewayID = e.NatGateway.CloudformationLink()
-	} else if e.TransitGatewayID != nil {
-		tf.TransitGatewayID = e.TransitGatewayID
-	} else if e.VPCPeeringConnectionID != nil {
-		tf.VPCPeeringConnectionID = e.VPCPeeringConnectionID
-	}
-
-	if e.Instance != nil {
-		return fmt.Errorf("instance cloudformation routes not yet implemented")
-		// tf.InstanceID = e.Instance.CloudformationLink()
-	}
-
-	return t.RenderResource("AWS::EC2::Route", *e.Name, tf)
 }

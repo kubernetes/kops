@@ -26,7 +26,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/eventbridge"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
@@ -139,9 +138,4 @@ func (_ *EventBridgeTarget) RenderTerraform(t *terraform.TerraformTarget, a, e, 
 	}
 
 	return t.RenderResource("aws_cloudwatch_event_target", *e.Name, tf)
-}
-
-func (_ *EventBridgeTarget) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *EventBridgeTarget) error {
-	// There is no Cloudformation EventBridge Target resource. Instead it's included in Cloudformation's EventBridge Rule resource
-	return nil
 }

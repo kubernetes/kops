@@ -17,7 +17,6 @@ limitations under the License.
 package awstasks
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -25,7 +24,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
@@ -149,41 +147,4 @@ func (_ *EventBridgeRule) RenderTerraform(t *terraform.TerraformTarget, a, e, ch
 
 func (eb *EventBridgeRule) TerraformLink() *terraformWriter.Literal {
 	return terraformWriter.LiteralProperty("aws_cloudwatch_event_rule", fi.ValueOf(eb.Name), "id")
-}
-
-type cloudformationTarget struct {
-	Id  *string
-	Arn *cloudformation.Literal
-}
-
-type cloudformationEventBridgeRule struct {
-	Name         *string                `json:"Name"`
-	EventPattern map[string]interface{} `json:"EventPattern"`
-	Targets      []cloudformationTarget `json:"Targets"`
-}
-
-func (_ *EventBridgeRule) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *EventBridgeRule) error {
-	// convert event pattern string into a json struct
-	jsonString, err := fi.ResourceAsBytes(fi.NewStringResource(*e.EventPattern))
-	if err != nil {
-		return err
-	}
-	data := make(map[string]interface{})
-	err = json.Unmarshal(jsonString, &data)
-	if err != nil {
-		return fmt.Errorf("error parsing SQS PolicyDocument: %v", err)
-	}
-
-	target := &cloudformationTarget{
-		Id:  s("1"),
-		Arn: e.SQSQueue.CloudformationLink(),
-	}
-
-	cf := &cloudformationEventBridgeRule{
-		Name:         e.Name,
-		EventPattern: data,
-		Targets:      []cloudformationTarget{*target},
-	}
-
-	return t.RenderResource("AWS::Events::Rule", *e.Name, cf)
 }

@@ -26,7 +26,6 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
@@ -221,44 +220,6 @@ func (e *SecurityGroup) TerraformLink() *terraformWriter.Literal {
 	}
 
 	return terraformWriter.LiteralProperty("aws_security_group", *e.Name, "id")
-}
-
-type cloudformationSecurityGroup struct {
-	GroupName   *string                 `json:"GroupName"`
-	VpcId       *cloudformation.Literal `json:"VpcId"`
-	Description *string                 `json:"GroupDescription"`
-	Tags        []cloudformationTag     `json:"Tags,omitempty"`
-}
-
-func (_ *SecurityGroup) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *SecurityGroup) error {
-	shared := fi.ValueOf(e.Shared)
-	if shared {
-		// Not cloudformation owned / managed
-		return nil
-	}
-
-	tf := &cloudformationSecurityGroup{
-		GroupName:   e.Name,
-		VpcId:       e.VPC.CloudformationLink(),
-		Description: e.Description,
-		Tags:        buildCloudformationTags(e.Tags),
-	}
-
-	return t.RenderResource("AWS::EC2::SecurityGroup", *e.Name, tf)
-}
-
-func (e *SecurityGroup) CloudformationLink() *cloudformation.Literal {
-	shared := fi.ValueOf(e.Shared)
-	if shared {
-		// Not cloudformation owned / managed
-		if e.ID != nil {
-			return cloudformation.LiteralString(*e.ID)
-		} else {
-			klog.Warningf("ID not set on shared subnet %v", e)
-		}
-	}
-
-	return cloudformation.Ref("AWS::EC2::SecurityGroup", *e.Name)
 }
 
 type deleteSecurityGroupRule struct {

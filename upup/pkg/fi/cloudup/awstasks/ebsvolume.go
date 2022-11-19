@@ -22,7 +22,6 @@ import (
 
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 
@@ -259,34 +258,4 @@ func (e *EBSVolume) PreRun(c *fi.Context) error {
 	}
 
 	return nil
-}
-
-type cloudformationVolume struct {
-	AvailabilityZone *string             `json:"AvailabilityZone,omitempty"`
-	Size             *int64              `json:"Size,omitempty"`
-	Type             *string             `json:"VolumeType,omitempty"`
-	Iops             *int64              `json:"Iops,omitempty"`
-	Throughput       *int64              `json:"Throughput,omitempty"`
-	KmsKeyId         *string             `json:"KmsKeyId,omitempty"`
-	Encrypted        *bool               `json:"Encrypted,omitempty"`
-	Tags             []cloudformationTag `json:"Tags,omitempty"`
-}
-
-func (_ *EBSVolume) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *EBSVolume) error {
-	cf := &cloudformationVolume{
-		AvailabilityZone: e.AvailabilityZone,
-		Size:             e.SizeGB,
-		Type:             e.VolumeType,
-		Iops:             e.VolumeIops,
-		Throughput:       e.VolumeThroughput,
-		KmsKeyId:         e.KmsKeyId,
-		Encrypted:        e.Encrypted,
-		Tags:             buildCloudformationTags(e.Tags),
-	}
-
-	return t.RenderResource("AWS::EC2::Volume", *e.Name, cf)
-}
-
-func (e *EBSVolume) CloudformationLink() *cloudformation.Literal {
-	return cloudformation.Ref("AWS::EC2::Volume", *e.Name)
 }

@@ -65,7 +65,7 @@ type ModelBuilder interface {
 type HasDeletions interface {
 	ModelBuilder
 	// FindDeletions finds cloud objects that are owned by the cluster but no longer in the model and creates tasks to delete them.
-	// It is not called for the Terraform or Cloudformation targets.
+	// It is not called for the Terraform target.
 	FindDeletions(context *ModelBuilderContext, cloud Cloud) error
 }
 

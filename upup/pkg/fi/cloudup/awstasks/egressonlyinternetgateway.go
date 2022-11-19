@@ -23,7 +23,6 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
@@ -218,11 +217,4 @@ func (e *EgressOnlyInternetGateway) TerraformLink() *terraformWriter.Literal {
 	}
 
 	return terraformWriter.LiteralProperty("aws_egress_only_internet_gateway", *e.Name, "id")
-}
-
-func (_ *EgressOnlyInternetGateway) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *EgressOnlyInternetGateway) error {
-	if changes != nil {
-		klog.Warning("Egress Only Internet Gateway is not supported by the cloudformation target")
-	}
-	return nil
 }
