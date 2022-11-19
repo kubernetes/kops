@@ -327,7 +327,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.RegisterFlagCompletionFunc("channel", completeChannel)
 
 	// Network topology
-	cmd.Flags().StringVarP(&options.Topology, "topology", "t", options.Topology, "Network topology for the cluster: public or private")
+	cmd.Flags().StringVarP(&options.Topology, "topology", "t", options.Topology, "Network topology for the cluster: 'public' or 'private'. Defaults to 'public' for IPv4 clusters and 'private' for IPv6 clusters.")
 	cmd.RegisterFlagCompletionFunc("topology", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return []string{api.TopologyPublic, api.TopologyPrivate}, cobra.ShellCompDirectiveNoFileComp
 	})
