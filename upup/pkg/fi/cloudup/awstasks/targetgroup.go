@@ -25,7 +25,6 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
@@ -264,48 +263,4 @@ func (e *TargetGroup) TerraformLink(params ...string) *terraformWriter.Literal {
 		}
 	}
 	return terraformWriter.LiteralProperty("aws_lb_target_group", *e.Name, "id")
-}
-
-type cloudformationTargetGroup struct {
-	Name     string                  `json:"Name"`
-	Port     int64                   `json:"Port"`
-	Protocol string                  `json:"Protocol"`
-	VPCID    *cloudformation.Literal `json:"VpcId"`
-	Tags     []cloudformationTag     `json:"Tags"`
-
-	HealthCheckProtocol string `json:"HealthCheckProtocol"`
-	HealthyThreshold    int64  `json:"HealthyThresholdCount"`
-	UnhealthyThreshold  int64  `json:"UnhealthyThresholdCount"`
-}
-
-func (_ *TargetGroup) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *TargetGroup) error {
-	shared := fi.ValueOf(e.Shared)
-	if shared {
-		return nil
-	}
-
-	cf := &cloudformationTargetGroup{
-		Name:                *e.Name,
-		Port:                *e.Port,
-		Protocol:            *e.Protocol,
-		VPCID:               e.VPC.CloudformationLink(),
-		Tags:                buildCloudformationTags(e.Tags),
-		HealthCheckProtocol: *e.Protocol,
-		HealthyThreshold:    *e.HealthyThreshold,
-		UnhealthyThreshold:  *e.UnhealthyThreshold,
-	}
-	return t.RenderResource("AWS::ElasticLoadBalancingV2::TargetGroup", *e.Name, cf)
-}
-
-func (e *TargetGroup) CloudformationLink() *cloudformation.Literal {
-	shared := fi.ValueOf(e.Shared)
-	if shared {
-		if e.ARN != nil {
-			return cloudformation.LiteralString(*e.ARN)
-		} else {
-			klog.Warningf("ID not set on shared Target Group: %v", e)
-		}
-	}
-
-	return cloudformation.Ref("AWS::ElasticLoadBalancingV2::TargetGroup", *e.Name)
 }

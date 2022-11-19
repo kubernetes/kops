@@ -17,8 +17,7 @@ limitations under the License.
 package cloudup
 
 const (
-	TargetDirect         = "direct"
-	TargetDryRun         = "dryrun"
-	TargetTerraform      = "terraform"
-	TargetCloudformation = "cloudformation"
+	TargetDirect    = "direct"
+	TargetDryRun    = "dryrun"
+	TargetTerraform = "terraform"
 )

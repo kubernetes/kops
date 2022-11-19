@@ -26,7 +26,6 @@ import (
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
@@ -40,7 +39,7 @@ type VPC struct {
 	CIDR *string
 
 	// AmazonIPv6 is used only for Terraform rendering.
-	// Direct and CloudFormation rendering is handled via the VPCAmazonIPv6CIDRBlock task
+	// Direct rendering is handled via the VPCAmazonIPv6CIDRBlock task
 	AmazonIPv6 *bool
 	IPv6CIDR   *string
 
@@ -328,45 +327,6 @@ func (e *VPC) TerraformLink() *terraformWriter.Literal {
 	}
 
 	return terraformWriter.LiteralProperty("aws_vpc", *e.Name, "id")
-}
-
-type cloudformationVPC struct {
-	CidrBlock          *string             `json:"CidrBlock,omitempty"`
-	EnableDnsHostnames *bool               `json:"EnableDnsHostnames,omitempty"`
-	EnableDnsSupport   *bool               `json:"EnableDnsSupport,omitempty"`
-	Tags               []cloudformationTag `json:"Tags,omitempty"`
-}
-
-func (_ *VPC) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *VPC) error {
-	shared := fi.ValueOf(e.Shared)
-	if shared {
-		// Not cloudformation owned / managed
-		// We won't apply changes, but our validation (kops update) will still warn
-		return nil
-	}
-
-	tf := &cloudformationVPC{
-		CidrBlock:          e.CIDR,
-		EnableDnsHostnames: e.EnableDNSHostnames,
-		EnableDnsSupport:   e.EnableDNSSupport,
-		Tags:               buildCloudformationTags(e.Tags),
-	}
-
-	return t.RenderResource("AWS::EC2::VPC", *e.Name, tf)
-}
-
-func (e *VPC) CloudformationLink() *cloudformation.Literal {
-	shared := fi.ValueOf(e.Shared)
-	if shared {
-		if e.ID == nil {
-			klog.Fatalf("ID must be set, if VPC is shared: %s", e)
-		}
-
-		klog.V(4).Infof("reusing existing VPC with id %q", *e.ID)
-		return cloudformation.LiteralString(*e.ID)
-	}
-
-	return cloudformation.Ref("AWS::EC2::VPC", *e.Name)
 }
 
 type deleteVPCCIDRBlock struct {

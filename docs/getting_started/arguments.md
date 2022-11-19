@@ -68,7 +68,7 @@ Required packages are also updated during bootstrapping if the value is not set.
 
 ## out
 
-`out` determines the directory into which kOps will write the target output for Terraform and CloudFormation.  It defaults to `out/terraform` and `out/cloudformation` respectively.
+`out` determines the directory into which kOps will write the target output for Terraform.  It defaults to `out/terraform`.
 
 # API only Arguments
 

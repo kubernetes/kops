@@ -44,13 +44,6 @@ type terraformLoadBalancerAccessLog struct {
 	S3BucketPrefix *string `cty:"bucket_prefix"`
 }
 
-type cloudformationClassicLoadBalancerAccessLog struct {
-	EmitInterval   *int64  `json:"EmitInterval,omitempty"`
-	Enabled        *bool   `json:"Enabled,omitempty"`
-	S3BucketName   *string `json:"S3BucketName,omitempty"`
-	S3BucketPrefix *string `json:"S3BucketPrefix,omitempty"`
-}
-
 //type LoadBalancerAdditionalAttribute struct {
 //	Key   *string
 //	Value *string

@@ -26,7 +26,6 @@ import (
 
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
@@ -302,42 +301,4 @@ func (e *ElasticIP) TerraformLink() *terraformWriter.Literal {
 	}
 
 	return terraformWriter.LiteralProperty("aws_eip", *e.Name, "id")
-}
-
-type cloudformationElasticIP struct {
-	Domain *string             `json:"Domain"`
-	Tags   []cloudformationTag `json:"Tags,omitempty"`
-}
-
-func (_ *ElasticIP) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *ElasticIP) error {
-	if fi.ValueOf(e.Shared) {
-		if e.ID == nil {
-			return fmt.Errorf("ID must be set, if ElasticIP is shared: %v", e)
-		}
-		klog.V(4).Infof("reusing existing ElasticIP with id %q", aws.StringValue(e.ID))
-		return nil
-	}
-
-	tf := &cloudformationElasticIP{
-		Domain: aws.String("vpc"),
-		Tags:   buildCloudformationTags(e.Tags),
-	}
-
-	return t.RenderResource("AWS::EC2::EIP", *e.Name, tf)
-}
-
-// Removed because you normally want CloudformationAllocationID
-//func (e *ElasticIP) CloudformationLink() *cloudformation.Literal {
-//	return cloudformation.Ref("AWS::EC2::EIP", *e.Name)
-//}
-
-func (e *ElasticIP) CloudformationAllocationID() *cloudformation.Literal {
-	if fi.ValueOf(e.Shared) {
-		if e.ID == nil {
-			klog.Fatalf("ID must be set, if ElasticIP is shared: %v", e)
-		}
-		return cloudformation.LiteralString(*e.ID)
-	}
-
-	return cloudformation.GetAtt("AWS::EC2::EIP", *e.Name, "AllocationId")
 }

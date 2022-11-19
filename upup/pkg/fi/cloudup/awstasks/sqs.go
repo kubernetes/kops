@@ -30,7 +30,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
@@ -214,54 +213,6 @@ func (_ *SQS) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SQS) 
 
 func (e *SQS) TerraformLink() *terraformWriter.Literal {
 	return terraformWriter.LiteralProperty("aws_sqs_queue", *e.Name, "arn")
-}
-
-type cloudformationSQSQueue struct {
-	QueueName              *string             `json:"QueueName"`
-	MessageRetentionPeriod int                 `json:"MessageRetentionPeriod"`
-	Tags                   []cloudformationTag `json:"Tags,omitempty"`
-}
-
-type cloudformationSQSQueuePolicy struct {
-	Queues         []*cloudformation.Literal `json:"Queues"`
-	PolicyDocument map[string]interface{}    `json:"PolicyDocument"`
-	Tags           []cloudformationTag       `json:"Tags,omitempty"`
-}
-
-func (_ *SQS) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *SQS) error {
-	cfQueue := &cloudformationSQSQueue{
-		QueueName:              e.Name,
-		MessageRetentionPeriod: e.MessageRetentionPeriod,
-		Tags:                   buildCloudformationTags(e.Tags),
-	}
-
-	err := t.RenderResource("AWS::SQS::Queue", *e.Name, cfQueue)
-	if err != nil {
-		return err
-	}
-
-	// convert Policy string into json
-	jsonString, err := fi.ResourceAsBytes(e.Policy)
-	if err != nil {
-		return err
-	}
-	data := make(map[string]interface{})
-	err = json.Unmarshal(jsonString, &data)
-	if err != nil {
-		return fmt.Errorf("error parsing SQS PolicyDocument: %v", err)
-	}
-
-	cfQueueRef := cloudformation.Ref("AWS::SQS::Queue", fi.ValueOf(e.Name))
-
-	cfQueuePolicy := &cloudformationSQSQueuePolicy{
-		Queues:         []*cloudformation.Literal{cfQueueRef},
-		PolicyDocument: data,
-	}
-	return t.RenderResource("AWS::SQS::QueuePolicy", *e.Name+"Policy", cfQueuePolicy)
-}
-
-func (e *SQS) CloudformationLink() *cloudformation.Literal {
-	return cloudformation.Ref("AWS::SQS::Queue", *e.Name)
 }
 
 // change tags to format required by CreateQueue

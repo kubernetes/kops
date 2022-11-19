@@ -31,7 +31,6 @@ import (
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
@@ -358,48 +357,4 @@ func (_ *IAMRolePolicy) RenderTerraform(t *terraform.TerraformTarget, a, e, chan
 
 func (e *IAMRolePolicy) TerraformLink() *terraformWriter.Literal {
 	return terraformWriter.LiteralSelfLink("aws_iam_role_policy", *e.Name)
-}
-
-type cloudformationIAMRolePolicy struct {
-	PolicyName     *string                   `json:"PolicyName"`
-	Roles          []*cloudformation.Literal `json:"Roles"`
-	PolicyDocument map[string]interface{}    `json:"PolicyDocument"`
-}
-
-func (_ *IAMRolePolicy) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *IAMRolePolicy) error {
-	// Currently CloudFormation does not have a reciprocal function to Terraform that allows the modification of a role
-	// after the fact. In order to make this feature complete we would have to intercept the role task and modify it.
-	if e.ExternalPolicies != nil && len(*e.ExternalPolicies) > 0 {
-		return fmt.Errorf("CloudFormation not supported for use with ExternalPolicies.")
-	}
-
-	policyString, err := e.policyDocumentString()
-	if err != nil {
-		return fmt.Errorf("error rendering PolicyDocument: %v", err)
-	}
-	if policyString == "" {
-		// A deletion; we simply don't render; cloudformation will observe the removal
-		return nil
-	}
-
-	tf := &cloudformationIAMRolePolicy{
-		PolicyName: e.Name,
-		Roles:      []*cloudformation.Literal{e.Role.CloudformationLink()},
-	}
-
-	{
-		data := make(map[string]interface{})
-		err = json.Unmarshal([]byte(policyString), &data)
-		if err != nil {
-			return fmt.Errorf("error parsing PolicyDocument: %v", err)
-		}
-
-		tf.PolicyDocument = data
-	}
-
-	return t.RenderResource("AWS::IAM::Policy", *e.Name, tf)
-}
-
-func (e *IAMRolePolicy) CloudformationLink() *cloudformation.Literal {
-	return cloudformation.Ref("AWS::IAM::Policy", *e.Name)
 }

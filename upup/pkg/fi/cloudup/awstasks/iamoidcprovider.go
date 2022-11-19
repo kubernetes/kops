@@ -17,7 +17,6 @@ limitations under the License.
 package awstasks
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
@@ -27,7 +26,6 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
@@ -246,8 +244,4 @@ func (p *IAMOIDCProvider) RenderTerraform(t *terraform.TerraformTarget, a, e, ch
 
 func (e *IAMOIDCProvider) TerraformLink() *terraformWriter.Literal {
 	return terraformWriter.LiteralProperty("aws_iam_openid_connect_provider", *e.Name, "arn")
-}
-
-func (_ *IAMOIDCProvider) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *IAMOIDCProvider) error {
-	return errors.New("cloudformation does not support IAM OIDC Provider")
 }

@@ -23,7 +23,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
@@ -162,25 +161,4 @@ func (_ *VPCCIDRBlock) RenderTerraform(t *terraform.TerraformTarget, a, e, chang
 	// and https://www.terraform.io/upgrade-guides/0-12.html#pre-upgrade-checklist
 	name := fmt.Sprintf("cidr-%v", *e.Name)
 	return t.RenderResource("aws_vpc_ipv4_cidr_block_association", name, tf)
-}
-
-type cloudformationVPCCIDRBlock struct {
-	VPCID     *cloudformation.Literal `json:"VpcId"`
-	CIDRBlock *string                 `json:"CidrBlock"`
-}
-
-func (_ *VPCCIDRBlock) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *VPCCIDRBlock) error {
-	shared := aws.BoolValue(e.Shared)
-	if shared && a == nil {
-		// VPC not owned by kOps, no changes will be applied
-		// Verify that the CIDR block was found.
-		return fmt.Errorf("CIDR block %q not found", aws.StringValue(e.CIDRBlock))
-	}
-
-	cf := &cloudformationVPCCIDRBlock{
-		VPCID:     e.VPC.CloudformationLink(),
-		CIDRBlock: e.CIDRBlock,
-	}
-
-	return t.RenderResource("AWS::EC2::VPCCidrBlock", *e.Name, cf)
 }

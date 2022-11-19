@@ -22,7 +22,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
-	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/elb"
@@ -78,17 +77,16 @@ func BuildMockAWSCloud(region string, zoneLetters string) *MockAWSCloud {
 }
 
 type MockCloud struct {
-	MockAutoscaling    autoscalingiface.AutoScalingAPI
-	MockCloudFormation *cloudformation.CloudFormation
-	MockEC2            ec2iface.EC2API
-	MockIAM            iamiface.IAMAPI
-	MockRoute53        route53iface.Route53API
-	MockELB            elbiface.ELBAPI
-	MockELBV2          elbv2iface.ELBV2API
-	MockSpotinst       spotinst.Cloud
-	MockSQS            sqsiface.SQSAPI
-	MockEventBridge    eventbridgeiface.EventBridgeAPI
-	MockSSM            ssmiface.SSMAPI
+	MockAutoscaling autoscalingiface.AutoScalingAPI
+	MockEC2         ec2iface.EC2API
+	MockIAM         iamiface.IAMAPI
+	MockRoute53     route53iface.Route53API
+	MockELB         elbiface.ELBAPI
+	MockELBV2       elbv2iface.ELBV2API
+	MockSpotinst    spotinst.Cloud
+	MockSQS         sqsiface.SQSAPI
+	MockEventBridge eventbridgeiface.EventBridgeAPI
+	MockSSM         ssmiface.SSMAPI
 }
 
 func (c *MockAWSCloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
@@ -236,13 +234,6 @@ func (c *MockAWSCloud) WithTags(tags map[string]string) AWSCloud {
 	*m = *c
 	m.tags = tags
 	return m
-}
-
-func (c *MockAWSCloud) CloudFormation() *cloudformation.CloudFormation {
-	if c.MockEC2 == nil {
-		klog.Fatalf("MockAWSCloud MockCloudFormation not set")
-	}
-	return c.MockCloudFormation
 }
 
 func (c *MockAWSCloud) EC2() ec2iface.EC2API {
