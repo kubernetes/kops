@@ -1444,6 +1444,23 @@ spec:
 
 ---
 
+apiVersion: karpenter.k8s.aws/v1alpha1
+kind: AWSNodeTemplate
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: karpenter.sh
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: karpenter.sh
+  name: karpenter-nodes-default
+spec:
+  launchTemplate: karpenter-nodes-default.minimal.example.com
+  subnetSelector:
+    kops.k8s.io/instance-group/karpenter-nodes-default: '*'
+    kubernetes.io/cluster/minimal.example.com: '*'
+
+---
+
 apiVersion: karpenter.sh/v1alpha5
 kind: Provisioner
 metadata:
@@ -1464,11 +1481,8 @@ spec:
     systemReserved:
       cpu: 500m
       memory: 1G
-  provider:
-    launchTemplate: karpenter-nodes-default.minimal.example.com
-    subnetSelector:
-      kops.k8s.io/instance-group/karpenter-nodes-default: '*'
-      kubernetes.io/cluster/minimal.example.com: '*'
+  providerRef:
+    name: karpenter-nodes-default
   requirements:
   - key: karpenter.sh/capacity-type
     operator: In
@@ -1489,6 +1503,23 @@ spec:
 
 ---
 
+apiVersion: karpenter.k8s.aws/v1alpha1
+kind: AWSNodeTemplate
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: karpenter.sh
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: karpenter.sh
+  name: karpenter-nodes-single-machinetype
+spec:
+  launchTemplate: karpenter-nodes-single-machinetype.minimal.example.com
+  subnetSelector:
+    kops.k8s.io/instance-group/karpenter-nodes-single-machinetype: '*'
+    kubernetes.io/cluster/minimal.example.com: '*'
+
+---
+
 apiVersion: karpenter.sh/v1alpha5
 kind: Provisioner
 metadata:
@@ -1501,11 +1532,8 @@ metadata:
 spec:
   consolidation:
     enabled: true
-  provider:
-    launchTemplate: karpenter-nodes-single-machinetype.minimal.example.com
-    subnetSelector:
-      kops.k8s.io/instance-group/karpenter-nodes-single-machinetype: '*'
-      kubernetes.io/cluster/minimal.example.com: '*'
+  providerRef:
+    name: karpenter-nodes-single-machinetype
   requirements:
   - key: karpenter.sh/capacity-type
     operator: In
