@@ -90,7 +90,7 @@ func TestPopulateCluster_Subnets(t *testing.T) {
 			c.Spec.ExternalCloudControllerManager = &kopsapi.CloudControllerManagerConfig{}
 			c.Spec.CloudConfig = &kopsapi.CloudConfiguration{
 				AWSEBSCSIDriver: &kopsapi.AWSEBSCSIDriver{
-					Enabled: fi.Bool(true),
+					Enabled: fi.PtrTo(true),
 				},
 			}
 
@@ -121,8 +121,8 @@ func mockedPopulateClusterSpec(c *kopsapi.Cluster, cloud fi.Cloud) (*kopsapi.Clu
 func TestPopulateCluster_Docker_Spec(t *testing.T) {
 	cloud, c := buildMinimalCluster()
 	c.Spec.Docker = &kopsapi.DockerConfig{
-		MTU:                fi.Int32(5678),
-		InsecureRegistry:   fi.String("myregistry.com:1234"),
+		MTU:                fi.PtrTo(int32(5678)),
+		InsecureRegistry:   fi.PtrTo("myregistry.com:1234"),
 		InsecureRegistries: []string{"myregistry.com:1234", "myregistry2.com:1234"},
 		RegistryMirrors:    []string{"https://registry.example.com"},
 		LogOpt:             []string{"env=FOO"},
@@ -138,11 +138,11 @@ func TestPopulateCluster_Docker_Spec(t *testing.T) {
 		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
 	}
 
-	if fi.Int32Value(full.Spec.Docker.MTU) != 5678 {
+	if fi.ValueOf(full.Spec.Docker.MTU) != 5678 {
 		t.Fatalf("Unexpected Docker MTU: %v", full.Spec.Docker.MTU)
 	}
 
-	if fi.StringValue(full.Spec.Docker.InsecureRegistry) != "myregistry.com:1234" {
+	if fi.ValueOf(full.Spec.Docker.InsecureRegistry) != "myregistry.com:1234" {
 		t.Fatalf("Unexpected Docker InsecureRegistry: %v", full.Spec.Docker.InsecureRegistry)
 	}
 
@@ -172,7 +172,7 @@ func TestPopulateCluster_StorageDefault(t *testing.T) {
 		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
 	}
 
-	if fi.StringValue(full.Spec.KubeAPIServer.StorageBackend) != "etcd3" {
+	if fi.ValueOf(full.Spec.KubeAPIServer.StorageBackend) != "etcd3" {
 		t.Fatalf("Unexpected StorageBackend: %v", *full.Spec.KubeAPIServer.StorageBackend)
 	}
 }
@@ -186,7 +186,7 @@ func TestPopulateCluster_EvictionHard(t *testing.T) {
 	}
 
 	c.Spec.Kubelet = &kopsapi.KubeletConfigSpec{
-		EvictionHard: fi.String("memory.available<250Mi"),
+		EvictionHard: fi.PtrTo("memory.available<250Mi"),
 	}
 
 	full, err := mockedPopulateClusterSpec(c, cloud)
@@ -194,7 +194,7 @@ func TestPopulateCluster_EvictionHard(t *testing.T) {
 		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
 	}
 
-	if fi.StringValue(full.Spec.Kubelet.EvictionHard) != "memory.available<250Mi" {
+	if fi.ValueOf(full.Spec.Kubelet.EvictionHard) != "memory.available<250Mi" {
 		t.Fatalf("Unexpected StorageBackend: %v", *full.Spec.Kubelet.EvictionHard)
 	}
 }
@@ -242,7 +242,7 @@ func TestPopulateCluster_Custom_CIDR(t *testing.T) {
 
 func TestPopulateCluster_IsolateMasters(t *testing.T) {
 	cloud, c := buildMinimalCluster()
-	c.Spec.IsolateMasters = fi.Bool(true)
+	c.Spec.IsolateMasters = fi.PtrTo(true)
 
 	err := PerformAssignments(c, cloud)
 	if err != nil {
@@ -253,17 +253,17 @@ func TestPopulateCluster_IsolateMasters(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
 	}
-	if fi.BoolValue(full.Spec.MasterKubelet.EnableDebuggingHandlers) != false {
-		t.Fatalf("Unexpected EnableDebuggingHandlers: %v", fi.BoolValue(full.Spec.MasterKubelet.EnableDebuggingHandlers))
+	if fi.ValueOf(full.Spec.MasterKubelet.EnableDebuggingHandlers) != false {
+		t.Fatalf("Unexpected EnableDebuggingHandlers: %v", fi.ValueOf(full.Spec.MasterKubelet.EnableDebuggingHandlers))
 	}
-	if fi.BoolValue(full.Spec.MasterKubelet.ReconcileCIDR) != false {
-		t.Fatalf("Unexpected ReconcileCIDR: %v", fi.BoolValue(full.Spec.MasterKubelet.ReconcileCIDR))
+	if fi.ValueOf(full.Spec.MasterKubelet.ReconcileCIDR) != false {
+		t.Fatalf("Unexpected ReconcileCIDR: %v", fi.ValueOf(full.Spec.MasterKubelet.ReconcileCIDR))
 	}
 }
 
 func TestPopulateCluster_IsolateMastersFalse(t *testing.T) {
 	cloud, c := buildMinimalCluster()
-	// default: c.Spec.IsolateMasters = fi.Bool(false)
+	// default: c.Spec.IsolateMasters = fi.PtrTo(false)
 
 	err := PerformAssignments(c, cloud)
 	if err != nil {
@@ -274,8 +274,8 @@ func TestPopulateCluster_IsolateMastersFalse(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
 	}
-	if fi.BoolValue(full.Spec.MasterKubelet.EnableDebuggingHandlers) != true {
-		t.Fatalf("Unexpected EnableDebuggingHandlers: %v", fi.BoolValue(full.Spec.MasterKubelet.EnableDebuggingHandlers))
+	if fi.ValueOf(full.Spec.MasterKubelet.EnableDebuggingHandlers) != true {
+		t.Fatalf("Unexpected EnableDebuggingHandlers: %v", fi.ValueOf(full.Spec.MasterKubelet.EnableDebuggingHandlers))
 	}
 }
 
@@ -364,8 +364,8 @@ func TestPopulateCluster_APIServerCount(t *testing.T) {
 		t.Fatalf("error during build: %v", err)
 	}
 
-	if fi.Int32Value(full.Spec.KubeAPIServer.APIServerCount) != 3 {
-		t.Fatalf("Unexpected APIServerCount: %v", fi.Int32Value(full.Spec.KubeAPIServer.APIServerCount))
+	if fi.ValueOf(full.Spec.KubeAPIServer.APIServerCount) != 3 {
+		t.Fatalf("Unexpected APIServerCount: %v", fi.ValueOf(full.Spec.KubeAPIServer.APIServerCount))
 	}
 }
 
@@ -387,8 +387,8 @@ func TestPopulateCluster_AnonymousAuth(t *testing.T) {
 		t.Fatalf("AnonymousAuth not specified")
 	}
 
-	if fi.BoolValue(full.Spec.KubeAPIServer.AnonymousAuth) != false {
-		t.Fatalf("Unexpected AnonymousAuth: %v", fi.BoolValue(full.Spec.KubeAPIServer.AnonymousAuth))
+	if fi.ValueOf(full.Spec.KubeAPIServer.AnonymousAuth) != false {
+		t.Fatalf("Unexpected AnonymousAuth: %v", fi.ValueOf(full.Spec.KubeAPIServer.AnonymousAuth))
 	}
 }
 
@@ -413,8 +413,8 @@ func TestPopulateCluster_DockerVersion(t *testing.T) {
 			t.Fatalf("error during build: %v", err)
 		}
 
-		if fi.StringValue(full.Spec.Docker.Version) != test.DockerVersion {
-			t.Fatalf("Unexpected DockerVersion: %v", fi.StringValue(full.Spec.Docker.Version))
+		if fi.ValueOf(full.Spec.Docker.Version) != test.DockerVersion {
+			t.Fatalf("Unexpected DockerVersion: %v", fi.ValueOf(full.Spec.Docker.Version))
 		}
 	}
 }

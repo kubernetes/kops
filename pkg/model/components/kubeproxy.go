@@ -64,7 +64,7 @@ func (b *KubeProxyOptionsBuilder) BuildOptions(o interface{}) error {
 
 	if config.ClusterCIDR == nil {
 		if b.needsClusterCIDR(clusterSpec) {
-			config.ClusterCIDR = fi.String(clusterSpec.KubeControllerManager.ClusterCIDR)
+			config.ClusterCIDR = fi.PtrTo(clusterSpec.KubeControllerManager.ClusterCIDR)
 		}
 	}
 

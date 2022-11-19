@@ -102,13 +102,13 @@ func (s *Service) String() string {
 func (s *Service) InitDefaults() *Service {
 	// Default some values to true: Running, SmartRestart, ManageState
 	if s.Running == nil {
-		s.Running = fi.Bool(true)
+		s.Running = fi.PtrTo(true)
 	}
 	if s.SmartRestart == nil {
-		s.SmartRestart = fi.Bool(true)
+		s.SmartRestart = fi.PtrTo(true)
 	}
 	if s.ManageState == nil {
-		s.ManageState = fi.Bool(true)
+		s.ManageState = fi.PtrTo(true)
 	}
 
 	// Default Enabled to be the same as running
@@ -178,13 +178,13 @@ func (e *Service) Find(c *fi.Context) (*Service, error) {
 		return &Service{
 			Name:       e.Name,
 			Definition: nil,
-			Running:    fi.Bool(false),
+			Running:    fi.PtrTo(false),
 		}, nil
 	}
 
 	actual := &Service{
 		Name:       e.Name,
-		Definition: fi.String(string(d)),
+		Definition: fi.PtrTo(string(d)),
 
 		// Avoid spurious changes
 		ManageState:  e.ManageState,
@@ -199,27 +199,27 @@ func (e *Service) Find(c *fi.Context) (*Service, error) {
 	activeState := properties["ActiveState"]
 	switch activeState {
 	case "active":
-		actual.Running = fi.Bool(true)
+		actual.Running = fi.PtrTo(true)
 
 	case "failed", "inactive":
-		actual.Running = fi.Bool(false)
+		actual.Running = fi.PtrTo(false)
 	default:
 		klog.Warningf("Unknown ActiveState=%q; will treat as not running", activeState)
-		actual.Running = fi.Bool(false)
+		actual.Running = fi.PtrTo(false)
 	}
 
 	wantedBy := properties["WantedBy"]
 	switch wantedBy {
 	case "":
-		actual.Enabled = fi.Bool(false)
+		actual.Enabled = fi.PtrTo(false)
 
 	// TODO: Can probably do better here!
 	case "multi-user.target", "graphical.target multi-user.target":
-		actual.Enabled = fi.Bool(true)
+		actual.Enabled = fi.PtrTo(true)
 
 	default:
 		klog.Warningf("Unknown WantedBy=%q; will treat as not enabled", wantedBy)
-		actual.Enabled = fi.Bool(false)
+		actual.Enabled = fi.PtrTo(false)
 	}
 
 	return actual, nil
@@ -268,8 +268,8 @@ func (_ *Service) RenderLocal(t *local.LocalTarget, a, e, changes *Service) erro
 
 	action := ""
 
-	if changes.Running != nil && fi.BoolValue(e.ManageState) {
-		if fi.BoolValue(e.Running) {
+	if changes.Running != nil && fi.ValueOf(e.ManageState) {
+		if fi.ValueOf(e.Running) {
 			action = "restart"
 		} else {
 			action = "stop"
@@ -292,13 +292,13 @@ func (_ *Service) RenderLocal(t *local.LocalTarget, a, e, changes *Service) erro
 	}
 
 	// "SmartRestart" - look at the obvious dependencies in the systemd service, restart if start time older
-	if fi.BoolValue(e.ManageState) && fi.BoolValue(e.SmartRestart) {
-		definition := fi.StringValue(e.Definition)
+	if fi.ValueOf(e.ManageState) && fi.ValueOf(e.SmartRestart) {
+		definition := fi.ValueOf(e.Definition)
 		if definition == "" && a != nil {
-			definition = fi.StringValue(a.Definition)
+			definition = fi.ValueOf(a.Definition)
 		}
 
-		if action == "" && fi.BoolValue(e.Running) && definition != "" {
+		if action == "" && fi.ValueOf(e.Running) && definition != "" {
 			dependencies, err := getSystemdDependencies(serviceName, definition)
 			if err != nil {
 				return err
@@ -345,7 +345,7 @@ func (_ *Service) RenderLocal(t *local.LocalTarget, a, e, changes *Service) erro
 		}
 	}
 
-	if action != "" && fi.BoolValue(e.ManageState) {
+	if action != "" && fi.ValueOf(e.ManageState) {
 		klog.Infof("Restarting service %q", serviceName)
 		cmd := exec.Command("systemctl", action, serviceName)
 		output, err := cmd.CombinedOutput()
@@ -354,9 +354,9 @@ func (_ *Service) RenderLocal(t *local.LocalTarget, a, e, changes *Service) erro
 		}
 	}
 
-	if changes.Enabled != nil && fi.BoolValue(e.ManageState) {
+	if changes.Enabled != nil && fi.ValueOf(e.ManageState) {
 		var args []string
-		if fi.BoolValue(e.Enabled) {
+		if fi.ValueOf(e.Enabled) {
 			klog.Infof("Enabling service %q", serviceName)
 			args = []string{"enable", serviceName}
 		} else {
@@ -388,7 +388,7 @@ func (_ *Service) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *S
 		return err
 	}
 
-	if fi.BoolValue(e.ManageState) {
+	if fi.ValueOf(e.ManageState) {
 		t.AddCommand(cloudinit.Once, "systemctl", "daemon-reload")
 		t.AddCommand(cloudinit.Once, "systemctl", "start", "--no-block", serviceName)
 	}

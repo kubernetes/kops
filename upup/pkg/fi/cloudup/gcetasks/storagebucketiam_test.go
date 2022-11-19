@@ -34,9 +34,9 @@ func TestStorageBucketIAM(t *testing.T) {
 		binding := &StorageBucketIAM{
 			Lifecycle: fi.LifecycleSync,
 
-			Bucket: fi.String("bucket1"),
-			Member: fi.String("serviceAccount:foo@testproject.iam.gserviceaccount.com"),
-			Role:   fi.String("roles/owner"),
+			Bucket: fi.PtrTo("bucket1"),
+			Member: fi.PtrTo("serviceAccount:foo@testproject.iam.gserviceaccount.com"),
+			Role:   fi.PtrTo("roles/owner"),
 		}
 
 		return map[string]fi.Task{

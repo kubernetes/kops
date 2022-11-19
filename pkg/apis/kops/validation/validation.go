@@ -295,7 +295,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 
 	if spec.Karpenter != nil && spec.Karpenter.Enabled {
 		fldPath := fieldPath.Child("karpenter", "enabled")
-		if !fi.BoolValue(spec.IAM.UseServiceAccountExternalPermissions) {
+		if !fi.ValueOf(spec.IAM.UseServiceAccountExternalPermissions) {
 			allErrs = append(allErrs, field.Forbidden(fldPath, "Karpenter requires that service accounts use external permissions"))
 		}
 		if !featureflag.Karpenter.Enabled() {
@@ -306,7 +306,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 	if spec.PodIdentityWebhook != nil && spec.PodIdentityWebhook.Enabled {
 		allErrs = append(allErrs, validatePodIdentityWebhook(c, spec.PodIdentityWebhook, fieldPath.Child("podIdentityWebhook"))...)
 	}
-	if spec.CertManager != nil && fi.BoolValue(spec.CertManager.Enabled) {
+	if spec.CertManager != nil && fi.ValueOf(spec.CertManager.Enabled) {
 		allErrs = append(allErrs, validateCertManager(c, spec.CertManager, fieldPath.Child("certManager"))...)
 	}
 
@@ -511,7 +511,7 @@ func validateSubnet(subnet *kops.ClusterSubnetSpec, c *kops.ClusterSpec, fieldPa
 		}
 	}
 
-	allErrs = append(allErrs, IsValidValue(fieldPath.Child("type"), fi.String(string(subnet.Type)), []string{
+	allErrs = append(allErrs, IsValidValue(fieldPath.Child("type"), fi.PtrTo(string(subnet.Type)), []string{
 		string(kops.SubnetTypePublic),
 		string(kops.SubnetTypePrivate),
 		string(kops.SubnetTypeDualStack),
@@ -976,7 +976,7 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "Only version 1.11 with patch version 5 or higher is supported"))
 		}
 
-		if v.Hubble != nil && fi.BoolValue(v.Hubble.Enabled) {
+		if v.Hubble != nil && fi.ValueOf(v.Hubble.Enabled) {
 			if !components.IsCertManagerEnabled(cluster) {
 				allErrs = append(allErrs, field.Forbidden(fldPath.Child("hubble", "enabled"), "Hubble requires that cert manager is enabled"))
 			}
@@ -1019,13 +1019,13 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 			// Cilium with Wireguard integration follow-up --> https://github.com/cilium/cilium/issues/15462.
 			// The following rule of validation should be deleted as this combination
 			// will be supported on future releases of Cilium (>= v1.11.0).
-			if fi.BoolValue(v.EnableL7Proxy) {
+			if fi.ValueOf(v.EnableL7Proxy) {
 				allErrs = append(allErrs, field.Forbidden(fldPath.Child("enableL7Proxy"), "L7 proxy cannot be enabled if wireguard is enabled."))
 			}
 		}
 	}
 
-	if fi.BoolValue(v.EnableL7Proxy) && v.InstallIptablesRules != nil && !*v.InstallIptablesRules {
+	if fi.ValueOf(v.EnableL7Proxy) && v.InstallIptablesRules != nil && !*v.InstallIptablesRules {
 		allErrs = append(allErrs, field.Forbidden(fldPath.Child("enableL7Proxy"), "Cilium L7 Proxy requires installIptablesRules."))
 	}
 
@@ -1212,7 +1212,7 @@ func validateEtcdMemberSpec(spec kops.EtcdMemberSpec, fieldPath *field.Path) fie
 		allErrs = append(allErrs, field.Required(fieldPath.Child("name"), "etcdMember did not have name"))
 	}
 
-	if fi.StringValue(spec.InstanceGroup) == "" {
+	if fi.ValueOf(spec.InstanceGroup) == "" {
 		allErrs = append(allErrs, field.Required(fieldPath.Child("instanceGroup"), "etcdMember did not have instanceGroup"))
 	}
 
@@ -1228,7 +1228,7 @@ func validateNetworkingCalico(c *kops.ClusterSpec, v *kops.CalicoNetworkingSpec,
 	}
 
 	if v.CrossSubnet != nil {
-		if fi.BoolValue(v.CrossSubnet) && v.AWSSrcDstCheck != "Disable" {
+		if fi.ValueOf(v.CrossSubnet) && v.AWSSrcDstCheck != "Disable" {
 			field.Invalid(fldPath.Child("crossSubnet"), v.CrossSubnet, "crossSubnet is deprecated, use awsSrcDstCheck instead")
 		}
 	}
@@ -1404,13 +1404,13 @@ func validateContainerdConfig(spec *kops.ClusterSpec, config *kops.ContainerdCon
 
 	if config.Packages != nil {
 		if config.Packages.UrlAmd64 != nil && config.Packages.HashAmd64 != nil {
-			u := fi.StringValue(config.Packages.UrlAmd64)
+			u := fi.ValueOf(config.Packages.UrlAmd64)
 			_, err := url.Parse(u)
 			if err != nil {
 				allErrs = append(allErrs, field.Invalid(fldPath.Child("packageUrl"), config.Packages.UrlAmd64,
 					fmt.Sprintf("cannot parse package URL: %v", err)))
 			}
-			h := fi.StringValue(config.Packages.HashAmd64)
+			h := fi.ValueOf(config.Packages.HashAmd64)
 			if len(h) > 64 {
 				allErrs = append(allErrs, field.Invalid(fldPath.Child("packageHash"), config.Packages.HashAmd64,
 					"Package hash must be 64 characters long"))
@@ -1424,13 +1424,13 @@ func validateContainerdConfig(spec *kops.ClusterSpec, config *kops.ContainerdCon
 		}
 
 		if config.Packages.UrlArm64 != nil && config.Packages.HashArm64 != nil {
-			u := fi.StringValue(config.Packages.UrlArm64)
+			u := fi.ValueOf(config.Packages.UrlArm64)
 			_, err := url.Parse(u)
 			if err != nil {
 				allErrs = append(allErrs, field.Invalid(fldPath.Child("packageUrlArm64"), config.Packages.UrlArm64,
 					fmt.Sprintf("cannot parse package URL: %v", err)))
 			}
-			h := fi.StringValue(config.Packages.HashArm64)
+			h := fi.ValueOf(config.Packages.HashArm64)
 			if len(h) > 64 {
 				allErrs = append(allErrs, field.Invalid(fldPath.Child("packageHashArm64"), config.Packages.HashArm64,
 					"Package hash must be 64 characters long"))
@@ -1471,13 +1471,13 @@ func validateDockerConfig(config *kops.DockerConfig, fldPath *field.Path) field.
 
 	if config.Packages != nil {
 		if config.Packages.UrlAmd64 != nil && config.Packages.HashAmd64 != nil {
-			u := fi.StringValue(config.Packages.UrlAmd64)
+			u := fi.ValueOf(config.Packages.UrlAmd64)
 			_, err := url.Parse(u)
 			if err != nil {
 				allErrs = append(allErrs, field.Invalid(fldPath.Child("packageUrl"), config.Packages.UrlAmd64,
 					fmt.Sprintf("unable parse package URL string: %v", err)))
 			}
-			h := fi.StringValue(config.Packages.HashAmd64)
+			h := fi.ValueOf(config.Packages.HashAmd64)
 			if len(h) > 64 {
 				allErrs = append(allErrs, field.Invalid(fldPath.Child("packageHash"), config.Packages.HashAmd64,
 					"Package hash must be 64 characters long"))
@@ -1491,13 +1491,13 @@ func validateDockerConfig(config *kops.DockerConfig, fldPath *field.Path) field.
 		}
 
 		if config.Packages.UrlArm64 != nil && config.Packages.HashArm64 != nil {
-			u := fi.StringValue(config.Packages.UrlArm64)
+			u := fi.ValueOf(config.Packages.UrlArm64)
 			_, err := url.Parse(u)
 			if err != nil {
 				allErrs = append(allErrs, field.Invalid(fldPath.Child("packageUrlArm64"), config.Packages.UrlArm64,
 					fmt.Sprintf("unable parse package URL string: %v", err)))
 			}
-			h := fi.StringValue(config.Packages.HashArm64)
+			h := fi.ValueOf(config.Packages.HashArm64)
 			if len(h) > 64 {
 				allErrs = append(allErrs, field.Invalid(fldPath.Child("packageHashArm64"), config.Packages.HashArm64,
 					"Package hash must be 64 characters long"))
@@ -1523,7 +1523,7 @@ func validateDockerConfig(config *kops.DockerConfig, fldPath *field.Path) field.
 }
 
 func validateNvidiaConfig(spec *kops.ClusterSpec, nvidia *kops.NvidiaGPUConfig, fldPath *field.Path, inClusterConfig bool) (allErrs field.ErrorList) {
-	if !fi.BoolValue(nvidia.Enabled) {
+	if !fi.ValueOf(nvidia.Enabled) {
 		return allErrs
 	}
 	if spec.GetCloudProvider() != kops.CloudProviderAWS && spec.GetCloudProvider() != kops.CloudProviderOpenstack {
@@ -1597,7 +1597,7 @@ func validateNodeLocalDNS(spec *kops.ClusterSpec, fldpath *field.Path) field.Err
 func validateClusterAutoscaler(cluster *kops.Cluster, spec *kops.ClusterAutoscalerConfig, fldPath *field.Path) (allErrs field.ErrorList) {
 	allErrs = append(allErrs, IsValidValue(fldPath.Child("expander"), spec.Expander, []string{"least-waste", "random", "most-pods", "price", "priority"})...)
 
-	if fi.StringValue(spec.Expander) == "price" && cluster.Spec.CloudProvider.GCE == nil {
+	if fi.ValueOf(spec.Expander) == "price" && cluster.Spec.CloudProvider.GCE == nil {
 		allErrs = append(allErrs, field.Forbidden(fldPath.Child("expander"), "Cluster autoscaler price expander is only supported on GCE"))
 	}
 
@@ -1634,8 +1634,8 @@ func validateNodeTerminationHandler(cluster *kops.Cluster, spec *kops.NodeTermin
 }
 
 func validateMetricsServer(cluster *kops.Cluster, spec *kops.MetricsServerConfig, fldPath *field.Path) (allErrs field.ErrorList) {
-	if spec != nil && fi.BoolValue(spec.Enabled) {
-		if !fi.BoolValue(spec.Insecure) && !components.IsCertManagerEnabled(cluster) {
+	if spec != nil && fi.ValueOf(spec.Enabled) {
+		if !fi.ValueOf(spec.Insecure) && !components.IsCertManagerEnabled(cluster) {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("insecure"), "Secure metrics server requires that cert manager is enabled"))
 		}
 	}
@@ -1644,7 +1644,7 @@ func validateMetricsServer(cluster *kops.Cluster, spec *kops.MetricsServerConfig
 }
 
 func validateAWSLoadBalancerController(cluster *kops.Cluster, spec *kops.AWSLoadBalancerControllerConfig, fldPath *field.Path) (allErrs field.ErrorList) {
-	if spec != nil && fi.BoolValue(spec.Enabled) {
+	if spec != nil && fi.ValueOf(spec.Enabled) {
 		if !components.IsCertManagerEnabled(cluster) {
 			allErrs = append(allErrs, field.Forbidden(fldPath, "AWS Load Balancer Controller requires that cert manager is enabled"))
 		}
@@ -1678,7 +1678,7 @@ func validateWarmPool(warmPool *kops.WarmPoolSpec, fldPath *field.Path) (allErrs
 }
 
 func validateSnapshotController(cluster *kops.Cluster, spec *kops.SnapshotControllerConfig, fldPath *field.Path) (allErrs field.ErrorList) {
-	if spec != nil && fi.BoolValue(spec.Enabled) {
+	if spec != nil && fi.ValueOf(spec.Enabled) {
 		if !components.IsCertManagerEnabled(cluster) {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("enabled"), "Snapshot controller requires that cert manager is enabled"))
 		}
@@ -1698,7 +1698,7 @@ func validatePodIdentityWebhook(cluster *kops.Cluster, spec *kops.PodIdentityWeb
 
 func validateCertManager(cluster *kops.Cluster, spec *kops.CertManagerConfig, fldPath *field.Path) (allErrs field.ErrorList) {
 	if len(spec.HostedZoneIDs) > 0 {
-		if !fi.BoolValue(cluster.Spec.IAM.UseServiceAccountExternalPermissions) {
+		if !fi.ValueOf(cluster.Spec.IAM.UseServiceAccountExternalPermissions) {
 			allErrs = append(allErrs, field.Forbidden(fldPath, "Cert Manager requires that service accounts use external permissions in order to do dns-01 validation"))
 		}
 	}

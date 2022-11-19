@@ -42,7 +42,7 @@ type Firewall struct {
 var _ fi.CompareWithID = &Firewall{}
 
 func (v *Firewall) CompareWithID() *string {
-	return fi.String(strconv.Itoa(fi.IntValue(v.ID)))
+	return fi.PtrTo(strconv.Itoa(fi.ValueOf(v.ID)))
 }
 
 func (v *Firewall) Find(c *fi.Context) (*Firewall, error) {
@@ -56,11 +56,11 @@ func (v *Firewall) Find(c *fi.Context) (*Firewall, error) {
 	}
 
 	for _, firewall := range firewalls {
-		if firewall.Name == fi.StringValue(v.Name) {
+		if firewall.Name == fi.ValueOf(v.Name) {
 			matches := &Firewall{
 				Lifecycle: v.Lifecycle,
-				Name:      fi.String(firewall.Name),
-				ID:        fi.Int(firewall.ID),
+				Name:      fi.PtrTo(firewall.Name),
+				ID:        fi.PtrTo(firewall.ID),
 				Labels:    firewall.Labels,
 			}
 			for _, rule := range firewall.Rules {
@@ -115,7 +115,7 @@ func (_ *Firewall) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *Fir
 	client := t.Cloud.FirewallClient()
 	if a == nil {
 		opts := hcloud.FirewallCreateOpts{
-			Name: fi.StringValue(e.Name),
+			Name: fi.ValueOf(e.Name),
 			ApplyTo: []hcloud.FirewallResource{
 				{
 					Type:          hcloud.FirewallResourceTypeLabelSelector,
@@ -139,7 +139,7 @@ func (_ *Firewall) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *Fir
 		}
 
 	} else {
-		firewall, _, err := client.Get(context.TODO(), fi.StringValue(e.Name))
+		firewall, _, err := client.Get(context.TODO(), fi.ValueOf(e.Name))
 		if err != nil {
 			return err
 		}
@@ -147,7 +147,7 @@ func (_ *Firewall) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *Fir
 		// Update the labels
 		if changes.Name != nil || len(changes.Labels) != 0 {
 			_, _, err := client.Update(context.TODO(), firewall, hcloud.FirewallUpdateOpts{
-				Name:   fi.StringValue(e.Name),
+				Name:   fi.ValueOf(e.Name),
 				Labels: e.Labels,
 			})
 			if err != nil {
@@ -231,19 +231,19 @@ func (_ *Firewall) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *
 			Name: e.Name,
 			ApplyTo: []*terraformFirewallApplyTo{
 				{
-					LabelSelector: fi.String(e.Selector),
+					LabelSelector: fi.PtrTo(e.Selector),
 				},
 			},
 			Labels: e.Labels,
 		}
 		for _, rule := range e.Rules {
 			tfr := &terraformFirewallRule{
-				Direction: fi.String(string(rule.Direction)),
-				Protocol:  fi.String(string(rule.Protocol)),
+				Direction: fi.PtrTo(string(rule.Direction)),
+				Protocol:  fi.PtrTo(string(rule.Protocol)),
 				Port:      rule.Port,
 			}
 			for _, ip := range rule.SourceIPs {
-				tfr.SourceIPs = append(tfr.SourceIPs, fi.String(ip.String()))
+				tfr.SourceIPs = append(tfr.SourceIPs, fi.PtrTo(ip.String()))
 			}
 			tf.Rules = append(tf.Rules, tfr)
 		}

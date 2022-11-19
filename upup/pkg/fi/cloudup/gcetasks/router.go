@@ -89,8 +89,8 @@ func (r *Router) Find(c *fi.Context) (*Router, error) {
 	actual := &Router{
 		Name:                          &found.Name,
 		Lifecycle:                     r.Lifecycle,
-		Network:                       &Network{Name: fi.String(lastComponent(found.Network))},
-		Region:                        fi.String(lastComponent(found.Region)),
+		Network:                       &Network{Name: fi.PtrTo(lastComponent(found.Network))},
+		Region:                        fi.PtrTo(lastComponent(found.Region)),
 		NATIPAllocationOption:         &nat.NatIpAllocateOption,
 		SourceSubnetworkIPRangesToNAT: &nat.SourceSubnetworkIpRangesToNat,
 	}
@@ -147,7 +147,7 @@ func (*Router) CheckChanges(a, e, changes *Router) error {
 func (*Router) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Router) error {
 	cloud := t.Cloud
 	project := cloud.Project()
-	region := fi.StringValue(e.Region)
+	region := fi.ValueOf(e.Region)
 
 	if a == nil {
 		klog.V(2).Infof("Creating Cloud NAT Gateway %v", e.Name)

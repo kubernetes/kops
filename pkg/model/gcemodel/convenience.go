@@ -20,10 +20,10 @@ import "k8s.io/kops/upup/pkg/fi"
 
 // s is a helper that builds a *string from a string value
 func s(v string) *string {
-	return fi.String(v)
+	return fi.PtrTo(v)
 }
 
 // i64 is a helper that builds a *int64 from an int64 value
 func i64(v int64) *int64 {
-	return fi.Int64(v)
+	return fi.PtrTo(v)
 }

@@ -69,14 +69,14 @@ func TestSharedEgressOnlyInternetGatewayDoesNotRename(t *testing.T) {
 			Lifecycle: fi.LifecycleSync,
 			CIDR:      s("172.20.0.0/16"),
 			Tags:      map[string]string{"kubernetes.io/cluster/cluster.example.com": "shared"},
-			Shared:    fi.Bool(true),
+			Shared:    fi.PtrTo(true),
 			ID:        vpc.Vpc.VpcId,
 		}
 		eigw1 := &EgressOnlyInternetGateway{
 			Name:      s("eigw1"),
 			Lifecycle: fi.LifecycleSync,
 			VPC:       vpc1,
-			Shared:    fi.Bool(true),
+			Shared:    fi.PtrTo(true),
 			ID:        internetGateway.EgressOnlyInternetGateway.EgressOnlyInternetGatewayId,
 			Tags:      make(map[string]string),
 		}
@@ -105,7 +105,7 @@ func TestSharedEgressOnlyInternetGatewayDoesNotRename(t *testing.T) {
 			t.Fatalf("unexpected error during Run: %v", err)
 		}
 
-		if fi.StringValue(eigw1.ID) == "" {
+		if fi.ValueOf(eigw1.ID) == "" {
 			t.Fatalf("ID not set after create")
 		}
 

@@ -94,13 +94,13 @@ func (_ *Prefix) RenderLocal(t *local.LocalTarget, a, e, changes *Prefix) error 
 	}
 
 	response, err := t.Cloud.(awsup.AWSCloud).EC2().AssignIpv6Addresses(&ec2.AssignIpv6AddressesInput{
-		Ipv6PrefixCount:    fi.Int64(1),
-		NetworkInterfaceId: fi.String(interfaceId),
+		Ipv6PrefixCount:    fi.PtrTo(int64(1)),
+		NetworkInterfaceId: fi.PtrTo(interfaceId),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to assign prefix: %w", err)
 	}
-	klog.V(2).Infof("assigned prefix to primary network interface: %q", fi.StringValue(response.AssignedIpv6Prefixes[0]))
+	klog.V(2).Infof("assigned prefix to primary network interface: %q", fi.ValueOf(response.AssignedIpv6Prefixes[0]))
 
 	return nil
 }

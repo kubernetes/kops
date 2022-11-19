@@ -34,7 +34,7 @@ func (r *ServiceAccount) BuildAWSPolicy(b *iam.PolicyBuilder) (*iam.Policy, erro
 	p := iam.NewPolicy(clusterName, b.Partition)
 
 	var useStaticInstanceList bool
-	if ca := b.Cluster.Spec.ClusterAutoscaler; ca != nil && fi.BoolValue(ca.AWSUseStaticInstanceList) {
+	if ca := b.Cluster.Spec.ClusterAutoscaler; ca != nil && fi.ValueOf(ca.AWSUseStaticInstanceList) {
 		useStaticInstanceList = true
 	}
 	iam.AddClusterAutoscalerPermissions(p, useStaticInstanceList)

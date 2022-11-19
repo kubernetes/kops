@@ -57,15 +57,15 @@ func (d *DropletBuilder) Build(c *fi.ModelBuilderContext) error {
 		name := d.AutoscalingGroupName(ig)
 
 		droplet := dotasks.Droplet{
-			Count:     int(fi.Int32Value(ig.Spec.MinSize)),
-			Name:      fi.String(name),
+			Count:     int(fi.ValueOf(ig.Spec.MinSize)),
+			Name:      fi.PtrTo(name),
 			Lifecycle: d.Lifecycle,
 
 			// kops do supports allow only 1 region
-			Region: fi.String(d.Cluster.Spec.Subnets[0].Region),
-			Size:   fi.String(ig.Spec.MachineType),
-			Image:  fi.String(ig.Spec.Image),
-			SSHKey: fi.String(sshKeyFingerPrint),
+			Region: fi.PtrTo(d.Cluster.Spec.Subnets[0].Region),
+			Size:   fi.PtrTo(ig.Spec.MachineType),
+			Image:  fi.PtrTo(ig.Spec.Image),
+			SSHKey: fi.PtrTo(sshKeyFingerPrint),
 			Tags:   []string{clusterTag},
 		}
 
@@ -82,13 +82,13 @@ func (d *DropletBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		if d.Cluster.Spec.NetworkID != "" {
-			droplet.VPCUUID = fi.String(d.Cluster.Spec.NetworkID)
+			droplet.VPCUUID = fi.PtrTo(d.Cluster.Spec.NetworkID)
 		} else if d.Cluster.Spec.NetworkCIDR != "" {
 			// since networkCIDR specified as part of the request, it is made sure that vpc with this cidr exist before
 			// creating the droplet, so you can associate with vpc uuid for this droplet.
 			vpcName := "vpc-" + clusterName
-			droplet.VPCName = fi.String(vpcName)
-			droplet.NetworkCIDR = fi.String(d.Cluster.Spec.NetworkCIDR)
+			droplet.VPCName = fi.PtrTo(vpcName)
+			droplet.NetworkCIDR = fi.PtrTo(d.Cluster.Spec.NetworkCIDR)
 		}
 
 		userData, err := d.BootstrapScriptBuilder.ResourceNodeUp(c, ig)

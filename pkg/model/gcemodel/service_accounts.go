@@ -37,7 +37,7 @@ func (b *ServiceAccountsBuilder) Build(c *fi.ModelBuilderContext) error {
 		serviceAccount := &gcetasks.ServiceAccount{
 			Name:      s("shared"),
 			Email:     &b.Cluster.Spec.CloudConfig.GCEServiceAccount,
-			Shared:    fi.Bool(true),
+			Shared:    fi.PtrTo(true),
 			Lifecycle: b.Lifecycle,
 		}
 		c.AddTask(serviceAccount)
@@ -48,7 +48,7 @@ func (b *ServiceAccountsBuilder) Build(c *fi.ModelBuilderContext) error {
 	doneEmails := make(map[string]bool)
 	for _, ig := range b.InstanceGroups {
 		link := b.LinkToServiceAccount(ig)
-		if fi.BoolValue(link.Shared) {
+		if fi.ValueOf(link.Shared) {
 			c.EnsureTask(link)
 			continue
 		}
@@ -66,11 +66,11 @@ func (b *ServiceAccountsBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		switch ig.Spec.Role {
 		case kops.InstanceGroupRoleAPIServer, kops.InstanceGroupRoleMaster:
-			serviceAccount.Description = fi.String("kubernetes control-plane instances")
+			serviceAccount.Description = fi.PtrTo("kubernetes control-plane instances")
 		case kops.InstanceGroupRoleNode:
-			serviceAccount.Description = fi.String("kubernetes worker nodes")
+			serviceAccount.Description = fi.PtrTo("kubernetes worker nodes")
 		case kops.InstanceGroupRoleBastion:
-			serviceAccount.Description = fi.String("bastion nodes")
+			serviceAccount.Description = fi.PtrTo("bastion nodes")
 		default:
 			klog.Warningf("unknown instance role %q", ig.Spec.Role)
 		}

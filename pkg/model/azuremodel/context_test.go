@@ -43,13 +43,13 @@ func TestCloudTagsForInstanceGroup(t *testing.T) {
 
 	actual := c.CloudTagsForInstanceGroup(c.InstanceGroups[0])
 	expected := map[string]*string{
-		"cluster_label_key":                            fi.String("cluster_label_value"),
-		"ig_label_key":                                 fi.String("ig_label_value"),
-		"test_label":                                   fi.String("from_ig"),
-		"k8s.io_cluster_node-template_label_0":         fi.String("node_label/key=node_label_value"),
-		"k8s.io_cluster_node-template_taint_taint_key": fi.String("taint_value"),
-		"k8s.io_role_node":                             fi.String("1"),
-		"kops.k8s.io_instancegroup":                    fi.String("nodes"),
+		"cluster_label_key":                            fi.PtrTo("cluster_label_value"),
+		"ig_label_key":                                 fi.PtrTo("ig_label_value"),
+		"test_label":                                   fi.PtrTo("from_ig"),
+		"k8s.io_cluster_node-template_label_0":         fi.PtrTo("node_label/key=node_label_value"),
+		"k8s.io_cluster_node-template_taint_taint_key": fi.PtrTo("taint_value"),
+		"k8s.io_role_node":                             fi.PtrTo("1"),
+		"kops.k8s.io_instancegroup":                    fi.PtrTo("nodes"),
 	}
 
 	if !reflect.DeepEqual(actual, expected) {

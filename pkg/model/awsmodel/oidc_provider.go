@@ -45,7 +45,7 @@ func (b *OIDCProviderBuilder) Build(c *fi.ModelBuilderContext) error {
 	thumbprints := []*string{}
 
 	for _, fingerprint := range fingerprints {
-		thumbprints = append(thumbprints, fi.String(fingerprint))
+		thumbprints = append(thumbprints, fi.PtrTo(fingerprint))
 	}
 
 	audiences := []string{defaultAudience}
@@ -54,7 +54,7 @@ func (b *OIDCProviderBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	c.AddTask(&awstasks.IAMOIDCProvider{
-		Name:        fi.String(b.ClusterName()),
+		Name:        fi.PtrTo(b.ClusterName()),
 		Lifecycle:   b.Lifecycle,
 		URL:         b.Cluster.Spec.KubeAPIServer.ServiceAccountIssuer,
 		ClientIDs:   fi.StringSlice(audiences),

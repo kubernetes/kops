@@ -125,5 +125,5 @@ func (c *OpenstackModelContext) LinkToPort(name *string) *openstacktasks.Port {
 }
 
 func (c *OpenstackModelContext) LinkToSecurityGroup(name string) *openstacktasks.SecurityGroup {
-	return &openstacktasks.SecurityGroup{Name: fi.String(name)}
+	return &openstacktasks.SecurityGroup{Name: fi.PtrTo(name)}
 }

@@ -40,7 +40,7 @@ func (b *DNSModelBuilder) ensureDNSZone(c *fi.ModelBuilderContext) error {
 
 	// Configuration for a DNS zone
 	dnsZone := &awstasks.DNSZone{
-		Name:      fi.String(b.NameForDNSZone()),
+		Name:      fi.PtrTo(b.NameForDNSZone()),
 		Lifecycle: b.Lifecycle,
 	}
 
@@ -51,7 +51,7 @@ func (b *DNSModelBuilder) ensureDNSZone(c *fi.ModelBuilderContext) error {
 		// Ignore
 
 		case kops.DNSTypePrivate:
-			dnsZone.Private = fi.Bool(true)
+			dnsZone.Private = fi.PtrTo(true)
 			dnsZone.PrivateVPC = b.LinkToVPC()
 
 		default:
@@ -61,10 +61,10 @@ func (b *DNSModelBuilder) ensureDNSZone(c *fi.ModelBuilderContext) error {
 
 	if !strings.Contains(b.Cluster.Spec.DNSZone, ".") {
 		// Looks like a hosted zone ID
-		dnsZone.ZoneID = fi.String(b.Cluster.Spec.DNSZone)
+		dnsZone.ZoneID = fi.PtrTo(b.Cluster.Spec.DNSZone)
 	} else {
 		// Looks like a normal DNS name
-		dnsZone.DNSName = fi.String(b.Cluster.Spec.DNSZone)
+		dnsZone.DNSName = fi.PtrTo(b.Cluster.Spec.DNSZone)
 	}
 
 	return c.EnsureTask(dnsZone)
@@ -100,20 +100,20 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 
 			c.AddTask(&awstasks.DNSName{
-				Name:               fi.String(b.Cluster.Spec.MasterPublicName),
-				ResourceName:       fi.String(b.Cluster.Spec.MasterPublicName),
+				Name:               fi.PtrTo(b.Cluster.Spec.MasterPublicName),
+				ResourceName:       fi.PtrTo(b.Cluster.Spec.MasterPublicName),
 				Lifecycle:          b.Lifecycle,
 				Zone:               b.LinkToDNSZone(),
-				ResourceType:       fi.String("A"),
+				ResourceType:       fi.PtrTo("A"),
 				TargetLoadBalancer: targetLoadBalancer,
 			})
 			if b.UseIPv6ForAPI() {
 				c.AddTask(&awstasks.DNSName{
-					Name:               fi.String(b.Cluster.Spec.MasterPublicName + "-AAAA"),
-					ResourceName:       fi.String(b.Cluster.Spec.MasterPublicName),
+					Name:               fi.PtrTo(b.Cluster.Spec.MasterPublicName + "-AAAA"),
+					ResourceName:       fi.PtrTo(b.Cluster.Spec.MasterPublicName),
 					Lifecycle:          b.Lifecycle,
 					Zone:               b.LinkToDNSZone(),
-					ResourceType:       fi.String("AAAA"),
+					ResourceType:       fi.PtrTo("AAAA"),
 					TargetLoadBalancer: targetLoadBalancer,
 				})
 			}
@@ -132,11 +132,11 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			// Using EnsureTask as APIInternalName() and MasterPublicName could be the same
 			{
 				err := c.EnsureTask(&awstasks.DNSName{
-					Name:               fi.String(b.Cluster.APIInternalName()),
-					ResourceName:       fi.String(b.Cluster.APIInternalName()),
+					Name:               fi.PtrTo(b.Cluster.APIInternalName()),
+					ResourceName:       fi.PtrTo(b.Cluster.APIInternalName()),
 					Lifecycle:          b.Lifecycle,
 					Zone:               b.LinkToDNSZone(),
-					ResourceType:       fi.String("A"),
+					ResourceType:       fi.PtrTo("A"),
 					TargetLoadBalancer: targetLoadBalancer,
 				})
 				if err != nil {
@@ -145,11 +145,11 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 			if b.UseIPv6ForAPI() {
 				err := c.EnsureTask(&awstasks.DNSName{
-					Name:               fi.String(b.Cluster.APIInternalName() + "-AAAA"),
-					ResourceName:       fi.String(b.Cluster.APIInternalName()),
+					Name:               fi.PtrTo(b.Cluster.APIInternalName() + "-AAAA"),
+					ResourceName:       fi.PtrTo(b.Cluster.APIInternalName()),
 					Lifecycle:          b.Lifecycle,
 					Zone:               b.LinkToDNSZone(),
-					ResourceType:       fi.String("AAAA"),
+					ResourceType:       fi.PtrTo("AAAA"),
 					TargetLoadBalancer: targetLoadBalancer,
 				})
 				if err != nil {

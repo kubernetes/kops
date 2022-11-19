@@ -65,7 +65,7 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	sharedProfileARNsToIGRole := make(map[string]kops.InstanceGroupRole)
 	for _, ig := range b.InstanceGroups {
 		if ig.Spec.IAM != nil && ig.Spec.IAM.Profile != nil {
-			specProfile := fi.StringValue(ig.Spec.IAM.Profile)
+			specProfile := fi.ValueOf(ig.Spec.IAM.Profile)
 			if matchingRole, ok := sharedProfileARNsToIGRole[specProfile]; ok {
 				if matchingRole != ig.Spec.Role {
 					return fmt.Errorf("found IAM instance profile assigned to multiple Instance Group roles %v and %v: %v",
@@ -153,10 +153,10 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				return fmt.Errorf("error building service account role tasks: %w", err)
 			}
 			if len(aws.PolicyARNs) > 0 {
-				name := "external-" + fi.StringValue(iamRole.Name)
+				name := "external-" + fi.ValueOf(iamRole.Name)
 				externalPolicies := aws.PolicyARNs
 				c.AddTask(&awstasks.IAMRolePolicy{
-					Name:             fi.String(name),
+					Name:             fi.PtrTo(name),
 					ExternalPolicies: &externalPolicies,
 					Managed:          true,
 					Role:             iamRole,
@@ -197,7 +197,7 @@ func (b *IAMModelBuilder) buildIAMRole(role iam.Subject, iamName string, c *fi.M
 	}
 
 	iamRole := &awstasks.IAMRole{
-		Name:      fi.String(iamName),
+		Name:      fi.PtrTo(iamName),
 		Lifecycle: b.Lifecycle,
 
 		RolePolicyDocument: rolePolicy,
@@ -205,14 +205,14 @@ func (b *IAMModelBuilder) buildIAMRole(role iam.Subject, iamName string, c *fi.M
 
 	if isServiceAccount {
 		// e.g. kube-system-dns-controller
-		iamRole.ExportWithID = fi.String(roleKey)
+		iamRole.ExportWithID = fi.PtrTo(roleKey)
 		sa, ok := role.ServiceAccount()
 		if ok {
 			iamRole.Tags = b.CloudTagsForServiceAccount(iamName, sa)
 		}
 	} else {
 		// e.g. nodes
-		iamRole.ExportWithID = fi.String(roleKey + "s")
+		iamRole.ExportWithID = fi.PtrTo(roleKey + "s")
 		iamRole.Tags = b.CloudTags(iamName, false)
 	}
 
@@ -241,12 +241,12 @@ func (b *IAMModelBuilder) buildIAMRolePolicy(role iam.Subject, iamName string, i
 		// but we might be creating the hosted zone dynamically.
 		// We create a stub-reference which will be combined by the execution engine.
 		iamPolicy.DNSZone = &awstasks.DNSZone{
-			Name: fi.String(b.NameForDNSZone()),
+			Name: fi.PtrTo(b.NameForDNSZone()),
 		}
 	}
 
 	t := &awstasks.IAMRolePolicy{
-		Name:      fi.String(iamName),
+		Name:      fi.PtrTo(iamName),
 		Lifecycle: b.Lifecycle,
 
 		Role:           iamRole,
@@ -290,9 +290,9 @@ func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, c *fi.
 		var iamInstanceProfile *awstasks.IAMInstanceProfile
 		{
 			iamInstanceProfile = &awstasks.IAMInstanceProfile{
-				Name:      fi.String(iamName),
+				Name:      fi.PtrTo(iamName),
 				Lifecycle: b.Lifecycle,
-				Shared:    fi.Bool(shared),
+				Shared:    fi.PtrTo(shared),
 				Tags:      b.CloudTags(iamName, shared),
 			}
 			c.AddTask(iamInstanceProfile)
@@ -312,7 +312,7 @@ func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, c *fi.
 				}
 				{
 					iamInstanceProfileRole := &awstasks.IAMInstanceProfileRole{
-						Name:      fi.String(iamName),
+						Name:      fi.PtrTo(iamName),
 						Lifecycle: b.Lifecycle,
 
 						InstanceProfile: iamInstanceProfile,
@@ -331,7 +331,7 @@ func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, c *fi.
 
 				name := fmt.Sprintf("%s-policyoverride", roleKey)
 				t := &awstasks.IAMRolePolicy{
-					Name:             fi.String(name),
+					Name:             fi.PtrTo(name),
 					Lifecycle:        b.Lifecycle,
 					Role:             iamRole,
 					Managed:          true,
@@ -353,7 +353,7 @@ func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, c *fi.
 				additionalPolicyName := "additional." + iamName
 
 				t := &awstasks.IAMRolePolicy{
-					Name:      fi.String(additionalPolicyName),
+					Name:      fi.PtrTo(additionalPolicyName),
 					Lifecycle: b.Lifecycle,
 
 					Role: iamRole,
@@ -474,18 +474,18 @@ func (b *IAMModelBuilder) FindDeletions(context *fi.ModelBuilderContext, cloud f
 	var getRoleErr error
 	err := iamapi.ListRolesPages(request, func(p *awsIam.ListRolesOutput, lastPage bool) bool {
 		for _, role := range p.Roles {
-			if !strings.HasSuffix(fi.StringValue(role.RoleName), "."+b.Cluster.ObjectMeta.Name) {
+			if !strings.HasSuffix(fi.ValueOf(role.RoleName), "."+b.Cluster.ObjectMeta.Name) {
 				continue
 			}
 			getRequest := &awsIam.GetRoleInput{RoleName: role.RoleName}
 			roleOutput, err := iamapi.GetRole(getRequest)
 			if err != nil {
-				getRoleErr = fmt.Errorf("calling IAM GetRole on %s: %w", fi.StringValue(role.RoleName), err)
+				getRoleErr = fmt.Errorf("calling IAM GetRole on %s: %w", fi.ValueOf(role.RoleName), err)
 				return false
 			}
 			for _, tag := range roleOutput.Role.Tags {
-				if fi.StringValue(tag.Key) == ownershipTag && fi.StringValue(tag.Value) == "owned" {
-					if _, ok := context.Tasks["IAMRole/"+fi.StringValue(role.RoleName)]; !ok {
+				if fi.ValueOf(tag.Key) == ownershipTag && fi.ValueOf(tag.Value) == "owned" {
+					if _, ok := context.Tasks["IAMRole/"+fi.ValueOf(role.RoleName)]; !ok {
 						context.AddTask(&awstasks.IAMRole{
 							ID:        role.RoleId,
 							Name:      role.RoleName,

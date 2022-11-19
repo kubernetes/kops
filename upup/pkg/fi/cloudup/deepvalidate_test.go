@@ -134,8 +134,8 @@ func TestDeepValidate_EvenEtcdClusterSize(t *testing.T) {
 		{
 			Name: "main",
 			Members: []kopsapi.EtcdMemberSpec{
-				{Name: "us-test-1a", InstanceGroup: fi.String("us-test-1a")},
-				{Name: "us-test-1b", InstanceGroup: fi.String("us-test-1b")},
+				{Name: "us-test-1a", InstanceGroup: fi.PtrTo("us-test-1a")},
+				{Name: "us-test-1b", InstanceGroup: fi.PtrTo("us-test-1b")},
 			},
 		},
 	}
@@ -156,9 +156,9 @@ func TestDeepValidate_MissingEtcdMember(t *testing.T) {
 		{
 			Name: "main",
 			Members: []kopsapi.EtcdMemberSpec{
-				{Name: "us-test-1a", InstanceGroup: fi.String("us-test-1a")},
-				{Name: "us-test-1b", InstanceGroup: fi.String("us-test-1b")},
-				{Name: "us-test-1c", InstanceGroup: fi.String("us-test-1c")},
+				{Name: "us-test-1a", InstanceGroup: fi.PtrTo("us-test-1a")},
+				{Name: "us-test-1b", InstanceGroup: fi.PtrTo("us-test-1b")},
+				{Name: "us-test-1c", InstanceGroup: fi.PtrTo("us-test-1c")},
 			},
 		},
 	}

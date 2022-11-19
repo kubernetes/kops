@@ -41,7 +41,7 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			return err
 		}
 		t := &hetznertasks.SSHKey{
-			Name:      fi.String(b.ClusterName() + "-" + fingerprint),
+			Name:      fi.PtrTo(b.ClusterName() + "-" + fingerprint),
 			Lifecycle: b.Lifecycle,
 			PublicKey: string(sshkey),
 			Labels: map[string]string{
@@ -53,7 +53,7 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	for _, ig := range b.InstanceGroups {
-		igSize := fi.Int32Value(ig.Spec.MinSize)
+		igSize := fi.ValueOf(ig.Spec.MinSize)
 
 		labels := make(map[string]string)
 		labels[hetzner.TagKubernetesClusterName] = b.ClusterName()
@@ -66,7 +66,7 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		serverGroup := hetznertasks.ServerGroup{
-			Name:       fi.String(ig.Name),
+			Name:       fi.PtrTo(ig.Name),
 			Lifecycle:  b.Lifecycle,
 			SSHKeys:    sshkeyTasks,
 			Network:    b.LinkToNetwork(),

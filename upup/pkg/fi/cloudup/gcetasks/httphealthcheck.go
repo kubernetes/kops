@@ -43,7 +43,7 @@ func (e *HTTPHealthcheck) CompareWithID() *string {
 
 func (e *HTTPHealthcheck) Find(c *fi.Context) (*HTTPHealthcheck, error) {
 	cloud := c.Cloud.(gce.GCECloud)
-	name := fi.StringValue(e.Name)
+	name := fi.ValueOf(e.Name)
 	r, err := cloud.Compute().HTTPHealthChecks().Get(cloud.Project(), name)
 	if err != nil {
 		if gce.IsNotFound(err) {
@@ -52,8 +52,8 @@ func (e *HTTPHealthcheck) Find(c *fi.Context) (*HTTPHealthcheck, error) {
 		return nil, fmt.Errorf("error getting HealthCheck %q: %v", name, err)
 	}
 	actual := &HTTPHealthcheck{
-		Name:     fi.String(r.Name),
-		Port:     fi.Int64(r.Port),
+		Name:     fi.PtrTo(r.Name),
+		Port:     fi.PtrTo(r.Port),
 		SelfLink: r.SelfLink,
 	}
 	// System fields
@@ -67,7 +67,7 @@ func (e *HTTPHealthcheck) Run(c *fi.Context) error {
 }
 
 func (_ *HTTPHealthcheck) CheckChanges(a, e, changes *HTTPHealthcheck) error {
-	if fi.StringValue(e.Name) == "" {
+	if fi.ValueOf(e.Name) == "" {
 		return fi.RequiredField("Name")
 	}
 	return nil
@@ -76,8 +76,8 @@ func (_ *HTTPHealthcheck) CheckChanges(a, e, changes *HTTPHealthcheck) error {
 func (h *HTTPHealthcheck) RenderGCE(t *gce.GCEAPITarget, a, e, changes *HTTPHealthcheck) error {
 	if a == nil {
 		o := &compute.HttpHealthCheck{
-			Name:        fi.StringValue(e.Name),
-			Port:        fi.Int64Value(e.Port),
+			Name:        fi.ValueOf(e.Name),
+			Port:        fi.ValueOf(e.Port),
 			RequestPath: "/healthz",
 		}
 

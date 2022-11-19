@@ -72,7 +72,7 @@ func (e *VPC) Find(c *fi.Context) (*VPC, error) {
 
 	request := &ec2.DescribeVpcsInput{}
 
-	if fi.StringValue(e.ID) != "" {
+	if fi.ValueOf(e.ID) != "" {
 		request.VpcIds = []*string{e.ID}
 	} else {
 		request.Filters = cloud.BuildFilters(e.Name)
@@ -173,11 +173,11 @@ func (e *VPC) Run(c *fi.Context) error {
 }
 
 func (_ *VPC) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPC) error {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Verify the VPC was found and matches our required settings
 		if a == nil {
-			return fmt.Errorf("VPC with id %q not found", fi.StringValue(e.ID))
+			return fmt.Errorf("VPC with id %q not found", fi.ValueOf(e.ID))
 		}
 
 		if changes != nil && changes.EnableDNSSupport != nil {
@@ -185,7 +185,7 @@ func (_ *VPC) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPC) error {
 				klog.Warningf("VPC did not have EnableDNSSupport=true, but ignoring because of VPCSkipEnableDNSSupport feature-flag")
 			} else {
 				// TODO: We could easily just allow kops to fix this...
-				return fmt.Errorf("VPC with id %q was set to be shared, but did not have EnableDNSSupport=true.", fi.StringValue(e.ID))
+				return fmt.Errorf("VPC with id %q was set to be shared, but did not have EnableDNSSupport=true.", fi.ValueOf(e.ID))
 			}
 		}
 	}
@@ -234,7 +234,7 @@ func (_ *VPC) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPC) error {
 }
 
 func (e *VPC) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
-	if fi.IsNilOrEmpty(e.ID) || fi.BoolValue(e.Shared) {
+	if fi.IsNilOrEmpty(e.ID) || fi.ValueOf(e.Shared) {
 		return nil, nil
 	}
 
@@ -258,13 +258,13 @@ func (e *VPC) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
 	for _, association := range vpc.CidrBlockAssociationSet {
 		// We'll only delete CIDR associations that are not the primary association
 		// and that have a state of "associated"
-		if fi.StringValue(association.CidrBlock) == fi.StringValue(vpc.CidrBlock) ||
-			association.CidrBlockState != nil && fi.StringValue(association.CidrBlockState.State) != ec2.VpcCidrBlockStateCodeAssociated {
+		if fi.ValueOf(association.CidrBlock) == fi.ValueOf(vpc.CidrBlock) ||
+			association.CidrBlockState != nil && fi.ValueOf(association.CidrBlockState.State) != ec2.VpcCidrBlockStateCodeAssociated {
 			continue
 		}
 		match := false
 		for _, cidr := range e.AssociateExtraCIDRBlocks {
-			if fi.StringValue(association.CidrBlock) == cidr {
+			if fi.ValueOf(association.CidrBlock) == cidr {
 				match = true
 				break
 			}
@@ -293,7 +293,7 @@ func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) 
 		return err
 	}
 
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Not terraform owned / managed
 		// We won't apply changes, but our validation (kops update) will still warn
@@ -317,7 +317,7 @@ func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) 
 }
 
 func (e *VPC) TerraformLink() *terraformWriter.Literal {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		if e.ID == nil {
 			klog.Fatalf("ID must be set, if VPC is shared: %s", e)
@@ -338,7 +338,7 @@ type cloudformationVPC struct {
 }
 
 func (_ *VPC) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *VPC) error {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Not cloudformation owned / managed
 		// We won't apply changes, but our validation (kops update) will still warn
@@ -356,7 +356,7 @@ func (_ *VPC) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e,
 }
 
 func (e *VPC) CloudformationLink() *cloudformation.Literal {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		if e.ID == nil {
 			klog.Fatalf("ID must be set, if VPC is shared: %s", e)

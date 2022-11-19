@@ -32,7 +32,7 @@ import (
 )
 
 func RemapAddonManifest(addon *addonsapi.AddonSpec, context *model.KopsModelContext, assetBuilder *assets.AssetBuilder, manifest []byte, serviceAccounts map[string]iam.Subject) ([]byte, error) {
-	name := fi.StringValue(addon.Name)
+	name := fi.ValueOf(addon.Name)
 
 	{
 		objects, err := kubemanifest.LoadObjectsFrom(manifest)

@@ -53,9 +53,9 @@ func (v *Network) Find(c *fi.Context) (*Network, error) {
 	cloud := c.Cloud.(hetzner.HetznerCloud)
 	client := cloud.NetworkClient()
 
-	idOrName := fi.StringValue(v.Name)
+	idOrName := fi.ValueOf(v.Name)
 	if v.ID != nil {
-		idOrName = fi.StringValue(v.ID)
+		idOrName = fi.ValueOf(v.ID)
 	}
 
 	network, _, err := client.Get(context.TODO(), idOrName)
@@ -72,7 +72,7 @@ func (v *Network) Find(c *fi.Context) (*Network, error) {
 	matches := &Network{
 		Name:      v.Name,
 		Lifecycle: v.Lifecycle,
-		ID:        fi.String(strconv.Itoa(network.ID)),
+		ID:        fi.PtrTo(strconv.Itoa(network.ID)),
 	}
 
 	if v.ID == nil {
@@ -143,7 +143,7 @@ func (_ *Network) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *Netw
 			return err
 		}
 		opts := hcloud.NetworkCreateOpts{
-			Name:    fi.StringValue(e.Name),
+			Name:    fi.ValueOf(e.Name),
 			IPRange: ipRange,
 			Labels:  e.Labels,
 		}
@@ -151,11 +151,11 @@ func (_ *Network) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *Netw
 		if err != nil {
 			return err
 		}
-		e.ID = fi.String(strconv.Itoa(network.ID))
+		e.ID = fi.PtrTo(strconv.Itoa(network.ID))
 
 	} else {
 		var err error
-		network, _, err = client.Get(context.TODO(), fi.StringValue(e.Name))
+		network, _, err = client.Get(context.TODO(), fi.ValueOf(e.Name))
 		if err != nil {
 			return err
 		}
@@ -163,7 +163,7 @@ func (_ *Network) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *Netw
 		// Update the labels
 		if changes.Name != nil || len(changes.Labels) != 0 {
 			_, _, err := client.Update(context.TODO(), network, hcloud.NetworkUpdateOpts{
-				Name:   fi.StringValue(e.Name),
+				Name:   fi.ValueOf(e.Name),
 				Labels: e.Labels,
 			})
 			if err != nil {
@@ -221,7 +221,7 @@ func (_ *Network) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *N
 	{
 		tf := &terraformNetwork{
 			Name:    e.Name,
-			IPRange: fi.String(e.IPRange),
+			IPRange: fi.PtrTo(e.IPRange),
 			Labels:  e.Labels,
 		}
 
@@ -239,9 +239,9 @@ func (_ *Network) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *N
 
 		tf := &terraformNetworkSubnet{
 			NetworkID:   e.TerraformLink(),
-			Type:        fi.String(string(hcloud.NetworkSubnetTypeCloud)),
-			IPRange:     fi.String(subnetIpRange.String()),
-			NetworkZone: fi.String(e.Region),
+			Type:        fi.PtrTo(string(hcloud.NetworkSubnetTypeCloud)),
+			IPRange:     fi.PtrTo(subnetIpRange.String()),
+			NetworkZone: fi.PtrTo(e.Region),
 		}
 
 		err = t.RenderResource("hcloud_network_subnet", *e.Name+"-"+subnet, tf)

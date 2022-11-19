@@ -59,8 +59,8 @@ func NewLBListenerTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lif
 	// sort for consistent comparison
 	sort.Strings(listener.AllowedCIDRs)
 	listenerTask := &LBListener{
-		ID:           fi.String(listener.ID),
-		Name:         fi.String(listener.Name),
+		ID:           fi.PtrTo(listener.ID),
+		Name:         fi.PtrTo(listener.Name),
 		AllowedCIDRs: listener.AllowedCIDRs,
 		Lifecycle:    lifecycle,
 	}
@@ -103,17 +103,17 @@ func (s *LBListener) Find(context *fi.Context) (*LBListener, error) {
 
 	cloud := context.Cloud.(openstack.OpenstackCloud)
 	listenerList, err := cloud.ListListeners(listeners.ListOpts{
-		ID:   fi.StringValue(s.ID),
-		Name: fi.StringValue(s.Name),
+		ID:   fi.ValueOf(s.ID),
+		Name: fi.ValueOf(s.Name),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("Failed to list loadbalancer listeners for name %s: %v", fi.StringValue(s.Name), err)
+		return nil, fmt.Errorf("Failed to list loadbalancer listeners for name %s: %v", fi.ValueOf(s.Name), err)
 	}
 	if len(listenerList) == 0 {
 		return nil, nil
 	}
 	if len(listenerList) > 1 {
-		return nil, fmt.Errorf("Multiple listeners found with name %s", fi.StringValue(s.Name))
+		return nil, fmt.Errorf("Multiple listeners found with name %s", fi.ValueOf(s.Name))
 	}
 
 	return NewLBListenerTaskFromCloud(cloud, s.Lifecycle, &listenerList[0], s)
@@ -146,16 +146,16 @@ func (_ *LBListener) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, chan
 	}
 
 	if a == nil {
-		klog.V(2).Infof("Creating LB with Name: %q", fi.StringValue(e.Name))
+		klog.V(2).Infof("Creating LB with Name: %q", fi.ValueOf(e.Name))
 		listeneropts := listeners.CreateOpts{
-			Name:           fi.StringValue(e.Name),
-			DefaultPoolID:  fi.StringValue(e.Pool.ID),
-			LoadbalancerID: fi.StringValue(e.Pool.Loadbalancer.ID),
+			Name:           fi.ValueOf(e.Name),
+			DefaultPoolID:  fi.ValueOf(e.Pool.ID),
+			LoadbalancerID: fi.ValueOf(e.Pool.Loadbalancer.ID),
 			Protocol:       listeners.ProtocolTCP,
 			ProtocolPort:   443,
 		}
 
-		if useVIPACL && (fi.StringValue(e.Pool.Loadbalancer.Provider) != "ovn") {
+		if useVIPACL && (fi.ValueOf(e.Pool.Loadbalancer.Provider) != "ovn") {
 			listeneropts.AllowedCIDRs = e.AllowedCIDRs
 		}
 
@@ -163,14 +163,14 @@ func (_ *LBListener) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, chan
 		if err != nil {
 			return fmt.Errorf("error creating LB listener: %v", err)
 		}
-		e.ID = fi.String(listener.ID)
+		e.ID = fi.PtrTo(listener.ID)
 		return nil
 	} else if len(changes.AllowedCIDRs) > 0 {
-		if useVIPACL && (fi.StringValue(a.Pool.Loadbalancer.Provider) != "ovn") {
+		if useVIPACL && (fi.ValueOf(a.Pool.Loadbalancer.Provider) != "ovn") {
 			opts := listeners.UpdateOpts{
 				AllowedCIDRs: &changes.AllowedCIDRs,
 			}
-			_, err := listeners.Update(t.Cloud.LoadBalancerClient(), fi.StringValue(a.ID), opts).Extract()
+			_, err := listeners.Update(t.Cloud.LoadBalancerClient(), fi.ValueOf(a.ID), opts).Extract()
 			if err != nil {
 				return fmt.Errorf("error updating LB listener: %v", err)
 			}

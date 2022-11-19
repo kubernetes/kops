@@ -49,18 +49,18 @@ func findDockerAsset(c *kops.Cluster, assetBuilder *assets.AssetBuilder, arch ar
 
 	if docker.Packages != nil {
 		if arch == architectures.ArchitectureAmd64 && docker.Packages.UrlAmd64 != nil && docker.Packages.HashAmd64 != nil {
-			assetUrl := fi.StringValue(docker.Packages.UrlAmd64)
-			assetHash := fi.StringValue(docker.Packages.HashAmd64)
+			assetUrl := fi.ValueOf(docker.Packages.UrlAmd64)
+			assetHash := fi.ValueOf(docker.Packages.HashAmd64)
 			return findAssetsUrlHash(assetBuilder, assetUrl, assetHash)
 		}
 		if arch == architectures.ArchitectureArm64 && docker.Packages.UrlArm64 != nil && docker.Packages.HashArm64 != nil {
-			assetUrl := fi.StringValue(docker.Packages.UrlArm64)
-			assetHash := fi.StringValue(docker.Packages.HashArm64)
+			assetUrl := fi.ValueOf(docker.Packages.UrlArm64)
+			assetHash := fi.ValueOf(docker.Packages.HashArm64)
 			return findAssetsUrlHash(assetBuilder, assetUrl, assetHash)
 		}
 	}
 
-	version := fi.StringValue(docker.Version)
+	version := fi.ValueOf(docker.Version)
 	if version == "" {
 		return nil, nil, fmt.Errorf("unable to find Docker version")
 	}

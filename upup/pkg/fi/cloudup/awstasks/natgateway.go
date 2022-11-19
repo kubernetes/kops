@@ -64,7 +64,7 @@ func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
 	var ngw *ec2.NatGateway
 	actual := &NatGateway{}
 
-	if fi.StringValue(e.ID) != "" {
+	if fi.ValueOf(e.ID) != "" {
 		// We have an existing NGW, lets look up the EIP
 		var ngwIds []*string
 		ngwIds = append(ngwIds, e.ID)
@@ -79,7 +79,7 @@ func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
 		}
 
 		if len(response.NatGateways) != 1 {
-			return nil, fmt.Errorf("found %d Nat Gateways with ID %q, expected 1", len(response.NatGateways), fi.StringValue(e.ID))
+			return nil, fmt.Errorf("found %d Nat Gateways with ID %q, expected 1", len(response.NatGateways), fi.ValueOf(e.ID))
 		}
 		ngw = response.NatGateways[0]
 
@@ -233,7 +233,7 @@ func findNatGatewayFromRouteTable(cloud awsup.AWSCloud, routeTable *RouteTable) 
 						return nil, err
 					}
 
-					if raws.HasOwnedTag(ec2.ResourceTypeNatgateway+":"+fi.StringValue(natGatewayID), gw.Tags, clusterName) {
+					if raws.HasOwnedTag(ec2.ResourceTypeNatgateway+":"+fi.ValueOf(natGatewayID), gw.Tags, clusterName) {
 						filteredNatGateways = append(filteredNatGateways, gw)
 					}
 				}
@@ -256,7 +256,7 @@ func findNatGatewayFromRouteTable(cloud awsup.AWSCloud, routeTable *RouteTable) 
 func (s *NatGateway) CheckChanges(a, e, changes *NatGateway) error {
 	// New
 	if a == nil {
-		if !fi.BoolValue(e.Shared) {
+		if !fi.ValueOf(e.Shared) {
 			if e.ElasticIP == nil {
 				return fi.RequiredField("ElasticIP")
 			}
@@ -274,11 +274,11 @@ func (s *NatGateway) CheckChanges(a, e, changes *NatGateway) error {
 		if changes.ElasticIP != nil {
 			eID := ""
 			if e.ElasticIP != nil {
-				eID = fi.StringValue(e.ElasticIP.ID)
+				eID = fi.ValueOf(e.ElasticIP.ID)
 			}
 			aID := ""
 			if a.ElasticIP != nil {
-				aID = fi.StringValue(a.ElasticIP.ID)
+				aID = fi.ValueOf(a.ElasticIP.ID)
 			}
 			return fi.FieldIsImmutable(eID, aID, field.NewPath("ElasticIP"))
 		}
@@ -302,8 +302,8 @@ func (_ *NatGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NatGateway)
 	var id *string
 	if a == nil {
 
-		if fi.BoolValue(e.Shared) {
-			return fmt.Errorf("NAT gateway %q not found", fi.StringValue(e.ID))
+		if fi.ValueOf(e.Shared) {
+			return fmt.Errorf("NAT gateway %q not found", fi.ValueOf(e.ID))
 		}
 
 		klog.V(2).Infof("Creating Nat Gateway")
@@ -348,12 +348,12 @@ func (_ *NatGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NatGateway)
 	// This is better than just a tag that's shared because this lets us create a whitelist of these NGWs
 	// without doing a bunch more work in `kutil/delete_cluster.go`
 
-	if fi.BoolValue(e.Shared) {
+	if fi.ValueOf(e.Shared) {
 		if e.AssociatedRouteTable == nil {
 			return fmt.Errorf("AssociatedRouteTable not provided")
 		}
-		klog.V(2).Infof("tagging route table %s to track shared NGW", fi.StringValue(e.AssociatedRouteTable.ID))
-		err = t.AddAWSTags(fi.StringValue(e.AssociatedRouteTable.ID), tags)
+		klog.V(2).Infof("tagging route table %s to track shared NGW", fi.ValueOf(e.AssociatedRouteTable.ID))
+		err = t.AddAWSTags(fi.ValueOf(e.AssociatedRouteTable.ID), tags)
 		if err != nil {
 			return fmt.Errorf("unable to tag route table %v", err)
 		}
@@ -369,7 +369,7 @@ type terraformNATGateway struct {
 }
 
 func (_ *NatGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *NatGateway) error {
-	if fi.BoolValue(e.Shared) {
+	if fi.ValueOf(e.Shared) {
 		if e.ID == nil {
 			return fmt.Errorf("ID must be set, if NatGateway is shared: %s", e)
 		}
@@ -388,7 +388,7 @@ func (_ *NatGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 }
 
 func (e *NatGateway) TerraformLink() *terraformWriter.Literal {
-	if fi.BoolValue(e.Shared) {
+	if fi.ValueOf(e.Shared) {
 		if e.ID == nil {
 			klog.Fatalf("ID must be set, if NatGateway is shared: %s", e)
 		}
@@ -406,7 +406,7 @@ type cloudformationNATGateway struct {
 }
 
 func (_ *NatGateway) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *NatGateway) error {
-	if fi.BoolValue(e.Shared) {
+	if fi.ValueOf(e.Shared) {
 		if e.ID == nil {
 			return fmt.Errorf("ID must be set, if NatGateway is shared: %s", e)
 		}
@@ -425,7 +425,7 @@ func (_ *NatGateway) RenderCloudformation(t *cloudformation.CloudformationTarget
 }
 
 func (e *NatGateway) CloudformationLink() *cloudformation.Literal {
-	if fi.BoolValue(e.Shared) {
+	if fi.ValueOf(e.Shared) {
 		if e.ID == nil {
 			klog.Fatalf("ID must be set, if NatGateway is shared: %s", e)
 		}

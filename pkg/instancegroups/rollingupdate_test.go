@@ -893,7 +893,7 @@ func TestRollingUpdateDisabled(t *testing.T) {
 	c.CloudOnly = true
 
 	c.Cluster.Spec.RollingUpdate = &kopsapi.RollingUpdate{
-		DrainAndTerminate: fi.Bool(false),
+		DrainAndTerminate: fi.PtrTo(false),
 	}
 
 	groups := getGroupsAllNeedUpdate(c.K8sClient, cloud)
@@ -936,7 +936,7 @@ func TestRollingUpdateDisabledSurge(t *testing.T) {
 
 	one := intstr.FromInt(1)
 	c.Cluster.Spec.RollingUpdate = &kopsapi.RollingUpdate{
-		DrainAndTerminate: fi.Bool(false),
+		DrainAndTerminate: fi.PtrTo(false),
 		MaxSurge:          &one,
 	}
 

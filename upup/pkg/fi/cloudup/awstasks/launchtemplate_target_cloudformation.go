@@ -166,12 +166,12 @@ type cloudformationLaunchTemplate struct {
 
 // CloudformationLink returns the cloudformation link for us
 func (t *LaunchTemplate) CloudformationLink() *cloudformation.Literal {
-	return cloudformation.Ref("AWS::EC2::LaunchTemplate", fi.StringValue(t.Name))
+	return cloudformation.Ref("AWS::EC2::LaunchTemplate", fi.ValueOf(t.Name))
 }
 
 // CloudformationLink returns the cloudformation version.
 func (t *LaunchTemplate) CloudformationVersion() *cloudformation.Literal {
-	return cloudformation.GetAtt("AWS::EC2::LaunchTemplate", fi.StringValue(t.Name), "LatestVersionNumber")
+	return cloudformation.GetAtt("AWS::EC2::LaunchTemplate", fi.ValueOf(t.Name), "LatestVersionNumber")
 }
 
 // RenderCloudformation is responsible for rendering the cloudformation json
@@ -182,7 +182,7 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 
 	var image *string
 	if e.ImageID != nil {
-		im, err := cloud.ResolveImage(fi.StringValue(e.ImageID))
+		im, err := cloud.ResolveImage(fi.ValueOf(e.ImageID))
 		if err != nil {
 			return err
 		}
@@ -200,14 +200,14 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 		NetworkInterfaces: []*cloudformationLaunchTemplateNetworkInterface{
 			{
 				AssociatePublicIPAddress: e.AssociatePublicIP,
-				DeleteOnTermination:      fi.Bool(true),
-				DeviceIndex:              fi.Int(0),
+				DeleteOnTermination:      fi.PtrTo(true),
+				DeviceIndex:              fi.PtrTo(0),
 				Ipv6AddressCount:         e.IPv6AddressCount,
 			},
 		},
 	}
 
-	if fi.StringValue(e.SpotPrice) != "" {
+	if fi.ValueOf(e.SpotPrice) != "" {
 		marketSpotOptions := cloudformationLaunchTemplateMarketOptionsSpotOptions{MaxPrice: e.SpotPrice}
 		if e.SpotDurationInMinutes != nil {
 			marketSpotOptions.BlockDurationMinutes = e.SpotDurationInMinutes
@@ -215,17 +215,17 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 		if e.InstanceInterruptionBehavior != nil {
 			marketSpotOptions.InstanceInterruptionBehavior = e.InstanceInterruptionBehavior
 		}
-		launchTemplateData.MarketOptions = &cloudformationLaunchTemplateMarketOptions{MarketType: fi.String("spot"), SpotOptions: &marketSpotOptions}
+		launchTemplateData.MarketOptions = &cloudformationLaunchTemplateMarketOptions{MarketType: fi.PtrTo("spot"), SpotOptions: &marketSpotOptions}
 	}
 
-	if fi.StringValue(e.CPUCredits) != "" {
+	if fi.ValueOf(e.CPUCredits) != "" {
 		launchTemplateData.CreditSpecification = &cloudformationLaunchTemplateCreditSpecification{
 			CPUCredits: e.CPUCredits,
 		}
 	}
 
 	cf := &cloudformationLaunchTemplate{
-		LaunchTemplateName: fi.String(fi.StringValue(e.Name)),
+		LaunchTemplateName: fi.PtrTo(fi.ValueOf(e.Name)),
 		LaunchTemplateData: launchTemplateData,
 	}
 	data := cf.LaunchTemplateData
@@ -266,9 +266,9 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 	}
 	for name, x := range devices {
 		data.BlockDeviceMappings = append(data.BlockDeviceMappings, &cloudformationLaunchTemplateBlockDevice{
-			DeviceName: fi.String(name),
+			DeviceName: fi.PtrTo(name),
 			EBS: &cloudformationLaunchTemplateBlockDeviceEBS{
-				DeleteOnTermination: fi.Bool(true),
+				DeleteOnTermination: fi.PtrTo(true),
 				IOPS:                x.EbsVolumeIops,
 				Throughput:          x.EbsVolumeThroughput,
 				VolumeSize:          x.EbsVolumeSize,
@@ -280,9 +280,9 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 	}
 	for name, x := range additionals {
 		data.BlockDeviceMappings = append(data.BlockDeviceMappings, &cloudformationLaunchTemplateBlockDevice{
-			DeviceName: fi.String(name),
+			DeviceName: fi.PtrTo(name),
 			EBS: &cloudformationLaunchTemplateBlockDeviceEBS{
-				DeleteOnTermination: fi.Bool(true),
+				DeleteOnTermination: fi.PtrTo(true),
 				IOPS:                x.EbsVolumeIops,
 				VolumeSize:          x.EbsVolumeSize,
 				Throughput:          x.EbsVolumeThroughput,
@@ -293,28 +293,28 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 		})
 	}
 
-	devices, err = buildEphemeralDevices(cloud, fi.StringValue(e.InstanceType))
+	devices, err = buildEphemeralDevices(cloud, fi.ValueOf(e.InstanceType))
 	if err != nil {
 		return err
 	}
 	for n, x := range devices {
 		data.BlockDeviceMappings = append(data.BlockDeviceMappings, &cloudformationLaunchTemplateBlockDevice{
 			VirtualName: x.VirtualName,
-			DeviceName:  fi.String(n),
+			DeviceName:  fi.PtrTo(n),
 		})
 	}
 
 	if e.Tags != nil {
 		tags := buildCloudformationTags(t.Tags)
 		data.TagSpecifications = append(data.TagSpecifications, &cloudformationLaunchTemplateTagSpecification{
-			ResourceType: fi.String("instance"),
+			ResourceType: fi.PtrTo("instance"),
 			Tags:         tags,
 		})
 		data.TagSpecifications = append(data.TagSpecifications, &cloudformationLaunchTemplateTagSpecification{
-			ResourceType: fi.String("volume"),
+			ResourceType: fi.PtrTo("volume"),
 			Tags:         tags,
 		})
 	}
 
-	return target.RenderResource("AWS::EC2::LaunchTemplate", fi.StringValue(e.Name), cf)
+	return target.RenderResource("AWS::EC2::LaunchTemplate", fi.ValueOf(e.Name), cf)
 }

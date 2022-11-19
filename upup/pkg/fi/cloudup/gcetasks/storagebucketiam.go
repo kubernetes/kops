@@ -49,9 +49,9 @@ func (e *StorageBucketIAM) Find(c *fi.Context) (*StorageBucketIAM, error) {
 
 	cloud := c.Cloud.(gce.GCECloud)
 
-	bucket := fi.StringValue(e.Bucket)
-	member := fi.StringValue(e.Member)
-	role := fi.StringValue(e.Role)
+	bucket := fi.ValueOf(e.Bucket)
+	member := fi.ValueOf(e.Member)
+	role := fi.ValueOf(e.Role)
 
 	klog.V(2).Infof("Checking GCS bucket IAM for gs://%s for %s", bucket, member)
 	policy, err := cloud.Storage().Buckets.GetIamPolicy(bucket).Context(ctx).Do()
@@ -84,13 +84,13 @@ func (e *StorageBucketIAM) Run(c *fi.Context) error {
 }
 
 func (_ *StorageBucketIAM) CheckChanges(a, e, changes *StorageBucketIAM) error {
-	if fi.StringValue(e.Bucket) == "" {
+	if fi.ValueOf(e.Bucket) == "" {
 		return fi.RequiredField("Bucket")
 	}
-	if fi.StringValue(e.Member) == "" {
+	if fi.ValueOf(e.Member) == "" {
 		return fi.RequiredField("Member")
 	}
-	if fi.StringValue(e.Role) == "" {
+	if fi.ValueOf(e.Role) == "" {
 		return fi.RequiredField("Role")
 	}
 	return nil
@@ -99,9 +99,9 @@ func (_ *StorageBucketIAM) CheckChanges(a, e, changes *StorageBucketIAM) error {
 func (_ *StorageBucketIAM) RenderGCE(t *gce.GCEAPITarget, a, e, changes *StorageBucketIAM) error {
 	ctx := context.TODO()
 
-	bucket := fi.StringValue(e.Bucket)
-	member := fi.StringValue(e.Member)
-	role := fi.StringValue(e.Role)
+	bucket := fi.ValueOf(e.Bucket)
+	member := fi.ValueOf(e.Member)
+	role := fi.ValueOf(e.Role)
 
 	klog.V(2).Infof("Creating GCS bucket IAM for gs://%s for %s as %s", bucket, member, role)
 
@@ -133,9 +133,9 @@ type terraformStorageBucketIAM struct {
 
 func (_ *StorageBucketIAM) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *StorageBucketIAM) error {
 	tf := &terraformStorageBucketIAM{
-		Bucket: fi.StringValue(e.Bucket),
-		Role:   fi.StringValue(e.Role),
-		Member: fi.StringValue(e.Member),
+		Bucket: fi.ValueOf(e.Bucket),
+		Role:   fi.ValueOf(e.Role),
+		Member: fi.ValueOf(e.Member),
 	}
 
 	return t.RenderResource("google_storage_bucket_iam_member", *e.Name, tf)

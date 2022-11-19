@@ -86,17 +86,17 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.KubeDNS.NodeLocalDNS = nodeLocalDNS
 	}
 	if nodeLocalDNS.Enabled == nil {
-		nodeLocalDNS.Enabled = fi.Bool(false)
+		nodeLocalDNS.Enabled = fi.PtrTo(false)
 	}
-	if fi.BoolValue(nodeLocalDNS.Enabled) && nodeLocalDNS.LocalIP == "" {
+	if fi.ValueOf(nodeLocalDNS.Enabled) && nodeLocalDNS.LocalIP == "" {
 		if clusterSpec.IsIPv6Only() {
 			nodeLocalDNS.LocalIP = "fd00:90de:d95::1"
 		} else {
 			nodeLocalDNS.LocalIP = "169.254.20.10"
 		}
 	}
-	if fi.BoolValue(nodeLocalDNS.Enabled) && nodeLocalDNS.ForwardToKubeDNS == nil {
-		nodeLocalDNS.ForwardToKubeDNS = fi.Bool(false)
+	if fi.ValueOf(nodeLocalDNS.Enabled) && nodeLocalDNS.ForwardToKubeDNS == nil {
+		nodeLocalDNS.ForwardToKubeDNS = fi.PtrTo(false)
 	}
 
 	if nodeLocalDNS.MemoryRequest == nil || nodeLocalDNS.MemoryRequest.IsZero() {
@@ -110,7 +110,7 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if nodeLocalDNS.Image == nil {
-		nodeLocalDNS.Image = fi.String("registry.k8s.io/dns/k8s-dns-node-cache:1.22.8")
+		nodeLocalDNS.Image = fi.PtrTo("registry.k8s.io/dns/k8s-dns-node-cache:1.22.8")
 	}
 
 	return nil

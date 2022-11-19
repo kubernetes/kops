@@ -101,7 +101,7 @@ func (e *IAMInstanceProfile) Run(c *fi.Context) error {
 
 func (s *IAMInstanceProfile) CheckChanges(a, e, changes *IAMInstanceProfile) error {
 	if a != nil {
-		if fi.StringValue(e.Name) == "" && !fi.BoolValue(e.Shared) {
+		if fi.ValueOf(e.Name) == "" && !fi.ValueOf(e.Shared) {
 			return fi.RequiredField("Name")
 		}
 	}
@@ -109,9 +109,9 @@ func (s *IAMInstanceProfile) CheckChanges(a, e, changes *IAMInstanceProfile) err
 }
 
 func (_ *IAMInstanceProfile) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMInstanceProfile) error {
-	if fi.BoolValue(e.Shared) {
+	if fi.ValueOf(e.Shared) {
 		if a == nil {
-			return fmt.Errorf("instance role profile with id %q not found", fi.StringValue(e.ID))
+			return fmt.Errorf("instance role profile with id %q not found", fi.ValueOf(e.ID))
 		}
 	} else if a == nil {
 		klog.V(2).Infof("Creating IAMInstanceProfile with Name:%q", *e.Name)
@@ -182,8 +182,8 @@ func (_ *IAMInstanceProfile) RenderTerraform(t *terraform.TerraformTarget, a, e,
 }
 
 func (e *IAMInstanceProfile) TerraformLink() *terraformWriter.Literal {
-	if fi.BoolValue(e.Shared) {
-		return terraformWriter.LiteralFromStringValue(fi.StringValue(e.Name))
+	if fi.ValueOf(e.Shared) {
+		return terraformWriter.LiteralFromStringValue(fi.ValueOf(e.Name))
 	}
 	return terraformWriter.LiteralProperty("aws_iam_instance_profile", *e.Name, "id")
 }
@@ -194,8 +194,8 @@ func (_ *IAMInstanceProfile) RenderCloudformation(t *cloudformation.Cloudformati
 }
 
 func (e *IAMInstanceProfile) CloudformationLink() *cloudformation.Literal {
-	if fi.BoolValue(e.Shared) {
-		return cloudformation.LiteralString(fi.StringValue(e.Name))
+	if fi.ValueOf(e.Shared) {
+		return cloudformation.LiteralString(fi.ValueOf(e.Name))
 	}
-	return cloudformation.Ref("AWS::IAM::InstanceProfile", fi.StringValue(e.Name))
+	return cloudformation.Ref("AWS::IAM::InstanceProfile", fi.ValueOf(e.Name))
 }

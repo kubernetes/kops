@@ -25,12 +25,12 @@ import (
 
 // s is a helper that builds a *string from a string value
 func s(v string) *string {
-	return fi.String(v)
+	return fi.PtrTo(v)
 }
 
 // b returns a pointer to a boolean
 func b(v bool) *bool {
-	return fi.Bool(v)
+	return fi.PtrTo(v)
 }
 
 // buildContainerRuntimeEnvironmentVars just converts a series of keypairs to docker environment variables switches

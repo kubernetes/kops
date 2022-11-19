@@ -47,7 +47,7 @@ type LoadBalancer struct {
 var _ fi.CompareWithID = &LoadBalancer{}
 
 func (v *LoadBalancer) CompareWithID() *string {
-	return fi.String(strconv.Itoa(fi.IntValue(v.ID)))
+	return fi.PtrTo(strconv.Itoa(fi.ValueOf(v.ID)))
 }
 
 var _ fi.HasAddress = &LoadBalancer{}
@@ -73,15 +73,15 @@ func (v *LoadBalancer) FindAddresses(c *fi.Context) ([]string, error) {
 	}
 
 	for _, loadbalancer := range loadbalancers {
-		if loadbalancer.Name == fi.StringValue(v.Name) {
+		if loadbalancer.Name == fi.ValueOf(v.Name) {
 			var addresses []string
 			if loadbalancer.PublicNet.IPv4.IP == nil {
-				return nil, fmt.Errorf("failed to find load-balancer %q public address", fi.StringValue(v.Name))
+				return nil, fmt.Errorf("failed to find load-balancer %q public address", fi.ValueOf(v.Name))
 			}
 			addresses = append(addresses, loadbalancer.PublicNet.IPv4.IP.String())
 			for _, privateNetwork := range loadbalancer.PrivateNet {
 				if privateNetwork.IP == nil {
-					return nil, fmt.Errorf("failed to find load-balancer %q private address", fi.StringValue(v.Name))
+					return nil, fmt.Errorf("failed to find load-balancer %q private address", fi.ValueOf(v.Name))
 				}
 				addresses = append(addresses, privateNetwork.IP.String())
 			}
@@ -104,11 +104,11 @@ func (v *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 	}
 
 	for _, loadbalancer := range loadbalancers {
-		if loadbalancer.Name == fi.StringValue(v.Name) {
+		if loadbalancer.Name == fi.ValueOf(v.Name) {
 			matches := &LoadBalancer{
 				Lifecycle: v.Lifecycle,
-				Name:      fi.String(loadbalancer.Name),
-				ID:        fi.Int(loadbalancer.ID),
+				Name:      fi.PtrTo(loadbalancer.Name),
+				ID:        fi.PtrTo(loadbalancer.ID),
 				Labels:    loadbalancer.Labels,
 			}
 
@@ -122,8 +122,8 @@ func (v *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 			for _, service := range loadbalancer.Services {
 				loadbalancerService := LoadBalancerService{
 					Protocol:        string(service.Protocol),
-					ListenerPort:    fi.Int(service.ListenPort),
-					DestinationPort: fi.Int(service.DestinationPort),
+					ListenerPort:    fi.PtrTo(service.ListenPort),
+					DestinationPort: fi.PtrTo(service.DestinationPort),
 				}
 				matches.Services = append(matches.Services, &loadbalancerService)
 			}
@@ -196,16 +196,16 @@ func (_ *LoadBalancer) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes 
 
 	if a == nil {
 		if e.Network == nil {
-			return fmt.Errorf("failed to find network for loadbalancer %q", fi.StringValue(e.Name))
+			return fmt.Errorf("failed to find network for loadbalancer %q", fi.ValueOf(e.Name))
 		}
 
-		networkID, err := strconv.Atoi(fi.StringValue(e.Network.ID))
+		networkID, err := strconv.Atoi(fi.ValueOf(e.Network.ID))
 		if err != nil {
-			return fmt.Errorf("failed to convert network ID %q to int: %w", fi.StringValue(e.Network.ID), err)
+			return fmt.Errorf("failed to convert network ID %q to int: %w", fi.ValueOf(e.Network.ID), err)
 		}
 
 		opts := hcloud.LoadBalancerCreateOpts{
-			Name: fi.StringValue(e.Name),
+			Name: fi.ValueOf(e.Name),
 			LoadBalancerType: &hcloud.LoadBalancerType{
 				Name: e.Type,
 			},
@@ -222,7 +222,7 @@ func (_ *LoadBalancer) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes 
 					LabelSelector: hcloud.LoadBalancerCreateOptsTargetLabelSelector{
 						Selector: e.Target,
 					},
-					UsePrivateIP: fi.Bool(true),
+					UsePrivateIP: fi.PtrTo(true),
 				},
 			},
 			Network: &hcloud.Network{
@@ -249,7 +249,7 @@ func (_ *LoadBalancer) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes 
 
 	} else {
 		var err error
-		loadbalancer, _, err := client.Get(ctx, strconv.Itoa(fi.IntValue(a.ID)))
+		loadbalancer, _, err := client.Get(ctx, strconv.Itoa(fi.ValueOf(a.ID)))
 		if err != nil {
 			return err
 		}
@@ -257,7 +257,7 @@ func (_ *LoadBalancer) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes 
 		// Update the labels
 		if changes.Name != nil || len(changes.Labels) != 0 {
 			_, _, err := client.Update(ctx, loadbalancer, hcloud.LoadBalancerUpdateOpts{
-				Name:   fi.StringValue(e.Name),
+				Name:   fi.ValueOf(e.Name),
 				Labels: e.Labels,
 			})
 			if err != nil {
@@ -289,7 +289,7 @@ func (_ *LoadBalancer) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes 
 		if a.Target == "" {
 			action, _, err := client.AddLabelSelectorTarget(ctx, loadbalancer, hcloud.LoadBalancerAddLabelSelectorTargetOpts{
 				Selector:     e.Target,
-				UsePrivateIP: fi.Bool(true),
+				UsePrivateIP: fi.PtrTo(true),
 			})
 			if err != nil {
 				return err
@@ -375,7 +375,7 @@ func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, chang
 	for _, service := range e.Services {
 		tf := &terraformLoadBalancerService{
 			LoadBalancerID:  e.TerraformLink(),
-			Protocol:        fi.String(service.Protocol),
+			Protocol:        fi.PtrTo(service.Protocol),
 			ListenPort:      service.ListenerPort,
 			DestinationPort: service.DestinationPort,
 		}
@@ -389,9 +389,9 @@ func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, chang
 	{
 		tf := &terraformLoadBalancerTarget{
 			LoadBalancerID: e.TerraformLink(),
-			Type:           fi.String(string(hcloud.LoadBalancerTargetTypeLabelSelector)),
-			LabelSelector:  fi.String(e.Target),
-			UsePrivateIP:   fi.Bool(true),
+			Type:           fi.PtrTo(string(hcloud.LoadBalancerTargetTypeLabelSelector)),
+			LabelSelector:  fi.PtrTo(e.Target),
+			UsePrivateIP:   fi.PtrTo(true),
 		}
 
 		err := t.RenderResource("hcloud_load_balancer_target", *e.Name, tf)

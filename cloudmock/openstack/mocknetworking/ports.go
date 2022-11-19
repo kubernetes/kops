@@ -238,7 +238,7 @@ func (m *MockClient) updatePort(w http.ResponseWriter, r *http.Request) {
 
 	deviceID := update.Port.DeviceID
 	if deviceID != nil {
-		port.DeviceID = fi.StringValue(deviceID)
+		port.DeviceID = fi.ValueOf(deviceID)
 	}
 	m.ports[portID] = port
 

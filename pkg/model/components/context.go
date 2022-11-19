@@ -175,5 +175,5 @@ func GCETagForRole(clusterName string, role kops.InstanceGroupRole) string {
 
 // IsCertManagerEnabled returns true if the cluster has the capability to handle cert-manager PKI
 func IsCertManagerEnabled(cluster *kops.Cluster) bool {
-	return cluster.Spec.CertManager != nil && fi.BoolValue(cluster.Spec.CertManager.Enabled)
+	return cluster.Spec.CertManager != nil && fi.ValueOf(cluster.Spec.CertManager.Enabled)
 }

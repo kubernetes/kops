@@ -74,7 +74,7 @@ func (eb *EventBridgeTarget) Find(c *fi.Context) (*EventBridgeTarget, error) {
 		return nil, nil
 	}
 	for _, target := range response.Targets {
-		if fi.StringValue(target.Arn) == fi.StringValue(eb.SQSQueue.ARN) {
+		if fi.ValueOf(target.Arn) == fi.ValueOf(eb.SQSQueue.ARN) {
 			actual := &EventBridgeTarget{
 				ID:        target.Id,
 				Name:      eb.Name,
