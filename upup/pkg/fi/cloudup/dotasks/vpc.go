@@ -51,13 +51,13 @@ func (v *VPC) Find(c *fi.Context) (*VPC, error) {
 	}
 
 	for _, vpc := range vpcs {
-		if vpc.Name == fi.StringValue(v.Name) {
+		if vpc.Name == fi.ValueOf(v.Name) {
 			return &VPC{
-				Name:      fi.String(vpc.Name),
-				ID:        fi.String(vpc.ID),
+				Name:      fi.PtrTo(vpc.Name),
+				ID:        fi.PtrTo(vpc.ID),
 				Lifecycle: v.Lifecycle,
-				IPRange:   fi.String(vpc.IPRange),
-				Region:    fi.String(vpc.RegionSlug),
+				IPRange:   fi.PtrTo(vpc.IPRange),
+				Region:    fi.PtrTo(vpc.RegionSlug),
 			}, nil
 		}
 	}
@@ -99,9 +99,9 @@ func (_ *VPC) RenderDO(t *do.DOAPITarget, a, e, changes *VPC) error {
 
 	vpcService := t.Cloud.VPCsService()
 	_, _, err := vpcService.Create(context.TODO(), &godo.VPCCreateRequest{
-		Name:       fi.StringValue(e.Name),
-		RegionSlug: fi.StringValue(e.Region),
-		IPRange:    fi.StringValue(e.IPRange),
+		Name:       fi.ValueOf(e.Name),
+		RegionSlug: fi.ValueOf(e.Region),
+		IPRange:    fi.ValueOf(e.IPRange),
 	})
 
 	return err

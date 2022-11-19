@@ -125,7 +125,7 @@ func findFile(p string) (*File, error) {
 
 	actual := &File{}
 	actual.Path = p
-	actual.Mode = fi.String(fi.FileModeToString(stat.Mode() & os.ModePerm))
+	actual.Mode = fi.PtrTo(fi.FileModeToString(stat.Mode() & os.ModePerm))
 
 	uid := int(stat.Sys().(*syscall.Stat_t).Uid)
 	owner, err := fi.LookupUserByID(uid)
@@ -133,9 +133,9 @@ func findFile(p string) (*File, error) {
 		return nil, err
 	}
 	if owner != nil {
-		actual.Owner = fi.String(owner.Name)
+		actual.Owner = fi.PtrTo(owner.Name)
 	} else {
-		actual.Owner = fi.String(strconv.Itoa(uid))
+		actual.Owner = fi.PtrTo(strconv.Itoa(uid))
 	}
 
 	gid := int(stat.Sys().(*syscall.Stat_t).Gid)
@@ -144,9 +144,9 @@ func findFile(p string) (*File, error) {
 		return nil, err
 	}
 	if group != nil {
-		actual.Group = fi.String(group.Name)
+		actual.Group = fi.PtrTo(group.Name)
 	} else {
-		actual.Group = fi.String(strconv.Itoa(gid))
+		actual.Group = fi.PtrTo(strconv.Itoa(gid))
 	}
 
 	if (stat.Mode() & os.ModeSymlink) != 0 {
@@ -156,7 +156,7 @@ func findFile(p string) (*File, error) {
 		}
 
 		actual.Type = FileType_Symlink
-		actual.Symlink = fi.String(target)
+		actual.Symlink = fi.PtrTo(target)
 	} else if (stat.Mode() & os.ModeDir) != 0 {
 		actual.Type = FileType_Directory
 	} else {
@@ -196,9 +196,9 @@ func (s *File) CheckChanges(a, e, changes *File) error {
 
 func (_ *File) RenderLocal(t *local.LocalTarget, a, e, changes *File) error {
 	dirMode := os.FileMode(0o755)
-	fileMode, err := fi.ParseFileMode(fi.StringValue(e.Mode), 0o644)
+	fileMode, err := fi.ParseFileMode(fi.ValueOf(e.Mode), 0o644)
 	if err != nil {
-		return fmt.Errorf("invalid file mode for %q: %q", e.Path, fi.StringValue(e.Mode))
+		return fmt.Errorf("invalid file mode for %q: %q", e.Path, fi.ValueOf(e.Mode))
 	}
 
 	if a != nil {
@@ -236,7 +236,7 @@ func (_ *File) RenderLocal(t *local.LocalTarget, a, e, changes *File) error {
 		}
 	} else if e.Type == FileType_File {
 		if changes.Contents != nil {
-			err = fi.WriteFile(e.Path, e.Contents, fileMode, dirMode, fi.StringValue(e.Owner), fi.StringValue(e.Group))
+			err = fi.WriteFile(e.Path, e.Contents, fileMode, dirMode, fi.ValueOf(e.Owner), fi.ValueOf(e.Group))
 			if err != nil {
 				return fmt.Errorf("error copying file %q: %v", e.Path, err)
 			}
@@ -255,7 +255,7 @@ func (_ *File) RenderLocal(t *local.LocalTarget, a, e, changes *File) error {
 	}
 
 	if changes.Owner != nil || changes.Group != nil {
-		ownerChanged, err := fi.EnsureFileOwner(e.Path, fi.StringValue(e.Owner), fi.StringValue(e.Group))
+		ownerChanged, err := fi.EnsureFileOwner(e.Path, fi.ValueOf(e.Owner), fi.ValueOf(e.Group))
 		if err != nil {
 			return fmt.Errorf("error changing owner/group on %q: %v", e.Path, err)
 		}
@@ -281,13 +281,13 @@ func (_ *File) RenderLocal(t *local.LocalTarget, a, e, changes *File) error {
 
 func (_ *File) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *File) error {
 	dirMode := os.FileMode(0o755)
-	fileMode, err := fi.ParseFileMode(fi.StringValue(e.Mode), 0o644)
+	fileMode, err := fi.ParseFileMode(fi.ValueOf(e.Mode), 0o644)
 	if err != nil {
 		return fmt.Errorf("invalid file mode for %s: %q", e.Path, *e.Mode)
 	}
 
 	if e.Type == FileType_Symlink {
-		t.AddCommand(cloudinit.Always, "ln", "-s", fi.StringValue(e.Symlink), e.Path)
+		t.AddCommand(cloudinit.Always, "ln", "-s", fi.ValueOf(e.Symlink), e.Path)
 	} else if e.Type == FileType_Directory {
 		parent := filepath.Dir(strings.TrimSuffix(e.Path, "/"))
 		t.AddCommand(cloudinit.Once, "mkdir", "-p", "-m", fi.FileModeToString(dirMode), parent)
@@ -302,7 +302,7 @@ func (_ *File) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *File
 	}
 
 	if e.Owner != nil || e.Group != nil {
-		t.Chown(e.Path, fi.StringValue(e.Owner), fi.StringValue(e.Group))
+		t.Chown(e.Path, fi.ValueOf(e.Owner), fi.ValueOf(e.Group))
 	}
 
 	if e.OnChangeExecute != nil {

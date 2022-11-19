@@ -44,10 +44,10 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Create a separate vpc for this cluster.
 	vpc := &dotasks.VPC{
-		Name:      fi.String(vpcName),
-		Region:    fi.String(b.Cluster.Spec.Subnets[0].Region),
+		Name:      fi.PtrTo(vpcName),
+		Region:    fi.PtrTo(b.Cluster.Spec.Subnets[0].Region),
 		Lifecycle: b.Lifecycle,
-		IPRange:   fi.String(ipRange),
+		IPRange:   fi.PtrTo(ipRange),
 	}
 	c.AddTask(vpc)
 

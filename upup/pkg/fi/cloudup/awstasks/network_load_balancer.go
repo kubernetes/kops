@@ -92,8 +92,8 @@ type NetworkLoadBalancerListener struct {
 func (e *NetworkLoadBalancerListener) mapToAWS(targetGroups []*TargetGroup, loadBalancerArn string) (*elbv2.CreateListenerInput, error) {
 	var tgARN string
 	for _, tg := range targetGroups {
-		if fi.StringValue(tg.Name) == e.TargetGroupName {
-			tgARN = fi.StringValue(tg.ARN)
+		if fi.ValueOf(tg.Name) == e.TargetGroupName {
+			tgARN = fi.ValueOf(tg.ARN)
 		}
 	}
 	if tgARN == "" {
@@ -324,11 +324,11 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 			if len(l.DefaultActions) > 0 {
 				targetGroupARN := l.DefaultActions[0].TargetGroupArn
 				if targetGroupARN != nil {
-					targetGroupName, err := awsup.GetTargetGroupNameFromARN(fi.StringValue(targetGroupARN))
+					targetGroupName, err := awsup.GetTargetGroupNameFromARN(fi.ValueOf(targetGroupARN))
 					if err != nil {
 						return nil, err
 					}
-					actual.TargetGroups = append(actual.TargetGroups, &TargetGroup{ARN: targetGroupARN, Name: fi.String(targetGroupName)})
+					actual.TargetGroups = append(actual.TargetGroups, &TargetGroup{ARN: targetGroupARN, Name: fi.PtrTo(targetGroupName)})
 
 					cloud := c.Cloud.(awsup.AWSCloud)
 					descResp, err := cloud.ELBV2().DescribeTargetGroups(&elbv2.DescribeTargetGroupsInput{
@@ -367,7 +367,7 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 				if err != nil {
 					return nil, err
 				}
-				actual.CrossZoneLoadBalancing = fi.Bool(b)
+				actual.CrossZoneLoadBalancing = fi.PtrTo(b)
 			case "access_logs.s3.enabled":
 				b, err := strconv.ParseBool(*value)
 				if err != nil {
@@ -376,19 +376,19 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 				if actual.AccessLog == nil {
 					actual.AccessLog = &NetworkLoadBalancerAccessLog{}
 				}
-				actual.AccessLog.Enabled = fi.Bool(b)
+				actual.AccessLog.Enabled = fi.PtrTo(b)
 			case "access_logs.s3.bucket":
 				if actual.AccessLog == nil {
 					actual.AccessLog = &NetworkLoadBalancerAccessLog{}
 				}
-				if fi.StringValue(value) != "" {
+				if fi.ValueOf(value) != "" {
 					actual.AccessLog.S3BucketName = value
 				}
 			case "access_logs.s3.prefix":
 				if actual.AccessLog == nil {
 					actual.AccessLog = &NetworkLoadBalancerAccessLog{}
 				}
-				if fi.StringValue(value) != "" {
+				if fi.ValueOf(value) != "" {
 					actual.AccessLog.S3BucketPrefix = value
 				}
 			default:
@@ -412,13 +412,13 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 	}
 
 	// An existing internal NLB can't be updated to dualstack.
-	if fi.StringValue(actual.Scheme) == elbv2.LoadBalancerSchemeEnumInternal && fi.StringValue(actual.IpAddressType) == elbv2.IpAddressTypeIpv4 {
+	if fi.ValueOf(actual.Scheme) == elbv2.LoadBalancerSchemeEnumInternal && fi.ValueOf(actual.IpAddressType) == elbv2.IpAddressTypeIpv4 {
 		e.IpAddressType = actual.IpAddressType
 	}
 
 	// We allow for the LoadBalancerName to be wrong:
 	// 1. We don't want to force a rename of the NLB, because that is a destructive operation
-	if fi.StringValue(e.LoadBalancerName) != fi.StringValue(actual.LoadBalancerName) {
+	if fi.ValueOf(e.LoadBalancerName) != fi.ValueOf(actual.LoadBalancerName) {
 		klog.V(2).Infof("Reusing existing load balancer with name: %q", aws.StringValue(actual.LoadBalancerName))
 		e.LoadBalancerName = actual.LoadBalancerName
 	}
@@ -449,19 +449,19 @@ func (e *NetworkLoadBalancer) FindAddresses(context *fi.Context) ([]string, erro
 		if err != nil {
 			return nil, fmt.Errorf("failed to find load balancer matching %q: %w", e.Tags["Name"], err)
 		}
-		if lb != nil && fi.StringValue(lb.DNSName) != "" {
-			addresses = append(addresses, fi.StringValue(lb.DNSName))
+		if lb != nil && fi.ValueOf(lb.DNSName) != "" {
+			addresses = append(addresses, fi.ValueOf(lb.DNSName))
 		}
 	}
 
 	if cluster.UsesNoneDNS() {
-		nis, err := cloud.FindELBV2NetworkInterfacesByName(fi.StringValue(e.VPC.ID), fi.StringValue(e.LoadBalancerName))
+		nis, err := cloud.FindELBV2NetworkInterfacesByName(fi.ValueOf(e.VPC.ID), fi.ValueOf(e.LoadBalancerName))
 		if err != nil {
-			return nil, fmt.Errorf("failed to find network interfaces matching %q: %w", fi.StringValue(e.LoadBalancerName), err)
+			return nil, fmt.Errorf("failed to find network interfaces matching %q: %w", fi.ValueOf(e.LoadBalancerName), err)
 		}
 		for _, ni := range nis {
-			if fi.StringValue(ni.PrivateIpAddress) != "" {
-				addresses = append(addresses, fi.StringValue(ni.PrivateIpAddress))
+			if fi.ValueOf(ni.PrivateIpAddress) != "" {
+				addresses = append(addresses, fi.ValueOf(ni.PrivateIpAddress))
 			}
 		}
 	}
@@ -485,7 +485,7 @@ func (e *NetworkLoadBalancer) Normalize(c *fi.Context) error {
 
 func (*NetworkLoadBalancer) CheckChanges(a, e, changes *NetworkLoadBalancer) error {
 	if a == nil {
-		if fi.StringValue(e.Name) == "" {
+		if fi.ValueOf(e.Name) == "" {
 			return fi.RequiredField("Name")
 		}
 		if len(e.SubnetMappings) == 0 {
@@ -526,7 +526,7 @@ func (*NetworkLoadBalancer) CheckChanges(a, e, changes *NetworkLoadBalancer) err
 				if !ok {
 					return fmt.Errorf("network load balancers do not support detaching subnets")
 				}
-				if fi.StringValue(eIP) != fi.StringValue(s.PrivateIPv4Address) || fi.StringValue(eIP) != fi.StringValue(s.AllocationID) {
+				if fi.ValueOf(eIP) != fi.ValueOf(s.PrivateIPv4Address) || fi.ValueOf(eIP) != fi.ValueOf(s.AllocationID) {
 					return fmt.Errorf("network load balancers do not support modifying address settings")
 				}
 			}
@@ -585,14 +585,14 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 			e.DNSName = lb.DNSName
 			e.HostedZoneId = lb.CanonicalHostedZoneId
 			e.VPC = &VPC{ID: lb.VpcId}
-			loadBalancerArn = fi.StringValue(lb.LoadBalancerArn)
+			loadBalancerArn = fi.ValueOf(lb.LoadBalancerArn)
 
 		}
 
 		// Wait for all load balancer components to be created (including network interfaces needed for NoneDNS).
 		// Limiting this to clusters using NoneDNS because load balancer creation is quite slow.
 		for _, tg := range e.TargetGroups {
-			if strings.HasPrefix(fi.StringValue(tg.Name), "kops-controller") {
+			if strings.HasPrefix(fi.ValueOf(tg.Name), "kops-controller") {
 				klog.Infof("Waiting for load balancer %q to be created...", loadBalancerName)
 				request := &elbv2.DescribeLoadBalancersInput{
 					Names: []*string{&loadBalancerName},
@@ -620,14 +620,14 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 			}
 		}
 	} else {
-		loadBalancerName = fi.StringValue(a.LoadBalancerName)
+		loadBalancerName = fi.ValueOf(a.LoadBalancerName)
 
 		lb, err := findNetworkLoadBalancerByLoadBalancerName(t.Cloud, loadBalancerName)
 		if err != nil {
 			return fmt.Errorf("error getting load balancer by name: %v", err)
 		}
 
-		loadBalancerArn = fi.StringValue(lb.LoadBalancerArn)
+		loadBalancerArn = fi.ValueOf(lb.LoadBalancerArn)
 
 		if changes.IpAddressType != nil {
 			request := &elbv2.SetIpAddressTypeInput{
@@ -655,7 +655,7 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 			hasChanges := false
 			for _, s := range e.SubnetMappings {
 				aIP, ok := actualSubnets[*s.Subnet.ID]
-				if !ok || (fi.StringValue(s.PrivateIPv4Address) != fi.StringValue(aIP) && fi.StringValue(s.AllocationID) != fi.StringValue(aIP)) {
+				if !ok || (fi.ValueOf(s.PrivateIPv4Address) != fi.ValueOf(aIP) && fi.ValueOf(s.AllocationID) != fi.ValueOf(aIP)) {
 					hasChanges = true
 				}
 				awsSubnetMappings = append(awsSubnetMappings, &elbv2.SubnetMapping{
@@ -764,10 +764,10 @@ type terraformNetworkLoadBalancerListenerAction struct {
 func (_ *NetworkLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *NetworkLoadBalancer) error {
 	nlbTF := &terraformNetworkLoadBalancer{
 		Name:                   *e.LoadBalancerName,
-		Internal:               fi.StringValue(e.Scheme) == elbv2.LoadBalancerSchemeEnumInternal,
+		Internal:               fi.ValueOf(e.Scheme) == elbv2.LoadBalancerSchemeEnumInternal,
 		Type:                   elbv2.LoadBalancerTypeEnumNetwork,
 		Tags:                   e.Tags,
-		CrossZoneLoadBalancing: fi.BoolValue(e.CrossZoneLoadBalancing),
+		CrossZoneLoadBalancing: fi.ValueOf(e.CrossZoneLoadBalancing),
 	}
 
 	for _, subnetMapping := range e.SubnetMappings {
@@ -778,7 +778,7 @@ func (_ *NetworkLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e
 		})
 	}
 
-	if e.AccessLog != nil && fi.BoolValue(e.AccessLog.Enabled) {
+	if e.AccessLog != nil && fi.ValueOf(e.AccessLog.Enabled) {
 		nlbTF.AccessLog = &terraformNetworkLoadBalancerAccessLog{
 			Enabled:        e.AccessLog.Enabled,
 			S3BucketName:   e.AccessLog.S3BucketName,
@@ -981,7 +981,7 @@ func (e *NetworkLoadBalancer) FindDeletions(context *fi.Context) ([]fi.Deletion,
 
 	cloud := context.Cloud.(awsup.AWSCloud)
 
-	lb, err := cloud.FindELBByNameTag(fi.StringValue(e.CLBName))
+	lb, err := cloud.FindELBByNameTag(fi.ValueOf(e.CLBName))
 	if err != nil {
 		return nil, err
 	}

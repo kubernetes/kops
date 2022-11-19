@@ -578,13 +578,13 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 
 	if c.MasterVolumeSize != 0 {
 		for _, group := range masters {
-			group.Spec.RootVolumeSize = fi.Int32(c.MasterVolumeSize)
+			group.Spec.RootVolumeSize = fi.PtrTo(c.MasterVolumeSize)
 		}
 	}
 
 	if c.NodeVolumeSize != 0 {
 		for _, group := range nodes {
-			group.Spec.RootVolumeSize = fi.Int32(c.NodeVolumeSize)
+			group.Spec.RootVolumeSize = fi.PtrTo(c.NodeVolumeSize)
 		}
 	}
 
@@ -601,7 +601,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	}
 
 	if c.DisableSubnetTags {
-		cluster.Spec.TagSubnets = fi.Bool(false)
+		cluster.Spec.TagSubnets = fi.PtrTo(false)
 	}
 
 	if c.MasterPublicName != "" {

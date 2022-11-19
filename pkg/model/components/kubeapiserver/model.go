@@ -57,8 +57,8 @@ func (b *KubeApiserverBuilder) Build(c *fi.ModelBuilderContext) error {
 	c.AddTask(&fitasks.ManagedFile{
 		Contents:  fi.NewBytesResource(manifestYAML),
 		Lifecycle: b.Lifecycle,
-		Location:  fi.String(location),
-		Name:      fi.String("manifests-static-" + key),
+		Location:  fi.PtrTo(location),
+		Name:      fi.PtrTo("manifests-static-" + key),
 	})
 
 	b.AssetBuilder.StaticManifests = append(b.AssetBuilder.StaticManifests, &assets.StaticManifest{

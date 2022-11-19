@@ -121,11 +121,11 @@ func TestValidateFull_UpdatePolicy_Valid(t *testing.T) {
 		},
 		{
 			label:  "automatic",
-			policy: fi.String(api.UpdatePolicyAutomatic),
+			policy: fi.PtrTo(api.UpdatePolicyAutomatic),
 		},
 		{
 			label:  "external",
-			policy: fi.String(api.UpdatePolicyExternal),
+			policy: fi.PtrTo(api.UpdatePolicyExternal),
 		},
 	} {
 		t.Run(test.label, func(t *testing.T) {

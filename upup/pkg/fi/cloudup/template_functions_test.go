@@ -159,7 +159,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 					Openstack: &kops.OpenstackSpec{},
 				},
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
-					AllocateNodeCIDRs: fi.Bool(true),
+					AllocateNodeCIDRs: fi.PtrTo(true),
 				},
 			}},
 			expectedArgv: []string{
@@ -177,7 +177,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 					Openstack: &kops.OpenstackSpec{},
 				},
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
-					ConfigureCloudRoutes: fi.Bool(true),
+					ConfigureCloudRoutes: fi.PtrTo(true),
 				},
 			}},
 			expectedArgv: []string{
@@ -195,7 +195,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 					Openstack: &kops.OpenstackSpec{},
 				},
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
-					CIDRAllocatorType: fi.String("RangeAllocator"),
+					CIDRAllocatorType: fi.PtrTo("RangeAllocator"),
 				},
 			}},
 			expectedArgv: []string{
@@ -213,7 +213,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 					Openstack: &kops.OpenstackSpec{},
 				},
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
-					UseServiceAccountCredentials: fi.Bool(false),
+					UseServiceAccountCredentials: fi.PtrTo(false),
 				},
 			}},
 			expectedArgv: []string{
@@ -230,7 +230,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 					Openstack: &kops.OpenstackSpec{},
 				},
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
-					LeaderElection: &kops.LeaderElectionConfiguration{LeaderElect: fi.Bool(true)},
+					LeaderElection: &kops.LeaderElectionConfiguration{LeaderElect: fi.PtrTo(true)},
 				},
 			}},
 			expectedArgv: []string{
@@ -248,8 +248,8 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 					Openstack: &kops.OpenstackSpec{},
 				},
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
-					LeaderElection:        &kops.LeaderElectionConfiguration{LeaderElect: fi.Bool(true)},
-					EnableLeaderMigration: fi.Bool(true),
+					LeaderElection:        &kops.LeaderElectionConfiguration{LeaderElect: fi.PtrTo(true)},
+					EnableLeaderMigration: fi.PtrTo(true),
 				},
 			}},
 			expectedArgv: []string{

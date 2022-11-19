@@ -43,7 +43,7 @@ func resolveSettings(cluster *kops.Cluster, group *kops.InstanceGroup, numInstan
 	}
 
 	if rollingUpdate.DrainAndTerminate == nil {
-		rollingUpdate.DrainAndTerminate = fi.Bool(true)
+		rollingUpdate.DrainAndTerminate = fi.PtrTo(true)
 	}
 
 	if rollingUpdate.MaxSurge == nil {

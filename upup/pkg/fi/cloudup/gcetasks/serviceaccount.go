@@ -52,7 +52,7 @@ func (e *ServiceAccount) Find(c *fi.Context) (*ServiceAccount, error) {
 
 	ctx := context.TODO()
 
-	email := fi.StringValue(e.Email)
+	email := fi.ValueOf(e.Email)
 
 	if email == "default" {
 		// Special case - the default serviceaccount always exists
@@ -103,9 +103,9 @@ func (_ *ServiceAccount) RenderGCE(t *gce.GCEAPITarget, a, e, changes *ServiceAc
 
 	cloud := t.Cloud
 
-	email := fi.StringValue(e.Email)
+	email := fi.ValueOf(e.Email)
 
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Verify the service account was found
 		if a == nil {
@@ -126,8 +126,8 @@ func (_ *ServiceAccount) RenderGCE(t *gce.GCEAPITarget, a, e, changes *ServiceAc
 		sa := &iam.CreateServiceAccountRequest{
 			AccountId: accountID,
 			ServiceAccount: &iam.ServiceAccount{
-				Description: fi.StringValue(e.Description),
-				DisplayName: fi.StringValue(e.DisplayName),
+				Description: fi.ValueOf(e.Description),
+				DisplayName: fi.ValueOf(e.DisplayName),
 			},
 		}
 
@@ -142,8 +142,8 @@ func (_ *ServiceAccount) RenderGCE(t *gce.GCEAPITarget, a, e, changes *ServiceAc
 		if changes.Description != nil || changes.DisplayName != nil {
 			sa := &iam.ServiceAccount{
 				Email:       email,
-				Description: fi.StringValue(e.Description),
-				DisplayName: fi.StringValue(e.DisplayName),
+				Description: fi.ValueOf(e.Description),
+				DisplayName: fi.ValueOf(e.DisplayName),
 			}
 
 			_, err := cloud.IAM().ServiceAccounts().Update(ctx, fqn, sa)
@@ -172,13 +172,13 @@ type terraformServiceAccount struct {
 }
 
 func (_ *ServiceAccount) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ServiceAccount) error {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Not terraform owned / managed
 		return nil
 	}
 
-	email := fi.StringValue(e.Email)
+	email := fi.ValueOf(e.Email)
 	accountID, projectID, err := gce.SplitServiceAccountEmail(email)
 	if err != nil {
 		return err
@@ -195,9 +195,9 @@ func (_ *ServiceAccount) RenderTerraform(t *terraform.TerraformTarget, a, e, cha
 }
 
 func (e *ServiceAccount) TerraformLink() *terraformWriter.Literal {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
-		email := fi.StringValue(e.Email)
+		email := fi.ValueOf(e.Email)
 		if email == "" {
 			klog.Fatalf("Email must be set, if ServiceAccount is shared: %#v", e)
 		}

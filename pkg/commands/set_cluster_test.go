@@ -57,7 +57,7 @@ func TestSetClusterFields(t *testing.T) {
 					KubernetesVersion: "1.8.2",
 					Kubelet: &kops.KubeletConfigSpec{
 						AuthorizationMode:          "Webhook",
-						AuthenticationTokenWebhook: fi.Bool(true),
+						AuthenticationTokenWebhook: fi.PtrTo(true),
 					},
 				},
 			},
@@ -92,7 +92,7 @@ func TestSetClusterFields(t *testing.T) {
 			Output: kops.Cluster{
 				Spec: kops.ClusterSpec{
 					Kubelet: &kops.KubeletConfigSpec{
-						AuthenticationTokenWebhook: fi.Bool(false),
+						AuthenticationTokenWebhook: fi.PtrTo(false),
 					},
 				},
 			},
@@ -102,7 +102,7 @@ func TestSetClusterFields(t *testing.T) {
 			Output: kops.Cluster{
 				Spec: kops.ClusterSpec{
 					Docker: &kops.DockerConfig{
-						SelinuxEnabled: fi.Bool(true),
+						SelinuxEnabled: fi.PtrTo(true),
 					},
 				},
 			},
@@ -240,7 +240,7 @@ func TestSetClusterFields(t *testing.T) {
 				Spec: kops.ClusterSpec{
 					Networking: &kops.NetworkingSpec{
 						Cilium: &kops.CiliumNetworkingSpec{
-							Masquerade: fi.Bool(false),
+							Masquerade: fi.PtrTo(false),
 						},
 					},
 				},
@@ -254,7 +254,7 @@ func TestSetClusterFields(t *testing.T) {
 			Output: kops.Cluster{
 				Spec: kops.ClusterSpec{
 					KubeProxy: &kops.KubeProxyConfig{
-						Enabled: fi.Bool(true),
+						Enabled: fi.PtrTo(true),
 					},
 				},
 			},
@@ -312,13 +312,13 @@ func TestSetCiliumFields(t *testing.T) {
 			Output: kops.Cluster{
 				Spec: kops.ClusterSpec{
 					KubeProxy: &kops.KubeProxyConfig{
-						Enabled: fi.Bool(false),
+						Enabled: fi.PtrTo(false),
 					},
 					Networking: &kops.NetworkingSpec{
 						Cilium: &kops.CiliumNetworkingSpec{
 							IPAM:           "eni",
 							EnableNodePort: true,
-							Masquerade:     fi.Bool(false),
+							Masquerade:     fi.PtrTo(false),
 						},
 					},
 				},

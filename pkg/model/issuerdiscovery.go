@@ -74,20 +74,20 @@ func (b *IssuerDiscoveryModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	keysFile := &fitasks.ManagedFile{
 		Contents:  keys,
 		Lifecycle: b.Lifecycle,
-		Location:  fi.String("openid/v1/jwks"),
-		Name:      fi.String("keys.json"),
-		Base:      fi.String(b.Cluster.Spec.ServiceAccountIssuerDiscovery.DiscoveryStore),
-		Public:    fi.Bool(true),
+		Location:  fi.PtrTo("openid/v1/jwks"),
+		Name:      fi.PtrTo("keys.json"),
+		Base:      fi.PtrTo(b.Cluster.Spec.ServiceAccountIssuerDiscovery.DiscoveryStore),
+		Public:    fi.PtrTo(true),
 	}
 	c.AddTask(keysFile)
 
 	discoveryFile := &fitasks.ManagedFile{
 		Contents:  fi.NewBytesResource(discovery),
 		Lifecycle: b.Lifecycle,
-		Location:  fi.String(".well-known/openid-configuration"),
-		Name:      fi.String("discovery.json"),
-		Base:      fi.String(b.Cluster.Spec.ServiceAccountIssuerDiscovery.DiscoveryStore),
-		Public:    fi.Bool(true),
+		Location:  fi.PtrTo(".well-known/openid-configuration"),
+		Name:      fi.PtrTo("discovery.json"),
+		Base:      fi.PtrTo(b.Cluster.Spec.ServiceAccountIssuerDiscovery.DiscoveryStore),
+		Public:    fi.PtrTo(true),
 	}
 	c.AddTask(discoveryFile)
 

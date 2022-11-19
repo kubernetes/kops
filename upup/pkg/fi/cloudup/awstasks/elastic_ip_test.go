@@ -88,7 +88,7 @@ func TestElasticIPCreate(t *testing.T) {
 			t.Fatalf("unexpected error during Run: %v", err)
 		}
 
-		if fi.StringValue(eip1.ID) == "" {
+		if fi.ValueOf(eip1.ID) == "" {
 			t.Fatalf("ID not set after create")
 		}
 

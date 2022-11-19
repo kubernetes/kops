@@ -340,7 +340,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 
 	dest["HasSnapshotController"] = func() bool {
 		sc := cluster.Spec.SnapshotController
-		return sc != nil && fi.BoolValue(sc.Enabled)
+		return sc != nil && fi.ValueOf(sc.Enabled)
 	}
 
 	dest["IsKubernetesGTE"] = tf.IsKubernetesGTE
@@ -388,7 +388,7 @@ func (tf *TemplateFunctions) GetInstanceGroup(name string) (*kops.InstanceGroup,
 // deployOnWorkersIfExternalPermissons should be true if a controller runs on worker nodes when external IAM permissions is enabled for the cluster.
 // In this case it is assumed that it can run 2 replicas.
 func (tf *TemplateFunctions) ControlPlaneControllerReplicas(deployOnWorkersIfExternalPermissions bool) int {
-	if deployOnWorkersIfExternalPermissions && tf.Cluster.Spec.IAM != nil && fi.BoolValue(tf.Cluster.Spec.IAM.UseServiceAccountExternalPermissions) {
+	if deployOnWorkersIfExternalPermissions && tf.Cluster.Spec.IAM != nil && fi.ValueOf(tf.Cluster.Spec.IAM.UseServiceAccountExternalPermissions) {
 		return 2
 	}
 	if tf.HasHighlyAvailableControlPlane() {
@@ -474,7 +474,7 @@ func (tf *TemplateFunctions) DNSControllerArgv() ([]string, error) {
 		// @check if the watch ingress is set
 		var watchIngress bool
 		if cluster.Spec.ExternalDNS.WatchIngress != nil {
-			watchIngress = fi.BoolValue(cluster.Spec.ExternalDNS.WatchIngress)
+			watchIngress = fi.ValueOf(cluster.Spec.ExternalDNS.WatchIngress)
 		}
 
 		if watchIngress {
@@ -898,8 +898,8 @@ func karpenterInstanceTypes(cloud awsup.AWSCloud, ig kops.InstanceGroupSpec) ([]
 			ir := &ec2.InstanceRequirementsRequest{
 				VCpuCount:            &ec2.VCpuCountRangeRequest{},
 				MemoryMiB:            &ec2.MemoryMiBRequest{},
-				BurstablePerformance: fi.String("included"),
-				InstanceGenerations:  []*string{fi.String("current")},
+				BurstablePerformance: fi.PtrTo("included"),
+				InstanceGenerations:  []*string{fi.PtrTo("current")},
 			}
 			cpu := instanceRequirements.CPU
 			if cpu != nil {
@@ -918,7 +918,7 @@ func karpenterInstanceTypes(cloud awsup.AWSCloud, ig kops.InstanceGroupSpec) ([]
 						ir.VCpuCount.Min = &cpuMin
 					}
 				} else {
-					ir.VCpuCount.Min = fi.Int64(0)
+					ir.VCpuCount.Min = fi.PtrTo(int64(0))
 				}
 
 				memory := instanceRequirements.Memory
@@ -932,12 +932,12 @@ func karpenterInstanceTypes(cloud awsup.AWSCloud, ig kops.InstanceGroupSpec) ([]
 						ir.MemoryMiB.Min = &memoryMin
 					}
 				} else {
-					ir.MemoryMiB.Min = fi.Int64(0)
+					ir.MemoryMiB.Min = fi.PtrTo(int64(0))
 				}
 
 				ir.AcceleratorCount = &ec2.AcceleratorCountRequest{
-					Min: fi.Int64(0),
-					Max: fi.Int64(0),
+					Min: fi.PtrTo(int64(0)),
+					Max: fi.PtrTo(int64(0)),
 				}
 
 				response, err := cloud.EC2().GetInstanceTypesFromInstanceRequirements(

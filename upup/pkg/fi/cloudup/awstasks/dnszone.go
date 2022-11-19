@@ -67,10 +67,10 @@ func (e *DNSZone) Find(c *fi.Context) (*DNSZone, error) {
 	actual := &DNSZone{}
 	actual.Name = e.Name
 	if z.HostedZone.Name != nil {
-		actual.DNSName = fi.String(strings.TrimSuffix(*z.HostedZone.Name, "."))
+		actual.DNSName = fi.PtrTo(strings.TrimSuffix(*z.HostedZone.Name, "."))
 	}
 	if z.HostedZone.Id != nil {
-		actual.ZoneID = fi.String(strings.TrimPrefix(*z.HostedZone.Id, "/hostedzone/"))
+		actual.ZoneID = fi.PtrTo(strings.TrimPrefix(*z.HostedZone.Id, "/hostedzone/"))
 	}
 	actual.Private = z.HostedZone.Config.PrivateZone
 
@@ -120,7 +120,7 @@ func (e *DNSZone) findExisting(cloud awsup.AWSCloud) (*route53.GetHostedZoneOutp
 		}
 	}
 
-	findName := fi.StringValue(e.DNSName)
+	findName := fi.ValueOf(e.DNSName)
 	if findName == "" {
 		return nil, nil
 	}
@@ -138,7 +138,7 @@ func (e *DNSZone) findExisting(cloud awsup.AWSCloud) (*route53.GetHostedZoneOutp
 
 	var zones []*route53.HostedZone
 	for _, zone := range response.HostedZones {
-		if aws.StringValue(zone.Name) == findName && fi.BoolValue(zone.Config.PrivateZone) == fi.BoolValue(e.Private) {
+		if aws.StringValue(zone.Name) == findName && fi.ValueOf(zone.Config.PrivateZone) == fi.ValueOf(e.Private) {
 			zones = append(zones, zone)
 		}
 	}
@@ -166,7 +166,7 @@ func (e *DNSZone) Run(c *fi.Context) error {
 }
 
 func (s *DNSZone) CheckChanges(a, e, changes *DNSZone) error {
-	if fi.StringValue(e.Name) == "" {
+	if fi.ValueOf(e.Name) == "" {
 		return fi.RequiredField("Name")
 	}
 	return nil
@@ -234,7 +234,7 @@ type terraformRoute53ZoneAssociation struct {
 func (_ *DNSZone) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *DNSZone) error {
 	cloud := t.Cloud.(awsup.AWSCloud)
 
-	dnsName := fi.StringValue(e.DNSName)
+	dnsName := fi.ValueOf(e.DNSName)
 
 	// As a special case, we check for an existing zone
 	// It is really painful to have TF create a new one...
@@ -308,7 +308,7 @@ type cloudformationRoute53Zone struct {
 func (_ *DNSZone) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *DNSZone) error {
 	cloud := t.Cloud.(awsup.AWSCloud)
 
-	dnsName := fi.StringValue(e.DNSName)
+	dnsName := fi.ValueOf(e.DNSName)
 
 	// As a special case, we check for an existing zone
 	// It is really painful to have TF create a new one...
@@ -328,7 +328,7 @@ func (_ *DNSZone) RenderCloudformation(t *cloudformation.CloudformationTarget, a
 		return nil
 	}
 
-	if !fi.BoolValue(e.Private) {
+	if !fi.ValueOf(e.Private) {
 		return fmt.Errorf("Creation of public Route53 hosted zones is not supported for cloudformation")
 	}
 

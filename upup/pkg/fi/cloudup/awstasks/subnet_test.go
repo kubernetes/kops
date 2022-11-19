@@ -81,7 +81,7 @@ func TestSubnetCreate(t *testing.T) {
 			Lifecycle:           fi.LifecycleSync,
 			VPC:                 vpc1,
 			CIDR:                s("172.20.1.0/24"),
-			ResourceBasedNaming: fi.Bool(true),
+			ResourceBasedNaming: fi.PtrTo(true),
 			Tags:                map[string]string{"Name": "subnet1"},
 		}
 
@@ -109,7 +109,7 @@ func TestSubnetCreate(t *testing.T) {
 			t.Fatalf("unexpected error during Run: %v", err)
 		}
 
-		if fi.StringValue(subnet1.ID) == "" {
+		if fi.ValueOf(subnet1.ID) == "" {
 			t.Fatalf("ID not set after create")
 		}
 
@@ -170,7 +170,7 @@ func TestSubnetCreateIPv6(t *testing.T) {
 			VPC:                 vpc1,
 			CIDR:                s("172.20.1.0/24"),
 			IPv6CIDR:            s("2001:db8:0:1::/64"),
-			ResourceBasedNaming: fi.Bool(true),
+			ResourceBasedNaming: fi.PtrTo(true),
 			Tags:                map[string]string{"Name": "subnet1"},
 		}
 
@@ -199,7 +199,7 @@ func TestSubnetCreateIPv6(t *testing.T) {
 			t.Fatalf("unexpected error during Run: %v", err)
 		}
 
-		if fi.StringValue(subnet1.ID) == "" {
+		if fi.ValueOf(subnet1.ID) == "" {
 			t.Fatalf("ID not set after create")
 		}
 
@@ -297,7 +297,7 @@ func TestSubnetCreateIPv6NetNum(t *testing.T) {
 			t.Fatalf("unexpected error during Run: %v", err)
 		}
 
-		if fi.StringValue(subnet1.ID) == "" {
+		if fi.ValueOf(subnet1.ID) == "" {
 			t.Fatalf("ID not set after create")
 		}
 
@@ -392,7 +392,7 @@ func TestSharedSubnetCreateDoesNotCreateNew(t *testing.T) {
 			Lifecycle: fi.LifecycleSync,
 			CIDR:      s("172.20.0.0/16"),
 			Tags:      map[string]string{"kubernetes.io/cluster/cluster.example.com": "shared"},
-			Shared:    fi.Bool(true),
+			Shared:    fi.PtrTo(true),
 			ID:        vpc.Vpc.VpcId,
 		}
 		subnet1 := &Subnet{
@@ -401,7 +401,7 @@ func TestSharedSubnetCreateDoesNotCreateNew(t *testing.T) {
 			VPC:       vpc1,
 			CIDR:      s("172.20.1.0/24"),
 			Tags:      map[string]string{"kubernetes.io/cluster/cluster.example.com": "shared"},
-			Shared:    fi.Bool(true),
+			Shared:    fi.PtrTo(true),
 			ID:        subnet.Subnet.SubnetId,
 		}
 
@@ -429,7 +429,7 @@ func TestSharedSubnetCreateDoesNotCreateNew(t *testing.T) {
 			t.Fatalf("unexpected error during Run: %v", err)
 		}
 
-		if fi.StringValue(subnet1.ID) == "" {
+		if fi.ValueOf(subnet1.ID) == "" {
 			t.Fatalf("ID not set after create")
 		}
 

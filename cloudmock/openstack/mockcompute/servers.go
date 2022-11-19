@@ -206,7 +206,7 @@ func (m *MockClient) createServer(w http.ResponseWriter, r *http.Request) {
 
 	portID := create.Server.Networks[0].Port
 	ports.Update(m.networkClient, portID, ports.UpdateOpts{
-		DeviceID: fi.String(server.ID),
+		DeviceID: fi.PtrTo(server.ID),
 	})
 
 	// Assign an IP address

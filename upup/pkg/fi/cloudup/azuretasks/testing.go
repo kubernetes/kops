@@ -157,7 +157,7 @@ func (c *MockAzureCloud) GetCloudGroups(
 
 // AddClusterTags add the cluster tag to the given tag map.
 func (c *MockAzureCloud) AddClusterTags(tags map[string]*string) {
-	tags[azure.TagClusterName] = fi.String(testClusterName)
+	tags[azure.TagClusterName] = fi.PtrTo(testClusterName)
 }
 
 // FindClusterStatus discovers the status of the cluster, by looking for the tagged etcd volumes
@@ -389,7 +389,7 @@ func (c *MockVMScaleSetsClient) CreateOrUpdate(ctx context.Context, resourceGrou
 		return nil, fmt.Errorf("update not supported")
 	}
 	parameters.Name = &vmScaleSetName
-	parameters.Identity.PrincipalID = fi.String(uuid.New().String())
+	parameters.Identity.PrincipalID = fi.PtrTo(uuid.New().String())
 	c.VMSSes[vmScaleSetName] = parameters
 	return &parameters, nil
 }

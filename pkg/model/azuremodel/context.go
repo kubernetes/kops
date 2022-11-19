@@ -35,7 +35,7 @@ type AzureModelContext struct {
 
 // LinkToVirtualNetwork returns the Azure Virtual Network object the cluster is located in.
 func (c *AzureModelContext) LinkToVirtualNetwork() *azuretasks.VirtualNetwork {
-	return &azuretasks.VirtualNetwork{Name: fi.String(c.NameForVirtualNetwork())}
+	return &azuretasks.VirtualNetwork{Name: fi.PtrTo(c.NameForVirtualNetwork())}
 }
 
 // NameForVirtualNetwork returns the name of the Azure Virtual Network object the cluster is located in.
@@ -49,7 +49,7 @@ func (c *AzureModelContext) NameForVirtualNetwork() string {
 
 // LinkToResourceGroup returns the Resource Group object the cluster is located in.
 func (c *AzureModelContext) LinkToResourceGroup() *azuretasks.ResourceGroup {
-	return &azuretasks.ResourceGroup{Name: fi.String(c.NameForResourceGroup())}
+	return &azuretasks.ResourceGroup{Name: fi.PtrTo(c.NameForResourceGroup())}
 }
 
 // NameForResourceGroup returns the name of the Resource Group object the cluster is located in.
@@ -59,7 +59,7 @@ func (c *AzureModelContext) NameForResourceGroup() string {
 
 // LinkToAzureSubnet returns the Azure Subnet object the cluster is located in.
 func (c *AzureModelContext) LinkToAzureSubnet(spec *kops.ClusterSubnetSpec) *azuretasks.Subnet {
-	return &azuretasks.Subnet{Name: fi.String(spec.Name)}
+	return &azuretasks.Subnet{Name: fi.PtrTo(spec.Name)}
 }
 
 // NameForRouteTable returns the name of the Route Table object for the cluster.
@@ -69,7 +69,7 @@ func (c *AzureModelContext) NameForRouteTable() string {
 
 // LinkToLoadBalancer returns the Load Balancer object for the cluster.
 func (c *AzureModelContext) LinkToLoadBalancer() *azuretasks.LoadBalancer {
-	return &azuretasks.LoadBalancer{Name: fi.String(c.NameForLoadBalancer())}
+	return &azuretasks.LoadBalancer{Name: fi.PtrTo(c.NameForLoadBalancer())}
 }
 
 // NameForLoadBalancer returns the name of the Load Balancer object for the cluster.
@@ -123,7 +123,7 @@ func (c *AzureModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) ma
 	// Replace all "/" with "_" as "/" is not an allowed key character in Azure.
 	m := make(map[string]*string)
 	for k, v := range labels {
-		m[strings.ReplaceAll(k, "/", "_")] = fi.String(v)
+		m[strings.ReplaceAll(k, "/", "_")] = fi.PtrTo(v)
 	}
 	return m
 }

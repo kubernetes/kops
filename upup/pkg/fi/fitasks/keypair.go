@@ -69,7 +69,7 @@ func (e *Keypair) CompareWithID() *string {
 }
 
 func (e *Keypair) Find(c *fi.Context) (*Keypair, error) {
-	name := fi.StringValue(e.Name)
+	name := fi.ValueOf(e.Name)
 	if name == "" {
 		return nil, nil
 	}
@@ -159,7 +159,7 @@ func (_ *Keypair) ShouldCreate(a, e, changes *Keypair) (bool, error) {
 }
 
 func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
-	name := fi.StringValue(e.Name)
+	name := fi.ValueOf(e.Name)
 	if name == "" {
 		return fi.RequiredField("Name")
 	}
@@ -216,7 +216,7 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 
 		signer := fi.CertificateIDCA
 		if e.Signer != nil {
-			signer = fi.StringValue(e.Signer.Name)
+			signer = fi.ValueOf(e.Signer.Name)
 		}
 
 		klog.Infof("Issuing new certificate: %q", *e.Name)

@@ -66,11 +66,11 @@ func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
 
 	actual := &Subnet{}
 	actual.Name = &s.Name
-	actual.Network = &Network{Name: fi.String(lastComponent(s.Network))}
-	actual.Region = fi.String(lastComponent(s.Region))
+	actual.Network = &Network{Name: fi.PtrTo(lastComponent(s.Network))}
+	actual.Region = fi.PtrTo(lastComponent(s.Region))
 	actual.CIDR = &s.IpCidrRange
 
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	{
 		actual.SecondaryIpRanges = make(map[string]string)
 		for _, r := range s.SecondaryIpRanges {
@@ -102,11 +102,11 @@ func (_ *Subnet) CheckChanges(a, e, changes *Subnet) error {
 }
 
 func (_ *Subnet) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Subnet) error {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Verify the subnet was found
 		if a == nil {
-			return fmt.Errorf("Subnet with name %q not found", fi.StringValue(e.Name))
+			return fmt.Errorf("Subnet with name %q not found", fi.ValueOf(e.Name))
 		}
 	}
 
@@ -114,10 +114,10 @@ func (_ *Subnet) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Subnet) error {
 	project := cloud.Project()
 
 	if a == nil {
-		klog.V(2).Infof("Creating Subnet with CIDR: %q", fi.StringValue(e.CIDR))
+		klog.V(2).Infof("Creating Subnet with CIDR: %q", fi.ValueOf(e.CIDR))
 
 		subnet := &compute.Subnetwork{
-			IpCidrRange: fi.StringValue(e.CIDR),
+			IpCidrRange: fi.ValueOf(e.CIDR),
 			Name:        *e.Name,
 			Network:     e.Network.URL(project),
 		}
@@ -252,7 +252,7 @@ type terraformSubnetRange struct {
 }
 
 func (_ *Subnet) RenderSubnet(t *terraform.TerraformTarget, a, e, changes *Subnet) error {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Not terraform owned / managed
 		return nil
@@ -276,7 +276,7 @@ func (_ *Subnet) RenderSubnet(t *terraform.TerraformTarget, a, e, changes *Subne
 }
 
 func (e *Subnet) TerraformLink() *terraformWriter.Literal {
-	shared := fi.BoolValue(e.Shared)
+	shared := fi.ValueOf(e.Shared)
 	if shared {
 		if e.Name == nil {
 			klog.Fatalf("GCEName must be set, if subnet is shared: %#v", e)

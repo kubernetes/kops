@@ -27,8 +27,8 @@ func TestCloudConfigurationOptionsBuilder(t *testing.T) {
 	ob := &CloudConfigurationOptionsBuilder{
 		Context: nil,
 	}
-	disabled := fi.Bool(false)
-	enabled := fi.Bool(true)
+	disabled := fi.PtrTo(false)
+	enabled := fi.PtrTo(true)
 	for _, test := range []struct {
 		description              string
 		generalManageSCs         *bool

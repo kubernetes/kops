@@ -57,9 +57,9 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	// Standard options
-	clusterSpec.Kubelet.EnableDebuggingHandlers = fi.Bool(true)
+	clusterSpec.Kubelet.EnableDebuggingHandlers = fi.PtrTo(true)
 	clusterSpec.Kubelet.PodManifestPath = "/etc/kubernetes/manifests"
-	clusterSpec.Kubelet.LogLevel = fi.Int32(2)
+	clusterSpec.Kubelet.LogLevel = fi.PtrTo(int32(2))
 	clusterSpec.Kubelet.ClusterDomain = clusterSpec.ClusterDNSDomain
 
 	// AllowPrivileged is deprecated and removed in v1.14.
@@ -75,7 +75,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if clusterSpec.Kubelet.ClusterDNS == "" {
-		if clusterSpec.KubeDNS != nil && clusterSpec.KubeDNS.NodeLocalDNS != nil && fi.BoolValue(clusterSpec.KubeDNS.NodeLocalDNS.Enabled) {
+		if clusterSpec.KubeDNS != nil && clusterSpec.KubeDNS.NodeLocalDNS != nil && fi.ValueOf(clusterSpec.KubeDNS.NodeLocalDNS.Enabled) {
 			clusterSpec.Kubelet.ClusterDNS = clusterSpec.KubeDNS.NodeLocalDNS.LocalIP
 		} else {
 			ip, err := WellKnownServiceIP(clusterSpec, 10)
@@ -86,11 +86,11 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 	}
 
-	clusterSpec.MasterKubelet.RegisterSchedulable = fi.Bool(false)
+	clusterSpec.MasterKubelet.RegisterSchedulable = fi.PtrTo(false)
 	// Replace the CIDR with a CIDR allocated by KCM (the default, but included for clarity)
 	// We _do_ allow debugging handlers, so we can do logs
 	// This does allow more access than we would like though
-	clusterSpec.MasterKubelet.EnableDebuggingHandlers = fi.Bool(true)
+	clusterSpec.MasterKubelet.EnableDebuggingHandlers = fi.PtrTo(true)
 
 	{
 		// For pod eviction in low memory or empty disk situations
@@ -106,7 +106,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 				"imagefs.available<10%",
 				"imagefs.inodesFree<5%",
 			}
-			clusterSpec.Kubelet.EvictionHard = fi.String(strings.Join(evictionHard, ","))
+			clusterSpec.Kubelet.EvictionHard = fi.PtrTo(strings.Join(evictionHard, ","))
 		}
 	}
 
@@ -117,8 +117,8 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 
 	// IsolateMasters enables the legacy behaviour, where master pods on a separate network
 	// In newer versions of kubernetes, most of that functionality has been removed though
-	if fi.BoolValue(clusterSpec.IsolateMasters) {
-		clusterSpec.MasterKubelet.EnableDebuggingHandlers = fi.Bool(false)
+	if fi.ValueOf(clusterSpec.IsolateMasters) {
+		clusterSpec.MasterKubelet.EnableDebuggingHandlers = fi.PtrTo(false)
 		clusterSpec.MasterKubelet.HairpinMode = "none"
 	}
 
@@ -142,8 +142,8 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		if clusterSpec.CloudConfig == nil {
 			clusterSpec.CloudConfig = &kops.CloudConfiguration{}
 		}
-		clusterSpec.CloudConfig.Multizone = fi.Bool(true)
-		clusterSpec.CloudConfig.NodeTags = fi.String(gce.TagForRole(b.ClusterName, kops.InstanceGroupRoleNode))
+		clusterSpec.CloudConfig.Multizone = fi.PtrTo(true)
+		clusterSpec.CloudConfig.NodeTags = fi.PtrTo(gce.TagForRole(b.ClusterName, kops.InstanceGroupRoleNode))
 
 	}
 
@@ -169,9 +169,9 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 			return fmt.Errorf("no networking mode set")
 		}
 		if UsesKubenet(networking) && b.IsKubernetesLT("1.24") {
-			clusterSpec.Kubelet.NetworkPluginName = fi.String("kubenet")
-			clusterSpec.Kubelet.NetworkPluginMTU = fi.Int32(9001)
-			clusterSpec.Kubelet.NonMasqueradeCIDR = fi.String(clusterSpec.NonMasqueradeCIDR)
+			clusterSpec.Kubelet.NetworkPluginName = fi.PtrTo("kubenet")
+			clusterSpec.Kubelet.NetworkPluginMTU = fi.PtrTo(int32(9001))
+			clusterSpec.Kubelet.NonMasqueradeCIDR = fi.PtrTo(clusterSpec.NonMasqueradeCIDR)
 		}
 	}
 
@@ -188,7 +188,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.Kubelet.FeatureGates = make(map[string]string)
 	}
 
-	if clusterSpec.CloudConfig != nil && clusterSpec.CloudConfig.AWSEBSCSIDriver != nil && fi.BoolValue(clusterSpec.CloudConfig.AWSEBSCSIDriver.Enabled) {
+	if clusterSpec.CloudConfig != nil && clusterSpec.CloudConfig.AWSEBSCSIDriver != nil && fi.ValueOf(clusterSpec.CloudConfig.AWSEBSCSIDriver.Enabled) {
 		if _, found := clusterSpec.Kubelet.FeatureGates["CSIMigrationAWS"]; !found {
 			clusterSpec.Kubelet.FeatureGates["CSIMigrationAWS"] = "true"
 		}
@@ -204,7 +204,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if b.IsKubernetesGTE("1.22") && clusterSpec.Kubelet.ProtectKernelDefaults == nil {
-		clusterSpec.Kubelet.ProtectKernelDefaults = fi.Bool(true)
+		clusterSpec.Kubelet.ProtectKernelDefaults = fi.PtrTo(true)
 	}
 
 	// We do not enable graceful shutdown when using amazonaws due to leaking ENIs.
@@ -217,8 +217,8 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.Kubelet.ShutdownGracePeriodCriticalPods = &metav1.Duration{Duration: 0}
 	}
 
-	clusterSpec.Kubelet.RegisterSchedulable = fi.Bool(true)
-	clusterSpec.MasterKubelet.RegisterSchedulable = fi.Bool(true)
+	clusterSpec.Kubelet.RegisterSchedulable = fi.PtrTo(true)
+	clusterSpec.MasterKubelet.RegisterSchedulable = fi.PtrTo(true)
 
 	return nil
 }

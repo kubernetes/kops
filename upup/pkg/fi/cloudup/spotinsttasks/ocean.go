@@ -106,25 +106,25 @@ func (o *Ocean) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 }
 
 func (o *Ocean) find(svc spotinst.InstanceGroupService) (*aws.Cluster, error) {
-	klog.V(4).Infof("Attempting to find Ocean: %q", fi.StringValue(o.Name))
+	klog.V(4).Infof("Attempting to find Ocean: %q", fi.ValueOf(o.Name))
 
 	oceans, err := svc.List(context.Background())
 	if err != nil {
-		return nil, fmt.Errorf("spotinst: failed to find ocean %q: %v", fi.StringValue(o.Name), err)
+		return nil, fmt.Errorf("spotinst: failed to find ocean %q: %v", fi.ValueOf(o.Name), err)
 	}
 
 	var out *aws.Cluster
 	for _, ocean := range oceans {
-		if ocean.Name() == fi.StringValue(o.Name) {
+		if ocean.Name() == fi.ValueOf(o.Name) {
 			out = ocean.Obj().(*aws.Cluster)
 			break
 		}
 	}
 	if out == nil {
-		return nil, fmt.Errorf("spotinst: failed to find ocean %q", fi.StringValue(o.Name))
+		return nil, fmt.Errorf("spotinst: failed to find ocean %q", fi.ValueOf(o.Name))
 	}
 
-	klog.V(4).Infof("Ocean/%s: %s", fi.StringValue(o.Name), stringutil.Stringify(out))
+	klog.V(4).Infof("Ocean/%s: %s", fi.ValueOf(o.Name), stringutil.Stringify(out))
 	return out, nil
 }
 
@@ -143,9 +143,9 @@ func (o *Ocean) Find(c *fi.Context) (*Ocean, error) {
 
 	// Capacity.
 	{
-		if !fi.BoolValue(ocean.Compute.LaunchSpecification.UseAsTemplateOnly) {
-			actual.MinSize = fi.Int64(int64(fi.IntValue(ocean.Capacity.Minimum)))
-			actual.MaxSize = fi.Int64(int64(fi.IntValue(ocean.Capacity.Maximum)))
+		if !fi.ValueOf(ocean.Compute.LaunchSpecification.UseAsTemplateOnly) {
+			actual.MinSize = fi.PtrTo(int64(fi.ValueOf(ocean.Capacity.Minimum)))
+			actual.MaxSize = fi.PtrTo(int64(fi.ValueOf(ocean.Capacity.Maximum)))
 		}
 	}
 
@@ -157,11 +157,11 @@ func (o *Ocean) Find(c *fi.Context) (*Ocean, error) {
 			actual.UtilizeCommitments = strategy.UtilizeCommitments
 
 			if strategy.DrainingTimeout != nil {
-				actual.DrainingTimeout = fi.Int64(int64(fi.IntValue(strategy.DrainingTimeout)))
+				actual.DrainingTimeout = fi.PtrTo(int64(fi.ValueOf(strategy.DrainingTimeout)))
 			}
 
 			if strategy.GracePeriod != nil {
-				actual.GracePeriod = fi.Int64(int64(fi.IntValue(strategy.GracePeriod)))
+				actual.GracePeriod = fi.PtrTo(int64(fi.ValueOf(strategy.GracePeriod)))
 			}
 		}
 	}
@@ -175,7 +175,7 @@ func (o *Ocean) Find(c *fi.Context) (*Ocean, error) {
 			if subnets := compute.SubnetIDs; subnets != nil {
 				for _, subnetID := range subnets {
 					actual.Subnets = append(actual.Subnets,
-						&awstasks.Subnet{ID: fi.String(subnetID)})
+						&awstasks.Subnet{ID: fi.PtrTo(subnetID)})
 				}
 				if subnetSlicesEqualIgnoreOrder(actual.Subnets, o.Subnets) {
 					actual.Subnets = o.Subnets
@@ -208,12 +208,12 @@ func (o *Ocean) Find(c *fi.Context) (*Ocean, error) {
 			actual.ImageID = lc.ImageID
 
 			if o.ImageID != nil && actual.ImageID != nil &&
-				fi.StringValue(actual.ImageID) != fi.StringValue(o.ImageID) {
-				image, err := resolveImage(cloud, fi.StringValue(o.ImageID))
+				fi.ValueOf(actual.ImageID) != fi.ValueOf(o.ImageID) {
+				image, err := resolveImage(cloud, fi.ValueOf(o.ImageID))
 				if err != nil {
 					return nil, err
 				}
-				if fi.StringValue(image.ImageId) == fi.StringValue(lc.ImageID) {
+				if fi.ValueOf(image.ImageId) == fi.ValueOf(lc.ImageID) {
 					actual.ImageID = o.ImageID
 				}
 			}
@@ -224,7 +224,7 @@ func (o *Ocean) Find(c *fi.Context) (*Ocean, error) {
 			if lc.Tags != nil && len(lc.Tags) > 0 {
 				actual.Tags = make(map[string]string)
 				for _, tag := range lc.Tags {
-					actual.Tags[fi.StringValue(tag.Key)] = fi.StringValue(tag.Value)
+					actual.Tags[fi.ValueOf(tag.Key)] = fi.ValueOf(tag.Value)
 				}
 			}
 		}
@@ -234,7 +234,7 @@ func (o *Ocean) Find(c *fi.Context) (*Ocean, error) {
 			if lc.SecurityGroupIDs != nil {
 				for _, sgID := range lc.SecurityGroupIDs {
 					actual.SecurityGroups = append(actual.SecurityGroups,
-						&awstasks.SecurityGroup{ID: fi.String(sgID)})
+						&awstasks.SecurityGroup{ID: fi.PtrTo(sgID)})
 				}
 			}
 		}
@@ -242,7 +242,7 @@ func (o *Ocean) Find(c *fi.Context) (*Ocean, error) {
 		// User data.
 		{
 			if lc.UserData != nil {
-				userData, err := base64.StdEncoding.DecodeString(fi.StringValue(lc.UserData))
+				userData, err := base64.StdEncoding.DecodeString(fi.ValueOf(lc.UserData))
 				if err != nil {
 					return nil, err
 				}
@@ -252,7 +252,7 @@ func (o *Ocean) Find(c *fi.Context) (*Ocean, error) {
 
 		// EBS optimization.
 		{
-			if fi.BoolValue(lc.EBSOptimized) {
+			if fi.ValueOf(lc.EBSOptimized) {
 				if actual.RootVolumeOpts == nil {
 					actual.RootVolumeOpts = new(RootVolumeOpts)
 				}
@@ -278,7 +278,7 @@ func (o *Ocean) Find(c *fi.Context) (*Ocean, error) {
 		// Root volume options.
 		if lc.RootVolumeSize != nil {
 			actual.RootVolumeOpts = new(RootVolumeOpts)
-			actual.RootVolumeOpts.Size = fi.Int64(int64(*lc.RootVolumeSize))
+			actual.RootVolumeOpts.Size = fi.PtrTo(int64(*lc.RootVolumeSize))
 		}
 
 		// Monitoring.
@@ -369,15 +369,15 @@ func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 	// General.
 	{
 		ocean.SetName(e.Name)
-		ocean.SetRegion(fi.String(cloud.Region()))
+		ocean.SetRegion(fi.PtrTo(cloud.Region()))
 	}
 
 	// Capacity.
 	{
-		if !fi.BoolValue(e.UseAsTemplateOnly) {
-			ocean.Capacity.SetTarget(fi.Int(int(*e.MinSize)))
-			ocean.Capacity.SetMinimum(fi.Int(int(*e.MinSize)))
-			ocean.Capacity.SetMaximum(fi.Int(int(*e.MaxSize)))
+		if !fi.ValueOf(e.UseAsTemplateOnly) {
+			ocean.Capacity.SetTarget(fi.PtrTo(int(*e.MinSize)))
+			ocean.Capacity.SetMinimum(fi.PtrTo(int(*e.MinSize)))
+			ocean.Capacity.SetMaximum(fi.PtrTo(int(*e.MaxSize)))
 		}
 	}
 
@@ -388,11 +388,11 @@ func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 		ocean.Strategy.SetUtilizeCommitments(e.UtilizeCommitments)
 
 		if e.DrainingTimeout != nil {
-			ocean.Strategy.SetDrainingTimeout(fi.Int(int(*e.DrainingTimeout)))
+			ocean.Strategy.SetDrainingTimeout(fi.PtrTo(int(*e.DrainingTimeout)))
 		}
 
 		if e.GracePeriod != nil {
-			ocean.Strategy.SetGracePeriod(fi.Int(int(*e.GracePeriod)))
+			ocean.Strategy.SetGracePeriod(fi.PtrTo(int(*e.GracePeriod)))
 		}
 	}
 
@@ -403,7 +403,7 @@ func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 			if e.Subnets != nil {
 				subnetIDs := make([]string, len(e.Subnets))
 				for i, subnet := range e.Subnets {
-					subnetIDs[i] = fi.StringValue(subnet.ID)
+					subnetIDs[i] = fi.ValueOf(subnet.ID)
 				}
 				ocean.Compute.SetSubnetIDs(subnetIDs)
 			}
@@ -437,7 +437,7 @@ func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 			// Image.
 			{
 				if e.ImageID != nil {
-					image, err := resolveImage(cloud, fi.StringValue(e.ImageID))
+					image, err := resolveImage(cloud, fi.ValueOf(e.ImageID))
 					if err != nil {
 						return err
 					}
@@ -456,7 +456,7 @@ func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 				}
 			}
 
-			if !fi.BoolValue(e.UseAsTemplateOnly) {
+			if !fi.ValueOf(e.UseAsTemplateOnly) {
 				// User data.
 				{
 					if e.UserData != nil {
@@ -467,7 +467,7 @@ func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 
 						if len(userData) > 0 {
 							encoded := base64.StdEncoding.EncodeToString([]byte(userData))
-							ocean.Compute.LaunchSpecification.SetUserData(fi.String(encoded))
+							ocean.Compute.LaunchSpecification.SetUserData(fi.PtrTo(encoded))
 						}
 					}
 				}
@@ -487,7 +487,7 @@ func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 
 						// Volume size.
 						if opts.Size != nil {
-							ocean.Compute.LaunchSpecification.SetRootVolumeSize(fi.Int(int(*opts.Size)))
+							ocean.Compute.LaunchSpecification.SetRootVolumeSize(fi.PtrTo(int(*opts.Size)))
 						}
 
 						// EBS optimization.
@@ -579,8 +579,8 @@ readyLoop:
 						return fmt.Errorf("IAM instance profile not yet created/propagated (original error: %v)", err)
 					}
 
-					klog.V(4).Infof("Got an error indicating that the IAM instance profile %q is not ready %q", fi.StringValue(e.IAMInstanceProfile.Name), err)
-					klog.Infof("Waiting for IAM instance profile %q to be ready", fi.StringValue(e.IAMInstanceProfile.Name))
+					klog.V(4).Infof("Got an error indicating that the IAM instance profile %q is not ready %q", fi.ValueOf(e.IAMInstanceProfile.Name), err)
+					klog.Infof("Waiting for IAM instance profile %q to be ready", fi.ValueOf(e.IAMInstanceProfile.Name))
 					goto readyLoop
 				}
 			}
@@ -646,7 +646,7 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 				ocean.Strategy = new(aws.Strategy)
 			}
 
-			ocean.Strategy.SetDrainingTimeout(fi.Int(int(*e.DrainingTimeout)))
+			ocean.Strategy.SetDrainingTimeout(fi.PtrTo(int(*e.DrainingTimeout)))
 			changes.DrainingTimeout = nil
 			changed = true
 		}
@@ -657,7 +657,7 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 				ocean.Strategy = new(aws.Strategy)
 			}
 
-			ocean.Strategy.SetGracePeriod(fi.Int(int(*e.GracePeriod)))
+			ocean.Strategy.SetGracePeriod(fi.PtrTo(int(*e.GracePeriod)))
 			changes.GracePeriod = nil
 			changed = true
 		}
@@ -674,7 +674,7 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 
 				subnetIDs := make([]string, len(e.Subnets))
 				for i, subnet := range e.Subnets {
-					subnetIDs[i] = fi.StringValue(subnet.ID)
+					subnetIDs[i] = fi.ValueOf(subnet.ID)
 				}
 
 				ocean.Compute.SetSubnetIDs(subnetIDs)
@@ -744,7 +744,7 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 			// Image.
 			{
 				if changes.ImageID != nil {
-					image, err := resolveImage(cloud, fi.StringValue(e.ImageID))
+					image, err := resolveImage(cloud, fi.ValueOf(e.ImageID))
 					if err != nil {
 						return err
 					}
@@ -813,7 +813,7 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 				}
 			}
 
-			if !fi.BoolValue(e.UseAsTemplateOnly) {
+			if !fi.ValueOf(e.UseAsTemplateOnly) {
 				// User data.
 				{
 					if changes.UserData != nil {
@@ -831,7 +831,7 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 							}
 
 							encoded := base64.StdEncoding.EncodeToString([]byte(userData))
-							ocean.Compute.LaunchSpecification.SetUserData(fi.String(encoded))
+							ocean.Compute.LaunchSpecification.SetUserData(fi.PtrTo(encoded))
 							changed = true
 						}
 
@@ -903,7 +903,7 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 								ocean.Compute.LaunchSpecification = new(aws.LaunchSpecification)
 							}
 
-							ocean.Compute.LaunchSpecification.SetRootVolumeSize(fi.Int(int(*opts.Size)))
+							ocean.Compute.LaunchSpecification.SetRootVolumeSize(fi.PtrTo(int(*opts.Size)))
 							changed = true
 						}
 
@@ -929,19 +929,19 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 
 	// Capacity.
 	{
-		if !fi.BoolValue(e.UseAsTemplateOnly) {
+		if !fi.ValueOf(e.UseAsTemplateOnly) {
 			if changes.MinSize != nil {
 				if ocean.Capacity == nil {
 					ocean.Capacity = new(aws.Capacity)
 				}
 
-				ocean.Capacity.SetMinimum(fi.Int(int(*e.MinSize)))
+				ocean.Capacity.SetMinimum(fi.PtrTo(int(*e.MinSize)))
 				changes.MinSize = nil
 				changed = true
 
 				// Scale up the target capacity, if needed.
 				if int64(*actual.Capacity.Target) < *e.MinSize {
-					ocean.Capacity.SetTarget(fi.Int(int(*e.MinSize)))
+					ocean.Capacity.SetTarget(fi.PtrTo(int(*e.MinSize)))
 				}
 			}
 			if changes.MaxSize != nil {
@@ -949,7 +949,7 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 					ocean.Capacity = new(aws.Capacity)
 				}
 
-				ocean.Capacity.SetMaximum(fi.Int(int(*e.MaxSize)))
+				ocean.Capacity.SetMaximum(fi.PtrTo(int(*e.MaxSize)))
 				changes.MaxSize = nil
 				changed = true
 			}
@@ -1057,7 +1057,7 @@ func (_ *Ocean) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Oce
 
 	tf := &terraformOcean{
 		Name:                     e.Name,
-		Region:                   fi.String(cloud.Region()),
+		Region:                   fi.PtrTo(cloud.Region()),
 		UseAsTemplateOnly:        e.UseAsTemplateOnly,
 		FallbackToOnDemand:       e.FallbackToOnDemand,
 		UtilizeReservedInstances: e.UtilizeReservedInstances,
@@ -1068,7 +1068,7 @@ func (_ *Ocean) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Oce
 
 	// Image.
 	if e.ImageID != nil {
-		image, err := resolveImage(cloud, fi.StringValue(e.ImageID))
+		image, err := resolveImage(cloud, fi.ValueOf(e.ImageID))
 		if err != nil {
 			return err
 		}
@@ -1165,7 +1165,7 @@ func (_ *Ocean) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Oce
 		}
 	}
 
-	if !fi.BoolValue(tf.UseAsTemplateOnly) {
+	if !fi.ValueOf(tf.UseAsTemplateOnly) {
 		// Capacity.
 		tf.DesiredCapacity = e.MinSize
 		tf.MinSize = e.MinSize
@@ -1227,8 +1227,8 @@ func (o *Ocean) buildTags() []*aws.Tag {
 
 	for key, value := range o.Tags {
 		tags = append(tags, &aws.Tag{
-			Key:   fi.String(key),
-			Value: fi.String(value),
+			Key:   fi.PtrTo(key),
+			Value: fi.PtrTo(value),
 		})
 	}
 

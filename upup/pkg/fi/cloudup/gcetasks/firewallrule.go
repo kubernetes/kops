@@ -67,7 +67,7 @@ func (e *FirewallRule) Find(c *fi.Context) (*FirewallRule, error) {
 
 	actual := &FirewallRule{}
 	actual.Name = &r.Name
-	actual.Network = &Network{Name: fi.String(lastComponent(r.Network))}
+	actual.Network = &Network{Name: fi.PtrTo(lastComponent(r.Network))}
 	actual.TargetTags = r.TargetTags
 	actual.SourceRanges = r.SourceRanges
 	actual.SourceTags = r.SourceTags
@@ -103,7 +103,7 @@ func (e *FirewallRule) Normalize(c *fi.Context) error {
 		return fmt.Errorf("SourceRanges and SourceTags should not both be specified")
 	}
 
-	name := fi.StringValue(e.Name)
+	name := fi.ValueOf(e.Name)
 
 	// Make sure we've split the ipv4 / ipv6 addresses.
 	// A single firewall rule can't mix ipv4 and ipv6 addresses, so we split them into two rules.

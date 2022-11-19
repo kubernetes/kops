@@ -33,7 +33,7 @@ func MetadataMatchesClusterName(findClusterName string, metadata *compute.Metada
 	}
 	for _, item := range metadata.Items {
 		if item.Key == MetadataKeyClusterName {
-			value := fi.StringValue(item.Value)
+			value := fi.ValueOf(item.Value)
 			if strings.TrimSpace(value) == findClusterName {
 				return true
 			} else {

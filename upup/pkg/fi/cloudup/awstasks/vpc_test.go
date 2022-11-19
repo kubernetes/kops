@@ -63,7 +63,7 @@ func TestVPCCreate(t *testing.T) {
 			t.Fatalf("unexpected error during Run: %v", err)
 		}
 
-		if fi.StringValue(vpc1.ID) == "" {
+		if fi.ValueOf(vpc1.ID) == "" {
 			t.Fatalf("ID not set after create")
 		}
 
@@ -73,7 +73,7 @@ func TestVPCCreate(t *testing.T) {
 
 		expected := &ec2.Vpc{
 			CidrBlock: s("172.21.0.0/16"),
-			IsDefault: fi.Bool(false),
+			IsDefault: fi.PtrTo(false),
 			VpcId:     vpc1.ID,
 			Tags: buildTags(map[string]string{
 				"Name": "vpc1",
@@ -162,7 +162,7 @@ func TestSharedVPCAdditionalCIDR(t *testing.T) {
 			Lifecycle: fi.LifecycleSync,
 			CIDR:      s("172.21.0.0/16"),
 			Tags:      map[string]string{"Name": "vpc-1"},
-			Shared:    fi.Bool(true),
+			Shared:    fi.PtrTo(true),
 		}
 		return map[string]fi.Task{
 			"vpc-1": vpc1,
@@ -187,7 +187,7 @@ func TestSharedVPCAdditionalCIDR(t *testing.T) {
 			t.Fatalf("unexpected error during Run: %v", err)
 		}
 
-		if fi.StringValue(vpc1.ID) == "" {
+		if fi.ValueOf(vpc1.ID) == "" {
 			t.Fatalf("ID not set")
 		}
 
@@ -197,7 +197,7 @@ func TestSharedVPCAdditionalCIDR(t *testing.T) {
 
 		expected := &ec2.Vpc{
 			CidrBlock: s("172.21.0.0/16"),
-			IsDefault: fi.Bool(false),
+			IsDefault: fi.PtrTo(false),
 			VpcId:     vpc1.ID,
 			Tags: buildTags(map[string]string{
 				"Name": "vpc-1",

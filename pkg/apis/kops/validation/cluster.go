@@ -106,7 +106,7 @@ func validateEtcdMemberUpdate(fp *field.Path, obj kops.EtcdMemberSpec, old kops.
 		allErrs = append(allErrs, field.Forbidden(fp.Child("name"), "name cannot be changed"))
 	}
 
-	if fi.StringValue(obj.InstanceGroup) != fi.StringValue(old.InstanceGroup) {
+	if fi.ValueOf(obj.InstanceGroup) != fi.ValueOf(old.InstanceGroup) {
 		allErrs = append(allErrs, field.Forbidden(fp.Child("instanceGroup"), "instanceGroup cannot be changed"))
 	}
 

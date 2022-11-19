@@ -60,7 +60,7 @@ func (b *EtcdManagerTLSBuilder) Build(ctx *fi.ModelBuilderContext) error {
 				Path:     filepath.Join(d, fileName+".crt"),
 				Contents: fi.NewStringResource(b.NodeupConfig.CAs[keystoreName]),
 				Type:     nodetasks.FileType_File,
-				Mode:     fi.String("0644"),
+				Mode:     fi.PtrTo("0644"),
 			})
 
 		}

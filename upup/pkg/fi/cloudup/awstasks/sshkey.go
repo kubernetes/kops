@@ -95,18 +95,18 @@ func (e *SSHKey) find(cloud awsup.AWSCloud) (*SSHKey, error) {
 	}
 
 	// Avoid spurious changes
-	if fi.StringValue(k.KeyType) == ec2.KeyTypeEd25519 {
+	if fi.ValueOf(k.KeyType) == ec2.KeyTypeEd25519 {
 		// Trim the trailing "=" and prefix with "SHA256:" to match the output of "ssh-keygen -lf"
-		fingerprint := fi.StringValue(k.KeyFingerprint)
+		fingerprint := fi.ValueOf(k.KeyFingerprint)
 		fingerprint = strings.TrimRight(fingerprint, "=")
 		fingerprint = fmt.Sprintf("SHA256:%s", fingerprint)
-		actual.KeyFingerprint = fi.String(fingerprint)
+		actual.KeyFingerprint = fi.PtrTo(fingerprint)
 	}
-	if fi.StringValue(actual.KeyFingerprint) == fi.StringValue(e.KeyFingerprint) {
+	if fi.ValueOf(actual.KeyFingerprint) == fi.ValueOf(e.KeyFingerprint) {
 		klog.V(2).Infof("SSH key fingerprints match; assuming public keys match")
 		actual.PublicKey = e.PublicKey
 	} else {
-		klog.V(2).Infof("Computed SSH key fingerprint mismatch: %q %q", fi.StringValue(e.KeyFingerprint), fi.StringValue(actual.KeyFingerprint))
+		klog.V(2).Infof("Computed SSH key fingerprint mismatch: %q %q", fi.ValueOf(e.KeyFingerprint), fi.ValueOf(actual.KeyFingerprint))
 	}
 	actual.Lifecycle = e.Lifecycle
 	if actual.Shared {

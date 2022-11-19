@@ -102,10 +102,10 @@ func (b *Builder) loadClusterPackage(u *unstructured.Unstructured) (*Package, er
 	addon := &Package{
 		Manifest: manifestBytes,
 		Spec: channelsapi.AddonSpec{
-			Name:     fi.String(operatorKey),
+			Name:     fi.PtrTo(operatorKey),
 			Id:       id,
 			Selector: map[string]string{"k8s-addon": operatorKey},
-			Manifest: fi.String(location),
+			Manifest: fi.PtrTo(location),
 		},
 	}
 	return addon, nil

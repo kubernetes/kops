@@ -50,14 +50,14 @@ var _ fi.ModelBuilder = &FirewallModelBuilder{}
 
 func (b *FirewallModelBuilder) usesOctavia() bool {
 	if b.Cluster.Spec.CloudProvider.Openstack.Loadbalancer != nil {
-		return fi.BoolValue(b.Cluster.Spec.CloudProvider.Openstack.Loadbalancer.UseOctavia)
+		return fi.ValueOf(b.Cluster.Spec.CloudProvider.Openstack.Loadbalancer.UseOctavia)
 	}
 	return false
 }
 
 func (b *FirewallModelBuilder) getOctaviaProvider() string {
 	if b.Cluster.Spec.CloudProvider.Openstack.Loadbalancer != nil {
-		return fi.StringValue(b.Cluster.Spec.CloudProvider.Openstack.Loadbalancer.Provider)
+		return fi.ValueOf(b.Cluster.Spec.CloudProvider.Openstack.Loadbalancer.Provider)
 	}
 	return ""
 }
@@ -78,11 +78,11 @@ func (b *FirewallModelBuilder) addDirectionalGroupRule(c *fi.ModelBuilderContext
 		RemoteGroup:    dest,
 		RemoteIPPrefix: sgr.RemoteIPPrefix,
 		SecGroup:       source,
-		Delete:         fi.Bool(false),
+		Delete:         fi.PtrTo(false),
 	}
 
-	klog.V(8).Infof("Adding rule %v", fi.StringValue(t.GetName()))
-	b.Rules[fi.StringValue(t.GetName())] = t
+	klog.V(8).Infof("Adding rule %v", fi.ValueOf(t.GetName()))
+	b.Rules[fi.ValueOf(t.GetName())] = t
 }
 
 // addSSHRules - sets the ssh rules based on the presence of a bastion
@@ -545,7 +545,7 @@ func (b *FirewallModelBuilder) getExistingRules(sgMap map[string]*openstacktasks
 			return fmt.Errorf("Found multiple security groups with the same name: %v", sgName)
 		}
 		sg := sgs[0]
-		sgt.Name = fi.String(sg.Name)
+		sgt.Name = fi.PtrTo(sg.Name)
 		sgIdMap[sg.ID] = sgt
 	}
 
@@ -560,20 +560,20 @@ func (b *FirewallModelBuilder) getExistingRules(sgMap map[string]*openstacktasks
 		for _, rule := range sgRules {
 
 			t := &openstacktasks.SecurityGroupRule{
-				ID:             fi.String(rule.ID),
-				Direction:      fi.String(rule.Direction),
-				EtherType:      fi.String(rule.EtherType),
-				PortRangeMax:   fi.Int(rule.PortRangeMax),
-				PortRangeMin:   fi.Int(rule.PortRangeMin),
-				Protocol:       fi.String(rule.Protocol),
-				RemoteIPPrefix: fi.String(rule.RemoteIPPrefix),
+				ID:             fi.PtrTo(rule.ID),
+				Direction:      fi.PtrTo(rule.Direction),
+				EtherType:      fi.PtrTo(rule.EtherType),
+				PortRangeMax:   fi.PtrTo(rule.PortRangeMax),
+				PortRangeMin:   fi.PtrTo(rule.PortRangeMin),
+				Protocol:       fi.PtrTo(rule.Protocol),
+				RemoteIPPrefix: fi.PtrTo(rule.RemoteIPPrefix),
 				RemoteGroup:    sgIdMap[rule.RemoteGroupID],
 				Lifecycle:      b.Lifecycle,
 				SecGroup:       sgIdMap[rule.SecGroupID],
-				Delete:         fi.Bool(true),
+				Delete:         fi.PtrTo(true),
 			}
 			klog.V(8).Infof("Adding existing rule %v", t)
-			b.Rules[fi.StringValue(t.GetName())] = t
+			b.Rules[fi.ValueOf(t.GetName())] = t
 		}
 	}
 	return nil

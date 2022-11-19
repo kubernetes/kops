@@ -38,7 +38,7 @@ func (b *GCPPDCSIDriverOptionsBuilder) BuildOptions(o interface{}) error {
 	cc := clusterSpec.CloudConfig
 	if cc.GCPPDCSIDriver == nil {
 		cc.GCPPDCSIDriver = &kops.GCPPDCSIDriver{
-			Enabled: fi.Bool(b.IsKubernetesGTE("1.23")),
+			Enabled: fi.PtrTo(b.IsKubernetesGTE("1.23")),
 		}
 	}
 

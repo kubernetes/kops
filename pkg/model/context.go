@@ -149,8 +149,8 @@ func (b *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 
 	// Apply NTH Labels
 	nth := b.Cluster.Spec.NodeTerminationHandler
-	if nth != nil && fi.BoolValue(nth.Enabled) && fi.BoolValue(nth.EnableSQSTerminationDraining) {
-		labels[fi.StringValue(nth.ManagedASGTag)] = ""
+	if nth != nil && fi.ValueOf(nth.Enabled) && fi.ValueOf(nth.EnableSQSTerminationDraining) {
+		labels[fi.ValueOf(nth.ManagedASGTag)] = ""
 	}
 
 	// Apply labels for cluster autoscaler node labels
@@ -246,7 +246,7 @@ func (b *KopsModelContext) UseBootstrapTokens() bool {
 		return false
 	}
 
-	return fi.BoolValue(b.Cluster.Spec.KubeAPIServer.EnableBootstrapAuthToken)
+	return fi.ValueOf(b.Cluster.Spec.KubeAPIServer.EnableBootstrapAuthToken)
 }
 
 // UsesBastionDns checks if we should use a specific name for the bastion dns
@@ -386,7 +386,7 @@ func (b *KopsModelContext) NodePortRange() (utilnet.PortRange, error) {
 // UseServiceAccountExternalPermissions returns true if we are using service-account bound IAM roles.
 func (b *KopsModelContext) UseServiceAccountExternalPermissions() bool {
 	return b.Cluster.Spec.IAM != nil &&
-		fi.BoolValue(b.Cluster.Spec.IAM.UseServiceAccountExternalPermissions)
+		fi.ValueOf(b.Cluster.Spec.IAM.UseServiceAccountExternalPermissions)
 }
 
 // NetworkingIsCalico returns true if we are using calico networking

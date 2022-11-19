@@ -104,7 +104,7 @@ func (e *AutoscalingGroup) CompareWithID() *string {
 func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
-	g, err := findAutoscalingGroup(cloud, fi.StringValue(e.Name))
+	g, err := findAutoscalingGroup(cloud, fi.ValueOf(e.Name))
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +121,7 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 
 	// Use 0 as default value when api returns nil (same as model)
 	if g.MaxInstanceLifetime == nil {
-		actual.MaxInstanceLifetime = fi.Int64(0)
+		actual.MaxInstanceLifetime = fi.PtrTo(int64(0))
 	} else {
 		actual.MaxInstanceLifetime = g.MaxInstanceLifetime
 	}
@@ -152,12 +152,12 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 		for _, lb := range e.LoadBalancers {
 			// All external ELBs have their Shared field set to true. The API ELB does not.
 			// Note that Shared is set by the kops model rather than AWS tags.
-			if !fi.BoolValue(lb.Shared) {
+			if !fi.ValueOf(lb.Shared) {
 				apiLBTask = lb
 			}
 		}
 		if apiLBTask != nil && len(actual.LoadBalancers) > 0 {
-			apiLBDesc, err := c.Cloud.(awsup.AWSCloud).FindELBByNameTag(fi.StringValue(apiLBTask.Name))
+			apiLBDesc, err := c.Cloud.(awsup.AWSCloud).FindELBByNameTag(fi.ValueOf(apiLBTask.Name))
 			if err != nil {
 				return nil, err
 			}
@@ -176,14 +176,14 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 	actual.TargetGroups = []*TargetGroup{}
 	if len(g.TargetGroupARNs) > 0 {
 		for _, tg := range g.TargetGroupARNs {
-			targetGroupName, err := awsup.GetTargetGroupNameFromARN(fi.StringValue(tg))
+			targetGroupName, err := awsup.GetTargetGroupNameFromARN(fi.ValueOf(tg))
 			if err != nil {
 				return nil, err
 			}
 			if targetGroupName != awsup.GetResourceName32(c.Cluster.Name, "tcp") && targetGroupName != awsup.GetResourceName32(c.Cluster.Name, "tls") {
 				actual.TargetGroups = append(actual.TargetGroups, &TargetGroup{ARN: aws.String(*tg), Name: aws.String(targetGroupName)})
 			} else {
-				actual.TargetGroups = append(actual.TargetGroups, &TargetGroup{ARN: aws.String(*tg), Name: aws.String(fi.StringValue(g.AutoScalingGroupName) + "-" + targetGroupName)})
+				actual.TargetGroups = append(actual.TargetGroups, &TargetGroup{ARN: aws.String(*tg), Name: aws.String(fi.ValueOf(g.AutoScalingGroupName) + "-" + targetGroupName)})
 			}
 		}
 	}
@@ -231,7 +231,7 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 			actual.MixedSpotMaxPrice = mpd.SpotMaxPrice
 			// MixedSpotMaxPrice must be set to "" in order to unset.
 			if mpd.SpotMaxPrice == nil {
-				actual.MixedSpotMaxPrice = fi.String("")
+				actual.MixedSpotMaxPrice = fi.PtrTo("")
 			}
 		}
 
@@ -244,7 +244,7 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 			}
 
 			for _, n := range g.MixedInstancesPolicy.LaunchTemplate.Overrides {
-				actual.MixedInstanceOverrides = append(actual.MixedInstanceOverrides, fi.StringValue(n.InstanceType))
+				actual.MixedInstanceOverrides = append(actual.MixedInstanceOverrides, fi.ValueOf(n.InstanceType))
 			}
 		}
 	}
@@ -285,14 +285,14 @@ func findAutoscalingGroup(cloud awsup.AWSCloud, name string) (*autoscaling.Group
 			// Check for "Delete in progress" (the only use .Status). We won't be able to update or create while
 			// this is true, but filtering it out here makes the messages slightly clearer.
 			if g.Status != nil {
-				klog.Warningf("Skipping AutoScalingGroup %v: %v", fi.StringValue(g.AutoScalingGroupName), fi.StringValue(g.Status))
+				klog.Warningf("Skipping AutoScalingGroup %v: %v", fi.ValueOf(g.AutoScalingGroupName), fi.ValueOf(g.Status))
 				continue
 			}
 
 			if aws.StringValue(g.AutoScalingGroupName) == name {
 				found = append(found, g)
 			} else {
-				klog.Warningf("Got ASG with unexpected name %q", fi.StringValue(g.AutoScalingGroupName))
+				klog.Warningf("Got ASG with unexpected name %q", fi.ValueOf(g.AutoScalingGroupName))
 			}
 		}
 
@@ -339,7 +339,7 @@ func (e *AutoscalingGroup) CheckChanges(a, ex, changes *AutoscalingGroup) error 
 func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *AutoscalingGroup) error {
 	// @step: did we find an autoscaling group?
 	if a == nil {
-		klog.V(2).Infof("Creating autoscaling group with name: %s", fi.StringValue(e.Name))
+		klog.V(2).Infof("Creating autoscaling group with name: %s", fi.ValueOf(e.Name))
 
 		request := &autoscaling.CreateAutoScalingGroupInput{
 			AutoScalingGroupName:             e.Name,
@@ -347,11 +347,11 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			MaxSize:                          e.MaxSize,
 			NewInstancesProtectedFromScaleIn: e.InstanceProtection,
 			Tags:                             v.AutoscalingGroupTags(),
-			VPCZoneIdentifier:                fi.String(strings.Join(e.AutoscalingGroupSubnets(), ",")),
+			VPCZoneIdentifier:                fi.PtrTo(strings.Join(e.AutoscalingGroupSubnets(), ",")),
 		}
 
 		//On ASG creation 0 value is forbidden
-		if fi.Int64Value(e.MaxInstanceLifetime) == 0 {
+		if fi.ValueOf(e.MaxInstanceLifetime) == 0 {
 			request.MaxInstanceLifetime = nil
 		} else {
 			request.MaxInstanceLifetime = e.MaxInstanceLifetime
@@ -359,7 +359,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 
 		for _, k := range e.LoadBalancers {
 			if k.LoadBalancerName == nil {
-				lbDesc, err := t.Cloud.FindELBByNameTag(fi.StringValue(k.GetName()))
+				lbDesc, err := t.Cloud.FindELBByNameTag(fi.ValueOf(k.GetName()))
 				if err != nil {
 					return err
 				}
@@ -396,7 +396,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			p := request.MixedInstancesPolicy.LaunchTemplate
 			for _, x := range e.MixedInstanceOverrides {
 				p.Overrides = append(p.Overrides, &autoscaling.LaunchTemplateOverrides{
-					InstanceType: fi.String(x),
+					InstanceType: fi.PtrTo(x),
 				},
 				)
 			}
@@ -510,7 +510,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			if changes.MixedInstanceOverrides != nil {
 				p := request.MixedInstancesPolicy.LaunchTemplate
 				for _, x := range changes.MixedInstanceOverrides {
-					p.Overrides = append(p.Overrides, &autoscaling.LaunchTemplateOverrides{InstanceType: fi.String(x)})
+					p.Overrides = append(p.Overrides, &autoscaling.LaunchTemplateOverrides{InstanceType: fi.PtrTo(x)})
 				}
 				changes.MixedInstanceOverrides = nil
 			}
@@ -540,7 +540,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			request.MaxInstanceLifetime = e.MaxInstanceLifetime
 			changes.MaxInstanceLifetime = nil
 		} else {
-			request.MaxInstanceLifetime = fi.Int64(0)
+			request.MaxInstanceLifetime = fi.PtrTo(int64(0))
 		}
 
 		var updateTagsRequest *autoscaling.CreateOrUpdateTagsInput
@@ -646,7 +646,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			klog.Warningf("cannot apply changes to AutoScalingGroup: %v", changes)
 		}
 
-		klog.V(2).Infof("Updating autoscaling group %s", fi.StringValue(e.Name))
+		klog.V(2).Infof("Updating autoscaling group %s", fi.ValueOf(e.Name))
 
 		if _, err := t.Cloud.Autoscaling().UpdateAutoScalingGroup(request); err != nil {
 			return fmt.Errorf("error updating AutoscalingGroup: %v", err)
@@ -741,7 +741,7 @@ func (e *AutoscalingGroup) AutoscalingGroupSubnets() []string {
 	var list []string
 
 	for _, x := range e.Subnets {
-		list = append(list, fi.StringValue(x.ID))
+		list = append(list, fi.ValueOf(x.ID))
 	}
 
 	return list
@@ -933,9 +933,9 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 	for _, k := range maps.SortedKeys(e.Tags) {
 		v := e.Tags[k]
 		tf.Tags = append(tf.Tags, &terraformASGTag{
-			Key:               fi.String(k),
-			Value:             fi.String(v),
-			PropagateAtLaunch: fi.Bool(true),
+			Key:               fi.PtrTo(k),
+			Value:             fi.PtrTo(v),
+			PropagateAtLaunch: fi.PtrTo(true),
 		})
 	}
 
@@ -951,7 +951,7 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 
 	if e.UseMixedInstancesPolicy() {
 		// Temporary warning until https://github.com/terraform-providers/terraform-provider-aws/issues/9750 is resolved
-		if e.MixedSpotAllocationStrategy == fi.String("capacity-optimized") {
+		if e.MixedSpotAllocationStrategy == fi.PtrTo("capacity-optimized") {
 			fmt.Print("Terraform does not currently support a capacity optimized strategy - please see https://github.com/terraform-providers/terraform-provider-aws/issues/9750")
 		}
 
@@ -981,7 +981,7 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 		}
 
 		for _, x := range e.MixedInstanceOverrides {
-			tf.MixedInstancesPolicy[0].LaunchTemplate[0].Override = append(tf.MixedInstancesPolicy[0].LaunchTemplate[0].Override, &terraformAutoscalingMixedInstancesPolicyLaunchTemplateOverride{InstanceType: fi.String(x)})
+			tf.MixedInstancesPolicy[0].LaunchTemplate[0].Override = append(tf.MixedInstancesPolicy[0].LaunchTemplate[0].Override, &terraformAutoscalingMixedInstancesPolicyLaunchTemplateOverride{InstanceType: fi.PtrTo(x)})
 		}
 	} else if e.LaunchTemplate != nil {
 		tf.LaunchTemplate = &terraformAutoscalingLaunchTemplateSpecification{
@@ -1026,7 +1026,7 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 	var processes []*string
 	if e.SuspendProcesses != nil {
 		for _, p := range *e.SuspendProcesses {
-			processes = append(processes, fi.String(p))
+			processes = append(processes, fi.PtrTo(p))
 		}
 	}
 	tf.SuspendedProcesses = processes
@@ -1036,7 +1036,7 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 
 // TerraformLink fills in the property
 func (e *AutoscalingGroup) TerraformLink() *terraformWriter.Literal {
-	return terraformWriter.LiteralProperty("aws_autoscaling_group", fi.StringValue(e.Name), "id")
+	return terraformWriter.LiteralProperty("aws_autoscaling_group", fi.ValueOf(e.Name), "id")
 }
 
 type cloudformationASGTag struct {
@@ -1138,7 +1138,7 @@ func (_ *AutoscalingGroup) RenderCloudformation(t *cloudformation.Cloudformation
 		}
 
 		for _, x := range e.MixedInstanceOverrides {
-			cf.MixedInstancesPolicy.LaunchTemplate.Overrides = append(cf.MixedInstancesPolicy.LaunchTemplate.Overrides, &cloudformationAutoscalingLaunchTemplateOverride{InstanceType: fi.String(x)})
+			cf.MixedInstancesPolicy.LaunchTemplate.Overrides = append(cf.MixedInstancesPolicy.LaunchTemplate.Overrides, &cloudformationAutoscalingLaunchTemplateOverride{InstanceType: fi.PtrTo(x)})
 		}
 	} else if e.LaunchTemplate != nil {
 		cf.LaunchTemplate = &cloudformationAutoscalingLaunchTemplateSpecification{
@@ -1156,9 +1156,9 @@ func (_ *AutoscalingGroup) RenderCloudformation(t *cloudformation.Cloudformation
 	for _, k := range maps.SortedKeys(e.Tags) {
 		v := e.Tags[k]
 		cf.Tags = append(cf.Tags, &cloudformationASGTag{
-			Key:               fi.String(k),
-			Value:             fi.String(v),
-			PropagateAtLaunch: fi.Bool(true),
+			Key:               fi.PtrTo(k),
+			Value:             fi.PtrTo(v),
+			PropagateAtLaunch: fi.PtrTo(true),
 		})
 	}
 
@@ -1170,10 +1170,10 @@ func (_ *AutoscalingGroup) RenderCloudformation(t *cloudformation.Cloudformation
 		cf.TargetGroupARNs = append(cf.TargetGroupARNs, tg.CloudformationLink())
 	}
 
-	return t.RenderResource("AWS::AutoScaling::AutoScalingGroup", fi.StringValue(e.Name), cf)
+	return t.RenderResource("AWS::AutoScaling::AutoScalingGroup", fi.ValueOf(e.Name), cf)
 }
 
 // CloudformationLink is adds a reference
 func (e *AutoscalingGroup) CloudformationLink() *cloudformation.Literal {
-	return cloudformation.Ref("AWS::AutoScaling::AutoScalingGroup", fi.StringValue(e.Name))
+	return cloudformation.Ref("AWS::AutoScaling::AutoScalingGroup", fi.ValueOf(e.Name))
 }

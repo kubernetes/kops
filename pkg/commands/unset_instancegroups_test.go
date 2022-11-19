@@ -74,8 +74,8 @@ func TestUnsetInstanceGroupsFields(t *testing.T) {
 			},
 			Input: kops.InstanceGroup{
 				Spec: kops.InstanceGroupSpec{
-					MinSize: fi.Int32(1),
-					MaxSize: fi.Int32(3),
+					MinSize: fi.PtrTo(int32(1)),
+					MaxSize: fi.PtrTo(int32(3)),
 				},
 			},
 			Output: kops.InstanceGroup{

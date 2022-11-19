@@ -104,7 +104,7 @@ func (t *LaunchTemplate) CompareWithID() *string {
 
 // buildRootDevice is responsible for retrieving a boot device mapping from the image name
 func (t *LaunchTemplate) buildRootDevice(cloud awsup.AWSCloud) (map[string]*BlockDeviceMapping, error) {
-	image := fi.StringValue(t.ImageID)
+	image := fi.ValueOf(t.ImageID)
 	if image == "" {
 		return map[string]*BlockDeviceMapping{}, nil
 	}

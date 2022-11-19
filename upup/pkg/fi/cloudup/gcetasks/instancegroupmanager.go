@@ -59,14 +59,14 @@ func (e *InstanceGroupManager) Find(c *fi.Context) (*InstanceGroupManager, error
 
 	actual := &InstanceGroupManager{}
 	actual.Name = &r.Name
-	actual.Zone = fi.String(lastComponent(r.Zone))
+	actual.Zone = fi.PtrTo(lastComponent(r.Zone))
 	actual.BaseInstanceName = &r.BaseInstanceName
 	actual.TargetSize = &r.TargetSize
-	actual.InstanceTemplate = &InstanceTemplate{ID: fi.String(lastComponent(r.InstanceTemplate))}
+	actual.InstanceTemplate = &InstanceTemplate{ID: fi.PtrTo(lastComponent(r.InstanceTemplate))}
 
 	for _, targetPool := range r.TargetPools {
 		actual.TargetPools = append(actual.TargetPools, &TargetPool{
-			Name: fi.String(lastComponent(targetPool)),
+			Name: fi.PtrTo(lastComponent(targetPool)),
 		})
 	}
 	// TODO: Sort by name

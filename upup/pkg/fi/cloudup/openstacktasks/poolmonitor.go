@@ -54,8 +54,8 @@ func (p *PoolMonitor) Find(context *fi.Context) (*PoolMonitor, error) {
 	cloud := context.Cloud.(openstack.OpenstackCloud)
 
 	opt := monitors.ListOpts{
-		Name:   fi.StringValue(p.Name),
-		PoolID: fi.StringValue(p.Pool.ID),
+		Name:   fi.ValueOf(p.Name),
+		PoolID: fi.ValueOf(p.Pool.ID),
 	}
 
 	rs, err := cloud.ListMonitors(opt)
@@ -65,12 +65,12 @@ func (p *PoolMonitor) Find(context *fi.Context) (*PoolMonitor, error) {
 	if rs == nil || len(rs) == 0 {
 		return nil, nil
 	} else if len(rs) != 1 {
-		return nil, fmt.Errorf("found multiple monitors with name: %s", fi.StringValue(p.Name))
+		return nil, fmt.Errorf("found multiple monitors with name: %s", fi.ValueOf(p.Name))
 	}
 	found := rs[0]
 	actual := &PoolMonitor{
-		ID:        fi.String(found.ID),
-		Name:      fi.String(found.Name),
+		ID:        fi.PtrTo(found.ID),
+		Name:      fi.PtrTo(found.Name),
 		Pool:      p.Pool,
 		Lifecycle: p.Lifecycle,
 	}
@@ -100,11 +100,11 @@ func (_ *PoolMonitor) CheckChanges(a, e, changes *PoolMonitor) error {
 
 func (_ *PoolMonitor) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *PoolMonitor) error {
 	if a == nil {
-		klog.V(2).Infof("Creating PoolMonitor with Name: %q", fi.StringValue(e.Name))
+		klog.V(2).Infof("Creating PoolMonitor with Name: %q", fi.ValueOf(e.Name))
 
 		poolMonitor, err := t.Cloud.CreatePoolMonitor(monitors.CreateOpts{
-			Name:           fi.StringValue(e.Name),
-			PoolID:         fi.StringValue(e.Pool.ID),
+			Name:           fi.ValueOf(e.Name),
+			PoolID:         fi.ValueOf(e.Pool.ID),
 			Type:           monitors.TypeTCP,
 			Delay:          10,
 			Timeout:        5,
@@ -114,7 +114,7 @@ func (_ *PoolMonitor) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, cha
 		if err != nil {
 			return fmt.Errorf("error creating PoolMonitor: %v", err)
 		}
-		e.ID = fi.String(poolMonitor.ID)
+		e.ID = fi.PtrTo(poolMonitor.ID)
 	}
 	return nil
 }

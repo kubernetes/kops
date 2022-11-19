@@ -245,7 +245,7 @@ func TestValidateKubeAPIServer(t *testing.T) {
 		},
 		{
 			Input: kops.KubeAPIServerConfig{
-				AuthorizationMode: fi.String("RBAC"),
+				AuthorizationMode: fi.PtrTo("RBAC"),
 			},
 			Cluster: &kops.Cluster{
 				Spec: kops.ClusterSpec{
@@ -264,7 +264,7 @@ func TestValidateKubeAPIServer(t *testing.T) {
 		},
 		{
 			Input: kops.KubeAPIServerConfig{
-				AuthorizationMode: fi.String("RBAC,Node"),
+				AuthorizationMode: fi.PtrTo("RBAC,Node"),
 			},
 			Cluster: &kops.Cluster{
 				Spec: kops.ClusterSpec{
@@ -280,7 +280,7 @@ func TestValidateKubeAPIServer(t *testing.T) {
 		},
 		{
 			Input: kops.KubeAPIServerConfig{
-				AuthorizationMode: fi.String("RBAC,Node,Bogus"),
+				AuthorizationMode: fi.PtrTo("RBAC,Node,Bogus"),
 			},
 			Cluster: &kops.Cluster{
 				Spec: kops.ClusterSpec{
@@ -446,7 +446,7 @@ func Test_Validate_AdditionalPolicies(t *testing.T) {
 					Members: []kops.EtcdMemberSpec{
 						{
 							Name:          "us-test-1a",
-							InstanceGroup: fi.String("master-us-test-1a"),
+							InstanceGroup: fi.PtrTo("master-us-test-1a"),
 						},
 					},
 				},
@@ -839,7 +839,7 @@ func Test_Validate_Cilium(t *testing.T) {
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
-				Masquerade: fi.Bool(false),
+				Masquerade: fi.PtrTo(false),
 				IPAM:       "eni",
 			},
 			Spec: kops.ClusterSpec{
@@ -856,7 +856,7 @@ func Test_Validate_Cilium(t *testing.T) {
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
-				Masquerade: fi.Bool(true),
+				Masquerade: fi.PtrTo(true),
 				IPAM:       "eni",
 			},
 			Spec: kops.ClusterSpec{
@@ -868,8 +868,8 @@ func Test_Validate_Cilium(t *testing.T) {
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
-				EnableL7Proxy:        fi.Bool(true),
-				InstallIptablesRules: fi.Bool(false),
+				EnableL7Proxy:        fi.PtrTo(true),
+				InstallIptablesRules: fi.PtrTo(false),
 			},
 			Spec: kops.ClusterSpec{
 				CloudProvider: kops.CloudProviderSpec{
@@ -914,7 +914,7 @@ func Test_Validate_Cilium(t *testing.T) {
 			Cilium: kops.CiliumNetworkingSpec{
 				Version: "v1.8.0",
 				Hubble: &kops.HubbleSpec{
-					Enabled: fi.Bool(true),
+					Enabled: fi.PtrTo(true),
 				},
 			},
 			ExpectedErrors: []string{"Forbidden::cilium.hubble.enabled"},
@@ -923,12 +923,12 @@ func Test_Validate_Cilium(t *testing.T) {
 			Cilium: kops.CiliumNetworkingSpec{
 				Version: "v1.11.6",
 				Hubble: &kops.HubbleSpec{
-					Enabled: fi.Bool(true),
+					Enabled: fi.PtrTo(true),
 				},
 			},
 			Spec: kops.ClusterSpec{
 				CertManager: &kops.CertManagerConfig{
-					Enabled: fi.Bool(true),
+					Enabled: fi.PtrTo(true),
 				},
 			},
 		},
@@ -1101,7 +1101,7 @@ func Test_Validate_NodeLocalDNS(t *testing.T) {
 				KubeDNS: &kops.KubeDNSConfig{
 					Provider: "CoreDNS",
 					NodeLocalDNS: &kops.NodeLocalDNSConfig{
-						Enabled: fi.Bool(true),
+						Enabled: fi.PtrTo(true),
 					},
 				},
 			},
@@ -1118,7 +1118,7 @@ func Test_Validate_NodeLocalDNS(t *testing.T) {
 				KubeDNS: &kops.KubeDNSConfig{
 					Provider: "CoreDNS",
 					NodeLocalDNS: &kops.NodeLocalDNSConfig{
-						Enabled: fi.Bool(true),
+						Enabled: fi.PtrTo(true),
 					},
 				},
 			},
@@ -1135,7 +1135,7 @@ func Test_Validate_NodeLocalDNS(t *testing.T) {
 				KubeDNS: &kops.KubeDNSConfig{
 					Provider: "CoreDNS",
 					NodeLocalDNS: &kops.NodeLocalDNSConfig{
-						Enabled: fi.Bool(true),
+						Enabled: fi.PtrTo(true),
 					},
 				},
 				Networking: &kops.NetworkingSpec{
@@ -1155,7 +1155,7 @@ func Test_Validate_NodeLocalDNS(t *testing.T) {
 				KubeDNS: &kops.KubeDNSConfig{
 					Provider: "CoreDNS",
 					NodeLocalDNS: &kops.NodeLocalDNSConfig{
-						Enabled: fi.Bool(true),
+						Enabled: fi.PtrTo(true),
 						LocalIP: "169.254.20.10",
 					},
 				},
@@ -1187,13 +1187,13 @@ func Test_Validate_CloudConfiguration(t *testing.T) {
 		{
 			Description: "all false",
 			Input: kops.CloudConfiguration{
-				ManageStorageClasses: fi.Bool(false),
+				ManageStorageClasses: fi.PtrTo(false),
 			},
 		},
 		{
 			Description: "all true",
 			Input: kops.CloudConfiguration{
-				ManageStorageClasses: fi.Bool(true),
+				ManageStorageClasses: fi.PtrTo(true),
 			},
 		},
 		{
@@ -1202,7 +1202,7 @@ func Test_Validate_CloudConfiguration(t *testing.T) {
 			CloudProvider: kops.CloudProviderSpec{
 				Openstack: &kops.OpenstackSpec{
 					BlockStorage: &kops.OpenstackBlockStorageConfig{
-						CreateStorageClass: fi.Bool(false),
+						CreateStorageClass: fi.PtrTo(false),
 					},
 				},
 			},
@@ -1213,7 +1213,7 @@ func Test_Validate_CloudConfiguration(t *testing.T) {
 			CloudProvider: kops.CloudProviderSpec{
 				Openstack: &kops.OpenstackSpec{
 					BlockStorage: &kops.OpenstackBlockStorageConfig{
-						CreateStorageClass: fi.Bool(true),
+						CreateStorageClass: fi.PtrTo(true),
 					},
 				},
 			},
@@ -1221,12 +1221,12 @@ func Test_Validate_CloudConfiguration(t *testing.T) {
 		{
 			Description: "all false, os false",
 			Input: kops.CloudConfiguration{
-				ManageStorageClasses: fi.Bool(false),
+				ManageStorageClasses: fi.PtrTo(false),
 			},
 			CloudProvider: kops.CloudProviderSpec{
 				Openstack: &kops.OpenstackSpec{
 					BlockStorage: &kops.OpenstackBlockStorageConfig{
-						CreateStorageClass: fi.Bool(false),
+						CreateStorageClass: fi.PtrTo(false),
 					},
 				},
 			},
@@ -1234,12 +1234,12 @@ func Test_Validate_CloudConfiguration(t *testing.T) {
 		{
 			Description: "all false, os true",
 			Input: kops.CloudConfiguration{
-				ManageStorageClasses: fi.Bool(false),
+				ManageStorageClasses: fi.PtrTo(false),
 			},
 			CloudProvider: kops.CloudProviderSpec{
 				Openstack: &kops.OpenstackSpec{
 					BlockStorage: &kops.OpenstackBlockStorageConfig{
-						CreateStorageClass: fi.Bool(true),
+						CreateStorageClass: fi.PtrTo(true),
 					},
 				},
 			},
@@ -1248,12 +1248,12 @@ func Test_Validate_CloudConfiguration(t *testing.T) {
 		{
 			Description: "all true, os false",
 			Input: kops.CloudConfiguration{
-				ManageStorageClasses: fi.Bool(true),
+				ManageStorageClasses: fi.PtrTo(true),
 			},
 			CloudProvider: kops.CloudProviderSpec{
 				Openstack: &kops.OpenstackSpec{
 					BlockStorage: &kops.OpenstackBlockStorageConfig{
-						CreateStorageClass: fi.Bool(false),
+						CreateStorageClass: fi.PtrTo(false),
 					},
 				},
 			},
@@ -1262,12 +1262,12 @@ func Test_Validate_CloudConfiguration(t *testing.T) {
 		{
 			Description: "all true, os true",
 			Input: kops.CloudConfiguration{
-				ManageStorageClasses: fi.Bool(true),
+				ManageStorageClasses: fi.PtrTo(true),
 			},
 			CloudProvider: kops.CloudProviderSpec{
 				Openstack: &kops.OpenstackSpec{
 					BlockStorage: &kops.OpenstackBlockStorageConfig{
-						CreateStorageClass: fi.Bool(true),
+						CreateStorageClass: fi.PtrTo(true),
 					},
 				},
 			},
@@ -1382,7 +1382,7 @@ func Test_Validate_Nvidia_Cluster(t *testing.T) {
 			Input: kops.ClusterSpec{
 				Containerd: &kops.ContainerdConfig{
 					NvidiaGPU: &kops.NvidiaGPUConfig{
-						Enabled: fi.Bool(true),
+						Enabled: fi.PtrTo(true),
 					},
 				},
 				CloudProvider: kops.CloudProviderSpec{
@@ -1395,7 +1395,7 @@ func Test_Validate_Nvidia_Cluster(t *testing.T) {
 			Input: kops.ClusterSpec{
 				Containerd: &kops.ContainerdConfig{
 					NvidiaGPU: &kops.NvidiaGPUConfig{
-						Enabled: fi.Bool(true),
+						Enabled: fi.PtrTo(true),
 					},
 				},
 				CloudProvider: kops.CloudProviderSpec{
@@ -1409,7 +1409,7 @@ func Test_Validate_Nvidia_Cluster(t *testing.T) {
 			Input: kops.ClusterSpec{
 				Containerd: &kops.ContainerdConfig{
 					NvidiaGPU: &kops.NvidiaGPUConfig{
-						Enabled: fi.Bool(true),
+						Enabled: fi.PtrTo(true),
 					},
 				},
 				CloudProvider: kops.CloudProviderSpec{
@@ -1423,7 +1423,7 @@ func Test_Validate_Nvidia_Cluster(t *testing.T) {
 			Input: kops.ClusterSpec{
 				Containerd: &kops.ContainerdConfig{
 					NvidiaGPU: &kops.NvidiaGPUConfig{
-						Enabled: fi.Bool(true),
+						Enabled: fi.PtrTo(true),
 					},
 				},
 				CloudProvider: kops.CloudProviderSpec{
@@ -1449,7 +1449,7 @@ func Test_Validate_Nvidia_Ig(t *testing.T) {
 			Input: kops.ClusterSpec{
 				Containerd: &kops.ContainerdConfig{
 					NvidiaGPU: &kops.NvidiaGPUConfig{
-						Enabled: fi.Bool(true),
+						Enabled: fi.PtrTo(true),
 					},
 				},
 				CloudProvider: kops.CloudProviderSpec{
@@ -1462,7 +1462,7 @@ func Test_Validate_Nvidia_Ig(t *testing.T) {
 			Input: kops.ClusterSpec{
 				Containerd: &kops.ContainerdConfig{
 					NvidiaGPU: &kops.NvidiaGPUConfig{
-						Enabled: fi.Bool(true),
+						Enabled: fi.PtrTo(true),
 					},
 				},
 				CloudProvider: kops.CloudProviderSpec{
@@ -1475,7 +1475,7 @@ func Test_Validate_Nvidia_Ig(t *testing.T) {
 			Input: kops.ClusterSpec{
 				Containerd: &kops.ContainerdConfig{
 					NvidiaGPU: &kops.NvidiaGPUConfig{
-						Enabled: fi.Bool(true),
+						Enabled: fi.PtrTo(true),
 					},
 				},
 				CloudProvider: kops.CloudProviderSpec{
@@ -1489,7 +1489,7 @@ func Test_Validate_Nvidia_Ig(t *testing.T) {
 			Input: kops.ClusterSpec{
 				Containerd: &kops.ContainerdConfig{
 					NvidiaGPU: &kops.NvidiaGPUConfig{
-						Enabled: fi.Bool(true),
+						Enabled: fi.PtrTo(true),
 					},
 				},
 				CloudProvider: kops.CloudProviderSpec{
