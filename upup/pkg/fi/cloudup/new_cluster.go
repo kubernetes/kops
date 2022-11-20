@@ -643,8 +643,7 @@ func setupZones(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.Stri
 					if len(opt.SubnetIDs) != 1 {
 						return nil, fmt.Errorf("expected exactly one subnet for GCE, got %d", len(opt.SubnetIDs))
 					}
-					providerID := opt.SubnetIDs[0]
-					subnet.ProviderID = providerID
+					subnet.ID = opt.SubnetIDs[0]
 				}
 				cluster.Spec.Subnets = append(cluster.Spec.Subnets, *subnet)
 			}
@@ -736,7 +735,7 @@ func setupZones(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.Stri
 				Egress: opt.Egress,
 			}
 			if subnetID, ok := zoneToSubnetProviderID[zoneName]; ok {
-				subnet.ProviderID = subnetID
+				subnet.ID = subnetID
 			}
 			cluster.Spec.Subnets = append(cluster.Spec.Subnets, *subnet)
 		}
@@ -1225,7 +1224,7 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 					Region: s.Region,
 				}
 				if subnetID, ok := zoneToSubnetProviderID[s.Zone]; ok {
-					subnet.ProviderID = subnetID
+					subnet.ID = subnetID
 				}
 				dualStackSubnets = append(dualStackSubnets, subnet)
 			}
@@ -1253,7 +1252,7 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 					Region: s.Region,
 				}
 				if subnetID, ok := zoneToSubnetProviderID[s.Zone]; ok {
-					subnet.ProviderID = subnetID
+					subnet.ID = subnetID
 				}
 				utilitySubnets = append(utilitySubnets, subnet)
 			}

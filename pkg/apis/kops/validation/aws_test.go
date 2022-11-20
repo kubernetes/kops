@@ -825,7 +825,7 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 				NetworkCIDR: test.clusterCidr,
 				Subnets: []kops.ClusterSubnetSpec{
 					{
-						ProviderID:       test.providerId,
+						ID:               test.providerId,
 						Type:             test.subnetType,
 						AdditionalRoutes: test.route,
 					},

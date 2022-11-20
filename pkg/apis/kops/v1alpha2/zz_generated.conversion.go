@@ -3253,7 +3253,7 @@ func autoConvert_v1alpha2_ClusterSubnetSpec_To_kops_ClusterSubnetSpec(in *Cluste
 	out.Region = in.Region
 	out.CIDR = in.CIDR
 	out.IPv6CIDR = in.IPv6CIDR
-	out.ProviderID = in.ProviderID
+	out.ID = in.ID
 	out.Egress = in.Egress
 	out.Type = kops.SubnetType(in.Type)
 	out.PublicIP = in.PublicIP
@@ -3282,7 +3282,7 @@ func autoConvert_kops_ClusterSubnetSpec_To_v1alpha2_ClusterSubnetSpec(in *kops.C
 	out.IPv6CIDR = in.IPv6CIDR
 	out.Zone = in.Zone
 	out.Region = in.Region
-	out.ProviderID = in.ProviderID
+	out.ID = in.ID
 	out.Egress = in.Egress
 	out.Type = SubnetType(in.Type)
 	out.PublicIP = in.PublicIP

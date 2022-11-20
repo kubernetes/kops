@@ -76,7 +76,7 @@ func (c *OpenstackModelContext) GetNetworkName() (string, error) {
 func (c *OpenstackModelContext) findSubnetClusterSpec(subnet string) (string, error) {
 	for _, sp := range c.Cluster.Spec.Subnets {
 		if sp.Name == subnet {
-			name, err := c.findSubnetNameByID(sp.ProviderID, sp.Name)
+			name, err := c.findSubnetNameByID(sp.ID, sp.Name)
 			if err != nil {
 				return "", err
 			}
