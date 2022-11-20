@@ -39,7 +39,7 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 	if internal {
 		master = cluster.APIInternalName()
 	} else {
-		master = cluster.Spec.MasterPublicName
+		master = cluster.Spec.API.PublicName
 		if master == "" {
 			master = "api." + clusterName
 		}
@@ -65,7 +65,7 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 	// We differentiate using the heuristic that if we have an internal ELB
 	// we are likely connected directly to the VPC.
 	privateDNS := cluster.Spec.Topology != nil && cluster.Spec.Topology.DNS == kops.DNSTypePrivate
-	internalELB := cluster.Spec.API != nil && cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.Type == kops.LoadBalancerTypeInternal
+	internalELB := cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.Type == kops.LoadBalancerTypeInternal
 	if privateDNS && !internalELB {
 		useELBName = true
 	}
@@ -100,7 +100,7 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 	b := NewKubeconfigBuilder()
 
 	// Use the secondary load balancer port if a certificate is on the primary listener
-	if admin != 0 && cluster.Spec.API != nil && cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.SSLCertificate != "" && cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork {
+	if admin != 0 && cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.SSLCertificate != "" && cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork {
 		server = server + ":8443"
 	}
 
@@ -109,7 +109,7 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 
 	// add the CA Cert to the kubeconfig only if we didn't specify a certificate for the LB
 	//  or if we're using admin credentials and the secondary port
-	if cluster.Spec.API == nil || cluster.Spec.API.LoadBalancer == nil || cluster.Spec.API.LoadBalancer.SSLCertificate == "" || cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork || internal {
+	if cluster.Spec.API.LoadBalancer == nil || cluster.Spec.API.LoadBalancer.SSLCertificate == "" || cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork || internal {
 		keySet, err := keyStore.FindKeyset(fi.CertificateIDCA)
 		if err != nil {
 			return nil, fmt.Errorf("error fetching CA keypair: %v", err)

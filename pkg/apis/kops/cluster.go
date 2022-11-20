@@ -70,8 +70,6 @@ type ClusterSpec struct {
 	KubernetesVersion string `json:"kubernetesVersion,omitempty"`
 	// Configuration of subnets we are targeting
 	Subnets []ClusterSubnetSpec `json:"subnets,omitempty"`
-	// MasterPublicName is the external DNS name for the master nodes
-	MasterPublicName string `json:"masterPublicName,omitempty"`
 	// NetworkCIDR is the CIDR used for the AWS VPC / DO/ GCE Network, or otherwise allocated to k8s
 	// This is a real CIDR, not the internal k8s network
 	// On AWS, it maps to the VPC CIDR.  It is not required on GCE.
@@ -102,8 +100,6 @@ type ClusterSpec struct {
 	DNSZone string `json:"dnsZone,omitempty"`
 	// DNSControllerGossipConfig for the cluster assuming the use of gossip DNS
 	DNSControllerGossipConfig *DNSControllerGossipConfig `json:"dnsControllerGossipConfig,omitempty"`
-	// AdditionalSANs adds additional Subject Alternate Names to apiserver cert that kops generates
-	AdditionalSANs []string `json:"additionalSANs,omitempty"`
 	// ClusterDNSDomain is the suffix we use for internal DNS names (normally cluster.local)
 	ClusterDNSDomain string `json:"clusterDNSDomain,omitempty"`
 	// ServiceClusterIPRange is the CIDR, from the internal network, where we allocate IPs for services
@@ -121,8 +117,6 @@ type ClusterSpec struct {
 	EgressProxy *EgressProxySpec `json:"egressProxy,omitempty"`
 	// SSHKeyName specifies a preexisting SSH key to use
 	SSHKeyName *string `json:"sshKeyName,omitempty"`
-	// KubernetesAPIAccess is a list of the CIDRs that can access the Kubernetes API endpoint (master HTTPS)
-	KubernetesAPIAccess []string `json:"kubernetesAPIAccess,omitempty"`
 	// IsolateMasters determines whether we should lock down masters so that they are not on the pod network.
 	// true is the kube-up behaviour, but it is very surprising: it means that daemonsets only work on the master
 	// if they have hostNetwork=true.
@@ -176,8 +170,8 @@ type ClusterSpec struct {
 
 	// Networking configuration
 	Networking *NetworkingSpec `json:"networking,omitempty"`
-	// API field controls how the API is exposed outside the cluster
-	API *AccessSpec `json:"api,omitempty"`
+	// API controls how the Kubernetes API is exposed.
+	API APISpec `json:"api,omitempty"`
 	// Authentication field controls how the cluster is configured for authentication
 	Authentication *AuthenticationSpec `json:"authentication,omitempty"`
 	// Authorization field controls how the cluster is configured for authorization
@@ -450,12 +444,18 @@ type RBACAuthorizationSpec struct{}
 
 type AlwaysAllowAuthorizationSpec struct{}
 
-// AccessSpec provides configuration details related to kubeapi dns and ELB access
-type AccessSpec struct {
-	// DNS will be used to provide config on kube-apiserver ELB DNS
+// APISpec provides configuration details related to the Kubernetes API.
+type APISpec struct {
+	// DNS will be used to provide configuration for the Kubernetes API's DNS server.
 	DNS *DNSAccessSpec `json:"dns,omitempty"`
-	// LoadBalancer is the configuration for the kube-apiserver ELB
+	// LoadBalancer is the configuration for the Kubernetes API load balancer.
 	LoadBalancer *LoadBalancerAccessSpec `json:"loadBalancer,omitempty"`
+	// PublicName is the external DNS name for the Kubernetes API.
+	PublicName string `json:"publicName,omitempty"`
+	// AdditionalSANs adds additional Subject Alternate Names to the Kubernetes API certificate.
+	AdditionalSANs []string `json:"additionalSANs,omitempty"`
+	// Access is a list of the CIDRs that can access the Kubernetes API endpoint.
+	Access []string `json:"access,omitempty"`
 }
 
 type DNSAccessSpec struct{}

@@ -4,12 +4,18 @@ metadata:
   creationTimestamp: "2016-12-10T22:42:27Z"
   name: minimal.example.com
 spec:
-  additionalSANs:
-  - proxy.api.minimal.example.com
   addons:
   - manifest: s3://somebucket/example.yaml
   api:
+    access:
+    - 0.0.0.0/0
+    additionalSANs:
+    - proxy.api.minimal.example.com
     dns: {}
+    loadBalancer:
+      class: Network
+      type: Public
+    publicName: api.minimal.example.com
   authorization:
     alwaysAllow: {}
   channel: stable
@@ -38,10 +44,7 @@ spec:
   - enabled: true
     name: hookEnabled
   iam: {}
-  kubernetesAPIAccess:
-  - 0.0.0.0/0
   kubernetesVersion: v1.21.0
-  masterPublicName: api.minimal.example.com
   networkCIDR: 172.20.0.0/16
   networking:
     kubenet: {}

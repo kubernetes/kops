@@ -249,17 +249,17 @@ func buildPrecreateDNSHostnames(cluster *kops.Cluster) []recordKey {
 		internalType = rrstype.AAAA
 	}
 
-	hasAPILoadbalancer := cluster.Spec.API != nil && cluster.Spec.API.LoadBalancer != nil
+	hasAPILoadbalancer := cluster.Spec.API.LoadBalancer != nil
 	useLBForInternalAPI := hasAPILoadbalancer && cluster.Spec.API.LoadBalancer.UseForInternalAPI
 
-	if cluster.Spec.MasterPublicName != "" && !hasAPILoadbalancer {
+	if cluster.Spec.API.PublicName != "" && !hasAPILoadbalancer {
 		recordKeys = append(recordKeys, recordKey{
-			hostname: cluster.Spec.MasterPublicName,
+			hostname: cluster.Spec.API.PublicName,
 			rrsType:  rrstype.A,
 		})
 		if internalType != rrstype.A {
 			recordKeys = append(recordKeys, recordKey{
-				hostname: cluster.Spec.MasterPublicName,
+				hostname: cluster.Spec.API.PublicName,
 				rrsType:  internalType,
 			})
 		}
