@@ -918,8 +918,8 @@ type SnapshotControllerConfig struct {
 	InstallDefaultClass bool `json:"installDefaultClass,omitempty"`
 }
 
-// NodeTerminationHandlerConfig determines the node termination handler configuration.
-type NodeTerminationHandlerConfig struct {
+// NodeTerminationHandlerSpec determines the node termination handler configuration.
+type NodeTerminationHandlerSpec struct {
 	// Enabled enables the node termination handler.
 	// Default: true
 	Enabled *bool `json:"enabled,omitempty"`
@@ -966,7 +966,7 @@ type NodeTerminationHandlerConfig struct {
 	Version *string `json:"version,omitempty"`
 }
 
-func (n *NodeTerminationHandlerConfig) IsQueueMode() bool {
+func (n *NodeTerminationHandlerSpec) IsQueueMode() bool {
 	return n != nil && n.Enabled != nil && *n.Enabled && (n.EnableSQSTerminationDraining == nil || *n.EnableSQSTerminationDraining)
 }
 
@@ -1088,8 +1088,8 @@ type CertManagerConfig struct {
 	HostedZoneIDs []string `json:"hostedZoneIDs,omitempty"`
 }
 
-// AWSLoadBalancerControllerConfig determines the AWS LB controller configuration.
-type AWSLoadBalancerControllerConfig struct {
+// LoadBalancerControllerSpec determines the AWS LB controller configuration.
+type LoadBalancerControllerSpec struct {
 	// Enabled enables the loadbalancer controller.
 	// Default: false
 	Enabled *bool `json:"enabled,omitempty"`

@@ -74,16 +74,6 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}); err != nil {
 		return err
 	}
-	if err := s.AddGeneratedConversionFunc((*AWSLoadBalancerControllerConfig)(nil), (*kops.AWSLoadBalancerControllerConfig)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_v1alpha3_AWSLoadBalancerControllerConfig_To_kops_AWSLoadBalancerControllerConfig(a.(*AWSLoadBalancerControllerConfig), b.(*kops.AWSLoadBalancerControllerConfig), scope)
-	}); err != nil {
-		return err
-	}
-	if err := s.AddGeneratedConversionFunc((*kops.AWSLoadBalancerControllerConfig)(nil), (*AWSLoadBalancerControllerConfig)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_kops_AWSLoadBalancerControllerConfig_To_v1alpha3_AWSLoadBalancerControllerConfig(a.(*kops.AWSLoadBalancerControllerConfig), b.(*AWSLoadBalancerControllerConfig), scope)
-	}); err != nil {
-		return err
-	}
 	if err := s.AddGeneratedConversionFunc((*AWSPermission)(nil), (*kops.AWSPermission)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_v1alpha3_AWSPermission_To_kops_AWSPermission(a.(*AWSPermission), b.(*kops.AWSPermission), scope)
 	}); err != nil {
@@ -854,6 +844,16 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}); err != nil {
 		return err
 	}
+	if err := s.AddGeneratedConversionFunc((*LoadBalancerControllerSpec)(nil), (*kops.LoadBalancerControllerSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha3_LoadBalancerControllerSpec_To_kops_LoadBalancerControllerSpec(a.(*LoadBalancerControllerSpec), b.(*kops.LoadBalancerControllerSpec), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*kops.LoadBalancerControllerSpec)(nil), (*LoadBalancerControllerSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_kops_LoadBalancerControllerSpec_To_v1alpha3_LoadBalancerControllerSpec(a.(*kops.LoadBalancerControllerSpec), b.(*LoadBalancerControllerSpec), scope)
+	}); err != nil {
+		return err
+	}
 	if err := s.AddGeneratedConversionFunc((*LoadBalancerSpec)(nil), (*kops.LoadBalancerSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_v1alpha3_LoadBalancerSpec_To_kops_LoadBalancerSpec(a.(*LoadBalancerSpec), b.(*kops.LoadBalancerSpec), scope)
 	}); err != nil {
@@ -944,13 +944,13 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}); err != nil {
 		return err
 	}
-	if err := s.AddGeneratedConversionFunc((*NodeTerminationHandlerConfig)(nil), (*kops.NodeTerminationHandlerConfig)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_v1alpha3_NodeTerminationHandlerConfig_To_kops_NodeTerminationHandlerConfig(a.(*NodeTerminationHandlerConfig), b.(*kops.NodeTerminationHandlerConfig), scope)
+	if err := s.AddGeneratedConversionFunc((*NodeTerminationHandlerSpec)(nil), (*kops.NodeTerminationHandlerSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha3_NodeTerminationHandlerSpec_To_kops_NodeTerminationHandlerSpec(a.(*NodeTerminationHandlerSpec), b.(*kops.NodeTerminationHandlerSpec), scope)
 	}); err != nil {
 		return err
 	}
-	if err := s.AddGeneratedConversionFunc((*kops.NodeTerminationHandlerConfig)(nil), (*NodeTerminationHandlerConfig)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_kops_NodeTerminationHandlerConfig_To_v1alpha3_NodeTerminationHandlerConfig(a.(*kops.NodeTerminationHandlerConfig), b.(*NodeTerminationHandlerConfig), scope)
+	if err := s.AddGeneratedConversionFunc((*kops.NodeTerminationHandlerSpec)(nil), (*NodeTerminationHandlerSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_kops_NodeTerminationHandlerSpec_To_v1alpha3_NodeTerminationHandlerSpec(a.(*kops.NodeTerminationHandlerSpec), b.(*NodeTerminationHandlerSpec), scope)
 	}); err != nil {
 		return err
 	}
@@ -1044,13 +1044,13 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}); err != nil {
 		return err
 	}
-	if err := s.AddGeneratedConversionFunc((*PodIdentityWebhookConfig)(nil), (*kops.PodIdentityWebhookConfig)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_v1alpha3_PodIdentityWebhookConfig_To_kops_PodIdentityWebhookConfig(a.(*PodIdentityWebhookConfig), b.(*kops.PodIdentityWebhookConfig), scope)
+	if err := s.AddGeneratedConversionFunc((*PodIdentityWebhookSpec)(nil), (*kops.PodIdentityWebhookSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha3_PodIdentityWebhookSpec_To_kops_PodIdentityWebhookSpec(a.(*PodIdentityWebhookSpec), b.(*kops.PodIdentityWebhookSpec), scope)
 	}); err != nil {
 		return err
 	}
-	if err := s.AddGeneratedConversionFunc((*kops.PodIdentityWebhookConfig)(nil), (*PodIdentityWebhookConfig)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_kops_PodIdentityWebhookConfig_To_v1alpha3_PodIdentityWebhookConfig(a.(*kops.PodIdentityWebhookConfig), b.(*PodIdentityWebhookConfig), scope)
+	if err := s.AddGeneratedConversionFunc((*kops.PodIdentityWebhookSpec)(nil), (*PodIdentityWebhookSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_kops_PodIdentityWebhookSpec_To_v1alpha3_PodIdentityWebhookSpec(a.(*kops.PodIdentityWebhookSpec), b.(*PodIdentityWebhookSpec), scope)
 	}); err != nil {
 		return err
 	}
@@ -1413,34 +1413,6 @@ func Convert_kops_AWSEBSCSIDriver_To_v1alpha3_AWSEBSCSIDriver(in *kops.AWSEBSCSI
 	return autoConvert_kops_AWSEBSCSIDriver_To_v1alpha3_AWSEBSCSIDriver(in, out, s)
 }
 
-func autoConvert_v1alpha3_AWSLoadBalancerControllerConfig_To_kops_AWSLoadBalancerControllerConfig(in *AWSLoadBalancerControllerConfig, out *kops.AWSLoadBalancerControllerConfig, s conversion.Scope) error {
-	out.Enabled = in.Enabled
-	out.Version = in.Version
-	out.EnableWAF = in.EnableWAF
-	out.EnableWAFv2 = in.EnableWAFv2
-	out.EnableShield = in.EnableShield
-	return nil
-}
-
-// Convert_v1alpha3_AWSLoadBalancerControllerConfig_To_kops_AWSLoadBalancerControllerConfig is an autogenerated conversion function.
-func Convert_v1alpha3_AWSLoadBalancerControllerConfig_To_kops_AWSLoadBalancerControllerConfig(in *AWSLoadBalancerControllerConfig, out *kops.AWSLoadBalancerControllerConfig, s conversion.Scope) error {
-	return autoConvert_v1alpha3_AWSLoadBalancerControllerConfig_To_kops_AWSLoadBalancerControllerConfig(in, out, s)
-}
-
-func autoConvert_kops_AWSLoadBalancerControllerConfig_To_v1alpha3_AWSLoadBalancerControllerConfig(in *kops.AWSLoadBalancerControllerConfig, out *AWSLoadBalancerControllerConfig, s conversion.Scope) error {
-	out.Enabled = in.Enabled
-	out.Version = in.Version
-	out.EnableWAF = in.EnableWAF
-	out.EnableWAFv2 = in.EnableWAFv2
-	out.EnableShield = in.EnableShield
-	return nil
-}
-
-// Convert_kops_AWSLoadBalancerControllerConfig_To_v1alpha3_AWSLoadBalancerControllerConfig is an autogenerated conversion function.
-func Convert_kops_AWSLoadBalancerControllerConfig_To_v1alpha3_AWSLoadBalancerControllerConfig(in *kops.AWSLoadBalancerControllerConfig, out *AWSLoadBalancerControllerConfig, s conversion.Scope) error {
-	return autoConvert_kops_AWSLoadBalancerControllerConfig_To_v1alpha3_AWSLoadBalancerControllerConfig(in, out, s)
-}
-
 func autoConvert_v1alpha3_AWSPermission_To_kops_AWSPermission(in *AWSPermission, out *kops.AWSPermission, s conversion.Scope) error {
 	out.PolicyARNs = in.PolicyARNs
 	out.InlinePolicy = in.InlinePolicy
@@ -1464,6 +1436,42 @@ func Convert_kops_AWSPermission_To_v1alpha3_AWSPermission(in *kops.AWSPermission
 }
 
 func autoConvert_v1alpha3_AWSSpec_To_kops_AWSSpec(in *AWSSpec, out *kops.AWSSpec, s conversion.Scope) error {
+	if in.NodeTerminationHandler != nil {
+		in, out := &in.NodeTerminationHandler, &out.NodeTerminationHandler
+		*out = new(kops.NodeTerminationHandlerSpec)
+		if err := Convert_v1alpha3_NodeTerminationHandlerSpec_To_kops_NodeTerminationHandlerSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.NodeTerminationHandler = nil
+	}
+	if in.LoadBalancerController != nil {
+		in, out := &in.LoadBalancerController, &out.LoadBalancerController
+		*out = new(kops.LoadBalancerControllerSpec)
+		if err := Convert_v1alpha3_LoadBalancerControllerSpec_To_kops_LoadBalancerControllerSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.LoadBalancerController = nil
+	}
+	if in.PodIdentityWebhook != nil {
+		in, out := &in.PodIdentityWebhook, &out.PodIdentityWebhook
+		*out = new(kops.PodIdentityWebhookSpec)
+		if err := Convert_v1alpha3_PodIdentityWebhookSpec_To_kops_PodIdentityWebhookSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.PodIdentityWebhook = nil
+	}
+	if in.WarmPool != nil {
+		in, out := &in.WarmPool, &out.WarmPool
+		*out = new(kops.WarmPoolSpec)
+		if err := Convert_v1alpha3_WarmPoolSpec_To_kops_WarmPoolSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.WarmPool = nil
+	}
 	return nil
 }
 
@@ -1473,6 +1481,42 @@ func Convert_v1alpha3_AWSSpec_To_kops_AWSSpec(in *AWSSpec, out *kops.AWSSpec, s 
 }
 
 func autoConvert_kops_AWSSpec_To_v1alpha3_AWSSpec(in *kops.AWSSpec, out *AWSSpec, s conversion.Scope) error {
+	if in.NodeTerminationHandler != nil {
+		in, out := &in.NodeTerminationHandler, &out.NodeTerminationHandler
+		*out = new(NodeTerminationHandlerSpec)
+		if err := Convert_kops_NodeTerminationHandlerSpec_To_v1alpha3_NodeTerminationHandlerSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.NodeTerminationHandler = nil
+	}
+	if in.LoadBalancerController != nil {
+		in, out := &in.LoadBalancerController, &out.LoadBalancerController
+		*out = new(LoadBalancerControllerSpec)
+		if err := Convert_kops_LoadBalancerControllerSpec_To_v1alpha3_LoadBalancerControllerSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.LoadBalancerController = nil
+	}
+	if in.PodIdentityWebhook != nil {
+		in, out := &in.PodIdentityWebhook, &out.PodIdentityWebhook
+		*out = new(PodIdentityWebhookSpec)
+		if err := Convert_kops_PodIdentityWebhookSpec_To_v1alpha3_PodIdentityWebhookSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.PodIdentityWebhook = nil
+	}
+	if in.WarmPool != nil {
+		in, out := &in.WarmPool, &out.WarmPool
+		*out = new(WarmPoolSpec)
+		if err := Convert_kops_WarmPoolSpec_To_v1alpha3_WarmPoolSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.WarmPool = nil
+	}
 	return nil
 }
 
@@ -2708,15 +2752,6 @@ func autoConvert_v1alpha3_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	} else {
 		out.NTP = nil
 	}
-	if in.NodeTerminationHandler != nil {
-		in, out := &in.NodeTerminationHandler, &out.NodeTerminationHandler
-		*out = new(kops.NodeTerminationHandlerConfig)
-		if err := Convert_v1alpha3_NodeTerminationHandlerConfig_To_kops_NodeTerminationHandlerConfig(*in, *out, s); err != nil {
-			return err
-		}
-	} else {
-		out.NodeTerminationHandler = nil
-	}
 	if in.NodeProblemDetector != nil {
 		in, out := &in.NodeProblemDetector, &out.NodeProblemDetector
 		*out = new(kops.NodeProblemDetectorConfig)
@@ -2743,15 +2778,6 @@ func autoConvert_v1alpha3_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 		}
 	} else {
 		out.CertManager = nil
-	}
-	if in.AWSLoadBalancerController != nil {
-		in, out := &in.AWSLoadBalancerController, &out.AWSLoadBalancerController
-		*out = new(kops.AWSLoadBalancerControllerConfig)
-		if err := Convert_v1alpha3_AWSLoadBalancerControllerConfig_To_kops_AWSLoadBalancerControllerConfig(*in, *out, s); err != nil {
-			return err
-		}
-	} else {
-		out.AWSLoadBalancerController = nil
 	}
 	if err := Convert_v1alpha3_NetworkingSpec_To_kops_NetworkingSpec(&in.Networking, &out.Networking, s); err != nil {
 		return err
@@ -2838,15 +2864,6 @@ func autoConvert_v1alpha3_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	} else {
 		out.ClusterAutoscaler = nil
 	}
-	if in.WarmPool != nil {
-		in, out := &in.WarmPool, &out.WarmPool
-		*out = new(kops.WarmPoolSpec)
-		if err := Convert_v1alpha3_WarmPoolSpec_To_kops_WarmPoolSpec(*in, *out, s); err != nil {
-			return err
-		}
-	} else {
-		out.WarmPool = nil
-	}
 	if in.ServiceAccountIssuerDiscovery != nil {
 		in, out := &in.ServiceAccountIssuerDiscovery, &out.ServiceAccountIssuerDiscovery
 		*out = new(kops.ServiceAccountIssuerDiscoveryConfig)
@@ -2873,15 +2890,6 @@ func autoConvert_v1alpha3_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 		}
 	} else {
 		out.Karpenter = nil
-	}
-	if in.PodIdentityWebhook != nil {
-		in, out := &in.PodIdentityWebhook, &out.PodIdentityWebhook
-		*out = new(kops.PodIdentityWebhookConfig)
-		if err := Convert_v1alpha3_PodIdentityWebhookConfig_To_kops_PodIdentityWebhookConfig(*in, *out, s); err != nil {
-			return err
-		}
-	} else {
-		out.PodIdentityWebhook = nil
 	}
 	return nil
 }
@@ -3078,15 +3086,6 @@ func autoConvert_kops_ClusterSpec_To_v1alpha3_ClusterSpec(in *kops.ClusterSpec, 
 	} else {
 		out.NTP = nil
 	}
-	if in.NodeTerminationHandler != nil {
-		in, out := &in.NodeTerminationHandler, &out.NodeTerminationHandler
-		*out = new(NodeTerminationHandlerConfig)
-		if err := Convert_kops_NodeTerminationHandlerConfig_To_v1alpha3_NodeTerminationHandlerConfig(*in, *out, s); err != nil {
-			return err
-		}
-	} else {
-		out.NodeTerminationHandler = nil
-	}
 	if in.NodeProblemDetector != nil {
 		in, out := &in.NodeProblemDetector, &out.NodeProblemDetector
 		*out = new(NodeProblemDetectorConfig)
@@ -3113,15 +3112,6 @@ func autoConvert_kops_ClusterSpec_To_v1alpha3_ClusterSpec(in *kops.ClusterSpec, 
 		}
 	} else {
 		out.CertManager = nil
-	}
-	if in.AWSLoadBalancerController != nil {
-		in, out := &in.AWSLoadBalancerController, &out.AWSLoadBalancerController
-		*out = new(AWSLoadBalancerControllerConfig)
-		if err := Convert_kops_AWSLoadBalancerControllerConfig_To_v1alpha3_AWSLoadBalancerControllerConfig(*in, *out, s); err != nil {
-			return err
-		}
-	} else {
-		out.AWSLoadBalancerController = nil
 	}
 	if err := Convert_kops_NetworkingSpec_To_v1alpha3_NetworkingSpec(&in.Networking, &out.Networking, s); err != nil {
 		return err
@@ -3208,15 +3198,6 @@ func autoConvert_kops_ClusterSpec_To_v1alpha3_ClusterSpec(in *kops.ClusterSpec, 
 	} else {
 		out.ClusterAutoscaler = nil
 	}
-	if in.WarmPool != nil {
-		in, out := &in.WarmPool, &out.WarmPool
-		*out = new(WarmPoolSpec)
-		if err := Convert_kops_WarmPoolSpec_To_v1alpha3_WarmPoolSpec(*in, *out, s); err != nil {
-			return err
-		}
-	} else {
-		out.WarmPool = nil
-	}
 	if in.ServiceAccountIssuerDiscovery != nil {
 		in, out := &in.ServiceAccountIssuerDiscovery, &out.ServiceAccountIssuerDiscovery
 		*out = new(ServiceAccountIssuerDiscoveryConfig)
@@ -3243,15 +3224,6 @@ func autoConvert_kops_ClusterSpec_To_v1alpha3_ClusterSpec(in *kops.ClusterSpec, 
 		}
 	} else {
 		out.Karpenter = nil
-	}
-	if in.PodIdentityWebhook != nil {
-		in, out := &in.PodIdentityWebhook, &out.PodIdentityWebhook
-		*out = new(PodIdentityWebhookConfig)
-		if err := Convert_kops_PodIdentityWebhookConfig_To_v1alpha3_PodIdentityWebhookConfig(*in, *out, s); err != nil {
-			return err
-		}
-	} else {
-		out.PodIdentityWebhook = nil
 	}
 	return nil
 }
@@ -5947,6 +5919,34 @@ func Convert_kops_LoadBalancerAccessSpec_To_v1alpha3_LoadBalancerAccessSpec(in *
 	return autoConvert_kops_LoadBalancerAccessSpec_To_v1alpha3_LoadBalancerAccessSpec(in, out, s)
 }
 
+func autoConvert_v1alpha3_LoadBalancerControllerSpec_To_kops_LoadBalancerControllerSpec(in *LoadBalancerControllerSpec, out *kops.LoadBalancerControllerSpec, s conversion.Scope) error {
+	out.Enabled = in.Enabled
+	out.Version = in.Version
+	out.EnableWAF = in.EnableWAF
+	out.EnableWAFv2 = in.EnableWAFv2
+	out.EnableShield = in.EnableShield
+	return nil
+}
+
+// Convert_v1alpha3_LoadBalancerControllerSpec_To_kops_LoadBalancerControllerSpec is an autogenerated conversion function.
+func Convert_v1alpha3_LoadBalancerControllerSpec_To_kops_LoadBalancerControllerSpec(in *LoadBalancerControllerSpec, out *kops.LoadBalancerControllerSpec, s conversion.Scope) error {
+	return autoConvert_v1alpha3_LoadBalancerControllerSpec_To_kops_LoadBalancerControllerSpec(in, out, s)
+}
+
+func autoConvert_kops_LoadBalancerControllerSpec_To_v1alpha3_LoadBalancerControllerSpec(in *kops.LoadBalancerControllerSpec, out *LoadBalancerControllerSpec, s conversion.Scope) error {
+	out.Enabled = in.Enabled
+	out.Version = in.Version
+	out.EnableWAF = in.EnableWAF
+	out.EnableWAFv2 = in.EnableWAFv2
+	out.EnableShield = in.EnableShield
+	return nil
+}
+
+// Convert_kops_LoadBalancerControllerSpec_To_v1alpha3_LoadBalancerControllerSpec is an autogenerated conversion function.
+func Convert_kops_LoadBalancerControllerSpec_To_v1alpha3_LoadBalancerControllerSpec(in *kops.LoadBalancerControllerSpec, out *LoadBalancerControllerSpec, s conversion.Scope) error {
+	return autoConvert_kops_LoadBalancerControllerSpec_To_v1alpha3_LoadBalancerControllerSpec(in, out, s)
+}
+
 func autoConvert_v1alpha3_LoadBalancerSpec_To_kops_LoadBalancerSpec(in *LoadBalancerSpec, out *kops.LoadBalancerSpec, s conversion.Scope) error {
 	out.LoadBalancerName = in.LoadBalancerName
 	out.TargetGroupARN = in.TargetGroupARN
@@ -6483,7 +6483,7 @@ func Convert_kops_NodeProblemDetectorConfig_To_v1alpha3_NodeProblemDetectorConfi
 	return autoConvert_kops_NodeProblemDetectorConfig_To_v1alpha3_NodeProblemDetectorConfig(in, out, s)
 }
 
-func autoConvert_v1alpha3_NodeTerminationHandlerConfig_To_kops_NodeTerminationHandlerConfig(in *NodeTerminationHandlerConfig, out *kops.NodeTerminationHandlerConfig, s conversion.Scope) error {
+func autoConvert_v1alpha3_NodeTerminationHandlerSpec_To_kops_NodeTerminationHandlerSpec(in *NodeTerminationHandlerSpec, out *kops.NodeTerminationHandlerSpec, s conversion.Scope) error {
 	out.Enabled = in.Enabled
 	out.EnableSpotInterruptionDraining = in.EnableSpotInterruptionDraining
 	out.EnableScheduledEventDraining = in.EnableScheduledEventDraining
@@ -6499,12 +6499,12 @@ func autoConvert_v1alpha3_NodeTerminationHandlerConfig_To_kops_NodeTerminationHa
 	return nil
 }
 
-// Convert_v1alpha3_NodeTerminationHandlerConfig_To_kops_NodeTerminationHandlerConfig is an autogenerated conversion function.
-func Convert_v1alpha3_NodeTerminationHandlerConfig_To_kops_NodeTerminationHandlerConfig(in *NodeTerminationHandlerConfig, out *kops.NodeTerminationHandlerConfig, s conversion.Scope) error {
-	return autoConvert_v1alpha3_NodeTerminationHandlerConfig_To_kops_NodeTerminationHandlerConfig(in, out, s)
+// Convert_v1alpha3_NodeTerminationHandlerSpec_To_kops_NodeTerminationHandlerSpec is an autogenerated conversion function.
+func Convert_v1alpha3_NodeTerminationHandlerSpec_To_kops_NodeTerminationHandlerSpec(in *NodeTerminationHandlerSpec, out *kops.NodeTerminationHandlerSpec, s conversion.Scope) error {
+	return autoConvert_v1alpha3_NodeTerminationHandlerSpec_To_kops_NodeTerminationHandlerSpec(in, out, s)
 }
 
-func autoConvert_kops_NodeTerminationHandlerConfig_To_v1alpha3_NodeTerminationHandlerConfig(in *kops.NodeTerminationHandlerConfig, out *NodeTerminationHandlerConfig, s conversion.Scope) error {
+func autoConvert_kops_NodeTerminationHandlerSpec_To_v1alpha3_NodeTerminationHandlerSpec(in *kops.NodeTerminationHandlerSpec, out *NodeTerminationHandlerSpec, s conversion.Scope) error {
 	out.Enabled = in.Enabled
 	out.EnableSpotInterruptionDraining = in.EnableSpotInterruptionDraining
 	out.EnableScheduledEventDraining = in.EnableScheduledEventDraining
@@ -6520,9 +6520,9 @@ func autoConvert_kops_NodeTerminationHandlerConfig_To_v1alpha3_NodeTerminationHa
 	return nil
 }
 
-// Convert_kops_NodeTerminationHandlerConfig_To_v1alpha3_NodeTerminationHandlerConfig is an autogenerated conversion function.
-func Convert_kops_NodeTerminationHandlerConfig_To_v1alpha3_NodeTerminationHandlerConfig(in *kops.NodeTerminationHandlerConfig, out *NodeTerminationHandlerConfig, s conversion.Scope) error {
-	return autoConvert_kops_NodeTerminationHandlerConfig_To_v1alpha3_NodeTerminationHandlerConfig(in, out, s)
+// Convert_kops_NodeTerminationHandlerSpec_To_v1alpha3_NodeTerminationHandlerSpec is an autogenerated conversion function.
+func Convert_kops_NodeTerminationHandlerSpec_To_v1alpha3_NodeTerminationHandlerSpec(in *kops.NodeTerminationHandlerSpec, out *NodeTerminationHandlerSpec, s conversion.Scope) error {
+	return autoConvert_kops_NodeTerminationHandlerSpec_To_v1alpha3_NodeTerminationHandlerSpec(in, out, s)
 }
 
 func autoConvert_v1alpha3_NvidiaGPUConfig_To_kops_NvidiaGPUConfig(in *NvidiaGPUConfig, out *kops.NvidiaGPUConfig, s conversion.Scope) error {
@@ -6883,26 +6883,26 @@ func Convert_kops_PackagesConfig_To_v1alpha3_PackagesConfig(in *kops.PackagesCon
 	return autoConvert_kops_PackagesConfig_To_v1alpha3_PackagesConfig(in, out, s)
 }
 
-func autoConvert_v1alpha3_PodIdentityWebhookConfig_To_kops_PodIdentityWebhookConfig(in *PodIdentityWebhookConfig, out *kops.PodIdentityWebhookConfig, s conversion.Scope) error {
+func autoConvert_v1alpha3_PodIdentityWebhookSpec_To_kops_PodIdentityWebhookSpec(in *PodIdentityWebhookSpec, out *kops.PodIdentityWebhookSpec, s conversion.Scope) error {
 	out.Enabled = in.Enabled
 	out.Replicas = in.Replicas
 	return nil
 }
 
-// Convert_v1alpha3_PodIdentityWebhookConfig_To_kops_PodIdentityWebhookConfig is an autogenerated conversion function.
-func Convert_v1alpha3_PodIdentityWebhookConfig_To_kops_PodIdentityWebhookConfig(in *PodIdentityWebhookConfig, out *kops.PodIdentityWebhookConfig, s conversion.Scope) error {
-	return autoConvert_v1alpha3_PodIdentityWebhookConfig_To_kops_PodIdentityWebhookConfig(in, out, s)
+// Convert_v1alpha3_PodIdentityWebhookSpec_To_kops_PodIdentityWebhookSpec is an autogenerated conversion function.
+func Convert_v1alpha3_PodIdentityWebhookSpec_To_kops_PodIdentityWebhookSpec(in *PodIdentityWebhookSpec, out *kops.PodIdentityWebhookSpec, s conversion.Scope) error {
+	return autoConvert_v1alpha3_PodIdentityWebhookSpec_To_kops_PodIdentityWebhookSpec(in, out, s)
 }
 
-func autoConvert_kops_PodIdentityWebhookConfig_To_v1alpha3_PodIdentityWebhookConfig(in *kops.PodIdentityWebhookConfig, out *PodIdentityWebhookConfig, s conversion.Scope) error {
+func autoConvert_kops_PodIdentityWebhookSpec_To_v1alpha3_PodIdentityWebhookSpec(in *kops.PodIdentityWebhookSpec, out *PodIdentityWebhookSpec, s conversion.Scope) error {
 	out.Enabled = in.Enabled
 	out.Replicas = in.Replicas
 	return nil
 }
 
-// Convert_kops_PodIdentityWebhookConfig_To_v1alpha3_PodIdentityWebhookConfig is an autogenerated conversion function.
-func Convert_kops_PodIdentityWebhookConfig_To_v1alpha3_PodIdentityWebhookConfig(in *kops.PodIdentityWebhookConfig, out *PodIdentityWebhookConfig, s conversion.Scope) error {
-	return autoConvert_kops_PodIdentityWebhookConfig_To_v1alpha3_PodIdentityWebhookConfig(in, out, s)
+// Convert_kops_PodIdentityWebhookSpec_To_v1alpha3_PodIdentityWebhookSpec is an autogenerated conversion function.
+func Convert_kops_PodIdentityWebhookSpec_To_v1alpha3_PodIdentityWebhookSpec(in *kops.PodIdentityWebhookSpec, out *PodIdentityWebhookSpec, s conversion.Scope) error {
+	return autoConvert_kops_PodIdentityWebhookSpec_To_v1alpha3_PodIdentityWebhookSpec(in, out, s)
 }
 
 func autoConvert_v1alpha3_RBACAuthorizationSpec_To_kops_RBACAuthorizationSpec(in *RBACAuthorizationSpec, out *kops.RBACAuthorizationSpec, s conversion.Scope) error {

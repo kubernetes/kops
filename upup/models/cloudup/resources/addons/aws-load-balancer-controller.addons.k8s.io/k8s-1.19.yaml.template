@@ -1,3 +1,4 @@
+{{- with .CloudProvider.AWS.LoadBalancerController }}
 # sourced from https://github.com/kubernetes-sigs/aws-load-balancer-controller/releases/download/v2.4.0/v2_4_0_full.yaml
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
@@ -744,9 +745,9 @@ spec:
       containers:
       - args:
         - --cluster-name={{ ClusterName }}
-        - --enable-waf={{ .AWSLoadBalancerController.EnableWAF }}
-        - --enable-wafv2={{ .AWSLoadBalancerController.EnableWAFv2 }}
-        - --enable-shield={{ .AWSLoadBalancerController.EnableShield }}
+        - --enable-waf={{ .EnableWAF }}
+        - --enable-wafv2={{ .EnableWAFv2 }}
+        - --enable-shield={{ .EnableShield }}
         - --ingress-class=alb
         - "--default-tags={{ CloudLabels }}"
         - --aws-region={{ Region }}
@@ -756,7 +757,7 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: spec.nodeName
-        image: amazon/aws-alb-ingress-controller:{{ or .AWSLoadBalancerController.Version "v2.4.5" }}
+        image: amazon/aws-alb-ingress-controller:{{ or .Version "v2.4.5" }}
         livenessProbe:
           failureThreshold: 2
           httpGet:
@@ -982,3 +983,4 @@ spec:
       app.kubernetes.io/component: controller
       app.kubernetes.io/name: aws-load-balancer-controller
   maxUnavailable: 1
+{{- end }}

@@ -89,7 +89,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) e
 			tsk.LaunchTemplate = task
 			c.AddTask(tsk)
 
-			warmPool := b.Cluster.Spec.WarmPool.ResolveDefaults(ig)
+			warmPool := b.Cluster.Spec.CloudProvider.AWS.WarmPool.ResolveDefaults(ig)
 
 			enabled := fi.PtrTo(warmPool.IsEnabled())
 			warmPoolTask := &awstasks.WarmPool{

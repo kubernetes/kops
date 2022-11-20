@@ -182,7 +182,8 @@ type ClusterSpec struct {
 	NTP                 *NTPConfig          `json:"ntp,omitempty"`
 
 	// NodeTerminationHandler determines the cluster autoscaler configuration.
-	NodeTerminationHandler *NodeTerminationHandlerConfig `json:"nodeTerminationHandler,omitempty"`
+	// +k8s:conversion-gen=false
+	NodeTerminationHandler *NodeTerminationHandlerSpec `json:"nodeTerminationHandler,omitempty"`
 	// NodeProblemDetector determines the node problem detector configuration.
 	NodeProblemDetector *NodeProblemDetectorConfig `json:"nodeProblemDetector,omitempty"`
 	// MetricsServer determines the metrics server configuration.
@@ -190,7 +191,8 @@ type ClusterSpec struct {
 	// CertManager determines the metrics server configuration.
 	CertManager *CertManagerConfig `json:"certManager,omitempty"`
 	// AWSLoadbalancerControllerConfig determines the AWS LB controller configuration.
-	AWSLoadBalancerController *AWSLoadBalancerControllerConfig `json:"awsLoadBalancerController,omitempty"`
+	// +k8s:conversion-gen=false
+	AWSLoadBalancerController *LoadBalancerControllerSpec `json:"awsLoadBalancerController,omitempty"`
 
 	// Networking configuration
 	// +k8s:conversion-gen=false
@@ -233,6 +235,7 @@ type ClusterSpec struct {
 	// ClusterAutoscaler defines the cluaster autoscaler configuration.
 	ClusterAutoscaler *ClusterAutoscalerConfig `json:"clusterAutoscaler,omitempty"`
 	// WarmPool defines the default warm pool settings for instance groups (AWS only).
+	// +k8s:conversion-gen=false
 	WarmPool *WarmPoolSpec `json:"warmPool,omitempty"`
 	// ServiceAccountIssuerDiscovery configures the OIDC Issuer for ServiceAccounts.
 	ServiceAccountIssuerDiscovery *ServiceAccountIssuerDiscoveryConfig `json:"serviceAccountIssuerDiscovery,omitempty"`
@@ -241,11 +244,12 @@ type ClusterSpec struct {
 	// Karpenter defines the Karpenter configuration.
 	Karpenter *KarpenterConfig `json:"karpenter,omitempty"`
 	// PodIdentityWebhook determines the EKS Pod Identity Webhook configuration.
-	PodIdentityWebhook *PodIdentityWebhookConfig `json:"podIdentityWebhook,omitempty"`
+	// +k8s:conversion-gen=false
+	PodIdentityWebhook *PodIdentityWebhookSpec `json:"podIdentityWebhook,omitempty"`
 }
 
-// PodIdentityWebhookConfig configures an EKS Pod Identity Webhook.
-type PodIdentityWebhookConfig struct {
+// PodIdentityWebhookSpec configures an EKS Pod Identity Webhook.
+type PodIdentityWebhookSpec struct {
 	Enabled  bool `json:"enabled,omitempty"`
 	Replicas int  `json:"replicas,omitempty"`
 }
