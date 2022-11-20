@@ -143,7 +143,7 @@ func (b *NodeTerminationHandlerBuilder) build(c *fi.CloudupModelBuilderContext) 
 	clusterNamePrefix := awsup.GetClusterName40(clusterName)
 
 	events := append([]event(nil), fixedEvents...)
-	if b.Cluster.Spec.NodeTerminationHandler != nil && fi.ValueOf(b.Cluster.Spec.NodeTerminationHandler.EnableRebalanceDraining) {
+	if b.Cluster.Spec.CloudProvider.AWS.NodeTerminationHandler != nil && fi.ValueOf(b.Cluster.Spec.CloudProvider.AWS.NodeTerminationHandler.EnableRebalanceDraining) {
 		events = append(events, rebalanceEvent)
 	}
 
@@ -179,7 +179,7 @@ func (b *NodeTerminationHandlerBuilder) build(c *fi.CloudupModelBuilderContext) 
 }
 
 func (b *NodeTerminationHandlerBuilder) FindDeletions(c *fi.CloudupModelBuilderContext, cloud fi.Cloud) error {
-	if b.Cluster.Spec.NodeTerminationHandler != nil && fi.ValueOf(b.Cluster.Spec.NodeTerminationHandler.EnableRebalanceDraining) {
+	if b.Cluster.Spec.CloudProvider.AWS.NodeTerminationHandler != nil && fi.ValueOf(b.Cluster.Spec.CloudProvider.AWS.NodeTerminationHandler.EnableRebalanceDraining) {
 		return nil
 	}
 

@@ -251,18 +251,8 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, cl
 		if g.Spec.RootVolumeType != nil {
 			allErrs = append(allErrs, IsValidValue(field.NewPath("spec", "rootVolumeType"), g.Spec.RootVolumeType, []string{"standard", "gp3", "gp2", "io1", "io2"})...)
 		}
-	} else {
-		if g.Spec.WarmPool != nil {
-			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "warmPool"), "warm pool only supported on AWS"))
-		}
-	}
 
-	if g.Spec.Containerd != nil {
-		allErrs = append(allErrs, validateContainerdConfig(&cluster.Spec, g.Spec.Containerd, field.NewPath("spec", "containerd"), false)...)
-	}
-
-	{
-		warmPool := cluster.Spec.WarmPool.ResolveDefaults(g)
+		warmPool := cluster.Spec.CloudProvider.AWS.WarmPool.ResolveDefaults(g)
 		if warmPool.MaxSize == nil || *warmPool.MaxSize != 0 {
 			if g.Spec.Role != kops.InstanceGroupRoleNode && g.Spec.Role != kops.InstanceGroupRoleAPIServer {
 				allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "warmPool"), "warm pool only allowed on instance groups with role Node or APIServer"))
@@ -284,6 +274,10 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, cl
 		if warmPool.MinSize < 0 {
 			allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "warmPool", "minSize"), warmPool.MinSize, "warm pool minSize cannot be negative"))
 		}
+	}
+
+	if g.Spec.Containerd != nil {
+		allErrs = append(allErrs, validateContainerdConfig(&cluster.Spec, g.Spec.Containerd, field.NewPath("spec", "containerd"), false)...)
 	}
 
 	return allErrs
