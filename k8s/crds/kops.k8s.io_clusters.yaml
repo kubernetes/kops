@@ -5531,8 +5531,8 @@ spec:
                         this subnet
                       type: string
                     id:
-                      description: ProviderID is the cloud provider id for the objects
-                        associated with the zone (the subnet on AWS)
+                      description: ID is the cloud provider ID for the objects associated
+                        with the zone (the subnet on AWS).
                       type: string
                     ipv6CIDR:
                       description: IPv6CIDR is the IPv6 CIDR block assigned to the
