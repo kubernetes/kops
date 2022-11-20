@@ -94,7 +94,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 	}
 
 	// KubernetesAPIAccess
-	for i, cidr := range spec.KubernetesAPIAccess {
+	for i, cidr := range spec.API.Access {
 		if strings.HasPrefix(cidr, "pl-") {
 			if spec.GetCloudProvider() != kops.CloudProviderAWS {
 				allErrs = append(allErrs, field.Invalid(fieldPath.Child("kubernetesAPIAccess").Index(i), cidr, "Prefix List ID only supported for AWS"))
@@ -243,7 +243,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		allErrs = append(allErrs, validateRollingUpdate(spec.RollingUpdate, fieldPath.Child("rollingUpdate"), false)...)
 	}
 
-	if spec.API != nil && spec.API.LoadBalancer != nil {
+	if spec.API.LoadBalancer != nil {
 		lbSpec := spec.API.LoadBalancer
 		lbPath := fieldPath.Child("api", "loadBalancer")
 		if spec.GetCloudProvider() == kops.CloudProviderAWS {

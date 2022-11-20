@@ -11,6 +11,9 @@ spec:
   - manifest: s3://somebucket/example.yaml
   api:
     dns: {}
+    loadBalancer:
+      class: Network
+      type: Public
   authorization:
     alwaysAllow: {}
   channel: stable

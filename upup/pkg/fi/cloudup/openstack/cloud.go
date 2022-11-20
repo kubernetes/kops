@@ -693,11 +693,11 @@ func getApiIngressStatus(c OpenstackCloud, cluster *kops.Cluster) ([]fi.ApiIngre
 
 func getLoadBalancerIngressStatus(c OpenstackCloud, cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
 	var ingresses []fi.ApiIngressStatus
-	if cluster.Spec.MasterPublicName != "" {
+	if cluster.Spec.API.PublicName != "" {
 		// Note that this must match OpenstackModel lb name
 		klog.V(2).Infof("Querying Openstack to find Loadbalancers for API (%q)", cluster.Name)
 		lbList, err := c.ListLBs(loadbalancers.ListOpts{
-			Name: cluster.Spec.MasterPublicName,
+			Name: cluster.Spec.API.PublicName,
 		})
 		if err != nil {
 			return ingresses, fmt.Errorf("GetApiIngressStatus: Failed to list openstack loadbalancers: %v", err)
