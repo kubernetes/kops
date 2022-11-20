@@ -51,7 +51,7 @@ func awsValidateCluster(c *kops.Cluster) field.ErrorList {
 	for i, subnet := range c.Spec.Subnets {
 		f := field.NewPath("spec", "subnets").Index(i)
 		if subnet.AdditionalRoutes != nil {
-			if len(subnet.ProviderID) > 0 {
+			if len(subnet.ID) > 0 {
 				allErrs = append(allErrs, field.Invalid(f, subnet, "additional routes cannot be added if the subnet is shared"))
 			} else if subnet.Type != kops.SubnetTypePrivate {
 				allErrs = append(allErrs, field.Invalid(f, subnet, "additional routes can only be added on private subnets"))

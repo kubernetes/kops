@@ -190,7 +190,7 @@ func performSubnetAssignments(ctx context.Context, c *kops.Cluster, cloudObj fi.
 	needCIDR := 0
 	for i := range c.Spec.Subnets {
 		subnet := &c.Spec.Subnets[i]
-		if subnet.ProviderID != "" {
+		if subnet.ID != "" {
 			continue
 		}
 		if subnet.CIDR == "" {
@@ -212,7 +212,7 @@ func performSubnetAssignments(ctx context.Context, c *kops.Cluster, cloudObj fi.
 
 	for i := range c.Spec.Subnets {
 		subnet := &c.Spec.Subnets[i]
-		if subnet.ProviderID != "" {
+		if subnet.ID != "" {
 			continue
 		}
 		if subnet.CIDR != "" {

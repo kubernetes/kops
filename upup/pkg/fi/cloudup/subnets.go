@@ -68,22 +68,22 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 		}
 		for i := range c.Spec.Subnets {
 			subnet := &c.Spec.Subnets[i]
-			if subnet.ProviderID != "" {
-				cloudSubnet := subnetByID[subnet.ProviderID]
+			if subnet.ID != "" {
+				cloudSubnet := subnetByID[subnet.ID]
 				if cloudSubnet == nil {
-					return fmt.Errorf("Subnet %q not found in VPC %q", subnet.ProviderID, c.Spec.NetworkID)
+					return fmt.Errorf("Subnet %q not found in VPC %q", subnet.ID, c.Spec.NetworkID)
 				}
 				if subnet.CIDR == "" {
 					subnet.CIDR = cloudSubnet.CIDR
 					if subnet.CIDR == "" {
-						return fmt.Errorf("Subnet %q did not have CIDR", subnet.ProviderID)
+						return fmt.Errorf("Subnet %q did not have CIDR", subnet.ID)
 					}
 				} else if subnet.CIDR != cloudSubnet.CIDR {
-					return fmt.Errorf("Subnet %q has configured CIDR %q, but the actual CIDR found was %q", subnet.ProviderID, subnet.CIDR, cloudSubnet.CIDR)
+					return fmt.Errorf("Subnet %q has configured CIDR %q, but the actual CIDR found was %q", subnet.ID, subnet.CIDR, cloudSubnet.CIDR)
 				}
 
 				if subnet.Zone != cloudSubnet.Zone {
-					return fmt.Errorf("Subnet %q has configured Zone %q, but the actual Zone found was %q", subnet.ProviderID, subnet.Zone, cloudSubnet.Zone)
+					return fmt.Errorf("Subnet %q has configured Zone %q, but the actual Zone found was %q", subnet.ID, subnet.Zone, cloudSubnet.Zone)
 				}
 
 			}
