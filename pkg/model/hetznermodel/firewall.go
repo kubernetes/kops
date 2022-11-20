@@ -90,7 +90,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	if !b.UseLoadBalancerForAPI() {
 		var apiAccess []net.IPNet
-		for _, cidr := range b.Cluster.Spec.KubernetesAPIAccess {
+		for _, cidr := range b.Cluster.Spec.API.Access {
 			_, ipNet, err := net.ParseCIDR(cidr)
 			if err != nil {
 				return err

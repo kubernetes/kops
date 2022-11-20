@@ -397,7 +397,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Allow traffic into the ELB from KubernetesAPIAccess CIDRs
 	if b.APILoadBalancerClass() == kops.LoadBalancerClassClassic {
-		for _, cidr := range b.Cluster.Spec.KubernetesAPIAccess {
+		for _, cidr := range b.Cluster.Spec.API.Access {
 			{
 				t := &awstasks.SecurityGroupRule{
 					Name:          fi.PtrTo("https-api-elb-" + cidr),
@@ -442,7 +442,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
-		for _, cidr := range b.Cluster.Spec.KubernetesAPIAccess {
+		for _, cidr := range b.Cluster.Spec.API.Access {
 			for _, masterGroup := range masterGroups {
 				{
 					t := &awstasks.SecurityGroupRule{
@@ -485,7 +485,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 					c.AddTask(t)
 				}
 
-				if b.Cluster.Spec.API != nil && b.Cluster.Spec.API.LoadBalancer != nil && b.Cluster.Spec.API.LoadBalancer.SSLCertificate != "" {
+				if b.Cluster.Spec.API.LoadBalancer != nil && b.Cluster.Spec.API.LoadBalancer.SSLCertificate != "" {
 					// Allow access to masters on secondary port through NLB
 					t := &awstasks.SecurityGroupRule{
 						Name:          fi.PtrTo(fmt.Sprintf("tcp-api-%s", cidr)),

@@ -68,15 +68,13 @@ func TestUnsetClusterFields(t *testing.T) {
 			},
 			Input: kops.Cluster{
 				Spec: kops.ClusterSpec{
-					API: &kops.AccessSpec{
+					API: kops.APISpec{
 						DNS: &kops.DNSAccessSpec{},
 					},
 				},
 			},
 			Output: kops.Cluster{
-				Spec: kops.ClusterSpec{
-					API: &kops.AccessSpec{},
-				},
+				Spec: kops.ClusterSpec{},
 			},
 		},
 		{
@@ -136,10 +134,12 @@ func TestUnsetClusterFields(t *testing.T) {
 			},
 		},
 		{
-			Fields: []string{"spec.masterPublicName"},
+			Fields: []string{"spec.api.publicName"},
 			Input: kops.Cluster{
 				Spec: kops.ClusterSpec{
-					MasterPublicName: "api.example.com",
+					API: kops.APISpec{
+						PublicName: "api.example.com",
+					},
 				},
 			},
 			Output: kops.Cluster{

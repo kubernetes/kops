@@ -2279,7 +2279,7 @@ func getApiIngressStatus(c AWSCloud, cluster *kops.Cluster) ([]fi.ApiIngressStat
 
 func findDNSName(c AWSCloud, cluster *kops.Cluster) (string, error) {
 	name := "api." + cluster.Name
-	if cluster.Spec.API == nil || cluster.Spec.API.LoadBalancer == nil {
+	if cluster.Spec.API.LoadBalancer == nil {
 		return "", nil
 	}
 	if cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassClassic {

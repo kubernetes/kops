@@ -49,7 +49,9 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 					Name: "cluster",
 				},
 				Spec: kops.ClusterSpec{
-					MasterPublicName: "master-public-name",
+					API: kops.APISpec{
+						PublicName: "master-public-name",
+					},
 					CloudProvider: kops.CloudProviderSpec{
 						Openstack: &kops.OpenstackSpec{
 							Router: &kops.OpenstackRouter{
@@ -107,7 +109,9 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 					Name: "cluster",
 				},
 				Spec: kops.ClusterSpec{
-					MasterPublicName: "master-public-name",
+					API: kops.APISpec{
+						PublicName: "master-public-name",
+					},
 					CloudProvider: kops.CloudProviderSpec{
 						Openstack: &kops.OpenstackSpec{
 							Router: &kops.OpenstackRouter{
@@ -193,7 +197,9 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 					Name: "cluster",
 				},
 				Spec: kops.ClusterSpec{
-					MasterPublicName: "master-public-name",
+					API: kops.APISpec{
+						PublicName: "master-public-name",
+					},
 					CloudProvider: kops.CloudProviderSpec{
 						Openstack: &kops.OpenstackSpec{
 							Router: &kops.OpenstackRouter{
@@ -315,7 +321,9 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 					Name: "tom-software-dev-playground-real33-k8s-local",
 				},
 				Spec: kops.ClusterSpec{
-					MasterPublicName: "master-public-name",
+					API: kops.APISpec{
+						PublicName: "master-public-name",
+					},
 					CloudProvider: kops.CloudProviderSpec{
 						Openstack: &kops.OpenstackSpec{
 							Router: &kops.OpenstackRouter{
@@ -373,7 +381,9 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 					Name: "cluster",
 				},
 				Spec: kops.ClusterSpec{
-					MasterPublicName: "master-public-name",
+					API: kops.APISpec{
+						PublicName: "master-public-name",
+					},
 					CloudProvider: kops.CloudProviderSpec{
 						Openstack: &kops.OpenstackSpec{
 							Loadbalancer: &kops.OpenstackLoadbalancerConfig{},
@@ -502,7 +512,9 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 					Name: "cluster",
 				},
 				Spec: kops.ClusterSpec{
-					MasterPublicName: "master-public-name",
+					API: kops.APISpec{
+						PublicName: "master-public-name",
+					},
 					CloudProvider: kops.CloudProviderSpec{
 						Openstack: &kops.OpenstackSpec{
 							Metadata: &kops.OpenstackMetadata{
@@ -621,7 +633,9 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 					Name: "cluster",
 				},
 				Spec: kops.ClusterSpec{
-					MasterPublicName: "master-public-name",
+					API: kops.APISpec{
+						PublicName: "master-public-name",
+					},
 					CloudProvider: kops.CloudProviderSpec{
 						Openstack: &kops.OpenstackSpec{
 							Router: &kops.OpenstackRouter{
@@ -703,7 +717,9 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 					Name: "cluster",
 				},
 				Spec: kops.ClusterSpec{
-					MasterPublicName: "master-public-name",
+					API: kops.APISpec{
+						PublicName: "master-public-name",
+					},
 					CloudProvider: kops.CloudProviderSpec{
 						Openstack: &kops.OpenstackSpec{
 							Router: &kops.OpenstackRouter{
@@ -763,7 +779,9 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 					Name: "cluster",
 				},
 				Spec: kops.ClusterSpec{
-					MasterPublicName: "master-public-name",
+					API: kops.APISpec{
+						PublicName: "master-public-name",
+					},
 					CloudProvider: kops.CloudProviderSpec{
 						Openstack: &kops.OpenstackSpec{
 							Router: &kops.OpenstackRouter{
@@ -849,7 +867,9 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 					Name: "cluster",
 				},
 				Spec: kops.ClusterSpec{
-					MasterPublicName: "master-public-name",
+					API: kops.APISpec{
+						PublicName: "master-public-name",
+					},
 					CloudProvider: kops.CloudProviderSpec{
 						Openstack: &kops.OpenstackSpec{
 							Metadata: &kops.OpenstackMetadata{
@@ -893,7 +913,9 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 					Name: "cluster",
 				},
 				Spec: kops.ClusterSpec{
-					MasterPublicName: "master-public-name",
+					API: kops.APISpec{
+						PublicName: "master-public-name",
+					},
 					CloudProvider: kops.CloudProviderSpec{
 						Openstack: &kops.OpenstackSpec{
 							Metadata: &kops.OpenstackMetadata{
@@ -939,7 +961,9 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 					Name: "cluster",
 				},
 				Spec: kops.ClusterSpec{
-					MasterPublicName: "master-public-name",
+					API: kops.APISpec{
+						PublicName: "master-public-name",
+					},
 					CloudProvider: kops.CloudProviderSpec{
 						Openstack: &kops.OpenstackSpec{
 							Metadata: &kops.OpenstackMetadata{
@@ -983,7 +1007,9 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 					Name: "cluster",
 				},
 				Spec: kops.ClusterSpec{
-					MasterPublicName: "master-public-name",
+					API: kops.APISpec{
+						PublicName: "master-public-name",
+					},
 					CloudProvider: kops.CloudProviderSpec{
 						Openstack: &kops.OpenstackSpec{
 							Metadata: &kops.OpenstackMetadata{
@@ -1027,7 +1053,9 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 					Name: "cluster",
 				},
 				Spec: kops.ClusterSpec{
-					MasterPublicName: "master-public-name",
+					API: kops.APISpec{
+						PublicName: "master-public-name",
+					},
 					CloudProvider: kops.CloudProviderSpec{
 						Openstack: &kops.OpenstackSpec{
 							Metadata: &kops.OpenstackMetadata{
@@ -1071,7 +1099,9 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 					Name: "cluster",
 				},
 				Spec: kops.ClusterSpec{
-					MasterPublicName: "master-public-name",
+					API: kops.APISpec{
+						PublicName: "master-public-name",
+					},
 					CloudProvider: kops.CloudProviderSpec{
 						Openstack: &kops.OpenstackSpec{
 							Metadata: &kops.OpenstackMetadata{
