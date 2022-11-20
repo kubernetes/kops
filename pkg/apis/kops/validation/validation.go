@@ -82,6 +82,10 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 
 	allErrs = append(allErrs, validateSubnets(spec, fieldPath.Child("networking", "subnets"))...)
 
+	if spec.CloudProvider.AWS != nil {
+		allErrs = append(allErrs, validateAWS(c, spec.CloudProvider.AWS, fieldPath.Child("cloudProvider", "aws"))...)
+	}
+
 	// SSHAccess
 	for i, cidr := range spec.SSHAccess {
 		if strings.HasPrefix(cidr, "pl-") {
@@ -175,16 +179,8 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		allErrs = append(allErrs, validateExternalDNS(c, spec.ExternalDNS, fieldPath.Child("externalDNS"))...)
 	}
 
-	if spec.NodeTerminationHandler != nil {
-		allErrs = append(allErrs, validateNodeTerminationHandler(c, spec.NodeTerminationHandler, fieldPath.Child("nodeTerminationHandler"))...)
-	}
-
 	if spec.MetricsServer != nil {
 		allErrs = append(allErrs, validateMetricsServer(c, spec.MetricsServer, fieldPath.Child("metricsServer"))...)
-	}
-
-	if spec.AWSLoadBalancerController != nil {
-		allErrs = append(allErrs, validateAWSLoadBalancerController(c, spec.AWSLoadBalancerController, fieldPath.Child("awsLoadBalanceController"))...)
 	}
 
 	if spec.SnapshotController != nil {
@@ -273,14 +269,6 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		allErrs = append(allErrs, validateCloudConfiguration(spec.CloudConfig, spec, fieldPath.Child("cloudConfig"))...)
 	}
 
-	if spec.WarmPool != nil {
-		if spec.GetCloudProvider() != kops.CloudProviderAWS {
-			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "warmPool"), "warm pool only supported on AWS"))
-		} else {
-			allErrs = append(allErrs, validateWarmPool(spec.WarmPool, fieldPath.Child("warmPool"))...)
-		}
-	}
-
 	if spec.IAM != nil {
 		if spec.IAM.Legacy {
 			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("iam", "legacy"), "legacy IAM permissions are no longer supported"))
@@ -301,11 +289,28 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		}
 	}
 
-	if spec.PodIdentityWebhook != nil && spec.PodIdentityWebhook.Enabled {
-		allErrs = append(allErrs, validatePodIdentityWebhook(c, spec.PodIdentityWebhook, fieldPath.Child("podIdentityWebhook"))...)
-	}
 	if spec.CertManager != nil && fi.ValueOf(spec.CertManager.Enabled) {
 		allErrs = append(allErrs, validateCertManager(c, spec.CertManager, fieldPath.Child("certManager"))...)
+	}
+
+	return allErrs
+}
+
+func validateAWS(c *kops.Cluster, aws *kops.AWSSpec, path *field.Path) (allErrs field.ErrorList) {
+	if aws.NodeTerminationHandler != nil {
+		allErrs = append(allErrs, validateNodeTerminationHandler(c, aws.NodeTerminationHandler, path.Child("nodeTerminationHandler"))...)
+	}
+
+	if aws.LoadBalancerController != nil {
+		allErrs = append(allErrs, validateAWSLoadBalancerController(c, aws.LoadBalancerController, path.Child("awsLoadBalanceController"))...)
+	}
+
+	if aws.WarmPool != nil {
+		allErrs = append(allErrs, validateWarmPool(aws.WarmPool, path.Child("warmPool"))...)
+	}
+
+	if aws.PodIdentityWebhook != nil && aws.PodIdentityWebhook.Enabled {
+		allErrs = append(allErrs, validatePodIdentityWebhook(c, aws.PodIdentityWebhook, path.Child("podIdentityWebhook"))...)
 	}
 
 	return allErrs
@@ -1646,11 +1651,17 @@ func validateExternalDNS(cluster *kops.Cluster, spec *kops.ExternalDNSConfig, fl
 	return allErrs
 }
 
-func validateNodeTerminationHandler(cluster *kops.Cluster, spec *kops.NodeTerminationHandlerConfig, fldPath *field.Path) (allErrs field.ErrorList) {
-	if cluster.Spec.GetCloudProvider() != kops.CloudProviderAWS {
-		allErrs = append(allErrs, field.Forbidden(fldPath, "Node Termination Handler supports only AWS"))
-		return allErrs
+func validateMetricsServer(cluster *kops.Cluster, spec *kops.MetricsServerConfig, fldPath *field.Path) (allErrs field.ErrorList) {
+	if spec != nil && fi.ValueOf(spec.Enabled) {
+		if !fi.ValueOf(spec.Insecure) && !components.IsCertManagerEnabled(cluster) {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("insecure"), "Secure metrics server requires that cert manager is enabled"))
+		}
 	}
+
+	return allErrs
+}
+
+func validateNodeTerminationHandler(cluster *kops.Cluster, spec *kops.NodeTerminationHandlerSpec, fldPath *field.Path) (allErrs field.ErrorList) {
 	if spec.IsQueueMode() {
 		if spec.EnableSpotInterruptionDraining != nil && !*spec.EnableSpotInterruptionDraining {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("enableSpotInterruptionDraining"), "spot interruption draining cannot be disabled in Queue Processor mode"))
@@ -1665,17 +1676,7 @@ func validateNodeTerminationHandler(cluster *kops.Cluster, spec *kops.NodeTermin
 	return allErrs
 }
 
-func validateMetricsServer(cluster *kops.Cluster, spec *kops.MetricsServerConfig, fldPath *field.Path) (allErrs field.ErrorList) {
-	if spec != nil && fi.ValueOf(spec.Enabled) {
-		if !fi.ValueOf(spec.Insecure) && !components.IsCertManagerEnabled(cluster) {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("insecure"), "Secure metrics server requires that cert manager is enabled"))
-		}
-	}
-
-	return allErrs
-}
-
-func validateAWSLoadBalancerController(cluster *kops.Cluster, spec *kops.AWSLoadBalancerControllerConfig, fldPath *field.Path) (allErrs field.ErrorList) {
+func validateAWSLoadBalancerController(cluster *kops.Cluster, spec *kops.LoadBalancerControllerSpec, fldPath *field.Path) (allErrs field.ErrorList) {
 	if spec != nil && fi.ValueOf(spec.Enabled) {
 		if !components.IsCertManagerEnabled(cluster) {
 			allErrs = append(allErrs, field.Forbidden(fldPath, "AWS Load Balancer Controller requires that cert manager is enabled"))
@@ -1718,7 +1719,7 @@ func validateSnapshotController(cluster *kops.Cluster, spec *kops.SnapshotContro
 	return allErrs
 }
 
-func validatePodIdentityWebhook(cluster *kops.Cluster, spec *kops.PodIdentityWebhookConfig, fldPath *field.Path) (allErrs field.ErrorList) {
+func validatePodIdentityWebhook(cluster *kops.Cluster, spec *kops.PodIdentityWebhookSpec, fldPath *field.Path) (allErrs field.ErrorList) {
 	if spec != nil && spec.Enabled {
 		if !components.IsCertManagerEnabled(cluster) {
 			allErrs = append(allErrs, field.Forbidden(fldPath, "EKS Pod Identity Webhook requires that cert manager is enabled"))
