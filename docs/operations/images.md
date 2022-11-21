@@ -2,14 +2,13 @@
 
 As of Kubernetes 1.18 the default images used by kOps are the **[official Ubuntu 20.04](#ubuntu-2004-focal)** images.
 
-You can choose a different image for an instance group by editing it with `kops edit ig nodes`. You should see an `image` field in one of the following formats:
+You can choose a different image for an instance group by editing it with `kops edit ig nodes`.
 
-* `ami-abcdef` - specifies an AMI by id directly
-* `<owner>/<name>` specifies an AMI by its owner's account ID  and name properties
-* `<alias>/<name>` specifies an AMI by its [owner's alias](#owner-aliases) and name properties
-* `ssm:<ssm_parameter>` specifies an AMI through an SSM parameter
-
-Using the AMI id is precise, but ids vary by region. It is often more convenient to use the `<owner/alias>/<name>` if equivalent images with the same name have been copied to other regions.
+For AWS, you should set the `image` field in one of the following formats:
+* `ami-abcdef` - specifies an image by id directly (image id is precise, but ids vary by region)
+* `<owner>/<name>` specifies an image by its owner's account ID  and name properties
+* `<alias>/<name>` specifies an image by its [owner's alias](#owner-aliases) and name properties
+* `ssm:<ssm_parameter>` specifies an image through an SSM parameter (kOps 1.26+)
 
 ```yaml
 image: ami-00579fbb15b954340
@@ -17,10 +16,6 @@ image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-202004
 image: ubuntu/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
 image: ssm:/aws/service/canonical/ubuntu/server/20.04/stable/current/amd64/hvm/ebs-gp2/ami-id
 ```
-
-You can find the name for an image using:
-
-`aws ec2 describe-images --region us-east-1 --image-id ami-00579fbb15b954340`
 
 ## Security Updates
 
