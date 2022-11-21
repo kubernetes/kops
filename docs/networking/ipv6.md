@@ -39,6 +39,10 @@ the NAT Gateway will be placed in the first-listed public subnet in that zone.
 The managed private subnets route the rest of outbound IPv6 traffic to the VPC's Egress-only Internet Gateway.
 The managed public subnets route the rest of outbound IPv6 traffic to the VPC's Internet Gateway.
 
+## Distributions
+
+As Debian, as of Debian 11, does not support IPv6-only instances, kOps does not support IPv6 on Debian.
+
 ## CNI
 
 kOps currently supports IPv6 on Calico, Cilium, and bring-your-own CNI only.
@@ -47,7 +51,7 @@ CNIs must not masquerade IPv6 addresses.
 
 ### Calico
 
-Running IPv6 with Calico requires a Ubuntu 22.04, Debian 11, or Flatcar based AMI.
+Running IPv6 with Calico requires a Ubuntu 22.04 or Flatcar based AMI.
 
 ## Future work
 
