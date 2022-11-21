@@ -8,7 +8,7 @@ For AWS, you should set the `image` field in one of the following formats:
 * `ami-abcdef` - specifies an image by id directly (image id is precise, but ids vary by region)
 * `<owner>/<name>` specifies an image by its owner's account ID  and name properties
 * `<alias>/<name>` specifies an image by its [owner's alias](#owner-aliases) and name properties
-* `ssm:<ssm_parameter>` specifies an image through an SSM parameter (kOps 1.26+)
+* `ssm:<ssm_parameter>` specifies an image through an SSM parameter (kOps 1.25.3+)
 
 ```yaml
 image: ami-00579fbb15b954340

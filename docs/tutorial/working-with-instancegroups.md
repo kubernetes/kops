@@ -194,7 +194,7 @@ using preemptible/spot instances you might be waiting for a long time.
 
 ## Fetching images via AWS SSM (AWS Only)
 
-{{ kops_feature_table(kops_added_default='1.26') }}
+{{ kops_feature_table(kops_added_default='1.25.3') }}
 
 If you are using AWS, you can dynamically fetch instance group images from an AWS SSM Parameter. kOps will automatically fetch SSM Parameter and lookup the AMI ID on every `kops update cluster` run. This is useful if you often update your images and don't want to update your instance group configuration every time. Your SSM Parameter must start with `ssm:` and contain the full path of the SSM Parameter.
 
