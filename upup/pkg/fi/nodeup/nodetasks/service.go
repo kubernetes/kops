@@ -37,14 +37,13 @@ const (
 	// TODO: Generally only repo packages write to /usr/lib/systemd/system on _rhel_family
 	// But we use it in two ways: we update the docker manifest, and we install our own
 	// package (protokube, kubelet).  Maybe we should have the idea of a "system" package.
-	centosSystemdSystemPath = "/usr/lib/systemd/system"
-
-	flatcarSystemdSystemPath = "/etc/systemd/system"
-
+	centosSystemdSystemPath      = "/usr/lib/systemd/system"
+	flatcarSystemdSystemPath     = "/etc/systemd/system"
 	containerosSystemdSystemPath = "/etc/systemd/system"
 
 	containerdService = "containerd.service"
 	dockerService     = "docker.service"
+	kubeletService    = "kubelet.service"
 	protokubeService  = "protokube.service"
 )
 
@@ -75,8 +74,12 @@ func (p *Service) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 		switch v := v.(type) {
 		case *Package, *UpdatePackages, *UserTask, *GroupTask, *Chattr, *BindMount, *Archive, *Prefix, *UpdateEtcHostsTask:
 			deps = append(deps, v)
-		case *Service, *LoadImageTask, *PullImageTask, *IssueCert, *BootstrapClientTask, *KubeConfig:
+		case *Service, *PullImageTask, *IssueCert, *BootstrapClientTask, *KubeConfig:
 			// ignore
+		case *LoadImageTask:
+			if p.Name == kubeletService {
+				deps = append(deps, v)
+			}
 		case *File:
 			if len(v.BeforeServices) > 0 {
 				for _, s := range v.BeforeServices {
