@@ -61,10 +61,10 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	routerName := strings.Replace(clusterName, ".", "-", -1)
 	for _, sp := range b.Cluster.Spec.Subnets {
 		// assumes that we do not need to create routers if we use existing subnets
-		if sp.ProviderID != "" {
+		if sp.ID != "" {
 			needRouter = false
 		}
-		subnetName, err := b.findSubnetNameByID(sp.ProviderID, sp.Name)
+		subnetName, err := b.findSubnetNameByID(sp.ID, sp.Name)
 		if err != nil {
 			return err
 		}

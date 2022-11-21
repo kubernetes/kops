@@ -464,9 +464,9 @@ func validateSubnets(cluster *kops.ClusterSpec, fieldPath *field.Path) field.Err
 
 	// cannot mix subnets with specified ID and without specified id
 	if len(subnets) > 0 {
-		hasID := subnets[0].ProviderID != ""
+		hasID := subnets[0].ID != ""
 		for i := range subnets {
-			if (subnets[i].ProviderID != "") != hasID {
+			if (subnets[i].ID != "") != hasID {
 				allErrs = append(allErrs, field.Forbidden(fieldPath.Index(i).Child("id"), "cannot mix subnets with specified ID and unspecified ID"))
 			}
 		}

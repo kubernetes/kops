@@ -150,7 +150,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	for i := range b.Cluster.Spec.Subnets {
 		subnetSpec := &b.Cluster.Spec.Subnets[i]
-		sharedSubnet := subnetSpec.ProviderID != ""
+		sharedSubnet := subnetSpec.ID != ""
 		if !sharedSubnet {
 			allSubnetsShared = false
 			allSubnetsSharedInZone[subnetSpec.Zone] = false
@@ -225,7 +225,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	for i := range b.Cluster.Spec.Subnets {
 		subnetSpec := &b.Cluster.Spec.Subnets[i]
-		sharedSubnet := subnetSpec.ProviderID != ""
+		sharedSubnet := subnetSpec.ID != ""
 		subnetName := subnetSpec.Name + "." + b.ClusterName()
 		tags := map[string]string{}
 
@@ -293,8 +293,8 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 			subnet.IPv6CIDR = fi.PtrTo(subnetSpec.IPv6CIDR)
 		}
-		if subnetSpec.ProviderID != "" {
-			subnet.ID = fi.PtrTo(subnetSpec.ProviderID)
+		if subnetSpec.ID != "" {
+			subnet.ID = fi.PtrTo(subnetSpec.ID)
 		}
 		c.AddTask(subnet)
 
