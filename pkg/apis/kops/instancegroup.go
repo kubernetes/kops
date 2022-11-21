@@ -160,7 +160,7 @@ type InstanceGroupSpec struct {
 	// SuspendProcesses disables the listed Scaling Policies
 	SuspendProcesses []string `json:"suspendProcesses,omitempty"`
 	// ExternalLoadBalancers define loadbalancers that should be attached to this instance group
-	ExternalLoadBalancers []LoadBalancer `json:"externalLoadBalancers,omitempty"`
+	ExternalLoadBalancers []LoadBalancerSpec `json:"externalLoadBalancers,omitempty"`
 	// DetailedInstanceMonitoring defines if detailed-monitoring is enabled (AWS only)
 	DetailedInstanceMonitoring *bool `json:"detailedInstanceMonitoring,omitempty"`
 	// IAMProfileSpec defines the identity of the cloud group IAM profile (AWS only).
@@ -370,7 +370,7 @@ func (g *InstanceGroup) AddInstanceGroupNodeLabel() {
 }
 
 // LoadBalancer defines a load balancer
-type LoadBalancer struct {
+type LoadBalancerSpec struct {
 	// LoadBalancerName to associate with this instance group (AWS ELB)
 	LoadBalancerName *string `json:"loadBalancerName,omitempty"`
 	// TargetGroupARN to associate with this instance group (AWS ALB/NLB)

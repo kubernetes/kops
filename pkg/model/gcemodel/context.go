@@ -59,7 +59,7 @@ func (c *GCEModelContext) NameForIPAliasRange(key string) string {
 
 // LinkToSubnet returns a link to the GCE subnet object
 func (c *GCEModelContext) LinkToSubnet(subnet *kops.ClusterSubnetSpec) *gcetasks.Subnet {
-	name := subnet.ProviderID
+	name := subnet.ID
 	if name == "" {
 		name = gce.ClusterSuffixedName(subnet.Name, c.Cluster.ObjectMeta.Name, 63)
 	}

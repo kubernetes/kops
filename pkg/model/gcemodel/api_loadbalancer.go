@@ -194,7 +194,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 // subnetNotSpecified returns true if the given LB subnet is not listed in the list of cluster subnets.
 func subnetNotSpecified(sn kops.LoadBalancerSubnetSpec, subnets []kops.ClusterSubnetSpec) bool {
 	for _, csn := range subnets {
-		if csn.Name == sn.Name || csn.ProviderID == sn.Name {
+		if csn.Name == sn.Name || csn.ID == sn.Name {
 			return false
 		}
 	}

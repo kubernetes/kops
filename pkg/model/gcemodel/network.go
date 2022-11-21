@@ -54,7 +54,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	for i := range b.Cluster.Spec.Subnets {
 		subnet := &b.Cluster.Spec.Subnets[i]
 
-		sharedSubnet := subnet.ProviderID != ""
+		sharedSubnet := subnet.ID != ""
 
 		network, err := b.LinkToNetwork()
 		if err != nil {
@@ -104,7 +104,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 
 			// If we're in an existing subnet, we assume egress is already configured.
-			if subnet.ProviderID != "" {
+			if subnet.ID != "" {
 				continue
 			}
 

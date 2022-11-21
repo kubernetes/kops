@@ -661,8 +661,8 @@ type ClusterSubnetSpec struct {
 	// IPv6CIDR is the IPv6 CIDR block assigned to the subnet.
 	IPv6CIDR string `json:"ipv6CIDR,omitempty"`
 
-	// ProviderID is the cloud provider id for the objects associated with the zone (the subnet on AWS)
-	ProviderID string `json:"id,omitempty"`
+	// ID is the cloud provider ID for the objects associated with the zone (the subnet on AWS).
+	ID string `json:"id,omitempty"`
 
 	// Egress defines the method of traffic egress for this subnet
 	Egress string `json:"egress,omitempty"`
