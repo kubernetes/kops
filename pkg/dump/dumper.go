@@ -46,11 +46,12 @@ type logDumper struct {
 }
 
 // NewLogDumper is the constructor for a logDumper
-func NewLogDumper(clusterName string, sshConfig *ssh.ClientConfig, keyRing agent.Agent, artifactsDir string) *logDumper {
+func NewLogDumper(clusterName string, sshConfig *ssh.ClientConfig, bastionSSHUser string, keyRing agent.Agent, artifactsDir string) *logDumper {
 	sshClientFactory := &sshClientFactoryImplementation{
-		bastion:   "bastion." + clusterName,
-		keyRing:   keyRing,
-		sshConfig: sshConfig,
+		bastion:        "bastion." + clusterName,
+		bastionSSHUser: bastionSSHUser,
+		keyRing:        keyRing,
+		sshConfig:      sshConfig,
 	}
 
 	d := &logDumper{
@@ -463,18 +464,25 @@ func (s *sshClientImplementation) Close() error {
 
 // sshClientFactoryImplementation is the default implementation of sshClientFactory
 type sshClientFactoryImplementation struct {
-	bastion   string
-	sshConfig *ssh.ClientConfig
-	keyRing   agent.Agent
+	bastion        string
+	bastionSSHUser string
+	sshConfig      *ssh.ClientConfig
+	keyRing        agent.Agent
 }
 
 var _ sshClientFactory = &sshClientFactoryImplementation{}
 
 // Dial implements sshClientFactory::Dial
 func (f *sshClientFactoryImplementation) Dial(ctx context.Context, host string, useBastion bool) (sshClient, error) {
+	sshConfig := f.sshConfig
 	var addr string
 	if useBastion {
 		addr = f.bastion
+		if f.bastionSSHUser != "" {
+			sshConfig = &ssh.ClientConfig{}
+			*sshConfig = *f.sshConfig
+			sshConfig.User = f.bastionSSHUser
+		}
 	} else {
 		addr = host
 	}
@@ -492,7 +500,7 @@ func (f *sshClientFactoryImplementation) Dial(ctx context.Context, host string, 
 	var client *ssh.Client
 	finished := make(chan error)
 	go func() {
-		c, chans, reqs, err := ssh.NewClientConn(conn, addr, f.sshConfig)
+		c, chans, reqs, err := ssh.NewClientConn(conn, addr, sshConfig)
 		if err == nil {
 			client = ssh.NewClient(c, chans, reqs)
 			if useBastion {
@@ -533,6 +541,8 @@ func (f *sshClientFactoryImplementation) Dial(ctx context.Context, host string, 
 		}
 		if !useBastion {
 			host = ""
+		} else if f.bastionSSHUser != "" {
+			host = fmt.Sprintf("%s@%s", f.sshConfig.User, host)
 		}
 		return &sshClientImplementation{
 			client:    client,

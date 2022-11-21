@@ -42,6 +42,9 @@ func (d *deployer) DumpClusterLogs() error {
 		"--private-key", d.SSHPrivateKeyPath,
 		"--ssh-user", d.SSHUser,
 	}
+	if d.BastionSSHUser != "" {
+		args = append(args, "--bastion-ssh-user", d.BastionSSHUser)
+	}
 	klog.Info(strings.Join(args, " "))
 	cmd := exec.Command(args[0], args[1:]...)
 	cmd.SetEnv(d.env()...)
@@ -184,6 +187,9 @@ func (d *deployer) dumpClusterInfoSSH() error {
 		"--private-key", d.SSHPrivateKeyPath,
 		"--ssh-user", d.SSHUser,
 		"-o", "yaml",
+	}
+	if d.BastionSSHUser != "" {
+		toolboxDumpArgs = append(toolboxDumpArgs, "--bastion-ssh-user", d.BastionSSHUser)
 	}
 	klog.Info(strings.Join(toolboxDumpArgs, " "))
 

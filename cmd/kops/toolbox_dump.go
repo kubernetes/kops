@@ -60,9 +60,10 @@ type ToolboxDumpOptions struct {
 
 	ClusterName string
 
-	Dir        string
-	PrivateKey string
-	SSHUser    string
+	Dir            string
+	PrivateKey     string
+	SSHUser        string
+	BastionSSHUser string
 }
 
 func (o *ToolboxDumpOptions) InitDefaults() {
@@ -97,6 +98,8 @@ func NewCmdToolboxDump(f commandutils.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.PrivateKey, "private-key", options.PrivateKey, "File containing private key to use for SSH access to instances")
 	cmd.Flags().StringVar(&options.SSHUser, "ssh-user", options.SSHUser, "The remote user for SSH access to instances")
 	cmd.RegisterFlagCompletionFunc("ssh-user", cobra.NoFileCompletions)
+	cmd.Flags().StringVar(&options.BastionSSHUser, "bastion-ssh-user", options.BastionSSHUser, "The remote user for SSH access to bastions. Defaults to value of --ssh-user")
+	cmd.RegisterFlagCompletionFunc("bastion-ssh-user", cobra.NoFileCompletions)
 
 	return cmd
 }
@@ -195,7 +198,7 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 			return fmt.Errorf("adding key to SSH agent: %w", err)
 		}
 
-		dumper := dump.NewLogDumper(cluster.ObjectMeta.Name, sshConfig, keyRing, options.Dir)
+		dumper := dump.NewLogDumper(cluster.ObjectMeta.Name, sshConfig, options.BastionSSHUser, keyRing, options.Dir)
 
 		var additionalIPs []string
 		var additionalPrivateIPs []string

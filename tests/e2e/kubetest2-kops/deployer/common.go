@@ -121,6 +121,9 @@ func (d *deployer) initialize() error {
 	if d.SSHUser == "" {
 		d.SSHUser = os.Getenv("KUBE_SSH_USER")
 	}
+	if d.BastionSSHUser == "" {
+		d.BastionSSHUser = os.Getenv("BASTION_SSH_USER")
+	}
 	if d.TerraformVersion != "" {
 		t, err := target.NewTerraform(d.TerraformVersion)
 		if err != nil {

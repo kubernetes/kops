@@ -69,6 +69,7 @@ type deployer struct {
 	SSHPrivateKeyPath string `flag:"ssh-private-key" desc:"The path to the private key used for SSH access to instances"`
 	SSHPublicKeyPath  string `flag:"ssh-public-key" desc:"The path to the public key passed to the cloud provider"`
 	SSHUser           string `flag:"ssh-user" desc:"The SSH user to use for SSH access to instances"`
+	BastionSSHUser    string `flag:"bastion-ssh-user" desc:"The SSH user to use for SSH access to bastions"`
 
 	TerraformVersion string `flag:"terraform-version" desc:"The version of terraform to use for applying the cluster"`
 
