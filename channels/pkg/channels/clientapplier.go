@@ -23,6 +23,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/restmapper"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/applylib/applyset"
 	"k8s.io/kops/pkg/kubemanifest"
 )
@@ -30,6 +31,10 @@ import (
 type ClientApplier struct {
 	Client     dynamic.Interface
 	RESTMapper *restmapper.DeferredDiscoveryRESTMapper
+
+	// IgnoreHealth means we won't treat the objects not being healthy as an error.
+	// Curently used only in tests
+	IgnoreHealth bool
 }
 
 // Apply applies the manifest to the cluster.
@@ -82,7 +87,11 @@ func (p *ClientApplier) Apply(ctx context.Context, manifest []byte) error {
 
 	// TODO: Check object health status
 	if !results.AllHealthy() {
-		return fmt.Errorf("not all objects were healthy")
+		if p.IgnoreHealth {
+			klog.Infof("not all objects healthy, but configured to ignore health")
+		} else {
+			return fmt.Errorf("not all objects were healthy")
+		}
 	}
 
 	return nil
