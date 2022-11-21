@@ -1185,6 +1185,42 @@ func TestClusterNameDigit(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
+// TestCASPriorityExpander tests cluster-autoscaler priority-expander configMap based on instance group autoscalePriority
+func TestCASPriorityExpander(t *testing.T) {
+	test := newIntegrationTest("cas-priority-expander.example.com", "cluster-autoscaler-priority-expander").
+		withAddons(
+			awsCCMAddon,
+			awsEBSCSIAddon,
+			dnsControllerAddon,
+			"cluster-autoscaler.addons.k8s.io-k8s-1.15",
+		)
+	test.expectTerraformFilenames = append(test.expectTerraformFilenames,
+		"aws_launch_template_nodes-high-priority.cas-priority-expander.example.com_user_data",
+		"aws_launch_template_nodes-low-priority.cas-priority-expander.example.com_user_data",
+		"aws_s3_object_nodeupconfig-nodes-high-priority_content",
+		"aws_s3_object_nodeupconfig-nodes-low-priority_content",
+	)
+	test.runTestTerraformAWS(t)
+}
+
+// TestCASPriorityExpanderCustom tests cluster-autoscaler priority-expander configMap with custom priority config
+func TestCASPriorityExpanderCustom(t *testing.T) {
+	test := newIntegrationTest("cas-priority-expander-custom.example.com", "cluster-autoscaler-priority-expander-custom").
+		withAddons(
+			awsCCMAddon,
+			awsEBSCSIAddon,
+			dnsControllerAddon,
+			"cluster-autoscaler.addons.k8s.io-k8s-1.15",
+		)
+	test.expectTerraformFilenames = append(test.expectTerraformFilenames,
+		"aws_launch_template_nodes-high-priority.cas-priority-expander-custom.example.com_user_data",
+		"aws_launch_template_nodes-low-priority.cas-priority-expander-custom.example.com_user_data",
+		"aws_s3_object_nodeupconfig-nodes-high-priority_content",
+		"aws_s3_object_nodeupconfig-nodes-low-priority_content",
+	)
+	test.runTestTerraformAWS(t)
+}
+
 func (i *integrationTest) runTest(t *testing.T, ctx context.Context, h *testutils.IntegrationTestHarness, expectedDataFilenames []string, tfFileName string, expectedTfFileName string, phase *cloudup.Phase) {
 	var stdout bytes.Buffer
 
