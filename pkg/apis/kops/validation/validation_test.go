@@ -138,14 +138,14 @@ func TestValidateSubnets(t *testing.T) {
 		},
 		{
 			Input: []kops.ClusterSubnetSpec{
-				{Name: "a", ProviderID: "a", Type: kops.SubnetTypePublic},
-				{Name: "b", ProviderID: "b", Type: kops.SubnetTypePublic},
+				{Name: "a", ID: "a", Type: kops.SubnetTypePublic},
+				{Name: "b", ID: "b", Type: kops.SubnetTypePublic},
 			},
 		},
 		{
 			Input: []kops.ClusterSubnetSpec{
-				{Name: "a", ProviderID: "a", Type: kops.SubnetTypePublic},
-				{Name: "b", ProviderID: "", Type: kops.SubnetTypePublic},
+				{Name: "a", ID: "a", Type: kops.SubnetTypePublic},
+				{Name: "b", ID: "", Type: kops.SubnetTypePublic},
 			},
 			ExpectedErrors: []string{"Forbidden::subnets[1].id"},
 		},

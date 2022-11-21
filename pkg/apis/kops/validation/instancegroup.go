@@ -381,7 +381,7 @@ func validateIGCloudLabels(ig *kops.InstanceGroup, fldPath *field.Path) (allErrs
 	return allErrs
 }
 
-func validateExternalLoadBalancer(lb *kops.LoadBalancer, fldPath *field.Path) field.ErrorList {
+func validateExternalLoadBalancer(lb *kops.LoadBalancerSpec, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	if lb.LoadBalancerName != nil && lb.TargetGroupARN != nil {
