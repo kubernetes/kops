@@ -88,10 +88,18 @@ additionalUserData:
 Available images can be listed using:
 
 ```bash
+# Amazon Web Services (AWS)
 aws ec2 describe-images --region us-east-1 --output table \
   --owners 136693071363 \
   --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
   --filters "Name=name,Values=debian-10-amd64-*"
+
+# Google Cloud Platform (GCP)
+gcloud compute images list --filter debian-10-buster-v
+
+# Microsoft Azure
+az vm image list --all --output table \
+  --publisher Debian --offer debian-10 --sku 10-gen2
 ```
 
 ### Debian 11 (Bullseye)
@@ -101,10 +109,18 @@ Debian 11 is based on Kernel version **5.10** which has no known major Kernel bu
 Available images can be listed using:
 
 ```bash
+# Amazon Web Services (AWS)
 aws ec2 describe-images --region us-east-1 --output table \
   --owners 136693071363 \
   --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
   --filters "Name=name,Values=debian-11-amd64-*"
+
+# Google Cloud Platform (GCP)
+gcloud compute images list --filter debian-11-bullseye-v
+
+# Microsoft Azure
+az vm image list --all --output table \
+  --publisher Debian --offer debian-11 --sku 11-gen2
 ```
 
 ### Flatcar
