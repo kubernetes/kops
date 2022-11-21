@@ -111,7 +111,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	}
 
 	dest["ClusterAutoscalerAutoDiscovery"] = func() bool {
-		return fi.BoolValue(cluster.Spec.ClusterAutoscaler.AutoDiscovery)
+		return fi.ValueOf(cluster.Spec.ClusterAutoscaler.AutoDiscovery)
 	}
 
 	dest["GetCloudProvider"] = cluster.Spec.GetCloudProvider

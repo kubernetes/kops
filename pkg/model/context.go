@@ -157,7 +157,7 @@ func (b *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 	case kops.CloudProviderAWS:
 		// Apply labels for cluster autoscaler autodiscovery
 		cas := b.Cluster.Spec.ClusterAutoscaler
-		if cas != nil && fi.BoolValue(cas.Enabled) && fi.BoolValue(cas.AutoDiscovery) && ig.Spec.Autoscale != nil {
+		if cas != nil && fi.ValueOf(cas.Enabled) && fi.ValueOf(cas.AutoDiscovery) && ig.Spec.Autoscale != nil {
 			labels["k8s.io/cluster-autoscaler/enabled"] = "true"
 			labels["k8s.io/cluster-autoscaler/"+b.Cluster.ObjectMeta.Name] = "true"
 		}
