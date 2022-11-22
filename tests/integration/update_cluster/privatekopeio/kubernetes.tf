@@ -23,6 +23,8 @@ locals {
   subnet_utility-us-test-1b_id      = aws_subnet.utility-us-test-1b-privatekopeio-example-com.id
   vpc_cidr_block                    = aws_vpc.privatekopeio-example-com.cidr_block
   vpc_id                            = aws_vpc.privatekopeio-example-com.id
+  vpc_ipv6_cidr_block               = aws_vpc.privatekopeio-example-com.ipv6_cidr_block
+  vpc_ipv6_cidr_length              = local.vpc_ipv6_cidr_block == null ? null : tonumber(regex(".*/(\\d+)", local.vpc_ipv6_cidr_block)[0])
 }
 
 output "bastion_autoscaling_group_ids" {
@@ -119,6 +121,14 @@ output "vpc_cidr_block" {
 
 output "vpc_id" {
   value = aws_vpc.privatekopeio-example-com.id
+}
+
+output "vpc_ipv6_cidr_block" {
+  value = aws_vpc.privatekopeio-example-com.ipv6_cidr_block
+}
+
+output "vpc_ipv6_cidr_length" {
+  value = local.vpc_ipv6_cidr_block == null ? null : tonumber(regex(".*/(\\d+)", local.vpc_ipv6_cidr_block)[0])
 }
 
 provider "aws" {
