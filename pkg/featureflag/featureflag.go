@@ -91,6 +91,13 @@ var (
 	ImageDigest = new("ImageDigest", Bool(true))
 	// Scaleway toggles the Scaleway Cloud support.
 	Scaleway = new("Scaleway", Bool(false))
+	// SELinuxMount configures AWS EBS CSI driver for SELinuxMount support.
+	// It expects than Kubernetes feature gate SELinuxMountReadWriteOncePod is
+	// enabled or GA in the API server, KCM and kubelet.
+	// OS with SELinux support on all nodes is recommended, but not required
+	// - the feature won't do anything when the node OS does not support SELinux.
+	// TODO(jsafrane): add to all CSI drivers installed by kops.
+	SELinuxMount = new("SELinuxMount", Bool(false))
 )
 
 // FeatureFlag defines a feature flag
