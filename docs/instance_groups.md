@@ -2,7 +2,7 @@
 
 The `InstanceGroup` resource represents a group of similar machines typically provisioned in the same availability zone. On AWS, instance groups map directly to an autoscaling group.
 
-The complete list of keys can be found at the [InstanceGroup](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#InstanceGroupSpec) reference page. 
+The complete list of keys can be found at the [InstanceGroup](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#InstanceGroupSpec) reference page.
 
 You can also find concrete use cases for the configurations on the [Instance Group operations page](instance_groups.md)
 
@@ -101,7 +101,7 @@ spec:
 
 ## additionalUserData
 
-kOps utilizes cloud-init to initialize and setup a host at boot time. However in certain cases you may already be leveraging certain features of cloud-init in your infrastructure and would like to continue doing so. More information on cloud-init can be found [here](http://cloudinit.readthedocs.io/en/latest/). 
+kOps utilizes cloud-init to initialize and setup a host at boot time. However in certain cases you may already be leveraging certain features of cloud-init in your infrastructure and would like to continue doing so. More information on cloud-init can be found [here](http://cloudinit.readthedocs.io/en/latest/).
 
 Additional user-data can be passed to the host provisioning by setting the `additionalUserData` field. A list of valid user-data content-types can be found [here](http://cloudinit.readthedocs.io/en/latest/topics/format.html#mime-multi-part-archive).
 
@@ -135,7 +135,7 @@ spec:
 ## compressUserData
 {{ kops_feature_table(kops_added_default='1.19') }}
 
-Compresses parts of the user-data to save space and help with the size limit 
+Compresses parts of the user-data to save space and help with the size limit
 in certain clouds. Currently only the Specs in nodeup.sh will be compressed.
 
 ```YAML
@@ -191,10 +191,10 @@ which would end up in a drop-in file on nodes of the instance group in question.
 
 ## mixedInstancesPolicy (AWS Only)
 
-A Mixed Instances Policy utilizing EC2 Spot and the `capacity-optimized` allocation strategy allows an EC2 Autoscaling Group to select the instance types with the highest capacity. This reduces the chance of a spot interruption on your instance group. 
+A Mixed Instances Policy utilizing EC2 Spot and the `capacity-optimized` allocation strategy allows an EC2 Autoscaling Group to select the instance types with the highest capacity. This reduces the chance of a spot interruption on your instance group.
 
-Instance groups with a mixedInstancesPolicy can be generated with the `kops toolbox instance-selector` command. 
-The instance-selector accepts user supplied resource parameters like vcpus, memory, and much more to dynamically select instance types that match your criteria. 
+Instance groups with a mixedInstancesPolicy can be generated with the `kops toolbox instance-selector` command.
+The instance-selector accepts user supplied resource parameters like vcpus, memory, and much more to dynamically select instance types that match your criteria.
 
 ```bash
 kops toolbox instance-selector --vcpus 4 --flexible --usage-class spot --instance-group-name spotgroup
@@ -259,6 +259,13 @@ https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_InstancesDistributi
 ### spotInstancePools
 Used only when the Spot allocation strategy is lowest-price.
 The number of Spot Instance pools across which to allocate your Spot Instances. The Spot pools are determined from the different instance types in the Overrides array of LaunchTemplate. Default if not set is 2.
+
+### CapacityRebalance
+
+{{ kops_feature_table(kops_added_default='1.26') }}
+
+If using spot instances, it's recommended to enable CapacityRebalance in your InstanceGroup. This configures ASGs to proactively replace spot instances when ASG receives a rebalance recommendation.
+https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-capacity-rebalancing.html
 
 ### instanceRequirements
 
@@ -326,7 +333,7 @@ spec:
 {{ kops_feature_table(kops_added_default='1.24') }}
 
 The maximum instance lifetime specifies the maximum amount of time (in go duration [format](https://pkg.go.dev/time#ParseDuration)) that an instance can be in service before it is terminated and replaced.
-A common use case might be a requirement to replace your instances on a schedule because of internal security policies or external compliance controls. 
+A common use case might be a requirement to replace your instances on a schedule because of internal security policies or external compliance controls.
 In other words, this feature helps you to put a bit of ephemerality in your cluster.
 You must specify a value of at least 24h (86,400 seconds). To clear a previously set value, specify a new value of 0.
 

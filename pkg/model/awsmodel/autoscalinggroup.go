@@ -440,6 +440,10 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 		t.InstanceProtection = ig.Spec.InstanceProtection
 	}
 
+	if ig.Spec.CapacityRebalance != nil {
+		t.CapacityRebalance = ig.Spec.CapacityRebalance
+	}
+
 	t.LoadBalancers = []*awstasks.ClassicLoadBalancer{}
 	t.TargetGroups = []*awstasks.TargetGroup{}
 

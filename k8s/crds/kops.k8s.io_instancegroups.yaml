@@ -91,6 +91,11 @@ spec:
                 description: Autoscale determines if autoscaling will be enabled for
                   this instance group if cluster autoscaler is enabled
                 type: boolean
+              capacityRebalance:
+                description: CapacityRebalance makes ASGs proactively replace spot
+                  instances when the ASG receives a rebalance recommendation (AWS
+                  Only).
+                type: boolean
               cloudLabels:
                 additionalProperties:
                   type: string

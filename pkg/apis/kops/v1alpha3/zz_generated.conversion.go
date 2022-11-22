@@ -4575,6 +4575,7 @@ func autoConvert_v1alpha3_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 	} else {
 		out.MixedInstancesPolicy = nil
 	}
+	out.CapacityRebalance = in.CapacityRebalance
 	if in.AdditionalUserData != nil {
 		in, out := &in.AdditionalUserData, &out.AdditionalUserData
 		*out = make([]kops.UserData, len(*in))
@@ -4760,6 +4761,7 @@ func autoConvert_kops_InstanceGroupSpec_To_v1alpha3_InstanceGroupSpec(in *kops.I
 	} else {
 		out.MixedInstancesPolicy = nil
 	}
+	out.CapacityRebalance = in.CapacityRebalance
 	if in.AdditionalUserData != nil {
 		in, out := &in.AdditionalUserData, &out.AdditionalUserData
 		*out = make([]UserData, len(*in))
