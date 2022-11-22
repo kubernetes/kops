@@ -185,6 +185,44 @@ the command.  When run without `--yes` it shows a preview of the objects it will
 
 After you've double-checked you're deleting exactly what you want to delete, run `kops delete cluster simple.k8s.local --yes`.
 
+# Best practices
+Below are some of the best practices when using kOps to create and administer a Kubernetes cluster on GCP.
+
+### Use spot instances to reduce cost. 
+
+[Spot instances](https://cloud.google.com/spot-vms) have the same specs as regular compute instances, but can be preempted at any time by higher priority instances. Using spot instances can reduce your compute cost by up to ~90%, so if your workloads are fault-tolerant this strategy can be extremely beneficial. Note that GCE handles preemption gracefully, giving you 30 seconds to shut down so you can safely checkpoint state/progress to be resumed later. 
+
+To create a instance group of spot instances, create your cluster as documented above, then update your instance group to use spot instances by performing the following steps:
+
+- Run `kops edit ig <instance-group-name>` to edit the instance group config.
+- Add the key-value pair `gcpProvisioningModel: SPOT` in the instance group `spec`:
+
+```yaml
+spec:
+  gcpProvisioningModel: SPOT
+```
+
+- Run `kops update cluster --yes` followed by `kops rolling-update cluster --yes` to update the instance group.
+- You can verify this succeeded on the [Google Cloud Platform developer console](https://console.cloud.google.com/) by navigating to Compute Engine, clicking on your particular node instance (by default it will be named something like `nodes-<zone>`) to pull up instance details, then under Management > Availability Policy there should be a setting that says `VM Provisioning Model: Spot`.
+
+### Use regional or multi-zonal cluster for high availability
+By default, kOps will create a k8s cluster instance in a single [zone](https://cloud.google.com/compute/docs/regions-zones). In the event of an issue affecting
+that particular datacenter (or even the particular server rack your VM instance is running on), this can cause availability issues for your cluster. The recommended solution is to use a **multi-zonal** cluster. 
+
+Specifically, it is recommended that both the control plane (master) nodes and the worker nodes both run in **3+ zones within a region**, 
+in order to ensure availability of both the control plane and worker nodes in the event of datacenter outages.
+
+Example of creating a high availability multi-zonal cluster, with both the control plane and nodes running in 3 zones within a region:
+
+```
+kops create cluster \
+--master-zones=us-central1-a,us-central1-b,us-central1-c \
+--zones=us-central1-a,us-central1-b,us-central1-c \
+--node-count=2
+${CLUSTER_NAME}
+```
+
+
 ## Next steps
 
 Now that you have a working kOps cluster, read through the [recommendations for production setups guide](production.md) to learn more about how to configure kOps for production workloads.
