@@ -324,6 +324,12 @@ spec:
               mountPath: /csi
             - name: device-dir
               mountPath: /dev
+{{ if KopsFeatureEnabled "SELinuxMount" }}
+            - name: etc-selinux
+              mountPath: /etc/selinux
+            - name: sys-fs
+              mountPath: /sys/fs
+{{ end }}
           ports:
             - name: healthz
               containerPort: 9808
@@ -384,6 +390,16 @@ spec:
           hostPath:
             path: /dev
             type: Directory
+{{ if KopsFeatureEnabled "SELinuxMount" }}
+        - name: etc-selinux
+          hostPath:
+            path: /etc/selinux
+            type: DirectoryOrCreate
+        - name: sys-fs
+          hostPath:
+            path: /sys/fs
+            type: Directory
+{{ end }}
 ---
 # Source: aws-ebs-csi-driver/templates/controller.yaml
 # Controller Service
@@ -622,6 +638,9 @@ metadata:
 spec:
   attachRequired: true
   podInfoOnMount: false
+{{ if KopsFeatureEnabled "SELinuxMount" }}
+  seLinuxMount: true
+{{ end }}
 ---
 {{ if IsKubernetesGTE "1.23" }}
 apiVersion: policy/v1
