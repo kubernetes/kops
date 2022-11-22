@@ -8,12 +8,6 @@ spec:
     loadBalancer:
       type: Public
       class: Network
-  kubernetesApiAccess:
-  - 0.0.0.0/0
-  - ::/0
-  sshAccess:
-  - 0.0.0.0/0
-  - ::/0
   channel: stable
   cloudConfig:
     awsEBSCSIDriver:
@@ -33,21 +27,50 @@ spec:
   iam: {}
   kubelet:
     anonymousAuth: false
-  kubernetesVersion: v1.21.0
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  - ::/0
+  kubernetesVersion: v1.25.0
   masterPublicName: api.minimal-ipv6.example.com
   networkCIDR: 172.20.0.0/16
   networking:
     cni: {}
   nonMasqueradeCIDR: ::/0
-  topology:
-    masters: public
-    nodes: public
+  sshAccess:
+  - 0.0.0.0/0
+  - ::/0
   subnets:
-  - cidr: 172.20.32.0/19
-    ipv6CIDR: 2001:db8:0:111::/64
+  - ipv6CIDR: 2001:db8:0:111::/64
     name: us-test-1a
-    type: Public
+    type: Private
     zone: us-test-1a
+  - ipv6CIDR: 2001:db8:0:112::/64
+    name: us-test-1b
+    type: Private
+    zone: us-test-1b
+  - cidr: 172.20.32.0/19
+    ipv6CIDR: 2001:db8:0:113::/64
+    name: dualstack-us-test-1a
+    type: DualStack
+    zone: us-test-1a
+  - cidr: 172.20.64.0/19
+    ipv6CIDR: 2001:db8:0:114::/64
+    name: dualstack-us-test-1b
+    type: DualStack
+    zone: us-test-1b
+  - cidr: 172.20.0.0/22
+    ipv6CIDR: 2001:db8:0:115::/64
+    name: utility-us-test-1a
+    type: Utility
+    zone: us-test-1a
+  - cidr: 172.20.4.0/22
+    ipv6CIDR: 2001:db8:0:116::/64
+    name: utility-us-test-1b
+    type: Utility
+    zone: us-test-1b
+  topology:
+    masters: private
+    nodes: private
 
 ---
 
@@ -61,12 +84,13 @@ metadata:
 spec:
   associatePublicIp: true
   image: ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404
-  machineType: t2.medium
+  machineType: t3.medium
   maxSize: 2
   minSize: 2
   role: Node
   subnets:
   - us-test-1a
+  - us-test-1b
 
 ---
 
@@ -85,4 +109,4 @@ spec:
   minSize: 1
   role: Master
   subnets:
-  - us-test-1a
+  - dualstack-us-test-1a
