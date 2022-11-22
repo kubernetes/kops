@@ -394,14 +394,7 @@ func TestExternalPolicies(t *testing.T) {
 // TestMinimalIPv6 runs the test on a minimum IPv6 configuration
 func TestMinimalIPv6(t *testing.T) {
 	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6").
-		withAddons(awsCCMAddon, awsEBSCSIAddon, dnsControllerAddon).
-		runTestTerraformAWS(t)
-}
-
-// TestMinimalIPv6 runs the test on a minimum IPv6 configuration
-func TestMinimalIPv6Private(t *testing.T) {
-	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6-private").
-		withAddons(awsCCMAddon, awsEBSCSIAddon, dnsControllerAddon, leaderElectionAddon).
+		withDefaultAddons24().
 		runTestTerraformAWS(t)
 }
 
@@ -416,7 +409,8 @@ func TestMinimalIPv6Calico(t *testing.T) {
 // TestMinimalIPv6Calico runs the test on a minimum IPv6 configuration with Cilium
 func TestMinimalIPv6Cilium(t *testing.T) {
 	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6-cilium").
-		withAddons(awsCCMAddon, awsEBSCSIAddon, ciliumAddon, dnsControllerAddon).
+		withDefaultAddons24().
+		withAddons(ciliumAddon).
 		runTestTerraformAWS(t)
 }
 
