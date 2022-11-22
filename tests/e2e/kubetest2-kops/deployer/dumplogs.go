@@ -121,6 +121,7 @@ func (d *deployer) dumpClusterInfo() error {
 		args = []string{
 			"kubectl", "--request-timeout", "5s", "get", resType,
 			"--all-namespaces",
+			"--show-managed-fields",
 			"-o", "yaml",
 		}
 		klog.Info(strings.Join(args, " "))
@@ -141,7 +142,14 @@ func (d *deployer) dumpClusterInfo() error {
 		return fmt.Errorf("failed to get namespaces: %s", err)
 	}
 
-	namespacedResourceTypes := []string{"configmaps", "endpoints", "endpointslices", "leases", "persistentvolumeclaims"}
+	namespacedResourceTypes := []string{
+		"configmaps",
+		"endpoints",
+		"endpointslices",
+		"leases",
+		"persistentvolumeclaims",
+		"poddisruptionbudgets",
+	}
 	for _, namespace := range namespaces {
 		namespace = strings.TrimSpace(namespace)
 		if err := os.MkdirAll(path.Join(d.ArtifactsDir, "cluster-info", namespace), 0o755); err != nil {
@@ -157,6 +165,7 @@ func (d *deployer) dumpClusterInfo() error {
 			args = []string{
 				"kubectl", "get", resType,
 				"-n", namespace,
+				"--show-managed-fields",
 				"-o", "yaml",
 			}
 			klog.Info(strings.Join(args, " "))
