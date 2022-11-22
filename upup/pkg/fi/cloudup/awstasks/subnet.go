@@ -372,7 +372,7 @@ func subnetSlicesEqualIgnoreOrder(l, r []*Subnet) bool {
 type terraformSubnet struct {
 	VPCID                                   *terraformWriter.Literal `cty:"vpc_id"`
 	CIDR                                    *string                  `cty:"cidr_block"`
-	IPv6CIDR                                *string                  `cty:"ipv6_cidr_block"`
+	IPv6CIDR                                *terraformWriter.Literal `cty:"ipv6_cidr_block"`
 	IPv6Native                              *bool                    `cty:"ipv6_native"`
 	AssignIPv6AddressOnCreation             *bool                    `cty:"assign_ipv6_address_on_creation"`
 	AvailabilityZone                        *string                  `cty:"availability_zone"`
@@ -402,16 +402,22 @@ func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Su
 		return t.AddOutputVariableArray("subnet_ids", terraformWriter.LiteralFromStringValue(*e.ID))
 	}
 
+	var ipv6CIDR *terraformWriter.Literal
 	if strings.HasPrefix(aws.StringValue(e.IPv6CIDR), "/") {
-		// TODO: Implement using "cidrsubnet"
-		// https://www.terraform.io/docs/language/functions/cidrsubnet.html
-		return fmt.Errorf("<cidrsubnet> in not supported with Terraform target: %q", aws.StringValue(e.IPv6CIDR))
+		newSize, netNum, err := utils.ParseCIDRNotation(*e.IPv6CIDR)
+		if err != nil {
+			return fmt.Errorf("error parsing CIDR subnet: %v", err)
+		}
+
+		ipv6CIDR = terraformWriter.LiteralFunctionExpression("cidrsubnet", "local.vpc_ipv6_cidr_block", fmt.Sprintf("%d - local.vpc_ipv6_cidr_length", newSize), fmt.Sprintf("%d", netNum))
+	} else if e.IPv6CIDR != nil {
+		ipv6CIDR = terraformWriter.LiteralFromStringValue(aws.StringValue(e.IPv6CIDR))
 	}
 
 	tf := &terraformSubnet{
 		VPCID:            e.VPC.TerraformLink(),
 		CIDR:             e.CIDR,
-		IPv6CIDR:         e.IPv6CIDR,
+		IPv6CIDR:         ipv6CIDR,
 		AvailabilityZone: e.AvailabilityZone,
 		Tags:             e.Tags,
 	}
