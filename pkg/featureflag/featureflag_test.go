@@ -58,3 +58,25 @@ func TestSetenv(t *testing.T) {
 		t.Fatalf("Flag was not updated by ParseFlags")
 	}
 }
+
+func TestGetPositive(t *testing.T) {
+	// Find a random existing feature
+	var featureName string
+	for featureName = range flags {
+		break
+	}
+
+	f, err := Get(featureName)
+	if err != nil {
+		t.Errorf("Unexpected error when getting a feature: %s", err)
+	}
+	if f != flags[featureName] {
+		t.Errorf("Unexpected content when getting a feature: expected %+v, got %+v", flags[featureName], f)
+	}
+}
+
+func TestGetNegative(t *testing.T) {
+	if _, err := Get("NonExistingFeature"); err == nil {
+		t.Errorf("Expected Get error on NonExistingFeature, got nil")
+	}
+}

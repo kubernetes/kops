@@ -25,6 +25,7 @@ limitations under the License.
 package featureflag
 
 import (
+	"fmt"
 	"os"
 	"strings"
 	"sync"
@@ -163,4 +164,16 @@ func ParseFlags(f string) {
 			klog.Infof("Unknown FeatureFlag %q", s)
 		}
 	}
+}
+
+// Get returns given FeatureFlag.
+func Get(flagName string) (*FeatureFlag, error) {
+	flagsMutex.Lock()
+	defer flagsMutex.Unlock()
+
+	flag, found := flags[flagName]
+	if !found {
+		return nil, fmt.Errorf("flag %s not found", flagName)
+	}
+	return flag, nil
 }
