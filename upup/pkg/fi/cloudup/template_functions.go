@@ -346,6 +346,8 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["IsKubernetesGTE"] = tf.IsKubernetesGTE
 	dest["IsKubernetesLT"] = tf.IsKubernetesLT
 
+	dest["KopsFeatureEnabled"] = tf.kopsFeatureEnabled
+
 	return nil
 }
 
@@ -963,4 +965,12 @@ func karpenterInstanceTypes(cloud awsup.AWSCloud, ig kops.InstanceGroupSpec) ([]
 	}
 
 	return []string{ig.MachineType}, nil
+}
+
+func (tf *TemplateFunctions) kopsFeatureEnabled(featureName string) (bool, error) {
+	f, err := featureflag.Get(featureName)
+	if err != nil {
+		return false, err
+	}
+	return f.Enabled(), nil
 }

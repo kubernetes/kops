@@ -25,6 +25,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/kops/cloudmock/aws/mockec2"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
@@ -316,5 +317,46 @@ func Test_KarpenterInstanceTypes(t *testing.T) {
 	_, err := karpenterInstanceTypes(cloud, ig)
 	if err != nil {
 		t.Errorf("failed to fetch instance types: %v", err)
+	}
+}
+
+func TestKopsFeatureEnabled(t *testing.T) {
+	tests := []struct {
+		name          string
+		featureFlags  string
+		featureName   string
+		expectedValue bool
+		expectError   bool
+	}{
+		{
+			name:         "Missing feature",
+			featureFlags: "",
+			featureName:  "NonExistingFeature",
+			expectError:  true,
+		},
+		{
+			name:          "Existing feature",
+			featureFlags:  "+Scaleway",
+			featureName:   "Scaleway",
+			expectError:   false,
+			expectedValue: true,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			featureflag.ParseFlags(tc.featureFlags)
+			tf := &TemplateFunctions{}
+			value, err := tf.kopsFeatureEnabled(tc.featureName)
+			if err != nil && !tc.expectError {
+				t.Errorf("unexpected error: %s", err)
+			}
+			if err == nil && tc.expectError {
+				t.Errorf("expected error, got nil")
+			}
+			if value != tc.expectedValue {
+				t.Errorf("expected value %t, got %t", tc.expectedValue, value)
+			}
+		})
 	}
 }
