@@ -12,6 +12,7 @@ locals {
   region                       = "us-test-1"
   route_table_public_id        = aws_route_table.sharedvpc-example-com.id
   subnet_us-test-1a_id         = aws_subnet.us-test-1a-sharedvpc-example-com.id
+  vpc_cidr_block               = data.aws_vpc.sharedvpc-example-com.cidr_block
   vpc_id                       = "vpc-12345678"
 }
 
@@ -65,6 +66,10 @@ output "route_table_public_id" {
 
 output "subnet_us-test-1a_id" {
   value = aws_subnet.us-test-1a-sharedvpc-example-com.id
+}
+
+output "vpc_cidr_block" {
+  value = data.aws_vpc.sharedvpc-example-com.cidr_block
 }
 
 output "vpc_id" {
@@ -775,6 +780,10 @@ resource "aws_subnet" "us-test-1a-sharedvpc-example-com" {
     "kubernetes.io/role/internal-elb"              = "1"
   }
   vpc_id = "vpc-12345678"
+}
+
+data "aws_vpc" "sharedvpc-example-com" {
+  id = "vpc-12345678"
 }
 
 terraform {
