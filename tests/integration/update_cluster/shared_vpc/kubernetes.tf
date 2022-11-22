@@ -14,6 +14,8 @@ locals {
   subnet_us-test-1a_id         = aws_subnet.us-test-1a-sharedvpc-example-com.id
   vpc_cidr_block               = data.aws_vpc.sharedvpc-example-com.cidr_block
   vpc_id                       = "vpc-12345678"
+  vpc_ipv6_cidr_block          = data.aws_vpc.sharedvpc-example-com.ipv6_cidr_block
+  vpc_ipv6_cidr_length         = local.vpc_ipv6_cidr_block == null ? null : tonumber(regex(".*/(\\d+)", local.vpc_ipv6_cidr_block)[0])
 }
 
 output "cluster_name" {
@@ -74,6 +76,14 @@ output "vpc_cidr_block" {
 
 output "vpc_id" {
   value = "vpc-12345678"
+}
+
+output "vpc_ipv6_cidr_block" {
+  value = data.aws_vpc.sharedvpc-example-com.ipv6_cidr_block
+}
+
+output "vpc_ipv6_cidr_length" {
+  value = local.vpc_ipv6_cidr_block == null ? null : tonumber(regex(".*/(\\d+)", local.vpc_ipv6_cidr_block)[0])
 }
 
 provider "aws" {
