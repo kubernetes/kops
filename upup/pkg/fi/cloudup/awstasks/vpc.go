@@ -280,6 +280,10 @@ func (e *VPC) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
 	return removals, nil
 }
 
+type terraformVPCData struct {
+	ID *string `cty:"id"`
+}
+
 type terraformVPC struct {
 	CIDR               *string           `cty:"cidr_block"`
 	EnableDNSHostnames *bool             `cty:"enable_dns_hostnames"`
@@ -297,11 +301,19 @@ func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) 
 	if shared {
 		// Not terraform owned / managed
 		// We won't apply changes, but our validation (kops update) will still warn
-		return nil
+
+		if err := t.AddOutputVariable("vpc_cidr_block", terraformWriter.LiteralData("aws_vpc", *e.Name, "cidr_block")); err != nil {
+			return err
+		}
+
+		tf := terraformVPCData{
+			ID: e.ID,
+		}
+
+		return t.RenderDataSource("aws_vpc", *e.Name, tf)
 	}
 
 	if err := t.AddOutputVariable("vpc_cidr_block", terraformWriter.LiteralProperty("aws_vpc", *e.Name, "cidr_block")); err != nil {
-		// TODO: Should we try to output vpc_cidr_block for shared vpcs?
 		return err
 	}
 

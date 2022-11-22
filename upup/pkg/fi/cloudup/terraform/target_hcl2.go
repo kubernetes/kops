@@ -103,6 +103,47 @@ func (t *TerraformTarget) finishHCL2() error {
 		}
 	}
 
+	dataSourcesByType, err := t.GetDataSourcesByType()
+	if err != nil {
+		return err
+	}
+
+	dataSourceTypes := make([]string, 0, len(dataSourcesByType))
+	for dataSourceType := range dataSourcesByType {
+		dataSourceTypes = append(dataSourceTypes, dataSourceType)
+	}
+	sort.Strings(dataSourceTypes)
+	for _, dataSourceType := range dataSourceTypes {
+		dataSources := dataSourcesByType[dataSourceType]
+		dataSourceNames := make([]string, 0, len(dataSources))
+		for dataSourceName := range dataSources {
+			dataSourceNames = append(dataSourceNames, dataSourceName)
+		}
+		sort.Strings(dataSourceNames)
+		for _, dataSourceName := range dataSourceNames {
+			item := dataSources[dataSourceName]
+
+			dataBlock := rootBody.AppendNewBlock("data", []string{dataSourceType, dataSourceName})
+			dataBody := dataBlock.Body()
+			dataType, err := gocty.ImpliedType(item)
+			if err != nil {
+				return err
+			}
+			dataVal, err := gocty.ToCtyValue(item, dataType)
+			if err != nil {
+				return err
+			}
+			if dataVal.IsNull() {
+				continue
+			}
+			dataVal.ForEachElement(func(key cty.Value, value cty.Value) bool {
+				writeValue(dataBody, key.AsString(), value)
+				return false
+			})
+			rootBody.AppendNewline()
+		}
+	}
+
 	terraformBlock := rootBody.AppendNewBlock("terraform", []string{})
 	terraformBody := terraformBlock.Body()
 	terraformBody.SetAttributeValue("required_version", cty.StringVal(">= 0.15.0"))
