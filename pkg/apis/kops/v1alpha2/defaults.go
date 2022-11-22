@@ -72,10 +72,9 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 			obj.LegacyAPI.LoadBalancer.Type = LoadBalancerTypePublic
 		}
 
-	}
-
-	if obj.LegacyAPI.LoadBalancer != nil && obj.LegacyAPI.LoadBalancer.Class == "" && obj.LegacyCloudProvider == "aws" {
-		obj.LegacyAPI.LoadBalancer.Class = LoadBalancerClassClassic
+		if obj.LegacyAPI.LoadBalancer != nil && obj.LegacyAPI.LoadBalancer.Class == "" && obj.LegacyCloudProvider == "aws" {
+			obj.LegacyAPI.LoadBalancer.Class = LoadBalancerClassClassic
+		}
 	}
 
 	if obj.Authorization == nil {
