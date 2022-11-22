@@ -60,8 +60,8 @@ func (b *ClusterAutoscalerOptionsBuilder) BuildOptions(o interface{}) error {
 		cas.Image = fi.PtrTo(image)
 	}
 
-	if cas.Expander == nil {
-		cas.Expander = fi.PtrTo("random")
+	if cas.Expander == "" {
+		cas.Expander = "random"
 	}
 	if cas.ScaleDownUtilizationThreshold == nil {
 		cas.ScaleDownUtilizationThreshold = fi.PtrTo("0.5")
