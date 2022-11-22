@@ -191,6 +191,11 @@ func createManagedFieldPatch(currentObject *unstructured.Unstructured) ([]byte, 
 		fixedManagedField := managedField.DeepCopy()
 		if managedField.Manager == "kubectl-edit" || managedField.Manager == "kubectl-client-side-apply" {
 			fixedManagedField.Manager = "kops"
+			fixedManagedField.Operation = "Apply"
+		}
+		// In case we have a kops & Update manager
+		if fixedManagedField.Manager == "kops" && fixedManagedField.Operation == "Update" {
+			fixedManagedField.Operation = "Apply"
 		}
 		fixedManagedFields = append(fixedManagedFields, *fixedManagedField)
 	}
