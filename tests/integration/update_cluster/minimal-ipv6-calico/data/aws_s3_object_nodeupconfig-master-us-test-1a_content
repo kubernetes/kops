@@ -257,7 +257,6 @@ KubeletConfig:
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   nodeLabels:
-    kops.k8s.io/instancegroup: master-us-test-1a
     kops.k8s.io/kops-controller-pki: ""
     node-role.kubernetes.io/control-plane: ""
     node.kubernetes.io/exclude-from-external-load-balancers: ""
