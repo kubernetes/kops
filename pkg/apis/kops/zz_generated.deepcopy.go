@@ -983,11 +983,6 @@ func (in *ClusterAutoscalerConfig) DeepCopyInto(out *ClusterAutoscalerConfig) {
 		*out = new(bool)
 		**out = **in
 	}
-	if in.Expander != nil {
-		in, out := &in.Expander, &out.Expander
-		*out = new(string)
-		**out = **in
-	}
 	if in.BalanceSimilarNodeGroups != nil {
 		in, out := &in.BalanceSimilarNodeGroups, &out.BalanceSimilarNodeGroups
 		*out = new(bool)
