@@ -49,7 +49,7 @@ func (l *Literal) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&l.Value)
 }
 
-func LiteralFunctionExpression(functionName string, args []string) *Literal {
+func LiteralFunctionExpression(functionName string, args ...string) *Literal {
 	return &Literal{
 		Value:  fmt.Sprintf("${%v(%v)}", functionName, strings.Join(args, ", ")),
 		FnName: functionName,

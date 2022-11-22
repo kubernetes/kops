@@ -80,7 +80,7 @@ func (t *TerraformWriter) AddFileBytes(resourceType string, resourceName string,
 	if base64 {
 		fn = "filebase64"
 	}
-	return LiteralFunctionExpression(fn, []string{modulePath}), nil
+	return LiteralFunctionExpression(fn, modulePath), nil
 }
 
 func (t *TerraformWriter) RenderResource(resourceType string, resourceName string, e interface{}) error {
