@@ -261,6 +261,9 @@ Used only when the Spot allocation strategy is lowest-price.
 The number of Spot Instance pools across which to allocate your Spot Instances. The Spot pools are determined from the different instance types in the Overrides array of LaunchTemplate. Default if not set is 2.
 
 ### CapacityRebalance
+
+{{ kops_feature_table(kops_added_default='1.26') }}
+
 If using spot instances, it's recommended to enable CapacityRebalance in your InstanceGroup. This configures ASGs to proactively replace spot instances when ASG receives a rebalance recommendation.
 https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-capacity-rebalancing.html
 
