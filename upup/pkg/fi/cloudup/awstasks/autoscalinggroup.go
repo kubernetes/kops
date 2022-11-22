@@ -90,6 +90,8 @@ type AutoscalingGroup struct {
 	Tags map[string]string
 	// TargetGroups is a list of ALB/NLB target group ARNs to add to the autoscaling group
 	TargetGroups []*TargetGroup
+	// CapacityRebalance makes ASG proactively replace spot instances when ASG receives a rebalance recommendation
+	CapacityRebalance *bool
 }
 
 var _ fi.CompareWithID = &AutoscalingGroup{}
@@ -348,6 +350,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			NewInstancesProtectedFromScaleIn: e.InstanceProtection,
 			Tags:                             v.AutoscalingGroupTags(),
 			VPCZoneIdentifier:                fi.PtrTo(strings.Join(e.AutoscalingGroupSubnets(), ",")),
+			CapacityRebalance:                e.CapacityRebalance,
 		}
 
 		//On ASG creation 0 value is forbidden
@@ -641,6 +644,11 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			changes.InstanceProtection = nil
 		}
 
+		if changes.CapacityRebalance != nil {
+			request.CapacityRebalance = e.CapacityRebalance
+			changes.CapacityRebalance = nil
+		}
+
 		empty := &AutoscalingGroup{}
 		if !reflect.DeepEqual(empty, changes) {
 			klog.Warningf("cannot apply changes to AutoScalingGroup: %v", changes)
@@ -912,6 +920,7 @@ type terraformAutoscalingGroup struct {
 	LoadBalancers           []*terraformWriter.Literal                       `cty:"load_balancers"`
 	TargetGroupARNs         []*terraformWriter.Literal                       `cty:"target_group_arns"`
 	MaxInstanceLifetime     *int64                                           `cty:"max_instance_lifetime"`
+	CapacityRebalance       *bool                                            `cty:"capacity_rebalance"`
 }
 
 // RenderTerraform is responsible for rendering the terraform codebase
@@ -924,6 +933,7 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 		EnabledMetrics:      aws.StringSlice(e.Metrics),
 		InstanceProtection:  e.InstanceProtection,
 		MaxInstanceLifetime: e.MaxInstanceLifetime,
+		CapacityRebalance:   e.CapacityRebalance,
 	}
 
 	for _, s := range e.Subnets {
