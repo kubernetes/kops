@@ -995,7 +995,7 @@ type ClusterAutoscalerConfig struct {
 	// The price expander is only supported on GCE.
 	// The priority expander requires additional configuration via a ConfigMap.
 	// Default: least-waste
-	Expander *string `json:"expander,omitempty"`
+	Expander string `json:"expander,omitempty"`
 	// BalanceSimilarNodeGroups makes cluster autoscaler treat similar node groups as one.
 	// Default: false
 	BalanceSimilarNodeGroups *bool `json:"balanceSimilarNodeGroups,omitempty"`
