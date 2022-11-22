@@ -313,6 +313,14 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 				MaxRetries: fi.Int(3),
 			},
 		}
+		tags := make(map[string]string)
+		tags[openstack.TagClusterName] = cluster.GetName()
+		osCloud, err := openstack.NewOpenstackCloud(tags, &cluster.Spec, "openstackmodel")
+		if err != nil {
+			return nil, err
+		}
+		cloud = osCloud
+
 	default:
 		return nil, fmt.Errorf("unsupported cloud provider %s", opt.CloudProvider)
 	}
