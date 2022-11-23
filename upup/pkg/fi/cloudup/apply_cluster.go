@@ -1444,7 +1444,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 		}
 	}
 
-	useConfigServer := apiModel.UseKopsControllerForNodeBootstrap(cluster) && (role != kops.InstanceGroupRoleMaster)
+	useConfigServer := apiModel.UseKopsControllerForNodeBootstrap(cluster) && !ig.HasAPIServer()
 	if useConfigServer {
 		host := "kops-controller.internal." + cluster.ObjectMeta.Name
 		if cluster.UsesNoneDNS() {
