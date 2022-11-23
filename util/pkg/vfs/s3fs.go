@@ -31,8 +31,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/spf13/viper"
 	"k8s.io/klog/v2"
-
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 	"k8s.io/kops/util/pkg/hashing"
 )
@@ -276,7 +276,8 @@ func (p *S3Path) getServerSideEncryption(ctx context.Context) (sse *string, sseL
 }
 
 func (p *S3Path) getRequestACL(aclObj ACL) (*string, error) {
-	acl := os.Getenv("KOPS_STATE_S3_ACL")
+	_ = viper.BindEnv("KOPS_STATE_S3_ACL")
+	acl := viper.GetString("KOPS_STATE_S3_ACL")
 	acl = strings.TrimSpace(acl)
 	if acl != "" {
 		klog.V(8).Infof("Using KOPS_STATE_S3_ACL=%s", acl)

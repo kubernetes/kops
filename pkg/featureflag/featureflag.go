@@ -26,10 +26,10 @@ package featureflag
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"sync"
 
+	"github.com/spf13/viper"
 	"k8s.io/klog/v2"
 )
 
@@ -39,7 +39,8 @@ const (
 )
 
 func init() {
-	ParseFlags(os.Getenv(Name))
+	_ = viper.BindEnv(Name)
+	ParseFlags(viper.GetString(Name))
 }
 
 var (
