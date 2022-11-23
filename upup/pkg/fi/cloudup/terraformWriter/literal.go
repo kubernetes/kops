@@ -49,7 +49,7 @@ func (l *Literal) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&l.Value)
 }
 
-func LiteralFunctionExpression(functionName string, args []string) *Literal {
+func LiteralFunctionExpression(functionName string, args ...string) *Literal {
 	return &Literal{
 		Value:  fmt.Sprintf("${%v(%v)}", functionName, strings.Join(args, ", ")),
 		FnName: functionName,
@@ -59,6 +59,15 @@ func LiteralFunctionExpression(functionName string, args []string) *Literal {
 
 func LiteralSelfLink(resourceType, resourceName string) *Literal {
 	return LiteralProperty(resourceType, resourceName, "self_link")
+}
+
+func LiteralData(dataSourceType, dataSourceName, prop string) *Literal {
+	tfName := sanitizeName(dataSourceName)
+	expr := "${data." + dataSourceType + "." + tfName + "." + prop + "}"
+	return &Literal{
+		Value:  expr,
+		Tokens: []string{"data", dataSourceType, tfName, prop},
+	}
 }
 
 func LiteralProperty(resourceType, resourceName, prop string) *Literal {

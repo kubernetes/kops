@@ -135,7 +135,7 @@ func TestWriteLiteral(t *testing.T) {
 
 		{
 			name:     "file",
-			literal:  terraformWriter.LiteralFunctionExpression("file", []string{"\"${path.module}/foo\""}),
+			literal:  terraformWriter.LiteralFunctionExpression("file", "\"${path.module}/foo\""),
 			expected: `foo = file("${path.module}/foo")`,
 		},
 	}
@@ -283,9 +283,9 @@ func TestWriteMapLiterals(t *testing.T) {
 		{
 			name: "literal values",
 			values: map[string]terraformWriter.Literal{
-				"key1": *terraformWriter.LiteralFunctionExpression("file", []string{"\"${module.path}/path/to/value1\""}),
-				"key2": *terraformWriter.LiteralFunctionExpression("filebase64", []string{"\"${module.path}/path/to/value2\""}),
-				"key3": *terraformWriter.LiteralFunctionExpression("cidrsubnet", []string{"\"172.16.0.0/12\"", "4", "2"}),
+				"key1": *terraformWriter.LiteralFunctionExpression("file", "\"${module.path}/path/to/value1\""),
+				"key2": *terraformWriter.LiteralFunctionExpression("filebase64", "\"${module.path}/path/to/value2\""),
+				"key3": *terraformWriter.LiteralFunctionExpression("cidrsubnet", "\"172.16.0.0/12\"", "4", "2"),
 			},
 			expected: `
 metadata = {
