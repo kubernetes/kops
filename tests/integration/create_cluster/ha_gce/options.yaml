@@ -3,7 +3,7 @@ Zones:
 - us-test1-a
 - us-test1-b
 - us-test1-c
-MasterZones:
+ControlPlaneZones:
 - us-test1-a
 - us-test1-b
 - us-test1-c

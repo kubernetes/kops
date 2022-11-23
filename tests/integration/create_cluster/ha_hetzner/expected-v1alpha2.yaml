@@ -15,21 +15,21 @@ spec:
   etcdClusters:
   - cpuRequest: 200m
     etcdMembers:
-    - instanceGroup: master-fsn1-1
+    - instanceGroup: control-plane-fsn1-1
       name: etcd-1
-    - instanceGroup: master-fsn1-2
+    - instanceGroup: control-plane-fsn1-2
       name: etcd-2
-    - instanceGroup: master-fsn1-3
+    - instanceGroup: control-plane-fsn1-3
       name: etcd-3
     memoryRequest: 100Mi
     name: main
   - cpuRequest: 100m
     etcdMembers:
-    - instanceGroup: master-fsn1-1
+    - instanceGroup: control-plane-fsn1-1
       name: etcd-1
-    - instanceGroup: master-fsn1-2
+    - instanceGroup: control-plane-fsn1-2
       name: etcd-2
-    - instanceGroup: master-fsn1-3
+    - instanceGroup: control-plane-fsn1-3
       name: etcd-3
     memoryRequest: 100Mi
     name: events
@@ -67,7 +67,7 @@ metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   labels:
     kops.k8s.io/cluster: ha.example.com
-  name: master-fsn1-1
+  name: control-plane-fsn1-1
 spec:
   image: ubuntu-20.04
   machineType: cx21
@@ -85,7 +85,7 @@ metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   labels:
     kops.k8s.io/cluster: ha.example.com
-  name: master-fsn1-2
+  name: control-plane-fsn1-2
 spec:
   image: ubuntu-20.04
   machineType: cx21
@@ -103,7 +103,7 @@ metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   labels:
     kops.k8s.io/cluster: ha.example.com
-  name: master-fsn1-3
+  name: control-plane-fsn1-3
 spec:
   image: ubuntu-20.04
   machineType: cx21

@@ -74,8 +74,8 @@ type NewClusterOptions struct {
 	CloudProvider string
 	// Zones are the availability zones in which to run the cluster.
 	Zones []string
-	// MasterZones are the availability zones in which to run the masters. Defaults to the list in the Zones field.
-	MasterZones []string
+	// ControlPlaneZones are the availability zones in which to run the control-plane nodes. Defaults to the list in the Zones field.
+	ControlPlaneZones []string
 
 	// Project is the cluster's GCE project.
 	Project string
@@ -116,9 +116,9 @@ type NewClusterOptions struct {
 	AzureRouteTableName    string
 	AzureAdminUser         string
 
-	// MasterCount is the number of masters to create. Defaults to the length of MasterZones
-	// if MasterZones is explicitly nonempty, otherwise defaults to 1.
-	MasterCount int32
+	// ControlPlaneCount is the number of control-plane nodes to create. Defaults to the length of ControlPlaneZones.
+	// if ControlPlaneZones is explicitly nonempty, otherwise defaults to 1.
+	ControlPlaneCount int32
 	// APIServerCount is the number of API servers to create. Defaults to 0.
 	APIServerCount int32
 	// EncryptEtcdStorage is whether to encrypt the etcd volumes.
@@ -154,12 +154,12 @@ type NewClusterOptions struct {
 	// InstanceManager specifies which manager to use for managing instances.
 	InstanceManager string
 
-	Image        string
-	NodeImage    string
-	MasterImage  string
-	BastionImage string
-	MasterSize   string
-	NodeSize     string
+	Image             string
+	NodeImage         string
+	ControlPlaneImage string
+	BastionImage      string
+	ControlPlaneSize  string
+	NodeSize          string
 }
 
 func (o *NewClusterOptions) InitDefaults() {
@@ -285,7 +285,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 	}
 	allZones := sets.NewString()
 	allZones.Insert(opt.Zones...)
-	allZones.Insert(opt.MasterZones...)
+	allZones.Insert(opt.ControlPlaneZones...)
 
 	if opt.CloudProvider == "" {
 		for _, zone := range allZones.List() {
@@ -382,7 +382,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		return nil, err
 	}
 
-	masters, err := setupMasters(opt, &cluster, zoneToSubnetMap)
+	controlPlanes, err := setupControlPlane(opt, &cluster, zoneToSubnetMap)
 	if err != nil {
 		return nil, err
 	}
@@ -420,7 +420,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		return nil, err
 	}
 
-	instanceGroups := append([]*api.InstanceGroup(nil), masters...)
+	instanceGroups := append([]*api.InstanceGroup(nil), controlPlanes...)
 	instanceGroups = append(instanceGroups, apiservers...)
 	instanceGroups = append(instanceGroups, nodes...)
 	instanceGroups = append(instanceGroups, bastions...)
@@ -445,7 +445,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 			if g.Spec.MachineType == "" {
 				g.Spec.MachineType, err = defaultMachineType(cloud, &cluster, ig)
 				if err != nil {
-					return nil, fmt.Errorf("error assigning default machine type for masters: %v", err)
+					return nil, fmt.Errorf("error assigning default machine type for control plane: %v", err)
 				}
 
 			}
@@ -482,7 +482,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 
 		if ig.IsControlPlane() {
 			if len(ig.Spec.Subnets) == 0 {
-				return nil, fmt.Errorf("master InstanceGroup %s did not specify any Subnets", g.ObjectMeta.Name)
+				return nil, fmt.Errorf("control-plane InstanceGroup %s did not specify any Subnets", g.ObjectMeta.Name)
 			}
 		} else if ig.IsAPIServerOnly() && cluster.Spec.IsIPv6Only() {
 			if len(ig.Spec.Subnets) == 0 {
@@ -811,52 +811,52 @@ func getOpenstackZoneToSubnetProviderID(spec *api.ClusterSpec, zones []string, s
 	return res, nil
 }
 
-func setupMasters(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap map[string]*api.ClusterSubnetSpec) ([]*api.InstanceGroup, error) {
+func setupControlPlane(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap map[string]*api.ClusterSubnetSpec) ([]*api.InstanceGroup, error) {
 	cloudProvider := cluster.Spec.GetCloudProvider()
 
-	var masters []*api.InstanceGroup
+	var controlPlanes []*api.InstanceGroup
 
-	// Build the master subnets
-	// The master zones is the default set of zones unless explicitly set
-	// The master count is the number of master zones unless explicitly set
-	// We then round-robin around the zones
+	// Build the control-plane subnets.
+	// The control-plane zones is the default set of zones unless explicitly set.
+	// The control-plane count is the number of control-plane zones unless explicitly set.
+	// We then round-robin around the zones.
 	{
-		masterCount := opt.MasterCount
-		masterZones := opt.MasterZones
-		if len(masterZones) != 0 {
-			if masterCount != 0 && masterCount < int32(len(masterZones)) {
-				return nil, fmt.Errorf("specified %d master zones, but also requested %d masters.  If specifying both, the count should match.", len(masterZones), masterCount)
+		controlPlaneCount := opt.ControlPlaneCount
+		controlPlaneZones := opt.ControlPlaneZones
+		if len(controlPlaneZones) != 0 {
+			if controlPlaneCount != 0 && controlPlaneCount < int32(len(controlPlaneZones)) {
+				return nil, fmt.Errorf("specified %d control-plane zones, but also requested %d control-plane nodes.  If specifying both, the count should match.", len(controlPlaneZones), controlPlaneCount)
 			}
 
-			if masterCount == 0 {
-				// If master count is not specified, default to the number of master zones
-				masterCount = int32(len(masterZones))
+			if controlPlaneCount == 0 {
+				// If control-plane count is not specified, default to the number of control-plane zones
+				controlPlaneCount = int32(len(controlPlaneZones))
 			}
 		} else {
-			// masterZones not set; default to same as node Zones
-			masterZones = opt.Zones
+			// controlPlaneZones not set; default to same as node Zones
+			controlPlaneZones = opt.Zones
 
-			if masterCount == 0 {
-				// If master count is not specified, default to 1
-				masterCount = 1
+			if controlPlaneCount == 0 {
+				// If control-plane count is not specified, default to 1
+				controlPlaneCount = 1
 			}
 		}
 
-		if len(masterZones) == 0 {
+		if len(controlPlaneZones) == 0 {
 			// Should be unreachable
-			return nil, fmt.Errorf("cannot determine master zones")
+			return nil, fmt.Errorf("cannot determine control-plane zones")
 		}
 
-		for i := 0; i < int(masterCount); i++ {
-			zone := masterZones[i%len(masterZones)]
+		for i := 0; i < int(controlPlaneCount); i++ {
+			zone := controlPlaneZones[i%len(controlPlaneZones)]
 			name := zone
 			if cloudProvider == api.CloudProviderDO {
-				if int(masterCount) >= len(masterZones) {
-					name += "-" + strconv.Itoa(1+(i/len(masterZones)))
+				if int(controlPlaneCount) >= len(controlPlaneZones) {
+					name += "-" + strconv.Itoa(1+(i/len(controlPlaneZones)))
 				}
 			} else {
-				if int(masterCount) > len(masterZones) {
-					name += "-" + strconv.Itoa(1+(i/len(masterZones)))
+				if int(controlPlaneCount) > len(controlPlaneZones) {
+					name += "-" + strconv.Itoa(1+(i/len(controlPlaneZones)))
 				}
 			}
 
@@ -864,7 +864,7 @@ func setupMasters(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap 
 			g.Spec.Role = api.InstanceGroupRoleControlPlane
 			g.Spec.MinSize = fi.PtrTo(int32(1))
 			g.Spec.MaxSize = fi.PtrTo(int32(1))
-			g.ObjectMeta.Name = "master-" + name
+			g.ObjectMeta.Name = "control-plane-" + name
 
 			subnet := zoneToSubnetMap[zone]
 			if subnet == nil {
@@ -891,33 +891,33 @@ func setupMasters(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap 
 				}
 			}
 
-			g.Spec.MachineType = opt.MasterSize
-			g.Spec.Image = opt.MasterImage
+			g.Spec.MachineType = opt.ControlPlaneSize
+			g.Spec.Image = opt.ControlPlaneImage
 
-			masters = append(masters, g)
+			controlPlanes = append(controlPlanes, g)
 		}
 	}
 
 	// Build the Etcd clusters
 	{
-		masterAZs := sets.NewString()
+		controlPlaneAZs := sets.NewString()
 		duplicateAZs := false
-		for _, ig := range masters {
+		for _, ig := range controlPlanes {
 			zones, err := model.FindZonesForInstanceGroup(cluster, ig)
 			if err != nil {
 				return nil, err
 			}
 			for _, zone := range zones {
-				if masterAZs.Has(zone) {
+				if controlPlaneAZs.Has(zone) {
 					duplicateAZs = true
 				}
 
-				masterAZs.Insert(zone)
+				controlPlaneAZs.Insert(zone)
 			}
 		}
 
 		if duplicateAZs {
-			klog.Warningf("Running with masters in the same AZs; redundancy will be reduced")
+			klog.Warningf("Running with control-plane nodes in the same AZs; redundancy will be reduced")
 		}
 
 		clusters := EtcdClusters
@@ -933,12 +933,12 @@ func setupMasters(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap 
 			encryptEtcdStorage = true
 		}
 		for _, etcdCluster := range clusters {
-			etcd := createEtcdCluster(etcdCluster, masters, encryptEtcdStorage, opt.EtcdStorageType)
+			etcd := createEtcdCluster(etcdCluster, controlPlanes, encryptEtcdStorage, opt.EtcdStorageType)
 			cluster.Spec.EtcdClusters = append(cluster.Spec.EtcdClusters, etcd)
 		}
 	}
 
-	return masters, nil
+	return controlPlanes, nil
 }
 
 func trimCommonPrefix(names []string) []string {
@@ -1358,7 +1358,7 @@ func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
 			cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
 
 		default:
-			return fmt.Errorf("unknown master topology type: %q", cluster.Spec.Topology.ControlPlane)
+			return fmt.Errorf("unknown control-plane topology type: %q", cluster.Spec.Topology.ControlPlane)
 		}
 	}
 
@@ -1421,7 +1421,7 @@ func initializeOpenstackAPI(opt *NewClusterOptions, cluster *api.Cluster) {
 	}
 }
 
-func createEtcdCluster(etcdCluster string, masters []*api.InstanceGroup, encryptEtcdStorage bool, etcdStorageType string) api.EtcdClusterSpec {
+func createEtcdCluster(etcdCluster string, controlPlanes []*api.InstanceGroup, encryptEtcdStorage bool, etcdStorageType string) api.EtcdClusterSpec {
 	etcd := api.EtcdClusterSpec{}
 	etcd.Name = etcdCluster
 
@@ -1440,17 +1440,18 @@ func createEtcdCluster(etcdCluster string, masters []*api.InstanceGroup, encrypt
 	etcd.MemoryRequest = &memoryRequest
 
 	var names []string
-	for _, ig := range masters {
+	for _, ig := range controlPlanes {
 		name := ig.ObjectMeta.Name
-		// We expect the IG to have a `master-` prefix, but this is both superfluous
+		// We expect the IG to have a `control-plane-` or `master-` prefix, but this is both superfluous
 		// and not how we named things previously
+		name = strings.TrimPrefix(name, "control-plane-")
 		name = strings.TrimPrefix(name, "master-")
 		names = append(names, name)
 	}
 
 	names = trimCommonPrefix(names)
 
-	for i, ig := range masters {
+	for i, ig := range controlPlanes {
 		m := api.EtcdMemberSpec{}
 		if encryptEtcdStorage {
 			m.EncryptedVolume = &encryptEtcdStorage

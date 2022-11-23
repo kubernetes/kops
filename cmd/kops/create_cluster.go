@@ -61,18 +61,18 @@ import (
 
 type CreateClusterOptions struct {
 	cloudup.NewClusterOptions
-	Yes                  bool
-	Target               string
-	MasterVolumeSize     int32
-	NodeVolumeSize       int32
-	ContainerRuntime     string
-	OutDir               string
-	DisableSubnetTags    bool
-	NetworkCIDR          string
-	DNSZone              string
-	NodeSecurityGroups   []string
-	MasterSecurityGroups []string
-	AssociatePublicIP    *bool
+	Yes                        bool
+	Target                     string
+	ControlPlaneVolumeSize     int32
+	NodeVolumeSize             int32
+	ContainerRuntime           string
+	OutDir                     string
+	DisableSubnetTags          bool
+	NetworkCIDR                string
+	DNSZone                    string
+	NodeSecurityGroups         []string
+	ControlPlaneSecurityGroups []string
+	AssociatePublicIP          *bool
 
 	// SSHPublicKeys is a map of the SSH public keys we should configure; required on AWS, not required on GCE
 	SSHPublicKeys map[string][]byte
@@ -85,12 +85,12 @@ type CreateClusterOptions struct {
 	// CloudLabels are cloud-provider-level tags for instance groups and volumes.
 	CloudLabels string
 
-	// Specify tenancy (default or dedicated) for masters and nodes
-	MasterTenancy string
-	NodeTenancy   string
+	// Specify tenancy (default or dedicated) for control-plane and worker nodes
+	ControlPlaneTenancy string
+	NodeTenancy         string
 
-	// Allow custom public master name
-	MasterPublicName string
+	// Allow custom public Kubernetes API name.
+	APIPublicName string
 
 	OpenstackNetworkID string
 
@@ -126,19 +126,19 @@ var (
 		--zones=us-east-1a \
 		--node-count=2
 
-	# Create a cluster in AWS with High Availability masters. This cluster
+	# Create a cluster in AWS with a High Availability control plane. This cluster
 	# has also been configured for private networking in a kops-managed VPC.
 	# The bastion flag is set to create an entrypoint for admins to SSH.
 	export KOPS_STATE_STORE="s3://my-state-store"
-	export MASTER_SIZE="c5.large"
+	export CONTROL_PLANE_SIZE="c5.large"
 	export NODE_SIZE="m5.large"
 	export ZONES="us-east-1a,us-east-1b,us-east-1c"
 	kops create cluster k8s-cluster.example.com \
 	    --node-count 3 \
 		--zones $ZONES \
 		--node-size $NODE_SIZE \
-		--master-size $MASTER_SIZE \
-		--master-zones $ZONES \
+		--control-plane-size $CONTROL_PLANE_SIZE \
+		--control-plane-zones $ZONES \
 		--networking cilium \
 		--topology private \
 		--bastion="true" \
@@ -150,7 +150,7 @@ var (
 	kops create cluster k8s-cluster.example.com \
 		--cloud digitalocean \
 		--zones $ZONES \
-		--master-zones $ZONES \
+		--control-plane-zones $ZONES \
 		--node-count 3 \
 		--yes
 
@@ -237,8 +237,8 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringSliceVar(&options.Zones, "zones", options.Zones, "Zones in which to run the cluster")
 	cmd.RegisterFlagCompletionFunc("zones", completeZone(options))
-	cmd.Flags().StringSliceVar(&options.MasterZones, "master-zones", options.MasterZones, "Zones in which to run masters (must be an odd number)")
-	cmd.RegisterFlagCompletionFunc("master-zones", completeZone(options))
+	cmd.Flags().StringSliceVar(&options.ControlPlaneZones, "control-plane-zones", options.ControlPlaneZones, "Zones in which to run control-plane nodes. (must be an odd number)")
+	cmd.RegisterFlagCompletionFunc("control-plane-zones", completeZone(options))
 
 	if featureflag.ClusterAddons.Enabled() {
 		cmd.Flags().StringSliceVar(&options.AddonPaths, "add", options.AddonPaths, "Paths to addons we should add to the cluster")
@@ -261,24 +261,24 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		return []string{"pub"}, cobra.ShellCompDirectiveFilterFileExt
 	})
 
-	cmd.Flags().Int32Var(&options.MasterCount, "master-count", options.MasterCount, "Number of masters. Defaults to one master per master-zone")
+	cmd.Flags().Int32Var(&options.ControlPlaneCount, "control-plane-count", options.ControlPlaneCount, "Number of control-plane nodes. Defaults to one control-plane node per control-plane-zone")
 	cmd.Flags().Int32Var(&options.NodeCount, "node-count", options.NodeCount, "Total number of worker nodes. Defaults to one node per zone")
 
 	cmd.Flags().StringVar(&options.Image, "image", options.Image, "Machine image for all instances")
 	cmd.RegisterFlagCompletionFunc("image", completeInstanceImage)
 	cmd.Flags().StringVar(&options.NodeImage, "node-image", options.NodeImage, "Machine image for worker nodes. Takes precedence over --image")
 	cmd.RegisterFlagCompletionFunc("node-image", completeInstanceImage)
-	cmd.Flags().StringVar(&options.MasterImage, "master-image", options.MasterImage, "Machine image for masters. Takes precedence over --image")
-	cmd.RegisterFlagCompletionFunc("master-image", completeInstanceImage)
+	cmd.Flags().StringVar(&options.ControlPlaneImage, "control-plane-image", options.ControlPlaneImage, "Machine image for control-plane nodes. Takes precedence over --image")
+	cmd.RegisterFlagCompletionFunc("control-plane-image", completeInstanceImage)
 	cmd.Flags().StringVar(&options.BastionImage, "bastion-image", options.BastionImage, "Machine image for bastions. Takes precedence over --image")
 	cmd.RegisterFlagCompletionFunc("bastion-image", completeInstanceImage)
 
 	cmd.Flags().StringVar(&options.NodeSize, "node-size", options.NodeSize, "Machine type for worker nodes")
 	cmd.RegisterFlagCompletionFunc("node-size", completeMachineType)
-	cmd.Flags().StringVar(&options.MasterSize, "master-size", options.MasterSize, "Machine type for masters")
-	cmd.RegisterFlagCompletionFunc("master-size", completeMachineType)
+	cmd.Flags().StringVar(&options.ControlPlaneSize, "control-plane-size", options.ControlPlaneSize, "Machine type for control-plane nodes")
+	cmd.RegisterFlagCompletionFunc("control-plane-size", completeMachineType)
 
-	cmd.Flags().Int32Var(&options.MasterVolumeSize, "master-volume-size", options.MasterVolumeSize, "Instance volume size (in GB) for masters")
+	cmd.Flags().Int32Var(&options.ControlPlaneVolumeSize, "control-plane-volume-size", options.ControlPlaneVolumeSize, "Instance volume size (in GB) for control-plane nodes")
 	cmd.Flags().Int32Var(&options.NodeVolumeSize, "node-volume-size", options.NodeVolumeSize, "Instance volume size (in GB) for worker nodes")
 
 	cmd.Flags().StringVar(&options.NetworkID, "vpc", options.NetworkID, "Shared Network or VPC to use")
@@ -317,14 +317,14 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	})
 
 	// TODO: Can we deprecate this flag - it is awkward?
-	cmd.Flags().BoolVar(&associatePublicIP, "associate-public-ip", false, "Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'.")
+	cmd.Flags().BoolVar(&associatePublicIP, "associate-public-ip", false, "Specify --associate-public-ip=[true|false] to enable/disable association of public IP for control-plane ASG and nodes. Default is 'true'.")
 
 	cmd.Flags().BoolVar(&options.IPv6, "ipv6", false, "Use IPv6 for the pod network (AWS only)")
 
-	cmd.Flags().StringSliceVar(&options.NodeSecurityGroups, "node-security-groups", options.NodeSecurityGroups, "Additional precreated security groups to add to worker nodes.")
+	cmd.Flags().StringSliceVar(&options.NodeSecurityGroups, "node-security-groups", options.NodeSecurityGroups, "Additional pre-created security groups to add to worker nodes.")
 	cmd.RegisterFlagCompletionFunc("node-security-groups", completeSecurityGroup)
-	cmd.Flags().StringSliceVar(&options.MasterSecurityGroups, "master-security-groups", options.MasterSecurityGroups, "Additional precreated security groups to add to masters.")
-	cmd.RegisterFlagCompletionFunc("master-security-groups", completeSecurityGroup)
+	cmd.Flags().StringSliceVar(&options.ControlPlaneSecurityGroups, "control-plane-security-groups", options.ControlPlaneSecurityGroups, "Additional pre-created security groups to add to control-plane nodes.")
+	cmd.RegisterFlagCompletionFunc("control-plane-security-groups", completeSecurityGroup)
 
 	cmd.Flags().StringVar(&options.Channel, "channel", options.Channel, "Channel for default versions and configuration to use")
 	cmd.RegisterFlagCompletionFunc("channel", completeChannel)
@@ -357,9 +357,9 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	})
 
-	// Master and Node Tenancy
-	cmd.Flags().StringVar(&options.MasterTenancy, "master-tenancy", options.MasterTenancy, "Tenancy of the master group (AWS only): default or dedicated")
-	cmd.RegisterFlagCompletionFunc("master-tenancy", completeTenancy)
+	// Control Plane and Worker Node Tenancy
+	cmd.Flags().StringVar(&options.ControlPlaneTenancy, "control-plane-tenancy", options.ControlPlaneTenancy, "Tenancy of the control-plane group (AWS only): default or dedicated")
+	cmd.RegisterFlagCompletionFunc("control-plane-tenancy", completeTenancy)
 	cmd.Flags().StringVar(&options.NodeTenancy, "node-tenancy", options.NodeTenancy, "Tenancy of the node group (AWS only): default or dedicated")
 	cmd.RegisterFlagCompletionFunc("node-tenancy", completeTenancy)
 
@@ -375,9 +375,9 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.APISSLCertificate, "api-ssl-certificate", options.APISSLCertificate, "ARN of the SSL Certificate to use for the Kubernetes API load balancer (AWS only)")
 	cmd.RegisterFlagCompletionFunc("api-ssl-certificate", completeSSLCertificate)
 
-	// Allow custom public master name
-	cmd.Flags().StringVar(&options.MasterPublicName, "master-public-name", options.MasterPublicName, "Domain name of the public Kubernetes API")
-	cmd.RegisterFlagCompletionFunc("master-public-name", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	// Allow custom public Kuberneters API name.
+	cmd.Flags().StringVar(&options.APIPublicName, "api-public-name", options.APIPublicName, "Domain name of the public Kubernetes API")
+	cmd.RegisterFlagCompletionFunc("api-public-name", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	})
 
@@ -450,6 +450,22 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		switch name {
 		case "override":
 			name = "set"
+		case "master-count":
+			name = "control-plane-count"
+		case "master-image":
+			name = "control-plane-image"
+		case "master-public-name":
+			name = "api-public-name"
+		case "master-security-groups":
+			name = "control-plane-security-groups"
+		case "master-size":
+			name = "control-plane-size"
+		case "master-tenancy":
+			name = "control-plane-tenancy"
+		case "master-volume-size":
+			name = "control-plane-volume-size"
+		case "master-zones":
+			name = "control-plane-zones"
 		}
 		return pflag.NormalizedName(name)
 	})
@@ -528,12 +544,12 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	cluster := clusterResult.Cluster
 	instanceGroups := clusterResult.InstanceGroups
 
-	var masters []*api.InstanceGroup
+	var controlPlanes []*api.InstanceGroup
 	var nodes []*api.InstanceGroup
 	for _, ig := range instanceGroups {
 		switch ig.Spec.Role {
 		case api.InstanceGroupRoleControlPlane:
-			masters = append(masters, ig)
+			controlPlanes = append(controlPlanes, ig)
 		case api.InstanceGroupRoleNode:
 			nodes = append(nodes, ig)
 		}
@@ -553,9 +569,9 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		}
 	}
 
-	if c.MasterTenancy != "" {
-		for _, group := range masters {
-			group.Spec.Tenancy = c.MasterTenancy
+	if c.ControlPlaneTenancy != "" {
+		for _, group := range controlPlanes {
+			group.Spec.Tenancy = c.ControlPlaneTenancy
 		}
 	}
 
@@ -571,15 +587,15 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		}
 	}
 
-	if len(c.MasterSecurityGroups) > 0 {
-		for _, group := range masters {
-			group.Spec.AdditionalSecurityGroups = c.MasterSecurityGroups
+	if len(c.ControlPlaneSecurityGroups) > 0 {
+		for _, group := range controlPlanes {
+			group.Spec.AdditionalSecurityGroups = c.ControlPlaneSecurityGroups
 		}
 	}
 
-	if c.MasterVolumeSize != 0 {
-		for _, group := range masters {
-			group.Spec.RootVolumeSize = fi.PtrTo(c.MasterVolumeSize)
+	if c.ControlPlaneVolumeSize != 0 {
+		for _, group := range controlPlanes {
+			group.Spec.RootVolumeSize = fi.PtrTo(c.ControlPlaneVolumeSize)
 		}
 	}
 
@@ -605,8 +621,8 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		cluster.Spec.TagSubnets = fi.PtrTo(false)
 	}
 
-	if c.MasterPublicName != "" {
-		cluster.Spec.API.PublicName = c.MasterPublicName
+	if c.APIPublicName != "" {
+		cluster.Spec.API.PublicName = c.APIPublicName
 	}
 
 	if err := commands.UnsetClusterFields(c.Unsets, cluster); err != nil {
@@ -782,8 +798,8 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 			if len(nodes) > 0 {
 				fmt.Fprintf(&sb, " * edit your node instance group: kops edit ig --name=%s %s\n", cluster.Name, nodes[0].ObjectMeta.Name)
 			}
-			if len(masters) > 0 {
-				fmt.Fprintf(&sb, " * edit your master instance group: kops edit ig --name=%s %s\n", cluster.Name, masters[0].ObjectMeta.Name)
+			if len(controlPlanes) > 0 {
+				fmt.Fprintf(&sb, " * edit your control-plane instance group: kops edit ig --name=%s %s\n", cluster.Name, controlPlanes[0].ObjectMeta.Name)
 			}
 			fmt.Fprintf(&sb, "\n")
 			fmt.Fprintf(&sb, "Finally configure your cluster with: kops update cluster --name %s --yes --admin\n", cluster.Name)
