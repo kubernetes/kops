@@ -8,11 +8,11 @@ Bastion: true
 NodeSecurityGroups:
 - sg-exampleid
 - sg-exampleid2
-MasterSecurityGroups:
+ControlPlaneSecurityGroups:
 - sg-exampleid3
 - sg-exampleid4
 KubernetesVersion: v1.21.0
 cloudLabels: "Owner=John Doe,dn=\"cn=John Doe: dc=example dc=com\", foo/bar=fib+baz"
 Project: testproject
 GCEServiceAccount: test-account@testproject.iam.gserviceaccount.com
-MasterSize: e2-standard-2
+ControlPlaneSize: e2-standard-2

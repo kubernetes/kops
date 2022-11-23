@@ -15,13 +15,13 @@ spec:
   etcdClusters:
   - cpuRequest: 200m
     etcdMembers:
-    - instanceGroup: master-fsn1
+    - instanceGroup: control-plane-fsn1
       name: etcd-1
     memoryRequest: 100Mi
     name: main
   - cpuRequest: 100m
     etcdMembers:
-    - instanceGroup: master-fsn1
+    - instanceGroup: control-plane-fsn1
       name: etcd-1
     memoryRequest: 100Mi
     name: events
@@ -59,7 +59,7 @@ metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   labels:
     kops.k8s.io/cluster: minimal.k8s.local
-  name: master-fsn1
+  name: control-plane-fsn1
 spec:
   image: ubuntu-20.04
   machineType: cx21
