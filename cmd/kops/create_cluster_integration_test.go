@@ -64,6 +64,11 @@ func TestCreateClusterHetzner(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal_hetzner", "v1alpha2")
 }
 
+// TestCreateClusterCilium runs kops with the cilium networking flags
+func TestCreateClusterCilium(t *testing.T) {
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/cilium-eni", "v1alpha2")
+}
+
 // TestCreateClusterOverride tests the override flag
 func TestCreateClusterOverride(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/overrides", "v1alpha2")
