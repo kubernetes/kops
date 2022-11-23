@@ -510,6 +510,13 @@ func TestPrivateCiliumAdvanced(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
+func TestPrivateCiliumENI(t *testing.T) {
+	newIntegrationTest("privatecilium.example.com", "privatecilium-eni").
+		withPrivate().
+		withAddons(ciliumAddon, dnsControllerAddon).
+		runTestTerraformAWS(t)
+}
+
 // TestPrivateCanal runs the test on a configuration with private topology, canal networking
 func TestPrivateCanal(t *testing.T) {
 	newIntegrationTest("privatecanal.example.com", "privatecanal").

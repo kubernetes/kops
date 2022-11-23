@@ -964,6 +964,7 @@ func completeNetworking(options *CreateClusterOptions) func(cmd *cobra.Command, 
 			"cni",
 			"calico",
 			"cilium",
+			"cilium-eni",
 			"cilium-etcd",
 		}
 

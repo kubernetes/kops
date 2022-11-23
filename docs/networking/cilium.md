@@ -112,9 +112,9 @@ kops rolling-update cluster --yes
 
 {{ kops_feature_table(kops_added_default='1.18') }}
 
-This feature is in beta state.
-
 You can have Cilium provision AWS managed addresses and attach them directly to Pods much like AWS VPC. See [the Cilium docs for more information](https://docs.cilium.io/en/v1.6/concepts/ipam/eni/)
+
+Enable this by setting `--networking=cilium-eni` (as of kOps 1.26) or by specifying the following in the cluster spec:
 
 ```yaml
   networking:
