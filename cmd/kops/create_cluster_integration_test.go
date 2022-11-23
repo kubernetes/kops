@@ -64,6 +64,11 @@ func TestCreateClusterHetzner(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal_hetzner", "v1alpha2")
 }
 
+func TestCreateClusterOpenStack(t *testing.T) {
+	t.Setenv("OS_REGION_NAME", "us-test1")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_openstack", "v1alpha2")
+}
+
 // TestCreateClusterCilium runs kops with the cilium networking flags
 func TestCreateClusterCilium(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/cilium-eni", "v1alpha2")
@@ -191,6 +196,7 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 
 	h.SetupMockAWS()
 	h.SetupMockGCE()
+	testutils.SetupMockOpenstack()
 
 	cloudTags := map[string]string{}
 	awsCloud, _ := awsup.NewAWSCloud("us-test-1", cloudTags)

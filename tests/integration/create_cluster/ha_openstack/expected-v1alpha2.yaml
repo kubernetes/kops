@@ -1,0 +1,141 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  name: minimal.k8s.local
+spec:
+  authorization:
+    rbac: {}
+  channel: stable
+  cloudConfig:
+    openstack:
+      blockStorage:
+        bs-version: v3
+        ignore-volume-az: false
+      monitor:
+        delay: 15s
+        maxRetries: 3
+        timeout: 10s
+      router:
+        externalNetwork: ""
+  cloudProvider: openstack
+  configBase: memfs://tests/minimal.k8s.local
+  etcdClusters:
+  - cpuRequest: 200m
+    etcdMembers:
+    - instanceGroup: control-plane-us-test1-1
+      name: etcd-1
+    - instanceGroup: control-plane-us-test1-2
+      name: etcd-2
+    - instanceGroup: control-plane-us-test1-3
+      name: etcd-3
+    memoryRequest: 100Mi
+    name: main
+  - cpuRequest: 100m
+    etcdMembers:
+    - instanceGroup: control-plane-us-test1-1
+      name: etcd-1
+    - instanceGroup: control-plane-us-test1-2
+      name: etcd-2
+    - instanceGroup: control-plane-us-test1-3
+      name: etcd-3
+    memoryRequest: 100Mi
+    name: events
+  iam:
+    allowContainerRegistry: true
+    legacy: false
+  kubelet:
+    anonymousAuth: false
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  - ::/0
+  kubernetesVersion: v1.25.0
+  networkCIDR: 10.0.0.0/16
+  networking:
+    cni: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  sshAccess:
+  - 0.0.0.0/0
+  - ::/0
+  subnets:
+  - cidr: 10.0.32.0/19
+    name: us-test1
+    type: Public
+    zone: us-test1
+  topology:
+    dns:
+      type: Private
+    masters: public
+    nodes: public
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: minimal.k8s.local
+  name: control-plane-us-test1-1
+spec:
+  image: ubuntu-20.04
+  machineType: n1-standard-1
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - us-test1
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: minimal.k8s.local
+  name: control-plane-us-test1-2
+spec:
+  image: ubuntu-20.04
+  machineType: n1-standard-1
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - us-test1
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: minimal.k8s.local
+  name: control-plane-us-test1-3
+spec:
+  image: ubuntu-20.04
+  machineType: n1-standard-1
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - us-test1
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: minimal.k8s.local
+  name: nodes-us-test1
+spec:
+  image: ubuntu-20.04
+  machineType: n1-standard-1
+  maxSize: 1
+  minSize: 1
+  role: Node
+  subnets:
+  - us-test1
