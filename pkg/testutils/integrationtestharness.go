@@ -204,6 +204,9 @@ func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
 		InternetGatewayId: aws.String("igw-1"),
 		VpcId:             aws.String("vpc-12345678"),
 	})
+	mockEC2.CreateEgressOnlyInternetGateway(&ec2.CreateEgressOnlyInternetGatewayInput{
+		VpcId: aws.String("vpc-12345678"),
+	})
 
 	mockEC2.CreateRouteTableWithId(&ec2.CreateRouteTableInput{
 		VpcId: aws.String("vpc-12345678"),
