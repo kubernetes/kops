@@ -21,13 +21,13 @@ spec:
   etcdClusters:
   - cpuRequest: 200m
     etcdMembers:
-    - instanceGroup: master-us-test1-a
+    - instanceGroup: control-plane-us-test1-a
       name: a
     memoryRequest: 100Mi
     name: main
   - cpuRequest: 100m
     etcdMembers:
-    - instanceGroup: master-us-test1-a
+    - instanceGroup: control-plane-us-test1-a
       name: a
     memoryRequest: 100Mi
     name: events
@@ -89,7 +89,7 @@ metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   labels:
     kops.k8s.io/cluster: private.example.com
-  name: master-us-test1-a
+  name: control-plane-us-test1-a
 spec:
   additionalSecurityGroups:
   - sg-exampleid3
