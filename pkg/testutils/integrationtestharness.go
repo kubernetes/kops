@@ -340,7 +340,7 @@ func SetupMockOpenstack() *openstack.MockCloud {
 	flavors.Create(c.MockNovaClient.ServiceClient(), flavors.CreateOpts{
 		Name:  "n1-standard-2",
 		RAM:   8192,
-		VCPUs: 4,
+		VCPUs: 8,
 		Disk:  fi.PtrTo(16),
 	})
 	flavors.Create(c.MockNovaClient.ServiceClient(), flavors.CreateOpts{
