@@ -129,7 +129,7 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				return err
 			}
 
-			// Using EnsureTask as APIInternalName() and MasterPublicName could be the same
+			// Using EnsureTask as APIInternalName() and APIPublicName could be the same
 			{
 				err := c.EnsureTask(&awstasks.DNSName{
 					Name:               fi.PtrTo(b.Cluster.APIInternalName()),

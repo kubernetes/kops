@@ -5,7 +5,7 @@ CloudProvider: aws
 Networking: cni
 KubernetesVersion: v1.24.0
 Image: ami-image
-MasterImage: ami-control-plane
+ControlPlaneImage: ami-control-plane
 NodeImage: ami-worker-image
 Bastion: true
 Topology: private
