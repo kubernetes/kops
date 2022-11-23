@@ -59,7 +59,7 @@ func (b *KubeSchedulerBuilder) Build(c *fi.ModelBuilderContext) error {
 	b.AssetBuilder.StaticFiles = append(b.AssetBuilder.StaticFiles, &assets.StaticFile{
 		Path:    KubeSchedulerConfigPath,
 		Content: string(configYAML),
-		Roles:   []kops.InstanceGroupRole{kops.InstanceGroupRoleMaster, kops.InstanceGroupRoleAPIServer},
+		Roles:   []kops.InstanceGroupRole{kops.InstanceGroupRoleControlPlane, kops.InstanceGroupRoleAPIServer},
 	})
 	return nil
 }

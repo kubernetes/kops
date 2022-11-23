@@ -105,7 +105,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 	securityGroupName := b.SecurityGroupName(ig.Spec.Role)
 	securityGroups = append(securityGroups, b.LinkToSecurityGroup(securityGroupName))
 
-	if b.Cluster.Spec.CloudProvider.Openstack.Loadbalancer == nil && ig.Spec.Role == kops.InstanceGroupRoleMaster {
+	if b.Cluster.Spec.CloudProvider.Openstack.Loadbalancer == nil && ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
 		securityGroups = append(securityGroups, b.LinkToSecurityGroup(b.Cluster.Spec.API.PublicName))
 	}
 
@@ -204,7 +204,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 				}
 				c.AddTask(t)
 				instanceTask.FloatingIP = t
-			case kops.InstanceGroupRoleMaster:
+			case kops.InstanceGroupRoleControlPlane:
 
 				if b.Cluster.Spec.Topology == nil || b.Cluster.Spec.Topology.ControlPlane != kops.TopologyPrivate {
 					t := &openstacktasks.FloatingIP{
@@ -264,7 +264,7 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			return err
 		}
 
-		if ig.Spec.Role == kops.InstanceGroupRoleMaster {
+		if ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
 			masters = append(masters, sgTask)
 		}
 	}

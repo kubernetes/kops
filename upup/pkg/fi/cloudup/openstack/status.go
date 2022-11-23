@@ -83,7 +83,7 @@ func findEtcdStatus(c OpenstackCloud, cluster *kops.Cluster) ([]kops.EtcdCluster
 				if err != nil {
 					return nil, fmt.Errorf("error parsing etcd cluster tag %q on volume %q: %v", v, volumeID, err)
 				}
-			} else if k == TagNameRolePrefix+TagRoleMaster {
+			} else if k == TagNameRolePrefix+TagRoleControlPlane || k == TagNameRolePrefix+TagRoleMaster {
 				master = true
 			}
 		}

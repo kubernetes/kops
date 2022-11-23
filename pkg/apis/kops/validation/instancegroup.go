@@ -45,7 +45,7 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud, strict bool) f
 	switch g.Spec.Role {
 	case "":
 		allErrs = append(allErrs, field.Required(field.NewPath("spec", "role"), "Role must be set"))
-	case kops.InstanceGroupRoleMaster:
+	case kops.InstanceGroupRoleControlPlane:
 		if len(g.Spec.Subnets) == 0 {
 			allErrs = append(allErrs, field.Required(field.NewPath("spec", "subnets"), "master InstanceGroup must specify at least one Subnet"))
 		}
@@ -137,7 +137,7 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud, strict bool) f
 	allErrs = append(allErrs, validateInstanceProfile(g.Spec.IAM, field.NewPath("spec", "iam"))...)
 
 	if g.Spec.RollingUpdate != nil {
-		allErrs = append(allErrs, validateRollingUpdate(g.Spec.RollingUpdate, field.NewPath("spec", "rollingUpdate"), g.Spec.Role == kops.InstanceGroupRoleMaster)...)
+		allErrs = append(allErrs, validateRollingUpdate(g.Spec.RollingUpdate, field.NewPath("spec", "rollingUpdate"), g.Spec.Role == kops.InstanceGroupRoleControlPlane)...)
 	}
 
 	if g.Spec.NodeLabels != nil {
@@ -219,7 +219,7 @@ func validateVolumeMountSpec(path *field.Path, spec kops.VolumeMountSpec) field.
 func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, cloud fi.Cloud, strict bool) field.ErrorList {
 	allErrs := ValidateInstanceGroup(g, cloud, strict)
 
-	if g.Spec.Role == kops.InstanceGroupRoleMaster {
+	if g.Spec.Role == kops.InstanceGroupRoleControlPlane {
 		allErrs = append(allErrs, ValidateMasterInstanceGroup(g, cluster)...)
 	}
 

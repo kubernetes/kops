@@ -157,7 +157,7 @@ resource "aws_s3_object" "minimal-gce-private-example-com-addons-storage-gce-add
 resource "aws_s3_object" "nodeupconfig-master-us-test1-a" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_nodeupconfig-master-us-test1-a_content")
-  key                    = "tests/minimal-gce-private.example.com/igconfig/master/master-us-test1-a/nodeupconfig.yaml"
+  key                    = "tests/minimal-gce-private.example.com/igconfig/control-plane/master-us-test1-a/nodeupconfig.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
@@ -203,7 +203,7 @@ resource "google_compute_firewall" "kubernetes-master-https-ipv6-minimal-gce-pri
   name          = "kubernetes-master-https-ipv6-minimal-gce-private-example-com"
   network       = google_compute_network.minimal-gce-private-example-com.name
   source_ranges = ["::/0"]
-  target_tags   = ["minimal-gce-private-example-com-k8s-io-role-master"]
+  target_tags   = ["minimal-gce-private-example-com-k8s-io-role-control-plane", "minimal-gce-private-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "kubernetes-master-https-minimal-gce-private-example-com" {
@@ -215,7 +215,7 @@ resource "google_compute_firewall" "kubernetes-master-https-minimal-gce-private-
   name          = "kubernetes-master-https-minimal-gce-private-example-com"
   network       = google_compute_network.minimal-gce-private-example-com.name
   source_ranges = ["0.0.0.0/0"]
-  target_tags   = ["minimal-gce-private-example-com-k8s-io-role-master"]
+  target_tags   = ["minimal-gce-private-example-com-k8s-io-role-control-plane", "minimal-gce-private-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "master-to-master-minimal-gce-private-example-com" {
@@ -240,8 +240,8 @@ resource "google_compute_firewall" "master-to-master-minimal-gce-private-example
   disabled    = false
   name        = "master-to-master-minimal-gce-private-example-com"
   network     = google_compute_network.minimal-gce-private-example-com.name
-  source_tags = ["minimal-gce-private-example-com-k8s-io-role-master"]
-  target_tags = ["minimal-gce-private-example-com-k8s-io-role-master"]
+  source_tags = ["minimal-gce-private-example-com-k8s-io-role-control-plane", "minimal-gce-private-example-com-k8s-io-role-master"]
+  target_tags = ["minimal-gce-private-example-com-k8s-io-role-control-plane", "minimal-gce-private-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "master-to-node-minimal-gce-private-example-com" {
@@ -266,7 +266,7 @@ resource "google_compute_firewall" "master-to-node-minimal-gce-private-example-c
   disabled    = false
   name        = "master-to-node-minimal-gce-private-example-com"
   network     = google_compute_network.minimal-gce-private-example-com.name
-  source_tags = ["minimal-gce-private-example-com-k8s-io-role-master"]
+  source_tags = ["minimal-gce-private-example-com-k8s-io-role-control-plane", "minimal-gce-private-example-com-k8s-io-role-master"]
   target_tags = ["minimal-gce-private-example-com-k8s-io-role-node"]
 }
 
@@ -283,7 +283,7 @@ resource "google_compute_firewall" "node-to-master-minimal-gce-private-example-c
   name        = "node-to-master-minimal-gce-private-example-com"
   network     = google_compute_network.minimal-gce-private-example-com.name
   source_tags = ["minimal-gce-private-example-com-k8s-io-role-node"]
-  target_tags = ["minimal-gce-private-example-com-k8s-io-role-master"]
+  target_tags = ["minimal-gce-private-example-com-k8s-io-role-control-plane", "minimal-gce-private-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "node-to-node-minimal-gce-private-example-com" {
@@ -353,7 +353,7 @@ resource "google_compute_firewall" "ssh-external-to-master-ipv6-minimal-gce-priv
   name          = "ssh-external-to-master-ipv6-minimal-gce-private-example-com"
   network       = google_compute_network.minimal-gce-private-example-com.name
   source_ranges = ["::/0"]
-  target_tags   = ["minimal-gce-private-example-com-k8s-io-role-master"]
+  target_tags   = ["minimal-gce-private-example-com-k8s-io-role-control-plane", "minimal-gce-private-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "ssh-external-to-master-minimal-gce-private-example-com" {
@@ -365,7 +365,7 @@ resource "google_compute_firewall" "ssh-external-to-master-minimal-gce-private-e
   name          = "ssh-external-to-master-minimal-gce-private-example-com"
   network       = google_compute_network.minimal-gce-private-example-com.name
   source_ranges = ["0.0.0.0/0"]
-  target_tags   = ["minimal-gce-private-example-com-k8s-io-role-master"]
+  target_tags   = ["minimal-gce-private-example-com-k8s-io-role-control-plane", "minimal-gce-private-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "ssh-external-to-node-ipv6-minimal-gce-private-example-com" {
@@ -428,9 +428,10 @@ resource "google_compute_instance_template" "master-us-test1-a-minimal-gce-priva
     type         = "PERSISTENT"
   }
   labels = {
-    "k8s-io-cluster-name"   = "minimal-gce-private-example-com"
-    "k8s-io-instance-group" = "master-us-test1-a"
-    "k8s-io-role-master"    = ""
+    "k8s-io-cluster-name"       = "minimal-gce-private-example-com"
+    "k8s-io-instance-group"     = "master-us-test1-a"
+    "k8s-io-role-control-plane" = ""
+    "k8s-io-role-master"        = ""
   }
   machine_type = "n1-standard-1"
   metadata = {
@@ -454,7 +455,7 @@ resource "google_compute_instance_template" "master-us-test1-a-minimal-gce-priva
     email  = google_service_account.control-plane.email
     scopes = ["https://www.googleapis.com/auth/compute", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/devstorage.read_write", "https://www.googleapis.com/auth/ndev.clouddns.readwrite"]
   }
-  tags = ["minimal-gce-private-example-com-k8s-io-role-master"]
+  tags = ["minimal-gce-private-example-com-k8s-io-role-control-plane", "minimal-gce-private-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_instance_template" "nodes-minimal-gce-private-example-com" {

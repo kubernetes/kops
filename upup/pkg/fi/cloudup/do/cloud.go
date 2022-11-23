@@ -42,7 +42,6 @@ import (
 const (
 	TagKubernetesClusterIndex        = "k8s-index"
 	TagNameEtcdClusterPrefix         = "etcdCluster-"
-	TagNameRolePrefix                = "k8s.io/role/"
 	TagKubernetesClusterNamePrefix   = "KubernetesCluster"
 	TagKubernetesClusterMasterPrefix = "KubernetesCluster-Master"
 	TagKubernetesInstanceGroup       = "kops-instancegroup"
@@ -499,7 +498,7 @@ func matchInstanceGroup(name string, clusterName string, instancegroups []*kops.
 		var groupName string
 
 		switch g.Spec.Role {
-		case kops.InstanceGroupRoleMaster, kops.InstanceGroupRoleNode:
+		case kops.InstanceGroupRoleControlPlane, kops.InstanceGroupRoleNode:
 			groupName = clusterName + "-" + g.ObjectMeta.Name
 		default:
 			klog.Warningf("Ignoring InstanceGroup of unknown role %q", g.Spec.Role)

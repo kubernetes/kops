@@ -156,7 +156,7 @@ func (c *GCEModelContext) LinkToServiceAccount(ig *kops.InstanceGroup) *gcetasks
 
 	name := ""
 	switch role {
-	case kops.InstanceGroupRoleAPIServer, kops.InstanceGroupRoleMaster:
+	case kops.InstanceGroupRoleAPIServer, kops.InstanceGroupRoleControlPlane:
 		name = gce.ControlPlane
 
 	case kops.InstanceGroupRoleBastion:

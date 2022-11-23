@@ -71,7 +71,7 @@ func defaultInstanceType(c OpenstackCloud, cluster *kops.Cluster, ig *kops.Insta
 
 	var candidates flavorList
 	switch ig.Spec.Role {
-	case kops.InstanceGroupRoleMaster:
+	case kops.InstanceGroupRoleControlPlane:
 		// Requirements based on awsCloudImplementation.DefaultInstanceType
 		for _, flavor := range fList {
 			if flavor.RAM >= 4096 && flavor.VCPUs >= 1 {

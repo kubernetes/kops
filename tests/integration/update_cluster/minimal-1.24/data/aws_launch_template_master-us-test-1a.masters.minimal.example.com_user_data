@@ -266,7 +266,7 @@ cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
 ConfigBase: memfs://tests/minimal.example.com
 InstanceGroupName: master-us-test-1a
-InstanceGroupRole: Master
+InstanceGroupRole: ControlPlane
 NodeupConfigHash: erCDEim2sZNb0FLT00WeCAQp2oSa1ky45uie/2rhMlY=
 
 __EOF_KUBE_ENV

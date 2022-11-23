@@ -43,7 +43,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		klog.Warningf("SSHAccess is empty")
 	}
 
-	masterGroups, err := b.GetSecurityGroups(kops.InstanceGroupRoleMaster)
+	masterGroups, err := b.GetSecurityGroups(kops.InstanceGroupRoleControlPlane)
 	if err != nil {
 		return err
 	}

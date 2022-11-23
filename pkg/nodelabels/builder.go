@@ -38,7 +38,7 @@ const (
 // BuildNodeLabels returns the node labels for the specified instance group
 // This moved from the kubelet to a central controller in kubernetes 1.16
 func BuildNodeLabels(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) map[string]string {
-	isControlPlane := instanceGroup.Spec.Role == kops.InstanceGroupRoleMaster
+	isControlPlane := instanceGroup.Spec.Role == kops.InstanceGroupRoleControlPlane
 
 	isAPIServer := instanceGroup.Spec.Role == kops.InstanceGroupRoleAPIServer
 

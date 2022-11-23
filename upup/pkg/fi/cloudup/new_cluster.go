@@ -441,7 +441,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		}
 
 		// TODO: Clean up
-		if g.IsMaster() {
+		if g.IsControlPlane() {
 			if g.Spec.MachineType == "" {
 				g.Spec.MachineType, err = defaultMachineType(cloud, &cluster, ig)
 				if err != nil {
@@ -480,7 +480,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 			}
 		}
 
-		if ig.IsMaster() {
+		if ig.IsControlPlane() {
 			if len(ig.Spec.Subnets) == 0 {
 				return nil, fmt.Errorf("master InstanceGroup %s did not specify any Subnets", g.ObjectMeta.Name)
 			}
@@ -861,7 +861,7 @@ func setupMasters(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap 
 			}
 
 			g := &api.InstanceGroup{}
-			g.Spec.Role = api.InstanceGroupRoleMaster
+			g.Spec.Role = api.InstanceGroupRoleControlPlane
 			g.Spec.MinSize = fi.PtrTo(int32(1))
 			g.Spec.MaxSize = fi.PtrTo(int32(1))
 			g.ObjectMeta.Name = "master-" + name

@@ -541,13 +541,21 @@ func DumpInstance(op *resources.DumpOperation, r *resources.Resource) error {
 			i.PrivateAddresses = append(i.PrivateAddresses, *ec2Instance.PrivateIpAddress)
 		}
 	}
+	isControlPlane := false
 	for _, tag := range ec2Instance.Tags {
 		key := aws.StringValue(tag.Key)
 		if !strings.HasPrefix(key, awsup.TagNameRolePrefix) {
 			continue
 		}
 		role := strings.TrimPrefix(key, awsup.TagNameRolePrefix)
-		i.Roles = append(i.Roles, role)
+		if role == "master" || role == "control-plane" {
+			isControlPlane = true
+		} else {
+			i.Roles = append(i.Roles, role)
+		}
+	}
+	if isControlPlane {
+		i.Roles = append(i.Roles, "control-plane")
 	}
 
 	imageID := aws.StringValue(ec2Instance.ImageId)

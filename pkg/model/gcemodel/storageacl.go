@@ -76,7 +76,7 @@ func (b *StorageAclBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		klog.Warningf("we need to split master / node roles")
-		nodeRole, err := iam.BuildNodeRoleSubject(kops.InstanceGroupRoleMaster, false)
+		nodeRole, err := iam.BuildNodeRoleSubject(kops.InstanceGroupRoleControlPlane, false)
 		if err != nil {
 			return err
 		}
