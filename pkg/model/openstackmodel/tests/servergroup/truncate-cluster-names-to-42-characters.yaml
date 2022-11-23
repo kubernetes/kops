@@ -37,7 +37,7 @@ Metadata:
   KopsInstanceGroup: master
   KopsName: master-1-tom-software-dev-playground-real33-k8s-local
   KopsNetwork: tom-software-dev-playground-real33-k8s-local
-  KopsRole: Master
+  KopsRole: ControlPlane
   KubernetesCluster: tom-software-dev-playground-real33-k8s-local
   cluster_generation: "0"
   ig_generation: "0"
@@ -45,6 +45,7 @@ Metadata:
   k8s.io_cluster-autoscaler_node-template_label_kops.k8s.io_kops-controller-pki: ""
   k8s.io_cluster-autoscaler_node-template_label_node-role.kubernetes.io_control-plane: ""
   k8s.io_cluster-autoscaler_node-template_label_node.kubernetes.io_exclude-from-external-load-balancers: ""
+  k8s.io_role_control-plane: "1"
   k8s.io_role_master: "1"
   kops.k8s.io_instancegroup: master
 Name: master-1-tom-software-dev-playground-real33-k8s-local
@@ -86,7 +87,7 @@ Port:
   - KopsName=port-master-1
   - KubernetesCluster=tom-software-dev-playground-real33--kngu8l
 Region: region
-Role: Master
+Role: ControlPlane
 SSHKey: kubernetes.tom-software-dev-playground-real33-k8s-local-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
 SecurityGroups: null
 ServerGroup:
@@ -292,7 +293,7 @@ Contents:
     Lifecycle: ""
     Name: master
 Lifecycle: ""
-Location: igconfig/master/master/nodeupconfig.yaml
+Location: igconfig/control-plane/master/nodeupconfig.yaml
 Name: nodeupconfig-master
 Public: null
 ---

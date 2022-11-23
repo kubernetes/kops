@@ -201,7 +201,7 @@ func (b *KubeAPIServerOptionsBuilder) buildAPIServerCount(clusterSpec *kops.Clus
 
 	//count := 0
 	//for _, ig := range b.InstanceGroups {
-	//	if !ig.IsMaster() {
+	//	if !ig.IsControlPlane() {
 	//		continue
 	//	}
 	//	size := fi.ValueOf(ig.Spec.MaxSize)

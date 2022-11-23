@@ -4,6 +4,9 @@ metadata:
   creationTimestamp: "2016-12-10T22:42:27Z"
   name: minimal.example.com
 spec:
+  additionalPolicies:
+    control-plane: '[ { "Action": [ "s3:GetObject" ], "Resource": [ "*" ], "Effect":
+      "Allow" } ]'
   addons:
   - manifest: s3://somebucket/example.yaml
   api:
@@ -37,12 +40,17 @@ spec:
     name: events
   externalDNS:
     provider: none
+  externalPolicies:
+    control-plane:
+    - arn:aws-test:iam::123456789000:policy/test-policy
   hooks:
   - enabled: false
     name: hookDisabled
   - name: hookDefault
   - enabled: true
     name: hookEnabled
+    roles:
+    - ControlPlane
   iam: {}
   kubernetesVersion: v1.21.0
   networkCIDR: 172.20.0.0/16
@@ -96,6 +104,6 @@ spec:
   machineType: m3.medium
   maxSize: 1
   minSize: 1
-  role: Master
+  role: ControlPlane
   subnets:
   - us-test-1a

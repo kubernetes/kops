@@ -16,7 +16,7 @@ spec:
       --client-urls=https://__name__:4001 --cluster-name=etcd --containerized=true
       --dns-suffix=.internal.minimal-etcd.example.com --grpc-port=3996 --peer-urls=https://__name__:2380
       --quarantine-client-urls=https://__name__:3994 --v=10 --volume-name-tag=k8s.io/etcd/main
-      --volume-provider=aws --volume-tag=k8s.io/etcd/main --volume-tag=k8s.io/role/master=1
+      --volume-provider=aws --volume-tag=k8s.io/etcd/main --volume-tag=k8s.io/role/control-plane=1
       --volume-tag=kubernetes.io/cluster/minimal-etcd.example.com=owned > /tmp/pipe
       2>&1
     image: gcr.io/k8s-staging-etcdadm/etcd:v20210430-v0.1.3-739-g7da12acc

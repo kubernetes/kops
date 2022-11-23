@@ -5,6 +5,9 @@ metadata:
   name: minimal.example.com
 spec:
   DisableSubnetTags: true
+  additionalPolicies:
+    master: '[ { "Action": [ "s3:GetObject" ], "Resource": [ "*" ], "Effect": "Allow"
+      } ]'
   additionalSans:
   - proxy.api.minimal.example.com
   addons:
@@ -34,12 +37,17 @@ spec:
     name: events
   externalDns:
     disable: true
+  externalPolicies:
+    master:
+    - arn:aws-test:iam::123456789000:policy/test-policy
   hooks:
   - disabled: true
     name: hookDisabled
   - name: hookDefault
   - disabled: false
     name: hookEnabled
+    roles:
+    - Master
   iam:
     legacy: false
   kubernetesApiAccess:

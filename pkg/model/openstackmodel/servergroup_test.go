@@ -77,7 +77,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						Name: "master",
 					},
 					Spec: kops.InstanceGroupSpec{
-						Role:        kops.InstanceGroupRoleMaster,
+						Role:        kops.InstanceGroupRoleControlPlane,
 						Image:       "image-master",
 						MinSize:     i32(1),
 						MaxSize:     i32(1),
@@ -144,7 +144,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						Name: "master",
 					},
 					Spec: kops.InstanceGroupSpec{
-						Role:        kops.InstanceGroupRoleMaster,
+						Role:        kops.InstanceGroupRoleControlPlane,
 						Image:       "image",
 						MinSize:     i32(1),
 						MaxSize:     i32(1),
@@ -233,7 +233,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						Name: "master-a",
 					},
 					Spec: kops.InstanceGroupSpec{
-						Role:        kops.InstanceGroupRoleMaster,
+						Role:        kops.InstanceGroupRoleControlPlane,
 						Image:       "image",
 						MinSize:     i32(1),
 						MaxSize:     i32(1),
@@ -261,7 +261,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						Name: "master-b",
 					},
 					Spec: kops.InstanceGroupSpec{
-						Role:        kops.InstanceGroupRoleMaster,
+						Role:        kops.InstanceGroupRoleControlPlane,
 						Image:       "image",
 						MinSize:     i32(1),
 						MaxSize:     i32(1),
@@ -289,7 +289,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						Name: "master-c",
 					},
 					Spec: kops.InstanceGroupSpec{
-						Role:        kops.InstanceGroupRoleMaster,
+						Role:        kops.InstanceGroupRoleControlPlane,
 						Image:       "image",
 						MinSize:     i32(1),
 						MaxSize:     i32(1),
@@ -349,7 +349,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						Name: "master",
 					},
 					Spec: kops.InstanceGroupSpec{
-						Role:        kops.InstanceGroupRoleMaster,
+						Role:        kops.InstanceGroupRoleControlPlane,
 						Image:       "image-master",
 						MinSize:     i32(1),
 						MaxSize:     i32(1),
@@ -424,7 +424,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						Name: "master-a",
 					},
 					Spec: kops.InstanceGroupSpec{
-						Role:        kops.InstanceGroupRoleMaster,
+						Role:        kops.InstanceGroupRoleControlPlane,
 						Image:       "image",
 						MinSize:     i32(1),
 						MaxSize:     i32(1),
@@ -452,7 +452,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						Name: "master-b",
 					},
 					Spec: kops.InstanceGroupSpec{
-						Role:        kops.InstanceGroupRoleMaster,
+						Role:        kops.InstanceGroupRoleControlPlane,
 						Image:       "image",
 						MinSize:     i32(1),
 						MaxSize:     i32(1),
@@ -480,7 +480,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						Name: "master-c",
 					},
 					Spec: kops.InstanceGroupSpec{
-						Role:        kops.InstanceGroupRoleMaster,
+						Role:        kops.InstanceGroupRoleControlPlane,
 						Image:       "image",
 						MinSize:     i32(1),
 						MaxSize:     i32(1),
@@ -545,7 +545,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						Name: "master-a",
 					},
 					Spec: kops.InstanceGroupSpec{
-						Role:        kops.InstanceGroupRoleMaster,
+						Role:        kops.InstanceGroupRoleControlPlane,
 						Image:       "image",
 						MinSize:     i32(1),
 						MaxSize:     i32(1),
@@ -573,7 +573,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						Name: "master-b",
 					},
 					Spec: kops.InstanceGroupSpec{
-						Role:        kops.InstanceGroupRoleMaster,
+						Role:        kops.InstanceGroupRoleControlPlane,
 						Image:       "image",
 						MinSize:     i32(1),
 						MaxSize:     i32(1),
@@ -601,7 +601,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						Name: "master-c",
 					},
 					Spec: kops.InstanceGroupSpec{
-						Role:        kops.InstanceGroupRoleMaster,
+						Role:        kops.InstanceGroupRoleControlPlane,
 						Image:       "image",
 						MinSize:     i32(1),
 						MaxSize:     i32(1),
@@ -669,7 +669,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						Name: "master",
 					},
 					Spec: kops.InstanceGroupSpec{
-						Role:        kops.InstanceGroupRoleMaster,
+						Role:        kops.InstanceGroupRoleControlPlane,
 						Image:       "image",
 						MinSize:     i32(3),
 						MaxSize:     i32(3),
@@ -745,7 +745,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						Name: "master",
 					},
 					Spec: kops.InstanceGroupSpec{
-						Role:              kops.InstanceGroupRoleMaster,
+						Role:              kops.InstanceGroupRoleControlPlane,
 						Image:             "image-master",
 						MinSize:           i32(1),
 						MaxSize:           i32(1),
@@ -811,7 +811,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						Name: "master",
 					},
 					Spec: kops.InstanceGroupSpec{
-						Role:              kops.InstanceGroupRoleMaster,
+						Role:              kops.InstanceGroupRoleControlPlane,
 						Image:             "image",
 						MinSize:           i32(1),
 						MaxSize:           i32(1),

@@ -383,7 +383,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 			config.VolumeTag = []string{
 				fmt.Sprintf("kubernetes.io/cluster/%s=owned", b.Cluster.Name),
 				awsup.TagNameEtcdClusterPrefix + etcdCluster.Name,
-				awsup.TagNameRolePrefix + "master=1",
+				awsup.TagNameRolePrefix + "control-plane=1",
 			}
 			config.VolumeNameTag = awsup.TagNameEtcdClusterPrefix + etcdCluster.Name
 
@@ -395,7 +395,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 				// allowed as a tag key in Azure.
 				fmt.Sprintf("kubernetes.io_cluster_%s=owned", b.Cluster.Name),
 				azure.TagNameEtcdClusterPrefix + etcdCluster.Name,
-				azure.TagNameRolePrefix + "master=1",
+				azure.TagNameRolePrefix + "control_plane=1",
 			}
 			config.VolumeNameTag = azure.TagNameEtcdClusterPrefix + etcdCluster.Name
 
@@ -435,7 +435,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 
 			config.VolumeTag = []string{
 				openstack.TagNameEtcdClusterPrefix + etcdCluster.Name,
-				openstack.TagNameRolePrefix + "master=1",
+				openstack.TagNameRolePrefix + "control-plane=1",
 				fmt.Sprintf("%s=%s", openstack.TagClusterName, b.Cluster.Name),
 			}
 			config.VolumeNameTag = openstack.TagNameEtcdClusterPrefix + etcdCluster.Name

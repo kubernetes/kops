@@ -267,7 +267,7 @@ func (b *IAMModelBuilder) roleKey(role iam.Subject) (string, bool) {
 	// This isn't great, but we have to be backwards compatible with the old names.
 	switch role.(type) {
 	case *iam.NodeRoleMaster:
-		return strings.ToLower(string(kops.InstanceGroupRoleMaster)), false
+		return "master", false
 	case *iam.NodeRoleAPIServer:
 		return strings.ToLower(string(kops.InstanceGroupRoleAPIServer)), false
 	case *iam.NodeRoleNode:
@@ -325,7 +325,11 @@ func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, c *fi.
 
 				if b.Cluster.Spec.ExternalPolicies != nil {
 					p := *(b.Cluster.Spec.ExternalPolicies)
-					externalPolicies = append(externalPolicies, p[roleKey]...)
+					key := roleKey
+					if key == "master" {
+						key = "control-plane"
+					}
+					externalPolicies = append(externalPolicies, p[key]...)
 				}
 				sort.Strings(externalPolicies)
 

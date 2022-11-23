@@ -247,7 +247,7 @@ cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: gce
 ConfigBase: memfs://tests/minimal-gce-private.example.com
 InstanceGroupName: master-us-test1-a
-InstanceGroupRole: Master
+InstanceGroupRole: ControlPlane
 NodeupConfigHash: j84dr93p85IskkxI3g0N8sUCaF2i1+GH+oT4XTPqhIM=
 
 __EOF_KUBE_ENV

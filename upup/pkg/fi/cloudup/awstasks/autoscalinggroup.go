@@ -1006,6 +1006,9 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 	for k := range e.Tags {
 		if strings.HasPrefix(k, CloudTagInstanceGroupRolePrefix) {
 			suffix := strings.TrimPrefix(k, CloudTagInstanceGroupRolePrefix)
+			if suffix == "control-plane" {
+				suffix = "master"
+			}
 			if role != "" && role != suffix {
 				return fmt.Errorf("Found multiple role tags: %q vs %q", role, suffix)
 			}

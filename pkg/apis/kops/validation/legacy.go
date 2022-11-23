@@ -477,7 +477,7 @@ func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool, cl
 	masterGroupCount := 0
 	nodeGroupCount := 0
 	for _, g := range groups {
-		if g.IsMaster() {
+		if g.IsControlPlane() {
 			masterGroupCount++
 		} else {
 			nodeGroupCount++

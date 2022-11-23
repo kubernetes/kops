@@ -417,7 +417,7 @@ func getGroupNameByRole(cluster *kops.Cluster, ig *kops.InstanceGroup) string {
 	var groupName string
 
 	switch ig.Spec.Role {
-	case kops.InstanceGroupRoleMaster:
+	case kops.InstanceGroupRoleControlPlane:
 		groupName = ig.ObjectMeta.Name + ".masters." + cluster.ObjectMeta.Name
 	case kops.InstanceGroupRoleNode:
 		groupName = ig.ObjectMeta.Name + "." + cluster.ObjectMeta.Name

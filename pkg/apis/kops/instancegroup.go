@@ -17,6 +17,8 @@ limitations under the License.
 package kops
 
 import (
+	"strings"
+
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -31,7 +33,7 @@ const (
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// InstanceGroup represents a group of instances (either nodes or masters) with the same configuration
+// InstanceGroup represents a group of instances with the same configuration.
 type InstanceGroup struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -49,23 +51,23 @@ type InstanceGroupList struct {
 	Items []InstanceGroup `json:"items"`
 }
 
-// InstanceGroupRole describes the roles of the nodes in this InstanceGroup (master or nodes)
+// InstanceGroupRole describes the roles of the nodes in this InstanceGroup.
 type InstanceGroupRole string
 
 const (
-	// InstanceGroupRoleMaster is a master role
-	InstanceGroupRoleMaster InstanceGroupRole = "Master"
-	// InstanceGroupRoleNode is a node role
+	// InstanceGroupRoleControlPlane is a control-plane role.
+	InstanceGroupRoleControlPlane InstanceGroupRole = "ControlPlane"
+	// InstanceGroupRoleNode is a node role.
 	InstanceGroupRoleNode InstanceGroupRole = "Node"
-	// InstanceGroupRoleBastion is a bastion role
+	// InstanceGroupRoleBastion is a bastion role.
 	InstanceGroupRoleBastion InstanceGroupRole = "Bastion"
-	// InstanceGroupRoleAPIServer is an API server role
+	// InstanceGroupRoleAPIServer is an API server role.
 	InstanceGroupRoleAPIServer InstanceGroupRole = "APIServer"
 )
 
 // AllInstanceGroupRoles is a slice of all valid InstanceGroupRole values
 var AllInstanceGroupRoles = []InstanceGroupRole{
-	InstanceGroupRoleMaster,
+	InstanceGroupRoleControlPlane,
 	InstanceGroupRoleAPIServer,
 	InstanceGroupRoleNode,
 	InstanceGroupRoleBastion,
@@ -94,7 +96,7 @@ const (
 type InstanceGroupSpec struct {
 	// Manager determines what is managing the node lifecycle
 	Manager InstanceManager `json:"manager,omitempty"`
-	// Type determines the role of instances in this instance group: masters or nodes
+	// Role determines the role of instances in this instance group.
 	Role InstanceGroupRole `json:"role,omitempty"`
 	// Image is the instance (ami etc) we should use
 	Image string `json:"image,omitempty"`
@@ -329,10 +331,10 @@ type IAMProfileSpec struct {
 	Profile *string `json:"profile,omitempty"`
 }
 
-// IsMaster checks if instanceGroup is a master
-func (g *InstanceGroup) IsMaster() bool {
+// IsControlPlane checks if instanceGroup is a control-plane node.
+func (g *InstanceGroup) IsControlPlane() bool {
 	switch g.Spec.Role {
-	case InstanceGroupRoleMaster:
+	case InstanceGroupRoleControlPlane:
 		return true
 	default:
 		return false
@@ -351,7 +353,7 @@ func (g *InstanceGroup) IsAPIServerOnly() bool {
 
 // hasAPIServer checks if instanceGroup runs an API Server
 func (g *InstanceGroup) HasAPIServer() bool {
-	return g.IsMaster() || g.IsAPIServerOnly()
+	return g.IsControlPlane() || g.IsAPIServerOnly()
 }
 
 // IsBastion checks if instanceGroup is a bastion
@@ -369,6 +371,15 @@ func (g *InstanceGroup) AddInstanceGroupNodeLabel() {
 		g.Spec.NodeLabels = make(map[string]string)
 	}
 	g.Spec.NodeLabels[NodeLabelInstanceGroup] = g.Name
+}
+
+func (r InstanceGroupRole) ToLowerString() string {
+	switch r {
+	case InstanceGroupRoleControlPlane:
+		return "control-plane"
+	default:
+		return strings.ToLower(string(r))
+	}
 }
 
 // LoadBalancer defines a load balancer

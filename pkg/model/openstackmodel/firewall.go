@@ -87,7 +87,7 @@ func (b *FirewallModelBuilder) addDirectionalGroupRule(c *fi.ModelBuilderContext
 
 // addSSHRules - sets the ssh rules based on the presence of a bastion
 func (b *FirewallModelBuilder) addSSHRules(c *fi.ModelBuilderContext, sgMap map[string]*openstacktasks.SecurityGroup) error {
-	masterName := b.SecurityGroupName(kops.InstanceGroupRoleMaster)
+	masterName := b.SecurityGroupName(kops.InstanceGroupRoleControlPlane)
 	nodeName := b.SecurityGroupName(kops.InstanceGroupRoleNode)
 	bastionName := b.SecurityGroupName(kops.InstanceGroupRoleBastion)
 	masterSG := sgMap[masterName]
@@ -147,7 +147,7 @@ func (b *FirewallModelBuilder) addSSHRules(c *fi.ModelBuilderContext, sgMap map[
 
 // addETCDRules - Add ETCD access rules based on which CNI might need to access __ETCD_ENDPOINTS__
 func (b *FirewallModelBuilder) addETCDRules(c *fi.ModelBuilderContext, sgMap map[string]*openstacktasks.SecurityGroup) error {
-	masterName := b.SecurityGroupName(kops.InstanceGroupRoleMaster)
+	masterName := b.SecurityGroupName(kops.InstanceGroupRoleControlPlane)
 	nodeName := b.SecurityGroupName(kops.InstanceGroupRoleNode)
 	masterSG := sgMap[masterName]
 	nodeSG := sgMap[nodeName]
@@ -231,7 +231,7 @@ func (b *FirewallModelBuilder) addNodePortRules(c *fi.ModelBuilderContext, sgMap
 
 // addHTTPSRules - Add rules to 443 access given the presence of a loadbalancer or not
 func (b *FirewallModelBuilder) addHTTPSRules(c *fi.ModelBuilderContext, sgMap map[string]*openstacktasks.SecurityGroup, useVIPACL bool) error {
-	masterName := b.SecurityGroupName(kops.InstanceGroupRoleMaster)
+	masterName := b.SecurityGroupName(kops.InstanceGroupRoleControlPlane)
 	nodeName := b.SecurityGroupName(kops.InstanceGroupRoleNode)
 	lbSGName := b.Cluster.Spec.API.PublicName
 	lbSG := sgMap[lbSGName]
@@ -329,7 +329,7 @@ func (b *FirewallModelBuilder) addHTTPSRules(c *fi.ModelBuilderContext, sgMap ma
 // addKubeletRules - Add rules to 10250 port
 func (b *FirewallModelBuilder) addKubeletRules(c *fi.ModelBuilderContext, sgMap map[string]*openstacktasks.SecurityGroup) error {
 	// TODO: This is the default port for kubelet and may be overridden
-	masterName := b.SecurityGroupName(kops.InstanceGroupRoleMaster)
+	masterName := b.SecurityGroupName(kops.InstanceGroupRoleControlPlane)
 	nodeName := b.SecurityGroupName(kops.InstanceGroupRoleNode)
 	masterSG := sgMap[masterName]
 	nodeSG := sgMap[nodeName]
@@ -353,7 +353,7 @@ func (b *FirewallModelBuilder) addKubeletRules(c *fi.ModelBuilderContext, sgMap 
 
 // addNodeExporterAndOccmRules - Allow 9100 TCP port from nodesg, allow 10258 from nodes to master - expose occm metrics
 func (b *FirewallModelBuilder) addNodeExporterAndOccmRules(c *fi.ModelBuilderContext, sgMap map[string]*openstacktasks.SecurityGroup) error {
-	masterName := b.SecurityGroupName(kops.InstanceGroupRoleMaster)
+	masterName := b.SecurityGroupName(kops.InstanceGroupRoleControlPlane)
 	nodeName := b.SecurityGroupName(kops.InstanceGroupRoleNode)
 	masterSG := sgMap[masterName]
 	nodeSG := sgMap[nodeName]
@@ -383,7 +383,7 @@ func (b *FirewallModelBuilder) addNodeExporterAndOccmRules(c *fi.ModelBuilderCon
 
 // addDNSRules - Add DNS rules for internal DNS queries
 func (b *FirewallModelBuilder) addDNSRules(c *fi.ModelBuilderContext, sgMap map[string]*openstacktasks.SecurityGroup) error {
-	masterName := b.SecurityGroupName(kops.InstanceGroupRoleMaster)
+	masterName := b.SecurityGroupName(kops.InstanceGroupRoleControlPlane)
 	nodeName := b.SecurityGroupName(kops.InstanceGroupRoleNode)
 	masterSG := sgMap[masterName]
 	nodeSG := sgMap[nodeName]
@@ -451,7 +451,7 @@ func (b *FirewallModelBuilder) addCNIRules(c *fi.ModelBuilderContext, sgMap map[
 		}
 	}
 
-	masterName := b.SecurityGroupName(kops.InstanceGroupRoleMaster)
+	masterName := b.SecurityGroupName(kops.InstanceGroupRoleControlPlane)
 	nodeName := b.SecurityGroupName(kops.InstanceGroupRoleNode)
 	masterSG := sgMap[masterName]
 	nodeSG := sgMap[nodeName]
@@ -502,7 +502,7 @@ func (b *FirewallModelBuilder) addCNIRules(c *fi.ModelBuilderContext, sgMap map[
 // addProtokubeRules - Add rules for protokube if gossip DNS is enabled
 func (b *FirewallModelBuilder) addProtokubeRules(c *fi.ModelBuilderContext, sgMap map[string]*openstacktasks.SecurityGroup) error {
 	if b.Cluster.IsGossip() {
-		masterName := b.SecurityGroupName(kops.InstanceGroupRoleMaster)
+		masterName := b.SecurityGroupName(kops.InstanceGroupRoleControlPlane)
 		nodeName := b.SecurityGroupName(kops.InstanceGroupRoleNode)
 		masterSG := sgMap[masterName]
 		nodeSG := sgMap[nodeName]
@@ -606,7 +606,7 @@ func (b *FirewallModelBuilder) addDefaultEgress(c *fi.ModelBuilderContext, sgMap
 
 // Build - schedule security groups and security group rule tasks for Openstack
 func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
-	roles := []kops.InstanceGroupRole{kops.InstanceGroupRoleMaster, kops.InstanceGroupRoleNode}
+	roles := []kops.InstanceGroupRole{kops.InstanceGroupRoleControlPlane, kops.InstanceGroupRoleNode}
 	if b.UsesSSHBastion() {
 		roles = append(roles, kops.InstanceGroupRoleBastion)
 	}
@@ -640,7 +640,7 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			sg.RemoveExtraRules = []string{"port=22"}
 		} else if role == kops.InstanceGroupRoleNode {
 			sg.RemoveExtraRules = []string{"port=22", "port=10250"}
-		} else if role == kops.InstanceGroupRoleMaster {
+		} else if role == kops.InstanceGroupRoleControlPlane {
 			sg.RemoveExtraRules = []string{"port=22", "port=443", "port=10250"}
 		}
 		c.AddTask(sg)

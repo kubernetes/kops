@@ -124,7 +124,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 			nodeGroups[k] = group
 		case api.InstanceGroupRoleAPIServer:
 			apiServerGroups[k] = group
-		case api.InstanceGroupRoleMaster:
+		case api.InstanceGroupRoleControlPlane:
 			masterGroups[k] = group
 		case api.InstanceGroupRoleBastion:
 			bastionGroups[k] = group

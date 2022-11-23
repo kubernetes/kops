@@ -192,7 +192,7 @@ func getGroups(k8sClient kubernetes.Interface, cloud awsup.AWSCloud) map[string]
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
 	makeGroup(groups, k8sClient, cloud, "node-1", kopsapi.InstanceGroupRoleNode, 3, 0)
 	makeGroup(groups, k8sClient, cloud, "node-2", kopsapi.InstanceGroupRoleNode, 3, 0)
-	makeGroup(groups, k8sClient, cloud, "master-1", kopsapi.InstanceGroupRoleMaster, 2, 0)
+	makeGroup(groups, k8sClient, cloud, "master-1", kopsapi.InstanceGroupRoleControlPlane, 2, 0)
 	makeGroup(groups, k8sClient, cloud, "bastion-1", kopsapi.InstanceGroupRoleBastion, 1, 0)
 	return groups
 }
@@ -201,7 +201,7 @@ func getGroupsAllNeedUpdate(k8sClient kubernetes.Interface, cloud awsup.AWSCloud
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
 	makeGroup(groups, k8sClient, cloud, "node-1", kopsapi.InstanceGroupRoleNode, 3, 3)
 	makeGroup(groups, k8sClient, cloud, "node-2", kopsapi.InstanceGroupRoleNode, 3, 3)
-	makeGroup(groups, k8sClient, cloud, "master-1", kopsapi.InstanceGroupRoleMaster, 2, 2)
+	makeGroup(groups, k8sClient, cloud, "master-1", kopsapi.InstanceGroupRoleControlPlane, 2, 2)
 	makeGroup(groups, k8sClient, cloud, "bastion-1", kopsapi.InstanceGroupRoleBastion, 1, 1)
 	return groups
 }
@@ -480,7 +480,7 @@ func TestRollingUpdateNonRelatedInstanceGroupFailure(t *testing.T) {
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
 	makeGroup(groups, c.K8sClient, cloud, "node-1", kopsapi.InstanceGroupRoleNode, 3, 3)
 	makeGroup(groups, c.K8sClient, cloud, "node-2", kopsapi.InstanceGroupRoleNode, 3, 0)
-	makeGroup(groups, c.K8sClient, cloud, "master-1", kopsapi.InstanceGroupRoleMaster, 2, 0)
+	makeGroup(groups, c.K8sClient, cloud, "master-1", kopsapi.InstanceGroupRoleControlPlane, 2, 0)
 	makeGroup(groups, c.K8sClient, cloud, "bastion-1", kopsapi.InstanceGroupRoleBastion, 1, 0)
 
 	c.ClusterValidator = &instanceGroupNodeSpecificErrorClusterValidator{
@@ -502,7 +502,7 @@ func TestRollingUpdateRelatedInstanceGroupFailure(t *testing.T) {
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
 	makeGroup(groups, c.K8sClient, cloud, "node-1", kopsapi.InstanceGroupRoleNode, 3, 3)
 	makeGroup(groups, c.K8sClient, cloud, "node-2", kopsapi.InstanceGroupRoleNode, 3, 0)
-	makeGroup(groups, c.K8sClient, cloud, "master-1", kopsapi.InstanceGroupRoleMaster, 2, 0)
+	makeGroup(groups, c.K8sClient, cloud, "master-1", kopsapi.InstanceGroupRoleControlPlane, 2, 0)
 	makeGroup(groups, c.K8sClient, cloud, "bastion-1", kopsapi.InstanceGroupRoleBastion, 1, 0)
 
 	c.ClusterValidator = &instanceGroupNodeSpecificErrorClusterValidator{
@@ -524,7 +524,7 @@ func TestRollingUpdateMasterGroupFailure(t *testing.T) {
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
 	makeGroup(groups, c.K8sClient, cloud, "node-1", kopsapi.InstanceGroupRoleNode, 3, 3)
 	makeGroup(groups, c.K8sClient, cloud, "node-2", kopsapi.InstanceGroupRoleNode, 3, 0)
-	makeGroup(groups, c.K8sClient, cloud, "master-1", kopsapi.InstanceGroupRoleMaster, 2, 0)
+	makeGroup(groups, c.K8sClient, cloud, "master-1", kopsapi.InstanceGroupRoleControlPlane, 2, 0)
 	makeGroup(groups, c.K8sClient, cloud, "bastion-1", kopsapi.InstanceGroupRoleBastion, 1, 0)
 
 	c.ClusterValidator = &instanceGroupNodeSpecificErrorClusterValidator{
@@ -546,7 +546,7 @@ func TestRollingUpdateValidationErrorInstanceGroupNil(t *testing.T) {
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
 	makeGroup(groups, c.K8sClient, cloud, "node-1", kopsapi.InstanceGroupRoleNode, 3, 3)
 	makeGroup(groups, c.K8sClient, cloud, "node-2", kopsapi.InstanceGroupRoleNode, 3, 0)
-	makeGroup(groups, c.K8sClient, cloud, "master-1", kopsapi.InstanceGroupRoleMaster, 2, 0)
+	makeGroup(groups, c.K8sClient, cloud, "master-1", kopsapi.InstanceGroupRoleControlPlane, 2, 0)
 	makeGroup(groups, c.K8sClient, cloud, "bastion-1", kopsapi.InstanceGroupRoleBastion, 1, 0)
 
 	c.ClusterValidator = &instanceGroupNodeSpecificErrorClusterValidator{
@@ -720,7 +720,7 @@ func TestAddAnnotatedNodesToNeedsUpdate(t *testing.T) {
 	c, cloud := getTestSetup()
 
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
-	makeGroup(groups, c.K8sClient, cloud, "master-1", kopsapi.InstanceGroupRoleMaster, 2, 1)
+	makeGroup(groups, c.K8sClient, cloud, "master-1", kopsapi.InstanceGroupRoleControlPlane, 2, 1)
 	makeGroup(groups, c.K8sClient, cloud, "node-1", kopsapi.InstanceGroupRoleNode, 2, 1)
 	makeGroup(groups, c.K8sClient, cloud, "node-2", kopsapi.InstanceGroupRoleNode, 2, 1)
 
@@ -740,7 +740,7 @@ func TestAddAnnotatedNodesToNeedsUpdateCloudonly(t *testing.T) {
 	c, cloud := getTestSetup()
 
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
-	makeGroup(groups, c.K8sClient, cloud, "master-1", kopsapi.InstanceGroupRoleMaster, 2, 1)
+	makeGroup(groups, c.K8sClient, cloud, "master-1", kopsapi.InstanceGroupRoleControlPlane, 2, 1)
 	makeGroup(groups, c.K8sClient, cloud, "node-1", kopsapi.InstanceGroupRoleNode, 2, 1)
 	makeGroup(groups, c.K8sClient, cloud, "node-2", kopsapi.InstanceGroupRoleNode, 2, 1)
 
@@ -845,7 +845,7 @@ func TestRollingUpdateMaxSurgeIgnoredForMaster(t *testing.T) {
 	}
 
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
-	makeGroup(groups, c.K8sClient, cloud, "master-1", kopsapi.InstanceGroupRoleMaster, 3, 2)
+	makeGroup(groups, c.K8sClient, cloud, "master-1", kopsapi.InstanceGroupRoleControlPlane, 3, 2)
 	err := c.RollingUpdate(groups, &kopsapi.InstanceGroupList{})
 	assert.NoError(t, err, "rolling update")
 
@@ -1194,7 +1194,7 @@ func TestRollingUpdateMaxUnavailableAllNeedUpdateMaster(t *testing.T) {
 	}
 
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
-	makeGroup(groups, c.K8sClient, cloud, "master-1", kopsapi.InstanceGroupRoleMaster, 7, 7)
+	makeGroup(groups, c.K8sClient, cloud, "master-1", kopsapi.InstanceGroupRoleControlPlane, 7, 7)
 
 	err := c.RollingUpdate(groups, &kopsapi.InstanceGroupList{})
 	assert.NoError(t, err, "rolling update")
