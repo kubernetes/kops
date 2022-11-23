@@ -32,6 +32,7 @@ type Volume struct {
 	Size *int64
 	Zone *string
 	Tags []string
+	Type *string
 }
 
 var _ fi.CompareWithID = &Volume{}
@@ -61,6 +62,7 @@ func (v *Volume) Find(c *fi.Context) (*Volume, error) {
 				Lifecycle: v.Lifecycle,
 				Size:      fi.PtrTo(int64(volume.Size)),
 				Zone:      fi.PtrTo(string(volume.Zone)),
+				Type:      fi.PtrTo(string(volume.VolumeType)),
 			}, nil
 		}
 	}
@@ -107,7 +109,7 @@ func (_ *Volume) RenderScw(t *scaleway.ScwAPITarget, a, e, changes *Volume) erro
 	_, err := instanceService.CreateVolume(&instance.CreateVolumeRequest{
 		Zone:       scw.Zone(fi.ValueOf(e.Zone)),
 		Name:       fi.ValueOf(e.Name),
-		VolumeType: "b_ssd",
+		VolumeType: instance.VolumeVolumeType(fi.ValueOf(e.Type)),
 		Size:       scw.SizePtr(scw.Size(fi.ValueOf(e.Size))),
 		Tags:       e.Tags,
 	})

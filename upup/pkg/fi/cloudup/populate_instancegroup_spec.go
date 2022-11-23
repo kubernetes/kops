@@ -36,19 +36,21 @@ import (
 
 // Default Machine types for various types of instance group machine
 const (
-	defaultNodeMachineTypeGCE     = "e2-medium"
-	defaultNodeMachineTypeDO      = "s-2vcpu-4gb"
-	defaultNodeMachineTypeAzure   = "Standard_B2s"
-	defaultNodeMachineTypeHetzner = "cx21"
+	defaultNodeMachineTypeGCE      = "e2-medium"
+	defaultNodeMachineTypeDO       = "s-2vcpu-4gb"
+	defaultNodeMachineTypeAzure    = "Standard_B2s"
+	defaultNodeMachineTypeHetzner  = "cx21"
+	defaultNodeMachineTypeScaleway = "DEV1-M"
 
 	defaultBastionMachineTypeGCE     = "e2-micro"
 	defaultBastionMachineTypeAzure   = "Standard_B2s"
 	defaultBastionMachineTypeHetzner = "cx11"
 
-	defaultMasterMachineTypeGCE     = "e2-medium"
-	defaultMasterMachineTypeDO      = "s-2vcpu-4gb"
-	defaultMasterMachineTypeAzure   = "Standard_B2s"
-	defaultMasterMachineTypeHetzner = "cx21"
+	defaultMasterMachineTypeGCE      = "e2-medium"
+	defaultMasterMachineTypeDO       = "s-2vcpu-4gb"
+	defaultMasterMachineTypeAzure    = "Standard_B2s"
+	defaultMasterMachineTypeHetzner  = "cx21"
+	defaultMasterMachineTypeScaleway = "DEV1-M"
 
 	defaultDOImage       = "ubuntu-20-04-x64"
 	defaultHetznerImage  = "ubuntu-20.04"
@@ -361,6 +363,15 @@ func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.Instance
 
 		case kops.InstanceGroupRoleBastion:
 			return defaultBastionMachineTypeAzure, nil
+		}
+
+	case kops.CloudProviderScaleway:
+		switch ig.Spec.Role {
+		case kops.InstanceGroupRoleControlPlane:
+			return defaultMasterMachineTypeScaleway, nil
+
+		case kops.InstanceGroupRoleNode:
+			return defaultNodeMachineTypeScaleway, nil
 		}
 	}
 

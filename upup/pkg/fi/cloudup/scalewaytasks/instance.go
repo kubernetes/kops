@@ -75,6 +75,37 @@ func (s *Instance) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(s, c)
 }
 
+func (_ *Instance) CheckChanges(actual, expected, changes *Instance) error {
+	if actual != nil {
+		if changes.Name != nil {
+			return fi.CannotChangeField("Name")
+		}
+		if changes.Zone != nil {
+			return fi.CannotChangeField("Zone")
+		}
+		if changes.CommercialType != nil {
+			return fi.CannotChangeField("CommercialType")
+		}
+		if changes.Image != nil {
+			return fi.CannotChangeField("Image")
+		}
+	} else {
+		if expected.Name == nil {
+			return fi.RequiredField("Name")
+		}
+		if expected.Zone == nil {
+			return fi.RequiredField("Zone")
+		}
+		if expected.CommercialType == nil {
+			return fi.RequiredField("CommercialType")
+		}
+		if expected.Image == nil {
+			return fi.RequiredField("Image")
+		}
+	}
+	return nil
+}
+
 func (_ *Instance) RenderScw(c *fi.Context, actual, expected, changes *Instance) error {
 	cloud := c.Cloud.(scaleway.ScwCloud)
 	instanceService := cloud.InstanceService()
@@ -165,36 +196,5 @@ func (_ *Instance) RenderScw(c *fi.Context, actual, expected, changes *Instance)
 		}
 	}
 
-	return nil
-}
-
-func (_ *Instance) CheckChanges(actual, expected, changes *Instance) error {
-	if actual != nil {
-		if changes.Name != nil {
-			return fi.CannotChangeField("Name")
-		}
-		if changes.Zone != nil {
-			return fi.CannotChangeField("Zone")
-		}
-		if changes.CommercialType != nil {
-			return fi.CannotChangeField("CommercialType")
-		}
-		if changes.Image != nil {
-			return fi.CannotChangeField("Image")
-		}
-	} else {
-		if expected.Name == nil {
-			return fi.RequiredField("Name")
-		}
-		if expected.Zone == nil {
-			return fi.RequiredField("Zone")
-		}
-		if expected.CommercialType == nil {
-			return fi.RequiredField("CommercialType")
-		}
-		if expected.Image == nil {
-			return fi.RequiredField("Image")
-		}
-	}
 	return nil
 }

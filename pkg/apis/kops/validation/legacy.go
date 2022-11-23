@@ -337,6 +337,8 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 			k8sCloudProvider = "openstack"
 		case kops.CloudProviderAzure:
 			k8sCloudProvider = "azure"
+		case kops.CloudProviderScaleway:
+			k8sCloudProvider = "external"
 		default:
 			// We already added an error above
 			k8sCloudProvider = "ignore"
