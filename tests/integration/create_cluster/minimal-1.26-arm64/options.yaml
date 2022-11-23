@@ -5,4 +5,4 @@ CloudProvider: aws
 Networking: cni
 KubernetesVersion: v1.26.0
 NodeSize: m6g.xlarge
-MasterSize: m6g.xlarge
+ControlPlaneSize: m6g.xlarge

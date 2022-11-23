@@ -17,14 +17,14 @@ spec:
   - cpuRequest: 200m
     etcdMembers:
     - encryptedVolume: true
-      instanceGroup: master-us-test-1a
+      instanceGroup: control-plane-us-test-1a
       name: a
     memoryRequest: 100Mi
     name: main
   - cpuRequest: 100m
     etcdMembers:
     - encryptedVolume: true
-      instanceGroup: master-us-test-1a
+      instanceGroup: control-plane-us-test-1a
       name: a
     memoryRequest: 100Mi
     name: events
@@ -112,7 +112,7 @@ metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   labels:
     kops.k8s.io/cluster: amis.example.com
-  name: master-us-test-1a
+  name: control-plane-us-test-1a
 spec:
   image: ami-control-plane
   instanceMetadata:

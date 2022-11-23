@@ -2,7 +2,7 @@ CloudProvider: hetzner
 ClusterName: ha.example.com
 Image: ubuntu-20.04
 KubernetesVersion: v1.25.0
-MasterCount: 3
+ControlPlaneCount: 3
 NetworkCIDR: 10.0.0.0/16
 Networking: cni
 Zones:

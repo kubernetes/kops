@@ -15,26 +15,26 @@ spec:
   - cpuRequest: 200m
     etcdMembers:
     - encryptedVolume: true
-      instanceGroup: master-us-test-1a-1
+      instanceGroup: control-plane-us-test-1a-1
       name: etcd-1
     - encryptedVolume: true
-      instanceGroup: master-us-test-1a-2
+      instanceGroup: control-plane-us-test-1a-2
       name: etcd-2
     - encryptedVolume: true
-      instanceGroup: master-us-test-1a-3
+      instanceGroup: control-plane-us-test-1a-3
       name: etcd-3
     memoryRequest: 100Mi
     name: main
   - cpuRequest: 100m
     etcdMembers:
     - encryptedVolume: true
-      instanceGroup: master-us-test-1a-1
+      instanceGroup: control-plane-us-test-1a-1
       name: etcd-1
     - encryptedVolume: true
-      instanceGroup: master-us-test-1a-2
+      instanceGroup: control-plane-us-test-1a-2
       name: etcd-2
     - encryptedVolume: true
-      instanceGroup: master-us-test-1a-3
+      instanceGroup: control-plane-us-test-1a-3
       name: etcd-3
     memoryRequest: 100Mi
     name: events
@@ -74,7 +74,7 @@ metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   labels:
     kops.k8s.io/cluster: ha.example.com
-  name: master-us-test-1a-1
+  name: control-plane-us-test-1a-1
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221018
   machineType: m3.medium
@@ -92,7 +92,7 @@ metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   labels:
     kops.k8s.io/cluster: ha.example.com
-  name: master-us-test-1a-2
+  name: control-plane-us-test-1a-2
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221018
   machineType: m3.medium
@@ -110,7 +110,7 @@ metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   labels:
     kops.k8s.io/cluster: ha.example.com
-  name: master-us-test-1a-3
+  name: control-plane-us-test-1a-3
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221018
   machineType: m3.medium
