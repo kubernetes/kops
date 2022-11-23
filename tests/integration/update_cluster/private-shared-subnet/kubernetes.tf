@@ -17,6 +17,7 @@ locals {
   subnet_ids                    = ["subnet-12345678", "subnet-abcdef"]
   subnet_us-test-1a_id          = "subnet-12345678"
   subnet_utility-us-test-1a_id  = "subnet-abcdef"
+  vpc_cidr_block                = data.aws_vpc.private-shared-subnet-example-com.cidr_block
   vpc_id                        = "vpc-12345678"
 }
 
@@ -90,6 +91,10 @@ output "subnet_us-test-1a_id" {
 
 output "subnet_utility-us-test-1a_id" {
   value = "subnet-abcdef"
+}
+
+output "vpc_cidr_block" {
+  value = data.aws_vpc.private-shared-subnet-example-com.cidr_block
 }
 
 output "vpc_id" {
@@ -1101,6 +1106,10 @@ resource "aws_security_group_rule" "icmp-pmtu-ssh-nlb-172-20-4-0--22" {
   security_group_id = aws_security_group.bastion-private-shared-subnet-example-com.id
   to_port           = 4
   type              = "ingress"
+}
+
+data "aws_vpc" "private-shared-subnet-example-com" {
+  id = "vpc-12345678"
 }
 
 terraform {

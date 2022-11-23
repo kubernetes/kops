@@ -27,6 +27,8 @@ import (
 type TerraformWriter struct {
 	// mutex protects the following items (resources & Files)
 	mutex sync.Mutex
+	// dataSources is a list of TF data sources that should be created.
+	dataSources []*terraformDataSource
 	// resources is a list of TF items that should be created
 	resources []*terraformResource
 	// outputs is a list of our TF output variables
@@ -38,6 +40,12 @@ type TerraformWriter struct {
 type OutputValue struct {
 	Value      *Literal
 	ValueArray []*Literal
+}
+
+type terraformDataSource struct {
+	DataType string
+	DataName string
+	Item     interface{}
 }
 
 type terraformResource struct {
@@ -80,7 +88,22 @@ func (t *TerraformWriter) AddFileBytes(resourceType string, resourceName string,
 	if base64 {
 		fn = "filebase64"
 	}
-	return LiteralFunctionExpression(fn, []string{modulePath}), nil
+	return LiteralFunctionExpression(fn, modulePath), nil
+}
+
+func (t *TerraformWriter) RenderDataSource(dataType string, dataName string, e interface{}) error {
+	data := &terraformDataSource{
+		DataType: dataType,
+		DataName: dataName,
+		Item:     e,
+	}
+
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
+
+	t.dataSources = append(t.dataSources, data)
+
+	return nil
 }
 
 func (t *TerraformWriter) RenderResource(resourceType string, resourceName string, e interface{}) error {
@@ -132,6 +155,28 @@ func (t *TerraformWriter) AddOutputVariableArray(key string, literal *Literal) e
 	t.outputs[key].ValueArray = append(t.outputs[key].ValueArray, literal)
 
 	return nil
+}
+
+func (t *TerraformWriter) GetDataSourcesByType() (map[string]map[string]interface{}, error) {
+	dataSourcesByType := make(map[string]map[string]interface{})
+
+	for _, dataSource := range t.dataSources {
+		dataSources := dataSourcesByType[dataSource.DataType]
+		if dataSources == nil {
+			dataSources = make(map[string]interface{})
+			dataSourcesByType[dataSource.DataType] = dataSources
+		}
+
+		tfName := sanitizeName(dataSource.DataName)
+
+		if dataSources[tfName] != nil {
+			return nil, fmt.Errorf("duplicate data source found: %s.%s", dataSource.DataType, tfName)
+		}
+
+		dataSources[tfName] = dataSource.Item
+	}
+
+	return dataSourcesByType, nil
 }
 
 func (t *TerraformWriter) GetResourcesByType() (map[string]map[string]interface{}, error) {

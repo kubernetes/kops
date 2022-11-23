@@ -12,6 +12,7 @@ locals {
   region                       = "us-test-1"
   subnet_ids                   = ["subnet-12345678"]
   subnet_us-test-1a_id         = "subnet-12345678"
+  vpc_cidr_block               = data.aws_vpc.sharedsubnet-example-com.cidr_block
   vpc_id                       = "vpc-12345678"
 }
 
@@ -65,6 +66,10 @@ output "subnet_ids" {
 
 output "subnet_us-test-1a_id" {
   value = "subnet-12345678"
+}
+
+output "vpc_cidr_block" {
+  value = data.aws_vpc.sharedsubnet-example-com.cidr_block
 }
 
 output "vpc_id" {
@@ -732,6 +737,10 @@ resource "aws_security_group_rule" "from-nodes-sharedsubnet-example-com-ingress-
   source_security_group_id = aws_security_group.nodes-sharedsubnet-example-com.id
   to_port                  = 65535
   type                     = "ingress"
+}
+
+data "aws_vpc" "sharedsubnet-example-com" {
+  id = "vpc-12345678"
 }
 
 terraform {
