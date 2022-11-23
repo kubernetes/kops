@@ -15,21 +15,21 @@ spec:
   etcdClusters:
   - cpuRequest: 200m
     etcdMembers:
-    - instanceGroup: master-us-test1-a
+    - instanceGroup: control-plane-us-test1-a
       name: a
-    - instanceGroup: master-us-test1-b
+    - instanceGroup: control-plane-us-test1-b
       name: b
-    - instanceGroup: master-us-test1-c
+    - instanceGroup: control-plane-us-test1-c
       name: c
     memoryRequest: 100Mi
     name: main
   - cpuRequest: 100m
     etcdMembers:
-    - instanceGroup: master-us-test1-a
+    - instanceGroup: control-plane-us-test1-a
       name: a
-    - instanceGroup: master-us-test1-b
+    - instanceGroup: control-plane-us-test1-b
       name: b
-    - instanceGroup: master-us-test1-c
+    - instanceGroup: control-plane-us-test1-c
       name: c
     memoryRequest: 100Mi
     name: events
@@ -69,7 +69,7 @@ metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   labels:
     kops.k8s.io/cluster: ha-gce.example.com
-  name: master-us-test1-a
+  name: control-plane-us-test1-a
 spec:
   image: ubuntu-os-cloud/ubuntu-2004-focal-v20221018
   machineType: e2-medium
@@ -89,7 +89,7 @@ metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   labels:
     kops.k8s.io/cluster: ha-gce.example.com
-  name: master-us-test1-b
+  name: control-plane-us-test1-b
 spec:
   image: ubuntu-os-cloud/ubuntu-2004-focal-v20221018
   machineType: e2-medium
@@ -109,7 +109,7 @@ metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   labels:
     kops.k8s.io/cluster: ha-gce.example.com
-  name: master-us-test1-c
+  name: control-plane-us-test1-c
 spec:
   image: ubuntu-os-cloud/ubuntu-2004-focal-v20221018
   machineType: e2-medium
