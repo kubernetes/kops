@@ -19,8 +19,8 @@ package cloudup
 import (
 	"fmt"
 	"net/url"
-	"os"
 
+	"github.com/spf13/viper"
 	"k8s.io/klog/v2"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
@@ -48,8 +48,8 @@ const (
 
 func findCNIAssets(c *kopsapi.Cluster, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*url.URL, *hashing.Hash, error) {
 	// Override CNI packages from env vars
-	cniAssetURL := os.Getenv(ENV_VAR_CNI_ASSET_URL)
-	cniAssetHash := os.Getenv(ENV_VAR_CNI_ASSET_HASH)
+	cniAssetURL := viper.GetString(ENV_VAR_CNI_ASSET_URL)
+	cniAssetHash := viper.GetString(ENV_VAR_CNI_ASSET_HASH)
 
 	if cniAssetURL != "" && cniAssetHash != "" {
 		klog.V(2).Infof("Using CNI asset URL %q, as set in %s", cniAssetURL, ENV_VAR_CNI_ASSET_URL)

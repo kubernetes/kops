@@ -29,6 +29,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/spf13/viper"
+
 	"k8s.io/kops/cloudmock/aws/mockec2"
 	gcemock "k8s.io/kops/cloudmock/gce"
 	"k8s.io/kops/cmd/kops/util"
@@ -413,7 +415,7 @@ func runLifecycleTestOpenstack(o *LifecycleTestOptions) {
 	h := testutils.NewIntegrationTestHarness(o.t)
 	defer h.Close()
 
-	origRegion := os.Getenv("OS_REGION_NAME")
+	origRegion := viper.GetString("OS_REGION_NAME")
 	os.Setenv("OS_REGION_NAME", "us-test1")
 	defer func() {
 		os.Setenv("OS_REGION_NAME", origRegion)

@@ -22,8 +22,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 
+	"github.com/spf13/viper"
 	"k8s.io/klog/v2"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -46,7 +46,7 @@ func newVaultClient(scheme string, host string, port string) (*vault.Client, err
 		return nil, err
 	}
 
-	token := os.Getenv("VAULT_TOKEN")
+	token := viper.GetString("VAULT_TOKEN")
 	if token == "" {
 		token, err = awsAuth(client, host)
 		if err != nil {

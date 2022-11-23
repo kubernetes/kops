@@ -30,6 +30,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/spf13/viper"
+
 	"github.com/go-ini/ini"
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
@@ -98,7 +100,7 @@ func NewSwiftClient() (*gophercloud.ServiceClient, error) {
 type OpenstackConfig struct{}
 
 func (OpenstackConfig) filename() (string, error) {
-	name := os.Getenv("OPENSTACK_CREDENTIAL_FILE")
+	name := viper.GetString("OPENSTACK_CREDENTIAL_FILE")
 	if name != "" {
 		klog.V(2).Infof("using openstack config found in $OPENSTACK_CREDENTIAL_FILE: %s", name)
 		return name, nil
@@ -151,7 +153,7 @@ func (oc OpenstackConfig) GetCredential() (gophercloud.AuthOptions, error) {
 
 func (oc OpenstackConfig) GetRegion() (string, error) {
 	var region string
-	if region = os.Getenv("OS_REGION_NAME"); region != "" {
+	if region = viper.GetString("OS_REGION_NAME"); region != "" {
 		if len(region) > 1 {
 			if region[0] == '\'' && region[len(region)-1] == '\'' {
 				region = region[1 : len(region)-1]

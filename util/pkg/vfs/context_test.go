@@ -17,16 +17,17 @@ limitations under the License.
 package vfs
 
 import (
-	"os"
 	"testing"
+
+	"github.com/spf13/viper"
 )
 
 func TestBuildVaultPath(t *testing.T) {
-	token := os.Getenv("VAULT_DEV_ROOT_TOKEN_ID")
+	token := viper.GetString("VAULT_DEV_ROOT_TOKEN_ID")
 	if token == "" {
 		t.Skip("No vault dev token set")
 	}
-	if os.Getenv("VAULT_TOKEN") != token {
+	if viper.GetString("VAULT_TOKEN") != token {
 		t.Skip("BuildVaultPath test needs VAULT_TOKEN == VAULT_DEV_ROOT_TOKEN_ID")
 	}
 	grid := []struct {

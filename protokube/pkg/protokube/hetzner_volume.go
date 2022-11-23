@@ -20,10 +20,10 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"os"
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/hcloud-go/hcloud/metadata"
+	"github.com/spf13/viper"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossiphetzner "k8s.io/kops/protokube/pkg/gossip/hetzner"
@@ -47,7 +47,7 @@ func NewHetznerCloudProvider() (*HetznerCloudProvider, error) {
 	}
 	klog.V(4).Infof("Found ID of the running server: %d", serverID)
 
-	hcloudToken := os.Getenv("HCLOUD_TOKEN")
+	hcloudToken := viper.GetString("HCLOUD_TOKEN")
 	if hcloudToken == "" {
 		return nil, fmt.Errorf("%s is required", "HCLOUD_TOKEN")
 	}

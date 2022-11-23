@@ -48,7 +48,7 @@ func buildDefaultCluster(t *testing.T) *api.Cluster {
 
 	//c.InstanceGroups = append(c.InstanceGroups, buildNodeInstanceGroup("us-test-1a"))
 	//c.InstanceGroups = append(c.InstanceGroups, buildMasterInstanceGroup("us-test-1a"))
-	//c.SSHPublicKey = path.Join(os.Getenv("HOME"), ".ssh", "id_rsa.pub")
+	//c.SSHPublicKey = path.Join(viper.GetString("HOME"), ".ssh", "id_rsa.pub")
 	//
 	//c.Cluster.Spec.Kubelet = &api.KubeletConfig{}
 	//c.Cluster.Spec.KubeControllerManager = &api.KubeControllerManagerConfig{}

@@ -27,11 +27,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/spf13/viper"
+
 	vault "github.com/hashicorp/vault/api"
 )
 
 func createClient(t *testing.T) *vault.Client {
-	token := os.Getenv("VAULT_DEV_ROOT_TOKEN_ID")
+	token := viper.GetString("VAULT_DEV_ROOT_TOKEN_ID")
 	if token == "" {
 		t.Skip("No vault dev token set. Skipping")
 	}

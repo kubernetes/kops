@@ -19,8 +19,9 @@ package openstack
 import (
 	"context"
 	"fmt"
-	"os"
 	"strings"
+
+	"github.com/spf13/viper"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
@@ -42,7 +43,7 @@ func New() (nodeidentity.LegacyIdentifier, error) {
 		return nil, err
 	}
 
-	region := os.Getenv("OS_REGION_NAME")
+	region := viper.GetString("OS_REGION_NAME")
 	if region == "" {
 		return nil, fmt.Errorf("unable to find region")
 	}

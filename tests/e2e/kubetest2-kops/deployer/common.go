@@ -25,6 +25,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/spf13/viper"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/gce"
 	"k8s.io/kops/tests/e2e/pkg/kops"
@@ -77,10 +78,10 @@ func (d *deployer) initialize() error {
 		}
 	case "digitalocean":
 		if d.SSHPrivateKeyPath == "" {
-			d.SSHPrivateKeyPath = os.Getenv("DO_SSH_PRIVATE_KEY_FILE")
+			d.SSHPrivateKeyPath = viper.GetString("DO_SSH_PRIVATE_KEY_FILE")
 		}
 		if d.SSHPublicKeyPath == "" {
-			d.SSHPublicKeyPath = os.Getenv("DO_SSH_PUBLIC_KEY_FILE")
+			d.SSHPublicKeyPath = viper.GetString("DO_SSH_PUBLIC_KEY_FILE")
 		}
 		d.SSHUser = "root"
 	case "gce":
@@ -119,7 +120,7 @@ func (d *deployer) initialize() error {
 	}
 
 	if d.SSHUser == "" {
-		d.SSHUser = os.Getenv("KUBE_SSH_USER")
+		d.SSHUser = viper.GetString("KUBE_SSH_USER")
 	}
 	if d.TerraformVersion != "" {
 		t, err := target.NewTerraform(d.TerraformVersion)
@@ -176,8 +177,8 @@ func (d *deployer) verifyKopsFlags() error {
 func (d *deployer) env() []string {
 	vars := d.Env
 	vars = append(vars, []string{
-		fmt.Sprintf("PATH=%v", os.Getenv("PATH")),
-		fmt.Sprintf("HOME=%v", os.Getenv("HOME")),
+		fmt.Sprintf("PATH=%v", viper.GetString("PATH")),
+		fmt.Sprintf("HOME=%v", viper.GetString("HOME")),
 		fmt.Sprintf("KOPS_STATE_STORE=%v", d.stateStore()),
 		fmt.Sprintf("KOPS_FEATURE_FLAGS=%v", d.featureFlags()),
 		"KOPS_RUN_TOO_NEW_VERSION=1",
@@ -185,7 +186,7 @@ func (d *deployer) env() []string {
 	if d.CloudProvider == "aws" {
 		// Pass through some env vars if set
 		for _, k := range []string{"AWS_PROFILE", "AWS_SHARED_CREDENTIALS_FILE"} {
-			v := os.Getenv(k)
+			v := viper.GetString(k)
 			if v != "" {
 				vars = append(vars, k+"="+v)
 			}
@@ -196,7 +197,7 @@ func (d *deployer) env() []string {
 	} else if d.CloudProvider == "digitalocean" {
 		// Pass through some env vars if set
 		for _, k := range []string{"DIGITALOCEAN_ACCESS_TOKEN", "S3_ACCESS_KEY_ID", "S3_SECRET_ACCESS_KEY"} {
-			v := os.Getenv(k)
+			v := viper.GetString(k)
 			if v != "" {
 				vars = append(vars, k+"="+v)
 			} else {
@@ -206,8 +207,8 @@ func (d *deployer) env() []string {
 	}
 	if d.KopsBaseURL != "" {
 		vars = append(vars, fmt.Sprintf("KOPS_BASE_URL=%v", d.KopsBaseURL))
-	} else if baseURL := os.Getenv("KOPS_BASE_URL"); baseURL != "" {
-		vars = append(vars, fmt.Sprintf("KOPS_BASE_URL=%v", os.Getenv("KOPS_BASE_URL")))
+	} else if baseURL := viper.GetString("KOPS_BASE_URL"); baseURL != "" {
+		vars = append(vars, fmt.Sprintf("KOPS_BASE_URL=%v", viper.GetString("KOPS_BASE_URL")))
 	}
 	return vars
 }
@@ -229,10 +230,10 @@ func (d *deployer) featureFlags() string {
 
 // defaultClusterName returns a kops cluster name to use when ClusterName is not set
 func defaultClusterName(cloudProvider string) (string, error) {
-	jobName := os.Getenv("JOB_NAME")
-	jobType := os.Getenv("JOB_TYPE")
-	buildID := os.Getenv("BUILD_ID")
-	pullNumber := os.Getenv("PULL_NUMBER")
+	jobName := viper.GetString("JOB_NAME")
+	jobType := viper.GetString("JOB_TYPE")
+	buildID := viper.GetString("BUILD_ID")
+	pullNumber := viper.GetString("PULL_NUMBER")
 	if jobName == "" || buildID == "" {
 		return "", errors.New("JOB_NAME, and BUILD_ID env vars are required when --cluster-name is not set")
 	}
@@ -257,7 +258,7 @@ func defaultClusterName(cloudProvider string) (string, error) {
 // stateStore returns the kops state store to use
 // defaulting to values used in prow jobs
 func (d *deployer) stateStore() string {
-	ss := os.Getenv("KOPS_STATE_STORE")
+	ss := viper.GetString("KOPS_STATE_STORE")
 	if ss == "" {
 		switch d.CloudProvider {
 		case "aws":

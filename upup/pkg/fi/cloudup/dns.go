@@ -20,8 +20,9 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"os"
 	"strings"
+
+	"github.com/spf13/viper"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/dns-controller/pkg/dns"
@@ -114,7 +115,7 @@ func validateDNS(cluster *kops.Cluster, cloud fi.Cloud) error {
 	}
 
 	if len(ns) == 0 {
-		if os.Getenv("DNS_IGNORE_NS_CHECK") == "" {
+		if viper.GetString("DNS_IGNORE_NS_CHECK") == "" {
 			return fmt.Errorf("NS records not found for %q - please make sure they are correctly configured", dnsName)
 		}
 		klog.Warningf("Ignoring failed NS record check because DNS_IGNORE_NS_CHECK is set")

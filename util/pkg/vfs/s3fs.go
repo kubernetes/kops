@@ -26,6 +26,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/spf13/viper"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -235,7 +237,7 @@ func (p *S3Path) getServerSideEncryption() (sse *string, sseLog string, err erro
 }
 
 func (p *S3Path) getRequestACL(aclObj ACL) (*string, error) {
-	acl := os.Getenv("KOPS_STATE_S3_ACL")
+	acl := viper.GetString("KOPS_STATE_S3_ACL")
 	acl = strings.TrimSpace(acl)
 	if acl != "" {
 		klog.V(8).Infof("Using KOPS_STATE_S3_ACL=%s", acl)

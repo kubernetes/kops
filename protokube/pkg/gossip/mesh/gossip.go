@@ -19,9 +19,10 @@ package mesh
 import (
 	"fmt"
 	"net"
-	"os"
 	"strconv"
 	"time"
+
+	"github.com/spf13/viper"
 
 	"github.com/weaveworks/mesh"
 	"k8s.io/klog/v2"
@@ -45,7 +46,7 @@ type MeshGossiper struct {
 
 func NewMeshGossiper(listen string, channelName string, nodeName string, password []byte, seeds gossip.SeedProvider) (*MeshGossiper, error) {
 	connLimit := 0 // 0 means no limit
-	gossipDnsConnLimit := os.Getenv("GOSSIP_DNS_CONN_LIMIT")
+	gossipDnsConnLimit := viper.GetString("GOSSIP_DNS_CONN_LIMIT")
 	if gossipDnsConnLimit != "" {
 		limit, err := strconv.Atoi(gossipDnsConnLimit)
 		if err != nil {

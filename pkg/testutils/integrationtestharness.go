@@ -22,6 +22,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/spf13/viper"
+
 	"google.golang.org/api/compute/v1"
 	"k8s.io/kops/cloudmock/aws/mockeventbridge"
 	"k8s.io/kops/cloudmock/aws/mocksqs"
@@ -108,7 +110,7 @@ func NewIntegrationTestHarness(t *testing.T) *IntegrationTestHarness {
 
 func (h *IntegrationTestHarness) Close() {
 	if h.TempDir != "" {
-		if os.Getenv("KEEP_TEMP_DIR") != "" {
+		if viper.GetString("KEEP_TEMP_DIR") != "" {
 			klog.Infof("NOT removing temp directory, because KEEP_TEMP_DIR is set: %s", h.TempDir)
 		} else {
 			err := os.RemoveAll(h.TempDir)

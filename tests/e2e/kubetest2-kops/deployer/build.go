@@ -23,6 +23,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/spf13/viper"
 	"k8s.io/kops/tests/e2e/pkg/util"
 	"sigs.k8s.io/kubetest2/pkg/exec"
 )
@@ -49,7 +50,7 @@ func (d *deployer) Build() error {
 
 func (d *deployer) verifyBuildFlags() error {
 	if d.KopsRoot == "" {
-		if goPath := os.Getenv("GOPATH"); goPath != "" {
+		if goPath := viper.GetString("GOPATH"); goPath != "" {
 			d.KopsRoot = path.Join(goPath, "src", "k8s.io", "kops")
 		} else {
 			return errors.New("required --kops-root when building from source")
@@ -66,7 +67,7 @@ func (d *deployer) verifyBuildFlags() error {
 		}
 		d.StageLocation = stageLocation
 	}
-	if d.KopsBaseURL == "" && os.Getenv("KOPS_BASE_URL") == "" {
+	if d.KopsBaseURL == "" && viper.GetString("KOPS_BASE_URL") == "" {
 		d.KopsBaseURL = strings.Replace(d.StageLocation, "gs://", "https://storage.googleapis.com/", 1)
 	}
 
@@ -87,12 +88,12 @@ func (d *deployer) verifyBuildFlags() error {
 }
 
 func defaultStageLocation(kopsRoot string) (string, error) {
-	jobName := os.Getenv("JOB_NAME")
+	jobName := viper.GetString("JOB_NAME")
 	if jobName == "" {
 		jobName = defaultJobName
 	}
 
-	sha := os.Getenv("PULL_PULL_SHA")
+	sha := viper.GetString("PULL_PULL_SHA")
 	if sha == "" {
 		cmd := exec.Command("git", "rev-parse", "--short", "HEAD")
 		cmd.SetDir(kopsRoot)

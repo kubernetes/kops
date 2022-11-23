@@ -18,9 +18,10 @@ package nodetasks
 
 import (
 	"fmt"
-	"os"
 	"os/exec"
 	"syscall"
+
+	"github.com/spf13/viper"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
@@ -67,7 +68,7 @@ func (s *UpdatePackages) CheckChanges(a, e, changes *UpdatePackages) error {
 }
 
 func (_ *UpdatePackages) RenderLocal(t *local.LocalTarget, a, e, changes *UpdatePackages) error {
-	if os.Getenv("SKIP_PACKAGE_UPDATE") != "" {
+	if viper.GetString("SKIP_PACKAGE_UPDATE") != "" {
 		klog.Infof("SKIP_PACKAGE_UPDATE was set; skipping package update")
 		return nil
 	}

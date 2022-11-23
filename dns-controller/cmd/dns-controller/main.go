@@ -24,6 +24,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/spf13/viper"
+
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/pflag"
 	"k8s.io/client-go/kubernetes"
@@ -143,7 +145,7 @@ func main() {
 	if len(gossipSeeds) != 0 {
 		gossipSeeds := gossip.NewStaticSeedProvider(gossipSeeds)
 
-		id := os.Getenv("HOSTNAME")
+		id := viper.GetString("HOSTNAME")
 		if id == "" {
 			klog.Fatalf("Unable to fetch HOSTNAME for use as node identifier")
 		}

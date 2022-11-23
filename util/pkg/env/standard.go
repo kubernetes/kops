@@ -17,8 +17,9 @@ limitations under the License.
 package env
 
 import (
-	"os"
 	"sort"
+
+	"github.com/spf13/viper"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/kops/pkg/apis/kops"
@@ -28,7 +29,7 @@ import (
 type EnvVars map[string]string
 
 func (m EnvVars) addEnvVariableIfExist(name string) {
-	v := os.Getenv(name)
+	v := viper.GetString(name)
 	if v != "" {
 		m[name] = v
 	}

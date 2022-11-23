@@ -19,8 +19,9 @@ package model
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"strings"
+
+	"github.com/spf13/viper"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
@@ -124,28 +125,28 @@ func (b *CloudConfigBuilder) build(c *fi.ModelBuilderContext, inTree bool) error
 			break
 		}
 		// Support mapping of older keystone API
-		tenantName := os.Getenv("OS_TENANT_NAME")
+		tenantName := viper.GetString("OS_TENANT_NAME")
 		if tenantName == "" {
-			tenantName = os.Getenv("OS_PROJECT_NAME")
+			tenantName = viper.GetString("OS_PROJECT_NAME")
 		}
-		tenantID := os.Getenv("OS_TENANT_ID")
+		tenantID := viper.GetString("OS_TENANT_ID")
 		if tenantID == "" {
-			tenantID = os.Getenv("OS_PROJECT_ID")
+			tenantID = viper.GetString("OS_PROJECT_ID")
 		}
 		lines = append(lines,
-			fmt.Sprintf("auth-url=\"%s\"", os.Getenv("OS_AUTH_URL")),
-			fmt.Sprintf("username=\"%s\"", os.Getenv("OS_USERNAME")),
-			fmt.Sprintf("password=\"%s\"", os.Getenv("OS_PASSWORD")),
-			fmt.Sprintf("region=\"%s\"", os.Getenv("OS_REGION_NAME")),
+			fmt.Sprintf("auth-url=\"%s\"", viper.GetString("OS_AUTH_URL")),
+			fmt.Sprintf("username=\"%s\"", viper.GetString("OS_USERNAME")),
+			fmt.Sprintf("password=\"%s\"", viper.GetString("OS_PASSWORD")),
+			fmt.Sprintf("region=\"%s\"", viper.GetString("OS_REGION_NAME")),
 			fmt.Sprintf("tenant-id=\"%s\"", tenantID),
 			fmt.Sprintf("tenant-name=\"%s\"", tenantName),
-			fmt.Sprintf("domain-name=\"%s\"", os.Getenv("OS_DOMAIN_NAME")),
-			fmt.Sprintf("domain-id=\"%s\"", os.Getenv("OS_DOMAIN_ID")),
+			fmt.Sprintf("domain-name=\"%s\"", viper.GetString("OS_DOMAIN_NAME")),
+			fmt.Sprintf("domain-id=\"%s\"", viper.GetString("OS_DOMAIN_ID")),
 		)
 		if b.Cluster.Spec.ExternalCloudControllerManager != nil {
 			lines = append(lines,
-				fmt.Sprintf("application-credential-id=\"%s\"", os.Getenv("OS_APPLICATION_CREDENTIAL_ID")),
-				fmt.Sprintf("application-credential-secret=\"%s\"", os.Getenv("OS_APPLICATION_CREDENTIAL_SECRET")),
+				fmt.Sprintf("application-credential-id=\"%s\"", viper.GetString("OS_APPLICATION_CREDENTIAL_ID")),
+				fmt.Sprintf("application-credential-secret=\"%s\"", viper.GetString("OS_APPLICATION_CREDENTIAL_SECRET")),
 			)
 		}
 

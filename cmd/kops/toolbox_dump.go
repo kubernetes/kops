@@ -25,6 +25,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/spf13/viper"
+
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
@@ -134,7 +136,7 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 	if options.Dir != "" {
 		privateKeyPath := options.PrivateKey
 		if strings.HasPrefix(privateKeyPath, "~/") {
-			privateKeyPath = filepath.Join(os.Getenv("HOME"), privateKeyPath[2:])
+			privateKeyPath = filepath.Join(viper.GetString("HOME"), privateKeyPath[2:])
 		}
 		key, err := os.ReadFile(privateKeyPath)
 		if err != nil {

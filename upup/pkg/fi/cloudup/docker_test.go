@@ -24,6 +24,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/spf13/viper"
+
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/architectures"
 )
@@ -241,7 +243,7 @@ func TestDockerVersionHash(t *testing.T) {
 }
 
 func TestDockerVersionsHashesAmd64(t *testing.T) {
-	if os.Getenv("VERIFY_HASHES") == "" {
+	if viper.GetString("VERIFY_HASHES") == "" {
 		t.Skip("VERIFY_HASHES not set, won't download & verify docker hashes")
 	}
 
@@ -256,7 +258,7 @@ func TestDockerVersionsHashesAmd64(t *testing.T) {
 }
 
 func TestDockerVersionsHashesArm64(t *testing.T) {
-	if os.Getenv("VERIFY_HASHES") == "" {
+	if viper.GetString("VERIFY_HASHES") == "" {
 		t.Skip("VERIFY_HASHES not set, won't download & verify docker hashes")
 	}
 

@@ -19,10 +19,11 @@ package hetzner
 import (
 	"context"
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/spf13/viper"
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	corev1 "k8s.io/api/core/v1"
@@ -47,7 +48,7 @@ type nodeIdentifier struct {
 
 // New creates and returns a nodeidentity.Identifier for Nodes running on Hetzner Cloud
 func New(CacheNodeidentityInfo bool) (nodeidentity.Identifier, error) {
-	hcloudToken := os.Getenv("HCLOUD_TOKEN")
+	hcloudToken := viper.GetString("HCLOUD_TOKEN")
 	if hcloudToken == "" {
 		return nil, fmt.Errorf("%s is required", "HCLOUD_TOKEN")
 	}

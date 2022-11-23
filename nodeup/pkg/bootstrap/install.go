@@ -18,8 +18,9 @@ package bootstrap
 
 import (
 	"fmt"
-	"os"
 	"strings"
+
+	"github.com/spf13/viper"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/systemd"
@@ -99,24 +100,24 @@ func (i *Installation) Build(c *fi.ModelBuilderContext) {
 func (i *Installation) buildEnvFile() *nodetasks.File {
 	envVars := make(map[string]string)
 
-	if os.Getenv("AWS_REGION") != "" {
-		envVars["AWS_REGION"] = os.Getenv("AWS_REGION")
+	if viper.GetString("AWS_REGION") != "" {
+		envVars["AWS_REGION"] = viper.GetString("AWS_REGION")
 	}
 
-	if os.Getenv("GOSSIP_DNS_CONN_LIMIT") != "" {
-		envVars["GOSSIP_DNS_CONN_LIMIT"] = os.Getenv("GOSSIP_DNS_CONN_LIMIT")
+	if viper.GetString("GOSSIP_DNS_CONN_LIMIT") != "" {
+		envVars["GOSSIP_DNS_CONN_LIMIT"] = viper.GetString("GOSSIP_DNS_CONN_LIMIT")
 	}
 
 	// Pass in required credentials when using user-defined s3 endpoint
-	if os.Getenv("S3_ENDPOINT") != "" {
-		envVars["S3_ENDPOINT"] = os.Getenv("S3_ENDPOINT")
-		envVars["S3_REGION"] = os.Getenv("S3_REGION")
-		envVars["S3_ACCESS_KEY_ID"] = os.Getenv("S3_ACCESS_KEY_ID")
-		envVars["S3_SECRET_ACCESS_KEY"] = os.Getenv("S3_SECRET_ACCESS_KEY")
+	if viper.GetString("S3_ENDPOINT") != "" {
+		envVars["S3_ENDPOINT"] = viper.GetString("S3_ENDPOINT")
+		envVars["S3_REGION"] = viper.GetString("S3_REGION")
+		envVars["S3_ACCESS_KEY_ID"] = viper.GetString("S3_ACCESS_KEY_ID")
+		envVars["S3_SECRET_ACCESS_KEY"] = viper.GetString("S3_SECRET_ACCESS_KEY")
 	}
 
 	// Pass in required credentials when using user-defined swift endpoint
-	if os.Getenv("OS_AUTH_URL") != "" {
+	if viper.GetString("OS_AUTH_URL") != "" {
 		for _, envVar := range []string{
 			"OS_TENANT_ID", "OS_TENANT_NAME", "OS_PROJECT_ID", "OS_PROJECT_NAME",
 			"OS_PROJECT_DOMAIN_NAME", "OS_PROJECT_DOMAIN_ID",
@@ -128,37 +129,37 @@ func (i *Installation) buildEnvFile() *nodetasks.File {
 			"OS_APPLICATION_CREDENTIAL_ID",
 			"OS_APPLICATION_CREDENTIAL_SECRET",
 		} {
-			envVars[envVar] = os.Getenv(envVar)
+			envVars[envVar] = viper.GetString(envVar)
 		}
 	}
 
-	if os.Getenv("DIGITALOCEAN_ACCESS_TOKEN") != "" {
-		envVars["DIGITALOCEAN_ACCESS_TOKEN"] = os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
+	if viper.GetString("DIGITALOCEAN_ACCESS_TOKEN") != "" {
+		envVars["DIGITALOCEAN_ACCESS_TOKEN"] = viper.GetString("DIGITALOCEAN_ACCESS_TOKEN")
 	}
 
-	if os.Getenv("HCLOUD_TOKEN") != "" {
-		envVars["HCLOUD_TOKEN"] = os.Getenv("HCLOUD_TOKEN")
+	if viper.GetString("HCLOUD_TOKEN") != "" {
+		envVars["HCLOUD_TOKEN"] = viper.GetString("HCLOUD_TOKEN")
 	}
 
-	if os.Getenv("OSS_REGION") != "" {
-		envVars["OSS_REGION"] = os.Getenv("OSS_REGION")
+	if viper.GetString("OSS_REGION") != "" {
+		envVars["OSS_REGION"] = viper.GetString("OSS_REGION")
 	}
 
-	if os.Getenv("ALIYUN_ACCESS_KEY_ID") != "" {
-		envVars["ALIYUN_ACCESS_KEY_ID"] = os.Getenv("ALIYUN_ACCESS_KEY_ID")
-		envVars["ALIYUN_ACCESS_KEY_SECRET"] = os.Getenv("ALIYUN_ACCESS_KEY_SECRET")
+	if viper.GetString("ALIYUN_ACCESS_KEY_ID") != "" {
+		envVars["ALIYUN_ACCESS_KEY_ID"] = viper.GetString("ALIYUN_ACCESS_KEY_ID")
+		envVars["ALIYUN_ACCESS_KEY_SECRET"] = viper.GetString("ALIYUN_ACCESS_KEY_SECRET")
 	}
 
-	if os.Getenv("AZURE_STORAGE_ACCOUNT") != "" {
-		envVars["AZURE_STORAGE_ACCOUNT"] = os.Getenv("AZURE_STORAGE_ACCOUNT")
+	if viper.GetString("AZURE_STORAGE_ACCOUNT") != "" {
+		envVars["AZURE_STORAGE_ACCOUNT"] = viper.GetString("AZURE_STORAGE_ACCOUNT")
 	}
 
-	if os.Getenv("SCW_SECRET_KEY") != "" {
-		envVars["SCW_ACCESS_KEY"] = os.Getenv("SCW_ACCESS_KEY")
-		envVars["SCW_SECRET_KEY"] = os.Getenv("SCW_SECRET_KEY")
-		envVars["SCW_DEFAULT_PROJECT_ID"] = os.Getenv("SCW_DEFAULT_PROJECT_ID")
-		envVars["SCW_DEFAULT_REGION"] = os.Getenv("SCW_DEFAULT_REGION")
-		envVars["SCW_DEFAULT_ZONE"] = os.Getenv("SCW_DEFAULT_ZONE")
+	if viper.GetString("SCW_SECRET_KEY") != "" {
+		envVars["SCW_ACCESS_KEY"] = viper.GetString("SCW_ACCESS_KEY")
+		envVars["SCW_SECRET_KEY"] = viper.GetString("SCW_SECRET_KEY")
+		envVars["SCW_DEFAULT_PROJECT_ID"] = viper.GetString("SCW_DEFAULT_PROJECT_ID")
+		envVars["SCW_DEFAULT_REGION"] = viper.GetString("SCW_DEFAULT_REGION")
+		envVars["SCW_DEFAULT_ZONE"] = viper.GetString("SCW_DEFAULT_ZONE")
 	}
 
 	sysconfig := ""

@@ -19,16 +19,16 @@ package gce
 import (
 	"encoding/hex"
 	"math/rand"
-	"os"
 	"strings"
 
+	"github.com/spf13/viper"
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/kubetest2/pkg/exec"
 )
 
 func GCSBucketName(projectID string) string {
 	var s string
-	if jobID := os.Getenv("PROW_JOB_ID"); len(jobID) >= 2 {
+	if jobID := viper.GetString("PROW_JOB_ID"); len(jobID) >= 2 {
 		s = jobID[:2]
 	} else {
 		b := make([]byte, 2)

@@ -52,6 +52,8 @@ func TestS3RenderTerraform(t *testing.T) {
 		},
 	}
 	t.Setenv("S3_ENDPOINT", "foo.s3.amazonaws.com")
+	t.Setenv("S3_ACCESS_KEY_ID", "foobar")
+	t.Setenv("S3_SECRET_ACCESS_KEY", "11111111-1111-1111-1111-111111111111")
 
 	t.Setenv("KOPS_STATE_S3_ACL", "bucket-owner-full-control")
 	for _, tc := range grid {

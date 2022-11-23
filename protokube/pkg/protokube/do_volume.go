@@ -23,9 +23,10 @@ import (
 	"io"
 	"net"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
+
+	"github.com/spf13/viper"
 
 	"github.com/digitalocean/godo"
 	"golang.org/x/oauth2"
@@ -148,7 +149,7 @@ func (t *TokenSource) Token() (*oauth2.Token, error) {
 }
 
 func NewDOCloud() (*godo.Client, error) {
-	accessToken := os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
+	accessToken := viper.GetString("DIGITALOCEAN_ACCESS_TOKEN")
 	if accessToken == "" {
 		return nil, errors.New("DIGITALOCEAN_ACCESS_TOKEN is required")
 	}

@@ -19,10 +19,11 @@ package fi
 import (
 	"math/big"
 	"math/rand"
-	"os"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/spf13/viper"
 
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/util/pkg/vfs"
@@ -156,11 +157,11 @@ spec:
 }
 
 func TestVFSCAStoreRoundTripWithVault(t *testing.T) {
-	token := os.Getenv("VAULT_DEV_ROOT_TOKEN_ID")
+	token := viper.GetString("VAULT_DEV_ROOT_TOKEN_ID")
 	if token == "" {
 		t.Skip("No vault dev token set")
 	}
-	if os.Getenv("VAULT_TOKEN") != token {
+	if viper.GetString("VAULT_TOKEN") != token {
 		t.Skip("RoundTrip test needs VAULT_TOKEN == VAULT_DEV_ROOT_TOKEN_ID")
 	}
 	basePath, err := vfs.Context.BuildVfsPath("vault://localhost:8200/secret/clusters/vdscastoretest?tls=false")

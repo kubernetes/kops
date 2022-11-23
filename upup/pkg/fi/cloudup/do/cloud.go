@@ -20,10 +20,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/spf13/viper"
 
 	"github.com/digitalocean/godo"
 	"golang.org/x/oauth2"
@@ -109,7 +110,7 @@ func (t *TokenSource) Token() (*oauth2.Token, error) {
 // NewCloud returns a Cloud, expecting the env var DIGITALOCEAN_ACCESS_TOKEN
 // NewCloud will return an err if DIGITALOCEAN_ACCESS_TOKEN is not defined
 func NewDOCloud(region string) (DOCloud, error) {
-	accessToken := os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
+	accessToken := viper.GetString("DIGITALOCEAN_ACCESS_TOKEN")
 	if accessToken == "" {
 		return nil, errors.New("DIGITALOCEAN_ACCESS_TOKEN is required")
 	}

@@ -19,9 +19,10 @@ package hetzner
 import (
 	"context"
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
+
+	"github.com/spf13/viper"
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"k8s.io/kops/pkg/bootstrap"
@@ -38,7 +39,7 @@ type hetznerVerifier struct {
 var _ bootstrap.Verifier = &hetznerVerifier{}
 
 func NewHetznerVerifier(opt *HetznerVerifierOptions) (bootstrap.Verifier, error) {
-	hcloudToken := os.Getenv("HCLOUD_TOKEN")
+	hcloudToken := viper.GetString("HCLOUD_TOKEN")
 	if hcloudToken == "" {
 		return nil, fmt.Errorf("%s is required", "HCLOUD_TOKEN")
 	}

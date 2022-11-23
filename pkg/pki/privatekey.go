@@ -31,6 +31,8 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/spf13/viper"
+
 	"k8s.io/klog/v2"
 )
 
@@ -53,8 +55,8 @@ func ParsePEMPrivateKey(data []byte) (*PrivateKey, error) {
 func GeneratePrivateKey() (*PrivateKey, error) {
 	rsaKeySize := DefaultPrivateKeySize
 
-	if os.Getenv("KOPS_RSA_PRIVATE_KEY_SIZE") != "" {
-		s := os.Getenv("KOPS_RSA_PRIVATE_KEY_SIZE")
+	if viper.GetString("KOPS_RSA_PRIVATE_KEY_SIZE") != "" {
+		s := viper.GetString("KOPS_RSA_PRIVATE_KEY_SIZE")
 		if v, err := strconv.Atoi(s); err != nil {
 			return nil, fmt.Errorf("error parsing KOPS_RSA_PRIVATE_KEY_SIZE=%s as integer", s)
 		} else {

@@ -25,6 +25,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/spf13/viper"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -46,7 +48,7 @@ func (m *mockKeystore) FindPrimaryKeypair(name string) (*Certificate, *PrivateKe
 }
 
 func TestIssueCert(t *testing.T) {
-	origSize := os.Getenv("KOPS_RSA_PRIVATE_KEY_SIZE")
+	origSize := viper.GetString("KOPS_RSA_PRIVATE_KEY_SIZE")
 	os.Unsetenv("KOPS_RSA_PRIVATE_KEY_SIZE")
 	defer func() {
 		os.Setenv("KOPS_RSA_PRIVATE_KEY_SIZE", origSize)

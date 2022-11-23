@@ -20,9 +20,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"strconv"
 	"time"
+
+	"github.com/spf13/viper"
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	v1 "k8s.io/api/core/v1"
@@ -75,7 +76,7 @@ type hetznerCloudImplementation struct {
 
 // NewHetznerCloud returns a Cloud, using the env var HCLOUD_TOKEN
 func NewHetznerCloud(region string) (HetznerCloud, error) {
-	accessToken := os.Getenv("HCLOUD_TOKEN")
+	accessToken := viper.GetString("HCLOUD_TOKEN")
 	if accessToken == "" {
 		return nil, errors.New("HCLOUD_TOKEN is required")
 	}

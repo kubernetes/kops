@@ -18,10 +18,11 @@ package model
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/spf13/viper"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
@@ -254,23 +255,23 @@ func (t *ProtokubeBuilder) buildEnvFile() (*nodetasks.File, error) {
 	envVars["KUBECONFIG"] = "/var/lib/kops/kubeconfig"
 
 	// Pass in gossip dns connection limit
-	if os.Getenv("GOSSIP_DNS_CONN_LIMIT") != "" {
-		envVars["GOSSIP_DNS_CONN_LIMIT"] = os.Getenv("GOSSIP_DNS_CONN_LIMIT")
+	if viper.GetString("GOSSIP_DNS_CONN_LIMIT") != "" {
+		envVars["GOSSIP_DNS_CONN_LIMIT"] = viper.GetString("GOSSIP_DNS_CONN_LIMIT")
 	}
 
 	// Pass in required credentials when using user-defined s3 endpoint
-	if os.Getenv("AWS_REGION") != "" {
-		envVars["AWS_REGION"] = os.Getenv("AWS_REGION")
+	if viper.GetString("AWS_REGION") != "" {
+		envVars["AWS_REGION"] = viper.GetString("AWS_REGION")
 	}
 
-	if os.Getenv("S3_ENDPOINT") != "" {
-		envVars["S3_ENDPOINT"] = os.Getenv("S3_ENDPOINT")
-		envVars["S3_REGION"] = os.Getenv("S3_REGION")
-		envVars["S3_ACCESS_KEY_ID"] = os.Getenv("S3_ACCESS_KEY_ID")
-		envVars["S3_SECRET_ACCESS_KEY"] = os.Getenv("S3_SECRET_ACCESS_KEY")
+	if viper.GetString("S3_ENDPOINT") != "" {
+		envVars["S3_ENDPOINT"] = viper.GetString("S3_ENDPOINT")
+		envVars["S3_REGION"] = viper.GetString("S3_REGION")
+		envVars["S3_ACCESS_KEY_ID"] = viper.GetString("S3_ACCESS_KEY_ID")
+		envVars["S3_SECRET_ACCESS_KEY"] = viper.GetString("S3_SECRET_ACCESS_KEY")
 	}
 
-	if os.Getenv("OS_AUTH_URL") != "" {
+	if viper.GetString("OS_AUTH_URL") != "" {
 		for _, envVar := range []string{
 			"OS_TENANT_ID", "OS_TENANT_NAME", "OS_PROJECT_ID", "OS_PROJECT_NAME",
 			"OS_PROJECT_DOMAIN_NAME", "OS_PROJECT_DOMAIN_ID",
@@ -282,37 +283,37 @@ func (t *ProtokubeBuilder) buildEnvFile() (*nodetasks.File, error) {
 			"OS_APPLICATION_CREDENTIAL_ID",
 			"OS_APPLICATION_CREDENTIAL_SECRET",
 		} {
-			envVars[envVar] = os.Getenv(envVar)
+			envVars[envVar] = viper.GetString(envVar)
 		}
 	}
 
-	if t.CloudProvider == kops.CloudProviderDO && os.Getenv("DIGITALOCEAN_ACCESS_TOKEN") != "" {
-		envVars["DIGITALOCEAN_ACCESS_TOKEN"] = os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
+	if t.CloudProvider == kops.CloudProviderDO && viper.GetString("DIGITALOCEAN_ACCESS_TOKEN") != "" {
+		envVars["DIGITALOCEAN_ACCESS_TOKEN"] = viper.GetString("DIGITALOCEAN_ACCESS_TOKEN")
 	}
 
-	if os.Getenv("HCLOUD_TOKEN") != "" {
-		envVars["HCLOUD_TOKEN"] = os.Getenv("HCLOUD_TOKEN")
+	if viper.GetString("HCLOUD_TOKEN") != "" {
+		envVars["HCLOUD_TOKEN"] = viper.GetString("HCLOUD_TOKEN")
 	}
 
-	if os.Getenv("OSS_REGION") != "" {
-		envVars["OSS_REGION"] = os.Getenv("OSS_REGION")
+	if viper.GetString("OSS_REGION") != "" {
+		envVars["OSS_REGION"] = viper.GetString("OSS_REGION")
 	}
 
-	if os.Getenv("ALIYUN_ACCESS_KEY_ID") != "" {
-		envVars["ALIYUN_ACCESS_KEY_ID"] = os.Getenv("ALIYUN_ACCESS_KEY_ID")
-		envVars["ALIYUN_ACCESS_KEY_SECRET"] = os.Getenv("ALIYUN_ACCESS_KEY_SECRET")
+	if viper.GetString("ALIYUN_ACCESS_KEY_ID") != "" {
+		envVars["ALIYUN_ACCESS_KEY_ID"] = viper.GetString("ALIYUN_ACCESS_KEY_ID")
+		envVars["ALIYUN_ACCESS_KEY_SECRET"] = viper.GetString("ALIYUN_ACCESS_KEY_SECRET")
 	}
 
-	if os.Getenv("AZURE_STORAGE_ACCOUNT") != "" {
-		envVars["AZURE_STORAGE_ACCOUNT"] = os.Getenv("AZURE_STORAGE_ACCOUNT")
+	if viper.GetString("AZURE_STORAGE_ACCOUNT") != "" {
+		envVars["AZURE_STORAGE_ACCOUNT"] = viper.GetString("AZURE_STORAGE_ACCOUNT")
 	}
 
 	if t.CloudProvider == kops.CloudProviderScaleway {
-		envVars["SCW_ACCESS_KEY"] = os.Getenv("SCW_ACCESS_KEY")
-		envVars["SCW_SECRET_KEY"] = os.Getenv("SCW_SECRET_KEY")
-		envVars["SCW_DEFAULT_PROJECT_ID"] = os.Getenv("SCW_DEFAULT_PROJECT_ID")
-		envVars["SCW_DEFAULT_REGION"] = os.Getenv("SCW_DEFAULT_REGION")
-		envVars["SCW_DEFAULT_ZONE"] = os.Getenv("SCW_DEFAULT_ZONE")
+		envVars["SCW_ACCESS_KEY"] = viper.GetString("SCW_ACCESS_KEY")
+		envVars["SCW_SECRET_KEY"] = viper.GetString("SCW_SECRET_KEY")
+		envVars["SCW_DEFAULT_PROJECT_ID"] = viper.GetString("SCW_DEFAULT_PROJECT_ID")
+		envVars["SCW_DEFAULT_REGION"] = viper.GetString("SCW_DEFAULT_REGION")
+		envVars["SCW_DEFAULT_ZONE"] = viper.GetString("SCW_DEFAULT_ZONE")
 	}
 
 	for _, envVar := range proxy.GetProxyEnvVars(t.Cluster.Spec.EgressProxy) {
@@ -321,7 +322,7 @@ func (t *ProtokubeBuilder) buildEnvFile() (*nodetasks.File, error) {
 
 	switch t.Distribution {
 	case distributions.DistributionFlatcar:
-		envVars["PATH"] = fmt.Sprintf("/opt/kops/bin:%v", os.Getenv("PATH"))
+		envVars["PATH"] = fmt.Sprintf("/opt/kops/bin:%v", viper.GetString("PATH"))
 	}
 
 	sysconfig := ""

@@ -19,11 +19,12 @@ package assets
 import (
 	"fmt"
 	"net/url"
-	"os"
 	"path"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/spf13/viper"
 
 	"github.com/blang/semver/v4"
 	"github.com/google/go-containerregistry/pkg/authn"
@@ -148,7 +149,7 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 		// 1. DOCKER_REGISTRY=[your docker hub repo] make dns-controller-push
 		// 2. export DNSCONTROLLER_IMAGE=[your docker hub repo]
 		// 3. make kops and create/apply cluster
-		override := os.Getenv("DNSCONTROLLER_IMAGE")
+		override := viper.GetString("DNSCONTROLLER_IMAGE")
 		if override != "" {
 			image = override
 		}
@@ -159,14 +160,14 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 		// 1. DOCKER_REGISTRY=[your docker hub repo] make kops-controller-push
 		// 2. export KOPSCONTROLLER_IMAGE=[your docker hub repo]
 		// 3. make kops and create/apply cluster
-		override := os.Getenv("KOPSCONTROLLER_IMAGE")
+		override := viper.GetString("KOPSCONTROLLER_IMAGE")
 		if override != "" {
 			image = override
 		}
 	}
 
 	if strings.HasPrefix(image, "k8s.gcr.io/kops/kube-apiserver-healthcheck:") || strings.HasPrefix(image, "registry.k8s.io/kops/kube-apiserver-healthcheck:") {
-		override := os.Getenv("KUBE_APISERVER_HEALTHCHECK_IMAGE")
+		override := viper.GetString("KUBE_APISERVER_HEALTHCHECK_IMAGE")
 		if override != "" {
 			image = override
 		}
@@ -218,7 +219,7 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 
 	a.ImageAssets = append(a.ImageAssets, asset)
 
-	if !featureflag.ImageDigest.Enabled() || os.Getenv("KOPS_BASE_URL") != "" {
+	if !featureflag.ImageDigest.Enabled() || viper.GetString("KOPS_BASE_URL") != "" {
 		return image, nil
 	}
 

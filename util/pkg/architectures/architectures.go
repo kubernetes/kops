@@ -18,8 +18,9 @@ package architectures
 
 import (
 	"fmt"
-	"os"
 	"runtime"
+
+	"github.com/spf13/viper"
 
 	"k8s.io/klog/v2"
 )
@@ -51,7 +52,7 @@ func FindArchitecture() (Architecture, error) {
 func GetSupported() []Architecture {
 	// Kubernetes PR builds only generate AMD64 binaries at the moment
 	// Force support only for AMD64 or ARM64
-	arch := os.Getenv("KOPS_ARCH")
+	arch := viper.GetString("KOPS_ARCH")
 	if arch != "" {
 		switch arch {
 		case "amd64":

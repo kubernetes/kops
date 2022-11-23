@@ -32,12 +32,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
-	"os"
 	"path"
 	"sort"
 	"strconv"
 	"strings"
 	"text/template"
+
+	"github.com/spf13/viper"
 
 	"github.com/Masterminds/sprig/v3"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -166,11 +167,11 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	}
 
 	dest["DO_TOKEN"] = func() string {
-		return os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
+		return viper.GetString("DIGITALOCEAN_ACCESS_TOKEN")
 	}
 
 	dest["HCLOUD_TOKEN"] = func() string {
-		return os.Getenv("HCLOUD_TOKEN")
+		return viper.GetString("HCLOUD_TOKEN")
 	}
 	dest["HCLOUD_NETWORK"] = func() string {
 		if cluster.Spec.NetworkID != "" {
@@ -538,7 +539,7 @@ func (tf *TemplateFunctions) DNSControllerArgv() ([]string, error) {
 	} else {
 		switch cluster.Spec.GetCloudProvider() {
 		case kops.CloudProviderAWS:
-			if strings.HasPrefix(os.Getenv("AWS_REGION"), "cn-") {
+			if strings.HasPrefix(viper.GetString("AWS_REGION"), "cn-") {
 				argv = append(argv, "--dns=gossip")
 			} else {
 				argv = append(argv, "--dns=aws-route53")

@@ -23,6 +23,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/spf13/viper"
+
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -41,7 +43,7 @@ var masterZones []string
 var sshPublicKey = "~/.ssh/id_rsa.pub"
 
 var (
-	flagRegistryBase = flag.String("registry", os.Getenv("KOPS_STATE_STORE"), "VFS path where files are kept")
+	flagRegistryBase = flag.String("registry", viper.GetString("KOPS_STATE_STORE"), "VFS path where files are kept")
 	flagClusterName  = flag.String("name", "", "Name of cluster to create")
 	flagZones        = flag.String("zones", "", "Comma separated list of zones to create")
 )

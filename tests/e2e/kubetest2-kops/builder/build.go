@@ -22,6 +22,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/spf13/viper"
 	"sigs.k8s.io/kubetest2/pkg/exec"
 )
 
@@ -34,10 +35,10 @@ type BuildOptions struct {
 func (b *BuildOptions) Build() error {
 	cmd := exec.Command("make", "gcs-publish-ci")
 	cmd.SetEnv(
-		fmt.Sprintf("HOME=%v", os.Getenv("HOME")),
-		fmt.Sprintf("PATH=%v", os.Getenv("PATH")),
+		fmt.Sprintf("HOME=%v", viper.GetString("HOME")),
+		fmt.Sprintf("PATH=%v", viper.GetString("PATH")),
 		fmt.Sprintf("GCS_LOCATION=%v", b.StageLocation),
-		fmt.Sprintf("GOPATH=%v", os.Getenv("GOPATH")),
+		fmt.Sprintf("GOPATH=%v", viper.GetString("GOPATH")),
 	)
 	cmd.SetDir(b.KopsRoot)
 	exec.InheritOutput(cmd)

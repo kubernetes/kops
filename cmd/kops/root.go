@@ -152,7 +152,7 @@ func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
 	viper.BindEnv("KOPS_STATE_STORE")
 	// TODO implement completion against VFS
 
-	defaultClusterName := os.Getenv("KOPS_CLUSTER_NAME")
+	defaultClusterName := viper.GetString("KOPS_CLUSTER_NAME")
 	cmd.PersistentFlags().StringVarP(&rootCommand.clusterName, "name", "", defaultClusterName, "Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable")
 	cmd.RegisterFlagCompletionFunc("name", commandutils.CompleteClusterName(rootCommand.factory, false, false))
 

@@ -21,10 +21,11 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
-	"os"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/spf13/viper"
 
 	"k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/klog/v2"
@@ -128,15 +129,15 @@ func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.Context) (*nodeu
 func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[string]string, error) {
 	env := make(map[string]string)
 
-	if os.Getenv("GOSSIP_DNS_CONN_LIMIT") != "" {
-		env["GOSSIP_DNS_CONN_LIMIT"] = os.Getenv("GOSSIP_DNS_CONN_LIMIT")
+	if viper.GetString("GOSSIP_DNS_CONN_LIMIT") != "" {
+		env["GOSSIP_DNS_CONN_LIMIT"] = viper.GetString("GOSSIP_DNS_CONN_LIMIT")
 	}
 
-	if os.Getenv("S3_ENDPOINT") != "" && (!model.UseKopsControllerForNodeBootstrap(cluster) || b.ig.HasAPIServer()) {
-		env["S3_ENDPOINT"] = os.Getenv("S3_ENDPOINT")
-		env["S3_REGION"] = os.Getenv("S3_REGION")
-		env["S3_ACCESS_KEY_ID"] = os.Getenv("S3_ACCESS_KEY_ID")
-		env["S3_SECRET_ACCESS_KEY"] = os.Getenv("S3_SECRET_ACCESS_KEY")
+	if viper.GetString("S3_ENDPOINT") != "" && (!model.UseKopsControllerForNodeBootstrap(cluster) || b.ig.HasAPIServer()) {
+		env["S3_ENDPOINT"] = viper.GetString("S3_ENDPOINT")
+		env["S3_REGION"] = viper.GetString("S3_REGION")
+		env["S3_ACCESS_KEY_ID"] = viper.GetString("S3_ACCESS_KEY_ID")
+		env["S3_SECRET_ACCESS_KEY"] = viper.GetString("S3_SECRET_ACCESS_KEY")
 	}
 
 	if cluster.Spec.GetCloudProvider() == kops.CloudProviderOpenstack {
@@ -150,7 +151,7 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 		}
 
 		hasCCM := cluster.Spec.ExternalCloudControllerManager != nil
-		appCreds := os.Getenv("OS_APPLICATION_CREDENTIAL_ID") != "" && os.Getenv("OS_APPLICATION_CREDENTIAL_SECRET") != ""
+		appCreds := viper.GetString("OS_APPLICATION_CREDENTIAL_ID") != "" && viper.GetString("OS_APPLICATION_CREDENTIAL_SECRET") != ""
 		if !hasCCM && appCreds {
 			klog.Warning("application credentials only supported when using external cloud controller manager. Continuing with passwords.")
 		}
@@ -169,22 +170,22 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 		}
 
 		// Pass in required credentials when using user-defined swift endpoint
-		if os.Getenv("OS_AUTH_URL") != "" {
+		if viper.GetString("OS_AUTH_URL") != "" {
 			for _, envVar := range osEnvs {
-				env[envVar] = fmt.Sprintf("'%s'", os.Getenv(envVar))
+				env[envVar] = fmt.Sprintf("'%s'", viper.GetString(envVar))
 			}
 		}
 	}
 
 	if cluster.Spec.GetCloudProvider() == kops.CloudProviderDO {
-		doToken := os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
+		doToken := viper.GetString("DIGITALOCEAN_ACCESS_TOKEN")
 		if doToken != "" {
 			env["DIGITALOCEAN_ACCESS_TOKEN"] = doToken
 		}
 	}
 
 	if cluster.Spec.GetCloudProvider() == kops.CloudProviderHetzner && (b.ig.IsControlPlane() || cluster.IsGossip()) {
-		hcloudToken := os.Getenv("HCLOUD_TOKEN")
+		hcloudToken := viper.GetString("HCLOUD_TOKEN")
 		if hcloudToken != "" {
 			env["HCLOUD_TOKEN"] = hcloudToken
 		}
@@ -203,35 +204,35 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 	}
 
 	if cluster.Spec.GetCloudProvider() == kops.CloudProviderAzure {
-		env["AZURE_STORAGE_ACCOUNT"] = os.Getenv("AZURE_STORAGE_ACCOUNT")
-		azureEnv := os.Getenv("AZURE_ENVIRONMENT")
+		env["AZURE_STORAGE_ACCOUNT"] = viper.GetString("AZURE_STORAGE_ACCOUNT")
+		azureEnv := viper.GetString("AZURE_ENVIRONMENT")
 		if azureEnv != "" {
-			env["AZURE_ENVIRONMENT"] = os.Getenv("AZURE_ENVIRONMENT")
+			env["AZURE_ENVIRONMENT"] = viper.GetString("AZURE_ENVIRONMENT")
 		}
 	}
 
 	if cluster.Spec.GetCloudProvider() == kops.CloudProviderScaleway {
 		errList := []error(nil)
 
-		region, err := scw.ParseRegion(os.Getenv("SCW_DEFAULT_REGION"))
+		region, err := scw.ParseRegion(viper.GetString("SCW_DEFAULT_REGION"))
 		if err != nil {
 			errList = append(errList, fmt.Errorf("error parsing SCW_DEFAULT_REGION: %w", err))
 		}
-		zone, err := scw.ParseZone(os.Getenv("SCW_DEFAULT_ZONE"))
+		zone, err := scw.ParseZone(viper.GetString("SCW_DEFAULT_ZONE"))
 		if err != nil {
 			errList = append(errList, fmt.Errorf("error parsing SCW_DEFAULT_ZONE: %w", err))
 		}
 
 		// We make sure that the credentials env vars are defined
-		scwAccessKey := os.Getenv("SCW_ACCESS_KEY")
+		scwAccessKey := viper.GetString("SCW_ACCESS_KEY")
 		if scwAccessKey == "" {
 			errList = append(errList, fmt.Errorf("SCW_ACCESS_KEY has to be set as an environment variable"))
 		}
-		scwSecretKey := os.Getenv("SCW_SECRET_KEY")
+		scwSecretKey := viper.GetString("SCW_SECRET_KEY")
 		if scwSecretKey == "" {
 			errList = append(errList, fmt.Errorf("SCW_SECRET_KEY has to be set as an environment variable"))
 		}
-		scwProjectID := os.Getenv("SCW_DEFAULT_PROJECT_ID")
+		scwProjectID := viper.GetString("SCW_DEFAULT_PROJECT_ID")
 		if scwProjectID == "" {
 			errList = append(errList, fmt.Errorf("SCW_DEFAULT_PROJECT_ID has to be set as an environment variable"))
 		}

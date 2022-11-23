@@ -158,7 +158,7 @@ func (s *S3Context) getDetailsForBucket(bucket string) (*S3BucketDetails, error)
 		return bucketDetails, nil
 	}
 
-	awsRegion := os.Getenv("AWS_REGION")
+	awsRegion := viper.GetString("AWS_REGION")
 	if awsRegion == "" {
 		isEC2, err := isRunningOnEC2()
 		if isEC2 || err != nil {

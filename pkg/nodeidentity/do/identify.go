@@ -22,9 +22,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
+
+	"github.com/spf13/viper"
 
 	"golang.org/x/oauth2"
 
@@ -80,7 +81,7 @@ func getMetadataRegion() (string, error) {
 // NewCloud returns a Cloud, expecting the env var DIGITALOCEAN_ACCESS_TOKEN
 // NewCloud will return an err if DIGITALOCEAN_ACCESS_TOKEN is not defined
 func NewCloud(region string) (*godo.Client, error) {
-	accessToken := os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
+	accessToken := viper.GetString("DIGITALOCEAN_ACCESS_TOKEN")
 	if accessToken == "" {
 		return nil, errors.New("DIGITALOCEAN_ACCESS_TOKEN is required")
 	}

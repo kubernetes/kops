@@ -22,10 +22,10 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 
 	"github.com/Azure/azure-pipeline-go/pipeline"
 	"github.com/Azure/azure-storage-blob-go/azblob"
+	"github.com/spf13/viper"
 	"golang.org/x/oauth2"
 	"k8s.io/klog/v2"
 )
@@ -51,7 +51,7 @@ func (c *azureClient) newContainerURL(containerName string) (*azblob.ContainerUR
 }
 
 func newAzureClient() (*azureClient, error) {
-	accountName := os.Getenv("AZURE_STORAGE_ACCOUNT")
+	accountName := viper.GetString("AZURE_STORAGE_ACCOUNT")
 	if accountName == "" {
 		return nil, fmt.Errorf("AZURE_STORAGE_ACCOUNT must be set")
 	}
@@ -73,7 +73,7 @@ func newAzureClient() (*azureClient, error) {
 // Please note that Instance Metadata Service is available only within a VM
 // running in Azure (and when necessary role is attached to the VM).
 func newAzureCredential(accountName string) (azblob.Credential, error) {
-	accountKey := os.Getenv("AZURE_STORAGE_KEY")
+	accountKey := viper.GetString("AZURE_STORAGE_KEY")
 	if accountKey != "" {
 		klog.V(2).Infof("Creating a shared key credential")
 		return azblob.NewSharedKeyCredential(accountName, accountKey)

@@ -23,12 +23,14 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/spf13/viper"
+
 	"k8s.io/kops/pkg/diff"
 )
 
 // UpdateExpectedOutput returns true if we should be writing/updating the expected output.
 func UpdateExpectedOutput() bool {
-	return os.Getenv("HACK_UPDATE_EXPECTED_IN_PLACE") != ""
+	return viper.GetString("HACK_UPDATE_EXPECTED_IN_PLACE") != ""
 }
 
 // AssertMatchesFile matches the actual value to a with expected file.

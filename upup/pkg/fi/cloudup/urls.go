@@ -19,8 +19,9 @@ package cloudup
 import (
 	"fmt"
 	"net/url"
-	"os"
 	"path"
+
+	"github.com/spf13/viper"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops"
@@ -54,7 +55,7 @@ func BaseURL() (*url.URL, error) {
 		return copyBaseURL(kopsBaseURL)
 	}
 
-	baseURLString := os.Getenv("KOPS_BASE_URL")
+	baseURLString := viper.GetString("KOPS_BASE_URL")
 	var err error
 	if baseURLString == "" {
 		baseURLString = fmt.Sprintf(defaultKopsBaseURL, kops.Version)

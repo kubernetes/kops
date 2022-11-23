@@ -18,9 +18,10 @@ package cloudup
 
 import (
 	"fmt"
-	"os"
 	"reflect"
 	"testing"
+
+	"github.com/spf13/viper"
 
 	"k8s.io/kops/util/pkg/architectures"
 )
@@ -312,7 +313,7 @@ func TestContainerdVersionHash(t *testing.T) {
 }
 
 func TestContainerdVersionsHashesAmd64(t *testing.T) {
-	if os.Getenv("VERIFY_HASHES") == "" {
+	if viper.GetString("VERIFY_HASHES") == "" {
 		t.Skip("VERIFY_HASHES not set, won't download & verify containerd hashes")
 	}
 
@@ -327,7 +328,7 @@ func TestContainerdVersionsHashesAmd64(t *testing.T) {
 }
 
 func TestContainerdVersionsHashesArm64(t *testing.T) {
-	if os.Getenv("VERIFY_HASHES") == "" {
+	if viper.GetString("VERIFY_HASHES") == "" {
 		t.Skip("VERIFY_HASHES not set, won't download & verify containerd hashes")
 	}
 

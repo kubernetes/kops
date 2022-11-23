@@ -19,9 +19,10 @@ package gce
 import (
 	"context"
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
+
+	"github.com/spf13/viper"
 
 	"cloud.google.com/go/compute/metadata"
 	compute "google.golang.org/api/compute/v1"
@@ -53,7 +54,7 @@ func New() (nodeidentity.LegacyIdentifier, error) {
 	}
 
 	// Project ID
-	project := os.Getenv("GCP_PROJECT")
+	project := viper.GetString("GCP_PROJECT")
 	if project != "" {
 		klog.Infof("using project=%q from GCP_PROJECT env var", project)
 	} else {

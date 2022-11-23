@@ -30,6 +30,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/spf13/viper"
+
 	"github.com/blang/semver/v4"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
@@ -901,7 +903,7 @@ func (c *ApplyClusterCmd) validateKopsVersion() error {
 	}
 
 	if required {
-		if os.Getenv("KOPS_RUN_OBSOLETE_VERSION") == "" {
+		if viper.GetString("KOPS_RUN_OBSOLETE_VERSION") == "" {
 			return fmt.Errorf("kops upgrade is required")
 		}
 	}
@@ -935,7 +937,7 @@ func (c *ApplyClusterCmd) validateKubernetesVersion() error {
 			fmt.Printf("\n")
 			fmt.Printf("%s\n", starline)
 			fmt.Printf("\n")
-			if os.Getenv("KOPS_RUN_TOO_NEW_VERSION") == "" {
+			if viper.GetString("KOPS_RUN_TOO_NEW_VERSION") == "" {
 				return fmt.Errorf("kops upgrade is required")
 			}
 		}
@@ -1018,7 +1020,7 @@ func (c *ApplyClusterCmd) validateKubernetesVersion() error {
 	}
 
 	if required {
-		if os.Getenv("KOPS_RUN_OBSOLETE_VERSION") == "" {
+		if viper.GetString("KOPS_RUN_OBSOLETE_VERSION") == "" {
 			return fmt.Errorf("kubernetes upgrade is required")
 		}
 	}
@@ -1228,10 +1230,10 @@ func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 
 		// `docker load` our images when using a KOPS_BASE_URL, so we
 		// don't need to push/pull from a registry
-		if os.Getenv("KOPS_BASE_URL") != "" && isMaster {
+		if viper.GetString("KOPS_BASE_URL") != "" && isMaster {
 			for _, arch := range architectures.GetSupported() {
 				for _, name := range []string{"kops-controller", "dns-controller", "kube-apiserver-healthcheck"} {
-					baseURL, err := url.Parse(os.Getenv("KOPS_BASE_URL"))
+					baseURL, err := url.Parse(viper.GetString("KOPS_BASE_URL"))
 					if err != nil {
 						return nil, err
 					}
@@ -1251,10 +1253,10 @@ func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 				}
 			}
 		}
-		if os.Getenv("KOPS_BASE_URL") != "" && isAPIServer {
+		if viper.GetString("KOPS_BASE_URL") != "" && isAPIServer {
 			for _, arch := range architectures.GetSupported() {
 				for _, name := range []string{"kube-apiserver-healthcheck"} {
-					baseURL, err := url.Parse(os.Getenv("KOPS_BASE_URL"))
+					baseURL, err := url.Parse(viper.GetString("KOPS_BASE_URL"))
 					if err != nil {
 						return nil, err
 					}

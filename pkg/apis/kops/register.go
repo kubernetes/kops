@@ -28,7 +28,7 @@ var (
 
 //var GroupFactoryRegistry = make(announced.APIGroupFactoryRegistry)
 //
-//var Registry = registered.NewOrDie(os.Getenv("KOPS_API_VERSIONS"))
+//var Registry = registered.NewOrDie(viper.GetString("KOPS_API_VERSIONS"))
 //
 //var Scheme = runtime.NewScheme()
 //

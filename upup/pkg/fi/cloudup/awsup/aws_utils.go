@@ -18,9 +18,10 @@ package awsup
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"sync"
+
+	"github.com/spf13/viper"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/arn"
@@ -67,7 +68,7 @@ func ValidateRegion(region string) error {
 		klog.V(2).Infof("Querying EC2 for all valid regions")
 
 		request := &ec2.DescribeRegionsInput{}
-		awsRegion := os.Getenv("AWS_REGION")
+		awsRegion := viper.GetString("AWS_REGION")
 		if awsRegion == "" {
 			awsRegion = "us-east-1"
 		}
@@ -98,7 +99,7 @@ func ValidateRegion(region string) error {
 		}
 	}
 
-	if os.Getenv("SKIP_REGION_CHECK") != "" {
+	if viper.GetString("SKIP_REGION_CHECK") != "" {
 		klog.Infof("AWS region does not appear to be valid, but skipping because SKIP_REGION_CHECK is set")
 		return nil
 	}

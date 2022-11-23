@@ -24,6 +24,8 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/spf13/viper"
+
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/cloudresourcemanager/v1"
 	compute "google.golang.org/api/compute/v1"
@@ -122,8 +124,8 @@ func NewGCECloud(region string, project string, labels map[string]string) (GCECl
 
 	ctx := context.Background()
 
-	if os.Getenv("GOOGLE_APPLICATION_CREDENTIALS") != "" {
-		klog.Infof("Will load GOOGLE_APPLICATION_CREDENTIALS from %s", os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"))
+	if viper.GetString("GOOGLE_APPLICATION_CREDENTIALS") != "" {
+		klog.Infof("Will load GOOGLE_APPLICATION_CREDENTIALS from %s", viper.GetString("GOOGLE_APPLICATION_CREDENTIALS"))
 	}
 
 	computeClient, err := newComputeClientImpl(ctx)
