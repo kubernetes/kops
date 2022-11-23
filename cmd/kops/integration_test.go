@@ -808,6 +808,13 @@ func TestSharedVPC(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
+// TestSharedVPCIPv6 runs the test on a configuration with a shared VPC using IPv6
+func TestSharedVPCIPv6(t *testing.T) {
+	newIntegrationTest("minimal-ipv6.example.com", "shared_vpc_ipv6").
+		withDefaultAddons24().
+		runTestTerraformAWS(t)
+}
+
 // TestExistingIAM runs the test on a configuration with existing IAM instance profiles
 func TestExistingIAM(t *testing.T) {
 	lifecycleOverrides := []string{"IAMRole=ExistsAndWarnIfChanges", "IAMRolePolicy=ExistsAndWarnIfChanges", "IAMInstanceProfileRole=ExistsAndWarnIfChanges"}
