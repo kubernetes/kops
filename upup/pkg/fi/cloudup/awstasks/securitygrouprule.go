@@ -26,7 +26,6 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -396,62 +395,4 @@ func (_ *SecurityGroupRule) RenderTerraform(t *terraform.TerraformTarget, a, e, 
 	}
 
 	return t.RenderResource("aws_security_group_rule", *e.Name, tf)
-}
-
-type cloudformationSecurityGroupIngress struct {
-	SecurityGroup *cloudformation.Literal `json:"GroupId,omitempty"`
-	SourceGroup   *cloudformation.Literal `json:"SourceSecurityGroupId,omitempty"`
-
-	FromPort *int64 `json:"FromPort,omitempty"`
-	ToPort   *int64 `json:"ToPort,omitempty"`
-
-	Protocol           *string `json:"IpProtocol,omitempty"`
-	CidrIp             *string `json:"CidrIp,omitempty"`
-	CidrIpv6           *string `json:"CidrIpv6,omitempty"`
-	SourcePrefixListId *string `json:"SourcePrefixListId,omitempty"`
-}
-
-func (_ *SecurityGroupRule) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *SecurityGroupRule) error {
-	cfType := "AWS::EC2::SecurityGroupIngress"
-	if fi.ValueOf(e.Egress) {
-		cfType = "AWS::EC2::SecurityGroupEgress"
-	}
-
-	tf := &cloudformationSecurityGroupIngress{
-		SecurityGroup: e.SecurityGroup.CloudformationLink(),
-		FromPort:      e.FromPort,
-		ToPort:        e.ToPort,
-		Protocol:      e.Protocol,
-	}
-
-	if e.Protocol == nil {
-		tf.Protocol = fi.PtrTo("-1")
-		tf.FromPort = fi.PtrTo(int64(0))
-		tf.ToPort = fi.PtrTo(int64(0))
-	}
-
-	if tf.FromPort == nil {
-		// FromPort is required by tf
-		tf.FromPort = fi.PtrTo(int64(0))
-	}
-	if tf.ToPort == nil {
-		// ToPort is required by tf
-		tf.ToPort = fi.PtrTo(int64(65535))
-	}
-
-	if e.SourceGroup != nil {
-		tf.SourceGroup = e.SourceGroup.CloudformationLink()
-	}
-
-	if e.CIDR != nil {
-		tf.CidrIp = e.CIDR
-	}
-	if e.IPv6CIDR != nil {
-		tf.CidrIpv6 = e.IPv6CIDR
-	}
-	if e.PrefixList != nil {
-		tf.SourcePrefixListId = e.PrefixList
-	}
-
-	return t.RenderResource(cfType, *e.Name, tf)
 }

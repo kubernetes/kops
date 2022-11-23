@@ -23,7 +23,6 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
@@ -122,13 +121,6 @@ func (*WarmPool) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *WarmPool) error
 func (_ *WarmPool) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *WarmPool) error {
 	if changes != nil {
 		klog.Warning("ASG warm pool is not supported by the terraform target")
-	}
-	return nil
-}
-
-func (_ *WarmPool) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *WarmPool) error {
-	if changes != nil {
-		klog.Warning("ASG warm pool is not supported by the cloudformation target")
 	}
 	return nil
 }

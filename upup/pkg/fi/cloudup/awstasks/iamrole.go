@@ -29,7 +29,6 @@ import (
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
@@ -370,40 +369,4 @@ func (_ *IAMRole) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *I
 
 func (e *IAMRole) TerraformLink() *terraformWriter.Literal {
 	return terraformWriter.LiteralProperty("aws_iam_role", *e.Name, "name")
-}
-
-type cloudformationIAMRole struct {
-	RoleName                 *string `json:"RoleName"`
-	AssumeRolePolicyDocument map[string]interface{}
-	PermissionsBoundary      *string             `json:"PermissionsBoundary,omitempty"`
-	Tags                     []cloudformationTag `json:"Tags,omitempty"`
-}
-
-func (_ *IAMRole) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *IAMRole) error {
-	jsonString, err := fi.ResourceAsBytes(e.RolePolicyDocument)
-	if err != nil {
-		return err
-	}
-
-	data := make(map[string]interface{})
-	err = json.Unmarshal(jsonString, &data)
-	if err != nil {
-		return fmt.Errorf("error parsing RolePolicyDocument: %v", err)
-	}
-
-	cf := &cloudformationIAMRole{
-		RoleName:                 e.Name,
-		AssumeRolePolicyDocument: data,
-		Tags:                     buildCloudformationTags(e.Tags),
-	}
-
-	if e.PermissionsBoundary != nil {
-		cf.PermissionsBoundary = e.PermissionsBoundary
-	}
-
-	return t.RenderResource("AWS::IAM::Role", *e.Name, cf)
-}
-
-func (e *IAMRole) CloudformationLink() *cloudformation.Literal {
-	return cloudformation.Ref("AWS::IAM::Role", *e.Name)
 }

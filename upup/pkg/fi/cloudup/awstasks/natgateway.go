@@ -26,7 +26,6 @@ import (
 	raws "k8s.io/kops/pkg/resources/aws"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
@@ -397,41 +396,4 @@ func (e *NatGateway) TerraformLink() *terraformWriter.Literal {
 	}
 
 	return terraformWriter.LiteralProperty("aws_nat_gateway", *e.Name, "id")
-}
-
-type cloudformationNATGateway struct {
-	AllocationID *cloudformation.Literal `json:"AllocationId,omitempty"`
-	SubnetID     *cloudformation.Literal `json:"SubnetId,omitempty"`
-	Tags         []cloudformationTag     `json:"Tags,omitempty"`
-}
-
-func (_ *NatGateway) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *NatGateway) error {
-	if fi.ValueOf(e.Shared) {
-		if e.ID == nil {
-			return fmt.Errorf("ID must be set, if NatGateway is shared: %s", e)
-		}
-
-		klog.V(4).Infof("reusing existing NatGateway with id %q", *e.ID)
-		return nil
-	}
-
-	cf := &cloudformationNATGateway{
-		AllocationID: e.ElasticIP.CloudformationAllocationID(),
-		SubnetID:     e.Subnet.CloudformationLink(),
-		Tags:         buildCloudformationTags(e.Tags),
-	}
-
-	return t.RenderResource("AWS::EC2::NatGateway", *e.Name, cf)
-}
-
-func (e *NatGateway) CloudformationLink() *cloudformation.Literal {
-	if fi.ValueOf(e.Shared) {
-		if e.ID == nil {
-			klog.Fatalf("ID must be set, if NatGateway is shared: %s", e)
-		}
-
-		return cloudformation.LiteralString(*e.ID)
-	}
-
-	return cloudformation.Ref("AWS::EC2::NatGateway", *e.Name)
 }

@@ -23,7 +23,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
@@ -109,27 +108,6 @@ func (_ *VPCAmazonIPv6CIDRBlock) RenderAWS(t *awsup.AWSAPITarget, a, e, changes 
 func (_ *VPCAmazonIPv6CIDRBlock) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPCAmazonIPv6CIDRBlock) error {
 	// At the moment, this can only be done via the aws_vpc resource
 	return nil
-}
-
-type cloudformationVPCAmazonIPv6CIDRBlock struct {
-	VPCID      *cloudformation.Literal `json:"VpcId"`
-	AmazonIPv6 *bool                   `json:"AmazonProvidedIpv6CidrBlock"`
-}
-
-func (_ *VPCAmazonIPv6CIDRBlock) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *VPCAmazonIPv6CIDRBlock) error {
-	shared := aws.BoolValue(e.Shared)
-	if shared && a == nil {
-		// VPC not owned by kOps, no changes will be applied
-		// Verify that the Amazon IPv6 provided CIDR block was found.
-		return fmt.Errorf("IPv6 CIDR block provided by Amazon not found")
-	}
-
-	cf := &cloudformationVPCAmazonIPv6CIDRBlock{
-		VPCID:      e.VPC.CloudformationLink(),
-		AmazonIPv6: aws.Bool(true),
-	}
-
-	return t.RenderResource("AWS::EC2::VPCCidrBlock", *e.Name, cf)
 }
 
 func findVPCIPv6CIDR(cloud awsup.AWSCloud, vpcID *string) (*string, error) {
