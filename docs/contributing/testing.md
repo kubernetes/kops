@@ -11,7 +11,7 @@ go test -v ./...
 
 ### Adding an integration test
 
-The integration tests takes a cluster spec and builds cloudformation/terraform templates. For new functionality, consider adding it to the `complex.example.com` cluster unless it conflicts with existing functionality in that cluster. To add a new integration test, create a new directory in `tests/integration/update_cluster/` and put the cluster spec in `in-v1alpha2.yaml`. Use a unique cluster name.
+The integration tests takes a cluster spec and builds terraform templates. For new functionality, consider adding it to the `complex.example.com` cluster unless it conflicts with existing functionality in that cluster. To add a new integration test, create a new directory in `tests/integration/update_cluster/` and put the cluster spec in `in-v1alpha2.yaml`. Use a unique cluster name.
 
 Then edit `./cmd/kops/integration_test.go` and add the test function with the cluster name and directory from above.
 

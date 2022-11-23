@@ -25,7 +25,6 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
@@ -191,27 +190,4 @@ func (_ *DHCPOptions) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 
 func (e *DHCPOptions) TerraformLink() *terraformWriter.Literal {
 	return terraformWriter.LiteralProperty("aws_vpc_dhcp_options", *e.Name, "id")
-}
-
-type cloudformationDHCPOptions struct {
-	DomainName        *string             `json:"DomainName,omitempty"`
-	DomainNameServers []string            `json:"DomainNameServers,omitempty"`
-	Tags              []cloudformationTag `json:"Tags,omitempty"`
-}
-
-func (_ *DHCPOptions) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *DHCPOptions) error {
-	cf := &cloudformationDHCPOptions{
-		DomainName: e.DomainName,
-		Tags:       buildCloudformationTags(e.Tags),
-	}
-
-	if e.DomainNameServers != nil {
-		cf.DomainNameServers = strings.Split(*e.DomainNameServers, ",")
-	}
-
-	return t.RenderResource("AWS::EC2::DHCPOptions", *e.Name, cf)
-}
-
-func (e *DHCPOptions) CloudformationLink() *cloudformation.Literal {
-	return cloudformation.Ref("AWS::EC2::DHCPOptions", *e.Name)
 }

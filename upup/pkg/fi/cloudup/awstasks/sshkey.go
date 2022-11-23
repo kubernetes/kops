@@ -28,7 +28,6 @@ import (
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
@@ -231,30 +230,6 @@ func (e *SSHKey) TerraformLink() *terraformWriter.Literal {
 	}
 	tfName := strings.Replace(*e.Name, ":", "", -1)
 	return terraformWriter.LiteralProperty("aws_key_pair", tfName, "id")
-}
-
-func (_ *SSHKey) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *SSHKey) error {
-	if e.NoSSHKey() {
-		return nil
-	}
-
-	cloud := t.Cloud.(awsup.AWSCloud)
-
-	klog.Warningf("Cloudformation does not manage SSH keys; pre-creating SSH key")
-
-	keypair, err := e.find(cloud)
-	if err != nil {
-		return err
-	}
-
-	if keypair == nil {
-		err := e.createKeypair(cloud)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 func (e *SSHKey) NoSSHKey() bool {

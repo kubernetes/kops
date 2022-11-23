@@ -77,7 +77,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			t.EnableDNSHostnames = fi.PtrTo(true)
 
 			// Used only for Terraform rendering.
-			// Direct and CloudFormation rendering is handled via the VPCAmazonIPv6CIDRBlock task
+			// Direct rendering is handled via the VPCAmazonIPv6CIDRBlock task
 			t.AmazonIPv6 = fi.PtrTo(true)
 			t.AssociateExtraCIDRBlocks = b.Cluster.Spec.AdditionalNetworkCIDRs
 		}

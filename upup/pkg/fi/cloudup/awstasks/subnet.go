@@ -26,7 +26,6 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -432,53 +431,6 @@ func (e *Subnet) TerraformLink() *terraformWriter.Literal {
 	}
 
 	return terraformWriter.LiteralProperty("aws_subnet", *e.Name, "id")
-}
-
-type cloudformationSubnet struct {
-	VPCID            *cloudformation.Literal `json:"VpcId,omitempty"`
-	CIDR             *string                 `json:"CidrBlock,omitempty"`
-	IPv6CIDR         *string                 `json:"Ipv6CidrBlock,omitempty"`
-	AvailabilityZone *string                 `json:"AvailabilityZone,omitempty"`
-	Tags             []cloudformationTag     `json:"Tags,omitempty"`
-}
-
-func (_ *Subnet) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *Subnet) error {
-	shared := fi.ValueOf(e.Shared)
-	if shared {
-		// Not cloudformation owned / managed
-		// We won't apply changes, but our validation (kops update) will still warn
-		return nil
-	}
-
-	if strings.HasPrefix(aws.StringValue(e.IPv6CIDR), "/") {
-		// TODO: Implement using "Fn::Cidr"
-		// https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-cidr.html
-		return fmt.Errorf("<cidrsubnet> in not supported with CloudFormation target: %q", aws.StringValue(e.IPv6CIDR))
-	}
-
-	cf := &cloudformationSubnet{
-		VPCID:            e.VPC.CloudformationLink(),
-		CIDR:             e.CIDR,
-		IPv6CIDR:         e.IPv6CIDR,
-		AvailabilityZone: e.AvailabilityZone,
-		Tags:             buildCloudformationTags(e.Tags),
-	}
-
-	return t.RenderResource("AWS::EC2::Subnet", *e.Name, cf)
-}
-
-func (e *Subnet) CloudformationLink() *cloudformation.Literal {
-	shared := fi.ValueOf(e.Shared)
-	if shared {
-		if e.ID == nil {
-			klog.Fatalf("ID must be set, if subnet is shared: %s", e)
-		}
-
-		klog.V(4).Infof("reusing existing subnet with id %q", *e.ID)
-		return cloudformation.LiteralString(*e.ID)
-	}
-
-	return cloudformation.Ref("AWS::EC2::Subnet", *e.Name)
 }
 
 func (e *Subnet) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
