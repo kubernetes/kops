@@ -21,7 +21,6 @@ import (
 
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 
@@ -186,16 +185,4 @@ func (e *IAMInstanceProfile) TerraformLink() *terraformWriter.Literal {
 		return terraformWriter.LiteralFromStringValue(fi.ValueOf(e.Name))
 	}
 	return terraformWriter.LiteralProperty("aws_iam_instance_profile", *e.Name, "id")
-}
-
-func (_ *IAMInstanceProfile) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *IAMInstanceProfile) error {
-	// Done on IAMInstanceProfileRole
-	return nil
-}
-
-func (e *IAMInstanceProfile) CloudformationLink() *cloudformation.Literal {
-	if fi.ValueOf(e.Shared) {
-		return cloudformation.LiteralString(fi.ValueOf(e.Name))
-	}
-	return cloudformation.Ref("AWS::IAM::InstanceProfile", fi.ValueOf(e.Name))
 }

@@ -25,7 +25,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/aws/aws-sdk-go/service/elbv2"
@@ -57,8 +56,6 @@ func ListResourcesAWS(cloud awsup.AWSCloud, clusterName string) (map[string]*res
 	// These are the functions that are used for looking up
 	// cluster resources by their tags.
 	listFunctions := []listFn{
-		// CloudFormation
-		// ListCloudFormationStacks,
 		// EC2
 		ListAutoScalingGroups,
 		ListInstances,
@@ -322,56 +319,6 @@ func DeleteInstance(cloud fi.Cloud, t *resources.Resource) error {
 		}
 	}
 	return nil
-}
-
-func DeleteCloudFormationStack(cloud fi.Cloud, t *resources.Resource) error {
-	c := cloud.(awsup.AWSCloud)
-
-	id := t.ID
-	klog.V(2).Infof("deleting CloudFormation stack %q %q", t.Name, id)
-
-	request := &cloudformation.DeleteStackInput{}
-	request.StackName = &t.Name
-
-	_, err := c.CloudFormation().DeleteStack(request)
-	if err != nil {
-		return fmt.Errorf("error deleting CloudFormation stack %q: %v", id, err)
-	}
-	return nil
-}
-
-func DumpCloudFormationStack(op *resources.DumpOperation, r *resources.Resource) error {
-	data := make(map[string]interface{})
-	data["id"] = r.ID
-	data["type"] = r.Type
-	data["raw"] = r.Obj
-	op.Dump.Resources = append(op.Dump.Resources, data)
-	return nil
-}
-
-func ListCloudFormationStacks(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
-	var resourceTrackers []*resources.Resource
-	request := &cloudformation.ListStacksInput{}
-	c := cloud.(awsup.AWSCloud)
-	response, err := c.CloudFormation().ListStacks(request)
-	if err != nil {
-		return nil, fmt.Errorf("unable to list CloudFormation stacks: %v", err)
-	}
-	for _, stack := range response.StackSummaries {
-		if *stack.StackName == clusterName {
-			resourceTracker := &resources.Resource{
-				Name:    *stack.StackName,
-				ID:      *stack.StackId,
-				Type:    "cloud-formation",
-				Deleter: DeleteCloudFormationStack,
-				Dumper:  DumpCloudFormationStack,
-				Obj:     stack,
-			}
-			resourceTrackers = append(resourceTrackers, resourceTracker)
-		}
-	}
-
-	return resourceTrackers, nil
 }
 
 func ListInstances(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {

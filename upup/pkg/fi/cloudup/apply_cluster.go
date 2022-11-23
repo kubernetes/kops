@@ -64,7 +64,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/bootstrapchannelbuilder"
-	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
@@ -761,22 +760,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 		// Can cause conflicts with terraform management
 		shouldPrecreateDNS = false
-
-	case TargetCloudformation:
-		checkExisting = false
-		outDir := c.OutDir
-		target = cloudformation.NewCloudformationTarget(cloud, project, outDir)
-
-		// Can cause conflicts with cloudformation management
-		shouldPrecreateDNS = false
-
-		fmt.Printf("\n")
-		fmt.Printf("%s\n", starline)
-		fmt.Printf("\n")
-		fmt.Printf("Kops support for CloudFormation is deprecated and will be removed in a future release.\n")
-		fmt.Printf("\n")
-		fmt.Printf("%s\n", starline)
-		fmt.Printf("\n")
 
 	case TargetDryRun:
 		var out io.Writer = os.Stdout
