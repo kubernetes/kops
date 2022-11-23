@@ -1,0 +1,58 @@
+{
+  "metadata": {
+    "creationTimestamp": null,
+    "managedFields": [
+      {
+        "manager": "kube-controller-manager",
+        "operation": "Update",
+        "apiVersion": "policy/v1",
+        "time": "2022-11-23T14:50:41Z",
+        "fieldsType": "FieldsV1",
+        "fieldsV1": {
+          "f:status": {
+            "f:conditions": {
+              ".": {},
+              "k:{\"type\":\"DisruptionAllowed\"}": {
+                ".": {},
+                "f:lastTransitionTime": {},
+                "f:message": {},
+                "f:observedGeneration": {},
+                "f:reason": {},
+                "f:status": {},
+                "f:type": {}
+              }
+            },
+            "f:desiredHealthy": {},
+            "f:observedGeneration": {}
+          }
+        },
+        "subresource": "status"
+      },
+      {
+        "manager": "new-manager",
+        "operation": "Apply",
+        "apiVersion": "policy/v1beta1",
+        "time": "2022-11-23T14:50:41Z",
+        "fieldsType": "FieldsV1",
+        "fieldsV1": {
+          "f:metadata": {
+            "f:annotations": {
+              ".": {},
+              "f:kubectl.kubernetes.io/last-applied-configuration": {}
+            },
+            "f:labels": {
+              ".": {},
+              "f:addon.kops.k8s.io/name": {},
+              "f:app.kubernetes.io/managed-by": {},
+              "f:k8s-addon": {}
+            }
+          },
+          "f:spec": {
+            "f:minAvailable": {},
+            "f:selector": {}
+          }
+        }
+      }
+    ]
+  }
+}

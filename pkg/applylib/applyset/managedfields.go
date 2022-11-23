@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sort"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -84,13 +85,28 @@ func (m *ManagedFieldsMigrator) createManagedFieldPatch(currentObject *unstructu
 	}
 	fixedManagedFields = merged
 
+	// Ensure patch is stable, mostly for tests
+	sort.Slice(fixedManagedFields, func(i, j int) bool {
+		if fixedManagedFields[i].Manager != fixedManagedFields[j].Manager {
+			return fixedManagedFields[i].Manager < fixedManagedFields[j].Manager
+		}
+		if fixedManagedFields[i].Subresource != fixedManagedFields[j].Subresource {
+			return fixedManagedFields[i].Subresource < fixedManagedFields[j].Subresource
+		}
+		if fixedManagedFields[i].Operation != fixedManagedFields[j].Operation {
+			return fixedManagedFields[i].Operation < fixedManagedFields[j].Operation
+		}
+		return false
+	})
+
 	meta := &metav1.ObjectMeta{}
 	meta.SetManagedFields(fixedManagedFields)
 	patchObject := map[string]interface{}{
 		"metadata": meta,
 	}
 
-	jsonData, err := json.Marshal(patchObject)
+	// MarshalIndent is a little less efficient, but makes this much more readable (also helps tests)
+	jsonData, err := json.MarshalIndent(patchObject, "", "  ")
 	if err != nil {
 		return nil, fmt.Errorf("failed to marsal %q into json: %w", currentObject.GetName(), err)
 	}

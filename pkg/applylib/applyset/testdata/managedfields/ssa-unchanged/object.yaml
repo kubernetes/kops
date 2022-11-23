@@ -1,0 +1,30 @@
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: kube-dns
+  namespace: testmanagedfieldsmigrator
+  creationTimestamp: "2022-11-23T14:50:41Z"
+  generation: 1
+  labels:
+    addon.kops.k8s.io/name: coredns.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: coredns.addons.k8s.io
+  managedFields:
+  - apiVersion: policy/v1
+    fieldsType: FieldsV1
+    fieldsV1: {"f:status":{"f:conditions":{".":{},"k:{\"type\":\"DisruptionAllowed\"}":{".":{},"f:lastTransitionTime":{},"f:message":{},"f:observedGeneration":{},"f:reason":{},"f:status":{},"f:type":{}}},"f:desiredHealthy":{},"f:observedGeneration":{}}}
+    manager: kube-controller-manager
+    operation: Update
+    subresource: status
+    time: "2022-11-23T14:50:41Z"
+  - apiVersion: policy/v1beta1
+    fieldsType: FieldsV1
+    fieldsV1: {"f:metadata":{"f:annotations":{".":{},"f:kubectl.kubernetes.io/last-applied-configuration":{}},"f:labels":{".":{},"f:addon.kops.k8s.io/name":{},"f:app.kubernetes.io/managed-by":{},"f:k8s-addon":{}}},"f:spec":{"f:minAvailable":{},"f:selector":{}}}
+    manager: new-manager
+    operation: Apply
+    time: "2022-11-23T14:50:41Z"
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      k8s-app: kube-dns
