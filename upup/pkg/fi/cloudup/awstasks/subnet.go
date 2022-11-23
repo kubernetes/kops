@@ -43,14 +43,15 @@ type Subnet struct {
 
 	Lifecycle fi.Lifecycle
 
-	ID                  *string
-	VPC                 *VPC
-	AmazonIPv6CIDR      *VPCAmazonIPv6CIDRBlock
-	AvailabilityZone    *string
-	CIDR                *string
-	IPv6CIDR            *string
-	ResourceBasedNaming *bool
-	Shared              *bool
+	ID                          *string
+	VPC                         *VPC
+	AmazonIPv6CIDR              *VPCAmazonIPv6CIDRBlock
+	AvailabilityZone            *string
+	CIDR                        *string
+	IPv6CIDR                    *string
+	ResourceBasedNaming         *bool
+	AssignIPv6AddressOnCreation *bool
+	Shared                      *bool
 
 	Tags map[string]string
 }
@@ -71,6 +72,8 @@ func (a OrderSubnetsById) Less(i, j int) bool {
 }
 
 func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
+	e.AssignIPv6AddressOnCreation = fi.PtrTo(e.IPv6CIDR != nil)
+
 	subnet, err := e.findEc2Subnet(c)
 	if err != nil {
 		return nil, err
@@ -103,6 +106,8 @@ func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
 		actual.IPv6CIDR = association.Ipv6CidrBlock
 		break
 	}
+
+	actual.AssignIPv6AddressOnCreation = subnet.AssignIpv6AddressOnCreation
 
 	actual.ResourceBasedNaming = fi.PtrTo(aws.StringValue(subnet.PrivateDnsNameOptionsOnLaunch.HostnameType) == ec2.HostnameTypeResourceName)
 	if *actual.ResourceBasedNaming {
@@ -289,6 +294,17 @@ func (_ *Subnet) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Subnet) error {
 		}
 	}
 
+	if a == nil || changes.AssignIPv6AddressOnCreation != nil {
+		request := &ec2.ModifySubnetAttributeInput{
+			SubnetId:                    e.ID,
+			AssignIpv6AddressOnCreation: &ec2.AttributeBooleanValue{Value: e.AssignIPv6AddressOnCreation},
+		}
+		_, err := t.Cloud.EC2().ModifySubnetAttribute(request)
+		if err != nil {
+			return fmt.Errorf("error modifying AssignIPv6AddressOnCreation: %w", err)
+		}
+	}
+
 	if changes.ResourceBasedNaming != nil {
 		hostnameType := ec2.HostnameTypeIpName
 		if *changes.ResourceBasedNaming {
@@ -359,6 +375,7 @@ type terraformSubnet struct {
 	CIDR                                    *string                  `cty:"cidr_block"`
 	IPv6CIDR                                *string                  `cty:"ipv6_cidr_block"`
 	IPv6Native                              *bool                    `cty:"ipv6_native"`
+	AssignIPv6AddressOnCreation             *bool                    `cty:"assign_ipv6_address_on_creation"`
 	AvailabilityZone                        *string                  `cty:"availability_zone"`
 	EnableDNS64                             *bool                    `cty:"enable_dns64"`
 	EnableResourceNameDNSAAAARecordOnLaunch *bool                    `cty:"enable_resource_name_dns_aaaa_record_on_launch"`
@@ -402,6 +419,9 @@ func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Su
 	if fi.ValueOf(e.CIDR) == "" {
 		tf.EnableDNS64 = fi.PtrTo(true)
 		tf.IPv6Native = fi.PtrTo(true)
+	}
+	if fi.ValueOf(e.IPv6CIDR) != "" {
+		tf.AssignIPv6AddressOnCreation = fi.PtrTo(true)
 	}
 	if e.ResourceBasedNaming != nil {
 		hostnameType := ec2.HostnameTypeIpName
