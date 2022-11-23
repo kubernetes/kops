@@ -1143,6 +1143,7 @@ func setupNetworking(opt *NewClusterOptions, cluster *api.Cluster) error {
 		cluster.Spec.Networking.Cilium.EtcdManaged = true
 	case "cilium-eni":
 		addCiliumNetwork(cluster)
+		cluster.Spec.Networking.Cilium.IPAM = "eni"
 	case "gce":
 		cluster.Spec.Networking.GCE = &api.GCENetworkingSpec{}
 	default:
