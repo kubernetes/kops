@@ -1,7 +1,7 @@
 ClusterName: ha.example.com
 Zones:
 - us-test-1a
-MasterCount: 3
+ControlPlaneCount: 3
 CloudProvider: aws
 Networking: cni
 KubernetesVersion: v1.21.0

@@ -1,7 +1,7 @@
 ClusterName: gce.example.com
 Zones:
 - us-test1-a
-MasterZones:
+ControlPlaneZones:
 - us-test1-a
 CloudProvider: gce
 Networking: cni

@@ -8,7 +8,7 @@ Bastion: true
 NodeSecurityGroups:
 - sg-exampleid
 - sg-exampleid2
-MasterSecurityGroups:
+ControlPlaneSecurityGroups:
 - sg-exampleid3
 - sg-exampleid4
 KubernetesVersion: v1.21.0
