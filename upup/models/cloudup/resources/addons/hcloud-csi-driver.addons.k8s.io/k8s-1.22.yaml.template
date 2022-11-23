@@ -15,7 +15,6 @@ metadata:
   annotations:
     storageclass.kubernetes.io/is-default-class: "true"
   name: hcloud-volumes
-  namespace: kube-system
 provisioner: csi.hetzner.cloud
 volumeBindingMode: WaitForFirstConsumer
 ---
@@ -257,7 +256,7 @@ spec:
             secretKeyRef:
               key: token
               name: hcloud-csi
-        image: hetznercloud/hcloud-csi-driver:latest
+        image: hetznercloud/hcloud-csi-driver:2.0.0
         imagePullPolicy: Always
         livenessProbe:
           failureThreshold: 5
@@ -332,7 +331,7 @@ spec:
           value: 0.0.0.0:9189
         - name: ENABLE_METRICS
           value: "true"
-        image: hetznercloud/hcloud-csi-driver:latest
+        image: hetznercloud/hcloud-csi-driver:2.0.0
         imagePullPolicy: Always
         livenessProbe:
           failureThreshold: 5
