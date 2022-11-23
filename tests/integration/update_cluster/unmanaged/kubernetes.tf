@@ -18,6 +18,7 @@ locals {
   subnet_us-test-1b_id          = aws_subnet.us-test-1b-unmanaged-example-com.id
   subnet_utility-us-test-1a_id  = aws_subnet.utility-us-test-1a-unmanaged-example-com.id
   subnet_utility-us-test-1b_id  = aws_subnet.utility-us-test-1b-unmanaged-example-com.id
+  vpc_cidr_block                = data.aws_vpc.unmanaged-example-com.cidr_block
   vpc_id                        = "vpc-12345678"
 }
 
@@ -95,6 +96,10 @@ output "subnet_utility-us-test-1a_id" {
 
 output "subnet_utility-us-test-1b_id" {
   value = aws_subnet.utility-us-test-1b-unmanaged-example-com.id
+}
+
+output "vpc_cidr_block" {
+  value = data.aws_vpc.unmanaged-example-com.cidr_block
 }
 
 output "vpc_id" {
@@ -1183,6 +1188,10 @@ resource "aws_subnet" "utility-us-test-1b-unmanaged-example-com" {
     "kubernetes.io/role/elb"                      = "1"
   }
   vpc_id = "vpc-12345678"
+}
+
+data "aws_vpc" "unmanaged-example-com" {
+  id = "vpc-12345678"
 }
 
 terraform {
