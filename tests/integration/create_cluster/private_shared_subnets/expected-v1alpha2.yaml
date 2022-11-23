@@ -17,14 +17,14 @@ spec:
   - cpuRequest: 200m
     etcdMembers:
     - encryptedVolume: true
-      instanceGroup: master-us-test-1a
+      instanceGroup: control-plane-us-test-1a
       name: a
     memoryRequest: 100Mi
     name: main
   - cpuRequest: 100m
     etcdMembers:
     - encryptedVolume: true
-      instanceGroup: master-us-test-1a
+      instanceGroup: control-plane-us-test-1a
       name: a
     memoryRequest: 100Mi
     name: events
@@ -71,7 +71,7 @@ metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   labels:
     kops.k8s.io/cluster: private-subnets.example.com
-  name: master-us-test-1a
+  name: control-plane-us-test-1a
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221018
   machineType: m3.medium
