@@ -79,7 +79,7 @@ metadata:
   name: control-plane-us-test1-1
 spec:
   image: ubuntu-20.04
-  machineType: n1-standard-2
+  machineType: n1-standard-1
   maxSize: 1
   minSize: 1
   role: Master
@@ -97,7 +97,7 @@ metadata:
   name: control-plane-us-test1-2
 spec:
   image: ubuntu-20.04
-  machineType: n1-standard-2
+  machineType: n1-standard-1
   maxSize: 1
   minSize: 1
   role: Master
@@ -115,7 +115,7 @@ metadata:
   name: control-plane-us-test1-3
 spec:
   image: ubuntu-20.04
-  machineType: n1-standard-2
+  machineType: n1-standard-1
   maxSize: 1
   minSize: 1
   role: Master
@@ -133,7 +133,7 @@ metadata:
   name: nodes-us-test1
 spec:
   image: ubuntu-20.04
-  machineType: n1-standard-2
+  machineType: n1-standard-1
   maxSize: 1
   minSize: 1
   role: Node
