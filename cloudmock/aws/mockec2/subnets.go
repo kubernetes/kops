@@ -256,6 +256,9 @@ func (m *MockEC2) DeleteSubnetRequest(*ec2.DeleteSubnetInput) (*request.Request,
 }
 
 func (m *MockEC2) ModifySubnetAttribute(request *ec2.ModifySubnetAttributeInput) (*ec2.ModifySubnetAttributeOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	subnet := m.subnets[*request.SubnetId]
 	if request.EnableResourceNameDnsAAAARecordOnLaunch != nil {
 		subnet.main.PrivateDnsNameOptionsOnLaunch.EnableResourceNameDnsAAAARecord = request.EnableResourceNameDnsAAAARecordOnLaunch.Value
