@@ -23,6 +23,7 @@ import (
 	"path"
 	"strings"
 
+	"k8s.io/klog/v2"
 	"k8s.io/kops/tests/e2e/pkg/util"
 	"sigs.k8s.io/kubetest2/pkg/exec"
 )
@@ -36,9 +37,15 @@ func (d *deployer) Build() error {
 	if err := d.init(); err != nil {
 		return err
 	}
-	if err := d.BuildOptions.Build(); err != nil {
+	results, err := d.BuildOptions.Build()
+	if err != nil {
 		return err
 	}
+	if results.KopsBaseURL != "" {
+		klog.Infof("setting kops base url to %q from build results", results.KopsBaseURL)
+		d.KopsBaseURL = results.KopsBaseURL
+	}
+
 	// Copy the kops binary into the test's RunDir to be included in the tester's PATH
 	if d.KopsBinaryPath != "" {
 		return util.Copy(d.KopsBinaryPath, path.Join(d.commonOptions.RunDir(), "kops"))
