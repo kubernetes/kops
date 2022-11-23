@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"k8s.io/kops/upup/pkg/fi/utils"
+	"sigs.k8s.io/yaml"
 )
 
 // ParseInstanceGroupRole converts a string to an InstanceGroupRole.
@@ -60,7 +61,7 @@ func ParseRawYaml(data []byte, dest interface{}) error {
 	configString = strings.TrimSpace(configString)
 
 	if configString != "" {
-		err := utils.YamlUnmarshal([]byte(configString), dest)
+		err := yaml.Unmarshal([]byte(configString), dest, yaml.DisallowUnknownFields)
 		if err != nil {
 			return fmt.Errorf("error parsing configuration: %v", err)
 		}
