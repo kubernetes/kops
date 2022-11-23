@@ -1090,6 +1090,7 @@ resource "aws_security_group_rule" "icmpv6-pmtu-api-elb-__--0" {
 }
 
 resource "aws_subnet" "dualstack-us-test-1a-minimal-ipv6-example-com" {
+  assign_ipv6_address_on_creation                = true
   availability_zone                              = "us-test-1a"
   cidr_block                                     = "172.20.32.0/19"
   enable_resource_name_dns_a_record_on_launch    = true
@@ -1108,6 +1109,7 @@ resource "aws_subnet" "dualstack-us-test-1a-minimal-ipv6-example-com" {
 }
 
 resource "aws_subnet" "dualstack-us-test-1b-minimal-ipv6-example-com" {
+  assign_ipv6_address_on_creation                = true
   availability_zone                              = "us-test-1b"
   cidr_block                                     = "172.20.64.0/19"
   enable_resource_name_dns_a_record_on_launch    = true
@@ -1125,6 +1127,7 @@ resource "aws_subnet" "dualstack-us-test-1b-minimal-ipv6-example-com" {
 }
 
 resource "aws_subnet" "us-test-1a-minimal-ipv6-example-com" {
+  assign_ipv6_address_on_creation                = true
   availability_zone                              = "us-test-1a"
   enable_dns64                                   = true
   enable_resource_name_dns_aaaa_record_on_launch = true
@@ -1142,6 +1145,7 @@ resource "aws_subnet" "us-test-1a-minimal-ipv6-example-com" {
 }
 
 resource "aws_subnet" "us-test-1b-minimal-ipv6-example-com" {
+  assign_ipv6_address_on_creation                = true
   availability_zone                              = "us-test-1b"
   enable_dns64                                   = true
   enable_resource_name_dns_aaaa_record_on_launch = true
@@ -1159,6 +1163,7 @@ resource "aws_subnet" "us-test-1b-minimal-ipv6-example-com" {
 }
 
 resource "aws_subnet" "utility-us-test-1a-minimal-ipv6-example-com" {
+  assign_ipv6_address_on_creation                = true
   availability_zone                              = "us-test-1a"
   cidr_block                                     = "172.20.0.0/22"
   enable_resource_name_dns_a_record_on_launch    = true
@@ -1176,6 +1181,7 @@ resource "aws_subnet" "utility-us-test-1a-minimal-ipv6-example-com" {
 }
 
 resource "aws_subnet" "utility-us-test-1b-minimal-ipv6-example-com" {
+  assign_ipv6_address_on_creation                = true
   availability_zone                              = "us-test-1b"
   cidr_block                                     = "172.20.4.0/22"
   enable_resource_name_dns_a_record_on_launch    = true
