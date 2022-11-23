@@ -260,6 +260,9 @@ func (m *MockEC2) ModifySubnetAttribute(request *ec2.ModifySubnetAttributeInput)
 	defer m.mutex.Unlock()
 
 	subnet := m.subnets[*request.SubnetId]
+	if request.AssignIpv6AddressOnCreation != nil {
+		subnet.main.AssignIpv6AddressOnCreation = request.AssignIpv6AddressOnCreation.Value
+	}
 	if request.EnableResourceNameDnsAAAARecordOnLaunch != nil {
 		subnet.main.PrivateDnsNameOptionsOnLaunch.EnableResourceNameDnsAAAARecord = request.EnableResourceNameDnsAAAARecordOnLaunch.Value
 	}

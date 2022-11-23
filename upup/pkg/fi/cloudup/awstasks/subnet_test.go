@@ -118,7 +118,8 @@ func TestSubnetCreate(t *testing.T) {
 		}
 
 		expected := &ec2.Subnet{
-			CidrBlock: aws.String("172.20.1.0/24"),
+			AssignIpv6AddressOnCreation: aws.Bool(false),
+			CidrBlock:                   aws.String("172.20.1.0/24"),
 			PrivateDnsNameOptionsOnLaunch: &ec2.PrivateDnsNameOptionsOnLaunch{
 				EnableResourceNameDnsAAAARecord: aws.Bool(false),
 				EnableResourceNameDnsARecord:    aws.Bool(true),
@@ -208,7 +209,8 @@ func TestSubnetCreateIPv6(t *testing.T) {
 		}
 
 		expected := &ec2.Subnet{
-			CidrBlock: aws.String("172.20.1.0/24"),
+			AssignIpv6AddressOnCreation: aws.Bool(true),
+			CidrBlock:                   aws.String("172.20.1.0/24"),
 			Ipv6CidrBlockAssociationSet: []*ec2.SubnetIpv6CidrBlockAssociation{
 				{
 					AssociationId: aws.String("subnet-cidr-assoc-ipv6-subnet-1"),
@@ -306,7 +308,8 @@ func TestSubnetCreateIPv6NetNum(t *testing.T) {
 		}
 
 		expected := &ec2.Subnet{
-			CidrBlock: aws.String("172.20.1.0/24"),
+			AssignIpv6AddressOnCreation: aws.Bool(true),
+			CidrBlock:                   aws.String("172.20.1.0/24"),
 			Ipv6CidrBlockAssociationSet: []*ec2.SubnetIpv6CidrBlockAssociation{
 				{
 					AssociationId: aws.String("subnet-cidr-assoc-ipv6-subnet-1"),
@@ -442,7 +445,8 @@ func TestSharedSubnetCreateDoesNotCreateNew(t *testing.T) {
 			t.Fatalf("Subnet created but then not found")
 		}
 		expected := &ec2.Subnet{
-			CidrBlock: aws.String("172.20.1.0/24"),
+			AssignIpv6AddressOnCreation: aws.Bool(false),
+			CidrBlock:                   aws.String("172.20.1.0/24"),
 			PrivateDnsNameOptionsOnLaunch: &ec2.PrivateDnsNameOptionsOnLaunch{
 				EnableResourceNameDnsAAAARecord: aws.Bool(false),
 				EnableResourceNameDnsARecord:    aws.Bool(false),
