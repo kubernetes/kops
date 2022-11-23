@@ -18,6 +18,7 @@ package vfs
 
 import (
 	"fmt"
+	"github.com/spf13/viper"
 	"net/http"
 	"os"
 	"regexp"
@@ -82,7 +83,7 @@ func (s *S3Context) getClient(region string) (*s3.S3, error) {
 	if s3Client == nil {
 		var config *aws.Config
 		var err error
-		endpoint := os.Getenv("S3_ENDPOINT")
+		endpoint := viper.GetString("S3_ENDPOINT")
 		if endpoint == "" {
 			config = aws.NewConfig().WithRegion(region).WithUseDualStack(true)
 			config = config.WithCredentialsChainVerboseErrors(true)
@@ -110,11 +111,11 @@ func (s *S3Context) getClient(region string) (*s3.S3, error) {
 }
 
 func getCustomS3Config(endpoint string, region string) (*aws.Config, error) {
-	accessKeyID := os.Getenv("S3_ACCESS_KEY_ID")
+	accessKeyID := viper.GetString("S3_ACCESS_KEY_ID")
 	if accessKeyID == "" {
 		return nil, fmt.Errorf("S3_ACCESS_KEY_ID cannot be empty when S3_ENDPOINT is not empty")
 	}
-	secretAccessKey := os.Getenv("S3_SECRET_ACCESS_KEY")
+	secretAccessKey := viper.GetString("S3_SECRET_ACCESS_KEY")
 	if secretAccessKey == "" {
 		return nil, fmt.Errorf("S3_SECRET_ACCESS_KEY cannot be empty when S3_ENDPOINT is not empty")
 	}
@@ -146,10 +147,10 @@ func (s *S3Context) getDetailsForBucket(bucket string) (*S3BucketDetails, error)
 	}
 
 	// Probe to find correct region for bucket
-	endpoint := os.Getenv("S3_ENDPOINT")
+	endpoint := viper.GetString("S3_ENDPOINT")
 	if endpoint != "" {
 		// If customized S3 storage is set, return user-defined region
-		bucketDetails.region = os.Getenv("S3_REGION")
+		bucketDetails.region = viper.GetString("S3_REGION")
 		if bucketDetails.region == "" {
 			bucketDetails.region = "us-east-1"
 		}

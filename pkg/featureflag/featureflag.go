@@ -26,7 +26,7 @@ package featureflag
 
 import (
 	"fmt"
-	"os"
+	"github.com/spf13/viper"
 	"strings"
 	"sync"
 
@@ -39,7 +39,7 @@ const (
 )
 
 func init() {
-	ParseFlags(os.Getenv(Name))
+	ParseFlags(viper.GetString(Name))
 }
 
 var (

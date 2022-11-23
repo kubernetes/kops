@@ -18,7 +18,7 @@ package scaleway
 
 import (
 	"fmt"
-	"os"
+	"github.com/spf13/viper"
 	"strings"
 
 	account "github.com/scaleway/scaleway-sdk-go/api/account/v2alpha1"
@@ -89,27 +89,27 @@ type scwCloudImplementation struct {
 func NewScwCloud(tags map[string]string) (ScwCloud, error) {
 	errList := []error(nil)
 
-	region, err := scw.ParseRegion(os.Getenv("SCW_DEFAULT_REGION"))
+	region, err := scw.ParseRegion(viper.GetString("SCW_DEFAULT_REGION"))
 	if err != nil {
 		errList = append(errList, fmt.Errorf("error parsing SCW_DEFAULT_REGION: %w", err))
 	}
-	zone, err := scw.ParseZone(os.Getenv("SCW_DEFAULT_ZONE"))
+	zone, err := scw.ParseZone(viper.GetString("SCW_DEFAULT_ZONE"))
 	if err != nil {
 		errList = append(errList, fmt.Errorf("error parsing SCW_DEFAULT_ZONE: %w", err))
 	}
 
 	// We make sure that the credentials env vars are defined
-	scwAccessKey := os.Getenv("SCW_ACCESS_KEY")
+	scwAccessKey := viper.GetString("SCW_ACCESS_KEY")
 	if scwAccessKey == "" {
-		errList = append(errList, fmt.Errorf("SCW_ACCESS_KEY has to be set as an environment variable"))
+		errList = append(errList, fmt.Errorf("SCW_ACCESS_KEY has to be set as an environment variable or in kops configuration file"))
 	}
-	scwSecretKey := os.Getenv("SCW_SECRET_KEY")
+	scwSecretKey := viper.GetString("SCW_SECRET_KEY")
 	if scwSecretKey == "" {
-		errList = append(errList, fmt.Errorf("SCW_SECRET_KEY has to be set as an environment variable"))
+		errList = append(errList, fmt.Errorf("SCW_SECRET_KEY has to be set as an environment variable or in kops configuration file"))
 	}
-	scwProjectID := os.Getenv("SCW_DEFAULT_PROJECT_ID")
+	scwProjectID := viper.GetString("SCW_DEFAULT_PROJECT_ID")
 	if scwProjectID == "" {
-		errList = append(errList, fmt.Errorf("SCW_DEFAULT_PROJECT_ID has to be set as an environment variable"))
+		errList = append(errList, fmt.Errorf("SCW_DEFAULT_PROJECT_ID has to be set as an environment variable or in kops configuration file"))
 	}
 
 	if len(errList) != 0 {
