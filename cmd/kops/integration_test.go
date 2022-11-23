@@ -33,6 +33,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/spf13/viper"
+
 	"golang.org/x/crypto/ssh"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops/model"
@@ -264,7 +266,7 @@ func TestMinimal_v1_26(t *testing.T) {
 
 // TestMinimal_NoneDNS runs the test on a minimum configuration with --dns=none
 func TestMinimal_NoneDNS(t *testing.T) {
-	t.Setenv("KOPS_RUN_TOO_NEW_VERSION", "1")
+	viper.Set("KOPS_RUN_TOO_NEW_VERSION", "1")
 
 	newIntegrationTest("minimal.example.com", "minimal-dns-none").
 		withAddons(
@@ -276,7 +278,7 @@ func TestMinimal_NoneDNS(t *testing.T) {
 
 // TestHetzner runs the test on a minimum configuration
 func TestHetzner(t *testing.T) {
-	t.Setenv("HCLOUD_TOKEN", "REDACTED")
+	viper.Set("HCLOUD_TOKEN", "REDACTED")
 	newIntegrationTest("minimal.example.com", "minimal_hetzner").
 		runTestTerraformHetzner(t)
 }

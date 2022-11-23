@@ -23,6 +23,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/spf13/viper"
+
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/api/storage/v1"
 	"k8s.io/kops/cloudmock/gce"
@@ -37,7 +39,7 @@ func TestGSRenderTerraform(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to prepare mock gcp credentials: %v", err)
 	}
-	t.Setenv("GOOGLE_APPLICATION_CREDENTIALS", creds)
+	viper.Set("GOOGLE_APPLICATION_CREDENTIALS", creds)
 
 	content := "hello world"
 	grid := []struct {

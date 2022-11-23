@@ -22,6 +22,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/spf13/viper"
+
 	"github.com/stretchr/testify/assert"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -51,11 +53,11 @@ func TestS3RenderTerraform(t *testing.T) {
 			`,
 		},
 	}
-	t.Setenv("S3_ENDPOINT", "foo.s3.amazonaws.com")
-	t.Setenv("S3_ACCESS_KEY_ID", "foobar")
-	t.Setenv("S3_SECRET_ACCESS_KEY", "11111111-1111-1111-1111-111111111111")
+	viper.Set("S3_ENDPOINT", "foo.s3.amazonaws.com")
+	viper.Set("S3_ACCESS_KEY_ID", "foobar")
+	viper.Set("S3_SECRET_ACCESS_KEY", "11111111-1111-1111-1111-111111111111")
 
-	t.Setenv("KOPS_STATE_S3_ACL", "bucket-owner-full-control")
+	viper.Set("KOPS_STATE_S3_ACL", "bucket-owner-full-control")
 	for _, tc := range grid {
 
 		t.Run(tc.s3Path, func(t *testing.T) {

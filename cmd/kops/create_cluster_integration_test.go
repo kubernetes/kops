@@ -25,6 +25,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/spf13/viper"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 
@@ -59,13 +61,13 @@ func TestCreateClusterMinimal(t *testing.T) {
 
 // TestCreateClusterHetzner runs kops create cluster minimal.k8s.local --zones fsn1
 func TestCreateClusterHetzner(t *testing.T) {
-	t.Setenv("HCLOUD_TOKEN", "REDACTED")
+	viper.Set("HCLOUD_TOKEN", "REDACTED")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_hetzner", "v1alpha2")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal_hetzner", "v1alpha2")
 }
 
 func TestCreateClusterOpenStack(t *testing.T) {
-	t.Setenv("OS_REGION_NAME", "us-test1")
+	viper.Set("OS_REGION_NAME", "us-test1")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_openstack", "v1alpha2")
 }
 

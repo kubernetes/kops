@@ -416,9 +416,9 @@ func runLifecycleTestOpenstack(o *LifecycleTestOptions) {
 	defer h.Close()
 
 	origRegion := viper.GetString("OS_REGION_NAME")
-	os.Setenv("OS_REGION_NAME", "us-test1")
+	viper.Set("OS_REGION_NAME", "us-test1")
 	defer func() {
-		os.Setenv("OS_REGION_NAME", origRegion)
+		viper.Set("OS_REGION_NAME", origRegion)
 	}()
 
 	h.MockKopsVersion("1.21.0-alpha.1")

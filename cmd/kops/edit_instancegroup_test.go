@@ -22,6 +22,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/spf13/viper"
+
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/kops/cmd/kops/util"
@@ -31,7 +33,7 @@ import (
 )
 
 func TestEditInstanceGroup(t *testing.T) {
-	t.Setenv("SKIP_REGION_CHECK", "1")
+	viper.Set("SKIP_REGION_CHECK", "1")
 	var stdout bytes.Buffer
 
 	clusterName := "test.k8s.io"

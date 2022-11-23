@@ -20,12 +20,14 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/spf13/viper"
+
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
 func TestBootstarapBuilder_Simple(t *testing.T) {
-	t.Setenv("AWS_REGION", "us-test1")
+	viper.Set("AWS_REGION", "us-test1")
 
 	runInstallBuilderTest(t, "tests/simple")
 }

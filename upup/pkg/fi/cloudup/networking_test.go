@@ -19,6 +19,8 @@ package cloudup
 import (
 	"testing"
 
+	"github.com/spf13/viper"
+
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/util/pkg/architectures"
@@ -28,8 +30,8 @@ func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
 	desiredCNIVersion := "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-TEST-VERSION.tar.gz"
 	desiredCNIVersionHash := "sha256:0000000000000000000000000000000000000000000000000000000000000000"
 
-	t.Setenv(ENV_VAR_CNI_ASSET_URL, desiredCNIVersion)
-	t.Setenv(ENV_VAR_CNI_ASSET_HASH, desiredCNIVersionHash)
+	viper.Set(ENV_VAR_CNI_ASSET_URL, desiredCNIVersion)
+	viper.Set(ENV_VAR_CNI_ASSET_HASH, desiredCNIVersionHash)
 
 	cluster := &api.Cluster{}
 	cluster.Spec.KubernetesVersion = "v1.18.0"
