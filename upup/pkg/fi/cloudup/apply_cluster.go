@@ -1206,7 +1206,7 @@ func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 	}
 
 	for _, role := range kops.AllInstanceGroupRoles {
-		isMaster := role == kops.InstanceGroupRoleMaster
+		isMaster := role == kops.InstanceGroupRoleControlPlane
 		isAPIServer := role == kops.InstanceGroupRoleAPIServer
 
 		images[role] = make(map[architectures.Architecture][]*nodeup.Image)
@@ -1333,7 +1333,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 	}
 
 	useGossip := cluster.IsGossip()
-	isMaster := role == kops.InstanceGroupRoleMaster
+	isMaster := role == kops.InstanceGroupRoleControlPlane
 	hasAPIServer := isMaster || role == kops.InstanceGroupRoleAPIServer
 
 	config, bootConfig := nodeup.NewConfig(cluster, ig)
@@ -1574,7 +1574,7 @@ func (n *nodeUpConfigBuilder) buildContainerdConfig(ig *kops.InstanceGroup) *kop
 
 // buildWarmPoolImages returns a list of container images that should be pre-pulled during instance pre-initialization
 func (n *nodeUpConfigBuilder) buildWarmPoolImages(ig *kops.InstanceGroup) []string {
-	if ig == nil || ig.Spec.Role == kops.InstanceGroupRoleMaster {
+	if ig == nil || ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
 		return nil
 	}
 

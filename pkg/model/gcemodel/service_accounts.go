@@ -65,7 +65,7 @@ func (b *ServiceAccountsBuilder) Build(c *fi.ModelBuilderContext) error {
 			Lifecycle:   b.Lifecycle,
 		}
 		switch ig.Spec.Role {
-		case kops.InstanceGroupRoleAPIServer, kops.InstanceGroupRoleMaster:
+		case kops.InstanceGroupRoleAPIServer, kops.InstanceGroupRoleControlPlane:
 			serviceAccount.Description = fi.PtrTo("kubernetes control-plane instances")
 		case kops.InstanceGroupRoleNode:
 			serviceAccount.Description = fi.PtrTo("kubernetes worker nodes")
@@ -79,7 +79,7 @@ func (b *ServiceAccountsBuilder) Build(c *fi.ModelBuilderContext) error {
 		role := ig.Spec.Role
 		if role == kops.InstanceGroupRoleAPIServer {
 			// Because these share a serviceaccount, we share a role
-			role = kops.InstanceGroupRoleMaster
+			role = kops.InstanceGroupRoleControlPlane
 		}
 
 		if err := b.addInstanceGroupServiceAccountPermissions(c, *serviceAccount.Email, role); err != nil {
@@ -98,7 +98,7 @@ func (b *ServiceAccountsBuilder) addInstanceGroupServiceAccountPermissions(c *fi
 	// If we can find a solution, we can easily switch to a custom role.
 
 	switch role {
-	case kops.InstanceGroupRoleMaster:
+	case kops.InstanceGroupRoleControlPlane:
 		// We reuse the GKE role
 		c.AddTask(&gcetasks.ProjectIAMBinding{
 			Name:      s("serviceaccount-control-plane"),

@@ -86,7 +86,7 @@ func up(ctx context.Context) error {
 		ig := &api.InstanceGroup{}
 		ig.ObjectMeta.Name = "master"
 		ig.Spec = api.InstanceGroupSpec{
-			Role:    api.InstanceGroupRoleMaster,
+			Role:    api.InstanceGroupRoleControlPlane,
 			Subnets: masterZones,
 		}
 		_, err := clientset.InstanceGroupsFor(cluster).Create(ctx, ig, metav1.CreateOptions{})

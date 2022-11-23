@@ -142,7 +142,7 @@ func (v *clusterValidatorImpl) Validate() (*ValidationCluster, error) {
 			message := fmt.Sprintf("Validation Failed\n\n"+
 				"The %[1]v Kubernetes deployment has not updated the Kubernetes cluster's API DNS entry to the correct IP address."+
 				"  The API DNS IP address is the placeholder address that kops creates: %[2]v."+
-				"  Please wait about 5-10 minutes for a master to start, %[1]v to launch, and DNS to propagate."+
+				"  Please wait about 5-10 minutes for a control plane node to start, %[1]v to launch, and DNS to propagate."+
 				"  The protokube container and %[1]v deployment logs may contain more diagnostic information."+
 				"  Etcd and the API DNS entries must be updated for a kops Kubernetes cluster to start.", dnsProvider, hasPlaceHolderIPAddress)
 			validation.addError(&ValidationError{
@@ -333,7 +333,7 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 
 			nodeInstanceGroupMapping[node.Name] = cloudGroup.InstanceGroup
 
-			role := strings.ToLower(string(cloudGroup.InstanceGroup.Spec.Role))
+			role := cloudGroup.InstanceGroup.Spec.Role.ToLowerString()
 			if role == "" {
 				role = "node"
 			}
@@ -355,7 +355,7 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 			}
 
 			switch n.Role {
-			case "master", "apiserver", "node":
+			case "control-plane", "apiserver", "node":
 				if !ready {
 					v.addError(&ValidationError{
 						Kind:          "Node",

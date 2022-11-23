@@ -72,8 +72,8 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Name:       s(b.NameForFirewallRule("master-to-master")),
 			Lifecycle:  b.Lifecycle,
 			Network:    network,
-			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
-			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
+			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleControlPlane), b.GCETagForRole("Master")},
+			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleControlPlane), b.GCETagForRole("Master")},
 			Allowed:    allProtocols,
 		}
 		c.AddTask(t)
@@ -89,7 +89,7 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Name:       s(b.NameForFirewallRule("master-to-node")),
 			Lifecycle:  b.Lifecycle,
 			Network:    network,
-			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
+			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleControlPlane), b.GCETagForRole("Master")},
 			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
 			Allowed:    allProtocols,
 		}
@@ -107,7 +107,7 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Lifecycle:  b.Lifecycle,
 			Network:    network,
 			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
-			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
+			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleControlPlane), b.GCETagForRole("Master")},
 			Allowed: []string{
 				fmt.Sprintf("tcp:%d", wellknownports.KubeAPIServer),
 				fmt.Sprintf("tcp:%d", wellknownports.KopsControllerPort),

@@ -115,7 +115,10 @@ func (c *AzureModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) ma
 	}
 
 	// The system tags take priority because the cluster likely breaks without them...
-	labels[azure.TagNameRolePrefix+strings.ToLower(string(ig.Spec.Role))] = "1"
+	labels[azure.TagNameRolePrefix+ig.Spec.Role.ToLowerString()] = "1"
+	if ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
+		labels[azure.TagNameRolePrefix+"master"] = "1"
+	}
 
 	// Set the tag used by kops-controller to identify the instance group to which the VM ScaleSet belongs.
 	labels[nodeidentityazure.InstanceGroupNameTag] = ig.Name

@@ -21,6 +21,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// InstanceGroup represents a group of instances with the same configuration.
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:printcolumn:name="role",type="string",JSONPath=".spec.role",description="Role",priority=0
@@ -29,7 +30,6 @@ import (
 // +kubebuilder:printcolumn:name="max",type="integer",JSONPath=".spec.maxSize",description="Max",priority=0
 // +kubebuilder:printcolumn:name="zones",type="string",JSONPath=".spec.zones",description="Zones",priority=0
 // +kubebuilder:resource:shortName=ig
-// InstanceGroup represents a group of instances (either nodes or masters) with the same configuration
 type InstanceGroup struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -47,7 +47,7 @@ type InstanceGroupList struct {
 	Items []InstanceGroup `json:"items"`
 }
 
-// InstanceGroupRole string describes the roles of the nodes in this InstanceGroup (master or nodes)
+// InstanceGroupRole string describes the roles of the nodes in this InstanceGroup.
 type InstanceGroupRole string
 
 type InstanceManager string
@@ -56,7 +56,7 @@ type InstanceManager string
 type InstanceGroupSpec struct {
 	// Manager determines what is managing the node lifecycle
 	Manager InstanceManager `json:"manager,omitempty"`
-	// Type determines the role of instances in this instance group: masters or nodes
+	// Role determines the role of instances in this instance group.
 	Role InstanceGroupRole `json:"role,omitempty"`
 	// Image is the instance (ami etc) we should use
 	Image string `json:"image,omitempty"`

@@ -33,10 +33,10 @@ func ParseInstanceGroupRole(input string, lenient bool) (InstanceGroupRole, bool
 		// Accept pluralized "bastions" for "bastion"
 		findRole = strings.TrimSuffix(findRole, "s")
 	}
+	findRole = strings.Replace(findRole, "controlplane", "control-plane", 1)
 
 	for _, role := range AllInstanceGroupRoles {
-		s := string(role)
-		s = strings.ToLower(s)
+		s := role.ToLowerString()
 		if lenient {
 			s = strings.TrimSuffix(s, "s")
 		}
@@ -44,6 +44,11 @@ func ParseInstanceGroupRole(input string, lenient bool) (InstanceGroupRole, bool
 			return role, true
 		}
 	}
+
+	if lenient && strings.ToLower(findRole) == "master" {
+		return InstanceGroupRoleControlPlane, true
+	}
+
 	return "", false
 }
 

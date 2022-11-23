@@ -183,7 +183,7 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 		}
 	}
 
-	if cluster.Spec.GetCloudProvider() == kops.CloudProviderHetzner && (b.ig.IsMaster() || cluster.IsGossip()) {
+	if cluster.Spec.GetCloudProvider() == kops.CloudProviderHetzner && (b.ig.IsControlPlane() || cluster.IsGossip()) {
 		hcloudToken := os.Getenv("HCLOUD_TOKEN")
 		if hcloudToken != "" {
 			env["HCLOUD_TOKEN"] = hcloudToken
@@ -307,7 +307,7 @@ func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.ModelBuilderContext, ig *k
 	c.AddTask(&fitasks.ManagedFile{
 		Name:      fi.PtrTo("nodeupconfig-" + ig.Name),
 		Lifecycle: b.Lifecycle,
-		Location:  fi.PtrTo("igconfig/" + strings.ToLower(string(ig.Spec.Role)) + "/" + ig.Name + "/nodeupconfig.yaml"),
+		Location:  fi.PtrTo("igconfig/" + ig.Spec.Role.ToLowerString() + "/" + ig.Name + "/nodeupconfig.yaml"),
 		Contents:  &task.nodeupConfig,
 	})
 	return &task.resource, nil
@@ -390,7 +390,7 @@ func (b *BootstrapScript) Run(c *fi.Context) error {
 				}
 			}
 
-			if b.ig.IsMaster() {
+			if b.ig.IsControlPlane() {
 				spec["encryptionConfig"] = cs.EncryptionConfig
 				spec["etcdClusters"] = make(map[string]kops.EtcdClusterSpec)
 				spec["kubeAPIServer"] = cs.KubeAPIServer

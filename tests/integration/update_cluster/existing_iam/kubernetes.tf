@@ -123,6 +123,11 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-existing-iam-example
     value               = ""
   }
   tag {
+    key                 = "k8s.io/role/control-plane"
+    propagate_at_launch = true
+    value               = "1"
+  }
+  tag {
     key                 = "k8s.io/role/master"
     propagate_at_launch = true
     value               = "1"
@@ -188,6 +193,11 @@ resource "aws_autoscaling_group" "master-us-test-1b-masters-existing-iam-example
     value               = ""
   }
   tag {
+    key                 = "k8s.io/role/control-plane"
+    propagate_at_launch = true
+    value               = "1"
+  }
+  tag {
     key                 = "k8s.io/role/master"
     propagate_at_launch = true
     value               = "1"
@@ -251,6 +261,11 @@ resource "aws_autoscaling_group" "master-us-test-1c-masters-existing-iam-example
     key                 = "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers"
     propagate_at_launch = true
     value               = ""
+  }
+  tag {
+    key                 = "k8s.io/role/control-plane"
+    propagate_at_launch = true
+    value               = "1"
   }
   tag {
     key                 = "k8s.io/role/master"
@@ -329,6 +344,7 @@ resource "aws_ebs_volume" "a-etcd-events-existing-iam-example-com" {
     "KubernetesCluster"                              = "existing-iam.example.com"
     "Name"                                           = "a.etcd-events.existing-iam.example.com"
     "k8s.io/etcd/events"                             = "a/a,b,c"
+    "k8s.io/role/control-plane"                      = "1"
     "k8s.io/role/master"                             = "1"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
   }
@@ -345,6 +361,7 @@ resource "aws_ebs_volume" "a-etcd-main-existing-iam-example-com" {
     "KubernetesCluster"                              = "existing-iam.example.com"
     "Name"                                           = "a.etcd-main.existing-iam.example.com"
     "k8s.io/etcd/main"                               = "a/a,b,c"
+    "k8s.io/role/control-plane"                      = "1"
     "k8s.io/role/master"                             = "1"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
   }
@@ -361,6 +378,7 @@ resource "aws_ebs_volume" "b-etcd-events-existing-iam-example-com" {
     "KubernetesCluster"                              = "existing-iam.example.com"
     "Name"                                           = "b.etcd-events.existing-iam.example.com"
     "k8s.io/etcd/events"                             = "b/a,b,c"
+    "k8s.io/role/control-plane"                      = "1"
     "k8s.io/role/master"                             = "1"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
   }
@@ -377,6 +395,7 @@ resource "aws_ebs_volume" "b-etcd-main-existing-iam-example-com" {
     "KubernetesCluster"                              = "existing-iam.example.com"
     "Name"                                           = "b.etcd-main.existing-iam.example.com"
     "k8s.io/etcd/main"                               = "b/a,b,c"
+    "k8s.io/role/control-plane"                      = "1"
     "k8s.io/role/master"                             = "1"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
   }
@@ -393,6 +412,7 @@ resource "aws_ebs_volume" "c-etcd-events-existing-iam-example-com" {
     "KubernetesCluster"                              = "existing-iam.example.com"
     "Name"                                           = "c.etcd-events.existing-iam.example.com"
     "k8s.io/etcd/events"                             = "c/a,b,c"
+    "k8s.io/role/control-plane"                      = "1"
     "k8s.io/role/master"                             = "1"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
   }
@@ -409,6 +429,7 @@ resource "aws_ebs_volume" "c-etcd-main-existing-iam-example-com" {
     "KubernetesCluster"                              = "existing-iam.example.com"
     "Name"                                           = "c.etcd-main.existing-iam.example.com"
     "k8s.io/etcd/main"                               = "c/a,b,c"
+    "k8s.io/role/control-plane"                      = "1"
     "k8s.io/role/master"                             = "1"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
   }
@@ -486,6 +507,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-existing-iam-example-c
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
+      "k8s.io/role/control-plane"                                                                             = "1"
       "k8s.io/role/master"                                                                                    = "1"
       "kops.k8s.io/instancegroup"                                                                             = "master-us-test-1a"
       "kubernetes.io/cluster/existing-iam.example.com"                                                        = "owned"
@@ -501,6 +523,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-existing-iam-example-c
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
+      "k8s.io/role/control-plane"                                                                             = "1"
       "k8s.io/role/master"                                                                                    = "1"
       "kops.k8s.io/instancegroup"                                                                             = "master-us-test-1a"
       "kubernetes.io/cluster/existing-iam.example.com"                                                        = "owned"
@@ -514,6 +537,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-existing-iam-example-c
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
     "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
+    "k8s.io/role/control-plane"                                                                             = "1"
     "k8s.io/role/master"                                                                                    = "1"
     "kops.k8s.io/instancegroup"                                                                             = "master-us-test-1a"
     "kubernetes.io/cluster/existing-iam.example.com"                                                        = "owned"
@@ -572,6 +596,7 @@ resource "aws_launch_template" "master-us-test-1b-masters-existing-iam-example-c
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
+      "k8s.io/role/control-plane"                                                                             = "1"
       "k8s.io/role/master"                                                                                    = "1"
       "kops.k8s.io/instancegroup"                                                                             = "master-us-test-1b"
       "kubernetes.io/cluster/existing-iam.example.com"                                                        = "owned"
@@ -587,6 +612,7 @@ resource "aws_launch_template" "master-us-test-1b-masters-existing-iam-example-c
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
+      "k8s.io/role/control-plane"                                                                             = "1"
       "k8s.io/role/master"                                                                                    = "1"
       "kops.k8s.io/instancegroup"                                                                             = "master-us-test-1b"
       "kubernetes.io/cluster/existing-iam.example.com"                                                        = "owned"
@@ -600,6 +626,7 @@ resource "aws_launch_template" "master-us-test-1b-masters-existing-iam-example-c
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
     "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
+    "k8s.io/role/control-plane"                                                                             = "1"
     "k8s.io/role/master"                                                                                    = "1"
     "kops.k8s.io/instancegroup"                                                                             = "master-us-test-1b"
     "kubernetes.io/cluster/existing-iam.example.com"                                                        = "owned"
@@ -658,6 +685,7 @@ resource "aws_launch_template" "master-us-test-1c-masters-existing-iam-example-c
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
+      "k8s.io/role/control-plane"                                                                             = "1"
       "k8s.io/role/master"                                                                                    = "1"
       "kops.k8s.io/instancegroup"                                                                             = "master-us-test-1c"
       "kubernetes.io/cluster/existing-iam.example.com"                                                        = "owned"
@@ -673,6 +701,7 @@ resource "aws_launch_template" "master-us-test-1c-masters-existing-iam-example-c
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
+      "k8s.io/role/control-plane"                                                                             = "1"
       "k8s.io/role/master"                                                                                    = "1"
       "kops.k8s.io/instancegroup"                                                                             = "master-us-test-1c"
       "kubernetes.io/cluster/existing-iam.example.com"                                                        = "owned"
@@ -686,6 +715,7 @@ resource "aws_launch_template" "master-us-test-1c-masters-existing-iam-example-c
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
     "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
+    "k8s.io/role/control-plane"                                                                             = "1"
     "k8s.io/role/master"                                                                                    = "1"
     "kops.k8s.io/instancegroup"                                                                             = "master-us-test-1c"
     "kubernetes.io/cluster/existing-iam.example.com"                                                        = "owned"
@@ -950,7 +980,7 @@ resource "aws_s3_object" "manifests-static-kube-apiserver-healthcheck" {
 resource "aws_s3_object" "nodeupconfig-master-us-test-1a" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_nodeupconfig-master-us-test-1a_content")
-  key                    = "tests/existing-iam.example.com/igconfig/master/master-us-test-1a/nodeupconfig.yaml"
+  key                    = "tests/existing-iam.example.com/igconfig/control-plane/master-us-test-1a/nodeupconfig.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
@@ -958,7 +988,7 @@ resource "aws_s3_object" "nodeupconfig-master-us-test-1a" {
 resource "aws_s3_object" "nodeupconfig-master-us-test-1b" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_nodeupconfig-master-us-test-1b_content")
-  key                    = "tests/existing-iam.example.com/igconfig/master/master-us-test-1b/nodeupconfig.yaml"
+  key                    = "tests/existing-iam.example.com/igconfig/control-plane/master-us-test-1b/nodeupconfig.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
@@ -966,7 +996,7 @@ resource "aws_s3_object" "nodeupconfig-master-us-test-1b" {
 resource "aws_s3_object" "nodeupconfig-master-us-test-1c" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_nodeupconfig-master-us-test-1c_content")
-  key                    = "tests/existing-iam.example.com/igconfig/master/master-us-test-1c/nodeupconfig.yaml"
+  key                    = "tests/existing-iam.example.com/igconfig/control-plane/master-us-test-1c/nodeupconfig.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }

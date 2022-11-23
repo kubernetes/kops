@@ -55,7 +55,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		b.AddFirewallRulesTasks(c, "ssh-external-to-master", &gcetasks.FirewallRule{
 			Lifecycle:    b.Lifecycle,
-			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
+			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleControlPlane), b.GCETagForRole("Master")},
 			Allowed:      []string{"tcp:22"},
 			SourceRanges: b.Cluster.Spec.SSHAccess,
 			Network:      network,
@@ -107,7 +107,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		b.AddFirewallRulesTasks(c, "kubernetes-master-https", &gcetasks.FirewallRule{
 			Lifecycle:    b.Lifecycle,
-			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
+			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleControlPlane), b.GCETagForRole("Master")},
 			Allowed:      []string{"tcp:443"},
 			SourceRanges: b.Cluster.Spec.API.Access,
 			Network:      network,

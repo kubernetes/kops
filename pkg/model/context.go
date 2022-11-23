@@ -113,7 +113,7 @@ func (b *KopsModelContext) FindZonesForInstanceGroup(ig *kops.InstanceGroup) ([]
 func (b *KopsModelContext) MasterInstanceGroups() []*kops.InstanceGroup {
 	var groups []*kops.InstanceGroup
 	for _, ig := range b.InstanceGroups {
-		if !ig.IsMaster() {
+		if !ig.IsControlPlane() {
 			continue
 		}
 		groups = append(groups, ig)
@@ -168,8 +168,9 @@ func (b *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 
 	// The system tags take priority because the cluster likely breaks without them...
 
-	if ig.Spec.Role == kops.InstanceGroupRoleMaster {
-		labels[awstasks.CloudTagInstanceGroupRolePrefix+strings.ToLower(string(kops.InstanceGroupRoleMaster))] = "1"
+	if ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
+		labels[awstasks.CloudTagInstanceGroupRolePrefix+"master"] = "1"
+		labels[awstasks.CloudTagInstanceGroupRolePrefix+kops.InstanceGroupRoleControlPlane.ToLowerString()] = "1"
 	}
 
 	if ig.Spec.Role == kops.InstanceGroupRoleAPIServer {
@@ -342,7 +343,7 @@ func (b *KopsModelContext) IsIPv6Only() bool {
 
 func (b *KopsModelContext) UseIPv6ForAPI() bool {
 	for _, ig := range b.InstanceGroups {
-		if ig.Spec.Role != kops.InstanceGroupRoleMaster && ig.Spec.Role != kops.InstanceGroupRoleAPIServer {
+		if ig.Spec.Role != kops.InstanceGroupRoleControlPlane && ig.Spec.Role != kops.InstanceGroupRoleAPIServer {
 			break
 		}
 		for _, igSubnetName := range ig.Spec.Subnets {

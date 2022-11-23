@@ -162,7 +162,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		nodeupConfigHash = sha256.Sum256([]byte(nodeConfig.NodeupConfig))
 		nodeupConfig.CAs[fi.CertificateIDCA] = bootConfig.ConfigServer.CACertificates
 	} else if bootConfig.InstanceGroupName != "" {
-		nodeupConfigLocation := configBase.Join("igconfig", strings.ToLower(string(bootConfig.InstanceGroupRole)), bootConfig.InstanceGroupName, "nodeupconfig.yaml")
+		nodeupConfigLocation := configBase.Join("igconfig", bootConfig.InstanceGroupRole.ToLowerString(), bootConfig.InstanceGroupName, "nodeupconfig.yaml")
 
 		b, err := nodeupConfigLocation.ReadFile()
 		if err != nil {

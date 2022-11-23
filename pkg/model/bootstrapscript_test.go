@@ -85,28 +85,28 @@ func TestBootstrapUserData(t *testing.T) {
 		FileAssetSpecRoles []kops.InstanceGroupRole
 	}{
 		{
-			Role:               "Master",
+			Role:               "ControlPlane",
 			ExpectedFileIndex:  0,
 			HookSpecRoles:      []kops.InstanceGroupRole{""},
 			FileAssetSpecRoles: []kops.InstanceGroupRole{""},
 		},
 		{
-			Role:               "Master",
+			Role:               "ControlPlane",
 			ExpectedFileIndex:  0,
 			HookSpecRoles:      []kops.InstanceGroupRole{"Node"},
 			FileAssetSpecRoles: []kops.InstanceGroupRole{"Node"},
 		},
 		{
-			Role:               "Master",
+			Role:               "ControlPlane",
 			ExpectedFileIndex:  1,
-			HookSpecRoles:      []kops.InstanceGroupRole{"Master"},
-			FileAssetSpecRoles: []kops.InstanceGroupRole{"Master"},
+			HookSpecRoles:      []kops.InstanceGroupRole{"ControlPlane"},
+			FileAssetSpecRoles: []kops.InstanceGroupRole{"ControlPlane"},
 		},
 		{
-			Role:               "Master",
+			Role:               "ControlPlane",
 			ExpectedFileIndex:  2,
-			HookSpecRoles:      []kops.InstanceGroupRole{"Master", "Node"},
-			FileAssetSpecRoles: []kops.InstanceGroupRole{"Master", "Node"},
+			HookSpecRoles:      []kops.InstanceGroupRole{"ControlPlane", "Node"},
+			FileAssetSpecRoles: []kops.InstanceGroupRole{"ControlPlane", "Node"},
 		},
 		{
 			Role:               "Node",
@@ -123,14 +123,14 @@ func TestBootstrapUserData(t *testing.T) {
 		{
 			Role:               "Node",
 			ExpectedFileIndex:  3,
-			HookSpecRoles:      []kops.InstanceGroupRole{"Master"},
-			FileAssetSpecRoles: []kops.InstanceGroupRole{"Master"},
+			HookSpecRoles:      []kops.InstanceGroupRole{"ControlPlane"},
+			FileAssetSpecRoles: []kops.InstanceGroupRole{"ControlPlane"},
 		},
 		{
 			Role:               "Node",
 			ExpectedFileIndex:  5,
-			HookSpecRoles:      []kops.InstanceGroupRole{"Master", "Node"},
-			FileAssetSpecRoles: []kops.InstanceGroupRole{"Master", "Node"},
+			HookSpecRoles:      []kops.InstanceGroupRole{"ControlPlane", "Node"},
+			FileAssetSpecRoles: []kops.InstanceGroupRole{"ControlPlane", "Node"},
 		},
 	}
 

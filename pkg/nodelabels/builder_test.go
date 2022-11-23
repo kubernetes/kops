@@ -51,7 +51,7 @@ func TestBuildNodeLabels(t *testing.T) {
 			},
 			ig: &kops.InstanceGroup{
 				Spec: kops.InstanceGroupSpec{
-					Role: kops.InstanceGroupRoleMaster,
+					Role: kops.InstanceGroupRoleControlPlane,
 					Kubelet: &kops.KubeletConfigSpec{
 						NodeLabels: map[string]string{
 							"node1": "override1",

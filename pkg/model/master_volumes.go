@@ -163,7 +163,8 @@ func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name strin
 	// tags[awsup.TagClusterName] = b.C.cluster.Name
 	// This is the configuration of the etcd cluster
 	tags[awsup.TagNameEtcdClusterPrefix+etcd.Name] = m.Name + "/" + strings.Join(allMembers, ",")
-	// This says "only mount on a master"
+	// This says "only mount on a control plane node"
+	tags[awsup.TagNameRolePrefix+"control-plane"] = "1"
 	tags[awsup.TagNameRolePrefix+"master"] = "1"
 
 	// We always add an owned tags (these can't be shared)
@@ -322,7 +323,8 @@ func (b *MasterVolumeBuilder) addOpenstackVolume(c *fi.ModelBuilderContext, name
 	}
 	// This is the configuration of the etcd cluster
 	tags[openstack.TagNameEtcdClusterPrefix+etcd.Name] = m.Name + "/" + strings.Join(allMembers, ",")
-	// This says "only mount on a master"
+	// This says "only mount on a control plane node"
+	tags[openstack.TagNameRolePrefix+openstack.TagRoleControlPlane] = "1"
 	tags[openstack.TagNameRolePrefix+"master"] = "1"
 
 	// override zone
@@ -355,8 +357,9 @@ func (b *MasterVolumeBuilder) addAzureVolume(
 	tags := map[string]*string{
 		// This is the configuration of the etcd cluster.
 		azure.TagNameEtcdClusterPrefix + etcd.Name: fi.PtrTo(m.Name + "/" + strings.Join(allMembers, ",")),
-		// This says "only mount on a master".
-		azure.TagNameRolePrefix + azure.TagRoleMaster: fi.PtrTo("1"),
+		// This says "only mount on a control plane node".
+		azure.TagNameRolePrefix + azure.TagRoleControlPlane: fi.PtrTo("1"),
+		azure.TagNameRolePrefix + azure.TagRoleMaster:       fi.PtrTo("1"),
 		// We always add an owned tags (these can't be shared).
 		// Use dash (_) as a splitter. Other CSPs use slash (/), but slash is not
 		// allowed as a tag key in Azure.

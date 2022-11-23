@@ -53,7 +53,15 @@ func Test_ParseInstanceGroupRole(t *testing.T) {
 		},
 		{
 			"Masters", true,
-			InstanceGroupRoleMaster, true,
+			InstanceGroupRoleControlPlane, true,
+		},
+		{
+			"ControlPlanes", true,
+			InstanceGroupRoleControlPlane, true,
+		},
+		{
+			"Control-Planes", true,
+			InstanceGroupRoleControlPlane, true,
 		},
 		{
 			"NotARole", true,

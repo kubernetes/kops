@@ -131,7 +131,7 @@ func TestValidMasterInstanceGroup(t *testing.T) {
 					Name: "eu-central-1a",
 				},
 				Spec: kops.InstanceGroupSpec{
-					Role: kops.InstanceGroupRoleMaster,
+					Role: kops.InstanceGroupRoleControlPlane,
 				},
 			},
 			ExpectedErrors: 0,
@@ -166,7 +166,7 @@ func TestValidMasterInstanceGroup(t *testing.T) {
 					Name: "eu-central-1d",
 				},
 				Spec: kops.InstanceGroupSpec{
-					Role: kops.InstanceGroupRoleMaster,
+					Role: kops.InstanceGroupRoleControlPlane,
 				},
 			},
 			ExpectedErrors: 1,
@@ -394,7 +394,7 @@ func TestValidInstanceGroup(t *testing.T) {
 					Name: "eu-central-1a",
 				},
 				Spec: kops.InstanceGroupSpec{
-					Role:    kops.InstanceGroupRoleMaster,
+					Role:    kops.InstanceGroupRoleControlPlane,
 					Subnets: []string{"eu-central-1a"},
 					MaxSize: fi.PtrTo(int32(1)),
 					MinSize: fi.PtrTo(int32(1)),
