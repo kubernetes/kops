@@ -108,36 +108,35 @@ func (s *SSHKey) CheckChanges(actual, expected, changes *SSHKey) error {
 }
 
 func (*SSHKey) RenderScw(c *fi.Context, actual, expected, changes *SSHKey) error {
-	cloud := c.Cloud.(scaleway.ScwCloud)
-
-	if actual == nil {
-
-		name := fi.ValueOf(expected.Name)
-		if name == "" {
-			return fi.RequiredField("Name")
-		}
-		klog.V(2).Infof("Creating keypair with name: %q", name)
-
-		keyArgs := &account.CreateSSHKeyRequest{
-			Name: name,
-		}
-		if expected.PublicKey != nil {
-			d, err := fi.ResourceAsString(*expected.PublicKey)
-			if err != nil {
-				return fmt.Errorf("error rendering SSH public key: %w", err)
-			}
-			keyArgs.PublicKey = d
-		}
-
-		key, err := cloud.AccountService().CreateSSHKey(keyArgs)
-		if err != nil {
-			return fmt.Errorf("error creating SSH keypair: %w", err)
-		}
-		expected.KeyPairFingerPrint = fi.PtrTo(key.Fingerprint)
-		klog.V(2).Infof("Created a new SSH keypair, id=%q fingerprint=%q", key.ID, key.Fingerprint)
-
+	// Scaleway does not support changes to ssh keys for the moment
+	if actual != nil {
 		return nil
 	}
+
+	cloud := c.Cloud.(scaleway.ScwCloud)
+
+	name := fi.ValueOf(expected.Name)
+	if name == "" {
+		return fi.RequiredField("Name")
+	}
+	klog.V(2).Infof("Creating keypair with name: %q", name)
+
+	keyArgs := &account.CreateSSHKeyRequest{
+		Name: name}
+	if expected.PublicKey != nil {
+		d, err := fi.ResourceAsString(*expected.PublicKey)
+		if err != nil {
+			return fmt.Errorf("error rendering SSH public key: %w", err)
+		}
+		keyArgs.PublicKey = d
+	}
+
+	key, err := cloud.AccountService().CreateSSHKey(keyArgs)
+	if err != nil {
+		return fmt.Errorf("error creating SSH keypair: %w", err)
+	}
+	expected.KeyPairFingerPrint = fi.PtrTo(key.Fingerprint)
+	klog.V(2).Infof("Created a new SSH keypair, id=%q fingerprint=%q", key.ID, key.Fingerprint)
 
 	return nil
 }

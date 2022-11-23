@@ -40,7 +40,7 @@ const (
 	TagInstanceGroup         = "instance-group"
 	TagNameRolePrefix        = "k8s.io/role/"
 	TagNameEtcdClusterPrefix = "k8s.io/etcd/"
-	TagRoleMaster            = "master"
+	TagRoleMaster            = "control-plane"
 	TagRoleVolume            = "volume"
 )
 
@@ -227,7 +227,7 @@ func (s *scwCloudImplementation) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 
 func (s *scwCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
 	klog.V(8).Info("Scaleway doesn't have load-balancers yet so GetApiIngressStatus is not implemented")
-	return nil, fmt.Errorf("GetApiIngressStatus is not implemented yet for Scaleway")
+	return nil, nil
 }
 
 func (s *scwCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
