@@ -35,10 +35,13 @@ import (
 )
 
 const (
-	TagClusterName      = "kops.k8s.io/cluster"
-	KopsUserAgentPrefix = "kubernetes-kops/"
-	TagInstanceGroup    = "instance-group"
-	TagNameRolePrefix   = "k8s.io/role/"
+	TagClusterName           = "kops.k8s.io/cluster"
+	KopsUserAgentPrefix      = "kubernetes-kops/"
+	TagInstanceGroup         = "instance-group"
+	TagNameRolePrefix        = "k8s.io/role/"
+	TagNameEtcdClusterPrefix = "k8s.io/etcd/"
+	TagRoleMaster            = "master"
+	TagRoleVolume            = "volume"
 )
 
 // ScwCloud exposes all the interfaces required to operate on Scaleway resources

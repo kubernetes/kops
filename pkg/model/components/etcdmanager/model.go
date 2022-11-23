@@ -39,6 +39,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
+	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/util/pkg/env"
 	"k8s.io/kops/util/pkg/exec"
@@ -439,6 +440,17 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 				fmt.Sprintf("%s=%s", openstack.TagClusterName, b.Cluster.Name),
 			}
 			config.VolumeNameTag = openstack.TagNameEtcdClusterPrefix + etcdCluster.Name
+
+		case kops.CloudProviderScaleway:
+			config.VolumeProvider = "scaleway"
+
+			config.VolumeTag = []string{
+				fmt.Sprintf("%s=%s", scaleway.TagClusterName, b.Cluster.Name),
+				fmt.Sprintf("%s=%s", scaleway.TagNameEtcdClusterPrefix, etcdCluster.Name),
+				fmt.Sprintf("%s=%s", scaleway.TagNameRolePrefix, scaleway.TagRoleMaster),
+				fmt.Sprintf("%s=%s", scaleway.TagInstanceGroup, instanceGroupName),
+			}
+			config.VolumeNameTag = fmt.Sprintf("%s=%s", scaleway.TagNameEtcdClusterPrefix, etcdCluster.Name)
 
 		default:
 			return nil, fmt.Errorf("CloudProvider %q not supported with etcd-manager", b.Cluster.Spec.GetCloudProvider())
