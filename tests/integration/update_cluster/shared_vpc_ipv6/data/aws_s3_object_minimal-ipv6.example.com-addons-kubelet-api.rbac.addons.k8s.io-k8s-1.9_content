@@ -1,0 +1,17 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: kubelet-api.rbac.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: kubelet-api.rbac.addons.k8s.io
+  name: kops:system:kubelet-api-admin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:kubelet-api-admin
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: kubelet-api
