@@ -26,9 +26,10 @@ package featureflag
 
 import (
 	"fmt"
-	"github.com/spf13/viper"
 	"strings"
 	"sync"
+
+	"github.com/spf13/viper"
 
 	"k8s.io/klog/v2"
 )

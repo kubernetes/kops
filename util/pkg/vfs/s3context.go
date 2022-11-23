@@ -18,7 +18,6 @@ package vfs
 
 import (
 	"fmt"
-	"github.com/spf13/viper"
 	"net/http"
 	"os"
 	"regexp"
@@ -26,6 +25,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/spf13/viper"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
