@@ -11,7 +11,7 @@ Create an InstanceGroup configuration.
 
  An InstanceGroup is a group of similar virtual machines. On AWS, an InstanceGroup maps to an AutoScalingGroup.
 
- The Role of an InstanceGroup defines whether machines will act as a Kubernetes master or node.
+ The Role of an InstanceGroup defines whether machines will act as a Kubernetes control-plane, or worker node.
 
 ```
 kops create instancegroup INSTANCE_GROUP [flags]
