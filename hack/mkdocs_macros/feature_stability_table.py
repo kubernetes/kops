@@ -24,6 +24,7 @@ def define_env(env):
         Generate a markdown table which will be rendered when called, along with the supported passed keyword args.
         :param kwargs:
                        kops_added_ff => kOps version in which this feature was added as a feature flag
+                       kops_added_beta => kOps version in which this feature was introduced as beta
                        kops_added_default => kOps version in which this feature was introduced as stable
                        k8s_min => Minimum k8s version which supports this feature
         :return: rendered markdown table
@@ -32,6 +33,7 @@ def define_env(env):
         # this dict object maps the kwarg to its description, which will be used in the final table
         supported_args = {
             'kops_added_ff': 'Alpha (Feature Flag)',
+            'kops_added_beta': 'Beta',
             'kops_added_default': 'Default',
             'k8s_min': 'Minimum K8s Version'
         }
@@ -45,7 +47,7 @@ def define_env(env):
         for arg, header in supported_args.items():
             if arg not in kwargs.keys():
                 continue
-            if arg == 'kops_added_default' and 'kops_added_ff' not in kwargs.keys():
+            if arg == 'kops_added_default' and 'kops_added_ff' not in kwargs.keys() and 'kops_added_beta' not in kwargs.keys():
                 title += ' Introduced |'
             else:
                 title += f' {header} |'
