@@ -179,6 +179,7 @@
         "ec2:DeleteSecurityGroup",
         "ec2:DeleteVolume",
         "ec2:DescribeAccountAttributes",
+        "ec2:DescribeAvailabilityZones",
         "ec2:DescribeInstanceTypes",
         "ec2:DescribeInstances",
         "ec2:DescribeLaunchTemplateVersions",
