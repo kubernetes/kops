@@ -1,8 +1,8 @@
 # IPv6
 
-{{ kops_feature_table(kops_added_ff='1.23') }}
+{{ kops_feature_table(kops_added_ff='1.23', kops_added_beta='1.26') }}
 
-kOps has experimental support for configuring clusters with IPv6-only pods and IPv6-only or dual-stack nodes.
+kOps has beta support for configuring clusters with IPv6-only pods and IPv6-only or dual-stack nodes.
 
 IPv6 mode is specified by setting `nonMasqueradeCIDR: "::/0"` in the cluster spec.
 The `--ipv6` flag of `kops create cluster` sets this field, among others.
