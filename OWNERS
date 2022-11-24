@@ -8,24 +8,20 @@ emeritus_approvers:
   - chrislovecnm
   - chrisz100
   - gambol99
-  - granular-ryanbonham
-approvers:
   - geojaz
+  - granular-ryanbonham
+  - kashifsaadat
+  - mikesplain
+  - rdrgmnzs
+approvers:
   - hakman
   - johngmyers
   - justinsb
-  - kashifsaadat
-  - mikesplain
   - olemarkus
-  - rdrgmnzs
   - rifelpet
   - zetaab
 reviewers:
   - hakman
   - johngmyers
-  - joshbranham
-  - kashifsaadat
-  - mikesplain
   - olemarkus
-  - rdrgmnzs
   - zetaab
