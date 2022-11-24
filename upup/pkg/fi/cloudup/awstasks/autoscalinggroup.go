@@ -694,14 +694,14 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		if len(detachTGRequests) > 0 {
 			for _, detachTGRequest := range detachTGRequests {
 				if _, err := t.Cloud.Autoscaling().DetachLoadBalancerTargetGroups(detachTGRequest); err != nil {
-					return fmt.Errorf("error detaching TargetGroups: %v", err)
+					return fmt.Errorf("failed to detach target groups: %v", err)
 				}
 			}
 		}
 		if len(attachTGRequests) > 0 {
 			for _, attachTGRequest := range attachTGRequests {
 				if _, err := t.Cloud.Autoscaling().AttachLoadBalancerTargetGroups(attachTGRequest); err != nil {
-					return fmt.Errorf("error attaching TargetGroups: %v", err)
+					return fmt.Errorf("failed to attach target groups: %v", err)
 				}
 			}
 		}
