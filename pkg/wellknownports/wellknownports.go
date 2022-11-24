@@ -56,10 +56,13 @@ const (
 	// ProtokubeGossipMemberlist is the port where protokube listens for the memberlist-backed gossip
 	ProtokubeGossipMemberlist = 4000
 
+	// 4001 is etcd main, 4002 is etcd events
+
+	// EtcdCiliumClientPort is the port were the Cilium etcd cluster listens
+	EtcdCiliumClientPort = 4003
+
 	// CiliumOperatorPrometheusPort is the port the Cilium Operator exposes metrics
 	CiliumPrometheusOperatorPort = 6942
-
-	// 4001 is etcd main, 4002 is etcd events, 4003 is etcd cilium
 
 	// CiliumPrometheusPort is the default port where Cilium exposes metrics
 	CiliumPrometheusPort = 9090
