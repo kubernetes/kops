@@ -444,7 +444,10 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 				if err != nil {
 					return nil, err
 				}
-				instanceGroup.Spec.Image = defaultImage(&cluster, channel, architecture)
+				instanceGroup.Spec.Image, err = defaultImage(&cluster, channel, architecture)
+				if err != nil {
+					return nil, err
+				}
 			}
 		}
 
@@ -1503,30 +1506,34 @@ func addCiliumNetwork(cluster *api.Cluster) {
 }
 
 // defaultImage returns the default Image, based on the cloudprovider
-func defaultImage(cluster *api.Cluster, channel *api.Channel, architecture architectures.Architecture) string {
+func defaultImage(cluster *api.Cluster, channel *api.Channel, architecture architectures.Architecture) (string, error) {
 	if channel != nil {
 		var kubernetesVersion *semver.Version
 		if cluster.Spec.KubernetesVersion != "" {
 			var err error
 			kubernetesVersion, err = util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
 			if err != nil {
-				klog.Warningf("cannot parse KubernetesVersion %q in cluster", cluster.Spec.KubernetesVersion)
+				return "", fmt.Errorf("unable to parse kubernetes version %q", cluster.Spec.KubernetesVersion)
 			}
 		}
-		if kubernetesVersion != nil {
+		if channel != nil && kubernetesVersion != nil {
 			image := channel.FindImage(cluster.Spec.GetCloudProvider(), *kubernetesVersion, architecture)
 			if image != nil {
-				return image.Name
+				return image.Name, nil
 			}
 		}
 	}
 
 	switch cluster.Spec.GetCloudProvider() {
 	case api.CloudProviderDO:
-		return defaultDONodeImage
+		return defaultDOImage, nil
+	case api.CloudProviderHetzner:
+		return defaultHetznerImage, nil
+	case api.CloudProviderScaleway:
+		return defaultScalewayImage, nil
 	}
-	klog.Infof("Cannot set default Image for CloudProvider=%q", cluster.Spec.GetCloudProvider())
-	return ""
+
+	return "", fmt.Errorf("unable to determine default image for cloud provider %q and architecture %q", cluster.Spec.GetCloudProvider(), architecture)
 }
 
 func MachineArchitecture(cloud fi.Cloud, machineType string) (architectures.Architecture, error) {

@@ -50,7 +50,9 @@ const (
 	defaultMasterMachineTypeAzure   = "Standard_B2s"
 	defaultMasterMachineTypeHetzner = "cx21"
 
-	defaultDONodeImage = "ubuntu-20-04-x64"
+	defaultDOImage       = "ubuntu-20-04-x64"
+	defaultHetznerImage  = "ubuntu-20.04"
+	defaultScalewayImage = "ubuntu_focal"
 )
 
 // TODO: this hardcoded list can be replaced with DescribeInstanceTypes' DedicatedHostsSupported field
@@ -129,9 +131,9 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 		if err != nil {
 			return nil, fmt.Errorf("unable to determine machine architecture for InstanceGroup %q: %v", ig.ObjectMeta.Name, err)
 		}
-		ig.Spec.Image = defaultImage(cluster, channel, architecture)
-		if ig.Spec.Image == "" {
-			return nil, fmt.Errorf("unable to determine default image for InstanceGroup %s", ig.ObjectMeta.Name)
+		ig.Spec.Image, err = defaultImage(cluster, channel, architecture)
+		if err != nil {
+			return nil, fmt.Errorf("unable to determine default image for instance group %q: %v", ig.ObjectMeta.Name, err)
 		}
 	}
 

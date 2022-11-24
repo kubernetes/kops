@@ -26,6 +26,7 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/architectures"
 )
 
 func TestRemoveSharedPrefix(t *testing.T) {
@@ -331,6 +332,115 @@ func TestSetupNetworking(t *testing.T) {
 		if string(expectedYaml) != string(actualYaml) {
 			diffString := diff.FormatDiff(string(expectedYaml), string(actualYaml))
 			t.Errorf("unexpected cluster networking setup:\n%s", diffString)
+		}
+	}
+}
+
+func TestDefaultImage(t *testing.T) {
+	tests := []struct {
+		cluster      *api.Cluster
+		architecture architectures.Architecture
+		expected     string
+	}{
+		{
+			cluster: &api.Cluster{
+				Spec: api.ClusterSpec{
+					KubernetesVersion: "v1.25.0",
+					CloudProvider: api.CloudProviderSpec{
+						AWS: &api.AWSSpec{},
+					},
+				},
+			},
+			architecture: architectures.ArchitectureAmd64,
+			expected:     "099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221018",
+		},
+		{
+			cluster: &api.Cluster{
+				Spec: api.ClusterSpec{
+					KubernetesVersion: "v1.25.0",
+					CloudProvider: api.CloudProviderSpec{
+						AWS: &api.AWSSpec{},
+					},
+				},
+			},
+			architecture: architectures.ArchitectureArm64,
+			expected:     "099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20221018",
+		},
+		{
+			cluster: &api.Cluster{
+				Spec: api.ClusterSpec{
+					KubernetesVersion: "v1.25.0",
+					CloudProvider: api.CloudProviderSpec{
+						Azure: &api.AzureSpec{},
+					},
+				},
+			},
+			architecture: architectures.ArchitectureAmd64,
+			expected:     "Canonical:0001-com-ubuntu-server-focal:20_04-lts-gen2:20.04.202210180",
+		},
+		{
+			cluster: &api.Cluster{
+				Spec: api.ClusterSpec{
+					KubernetesVersion: "v1.25.0",
+					CloudProvider: api.CloudProviderSpec{
+						GCE: &api.GCESpec{},
+					},
+				},
+			},
+			architecture: architectures.ArchitectureAmd64,
+			expected:     "ubuntu-os-cloud/ubuntu-2004-focal-v20221018",
+		},
+		{
+			cluster: &api.Cluster{
+				Spec: api.ClusterSpec{
+					KubernetesVersion: "v1.25.0",
+					CloudProvider: api.CloudProviderSpec{
+						DO: &api.DOSpec{},
+					},
+				},
+			},
+			architecture: architectures.ArchitectureAmd64,
+			expected:     defaultDOImage,
+		},
+		{
+			cluster: &api.Cluster{
+				Spec: api.ClusterSpec{
+					KubernetesVersion: "v1.25.0",
+					CloudProvider: api.CloudProviderSpec{
+						Hetzner: &api.HetznerSpec{},
+					},
+				},
+			},
+			architecture: architectures.ArchitectureAmd64,
+			expected:     defaultHetznerImage,
+		},
+		{
+			cluster: &api.Cluster{
+				Spec: api.ClusterSpec{
+					KubernetesVersion: "v1.25.0",
+					CloudProvider: api.CloudProviderSpec{
+						Scaleway: &api.ScalewaySpec{},
+					},
+				},
+			},
+			architecture: architectures.ArchitectureAmd64,
+			expected:     defaultScalewayImage,
+		},
+	}
+
+	channel, err := api.LoadChannel("file://tests/channels/channel.yaml")
+	if err != nil {
+		t.Fatalf("unable to load test channel: %v", err)
+	}
+
+	for _, test := range tests {
+		actual, err := defaultImage(test.cluster, channel, test.architecture)
+		if err != nil {
+			t.Error(err)
+			continue
+		}
+		if actual != test.expected {
+			t.Errorf("unexpected default image for cluster %s: expected=%q, actual=%q", fi.DebugAsJsonString(test.cluster.Spec), test.expected, actual)
 		}
 	}
 }
