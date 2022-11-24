@@ -21,6 +21,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"k8s.io/klog/v2"
@@ -103,9 +104,10 @@ func (_ *LoadImageTask) RenderLocal(t *local.LocalTarget, a, e, changes *LoadIma
 		return fmt.Errorf("no sources specified: %v", err)
 	}
 
-	// We assume the first url is the "main" url, and download to that _name_, wherever we get it from
+	// We assume the first url is the "main" url, and download to a local file based on that _name_, wherever we get it from
 	primaryURL := urls[0]
-	localFile := path.Join(t.CacheDir, hash.String()+"_"+utils.SanitizeString(primaryURL))
+	key := path.Base(primaryURL)
+	localFile := filepath.Join(t.CacheDir, hash.String()+"_"+utils.SanitizeString(key))
 
 	for _, url := range urls {
 		_, err = fi.DownloadURL(url, localFile, hash)
