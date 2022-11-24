@@ -704,7 +704,7 @@ func (c *RollingUpdateCluster) deleteNode(node *corev1.Node) error {
 func (c *RollingUpdateCluster) UpdateSingleInstance(cloudMember *cloudinstances.CloudInstance, detach bool) error {
 	if detach {
 		if cloudMember.CloudInstanceGroup.InstanceGroup.IsControlPlane() {
-			klog.Warning("cannot detach master instances. Assuming --surge=false")
+			klog.Warning("cannot detach control-plane instances. Assuming --surge=false")
 		} else if cloudMember.CloudInstanceGroup.InstanceGroup.Spec.Manager != api.InstanceManagerKarpenter {
 			err := c.detachInstance(cloudMember)
 			if err != nil {

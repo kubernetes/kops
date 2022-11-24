@@ -271,7 +271,7 @@ func findControlPlaneIPUser(dump resources.Dump) (string, string, bool) {
 			continue
 		}
 		for _, role := range instance.Roles {
-			if role == "master" {
+			if role == "control-plane" {
 				return instance.PublicAddresses[0], instance.SSHUser, true
 			}
 		}

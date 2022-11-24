@@ -63,7 +63,7 @@ var (
 	    An InstanceGroup is a group of similar virtual machines.
 		On AWS, an InstanceGroup maps to an AutoScalingGroup.
 
-		The Role of an InstanceGroup defines whether machines will act as a Kubernetes master or node.`))
+		The Role of an InstanceGroup defines whether machines will act as a Kubernetes control-plane, or worker node.`))
 
 	createInstanceGroupExample = templates.Examples(i18n.T(`
 

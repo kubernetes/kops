@@ -83,7 +83,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 		if ig.Spec.MachineType == "" {
 			ig.Spec.MachineType, err = defaultMachineType(cloud, cluster, ig)
 			if err != nil {
-				return nil, fmt.Errorf("error assigning default machine type for masters: %v", err)
+				return nil, fmt.Errorf("assigning default machine type for control-plane nodes: %v", err)
 			}
 
 		}
@@ -148,7 +148,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 
 	if ig.IsControlPlane() {
 		if len(ig.Spec.Subnets) == 0 {
-			return nil, fmt.Errorf("master InstanceGroup %s did not specify any Subnets", ig.ObjectMeta.Name)
+			return nil, fmt.Errorf("control-plane InstanceGroup %s did not specify any Subnets", ig.ObjectMeta.Name)
 		}
 	} else if ig.IsAPIServerOnly() && cluster.Spec.IsIPv6Only() {
 		if len(ig.Spec.Subnets) == 0 {
