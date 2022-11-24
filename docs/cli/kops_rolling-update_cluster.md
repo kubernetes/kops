@@ -56,22 +56,22 @@ kops rolling-update cluster [CLUSTER] [flags]
 ### Options
 
 ```
-      --bastion-interval duration      Time to wait between restarting bastions (default 15s)
-      --cloudonly                      Perform rolling update without confirming progress with Kubernetes
-      --drain-timeout duration         Maximum time to wait for a node to drain (default 15m0s)
-      --fail-on-drain-error            Fail if draining a node fails (default true)
-      --fail-on-validate-error         Fail if the cluster fails to validate (default true)
-      --force                          Force rolling update, even if no changes
-  -h, --help                           help for cluster
-      --instance-group strings         Instance groups to update (defaults to all if not specified)
-      --instance-group-roles strings   Instance group roles to update (control-plane,apiserver,node,bastion)
-  -i, --interactive                    Prompt to continue after each instance is updated
-      --master-interval duration       Time to wait between restarting control plane nodes (default 15s)
-      --node-interval duration         Time to wait between restarting worker nodes (default 15s)
-      --post-drain-delay duration      Time to wait after draining each node (default 5s)
-      --validate-count int32           Number of times that a cluster needs to be validated after single node update (default 2)
-      --validation-timeout duration    Maximum time to wait for a cluster to validate (default 15m0s)
-  -y, --yes                            Perform rolling update immediately; without --yes rolling-update executes a dry-run
+      --bastion-interval duration         Time to wait between restarting bastions (default 15s)
+      --cloudonly                         Perform rolling update without confirming progress with Kubernetes
+      --control-plane-interval duration   Time to wait between restarting control plane nodes (default 15s)
+      --drain-timeout duration            Maximum time to wait for a node to drain (default 15m0s)
+      --fail-on-drain-error               Fail if draining a node fails (default true)
+      --fail-on-validate-error            Fail if the cluster fails to validate (default true)
+      --force                             Force rolling update, even if no changes
+  -h, --help                              help for cluster
+      --instance-group strings            Instance groups to update (defaults to all if not specified)
+      --instance-group-roles strings      Instance group roles to update (control-plane,apiserver,node,bastion)
+  -i, --interactive                       Prompt to continue after each instance is updated
+      --node-interval duration            Time to wait between restarting worker nodes (default 15s)
+      --post-drain-delay duration         Time to wait after draining each node (default 5s)
+      --validate-count int32              Number of times that a cluster needs to be validated after single node update (default 2)
+      --validation-timeout duration       Maximum time to wait for a cluster to validate (default 15m0s)
+  -y, --yes                               Perform rolling update immediately; without --yes rolling-update executes a dry-run
 ```
 
 ### Options inherited from parent commands

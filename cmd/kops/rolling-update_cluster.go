@@ -119,10 +119,10 @@ type RollingUpdateOptions struct {
 	// ValidateCount is the amount of time that a cluster needs to be validated after single node update
 	ValidateCount int32
 
-	// MasterInterval is the minimum time to wait after stopping a master node.  This does not include drain and validate time.
-	MasterInterval time.Duration
+	// ControlPlaneInterval is the minimum time to wait after stopping a control-plane node.  This does not include drain and validate time.
+	ControlPlaneInterval time.Duration
 
-	// NodeInterval is the minimum time to wait after stopping a (non-master) node.  This does not include drain and validate time.
+	// NodeInterval is the minimum time to wait after stopping a (non-control-plane) node.  This does not include drain and validate time.
 	NodeInterval time.Duration
 
 	// BastionInterval is the minimum time to wait after stopping a bastion.  This does not include drain and validate time.
@@ -152,7 +152,7 @@ func (o *RollingUpdateOptions) InitDefaults() {
 	o.FailOnDrainError = false
 	o.FailOnValidate = true
 
-	o.MasterInterval = 15 * time.Second
+	o.ControlPlaneInterval = 15 * time.Second
 	o.NodeInterval = 15 * time.Second
 	o.BastionInterval = 15 * time.Second
 	o.Interactive = false
@@ -194,7 +194,7 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().DurationVar(&options.ValidationTimeout, "validation-timeout", options.ValidationTimeout, "Maximum time to wait for a cluster to validate")
 	cmd.Flags().DurationVar(&options.DrainTimeout, "drain-timeout", options.DrainTimeout, "Maximum time to wait for a node to drain")
 	cmd.Flags().Int32Var(&options.ValidateCount, "validate-count", options.ValidateCount, "Number of times that a cluster needs to be validated after single node update")
-	cmd.Flags().DurationVar(&options.MasterInterval, "master-interval", options.MasterInterval, "Time to wait between restarting control plane nodes")
+	cmd.Flags().DurationVar(&options.ControlPlaneInterval, "control-plane-interval", options.ControlPlaneInterval, "Time to wait between restarting control plane nodes")
 	cmd.Flags().DurationVar(&options.NodeInterval, "node-interval", options.NodeInterval, "Time to wait between restarting worker nodes")
 	cmd.Flags().DurationVar(&options.BastionInterval, "bastion-interval", options.BastionInterval, "Time to wait between restarting bastions")
 	cmd.Flags().DurationVar(&options.PostDrainDelay, "post-drain-delay", options.PostDrainDelay, "Time to wait after draining each node")
@@ -213,6 +213,8 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		switch name {
 		case "ig", "instance-groups":
 			name = "instance-group"
+		case "master-interval":
+			name = "control-plane-interval"
 		case "role", "roles", "instance-group-role":
 			name = "instance-group-roles"
 		}
@@ -345,7 +347,7 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 		Clientset:         clientset,
 		Ctx:               ctx,
 		Cluster:           cluster,
-		MasterInterval:    options.MasterInterval,
+		MasterInterval:    options.ControlPlaneInterval,
 		NodeInterval:      options.NodeInterval,
 		BastionInterval:   options.BastionInterval,
 		Interactive:       options.Interactive,
