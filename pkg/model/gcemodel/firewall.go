@@ -23,6 +23,7 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
@@ -124,6 +125,9 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		if b.NetworkingIsCilium() {
 			t.Allowed = append(t.Allowed, fmt.Sprintf("udp:%d", wellknownports.VxlanUDP))
+			if model.UseCiliumEtcd(b.Cluster) {
+				t.Allowed = append(t.Allowed, fmt.Sprintf("tcp:%d", wellknownports.EtcdCiliumClientPort))
+			}
 		}
 		c.AddTask(t)
 	}
