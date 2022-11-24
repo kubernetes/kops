@@ -57,7 +57,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// If we are using a bastion, we only access through the bastion
 		// This is admittedly a little odd... adding a bastion shuts down direct access to the masters/nodes
 		// But I think we can always add more permissions in this case later, but we can't easily take them away
-		klog.V(2).Infof("bastion is in use; won't configure SSH access to master / node instances")
+		klog.V(2).Infof("bastion is in use; won't configure SSH access to control-plane / worker node instances")
 	} else {
 		for _, sshAccess := range b.Cluster.Spec.SSHAccess {
 			for _, masterGroup := range masterGroups {

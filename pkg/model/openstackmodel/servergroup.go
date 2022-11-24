@@ -282,7 +282,7 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 		}
 		if lbSubnetName == "" {
-			return fmt.Errorf("could not find subnet for master loadbalancer")
+			return fmt.Errorf("could not find subnet for Kubernetes API loadbalancer")
 		}
 		lbTask := &openstacktasks.LB{
 			Name:      fi.PtrTo(b.Cluster.Spec.API.PublicName),
