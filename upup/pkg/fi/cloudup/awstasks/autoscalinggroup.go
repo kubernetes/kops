@@ -33,8 +33,15 @@ import (
 	"k8s.io/kops/util/pkg/maps"
 )
 
-// CloudTagInstanceGroupRolePrefix is a cloud tag that defines the instance role
-const CloudTagInstanceGroupRolePrefix = "k8s.io/role/"
+const (
+	// CloudTagInstanceGroupRolePrefix is a cloud tag that defines the instance role
+	CloudTagInstanceGroupRolePrefix = "k8s.io/role/"
+
+	// Auto Scaling group API operations limits
+	// https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-quotas.html
+	attachLoadBalancerTargetGroupsMaxItems = 10
+	detachLoadBalancerTargetGroupsMaxItems = 10
+)
 
 // AutoscalingGroup provides the definition for a autoscaling group in aws
 // +kops:fitask
@@ -576,20 +583,24 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			changes.LoadBalancers = nil
 		}
 
-		var attachTGRequest *autoscaling.AttachLoadBalancerTargetGroupsInput
-		var detachTGRequest *autoscaling.DetachLoadBalancerTargetGroupsInput
+		var attachTGRequests []*autoscaling.AttachLoadBalancerTargetGroupsInput
+		var detachTGRequests []*autoscaling.DetachLoadBalancerTargetGroupsInput
 		if changes.TargetGroups != nil {
 			if e != nil && len(e.TargetGroups) > 0 {
-				attachTGRequest = &autoscaling.AttachLoadBalancerTargetGroupsInput{
-					AutoScalingGroupName: e.Name,
-					TargetGroupARNs:      e.AutoscalingTargetGroups(),
+				for _, tgsChunkToAttach := range sliceChunks(e.AutoscalingTargetGroups(), attachLoadBalancerTargetGroupsMaxItems) {
+					attachTGRequests = append(attachTGRequests, &autoscaling.AttachLoadBalancerTargetGroupsInput{
+						AutoScalingGroupName: e.Name,
+						TargetGroupARNs:      tgsChunkToAttach,
+					})
 				}
 			}
 
 			if a != nil && len(a.TargetGroups) > 0 {
-				detachTGRequest = &autoscaling.DetachLoadBalancerTargetGroupsInput{
-					AutoScalingGroupName: e.Name,
-					TargetGroupARNs:      e.getTGsToDetach(a.TargetGroups),
+				for _, tgsChunkToDetach := range sliceChunks(e.getTGsToDetach(a.TargetGroups), detachLoadBalancerTargetGroupsMaxItems) {
+					detachTGRequests = append(detachTGRequests, &autoscaling.DetachLoadBalancerTargetGroupsInput{
+						AutoScalingGroupName: e.Name,
+						TargetGroupARNs:      tgsChunkToDetach,
+					})
 				}
 			}
 			changes.TargetGroups = nil
@@ -680,14 +691,18 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 				return fmt.Errorf("error attaching LoadBalancers: %v", err)
 			}
 		}
-		if detachTGRequest != nil {
-			if _, err := t.Cloud.Autoscaling().DetachLoadBalancerTargetGroups(detachTGRequest); err != nil {
-				return fmt.Errorf("error detaching TargetGroups: %v", err)
+		if len(detachTGRequests) > 0 {
+			for _, detachTGRequest := range detachTGRequests {
+				if _, err := t.Cloud.Autoscaling().DetachLoadBalancerTargetGroups(detachTGRequest); err != nil {
+					return fmt.Errorf("error detaching TargetGroups: %v", err)
+				}
 			}
 		}
-		if attachTGRequest != nil {
-			if _, err := t.Cloud.Autoscaling().AttachLoadBalancerTargetGroups(attachTGRequest); err != nil {
-				return fmt.Errorf("error attaching TargetGroups: %v", err)
+		if len(attachTGRequests) > 0 {
+			for _, attachTGRequest := range attachTGRequests {
+				if _, err := t.Cloud.Autoscaling().AttachLoadBalancerTargetGroups(attachTGRequest); err != nil {
+					return fmt.Errorf("error attaching TargetGroups: %v", err)
+				}
 			}
 		}
 	}
@@ -847,6 +862,21 @@ func (e *AutoscalingGroup) getTGsToDetach(currentTGs []*TargetGroup) []*string {
 		}
 	}
 	return tgsToDetach
+}
+
+// sliceChunks returns a chunked slice
+func sliceChunks(slice []*string, chunkSize int) [][]*string {
+	var chunks [][]*string
+	for i := 0; i < len(slice); i = i + chunkSize {
+		var chunk []*string
+		if i+chunkSize < len(slice) {
+			chunk = slice[i : i+chunkSize]
+		} else {
+			chunk = slice[i:]
+		}
+		chunks = append(chunks, chunk)
+	}
+	return chunks
 }
 
 type terraformASGTag struct {
