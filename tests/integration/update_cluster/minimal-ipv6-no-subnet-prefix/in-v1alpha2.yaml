@@ -1,0 +1,112 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: "2016-12-10T22:42:27Z"
+  name: minimal-ipv6.example.com
+spec:
+  api:
+    loadBalancer:
+      type: Public
+      class: Network
+  channel: stable
+  cloudConfig:
+    awsEBSCSIDriver:
+      enabled: true
+  cloudControllerManager: {}
+  cloudProvider: aws
+  configBase: memfs://clusters.example.com/minimal-ipv6.example.com
+  etcdClusters:
+  - etcdMembers:
+    - instanceGroup: master-us-test-1a
+      name: us-test-1a
+    name: main
+  - etcdMembers:
+    - instanceGroup: master-us-test-1a
+      name: us-test-1a
+    name: events
+  iam: {}
+  kubelet:
+    anonymousAuth: false
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  - ::/0
+  kubernetesVersion: v1.25.0
+  masterPublicName: api.minimal-ipv6.example.com
+  networkCIDR: 172.20.0.0/16
+  networking:
+    cni: {}
+  nonMasqueradeCIDR: ::/0
+  sshAccess:
+  - 0.0.0.0/0
+  - ::/0
+  subnets:
+  - ipv6CIDR: /64#1
+    name: us-test-1a
+    type: Private
+    zone: us-test-1a
+  - ipv6CIDR: /64#2
+    name: us-test-1b
+    type: Private
+    zone: us-test-1b
+  - cidr: 172.20.32.0/19
+    ipv6CIDR: /64#3
+    name: dualstack-us-test-1a
+    type: DualStack
+    zone: us-test-1a
+  - cidr: 172.20.64.0/19
+    ipv6CIDR: /64#4
+    name: dualstack-us-test-1b
+    type: DualStack
+    zone: us-test-1b
+  - cidr: 172.20.0.0/22
+    ipv6CIDR: /64#5
+    name: utility-us-test-1a
+    type: Utility
+    zone: us-test-1a
+  - cidr: 172.20.4.0/22
+    ipv6CIDR: /64#6
+    name: utility-us-test-1b
+    type: Utility
+    zone: us-test-1b
+  topology:
+    masters: private
+    nodes: private
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2016-12-10T22:42:28Z"
+  name: nodes
+  labels:
+    kops.k8s.io/cluster: minimal-ipv6.example.com
+spec:
+  associatePublicIp: true
+  image: ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404
+  machineType: t3.medium
+  maxSize: 2
+  minSize: 2
+  role: Node
+  subnets:
+  - us-test-1a
+  - us-test-1b
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2016-12-10T22:42:28Z"
+  name: master-us-test-1a
+  labels:
+    kops.k8s.io/cluster: minimal-ipv6.example.com
+spec:
+  associatePublicIp: true
+  image: ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404
+  machineType: m3.medium
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - dualstack-us-test-1a

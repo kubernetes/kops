@@ -296,12 +296,20 @@ func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) 
 		return err
 	}
 
+	if err := t.AddOutputVariable("vpc_ipv6_cidr_length", terraformWriter.LiteralFunctionExpression("local.vpc_ipv6_cidr_block == null ? null : tonumber", "regex(\".*/(\\\\d+)\", local.vpc_ipv6_cidr_block)[0]")); err != nil {
+		return err
+	}
+
 	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Not terraform owned / managed
 		// We won't apply changes, but our validation (kops update) will still warn
 
 		if err := t.AddOutputVariable("vpc_cidr_block", terraformWriter.LiteralData("aws_vpc", *e.Name, "cidr_block")); err != nil {
+			return err
+		}
+
+		if err := t.AddOutputVariable("vpc_ipv6_cidr_block", terraformWriter.LiteralData("aws_vpc", *e.Name, "ipv6_cidr_block")); err != nil {
 			return err
 		}
 
@@ -313,6 +321,10 @@ func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) 
 	}
 
 	if err := t.AddOutputVariable("vpc_cidr_block", terraformWriter.LiteralProperty("aws_vpc", *e.Name, "cidr_block")); err != nil {
+		return err
+	}
+
+	if err := t.AddOutputVariable("vpc_ipv6_cidr_block", terraformWriter.LiteralProperty("aws_vpc", *e.Name, "ipv6_cidr_block")); err != nil {
 		return err
 	}
 

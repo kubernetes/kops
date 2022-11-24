@@ -414,6 +414,13 @@ func TestMinimalIPv6Cilium(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
+// TestMinimalIPv6NoSubnetPrefix runs the test with "/64#N" subnet notation
+func TestMinimalIPv6NoSubnetPrefix(t *testing.T) {
+	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6-no-subnet-prefix").
+		withDefaultAddons24().
+		runTestTerraformAWS(t)
+}
+
 // TestMinimalWarmPool runs the test on a minimum Warm Pool configuration
 func TestMinimalWarmPool(t *testing.T) {
 	newIntegrationTest("minimal-warmpool.example.com", "minimal-warmpool").
@@ -798,6 +805,13 @@ func TestSharedSubnet(t *testing.T) {
 func TestSharedVPC(t *testing.T) {
 	newIntegrationTest("sharedvpc.example.com", "shared_vpc").
 		withAddons(dnsControllerAddon).
+		runTestTerraformAWS(t)
+}
+
+// TestSharedVPCIPv6 runs the test on a configuration with a shared VPC using IPv6
+func TestSharedVPCIPv6(t *testing.T) {
+	newIntegrationTest("minimal-ipv6.example.com", "shared_vpc_ipv6").
+		withDefaultAddons24().
 		runTestTerraformAWS(t)
 }
 
