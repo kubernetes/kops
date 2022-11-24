@@ -17,6 +17,7 @@ limitations under the License.
 package awstasks
 
 import (
+	"fmt"
 	"sort"
 	"testing"
 
@@ -335,4 +336,85 @@ terraform {
 	}
 
 	doRenderTests(t, "RenderTerraform", cases)
+}
+
+func TestTGsARNsChunks(t *testing.T) {
+	var tgsARNs []*string
+	for i := 0; i < 30; i++ {
+		tgsARNs = append(tgsARNs, fi.PtrTo(fmt.Sprintf("arn:aws:elasticloadbalancing:us-west-2:123456789012:targetgroup/my-targets/00000000000000%02d", i)))
+	}
+
+	tests := []struct {
+		tgsARNs   []*string
+		chunkSize int
+		expected  [][]*string
+	}{
+		{
+			tgsARNs:   tgsARNs[0:1],
+			chunkSize: 10,
+			expected:  [][]*string{tgsARNs[0:1]},
+		},
+		{
+			tgsARNs:   tgsARNs[0:5],
+			chunkSize: 10,
+			expected:  [][]*string{tgsARNs[0:5]},
+		},
+		{
+			tgsARNs:   tgsARNs[0:10],
+			chunkSize: 10,
+			expected:  [][]*string{tgsARNs[0:10]},
+		},
+		{
+			tgsARNs:   tgsARNs[0:11],
+			chunkSize: 10,
+			expected:  [][]*string{tgsARNs[0:10], tgsARNs[10:11]},
+		},
+		{
+			tgsARNs:   tgsARNs[0:15],
+			chunkSize: 10,
+			expected:  [][]*string{tgsARNs[0:10], tgsARNs[10:15]},
+		},
+		{
+			tgsARNs:   tgsARNs[0:20],
+			chunkSize: 10,
+			expected:  [][]*string{tgsARNs[0:10], tgsARNs[10:20]},
+		},
+		{
+			tgsARNs:   tgsARNs[0:21],
+			chunkSize: 10,
+			expected:  [][]*string{tgsARNs[0:10], tgsARNs[10:20], tgsARNs[20:21]},
+		},
+		{
+			tgsARNs:   tgsARNs[0:25],
+			chunkSize: 10,
+			expected:  [][]*string{tgsARNs[0:10], tgsARNs[10:20], tgsARNs[20:25]},
+		},
+		{
+			tgsARNs:   tgsARNs[0:30],
+			chunkSize: 10,
+			expected:  [][]*string{tgsARNs[0:10], tgsARNs[10:20], tgsARNs[20:30]},
+		},
+	}
+
+	for i, test := range tests {
+		result := sliceChunks(test.tgsARNs, test.chunkSize)
+
+		expected, err := yaml.Marshal(test.expected)
+		if err != nil {
+			t.Errorf("case %d: failed to convert expected to yaml: %v", i, err)
+			continue
+		}
+
+		actual, err := yaml.Marshal(result)
+		if err != nil {
+			t.Errorf("case %d: failed to convert actual to yaml: %v", i, err)
+			continue
+		}
+
+		if string(expected) != string(actual) {
+			diffString := diff.FormatDiff(string(expected), string(actual))
+			t.Errorf("case %d: actual output differed from expected", i)
+			t.Logf("diff:\n%s\n", diffString)
+		}
+	}
 }
