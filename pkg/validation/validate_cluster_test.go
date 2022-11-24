@@ -555,7 +555,7 @@ func Test_ValidateMasterStaticPods(t *testing.T) {
 		expectedFailures = append(expectedFailures, &ValidationError{
 			Kind:          "Node",
 			Name:          "master-1b",
-			Message:       "master \"master-1b\" is missing " + pod + " pod",
+			Message:       "control-plane node \"master-1b\" is missing " + pod + " pod",
 			InstanceGroup: groups["node-1"].InstanceGroup,
 		})
 	}

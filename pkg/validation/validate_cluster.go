@@ -265,7 +265,7 @@ func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kuber
 			v.addError(&ValidationError{
 				Kind:          "Node",
 				Name:          node,
-				Message:       fmt.Sprintf("master %q is missing %s pod", node, app),
+				Message:       fmt.Sprintf("control-plane node %q is missing %s pod", node, app),
 				InstanceGroup: nodeInstanceGroupMapping[node],
 			})
 		}

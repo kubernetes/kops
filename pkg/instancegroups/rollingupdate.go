@@ -164,17 +164,17 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 		}
 	}
 
-	// Upgrade masters next
+	// Upgrade control plane next.
 	{
-		// We run master nodes in series, even if they are in separate instance groups
+		// We run control-plane nodes in series, even if they are in separate instance groups
 		// typically they will be in separate instance groups, so we can force the zones,
-		// and we don't want to roll all the masters at the same time.  See issue #284
+		// and we don't want to roll all the control-plane nodes at the same time.  See issue #284
 
 		for _, k := range sortGroups(masterGroups) {
 			err := c.rollingUpdateInstanceGroup(masterGroups[k], c.MasterInterval)
-			// Do not continue update if master(s) failed, cluster is potentially in an unhealthy state
+			// Do not continue update if control-plane node(s) failed; cluster is potentially in an unhealthy state.
 			if err != nil {
-				return fmt.Errorf("master not healthy after update, stopping rolling-update: %q", err)
+				return fmt.Errorf("control-plane node not healthy after update, stopping rolling-update: %q", err)
 			}
 		}
 	}
