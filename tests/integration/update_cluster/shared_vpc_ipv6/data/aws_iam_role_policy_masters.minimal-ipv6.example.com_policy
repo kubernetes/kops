@@ -172,6 +172,7 @@
         "autoscaling:DescribeTags",
         "ec2:AssignIpv6Addresses",
         "ec2:DescribeAccountAttributes",
+        "ec2:DescribeAvailabilityZones",
         "ec2:DescribeInstanceTypes",
         "ec2:DescribeInstances",
         "ec2:DescribeLaunchTemplateVersions",
