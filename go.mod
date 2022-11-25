@@ -14,10 +14,10 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/apparentlymart/go-cidr v1.1.0
 	github.com/aws/amazon-ec2-instance-selector/v2 v2.4.0
-	github.com/aws/aws-sdk-go v1.44.140
+	github.com/aws/aws-sdk-go v1.44.145
 	github.com/blang/semver/v4 v4.0.0
-	github.com/cert-manager/cert-manager v1.10.0
-	github.com/digitalocean/godo v1.90.0
+	github.com/cert-manager/cert-manager v1.10.1
+	github.com/digitalocean/godo v1.91.1
 	github.com/go-ini/ini v1.67.0
 	github.com/go-logr/logr v1.2.3
 	github.com/gogo/protobuf v1.3.2
@@ -26,7 +26,7 @@ require (
 	github.com/google/go-tpm v0.3.3
 	github.com/google/go-tpm-tools v0.3.9
 	github.com/google/uuid v1.3.0
-	github.com/gophercloud/gophercloud v1.0.0
+	github.com/gophercloud/gophercloud v1.1.0
 	github.com/hashicorp/hcl/v2 v2.15.0
 	github.com/hashicorp/vault/api v1.8.2
 	github.com/hetznercloud/hcloud-go v1.37.0
@@ -40,7 +40,7 @@ require (
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.14.0
-	github.com/spotinst/spotinst-sdk-go v1.131.1
+	github.com/spotinst/spotinst-sdk-go v1.132.0
 	github.com/stretchr/testify v1.8.1
 	github.com/weaveworks/mesh v0.0.0-20191105120815-58dbcc3e8e63
 	github.com/zclconf/go-cty v1.12.1
