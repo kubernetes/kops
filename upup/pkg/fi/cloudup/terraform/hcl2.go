@@ -17,10 +17,8 @@ limitations under the License.
 package terraform
 
 import (
-	"fmt"
 	"reflect"
 	"sort"
-	"strings"
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
@@ -104,14 +102,13 @@ func writeValue(body *hclwrite.Body, key string, value cty.Value) {
 // key = res_type.res_name.res_prop
 // key = file("${module.path}/foo")
 func writeLiteral(body *hclwrite.Body, key string, literal *terraformWriter.Literal) {
-	if literal.FnName != "" {
-		tokens := hclwrite.Tokens{
+	if literal.String != "" {
+		body.SetAttributeRaw(key, hclwrite.Tokens{
 			{
 				Type:  hclsyntax.TokenIdent,
-				Bytes: []byte(fmt.Sprintf("%v(%v)", literal.FnName, strings.Join(literal.FnArgs, ", "))),
+				Bytes: []byte(literal.String),
 			},
-		}
-		body.SetAttributeRaw(key, tokens)
+		})
 	} else if literal.Index {
 		tokens := hclwrite.Tokens{
 			{
@@ -242,10 +239,10 @@ func writeMap(body *hclwrite.Body, key string, values map[string]cty.Value) {
 		errLiteralSlice := gocty.FromCtyValue(v, refLiteralSlice.Interface())
 		// If this is a map of literals then do not surround the value with quotes
 		if literal, ok := refLiteral.Interface().(*terraformWriter.Literal); errLiteral == nil && ok {
-			if literal.FnName != "" {
+			if literal.String != "" {
 				tokens = append(tokens, &hclwrite.Token{
 					Type:  hclsyntax.TokenIdent,
-					Bytes: []byte(fmt.Sprintf("%v(%v)", literal.FnName, strings.Join(literal.FnArgs, ", "))),
+					Bytes: []byte(literal.String),
 				})
 			} else if literal.Value != "" {
 				tokens = append(tokens, []*hclwrite.Token{
