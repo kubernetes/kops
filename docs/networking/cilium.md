@@ -137,6 +137,8 @@ Also note that this feature has only been tested on the default kOps AMIs.
 
 #### Enabling Encryption in Cilium
 
+Encryption in Cilium is an area under active development seeking maintainers for several feature areas. There are varying levels of support for encryption features. Specifically, use caution when enabling encryption alongside enabling Cilium NodePort support, as this combination has been noted to result in broken deployments. Understand the [limitations](https://github.com/cilium/cilium/issues/13663) and state of the features before enabling IPSec or Wireguard.
+
 ##### ipsec
 {{ kops_feature_table(kops_added_default='1.19', k8s_min='1.17') }}
 
