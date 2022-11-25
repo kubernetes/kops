@@ -45,7 +45,3 @@ assets:
     githubName: channels-linux-arm64
   - source: linux/arm64/channels.sha256
     githubName: channels-linux-arm64.sha256
-  - source: images/images.tar.gz
-    githubName: images.tar.gz
-  - source: images/images.tar.gz.sha256
-    githubName: images.tar.gz.sha256
