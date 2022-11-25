@@ -1,5 +1,9 @@
 # Change Log
 
+## [v1.91.1] - 2022-11-23
+
+- #582 - @StephenVarela - Load Balancers: Support new endpoints for http alerts
+
 ## [v1.90.0] - 2022-11-16
 
 - #571 - @kraai - Add WaitForAvailable
