@@ -1632,6 +1632,9 @@ func validateNodeTerminationHandler(cluster *kops.Cluster, spec *kops.NodeTermin
 	if cluster.Spec.GetCloudProvider() != kops.CloudProviderAWS {
 		allErrs = append(allErrs, field.Forbidden(fldPath, "Node Termination Handler supports only AWS"))
 	}
+	if fi.ValueOf(spec.Enabled) && cluster.Spec.Karpenter != nil && cluster.Spec.Karpenter.Enabled {
+		allErrs = append(allErrs, field.Forbidden(fldPath, "Node Termination Handler functionality is subsumed by Karpenter"))
+	}
 	return allErrs
 }
 
