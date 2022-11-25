@@ -18,6 +18,12 @@ type CreateResult struct {
 	commonResult
 }
 
+// UpdateResult is the response of a Put operation. Call its Extract method to
+// interpret it as a Flavor.
+type UpdateResult struct {
+	commonResult
+}
+
 // GetResult is the response of a Get operations. Call its Extract method to
 // interpret it as a Flavor.
 type GetResult struct {
@@ -69,6 +75,11 @@ type Flavor struct {
 
 	// Ephemeral is the amount of ephemeral disk space, measured in GB.
 	Ephemeral int `json:"OS-FLV-EXT-DATA:ephemeral"`
+
+	// Description is a free form description of the flavor. Limited to
+	// 65535 characters in length. Only printable characters are allowed.
+	// New in version 2.55
+	Description string `json:"description"`
 }
 
 func (r *Flavor) UnmarshalJSON(b []byte) error {

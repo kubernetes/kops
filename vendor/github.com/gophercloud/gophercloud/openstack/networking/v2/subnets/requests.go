@@ -122,6 +122,9 @@ type CreateOpts struct {
 	// DNSNameservers are the nameservers to be set via DHCP.
 	DNSNameservers []string `json:"dns_nameservers,omitempty"`
 
+	// ServiceTypes are the service types associated with the subnet.
+	ServiceTypes []string `json:"service_types,omitempty"`
+
 	// HostRoutes are any static host routes to be set via DHCP.
 	HostRoutes []HostRoute `json:"host_routes,omitempty"`
 
@@ -193,6 +196,9 @@ type UpdateOpts struct {
 
 	// DNSNameservers are the nameservers to be set via DHCP.
 	DNSNameservers *[]string `json:"dns_nameservers,omitempty"`
+
+	// ServiceTypes are the service types associated with the subnet.
+	ServiceTypes *[]string `json:"service_types,omitempty"`
 
 	// HostRoutes are any static host routes to be set via DHCP.
 	HostRoutes *[]HostRoute `json:"host_routes,omitempty"`
