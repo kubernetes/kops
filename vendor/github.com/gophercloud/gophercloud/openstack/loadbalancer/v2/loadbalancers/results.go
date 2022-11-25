@@ -47,6 +47,9 @@ type LoadBalancer struct {
 	// Loadbalancer address.
 	VipNetworkID string `json:"vip_network_id"`
 
+	// The ID of the QoS Policy which will apply to the Virtual IP
+	VipQosPolicyID string `json:"vip_qos_policy_id"`
+
 	// The unique ID for the LoadBalancer.
 	ID string `json:"id"`
 

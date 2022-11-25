@@ -874,6 +874,7 @@ type Instance struct {
 	PrivateIP        *string    `json:"privateIp,omitempty"`
 	PublicIP         *string    `json:"publicIp,omitempty"`
 	CreatedAt        *time.Time `json:"createdAt,omitempty"`
+	IPv6Address      *string    `json:"ipv6Address,omitempty"`
 }
 
 type RollStrategy struct {

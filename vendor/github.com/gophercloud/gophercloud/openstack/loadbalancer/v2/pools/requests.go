@@ -190,6 +190,9 @@ type UpdateOpts struct {
 	// or false (DOWN).
 	AdminStateUp *bool `json:"admin_state_up,omitempty"`
 
+	// Persistence is the session persistence of the pool.
+	Persistence *SessionPersistence `json:"session_persistence,omitempty"`
+
 	// Tags is a set of resource tags. New in version 2.5
 	Tags *[]string `json:"tags,omitempty"`
 }

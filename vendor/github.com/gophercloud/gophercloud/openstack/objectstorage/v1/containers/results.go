@@ -30,6 +30,10 @@ type ContainerPage struct {
 
 // IsEmpty returns true if a ListResult contains no container names.
 func (r ContainerPage) IsEmpty() (bool, error) {
+	if r.StatusCode == 204 {
+		return true, nil
+	}
+
 	names, err := ExtractNames(r)
 	return len(names) == 0, err
 }
