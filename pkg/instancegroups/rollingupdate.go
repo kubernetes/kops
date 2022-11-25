@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -81,11 +82,6 @@ type RollingUpdateCluster struct {
 
 	// DrainTimeout is the maximum amount of time to wait while draining a node.
 	DrainTimeout time.Duration
-
-	// ExitOnFirstError ensures the rolling update stops on the first error returned by any
-	// node or apiserver instancegroup. The default is `false` which will try to roll every instance
-	// group in serial and then return any errors.
-	ExitOnFirstError bool
 
 	// Options holds user-specified options
 	Options RollingUpdateOptions
@@ -192,7 +188,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 
 		for _, k := range sortGroups(apiServerGroups) {
 			err := c.rollingUpdateInstanceGroup(apiServerGroups[k], c.NodeInterval)
-			if err != nil && c.ExitOnFirstError {
+			if err != nil && exitableError(err) {
 				return err
 			}
 
@@ -214,7 +210,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 
 		for _, k := range sortGroups(nodeGroups) {
 			err := c.rollingUpdateInstanceGroup(nodeGroups[k], c.NodeInterval)
-			if err != nil && c.ExitOnFirstError {
+			if err != nil && exitableError(err) {
 				return err
 			}
 
@@ -240,4 +236,14 @@ func sortGroups(groupMap map[string]*cloudinstances.CloudInstanceGroup) []string
 	}
 	sort.Strings(groups)
 	return groups
+}
+
+// exitableError inspects an error to determine if the error is
+// fatal enough that the rolling update cannot continue.
+//
+// For example, if a cluster is unable to be validated by the deadline, then it
+// is unlikely that it will validate on the next instance roll, so an early exit as a
+// warning to the user is more appropriate.
+func exitableError(err error) bool {
+	return strings.HasPrefix(err.Error(), "error validating cluster")
 }

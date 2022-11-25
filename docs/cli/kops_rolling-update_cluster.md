@@ -58,7 +58,6 @@ kops rolling-update cluster [CLUSTER] [flags]
 ```
       --bastion-interval duration         Time to wait between restarting bastions (default 15s)
       --cloudonly                         Perform rolling update without confirming progress with Kubernetes
-      --exit-on-first-error               Exit on the first node or apiserver instancegroup error
       --control-plane-interval duration   Time to wait between restarting control plane nodes (default 15s)
       --drain-timeout duration            Maximum time to wait for a node to drain (default 15m0s)
       --fail-on-drain-error               Fail if draining a node fails (default true)
