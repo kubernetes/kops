@@ -214,7 +214,7 @@ type terraformTargetGroup struct {
 	Name        string                          `cty:"name"`
 	Port        int64                           `cty:"port"`
 	Protocol    string                          `cty:"protocol"`
-	VPCID       terraformWriter.Literal         `cty:"vpc_id"`
+	VPCID       *terraformWriter.Literal        `cty:"vpc_id"`
 	Tags        map[string]string               `cty:"tags"`
 	HealthCheck terraformTargetGroupHealthCheck `cty:"health_check"`
 }
@@ -240,7 +240,7 @@ func (_ *TargetGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 		Name:     *e.Name,
 		Port:     *e.Port,
 		Protocol: *e.Protocol,
-		VPCID:    *e.VPC.TerraformLink(),
+		VPCID:    e.VPC.TerraformLink(),
 		Tags:     e.Tags,
 		HealthCheck: terraformTargetGroupHealthCheck{
 			Interval:           *e.Interval,
@@ -253,7 +253,7 @@ func (_ *TargetGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 	return t.RenderResource("aws_lb_target_group", *e.Name, tf)
 }
 
-func (e *TargetGroup) TerraformLink(params ...string) *terraformWriter.Literal {
+func (e *TargetGroup) TerraformLink() *terraformWriter.Literal {
 	shared := fi.ValueOf(e.Shared)
 	if shared {
 		if e.ARN != nil {
