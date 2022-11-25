@@ -27,6 +27,8 @@ import (
 
 // Literal represents a literal in terraform syntax
 type Literal struct {
+	// String is the Terraform representation.
+	String string `cty:"string"`
 	// Value is used to support Terraform's "${}" interpolation.
 	Value string `cty:"value"`
 	// Index to support the index of the count meta-argument.
@@ -36,8 +38,6 @@ type Literal struct {
 	// example: {"aws_vpc", "foo", "id"}
 	Tokens []string `cty:"tokens"`
 
-	// FnName represents the name of a terraform function.
-	FnName string `cty:"fn_name"`
 	// FnArgs contains string representations of arguments to the function call.
 	// Any string arguments must be quoted.
 	FnArgs []string `cty:"fn_arg"`
@@ -51,8 +51,8 @@ func (l *Literal) MarshalJSON() ([]byte, error) {
 
 func LiteralFunctionExpression(functionName string, args ...string) *Literal {
 	return &Literal{
+		String: fmt.Sprintf("%v(%v)", functionName, strings.Join(args, ", ")),
 		Value:  fmt.Sprintf("${%v(%v)}", functionName, strings.Join(args, ", ")),
-		FnName: functionName,
 		FnArgs: args,
 	}
 }
