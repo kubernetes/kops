@@ -106,7 +106,7 @@ github.com/aws/amazon-ec2-instance-selector/v2/pkg/instancetypes
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector/outputs
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/sorter
-# github.com/aws/aws-sdk-go v1.44.140
+# github.com/aws/aws-sdk-go v1.44.145
 ## explicit; go 1.11
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/arn
@@ -188,7 +188,7 @@ github.com/blang/semver/v4
 # github.com/cenkalti/backoff/v3 v3.0.0
 ## explicit; go 1.12
 github.com/cenkalti/backoff/v3
-# github.com/cert-manager/cert-manager v1.10.0
+# github.com/cert-manager/cert-manager v1.10.1
 ## explicit; go 1.19
 github.com/cert-manager/cert-manager/pkg/apis/acme
 github.com/cert-manager/cert-manager/pkg/apis/acme/v1
@@ -258,7 +258,7 @@ github.com/cpuguy83/go-md2man/v2/md2man
 # github.com/davecgh/go-spew v1.1.1
 ## explicit
 github.com/davecgh/go-spew/spew
-# github.com/digitalocean/godo v1.90.0
+# github.com/digitalocean/godo v1.91.1
 ## explicit; go 1.18
 github.com/digitalocean/godo
 github.com/digitalocean/godo/metrics
@@ -463,7 +463,7 @@ github.com/googleapis/gax-go/v2
 github.com/googleapis/gax-go/v2/apierror
 github.com/googleapis/gax-go/v2/apierror/internal/proto
 github.com/googleapis/gax-go/v2/internal
-# github.com/gophercloud/gophercloud v1.0.0
+# github.com/gophercloud/gophercloud v1.1.0
 ## explicit; go 1.14
 github.com/gophercloud/gophercloud
 github.com/gophercloud/gophercloud/openstack
@@ -877,7 +877,7 @@ github.com/spf13/viper/internal/encoding/javaproperties
 github.com/spf13/viper/internal/encoding/json
 github.com/spf13/viper/internal/encoding/toml
 github.com/spf13/viper/internal/encoding/yaml
-# github.com/spotinst/spotinst-sdk-go v1.131.1
+# github.com/spotinst/spotinst-sdk-go v1.132.0
 ## explicit; go 1.16
 github.com/spotinst/spotinst-sdk-go/service/elastigroup
 github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/aws

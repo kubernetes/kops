@@ -42,6 +42,19 @@ Example to Create a Flavor
 		panic(err)
 	}
 
+Example to Update a Flavor
+
+	flavorID := "e91758d6-a54a-4778-ad72-0c73a1cb695b"
+
+	updateOpts := flavors.UpdateOpts{
+		Description: "This is a good description"
+	}
+
+	flavor, err := flavors.Update(computeClient, flavorID, updateOpts).Extract()
+	if err != nil {
+		panic(err)
+	}
+
 Example to List Flavor Access
 
 	flavorID := "e91758d6-a54a-4778-ad72-0c73a1cb695b"
