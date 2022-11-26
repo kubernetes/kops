@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"sort"
-	"strings"
 	"sync"
 	"time"
 
@@ -245,5 +244,6 @@ func sortGroups(groupMap map[string]*cloudinstances.CloudInstanceGroup) []string
 // is unlikely that it will validate on the next instance roll, so an early exit as a
 // warning to the user is more appropriate.
 func exitableError(err error) bool {
-	return strings.HasPrefix(err.Error(), "error validating cluster")
+	_, ok := err.(*ValidationTimeoutError)
+	return ok
 }
