@@ -71,9 +71,10 @@ git add . && git commit -m "Release ${VERSION}"
 ```
 
 This is the "release commit". Push and create a PR.
+For alpha and ".0-beta.1" releases, the base branch flag (`-B`) should be omitted.
 
 ```
-gh pr create -f -l tide/merge-method-squash
+gh pr create -f -l tide/merge-method-squash -B release-1.22
 ```
 
 Wait for the PR to merge.
@@ -94,37 +95,6 @@ After the PR merges, GitHub Actions will tag the release.
 The [staging CI job](https://testgrid.k8s.io/sig-cluster-lifecycle-kops#kops-postsubmit-push-to-staging) should build from the tag (from the trusted prow cluster, using Google Cloud Build).
 
 It (currently) takes about 30 minutes to run.
-
-In the meantime, you can compile the release notes...
-
-### Compile release notes
-
-This step is not necessary for an ".0-alpha.1" release as these are made off
-of the branch point for the previous minor release.
-
-The `relnotes` tool is from [kopeio/shipbot](https://github.com/kopeio/shipbot).
-
-For example:
-
-```
-git checkout master
-git pull upstream master
-git checkout -b relnotes_${VERSION}
-
-FROM=1.21.0-alpha.2 # Replace "1.21.0-alpha.2" with the previous version
-DOC=$(expr ${VERSION} : '\([^.]*.[^.]*\)')
-git log v${FROM}..v${VERSION} --oneline | grep Merge.pull | grep -v Revert..Merge.pull | cut -f 5 -d ' ' | tac  > /tmp/prs
-echo -e "\n## ${FROM} to ${VERSION}\n"  >> docs/releases/${DOC}-NOTES.md
-relnotes  -config .shipbot.yaml  < /tmp/prs  >> docs/releases/${DOC}-NOTES.md
-```
-
-Review then send a PR with the release notes:
-
-```
-git add -p docs/releases/${DOC}-NOTES.md
-git commit -m "Release notes for ${VERSION}"
-gh pr create -f
-```
 
 ### Propose promotion of artifacts
 
@@ -148,7 +118,7 @@ echo "# ${VERSION}" >> images.yaml
 kpromo cip run --snapshot gcr.io/k8s-staging-kops --snapshot-tag ${VERSION} >> images.yaml
 ```
 
-Currently we send the image and non-image artifact promotion PRs separately.
+Currently, we send the image and non-image artifact promotion PRs separately.
 
 ```
 cd ${GOPATH}/src/k8s.io/k8s.io
@@ -197,12 +167,6 @@ git checkout v$VERSION
 shipbot -tag v${VERSION} -config .shipbot.yaml -src ${GOPATH}/src/k8s.io/k8s.io/k8s-staging-kops/kops/releases/${VERSION}/
 ```
 
-### Promote to S3 (stable releases < 1.22)
-
-```
-aws s3 sync --acl public-read ${GOPATH}/src/k8s.io/k8s.io/k8s-staging-kops/kops/releases/${VERSION}/ s3://kubeupv2/kops/${VERSION}/
-```
-
 ### Smoke test the release
 
 This step is only necessary for stable releases (as binary artifacts are not otherwise promoted to artifacts.k8s.io).
@@ -223,7 +187,7 @@ everything is pulling from the new locations.
 
 * Download release
 * Validate it
-* Add notes
+* Add notes by pressing the "Generate release notes" button
 * Publish it
 
 ### Release to Homebrew
