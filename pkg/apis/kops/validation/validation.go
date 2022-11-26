@@ -589,8 +589,12 @@ func validateKubeAPIServer(v *kops.KubeAPIServerConfig, c *kops.Cluster, fldPath
 
 	if len(v.AdmissionControl) > 0 {
 		if len(v.DisableAdmissionPlugins) > 0 {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("disableAdmissionPlugins"),
-				"disableAdmissionPlugins is mutually exclusive, you cannot use both admissionControl and disableAdmissionPlugins together"))
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("admissionControl"),
+				"admissionControl is mutually exclusive with disableAdmissionPlugins˚"))
+		}
+
+		if c.IsKubernetesGTE("1.26") {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("admissionControl"), "admissionControl has been replaced with enableAdmissionPlugins"))
 		}
 	}
 
