@@ -27,7 +27,7 @@ kops create cluster \
 
 ### Using etcd for agent state sync
 
-This feature is in beta state as of kOps 1.18.
+{{ kops_feature_table(kops_added_beta='1.18', kops_added_default='1.26') }}
 
 By default, Cilium will use CRDs for synchronizing agent state. This can cause performance problems on larger clusters. As of kOps 1.18, kOps can manage an etcd cluster using etcd-manager dedicated for cilium agent state sync. The [Cilium docs](https://docs.cilium.io/en/stable/gettingstarted/k8s-install-external-etcd/) contains recommendations for when this must be enabled.
 
@@ -99,7 +99,7 @@ Also be aware that while enabling this on an existing cluster is safe, disabling
       enableNodePort: true
 ```
 
-If you are migrating an existing cluster, you need to manually roll the cilium DaemonSet before rolling the cluster:
+If you are migrating an existing cluster, you need to manually rolling-update the cilium DaemonSet before rolling-updating the cluster:
 
 ```
 kops update cluster
@@ -108,9 +108,9 @@ kubectl rollout restart ds/cilium -n kube-system
 kops rolling-update cluster --yes
 ```
 
-### Enabling Cilium ENI IPAM
+### Enabling Cilium ENI IPAM (IPv4 only)
 
-{{ kops_feature_table(kops_added_default='1.18') }}
+{{ kops_feature_table(kops_added_beta='1.18', kops_added_default='1.26') }}
 
 You can have Cilium provision AWS managed addresses and attach them directly to Pods much like AWS VPC. See [the Cilium docs for more information](https://docs.cilium.io/en/v1.6/concepts/ipam/eni/)
 
@@ -135,12 +135,12 @@ Note that since Cilium Operator is the entity that interacts with the EC2 API to
 
 Also note that this feature has only been tested on the default kOps AMIs.
 
-#### Enabling Encryption in Cilium
+#### Enabling Encryption in Cilium (IPv4 only)
 
-##### ipsec
+##### IPsec
 {{ kops_feature_table(kops_added_default='1.19', k8s_min='1.17') }}
 
-As of kOps 1.19, it is possible to enable encryption for Cilium agent.
+As of kOps 1.19, it is possible to enable encryption for Cilium agent in IPv4 clusters.
 In order to enable encryption, you must first generate the pre-shared key using this command:
 ```bash
 cat <<EOF | kops create secret ciliumpassword -f -
@@ -155,7 +155,7 @@ Once the secret has been created, encryption can be enabled by setting `enableEn
       enableEncryption: true
 ```
 
-##### wireguard
+##### WireGuard
 {{ kops_feature_table(kops_added_default='1.22', k8s_min='1.17') }}
 
 Cilium can make use of the [wireguard protocol for transparent encryption](https://docs.cilium.io/en/v1.10/gettingstarted/encryption-wireguard/). Take care to familiarise yourself with the [limitations](https://docs.cilium.io/en/v1.10/gettingstarted/encryption-wireguard/#limitations).

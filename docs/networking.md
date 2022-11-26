@@ -20,6 +20,7 @@ As of kOps 1.26 the default network provider is Cilium. Prior to that the defaul
 | Calico           |          1.6 |   1.11 |          - |               - |
 | Canal            |         1.12 |      - |          - |               - |
 | Cilium           |          1.9 |   1.15 |          - |               - |
+| Cilium ENI       |         1.18 |   1.26 |          - |               - |
 | Flannel udp      |        1.5.2 |      - |          - |               - |
 | Flannel vxlan    |        1.8.0 |      - |          - |               - |
 | Kopeio           |          1.5 |      - |          - |               - |
