@@ -373,7 +373,7 @@ func (r *NodeRoleAPIServer) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		addCiliumEniPermissions(p)
 	}
 
-	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Calico != nil && b.Cluster.Spec.Networking.Calico.AWSSrcDstCheck != "DoNothing" {
+	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Calico != nil && b.Cluster.Spec.Networking.Calico.AWSSrcDstCheck != "DoNothing" && !b.Cluster.Spec.IsIPv6Only() {
 		addCalicoSrcDstCheckPermissions(p)
 	}
 
@@ -452,7 +452,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		addCiliumEniPermissions(p)
 	}
 
-	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Calico != nil && b.Cluster.Spec.Networking.Calico.AWSSrcDstCheck != "DoNothing" {
+	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Calico != nil && b.Cluster.Spec.Networking.Calico.AWSSrcDstCheck != "DoNothing" && !b.Cluster.Spec.IsIPv6Only() {
 		addCalicoSrcDstCheckPermissions(p)
 	}
 
@@ -478,7 +478,7 @@ func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		addAmazonVPCCNIPermissions(p)
 	}
 
-	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Calico != nil && b.Cluster.Spec.Networking.Calico.AWSSrcDstCheck != "DoNothing" {
+	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Calico != nil && b.Cluster.Spec.Networking.Calico.AWSSrcDstCheck != "DoNothing" && !b.Cluster.Spec.IsIPv6Only() {
 		addCalicoSrcDstCheckPermissions(p)
 	}
 

@@ -4547,7 +4547,7 @@ spec:
         - name: FELIX_HEALTHENABLED
           value: "true"
         - name: FELIX_AWSSRCDSTCHECK
-          value: Disable
+          value: DoNothing
         - name: FELIX_BPFENABLED
           value: "false"
         - name: FELIX_BPFEXTERNALSERVICEMODE
