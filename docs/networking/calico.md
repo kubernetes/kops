@@ -30,11 +30,13 @@ kops create cluster \
 
 ## Configuring
 
-### Select an Encapsulation Mode
+### Select an Encapsulation Mode (IPv4 only)
 
-In order to send network traffic to and from Kubernetes pods, Calico can use either of two networking encapsulation modes: [IP-in-IP](https://tools.ietf.org/html/rfc2003)  or [VXLAN](https://tools.ietf.org/html/rfc7348). Though IP-in-IP encapsulation uses fewer bytes of overhead per packet than VXLAN encapsulation, [VXLAN can be a better choice when used in concert with Calico's eBPF dataplane](https://docs.projectcalico.org/maintenance/troubleshoot/troubleshoot-ebpf#poor-performance). In particular, eBPF programs can redirect packets between Layer 2 devices, but not between devices at Layer 2 and Layer 3, as is required to use IP-in-IP tunneling.
+In IPv6 clusters, kOps configures (and requires) Calico to use no encapsulation.
 
-kOps chooses the IP-in-IP encapsulation mode by default, it still being the Calico project's default choice, which is equivalent to writing the following in the cluster spec:
+In IPv4 clusters, in order to send network traffic to and from Kubernetes pods, Calico can use either of two networking encapsulation modes: [IP-in-IP](https://tools.ietf.org/html/rfc2003)  or [VXLAN](https://tools.ietf.org/html/rfc7348). Though IP-in-IP encapsulation uses fewer bytes of overhead per packet than VXLAN encapsulation, [VXLAN can be a better choice when used in concert with Calico's eBPF dataplane](https://docs.projectcalico.org/maintenance/troubleshoot/troubleshoot-ebpf#poor-performance). In particular, eBPF programs can redirect packets between Layer 2 devices, but not between devices at Layer 2 and Layer 3, as is required to use IP-in-IP tunneling.
+
+By default, kOps uses the IP-in-IP encapsulation mode; this is the Calico project's default choice. This is equivalent to writing the following in the cluster spec:
 ```yaml
   networking:
     calico:
@@ -47,11 +49,17 @@ To use the VXLAN encapsulation mode instead, add the following to the cluster sp
       encapsulationMode: vxlan
 ```
 
-As of Calico version 3.17, in order to use IP-in-IP encapsulation, Calico must use its BIRD networking backend, in which it runs the BIRD BGP daemon in each "calico-node" container to distribute routes to each machine. With the BIRD backend Calico can use either IP-in-IP or VXLAN encapsulation between machines. For now, IP-in-IP encapsulation requires maintaining the routes with BGP, whereas VXLAN encapsulation does not. Conversely, with the VXLAN backend, Calico does not run the BIRD daemon and does not use BGP to maintain routes. This rules out use of IP-in-IP encapsulation, and allows only VXLAN encapsulation. Calico may remove this need for BGP with IP-in-IP encapsulation in the future.
+As of Calico version 3.17, in order to use IP-in-IP encapsulation Calico must use its BIRD networking backend.
+This runs the BIRD BGP daemon in each "calico-node" container in order to distribute routes to each machine.
+With the BIRD backend, Calico can use either IP-in-IP or VXLAN encapsulation between machines.
+For now, IP-in-IP encapsulation requires maintaining the routes with BGP, whereas VXLAN encapsulation does not.
+Conversely, with the VXLAN backend, Calico does not run the BIRD daemon and does not use BGP to maintain routes.
+This rules out use of IP-in-IP encapsulation, and allows only VXLAN encapsulation.
+Calico may remove this need for BGP with IP-in-IP encapsulation in the future.
 
-### Enable Cross-Subnet mode in Calico
+### Configure Cross-Subnet mode (IPv4 only)
 
-Calico supports a new option for both of its IP-in-IP and VXLAN encapsulation modes where traffic is only encapsulated
+In IPv4 clusters, Calico supports an option for both of its IP-in-IP and VXLAN encapsulation modes where traffic is only encapsulated
 when it’s destined to subnets with intermediate infrastructure lacking Calico route awareness, for example, across
 heterogeneous public clouds or on AWS where traffic is crossing availability zones.
 
@@ -67,15 +75,8 @@ The setup of BGP route reflectors is currently out of the scope of kOps.
 
 Read more here: [BGP route reflectors](https://docs.projectcalico.org/reference/architecture/overview#bgp-route-reflector-bird)
 
-To enable this mode in a cluster, add the following to the cluster spec:
-
-```yaml
-  networking:
-    calico:
-      crossSubnet: true
-```
 In the case of AWS, EC2 instances' ENIs have source/destination checks enabled by default.
-When you enable cross-subnet mode in kOps 1.19+, it is equivalent to either:
+When cross-subnet mode is enabled in kOps 1.19+, it is equivalent to either:
 ```yaml
   networking:
     calico:
@@ -96,12 +97,12 @@ It can be disabled or adjusted by setting the `ipipMode`, `vxlanMode` and `awsSr
 
 In AWS an IAM policy will be added to all nodes to allow Calico to execute `ec2:DescribeInstances` and `ec2:ModifyNetworkInterfaceAttribute`, as required when [awsSrcDstCheck](https://docs.projectcalico.org/reference/resources/felixconfig#spec) is set.
 For older versions of kOps, an addon controller ([k8s-ec2-srcdst](https://github.com/ottoyiu/k8s-ec2-srcdst))
-will be deployed as a Pod (which will be scheduled on one of the masters) to facilitate the disabling of said source/destination address checks.
+will be deployed as a Pod (which will be scheduled on one of the control plane nodes) to facilitate the disabling of said source/destination address checks.
 Only the control plane nodes have an IAM policy to allow k8s-ec2-srcdst to execute `ec2:ModifyInstanceAttribute`.
 
 ### Configuring Calico MTU
 
-The Calico MTU is configurable by editing the cluster and setting `mtu` field in the Calico configuration. If left to its default empty value, Calico will inspect the network devices and [choose a suitable MTU value automatically](https://docs.projectcalico.org/networking/mtu#mtu-and-calico-defaults). If you decide to override this automatic tuning, specify a positive value for the `mtu` field. In AWS, VPCs support jumbo frames of size 9,001, so [the recommended choice for Calico's MTU](https://docs.projectcalico.org/networking/mtu#determine-mtu-size) is either 8,981 for IP-in-IP encapsulation, 8,951 for VXLAN encapsulation, or 8,941 for WireGuard, in each case deducting the appropriate overhead for the encapsulation format.
+The Calico MTU is configurable by setting the `mtu` field in the Calico configuration. If left to its default empty value, Calico will inspect the network devices and [choose a suitable MTU value automatically](https://docs.projectcalico.org/networking/mtu#mtu-and-calico-defaults). If you decide to override this automatic tuning, specify a positive value for the `mtu` field. In AWS, VPCs support jumbo frames of size 9,001, so [the recommended choice for Calico's MTU](https://docs.projectcalico.org/networking/mtu#determine-mtu-size) is either 8,981 for IP-in-IP encapsulation, 8,951 for VXLAN encapsulation, or 8,941 for WireGuard, in each case deducting the appropriate overhead for the encapsulation format.
 
 ```yaml
 spec:
@@ -152,10 +153,10 @@ You can further tune Calico's eBPF dataplane with additional options, such as en
 
 **Note:** Transitioning to or from Calico's eBPF dataplane in an existing cluster is disruptive. kOps cannot orchestrate this transition automatically today.
 
-### Configuring WireGuard
+### Configuring WireGuard (IPv4 only)
 {{ kops_feature_table(kops_added_default='1.19', k8s_min='1.16') }}
 
-Calico supports WireGuard to encrypt pod-to-pod traffic. If you enable this options, WireGuard encryption is automatically enabled for all nodes. At the moment, kOps installs WireGuard automatically only when the host OS is *Ubuntu*. For other OSes, WireGuard has to be part of the base image or installed via a hook.
+In IPv4 clusters, Calico supports WireGuard to encrypt pod-to-pod traffic. If you enable this options, WireGuard encryption is automatically enabled for all nodes. At the moment, kOps installs WireGuard automatically only when the host OS is *Ubuntu*. For other OSes, WireGuard has to be part of the base image or installed via a hook.
 
 For more details of Calico WireGuard please refer the [Calico Docs](https://docs.projectcalico.org/security/encrypt-cluster-pod-traffic).
 
