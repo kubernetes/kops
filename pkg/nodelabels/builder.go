@@ -45,7 +45,7 @@ func BuildNodeLabels(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) m
 	// Merge KubeletConfig for NodeLabels
 	c := &kops.KubeletConfigSpec{}
 	if isControlPlane {
-		reflectutils.JSONMergeStruct(c, cluster.Spec.MasterKubelet)
+		reflectutils.JSONMergeStruct(c, cluster.Spec.ControlPlaneKubelet)
 	} else {
 		reflectutils.JSONMergeStruct(c, cluster.Spec.Kubelet)
 	}

@@ -396,7 +396,7 @@ func (b *BootstrapScript) Run(c *fi.Context) error {
 				spec["kubeAPIServer"] = cs.KubeAPIServer
 				spec["kubeControllerManager"] = cs.KubeControllerManager
 				spec["kubeScheduler"] = cs.KubeScheduler
-				spec["masterKubelet"] = cs.MasterKubelet
+				spec["masterKubelet"] = cs.ControlPlaneKubelet
 
 				for _, etcdCluster := range cs.EtcdClusters {
 					c := kops.EtcdClusterSpec{
