@@ -36,11 +36,11 @@ func (l *SpecBuilder) BuildCompleteSpec(clusterSpec *kopsapi.ClusterSpec) (*kops
 	completed := &kopsapi.ClusterSpec{}
 	*completed = *(loaded.(*kopsapi.ClusterSpec))
 
-	// Master kubelet config = (base kubelet config + master kubelet config)
-	masterKubelet := &kopsapi.KubeletConfigSpec{}
-	reflectutils.JSONMergeStruct(masterKubelet, completed.Kubelet)
-	reflectutils.JSONMergeStruct(masterKubelet, completed.MasterKubelet)
-	completed.MasterKubelet = masterKubelet
+	// Control-plane kubelet config = (base kubelet config + control-plane kubelet config)
+	controlPlaneKubelet := &kopsapi.KubeletConfigSpec{}
+	reflectutils.JSONMergeStruct(controlPlaneKubelet, completed.Kubelet)
+	reflectutils.JSONMergeStruct(controlPlaneKubelet, completed.ControlPlaneKubelet)
+	completed.ControlPlaneKubelet = controlPlaneKubelet
 
 	klog.V(1).Infof("options: %s", fi.DebugAsJsonStringIndent(completed))
 	return completed, nil
