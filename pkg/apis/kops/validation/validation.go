@@ -1223,8 +1223,12 @@ func validateNetworkingCalico(c *kops.ClusterSpec, v *kops.CalicoNetworkingSpec,
 	allErrs := field.ErrorList{}
 
 	if v.AWSSrcDstCheck != "" {
-		valid := []string{"Enable", "Disable", "DoNothing"}
-		allErrs = append(allErrs, IsValidValue(fldPath.Child("awsSrcDstCheck"), &v.AWSSrcDstCheck, valid)...)
+		if c.IsIPv6Only() && v.AWSSrcDstCheck != "DoNothing" {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("awsSrcDstCheck"), "awsSrcDstCheck may only be \"DoNothing\" for IPv6 clusters"))
+		} else {
+			valid := []string{"Enable", "Disable", "DoNothing"}
+			allErrs = append(allErrs, IsValidValue(fldPath.Child("awsSrcDstCheck"), &v.AWSSrcDstCheck, valid)...)
+		}
 	}
 
 	if v.CrossSubnet != nil {

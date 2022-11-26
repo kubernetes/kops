@@ -108,8 +108,8 @@ type CalicoNetworkingSpec struct {
 	// AllowIPForwarding enable ip_forwarding setting within the container namespace.
 	// (default: false)
 	AllowIPForwarding bool `json:"allowIPForwarding,omitempty"`
-	// AWSSrcDstCheck enables/disables ENI source/destination checks (AWS only)
-	// Options: Disable (default), Enable, or DoNothing
+	// AWSSrcDstCheck enables/disables ENI source/destination checks (AWS IPv4 only)
+	// Options: Disable (default for IPv4), Enable, or DoNothing
 	AWSSrcDstCheck string `json:"awsSrcDstCheck,omitempty"`
 	// BPFEnabled enables the eBPF dataplane mode.
 	BPFEnabled bool `json:"bpfEnabled,omitempty"`

@@ -4430,8 +4430,8 @@ spec:
                         type: boolean
                       awsSrcDstCheck:
                         description: 'AWSSrcDstCheck enables/disables ENI source/destination
-                          checks (AWS only) Options: Disable (default), Enable, or
-                          DoNothing'
+                          checks (AWS IPv4 only) Options: Disable (default for IPv4),
+                          Enable, or DoNothing'
                         type: string
                       bpfEnabled:
                         description: BPFEnabled enables the eBPF dataplane mode.
