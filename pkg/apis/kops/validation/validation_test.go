@@ -602,6 +602,7 @@ func Test_Validate_Calico(t *testing.T) {
 		{
 			Description: "AWS source/destination checks off",
 			Input: caliInput{
+				Cluster: &kops.ClusterSpec{},
 				Calico: &kops.CalicoNetworkingSpec{
 					AWSSrcDstCheck: "off",
 				},
@@ -611,6 +612,7 @@ func Test_Validate_Calico(t *testing.T) {
 		{
 			Description: "AWS source/destination checks enabled",
 			Input: caliInput{
+				Cluster: &kops.ClusterSpec{},
 				Calico: &kops.CalicoNetworkingSpec{
 					AWSSrcDstCheck: "Enable",
 				},
@@ -619,6 +621,7 @@ func Test_Validate_Calico(t *testing.T) {
 		{
 			Description: "AWS source/destination checks disabled",
 			Input: caliInput{
+				Cluster: &kops.ClusterSpec{},
 				Calico: &kops.CalicoNetworkingSpec{
 					AWSSrcDstCheck: "Disable",
 				},
@@ -627,6 +630,7 @@ func Test_Validate_Calico(t *testing.T) {
 		{
 			Description: "AWS source/destination checks left as is",
 			Input: caliInput{
+				Cluster: &kops.ClusterSpec{},
 				Calico: &kops.CalicoNetworkingSpec{
 					AWSSrcDstCheck: "DoNothing",
 				},
