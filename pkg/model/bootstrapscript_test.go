@@ -278,7 +278,7 @@ func makeTestCluster(hookSpecRoles []kops.InstanceGroupRole, fileAssetSpecRoles 
 			Kubelet: &kops.KubeletConfigSpec{
 				KubeconfigPath: "/etc/kubernetes/config.txt",
 			},
-			MasterKubelet: &kops.KubeletConfigSpec{
+			ControlPlaneKubelet: &kops.KubeletConfigSpec{
 				KubeconfigPath: "/etc/kubernetes/config.cfg",
 			},
 			EgressProxy: &kops.EgressProxySpec{

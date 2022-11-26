@@ -172,7 +172,7 @@ func TestPopulateInstanceGroup_EvictionHard3(t *testing.T) {
 
 func TestPopulateInstanceGroup_EvictionHard4(t *testing.T) {
 	_, cluster := buildMinimalCluster()
-	cluster.Spec.MasterKubelet = &kopsapi.KubeletConfigSpec{
+	cluster.Spec.ControlPlaneKubelet = &kopsapi.KubeletConfigSpec{
 		EvictionHard: fi.PtrTo("memory.available<350Mi"),
 	}
 	input := buildMinimalMasterInstanceGroup("us-test-1")

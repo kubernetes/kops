@@ -253,11 +253,11 @@ func TestPopulateCluster_IsolateMasters(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
 	}
-	if fi.ValueOf(full.Spec.MasterKubelet.EnableDebuggingHandlers) != false {
-		t.Fatalf("Unexpected EnableDebuggingHandlers: %v", fi.ValueOf(full.Spec.MasterKubelet.EnableDebuggingHandlers))
+	if fi.ValueOf(full.Spec.ControlPlaneKubelet.EnableDebuggingHandlers) != false {
+		t.Fatalf("Unexpected EnableDebuggingHandlers: %v", fi.ValueOf(full.Spec.ControlPlaneKubelet.EnableDebuggingHandlers))
 	}
-	if fi.ValueOf(full.Spec.MasterKubelet.ReconcileCIDR) != false {
-		t.Fatalf("Unexpected ReconcileCIDR: %v", fi.ValueOf(full.Spec.MasterKubelet.ReconcileCIDR))
+	if fi.ValueOf(full.Spec.ControlPlaneKubelet.ReconcileCIDR) != false {
+		t.Fatalf("Unexpected ReconcileCIDR: %v", fi.ValueOf(full.Spec.ControlPlaneKubelet.ReconcileCIDR))
 	}
 }
 
@@ -274,8 +274,8 @@ func TestPopulateCluster_IsolateMastersFalse(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
 	}
-	if fi.ValueOf(full.Spec.MasterKubelet.EnableDebuggingHandlers) != true {
-		t.Fatalf("Unexpected EnableDebuggingHandlers: %v", fi.ValueOf(full.Spec.MasterKubelet.EnableDebuggingHandlers))
+	if fi.ValueOf(full.Spec.ControlPlaneKubelet.EnableDebuggingHandlers) != true {
+		t.Fatalf("Unexpected EnableDebuggingHandlers: %v", fi.ValueOf(full.Spec.ControlPlaneKubelet.EnableDebuggingHandlers))
 	}
 }
 

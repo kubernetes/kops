@@ -234,12 +234,12 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 	var igKubeletConfig *kops.KubeletConfigSpec
 	// Start with the cluster kubelet config
 	if ig.IsControlPlane() {
-		if cluster.Spec.MasterKubelet != nil {
-			igKubeletConfig = cluster.Spec.MasterKubelet.DeepCopy()
+		if cluster.Spec.ControlPlaneKubelet != nil {
+			igKubeletConfig = cluster.Spec.ControlPlaneKubelet.DeepCopy()
 		} else {
 			igKubeletConfig = &kops.KubeletConfigSpec{}
 		}
-		// A few settings in Kubelet override those in MasterKubelet. I'm not sure why.
+		// A few settings in Kubelet override those in ControlPlaneKubelet. I'm not sure why.
 		if cluster.Spec.Kubelet != nil && cluster.Spec.Kubelet.AnonymousAuth != nil && !*cluster.Spec.Kubelet.AnonymousAuth {
 			igKubeletConfig.AnonymousAuth = fi.PtrTo(false)
 		}

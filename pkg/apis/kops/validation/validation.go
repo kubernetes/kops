@@ -154,8 +154,8 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		allErrs = append(allErrs, validateKubelet(spec.Kubelet, c, fieldPath.Child("kubelet"))...)
 	}
 
-	if spec.MasterKubelet != nil {
-		allErrs = append(allErrs, validateKubelet(spec.MasterKubelet, c, fieldPath.Child("masterKubelet"))...)
+	if spec.ControlPlaneKubelet != nil {
+		allErrs = append(allErrs, validateKubelet(spec.ControlPlaneKubelet, c, fieldPath.Child("controlPlaneKubelet"))...)
 	}
 
 	if spec.Networking != nil {
@@ -1586,8 +1586,8 @@ func validateNodeLocalDNS(spec *kops.ClusterSpec, fldpath *field.Path) field.Err
 			allErrs = append(allErrs, field.Forbidden(fldpath.Child("kubelet", "clusterDNS"), "Kubelet ClusterDNS must be set to the default IP address for LocalIP"))
 		}
 
-		if spec.MasterKubelet != nil && spec.MasterKubelet.ClusterDNS != "" && spec.MasterKubelet.ClusterDNS != spec.KubeDNS.NodeLocalDNS.LocalIP {
-			allErrs = append(allErrs, field.Forbidden(fldpath.Child("kubelet", "clusterDNS"), "MasterKubelet ClusterDNS must be set to the default IP address for LocalIP"))
+		if spec.ControlPlaneKubelet != nil && spec.ControlPlaneKubelet.ClusterDNS != "" && spec.ControlPlaneKubelet.ClusterDNS != spec.KubeDNS.NodeLocalDNS.LocalIP {
+			allErrs = append(allErrs, field.Forbidden(fldpath.Child("kubelet", "clusterDNS"), "ControlPlaneKubelet ClusterDNS must be set to the default IP address for LocalIP"))
 		}
 	}
 
