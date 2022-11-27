@@ -298,7 +298,9 @@ func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) 
 
 	if err := t.AddOutputVariable("vpc_ipv6_cidr_length", terraformWriter.LiteralNullConditionalExpression(
 		terraformWriter.LiteralTokens("local", "vpc_ipv6_cidr_block"),
-		terraformWriter.LiteralFunctionExpression("tonumber", "regex(\".*/(\\\\d+)\", local.vpc_ipv6_cidr_block)[0]"),
+		terraformWriter.LiteralFunctionExpression("tonumber",
+			terraformWriter.LiteralTokens("regex(\".*/(\\\\d+)\", local.vpc_ipv6_cidr_block)[0]"),
+		),
 	)); err != nil {
 		return err
 	}

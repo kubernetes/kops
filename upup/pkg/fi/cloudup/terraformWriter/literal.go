@@ -21,6 +21,8 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+
+	"golang.org/x/exp/constraints"
 )
 
 // Literal represents a literal in terraform syntax
@@ -35,9 +37,18 @@ func (l *Literal) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&l.String)
 }
 
-func LiteralFunctionExpression(functionName string, args ...string) *Literal {
+// LiteralFunctionExpression constructs a Literal representing the result of
+// calling the supplied functionName with the supplied args.
+func LiteralFunctionExpression(functionName string, args ...*Literal) *Literal {
+	s := functionName + "("
+	for i, arg := range args {
+		if i != 0 {
+			s += ", "
+		}
+		s += arg.String
+	}
 	return &Literal{
-		String: fmt.Sprintf("%v(%v)", functionName, strings.Join(args, ", ")),
+		String: s + ")",
 	}
 }
 
@@ -62,6 +73,12 @@ func LiteralProperty(resourceType, resourceName, prop string) *Literal {
 func LiteralTokens(tokens ...string) *Literal {
 	return &Literal{
 		String: strings.Join(tokens, "."),
+	}
+}
+
+func LiteralFromIntValue[T constraints.Integer](i T) *Literal {
+	return &Literal{
+		String: fmt.Sprintf("%d", i),
 	}
 }
 
