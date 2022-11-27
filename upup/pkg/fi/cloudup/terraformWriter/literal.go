@@ -27,8 +27,6 @@ import (
 type Literal struct {
 	// String is the Terraform representation.
 	String string `cty:"string"`
-	// Value is used to support JSON marshalling for unit tests.
-	Value string `cty:"value"`
 
 	// FnArgs contains string representations of arguments to the function call.
 	// Any string arguments must be quoted.
@@ -38,13 +36,12 @@ type Literal struct {
 var _ json.Marshaler = &Literal{}
 
 func (l *Literal) MarshalJSON() ([]byte, error) {
-	return json.Marshal(&l.Value)
+	return json.Marshal(&l.String)
 }
 
 func LiteralFunctionExpression(functionName string, args ...string) *Literal {
 	return &Literal{
 		String: fmt.Sprintf("%v(%v)", functionName, strings.Join(args, ", ")),
-		Value:  fmt.Sprintf("${%v(%v)}", functionName, strings.Join(args, ", ")),
 		FnArgs: args,
 	}
 }
@@ -55,41 +52,33 @@ func LiteralSelfLink(resourceType, resourceName string) *Literal {
 
 func LiteralData(dataSourceType, dataSourceName, prop string) *Literal {
 	tfName := sanitizeName(dataSourceName)
-	expr := "data." + dataSourceType + "." + tfName + "." + prop + ""
 	return &Literal{
-		String: expr,
-		Value:  "${" + expr + "}",
+		String: "data." + dataSourceType + "." + tfName + "." + prop + "",
 	}
 }
 
 func LiteralProperty(resourceType, resourceName, prop string) *Literal {
 	tfName := sanitizeName(resourceName)
-	expr := resourceType + "." + tfName + "." + prop
 	return &Literal{
-		String: expr,
-		Value:  "${" + expr + "}",
+		String: resourceType + "." + tfName + "." + prop,
 	}
 }
 
 func LiteralTokens(tokens ...string) *Literal {
-	expr := strings.Join(tokens, ".")
 	return &Literal{
-		String: expr,
-		Value:  "${" + expr + "}",
+		String: strings.Join(tokens, "."),
 	}
 }
 
 func LiteralFromStringValue(s string) *Literal {
 	return &Literal{
 		String: "\"" + s + "\"",
-		Value:  s,
 	}
 }
 
 func LiteralWithIndex(s string) *Literal {
 	return &Literal{
 		String: fmt.Sprintf("\"%s-${count.index}\"", s),
-		Value:  s,
 	}
 }
 
