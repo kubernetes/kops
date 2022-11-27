@@ -268,6 +268,7 @@ gcs-publish-ci: gsutil version-dist-ci
 .PHONY: gen-cli-docs
 gen-cli-docs: kops # Regenerate CLI docs
 	KOPS_STATE_STORE= \
+	KOPS_CLUSTER_NAME= \
 	KOPS_FEATURE_FLAGS= \
 	${DIST}/${OSARCH}/kops gen-cli-docs --out docs/cli
 

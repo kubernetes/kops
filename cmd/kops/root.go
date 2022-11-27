@@ -147,13 +147,14 @@ func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
 		return []string{"yaml", "json"}, cobra.ShellCompDirectiveFilterFileExt
 	})
 
-	cmd.PersistentFlags().StringVar(&rootCommand.RegistryPath, "state", "", "Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable")
-	viper.BindPFlag("KOPS_STATE_STORE", cmd.PersistentFlags().Lookup("state"))
 	viper.BindEnv("KOPS_STATE_STORE")
+	viperStateStore := strings.TrimSuffix(viper.GetString("KOPS_STATE_STORE"), "/")
+	cmd.PersistentFlags().StringVar(&rootCommand.RegistryPath, "state", viperStateStore, "Location of state storage (kops 'config' file). Overrides KOPS_STATE_STORE environment variable")
 	// TODO implement completion against VFS
 
-	defaultClusterName := os.Getenv("KOPS_CLUSTER_NAME")
-	cmd.PersistentFlags().StringVarP(&rootCommand.clusterName, "name", "", defaultClusterName, "Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable")
+	viper.BindEnv("KOPS_CLUSTER_NAME")
+	viperClusterName := viper.GetString("KOPS_CLUSTER_NAME")
+	cmd.PersistentFlags().StringVar(&rootCommand.clusterName, "name", viperClusterName, "Name of cluster. Overrides KOPS_CLUSTER_NAME environment variable")
 	cmd.RegisterFlagCompletionFunc("name", commandutils.CompleteClusterName(rootCommand.factory, false, false))
 
 	// create subcommands
@@ -207,11 +208,6 @@ func initConfig() {
 			klog.Warningf("error reading config: %v", err)
 		}
 	}
-
-	rootCommand.RegistryPath = viper.GetString("KOPS_STATE_STORE")
-
-	// Tolerate multiple slashes at end
-	rootCommand.RegistryPath = strings.TrimSuffix(rootCommand.RegistryPath, "/")
 }
 
 func (c *RootCmd) AddCommand(cmd *cobra.Command) {
