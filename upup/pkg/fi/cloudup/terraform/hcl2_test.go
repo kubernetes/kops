@@ -167,7 +167,7 @@ func TestWriteLiteralList(t *testing.T) {
 			name: "one literal",
 			literals: []*terraformWriter.Literal{
 				{
-					Tokens: []string{"type", "name", "prop"},
+					String: "type.name.prop",
 				},
 			},
 			expected: "foo = [type.name.prop]",
@@ -176,10 +176,10 @@ func TestWriteLiteralList(t *testing.T) {
 			name: "two literals",
 			literals: []*terraformWriter.Literal{
 				{
-					Tokens: []string{"type1", "name1", "prop1"},
+					String: "type1.name1.prop1",
 				},
 				{
-					Tokens: []string{"type2", "name2", "prop2"},
+					String: "type2.name2.prop2",
 				},
 			},
 			expected: "foo = [type1.name1.prop1, type2.name2.prop2]",
@@ -188,7 +188,7 @@ func TestWriteLiteralList(t *testing.T) {
 			name: "one traversal literal, one string literal",
 			literals: []*terraformWriter.Literal{
 				{
-					Tokens: []string{"type", "name", "prop"},
+					String: "type.name.prop",
 				},
 				{
 					Value: "foobar",
