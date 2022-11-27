@@ -191,7 +191,7 @@ func TestWriteLiteralList(t *testing.T) {
 					String: "type.name.prop",
 				},
 				{
-					Value: "foobar",
+					String: "\"foobar\"",
 				},
 			},
 			expected: `foo = [type.name.prop, "foobar"]`,

@@ -101,16 +101,12 @@ func writeValue(body *hclwrite.Body, key string, value cty.Value) {
 // key = res_type.res_name.res_prop
 // key = file("${module.path}/foo")
 func writeLiteral(body *hclwrite.Body, key string, literal *terraformWriter.Literal) {
-	if literal.String != "" {
-		body.SetAttributeRaw(key, hclwrite.Tokens{
-			{
-				Type:  hclsyntax.TokenIdent,
-				Bytes: []byte(literal.String),
-			},
-		})
-	} else {
-		body.SetAttributeValue(key, cty.StringVal(literal.Value))
-	}
+	body.SetAttributeRaw(key, hclwrite.Tokens{
+		{
+			Type:  hclsyntax.TokenIdent,
+			Bytes: []byte(literal.String),
+		},
+	})
 }
 
 // literalListTokens returns the tokens of a list of literals
@@ -121,15 +117,7 @@ func literalListTokens(literals []*terraformWriter.Literal) hclwrite.Tokens {
 		{Type: hclsyntax.TokenOBrack, Bytes: []byte("["), SpacesBefore: 1},
 	}
 	for i, literal := range literals {
-		if literal.String != "" {
-			tokens = append(tokens, &hclwrite.Token{Type: hclsyntax.TokenIdent, Bytes: []byte(literal.String)})
-		} else {
-			tokens = append(tokens, []*hclwrite.Token{
-				{Type: hclsyntax.TokenOQuote, Bytes: []byte{'"'}, SpacesBefore: 1},
-				{Type: hclsyntax.TokenQuotedLit, Bytes: []byte(literal.Value)},
-				{Type: hclsyntax.TokenCQuote, Bytes: []byte{'"'}, SpacesBefore: 1},
-			}...)
-		}
+		tokens = append(tokens, &hclwrite.Token{Type: hclsyntax.TokenIdent, Bytes: []byte(literal.String)})
 		if i < len(literals)-1 {
 			tokens = append(tokens, &hclwrite.Token{Type: hclsyntax.TokenComma, Bytes: []byte(",")})
 		}
@@ -186,18 +174,10 @@ func writeMap(body *hclwrite.Body, key string, values map[string]cty.Value) {
 		errLiteralSlice := gocty.FromCtyValue(v, refLiteralSlice.Interface())
 		// If this is a map of literals then do not surround the value with quotes
 		if literal, ok := refLiteral.Interface().(*terraformWriter.Literal); errLiteral == nil && ok {
-			if literal.String != "" {
-				tokens = append(tokens, &hclwrite.Token{
-					Type:  hclsyntax.TokenIdent,
-					Bytes: []byte(literal.String),
-				})
-			} else if literal.Value != "" {
-				tokens = append(tokens, []*hclwrite.Token{
-					{Type: hclsyntax.TokenOQuote, Bytes: []byte{'"'}, SpacesBefore: 1},
-					{Type: hclsyntax.TokenQuotedLit, Bytes: []byte(literal.Value)},
-					{Type: hclsyntax.TokenOQuote, Bytes: []byte{'"'}, SpacesBefore: 1},
-				}...)
-			}
+			tokens = append(tokens, &hclwrite.Token{
+				Type:  hclsyntax.TokenIdent,
+				Bytes: []byte(literal.String),
+			})
 		} else if literals, ok := refLiteralSlice.Interface().(*[]*terraformWriter.Literal); errLiteralSlice == nil && ok {
 			tokens = append(tokens, literalListTokens(*literals)...)
 		} else {

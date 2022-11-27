@@ -29,7 +29,7 @@ import (
 type Literal struct {
 	// String is the Terraform representation.
 	String string `cty:"string"`
-	// Value is used to support Terraform's "${}" interpolation.
+	// Value is used to support JSON marshalling for unit tests and sorting.
 	Value string `cty:"value"`
 
 	// FnArgs contains string representations of arguments to the function call.
@@ -82,7 +82,10 @@ func LiteralTokens(tokens ...string) *Literal {
 }
 
 func LiteralFromStringValue(s string) *Literal {
-	return &Literal{Value: s}
+	return &Literal{
+		String: "\"" + s + "\"",
+		Value:  s,
+	}
 }
 
 func LiteralWithIndex(s string) *Literal {
