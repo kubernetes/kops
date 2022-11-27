@@ -409,7 +409,11 @@ func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Su
 			return fmt.Errorf("error parsing CIDR subnet: %v", err)
 		}
 
-		ipv6CIDR = terraformWriter.LiteralFunctionExpression("cidrsubnet", "local.vpc_ipv6_cidr_block", fmt.Sprintf("%d - local.vpc_ipv6_cidr_length", newSize), fmt.Sprintf("%d", netNum))
+		ipv6CIDR = terraformWriter.LiteralFunctionExpression("cidrsubnet",
+			terraformWriter.LiteralTokens("local", "vpc_ipv6_cidr_block"),
+			terraformWriter.LiteralTokens(fmt.Sprintf("%d - local.vpc_ipv6_cidr_length", newSize)),
+			terraformWriter.LiteralFromIntValue(netNum),
+		)
 	} else if e.IPv6CIDR != nil {
 		ipv6CIDR = terraformWriter.LiteralFromStringValue(aws.StringValue(e.IPv6CIDR))
 	}
