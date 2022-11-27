@@ -20,7 +20,6 @@ import (
 	"reflect"
 	"sort"
 
-	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/zclconf/go-cty/cty"
@@ -145,17 +144,8 @@ func writeLiteral(body *hclwrite.Body, key string, literal *terraformWriter.Lite
 			},
 		}
 		body.SetAttributeRaw(key, tokens)
-	} else if len(literal.Tokens) == 0 {
-		body.SetAttributeValue(key, cty.StringVal(literal.Value))
 	} else {
-		traversal := hcl.Traversal{
-			hcl.TraverseRoot{Name: literal.Tokens[0]},
-		}
-		for i := 1; i < len(literal.Tokens); i++ {
-			token := literal.Tokens[i]
-			traversal = append(traversal, hcl.TraverseAttr{Name: token})
-		}
-		body.SetAttributeTraversal(key, traversal)
+		body.SetAttributeValue(key, cty.StringVal(literal.Value))
 	}
 }
 
@@ -167,21 +157,14 @@ func literalListTokens(literals []*terraformWriter.Literal) hclwrite.Tokens {
 		{Type: hclsyntax.TokenOBrack, Bytes: []byte("["), SpacesBefore: 1},
 	}
 	for i, literal := range literals {
-		if len(literal.Tokens) == 0 {
+		if literal.String != "" {
+			tokens = append(tokens, &hclwrite.Token{Type: hclsyntax.TokenIdent, Bytes: []byte(literal.String)})
+		} else {
 			tokens = append(tokens, []*hclwrite.Token{
 				{Type: hclsyntax.TokenOQuote, Bytes: []byte{'"'}, SpacesBefore: 1},
 				{Type: hclsyntax.TokenQuotedLit, Bytes: []byte(literal.Value)},
 				{Type: hclsyntax.TokenCQuote, Bytes: []byte{'"'}, SpacesBefore: 1},
 			}...)
-		} else {
-			tokens = append(tokens, &hclwrite.Token{Type: hclsyntax.TokenStringLit, Bytes: []byte(literal.Tokens[0]), SpacesBefore: 1})
-			for i := 1; i < len(literal.Tokens); i++ {
-				token := literal.Tokens[i]
-				tokens = append(tokens, []*hclwrite.Token{
-					{Type: hclsyntax.TokenDot, Bytes: []byte(".")},
-					{Type: hclsyntax.TokenStringLit, Bytes: []byte(token)},
-				}...)
-			}
 		}
 		if i < len(literals)-1 {
 			tokens = append(tokens, &hclwrite.Token{Type: hclsyntax.TokenComma, Bytes: []byte(",")})
