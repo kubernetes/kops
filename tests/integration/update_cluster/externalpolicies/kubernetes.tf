@@ -5,7 +5,7 @@ locals {
   masters_role_arn             = aws_iam_role.masters-externalpolicies-example-com.arn
   masters_role_name            = aws_iam_role.masters-externalpolicies-example-com.name
   node_autoscaling_group_ids   = [aws_autoscaling_group.nodes-externalpolicies-example-com.id]
-  node_security_group_ids      = [aws_security_group.nodes-externalpolicies-example-com.id, "sg-exampleid3", "sg-exampleid4"]
+  node_security_group_ids      = ["sg-exampleid3", "sg-exampleid4", aws_security_group.nodes-externalpolicies-example-com.id]
   node_subnet_ids              = [aws_subnet.us-test-1a-externalpolicies-example-com.id]
   nodes_role_arn               = aws_iam_role.nodes-externalpolicies-example-com.arn
   nodes_role_name              = aws_iam_role.nodes-externalpolicies-example-com.name
@@ -43,7 +43,7 @@ output "node_autoscaling_group_ids" {
 }
 
 output "node_security_group_ids" {
-  value = [aws_security_group.nodes-externalpolicies-example-com.id, "sg-exampleid3", "sg-exampleid4"]
+  value = ["sg-exampleid3", "sg-exampleid4", aws_security_group.nodes-externalpolicies-example-com.id]
 }
 
 output "node_subnet_ids" {
@@ -294,7 +294,7 @@ resource "aws_elb" "api-externalpolicies-example-com" {
     lb_protocol       = "TCP"
   }
   name            = "api-externalpolicies-exam-5cse45"
-  security_groups = [aws_security_group.api-elb-externalpolicies-example-com.id, "sg-exampleid3", "sg-exampleid4"]
+  security_groups = ["sg-exampleid3", "sg-exampleid4", aws_security_group.api-elb-externalpolicies-example-com.id]
   subnets         = [aws_subnet.us-test-1a-externalpolicies-example-com.id]
   tags = {
     "KubernetesCluster"                                  = "externalpolicies.example.com"

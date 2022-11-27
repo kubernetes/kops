@@ -21,15 +21,13 @@ import (
 	"fmt"
 	"sort"
 	"strings"
-
-	"k8s.io/klog/v2"
 )
 
 // Literal represents a literal in terraform syntax
 type Literal struct {
 	// String is the Terraform representation.
 	String string `cty:"string"`
-	// Value is used to support JSON marshalling for unit tests and sorting.
+	// Value is used to support JSON marshalling for unit tests.
 	Value string `cty:"value"`
 
 	// FnArgs contains string representations of arguments to the function call.
@@ -95,49 +93,11 @@ func LiteralWithIndex(s string) *Literal {
 	}
 }
 
-type literalWithJSON struct {
-	literal *Literal
-	key     string
-}
-
-type byKey []*literalWithJSON
-
-func (a byKey) Len() int      { return len(a) }
-func (a byKey) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
-func (a byKey) Less(i, j int) bool {
-	return a[i].key < a[j].key
-}
-
-// buildSortProxies maps a list of Literals to a list of literalWithJSON
-func buildSortProxies(v []*Literal) ([]*literalWithJSON, error) {
-	var proxies []*literalWithJSON
-	for _, l := range v {
-		k, err := json.Marshal(l)
-		if err != nil {
-			return nil, err
-		}
-		proxies = append(proxies, &literalWithJSON{
-			literal: l,
-			key:     string(k),
-		})
-	}
-
-	return proxies, nil
-}
-
 // SortLiterals sorts a list of Literal, by key.  It does so in-place
 func SortLiterals(v []*Literal) {
-	proxies, err := buildSortProxies(v)
-	if err != nil {
-		// Very unexpected
-		klog.Fatalf("error processing terraform Literal: %v", err)
-	}
-
-	sort.Sort(byKey(proxies))
-
-	for i := range proxies {
-		v[i] = proxies[i].literal
-	}
+	sort.Slice(v, func(i, j int) bool {
+		return v[i].String < v[j].String
+	})
 }
 
 // dedupLiterals removes any duplicate Literals before returning the slice.
@@ -147,19 +107,14 @@ func dedupLiterals(v []*Literal) ([]*Literal, error) {
 		return nil, nil
 	}
 
-	proxies, err := buildSortProxies(v)
-	if err != nil {
-		return nil, err
-	}
-
-	sort.Sort(byKey(proxies))
+	SortLiterals(v)
 
 	var deduped []*Literal
-	for i, p := range proxies {
-		if i != 0 && proxies[i-1].key == proxies[i].key {
+	for i, p := range v {
+		if i != 0 && v[i-1].String == v[i].String {
 			continue
 		}
-		deduped = append(deduped, p.literal)
+		deduped = append(deduped, p)
 	}
 
 	return deduped, nil
