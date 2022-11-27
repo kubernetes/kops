@@ -43,9 +43,9 @@ func TestS3RenderTerraform(t *testing.T) {
 			{
 				"acl": "bucket-owner-full-control",
 				"bucket": "foo",
-				"content": "${file(\"${path.module}/data/aws_s3_object_bar_content\")}",
+				"content": "file(\"${path.module}/data/aws_s3_object_bar_content\")",
 				"key": "bar",
-				"provider": "${aws.files}",
+				"provider": "aws.files",
 				"server_side_encryption": "AES256"
 			}
 			`,
