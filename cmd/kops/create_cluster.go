@@ -868,14 +868,14 @@ func loadSSHPublicKeys(sshPublicKey string) (map[string][]byte, error) {
 func completeZone(options *CreateClusterOptions, rootCommand *RootCmd) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		if options.CloudProvider != "" {
-			return zones.WellKnownZonesForCloud(api.CloudProviderID(options.CloudProvider)), cobra.ShellCompDirectiveNoFileComp
+			return zones.WellKnownZonesForCloud(api.CloudProviderID(options.CloudProvider), toComplete), cobra.ShellCompDirectiveNoFileComp
 		}
 
 		cloud, err := clouds.GuessCloudForPath(rootCommand.RegistryPath)
 		if err != nil {
 			return commandutils.CompletionError("listing cloud zones", err)
 		}
-		return zones.WellKnownZonesForCloud(cloud), cobra.ShellCompDirectiveNoFileComp
+		return zones.WellKnownZonesForCloud(cloud, toComplete), cobra.ShellCompDirectiveNoFileComp
 	}
 }
 
