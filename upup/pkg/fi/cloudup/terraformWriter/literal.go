@@ -77,6 +77,16 @@ func LiteralWithIndex(s string) *Literal {
 	}
 }
 
+// LiteralNullConditionalExpression constructs a Literal which returns `null`
+// if the supplied "nullable" expression is null, otherwise returns "value".
+// It is the caller's responsibility to ensure the supplied parameters do not use operators
+// with lower precedence than the conditional operator.
+func LiteralNullConditionalExpression(nullable, value *Literal) *Literal {
+	return &Literal{
+		String: fmt.Sprintf("%s == null ? null : %s", nullable.String, value.String),
+	}
+}
+
 // SortLiterals sorts a list of Literal, by key.  It does so in-place
 func SortLiterals(v []*Literal) {
 	sort.Slice(v, func(i, j int) bool {
