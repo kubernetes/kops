@@ -34,10 +34,6 @@ type Literal struct {
 	// Index to support the index of the count meta-argument.
 	Index bool `cty:"index"`
 
-	// Tokens are portions of a literal reference joined by periods.
-	// example: {"aws_vpc", "foo", "id"}
-	Tokens []string `cty:"tokens"`
-
 	// FnArgs contains string representations of arguments to the function call.
 	// Any string arguments must be quoted.
 	FnArgs []string `cty:"fn_arg"`
@@ -63,27 +59,27 @@ func LiteralSelfLink(resourceType, resourceName string) *Literal {
 
 func LiteralData(dataSourceType, dataSourceName, prop string) *Literal {
 	tfName := sanitizeName(dataSourceName)
-	expr := "${data." + dataSourceType + "." + tfName + "." + prop + "}"
+	expr := "data." + dataSourceType + "." + tfName + "." + prop + ""
 	return &Literal{
-		Value:  expr,
-		Tokens: []string{"data", dataSourceType, tfName, prop},
+		String: expr,
+		Value:  "${" + expr + "}",
 	}
 }
 
 func LiteralProperty(resourceType, resourceName, prop string) *Literal {
 	tfName := sanitizeName(resourceName)
-	expr := "${" + resourceType + "." + tfName + "." + prop + "}"
+	expr := resourceType + "." + tfName + "." + prop
 	return &Literal{
-		Value:  expr,
-		Tokens: []string{resourceType, tfName, prop},
+		String: expr,
+		Value:  "${" + expr + "}",
 	}
 }
 
 func LiteralTokens(tokens ...string) *Literal {
-	expr := "${" + strings.Join(tokens, ".") + "}"
+	expr := strings.Join(tokens, ".")
 	return &Literal{
-		Value:  expr,
-		Tokens: tokens,
+		String: expr,
+		Value:  "${" + expr + "}",
 	}
 }
 
