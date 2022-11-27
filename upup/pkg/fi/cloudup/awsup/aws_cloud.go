@@ -256,14 +256,6 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 		config = config.WithCredentialsChainVerboseErrors(true)
 		config = request.WithRetryer(config, newLoggingRetryer(ClientMaxRetries))
 
-		// We have the updated aws sdk from 1.9, but don't have https://github.com/kubernetes/kubernetes/pull/55307
-		// Set the SleepDelay function to work around this
-		// TODO: Remove once we update to k8s >= 1.9 (or a version of the retry delayer than includes this)
-		config.SleepDelay = func(d time.Duration) {
-			klog.V(6).Infof("aws request sleeping for %v", d)
-			time.Sleep(d)
-		}
-
 		requestLogger := newRequestLogger(2)
 
 		sess, err := session.NewSessionWithOptions(session.Options{
