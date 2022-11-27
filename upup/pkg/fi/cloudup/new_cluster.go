@@ -34,7 +34,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/featureflag"
-	"k8s.io/kops/pkg/zones"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
@@ -288,24 +287,9 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 	allZones.Insert(opt.ControlPlaneZones...)
 
 	if opt.CloudProvider == "" {
-		for _, zone := range allZones.List() {
-			cloud, known := zones.GuessCloudForZone(zone)
-			if known {
-				klog.Infof("Inferred %q cloud provider from zone %q", cloud, zone)
-				opt.CloudProvider = string(cloud)
-				break
-			}
-		}
-		if opt.CloudProvider == "" {
-			if allZones.Len() == 0 {
-				return nil, fmt.Errorf("must specify --zones or --cloud")
-			}
-			return nil, fmt.Errorf("unable to infer cloud provider from zones. pass in the cloud provider explicitly using --cloud")
-		}
+		return nil, fmt.Errorf("must specify cloud provider for the cluster (use --cloud)")
 	}
-
 	var cloud fi.Cloud
-
 	switch api.CloudProviderID(opt.CloudProvider) {
 	case api.CloudProviderAWS:
 		cluster.Spec.CloudProvider.AWS = &api.AWSSpec{}

@@ -231,11 +231,13 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		sort.Strings(validClouds)
 	}
 	cmd.Flags().StringVar(&options.CloudProvider, "cloud", options.CloudProvider, fmt.Sprintf("Cloud provider to use - %s", strings.Join(validClouds, ", ")))
+	cmd.MarkFlagRequired("cloud")
 	cmd.RegisterFlagCompletionFunc("cloud", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return validClouds, cobra.ShellCompDirectiveNoFileComp
 	})
 
 	cmd.Flags().StringSliceVar(&options.Zones, "zones", options.Zones, "Zones in which to run the cluster")
+	cmd.MarkFlagRequired("zones")
 	cmd.RegisterFlagCompletionFunc("zones", completeZone(options))
 	cmd.Flags().StringSliceVar(&options.ControlPlaneZones, "control-plane-zones", options.ControlPlaneZones, "Zones in which to run control-plane nodes. (must be an odd number)")
 	cmd.RegisterFlagCompletionFunc("control-plane-zones", completeZone(options))
