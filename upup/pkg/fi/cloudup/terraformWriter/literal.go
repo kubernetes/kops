@@ -31,8 +31,6 @@ type Literal struct {
 	String string `cty:"string"`
 	// Value is used to support Terraform's "${}" interpolation.
 	Value string `cty:"value"`
-	// Index to support the index of the count meta-argument.
-	Index bool `cty:"index"`
 
 	// FnArgs contains string representations of arguments to the function call.
 	// Any string arguments must be quoted.
@@ -88,7 +86,10 @@ func LiteralFromStringValue(s string) *Literal {
 }
 
 func LiteralWithIndex(s string) *Literal {
-	return &Literal{Value: s, Index: true}
+	return &Literal{
+		String: fmt.Sprintf("\"%s-${count.index}\"", s),
+		Value:  s,
+	}
 }
 
 type literalWithJSON struct {
