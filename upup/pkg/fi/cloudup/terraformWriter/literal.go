@@ -103,6 +103,16 @@ func LiteralBinaryExpression(lhs *Literal, operator string, rhs *Literal) *Liter
 	}
 }
 
+// LiteralIndexExpression constructs a Literal with the result of accessing the
+// supplied collection using the supplied index.
+// It is the caller's responsibility to ensure the supplied collection does not use operators
+// with lower precedence than the index operator.
+func LiteralIndexExpression(collection *Literal, index *Literal) *Literal {
+	return &Literal{
+		String: fmt.Sprintf("%s[%s]", collection.String, index.String),
+	}
+}
+
 // LiteralNullConditionalExpression constructs a Literal which returns `null`
 // if the supplied "nullable" expression is null, otherwise returns "value".
 // It is the caller's responsibility to ensure the supplied parameters do not use operators
