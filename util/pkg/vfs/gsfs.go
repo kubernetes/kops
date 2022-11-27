@@ -389,7 +389,7 @@ func (p *GSPath) Hash(a hashing.HashAlgorithm) (*hashing.Hash, error) {
 type terraformGSObject struct {
 	Bucket   string                   `json:"bucket" cty:"bucket"`
 	Name     string                   `json:"name" cty:"name"`
-	Source   string                   `json:"source" cty:"source"`
+	Source   *terraformWriter.Literal `json:"source" cty:"source"`
 	Provider *terraformWriter.Literal `json:"provider,omitempty" cty:"provider"`
 }
 
@@ -406,7 +406,7 @@ func (p *GSPath) RenderTerraform(w *terraformWriter.TerraformWriter, name string
 		return fmt.Errorf("reading data: %v", err)
 	}
 
-	content, err := w.AddFileBytes("google_storage_bucket_object", name, "content", bytes, false)
+	content, err := w.AddFilePath("google_storage_bucket_object", name, "content", bytes, false)
 	if err != nil {
 		return fmt.Errorf("rendering GCS file: %v", err)
 	}
@@ -414,7 +414,7 @@ func (p *GSPath) RenderTerraform(w *terraformWriter.TerraformWriter, name string
 	tf := &terraformGSObject{
 		Bucket:   p.Bucket(),
 		Name:     p.Object(),
-		Source:   content.FnArgs[0],
+		Source:   content,
 		Provider: terraformWriter.LiteralTokens("google", "files"),
 	}
 	err = w.RenderResource("google_storage_bucket_object", name, tf)
