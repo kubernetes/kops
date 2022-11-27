@@ -27,10 +27,6 @@ import (
 type Literal struct {
 	// String is the Terraform representation.
 	String string `cty:"string"`
-
-	// FnArgs contains string representations of arguments to the function call.
-	// Any string arguments must be quoted.
-	FnArgs []string `cty:"fn_arg"`
 }
 
 var _ json.Marshaler = &Literal{}
@@ -42,7 +38,6 @@ func (l *Literal) MarshalJSON() ([]byte, error) {
 func LiteralFunctionExpression(functionName string, args ...string) *Literal {
 	return &Literal{
 		String: fmt.Sprintf("%v(%v)", functionName, strings.Join(args, ", ")),
-		FnArgs: args,
 	}
 }
 
