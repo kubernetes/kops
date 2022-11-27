@@ -296,11 +296,17 @@ func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) 
 		return err
 	}
 
+	cidrPrefixLengthCaptureList := terraformWriter.LiteralFunctionExpression("regex",
+		terraformWriter.LiteralFromStringValue(".*/(\\\\d+)"),
+		terraformWriter.LiteralTokens("local", "vpc_ipv6_cidr_block"),
+	)
+	cidrPrefixLengthString := terraformWriter.LiteralIndexExpression(
+		cidrPrefixLengthCaptureList,
+		terraformWriter.LiteralFromIntValue(0),
+	)
 	if err := t.AddOutputVariable("vpc_ipv6_cidr_length", terraformWriter.LiteralNullConditionalExpression(
 		terraformWriter.LiteralTokens("local", "vpc_ipv6_cidr_block"),
-		terraformWriter.LiteralFunctionExpression("tonumber",
-			terraformWriter.LiteralTokens("regex(\".*/(\\\\d+)\", local.vpc_ipv6_cidr_block)[0]"),
-		),
+		terraformWriter.LiteralFunctionExpression("tonumber", cidrPrefixLengthString),
 	)); err != nil {
 		return err
 	}
