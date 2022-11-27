@@ -94,6 +94,15 @@ func LiteralWithIndex(s string) *Literal {
 	}
 }
 
+// LiteralBinaryExpression constructs a Literal with the result of a binary operator expression.
+// It is the caller's responsibility to ensure the supplied parameters do not use operators
+// with lower precedence than the supplied operator.
+func LiteralBinaryExpression(lhs *Literal, operator string, rhs *Literal) *Literal {
+	return &Literal{
+		String: fmt.Sprintf("%s %s %s", lhs.String, operator, rhs.String),
+	}
+}
+
 // LiteralNullConditionalExpression constructs a Literal which returns `null`
 // if the supplied "nullable" expression is null, otherwise returns "value".
 // It is the caller's responsibility to ensure the supplied parameters do not use operators
