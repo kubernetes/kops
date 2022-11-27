@@ -85,7 +85,7 @@ func (t *TerraformWriter) AddFileBytes(resourceType string, resourceName string,
 	if base64 {
 		fn = "filebase64"
 	}
-	return LiteralFunctionExpression(fn, path.String), nil
+	return LiteralFunctionExpression(fn, path), nil
 }
 
 func (t *TerraformWriter) AddFilePath(resourceType string, resourceName string, key string, data []byte, base64 bool) (*Literal, error) {
