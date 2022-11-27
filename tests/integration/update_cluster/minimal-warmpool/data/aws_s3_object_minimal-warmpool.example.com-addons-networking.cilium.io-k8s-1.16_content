@@ -44,6 +44,7 @@ data:
   enable-bpf-masquerade: "false"
   enable-endpoint-health-checking: "true"
   enable-ipv4: "true"
+  enable-ipv4-masquerade: "true"
   enable-ipv6: "false"
   enable-ipv6-masquerade: "false"
   enable-l7-proxy: "true"
@@ -55,7 +56,6 @@ data:
   install-iptables-rules: "true"
   ipam: kubernetes
   kube-proxy-replacement: partial
-  masquerade: "true"
   monitor-aggregation: medium
   nodes-gc-interval: 5m0s
   preallocate-bpf-maps: "false"
