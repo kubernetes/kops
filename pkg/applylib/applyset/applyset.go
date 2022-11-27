@@ -22,11 +22,9 @@ import (
 	"fmt"
 	"sync"
 
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/dynamic"
 )
@@ -102,6 +100,11 @@ func (a *ApplySet) ApplyOnce(ctx context.Context) (*ApplyResults, error) {
 	trackers := a.trackers
 	a.mutex.Unlock()
 
+	client := &UnstructuredClient{
+		client:     a.client,
+		restMapper: a.restMapper,
+	}
+
 	results := &ApplyResults{total: len(trackers.items)}
 
 	for i := range trackers.items {
@@ -113,54 +116,28 @@ func (a *ApplySet) ApplyOnce(ctx context.Context) (*ApplyResults, error) {
 		gvk := expectedObject.GroupVersionKind()
 		nn := types.NamespacedName{Namespace: ns, Name: name}
 
-		restMapping, err := a.restMapper.RESTMapping(gvk.GroupKind(), gvk.Version)
+		currentObj, err := client.Get(ctx, gvk, nn)
 		if err != nil {
-			results.applyError(gvk, nn, fmt.Errorf("error getting rest mapping for %v: %w", gvk, err))
-			continue
-		}
-		gvr := restMapping.Resource
-
-		var dynamicResource dynamic.ResourceInterface
-
-		switch restMapping.Scope.Name() {
-		case meta.RESTScopeNameNamespace:
-			if ns == "" {
-				// TODO: Differentiate between server-fixable vs client-fixable errors?
-				results.applyError(gvk, nn, fmt.Errorf("namespace was not provided for namespace-scoped object %v", gvk))
+			if !apierrors.IsNotFound(err) {
+				results.applyError(gvk, nn, err)
 				continue
 			}
-			dynamicResource = a.client.Resource(gvr).Namespace(ns)
+		}
 
-		case meta.RESTScopeNameRoot:
-			if ns != "" {
-				// TODO: Differentiate between server-fixable vs client-fixable errors?
-				results.applyError(gvk, nn, fmt.Errorf("namespace %q was provided for cluster-scoped object %v", expectedObject.GetNamespace(), gvk))
+		// If the object exists, we need to update any client-side-apply field-managers
+		// Otherwise we often end up with old and new objects combined, which
+		// is unexpected and can be invalid.
+		if currentObj != nil {
+			managedFields := &ManagedFieldsMigrator{
+				NewManager: "kops",
+				Client:     client,
+			}
+			if err := managedFields.Migrate(ctx, currentObj); err != nil {
+				results.applyError(gvk, nn, err)
 				continue
 			}
-			dynamicResource = a.client.Resource(gvr)
-
-		default:
-			// Internal error ... this is panic-level
-			return nil, fmt.Errorf("unknown scope for gvk %s: %q", gvk, restMapping.Scope.Name())
 		}
 
-		currentObj, err := dynamicResource.Get(ctx, name, v1.GetOptions{})
-		if err != nil {
-			if !errors.IsNotFound(err) {
-				return nil, fmt.Errorf("could not get existing object: %w", err)
-			}
-		}
-		jsonData, err := createManagedFieldPatch(currentObj)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create json patch: %w", err)
-		}
-
-		if jsonData != nil {
-			_, err := dynamicResource.Patch(ctx, name, types.MergePatchType, jsonData, v1.PatchOptions{})
-			if err != nil {
-				return nil, fmt.Errorf("failed to patch object %q: %w", name, err)
-			}
-		}
 		j, err := json.Marshal(expectedObject)
 		if err != nil {
 			// TODO: Differentiate between server-fixable vs client-fixable errors?
@@ -168,7 +145,7 @@ func (a *ApplySet) ApplyOnce(ctx context.Context) (*ApplyResults, error) {
 			continue
 		}
 
-		lastApplied, err := dynamicResource.Patch(ctx, name, types.ApplyPatchType, j, a.patchOptions)
+		lastApplied, err := client.Patch(ctx, gvk, nn, types.ApplyPatchType, j, a.patchOptions)
 		if err != nil {
 			results.applyError(gvk, nn, fmt.Errorf("error from apply: %w", err))
 			continue
@@ -180,32 +157,4 @@ func (a *ApplySet) ApplyOnce(ctx context.Context) (*ApplyResults, error) {
 		results.reportHealth(gvk, nn, tracker.isHealthy)
 	}
 	return results, nil
-}
-
-func createManagedFieldPatch(currentObject *unstructured.Unstructured) ([]byte, error) {
-	if currentObject == nil {
-		return nil, nil
-	}
-	fixedManagedFields := []v1.ManagedFieldsEntry{}
-	for _, managedField := range currentObject.GetManagedFields() {
-		fixedManagedField := managedField.DeepCopy()
-		if managedField.Manager == "kubectl-edit" || managedField.Manager == "kubectl-client-side-apply" {
-			fixedManagedField.Manager = "kops"
-		}
-		fixedManagedFields = append(fixedManagedFields, *fixedManagedField)
-	}
-	if len(fixedManagedFields) == 0 {
-		return nil, nil
-	}
-	meta := &v1.ObjectMeta{}
-	meta.SetManagedFields(fixedManagedFields)
-	patchObject := map[string]interface{}{
-		"metadata": meta,
-	}
-
-	jsonData, err := json.Marshal(patchObject)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marsal %q into json: %w", currentObject.GetName(), err)
-	}
-	return jsonData, nil
 }
