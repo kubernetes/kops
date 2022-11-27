@@ -47,6 +47,7 @@ data:
   enable-endpoint-health-checking: "true"
   enable-endpoint-routes: "true"
   enable-ipv4: "true"
+  enable-ipv4-masquerade: "false"
   enable-ipv6: "false"
   enable-ipv6-masquerade: "false"
   enable-k8s-event-handover: "true"
@@ -69,7 +70,6 @@ data:
   kube-proxy-replacement: strict
   kvstore: etcd
   kvstore-opt: '{"etcd.config": "/var/lib/etcd-config/etcd.config"}'
-  masquerade: "false"
   monitor-aggregation: medium
   nodes-gc-interval: 5m0s
   preallocate-bpf-maps: "false"
