@@ -21,6 +21,8 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+
+	"golang.org/x/exp/constraints"
 )
 
 // Literal represents a literal in terraform syntax
@@ -35,9 +37,18 @@ func (l *Literal) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&l.String)
 }
 
-func LiteralFunctionExpression(functionName string, args ...string) *Literal {
+// LiteralFunctionExpression constructs a Literal representing the result of
+// calling the supplied functionName with the supplied args.
+func LiteralFunctionExpression(functionName string, args ...*Literal) *Literal {
+	s := functionName + "("
+	for i, arg := range args {
+		if i != 0 {
+			s += ", "
+		}
+		s += arg.String
+	}
 	return &Literal{
-		String: fmt.Sprintf("%v(%v)", functionName, strings.Join(args, ", ")),
+		String: s + ")",
 	}
 }
 
@@ -65,6 +76,12 @@ func LiteralTokens(tokens ...string) *Literal {
 	}
 }
 
+func LiteralFromIntValue[T constraints.Integer](i T) *Literal {
+	return &Literal{
+		String: fmt.Sprintf("%d", i),
+	}
+}
+
 func LiteralFromStringValue(s string) *Literal {
 	return &Literal{
 		String: "\"" + s + "\"",
@@ -74,6 +91,35 @@ func LiteralFromStringValue(s string) *Literal {
 func LiteralWithIndex(s string) *Literal {
 	return &Literal{
 		String: fmt.Sprintf("\"%s-${count.index}\"", s),
+	}
+}
+
+// LiteralBinaryExpression constructs a Literal with the result of a binary operator expression.
+// It is the caller's responsibility to ensure the supplied parameters do not use operators
+// with lower precedence than the supplied operator.
+func LiteralBinaryExpression(lhs *Literal, operator string, rhs *Literal) *Literal {
+	return &Literal{
+		String: fmt.Sprintf("%s %s %s", lhs.String, operator, rhs.String),
+	}
+}
+
+// LiteralIndexExpression constructs a Literal with the result of accessing the
+// supplied collection using the supplied index.
+// It is the caller's responsibility to ensure the supplied collection does not use operators
+// with lower precedence than the index operator.
+func LiteralIndexExpression(collection *Literal, index *Literal) *Literal {
+	return &Literal{
+		String: fmt.Sprintf("%s[%s]", collection.String, index.String),
+	}
+}
+
+// LiteralNullConditionalExpression constructs a Literal which returns `null`
+// if the supplied "nullable" expression is null, otherwise returns "value".
+// It is the caller's responsibility to ensure the supplied parameters do not use operators
+// with lower precedence than the conditional operator.
+func LiteralNullConditionalExpression(nullable, value *Literal) *Literal {
+	return &Literal{
+		String: fmt.Sprintf("%s == null ? null : %s", nullable.String, value.String),
 	}
 }
 
