@@ -56,15 +56,15 @@ func TestGSRenderTerraform(t *testing.T) {
 			{
 				"bucket": "foo",
 				"name": "bar",
-				"provider": "${google.files}",
+				"provider": "google.files",
 				"source": "\"${path.module}/data/google_storage_bucket_object_bar_content\""
 			}
 			`,
 			expectedACLJSON: `
 			{
 				"bucket": "foo",
-				"object": "${google_storage_bucket_object.bar.output_name}",
-				"provider": "${google.files}",
+				"object": "google_storage_bucket_object.bar.output_name",
+				"provider": "google.files",
 				"role_entity": [
 					"READER:user-foo-123@project.iam.gserviceaccount.com"
 				]
