@@ -31,6 +31,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"go.uber.org/multierr"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -734,16 +735,26 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		}
 
 		if autoloadSSHPublicKeys {
-			// Load from default location, if found
-			sshPublicKeyPath := "~/.ssh/id_rsa.pub"
-			c.SSHPublicKeys, err = loadSSHPublicKeys(sshPublicKeyPath)
-			if err != nil {
+			// Load from default locations, if found
+			sshPublicKeyPaths := []string{
+				"~/.ssh/id_rsa.pub",
+				"~/.ssh/id_ed25519.pub",
+			}
+			var merr error
+			for _, sshPublicKeyPath := range sshPublicKeyPaths {
+				c.SSHPublicKeys, err = loadSSHPublicKeys(sshPublicKeyPath)
+				if err == nil {
+					break
+				}
 				// Don't wrap file-not-found
 				if os.IsNotExist(err) {
 					klog.V(2).Infof("ssh key not found at %s", sshPublicKeyPath)
 				} else {
-					return fmt.Errorf("error reading SSH key file %q: %v", sshPublicKeyPath, err)
+					merr = multierr.Append(merr, err)
 				}
+			}
+			if merr != nil && len(c.SSHPublicKeys) == 0 {
+				return fmt.Errorf("error reading SSH public key files %q: %v", sshPublicKeyPaths, merr)
 			}
 		}
 	}
