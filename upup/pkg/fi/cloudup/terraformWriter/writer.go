@@ -75,6 +75,20 @@ func (t *TerraformWriter) InitTerraformWriter() {
 }
 
 func (t *TerraformWriter) AddFileBytes(resourceType string, resourceName string, key string, data []byte, base64 bool) (*Literal, error) {
+
+	path, err := t.AddFilePath(resourceType, resourceName, key, data, base64)
+	if err != nil {
+		return nil, err
+	}
+
+	fn := "file"
+	if base64 {
+		fn = "filebase64"
+	}
+	return LiteralFunctionExpression(fn, path.String), nil
+}
+
+func (t *TerraformWriter) AddFilePath(resourceType string, resourceName string, key string, data []byte, base64 bool) (*Literal, error) {
 	id := resourceType + "_" + resourceName + "_" + key
 
 	t.mutex.Lock()
@@ -84,11 +98,8 @@ func (t *TerraformWriter) AddFileBytes(resourceType string, resourceName string,
 	t.Files[p] = data
 
 	modulePath := fmt.Sprintf("%q", path.Join("${path.module}", p))
-	fn := "file"
-	if base64 {
-		fn = "filebase64"
-	}
-	return LiteralFunctionExpression(fn, modulePath), nil
+
+	return LiteralTokens(modulePath), nil
 }
 
 func (t *TerraformWriter) RenderDataSource(dataType string, dataName string, e interface{}) error {

@@ -1,7 +1,7 @@
 locals {
   cluster_name                 = "existingsg.example.com"
   master_autoscaling_group_ids = [aws_autoscaling_group.master-us-test-1a-masters-existingsg-example-com.id, aws_autoscaling_group.master-us-test-1b-masters-existingsg-example-com.id, aws_autoscaling_group.master-us-test-1c-masters-existingsg-example-com.id]
-  master_security_group_ids    = [aws_security_group.masters-existingsg-example-com.id, "sg-master-1a", "sg-master-1b"]
+  master_security_group_ids    = ["sg-master-1a", "sg-master-1b", aws_security_group.masters-existingsg-example-com.id]
   masters_role_arn             = aws_iam_role.masters-existingsg-example-com.arn
   masters_role_name            = aws_iam_role.masters-existingsg-example-com.name
   node_autoscaling_group_ids   = [aws_autoscaling_group.nodes-existingsg-example-com.id]
@@ -29,7 +29,7 @@ output "master_autoscaling_group_ids" {
 }
 
 output "master_security_group_ids" {
-  value = [aws_security_group.masters-existingsg-example-com.id, "sg-master-1a", "sg-master-1b"]
+  value = ["sg-master-1a", "sg-master-1b", aws_security_group.masters-existingsg-example-com.id]
 }
 
 output "masters_role_arn" {
