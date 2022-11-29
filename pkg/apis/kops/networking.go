@@ -29,9 +29,9 @@ type NetworkingSpec struct {
 	Flannel    *FlannelNetworkingSpec    `json:"flannel,omitempty"`
 	Calico     *CalicoNetworkingSpec     `json:"calico,omitempty"`
 	Canal      *CanalNetworkingSpec      `json:"canal,omitempty"`
-	Kuberouter *KuberouterNetworkingSpec `json:"kuberouter,omitempty"`
+	KubeRouter *KuberouterNetworkingSpec `json:"kubeRouter,omitempty"`
 	Romana     *RomanaNetworkingSpec     `json:"romana,omitempty"`
-	AmazonVPC  *AmazonVPCNetworkingSpec  `json:"amazonvpc,omitempty"`
+	AmazonVPC  *AmazonVPCNetworkingSpec  `json:"amazonVPC,omitempty"`
 	Cilium     *CiliumNetworkingSpec     `json:"cilium,omitempty"`
 	LyftVPC    *LyftVPCNetworkingSpec    `json:"lyftvpc,omitempty"`
 	GCE        *GCENetworkingSpec        `json:"gce,omitempty"`

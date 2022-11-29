@@ -237,7 +237,7 @@ func TestSetupNetworking(t *testing.T) {
 						Enabled: fi.PtrTo(false),
 					},
 					Networking: &api.NetworkingSpec{
-						Kuberouter: &api.KuberouterNetworkingSpec{},
+						KubeRouter: &api.KuberouterNetworkingSpec{},
 					},
 				},
 			},

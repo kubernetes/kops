@@ -144,7 +144,7 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 		protocols = append(protocols, ProtocolIPIP)
 	}
 
-	if b.Cluster.Spec.Networking.Kuberouter != nil {
+	if b.Cluster.Spec.Networking.KubeRouter != nil {
 		protocols = append(protocols, ProtocolIPIP)
 	}
 

@@ -822,7 +822,7 @@ func (c *Cluster) fillClusterSpecNetworkingSpec() {
 		// OK
 	} else if c.Spec.Networking.Canal != nil {
 		// OK
-	} else if c.Spec.Networking.Kuberouter != nil {
+	} else if c.Spec.Networking.KubeRouter != nil {
 		// OK
 	} else if c.Spec.Networking.AmazonVPC != nil {
 		// OK
