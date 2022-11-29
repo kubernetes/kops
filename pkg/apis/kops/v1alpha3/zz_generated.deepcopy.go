@@ -4283,8 +4283,8 @@ func (in *NetworkingSpec) DeepCopyInto(out *NetworkingSpec) {
 		*out = new(CanalNetworkingSpec)
 		(*in).DeepCopyInto(*out)
 	}
-	if in.Kuberouter != nil {
-		in, out := &in.Kuberouter, &out.Kuberouter
+	if in.KubeRouter != nil {
+		in, out := &in.KubeRouter, &out.KubeRouter
 		*out = new(KuberouterNetworkingSpec)
 		**out = **in
 	}

@@ -6267,14 +6267,14 @@ func autoConvert_v1alpha3_NetworkingSpec_To_kops_NetworkingSpec(in *NetworkingSp
 	} else {
 		out.Canal = nil
 	}
-	if in.Kuberouter != nil {
-		in, out := &in.Kuberouter, &out.Kuberouter
+	if in.KubeRouter != nil {
+		in, out := &in.KubeRouter, &out.KubeRouter
 		*out = new(kops.KuberouterNetworkingSpec)
 		if err := Convert_v1alpha3_KuberouterNetworkingSpec_To_kops_KuberouterNetworkingSpec(*in, *out, s); err != nil {
 			return err
 		}
 	} else {
-		out.Kuberouter = nil
+		out.KubeRouter = nil
 	}
 	out.Romana = in.Romana
 	if in.AmazonVPC != nil {
@@ -6387,14 +6387,14 @@ func autoConvert_kops_NetworkingSpec_To_v1alpha3_NetworkingSpec(in *kops.Network
 	} else {
 		out.Canal = nil
 	}
-	if in.Kuberouter != nil {
-		in, out := &in.Kuberouter, &out.Kuberouter
+	if in.KubeRouter != nil {
+		in, out := &in.KubeRouter, &out.KubeRouter
 		*out = new(KuberouterNetworkingSpec)
 		if err := Convert_kops_KuberouterNetworkingSpec_To_v1alpha3_KuberouterNetworkingSpec(*in, *out, s); err != nil {
 			return err
 		}
 	} else {
-		out.Kuberouter = nil
+		out.KubeRouter = nil
 	}
 	out.Romana = in.Romana
 	if in.AmazonVPC != nil {

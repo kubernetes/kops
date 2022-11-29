@@ -1139,7 +1139,7 @@ func setupNetworking(opt *NewClusterOptions, cluster *api.Cluster) error {
 	case "canal":
 		cluster.Spec.Networking.Canal = &api.CanalNetworkingSpec{}
 	case "kube-router":
-		cluster.Spec.Networking.Kuberouter = &api.KuberouterNetworkingSpec{}
+		cluster.Spec.Networking.KubeRouter = &api.KuberouterNetworkingSpec{}
 		if cluster.Spec.KubeProxy == nil {
 			cluster.Spec.KubeProxy = &api.KubeProxyConfig{}
 		}
