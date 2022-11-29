@@ -84,7 +84,7 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud, strict bool) f
 	}
 
 	if fi.ValueOf(g.Spec.RootVolumeIOPS) < 0 {
-		allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "rootVolumeIops"), g.Spec.RootVolumeIOPS, "RootVolumeIOPS must be greater than 0"))
+		allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "rootVolumeIOPS"), g.Spec.RootVolumeIOPS, "RootVolumeIOPS must be greater than 0"))
 	}
 
 	if fi.ValueOf(g.Spec.RootVolumeThroughput) < 0 {
@@ -401,27 +401,27 @@ func validateExternalLoadBalancer(lb *kops.LoadBalancerSpec, fldPath *field.Path
 
 		parsed, err := arn.Parse(actual)
 		if err != nil {
-			allErrs = append(allErrs, field.Invalid(fldPath.Child("targetGroupArn"), actual,
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("targetGroupARN"), actual,
 				fmt.Sprintf("Target Group ARN must be a valid AWS ARN: %v", err)))
 			return allErrs
 		}
 
 		resource := strings.Split(parsed.Resource, "/")
 		if len(resource) != 3 {
-			allErrs = append(allErrs, field.Invalid(fldPath.Child("targetGroupArn"), actual,
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("targetGroupARN"), actual,
 				"Target Group ARN resource must be a valid AWS ARN resource such as \"targetgroup/tg-name/1234567890123456\""))
 			return allErrs
 		}
 
 		kind := resource[0]
 		if kind != "targetgroup" {
-			allErrs = append(allErrs, field.Invalid(fldPath.Child("targetGroupArn"), kind,
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("targetGroupARN"), kind,
 				"Target Group ARN resource type must be \"targetgroup\""))
 		}
 
 		name := resource[1]
 		if len(name) > 32 {
-			allErrs = append(allErrs, field.Invalid(fldPath.Child("targetGroupArn"), name,
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("targetGroupARN"), name,
 				"Target Group ARN resource name must have at most 32 characters"))
 		}
 	}

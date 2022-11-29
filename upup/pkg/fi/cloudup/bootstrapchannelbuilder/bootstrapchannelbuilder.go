@@ -1019,7 +1019,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*Addon
 		}
 	}
 
-	if b.Cluster.Spec.Networking.Kuberouter != nil {
+	if b.Cluster.Spec.Networking.KubeRouter != nil {
 		key := "networking.kuberouter"
 
 		{
