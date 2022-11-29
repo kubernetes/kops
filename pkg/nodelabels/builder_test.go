@@ -35,7 +35,7 @@ func TestBuildNodeLabels(t *testing.T) {
 			cluster: &kops.Cluster{
 				Spec: kops.ClusterSpec{
 					KubernetesVersion: "v1.9.0",
-					MasterKubelet: &kops.KubeletConfigSpec{
+					ControlPlaneKubelet: &kops.KubeletConfigSpec{
 						NodeLabels: map[string]string{
 							"controlPlane1": "controlPlane1",
 							"controlPlane2": "controlPlane2",
@@ -78,7 +78,7 @@ func TestBuildNodeLabels(t *testing.T) {
 			cluster: &kops.Cluster{
 				Spec: kops.ClusterSpec{
 					KubernetesVersion: "v1.9.0",
-					MasterKubelet: &kops.KubeletConfigSpec{
+					ControlPlaneKubelet: &kops.KubeletConfigSpec{
 						NodeLabels: map[string]string{
 							"controlPlane1": "controlPlane1",
 							"controlPlane2": "controlPlane2",

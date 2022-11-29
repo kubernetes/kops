@@ -2708,14 +2708,14 @@ func autoConvert_v1alpha3_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	} else {
 		out.Kubelet = nil
 	}
-	if in.MasterKubelet != nil {
-		in, out := &in.MasterKubelet, &out.MasterKubelet
+	if in.ControlPlaneKubelet != nil {
+		in, out := &in.ControlPlaneKubelet, &out.ControlPlaneKubelet
 		*out = new(kops.KubeletConfigSpec)
 		if err := Convert_v1alpha3_KubeletConfigSpec_To_kops_KubeletConfigSpec(*in, *out, s); err != nil {
 			return err
 		}
 	} else {
-		out.MasterKubelet = nil
+		out.ControlPlaneKubelet = nil
 	}
 	if in.CloudConfig != nil {
 		in, out := &in.CloudConfig, &out.CloudConfig
@@ -3121,14 +3121,14 @@ func autoConvert_kops_ClusterSpec_To_v1alpha3_ClusterSpec(in *kops.ClusterSpec, 
 	} else {
 		out.Kubelet = nil
 	}
-	if in.MasterKubelet != nil {
-		in, out := &in.MasterKubelet, &out.MasterKubelet
+	if in.ControlPlaneKubelet != nil {
+		in, out := &in.ControlPlaneKubelet, &out.ControlPlaneKubelet
 		*out = new(KubeletConfigSpec)
 		if err := Convert_kops_KubeletConfigSpec_To_v1alpha3_KubeletConfigSpec(*in, *out, s); err != nil {
 			return err
 		}
 	} else {
-		out.MasterKubelet = nil
+		out.ControlPlaneKubelet = nil
 	}
 	if in.CloudConfig != nil {
 		in, out := &in.CloudConfig, &out.CloudConfig

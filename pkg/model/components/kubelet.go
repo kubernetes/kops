@@ -44,8 +44,8 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	if clusterSpec.Kubelet == nil {
 		clusterSpec.Kubelet = &kops.KubeletConfigSpec{}
 	}
-	if clusterSpec.MasterKubelet == nil {
-		clusterSpec.MasterKubelet = &kops.KubeletConfigSpec{}
+	if clusterSpec.ControlPlaneKubelet == nil {
+		clusterSpec.ControlPlaneKubelet = &kops.KubeletConfigSpec{}
 	}
 
 	if clusterSpec.KubeAPIServer != nil && clusterSpec.KubeAPIServer.EnableBootstrapAuthToken != nil {
@@ -86,11 +86,11 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 	}
 
-	clusterSpec.MasterKubelet.RegisterSchedulable = fi.PtrTo(false)
+	clusterSpec.ControlPlaneKubelet.RegisterSchedulable = fi.PtrTo(false)
 	// Replace the CIDR with a CIDR allocated by KCM (the default, but included for clarity)
 	// We _do_ allow debugging handlers, so we can do logs
 	// This does allow more access than we would like though
-	clusterSpec.MasterKubelet.EnableDebuggingHandlers = fi.PtrTo(true)
+	clusterSpec.ControlPlaneKubelet.EnableDebuggingHandlers = fi.PtrTo(true)
 
 	{
 		// For pod eviction in low memory or empty disk situations
@@ -113,13 +113,13 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	// use kubeconfig instead of api-servers
 	const kubeconfigPath = "/var/lib/kubelet/kubeconfig"
 	clusterSpec.Kubelet.KubeconfigPath = kubeconfigPath
-	clusterSpec.MasterKubelet.KubeconfigPath = kubeconfigPath
+	clusterSpec.ControlPlaneKubelet.KubeconfigPath = kubeconfigPath
 
 	// IsolateMasters enables the legacy behaviour, where master pods on a separate network
 	// In newer versions of kubernetes, most of that functionality has been removed though
 	if fi.ValueOf(clusterSpec.IsolateMasters) {
-		clusterSpec.MasterKubelet.EnableDebuggingHandlers = fi.PtrTo(false)
-		clusterSpec.MasterKubelet.HairpinMode = "none"
+		clusterSpec.ControlPlaneKubelet.EnableDebuggingHandlers = fi.PtrTo(false)
+		clusterSpec.ControlPlaneKubelet.HairpinMode = "none"
 	}
 
 	cloudProvider := clusterSpec.GetCloudProvider()
@@ -218,7 +218,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	clusterSpec.Kubelet.RegisterSchedulable = fi.PtrTo(true)
-	clusterSpec.MasterKubelet.RegisterSchedulable = fi.PtrTo(true)
+	clusterSpec.ControlPlaneKubelet.RegisterSchedulable = fi.PtrTo(true)
 
 	return nil
 }

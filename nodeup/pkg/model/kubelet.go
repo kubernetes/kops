@@ -132,7 +132,7 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 		if b.HasAPIServer || !b.UseBootstrapTokens() {
 			var kubeconfig fi.Resource
 			if b.HasAPIServer {
-				kubeconfig, err = b.buildMasterKubeletKubeconfig(c)
+				kubeconfig, err = b.buildControlPlaneKubeletKubeconfig(c)
 			} else {
 				kubeconfig, err = b.BuildBootstrapKubeconfig("kubelet", c)
 			}
@@ -608,8 +608,8 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 	return &c, nil
 }
 
-// buildMasterKubeletKubeconfig builds a kubeconfig for the master kubelet, self-signing the kubelet cert
-func (b *KubeletBuilder) buildMasterKubeletKubeconfig(c *fi.ModelBuilderContext) (fi.Resource, error) {
+// buildControlPlaneKubeletKubeconfig builds a kubeconfig for the master kubelet, self-signing the kubelet cert
+func (b *KubeletBuilder) buildControlPlaneKubeletKubeconfig(c *fi.ModelBuilderContext) (fi.Resource, error) {
 	nodeName, err := b.NodeName()
 	if err != nil {
 		return nil, fmt.Errorf("error getting NodeName: %v", err)
