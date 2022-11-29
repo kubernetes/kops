@@ -602,7 +602,7 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 		if cluster.Spec.KubeProxy.Enabled == nil || *cluster.Spec.KubeProxy.Enabled {
 			certNames = append(certNames, "kube-proxy")
 		}
-		if cluster.Spec.Networking.Kuberouter != nil {
+		if cluster.Spec.Networking.KubeRouter != nil {
 			certNames = append(certNames, "kube-router")
 		}
 

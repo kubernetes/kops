@@ -57,7 +57,7 @@ spec:
   kubernetesVersion: v1.21.0
   networkCIDR: 172.20.0.0/16
   networking:
-    kubenet: {}
+    amazonVPC: {}
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
   - 0.0.0.0/0

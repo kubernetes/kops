@@ -70,7 +70,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	if b.KopsModelContext.Cluster.Spec.Networking.Kuberouter != nil && !b.UseKopsControllerForNodeBootstrap() {
+	if b.KopsModelContext.Cluster.Spec.Networking.KubeRouter != nil && !b.UseKopsControllerForNodeBootstrap() {
 		t := &fitasks.Keypair{
 			Name:      fi.PtrTo("kube-router"),
 			Lifecycle: b.Lifecycle,
