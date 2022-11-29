@@ -25,6 +25,8 @@ spec:
   cloudProvider:
     aws: {}
   configBase: memfs://clusters.example.com/minimal.example.com
+  controlPlaneKubelet:
+    cpuCFSQuota: true
   etcdClusters:
   - cpuRequest: 200m
     etcdMembers:

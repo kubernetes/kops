@@ -118,8 +118,8 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 	if strict && c.Spec.Kubelet == nil {
 		allErrs = append(allErrs, field.Required(fieldSpec.Child("kubelet"), "kubelet not configured"))
 	}
-	if strict && c.Spec.MasterKubelet == nil {
-		allErrs = append(allErrs, field.Required(fieldSpec.Child("masterKubelet"), "masterKubelet not configured"))
+	if strict && c.Spec.ControlPlaneKubelet == nil {
+		allErrs = append(allErrs, field.Required(fieldSpec.Child("controlPlaneKubelet"), "controlPlaneKubelet not configured"))
 	}
 	if strict && c.Spec.KubeControllerManager == nil {
 		allErrs = append(allErrs, field.Required(fieldSpec.Child("kubeControllerManager"), "kubeControllerManager not configured"))
@@ -215,9 +215,9 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 							allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubelet", "nonMasqueradeCIDR"), "kubelet nonMasqueradeCIDR did not match cluster nonMasqueradeCIDR"))
 						}
 					}
-					if fi.ValueOf(c.Spec.MasterKubelet.NonMasqueradeCIDR) != nonMasqueradeCIDRString {
-						if strict || c.Spec.MasterKubelet.NonMasqueradeCIDR != nil {
-							allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("masterKubelet", "nonMasqueradeCIDR"), "masterKubelet nonMasqueradeCIDR did not match cluster nonMasqueradeCIDR"))
+					if fi.ValueOf(c.Spec.ControlPlaneKubelet.NonMasqueradeCIDR) != nonMasqueradeCIDRString {
+						if strict || c.Spec.ControlPlaneKubelet.NonMasqueradeCIDR != nil {
+							allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("controlPlaneKubelet", "nonMasqueradeCIDR"), "controlPlaneKubelet nonMasqueradeCIDR did not match cluster nonMasqueradeCIDR"))
 						}
 					}
 				}
@@ -280,8 +280,8 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 					if isExperimentalClusterDNS(c.Spec.Kubelet, c.Spec.KubeDNS) {
 						allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubelet", "clusterDNS"), "Kubelet ClusterDNS did not match cluster kubeDNS.serverIP or nodeLocalDNS.localIP"))
 					}
-					if isExperimentalClusterDNS(c.Spec.MasterKubelet, c.Spec.KubeDNS) {
-						allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("masterKubelet", "clusterDNS"), "MasterKubelet ClusterDNS did not match cluster kubeDNS.serverIP or nodeLocalDNS.localIP"))
+					if isExperimentalClusterDNS(c.Spec.ControlPlaneKubelet, c.Spec.KubeDNS) {
+						allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("controlPlaneKubelet", "clusterDNS"), "ControlPlaneKubelet ClusterDNS did not match cluster kubeDNS.serverIP or nodeLocalDNS.localIP"))
 					}
 				}
 			}
@@ -344,9 +344,9 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 					allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubelet", "cloudProvider"), "Did not match cluster cloudProvider"))
 				}
 			}
-			if c.Spec.MasterKubelet != nil && (strict || c.Spec.MasterKubelet.CloudProvider != "") {
-				if c.Spec.MasterKubelet.CloudProvider != "external" && k8sCloudProvider != c.Spec.MasterKubelet.CloudProvider {
-					allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("masterKubelet", "cloudProvider"), "Did not match cluster cloudProvider"))
+			if c.Spec.ControlPlaneKubelet != nil && (strict || c.Spec.ControlPlaneKubelet.CloudProvider != "") {
+				if c.Spec.ControlPlaneKubelet.CloudProvider != "external" && k8sCloudProvider != c.Spec.ControlPlaneKubelet.CloudProvider {
+					allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("controlPlaneKubelet", "cloudProvider"), "Did not match cluster cloudProvider"))
 				}
 			}
 			if c.Spec.KubeAPIServer != nil && (strict || c.Spec.KubeAPIServer.CloudProvider != "") {
