@@ -1599,14 +1599,19 @@ the removal of fields no longer in use.
 | kubelet.clientCaFile                                   | kubelet.clientCAFile                                           |
 | kubeProxy.ipvsExcludeCidrs                             | kubeProxy.ipvsExcludeCIDRs                                     |
 | kubernetesApiAccess                                    | api.access                                                     |
+| masterKubelet                                          | controlPlaneKubelet                                            |
+| masterKubelet.authenticationTokenWebhookCacheTtl       | controlPlaneKubelet.authenticationTokenWebhookCacheTTL         |
+| masterKubelet.clientCaFile                             | controlPlaneKubelet.clientCAFile                               |
 | masterPublicName                                       | api.publicName                                                 |
-| networking.amazonvpc.imageName                         | networking.amazonvpc.image                                     |
-| networking.amazonvpc.initImageName                     | networking.amazonvpc.initImage                                 |
+| networking.amazonvpc                                   | networking.amazonVPC                                           |
+| networking.amazonvpc.imageName                         | networking.amazonVPC.image                                     |
+| networking.amazonvpc.initImageName                     | networking.amazonVPC.initImage                                 |
 | networking.canal.disableFlannelForwardRules            | networking.canal.flanneldIptablesForwardRules (value inverted) |
 | networking.cilium.disableMasquerade                    | networking.cilium.masquerade (value inverted)                  |
 | networking.cilium.IPTablesRulesNoinstall               | networking.cilium.installIptablesRules (value inverted)        |
 | networking.cilium.toFqdnsDnsRejectResponseCode         | networking.cilium.toFQDNsDNSRejectResponseCode                 |
 | networking.cilium.toFqdnsEnablePoller                  | networking.cilium.toFQDNsEnablePoller                          |
+| networking.kuberouter                                  | networking.kubeRouter                                          |
 | project                                                | cloudProvider.gce.project                                      |
 | topology.bastion.bastionPublicName                     | topology.bastion.publicName                                    |
 | topology.dns.type                                      | topology.dns                                                   |

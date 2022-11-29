@@ -34,7 +34,7 @@ var _ fi.ModelBuilder = &KuberouterBuilder{}
 func (b *KuberouterBuilder) Build(c *fi.ModelBuilderContext) error {
 	networking := b.Cluster.Spec.Networking
 
-	if networking.Kuberouter == nil {
+	if networking.KubeRouter == nil {
 		return nil
 	}
 

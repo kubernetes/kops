@@ -446,7 +446,7 @@ func (b *FirewallModelBuilder) addCNIRules(c *fi.ModelBuilderContext, sgMap map[
 			protocols = append(protocols, ProtocolIPEncap)
 		}
 
-		if b.Cluster.Spec.Networking.Kuberouter != nil {
+		if b.Cluster.Spec.Networking.KubeRouter != nil {
 			protocols = append(protocols, ProtocolIPEncap)
 		}
 	}
