@@ -1159,8 +1159,8 @@ func (in *ClusterSpec) DeepCopyInto(out *ClusterSpec) {
 		*out = new(KubeletConfigSpec)
 		(*in).DeepCopyInto(*out)
 	}
-	if in.MasterKubelet != nil {
-		in, out := &in.MasterKubelet, &out.MasterKubelet
+	if in.ControlPlaneKubelet != nil {
+		in, out := &in.ControlPlaneKubelet, &out.ControlPlaneKubelet
 		*out = new(KubeletConfigSpec)
 		(*in).DeepCopyInto(*out)
 	}

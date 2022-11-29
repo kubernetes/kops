@@ -150,12 +150,12 @@ type ClusterSpec struct {
 	// Kubelet is the kubelet configuration for nodes not belonging to the control plane.
 	// It can be overridden by the kubelet configuration specified in the instance group.
 	Kubelet *KubeletConfigSpec `json:"kubelet,omitempty"`
-	// MasterKubelet is the kubelet configuration for nodes belonging to the control plane
+	// ControlPlaneKubelet is the kubelet configuration for nodes belonging to the control plane
 	// It can be overridden by the kubelet configuration specified in the instance group.
-	MasterKubelet *KubeletConfigSpec  `json:"masterKubelet,omitempty"`
-	CloudConfig   *CloudConfiguration `json:"cloudConfig,omitempty"`
-	ExternalDNS   *ExternalDNSConfig  `json:"externalDNS,omitempty"`
-	NTP           *NTPConfig          `json:"ntp,omitempty"`
+	ControlPlaneKubelet *KubeletConfigSpec  `json:"controlPlaneKubelet,omitempty"`
+	CloudConfig         *CloudConfiguration `json:"cloudConfig,omitempty"`
+	ExternalDNS         *ExternalDNSConfig  `json:"externalDNS,omitempty"`
+	NTP                 *NTPConfig          `json:"ntp,omitempty"`
 
 	// NodeTerminationHandler determines the node termination handler configuration.
 	NodeTerminationHandler *NodeTerminationHandlerConfig `json:"nodeTerminationHandler,omitempty"`
