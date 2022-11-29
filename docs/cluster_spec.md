@@ -1565,3 +1565,48 @@ spec:
 ```
 
 To configure Pods to assume the given IAM roles, enable the [Pod Identity Webhook](/addons/#pod-identity-webhook). Without this webhook, you need to modify your Pod specs yourself for your Pod to assume the defined roles.
+
+# API Changes
+
+kOps is working on updating the `v1alpha2` API to a newer version. That new API
+is still under development, but the internal form of the API and validation error
+messages use the new field names. The following table tracks the changes, excepting
+the removal of fields no longer in use.
+
+| v1alpha2 Field                                         | New Field                                                      |
+|--------------------------------------------------------|----------------------------------------------------------------|
+| additionalSans                                         | api.AdditionalSANs                                             |
+| api.loadBalancer.subnets.allocationId                  | api.loadBalancer.subnets.allocationID                          |
+| api.loadBalancer.useForInternalApi                     | api.loadBalancer.useForInternalAPI                             |
+| cloudConfig.azure                                      | cloudProvider.azure                                            |
+| cloudConfig.azure.subscriptionId                       | cloudProvider.azure.subscriptionID                             |
+| cloudConfig.azure.tenantId                             | cloudProvider.azure.tenantID                                   |
+| cloudConfig.openstack                                  | cloudProvider.openstack                                        |
+| cloudProvider (string)                                 | cloudProvider (map)                                            |
+| DisableSubnetTags                                      | tagSubnets (value inverted)                                    |
+| etcdClusters[\*].etcdMembers[\*].kmsKeyId              | etcdClusters[\*].etcdMembers[\*].kmsKeyID                      |
+| etcdClusters[\*].etcdMembers[\*].volumeIops            | etcdClusters[\*].etcdMembers[\*].volumeIOPS                    |
+| externalDns                                            | externalDNS                                                    |
+| externalDns.disable: true                              | externalDNS.provider: none                                     |
+| hooks[\*].disabled                                     | hooks[\*].enabled (value inverted)                             |
+| kubeAPIServer.authorizationRbacSuperUser               | kubeAPIServer.authorizationRBACSuperUser                       |
+| kubeAPIServer.authorizationWebhookCacheAuthorizedTtl   | kubeAPIServer.authorizationWebhookCacheAuthorizedTTL           |
+| kubeAPIServer.authorizationWebhookCacheUnauthorizedTtl | kubeAPIServer.authorizationWebhookCacheUnauthorizedTTL         |
+| kubeAPIServer.etcdCaFile                               | kubeAPIServer.etcdCAFile                                       |
+| kubeAPIServer.targetRamMb                              | kubeAPIServer.targetRamMB                                      |
+| kubeControllerManager.concurrentRcSyncs                | kubeControllerManager.concurrentRCSyncs                        |
+| kubelet.authenticationTokenWebhookCacheTtl             | kubelet.authenticationTokenWebhookCacheTTL                     |
+| kubelet.clientCaFile                                   | kubelet.clientCAFile                                           |
+| kubeProxy.ipvsExcludeCidrs                             | kubeProxy.ipvsExcludeCIDRs                                     |
+| kubernetesApiAccess                                    | api.access                                                     |
+| masterPublicName                                       | api.publicName                                                 |
+| networking.amazonvpc.imageName                         | networking.amazonvpc.image                                     |
+| networking.amazonvpc.initImageName                     | networking.amazonvpc.initImage                                 |
+| networking.canal.disableFlannelForwardRules            | networking.canal.flanneldIptablesForwardRules (value inverted) |
+| networking.cilium.disableMasquerade                    | networking.cilium.masquerade (value inverted)                  |
+| networking.cilium.IPTablesRulesNoinstall               | networking.cilium.installIptablesRules (value inverted)        |
+| networking.cilium.toFqdnsDnsRejectResponseCode         | networking.cilium.toFQDNsDNSRejectResponseCode                 |
+| networking.cilium.toFqdnsEnablePoller                  | networking.cilium.toFQDNsEnablePoller                          |
+| project                                                | cloudProvider.gce.project                                      |
+| topology.bastion.bastionPublicName                     | topology.bastion.publicName                                    |
+| topology.dns.type                                      | topology.dns                                                   |
