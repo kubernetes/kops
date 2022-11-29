@@ -343,3 +343,16 @@ The following configuration enables a maximum instance lifetime to two days.
 spec:
   maxInstanceLifetime: "48h"
 ```
+
+# API Changes
+
+kOps is working on updating the `v1alpha2` API to a newer version. That new API
+is still under development, but the internal form of the API and validation error
+messages use the new field names. The following table tracks the changes, excepting
+the removal of fields no longer in use.
+
+| v1alpha2 Field                           | New Field                                |
+|------------------------------------------|------------------------------------------|
+| associatePublicIp                        | associatePublicIP                        |
+| externalLoadBalancers[\*].targetGroupArn | externalLoadBalancers[\*].targetGroupARN |
+| rootVolumeIops                           | rootVolumeIOPS                           |
