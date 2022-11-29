@@ -270,7 +270,7 @@ func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.ModelBuilderContext, ig *k
 		keypairs = append(keypairs, "apiserver-aggregator-ca", "service-account", "etcd-clients-ca")
 	} else if !model.UseKopsControllerForNodeBootstrap(b.Cluster) {
 		keypairs = append(keypairs, "kubelet", "kube-proxy")
-		if b.Cluster.Spec.Networking.Kuberouter != nil {
+		if b.Cluster.Spec.Networking.KubeRouter != nil {
 			keypairs = append(keypairs, "kube-router")
 		}
 	}

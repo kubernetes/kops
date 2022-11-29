@@ -253,7 +253,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 				allErrs = append(allErrs, field.Forbidden(lbPath, "sslCertificate requires network loadbalancer. See https://github.com/kubernetes/kops/blob/master/permalinks/acm_nlb.md"))
 			}
 			if lbSpec.Class == kops.LoadBalancerClassNetwork && lbSpec.UseForInternalAPI && lbSpec.Type == kops.LoadBalancerTypeInternal {
-				allErrs = append(allErrs, field.Forbidden(lbPath, "useForInternalApi cannot be used with internal NLB due lack of hairpinning support"))
+				allErrs = append(allErrs, field.Forbidden(lbPath, "useForInternalAPI cannot be used with internal NLB due lack of hairpinning support"))
 			}
 		}
 
@@ -678,7 +678,7 @@ func validateKubeProxy(k *kops.KubeProxyConfig, fldPath *field.Path) field.Error
 
 	for i, x := range k.IPVSExcludeCIDRs {
 		if _, _, err := net.ParseCIDR(x); err != nil {
-			allErrs = append(allErrs, field.Invalid(fldPath.Child("ipvsExcludeCidrs").Index(i), x, "Invalid network CIDR"))
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("ipvsExcludeCIDRs").Index(i), x, "Invalid network CIDR"))
 		}
 	}
 
@@ -854,9 +854,9 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 		allErrs = append(allErrs, validateNetworkingCanal(cluster, v.Canal, fldPath.Child("canal"))...)
 	}
 
-	if v.Kuberouter != nil {
+	if v.KubeRouter != nil {
 		if optionTaken {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("kuberouter"), "only one networking option permitted"))
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("kubeRouter"), "only one networking option permitted"))
 		}
 		if c.KubeProxy != nil && (c.KubeProxy.Enabled == nil || *c.KubeProxy.Enabled) {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Root().Child("spec", "kubeProxy", "enabled"), "kube-router requires kubeProxy to be disabled"))
@@ -864,7 +864,7 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 		optionTaken = true
 
 		if cluster.Spec.IsIPv6Only() {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("kuberouter"), "kube-router does not support IPv6"))
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("kuberRouter"), "kube-router does not support IPv6"))
 		}
 	}
 
@@ -874,16 +874,16 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 
 	if v.AmazonVPC != nil {
 		if optionTaken {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("amazonvpc"), "only one networking option permitted"))
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("amazonVPC"), "only one networking option permitted"))
 		}
 		optionTaken = true
 
 		if c.GetCloudProvider() != kops.CloudProviderAWS {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("amazonvpc"), "amazon-vpc-routed-eni networking is supported only in AWS"))
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("amazonVPC"), "amazon-vpc-routed-eni networking is supported only in AWS"))
 		}
 
 		if cluster.Spec.IsIPv6Only() {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("amazonvpc"), "amazon-vpc-routed-eni networking does not support IPv6"))
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("amazonVPC"), "amazon-vpc-routed-eni networking does not support IPv6"))
 		}
 
 	}
