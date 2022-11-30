@@ -55,22 +55,31 @@ spec:
     - ControlPlane
   iam: {}
   kubernetesVersion: v1.21.0
-  networkCIDR: 172.20.0.0/16
   networking:
+    additionalNetworkCIDRs:
+    - 172.21.0.0/16
     amazonVPC: {}
-  nonMasqueradeCIDR: 100.64.0.0/10
+    egressProxy:
+      httpProxy:
+        host: egress-proxy.invalid
+    isolateControlPlane: true
+    networkCIDR: 172.20.0.0/16
+    networkID: vpc-123456
+    nonMasqueradeCIDR: 100.64.0.0/10
+    podCIDR: 100.64.0.0/16
+    serviceClusterIPRange: 100.65.0.0/16
+    subnets:
+    - cidr: 172.20.32.0/19
+      name: us-test-1a
+      type: Public
+      zone: us-test-1a
+    tagSubnets: false
+    topology:
+      controlPlane: public
+      dns: None
+      nodes: private
   sshAccess:
   - 0.0.0.0/0
-  subnets:
-  - cidr: 172.20.32.0/19
-    name: us-test-1a
-    type: Public
-    zone: us-test-1a
-  tagSubnets: false
-  topology:
-    controlPlane: public
-    dns: None
-    nodes: private
 
 ---
 

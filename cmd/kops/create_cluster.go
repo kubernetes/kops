@@ -615,11 +615,11 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	}
 
 	if c.NetworkCIDR != "" {
-		cluster.Spec.NetworkCIDR = c.NetworkCIDR
+		cluster.Spec.Networking.NetworkCIDR = c.NetworkCIDR
 	}
 
 	if c.DisableSubnetTags {
-		cluster.Spec.TagSubnets = fi.PtrTo(false)
+		cluster.Spec.Networking.TagSubnets = fi.PtrTo(false)
 	}
 
 	if c.APIPublicName != "" {

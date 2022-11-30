@@ -44,7 +44,7 @@ func (b *DNSModelBuilder) ensureDNSZone(c *fi.ModelBuilderContext) error {
 		Lifecycle: b.Lifecycle,
 	}
 
-	topology := b.Cluster.Spec.Topology
+	topology := b.Cluster.Spec.Networking.Topology
 	if topology != nil {
 		switch topology.DNS {
 		case kops.DNSTypePublic:

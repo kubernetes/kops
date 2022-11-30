@@ -37,7 +37,7 @@ func TestVMScaleSetModelBuilder_Build(t *testing.T) {
 			Lifecycle: fi.LifecycleSync,
 			Cluster: &kops.Cluster{
 				Spec: kops.ClusterSpec{
-					Networking: &kops.NetworkingSpec{},
+					Networking: kops.NetworkingSpec{},
 				},
 			},
 		},

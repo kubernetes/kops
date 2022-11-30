@@ -85,11 +85,11 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 		obj.Authorization.AlwaysAllow = &AlwaysAllowAuthorizationSpec{}
 	}
 
-	if obj.Networking != nil {
-		if obj.Networking.Flannel != nil {
+	if obj.LegacyNetworking != nil {
+		if obj.LegacyNetworking.Flannel != nil {
 			// Populate with legacy default value; new clusters will be created with "vxlan" by
 			// "create cluster."
-			rebindIfEmpty(&obj.Networking.Flannel.Backend, "udp")
+			rebindIfEmpty(&obj.LegacyNetworking.Flannel.Backend, "udp")
 		}
 	}
 }

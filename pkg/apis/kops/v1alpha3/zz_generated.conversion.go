@@ -2549,29 +2549,6 @@ func autoConvert_v1alpha3_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	}
 	out.ContainerRuntime = in.ContainerRuntime
 	out.KubernetesVersion = in.KubernetesVersion
-	if in.Subnets != nil {
-		in, out := &in.Subnets, &out.Subnets
-		*out = make([]kops.ClusterSubnetSpec, len(*in))
-		for i := range *in {
-			if err := Convert_v1alpha3_ClusterSubnetSpec_To_kops_ClusterSubnetSpec(&(*in)[i], &(*out)[i], s); err != nil {
-				return err
-			}
-		}
-	} else {
-		out.Subnets = nil
-	}
-	out.NetworkCIDR = in.NetworkCIDR
-	out.AdditionalNetworkCIDRs = in.AdditionalNetworkCIDRs
-	out.NetworkID = in.NetworkID
-	if in.Topology != nil {
-		in, out := &in.Topology, &out.Topology
-		*out = new(kops.TopologySpec)
-		if err := Convert_v1alpha3_TopologySpec_To_kops_TopologySpec(*in, *out, s); err != nil {
-			return err
-		}
-	} else {
-		out.Topology = nil
-	}
 	out.SecretStore = in.SecretStore
 	out.KeyStore = in.KeyStore
 	out.ConfigStore = in.ConfigStore
@@ -2586,22 +2563,9 @@ func autoConvert_v1alpha3_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 		out.DNSControllerGossipConfig = nil
 	}
 	out.ClusterDNSDomain = in.ClusterDNSDomain
-	out.ServiceClusterIPRange = in.ServiceClusterIPRange
-	out.PodCIDR = in.PodCIDR
-	out.NonMasqueradeCIDR = in.NonMasqueradeCIDR
 	out.SSHAccess = in.SSHAccess
 	out.NodePortAccess = in.NodePortAccess
-	if in.EgressProxy != nil {
-		in, out := &in.EgressProxy, &out.EgressProxy
-		*out = new(kops.EgressProxySpec)
-		if err := Convert_v1alpha3_EgressProxySpec_To_kops_EgressProxySpec(*in, *out, s); err != nil {
-			return err
-		}
-	} else {
-		out.EgressProxy = nil
-	}
 	out.SSHKeyName = in.SSHKeyName
-	out.IsolateMasters = in.IsolateMasters
 	out.UpdatePolicy = in.UpdatePolicy
 	out.ExternalPolicies = in.ExternalPolicies
 	out.AdditionalPolicies = in.AdditionalPolicies
@@ -2789,14 +2753,8 @@ func autoConvert_v1alpha3_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	} else {
 		out.AWSLoadBalancerController = nil
 	}
-	if in.Networking != nil {
-		in, out := &in.Networking, &out.Networking
-		*out = new(kops.NetworkingSpec)
-		if err := Convert_v1alpha3_NetworkingSpec_To_kops_NetworkingSpec(*in, *out, s); err != nil {
-			return err
-		}
-	} else {
-		out.Networking = nil
+	if err := Convert_v1alpha3_NetworkingSpec_To_kops_NetworkingSpec(&in.Networking, &out.Networking, s); err != nil {
+		return err
 	}
 	if err := Convert_v1alpha3_APISpec_To_kops_APISpec(&in.API, &out.API, s); err != nil {
 		return err
@@ -2851,7 +2809,6 @@ func autoConvert_v1alpha3_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 		out.IAM = nil
 	}
 	out.EncryptionConfig = in.EncryptionConfig
-	out.TagSubnets = in.TagSubnets
 	if in.Target != nil {
 		in, out := &in.Target, &out.Target
 		*out = new(kops.TargetSpec)
@@ -2962,29 +2919,6 @@ func autoConvert_kops_ClusterSpec_To_v1alpha3_ClusterSpec(in *kops.ClusterSpec, 
 	}
 	out.ContainerRuntime = in.ContainerRuntime
 	out.KubernetesVersion = in.KubernetesVersion
-	if in.Subnets != nil {
-		in, out := &in.Subnets, &out.Subnets
-		*out = make([]ClusterSubnetSpec, len(*in))
-		for i := range *in {
-			if err := Convert_kops_ClusterSubnetSpec_To_v1alpha3_ClusterSubnetSpec(&(*in)[i], &(*out)[i], s); err != nil {
-				return err
-			}
-		}
-	} else {
-		out.Subnets = nil
-	}
-	out.NetworkCIDR = in.NetworkCIDR
-	out.AdditionalNetworkCIDRs = in.AdditionalNetworkCIDRs
-	out.NetworkID = in.NetworkID
-	if in.Topology != nil {
-		in, out := &in.Topology, &out.Topology
-		*out = new(TopologySpec)
-		if err := Convert_kops_TopologySpec_To_v1alpha3_TopologySpec(*in, *out, s); err != nil {
-			return err
-		}
-	} else {
-		out.Topology = nil
-	}
 	out.SecretStore = in.SecretStore
 	out.KeyStore = in.KeyStore
 	out.ConfigStore = in.ConfigStore
@@ -2999,22 +2933,9 @@ func autoConvert_kops_ClusterSpec_To_v1alpha3_ClusterSpec(in *kops.ClusterSpec, 
 		out.DNSControllerGossipConfig = nil
 	}
 	out.ClusterDNSDomain = in.ClusterDNSDomain
-	out.ServiceClusterIPRange = in.ServiceClusterIPRange
-	out.PodCIDR = in.PodCIDR
-	out.NonMasqueradeCIDR = in.NonMasqueradeCIDR
 	out.SSHAccess = in.SSHAccess
 	out.NodePortAccess = in.NodePortAccess
-	if in.EgressProxy != nil {
-		in, out := &in.EgressProxy, &out.EgressProxy
-		*out = new(EgressProxySpec)
-		if err := Convert_kops_EgressProxySpec_To_v1alpha3_EgressProxySpec(*in, *out, s); err != nil {
-			return err
-		}
-	} else {
-		out.EgressProxy = nil
-	}
 	out.SSHKeyName = in.SSHKeyName
-	out.IsolateMasters = in.IsolateMasters
 	out.UpdatePolicy = in.UpdatePolicy
 	out.ExternalPolicies = in.ExternalPolicies
 	out.AdditionalPolicies = in.AdditionalPolicies
@@ -3202,14 +3123,8 @@ func autoConvert_kops_ClusterSpec_To_v1alpha3_ClusterSpec(in *kops.ClusterSpec, 
 	} else {
 		out.AWSLoadBalancerController = nil
 	}
-	if in.Networking != nil {
-		in, out := &in.Networking, &out.Networking
-		*out = new(NetworkingSpec)
-		if err := Convert_kops_NetworkingSpec_To_v1alpha3_NetworkingSpec(*in, *out, s); err != nil {
-			return err
-		}
-	} else {
-		out.Networking = nil
+	if err := Convert_kops_NetworkingSpec_To_v1alpha3_NetworkingSpec(&in.Networking, &out.Networking, s); err != nil {
+		return err
 	}
 	if err := Convert_kops_APISpec_To_v1alpha3_APISpec(&in.API, &out.API, s); err != nil {
 		return err
@@ -3264,7 +3179,6 @@ func autoConvert_kops_ClusterSpec_To_v1alpha3_ClusterSpec(in *kops.ClusterSpec, 
 		out.IAM = nil
 	}
 	out.EncryptionConfig = in.EncryptionConfig
-	out.TagSubnets = in.TagSubnets
 	if in.Target != nil {
 		in, out := &in.Target, &out.Target
 		*out = new(TargetSpec)
@@ -6194,6 +6108,43 @@ func Convert_kops_NTPConfig_To_v1alpha3_NTPConfig(in *kops.NTPConfig, out *NTPCo
 }
 
 func autoConvert_v1alpha3_NetworkingSpec_To_kops_NetworkingSpec(in *NetworkingSpec, out *kops.NetworkingSpec, s conversion.Scope) error {
+	out.NetworkID = in.NetworkID
+	out.NetworkCIDR = in.NetworkCIDR
+	out.AdditionalNetworkCIDRs = in.AdditionalNetworkCIDRs
+	if in.Subnets != nil {
+		in, out := &in.Subnets, &out.Subnets
+		*out = make([]kops.ClusterSubnetSpec, len(*in))
+		for i := range *in {
+			if err := Convert_v1alpha3_ClusterSubnetSpec_To_kops_ClusterSubnetSpec(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Subnets = nil
+	}
+	out.TagSubnets = in.TagSubnets
+	if in.Topology != nil {
+		in, out := &in.Topology, &out.Topology
+		*out = new(kops.TopologySpec)
+		if err := Convert_v1alpha3_TopologySpec_To_kops_TopologySpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Topology = nil
+	}
+	if in.EgressProxy != nil {
+		in, out := &in.EgressProxy, &out.EgressProxy
+		*out = new(kops.EgressProxySpec)
+		if err := Convert_v1alpha3_EgressProxySpec_To_kops_EgressProxySpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.EgressProxy = nil
+	}
+	out.NonMasqueradeCIDR = in.NonMasqueradeCIDR
+	out.PodCIDR = in.PodCIDR
+	out.ServiceClusterIPRange = in.ServiceClusterIPRange
+	out.IsolateControlPlane = in.IsolateControlPlane
 	out.Classic = in.Classic
 	if in.Kubenet != nil {
 		in, out := &in.Kubenet, &out.Kubenet
@@ -6314,6 +6265,43 @@ func Convert_v1alpha3_NetworkingSpec_To_kops_NetworkingSpec(in *NetworkingSpec, 
 }
 
 func autoConvert_kops_NetworkingSpec_To_v1alpha3_NetworkingSpec(in *kops.NetworkingSpec, out *NetworkingSpec, s conversion.Scope) error {
+	out.NetworkID = in.NetworkID
+	out.NetworkCIDR = in.NetworkCIDR
+	out.AdditionalNetworkCIDRs = in.AdditionalNetworkCIDRs
+	if in.Subnets != nil {
+		in, out := &in.Subnets, &out.Subnets
+		*out = make([]ClusterSubnetSpec, len(*in))
+		for i := range *in {
+			if err := Convert_kops_ClusterSubnetSpec_To_v1alpha3_ClusterSubnetSpec(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Subnets = nil
+	}
+	out.TagSubnets = in.TagSubnets
+	if in.Topology != nil {
+		in, out := &in.Topology, &out.Topology
+		*out = new(TopologySpec)
+		if err := Convert_kops_TopologySpec_To_v1alpha3_TopologySpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Topology = nil
+	}
+	if in.EgressProxy != nil {
+		in, out := &in.EgressProxy, &out.EgressProxy
+		*out = new(EgressProxySpec)
+		if err := Convert_kops_EgressProxySpec_To_v1alpha3_EgressProxySpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.EgressProxy = nil
+	}
+	out.NonMasqueradeCIDR = in.NonMasqueradeCIDR
+	out.PodCIDR = in.PodCIDR
+	out.ServiceClusterIPRange = in.ServiceClusterIPRange
+	out.IsolateControlPlane = in.IsolateControlPlane
 	out.Classic = in.Classic
 	if in.Kubenet != nil {
 		in, out := &in.Kubenet, &out.Kubenet

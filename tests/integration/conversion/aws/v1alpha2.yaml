@@ -5,6 +5,8 @@ metadata:
   name: minimal.example.com
 spec:
   DisableSubnetTags: true
+  additionalNetworkCIDRs:
+  - 172.21.0.0/16
   additionalPolicies:
     master: '[ { "Action": [ "s3:GetObject" ], "Resource": [ "*" ], "Effect": "Allow"
       } ]'
@@ -22,6 +24,9 @@ spec:
   channel: stable
   cloudProvider: aws
   configBase: memfs://clusters.example.com/minimal.example.com
+  egressProxy:
+    httpProxy:
+      host: egress-proxy.invalid
   etcdClusters:
   - cpuRequest: 200m
     etcdMembers:
@@ -50,6 +55,7 @@ spec:
     - Master
   iam:
     legacy: false
+  isolateMasters: true
   kubernetesApiAccess:
   - 0.0.0.0/0
   kubernetesVersion: v1.21.0
@@ -57,9 +63,12 @@ spec:
     cpuCFSQuota: true
   masterPublicName: api.minimal.example.com
   networkCIDR: 172.20.0.0/16
+  networkID: vpc-123456
   networking:
     amazonvpc: {}
   nonMasqueradeCIDR: 100.64.0.0/10
+  podCIDR: 100.64.0.0/16
+  serviceClusterIPRange: 100.65.0.0/16
   sshAccess:
   - 0.0.0.0/0
   subnets:

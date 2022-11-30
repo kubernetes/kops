@@ -16,10 +16,24 @@ limitations under the License.
 
 package v1alpha2
 
-import "k8s.io/apimachinery/pkg/api/resource"
+import (
+	"k8s.io/apimachinery/pkg/api/resource"
+)
 
 // NetworkingSpec allows selection and configuration of a networking plugin
 type NetworkingSpec struct {
+	NetworkID              string              `json:"-"`
+	NetworkCIDR            string              `json:"-"`
+	AdditionalNetworkCIDRs []string            `json:"-"`
+	Subnets                []ClusterSubnetSpec `json:"-"`
+	TagSubnets             *bool               `json:"-"`
+	Topology               *TopologySpec       `json:"-"`
+	EgressProxy            *EgressProxySpec    `json:"-"`
+	NonMasqueradeCIDR      string              `json:"-"`
+	PodCIDR                string              `json:"-"`
+	ServiceClusterIPRange  string              `json:"-"`
+	IsolateControlPlane    *bool               `json:"-"`
+
 	Classic    *ClassicNetworkingSpec    `json:"classic,omitempty"`
 	Kubenet    *KubenetNetworkingSpec    `json:"kubenet,omitempty"`
 	External   *ExternalNetworkingSpec   `json:"external,omitempty"`
@@ -35,6 +49,12 @@ type NetworkingSpec struct {
 	Cilium     *CiliumNetworkingSpec     `json:"cilium,omitempty"`
 	LyftVPC    *LyftVPCNetworkingSpec    `json:"lyftvpc,omitempty"`
 	GCE        *GCENetworkingSpec        `json:"gce,omitempty"`
+}
+
+func (s *NetworkingSpec) IsEmpty() bool {
+	return s.Classic == nil && s.Kubenet == nil && s.External == nil && s.CNI == nil && s.Kopeio == nil &&
+		s.Weave == nil && s.Flannel == nil && s.Calico == nil && s.Canal == nil && s.KubeRouter == nil &&
+		s.Romana == nil && s.AmazonVPC == nil && s.Cilium == nil && s.LyftVPC == nil && s.GCE == nil
 }
 
 // ClassicNetworkingSpec is the specification of classic networking mode, integrated into kubernetes.

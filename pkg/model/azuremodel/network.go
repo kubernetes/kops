@@ -35,13 +35,13 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		Name:          fi.PtrTo(b.NameForVirtualNetwork()),
 		Lifecycle:     b.Lifecycle,
 		ResourceGroup: b.LinkToResourceGroup(),
-		CIDR:          fi.PtrTo(b.Cluster.Spec.NetworkCIDR),
+		CIDR:          fi.PtrTo(b.Cluster.Spec.Networking.NetworkCIDR),
 		Tags:          map[string]*string{},
 		Shared:        fi.PtrTo(b.Cluster.SharedVPC()),
 	}
 	c.AddTask(networkTask)
 
-	for _, subnetSpec := range b.Cluster.Spec.Subnets {
+	for _, subnetSpec := range b.Cluster.Spec.Networking.Subnets {
 		subnetTask := &azuretasks.Subnet{
 			Name:           fi.PtrTo(subnetSpec.Name),
 			Lifecycle:      b.Lifecycle,

@@ -17,7 +17,6 @@ limitations under the License.
 package components
 
 import (
-	"fmt"
 	"strings"
 	"time"
 
@@ -115,9 +114,9 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec.Kubelet.KubeconfigPath = kubeconfigPath
 	clusterSpec.ControlPlaneKubelet.KubeconfigPath = kubeconfigPath
 
-	// IsolateMasters enables the legacy behaviour, where master pods on a separate network
+	// IsolateControlPlane enables the legacy behaviour, where master pods on a separate network
 	// In newer versions of kubernetes, most of that functionality has been removed though
-	if fi.ValueOf(clusterSpec.IsolateMasters) {
+	if fi.ValueOf(clusterSpec.Networking.IsolateControlPlane) {
 		clusterSpec.ControlPlaneKubelet.EnableDebuggingHandlers = fi.PtrTo(false)
 		clusterSpec.ControlPlaneKubelet.HairpinMode = "none"
 	}
@@ -164,14 +163,11 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if clusterSpec.ContainerRuntime == "docker" || clusterSpec.ContainerRuntime == "" {
-		networking := clusterSpec.Networking
-		if networking == nil {
-			return fmt.Errorf("no networking mode set")
-		}
+		networking := &clusterSpec.Networking
 		if UsesKubenet(networking) && b.IsKubernetesLT("1.24") {
 			clusterSpec.Kubelet.NetworkPluginName = fi.PtrTo("kubenet")
 			clusterSpec.Kubelet.NetworkPluginMTU = fi.PtrTo(int32(9001))
-			clusterSpec.Kubelet.NonMasqueradeCIDR = fi.PtrTo(clusterSpec.NonMasqueradeCIDR)
+			clusterSpec.Kubelet.NonMasqueradeCIDR = fi.PtrTo(networking.NonMasqueradeCIDR)
 		}
 	}
 

@@ -57,7 +57,7 @@ func (c *OpenstackModelContext) UseVIPACL() bool {
 }
 
 func (c *OpenstackModelContext) GetNetworkName() (string, error) {
-	if c.Cluster.Spec.NetworkID == "" {
+	if c.Cluster.Spec.Networking.NetworkID == "" {
 		return c.ClusterName(), nil
 	}
 
@@ -66,7 +66,7 @@ func (c *OpenstackModelContext) GetNetworkName() (string, error) {
 		return "", err
 	}
 
-	network, err := osCloud.GetNetwork(c.Cluster.Spec.NetworkID)
+	network, err := osCloud.GetNetwork(c.Cluster.Spec.Networking.NetworkID)
 	if err != nil {
 		return "", err
 	}
@@ -74,7 +74,7 @@ func (c *OpenstackModelContext) GetNetworkName() (string, error) {
 }
 
 func (c *OpenstackModelContext) findSubnetClusterSpec(subnet string) (string, error) {
-	for _, sp := range c.Cluster.Spec.Subnets {
+	for _, sp := range c.Cluster.Spec.Networking.Subnets {
 		if sp.Name == subnet {
 			name, err := c.findSubnetNameByID(sp.ID, sp.Name)
 			if err != nil {

@@ -39,11 +39,7 @@ func (b *NetworkingOptionsBuilder) BuildOptions(o interface{}) error {
 		options.Kubelet = &kops.KubeletConfigSpec{}
 	}
 
-	networking := clusterSpec.Networking
-	if networking == nil {
-		return fmt.Errorf("networking not set")
-	}
-
+	networking := &clusterSpec.Networking
 	if b.Context.IsKubernetesLT("1.24") {
 		if UsesCNI(networking) {
 			options.Kubelet.NetworkPluginName = fi.PtrTo("cni")

@@ -235,14 +235,14 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, cl
 	// Check that instance groups are defined in subnets that are defined in the cluster
 	{
 		clusterSubnets := make(map[string]*kops.ClusterSubnetSpec)
-		for i := range cluster.Spec.Subnets {
-			s := &cluster.Spec.Subnets[i]
+		for i := range cluster.Spec.Networking.Subnets {
+			s := &cluster.Spec.Networking.Subnets[i]
 			clusterSubnets[s.Name] = s
 		}
 
 		for i, z := range g.Spec.Subnets {
 			if clusterSubnets[z] == nil {
-				allErrs = append(allErrs, field.NotFound(field.NewPath("spec", "subnets").Index(i), z))
+				allErrs = append(allErrs, field.NotFound(field.NewPath("spec", "networking", "subnets").Index(i), z))
 			}
 		}
 	}

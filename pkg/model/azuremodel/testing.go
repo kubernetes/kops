@@ -55,14 +55,15 @@ func newTestCluster() *kops.Cluster {
 					RouteTableName:    "test-route-table",
 				},
 			},
-			Networking:  &kops.NetworkingSpec{},
-			NetworkID:   "test-virtual-network",
-			NetworkCIDR: "10.0.0.0/8",
-			Subnets: []kops.ClusterSubnetSpec{
-				{
-					Name: "test-subnet",
-					CIDR: "10.0.1.0/24",
-					Type: kops.SubnetTypePrivate,
+			Networking: kops.NetworkingSpec{
+				NetworkID:   "test-virtual-network",
+				NetworkCIDR: "10.0.0.0/8",
+				Subnets: []kops.ClusterSubnetSpec{
+					{
+						Name: "test-subnet",
+						CIDR: "10.0.1.0/24",
+						Type: kops.SubnetTypePrivate,
+					},
 				},
 			},
 		},

@@ -63,10 +63,12 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						},
 					},
 					KubernetesVersion: "1.24.0",
-					Subnets: []kops.ClusterSubnetSpec{
-						{
-							Name:   "subnet",
-							Region: "region",
+					Networking: kops.NetworkingSpec{
+						Subnets: []kops.ClusterSubnetSpec{
+							{
+								Name:   "subnet",
+								Region: "region",
+							},
 						},
 					},
 				},
@@ -123,18 +125,20 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						},
 					},
 					KubernetesVersion: "1.24.0",
-					Subnets: []kops.ClusterSubnetSpec{
-						{
-							Name:   "subnet",
-							Region: "region",
+					Networking: kops.NetworkingSpec{
+						Subnets: []kops.ClusterSubnetSpec{
+							{
+								Name:   "subnet",
+								Region: "region",
+							},
+							{
+								Name:   "utility-subnet",
+								Region: "region",
+							},
 						},
-						{
-							Name:   "utility-subnet",
-							Region: "region",
+						Topology: &kops.TopologySpec{
+							Nodes: "private",
 						},
-					},
-					Topology: &kops.TopologySpec{
-						Nodes: "private",
 					},
 				},
 			},
@@ -211,18 +215,20 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						},
 					},
 					KubernetesVersion: "1.24.0",
-					Subnets: []kops.ClusterSubnetSpec{
-						{
-							Name:   "subnet-a",
-							Region: "region",
-						},
-						{
-							Name:   "subnet-b",
-							Region: "region",
-						},
-						{
-							Name:   "subnet-c",
-							Region: "region",
+					Networking: kops.NetworkingSpec{
+						Subnets: []kops.ClusterSubnetSpec{
+							{
+								Name:   "subnet-a",
+								Region: "region",
+							},
+							{
+								Name:   "subnet-b",
+								Region: "region",
+							},
+							{
+								Name:   "subnet-c",
+								Region: "region",
+							},
 						},
 					},
 				},
@@ -335,10 +341,12 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						},
 					},
 					KubernetesVersion: "1.24.0",
-					Subnets: []kops.ClusterSubnetSpec{
-						{
-							Name:   "subnet",
-							Region: "region",
+					Networking: kops.NetworkingSpec{
+						Subnets: []kops.ClusterSubnetSpec{
+							{
+								Name:   "subnet",
+								Region: "region",
+							},
 						},
 					},
 				},
@@ -395,25 +403,27 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 							},
 						},
 					},
-					Topology: &kops.TopologySpec{
-						ControlPlane: kops.TopologyPrivate,
-					},
 					KubernetesVersion: "1.24.0",
-					Subnets: []kops.ClusterSubnetSpec{
-						{
-							Name:   "subnet-a",
-							Region: "region",
-							Type:   kops.SubnetTypePrivate,
+					Networking: kops.NetworkingSpec{
+						Subnets: []kops.ClusterSubnetSpec{
+							{
+								Name:   "subnet-a",
+								Region: "region",
+								Type:   kops.SubnetTypePrivate,
+							},
+							{
+								Name:   "subnet-b",
+								Region: "region",
+								Type:   kops.SubnetTypePrivate,
+							},
+							{
+								Name:   "subnet-c",
+								Region: "region",
+								Type:   kops.SubnetTypePrivate,
+							},
 						},
-						{
-							Name:   "subnet-b",
-							Region: "region",
-							Type:   kops.SubnetTypePrivate,
-						},
-						{
-							Name:   "subnet-c",
-							Region: "region",
-							Type:   kops.SubnetTypePrivate,
+						Topology: &kops.TopologySpec{
+							ControlPlane: kops.TopologyPrivate,
 						},
 					},
 				},
@@ -523,18 +533,20 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						},
 					},
 					KubernetesVersion: "1.24.0",
-					Subnets: []kops.ClusterSubnetSpec{
-						{
-							Name:   "subnet-a",
-							Region: "region",
-						},
-						{
-							Name:   "subnet-b",
-							Region: "region",
-						},
-						{
-							Name:   "subnet-c",
-							Region: "region",
+					Networking: kops.NetworkingSpec{
+						Subnets: []kops.ClusterSubnetSpec{
+							{
+								Name:   "subnet-a",
+								Region: "region",
+							},
+							{
+								Name:   "subnet-b",
+								Region: "region",
+							},
+							{
+								Name:   "subnet-c",
+								Region: "region",
+							},
 						},
 					},
 				},
@@ -647,18 +659,20 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						},
 					},
 					KubernetesVersion: "1.24.0",
-					Subnets: []kops.ClusterSubnetSpec{
-						{
-							Name:   "subnet-a",
-							Region: "region",
-						},
-						{
-							Name:   "subnet-b",
-							Region: "region",
-						},
-						{
-							Name:   "subnet-c",
-							Region: "region",
+					Networking: kops.NetworkingSpec{
+						Subnets: []kops.ClusterSubnetSpec{
+							{
+								Name:   "subnet-a",
+								Region: "region",
+							},
+							{
+								Name:   "subnet-b",
+								Region: "region",
+							},
+							{
+								Name:   "subnet-c",
+								Region: "region",
+							},
 						},
 					},
 				},
@@ -731,10 +745,12 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						},
 					},
 					KubernetesVersion: "1.24.0",
-					Subnets: []kops.ClusterSubnetSpec{
-						{
-							Name:   "subnet",
-							Region: "region",
+					Networking: kops.NetworkingSpec{
+						Subnets: []kops.ClusterSubnetSpec{
+							{
+								Name:   "subnet",
+								Region: "region",
+							},
 						},
 					},
 				},
@@ -793,14 +809,16 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						},
 					},
 					KubernetesVersion: "1.24.0",
-					Subnets: []kops.ClusterSubnetSpec{
-						{
-							Name:   "subnet",
-							Region: "region",
-						},
-						{
-							Name:   "utility-subnet",
-							Region: "region",
+					Networking: kops.NetworkingSpec{
+						Subnets: []kops.ClusterSubnetSpec{
+							{
+								Name:   "subnet",
+								Region: "region",
+							},
+							{
+								Name:   "utility-subnet",
+								Region: "region",
+							},
 						},
 					},
 				},
@@ -878,10 +896,12 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						},
 					},
 					KubernetesVersion: "1.24.0",
-					Subnets: []kops.ClusterSubnetSpec{
-						{
-							Name:   "subnet",
-							Region: "region",
+					Networking: kops.NetworkingSpec{
+						Subnets: []kops.ClusterSubnetSpec{
+							{
+								Name:   "subnet",
+								Region: "region",
+							},
 						},
 					},
 				},
@@ -924,10 +944,12 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						},
 					},
 					KubernetesVersion: "1.24.0",
-					Subnets: []kops.ClusterSubnetSpec{
-						{
-							Name:   "subnet",
-							Region: "region",
+					Networking: kops.NetworkingSpec{
+						Subnets: []kops.ClusterSubnetSpec{
+							{
+								Name:   "subnet",
+								Region: "region",
+							},
 						},
 					},
 				},
@@ -972,10 +994,12 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						},
 					},
 					KubernetesVersion: "1.24.0",
-					Subnets: []kops.ClusterSubnetSpec{
-						{
-							Name:   "subnet",
-							Region: "region",
+					Networking: kops.NetworkingSpec{
+						Subnets: []kops.ClusterSubnetSpec{
+							{
+								Name:   "subnet",
+								Region: "region",
+							},
 						},
 					},
 				},
@@ -1018,10 +1042,12 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						},
 					},
 					KubernetesVersion: "1.24.0",
-					Subnets: []kops.ClusterSubnetSpec{
-						{
-							Name:   "subnet",
-							Region: "region",
+					Networking: kops.NetworkingSpec{
+						Subnets: []kops.ClusterSubnetSpec{
+							{
+								Name:   "subnet",
+								Region: "region",
+							},
 						},
 					},
 					CloudLabels: map[string]string{
@@ -1064,10 +1090,12 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						},
 					},
 					KubernetesVersion: "1.24.0",
-					Subnets: []kops.ClusterSubnetSpec{
-						{
-							Name:   "subnet",
-							Region: "region",
+					Networking: kops.NetworkingSpec{
+						Subnets: []kops.ClusterSubnetSpec{
+							{
+								Name:   "subnet",
+								Region: "region",
+							},
 						},
 					},
 				},
@@ -1110,10 +1138,12 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						},
 					},
 					KubernetesVersion: "1.24.0",
-					Subnets: []kops.ClusterSubnetSpec{
-						{
-							Name:   "subnet",
-							Region: "region",
+					Networking: kops.NetworkingSpec{
+						Subnets: []kops.ClusterSubnetSpec{
+							{
+								Name:   "subnet",
+								Region: "region",
+							},
 						},
 					},
 				},
@@ -1181,9 +1211,6 @@ func RunGoldenTest(t *testing.T, basedir string, testCase serverGroupModelBuilde
 	testutils.SetupMockOpenstack()
 
 	clusterLifecycle := fi.LifecycleSync
-	if testCase.cluster.Spec.Networking == nil {
-		testCase.cluster.Spec.Networking = &kops.NetworkingSpec{}
-	}
 	bootstrapScriptBuilder := &model.BootstrapScriptBuilder{
 		KopsModelContext: &model.KopsModelContext{
 			IAMModelContext: iam.IAMModelContext{Cluster: testCase.cluster},

@@ -95,6 +95,11 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 		}
 		out.ExternalPolicies = &policies
 	}
+	if in.LegacyNetworking != nil {
+		if err := autoConvert_v1alpha2_NetworkingSpec_To_kops_NetworkingSpec(in.LegacyNetworking, &out.Networking, s); err != nil {
+			return err
+		}
+	}
 	if in.LegacyAPI != nil {
 		if err := autoConvert_v1alpha2_APISpec_To_kops_APISpec(in.LegacyAPI, &out.API, s); err != nil {
 			return err
@@ -139,17 +144,57 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 			string(kops.CloudProviderScaleway),
 		})
 	}
-	if in.TagSubnets != nil {
-		out.TagSubnets = values.Bool(!*in.TagSubnets)
-	}
 	for i, hook := range in.Hooks {
 		if hook.Enabled != nil {
 			out.Hooks[i].Enabled = values.Bool(!*hook.Enabled)
 		}
 	}
+	if in.Subnets != nil {
+		in, out := &in.Subnets, &out.Networking.Subnets
+		*out = make([]kops.ClusterSubnetSpec, len(*in))
+		for i := range *in {
+			if err := Convert_v1alpha2_ClusterSubnetSpec_To_kops_ClusterSubnetSpec(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Networking.Subnets = nil
+	}
 	out.API.PublicName = in.MasterPublicName
+	out.Networking.NetworkCIDR = in.NetworkCIDR
+	out.Networking.AdditionalNetworkCIDRs = in.AdditionalNetworkCIDRs
+	out.Networking.NetworkID = in.NetworkID
+	if in.Topology != nil {
+		in, out := &in.Topology, &out.Networking.Topology
+		*out = new(kops.TopologySpec)
+		if err := Convert_v1alpha2_TopologySpec_To_kops_TopologySpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Networking.Topology = nil
+	}
+	out.Networking.ServiceClusterIPRange = in.ServiceClusterIPRange
+	out.Networking.PodCIDR = in.PodCIDR
+	out.Networking.NonMasqueradeCIDR = in.NonMasqueradeCIDR
+	if in.EgressProxy != nil {
+		in, out := &in.EgressProxy, &out.Networking.EgressProxy
+		*out = new(kops.EgressProxySpec)
+		if err := Convert_v1alpha2_EgressProxySpec_To_kops_EgressProxySpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Networking.EgressProxy = nil
+	}
+	if in.IsolateMasters != nil {
+		in, out := &in.IsolateMasters, &out.Networking.IsolateControlPlane
+		*out = new(bool)
+		**out = **in
+	}
 	out.API.AdditionalSANs = in.AdditionalSANs
 	out.API.Access = in.KubernetesAPIAccess
+	if in.TagSubnets != nil {
+		out.Networking.TagSubnets = values.Bool(!*in.TagSubnets)
+	}
 	return nil
 }
 
@@ -176,6 +221,13 @@ func Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, out 
 			policies[k] = v
 		}
 		out.ExternalPolicies = &policies
+	}
+	out.LegacyNetworking = &NetworkingSpec{}
+	if err := autoConvert_kops_NetworkingSpec_To_v1alpha2_NetworkingSpec(&in.Networking, out.LegacyNetworking, s); err != nil {
+		return err
+	}
+	if out.LegacyNetworking.IsEmpty() {
+		out.LegacyNetworking = nil
 	}
 	out.LegacyAPI = &APISpec{}
 	if err := autoConvert_kops_APISpec_To_v1alpha2_APISpec(&in.API, out.LegacyAPI, s); err != nil {
@@ -209,8 +261,48 @@ func Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, out 
 			return err
 		}
 	}
-	if in.TagSubnets != nil {
-		out.TagSubnets = values.Bool(!*in.TagSubnets)
+	if in.Networking.Subnets != nil {
+		in, out := &in.Networking.Subnets, &out.Subnets
+		*out = make([]ClusterSubnetSpec, len(*in))
+		for i := range *in {
+			if err := Convert_kops_ClusterSubnetSpec_To_v1alpha2_ClusterSubnetSpec(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Subnets = nil
+	}
+	out.NetworkCIDR = in.Networking.NetworkCIDR
+	out.AdditionalNetworkCIDRs = in.Networking.AdditionalNetworkCIDRs
+	out.NetworkID = in.Networking.NetworkID
+	if in.Networking.Topology != nil {
+		in, out := &in.Networking.Topology, &out.Topology
+		*out = new(TopologySpec)
+		if err := Convert_kops_TopologySpec_To_v1alpha2_TopologySpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Topology = nil
+	}
+	out.ServiceClusterIPRange = in.Networking.ServiceClusterIPRange
+	out.PodCIDR = in.Networking.PodCIDR
+	out.NonMasqueradeCIDR = in.Networking.NonMasqueradeCIDR
+	if in.Networking.EgressProxy != nil {
+		in, out := &in.Networking.EgressProxy, &out.EgressProxy
+		*out = new(EgressProxySpec)
+		if err := Convert_kops_EgressProxySpec_To_v1alpha2_EgressProxySpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.EgressProxy = nil
+	}
+	if in.Networking.IsolateControlPlane != nil {
+		in, out := &in.Networking.IsolateControlPlane, &out.IsolateMasters
+		*out = new(bool)
+		**out = **in
+	}
+	if in.Networking.TagSubnets != nil {
+		out.TagSubnets = values.Bool(!*in.Networking.TagSubnets)
 	}
 	for i, hook := range in.Hooks {
 		if hook.Enabled != nil {

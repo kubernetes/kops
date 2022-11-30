@@ -370,7 +370,7 @@ func (b *BootstrapScript) Run(c *fi.Context) error {
 		}
 
 		nodeupScript.ProxyEnv = func() (string, error) {
-			return b.createProxyEnv(c.Cluster.Spec.EgressProxy)
+			return b.createProxyEnv(c.Cluster.Spec.Networking.EgressProxy)
 		}
 
 		nodeupScript.ClusterSpec = func() (string, error) {

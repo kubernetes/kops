@@ -299,7 +299,7 @@ func (b *FirewallModelBuilder) addHTTPSRules(c *fi.ModelBuilderContext, sgMap ma
 					EtherType:      s(IPV4),
 					PortRangeMin:   i(443),
 					PortRangeMax:   i(443),
-					RemoteIPPrefix: s(b.Cluster.Spec.NetworkCIDR),
+					RemoteIPPrefix: s(b.Cluster.Spec.Networking.NetworkCIDR),
 				})
 			}
 		}
@@ -412,43 +412,41 @@ func (b *FirewallModelBuilder) addCNIRules(c *fi.ModelBuilderContext, sgMap map[
 	// allow cadvisor
 	tcpPorts = append(tcpPorts, 4194)
 
-	if b.Cluster.Spec.Networking != nil {
-		if b.Cluster.Spec.Networking.Kopeio != nil {
-			// VXLAN over UDP
-			// https://tools.ietf.org/html/rfc7348
-			udpPorts = append(udpPorts, 4789)
-		}
+	if b.Cluster.Spec.Networking.Kopeio != nil {
+		// VXLAN over UDP
+		// https://tools.ietf.org/html/rfc7348
+		udpPorts = append(udpPorts, 4789)
+	}
 
-		if b.Cluster.Spec.Networking.Cilium != nil {
+	if b.Cluster.Spec.Networking.Cilium != nil {
+		udpPorts = append(udpPorts, 8472)
+		tcpPorts = append(tcpPorts, 4240)
+	}
+
+	if b.Cluster.Spec.Networking.Weave != nil {
+		udpPorts = append(udpPorts, 6783)
+		tcpPorts = append(tcpPorts, 6783)
+		udpPorts = append(udpPorts, 6784)
+	}
+
+	if b.Cluster.Spec.Networking.Flannel != nil {
+		switch b.Cluster.Spec.Networking.Flannel.Backend {
+		case "", "udp":
+			udpPorts = append(udpPorts, 8285)
+		case "vxlan":
 			udpPorts = append(udpPorts, 8472)
-			tcpPorts = append(tcpPorts, 4240)
+		default:
+			klog.Warningf("unknown flannel networking backend %q", b.Cluster.Spec.Networking.Flannel.Backend)
 		}
+	}
 
-		if b.Cluster.Spec.Networking.Weave != nil {
-			udpPorts = append(udpPorts, 6783)
-			tcpPorts = append(tcpPorts, 6783)
-			udpPorts = append(udpPorts, 6784)
-		}
+	if b.Cluster.Spec.Networking.Calico != nil {
+		tcpPorts = append(tcpPorts, 179)
+		protocols = append(protocols, ProtocolIPEncap)
+	}
 
-		if b.Cluster.Spec.Networking.Flannel != nil {
-			switch b.Cluster.Spec.Networking.Flannel.Backend {
-			case "", "udp":
-				udpPorts = append(udpPorts, 8285)
-			case "vxlan":
-				udpPorts = append(udpPorts, 8472)
-			default:
-				klog.Warningf("unknown flannel networking backend %q", b.Cluster.Spec.Networking.Flannel.Backend)
-			}
-		}
-
-		if b.Cluster.Spec.Networking.Calico != nil {
-			tcpPorts = append(tcpPorts, 179)
-			protocols = append(protocols, ProtocolIPEncap)
-		}
-
-		if b.Cluster.Spec.Networking.KubeRouter != nil {
-			protocols = append(protocols, ProtocolIPEncap)
-		}
+	if b.Cluster.Spec.Networking.KubeRouter != nil {
+		protocols = append(protocols, ProtocolIPEncap)
 	}
 
 	masterName := b.SecurityGroupName(kops.InstanceGroupRoleControlPlane)

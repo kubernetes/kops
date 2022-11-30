@@ -33,10 +33,10 @@ type GCEModelContext struct {
 
 // LinkToNetwork returns the GCE Network object the cluster is located in
 func (c *GCEModelContext) LinkToNetwork() (*gcetasks.Network, error) {
-	if c.Cluster.Spec.NetworkID == "" {
+	if c.Cluster.Spec.Networking.NetworkID == "" {
 		return &gcetasks.Network{Name: s(c.SafeTruncatedClusterName())}, nil
 	}
-	name, project, err := gce.ParseNameAndProjectFromNetworkID(c.Cluster.Spec.NetworkID)
+	name, project, err := gce.ParseNameAndProjectFromNetworkID(c.Cluster.Spec.Networking.NetworkID)
 	if err != nil {
 		return nil, err
 	}
@@ -133,11 +133,11 @@ func (c *GCEModelContext) NameForFirewallRule(id string) string {
 }
 
 func (c *GCEModelContext) NetworkingIsIPAlias() bool {
-	return c.Cluster.Spec.Networking != nil && c.Cluster.Spec.Networking.GCE != nil
+	return c.Cluster.Spec.Networking.GCE != nil
 }
 
 func (c *GCEModelContext) NetworkingIsGCERoutes() bool {
-	return c.Cluster.Spec.Networking != nil && c.Cluster.Spec.Networking.Kubenet != nil
+	return c.Cluster.Spec.Networking.Kubenet != nil
 }
 
 // LinkToServiceAccount returns a link to the GCE ServiceAccount object for VMs in the given role

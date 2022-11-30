@@ -128,7 +128,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 	kcm.AllocateNodeCIDRs = fi.PtrTo(!clusterSpec.IsKopsControllerIPAM())
 
 	if kcm.ClusterCIDR == "" && !clusterSpec.IsKopsControllerIPAM() {
-		kcm.ClusterCIDR = clusterSpec.PodCIDR
+		kcm.ClusterCIDR = clusterSpec.Networking.PodCIDR
 	}
 
 	if utils.IsIPv6CIDR(kcm.ClusterCIDR) {
@@ -142,10 +142,8 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		kcm.NodeCIDRMaskSize = fi.PtrTo(int32(clusterSize + nodeSize))
 	}
 
-	networking := clusterSpec.Networking
-	if networking == nil {
-		kcm.ConfigureCloudRoutes = fi.PtrTo(true)
-	} else if networking.Kubenet != nil {
+	networking := &clusterSpec.Networking
+	if networking.Kubenet != nil {
 		kcm.ConfigureCloudRoutes = fi.PtrTo(true)
 	} else if networking.GCE != nil {
 		kcm.ConfigureCloudRoutes = fi.PtrTo(false)

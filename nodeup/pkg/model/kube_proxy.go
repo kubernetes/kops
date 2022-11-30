@@ -51,7 +51,7 @@ func (b *KubeProxyBuilder) Build(c *fi.ModelBuilderContext) error {
 	if b.IsMaster {
 		// If this is a master that is not isolated, run it as a normal node also (start kube-proxy etc)
 		// This lets e.g. daemonset pods communicate with other pods in the system
-		if fi.ValueOf(b.Cluster.Spec.IsolateMasters) {
+		if fi.ValueOf(b.Cluster.Spec.Networking.IsolateControlPlane) {
 			klog.V(2).Infof("Running on Master with IsolateMaster=true; skipping kube-proxy installation")
 			return nil
 		}
