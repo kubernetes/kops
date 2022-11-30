@@ -352,15 +352,6 @@ func RecommendedKubernetesVersion(c *Channel, kopsVersionString string) *semver.
 		}
 	}
 
-	if c.Spec.Cluster != nil {
-		sv, err := util.ParseKubernetesVersion(c.Spec.Cluster.KubernetesVersion)
-		if err != nil {
-			klog.Warningf("unable to parse kubernetes version %q", c.Spec.Cluster.KubernetesVersion)
-		} else {
-			return sv
-		}
-	}
-
 	return nil
 }
 

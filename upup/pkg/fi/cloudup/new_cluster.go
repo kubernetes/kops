@@ -202,16 +202,13 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		},
 	}
 
-	if channel.Spec.Cluster != nil {
-		cluster.Spec = *channel.Spec.Cluster
-
+	cluster.Spec.Channel = opt.Channel
+	if opt.KubernetesVersion == "" {
 		kubernetesVersion := api.RecommendedKubernetesVersion(channel, kops.Version)
 		if kubernetesVersion != nil {
 			cluster.Spec.KubernetesVersion = kubernetesVersion.String()
 		}
-	}
-	cluster.Spec.Channel = opt.Channel
-	if opt.KubernetesVersion != "" {
+	} else {
 		cluster.Spec.KubernetesVersion = opt.KubernetesVersion
 	}
 
