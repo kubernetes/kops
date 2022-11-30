@@ -112,7 +112,7 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if c.Masquerade == nil {
-		c.Masquerade = fi.PtrTo(!clusterSpec.IsIPv6Only() && c.IPAM != "eni")
+		c.Masquerade = fi.PtrTo(!clusterSpec.IsIPv6Only())
 	}
 
 	if c.Tunnel == "" {
@@ -128,7 +128,7 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if c.EnableBPFMasquerade == nil {
-		c.EnableBPFMasquerade = fi.PtrTo(false)
+		c.EnableBPFMasquerade = fi.PtrTo(c.IPAM == "eni")
 	}
 
 	if c.EnableL7Proxy == nil {
