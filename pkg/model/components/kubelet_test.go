@@ -27,10 +27,11 @@ import (
 func buildKubeletTestCluster() *kops.Cluster {
 	return &kops.Cluster{
 		Spec: kops.ClusterSpec{
-			KubernetesVersion:     "1.6.2",
-			ServiceClusterIPRange: "10.10.0.0/16",
-			Kubelet:               &kops.KubeletConfigSpec{},
-			Networking:            &kops.NetworkingSpec{},
+			KubernetesVersion: "1.6.2",
+			Kubelet:           &kops.KubeletConfigSpec{},
+			Networking: kops.NetworkingSpec{
+				ServiceClusterIPRange: "10.10.0.0/16",
+			},
 		},
 	}
 }

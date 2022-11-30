@@ -25,10 +25,12 @@ import (
 func TestRenderInstanceGroupZones(t *testing.T) {
 	cluster := &kops.Cluster{
 		Spec: kops.ClusterSpec{
-			Subnets: []kops.ClusterSubnetSpec{
-				{Name: "subnet1", Zone: "subnet1zone"},
-				{Name: "subnet2", Zone: "subnet2zone"},
-				{Name: "subnet3", Zone: "subnet3zone"},
+			Networking: kops.NetworkingSpec{
+				Subnets: []kops.ClusterSubnetSpec{
+					{Name: "subnet1", Zone: "subnet1zone"},
+					{Name: "subnet2", Zone: "subnet2zone"},
+					{Name: "subnet3", Zone: "subnet3zone"},
+				},
 			},
 		},
 	}

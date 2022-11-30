@@ -31,7 +31,7 @@ import (
 
 // UsesIPAliases checks if the cluster uses IP aliases for network connectivity
 func UsesIPAliases(c *kops.Cluster) bool {
-	if c.Spec.Networking != nil && c.Spec.Networking.GCE != nil {
+	if c.Spec.Networking.GCE != nil {
 		return true
 	}
 	return false
@@ -70,7 +70,7 @@ func ParseNameAndProjectFromNetworkID(networkID string) (string, string, error) 
 }
 
 func buildUsed(ctx context.Context, c *kops.Cluster, cloudObj fi.Cloud) (*subnet.CIDRMap, error) {
-	networkName := c.Spec.NetworkID
+	networkName := c.Spec.Networking.NetworkID
 	if networkName == "" {
 		networkName = SafeClusterName(c.Name)
 	}
@@ -145,12 +145,12 @@ func buildUsed(ctx context.Context, c *kops.Cluster, cloudObj fi.Cloud) (*subnet
 }
 
 func performNetworkAssignmentsIPAliases(ctx context.Context, c *kops.Cluster, cloudObj fi.Cloud) error {
-	if len(c.Spec.Subnets) != 1 {
+	if len(c.Spec.Networking.Subnets) != 1 {
 		return fmt.Errorf("expected exactly one subnet with GCE IP Aliases")
 	}
-	nodeSubnet := &c.Spec.Subnets[0]
+	nodeSubnet := &c.Spec.Networking.Subnets[0]
 
-	if c.Spec.PodCIDR != "" && c.Spec.ServiceClusterIPRange != "" && nodeSubnet.CIDR != "" {
+	if c.Spec.Networking.PodCIDR != "" && c.Spec.Networking.ServiceClusterIPRange != "" && nodeSubnet.CIDR != "" {
 		return nil
 	}
 
@@ -180,16 +180,16 @@ func performNetworkAssignmentsIPAliases(ctx context.Context, c *kops.Cluster, cl
 	klog.Infof("Will use %v for Nodes, %v for Pods and %v for Services", nodeCIDR, podCIDR, serviceCIDR)
 
 	nodeSubnet.CIDR = nodeCIDR.String()
-	c.Spec.PodCIDR = podCIDR.String()
-	c.Spec.ServiceClusterIPRange = serviceCIDR.String()
+	c.Spec.Networking.PodCIDR = podCIDR.String()
+	c.Spec.Networking.ServiceClusterIPRange = serviceCIDR.String()
 
 	return nil
 }
 
 func performSubnetAssignments(ctx context.Context, c *kops.Cluster, cloudObj fi.Cloud) error {
 	needCIDR := 0
-	for i := range c.Spec.Subnets {
-		subnet := &c.Spec.Subnets[i]
+	for i := range c.Spec.Networking.Subnets {
+		subnet := &c.Spec.Networking.Subnets[i]
 		if subnet.ID != "" {
 			continue
 		}
@@ -210,8 +210,8 @@ func performSubnetAssignments(ctx context.Context, c *kops.Cluster, cloudObj fi.
 	// CIDRs should be in the RFC1918 range, but otherwise we have no constraints
 	networkCIDR := "10.0.0.0/8"
 
-	for i := range c.Spec.Subnets {
-		subnet := &c.Spec.Subnets[i]
+	for i := range c.Spec.Networking.Subnets {
+		subnet := &c.Spec.Networking.Subnets[i]
 		if subnet.ID != "" {
 			continue
 		}

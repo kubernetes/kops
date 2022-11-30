@@ -66,6 +66,7 @@ type ClusterSpec struct {
 	// The version of kubernetes to install (optional, and can be a "spec" like stable)
 	KubernetesVersion string `json:"kubernetesVersion,omitempty"`
 	// Configuration of subnets we are targeting
+	// +k8s:conversion-gen=false
 	Subnets []ClusterSubnetSpec `json:"subnets,omitempty"`
 	// Project is the cloud project we should use, required on GCE
 	// +k8s:conversion-gen=false
@@ -79,16 +80,20 @@ type ClusterSpec struct {
 	// NetworkCIDR is the CIDR used for the AWS VPC / GCE Network, or otherwise allocated to k8s
 	// This is a real CIDR, not the internal k8s network
 	// On AWS, it maps to the VPC CIDR.  It is not required on GCE.
+	// +k8s:conversion-gen=false
 	NetworkCIDR string `json:"networkCIDR,omitempty"`
 	// AdditionalNetworkCIDRs is a list of additional CIDR used for the AWS VPC
 	// or otherwise allocated to k8s. This is a real CIDR, not the internal k8s network
 	// On AWS, it maps to any additional CIDRs added to a VPC.
+	// +k8s:conversion-gen=false
 	AdditionalNetworkCIDRs []string `json:"additionalNetworkCIDRs,omitempty"`
 	// NetworkID is an identifier of a network, if we want to reuse/share an existing network (e.g. an AWS VPC)
+	// +k8s:conversion-gen=false
 	NetworkID string `json:"networkID,omitempty"`
 	// Topology defines the type of network topology to use on the cluster - default public
 	// This is heavily weighted towards AWS for the time being, but should also be agnostic enough
 	// to port out to GCE later if needed
+	// +k8s:conversion-gen=false
 	Topology *TopologySpec `json:"topology,omitempty"`
 	// SecretStore is the VFS path to where secrets are stored
 	SecretStore string `json:"secretStore,omitempty"`
@@ -111,12 +116,15 @@ type ClusterSpec struct {
 	// ClusterDNSDomain is the suffix we use for internal DNS names (normally cluster.local)
 	ClusterDNSDomain string `json:"clusterDNSDomain,omitempty"`
 	// ServiceClusterIPRange is the CIDR, from the internal network, where we allocate IPs for services
+	// +k8s:conversion-gen=false
 	ServiceClusterIPRange string `json:"serviceClusterIPRange,omitempty"`
 	// PodCIDR is the CIDR from which we allocate IPs for pods
+	// +k8s:conversion-gen=false
 	PodCIDR string `json:"podCIDR,omitempty"`
 	// MasterIPRange                 string `json:",omitempty"`
 	// NonMasqueradeCIDR is the CIDR for the internal k8s network (on which pods & services live)
 	// It cannot overlap ServiceClusterIPRange
+	// +k8s:conversion-gen=false
 	NonMasqueradeCIDR string `json:"nonMasqueradeCIDR,omitempty"`
 	// SSHAccess determines the permitted access to SSH
 	// Currently only a single CIDR is supported (though a richer grammar could be added in future)
@@ -124,6 +132,7 @@ type ClusterSpec struct {
 	// NodePortAccess is a list of the CIDRs that can access the node ports range (30000-32767).
 	NodePortAccess []string `json:"nodePortAccess,omitempty"`
 	// HTTPProxy defines connection information to support use of a private cluster behind an forward HTTP Proxy
+	// +k8s:conversion-gen=false
 	EgressProxy *EgressProxySpec `json:"egressProxy,omitempty"`
 	// SSHKeyName specifies a preexisting SSH key to use
 	SSHKeyName *string `json:"sshKeyName,omitempty"`
@@ -138,6 +147,7 @@ type ClusterSpec struct {
 	//  * give the master a normal PodCIDR
 	//  * run kube-proxy on the master
 	//  * enable debugging handlers on the master, so kubectl logs works
+	// +k8s:conversion-gen=false
 	IsolateMasters *bool `json:"isolateMasters,omitempty"`
 	// UpdatePolicy determines the policy for applying upgrades automatically.
 	// Valid values:
@@ -183,7 +193,9 @@ type ClusterSpec struct {
 	AWSLoadBalancerController *AWSLoadBalancerControllerConfig `json:"awsLoadBalancerController,omitempty"`
 
 	// Networking configuration
-	Networking *NetworkingSpec `json:"networking,omitempty"`
+	// +k8s:conversion-gen=false
+	LegacyNetworking *NetworkingSpec `json:"networking,omitempty"`
+	Networking       NetworkingSpec  `json:"-"`
 	// API field controls how the API is exposed outside the cluster
 	// +k8s:conversion-gen=false
 	LegacyAPI *APISpec `json:"api,omitempty"`
@@ -205,6 +217,7 @@ type ClusterSpec struct {
 	// EncryptionConfig holds the encryption config
 	EncryptionConfig *bool `json:"encryptionConfig,omitempty"`
 	// DisableSubnetTags controls if subnets are tagged in AWS
+	// +k8s:conversion-gen=false
 	TagSubnets *bool `json:"DisableSubnetTags,omitempty"`
 	// Target allows for us to nest extra config for targets such as terraform
 	Target *TargetSpec `json:"target,omitempty"`

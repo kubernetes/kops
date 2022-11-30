@@ -48,15 +48,15 @@ func awsValidateCluster(c *kops.Cluster) field.ErrorList {
 		allErrs = append(allErrs, awsValidateIAMAuthenticator(field.NewPath("spec", "authentication", "aws"), c.Spec.Authentication.AWS)...)
 	}
 
-	for i, subnet := range c.Spec.Subnets {
-		f := field.NewPath("spec", "subnets").Index(i)
+	for i, subnet := range c.Spec.Networking.Subnets {
+		f := field.NewPath("spec", "networking", "subnets").Index(i)
 		if subnet.AdditionalRoutes != nil {
 			if len(subnet.ID) > 0 {
 				allErrs = append(allErrs, field.Invalid(f, subnet, "additional routes cannot be added if the subnet is shared"))
 			} else if subnet.Type != kops.SubnetTypePrivate {
 				allErrs = append(allErrs, field.Invalid(f, subnet, "additional routes can only be added on private subnets"))
 			}
-			allErrs = append(allErrs, awsValidateAdditionalRoutes(f.Child("additionalRoutes"), subnet.AdditionalRoutes, c.Spec.NetworkCIDR)...)
+			allErrs = append(allErrs, awsValidateAdditionalRoutes(f.Child("additionalRoutes"), subnet.AdditionalRoutes, c.Spec.Networking.NetworkCIDR)...)
 		}
 	}
 
@@ -307,7 +307,7 @@ func awsValidateLoadBalancerSubnets(fieldPath *field.Path, spec kops.ClusterSpec
 		if subnet.Name == "" {
 			allErrs = append(allErrs, field.Required(fieldPath.Index(i).Child("name"), "subnet name can't be empty"))
 		} else {
-			for _, cs := range spec.Subnets {
+			for _, cs := range spec.Networking.Subnets {
 				if subnet.Name == cs.Name {
 					clusterSubnet = &cs
 					break
@@ -390,7 +390,7 @@ func awsValidateAdditionalRoutes(fieldPath *field.Path, routes []kops.RouteSpec,
 
 	_, clusterNet, errClusterNet := net.ParseCIDR(cidr)
 	if errClusterNet != nil {
-		allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "networkCIDR"), cidr, "Invalid cluster cidr"))
+		allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "networking", "networkCIDR"), cidr, "Invalid cluster cidr"))
 	} else {
 		for i, r := range routes {
 			f := fieldPath.Index(i)

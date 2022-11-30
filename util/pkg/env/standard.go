@@ -37,7 +37,7 @@ func (m EnvVars) addEnvVariableIfExist(name string) {
 func BuildSystemComponentEnvVars(spec *kops.ClusterSpec) EnvVars {
 	vars := make(EnvVars)
 
-	for _, v := range proxy.GetProxyEnvVars(spec.EgressProxy) {
+	for _, v := range proxy.GetProxyEnvVars(spec.Networking.EgressProxy) {
 		vars[v.Name] = v.Value
 	}
 

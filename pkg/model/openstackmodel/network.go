@@ -43,7 +43,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	{
 		t := &openstacktasks.Network{
 			Name:      s(netName),
-			ID:        s(b.Cluster.Spec.NetworkID),
+			ID:        s(b.Cluster.Spec.Networking.NetworkID),
 			Tag:       s(clusterName),
 			Lifecycle: b.Lifecycle,
 		}
@@ -59,7 +59,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		needRouter = false
 	}
 	routerName := strings.Replace(clusterName, ".", "-", -1)
-	for _, sp := range b.Cluster.Spec.Subnets {
+	for _, sp := range b.Cluster.Spec.Networking.Subnets {
 		// assumes that we do not need to create routers if we use existing subnets
 		if sp.ID != "" {
 			needRouter = false

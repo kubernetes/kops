@@ -29,7 +29,7 @@ import (
 func TestDeepValidate_OK(t *testing.T) {
 	c := buildDefaultCluster(t)
 	var groups []*kopsapi.InstanceGroup
-	for _, subnet := range c.Spec.Subnets {
+	for _, subnet := range c.Spec.Networking.Subnets {
 		groups = append(groups, buildMinimalMasterInstanceGroup(subnet.Name))
 		groups = append(groups, buildMinimalNodeInstanceGroup(subnet.Name))
 	}
@@ -56,7 +56,7 @@ func TestDeepValidate_NoMasterZones(t *testing.T) {
 func TestDeepValidate_BadZone(t *testing.T) {
 	t.Skipf("Zone validation not checked by DeepValidate")
 	c := buildDefaultCluster(t)
-	c.Spec.Subnets = []kopsapi.ClusterSubnetSpec{
+	c.Spec.Networking.Subnets = []kopsapi.ClusterSubnetSpec{
 		{Name: "subnet-badzone", Zone: "us-test-1z", CIDR: "172.20.1.0/24"},
 	}
 	var groups []*kopsapi.InstanceGroup
@@ -68,7 +68,7 @@ func TestDeepValidate_BadZone(t *testing.T) {
 func TestDeepValidate_MixedRegion(t *testing.T) {
 	t.Skipf("Region validation not checked by DeepValidate")
 	c := buildDefaultCluster(t)
-	c.Spec.Subnets = []kopsapi.ClusterSubnetSpec{
+	c.Spec.Networking.Subnets = []kopsapi.ClusterSubnetSpec{
 		{Name: "test1a", Zone: "us-test-1a", CIDR: "172.20.1.0/24"},
 		{Name: "west1b", Zone: "us-west-1b", CIDR: "172.20.2.0/24"},
 	}
@@ -82,7 +82,7 @@ func TestDeepValidate_MixedRegion(t *testing.T) {
 func TestDeepValidate_RegionAsZone(t *testing.T) {
 	t.Skipf("Region validation not checked by DeepValidate")
 	c := buildDefaultCluster(t)
-	c.Spec.Subnets = []kopsapi.ClusterSubnetSpec{
+	c.Spec.Networking.Subnets = []kopsapi.ClusterSubnetSpec{
 		{Name: "test1", Zone: "us-test-1", CIDR: "172.20.1.0/24"},
 	}
 	var groups []*kopsapi.InstanceGroup
@@ -98,24 +98,24 @@ func TestDeepValidate_NotIncludedZone(t *testing.T) {
 	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-test-1d"))
 	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-test-1d"))
 
-	expectErrorFromDeepValidate(t, c, groups, "spec.subnets[0]: Not found: \"subnet-us-test-1d\"")
+	expectErrorFromDeepValidate(t, c, groups, "spec.networking.subnets[0]: Not found: \"subnet-us-test-1d\"")
 }
 
 func TestDeepValidate_DuplicateZones(t *testing.T) {
 	c := buildDefaultCluster(t)
-	c.Spec.Subnets = []kopsapi.ClusterSubnetSpec{
+	c.Spec.Networking.Subnets = []kopsapi.ClusterSubnetSpec{
 		{Name: "dup1", Zone: "us-test-1a", CIDR: "172.20.1.0/24"},
 		{Name: "dup1", Zone: "us-test-1a", CIDR: "172.20.2.0/24"},
 	}
 	var groups []*kopsapi.InstanceGroup
 	groups = append(groups, buildMinimalMasterInstanceGroup("dup1"))
 	groups = append(groups, buildMinimalNodeInstanceGroup("dup1"))
-	expectErrorFromDeepValidate(t, c, groups, "spec.subnets[1].name: Duplicate value: \"dup1\"")
+	expectErrorFromDeepValidate(t, c, groups, "spec.networking.subnets[1].name: Duplicate value: \"dup1\"")
 }
 
 func TestDeepValidate_ExtraMasterZone(t *testing.T) {
 	c := buildDefaultCluster(t)
-	c.Spec.Subnets = []kopsapi.ClusterSubnetSpec{
+	c.Spec.Networking.Subnets = []kopsapi.ClusterSubnetSpec{
 		{Name: "test1a", Zone: "us-test-1a", CIDR: "172.20.1.0/24", Type: kopsapi.SubnetTypePublic},
 		{Name: "test1b", Zone: "us-test-1b", CIDR: "172.20.2.0/24", Type: kopsapi.SubnetTypePublic},
 	}
@@ -125,7 +125,7 @@ func TestDeepValidate_ExtraMasterZone(t *testing.T) {
 	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-test-1c"))
 	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-test-1a", "subnet-us-test-1b"))
 
-	expectErrorFromDeepValidate(t, c, groups, "spec.subnets[0]: Not found: \"subnet-us-test-1a\"")
+	expectErrorFromDeepValidate(t, c, groups, "spec.networking.subnets[0]: Not found: \"subnet-us-test-1a\"")
 }
 
 func TestDeepValidate_EvenEtcdClusterSize(t *testing.T) {

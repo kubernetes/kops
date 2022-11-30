@@ -154,7 +154,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 		}
 	} else if ig.IsAPIServerOnly() && cluster.Spec.IsIPv6Only() {
 		if len(ig.Spec.Subnets) == 0 {
-			for _, subnet := range cluster.Spec.Subnets {
+			for _, subnet := range cluster.Spec.Networking.Subnets {
 				if subnet.Type != kops.SubnetTypePrivate && subnet.Type != kops.SubnetTypeUtility {
 					ig.Spec.Subnets = append(ig.Spec.Subnets, subnet.Name)
 				}
@@ -162,7 +162,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 		}
 	} else {
 		if len(ig.Spec.Subnets) == 0 {
-			for _, subnet := range cluster.Spec.Subnets {
+			for _, subnet := range cluster.Spec.Networking.Subnets {
 				if subnet.Type != kops.SubnetTypeDualStack && subnet.Type != kops.SubnetTypeUtility {
 					ig.Spec.Subnets = append(ig.Spec.Subnets, subnet.Name)
 				}
@@ -170,7 +170,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 		}
 
 		if len(ig.Spec.Subnets) == 0 {
-			for _, subnet := range cluster.Spec.Subnets {
+			for _, subnet := range cluster.Spec.Networking.Subnets {
 				if subnet.Type != kops.SubnetTypeUtility {
 					ig.Spec.Subnets = append(ig.Spec.Subnets, subnet.Name)
 				}

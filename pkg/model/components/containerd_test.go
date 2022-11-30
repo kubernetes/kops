@@ -31,7 +31,7 @@ func buildContainerdCluster(version string) *kopsapi.Cluster {
 				AWS: &kopsapi.AWSSpec{},
 			},
 			KubernetesVersion: version,
-			Networking: &kopsapi.NetworkingSpec{
+			Networking: kopsapi.NetworkingSpec{
 				Kubenet: &kopsapi.KubenetNetworkingSpec{},
 			},
 		},

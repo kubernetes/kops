@@ -175,7 +175,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 			Name:             instanceName,
 			Lifecycle:        b.Lifecycle,
 			GroupName:        s(groupName),
-			Region:           fi.PtrTo(b.Cluster.Spec.Subnets[0].Region),
+			Region:           fi.PtrTo(b.Cluster.Spec.Networking.Subnets[0].Region),
 			Flavor:           fi.PtrTo(ig.Spec.MachineType),
 			Image:            fi.PtrTo(ig.Spec.Image),
 			SSHKey:           fi.PtrTo(sshKeyName),
@@ -206,7 +206,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 				instanceTask.FloatingIP = t
 			case kops.InstanceGroupRoleControlPlane:
 
-				if b.Cluster.Spec.Topology == nil || b.Cluster.Spec.Topology.ControlPlane != kops.TopologyPrivate {
+				if b.Cluster.Spec.Networking.Topology == nil || b.Cluster.Spec.Networking.Topology.ControlPlane != kops.TopologyPrivate {
 					t := &openstacktasks.FloatingIP{
 						Name:      fi.PtrTo(fmt.Sprintf("%s-%s", "fip", *instanceTask.Name)),
 						Lifecycle: b.Lifecycle,
@@ -216,7 +216,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 					instanceTask.FloatingIP = t
 				}
 			default:
-				if b.Cluster.Spec.Topology == nil || b.Cluster.Spec.Topology.Nodes != kops.TopologyPrivate {
+				if b.Cluster.Spec.Networking.Topology == nil || b.Cluster.Spec.Networking.Topology.Nodes != kops.TopologyPrivate {
 					t := &openstacktasks.FloatingIP{
 						Name:      fi.PtrTo(fmt.Sprintf("%s-%s", "fip", *instanceTask.Name)),
 						Lifecycle: b.Lifecycle,
@@ -272,7 +272,7 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	if b.Cluster.Spec.CloudProvider.Openstack.Loadbalancer != nil {
 		var lbSubnetName string
 		var err error
-		for _, sp := range b.Cluster.Spec.Subnets {
+		for _, sp := range b.Cluster.Spec.Networking.Subnets {
 			if sp.Type == kops.SubnetTypeDualStack || sp.Type == kops.SubnetTypePrivate {
 				lbSubnetName, err = b.findSubnetNameByID(sp.ID, sp.Name)
 				if err != nil {

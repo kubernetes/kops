@@ -27,9 +27,11 @@ import (
 func Test_FindSubnet(t *testing.T) {
 	cluster := &kops.Cluster{
 		Spec: kops.ClusterSpec{
-			Subnets: []kops.ClusterSubnetSpec{
-				{Name: "a"},
-				{Name: "b"},
+			Networking: kops.NetworkingSpec{
+				Subnets: []kops.ClusterSubnetSpec{
+					{Name: "a"},
+					{Name: "b"},
+				},
 			},
 		},
 	}
@@ -78,9 +80,11 @@ func Test_FindSubnet(t *testing.T) {
 func Test_FindZonesForInstanceGroup(t *testing.T) {
 	cluster := &kops.Cluster{
 		Spec: kops.ClusterSpec{
-			Subnets: []kops.ClusterSubnetSpec{
-				{Name: "zonea", Zone: "zonea"},
-				{Name: "zoneb", Zone: "zoneb"},
+			Networking: kops.NetworkingSpec{
+				Subnets: []kops.ClusterSubnetSpec{
+					{Name: "zonea", Zone: "zonea"},
+					{Name: "zoneb", Zone: "zoneb"},
+				},
 			},
 		},
 	}

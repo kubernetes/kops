@@ -292,12 +292,12 @@ func completeClusterSubnet(f commandutils.Factory, excludeSubnets *[]string) fun
 		var requiredType kopsapi.SubnetType
 		var subnets []string
 		alreadySelected := sets.NewString(*excludeSubnets...)
-		for _, subnet := range cluster.Spec.Subnets {
+		for _, subnet := range cluster.Spec.Networking.Subnets {
 			if alreadySelected.Has(subnet.Name) {
 				requiredType = subnet.Type
 			}
 		}
-		for _, subnet := range cluster.Spec.Subnets {
+		for _, subnet := range cluster.Spec.Networking.Subnets {
 			if !alreadySelected.Has(subnet.Name) && subnet.Type != kopsapi.SubnetTypeUtility &&
 				(subnet.Type == requiredType || requiredType == "") {
 				subnets = append(subnets, subnet.Name)

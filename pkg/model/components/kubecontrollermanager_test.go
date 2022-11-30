@@ -150,7 +150,7 @@ func Test_Build_KCM_Builder_CIDR_Mask_Size(t *testing.T) {
 				},
 			}
 
-			c.Spec.PodCIDR = tc.PodCIDR
+			c.Spec.Networking.PodCIDR = tc.PodCIDR
 			c.Spec.KubeControllerManager = &api.KubeControllerManagerConfig{
 				ClusterCIDR: tc.ClusterCIDR,
 			}

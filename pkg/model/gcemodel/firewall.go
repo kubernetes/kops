@@ -135,7 +135,7 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	if b.NetworkingIsIPAlias() || b.NetworkingIsGCERoutes() {
 		// When using IP alias or custom routes, SourceTags for identifying traffic don't work, and we must recognize by CIDR
 
-		if b.Cluster.Spec.PodCIDR == "" {
+		if b.Cluster.Spec.Networking.PodCIDR == "" {
 			return fmt.Errorf("expected PodCIDR to be set for IPAlias / kubenet")
 		}
 
@@ -147,7 +147,7 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Name:         s(b.NameForFirewallRule("pod-cidrs-to-node")),
 			Lifecycle:    b.Lifecycle,
 			Network:      network,
-			SourceRanges: []string{b.Cluster.Spec.PodCIDR},
+			SourceRanges: []string{b.Cluster.Spec.Networking.PodCIDR},
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
 			Allowed:      allProtocols,
 		})

@@ -84,7 +84,7 @@ func TestPopulateCluster_Subnets(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.NonMasqueradeCIDR, func(t *testing.T) {
 			cloud, c := buildMinimalCluster()
-			c.Spec.NonMasqueradeCIDR = tc.NonMasqueradeCIDR
+			c.Spec.Networking.NonMasqueradeCIDR = tc.NonMasqueradeCIDR
 			c.Spec.Networking.Kubenet = nil
 			c.Spec.Networking.CNI = &kopsapi.CNINetworkingSpec{}
 			c.Spec.ExternalCloudControllerManager = &kopsapi.CloudControllerManagerConfig{}
@@ -101,7 +101,7 @@ func TestPopulateCluster_Subnets(t *testing.T) {
 			require.NoError(t, err, "PopulateClusterSpec")
 
 			assert.Equal(t, tc.ExpectedClusterCIDR, full.Spec.KubeControllerManager.ClusterCIDR, "ClusterCIDR")
-			assert.Equal(t, tc.ExpectedServiceClusterIPRange, full.Spec.ServiceClusterIPRange, "ServiceClusterIPRange")
+			assert.Equal(t, tc.ExpectedServiceClusterIPRange, full.Spec.Networking.ServiceClusterIPRange, "ServiceClusterIPRange")
 		})
 	}
 }
@@ -219,8 +219,8 @@ func build(c *kopsapi.Cluster) (*kopsapi.Cluster, error) {
 
 func TestPopulateCluster_Custom_CIDR(t *testing.T) {
 	cloud, c := buildMinimalCluster()
-	c.Spec.NetworkCIDR = "172.20.2.0/24"
-	c.Spec.Subnets = []kopsapi.ClusterSubnetSpec{
+	c.Spec.Networking.NetworkCIDR = "172.20.2.0/24"
+	c.Spec.Networking.Subnets = []kopsapi.ClusterSubnetSpec{
 		{Name: "subnet-us-test-1a", Zone: "us-test-1a", CIDR: "172.20.2.0/27", Type: kopsapi.SubnetTypePublic},
 		{Name: "subnet-us-test-1b", Zone: "us-test-1b", CIDR: "172.20.2.32/27", Type: kopsapi.SubnetTypePublic},
 		{Name: "subnet-us-test-1c", Zone: "us-test-1c", CIDR: "172.20.2.64/27", Type: kopsapi.SubnetTypePublic},
@@ -235,14 +235,14 @@ func TestPopulateCluster_Custom_CIDR(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
 	}
-	if full.Spec.NetworkCIDR != "172.20.2.0/24" {
-		t.Fatalf("Unexpected NetworkCIDR: %v", full.Spec.NetworkCIDR)
+	if full.Spec.Networking.NetworkCIDR != "172.20.2.0/24" {
+		t.Fatalf("Unexpected NetworkCIDR: %v", full.Spec.Networking.NetworkCIDR)
 	}
 }
 
 func TestPopulateCluster_IsolateMasters(t *testing.T) {
 	cloud, c := buildMinimalCluster()
-	c.Spec.IsolateMasters = fi.PtrTo(true)
+	c.Spec.Networking.IsolateControlPlane = fi.PtrTo(true)
 
 	err := PerformAssignments(c, cloud)
 	if err != nil {
@@ -263,7 +263,7 @@ func TestPopulateCluster_IsolateMasters(t *testing.T) {
 
 func TestPopulateCluster_IsolateMastersFalse(t *testing.T) {
 	cloud, c := buildMinimalCluster()
-	// default: c.Spec.IsolateMasters = fi.PtrTo(false)
+	// default: c.Spec.IsolateControlPlane = fi.PtrTo(false)
 
 	err := PerformAssignments(c, cloud)
 	if err != nil {
@@ -288,21 +288,21 @@ func TestPopulateCluster_Name_Required(t *testing.T) {
 
 func TestPopulateCluster_Zone_Required(t *testing.T) {
 	cloud, c := buildMinimalCluster()
-	c.Spec.Subnets = nil
+	c.Spec.Networking.Subnets = nil
 
 	expectErrorFromPopulateCluster(t, c, cloud, "subnet")
 }
 
 func TestPopulateCluster_NetworkCIDR_Required(t *testing.T) {
 	cloud, c := buildMinimalCluster()
-	c.Spec.NetworkCIDR = ""
+	c.Spec.Networking.NetworkCIDR = ""
 
 	expectErrorFromPopulateCluster(t, c, cloud, "networkCIDR")
 }
 
 func TestPopulateCluster_NonMasqueradeCIDR_Required(t *testing.T) {
 	cloud, c := buildMinimalCluster()
-	c.Spec.NonMasqueradeCIDR = ""
+	c.Spec.Networking.NonMasqueradeCIDR = ""
 
 	expectErrorFromPopulateCluster(t, c, cloud, "nonMasqueradeCIDR")
 }
@@ -316,15 +316,15 @@ func TestPopulateCluster_CloudProvider_Required(t *testing.T) {
 
 func TestPopulateCluster_TopologyInvalidNil_Required(t *testing.T) {
 	cloud, c := buildMinimalCluster()
-	c.Spec.Topology.ControlPlane = ""
-	c.Spec.Topology.Nodes = ""
+	c.Spec.Networking.Topology.ControlPlane = ""
+	c.Spec.Networking.Topology.Nodes = ""
 	expectErrorFromPopulateCluster(t, c, cloud, "topology")
 }
 
 func TestPopulateCluster_TopologyInvalidValue_Required(t *testing.T) {
 	cloud, c := buildMinimalCluster()
-	c.Spec.Topology.ControlPlane = "123"
-	c.Spec.Topology.Nodes = "abc"
+	c.Spec.Networking.Topology.ControlPlane = "123"
+	c.Spec.Networking.Topology.Nodes = "abc"
 	expectErrorFromPopulateCluster(t, c, cloud, "topology")
 }
 
@@ -339,9 +339,9 @@ func TestPopulateCluster_TopologyInvalidValue_Required(t *testing.T) {
 func TestPopulateCluster_BastionInvalidMatchingValues_Required(t *testing.T) {
 	// We can't have a bastion with public masters / nodes
 	cloud, c := buildMinimalCluster()
-	c.Spec.Topology.ControlPlane = kopsapi.TopologyPublic
-	c.Spec.Topology.Nodes = kopsapi.TopologyPublic
-	c.Spec.Topology.Bastion = &kopsapi.BastionSpec{}
+	c.Spec.Networking.Topology.ControlPlane = kopsapi.TopologyPublic
+	c.Spec.Networking.Topology.Nodes = kopsapi.TopologyPublic
+	c.Spec.Networking.Topology.Bastion = &kopsapi.BastionSpec{}
 	expectErrorFromPopulateCluster(t, c, cloud, "bastion")
 }
 

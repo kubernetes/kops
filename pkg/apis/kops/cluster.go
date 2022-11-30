@@ -68,23 +68,6 @@ type ClusterSpec struct {
 	ContainerRuntime string `json:"containerRuntime,omitempty"`
 	// The version of kubernetes to install (optional, and can be a "spec" like stable)
 	KubernetesVersion string `json:"kubernetesVersion,omitempty"`
-	// Configuration of subnets we are targeting
-	Subnets []ClusterSubnetSpec `json:"subnets,omitempty"`
-	// NetworkCIDR is the CIDR used for the AWS VPC / DO/ GCE Network, or otherwise allocated to k8s
-	// This is a real CIDR, not the internal k8s network
-	// On AWS, it maps to the VPC CIDR.  It is not required on GCE.
-	// On DO, it maps to the VPC CIDR.
-	NetworkCIDR string `json:"networkCIDR,omitempty"`
-	// AdditionalNetworkCIDRs is a list of additional CIDR used for the AWS VPC
-	// or otherwise allocated to k8s. This is a real CIDR, not the internal k8s network
-	// On AWS, it maps to any additional CIDRs added to a VPC.
-	AdditionalNetworkCIDRs []string `json:"additionalNetworkCIDRs,omitempty"`
-	// NetworkID is an identifier of a network, if we want to reuse/share an existing network (e.g. an AWS VPC)
-	NetworkID string `json:"networkID,omitempty"`
-	// Topology defines the type of network topology to use on the cluster - default public
-	// This is heavily weighted towards AWS for the time being, but should also be agnostic enough
-	// to port out to GCE later if needed
-	Topology *TopologySpec `json:"topology,omitempty"`
 	// SecretStore is the VFS path to where secrets are stored
 	SecretStore string `json:"secretStore,omitempty"`
 	// KeyStore is the VFS path to where SSL keys and certificates are stored
@@ -102,29 +85,12 @@ type ClusterSpec struct {
 	DNSControllerGossipConfig *DNSControllerGossipConfig `json:"dnsControllerGossipConfig,omitempty"`
 	// ClusterDNSDomain is the suffix we use for internal DNS names (normally cluster.local)
 	ClusterDNSDomain string `json:"clusterDNSDomain,omitempty"`
-	// ServiceClusterIPRange is the CIDR, from the internal network, where we allocate IPs for services
-	ServiceClusterIPRange string `json:"serviceClusterIPRange,omitempty"`
-	// PodCIDR is the CIDR from which we allocate IPs for pods
-	PodCIDR string `json:"podCIDR,omitempty"`
-	// NonMasqueradeCIDR is the CIDR for the internal k8s network (on which pods & services live)
-	// It cannot overlap ServiceClusterIPRange
-	NonMasqueradeCIDR string `json:"nonMasqueradeCIDR,omitempty"`
 	// SSHAccess is a list of the CIDRs that can access SSH.
 	SSHAccess []string `json:"sshAccess,omitempty"`
 	// NodePortAccess is a list of the CIDRs that can access the node ports range (30000-32767).
 	NodePortAccess []string `json:"nodePortAccess,omitempty"`
-	// HTTPProxy defines connection information to support use of a private cluster behind an forward HTTP Proxy
-	EgressProxy *EgressProxySpec `json:"egressProxy,omitempty"`
 	// SSHKeyName specifies a preexisting SSH key to use
 	SSHKeyName *string `json:"sshKeyName,omitempty"`
-	// IsolateMasters determines whether we should lock down masters so that they are not on the pod network.
-	// true is the kube-up behaviour, but it is very surprising: it means that daemonsets only work on the master
-	// if they have hostNetwork=true.
-	// false is now the default, and it will:
-	//  * give the master a normal PodCIDR
-	//  * run kube-proxy on the master
-	//  * enable debugging handlers on the master, so kubectl logs works
-	IsolateMasters *bool `json:"isolateMasters,omitempty"`
 	// UpdatePolicy determines the policy for applying upgrades automatically.
 	// Valid values:
 	//   'automatic' (default): apply updates automatically (apply OS security upgrades, avoiding rebooting when possible)
@@ -168,8 +134,8 @@ type ClusterSpec struct {
 	// AWSLoadbalancerControllerConfig determines the AWS LB controller configuration.
 	AWSLoadBalancerController *AWSLoadBalancerControllerConfig `json:"awsLoadBalancerController,omitempty"`
 
-	// Networking configuration
-	Networking *NetworkingSpec `json:"networking,omitempty"`
+	// Networking configures networking.
+	Networking NetworkingSpec `json:"networking,omitempty"`
 	// API controls how the Kubernetes API is exposed.
 	API APISpec `json:"api,omitempty"`
 	// Authentication field controls how the cluster is configured for authentication
@@ -188,8 +154,6 @@ type ClusterSpec struct {
 	IAM *IAMSpec `json:"iam,omitempty"`
 	// EncryptionConfig controls if encryption is enabled
 	EncryptionConfig *bool `json:"encryptionConfig,omitempty"`
-	// TagSubnets controls if tags are added to subnets to enable use by load balancers (AWS only). Default: true.
-	TagSubnets *bool `json:"tagSubnets,omitempty"`
 	// Target allows for us to nest extra config for targets such as terraform
 	Target *TargetSpec `json:"target,omitempty"`
 	// UseHostCertificates will mount /etc/ssl/certs to inside needed containers.
@@ -714,6 +678,7 @@ const (
 )
 
 // ClusterSubnetSpec defines a subnet
+// TODO: move to networking.go
 type ClusterSubnetSpec struct {
 	// Name is the name of the subnet
 	Name string `json:"name,omitempty"`
@@ -783,15 +748,9 @@ func (t *TerraformSpec) IsEmpty() bool {
 // store them (i.e. we don't need to 'lock them')
 func (c *Cluster) FillDefaults() error {
 	// Topology support
-	if c.Spec.Topology == nil {
-		c.Spec.Topology = &TopologySpec{ControlPlane: TopologyPublic, Nodes: TopologyPublic, DNS: DNSTypePublic}
+	if c.Spec.Networking.Topology == nil {
+		c.Spec.Networking.Topology = &TopologySpec{ControlPlane: TopologyPublic, Nodes: TopologyPublic, DNS: DNSTypePublic}
 	}
-
-	if c.Spec.Networking == nil {
-		c.Spec.Networking = &NetworkingSpec{}
-	}
-
-	c.fillClusterSpecNetworkingSpec()
 
 	if c.Spec.Channel == "" {
 		c.Spec.Channel = DefaultChannel
@@ -804,41 +763,9 @@ func (c *Cluster) FillDefaults() error {
 	return nil
 }
 
-// fillClusterSpecNetworking provides default value if c.Spec.NetworkingSpec is nil
-func (c *Cluster) fillClusterSpecNetworkingSpec() {
-	if c.Spec.Networking.Kubenet != nil {
-		// OK
-	} else if c.Spec.Networking.CNI != nil {
-		// OK
-	} else if c.Spec.Networking.External != nil {
-		// OK
-	} else if c.Spec.Networking.Kopeio != nil {
-		// OK
-	} else if c.Spec.Networking.Weave != nil {
-		// OK
-	} else if c.Spec.Networking.Flannel != nil {
-		// OK
-	} else if c.Spec.Networking.Calico != nil {
-		// OK
-	} else if c.Spec.Networking.Canal != nil {
-		// OK
-	} else if c.Spec.Networking.KubeRouter != nil {
-		// OK
-	} else if c.Spec.Networking.AmazonVPC != nil {
-		// OK
-	} else if c.Spec.Networking.Cilium != nil {
-		// OK
-	} else if c.Spec.Networking.GCE != nil {
-		// OK
-	} else {
-		// No networking model selected; choose Kubenet
-		c.Spec.Networking.Kubenet = &KubenetNetworkingSpec{}
-	}
-}
-
 // SharedVPC is a simple helper function which makes the templates for a shared VPC clearer
 func (c *Cluster) SharedVPC() bool {
-	return c.Spec.NetworkID != ""
+	return c.Spec.Networking.NetworkID != ""
 }
 
 // IsKubernetesGTE checks if the version is >= the specified version.
@@ -894,21 +821,21 @@ func (c *Cluster) IsGossip() bool {
 }
 
 func (c *Cluster) UsesPublicDNS() bool {
-	if c.Spec.Topology == nil || c.Spec.Topology.DNS == "" || c.Spec.Topology.DNS == DNSTypePublic {
+	if c.Spec.Networking.Topology == nil || c.Spec.Networking.Topology.DNS == "" || c.Spec.Networking.Topology.DNS == DNSTypePublic {
 		return true
 	}
 	return false
 }
 
 func (c *Cluster) UsesPrivateDNS() bool {
-	if c.Spec.Topology != nil && c.Spec.Topology.DNS == DNSTypePrivate {
+	if c.Spec.Networking.Topology != nil && c.Spec.Networking.Topology.DNS == DNSTypePrivate {
 		return true
 	}
 	return false
 }
 
 func (c *Cluster) UsesNoneDNS() bool {
-	if c.Spec.Topology != nil && c.Spec.Topology.DNS == DNSTypeNone {
+	if c.Spec.Networking.Topology != nil && c.Spec.Networking.Topology.DNS == DNSTypeNone {
 		return true
 	}
 	return false
@@ -919,7 +846,7 @@ func (c *Cluster) APIInternalName() string {
 }
 
 func (c *ClusterSpec) IsIPv6Only() bool {
-	return utils.IsIPv6CIDR(c.NonMasqueradeCIDR)
+	return utils.IsIPv6CIDR(c.Networking.NonMasqueradeCIDR)
 }
 
 func (c *ClusterSpec) IsKopsControllerIPAM() bool {

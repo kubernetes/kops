@@ -187,7 +187,7 @@ func TestContainerdConfig(t *testing.T) {
 			ContainerRuntime:  "containerd",
 			Containerd:        &kops.ContainerdConfig{},
 			KubernetesVersion: "1.21.0",
-			Networking: &kops.NetworkingSpec{
+			Networking: kops.NetworkingSpec{
 				Kubenet: &kops.KubenetNetworkingSpec{},
 			},
 		},
