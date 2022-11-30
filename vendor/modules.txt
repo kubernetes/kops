@@ -91,9 +91,6 @@ github.com/apparentlymart/go-textseg/v13/textseg
 # github.com/armon/go-metrics v0.4.0
 ## explicit; go 1.12
 github.com/armon/go-metrics
-# github.com/armon/go-radix v1.0.0
-## explicit
-github.com/armon/go-radix
 # github.com/atotto/clipboard v0.1.4
 ## explicit
 github.com/atotto/clipboard
@@ -185,9 +182,6 @@ github.com/beorn7/perks/quantile
 # github.com/blang/semver/v4 v4.0.0
 ## explicit; go 1.14
 github.com/blang/semver/v4
-# github.com/cenkalti/backoff/v3 v3.0.0
-## explicit; go 1.12
-github.com/cenkalti/backoff/v3
 # github.com/cert-manager/cert-manager v1.10.1
 ## explicit; go 1.19
 github.com/cert-manager/cert-manager/pkg/apis/acme
@@ -336,9 +330,6 @@ github.com/evertras/bubble-table/table
 # github.com/exponent-io/jsonpath v0.0.0-20151013193312-d6023ce2651d
 ## explicit
 github.com/exponent-io/jsonpath
-# github.com/fatih/color v1.13.0
-## explicit; go 1.13
-github.com/fatih/color
 # github.com/fsnotify/fsnotify v1.6.0
 ## explicit; go 1.16
 github.com/fsnotify/fsnotify
@@ -379,11 +370,7 @@ github.com/golang/protobuf/proto
 github.com/golang/protobuf/ptypes
 github.com/golang/protobuf/ptypes/any
 github.com/golang/protobuf/ptypes/duration
-github.com/golang/protobuf/ptypes/empty
 github.com/golang/protobuf/ptypes/timestamp
-# github.com/golang/snappy v0.0.4
-## explicit
-github.com/golang/snappy
 # github.com/google/btree v1.0.1
 ## explicit; go 1.12
 github.com/google/btree
@@ -513,12 +500,6 @@ github.com/gregjones/httpcache
 # github.com/hashicorp/errwrap v1.1.0
 ## explicit
 github.com/hashicorp/errwrap
-# github.com/hashicorp/go-cleanhttp v0.5.2
-## explicit; go 1.13
-github.com/hashicorp/go-cleanhttp
-# github.com/hashicorp/go-hclog v1.2.0
-## explicit; go 1.13
-github.com/hashicorp/go-hclog
 # github.com/hashicorp/go-immutable-radix v1.3.1
 ## explicit
 github.com/hashicorp/go-immutable-radix
@@ -528,37 +509,11 @@ github.com/hashicorp/go-msgpack/codec
 # github.com/hashicorp/go-multierror v1.1.1
 ## explicit; go 1.13
 github.com/hashicorp/go-multierror
-# github.com/hashicorp/go-plugin v1.4.5
-## explicit; go 1.17
-github.com/hashicorp/go-plugin
-github.com/hashicorp/go-plugin/internal/plugin
-# github.com/hashicorp/go-retryablehttp v0.7.1
-## explicit; go 1.13
-github.com/hashicorp/go-retryablehttp
-# github.com/hashicorp/go-rootcerts v1.0.2
-## explicit; go 1.12
-github.com/hashicorp/go-rootcerts
-# github.com/hashicorp/go-secure-stdlib/mlock v0.1.1
-## explicit; go 1.16
-github.com/hashicorp/go-secure-stdlib/mlock
-# github.com/hashicorp/go-secure-stdlib/parseutil v0.1.6
-## explicit; go 1.16
-github.com/hashicorp/go-secure-stdlib/parseutil
-# github.com/hashicorp/go-secure-stdlib/strutil v0.1.2
-## explicit; go 1.16
-github.com/hashicorp/go-secure-stdlib/strutil
 # github.com/hashicorp/go-sockaddr v1.0.2
 ## explicit
 github.com/hashicorp/go-sockaddr
-# github.com/hashicorp/go-uuid v1.0.2
-## explicit
-github.com/hashicorp/go-uuid
-# github.com/hashicorp/go-version v1.2.1
-## explicit
-github.com/hashicorp/go-version
 # github.com/hashicorp/golang-lru v0.5.4
 ## explicit; go 1.12
-github.com/hashicorp/golang-lru
 github.com/hashicorp/golang-lru/simplelru
 # github.com/hashicorp/hcl v1.0.0
 ## explicit
@@ -581,32 +536,6 @@ github.com/hashicorp/hcl/v2/hclwrite
 # github.com/hashicorp/memberlist v0.3.1
 ## explicit; go 1.12
 github.com/hashicorp/memberlist
-# github.com/hashicorp/vault/api v1.8.2
-## explicit; go 1.19
-github.com/hashicorp/vault/api
-# github.com/hashicorp/vault/sdk v0.6.0
-## explicit; go 1.19
-github.com/hashicorp/vault/sdk/helper/certutil
-github.com/hashicorp/vault/sdk/helper/compressutil
-github.com/hashicorp/vault/sdk/helper/consts
-github.com/hashicorp/vault/sdk/helper/cryptoutil
-github.com/hashicorp/vault/sdk/helper/errutil
-github.com/hashicorp/vault/sdk/helper/hclutil
-github.com/hashicorp/vault/sdk/helper/jsonutil
-github.com/hashicorp/vault/sdk/helper/license
-github.com/hashicorp/vault/sdk/helper/locksutil
-github.com/hashicorp/vault/sdk/helper/logging
-github.com/hashicorp/vault/sdk/helper/pathmanager
-github.com/hashicorp/vault/sdk/helper/pluginutil
-github.com/hashicorp/vault/sdk/helper/strutil
-github.com/hashicorp/vault/sdk/helper/wrapping
-github.com/hashicorp/vault/sdk/logical
-github.com/hashicorp/vault/sdk/physical
-github.com/hashicorp/vault/sdk/physical/inmem
-github.com/hashicorp/vault/sdk/version
-# github.com/hashicorp/yamux v0.0.0-20180604194846-3520598351bb
-## explicit
-github.com/hashicorp/yamux
 # github.com/hetznercloud/hcloud-go v1.37.0
 ## explicit; go 1.18
 github.com/hetznercloud/hcloud-go/hcloud
@@ -661,9 +590,6 @@ github.com/magiconair/properties
 github.com/mailru/easyjson/buffer
 github.com/mailru/easyjson/jlexer
 github.com/mailru/easyjson/jwriter
-# github.com/mattn/go-colorable v0.1.12
-## explicit; go 1.13
-github.com/mattn/go-colorable
 # github.com/mattn/go-ieproxy v0.0.1
 ## explicit; go 1.14
 github.com/mattn/go-ieproxy
@@ -685,9 +611,6 @@ github.com/mitchellh/copystructure
 # github.com/mitchellh/go-homedir v1.1.0
 ## explicit
 github.com/mitchellh/go-homedir
-# github.com/mitchellh/go-testing-interface v1.0.0
-## explicit
-github.com/mitchellh/go-testing-interface
 # github.com/mitchellh/go-wordwrap v1.0.0
 ## explicit
 github.com/mitchellh/go-wordwrap
@@ -742,9 +665,6 @@ github.com/muesli/termenv
 # github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822
 ## explicit
 github.com/munnerz/goautoneg
-# github.com/oklog/run v1.0.0
-## explicit
-github.com/oklog/run
 # github.com/oklog/ulid v1.3.1
 ## explicit
 github.com/oklog/ulid
@@ -773,10 +693,6 @@ github.com/pelletier/go-toml/v2/internal/tracker
 # github.com/peterbourgon/diskv v2.0.1+incompatible
 ## explicit
 github.com/peterbourgon/diskv
-# github.com/pierrec/lz4 v2.5.2+incompatible
-## explicit
-github.com/pierrec/lz4
-github.com/pierrec/lz4/internal/xxh32
 # github.com/pkg/errors v0.9.1
 ## explicit
 github.com/pkg/errors
@@ -815,9 +731,6 @@ github.com/russross/blackfriday
 # github.com/russross/blackfriday/v2 v2.1.0
 ## explicit
 github.com/russross/blackfriday/v2
-# github.com/ryanuber/go-glob v1.0.0
-## explicit
-github.com/ryanuber/go-glob
 # github.com/sahilm/fuzzy v0.1.0
 ## explicit
 github.com/sahilm/fuzzy
@@ -962,8 +875,6 @@ golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blake2b
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/chacha20
-golang.org/x/crypto/cryptobyte
-golang.org/x/crypto/cryptobyte/asn1
 golang.org/x/crypto/curve25519
 golang.org/x/crypto/curve25519/internal/field
 golang.org/x/crypto/ed25519
@@ -1128,8 +1039,6 @@ google.golang.org/grpc/credentials/insecure
 google.golang.org/grpc/encoding
 google.golang.org/grpc/encoding/proto
 google.golang.org/grpc/grpclog
-google.golang.org/grpc/health
-google.golang.org/grpc/health/grpc_health_v1
 google.golang.org/grpc/internal
 google.golang.org/grpc/internal/backoff
 google.golang.org/grpc/internal/balancer/gracefulswitch
@@ -1157,8 +1066,6 @@ google.golang.org/grpc/internal/transport/networktype
 google.golang.org/grpc/keepalive
 google.golang.org/grpc/metadata
 google.golang.org/grpc/peer
-google.golang.org/grpc/reflection
-google.golang.org/grpc/reflection/grpc_reflection_v1alpha
 google.golang.org/grpc/resolver
 google.golang.org/grpc/serviceconfig
 google.golang.org/grpc/stats
@@ -1197,7 +1104,6 @@ google.golang.org/protobuf/runtime/protoimpl
 google.golang.org/protobuf/types/descriptorpb
 google.golang.org/protobuf/types/known/anypb
 google.golang.org/protobuf/types/known/durationpb
-google.golang.org/protobuf/types/known/emptypb
 google.golang.org/protobuf/types/known/timestamppb
 # gopkg.in/gcfg.v1 v1.2.3
 ## explicit
@@ -1216,7 +1122,6 @@ gopkg.in/ini.v1
 gopkg.in/square/go-jose.v2
 gopkg.in/square/go-jose.v2/cipher
 gopkg.in/square/go-jose.v2/json
-gopkg.in/square/go-jose.v2/jwt
 # gopkg.in/warnings.v0 v0.1.2
 ## explicit
 gopkg.in/warnings.v0
