@@ -571,9 +571,6 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 			iamS3path := "placeholder-read-bucket/" + strings.TrimPrefix(path.Path(), "file://")
 			b.buildS3GetStatements(p, iamS3path)
 			s3Buckets.Insert("placeholder-read-bucket")
-		case *vfs.VaultPath:
-			// Vault access needs to come from somewhere else
-			klog.Warningf("ignoring valult path %q for IAM policy builder", vfsPath)
 		default:
 			// We could implement this approach, but it seems better to
 			// get all clouds using cluster-readable storage
