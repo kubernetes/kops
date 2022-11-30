@@ -1041,8 +1041,8 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 			if c.GetCloudProvider() != kops.CloudProviderAWS {
 				allErrs = append(allErrs, field.Forbidden(fldPath.Child("ipam"), "Cilum ENI IPAM is supported only in AWS"))
 			}
-			if v.Masquerade != nil && *v.Masquerade {
-				allErrs = append(allErrs, field.Forbidden(fldPath.Child("masquerade"), "Masquerade must be disabled when ENI IPAM is used"))
+			if v.Masquerade != nil && !*v.Masquerade {
+				allErrs = append(allErrs, field.Forbidden(fldPath.Child("masquerade"), "Masquerade must be enabled when ENI IPAM is used"))
 			}
 			if c.IsIPv6Only() {
 				allErrs = append(allErrs, field.Forbidden(fldPath.Child("ipam"), "Cilium ENI IPAM does not support IPv6"))
