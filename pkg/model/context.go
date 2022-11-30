@@ -61,8 +61,8 @@ func (b *KopsModelContext) GatherSubnets(ig *kops.InstanceGroup) ([]*kops.Cluste
 
 	for _, subnetName := range ig.Spec.Subnets {
 		var matches []*kops.ClusterSubnetSpec
-		for i := range b.Cluster.Spec.Subnets {
-			clusterSubnet := &b.Cluster.Spec.Subnets[i]
+		for i := range b.Cluster.Spec.Networking.Subnets {
+			clusterSubnet := &b.Cluster.Spec.Networking.Subnets[i]
 			if clusterSubnet.Name == subnetName {
 				matches = append(matches, clusterSubnet)
 			}
@@ -252,7 +252,7 @@ func (b *KopsModelContext) UseBootstrapTokens() bool {
 
 // UsesBastionDns checks if we should use a specific name for the bastion dns
 func (b *KopsModelContext) UsesBastionDns() bool {
-	if b.Cluster.Spec.Topology.Bastion != nil && b.Cluster.Spec.Topology.Bastion.PublicName != "" {
+	if b.Cluster.Spec.Networking.Topology.Bastion != nil && b.Cluster.Spec.Networking.Topology.Bastion.PublicName != "" {
 		return true
 	}
 	return false
@@ -347,7 +347,7 @@ func (b *KopsModelContext) UseIPv6ForAPI() bool {
 			break
 		}
 		for _, igSubnetName := range ig.Spec.Subnets {
-			for _, clusterSubnet := range b.Cluster.Spec.Subnets {
+			for _, clusterSubnet := range b.Cluster.Spec.Networking.Subnets {
 				if igSubnetName != clusterSubnet.Name {
 					continue
 				}
@@ -389,10 +389,10 @@ func (b *KopsModelContext) UseServiceAccountExternalPermissions() bool {
 
 // NetworkingIsCalico returns true if we are using calico networking
 func (b *KopsModelContext) NetworkingIsCalico() bool {
-	return b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Calico != nil
+	return b.Cluster.Spec.Networking.Calico != nil
 }
 
 // NetworkingIsCilium returns true if we are using cilium networking
 func (b *KopsModelContext) NetworkingIsCilium() bool {
-	return b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Cilium != nil
+	return b.Cluster.Spec.Networking.Cilium != nil
 }

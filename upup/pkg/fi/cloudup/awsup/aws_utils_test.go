@@ -52,7 +52,7 @@ func TestValidateRegion(t *testing.T) {
 func TestFindRegion(t *testing.T) {
 	for _, zone := range []string{"us-east-1a", "us-east-1b", "us-east-1c", "us-east-2a", "us-east-2b", "us-east-2c"} {
 		c := &kops.Cluster{}
-		c.Spec.Subnets = append(c.Spec.Subnets, kops.ClusterSubnetSpec{Name: "subnet-" + zone, Zone: zone})
+		c.Spec.Networking.Subnets = append(c.Spec.Networking.Subnets, kops.ClusterSubnetSpec{Name: "subnet-" + zone, Zone: zone})
 
 		region, err := FindRegion(c)
 		if err != nil {

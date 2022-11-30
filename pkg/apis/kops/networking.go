@@ -18,8 +18,51 @@ package kops
 
 import "k8s.io/apimachinery/pkg/api/resource"
 
-// NetworkingSpec allows selection and configuration of a networking plugin
+// NetworkingSpec configures networking.
 type NetworkingSpec struct {
+	// NetworkID is the cloud provider's identifier of the existing network (for example, AWS VPC) the cluster should use.
+	// If not specified, kOps will create a new network.
+	NetworkID string `json:"networkID,omitempty"`
+	// NetworkCIDR is the primary IPv4 CIDR used for the cloud provider's network.
+	// It is not required on GCE.
+	// On DO, it maps to the VPC CIDR.
+	NetworkCIDR string `json:"networkCIDR,omitempty"`
+	// AdditionalNetworkCIDRs is a list of additional CIDR used for the AWS VPC
+	// or otherwise allocated to k8s. This is a real CIDR, not the internal k8s network
+	// On AWS, it maps to any additional CIDRs added to a VPC.
+	AdditionalNetworkCIDRs []string `json:"additionalNetworkCIDRs,omitempty"`
+
+	// Subnets are the subnets that the cluster can use.
+	Subnets []ClusterSubnetSpec `json:"subnets,omitempty"`
+	// TagSubnets controls if tags are added to subnets to enable use by load balancers (AWS only). Default: true.
+	TagSubnets *bool `json:"tagSubnets,omitempty"`
+
+	// Topology defines the type of network topology to use on the cluster - default public
+	// This is heavily weighted towards AWS for the time being, but should also be agnostic enough
+	// to port out to GCE later if needed
+	Topology *TopologySpec `json:"topology,omitempty"`
+	// HTTPProxy defines connection information to support use of a private cluster behind an forward HTTP Proxy
+	EgressProxy *EgressProxySpec `json:"egressProxy,omitempty"`
+
+	// NonMasqueradeCIDR is the CIDR for the internal k8s network (on which pods & services live)
+	// It cannot overlap ServiceClusterIPRange
+	NonMasqueradeCIDR string `json:"nonMasqueradeCIDR,omitempty"`
+	// PodCIDR is the CIDR from which we allocate IPs for pods
+	PodCIDR string `json:"podCIDR,omitempty"`
+	// ServiceClusterIPRange is the CIDR, from the internal network, where we allocate IPs for services
+	ServiceClusterIPRange string `json:"serviceClusterIPRange,omitempty"`
+	// IsolateControlPlane determines whether we should lock down masters so that they are not on the pod network.
+	// true is the kube-up behaviour, but it is very surprising: it means that daemonsets only work on the master
+	// if they have hostNetwork=true.
+	// false is now the default, and it will:
+	//  * give the master a normal PodCIDR
+	//  * run kube-proxy on the master
+	//  * enable debugging handlers on the master, so kubectl logs works
+	IsolateControlPlane *bool `json:"isolateControlPlane,omitempty"`
+
+	// The following specify the selection and configuration of a networking plugin.
+	// Exactly one of the fields must be non-null.
+
 	Classic    *ClassicNetworkingSpec    `json:"classic,omitempty"`
 	Kubenet    *KubenetNetworkingSpec    `json:"kubenet,omitempty"`
 	External   *ExternalNetworkingSpec   `json:"external,omitempty"`

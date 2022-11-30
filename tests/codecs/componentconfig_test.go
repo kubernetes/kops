@@ -43,6 +43,7 @@ spec:
   cloudProvider: {}
   kubeControllerManager: {}
   kubelet: {}
+  networking: {}
 `
 	if yamlString != expected {
 		diffString := diff.FormatDiff(expected, yamlString)

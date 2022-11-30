@@ -26,7 +26,7 @@ import (
 func FindRegion(cluster *kops.Cluster) (string, error) {
 	var region string
 
-	for _, subnet := range cluster.Spec.Subnets {
+	for _, subnet := range cluster.Spec.Networking.Subnets {
 		var zoneRegion string
 		switch subnet.Zone {
 		case "fsn1", "nbg1", "hel1":

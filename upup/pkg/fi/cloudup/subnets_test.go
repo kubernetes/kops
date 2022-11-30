@@ -127,8 +127,8 @@ func Test_AssignSubnets(t *testing.T) {
 	}
 	for i, test := range tests {
 		c := &kops.Cluster{}
-		c.Spec.NetworkCIDR = "10.0.0.0/8"
-		c.Spec.Subnets = test.subnets
+		c.Spec.Networking.NetworkCIDR = "10.0.0.0/8"
+		c.Spec.Networking.Subnets = test.subnets
 
 		err := assignCIDRsToSubnets(c, nil)
 		if err != nil {
@@ -136,7 +136,7 @@ func Test_AssignSubnets(t *testing.T) {
 		}
 
 		var actual []string
-		for _, subnet := range c.Spec.Subnets {
+		for _, subnet := range c.Spec.Networking.Subnets {
 			actual = append(actual, subnet.CIDR)
 		}
 		if !reflect.DeepEqual(actual, test.expected) {

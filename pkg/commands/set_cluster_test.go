@@ -195,7 +195,7 @@ func TestSetClusterFields(t *testing.T) {
 			Input: kops.Cluster{},
 			Output: kops.Cluster{
 				Spec: kops.ClusterSpec{
-					Networking: &kops.NetworkingSpec{
+					Networking: kops.NetworkingSpec{
 						Cilium: &kops.CiliumNetworkingSpec{
 							IPAM: "on",
 						},
@@ -210,7 +210,7 @@ func TestSetClusterFields(t *testing.T) {
 			Input: kops.Cluster{},
 			Output: kops.Cluster{
 				Spec: kops.ClusterSpec{
-					Networking: &kops.NetworkingSpec{
+					Networking: kops.NetworkingSpec{
 						Cilium: &kops.CiliumNetworkingSpec{
 							EnableHostReachableServices: true,
 						},
@@ -225,7 +225,7 @@ func TestSetClusterFields(t *testing.T) {
 			Input: kops.Cluster{},
 			Output: kops.Cluster{
 				Spec: kops.ClusterSpec{
-					Networking: &kops.NetworkingSpec{
+					Networking: kops.NetworkingSpec{
 						Cilium: &kops.CiliumNetworkingSpec{
 							EnableNodePort: true,
 						},
@@ -240,7 +240,7 @@ func TestSetClusterFields(t *testing.T) {
 			Input: kops.Cluster{},
 			Output: kops.Cluster{
 				Spec: kops.ClusterSpec{
-					Networking: &kops.NetworkingSpec{
+					Networking: kops.NetworkingSpec{
 						Cilium: &kops.CiliumNetworkingSpec{
 							Masquerade: fi.PtrTo(false),
 						},
@@ -268,7 +268,7 @@ func TestSetClusterFields(t *testing.T) {
 			Input: kops.Cluster{},
 			Output: kops.Cluster{
 				Spec: kops.ClusterSpec{
-					Networking: &kops.NetworkingSpec{
+					Networking: kops.NetworkingSpec{
 						Cilium: &kops.CiliumNetworkingSpec{
 							AgentPrometheusPort: 1234,
 						},
@@ -316,7 +316,7 @@ func TestSetCiliumFields(t *testing.T) {
 					KubeProxy: &kops.KubeProxyConfig{
 						Enabled: fi.PtrTo(false),
 					},
-					Networking: &kops.NetworkingSpec{
+					Networking: kops.NetworkingSpec{
 						Cilium: &kops.CiliumNetworkingSpec{
 							IPAM:           "eni",
 							EnableNodePort: true,

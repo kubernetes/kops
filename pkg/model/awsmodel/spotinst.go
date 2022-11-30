@@ -668,8 +668,8 @@ func (b *SpotInstanceGroupModelBuilder) buildSubnets(ig *kops.InstanceGroup) ([]
 
 func (b *SpotInstanceGroupModelBuilder) buildPublicIPOpts(ig *kops.InstanceGroup) (*bool, error) {
 	subnetMap := make(map[string]*kops.ClusterSubnetSpec)
-	for i := range b.Cluster.Spec.Subnets {
-		subnet := &b.Cluster.Spec.Subnets[i]
+	for i := range b.Cluster.Spec.Networking.Subnets {
+		subnet := &b.Cluster.Spec.Networking.Subnets[i]
 		subnetMap[subnet.Name] = subnet
 	}
 

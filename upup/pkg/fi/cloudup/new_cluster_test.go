@@ -95,7 +95,7 @@ func TestSetupNetworking(t *testing.T) {
 			},
 			expected: api.Cluster{
 				Spec: api.ClusterSpec{
-					Networking: &api.NetworkingSpec{
+					Networking: api.NetworkingSpec{
 						Kubenet: &api.KubenetNetworkingSpec{},
 					},
 				},
@@ -107,7 +107,7 @@ func TestSetupNetworking(t *testing.T) {
 			},
 			expected: api.Cluster{
 				Spec: api.ClusterSpec{
-					Networking: &api.NetworkingSpec{
+					Networking: api.NetworkingSpec{
 						External: &api.ExternalNetworkingSpec{},
 					},
 				},
@@ -119,7 +119,7 @@ func TestSetupNetworking(t *testing.T) {
 			},
 			expected: api.Cluster{
 				Spec: api.ClusterSpec{
-					Networking: &api.NetworkingSpec{
+					Networking: api.NetworkingSpec{
 						CNI: &api.CNINetworkingSpec{},
 					},
 				},
@@ -131,7 +131,7 @@ func TestSetupNetworking(t *testing.T) {
 			},
 			expected: api.Cluster{
 				Spec: api.ClusterSpec{
-					Networking: &api.NetworkingSpec{
+					Networking: api.NetworkingSpec{
 						Kopeio: &api.KopeioNetworkingSpec{},
 					},
 				},
@@ -143,7 +143,7 @@ func TestSetupNetworking(t *testing.T) {
 			},
 			expected: api.Cluster{
 				Spec: api.ClusterSpec{
-					Networking: &api.NetworkingSpec{
+					Networking: api.NetworkingSpec{
 						Kopeio: &api.KopeioNetworkingSpec{},
 					},
 				},
@@ -155,7 +155,7 @@ func TestSetupNetworking(t *testing.T) {
 			},
 			expected: api.Cluster{
 				Spec: api.ClusterSpec{
-					Networking: &api.NetworkingSpec{
+					Networking: api.NetworkingSpec{
 						Weave: &api.WeaveNetworkingSpec{},
 					},
 				},
@@ -167,7 +167,7 @@ func TestSetupNetworking(t *testing.T) {
 			},
 			expected: api.Cluster{
 				Spec: api.ClusterSpec{
-					Networking: &api.NetworkingSpec{
+					Networking: api.NetworkingSpec{
 						Flannel: &api.FlannelNetworkingSpec{
 							Backend: "vxlan",
 						},
@@ -181,7 +181,7 @@ func TestSetupNetworking(t *testing.T) {
 			},
 			expected: api.Cluster{
 				Spec: api.ClusterSpec{
-					Networking: &api.NetworkingSpec{
+					Networking: api.NetworkingSpec{
 						Flannel: &api.FlannelNetworkingSpec{
 							Backend: "vxlan",
 						},
@@ -195,7 +195,7 @@ func TestSetupNetworking(t *testing.T) {
 			},
 			expected: api.Cluster{
 				Spec: api.ClusterSpec{
-					Networking: &api.NetworkingSpec{
+					Networking: api.NetworkingSpec{
 						Flannel: &api.FlannelNetworkingSpec{
 							Backend: "udp",
 						},
@@ -209,7 +209,7 @@ func TestSetupNetworking(t *testing.T) {
 			},
 			expected: api.Cluster{
 				Spec: api.ClusterSpec{
-					Networking: &api.NetworkingSpec{
+					Networking: api.NetworkingSpec{
 						Calico: &api.CalicoNetworkingSpec{},
 					},
 				},
@@ -221,7 +221,7 @@ func TestSetupNetworking(t *testing.T) {
 			},
 			expected: api.Cluster{
 				Spec: api.ClusterSpec{
-					Networking: &api.NetworkingSpec{
+					Networking: api.NetworkingSpec{
 						Canal: &api.CanalNetworkingSpec{},
 					},
 				},
@@ -236,7 +236,7 @@ func TestSetupNetworking(t *testing.T) {
 					KubeProxy: &api.KubeProxyConfig{
 						Enabled: fi.PtrTo(false),
 					},
-					Networking: &api.NetworkingSpec{
+					Networking: api.NetworkingSpec{
 						KubeRouter: &api.KuberouterNetworkingSpec{},
 					},
 				},
@@ -248,7 +248,7 @@ func TestSetupNetworking(t *testing.T) {
 			},
 			expected: api.Cluster{
 				Spec: api.ClusterSpec{
-					Networking: &api.NetworkingSpec{
+					Networking: api.NetworkingSpec{
 						AmazonVPC: &api.AmazonVPCNetworkingSpec{},
 					},
 				},
@@ -260,7 +260,7 @@ func TestSetupNetworking(t *testing.T) {
 			},
 			expected: api.Cluster{
 				Spec: api.ClusterSpec{
-					Networking: &api.NetworkingSpec{
+					Networking: api.NetworkingSpec{
 						AmazonVPC: &api.AmazonVPCNetworkingSpec{},
 					},
 				},
@@ -275,7 +275,7 @@ func TestSetupNetworking(t *testing.T) {
 					KubeProxy: &api.KubeProxyConfig{
 						Enabled: fi.PtrTo(false),
 					},
-					Networking: &api.NetworkingSpec{
+					Networking: api.NetworkingSpec{
 						Cilium: &api.CiliumNetworkingSpec{
 							EnableNodePort: true,
 						},
@@ -292,7 +292,7 @@ func TestSetupNetworking(t *testing.T) {
 					KubeProxy: &api.KubeProxyConfig{
 						Enabled: fi.PtrTo(false),
 					},
-					Networking: &api.NetworkingSpec{
+					Networking: api.NetworkingSpec{
 						Cilium: &api.CiliumNetworkingSpec{
 							EnableNodePort: true,
 							EtcdManaged:    true,
@@ -307,7 +307,7 @@ func TestSetupNetworking(t *testing.T) {
 			},
 			expected: api.Cluster{
 				Spec: api.ClusterSpec{
-					Networking: &api.NetworkingSpec{
+					Networking: api.NetworkingSpec{
 						GCE: &api.GCENetworkingSpec{},
 					},
 				},

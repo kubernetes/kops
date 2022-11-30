@@ -61,17 +61,17 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Create LoadBalancer for API LB
 	loadbalancer := &dotasks.LoadBalancer{
 		Name:       fi.PtrTo(loadbalancerName),
-		Region:     fi.PtrTo(b.Cluster.Spec.Subnets[0].Region),
+		Region:     fi.PtrTo(b.Cluster.Spec.Networking.Subnets[0].Region),
 		DropletTag: fi.PtrTo(clusterMasterTag),
 		Lifecycle:  b.Lifecycle,
 	}
 
-	if b.Cluster.Spec.NetworkID != "" {
-		loadbalancer.VPCUUID = fi.PtrTo(b.Cluster.Spec.NetworkID)
-	} else if b.Cluster.Spec.NetworkCIDR != "" {
+	if b.Cluster.Spec.Networking.NetworkID != "" {
+		loadbalancer.VPCUUID = fi.PtrTo(b.Cluster.Spec.Networking.NetworkID)
+	} else if b.Cluster.Spec.Networking.NetworkCIDR != "" {
 		vpcName := "vpc-" + clusterName
 		loadbalancer.VPCName = fi.PtrTo(vpcName)
-		loadbalancer.NetworkCIDR = fi.PtrTo(b.Cluster.Spec.NetworkCIDR)
+		loadbalancer.NetworkCIDR = fi.PtrTo(b.Cluster.Spec.Networking.NetworkCIDR)
 	}
 
 	c.AddTask(loadbalancer)

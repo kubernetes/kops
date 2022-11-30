@@ -398,7 +398,7 @@ func (b *KubeAPIServerBuilder) writeServerCertificate(c *fi.ModelBuilderContext,
 			}
 		}
 		if b.CloudProvider == kops.CloudProviderOpenstack {
-			if b.Cluster.Spec.Topology != nil && b.Cluster.Spec.Topology.ControlPlane == kops.TopologyPrivate {
+			if b.Cluster.Spec.Networking.Topology != nil && b.Cluster.Spec.Networking.Topology.ControlPlane == kops.TopologyPrivate {
 				instanceAddress, err := getInstanceAddress()
 				if err != nil {
 					return err
@@ -617,7 +617,7 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 	container := &v1.Container{
 		Name:  "kube-apiserver",
 		Image: image,
-		Env:   proxy.GetProxyEnvVars(b.Cluster.Spec.EgressProxy),
+		Env:   proxy.GetProxyEnvVars(b.Cluster.Spec.Networking.EgressProxy),
 		LivenessProbe: &v1.Probe{
 			ProbeHandler: v1.ProbeHandler{
 				HTTPGet: probeAction,

@@ -55,7 +55,7 @@ func (b *GCPCloudControllerManagerOptionsBuilder) BuildOptions(options interface
 	ccmConfig.AllocateNodeCIDRs = fi.PtrTo(true)
 	ccmConfig.CIDRAllocatorType = fi.PtrTo("CloudAllocator")
 	if ccmConfig.ClusterCIDR == "" {
-		ccmConfig.ClusterCIDR = clusterSpec.PodCIDR
+		ccmConfig.ClusterCIDR = clusterSpec.Networking.PodCIDR
 	}
 	if ccmConfig.Image == "" {
 		// TODO: Implement CCM image publishing

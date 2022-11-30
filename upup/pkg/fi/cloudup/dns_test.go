@@ -40,7 +40,9 @@ func TestPrecreateDNSNames(t *testing.T) {
 		{
 			cluster: &kops.Cluster{
 				Spec: kops.ClusterSpec{
-					NonMasqueradeCIDR: "::/0",
+					Networking: kops.NetworkingSpec{
+						NonMasqueradeCIDR: "::/0",
+					},
 				},
 			},
 			expected: []recordKey{
@@ -67,7 +69,9 @@ func TestPrecreateDNSNames(t *testing.T) {
 					API: kops.APISpec{
 						LoadBalancer: &kops.LoadBalancerAccessSpec{},
 					},
-					NonMasqueradeCIDR: "::/0",
+					Networking: kops.NetworkingSpec{
+						NonMasqueradeCIDR: "::/0",
+					},
 				},
 			},
 			expected: []recordKey{
@@ -108,7 +112,9 @@ func TestPrecreateDNSNames(t *testing.T) {
 						AWS: &kops.AWSSpec{},
 					},
 					KubernetesVersion: "1.22.0",
-					NonMasqueradeCIDR: "::/0",
+					Networking: kops.NetworkingSpec{
+						NonMasqueradeCIDR: "::/0",
+					},
 				},
 			},
 			expected: []recordKey{

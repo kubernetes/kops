@@ -25,7 +25,7 @@ import (
 
 // FindSubnet returns the subnet with the specified name, or returns nil
 func FindSubnet(c *kops.Cluster, subnetName string) *kops.ClusterSubnetSpec {
-	for _, subnet := range c.Spec.Subnets {
+	for _, subnet := range c.Spec.Networking.Subnets {
 		if subnet.Name == subnetName {
 			return &subnet
 		}
