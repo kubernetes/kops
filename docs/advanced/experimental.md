@@ -18,5 +18,4 @@ The following experimental features are currently available:
 * `+SpotinstHybrid` - Toggles between hybrid and full instance group implementations
 * `-SpotinstController` - Toggles the installation of the Spot controller addon off
 * `+SkipEtcdVersionCheck` - Bypasses the check that etcd-manager is using a supported etcd version
-* `+VFSVaultSupport` - Enables setting Vault as secret/keystore
 * `+APIServerNodes` - Enables support for dedicated API server nodes
