@@ -118,8 +118,6 @@ func (f *Factory) KopsClient() (simple.Clientset, error) {
 				},
 				KopsClient: kopsClient.Kops(),
 			}
-		} else if strings.HasPrefix(registryPath, "vault://") {
-			return nil, field.Invalid(field.NewPath("State Store"), registryPath, "Vault is not supported as registry path")
 		} else {
 			basePath, err := vfs.Context.BuildVfsPath(registryPath)
 			if err != nil {

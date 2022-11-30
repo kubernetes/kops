@@ -48,10 +48,6 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 		return allErrs
 	}
 
-	if strings.HasPrefix(c.Spec.ConfigBase, "vault://") {
-		allErrs = append(allErrs, field.Invalid(fieldSpec.Child("configBase"), c.Spec.ConfigBase, "Vault is not supported as configBase"))
-	}
-
 	requiresSubnets := true
 	requiresNetworkCIDR := true
 	requiresSubnetCIDR := true
@@ -386,23 +382,6 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 	}
 
 	allErrs = append(allErrs, newValidateCluster(c)...)
-
-	if strings.HasPrefix(c.Spec.SecretStore, "vault://") {
-		if !featureflag.VFSVaultSupport.Enabled() {
-			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("secretStore"), "vault VFS is an experimental feature; set `export KOPS_FEATURE_FLAGS=VFSVaultSupport`"))
-		}
-		if c.Spec.GetCloudProvider() != kops.CloudProviderAWS {
-			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("secretStore"), "Vault secret store is only available on AWS"))
-		}
-	}
-	if strings.HasPrefix(c.Spec.KeyStore, "vault://") {
-		if !featureflag.VFSVaultSupport.Enabled() {
-			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("keyStore"), "vault VFS is an experimental feature; set `export KOPS_FEATURE_FLAGS=VFSVaultSupport`"))
-		}
-		if c.Spec.GetCloudProvider() != kops.CloudProviderAWS {
-			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("keyStore"), "Vault keystore is only available on AWS"))
-		}
-	}
 
 	said := c.Spec.ServiceAccountIssuerDiscovery
 	allErrs = append(allErrs, validateServiceAccountIssuerDiscovery(c, said, fieldSpec.Child("serviceAccountIssuerDiscovery"))...)
