@@ -188,6 +188,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 
 		for _, k := range sortGroups(apiServerGroups) {
 			err := c.rollingUpdateInstanceGroup(apiServerGroups[k], c.NodeInterval)
+			results[k] = err
 			if err != nil {
 				klog.Errorf("failed to roll InstanceGroup %q: %v", k, err)
 			}
@@ -195,8 +196,6 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 			if isExitableError(err) {
 				return err
 			}
-
-			results[k] = err
 		}
 	}
 
@@ -214,6 +213,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 
 		for _, k := range sortGroups(nodeGroups) {
 			err := c.rollingUpdateInstanceGroup(nodeGroups[k], c.NodeInterval)
+			results[k] = err
 			if err != nil {
 				klog.Errorf("failed to roll InstanceGroup %q: %v", k, err)
 			}
@@ -221,8 +221,6 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 			if isExitableError(err) {
 				return err
 			}
-
-			results[k] = err
 		}
 	}
 
