@@ -474,18 +474,18 @@ func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool, cl
 		return fmt.Errorf("must configure at least one InstanceGroup")
 	}
 
-	masterGroupCount := 0
+	controlPlaneGroupCount := 0
 	nodeGroupCount := 0
 	for _, g := range groups {
 		if g.IsControlPlane() {
-			masterGroupCount++
+			controlPlaneGroupCount++
 		} else {
 			nodeGroupCount++
 		}
 	}
 
-	if masterGroupCount == 0 {
-		return fmt.Errorf("must configure at least one Master InstanceGroup")
+	if controlPlaneGroupCount == 0 {
+		return fmt.Errorf("must configure at least one ControlPlane InstanceGroup")
 	}
 
 	if nodeGroupCount == 0 {
