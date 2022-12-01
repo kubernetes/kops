@@ -54,6 +54,15 @@ func (v *ValidationTimeoutError) Error() string {
 	return fmt.Sprintf("error validating cluster%s: %v", v.Operation, v.Err)
 }
 
+// Is checks that a given error is a ValidationTimeoutError.
+func (v *ValidationTimeoutError) Is(err error) bool {
+	// Currently all validation timeout errors are equivalent
+	// If you wish to differentiate, please update the instances of `errors.Is` that check
+	// this error to take that into account
+	_, ok := err.(*ValidationTimeoutError)
+	return ok
+}
+
 // promptInteractive asks the user to continue, mostly copied from vendor/google.golang.org/api/examples/gmail.go.
 func promptInteractive(upgradedHostID, upgradedHostName string) (stopPrompting bool, err error) {
 	stopPrompting = false
