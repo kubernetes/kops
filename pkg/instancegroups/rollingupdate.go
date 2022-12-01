@@ -243,7 +243,7 @@ func sortGroups(groupMap map[string]*cloudinstances.CloudInstanceGroup) []string
 // For example, if a cluster is unable to be validated by the deadline, then it
 // is unlikely that it will validate on the next instance roll, so an early exit as a
 // warning to the user is more appropriate.
-func exitableError(err error) bool {
+func isExitableError(err error) bool {
 	_, ok := err.(*ValidationTimeoutError)
 	return ok
 }
