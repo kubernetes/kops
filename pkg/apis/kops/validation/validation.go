@@ -1141,7 +1141,7 @@ func validateEtcdClusterSpec(spec kops.EtcdClusterSpec, c *kops.Cluster, fieldPa
 		allErrs = append(allErrs, field.Required(fieldPath.Child("etcdMembers"), "No members defined in etcd cluster"))
 	} else if (len(spec.Members) % 2) == 0 {
 		// Not technically a requirement, but doesn't really make sense to allow
-		allErrs = append(allErrs, field.Invalid(fieldPath.Child("etcdMembers"), len(spec.Members), "Should be an odd number of master-zones for quorum. Use --zones and --master-zones to declare node zones and master zones separately"))
+		allErrs = append(allErrs, field.Invalid(fieldPath.Child("etcdMembers"), len(spec.Members), "Should be an odd number of control-plane-zones for quorum. Use --zones and --control-plane-zones to declare node zones and control-plane zones separately"))
 	}
 	allErrs = append(allErrs, validateEtcdVersion(spec, fieldPath, nil)...)
 	for i, m := range spec.Members {
@@ -1550,7 +1550,7 @@ func validateNvidiaConfig(spec *kops.ClusterSpec, nvidia *kops.NvidiaGPUConfig, 
 	return allErrs
 }
 
-func validateRollingUpdate(rollingUpdate *kops.RollingUpdate, fldpath *field.Path, onMasterInstanceGroup bool) field.ErrorList {
+func validateRollingUpdate(rollingUpdate *kops.RollingUpdate, fldpath *field.Path, onControlPlaneInstanceGroup bool) field.ErrorList {
 	allErrs := field.ErrorList{}
 	var err error
 	unavailable := 1
@@ -1570,8 +1570,8 @@ func validateRollingUpdate(rollingUpdate *kops.RollingUpdate, fldpath *field.Pat
 			allErrs = append(allErrs, field.Invalid(fldpath.Child("maxSurge"), rollingUpdate.MaxSurge,
 				fmt.Sprintf("Unable to parse: %v", err)))
 		}
-		if onMasterInstanceGroup && surge != 0 {
-			allErrs = append(allErrs, field.Forbidden(fldpath.Child("maxSurge"), "Cannot surge instance groups with role \"Master\""))
+		if onControlPlaneInstanceGroup && surge != 0 {
+			allErrs = append(allErrs, field.Forbidden(fldpath.Child("maxSurge"), "Cannot surge instance groups with role \"ControlPlane\""))
 		} else if surge < 0 {
 			allErrs = append(allErrs, field.Invalid(fldpath.Child("maxSurge"), rollingUpdate.MaxSurge, "Cannot be negative"))
 		}
