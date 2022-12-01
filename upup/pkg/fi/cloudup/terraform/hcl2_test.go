@@ -262,7 +262,7 @@ tags = {
 		t.Run(tc.name, func(t *testing.T) {
 			f := hclwrite.NewEmptyFile()
 			root := f.Body()
-			writeMap(root, "tags", tc.values)
+			oldWriteMap(root, "tags", tc.values)
 			actual := strings.TrimSpace(string(f.Bytes()))
 			expected := strings.TrimSpace(tc.expected)
 			if actual != expected {
@@ -313,7 +313,7 @@ metadata = {
 
 			f := hclwrite.NewEmptyFile()
 			root := f.Body()
-			writeMap(root, "metadata", literalMap)
+			oldWriteMap(root, "metadata", literalMap)
 			actual := strings.TrimSpace(string(f.Bytes()))
 			expected := strings.TrimSpace(tc.expected)
 			if actual != expected {

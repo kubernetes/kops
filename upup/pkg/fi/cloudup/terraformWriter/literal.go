@@ -113,6 +113,22 @@ func LiteralIndexExpression(collection *Literal, index *Literal) *Literal {
 	}
 }
 
+// LiteralListExpression constructs a Literal consisting of a list of supplied Literals.
+func LiteralListExpression(args ...*Literal) *Literal {
+	var b strings.Builder
+	b.WriteRune('[')
+	for i, arg := range args {
+		if i != 0 {
+			b.WriteString(", ")
+		}
+		b.WriteString(arg.String)
+	}
+	b.WriteRune(']')
+	return &Literal{
+		String: b.String(),
+	}
+}
+
 // LiteralNullConditionalExpression constructs a Literal which returns `null`
 // if the supplied "nullable" expression is null, otherwise returns "value".
 // It is the caller's responsibility to ensure the supplied parameters do not use operators
