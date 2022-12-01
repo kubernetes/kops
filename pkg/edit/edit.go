@@ -19,10 +19,8 @@ package edit
 import (
 	"bytes"
 
-	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/yaml"
 
-	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -32,26 +30,15 @@ import (
 // (for example due to a typo in the field name)
 // If there are extra fields it returns a string with a description of the diffs
 // If there are no extra fields it returns an empty string
-func HasExtraFields(yamlString string, object runtime.Object) (string, error) {
-	switch object.(type) {
-	case *kops.Cluster:
-		editedObj := kops.Cluster{}
-		err := yaml.UnmarshalStrict([]byte(yamlString), &editedObj)
-		if err == nil {
-			return "", nil
-		}
-	case *kops.InstanceGroup:
-		editedObj := kops.InstanceGroup{}
-		err := yaml.UnmarshalStrict([]byte(yamlString), &editedObj)
-		if err == nil {
-			return "", nil
-		}
-	default:
-		panic("unknown object")
+func HasExtraFields(yamlString string) (string, error) {
+	decoder := kopscodecs.Codecs.UniversalDeserializer()
+
+	object, _, err := decoder.Decode([]byte(yamlString), nil, nil)
+	if err != nil {
+		return "", err
 	}
 
-	// Convert the cluster back to YAML for comparison purposes
-	newYaml, err := kopscodecs.ToVersionedYaml(object)
+	newYaml, err := utils.YamlMarshal(object)
 	if err != nil {
 		return "", err
 	}

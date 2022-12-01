@@ -214,7 +214,7 @@ func RunEditCluster(ctx context.Context, f *util.Factory, out io.Writer, options
 			continue
 		}
 
-		extraFields, err := edit.HasExtraFields(string(edited), newObj)
+		extraFields, err := edit.HasExtraFields(string(edited))
 		if err != nil {
 			results = editResults{
 				file: file,
