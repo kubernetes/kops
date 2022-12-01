@@ -318,10 +318,8 @@ spec:
             - --aws-use-static-instance-list={{ .AWSUseStaticInstanceList }}
             {{ end }}
             - --expander={{ .Expander }}
-            {{ range $name, $spec := GetNodeInstanceGroups }}
-            {{ if WithDefaultBool $spec.Autoscale true }}
-            - --nodes={{ $spec.MinSize }}:{{ $spec.MaxSize }}:{{ $name }}{{- if not (eq GetCloudProvider "gce") }}.{{ ClusterName }}{{ end -}}
-            {{ end }}
+            {{ range $nodeGroup := GetClusterAutoscalerNodeGroups }}
+            - --nodes={{ $nodeGroup.MinSize }}:{{ $nodeGroup.MaxSize }}:{{ $nodeGroup.Other }}
             {{ end }}
             - --scale-down-utilization-threshold={{ .ScaleDownUtilizationThreshold }}
             - --skip-nodes-with-local-storage={{ .SkipNodesWithLocalStorage }}
@@ -335,9 +333,11 @@ spec:
             - --logtostderr=true
             - --stderrthreshold=info
             - --v=4
+          {{ if (eq GetCloudProvider "aws") }}
           env:
             - name: AWS_REGION
               value: "{{ Region }}"
+          {{ end }}
           livenessProbe:
             failureThreshold: 3
             httpGet:

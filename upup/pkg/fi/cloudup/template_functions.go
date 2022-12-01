@@ -113,6 +113,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["GetCloudProvider"] = cluster.Spec.GetCloudProvider
 	dest["GetInstanceGroup"] = tf.GetInstanceGroup
 	dest["GetNodeInstanceGroups"] = tf.GetNodeInstanceGroups
+	dest["GetClusterAutoscalerNodeGroups"] = tf.GetClusterAutoscalerNodeGroups
 	dest["HasHighlyAvailableControlPlane"] = tf.HasHighlyAvailableControlPlane
 	dest["ControlPlaneControllerReplicas"] = tf.ControlPlaneControllerReplicas
 	dest["APIServerNodeRole"] = tf.APIServerNodeRole
@@ -822,6 +823,37 @@ func (tf *TemplateFunctions) GetNodeInstanceGroups() map[string]kops.InstanceGro
 		}
 	}
 	return nodegroups
+}
+
+type ClusterAutoscalerNodeGroup struct {
+	AutoScale *bool
+	MinSize   int32
+	MaxSize   int32
+	Other     string
+}
+
+// GetClusterAutoscalerGroups returns a map containing ClusterAutoscaler info for each instance group of type Node.
+func (tf *TemplateFunctions) GetClusterAutoscalerNodeGroups() map[string]ClusterAutoscalerNodeGroup {
+	cluster := tf.Cluster
+	groups := make(map[string]ClusterAutoscalerNodeGroup)
+	for _, ig := range tf.KopsModelContext.InstanceGroups {
+		if ig.Spec.Role == kops.InstanceGroupRoleNode && (ig.Spec.Autoscale == nil || fi.ValueOf(ig.Spec.Autoscale)) {
+			group := ClusterAutoscalerNodeGroup{
+				AutoScale: ig.Spec.Autoscale,
+				MinSize:   fi.ValueOf(ig.Spec.MinSize),
+				MaxSize:   fi.ValueOf(ig.Spec.MaxSize),
+			}
+			if cluster.Spec.GetCloudProvider() == kops.CloudProviderGCE {
+				cloud := tf.cloud.(gce.GCECloud)
+				format := "https://www.googleapis.com/compute/v1/projects/%s/zones/%s/instanceGroups/%s"
+				group.Other = fmt.Sprintf(format, cloud.Project(), ig.Spec.Zones[0], gce.NameForInstanceGroupManager(cluster, ig, ig.Spec.Zones[0]))
+			} else {
+				group.Other = ig.Name + "." + cluster.Name
+			}
+			groups[ig.Name] = group
+		}
+	}
+	return groups
 }
 
 func (tf *TemplateFunctions) architectureOfAMI(amiID string) string {
