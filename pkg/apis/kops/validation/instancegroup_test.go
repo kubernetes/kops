@@ -175,7 +175,7 @@ func TestValidMasterInstanceGroup(t *testing.T) {
 	}
 
 	for _, g := range grid {
-		errList := ValidateMasterInstanceGroup(g.IG, g.Cluster)
+		errList := ValidateControlPlaneInstanceGroup(g.IG, g.Cluster)
 		if len(errList) != g.ExpectedErrors {
 			t.Error(g.Description)
 		}

@@ -47,7 +47,7 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud, strict bool) f
 		allErrs = append(allErrs, field.Required(field.NewPath("spec", "role"), "Role must be set"))
 	case kops.InstanceGroupRoleControlPlane:
 		if len(g.Spec.Subnets) == 0 {
-			allErrs = append(allErrs, field.Required(field.NewPath("spec", "subnets"), "master InstanceGroup must specify at least one Subnet"))
+			allErrs = append(allErrs, field.Required(field.NewPath("spec", "subnets"), "controlPlane InstanceGroup must specify at least one Subnet"))
 		}
 	case kops.InstanceGroupRoleNode:
 	case kops.InstanceGroupRoleBastion:
@@ -220,7 +220,7 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, cl
 	allErrs := ValidateInstanceGroup(g, cloud, strict)
 
 	if g.Spec.Role == kops.InstanceGroupRoleControlPlane {
-		allErrs = append(allErrs, ValidateMasterInstanceGroup(g, cluster)...)
+		allErrs = append(allErrs, ValidateControlPlaneInstanceGroup(g, cluster)...)
 	}
 
 	if g.Spec.Role == kops.InstanceGroupRoleAPIServer {
@@ -289,7 +289,7 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, cl
 	return allErrs
 }
 
-func ValidateMasterInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster) field.ErrorList {
+func ValidateControlPlaneInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster) field.ErrorList {
 	allErrs := field.ErrorList{}
 	for _, etcd := range cluster.Spec.EtcdClusters {
 		hasEtcd := false
@@ -300,7 +300,7 @@ func ValidateMasterInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster) f
 			}
 		}
 		if !hasEtcd {
-			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "metadata", "name"), fmt.Sprintf("InstanceGroup \"%s\" with role Master must have a member in etcd cluster \"%s\"", g.ObjectMeta.Name, etcd.Name)))
+			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "metadata", "name"), fmt.Sprintf("InstanceGroup \"%s\" with role ControlPlane must have a member in etcd cluster \"%s\"", g.ObjectMeta.Name, etcd.Name)))
 		}
 	}
 	return allErrs

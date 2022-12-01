@@ -50,7 +50,7 @@ func TestDeepValidate_NoMasterZones(t *testing.T) {
 	c := buildDefaultCluster(t)
 	var groups []*kopsapi.InstanceGroup
 	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-test-1a"))
-	expectErrorFromDeepValidate(t, c, groups, "must configure at least one Master InstanceGroup")
+	expectErrorFromDeepValidate(t, c, groups, "must configure at least one ControlPlane InstanceGroup")
 }
 
 func TestDeepValidate_BadZone(t *testing.T) {
@@ -147,7 +147,7 @@ func TestDeepValidate_EvenEtcdClusterSize(t *testing.T) {
 	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-test-1d"))
 	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-test-1a"))
 
-	expectErrorFromDeepValidate(t, c, groups, "Should be an odd number of master-zones for quorum. Use --zones and --master-zones to declare node zones and master zones separately")
+	expectErrorFromDeepValidate(t, c, groups, "Should be an odd number of control-plane-zones for quorum. Use --zones and --control-plane-zones to declare node zones and control-plane zones separately")
 }
 
 func TestDeepValidate_MissingEtcdMember(t *testing.T) {
@@ -170,7 +170,7 @@ func TestDeepValidate_MissingEtcdMember(t *testing.T) {
 	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-test-1d"))
 	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-test-1a"))
 
-	expectErrorFromDeepValidate(t, c, groups, "spec.metadata.name: Forbidden: InstanceGroup \"master-subnet-us-test-1a\" with role Master must have a member in etcd cluster \"main\"")
+	expectErrorFromDeepValidate(t, c, groups, "spec.metadata.name: Forbidden: InstanceGroup \"master-subnet-us-test-1a\" with role ControlPlane must have a member in etcd cluster \"main\"")
 }
 
 func expectErrorFromDeepValidate(t *testing.T, c *kopsapi.Cluster, groups []*kopsapi.InstanceGroup, message string) {
