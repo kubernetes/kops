@@ -18,6 +18,7 @@ package instancegroups
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 	"sort"
 	"sync"
@@ -187,7 +188,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 
 		for _, k := range sortGroups(apiServerGroups) {
 			err := c.rollingUpdateInstanceGroup(apiServerGroups[k], c.NodeInterval)
-			if err != nil && exitableError(err) {
+			if err != nil && isExitableError(err) {
 				return err
 			}
 
@@ -209,7 +210,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 
 		for _, k := range sortGroups(nodeGroups) {
 			err := c.rollingUpdateInstanceGroup(nodeGroups[k], c.NodeInterval)
-			if err != nil && exitableError(err) {
+			if err != nil && isExitableError(err) {
 				return err
 			}
 
@@ -237,13 +238,12 @@ func sortGroups(groupMap map[string]*cloudinstances.CloudInstanceGroup) []string
 	return groups
 }
 
-// exitableError inspects an error to determine if the error is
+// isExitableError inspects an error to determine if the error is
 // fatal enough that the rolling update cannot continue.
 //
 // For example, if a cluster is unable to be validated by the deadline, then it
 // is unlikely that it will validate on the next instance roll, so an early exit as a
 // warning to the user is more appropriate.
 func isExitableError(err error) bool {
-	_, ok := err.(*ValidationTimeoutError)
-	return ok
+	return stderrors.Is(err, &ValidationTimeoutError{})
 }
