@@ -38,8 +38,8 @@ const (
 	TagClusterName           = "kops.k8s.io/cluster"
 	KopsUserAgentPrefix      = "kubernetes-kops/"
 	TagInstanceGroup         = "instance-group"
-	TagNameRolePrefix        = "k8s.io/role/"
-	TagNameEtcdClusterPrefix = "k8s.io/etcd/"
+	TagNameRolePrefix        = "k8s.io/role"
+	TagNameEtcdClusterPrefix = "k8s.io/etcd"
 	TagRoleMaster            = "control-plane"
 	TagRoleVolume            = "volume"
 )
