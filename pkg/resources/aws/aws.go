@@ -32,7 +32,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/route53"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
-	"k8s.io/kops/pkg/dns"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/pkg/resources/spotinst"
@@ -50,7 +50,8 @@ const (
 
 type listFn func(fi.Cloud, string) ([]*resources.Resource, error)
 
-func ListResourcesAWS(cloud awsup.AWSCloud, clusterName string) (map[string]*resources.Resource, error) {
+func ListResourcesAWS(cloud awsup.AWSCloud, cluster *kopsapi.Cluster) (map[string]*resources.Resource, error) {
+	clusterName := cluster.Name
 	resourceTrackers := make(map[string]*resources.Resource)
 
 	// These are the functions that are used for looking up
@@ -75,8 +76,6 @@ func ListResourcesAWS(cloud awsup.AWSCloud, clusterName string) (map[string]*res
 		ListELBV2s,
 		ListTargetGroups,
 
-		// Route 53
-		ListRoute53Records,
 		// IAM
 		ListIAMInstanceProfiles,
 		ListIAMRoles,
@@ -86,6 +85,11 @@ func ListResourcesAWS(cloud awsup.AWSCloud, clusterName string) (map[string]*res
 		ListSQSQueues,
 		// EventBridge
 		ListEventBridgeRules,
+	}
+
+	if !cluster.IsGossip() && !cluster.UsesNoneDNS() {
+		// Route 53
+		listFunctions = append(listFunctions, ListRoute53Records)
 	}
 
 	if featureflag.Spotinst.Enabled() {
@@ -1767,10 +1771,6 @@ func deleteRoute53Records(cloud fi.Cloud, zone *route53.HostedZone, resourceTrac
 
 func ListRoute53Records(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
 	var resourceTrackers []*resources.Resource
-
-	if dns.IsGossipClusterName(clusterName) {
-		return resourceTrackers, nil
-	}
 
 	c := cloud.(awsup.AWSCloud)
 
