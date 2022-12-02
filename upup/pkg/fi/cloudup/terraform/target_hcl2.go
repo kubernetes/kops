@@ -17,6 +17,7 @@ limitations under the License.
 package terraform
 
 import (
+	"bytes"
 	"fmt"
 	"sort"
 
@@ -144,48 +145,41 @@ func (t *TerraformTarget) finishHCL2() error {
 		}
 	}
 
-	terraformBlock := rootBody.AppendNewBlock("terraform", []string{})
-	terraformBody := terraformBlock.Body()
-	terraformBody.SetAttributeValue("required_version", cty.StringVal(">= 0.15.0"))
+	buf := bytes.NewBuffer(hclwrite.Format(f.Bytes()))
 
-	requiredProvidersBlock := terraformBody.AppendNewBlock("required_providers", []string{})
-	requiredProvidersBody := requiredProvidersBlock.Body()
+	buf.WriteString("terraform {\n")
+	buf.WriteString("  required_version = \">= 0.15.0\"\n")
+	buf.WriteString("  required_providers {\n")
 
 	if t.Cloud.ProviderID() == kops.CloudProviderGCE {
-		writeMap(requiredProvidersBody, "google", map[string]cty.Value{
-			"source":  cty.StringVal("hashicorp/google"),
-			"version": cty.StringVal(">= 2.19.0"),
+		writeMap(buf, 4, "google", map[string]*terraformWriter.Literal{
+			"source":  terraformWriter.LiteralFromStringValue("hashicorp/google"),
+			"version": terraformWriter.LiteralFromStringValue(">= 2.19.0"),
 		})
 	} else if t.Cloud.ProviderID() == kops.CloudProviderHetzner {
-		writeMap(requiredProvidersBody, "hcloud", map[string]cty.Value{
-			"source":  cty.StringVal("hetznercloud/hcloud"),
-			"version": cty.StringVal(">= 1.35.1"),
+		writeMap(buf, 4, "hcloud", map[string]*terraformWriter.Literal{
+			"source":  terraformWriter.LiteralFromStringValue("hetznercloud/hcloud"),
+			"version": terraformWriter.LiteralFromStringValue(">= 1.35.1"),
 		})
 	} else if t.Cloud.ProviderID() == kops.CloudProviderAWS {
-		configurationAliases := []*terraformWriter.Literal{terraformWriter.LiteralTokens("aws", "files")}
-		aliasesType, err := gocty.ImpliedType(configurationAliases)
-		if err != nil {
-			return err
-		}
-		aliasesVal, err := gocty.ToCtyValue(configurationAliases, aliasesType)
-		if err != nil {
-			return err
-		}
-		writeMap(requiredProvidersBody, "aws", map[string]cty.Value{
-			"source":                cty.StringVal("hashicorp/aws"),
-			"version":               cty.StringVal(">= 4.0.0"),
-			"configuration_aliases": aliasesVal,
+		configurationAlias := terraformWriter.LiteralTokens("aws", "files")
+		writeMap(buf, 4, "aws", map[string]*terraformWriter.Literal{
+			"source":                terraformWriter.LiteralFromStringValue("hashicorp/aws"),
+			"version":               terraformWriter.LiteralFromStringValue(">= 4.0.0"),
+			"configuration_aliases": terraformWriter.LiteralListExpression(configurationAlias),
 		})
 		if featureflag.Spotinst.Enabled() {
-			writeMap(requiredProvidersBody, "spotinst", map[string]cty.Value{
-				"source":  cty.StringVal("spotinst/spotinst"),
-				"version": cty.StringVal(">= 1.33.0"),
+			writeMap(buf, 4, "spotinst", map[string]*terraformWriter.Literal{
+				"source":  terraformWriter.LiteralFromStringValue("spotinst/spotinst"),
+				"version": terraformWriter.LiteralFromStringValue(">= 1.33.0"),
 			})
 		}
 	}
 
-	bytes := hclwrite.Format(f.Bytes())
-	t.Files["kubernetes.tf"] = bytes
+	buf.WriteString("  }\n")
+	buf.WriteString("}\n")
+
+	t.Files["kubernetes.tf"] = buf.Bytes()
 
 	return nil
 }

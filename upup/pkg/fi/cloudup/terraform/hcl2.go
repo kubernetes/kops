@@ -17,8 +17,10 @@ limitations under the License.
 package terraform
 
 import (
+	"bytes"
 	"reflect"
 	"sort"
+	"strings"
 
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
@@ -88,7 +90,7 @@ func writeValue(body *hclwrite.Body, key string, value cty.Value) {
 				writeValue(childBody, k, value.GetAttr(k))
 			}
 		} else if value.Type().IsMapType() {
-			writeMap(body, key, value.AsValueMap())
+			oldWriteMap(body, key, value.AsValueMap())
 		} else {
 			body.SetAttributeValue(key, value)
 		}
@@ -135,7 +137,7 @@ func writeLiteralList(body *hclwrite.Body, key string, literals []*terraformWrit
 	body.SetAttributeRaw(key, literalListTokens(literals))
 }
 
-// writeMap writes a map's key-value pairs to a body spready across multiple lines.
+// oldWriteMap writes a map's key-value pairs to a body spread across multiple lines.
 // Example:
 //
 //	key = {
@@ -144,7 +146,7 @@ func writeLiteralList(body *hclwrite.Body, key string, literals []*terraformWrit
 //	}
 //
 // The HCL2 library does not support this natively. See https://github.com/hashicorp/hcl/issues/356
-func writeMap(body *hclwrite.Body, key string, values map[string]cty.Value) {
+func oldWriteMap(body *hclwrite.Body, key string, values map[string]cty.Value) {
 	if len(values) == 0 {
 		return
 	}
@@ -193,4 +195,60 @@ func writeMap(body *hclwrite.Body, key string, values map[string]cty.Value) {
 		&hclwrite.Token{Type: hclsyntax.TokenCBrace, Bytes: []byte("}")},
 	)
 	body.SetAttributeRaw(key, tokens)
+}
+
+// writeMap writes a map's key-value pairs to a body spread across multiple lines.
+// Example:
+//
+//	key = {
+//	  "key1" = "value1"
+//	  "key2" = "value2"
+//	}
+func writeMap(buf *bytes.Buffer, indent int, key string, values map[string]*terraformWriter.Literal) {
+	if len(values) == 0 {
+		return
+	}
+	writeIndent(buf, indent)
+	buf.WriteString(key)
+	buf.WriteString(" = {\n")
+	keys := make([]string, 0, len(values))
+	maxKeyLen := 0
+	for k := range values {
+		kLen := len(quote(k))
+		if kLen > maxKeyLen {
+			maxKeyLen = kLen
+		}
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		writeIndent(buf, indent+2)
+		quoted := quote(k)
+		buf.WriteString(quoted)
+		writeIndent(buf, maxKeyLen-len(quoted))
+		buf.WriteString(" = ")
+		buf.WriteString(values[k].String)
+		buf.WriteRune('\n')
+	}
+	writeIndent(buf, indent)
+	buf.WriteString("}\n")
+}
+
+func writeIndent(buf *bytes.Buffer, indent int) {
+	for i := 0; i < indent; i++ {
+		buf.WriteString(" ")
+	}
+}
+
+func quote(s string) string {
+	var b strings.Builder
+	b.WriteRune('"')
+	for _, r := range s {
+		if r == '\\' || r == '"' {
+			b.WriteRune('\\')
+		}
+		b.WriteRune(r)
+	}
+	b.WriteRune('"')
+	return b.String()
 }
