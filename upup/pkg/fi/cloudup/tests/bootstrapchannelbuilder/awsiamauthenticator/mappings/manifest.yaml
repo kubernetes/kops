@@ -48,7 +48,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: authentication.aws/k8s-1.12.yaml
-    manifestHash: e8c9ce3983b6a5c5ee7a4dd37a203a8c8c41a1a741b4be7188f6e2fda3a77cb5
+    manifestHash: c970483b8c3fb2059ec916e320c6b27e118e64a5bbccd9b4222f4d3c118a0139
     name: authentication.aws
     selector:
       role.kubernetes.io/authentication: "1"

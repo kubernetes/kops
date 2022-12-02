@@ -134,6 +134,26 @@ subjects:
 
 ---
 
+apiVersion: v1
+data:
+  config.yaml: |
+    # a unique-per-cluster identifier to prevent replay attacks
+    # (good choices are a random token or a domain name that will be unique to your cluster)
+
+    clusterID: minimal.example.com
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: authentication.aws
+    app.kubernetes.io/managed-by: kops
+    k8s-app: aws-iam-authenticator
+    role.kubernetes.io/authentication: "1"
+  name: aws-iam-authenticator
+  namespace: kube-system
+
+---
+
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
