@@ -231,7 +231,7 @@ data:
   # - none
   # - auto (automatically detect the container runtime)
   #
-  masquerade: "{{ .Masquerade }}"
+  enable-ipv4-masquerade: "{{ .Masquerade }}"
   enable-ipv6-masquerade: "false"
   install-iptables-rules: "{{ WithDefaultBool .InstallIptablesRules true }}"
   auto-direct-node-routes: "{{ .AutoDirectNodeRoutes }}"
