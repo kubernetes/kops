@@ -10,7 +10,8 @@ spec:
   kubeScheduler:
     maxPersistentVolumes: 20
   kubernetesVersion: v1.24.0
-  topology:
-    controlPlane: public
-    dns: Public
-    nodes: public
+  networking:
+    topology:
+      controlPlane: public
+      dns: Public
+      nodes: public
