@@ -34,7 +34,7 @@ spec:
     cilium:
       enableNodePort: true
       etcdManaged: true
-      disableMasquerade: true
+      disableMasquerade: false
       ipam: eni
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
