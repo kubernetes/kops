@@ -843,7 +843,7 @@ func Test_Validate_Cilium(t *testing.T) {
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
-				Masquerade: fi.PtrTo(false),
+				Masquerade: fi.PtrTo(true),
 				IPAM:       "eni",
 			},
 			Spec: kops.ClusterSpec{
@@ -860,7 +860,7 @@ func Test_Validate_Cilium(t *testing.T) {
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
-				Masquerade: fi.PtrTo(true),
+				Masquerade: fi.PtrTo(false),
 				IPAM:       "eni",
 			},
 			Spec: kops.ClusterSpec{
