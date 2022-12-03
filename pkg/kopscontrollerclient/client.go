@@ -20,21 +20,28 @@ import (
 	"bufio"
 	"bytes"
 	"context"
-	"crypto/tls"
-	"crypto/x509"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"net/url"
 	"path"
+	"strings"
+	"sync"
 	"time"
 
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+	grpcresolver "google.golang.org/grpc/resolver"
+	"k8s.io/apimachinery/pkg/util/uuid"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/resolver"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
+
+	pb "k8s.io/kops/proto/generated/kops/kopscontroller/v1"
 )
 
 type Client struct {
@@ -89,14 +96,10 @@ func (b *Client) dial(ctx context.Context, network, addr string) (net.Conn, erro
 
 func (b *Client) Query(ctx context.Context, req any, resp any) error {
 	if b.httpClient == nil {
-		certPool := x509.NewCertPool()
-		certPool.AppendCertsFromPEM(b.CAs)
+		tlsConfig := b.buildTLSConfig()
 
 		transport := &http.Transport{
-			TLSClientConfig: &tls.Config{
-				RootCAs:    certPool,
-				MinVersion: tls.VersionTLS12,
-			},
+			TLSClientConfig: tlsConfig,
 		}
 
 		if b.Resolver != nil {
@@ -162,4 +165,147 @@ func (b *Client) Query(ctx context.Context, req any, resp any) error {
 	}
 
 	return json.NewDecoder(response.Body).Decode(resp)
+}
+
+func (b *Client) DiscoverHosts(ctx context.Context, req *pb.DiscoverHostsRequest) (pb.KopsControllerService_DiscoverHostsClient, error) {
+	tlsConfig := b.buildTLSConfig()
+
+	grpcURL := b.BaseURL.String()
+
+	dialCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	var opts []grpc.DialOption
+
+	if b.Resolver != nil {
+		resolverBuilder := &grpcResolverBuilder{kopsResolver: b.Resolver}
+		if !strings.HasPrefix(grpcURL, "https://") {
+			return nil, fmt.Errorf("expected kops-controller url to have https:// scheme, was %q", grpcURL)
+		}
+		grpcURL = strings.Replace(grpcURL, "https://", "kops://", 1)
+		opts = append(opts, grpc.WithResolvers(resolverBuilder))
+	}
+
+	tlsTransportCredentials := credentials.NewTLS(tlsConfig)
+	opts = append(opts, grpc.WithTransportCredentials(tlsTransportCredentials))
+
+	rpcCredentials := &grpcPerRPCCredentials{
+		Authenticator: b.Authenticator,
+	}
+	opts = append(opts, grpc.WithPerRPCCredentials(rpcCredentials))
+
+	conn, err := grpc.DialContext(dialCtx, grpcURL, opts...)
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	client := pb.NewKopsControllerServiceClient(conn)
+
+	stream, err := client.DiscoverHosts(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("error from DiscoverHosts request to kops-controller: %w", err)
+	}
+	return stream, nil
+}
+
+type grpcPerRPCCredentials struct {
+	// Authenticator generates authentication credentials for requests.
+	Authenticator bootstrap.Authenticator
+}
+
+func (c grpcPerRPCCredentials) GetRequestMetadata(ctx context.Context, uri ...string) (map[string]string, error) {
+	ri, _ := credentials.RequestInfoFromContext(ctx)
+	if err := credentials.CheckSecurityLevel(ri.AuthInfo, credentials.PrivacyAndIntegrity); err != nil {
+		return nil, fmt.Errorf("unable to transfer grpcPerRPCCredentials PerRPCCredentials: %w", err)
+	}
+
+	uid := string(uuid.NewUUID())
+
+	token, err := c.Authenticator.CreateToken([]byte(uid))
+	if err != nil {
+		return nil, err
+	}
+
+	return map[string]string{
+		"uid":           uid,
+		"authorization": token,
+	}, nil
+}
+
+func (c grpcPerRPCCredentials) RequireTransportSecurity() bool {
+	return true
+}
+
+type grpcResolverBuilder struct {
+	kopsResolver resolver.Resolver
+}
+
+var _ grpcresolver.Builder = &grpcResolverBuilder{}
+
+// Scheme implements grpcresolver.Builder
+func (r *grpcResolverBuilder) Scheme() string {
+	return "kops"
+}
+
+// Build implements grpcresolver.Builder
+func (r *grpcResolverBuilder) Build(target grpcresolver.Target, clientConn grpcresolver.ClientConn, opts grpcresolver.BuildOptions) (grpcresolver.Resolver, error) {
+	return &grpcResolver{
+		kopsResolver: r.kopsResolver,
+		clientConn:   clientConn,
+		url:          target.URL,
+	}, nil
+}
+
+type grpcResolver struct {
+	kopsResolver resolver.Resolver
+	url          url.URL
+
+	mutex      sync.Mutex
+	clientConn grpcresolver.ClientConn
+}
+
+var _ grpcresolver.Resolver = &grpcResolver{}
+
+// ResolveNow implements grpcresolver.Resolver
+func (r *grpcResolver) ResolveNow(opt grpcresolver.ResolveNowOptions) {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
+
+	ctx := context.TODO()
+
+	addresses, err := r.resolveAddresses(ctx)
+	if err != nil {
+		r.clientConn.ReportError(err)
+	} else {
+		r.clientConn.UpdateState(grpcresolver.State{
+			Addresses: addresses,
+		})
+	}
+}
+
+func (r *grpcResolver) resolveAddresses(ctx context.Context) ([]grpcresolver.Address, error) {
+	host, _, err := net.SplitHostPort(r.url.Host)
+	if err != nil {
+		return nil, fmt.Errorf("cannot split host and port from %q: %w", r.url.Host, err)
+	}
+
+	// TODO: cache?
+	addresses, err := r.kopsResolver.Resolve(ctx, host)
+	if err != nil {
+		return nil, err
+	}
+
+	klog.Infof("resolved %q to %v", host, addresses)
+
+	var grpcAddresses []grpcresolver.Address
+	for _, address := range addresses {
+		grpcAddresses = append(grpcAddresses, grpcresolver.Address{
+			Addr: address,
+		})
+	}
+
+	return grpcAddresses, nil
+}
+
+// Close implements grpcresolver.Resolver
+func (r *grpcResolver) Close() {
 }
