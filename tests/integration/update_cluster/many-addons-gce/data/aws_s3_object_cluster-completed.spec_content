@@ -96,6 +96,7 @@ spec:
     - ValidatingAdmissionWebhook
     - NodeRestriction
     - ResourceQuota
+    enableAggregatorRouting: true
     etcdServers:
     - https://127.0.0.1:4001
     etcdServersOverrides:
@@ -196,6 +197,8 @@ spec:
     shutdownGracePeriod: 30s
     shutdownGracePeriodCriticalPods: 10s
   masterPublicName: api.minimal.example.com
+  metricsServer:
+    enabled: true
   networking:
     cni: {}
   nonMasqueradeCIDR: 100.64.0.0/10
