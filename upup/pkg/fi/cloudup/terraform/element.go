@@ -78,15 +78,6 @@ func (o *object) Write(buffer *bytes.Buffer, indent int, key string) {
 }
 
 func ToElement(item interface{}) (element, error) {
-	if s, ok := item.(string); ok {
-		return terraformWriter.LiteralFromStringValue(s), nil
-	}
-	if s, ok := item.(*string); ok {
-		if s == nil {
-			return nil, nil
-		}
-		return terraformWriter.LiteralFromStringValue(*s), nil
-	}
 	v := reflect.ValueOf(item)
 	if v.Kind() == reflect.Pointer {
 		if v.IsNil() {
@@ -94,37 +85,45 @@ func ToElement(item interface{}) (element, error) {
 		}
 		v = v.Elem()
 	}
+	if v.Kind() == reflect.String {
+		return terraformWriter.LiteralFromStringValue(v.String()), nil
+	}
 	if v.Kind() == reflect.Struct {
 		o := &object{
 			field: map[string]element{},
 		}
 		for _, field := range reflect.VisibleFields(v.Type()) {
-			key := field.Tag.Get("cty")
-			if key == "" {
-				var b strings.Builder
-				prev_lower := false
-				for _, r := range field.Name {
-					if unicode.IsUpper(r) {
-						if prev_lower {
-							b.WriteRune('_')
-							prev_lower = false
-						}
-					} else {
-						prev_lower = true
-					}
-					b.WriteRune(unicode.ToLower(r))
-				}
-				key = b.String()
-			}
 			element, err := ToElement(v.FieldByIndex(field.Index).Interface())
 			if err != nil {
 				return nil, fmt.Errorf("converting field %q to element: %w", field.Name, err)
 			}
 			if element != nil {
-				o.field[key] = element
+				o.field[fieldKey(field)] = element
 			}
 		}
 		return o, nil
 	}
 	panic(fmt.Sprintf("unhandled kind %s", v.Kind()))
+}
+
+func fieldKey(field reflect.StructField) string {
+	key := field.Tag.Get("cty")
+	if key != "" {
+		return key
+	}
+
+	var b strings.Builder
+	prev_lower := false
+	for _, r := range field.Name {
+		if unicode.IsUpper(r) {
+			if prev_lower {
+				b.WriteRune('_')
+				prev_lower = false
+			}
+		} else {
+			prev_lower = true
+		}
+		b.WriteRune(unicode.ToLower(r))
+	}
+	return b.String()
 }
