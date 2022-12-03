@@ -743,6 +743,19 @@ func TestManyAddonsCCMIRSA26(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
+func TestManyAddonsGCE(t *testing.T) {
+	t.Setenv("KOPS_RUN_TOO_NEW_VERSION", "1")
+	newIntegrationTest("minimal.example.com", "many-addons-gce").
+		withAddons(
+			"gcp-pd-csi-driver.addons.k8s.io-k8s-1.23",
+			"certmanager.io-k8s-1.16",
+			"cluster-autoscaler.addons.k8s.io-k8s-1.15",
+			"gcp-cloud-controller.addons.k8s.io-k8s-1.23",
+			dnsControllerAddon,
+		).
+		runTestTerraformGCE(t)
+}
+
 func TestCCM(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "many-addons-ccm").
 		withAddons(
