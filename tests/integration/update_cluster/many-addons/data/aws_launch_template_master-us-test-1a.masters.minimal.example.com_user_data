@@ -159,6 +159,7 @@ kubeAPIServer:
   - ValidatingAdmissionWebhook
   - NodeRestriction
   - ResourceQuota
+  enableAggregatorRouting: true
   etcdServers:
   - https://127.0.0.1:4001
   etcdServersOverrides:
@@ -260,7 +261,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: 3eXdkP9halY6nXFlu9HMIb4qMRUqvOb4E6JPXLopbs0=
+NodeupConfigHash: wdfWmOUE63NZlYzHfc06zl6Skj6oCTXtb2gRMJrn3Kk=
 
 __EOF_KUBE_ENV
 
