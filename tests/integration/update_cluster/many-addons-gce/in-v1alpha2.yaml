@@ -8,6 +8,8 @@ spec:
     enabled: true
   clusterAutoscaler:
     enabled: true
+  metricsServer:
+    enabled: true
   api:
     dns: {}
   authorization:

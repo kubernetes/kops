@@ -170,6 +170,14 @@ resource "aws_s3_object" "minimal-example-com-addons-metadata-proxy-addons-k8s-i
   server_side_encryption = "AES256"
 }
 
+resource "aws_s3_object" "minimal-example-com-addons-metrics-server-addons-k8s-io-k8s-1-11" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_minimal.example.com-addons-metrics-server.addons.k8s.io-k8s-1.11_content")
+  key                    = "tests/minimal.example.com/addons/metrics-server.addons.k8s.io/k8s-1.11.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
 resource "aws_s3_object" "minimal-example-com-addons-storage-gce-addons-k8s-io-v1-7-0" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_minimal.example.com-addons-storage-gce.addons.k8s.io-v1.7.0_content")

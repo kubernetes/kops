@@ -836,6 +836,14 @@ resource "aws_s3_object" "minimal-example-com-addons-limit-range-addons-k8s-io" 
   server_side_encryption = "AES256"
 }
 
+resource "aws_s3_object" "minimal-example-com-addons-metrics-server-addons-k8s-io-k8s-1-11" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_minimal.example.com-addons-metrics-server.addons.k8s.io-k8s-1.11_content")
+  key                    = "clusters.example.com/minimal.example.com/addons/metrics-server.addons.k8s.io/k8s-1.11.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
 resource "aws_s3_object" "minimal-example-com-addons-networking-amazon-vpc-routed-eni-k8s-1-16" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_minimal.example.com-addons-networking.amazon-vpc-routed-eni-k8s-1.16_content")
