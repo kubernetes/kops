@@ -95,6 +95,7 @@ spec:
     - ValidatingAdmissionWebhook
     - NodeRestriction
     - ResourceQuota
+    enableAggregatorRouting: true
     etcdServers:
     - https://127.0.0.1:4001
     etcdServersOverrides:
@@ -206,6 +207,8 @@ spec:
     shutdownGracePeriod: 0s
     shutdownGracePeriodCriticalPods: 0s
   masterPublicName: api.minimal.example.com
+  metricsServer:
+    enabled: true
   networkCIDR: 172.20.0.0/16
   networking:
     amazonvpc: {}

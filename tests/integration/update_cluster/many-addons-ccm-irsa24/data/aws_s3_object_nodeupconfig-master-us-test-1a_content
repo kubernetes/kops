@@ -18,6 +18,7 @@ APIServerConfig:
     - ValidatingAdmissionWebhook
     - NodeRestriction
     - ResourceQuota
+    enableAggregatorRouting: true
     etcdServers:
     - https://127.0.0.1:4001
     etcdServersOverrides:
