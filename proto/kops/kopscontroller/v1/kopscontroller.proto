@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package kops.kopscontroller.v1;
+
+option go_package = "k8s.io/kops/proto/kopscontroller";
+
+service KopsControllerService {
+  // Finds addresses for well-known hosts (apiserver etc) without using DNS
+  rpc DiscoverHosts(DiscoverHostsRequest) returns (stream DiscoverHostsResponse) {}
+} 
+
+message DiscoverHostsRequest {
+
+}
+
+message DiscoverHostsResponse {
+    repeated HostRecord records = 1;
+    
+    // complete is set if the client has been sent a complete set of records
+    bool complete = 2;
+}
+
+message HostRecord {
+    string name = 1;
+
+    repeated Address addresses = 2;
+}
+
+message Address {
+    string address = 1;
+}
