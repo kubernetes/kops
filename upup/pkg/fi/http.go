@@ -117,7 +117,9 @@ func downloadURLAlways(url string, destPath string, dirMode os.FileMode) error {
 	}
 
 	start := time.Now()
-	defer klog.V(2).Infof("Copying %q to %q took %q", url, destPath, time.Since(start))
+	defer func() {
+		klog.V(2).Infof("Copying %q to %q took %q", url, destPath, time.Since(start))
+	}()
 
 	_, err = io.Copy(output, response.Body)
 	if err != nil {
