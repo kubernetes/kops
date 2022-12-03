@@ -47,6 +47,7 @@ import (
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/configserver"
 	"k8s.io/kops/pkg/kopscodecs"
+	"k8s.io/kops/pkg/kopscontrollerclient"
 	"k8s.io/kops/pkg/resolver"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -768,7 +769,7 @@ func getNodeConfigFromServer(ctx context.Context, bootConfig *nodeup.BootConfig,
 		return nil, fmt.Errorf("unsupported cloud provider for node configuration %s", bootConfig.CloudProvider)
 	}
 
-	client := &nodetasks.KopsBootstrapClient{
+	client := &kopscontrollerclient.Client{
 		Authenticator: authenticator,
 		Resolver:      resolver,
 	}
