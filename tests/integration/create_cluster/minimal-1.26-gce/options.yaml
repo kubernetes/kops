@@ -1,0 +1,7 @@
+ClusterName: private.example.com
+Zones:
+- us-test1-a
+CloudProvider: gce
+Networking: cni
+KubernetesVersion: v1.26.0
+Project: testproject
