@@ -1,0 +1,406 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: gcp-cloud-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    component: cloud-controller-manager
+    k8s-addon: gcp-cloud-controller.addons.k8s.io
+  name: cloud-controller-manager
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      component: cloud-controller-manager
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        component: cloud-controller-manager
+        kops.k8s.io/managed-by: kops
+        tier: control-plane
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
+      containers:
+      - args:
+        - --allocate-node-cidrs=true
+        - --cidr-allocator-type=CloudAllocator
+        - --cluster-cidr=100.96.0.0/11
+        - --cluster-name=minimal-example-com
+        - --leader-elect=true
+        - --v=2
+        - --cloud-provider=gce
+        - --use-service-account-credentials=true
+        - --cloud-config=/etc/kubernetes/cloud.config
+        command:
+        - /usr/local/bin/cloud-controller-manager
+        env:
+        - name: KUBERNETES_SERVICE_HOST
+          value: 127.0.0.1
+        image: k8scloudprovidergcp/cloud-controller-manager:latest
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            host: 127.0.0.1
+            path: /healthz
+            port: 10258
+            scheme: HTTPS
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 15
+        name: cloud-controller-manager
+        resources:
+          requests:
+            cpu: 200m
+        volumeMounts:
+        - mountPath: /etc/kubernetes/cloud.config
+          name: cloudconfig
+          readOnly: true
+      hostNetwork: true
+      nodeSelector: null
+      priorityClassName: system-cluster-critical
+      serviceAccountName: cloud-controller-manager
+      tolerations:
+      - effect: NoSchedule
+        key: node.cloudprovider.kubernetes.io/uninitialized
+        value: "true"
+      - effect: NoSchedule
+        key: node.kubernetes.io/not-ready
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/control-plane
+      volumes:
+      - hostPath:
+          path: /etc/kubernetes/cloud.config
+          type: ""
+        name: cloudconfig
+  updateStrategy:
+    type: RollingUpdate
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: gcp-cloud-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: gcp-cloud-controller.addons.k8s.io
+  name: cloud-controller-manager
+  namespace: kube-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: gcp-cloud-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: gcp-cloud-controller.addons.k8s.io
+  name: cloud-controller-manager:apiserver-authentication-reader
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: extension-apiserver-authentication-reader
+subjects:
+- apiGroup: ""
+  kind: ServiceAccount
+  name: cloud-controller-manager
+  namespace: kube-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: gcp-cloud-controller.addons.k8s.io
+    addonmanager.kubernetes.io/mode: Reconcile
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: gcp-cloud-controller.addons.k8s.io
+  name: system:cloud-controller-manager
+rules:
+- apiGroups:
+  - ""
+  - events.k8s.io
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+  - update
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+- apiGroups:
+  - coordination.k8s.io
+  resourceNames:
+  - cloud-controller-manager
+  resources:
+  - leases
+  verbs:
+  - get
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - endpoints
+  - serviceaccounts
+  verbs:
+  - create
+  - get
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  verbs:
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - nodes/status
+  verbs:
+  - patch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - create
+  - delete
+  - get
+  - update
+- apiGroups:
+  - authentication.k8s.io
+  resources:
+  - tokenreviews
+  verbs:
+  - create
+- apiGroups:
+  - '*'
+  resources:
+  - '*'
+  verbs:
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - serviceaccounts/token
+  verbs:
+  - create
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: gcp-cloud-controller.addons.k8s.io
+    addonmanager.kubernetes.io/mode: Reconcile
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: gcp-cloud-controller.addons.k8s.io
+  name: system::leader-locking-cloud-controller-manager
+  namespace: kube-system
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - watch
+- apiGroups:
+  - ""
+  resourceNames:
+  - cloud-controller-manager
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - update
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: gcp-cloud-controller.addons.k8s.io
+    addonmanager.kubernetes.io/mode: Reconcile
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: gcp-cloud-controller.addons.k8s.io
+  name: system:controller:cloud-node-controller
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+  - update
+  - delete
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - nodes/status
+  verbs:
+  - get
+  - list
+  - update
+  - delete
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - list
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - pods/status
+  verbs:
+  - list
+  - delete
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: gcp-cloud-controller.addons.k8s.io
+    addonmanager.kubernetes.io/mode: Reconcile
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: gcp-cloud-controller.addons.k8s.io
+  name: system::leader-locking-cloud-controller-manager
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: system::leader-locking-cloud-controller-manager
+subjects:
+- kind: ServiceAccount
+  name: cloud-controller-manager
+  namespace: kube-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: gcp-cloud-controller.addons.k8s.io
+    addonmanager.kubernetes.io/mode: Reconcile
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: gcp-cloud-controller.addons.k8s.io
+  name: system:cloud-controller-manager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:cloud-controller-manager
+subjects:
+- apiGroup: ""
+  kind: ServiceAccount
+  name: cloud-controller-manager
+  namespace: kube-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: gcp-cloud-controller.addons.k8s.io
+    addonmanager.kubernetes.io/mode: Reconcile
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: gcp-cloud-controller.addons.k8s.io
+  name: system:controller:cloud-node-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:controller:cloud-node-controller
+subjects:
+- kind: ServiceAccount
+  name: cloud-node-controller
+  namespace: kube-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: gcp-cloud-controller.addons.k8s.io
+    addonmanager.kubernetes.io/mode: Reconcile
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: gcp-cloud-controller.addons.k8s.io
+  name: system:controller:pvl-controller
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumeclaims
+  - persistentvolumes
+  verbs:
+  - list
+  - watch

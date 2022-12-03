@@ -198,13 +198,20 @@ const (
 	awsAuthenticatorAddon = "authentication.aws-k8s-1.12"
 	awsCCMAddon           = "aws-cloud-controller.addons.k8s.io-k8s-1.18"
 	awsEBSCSIAddon        = "aws-ebs-csi-driver.addons.k8s.io-k8s-1.17"
-	calicoAddon           = "networking.projectcalico.org-k8s-1.25"
-	canalAddon            = "networking.projectcalico.org.canal-k8s-1.25"
-	certManagerAddon      = "certmanager.io-k8s-1.16"
-	ciliumAddon           = "networking.cilium.io-k8s-1.16"
-	dnsControllerAddon    = "dns-controller.addons.k8s.io-k8s-1.12"
-	flannelAddon          = "networking.flannel-k8s-1.25"
-	leaderElectionAddon   = "leader-migration.rbac.addons.k8s.io-k8s-1.23"
+
+	gcpCCMAddon   = "gcp-cloud-controller.addons.k8s.io-k8s-1.23"
+	gcpPDCSIAddon = "gcp-pd-csi-driver.addons.k8s.io-k8s-1.23"
+
+	calicoAddon  = "networking.projectcalico.org-k8s-1.25"
+	canalAddon   = "networking.projectcalico.org.canal-k8s-1.25"
+	ciliumAddon  = "networking.cilium.io-k8s-1.16"
+	flannelAddon = "networking.flannel-k8s-1.25"
+
+	certManagerAddon       = "certmanager.io-k8s-1.16"
+	clusterAutoscalerAddon = "cluster-autoscaler.addons.k8s.io-k8s-1.15"
+	dnsControllerAddon     = "dns-controller.addons.k8s.io-k8s-1.12"
+	leaderElectionAddon    = "leader-migration.rbac.addons.k8s.io-k8s-1.23"
+	metricsServerAddon     = "metrics-server.addons.k8s.io-k8s-1.11"
 )
 
 // TestMinimal runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
@@ -620,6 +627,7 @@ func TestManyAddons(t *testing.T) {
 			"networking.amazon-vpc-routed-eni-k8s-1.16",
 			"node-termination-handler.aws-k8s-1.11",
 			"snapshot-controller.addons.k8s.io-k8s-1.20",
+			metricsServerAddon,
 			dnsControllerAddon).
 		runTestTerraformAWS(t)
 }
@@ -642,6 +650,7 @@ func TestManyAddonsCCMIRSA(t *testing.T) {
 			"node-termination-handler.aws-k8s-1.11",
 			"snapshot-controller.addons.k8s.io-k8s-1.20",
 			"aws-cloud-controller.addons.k8s.io-k8s-1.18",
+			metricsServerAddon,
 			dnsControllerAddon,
 		).
 		runTestTerraformAWS(t)
@@ -666,6 +675,7 @@ func TestManyAddonsCCMIRSA23(t *testing.T) {
 			"snapshot-controller.addons.k8s.io-k8s-1.20",
 			"aws-cloud-controller.addons.k8s.io-k8s-1.18",
 			leaderElectionAddon,
+			metricsServerAddon,
 			dnsControllerAddon,
 		).
 		runTestTerraformAWS(t)
@@ -690,6 +700,7 @@ func TestManyAddonsCCMIRSA24(t *testing.T) {
 			"snapshot-controller.addons.k8s.io-k8s-1.20",
 			"aws-cloud-controller.addons.k8s.io-k8s-1.18",
 			leaderElectionAddon,
+			metricsServerAddon,
 			dnsControllerAddon,
 		).
 		runTestTerraformAWS(t)
@@ -714,6 +725,7 @@ func TestManyAddonsCCMIRSA25(t *testing.T) {
 			"snapshot-controller.addons.k8s.io-k8s-1.20",
 			"aws-cloud-controller.addons.k8s.io-k8s-1.18",
 			leaderElectionAddon,
+			metricsServerAddon,
 			dnsControllerAddon,
 		).
 		runTestTerraformAWS(t)
@@ -738,9 +750,24 @@ func TestManyAddonsCCMIRSA26(t *testing.T) {
 			"node-termination-handler.aws-k8s-1.11",
 			"snapshot-controller.addons.k8s.io-k8s-1.20",
 			"aws-cloud-controller.addons.k8s.io-k8s-1.18",
+			metricsServerAddon,
 			dnsControllerAddon,
 		).
 		runTestTerraformAWS(t)
+}
+
+func TestManyAddonsGCE(t *testing.T) {
+	t.Setenv("KOPS_RUN_TOO_NEW_VERSION", "1")
+	newIntegrationTest("minimal.example.com", "many-addons-gce").
+		withAddons(
+			certManagerAddon,
+			clusterAutoscalerAddon,
+			dnsControllerAddon,
+			gcpCCMAddon,
+			gcpPDCSIAddon,
+			metricsServerAddon,
+		).
+		runTestTerraformGCE(t)
 }
 
 func TestCCM(t *testing.T) {
@@ -755,6 +782,7 @@ func TestCCM(t *testing.T) {
 			"snapshot-controller.addons.k8s.io-k8s-1.20",
 			"aws-cloud-controller.addons.k8s.io-k8s-1.18",
 			dnsControllerAddon,
+			metricsServerAddon,
 		).
 		runTestTerraformAWS(t)
 }
