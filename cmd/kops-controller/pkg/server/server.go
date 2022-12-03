@@ -30,6 +30,7 @@ import (
 	"runtime/debug"
 	"time"
 
+	"google.golang.org/grpc"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/cmd/kops-controller/pkg/config"
@@ -40,26 +41,39 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/secrets"
 	"k8s.io/kops/util/pkg/vfs"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+
+	pb "k8s.io/kops/proto/generated/kops/kopscontroller/v1"
 )
 
 type Server struct {
-	opt         *config.Options
-	certNames   sets.String
-	keypairIDs  map[string]string
-	server      *http.Server
+	client client.Client
+
+	opt        *config.Options
+	certNames  sets.String
+	keypairIDs map[string]string
+
+	httpServer  *http.Server
+	httpHandler http.Handler
+
+	grpcHandler *grpc.Server
+
 	verifier    bootstrap.Verifier
 	keystore    pki.Keystore
 	secretStore fi.SecretStore
 
 	// configBase is the base of the configuration storage.
 	configBase vfs.Path
+
+	// To support grpc
+	pb.UnimplementedKopsControllerServiceServer
 }
 
 var _ manager.LeaderElectionRunnable = &Server{}
 
-func NewServer(opt *config.Options, verifier bootstrap.Verifier) (*Server, error) {
-	server := &http.Server{
+func NewServer(opt *config.Options, client client.Client, verifier bootstrap.Verifier) (*Server, error) {
+	httpServer := &http.Server{
 		Addr: opt.Server.Listen,
 		TLSConfig: &tls.Config{
 			MinVersion:               tls.VersionTLS12,
@@ -67,12 +81,18 @@ func NewServer(opt *config.Options, verifier bootstrap.Verifier) (*Server, error
 		},
 	}
 
+	grpcHandler := grpc.NewServer()
+
 	s := &Server{
-		opt:       opt,
-		certNames: sets.NewString(opt.Server.CertNames...),
-		server:    server,
-		verifier:  verifier,
+		client:      client,
+		opt:         opt,
+		certNames:   sets.NewString(opt.Server.CertNames...),
+		httpServer:  httpServer,
+		grpcHandler: grpcHandler,
+		verifier:    verifier,
 	}
+
+	pb.RegisterKopsControllerServiceServer(s.grpcHandler, s)
 
 	configBase, err := vfs.Context.BuildVfsPath(opt.ConfigBase)
 	if err != nil {
@@ -86,9 +106,10 @@ func NewServer(opt *config.Options, verifier bootstrap.Verifier) (*Server, error
 	}
 	s.secretStore = secrets.NewVFSSecretStore(nil, p)
 
-	r := http.NewServeMux()
-	r.Handle("/bootstrap", http.HandlerFunc(s.bootstrap))
-	server.Handler = recovery(r)
+	httpMux := http.NewServeMux()
+	httpMux.Handle("/bootstrap", http.HandlerFunc(s.bootstrap))
+	s.httpHandler = recovery(httpMux)
+	httpServer.Handler = s
 
 	return s, nil
 }
@@ -110,17 +131,17 @@ func (s *Server) Start(ctx context.Context) error {
 		shutdownContext, cleanup := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cleanup()
 
-		if err := s.server.Shutdown(shutdownContext); err != nil {
+		if err := s.httpServer.Shutdown(shutdownContext); err != nil {
 			klog.Warningf("error during HTTP server shutdown: %v", err)
 		}
 
-		if err := s.server.Close(); err != nil {
+		if err := s.httpServer.Close(); err != nil {
 			klog.Warningf("error from HTTP server close: %v", err)
 		}
 	}()
 
 	klog.Infof("kops-controller listening on %s", s.opt.Server.Listen)
-	return s.server.ListenAndServeTLS(s.opt.Server.ServerCertificatePath, s.opt.Server.ServerKeyPath)
+	return s.httpServer.ListenAndServeTLS(s.opt.Server.ServerCertificatePath, s.opt.Server.ServerKeyPath)
 }
 
 func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
@@ -279,4 +300,12 @@ func recovery(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, req)
 	})
+}
+
+func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Header.Get("content-type") != "application/grpc" {
+		s.httpHandler.ServeHTTP(w, r)
+	} else {
+		s.grpcHandler.ServeHTTP(w, r)
+	}
 }

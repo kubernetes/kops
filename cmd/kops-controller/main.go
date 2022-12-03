@@ -138,7 +138,7 @@ func main() {
 			klog.Fatalf("server cloud provider config not provided")
 		}
 
-		srv, err := server.NewServer(&opt, verifier)
+		srv, err := server.NewServer(&opt, mgr.GetClient(), verifier)
 		if err != nil {
 			setupLog.Error(err, "unable to create server")
 			os.Exit(1)
