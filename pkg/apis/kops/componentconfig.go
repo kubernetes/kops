@@ -963,6 +963,10 @@ type NodeTerminationHandlerConfig struct {
 	Version *string `json:"version,omitempty"`
 }
 
+func (n *NodeTerminationHandlerConfig) IsQueueMode() bool {
+	return n != nil && n.Enabled != nil && *n.Enabled && n.EnableSQSTerminationDraining != nil && *n.EnableSQSTerminationDraining
+}
+
 // NodeProblemDetector determines the node problem detector configuration.
 type NodeProblemDetectorConfig struct {
 	// Enabled enables the NodeProblemDetector.
