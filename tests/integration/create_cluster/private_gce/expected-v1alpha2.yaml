@@ -72,7 +72,7 @@ metadata:
   name: bastions
 spec:
   image: ubuntu-os-cloud/ubuntu-2004-focal-v20221018
-  machineType: f1-micro
+  machineType: e2-micro
   maxSize: 1
   minSize: 1
   role: Bastion
@@ -118,7 +118,7 @@ spec:
   - sg-exampleid
   - sg-exampleid2
   image: ubuntu-os-cloud/ubuntu-2004-focal-v20221018
-  machineType: n1-standard-2
+  machineType: e2-medium
   maxSize: 1
   minSize: 1
   role: Node
