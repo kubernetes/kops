@@ -23,7 +23,6 @@ import (
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/zclconf/go-cty/cty"
-	"github.com/zclconf/go-cty/cty/gocty"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
@@ -63,6 +62,8 @@ func (t *TerraformTarget) finishHCL2() error {
 		return err
 	}
 
+	buf := bytes.NewBuffer(hclwrite.Format(f.Bytes()))
+
 	resourcesByType, err := t.GetResourcesByType()
 	if err != nil {
 		return err
@@ -81,30 +82,15 @@ func (t *TerraformTarget) finishHCL2() error {
 		}
 		sort.Strings(resourceNames)
 		for _, resourceName := range resourceNames {
-			item := resources[resourceName]
+			element, err := ToElement(resources[resourceName])
+			if err != nil {
+				return fmt.Errorf("resource %q %q: %w", resourceType, resourceName, err)
+			}
 
-			resBlock := rootBody.AppendNewBlock("resource", []string{resourceType, resourceName})
-			resBody := resBlock.Body()
-			resType, err := gocty.ImpliedType(item)
-			if err != nil {
-				return err
-			}
-			resVal, err := gocty.ToCtyValue(item, resType)
-			if err != nil {
-				return err
-			}
-			if resVal.IsNull() {
-				continue
-			}
-			resVal.ForEachElement(func(key cty.Value, value cty.Value) bool {
-				writeValue(resBody, key.AsString(), value)
-				return false
-			})
-			rootBody.AppendNewline()
+			element.Write(buf, 0, fmt.Sprintf("resource %q %q", resourceType, resourceName))
+			buf.WriteString("\n")
 		}
 	}
-
-	buf := bytes.NewBuffer(hclwrite.Format(f.Bytes()))
 
 	dataSourcesByType, err := t.GetDataSourcesByType()
 	if err != nil {
@@ -130,7 +116,7 @@ func (t *TerraformTarget) finishHCL2() error {
 			}
 
 			element.Write(buf, 0, fmt.Sprintf("data %q %q", dataSourceType, dataSourceName))
-			buf.WriteString("\n\n")
+			buf.WriteString("\n")
 		}
 	}
 

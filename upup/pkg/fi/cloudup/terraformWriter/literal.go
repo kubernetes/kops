@@ -45,6 +45,7 @@ func (l *Literal) IsSingleValue() bool {
 func (l *Literal) Write(buffer *bytes.Buffer, indent int, key string) {
 	buffer.WriteString("= ")
 	buffer.WriteString(l.String)
+	buffer.WriteString("\n")
 }
 
 // LiteralFunctionExpression constructs a Literal representing the result of
