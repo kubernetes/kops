@@ -2,58 +2,48 @@ apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
   creationTimestamp: "2016-12-10T22:42:27Z"
-  name: minimal.example.com
+  name: nthimdsprocessor.longclustername.example.com
 spec:
-  awsLoadBalancerController:
-    enabled: true
-  certManager:
-    enabled: true
-  clusterAutoscaler:
-    enabled: true
-    podAnnotations:
-      testAnnotation: testAnnotation
-  metricsServer:
-    enabled: true
   kubernetesApiAccess:
-  - 0.0.0.0/0
+    - 0.0.0.0/0
   channel: stable
-  cloudConfig:
-    awsEBSCSIDriver:
-      enabled: true
   cloudProvider: aws
-  configBase: memfs://clusters.example.com/minimal.example.com
+  configBase: memfs://clusters.example.com/nthimdsprocessor.longclustername.example.com
   etcdClusters:
-  - etcdMembers:
-    - instanceGroup: master-us-test-1a
-      name: us-test-1a
-    name: main
-  - etcdMembers:
-    - instanceGroup: master-us-test-1a
-      name: us-test-1a
-    name: events
-  iam: {}
+    - etcdMembers:
+        - instanceGroup: master-us-test-1a
+          name: us-test-1a
+      name: main
+    - etcdMembers:
+        - instanceGroup: master-us-test-1a
+          name: us-test-1a
+      name: events
+  iam:
+    useServiceAccountExternalPermissions: true
   kubelet:
     anonymousAuth: false
   kubernetesVersion: v1.21.0
-  masterPublicName: api.minimal.example.com
+  masterPublicName: api.nthimdsprocessor.longclustername.example.com
   networkCIDR: 172.20.0.0/16
   networking:
-    amazonvpc: {}
+    cni: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  serviceAccountIssuerDiscovery:
+    discoveryStore: memfs://discovery.example.com/minimal.example.com
+    enableAWSOIDCProvider: true
   nodeTerminationHandler:
     enabled: true
-  nonMasqueradeCIDR: 172.20.0.0/16
-  snapshotController:
-    enabled: true
+    enableSQSTerminationDraining: false
   sshAccess:
     - 0.0.0.0/0
   topology:
     masters: public
     nodes: public
   subnets:
-  - cidr: 172.20.32.0/19
-    name: us-test-1a
-    type: Public
-    zone: us-test-1a
+    - cidr: 172.20.32.0/19
+      name: us-test-1a
+      type: Public
+      zone: us-test-1a
 
 ---
 
@@ -63,7 +53,7 @@ metadata:
   creationTimestamp: "2016-12-10T22:42:28Z"
   name: nodes
   labels:
-    kops.k8s.io/cluster: minimal.example.com
+    kops.k8s.io/cluster: nthimdsprocessor.longclustername.example.com
 spec:
   associatePublicIp: true
   image: ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404
@@ -72,7 +62,7 @@ spec:
   minSize: 2
   role: Node
   subnets:
-  - us-test-1a
+    - us-test-1a
 
 ---
 
@@ -82,7 +72,7 @@ metadata:
   creationTimestamp: "2016-12-10T22:42:28Z"
   name: master-us-test-1a
   labels:
-    kops.k8s.io/cluster: minimal.example.com
+    kops.k8s.io/cluster: nthimdsprocessor.longclustername.example.com
 spec:
   associatePublicIp: true
   image: ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404
@@ -91,4 +81,4 @@ spec:
   minSize: 1
   role: Master
   subnets:
-  - us-test-1a
+    - us-test-1a
