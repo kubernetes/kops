@@ -41,5 +41,5 @@ kops toolbox dump [CLUSTER] [flags]
 
 ### SEE ALSO
 
-* [kops toolbox](kops_toolbox.md)	 - Miscellaneous, infrequently used commands.
+* [kops toolbox](kops_toolbox.md)	 - Miscellaneous, experimental, or infrequently used commands.
 
