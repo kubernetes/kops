@@ -41,7 +41,6 @@ import (
 
 	kopsbase "k8s.io/kops"
 	"k8s.io/kops/cmd/kops/util"
-	"k8s.io/kops/pkg/apis/kops"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	kopsutil "k8s.io/kops/pkg/apis/kops/util"
@@ -675,7 +674,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 
 	{
 		// Build full IG spec to ensure we end up with a valid IG
-		fullInstanceGroups := []*kops.InstanceGroup{}
+		fullInstanceGroups := []*api.InstanceGroup{}
 		for _, group := range instanceGroups {
 			fullGroup, err := cloudup.PopulateInstanceGroupSpec(cluster, group, cloud, clusterResult.Channel)
 			if err != nil {
