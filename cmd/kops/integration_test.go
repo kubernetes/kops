@@ -116,9 +116,10 @@ func (i *integrationTest) withPrivate() *integrationTest {
 
 // withServiceAccountRoles indicates we expect to assign an IAM role for a ServiceAccount (instead of just using the node roles)
 func (i *integrationTest) withServiceAccountRole(sa string, inlinePolicy bool) *integrationTest {
-	i.expectServiceAccountRolePolicies = append(i.expectServiceAccountRolePolicies, fmt.Sprintf("aws_iam_role_%s.sa.%s_policy", sa, i.clusterName))
+	role := truncate.TruncateString(sa+".sa."+i.clusterName, truncate.TruncateStringOptions{MaxLength: iam.MaxLengthIAMRoleName, AlwaysAddHash: false})
+	i.expectServiceAccountRolePolicies = append(i.expectServiceAccountRolePolicies, fmt.Sprintf("aws_iam_role_%s_policy", role))
 	if inlinePolicy {
-		i.expectServiceAccountRolePolicies = append(i.expectServiceAccountRolePolicies, fmt.Sprintf("aws_iam_role_policy_%s.sa.%s_policy", sa, i.clusterName))
+		i.expectServiceAccountRolePolicies = append(i.expectServiceAccountRolePolicies, fmt.Sprintf("aws_iam_role_policy_%s_policy", role))
 	}
 	return i
 }
@@ -620,10 +621,10 @@ func TestManyAddons(t *testing.T) {
 			"certmanager.io-k8s-1.16",
 			"cluster-autoscaler.addons.k8s.io-k8s-1.15",
 			"networking.amazon-vpc-routed-eni-k8s-1.16",
-			"node-termination-handler.aws-k8s-1.11",
 			"snapshot-controller.addons.k8s.io-k8s-1.20",
 			metricsServerAddon,
 			dnsControllerAddon).
+		withNTH().
 		runTestTerraformAWS(t)
 }
 
@@ -642,12 +643,12 @@ func TestManyAddonsCCMIRSA(t *testing.T) {
 			"certmanager.io-k8s-1.16",
 			"cluster-autoscaler.addons.k8s.io-k8s-1.15",
 			"networking.amazon-vpc-routed-eni-k8s-1.16",
-			"node-termination-handler.aws-k8s-1.11",
 			"snapshot-controller.addons.k8s.io-k8s-1.20",
 			"aws-cloud-controller.addons.k8s.io-k8s-1.18",
 			metricsServerAddon,
 			dnsControllerAddon,
 		).
+		withNTH().
 		runTestTerraformAWS(t)
 }
 
@@ -666,13 +667,13 @@ func TestManyAddonsCCMIRSA23(t *testing.T) {
 			"certmanager.io-k8s-1.16",
 			"cluster-autoscaler.addons.k8s.io-k8s-1.15",
 			"networking.amazon-vpc-routed-eni-k8s-1.16",
-			"node-termination-handler.aws-k8s-1.11",
 			"snapshot-controller.addons.k8s.io-k8s-1.20",
 			"aws-cloud-controller.addons.k8s.io-k8s-1.18",
 			leaderElectionAddon,
 			metricsServerAddon,
 			dnsControllerAddon,
 		).
+		withNTH().
 		runTestTerraformAWS(t)
 }
 
@@ -691,13 +692,13 @@ func TestManyAddonsCCMIRSA24(t *testing.T) {
 			"certmanager.io-k8s-1.16",
 			"cluster-autoscaler.addons.k8s.io-k8s-1.15",
 			"networking.amazon-vpc-routed-eni-k8s-1.16",
-			"node-termination-handler.aws-k8s-1.11",
 			"snapshot-controller.addons.k8s.io-k8s-1.20",
 			"aws-cloud-controller.addons.k8s.io-k8s-1.18",
 			leaderElectionAddon,
 			metricsServerAddon,
 			dnsControllerAddon,
 		).
+		withNTH().
 		runTestTerraformAWS(t)
 }
 
@@ -716,13 +717,13 @@ func TestManyAddonsCCMIRSA25(t *testing.T) {
 			"certmanager.io-k8s-1.16",
 			"cluster-autoscaler.addons.k8s.io-k8s-1.15",
 			"networking.amazon-vpc-routed-eni-k8s-1.16",
-			"node-termination-handler.aws-k8s-1.11",
 			"snapshot-controller.addons.k8s.io-k8s-1.20",
 			"aws-cloud-controller.addons.k8s.io-k8s-1.18",
 			leaderElectionAddon,
 			metricsServerAddon,
 			dnsControllerAddon,
 		).
+		withNTH().
 		runTestTerraformAWS(t)
 }
 
@@ -742,12 +743,12 @@ func TestManyAddonsCCMIRSA26(t *testing.T) {
 			"certmanager.io-k8s-1.16",
 			"cluster-autoscaler.addons.k8s.io-k8s-1.15",
 			"networking.amazon-vpc-routed-eni-k8s-1.16",
-			"node-termination-handler.aws-k8s-1.11",
 			"snapshot-controller.addons.k8s.io-k8s-1.20",
 			"aws-cloud-controller.addons.k8s.io-k8s-1.18",
 			metricsServerAddon,
 			dnsControllerAddon,
 		).
+		withNTH().
 		runTestTerraformAWS(t)
 }
 
@@ -773,12 +774,12 @@ func TestCCM(t *testing.T) {
 			"certmanager.io-k8s-1.16",
 			"cluster-autoscaler.addons.k8s.io-k8s-1.15",
 			"networking.amazon-vpc-routed-eni-k8s-1.16",
-			"node-termination-handler.aws-k8s-1.11",
 			"snapshot-controller.addons.k8s.io-k8s-1.20",
 			"aws-cloud-controller.addons.k8s.io-k8s-1.18",
 			dnsControllerAddon,
 			metricsServerAddon,
 		).
+		withNTH().
 		runTestTerraformAWS(t)
 }
 
@@ -934,11 +935,26 @@ func TestAPIServerNodes(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
-// TestNTHQueueProcessor tests the output for resources required by NTH Queue Processor mode
-func TestNTHQueueProcessor(t *testing.T) {
-	newIntegrationTest("nthsqsresources.longclustername.example.com", "nth_sqs_resources").
-		withNTH().
-		withAddons(dnsControllerAddon).
+// TestNTHIMDSProcessor tests the output for resources required by NTH IMDS Processor mode
+func TestNTHIMDSProcessor(t *testing.T) {
+	newIntegrationTest("nthimdsprocessor.longclustername.example.com", "nth-imds-processor").
+		withAddons(
+			dnsControllerAddon,
+			"node-termination-handler.aws-k8s-1.11",
+		).
+		runTestTerraformAWS(t)
+}
+
+// TestNTHIMDSProcessorIRSSA tests the output for resources required by NTH IMDS Processor mode with IRSA
+func TestNTHIMDSProcessorIRSA(t *testing.T) {
+	newIntegrationTest("nthimdsprocessor.longclustername.example.com", "nth-imds-processor-irsa").
+		withOIDCDiscovery().
+		withServiceAccountRole("dns-controller.kube-system", true).
+		withServiceAccountRole("aws-node-termination-handler.kube-system", true).
+		withAddons(
+			dnsControllerAddon,
+			"node-termination-handler.aws-k8s-1.11",
+		).
 		runTestTerraformAWS(t)
 }
 
