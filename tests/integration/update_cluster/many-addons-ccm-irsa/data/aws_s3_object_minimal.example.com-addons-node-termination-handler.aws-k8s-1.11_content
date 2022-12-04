@@ -99,12 +99,12 @@ subjects:
 ---
 
 apiVersion: apps/v1
-kind: DaemonSet
+kind: Deployment
 metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: node-termination-handler.aws
-    app.kubernetes.io/component: daemonset
+    app.kubernetes.io/component: deployment
     app.kubernetes.io/instance: aws-node-termination-handler
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node-termination-handler
@@ -115,6 +115,7 @@ metadata:
   name: aws-node-termination-handler
   namespace: kube-system
 spec:
+  replicas: 2
   selector:
     matchLabels:
       app.kubernetes.io/instance: aws-node-termination-handler
@@ -124,22 +125,14 @@ spec:
     metadata:
       creationTimestamp: null
       labels:
-        app.kubernetes.io/component: daemonset
+        app.kubernetes.io/component: deployment
         app.kubernetes.io/instance: aws-node-termination-handler
         app.kubernetes.io/name: aws-node-termination-handler
         k8s-app: aws-node-termination-handler
         kops.k8s.io/managed-by: kops
+        kops.k8s.io/nth-mode: sqs
         kubernetes.io/os: linux
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: eks.amazonaws.com/compute-type
-                operator: NotIn
-                values:
-                - fargate
       containers:
       - env:
         - name: NODE_NAME
@@ -155,7 +148,7 @@ spec:
             fieldRef:
               fieldPath: metadata.namespace
         - name: ENABLE_PROBES_SERVER
-          value: "false"
+          value: "true"
         - name: PROBES_SERVER_PORT
           value: "8080"
         - name: PROBES_SERVER_ENDPOINT
@@ -170,8 +163,12 @@ spec:
           value: "false"
         - name: PROMETHEUS_SERVER_PORT
           value: "9092"
-        - name: METADATA_TRIES
-          value: "3"
+        - name: CHECK_TAG_BEFORE_DRAINING
+          value: "true"
+        - name: MANAGED_TAG
+          value: aws-node-termination-handler/managed
+        - name: USE_PROVIDER_ID
+          value: "true"
         - name: DRY_RUN
           value: "false"
         - name: CORDON_ONLY
@@ -190,6 +187,8 @@ spec:
           value: "120"
         - name: EMIT_KUBERNETES_EVENTS
           value: "true"
+        - name: COMPLETE_LIFECYCLE_ACTION_DELAY_SECONDS
+          value: "-1"
         - name: ENABLE_SPOT_INTERRUPTION_DRAINING
           value: "true"
         - name: ENABLE_SCHEDULED_EVENT_DRAINING
@@ -199,16 +198,31 @@ spec:
         - name: ENABLE_REBALANCE_DRAINING
           value: "false"
         - name: ENABLE_SQS_TERMINATION_DRAINING
-          value: "false"
-        - name: UPTIME_FROM_FILE
-          value: /proc/uptime
+          value: "true"
+        - name: QUEUE_URL
+          value: https://sqs.us-test-1.amazonaws.com/123456789012/minimal-example-com-nth
+        - name: WORKERS
+          value: "10"
         - name: AWS_ROLE_ARN
           value: arn:aws-test:iam::123456789012:role/aws-node-termination-handler.kube-system.sa.minimal.example.com
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
         image: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.18.1
         imagePullPolicy: IfNotPresent
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
         name: aws-node-termination-handler
+        ports:
+        - containerPort: 8080
+          name: liveness-probe
+          protocol: TCP
+        - containerPort: 9092
+          name: metrics
+          protocol: TCP
         resources:
           requests:
             cpu: 50m
@@ -218,27 +232,33 @@ spec:
           readOnlyRootFilesystem: true
           runAsGroup: 1000
           runAsNonRoot: true
+          runAsUser: 1000
         volumeMounts:
-        - mountPath: /proc/uptime
-          name: uptime
-          readOnly: true
         - mountPath: /var/run/secrets/amazonaws.com/
           name: token-amazonaws-com
           readOnly: true
-      dnsPolicy: ClusterFirstWithHostNet
-      hostNetwork: true
-      nodeSelector:
-        kubernetes.io/os: linux
-      priorityClassName: system-node-critical
+      priorityClassName: system-cluster-critical
       securityContext:
         fsGroup: 1000
       serviceAccountName: aws-node-termination-handler
-      tolerations:
-      - operator: Exists
+      topologySpreadConstraints:
+      - labelSelector:
+          matchLabels:
+            app.kubernetes.io/instance: aws-node-termination-handler
+            app.kubernetes.io/name: aws-node-termination-handler
+            kops.k8s.io/nth-mode: sqs
+        maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: ScheduleAnyway
+      - labelSelector:
+          matchLabels:
+            app.kubernetes.io/instance: aws-node-termination-handler
+            app.kubernetes.io/name: aws-node-termination-handler
+            kops.k8s.io/nth-mode: sqs
+        maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
       volumes:
-      - hostPath:
-          path: /proc/uptime
-        name: uptime
       - name: token-amazonaws-com
         projected:
           defaultMode: 420
@@ -247,7 +267,25 @@ spec:
               audience: amazonaws.com
               expirationSeconds: 86400
               path: token
-  updateStrategy:
-    rollingUpdate:
-      maxUnavailable: 25%
-    type: RollingUpdate
+
+---
+
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: node-termination-handler.aws
+    app.kubernetes.io/instance: aws-node-termination-handler
+    app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: aws-node-termination-handler
+    k8s-addon: node-termination-handler.aws
+  name: aws-node-termination-handler
+  namespace: kube-system
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: aws-node-termination-handler
+      app.kubernetes.io/name: aws-node-termination-handler
+      kops.k8s.io/nth-mode: sqs
