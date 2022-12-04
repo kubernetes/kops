@@ -308,6 +308,10 @@ resource "google_compute_firewall" "node-to-master-minimal-example-com" {
     protocol = "tcp"
   }
   allow {
+    ports    = ["10250"]
+    protocol = "tcp"
+  }
+  allow {
     ports    = ["3988"]
     protocol = "tcp"
   }
