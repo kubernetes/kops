@@ -56,10 +56,6 @@ func (b *NodeTerminationHandlerOptionsBuilder) BuildOptions(o interface{}) error
 		nth.EnablePrometheusMetrics = fi.PtrTo(false)
 	}
 
-	if nth.EnableSQSTerminationDraining == nil {
-		nth.EnableSQSTerminationDraining = fi.PtrTo(false)
-	}
-
 	if nth.ExcludeFromLoadBalancers == nil {
 		nth.ExcludeFromLoadBalancers = fi.PtrTo(true)
 	}
