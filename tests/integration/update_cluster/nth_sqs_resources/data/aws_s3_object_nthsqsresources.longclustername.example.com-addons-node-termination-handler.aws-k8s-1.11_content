@@ -168,7 +168,7 @@ spec:
         - name: JSON_LOGGING
           value: "true"
         - name: LOG_FORMAT_VERSION
-          value: "1"
+          value: "2"
         - name: ENABLE_PROMETHEUS_SERVER
           value: "false"
         - name: PROMETHEUS_SERVER_PORT
