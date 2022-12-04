@@ -35,7 +35,7 @@ kOps is Kubernetes Operations.
 * [kops promote](kops_promote.md)	 - Promote a resource.
 * [kops replace](kops_replace.md)	 - Replace cluster resources.
 * [kops rolling-update](kops_rolling-update.md)	 - Rolling update a cluster.
-* [kops toolbox](kops_toolbox.md)	 - Miscellaneous, infrequently used commands.
+* [kops toolbox](kops_toolbox.md)	 - Miscellaneous, experimental, or infrequently used commands.
 * [kops trust](kops_trust.md)	 - Trust keypairs.
 * [kops update](kops_update.md)	 - Update a cluster.
 * [kops upgrade](kops_upgrade.md)	 - Upgrade a kubernetes cluster.

@@ -46,8 +46,8 @@ func NewCmdApplyChannel(f Factory, out io.Writer) *cobra.Command {
 	var options ApplyChannelOptions
 
 	cmd := &cobra.Command{
-		Use:   "channel",
-		Short: "Apply channel",
+		Use:   "channel CHANNEL",
+		Short: "Applies updates from the given channel",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.TODO()
 			return RunApplyChannel(ctx, f, out, &options, args)
