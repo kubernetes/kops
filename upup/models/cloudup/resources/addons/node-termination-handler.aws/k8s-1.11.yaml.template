@@ -175,7 +175,7 @@ spec:
             - name: JSON_LOGGING
               value: "true"
             - name: LOG_FORMAT_VERSION
-              value: "1"
+              value: "2"
             - name: ENABLE_PROMETHEUS_SERVER
               value: "{{ WithDefaultBool .EnablePrometheusMetrics false }}"
             - name: PROMETHEUS_SERVER_PORT
@@ -298,7 +298,6 @@ spec:
     matchLabels:
       app.kubernetes.io/name: aws-node-termination-handler
       app.kubernetes.io/instance: aws-node-termination-handler
-      app.kubernetes.io/component: daemonset
       kubernetes.io/os: linux
   template:
     metadata:
@@ -349,7 +348,7 @@ spec:
             - name: JSON_LOGGING
               value: "true"
             - name: LOG_FORMAT_VERSION
-              value: "1"
+              value: "2"
             - name: ENABLE_PROMETHEUS_SERVER
               value: "{{ WithDefaultBool .EnablePrometheusMetrics false }}"
             - name: PROMETHEUS_SERVER_PORT
