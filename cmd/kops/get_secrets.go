@@ -130,7 +130,7 @@ func RunGetSecrets(ctx context.Context, f *util.Factory, out io.Writer, options 
 	}
 
 	if len(items) == 0 {
-		return fmt.Errorf("No secrets found")
+		return fmt.Errorf("no secrets found")
 	}
 	switch options.Output {
 
