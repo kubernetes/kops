@@ -22,7 +22,7 @@ Manage addons
 
 ### SEE ALSO
 
-* [kops toolbox](kops_toolbox.md)	 - Miscellaneous, infrequently used commands.
+* [kops toolbox](kops_toolbox.md)	 - Miscellaneous, experimental, or infrequently used commands.
 * [kops toolbox addons apply](kops_toolbox_addons_apply.md)	 - Applies updates from the given channel
 * [kops toolbox addons list](kops_toolbox_addons_list.md)	 - Lists installed addons
 

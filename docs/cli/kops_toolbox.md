@@ -3,7 +3,7 @@
 
 ## kops toolbox
 
-Miscellaneous, infrequently used commands.
+Miscellaneous, experimental, or infrequently used commands.
 
 ### Options
 
