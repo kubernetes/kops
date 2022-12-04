@@ -111,6 +111,7 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleControlPlane), b.GCETagForRole("Master")},
 			Allowed: []string{
 				fmt.Sprintf("tcp:%d", wellknownports.KubeAPIServer),
+				fmt.Sprintf("tcp:%d", wellknownports.KubeletAPI),
 				fmt.Sprintf("tcp:%d", wellknownports.KopsControllerPort),
 			},
 		}
