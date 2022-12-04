@@ -36,12 +36,12 @@ import (
 
 // Default Machine types for various types of instance group machine
 const (
-	defaultNodeMachineTypeGCE     = "n1-standard-2"
+	defaultNodeMachineTypeGCE     = "e2-medium"
 	defaultNodeMachineTypeDO      = "s-2vcpu-4gb"
 	defaultNodeMachineTypeAzure   = "Standard_B2s"
 	defaultNodeMachineTypeHetzner = "cx21"
 
-	defaultBastionMachineTypeGCE     = "f1-micro"
+	defaultBastionMachineTypeGCE     = "e2-micro"
 	defaultBastionMachineTypeAzure   = "Standard_B2s"
 	defaultBastionMachineTypeHetzner = "cx11"
 
