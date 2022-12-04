@@ -184,7 +184,7 @@ func RunGetClusters(ctx context.Context, f commandutils.Factory, out io.Writer, 
 		// kops get cluster test.example.com -o json will return a single object (since a specific cluster is selected)
 		return fullOutputJSON(out, singleClusterSelected, obj...)
 	default:
-		return fmt.Errorf("Unknown output format: %q", options.Output)
+		return fmt.Errorf("unknown output format: %q", options.Output)
 	}
 }
 
