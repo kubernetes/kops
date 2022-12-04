@@ -270,6 +270,10 @@ resource "google_compute_firewall" "node-to-master-minimal-gce-with-a-very-very-
     protocol = "tcp"
   }
   allow {
+    ports    = ["10250"]
+    protocol = "tcp"
+  }
+  allow {
     ports    = ["3988"]
     protocol = "tcp"
   }
