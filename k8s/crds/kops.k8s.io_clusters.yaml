@@ -5346,7 +5346,7 @@ spec:
                   enableSQSTerminationDraining:
                     description: 'EnableSQSTerminationDraining enables queue-processor
                       mode which drains nodes when an SQS termination event is received.
-                      Default: false'
+                      Default: true'
                     type: boolean
                   enableScheduledEventDraining:
                     description: 'EnableScheduledEventDraining makes node termination
