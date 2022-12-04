@@ -191,6 +191,7 @@ spec:
           value: "false"
         - name: UPTIME_FROM_FILE
           value: /proc/uptime
+        - name: WEBHOOK_URL
         - name: AWS_ROLE_ARN
           value: arn:aws-test:iam::123456789012:role/aws-node-termination-handler.kube-system.sa.minimal.example.com
         - name: AWS_WEB_IDENTITY_TOKEN_FILE

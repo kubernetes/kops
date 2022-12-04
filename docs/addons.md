@@ -244,6 +244,7 @@ spec:
     enableSQSTerminationDraining: true
     managedASGTag: "aws-node-termination-handler/managed"
     prometheusEnable: true
+    webhookURL: "https://hooks.slack.com/services/YOUR/SLACK/URL"
 ```
 
 ##### Queue Processor Mode

@@ -6508,6 +6508,7 @@ func autoConvert_v1alpha3_NodeTerminationHandlerConfig_To_kops_NodeTerminationHa
 	out.MemoryRequest = in.MemoryRequest
 	out.CPURequest = in.CPURequest
 	out.Version = in.Version
+	out.WebhookURL = in.WebhookURL
 	return nil
 }
 
@@ -6529,6 +6530,7 @@ func autoConvert_kops_NodeTerminationHandlerConfig_To_v1alpha3_NodeTerminationHa
 	out.MemoryRequest = in.MemoryRequest
 	out.CPURequest = in.CPURequest
 	out.Version = in.Version
+	out.WebhookURL = in.WebhookURL
 	return nil
 }
 
