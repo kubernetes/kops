@@ -148,11 +148,6 @@ func (i *integrationTest) withNTH() *integrationTest {
 	return i
 }
 
-func (i *integrationTest) withKubeDNS() *integrationTest {
-	i.kubeDNS = true
-	return i
-}
-
 func (i *integrationTest) withOIDCDiscovery() *integrationTest {
 	i.discovery = true
 	return i
