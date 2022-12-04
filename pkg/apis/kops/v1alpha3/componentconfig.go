@@ -938,7 +938,7 @@ type NodeTerminationHandlerConfig struct {
 	EnablePrometheusMetrics *bool `json:"prometheusEnable,omitempty"`
 
 	// EnableSQSTerminationDraining enables queue-processor mode which drains nodes when an SQS termination event is received.
-	// Default: false
+	// Default: true
 	EnableSQSTerminationDraining *bool `json:"enableSQSTerminationDraining,omitempty"`
 
 	// ManagedASGTag is the tag used to determine which nodes NTH can take action on

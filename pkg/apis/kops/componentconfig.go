@@ -941,7 +941,7 @@ type NodeTerminationHandlerConfig struct {
 	EnablePrometheusMetrics *bool `json:"prometheusEnable,omitempty"`
 
 	// EnableSQSTerminationDraining enables queue-processor mode which drains nodes when an SQS termination event is received.
-	// Default: false
+	// Default: true
 	EnableSQSTerminationDraining *bool `json:"enableSQSTerminationDraining,omitempty"`
 
 	// ExcludeFromLoadBalancers makes node termination handler will mark for exclusion from load balancers before node are cordoned.
@@ -964,7 +964,7 @@ type NodeTerminationHandlerConfig struct {
 }
 
 func (n *NodeTerminationHandlerConfig) IsQueueMode() bool {
-	return n != nil && n.Enabled != nil && *n.Enabled && n.EnableSQSTerminationDraining != nil && *n.EnableSQSTerminationDraining
+	return n != nil && n.Enabled != nil && *n.Enabled && (n.EnableSQSTerminationDraining == nil || *n.EnableSQSTerminationDraining)
 }
 
 // NodeProblemDetector determines the node problem detector configuration.
