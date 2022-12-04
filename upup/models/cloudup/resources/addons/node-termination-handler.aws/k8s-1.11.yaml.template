@@ -130,6 +130,11 @@ spec:
             - matchExpressions:
               - key: node-role.kubernetes.io/master
                 operator: Exists
+      tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+      - key: node-role.kubernetes.io/master
+        operator: Exists
       {{ end }}
       serviceAccountName: aws-node-termination-handler
       securityContext:
