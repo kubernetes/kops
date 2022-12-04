@@ -435,7 +435,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		AddClusterAutoscalerPermissions(p, useStaticInstanceList)
 
 		nth := b.Cluster.Spec.NodeTerminationHandler
-		if nth != nil && fi.ValueOf(nth.Enabled) && fi.ValueOf(nth.EnableSQSTerminationDraining) {
+		if nth.IsQueueMode() {
 			AddNodeTerminationHandlerSQSPermissions(p)
 		}
 	}
