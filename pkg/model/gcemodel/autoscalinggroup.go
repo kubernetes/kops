@@ -107,6 +107,14 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderC
 				},
 			}
 
+			if ig.Spec.Role == kops.InstanceGroupRoleNode {
+				autoscalerEnvVars := "os_distribution=ubuntu;arch=amd64;os=linux"
+				if strings.HasPrefix(ig.Spec.Image, "cos-cloud/") {
+					autoscalerEnvVars = "os_distribution=cos;arch=amd64;os=linux"
+				}
+				t.Metadata["kube-env"] = fi.NewStringResource("AUTOSCALER_ENV_VARS: " + autoscalerEnvVars)
+			}
+
 			nodeRole, err := iam.BuildNodeRoleSubject(ig.Spec.Role, false)
 			if err != nil {
 				return nil, err
