@@ -210,7 +210,7 @@ func RunCreate(ctx context.Context, f *util.Factory, out io.Writer, c *CreateOpt
 
 			default:
 				klog.V(2).Infof("Type of object was %T", v)
-				return fmt.Errorf("Unhandled kind %q in %s", gvk, f)
+				return fmt.Errorf("unhandled kind %q in %s", gvk, f)
 			}
 		}
 	}

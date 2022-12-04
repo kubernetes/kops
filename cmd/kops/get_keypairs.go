@@ -253,7 +253,7 @@ func RunGetKeypairs(ctx context.Context, f commandutils.Factory, out io.Writer, 
 		}
 
 	default:
-		return fmt.Errorf("Unknown output format: %q", options.Output)
+		return fmt.Errorf("unknown output format: %q", options.Output)
 	}
 
 	return nil

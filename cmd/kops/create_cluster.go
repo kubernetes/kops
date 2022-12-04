@@ -842,7 +842,7 @@ func parseCloudLabels(s string) (map[string]string, error) {
 	r.TrimLeadingSpace = true
 	kvPairs, err := r.ReadAll()
 	if err != nil {
-		return nil, fmt.Errorf("One or more key=value pairs are malformed:\n%s\n:%v", records, err)
+		return nil, fmt.Errorf("one or more key=value pairs are malformed:\n%s\n:%w", records, err)
 	}
 
 	m := make(map[string]string, len(kvPairs))
