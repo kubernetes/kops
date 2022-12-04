@@ -87,7 +87,7 @@ func NewCmdValidateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			result, err := RunValidateCluster(context.TODO(), f, out, options)
 			if err != nil {
-				return fmt.Errorf("Validation failed: %v", err)
+				return fmt.Errorf("validation failed: %v", err)
 			}
 
 			// We want the validate command to exit non-zero if validation found a problem,

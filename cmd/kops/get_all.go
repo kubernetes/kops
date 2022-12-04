@@ -84,7 +84,7 @@ func RunGetAll(ctx context.Context, f commandutils.Factory, out io.Writer, optio
 	}
 
 	if cluster == nil {
-		return fmt.Errorf("No cluster found")
+		return fmt.Errorf("no cluster found")
 	}
 
 	igList, err := client.InstanceGroupsFor(cluster).List(ctx, metav1.ListOptions{})
@@ -157,7 +157,7 @@ func RunGetAll(ctx context.Context, f commandutils.Factory, out io.Writer, optio
 		}
 
 	default:
-		return fmt.Errorf("Unknown output format: %q", options.Output)
+		return fmt.Errorf("unknown output format: %q", options.Output)
 	}
 
 	return nil

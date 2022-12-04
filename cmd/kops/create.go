@@ -28,7 +28,6 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/cmd/kops/util"
-	"k8s.io/kops/pkg/apis/kops"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/pkg/kubemanifest"
@@ -109,7 +108,7 @@ func RunCreate(ctx context.Context, f *util.Factory, out io.Writer, c *CreateOpt
 	fmt.Fprintf(&sb, "\n")
 
 	var addons kubemanifest.ObjectList
-	var clusters []*kops.Cluster
+	var clusters []*kopsapi.Cluster
 
 	for _, f := range c.Filenames {
 		var contents []byte
@@ -210,7 +209,7 @@ func RunCreate(ctx context.Context, f *util.Factory, out io.Writer, c *CreateOpt
 
 			default:
 				klog.V(2).Infof("Type of object was %T", v)
-				return fmt.Errorf("Unhandled kind %q in %s", gvk, f)
+				return fmt.Errorf("unhandled kind %q in %s", gvk, f)
 			}
 		}
 	}
