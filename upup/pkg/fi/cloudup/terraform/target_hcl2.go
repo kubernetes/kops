@@ -104,6 +104,8 @@ func (t *TerraformTarget) finishHCL2() error {
 		}
 	}
 
+	buf := bytes.NewBuffer(hclwrite.Format(f.Bytes()))
+
 	dataSourcesByType, err := t.GetDataSourcesByType()
 	if err != nil {
 		return err
@@ -122,30 +124,15 @@ func (t *TerraformTarget) finishHCL2() error {
 		}
 		sort.Strings(dataSourceNames)
 		for _, dataSourceName := range dataSourceNames {
-			item := dataSources[dataSourceName]
+			element, err := ToElement(dataSources[dataSourceName])
+			if err != nil {
+				return fmt.Errorf("data %q %q: %w", dataSourceType, dataSourceName, err)
+			}
 
-			dataBlock := rootBody.AppendNewBlock("data", []string{dataSourceType, dataSourceName})
-			dataBody := dataBlock.Body()
-			dataType, err := gocty.ImpliedType(item)
-			if err != nil {
-				return err
-			}
-			dataVal, err := gocty.ToCtyValue(item, dataType)
-			if err != nil {
-				return err
-			}
-			if dataVal.IsNull() {
-				continue
-			}
-			dataVal.ForEachElement(func(key cty.Value, value cty.Value) bool {
-				writeValue(dataBody, key.AsString(), value)
-				return false
-			})
-			rootBody.AppendNewline()
+			element.Write(buf, 0, fmt.Sprintf("data %q %q", dataSourceType, dataSourceName))
+			buf.WriteString("\n\n")
 		}
 	}
-
-	buf := bytes.NewBuffer(hclwrite.Format(f.Bytes()))
 
 	buf.WriteString("terraform {\n")
 	buf.WriteString("  required_version = \">= 0.15.0\"\n")

@@ -17,6 +17,7 @@ limitations under the License.
 package terraformWriter
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"sort"
@@ -35,6 +36,15 @@ var _ json.Marshaler = &Literal{}
 
 func (l *Literal) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&l.String)
+}
+
+func (l *Literal) IsSingleValue() bool {
+	return true
+}
+
+func (l *Literal) Write(buffer *bytes.Buffer, indent int, key string) {
+	buffer.WriteString("= ")
+	buffer.WriteString(l.String)
 }
 
 // LiteralFunctionExpression constructs a Literal representing the result of
