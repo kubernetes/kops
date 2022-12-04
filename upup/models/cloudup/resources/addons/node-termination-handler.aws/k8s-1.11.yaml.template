@@ -201,13 +201,13 @@ spec:
             - name: COMPLETE_LIFECYCLE_ACTION_DELAY_SECONDS
               value: "-1"
             - name: ENABLE_SPOT_INTERRUPTION_DRAINING
-              value: "false"
+              value: "{{ WithDefaultBool .EnableSpotInterruptionDraining true }}"
             - name: ENABLE_SCHEDULED_EVENT_DRAINING
-              value: "false"
+              value: "{{ WithDefaultBool .EnableScheduledEventDraining false }}"
             - name: ENABLE_REBALANCE_MONITORING
-              value: "false"
+              value: "{{ WithDefaultBool .EnableRebalanceMonitoring false }}"
             - name: ENABLE_REBALANCE_DRAINING
-              value: "false"
+              value: "{{ WithDefaultBool .EnableRebalanceDraining false }}"
             - name: ENABLE_SQS_TERMINATION_DRAINING
               value: "true"
             - name: QUEUE_URL
