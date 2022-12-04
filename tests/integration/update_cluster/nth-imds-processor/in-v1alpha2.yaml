@@ -2,13 +2,13 @@ apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
   creationTimestamp: "2016-12-10T22:42:27Z"
-  name: nthsqsresources.longclustername.example.com
+  name: nthimdsprocessor.longclustername.example.com
 spec:
   kubernetesApiAccess:
     - 0.0.0.0/0
   channel: stable
   cloudProvider: aws
-  configBase: memfs://clusters.example.com/nthsqsresources.longclustername.example.com
+  configBase: memfs://clusters.example.com/nthimdsprocessor.longclustername.example.com
   etcdClusters:
     - etcdMembers:
         - instanceGroup: master-us-test-1a
@@ -22,14 +22,14 @@ spec:
   kubelet:
     anonymousAuth: false
   kubernetesVersion: v1.21.0
-  masterPublicName: api.nthsqsresources.longclustername.example.com
+  masterPublicName: api.nthimdsprocessor.longclustername.example.com
   networkCIDR: 172.20.0.0/16
   networking:
     cni: {}
   nonMasqueradeCIDR: 100.64.0.0/10
   nodeTerminationHandler:
     enabled: true
-    enableSQSTerminationDraining: true
+    enableSQSTerminationDraining: false
   sshAccess:
     - 0.0.0.0/0
   topology:
@@ -49,7 +49,7 @@ metadata:
   creationTimestamp: "2016-12-10T22:42:28Z"
   name: nodes
   labels:
-    kops.k8s.io/cluster: nthsqsresources.longclustername.example.com
+    kops.k8s.io/cluster: nthimdsprocessor.longclustername.example.com
 spec:
   associatePublicIp: true
   image: ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404
@@ -68,7 +68,7 @@ metadata:
   creationTimestamp: "2016-12-10T22:42:28Z"
   name: master-us-test-1a
   labels:
-    kops.k8s.io/cluster: nthsqsresources.longclustername.example.com
+    kops.k8s.io/cluster: nthimdsprocessor.longclustername.example.com
 spec:
   associatePublicIp: true
   image: ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404
