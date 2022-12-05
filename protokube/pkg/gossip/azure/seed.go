@@ -23,7 +23,10 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-05-01/network"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/resolver"
 	"k8s.io/kops/protokube/pkg/gossip"
+	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 )
 
 type client interface {
@@ -53,7 +56,10 @@ func NewSeedProvider(client client, tags map[string]string) (*SeedProvider, erro
 // This follows the implementation of AWS and creates seeds from
 // private IPs of VMs in the cluster.
 func (p *SeedProvider) GetSeeds() ([]string, error) {
-	ctx := context.TODO()
+	return p.discover(context.TODO(), nil)
+}
+
+func (p *SeedProvider) discover(ctx context.Context, predicate func(*compute.VirtualMachineScaleSet) bool) ([]string, error) {
 	vmsses, err := p.client.ListVMScaleSets(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error listing VM Scale Sets: %s", err)
@@ -61,6 +67,9 @@ func (p *SeedProvider) GetSeeds() ([]string, error) {
 
 	var vmssNames []string
 	for _, vmss := range vmsses {
+		if predicate != nil && !predicate(&vmss) {
+			continue
+		}
 		if p.isVMSSForCluster(&vmss) {
 			vmssNames = append(vmssNames, *vmss.Name)
 		}
@@ -91,4 +100,27 @@ func (p *SeedProvider) isVMSSForCluster(vmss *compute.VirtualMachineScaleSet) bo
 	}
 	// TODO(kenji): Filter by ProvisioningState if necessary.
 	return found == len(p.tags)
+}
+
+var _ resolver.Resolver = &SeedProvider{}
+
+// Resolve implements resolver.Resolve, providing name -> address resolution using cloud API discovery.
+func (p *SeedProvider) Resolve(ctx context.Context, name string) ([]string, error) {
+	klog.Infof("trying to resolve %q using SeedProvider", name)
+
+	// We assume we are trying to resolve a component that runs on the control plane
+	isControlPlane := func(vmss *compute.VirtualMachineScaleSet) bool {
+		for k := range vmss.Tags {
+			switch k {
+			case azure.TagNameRolePrefix + kops.InstanceGroupRoleControlPlane.ToLowerString():
+				return true
+			case azure.TagNameRolePrefix + "master":
+				return true
+			}
+		}
+		return false
+	}
+
+	// TODO: Can we push the predicate down so we can filter server-side?
+	return p.discover(ctx, isControlPlane)
 }
