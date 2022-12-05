@@ -19,6 +19,7 @@ package scalewaytasks
 import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 )
@@ -100,8 +101,8 @@ func (_ *Volume) CheckChanges(a, e, changes *Volume) error {
 }
 
 func (_ *Volume) RenderScw(t *scaleway.ScwAPITarget, a, e, changes *Volume) error {
-	// Scaleway does not support changes to volumes for the moment
 	if a != nil {
+		klog.Infof("Scaleway does not support changes to volumes for the moment")
 		return nil
 	}
 
