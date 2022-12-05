@@ -99,6 +99,14 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 		requiresNetworkCIDR = false
 		requiresSubnetCIDR = false
 	}
+	if c.Spec.CloudProvider.Scaleway != nil {
+		if optionTaken {
+			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("scaleway"), "only one cloudProvider option permitted"))
+		}
+		optionTaken = true
+		requiresNetworkCIDR = false
+		requiresSubnetCIDR = false
+	}
 	if !optionTaken {
 		allErrs = append(allErrs, field.Required(fieldSpec.Child("cloudProvider"), ""))
 		requiresSubnets = false
@@ -329,6 +337,8 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 			k8sCloudProvider = "openstack"
 		case kops.CloudProviderAzure:
 			k8sCloudProvider = "azure"
+		case kops.CloudProviderScaleway:
+			k8sCloudProvider = "external"
 		default:
 			// We already added an error above
 			k8sCloudProvider = "ignore"
