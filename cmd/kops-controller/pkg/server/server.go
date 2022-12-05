@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"hash/fnv"
 	"io"
+	"net"
 	"net/http"
 	"runtime/debug"
 	"time"
@@ -33,6 +34,8 @@ import (
 	"google.golang.org/grpc"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
 	"k8s.io/kops/cmd/kops-controller/pkg/config"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/bootstrap"
@@ -54,10 +57,10 @@ type Server struct {
 	certNames  sets.String
 	keypairIDs map[string]string
 
-	httpServer  *http.Server
+	// httpServer *http.Server
 	httpHandler http.Handler
 
-	grpcHandler *grpc.Server
+	// grpcHandler *grpc.Server
 
 	verifier    bootstrap.Verifier
 	keystore    pki.Keystore
@@ -73,26 +76,15 @@ type Server struct {
 var _ manager.LeaderElectionRunnable = &Server{}
 
 func NewServer(opt *config.Options, client client.Client, verifier bootstrap.Verifier) (*Server, error) {
-	httpServer := &http.Server{
-		Addr: opt.Server.Listen,
-		TLSConfig: &tls.Config{
-			MinVersion:               tls.VersionTLS12,
-			PreferServerCipherSuites: true,
-		},
-	}
-
-	grpcHandler := grpc.NewServer()
 
 	s := &Server{
-		client:      client,
-		opt:         opt,
-		certNames:   sets.NewString(opt.Server.CertNames...),
-		httpServer:  httpServer,
-		grpcHandler: grpcHandler,
-		verifier:    verifier,
+		client:    client,
+		opt:       opt,
+		certNames: sets.NewString(opt.Server.CertNames...),
+		// httpServer: httpServer,
+		// grpcHandler: grpcHandler,
+		verifier: verifier,
 	}
-
-	pb.RegisterKopsControllerServiceServer(s.grpcHandler, s)
 
 	configBase, err := vfs.Context.BuildVfsPath(opt.ConfigBase)
 	if err != nil {
@@ -106,10 +98,16 @@ func NewServer(opt *config.Options, client client.Client, verifier bootstrap.Ver
 	}
 	s.secretStore = secrets.NewVFSSecretStore(nil, p)
 
+	grpcHandler := grpc.NewServer()
+	pb.RegisterKopsControllerServiceServer(grpcHandler, s)
+
 	httpMux := http.NewServeMux()
 	httpMux.Handle("/bootstrap", http.HandlerFunc(s.bootstrap))
+	httpMux.Handle("/kops.kopscontroller.v1.KopsControllerService/", grpcHandler)
+	httpMux.Handle("/", http.HandlerFunc(s.httpUnknown))
 	s.httpHandler = recovery(httpMux)
-	httpServer.Handler = s
+	// s.httpHandler = recovery(httpMux)
+	// httpServer.Handler = s
 
 	return s, nil
 }
@@ -125,23 +123,97 @@ func (s *Server) Start(ctx context.Context) error {
 		return err
 	}
 
+	httpServer := &http.Server{
+		Addr: s.opt.Server.Listen,
+		TLSConfig: &tls.Config{
+			MinVersion:               tls.VersionTLS12,
+			PreferServerCipherSuites: true,
+		},
+	}
+	httpServer.Handler = s.httpHandler
+
 	go func() {
 		<-ctx.Done()
 
 		shutdownContext, cleanup := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cleanup()
 
-		if err := s.httpServer.Shutdown(shutdownContext); err != nil {
+		if err := httpServer.Shutdown(shutdownContext); err != nil {
 			klog.Warningf("error during HTTP server shutdown: %v", err)
 		}
 
-		if err := s.httpServer.Close(); err != nil {
+		if err := httpServer.Close(); err != nil {
 			klog.Warningf("error from HTTP server close: %v", err)
 		}
 	}()
 
-	klog.Infof("kops-controller listening on %s", s.opt.Server.Listen)
-	return s.httpServer.ListenAndServeTLS(s.opt.Server.ServerCertificatePath, s.opt.Server.ServerKeyPath)
+	// tlsConfig := &tls.Config{
+	// 	MinVersion:               tls.VersionTLS12,
+	// 	PreferServerCipherSuites: true,
+	// }
+
+	// tlsCert, err := tls.LoadX509KeyPair(s.opt.Server.ServerCertificatePath, s.opt.Server.ServerKeyPath)
+	// if err != nil {
+	// 	return fmt.Errorf("error loading certificate/key: %w", err)
+	// }
+	// tlsConfig.Certificates = []tls.Certificate{tlsCert}
+
+	// grpcHandler := grpc.NewServer(grpc.Creds(credentials.NewTLS(tlsConfig)))
+	grpcHandler := grpc.NewServer()
+	pb.RegisterKopsControllerServiceServer(grpcHandler, s)
+
+	// l, err := tls.Listen("tcp", s.opt.Server.Listen, tlsConfig)
+	l, err := net.Listen("tcp", s.opt.Server.Listen)
+	if err != nil {
+		return fmt.Errorf("error listening on %q: %w", s.opt.Server.Listen, err)
+	}
+
+	// listenMux := cmux.New(l)
+	// grpcListen := listenMux.Match(cmux.HTTP2HeaderField("content-type", "application/grpc"))
+	// httpListen := listenMux.Match(cmux.Any())
+
+	klog.Infof("kops-controller listening on %s (grpc + http)", s.opt.Server.Listen)
+
+	numGoRoutines := 1
+	errors := make(chan error, numGoRoutines)
+	go func() {
+		klog.Infof("starting http server")
+		err := httpServer.ServeTLS(l, s.opt.Server.ServerCertificatePath, s.opt.Server.ServerKeyPath)
+		// err := httpServer.Serve(l)
+		if err != nil {
+			klog.Warningf("error from http server: %v", err)
+		}
+		errors <- err
+	}()
+	// go func() {
+	// 	err := grpcHandler.Serve(l)
+	// 	if err != nil {
+	// 		klog.Warningf("error from grpc server: %v", err)
+	// 	}
+	// 	errors <- err
+	// }()
+	// go func() {
+	// 	err := listenMux.Serve()
+	// 	if err != nil {
+	// 		klog.Warningf("error from mux server: %v", err)
+	// 	}
+	// 	errors <- err
+	// }()
+
+	var firstErr error
+	for i := 0; i < numGoRoutines; i++ {
+		err := <-errors
+		if err != nil && firstErr == nil {
+			firstErr = err
+		}
+		l.Close()
+	}
+	return firstErr
+}
+
+func (s *Server) httpUnknown(w http.ResponseWriter, r *http.Request) {
+	klog.Infof("not found %s %s", r.Method, r.URL)
+	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 }
 
 func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
@@ -302,10 +374,14 @@ func recovery(next http.Handler) http.Handler {
 	})
 }
 
-func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.Header.Get("content-type") != "application/grpc" {
-		s.httpHandler.ServeHTTP(w, r)
-	} else {
-		s.grpcHandler.ServeHTTP(w, r)
-	}
-}
+// func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+// 	contentType := r.Header.Get("content-type")
+// 	klog.Infof("request: %s %s content-type=%q", r.Method, r.URL, contentType)
+// 	if r.ProtoMajor == 2 && strings.HasPrefix(contentType, "application/grpc") {
+// 		klog.Infof("grpc request: %s %s content-type=%q", r.Method, r.URL, contentType)
+// 		s.grpcHandler.ServeHTTP(w, r)
+// 	} else {
+// 		klog.Infof("http request: %s %s content-type=%q", r.Method, r.URL, contentType)
+// 		s.httpHandler.ServeHTTP(w, r)
+// 	}
+// }

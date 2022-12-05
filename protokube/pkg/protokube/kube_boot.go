@@ -51,10 +51,8 @@ type KubeBoot struct {
 	NodeName string
 }
 
-// RunSyncLoop is responsible for provision the cluster
-func (k *KubeBoot) RunSyncLoop() {
-	ctx := context.Background()
-
+// RunSyncLoop is responsible for provisioning the cluster
+func (k *KubeBoot) RunSyncLoop(ctx context.Context) {
 	if k.Master {
 		client, err := k.Kubernetes.KubernetesClient()
 		if err != nil {

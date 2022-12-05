@@ -183,6 +183,8 @@ func (e *executor[T]) forkJoin(tasks []*taskState[T]) []error {
 		go func(ts *taskState[T], index int) {
 			results[index] = fmt.Errorf("function panic")
 			defer wg.Done()
+
+			startTime := time.Now()
 			klog.V(2).Infof("Executing task %q: %v\n", ts.key, ts.task)
 
 			if taskNormalize, ok := ts.task.(TaskNormalize[T]); ok {
@@ -192,7 +194,13 @@ func (e *executor[T]) forkJoin(tasks []*taskState[T]) []error {
 				}
 			}
 
-			results[index] = ts.task.Run(e.context)
+			err := ts.task.Run(e.context)
+			results[index] = err
+			if err == nil {
+				klog.V(2).Infof("task %s succeeded in %v", ts.key, time.Since(startTime))
+			} else {
+				klog.V(2).Infof("task %s failed in %v; error=%v", ts.key, time.Since(startTime), err)
+			}
 		}(tasks[i], i)
 	}
 

@@ -17,11 +17,14 @@ limitations under the License.
 package model
 
 import (
+	"context"
 	"fmt"
 	"net"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
@@ -33,10 +36,18 @@ import (
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/nodeup"
+	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/dns"
+	"k8s.io/kops/pkg/kopscontrollerclient"
 	"k8s.io/kops/pkg/model/components"
+	"k8s.io/kops/pkg/resolver"
 	"k8s.io/kops/pkg/systemd"
+	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce/gcediscovery"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm/gcetpmsigner"
+	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/architectures"
@@ -82,10 +93,14 @@ type NodeupModelContext struct {
 	ConfigurationMode string
 	InstanceID        string
 	MachineType       string
+
+	CloudProvider kops.CloudProviderID
+
+	KopsControllerClient *kopscontrollerclient.Client
 }
 
 // Init completes initialization of the object, for example pre-parsing the kubernetes version
-func (c *NodeupModelContext) Init() error {
+func (c *NodeupModelContext) Init(ctx context.Context) error {
 	k8sVersion, err := util.ParseKubernetesVersion(c.NodeupConfig.KubernetesVersion)
 	if err != nil || k8sVersion == nil {
 		return fmt.Errorf("unable to parse KubernetesVersion %q", c.NodeupConfig.KubernetesVersion)
@@ -108,6 +123,23 @@ func (c *NodeupModelContext) Init() error {
 		c.IsGossip = true
 	}
 
+	if !c.IsMaster && c.UseKopsControllerForNodeBootstrap() {
+		if c.KopsControllerClient == nil {
+			baseURL := url.URL{
+				Scheme: "https",
+				Host:   net.JoinHostPort("kops-controller.internal."+c.Cluster.ObjectMeta.Name, strconv.Itoa(wellknownports.KopsControllerPort)),
+				Path:   "/",
+			}
+			caBundle := []byte(c.NodeupConfig.CAs[fi.CertificateIDCA])
+
+			client, err := BuildKopsControllerClient(ctx, baseURL, caBundle, c.CloudProvider, c.Cloud.Region())
+			if err != nil {
+				return fmt.Errorf("failed to build kops-controller client: %w", err)
+			}
+			c.KopsControllerClient = client
+		}
+	}
+
 	return nil
 }
 
@@ -121,6 +153,80 @@ func (c *NodeupModelContext) IsIPv6Only() bool {
 
 func (c *NodeupModelContext) IsKopsControllerIPAM() bool {
 	return c.IsIPv6Only()
+}
+
+func BuildKopsControllerClient(ctx context.Context, baseURL url.URL, caBundle []byte, cloudProvider kops.CloudProviderID, region string) (*kopscontrollerclient.Client, error) {
+	var authenticator bootstrap.Authenticator
+	var resolver resolver.Resolver
+
+	switch cloudProvider {
+	case kops.CloudProviderAWS:
+		a, err := awsup.NewAWSAuthenticator(region)
+		if err != nil {
+			return nil, err
+		}
+		authenticator = a
+	case kops.CloudProviderGCE:
+		a, err := gcetpmsigner.NewTPMAuthenticator()
+		if err != nil {
+			return nil, err
+		}
+		authenticator = a
+
+		discovery, err := gcediscovery.New()
+		if err != nil {
+			return nil, err
+		}
+		resolver = discovery
+	case kops.CloudProviderHetzner:
+		a, err := hetzner.NewHetznerAuthenticator()
+		if err != nil {
+			return nil, err
+		}
+		authenticator = a
+
+	case kops.CloudProviderOpenstack:
+	a, err := openstack.NewOpenstackAuthenticator()
+		if err != nil {
+			return nil, err
+		}
+		authenticator = a
+		
+	default:
+		return nil, fmt.Errorf("unsupported cloud provider for node configuration %s", cloudProvider)
+	}
+
+
+
+	default:
+		return fmt.Errorf("unsupported cloud provider for authenticator %q", b.BootConfig.CloudProvider)
+	}
+
+	if err != nil {
+		return err
+	}
+
+	baseURL := url.URL{
+		Scheme: "https",
+		Host:   net.JoinHostPort("kops-controller.internal."+b.NodeupConfig.ClusterName, strconv.Itoa(wellknownports.KopsControllerPort)),
+		Path:   "/",
+	}
+
+	bootstrapClient := &kopscontrollerclient.Client{
+		Authenticator: authenticator,
+		CAs:           []byte(b.NodeupConfig.CAs[fi.CertificateIDCA]),
+		BaseURL:       baseURL,
+=======
+
+
+	client := &kopscontrollerclient.Client{
+		Authenticator: authenticator,
+		CAs:           caBundle,
+		BaseURL:       baseURL,
+		Resolver:      resolver,
+	}
+
+	return client, nil
 }
 
 // SSLHostPaths returns the TLS paths for the distribution

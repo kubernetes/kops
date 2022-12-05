@@ -19,6 +19,7 @@ package protokube
 import (
 	"net"
 
+	"k8s.io/kops/pkg/resolver"
 	"k8s.io/kops/protokube/pkg/gossip"
 )
 
@@ -26,4 +27,6 @@ type CloudProvider interface {
 	InstanceID() string
 	InstanceInternalIP() net.IP
 	GossipSeeds() (gossip.SeedProvider, error)
+
+	Resolver() (resolver.Resolver, error)
 }

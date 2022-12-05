@@ -18,9 +18,11 @@ package server
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
+	"google.golang.org/protobuf/encoding/prototext"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
@@ -29,9 +31,12 @@ import (
 
 // Finds addresses for well-known hosts (apiserver etc) without using DNS
 func (s *Server) DiscoverHosts(req *pb.DiscoverHostsRequest, stream pb.KopsControllerService_DiscoverHostsServer) error {
+	klog.Infof("DiscoverHosts %v", prototext.Format(req))
 	ctx := stream.Context()
 
 	// TODO: Authentication
+
+	lastHosts := "dummyvalue"
 
 	for {
 		u := &unstructured.Unstructured{}
@@ -54,6 +59,12 @@ func (s *Server) DiscoverHosts(req *pb.DiscoverHostsRequest, stream pb.KopsContr
 			return fmt.Errorf("error getting data.hosts from coredns configmap: %w", err)
 		}
 
+		if lastHosts == hosts {
+			klog.Infof("skipping send of unchanged hosts")
+			time.Sleep(5 * time.Second)
+			continue
+		}
+
 		records := make(map[string]*pb.HostRecord)
 
 		for _, line := range strings.Split(hosts, "\n") {
@@ -70,7 +81,7 @@ func (s *Server) DiscoverHosts(req *pb.DiscoverHostsRequest, stream pb.KopsContr
 			for _, host := range tokens[1:] {
 				record := records[host]
 				if record == nil {
-					record = &pb.HostRecord{}
+					record = &pb.HostRecord{Name: host}
 					records[host] = record
 				}
 				record.Addresses = append(record.Addresses, &pb.Address{Address: addr})
@@ -87,12 +98,24 @@ func (s *Server) DiscoverHosts(req *pb.DiscoverHostsRequest, stream pb.KopsContr
 		for _, record := range records {
 			msg.Records = append(msg.Records, record)
 		}
+		sort.Slice(msg.Records, func(i, j int) bool {
+			return msg.Records[i].Name < msg.Records[j].Name
+		})
 
+		for _, record := range msg.Records {
+			sort.Slice(record.Addresses, func(i, j int) bool {
+				return record.Addresses[i].Address < record.Addresses[j].Address
+			})
+		}
 		// TODO: Only if changed (may need to normalize, but can also just check if configmap itself has changed)
+
+		klog.Infof("sending hosts %v", msg)
 
 		if err := stream.Send(msg); err != nil {
 			return err
 		}
+		lastHosts = hosts
+
 		if err := ctx.Err(); err != nil {
 			return err
 		}

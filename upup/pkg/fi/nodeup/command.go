@@ -41,21 +41,21 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/nodeup/pkg/model"
 	"k8s.io/kops/nodeup/pkg/model/networking"
+	"k8s.io/kops/pkg/apis/kops"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/assets"
-	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/configserver"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/pkg/kopscontrollerclient"
-	"k8s.io/kops/pkg/resolver"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/gcediscovery"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm/gcetpmsigner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
+	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/upup/pkg/fi/secrets"
@@ -228,10 +228,12 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		Distribution: distribution,
 		BootConfig:   &bootConfig,
 		NodeupConfig: &nodeupConfig,
+		KopsControllerClient: kopsControllerClient,
 	}
 
 	var secretStore fi.SecretStoreReader
 	var keyStore fi.KeystoreReader
+
 	if nodeConfig != nil {
 		modelContext.SecretStore = configserver.NewSecretStore(nodeConfig.NodeSecrets)
 	} else if c.cluster.Spec.SecretStore != "" {
@@ -262,7 +264,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("KeyStore not set")
 	}
 
-	if err := modelContext.Init(); err != nil {
+	if err := modelContext.Init(ctx); err != nil {
 		return err
 	}
 
@@ -791,6 +793,29 @@ func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig
 		return &resp, nil
 	}
 	return nil, merr
+// getNodeConfigFromServer queries kops-controller for our node's configuration.
+func getNodeConfigFromServer(ctx context.Context, kopsControllerClient *kopscontrollerclient.Client) (*nodeup.BootstrapResponse, error) {
+	var kopsControllerClient *kopscontrollerclient.Client
+	if bootConfig.ConfigServer != nil {
+		u, err := url.Parse(bootConfig.ConfigServer.Server)
+		if err != nil {
+			return fmt.Errorf("unable to parse configuration server url %q: %w", bootConfig.ConfigServer.Server, err)
+		}
+		caBundle := []byte(bootConfig.ConfigServer.CACertificates)
+		cloudProvider := kops.CloudProviderID(bootConfig.CloudProvider)
+
+		client, err := model.BuildKopsControllerClient(ctx, *u, caBundle, cloudProvider, region)
+		if err != nil {
+			return fmt.Errorf("failed to build kops-controller client: %w", err)
+		}
+		kopsControllerClient = client
+		response, err := getNodeConfigFromServer(ctx, kopsControllerClient)
+		
+		request := nodeup.BootstrapRequest{
+		APIVersion:        nodeup.BootstrapAPIVersion,
+		IncludeNodeConfig: true,
+	}
+	return kopsControllerClient.QueryBootstrap(ctx, &request)
 }
 
 func getAWSConfigurationMode(c *model.NodeupModelContext) (string, error) {
