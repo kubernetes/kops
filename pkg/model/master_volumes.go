@@ -402,7 +402,6 @@ func (b *MasterVolumeBuilder) addScalewayVolume(c *fi.ModelBuilderContext, name 
 		fmt.Sprintf("%s=%s", scaleway.TagClusterName, b.Cluster.ObjectMeta.Name),
 		fmt.Sprintf("%s=%s", scaleway.TagNameEtcdClusterPrefix, etcd.Name),
 		fmt.Sprintf("%s=%s", scaleway.TagNameRolePrefix, scaleway.TagRoleMaster),
-		fmt.Sprintf("%s=%s", scaleway.TagRoleVolume, etcd.Name),
 		fmt.Sprintf("%s=%s", scaleway.TagInstanceGroup, fi.ValueOf(m.InstanceGroup)),
 	}
 
