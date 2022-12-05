@@ -64,13 +64,10 @@ const maxGCERouteNameLength = 63
 func ListResourcesGCE(gceCloud gce.GCECloud, clusterInfo resources.ClusterInfo) (map[string]*resources.Resource, error) {
 	clusterName := clusterInfo.Name
 	clusterUsesNoneDNS := clusterInfo.UsesNoneDNS
-	region := clusterInfo.Region
 
 	ctx := context.TODO()
 
-	if region == "" {
-		region = gceCloud.Region()
-	}
+	region := gceCloud.Region()
 
 	resources := make(map[string]*resources.Resource)
 
