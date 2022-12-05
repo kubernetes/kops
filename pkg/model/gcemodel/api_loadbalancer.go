@@ -18,6 +18,7 @@ package gcemodel
 
 import (
 	"fmt"
+	"strconv"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/wellknownports"
@@ -49,7 +50,6 @@ func createPublicLB(b *APILoadBalancerBuilder, c *fi.ModelBuilderContext) error 
 		Port:      i64(wellknownports.KubeAPIServerHealthCheck),
 		Lifecycle: b.Lifecycle,
 	}
-
 	c.AddTask(healthCheck)
 
 	poolHealthCheck := &gcetasks.PoolHealthCheck{
@@ -61,28 +61,32 @@ func createPublicLB(b *APILoadBalancerBuilder, c *fi.ModelBuilderContext) error 
 	c.AddTask(poolHealthCheck)
 
 	ipAddress := &gcetasks.Address{
-		Name:      s(b.NameForIPAddress("api")),
-		Lifecycle: b.Lifecycle,
+		Name:         s(b.NameForIPAddress("api")),
+		ForAPIServer: true,
+		Lifecycle:    b.Lifecycle,
 	}
 	c.AddTask(ipAddress)
 
-	forwardingRule := &gcetasks.ForwardingRule{
+	c.AddTask(&gcetasks.ForwardingRule{
 		Name:       s(b.NameForForwardingRule("api")),
 		Lifecycle:  b.Lifecycle,
-		PortRange:  s("443-443"),
+		PortRange:  s(strconv.Itoa(wellknownports.KubeAPIServer) + "-" + strconv.Itoa(wellknownports.KubeAPIServer)),
 		TargetPool: targetPool,
 		IPAddress:  ipAddress,
 		IPProtocol: "TCP",
+	})
+	if b.Cluster.UsesNoneDNS() {
+		c.AddTask(&gcetasks.ForwardingRule{
+			Name:       s(b.NameForForwardingRule("kops-controller")),
+			Lifecycle:  b.Lifecycle,
+			PortRange:  s(strconv.Itoa(wellknownports.KopsControllerPort) + "-" + strconv.Itoa(wellknownports.KopsControllerPort)),
+			TargetPool: targetPool,
+			IPAddress:  ipAddress,
+			IPProtocol: "TCP",
+		})
 	}
 
-	c.AddTask(forwardingRule)
-
-	{
-		// Ensure the IP address is included in our certificate
-		ipAddress.ForAPIServer = true
-	}
-
-	// Allow traffic into the API (port 443) from KubernetesAPIAccess CIDRs
+	// Allow traffic into the API from KubernetesAPIAccess CIDRs
 	{
 		network, err := b.LinkToNetwork()
 		if err != nil {
@@ -93,8 +97,17 @@ func createPublicLB(b *APILoadBalancerBuilder, c *fi.ModelBuilderContext) error 
 			Network:      network,
 			SourceRanges: b.Cluster.Spec.API.Access,
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleControlPlane)},
-			Allowed:      []string{"tcp:443"},
+			Allowed:      []string{"tcp:" + strconv.Itoa(wellknownports.KubeAPIServer)},
 		})
+		if b.Cluster.UsesNoneDNS() {
+			b.AddFirewallRulesTasks(c, "kops-controller", &gcetasks.FirewallRule{
+				Lifecycle:    b.Lifecycle,
+				Network:      network,
+				SourceRanges: b.Cluster.Spec.API.Access,
+				TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleControlPlane)},
+				Allowed:      []string{"tcp:" + strconv.Itoa(wellknownports.KopsControllerPort)},
+			})
+		}
 	}
 	return nil
 
@@ -107,7 +120,7 @@ func createInternalLB(b *APILoadBalancerBuilder, c *fi.ModelBuilderContext) erro
 	lbSpec := b.Cluster.Spec.API.LoadBalancer
 	hc := &gcetasks.HealthCheck{
 		Name:      s(b.NameForHealthCheck("api")),
-		Port:      443,
+		Port:      wellknownports.KubeAPIServer,
 		Lifecycle: b.Lifecycle,
 	}
 	c.AddTask(hc)
@@ -117,10 +130,10 @@ func createInternalLB(b *APILoadBalancerBuilder, c *fi.ModelBuilderContext) erro
 			continue
 		}
 		if len(ig.Spec.Zones) > 1 {
-			return fmt.Errorf("Instance group %q has %d zones, which is not yet supported for GCP.", ig.GetName(), len(ig.Spec.Zones))
+			return fmt.Errorf("instance group %q has %d zones, which is not yet supported for GCP", ig.GetName(), len(ig.Spec.Zones))
 		}
 		if len(ig.Spec.Zones) == 0 {
-			return fmt.Errorf("Instance group %q must specify exactly one zone.", ig.GetName())
+			return fmt.Errorf("instance group %q must specify exactly one zone", ig.GetName())
 		}
 		zone := ig.Spec.Zones[0]
 		igms = append(igms, &gcetasks.InstanceGroupManager{Name: s(gce.NameForInstanceGroupManager(b.Cluster, ig, zone)), Zone: s(zone)})
@@ -156,13 +169,26 @@ func createInternalLB(b *APILoadBalancerBuilder, c *fi.ModelBuilderContext) erro
 			Name:                s(b.NameForForwardingRule(sn.Name)),
 			Lifecycle:           b.Lifecycle,
 			BackendService:      bs,
-			Ports:               []string{"443"},
+			Ports:               []string{strconv.Itoa(wellknownports.KubeAPIServer)},
 			RuleIPAddress:       sn.PrivateIPv4Address,
 			IPProtocol:          "TCP",
 			LoadBalancingScheme: s("INTERNAL"),
 			Network:             network,
 			Subnetwork:          subnet,
 		})
+		if b.Cluster.UsesNoneDNS() {
+			c.AddTask(&gcetasks.ForwardingRule{
+				Name:                s(b.NameForForwardingRule("kops-controller-" + sn.Name)),
+				Lifecycle:           b.Lifecycle,
+				BackendService:      bs,
+				Ports:               []string{strconv.Itoa(wellknownports.KopsControllerPort)},
+				RuleIPAddress:       sn.PrivateIPv4Address,
+				IPProtocol:          "TCP",
+				LoadBalancingScheme: s("INTERNAL"),
+				Network:             network,
+				Subnetwork:          subnet,
+			})
+		}
 	}
 
 	return nil
