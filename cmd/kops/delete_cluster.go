@@ -126,7 +126,7 @@ func RunDeleteCluster(ctx context.Context, f *util.Factory, out io.Writer, optio
 		}
 
 		klog.Info("Looking for cloud resources to delete")
-		allResources, err := resourceops.ListResources(cloud, cluster, options.Region)
+		allResources, err := resourceops.ListResources(cloud, cluster)
 		if err != nil {
 			return err
 		}
