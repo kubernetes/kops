@@ -38,20 +38,29 @@ import (
 
 // ListResources collects the resources from the specified cloud
 func ListResources(cloud fi.Cloud, cluster *kops.Cluster, region string) (map[string]*resources.Resource, error) {
-	clusterName := cluster.Name
+	clusterInfo := resources.ClusterInfo{
+		Name:        cluster.Name,
+		Region:      region,
+		UsesNoneDNS: cluster.UsesNoneDNS(),
+	}
+
 	switch cloud.ProviderID() {
 	case kops.CloudProviderAWS:
-		return aws.ListResourcesAWS(cloud.(awsup.AWSCloud), cluster)
+		return aws.ListResourcesAWS(cloud.(awsup.AWSCloud), clusterInfo)
 	case kops.CloudProviderDO:
-		return digitalocean.ListResources(cloud.(clouddo.DOCloud), clusterName)
+		return digitalocean.ListResources(cloud.(clouddo.DOCloud), clusterInfo)
 	case kops.CloudProviderGCE:
-		return gce.ListResourcesGCE(cloud.(cloudgce.GCECloud), clusterName, region)
+		return gce.ListResourcesGCE(cloud.(cloudgce.GCECloud), clusterInfo)
 	case kops.CloudProviderHetzner:
-		return hetzner.ListResources(cloud.(cloudhetzner.HetznerCloud), clusterName)
+		return hetzner.ListResources(cloud.(cloudhetzner.HetznerCloud), clusterInfo)
 	case kops.CloudProviderOpenstack:
-		return openstack.ListResources(cloud.(cloudopenstack.OpenstackCloud), clusterName)
+		return openstack.ListResources(cloud.(cloudopenstack.OpenstackCloud), clusterInfo)
 	case kops.CloudProviderAzure:
-		return azure.ListResourcesAzure(cloud.(cloudazure.AzureCloud), cluster)
+		clusterInfo.AzureResourceGroupName = cluster.AzureResourceGroupName()
+		clusterInfo.AzureResourceGroupShared = cluster.IsSharedAzureResourceGroup()
+		clusterInfo.AzureNetworkShared = cluster.SharedVPC()
+		clusterInfo.AzureRouteTableShared = cluster.IsSharedAzureRouteTable()
+		return azure.ListResourcesAzure(cloud.(cloudazure.AzureCloud), clusterInfo)
 	default:
 		return nil, fmt.Errorf("delete on clusters on %q not (yet) supported", cloud.ProviderID())
 	}
