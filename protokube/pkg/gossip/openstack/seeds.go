@@ -17,12 +17,15 @@ limitations under the License.
 package gce
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"github.com/gophercloud/gophercloud/pagination"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/resolver"
 	"k8s.io/kops/protokube/pkg/gossip"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
@@ -36,6 +39,13 @@ type SeedProvider struct {
 var _ gossip.SeedProvider = &SeedProvider{}
 
 func (p *SeedProvider) GetSeeds() ([]string, error) {
+	predicate := func(*servers.Server) bool {
+		return true
+	}
+	return p.discover(context.TODO(), predicate)
+}
+
+func (p *SeedProvider) discover(ctx context.Context, predicate func(*servers.Server) bool) ([]string, error) {
 	var seeds []string
 
 	err := servers.List(p.computeClient, servers.ListOpts{
@@ -48,6 +58,10 @@ func (p *SeedProvider) GetSeeds() ([]string, error) {
 		}
 
 		for _, server := range s {
+			if !predicate(&server) {
+				continue
+			}
+
 			if clusterName, ok := server.Metadata[openstack.TagClusterName]; ok {
 				// verify that the instance is from the same cluster
 				if clusterName != p.clusterName {
@@ -83,4 +97,27 @@ func NewSeedProvider(computeClient *gophercloud.ServiceClient, clusterName strin
 		clusterName:   clusterName,
 		projectID:     projectID,
 	}, nil
+}
+
+var _ resolver.Resolver = &SeedProvider{}
+
+// Resolve implements resolver.Resolve, providing name -> address resolution using cloud API discovery.
+func (p *SeedProvider) Resolve(ctx context.Context, name string) ([]string, error) {
+	klog.Infof("trying to resolve %q using SeedProvider", name)
+
+	// TODO: Can we push this predicate down so we can filter server-side?
+	// We assume we are trying to resolve a component that runs on the control plane
+	isControlPlane := func(server *servers.Server) bool {
+		switch server.Metadata[openstack.TagKopsRole] {
+		case kops.InstanceGroupRoleControlPlane.ToLowerString():
+			return true
+		case string(kops.InstanceGroupRoleControlPlane):
+			return true
+		case "master":
+			return true
+		default:
+			return false
+		}
+	}
+	return p.discover(ctx, isControlPlane)
 }

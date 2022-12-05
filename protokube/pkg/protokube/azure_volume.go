@@ -23,6 +23,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-05-01/network"
+	"k8s.io/kops/pkg/resolver"
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipazure "k8s.io/kops/protokube/pkg/gossip/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
@@ -45,6 +46,8 @@ type AzureCloudProvider struct {
 	clusterTag string
 	instanceID string
 	internalIP net.IP
+
+	discovery *gossipazure.SeedProvider
 }
 
 var _ CloudProvider = &AzureCloudProvider{}
@@ -72,12 +75,17 @@ func NewAzureCloudProvider() (*AzureCloudProvider, error) {
 	if internalIP == nil {
 		return nil, fmt.Errorf("error querying internal IP")
 	}
-	return &AzureCloudProvider{
+	p := &AzureCloudProvider{
 		client:     client,
 		clusterTag: clusterTag,
 		instanceID: instanceID,
 		internalIP: internalIP,
-	}, nil
+	}
+	p.discovery, err = p.buildDiscovery()
+	if err != nil {
+		return nil, err
+	}
+	return p, nil
 }
 
 // InstanceID implements CloudProvider InstanceID.
@@ -90,10 +98,18 @@ func (a *AzureCloudProvider) InstanceInternalIP() net.IP {
 	return a.internalIP
 }
 
-// GossipSeeds implements CloudProvider GossipSeeds.
-func (a *AzureCloudProvider) GossipSeeds() (gossip.SeedProvider, error) {
+func (a *AzureCloudProvider) buildDiscovery() (*gossipazure.SeedProvider, error) {
 	tags := map[string]string{
 		azure.TagClusterName: a.clusterTag,
 	}
 	return gossipazure.NewSeedProvider(a.client, tags)
+}
+
+// GossipSeeds implements CloudProvider GossipSeeds.
+func (d *AzureCloudProvider) GossipSeeds() (gossip.SeedProvider, error) {
+	return d.discovery, nil
+}
+
+func (d *AzureCloudProvider) Resolver() (resolver.Resolver, error) {
+	return d.discovery, nil
 }

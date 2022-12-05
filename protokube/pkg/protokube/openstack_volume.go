@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/resolver"
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipos "k8s.io/kops/protokube/pkg/gossip/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
@@ -38,6 +39,8 @@ type OpenStackCloudProvider struct {
 	instanceName string
 	internalIP   net.IP
 	storageZone  string
+
+	discovery *gossipos.SeedProvider
 }
 
 var _ CloudProvider = &OpenStackCloudProvider{}
@@ -60,6 +63,11 @@ func NewOpenStackCloudProvider() (*OpenStackCloudProvider, error) {
 	}
 
 	err = a.discoverTags()
+	if err != nil {
+		return nil, err
+	}
+
+	a.discovery, err = a.buildDiscovery()
 	if err != nil {
 		return nil, err
 	}
@@ -135,8 +143,17 @@ func (a *OpenStackCloudProvider) discoverTags() error {
 	return nil
 }
 
-func (g *OpenStackCloudProvider) GossipSeeds() (gossip.SeedProvider, error) {
+func (g *OpenStackCloudProvider) buildDiscovery() (*gossipos.SeedProvider, error) {
 	return gossipos.NewSeedProvider(g.cloud.ComputeClient(), g.clusterName, g.project)
+}
+
+func (a *OpenStackCloudProvider) GossipSeeds() (gossip.SeedProvider, error) {
+	return a.discovery, nil
+}
+
+// Resolver returns a resolver for resolving seed addresses via cloud discovery
+func (a *OpenStackCloudProvider) Resolver() (resolver.Resolver, error) {
+	return a.discovery, nil
 }
 
 func (g *OpenStackCloudProvider) InstanceID() string {
