@@ -108,8 +108,8 @@ func (s *SSHKey) CheckChanges(actual, expected, changes *SSHKey) error {
 }
 
 func (*SSHKey) RenderScw(c *fi.Context, actual, expected, changes *SSHKey) error {
-	// Scaleway does not support changes to ssh keys for the moment
 	if actual != nil {
+		klog.Infof("Scaleway does not support changes to ssh keys for the moment")
 		return nil
 	}
 
