@@ -18,7 +18,6 @@ package resources
 
 type ClusterInfo struct {
 	Name        string
-	Region      string
 	UsesNoneDNS bool
 	// Azure specific
 	AzureResourceGroupName   string

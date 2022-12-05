@@ -37,10 +37,9 @@ import (
 )
 
 // ListResources collects the resources from the specified cloud
-func ListResources(cloud fi.Cloud, cluster *kops.Cluster, region string) (map[string]*resources.Resource, error) {
+func ListResources(cloud fi.Cloud, cluster *kops.Cluster) (map[string]*resources.Resource, error) {
 	clusterInfo := resources.ClusterInfo{
 		Name:        cluster.Name,
-		Region:      region,
 		UsesNoneDNS: cluster.UsesNoneDNS(),
 	}
 
