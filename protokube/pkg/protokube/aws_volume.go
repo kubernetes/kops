@@ -27,6 +27,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/resolver"
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipaws "k8s.io/kops/protokube/pkg/gossip/aws"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -43,6 +44,8 @@ type AWSCloudProvider struct {
 	internalIP net.IP
 	metadata   *ec2metadata.EC2Metadata
 	zone       string
+
+	discovery *gossipaws.SeedProvider
 }
 
 var _ CloudProvider = &AWSCloudProvider{}
@@ -85,6 +88,11 @@ func NewAWSCloudProvider() (*AWSCloudProvider, error) {
 	a.ec2 = ec2.New(s, config.WithRegion(region))
 
 	err = a.discoverTags()
+	if err != nil {
+		return nil, err
+	}
+
+	a.discovery, err = a.buildDiscovery()
 	if err != nil {
 		return nil, err
 	}
@@ -147,11 +155,24 @@ func (a *AWSCloudProvider) describeInstance() (*ec2.Instance, error) {
 	return instances[0], nil
 }
 
-func (a *AWSCloudProvider) GossipSeeds() (gossip.SeedProvider, error) {
+func (a *AWSCloudProvider) buildDiscovery() (*gossipaws.SeedProvider, error) {
 	tags := make(map[string]string)
 	tags[awsup.TagClusterName] = a.clusterTag
 
-	return gossipaws.NewSeedProvider(a.ec2, tags)
+	seeds, err := gossipaws.NewSeedProvider(a.ec2, tags)
+	if err != nil {
+		return nil, err
+	}
+	return seeds, nil
+}
+
+func (a *AWSCloudProvider) GossipSeeds() (gossip.SeedProvider, error) {
+	return a.discovery, nil
+}
+
+// Resolver returns a resolver for resolving seed addresses via cloud discovery
+func (a *AWSCloudProvider) Resolver() (resolver.Resolver, error) {
+	return a.discovery, nil
 }
 
 func (a *AWSCloudProvider) InstanceID() string {

@@ -17,11 +17,14 @@ limitations under the License.
 package aws
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/resolver"
 	"k8s.io/kops/protokube/pkg/gossip"
 )
 
@@ -33,11 +36,22 @@ type SeedProvider struct {
 var _ gossip.SeedProvider = &SeedProvider{}
 
 func (p *SeedProvider) GetSeeds() ([]string, error) {
+	return p.discover(context.TODO(), nil, nil)
+}
+
+func (p *SeedProvider) discover(ctx context.Context, hasTags []string, predicate func(*ec2.Instance) bool) ([]string, error) {
 	request := &ec2.DescribeInstancesInput{}
 	for k, v := range p.tags {
 		filter := &ec2.Filter{
 			Name:   aws.String("tag:" + k),
 			Values: aws.StringSlice([]string{v}),
+		}
+		request.Filters = append(request.Filters, filter)
+	}
+	for _, k := range hasTags {
+		filter := &ec2.Filter{
+			Name:   aws.String("tag-key"),
+			Values: aws.StringSlice([]string{k}),
 		}
 		request.Filters = append(request.Filters, filter)
 	}
@@ -47,9 +61,12 @@ func (p *SeedProvider) GetSeeds() ([]string, error) {
 	})
 
 	var seeds []string
-	err := p.ec2.DescribeInstancesPages(request, func(p *ec2.DescribeInstancesOutput, lastPage bool) (shouldContinue bool) {
+	err := p.ec2.DescribeInstancesPagesWithContext(ctx, request, func(p *ec2.DescribeInstancesOutput, lastPage bool) (shouldContinue bool) {
 		for _, r := range p.Reservations {
 			for _, i := range r.Instances {
+				if predicate != nil && !predicate(i) {
+					continue
+				}
 				ip := aws.StringValue(i.PrivateIpAddress)
 				if ip != "" {
 					seeds = append(seeds, ip)
@@ -70,4 +87,17 @@ func NewSeedProvider(ec2 ec2iface.EC2API, tags map[string]string) (*SeedProvider
 		ec2:  ec2,
 		tags: tags,
 	}, nil
+}
+
+var _ resolver.Resolver = &SeedProvider{}
+
+// Resolve implements resolver.Resolve, providing name -> address resolution using cloud API discovery.
+func (p *SeedProvider) Resolve(ctx context.Context, name string) ([]string, error) {
+	klog.Infof("trying to resolve %q using SeedProvider", name)
+
+	// We assume we are trying to resolve a component that runs on the control plane
+	hasTags := []string{
+		"k8s.io/role/control-plane",
+	}
+	return p.discover(ctx, hasTags, nil)
 }
