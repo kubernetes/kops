@@ -24,7 +24,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-05-01/network"
 	authz "github.com/Azure/azure-sdk-for-go/services/preview/authorization/mgmt/2020-04-01-preview/authorization"
 	azureresources "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2021-04-01/resources"
-	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
@@ -44,21 +43,21 @@ const (
 )
 
 // ListResourcesAzure lists all resources for the cluster by quering Azure.
-func ListResourcesAzure(cloud azure.AzureCloud, cluster *kopsapi.Cluster) (map[string]*resources.Resource, error) {
+func ListResourcesAzure(cloud azure.AzureCloud, clusterInfo resources.ClusterInfo) (map[string]*resources.Resource, error) {
 	g := resourceGetter{
-		cloud:   cloud,
-		cluster: cluster,
+		cloud:       cloud,
+		clusterInfo: clusterInfo,
 	}
 	return g.listResourcesAzure()
 }
 
 type resourceGetter struct {
-	cloud   azure.AzureCloud
-	cluster *kopsapi.Cluster
+	cloud       azure.AzureCloud
+	clusterInfo resources.ClusterInfo
 }
 
 func (g *resourceGetter) resourceGroupName() string {
-	return g.cluster.AzureResourceGroupName()
+	return g.clusterInfo.AzureResourceGroupName
 }
 
 func (g *resourceGetter) listResourcesAzure() (map[string]*resources.Resource, error) {
@@ -129,7 +128,7 @@ func (g *resourceGetter) toResourceGroupResource(rg *azureresources.Group) *reso
 		ID:      *rg.Name,
 		Name:    *rg.Name,
 		Deleter: g.deleteResourceGroup,
-		Shared:  g.cluster.IsSharedAzureResourceGroup(),
+		Shared:  g.clusterInfo.AzureResourceGroupShared,
 	}
 }
 
@@ -168,7 +167,7 @@ func (g *resourceGetter) toVirtualNetworkResource(vnet *network.VirtualNetwork) 
 		Name:    *vnet.Name,
 		Deleter: g.deleteVirtualNetwork,
 		Blocks:  []string{toKey(typeResourceGroup, g.resourceGroupName())},
-		Shared:  g.cluster.SharedVPC(),
+		Shared:  g.clusterInfo.AzureNetworkShared,
 	}
 }
 
@@ -202,7 +201,7 @@ func (g *resourceGetter) toSubnetResource(subnet *network.Subnet, vnetName strin
 			toKey(typeVirtualNetwork, vnetName),
 			toKey(typeResourceGroup, g.resourceGroupName()),
 		},
-		Shared: g.cluster.SharedVPC(),
+		Shared: g.clusterInfo.AzureNetworkShared,
 	}
 }
 
@@ -235,7 +234,7 @@ func (g *resourceGetter) toRouteTableResource(rt *network.RouteTable) *resources
 		Name:    *rt.Name,
 		Deleter: g.deleteRouteTable,
 		Blocks:  []string{toKey(typeResourceGroup, g.resourceGroupName())},
-		Shared:  g.cluster.IsSharedAzureRouteTable(),
+		Shared:  g.clusterInfo.AzureRouteTableShared,
 	}
 }
 
@@ -469,7 +468,7 @@ func (g *resourceGetter) deletePublicIPAddress(_ fi.Cloud, r *resources.Resource
 // isOwnedByCluster returns true if the resource is owned by the cluster.
 func (g *resourceGetter) isOwnedByCluster(tags map[string]*string) bool {
 	for k, v := range tags {
-		if k == azure.TagClusterName && *v == g.cluster.Name {
+		if k == azure.TagClusterName && *v == g.clusterInfo.Name {
 			return true
 		}
 	}

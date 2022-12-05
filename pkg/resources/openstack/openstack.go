@@ -31,13 +31,13 @@ type clusterDiscoveryOS struct {
 }
 
 // ListResources lists the OpenStack resources kops manages
-func ListResources(cloud openstack.OpenstackCloud, clusterName string) (map[string]*resources.Resource, error) {
+func ListResources(cloud openstack.OpenstackCloud, clusterInfo resources.ClusterInfo) (map[string]*resources.Resource, error) {
 	resources := make(map[string]*resources.Resource)
 
 	os := &clusterDiscoveryOS{
 		cloud:       cloud,
 		osCloud:     cloud,
-		clusterName: clusterName,
+		clusterName: clusterInfo.Name,
 	}
 
 	listFunctions := []openstackListFn{
