@@ -23,7 +23,9 @@ import (
 
 	"github.com/digitalocean/godo"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/resolver"
 	"k8s.io/kops/protokube/pkg/gossip"
+	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 )
 
 type SeedProvider struct {
@@ -34,14 +36,25 @@ type SeedProvider struct {
 var _ gossip.SeedProvider = &SeedProvider{}
 
 func (p *SeedProvider) GetSeeds() ([]string, error) {
+	predicate := func(*godo.Droplet) bool {
+		return true
+	}
+	return p.discover(context.TODO(), predicate)
+}
+
+func (p *SeedProvider) discover(ctx context.Context, predicate func(*godo.Droplet) bool) ([]string, error) {
 	var seeds []string
 
-	droplets, _, err := p.godoClient.Droplets.List(context.TODO(), nil)
+	droplets, _, err := p.godoClient.Droplets.List(ctx, nil)
 	if err != nil {
-		return nil, fmt.Errorf("Droplets.ListByTag returned error: %v", err)
+		return nil, fmt.Errorf("Droplets.ListByTag returned error: %w", err)
 	}
 
 	for _, droplet := range droplets {
+		if !predicate(&droplet) {
+			continue
+		}
+
 		for _, dropTag := range droplet.Tags {
 			klog.V(4).Infof("Get Seeds - droplet found=%s,SeedProvider Tag=%s", dropTag, p.tag)
 			if strings.Contains(dropTag, strings.Replace(p.tag, ".", "-", -1)) {
@@ -70,4 +83,22 @@ func NewSeedProvider(godoClient *godo.Client, tag string) (*SeedProvider, error)
 		godoClient: godoClient,
 		tag:        tag,
 	}, nil
+}
+
+var _ resolver.Resolver = &SeedProvider{}
+
+// Resolve implements resolver.Resolve, providing name -> address resolution using cloud API discovery.
+func (p *SeedProvider) Resolve(ctx context.Context, name string) ([]string, error) {
+	klog.Infof("trying to resolve %q using SeedProvider", name)
+
+	// We assume we are trying to resolve a component that runs on the control plane
+	isControlPlane := func(droplet *godo.Droplet) bool {
+		for _, dropTag := range droplet.Tags {
+			if strings.HasPrefix(dropTag, do.TagKubernetesClusterMasterPrefix+":") {
+				return true
+			}
+		}
+		return false
+	}
+	return p.discover(ctx, isControlPlane)
 }

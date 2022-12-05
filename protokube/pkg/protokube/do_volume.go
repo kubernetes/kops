@@ -30,6 +30,7 @@ import (
 	"github.com/digitalocean/godo"
 	"golang.org/x/oauth2"
 
+	"k8s.io/kops/pkg/resolver"
 	"k8s.io/kops/protokube/pkg/etcd"
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipdo "k8s.io/kops/protokube/pkg/gossip/do"
@@ -57,6 +58,8 @@ type DOCloudProvider struct {
 	dropletID   int
 	dropletIP   net.IP
 	dropletTags []string
+
+	discovery *gossipdo.SeedProvider
 }
 
 var _ CloudProvider = &DOCloudProvider{}
@@ -128,7 +131,7 @@ func NewDOCloudProvider() (*DOCloudProvider, error) {
 		return nil, fmt.Errorf("failed to get clusterID: %s", err)
 	}
 
-	return &DOCloudProvider{
+	p := &DOCloudProvider{
 		godoClient:  godoClient,
 		ClusterID:   clusterID,
 		dropletID:   dropletID,
@@ -136,7 +139,12 @@ func NewDOCloudProvider() (*DOCloudProvider, error) {
 		dropletName: dropletName,
 		region:      region,
 		dropletTags: dropletTags,
-	}, nil
+	}
+	p.discovery, err = p.buildDiscovery()
+	if err != nil {
+		return nil, err
+	}
+	return p, nil
 }
 
 // Token() returns oauth2.Token
@@ -188,7 +196,7 @@ func (d *DOCloudProvider) getEtcdClusterSpec(vol godo.Volume) (*etcd.EtcdCluster
 	}, nil
 }
 
-func (d *DOCloudProvider) GossipSeeds() (gossip.SeedProvider, error) {
+func (d *DOCloudProvider) buildDiscovery() (*gossipdo.SeedProvider, error) {
 	for _, dropletTag := range d.dropletTags {
 		if strings.Contains(dropletTag, strings.Replace(d.ClusterID, ".", "-", -1)) {
 			return gossipdo.NewSeedProvider(d.godoClient, dropletTag)
@@ -196,6 +204,14 @@ func (d *DOCloudProvider) GossipSeeds() (gossip.SeedProvider, error) {
 	}
 
 	return nil, fmt.Errorf("could not determine a matching droplet tag for gossip seeding")
+}
+
+func (d *DOCloudProvider) GossipSeeds() (gossip.SeedProvider, error) {
+	return d.discovery, nil
+}
+
+func (d *DOCloudProvider) Resolver() (resolver.Resolver, error) {
+	return d.discovery, nil
 }
 
 func (d *DOCloudProvider) InstanceID() string {
