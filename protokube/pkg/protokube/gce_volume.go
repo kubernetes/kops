@@ -24,6 +24,7 @@ import (
 	"cloud.google.com/go/compute/metadata"
 	compute "google.golang.org/api/compute/v1"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/resolver"
 	"k8s.io/kops/protokube/pkg/gossip"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/gcediscovery"
 )
@@ -141,4 +142,9 @@ func (g *GCECloudProvider) GossipSeeds() (gossip.SeedProvider, error) {
 
 func (g *GCECloudProvider) InstanceID() string {
 	return g.instanceName
+}
+
+// Resolver returns a resolver for resolving seed addresses via cloud discovery
+func (g *GCECloudProvider) Resolver() (resolver.Resolver, error) {
+	return g.discovery, nil
 }
