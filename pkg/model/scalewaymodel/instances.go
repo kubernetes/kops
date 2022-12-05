@@ -60,6 +60,7 @@ func (d *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Tags: []string{
 				scaleway.TagInstanceGroup + "=" + ig.Name,
 				scaleway.TagClusterName + "=" + d.Cluster.Name,
+				scaleway.TagNameRolePrefix + ig.Spec.Role.ToLowerString(),
 			},
 		}
 

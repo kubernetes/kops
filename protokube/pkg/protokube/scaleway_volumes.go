@@ -25,6 +25,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"k8s.io/klog/v2"
 	kopsv "k8s.io/kops"
+	"k8s.io/kops/pkg/resolver"
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipscw "k8s.io/kops/protokube/pkg/gossip/scaleway"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
@@ -35,6 +36,8 @@ type ScwCloudProvider struct {
 	scwClient *scw.Client
 	server    *instance.Server
 	serverIP  net.IP
+
+	discovery *gossipscw.SeedProvider
 }
 
 var _ CloudProvider = &ScwCloudProvider{}
@@ -92,6 +95,11 @@ func NewScwCloudProvider() (*ScwCloudProvider, error) {
 		serverIP:  net.IP(privateIP),
 	}
 
+	s.discovery, err = s.buildDiscovery()
+	if err != nil {
+		return nil, err
+	}
+
 	return s, nil
 }
 
@@ -103,7 +111,7 @@ func (s ScwCloudProvider) InstanceInternalIP() net.IP {
 	return s.serverIP
 }
 
-func (s *ScwCloudProvider) GossipSeeds() (gossip.SeedProvider, error) {
+func (s *ScwCloudProvider) buildDiscovery() (*gossipscw.SeedProvider, error) {
 	for _, tag := range s.server.Tags {
 		if !strings.HasPrefix(tag, scaleway.TagClusterName) {
 			continue
@@ -112,4 +120,12 @@ func (s *ScwCloudProvider) GossipSeeds() (gossip.SeedProvider, error) {
 		return gossipscw.NewSeedProvider(s.scwClient, clusterName)
 	}
 	return nil, fmt.Errorf("failed to find cluster name label for running server: %v", s.server.Tags)
+}
+
+func (d *ScwCloudProvider) GossipSeeds() (gossip.SeedProvider, error) {
+	return d.discovery, nil
+}
+
+func (d *ScwCloudProvider) Resolver() (resolver.Resolver, error) {
+	return d.discovery, nil
 }
