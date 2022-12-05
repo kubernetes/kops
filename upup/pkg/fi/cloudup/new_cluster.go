@@ -348,6 +348,8 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 			return nil, err
 		}
 		cloud = osCloud
+	case api.CloudProviderScaleway:
+		cluster.Spec.CloudProvider.Scaleway = &api.ScalewaySpec{}
 
 	default:
 		return nil, fmt.Errorf("unsupported cloud provider %s", opt.CloudProvider)
@@ -728,6 +730,11 @@ func setupZones(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.Stri
 			if err != nil {
 				return nil, err
 			}
+		}
+
+	case api.CloudProviderScaleway:
+		if len(opt.Zones) > 1 {
+			return nil, fmt.Errorf("scaleway cloud provider currently supports only one availability zone")
 		}
 	}
 
