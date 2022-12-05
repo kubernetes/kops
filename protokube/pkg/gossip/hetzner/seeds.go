@@ -22,6 +22,7 @@ import (
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/resolver"
 	"k8s.io/kops/protokube/pkg/gossip"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 )
@@ -41,6 +42,13 @@ func NewSeedProvider(hcloudClient *hcloud.Client, tag string) (*SeedProvider, er
 }
 
 func (p *SeedProvider) GetSeeds() ([]string, error) {
+	predicate := func(*hcloud.Server) bool {
+		return true
+	}
+	return p.discover(context.TODO(), predicate)
+}
+
+func (p *SeedProvider) discover(ctx context.Context, predicate func(*hcloud.Server) bool) ([]string, error) {
 	var seeds []string
 
 	labelSelector := fmt.Sprintf("%s=%s", hetzner.TagKubernetesClusterName, p.tag)
@@ -50,12 +58,15 @@ func (p *SeedProvider) GetSeeds() ([]string, error) {
 	}
 	serverListOptions := hcloud.ServerListOpts{ListOpts: listOptions}
 
-	servers, err := p.hcloudClient.Server.AllWithOpts(context.TODO(), serverListOptions)
+	servers, err := p.hcloudClient.Server.AllWithOpts(ctx, serverListOptions)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get matching servers: %s", err)
+		return nil, fmt.Errorf("failed to get matching servers: %w", err)
 	}
 
 	for _, server := range servers {
+		if !predicate(server) {
+			continue
+		}
 		if len(server.PrivateNet) == 0 {
 			klog.Warningf("failed to find private net of the server %s(%d)", server.Name, server.ID)
 			continue
@@ -67,4 +78,24 @@ func (p *SeedProvider) GetSeeds() ([]string, error) {
 
 	klog.V(4).Infof("Get seeds function done now")
 	return seeds, nil
+}
+
+var _ resolver.Resolver = &SeedProvider{}
+
+// Resolve implements resolver.Resolve, providing name -> address resolution using cloud API discovery.
+func (p *SeedProvider) Resolve(ctx context.Context, name string) ([]string, error) {
+	klog.Infof("trying to resolve %q using SeedProvider", name)
+
+	// TODO: Can we push this predicate down so we can filter server-side?
+	// We assume we are trying to resolve a component that runs on the control plane
+	isControlPlane := func(server *hcloud.Server) bool {
+		instanceRole := server.Labels["kops.k8s.io/instance-role"]
+		switch instanceRole {
+		case "ControlPlane":
+			return true
+		default:
+			return false
+		}
+	}
+	return p.discover(ctx, isControlPlane)
 }

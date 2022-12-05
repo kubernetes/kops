@@ -25,6 +25,7 @@ import (
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/hcloud-go/hcloud/metadata"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/resolver"
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossiphetzner "k8s.io/kops/protokube/pkg/gossip/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
@@ -35,6 +36,8 @@ type HetznerCloudProvider struct {
 	hcloudClient *hcloud.Client
 	server       *hcloud.Server
 	serverIP     net.IP
+
+	discovery *gossiphetzner.SeedProvider
 }
 
 var _ CloudProvider = &HetznerCloudProvider{}
@@ -80,6 +83,11 @@ func NewHetznerCloudProvider() (*HetznerCloudProvider, error) {
 		serverIP:     server.PrivateNet[0].IP,
 	}
 
+	h.discovery, err = h.buildDiscovery()
+	if err != nil {
+		return nil, err
+	}
+
 	return h, nil
 }
 
@@ -87,12 +95,20 @@ func (h HetznerCloudProvider) InstanceInternalIP() net.IP {
 	return h.serverIP
 }
 
-func (h *HetznerCloudProvider) GossipSeeds() (gossip.SeedProvider, error) {
+func (h *HetznerCloudProvider) buildDiscovery() (*gossiphetzner.SeedProvider, error) {
 	clusterName, ok := h.server.Labels[hetzner.TagKubernetesClusterName]
 	if !ok {
 		return nil, fmt.Errorf("failed to find cluster name label for running server: %v", h.server.Labels)
 	}
 	return gossiphetzner.NewSeedProvider(h.hcloudClient, clusterName)
+}
+
+func (d *HetznerCloudProvider) GossipSeeds() (gossip.SeedProvider, error) {
+	return d.discovery, nil
+}
+
+func (d *HetznerCloudProvider) Resolver() (resolver.Resolver, error) {
+	return d.discovery, nil
 }
 
 func (h *HetznerCloudProvider) InstanceID() string {
