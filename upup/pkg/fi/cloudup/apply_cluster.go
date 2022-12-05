@@ -1410,20 +1410,32 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 
 	// Set API server address to an IP from the cluster network CIDR
 	if cluster.UsesNoneDNS() {
-		for _, networkCIDR := range append(cluster.Spec.Networking.AdditionalNetworkCIDRs, cluster.Spec.Networking.NetworkCIDR) {
-			_, cidr, err := net.ParseCIDR(networkCIDR)
-			if err != nil {
-				return nil, nil, fmt.Errorf("failed to parse network CIDR %q: %w", networkCIDR, err)
-			}
-			for _, additionalIP := range apiserverAdditionalIPs {
-				if cidr.Contains(net.ParseIP(additionalIP)) {
-					bootConfig.APIServerIP = additionalIP
+		switch cluster.Spec.GetCloudProvider() {
+		case kops.CloudProviderAWS, kops.CloudProviderHetzner:
+			// Use a private IP address that belongs to the cluster network CIDR (some additional addresses may be FQDNs or public IPs)
+			for _, networkCIDR := range append(cluster.Spec.Networking.AdditionalNetworkCIDRs, cluster.Spec.Networking.NetworkCIDR) {
+				_, cidr, err := net.ParseCIDR(networkCIDR)
+				if err != nil {
+					return nil, nil, fmt.Errorf("failed to parse network CIDR %q: %w", networkCIDR, err)
+				}
+				for _, additionalIP := range apiserverAdditionalIPs {
+					if cidr.Contains(net.ParseIP(additionalIP)) {
+						bootConfig.APIServerIP = additionalIP
+						break
+					}
+				}
+				if bootConfig.APIServerIP != "" {
 					break
 				}
 			}
-			if bootConfig.APIServerIP != "" {
+		case kops.CloudProviderGCE:
+			// Use any IP address that is found (including public ones)
+			for _, additionalIP := range apiserverAdditionalIPs {
+				bootConfig.APIServerIP = additionalIP
 				break
 			}
+		default:
+			return nil, nil, fmt.Errorf("'none' DNS topology is not supported for cloud %q", cluster.Spec.GetCloudProvider())
 		}
 	}
 
