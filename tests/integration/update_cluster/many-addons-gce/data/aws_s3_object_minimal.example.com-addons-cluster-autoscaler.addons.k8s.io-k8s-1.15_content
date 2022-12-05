@@ -325,7 +325,7 @@ spec:
         - --balance-similar-node-groups=false
         - --cloud-provider=gce
         - --expander=random
-        - --nodes=1:1:nodes
+        - --nodes=1:1:https://www.googleapis.com/compute/v1/projects/testproject/zones/us-test1-a/instanceGroups/a-nodes-minimal-example-com
         - --scale-down-utilization-threshold=0.5
         - --skip-nodes-with-local-storage=true
         - --skip-nodes-with-system-pods=true
@@ -338,9 +338,6 @@ spec:
         - --logtostderr=true
         - --stderrthreshold=info
         - --v=4
-        env:
-        - name: AWS_REGION
-          value: us-test1
         image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.25.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
