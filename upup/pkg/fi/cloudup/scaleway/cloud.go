@@ -35,10 +35,13 @@ import (
 )
 
 const (
-	TagClusterName      = "kops.k8s.io/cluster"
-	KopsUserAgentPrefix = "kubernetes-kops/"
-	TagInstanceGroup    = "instance-group"
-	TagNameRolePrefix   = "k8s.io/role/"
+	TagClusterName           = "kops.k8s.io/cluster"
+	KopsUserAgentPrefix      = "kubernetes-kops/"
+	TagInstanceGroup         = "instance-group"
+	TagNameRolePrefix        = "k8s.io/role"
+	TagNameEtcdClusterPrefix = "k8s.io/etcd"
+	TagRoleMaster            = "control-plane"
+	TagRoleVolume            = "volume"
 )
 
 // ScwCloud exposes all the interfaces required to operate on Scaleway resources
@@ -218,13 +221,13 @@ func (s *scwCloudImplementation) FindClusterStatus(cluster *kops.Cluster) (*kops
 
 // FindVPCInfo is not implemented yet, it's only here to satisfy the fi.Cloud interface
 func (s *scwCloudImplementation) FindVPCInfo(id string) (*fi.VPCInfo, error) {
-	klog.V(8).Info("Scaleway doesn't have a VPC yet so FindVPCInfo is not implemented")
+	klog.V(8).Info("Scaleway clusters don't have a VPC yet so FindVPCInfo is not implemented")
 	return nil, fmt.Errorf("FindVPCInfo is not implemented yet for Scaleway")
 }
 
 func (s *scwCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
-	klog.V(8).Info("Scaleway doesn't have load-balancers yet so GetApiIngressStatus is not implemented")
-	return nil, fmt.Errorf("GetApiIngressStatus is not implemented yet for Scaleway")
+	klog.V(8).Info("Scaleway clusters don't have load-balancers yet so GetApiIngressStatus is not implemented")
+	return nil, nil
 }
 
 func (s *scwCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {

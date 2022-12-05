@@ -22,7 +22,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
-
+	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/upup/pkg/fi"
@@ -38,6 +38,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetznertasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks"
+	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
+	"k8s.io/kops/upup/pkg/fi/cloudup/scalewaytasks"
 )
 
 const (
@@ -118,6 +120,8 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 				if err != nil {
 					return err
 				}
+			case kops.CloudProviderScaleway:
+				b.addScalewayVolume(c, name, volumeSize, zone, etcd, m, allMembers)
 			default:
 				return fmt.Errorf("unknown cloudprovider %q", b.Cluster.Spec.GetCloudProvider())
 			}
@@ -391,4 +395,25 @@ func (b *MasterVolumeBuilder) addAzureVolume(
 	c.AddTask(t)
 
 	return nil
+}
+
+func (b *MasterVolumeBuilder) addScalewayVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, zone string, etcd kops.EtcdClusterSpec, m kops.EtcdMemberSpec, allMembers []string) {
+	tags := []string{
+		fmt.Sprintf("%s=%s", scaleway.TagClusterName, b.Cluster.ObjectMeta.Name),
+		fmt.Sprintf("%s=%s", scaleway.TagNameEtcdClusterPrefix, etcd.Name),
+		fmt.Sprintf("%s=%s", scaleway.TagNameRolePrefix, scaleway.TagRoleMaster),
+		fmt.Sprintf("%s=%s", scaleway.TagInstanceGroup, fi.ValueOf(m.InstanceGroup)),
+	}
+
+	t := &scalewaytasks.Volume{
+		Name:      fi.PtrTo(name),
+		Lifecycle: b.Lifecycle,
+		Size:      fi.PtrTo(int64(volumeSize) * 1e9),
+		Zone:      &zone,
+		Tags:      tags,
+		Type:      fi.PtrTo(string(instance.VolumeVolumeTypeBSSD)),
+	}
+	c.AddTask(t)
+
+	return
 }
