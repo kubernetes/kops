@@ -35,42 +35,20 @@ const DefaultKubecfgAdminLifetime = 18 * time.Hour
 func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.SecretStore, cloud fi.Cloud, admin time.Duration, configUser string, internal bool, kopsStateStore string, useKopsAuthenticationPlugin bool) (*KubeconfigBuilder, error) {
 	clusterName := cluster.ObjectMeta.Name
 
-	var master string
+	var server string
 	if internal {
-		master = cluster.APIInternalName()
+		server = "https://" + cluster.APIInternalName()
 	} else {
-		master = cluster.Spec.API.PublicName
-		if master == "" {
-			master = "api." + clusterName
+		if cluster.Spec.API.PublicName != "" {
+			server = "https://" + cluster.Spec.API.PublicName
+		} else {
+			server = "https://api." + clusterName
 		}
 	}
 
-	server := "https://" + master
-
-	// We use the LoadBalancer where we know the master DNS name is otherwise unreachable
-	useELBName := false
-
-	// If the master DNS is a gossip DNS name; there's no way that name can resolve outside the cluster
-	if cluster.IsGossip() {
-		useELBName = true
-	}
-
-	// If the cluster has DNS disabled, must use the load balancer name
-	if cluster.UsesNoneDNS() {
-		useELBName = true
-	}
-
-	// If the DNS is set up as a private HostedZone, but here we have to be
-	// careful that we aren't accessing the API over DirectConnect (or a VPN).
-	// We differentiate using the heuristic that if we have an internal ELB
-	// we are likely connected directly to the VPC.
-	privateDNS := cluster.Spec.Networking.Topology != nil && cluster.Spec.Networking.Topology.DNS == kops.DNSTypePrivate
-	internalELB := cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.Type == kops.LoadBalancerTypeInternal
-	if privateDNS && !internalELB {
-		useELBName = true
-	}
-
-	if useELBName {
+	// If a load balancer exists we use it, except for when an SSL certificate is set.
+	// This should avoid a lot of pain with DNS pre-creation.
+	if cluster.Spec.API.LoadBalancer != nil && (cluster.Spec.API.LoadBalancer.SSLCertificate == "" || admin != 0) {
 		ingresses, err := cloud.GetApiIngressStatus(cluster)
 		if err != nil {
 			return nil, fmt.Errorf("error getting ingress status: %v", err)
