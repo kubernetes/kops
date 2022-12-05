@@ -125,7 +125,7 @@ func main() {
 	}
 
 	var dnsProviders []dnsprovider.Interface
-	if dnsProviderID != "gossip" {
+	if dnsProviderID != "gossip" && dnsProviderID != "none" {
 		var file io.Reader
 
 		dnsProvider, err := dnsprovider.GetDnsProvider(dnsProviderID, file)

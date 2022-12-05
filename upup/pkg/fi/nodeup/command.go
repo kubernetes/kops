@@ -232,6 +232,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 
 	var secretStore fi.SecretStoreReader
 	var keyStore fi.KeystoreReader
+
 	if nodeConfig != nil {
 		modelContext.SecretStore = configserver.NewSecretStore(nodeConfig.NodeSecrets)
 	} else if c.cluster.Spec.SecretStore != "" {

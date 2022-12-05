@@ -17,15 +17,21 @@ limitations under the License.
 package main
 
 import (
+	"context"
+	"crypto/tls"
 	"flag"
 	"fmt"
+	"net/url"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/spf13/pflag"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/kopscontrollerclient"
 	"k8s.io/kops/pkg/wellknownports"
+	"k8s.io/kops/protokube/pkg/discovery"
 	gossiputils "k8s.io/kops/protokube/pkg/gossip"
 	gossipdns "k8s.io/kops/protokube/pkg/gossip/dns"
 	_ "k8s.io/kops/protokube/pkg/gossip/memberlist"
@@ -40,11 +46,13 @@ var (
 )
 
 func main() {
+	ctx := context.Background()
+
 	klog.InitFlags(nil)
 
 	fmt.Printf("protokube version %s\n", BuildVersion)
 
-	if err := run(); err != nil {
+	if err := run(ctx); err != nil {
 		klog.Errorf("Error: %v", err)
 		os.Exit(1)
 	}
@@ -52,7 +60,7 @@ func main() {
 }
 
 // run is responsible for running the protokube service controller
-func run() error {
+func run(ctx context.Context) error {
 	var zones []string
 	var containerized, master, gossip bool
 	var cloud, clusterID, dnsInternalSuffix, gossipSecret, gossipListen, gossipProtocol, gossipSecretSecondary, gossipListenSecondary, gossipProtocolSecondary string
@@ -74,6 +82,13 @@ func run() error {
 	flag.StringVar(&gossipListenSecondary, "gossip-listen-secondary", fmt.Sprintf("0.0.0.0:%d", wellknownports.ProtokubeGossipMemberlist), "address:port on which to bind for gossip")
 	flags.StringVar(&gossipSecretSecondary, "gossip-secret-secondary", gossipSecret, "Secret to use to secure gossip")
 	flags.StringSliceVarP(&zones, "zone", "z", []string{}, "Configure permitted zones and their mappings")
+
+	var discoveryEndpoint string
+	flag.StringVar(&discoveryEndpoint, "discovery", discoveryEndpoint, "Set to the kops-controller endpoint if using discovery")
+	var certificateAuthorityPath string
+	flag.StringVar(&certificateAuthorityPath, "ca-path", certificateAuthorityPath, "Path to the CA bundle path (for communication with kops-controller)")
+	var machineKeyDir string
+	flag.StringVar(&machineKeyDir, "machine-key-dir", machineKeyDir, "Directory containing the machine key and certificate, used for kops-controller authentication.")
 
 	bootstrapMasterNodeLabels := false
 	flag.BoolVar(&bootstrapMasterNodeLabels, "bootstrap-master-node-labels", bootstrapMasterNodeLabels, "Bootstrap the labels for master nodes (required in k8s 1.16)")
@@ -181,6 +196,47 @@ func run() error {
 
 	protokube.RootFS = rootfs
 
+	if discoveryEndpoint != "" {
+		discoveryEndpointURL, err := url.Parse(discoveryEndpoint)
+		if err != nil {
+			return fmt.Errorf("error parsing discovery url %q: %w", discoveryEndpoint, err)
+		}
+
+		var caBytes []byte
+		if certificateAuthorityPath != "" {
+			b, err := os.ReadFile(certificateAuthorityPath)
+			if err != nil {
+				return fmt.Errorf("error reading CA bundle from %q: %w", certificateAuthorityPath, err)
+			}
+			caBytes = b
+		}
+
+		resolver, err := cloudProvider.Resolver()
+		if err != nil {
+			return fmt.Errorf("cannot get resolver from cloudprovider %T: %w", cloudProvider, err)
+		}
+
+		client := &kopscontrollerclient.Client{
+			BaseURL:            *discoveryEndpointURL,
+			Resolver:           resolver,
+			CACertificates:     caBytes,
+			ClientCertificates: clientCertificates,
+		}
+
+		hostsWriter := discovery.HostsWriter{
+			Client: client,
+		}
+		klog.Infof("discovering hosts from %q", discoveryEndpointURL.String())
+		go func() {
+			err := hostsWriter.RunForever(ctx)
+			if err != nil {
+				klog.Fatalf("host discovery exited unexpectedly: %v", err)
+			} else {
+				klog.Fatalf("host discovery exited unexpectedly, but without error")
+			}
+		}()
+	}
+
 	if gossip {
 		dnsTarget := &gossipdns.HostsFile{
 			Path: path.Join(rootfs, "etc/hosts"),
@@ -249,7 +305,7 @@ func run() error {
 		Master:                    master,
 	}
 
-	k.RunSyncLoop()
+	k.RunSyncLoop(ctx)
 
 	return fmt.Errorf("Unexpected exit")
 }

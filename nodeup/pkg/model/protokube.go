@@ -18,9 +18,12 @@ package model
 
 import (
 	"fmt"
+	"net"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"k8s.io/klog/v2"
@@ -28,6 +31,7 @@ import (
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/pkg/systemd"
+	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/distributions"
@@ -169,6 +173,12 @@ type ProtokubeFlags struct {
 	GossipProtocolSecondary *string `json:"gossip-protocol-secondary" flag:"gossip-protocol-secondary" flag-include-empty:"true"`
 	GossipListenSecondary   *string `json:"gossip-listen-secondary" flag:"gossip-listen-secondary"`
 	GossipSecretSecondary   *string `json:"gossip-secret-secondary" flag:"gossip-secret-secondary"`
+
+	DiscoveryEndpoint string `json:"discovery,omitempty" flag:"discovery"`
+	CAPath            string `json:"caPath,omitempty" flag:"ca-path"`
+
+	// MachineKeyDir is the directory containing the machine key and certificate, used for kops-controller authentication.
+	MachineKeyDir string `json:"machineKeyDir,omitempty" flag:"machine-key-dir"`
 }
 
 // ProtokubeFlags is responsible for building the command line flags for protokube
@@ -201,6 +211,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags() (*ProtokubeFlags, error) {
 	if t.IsGossip {
 		klog.Warningf("Cluster name %q implies gossip DNS", t.NodeupConfig.ClusterName)
 		f.Gossip = fi.PtrTo(true)
+
 		if t.Cluster.Spec.GossipConfig != nil {
 			f.GossipProtocol = t.Cluster.Spec.GossipConfig.Protocol
 			f.GossipListen = t.Cluster.Spec.GossipConfig.Listen
@@ -217,6 +228,23 @@ func (t *ProtokubeBuilder) ProtokubeFlags() (*ProtokubeFlags, error) {
 		internalSuffix := t.APIInternalName()
 		internalSuffix = strings.TrimPrefix(internalSuffix, "api.")
 		f.DNSInternalSuffix = fi.PtrTo(internalSuffix)
+
+		// Introduce our gossip-alternative on some clouds
+		if t.Cluster.Spec.GossipConfig == nil {
+			switch t.CloudProvider() {
+			case kops.CloudProviderGCE:
+				f.Gossip = fi.PtrTo(false)
+				discoveryEndpoint := url.URL{
+					Scheme: "https",
+					Host:   net.JoinHostPort("kops-controller."+*f.DNSInternalSuffix, strconv.Itoa(wellknownports.KopsControllerPort)),
+					Path:   "/",
+				}
+				f.DiscoveryEndpoint = discoveryEndpoint.String()
+
+				f.CAPath = filepath.Join(t.PathSrvKubernetes(), "ca.crt")
+				f.MachineKeyDir = t.MachineKeyDir()
+			}
+		}
 	}
 
 	if f.DNSInternalSuffix == nil {

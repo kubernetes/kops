@@ -487,7 +487,19 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 	}
 
 	if !b.Cluster.UsesNoneDNS() {
-		if b.Cluster.Spec.ExternalDNS == nil || b.Cluster.Spec.ExternalDNS.Provider == kops.ExternalDNSProviderDNSController {
+		skipDNS := false
+
+		if b.Cluster.IsGossip() {
+			// Introduce our gossip-alternative on some clouds
+			switch b.Cluster.Spec.GetCloudProvider() {
+			case kops.CloudProviderGCE:
+				skipDNS = true
+			}
+		}
+
+		if skipDNS {
+			// don't install dns
+		} else if b.Cluster.Spec.ExternalDNS == nil || b.Cluster.Spec.ExternalDNS.Provider == kops.ExternalDNSProviderDNSController {
 			{
 				key := "dns-controller.addons.k8s.io"
 				location := key + "/k8s-1.12.yaml"

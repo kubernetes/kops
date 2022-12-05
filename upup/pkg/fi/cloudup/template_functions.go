@@ -540,10 +540,10 @@ func (tf *TemplateFunctions) DNSControllerArgv() ([]string, error) {
 	}
 
 	if cluster.IsGossip() {
-		argv = append(argv, "--dns=gossip")
-
 		// Configuration specifically for the DNS controller gossip
 		if cluster.Spec.DNSControllerGossipConfig != nil {
+			argv = append(argv, "--dns=gossip")
+
 			if cluster.Spec.DNSControllerGossipConfig.Protocol != nil {
 				argv = append(argv, "--gossip-protocol="+*cluster.Spec.DNSControllerGossipConfig.Protocol)
 			}
@@ -578,12 +578,22 @@ func (tf *TemplateFunctions) DNSControllerArgv() ([]string, error) {
 				}
 			}
 		} else {
-			// Default to primary mesh and secondary memberlist
-			argv = append(argv, fmt.Sprintf("--gossip-seed=127.0.0.1:%d", wellknownports.ProtokubeGossipWeaveMesh))
+			// // Introduce our gossip-alternative on some clouds
+			// switch cluster.Spec.GetCloudProvider() {
+			// case kops.CloudProviderGCE:
+			// 	// Do not enable gossip DNS integration; our discovery mechanism populates the essential values
+			// 	argv = append(argv, "--dns=none")
 
-			argv = append(argv, "--gossip-protocol-secondary=memberlist")
-			argv = append(argv, fmt.Sprintf("--gossip-listen-secondary=0.0.0.0:%d", wellknownports.DNSControllerGossipMemberlist))
-			argv = append(argv, fmt.Sprintf("--gossip-seed-secondary=127.0.0.1:%d", wellknownports.ProtokubeGossipMemberlist))
+			// default:
+				argv = append(argv, "--dns=gossip")
+
+				// Default to primary mesh and secondary memberlist
+				argv = append(argv, fmt.Sprintf("--gossip-seed=127.0.0.1:%d", wellknownports.ProtokubeGossipWeaveMesh))
+
+				argv = append(argv, "--gossip-protocol-secondary=memberlist")
+				argv = append(argv, fmt.Sprintf("--gossip-listen-secondary=0.0.0.0:%d", wellknownports.DNSControllerGossipMemberlist))
+				argv = append(argv, fmt.Sprintf("--gossip-seed-secondary=127.0.0.1:%d", wellknownports.ProtokubeGossipMemberlist))
+			// }
 		}
 	} else {
 		switch cluster.Spec.GetCloudProvider() {

@@ -23,6 +23,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -189,15 +190,25 @@ func (b *Client) DiscoverHosts(ctx context.Context, req *pb.DiscoverHostsRequest
 		MinVersion: tls.VersionTLS12,
 	}
 
+	serverName, port, err := net.SplitHostPort(b.BaseURL.Host)
+	if err != nil {
+		return nil, fmt.Errorf("cannot split host %q: %w", b.BaseURL.Host, err)
+	}
+	tlsConfig.ServerName = serverName
+
 	grpcURL := b.BaseURL.String()
 
-	dialCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	dialCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 
 	var opts []grpc.DialOption
 
 	if b.Resolver != nil {
-		resolverBuilder := &grpcResolverBuilder{kopsResolver: b.Resolver}
+		resolverBuilder := &grpcResolverBuilder{
+			kopsResolver: b.Resolver,
+			// prefix:       "",
+			suffix: ":" + port,
+		}
 		if !strings.HasPrefix(grpcURL, "https://") {
 			return nil, fmt.Errorf("expected kops-controller url to have https:// scheme, was %q", grpcURL)
 		}
@@ -208,20 +219,22 @@ func (b *Client) DiscoverHosts(ctx context.Context, req *pb.DiscoverHostsRequest
 	tlsTransportCredentials := credentials.NewTLS(tlsConfig)
 	opts = append(opts, grpc.WithTransportCredentials(tlsTransportCredentials))
 
-	rpcCredentials := &grpcPerRPCCredentials{
-		Authenticator: b.Authenticator,
+	if b.Authenticator != nil {
+		rpcCredentials := &grpcPerRPCCredentials{
+			Authenticator: b.Authenticator,
+		}
+		opts = append(opts, grpc.WithPerRPCCredentials(rpcCredentials))
 	}
-	opts = append(opts, grpc.WithPerRPCCredentials(rpcCredentials))
 
 	conn, err := grpc.DialContext(dialCtx, grpcURL, opts...)
 	if err != nil {
-		log.Fatalf("did not connect: %v", err)
+		return nil, fmt.Errorf("failed to connect to %q: %w", grpcURL, err)
 	}
 	client := pb.NewKopsControllerServiceClient(conn)
 
 	stream, err := client.DiscoverHosts(ctx, req)
 	if err != nil {
-		return nil, fmt.Errorf("error from DiscoverHosts request to kops-controller: %w", err)
+		return nil, fmt.Errorf("error from DiscoverHosts request to %q: %w", grpcURL, err)
 	}
 	return stream, nil
 }
@@ -256,6 +269,9 @@ func (c grpcPerRPCCredentials) RequireTransportSecurity() bool {
 
 type grpcResolverBuilder struct {
 	kopsResolver resolver.Resolver
+
+	prefix string
+	suffix string
 }
 
 var _ grpcresolver.Builder = &grpcResolverBuilder{}
@@ -266,17 +282,32 @@ func (r *grpcResolverBuilder) Scheme() string {
 }
 
 // Build implements grpcresolver.Builder
-func (r *grpcResolverBuilder) Build(target grpcresolver.Target, clientConn grpcresolver.ClientConn, opts grpcresolver.BuildOptions) (grpcresolver.Resolver, error) {
-	return &grpcResolver{
-		kopsResolver: r.kopsResolver,
+func (b *grpcResolverBuilder) Build(target grpcresolver.Target, clientConn grpcresolver.ClientConn, opts grpcresolver.BuildOptions) (grpcresolver.Resolver, error) {
+	ctx := context.TODO()
+
+	r := &grpcResolver{
+		kopsResolver: b.kopsResolver,
 		clientConn:   clientConn,
-		url:          target.URL,
-	}, nil
+		targetURL:    target.URL,
+		prefix:       b.prefix,
+		suffix:       b.suffix,
+	}
+	state, err := r.resolve(ctx)
+	if err != nil {
+		klog.Infof("ResolveNow => error %v", err)
+		return nil, err
+	}
+
+	clientConn.UpdateState(*state)
+	return r, nil
 }
 
 type grpcResolver struct {
 	kopsResolver resolver.Resolver
-	url          url.URL
+	targetURL    url.URL
+
+	prefix string
+	suffix string
 
 	mutex      sync.Mutex
 	clientConn grpcresolver.ClientConn
@@ -291,20 +322,19 @@ func (r *grpcResolver) ResolveNow(opt grpcresolver.ResolveNowOptions) {
 
 	ctx := context.TODO()
 
-	addresses, err := r.resolveAddresses(ctx)
+	state, err := r.resolve(ctx)
 	if err != nil {
 		r.clientConn.ReportError(err)
 	} else {
-		r.clientConn.UpdateState(grpcresolver.State{
-			Addresses: addresses,
-		})
+		r.clientConn.UpdateState(*state)
 	}
+
 }
 
-func (r *grpcResolver) resolveAddresses(ctx context.Context) ([]grpcresolver.Address, error) {
-	host, _, err := net.SplitHostPort(r.url.Host)
+func (r *grpcResolver) resolve(ctx context.Context) (*grpcresolver.State, error) {
+	host, _, err := net.SplitHostPort(r.targetURL.Host)
 	if err != nil {
-		return nil, fmt.Errorf("cannot split host and port from %q: %w", r.url.Host, err)
+		return nil, fmt.Errorf("cannot split host and port from %q: %w", r.targetURL.Host, err)
 	}
 
 	// TODO: cache?
@@ -318,11 +348,14 @@ func (r *grpcResolver) resolveAddresses(ctx context.Context) ([]grpcresolver.Add
 	var grpcAddresses []grpcresolver.Address
 	for _, address := range addresses {
 		grpcAddresses = append(grpcAddresses, grpcresolver.Address{
-			Addr: address,
+			Addr: r.prefix + address + r.suffix,
 		})
 	}
 
-	return grpcAddresses, nil
+	state := &grpcresolver.State{
+		Addresses: grpcAddresses,
+	}
+	return state, nil
 }
 
 // Close implements grpcresolver.Resolver
