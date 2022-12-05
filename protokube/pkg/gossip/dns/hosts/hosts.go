@@ -131,22 +131,23 @@ func UpdateHostsFileWithRecords(p string, mutator func(guarded []string) (*HostM
 				klog.Warningf("/etc/hosts guard-block begin seen while in guard block; will ignore")
 			}
 			inGuardBlock = true
+			// don't output guard lines into guarded block
+			continue
+		}
+
+		if k == GUARD_END {
+			if !inGuardBlock {
+				klog.Warningf("/etc/hosts guard-block end seen before guard-block start; will ignore end")
+			}
+			inGuardBlock = false
+			// don't output guard lines into guarded block
+			continue
 		}
 
 		if inGuardBlock {
 			guarded = append(guarded, line)
 		} else {
 			out = append(out, line)
-		}
-
-		if k == GUARD_END {
-			if !inGuardBlock {
-				klog.Warningf("/etc/hosts guard-block end seen before guard-block start; will ignore end")
-				// Don't output the line
-				out = out[:len(out)-1]
-			}
-
-			inGuardBlock = false
 		}
 	}
 
