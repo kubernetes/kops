@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
+	"strconv"
 	"strings"
 	"unicode"
 
@@ -71,13 +72,46 @@ func (o *object) Write(buffer *bytes.Buffer, indent int, key string) {
 			maxKeyLen = 0
 		}
 		o.field[key].Write(buffer, indent+2, key)
-		buffer.WriteString("\n")
 	}
 	writeIndent(buffer, indent)
-	buffer.WriteString("}")
+	buffer.WriteString("}\n")
 }
 
+type sliceObject struct {
+	members []element
+}
+
+func (s *sliceObject) IsSingleValue() bool {
+	return false
+}
+
+func (s *sliceObject) Write(buffer *bytes.Buffer, indent int, key string) {
+	for _, member := range s.members {
+		member.Write(buffer, indent, key)
+	}
+}
+
+type mapStringLiteral struct {
+	members map[string]*terraformWriter.Literal
+}
+
+func (m *mapStringLiteral) IsSingleValue() bool {
+	return false
+}
+
+func (m *mapStringLiteral) Write(buffer *bytes.Buffer, indent int, key string) {
+	writeMap(buffer, indent, key, m.members)
+}
+
+var literalType = reflect.TypeOf(terraformWriter.Literal{})
+
 func ToElement(item interface{}) (element, error) {
+	if literal, ok := item.(*terraformWriter.Literal); ok {
+		if literal == nil {
+			return nil, nil
+		}
+		return literal, nil
+	}
 	v := reflect.ValueOf(item)
 	if v.Kind() == reflect.Pointer {
 		if v.IsNil() {
@@ -85,10 +119,34 @@ func ToElement(item interface{}) (element, error) {
 		}
 		v = v.Elem()
 	}
-	if v.Kind() == reflect.String {
+	switch v.Kind() {
+	case reflect.Bool:
+		return terraformWriter.LiteralTokens(strconv.FormatBool(v.Bool())), nil
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return terraformWriter.LiteralTokens(strconv.FormatInt(v.Int(), 10)), nil
+	case reflect.Map:
+		if v.Type().Key().Kind() != reflect.String {
+			panic(fmt.Sprintf("unhandled map key type %s", v.Type().Key().Kind()))
+		}
+		elemType := v.Type().Elem()
+		if elemType.Kind() == reflect.Pointer && elemType.Elem() == literalType {
+			o := &mapStringLiteral{members: make(map[string]*terraformWriter.Literal, v.Len())}
+			for _, key := range v.MapKeys() {
+				o.members[key.String()] = v.MapIndex(key).Interface().(*terraformWriter.Literal)
+			}
+			return o, nil
+		}
+		if elemType.Kind() != reflect.String {
+			panic(fmt.Sprintf("unhandled map value type %s", elemType.Kind()))
+		}
+		o := &mapStringLiteral{members: make(map[string]*terraformWriter.Literal, v.Len())}
+		for _, key := range v.MapKeys() {
+			o.members[key.String()] = terraformWriter.LiteralFromStringValue(v.MapIndex(key).String())
+		}
+		return o, nil
+	case reflect.String:
 		return terraformWriter.LiteralFromStringValue(v.String()), nil
-	}
-	if v.Kind() == reflect.Struct {
+	case reflect.Struct:
 		o := &object{
 			field: map[string]element{},
 		}
@@ -102,8 +160,50 @@ func ToElement(item interface{}) (element, error) {
 			}
 		}
 		return o, nil
+	case reflect.Slice:
+		if v.Len() == 0 {
+			return nil, nil
+		}
+		elemType := v.Type().Elem()
+		if elemType.Kind() == reflect.Pointer {
+			elemType = elemType.Elem()
+			if elemType == literalType {
+				elements := make([]*terraformWriter.Literal, v.Len())
+				for i := range elements {
+					elem := v.Index(i)
+					elements[i] = elem.Interface().(*terraformWriter.Literal)
+				}
+				return terraformWriter.LiteralListExpression(elements...), nil
+			}
+		}
+		switch elemType.Kind() {
+		case reflect.String:
+			elements := make([]*terraformWriter.Literal, v.Len())
+			for i := range elements {
+				elem := v.Index(i)
+				if elem.Kind() == reflect.Pointer {
+					// TODO can these ever be nil?
+					elem = elem.Elem()
+				}
+				elements[i] = terraformWriter.LiteralFromStringValue(elem.String())
+			}
+			return terraformWriter.LiteralListExpression(elements...), nil
+		case reflect.Struct:
+			o := &sliceObject{members: make([]element, v.Len())}
+			for i := range o.members {
+				elem, err := ToElement(v.Index(i).Interface())
+				if err != nil {
+					return nil, fmt.Errorf("converting slice member %d to element: %w", i, err)
+				}
+				o.members[i] = elem
+			}
+			return o, nil
+		default:
+			panic(fmt.Sprintf("unhandled slice member kind %s", elemType.Kind()))
+		}
+	default:
+		panic(fmt.Sprintf("unhandled kind %s", v.Kind()))
 	}
-	panic(fmt.Sprintf("unhandled kind %s", v.Kind()))
 }
 
 func fieldKey(field reflect.StructField) string {
