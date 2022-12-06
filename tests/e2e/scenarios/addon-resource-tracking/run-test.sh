@@ -31,6 +31,7 @@ KOPS=$(kops-download-from-base)
 
 # Start with a cluster running nodeTerminationHandler
 ARGS="--override=cluster.spec.nodeTerminationHandler.enabled=true"
+ARGS="${ARGS} --override=cluster.spec.nodeTerminationHandler.enableSQSTerminationDraining=false"
 
 ${KUBETEST2} \
     --up \

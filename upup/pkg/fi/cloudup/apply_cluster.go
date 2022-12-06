@@ -615,7 +615,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			}
 
 			nth := c.Cluster.Spec.NodeTerminationHandler
-			if nth != nil && fi.ValueOf(nth.Enabled) && fi.ValueOf(nth.EnableSQSTerminationDraining) {
+			if nth.IsQueueMode() {
 				l.Builders = append(l.Builders, &awsmodel.NodeTerminationHandlerBuilder{
 					AWSModelContext: awsModelContext,
 					Lifecycle:       clusterLifecycle,

@@ -216,7 +216,6 @@ spec:
     cpuRequest: 50m
     enableRebalanceDraining: false
     enableRebalanceMonitoring: false
-    enableSQSTerminationDraining: false
     enableScheduledEventDraining: false
     enableSpotInterruptionDraining: true
     enabled: true
