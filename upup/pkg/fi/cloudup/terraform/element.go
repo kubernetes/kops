@@ -91,21 +91,9 @@ func (s *sliceObject) Write(buffer *bytes.Buffer, indent int, key string) {
 	}
 }
 
-type mapStringLiteral struct {
-	members map[string]*terraformWriter.Literal
-}
-
-func (m *mapStringLiteral) IsSingleValue() bool {
-	return false
-}
-
-func (m *mapStringLiteral) Write(buffer *bytes.Buffer, indent int, key string) {
-	writeMap(buffer, indent, key, m.members)
-}
-
 var literalType = reflect.TypeOf(terraformWriter.Literal{})
 
-func ToElement(item interface{}) (element, error) {
+func toElement(item interface{}) (element, error) {
 	if literal, ok := item.(*terraformWriter.Literal); ok {
 		if literal == nil {
 			return nil, nil
@@ -125,25 +113,7 @@ func ToElement(item interface{}) (element, error) {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		return terraformWriter.LiteralTokens(strconv.FormatInt(v.Int(), 10)), nil
 	case reflect.Map:
-		if v.Type().Key().Kind() != reflect.String {
-			panic(fmt.Sprintf("unhandled map key type %s", v.Type().Key().Kind()))
-		}
-		elemType := v.Type().Elem()
-		if elemType.Kind() == reflect.Pointer && elemType.Elem() == literalType {
-			o := &mapStringLiteral{members: make(map[string]*terraformWriter.Literal, v.Len())}
-			for _, key := range v.MapKeys() {
-				o.members[key.String()] = v.MapIndex(key).Interface().(*terraformWriter.Literal)
-			}
-			return o, nil
-		}
-		if elemType.Kind() != reflect.String {
-			panic(fmt.Sprintf("unhandled map value type %s", elemType.Kind()))
-		}
-		o := &mapStringLiteral{members: make(map[string]*terraformWriter.Literal, v.Len())}
-		for _, key := range v.MapKeys() {
-			o.members[key.String()] = terraformWriter.LiteralFromStringValue(v.MapIndex(key).String())
-		}
-		return o, nil
+		return mapToElement(v.Interface()), nil
 	case reflect.String:
 		return terraformWriter.LiteralFromStringValue(v.String()), nil
 	case reflect.Struct:
@@ -151,7 +121,7 @@ func ToElement(item interface{}) (element, error) {
 			field: map[string]element{},
 		}
 		for _, field := range reflect.VisibleFields(v.Type()) {
-			element, err := ToElement(v.FieldByIndex(field.Index).Interface())
+			element, err := toElement(v.FieldByIndex(field.Index).Interface())
 			if err != nil {
 				return nil, fmt.Errorf("converting field %q to element: %w", field.Name, err)
 			}
@@ -191,7 +161,7 @@ func ToElement(item interface{}) (element, error) {
 		case reflect.Struct:
 			o := &sliceObject{members: make([]element, v.Len())}
 			for i := range o.members {
-				elem, err := ToElement(v.Index(i).Interface())
+				elem, err := toElement(v.Index(i).Interface())
 				if err != nil {
 					return nil, fmt.Errorf("converting slice member %d to element: %w", i, err)
 				}

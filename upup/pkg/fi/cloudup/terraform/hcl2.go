@@ -18,6 +18,8 @@ package terraform
 
 import (
 	"bytes"
+	"fmt"
+	"reflect"
 	"sort"
 	"strings"
 
@@ -66,23 +68,31 @@ func writeLiteralList(body *hclwrite.Body, key string, literals []*terraformWrit
 	body.SetAttributeRaw(key, literalListTokens(literals))
 }
 
-// writeMap writes a map's key-value pairs to a body spread across multiple lines.
+type mapStringLiteral struct {
+	members map[string]*terraformWriter.Literal
+}
+
+func (m *mapStringLiteral) IsSingleValue() bool {
+	return false
+}
+
+// write writes a map's key-value pairs to a body spread across multiple lines.
 // Example:
 //
 //	key = {
 //	  "key1" = "value1"
 //	  "key2" = "value2"
 //	}
-func writeMap(buf *bytes.Buffer, indent int, key string, values map[string]*terraformWriter.Literal) {
-	if len(values) == 0 {
+func (m *mapStringLiteral) Write(buffer *bytes.Buffer, indent int, key string) {
+	if len(m.members) == 0 {
 		return
 	}
-	writeIndent(buf, indent)
-	buf.WriteString(key)
-	buf.WriteString(" = {\n")
-	keys := make([]string, 0, len(values))
+	writeIndent(buffer, indent)
+	buffer.WriteString(key)
+	buffer.WriteString(" = {\n")
+	keys := make([]string, 0, len(m.members))
 	maxKeyLen := 0
-	for k := range values {
+	for k := range m.members {
 		kLen := len(quote(k))
 		if kLen > maxKeyLen {
 			maxKeyLen = kLen
@@ -91,16 +101,42 @@ func writeMap(buf *bytes.Buffer, indent int, key string, values map[string]*terr
 	}
 	sort.Strings(keys)
 	for _, k := range keys {
-		writeIndent(buf, indent+2)
+		writeIndent(buffer, indent+2)
 		quoted := quote(k)
-		buf.WriteString(quoted)
-		writeIndent(buf, maxKeyLen-len(quoted))
-		buf.WriteString(" = ")
-		buf.WriteString(values[k].String)
-		buf.WriteRune('\n')
+		buffer.WriteString(quoted)
+		writeIndent(buffer, maxKeyLen-len(quoted))
+		buffer.WriteString(" = ")
+		buffer.WriteString(m.members[k].String)
+		buffer.WriteRune('\n')
 	}
-	writeIndent(buf, indent)
-	buf.WriteString("}\n")
+	writeIndent(buffer, indent)
+	buffer.WriteString("}\n")
+}
+
+func mapToElement(item interface{}) element {
+	v := reflect.ValueOf(item)
+	if v.Kind() != reflect.Map {
+		panic(fmt.Sprintf("not a map type %s", v.Kind()))
+	}
+	if v.Type().Key().Kind() != reflect.String {
+		panic(fmt.Sprintf("unhandled map key type %s", v.Type().Key().Kind()))
+	}
+	elemType := v.Type().Elem()
+	if elemType.Kind() == reflect.Pointer && elemType.Elem() == literalType {
+		o := &mapStringLiteral{members: make(map[string]*terraformWriter.Literal, v.Len())}
+		for _, key := range v.MapKeys() {
+			o.members[key.String()] = v.MapIndex(key).Interface().(*terraformWriter.Literal)
+		}
+		return o
+	}
+	if elemType.Kind() != reflect.String {
+		panic(fmt.Sprintf("unhandled map value type %s", elemType.Kind()))
+	}
+	o := &mapStringLiteral{members: make(map[string]*terraformWriter.Literal, v.Len())}
+	for _, key := range v.MapKeys() {
+		o.members[key.String()] = terraformWriter.LiteralFromStringValue(v.MapIndex(key).String())
+	}
+	return o
 }
 
 func writeIndent(buf *bytes.Buffer, indent int) {
