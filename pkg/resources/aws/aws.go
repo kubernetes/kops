@@ -32,7 +32,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/route53"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
-	kopsapi "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/pkg/resources/spotinst"
@@ -50,8 +50,10 @@ const (
 
 type listFn func(fi.Cloud, string) ([]*resources.Resource, error)
 
-func ListResourcesAWS(cloud awsup.AWSCloud, cluster *kopsapi.Cluster) (map[string]*resources.Resource, error) {
-	clusterName := cluster.Name
+func ListResourcesAWS(cloud awsup.AWSCloud, clusterInfo resources.ClusterInfo) (map[string]*resources.Resource, error) {
+	clusterName := clusterInfo.Name
+	clusterUsesNoneDNS := clusterInfo.UsesNoneDNS
+
 	resourceTrackers := make(map[string]*resources.Resource)
 
 	// These are the functions that are used for looking up
@@ -87,7 +89,7 @@ func ListResourcesAWS(cloud awsup.AWSCloud, cluster *kopsapi.Cluster) (map[strin
 		ListEventBridgeRules,
 	}
 
-	if !cluster.IsGossip() && !cluster.UsesNoneDNS() {
+	if !dns.IsGossipClusterName(clusterName) && !clusterUsesNoneDNS {
 		// Route 53
 		listFunctions = append(listFunctions, ListRoute53Records)
 	}
