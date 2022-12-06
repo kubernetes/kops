@@ -21,7 +21,7 @@ import (
 	"os"
 	"strings"
 
-	account "github.com/scaleway/scaleway-sdk-go/api/account/v2alpha1"
+	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	v1 "k8s.io/api/core/v1"
@@ -54,7 +54,7 @@ type ScwCloud interface {
 	Region() string
 	Zone() string
 
-	AccountService() *account.API
+	IamService() *iam.API
 	InstanceService() *instance.API
 
 	DeleteGroup(group *cloudinstances.CloudInstanceGroup) error
@@ -83,7 +83,7 @@ type scwCloudImplementation struct {
 	zone   scw.Zone
 	tags   map[string]string
 
-	accountAPI  *account.API
+	iamAPI      *iam.API
 	instanceAPI *instance.API
 }
 
@@ -132,7 +132,7 @@ func NewScwCloud(tags map[string]string) (ScwCloud, error) {
 		region:      region,
 		zone:        zone,
 		tags:        tags,
-		accountAPI:  account.NewAPI(scwClient),
+		iamAPI:      iam.NewAPI(scwClient),
 		instanceAPI: instance.NewAPI(scwClient),
 	}, nil
 }
@@ -163,8 +163,8 @@ func (s *scwCloudImplementation) Zone() string {
 	return string(s.zone)
 }
 
-func (s *scwCloudImplementation) AccountService() *account.API {
-	return s.accountAPI
+func (s *scwCloudImplementation) IamService() *iam.API {
+	return s.iamAPI
 }
 
 func (s *scwCloudImplementation) InstanceService() *instance.API {
