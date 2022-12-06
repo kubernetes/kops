@@ -25,7 +25,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 
-	account "github.com/scaleway/scaleway-sdk-go/api/account/v2alpha1"
+	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -47,7 +47,7 @@ func (s *SSHKey) CompareWithID() *string {
 func (s *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
 	cloud := c.Cloud.(scaleway.ScwCloud)
 
-	keysResp, err := cloud.AccountService().ListSSHKeys(&account.ListSSHKeysRequest{
+	keysResp, err := cloud.IamService().ListSSHKeys(&iam.ListSSHKeysRequest{
 		Name: s.Name,
 	}, scw.WithAllPages())
 	if err != nil {
@@ -121,7 +121,7 @@ func (*SSHKey) RenderScw(c *fi.Context, actual, expected, changes *SSHKey) error
 	}
 	klog.V(2).Infof("Creating keypair with name: %q", name)
 
-	keyArgs := &account.CreateSSHKeyRequest{
+	keyArgs := &iam.CreateSSHKeyRequest{
 		Name: name}
 	if expected.PublicKey != nil {
 		d, err := fi.ResourceAsString(*expected.PublicKey)
@@ -131,7 +131,7 @@ func (*SSHKey) RenderScw(c *fi.Context, actual, expected, changes *SSHKey) error
 		keyArgs.PublicKey = d
 	}
 
-	key, err := cloud.AccountService().CreateSSHKey(keyArgs)
+	key, err := cloud.IamService().CreateSSHKey(keyArgs)
 	if err != nil {
 		return fmt.Errorf("error creating SSH keypair: %w", err)
 	}
