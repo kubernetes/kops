@@ -268,13 +268,16 @@
         "iam:GetServerCertificate",
         "iam:ListServerCertificates",
         "kms:DescribeKey",
-        "kms:GenerateRandom"
+        "kms:GenerateRandom",
+        "sqs:DeleteMessage",
+        "sqs:ReceiveMessage"
       ],
       "Effect": "Allow",
       "Resource": "*"
     },
     {
       "Action": [
+        "autoscaling:CompleteLifecycleAction",
         "autoscaling:SetDesiredCapacity",
         "autoscaling:TerminateInstanceInAutoScalingGroup",
         "ec2:AttachVolume",

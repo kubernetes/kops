@@ -322,7 +322,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 			return url
 		}
 
-		dest["EnableSQSTerminationDraining"] = func() bool { return *cluster.Spec.NodeTerminationHandler.EnableSQSTerminationDraining }
+		dest["EnableSQSTerminationDraining"] = func() bool { return cluster.Spec.NodeTerminationHandler.IsQueueMode() }
 	}
 
 	dest["ArchitectureOfAMI"] = tf.architectureOfAMI

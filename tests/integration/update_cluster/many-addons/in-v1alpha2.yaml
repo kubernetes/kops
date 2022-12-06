@@ -41,7 +41,6 @@ spec:
     amazonvpc: {}
   nodeTerminationHandler:
     enabled: true
-    enableSQSTerminationDraining: false
   nonMasqueradeCIDR: 172.20.0.0/16
   snapshotController:
     enabled: true

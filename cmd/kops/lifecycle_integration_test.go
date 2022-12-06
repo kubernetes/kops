@@ -171,12 +171,12 @@ func TestLifecyclePrivateSharedIP(t *testing.T) {
 	})
 }
 
-// TestLifecycleNodeTerminationHandlerQueueProcessor runs the test on a cluster with requisite resources for NTH Queue Processor
-func TestLifecycleNodeTerminationHandlerQueueProcessor(t *testing.T) {
+// TestLifecycleManyAddons runs the test on a cluster with requisite resources for NTH Queue Processor and other addons.
+func TestLifecycleManyAddons(t *testing.T) {
 	runLifecycleTestAWS(&LifecycleTestOptions{
 		t:           t,
-		SrcDir:      "nth_sqs_resources",
-		ClusterName: "nthsqsresources.longclustername.example.com",
+		SrcDir:      "many-addons",
+		ClusterName: "minimal.example.com",
 	})
 }
 
