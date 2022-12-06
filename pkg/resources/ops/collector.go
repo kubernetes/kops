@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/pkg/resources/gce"
 	"k8s.io/kops/pkg/resources/hetzner"
 	"k8s.io/kops/pkg/resources/openstack"
+	"k8s.io/kops/pkg/resources/scaleway"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	cloudazure "k8s.io/kops/upup/pkg/fi/cloudup/azure"
@@ -34,6 +35,7 @@ import (
 	cloudgce "k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	cloudhetzner "k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	cloudopenstack "k8s.io/kops/upup/pkg/fi/cloudup/openstack"
+	cloudscaleway "k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 )
 
 // ListResources collects the resources from the specified cloud
@@ -60,6 +62,8 @@ func ListResources(cloud fi.Cloud, cluster *kops.Cluster) (map[string]*resources
 		clusterInfo.AzureNetworkShared = cluster.SharedVPC()
 		clusterInfo.AzureRouteTableShared = cluster.IsSharedAzureRouteTable()
 		return azure.ListResourcesAzure(cloud.(cloudazure.AzureCloud), clusterInfo)
+	case kops.CloudProviderScaleway:
+		return scaleway.ListResources(cloud.(cloudscaleway.ScwCloud), clusterInfo)
 	default:
 		return nil, fmt.Errorf("delete on clusters on %q not (yet) supported", cloud.ProviderID())
 	}

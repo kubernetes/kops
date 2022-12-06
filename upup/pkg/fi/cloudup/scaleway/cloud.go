@@ -67,9 +67,11 @@ type ScwCloud interface {
 	GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error)
 
 	GetClusterServers(clusterName string, serverName *string) ([]*instance.Server, error)
+	GetClusterSSHKeys(clusterName string) ([]*iam.SSHKey, error)
 	GetClusterVolumes(clusterName string) ([]*instance.Volume, error)
 
 	DeleteServer(server *instance.Server) error
+	DeleteSSHKey(sshkey *iam.SSHKey) error
 	DeleteVolume(volume *instance.Volume) error
 }
 
@@ -326,6 +328,20 @@ func (s *scwCloudImplementation) GetClusterServers(clusterName string, serverNam
 	return servers.Servers, nil
 }
 
+func (s *scwCloudImplementation) GetClusterSSHKeys(clusterName string) ([]*iam.SSHKey, error) {
+	clusterSSHKeys := []*iam.SSHKey(nil)
+	allSSHKeys, err := s.iamAPI.ListSSHKeys(&iam.ListSSHKeysRequest{}, scw.WithAllPages())
+	for _, sshkey := range allSSHKeys.SSHKeys {
+		if strings.HasPrefix(sshkey.Name, fmt.Sprintf("kubernetes.%s-", clusterName)) {
+			clusterSSHKeys = append(clusterSSHKeys, sshkey)
+		}
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to list cluster ssh keys: %w", err)
+	}
+	return clusterSSHKeys, nil
+}
+
 func (s *scwCloudImplementation) GetClusterVolumes(clusterName string) ([]*instance.Volume, error) {
 	volumes, err := s.instanceAPI.ListVolumes(&instance.ListVolumesRequest{
 		Zone: s.zone,
@@ -396,6 +412,16 @@ func (s *scwCloudImplementation) DeleteServer(server *instance.Server) error {
 		}
 	}
 
+	return nil
+}
+
+func (s *scwCloudImplementation) DeleteSSHKey(sshkey *iam.SSHKey) error {
+	err := s.iamAPI.DeleteSSHKey(&iam.DeleteSSHKeyRequest{
+		SSHKeyID: sshkey.ID,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to delete ssh key %s: %w", sshkey.ID, err)
+	}
 	return nil
 }
 

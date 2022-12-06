@@ -122,7 +122,8 @@ func (*SSHKey) RenderScw(c *fi.Context, actual, expected, changes *SSHKey) error
 	klog.V(2).Infof("Creating keypair with name: %q", name)
 
 	keyArgs := &iam.CreateSSHKeyRequest{
-		Name: name}
+		Name: name,
+	}
 	if expected.PublicKey != nil {
 		d, err := fi.ResourceAsString(*expected.PublicKey)
 		if err != nil {
