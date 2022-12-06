@@ -40,13 +40,16 @@ func up(ctx context.Context) error {
 			AWS: &api.AWSSpec{},
 		},
 		ConfigBase: registryBase.Join(cluster.ObjectMeta.Name).Path(),
-		Topology:   &api.TopologySpec{},
+		Networking: api.NetworkingSpec{
+			Topology: &api.TopologySpec{
+				ControlPlane: api.TopologyPublic,
+				Nodes:        api.TopologyPublic,
+			},
+		},
 	}
-	cluster.Spec.Topology.ControlPlane = api.TopologyPublic
-	cluster.Spec.Topology.Nodes = api.TopologyPublic
 
 	for _, z := range nodeZones {
-		cluster.Spec.Subnets = append(cluster.Spec.Subnets, api.ClusterSubnetSpec{
+		cluster.Spec.Networking.Subnets = append(cluster.Spec.Networking.Subnets, api.ClusterSubnetSpec{
 			Name: z,
 			Zone: z,
 			Type: api.SubnetTypePublic,

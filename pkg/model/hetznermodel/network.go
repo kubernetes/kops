@@ -36,17 +36,17 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		Lifecycle: b.Lifecycle,
 	}
 
-	if b.Cluster.Spec.NetworkID == "" {
-		network.IPRange = b.Cluster.Spec.NetworkCIDR
+	if b.Cluster.Spec.Networking.NetworkID == "" {
+		network.IPRange = b.Cluster.Spec.Networking.NetworkCIDR
 		network.Region = b.Region
 		network.Subnets = []string{
-			b.Cluster.Spec.NetworkCIDR,
+			b.Cluster.Spec.Networking.NetworkCIDR,
 		}
 		network.Labels = map[string]string{
 			hetzner.TagKubernetesClusterName: b.ClusterName(),
 		}
 	} else {
-		network.ID = fi.PtrTo(b.Cluster.Spec.NetworkID)
+		network.ID = fi.PtrTo(b.Cluster.Spec.Networking.NetworkID)
 	}
 
 	c.AddTask(network)

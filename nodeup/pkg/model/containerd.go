@@ -70,7 +70,7 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 		// Using containerd with Kubenet requires special configuration.
 		// This is a temporary backwards-compatible solution for kubenet users and will be deprecated when Kubenet is deprecated:
 		// https://github.com/containerd/containerd/blob/master/docs/cri/config.md#cni-config-template
-		if components.UsesKubenet(b.Cluster.Spec.Networking) {
+		if components.UsesKubenet(&b.Cluster.Spec.Networking) {
 			b.buildCNIConfigTemplateFile(c)
 			if err := b.buildIPMasqueradeRules(c); err != nil {
 				return err
@@ -407,12 +407,12 @@ iptables -w -t nat -A IP-MASQ -d {{.NonMasqueradeCIDR}} -m comment --comment "ip
 iptables -w -t nat -A IP-MASQ -m comment --comment "ip-masq: outbound traffic is subject to MASQUERADE (must be last in chain)" -j MASQUERADE
 `
 
-	if b.Cluster.Spec.NonMasqueradeCIDR == "" {
+	if b.Cluster.Spec.Networking.NonMasqueradeCIDR == "" {
 		// We could fall back to the pod CIDR, that is likely more correct anyway
 		return fmt.Errorf("NonMasqueradeCIDR is not set")
 	}
 
-	script = strings.ReplaceAll(script, "{{.NonMasqueradeCIDR}}", b.Cluster.Spec.NonMasqueradeCIDR)
+	script = strings.ReplaceAll(script, "{{.NonMasqueradeCIDR}}", b.Cluster.Spec.Networking.NonMasqueradeCIDR)
 
 	c.AddTask(&nodetasks.File{
 		Path:     "/opt/kops/bin/cni-iptables-setup",
@@ -500,7 +500,7 @@ func (b *ContainerdBuilder) buildContainerdConfig() (string, error) {
 	config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "containerd", "runtimes", "runc", "runtime_type"}, "io.containerd.runc.v2")
 	// only enable systemd cgroups for kubernetes >= 1.20
 	config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "containerd", "runtimes", "runc", "options", "SystemdCgroup"}, true)
-	if components.UsesKubenet(cluster.Spec.Networking) {
+	if components.UsesKubenet(&cluster.Spec.Networking) {
 		// Using containerd with Kubenet requires special configuration.
 		// This is a temporary backwards-compatible solution for kubenet users and will be deprecated when Kubenet is deprecated:
 		// https://github.com/containerd/containerd/blob/master/docs/cri/config.md#cni-config-template

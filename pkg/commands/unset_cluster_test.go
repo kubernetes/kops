@@ -243,7 +243,7 @@ func TestUnsetClusterFields(t *testing.T) {
 			},
 			Input: kops.Cluster{
 				Spec: kops.ClusterSpec{
-					Networking: &kops.NetworkingSpec{
+					Networking: kops.NetworkingSpec{
 						Cilium: &kops.CiliumNetworkingSpec{
 							IPAM: "on",
 						},
@@ -252,7 +252,7 @@ func TestUnsetClusterFields(t *testing.T) {
 			},
 			Output: kops.Cluster{
 				Spec: kops.ClusterSpec{
-					Networking: &kops.NetworkingSpec{
+					Networking: kops.NetworkingSpec{
 						Cilium: &kops.CiliumNetworkingSpec{},
 					},
 				},
@@ -264,7 +264,7 @@ func TestUnsetClusterFields(t *testing.T) {
 			},
 			Input: kops.Cluster{
 				Spec: kops.ClusterSpec{
-					Networking: &kops.NetworkingSpec{
+					Networking: kops.NetworkingSpec{
 						Cilium: &kops.CiliumNetworkingSpec{
 							EnableHostReachableServices: true,
 						},
@@ -273,7 +273,7 @@ func TestUnsetClusterFields(t *testing.T) {
 			},
 			Output: kops.Cluster{
 				Spec: kops.ClusterSpec{
-					Networking: &kops.NetworkingSpec{
+					Networking: kops.NetworkingSpec{
 						Cilium: &kops.CiliumNetworkingSpec{},
 					},
 				},
@@ -285,7 +285,7 @@ func TestUnsetClusterFields(t *testing.T) {
 			},
 			Input: kops.Cluster{
 				Spec: kops.ClusterSpec{
-					Networking: &kops.NetworkingSpec{
+					Networking: kops.NetworkingSpec{
 						Cilium: &kops.CiliumNetworkingSpec{
 							EnableNodePort: true,
 						},
@@ -294,7 +294,7 @@ func TestUnsetClusterFields(t *testing.T) {
 			},
 			Output: kops.Cluster{
 				Spec: kops.ClusterSpec{
-					Networking: &kops.NetworkingSpec{
+					Networking: kops.NetworkingSpec{
 						Cilium: &kops.CiliumNetworkingSpec{},
 					},
 				},
@@ -306,7 +306,7 @@ func TestUnsetClusterFields(t *testing.T) {
 			},
 			Input: kops.Cluster{
 				Spec: kops.ClusterSpec{
-					Networking: &kops.NetworkingSpec{
+					Networking: kops.NetworkingSpec{
 						Cilium: &kops.CiliumNetworkingSpec{
 							Masquerade: fi.PtrTo(false),
 						},
@@ -315,7 +315,7 @@ func TestUnsetClusterFields(t *testing.T) {
 			},
 			Output: kops.Cluster{
 				Spec: kops.ClusterSpec{
-					Networking: &kops.NetworkingSpec{
+					Networking: kops.NetworkingSpec{
 						Cilium: &kops.CiliumNetworkingSpec{},
 					},
 				},
@@ -344,7 +344,7 @@ func TestUnsetClusterFields(t *testing.T) {
 			},
 			Input: kops.Cluster{
 				Spec: kops.ClusterSpec{
-					Networking: &kops.NetworkingSpec{
+					Networking: kops.NetworkingSpec{
 						Cilium: &kops.CiliumNetworkingSpec{
 							AgentPrometheusPort: 1234,
 						},
@@ -353,7 +353,7 @@ func TestUnsetClusterFields(t *testing.T) {
 			},
 			Output: kops.Cluster{
 				Spec: kops.ClusterSpec{
-					Networking: &kops.NetworkingSpec{
+					Networking: kops.NetworkingSpec{
 						Cilium: &kops.CiliumNetworkingSpec{},
 					},
 				},
@@ -396,7 +396,7 @@ func TestUnsetCiliumFields(t *testing.T) {
 					KubeProxy: &kops.KubeProxyConfig{
 						Enabled: fi.PtrTo(false),
 					},
-					Networking: &kops.NetworkingSpec{
+					Networking: kops.NetworkingSpec{
 						Cilium: &kops.CiliumNetworkingSpec{
 							IPAM:           "eni",
 							EnableNodePort: true,
@@ -408,7 +408,7 @@ func TestUnsetCiliumFields(t *testing.T) {
 			Output: kops.Cluster{
 				Spec: kops.ClusterSpec{
 					KubeProxy: &kops.KubeProxyConfig{},
-					Networking: &kops.NetworkingSpec{
+					Networking: kops.NetworkingSpec{
 						Cilium: &kops.CiliumNetworkingSpec{},
 					},
 				},

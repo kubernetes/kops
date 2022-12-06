@@ -219,10 +219,6 @@ func makeTestCluster(hookSpecRoles []kops.InstanceGroupRole, fileAssetSpecRoles 
 				AWS: &kops.AWSSpec{},
 			},
 			KubernetesVersion: "1.20.0",
-			Subnets: []kops.ClusterSubnetSpec{
-				{Name: "test", Zone: "eu-west-1a"},
-			},
-			NonMasqueradeCIDR: "10.100.0.0/16",
 			EtcdClusters: []kops.EtcdClusterSpec{
 				{
 					Name: "main",
@@ -246,7 +242,6 @@ func makeTestCluster(hookSpecRoles []kops.InstanceGroupRole, fileAssetSpecRoles 
 					Image:   "gcr.io/etcd-development/etcd:v3.1.11",
 				},
 			},
-			NetworkCIDR: "10.79.0.0/24",
 			CloudConfig: &kops.CloudConfiguration{
 				NodeTags: fi.PtrTo("something"),
 			},
@@ -281,13 +276,19 @@ func makeTestCluster(hookSpecRoles []kops.InstanceGroupRole, fileAssetSpecRoles 
 			ControlPlaneKubelet: &kops.KubeletConfigSpec{
 				KubeconfigPath: "/etc/kubernetes/config.cfg",
 			},
-			EgressProxy: &kops.EgressProxySpec{
-				HTTPProxy: kops.HTTPProxy{
-					Host: "example.com",
-					Port: 80,
+			Networking: kops.NetworkingSpec{
+				NetworkCIDR: "10.79.0.0/24",
+				Subnets: []kops.ClusterSubnetSpec{
+					{Name: "test", Zone: "eu-west-1a"},
 				},
+				EgressProxy: &kops.EgressProxySpec{
+					HTTPProxy: kops.HTTPProxy{
+						Host: "example.com",
+						Port: 80,
+					},
+				},
+				NonMasqueradeCIDR: "10.100.0.0/16",
 			},
-			Networking: &kops.NetworkingSpec{},
 			Hooks: []kops.HookSpec{
 				{
 					ExecContainer: &kops.ExecContainerAction{

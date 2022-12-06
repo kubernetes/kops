@@ -32,22 +32,22 @@ spec:
     name: events
   iam: {}
   kubernetesVersion: v1.21.0
-  networkCIDR: 172.20.0.0/16
   networking:
     kubenet: {}
-  nonMasqueradeCIDR: 100.64.0.0/10
+    networkCIDR: 172.20.0.0/16
+    nonMasqueradeCIDR: 100.64.0.0/10
+    subnets:
+    - cidr: 172.20.32.0/19
+      name: us-test-1a
+      type: Public
+      zone: us-test-1a
+    tagSubnets: false
+    topology:
+      controlPlane: public
+      dns: None
+      nodes: private
   sshAccess:
   - 0.0.0.0/0
-  subnets:
-  - cidr: 172.20.32.0/19
-    name: us-test-1a
-    type: Public
-    zone: us-test-1a
-  tagSubnets: false
-  topology:
-    controlPlane: public
-    dns: None
-    nodes: private
 
 ---
 

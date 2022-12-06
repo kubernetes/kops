@@ -55,23 +55,21 @@ func (b *AWSCloudControllerManagerOptionsBuilder) BuildOptions(o interface{}) er
 
 	eccm.ClusterName = b.ClusterName
 
-	eccm.ClusterCIDR = clusterSpec.NonMasqueradeCIDR
+	eccm.ClusterCIDR = clusterSpec.Networking.NonMasqueradeCIDR
 
 	eccm.AllocateNodeCIDRs = fi.PtrTo(true)
 	eccm.ConfigureCloudRoutes = fi.PtrTo(false)
 
 	// TODO: we want to consolidate this with the logic from KCM
-	networking := clusterSpec.Networking
-	if networking == nil {
-		eccm.ConfigureCloudRoutes = fi.PtrTo(true)
-	} else if networking.Kubenet != nil {
+	networking := &clusterSpec.Networking
+	if networking.Kubenet != nil {
 		eccm.ConfigureCloudRoutes = fi.PtrTo(true)
 	} else if networking.GCE != nil {
 		eccm.ConfigureCloudRoutes = fi.PtrTo(false)
 		eccm.CIDRAllocatorType = fi.PtrTo("CloudAllocator")
 
 		if eccm.ClusterCIDR == "" {
-			eccm.ClusterCIDR = clusterSpec.PodCIDR
+			eccm.ClusterCIDR = clusterSpec.Networking.PodCIDR
 		}
 	} else if networking.External != nil {
 		eccm.ConfigureCloudRoutes = fi.PtrTo(false)

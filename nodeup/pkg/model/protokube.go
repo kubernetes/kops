@@ -313,7 +313,7 @@ func (t *ProtokubeBuilder) buildEnvFile() (*nodetasks.File, error) {
 		envVars["SCW_DEFAULT_ZONE"] = os.Getenv("SCW_DEFAULT_ZONE")
 	}
 
-	for _, envVar := range proxy.GetProxyEnvVars(t.Cluster.Spec.EgressProxy) {
+	for _, envVar := range proxy.GetProxyEnvVars(t.Cluster.Spec.Networking.EgressProxy) {
 		envVars[envVar.Name] = envVar.Value
 	}
 

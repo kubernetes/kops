@@ -118,7 +118,7 @@ func CreateAddons(channel *kops.Channel, kubernetesVersion *semver.Version, clus
 		return addons, nil
 	}
 
-	if cluster.Spec.Networking != nil && cluster.Spec.Networking.Kopeio != nil {
+	if cluster.Spec.Networking.Kopeio != nil {
 		// TODO: Check that we haven't manually loaded a kopeio-networking operator
 		// TODO: Check that we haven't manually created a kopeio-networking CRD
 

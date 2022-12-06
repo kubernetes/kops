@@ -80,7 +80,7 @@ func newValidateCluster(cluster *kops.Cluster) field.ErrorList {
 func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	allErrs = append(allErrs, validateSubnets(spec, fieldPath.Child("subnets"))...)
+	allErrs = append(allErrs, validateSubnets(spec, fieldPath.Child("networking", "subnets"))...)
 
 	// SSHAccess
 	for i, cidr := range spec.SSHAccess {
@@ -116,12 +116,12 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 	}
 
 	// AdditionalNetworkCIDRs
-	for i, cidr := range spec.AdditionalNetworkCIDRs {
-		allErrs = append(allErrs, validateCIDR(cidr, fieldPath.Child("additionalNetworkCIDRs").Index(i))...)
+	for i, cidr := range spec.Networking.AdditionalNetworkCIDRs {
+		allErrs = append(allErrs, validateCIDR(cidr, fieldPath.Child("networking", "additionalNetworkCIDRs").Index(i))...)
 	}
 
-	if spec.Topology != nil {
-		allErrs = append(allErrs, validateTopology(c, spec.Topology, fieldPath.Child("topology"))...)
+	if spec.Networking.Topology != nil {
+		allErrs = append(allErrs, validateTopology(c, spec.Networking.Topology, fieldPath.Child("networking", "topology"))...)
 	}
 
 	// UpdatePolicy
@@ -158,11 +158,9 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		allErrs = append(allErrs, validateKubelet(spec.ControlPlaneKubelet, c, fieldPath.Child("controlPlaneKubelet"))...)
 	}
 
-	if spec.Networking != nil {
-		allErrs = append(allErrs, validateNetworking(c, spec.Networking, fieldPath.Child("networking"))...)
-		if spec.Networking.Calico != nil {
-			allErrs = append(allErrs, validateNetworkingCalico(&c.Spec, spec.Networking.Calico, fieldPath.Child("networking", "calico"))...)
-		}
+	allErrs = append(allErrs, validateNetworking(c, &spec.Networking, fieldPath.Child("networking"))...)
+	if spec.Networking.Calico != nil {
+		allErrs = append(allErrs, validateNetworkingCalico(&c.Spec, spec.Networking.Calico, fieldPath.Child("networking", "calico"))...)
 	}
 
 	if spec.NodeAuthorization != nil {
@@ -259,7 +257,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 
 		if lbSpec.Type == kops.LoadBalancerTypeInternal {
 			var hasPrivate bool
-			for _, subnet := range spec.Subnets {
+			for _, subnet := range spec.Networking.Subnets {
 				if subnet.Type == kops.SubnetTypePrivate {
 					hasPrivate = true
 					break
@@ -438,7 +436,7 @@ func validateTopology(c *kops.Cluster, topology *kops.TopologySpec, fieldPath *f
 func validateSubnets(cluster *kops.ClusterSpec, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	subnets := cluster.Subnets
+	subnets := cluster.Networking.Subnets
 
 	// cannot be empty
 	if len(subnets) == 0 {
@@ -1601,7 +1599,7 @@ func validateNodeLocalDNS(spec *kops.ClusterSpec, fldpath *field.Path) field.Err
 		}
 	}
 
-	if (spec.KubeProxy != nil && spec.KubeProxy.ProxyMode == "ipvs") || (spec.Networking != nil && spec.Networking.Cilium != nil) {
+	if (spec.KubeProxy != nil && spec.KubeProxy.ProxyMode == "ipvs") || spec.Networking.Cilium != nil {
 		if spec.Kubelet != nil && spec.Kubelet.ClusterDNS != "" && spec.Kubelet.ClusterDNS != spec.KubeDNS.NodeLocalDNS.LocalIP {
 			allErrs = append(allErrs, field.Forbidden(fldpath.Child("kubelet", "clusterDNS"), "Kubelet ClusterDNS must be set to the default IP address for LocalIP"))
 		}

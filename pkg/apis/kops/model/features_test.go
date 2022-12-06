@@ -36,7 +36,7 @@ func TestUseCiliumEtcd(t *testing.T) {
 							Name: "cilium",
 						},
 					},
-					Networking: &kops.NetworkingSpec{
+					Networking: kops.NetworkingSpec{
 						Cilium: &kops.CiliumNetworkingSpec{
 							Version: "v1.8",
 						},
@@ -53,7 +53,6 @@ func TestUseCiliumEtcd(t *testing.T) {
 							Name: "cilium",
 						},
 					},
-					Networking: &kops.NetworkingSpec{},
 				},
 			},
 			expected: false,
@@ -66,7 +65,7 @@ func TestUseCiliumEtcd(t *testing.T) {
 							Name: "calico",
 						},
 					},
-					Networking: &kops.NetworkingSpec{
+					Networking: kops.NetworkingSpec{
 						Cilium: &kops.CiliumNetworkingSpec{
 							Version: "v1.8",
 						},

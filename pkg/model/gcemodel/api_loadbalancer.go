@@ -149,7 +149,7 @@ func createInternalLB(b *APILoadBalancerBuilder, c *fi.ModelBuilderContext) erro
 			Lifecycle: fi.LifecycleExistsAndWarnIfChanges,
 		}
 		// TODO: automatically associate forwarding rule to subnets if no subnets are specified here.
-		if subnetNotSpecified(sn, b.Cluster.Spec.Subnets) {
+		if subnetNotSpecified(sn, b.Cluster.Spec.Networking.Subnets) {
 			c.AddTask(subnet)
 		}
 		c.AddTask(&gcetasks.ForwardingRule{

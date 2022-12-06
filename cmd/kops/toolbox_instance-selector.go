@@ -242,18 +242,18 @@ func RunToolboxInstanceSelector(ctx context.Context, f commandutils.Factory, out
 		return fmt.Errorf("cannot select instance types from non-aws cluster")
 	}
 
-	firstClusterSubnet := strings.ReplaceAll(cluster.Spec.Subnets[0].Name, "utility-", "")
+	firstClusterSubnet := strings.ReplaceAll(cluster.Spec.Networking.Subnets[0].Name, "utility-", "")
 	region := firstClusterSubnet[:len(firstClusterSubnet)-1]
 
 	igSubnets := []string{}
-	for _, clusterSubnet := range cluster.Spec.Subnets {
+	for _, clusterSubnet := range cluster.Spec.Networking.Subnets {
 		igSubnets = append(igSubnets, clusterSubnet.Name)
 	}
 
 	if commandline.Flags[subnets] != nil {
 		userSubnets := *commandline.StringSliceMe(commandline.Flags[subnets])
 		dryRun := *commandline.BoolMe(commandline.Flags[dryRun])
-		err := validateUserSubnets(userSubnets, cluster.Spec.Subnets)
+		err := validateUserSubnets(userSubnets, cluster.Spec.Networking.Subnets)
 		if err != nil && !dryRun {
 			return err
 		}
@@ -389,7 +389,7 @@ func retrieveClusterRefs(ctx context.Context, f commandutils.Factory, clusterNam
 		return nil, nil, nil, err
 	}
 
-	if len(cluster.Spec.Subnets) == 0 {
+	if len(cluster.Spec.Networking.Subnets) == 0 {
 		return nil, nil, nil, fmt.Errorf("configuration must include Subnets")
 	}
 

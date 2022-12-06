@@ -70,7 +70,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 	if len(lbSpec.Subnets) != 0 {
 		// Subnets have been explicitly set
 		for _, subnet := range lbSpec.Subnets {
-			for _, clusterSubnet := range b.Cluster.Spec.Subnets {
+			for _, clusterSubnet := range b.Cluster.Spec.Networking.Subnets {
 				if subnet.Name == clusterSubnet.Name {
 					elbSubnet := b.LinkToSubnet(&clusterSubnet)
 					elbSubnets = append(elbSubnets, elbSubnet)
@@ -92,8 +92,8 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 	} else {
 		// Compute the subnets - only one per zone, and then break ties based on chooseBestSubnetForELB
 		subnetsByZone := make(map[string][]*kops.ClusterSubnetSpec)
-		for i := range b.Cluster.Spec.Subnets {
-			subnet := &b.Cluster.Spec.Subnets[i]
+		for i := range b.Cluster.Spec.Networking.Subnets {
+			subnet := &b.Cluster.Spec.Networking.Subnets[i]
 
 			switch subnet.Type {
 			case kops.SubnetTypePublic, kops.SubnetTypeUtility:
@@ -542,9 +542,9 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				Protocol:      fi.PtrTo("tcp"),
 				SecurityGroup: masterGroup.Task,
 				ToPort:        fi.PtrTo(int64(443)),
-				CIDR:          fi.PtrTo(b.Cluster.Spec.NetworkCIDR),
+				CIDR:          fi.PtrTo(b.Cluster.Spec.Networking.NetworkCIDR),
 			})
-			for _, cidr := range b.Cluster.Spec.AdditionalNetworkCIDRs {
+			for _, cidr := range b.Cluster.Spec.Networking.AdditionalNetworkCIDRs {
 				c.AddTask(&awstasks.SecurityGroupRule{
 					Name:          fi.PtrTo(fmt.Sprintf("https-lb-to-master%s-%s", suffix, cidr)),
 					Lifecycle:     b.SecurityLifecycle,
@@ -569,9 +569,9 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				Protocol:      fi.PtrTo("tcp"),
 				SecurityGroup: masterGroup.Task,
 				ToPort:        fi.PtrTo(int64(wellknownports.KopsControllerPort)),
-				CIDR:          fi.PtrTo(b.Cluster.Spec.NetworkCIDR),
+				CIDR:          fi.PtrTo(b.Cluster.Spec.Networking.NetworkCIDR),
 			})
-			for _, cidr := range b.Cluster.Spec.AdditionalNetworkCIDRs {
+			for _, cidr := range b.Cluster.Spec.Networking.AdditionalNetworkCIDRs {
 				c.AddTask(&awstasks.SecurityGroupRule{
 					Name:          fi.PtrTo(fmt.Sprintf("kops-controller-lb-to-master%s-%s", suffix, cidr)),
 					Lifecycle:     b.SecurityLifecycle,

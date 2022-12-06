@@ -153,7 +153,7 @@ func (t *Tester) addProviderFlag() error {
 		provider = cluster.Spec.LegacyCloudProvider
 	case "digitalocean":
 	default:
-		klog.Warningf("unhandled cluster.spec.cloudProvider %q for determining ginkgo Provider", cluster.Spec.CloudProvider)
+		klog.Warningf("unhandled cluster.spec.cloudProvider %q for determining ginkgo Provider", cluster.Spec.LegacyCloudProvider)
 	}
 
 	klog.Infof("Setting --provider=%s", provider)
@@ -219,7 +219,7 @@ func (t *Tester) addRegionFlag() error {
 	case "gce":
 		region = cluster.Spec.Subnets[0].Region
 	default:
-		klog.Warningf("unhandled region detection for cloud provider: %v", cluster.Spec.CloudProvider)
+		klog.Warningf("unhandled region detection for cloud provider: %v", cluster.Spec.LegacyCloudProvider)
 	}
 
 	klog.Infof("Setting --gce-region=%s", region)

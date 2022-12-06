@@ -130,7 +130,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	c.AllowPrivileged = fi.PtrTo(true)
-	c.ServiceClusterIPRange = clusterSpec.ServiceClusterIPRange
+	c.ServiceClusterIPRange = clusterSpec.Networking.ServiceClusterIPRange
 	c.EtcdServers = nil
 	c.EtcdServersOverrides = nil
 

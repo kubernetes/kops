@@ -34,7 +34,7 @@ type NetworkModelBuilder struct {
 var _ fi.ModelBuilder = &NetworkModelBuilder{}
 
 func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
-	sharedNetwork := b.Cluster.Spec.NetworkID != ""
+	sharedNetwork := b.Cluster.Spec.Networking.NetworkID != ""
 
 	network, err := b.LinkToNetwork()
 	if err != nil {
@@ -51,8 +51,8 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 	c.AddTask(network)
 
-	for i := range b.Cluster.Spec.Subnets {
-		subnet := &b.Cluster.Spec.Subnets[i]
+	for i := range b.Cluster.Spec.Networking.Subnets {
+		subnet := &b.Cluster.Spec.Networking.Subnets[i]
 
 		sharedSubnet := subnet.ID != ""
 
@@ -80,8 +80,8 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			// All the CIDRs must be valid RFC1918 IP addresses, which makes conversion from the "pure kubenet" 100.64.0.0 GCE range difficult
 
 			t.CIDR = s(subnet.CIDR)
-			t.SecondaryIpRanges[b.NameForIPAliasRange("pods")] = b.Cluster.Spec.PodCIDR
-			t.SecondaryIpRanges[b.NameForIPAliasRange("services")] = b.Cluster.Spec.ServiceClusterIPRange
+			t.SecondaryIpRanges[b.NameForIPAliasRange("pods")] = b.Cluster.Spec.Networking.PodCIDR
+			t.SecondaryIpRanges[b.NameForIPAliasRange("services")] = b.Cluster.Spec.Networking.ServiceClusterIPRange
 		}
 
 		c.AddTask(t)
@@ -96,8 +96,8 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		var subnetworks []*gcetasks.Subnet
 
-		for i := range b.Cluster.Spec.Subnets {
-			subnet := &b.Cluster.Spec.Subnets[i]
+		for i := range b.Cluster.Spec.Networking.Subnets {
+			subnet := &b.Cluster.Spec.Networking.Subnets[i]
 			// Only need to deal with private subnets
 			if subnet.Type != kops.SubnetTypeDualStack && subnet.Type != kops.SubnetTypePrivate {
 				continue

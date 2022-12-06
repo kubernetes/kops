@@ -174,8 +174,8 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		return os.Getenv("HCLOUD_TOKEN")
 	}
 	dest["HCLOUD_NETWORK"] = func() string {
-		if cluster.Spec.NetworkID != "" {
-			return cluster.Spec.NetworkID
+		if cluster.Spec.Networking.NetworkID != "" {
+			return cluster.Spec.Networking.NetworkID
 		}
 		return cluster.Name
 	}
@@ -189,7 +189,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		}
 	}
 
-	if cluster.Spec.Networking != nil && cluster.Spec.Networking.AmazonVPC != nil {
+	if cluster.Spec.Networking.AmazonVPC != nil {
 		c := cluster.Spec.Networking.AmazonVPC
 		dest["AmazonVpcEnvVars"] = func() map[string]string {
 			envVars := map[string]string{
@@ -234,7 +234,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		}
 	}
 
-	if cluster.Spec.Networking != nil && cluster.Spec.Networking.Calico != nil {
+	if cluster.Spec.Networking.Calico != nil {
 		c := cluster.Spec.Networking.Calico
 		dest["CalicoIPv4PoolIPIPMode"] = func() string {
 			if c.EncapsulationMode != "ipip" {
@@ -259,7 +259,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		}
 	}
 
-	if cluster.Spec.Networking != nil && cluster.Spec.Networking.Cilium != nil {
+	if cluster.Spec.Networking.Cilium != nil {
 		ciliumsecretString := ""
 		ciliumsecret, _ := secretStore.Secret("ciliumpassword")
 		if ciliumsecret != nil {
@@ -273,7 +273,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		dest["CiliumSecret"] = func() string { return ciliumsecretString }
 	}
 
-	if cluster.Spec.Networking != nil && cluster.Spec.Networking.Flannel != nil {
+	if cluster.Spec.Networking.Flannel != nil {
 		flannelBackendType := cluster.Spec.Networking.Flannel.Backend
 		if flannelBackendType == "" {
 			klog.Warningf("Defaulting flannel backend to udp (not a recommended configuration)")
@@ -282,7 +282,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		dest["FlannelBackendType"] = func() string { return flannelBackendType }
 	}
 
-	if cluster.Spec.Networking != nil && cluster.Spec.Networking.Weave != nil {
+	if cluster.Spec.Networking.Weave != nil {
 		weavesecretString := ""
 		weavesecret, _ := secretStore.Secret("weavepassword")
 		if weavesecret != nil {
@@ -742,7 +742,7 @@ func (tf *TemplateFunctions) ProxyEnv() map[string]string {
 	cluster := tf.Cluster
 
 	envs := map[string]string{}
-	proxies := cluster.Spec.EgressProxy
+	proxies := cluster.Spec.Networking.EgressProxy
 	if proxies == nil {
 		return envs
 	}

@@ -213,7 +213,7 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 	}
 
 	// For AmazonVPC networking, pods running in Nodes could need to reach pods in master/s
-	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
+	if b.Cluster.Spec.Networking.AmazonVPC != nil {
 		// Nodes can talk to masters
 		for _, src := range nodeGroups {
 			for _, dest := range masterGroups {

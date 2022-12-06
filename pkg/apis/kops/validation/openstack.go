@@ -26,12 +26,12 @@ func openstackValidateCluster(c *kops.Cluster) (errList field.ErrorList) {
 		return errList
 	}
 	if c.Spec.CloudProvider.Openstack.Router == nil || c.Spec.CloudProvider.Openstack.Router.ExternalNetwork == nil {
-		topology := c.Spec.Topology
+		topology := c.Spec.Networking.Topology
 		if topology == nil || topology.Nodes == kops.TopologyPublic {
-			errList = append(errList, field.Forbidden(field.NewPath("spec", "topology", "nodes"), "Public topology requires an external network"))
+			errList = append(errList, field.Forbidden(field.NewPath("spec", "networking", "topology", "nodes"), "Public topology requires an external network"))
 		}
 		if topology == nil || topology.ControlPlane == kops.TopologyPublic {
-			errList = append(errList, field.Forbidden(field.NewPath("spec", "topology", "controlPlane"), "Public topology requires an external network"))
+			errList = append(errList, field.Forbidden(field.NewPath("spec", "networking", "topology", "controlPlane"), "Public topology requires an external network"))
 		}
 	}
 	return errList

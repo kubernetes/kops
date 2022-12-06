@@ -34,21 +34,21 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 		return true
 	}
 
-	if obj.Topology == nil {
-		obj.Topology = &TopologySpec{}
+	if obj.Networking.Topology == nil {
+		obj.Networking.Topology = &TopologySpec{}
 	}
 
-	rebindIfEmpty(&obj.Topology.ControlPlane, TopologyPublic)
+	rebindIfEmpty(&obj.Networking.Topology.ControlPlane, TopologyPublic)
 
-	rebindIfEmpty(&obj.Topology.Nodes, TopologyPublic)
+	rebindIfEmpty(&obj.Networking.Topology.Nodes, TopologyPublic)
 
-	if obj.Topology.DNS == "" {
-		obj.Topology.DNS = DNSTypePublic
+	if obj.Networking.Topology.DNS == "" {
+		obj.Networking.Topology.DNS = DNSTypePublic
 	}
 
 	if obj.CloudProvider.Openstack == nil {
 		if obj.API.DNS == nil && obj.API.LoadBalancer == nil {
-			switch obj.Topology.ControlPlane {
+			switch obj.Networking.Topology.ControlPlane {
 			case TopologyPublic:
 				obj.API.DNS = &DNSAccessSpec{}
 
@@ -56,7 +56,7 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 				obj.API.LoadBalancer = &LoadBalancerAccessSpec{}
 
 			default:
-				klog.Infof("unknown controlPlane topology type: %q", obj.Topology.ControlPlane)
+				klog.Infof("unknown controlPlane topology type: %q", obj.Networking.Topology.ControlPlane)
 			}
 		}
 
@@ -78,11 +78,9 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 		obj.Authorization.AlwaysAllow = &AlwaysAllowAuthorizationSpec{}
 	}
 
-	if obj.Networking != nil {
-		if obj.Networking.Flannel != nil {
-			// Populate with legacy default value; new clusters will be created with "vxlan" by
-			// "create cluster."
-			rebindIfEmpty(&obj.Networking.Flannel.Backend, "udp")
-		}
+	if obj.Networking.Flannel != nil {
+		// Populate with legacy default value; new clusters will be created with "vxlan" by
+		// "create cluster."
+		rebindIfEmpty(&obj.Networking.Flannel.Backend, "udp")
 	}
 }

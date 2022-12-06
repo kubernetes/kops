@@ -50,11 +50,13 @@ func TestBuildAzure(t *testing.T) {
 					RouteTableName:    routeTableName,
 				},
 			},
-			NetworkID: vnetName,
-			Subnets: []kops.ClusterSubnetSpec{
-				{
-					Name:   "test-subnet",
-					Region: "eastus",
+			Networking: kops.NetworkingSpec{
+				NetworkID: vnetName,
+				Subnets: []kops.ClusterSubnetSpec{
+					{
+						Name:   "test-subnet",
+						Region: "eastus",
+					},
 				},
 			},
 		},
@@ -127,7 +129,9 @@ func TestBuildAWSCustomNodeIPFamilies(t *testing.T) {
 			ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
 				CloudProvider: string(kops.CloudProviderAWS),
 			},
-			NonMasqueradeCIDR: "::/0",
+			Networking: kops.NetworkingSpec{
+				NonMasqueradeCIDR: "::/0",
+			},
 		},
 	}
 
