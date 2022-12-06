@@ -82,7 +82,7 @@ func (t *TerraformTarget) finishHCL2() error {
 		}
 		sort.Strings(resourceNames)
 		for _, resourceName := range resourceNames {
-			element, err := ToElement(resources[resourceName])
+			element, err := toElement(resources[resourceName])
 			if err != nil {
 				return fmt.Errorf("resource %q %q: %w", resourceType, resourceName, err)
 			}
@@ -110,7 +110,7 @@ func (t *TerraformTarget) finishHCL2() error {
 		}
 		sort.Strings(dataSourceNames)
 		for _, dataSourceName := range dataSourceNames {
-			element, err := ToElement(dataSources[dataSourceName])
+			element, err := toElement(dataSources[dataSourceName])
 			if err != nil {
 				return fmt.Errorf("data %q %q: %w", dataSourceType, dataSourceName, err)
 			}
@@ -125,27 +125,27 @@ func (t *TerraformTarget) finishHCL2() error {
 	buf.WriteString("  required_providers {\n")
 
 	if t.Cloud.ProviderID() == kops.CloudProviderGCE {
-		writeMap(buf, 4, "google", map[string]*terraformWriter.Literal{
+		mapToElement(map[string]*terraformWriter.Literal{
 			"source":  terraformWriter.LiteralFromStringValue("hashicorp/google"),
 			"version": terraformWriter.LiteralFromStringValue(">= 2.19.0"),
-		})
+		}).Write(buf, 4, "google")
 	} else if t.Cloud.ProviderID() == kops.CloudProviderHetzner {
-		writeMap(buf, 4, "hcloud", map[string]*terraformWriter.Literal{
+		mapToElement(map[string]*terraformWriter.Literal{
 			"source":  terraformWriter.LiteralFromStringValue("hetznercloud/hcloud"),
 			"version": terraformWriter.LiteralFromStringValue(">= 1.35.1"),
-		})
+		}).Write(buf, 4, "hcloud")
 	} else if t.Cloud.ProviderID() == kops.CloudProviderAWS {
 		configurationAlias := terraformWriter.LiteralTokens("aws", "files")
-		writeMap(buf, 4, "aws", map[string]*terraformWriter.Literal{
+		mapToElement(map[string]*terraformWriter.Literal{
 			"source":                terraformWriter.LiteralFromStringValue("hashicorp/aws"),
 			"version":               terraformWriter.LiteralFromStringValue(">= 4.0.0"),
 			"configuration_aliases": terraformWriter.LiteralListExpression(configurationAlias),
-		})
+		}).Write(buf, 4, "aws")
 		if featureflag.Spotinst.Enabled() {
-			writeMap(buf, 4, "spotinst", map[string]*terraformWriter.Literal{
+			mapToElement(map[string]*terraformWriter.Literal{
 				"source":  terraformWriter.LiteralFromStringValue("spotinst/spotinst"),
 				"version": terraformWriter.LiteralFromStringValue(">= 1.33.0"),
-			})
+			}).Write(buf, 4, "spotinst")
 		}
 	}
 
