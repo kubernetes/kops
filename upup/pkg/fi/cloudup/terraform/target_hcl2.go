@@ -22,7 +22,6 @@ import (
 	"sort"
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
-	"github.com/zclconf/go-cty/cty"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
@@ -38,6 +37,8 @@ func (t *TerraformTarget) finishHCL2() error {
 	}
 	writeLocalsOutputs(rootBody, outputs)
 
+	buf := bytes.NewBuffer(hclwrite.Format(f.Bytes()))
+
 	providerName := string(t.Cloud.ProviderID())
 	if t.Cloud.ProviderID() == kops.CloudProviderGCE {
 		providerName = "google"
@@ -45,24 +46,36 @@ func (t *TerraformTarget) finishHCL2() error {
 	if t.Cloud.ProviderID() == kops.CloudProviderHetzner {
 		providerName = "hcloud"
 	}
-	providerBlock := rootBody.AppendNewBlock("provider", []string{providerName})
-	providerBody := providerBlock.Body()
+	providerBody := map[string]string{}
 	if t.Cloud.ProviderID() == kops.CloudProviderGCE {
-		providerBody.SetAttributeValue("project", cty.StringVal(t.Project))
+		providerBody["project"] = t.Project
 	}
 	if t.Cloud.ProviderID() != kops.CloudProviderHetzner {
-		providerBody.SetAttributeValue("region", cty.StringVal(t.Cloud.Region()))
+		providerBody["region"] = t.Cloud.Region()
 	}
 	for k, v := range tfGetProviderExtraConfig(t.clusterSpecTarget) {
-		providerBody.SetAttributeValue(k, cty.StringVal(v))
+		providerBody[k] = v
 	}
-	rootBody.AppendNewline()
+	mapToElement(providerBody).
+		ToObject().
+		Write(buf, 0, fmt.Sprintf("provider %q", providerName))
+	buf.WriteString("\n")
 
-	if err := t.writeFilesProvider(rootBody); err != nil {
-		return err
+	// Add the second provider definition for managed files
+	if t.filesProvider != nil {
+		providerBody := map[string]string{}
+		providerBody["alias"] = "files"
+		for k, v := range t.filesProvider.Arguments {
+			providerBody[k] = v
+		}
+		for k, v := range tfGetFilesProviderExtraConfig(t.clusterSpecTarget) {
+			providerBody[k] = v
+		}
+		mapToElement(providerBody).
+			ToObject().
+			Write(buf, 0, fmt.Sprintf("provider %q", t.filesProvider.Name))
+		buf.WriteString("\n")
 	}
-
-	buf := bytes.NewBuffer(hclwrite.Format(f.Bytes()))
 
 	resourcesByType, err := t.GetResourcesByType()
 	if err != nil {
@@ -199,23 +212,5 @@ func writeLocalsOutputs(body *hclwrite.Body, outputs map[string]terraformWriter.
 		existingOutputVars[tfName] = true
 		body.AppendNewline()
 	}
-	return nil
-}
-
-// writeFilesProvider adds the second provider definition for managed files
-func (t *TerraformTarget) writeFilesProvider(body *hclwrite.Body) error {
-	if t.filesProvider == nil {
-		return nil
-	}
-	providerBlock := body.AppendNewBlock("provider", []string{t.filesProvider.Name})
-	providerBody := providerBlock.Body()
-	providerBody.SetAttributeValue("alias", cty.StringVal("files"))
-	for k, v := range t.filesProvider.Arguments {
-		providerBody.SetAttributeValue(k, cty.StringVal(v))
-	}
-	for k, v := range tfGetFilesProviderExtraConfig(t.clusterSpecTarget) {
-		providerBody.SetAttributeValue(k, cty.StringVal(v))
-	}
-	body.AppendNewline()
 	return nil
 }

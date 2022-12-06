@@ -76,6 +76,14 @@ func (m *mapStringLiteral) IsSingleValue() bool {
 	return false
 }
 
+func (m *mapStringLiteral) ToObject() element {
+	o := &object{field: make(map[string]element, len(m.members))}
+	for k, v := range m.members {
+		o.field[k] = v
+	}
+	return o
+}
+
 // write writes a map's key-value pairs to a body spread across multiple lines.
 // Example:
 //
@@ -113,7 +121,7 @@ func (m *mapStringLiteral) Write(buffer *bytes.Buffer, indent int, key string) {
 	buffer.WriteString("}\n")
 }
 
-func mapToElement(item interface{}) element {
+func mapToElement(item interface{}) *mapStringLiteral {
 	v := reflect.ValueOf(item)
 	if v.Kind() != reflect.Map {
 		panic(fmt.Sprintf("not a map type %s", v.Kind()))
