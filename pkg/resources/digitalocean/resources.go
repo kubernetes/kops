@@ -45,7 +45,9 @@ const (
 
 type listFn func(fi.Cloud, string) ([]*resources.Resource, error)
 
-func ListResources(cloud do.DOCloud, clusterName string) (map[string]*resources.Resource, error) {
+func ListResources(cloud do.DOCloud, clusterInfo resources.ClusterInfo) (map[string]*resources.Resource, error) {
+	clusterName := clusterInfo.Name
+
 	resourceTrackers := make(map[string]*resources.Resource)
 
 	listFunctions := []listFn{
