@@ -496,7 +496,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 			}
 		} else if ig.IsAPIServerOnly() && cluster.Spec.IsIPv6Only() {
 			if len(ig.Spec.Subnets) == 0 {
-				for _, subnet := range cluster.Spec.Subnets {
+				for _, subnet := range cluster.Spec.Networking.Subnets {
 					if subnet.Type != api.SubnetTypePrivate && subnet.Type != api.SubnetTypeUtility {
 						ig.Spec.Subnets = append(g.Spec.Subnets, subnet.Name)
 					}
@@ -504,7 +504,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 			}
 		} else {
 			if len(ig.Spec.Subnets) == 0 {
-				for _, subnet := range cluster.Spec.Subnets {
+				for _, subnet := range cluster.Spec.Networking.Subnets {
 					if subnet.Type != api.SubnetTypeDualStack && subnet.Type != api.SubnetTypeUtility {
 						g.Spec.Subnets = append(g.Spec.Subnets, subnet.Name)
 					}
@@ -512,7 +512,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 			}
 
 			if len(g.Spec.Subnets) == 0 {
-				for _, subnet := range cluster.Spec.Subnets {
+				for _, subnet := range cluster.Spec.Networking.Subnets {
 					if subnet.Type != api.SubnetTypeUtility {
 						g.Spec.Subnets = append(g.Spec.Subnets, subnet.Name)
 					}
@@ -534,11 +534,11 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 }
 
 func setupVPC(opt *NewClusterOptions, cluster *api.Cluster, cloud fi.Cloud) error {
-	cluster.Spec.NetworkID = opt.NetworkID
+	cluster.Spec.Networking.NetworkID = opt.NetworkID
 
 	switch cluster.Spec.GetCloudProvider() {
 	case api.CloudProviderAWS:
-		if cluster.Spec.NetworkID == "" && len(opt.SubnetIDs) > 0 {
+		if cluster.Spec.Networking.NetworkID == "" && len(opt.SubnetIDs) > 0 {
 			awsCloud := cloud.(awsup.AWSCloud)
 			res, err := awsCloud.EC2().DescribeSubnets(&ec2.DescribeSubnetsInput{
 				SubnetIds: []*string{aws.String(opt.SubnetIDs[0])},
@@ -549,7 +549,7 @@ func setupVPC(opt *NewClusterOptions, cluster *api.Cluster, cloud fi.Cloud) erro
 			if len(res.Subnets) == 0 || res.Subnets[0].VpcId == nil {
 				return fmt.Errorf("failed to determine VPC id of subnet %s", opt.SubnetIDs[0])
 			}
-			cluster.Spec.NetworkID = *res.Subnets[0].VpcId
+			cluster.Spec.Networking.NetworkID = *res.Subnets[0].VpcId
 		}
 
 	case api.CloudProviderGCE:
@@ -579,7 +579,7 @@ func setupVPC(opt *NewClusterOptions, cluster *api.Cluster, cloud fi.Cloud) erro
 			cluster.Spec.CloudConfig = &api.CloudConfiguration{}
 		}
 
-		if cluster.Spec.NetworkID == "" && len(opt.SubnetIDs) > 0 {
+		if cluster.Spec.Networking.NetworkID == "" && len(opt.SubnetIDs) > 0 {
 			tags := make(map[string]string)
 			tags[openstack.TagClusterName] = cluster.Name
 			osCloud, err := openstack.NewOpenstackCloud(tags, &cluster.Spec, "new-cluster-setupvpc")
@@ -591,7 +591,7 @@ func setupVPC(opt *NewClusterOptions, cluster *api.Cluster, cloud fi.Cloud) erro
 			if err != nil {
 				return fmt.Errorf("error finding network: %v", err)
 			}
-			cluster.Spec.NetworkID = res.ID
+			cluster.Spec.Networking.NetworkID = res.ID
 		}
 
 		if opt.OpenstackDNSServers != "" {
@@ -655,7 +655,7 @@ func setupZones(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.Stri
 					}
 					subnet.ID = opt.SubnetIDs[0]
 				}
-				cluster.Spec.Subnets = append(cluster.Spec.Subnets, *subnet)
+				cluster.Spec.Networking.Subnets = append(cluster.Spec.Networking.Subnets, *subnet)
 			}
 			zoneToSubnetMap[zoneName] = subnet
 		}
@@ -681,7 +681,7 @@ func setupZones(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.Stri
 				Region: region,
 				Zone:   region,
 			}
-			cluster.Spec.Subnets = append(cluster.Spec.Subnets, *subnet)
+			cluster.Spec.Networking.Subnets = append(cluster.Spec.Networking.Subnets, *subnet)
 		}
 		zoneToSubnetMap[region] = subnet
 		return zoneToSubnetMap, nil
@@ -709,14 +709,14 @@ func setupZones(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.Stri
 					Name:   subnetName,
 					Region: location,
 				}
-				cluster.Spec.Subnets = append(cluster.Spec.Subnets, *subnet)
+				cluster.Spec.Networking.Subnets = append(cluster.Spec.Networking.Subnets, *subnet)
 			}
 			zoneToSubnetMap[zoneName] = subnet
 		}
 
 	case api.CloudProviderAWS:
 		if len(opt.Zones) > 0 && len(opt.SubnetIDs) > 0 {
-			zoneToSubnetProviderID, err = getAWSZoneToSubnetProviderID(cluster.Spec.NetworkID, opt.Zones[0][:len(opt.Zones[0])-1], opt.SubnetIDs)
+			zoneToSubnetProviderID, err = getAWSZoneToSubnetProviderID(cluster.Spec.Networking.NetworkID, opt.Zones[0][:len(opt.Zones[0])-1], opt.SubnetIDs)
 			if err != nil {
 				return nil, err
 			}
@@ -752,7 +752,7 @@ func setupZones(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.Stri
 			if subnetID, ok := zoneToSubnetProviderID[zoneName]; ok {
 				subnet.ID = subnetID
 			}
-			cluster.Spec.Subnets = append(cluster.Spec.Subnets, *subnet)
+			cluster.Spec.Networking.Subnets = append(cluster.Spec.Networking.Subnets, *subnet)
 		}
 		zoneToSubnetMap[zoneName] = subnet
 	}
@@ -799,12 +799,12 @@ func getOpenstackZoneToSubnetProviderID(spec *api.ClusterSpec, zones []string, s
 	}
 	osCloud.UseZones(zones)
 
-	networkInfo, err := osCloud.FindVPCInfo(spec.NetworkID)
+	networkInfo, err := osCloud.FindVPCInfo(spec.Networking.NetworkID)
 	if err != nil {
 		return res, fmt.Errorf("error describing Network: %v", err)
 	}
 	if networkInfo == nil {
-		return res, fmt.Errorf("network %q not found", spec.NetworkID)
+		return res, fmt.Errorf("network %q not found", spec.Networking.NetworkID)
 	}
 
 	subnetByID := make(map[string]*fi.SubnetInfo)
@@ -815,7 +815,7 @@ func getOpenstackZoneToSubnetProviderID(spec *api.ClusterSpec, zones []string, s
 	for _, subnetID := range subnetIDs {
 		subnet, ok := subnetByID[subnetID]
 		if !ok {
-			return res, fmt.Errorf("subnet %s not found in network %s", subnetID, spec.NetworkID)
+			return res, fmt.Errorf("subnet %s not found in network %s", subnetID, spec.Networking.NetworkID)
 		}
 
 		if res[subnet.Zone] != "" {
@@ -1110,7 +1110,6 @@ func setupAPIServers(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetM
 }
 
 func setupNetworking(opt *NewClusterOptions, cluster *api.Cluster) error {
-	cluster.Spec.Networking = &api.NetworkingSpec{}
 	switch opt.Networking {
 	case "kubenet":
 		cluster.Spec.Networking.Kubenet = &api.KubenetNetworkingSpec{}
@@ -1183,7 +1182,7 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 
 	switch opt.Topology {
 	case api.TopologyPublic:
-		cluster.Spec.Topology = &api.TopologySpec{
+		cluster.Spec.Networking.Topology = &api.TopologySpec{
 			ControlPlane: api.TopologyPublic,
 			Nodes:        api.TopologyPublic,
 		}
@@ -1192,21 +1191,21 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 			return nil, fmt.Errorf("bastion supports --topology='private' only")
 		}
 
-		for i := range cluster.Spec.Subnets {
-			cluster.Spec.Subnets[i].Type = api.SubnetTypePublic
+		for i := range cluster.Spec.Networking.Subnets {
+			cluster.Spec.Networking.Subnets[i].Type = api.SubnetTypePublic
 		}
 
 	case api.TopologyPrivate:
 		if cluster.Spec.Networking.Kubenet != nil {
 			return nil, fmt.Errorf("invalid networking option %s. Kubenet does not support private topology", opt.Networking)
 		}
-		cluster.Spec.Topology = &api.TopologySpec{
+		cluster.Spec.Networking.Topology = &api.TopologySpec{
 			ControlPlane: api.TopologyPrivate,
 			Nodes:        api.TopologyPrivate,
 		}
 
-		for i := range cluster.Spec.Subnets {
-			cluster.Spec.Subnets[i].Type = api.SubnetTypePrivate
+		for i := range cluster.Spec.Networking.Subnets {
+			cluster.Spec.Networking.Subnets[i].Type = api.SubnetTypePrivate
 		}
 
 		var zoneToSubnetProviderID map[string]string
@@ -1214,7 +1213,7 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 		if len(opt.Zones) > 0 && len(opt.UtilitySubnetIDs) > 0 {
 			switch cluster.Spec.GetCloudProvider() {
 			case api.CloudProviderAWS:
-				zoneToSubnetProviderID, err = getAWSZoneToSubnetProviderID(cluster.Spec.NetworkID, opt.Zones[0][:len(opt.Zones[0])-1], opt.UtilitySubnetIDs)
+				zoneToSubnetProviderID, err = getAWSZoneToSubnetProviderID(cluster.Spec.Networking.NetworkID, opt.Zones[0][:len(opt.Zones[0])-1], opt.UtilitySubnetIDs)
 				if err != nil {
 					return nil, err
 				}
@@ -1231,7 +1230,7 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 		if opt.IPv6 {
 			var dualStackSubnets []api.ClusterSubnetSpec
 
-			for _, s := range cluster.Spec.Subnets {
+			for _, s := range cluster.Spec.Networking.Subnets {
 				if s.Type != api.SubnetTypePrivate {
 					continue
 				}
@@ -1246,7 +1245,7 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 				}
 				dualStackSubnets = append(dualStackSubnets, subnet)
 			}
-			cluster.Spec.Subnets = append(cluster.Spec.Subnets, dualStackSubnets...)
+			cluster.Spec.Networking.Subnets = append(cluster.Spec.Networking.Subnets, dualStackSubnets...)
 		}
 
 		addUtilitySubnets := true
@@ -1259,7 +1258,7 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 		if addUtilitySubnets {
 			var utilitySubnets []api.ClusterSubnetSpec
 
-			for _, s := range cluster.Spec.Subnets {
+			for _, s := range cluster.Spec.Networking.Subnets {
 				if s.Type != api.SubnetTypePrivate {
 					continue
 				}
@@ -1274,7 +1273,7 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 				}
 				utilitySubnets = append(utilitySubnets, subnet)
 			}
-			cluster.Spec.Subnets = append(cluster.Spec.Subnets, utilitySubnets...)
+			cluster.Spec.Networking.Subnets = append(cluster.Spec.Networking.Subnets, utilitySubnets...)
 		}
 
 		if opt.Bastion {
@@ -1286,12 +1285,12 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 			bastions = append(bastions, bastionGroup)
 
 			if !cluster.IsGossip() && !cluster.UsesNoneDNS() {
-				cluster.Spec.Topology.Bastion = &api.BastionSpec{
+				cluster.Spec.Networking.Topology.Bastion = &api.BastionSpec{
 					PublicName: "bastion." + cluster.Name,
 				}
 			}
 			if opt.IPv6 {
-				for _, s := range cluster.Spec.Subnets {
+				for _, s := range cluster.Spec.Networking.Subnets {
 					if s.Type == api.SubnetTypeDualStack {
 						bastionGroup.Spec.Subnets = append(bastionGroup.Spec.Subnets, s.Name)
 					}
@@ -1316,11 +1315,11 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 	}
 
 	if opt.IPv6 {
-		cluster.Spec.NonMasqueradeCIDR = "::/0"
+		cluster.Spec.Networking.NonMasqueradeCIDR = "::/0"
 		cluster.Spec.ExternalCloudControllerManager = &api.CloudControllerManagerConfig{}
 		if cluster.Spec.GetCloudProvider() == api.CloudProviderAWS {
-			for i := range cluster.Spec.Subnets {
-				cluster.Spec.Subnets[i].IPv6CIDR = fmt.Sprintf("/64#%x", i)
+			for i := range cluster.Spec.Networking.Subnets {
+				cluster.Spec.Networking.Subnets[i].IPv6CIDR = fmt.Sprintf("/64#%x", i)
 			}
 		} else {
 			klog.Errorf("IPv6 support is available only on AWS")
@@ -1330,18 +1329,18 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 	switch strings.ToLower(opt.DNSType) {
 	case "":
 		if cluster.IsGossip() {
-			cluster.Spec.Topology.DNS = api.DNSTypePrivate
+			cluster.Spec.Networking.Topology.DNS = api.DNSTypePrivate
 		} else if cluster.Spec.GetCloudProvider() == api.CloudProviderHetzner {
-			cluster.Spec.Topology.DNS = api.DNSTypeNone
+			cluster.Spec.Networking.Topology.DNS = api.DNSTypeNone
 		} else {
-			cluster.Spec.Topology.DNS = api.DNSTypePublic
+			cluster.Spec.Networking.Topology.DNS = api.DNSTypePublic
 		}
 	case "public":
-		cluster.Spec.Topology.DNS = api.DNSTypePublic
+		cluster.Spec.Networking.Topology.DNS = api.DNSTypePublic
 	case "private":
-		cluster.Spec.Topology.DNS = api.DNSTypePrivate
+		cluster.Spec.Networking.Topology.DNS = api.DNSTypePrivate
 	case "none":
-		cluster.Spec.Topology.DNS = api.DNSTypeNone
+		cluster.Spec.Networking.Topology.DNS = api.DNSTypeNone
 	default:
 		return nil, fmt.Errorf("unknown DNSType: %q", opt.DNSType)
 	}
@@ -1363,7 +1362,7 @@ func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
 	} else if opt.APILoadBalancerType != "" || opt.APISSLCertificate != "" {
 		cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
 	} else {
-		switch cluster.Spec.Topology.ControlPlane {
+		switch cluster.Spec.Networking.Topology.ControlPlane {
 		case api.TopologyPublic:
 			if cluster.IsGossip() || cluster.UsesNoneDNS() {
 				// gossip DNS names don't work outside the cluster, so we use a LoadBalancer instead
@@ -1376,7 +1375,7 @@ func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
 			cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
 
 		default:
-			return fmt.Errorf("unknown control-plane topology type: %q", cluster.Spec.Topology.ControlPlane)
+			return fmt.Errorf("unknown control-plane topology type: %q", cluster.Spec.Networking.Topology.ControlPlane)
 		}
 	}
 

@@ -308,7 +308,7 @@ func (c *gceCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]f
 
 	klog.V(2).Infof("Querying GCE to find ForwardingRules for API (%q)", name)
 	// These are the ingress rules, so we search for them in the network project.
-	_, project, err := ParseNameAndProjectFromNetworkID(cluster.Spec.NetworkID)
+	_, project, err := ParseNameAndProjectFromNetworkID(cluster.Spec.Networking.NetworkID)
 	if err != nil {
 		return nil, err
 	} else if project == "" {

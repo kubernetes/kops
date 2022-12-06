@@ -427,7 +427,7 @@ func usesBastion(instanceGroups []*kops.InstanceGroup) bool {
 }
 
 func findBastionPublicName(c *kops.Cluster) string {
-	topology := c.Spec.Topology
+	topology := c.Spec.Networking.Topology
 	if topology == nil {
 		return ""
 	}

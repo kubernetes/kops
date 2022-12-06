@@ -29,7 +29,7 @@ func BuildMinimalCluster(clusterName string) *kops.Cluster {
 	c := &kops.Cluster{}
 	c.ObjectMeta.Name = clusterName
 	c.Spec.KubernetesVersion = "1.23.2"
-	c.Spec.Subnets = []kops.ClusterSubnetSpec{
+	c.Spec.Networking.Subnets = []kops.ClusterSubnetSpec{
 		{Name: "subnet-us-test-1a", Zone: "us-test-1a", CIDR: "172.20.1.0/24", Type: kops.SubnetTypePrivate},
 	}
 
@@ -41,22 +41,20 @@ func BuildMinimalCluster(clusterName string) *kops.Cluster {
 	c.Spec.SSHAccess = []string{"0.0.0.0/0"}
 
 	// Default to public topology
-	c.Spec.Topology = &kops.TopologySpec{
+	c.Spec.Networking.Topology = &kops.TopologySpec{
 		ControlPlane: kops.TopologyPublic,
 		Nodes:        kops.TopologyPublic,
 		DNS:          kops.DNSTypePublic,
 	}
 
-	c.Spec.Networking = &kops.NetworkingSpec{}
-
-	c.Spec.NetworkCIDR = "172.20.0.0/16"
-	c.Spec.Subnets = []kops.ClusterSubnetSpec{
+	c.Spec.Networking.NetworkCIDR = "172.20.0.0/16"
+	c.Spec.Networking.Subnets = []kops.ClusterSubnetSpec{
 		{Name: "subnet-us-test-1a", Zone: "us-test-1a", CIDR: "172.20.1.0/24", Type: kops.SubnetTypePublic},
 		{Name: "subnet-us-test-1b", Zone: "us-test-1b", CIDR: "172.20.2.0/24", Type: kops.SubnetTypePublic},
 		{Name: "subnet-us-test-1c", Zone: "us-test-1c", CIDR: "172.20.3.0/24", Type: kops.SubnetTypePublic},
 	}
 
-	c.Spec.NonMasqueradeCIDR = "100.64.0.0/10"
+	c.Spec.Networking.NonMasqueradeCIDR = "100.64.0.0/10"
 	c.Spec.CloudProvider.AWS = &kops.AWSSpec{}
 
 	c.Spec.ConfigBase = "memfs://unittest-bucket/" + clusterName
@@ -72,7 +70,7 @@ func BuildMinimalCluster(clusterName string) *kops.Cluster {
 
 func addEtcdClusters(c *kops.Cluster) {
 	subnetNames := sets.NewString()
-	for _, z := range c.Spec.Subnets {
+	for _, z := range c.Spec.Networking.Subnets {
 		subnetNames.Insert(z.Name)
 	}
 	etcdZones := subnetNames.List()

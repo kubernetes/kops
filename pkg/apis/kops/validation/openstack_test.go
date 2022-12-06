@@ -36,8 +36,8 @@ func Test_ValidateTopology(t *testing.T) {
 				},
 			},
 			ExpectedErrors: []string{
-				"Forbidden::spec.topology.nodes",
-				"Forbidden::spec.topology.controlPlane",
+				"Forbidden::spec.networking.topology.nodes",
+				"Forbidden::spec.networking.topology.controlPlane",
 			},
 		},
 		{
@@ -49,8 +49,8 @@ func Test_ValidateTopology(t *testing.T) {
 				},
 			},
 			ExpectedErrors: []string{
-				"Forbidden::spec.topology.nodes",
-				"Forbidden::spec.topology.controlPlane",
+				"Forbidden::spec.networking.topology.nodes",
+				"Forbidden::spec.networking.topology.controlPlane",
 			},
 		},
 		{
@@ -58,9 +58,11 @@ func Test_ValidateTopology(t *testing.T) {
 				CloudProvider: kops.CloudProviderSpec{
 					Openstack: &kops.OpenstackSpec{},
 				},
-				Topology: &kops.TopologySpec{
-					ControlPlane: kops.TopologyPrivate,
-					Nodes:        kops.TopologyPrivate,
+				Networking: kops.NetworkingSpec{
+					Topology: &kops.TopologySpec{
+						ControlPlane: kops.TopologyPrivate,
+						Nodes:        kops.TopologyPrivate,
+					},
 				},
 			},
 			ExpectedErrors: []string{},

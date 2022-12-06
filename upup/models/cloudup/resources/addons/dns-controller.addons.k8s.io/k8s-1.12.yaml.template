@@ -56,7 +56,7 @@ spec:
         env:
         - name: KUBERNETES_SERVICE_HOST
           value: "127.0.0.1"
-{{- if .EgressProxy }}
+{{- if .Networking.EgressProxy }}
 {{ range $name, $value := ProxyEnv }}
         - name: {{ $name }}
           value: {{ $value }}

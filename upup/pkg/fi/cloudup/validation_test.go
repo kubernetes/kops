@@ -160,9 +160,7 @@ func TestValidateFull_UpdatePolicy_Invalid(t *testing.T) {
 func Test_Validate_Kubenet_With_14(t *testing.T) {
 	c := buildDefaultCluster(t)
 	c.Spec.KubernetesVersion = "1.4.1"
-	c.Spec.Networking = &api.NetworkingSpec{
-		Kubenet: &api.KubenetNetworkingSpec{},
-	}
+	c.Spec.Networking.Kubenet = &api.KubenetNetworkingSpec{}
 
 	expectNoErrorFromValidate(t, c)
 }

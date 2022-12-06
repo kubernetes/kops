@@ -218,7 +218,7 @@ func (b *KubeControllerManagerBuilder) buildPod(kcm *kops.KubeControllerManagerC
 	container := &v1.Container{
 		Name:  "kube-controller-manager",
 		Image: image,
-		Env:   proxy.GetProxyEnvVars(b.Cluster.Spec.EgressProxy),
+		Env:   proxy.GetProxyEnvVars(b.Cluster.Spec.Networking.EgressProxy),
 		LivenessProbe: &v1.Probe{
 			ProbeHandler: v1.ProbeHandler{
 				HTTPGet: &v1.HTTPGetAction{

@@ -82,7 +82,7 @@ data:
     }
   net-conf.json: |
     {
-      "Network": "{{ .NonMasqueradeCIDR }}",
+      "Network": "{{ .Networking.NonMasqueradeCIDR }}",
       "Backend": {
         "Type": "{{ FlannelBackendType }}"
       }

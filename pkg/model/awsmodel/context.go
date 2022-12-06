@@ -37,8 +37,8 @@ func (b *AWSModelContext) LinkToSubnet(z *kops.ClusterSubnetSpec) *awstasks.Subn
 
 func (b *AWSModelContext) LinkToPublicSubnetInZone(zoneName string) (*awstasks.Subnet, error) {
 	var matches []*kops.ClusterSubnetSpec
-	for i := range b.Cluster.Spec.Subnets {
-		z := &b.Cluster.Spec.Subnets[i]
+	for i := range b.Cluster.Spec.Networking.Subnets {
+		z := &b.Cluster.Spec.Networking.Subnets[i]
 		if z.Zone != zoneName {
 			continue
 		}
@@ -60,8 +60,8 @@ func (b *AWSModelContext) LinkToPublicSubnetInZone(zoneName string) (*awstasks.S
 
 func (b *AWSModelContext) LinkToUtilitySubnetInZone(zoneName string) (*awstasks.Subnet, error) {
 	var matches []*kops.ClusterSubnetSpec
-	for i := range b.Cluster.Spec.Subnets {
-		s := &b.Cluster.Spec.Subnets[i]
+	for i := range b.Cluster.Spec.Networking.Subnets {
+		s := &b.Cluster.Spec.Networking.Subnets[i]
 		if s.Zone != zoneName {
 			continue
 		}
@@ -82,8 +82,8 @@ func (b *AWSModelContext) LinkToUtilitySubnetInZone(zoneName string) (*awstasks.
 }
 func (b *AWSModelContext) LinkToPrivateSubnetsInZone(zoneName string) ([]*awstasks.Subnet, error) {
 	var matches []*kops.ClusterSubnetSpec
-	for i := range b.Cluster.Spec.Subnets {
-		s := &b.Cluster.Spec.Subnets[i]
+	for i := range b.Cluster.Spec.Networking.Subnets {
+		s := &b.Cluster.Spec.Networking.Subnets[i]
 		if s.Zone != zoneName {
 			continue
 		}

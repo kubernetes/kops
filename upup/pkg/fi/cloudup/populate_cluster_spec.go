@@ -226,8 +226,8 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 		}
 		if dns != nil {
 			dnsType := kopsapi.DNSTypePublic
-			if cluster.Spec.Topology != nil && cluster.Spec.Topology.DNS != "" {
-				dnsType = cluster.Spec.Topology.DNS
+			if cluster.Spec.Networking.Topology != nil && cluster.Spec.Networking.Topology.DNS != "" {
+				dnsType = cluster.Spec.Networking.Topology.DNS
 			}
 
 			dnsZone, err := FindDNSHostedZone(dns, cluster.ObjectMeta.Name, dnsType)
@@ -307,7 +307,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 	}
 
 	// TODO: This should not be needed...
-	completed.Topology = c.InputCluster.Spec.Topology
+	completed.Networking.Topology = c.InputCluster.Spec.Networking.Topology
 	// completed.Topology.Bastion = c.InputCluster.Spec.Topology.Bastion
 
 	fullCluster := &kopsapi.Cluster{}
@@ -323,14 +323,14 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 }
 
 func (c *populateClusterSpec) assignSubnets(cluster *kopsapi.Cluster) error {
-	if cluster.Spec.NonMasqueradeCIDR == "" {
+	if cluster.Spec.Networking.NonMasqueradeCIDR == "" {
 		klog.Warningf("NonMasqueradeCIDR not set; can't auto-assign dependent subnets")
 		return nil
 	}
 
-	_, nonMasqueradeCIDR, err := net.ParseCIDR(cluster.Spec.NonMasqueradeCIDR)
+	_, nonMasqueradeCIDR, err := net.ParseCIDR(cluster.Spec.Networking.NonMasqueradeCIDR)
 	if err != nil {
-		return fmt.Errorf("error parsing NonMasqueradeCIDR %q: %v", cluster.Spec.NonMasqueradeCIDR, err)
+		return fmt.Errorf("error parsing NonMasqueradeCIDR %q: %v", cluster.Spec.Networking.NonMasqueradeCIDR, err)
 	}
 	nmOnes, nmBits := nonMasqueradeCIDR.Mask.Size()
 
@@ -338,18 +338,18 @@ func (c *populateClusterSpec) assignSubnets(cluster *kopsapi.Cluster) error {
 		cluster.Spec.KubeControllerManager = &kopsapi.KubeControllerManagerConfig{}
 	}
 
-	if cluster.Spec.PodCIDR == "" && nmBits == 32 {
+	if cluster.Spec.Networking.PodCIDR == "" && nmBits == 32 {
 		// Allocate as big a range as possible: the NonMasqueradeCIDR mask + 1, with a '1' in the extra bit
 		ip := nonMasqueradeCIDR.IP.Mask(nonMasqueradeCIDR.Mask)
 		ip[nmOnes/8] |= 128 >> (nmOnes % 8)
 		cidr := net.IPNet{IP: ip, Mask: net.CIDRMask(nmOnes+1, nmBits)}
-		cluster.Spec.PodCIDR = cidr.String()
-		klog.V(2).Infof("Defaulted PodCIDR to %v", cluster.Spec.PodCIDR)
+		cluster.Spec.Networking.PodCIDR = cidr.String()
+		klog.V(2).Infof("Defaulted PodCIDR to %v", cluster.Spec.Networking.PodCIDR)
 	}
 
-	if cluster.Spec.ServiceClusterIPRange == "" {
+	if cluster.Spec.Networking.ServiceClusterIPRange == "" {
 		if nmBits > 32 {
-			cluster.Spec.ServiceClusterIPRange = "fd00:5e4f:ce::/108"
+			cluster.Spec.Networking.ServiceClusterIPRange = "fd00:5e4f:ce::/108"
 		} else {
 			// Allocate from the '0' subnet; but only carve off 1/4 of that (i.e. add 1 + 2 bits to the netmask)
 			serviceOnes := nmOnes + 3
@@ -358,9 +358,9 @@ func (c *populateClusterSpec) assignSubnets(cluster *kopsapi.Cluster) error {
 				serviceOnes = nmBits - 20
 			}
 			cidr := net.IPNet{IP: nonMasqueradeCIDR.IP.Mask(nonMasqueradeCIDR.Mask), Mask: net.CIDRMask(serviceOnes, nmBits)}
-			cluster.Spec.ServiceClusterIPRange = cidr.String()
+			cluster.Spec.Networking.ServiceClusterIPRange = cidr.String()
 		}
-		klog.V(2).Infof("Defaulted ServiceClusterIPRange to %v", cluster.Spec.ServiceClusterIPRange)
+		klog.V(2).Infof("Defaulted ServiceClusterIPRange to %v", cluster.Spec.Networking.ServiceClusterIPRange)
 	}
 
 	return nil

@@ -79,15 +79,15 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			// Used only for Terraform rendering.
 			// Direct rendering is handled via the VPCAmazonIPv6CIDRBlock task
 			t.AmazonIPv6 = fi.PtrTo(true)
-			t.AssociateExtraCIDRBlocks = b.Cluster.Spec.AdditionalNetworkCIDRs
+			t.AssociateExtraCIDRBlocks = b.Cluster.Spec.Networking.AdditionalNetworkCIDRs
 		}
 
-		if b.Cluster.Spec.NetworkID != "" {
-			t.ID = fi.PtrTo(b.Cluster.Spec.NetworkID)
+		if b.Cluster.Spec.Networking.NetworkID != "" {
+			t.ID = fi.PtrTo(b.Cluster.Spec.Networking.NetworkID)
 		}
 
-		if b.Cluster.Spec.NetworkCIDR != "" {
-			t.CIDR = fi.PtrTo(b.Cluster.Spec.NetworkCIDR)
+		if b.Cluster.Spec.Networking.NetworkCIDR != "" {
+			t.CIDR = fi.PtrTo(b.Cluster.Spec.Networking.NetworkCIDR)
 		}
 
 		c.AddTask(t)
@@ -103,7 +103,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		})
 
 		// Associate additional CIDR blocks with the VPC
-		for _, cidr := range b.Cluster.Spec.AdditionalNetworkCIDRs {
+		for _, cidr := range b.Cluster.Spec.Networking.AdditionalNetworkCIDRs {
 			c.AddTask(&awstasks.VPCCIDRBlock{
 				Name:      fi.PtrTo(cidr),
 				Lifecycle: b.Lifecycle,
@@ -143,13 +143,13 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	allPrivateSubnetsUnmanaged := true
 	allSubnetsShared := true
 	allSubnetsSharedInZone := make(map[string]bool)
-	for i := range b.Cluster.Spec.Subnets {
-		subnetSpec := &b.Cluster.Spec.Subnets[i]
+	for i := range b.Cluster.Spec.Networking.Subnets {
+		subnetSpec := &b.Cluster.Spec.Networking.Subnets[i]
 		allSubnetsSharedInZone[subnetSpec.Zone] = true
 	}
 
-	for i := range b.Cluster.Spec.Subnets {
-		subnetSpec := &b.Cluster.Spec.Subnets[i]
+	for i := range b.Cluster.Spec.Networking.Subnets {
+		subnetSpec := &b.Cluster.Spec.Networking.Subnets[i]
 		sharedSubnet := subnetSpec.ID != ""
 		if !sharedSubnet {
 			allSubnetsShared = false
@@ -217,20 +217,20 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	infoByZone := make(map[string]*zoneInfo)
 
 	haveDualStack := map[string]bool{}
-	for _, subnetSpec := range b.Cluster.Spec.Subnets {
+	for _, subnetSpec := range b.Cluster.Spec.Networking.Subnets {
 		if subnetSpec.Type == kops.SubnetTypeDualStack {
 			haveDualStack[subnetSpec.Zone] = true
 		}
 	}
 
-	for i := range b.Cluster.Spec.Subnets {
-		subnetSpec := &b.Cluster.Spec.Subnets[i]
+	for i := range b.Cluster.Spec.Networking.Subnets {
+		subnetSpec := &b.Cluster.Spec.Networking.Subnets[i]
 		sharedSubnet := subnetSpec.ID != ""
 		subnetName := subnetSpec.Name + "." + b.ClusterName()
 		tags := map[string]string{}
 
 		// Apply tags so that Kubernetes knows which subnets should be used for internal/external ELBs
-		if b.Cluster.Spec.TagSubnets == nil || *b.Cluster.Spec.TagSubnets {
+		if b.Cluster.Spec.Networking.TagSubnets == nil || *b.Cluster.Spec.Networking.TagSubnets {
 			klog.V(2).Infof("applying subnet tags")
 			tags = b.CloudTags(subnetName, sharedSubnet)
 			tags["SubnetType"] = string(subnetSpec.Type)
@@ -241,7 +241,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 				// AWS ALB contoller won't provision any internal ELBs unless this tag is set.
 				// So we add this to public subnets as well if we do not expect any private subnets.
-				if b.Cluster.Spec.Topology.Nodes == kops.TopologyPublic {
+				if b.Cluster.Spec.Networking.Topology.Nodes == kops.TopologyPublic {
 					tags[aws.TagNameSubnetInternalELB] = "1"
 				}
 
@@ -579,7 +579,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				return err
 			}
 
-			for _, subnetSpec := range b.Cluster.Spec.Subnets {
+			for _, subnetSpec := range b.Cluster.Spec.Networking.Subnets {
 				for _, subnet := range subnets {
 					if strings.HasPrefix(*subnet.Name, subnetSpec.Name) {
 						err := addAdditionalRoutes(subnetSpec.AdditionalRoutes, subnetSpec.Name, rt, b.Lifecycle, c)

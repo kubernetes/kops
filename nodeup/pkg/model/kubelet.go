@@ -150,7 +150,7 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	if components.UsesCNI(b.Cluster.Spec.Networking) {
+	if components.UsesCNI(&b.Cluster.Spec.Networking) {
 		c.AddTask(&nodetasks.File{
 			Path: b.CNIConfDir(),
 			Type: nodetasks.FileType_Directory,
@@ -530,7 +530,7 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 		c.BootstrapKubeconfig = ""
 	}
 
-	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
+	if b.Cluster.Spec.Networking.AmazonVPC != nil {
 		sess := session.Must(session.NewSession())
 		metadata := ec2metadata.New(sess)
 

@@ -222,7 +222,7 @@ func clusterOutputTable(clusters []*kopsapi.Cluster, out io.Writer) error {
 	})
 	t.AddColumn("ZONES", func(c *kopsapi.Cluster) string {
 		zones := sets.NewString()
-		for _, s := range c.Spec.Subnets {
+		for _, s := range c.Spec.Networking.Subnets {
 			if s.Zone != "" {
 				zones.Insert(s.Zone)
 			}

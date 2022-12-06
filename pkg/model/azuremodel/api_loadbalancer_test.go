@@ -42,7 +42,7 @@ func TestSubnetForLoadbalancer(t *testing.T) {
 	b := APILoadBalancerModelBuilder{
 		AzureModelContext: newTestAzureModelContext(),
 	}
-	b.Cluster.Spec.Subnets = []kops.ClusterSubnetSpec{
+	b.Cluster.Spec.Networking.Subnets = []kops.ClusterSubnetSpec{
 		{
 			Name: "master",
 			Type: kops.SubnetTypePrivate,
