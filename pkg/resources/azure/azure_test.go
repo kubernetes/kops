@@ -26,8 +26,6 @@ import (
 	authz "github.com/Azure/azure-sdk-for-go/services/preview/authorization/mgmt/2020-04-01-preview/authorization"
 	azureresources "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2021-04-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azuretasks"
@@ -176,17 +174,10 @@ func TestListResourcesAzure(t *testing.T) {
 	// Call listResourcesAzure.
 	g := resourceGetter{
 		cloud: cloud,
-		cluster: &kops.Cluster{
-			ObjectMeta: metav1.ObjectMeta{
-				Name: clusterName,
-			},
-			Spec: kops.ClusterSpec{
-				CloudProvider: kops.CloudProviderSpec{
-					Azure: &kops.AzureSpec{
-						ResourceGroupName: rgName,
-					},
-				},
-			},
+		clusterInfo: resources.ClusterInfo{
+			Name:                     clusterName,
+			AzureResourceGroupName:   rgName,
+			AzureResourceGroupShared: true,
 		},
 	}
 	actual, err := g.listResourcesAzure()
@@ -310,10 +301,8 @@ func TestIsOwnedByCluster(t *testing.T) {
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("test case %d", i), func(t *testing.T) {
 			g := &resourceGetter{
-				cluster: &kops.Cluster{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: clusterName,
-					},
+				clusterInfo: resources.ClusterInfo{
+					Name: clusterName,
 				},
 			}
 			a := g.isOwnedByCluster(tc.tags)

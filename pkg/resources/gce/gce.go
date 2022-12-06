@@ -61,12 +61,13 @@ const maxPrefixTokens = 5
 // Maximum length of a GCE route name
 const maxGCERouteNameLength = 63
 
-func ListResourcesGCE(gceCloud gce.GCECloud, clusterName string, region string) (map[string]*resources.Resource, error) {
+func ListResourcesGCE(gceCloud gce.GCECloud, clusterInfo resources.ClusterInfo) (map[string]*resources.Resource, error) {
+	clusterName := clusterInfo.Name
+	clusterUsesNoneDNS := clusterInfo.UsesNoneDNS
+
 	ctx := context.TODO()
 
-	if region == "" {
-		region = gceCloud.Region()
-	}
+	region := gceCloud.Region()
 
 	resources := make(map[string]*resources.Resource)
 
@@ -105,7 +106,6 @@ func ListResourcesGCE(gceCloud gce.GCECloud, clusterName string, region string) 
 		d.listForwardingRules,
 		d.listFirewallRules,
 		d.listGCEDisks,
-		d.listGCEDNSZone,
 		// TODO: Find routes via instances (via instance groups)
 		d.listAddresses,
 		d.listSubnets,
@@ -115,6 +115,10 @@ func ListResourcesGCE(gceCloud gce.GCECloud, clusterName string, region string) 
 		d.listBackendServices,
 		d.listHealthchecks,
 	}
+	if !dns.IsGossipClusterName(clusterName) && !clusterUsesNoneDNS {
+		listFunctions = append(listFunctions, d.listGCEDNSZone)
+	}
+
 	for _, fn := range listFunctions {
 		resourceTrackers, err := fn()
 		if err != nil {
@@ -1282,10 +1286,6 @@ func (d *clusterDiscoveryGCE) isKopsManagedDNSName(name string) bool {
 }
 
 func (d *clusterDiscoveryGCE) listGCEDNSZone() ([]*resources.Resource, error) {
-	if dns.IsGossipClusterName(d.clusterName) {
-		return nil, nil
-	}
-
 	var resourceTrackers []*resources.Resource
 
 	managedZones, err := d.gceCloud.CloudDNS().ManagedZones().List(d.gceCloud.Project())
