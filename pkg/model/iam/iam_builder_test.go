@@ -171,7 +171,7 @@ func TestPolicyGeneration(t *testing.T) {
 							Enabled: fi.PtrTo(true),
 						},
 					},
-					Networking: &kops.NetworkingSpec{
+					Networking: kops.NetworkingSpec{
 						Kubenet: &kops.KubenetNetworkingSpec{},
 					},
 				},

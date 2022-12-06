@@ -74,7 +74,7 @@ func TestRootVolumeOptimizationFlag(t *testing.T) {
 					CloudProvider: kops.CloudProviderSpec{
 						AWS: &kops.AWSSpec{},
 					},
-					Networking:        &kops.NetworkingSpec{},
+					Networking:        kops.NetworkingSpec{},
 					KubernetesVersion: "1.20.0",
 				},
 			},
@@ -135,7 +135,7 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 	igs := make([]*kops.InstanceGroup, _roleCount)
 	// NB: (*AutoscalingGroupModelBuilder).buildLaunchTemplateTask expects there to be at least
 	// one subnet specified in each InstanceGroup.
-	subnets := []string{cluster.Spec.Subnets[0].Name}
+	subnets := []string{cluster.Spec.Networking.Subnets[0].Name}
 	igs[roleBastion] = &kops.InstanceGroup{
 		ObjectMeta: v1.ObjectMeta{
 			Name: "bastion1",

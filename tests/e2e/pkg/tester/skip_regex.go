@@ -52,7 +52,7 @@ func (t *Tester) setSkipRegexFlag() error {
 	// https://github.com/kubernetes/kubernetes/issues/113964
 	skipRegex += "|LoadBalancers.should.be.able.to.preserve.UDP.traffic"
 
-	networking := cluster.Spec.Networking
+	networking := cluster.Spec.LegacyNetworking
 	switch {
 	case networking.Kubenet != nil, networking.Canal != nil, networking.Weave != nil, networking.Cilium != nil:
 		skipRegex += "|Services.*rejected.*endpoints"

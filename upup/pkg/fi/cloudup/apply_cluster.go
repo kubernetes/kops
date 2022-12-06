@@ -1410,7 +1410,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 
 	// Set API server address to an IP from the cluster network CIDR
 	if cluster.UsesNoneDNS() {
-		for _, networkCIDR := range append(cluster.Spec.AdditionalNetworkCIDRs, cluster.Spec.NetworkCIDR) {
+		for _, networkCIDR := range append(cluster.Spec.Networking.AdditionalNetworkCIDRs, cluster.Spec.Networking.NetworkCIDR) {
 			_, cidr, err := net.ParseCIDR(networkCIDR)
 			if err != nil {
 				return nil, nil, fmt.Errorf("failed to parse network CIDR %q: %w", networkCIDR, err)

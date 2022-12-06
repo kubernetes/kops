@@ -33,7 +33,7 @@ var _ fi.ModelBuilder = &NetworkModelBuilder{}
 
 func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
-	ipRange := b.Cluster.Spec.NetworkCIDR
+	ipRange := b.Cluster.Spec.Networking.NetworkCIDR
 	if ipRange == "" {
 		// no cidr specified, use the default vpc in DO that's always available
 		return nil
@@ -45,7 +45,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Create a separate vpc for this cluster.
 	vpc := &dotasks.VPC{
 		Name:      fi.PtrTo(vpcName),
-		Region:    fi.PtrTo(b.Cluster.Spec.Subnets[0].Region),
+		Region:    fi.PtrTo(b.Cluster.Spec.Networking.Subnets[0].Region),
 		Lifecycle: b.Lifecycle,
 		IPRange:   fi.PtrTo(ipRange),
 	}

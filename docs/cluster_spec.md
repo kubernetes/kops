@@ -1575,7 +1575,8 @@ the removal of fields no longer in use.
 
 | v1alpha2 Field                                         | New Field                                                      |
 |--------------------------------------------------------|----------------------------------------------------------------|
-| additionalSans                                         | api.AdditionalSANs                                             |
+| additionalNetworkCIDRs                                 | networking.additionalNetworkCIDRs                              |
+| additionalSans                                         | api.additionalSANs                                             |
 | api.loadBalancer.subnets.allocationId                  | api.loadBalancer.subnets.allocationID                          |
 | api.loadBalancer.useForInternalApi                     | api.loadBalancer.useForInternalAPI                             |
 | cloudConfig.azure                                      | cloudProvider.azure                                            |
@@ -1584,11 +1585,13 @@ the removal of fields no longer in use.
 | cloudConfig.openstack                                  | cloudProvider.openstack                                        |
 | cloudProvider (string)                                 | cloudProvider (map)                                            |
 | DisableSubnetTags                                      | tagSubnets (value inverted)                                    |
+| egressProxy                                            | networking.egressProxy                                         |
 | etcdClusters[\*].etcdMembers[\*].kmsKeyId              | etcdClusters[\*].etcdMembers[\*].kmsKeyID                      |
 | etcdClusters[\*].etcdMembers[\*].volumeIops            | etcdClusters[\*].etcdMembers[\*].volumeIOPS                    |
 | externalDns                                            | externalDNS                                                    |
 | externalDns.disable: true                              | externalDNS.provider: none                                     |
 | hooks[\*].disabled                                     | hooks[\*].enabled (value inverted)                             |
+| isolateMasters                                         | networking.isolateControlPlane                                 |
 | kubeAPIServer.authorizationRbacSuperUser               | kubeAPIServer.authorizationRBACSuperUser                       |
 | kubeAPIServer.authorizationWebhookCacheAuthorizedTtl   | kubeAPIServer.authorizationWebhookCacheAuthorizedTTL           |
 | kubeAPIServer.authorizationWebhookCacheUnauthorizedTtl | kubeAPIServer.authorizationWebhookCacheUnauthorizedTTL         |
@@ -1603,6 +1606,8 @@ the removal of fields no longer in use.
 | masterKubelet.authenticationTokenWebhookCacheTtl       | controlPlaneKubelet.authenticationTokenWebhookCacheTTL         |
 | masterKubelet.clientCaFile                             | controlPlaneKubelet.clientCAFile                               |
 | masterPublicName                                       | api.publicName                                                 |
+| networkCIDR                                            | networking.networkCIDR                                         |
+| networkID                                              | networking.networkID                                           |
 | networking.amazonvpc                                   | networking.amazonVPC                                           |
 | networking.amazonvpc.imageName                         | networking.amazonVPC.image                                     |
 | networking.amazonvpc.initImageName                     | networking.amazonVPC.initImage                                 |
@@ -1612,6 +1617,12 @@ the removal of fields no longer in use.
 | networking.cilium.toFqdnsDnsRejectResponseCode         | networking.cilium.toFQDNsDNSRejectResponseCode                 |
 | networking.cilium.toFqdnsEnablePoller                  | networking.cilium.toFQDNsEnablePoller                          |
 | networking.kuberouter                                  | networking.kubeRouter                                          |
+| nonMasqueradeCIDR                                      | networking.nonMasqueradeCIDR                                   |
+| podCIDR                                                | networking.podCIDR                                             |
 | project                                                | cloudProvider.gce.project                                      |
-| topology.bastion.bastionPublicName                     | topology.bastion.publicName                                    |
-| topology.dns.type                                      | topology.dns                                                   |
+| serviceClusterIPRange                                  | networking.serviceClusterIPRange                               |
+| subnets                                                | networking.subnets                                             |
+| tagSubnets                                             | networking.tagSubnets                                          |
+| topology                                               | networking.topology                                            |
+| topology.bastion.bastionPublicName                     | networking.topology.bastion.publicName                         |
+| topology.dns.type                                      | networking.topology.dns                                        |

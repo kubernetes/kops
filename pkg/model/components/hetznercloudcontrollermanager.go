@@ -48,7 +48,7 @@ func (b *HetznerCloudControllerManagerOptionsBuilder) BuildOptions(o interface{}
 		LeaderElect: fi.PtrTo(false),
 	}
 
-	eccm.ClusterCIDR = clusterSpec.NonMasqueradeCIDR
+	eccm.ClusterCIDR = clusterSpec.Networking.NonMasqueradeCIDR
 	eccm.AllocateNodeCIDRs = fi.PtrTo(true)
 	eccm.ConfigureCloudRoutes = fi.PtrTo(false)
 

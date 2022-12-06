@@ -222,7 +222,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		}
 
 		// @step: add an IPv6 address
-		for _, clusterSubnet := range b.Cluster.Spec.Subnets {
+		for _, clusterSubnet := range b.Cluster.Spec.Networking.Subnets {
 			for _, igSubnet := range ig.Spec.Subnets {
 				if clusterSubnet.Name != igSubnet {
 					continue

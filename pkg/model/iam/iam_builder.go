@@ -365,15 +365,15 @@ func (r *NodeRoleAPIServer) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		addECRPermissions(p)
 	}
 
-	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
+	if b.Cluster.Spec.Networking.AmazonVPC != nil {
 		addAmazonVPCCNIPermissions(p)
 	}
 
-	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Cilium != nil && b.Cluster.Spec.Networking.Cilium.IPAM == kops.CiliumIpamEni {
+	if b.Cluster.Spec.Networking.Cilium != nil && b.Cluster.Spec.Networking.Cilium.IPAM == kops.CiliumIpamEni {
 		addCiliumEniPermissions(p)
 	}
 
-	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Calico != nil && b.Cluster.Spec.Networking.Calico.AWSSrcDstCheck != "DoNothing" && !b.Cluster.Spec.IsIPv6Only() {
+	if b.Cluster.Spec.Networking.Calico != nil && b.Cluster.Spec.Networking.Calico.AWSSrcDstCheck != "DoNothing" && !b.Cluster.Spec.IsIPv6Only() {
 		addCalicoSrcDstCheckPermissions(p)
 	}
 
@@ -444,15 +444,15 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		addECRPermissions(p)
 	}
 
-	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
+	if b.Cluster.Spec.Networking.AmazonVPC != nil {
 		addAmazonVPCCNIPermissions(p)
 	}
 
-	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Cilium != nil && b.Cluster.Spec.Networking.Cilium.IPAM == kops.CiliumIpamEni {
+	if b.Cluster.Spec.Networking.Cilium != nil && b.Cluster.Spec.Networking.Cilium.IPAM == kops.CiliumIpamEni {
 		addCiliumEniPermissions(p)
 	}
 
-	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Calico != nil && b.Cluster.Spec.Networking.Calico.AWSSrcDstCheck != "DoNothing" && !b.Cluster.Spec.IsIPv6Only() {
+	if b.Cluster.Spec.Networking.Calico != nil && b.Cluster.Spec.Networking.Calico.AWSSrcDstCheck != "DoNothing" && !b.Cluster.Spec.IsIPv6Only() {
 		addCalicoSrcDstCheckPermissions(p)
 	}
 
@@ -474,11 +474,11 @@ func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		addECRPermissions(p)
 	}
 
-	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
+	if b.Cluster.Spec.Networking.AmazonVPC != nil {
 		addAmazonVPCCNIPermissions(p)
 	}
 
-	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Calico != nil && b.Cluster.Spec.Networking.Calico.AWSSrcDstCheck != "DoNothing" && !b.Cluster.Spec.IsIPv6Only() {
+	if b.Cluster.Spec.Networking.Calico != nil && b.Cluster.Spec.Networking.Calico.AWSSrcDstCheck != "DoNothing" && !b.Cluster.Spec.IsIPv6Only() {
 		addCalicoSrcDstCheckPermissions(p)
 	}
 
@@ -712,19 +712,17 @@ func ReadableStatePaths(cluster *kops.Cluster, role Subject) ([]string, error) {
 				paths = append(paths, "/pki/private/kubelet/*")
 			}
 
-			networkingSpec := cluster.Spec.Networking
+			networkingSpec := &cluster.Spec.Networking
 
-			if networkingSpec != nil {
-				// @check if kuberoute is enabled and permit access to the private key
-				if networkingSpec.KubeRouter != nil {
-					paths = append(paths, "/pki/private/kube-router/*")
-				}
+			// @check if kuberoute is enabled and permit access to the private key
+			if networkingSpec.KubeRouter != nil {
+				paths = append(paths, "/pki/private/kube-router/*")
+			}
 
-				// @check if cilium is enabled as the CNI provider and permit access to the cilium etc client TLS certificate by default
-				// As long as the Cilium Etcd cluster exists, we should do this
-				if networkingSpec.Cilium != nil && model.UseCiliumEtcd(cluster) {
-					paths = append(paths, "/pki/private/etcd-client-cilium/*")
-				}
+			// @check if cilium is enabled as the CNI provider and permit access to the cilium etc client TLS certificate by default
+			// As long as the Cilium Etcd cluster exists, we should do this
+			if networkingSpec.Cilium != nil && model.UseCiliumEtcd(cluster) {
+				paths = append(paths, "/pki/private/etcd-client-cilium/*")
 			}
 		}
 	}

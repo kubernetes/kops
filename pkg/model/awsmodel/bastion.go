@@ -101,19 +101,19 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	var bastionLoadBalancerType kops.LoadBalancerType
 	{
 		// Check if we requested a public or internal NLB
-		if b.Cluster.Spec.Topology != nil && b.Cluster.Spec.Topology.Bastion != nil && b.Cluster.Spec.Topology.Bastion.LoadBalancer != nil {
-			if b.Cluster.Spec.Topology.Bastion.LoadBalancer.Type != "" {
-				switch b.Cluster.Spec.Topology.Bastion.LoadBalancer.Type {
+		if b.Cluster.Spec.Networking.Topology != nil && b.Cluster.Spec.Networking.Topology.Bastion != nil && b.Cluster.Spec.Networking.Topology.Bastion.LoadBalancer != nil {
+			if b.Cluster.Spec.Networking.Topology.Bastion.LoadBalancer.Type != "" {
+				switch b.Cluster.Spec.Networking.Topology.Bastion.LoadBalancer.Type {
 				case kops.LoadBalancerTypeInternal:
 					bastionLoadBalancerType = "Internal"
 				case kops.LoadBalancerTypePublic:
 					bastionLoadBalancerType = "Public"
 				default:
-					return fmt.Errorf("unhandled bastion LoadBalancer type %q", b.Cluster.Spec.Topology.Bastion.LoadBalancer.Type)
+					return fmt.Errorf("unhandled bastion LoadBalancer type %q", b.Cluster.Spec.Networking.Topology.Bastion.LoadBalancer.Type)
 				}
 			} else {
 				// Default to Public
-				b.Cluster.Spec.Topology.Bastion.LoadBalancer.Type = kops.LoadBalancerTypePublic
+				b.Cluster.Spec.Networking.Topology.Bastion.LoadBalancer.Type = kops.LoadBalancerTypePublic
 				bastionLoadBalancerType = "Public"
 			}
 		} else {
@@ -159,8 +159,8 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	{
 		// Compute the subnets - only one per zone, and then break ties based on chooseBestSubnetForNLB
 		subnetsByZone := make(map[string][]*kops.ClusterSubnetSpec)
-		for i := range b.Cluster.Spec.Subnets {
-			subnet := &b.Cluster.Spec.Subnets[i]
+		for i := range b.Cluster.Spec.Networking.Subnets {
+			subnet := &b.Cluster.Spec.Networking.Subnets[i]
 
 			switch subnet.Type {
 			case kops.SubnetTypePublic, kops.SubnetTypeUtility:
@@ -311,8 +311,8 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	publicName := ""
-	if b.Cluster.Spec.Topology != nil && b.Cluster.Spec.Topology.Bastion != nil {
-		publicName = b.Cluster.Spec.Topology.Bastion.PublicName
+	if b.Cluster.Spec.Networking.Topology != nil && b.Cluster.Spec.Networking.Topology.Bastion != nil {
+		publicName = b.Cluster.Spec.Networking.Topology.Bastion.PublicName
 	}
 	if publicName != "" {
 		// Here we implement the bastion CNAME logic
@@ -347,7 +347,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 func useIPv6ForBastion(b *BastionModelBuilder) bool {
 	for _, ig := range b.InstanceGroups {
 		for _, igSubnetName := range ig.Spec.Subnets {
-			for _, clusterSubnet := range b.Cluster.Spec.Subnets {
+			for _, clusterSubnet := range b.Cluster.Spec.Networking.Subnets {
 				if igSubnetName != clusterSubnet.Name {
 					continue
 				}

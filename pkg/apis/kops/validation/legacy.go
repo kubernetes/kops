@@ -78,8 +78,8 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 		optionTaken = true
 		requiresNetworkCIDR = false
 		requiresSubnetCIDR = false
-		if c.Spec.NetworkCIDR != "" {
-			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("networkCIDR"), "networkCIDR should not be set on GCE"))
+		if c.Spec.Networking.NetworkCIDR != "" {
+			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("networking", "networkCIDR"), "networkCIDR should not be set on GCE"))
 		}
 	}
 	if c.Spec.CloudProvider.Hetzner != nil {
@@ -114,9 +114,9 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 		requiresNetworkCIDR = false
 	}
 
-	if requiresSubnets && len(c.Spec.Subnets) == 0 {
+	if requiresSubnets && len(c.Spec.Networking.Subnets) == 0 {
 		// TODO: Auto choose zones from region?
-		allErrs = append(allErrs, field.Required(fieldSpec.Child("subnets"), "must configure at least one subnet (use --zones)"))
+		allErrs = append(allErrs, field.Required(fieldSpec.Child("networking", "subnets"), "must configure at least one subnet (use --zones)"))
 	}
 
 	if strict && c.Spec.Kubelet == nil {
@@ -148,23 +148,23 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 	var networkCIDR *net.IPNet
 	var err error
 	{
-		if c.Spec.NetworkCIDR == "" {
+		if c.Spec.Networking.NetworkCIDR == "" {
 			if requiresNetworkCIDR {
-				allErrs = append(allErrs, field.Required(fieldSpec.Child("networkCIDR"), "Cluster did not have networkCIDR set"))
+				allErrs = append(allErrs, field.Required(fieldSpec.Child("networking", "networkCIDR"), "Cluster did not have networkCIDR set"))
 			}
 		} else {
-			_, networkCIDR, err = net.ParseCIDR(c.Spec.NetworkCIDR)
+			_, networkCIDR, err = net.ParseCIDR(c.Spec.Networking.NetworkCIDR)
 			if err != nil {
-				allErrs = append(allErrs, field.Invalid(fieldSpec.Child("networkCIDR"), c.Spec.NetworkCIDR, "Cluster had an invalid networkCIDR"))
+				allErrs = append(allErrs, field.Invalid(fieldSpec.Child("networking", "networkCIDR"), c.Spec.Networking.NetworkCIDR, "Cluster had an invalid networkCIDR"))
 			}
 			if c.Spec.GetCloudProvider() == kops.CloudProviderDO {
 				// verify if the NetworkCIDR is in a private range as per RFC1918
 				if !networkCIDR.IP.IsPrivate() {
-					allErrs = append(allErrs, field.Invalid(fieldSpec.Child("networkCIDR"), c.Spec.NetworkCIDR, "Cluster had a networkCIDR outside the private IP range"))
+					allErrs = append(allErrs, field.Invalid(fieldSpec.Child("networking", "networkCIDR"), c.Spec.Networking.NetworkCIDR, "Cluster had a networkCIDR outside the private IP range"))
 				}
 				// verify if networkID is not specified. In case of DO, this is mutually exclusive.
-				if c.Spec.NetworkID != "" {
-					allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("networkCIDR"), "DO doesn't support specifying both NetworkID and NetworkCIDR together"))
+				if c.Spec.Networking.NetworkID != "" {
+					allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("networking", "networkCIDR"), "DO doesn't support specifying both NetworkID and NetworkCIDR together"))
 				}
 			}
 		}
@@ -173,21 +173,19 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 	// Check AdditionalNetworkCIDRs
 	var additionalNetworkCIDRs []*net.IPNet
 	{
-		if len(c.Spec.AdditionalNetworkCIDRs) > 0 {
-			for _, AdditionalNetworkCIDR := range c.Spec.AdditionalNetworkCIDRs {
-				_, IPNetAdditionalNetworkCIDR, err := net.ParseCIDR(AdditionalNetworkCIDR)
-				if err != nil {
-					allErrs = append(allErrs, field.Invalid(fieldSpec.Child("additionalNetworkCIDRs"), AdditionalNetworkCIDR, "Cluster had an invalid additionalNetworkCIDRs"))
-				}
-				additionalNetworkCIDRs = append(additionalNetworkCIDRs, IPNetAdditionalNetworkCIDR)
+		for _, AdditionalNetworkCIDR := range c.Spec.Networking.AdditionalNetworkCIDRs {
+			_, IPNetAdditionalNetworkCIDR, err := net.ParseCIDR(AdditionalNetworkCIDR)
+			if err != nil {
+				allErrs = append(allErrs, field.Invalid(fieldSpec.Child("networking", "additionalNetworkCIDRs"), AdditionalNetworkCIDR, "Cluster had an invalid additionalNetworkCIDRs"))
 			}
+			additionalNetworkCIDRs = append(additionalNetworkCIDRs, IPNetAdditionalNetworkCIDR)
 		}
 	}
 
 	// nonMasqueradeCIDR is essentially deprecated, and we're moving to cluster-cidr instead (which is better named pod-cidr)
 	nonMasqueradeCIDRRequired := true
 	serviceClusterMustBeSubnetOfNonMasqueradeCIDR := true
-	if c.Spec.Networking != nil && c.Spec.Networking.GCE != nil {
+	if c.Spec.Networking.GCE != nil {
 		nonMasqueradeCIDRRequired = false
 		serviceClusterMustBeSubnetOfNonMasqueradeCIDR = false
 	}
@@ -195,28 +193,28 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 	// Check NonMasqueradeCIDR
 	var nonMasqueradeCIDR *net.IPNet
 	{
-		nonMasqueradeCIDRString := c.Spec.NonMasqueradeCIDR
+		nonMasqueradeCIDRString := c.Spec.Networking.NonMasqueradeCIDR
 		if nonMasqueradeCIDRString == "" {
 			if nonMasqueradeCIDRRequired {
-				allErrs = append(allErrs, field.Required(fieldSpec.Child("nonMasqueradeCIDR"), "Cluster did not have nonMasqueradeCIDR set"))
+				allErrs = append(allErrs, field.Required(fieldSpec.Child("networking", "nonMasqueradeCIDR"), "Cluster did not have nonMasqueradeCIDR set"))
 			}
 		} else {
 			_, nonMasqueradeCIDR, err = net.ParseCIDR(nonMasqueradeCIDRString)
 			if err != nil {
-				allErrs = append(allErrs, field.Invalid(fieldSpec.Child("nonMasqueradeCIDR"), nonMasqueradeCIDRString, "Cluster had an invalid nonMasqueradeCIDR"))
+				allErrs = append(allErrs, field.Invalid(fieldSpec.Child("networking", "nonMasqueradeCIDR"), nonMasqueradeCIDRString, "Cluster had an invalid nonMasqueradeCIDR"))
 			} else {
 				if strings.Contains(nonMasqueradeCIDRString, ":") && nonMasqueradeCIDRString != "::/0" {
-					allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("nonMasqueradeCIDR"), "IPv6 clusters must have a nonMasqueradeCIDR of \"::/0\""))
+					allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("networking", "nonMasqueradeCIDR"), "IPv6 clusters must have a nonMasqueradeCIDR of \"::/0\""))
 				}
 
-				if networkCIDR != nil && subnet.Overlap(nonMasqueradeCIDR, networkCIDR) && c.Spec.Networking != nil && c.Spec.Networking.AmazonVPC == nil && (c.Spec.Networking.Cilium == nil || c.Spec.Networking.Cilium.IPAM != kops.CiliumIpamEni) {
-					allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("nonMasqueradeCIDR"), fmt.Sprintf("nonMasqueradeCIDR %q cannot overlap with networkCIDR %q", nonMasqueradeCIDRString, c.Spec.NetworkCIDR)))
+				if networkCIDR != nil && subnet.Overlap(nonMasqueradeCIDR, networkCIDR) && c.Spec.Networking.AmazonVPC == nil && (c.Spec.Networking.Cilium == nil || c.Spec.Networking.Cilium.IPAM != kops.CiliumIpamEni) {
+					allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("networking", "nonMasqueradeCIDR"), fmt.Sprintf("nonMasqueradeCIDR %q cannot overlap with networkCIDR %q", nonMasqueradeCIDRString, c.Spec.Networking.NetworkCIDR)))
 				}
 
 				if c.Spec.ContainerRuntime == "docker" && c.Spec.Kubelet != nil && fi.ValueOf(c.Spec.Kubelet.NetworkPluginName) == "kubenet" {
 					if fi.ValueOf(c.Spec.Kubelet.NonMasqueradeCIDR) != nonMasqueradeCIDRString {
 						if strict || c.Spec.Kubelet.NonMasqueradeCIDR != nil {
-							allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubelet", "nonMasqueradeCIDR"), "kubelet nonMasqueradeCIDR did not match cluster nonMasqueradeCIDR"))
+							allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubelet", "networking", "nonMasqueradeCIDR"), "kubelet nonMasqueradeCIDR did not match cluster nonMasqueradeCIDR"))
 						}
 					}
 					if fi.ValueOf(c.Spec.ControlPlaneKubelet.NonMasqueradeCIDR) != nonMasqueradeCIDRString {
@@ -232,18 +230,18 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 	// Check ServiceClusterIPRange
 	var serviceClusterIPRange *net.IPNet
 	{
-		serviceClusterIPRangeString := c.Spec.ServiceClusterIPRange
+		serviceClusterIPRangeString := c.Spec.Networking.ServiceClusterIPRange
 		if serviceClusterIPRangeString == "" {
 			if strict {
-				allErrs = append(allErrs, field.Required(fieldSpec.Child("serviceClusterIPRange"), "Cluster did not have serviceClusterIPRange set"))
+				allErrs = append(allErrs, field.Required(fieldSpec.Child("networking", "serviceClusterIPRange"), "Cluster did not have serviceClusterIPRange set"))
 			}
 		} else {
 			_, serviceClusterIPRange, err = net.ParseCIDR(serviceClusterIPRangeString)
 			if err != nil {
-				allErrs = append(allErrs, field.Invalid(fieldSpec.Child("serviceClusterIPRange"), serviceClusterIPRangeString, "Cluster had an invalid serviceClusterIPRange"))
+				allErrs = append(allErrs, field.Invalid(fieldSpec.Child("networking", "serviceClusterIPRange"), serviceClusterIPRangeString, "Cluster had an invalid serviceClusterIPRange"))
 			} else {
 				if nonMasqueradeCIDR != nil && serviceClusterMustBeSubnetOfNonMasqueradeCIDR && !subnet.BelongsTo(nonMasqueradeCIDR, serviceClusterIPRange) {
-					allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("serviceClusterIPRange"), fmt.Sprintf("serviceClusterIPRange %q must be a subnet of nonMasqueradeCIDR %q", serviceClusterIPRangeString, c.Spec.NonMasqueradeCIDR)))
+					allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("networking", "serviceClusterIPRange"), fmt.Sprintf("serviceClusterIPRange %q must be a subnet of nonMasqueradeCIDR %q", serviceClusterIPRangeString, c.Spec.Networking.NonMasqueradeCIDR)))
 				}
 
 				if c.Spec.KubeAPIServer != nil && c.Spec.KubeAPIServer.ServiceClusterIPRange != serviceClusterIPRangeString {
@@ -264,7 +262,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 			if err != nil {
 				allErrs = append(allErrs, field.Invalid(fieldSpec.Child("kubeControllerManager", "clusterCIDR"), clusterCIDRString, "cluster had an invalid kubeControllerManager.clusterCIDR"))
 			} else if nonMasqueradeCIDR != nil && !subnet.BelongsTo(nonMasqueradeCIDR, clusterCIDR) {
-				allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubeControllerManager", "clusterCIDR"), fmt.Sprintf("kubeControllerManager.clusterCIDR %q must be a subnet of nonMasqueradeCIDR %q", clusterCIDRString, c.Spec.NonMasqueradeCIDR)))
+				allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubeControllerManager", "clusterCIDR"), fmt.Sprintf("kubeControllerManager.clusterCIDR %q must be a subnet of nonMasqueradeCIDR %q", clusterCIDRString, c.Spec.Networking.NonMasqueradeCIDR)))
 			}
 		}
 	}
@@ -278,7 +276,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 				allErrs = append(allErrs, field.Invalid(fieldSpec.Child("kubeDNS", "serverIP"), address, "Cluster had an invalid kubeDNS.serverIP"))
 			} else {
 				if serviceClusterIPRange != nil && !serviceClusterIPRange.Contains(ip) {
-					allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubeDNS", "serverIP"), fmt.Sprintf("ServiceClusterIPRange %q must contain the DNS Server IP %q", c.Spec.ServiceClusterIPRange, address)))
+					allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubeDNS", "serverIP"), fmt.Sprintf("ServiceClusterIPRange %q must contain the DNS Server IP %q", c.Spec.Networking.ServiceClusterIPRange, address)))
 				}
 				if !featureflag.ExperimentalClusterDNS.Enabled() {
 					if isExperimentalClusterDNS(c.Spec.Kubelet, c.Spec.KubeDNS) {
@@ -370,11 +368,11 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 
 	// Check that the subnet CIDRs are all consistent
 	{
-		for i, s := range c.Spec.Subnets {
-			fieldSubnet := fieldSpec.Child("subnets").Index(i)
+		for i, s := range c.Spec.Networking.Subnets {
+			fieldSubnet := fieldSpec.Child("networking", "subnets").Index(i)
 			if s.CIDR == "" {
 				if requiresSubnetCIDR && strict {
-					if !strings.Contains(c.Spec.NonMasqueradeCIDR, ":") || s.IPv6CIDR == "" {
+					if !strings.Contains(c.Spec.Networking.NonMasqueradeCIDR, ":") || s.IPv6CIDR == "" {
 						allErrs = append(allErrs, field.Required(fieldSubnet.Child("cidr"), "subnet did not have a cidr set"))
 					} else if c.IsKubernetesLT("1.22") {
 						allErrs = append(allErrs, field.Required(fieldSubnet.Child("cidr"), "IPv6-only subnets require Kubernetes 1.22+"))
@@ -385,7 +383,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 				if err != nil {
 					allErrs = append(allErrs, field.Invalid(fieldSubnet.Child("cidr"), s.CIDR, "subnet had an invalid cidr"))
 				} else if networkCIDR != nil && !validateSubnetCIDR(networkCIDR, additionalNetworkCIDRs, subnetCIDR) {
-					allErrs = append(allErrs, field.Forbidden(fieldSubnet.Child("cidr"), fmt.Sprintf("subnet %q had a cidr %q that was not a subnet of the networkCIDR %q", s.Name, s.CIDR, c.Spec.NetworkCIDR)))
+					allErrs = append(allErrs, field.Forbidden(fieldSubnet.Child("cidr"), fmt.Sprintf("subnet %q had a cidr %q that was not a subnet of the networkCIDR %q", s.Name, s.CIDR, c.Spec.Networking.NetworkCIDR)))
 				}
 			}
 		}

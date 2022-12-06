@@ -113,7 +113,7 @@ data:
   # Flannel network configuration. Mounted into the flannel container.
   net-conf.json: |
     {
-      "Network": "{{ .NonMasqueradeCIDR }}",
+      "Network": "{{ .Networking.NonMasqueradeCIDR }}",
       "Backend": {
         "Type": "vxlan"
       }

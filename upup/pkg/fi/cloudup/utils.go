@@ -43,7 +43,7 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 	switch cluster.Spec.GetCloudProvider() {
 	case kops.CloudProviderGCE:
 		{
-			for _, subnet := range cluster.Spec.Subnets {
+			for _, subnet := range cluster.Spec.Networking.Subnets {
 				if subnet.Region != "" {
 					region = subnet.Region
 				}
@@ -87,7 +87,7 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 			}
 
 			var zoneNames []string
-			for _, subnet := range cluster.Spec.Subnets {
+			for _, subnet := range cluster.Spec.Networking.Subnets {
 				zoneNames = append(zoneNames, subnet.Zone)
 			}
 			err = awsup.ValidateZones(zoneNames, awsCloud)
@@ -101,7 +101,7 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 			// for development purposes we're going to assume
 			// single region setups for DO. Reconsider this logic
 			// when setting up multi-region kubernetes clusters on DO
-			region := cluster.Spec.Subnets[0].Zone
+			region := cluster.Spec.Networking.Subnets[0].Zone
 			doCloud, err := do.NewDOCloud(region)
 			if err != nil {
 				return nil, fmt.Errorf("error initializing digitalocean cloud: %s", err)
@@ -133,7 +133,7 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 				return nil, err
 			}
 			var zoneNames []string
-			for _, subnet := range cluster.Spec.Subnets {
+			for _, subnet := range cluster.Spec.Networking.Subnets {
 				if !fi.ArrayContains(zoneNames, subnet.Zone) {
 					zoneNames = append(zoneNames, subnet.Zone)
 				}
@@ -144,7 +144,7 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 
 	case kops.CloudProviderAzure:
 		{
-			for _, subnet := range cluster.Spec.Subnets {
+			for _, subnet := range cluster.Spec.Networking.Subnets {
 				if subnet.Region != "" {
 					region = subnet.Region
 				}

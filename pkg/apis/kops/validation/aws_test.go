@@ -586,7 +586,7 @@ func TestLoadBalancerSubnets(t *testing.T) {
 			cluster.Spec.API.LoadBalancer.Type = kops.LoadBalancerType(*test.lbType)
 		}
 		for _, s := range test.clusterSubnets {
-			cluster.Spec.Subnets = append(cluster.Spec.Subnets, kops.ClusterSubnetSpec{
+			cluster.Spec.Networking.Subnets = append(cluster.Spec.Networking.Subnets, kops.ClusterSubnetSpec{
 				Name: s,
 				CIDR: cidr,
 			})
@@ -744,7 +744,7 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 					Target: "pcx-abcdef",
 				},
 			},
-			expected: []string{"Invalid value::spec.networkCIDR"},
+			expected: []string{"Invalid value::spec.networking.networkCIDR"},
 		},
 		{ // bad cidr
 			clusterCidr: "100.64.0.0/10",
@@ -755,7 +755,7 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 					Target: "pcx-abcdef",
 				},
 			},
-			expected: []string{"Invalid value::spec.subnets[0].additionalRoutes[0].cidr"},
+			expected: []string{"Invalid value::spec.networking.subnets[0].additionalRoutes[0].cidr"},
 		},
 		{ // bad target
 			clusterCidr: "100.64.0.0/10",
@@ -766,7 +766,7 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 					Target: "unknown-abcdef",
 				},
 			},
-			expected: []string{"Invalid value::spec.subnets[0].additionalRoutes[0].target"},
+			expected: []string{"Invalid value::spec.networking.subnets[0].additionalRoutes[0].target"},
 		},
 		{ // target more specific
 			clusterCidr: "100.64.0.0/10",
@@ -777,7 +777,7 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 					Target: "pcx-abcdef",
 				},
 			},
-			expected: []string{"Forbidden::spec.subnets[0].additionalRoutes[0].target"},
+			expected: []string{"Forbidden::spec.networking.subnets[0].additionalRoutes[0].target"},
 		},
 		{ // duplicates cidr
 			clusterCidr: "100.64.0.0/10",
@@ -792,7 +792,7 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 					Target: "tgw-abcdef",
 				},
 			},
-			expected: []string{"Duplicate value::spec.subnets[0].additionalRoutes[1].cidr"},
+			expected: []string{"Duplicate value::spec.networking.subnets[0].additionalRoutes[1].cidr"},
 		},
 		{ // shared subnet
 			clusterCidr: "100.64.0.0/10",
@@ -804,7 +804,7 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 					Target: "pcx-abcdef",
 				},
 			},
-			expected: []string{"Invalid value::spec.subnets[0]"},
+			expected: []string{"Invalid value::spec.networking.subnets[0]"},
 		},
 		{ // not a private subnet
 			clusterCidr: "100.64.0.0/10",
@@ -815,19 +815,21 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 					Target: "pcx-abcdef",
 				},
 			},
-			expected: []string{"Invalid value::spec.subnets[0]"},
+			expected: []string{"Invalid value::spec.networking.subnets[0]"},
 		},
 	}
 
 	for _, test := range tests {
 		cluster := kops.Cluster{
 			Spec: kops.ClusterSpec{
-				NetworkCIDR: test.clusterCidr,
-				Subnets: []kops.ClusterSubnetSpec{
-					{
-						ID:               test.providerId,
-						Type:             test.subnetType,
-						AdditionalRoutes: test.route,
+				Networking: kops.NetworkingSpec{
+					NetworkCIDR: test.clusterCidr,
+					Subnets: []kops.ClusterSubnetSpec{
+						{
+							ID:               test.providerId,
+							Type:             test.subnetType,
+							AdditionalRoutes: test.route,
+						},
 					},
 				},
 			},

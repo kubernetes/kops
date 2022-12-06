@@ -216,7 +216,7 @@ func (b *CloudConfigBuilder) build(c *fi.ModelBuilderContext, inTree bool) error
 		requireGlobal = false
 
 		var region string
-		for _, subnet := range b.Cluster.Spec.Subnets {
+		for _, subnet := range b.Cluster.Spec.Networking.Subnets {
 			if subnet.Region != "" {
 				region = subnet.Region
 				break
@@ -226,7 +226,7 @@ func (b *CloudConfigBuilder) build(c *fi.ModelBuilderContext, inTree bool) error
 			return fmt.Errorf("on Azure, subnets must include Regions")
 		}
 
-		vnetName := b.Cluster.Spec.NetworkID
+		vnetName := b.Cluster.Spec.Networking.NetworkID
 		if vnetName == "" {
 			vnetName = b.Cluster.Name
 		}

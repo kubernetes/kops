@@ -52,26 +52,26 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 		return nil
 	}
 
-	if c.Spec.NetworkID != "" {
+	if c.Spec.Networking.NetworkID != "" {
 
-		vpcInfo, err := cloud.FindVPCInfo(c.Spec.NetworkID)
+		vpcInfo, err := cloud.FindVPCInfo(c.Spec.Networking.NetworkID)
 		if err != nil {
 			return err
 		}
 		if vpcInfo == nil {
-			return fmt.Errorf("VPC %q not found", c.Spec.NetworkID)
+			return fmt.Errorf("VPC %q not found", c.Spec.Networking.NetworkID)
 		}
 
 		subnetByID := make(map[string]*fi.SubnetInfo)
 		for _, subnetInfo := range vpcInfo.Subnets {
 			subnetByID[subnetInfo.ID] = subnetInfo
 		}
-		for i := range c.Spec.Subnets {
-			subnet := &c.Spec.Subnets[i]
+		for i := range c.Spec.Networking.Subnets {
+			subnet := &c.Spec.Networking.Subnets[i]
 			if subnet.ID != "" {
 				cloudSubnet := subnetByID[subnet.ID]
 				if cloudSubnet == nil {
-					return fmt.Errorf("Subnet %q not found in VPC %q", subnet.ID, c.Spec.NetworkID)
+					return fmt.Errorf("Subnet %q not found in VPC %q", subnet.ID, c.Spec.Networking.NetworkID)
 				}
 				if subnet.CIDR == "" {
 					subnet.CIDR = cloudSubnet.CIDR
@@ -95,9 +95,9 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 		return nil
 	}
 
-	_, cidr, err := net.ParseCIDR(c.Spec.NetworkCIDR)
+	_, cidr, err := net.ParseCIDR(c.Spec.Networking.NetworkCIDR)
 	if err != nil {
-		return fmt.Errorf("Invalid NetworkCIDR: %q", c.Spec.NetworkCIDR)
+		return fmt.Errorf("Invalid NetworkCIDR: %q", c.Spec.Networking.NetworkCIDR)
 	}
 
 	// We split the network range into 8 subnets
@@ -116,8 +116,8 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 	var littleSubnets []*kops.ClusterSubnetSpec
 
 	var reserved []*net.IPNet
-	for i := range c.Spec.Subnets {
-		subnet := &c.Spec.Subnets[i]
+	for i := range c.Spec.Networking.Subnets {
+		subnet := &c.Spec.Networking.Subnets[i]
 		switch subnet.Type {
 		case kops.SubnetTypeDualStack, kops.SubnetTypePublic, kops.SubnetTypePrivate:
 			bigSubnets = append(bigSubnets, subnet)
@@ -206,8 +206,8 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 
 // allSubnetsHaveCIDRs returns true iff each subnet in the cluster has a non-empty CIDR
 func allSubnetsHaveCIDRs(c *kops.Cluster) bool {
-	for i := range c.Spec.Subnets {
-		subnet := &c.Spec.Subnets[i]
+	for i := range c.Spec.Networking.Subnets {
+		subnet := &c.Spec.Networking.Subnets[i]
 		if subnet.CIDR == "" {
 			return false
 		}

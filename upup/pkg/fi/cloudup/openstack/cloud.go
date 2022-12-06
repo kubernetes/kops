@@ -735,7 +735,7 @@ func getIPIngressStatus(c OpenstackCloud, cluster *kops.Cluster) (ingresses []fi
 			if ok && val == cluster.Name && ok2 {
 				role, success := kops.ParseInstanceGroupRole(val2, false)
 				if success && role == kops.InstanceGroupRoleControlPlane {
-					if cluster.Spec.Topology != nil && cluster.Spec.Topology.ControlPlane == kops.TopologyPrivate {
+					if cluster.Spec.Networking.Topology != nil && cluster.Spec.Networking.Topology.ControlPlane == kops.TopologyPrivate {
 						ifName := instance.Metadata[TagKopsNetwork]
 						address, err := GetServerFixedIP(&instance, ifName)
 						if err != nil {

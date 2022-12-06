@@ -40,7 +40,7 @@ func (c *AzureModelContext) LinkToVirtualNetwork() *azuretasks.VirtualNetwork {
 
 // NameForVirtualNetwork returns the name of the Azure Virtual Network object the cluster is located in.
 func (c *AzureModelContext) NameForVirtualNetwork() string {
-	networkName := c.Cluster.Spec.NetworkID
+	networkName := c.Cluster.Spec.Networking.NetworkID
 	if networkName == "" {
 		networkName = c.ClusterName()
 	}

@@ -173,7 +173,7 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		config.UpdatePolicy = kops.UpdatePolicyAutomatic
 	}
 
-	if cluster.Spec.Networking != nil && cluster.Spec.Networking.AmazonVPC != nil {
+	if cluster.Spec.Networking.AmazonVPC != nil {
 		config.DefaultMachineType = fi.PtrTo(strings.Split(instanceGroup.Spec.MachineType, ",")[0])
 	}
 

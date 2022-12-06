@@ -28,8 +28,8 @@ func gceValidateCluster(c *kops.Cluster) field.ErrorList {
 	fieldSpec := field.NewPath("spec")
 
 	region := ""
-	for i, subnet := range c.Spec.Subnets {
-		f := fieldSpec.Child("subnets").Index(i)
+	for i, subnet := range c.Spec.Networking.Subnets {
+		f := fieldSpec.Child("networking", "subnets").Index(i)
 		if subnet.Zone != "" {
 			allErrs = append(allErrs, field.Invalid(f.Child("zone"), subnet.Zone, "zones should not be specified for GCE subnets, as GCE subnets are regional"))
 		}

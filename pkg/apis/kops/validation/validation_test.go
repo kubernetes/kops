@@ -190,7 +190,9 @@ func TestValidateSubnets(t *testing.T) {
 			CloudProvider: kops.CloudProviderSpec{
 				AWS: &kops.AWSSpec{},
 			},
-			Subnets: g.Input,
+			Networking: kops.NetworkingSpec{
+				Subnets: g.Input,
+			},
 		}
 		errs := validateSubnets(cluster, field.NewPath("subnets"))
 
@@ -384,13 +386,10 @@ func Test_Validate_Networking_Flannel(t *testing.T) {
 		},
 	}
 	for _, g := range grid {
-		networking := &kops.NetworkingSpec{}
-		networking.Flannel = &g.Input
-
 		cluster := &kops.Cluster{}
-		cluster.Spec.Networking = networking
+		cluster.Spec.Networking.Flannel = &g.Input
 
-		errs := validateNetworking(cluster, networking, field.NewPath("networking"))
+		errs := validateNetworking(cluster, &cluster.Spec.Networking, field.NewPath("networking"))
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }
@@ -437,8 +436,10 @@ func Test_Validate_AdditionalPolicies(t *testing.T) {
 		clusterSpec := &kops.ClusterSpec{
 			KubernetesVersion:  "1.17.0",
 			AdditionalPolicies: &g.Input,
-			Subnets: []kops.ClusterSubnetSpec{
-				{Name: "subnet1", Type: kops.SubnetTypePublic},
+			Networking: kops.NetworkingSpec{
+				Subnets: []kops.ClusterSubnetSpec{
+					{Name: "subnet1", Type: kops.SubnetTypePublic},
+				},
 			},
 			EtcdClusters: []kops.EtcdClusterSpec{
 				{
@@ -640,7 +641,9 @@ func Test_Validate_Calico(t *testing.T) {
 			Description: "encapsulation none with IPv4",
 			Input: caliInput{
 				Cluster: &kops.ClusterSpec{
-					NonMasqueradeCIDR: "100.64.0.0/10",
+					Networking: kops.NetworkingSpec{
+						NonMasqueradeCIDR: "100.64.0.0/10",
+					},
 				},
 				Calico: &kops.CalicoNetworkingSpec{
 					EncapsulationMode: "none",
@@ -652,7 +655,9 @@ func Test_Validate_Calico(t *testing.T) {
 			Description: "encapsulation mode IPIP for IPv6",
 			Input: caliInput{
 				Cluster: &kops.ClusterSpec{
-					NonMasqueradeCIDR: "::/0",
+					Networking: kops.NetworkingSpec{
+						NonMasqueradeCIDR: "::/0",
+					},
 				},
 				Calico: &kops.CalicoNetworkingSpec{
 					EncapsulationMode: "ipip",
@@ -664,7 +669,9 @@ func Test_Validate_Calico(t *testing.T) {
 			Description: "encapsulation mode VXLAN for IPv6",
 			Input: caliInput{
 				Cluster: &kops.ClusterSpec{
-					NonMasqueradeCIDR: "::/0",
+					Networking: kops.NetworkingSpec{
+						NonMasqueradeCIDR: "::/0",
+					},
 				},
 				Calico: &kops.CalicoNetworkingSpec{
 					EncapsulationMode: "vxlan",
@@ -711,7 +718,9 @@ func Test_Validate_Calico(t *testing.T) {
 			Description: "Calico IPIP encapsulation mode (explicit) with IPIP IPPool mode (always)",
 			Input: caliInput{
 				Cluster: &kops.ClusterSpec{
-					NonMasqueradeCIDR: "100.64.0.0/10",
+					Networking: kops.NetworkingSpec{
+						NonMasqueradeCIDR: "100.64.0.0/10",
+					},
 				},
 				Calico: &kops.CalicoNetworkingSpec{
 					EncapsulationMode: "ipip",
@@ -723,7 +732,9 @@ func Test_Validate_Calico(t *testing.T) {
 			Description: "Calico IPIP encapsulation mode (explicit) with IPIP IPPool mode (cross-subnet)",
 			Input: caliInput{
 				Cluster: &kops.ClusterSpec{
-					NonMasqueradeCIDR: "100.64.0.0/10",
+					Networking: kops.NetworkingSpec{
+						NonMasqueradeCIDR: "100.64.0.0/10",
+					},
 				},
 				Calico: &kops.CalicoNetworkingSpec{
 					EncapsulationMode: "ipip",
@@ -735,7 +746,9 @@ func Test_Validate_Calico(t *testing.T) {
 			Description: "Calico IPIP encapsulation mode (explicit) with IPIP IPPool mode (never)",
 			Input: caliInput{
 				Cluster: &kops.ClusterSpec{
-					NonMasqueradeCIDR: "100.64.0.0/10",
+					Networking: kops.NetworkingSpec{
+						NonMasqueradeCIDR: "100.64.0.0/10",
+					},
 				},
 				Calico: &kops.CalicoNetworkingSpec{
 					EncapsulationMode: "ipip",
@@ -747,7 +760,9 @@ func Test_Validate_Calico(t *testing.T) {
 			Description: "Calico VXLAN encapsulation mode with IPIP IPPool mode",
 			Input: caliInput{
 				Cluster: &kops.ClusterSpec{
-					NonMasqueradeCIDR: "100.64.0.0/10",
+					Networking: kops.NetworkingSpec{
+						NonMasqueradeCIDR: "100.64.0.0/10",
+					},
 				},
 				Calico: &kops.CalicoNetworkingSpec{
 					EncapsulationMode: "vxlan",
@@ -760,7 +775,9 @@ func Test_Validate_Calico(t *testing.T) {
 			Description: "Calico VXLAN encapsulation mode with IPIP IPPool mode (always)",
 			Input: caliInput{
 				Cluster: &kops.ClusterSpec{
-					NonMasqueradeCIDR: "100.64.0.0/10",
+					Networking: kops.NetworkingSpec{
+						NonMasqueradeCIDR: "100.64.0.0/10",
+					},
 				},
 				Calico: &kops.CalicoNetworkingSpec{
 					EncapsulationMode: "vxlan",
@@ -773,7 +790,9 @@ func Test_Validate_Calico(t *testing.T) {
 			Description: "Calico VXLAN encapsulation mode with IPIP IPPool mode (cross-subnet)",
 			Input: caliInput{
 				Cluster: &kops.ClusterSpec{
-					NonMasqueradeCIDR: "100.64.0.0/10",
+					Networking: kops.NetworkingSpec{
+						NonMasqueradeCIDR: "100.64.0.0/10",
+					},
 				},
 				Calico: &kops.CalicoNetworkingSpec{
 					EncapsulationMode: "vxlan",
@@ -786,7 +805,9 @@ func Test_Validate_Calico(t *testing.T) {
 			Description: "Calico VXLAN encapsulation mode with IPIP IPPool mode (never)",
 			Input: caliInput{
 				Cluster: &kops.ClusterSpec{
-					NonMasqueradeCIDR: "100.64.0.0/10",
+					Networking: kops.NetworkingSpec{
+						NonMasqueradeCIDR: "100.64.0.0/10",
+					},
 				},
 				Calico: &kops.CalicoNetworkingSpec{
 					EncapsulationMode: "vxlan",
@@ -798,7 +819,9 @@ func Test_Validate_Calico(t *testing.T) {
 			Description: "Calico IPv6 without encapsulation",
 			Input: caliInput{
 				Cluster: &kops.ClusterSpec{
-					NonMasqueradeCIDR: "::/0",
+					Networking: kops.NetworkingSpec{
+						NonMasqueradeCIDR: "::/0",
+					},
 				},
 				Calico: &kops.CalicoNetworkingSpec{
 					EncapsulationMode: "none",
@@ -938,7 +961,7 @@ func Test_Validate_Cilium(t *testing.T) {
 		},
 	}
 	for _, g := range grid {
-		g.Spec.Networking = &kops.NetworkingSpec{
+		g.Spec.Networking = kops.NetworkingSpec{
 			Cilium: &g.Cilium,
 		}
 		if g.Spec.KubernetesVersion == "" {
@@ -1142,7 +1165,7 @@ func Test_Validate_NodeLocalDNS(t *testing.T) {
 						Enabled: fi.PtrTo(true),
 					},
 				},
-				Networking: &kops.NetworkingSpec{
+				Networking: kops.NetworkingSpec{
 					Cilium: &kops.CiliumNetworkingSpec{},
 				},
 			},
@@ -1163,7 +1186,7 @@ func Test_Validate_NodeLocalDNS(t *testing.T) {
 						LocalIP: "169.254.20.10",
 					},
 				},
-				Networking: &kops.NetworkingSpec{
+				Networking: kops.NetworkingSpec{
 					Cilium: &kops.CiliumNetworkingSpec{},
 				},
 			},
