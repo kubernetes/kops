@@ -102,14 +102,14 @@ output "vpc_ipv6_cidr_length" {
 }
 
 provider "aws" {
-  region      = "us-test-1"
   max_retries = "10"
+  region      = "us-test-1"
 }
 
 provider "aws" {
   alias   = "files"
-  region  = "us-test-1"
   profile = "foo"
+  region  = "us-test-1"
 }
 
 resource "aws_autoscaling_group" "master-us-test-1a-masters-complex-example-com" {
