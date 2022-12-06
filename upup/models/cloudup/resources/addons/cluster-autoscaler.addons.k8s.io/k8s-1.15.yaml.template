@@ -290,20 +290,23 @@ spec:
       nodeSelector: null
       affinity:
         nodeAffinity:
+          {{ if not UseServiceAccountExternalPermissions }}
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
-            {{ if not UseServiceAccountExternalPermissions }}
             - matchExpressions:
               - key: node-role.kubernetes.io/control-plane
                 operator: Exists
             - matchExpressions:
               - key: node-role.kubernetes.io/master
                 operator: Exists
-            {{ else }}
-            - matchExpressions:
+          {{ else }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            preference:
+              matchExpressions:
               - key: node-role.kubernetes.io/spot-worker
                 operator: DoesNotExist
-            {{ end }}
+          {{ end }}
       priorityClassName: "system-cluster-critical"
       dnsPolicy: "ClusterFirst"
       containers:

@@ -311,11 +311,12 @@ spec:
     spec:
       affinity:
         nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - preference:
+              matchExpressions:
               - key: node-role.kubernetes.io/spot-worker
                 operator: DoesNotExist
+            weight: 1
       containers:
       - command:
         - ./cluster-autoscaler
