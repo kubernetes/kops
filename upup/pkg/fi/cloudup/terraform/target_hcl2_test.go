@@ -17,20 +17,19 @@ limitations under the License.
 package terraform
 
 import (
+	"bytes"
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/hcl/v2/hclwrite"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 func TestWriteLocalsOutputs(t *testing.T) {
 	cases := []struct {
-		name        string
-		values      map[string]terraformWriter.OutputValue
-		expected    string
-		errExpected bool
+		name     string
+		values   map[string]terraformWriter.OutputValue
+		expected string
 	}{
 		{
 			name:     "empty map",
@@ -74,21 +73,9 @@ output "key1" {
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			f := hclwrite.NewEmptyFile()
-			root := f.Body()
-			err := writeLocalsOutputs(root, tc.values)
-			if tc.errExpected {
-				if err == nil {
-					t.Errorf("did not find expected error")
-					t.FailNow()
-				}
-				return
-			}
-			if err != nil {
-				t.Errorf("unexpected error: %e", err)
-				t.FailNow()
-			}
-			actual := strings.TrimSpace(string(f.Bytes()))
+			buf := &bytes.Buffer{}
+			writeLocalsOutputs(buf, tc.values)
+			actual := strings.TrimSpace(buf.String())
 			expected := strings.TrimSpace(tc.expected)
 			if actual != expected {
 				diffString := diff.FormatDiff(expected, string(actual))
