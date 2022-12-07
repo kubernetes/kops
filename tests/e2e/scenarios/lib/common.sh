@@ -102,18 +102,18 @@ function kops-channels-download-from-base() {
 
 function kops-base-from-marker() {
     if [[ "${1}" =~ ^https: ]]; then
-        curl -s "${1}"
+        curl -fs "${1}"
     elif [[ "${1}" == "latest" ]]; then
-        curl -s "https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt"
+        curl -fs "https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt"
     else
-        curl -s "https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-${1}/latest-ci.txt"
+        curl -fs "https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-${1}/latest-ci.txt"
     fi
 }
 
 # This function will download the latest kops if in a periodic job, otherwise build from the current tree
 function kops-acquire-latest() {
     if [[ "${JOB_TYPE-}" == "periodic" ]]; then
-        KOPS_BASE_URL="$(curl -s https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt)"
+        KOPS_BASE_URL="$(curl -fs https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt)"
         KOPS=$(kops-download-from-base)
         CHANNELS=$(kops-channels-download-from-base)
     else
@@ -136,7 +136,7 @@ function kops-up() {
         create_args="${create_args} --zones=${ZONES}"
     fi
     if [[ -z "${K8S_VERSION-}" ]]; then
-        K8S_VERSION="$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)"
+        K8S_VERSION="$(curl -fs https://storage.googleapis.com/kubernetes-release/release/stable.txt)"
     fi
 
     if [[ ${KOPS_IRSA-} = true ]]; then
