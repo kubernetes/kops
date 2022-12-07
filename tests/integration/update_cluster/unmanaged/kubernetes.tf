@@ -710,6 +710,8 @@ resource "aws_lb_listener" "bastion-unmanaged-example-com-22" {
 }
 
 resource "aws_lb_target_group" "bastion-unmanaged-example-d7bn3d" {
+  connection_termination = "true"
+  deregistration_delay   = "30"
   health_check {
     healthy_threshold   = 2
     interval            = 10
