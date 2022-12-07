@@ -69,6 +69,11 @@ func TestCreateClusterOpenStack(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_openstack", "v1alpha2")
 }
 
+func TestCreateClusterOpenStackOctavia(t *testing.T) {
+	t.Setenv("OS_REGION_NAME", "us-test1")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_openstack_octavia", "v1alpha2")
+}
+
 // TestCreateClusterCilium runs kops with the cilium networking flags
 func TestCreateClusterCilium(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/cilium-eni", "v1alpha2")
