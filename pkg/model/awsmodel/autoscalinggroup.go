@@ -480,7 +480,9 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 				Shared:           fi.PtrTo(true),
 			}
 			t.LoadBalancers = append(t.LoadBalancers, lb)
-			c.EnsureTask(lb)
+			if err := c.EnsureTask(lb); err != nil {
+				return nil, err
+			}
 		}
 
 		if extLB.TargetGroupARN != nil {
@@ -489,13 +491,15 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 				return nil, err
 			}
 			tg := &awstasks.TargetGroup{
-				Name:      fi.PtrTo(name + "-" + targetGroupName),
+				Name:      fi.PtrTo(targetGroupName),
 				Lifecycle: b.Lifecycle,
 				ARN:       extLB.TargetGroupARN,
 				Shared:    fi.PtrTo(true),
 			}
 			t.TargetGroups = append(t.TargetGroups, tg)
-			c.AddTask(tg)
+			if err := c.EnsureTask(tg); err != nil {
+				return nil, err
+			}
 		}
 	}
 	sort.Stable(awstasks.OrderLoadBalancersByName(t.LoadBalancers))
