@@ -48,6 +48,7 @@ type loadBalancer struct {
 
 type targetGroup struct {
 	description elbv2.TargetGroup
+	attributes  []*elbv2.TargetGroupAttribute
 }
 
 type listener struct {

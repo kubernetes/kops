@@ -574,6 +574,8 @@ resource "aws_lb_listener" "api-complex-example-com-8443" {
 }
 
 resource "aws_lb_target_group" "tcp-complex-example-com-vpjolq" {
+  connection_termination = "true"
+  deregistration_delay   = "30"
   health_check {
     healthy_threshold   = 2
     interval            = 10
@@ -594,6 +596,8 @@ resource "aws_lb_target_group" "tcp-complex-example-com-vpjolq" {
 }
 
 resource "aws_lb_target_group" "tls-complex-example-com-5nursn" {
+  connection_termination = "true"
+  deregistration_delay   = "30"
   health_check {
     healthy_threshold   = 2
     interval            = 10

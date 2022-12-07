@@ -742,6 +742,8 @@ resource "aws_lb_listener" "bastion-privateciliumadvanced-example-com-22" {
 }
 
 resource "aws_lb_target_group" "bastion-privateciliumadva-0jni40" {
+  connection_termination = "true"
+  deregistration_delay   = "30"
   health_check {
     healthy_threshold   = 2
     interval            = 10

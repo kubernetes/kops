@@ -511,6 +511,8 @@ resource "aws_lb_listener" "api-minimal-example-com-443" {
 }
 
 resource "aws_lb_target_group" "kops-controller-minimal-e-uvauf3" {
+  connection_termination = "true"
+  deregistration_delay   = "30"
   health_check {
     healthy_threshold   = 2
     interval            = 10
@@ -529,6 +531,8 @@ resource "aws_lb_target_group" "kops-controller-minimal-e-uvauf3" {
 }
 
 resource "aws_lb_target_group" "tcp-minimal-example-com-5905t8" {
+  connection_termination = "true"
+  deregistration_delay   = "30"
   health_check {
     healthy_threshold   = 2
     interval            = 10

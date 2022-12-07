@@ -19,7 +19,6 @@ package awstasks
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"k8s.io/klog/v2"
@@ -27,6 +26,17 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
+)
+
+const (
+	// TargetGroupAttributeDeregistrationDelayConnectionTerminationEnabled indicates whether
+	//the load balancer terminates connections at the end of the deregistration timeout.
+	// https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-target-groups.html#deregistration-delay
+	TargetGroupAttributeDeregistrationDelayConnectionTerminationEnabled = "deregistration_delay.connection_termination.enabled"
+	// TargetGroupAttributeDeregistrationDelayTimeoutSeconds is the amount of time for Elastic Load Balancing
+	// to wait before changing the state of a deregistering target from draining to unused.
+	// https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-target-groups.html#deregistration-delay
+	TargetGroupAttributeDeregistrationDelayTimeoutSeconds = "deregistration_delay.timeout_seconds"
 )
 
 // +kops:fitask
@@ -43,6 +53,8 @@ type TargetGroup struct {
 
 	// Shared is set if this is an external LB (one we don't create or own)
 	Shared *bool
+
+	Attributes map[string]string
 
 	Interval           *int64
 	HealthyThreshold   *int64
@@ -112,38 +124,27 @@ func (e *TargetGroup) Find(c *fi.Context) (*TargetGroup, error) {
 	}
 	actual.Tags = tags
 
+	attrResp, err := cloud.ELBV2().DescribeTargetGroupAttributes(&elbv2.DescribeTargetGroupAttributesInput{
+		TargetGroupArn: tg.TargetGroupArn,
+	})
+	if err != nil {
+		return nil, err
+	}
+	attributes := make(map[string]string)
+	for _, attr := range attrResp.Attributes {
+		if _, ok := e.Attributes[fi.ValueOf(attr.Key)]; ok {
+			attributes[fi.ValueOf(attr.Key)] = fi.ValueOf(attr.Value)
+		}
+	}
+	if len(attributes) > 0 {
+		actual.Attributes = attributes
+	}
+
 	// Prevent spurious changes
 	actual.Lifecycle = e.Lifecycle
 	actual.Shared = e.Shared
 
 	return actual, nil
-}
-
-func FindTargetGroupByName(cloud awsup.AWSCloud, findName string) (*elbv2.TargetGroup, error) {
-	klog.V(2).Infof("Listing all TargetGroups for FindTargetGroupByName")
-
-	request := &elbv2.DescribeTargetGroupsInput{
-		Names: []*string{aws.String(findName)},
-	}
-	// ELB DescribeTags has a limit of 20 names, so we set the page size here to 20 also
-	request.PageSize = aws.Int64(20)
-
-	resp, err := cloud.ELBV2().DescribeTargetGroups(request)
-	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == elbv2.ErrCodeTargetGroupNotFoundException {
-			return nil, nil
-		}
-		return nil, fmt.Errorf("error describing TargetGroups: %v", err)
-	}
-	if len(resp.TargetGroups) == 0 {
-		return nil, nil
-	}
-
-	if len(resp.TargetGroups) != 1 {
-		return nil, fmt.Errorf("Found multiple TargetGroups with Name %q", findName)
-	}
-
-	return resp.TargetGroups[0], nil
 }
 
 func (e *TargetGroup) Run(c *fi.Context) error {
@@ -189,14 +190,40 @@ func (_ *TargetGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *TargetGrou
 			return fmt.Errorf("Error creating target group for NLB : %v", err)
 		}
 
-		targetGroupArn := *response.TargetGroups[0].TargetGroupArn
-		e.ARN = fi.PtrTo(targetGroupArn)
+		if err := ModifyTargetGroupAttributes(t.Cloud, response.TargetGroups[0].TargetGroupArn, e.Attributes); err != nil {
+			return err
+		}
+
+		// Avoid spurious changes
+		e.ARN = response.TargetGroups[0].TargetGroupArn
+
 	} else {
 		if a.ARN != nil {
 			if err := t.AddELBV2Tags(fi.ValueOf(a.ARN), e.Tags); err != nil {
 				return err
 			}
+			if err := ModifyTargetGroupAttributes(t.Cloud, a.ARN, e.Attributes); err != nil {
+				return err
+			}
 		}
+	}
+	return nil
+}
+
+func ModifyTargetGroupAttributes(cloud awsup.AWSCloud, arn *string, attributes map[string]string) error {
+	klog.V(2).Infof("Modifying Target Group attributes for NLB")
+	attrReq := &elbv2.ModifyTargetGroupAttributesInput{
+		Attributes:     []*elbv2.TargetGroupAttribute{},
+		TargetGroupArn: arn,
+	}
+	for k, v := range attributes {
+		attrReq.Attributes = append(attrReq.Attributes, &elbv2.TargetGroupAttribute{
+			Key:   fi.PtrTo(k),
+			Value: fi.PtrTo(v),
+		})
+	}
+	if _, err := cloud.ELBV2().ModifyTargetGroupAttributes(attrReq); err != nil {
+		return fmt.Errorf("error modifying target group attributes for NLB : %v", err)
 	}
 	return nil
 }
@@ -211,12 +238,14 @@ func (a OrderTargetGroupsByName) Less(i, j int) bool {
 }
 
 type terraformTargetGroup struct {
-	Name        string                          `cty:"name"`
-	Port        int64                           `cty:"port"`
-	Protocol    string                          `cty:"protocol"`
-	VPCID       *terraformWriter.Literal        `cty:"vpc_id"`
-	Tags        map[string]string               `cty:"tags"`
-	HealthCheck terraformTargetGroupHealthCheck `cty:"health_check"`
+	Name                  string                          `cty:"name"`
+	Port                  int64                           `cty:"port"`
+	Protocol              string                          `cty:"protocol"`
+	VPCID                 *terraformWriter.Literal        `cty:"vpc_id"`
+	ConnectionTermination string                          `cty:"connection_termination"`
+	DeregistrationDelay   string                          `cty:"deregistration_delay"`
+	Tags                  map[string]string               `cty:"tags"`
+	HealthCheck           terraformTargetGroupHealthCheck `cty:"health_check"`
 }
 
 type terraformTargetGroupHealthCheck struct {
@@ -248,6 +277,15 @@ func (_ *TargetGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 			UnhealthyThreshold: *e.UnhealthyThreshold,
 			Protocol:           elbv2.ProtocolEnumTcp,
 		},
+	}
+
+	for attr, val := range e.Attributes {
+		if attr == TargetGroupAttributeDeregistrationDelayConnectionTerminationEnabled {
+			tf.ConnectionTermination = val
+		}
+		if attr == TargetGroupAttributeDeregistrationDelayTimeoutSeconds {
+			tf.DeregistrationDelay = val
+		}
 	}
 
 	return t.RenderResource("aws_lb_target_group", *e.Name, tf)

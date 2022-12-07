@@ -693,6 +693,8 @@ resource "aws_lb_listener" "bastion-privateflannel-example-com-22" {
 }
 
 resource "aws_lb_target_group" "bastion-privateflannel-ex-753531" {
+  connection_termination = "true"
+  deregistration_delay   = "30"
   health_check {
     healthy_threshold   = 2
     interval            = 10
