@@ -274,6 +274,10 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		if b.APILoadBalancerClass() == kops.LoadBalancerClassClassic {
 			c.AddTask(clb)
 		} else if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
+			groupAttrs := map[string]string{
+				awstasks.TargetGroupAttributeDeregistrationDelayConnectionTerminationEnabled: "true",
+				awstasks.TargetGroupAttributeDeregistrationDelayTimeoutSeconds:               "30",
+			}
 
 			{
 				groupName := b.NLBTargetGroupName("tcp")
@@ -289,6 +293,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 					Tags:               groupTags,
 					Protocol:           fi.PtrTo("TCP"),
 					Port:               fi.PtrTo(int64(443)),
+					Attributes:         groupAttrs,
 					Interval:           fi.PtrTo(int64(10)),
 					HealthyThreshold:   fi.PtrTo(int64(2)),
 					UnhealthyThreshold: fi.PtrTo(int64(2)),
@@ -314,6 +319,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 					Tags:               groupTags,
 					Protocol:           fi.PtrTo("TCP"),
 					Port:               fi.PtrTo(int64(wellknownports.KopsControllerPort)),
+					Attributes:         groupAttrs,
 					Interval:           fi.PtrTo(int64(10)),
 					HealthyThreshold:   fi.PtrTo(int64(2)),
 					UnhealthyThreshold: fi.PtrTo(int64(2)),
@@ -338,6 +344,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 					Tags:               tlsGroupTags,
 					Protocol:           fi.PtrTo("TLS"),
 					Port:               fi.PtrTo(int64(443)),
+					Attributes:         groupAttrs,
 					Interval:           fi.PtrTo(int64(10)),
 					HealthyThreshold:   fi.PtrTo(int64(2)),
 					UnhealthyThreshold: fi.PtrTo(int64(2)),

@@ -799,6 +799,8 @@ resource "aws_lb_listener" "bastion-privatedns1-example-com-22" {
 }
 
 resource "aws_lb_target_group" "bastion-privatedns1-examp-mbgbef" {
+  connection_termination = "true"
+  deregistration_delay   = "30"
   health_check {
     healthy_threshold   = 2
     interval            = 10
