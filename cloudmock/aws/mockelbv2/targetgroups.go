@@ -131,3 +131,24 @@ func (m *MockELBV2) DeleteTargetGroup(request *elbv2.DeleteTargetGroupInput) (*e
 	delete(m.TargetGroups, arn)
 	return &elbv2.DeleteTargetGroupOutput{}, nil
 }
+
+func (m *MockELBV2) DescribeTargetGroupAttributes(request *elbv2.DescribeTargetGroupAttributesInput) (*elbv2.DescribeTargetGroupAttributesOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	klog.Infof("DescribeTargetGroupAttributes %v", request)
+
+	arn := aws.StringValue(request.TargetGroupArn)
+	return &elbv2.DescribeTargetGroupAttributesOutput{Attributes: m.TargetGroups[arn].attributes}, nil
+}
+
+func (m *MockELBV2) ModifyTargetGroupAttributes(request *elbv2.ModifyTargetGroupAttributesInput) (*elbv2.ModifyTargetGroupAttributesOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	klog.Infof("ModifyTargetGroupAttributes %v", request)
+
+	arn := aws.StringValue(request.TargetGroupArn)
+	m.TargetGroups[arn].attributes = request.Attributes
+	return &elbv2.ModifyTargetGroupAttributesOutput{Attributes: request.Attributes}, nil
+}

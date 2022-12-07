@@ -689,6 +689,8 @@ resource "aws_lb_listener" "bastion-privatecalico-example-com-22" {
 }
 
 resource "aws_lb_target_group" "bastion-privatecalico-exa-hocohm" {
+  connection_termination = "true"
+  deregistration_delay   = "30"
   health_check {
     healthy_threshold   = 2
     interval            = 10

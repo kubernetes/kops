@@ -289,6 +289,11 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// Override the returned name to be the expected NLB TG name
 		sshGroupTags["Name"] = sshGroupName
 
+		groupAttrs := map[string]string{
+			awstasks.TargetGroupAttributeDeregistrationDelayConnectionTerminationEnabled: "true",
+			awstasks.TargetGroupAttributeDeregistrationDelayTimeoutSeconds:               "30",
+		}
+
 		tg := &awstasks.TargetGroup{
 			Name:               fi.PtrTo(sshGroupName),
 			Lifecycle:          b.Lifecycle,
@@ -296,6 +301,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Tags:               sshGroupTags,
 			Protocol:           fi.PtrTo("TCP"),
 			Port:               fi.PtrTo(int64(22)),
+			Attributes:         groupAttrs,
 			Interval:           fi.PtrTo(int64(10)),
 			HealthyThreshold:   fi.PtrTo(int64(2)),
 			UnhealthyThreshold: fi.PtrTo(int64(2)),
