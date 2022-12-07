@@ -188,11 +188,7 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 			if err != nil {
 				return nil, err
 			}
-			if targetGroupName != awsup.GetResourceName32(c.Cluster.Name, "tcp") && targetGroupName != awsup.GetResourceName32(c.Cluster.Name, "tls") {
-				actual.TargetGroups = append(actual.TargetGroups, &TargetGroup{ARN: aws.String(*tg), Name: aws.String(targetGroupName)})
-			} else {
-				actual.TargetGroups = append(actual.TargetGroups, &TargetGroup{ARN: aws.String(*tg), Name: aws.String(fi.ValueOf(g.AutoScalingGroupName) + "-" + targetGroupName)})
-			}
+			actual.TargetGroups = append(actual.TargetGroups, &TargetGroup{ARN: aws.String(*tg), Name: aws.String(targetGroupName)})
 		}
 	}
 	sort.Stable(OrderTargetGroupsByName(actual.TargetGroups))
