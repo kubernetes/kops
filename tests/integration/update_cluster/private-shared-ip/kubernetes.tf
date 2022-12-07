@@ -707,6 +707,8 @@ resource "aws_lb_listener" "bastion-private-shared-ip-example-com-22" {
 }
 
 resource "aws_lb_target_group" "bastion-private-shared-ip-eepmph" {
+  connection_termination = "true"
+  deregistration_delay   = "30"
   health_check {
     healthy_threshold   = 2
     interval            = 10

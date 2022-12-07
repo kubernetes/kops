@@ -726,6 +726,8 @@ resource "aws_lb_listener" "bastion-bastionuserdata-example-com-22" {
 }
 
 resource "aws_lb_target_group" "bastion-bastionuserdata-e-4grhsv" {
+  connection_termination = "true"
+  deregistration_delay   = "30"
   health_check {
     healthy_threshold   = 2
     interval            = 10
