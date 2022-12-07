@@ -21,23 +21,19 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/hashicorp/hcl/v2/hclwrite"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 func (t *TerraformTarget) finishHCL2() error {
-	f := hclwrite.NewEmptyFile()
-	rootBody := f.Body()
+	buf := &bytes.Buffer{}
 
 	outputs, err := t.GetOutputs()
 	if err != nil {
 		return err
 	}
-	writeLocalsOutputs(rootBody, outputs)
-
-	buf := bytes.NewBuffer(hclwrite.Format(f.Bytes()))
+	writeLocalsOutputs(buf, outputs)
 
 	providerName := string(t.Cloud.ProviderID())
 	if t.Cloud.ProviderID() == kops.CloudProviderGCE {
@@ -162,6 +158,10 @@ func (t *TerraformTarget) finishHCL2() error {
 	return nil
 }
 
+type output struct {
+	Value *terraformWriter.Literal
+}
+
 // writeLocalsOutputs creates the locals block and output blocks for all output variables
 // Example:
 //
@@ -177,40 +177,34 @@ func (t *TerraformTarget) finishHCL2() error {
 //	output "key2" {
 //	  value = "value2"
 //	}
-func writeLocalsOutputs(body *hclwrite.Body, outputs map[string]terraformWriter.OutputValue) error {
+func writeLocalsOutputs(buf *bytes.Buffer, outputs map[string]terraformWriter.OutputValue) {
 	if len(outputs) == 0 {
-		return nil
+		return
 	}
 
-	localsBlock := body.AppendNewBlock("locals", []string{})
-	body.AppendNewline()
-	// each output is added to a single locals block and its own output block
-	localsBody := localsBlock.Body()
-	existingOutputVars := make(map[string]bool)
-
 	outputNames := make([]string, 0, len(outputs))
-	for k := range outputs {
+	locals := make(map[string]*terraformWriter.Literal, len(outputs))
+	for k, v := range outputs {
+		if _, ok := locals[k]; ok {
+			panic(fmt.Sprintf("duplicate variable found: %s", k))
+		}
+		if v.Value != nil {
+			locals[k] = v.Value
+		} else {
+			locals[k] = terraformWriter.LiteralListExpression(v.ValueArray...)
+		}
 		outputNames = append(outputNames, k)
 	}
 	sort.Strings(outputNames)
 
-	for _, tfName := range outputNames {
-		v := outputs[tfName]
-		outputBlock := body.AppendNewBlock("output", []string{tfName})
-		outputBody := outputBlock.Body()
-		if v.Value != nil {
-			writeLiteral(outputBody, "value", v.Value)
-			writeLiteral(localsBody, tfName, v.Value)
-		} else {
-			writeLiteralList(outputBody, "value", v.ValueArray)
-			writeLiteralList(localsBody, tfName, v.ValueArray)
-		}
+	mapToElement(locals).
+		ToObject().
+		Write(buf, 0, "locals")
+	buf.WriteString("\n")
 
-		if existingOutputVars[tfName] {
-			return fmt.Errorf("duplicate variable found: %s", tfName)
-		}
-		existingOutputVars[tfName] = true
-		body.AppendNewline()
+	for _, tfName := range outputNames {
+		toElement(&output{Value: locals[tfName]}).Write(buf, 0, fmt.Sprintf("output %q", tfName))
+		buf.WriteString("\n")
 	}
-	return nil
+	return
 }
