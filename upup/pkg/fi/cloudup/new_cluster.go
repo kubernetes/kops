@@ -341,6 +341,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 				MaxRetries: fi.PtrTo(3),
 			},
 		}
+		initializeOpenstackLoadBalancer(opt, &cluster)
 		tags := make(map[string]string)
 		tags[openstack.TagClusterName] = cluster.GetName()
 		osCloud, err := openstack.NewOpenstackCloud(tags, &cluster.Spec, "openstackmodel")
@@ -1351,9 +1352,7 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
 	// Populate the API access, so that it can be discoverable
 	klog.Infof(" Cloud Provider ID = %s", cluster.Spec.GetCloudProvider())
-	if cluster.Spec.GetCloudProvider() == api.CloudProviderOpenstack {
-		initializeOpenstackAPI(opt, cluster)
-	} else if cluster.Spec.GetCloudProvider() == api.CloudProviderAzure {
+	if cluster.Spec.GetCloudProvider() == api.CloudProviderAzure {
 		// Do nothing to disable the use of loadbalancer for the k8s API server.
 		// TODO(kenji): Remove this condition once we support the loadbalancer
 		// in pkg/model/azuremodel/api_loadbalancer.go.
@@ -1409,9 +1408,8 @@ func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
 	return nil
 }
 
-func initializeOpenstackAPI(opt *NewClusterOptions, cluster *api.Cluster) {
+func initializeOpenstackLoadBalancer(opt *NewClusterOptions, cluster *api.Cluster) {
 	if opt.APILoadBalancerType != "" {
-		cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
 		provider := "haproxy"
 		if opt.OpenstackLBOctavia {
 			if opt.OpenstackOctaviaProvider != "" {
