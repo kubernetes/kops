@@ -364,12 +364,16 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec, uagent st
 		return nil, fmt.Errorf("error building openstack authenticated client: %v", err)
 	}
 
+	return buildClients(provider, tags, spec.CloudProvider.Openstack, config, region)
+}
+
+func buildClients(provider *gophercloud.ProviderClient, tags map[string]string, spec *kops.OpenstackSpec, config vfs.OpenstackConfig, region string) (OpenstackCloud, error) {
 	cinderClient, err := os.NewBlockStorageV3(provider, gophercloud.EndpointOpts{
 		Type:   "volumev3",
 		Region: region,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("error building cinder client: %v", err)
+		return nil, fmt.Errorf("error building cinder client: %w", err)
 	}
 
 	neutronClient, err := os.NewNetworkV2(provider, gophercloud.EndpointOpts{
@@ -377,7 +381,7 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec, uagent st
 		Region: region,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("error building neutron client: %v", err)
+		return nil, fmt.Errorf("error building neutron client: %w", err)
 	}
 
 	novaClient, err := os.NewComputeV2(provider, gophercloud.EndpointOpts{
@@ -385,7 +389,7 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec, uagent st
 		Region: region,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("error building nova client: %v", err)
+		return nil, fmt.Errorf("error building nova client: %w", err)
 	}
 	// 2.47 is the minimum version where the compute API /server/details returns flavor names
 	novaClient.Microversion = "2.47"
@@ -395,7 +399,7 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec, uagent st
 		Region: region,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("error building glance client: %v", err)
+		return nil, fmt.Errorf("error building glance client: %w", err)
 	}
 
 	var dnsClient *gophercloud.ServiceClient
@@ -403,12 +407,12 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec, uagent st
 		// TODO: This should be replaced with the environment variable methods as done above
 		endpointOpt, err := config.GetServiceConfig("Designate")
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to get service config: %w", err)
 		}
 
 		dnsClient, err = os.NewDNSV2(provider, endpointOpt)
 		if err != nil {
-			return nil, fmt.Errorf("error building dns client: %v", err)
+			return nil, fmt.Errorf("error building dns client: %w", err)
 		}
 	}
 
@@ -423,67 +427,79 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec, uagent st
 		useOctavia:    false,
 	}
 
-	octavia := false
-	floatingEnabled := false
-	if spec != nil &&
-		spec.CloudProvider.Openstack != nil &&
-		spec.CloudProvider.Openstack.Router != nil {
-
-		floatingEnabled = true
-		c.extNetworkName = spec.CloudProvider.Openstack.Router.ExternalNetwork
-
-		if spec.CloudProvider.Openstack.Router.ExternalSubnet != nil {
-			c.extSubnetName = spec.CloudProvider.Openstack.Router.ExternalSubnet
-		}
-		if spec.CloudProvider.Openstack.Loadbalancer != nil &&
-			spec.CloudProvider.Openstack.Loadbalancer.FloatingNetworkID == nil &&
-			spec.CloudProvider.Openstack.Loadbalancer.FloatingNetwork != nil {
-			// This field is derived
-			lbNet, err := c.ListNetworks(networks.ListOpts{
-				Name: fi.ValueOf(spec.CloudProvider.Openstack.Loadbalancer.FloatingNetwork),
-			})
-			if err != nil || len(lbNet) != 1 {
-				return c, fmt.Errorf("could not establish floating network id")
-			}
-			spec.CloudProvider.Openstack.Loadbalancer.FloatingNetworkID = fi.PtrTo(lbNet[0].ID)
-		}
-		if spec.CloudProvider.Openstack.Loadbalancer != nil {
-			if spec.CloudProvider.Openstack.Loadbalancer.UseOctavia != nil {
-				octavia = fi.ValueOf(spec.CloudProvider.Openstack.Loadbalancer.UseOctavia)
-			}
-			if spec.CloudProvider.Openstack.Loadbalancer.FloatingSubnet != nil {
-				c.floatingSubnet = spec.CloudProvider.Openstack.Loadbalancer.FloatingSubnet
-			}
-		}
+	err = buildLoadBalancerClient(c, spec, provider, region)
+	if err != nil {
+		return nil, fmt.Errorf("failed to build load balancer client: %w", err)
 	}
-	c.floatingEnabled = floatingEnabled
-	c.useOctavia = octavia
-	var lbClient *gophercloud.ServiceClient
-	if spec != nil && spec.CloudProvider.Openstack != nil {
-		if spec.CloudProvider.Openstack.Loadbalancer != nil && octavia {
-			klog.V(2).Infof("Openstack using Octavia lbaasv2 api")
-			lbClient, err = os.NewLoadBalancerV2(provider, gophercloud.EndpointOpts{
-				Region: region,
-			})
-			if err != nil {
-				return nil, fmt.Errorf("error building lb client: %v", err)
-			}
-		} else if spec.CloudProvider.Openstack.Loadbalancer != nil {
-			klog.V(2).Infof("Openstack using deprecated lbaasv2 api")
-			lbClient, err = os.NewNetworkV2(provider, gophercloud.EndpointOpts{
-				Region: region,
-			})
-			if err != nil {
-				return nil, fmt.Errorf("error building lb client: %v", err)
-			}
-		} else {
-			klog.V(2).Infof("Openstack disabled loadbalancer support")
-		}
-	}
-	c.lbClient = lbClient
 	openstackCloudInstances[region] = c
 
 	return c, nil
+
+}
+
+func buildLoadBalancerClient(c *openstackCloud, spec *kops.OpenstackSpec, provider *gophercloud.ProviderClient, region string) error {
+
+	if spec == nil || spec.Loadbalancer == nil {
+		klog.V(2).Infof("Openstack disabled loadbalancer support")
+		return nil
+	}
+
+	octavia := false
+	floatingEnabled := false
+	if spec.Router != nil {
+
+		floatingEnabled = true
+		c.extNetworkName = spec.Router.ExternalNetwork
+
+		if spec.Router.ExternalSubnet != nil {
+			c.extSubnetName = spec.Router.ExternalSubnet
+		}
+		if spec.Loadbalancer.FloatingNetworkID == nil &&
+			spec.Loadbalancer.FloatingNetwork != nil {
+			// This field is derived
+			lbNet, err := c.ListNetworks(networks.ListOpts{
+				Name: fi.ValueOf(spec.Loadbalancer.FloatingNetwork),
+			})
+			if err != nil || len(lbNet) != 1 {
+				return fmt.Errorf("could not establish floating network id")
+			}
+			spec.Loadbalancer.FloatingNetworkID = fi.PtrTo(lbNet[0].ID)
+		}
+
+		if spec.Loadbalancer.UseOctavia != nil {
+			octavia = fi.ValueOf(spec.Loadbalancer.UseOctavia)
+		}
+		if spec.Loadbalancer.FloatingSubnet != nil {
+			c.floatingSubnet = spec.Loadbalancer.FloatingSubnet
+		}
+	} else if fi.ValueOf(spec.Loadbalancer.UseOctavia) {
+		return fmt.Errorf("cluster configured to use octavia, but router was not configured")
+	}
+	c.floatingEnabled = floatingEnabled
+	c.useOctavia = octavia
+
+	var lbClient *gophercloud.ServiceClient
+	if octavia {
+		klog.V(2).Infof("Openstack using Octavia lbaasv2 api")
+		client, err := os.NewLoadBalancerV2(provider, gophercloud.EndpointOpts{
+			Region: region,
+		})
+		if err != nil {
+			return fmt.Errorf("error building lb client: %w", err)
+		}
+		lbClient = client
+	} else {
+		klog.V(2).Infof("Openstack using deprecated lbaasv2 api")
+		client, err := os.NewNetworkV2(provider, gophercloud.EndpointOpts{
+			Region: region,
+		})
+		if err != nil {
+			return fmt.Errorf("error building lb client: %w", err)
+		}
+		lbClient = client
+	}
+	c.lbClient = lbClient
+	return nil
 }
 
 // UseZones add unique zone names to openstackcloud
