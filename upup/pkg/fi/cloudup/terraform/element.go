@@ -77,20 +77,6 @@ func (o *object) Write(buffer *bytes.Buffer, indent int, key string) {
 	buffer.WriteString("}\n")
 }
 
-type sliceObject struct {
-	members []element
-}
-
-func (s *sliceObject) IsSingleValue() bool {
-	return false
-}
-
-func (s *sliceObject) Write(buffer *bytes.Buffer, indent int, key string) {
-	for _, member := range s.members {
-		member.Write(buffer, indent, key)
-	}
-}
-
 var literalType = reflect.TypeOf(terraformWriter.Literal{})
 
 func toElement(item interface{}) element {
@@ -128,45 +114,63 @@ func toElement(item interface{}) element {
 		}
 		return o
 	case reflect.Slice:
-		if v.Len() == 0 {
-			return nil
-		}
-		elemType := v.Type().Elem()
-		if elemType.Kind() == reflect.Pointer {
-			elemType = elemType.Elem()
-			if elemType == literalType {
-				elements := make([]*terraformWriter.Literal, v.Len())
-				for i := range elements {
-					elem := v.Index(i)
-					elements[i] = elem.Interface().(*terraformWriter.Literal)
-				}
-				return terraformWriter.LiteralListExpression(elements...)
-			}
-		}
-		switch elemType.Kind() {
-		case reflect.String:
+		return sliceToElement(v)
+	default:
+		panic(fmt.Sprintf("unhandled kind %s", v.Kind()))
+	}
+}
+
+type sliceObject struct {
+	members []element
+}
+
+func (s *sliceObject) IsSingleValue() bool {
+	return false
+}
+
+func (s *sliceObject) Write(buffer *bytes.Buffer, indent int, key string) {
+	for _, member := range s.members {
+		member.Write(buffer, indent, key)
+	}
+}
+
+func sliceToElement(v reflect.Value) element {
+	if v.Len() == 0 {
+		return nil
+	}
+	elemType := v.Type().Elem()
+	if elemType.Kind() == reflect.Pointer {
+		elemType = elemType.Elem()
+		if elemType == literalType {
 			elements := make([]*terraformWriter.Literal, v.Len())
 			for i := range elements {
 				elem := v.Index(i)
-				if elem.Kind() == reflect.Pointer {
-					// TODO can these ever be nil?
-					elem = elem.Elem()
-				}
-				elements[i] = terraformWriter.LiteralFromStringValue(elem.String())
+				elements[i] = elem.Interface().(*terraformWriter.Literal)
 			}
 			return terraformWriter.LiteralListExpression(elements...)
-		case reflect.Struct:
-			o := &sliceObject{members: make([]element, v.Len())}
-			for i := range o.members {
-				elem := toElement(v.Index(i).Interface())
-				o.members[i] = elem
-			}
-			return o
-		default:
-			panic(fmt.Sprintf("unhandled slice member kind %s", elemType.Kind()))
 		}
+	}
+	switch elemType.Kind() {
+	case reflect.String:
+		elements := make([]*terraformWriter.Literal, v.Len())
+		for i := range elements {
+			elem := v.Index(i)
+			if elem.Kind() == reflect.Pointer {
+				// TODO can these ever be nil?
+				elem = elem.Elem()
+			}
+			elements[i] = terraformWriter.LiteralFromStringValue(elem.String())
+		}
+		return terraformWriter.LiteralListExpression(elements...)
+	case reflect.Struct:
+		o := &sliceObject{members: make([]element, v.Len())}
+		for i := range o.members {
+			elem := toElement(v.Index(i).Interface())
+			o.members[i] = elem
+		}
+		return o
 	default:
-		panic(fmt.Sprintf("unhandled kind %s", v.Kind()))
+		panic(fmt.Sprintf("unhandled slice member kind %s", elemType.Kind()))
 	}
 }
 
