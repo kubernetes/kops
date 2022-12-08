@@ -42,48 +42,14 @@ func (t *TerraformTarget) finishHCL2() error {
 		return err
 	}
 
-	resourceTypes := make([]string, 0, len(resourcesByType))
-	for resourceType := range resourcesByType {
-		resourceTypes = append(resourceTypes, resourceType)
-	}
-	sort.Strings(resourceTypes)
-	for _, resourceType := range resourceTypes {
-		resources := resourcesByType[resourceType]
-		resourceNames := make([]string, 0, len(resources))
-		for resourceName := range resources {
-			resourceNames = append(resourceNames, resourceName)
-		}
-		sort.Strings(resourceNames)
-		for _, resourceName := range resourceNames {
-			toElement(resources[resourceName]).
-				Write(buf, 0, fmt.Sprintf("resource %q %q", resourceType, resourceName))
-			buf.WriteString("\n")
-		}
-	}
+	t.writeResources(buf, resourcesByType)
 
 	dataSourcesByType, err := t.GetDataSourcesByType()
 	if err != nil {
 		return err
 	}
 
-	dataSourceTypes := make([]string, 0, len(dataSourcesByType))
-	for dataSourceType := range dataSourcesByType {
-		dataSourceTypes = append(dataSourceTypes, dataSourceType)
-	}
-	sort.Strings(dataSourceTypes)
-	for _, dataSourceType := range dataSourceTypes {
-		dataSources := dataSourcesByType[dataSourceType]
-		dataSourceNames := make([]string, 0, len(dataSources))
-		for dataSourceName := range dataSources {
-			dataSourceNames = append(dataSourceNames, dataSourceName)
-		}
-		sort.Strings(dataSourceNames)
-		for _, dataSourceName := range dataSourceNames {
-			toElement(dataSources[dataSourceName]).
-				Write(buf, 0, fmt.Sprintf("data %q %q", dataSourceType, dataSourceName))
-			buf.WriteString("\n")
-		}
-	}
+	t.writeDataSources(buf, dataSourcesByType)
 
 	t.writeTerraform(buf)
 
@@ -183,20 +149,62 @@ func (t *TerraformTarget) writeProviders(buf *bytes.Buffer) {
 	}
 }
 
+func (t *TerraformTarget) writeResources(buf *bytes.Buffer, resourcesByType map[string]map[string]interface{}) {
+	resourceTypes := make([]string, 0, len(resourcesByType))
+	for resourceType := range resourcesByType {
+		resourceTypes = append(resourceTypes, resourceType)
+	}
+	sort.Strings(resourceTypes)
+	for _, resourceType := range resourceTypes {
+		resources := resourcesByType[resourceType]
+		resourceNames := make([]string, 0, len(resources))
+		for resourceName := range resources {
+			resourceNames = append(resourceNames, resourceName)
+		}
+		sort.Strings(resourceNames)
+		for _, resourceName := range resourceNames {
+			toElement(resources[resourceName]).
+				Write(buf, 0, fmt.Sprintf("resource %q %q", resourceType, resourceName))
+			buf.WriteString("\n")
+		}
+	}
+}
+
+func (t *TerraformTarget) writeDataSources(buf *bytes.Buffer, dataSourcesByType map[string]map[string]interface{}) {
+	dataSourceTypes := make([]string, 0, len(dataSourcesByType))
+	for dataSourceType := range dataSourcesByType {
+		dataSourceTypes = append(dataSourceTypes, dataSourceType)
+	}
+	sort.Strings(dataSourceTypes)
+	for _, dataSourceType := range dataSourceTypes {
+		dataSources := dataSourcesByType[dataSourceType]
+		dataSourceNames := make([]string, 0, len(dataSources))
+		for dataSourceName := range dataSources {
+			dataSourceNames = append(dataSourceNames, dataSourceName)
+		}
+		sort.Strings(dataSourceNames)
+		for _, dataSourceName := range dataSourceNames {
+			toElement(dataSources[dataSourceName]).
+				Write(buf, 0, fmt.Sprintf("data %q %q", dataSourceType, dataSourceName))
+			buf.WriteString("\n")
+		}
+	}
+}
+
 func (t *TerraformTarget) writeTerraform(buf *bytes.Buffer) {
 	buf.WriteString("terraform {\n")
 	buf.WriteString("  required_version = \">= 0.15.0\"\n")
 	buf.WriteString("  required_providers {\n")
 
 	if t.Cloud.ProviderID() == kops.CloudProviderGCE {
-		mapToElement(map[string]*terraformWriter.Literal{
-			"source":  terraformWriter.LiteralFromStringValue("hashicorp/google"),
-			"version": terraformWriter.LiteralFromStringValue(">= 2.19.0"),
+		mapToElement(map[string]string{
+			"source":  "hashicorp/google",
+			"version": ">= 2.19.0",
 		}).Write(buf, 4, "google")
 	} else if t.Cloud.ProviderID() == kops.CloudProviderHetzner {
-		mapToElement(map[string]*terraformWriter.Literal{
-			"source":  terraformWriter.LiteralFromStringValue("hetznercloud/hcloud"),
-			"version": terraformWriter.LiteralFromStringValue(">= 1.35.1"),
+		mapToElement(map[string]string{
+			"source":  "hetznercloud/hcloud",
+			"version": ">= 1.35.1",
 		}).Write(buf, 4, "hcloud")
 	} else if t.Cloud.ProviderID() == kops.CloudProviderAWS {
 		configurationAlias := terraformWriter.LiteralTokens("aws", "files")
@@ -206,9 +214,9 @@ func (t *TerraformTarget) writeTerraform(buf *bytes.Buffer) {
 			"configuration_aliases": terraformWriter.LiteralListExpression(configurationAlias),
 		}).Write(buf, 4, "aws")
 		if featureflag.Spotinst.Enabled() {
-			mapToElement(map[string]*terraformWriter.Literal{
-				"source":  terraformWriter.LiteralFromStringValue("spotinst/spotinst"),
-				"version": terraformWriter.LiteralFromStringValue(">= 1.33.0"),
+			mapToElement(map[string]string{
+				"source":  "spotinst/spotinst",
+				"version": ">= 1.33.0",
 			}).Write(buf, 4, "spotinst")
 		}
 	}
