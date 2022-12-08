@@ -4,6 +4,9 @@ metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   name: minimal.k8s.local
 spec:
+  api:
+    loadBalancer:
+      type: Public
   authorization:
     rbac: {}
   channel: stable
@@ -12,12 +15,18 @@ spec:
       blockStorage:
         bs-version: v3
         ignore-volume-az: false
+      loadbalancer:
+        floatingNetwork: vlan1
+        method: ROUND_ROBIN
+        provider: octavia
+        useOctavia: true
       monitor:
         delay: 15s
         maxRetries: 3
         timeout: 10s
       router:
-        externalNetwork: ""
+        dnsServers: 1.1.1.1
+        externalNetwork: vlan1
   cloudProvider: openstack
   configBase: memfs://tests/minimal.k8s.local
   etcdClusters:
@@ -60,13 +69,17 @@ spec:
   subnets:
   - cidr: 10.0.32.0/19
     name: us-test1
-    type: Public
+    type: Private
+    zone: us-test1
+  - cidr: 10.0.0.0/22
+    name: utility-us-test1
+    type: Utility
     zone: us-test1
   topology:
     dns:
       type: Private
-    masters: public
-    nodes: public
+    masters: private
+    nodes: private
 
 ---
 

@@ -7,4 +7,8 @@ NetworkCIDR: 10.0.0.0/16
 Networking: cni
 Zones:
   - us-test1
-Octavia: true
+OpenstackLBOctavia: true
+OpenstackExternalNet: vlan1
+OpenstackDNSServers: 1.1.1.1
+APILoadBalancerType: public
+Topology: private
