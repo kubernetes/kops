@@ -672,6 +672,9 @@ func (c *openstackCloud) UseLoadBalancerVIPACL() (bool, error) {
 }
 
 func useLoadBalancerVIPACL(c OpenstackCloud) (bool, error) {
+	if c.LoadBalancerClient() == nil {
+		return false, nil
+	}
 	allPages, err := apiversions.List(c.LoadBalancerClient()).AllPages()
 	if err != nil {
 		return false, err
