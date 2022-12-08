@@ -32,6 +32,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 func Test_OpenstackCloud_GetApiIngressStatus(t *testing.T) {
@@ -480,4 +481,89 @@ func pointersAreBothNil(t *testing.T, name string, actual, expected interface{})
 		t.Fatalf("%s differ: expected is nil, actual is not", name)
 	}
 	return false
+}
+
+func Test_BuildClients(t *testing.T) {
+	tags := map[string]string{
+		TagClusterName: "test.k8s.local",
+	}
+	provider := &gophercloud.ProviderClient{
+		EndpointLocator: func(eo gophercloud.EndpointOpts) (string, error) { return "", nil },
+	}
+
+	grid := []struct {
+		name         string
+		spec         *kops.OpenstackSpec
+		expectLB     bool
+		expectedType string
+		expectError  bool
+	}{
+		{
+			name:         "Empty openstack spec means no load balancer",
+			spec:         &kops.OpenstackSpec{},
+			expectLB:     false,
+			expectedType: "",
+		},
+		{
+			name: "When octavia is set, but no router, an error should be returned",
+			spec: &kops.OpenstackSpec{
+				Loadbalancer: &kops.OpenstackLoadbalancerConfig{
+					UseOctavia: fi.PtrTo(true),
+				},
+			},
+			expectLB:     true,
+			expectedType: "",
+			expectError:  true,
+		},
+		{
+			name: "When octavia is set, and there is a router, a load-balancer should be returned",
+			spec: &kops.OpenstackSpec{
+				Loadbalancer: &kops.OpenstackLoadbalancerConfig{
+					UseOctavia: fi.PtrTo(true),
+				},
+				Router: &kops.OpenstackRouter{},
+			},
+			expectLB:     true,
+			expectedType: "load-balancer",
+			expectError:  false,
+		},
+		{
+			name: "When octavia is not set, network should be returned",
+			spec: &kops.OpenstackSpec{
+				Loadbalancer: &kops.OpenstackLoadbalancerConfig{},
+			},
+			expectLB:     true,
+			expectedType: "network",
+			expectError:  false,
+		}}
+
+	for _, g := range grid {
+
+		t.Run(g.name, func(t *testing.T) {
+
+			cloud, err := buildClients(provider, tags, g.spec, vfs.OpenstackConfig{}, "")
+			if g.expectError {
+				if err != nil {
+					return
+				} else {
+					t.Fatalf("expected error, but got nil")
+				}
+			}
+			if err != nil {
+				t.Fatalf("failed to build cloud clients: %v", err)
+			}
+
+			lbClient := cloud.LoadBalancerClient()
+			hasLB := cloud.LoadBalancerClient() != nil
+			if hasLB != g.expectLB {
+				t.Fatalf("did not match expectation. Expected: %v, actual: %v", g.expectLB, hasLB)
+			}
+			if g.expectLB {
+				if lbClient.Type != g.expectedType {
+					t.Fatalf("did not match expectation. Expected: %v, actual: %v", g.expectedType, lbClient.Type)
+				}
+			}
+
+		})
+	}
 }
