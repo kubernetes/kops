@@ -148,11 +148,11 @@ func (r *HostsReconciler) updateConfigMap(ctx context.Context, addrToHosts map[s
 	data.Data = map[string]string{"hosts": hosts}
 
 	if r.lastUpdate != nil && reflect.DeepEqual(r.lastUpdate, data) {
-		klog.Infof("skipping hosts configmap update (unchanged): %#v", data)
+		klog.V(8).Infof("skipping hosts configmap update (unchanged): %#v", data)
 		return nil
 	}
 
-	klog.Infof("patching hosts configmap: %#v", data)
+	klog.V(4).Infof("patching hosts configmap: %#v", data)
 
 	configmapGVR := schema.GroupVersionResource{Group: "", Version: "v1", Resource: "configmaps"}
 
