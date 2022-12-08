@@ -1,0 +1,14 @@
+CloudProvider: openstack
+ClusterName: minimal.k8s.local
+Image: ubuntu-20.04
+KubernetesVersion: v1.25.0
+ControlPlaneCount: 3
+NetworkCIDR: 10.0.0.0/16
+Networking: cni
+Zones:
+  - us-test1
+OpenstackLBOctavia: true
+OpenstackExternalNet: vlan1
+OpenstackDNSServers: 1.1.1.1
+APILoadBalancerType: public
+Topology: private
