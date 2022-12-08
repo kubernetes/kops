@@ -7,3 +7,8 @@
 .hidden {
 	display: none;
 }
+
+.md-content {
+  /* Needed so that content doesn't overflow under right sidebar (and not be copyable) */
+  overflow-wrap: break-word;
+}
