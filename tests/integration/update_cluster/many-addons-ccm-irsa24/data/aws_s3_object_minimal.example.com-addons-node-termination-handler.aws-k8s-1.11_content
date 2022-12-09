@@ -192,7 +192,7 @@ spec:
         - name: ENABLE_SPOT_INTERRUPTION_DRAINING
           value: "true"
         - name: ENABLE_SCHEDULED_EVENT_DRAINING
-          value: "false"
+          value: "true"
         - name: ENABLE_REBALANCE_MONITORING
           value: "false"
         - name: ENABLE_REBALANCE_DRAINING

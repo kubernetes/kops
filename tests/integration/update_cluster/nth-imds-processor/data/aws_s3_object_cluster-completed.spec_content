@@ -168,7 +168,7 @@ spec:
     enableRebalanceDraining: false
     enableRebalanceMonitoring: false
     enableSQSTerminationDraining: false
-    enableScheduledEventDraining: false
+    enableScheduledEventDraining: true
     enableSpotInterruptionDraining: true
     enabled: true
     excludeFromLoadBalancers: true
