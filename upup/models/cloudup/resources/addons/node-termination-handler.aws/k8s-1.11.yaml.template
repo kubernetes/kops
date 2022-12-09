@@ -209,7 +209,7 @@ spec:
             - name: ENABLE_SPOT_INTERRUPTION_DRAINING
               value: "{{ WithDefaultBool .EnableSpotInterruptionDraining true }}"
             - name: ENABLE_SCHEDULED_EVENT_DRAINING
-              value: "{{ WithDefaultBool .EnableScheduledEventDraining false }}"
+              value: "{{ WithDefaultBool .EnableScheduledEventDraining true }}"
             - name: ENABLE_REBALANCE_MONITORING
               value: "{{ WithDefaultBool .EnableRebalanceMonitoring false }}"
             - name: ENABLE_REBALANCE_DRAINING
@@ -376,7 +376,7 @@ spec:
             - name: ENABLE_SPOT_INTERRUPTION_DRAINING
               value: "{{ WithDefaultBool .EnableSpotInterruptionDraining true }}"
             - name: ENABLE_SCHEDULED_EVENT_DRAINING
-              value: "{{ WithDefaultBool .EnableScheduledEventDraining false }}"
+              value: "{{ WithDefaultBool .EnableScheduledEventDraining true }}"
             - name: ENABLE_REBALANCE_MONITORING
               value: "{{ WithDefaultBool .EnableRebalanceMonitoring false }}"
             - name: ENABLE_REBALANCE_DRAINING

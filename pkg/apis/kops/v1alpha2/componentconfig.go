@@ -953,7 +953,7 @@ type NodeTerminationHandlerConfig struct {
 	// Default: true
 	EnableSpotInterruptionDraining *bool `json:"enableSpotInterruptionDraining,omitempty"`
 	// EnableScheduledEventDraining makes node termination handler drain nodes before the maintenance window starts for an EC2 instance scheduled event.
-	// Default: false
+	// Default: true
 	EnableScheduledEventDraining *bool `json:"enableScheduledEventDraining,omitempty"`
 	// EnableRebalanceMonitoring makes node termination handler cordon nodes when the rebalance recommendation notice is received
 	// Default: false
