@@ -1,5 +1,7 @@
 # Canal
 
+&#9888; The Canal CNI is not supported for Kubernetes 1.26 or later.
+
 [Canal](https://github.com/projectcalico/canal) is a project that combines [Flannel](https://github.com/coreos/flannel) and [Calico](http://docs.projectcalico.org/latest/getting-started/kubernetes/installation/) for CNI Networking.  It uses Flannel for networking pod traffic between hosts via VXLAN and Calico for network policy enforcement and pod to pod traffic.
 
 ## Installing

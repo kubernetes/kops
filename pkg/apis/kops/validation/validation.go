@@ -929,6 +929,11 @@ func validateNetworkingFlannel(c *kops.Cluster, v *kops.FlannelNetworkingSpec, f
 func validateNetworkingCanal(c *kops.Cluster, v *kops.CanalNetworkingSpec, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
+	if c.IsKubernetesGTE("1.26") {
+		allErrs = append(allErrs, field.Forbidden(fldPath, "is not supported for Kubernetes >= 1.26"))
+		return allErrs
+	}
+
 	if c.Spec.IsIPv6Only() {
 		allErrs = append(allErrs, field.Forbidden(fldPath, "Canal does not support IPv6"))
 	}
