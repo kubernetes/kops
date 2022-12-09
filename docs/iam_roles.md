@@ -17,8 +17,10 @@ iam:
 ```
 
 Adding ECR permissions will extend the IAM policy documents as below:
-- Control Plane Nodes: https://github.com/kubernetes/kops/blob/master/pkg/model/iam/tests/iam_builder_master_strict_ecr.json
-- Worker Nodes: https://github.com/kubernetes/kops/blob/master/pkg/model/iam/tests/iam_builder_node_strict_ecr.json
+
+- Control Plane Nodes: [https://github.com/kubernetes/kops/blob/master/pkg/model/iam/tests/iam_builder_master_strict_ecr.json](https://github.com/kubernetes/kops/blob/master/pkg/model/iam/tests/iam_builder_master_strict_ecr.json)
+
+- Worker Nodes: [https://github.com/kubernetes/kops/blob/master/pkg/model/iam/tests/iam_builder_node_strict_ecr.json](https://github.com/kubernetes/kops/blob/master/pkg/model/iam/tests/iam_builder_master_strict_ecr.json)
 
 The additional permissions are:
 ```json
@@ -39,6 +41,7 @@ The additional permissions are:
   ]
 }
 ```
+
 ## Permissions Boundaries
 {{ kops_feature_table(kops_added_default='1.19') }}
 
