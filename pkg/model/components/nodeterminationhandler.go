@@ -43,7 +43,7 @@ func (b *NodeTerminationHandlerOptionsBuilder) BuildOptions(o interface{}) error
 		nth.EnableSpotInterruptionDraining = fi.PtrTo(true)
 	}
 	if nth.EnableScheduledEventDraining == nil {
-		nth.EnableScheduledEventDraining = fi.PtrTo(false)
+		nth.EnableScheduledEventDraining = fi.PtrTo(true)
 	}
 	if nth.EnableRebalanceMonitoring == nil {
 		nth.EnableRebalanceMonitoring = fi.PtrTo(false)
