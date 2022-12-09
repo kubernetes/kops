@@ -5351,7 +5351,7 @@ spec:
                   enableScheduledEventDraining:
                     description: 'EnableScheduledEventDraining makes node termination
                       handler drain nodes before the maintenance window starts for
-                      an EC2 instance scheduled event. Default: false'
+                      an EC2 instance scheduled event. Default: true'
                     type: boolean
                   enableSpotInterruptionDraining:
                     description: 'EnableSpotInterruptionDraining makes node termination
