@@ -42,7 +42,7 @@ spec:
       name: etcd-1
     memoryRequest: 100Mi
     name: main
-    version: 3.5.4
+    version: 3.5.6
   - backups:
       backupStore: memfs://tests/minimal.k8s.local/backups/etcd/events
     cpuRequest: 100m
@@ -51,7 +51,7 @@ spec:
       name: etcd-1
     memoryRequest: 100Mi
     name: events
-    version: 3.5.4
+    version: 3.5.6
   externalDns:
     provider: dns-controller
   iam:
