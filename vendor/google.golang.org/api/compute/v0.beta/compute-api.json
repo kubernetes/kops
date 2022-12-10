@@ -35517,9 +35517,32 @@
       }
     }
   },
-  "revision": "20221026",
+  "revision": "20221101",
   "rootUrl": "https://compute.googleapis.com/",
   "schemas": {
+    "AWSV4Signature": {
+      "description": "Contains the configurations necessary to generate a signature for access to private storage buckets that support Signature Version 4 for authentication. The service name for generating the authentication header will always default to 's3'.",
+      "id": "AWSV4Signature",
+      "properties": {
+        "accessKey": {
+          "description": "The access key used for s3 bucket authentication. Required for updating or creating a backend that uses AWS v4 signature authentication, but will not be returned as part of the configuration when queried with a REST API GET request. @InputOnly",
+          "type": "string"
+        },
+        "accessKeyId": {
+          "description": "The identifier of an access key used for s3 bucket authentication.",
+          "type": "string"
+        },
+        "accessKeyVersion": {
+          "description": "The optional version identifier for the access key. You can use this to keep track of different iterations of your access key.",
+          "type": "string"
+        },
+        "originRegion": {
+          "description": "The name of the cloud region of your origin. This is a free-form field with the name of the region your cloud uses to host your origin. For example, \"us-east-1\" for AWS or \"us-ashburn-1\" for OCI.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "AcceleratorConfig": {
       "description": "A specification of the type and number of accelerator cards attached to the instance.",
       "id": "AcceleratorConfig",
@@ -45000,6 +45023,10 @@
             "$ref": "MetadataFilter"
           },
           "type": "array"
+        },
+        "pathTemplateMatch": {
+          "description": "If specified, the route is a pattern match expression that must match the :path header once the query string is removed. A pattern match allows you to match - The value must be between 1 and 1024 characters - The pattern must start with a leading slash (\"/\") - There may be no more than 5 operators in pattern Precisely one of prefix_match, full_path_match, regex_match or path_template_match must be set.",
+          "type": "string"
         },
         "prefixMatch": {
           "description": "For satisfying the matchRule condition, the request's path must begin with the specified prefixMatch. prefixMatch must begin with a /. The value must be from 1 to 1024 characters. Only one of prefixMatch, fullPathMatch or regexMatch must be specified.",
@@ -60620,6 +60647,19 @@
         "physicalHost": {
           "description": "[Output Only] An opaque ID of the host on which the VM is running.",
           "type": "string"
+        },
+        "scheduling": {
+          "$ref": "ResourceStatusScheduling"
+        }
+      },
+      "type": "object"
+    },
+    "ResourceStatusScheduling": {
+      "id": "ResourceStatusScheduling",
+      "properties": {
+        "terminationTimestamp": {
+          "description": "Time in future when the instance will be terminated in RFC3339 text format.",
+          "type": "string"
         }
       },
       "type": "object"
@@ -63728,6 +63768,10 @@
         "authentication": {
           "description": "[Deprecated] Use clientTlsPolicy instead.",
           "type": "string"
+        },
+        "awsV4Authentication": {
+          "$ref": "AWSV4Signature",
+          "description": "The configuration needed to generate a signature for access to private storage buckets that support AWS's Signature Version 4 for authentication. Allowed only for INTERNET_IP_PORT and INTERNET_FQDN_PORT NEG backends."
         },
         "clientTlsPolicy": {
           "description": "Optional. A URL referring to a networksecurity.ClientTlsPolicy resource that describes how clients should authenticate with this service's backends. clientTlsPolicy only applies to a global BackendService with the loadBalancingScheme set to INTERNAL_SELF_MANAGED. If left blank, communications are not encrypted. Note: This field currently has no impact.",
@@ -70568,6 +70612,10 @@
         },
         "pathPrefixRewrite": {
           "description": "Before forwarding the request to the selected backend service, the matching portion of the request's path is replaced by pathPrefixRewrite. The value must be from 1 to 1024 characters.",
+          "type": "string"
+        },
+        "pathTemplateRewrite": {
+          "description": " If specified, the pattern rewrites the URL path (based on the :path header) using the HTTP template syntax. A corresponding path_template_match must be specified. Any template variables must exist in the path_template_match field. - -At least one variable must be specified in the path_template_match field - You can omit variables from the rewritten URL - The * and ** operators cannot be matched unless they have a corresponding variable name - e.g. {format=*} or {var=**}. For example, a path_template_match of /static/{format=**} could be rewritten as /static/content/{format} to prefix /content to the URL. Variables can also be re-ordered in a rewrite, so that /{country}/{format}/{suffix=**} can be rewritten as /content/{format}/{country}/{suffix}. At least one non-empty routeRules[].matchRules[].path_template_match is required. Only one of path_prefix_rewrite or path_template_rewrite may be specified.",
           "type": "string"
         }
       },

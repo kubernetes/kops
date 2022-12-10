@@ -316,6 +316,101 @@ func (c *AutoScaling) AttachLoadBalancersWithContext(ctx aws.Context, input *Att
 	return out, req.Send()
 }
 
+const opAttachTrafficSources = "AttachTrafficSources"
+
+// AttachTrafficSourcesRequest generates a "aws/request.Request" representing the
+// client's request for the AttachTrafficSources operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See AttachTrafficSources for more information on using the AttachTrafficSources
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the AttachTrafficSourcesRequest method.
+//	req, resp := client.AttachTrafficSourcesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/AttachTrafficSources
+func (c *AutoScaling) AttachTrafficSourcesRequest(input *AttachTrafficSourcesInput) (req *request.Request, output *AttachTrafficSourcesOutput) {
+	op := &request.Operation{
+		Name:       opAttachTrafficSources,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &AttachTrafficSourcesInput{}
+	}
+
+	output = &AttachTrafficSourcesOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(query.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// AttachTrafficSources API operation for Auto Scaling.
+//
+// Reserved for use with Amazon VPC Lattice, which is in preview and subject
+// to change. Do not use this API for production workloads. This API is also
+// subject to change.
+//
+// Attaches one or more traffic sources to the specified Auto Scaling group.
+//
+// To describe the traffic sources for an Auto Scaling group, call the DescribeTrafficSources
+// API. To detach a traffic source from the Auto Scaling group, call the DetachTrafficSources
+// API.
+//
+// This operation is additive and does not detach existing traffic sources from
+// the Auto Scaling group.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Auto Scaling's
+// API operation AttachTrafficSources for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeResourceContentionFault "ResourceContention"
+//     You already have a pending update to an Amazon EC2 Auto Scaling resource
+//     (for example, an Auto Scaling group, instance, or load balancer).
+//
+//   - ErrCodeServiceLinkedRoleFailure "ServiceLinkedRoleFailure"
+//     The service-linked role is not yet ready for use.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/AttachTrafficSources
+func (c *AutoScaling) AttachTrafficSources(input *AttachTrafficSourcesInput) (*AttachTrafficSourcesOutput, error) {
+	req, out := c.AttachTrafficSourcesRequest(input)
+	return out, req.Send()
+}
+
+// AttachTrafficSourcesWithContext is the same as AttachTrafficSources with the addition of
+// the ability to pass a context and additional request options.
+//
+// See AttachTrafficSources for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AutoScaling) AttachTrafficSourcesWithContext(ctx aws.Context, input *AttachTrafficSourcesInput, opts ...request.Option) (*AttachTrafficSourcesOutput, error) {
+	req, out := c.AttachTrafficSourcesRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opBatchDeleteScheduledAction = "BatchDeleteScheduledAction"
 
 // BatchDeleteScheduledActionRequest generates a "aws/request.Request" representing the
@@ -2750,6 +2845,10 @@ func (c *AutoScaling) DescribeLoadBalancerTargetGroupsRequest(input *DescribeLoa
 // Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/autoscaling-load-balancer.html)
 // in the Amazon EC2 Auto Scaling User Guide.
 //
+// You can use this operation to describe target groups that were attached by
+// using AttachLoadBalancerTargetGroups, but not for target groups that were
+// attached by using AttachTrafficSources.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -3873,6 +3972,94 @@ func (c *AutoScaling) DescribeTerminationPolicyTypesWithContext(ctx aws.Context,
 	return out, req.Send()
 }
 
+const opDescribeTrafficSources = "DescribeTrafficSources"
+
+// DescribeTrafficSourcesRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeTrafficSources operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeTrafficSources for more information on using the DescribeTrafficSources
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeTrafficSourcesRequest method.
+//	req, resp := client.DescribeTrafficSourcesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeTrafficSources
+func (c *AutoScaling) DescribeTrafficSourcesRequest(input *DescribeTrafficSourcesInput) (req *request.Request, output *DescribeTrafficSourcesOutput) {
+	op := &request.Operation{
+		Name:       opDescribeTrafficSources,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DescribeTrafficSourcesInput{}
+	}
+
+	output = &DescribeTrafficSourcesOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeTrafficSources API operation for Auto Scaling.
+//
+// Reserved for use with Amazon VPC Lattice, which is in preview and subject
+// to change. Do not use this API for production workloads. This API is also
+// subject to change.
+//
+// Gets information about the traffic sources for the specified Auto Scaling
+// group.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Auto Scaling's
+// API operation DescribeTrafficSources for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeResourceContentionFault "ResourceContention"
+//     You already have a pending update to an Amazon EC2 Auto Scaling resource
+//     (for example, an Auto Scaling group, instance, or load balancer).
+//
+//   - ErrCodeInvalidNextToken "InvalidNextToken"
+//     The NextToken value is not valid.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeTrafficSources
+func (c *AutoScaling) DescribeTrafficSources(input *DescribeTrafficSourcesInput) (*DescribeTrafficSourcesOutput, error) {
+	req, out := c.DescribeTrafficSourcesRequest(input)
+	return out, req.Send()
+}
+
+// DescribeTrafficSourcesWithContext is the same as DescribeTrafficSources with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeTrafficSources for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AutoScaling) DescribeTrafficSourcesWithContext(ctx aws.Context, input *DescribeTrafficSourcesInput, opts ...request.Option) (*DescribeTrafficSourcesOutput, error) {
+	req, out := c.DescribeTrafficSourcesRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDescribeWarmPool = "DescribeWarmPool"
 
 // DescribeWarmPoolRequest generates a "aws/request.Request" representing the
@@ -4110,6 +4297,10 @@ func (c *AutoScaling) DetachLoadBalancerTargetGroupsRequest(input *DetachLoadBal
 // can no longer describe the target group using the DescribeLoadBalancerTargetGroups
 // API call. The instances remain running.
 //
+// You can use this operation to detach target groups that were attached by
+// using AttachLoadBalancerTargetGroups, but not for target groups that were
+// attached by using AttachTrafficSources.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -4229,6 +4420,90 @@ func (c *AutoScaling) DetachLoadBalancers(input *DetachLoadBalancersInput) (*Det
 // for more information on using Contexts.
 func (c *AutoScaling) DetachLoadBalancersWithContext(ctx aws.Context, input *DetachLoadBalancersInput, opts ...request.Option) (*DetachLoadBalancersOutput, error) {
 	req, out := c.DetachLoadBalancersRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDetachTrafficSources = "DetachTrafficSources"
+
+// DetachTrafficSourcesRequest generates a "aws/request.Request" representing the
+// client's request for the DetachTrafficSources operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DetachTrafficSources for more information on using the DetachTrafficSources
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DetachTrafficSourcesRequest method.
+//	req, resp := client.DetachTrafficSourcesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DetachTrafficSources
+func (c *AutoScaling) DetachTrafficSourcesRequest(input *DetachTrafficSourcesInput) (req *request.Request, output *DetachTrafficSourcesOutput) {
+	op := &request.Operation{
+		Name:       opDetachTrafficSources,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DetachTrafficSourcesInput{}
+	}
+
+	output = &DetachTrafficSourcesOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(query.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DetachTrafficSources API operation for Auto Scaling.
+//
+// Reserved for use with Amazon VPC Lattice, which is in preview and subject
+// to change. Do not use this API for production workloads. This API is also
+// subject to change.
+//
+// Detaches one or more traffic sources from the specified Auto Scaling group.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Auto Scaling's
+// API operation DetachTrafficSources for usage and error information.
+//
+// Returned Error Codes:
+//   - ErrCodeResourceContentionFault "ResourceContention"
+//     You already have a pending update to an Amazon EC2 Auto Scaling resource
+//     (for example, an Auto Scaling group, instance, or load balancer).
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DetachTrafficSources
+func (c *AutoScaling) DetachTrafficSources(input *DetachTrafficSourcesInput) (*DetachTrafficSourcesOutput, error) {
+	req, out := c.DetachTrafficSourcesRequest(input)
+	return out, req.Send()
+}
+
+// DetachTrafficSourcesWithContext is the same as DetachTrafficSources with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DetachTrafficSources for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AutoScaling) DetachTrafficSourcesWithContext(ctx aws.Context, input *DetachTrafficSourcesInput, opts ...request.Option) (*DetachTrafficSourcesOutput, error) {
+	req, out := c.DetachTrafficSourcesRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -6574,7 +6849,7 @@ type AttachLoadBalancerTargetGroupsInput struct {
 	// AutoScalingGroupName is a required field
 	AutoScalingGroupName *string `min:"1" type:"string" required:"true"`
 
-	// The Amazon Resource Names (ARN) of the target groups. You can specify up
+	// The Amazon Resource Names (ARNs) of the target groups. You can specify up
 	// to 10 target groups. To get the ARN of a target group, use the Elastic Load
 	// Balancing DescribeTargetGroups (https://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/API_DescribeTargetGroups.html)
 	// API operation.
@@ -6736,6 +7011,107 @@ func (s AttachLoadBalancersOutput) String() string {
 // be included in the string output. The member name will be present, but the
 // value will be replaced with "sensitive".
 func (s AttachLoadBalancersOutput) GoString() string {
+	return s.String()
+}
+
+type AttachTrafficSourcesInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the Auto Scaling group.
+	//
+	// AutoScalingGroupName is a required field
+	AutoScalingGroupName *string `min:"1" type:"string" required:"true"`
+
+	// The unique identifiers of one or more traffic sources. You can specify up
+	// to 10 traffic sources.
+	//
+	// Currently, you must specify an Amazon Resource Name (ARN) for an existing
+	// VPC Lattice target group. Amazon EC2 Auto Scaling registers the running instances
+	// with the attached target groups. The target groups receive incoming traffic
+	// and route requests to one or more registered targets.
+	//
+	// TrafficSources is a required field
+	TrafficSources []*TrafficSourceIdentifier `type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AttachTrafficSourcesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AttachTrafficSourcesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AttachTrafficSourcesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AttachTrafficSourcesInput"}
+	if s.AutoScalingGroupName == nil {
+		invalidParams.Add(request.NewErrParamRequired("AutoScalingGroupName"))
+	}
+	if s.AutoScalingGroupName != nil && len(*s.AutoScalingGroupName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AutoScalingGroupName", 1))
+	}
+	if s.TrafficSources == nil {
+		invalidParams.Add(request.NewErrParamRequired("TrafficSources"))
+	}
+	if s.TrafficSources != nil {
+		for i, v := range s.TrafficSources {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "TrafficSources", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *AttachTrafficSourcesInput) SetAutoScalingGroupName(v string) *AttachTrafficSourcesInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetTrafficSources sets the TrafficSources field's value.
+func (s *AttachTrafficSourcesInput) SetTrafficSources(v []*TrafficSourceIdentifier) *AttachTrafficSourcesInput {
+	s.TrafficSources = v
+	return s
+}
+
+type AttachTrafficSourcesOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AttachTrafficSourcesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AttachTrafficSourcesOutput) GoString() string {
 	return s.String()
 }
 
@@ -7420,21 +7796,23 @@ type CreateAutoScalingGroupInput struct {
 
 	// The amount of time, in seconds, that Amazon EC2 Auto Scaling waits before
 	// checking the health status of an EC2 instance that has come into service
-	// and marking it unhealthy due to a failed Elastic Load Balancing or custom
-	// health check. This is useful if your instances do not immediately pass these
-	// health checks after they enter the InService state. For more information,
-	// see Set the health check grace period for an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/health-check-grace-period.html)
+	// and marking it unhealthy due to a failed health check. This is useful if
+	// your instances do not immediately pass their health checks after they enter
+	// the InService state. For more information, see Set the health check grace
+	// period for an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/health-check-grace-period.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	//
 	// Default: 0 seconds
 	HealthCheckGracePeriod *int64 `type:"integer"`
 
-	// The service to use for the health checks. The valid values are EC2 (default)
-	// and ELB. If you configure an Auto Scaling group to use load balancer (ELB)
-	// health checks, it considers the instance unhealthy if it fails either the
-	// EC2 status checks or the load balancer health checks. For more information,
+	// Determines whether any additional health checks are performed on the instances
+	// in this group. Amazon EC2 health checks are always on. For more information,
 	// see Health checks for Auto Scaling instances (https://docs.aws.amazon.com/autoscaling/ec2/userguide/healthcheck.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
+	//
+	// The valid values are EC2 (default), ELB, and VPC_LATTICE. The VPC_LATTICE
+	// health check type is reserved for use with VPC Lattice, which is in preview
+	// release and is subject to change.
 	HealthCheckType *string `min:"1" type:"string"`
 
 	// The ID of the instance used to base the launch configuration on. If specified,
@@ -7538,11 +7916,12 @@ type CreateAutoScalingGroupInput struct {
 	// in the Amazon EC2 Auto Scaling User Guide.
 	Tags []*Tag `type:"list"`
 
-	// The Amazon Resource Names (ARN) of the target groups to associate with the
-	// Auto Scaling group. Instances are registered as targets with the target groups.
-	// The target groups receive incoming traffic and route requests to one or more
-	// registered targets. For more information, see Use Elastic Load Balancing
-	// to distribute traffic across the instances in your Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/autoscaling-load-balancer.html)
+	// The Amazon Resource Names (ARN) of the Elastic Load Balancing target groups
+	// to associate with the Auto Scaling group. Instances are registered as targets
+	// with the target groups. The target groups receive incoming traffic and route
+	// requests to one or more registered targets. For more information, see Use
+	// Elastic Load Balancing to distribute traffic across the instances in your
+	// Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/autoscaling-load-balancer.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	TargetGroupARNs []*string `type:"list"`
 
@@ -7555,6 +7934,18 @@ type CreateAutoScalingGroupInput struct {
 	// NewestInstance | OldestInstance | OldestLaunchConfiguration | OldestLaunchTemplate
 	// | arn:aws:lambda:region:account-id:function:my-function:my-alias
 	TerminationPolicies []*string `type:"list"`
+
+	// Reserved for use with Amazon VPC Lattice, which is in preview release and
+	// is subject to change. Do not use this parameter for production workloads.
+	// It is also subject to change.
+	//
+	// The unique identifiers of one or more traffic sources.
+	//
+	// Currently, you must specify an Amazon Resource Name (ARN) for an existing
+	// VPC Lattice target group. Amazon EC2 Auto Scaling registers the running instances
+	// with the attached target groups. The target groups receive incoming traffic
+	// and route requests to one or more registered targets.
+	TrafficSources []*TrafficSourceIdentifier `type:"list"`
 
 	// A comma-separated list of subnet IDs for a virtual private cloud (VPC) where
 	// instances in the Auto Scaling group can be created. If you specify VPCZoneIdentifier
@@ -7644,6 +8035,16 @@ func (s *CreateAutoScalingGroupInput) Validate() error {
 			}
 			if err := v.Validate(); err != nil {
 				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.TrafficSources != nil {
+		for i, v := range s.TrafficSources {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "TrafficSources", i), err.(request.ErrInvalidParams))
 			}
 		}
 	}
@@ -7801,6 +8202,12 @@ func (s *CreateAutoScalingGroupInput) SetTargetGroupARNs(v []*string) *CreateAut
 // SetTerminationPolicies sets the TerminationPolicies field's value.
 func (s *CreateAutoScalingGroupInput) SetTerminationPolicies(v []*string) *CreateAutoScalingGroupInput {
 	s.TerminationPolicies = v
+	return s
+}
+
+// SetTrafficSources sets the TrafficSources field's value.
+func (s *CreateAutoScalingGroupInput) SetTrafficSources(v []*TrafficSourceIdentifier) *CreateAutoScalingGroupInput {
+	s.TrafficSources = v
 	return s
 }
 
@@ -8321,19 +8728,17 @@ type CustomizedMetricSpecification struct {
 	// The name of the metric. To get the exact metric name, namespace, and dimensions,
 	// inspect the Metric (https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_Metric.html)
 	// object that is returned by a call to ListMetrics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_ListMetrics.html).
-	//
-	// MetricName is a required field
-	MetricName *string `type:"string" required:"true"`
+	MetricName *string `type:"string"`
+
+	// The metrics to include in the target tracking scaling policy, as a metric
+	// data query. This can include both raw metric and metric math expressions.
+	Metrics []*TargetTrackingMetricDataQuery `type:"list"`
 
 	// The namespace of the metric.
-	//
-	// Namespace is a required field
-	Namespace *string `type:"string" required:"true"`
+	Namespace *string `type:"string"`
 
 	// The statistic of the metric.
-	//
-	// Statistic is a required field
-	Statistic *string `type:"string" required:"true" enum:"MetricStatistic"`
+	Statistic *string `type:"string" enum:"MetricStatistic"`
 
 	// The unit of the metric. For a complete list of the units that CloudWatch
 	// supports, see the MetricDatum (https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_MetricDatum.html)
@@ -8362,15 +8767,6 @@ func (s CustomizedMetricSpecification) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *CustomizedMetricSpecification) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "CustomizedMetricSpecification"}
-	if s.MetricName == nil {
-		invalidParams.Add(request.NewErrParamRequired("MetricName"))
-	}
-	if s.Namespace == nil {
-		invalidParams.Add(request.NewErrParamRequired("Namespace"))
-	}
-	if s.Statistic == nil {
-		invalidParams.Add(request.NewErrParamRequired("Statistic"))
-	}
 	if s.Dimensions != nil {
 		for i, v := range s.Dimensions {
 			if v == nil {
@@ -8378,6 +8774,16 @@ func (s *CustomizedMetricSpecification) Validate() error {
 			}
 			if err := v.Validate(); err != nil {
 				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Dimensions", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.Metrics != nil {
+		for i, v := range s.Metrics {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Metrics", i), err.(request.ErrInvalidParams))
 			}
 		}
 	}
@@ -8397,6 +8803,12 @@ func (s *CustomizedMetricSpecification) SetDimensions(v []*MetricDimension) *Cus
 // SetMetricName sets the MetricName field's value.
 func (s *CustomizedMetricSpecification) SetMetricName(v string) *CustomizedMetricSpecification {
 	s.MetricName = &v
+	return s
+}
+
+// SetMetrics sets the Metrics field's value.
+func (s *CustomizedMetricSpecification) SetMetrics(v []*TargetTrackingMetricDataQuery) *CustomizedMetricSpecification {
+	s.Metrics = v
 	return s
 }
 
@@ -10827,6 +11239,136 @@ func (s *DescribeTerminationPolicyTypesOutput) SetTerminationPolicyTypes(v []*st
 	return s
 }
 
+type DescribeTrafficSourcesInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the Auto Scaling group.
+	//
+	// AutoScalingGroupName is a required field
+	AutoScalingGroupName *string `min:"1" type:"string" required:"true"`
+
+	// The maximum number of items to return with this call. The maximum value is
+	// 50.
+	MaxRecords *int64 `type:"integer"`
+
+	// The token for the next set of items to return. (You received this token from
+	// a previous call.)
+	NextToken *string `type:"string"`
+
+	// The type of traffic source you are describing. Currently, the only valid
+	// value is vpc-lattice.
+	//
+	// TrafficSourceType is a required field
+	TrafficSourceType *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrafficSourcesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrafficSourcesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeTrafficSourcesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeTrafficSourcesInput"}
+	if s.AutoScalingGroupName == nil {
+		invalidParams.Add(request.NewErrParamRequired("AutoScalingGroupName"))
+	}
+	if s.AutoScalingGroupName != nil && len(*s.AutoScalingGroupName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AutoScalingGroupName", 1))
+	}
+	if s.TrafficSourceType == nil {
+		invalidParams.Add(request.NewErrParamRequired("TrafficSourceType"))
+	}
+	if s.TrafficSourceType != nil && len(*s.TrafficSourceType) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("TrafficSourceType", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *DescribeTrafficSourcesInput) SetAutoScalingGroupName(v string) *DescribeTrafficSourcesInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetMaxRecords sets the MaxRecords field's value.
+func (s *DescribeTrafficSourcesInput) SetMaxRecords(v int64) *DescribeTrafficSourcesInput {
+	s.MaxRecords = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeTrafficSourcesInput) SetNextToken(v string) *DescribeTrafficSourcesInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetTrafficSourceType sets the TrafficSourceType field's value.
+func (s *DescribeTrafficSourcesInput) SetTrafficSourceType(v string) *DescribeTrafficSourcesInput {
+	s.TrafficSourceType = &v
+	return s
+}
+
+type DescribeTrafficSourcesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// This string indicates that the response contains more items than can be returned
+	// in a single response. To receive additional items, specify this string for
+	// the NextToken value when requesting the next set of items. This value is
+	// null when there are no more items to return.
+	NextToken *string `type:"string"`
+
+	// Information about the traffic sources.
+	TrafficSources []*TrafficSourceState `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrafficSourcesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrafficSourcesOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeTrafficSourcesOutput) SetNextToken(v string) *DescribeTrafficSourcesOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetTrafficSources sets the TrafficSources field's value.
+func (s *DescribeTrafficSourcesOutput) SetTrafficSources(v []*TrafficSourceState) *DescribeTrafficSourcesOutput {
+	s.TrafficSources = v
+	return s
+}
+
 type DescribeWarmPoolInput struct {
 	_ struct{} `type:"structure"`
 
@@ -10902,8 +11444,10 @@ type DescribeWarmPoolOutput struct {
 	// The instances that are currently in the warm pool.
 	Instances []*Instance `type:"list"`
 
-	// The token for the next set of items to return. (You received this token from
-	// a previous call.)
+	// This string indicates that the response contains more items than can be returned
+	// in a single response. To receive additional items, specify this string for
+	// the NextToken value when requesting the next set of items. This value is
+	// null when there are no more items to return.
 	NextToken *string `type:"string"`
 
 	// The warm pool configuration details.
@@ -11292,6 +11836,108 @@ func (s DetachLoadBalancersOutput) String() string {
 // be included in the string output. The member name will be present, but the
 // value will be replaced with "sensitive".
 func (s DetachLoadBalancersOutput) GoString() string {
+	return s.String()
+}
+
+type DetachTrafficSourcesInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the Auto Scaling group.
+	//
+	// AutoScalingGroupName is a required field
+	AutoScalingGroupName *string `min:"1" type:"string" required:"true"`
+
+	// The unique identifiers of one or more traffic sources you are detaching.
+	// You can specify up to 10 traffic sources.
+	//
+	// Currently, you must specify an Amazon Resource Name (ARN) for an existing
+	// VPC Lattice target group. When you detach a target group, it enters the Removing
+	// state while deregistering the instances in the group. When all instances
+	// are deregistered, then you can no longer describe the target group using
+	// the DescribeTrafficSources API call. The instances continue to run.
+	//
+	// TrafficSources is a required field
+	TrafficSources []*TrafficSourceIdentifier `type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DetachTrafficSourcesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DetachTrafficSourcesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DetachTrafficSourcesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DetachTrafficSourcesInput"}
+	if s.AutoScalingGroupName == nil {
+		invalidParams.Add(request.NewErrParamRequired("AutoScalingGroupName"))
+	}
+	if s.AutoScalingGroupName != nil && len(*s.AutoScalingGroupName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AutoScalingGroupName", 1))
+	}
+	if s.TrafficSources == nil {
+		invalidParams.Add(request.NewErrParamRequired("TrafficSources"))
+	}
+	if s.TrafficSources != nil {
+		for i, v := range s.TrafficSources {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "TrafficSources", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *DetachTrafficSourcesInput) SetAutoScalingGroupName(v string) *DetachTrafficSourcesInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+// SetTrafficSources sets the TrafficSources field's value.
+func (s *DetachTrafficSourcesInput) SetTrafficSources(v []*TrafficSourceIdentifier) *DetachTrafficSourcesInput {
+	s.TrafficSources = v
+	return s
+}
+
+type DetachTrafficSourcesOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DetachTrafficSourcesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DetachTrafficSourcesOutput) GoString() string {
 	return s.String()
 }
 
@@ -12485,10 +13131,12 @@ type Group struct {
 	// The duration of the health check grace period, in seconds.
 	HealthCheckGracePeriod *int64 `type:"integer"`
 
-	// The service to use for the health checks. The valid values are EC2 and ELB.
-	// If you configure an Auto Scaling group to use ELB health checks, it considers
-	// the instance unhealthy if it fails either the EC2 status checks or the load
-	// balancer health checks.
+	// Determines whether any additional health checks are performed on the instances
+	// in this group. Amazon EC2 health checks are always on.
+	//
+	// The valid values are EC2 (default), ELB, and VPC_LATTICE. The VPC_LATTICE
+	// health check type is reserved for use with VPC Lattice, which is in preview
+	// release and is subject to change.
 	//
 	// HealthCheckType is a required field
 	HealthCheckType *string `min:"1" type:"string" required:"true"`
@@ -12552,6 +13200,9 @@ type Group struct {
 
 	// The termination policies for the group.
 	TerminationPolicies []*string `type:"list"`
+
+	// The unique identifiers of the traffic sources.
+	TrafficSources []*TrafficSourceIdentifier `type:"list"`
 
 	// One or more subnet IDs, if applicable, separated by commas.
 	VPCZoneIdentifier *string `min:"1" type:"string"`
@@ -12758,6 +13409,12 @@ func (s *Group) SetTargetGroupARNs(v []*string) *Group {
 // SetTerminationPolicies sets the TerminationPolicies field's value.
 func (s *Group) SetTerminationPolicies(v []*string) *Group {
 	s.TerminationPolicies = v
+	return s
+}
+
+// SetTrafficSources sets the TrafficSources field's value.
+func (s *Group) SetTrafficSources(v []*TrafficSourceIdentifier) *Group {
+	s.TrafficSources = v
 	return s
 }
 
@@ -13995,11 +14652,9 @@ type InstancesDistribution struct {
 	//
 	// price-capacity-optimized (recommended)
 	//
-	// Amazon EC2 Auto Scaling identifies the pools with the highest capacity availability
-	// for the number of instances that are launching. This means that we will request
-	// Spot Instances from the pools that we believe have the lowest chance of interruption
-	// in the near term. Amazon EC2 Auto Scaling then requests Spot Instances from
-	// the lowest priced of these pools.
+	// The price and capacity optimized allocation strategy looks at both price
+	// and capacity to select the Spot Instance pools that are the least likely
+	// to be interrupted and have the lowest possible price.
 	SpotAllocationStrategy *string `type:"string"`
 
 	// The number of Spot Instance pools across which to allocate your Spot Instances.
@@ -19319,6 +19974,215 @@ func (s *TargetTrackingConfiguration) SetTargetValue(v float64) *TargetTrackingC
 	return s
 }
 
+// The metric data to return. Also defines whether this call is returning data
+// for one metric only, or whether it is performing a math expression on the
+// values of returned metric statistics to create a new time series. A time
+// series is a series of data points, each of which is associated with a timestamp.
+type TargetTrackingMetricDataQuery struct {
+	_ struct{} `type:"structure"`
+
+	// The math expression to perform on the returned data, if this object is performing
+	// a math expression. This expression can use the Id of the other metrics to
+	// refer to those metrics, and can also use the Id of other expressions to use
+	// the result of those expressions.
+	//
+	// Conditional: Within each TargetTrackingMetricDataQuery object, you must specify
+	// either Expression or MetricStat, but not both.
+	Expression *string `min:"1" type:"string"`
+
+	// A short name that identifies the object's results in the response. This name
+	// must be unique among all TargetTrackingMetricDataQuery objects specified
+	// for a single scaling policy. If you are performing math expressions on this
+	// set of data, this name represents that data and can serve as a variable in
+	// the mathematical expression. The valid characters are letters, numbers, and
+	// underscores. The first character must be a lowercase letter.
+	//
+	// Id is a required field
+	Id *string `min:"1" type:"string" required:"true"`
+
+	// A human-readable label for this metric or expression. This is especially
+	// useful if this is a math expression, so that you know what the value represents.
+	Label *string `type:"string"`
+
+	// Information about the metric data to return.
+	//
+	// Conditional: Within each TargetTrackingMetricDataQuery object, you must specify
+	// either Expression or MetricStat, but not both.
+	MetricStat *TargetTrackingMetricStat `type:"structure"`
+
+	// Indicates whether to return the timestamps and raw data values of this metric.
+	//
+	// If you use any math expressions, specify true for this value for only the
+	// final math expression that the metric specification is based on. You must
+	// specify false for ReturnData for all the other metrics and expressions used
+	// in the metric specification.
+	//
+	// If you are only retrieving metrics and not performing any math expressions,
+	// do not specify anything for ReturnData. This sets it to its default (true).
+	ReturnData *bool `type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TargetTrackingMetricDataQuery) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TargetTrackingMetricDataQuery) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *TargetTrackingMetricDataQuery) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "TargetTrackingMetricDataQuery"}
+	if s.Expression != nil && len(*s.Expression) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Expression", 1))
+	}
+	if s.Id == nil {
+		invalidParams.Add(request.NewErrParamRequired("Id"))
+	}
+	if s.Id != nil && len(*s.Id) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Id", 1))
+	}
+	if s.MetricStat != nil {
+		if err := s.MetricStat.Validate(); err != nil {
+			invalidParams.AddNested("MetricStat", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetExpression sets the Expression field's value.
+func (s *TargetTrackingMetricDataQuery) SetExpression(v string) *TargetTrackingMetricDataQuery {
+	s.Expression = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *TargetTrackingMetricDataQuery) SetId(v string) *TargetTrackingMetricDataQuery {
+	s.Id = &v
+	return s
+}
+
+// SetLabel sets the Label field's value.
+func (s *TargetTrackingMetricDataQuery) SetLabel(v string) *TargetTrackingMetricDataQuery {
+	s.Label = &v
+	return s
+}
+
+// SetMetricStat sets the MetricStat field's value.
+func (s *TargetTrackingMetricDataQuery) SetMetricStat(v *TargetTrackingMetricStat) *TargetTrackingMetricDataQuery {
+	s.MetricStat = v
+	return s
+}
+
+// SetReturnData sets the ReturnData field's value.
+func (s *TargetTrackingMetricDataQuery) SetReturnData(v bool) *TargetTrackingMetricDataQuery {
+	s.ReturnData = &v
+	return s
+}
+
+// This structure defines the CloudWatch metric to return, along with the statistic,
+// period, and unit.
+//
+// For more information about the CloudWatch terminology below, see Amazon CloudWatch
+// concepts (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html)
+// in the Amazon CloudWatch User Guide.
+type TargetTrackingMetricStat struct {
+	_ struct{} `type:"structure"`
+
+	// Represents a specific metric.
+	//
+	// Metric is a required field
+	Metric *Metric `type:"structure" required:"true"`
+
+	// The statistic to return. It can include any CloudWatch statistic or extended
+	// statistic. For a list of valid values, see the table in Statistics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#Statistic)
+	// in the Amazon CloudWatch User Guide.
+	//
+	// The most commonly used metrics for scaling is Average
+	//
+	// Stat is a required field
+	Stat *string `min:"1" type:"string" required:"true"`
+
+	// The unit to use for the returned data points. For a complete list of the
+	// units that CloudWatch supports, see the MetricDatum (https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_MetricDatum.html)
+	// data type in the Amazon CloudWatch API Reference.
+	Unit *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TargetTrackingMetricStat) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TargetTrackingMetricStat) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *TargetTrackingMetricStat) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "TargetTrackingMetricStat"}
+	if s.Metric == nil {
+		invalidParams.Add(request.NewErrParamRequired("Metric"))
+	}
+	if s.Stat == nil {
+		invalidParams.Add(request.NewErrParamRequired("Stat"))
+	}
+	if s.Stat != nil && len(*s.Stat) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Stat", 1))
+	}
+	if s.Metric != nil {
+		if err := s.Metric.Validate(); err != nil {
+			invalidParams.AddNested("Metric", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMetric sets the Metric field's value.
+func (s *TargetTrackingMetricStat) SetMetric(v *Metric) *TargetTrackingMetricStat {
+	s.Metric = v
+	return s
+}
+
+// SetStat sets the Stat field's value.
+func (s *TargetTrackingMetricStat) SetStat(v string) *TargetTrackingMetricStat {
+	s.Stat = &v
+	return s
+}
+
+// SetUnit sets the Unit field's value.
+func (s *TargetTrackingMetricStat) SetUnit(v string) *TargetTrackingMetricStat {
+	s.Unit = &v
+	return s
+}
+
 type TerminateInstanceInAutoScalingGroupInput struct {
 	_ struct{} `type:"structure"`
 
@@ -19456,6 +20320,111 @@ func (s *TotalLocalStorageGBRequest) SetMin(v float64) *TotalLocalStorageGBReque
 	return s
 }
 
+// Describes the identifier of a traffic source.
+//
+// Currently, you must specify an Amazon Resource Name (ARN) for an existing
+// VPC Lattice target group.
+type TrafficSourceIdentifier struct {
+	_ struct{} `type:"structure"`
+
+	// The unique identifier of the traffic source.
+	Identifier *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TrafficSourceIdentifier) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TrafficSourceIdentifier) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *TrafficSourceIdentifier) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "TrafficSourceIdentifier"}
+	if s.Identifier != nil && len(*s.Identifier) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Identifier", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetIdentifier sets the Identifier field's value.
+func (s *TrafficSourceIdentifier) SetIdentifier(v string) *TrafficSourceIdentifier {
+	s.Identifier = &v
+	return s
+}
+
+// Describes the state of a traffic source.
+type TrafficSourceState struct {
+	_ struct{} `type:"structure"`
+
+	// The following are the possible states for a VPC Lattice target group:
+	//
+	//    * Adding - The Auto Scaling instances are being registered with the target
+	//    group.
+	//
+	//    * Added - All Auto Scaling instances are registered with the target group.
+	//
+	//    * InService - At least one Auto Scaling instance passed the VPC_LATTICE
+	//    health check.
+	//
+	//    * Removing - The Auto Scaling instances are being deregistered from the
+	//    target group. If connection draining is enabled, VPC Lattice waits for
+	//    in-flight requests to complete before deregistering the instances.
+	//
+	//    * Removed - All Auto Scaling instances are deregistered from the target
+	//    group.
+	State *string `min:"1" type:"string"`
+
+	// The unique identifier of the traffic source. Currently, this is the Amazon
+	// Resource Name (ARN) for a VPC Lattice target group.
+	TrafficSource *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TrafficSourceState) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TrafficSourceState) GoString() string {
+	return s.String()
+}
+
+// SetState sets the State field's value.
+func (s *TrafficSourceState) SetState(v string) *TrafficSourceState {
+	s.State = &v
+	return s
+}
+
+// SetTrafficSource sets the TrafficSource field's value.
+func (s *TrafficSourceState) SetTrafficSource(v string) *TrafficSourceState {
+	s.TrafficSource = &v
+	return s
+}
+
 type UpdateAutoScalingGroupInput struct {
 	_ struct{} `type:"structure"`
 
@@ -19522,17 +20491,19 @@ type UpdateAutoScalingGroupInput struct {
 
 	// The amount of time, in seconds, that Amazon EC2 Auto Scaling waits before
 	// checking the health status of an EC2 instance that has come into service
-	// and marking it unhealthy due to a failed Elastic Load Balancing or custom
-	// health check. This is useful if your instances do not immediately pass these
-	// health checks after they enter the InService state. For more information,
-	// see Set the health check grace period for an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/health-check-grace-period.html)
+	// and marking it unhealthy due to a failed health check. This is useful if
+	// your instances do not immediately pass their health checks after they enter
+	// the InService state. For more information, see Set the health check grace
+	// period for an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/health-check-grace-period.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	HealthCheckGracePeriod *int64 `type:"integer"`
 
-	// The service to use for the health checks. The valid values are EC2 and ELB.
-	// If you configure an Auto Scaling group to use ELB health checks, it considers
-	// the instance unhealthy if it fails either the EC2 status checks or the load
-	// balancer health checks.
+	// Determines whether any additional health checks are performed on the instances
+	// in this group. Amazon EC2 health checks are always on.
+	//
+	// The valid values are EC2 (default), ELB, and VPC_LATTICE. The VPC_LATTICE
+	// health check type is reserved for use with VPC Lattice, which is in preview
+	// release and is subject to change.
 	HealthCheckType *string `min:"1" type:"string"`
 
 	// The name of the launch configuration. If you specify LaunchConfigurationName

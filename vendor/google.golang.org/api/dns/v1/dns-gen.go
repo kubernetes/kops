@@ -1367,6 +1367,11 @@ type ManagedZoneForwardingConfigNameServerTarget struct {
 	// Ipv4Address: IPv4 address of a target name server.
 	Ipv4Address string `json:"ipv4Address,omitempty"`
 
+	// Ipv6Address: IPv6 address of a target name server. Does not accept
+	// both fields (ipv4 & ipv6) being populated. Public preview as of
+	// November 2022.
+	Ipv6Address string `json:"ipv6Address,omitempty"`
+
 	Kind string `json:"kind,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "ForwardingPath") to
@@ -2107,6 +2112,10 @@ type PolicyAlternativeNameServerConfigTargetNameServer struct {
 
 	// Ipv4Address: IPv4 address to forward queries to.
 	Ipv4Address string `json:"ipv4Address,omitempty"`
+
+	// Ipv6Address: IPv6 address to forward to. Does not accept both fields
+	// (ipv4 & ipv6) being populated. Public preview as of November 2022.
+	Ipv6Address string `json:"ipv6Address,omitempty"`
 
 	Kind string `json:"kind,omitempty"`
 
