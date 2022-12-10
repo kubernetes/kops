@@ -1824,7 +1824,7 @@
       }
     }
   },
-  "revision": "20221013",
+  "revision": "20221110",
   "rootUrl": "https://dns.googleapis.com/",
   "schemas": {
     "Change": {
@@ -2450,6 +2450,10 @@
           "description": "IPv4 address of a target name server.",
           "type": "string"
         },
+        "ipv6Address": {
+          "description": "IPv6 address of a target name server. Does not accept both fields (ipv4 \u0026 ipv6) being populated. Public preview as of November 2022.",
+          "type": "string"
+        },
         "kind": {
           "default": "dns#managedZoneForwardingConfigNameServerTarget",
           "type": "string"
@@ -2835,6 +2839,10 @@
         },
         "ipv4Address": {
           "description": "IPv4 address to forward queries to.",
+          "type": "string"
+        },
+        "ipv6Address": {
+          "description": "IPv6 address to forward to. Does not accept both fields (ipv4 \u0026 ipv6) being populated. Public preview as of November 2022.",
           "type": "string"
         },
         "kind": {
