@@ -195,9 +195,9 @@ spec:
         - name: ENABLE_SCHEDULED_EVENT_DRAINING
           value: "true"
         - name: ENABLE_REBALANCE_MONITORING
-          value: "false"
+          value: "true"
         - name: ENABLE_REBALANCE_DRAINING
-          value: "false"
+          value: "true"
         - name: ENABLE_SQS_TERMINATION_DRAINING
           value: "false"
         - name: UPTIME_FROM_FILE

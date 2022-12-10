@@ -165,8 +165,8 @@ spec:
     cni: {}
   nodeTerminationHandler:
     cpuRequest: 50m
-    enableRebalanceDraining: false
-    enableRebalanceMonitoring: false
+    enableRebalanceDraining: true
+    enableRebalanceMonitoring: true
     enableSQSTerminationDraining: false
     enableScheduledEventDraining: true
     enableSpotInterruptionDraining: true
