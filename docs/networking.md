@@ -24,7 +24,7 @@ As of kOps 1.26 the default network provider is Cilium. Prior to that the defaul
 | Flannel udp      |        1.5.2 |      - |          - |               - |
 | Flannel vxlan    |        1.8.0 |      - |          - |               - |
 | Kopeio           |          1.5 |      - |          - |               - |
-| Kube-router      |        1.6.2 |      - |          - |               - |
+| Kube-router      |        1.6.2 |      - |       1.26 |               - |
 | Kubenet          |          1.5 |    1.5 |          - |               - |
 | Lyft VPC         |         1.11 |      - |       1.22 |            1.23 |
 | Romana           |          1.8 |      - |       1.18 |            1.19 |

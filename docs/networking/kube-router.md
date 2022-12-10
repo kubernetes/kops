@@ -1,5 +1,7 @@
 # Kube-router
 
+&#9888; The Kube-router CNI is deprecated due to lack of a kOps maintainer.
+
 [Kube-router](https://github.com/cloudnativelabs/kube-router) is project that provides one cohesive solution that provides CNI networking for pods, an IPVS based network service proxy and iptables based network policy enforcement.
 
 Kube-router also provides a service proxy, so kube-proxy will not be deployed in to the cluster.
