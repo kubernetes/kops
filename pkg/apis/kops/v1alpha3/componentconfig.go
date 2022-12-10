@@ -927,10 +927,10 @@ type NodeTerminationHandlerConfig struct {
 	// Default: true
 	EnableScheduledEventDraining *bool `json:"enableScheduledEventDraining,omitempty"`
 	// EnableRebalanceMonitoring makes node termination handler cordon nodes when the rebalance recommendation notice is received
-	// Default: false
+	// Default: true
 	EnableRebalanceMonitoring *bool `json:"enableRebalanceMonitoring,omitempty"`
 	// EnableRebalanceDraining makes node termination handler drain nodes when the rebalance recommendation notice is received
-	// Default: false
+	// Default: true
 	EnableRebalanceDraining *bool `json:"enableRebalanceDraining,omitempty"`
 
 	// EnablePrometheusMetrics enables the "/metrics" endpoint.

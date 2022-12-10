@@ -46,10 +46,10 @@ func (b *NodeTerminationHandlerOptionsBuilder) BuildOptions(o interface{}) error
 		nth.EnableScheduledEventDraining = fi.PtrTo(true)
 	}
 	if nth.EnableRebalanceMonitoring == nil {
-		nth.EnableRebalanceMonitoring = fi.PtrTo(false)
+		nth.EnableRebalanceMonitoring = fi.PtrTo(true)
 	}
 	if nth.EnableRebalanceDraining == nil {
-		nth.EnableRebalanceDraining = fi.PtrTo(false)
+		nth.EnableRebalanceDraining = fi.PtrTo(true)
 	}
 
 	if nth.EnablePrometheusMetrics == nil {

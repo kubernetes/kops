@@ -211,9 +211,9 @@ spec:
             - name: ENABLE_SCHEDULED_EVENT_DRAINING
               value: "{{ WithDefaultBool .EnableScheduledEventDraining true }}"
             - name: ENABLE_REBALANCE_MONITORING
-              value: "{{ WithDefaultBool .EnableRebalanceMonitoring false }}"
+              value: "{{ WithDefaultBool .EnableRebalanceMonitoring true }}"
             - name: ENABLE_REBALANCE_DRAINING
-              value: "{{ WithDefaultBool .EnableRebalanceDraining false }}"
+              value: "{{ WithDefaultBool .EnableRebalanceDraining true }}"
             - name: ENABLE_SQS_TERMINATION_DRAINING
               value: "true"
             - name: QUEUE_URL
@@ -378,9 +378,9 @@ spec:
             - name: ENABLE_SCHEDULED_EVENT_DRAINING
               value: "{{ WithDefaultBool .EnableScheduledEventDraining true }}"
             - name: ENABLE_REBALANCE_MONITORING
-              value: "{{ WithDefaultBool .EnableRebalanceMonitoring false }}"
+              value: "{{ WithDefaultBool .EnableRebalanceMonitoring true }}"
             - name: ENABLE_REBALANCE_DRAINING
-              value: "{{ WithDefaultBool .EnableRebalanceDraining false }}"
+              value: "{{ WithDefaultBool .EnableRebalanceDraining true }}"
             - name: ENABLE_SQS_TERMINATION_DRAINING
               value: "false"
             - name: UPTIME_FROM_FILE

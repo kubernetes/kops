@@ -5336,12 +5336,12 @@ spec:
                   enableRebalanceDraining:
                     description: 'EnableRebalanceDraining makes node termination handler
                       drain nodes when the rebalance recommendation notice is received
-                      Default: false'
+                      Default: true'
                     type: boolean
                   enableRebalanceMonitoring:
                     description: 'EnableRebalanceMonitoring makes node termination
                       handler cordon nodes when the rebalance recommendation notice
-                      is received Default: false'
+                      is received Default: true'
                     type: boolean
                   enableSQSTerminationDraining:
                     description: 'EnableSQSTerminationDraining enables queue-processor
