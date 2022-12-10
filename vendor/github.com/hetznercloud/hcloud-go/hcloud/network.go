@@ -21,6 +21,7 @@ type NetworkZone string
 const (
 	NetworkZoneEUCentral NetworkZone = "eu-central"
 	NetworkZoneUSEast    NetworkZone = "us-east"
+	NetworkZoneUSWest    NetworkZone = "us-west"
 )
 
 // NetworkSubnetType specifies a type of a subnet.
