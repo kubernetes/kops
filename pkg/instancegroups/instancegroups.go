@@ -46,12 +46,16 @@ const rollingUpdateTaintKey = "kops.k8s.io/scheduled-for-update"
 // ValidationTimeoutError represents an error that occurs when
 // the cluster fails to validate within the designated timeout.
 type ValidationTimeoutError struct {
-	Operation string
-	Err       error
+	operation string
+	err       error
 }
 
 func (v *ValidationTimeoutError) Error() string {
-	return fmt.Sprintf("error validating cluster%s: %v", v.Operation, v.Err)
+	return fmt.Sprintf("error validating cluster%s: %s", v.operation, v.err.Error())
+}
+
+func (v *ValidationTimeoutError) Unwrap() error {
+	return v.err
 }
 
 // Is checks that a given error is a ValidationTimeoutError.
@@ -501,8 +505,8 @@ func (c *RollingUpdateCluster) maybeValidate(operation string, validateCount int
 			if c.FailOnValidate {
 				klog.Errorf("Cluster did not validate within %s", c.ValidationTimeout)
 				return &ValidationTimeoutError{
-					Operation: operation,
-					Err:       err,
+					operation: operation,
+					err:       err,
 				}
 			}
 
