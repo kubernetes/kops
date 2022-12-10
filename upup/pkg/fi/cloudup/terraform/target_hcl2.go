@@ -21,24 +21,95 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/hashicorp/hcl/v2/hclwrite"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 func (t *TerraformTarget) finishHCL2() error {
-	f := hclwrite.NewEmptyFile()
-	rootBody := f.Body()
+	buf := &bytes.Buffer{}
 
 	outputs, err := t.GetOutputs()
 	if err != nil {
 		return err
 	}
-	writeLocalsOutputs(rootBody, outputs)
+	writeLocalsOutputs(buf, outputs)
 
-	buf := bytes.NewBuffer(hclwrite.Format(f.Bytes()))
+	t.writeProviders(buf)
 
+	resourcesByType, err := t.GetResourcesByType()
+	if err != nil {
+		return err
+	}
+
+	t.writeResources(buf, resourcesByType)
+
+	dataSourcesByType, err := t.GetDataSourcesByType()
+	if err != nil {
+		return err
+	}
+
+	t.writeDataSources(buf, dataSourcesByType)
+
+	t.writeTerraform(buf)
+
+	t.Files["kubernetes.tf"] = buf.Bytes()
+
+	return nil
+}
+
+type output struct {
+	Value *terraformWriter.Literal
+}
+
+// writeLocalsOutputs creates the locals block and output blocks for all output variables
+// Example:
+//
+//	locals {
+//	  key1 = "value1"
+//	  key2 = "value2"
+//	}
+//
+//	output "key1" {
+//	  value = "value1"
+//	}
+//
+//	output "key2" {
+//	  value = "value2"
+//	}
+func writeLocalsOutputs(buf *bytes.Buffer, outputs map[string]terraformWriter.OutputValue) {
+	if len(outputs) == 0 {
+		return
+	}
+
+	outputNames := make([]string, 0, len(outputs))
+	locals := make(map[string]*terraformWriter.Literal, len(outputs))
+	for k, v := range outputs {
+		if _, ok := locals[k]; ok {
+			panic(fmt.Sprintf("duplicate variable found: %s", k))
+		}
+		if v.Value != nil {
+			locals[k] = v.Value
+		} else {
+			locals[k] = terraformWriter.LiteralListExpression(v.ValueArray...)
+		}
+		outputNames = append(outputNames, k)
+	}
+	sort.Strings(outputNames)
+
+	mapToElement(locals).
+		ToObject().
+		Write(buf, 0, "locals")
+	buf.WriteString("\n")
+
+	for _, tfName := range outputNames {
+		toElement(&output{Value: locals[tfName]}).Write(buf, 0, fmt.Sprintf("output %q", tfName))
+		buf.WriteString("\n")
+	}
+	return
+}
+
+func (t *TerraformTarget) writeProviders(buf *bytes.Buffer) {
 	providerName := string(t.Cloud.ProviderID())
 	if t.Cloud.ProviderID() == kops.CloudProviderGCE {
 		providerName = "google"
@@ -76,12 +147,9 @@ func (t *TerraformTarget) finishHCL2() error {
 			Write(buf, 0, fmt.Sprintf("provider %q", t.filesProvider.Name))
 		buf.WriteString("\n")
 	}
+}
 
-	resourcesByType, err := t.GetResourcesByType()
-	if err != nil {
-		return err
-	}
-
+func (t *TerraformTarget) writeResources(buf *bytes.Buffer, resourcesByType map[string]map[string]interface{}) {
 	resourceTypes := make([]string, 0, len(resourcesByType))
 	for resourceType := range resourcesByType {
 		resourceTypes = append(resourceTypes, resourceType)
@@ -95,17 +163,14 @@ func (t *TerraformTarget) finishHCL2() error {
 		}
 		sort.Strings(resourceNames)
 		for _, resourceName := range resourceNames {
-			element := toElement(resources[resourceName])
-			element.Write(buf, 0, fmt.Sprintf("resource %q %q", resourceType, resourceName))
+			toElement(resources[resourceName]).
+				Write(buf, 0, fmt.Sprintf("resource %q %q", resourceType, resourceName))
 			buf.WriteString("\n")
 		}
 	}
+}
 
-	dataSourcesByType, err := t.GetDataSourcesByType()
-	if err != nil {
-		return err
-	}
-
+func (t *TerraformTarget) writeDataSources(buf *bytes.Buffer, dataSourcesByType map[string]map[string]interface{}) {
 	dataSourceTypes := make([]string, 0, len(dataSourcesByType))
 	for dataSourceType := range dataSourcesByType {
 		dataSourceTypes = append(dataSourceTypes, dataSourceType)
@@ -119,25 +184,27 @@ func (t *TerraformTarget) finishHCL2() error {
 		}
 		sort.Strings(dataSourceNames)
 		for _, dataSourceName := range dataSourceNames {
-			element := toElement(dataSources[dataSourceName])
-			element.Write(buf, 0, fmt.Sprintf("data %q %q", dataSourceType, dataSourceName))
+			toElement(dataSources[dataSourceName]).
+				Write(buf, 0, fmt.Sprintf("data %q %q", dataSourceType, dataSourceName))
 			buf.WriteString("\n")
 		}
 	}
+}
 
+func (t *TerraformTarget) writeTerraform(buf *bytes.Buffer) {
 	buf.WriteString("terraform {\n")
 	buf.WriteString("  required_version = \">= 0.15.0\"\n")
 	buf.WriteString("  required_providers {\n")
 
 	if t.Cloud.ProviderID() == kops.CloudProviderGCE {
-		mapToElement(map[string]*terraformWriter.Literal{
-			"source":  terraformWriter.LiteralFromStringValue("hashicorp/google"),
-			"version": terraformWriter.LiteralFromStringValue(">= 2.19.0"),
+		mapToElement(map[string]string{
+			"source":  "hashicorp/google",
+			"version": ">= 2.19.0",
 		}).Write(buf, 4, "google")
 	} else if t.Cloud.ProviderID() == kops.CloudProviderHetzner {
-		mapToElement(map[string]*terraformWriter.Literal{
-			"source":  terraformWriter.LiteralFromStringValue("hetznercloud/hcloud"),
-			"version": terraformWriter.LiteralFromStringValue(">= 1.35.1"),
+		mapToElement(map[string]string{
+			"source":  "hetznercloud/hcloud",
+			"version": ">= 1.35.1",
 		}).Write(buf, 4, "hcloud")
 	} else if t.Cloud.ProviderID() == kops.CloudProviderAWS {
 		configurationAlias := terraformWriter.LiteralTokens("aws", "files")
@@ -147,70 +214,13 @@ func (t *TerraformTarget) finishHCL2() error {
 			"configuration_aliases": terraformWriter.LiteralListExpression(configurationAlias),
 		}).Write(buf, 4, "aws")
 		if featureflag.Spotinst.Enabled() {
-			mapToElement(map[string]*terraformWriter.Literal{
-				"source":  terraformWriter.LiteralFromStringValue("spotinst/spotinst"),
-				"version": terraformWriter.LiteralFromStringValue(">= 1.33.0"),
+			mapToElement(map[string]string{
+				"source":  "spotinst/spotinst",
+				"version": ">= 1.33.0",
 			}).Write(buf, 4, "spotinst")
 		}
 	}
 
 	buf.WriteString("  }\n")
 	buf.WriteString("}\n")
-
-	t.Files["kubernetes.tf"] = buf.Bytes()
-
-	return nil
-}
-
-// writeLocalsOutputs creates the locals block and output blocks for all output variables
-// Example:
-//
-//	locals {
-//	  key1 = "value1"
-//	  key2 = "value2"
-//	}
-//
-//	output "key1" {
-//	  value = "value1"
-//	}
-//
-//	output "key2" {
-//	  value = "value2"
-//	}
-func writeLocalsOutputs(body *hclwrite.Body, outputs map[string]terraformWriter.OutputValue) error {
-	if len(outputs) == 0 {
-		return nil
-	}
-
-	localsBlock := body.AppendNewBlock("locals", []string{})
-	body.AppendNewline()
-	// each output is added to a single locals block and its own output block
-	localsBody := localsBlock.Body()
-	existingOutputVars := make(map[string]bool)
-
-	outputNames := make([]string, 0, len(outputs))
-	for k := range outputs {
-		outputNames = append(outputNames, k)
-	}
-	sort.Strings(outputNames)
-
-	for _, tfName := range outputNames {
-		v := outputs[tfName]
-		outputBlock := body.AppendNewBlock("output", []string{tfName})
-		outputBody := outputBlock.Body()
-		if v.Value != nil {
-			writeLiteral(outputBody, "value", v.Value)
-			writeLiteral(localsBody, tfName, v.Value)
-		} else {
-			writeLiteralList(outputBody, "value", v.ValueArray)
-			writeLiteralList(localsBody, tfName, v.ValueArray)
-		}
-
-		if existingOutputVars[tfName] {
-			return fmt.Errorf("duplicate variable found: %s", tfName)
-		}
-		existingOutputVars[tfName] = true
-		body.AppendNewline()
-	}
-	return nil
 }
