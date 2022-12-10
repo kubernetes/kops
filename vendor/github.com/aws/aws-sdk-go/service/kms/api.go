@@ -2282,13 +2282,14 @@ func (c *KMS) DescribeKeyRequest(input *DescribeKeyInput) (req *request.Request,
 // any) of the key material. It includes fields, like KeySpec, that help you
 // distinguish different types of KMS keys. It also displays the key usage (encryption,
 // signing, or generating and verifying MACs) and the algorithms that the KMS
-// key supports. For multi-Region keys (kms/latest/developerguide/multi-region-keys-overview.html),
-// it displays the primary key and all related replica keys. For KMS keys in
-// CloudHSM key stores (kms/latest/developerguide/keystore-cloudhsm.html), it
-// includes information about the custom key store, such as the key store ID
-// and the CloudHSM cluster ID. For KMS key in external key stores (kms/latest/developerguide/keystore-external.html),
-// it includes the custom key store ID and the ID and status of the associated
-// external key.
+// key supports.
+//
+// For multi-Region keys (kms/latest/developerguide/multi-region-keys-overview.html),
+// DescribeKey displays the primary key and all related replica keys. For KMS
+// keys in CloudHSM key stores (kms/latest/developerguide/keystore-cloudhsm.html),
+// it includes information about the key store, such as the key store ID and
+// the CloudHSM cluster ID. For KMS keys in external key stores (kms/latest/developerguide/keystore-external.html),
+// it includes the custom key store ID and the ID of the external key.
 //
 // DescribeKey does not return the following information:
 //
@@ -9766,8 +9767,6 @@ type CreateCustomKeyStoreInput struct {
 	// String and GoString methods.
 	KeyStorePassword *string `min:"7" type:"string" sensitive:"true"`
 
-	// * CreateCustom
-	//
 	// Specifies the certificate for an CloudHSM key store. This parameter is required
 	// for custom key stores with a CustomKeyStoreType of AWS_CLOUDHSM.
 	//
@@ -19923,7 +19922,7 @@ func (s *XksKeyAlreadyInUseException) RequestID() string {
 // Information about the external key (https://docs.aws.amazon.com/kms/latest/developerguide/keystore-external.html#concept-external-key)that
 // is associated with a KMS key in an external key store.
 //
-// These fields appear in a CreateKey or DescribeKey response only for a KMS
+// This element appears in a CreateKey or DescribeKey response only for a KMS
 // key in an external key store.
 //
 // The external key is a symmetric encryption key that is hosted by an external
