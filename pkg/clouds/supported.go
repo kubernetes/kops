@@ -17,6 +17,10 @@ limitations under the License.
 package clouds
 
 import (
+	"fmt"
+	"os"
+	"strings"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 )
@@ -37,4 +41,27 @@ func SupportedClouds() []kops.CloudProviderID {
 	}
 
 	return clouds
+}
+
+// GuessCloudForPath tries to infer the cloud provider from a VFS path
+func GuessCloudForPath(path string) (kops.CloudProviderID, error) {
+	switch {
+	case strings.HasPrefix(path, "azureblob://"):
+		return kops.CloudProviderAzure, nil
+	case strings.HasPrefix(path, "do://"):
+		return kops.CloudProviderDO, nil
+	case strings.HasPrefix(path, "gs://"):
+		return kops.CloudProviderGCE, nil
+	case strings.HasPrefix(path, "scw://"):
+		return kops.CloudProviderScaleway, nil
+	case strings.HasPrefix(path, "swift://"):
+		return kops.CloudProviderOpenstack, nil
+	case strings.HasPrefix(path, "s3://"):
+		if os.Getenv("HCLOUD_TOKEN") != "" {
+			return kops.CloudProviderHetzner, nil
+		}
+		return kops.CloudProviderAWS, nil
+	default:
+		return "", fmt.Errorf("cannot infer cloud provider from path: %q", path)
+	}
 }

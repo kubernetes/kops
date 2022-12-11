@@ -33,8 +33,8 @@ import (
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/pkg/clouds"
 	"k8s.io/kops/pkg/featureflag"
-	"k8s.io/kops/pkg/zones"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
@@ -285,20 +285,12 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 	allZones.Insert(opt.ControlPlaneZones...)
 
 	if opt.CloudProvider == "" {
-		for _, zone := range allZones.List() {
-			cloud, known := zones.GuessCloudForZone(zone)
-			if known {
-				klog.Infof("Inferred %q cloud provider from zone %q", cloud, zone)
-				opt.CloudProvider = string(cloud)
-				break
-			}
+		cloud, err := clouds.GuessCloudForPath(cluster.Spec.ConfigBase)
+		if err != nil {
+			return nil, fmt.Errorf("pass in the cloud provider explicitly using --cloud: %w", err)
 		}
-		if opt.CloudProvider == "" {
-			if allZones.Len() == 0 {
-				return nil, fmt.Errorf("must specify --zones or --cloud")
-			}
-			return nil, fmt.Errorf("unable to infer cloud provider from zones. pass in the cloud provider explicitly using --cloud")
-		}
+		klog.V(2).Infof("Inferred %q cloud provider from state store %q", cloud, cluster.Spec.ConfigBase)
+		opt.CloudProvider = string(cloud)
 	}
 
 	var cloud fi.Cloud
@@ -1350,7 +1342,7 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 
 func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
 	// Populate the API access, so that it can be discoverable
-	klog.Infof(" Cloud Provider ID = %s", cluster.Spec.GetCloudProvider())
+	klog.Infof("Cloud Provider ID: %q", cluster.Spec.GetCloudProvider())
 	if cluster.Spec.GetCloudProvider() == api.CloudProviderOpenstack {
 		initializeOpenstackAPI(opt, cluster)
 	} else if cluster.Spec.GetCloudProvider() == api.CloudProviderAzure {
