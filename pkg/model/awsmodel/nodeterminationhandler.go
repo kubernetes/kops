@@ -17,17 +17,16 @@ limitations under the License.
 package awsmodel
 
 import (
+	"fmt"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/eventbridge"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
-
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-
-	"github.com/aws/aws-sdk-go/aws"
-
-	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
 )
 
 const (
@@ -52,8 +51,9 @@ type event struct {
 
 var (
 	_ fi.ModelBuilder = &NodeTerminationHandlerBuilder{}
+	_ fi.HasDeletions = &NodeTerminationHandlerBuilder{}
 
-	events = []event{
+	fixedEvents = []event{
 		{
 			name:    "ASGLifecycle",
 			pattern: `{"source":["aws.autoscaling"],"detail-type":["EC2 Instance-terminate Lifecycle Action"]}`,
@@ -63,10 +63,6 @@ var (
 			pattern: `{"source": ["aws.ec2"],"detail-type": ["EC2 Spot Instance Interruption Warning"]}`,
 		},
 		{
-			name:    "RebalanceRecommendation",
-			pattern: `{"source": ["aws.ec2"],"detail-type": ["EC2 Instance Rebalance Recommendation"]}`,
-		},
-		{
 			name:    "InstanceStateChange",
 			pattern: `{"source": ["aws.ec2"],"detail-type": ["EC2 Instance State-change Notification"]}`,
 		},
@@ -74,6 +70,11 @@ var (
 			name:    "InstanceScheduledChange",
 			pattern: `{"source": ["aws.health"],"detail-type": ["AWS Health Event"],"detail": {"service": ["EC2"],"eventTypeCategory": ["scheduledChange"]}}`,
 		},
+	}
+
+	rebalanceEvent = event{
+		name:    "RebalanceRecommendation",
+		pattern: `{"source": ["aws.ec2"],"detail-type": ["EC2 Instance Rebalance Recommendation"]}`,
 	}
 )
 
@@ -140,6 +141,12 @@ func (b *NodeTerminationHandlerBuilder) build(c *fi.ModelBuilderContext) error {
 	clusterName := b.ClusterName()
 
 	clusterNamePrefix := awsup.GetClusterName40(clusterName)
+
+	events := append([]event(nil), fixedEvents...)
+	if b.Cluster.Spec.NodeTerminationHandler != nil && fi.ValueOf(b.Cluster.Spec.NodeTerminationHandler.EnableRebalanceDraining) {
+		events = append(events, rebalanceEvent)
+	}
+
 	for _, event := range events {
 		// build rule
 		ruleName := aws.String(clusterNamePrefix + "-" + event.name)
@@ -167,6 +174,58 @@ func (b *NodeTerminationHandlerBuilder) build(c *fi.ModelBuilderContext) error {
 
 		c.AddTask(targetTask)
 	}
+
+	return nil
+}
+
+func (b *NodeTerminationHandlerBuilder) FindDeletions(c *fi.ModelBuilderContext, cloud fi.Cloud) error {
+	if b.Cluster.Spec.NodeTerminationHandler != nil && fi.ValueOf(b.Cluster.Spec.NodeTerminationHandler.EnableRebalanceDraining) {
+		return nil
+	}
+
+	clusterName := b.ClusterName()
+	clusterNamePrefix := awsup.GetClusterName40(clusterName)
+	ruleName := aws.String(clusterNamePrefix + "-" + rebalanceEvent.name)
+
+	eventBridge := cloud.(awsup.AWSCloud).EventBridge()
+	request := &eventbridge.ListRulesInput{
+		NamePrefix: ruleName,
+	}
+	response, err := eventBridge.ListRules(request)
+	if err != nil {
+		return fmt.Errorf("listing EventBridge rules: %w", err)
+	}
+	if response == nil || len(response.Rules) == 0 {
+		return nil
+	}
+	if len(response.Rules) > 1 {
+		return fmt.Errorf("found multiple EventBridge rules with the same name %s", *ruleName)
+	}
+
+	rule := response.Rules[0]
+
+	tagResponse, err := eventBridge.ListTagsForResource(&eventbridge.ListTagsForResourceInput{ResourceARN: rule.Arn})
+	if err != nil {
+		return fmt.Errorf("listing tags for EventBridge rule: %w", err)
+	}
+
+	owned := false
+	ownershipTag := "kubernetes.io/cluster/" + b.Cluster.ObjectMeta.Name
+	for _, tag := range tagResponse.Tags {
+		if fi.ValueOf(tag.Key) == ownershipTag && fi.ValueOf(tag.Value) == "owned" {
+			owned = true
+			break
+		}
+	}
+	if !owned {
+		return nil
+	}
+
+	ruleTask := &awstasks.EventBridgeRule{
+		Name:      ruleName,
+		Lifecycle: b.Lifecycle,
+	}
+	c.AddTask(ruleTask)
 
 	return nil
 }
