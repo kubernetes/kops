@@ -26,6 +26,7 @@ metadata:
 
 apiVersion: v1
 data:
+  agent-health-port: "9876"
   auto-create-cilium-node-resource: "true"
   auto-direct-node-routes: "false"
   blacklist-conflicting-routes: "false"
@@ -77,6 +78,7 @@ data:
   tofqdns-dns-reject-response-code: refused
   tofqdns-enable-poller: "false"
   tunnel: disabled
+  wait-bpf-mount: "false"
 kind: ConfigMap
 metadata:
   creationTimestamp: null
@@ -467,7 +469,7 @@ spec:
           value: api.internal.privateciliumadvanced.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/cilium:v1.12.4
+        image: quay.io/cilium/cilium:v1.13.0-rc3
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -487,7 +489,7 @@ spec:
             - name: brief
               value: "true"
             path: /healthz
-            port: 9879
+            port: 9876
             scheme: HTTP
           periodSeconds: 30
           successThreshold: 1
@@ -501,7 +503,7 @@ spec:
             - name: brief
               value: "true"
             path: /healthz
-            port: 9879
+            port: 9876
             scheme: HTTP
           initialDelaySeconds: 5
           periodSeconds: 30
@@ -521,14 +523,13 @@ spec:
             - name: brief
               value: "true"
             path: /healthz
-            port: 9879
+            port: 9876
             scheme: HTTP
           periodSeconds: 2
           successThreshold: null
         terminationMessagePolicy: FallbackToLogsOnError
         volumeMounts:
         - mountPath: /sys/fs/bpf
-          mountPropagation: Bidirectional
           name: bpf-maps
         - mountPath: /var/run/cilium
           name: cilium-run
@@ -570,7 +571,13 @@ spec:
               key: clean-cilium-bpf-state
               name: cilium-config
               optional: true
-        image: quay.io/cilium/cilium:v1.12.4
+        - name: CILIUM_WAIT_BPF_MOUNT
+          valueFrom:
+            configMapKeyRef:
+              key: wait-bpf-mount
+              name: cilium-config
+              optional: true
+        image: quay.io/cilium/cilium:v1.13.0-rc3
         imagePullPolicy: IfNotPresent
         name: clean-cilium-state
         resources:
@@ -584,6 +591,7 @@ spec:
         terminationMessagePolicy: FallbackToLogsOnError
         volumeMounts:
         - mountPath: /sys/fs/bpf
+          mountPropagation: HostToContainer
           name: bpf-maps
         - mountPath: /run/cilium/cgroupv2
           mountPropagation: HostToContainer
@@ -718,7 +726,7 @@ spec:
           value: api.internal.privateciliumadvanced.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/operator:v1.12.4
+        image: quay.io/cilium/operator:v1.13.0-rc3
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:

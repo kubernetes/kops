@@ -948,7 +948,7 @@ func Test_Validate_Cilium(t *testing.T) {
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
-				Version: "v1.12.4",
+				Version: "v1.13.0",
 				Hubble: &kops.HubbleSpec{
 					Enabled: fi.PtrTo(true),
 				},
