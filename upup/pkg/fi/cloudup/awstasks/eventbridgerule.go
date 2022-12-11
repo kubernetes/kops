@@ -22,6 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/eventbridge"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+	awsResources "k8s.io/kops/pkg/resources/aws"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -100,6 +101,10 @@ func (_ *EventBridgeRule) CheckChanges(a, e, changes *EventBridgeRule) error {
 }
 
 func (eb *EventBridgeRule) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *EventBridgeRule) error {
+	if e.EventPattern == nil {
+		return awsResources.DeleteEventBridgeRule(t.Cloud, *e.Name)
+	}
+
 	if a == nil {
 		var tags []*eventbridge.Tag
 		for k, v := range eb.Tags {
