@@ -974,8 +974,8 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "Could not parse as semantic version"))
 		}
 
-		if version.Minor != 11 && version.Patch < 5 {
-			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "Only version 1.11 with patch version 5 or higher is supported"))
+		if version.Minor != 12 {
+			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "Only version 1.12 is supported"))
 		}
 
 		if v.Hubble != nil && fi.ValueOf(v.Hubble.Enabled) {
