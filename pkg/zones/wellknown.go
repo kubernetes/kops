@@ -17,9 +17,9 @@ limitations under the License.
 package zones
 
 import (
-	"k8s.io/klog/v2"
+	"sort"
+
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/clouds"
 )
 
 // These lists allows us to infer from certain well-known zones to a cloud
@@ -361,45 +361,23 @@ var azureZones = []string{
 	"westusstage",
 }
 
-// GuessCloudForZone tries to infer the cloudprovider from the zone name
-// Ali has the same zoneNames as AWS in the regions outside China, so if use AliCloud to install k8s in the regions outside China,
-// the users need to provide parameter "--cloud". But the regions inside China can be easily identified.
-func GuessCloudForZone(zone string) (kops.CloudProviderID, bool) {
-	providers := clouds.SupportedClouds()
-	var matches []kops.CloudProviderID
-	for _, provider := range providers {
-		zones := WellKnownZonesForCloud(provider)
-		for _, z := range zones {
-			if z == zone {
-				matches = append(matches, provider)
-			}
-		}
-	}
-
-	if len(matches) == 0 {
-		return "", false
-	}
-	if len(matches) > 1 {
-		klog.Warningf("found multiple providers for zone %q, must pass --cloud", zone)
-		return "", false
-	}
-	return matches[0], true
-}
-
 func WellKnownZonesForCloud(matchCloud kops.CloudProviderID) []string {
+	var zones []string
 	switch matchCloud {
 	case kops.CloudProviderAWS:
-		return awsZones
+		zones = awsZones
 	case kops.CloudProviderAzure:
-		return azureZones
+		zones = azureZones
 	case kops.CloudProviderDO:
-		return doZones
+		zones = doZones
 	case kops.CloudProviderGCE:
-		return gceZones
+		zones = gceZones
 	case kops.CloudProviderHetzner:
-		return hetznerZones
-
+		zones = hetznerZones
 	default:
 		return nil
 	}
+
+	sort.Strings(zones)
+	return zones
 }

@@ -236,9 +236,9 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	})
 
 	cmd.Flags().StringSliceVar(&options.Zones, "zones", options.Zones, "Zones in which to run the cluster")
-	cmd.RegisterFlagCompletionFunc("zones", completeZone(options))
+	cmd.RegisterFlagCompletionFunc("zones", completeZone(options, &rootCommand))
 	cmd.Flags().StringSliceVar(&options.ControlPlaneZones, "control-plane-zones", options.ControlPlaneZones, "Zones in which to run control-plane nodes. (must be an odd number)")
-	cmd.RegisterFlagCompletionFunc("control-plane-zones", completeZone(options))
+	cmd.RegisterFlagCompletionFunc("control-plane-zones", completeZone(options, &rootCommand))
 
 	if featureflag.ClusterAddons.Enabled() {
 		cmd.Flags().StringSliceVar(&options.AddonPaths, "add", options.AddonPaths, "Paths to addons we should add to the cluster")
@@ -865,28 +865,17 @@ func loadSSHPublicKeys(sshPublicKey string) (map[string][]byte, error) {
 	return sshPublicKeys, nil
 }
 
-func completeZone(options *CreateClusterOptions) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func completeZone(options *CreateClusterOptions, rootCommand *RootCmd) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		var allClouds []api.CloudProviderID
 		if options.CloudProvider != "" {
-			allClouds = []api.CloudProviderID{api.CloudProviderID(options.CloudProvider)}
-		} else {
-			allClouds = clouds.SupportedClouds()
+			return zones.WellKnownZonesForCloud(api.CloudProviderID(options.CloudProvider)), cobra.ShellCompDirectiveNoFileComp
 		}
 
-		var allZones []string
-		for _, c := range allClouds {
-			zones := zones.WellKnownZonesForCloud(c)
-			for _, z := range zones {
-				if options.CloudProvider == "" {
-					allZones = append(allZones, z+"\t"+string(c))
-				} else {
-					allZones = append(allZones, z)
-				}
-			}
+		cloud, err := clouds.GuessCloudForPath(rootCommand.RegistryPath)
+		if err != nil {
+			return commandutils.CompletionError("listing cloud zones", err)
 		}
-		sort.Strings(allZones)
-		return allZones, cobra.ShellCompDirectiveNoFileComp
+		return zones.WellKnownZonesForCloud(cloud), cobra.ShellCompDirectiveNoFileComp
 	}
 }
 
