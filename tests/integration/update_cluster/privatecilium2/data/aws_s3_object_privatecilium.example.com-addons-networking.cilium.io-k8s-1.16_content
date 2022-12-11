@@ -39,6 +39,7 @@ metadata:
 
 apiVersion: v1
 data:
+  agent-health-port: "9879"
   auto-direct-node-routes: "false"
   bpf-ct-global-any-max: "262144"
   bpf-ct-global-tcp-max: "524288"
@@ -519,7 +520,7 @@ spec:
           value: api.internal.privatecilium.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/cilium:v1.12.10
+        image: quay.io/cilium/cilium:v1.13.5
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -604,7 +605,7 @@ spec:
       initContainers:
       - command:
         - /install-plugin.sh
-        image: quay.io/cilium/cilium:v1.12.10
+        image: quay.io/cilium/cilium:v1.13.5
         imagePullPolicy: IfNotPresent
         name: install-cni-binaries
         resources:
@@ -635,7 +636,7 @@ spec:
               key: clean-cilium-bpf-state
               name: cilium-config
               optional: true
-        image: quay.io/cilium/cilium:v1.12.10
+        image: quay.io/cilium/cilium:v1.13.5
         imagePullPolicy: IfNotPresent
         name: clean-cilium-state
         resources:
@@ -776,7 +777,7 @@ spec:
           value: api.internal.privatecilium.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/operator:v1.12.10
+        image: quay.io/cilium/operator:v1.13.5
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -864,7 +865,7 @@ spec:
         env:
         - name: GODEBUG
           value: x509ignoreCN=0
-        image: quay.io/cilium/hubble-relay:v1.12.10
+        image: quay.io/cilium/hubble-relay:v1.13.5
         imagePullPolicy: IfNotPresent
         livenessProbe:
           tcpSocket:

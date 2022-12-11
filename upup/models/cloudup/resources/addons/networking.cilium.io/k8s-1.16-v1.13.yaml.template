@@ -38,6 +38,7 @@ metadata:
   name: cilium-config
   namespace: kube-system
 data:
+  agent-health-port: "{{ $healthPort }}"
 
 {{- if .EtcdManaged }}
   kvstore: etcd
