@@ -50,6 +50,6 @@ warmPoolImages:
 - quay.io/cilium/cilium:v1.12.4
 - quay.io/cilium/operator:v1.12.4
 - registry.k8s.io/kube-proxy:v1.21.0
-- registry.k8s.io/provider-aws/aws-ebs-csi-driver:v1.12.0
+- registry.k8s.io/provider-aws/aws-ebs-csi-driver:v1.13.0
 - registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.5.1
 - registry.k8s.io/sig-storage/livenessprobe:v2.6.0
