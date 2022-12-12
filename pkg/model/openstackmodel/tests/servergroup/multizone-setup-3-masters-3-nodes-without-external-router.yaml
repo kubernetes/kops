@@ -583,7 +583,7 @@ Contents:
 Lifecycle: ""
 Location: igconfig/control-plane/master-a/nodeupconfig.yaml
 Name: nodeupconfig-master-a
-Public: null
+PublicACL: null
 ---
 Base: null
 Contents:
@@ -593,7 +593,7 @@ Contents:
 Lifecycle: ""
 Location: igconfig/control-plane/master-b/nodeupconfig.yaml
 Name: nodeupconfig-master-b
-Public: null
+PublicACL: null
 ---
 Base: null
 Contents:
@@ -603,7 +603,7 @@ Contents:
 Lifecycle: ""
 Location: igconfig/control-plane/master-c/nodeupconfig.yaml
 Name: nodeupconfig-master-c
-Public: null
+PublicACL: null
 ---
 Base: null
 Contents:
@@ -613,7 +613,7 @@ Contents:
 Lifecycle: ""
 Location: igconfig/node/node-a/nodeupconfig.yaml
 Name: nodeupconfig-node-a
-Public: null
+PublicACL: null
 ---
 Base: null
 Contents:
@@ -623,7 +623,7 @@ Contents:
 Lifecycle: ""
 Location: igconfig/node/node-b/nodeupconfig.yaml
 Name: nodeupconfig-node-b
-Public: null
+PublicACL: null
 ---
 Base: null
 Contents:
@@ -633,7 +633,7 @@ Contents:
 Lifecycle: ""
 Location: igconfig/node/node-c/nodeupconfig.yaml
 Name: nodeupconfig-node-c
-Public: null
+PublicACL: null
 ---
 AdditionalSecurityGroups: null
 ID: null

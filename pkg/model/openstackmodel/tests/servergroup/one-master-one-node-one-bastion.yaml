@@ -368,7 +368,7 @@ Contents:
 Lifecycle: ""
 Location: igconfig/bastion/bastion/nodeupconfig.yaml
 Name: nodeupconfig-bastion
-Public: null
+PublicACL: null
 ---
 Base: null
 Contents:
@@ -378,7 +378,7 @@ Contents:
 Lifecycle: ""
 Location: igconfig/control-plane/master/nodeupconfig.yaml
 Name: nodeupconfig-master
-Public: null
+PublicACL: null
 ---
 Base: null
 Contents:
@@ -388,7 +388,7 @@ Contents:
 Lifecycle: ""
 Location: igconfig/node/node/nodeupconfig.yaml
 Name: nodeupconfig-node
-Public: null
+PublicACL: null
 ---
 AdditionalSecurityGroups: null
 ID: null
