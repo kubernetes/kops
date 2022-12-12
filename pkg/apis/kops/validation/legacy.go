@@ -223,14 +223,16 @@ func validateServiceAccountIssuerDiscovery(c *kops.Cluster, said *kops.ServiceAc
 				if strings.Contains(base.Bucket(), ".") {
 					allErrs = append(allErrs, field.Invalid(saidStoreField, saidStore, "Bucket name cannot contain dots"))
 				}
+			case *vfs.GSPath:
+				// OK
 			case *vfs.MemFSPath:
 				// memfs is ok for tests; not OK otherwise
 				if !base.IsClusterReadable() {
 					// (If this _is_ a test, we should call MarkClusterReadable)
-					allErrs = append(allErrs, field.Invalid(saidStoreField, saidStore, "S3 is the only supported VFS for discoveryStore"))
+					allErrs = append(allErrs, field.Invalid(saidStoreField, saidStore, "unsupported VFS for discoveryStore; use gs:// or s3://"))
 				}
 			default:
-				allErrs = append(allErrs, field.Invalid(saidStoreField, saidStore, "S3 is the only supported VFS for discoveryStore"))
+				allErrs = append(allErrs, field.Invalid(saidStoreField, saidStore, "unsupported VFS for discoveryStore; use gs:// or s3://"))
 			}
 		}
 	}

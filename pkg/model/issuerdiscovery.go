@@ -96,6 +96,16 @@ func (b *IssuerDiscoveryModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 			publicFileACL = fi.PtrTo(true)
 		}
 
+	case *vfs.GSPath:
+		isPublic, err := discoveryStore.IsBucketPublic(ctx)
+		if err != nil {
+			return fmt.Errorf("checking if bucket was public: %w", err)
+		}
+		if !isPublic {
+			exampleCommand := fmt.Sprintf("gsutil iam ch allUsers:objectViewer gs://%s", discoveryStore.Bucket())
+			return fmt.Errorf("the location for publishing serviceAccountIssuers should be set to world-readable (and a dedicated bucket).\nExample command: `%s`", exampleCommand)
+		}
+
 	case *vfs.MemFSPath:
 		// ok
 

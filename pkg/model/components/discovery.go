@@ -61,6 +61,11 @@ func (b *DiscoveryOptionsBuilder) BuildOptions(o interface{}) error {
 				if err != nil {
 					return err
 				}
+			case *vfs.GSPath:
+				serviceAccountIssuer, err = base.GetHTTPsUrl(clusterSpec.IsIPv6Only())
+				if err != nil {
+					return err
+				}
 			case *vfs.MemFSPath:
 				if !base.IsClusterReadable() {
 					// If this _is_ a test, we should call MarkClusterReadable
