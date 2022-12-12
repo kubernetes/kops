@@ -19,7 +19,6 @@ package scaleway
 import (
 	"context"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
@@ -138,7 +137,10 @@ func stringKeyFunc(obj interface{}) (string, error) {
 // getServer queries Scaleway for the server with the specified ID, returning an error if not found
 func (i *nodeIdentifier) getServer(ctx context.Context, id string) (*instance.Server, error) {
 	api := instance.NewAPI(i.client)
-	zone := os.Getenv("SCW_DEFAULT_ZONE")
+	zone, exists := i.client.GetDefaultZone()
+	if !exists {
+		return nil, fmt.Errorf("client default zone is empty")
+	}
 	uuid := strings.Split(id, "/")
 	if len(uuid) != 3 {
 		return nil, fmt.Errorf("unexpected format for server id %s", id)
