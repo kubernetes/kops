@@ -17,6 +17,7 @@ limitations under the License.
 package iam
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
@@ -96,6 +97,7 @@ func TestRoundTrip(t *testing.T) {
 }
 
 func TestPolicyGeneration(t *testing.T) {
+	ctx := context.TODO()
 	grid := []struct {
 		Role                   Subject
 		AllowContainerRegistry bool
@@ -181,7 +183,7 @@ func TestPolicyGeneration(t *testing.T) {
 		}
 		b.Cluster.SetName("iam-builder-test.k8s.local")
 
-		p, err := b.BuildAWSPolicy()
+		p, err := b.BuildAWSPolicy(ctx)
 		if err != nil {
 			t.Errorf("case %d failed to build an AWS IAM policy. Error: %v", i, err)
 			continue
@@ -198,6 +200,7 @@ func TestPolicyGeneration(t *testing.T) {
 }
 
 func TestEmptyPolicy(t *testing.T) {
+	ctx := context.TODO()
 	role := &GenericServiceAccount{
 		NamespacedName: types.NamespacedName{
 			Name:      "myaccount",
@@ -216,7 +219,7 @@ func TestEmptyPolicy(t *testing.T) {
 		Builder: b,
 	}
 
-	policy, err := fi.ResourceAsString(pr)
+	policy, err := fi.ResourceAsString(ctx, pr)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

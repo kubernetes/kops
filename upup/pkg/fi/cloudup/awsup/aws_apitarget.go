@@ -17,6 +17,7 @@ limitations under the License.
 package awsup
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -42,7 +43,7 @@ func (t *AWSAPITarget) ProcessDeletions() bool {
 	return true
 }
 
-func (t *AWSAPITarget) Finish(taskMap map[string]fi.Task) error {
+func (t *AWSAPITarget) Finish(ctx context.Context, taskMap map[string]fi.Task) error {
 	return nil
 }
 

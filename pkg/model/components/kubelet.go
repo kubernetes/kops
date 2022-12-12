@@ -17,6 +17,7 @@ limitations under the License.
 package components
 
 import (
+	"context"
 	"strings"
 	"time"
 
@@ -37,7 +38,7 @@ type KubeletOptionsBuilder struct {
 var _ loader.OptionsBuilder = &KubeletOptionsBuilder{}
 
 // BuildOptions is responsible for filling the defaults for the kubelet
-func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
+func (b *KubeletOptionsBuilder) BuildOptions(ctx context.Context, o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 
 	if clusterSpec.Kubelet == nil {

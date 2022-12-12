@@ -17,6 +17,7 @@ limitations under the License.
 package nodetasks
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -262,6 +263,8 @@ func (s *Service) CheckChanges(a, e, changes *Service) error {
 }
 
 func (_ *Service) RenderLocal(t *local.LocalTarget, a, e, changes *Service) error {
+	ctx := context.TODO()
+
 	systemdSystemPath, err := e.systemdSystemPath()
 	if err != nil {
 		return err
@@ -281,7 +284,7 @@ func (_ *Service) RenderLocal(t *local.LocalTarget, a, e, changes *Service) erro
 
 	if changes.Definition != nil {
 		servicePath := path.Join(systemdSystemPath, serviceName)
-		err := fi.WriteFile(servicePath, fi.NewStringResource(*e.Definition), 0o644, 0o755, "", "")
+		err := fi.WriteFile(ctx, servicePath, fi.NewStringResource(*e.Definition), 0o644, 0o755, "", "")
 		if err != nil {
 			return fmt.Errorf("error writing systemd service file: %v", err)
 		}
@@ -378,6 +381,7 @@ func (_ *Service) RenderLocal(t *local.LocalTarget, a, e, changes *Service) erro
 }
 
 func (_ *Service) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *Service) error {
+	ctx := context.TODO()
 	systemdSystemPath, err := e.systemdSystemPath()
 	if err != nil {
 		return err
@@ -386,7 +390,7 @@ func (_ *Service) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *S
 	serviceName := e.Name
 
 	servicePath := path.Join(systemdSystemPath, serviceName)
-	err = t.WriteFile(servicePath, fi.NewStringResource(*e.Definition), 0o644, 0o755)
+	err = t.WriteFile(ctx, servicePath, fi.NewStringResource(*e.Definition), 0o644, 0o755)
 	if err != nil {
 		return err
 	}

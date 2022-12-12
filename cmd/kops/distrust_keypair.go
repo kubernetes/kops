@@ -109,7 +109,7 @@ func NewCmdDistrustKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 }
 
 func RunDistrustKeypair(ctx context.Context, f *util.Factory, out io.Writer, options *DistrustKeypairOptions) error {
-	clientset, err := f.KopsClient()
+	clientset, err := f.KopsClient(ctx)
 	if err != nil {
 		return err
 	}
@@ -119,7 +119,7 @@ func RunDistrustKeypair(ctx context.Context, f *util.Factory, out io.Writer, opt
 		return err
 	}
 
-	keyStore, err := clientset.KeyStore(cluster)
+	keyStore, err := clientset.KeyStore(ctx, cluster)
 	if err != nil {
 		return err
 	}
@@ -201,7 +201,7 @@ func completeDistrustKeyset(f commandutils.Factory, options *DistrustKeypairOpti
 		return completions, directive
 	}
 
-	keyset, _, completions, directive := completeKeyset(cluster, clientSet, args, rotatableKeysetFilter)
+	keyset, _, completions, directive := completeKeyset(ctx, cluster, clientSet, args, rotatableKeysetFilter)
 	if keyset == nil {
 		return completions, directive
 	}

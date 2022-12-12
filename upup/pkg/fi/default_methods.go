@@ -26,6 +26,8 @@ import (
 // DefaultDeltaRunMethod implements the standard change-based run procedure:
 // find the existing item; compare properties; call render with (actual, expected, changes)
 func DefaultDeltaRunMethod(e Task, c *Context) error {
+	ctx := c.Context()
+
 	var a Task
 	var err error
 
@@ -65,7 +67,7 @@ func DefaultDeltaRunMethod(e Task, c *Context) error {
 	}
 
 	changes := reflect.New(reflect.TypeOf(e).Elem()).Interface().(Task)
-	changed := BuildChanges(a, e, changes)
+	changed := BuildChanges(ctx, a, e, changes)
 
 	if changed {
 		err = invokeCheckChanges(a, e, changes)

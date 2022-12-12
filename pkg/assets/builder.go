@@ -17,6 +17,7 @@ limitations under the License.
 package assets
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"os"
@@ -237,7 +238,7 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 
 // RemapFileAndSHA returns a remapped URL for the file, if AssetsLocation is defined.
 // It also returns the SHA hash of the file.
-func (a *AssetBuilder) RemapFileAndSHA(fileURL *url.URL) (*url.URL, *hashing.Hash, error) {
+func (a *AssetBuilder) RemapFileAndSHA(ctx context.Context, fileURL *url.URL) (*url.URL, *hashing.Hash, error) {
 	if fileURL == nil {
 		return nil, nil, fmt.Errorf("unable to remap a nil URL")
 	}
@@ -259,7 +260,7 @@ func (a *AssetBuilder) RemapFileAndSHA(fileURL *url.URL) (*url.URL, *hashing.Has
 		klog.V(4).Infof("adding remapped file: %+v", fileAsset)
 	}
 
-	h, err := a.findHash(fileAsset)
+	h, err := a.findHash(ctx, fileAsset)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -300,7 +301,7 @@ func (a *AssetBuilder) RemapFileAndSHAValue(fileURL *url.URL, shaValue string) (
 }
 
 // FindHash returns the hash value of a FileAsset.
-func (a *AssetBuilder) findHash(file *FileAsset) (*hashing.Hash, error) {
+func (a *AssetBuilder) findHash(ctx context.Context, file *FileAsset) (*hashing.Hash, error) {
 	// If the phase is "assets" we use the CanonicalFileURL,
 	// but during other phases we use the hash from the FileRepository or the base kops path.
 	// We do not want to just test for CanonicalFileURL as it is defined in
@@ -337,7 +338,7 @@ func (a *AssetBuilder) findHash(file *FileAsset) (*hashing.Hash, error) {
 			for _, mirror := range mirrors.FindUrlMirrors(u.String()) {
 				hashURL := mirror + ext
 				klog.V(3).Infof("Trying to read hash fie: %q", hashURL)
-				b, err := vfs.Context.ReadFile(hashURL, vfs.WithBackoff(backoff))
+				b, err := vfs.FromContext(ctx).ReadFile(hashURL, vfs.WithBackoff(backoff))
 				if err != nil {
 					// Try to log without being too alarming - issue #7550
 					klog.V(2).Infof("Unable to read hash file %q: %v", hashURL, err)

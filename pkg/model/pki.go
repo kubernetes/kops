@@ -36,6 +36,8 @@ var _ fi.ModelBuilder = &PKIModelBuilder{}
 
 // Build is responsible for generating the various pki assets.
 func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
+	ctx := c.Context()
+
 	// TODO: Only create the CA via this task
 	defaultCA := &fitasks.Keypair{
 		Name:      fi.PtrTo(fi.CertificateIDCA),
@@ -144,7 +146,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	{
-		mirrorPath, err := vfs.Context.BuildVfsPath(b.Cluster.Spec.SecretStore)
+		mirrorPath, err := vfs.FromContext(ctx).BuildVfsPath(b.Cluster.Spec.SecretStore)
 		if err != nil {
 			return err
 		}
@@ -158,7 +160,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	{
-		mirrorPath, err := vfs.Context.BuildVfsPath(b.Cluster.Spec.KeyStore)
+		mirrorPath, err := vfs.FromContext(ctx).BuildVfsPath(b.Cluster.Spec.KeyStore)
 		if err != nil {
 			return err
 		}

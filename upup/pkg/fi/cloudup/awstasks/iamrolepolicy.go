@@ -17,6 +17,7 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"hash/fnv"
@@ -156,7 +157,8 @@ func (s *IAMRolePolicy) CheckChanges(a, e, changes *IAMRolePolicy) error {
 }
 
 func (_ *IAMRolePolicy) ShouldCreate(a, e, changes *IAMRolePolicy) (bool, error) {
-	ePolicy, err := e.policyDocumentString()
+	ctx := context.TODO()
+	ePolicy, err := e.policyDocumentString(ctx)
 	if err != nil {
 		return false, fmt.Errorf("error rendering PolicyDocument: %v", err)
 	}
@@ -169,7 +171,8 @@ func (_ *IAMRolePolicy) ShouldCreate(a, e, changes *IAMRolePolicy) (bool, error)
 }
 
 func (_ *IAMRolePolicy) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRolePolicy) error {
-	policy, err := e.policyDocumentString()
+	ctx := context.TODO()
+	policy, err := e.policyDocumentString(ctx)
 	if err != nil {
 		return fmt.Errorf("error rendering PolicyDocument: %v", err)
 	}
@@ -252,7 +255,7 @@ func (_ *IAMRolePolicy) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRoleP
 		if changes.PolicyDocument != nil {
 			klog.V(2).Infof("Applying changed role policy to %q:", *e.Name)
 
-			actualPolicy, err := a.policyDocumentString()
+			actualPolicy, err := a.policyDocumentString(ctx)
 			if err != nil {
 				return fmt.Errorf("error reading actual policy document: %v", err)
 			}
@@ -287,12 +290,12 @@ func (_ *IAMRolePolicy) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRoleP
 	return nil // No tags in IAM
 }
 
-func (e *IAMRolePolicy) policyDocumentString() (string, error) {
+func (e *IAMRolePolicy) policyDocumentString(ctx context.Context) (string, error) {
 	if e.PolicyDocument == nil {
 		return "", nil
 	}
 
-	policy, err := fi.ResourceAsString(e.PolicyDocument)
+	policy, err := fi.ResourceAsString(ctx, e.PolicyDocument)
 	if err != nil {
 		return "", err
 	}
@@ -311,6 +314,7 @@ type terraformIAMRolePolicy struct {
 }
 
 func (_ *IAMRolePolicy) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IAMRolePolicy) error {
+	ctx := context.TODO()
 	if e.ExternalPolicies != nil && len(*e.ExternalPolicies) > 0 {
 		for _, policy := range *e.ExternalPolicies {
 			// create a hash of the arn
@@ -331,7 +335,7 @@ func (_ *IAMRolePolicy) RenderTerraform(t *terraform.TerraformTarget, a, e, chan
 		}
 	}
 
-	policyString, err := e.policyDocumentString()
+	policyString, err := e.policyDocumentString(ctx)
 	if err != nil {
 		return fmt.Errorf("error rendering PolicyDocument: %v", err)
 	}
@@ -341,7 +345,7 @@ func (_ *IAMRolePolicy) RenderTerraform(t *terraform.TerraformTarget, a, e, chan
 		return nil
 	}
 
-	policy, err := t.AddFileResource("aws_iam_role_policy", *e.Name, "policy", e.PolicyDocument, false)
+	policy, err := t.AddFileResource(ctx, "aws_iam_role_policy", *e.Name, "policy", e.PolicyDocument, false)
 	if err != nil {
 		return fmt.Errorf("error rendering PolicyDocument: %v", err)
 	}

@@ -85,7 +85,7 @@ func NewCmdReplace(f *util.Factory, out io.Writer) *cobra.Command {
 
 // RunReplace processes the replace command
 func RunReplace(ctx context.Context, f *util.Factory, out io.Writer, c *ReplaceOptions) error {
-	clientset, err := f.KopsClient()
+	clientset, err := f.KopsClient(ctx)
 	if err != nil {
 		return err
 	}
@@ -98,7 +98,7 @@ func RunReplace(ctx context.Context, f *util.Factory, out io.Writer, c *ReplaceO
 				return err
 			}
 		} else {
-			contents, err = vfs.Context.ReadFile(f)
+			contents, err = vfs.FromContext(ctx).ReadFile(f)
 			if err != nil {
 				return fmt.Errorf("error reading file %q: %v", f, err)
 			}
@@ -201,7 +201,7 @@ func RunReplace(ctx context.Context, f *util.Factory, out io.Writer, c *ReplaceO
 					return err
 				}
 
-				sshCredentialStore, err := clientset.SSHCredentialStore(cluster)
+				sshCredentialStore, err := clientset.SSHCredentialStore(ctx, cluster)
 				if err != nil {
 					return err
 				}

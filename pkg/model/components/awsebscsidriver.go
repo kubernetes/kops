@@ -17,6 +17,8 @@ limitations under the License.
 package components
 
 import (
+	"context"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -29,7 +31,7 @@ type AWSEBSCSIDriverOptionsBuilder struct {
 
 var _ loader.OptionsBuilder = &AWSEBSCSIDriverOptionsBuilder{}
 
-func (b *AWSEBSCSIDriverOptionsBuilder) BuildOptions(o interface{}) error {
+func (b *AWSEBSCSIDriverOptionsBuilder) BuildOptions(ctx context.Context, o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 	if clusterSpec.GetCloudProvider() != kops.CloudProviderAWS {
 		return nil

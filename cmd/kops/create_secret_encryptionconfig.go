@@ -90,12 +90,12 @@ func RunCreateSecretEncryptionConfig(ctx context.Context, f commandutils.Factory
 		return err
 	}
 
-	clientset, err := f.KopsClient()
+	clientset, err := f.KopsClient(ctx)
 	if err != nil {
 		return err
 	}
 
-	secretStore, err := clientset.SecretStore(cluster)
+	secretStore, err := clientset.SecretStore(ctx, cluster)
 	if err != nil {
 		return err
 	}

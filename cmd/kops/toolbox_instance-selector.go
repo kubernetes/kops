@@ -374,7 +374,7 @@ func processAndValidateFlags(commandline *cli.CommandLineInterface) error {
 }
 
 func retrieveClusterRefs(ctx context.Context, f commandutils.Factory, clusterName string) (simple.Clientset, *kops.Cluster, *kops.Channel, error) {
-	clientset, err := f.KopsClient()
+	clientset, err := f.KopsClient(ctx)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -384,7 +384,7 @@ func retrieveClusterRefs(ctx context.Context, f commandutils.Factory, clusterNam
 		return nil, nil, nil, err
 	}
 
-	channel, err := cloudup.ChannelForCluster(cluster)
+	channel, err := cloudup.ChannelForCluster(ctx, cluster)
 	if err != nil {
 		return nil, nil, nil, err
 	}

@@ -18,6 +18,7 @@ package templates
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -136,7 +137,7 @@ type templateResource struct {
 
 var _ fi.Resource = &templateResource{}
 
-func (a *templateResource) Open() (io.Reader, error) {
+func (a *templateResource) Open(ctx context.Context) (io.Reader, error) {
 	var err error
 	result, err := a.loader.executeTemplate(a.key, a.template)
 	if err != nil {

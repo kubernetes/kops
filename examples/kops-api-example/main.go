@@ -47,15 +47,15 @@ var (
 )
 
 func main() {
+	ctx := context.Background()
+
 	flag.Parse()
 
-	err := parseFlags()
+	err := parseFlags(ctx)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
 	}
-
-	ctx := context.TODO()
 
 	err = up(ctx)
 	if err != nil {
@@ -70,10 +70,10 @@ func main() {
 	}
 }
 
-func parseFlags() error {
+func parseFlags(ctx context.Context) error {
 	var err error
 
-	registryBase, err = vfs.Context.BuildVfsPath(*flagRegistryBase)
+	registryBase, err = vfs.FromContext(ctx).BuildVfsPath(*flagRegistryBase)
 	if err != nil {
 		return fmt.Errorf("error parsing registry path %q: %v", *flagRegistryBase, err)
 	}

@@ -17,6 +17,7 @@ limitations under the License.
 package components
 
 import (
+	"context"
 	"testing"
 
 	kopsapi "k8s.io/kops/pkg/apis/kops"
@@ -39,6 +40,7 @@ func buildContainerdCluster(version string) *kopsapi.Cluster {
 }
 
 func Test_Build_Containerd_Supported_Version(t *testing.T) {
+	ctx := context.TODO()
 	kubernetesVersions := []string{"1.18.0", "1.18.3"}
 
 	for _, v := range kubernetesVersions {
@@ -59,7 +61,7 @@ func Test_Build_Containerd_Supported_Version(t *testing.T) {
 			},
 		}
 
-		err = ob.BuildOptions(&c.Spec)
+		err = ob.BuildOptions(ctx, &c.Spec)
 		if err != nil {
 			t.Fatalf("unexpected error from BuildOptions: %v", err)
 		}
@@ -71,6 +73,8 @@ func Test_Build_Containerd_Supported_Version(t *testing.T) {
 }
 
 func Test_Build_Containerd_Unneeded_Runtime(t *testing.T) {
+	ctx := context.TODO()
+
 	dockerVersions := []string{"1.13.1", "17.03.2", "18.06.3"}
 
 	for _, v := range dockerVersions {
@@ -88,7 +92,7 @@ func Test_Build_Containerd_Unneeded_Runtime(t *testing.T) {
 			},
 		}
 
-		err := ob.BuildOptions(&c.Spec)
+		err := ob.BuildOptions(ctx, &c.Spec)
 		if err != nil {
 			t.Fatalf("unexpected error from BuildOptions: %v", err)
 		}
@@ -100,6 +104,7 @@ func Test_Build_Containerd_Unneeded_Runtime(t *testing.T) {
 }
 
 func Test_Build_Containerd_Needed_Runtime(t *testing.T) {
+	ctx := context.TODO()
 	dockerVersions := []string{"18.09.3", "18.09.9", "19.03.4"}
 
 	for _, v := range dockerVersions {
@@ -117,7 +122,7 @@ func Test_Build_Containerd_Needed_Runtime(t *testing.T) {
 			},
 		}
 
-		err := ob.BuildOptions(&c.Spec)
+		err := ob.BuildOptions(ctx, &c.Spec)
 		if err != nil {
 			t.Fatalf("unexpected error from BuildOptions: %v", err)
 		}

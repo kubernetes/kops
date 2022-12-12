@@ -17,6 +17,7 @@ limitations under the License.
 package components
 
 import (
+	"context"
 	"testing"
 
 	api "k8s.io/kops/pkg/apis/kops"
@@ -41,6 +42,7 @@ func buildSchedulerConfigMapCluster(version string) *api.Cluster {
 }
 
 func Test_Build_Scheduler_Without_PolicyConfigMap(t *testing.T) {
+	ctx := context.TODO()
 	versions := []string{"v1.6.0", "v1.6.4", "v1.7.0", "v1.7.4"}
 
 	for _, v := range versions {
@@ -61,7 +63,7 @@ func Test_Build_Scheduler_Without_PolicyConfigMap(t *testing.T) {
 			},
 		}
 
-		err = ks.BuildOptions(&c.Spec)
+		err = ks.BuildOptions(ctx, &c.Spec)
 
 		if err != nil {
 			t.Fatalf("unexpected error from BuildOptions: %v", err)
@@ -70,6 +72,7 @@ func Test_Build_Scheduler_Without_PolicyConfigMap(t *testing.T) {
 }
 
 func Test_Build_Scheduler_PolicyConfigMap_Supported_Version(t *testing.T) {
+	ctx := context.TODO()
 	versions := []string{"v1.9.0", "v1.10.5", "v1.18.0"}
 
 	for _, v := range versions {
@@ -89,7 +92,7 @@ func Test_Build_Scheduler_PolicyConfigMap_Supported_Version(t *testing.T) {
 			},
 		}
 
-		err = ks.BuildOptions(&c.Spec)
+		err = ks.BuildOptions(ctx, &c.Spec)
 		if err != nil {
 			t.Fatalf("unexpected error from BuildOptions %s: %v", v, err)
 		}

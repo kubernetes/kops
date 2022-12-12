@@ -17,6 +17,7 @@ limitations under the License.
 package wellknownoperators
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"path"
@@ -40,7 +41,7 @@ type Builder struct {
 	Cluster *kops.Cluster
 }
 
-func (b *Builder) Build(objects kubemanifest.ObjectList) ([]*Package, kubemanifest.ObjectList, error) {
+func (b *Builder) Build(ctx context.Context, objects kubemanifest.ObjectList) ([]*Package, kubemanifest.ObjectList, error) {
 	if !featureflag.UseAddonOperators.Enabled() {
 		return nil, objects, nil
 	}
@@ -57,7 +58,7 @@ func (b *Builder) Build(objects kubemanifest.ObjectList) ([]*Package, kubemanife
 		if object.Kind() == "ClusterPackage" {
 			u := object.ToUnstructured()
 			if u.GroupVersionKind().Group == "addons.x-k8s.io" {
-				pkg, err := b.loadClusterPackage(u)
+				pkg, err := b.loadClusterPackage(ctx, u)
 				if err != nil {
 					return nil, nil, fmt.Errorf("failed to load package: %w", err)
 				}
@@ -73,7 +74,7 @@ func (b *Builder) Build(objects kubemanifest.ObjectList) ([]*Package, kubemanife
 	return packages, keepObjects, nil
 }
 
-func (b *Builder) loadClusterPackage(u *unstructured.Unstructured) (*Package, error) {
+func (b *Builder) loadClusterPackage(ctx context.Context, u *unstructured.Unstructured) (*Package, error) {
 	operatorKey := u.GetName()
 	if operatorKey == "" {
 		return nil, fmt.Errorf("could not get name from ClusterPackage")
@@ -94,7 +95,7 @@ func (b *Builder) loadClusterPackage(u *unstructured.Unstructured) (*Package, er
 
 	locationURL := channelURL.ResolveReference(&url.URL{Path: location}).String()
 
-	manifestBytes, err := vfs.Context.ReadFile(locationURL)
+	manifestBytes, err := vfs.FromContext(ctx).ReadFile(locationURL)
 	if err != nil {
 		return nil, fmt.Errorf("error reading operator manifest %q: %v", locationURL, err)
 	}

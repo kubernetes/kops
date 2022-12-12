@@ -35,10 +35,12 @@ var _ fi.ModelBuilder = &ManifestsBuilder{}
 
 // Build creates tasks for copying the manifests
 func (b *ManifestsBuilder) Build(c *fi.ModelBuilderContext) error {
+	ctx := c.Context()
+
 	// Write etcd manifests (currently etcd <=> master)
 	if b.IsMaster {
 		for _, manifest := range b.NodeupConfig.EtcdManifests {
-			p, err := vfs.Context.BuildVfsPath(manifest)
+			p, err := vfs.FromContext(ctx).BuildVfsPath(manifest)
 			if err != nil {
 				return fmt.Errorf("error parsing path for etcd manifest %s: %v", manifest, err)
 			}

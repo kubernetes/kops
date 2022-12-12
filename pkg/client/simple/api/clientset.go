@@ -68,7 +68,7 @@ func (c *RESTClientset) UpdateCluster(ctx context.Context, cluster *kops.Cluster
 	if err != nil {
 		return nil, err
 	}
-	if err := validation.ValidateClusterUpdate(cluster, status, old).ToAggregate(); err != nil {
+	if err := validation.ValidateClusterUpdate(ctx, cluster, status, old).ToAggregate(); err != nil {
 		return nil, err
 	}
 
@@ -77,13 +77,13 @@ func (c *RESTClientset) UpdateCluster(ctx context.Context, cluster *kops.Cluster
 }
 
 // ConfigBaseFor implements the ConfigBaseFor method of Clientset for a kubernetes-API state store
-func (c *RESTClientset) ConfigBaseFor(cluster *kops.Cluster) (vfs.Path, error) {
+func (c *RESTClientset) ConfigBaseFor(ctx context.Context, cluster *kops.Cluster) (vfs.Path, error) {
 	if cluster.Spec.ConfigBase != "" {
-		return vfs.Context.BuildVfsPath(cluster.Spec.ConfigBase)
+		return vfs.FromContext(ctx).BuildVfsPath(cluster.Spec.ConfigBase)
 	}
 	// URL for clusters looks like https://<server>/apis/kops/v1alpha2/namespaces/<cluster>/clusters/<cluster>
 	// We probably want to add a subresource for full resources
-	return vfs.Context.BuildVfsPath(c.BaseURL.String())
+	return vfs.FromContext(ctx).BuildVfsPath(c.BaseURL.String())
 }
 
 // ListClusters implements the ListClusters method of Clientset for a kubernetes-API state store
@@ -97,23 +97,23 @@ func (c *RESTClientset) InstanceGroupsFor(cluster *kops.Cluster) kopsinternalver
 	return c.KopsClient.InstanceGroups(namespace)
 }
 
-func (c *RESTClientset) SecretStore(cluster *kops.Cluster) (fi.SecretStore, error) {
+func (c *RESTClientset) SecretStore(ctx context.Context, cluster *kops.Cluster) (fi.SecretStore, error) {
 	namespace := restNamespaceForClusterName(cluster.Name)
 	return secrets.NewClientsetSecretStore(cluster, c.KopsClient, namespace), nil
 }
 
-func (c *RESTClientset) KeyStore(cluster *kops.Cluster) (fi.CAStore, error) {
+func (c *RESTClientset) KeyStore(ctx context.Context, cluster *kops.Cluster) (fi.CAStore, error) {
 	namespace := restNamespaceForClusterName(cluster.Name)
 	return fi.NewClientsetCAStore(cluster, c.KopsClient, namespace), nil
 }
 
-func (c *RESTClientset) SSHCredentialStore(cluster *kops.Cluster) (fi.SSHCredentialStore, error) {
+func (c *RESTClientset) SSHCredentialStore(ctx context.Context, cluster *kops.Cluster) (fi.SSHCredentialStore, error) {
 	namespace := restNamespaceForClusterName(cluster.Name)
 	return fi.NewClientsetSSHCredentialStore(cluster, c.KopsClient, namespace), nil
 }
 
 func (c *RESTClientset) DeleteCluster(ctx context.Context, cluster *kops.Cluster) error {
-	configBase, err := registry.ConfigBase(cluster)
+	configBase, err := registry.ConfigBase(ctx, cluster)
 	if err != nil {
 		return err
 	}

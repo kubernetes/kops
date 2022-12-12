@@ -17,6 +17,7 @@ limitations under the License.
 package tests
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"path/filepath"
@@ -33,6 +34,8 @@ import (
 var credsFile = "./mock_gcp_credentials.json"
 
 func TestGSRenderTerraform(t *testing.T) {
+	ctx := context.TODO()
+
 	creds, err := filepath.Abs(credsFile)
 	if err != nil {
 		t.Fatalf("failed to prepare mock gcp credentials: %v", err)
@@ -76,7 +79,7 @@ func TestGSRenderTerraform(t *testing.T) {
 
 		t.Run(tc.gsPath, func(t *testing.T) {
 			cloud := gce.InstallMockGCECloud("us-central1", "project")
-			path, err := vfs.Context.BuildVfsPath(tc.gsPath)
+			path, err := vfs.FromContext(ctx).BuildVfsPath(tc.gsPath)
 			if err != nil {
 				t.Fatalf("error building VFS path: %v", err)
 			}

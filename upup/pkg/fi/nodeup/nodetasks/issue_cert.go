@@ -18,6 +18,7 @@ package nodetasks
 
 import (
 	"bytes"
+	"context"
 	"crypto/x509/pkix"
 	"fmt"
 	"hash/fnv"
@@ -194,7 +195,7 @@ type asBytesResource struct {
 	hasAsBytes
 }
 
-func (a asBytesResource) Open() (io.Reader, error) {
+func (a asBytesResource) Open(ctx context.Context) (io.Reader, error) {
 	data, err := a.AsBytes()
 	if err != nil {
 		return nil, err

@@ -18,6 +18,7 @@ package fi
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"reflect"
@@ -126,7 +127,7 @@ func idForTask(taskMap map[string]Task, t Task) string {
 	return "?"
 }
 
-func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error {
+func (t *DryRunTarget) PrintReport(ctx context.Context, taskMap map[string]Task, out io.Writer) error {
 	b := &bytes.Buffer{}
 
 	if len(t.changes) != 0 {
@@ -211,7 +212,7 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 			fmt.Fprintf(b, "Will modify resources:\n")
 			// We can't use our reflection helpers here - we want corresponding values from a,e,c
 			for _, r := range updates {
-				changeList, err := buildChangeList(r.a, r.e, r.changes)
+				changeList, err := buildChangeList(ctx, r.a, r.e, r.changes)
 				if err != nil {
 					return err
 				}
@@ -277,7 +278,7 @@ type change struct {
 	Description string
 }
 
-func buildChangeList(a, e, changes Task) ([]change, error) {
+func buildChangeList(ctx context.Context, a, e, changes Task) ([]change, error) {
 	var changeList []change
 
 	valC := reflect.ValueOf(changes)
@@ -326,8 +327,8 @@ func buildChangeList(a, e, changes Task) ([]change, error) {
 				// case SimpleUnit:
 				//	ignored = true
 				case Resource:
-					resA, okA := tryResourceAsString(fieldValA)
-					resE, okE := tryResourceAsString(fieldValE)
+					resA, okA := tryResourceAsString(ctx, fieldValA)
+					resE, okE := tryResourceAsString(ctx, fieldValE)
 					if okA && okE {
 						description = diff.FormatDiff(resA, resE)
 					}
@@ -349,7 +350,7 @@ func buildChangeList(a, e, changes Task) ([]change, error) {
 	return changeList, nil
 }
 
-func tryResourceAsString(v reflect.Value) (string, bool) {
+func tryResourceAsString(ctx context.Context, v reflect.Value) (string, bool) {
 	if !v.IsValid() {
 		return "", false
 	}
@@ -367,7 +368,7 @@ func tryResourceAsString(v reflect.Value) (string, bool) {
 
 	intf := v.Interface()
 	if res, ok := intf.(Resource); ok {
-		s, err := ResourceAsString(res)
+		s, err := ResourceAsString(ctx, res)
 		if err != nil {
 			klog.Warningf("error converting to resource: %v", err)
 			return "", false
@@ -387,8 +388,8 @@ func getTaskName(t Task) string {
 }
 
 // Finish is called at the end of a run, and prints a list of changes to the configured Writer
-func (t *DryRunTarget) Finish(taskMap map[string]Task) error {
-	return t.PrintReport(taskMap, t.out)
+func (t *DryRunTarget) Finish(ctx context.Context, taskMap map[string]Task) error {
+	return t.PrintReport(ctx, taskMap, t.out)
 }
 
 // Deletions returns all task names which is going to be deleted

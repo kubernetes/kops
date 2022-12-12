@@ -17,6 +17,8 @@ limitations under the License.
 package gce
 
 import (
+	"context"
+
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -32,7 +34,7 @@ func NewGCEAPITarget(cloud GCECloud) *GCEAPITarget {
 	}
 }
 
-func (t *GCEAPITarget) Finish(taskMap map[string]fi.Task) error {
+func (t *GCEAPITarget) Finish(ctx context.Context, taskMap map[string]fi.Task) error {
 	return nil
 }
 

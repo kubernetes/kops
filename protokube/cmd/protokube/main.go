@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -40,11 +41,13 @@ var (
 )
 
 func main() {
+	ctx := context.Background()
+
 	klog.InitFlags(nil)
 
 	fmt.Printf("protokube version %s\n", BuildVersion)
 
-	if err := run(); err != nil {
+	if err := run(ctx); err != nil {
 		klog.Errorf("Error: %v", err)
 		os.Exit(1)
 	}
@@ -52,7 +55,7 @@ func main() {
 }
 
 // run is responsible for running the protokube service controller
-func run() error {
+func run(ctx context.Context) error {
 	var zones []string
 	var containerized, master, gossip bool
 	var cloud, clusterID, dnsInternalSuffix, gossipSecret, gossipListen, gossipProtocol, gossipSecretSecondary, gossipListenSecondary, gossipProtocolSecondary string

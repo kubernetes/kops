@@ -17,6 +17,7 @@ limitations under the License.
 package openstacktasks
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -71,8 +72,10 @@ func (e *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
 }
 
 func (e *SSHKey) Normalize(c *fi.Context) error {
+	ctx := c.Context()
+
 	if e.KeyFingerprint == nil && e.PublicKey != nil {
-		publicKey, err := fi.ResourceAsString(e.PublicKey)
+		publicKey, err := fi.ResourceAsString(ctx, e.PublicKey)
 		if err != nil {
 			return fmt.Errorf("error reading SSH public key: %v", err)
 		}
@@ -114,6 +117,8 @@ func openstackKeyPairName(org string) string {
 }
 
 func (_ *SSHKey) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *SSHKey) error {
+	ctx := context.TODO()
+
 	if a == nil {
 		klog.V(2).Infof("Creating Keypair with name:%q", fi.ValueOf(e.Name))
 
@@ -122,7 +127,7 @@ func (_ *SSHKey) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes 
 		}
 
 		if e.PublicKey != nil {
-			d, err := fi.ResourceAsString(e.PublicKey)
+			d, err := fi.ResourceAsString(ctx, e.PublicKey)
 			if err != nil {
 				return fmt.Errorf("error rendering SSHKey PublicKey: %v", err)
 			}

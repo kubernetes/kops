@@ -17,6 +17,8 @@ limitations under the License.
 package components
 
 import (
+	"context"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -29,7 +31,7 @@ type CloudConfigurationOptionsBuilder struct {
 
 var _ loader.OptionsBuilder = &CloudConfigurationOptionsBuilder{}
 
-func (b *CloudConfigurationOptionsBuilder) BuildOptions(o interface{}) error {
+func (b *CloudConfigurationOptionsBuilder) BuildOptions(ctx context.Context, o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 	c := clusterSpec.CloudConfig
 	if c == nil {

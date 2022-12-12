@@ -86,12 +86,12 @@ func RunCreateSSHPublicKey(ctx context.Context, f *util.Factory, out io.Writer, 
 		return err
 	}
 
-	clientset, err := f.KopsClient()
+	clientset, err := f.KopsClient(ctx)
 	if err != nil {
 		return err
 	}
 
-	sshCredentialStore, err := clientset.SSHCredentialStore(cluster)
+	sshCredentialStore, err := clientset.SSHCredentialStore(ctx, cluster)
 	if err != nil {
 		return err
 	}

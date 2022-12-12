@@ -17,6 +17,7 @@ limitations under the License.
 package components
 
 import (
+	"context"
 	"fmt"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -32,7 +33,7 @@ type AWSCloudControllerManagerOptionsBuilder struct {
 var _ loader.OptionsBuilder = &AWSCloudControllerManagerOptionsBuilder{}
 
 // BuildOptions generates the configurations used for the AWS cloud controller manager manifest
-func (b *AWSCloudControllerManagerOptionsBuilder) BuildOptions(o interface{}) error {
+func (b *AWSCloudControllerManagerOptionsBuilder) BuildOptions(ctx context.Context, o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 
 	if clusterSpec.GetCloudProvider() != kops.CloudProviderAWS {

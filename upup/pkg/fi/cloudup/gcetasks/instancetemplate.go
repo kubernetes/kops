@@ -90,6 +90,8 @@ func (e *InstanceTemplate) CompareWithID() *string {
 }
 
 func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
+	ctx := c.Context()
+
 	cloud := c.Cloud.(gce.GCECloud)
 
 	templates, err := cloud.Compute().InstanceTemplates().List(context.Background(), cloud.Project())
@@ -100,7 +102,7 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 		return nil, fmt.Errorf("error listing InstanceTemplates: %v", err)
 	}
 
-	expected, err := e.mapToGCE(cloud.Project(), cloud.Region())
+	expected, err := e.mapToGCE(ctx, cloud.Project(), cloud.Region())
 	if err != nil {
 		return nil, err
 	}
@@ -243,7 +245,7 @@ func (_ *InstanceTemplate) CheckChanges(a, e, changes *InstanceTemplate) error {
 	return nil
 }
 
-func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.InstanceTemplate, error) {
+func (e *InstanceTemplate) mapToGCE(ctx context.Context, project string, region string) (*compute.InstanceTemplate, error) {
 	// TODO: This is similar to Instance...
 	var scheduling *compute.Scheduling
 
@@ -344,7 +346,7 @@ func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.Ins
 
 	var metadataItems []*compute.MetadataItems
 	for key, r := range e.Metadata {
-		v, err := fi.ResourceAsString(r)
+		v, err := fi.ResourceAsString(ctx, r)
 		if err != nil {
 			return nil, fmt.Errorf("error rendering InstanceTemplate metadata %q: %v", key, err)
 		}
@@ -449,10 +451,11 @@ func (e *InstanceTemplate) URL(project string) (string, error) {
 }
 
 func (_ *InstanceTemplate) RenderGCE(t *gce.GCEAPITarget, a, e, changes *InstanceTemplate) error {
+	ctx := context.TODO()
 	project := t.Cloud.Project()
 	region := t.Cloud.Region()
 
-	i, err := e.mapToGCE(project, region)
+	i, err := e.mapToGCE(ctx, project, region)
 	if err != nil {
 		return err
 	}
@@ -602,9 +605,11 @@ func mapServiceAccountsToTerraform(serviceAccounts []*ServiceAccount, saScopes [
 }
 
 func (_ *InstanceTemplate) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *InstanceTemplate) error {
+	ctx := context.TODO()
+
 	project := t.Project
 
-	i, err := e.mapToGCE(project, t.Cloud.Region())
+	i, err := e.mapToGCE(ctx, project, t.Cloud.Region())
 	if err != nil {
 		return err
 	}

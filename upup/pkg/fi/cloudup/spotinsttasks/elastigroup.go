@@ -509,6 +509,8 @@ func (eg *Elastigroup) createOrUpdate(cloud awsup.AWSCloud, a, e, changes *Elast
 }
 
 func (_ *Elastigroup) create(cloud awsup.AWSCloud, a, e, changes *Elastigroup) error {
+	ctx := context.TODO()
+
 	klog.V(2).Infof("Creating Elastigroup %q", *e.Name)
 	e.applyDefaults()
 
@@ -611,7 +613,7 @@ func (_ *Elastigroup) create(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 			// User data.
 			{
 				if e.UserData != nil {
-					userData, err := fi.ResourceAsString(e.UserData)
+					userData, err := fi.ResourceAsString(ctx, e.UserData)
 					if err != nil {
 						return err
 					}
@@ -974,7 +976,7 @@ func (_ *Elastigroup) update(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 			// User data.
 			{
 				if changes.UserData != nil {
-					userData, err := fi.ResourceAsString(e.UserData)
+					userData, err := fi.ResourceAsString(ctx, e.UserData)
 					if err != nil {
 						return err
 					}
@@ -1461,6 +1463,7 @@ type terraformTaint struct {
 }
 
 func (_ *Elastigroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Elastigroup) error {
+	ctx := context.TODO()
 	cloud := t.Cloud.(awsup.AWSCloud)
 	e.applyDefaults()
 
@@ -1524,7 +1527,7 @@ func (_ *Elastigroup) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 	// User data.
 	if e.UserData != nil {
 		var err error
-		tf.UserData, err = t.AddFileResource("spotinst_elastigroup_aws", *e.Name, "user_data", e.UserData, false)
+		tf.UserData, err = t.AddFileResource(ctx, "spotinst_elastigroup_aws", *e.Name, "user_data", e.UserData, false)
 		if err != nil {
 			return err
 		}

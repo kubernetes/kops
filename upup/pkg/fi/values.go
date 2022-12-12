@@ -17,6 +17,7 @@ limitations under the License.
 package fi
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -73,7 +74,7 @@ func ArrayContains(array []string, word string) bool {
 	return false
 }
 
-func DebugPrint(o interface{}) string {
+func DebugPrint(ctx context.Context, o interface{}) string {
 	if o == nil {
 		return "<nil>"
 	}
@@ -83,7 +84,7 @@ func DebugPrint(o interface{}) string {
 			return "<nil>"
 		}
 
-		s, err := ResourceAsString(resource)
+		s, err := ResourceAsString(ctx, resource)
 		if err != nil {
 			return fmt.Sprintf("error converting resource to string: %v", err)
 		}

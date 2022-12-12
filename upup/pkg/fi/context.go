@@ -18,6 +18,7 @@ package fi
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"os"
 	"reflect"
@@ -30,6 +31,10 @@ import (
 )
 
 type Context struct {
+	// ctx holds the go Context object.
+	// While the general advice is not to embed context objects, it is done where the lifecycles are aligned.
+	ctx context.Context
+
 	Tmpdir string
 
 	Target            Target
@@ -53,8 +58,9 @@ type Warning struct {
 	Message string
 }
 
-func NewContext(target Target, cluster *kops.Cluster, cloud Cloud, keystore Keystore, secretStore SecretStore, clusterConfigBase vfs.Path, checkExisting bool, tasks map[string]Task) (*Context, error) {
+func NewContext(ctx context.Context, target Target, cluster *kops.Cluster, cloud Cloud, keystore Keystore, secretStore SecretStore, clusterConfigBase vfs.Path, checkExisting bool, tasks map[string]Task) (*Context, error) {
 	c := &Context{
+		ctx:               ctx,
 		Cloud:             cloud,
 		Cluster:           cluster,
 		Target:            target,
@@ -72,6 +78,11 @@ func NewContext(target Target, cluster *kops.Cluster, cloud Cloud, keystore Keys
 	c.Tmpdir = t
 
 	return c, nil
+}
+
+// Context returns the go Context.
+func (c *Context) Context() context.Context {
+	return c.ctx
 }
 
 func (c *Context) AllTasks() map[string]Task {
@@ -114,6 +125,8 @@ var typeContextPtr = reflect.TypeOf((*Context)(nil))
 // it is typically called after we have checked the existing state of the Task and determined that is different
 // from the desired state.
 func (c *Context) Render(a, e, changes Task) error {
+	ctx := c.Context()
+
 	var lifecycle Lifecycle
 	if hl, ok := e.(HasLifecycle); ok {
 		lifecycle = hl.GetLifecycle()
@@ -132,7 +145,7 @@ func (c *Context) Render(a, e, changes Task) error {
 			case LifecycleExistsAndValidates, LifecycleExistsAndWarnIfChanges:
 
 				out := os.Stderr
-				changeList, err := buildChangeList(a, e, changes)
+				changeList, err := buildChangeList(ctx, a, e, changes)
 				if err != nil {
 					return err
 				}

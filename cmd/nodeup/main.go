@@ -17,6 +17,7 @@ limitations under the License.
 package main // import "k8s.io/kops/cmd/nodeup"
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -34,6 +35,8 @@ const (
 )
 
 func main() {
+	ctx := context.Background()
+
 	klog.InitFlags(nil)
 
 	var flagConf, flagCacheDir, gitVersion string
@@ -103,7 +106,7 @@ func main() {
 			}
 			i.RunTasksOptions.InitDefaults()
 			i.RunTasksOptions.MaxTaskDuration = 5 * time.Minute
-			err = i.Run()
+			err = i.Run(ctx)
 			if err == nil {
 				fmt.Printf("service installed")
 				os.Exit(0)

@@ -17,6 +17,7 @@ limitations under the License.
 package etcdmanager
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -36,7 +37,7 @@ type EtcdManagerOptionsBuilder struct {
 var _ loader.OptionsBuilder = &EtcdManagerOptionsBuilder{}
 
 // BuildOptions generates the configurations used to create etcd manager manifest
-func (b *EtcdManagerOptionsBuilder) BuildOptions(o interface{}) error {
+func (b *EtcdManagerOptionsBuilder) BuildOptions(ctx context.Context, o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 
 	for i := range clusterSpec.EtcdClusters {

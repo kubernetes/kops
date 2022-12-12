@@ -17,6 +17,7 @@ limitations under the License.
 package components
 
 import (
+	"context"
 	"encoding/binary"
 	"fmt"
 	"math/big"
@@ -115,7 +116,7 @@ func IsBaseURL(kubernetesVersion string) bool {
 }
 
 // Image returns the docker image name for the specified component
-func Image(component string, clusterSpec *kops.ClusterSpec, assetsBuilder *assets.AssetBuilder) (string, error) {
+func Image(ctx context.Context, component string, clusterSpec *kops.ClusterSpec, assetsBuilder *assets.AssetBuilder) (string, error) {
 	if assetsBuilder == nil {
 		return "", fmt.Errorf("unable to parse assets as assetBuilder is not defined")
 	}
@@ -155,7 +156,7 @@ func Image(component string, clusterSpec *kops.ClusterSpec, assetsBuilder *asset
 	tagURL := baseURL + "/bin/linux/amd64/" + component + ".docker_tag"
 	klog.V(2).Infof("Downloading docker tag for %s from: %s", component, tagURL)
 
-	b, err := vfs.Context.ReadFile(tagURL)
+	b, err := vfs.FromContext(ctx).ReadFile(tagURL)
 	if err != nil {
 		return "", fmt.Errorf("error reading tag file %q: %v", tagURL, err)
 	}

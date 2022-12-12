@@ -17,6 +17,7 @@ limitations under the License.
 package fi
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -29,13 +30,13 @@ import (
 )
 
 // WriteFile writes a file to the specified path, setting the mode, owner & group.
-func WriteFile(destPath string, contents Resource, fileMode os.FileMode, dirMode os.FileMode, owner string, group string) error {
+func WriteFile(ctx context.Context, destPath string, contents Resource, fileMode os.FileMode, dirMode os.FileMode, owner string, group string) error {
 	err := os.MkdirAll(path.Dir(destPath), dirMode)
 	if err != nil {
 		return fmt.Errorf("error creating directories for destination file %q: %v", destPath, err)
 	}
 
-	err = writeFileContents(destPath, contents, fileMode)
+	err = writeFileContents(ctx, destPath, contents, fileMode)
 	if err != nil {
 		return err
 	}
@@ -53,10 +54,10 @@ func WriteFile(destPath string, contents Resource, fileMode os.FileMode, dirMode
 	return nil
 }
 
-func writeFileContents(destPath string, src Resource, fileMode os.FileMode) error {
+func writeFileContents(ctx context.Context, destPath string, src Resource, fileMode os.FileMode) error {
 	klog.Infof("Writing file %q", destPath)
 
-	in, err := src.Open()
+	in, err := src.Open(ctx)
 	if err != nil {
 		return fmt.Errorf("error opening source resource for file %q: %v", destPath, err)
 	}

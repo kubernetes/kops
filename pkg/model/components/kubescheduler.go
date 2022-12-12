@@ -17,6 +17,8 @@ limitations under the License.
 package components
 
 import (
+	"context"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -29,7 +31,7 @@ type KubeSchedulerOptionsBuilder struct {
 
 var _ loader.OptionsBuilder = &KubeSchedulerOptionsBuilder{}
 
-func (b *KubeSchedulerOptionsBuilder) BuildOptions(o interface{}) error {
+func (b *KubeSchedulerOptionsBuilder) BuildOptions(ctx context.Context, o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 	if clusterSpec.KubeScheduler == nil {
 		clusterSpec.KubeScheduler = &kops.KubeSchedulerConfig{}
@@ -43,7 +45,7 @@ func (b *KubeSchedulerOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if config.Image == "" {
-		image, err := Image("kube-scheduler", clusterSpec, b.AssetBuilder)
+		image, err := Image(ctx, "kube-scheduler", clusterSpec, b.AssetBuilder)
 		if err != nil {
 			return err
 		}

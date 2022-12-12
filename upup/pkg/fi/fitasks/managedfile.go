@@ -147,12 +147,14 @@ func (e *ManagedFile) getACL(c *fi.Context, p vfs.Path) (vfs.ACL, error) {
 }
 
 func (_ *ManagedFile) Render(c *fi.Context, a, e, changes *ManagedFile) error {
+	ctx := c.Context()
+
 	location := fi.ValueOf(e.Location)
 	if location == "" {
 		return fi.RequiredField("Location")
 	}
 
-	data, err := fi.ResourceAsBytes(e.Contents)
+	data, err := fi.ResourceAsBytes(ctx, e.Contents)
 	if err != nil {
 		return fmt.Errorf("error reading contents of ManagedFile: %v", err)
 	}
@@ -177,9 +179,11 @@ func (_ *ManagedFile) Render(c *fi.Context, a, e, changes *ManagedFile) error {
 }
 
 func getBasePath(c *fi.Context, e *ManagedFile) (vfs.Path, error) {
+	ctx := c.Context()
+
 	base := fi.ValueOf(e.Base)
 	if base != "" {
-		p, err := vfs.Context.BuildVfsPath(base)
+		p, err := vfs.FromContext(ctx).BuildVfsPath(base)
 		if err != nil {
 			return nil, fmt.Errorf("error parsing ManagedFile Base %q: %v", base, err)
 		}
@@ -191,6 +195,8 @@ func getBasePath(c *fi.Context, e *ManagedFile) (vfs.Path, error) {
 
 // RenderTerraform is responsible for rendering the terraform json.
 func (f *ManagedFile) RenderTerraform(c *fi.Context, t *terraform.TerraformTarget, a, e, changes *ManagedFile) error {
+	ctx := c.Context()
+
 	if !featureflag.TerraformManagedFiles.Enabled() {
 		return f.Render(c, a, e, changes)
 	}
@@ -216,7 +222,7 @@ func (f *ManagedFile) RenderTerraform(c *fi.Context, t *terraform.TerraformTarge
 		return fmt.Errorf("path %q must be of a type that can render in Terraform", p)
 	}
 
-	reader, err := e.Contents.Open()
+	reader, err := e.Contents.Open(ctx)
 	if err != nil {
 		return err
 	}

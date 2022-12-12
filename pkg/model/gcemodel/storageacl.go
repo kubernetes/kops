@@ -43,6 +43,8 @@ var _ fi.ModelBuilder = &NetworkModelBuilder{}
 // Build creates the tasks that set up storage acls
 
 func (b *StorageAclBuilder) Build(c *fi.ModelBuilderContext) error {
+	ctx := c.Context()
+
 	if featureflag.GoogleCloudBucketACL.Enabled() {
 		if b.Cluster.Spec.CloudConfig.GCEServiceAccount == "" {
 			return fmt.Errorf("featureflag GoogleCloudBucketACL not supported with per-instancegroup GCEServiceAccount")
@@ -56,7 +58,7 @@ func (b *StorageAclBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		clusterPath := b.Cluster.Spec.ConfigBase
-		p, err := vfs.Context.BuildVfsPath(clusterPath)
+		p, err := vfs.FromContext(ctx).BuildVfsPath(clusterPath)
 		if err != nil {
 			return fmt.Errorf("cannot parse cluster path %q: %w", clusterPath, err)
 		}
@@ -81,7 +83,7 @@ func (b *StorageAclBuilder) Build(c *fi.ModelBuilderContext) error {
 			return err
 		}
 
-		writeablePaths, err := iam.WriteableVFSPaths(b.Cluster, nodeRole)
+		writeablePaths, err := iam.WriteableVFSPaths(ctx, b.Cluster, nodeRole)
 		if err != nil {
 			return err
 		}
@@ -143,7 +145,7 @@ func (b *StorageAclBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		buckets := sets.NewString()
 
-		writeablePaths, err := iam.WriteableVFSPaths(b.Cluster, nodeRole)
+		writeablePaths, err := iam.WriteableVFSPaths(ctx, b.Cluster, nodeRole)
 		if err != nil {
 			return err
 		}
@@ -179,7 +181,7 @@ func (b *StorageAclBuilder) Build(c *fi.ModelBuilderContext) error {
 			return err
 		}
 		if len(readablePaths) != 0 {
-			p, err := vfs.Context.BuildVfsPath(b.Cluster.Spec.ConfigStore)
+			p, err := vfs.FromContext(ctx).BuildVfsPath(b.Cluster.Spec.ConfigStore)
 			if err != nil {
 				return fmt.Errorf("cannot parse VFS path %q: %v", b.Cluster.Spec.ConfigStore, err)
 			}

@@ -17,6 +17,7 @@ limitations under the License.
 package components
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"time"
@@ -42,7 +43,7 @@ type KubeControllerManagerOptionsBuilder struct {
 var _ loader.OptionsBuilder = &KubeControllerManagerOptionsBuilder{}
 
 // BuildOptions generates the configurations used to create kubernetes controller manager manifest
-func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error {
+func (b *KubeControllerManagerOptionsBuilder) BuildOptions(ctx context.Context, o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 	if clusterSpec.KubeControllerManager == nil {
 		clusterSpec.KubeControllerManager = &kops.KubeControllerManagerConfig{}
@@ -119,7 +120,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		kcm.LogLevel = 2
 	}
 
-	image, err := Image("kube-controller-manager", clusterSpec, b.AssetBuilder)
+	image, err := Image(ctx, "kube-controller-manager", clusterSpec, b.AssetBuilder)
 	if err != nil {
 		return err
 	}

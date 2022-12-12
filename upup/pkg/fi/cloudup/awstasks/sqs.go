@@ -17,6 +17,7 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -53,6 +54,7 @@ func (q *SQS) CompareWithID() *string {
 }
 
 func (q *SQS) Find(c *fi.Context) (*SQS, error) {
+	ctx := context.TODO()
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	if q.Name == nil {
@@ -97,7 +99,7 @@ func (q *SQS) Find(c *fi.Context) (*SQS, error) {
 
 	// We parse both as JSON; if the json forms are equal we pretend the actual value is the expected value
 	if q.Policy != nil {
-		expectedPolicy, err := fi.ResourceAsString(q.Policy)
+		expectedPolicy, err := fi.ResourceAsString(ctx, q.Policy)
 		if err != nil {
 			return nil, fmt.Errorf("error reading expected Policy for SQS %q: %v", aws.StringValue(q.Name), err)
 		}
@@ -155,7 +157,9 @@ func (q *SQS) CheckChanges(a, e, changes *SQS) error {
 }
 
 func (q *SQS) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *SQS) error {
-	policy, err := fi.ResourceAsString(e.Policy)
+	ctx := context.TODO()
+
+	policy, err := fi.ResourceAsString(ctx, e.Policy)
 	if err != nil {
 		return fmt.Errorf("error rendering RolePolicyDocument: %v", err)
 	}
@@ -196,7 +200,7 @@ type terraformSQSQueue struct {
 }
 
 func (_ *SQS) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SQS) error {
-	p, err := t.AddFileResource("aws_sqs_queue", *e.Name, "policy", e.Policy, false)
+	p, err := t.AddFileResource(ctx, "aws_sqs_queue", *e.Name, "policy", e.Policy, false)
 	if err != nil {
 		return err
 	}

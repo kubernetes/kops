@@ -17,6 +17,7 @@ limitations under the License.
 package components
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/blang/semver/v4"
@@ -34,7 +35,7 @@ type ContainerdOptionsBuilder struct {
 var _ loader.OptionsBuilder = &ContainerdOptionsBuilder{}
 
 // BuildOptions is responsible for filling in the default setting for containerd daemon
-func (b *ContainerdOptionsBuilder) BuildOptions(o interface{}) error {
+func (b *ContainerdOptionsBuilder) BuildOptions(ctx context.Context, o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 
 	if clusterSpec.Containerd == nil {

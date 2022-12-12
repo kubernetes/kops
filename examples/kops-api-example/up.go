@@ -113,7 +113,7 @@ func up(ctx context.Context) error {
 		}
 	}
 
-	sshCredentialStore, err := clientset.SSHCredentialStore(cluster)
+	sshCredentialStore, err := clientset.SSHCredentialStore(ctx, cluster)
 	if err != nil {
 		return err
 	}

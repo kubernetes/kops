@@ -17,6 +17,7 @@ limitations under the License.
 package fi
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"strings"
@@ -71,8 +72,26 @@ type HasDeletions interface {
 
 // ModelBuilderContext is a context object that holds state we want to pass to ModelBuilder
 type ModelBuilderContext struct {
+	// ctx holds the go Context object.
+	// While the general advice is not to embed context objects, it is done where the lifecycles are aligned.
+	ctx context.Context
+
 	Tasks              map[string]Task
 	LifecycleOverrides map[string]Lifecycle
+}
+
+func (c *ModelBuilderContext) WithContext(ctx context.Context) *ModelBuilderContext {
+	c2 := *c
+	c2.ctx = ctx
+	return &c2
+}
+
+func (c *ModelBuilderContext) Context() context.Context {
+	ctx := c.ctx
+	if ctx == nil {
+		ctx = context.TODO()
+	}
+	return ctx
 }
 
 func (c *ModelBuilderContext) AddTask(task Task) {

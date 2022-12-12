@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"context"
 	"path/filepath"
 
 	"k8s.io/kops/upup/pkg/fi"
@@ -64,8 +65,8 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
-func getInstanceAddress() (string, error) {
-	addrBytes, err := vfs.Context.ReadFile("metadata://openstack/local-ipv4")
+func getInstanceAddress(ctx context.Context) (string, error) {
+	addrBytes, err := vfs.FromContext(ctx).ReadFile("metadata://openstack/local-ipv4")
 	if err != nil {
 		return "", nil
 	}

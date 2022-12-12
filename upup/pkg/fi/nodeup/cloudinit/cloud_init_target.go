@@ -17,6 +17,7 @@ limitations under the License.
 package cloudinit
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
 	"io"
@@ -108,7 +109,7 @@ func (t *CloudInitTarget) fetch(p *fi.Source, destPath string) {
 	}
 }
 
-func (t *CloudInitTarget) WriteFile(destPath string, contents fi.Resource, fileMode os.FileMode, dirMode os.FileMode) error {
+func (t *CloudInitTarget) WriteFile(ctx context.Context, destPath string, contents fi.Resource, fileMode os.FileMode, dirMode os.FileMode) error {
 	var p *fi.Source
 
 	if hs, ok := contents.(fi.HasSource); ok {
@@ -127,7 +128,7 @@ func (t *CloudInitTarget) WriteFile(destPath string, contents fi.Resource, fileM
 			Path:        destPath,
 		}
 
-		d, err := fi.ResourceAsBytes(contents)
+		d, err := fi.ResourceAsBytes(ctx, contents)
 		if err != nil {
 			return err
 		}
@@ -168,7 +169,7 @@ func (t *CloudInitTarget) AddCommand(addBehaviour AddBehaviour, args ...string) 
 	t.Config.RunCommmands = append(t.Config.RunCommmands, args)
 }
 
-func (t *CloudInitTarget) Finish(taskMap map[string]fi.Task) error {
+func (t *CloudInitTarget) Finish(ctx context.Context, taskMap map[string]fi.Task) error {
 	d, err := utils.YamlMarshal(t.Config)
 	if err != nil {
 		return fmt.Errorf("error serializing config to yaml: %v", err)

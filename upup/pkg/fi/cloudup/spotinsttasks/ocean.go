@@ -356,6 +356,7 @@ func (o *Ocean) createOrUpdate(cloud awsup.AWSCloud, a, e, changes *Ocean) error
 }
 
 func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
+	ctx := context.TODO()
 	klog.V(2).Infof("Creating Ocean %q", *e.Name)
 
 	ocean := &aws.Cluster{
@@ -460,7 +461,7 @@ func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 				// User data.
 				{
 					if e.UserData != nil {
-						userData, err := fi.ResourceAsString(e.UserData)
+						userData, err := fi.ResourceAsString(ctx, e.UserData)
 						if err != nil {
 							return err
 						}
@@ -593,6 +594,7 @@ readyLoop:
 }
 
 func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
+	ctx := context.TODO()
 	klog.V(2).Infof("Updating Ocean %q", *e.Name)
 
 	actual, err := e.find(cloud.Spotinst().Ocean())
@@ -817,7 +819,7 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 				// User data.
 				{
 					if changes.UserData != nil {
-						userData, err := fi.ResourceAsString(e.UserData)
+						userData, err := fi.ResourceAsString(ctx, e.UserData)
 						if err != nil {
 							return err
 						}
@@ -1053,6 +1055,7 @@ type terraformOcean struct {
 }
 
 func (_ *Ocean) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Ocean) error {
+	ctx := context.TODO()
 	cloud := t.Cloud.(awsup.AWSCloud)
 
 	tf := &terraformOcean{
@@ -1196,7 +1199,7 @@ func (_ *Ocean) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Oce
 		// User data.
 		if e.UserData != nil {
 			var err error
-			tf.UserData, err = t.AddFileResource("spotinst_ocean_aws", *e.Name, "user_data", e.UserData, false)
+			tf.UserData, err = t.AddFileResource(ctx, "spotinst_ocean_aws", *e.Name, "user_data", e.UserData, false)
 			if err != nil {
 				return err
 			}

@@ -93,7 +93,7 @@ func NewCmdTrustKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 }
 
 func RunTrustKeypair(ctx context.Context, f *util.Factory, out io.Writer, options *TrustKeypairOptions) error {
-	clientset, err := f.KopsClient()
+	clientset, err := f.KopsClient(ctx)
 	if err != nil {
 		return err
 	}
@@ -103,7 +103,7 @@ func RunTrustKeypair(ctx context.Context, f *util.Factory, out io.Writer, option
 		return err
 	}
 
-	keyStore, err := clientset.KeyStore(cluster)
+	keyStore, err := clientset.KeyStore(ctx, cluster)
 	if err != nil {
 		return err
 	}
@@ -144,7 +144,7 @@ func completeTrustKeyset(f commandutils.Factory, options *TrustKeypairOptions, a
 		return completions, directive
 	}
 
-	keyset, _, completions, directive := completeKeyset(cluster, clientSet, args, func(name string, keyset *fi.Keyset) bool {
+	keyset, _, completions, directive := completeKeyset(ctx, cluster, clientSet, args, func(name string, keyset *fi.Keyset) bool {
 		if name == "all" {
 			return false
 		}

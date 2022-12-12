@@ -17,6 +17,8 @@ limitations under the License.
 package components
 
 import (
+	"context"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
@@ -29,7 +31,7 @@ type GCPCloudControllerManagerOptionsBuilder struct {
 
 var _ loader.OptionsBuilder = (*GCPCloudControllerManagerOptionsBuilder)(nil)
 
-func (b *GCPCloudControllerManagerOptionsBuilder) BuildOptions(options interface{}) error {
+func (b *GCPCloudControllerManagerOptionsBuilder) BuildOptions(ctx context.Context, options interface{}) error {
 	clusterSpec := options.(*kops.ClusterSpec)
 
 	if clusterSpec.GetCloudProvider() != kops.CloudProviderGCE {

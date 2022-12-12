@@ -17,6 +17,7 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"testing"
@@ -29,11 +30,13 @@ import (
 )
 
 func Test_Subnet_ValidateRequired(t *testing.T) {
+	ctx := context.TODO()
+
 	var a *Subnet
 	e := &Subnet{}
 
 	changes := &Subnet{}
-	fi.BuildChanges(a, e, changes)
+	fi.BuildChanges(ctx, a, e, changes)
 
 	err := e.CheckChanges(a, e, changes)
 	if err == nil {
@@ -45,6 +48,8 @@ func Test_Subnet_ValidateRequired(t *testing.T) {
 }
 
 func Test_Subnet_CannotChangeSubnet(t *testing.T) {
+	ctx := context.TODO()
+
 	a := &Subnet{VPC: &VPC{Name: s("defaultvpc")}, CIDR: s("192.168.0.0/16")}
 	e := &Subnet{}
 	*e = *a
@@ -52,7 +57,7 @@ func Test_Subnet_CannotChangeSubnet(t *testing.T) {
 	e.CIDR = s("192.168.0.1/16")
 
 	changes := &Subnet{}
-	fi.BuildChanges(a, e, changes)
+	fi.BuildChanges(ctx, a, e, changes)
 
 	err := e.CheckChanges(a, e, changes)
 	if err == nil {
@@ -64,6 +69,8 @@ func Test_Subnet_CannotChangeSubnet(t *testing.T) {
 }
 
 func TestSubnetCreate(t *testing.T) {
+	ctx := context.TODO()
+
 	cloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
 	c := &mockec2.MockEC2{}
 	cloud.MockEC2 = c
@@ -99,7 +106,7 @@ func TestSubnetCreate(t *testing.T) {
 			Cloud: cloud,
 		}
 
-		context, err := fi.NewContext(target, nil, cloud, nil, nil, nil, true, allTasks)
+		context, err := fi.NewContext(ctx, target, nil, cloud, nil, nil, nil, true, allTasks)
 		if err != nil {
 			t.Fatalf("error building context: %v", err)
 		}
@@ -142,11 +149,13 @@ func TestSubnetCreate(t *testing.T) {
 
 	{
 		allTasks := buildTasks()
-		checkNoChanges(t, cloud, allTasks)
+		checkNoChanges(t, ctx, cloud, allTasks)
 	}
 }
 
 func TestSubnetCreateIPv6(t *testing.T) {
+	ctx := context.TODO()
+
 	cloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
 	c := &mockec2.MockEC2{}
 	cloud.MockEC2 = c
@@ -190,7 +199,7 @@ func TestSubnetCreateIPv6(t *testing.T) {
 			Cloud: cloud,
 		}
 
-		context, err := fi.NewContext(target, nil, cloud, nil, nil, nil, true, allTasks)
+		context, err := fi.NewContext(ctx, target, nil, cloud, nil, nil, nil, true, allTasks)
 		if err != nil {
 			t.Fatalf("error building context: %v", err)
 		}
@@ -242,11 +251,13 @@ func TestSubnetCreateIPv6(t *testing.T) {
 
 	{
 		allTasks := buildTasks()
-		checkNoChanges(t, cloud, allTasks)
+		checkNoChanges(t, ctx, cloud, allTasks)
 	}
 }
 
 func TestSubnetCreateIPv6NetNum(t *testing.T) {
+	ctx := context.TODO()
+
 	cloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
 	c := &mockec2.MockEC2{}
 	cloud.MockEC2 = c
@@ -289,7 +300,7 @@ func TestSubnetCreateIPv6NetNum(t *testing.T) {
 			Cloud: cloud,
 		}
 
-		context, err := fi.NewContext(target, nil, cloud, nil, nil, nil, true, allTasks)
+		context, err := fi.NewContext(ctx, target, nil, cloud, nil, nil, nil, true, allTasks)
 		if err != nil {
 			t.Fatalf("error building context: %v", err)
 		}
@@ -341,11 +352,13 @@ func TestSubnetCreateIPv6NetNum(t *testing.T) {
 
 	{
 		allTasks := buildTasks()
-		checkNoChanges(t, cloud, allTasks)
+		checkNoChanges(t, ctx, cloud, allTasks)
 	}
 }
 
 func TestSharedSubnetCreateDoesNotCreateNew(t *testing.T) {
+	ctx := context.TODO()
+
 	cloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
 	c := &mockec2.MockEC2{}
 	cloud.MockEC2 = c
@@ -422,7 +435,7 @@ func TestSharedSubnetCreateDoesNotCreateNew(t *testing.T) {
 			Cloud: cloud,
 		}
 
-		context, err := fi.NewContext(target, nil, cloud, nil, nil, nil, true, allTasks)
+		context, err := fi.NewContext(ctx, target, nil, cloud, nil, nil, nil, true, allTasks)
 		if err != nil {
 			t.Fatalf("error building context: %v", err)
 		}
@@ -470,6 +483,6 @@ func TestSharedSubnetCreateDoesNotCreateNew(t *testing.T) {
 
 	{
 		allTasks := buildTasks()
-		checkNoChanges(t, cloud, allTasks)
+		checkNoChanges(t, ctx, cloud, allTasks)
 	}
 }

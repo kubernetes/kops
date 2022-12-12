@@ -52,9 +52,29 @@ type VFSContext struct {
 	azureClient *azureClient
 }
 
+// Context holds the global VFS state.
+// Deprecated: prefer FromContext.
 var Context = VFSContext{
 	s3Context:  NewS3Context(),
 	k8sContext: NewKubernetesContext(),
+}
+
+type contextKeyType int
+
+var contextKey contextKeyType
+
+// FromContext returns the vfs Context from the given context.Context.
+func FromContext(ctx context.Context) *VFSContext {
+	o := ctx.Value(contextKey)
+	if o != nil {
+		return o.(*VFSContext)
+	}
+	return &Context
+}
+
+// WithContext returns a context.Context with the given VFS context added.
+func WithContext(parent context.Context, vfsContext *VFSContext) context.Context {
+	return context.WithValue(parent, contextKey, vfsContext)
 }
 
 type vfsOptions struct {

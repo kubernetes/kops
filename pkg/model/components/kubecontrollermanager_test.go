@@ -17,6 +17,7 @@ limitations under the License.
 package components
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -41,6 +42,7 @@ func buildCluster() *api.Cluster {
 }
 
 func Test_Build_KCM_Builder(t *testing.T) {
+	ctx := context.TODO()
 	versions := []string{"v1.11.0", "v2.4.0"}
 	for _, v := range versions {
 
@@ -54,7 +56,7 @@ func Test_Build_KCM_Builder(t *testing.T) {
 			},
 		}
 
-		err := kcm.BuildOptions(&c.Spec)
+		err := kcm.BuildOptions(ctx, &c.Spec)
 		if err != nil {
 			t.Fatalf("unexpected error from BuildOptions %s", err)
 		}
@@ -66,6 +68,7 @@ func Test_Build_KCM_Builder(t *testing.T) {
 }
 
 func Test_Build_KCM_Builder_Change_Duration(t *testing.T) {
+	ctx := context.TODO()
 	c := buildCluster()
 	b := assets.NewAssetBuilder(c, false)
 
@@ -81,7 +84,7 @@ func Test_Build_KCM_Builder_Change_Duration(t *testing.T) {
 
 	c.Spec.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration = time.Minute * 5
 
-	err := kcm.BuildOptions(&c.Spec)
+	err := kcm.BuildOptions(ctx, &c.Spec)
 	if err != nil {
 		t.Fatalf("unexpected error from BuildOptions %s", err)
 	}
@@ -92,6 +95,7 @@ func Test_Build_KCM_Builder_Change_Duration(t *testing.T) {
 }
 
 func Test_Build_KCM_Builder_CIDR_Mask_Size(t *testing.T) {
+	ctx := context.TODO()
 	grid := []struct {
 		PodCIDR          string
 		ClusterCIDR      string
@@ -155,7 +159,7 @@ func Test_Build_KCM_Builder_CIDR_Mask_Size(t *testing.T) {
 				ClusterCIDR: tc.ClusterCIDR,
 			}
 
-			err := kcm.BuildOptions(&c.Spec)
+			err := kcm.BuildOptions(ctx, &c.Spec)
 			require.NoError(t, err)
 
 			assert.Equal(t, tc.ExpectedMaskSize, c.Spec.KubeControllerManager.NodeCIDRMaskSize)

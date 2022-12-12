@@ -97,7 +97,7 @@ func NewCmdCreate(f *util.Factory, out io.Writer) *cobra.Command {
 }
 
 func RunCreate(ctx context.Context, f *util.Factory, out io.Writer, c *CreateOptions) error {
-	clientset, err := f.KopsClient()
+	clientset, err := f.KopsClient(ctx)
 	if err != nil {
 		return err
 	}
@@ -118,7 +118,7 @@ func RunCreate(ctx context.Context, f *util.Factory, out io.Writer, c *CreateOpt
 				return err
 			}
 		} else {
-			contents, err = vfs.Context.ReadFile(f)
+			contents, err = vfs.FromContext(ctx).ReadFile(f)
 			if err != nil {
 				return fmt.Errorf("error reading file %q: %v", f, err)
 			}
@@ -192,7 +192,7 @@ func RunCreate(ctx context.Context, f *util.Factory, out io.Writer, c *CreateOpt
 					return err
 				}
 
-				sshCredentialStore, err := clientset.SSHCredentialStore(cluster)
+				sshCredentialStore, err := clientset.SSHCredentialStore(ctx, cluster)
 				if err != nil {
 					return err
 				}

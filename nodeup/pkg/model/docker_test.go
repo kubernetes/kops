@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"context"
 	"path"
 	"path/filepath"
 	"testing"
@@ -124,6 +125,8 @@ func TestDockerBuilder_BuildFlags(t *testing.T) {
 }
 
 func runDockerBuilderTest(t *testing.T, key string) {
+	ctx := context.TODO()
+
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
@@ -137,7 +140,7 @@ func runDockerBuilderTest(t *testing.T, key string) {
 		t.Fatal(err)
 	}
 
-	nodeUpModelContext, err := BuildNodeupModelContext(model)
+	nodeUpModelContext, err := BuildNodeupModelContext(ctx, model)
 	if err != nil {
 		t.Fatalf("error parsing cluster yaml %q: %v", basedir, err)
 		return

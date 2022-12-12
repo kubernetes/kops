@@ -17,6 +17,8 @@ limitations under the License.
 package components
 
 import (
+	"context"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
@@ -28,7 +30,7 @@ type CalicoOptionsBuilder struct {
 
 var _ loader.OptionsBuilder = &CalicoOptionsBuilder{}
 
-func (b *CalicoOptionsBuilder) BuildOptions(o interface{}) error {
+func (b *CalicoOptionsBuilder) BuildOptions(ctx context.Context, o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 	c := clusterSpec.Networking.Calico
 	if c == nil {

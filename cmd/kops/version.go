@@ -52,7 +52,8 @@ func NewCmdVersion(f *util.Factory, out io.Writer) *cobra.Command {
 		Args:              rootCommand.clusterNameArgsAllowNoCluster(&options.ClusterName),
 		ValidArgsFunction: cobra.NoFileCompletions,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RunVersion(f, out, options)
+			ctx := cmd.Context()
+			return RunVersion(ctx, f, out, options)
 		},
 	}
 
@@ -69,7 +70,7 @@ type VersionOptions struct {
 }
 
 // RunVersion implements the version command logic
-func RunVersion(f *util.Factory, out io.Writer, options *VersionOptions) error {
+func RunVersion(ctx context.Context, f *util.Factory, out io.Writer, options *VersionOptions) error {
 	if options.short {
 		s := kops.Version
 		_, err := fmt.Fprintf(out, "%s\n", s)
@@ -77,7 +78,7 @@ func RunVersion(f *util.Factory, out io.Writer, options *VersionOptions) error {
 			return err
 		}
 		if options.server {
-			server := serverVersion(f, options)
+			server := serverVersion(ctx, f, options)
 
 			_, err := fmt.Fprintf(out, "%s\n", server)
 			return err
@@ -97,7 +98,7 @@ func RunVersion(f *util.Factory, out io.Writer, options *VersionOptions) error {
 			}
 		}
 		if options.server {
-			server := serverVersion(f, options)
+			server := serverVersion(ctx, f, options)
 
 			_, err := fmt.Fprintf(out, "Last applied server version: %s\n", server)
 			return err
@@ -106,17 +107,16 @@ func RunVersion(f *util.Factory, out io.Writer, options *VersionOptions) error {
 	}
 }
 
-func serverVersion(f *util.Factory, options *VersionOptions) string {
+func serverVersion(ctx context.Context, f *util.Factory, options *VersionOptions) string {
 	if options.ClusterName == "" {
 		return "No cluster selected"
 	}
 
-	ctx := context.Background()
 	cluster, err := GetCluster(ctx, f, options.ClusterName)
 	if err != nil {
 		return "could not fetch cluster"
 	}
-	configBase, err := vfs.Context.BuildVfsPath(cluster.Spec.ConfigBase)
+	configBase, err := vfs.FromContext(ctx).BuildVfsPath(cluster.Spec.ConfigBase)
 	if err != nil {
 		return "could not talk to vfs"
 	}

@@ -17,6 +17,7 @@ limitations under the License.
 package vfsclientset
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -95,8 +96,8 @@ func (c *ClusterVFS) List(options metav1.ListOptions) (*api.ClusterList, error) 
 	return &api.ClusterList{Items: items}, nil
 }
 
-func (r *ClusterVFS) Create(c *api.Cluster) (*api.Cluster, error) {
-	if errs := validation.ValidateCluster(c, false); len(errs) != 0 {
+func (r *ClusterVFS) Create(ctx context.Context, c *api.Cluster) (*api.Cluster, error) {
+	if errs := validation.ValidateCluster(ctx, c, false); len(errs) != 0 {
 		return nil, errs.ToAggregate()
 	}
 
@@ -119,7 +120,7 @@ func (r *ClusterVFS) Create(c *api.Cluster) (*api.Cluster, error) {
 	return c, nil
 }
 
-func (r *ClusterVFS) Update(c *api.Cluster, status *api.ClusterStatus) (*api.Cluster, error) {
+func (r *ClusterVFS) Update(ctx context.Context, c *api.Cluster, status *api.ClusterStatus) (*api.Cluster, error) {
 	clusterName := c.ObjectMeta.Name
 	if clusterName == "" {
 		return nil, field.Required(field.NewPath("objectMeta", "name"), "clusterName is required")
@@ -134,7 +135,7 @@ func (r *ClusterVFS) Update(c *api.Cluster, status *api.ClusterStatus) (*api.Clu
 		return nil, errors.NewNotFound(schema.GroupResource{Group: api.GroupName, Resource: "Cluster"}, clusterName)
 	}
 
-	if err := validation.ValidateClusterUpdate(c, status, old).ToAggregate(); err != nil {
+	if err := validation.ValidateClusterUpdate(ctx, c, status, old).ToAggregate(); err != nil {
 		return nil, err
 	}
 

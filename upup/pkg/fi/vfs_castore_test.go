@@ -17,6 +17,7 @@ limitations under the License.
 package fi
 
 import (
+	"context"
 	"math/big"
 	"math/rand"
 	"strings"
@@ -46,9 +47,11 @@ func TestBigInt_Format(t *testing.T) {
 }
 
 func TestVFSCAStoreRoundTrip(t *testing.T) {
-	vfs.Context.ResetMemfsContext(true)
+	ctx := context.TODO()
 
-	basePath, err := vfs.Context.BuildVfsPath("memfs://tests")
+	vfs.FromContext(ctx).ResetMemfsContext(true)
+
+	basePath, err := vfs.FromContext(ctx).BuildVfsPath("memfs://tests")
 	if err != nil {
 		t.Fatalf("error building vfspath: %v", err)
 	}

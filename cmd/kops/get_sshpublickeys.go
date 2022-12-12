@@ -70,7 +70,7 @@ type SSHKeyItem struct {
 }
 
 func RunGetSSHPublicKeys(ctx context.Context, f *util.Factory, out io.Writer, options *GetSSHPublicKeysOptions) error {
-	clientset, err := f.KopsClient()
+	clientset, err := f.KopsClient(ctx)
 	if err != nil {
 		return err
 	}
@@ -80,7 +80,7 @@ func RunGetSSHPublicKeys(ctx context.Context, f *util.Factory, out io.Writer, op
 		return err
 	}
 
-	sshCredentialStore, err := clientset.SSHCredentialStore(cluster)
+	sshCredentialStore, err := clientset.SSHCredentialStore(ctx, cluster)
 	if err != nil {
 		return err
 	}

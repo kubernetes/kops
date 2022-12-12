@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
@@ -78,6 +79,8 @@ func (n *nodeupConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 }
 
 func TestBootstrapUserData(t *testing.T) {
+	ctx := context.TODO()
+
 	cs := []struct {
 		Role               kops.InstanceGroupRole
 		ExpectedFileIndex  int
@@ -193,7 +196,7 @@ func TestBootstrapUserData(t *testing.T) {
 		err = c.Tasks["BootstrapScript/testIG"].Run(&fi.Context{Cluster: cluster})
 		require.NoError(t, err, "running task")
 
-		actual, err := fi.ResourceAsString(res)
+		actual, err := fi.ResourceAsString(ctx, res)
 		if err != nil {
 			t.Errorf("case %d failed to render nodeup resource. error: %s", i, err)
 			continue
@@ -202,7 +205,7 @@ func TestBootstrapUserData(t *testing.T) {
 		golden.AssertMatchesFile(t, actual, fmt.Sprintf("tests/data/bootstrapscript_%d.txt", x.ExpectedFileIndex))
 
 		require.Contains(t, c.Tasks, "ManagedFile/nodeupconfig-testIG")
-		actual, err = fi.ResourceAsString(c.Tasks["ManagedFile/nodeupconfig-testIG"].(*fitasks.ManagedFile).Contents)
+		actual, err = fi.ResourceAsString(ctx, c.Tasks["ManagedFile/nodeupconfig-testIG"].(*fitasks.ManagedFile).Contents)
 		if err != nil {
 			t.Errorf("case %d failed to render nodeupconfig resource. error: %s", i, err)
 			continue

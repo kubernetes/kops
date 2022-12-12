@@ -355,6 +355,8 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 }
 
 func (b *KubeAPIServerBuilder) writeServerCertificate(c *fi.ModelBuilderContext, kubeAPIServer *kops.KubeAPIServerConfig) error {
+	ctx := c.Context()
+
 	pathSrvKAPI := filepath.Join(b.PathSrvKubernetes(), "kube-apiserver")
 
 	{
@@ -399,7 +401,7 @@ func (b *KubeAPIServerBuilder) writeServerCertificate(c *fi.ModelBuilderContext,
 		}
 		if b.CloudProvider == kops.CloudProviderOpenstack {
 			if b.Cluster.Spec.Networking.Topology != nil && b.Cluster.Spec.Networking.Topology.ControlPlane == kops.TopologyPrivate {
-				instanceAddress, err := getInstanceAddress()
+				instanceAddress, err := getInstanceAddress(ctx)
 				if err != nil {
 					return err
 				}

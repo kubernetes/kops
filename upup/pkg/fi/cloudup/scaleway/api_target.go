@@ -16,7 +16,11 @@ limitations under the License.
 
 package scaleway
 
-import "k8s.io/kops/upup/pkg/fi"
+import (
+	"context"
+
+	"k8s.io/kops/upup/pkg/fi"
+)
 
 type ScwAPITarget struct {
 	Cloud ScwCloud
@@ -30,7 +34,7 @@ func NewScwAPITarget(cloud ScwCloud) *ScwAPITarget {
 	}
 }
 
-func (s ScwAPITarget) Finish(taskMap map[string]fi.Task) error {
+func (s ScwAPITarget) Finish(ctx context.Context, taskMap map[string]fi.Task) error {
 	return nil
 }
 

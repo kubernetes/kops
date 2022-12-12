@@ -17,6 +17,7 @@ limitations under the License.
 package cloudup
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
@@ -29,7 +30,7 @@ import (
 
 const testAWSRegion = "us-test-1"
 
-func buildDefaultCluster(t *testing.T) *api.Cluster {
+func buildDefaultCluster(t *testing.T, ctx context.Context) *api.Cluster {
 	cloud, c := buildMinimalCluster()
 
 	err := PerformAssignments(c, cloud)
@@ -37,7 +38,7 @@ func buildDefaultCluster(t *testing.T) *api.Cluster {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
 
-	fullSpec, err := mockedPopulateClusterSpec(c, cloud)
+	fullSpec, err := mockedPopulateClusterSpec(ctx, c, cloud)
 	if err != nil {
 		t.Fatalf("error from PopulateClusterSpec: %v", err)
 	}
@@ -82,36 +83,40 @@ func buildDefaultCluster(t *testing.T) *api.Cluster {
 }
 
 func TestValidateFull_Default_Validates(t *testing.T) {
-	c := buildDefaultCluster(t)
-	if errs := validation.ValidateCluster(c, false); len(errs) != 0 {
+	ctx := context.TODO()
+
+	c := buildDefaultCluster(t, ctx)
+	if errs := validation.ValidateCluster(ctx, c, false); len(errs) != 0 {
 		klog.Infof("Cluster: %v", c)
 		t.Fatalf("Validate gave unexpected error (strict=false): %v", errs.ToAggregate())
 	}
-	if errs := validation.ValidateCluster(c, true); len(errs) != 0 {
+	if errs := validation.ValidateCluster(ctx, c, true); len(errs) != 0 {
 		t.Fatalf("Validate gave unexpected error (strict=true): %v", errs.ToAggregate())
 	}
 }
 
 func TestValidateFull_ClusterName_InvalidDNS_NoDot(t *testing.T) {
-	c := buildDefaultCluster(t)
+	ctx := context.TODO()
+	c := buildDefaultCluster(t, ctx)
 	c.ObjectMeta.Name = "test"
-	expectErrorFromValidate(t, c, "DNS name")
+	expectErrorFromValidate(t, ctx, c, "DNS name")
 }
 
 func TestValidateFull_ClusterName_InvalidDNS_Invalid(t *testing.T) {
-	c := buildDefaultCluster(t)
+	ctx := context.TODO()
+	c := buildDefaultCluster(t, ctx)
 	c.ObjectMeta.Name = "test.-"
-	expectErrorFromValidate(t, c, "DNS name")
+	expectErrorFromValidate(t, ctx, c, "DNS name")
 }
 
 func TestValidateFull_ClusterName_Required(t *testing.T) {
-	c := buildDefaultCluster(t)
+	ctx := context.TODO()
+	c := buildDefaultCluster(t, ctx)
 	c.ObjectMeta.Name = ""
-	expectErrorFromValidate(t, c, "Name")
+	expectErrorFromValidate(t, ctx, c, "Name")
 }
 
 func TestValidateFull_UpdatePolicy_Valid(t *testing.T) {
-	c := buildDefaultCluster(t)
 	for _, test := range []struct {
 		label  string
 		policy *string
@@ -129,14 +134,14 @@ func TestValidateFull_UpdatePolicy_Valid(t *testing.T) {
 		},
 	} {
 		t.Run(test.label, func(t *testing.T) {
-			c.Spec.UpdatePolicy = test.policy
-			expectNoErrorFromValidate(t, c)
+			ctx := context.TODO()
+			c := buildDefaultCluster(t, ctx)
+			expectNoErrorFromValidate(t, ctx, c)
 		})
 	}
 }
 
 func TestValidateFull_UpdatePolicy_Invalid(t *testing.T) {
-	c := buildDefaultCluster(t)
 	for _, test := range []struct {
 		label  string
 		policy string
@@ -151,53 +156,62 @@ func TestValidateFull_UpdatePolicy_Invalid(t *testing.T) {
 		},
 	} {
 		t.Run(test.label, func(t *testing.T) {
+			ctx := context.TODO()
+			c := buildDefaultCluster(t, ctx)
+
 			c.Spec.UpdatePolicy = &test.policy
-			expectErrorFromValidate(t, c, "spec.updatePolicy")
+			expectErrorFromValidate(t, ctx, c, "spec.updatePolicy")
 		})
 	}
 }
 
 func Test_Validate_Kubenet_With_14(t *testing.T) {
-	c := buildDefaultCluster(t)
+	ctx := context.TODO()
+
+	c := buildDefaultCluster(t, ctx)
 	c.Spec.KubernetesVersion = "1.4.1"
 	c.Spec.Networking.Kubenet = &api.KubenetNetworkingSpec{}
 
-	expectNoErrorFromValidate(t, c)
+	expectNoErrorFromValidate(t, ctx, c)
 }
 
 func TestValidate_ClusterName_Import(t *testing.T) {
-	c := buildDefaultCluster(t)
+	ctx := context.TODO()
+
+	c := buildDefaultCluster(t, ctx)
 
 	// When we import a cluster, it likely won't have a valid name until we convert it
 	c.ObjectMeta.Annotations = make(map[string]string)
 	c.ObjectMeta.Annotations[api.AnnotationNameManagement] = api.AnnotationValueManagementImported
 	c.ObjectMeta.Name = "kubernetes"
 
-	expectNoErrorFromValidate(t, c)
+	expectNoErrorFromValidate(t, ctx, c)
 }
 
 func TestValidate_ContainerRegistry_and_ContainerProxy_exclusivity(t *testing.T) {
-	c := buildDefaultCluster(t)
+	ctx := context.TODO()
+
+	c := buildDefaultCluster(t, ctx)
 
 	assets := new(api.Assets)
 	c.Spec.Assets = assets
 
-	expectNoErrorFromValidate(t, c)
+	expectNoErrorFromValidate(t, ctx, c)
 
 	registry := "https://registry.example.com/"
 	c.Spec.Assets.ContainerRegistry = &registry
-	expectNoErrorFromValidate(t, c)
+	expectNoErrorFromValidate(t, ctx, c)
 
 	proxy := "https://proxy.example.com/"
 	c.Spec.Assets.ContainerProxy = &proxy
-	expectErrorFromValidate(t, c, "containerProxy cannot be used in conjunction with containerRegistry")
+	expectErrorFromValidate(t, ctx, c, "containerProxy cannot be used in conjunction with containerRegistry")
 
 	c.Spec.Assets.ContainerRegistry = nil
-	expectNoErrorFromValidate(t, c)
+	expectNoErrorFromValidate(t, ctx, c)
 }
 
-func expectErrorFromValidate(t *testing.T, c *api.Cluster, message string) {
-	errs := validation.ValidateCluster(c, false)
+func expectErrorFromValidate(t *testing.T, ctx context.Context, c *api.Cluster, message string) {
+	errs := validation.ValidateCluster(ctx, c, false)
 	if len(errs) == 0 {
 		t.Fatalf("Expected error from Validate")
 	}
@@ -207,8 +221,8 @@ func expectErrorFromValidate(t *testing.T, c *api.Cluster, message string) {
 	}
 }
 
-func expectNoErrorFromValidate(t *testing.T, c *api.Cluster) {
-	errs := validation.ValidateCluster(c, false)
+func expectNoErrorFromValidate(t *testing.T, ctx context.Context, c *api.Cluster) {
+	errs := validation.ValidateCluster(ctx, c, false)
 	if len(errs) != 0 {
 		t.Fatalf("Unexpected error from Validate: %v", errs.ToAggregate())
 	}

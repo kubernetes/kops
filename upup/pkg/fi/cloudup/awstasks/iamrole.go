@@ -17,6 +17,7 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/url"
@@ -61,6 +62,8 @@ func (e *IAMRole) CompareWithID() *string {
 }
 
 func (e *IAMRole) Find(c *fi.Context) (*IAMRole, error) {
+	ctx := c.Context()
+
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	request := &iam.GetRoleInput{RoleName: e.Name}
@@ -93,7 +96,7 @@ func (e *IAMRole) Find(c *fi.Context) (*IAMRole, error) {
 		// The RolePolicyDocument is reformatted by AWS
 		// We parse both as JSON; if the json forms are equal we pretend the actual value is the expected value
 		if e.RolePolicyDocument != nil {
-			expectedPolicy, err := fi.ResourceAsString(e.RolePolicyDocument)
+			expectedPolicy, err := fi.ResourceAsString(ctx, e.RolePolicyDocument)
 			if err != nil {
 				return nil, fmt.Errorf("error reading expected RolePolicyDocument for IAMRole %q: %v", aws.StringValue(e.Name), err)
 			}
@@ -153,6 +156,8 @@ func (s *IAMRole) CheckChanges(a, e, changes *IAMRole) error {
 }
 
 func (_ *IAMRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRole) error {
+	ctx := context.TODO()
+
 	if e.RolePolicyDocument == nil {
 		klog.V(2).Infof("Deleting IAM role %q", a.Name)
 
@@ -234,7 +239,7 @@ func (_ *IAMRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRole) error
 		return nil
 	}
 
-	policy, err := fi.ResourceAsString(e.RolePolicyDocument)
+	policy, err := fi.ResourceAsString(ctx, e.RolePolicyDocument)
 	if err != nil {
 		return fmt.Errorf("error rendering RolePolicyDocument: %v", err)
 	}
@@ -266,7 +271,7 @@ func (_ *IAMRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRole) error
 
 			actualPolicy := ""
 			if a.RolePolicyDocument != nil {
-				actualPolicy, err = fi.ResourceAsString(a.RolePolicyDocument)
+				actualPolicy, err = fi.ResourceAsString(ctx, a.RolePolicyDocument)
 				if err != nil {
 					return fmt.Errorf("error reading actual policy document: %v", err)
 				}
@@ -344,7 +349,8 @@ type terraformIAMRole struct {
 }
 
 func (_ *IAMRole) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IAMRole) error {
-	policy, err := t.AddFileResource("aws_iam_role", *e.Name, "policy", e.RolePolicyDocument, false)
+	ctx := context.TODO()
+	policy, err := t.AddFileResource(ctx, "aws_iam_role", *e.Name, "policy", e.RolePolicyDocument, false)
 	if err != nil {
 		return fmt.Errorf("error rendering RolePolicyDocument: %v", err)
 	}

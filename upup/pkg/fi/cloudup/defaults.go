@@ -127,15 +127,15 @@ func PerformAssignments(c *kops.Cluster, cloud fi.Cloud) error {
 	}
 	c.Spec.Networking.EgressProxy = proxy
 
-	return ensureKubernetesVersion(c)
+	return ensureKubernetesVersion(ctx, c)
 }
 
 // ensureKubernetesVersion populates KubernetesVersion, if it is not already set
 // It will be populated with the latest stable kubernetes version, or the version from the channel
-func ensureKubernetesVersion(c *kops.Cluster) error {
+func ensureKubernetesVersion(ctx context.Context, c *kops.Cluster) error {
 	if c.Spec.KubernetesVersion == "" {
 		if c.Spec.Channel != "" {
-			channel, err := kops.LoadChannel(c.Spec.Channel)
+			channel, err := kops.LoadChannel(ctx, c.Spec.Channel)
 			if err != nil {
 				return err
 			}
@@ -152,7 +152,7 @@ func ensureKubernetesVersion(c *kops.Cluster) error {
 	}
 
 	if c.Spec.KubernetesVersion == "" {
-		latestVersion, err := FindLatestKubernetesVersion()
+		latestVersion, err := FindLatestKubernetesVersion(ctx)
 		if err != nil {
 			return err
 		}
@@ -165,10 +165,10 @@ func ensureKubernetesVersion(c *kops.Cluster) error {
 // FindLatestKubernetesVersion returns the latest kubernetes version,
 // as stored at https://storage.googleapis.com/kubernetes-release/release/stable.txt
 // This shouldn't be used any more; we prefer reading the stable channel
-func FindLatestKubernetesVersion() (string, error) {
+func FindLatestKubernetesVersion(ctx context.Context) (string, error) {
 	stableURL := "https://storage.googleapis.com/kubernetes-release/release/stable.txt"
 	klog.Warningf("Loading latest kubernetes version from %q", stableURL)
-	b, err := vfs.Context.ReadFile(stableURL)
+	b, err := vfs.FromContext(ctx).ReadFile(stableURL)
 	if err != nil {
 		return "", fmt.Errorf("KubernetesVersion not specified, and unable to download latest version from %q: %v", stableURL, err)
 	}

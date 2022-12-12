@@ -17,6 +17,7 @@ limitations under the License.
 package openstacktasks
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
@@ -312,6 +313,8 @@ func generateInstanceName(e *Instance) (string, error) {
 }
 
 func (_ *Instance) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Instance) error {
+	ctx := context.TODO()
+
 	cloud := t.Cloud
 	if a == nil {
 		serverName, err := generateInstanceName(e)
@@ -346,7 +349,7 @@ func (_ *Instance) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, change
 			ConfigDrive:    e.ConfigDrive,
 		}
 		if e.UserData != nil {
-			bytes, err := fi.ResourceAsBytes(e.UserData)
+			bytes, err := fi.ResourceAsBytes(ctx, e.UserData)
 			if err != nil {
 				return err
 			}

@@ -335,6 +335,8 @@ func (b *BootstrapScript) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 }
 
 func (b *BootstrapScript) Run(c *fi.Context) error {
+	ctx := c.Context()
+
 	if b.Lifecycle == fi.LifecycleIgnore {
 		return nil
 	}
@@ -441,7 +443,7 @@ func (b *BootstrapScript) Run(c *fi.Context) error {
 	}
 
 	b.resource.Resource = fi.FunctionToResource(func() ([]byte, error) {
-		nodeupScript, err := fi.ResourceAsString(nodeupScriptResource)
+		nodeupScript, err := fi.ResourceAsString(ctx, nodeupScriptResource)
 		if err != nil {
 			return nil, err
 		}

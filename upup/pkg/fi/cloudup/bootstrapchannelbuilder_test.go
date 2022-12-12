@@ -17,6 +17,7 @@ limitations under the License.
 package cloudup
 
 import (
+	"context"
 	"os"
 	"path"
 	"testing"
@@ -39,25 +40,27 @@ import (
 )
 
 func TestBootstrapChannelBuilder_BuildTasks(t *testing.T) {
+	ctx := context.TODO()
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
 	h.SetupMockAWS()
 
-	runChannelBuilderTest(t, "simple", []string{"kops-controller.addons.k8s.io-k8s-1.16"})
+	runChannelBuilderTest(t, ctx, "simple", []string{"kops-controller.addons.k8s.io-k8s-1.16"})
 	// Use cilium networking, proxy
-	runChannelBuilderTest(t, "cilium", []string{"kops-controller.addons.k8s.io-k8s-1.16"})
-	runChannelBuilderTest(t, "weave", []string{})
-	runChannelBuilderTest(t, "amazonvpc", []string{"networking.amazon-vpc-routed-eni-k8s-1.16"})
-	runChannelBuilderTest(t, "amazonvpc-containerd", []string{"networking.amazon-vpc-routed-eni-k8s-1.16"})
-	runChannelBuilderTest(t, "awsiamauthenticator/crd", []string{"authentication.aws-k8s-1.12"})
-	runChannelBuilderTest(t, "awsiamauthenticator/mappings", []string{"authentication.aws-k8s-1.12"})
-	runChannelBuilderTest(t, "metrics-server/insecure-1.19", []string{"metrics-server.addons.k8s.io-k8s-1.11"})
-	runChannelBuilderTest(t, "metrics-server/secure-1.19", []string{"metrics-server.addons.k8s.io-k8s-1.11"})
-	runChannelBuilderTest(t, "coredns", []string{"coredns.addons.k8s.io-k8s-1.12"})
+	runChannelBuilderTest(t, ctx, "cilium", []string{"kops-controller.addons.k8s.io-k8s-1.16"})
+	runChannelBuilderTest(t, ctx, "weave", []string{})
+	runChannelBuilderTest(t, ctx, "amazonvpc", []string{"networking.amazon-vpc-routed-eni-k8s-1.16"})
+	runChannelBuilderTest(t, ctx, "amazonvpc-containerd", []string{"networking.amazon-vpc-routed-eni-k8s-1.16"})
+	runChannelBuilderTest(t, ctx, "awsiamauthenticator/crd", []string{"authentication.aws-k8s-1.12"})
+	runChannelBuilderTest(t, ctx, "awsiamauthenticator/mappings", []string{"authentication.aws-k8s-1.12"})
+	runChannelBuilderTest(t, ctx, "metrics-server/insecure-1.19", []string{"metrics-server.addons.k8s.io-k8s-1.11"})
+	runChannelBuilderTest(t, ctx, "metrics-server/secure-1.19", []string{"metrics-server.addons.k8s.io-k8s-1.11"})
+	runChannelBuilderTest(t, ctx, "coredns", []string{"coredns.addons.k8s.io-k8s-1.12"})
 }
 
 func TestBootstrapChannelBuilder_ServiceAccountIAM(t *testing.T) {
+	ctx := context.TODO()
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
@@ -68,19 +71,20 @@ func TestBootstrapChannelBuilder_ServiceAccountIAM(t *testing.T) {
 		featureflag.ParseFlags("-UseServiceAccountExternalPermissions")
 	}
 	defer unsetFeatureFlag()
-	runChannelBuilderTest(t, "service-account-iam", []string{"dns-controller.addons.k8s.io-k8s-1.12", "kops-controller.addons.k8s.io-k8s-1.16"})
+	runChannelBuilderTest(t, ctx, "service-account-iam", []string{"dns-controller.addons.k8s.io-k8s-1.12", "kops-controller.addons.k8s.io-k8s-1.16"})
 }
 
 func TestBootstrapChannelBuilder_AWSCloudController(t *testing.T) {
+	ctx := context.TODO()
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
 	h.SetupMockAWS()
 
-	runChannelBuilderTest(t, "awscloudcontroller", []string{"aws-cloud-controller.addons.k8s.io-k8s-1.18"})
+	runChannelBuilderTest(t, ctx, "awscloudcontroller", []string{"aws-cloud-controller.addons.k8s.io-k8s-1.18"})
 }
 
-func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
+func runChannelBuilderTest(t *testing.T, ctx context.Context, key string, addonManifests []string) {
 	basedir := path.Join("tests/bootstrapchannelbuilder/", key)
 
 	clusterYamlPath := path.Join(basedir, "cluster.yaml")
@@ -103,7 +107,7 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 		t.Fatalf("error from PerformAssignments for %q: %v", key, err)
 	}
 
-	fullSpec, err := mockedPopulateClusterSpec(cluster, cloud)
+	fullSpec, err := mockedPopulateClusterSpec(ctx, cluster, cloud)
 	if err != nil {
 		t.Fatalf("error from PopulateClusterSpec for %q: %v", key, err)
 	}
@@ -114,15 +118,15 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 		t.Fatalf("error building templates for %q: %v", key, err)
 	}
 
-	vfs.Context.ResetMemfsContext(true)
+	vfs.FromContext(ctx).ResetMemfsContext(true)
 
-	basePath, err := vfs.Context.BuildVfsPath("memfs://tests")
+	basePath, err := vfs.FromContext(ctx).BuildVfsPath("memfs://tests")
 	if err != nil {
 		t.Errorf("error building vfspath: %v", err)
 	}
 	clientset := vfsclientset.NewVFSClientset(basePath)
 
-	secretStore, err := clientset.SecretStore(cluster)
+	secretStore, err := clientset.SecretStore(ctx, cluster)
 	if err != nil {
 		t.Error(err)
 	}
@@ -181,7 +185,7 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 		}
 
 		manifestFileTask := manifestTask.(*fitasks.ManagedFile)
-		actualManifest, err := fi.ResourceAsString(manifestFileTask.Contents)
+		actualManifest, err := fi.ResourceAsString(ctx, manifestFileTask.Contents)
 		if err != nil {
 			t.Fatalf("error getting manifest as string: %v", err)
 		}
@@ -201,7 +205,7 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 		}
 
 		manifestFileTask := manifestTask.(*fitasks.ManagedFile)
-		actualManifest, err := fi.ResourceAsString(manifestFileTask.Contents)
+		actualManifest, err := fi.ResourceAsString(ctx, manifestFileTask.Contents)
 		if err != nil {
 			t.Fatalf("error getting manifest as string: %v", err)
 		}

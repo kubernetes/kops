@@ -73,7 +73,7 @@ func NewCmdGetAll(f *util.Factory, out io.Writer, getOptions *GetOptions) *cobra
 }
 
 func RunGetAll(ctx context.Context, f commandutils.Factory, out io.Writer, options *GetAllOptions) error {
-	client, err := f.KopsClient()
+	client, err := f.KopsClient(ctx)
 	if err != nil {
 		return err
 	}

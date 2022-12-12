@@ -91,6 +91,8 @@ func newTestVMScaleSet() *VMScaleSet {
 }
 
 func TestVMScaleSetRenderAzure(t *testing.T) {
+	ctx := context.TODO()
+
 	cloud := NewMockAzureCloud("eastus")
 	apiTarget := azure.NewAzureAPITarget(cloud)
 	vmss := &VMScaleSet{}
@@ -118,7 +120,7 @@ func TestVMScaleSetRenderAzure(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to decode user data: %s", err)
 	}
-	expectedUserData, err := fi.ResourceAsBytes(expected.UserData)
+	expectedUserData, err := fi.ResourceAsBytes(ctx, expected.UserData)
 	if err != nil {
 		t.Fatalf("failed to get user data: %s", err)
 	}

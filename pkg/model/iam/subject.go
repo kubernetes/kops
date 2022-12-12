@@ -17,6 +17,7 @@ limitations under the License.
 package iam
 
 import (
+	"context"
 	"fmt"
 
 	corev1 "k8s.io/api/core/v1"
@@ -29,7 +30,7 @@ import (
 // It is implemented by NodeRole objects and per-ServiceAccount objects.
 type Subject interface {
 	// BuildAWSPolicy builds the AWS permissions for the given subject.
-	BuildAWSPolicy(*PolicyBuilder) (*Policy, error)
+	BuildAWSPolicy(context.Context, *PolicyBuilder) (*Policy, error)
 
 	// ServiceAccount returns the kubernetes service account used by pods with this specified role.
 	// For node roles, it returns an empty NamespacedName and false.
@@ -81,7 +82,7 @@ func (g *GenericServiceAccount) ServiceAccount() (types.NamespacedName, bool) {
 	return g.NamespacedName, true
 }
 
-func (g *GenericServiceAccount) BuildAWSPolicy(*PolicyBuilder) (*Policy, error) {
+func (g *GenericServiceAccount) BuildAWSPolicy(context.Context, *PolicyBuilder) (*Policy, error) {
 	return g.Policy, nil
 }
 

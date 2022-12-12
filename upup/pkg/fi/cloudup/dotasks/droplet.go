@@ -125,7 +125,9 @@ func (d *Droplet) Run(c *fi.Context) error {
 }
 
 func (_ *Droplet) RenderDO(t *do.DOAPITarget, a, e, changes *Droplet) error {
-	userData, err := fi.ResourceAsString(e.UserData)
+	ctx := context.TODO()
+
+	userData, err := fi.ResourceAsString(ctx, e.UserData)
 	if err != nil {
 		return err
 	}

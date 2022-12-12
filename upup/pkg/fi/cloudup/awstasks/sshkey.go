@@ -17,6 +17,7 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -121,8 +122,10 @@ func (e *SSHKey) find(cloud awsup.AWSCloud) (*SSHKey, error) {
 }
 
 func (e *SSHKey) Normalize(c *fi.Context) error {
+	ctx := c.Context()
+
 	if e.KeyFingerprint == nil && e.PublicKey != nil {
-		publicKey, err := fi.ResourceAsString(e.PublicKey)
+		publicKey, err := fi.ResourceAsString(ctx, e.PublicKey)
 		if err != nil {
 			return fmt.Errorf("error reading SSH public key: %v", err)
 		}
@@ -151,7 +154,7 @@ func (s *SSHKey) CheckChanges(a, e, changes *SSHKey) error {
 	return nil
 }
 
-func (e *SSHKey) createKeypair(cloud awsup.AWSCloud) error {
+func (e *SSHKey) createKeypair(ctx context.Context, cloud awsup.AWSCloud) error {
 	klog.V(2).Infof("Creating SSHKey with Name:%q", *e.Name)
 
 	request := &ec2.ImportKeyPairInput{
@@ -160,7 +163,7 @@ func (e *SSHKey) createKeypair(cloud awsup.AWSCloud) error {
 	}
 
 	if e.PublicKey != nil {
-		d, err := fi.ResourceAsBytes(e.PublicKey)
+		d, err := fi.ResourceAsBytes(ctx, e.PublicKey)
 		if err != nil {
 			return fmt.Errorf("error rendering SSHKey PublicKey: %v", err)
 		}
@@ -179,8 +182,9 @@ func (e *SSHKey) createKeypair(cloud awsup.AWSCloud) error {
 }
 
 func (_ *SSHKey) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *SSHKey) error {
+	ctx := context.TODO()
 	if a == nil {
-		return e.createKeypair(t.Cloud)
+		return e.createKeypair(ctx, t.Cloud)
 	}
 
 	if !e.Shared {
@@ -196,12 +200,13 @@ type terraformSSHKey struct {
 }
 
 func (_ *SSHKey) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SSHKey) error {
+	ctx := context.TODO()
 	// We don't want to render a key definition when we're using one that already exists
 	if e.IsExistingKey() {
 		return nil
 	}
 	tfName := strings.Replace(*e.Name, ":", "", -1)
-	publicKey, err := t.AddFileResource("aws_key_pair", tfName, "public_key", e.PublicKey, false)
+	publicKey, err := t.AddFileResource(ctx, "aws_key_pair", tfName, "public_key", e.PublicKey, false)
 	if err != nil {
 		return fmt.Errorf("error rendering PublicKey: %v", err)
 	}

@@ -17,6 +17,8 @@ limitations under the License.
 package components
 
 import (
+	"context"
+
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
@@ -30,7 +32,7 @@ type NodeTerminationHandlerOptionsBuilder struct {
 
 var _ loader.OptionsBuilder = &NodeTerminationHandlerOptionsBuilder{}
 
-func (b *NodeTerminationHandlerOptionsBuilder) BuildOptions(o interface{}) error {
+func (b *NodeTerminationHandlerOptionsBuilder) BuildOptions(ctx context.Context, o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 	if clusterSpec.NodeTerminationHandler == nil {
 		return nil

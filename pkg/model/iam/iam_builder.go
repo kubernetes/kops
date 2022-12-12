@@ -27,6 +27,7 @@ package iam
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -316,7 +317,7 @@ type PolicyBuilder struct {
 
 // BuildAWSPolicy builds a set of IAM policy statements based on the
 // instance group type and IAM Legacy flag within the Cluster Spec
-func (b *PolicyBuilder) BuildAWSPolicy() (*Policy, error) {
+func (b *PolicyBuilder) BuildAWSPolicy(ctx context.Context) (*Policy, error) {
 	// Retrieve all the KMS Keys in use
 	for _, e := range b.Cluster.Spec.EtcdClusters {
 		for _, m := range e.Members {
@@ -326,7 +327,7 @@ func (b *PolicyBuilder) BuildAWSPolicy() (*Policy, error) {
 		}
 	}
 
-	p, err := b.Role.BuildAWSPolicy(b)
+	p, err := b.Role.BuildAWSPolicy(ctx, b)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate AWS IAM Policy: %v", err)
 	}
@@ -347,13 +348,13 @@ func NewPolicy(clusterName, partition string) *Policy {
 }
 
 // BuildAWSPolicy generates a custom policy for a Kubernetes master.
-func (r *NodeRoleAPIServer) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
+func (r *NodeRoleAPIServer) BuildAWSPolicy(ctx context.Context, b *PolicyBuilder) (*Policy, error) {
 	p := NewPolicy(b.Cluster.GetName(), b.Partition)
 
 	b.addNodeupPermissions(p, r.warmPool)
 
 	var err error
-	if p, err = b.AddS3Permissions(p); err != nil {
+	if p, err = b.AddS3Permissions(ctx, p); err != nil {
 		return nil, fmt.Errorf("failed to generate AWS IAM S3 access statements: %v", err)
 	}
 
@@ -381,7 +382,7 @@ func (r *NodeRoleAPIServer) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 }
 
 // BuildAWSPolicy generates a custom policy for a Kubernetes master.
-func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
+func (r *NodeRoleMaster) BuildAWSPolicy(ctx context.Context, b *PolicyBuilder) (*Policy, error) {
 	clusterName := b.Cluster.GetName()
 
 	p := NewPolicy(clusterName, b.Partition)
@@ -394,7 +395,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	}
 
 	var err error
-	if p, err = b.AddS3Permissions(p); err != nil {
+	if p, err = b.AddS3Permissions(ctx, p); err != nil {
 		return nil, fmt.Errorf("failed to generate AWS IAM S3 access statements: %v", err)
 	}
 
@@ -460,13 +461,13 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 }
 
 // BuildAWSPolicy generates a custom policy for a Kubernetes node.
-func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
+func (r *NodeRoleNode) BuildAWSPolicy(ctx context.Context, b *PolicyBuilder) (*Policy, error) {
 	p := NewPolicy(b.Cluster.GetName(), b.Partition)
 
 	b.addNodeupPermissions(p, r.enableLifecycleHookPermissions)
 
 	var err error
-	if p, err = b.AddS3Permissions(p); err != nil {
+	if p, err = b.AddS3Permissions(ctx, p); err != nil {
 		return nil, fmt.Errorf("failed to generate AWS IAM S3 access statements: %v", err)
 	}
 
@@ -486,7 +487,7 @@ func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 }
 
 // BuildAWSPolicy generates a custom policy for a bastion host.
-func (r *NodeRoleBastion) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
+func (r *NodeRoleBastion) BuildAWSPolicy(ctx context.Context, b *PolicyBuilder) (*Policy, error) {
 	p := NewPolicy(b.Cluster.GetName(), b.Partition)
 
 	// Bastion hosts currently don't require any specific permissions.
@@ -498,7 +499,7 @@ func (r *NodeRoleBastion) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 
 // AddS3Permissions builds an IAM Policy, with statements granting tailored
 // access to S3 assets, depending on the instance group or service-account role
-func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
+func (b *PolicyBuilder) AddS3Permissions(ctx context.Context, p *Policy) (*Policy, error) {
 	// For S3 IAM permissions we grant permissions to subtrees, so find the parents;
 	// we don't need to grant mypath and mypath/child.
 	var roots []string
@@ -543,7 +544,7 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 	s3Buckets := sets.NewString()
 
 	for _, root := range roots {
-		vfsPath, err := vfs.Context.BuildVfsPath(root)
+		vfsPath, err := vfs.FromContext(ctx).BuildVfsPath(root)
 		if err != nil {
 			return nil, fmt.Errorf("cannot parse VFS path %q: %v", root, err)
 		}
@@ -578,7 +579,7 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 		}
 	}
 
-	writeablePaths, err := WriteableVFSPaths(b.Cluster, b.Role)
+	writeablePaths, err := WriteableVFSPaths(ctx, b.Cluster, b.Role)
 	if err != nil {
 		return nil, err
 	}
@@ -661,7 +662,7 @@ func (b *PolicyBuilder) buildS3GetStatements(p *Policy, iamS3Path string) error 
 	return nil
 }
 
-func WriteableVFSPaths(cluster *kops.Cluster, role Subject) ([]vfs.Path, error) {
+func WriteableVFSPaths(ctx context.Context, cluster *kops.Cluster, role Subject) ([]vfs.Path, error) {
 	var paths []vfs.Path
 
 	// etcd-manager needs write permissions to the backup store
@@ -674,7 +675,7 @@ func WriteableVFSPaths(cluster *kops.Cluster, role Subject) ([]vfs.Path, error) 
 			}
 			backupStore := c.Backups.BackupStore
 
-			vfsPath, err := vfs.Context.BuildVfsPath(backupStore)
+			vfsPath, err := vfs.FromContext(ctx).BuildVfsPath(backupStore)
 			if err != nil {
 				return nil, fmt.Errorf("cannot parse VFS path %q: %v", backupStore, err)
 			}
@@ -751,7 +752,7 @@ func (b *PolicyResource) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 }
 
 // Open produces the AWS IAM policy for the given role
-func (b *PolicyResource) Open() (io.Reader, error) {
+func (b *PolicyResource) Open(ctx context.Context) (io.Reader, error) {
 	// Defensive copy before mutation
 	pb := *b.Builder
 
@@ -764,7 +765,7 @@ func (b *PolicyResource) Open() (io.Reader, error) {
 		pb.HostedZoneID = hostedZoneID
 	}
 
-	policy, err := pb.BuildAWSPolicy()
+	policy, err := pb.BuildAWSPolicy(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error building IAM policy: %v", err)
 	}

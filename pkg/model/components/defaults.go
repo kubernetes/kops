@@ -17,6 +17,8 @@ limitations under the License.
 package components
 
 import (
+	"context"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
@@ -29,7 +31,7 @@ type DefaultsOptionsBuilder struct {
 var _ loader.OptionsBuilder = &DefaultsOptionsBuilder{}
 
 // BuildOptions is responsible for cluster options
-func (b *DefaultsOptionsBuilder) BuildOptions(o interface{}) error {
+func (b *DefaultsOptionsBuilder) BuildOptions(ctx context.Context, o interface{}) error {
 	options := o.(*kops.ClusterSpec)
 
 	if options.ClusterDNSDomain == "" {

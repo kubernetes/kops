@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"flag"
@@ -128,7 +129,7 @@ func (s *healthCheckServer) proxyRequest(w http.ResponseWriter, forwardRequest *
 	}
 }
 
-func run() error {
+func run(ctx context.Context) error {
 	listen := fmt.Sprintf(":%d", wellknownports.KubeAPIServerHealthCheck)
 
 	clientCert := ""
@@ -184,7 +185,9 @@ func run() error {
 }
 
 func main() {
-	if err := run(); err != nil {
+	ctx := context.Background()
+
+	if err := run(ctx); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
 	}

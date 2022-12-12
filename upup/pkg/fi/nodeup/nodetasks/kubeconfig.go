@@ -72,16 +72,18 @@ func (k *KubeConfig) GetConfig() *fi.TaskDependentResource {
 	return k.config
 }
 
-func (k *KubeConfig) Run(_ *fi.Context) error {
-	cert, err := fi.ResourceAsBytes(k.Cert)
+func (k *KubeConfig) Run(c *fi.Context) error {
+	ctx := c.Context()
+
+	cert, err := fi.ResourceAsBytes(ctx, k.Cert)
 	if err != nil {
 		return err
 	}
-	key, err := fi.ResourceAsBytes(k.Key)
+	key, err := fi.ResourceAsBytes(ctx, k.Key)
 	if err != nil {
 		return err
 	}
-	ca, err := fi.ResourceAsBytes(k.CA)
+	ca, err := fi.ResourceAsBytes(ctx, k.CA)
 	if err != nil {
 		return err
 	}

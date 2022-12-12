@@ -17,6 +17,7 @@ limitations under the License.
 package tests
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -57,8 +58,10 @@ func TestS3RenderTerraform(t *testing.T) {
 	for _, tc := range grid {
 
 		t.Run(tc.s3Path, func(t *testing.T) {
+			ctx := context.TODO()
+
 			cloud := awsup.BuildMockAWSCloud("us-east-1", "a")
-			path, err := vfs.Context.BuildVfsPath(tc.s3Path)
+			path, err := vfs.FromContext(ctx).BuildVfsPath(tc.s3Path)
 			if err != nil {
 				t.Fatalf("error building VFS path: %v", err)
 			}

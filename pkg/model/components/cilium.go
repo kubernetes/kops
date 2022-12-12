@@ -17,6 +17,8 @@ limitations under the License.
 package components
 
 import (
+	"context"
+
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -32,7 +34,7 @@ type CiliumOptionsBuilder struct {
 
 var _ loader.OptionsBuilder = &CiliumOptionsBuilder{}
 
-func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
+func (b *CiliumOptionsBuilder) BuildOptions(ctx context.Context, o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 	c := clusterSpec.Networking.Cilium
 	if c == nil {

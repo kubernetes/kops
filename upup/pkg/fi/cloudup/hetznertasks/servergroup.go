@@ -55,6 +55,8 @@ type ServerGroup struct {
 }
 
 func (v *ServerGroup) Find(c *fi.Context) (*ServerGroup, error) {
+	ctx := c.Context()
+
 	cloud := c.Cloud.(hetzner.HetznerCloud)
 	client := cloud.ServerClient()
 
@@ -76,7 +78,7 @@ func (v *ServerGroup) Find(c *fi.Context) (*ServerGroup, error) {
 	}
 
 	// Calculate the user-data hash
-	userDataBytes, err := fi.ResourceAsBytes(v.UserData)
+	userDataBytes, err := fi.ResourceAsBytes(ctx, v.UserData)
 	if err != nil {
 		return nil, err
 	}
@@ -155,6 +157,7 @@ func (_ *ServerGroup) CheckChanges(a, e, changes *ServerGroup) error {
 }
 
 func (_ *ServerGroup) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *ServerGroup) error {
+	ctx := context.TODO()
 	client := t.Cloud.ServerClient()
 
 	if a != nil {
@@ -196,11 +199,11 @@ func (_ *ServerGroup) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *
 		return fmt.Errorf("failed to find network for server group %q", fi.ValueOf(e.Name))
 	}
 
-	userData, err := fi.ResourceAsString(e.UserData)
+	userData, err := fi.ResourceAsString(ctx, e.UserData)
 	if err != nil {
 		return err
 	}
-	userDataBytes, err := fi.ResourceAsBytes(e.UserData)
+	userDataBytes, err := fi.ResourceAsBytes(ctx, e.UserData)
 	if err != nil {
 		return err
 	}
@@ -298,6 +301,8 @@ type terraformServerPublicNet struct {
 }
 
 func (_ *ServerGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ServerGroup) error {
+	ctx := context.TODO()
+
 	name := terraformWriter.LiteralWithIndex(fi.ValueOf(e.Name))
 	tf := &terraformServer{
 		Count:      fi.PtrTo(e.Count),
@@ -322,7 +327,7 @@ func (_ *ServerGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 	}
 
 	if e.UserData != nil {
-		data, err := fi.ResourceAsBytes(e.UserData)
+		data, err := fi.ResourceAsBytes(ctx, e.UserData)
 		if err != nil {
 			return err
 		}

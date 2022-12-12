@@ -17,6 +17,8 @@ limitations under the License.
 package dnscontroller
 
 import (
+	"context"
+
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/kops/pkg/model/iam"
 )
@@ -28,7 +30,7 @@ type ServiceAccount struct{}
 var _ iam.Subject = &ServiceAccount{}
 
 // BuildAWSPolicy generates a custom policy for a ServiceAccount IAM role.
-func (r *ServiceAccount) BuildAWSPolicy(b *iam.PolicyBuilder) (*iam.Policy, error) {
+func (r *ServiceAccount) BuildAWSPolicy(ctx context.Context, b *iam.PolicyBuilder) (*iam.Policy, error) {
 	clusterName := b.Cluster.ObjectMeta.Name
 	p := iam.NewPolicy(clusterName, b.Partition)
 

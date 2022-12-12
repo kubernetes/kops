@@ -82,8 +82,10 @@ func (s *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
 }
 
 func (s *SSHKey) Run(c *fi.Context) error {
+	ctx := c.Context()
+
 	if s.KeyPairFingerPrint == nil && s.PublicKey != nil {
-		publicKey, err := fi.ResourceAsString(*s.PublicKey)
+		publicKey, err := fi.ResourceAsString(ctx, *s.PublicKey)
 		if err != nil {
 			return fmt.Errorf("error reading SSH public key: %w", err)
 		}
@@ -108,6 +110,8 @@ func (s *SSHKey) CheckChanges(actual, expected, changes *SSHKey) error {
 }
 
 func (*SSHKey) RenderScw(c *fi.Context, actual, expected, changes *SSHKey) error {
+	ctx := c.Context()
+
 	if actual != nil {
 		klog.Infof("Scaleway does not support changes to ssh keys for the moment")
 		return nil
@@ -124,7 +128,7 @@ func (*SSHKey) RenderScw(c *fi.Context, actual, expected, changes *SSHKey) error
 	keyArgs := &iam.CreateSSHKeyRequest{
 		Name: name}
 	if expected.PublicKey != nil {
-		d, err := fi.ResourceAsString(*expected.PublicKey)
+		d, err := fi.ResourceAsString(ctx, *expected.PublicKey)
 		if err != nil {
 			return fmt.Errorf("error rendering SSH public key: %w", err)
 		}

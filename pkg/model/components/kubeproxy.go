@@ -17,6 +17,8 @@ limitations under the License.
 package components
 
 import (
+	"context"
+
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -31,7 +33,7 @@ type KubeProxyOptionsBuilder struct {
 
 var _ loader.OptionsBuilder = &KubeProxyOptionsBuilder{}
 
-func (b *KubeProxyOptionsBuilder) BuildOptions(o interface{}) error {
+func (b *KubeProxyOptionsBuilder) BuildOptions(ctx context.Context, o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 	if clusterSpec.KubeProxy == nil {
 		clusterSpec.KubeProxy = &kops.KubeProxyConfig{}
@@ -50,7 +52,7 @@ func (b *KubeProxyOptionsBuilder) BuildOptions(o interface{}) error {
 		config.CPURequest = resource.NewScaledQuantity(100, resource.Milli)
 	}
 
-	image, err := Image("kube-proxy", clusterSpec, b.Context.AssetBuilder)
+	image, err := Image(ctx, "kube-proxy", clusterSpec, b.Context.AssetBuilder)
 	if err != nil {
 		return err
 	}

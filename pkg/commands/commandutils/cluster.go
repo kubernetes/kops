@@ -27,13 +27,15 @@ import (
 // CompleteClusterName returns a Cobra completion function for cluster names.
 func CompleteClusterName(f Factory, suppressIfArgs bool, suppressArgs bool) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		ctx := cmd.Context()
+
 		if suppressIfArgs && len(args) > 0 {
 			return nil, cobra.ShellCompDirectiveNoFileComp
 		}
 
 		ConfigureKlogForCompletion()
 
-		client, err := f.KopsClient()
+		client, err := f.KopsClient(ctx)
 		if err != nil {
 			return CompletionError("getting clientset", err)
 		}

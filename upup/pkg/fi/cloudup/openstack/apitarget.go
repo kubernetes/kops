@@ -17,6 +17,8 @@ limitations under the License.
 package openstack
 
 import (
+	"context"
+
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -32,7 +34,7 @@ func NewOpenstackAPITarget(cloud OpenstackCloud) *OpenstackAPITarget {
 	}
 }
 
-func (t *OpenstackAPITarget) Finish(taskMap map[string]fi.Task) error {
+func (t *OpenstackAPITarget) Finish(ctx context.Context, taskMap map[string]fi.Task) error {
 	return nil
 }
 

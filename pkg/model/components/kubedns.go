@@ -17,6 +17,8 @@ limitations under the License.
 package components
 
 import (
+	"context"
+
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -32,7 +34,7 @@ type KubeDnsOptionsBuilder struct {
 var _ loader.OptionsBuilder = &KubeDnsOptionsBuilder{}
 
 // BuildOptions fills in the kubedns model
-func (b *KubeDnsOptionsBuilder) BuildOptions(o interface{}) error {
+func (b *KubeDnsOptionsBuilder) BuildOptions(ctx context.Context, o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 
 	if clusterSpec.KubeDNS == nil {

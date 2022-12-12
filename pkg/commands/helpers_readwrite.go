@@ -41,12 +41,12 @@ func UpdateCluster(ctx context.Context, clientset simple.Clientset, cluster *kop
 	}
 
 	assetBuilder := assets.NewAssetBuilder(cluster, false)
-	fullCluster, err := cloudup.PopulateClusterSpec(clientset, cluster, cloud, assetBuilder)
+	fullCluster, err := cloudup.PopulateClusterSpec(ctx, clientset, cluster, cloud, assetBuilder)
 	if err != nil {
 		return err
 	}
 
-	err = validation.DeepValidate(fullCluster, instanceGroups, true, nil)
+	err = validation.DeepValidate(ctx, fullCluster, instanceGroups, true, nil)
 	if err != nil {
 		return err
 	}
@@ -79,7 +79,7 @@ func UpdateInstanceGroup(ctx context.Context, clientset simple.Clientset, cluste
 	}
 
 	assetBuilder := assets.NewAssetBuilder(cluster, false)
-	fullCluster, err := cloudup.PopulateClusterSpec(clientset, cluster, cloud, assetBuilder)
+	fullCluster, err := cloudup.PopulateClusterSpec(ctx, clientset, cluster, cloud, assetBuilder)
 	if err != nil {
 		return err
 	}

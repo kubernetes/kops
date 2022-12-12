@@ -111,7 +111,7 @@ func NewCmdValidateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 }
 
 func RunValidateCluster(ctx context.Context, f *util.Factory, out io.Writer, options *ValidateClusterOptions) (*validation.ValidationCluster, error) {
-	clientSet, err := f.KopsClient()
+	clientSet, err := f.KopsClient(ctx)
 	if err != nil {
 		return nil, err
 	}

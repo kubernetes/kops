@@ -17,6 +17,7 @@ limitations under the License.
 package cloudup
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
@@ -27,47 +28,57 @@ import (
 )
 
 func TestDeepValidate_OK(t *testing.T) {
-	c := buildDefaultCluster(t)
+	ctx := context.TODO()
+
+	c := buildDefaultCluster(t, ctx)
 	var groups []*kopsapi.InstanceGroup
 	for _, subnet := range c.Spec.Networking.Subnets {
 		groups = append(groups, buildMinimalMasterInstanceGroup(subnet.Name))
 		groups = append(groups, buildMinimalNodeInstanceGroup(subnet.Name))
 	}
-	err := validation.DeepValidate(c, groups, true, nil)
+	err := validation.DeepValidate(ctx, c, groups, true, nil)
 	if err != nil {
 		t.Fatalf("Expected no error from DeepValidate, got %v", err)
 	}
 }
 
 func TestDeepValidate_NoNodeZones(t *testing.T) {
-	c := buildDefaultCluster(t)
+	ctx := context.TODO()
+
+	c := buildDefaultCluster(t, ctx)
 	var groups []*kopsapi.InstanceGroup
 	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-test-1a"))
-	expectErrorFromDeepValidate(t, c, groups, "must configure at least one Node InstanceGroup")
+	expectErrorFromDeepValidate(t, ctx, c, groups, "must configure at least one Node InstanceGroup")
 }
 
 func TestDeepValidate_NoMasterZones(t *testing.T) {
-	c := buildDefaultCluster(t)
+	ctx := context.TODO()
+
+	c := buildDefaultCluster(t, ctx)
 	var groups []*kopsapi.InstanceGroup
 	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-test-1a"))
-	expectErrorFromDeepValidate(t, c, groups, "must configure at least one ControlPlane InstanceGroup")
+	expectErrorFromDeepValidate(t, ctx, c, groups, "must configure at least one ControlPlane InstanceGroup")
 }
 
 func TestDeepValidate_BadZone(t *testing.T) {
+	ctx := context.TODO()
+
 	t.Skipf("Zone validation not checked by DeepValidate")
-	c := buildDefaultCluster(t)
+	c := buildDefaultCluster(t, ctx)
 	c.Spec.Networking.Subnets = []kopsapi.ClusterSubnetSpec{
 		{Name: "subnet-badzone", Zone: "us-test-1z", CIDR: "172.20.1.0/24"},
 	}
 	var groups []*kopsapi.InstanceGroup
 	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-test-1z"))
 	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-test-1z"))
-	expectErrorFromDeepValidate(t, c, groups, "Zone is not a recognized AZ")
+	expectErrorFromDeepValidate(t, ctx, c, groups, "Zone is not a recognized AZ")
 }
 
 func TestDeepValidate_MixedRegion(t *testing.T) {
+	ctx := context.TODO()
+
 	t.Skipf("Region validation not checked by DeepValidate")
-	c := buildDefaultCluster(t)
+	c := buildDefaultCluster(t, ctx)
 	c.Spec.Networking.Subnets = []kopsapi.ClusterSubnetSpec{
 		{Name: "test1a", Zone: "us-test-1a", CIDR: "172.20.1.0/24"},
 		{Name: "west1b", Zone: "us-west-1b", CIDR: "172.20.2.0/24"},
@@ -76,12 +87,14 @@ func TestDeepValidate_MixedRegion(t *testing.T) {
 	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-test-1a"))
 	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-test-1a", "subnet-us-west-1b"))
 
-	expectErrorFromDeepValidate(t, c, groups, "Clusters cannot span multiple regions")
+	expectErrorFromDeepValidate(t, ctx, c, groups, "Clusters cannot span multiple regions")
 }
 
 func TestDeepValidate_RegionAsZone(t *testing.T) {
+	ctx := context.TODO()
+
 	t.Skipf("Region validation not checked by DeepValidate")
-	c := buildDefaultCluster(t)
+	c := buildDefaultCluster(t, ctx)
 	c.Spec.Networking.Subnets = []kopsapi.ClusterSubnetSpec{
 		{Name: "test1", Zone: "us-test-1", CIDR: "172.20.1.0/24"},
 	}
@@ -89,20 +102,24 @@ func TestDeepValidate_RegionAsZone(t *testing.T) {
 	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-test-1"))
 	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-test-1"))
 
-	expectErrorFromDeepValidate(t, c, groups, "Region is not a recognized EC2 region: \"us-east-\" (check you have specified valid zones?)")
+	expectErrorFromDeepValidate(t, ctx, c, groups, "Region is not a recognized EC2 region: \"us-east-\" (check you have specified valid zones?)")
 }
 
 func TestDeepValidate_NotIncludedZone(t *testing.T) {
-	c := buildDefaultCluster(t)
+	ctx := context.TODO()
+
+	c := buildDefaultCluster(t, ctx)
 	var groups []*kopsapi.InstanceGroup
 	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-test-1d"))
 	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-test-1d"))
 
-	expectErrorFromDeepValidate(t, c, groups, "spec.networking.subnets[0]: Not found: \"subnet-us-test-1d\"")
+	expectErrorFromDeepValidate(t, ctx, c, groups, "spec.networking.subnets[0]: Not found: \"subnet-us-test-1d\"")
 }
 
 func TestDeepValidate_DuplicateZones(t *testing.T) {
-	c := buildDefaultCluster(t)
+	ctx := context.TODO()
+
+	c := buildDefaultCluster(t, ctx)
 	c.Spec.Networking.Subnets = []kopsapi.ClusterSubnetSpec{
 		{Name: "dup1", Zone: "us-test-1a", CIDR: "172.20.1.0/24"},
 		{Name: "dup1", Zone: "us-test-1a", CIDR: "172.20.2.0/24"},
@@ -110,11 +127,13 @@ func TestDeepValidate_DuplicateZones(t *testing.T) {
 	var groups []*kopsapi.InstanceGroup
 	groups = append(groups, buildMinimalMasterInstanceGroup("dup1"))
 	groups = append(groups, buildMinimalNodeInstanceGroup("dup1"))
-	expectErrorFromDeepValidate(t, c, groups, "spec.networking.subnets[1].name: Duplicate value: \"dup1\"")
+	expectErrorFromDeepValidate(t, ctx, c, groups, "spec.networking.subnets[1].name: Duplicate value: \"dup1\"")
 }
 
 func TestDeepValidate_ExtraMasterZone(t *testing.T) {
-	c := buildDefaultCluster(t)
+	ctx := context.TODO()
+
+	c := buildDefaultCluster(t, ctx)
 	c.Spec.Networking.Subnets = []kopsapi.ClusterSubnetSpec{
 		{Name: "test1a", Zone: "us-test-1a", CIDR: "172.20.1.0/24", Type: kopsapi.SubnetTypePublic},
 		{Name: "test1b", Zone: "us-test-1b", CIDR: "172.20.2.0/24", Type: kopsapi.SubnetTypePublic},
@@ -125,11 +144,13 @@ func TestDeepValidate_ExtraMasterZone(t *testing.T) {
 	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-test-1c"))
 	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-test-1a", "subnet-us-test-1b"))
 
-	expectErrorFromDeepValidate(t, c, groups, "spec.networking.subnets[0]: Not found: \"subnet-us-test-1a\"")
+	expectErrorFromDeepValidate(t, ctx, c, groups, "spec.networking.subnets[0]: Not found: \"subnet-us-test-1a\"")
 }
 
 func TestDeepValidate_EvenEtcdClusterSize(t *testing.T) {
-	c := buildDefaultCluster(t)
+	ctx := context.TODO()
+
+	c := buildDefaultCluster(t, ctx)
 	c.Spec.EtcdClusters = []kopsapi.EtcdClusterSpec{
 		{
 			Name: "main",
@@ -147,11 +168,13 @@ func TestDeepValidate_EvenEtcdClusterSize(t *testing.T) {
 	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-test-1d"))
 	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-test-1a"))
 
-	expectErrorFromDeepValidate(t, c, groups, "Should be an odd number of control-plane-zones for quorum. Use --zones and --control-plane-zones to declare node zones and control-plane zones separately")
+	expectErrorFromDeepValidate(t, ctx, c, groups, "Should be an odd number of control-plane-zones for quorum. Use --zones and --control-plane-zones to declare node zones and control-plane zones separately")
 }
 
 func TestDeepValidate_MissingEtcdMember(t *testing.T) {
-	c := buildDefaultCluster(t)
+	ctx := context.TODO()
+
+	c := buildDefaultCluster(t, ctx)
 	c.Spec.EtcdClusters = []kopsapi.EtcdClusterSpec{
 		{
 			Name: "main",
@@ -170,11 +193,11 @@ func TestDeepValidate_MissingEtcdMember(t *testing.T) {
 	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-test-1d"))
 	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-test-1a"))
 
-	expectErrorFromDeepValidate(t, c, groups, "spec.metadata.name: Forbidden: InstanceGroup \"master-subnet-us-test-1a\" with role ControlPlane must have a member in etcd cluster \"main\"")
+	expectErrorFromDeepValidate(t, ctx, c, groups, "spec.metadata.name: Forbidden: InstanceGroup \"master-subnet-us-test-1a\" with role ControlPlane must have a member in etcd cluster \"main\"")
 }
 
-func expectErrorFromDeepValidate(t *testing.T, c *kopsapi.Cluster, groups []*kopsapi.InstanceGroup, message string) {
-	err := validation.DeepValidate(c, groups, true, nil)
+func expectErrorFromDeepValidate(t *testing.T, ctx context.Context, c *kopsapi.Cluster, groups []*kopsapi.InstanceGroup, message string) {
+	err := validation.DeepValidate(ctx, c, groups, true, nil)
 	if err == nil {
 		t.Fatalf("Expected error %q from DeepValidate (strict=true), not no error raised", message)
 	}

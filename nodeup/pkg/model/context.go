@@ -331,7 +331,7 @@ func (c *NodeupModelContext) BuildBootstrapKubeconfig(name string, ctx *fi.Model
 			return nil, err
 		}
 
-		config, err := fi.ResourceAsBytes(kubeConfig.GetConfig())
+		config, err := fi.ResourceAsBytes(ctx.Context(), kubeConfig.GetConfig())
 		if err != nil {
 			return nil, err
 		}

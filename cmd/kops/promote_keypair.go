@@ -123,12 +123,12 @@ func RunPromoteKeypair(ctx context.Context, f *util.Factory, out io.Writer, opti
 		return fmt.Errorf("getting cluster: %q: %v", options.ClusterName, err)
 	}
 
-	clientSet, err := f.KopsClient()
+	clientSet, err := f.KopsClient(ctx)
 	if err != nil {
 		return fmt.Errorf("getting clientset: %v", err)
 	}
 
-	keyStore, err := clientSet.KeyStore(cluster)
+	keyStore, err := clientSet.KeyStore(ctx, cluster)
 	if err != nil {
 		return fmt.Errorf("getting keystore: %v", err)
 	}
@@ -210,7 +210,7 @@ func completePromoteKeyset(f commandutils.Factory, options *PromoteKeypairOption
 		return completions, directive
 	}
 
-	keyset, _, completions, directive := completeKeyset(cluster, clientSet, args, rotatableKeysetFilter)
+	keyset, _, completions, directive := completeKeyset(ctx, cluster, clientSet, args, rotatableKeysetFilter)
 	if keyset == nil {
 		return completions, directive
 	}

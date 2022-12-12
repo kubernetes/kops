@@ -17,6 +17,7 @@ limitations under the License.
 package util
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"strings"
@@ -77,7 +78,7 @@ For example, a valid value follows the format s3://<bucket>.
 Trailing slash will be trimmed.`
 )
 
-func (f *Factory) KopsClient() (simple.Clientset, error) {
+func (f *Factory) KopsClient(ctx context.Context) (simple.Clientset, error) {
 	if f.clientset == nil {
 		registryPath := f.options.RegistryPath
 		klog.V(2).Infof("state store %s", registryPath)
@@ -119,7 +120,7 @@ func (f *Factory) KopsClient() (simple.Clientset, error) {
 				KopsClient: kopsClient.Kops(),
 			}
 		} else {
-			basePath, err := vfs.Context.BuildVfsPath(registryPath)
+			basePath, err := vfs.FromContext(ctx).BuildVfsPath(registryPath)
 			if err != nil {
 				return nil, fmt.Errorf("error building path for %q: %v", registryPath, err)
 			}

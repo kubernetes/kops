@@ -17,6 +17,7 @@ limitations under the License.
 package nodetasks
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -195,6 +196,8 @@ func (s *File) CheckChanges(a, e, changes *File) error {
 }
 
 func (_ *File) RenderLocal(t *local.LocalTarget, a, e, changes *File) error {
+	ctx := context.TODO()
+
 	dirMode := os.FileMode(0o755)
 	fileMode, err := fi.ParseFileMode(fi.ValueOf(e.Mode), 0o644)
 	if err != nil {
@@ -236,7 +239,7 @@ func (_ *File) RenderLocal(t *local.LocalTarget, a, e, changes *File) error {
 		}
 	} else if e.Type == FileType_File {
 		if changes.Contents != nil {
-			err = fi.WriteFile(e.Path, e.Contents, fileMode, dirMode, fi.ValueOf(e.Owner), fi.ValueOf(e.Group))
+			err = fi.WriteFile(ctx, e.Path, e.Contents, fileMode, dirMode, fi.ValueOf(e.Owner), fi.ValueOf(e.Group))
 			if err != nil {
 				return fmt.Errorf("error copying file %q: %v", e.Path, err)
 			}
@@ -280,6 +283,8 @@ func (_ *File) RenderLocal(t *local.LocalTarget, a, e, changes *File) error {
 }
 
 func (_ *File) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *File) error {
+	ctx := context.TODO()
+
 	dirMode := os.FileMode(0o755)
 	fileMode, err := fi.ParseFileMode(fi.ValueOf(e.Mode), 0o644)
 	if err != nil {
@@ -293,7 +298,7 @@ func (_ *File) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *File
 		t.AddCommand(cloudinit.Once, "mkdir", "-p", "-m", fi.FileModeToString(dirMode), parent)
 		t.AddCommand(cloudinit.Once, "mkdir", "-m", fi.FileModeToString(dirMode), e.Path)
 	} else if e.Type == FileType_File {
-		err = t.WriteFile(e.Path, e.Contents, fileMode, dirMode)
+		err = t.WriteFile(ctx, e.Path, e.Contents, fileMode, dirMode)
 		if err != nil {
 			return err
 		}

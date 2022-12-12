@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -58,6 +59,8 @@ func init() {
 }
 
 func main() {
+	ctx := context.Background()
+
 	klog.InitFlags(nil)
 
 	// Disable metrics by default (avoid port conflicts, also risky because we are host network)
@@ -130,7 +133,7 @@ func main() {
 			klog.Fatalf("server cloud provider config not provided")
 		}
 
-		srv, err := server.NewServer(&opt, verifier)
+		srv, err := server.NewServer(ctx, &opt, verifier)
 		if err != nil {
 			setupLog.Error(err, "unable to create server")
 			os.Exit(1)
@@ -155,7 +158,7 @@ func main() {
 		}
 	}
 
-	if err := addNodeController(mgr, &opt); err != nil {
+	if err := addNodeController(ctx, mgr, &opt); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "NodeController")
 		os.Exit(1)
 	}
@@ -185,7 +188,7 @@ func buildScheme() error {
 	return nil
 }
 
-func addNodeController(mgr manager.Manager, opt *config.Options) error {
+func addNodeController(ctx context.Context, mgr manager.Manager, opt *config.Options) error {
 	var legacyIdentifier nodeidentity.LegacyIdentifier
 	var identifier nodeidentity.Identifier
 	var err error
@@ -249,7 +252,7 @@ func addNodeController(mgr manager.Manager, opt *config.Options) error {
 			return fmt.Errorf("must specify secretStore")
 		}
 
-		nodeController, err := controllers.NewLegacyNodeReconciler(mgr, opt.ConfigBase, legacyIdentifier)
+		nodeController, err := controllers.NewLegacyNodeReconciler(ctx, mgr, opt.ConfigBase, legacyIdentifier)
 		if err != nil {
 			return err
 		}

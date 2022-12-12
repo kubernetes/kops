@@ -48,7 +48,7 @@ func TestEditInstanceGroup(t *testing.T) {
 	factoryOptions.RegistryPath = "memfs://tests"
 
 	factory := util.NewFactory(factoryOptions)
-	clientSet, err := factory.KopsClient()
+	clientSet, err := factory.KopsClient(ctx)
 	if err != nil {
 		t.Fatalf("could not create clientset: %v", err)
 	}

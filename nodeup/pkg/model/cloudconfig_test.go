@@ -84,9 +84,9 @@ func TestBuildAzure(t *testing.T) {
 	if task == nil {
 		t.Fatalf("no File task found")
 	}
-	r, err := task.Contents.Open()
+	r, err := task.Contents.Open(ctx.Context())
 	if err != nil {
-		t.Fatalf("unexpected error from task.Contents.Open(): %v", err)
+		t.Fatalf("unexpected error from task.Contents.Open(ctx): %v", err)
 	}
 	data, err := io.ReadAll(r)
 	if err != nil {
@@ -157,9 +157,9 @@ func TestBuildAWSCustomNodeIPFamilies(t *testing.T) {
 	if task == nil {
 		t.Fatalf("no File task found")
 	}
-	r, err := task.Contents.Open()
+	r, err := task.Contents.Open(ctx.Context())
 	if err != nil {
-		t.Fatalf("unexpected error from task.Contents.Open(): %v", err)
+		t.Fatalf("unexpected error from task.Contents.Open(ctx): %v", err)
 	}
 	awsCloudConfig, err := io.ReadAll(r)
 	if err != nil {

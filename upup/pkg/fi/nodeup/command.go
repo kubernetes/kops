@@ -80,7 +80,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 
 	var bootConfig nodeup.BootConfig
 	if c.ConfigLocation != "" {
-		b, err := vfs.Context.ReadFile(c.ConfigLocation)
+		b, err := vfs.FromContext(ctx).ReadFile(c.ConfigLocation)
 		if err != nil {
 			return fmt.Errorf("error loading configuration %q: %v", c.ConfigLocation, err)
 		}
@@ -118,7 +118,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		nodeConfig = response.NodeConfig
 	} else if fi.ValueOf(bootConfig.ConfigBase) != "" {
 		var err error
-		configBase, err = vfs.Context.BuildVfsPath(*bootConfig.ConfigBase)
+		configBase, err = vfs.FromContext(ctx).BuildVfsPath(*bootConfig.ConfigBase)
 		if err != nil {
 			return fmt.Errorf("cannot parse ConfigBase %q: %v", *bootConfig.ConfigBase, err)
 		}
@@ -186,7 +186,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		cloudProvider = c.cluster.Spec.GetCloudProvider()
 	}
 
-	err = evaluateSpec(c, &nodeupConfig, cloudProvider)
+	err = evaluateSpec(ctx, c, &nodeupConfig, cloudProvider)
 	if err != nil {
 		return err
 	}
@@ -238,7 +238,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		modelContext.SecretStore = configserver.NewSecretStore(nodeConfig.NodeSecrets)
 	} else if c.cluster.Spec.SecretStore != "" {
 		klog.Infof("Building SecretStore at %q", c.cluster.Spec.SecretStore)
-		p, err := vfs.Context.BuildVfsPath(c.cluster.Spec.SecretStore)
+		p, err := vfs.FromContext(ctx).BuildVfsPath(c.cluster.Spec.SecretStore)
 		if err != nil {
 			return fmt.Errorf("error building secret store path: %v", err)
 		}
@@ -253,7 +253,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		modelContext.KeyStore = configserver.NewKeyStore()
 	} else if c.cluster.Spec.KeyStore != "" {
 		klog.Infof("Building KeyStore at %q", c.cluster.Spec.KeyStore)
-		p, err := vfs.Context.BuildVfsPath(c.cluster.Spec.KeyStore)
+		p, err := vfs.FromContext(ctx).BuildVfsPath(c.cluster.Spec.KeyStore)
 		if err != nil {
 			return fmt.Errorf("error building key store path: %v", err)
 		}
@@ -269,7 +269,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	}
 
 	if cloudProvider == api.CloudProviderAWS {
-		instanceIDBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/instance-id")
+		instanceIDBytes, err := vfs.FromContext(ctx).ReadFile("metadata://aws/meta-data/instance-id")
 		if err != nil {
 			return fmt.Errorf("error reading instance-id from AWS metadata: %v", err)
 		}
@@ -384,7 +384,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("unsupported target type %q", c.Target)
 	}
 
-	context, err := fi.NewContext(target, c.cluster, cloud, keyStore, secretStore, configBase, checkExisting, taskMap)
+	context, err := fi.NewContext(ctx, target, c.cluster, cloud, keyStore, secretStore, configBase, checkExisting, taskMap)
 	if err != nil {
 		klog.Exitf("error building context: %v", err)
 	}
@@ -398,7 +398,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		klog.Exitf("error running tasks: %v", err)
 	}
 
-	err = target.Finish(taskMap)
+	err = target.Finish(ctx, taskMap)
 	if err != nil {
 		klog.Exitf("error closing target: %v", err)
 	}
@@ -459,8 +459,8 @@ func completeWarmingLifecycleAction(cloud awsup.AWSCloud, modelContext *model.No
 	return nil
 }
 
-func evaluateSpec(c *NodeUpCommand, nodeupConfig *nodeup.Config, cloudProvider api.CloudProviderID) error {
-	hostnameOverride, err := evaluateHostnameOverride(cloudProvider, nodeupConfig.UseInstanceIDForNodeName)
+func evaluateSpec(ctx context.Context, c *NodeUpCommand, nodeupConfig *nodeup.Config, cloudProvider api.CloudProviderID) error {
+	hostnameOverride, err := evaluateHostnameOverride(ctx, cloudProvider, nodeupConfig.UseInstanceIDForNodeName)
 	if err != nil {
 		return err
 	}
@@ -472,7 +472,7 @@ func evaluateSpec(c *NodeUpCommand, nodeupConfig *nodeup.Config, cloudProvider a
 	}
 
 	c.cluster.Spec.KubeProxy.HostnameOverride = hostnameOverride
-	c.cluster.Spec.KubeProxy.BindAddress, err = evaluateBindAddress(c.cluster.Spec.KubeProxy.BindAddress)
+	c.cluster.Spec.KubeProxy.BindAddress, err = evaluateBindAddress(ctx, c.cluster.Spec.KubeProxy.BindAddress)
 	if err != nil {
 		return err
 	}
@@ -487,10 +487,10 @@ func evaluateSpec(c *NodeUpCommand, nodeupConfig *nodeup.Config, cloudProvider a
 	return nil
 }
 
-func evaluateHostnameOverride(cloudProvider api.CloudProviderID, useInstanceIDForNodeName bool) (string, error) {
+func evaluateHostnameOverride(ctx context.Context, cloudProvider api.CloudProviderID, useInstanceIDForNodeName bool) (string, error) {
 	switch cloudProvider {
 	case api.CloudProviderAWS:
-		instanceIDBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/instance-id")
+		instanceIDBytes, err := vfs.FromContext(ctx).ReadFile("metadata://aws/meta-data/instance-id")
 		if err != nil {
 			return "", fmt.Errorf("error reading instance-id from AWS metadata: %v", err)
 		}
@@ -500,7 +500,7 @@ func evaluateHostnameOverride(cloudProvider api.CloudProviderID, useInstanceIDFo
 			return instanceID, nil
 		}
 
-		azBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/placement/availability-zone")
+		azBytes, err := vfs.FromContext(ctx).ReadFile("metadata://aws/meta-data/placement/availability-zone")
 		if err != nil {
 			return "", fmt.Errorf("error reading availability zone from AWS metadata: %v", err)
 		}
@@ -533,7 +533,7 @@ func evaluateHostnameOverride(cloudProvider api.CloudProviderID, useInstanceIDFo
 
 	case api.CloudProviderGCE:
 		// This lets us tolerate broken hostnames (i.e. systemd)
-		b, err := vfs.Context.ReadFile("metadata://gce/instance/hostname")
+		b, err := vfs.FromContext(ctx).ReadFile("metadata://gce/instance/hostname")
 		if err != nil {
 			return "", fmt.Errorf("error reading hostname from GCE metadata: %v", err)
 		}
@@ -544,7 +544,7 @@ func evaluateHostnameOverride(cloudProvider api.CloudProviderID, useInstanceIDFo
 		bareHostname := strings.Split(fullyQualified, ".")[0]
 		return bareHostname, nil
 	case api.CloudProviderDO:
-		vBytes, err := vfs.Context.ReadFile("metadata://digitalocean/interfaces/private/0/ipv4/address")
+		vBytes, err := vfs.FromContext(ctx).ReadFile("metadata://digitalocean/interfaces/private/0/ipv4/address")
 		if err != nil {
 			return "", fmt.Errorf("error reading droplet private IP from DigitalOcean metadata: %v", err)
 		}
@@ -560,12 +560,12 @@ func evaluateHostnameOverride(cloudProvider api.CloudProviderID, useInstanceIDFo
 	return "", nil
 }
 
-func evaluateBindAddress(bindAddress string) (string, error) {
+func evaluateBindAddress(ctx context.Context, bindAddress string) (string, error) {
 	if bindAddress == "" {
 		return "", nil
 	}
 	if bindAddress == "@aws" {
-		vBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/local-ipv4")
+		vBytes, err := vfs.FromContext(ctx).ReadFile("metadata://aws/meta-data/local-ipv4")
 		if err != nil {
 			return "", fmt.Errorf("error reading local IP from AWS metadata: %v", err)
 		}

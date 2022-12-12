@@ -187,7 +187,7 @@ func RunDeleteCluster(ctx context.Context, f *util.Factory, out io.Writer, optio
 			}
 			return nil
 		}
-		clientset, err := f.KopsClient()
+		clientset, err := f.KopsClient(ctx)
 		if err != nil {
 			return err
 		}

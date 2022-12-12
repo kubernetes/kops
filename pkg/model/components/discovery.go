@@ -17,6 +17,7 @@ limitations under the License.
 package components
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -33,7 +34,7 @@ type DiscoveryOptionsBuilder struct {
 
 var _ loader.OptionsBuilder = &DiscoveryOptionsBuilder{}
 
-func (b *DiscoveryOptionsBuilder) BuildOptions(o interface{}) error {
+func (b *DiscoveryOptionsBuilder) BuildOptions(ctx context.Context, o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 
 	if clusterSpec.KubeAPIServer == nil {
@@ -51,7 +52,7 @@ func (b *DiscoveryOptionsBuilder) BuildOptions(o interface{}) error {
 		var serviceAccountIssuer string
 		if said != nil && said.DiscoveryStore != "" {
 			store := said.DiscoveryStore
-			base, err := vfs.Context.BuildVfsPath(store)
+			base, err := vfs.FromContext(ctx).BuildVfsPath(store)
 			if err != nil {
 				return fmt.Errorf("error parsing locationStore=%q: %w", store, err)
 			}

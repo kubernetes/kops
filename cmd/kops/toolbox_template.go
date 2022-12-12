@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -86,7 +87,8 @@ func NewCmdToolboxTemplate(f commandutils.Factory, out io.Writer) *cobra.Command
 		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
 		ValidArgsFunction: commandutils.CompleteClusterName(f, true, false),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RunToolBoxTemplate(f, out, options)
+			ctx := cmd.Context()
+			return RunToolBoxTemplate(ctx, f, out, options)
 		},
 	}
 
@@ -120,7 +122,7 @@ func NewCmdToolboxTemplate(f commandutils.Factory, out io.Writer) *cobra.Command
 }
 
 // RunToolBoxTemplate is the action for the command
-func RunToolBoxTemplate(f commandutils.Factory, out io.Writer, options *ToolboxTemplateOptions) error {
+func RunToolBoxTemplate(ctx context.Context, f commandutils.Factory, out io.Writer, options *ToolboxTemplateOptions) error {
 	// @step: read in the configuration if any
 	context, err := newTemplateContext(options.configPath, options.values, options.stringValues)
 	if err != nil {
@@ -173,7 +175,7 @@ func RunToolBoxTemplate(f commandutils.Factory, out io.Writer, options *ToolboxT
 		}
 	}
 
-	channel, err := kopsapi.LoadChannel(options.channel)
+	channel, err := kopsapi.LoadChannel(ctx, options.channel)
 	if err != nil {
 		return fmt.Errorf("error loading channel %q: %v", options.channel, err)
 	}

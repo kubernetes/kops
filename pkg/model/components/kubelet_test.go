@@ -17,6 +17,7 @@ limitations under the License.
 package components
 
 import (
+	"context"
 	"testing"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -36,7 +37,7 @@ func buildKubeletTestCluster() *kops.Cluster {
 	}
 }
 
-func buildOptions(cluster *kops.Cluster) error {
+func buildOptions(ctx context.Context, cluster *kops.Cluster) error {
 	ab := assets.NewAssetBuilder(cluster, false)
 
 	ver, err := util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
@@ -51,7 +52,7 @@ func buildOptions(cluster *kops.Cluster) error {
 		},
 	}
 
-	err = builder.BuildOptions(&cluster.Spec)
+	err = builder.BuildOptions(ctx, &cluster.Spec)
 	if err != nil {
 		return nil
 	}
@@ -60,9 +61,10 @@ func buildOptions(cluster *kops.Cluster) error {
 }
 
 func TestFeatureGatesKubernetesVersion(t *testing.T) {
+	ctx := context.TODO()
 	cluster := buildKubeletTestCluster()
 	cluster.Spec.KubernetesVersion = "1.17.0"
-	err := buildOptions(cluster)
+	err := buildOptions(ctx, cluster)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -74,12 +76,13 @@ func TestFeatureGatesKubernetesVersion(t *testing.T) {
 }
 
 func TestFeatureGatesOverride(t *testing.T) {
+	ctx := context.TODO()
 	cluster := buildKubeletTestCluster()
 	cluster.Spec.Kubelet.FeatureGates = map[string]string{
 		"ExperimentalCriticalPodAnnotation": "false",
 	}
 
-	err := buildOptions(cluster)
+	err := buildOptions(ctx, cluster)
 	if err != nil {
 		t.Fatal(err)
 	}

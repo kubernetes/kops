@@ -18,6 +18,7 @@ package fi
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -27,7 +28,7 @@ import (
 )
 
 type Resource interface {
-	Open() (io.Reader, error)
+	Open(ctx context.Context) (io.Reader, error)
 }
 
 // HasIsReady is implemented by Resources that are derived (and thus may not be ready at comparison time)
@@ -35,14 +36,14 @@ type HasIsReady interface {
 	IsReady() bool
 }
 
-func ResourcesMatch(a, b Resource) (bool, error) {
-	aReader, err := a.Open()
+func ResourcesMatch(ctx context.Context, a, b Resource) (bool, error) {
+	aReader, err := a.Open(ctx)
 	if err != nil {
 		return false, err
 	}
 	defer SafeClose(aReader)
 
-	bReader, err := b.Open()
+	bReader, err := b.Open(ctx)
 	if err != nil {
 		return false, err
 	}
@@ -81,8 +82,8 @@ func ResourcesMatch(a, b Resource) (bool, error) {
 	}
 }
 
-func CopyResource(dest io.Writer, r Resource) (int64, error) {
-	in, err := r.Open()
+func CopyResource(ctx context.Context, dest io.Writer, r Resource) (int64, error) {
+	in, err := r.Open(ctx)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return 0, err
@@ -98,18 +99,18 @@ func CopyResource(dest io.Writer, r Resource) (int64, error) {
 	return n, nil
 }
 
-func ResourceAsString(r Resource) (string, error) {
+func ResourceAsString(ctx context.Context, r Resource) (string, error) {
 	buf := new(bytes.Buffer)
-	_, err := CopyResource(buf, r)
+	_, err := CopyResource(ctx, buf, r)
 	if err != nil {
 		return "", err
 	}
 	return buf.String(), nil
 }
 
-func ResourceAsBytes(r Resource) ([]byte, error) {
+func ResourceAsBytes(ctx context.Context, r Resource) ([]byte, error) {
 	buf := new(bytes.Buffer)
-	_, err := CopyResource(buf, r)
+	_, err := CopyResource(ctx, buf, r)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +131,7 @@ func NewStringResource(s string) *StringResource {
 	return &StringResource{s: s}
 }
 
-func (s *StringResource) Open() (io.Reader, error) {
+func (s *StringResource) Open(ctx context.Context) (io.Reader, error) {
 	r := bytes.NewReader([]byte(s.s))
 	return r, nil
 }
@@ -151,7 +152,7 @@ func NewBytesResource(data []byte) *BytesResource {
 	return &BytesResource{data: data}
 }
 
-func (r *BytesResource) Open() (io.Reader, error) {
+func (r *BytesResource) Open(ctx context.Context) (io.Reader, error) {
 	reader := bytes.NewReader([]byte(r.data))
 	return reader, nil
 }
@@ -166,7 +167,7 @@ func NewFileResource(path string) *FileResource {
 	return &FileResource{Path: path}
 }
 
-func (r *FileResource) Open() (io.Reader, error) {
+func (r *FileResource) Open(ctx context.Context) (io.Reader, error) {
 	in, err := os.Open(r.Path)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -187,7 +188,7 @@ func NewVFSResource(path vfs.Path) *VFSResource {
 	return &VFSResource{Path: path}
 }
 
-func (r *VFSResource) Open() (io.Reader, error) {
+func (r *VFSResource) Open(ctx context.Context) (io.Reader, error) {
 	data, err := r.Path.ReadFile()
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -210,11 +211,11 @@ var (
 	_ HasIsReady      = &TaskDependentResource{}
 )
 
-func (r *TaskDependentResource) Open() (io.Reader, error) {
+func (r *TaskDependentResource) Open(ctx context.Context) (io.Reader, error) {
 	if r.Resource == nil {
 		return nil, fmt.Errorf("resource opened before it is ready (task=%v)", r.Task)
 	}
-	return r.Resource.Open()
+	return r.Resource.Open(ctx)
 }
 
 func (r *TaskDependentResource) GetDependencies(tasks map[string]Task) []Task {
@@ -238,7 +239,7 @@ type functionResource struct {
 	fn   func() ([]byte, error)
 }
 
-func (r *functionResource) Open() (io.Reader, error) {
+func (r *functionResource) Open(ctx context.Context) (io.Reader, error) {
 	b := r.data
 	if b == nil {
 		data, err := r.fn()

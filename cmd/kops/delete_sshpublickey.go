@@ -62,7 +62,7 @@ func NewCmdDeleteSSHPublicKey(f *util.Factory, out io.Writer) *cobra.Command {
 }
 
 func RunDeleteSSHPublicKey(ctx context.Context, f *util.Factory, out io.Writer, options *DeleteSSHPublicKeyOptions) error {
-	clientset, err := f.KopsClient()
+	clientset, err := f.KopsClient(ctx)
 	if err != nil {
 		return err
 	}
@@ -72,7 +72,7 @@ func RunDeleteSSHPublicKey(ctx context.Context, f *util.Factory, out io.Writer, 
 		return err
 	}
 
-	sshCredentialStore, err := clientset.SSHCredentialStore(cluster)
+	sshCredentialStore, err := clientset.SSHCredentialStore(ctx, cluster)
 	if err != nil {
 		return err
 	}

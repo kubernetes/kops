@@ -110,7 +110,7 @@ func RunEditCluster(ctx context.Context, f *util.Factory, out io.Writer, options
 		return err
 	}
 
-	clientset, err := f.KopsClient()
+	clientset, err := f.KopsClient(ctx)
 	if err != nil {
 		return err
 	}
@@ -264,12 +264,12 @@ func updateCluster(ctx context.Context, clientset simple.Clientset, oldCluster, 
 	}
 
 	assetBuilder := assets.NewAssetBuilder(newCluster, false)
-	fullCluster, err := cloudup.PopulateClusterSpec(clientset, newCluster, cloud, assetBuilder)
+	fullCluster, err := cloudup.PopulateClusterSpec(ctx, clientset, newCluster, cloud, assetBuilder)
 	if err != nil {
 		return fmt.Sprintf("error populating cluster spec: %s", err), nil
 	}
 
-	err = validation.DeepValidate(fullCluster, instanceGroups, true, cloud)
+	err = validation.DeepValidate(ctx, fullCluster, instanceGroups, true, cloud)
 	if err != nil {
 		return fmt.Sprintf("validation failed: %s", err), nil
 	}

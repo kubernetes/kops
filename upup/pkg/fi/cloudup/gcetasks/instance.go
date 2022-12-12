@@ -17,6 +17,7 @@ limitations under the License.
 package gcetasks
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"strings"
@@ -185,7 +186,7 @@ func scopeToShortForm(s string) string {
 	return s
 }
 
-func (e *Instance) mapToGCE(project string, ipAddressResolver func(*Address) (*string, error)) (*compute.Instance, error) {
+func (e *Instance) mapToGCE(ctx context.Context, project string, ipAddressResolver func(*Address) (*string, error)) (*compute.Instance, error) {
 	zone := *e.Zone
 
 	var scheduling *compute.Scheduling
@@ -271,7 +272,7 @@ func (e *Instance) mapToGCE(project string, ipAddressResolver func(*Address) (*s
 
 	var metadataItems []*compute.MetadataItems
 	for key, r := range e.Metadata {
-		v, err := fi.ResourceAsString(r)
+		v, err := fi.ResourceAsString(ctx, r)
 		if err != nil {
 			return nil, fmt.Errorf("error rendering Instance metadata %q: %v", key, err)
 		}
@@ -312,6 +313,8 @@ func (i *Instance) isZero() bool {
 }
 
 func (_ *Instance) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Instance) error {
+	ctx := context.TODO()
+
 	cloud := t.Cloud
 	project := cloud.Project()
 	zone := *e.Zone
@@ -320,7 +323,7 @@ func (_ *Instance) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Instance) error
 		return ip.IPAddress, nil
 	}
 
-	i, err := e.mapToGCE(project, ipAddressResolver)
+	i, err := e.mapToGCE(ctx, project, ipAddressResolver)
 	if err != nil {
 		return err
 	}
@@ -420,6 +423,7 @@ type terraformInstanceAttachedDisk struct {
 }
 
 func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Instance) error {
+	ctx := context.TODO()
 	project := t.Project
 
 	// This is a "little" hacky...
@@ -428,7 +432,7 @@ func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *
 		return &tf, nil
 	}
 
-	i, err := e.mapToGCE(project, ipAddressResolver)
+	i, err := e.mapToGCE(ctx, project, ipAddressResolver)
 	if err != nil {
 		return err
 	}

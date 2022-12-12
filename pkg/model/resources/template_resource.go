@@ -18,6 +18,7 @@ package resources
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"text/template"
@@ -57,7 +58,7 @@ func newTemplateResource(key string, definition string, functions template.FuncM
 	return r, nil
 }
 
-func (r *templateResource) Open() (io.Reader, error) {
+func (r *templateResource) Open(ctx context.Context) (io.Reader, error) {
 	buffer := &bytes.Buffer{}
 
 	err := r.parsed.ExecuteTemplate(buffer, r.key, r.context)

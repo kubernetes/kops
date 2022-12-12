@@ -107,11 +107,13 @@ func (_ *Instance) CheckChanges(actual, expected, changes *Instance) error {
 }
 
 func (_ *Instance) RenderScw(c *fi.Context, actual, expected, changes *Instance) error {
+	ctx := c.Context()
+
 	cloud := c.Cloud.(scaleway.ScwCloud)
 	instanceService := cloud.InstanceService()
 	zone := scw.Zone(fi.ValueOf(expected.Zone))
 
-	userData, err := fi.ResourceAsBytes(*expected.UserData)
+	userData, err := fi.ResourceAsBytes(ctx, *expected.UserData)
 	if err != nil {
 		return fmt.Errorf("error rendering instances: %w", err)
 	}

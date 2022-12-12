@@ -141,7 +141,7 @@ func RunGetAssets(ctx context.Context, f *util.Factory, out io.Writer, options *
 	}
 
 	if options.Copy {
-		err := assets.Copy(updateClusterResults.ImageAssets, updateClusterResults.FileAssets, updateClusterResults.Cluster)
+		err := assets.Copy(ctx, updateClusterResults.ImageAssets, updateClusterResults.FileAssets, updateClusterResults.Cluster)
 		if err != nil {
 			return err
 		}

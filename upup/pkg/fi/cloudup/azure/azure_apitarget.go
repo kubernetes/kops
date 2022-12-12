@@ -17,6 +17,8 @@ limitations under the License.
 package azure
 
 import (
+	"context"
+
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -36,7 +38,7 @@ func NewAzureAPITarget(cloud AzureCloud) *AzureAPITarget {
 
 // Finish is called by a lifecycle drive to finish the lifecycle of
 // the target.
-func (t *AzureAPITarget) Finish(taskMap map[string]fi.Task) error {
+func (t *AzureAPITarget) Finish(ctx context.Context, taskMap map[string]fi.Task) error {
 	return nil
 }
 

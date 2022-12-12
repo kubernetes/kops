@@ -17,6 +17,8 @@ limitations under the License.
 package components
 
 import (
+	"context"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -30,7 +32,7 @@ type HetznerCloudControllerManagerOptionsBuilder struct {
 var _ loader.OptionsBuilder = &HetznerCloudControllerManagerOptionsBuilder{}
 
 // BuildOptions generates the configurations used for the Hetzner cloud controller manager manifest
-func (b *HetznerCloudControllerManagerOptionsBuilder) BuildOptions(o interface{}) error {
+func (b *HetznerCloudControllerManagerOptionsBuilder) BuildOptions(ctx context.Context, o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 
 	if clusterSpec.GetCloudProvider() != kops.CloudProviderHetzner {

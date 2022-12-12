@@ -17,6 +17,7 @@ limitations under the License.
 package cloudup
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"strings"
@@ -55,13 +56,13 @@ type populateClusterSpec struct {
 
 // PopulateClusterSpec takes a user-specified cluster spec, and computes the full specification that should be set on the cluster.
 // We do this so that we don't need any real "brains" on the node side.
-func PopulateClusterSpec(clientset simple.Clientset, cluster *kopsapi.Cluster, cloud fi.Cloud, assetBuilder *assets.AssetBuilder) (*kopsapi.Cluster, error) {
+func PopulateClusterSpec(ctx context.Context, clientset simple.Clientset, cluster *kopsapi.Cluster, cloud fi.Cloud, assetBuilder *assets.AssetBuilder) (*kopsapi.Cluster, error) {
 	c := &populateClusterSpec{
 		cloud:        cloud,
 		InputCluster: cluster,
 		assetBuilder: assetBuilder,
 	}
-	err := c.run(clientset)
+	err := c.run(ctx, clientset)
 	if err != nil {
 		return nil, err
 	}
@@ -76,8 +77,8 @@ func PopulateClusterSpec(clientset simple.Clientset, cluster *kopsapi.Cluster, c
 // very wrong.. but at least now my new cluster.Spec.Topology
 // struct is falling through..
 // @kris-nova
-func (c *populateClusterSpec) run(clientset simple.Clientset) error {
-	if errs := validation.ValidateCluster(c.InputCluster, false); len(errs) != 0 {
+func (c *populateClusterSpec) run(ctx context.Context, clientset simple.Clientset) error {
+	if errs := validation.ValidateCluster(ctx, c.InputCluster, false); len(errs) != 0 {
 		return errs.ToAggregate()
 	}
 
@@ -161,7 +162,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 		}
 	}
 
-	configBase, err := vfs.Context.BuildVfsPath(cluster.Spec.ConfigBase)
+	configBase, err := vfs.FromContext(ctx).BuildVfsPath(cluster.Spec.ConfigBase)
 	if err != nil {
 		return fmt.Errorf("error parsing ConfigBase %q: %v", cluster.Spec.ConfigBase, err)
 	}
@@ -172,7 +173,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 		return fmt.Errorf("ConfigBase path is not cluster readable: %v", cluster.Spec.ConfigBase)
 	}
 
-	keyStore, err := clientset.KeyStore(cluster)
+	keyStore, err := clientset.KeyStore(ctx, cluster)
 	if err != nil {
 		return err
 	}
@@ -192,7 +193,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 		}
 	}
 
-	secretStore, err := clientset.SecretStore(cluster)
+	secretStore, err := clientset.SecretStore(ctx, cluster)
 	if err != nil {
 		return err
 	}
@@ -301,7 +302,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 		OptionsLoader: loader.NewOptionsLoader(codeModels),
 	}
 
-	completed, err := specBuilder.BuildCompleteSpec(&cluster.Spec)
+	completed, err := specBuilder.BuildCompleteSpec(ctx, &cluster.Spec)
 	if err != nil {
 		return fmt.Errorf("error building complete spec: %v", err)
 	}
@@ -314,7 +315,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 	*fullCluster = *cluster
 	fullCluster.Spec = *completed
 
-	if errs := validation.ValidateCluster(fullCluster, true); len(errs) != 0 {
+	if errs := validation.ValidateCluster(ctx, fullCluster, true); len(errs) != 0 {
 		return fmt.Errorf("completed cluster failed validation: %v", errs.ToAggregate())
 	}
 

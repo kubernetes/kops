@@ -17,6 +17,8 @@ limitations under the License.
 package hetzner
 
 import (
+	"context"
+
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -32,7 +34,7 @@ func NewHetznerAPITarget(cloud HetznerCloud) *HetznerAPITarget {
 	}
 }
 
-func (t *HetznerAPITarget) Finish(taskMap map[string]fi.Task) error {
+func (t *HetznerAPITarget) Finish(ctx context.Context, taskMap map[string]fi.Task) error {
 	return nil
 }
 

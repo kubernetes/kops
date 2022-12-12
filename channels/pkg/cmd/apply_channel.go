@@ -100,7 +100,7 @@ func RunApplyChannel(ctx context.Context, f Factory, out io.Writer, options *App
 	channelLocation := args[0]
 
 	// menu is the expected list of addons in the cluster and their configurations.
-	menu, err := buildMenu(kubernetesVersion, channelLocation)
+	menu, err := buildMenu(ctx, kubernetesVersion, channelLocation)
 	if err != nil {
 		return fmt.Errorf("cannot build the addon menu from args: %w", err)
 	}
@@ -219,7 +219,7 @@ func getChannelVersions(ctx context.Context, k8sClient kubernetes.Interface) (ma
 	return channelVersions, nil
 }
 
-func buildMenu(kubernetesVersion semver.Version, channelLocation string) (*channels.AddonMenu, error) {
+func buildMenu(ctx context.Context, kubernetesVersion semver.Version, channelLocation string) (*channels.AddonMenu, error) {
 	menu := channels.NewAddonMenu()
 
 	location, err := url.Parse(channelLocation)
@@ -245,7 +245,7 @@ func buildMenu(kubernetesVersion semver.Version, channelLocation string) (*chann
 			klog.Warningf("Legacy addons are deprecated and unmaintained, use managed addons instead of %s", expanded)
 		}
 	}
-	o, err := channels.LoadAddons(channelLocation, location)
+	o, err := channels.LoadAddons(ctx, channelLocation, location)
 	if err != nil {
 		return nil, fmt.Errorf("error loading channel %q: %v", location, err)
 	}

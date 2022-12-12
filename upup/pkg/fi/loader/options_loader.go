@@ -17,6 +17,7 @@ limitations under the License.
 package loader
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 
@@ -31,7 +32,7 @@ type OptionsLoader struct {
 }
 
 type OptionsBuilder interface {
-	BuildOptions(options interface{}) error
+	BuildOptions(ctx context.Context, options interface{}) error
 }
 
 func NewOptionsLoader(builders []OptionsBuilder) *OptionsLoader {
@@ -41,7 +42,7 @@ func NewOptionsLoader(builders []OptionsBuilder) *OptionsLoader {
 }
 
 // iterate performs a single iteration of all the templates, executing each template in order
-func (l *OptionsLoader) iterate(userConfig interface{}, current interface{}) (interface{}, error) {
+func (l *OptionsLoader) iterate(ctx context.Context, userConfig interface{}, current interface{}) (interface{}, error) {
 	t := reflect.TypeOf(current).Elem()
 
 	next := reflect.New(t).Interface()
@@ -52,7 +53,7 @@ func (l *OptionsLoader) iterate(userConfig interface{}, current interface{}) (in
 	for _, t := range l.Builders {
 		klog.V(2).Infof("executing builder %T", t)
 
-		err := t.BuildOptions(next)
+		err := t.BuildOptions(ctx, next)
 		if err != nil {
 			return nil, err
 		}
@@ -66,11 +67,11 @@ func (l *OptionsLoader) iterate(userConfig interface{}, current interface{}) (in
 
 // Build executes the options configuration templates, until they converge
 // It bails out after maxIterations
-func (l *OptionsLoader) Build(userConfig interface{}) (interface{}, error) {
+func (l *OptionsLoader) Build(ctx context.Context, userConfig interface{}) (interface{}, error) {
 	options := userConfig
 	iteration := 0
 	for {
-		nextOptions, err := l.iterate(userConfig, options)
+		nextOptions, err := l.iterate(ctx, userConfig, options)
 		if err != nil {
 			return nil, err
 		}

@@ -17,6 +17,7 @@ limitations under the License.
 package components
 
 import (
+	"context"
 	"fmt"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -31,7 +32,7 @@ type NetworkingOptionsBuilder struct {
 
 var _ loader.OptionsBuilder = &NetworkingOptionsBuilder{}
 
-func (b *NetworkingOptionsBuilder) BuildOptions(o interface{}) error {
+func (b *NetworkingOptionsBuilder) BuildOptions(ctx context.Context, o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 
 	options := o.(*kops.ClusterSpec)

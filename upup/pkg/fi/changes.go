@@ -17,6 +17,7 @@ limitations under the License.
 package fi
 
 import (
+	"context"
 	"reflect"
 
 	"k8s.io/klog/v2"
@@ -33,7 +34,7 @@ import (
 // a is the actual object found, e is the expected value
 // Note that the ignore-nil-in-e logic therefore implements the idea that nil value in e means "don't care"
 // If a is nil, all the non-nil values in e will be copied over to changes, because every field in e must be applied
-func BuildChanges(a, e, changes interface{}) bool {
+func BuildChanges(ctx context.Context, a, e, changes interface{}) bool {
 	changed := false
 
 	vc := reflect.ValueOf(changes)
@@ -74,11 +75,11 @@ func BuildChanges(a, e, changes interface{}) bool {
 		if !aIsNil {
 			fva := va.Field(i)
 
-			if equalFieldValues(fva, fve) {
+			if equalFieldValues(ctx, fva, fve) {
 				continue
 			}
 
-			klog.V(8).Infof("Field changed %q actual=%q expected=%q", t.Field(i).Name, DebugPrint(fva.Interface()), DebugPrint(fve.Interface()))
+			klog.V(8).Infof("Field changed %q actual=%q expected=%q", t.Field(i).Name, DebugPrint(ctx, fva.Interface()), DebugPrint(ctx, fve.Interface()))
 		}
 		changed = true
 		vc.Field(i).Set(fve)
@@ -88,16 +89,16 @@ func BuildChanges(a, e, changes interface{}) bool {
 }
 
 // equalFieldValues implements our equality checking, with special cases for resources and tasks
-func equalFieldValues(a, e reflect.Value) bool {
+func equalFieldValues(ctx context.Context, a, e reflect.Value) bool {
 	if !a.IsValid() || !e.IsValid() {
 		return a.IsValid() == e.IsValid()
 	}
 
 	if a.Kind() == reflect.Map {
-		return equalMapValues(a, e)
+		return equalMapValues(ctx, a, e)
 	}
 	if a.Kind() == reflect.Slice {
-		return equalSlice(a, e)
+		return equalSlice(ctx, a, e)
 	}
 	if (a.Kind() == reflect.Ptr || a.Kind() == reflect.Interface) && !a.IsNil() {
 		aHasID, ok := a.Interface().(CompareWithID)
@@ -121,7 +122,7 @@ func equalFieldValues(a, e reflect.Value) bool {
 						return false
 					}
 				}
-				same, err := ResourcesMatch(aResource, eResource)
+				same, err := ResourcesMatch(ctx, aResource, eResource)
 				if err != nil {
 					klog.Fatalf("error while comparing resources: %v", err)
 				} else {
@@ -137,7 +138,7 @@ func equalFieldValues(a, e reflect.Value) bool {
 }
 
 // equalMapValues performs a deep-equality check on a map, but using our custom comparison logic (equalFieldValues)
-func equalMapValues(a, e reflect.Value) bool {
+func equalMapValues(ctx context.Context, a, e reflect.Value) bool {
 	if a.IsNil() != e.IsNil() {
 		return false
 	}
@@ -153,7 +154,7 @@ func equalMapValues(a, e reflect.Value) bool {
 
 		klog.V(10).Infof("comparing maps: %v %v %v", k, valA, valE)
 
-		if !equalFieldValues(valA, valE) {
+		if !equalFieldValues(ctx, valA, valE) {
 			klog.V(4).Infof("unequal map value: %v %v %v", k, valA, valE)
 			return false
 		}
@@ -162,7 +163,7 @@ func equalMapValues(a, e reflect.Value) bool {
 }
 
 // equalSlice performs a deep-equality check on a slice, but using our custom comparison logic (equalFieldValues)
-func equalSlice(a, e reflect.Value) bool {
+func equalSlice(ctx context.Context, a, e reflect.Value) bool {
 	if a.IsNil() != e.IsNil() {
 		return false
 	}
@@ -178,7 +179,7 @@ func equalSlice(a, e reflect.Value) bool {
 
 		klog.V(10).Infof("comparing slices: %d %v %v", i, valA, valE)
 
-		if !equalFieldValues(valA, valE) {
+		if !equalFieldValues(ctx, valA, valE) {
 			klog.V(4).Infof("unequal slice value: %d %v %v", i, valA, valE)
 			return false
 		}

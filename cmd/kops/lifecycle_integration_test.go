@@ -210,7 +210,7 @@ func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptio
 		if err != nil {
 			t.Fatalf("error getting cluster: %v", err)
 		}
-		clientset, err := factory.KopsClient()
+		clientset, err := factory.KopsClient(ctx)
 		if err != nil {
 			t.Fatalf("error getting clientset: %v", err)
 		}
@@ -548,7 +548,7 @@ func updateEnsureNoChanges(ctx context.Context, t *testing.T, factory *util.Fact
 	target := results.Target.(*fi.DryRunTarget)
 	if target.HasChanges() {
 		var b bytes.Buffer
-		if err := target.PrintReport(results.TaskMap, &b); err != nil {
+		if err := target.PrintReport(ctx, results.TaskMap, &b); err != nil {
 			t.Fatalf("error building report: %v", err)
 		}
 		t.Fatalf("Target had changes after executing: %v", b.String())

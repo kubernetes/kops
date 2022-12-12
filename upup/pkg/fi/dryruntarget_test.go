@@ -18,6 +18,7 @@ package fi
 
 import (
 	"bytes"
+	"context"
 	"reflect"
 	"testing"
 
@@ -27,6 +28,8 @@ import (
 )
 
 func Test_tryResourceAsString(t *testing.T) {
+	ctx := context.TODO()
+
 	var sr *StringResource
 	grid := []struct {
 		Resource interface{}
@@ -47,7 +50,7 @@ func Test_tryResourceAsString(t *testing.T) {
 	}
 	for i, g := range grid {
 		v := reflect.ValueOf(g.Resource)
-		actual, _ := tryResourceAsString(v)
+		actual, _ := tryResourceAsString(ctx, v)
 		if actual != g.Expected {
 			t.Errorf("unexpected result from %d.  Expected=%q, got %q", i, g.Expected, actual)
 		}
@@ -67,6 +70,8 @@ func (*testTask) Run(_ *Context) error {
 }
 
 func Test_DryrunTarget_PrintReport(t *testing.T) {
+	ctx := context.TODO()
+
 	builder := assets.NewAssetBuilder(&api.Cluster{
 		Spec: api.ClusterSpec{
 			KubernetesVersion: "1.17.3",
@@ -86,12 +91,12 @@ func Test_DryrunTarget_PrintReport(t *testing.T) {
 		Tags:      map[string]string{"key": "value"},
 	}
 	changes := reflect.New(reflect.TypeOf(e).Elem()).Interface().(Task)
-	_ = BuildChanges(a, e, changes)
+	_ = BuildChanges(ctx, a, e, changes)
 	err := target.Render(a, e, changes)
 	tasks[*e.Name] = e
 	assert.NoError(t, err, "target.Render()")
 
 	var out bytes.Buffer
-	err = target.PrintReport(tasks, &out)
+	err = target.PrintReport(ctx, tasks, &out)
 	assert.NoError(t, err, "target.PrintReport()")
 }

@@ -17,6 +17,7 @@ limitations under the License.
 package cloudup
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
@@ -337,6 +338,8 @@ func TestSetupNetworking(t *testing.T) {
 }
 
 func TestDefaultImage(t *testing.T) {
+	ctx := context.TODO()
+
 	tests := []struct {
 		cluster      *api.Cluster
 		architecture architectures.Architecture
@@ -428,7 +431,7 @@ func TestDefaultImage(t *testing.T) {
 		},
 	}
 
-	channel, err := api.LoadChannel("file://tests/channels/channel.yaml")
+	channel, err := api.LoadChannel(ctx, "file://tests/channels/channel.yaml")
 	if err != nil {
 		t.Fatalf("unable to load test channel: %v", err)
 	}

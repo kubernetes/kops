@@ -17,6 +17,8 @@ limitations under the License.
 package do
 
 import (
+	"context"
+
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -32,7 +34,7 @@ func NewDOAPITarget(cloud DOCloud) *DOAPITarget {
 	}
 }
 
-func (t *DOAPITarget) Finish(taskMap map[string]fi.Task) error {
+func (t *DOAPITarget) Finish(ctx context.Context, taskMap map[string]fi.Task) error {
 	return nil
 }
 

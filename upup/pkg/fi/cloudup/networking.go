@@ -17,6 +17,7 @@ limitations under the License.
 package cloudup
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"os"
@@ -46,7 +47,7 @@ const (
 	ENV_VAR_CNI_ASSET_HASH = "CNI_ASSET_HASH_STRING"
 )
 
-func findCNIAssets(c *kopsapi.Cluster, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*url.URL, *hashing.Hash, error) {
+func findCNIAssets(ctx context.Context, c *kopsapi.Cluster, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*url.URL, *hashing.Hash, error) {
 	// Override CNI packages from env vars
 	cniAssetURL := os.Getenv(ENV_VAR_CNI_ASSET_URL)
 	cniAssetHash := os.Getenv(ENV_VAR_CNI_ASSET_HASH)
@@ -97,7 +98,7 @@ func findCNIAssets(c *kopsapi.Cluster, assetBuilder *assets.AssetBuilder, arch a
 		return nil, nil, fmt.Errorf("unable to parse CNI plugin binaries asset URL %q: %v", cniAssetURL, err)
 	}
 
-	u, h, err := assetBuilder.RemapFileAndSHA(u)
+	u, h, err := assetBuilder.RemapFileAndSHA(ctx, u)
 	if err != nil {
 		return nil, nil, fmt.Errorf("unable to remap CNI plugin binaries asset: %v", err)
 	}

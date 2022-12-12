@@ -153,12 +153,12 @@ func RunCreateKeypair(ctx context.Context, f *util.Factory, out io.Writer, optio
 		return fmt.Errorf("error getting cluster: %q: %v", options.ClusterName, err)
 	}
 
-	clientSet, err := f.KopsClient()
+	clientSet, err := f.KopsClient(ctx)
 	if err != nil {
 		return fmt.Errorf("error getting clientset: %v", err)
 	}
 
-	keyStore, err := clientSet.KeyStore(cluster)
+	keyStore, err := clientSet.KeyStore(ctx, cluster)
 	if err != nil {
 		return fmt.Errorf("error getting keystore: %v", err)
 	}
@@ -267,8 +267,8 @@ func createKeypair(out io.Writer, options *CreateKeypairOptions, name string, ke
 	return nil
 }
 
-func completeKeyset(cluster *kopsapi.Cluster, clientSet simple.Clientset, args []string, filter func(name string, keyset *fi.Keyset) bool) (keyset *fi.Keyset, keyStore fi.CAStore, completions []string, directive cobra.ShellCompDirective) {
-	keyStore, err := clientSet.KeyStore(cluster)
+func completeKeyset(ctx context.Context, cluster *kopsapi.Cluster, clientSet simple.Clientset, args []string, filter func(name string, keyset *fi.Keyset) bool) (keyset *fi.Keyset, keyStore fi.CAStore, completions []string, directive cobra.ShellCompDirective) {
+	keyStore, err := clientSet.KeyStore(ctx, cluster)
 	if err != nil {
 		completions, directive := commandutils.CompletionError("getting keystore", err)
 		return nil, nil, completions, directive
@@ -313,7 +313,7 @@ func completeCreateKeypair(f commandutils.Factory, options *CreateKeypairOptions
 		return completions, directive
 	}
 
-	keyset, _, completions, directive := completeKeyset(cluster, clientSet, args, rotatableKeysetFilter)
+	keyset, _, completions, directive := completeKeyset(ctx, cluster, clientSet, args, rotatableKeysetFilter)
 	if keyset == nil {
 		return completions, directive
 	}

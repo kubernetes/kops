@@ -17,6 +17,7 @@ limitations under the License.
 package terraform
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path"
@@ -56,8 +57,8 @@ func NewTerraformTarget(cloud fi.Cloud, project string, filesProvider *vfs.Terra
 
 var _ fi.Target = &TerraformTarget{}
 
-func (t *TerraformTarget) AddFileResource(resourceType string, resourceName string, key string, r fi.Resource, base64 bool) (*terraformWriter.Literal, error) {
-	d, err := fi.ResourceAsBytes(r)
+func (t *TerraformTarget) AddFileResource(ctx context.Context, resourceType string, resourceName string, key string, r fi.Resource, base64 bool) (*terraformWriter.Literal, error) {
+	d, err := fi.ResourceAsBytes(ctx, r)
 	if err != nil {
 		id := resourceType + "_" + resourceName + "_" + key
 		return nil, fmt.Errorf("error rending resource %s %v", id, err)
@@ -91,7 +92,7 @@ func tfGetFilesProviderExtraConfig(c *kops.TargetSpec) map[string]string {
 	return nil
 }
 
-func (t *TerraformTarget) Finish(taskMap map[string]fi.Task) error {
+func (t *TerraformTarget) Finish(ctx context.Context, taskMap map[string]fi.Task) error {
 	if err := t.finishHCL2(); err != nil {
 		return err
 	}

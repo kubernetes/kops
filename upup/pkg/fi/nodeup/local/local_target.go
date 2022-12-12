@@ -17,6 +17,7 @@ limitations under the License.
 package local
 
 import (
+	"context"
 	"os/exec"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -32,7 +33,7 @@ type LocalTarget struct {
 
 var _ fi.Target = &LocalTarget{}
 
-func (t *LocalTarget) Finish(taskMap map[string]fi.Task) error {
+func (t *LocalTarget) Finish(ctx context.Context, taskMap map[string]fi.Task) error {
 	return nil
 }
 

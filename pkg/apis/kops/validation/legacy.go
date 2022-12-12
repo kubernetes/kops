@@ -17,6 +17,7 @@ limitations under the License.
 package validation
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"strings"
@@ -33,7 +34,7 @@ import (
 // legacy contains validation functions that don't match the apimachinery style
 
 // ValidateCluster is responsible for checking the validity of the Cluster spec
-func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
+func ValidateCluster(ctx context.Context, c *kops.Cluster, strict bool) field.ErrorList {
 	fieldSpec := field.NewPath("spec")
 	allErrs := field.ErrorList{}
 
@@ -392,12 +393,12 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 	allErrs = append(allErrs, newValidateCluster(c)...)
 
 	said := c.Spec.ServiceAccountIssuerDiscovery
-	allErrs = append(allErrs, validateServiceAccountIssuerDiscovery(c, said, fieldSpec.Child("serviceAccountIssuerDiscovery"))...)
+	allErrs = append(allErrs, validateServiceAccountIssuerDiscovery(ctx, c, said, fieldSpec.Child("serviceAccountIssuerDiscovery"))...)
 
 	return allErrs
 }
 
-func validateServiceAccountIssuerDiscovery(c *kops.Cluster, said *kops.ServiceAccountIssuerDiscoveryConfig, fieldSpec *field.Path) field.ErrorList {
+func validateServiceAccountIssuerDiscovery(ctx context.Context, c *kops.Cluster, said *kops.ServiceAccountIssuerDiscoveryConfig, fieldSpec *field.Path) field.ErrorList {
 	if said == nil {
 		return nil
 	}
@@ -405,7 +406,7 @@ func validateServiceAccountIssuerDiscovery(c *kops.Cluster, said *kops.ServiceAc
 	saidStore := said.DiscoveryStore
 	if saidStore != "" {
 		saidStoreField := fieldSpec.Child("serviceAccountIssuerDiscovery", "discoveryStore")
-		base, err := vfs.Context.BuildVfsPath(saidStore)
+		base, err := vfs.FromContext(ctx).BuildVfsPath(saidStore)
 		if err != nil {
 			allErrs = append(allErrs, field.Invalid(saidStoreField, saidStore, "not a valid VFS path"))
 		} else {
@@ -452,8 +453,8 @@ func validateSubnetCIDR(networkCIDR *net.IPNet, additionalNetworkCIDRs []*net.IP
 }
 
 // DeepValidate is responsible for validating the instancegroups within the cluster spec
-func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool, cloud fi.Cloud) error {
-	if errs := ValidateCluster(c, strict); len(errs) != 0 {
+func DeepValidate(ctx context.Context, c *kops.Cluster, groups []*kops.InstanceGroup, strict bool, cloud fi.Cloud) error {
+	if errs := ValidateCluster(ctx, c, strict); len(errs) != 0 {
 		return errs.ToAggregate()
 	}
 

@@ -17,6 +17,7 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
 	"strings"
@@ -208,6 +209,8 @@ func (_ *Instance) CheckChanges(a, e, changes *Instance) error {
 }
 
 func (_ *Instance) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Instance) error {
+	ctx := context.TODO()
+
 	if a == nil {
 
 		if fi.ValueOf(e.Shared) {
@@ -263,7 +266,7 @@ func (_ *Instance) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Instance) err
 		}
 
 		if e.UserData != nil {
-			d, err := fi.ResourceAsBytes(e.UserData)
+			d, err := fi.ResourceAsBytes(ctx, e.UserData)
 			if err != nil {
 				return fmt.Errorf("error rendering Instance UserData: %v", err)
 			}

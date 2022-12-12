@@ -165,7 +165,7 @@ func listKeypairs(keyStore fi.CAStore, names []string, includeDistrusted bool) (
 }
 
 func RunGetKeypairs(ctx context.Context, f commandutils.Factory, out io.Writer, options *GetKeypairsOptions) error {
-	clientset, err := f.KopsClient()
+	clientset, err := f.KopsClient(ctx)
 	if err != nil {
 		return err
 	}
@@ -175,7 +175,7 @@ func RunGetKeypairs(ctx context.Context, f commandutils.Factory, out io.Writer, 
 		return err
 	}
 
-	keyStore, err := clientset.KeyStore(cluster)
+	keyStore, err := clientset.KeyStore(ctx, cluster)
 	if err != nil {
 		return err
 	}
@@ -269,7 +269,7 @@ func completeGetKeypairs(f commandutils.Factory, options *GetKeypairsOptions, ar
 	}
 
 	alreadySelected := sets.NewString(args...).Insert("all")
-	_, _, completions, directive = completeKeyset(cluster, clientSet, nil, func(name string, keyset *fi.Keyset) bool {
+	_, _, completions, directive = completeKeyset(ctx, cluster, clientSet, nil, func(name string, keyset *fi.Keyset) bool {
 		return !alreadySelected.Has(name)
 	})
 

@@ -270,7 +270,7 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 		}
 	}
 
-	clientset, err := factory.KopsClient()
+	clientset, err := factory.KopsClient(ctx)
 	if err != nil {
 		t.Fatalf("error getting clientset: %v", err)
 	}

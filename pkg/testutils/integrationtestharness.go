@@ -17,6 +17,7 @@ limitations under the License.
 package testutils
 
 import (
+	"context"
 	"os"
 	"path"
 	"path/filepath"
@@ -76,6 +77,8 @@ type IntegrationTestHarness struct {
 }
 
 func NewIntegrationTestHarness(t *testing.T) *IntegrationTestHarness {
+	ctx := context.TODO()
+
 	featureflag.ParseFlags("-ImageDigest")
 	h := &IntegrationTestHarness{}
 	tempDir, err := os.MkdirTemp("", "test")
@@ -84,7 +87,7 @@ func NewIntegrationTestHarness(t *testing.T) *IntegrationTestHarness {
 	}
 	h.TempDir = tempDir
 
-	vfs.Context.ResetMemfsContext(true)
+	vfs.FromContext(ctx).ResetMemfsContext(true)
 
 	// Generate much smaller keys, as this is often the bottleneck for tests
 	h.originalPKIDefaultPrivateKeySize = pki.DefaultPrivateKeySize

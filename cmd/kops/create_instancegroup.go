@@ -154,12 +154,12 @@ func RunCreateInstanceGroup(ctx context.Context, f *util.Factory, out io.Writer,
 		return fmt.Errorf("error getting cluster: %q: %v", options.ClusterName, err)
 	}
 
-	clientset, err := f.KopsClient()
+	clientset, err := f.KopsClient(ctx)
 	if err != nil {
 		return err
 	}
 
-	channel, err := cloudup.ChannelForCluster(cluster)
+	channel, err := cloudup.ChannelForCluster(ctx, cluster)
 	if err != nil {
 		klog.Warningf("%v", err)
 	}

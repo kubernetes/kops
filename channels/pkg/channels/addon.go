@@ -192,7 +192,7 @@ func (a *Addon) updateAddon(ctx context.Context, k8sClient kubernetes.Interface,
 	klog.Infof("Applying update from %q", manifestURL)
 
 	// We copy the manifest to a temp file because it is likely e.g. an s3 URL, which kubectl can't read
-	data, err := vfs.Context.ReadFile(manifestURL.String())
+	data, err := vfs.FromContext(ctx).ReadFile(manifestURL.String())
 	if err != nil {
 		return fmt.Errorf("error reading manifest: %w", err)
 	}

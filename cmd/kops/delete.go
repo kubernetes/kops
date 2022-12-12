@@ -91,7 +91,7 @@ func RunDelete(ctx context.Context, factory *util.Factory, out io.Writer, d *Del
 				return fmt.Errorf("reading from stdin: %v", err)
 			}
 		} else {
-			contents, err = vfs.Context.ReadFile(f)
+			contents, err = vfs.FromContext(ctx).ReadFile(f)
 			if err != nil {
 				return fmt.Errorf("reading file %q: %v", f, err)
 			}

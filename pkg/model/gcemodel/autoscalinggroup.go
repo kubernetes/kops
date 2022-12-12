@@ -50,6 +50,8 @@ var _ fi.ModelBuilder = &AutoscalingGroupModelBuilder{}
 // Build the GCE instance template object for an InstanceGroup
 // We are then able to extract out the fields when running with the clusterapi.
 func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderContext, ig *kops.InstanceGroup, subnet *kops.ClusterSubnetSpec) (*gcetasks.InstanceTemplate, error) {
+	ctx := c.Context()
+
 	// Indented to keep diff manageable
 	// TODO: Remove spurious indent
 	{
@@ -120,7 +122,7 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderC
 				return nil, err
 			}
 
-			storagePaths, err := iam.WriteableVFSPaths(b.Cluster, nodeRole)
+			storagePaths, err := iam.WriteableVFSPaths(ctx, b.Cluster, nodeRole)
 			if err != nil {
 				return nil, err
 			}

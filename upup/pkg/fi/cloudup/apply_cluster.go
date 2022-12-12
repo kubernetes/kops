@@ -205,7 +205,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		}
 	}
 
-	channel, err := ChannelForCluster(c.Cluster)
+	channel, err := ChannelForCluster(ctx, c.Cluster)
 	if err != nil {
 		klog.Warningf("%v", err)
 	}
@@ -246,7 +246,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	}
 
 	assetBuilder := assets.NewAssetBuilder(c.Cluster, c.GetAssets)
-	err = c.upgradeSpecs(assetBuilder)
+	err = c.upgradeSpecs(ctx, assetBuilder)
 	if err != nil {
 		return err
 	}
@@ -263,7 +263,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 	cluster := c.Cluster
 
-	configBase, err := vfs.Context.BuildVfsPath(cluster.Spec.ConfigBase)
+	configBase, err := vfs.FromContext(ctx).BuildVfsPath(cluster.Spec.ConfigBase)
 	if err != nil {
 		return fmt.Errorf("error parsing config base %q: %v", cluster.Spec.ConfigBase, err)
 	}
@@ -294,7 +294,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 	cloud := c.Cloud
 
-	err = validation.DeepValidate(c.Cluster, c.InstanceGroups, true, cloud)
+	err = validation.DeepValidate(ctx, c.Cluster, c.InstanceGroups, true, cloud)
 	if err != nil {
 		return err
 	}
@@ -309,17 +309,17 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	l := &Loader{}
 	l.Init()
 
-	keyStore, err := c.Clientset.KeyStore(cluster)
+	keyStore, err := c.Clientset.KeyStore(ctx, cluster)
 	if err != nil {
 		return err
 	}
 
-	sshCredentialStore, err := c.Clientset.SSHCredentialStore(cluster)
+	sshCredentialStore, err := c.Clientset.SSHCredentialStore(ctx, cluster)
 	if err != nil {
 		return err
 	}
 
-	secretStore, err := c.Clientset.SecretStore(cluster)
+	secretStore, err := c.Clientset.SecretStore(ctx, cluster)
 	if err != nil {
 		return err
 	}
@@ -392,7 +392,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		}
 	}
 
-	if err := c.addFileAssets(assetBuilder); err != nil {
+	if err := c.addFileAssets(ctx, assetBuilder); err != nil {
 		return err
 	}
 
@@ -511,7 +511,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		cloud:            cloud,
 	}
 
-	configBuilder, err := newNodeUpConfigBuilder(cluster, assetBuilder, c.Assets, encryptionConfigSecretHash)
+	configBuilder, err := newNodeUpConfigBuilder(ctx, cluster, assetBuilder, c.Assets, encryptionConfigSecretHash)
 	if err != nil {
 		return err
 	}
@@ -699,7 +699,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.GetCloudProvider())
 		}
 	}
-	c.TaskMap, err = l.BuildTasks(c.LifecycleOverrides)
+	c.TaskMap, err = l.BuildTasks(ctx, c.LifecycleOverrides)
 	if err != nil {
 		return fmt.Errorf("error building tasks: %v", err)
 	}
@@ -783,7 +783,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		}
 	}
 
-	context, err := fi.NewContext(target, cluster, cloud, keyStore, secretStore, configBase, checkExisting, c.TaskMap)
+	context, err := fi.NewContext(ctx, target, cluster, cloud, keyStore, secretStore, configBase, checkExisting, c.TaskMap)
 	if err != nil {
 		return fmt.Errorf("error building context: %v", err)
 	}
@@ -811,7 +811,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		}
 	}
 
-	err = target.Finish(c.TaskMap) // This will finish the apply, and print the changes
+	err = target.Finish(ctx, c.TaskMap) // This will finish the apply, and print the changes
 	if err != nil {
 		return fmt.Errorf("error closing target: %v", err)
 	}
@@ -823,8 +823,8 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 }
 
 // upgradeSpecs ensures that fields are fully populated / defaulted
-func (c *ApplyClusterCmd) upgradeSpecs(assetBuilder *assets.AssetBuilder) error {
-	fullCluster, err := PopulateClusterSpec(c.Clientset, c.Cluster, c.Cloud, assetBuilder)
+func (c *ApplyClusterCmd) upgradeSpecs(ctx context.Context, assetBuilder *assets.AssetBuilder) error {
+	fullCluster, err := PopulateClusterSpec(ctx, c.Clientset, c.Cluster, c.Cloud, assetBuilder)
 	if err != nil {
 		return err
 	}
@@ -1027,7 +1027,7 @@ func (c *ApplyClusterCmd) validateKubernetesVersion() error {
 }
 
 // addFileAssets adds the file assets within the assetBuilder
-func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error {
+func (c *ApplyClusterCmd) addFileAssets(ctx context.Context, assetBuilder *assets.AssetBuilder) error {
 	var baseURL string
 	if components.IsBaseURL(c.Cluster.Spec.KubernetesVersion) {
 		baseURL = c.Cluster.Spec.KubernetesVersion
@@ -1056,14 +1056,14 @@ func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error
 			}
 			k.Path = path.Join(k.Path, an)
 
-			u, hash, err := assetBuilder.RemapFileAndSHA(k)
+			u, hash, err := assetBuilder.RemapFileAndSHA(ctx, k)
 			if err != nil {
 				return err
 			}
 			c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(u, hash))
 		}
 
-		cniAsset, cniAssetHash, err := findCNIAssets(c.Cluster, assetBuilder, arch)
+		cniAsset, cniAssetHash, err := findCNIAssets(ctx, c.Cluster, assetBuilder, arch)
 		if err != nil {
 			return err
 		}
@@ -1096,7 +1096,7 @@ func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error
 			}
 		}
 
-		asset, err := NodeUpAsset(assetBuilder, arch)
+		asset, err := NodeUpAsset(ctx, assetBuilder, arch)
 		if err != nil {
 			return err
 		}
@@ -1115,12 +1115,12 @@ func buildPermalink(key, anchor string) string {
 	return url
 }
 
-func ChannelForCluster(c *kops.Cluster) (*kops.Channel, error) {
+func ChannelForCluster(ctx context.Context, c *kops.Cluster) (*kops.Channel, error) {
 	channelLocation := c.Spec.Channel
 	if channelLocation == "" {
 		channelLocation = kops.DefaultChannel
 	}
-	return kops.LoadChannel(channelLocation)
+	return kops.LoadChannel(ctx, channelLocation)
 }
 
 // needsMounterAsset checks if we need the mounter program
@@ -1153,8 +1153,8 @@ type nodeUpConfigBuilder struct {
 	encryptionConfigSecretHash string
 }
 
-func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBuilder, assets map[architectures.Architecture][]*mirrors.MirroredAsset, encryptionConfigSecretHash string) (model.NodeUpConfigBuilder, error) {
-	configBase, err := vfs.Context.BuildVfsPath(cluster.Spec.ConfigBase)
+func newNodeUpConfigBuilder(ctx context.Context, cluster *kops.Cluster, assetBuilder *assets.AssetBuilder, assets map[architectures.Architecture][]*mirrors.MirroredAsset, encryptionConfigSecretHash string) (model.NodeUpConfigBuilder, error) {
+	configBase, err := vfs.FromContext(ctx).BuildVfsPath(cluster.Spec.ConfigBase)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing config base %q: %v", cluster.Spec.ConfigBase, err)
 	}
@@ -1173,7 +1173,7 @@ func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 	channelsAsset := map[architectures.Architecture][]*mirrors.MirroredAsset{}
 
 	for _, arch := range architectures.GetSupported() {
-		asset, err := ProtokubeAsset(assetBuilder, arch)
+		asset, err := ProtokubeAsset(ctx, assetBuilder, arch)
 		if err != nil {
 			return nil, err
 		}
@@ -1181,7 +1181,7 @@ func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 	}
 
 	for _, arch := range architectures.GetSupported() {
-		asset, err := ChannelsAsset(assetBuilder, arch)
+		asset, err := ChannelsAsset(ctx, assetBuilder, arch)
 		if err != nil {
 			return nil, err
 		}
@@ -1212,7 +1212,7 @@ func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 
 					baseURL.Path = path.Join(baseURL.Path, "/bin/linux", string(arch), component+".tar")
 
-					u, hash, err := assetBuilder.RemapFileAndSHA(baseURL)
+					u, hash, err := assetBuilder.RemapFileAndSHA(ctx, baseURL)
 					if err != nil {
 						return nil, err
 					}
@@ -1238,7 +1238,7 @@ func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 
 					baseURL.Path = path.Join(baseURL.Path, "/images/"+name+"-"+string(arch)+".tar.gz")
 
-					u, hash, err := assetBuilder.RemapFileAndSHA(baseURL)
+					u, hash, err := assetBuilder.RemapFileAndSHA(ctx, baseURL)
 					if err != nil {
 						return nil, err
 					}
@@ -1261,7 +1261,7 @@ func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 
 					baseURL.Path = path.Join(baseURL.Path, "/images/"+name+"-"+string(arch)+".tar.gz")
 
-					u, hash, err := assetBuilder.RemapFileAndSHA(baseURL)
+					u, hash, err := assetBuilder.RemapFileAndSHA(ctx, baseURL)
 					if err != nil {
 						return nil, err
 					}

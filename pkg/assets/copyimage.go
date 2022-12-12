@@ -17,6 +17,7 @@ limitations under the License.
 package assets
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/google/go-containerregistry/pkg/authn"
@@ -34,7 +35,7 @@ type CopyImage struct {
 	TargetImage string
 }
 
-func (e *CopyImage) Run() error {
+func (e *CopyImage) Run(ctx context.Context) error {
 	source := e.SourceImage
 	target := e.TargetImage
 
@@ -49,6 +50,7 @@ func (e *CopyImage) Run() error {
 	}
 
 	options := []remote.Option{remote.WithAuthFromKeychain(authn.DefaultKeychain)}
+	options = append(options, remote.WithContext(ctx))
 
 	desc, err := remote.Get(sourceRef, options...)
 	if err != nil {

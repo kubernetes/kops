@@ -508,7 +508,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		}
 	}
 
-	clientset, err := f.KopsClient()
+	clientset, err := f.KopsClient(ctx)
 	if err != nil {
 		return err
 	}
@@ -536,7 +536,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		c.NetworkID = c.OpenstackNetworkID
 	}
 
-	clusterResult, err := cloudup.NewCluster(&c.NewClusterOptions, clientset)
+	clusterResult, err := cloudup.NewCluster(ctx, &c.NewClusterOptions, clientset)
 	if err != nil {
 		return err
 	}
@@ -643,13 +643,13 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	}
 
 	strict := false
-	err = validation.DeepValidate(cluster, instanceGroups, strict, nil)
+	err = validation.DeepValidate(ctx, cluster, instanceGroups, strict, nil)
 	if err != nil {
 		return err
 	}
 
 	assetBuilder := assets.NewAssetBuilder(cluster, false)
-	fullCluster, err := cloudup.PopulateClusterSpec(clientset, cluster, cloud, assetBuilder)
+	fullCluster, err := cloudup.PopulateClusterSpec(ctx, clientset, cluster, cloud, assetBuilder)
 	if err != nil {
 		return err
 	}
@@ -665,7 +665,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	}
 
 	for _, p := range c.AddonPaths {
-		addon, err := clusteraddons.LoadClusterAddon(p)
+		addon, err := clusteraddons.LoadClusterAddon(ctx, p)
 		if err != nil {
 			return fmt.Errorf("error loading cluster addon %s: %v", p, err)
 		}
@@ -683,7 +683,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 			fullInstanceGroups = append(fullInstanceGroups, fullGroup)
 		}
 
-		err = validation.DeepValidate(fullCluster, fullInstanceGroups, true, nil)
+		err = validation.DeepValidate(ctx, fullCluster, fullInstanceGroups, true, nil)
 		if err != nil {
 			return fmt.Errorf("validation of the full cluster and instance group specs failed: %w", err)
 		}
@@ -759,7 +759,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	}
 
 	if len(c.SSHPublicKeys) != 0 {
-		sshCredentialStore, err := clientset.SSHCredentialStore(cluster)
+		sshCredentialStore, err := clientset.SSHCredentialStore(ctx, cluster)
 		if err != nil {
 			return err
 		}

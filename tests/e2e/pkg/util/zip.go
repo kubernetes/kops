@@ -57,7 +57,7 @@ func UnzipToTempDir(data []byte) (string, error) {
 			return "", err
 		}
 
-		fileReader, err := r.Open()
+		fileReader, err := r.Open(ctx)
 		if err != nil {
 			return "", err
 		}

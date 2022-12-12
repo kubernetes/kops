@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"context"
 	"fmt"
 	"path/filepath"
 	"sort"
@@ -119,6 +120,7 @@ func stringSlicesEqual(exp, other []string) bool {
 }
 
 func Test_RunKubeletBuilder(t *testing.T) {
+	ctx := context.TODO()
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
@@ -136,7 +138,7 @@ func Test_RunKubeletBuilder(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	nodeUpModelContext, err := BuildNodeupModelContext(model)
+	nodeUpModelContext, err := BuildNodeupModelContext(ctx, model)
 	if err != nil {
 		t.Fatalf("error loading model %q: %v", basedir, err)
 		return
@@ -147,6 +149,7 @@ func Test_RunKubeletBuilder(t *testing.T) {
 }
 
 func Test_RunKubeletBuilderWarmPool(t *testing.T) {
+	ctx := context.TODO()
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
@@ -164,7 +167,7 @@ func Test_RunKubeletBuilderWarmPool(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	nodeUpModelContext, err := BuildNodeupModelContext(model)
+	nodeUpModelContext, err := BuildNodeupModelContext(ctx, model)
 	if err != nil {
 		t.Fatalf("error loading model %q: %v", basedir, err)
 		return
@@ -225,7 +228,7 @@ func runKubeletBuilder(t *testing.T, context *fi.ModelBuilderContext, nodeupMode
 	}
 }
 
-func BuildNodeupModelContext(model *testutils.Model) (*NodeupModelContext, error) {
+func BuildNodeupModelContext(ctx context.Context, model *testutils.Model) (*NodeupModelContext, error) {
 	if model.Cluster == nil {
 		return nil, fmt.Errorf("no cluster found in model")
 	}
@@ -251,7 +254,7 @@ func BuildNodeupModelContext(model *testutils.Model) (*NodeupModelContext, error
 		return nil, fmt.Errorf("error from PerformAssignments: %v", err)
 	}
 
-	nodeupModelContext.Cluster, err = mockedPopulateClusterSpec(model.Cluster, cloud)
+	nodeupModelContext.Cluster, err = mockedPopulateClusterSpec(ctx, model.Cluster, cloud)
 	if err != nil {
 		return nil, fmt.Errorf("unexpected error from mockedPopulateClusterSpec: %v", err)
 	}
@@ -292,16 +295,16 @@ func BuildNodeupModelContext(model *testutils.Model) (*NodeupModelContext, error
 	return nodeupModelContext, nil
 }
 
-func mockedPopulateClusterSpec(c *kops.Cluster, cloud fi.Cloud) (*kops.Cluster, error) {
-	vfs.Context.ResetMemfsContext(true)
+func mockedPopulateClusterSpec(ctx context.Context, c *kops.Cluster, cloud fi.Cloud) (*kops.Cluster, error) {
+	vfs.FromContext(ctx).ResetMemfsContext(true)
 
 	assetBuilder := assets.NewAssetBuilder(c, false)
-	basePath, err := vfs.Context.BuildVfsPath("memfs://tests")
+	basePath, err := vfs.FromContext(ctx).BuildVfsPath("memfs://tests")
 	if err != nil {
 		return nil, fmt.Errorf("error building vfspath: %v", err)
 	}
 	clientset := vfsclientset.NewVFSClientset(basePath)
-	return cloudup.PopulateClusterSpec(clientset, c, cloud, assetBuilder)
+	return cloudup.PopulateClusterSpec(ctx, clientset, c, cloud, assetBuilder)
 }
 
 // Fixed cert and key, borrowed from the create_kubecfg_test.go test
@@ -355,6 +358,7 @@ func mustParseKey(s string) *pki.PrivateKey {
 }
 
 func RunGoldenTest(t *testing.T, basedir string, key string, builder func(*NodeupModelContext, *fi.ModelBuilderContext) error) {
+	ctx := context.TODO()
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
@@ -382,7 +386,7 @@ func RunGoldenTest(t *testing.T, basedir string, key string, builder func(*Nodeu
 		"service-account":         saKeyset,
 	}
 
-	nodeupModelContext, err := BuildNodeupModelContext(model)
+	nodeupModelContext, err := BuildNodeupModelContext(ctx, model)
 	if err != nil {
 		t.Fatalf("error loading model %q: %v", basedir, err)
 	}

@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"context"
 	"fmt"
 	"path"
 	"path/filepath"
@@ -132,6 +133,8 @@ func TestContainerdBuilder_BuildFlags(t *testing.T) {
 }
 
 func runContainerdBuilderTest(t *testing.T, key string, distro distributions.Distribution) {
+	ctx := context.TODO()
+
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
@@ -145,7 +148,7 @@ func runContainerdBuilderTest(t *testing.T, key string, distro distributions.Dis
 		t.Fatal(err)
 	}
 
-	nodeUpModelContext, err := BuildNodeupModelContext(model)
+	nodeUpModelContext, err := BuildNodeupModelContext(ctx, model)
 	if err != nil {
 		t.Fatalf("error parsing cluster yaml %q: %v", basedir, err)
 		return

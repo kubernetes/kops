@@ -17,6 +17,7 @@ limitations under the License.
 package cloudup
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"os"
@@ -84,7 +85,7 @@ func copyBaseURL(base *url.URL) (*url.URL, error) {
 }
 
 // NodeUpAsset returns the asset for where nodeup should be downloaded
-func NodeUpAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architecture) (*mirrors.MirroredAsset, error) {
+func NodeUpAsset(ctx context.Context, assetsBuilder *assets.AssetBuilder, arch architectures.Architecture) (*mirrors.MirroredAsset, error) {
 	if nodeUpAsset == nil {
 		nodeUpAsset = make(map[architectures.Architecture]*mirrors.MirroredAsset)
 	}
@@ -94,7 +95,7 @@ func NodeUpAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architec
 		return nodeUpAsset[arch], nil
 	}
 
-	u, hash, err := KopsFileURL(fmt.Sprintf("linux/%s/nodeup", arch), assetsBuilder)
+	u, hash, err := KopsFileURL(ctx, fmt.Sprintf("linux/%s/nodeup", arch), assetsBuilder)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +106,7 @@ func NodeUpAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architec
 }
 
 // ProtokubeAsset returns the url and hash of the protokube binary
-func ProtokubeAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architecture) (*mirrors.MirroredAsset, error) {
+func ProtokubeAsset(ctx context.Context, assetsBuilder *assets.AssetBuilder, arch architectures.Architecture) (*mirrors.MirroredAsset, error) {
 	if protokubeAsset == nil {
 		protokubeAsset = make(map[architectures.Architecture]*mirrors.MirroredAsset)
 	}
@@ -114,7 +115,7 @@ func ProtokubeAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Archi
 		return protokubeAsset[arch], nil
 	}
 
-	u, hash, err := KopsFileURL(fmt.Sprintf("linux/%s/protokube", arch), assetsBuilder)
+	u, hash, err := KopsFileURL(ctx, fmt.Sprintf("linux/%s/protokube", arch), assetsBuilder)
 	if err != nil {
 		return nil, err
 	}
@@ -125,7 +126,7 @@ func ProtokubeAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Archi
 }
 
 // ChannelsAsset returns the url and hash of the channels binary
-func ChannelsAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architecture) (*mirrors.MirroredAsset, error) {
+func ChannelsAsset(ctx context.Context, assetsBuilder *assets.AssetBuilder, arch architectures.Architecture) (*mirrors.MirroredAsset, error) {
 	if channelsAsset == nil {
 		channelsAsset = make(map[architectures.Architecture]*mirrors.MirroredAsset)
 	}
@@ -134,7 +135,7 @@ func ChannelsAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Archit
 		return channelsAsset[arch], nil
 	}
 
-	u, hash, err := KopsFileURL(fmt.Sprintf("linux/%s/channels", arch), assetsBuilder)
+	u, hash, err := KopsFileURL(ctx, fmt.Sprintf("linux/%s/channels", arch), assetsBuilder)
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +146,7 @@ func ChannelsAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Archit
 }
 
 // KopsFileURL returns the base url for the distribution of kops - in particular for nodeup & docker images
-func KopsFileURL(file string, assetBuilder *assets.AssetBuilder) (*url.URL, *hashing.Hash, error) {
+func KopsFileURL(ctx context.Context, file string, assetBuilder *assets.AssetBuilder) (*url.URL, *hashing.Hash, error) {
 	base, err := BaseURL()
 	if err != nil {
 		return nil, nil, err
@@ -153,7 +154,7 @@ func KopsFileURL(file string, assetBuilder *assets.AssetBuilder) (*url.URL, *has
 
 	base.Path = path.Join(base.Path, file)
 
-	fileURL, hash, err := assetBuilder.RemapFileAndSHA(base)
+	fileURL, hash, err := assetBuilder.RemapFileAndSHA(ctx, base)
 	if err != nil {
 		return nil, nil, err
 	}

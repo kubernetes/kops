@@ -100,6 +100,8 @@ func NewBootstrapChannelBuilder(modelContext *model.KopsModelContext,
 
 // Build is responsible for adding the addons to the channel
 func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
+	ctx := c.Context()
+
 	addons, serviceAccounts, err := b.buildAddons(c)
 	if err != nil {
 		return err
@@ -124,7 +126,7 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 			return fmt.Errorf("unable to find manifest %s", manifestPath)
 		}
 
-		manifestBytes, err := fi.ResourceAsBytes(manifestResource)
+		manifestBytes, err := fi.ResourceAsBytes(ctx, manifestResource)
 		if err != nil {
 			return fmt.Errorf("error reading manifest %s: %v", manifestPath, err)
 		}
@@ -165,7 +167,7 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Cluster: b.Cluster,
 		}
 
-		addonPackages, clusterAddons, err := ob.Build(b.ClusterAddons)
+		addonPackages, clusterAddons, err := ob.Build(ctx, b.ClusterAddons)
 		if err != nil {
 			return fmt.Errorf("error building well-known operators: %v", err)
 		}

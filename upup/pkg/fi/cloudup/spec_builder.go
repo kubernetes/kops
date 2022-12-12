@@ -17,6 +17,8 @@ limitations under the License.
 package cloudup
 
 import (
+	"context"
+
 	"k8s.io/klog/v2"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
@@ -28,8 +30,8 @@ type SpecBuilder struct {
 	OptionsLoader *loader.OptionsLoader
 }
 
-func (l *SpecBuilder) BuildCompleteSpec(clusterSpec *kopsapi.ClusterSpec) (*kopsapi.ClusterSpec, error) {
-	loaded, err := l.OptionsLoader.Build(clusterSpec)
+func (l *SpecBuilder) BuildCompleteSpec(ctx context.Context, clusterSpec *kopsapi.ClusterSpec) (*kopsapi.ClusterSpec, error) {
+	loaded, err := l.OptionsLoader.Build(ctx, clusterSpec)
 	if err != nil {
 		return nil, err
 	}

@@ -268,6 +268,7 @@ func (s *VMScaleSet) CheckChanges(a, e, changes *VMScaleSet) error {
 
 // RenderAzure creates or updates a VM Scale Set.
 func (s *VMScaleSet) RenderAzure(t *azure.AzureAPITarget, a, e, changes *VMScaleSet) error {
+	ctx := context.TODO()
 	if a == nil {
 		klog.Infof("Creating a new VM Scale Set with name: %s", fi.ValueOf(e.Name))
 	} else {
@@ -278,7 +279,7 @@ func (s *VMScaleSet) RenderAzure(t *azure.AzureAPITarget, a, e, changes *VMScale
 
 	var customData *string
 	if e.UserData != nil {
-		d, err := fi.ResourceAsBytes(e.UserData)
+		d, err := fi.ResourceAsBytes(ctx, e.UserData)
 		if err != nil {
 			return fmt.Errorf("error rendering UserData: %s", err)
 		}

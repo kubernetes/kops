@@ -153,7 +153,7 @@ func NewCmdDeleteInstance(f *util.Factory, out io.Writer) *cobra.Command {
 }
 
 func RunDeleteInstance(ctx context.Context, f *util.Factory, out io.Writer, options *DeleteInstanceOptions) error {
-	clientSet, err := f.KopsClient()
+	clientSet, err := f.KopsClient(ctx)
 	if err != nil {
 		return err
 	}

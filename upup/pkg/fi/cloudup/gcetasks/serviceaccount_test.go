@@ -18,6 +18,7 @@ package gcetasks
 
 import (
 	"bytes"
+	"context"
 	"os"
 	"testing"
 	"time"
@@ -30,6 +31,8 @@ import (
 )
 
 func TestServiceAccount(t *testing.T) {
+	ctx := context.TODO()
+
 	project := "testproject"
 	region := "us-test1"
 
@@ -53,17 +56,17 @@ func TestServiceAccount(t *testing.T) {
 
 	{
 		allTasks := buildTasks()
-		checkHasChanges(t, cloud, allTasks)
+		checkHasChanges(t, ctx, cloud, allTasks)
 	}
 
 	{
 		allTasks := buildTasks()
-		runTasks(t, cloud, allTasks)
+		runTasks(t, ctx, cloud, allTasks)
 	}
 
 	{
 		allTasks := buildTasks()
-		checkNoChanges(t, cloud, allTasks)
+		checkNoChanges(t, ctx, cloud, allTasks)
 	}
 }
 
@@ -74,30 +77,30 @@ var testRunTasksOptions = fi.RunTasksOptions{
 }
 
 // TODO: Dedup with awstasks
-func checkNoChanges(t *testing.T, cloud fi.Cloud, allTasks map[string]fi.Task) {
-	target := doDryRun(t, cloud, allTasks)
+func checkNoChanges(t *testing.T, ctx context.Context, cloud fi.Cloud, allTasks map[string]fi.Task) {
+	target := doDryRun(t, ctx, cloud, allTasks)
 
 	if target.HasChanges() {
 		var b bytes.Buffer
-		if err := target.PrintReport(allTasks, &b); err != nil {
+		if err := target.PrintReport(ctx, allTasks, &b); err != nil {
 			t.Fatalf("error building report: %v", err)
 		}
 		t.Fatalf("Target had changes after executing: %v", b.String())
 	}
 }
 
-func checkHasChanges(t *testing.T, cloud fi.Cloud, allTasks map[string]fi.Task) {
-	target := doDryRun(t, cloud, allTasks)
+func checkHasChanges(t *testing.T, ctx context.Context, cloud fi.Cloud, allTasks map[string]fi.Task) {
+	target := doDryRun(t, ctx, cloud, allTasks)
 
 	if !target.HasChanges() {
 		t.Fatalf("expected dry-run to have changes")
 	}
 }
 
-func runTasks(t *testing.T, cloud gce.GCECloud, allTasks map[string]fi.Task) {
+func runTasks(t *testing.T, ctx context.Context, cloud gce.GCECloud, allTasks map[string]fi.Task) {
 	target := gce.NewGCEAPITarget(cloud)
 
-	context, err := fi.NewContext(target, nil, cloud, nil, nil, nil, true, allTasks)
+	context, err := fi.NewContext(ctx, target, nil, cloud, nil, nil, nil, true, allTasks)
 	if err != nil {
 		t.Fatalf("error building context: %v", err)
 	}
@@ -108,7 +111,7 @@ func runTasks(t *testing.T, cloud gce.GCECloud, allTasks map[string]fi.Task) {
 	}
 }
 
-func doDryRun(t *testing.T, cloud fi.Cloud, allTasks map[string]fi.Task) *fi.DryRunTarget {
+func doDryRun(t *testing.T, ctx context.Context, cloud fi.Cloud, allTasks map[string]fi.Task) *fi.DryRunTarget {
 	cluster := &kops.Cluster{
 		Spec: kops.ClusterSpec{
 			KubernetesVersion: "v1.23.0",
@@ -116,7 +119,7 @@ func doDryRun(t *testing.T, cloud fi.Cloud, allTasks map[string]fi.Task) *fi.Dry
 	}
 	assetBuilder := assets.NewAssetBuilder(cluster, false)
 	target := fi.NewDryRunTarget(assetBuilder, os.Stderr)
-	context, err := fi.NewContext(target, nil, cloud, nil, nil, nil, true, allTasks)
+	context, err := fi.NewContext(ctx, target, nil, cloud, nil, nil, nil, true, allTasks)
 	if err != nil {
 		t.Fatalf("error building context: %v", err)
 	}

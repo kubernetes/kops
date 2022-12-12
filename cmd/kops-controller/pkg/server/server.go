@@ -55,7 +55,7 @@ type Server struct {
 	configBase vfs.Path
 }
 
-func NewServer(opt *config.Options, verifier bootstrap.Verifier) (*Server, error) {
+func NewServer(ctx context.Context, opt *config.Options, verifier bootstrap.Verifier) (*Server, error) {
 	server := &http.Server{
 		Addr: opt.Server.Listen,
 		TLSConfig: &tls.Config{
@@ -71,13 +71,13 @@ func NewServer(opt *config.Options, verifier bootstrap.Verifier) (*Server, error
 		verifier:  verifier,
 	}
 
-	configBase, err := vfs.Context.BuildVfsPath(opt.ConfigBase)
+	configBase, err := vfs.FromContext(ctx).BuildVfsPath(opt.ConfigBase)
 	if err != nil {
 		return nil, fmt.Errorf("cannot parse ConfigBase %q: %w", opt.ConfigBase, err)
 	}
 	s.configBase = configBase
 
-	p, err := vfs.Context.BuildVfsPath(opt.SecretStore)
+	p, err := vfs.FromContext(ctx).BuildVfsPath(opt.SecretStore)
 	if err != nil {
 		return nil, fmt.Errorf("cannot parse SecretStore %q: %w", opt.SecretStore, err)
 	}

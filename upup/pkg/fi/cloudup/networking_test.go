@@ -17,6 +17,7 @@ limitations under the License.
 package cloudup
 
 import (
+	"context"
 	"testing"
 
 	api "k8s.io/kops/pkg/apis/kops"
@@ -25,6 +26,8 @@ import (
 )
 
 func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
+	ctx := context.TODO()
+
 	desiredCNIVersion := "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-TEST-VERSION.tar.gz"
 	desiredCNIVersionHash := "sha256:0000000000000000000000000000000000000000000000000000000000000000"
 
@@ -35,7 +38,7 @@ func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
 	cluster.Spec.KubernetesVersion = "v1.18.0"
 
 	assetBuilder := assets.NewAssetBuilder(cluster, false)
-	cniAsset, cniAssetHash, err := findCNIAssets(cluster, assetBuilder, architectures.ArchitectureAmd64)
+	cniAsset, cniAssetHash, err := findCNIAssets(ctx, cluster, assetBuilder, architectures.ArchitectureAmd64)
 	if err != nil {
 		t.Errorf("Unable to parse CNI version %s", err)
 	}
@@ -50,6 +53,8 @@ func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
 }
 
 func Test_FindCNIAssetFromDefaults118(t *testing.T) {
+	ctx := context.TODO()
+
 	desiredCNIVersionURL := "https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-amd64-v0.8.7.tgz"
 	desiredCNIVersionHash := "sha256:977824932d5667c7a37aa6a3cbba40100a6873e7bd97e83e8be837e3e7afd0a8"
 
@@ -57,7 +62,7 @@ func Test_FindCNIAssetFromDefaults118(t *testing.T) {
 	cluster.Spec.KubernetesVersion = "v1.18.0"
 
 	assetBuilder := assets.NewAssetBuilder(cluster, false)
-	cniAsset, cniAssetHash, err := findCNIAssets(cluster, assetBuilder, architectures.ArchitectureAmd64)
+	cniAsset, cniAssetHash, err := findCNIAssets(ctx, cluster, assetBuilder, architectures.ArchitectureAmd64)
 	if err != nil {
 		t.Errorf("Unable to parse CNI version %s", err)
 	}
@@ -72,6 +77,8 @@ func Test_FindCNIAssetFromDefaults118(t *testing.T) {
 }
 
 func Test_FindCNIAssetFromDefaults122(t *testing.T) {
+	ctx := context.TODO()
+
 	desiredCNIVersionURL := "https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz"
 	desiredCNIVersionHash := "sha256:962100bbc4baeaaa5748cdbfce941f756b1531c2eadb290129401498bfac21e7"
 
@@ -79,7 +86,7 @@ func Test_FindCNIAssetFromDefaults122(t *testing.T) {
 	cluster.Spec.KubernetesVersion = "v1.22.0"
 
 	assetBuilder := assets.NewAssetBuilder(cluster, false)
-	cniAsset, cniAssetHash, err := findCNIAssets(cluster, assetBuilder, architectures.ArchitectureAmd64)
+	cniAsset, cniAssetHash, err := findCNIAssets(ctx, cluster, assetBuilder, architectures.ArchitectureAmd64)
 	if err != nil {
 		t.Errorf("Unable to parse CNI version %s", err)
 	}

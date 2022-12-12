@@ -17,6 +17,7 @@ limitations under the License.
 package components
 
 import (
+	"context"
 	"testing"
 
 	kopsapi "k8s.io/kops/pkg/apis/kops"
@@ -24,6 +25,8 @@ import (
 )
 
 func TestCloudConfigurationOptionsBuilder(t *testing.T) {
+	ctx := context.TODO()
+
 	ob := &CloudConfigurationOptionsBuilder{
 		Context: nil,
 	}
@@ -107,7 +110,7 @@ func TestCloudConfigurationOptionsBuilder(t *testing.T) {
 			if p := test.openStackManageSCs; p != nil {
 				spec.CloudProvider.Openstack.BlockStorage.CreateStorageClass = p
 			}
-			if err := ob.BuildOptions(&spec); err != nil {
+			if err := ob.BuildOptions(ctx, &spec); err != nil {
 				t.Fatalf("failed to build options: %v", err)
 			}
 			if want, got := test.expectedGeneralManageSCs, spec.CloudConfig.ManageStorageClasses; (want == nil) != (got == nil) || (got != nil && *got != *want) {

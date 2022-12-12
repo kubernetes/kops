@@ -17,6 +17,7 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
 	"sort"
@@ -32,6 +33,8 @@ import (
 
 // RenderAWS is responsible for performing creating / updating the launch template
 func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchTemplate) error {
+	ctx := context.TODO()
+
 	// @step: resolve the image id to an AMI for us
 	image, err := c.Cloud.ResolveImage(fi.ValueOf(t.ImageID))
 	if err != nil {
@@ -121,7 +124,7 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchT
 	}
 	// @step: add the userdata
 	if t.UserData != nil {
-		d, err := fi.ResourceAsBytes(t.UserData)
+		d, err := fi.ResourceAsBytes(ctx, t.UserData)
 		if err != nil {
 			return fmt.Errorf("error rendering LaunchTemplate UserData: %v", err)
 		}

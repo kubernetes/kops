@@ -18,6 +18,7 @@ package awstasks
 
 import (
 	"bytes"
+	"context"
 	"os"
 	"reflect"
 	"testing"
@@ -38,6 +39,8 @@ var testRunTasksOptions = fi.RunTasksOptions{
 }
 
 func TestElasticIPCreate(t *testing.T) {
+	ctx := context.TODO()
+
 	cloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
 	c := &mockec2.MockEC2{}
 	cloud.MockEC2 = c
@@ -78,7 +81,7 @@ func TestElasticIPCreate(t *testing.T) {
 			Cloud: cloud,
 		}
 
-		context, err := fi.NewContext(target, nil, cloud, nil, nil, nil, true, allTasks)
+		context, err := fi.NewContext(ctx, target, nil, cloud, nil, nil, nil, true, allTasks)
 		if err != nil {
 			t.Fatalf("error building context: %v", err)
 		}
@@ -115,11 +118,11 @@ func TestElasticIPCreate(t *testing.T) {
 
 	{
 		allTasks := buildTasks()
-		checkNoChanges(t, cloud, allTasks)
+		checkNoChanges(t, ctx, cloud, allTasks)
 	}
 }
 
-func checkNoChanges(t *testing.T, cloud fi.Cloud, allTasks map[string]fi.Task) {
+func checkNoChanges(t *testing.T, ctx context.Context, cloud fi.Cloud, allTasks map[string]fi.Task) {
 	cluster := &kops.Cluster{
 		Spec: kops.ClusterSpec{
 			KubernetesVersion: "v1.9.0",
@@ -127,7 +130,7 @@ func checkNoChanges(t *testing.T, cloud fi.Cloud, allTasks map[string]fi.Task) {
 	}
 	assetBuilder := assets.NewAssetBuilder(cluster, false)
 	target := fi.NewDryRunTarget(assetBuilder, os.Stderr)
-	context, err := fi.NewContext(target, nil, cloud, nil, nil, nil, true, allTasks)
+	context, err := fi.NewContext(ctx, target, nil, cloud, nil, nil, nil, true, allTasks)
 	if err != nil {
 		t.Fatalf("error building context: %v", err)
 	}
@@ -139,7 +142,7 @@ func checkNoChanges(t *testing.T, cloud fi.Cloud, allTasks map[string]fi.Task) {
 
 	if target.HasChanges() {
 		var b bytes.Buffer
-		if err := target.PrintReport(allTasks, &b); err != nil {
+		if err := target.PrintReport(ctx, allTasks, &b); err != nil {
 			t.Fatalf("error building report: %v", err)
 		}
 		t.Fatalf("Target had changes after executing: %v", b.String())

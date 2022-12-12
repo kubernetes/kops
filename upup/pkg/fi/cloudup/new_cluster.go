@@ -17,6 +17,7 @@ limitations under the License.
 package cloudup
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
@@ -183,7 +184,7 @@ type NewClusterResult struct {
 // intended for newly created clusters.
 // It is the responsibility of the caller to call cloudup.PerformAssignments() on
 // the returned cluster spec.
-func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewClusterResult, error) {
+func NewCluster(ctx context.Context, opt *NewClusterOptions, clientset simple.Clientset) (*NewClusterResult, error) {
 	if opt.ClusterName == "" {
 		return nil, fmt.Errorf("name is required")
 	}
@@ -191,7 +192,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 	if opt.Channel == "" {
 		opt.Channel = api.DefaultChannel
 	}
-	channel, err := api.LoadChannel(opt.Channel)
+	channel, err := api.LoadChannel(ctx, opt.Channel)
 	if err != nil {
 		return nil, err
 	}
@@ -213,7 +214,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 	}
 
 	cluster.Spec.ConfigBase = opt.ConfigBase
-	configBase, err := clientset.ConfigBaseFor(&cluster)
+	configBase, err := clientset.ConfigBaseFor(ctx, &cluster)
 	if err != nil {
 		return nil, fmt.Errorf("error building ConfigBase for cluster: %v", err)
 	}
@@ -356,7 +357,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 	}
 
 	if opt.DiscoveryStore != "" {
-		discoveryPath, err := vfs.Context.BuildVfsPath(opt.DiscoveryStore)
+		discoveryPath, err := vfs.FromContext(ctx).BuildVfsPath(opt.DiscoveryStore)
 		if err != nil {
 			return nil, fmt.Errorf("error building DiscoveryStore for cluster: %v", err)
 		}

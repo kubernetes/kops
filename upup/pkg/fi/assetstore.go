@@ -17,6 +17,7 @@ limitations under the License.
 package fi
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -82,8 +83,8 @@ var (
 	_ HasSource = &assetResource{}
 )
 
-func (r *assetResource) Open() (io.Reader, error) {
-	return r.Asset.resource.Open()
+func (r *assetResource) Open(ctx context.Context) (io.Reader, error) {
+	return r.Asset.resource.Open(ctx)
 }
 
 func (r *assetResource) GetSource() *Source {

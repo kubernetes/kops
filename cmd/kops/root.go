@@ -329,7 +329,7 @@ func GetCluster(ctx context.Context, factory commandutils.Factory, clusterName s
 		return nil, field.Required(field.NewPath("clusterName"), "Cluster name is required")
 	}
 
-	clientset, err := factory.KopsClient()
+	clientset, err := factory.KopsClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -379,7 +379,7 @@ func GetClusterForCompletion(ctx context.Context, factory commandutils.Factory, 
 		return nil, nil, completions, directive
 	}
 
-	clientSet, err = factory.KopsClient()
+	clientSet, err = factory.KopsClient(ctx)
 	if err != nil {
 		completions, directive := commandutils.CompletionError("getting clientset", err)
 		return nil, nil, completions, directive

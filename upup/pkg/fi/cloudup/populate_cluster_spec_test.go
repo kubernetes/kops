@@ -17,6 +17,7 @@ limitations under the License.
 package cloudup
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
@@ -42,6 +43,7 @@ func buildMinimalCluster() (*awsup.MockAWSCloud, *kopsapi.Cluster) {
 }
 
 func TestPopulateCluster_Default_NoError(t *testing.T) {
+	ctx := context.TODO()
 	cloud, c := buildMinimalCluster()
 
 	err := PerformAssignments(c, cloud)
@@ -49,7 +51,7 @@ func TestPopulateCluster_Default_NoError(t *testing.T) {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
 
-	_, err = mockedPopulateClusterSpec(c, cloud)
+	_, err = mockedPopulateClusterSpec(ctx, c, cloud)
 	if err != nil {
 		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
 	}
@@ -83,6 +85,7 @@ func TestPopulateCluster_Subnets(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.NonMasqueradeCIDR, func(t *testing.T) {
+			ctx := context.TODO()
 			cloud, c := buildMinimalCluster()
 			c.Spec.Networking.NonMasqueradeCIDR = tc.NonMasqueradeCIDR
 			c.Spec.Networking.Kubenet = nil
@@ -97,7 +100,7 @@ func TestPopulateCluster_Subnets(t *testing.T) {
 			err := PerformAssignments(c, cloud)
 			require.NoError(t, err, "PerformAssignments")
 
-			full, err := mockedPopulateClusterSpec(c, cloud)
+			full, err := mockedPopulateClusterSpec(ctx, c, cloud)
 			require.NoError(t, err, "PopulateClusterSpec")
 
 			assert.Equal(t, tc.ExpectedClusterCIDR, full.Spec.KubeControllerManager.ClusterCIDR, "ClusterCIDR")
@@ -106,19 +109,20 @@ func TestPopulateCluster_Subnets(t *testing.T) {
 	}
 }
 
-func mockedPopulateClusterSpec(c *kopsapi.Cluster, cloud fi.Cloud) (*kopsapi.Cluster, error) {
-	vfs.Context.ResetMemfsContext(true)
+func mockedPopulateClusterSpec(ctx context.Context, c *kopsapi.Cluster, cloud fi.Cloud) (*kopsapi.Cluster, error) {
+	vfs.FromContext(ctx).ResetMemfsContext(true)
 
 	assetBuilder := assets.NewAssetBuilder(c, false)
-	basePath, err := vfs.Context.BuildVfsPath("memfs://tests")
+	basePath, err := vfs.FromContext(ctx).BuildVfsPath("memfs://tests")
 	if err != nil {
 		return nil, fmt.Errorf("error building vfspath: %v", err)
 	}
 	clientset := vfsclientset.NewVFSClientset(basePath)
-	return PopulateClusterSpec(clientset, c, cloud, assetBuilder)
+	return PopulateClusterSpec(ctx, clientset, c, cloud, assetBuilder)
 }
 
 func TestPopulateCluster_Docker_Spec(t *testing.T) {
+	ctx := context.TODO()
 	cloud, c := buildMinimalCluster()
 	c.Spec.Docker = &kopsapi.DockerConfig{
 		MTU:                fi.PtrTo(int32(5678)),
@@ -133,7 +137,7 @@ func TestPopulateCluster_Docker_Spec(t *testing.T) {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
 
-	full, err := mockedPopulateClusterSpec(c, cloud)
+	full, err := mockedPopulateClusterSpec(ctx, c, cloud)
 	if err != nil {
 		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
 	}
@@ -160,6 +164,7 @@ func TestPopulateCluster_Docker_Spec(t *testing.T) {
 }
 
 func TestPopulateCluster_StorageDefault(t *testing.T) {
+	ctx := context.TODO()
 	cloud, c := buildMinimalCluster()
 
 	err := PerformAssignments(c, cloud)
@@ -167,7 +172,7 @@ func TestPopulateCluster_StorageDefault(t *testing.T) {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
 
-	full, err := mockedPopulateClusterSpec(c, cloud)
+	full, err := mockedPopulateClusterSpec(ctx, c, cloud)
 	if err != nil {
 		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
 	}
@@ -178,6 +183,7 @@ func TestPopulateCluster_StorageDefault(t *testing.T) {
 }
 
 func TestPopulateCluster_EvictionHard(t *testing.T) {
+	ctx := context.TODO()
 	cloud, c := buildMinimalCluster()
 
 	err := PerformAssignments(c, cloud)
@@ -189,7 +195,7 @@ func TestPopulateCluster_EvictionHard(t *testing.T) {
 		EvictionHard: fi.PtrTo("memory.available<250Mi"),
 	}
 
-	full, err := mockedPopulateClusterSpec(c, cloud)
+	full, err := mockedPopulateClusterSpec(ctx, c, cloud)
 	if err != nil {
 		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
 	}
@@ -200,6 +206,7 @@ func TestPopulateCluster_EvictionHard(t *testing.T) {
 }
 
 func build(c *kopsapi.Cluster) (*kopsapi.Cluster, error) {
+	ctx := context.TODO()
 	cloud, err := BuildCloud(c)
 	if err != nil {
 		return nil, fmt.Errorf("error from BuildCloud: %v", err)
@@ -210,7 +217,7 @@ func build(c *kopsapi.Cluster) (*kopsapi.Cluster, error) {
 		return nil, fmt.Errorf("error from PerformAssignments: %v", err)
 	}
 
-	full, err := mockedPopulateClusterSpec(c, cloud)
+	full, err := mockedPopulateClusterSpec(ctx, c, cloud)
 	if err != nil {
 		return nil, fmt.Errorf("Unexpected error from PopulateCluster: %v", err)
 	}
@@ -218,6 +225,7 @@ func build(c *kopsapi.Cluster) (*kopsapi.Cluster, error) {
 }
 
 func TestPopulateCluster_Custom_CIDR(t *testing.T) {
+	ctx := context.TODO()
 	cloud, c := buildMinimalCluster()
 	c.Spec.Networking.NetworkCIDR = "172.20.2.0/24"
 	c.Spec.Networking.Subnets = []kopsapi.ClusterSubnetSpec{
@@ -231,7 +239,7 @@ func TestPopulateCluster_Custom_CIDR(t *testing.T) {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
 
-	full, err := mockedPopulateClusterSpec(c, cloud)
+	full, err := mockedPopulateClusterSpec(ctx, c, cloud)
 	if err != nil {
 		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
 	}
@@ -241,6 +249,7 @@ func TestPopulateCluster_Custom_CIDR(t *testing.T) {
 }
 
 func TestPopulateCluster_IsolateMasters(t *testing.T) {
+	ctx := context.TODO()
 	cloud, c := buildMinimalCluster()
 	c.Spec.Networking.IsolateControlPlane = fi.PtrTo(true)
 
@@ -249,7 +258,7 @@ func TestPopulateCluster_IsolateMasters(t *testing.T) {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
 
-	full, err := mockedPopulateClusterSpec(c, cloud)
+	full, err := mockedPopulateClusterSpec(ctx, c, cloud)
 	if err != nil {
 		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
 	}
@@ -262,6 +271,7 @@ func TestPopulateCluster_IsolateMasters(t *testing.T) {
 }
 
 func TestPopulateCluster_IsolateMastersFalse(t *testing.T) {
+	ctx := context.TODO()
 	cloud, c := buildMinimalCluster()
 	// default: c.Spec.IsolateControlPlane = fi.PtrTo(false)
 
@@ -270,7 +280,7 @@ func TestPopulateCluster_IsolateMastersFalse(t *testing.T) {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
 
-	full, err := mockedPopulateClusterSpec(c, cloud)
+	full, err := mockedPopulateClusterSpec(ctx, c, cloud)
 	if err != nil {
 		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
 	}
@@ -280,52 +290,59 @@ func TestPopulateCluster_IsolateMastersFalse(t *testing.T) {
 }
 
 func TestPopulateCluster_Name_Required(t *testing.T) {
+	ctx := context.TODO()
 	cloud, c := buildMinimalCluster()
 	c.ObjectMeta.Name = ""
 
-	expectErrorFromPopulateCluster(t, c, cloud, "Name")
+	expectErrorFromPopulateCluster(t, ctx, c, cloud, "Name")
 }
 
 func TestPopulateCluster_Zone_Required(t *testing.T) {
+	ctx := context.TODO()
 	cloud, c := buildMinimalCluster()
 	c.Spec.Networking.Subnets = nil
 
-	expectErrorFromPopulateCluster(t, c, cloud, "subnet")
+	expectErrorFromPopulateCluster(t, ctx, c, cloud, "subnet")
 }
 
 func TestPopulateCluster_NetworkCIDR_Required(t *testing.T) {
+	ctx := context.TODO()
 	cloud, c := buildMinimalCluster()
 	c.Spec.Networking.NetworkCIDR = ""
 
-	expectErrorFromPopulateCluster(t, c, cloud, "networkCIDR")
+	expectErrorFromPopulateCluster(t, ctx, c, cloud, "networkCIDR")
 }
 
 func TestPopulateCluster_NonMasqueradeCIDR_Required(t *testing.T) {
+	ctx := context.TODO()
 	cloud, c := buildMinimalCluster()
 	c.Spec.Networking.NonMasqueradeCIDR = ""
 
-	expectErrorFromPopulateCluster(t, c, cloud, "nonMasqueradeCIDR")
+	expectErrorFromPopulateCluster(t, ctx, c, cloud, "nonMasqueradeCIDR")
 }
 
 func TestPopulateCluster_CloudProvider_Required(t *testing.T) {
+	ctx := context.TODO()
 	cloud, c := buildMinimalCluster()
 	c.Spec.CloudProvider = kopsapi.CloudProviderSpec{}
 
-	expectErrorFromPopulateCluster(t, c, cloud, "cloudProvider")
+	expectErrorFromPopulateCluster(t, ctx, c, cloud, "cloudProvider")
 }
 
 func TestPopulateCluster_TopologyInvalidNil_Required(t *testing.T) {
+	ctx := context.TODO()
 	cloud, c := buildMinimalCluster()
 	c.Spec.Networking.Topology.ControlPlane = ""
 	c.Spec.Networking.Topology.Nodes = ""
-	expectErrorFromPopulateCluster(t, c, cloud, "topology")
+	expectErrorFromPopulateCluster(t, ctx, c, cloud, "topology")
 }
 
 func TestPopulateCluster_TopologyInvalidValue_Required(t *testing.T) {
+	ctx := context.TODO()
 	cloud, c := buildMinimalCluster()
 	c.Spec.Networking.Topology.ControlPlane = "123"
 	c.Spec.Networking.Topology.Nodes = "abc"
-	expectErrorFromPopulateCluster(t, c, cloud, "topology")
+	expectErrorFromPopulateCluster(t, ctx, c, cloud, "topology")
 }
 
 //func TestPopulateCluster_TopologyInvalidMatchingValues_Required(t *testing.T) {
@@ -337,16 +354,17 @@ func TestPopulateCluster_TopologyInvalidValue_Required(t *testing.T) {
 //}
 
 func TestPopulateCluster_BastionInvalidMatchingValues_Required(t *testing.T) {
+	ctx := context.TODO()
 	// We can't have a bastion with public masters / nodes
 	cloud, c := buildMinimalCluster()
 	c.Spec.Networking.Topology.ControlPlane = kopsapi.TopologyPublic
 	c.Spec.Networking.Topology.Nodes = kopsapi.TopologyPublic
 	c.Spec.Networking.Topology.Bastion = &kopsapi.BastionSpec{}
-	expectErrorFromPopulateCluster(t, c, cloud, "bastion")
+	expectErrorFromPopulateCluster(t, ctx, c, cloud, "bastion")
 }
 
-func expectErrorFromPopulateCluster(t *testing.T, c *kopsapi.Cluster, cloud fi.Cloud, message string) {
-	_, err := mockedPopulateClusterSpec(c, cloud)
+func expectErrorFromPopulateCluster(t *testing.T, ctx context.Context, c *kopsapi.Cluster, cloud fi.Cloud, message string) {
+	_, err := mockedPopulateClusterSpec(ctx, c, cloud)
 	if err == nil {
 		t.Fatalf("Expected error from PopulateCluster")
 	}
@@ -370,6 +388,7 @@ func TestPopulateCluster_APIServerCount(t *testing.T) {
 }
 
 func TestPopulateCluster_AnonymousAuth(t *testing.T) {
+	ctx := context.TODO()
 	cloud, c := buildMinimalCluster()
 	c.Spec.KubernetesVersion = "1.20.0"
 
@@ -378,7 +397,7 @@ func TestPopulateCluster_AnonymousAuth(t *testing.T) {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
 
-	full, err := mockedPopulateClusterSpec(c, cloud)
+	full, err := mockedPopulateClusterSpec(ctx, c, cloud)
 	if err != nil {
 		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
 	}
@@ -420,6 +439,7 @@ func TestPopulateCluster_DockerVersion(t *testing.T) {
 }
 
 func TestPopulateCluster_KubeController_High_Enough_Version(t *testing.T) {
+	ctx := context.TODO()
 	cloud, c := buildMinimalCluster()
 	c.Spec.KubernetesVersion = "v1.9.0"
 
@@ -428,7 +448,7 @@ func TestPopulateCluster_KubeController_High_Enough_Version(t *testing.T) {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
 
-	full, err := mockedPopulateClusterSpec(c, cloud)
+	full, err := mockedPopulateClusterSpec(ctx, c, cloud)
 	if err != nil {
 		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
 	}

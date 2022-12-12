@@ -16,8 +16,12 @@ limitations under the License.
 
 package commandutils
 
-import "k8s.io/kops/pkg/client/simple"
+import (
+	"context"
+
+	"k8s.io/kops/pkg/client/simple"
+)
 
 type Factory interface {
-	KopsClient() (simple.Clientset, error)
+	KopsClient(ctx context.Context) (simple.Clientset, error)
 }

@@ -21,6 +21,7 @@ package fi
 
 import (
 	"bytes"
+	"context"
 	"os"
 	"path"
 	"syscall"
@@ -28,6 +29,8 @@ import (
 )
 
 func TestWriteFile(t *testing.T) {
+	ctx := context.TODO()
+
 	// Clear the umask so an unusual umask doesn't break our test (for directory mode)
 	syscall.Umask(0)
 
@@ -47,7 +50,7 @@ func TestWriteFile(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		err := WriteFile(test.path, NewBytesResource(test.data), test.fileMode, test.dirMode, "", "")
+		err := WriteFile(ctx, test.path, NewBytesResource(test.data), test.fileMode, test.dirMode, "", "")
 		if err != nil {
 			t.Errorf("Error writing file {%s}, error: {%v}", test.path, err)
 			continue

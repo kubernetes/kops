@@ -18,6 +18,7 @@ package model
 
 import (
 	"bytes"
+	"context"
 	"crypto"
 	"crypto/x509"
 	"encoding/base64"
@@ -122,7 +123,7 @@ func (o *OIDCKeys) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	}
 }
 
-func (o *OIDCKeys) Open() (io.Reader, error) {
+func (o *OIDCKeys) Open(ctx context.Context) (io.Reader, error) {
 	keyset := o.SigningKey.Keyset()
 	var keys []jose.JSONWebKey
 

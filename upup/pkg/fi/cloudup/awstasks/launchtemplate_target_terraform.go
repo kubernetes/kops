@@ -17,6 +17,8 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
+
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -177,6 +179,8 @@ func (t *LaunchTemplate) VersionLink() *terraformWriter.Literal {
 
 // RenderTerraform is responsible for rendering the terraform json
 func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e, changes *LaunchTemplate) error {
+	ctx := context.TODO()
+
 	var err error
 
 	cloud := target.Cloud.(awsup.AWSCloud)
@@ -252,7 +256,7 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 		}
 	}
 	if e.UserData != nil {
-		d, err := fi.ResourceAsBytes(e.UserData)
+		d, err := fi.ResourceAsBytes(ctx, e.UserData)
 		if err != nil {
 			return err
 		}

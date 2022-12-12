@@ -17,6 +17,7 @@ limitations under the License.
 package validation
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -25,8 +26,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-func ValidateClusterUpdate(obj *kops.Cluster, status *kops.ClusterStatus, old *kops.Cluster) field.ErrorList {
-	allErrs := ValidateCluster(obj, false)
+func ValidateClusterUpdate(ctx context.Context, obj *kops.Cluster, status *kops.ClusterStatus, old *kops.Cluster) field.ErrorList {
+	allErrs := ValidateCluster(ctx, obj, false)
 
 	// Validate etcd cluster changes
 	{

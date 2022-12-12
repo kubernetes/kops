@@ -17,6 +17,8 @@ limitations under the License.
 package components
 
 import (
+	"context"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
@@ -30,7 +32,7 @@ type ClusterAutoscalerOptionsBuilder struct {
 
 var _ loader.OptionsBuilder = &ClusterAutoscalerOptionsBuilder{}
 
-func (b *ClusterAutoscalerOptionsBuilder) BuildOptions(o interface{}) error {
+func (b *ClusterAutoscalerOptionsBuilder) BuildOptions(ctx context.Context, o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 	cas := clusterSpec.ClusterAutoscaler
 	if cas == nil || !fi.ValueOf(cas.Enabled) {

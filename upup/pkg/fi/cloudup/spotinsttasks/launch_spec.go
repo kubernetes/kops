@@ -362,6 +362,7 @@ func (o *LaunchSpec) createOrUpdate(cloud awsup.AWSCloud, a, e, changes *LaunchS
 }
 
 func (_ *LaunchSpec) create(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) error {
+	ctx := context.TODO()
 	ocean, err := e.Ocean.find(cloud.Spotinst().Ocean())
 	if err != nil {
 		return err
@@ -399,7 +400,7 @@ func (_ *LaunchSpec) create(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 	// User data.
 	{
 		if e.UserData != nil {
-			userData, err := fi.ResourceAsString(e.UserData)
+			userData, err := fi.ResourceAsString(ctx, e.UserData)
 			if err != nil {
 				return err
 			}
@@ -551,6 +552,7 @@ func (_ *LaunchSpec) create(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 }
 
 func (_ *LaunchSpec) update(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) error {
+	ctx := context.TODO()
 	klog.V(2).Infof("Updating Launch Spec for Ocean %q", *a.Ocean.Name)
 
 	ocean, err := a.Ocean.find(cloud.Spotinst().Ocean())
@@ -611,7 +613,7 @@ func (_ *LaunchSpec) update(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 	// User data.
 	{
 		if changes.UserData != nil {
-			userData, err := fi.ResourceAsString(e.UserData)
+			userData, err := fi.ResourceAsString(ctx, e.UserData)
 			if err != nil {
 				return err
 			}
@@ -799,7 +801,6 @@ func (_ *LaunchSpec) update(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 	}
 
 	klog.V(2).Infof("Updating Launch Spec %q (config: %s)", *e.Name, stringutil.Stringify(spec))
-	ctx := context.Background()
 
 	// Reset the Spot percentage on the Cluster level.
 	if spec.Strategy != nil && spec.Strategy.SpotPercentage != nil &&
@@ -884,6 +885,7 @@ type terraformBlockDeviceMappingEBS struct {
 }
 
 func (_ *LaunchSpec) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LaunchSpec) error {
+	ctx := context.TODO()
 	cloud := t.Cloud.(awsup.AWSCloud)
 
 	tf := &terraformLaunchSpec{
@@ -960,7 +962,7 @@ func (_ *LaunchSpec) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 	{
 		if e.UserData != nil {
 			var err error
-			tf.UserData, err = t.AddFileResource("spotinst_ocean_aws_launch_spec", *e.Name, "user_data", e.UserData, false)
+			tf.UserData, err = t.AddFileResource(ctx, "spotinst_ocean_aws_launch_spec", *e.Name, "user_data", e.UserData, false)
 			if err != nil {
 				return err
 			}

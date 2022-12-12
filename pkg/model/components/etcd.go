@@ -17,6 +17,8 @@ limitations under the License.
 package components
 
 import (
+	"context"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
@@ -34,7 +36,7 @@ const (
 )
 
 // BuildOptions is responsible for filling in the defaults for the etcd cluster model
-func (b *EtcdOptionsBuilder) BuildOptions(o interface{}) error {
+func (b *EtcdOptionsBuilder) BuildOptions(ctx context.Context, o interface{}) error {
 	spec := o.(*kops.ClusterSpec)
 
 	for i := range spec.EtcdClusters {

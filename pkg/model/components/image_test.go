@@ -18,6 +18,7 @@ package components
 
 import (
 	"bytes"
+	"context"
 	"testing"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -27,6 +28,7 @@ import (
 )
 
 func TestImage(t *testing.T) {
+	ctx := context.TODO()
 	featureflag.ParseFlags("-ImageDigest")
 	grid := []struct {
 		Component string
@@ -61,11 +63,11 @@ func TestImage(t *testing.T) {
 	}
 
 	for _, g := range grid {
-		vfs.Context.ResetMemfsContext(true)
+		vfs.FromContext(ctx).ResetMemfsContext(true)
 
 		// Populate VFS files
 		for k, v := range g.VFS {
-			p, err := vfs.Context.BuildVfsPath(k)
+			p, err := vfs.FromContext(ctx).BuildVfsPath(k)
 			if err != nil {
 				t.Errorf("error building vfs path for %s: %v", k, err)
 				continue
@@ -77,7 +79,7 @@ func TestImage(t *testing.T) {
 		}
 
 		assetBuilder := assets.NewAssetBuilder(g.Cluster, false)
-		actual, err := Image(g.Component, &g.Cluster.Spec, assetBuilder)
+		actual, err := Image(ctx, g.Component, &g.Cluster.Spec, assetBuilder)
 		if err != nil {
 			t.Errorf("unexpected error from image %q %v: %v",
 				g.Component, g.Cluster.Spec.KubernetesVersion, err)

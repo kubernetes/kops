@@ -17,6 +17,7 @@ limitations under the License.
 package assets
 
 import (
+	"context"
 	"fmt"
 	"sort"
 
@@ -25,10 +26,10 @@ import (
 )
 
 type assetTask interface {
-	Run() error
+	Run(ctx context.Context) error
 }
 
-func Copy(imageAssets []*ImageAsset, fileAssets []*FileAsset, cluster *kops.Cluster) error {
+func Copy(ctx context.Context, imageAssets []*ImageAsset, fileAssets []*FileAsset, cluster *kops.Cluster) error {
 	tasks := map[string]assetTask{}
 
 	for _, imageAsset := range imageAssets {
@@ -95,7 +96,7 @@ func Copy(imageAssets []*ImageAsset, fileAssets []*FileAsset, cluster *kops.Clus
 			gotError = true
 		}
 		go func(n string, t assetTask) {
-			err := t.Run()
+			err := t.Run(ctx)
 			if err != nil {
 				err = fmt.Errorf("%s: %v", n, err)
 			}

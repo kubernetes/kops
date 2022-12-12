@@ -17,6 +17,7 @@ limitations under the License.
 package components
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -37,7 +38,7 @@ type KubeAPIServerOptionsBuilder struct {
 var _ loader.OptionsBuilder = &KubeAPIServerOptionsBuilder{}
 
 // BuildOptions is responsible for filling in the default settings for the kube apiserver
-func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
+func (b *KubeAPIServerOptionsBuilder) BuildOptions(ctx context.Context, o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 	if clusterSpec.KubeAPIServer == nil {
 		clusterSpec.KubeAPIServer = &kops.KubeAPIServerConfig{}
@@ -91,7 +92,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		return nil
 	}
 
-	image, err := Image("kube-apiserver", clusterSpec, b.AssetBuilder)
+	image, err := Image(ctx, "kube-apiserver", clusterSpec, b.AssetBuilder)
 	if err != nil {
 		return err
 	}

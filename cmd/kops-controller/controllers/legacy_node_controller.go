@@ -39,7 +39,7 @@ import (
 )
 
 // NewLegacyNodeReconciler is the constructor for a LegacyNodeReconciler
-func NewLegacyNodeReconciler(mgr manager.Manager, configPath string, identifier nodeidentity.LegacyIdentifier) (*LegacyNodeReconciler, error) {
+func NewLegacyNodeReconciler(ctx context.Context, mgr manager.Manager, configPath string, identifier nodeidentity.LegacyIdentifier) (*LegacyNodeReconciler, error) {
 	r := &LegacyNodeReconciler{
 		client:     mgr.GetClient(),
 		log:        ctrl.Log.WithName("controllers").WithName("Node"),
@@ -53,7 +53,7 @@ func NewLegacyNodeReconciler(mgr manager.Manager, configPath string, identifier 
 	}
 	r.coreV1Client = coreClient
 
-	configBase, err := vfs.Context.BuildVfsPath(configPath)
+	configBase, err := vfs.FromContext(ctx).BuildVfsPath(configPath)
 	if err != nil {
 		return nil, fmt.Errorf("cannot parse ConfigBase %q: %v", configPath, err)
 	}

@@ -218,7 +218,7 @@ func loadCachedExecCredential(cacheFilePath string) (*ExecCredential, error) {
 }
 
 func buildCredentials(ctx context.Context, f *util.Factory, options *HelperKubectlAuthOptions) (*ExecCredentialStatus, error) {
-	clientset, err := f.KopsClient()
+	clientset, err := f.KopsClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -232,7 +232,7 @@ func buildCredentials(ctx context.Context, f *util.Factory, options *HelperKubec
 		return nil, fmt.Errorf("cluster not found %q", options.ClusterName)
 	}
 
-	keyStore, err := clientset.KeyStore(cluster)
+	keyStore, err := clientset.KeyStore(ctx, cluster)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get cluster keystore: %v", err)
 	}
