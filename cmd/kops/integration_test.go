@@ -1694,7 +1694,7 @@ func (i *integrationTest) runTestTerraformGCE(t *testing.T) {
 	defer h.Close()
 
 	h.MockKopsVersion("1.21.0-alpha.1")
-	h.SetupMockGCE()
+	_, ctx = h.SetupMockGCE(ctx)
 
 	expectedFilenames := i.expectTerraformFilenames
 

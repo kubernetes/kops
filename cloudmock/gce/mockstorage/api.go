@@ -52,27 +52,58 @@ func New() *storage.Service {
 }
 
 func (s *mockStorageService) RoundTrip(request *http.Request) (*http.Response, error) {
+	ctx := request.Context()
+
 	url := request.URL
 	if url.Host != "storage.googleapis.com" {
 		return nil, fmt.Errorf("unexpected host in request %#v", request)
 	}
 
 	pathTokens := strings.Split(strings.TrimPrefix(url.Path, "/"), "/")
-	if len(pathTokens) >= 2 && pathTokens[0] == "storage" && pathTokens[1] == "v1" {
-		if len(pathTokens) >= 4 && pathTokens[2] == "b" {
-			bucket := pathTokens[3]
-			if len(pathTokens) == 5 && pathTokens[4] == "iam" {
-				if request.Method == "GET" {
-					return s.buckets.getIAMPolicy(bucket, request)
-				}
 
-				if request.Method == "PUT" {
-					return s.buckets.setIAMPolicy(bucket, request)
-				}
+	if len(pathTokens) >= 3 && pathTokens[0] == "storage" && pathTokens[1] == "v1" && pathTokens[2] == "b" {
+		if len(pathTokens) == 3 {
+			if request.Method == "POST" {
+				return s.buckets.createBucket(request)
 			}
+		}
+
+		if len(pathTokens) == 4 {
+			bucketName := pathTokens[3]
+			if request.Method == "GET" {
+				return s.buckets.getBucket(bucketName, request)
+			}
+		}
+
+		if len(pathTokens) == 5 && pathTokens[4] == "iam" {
+			bucketName := pathTokens[3]
+			if request.Method == "GET" {
+				return s.buckets.getIAMPolicy(bucketName, request)
+			}
+
+			if request.Method == "PUT" {
+				return s.buckets.setIAMPolicy(bucketName, request)
+			}
+		}
+
+		if len(pathTokens) >= 6 && pathTokens[4] == "o" {
+			bucketName := pathTokens[3]
+			objectName := strings.Join(pathTokens[5:], "/")
+			if request.Method == "GET" {
+				return s.buckets.getObject(ctx, bucketName, objectName, request)
+			}
+		}
+
+	}
+
+	if len(pathTokens) == 6 && pathTokens[0] == "upload" && pathTokens[1] == "storage" && pathTokens[2] == "v1" && pathTokens[3] == "b" && pathTokens[5] == "o" {
+		bucket := pathTokens[4]
+
+		if request.Method == "POST" {
+			return s.buckets.createObject(ctx, bucket, request)
 		}
 	}
 
 	klog.Warningf("request: %s %s %#v", request.Method, request.URL, request)
-	return nil, fmt.Errorf("unhandled request %#v", request)
+	return nil, fmt.Errorf("unhandled request (pathTokens=%v) %#v", pathTokens, request)
 }

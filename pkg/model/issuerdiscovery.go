@@ -18,7 +18,6 @@ package model
 
 import (
 	"bytes"
-	"context"
 	"crypto"
 	"crypto/x509"
 	"encoding/base64"
@@ -54,7 +53,7 @@ type oidcDiscovery struct {
 }
 
 func (b *IssuerDiscoveryModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
-	ctx := context.TODO()
+	ctx := c.Context()
 
 	said := b.Cluster.Spec.ServiceAccountIssuerDiscovery
 	if said == nil || said.DiscoveryStore == "" {

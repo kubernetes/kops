@@ -209,7 +209,7 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 	defer h.Close()
 
 	h.SetupMockAWS()
-	h.SetupMockGCE()
+	_, ctx = h.SetupMockGCE(ctx)
 	testutils.SetupMockOpenstack()
 
 	cloudTags := map[string]string{}

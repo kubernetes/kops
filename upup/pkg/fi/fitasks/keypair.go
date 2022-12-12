@@ -272,7 +272,7 @@ func (_ *Keypair) Render(c *fi.CloudupContext, a, e, changes *Keypair) error {
 		if roundtrip, err := c.T.Keystore.FindKeyset(ctx, name); err != nil {
 			return err
 		} else if roundtrip == nil {
-			return fmt.Errorf("unable to find created certificate %q: %w", name, err)
+			return fmt.Errorf("unable to find created certificate %q", name)
 		}
 
 		klog.V(8).Infof("created certificate with cn=%s", cert.Subject.CommonName)

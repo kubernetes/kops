@@ -457,6 +457,8 @@ func runLifecycleTestOpenstack(o *LifecycleTestOptions) {
 }
 
 func runLifecycleTestGCE(o *LifecycleTestOptions) {
+	ctx := context.TODO()
+
 	o.AddDefaults()
 
 	t := o.t
@@ -466,15 +468,13 @@ func runLifecycleTestGCE(o *LifecycleTestOptions) {
 
 	h.MockKopsVersion("1.21.0-alpha.1")
 
-	cloud := h.SetupMockGCE()
+	cloud, ctx := h.SetupMockGCE(ctx)
 
 	var beforeIds []string
 	for id := range AllGCEResources(cloud) {
 		beforeIds = append(beforeIds, id)
 	}
 	sort.Strings(beforeIds)
-
-	ctx := context.Background()
 
 	t.Logf("running lifecycle test for cluster %s", o.ClusterName)
 
