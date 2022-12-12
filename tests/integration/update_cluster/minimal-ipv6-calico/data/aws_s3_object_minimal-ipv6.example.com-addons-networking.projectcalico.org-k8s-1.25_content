@@ -4632,33 +4632,6 @@ spec:
       hostNetwork: true
       initContainers:
       - command:
-        - /opt/cni/bin/calico-ipam
-        - -upgrade
-        env:
-        - name: KUBERNETES_NODE_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: spec.nodeName
-        - name: CALICO_NETWORKING_BACKEND
-          valueFrom:
-            configMapKeyRef:
-              key: calico_backend
-              name: calico-config
-        envFrom:
-        - configMapRef:
-            name: kubernetes-services-endpoint
-            optional: true
-        image: docker.io/calico/cni:v3.24.5
-        imagePullPolicy: IfNotPresent
-        name: upgrade-ipam
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /var/lib/cni/networks
-          name: host-local-net-dir
-        - mountPath: /host/opt/cni/bin
-          name: cni-bin-dir
-      - command:
         - /opt/cni/bin/install
         env:
         - name: CNI_CONF_NAME
@@ -4758,9 +4731,6 @@ spec:
       - hostPath:
           path: /var/log/calico/cni
         name: cni-log-dir
-      - hostPath:
-          path: /var/lib/cni/networks
-        name: host-local-net-dir
       - hostPath:
           path: /var/run/nodeagent
           type: DirectoryOrCreate

@@ -4452,6 +4452,7 @@ spec:
       terminationGracePeriodSeconds: 0
       priorityClassName: system-node-critical
       initContainers:
+        {{- if not IsIPv6Only }}
         # This container performs upgrade from host-local IPAM to calico-ipam.
         # It can be deleted if this is a fresh installation, or if you have already
         # upgraded to use calico-ipam.
@@ -4481,6 +4482,7 @@ spec:
               name: cni-bin-dir
           securityContext:
             privileged: true
+        {{- end }}
         # This container installs the CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
@@ -4814,12 +4816,14 @@ spec:
         - name: cni-log-dir
           hostPath:
             path: /var/log/calico/cni
+        {{- if not IsIPv6Only }}
         # Mount in the directory for host-local IPAM allocations. This is
         # used when upgrading from host-local to calico-ipam, and can be removed
         # if not using the upgrade-ipam init container.
         - name: host-local-net-dir
           hostPath:
             path: /var/lib/cni/networks
+        {{- end }}
         # Used to create per-pod Unix Domain Sockets
         - name: policysync
           hostPath:
