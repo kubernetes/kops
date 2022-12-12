@@ -386,6 +386,37 @@ func (p *GSPath) Hash(a hashing.HashAlgorithm) (*hashing.Hash, error) {
 	return &hashing.Hash{Algorithm: hashing.HashAlgorithmMD5, HashValue: md5Bytes}, nil
 }
 
+func (p *GSPath) IsBucketPublic(ctx context.Context) (bool, error) {
+	policy, err := p.client.Buckets.GetIamPolicy(p.bucket).Context(ctx).Do()
+	if err != nil {
+		return false, fmt.Errorf("getting IAM configuration for Cloud Storage bucket %q: %w", p.bucket, err)
+	}
+	allowsAnonymousAccess := false
+	for _, binding := range policy.Bindings {
+		isAnonymous := false
+		for _, user := range binding.Members {
+			if user == "allUsers" {
+				isAnonymous = true
+			}
+		}
+		if isAnonymous {
+			switch binding.Role {
+			case "roles/storage.admin":
+				klog.Warningf("bucket %q allows anonymous users full access", p.bucket)
+				allowsAnonymousAccess = true
+			case "roles/storage.objectViewer":
+				allowsAnonymousAccess = true
+			case "roles/storage.objectCreator":
+				// This only allows write, not read
+				klog.Warningf("bucket %q allows anonymous users to write", p.bucket)
+			default:
+				klog.Warningf("bucket %q has unknown role %q for anonymous access", p.bucket, binding.Role)
+			}
+		}
+	}
+	return allowsAnonymousAccess, nil
+}
+
 type terraformGSObject struct {
 	Bucket   string                   `json:"bucket" cty:"bucket"`
 	Name     string                   `json:"name" cty:"name"`
@@ -441,6 +472,12 @@ func (p *GSPath) RenderTerraform(w *terraformWriter.TerraformWriter, name string
 
 func (s *GSPath) TerraformLink(name string) *terraformWriter.Literal {
 	return terraformWriter.LiteralProperty("google_storage_bucket_object", name, "output_name")
+}
+
+func (p *GSPath) GetHTTPsUrl(dualstack bool) (string, error) {
+	url := fmt.Sprintf("https://storage.googleapis.com/%s/%s", p.bucket, p.key)
+
+	return strings.TrimSuffix(url, "/"), nil
 }
 
 func isGCSNotFound(err error) bool {

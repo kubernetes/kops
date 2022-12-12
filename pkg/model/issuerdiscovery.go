@@ -18,6 +18,7 @@ package model
 
 import (
 	"bytes"
+	"context"
 	"crypto"
 	"crypto/x509"
 	"encoding/base64"
@@ -30,6 +31,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 // IssuerDiscoveryModelBuilder publish OIDC issuer discovery metadata
@@ -51,6 +53,8 @@ type oidcDiscovery struct {
 }
 
 func (b *IssuerDiscoveryModelBuilder) Build(c *fi.ModelBuilderContext) error {
+	ctx := context.TODO()
+
 	said := b.Cluster.Spec.ServiceAccountIssuerDiscovery
 	if said == nil || said.DiscoveryStore == "" {
 		return nil
@@ -71,13 +75,44 @@ func (b *IssuerDiscoveryModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	if err != nil {
 		return err
 	}
+
+	publicFileACL := fi.PtrTo(true)
+
+	discoveryStorePath := b.Cluster.Spec.ServiceAccountIssuerDiscovery.DiscoveryStore
+	discoveryStore, err := vfs.Context.BuildVfsPath(discoveryStorePath)
+	if err != nil {
+		return fmt.Errorf("building VFS path for %q: %w", discoveryStorePath, err)
+	}
+
+	switch discoveryStore := discoveryStore.(type) {
+	case *vfs.GSPath:
+		isPublic, err := discoveryStore.IsBucketPublic(ctx)
+		if err != nil {
+			return fmt.Errorf("checking if bucket was public: %w", err)
+		}
+		if !isPublic {
+			exampleCommand := fmt.Sprintf("gsutil iam ch allUsers:objectViewer gs://%s", discoveryStore.Bucket())
+			return fmt.Errorf("the location for publishing serviceAccountIssuers should be set to world-readable (and a dedicated bucket).\nExample command: `%s`", exampleCommand)
+		} else {
+			publicFileACL = nil
+		}
+	case *vfs.S3Path:
+		// ok
+
+	case *vfs.MemFSPath:
+		// ok
+
+	default:
+		return fmt.Errorf("unhandled type %T", discoveryStore)
+	}
+
 	keysFile := &fitasks.ManagedFile{
 		Contents:  keys,
 		Lifecycle: b.Lifecycle,
 		Location:  fi.PtrTo("openid/v1/jwks"),
 		Name:      fi.PtrTo("keys.json"),
-		Base:      fi.PtrTo(b.Cluster.Spec.ServiceAccountIssuerDiscovery.DiscoveryStore),
-		PublicACL: fi.PtrTo(true),
+		Base:      fi.PtrTo(discoveryStorePath),
+		PublicACL: publicFileACL,
 	}
 	c.AddTask(keysFile)
 
@@ -86,8 +121,8 @@ func (b *IssuerDiscoveryModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		Lifecycle: b.Lifecycle,
 		Location:  fi.PtrTo(".well-known/openid-configuration"),
 		Name:      fi.PtrTo("discovery.json"),
-		Base:      fi.PtrTo(b.Cluster.Spec.ServiceAccountIssuerDiscovery.DiscoveryStore),
-		PublicACL: fi.PtrTo(true),
+		Base:      fi.PtrTo(discoveryStorePath),
+		PublicACL: publicFileACL,
 	}
 	c.AddTask(discoveryFile)
 
