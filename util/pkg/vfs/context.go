@@ -39,11 +39,18 @@ import (
 // VFSContext is a 'context' for VFS, that is normally a singleton
 // but allows us to configure S3 credentials, for example
 type VFSContext struct {
+	// mutex guards state
+	mutex sync.Mutex
+
+	// vfsContextState makes it easier to copy the state
+	vfsContextState
+}
+
+type vfsContextState struct {
 	s3Context    *S3Context
 	k8sContext   *KubernetesContext
 	memfsContext *MemFSContext
-	// mutex guards gcsClient
-	mutex sync.Mutex
+
 	// The google cloud storage client, if initialized
 	gcsClient *storage.Service
 	// swiftClient is the openstack swift client
@@ -52,9 +59,43 @@ type VFSContext struct {
 	azureClient *azureClient
 }
 
-var Context = VFSContext{
-	s3Context:  NewS3Context(),
-	k8sContext: NewKubernetesContext(),
+// Context holds the global VFS state.
+// Deprecated: prefer FromContext.
+var Context = NewVFSContext()
+
+// NewVFSContext builds a new VFSContext
+func NewVFSContext() *VFSContext {
+	v := &VFSContext{}
+	v.s3Context = NewS3Context()
+	v.k8sContext = NewKubernetesContext()
+	return v
+}
+
+func (v *VFSContext) WithGCSClient(gcsClient *storage.Service) *VFSContext {
+	v.mutex.Lock()
+	defer v.mutex.Unlock()
+
+	v2 := &VFSContext{
+		vfsContextState: v.vfsContextState,
+	}
+	v2.gcsClient = gcsClient
+	return v2
+}
+
+type contextKeyType int
+
+var contextKey contextKeyType
+
+func FromContext(ctx context.Context) *VFSContext {
+	o := ctx.Value(contextKey)
+	if o != nil {
+		return o.(*VFSContext)
+	}
+	return Context
+}
+
+func WithContext(parent context.Context, vfsContext *VFSContext) context.Context {
+	return context.WithValue(parent, contextKey, vfsContext)
 }
 
 type vfsOptions struct {
