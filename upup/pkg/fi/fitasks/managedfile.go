@@ -177,9 +177,13 @@ func (_ *ManagedFile) Render(c *fi.Context, a, e, changes *ManagedFile) error {
 }
 
 func getBasePath(c *fi.Context, e *ManagedFile) (vfs.Path, error) {
+	ctx := c.Context()
+
 	base := fi.ValueOf(e.Base)
 	if base != "" {
-		p, err := vfs.Context.BuildVfsPath(base)
+		vfsContext := vfs.FromContext(ctx)
+
+		p, err := vfsContext.BuildVfsPath(base)
 		if err != nil {
 			return nil, fmt.Errorf("error parsing ManagedFile Base %q: %v", base, err)
 		}

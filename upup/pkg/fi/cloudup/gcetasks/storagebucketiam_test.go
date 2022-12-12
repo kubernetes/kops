@@ -20,6 +20,7 @@ import (
 	"context"
 	"testing"
 
+	"google.golang.org/api/storage/v1"
 	gcemock "k8s.io/kops/cloudmock/gce"
 	"k8s.io/kops/upup/pkg/fi"
 )
@@ -31,6 +32,12 @@ func TestStorageBucketIAM(t *testing.T) {
 	region := "us-test1"
 
 	cloud := gcemock.InstallMockGCECloud(region, project)
+
+	if _, err := cloud.Storage().Buckets.Insert(project, &storage.Bucket{
+		Name: "bucket1",
+	}).Context(ctx).Do(); err != nil {
+		t.Fatalf("failed to create bucket: %v", err)
+	}
 
 	// We define a function so we can rebuild the tasks, because we modify in-place when running
 	buildTasks := func() map[string]fi.Task {

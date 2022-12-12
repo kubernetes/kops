@@ -18,7 +18,6 @@ package model
 
 import (
 	"bytes"
-	"context"
 	"crypto"
 	"crypto/x509"
 	"encoding/base64"
@@ -53,7 +52,7 @@ type oidcDiscovery struct {
 }
 
 func (b *IssuerDiscoveryModelBuilder) Build(c *fi.ModelBuilderContext) error {
-	ctx := context.TODO()
+	ctx := c.Context()
 
 	said := b.Cluster.Spec.ServiceAccountIssuerDiscovery
 	if said == nil || said.DiscoveryStore == "" {
@@ -79,7 +78,8 @@ func (b *IssuerDiscoveryModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	publicFileACL := fi.PtrTo(true)
 
 	discoveryStorePath := b.Cluster.Spec.ServiceAccountIssuerDiscovery.DiscoveryStore
-	discoveryStore, err := vfs.Context.BuildVfsPath(discoveryStorePath)
+	vfsContext := vfs.FromContext(ctx)
+	discoveryStore, err := vfsContext.BuildVfsPath(discoveryStorePath)
 	if err != nil {
 		return fmt.Errorf("building VFS path for %q: %w", discoveryStorePath, err)
 	}

@@ -29,18 +29,61 @@ import (
 type buckets struct {
 	mutex sync.Mutex
 
+	buckets  map[string]*storage.Bucket
 	policies map[string]*storage.Policy
 }
 
 func (s *buckets) Init() {
+	s.buckets = make(map[string]*storage.Bucket)
 	s.policies = make(map[string]*storage.Policy)
 }
 
-func (s *buckets) getIAMPolicy(bucket string, request *http.Request) (*http.Response, error) {
+func (s *buckets) createBucket(request *http.Request) (*http.Response, error) {
+	b, err := io.ReadAll(request.Body)
+	if err != nil {
+		return gcphttp.ErrorBadRequest("")
+	}
+
+	req := &storage.Bucket{}
+	if err := json.Unmarshal(b, &req); err != nil {
+		return gcphttp.ErrorBadRequest("")
+	}
+
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
-	policy := s.policies[bucket]
+	bucket := s.buckets[req.Name]
+	if bucket != nil {
+		return gcphttp.ErrorAlreadyExists("")
+	}
+
+	s.buckets[req.Name] = req
+
+	return gcphttp.OKResponse(req)
+}
+
+func (s *buckets) getBucket(bucketName string, request *http.Request) (*http.Response, error) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	bucket := s.buckets[bucketName]
+	if bucket == nil {
+		return gcphttp.ErrorNotFound("")
+	}
+
+	return gcphttp.OKResponse(bucket)
+}
+
+func (s *buckets) getIAMPolicy(bucketName string, request *http.Request) (*http.Response, error) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	bucket := s.buckets[bucketName]
+	if bucket == nil {
+		return gcphttp.ErrorNotFound("")
+	}
+
+	policy := s.policies[bucketName]
 	if policy == nil {
 		policy = &storage.Policy{}
 	}

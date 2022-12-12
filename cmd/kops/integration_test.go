@@ -1021,8 +1021,7 @@ func TestClusterNameDigit(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
-func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarness, expectedDataFilenames []string, tfFileName string, expectedTfFileName string, phase *cloudup.Phase) {
-	ctx := context.Background()
+func (i *integrationTest) runTest(t *testing.T, ctx context.Context, h *testutils.IntegrationTestHarness, expectedDataFilenames []string, tfFileName string, expectedTfFileName string, phase *cloudup.Phase) {
 
 	var stdout bytes.Buffer
 
@@ -1338,6 +1337,8 @@ func storeKeyset(t *testing.T, keyStore fi.Keystore, name string, testingKeyset 
 }
 
 func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
+	ctx := context.TODO()
+
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
@@ -1419,10 +1420,12 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 	}
 	expectedFilenames = append(expectedFilenames, i.expectServiceAccountRolePolicies...)
 
-	i.runTest(t, h, expectedFilenames, "", "", nil)
+	i.runTest(t, ctx, h, expectedFilenames, "", "", nil)
 }
 
 func (i *integrationTest) runTestPhase(t *testing.T, phase cloudup.Phase) {
+	ctx := context.TODO()
+
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
@@ -1463,15 +1466,17 @@ func (i *integrationTest) runTestPhase(t *testing.T, phase cloudup.Phase) {
 		}
 	}
 
-	i.runTest(t, h, expectedFilenames, tfFileName, "", &phase)
+	i.runTest(t, ctx, h, expectedFilenames, tfFileName, "", &phase)
 }
 
 func (i *integrationTest) runTestTerraformGCE(t *testing.T) {
+	ctx := context.TODO()
+
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
 	h.MockKopsVersion("1.21.0-alpha.1")
-	h.SetupMockGCE()
+	_, ctx = h.SetupMockGCE(ctx)
 
 	expectedFilenames := i.expectTerraformFilenames
 
@@ -1501,10 +1506,12 @@ func (i *integrationTest) runTestTerraformGCE(t *testing.T) {
 		expectedFilenames = append(expectedFilenames, prefix+"startup-script")
 	}
 
-	i.runTest(t, h, expectedFilenames, "", "", nil)
+	i.runTest(t, ctx, h, expectedFilenames, "", "", nil)
 }
 
 func (i *integrationTest) runTestTerraformHetzner(t *testing.T) {
+	ctx := context.TODO()
+
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
@@ -1533,7 +1540,7 @@ func (i *integrationTest) runTestTerraformHetzner(t *testing.T) {
 		"hcloud_server_nodes-fsn1_user_data",
 	)
 
-	i.runTest(t, h, expectedFilenames, "", "", nil)
+	i.runTest(t, ctx, h, expectedFilenames, "", "", nil)
 }
 
 func MakeSSHKeyPair(publicKeyPath string, privateKeyPath string) error {

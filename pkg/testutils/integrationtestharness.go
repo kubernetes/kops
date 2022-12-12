@@ -17,12 +17,14 @@ limitations under the License.
 package testutils
 
 import (
+	"context"
 	"os"
 	"path"
 	"path/filepath"
 	"testing"
 
 	"google.golang.org/api/compute/v1"
+	"google.golang.org/api/storage/v1"
 	"k8s.io/kops/cloudmock/aws/mockeventbridge"
 	"k8s.io/kops/cloudmock/aws/mocksqs"
 
@@ -280,7 +282,7 @@ func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
 }
 
 // SetupMockGCE configures a mock GCE cloud provider
-func (h *IntegrationTestHarness) SetupMockGCE() *gcemock.MockGCECloud {
+func (h *IntegrationTestHarness) SetupMockGCE(ctx context.Context) (*gcemock.MockGCECloud, context.Context) {
 	project := "testproject"
 	region := "us-test1"
 
@@ -297,7 +299,32 @@ func (h *IntegrationTestHarness) SetupMockGCE() *gcemock.MockGCECloud {
 		Region:  region,
 	})
 
-	return cloud
+	if _, err := cloud.Storage().Buckets.Insert(project, &storage.Bucket{
+		Name: "mock-public-discovery",
+		IamConfiguration: &storage.BucketIamConfiguration{
+			UniformBucketLevelAccess: &storage.BucketIamConfigurationUniformBucketLevelAccess{
+				Enabled: true,
+			},
+		},
+	}).Context(ctx).Do(); err != nil {
+		h.T.Fatalf("failed to create bucket mock-public-discovery: %v", err)
+	}
+	if _, err := cloud.Storage().Buckets.SetIamPolicy("mock-public-discovery", &storage.Policy{
+		Bindings: []*storage.PolicyBindings{
+			{
+				Members: []string{"allUsers"},
+				Role:    "roles/storage.objectViewer",
+			},
+		},
+	}).Context(ctx).Do(); err != nil {
+		h.T.Fatalf("failed to set iam policy on bucket mock-public-discovery: %v", err)
+	}
+
+	vfsContext := vfs.FromContext(ctx)
+	vfsContext = vfsContext.WithGCSClient(cloud.Storage())
+	ctx = vfs.WithContext(ctx, vfsContext)
+
+	return cloud, ctx
 }
 
 func SetupMockOpenstack() *openstack.MockCloud {
