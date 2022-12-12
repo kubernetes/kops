@@ -17,6 +17,7 @@ limitations under the License.
 package cloudup
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 
@@ -36,12 +37,13 @@ func (l *Loader) Init() {
 	l.tasks = make(map[string]fi.Task)
 }
 
-func (l *Loader) BuildTasks(lifecycleOverrides map[string]fi.Lifecycle) (map[string]fi.Task, error) {
+func (l *Loader) BuildTasks(ctx context.Context, lifecycleOverrides map[string]fi.Lifecycle) (map[string]fi.Task, error) {
 	for _, builder := range l.Builders {
 		context := &fi.ModelBuilderContext{
 			Tasks:              l.tasks,
 			LifecycleOverrides: lifecycleOverrides,
 		}
+		context = context.WithContext(ctx)
 		err := builder.Build(context)
 		if err != nil {
 			return nil, err

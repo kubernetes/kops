@@ -17,6 +17,7 @@ limitations under the License.
 package bootstrap
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -37,6 +38,8 @@ type Installation struct {
 }
 
 func (i *Installation) Run() error {
+	ctx := context.TODO()
+
 	_, err := distributions.FindDistribution("/")
 	if err != nil {
 		return fmt.Errorf("error determining OS distribution: %v", err)
@@ -72,7 +75,7 @@ func (i *Installation) Run() error {
 	}
 
 	checkExisting := true
-	context, err := fi.NewContext(target, nil, cloud, keyStore, secretStore, configBase, checkExisting, tasks)
+	context, err := fi.NewContext(ctx, target, nil, cloud, keyStore, secretStore, configBase, checkExisting, tasks)
 	if err != nil {
 		return fmt.Errorf("error building context: %v", err)
 	}
