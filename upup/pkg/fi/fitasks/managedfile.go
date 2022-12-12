@@ -43,8 +43,9 @@ type ManagedFile struct {
 
 	Contents fi.Resource
 
-	// Public controls whether the object is world-readable
-	Public *bool
+	// PublicACL controls whether the _object_ has an ACL which grants world-readable status.
+	// Note that the _bucket_ may itself have a grant for world-readable; that is separate.
+	PublicACL *bool
 }
 
 func (e *ManagedFile) Find(c *fi.Context) (*ManagedFile, error) {
@@ -80,10 +81,10 @@ func (e *ManagedFile) Find(c *fi.Context) (*ManagedFile, error) {
 		if err != nil {
 			return nil, err
 		}
-		actual.Public = &public
+		actual.PublicACL = &public
 
-		if e.Public == nil {
-			e.Public = fi.PtrTo(false)
+		if e.PublicACL == nil {
+			e.PublicACL = fi.PtrTo(false)
 		}
 	}
 
@@ -92,10 +93,10 @@ func (e *ManagedFile) Find(c *fi.Context) (*ManagedFile, error) {
 		if err != nil {
 			return nil, err
 		}
-		actual.Public = &public
+		actual.PublicACL = &public
 
-		if e.Public == nil {
-			e.Public = fi.PtrTo(false)
+		if e.PublicACL == nil {
+			e.PublicACL = fi.PtrTo(false)
 		}
 	}
 
@@ -123,7 +124,7 @@ func (s *ManagedFile) CheckChanges(a, e, changes *ManagedFile) error {
 
 func (e *ManagedFile) getACL(c *fi.Context, p vfs.Path) (vfs.ACL, error) {
 	var acl vfs.ACL
-	if fi.ValueOf(e.Public) {
+	if fi.ValueOf(e.PublicACL) {
 		switch p := p.(type) {
 		case *vfs.S3Path:
 			acl = &vfs.S3Acl{
