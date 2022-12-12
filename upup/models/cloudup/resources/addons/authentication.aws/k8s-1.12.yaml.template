@@ -110,6 +110,21 @@ subjects:
   namespace: kube-system
 
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: kube-system
+  name: aws-iam-authenticator
+  labels:
+    k8s-app: aws-iam-authenticator
+data:
+  config.yaml: |
+    # a unique-per-cluster identifier to prevent replay attacks
+    # (good choices are a random token or a domain name that will be unique to your cluster)
+
+    clusterID: {{ or .Authentication.AWS.ClusterID ClusterName }}
+
+---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
