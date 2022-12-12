@@ -188,7 +188,7 @@ Contents:
 Lifecycle: ""
 Location: igconfig/node/node/nodeupconfig.yaml
 Name: nodeupconfig-node
-Public: null
+PublicACL: null
 ---
 AdditionalSecurityGroups:
 - additional-sg

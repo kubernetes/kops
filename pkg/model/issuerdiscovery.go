@@ -77,7 +77,7 @@ func (b *IssuerDiscoveryModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		Location:  fi.PtrTo("openid/v1/jwks"),
 		Name:      fi.PtrTo("keys.json"),
 		Base:      fi.PtrTo(b.Cluster.Spec.ServiceAccountIssuerDiscovery.DiscoveryStore),
-		Public:    fi.PtrTo(true),
+		PublicACL: fi.PtrTo(true),
 	}
 	c.AddTask(keysFile)
 
@@ -87,7 +87,7 @@ func (b *IssuerDiscoveryModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		Location:  fi.PtrTo(".well-known/openid-configuration"),
 		Name:      fi.PtrTo("discovery.json"),
 		Base:      fi.PtrTo(b.Cluster.Spec.ServiceAccountIssuerDiscovery.DiscoveryStore),
-		Public:    fi.PtrTo(true),
+		PublicACL: fi.PtrTo(true),
 	}
 	c.AddTask(discoveryFile)
 

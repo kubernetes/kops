@@ -51,7 +51,7 @@ Contents: |-
 Lifecycle: ""
 Location: /control/etcd-cluster-spec
 Name: etcd-cluster-spec-events
-Public: null
+PublicACL: null
 ---
 Base: memfs://clusters.example.com/minimal.example.com/backups/etcd-main
 Contents: |-
@@ -61,7 +61,7 @@ Contents: |-
 Lifecycle: ""
 Location: /control/etcd-cluster-spec
 Name: etcd-cluster-spec-main
-Public: null
+PublicACL: null
 ---
 Base: null
 Contents: |
@@ -138,7 +138,7 @@ Contents: |
 Lifecycle: ""
 Location: manifests/etcd/events-master-us-test-1a.yaml
 Name: manifests-etcdmanager-events-master-us-test-1a
-Public: null
+PublicACL: null
 ---
 Base: null
 Contents: |
@@ -215,4 +215,4 @@ Contents: |
 Lifecycle: ""
 Location: manifests/etcd/main-master-us-test-1a.yaml
 Name: manifests-etcdmanager-main-master-us-test-1a
-Public: null
+PublicACL: null
