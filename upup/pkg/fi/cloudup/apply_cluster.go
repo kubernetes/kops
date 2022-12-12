@@ -699,7 +699,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.GetCloudProvider())
 		}
 	}
-	c.TaskMap, err = l.BuildTasks(c.LifecycleOverrides)
+	c.TaskMap, err = l.BuildTasks(ctx, c.LifecycleOverrides)
 	if err != nil {
 		return fmt.Errorf("error building tasks: %v", err)
 	}
@@ -783,7 +783,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		}
 	}
 
-	context, err := fi.NewContext(target, cluster, cloud, keyStore, secretStore, configBase, checkExisting, c.TaskMap)
+	context, err := fi.NewContext(ctx, target, cluster, cloud, keyStore, secretStore, configBase, checkExisting, c.TaskMap)
 	if err != nil {
 		return fmt.Errorf("error building context: %v", err)
 	}
