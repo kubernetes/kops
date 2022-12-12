@@ -162,6 +162,14 @@ func (i *integrationTest) withManagedFiles(files ...string) *integrationTest {
 	return i
 }
 
+func (i *integrationTest) withGCSManagedFiles(files ...string) *integrationTest {
+	for _, file := range files {
+		i.expectTerraformFilenames = append(i.expectTerraformFilenames,
+			"google_storage_bucket_object_"+file+"_content")
+	}
+	return i
+}
+
 func (i *integrationTest) withAddons(addons ...string) *integrationTest {
 	for _, addon := range addons {
 		i.expectTerraformFilenames = append(i.expectTerraformFilenames,
@@ -316,6 +324,14 @@ func TestMinimalGCE(t *testing.T) {
 			gcpCCMAddon,
 			gcpPDCSIAddon,
 		).
+		runTestTerraformGCE(t)
+}
+
+// Test_GCE_ServiceAccountIssuerDiscovery runs tests on a minimal GCE configuration
+func Test_GCE_ServiceAccountIssuerDiscovery(t *testing.T) {
+	newIntegrationTest("irsa-gce.example.com", "irsa_gce").
+		withAddons(dnsControllerAddon, leaderElectionAddon, "gcp-pd-csi-driver.addons.k8s.io-k8s-1.23").
+		withGCSManagedFiles("discovery.json", "keys.json").
 		runTestTerraformGCE(t)
 }
 
