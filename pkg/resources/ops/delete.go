@@ -18,6 +18,7 @@ package ops
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -72,7 +73,8 @@ func DeleteResources(cloud fi.Cloud, resourceMap map[string]*resources.Resource)
 				}
 
 				ready := true
-				for _, dep := range depMap[k] {
+				resourceType := strings.Split(k, ":")
+				for _, dep := range depMap[resourceType[0]] {
 					if _, d := done[dep]; !d {
 						klog.V(4).Infof("dependency %q of %q not deleted; skipping", dep, k)
 						ready = false
