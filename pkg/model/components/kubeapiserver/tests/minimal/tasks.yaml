@@ -36,4 +36,4 @@ Contents: |
 Lifecycle: ""
 Location: manifests/static/kube-apiserver-healthcheck.yaml
 Name: manifests-static-kube-apiserver-healthcheck
-Public: null
+PublicACL: null
