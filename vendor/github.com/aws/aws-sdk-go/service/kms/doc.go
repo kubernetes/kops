@@ -8,7 +8,7 @@
 // For general information about KMS, see the Key Management Service Developer
 // Guide (https://docs.aws.amazon.com/kms/latest/developerguide/).
 //
-// KMS is replacing the term customer master key (CMK) with KMS key and KMS
+// KMS has replaced the term customer master key (CMK) with KMS key and KMS
 // key. The concept has not changed. To prevent breaking changes, KMS is keeping
 // some variations of this term.
 //
@@ -40,7 +40,7 @@
 //
 // Requests must be signed by using an access key ID and a secret access key.
 // We strongly recommend that you do not use your Amazon Web Services account
-// (root) access key ID and secret key for everyday work with KMS. Instead,
+// (root) access key ID and secret access key for everyday work with KMS. Instead,
 // use the access key ID and secret access key for an IAM user. You can also
 // use the Amazon Web Services Security Token Service to generate temporary
 // security credentials that you can use to sign requests.

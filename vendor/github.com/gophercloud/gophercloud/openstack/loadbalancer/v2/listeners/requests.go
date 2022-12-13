@@ -18,7 +18,9 @@ const (
 	ProtocolHTTP  Protocol = "HTTP"
 	ProtocolHTTPS Protocol = "HTTPS"
 	// Protocol SCTP requires octavia microversion 2.23
-	ProtocolSCTP            Protocol = "SCTP"
+	ProtocolSCTP Protocol = "SCTP"
+	// Protocol Prometheus requires octavia microversion 2.25
+	ProtocolPrometheus      Protocol = "PROMETHEUS"
 	ProtocolTerminatedHTTPS Protocol = "TERMINATED_HTTPS"
 )
 

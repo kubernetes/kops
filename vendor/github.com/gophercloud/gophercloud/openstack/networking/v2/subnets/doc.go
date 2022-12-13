@@ -44,6 +44,7 @@ Example to Create a Subnet With Specified Gateway
 		  },
 		},
 		DNSNameservers: []string{"foo"},
+		ServiceTypes: []string{"network:floatingip"},
 	}
 
 	subnet, err := subnets.Create(networkClient, createOpts).Extract()
@@ -98,11 +99,13 @@ Example to Update a Subnet
 
 	subnetID := "db77d064-e34f-4d06-b060-f21e28a61c23"
 	dnsNameservers := []string{"8.8.8.8"}
+	serviceTypes := []string{"network:floatingip", "network:routed"}
 	name := "new_name"
 
 	updateOpts := subnets.UpdateOpts{
 		Name:           &name,
 		DNSNameservers: &dnsNameservers,
+		ServiceTypes:   &serviceTypes,
 	}
 
 	subnet, err := subnets.Update(networkClient, subnetID, updateOpts).Extract()
