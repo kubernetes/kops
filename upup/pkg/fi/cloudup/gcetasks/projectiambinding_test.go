@@ -17,6 +17,7 @@ limitations under the License.
 package gcetasks
 
 import (
+	"context"
 	"testing"
 
 	gcemock "k8s.io/kops/cloudmock/gce"
@@ -24,6 +25,8 @@ import (
 )
 
 func TestProjectIAMBinding(t *testing.T) {
+	ctx := context.TODO()
+
 	project := "testproject"
 	region := "us-test1"
 
@@ -46,16 +49,16 @@ func TestProjectIAMBinding(t *testing.T) {
 
 	{
 		allTasks := buildTasks()
-		checkHasChanges(t, cloud, allTasks)
+		checkHasChanges(t, ctx, cloud, allTasks)
 	}
 
 	{
 		allTasks := buildTasks()
-		runTasks(t, cloud, allTasks)
+		runTasks(t, ctx, cloud, allTasks)
 	}
 
 	{
 		allTasks := buildTasks()
-		checkNoChanges(t, cloud, allTasks)
+		checkNoChanges(t, ctx, cloud, allTasks)
 	}
 }

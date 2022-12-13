@@ -17,6 +17,7 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
@@ -28,6 +29,8 @@ import (
 )
 
 func TestVPCCreate(t *testing.T) {
+	ctx := context.TODO()
+
 	cloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
 	c := &mockec2.MockEC2{}
 	cloud.MockEC2 = c
@@ -53,7 +56,7 @@ func TestVPCCreate(t *testing.T) {
 			Cloud: cloud,
 		}
 
-		context, err := fi.NewContext(target, nil, cloud, nil, nil, nil, true, allTasks)
+		context, err := fi.NewContext(ctx, target, nil, cloud, nil, nil, nil, true, allTasks)
 		if err != nil {
 			t.Fatalf("error building context: %v", err)
 		}
@@ -91,7 +94,7 @@ func TestVPCCreate(t *testing.T) {
 	{
 		allTasks := buildTasks()
 
-		checkNoChanges(t, cloud, allTasks)
+		checkNoChanges(t, ctx, cloud, allTasks)
 	}
 }
 
@@ -132,6 +135,8 @@ func Test4758(t *testing.T) {
 }
 
 func TestSharedVPCAdditionalCIDR(t *testing.T) {
+	ctx := context.TODO()
+
 	cloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
 	c := &mockec2.MockEC2{}
 	c.CreateVpcWithId(&ec2.CreateVpcInput{
@@ -177,7 +182,7 @@ func TestSharedVPCAdditionalCIDR(t *testing.T) {
 			Cloud: cloud,
 		}
 
-		context, err := fi.NewContext(target, nil, cloud, nil, nil, nil, true, allTasks)
+		context, err := fi.NewContext(ctx, target, nil, cloud, nil, nil, nil, true, allTasks)
 		if err != nil {
 			t.Fatalf("error building context: %v", err)
 		}
