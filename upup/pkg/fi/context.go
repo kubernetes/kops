@@ -18,6 +18,7 @@ package fi
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"os"
 	"reflect"
@@ -30,6 +31,8 @@ import (
 )
 
 type Context struct {
+	ctx context.Context
+
 	Tmpdir string
 
 	Target            Target
@@ -47,14 +50,19 @@ type Context struct {
 	warnings []*Warning
 }
 
+func (c *Context) Context() context.Context {
+	return c.ctx
+}
+
 // Warning holds the details of a warning encountered during validation/creation
 type Warning struct {
 	Task    Task
 	Message string
 }
 
-func NewContext(target Target, cluster *kops.Cluster, cloud Cloud, keystore Keystore, secretStore SecretStore, clusterConfigBase vfs.Path, checkExisting bool, tasks map[string]Task) (*Context, error) {
+func NewContext(ctx context.Context, target Target, cluster *kops.Cluster, cloud Cloud, keystore Keystore, secretStore SecretStore, clusterConfigBase vfs.Path, checkExisting bool, tasks map[string]Task) (*Context, error) {
 	c := &Context{
+		ctx:               ctx,
 		Cloud:             cloud,
 		Cluster:           cluster,
 		Target:            target,

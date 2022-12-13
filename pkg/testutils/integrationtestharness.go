@@ -77,7 +77,7 @@ type IntegrationTestHarness struct {
 
 func NewIntegrationTestHarness(t *testing.T) *IntegrationTestHarness {
 	featureflag.ParseFlags("-ImageDigest")
-	h := &IntegrationTestHarness{}
+	h := &IntegrationTestHarness{T: t}
 	tempDir, err := os.MkdirTemp("", "test")
 	if err != nil {
 		t.Fatalf("failed to create temp dir: %v", err)
