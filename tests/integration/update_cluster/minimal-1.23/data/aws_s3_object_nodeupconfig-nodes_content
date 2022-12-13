@@ -3,13 +3,13 @@ Assets:
   - 4756ff345dd80704b749d87efb8eb294a143a1f4a251ec586197d26ad20ea518@https://storage.googleapis.com/kubernetes-release/release/v1.23.0/bin/linux/amd64/kubelet
   - 2d0f5ba6faa787878b642c151ccb2c3390ce4c1e6c8e2b59568b3869ba407c4f@https://storage.googleapis.com/kubernetes-release/release/v1.23.0/bin/linux/amd64/kubectl
   - 962100bbc4baeaaa5748cdbfce941f756b1531c2eadb290129401498bfac21e7@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz
-  - dd1f4730daf728822aea3ba35a440e14b1dfa8f1db97288a59a8666676a13637@https://github.com/containerd/containerd/releases/download/v1.6.10/containerd-1.6.10-linux-amd64.tar.gz
+  - a56c39795fd0d0ee356b4099a4dfa34689779f61afc858ef84c765c63e983a7d@https://github.com/containerd/containerd/releases/download/v1.6.12/containerd-1.6.12-linux-amd64.tar.gz
   - db772be63147a4e747b4fe286c7c16a2edc4a8458bd3092ea46aaee77750e8ce@https://github.com/opencontainers/runc/releases/download/v1.1.4/runc.amd64
   arm64:
   - a546fb7ccce69c4163e4a0b19a31f30ea039b4e4560c23fd6e3016e2b2dfd0d9@https://storage.googleapis.com/kubernetes-release/release/v1.23.0/bin/linux/arm64/kubelet
   - 1d77d6027fc8dfed772609ad9bd68f611b7e4ce73afa949f27084ad3a92b15fe@https://storage.googleapis.com/kubernetes-release/release/v1.23.0/bin/linux/arm64/kubectl
   - ef17764ffd6cdcb16d76401bac1db6acc050c9b088f1be5efa0e094ea3b01df0@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-arm64-v0.9.1.tgz
-  - 6d655e80a843f480e1c1cead18479185251581ff2d4a2e2e5eb88ad5b5e3d937@https://github.com/containerd/containerd/releases/download/v1.6.10/containerd-1.6.10-linux-arm64.tar.gz
+  - 0a0133336596b2d1dcafe3587eb91ab302afc28f273614e0e02300694b5457a0@https://github.com/containerd/containerd/releases/download/v1.6.12/containerd-1.6.12-linux-arm64.tar.gz
   - dbb71e737eaef454a406ce21fd021bd8f1b35afb7635016745992bbd7c17a223@https://github.com/opencontainers/runc/releases/download/v1.1.4/runc.arm64
 CAs: {}
 ClusterName: minimal.example.com
@@ -50,4 +50,4 @@ containerdConfig:
   logLevel: info
   runc:
     version: 1.1.4
-  version: 1.6.10
+  version: 1.6.12
