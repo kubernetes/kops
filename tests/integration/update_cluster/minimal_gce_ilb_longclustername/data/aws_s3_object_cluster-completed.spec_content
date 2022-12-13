@@ -28,7 +28,7 @@ spec:
     logLevel: info
     runc:
       version: 1.1.4
-    version: 1.6.10
+    version: 1.6.12
   dnsZone: "1"
   docker:
     skipInstall: true
