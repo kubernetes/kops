@@ -1,6 +1,7 @@
 package ports
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/gophercloud/gophercloud"
@@ -118,6 +119,44 @@ type Port struct {
 
 	// Timestamp when the port was last updated
 	UpdatedAt time.Time `json:"updated_at"`
+}
+
+func (r *Port) UnmarshalJSON(b []byte) error {
+	type tmp Port
+
+	// Support for older neutron time format
+	var s1 struct {
+		tmp
+		CreatedAt gophercloud.JSONRFC3339NoZ `json:"created_at"`
+		UpdatedAt gophercloud.JSONRFC3339NoZ `json:"updated_at"`
+	}
+
+	err := json.Unmarshal(b, &s1)
+	if err == nil {
+		*r = Port(s1.tmp)
+		r.CreatedAt = time.Time(s1.CreatedAt)
+		r.UpdatedAt = time.Time(s1.UpdatedAt)
+
+		return nil
+	}
+
+	// Support for newer neutron time format
+	var s2 struct {
+		tmp
+		CreatedAt time.Time `json:"created_at"`
+		UpdatedAt time.Time `json:"updated_at"`
+	}
+
+	err = json.Unmarshal(b, &s2)
+	if err != nil {
+		return err
+	}
+
+	*r = Port(s2.tmp)
+	r.CreatedAt = time.Time(s2.CreatedAt)
+	r.UpdatedAt = time.Time(s2.UpdatedAt)
+
+	return nil
 }
 
 // PortPage is the page returned by a pager when traversing over a collection
