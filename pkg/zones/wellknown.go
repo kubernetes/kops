@@ -19,145 +19,17 @@ package zones
 import (
 	"sort"
 
+	"strings"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/endpoints"
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
-// These lists allows us to infer from certain well-known zones to a cloud
+// These lists allow us to infer from certain well-known zones to a cloud
 // Note it is safe to "overmap" zones that don't exist: we'll check later if the zones actually exist
-
-var awsZones = []string{
-	"us-east-1a",
-	"us-east-1b",
-	"us-east-1c",
-	"us-east-1d",
-	"us-east-1e",
-	"us-east-1f",
-
-	"us-east-2a",
-	"us-east-2b",
-	"us-east-2c",
-	"us-east-2d",
-	"us-east-2e",
-	"us-east-2f",
-
-	"us-west-1a",
-	"us-west-1b",
-	"us-west-1c",
-	"us-west-1d",
-	"us-west-1e",
-	"us-west-1f",
-
-	"us-west-2a",
-	"us-west-2b",
-	"us-west-2c",
-	"us-west-2d",
-	"us-west-2e",
-	"us-west-2f",
-
-	"ca-central-1a",
-	"ca-central-1b",
-	"ca-central-1c",
-	"ca-central-1d",
-
-	"eu-north-1a",
-	"eu-north-1b",
-	"eu-north-1c",
-
-	"eu-west-1a",
-	"eu-west-1b",
-	"eu-west-1c",
-	"eu-west-1d",
-	"eu-west-1e",
-
-	"eu-west-2a",
-	"eu-west-2b",
-	"eu-west-2c",
-
-	"eu-west-3a",
-	"eu-west-3b",
-	"eu-west-3c",
-
-	"eu-central-1a",
-	"eu-central-1b",
-	"eu-central-1c",
-	"eu-central-1d",
-	"eu-central-1e",
-
-	"ap-south-1a",
-	"ap-south-1b",
-	"ap-south-1c",
-	"ap-south-1d",
-	"ap-south-1e",
-
-	"ap-southeast-1a",
-	"ap-southeast-1b",
-	"ap-southeast-1c",
-	"ap-southeast-1d",
-	"ap-southeast-1e",
-
-	"ap-southeast-2a",
-	"ap-southeast-2b",
-	"ap-southeast-2c",
-	"ap-southeast-2d",
-	"ap-southeast-2e",
-
-	"ap-northeast-1a",
-	"ap-northeast-1b",
-	"ap-northeast-1c",
-	"ap-northeast-1d",
-	"ap-northeast-1e",
-
-	"ap-northeast-2a",
-	"ap-northeast-2b",
-	"ap-northeast-2c",
-	"ap-northeast-2d",
-	"ap-northeast-2e",
-
-	"ap-northeast-3a",
-	"ap-northeast-3b",
-	"ap-northeast-3c",
-	"ap-northeast-3d",
-	"ap-northeast-3e",
-
-	"ap-east-1a",
-	"ap-east-1b",
-	"ap-east-1c",
-	"ap-east-1d",
-	"ap-east-1e",
-
-	"sa-east-1a",
-	"sa-east-1b",
-	"sa-east-1c",
-	"sa-east-1d",
-	"sa-east-1e",
-
-	"cn-north-1a",
-	"cn-north-1b",
-
-	"cn-northwest-1a",
-	"cn-northwest-1b",
-	"cn-northwest-1c",
-
-	"me-south-1a",
-	"me-south-1b",
-	"me-south-1c",
-
-	"us-gov-east-1a",
-	"us-gov-east-1b",
-	"us-gov-east-1c",
-
-	"us-gov-west-1a",
-	"us-gov-west-1b",
-	"us-gov-west-1c",
-
-	"af-south-1a",
-	"af-south-1b",
-	"af-south-1c",
-
-	"eu-south-1a",
-	"eu-south-1b",
-	"eu-south-1c",
-}
 
 var gceZones = []string{
 	"asia-east1-a",
@@ -361,23 +233,56 @@ var azureZones = []string{
 	"westusstage",
 }
 
-func WellKnownZonesForCloud(matchCloud kops.CloudProviderID) []string {
-	var zones []string
+func WellKnownZonesForCloud(matchCloud kops.CloudProviderID, prefix string) []string {
+	var found []string
 	switch matchCloud {
 	case kops.CloudProviderAWS:
-		zones = awsZones
+		prefix = strings.ToLower(prefix)
+		for _, partition := range endpoints.DefaultResolver().(endpoints.EnumPartitions).Partitions() {
+			for _, region := range partition.Regions() {
+				regionName := strings.ToLower(region.ID())
+				if prefix == regionName || strings.HasPrefix(prefix, regionName+"-") {
+					// If the prefix is a region name or a Local Zone or a Wavelength Zone,
+					// return all its matching zones as the completion options.
+					awsCloud, err := awsup.NewAWSCloud(regionName, map[string]string{})
+					if err != nil {
+						continue
+					}
+					var zones *ec2.DescribeAvailabilityZonesOutput
+					zones, err = awsCloud.EC2().DescribeAvailabilityZones(&ec2.DescribeAvailabilityZonesInput{
+						AllAvailabilityZones: aws.Bool(true),
+					})
+					if err != nil {
+						continue
+					}
+					for _, zone := range zones.AvailabilityZones {
+						found = append(found, *zone.ZoneName)
+					}
+				} else if strings.HasPrefix(regionName, prefix) {
+					// Return the region name as the completion option. After the user completes
+					// that much, the code will then look up the specific zone options.
+					found = append(found, regionName)
+				} else {
+					// If the zone name is in the form of single-letter zones
+					// belonging to a region, that's good enough.
+					if len(prefix) == len(regionName)+1 && strings.HasPrefix(prefix, regionName) {
+						found = append(found, prefix)
+					}
+				}
+			}
+		}
 	case kops.CloudProviderAzure:
-		zones = azureZones
+		found = azureZones
 	case kops.CloudProviderDO:
-		zones = doZones
+		found = doZones
 	case kops.CloudProviderGCE:
-		zones = gceZones
+		found = gceZones
 	case kops.CloudProviderHetzner:
-		zones = hetznerZones
+		found = hetznerZones
 	default:
 		return nil
 	}
 
-	sort.Strings(zones)
-	return zones
+	sort.Strings(found)
+	return found
 }
