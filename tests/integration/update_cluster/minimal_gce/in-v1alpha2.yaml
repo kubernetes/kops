@@ -7,18 +7,22 @@ spec:
   api:
     dns: {}
   authorization:
-    alwaysAllow: {}
+    rbac: {}
   channel: stable
   cloudProvider: gce
   configBase: memfs://tests/minimal-gce.example.com
   etcdClusters:
-  - etcdMembers:
+  - cpuRequest: 200m
+    etcdMembers:
     - instanceGroup: master-us-test1-a
-      name: "1"
+      name: a
+    memoryRequest: 100Mi
     name: main
-  - etcdMembers:
+  - cpuRequest: 100m
+    etcdMembers:
     - instanceGroup: master-us-test1-a
-      name: "1"
+      name: a
+    memoryRequest: 100Mi
     name: events
   gceServiceAccount: default
   iam:
@@ -27,7 +31,8 @@ spec:
     anonymousAuth: false
   kubernetesApiAccess:
   - 0.0.0.0/0
-  kubernetesVersion: v1.23.0
+  - ::/0
+  kubernetesVersion: v1.26.0
   masterPublicName: api.minimal-gce.example.com
   networking:
     cni: {}
@@ -35,6 +40,7 @@ spec:
   project: testproject
   sshAccess:
   - 0.0.0.0/0
+  - ::/0
   subnets:
   - name: us-test1
     region: us-test1
@@ -56,7 +62,7 @@ metadata:
   name: master-us-test1-a
 spec:
   image: ubuntu-os-cloud/ubuntu-2004-focal-v20221018
-  machineType: n1-standard-1
+  machineType: e2-medium
   maxSize: 1
   minSize: 1
   role: Master
@@ -76,7 +82,7 @@ metadata:
   name: nodes
 spec:
   image: ubuntu-os-cloud/ubuntu-2004-focal-v20221018
-  machineType: n1-standard-2
+  machineType: e2-medium
   maxSize: 2
   minSize: 2
   role: Node

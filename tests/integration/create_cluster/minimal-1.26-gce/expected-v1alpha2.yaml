@@ -2,7 +2,7 @@ apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
-  name: private.example.com
+  name: minimal.example.com
 spec:
   api:
     dns: {}
@@ -11,7 +11,7 @@ spec:
   channel: stable
   cloudConfig: {}
   cloudProvider: gce
-  configBase: memfs://tests/private.example.com
+  configBase: memfs://tests/minimal.example.com
   etcdClusters:
   - cpuRequest: 200m
     etcdMembers:
@@ -34,7 +34,7 @@ spec:
   - 0.0.0.0/0
   - ::/0
   kubernetesVersion: v1.26.0
-  masterPublicName: api.private.example.com
+  masterPublicName: api.minimal.example.com
   networking:
     cni: {}
   nonMasqueradeCIDR: 100.64.0.0/10
@@ -60,7 +60,7 @@ kind: InstanceGroup
 metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   labels:
-    kops.k8s.io/cluster: private.example.com
+    kops.k8s.io/cluster: minimal.example.com
   name: control-plane-us-test1-a
 spec:
   image: ubuntu-os-cloud/ubuntu-2004-focal-v20221018
@@ -80,7 +80,7 @@ kind: InstanceGroup
 metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   labels:
-    kops.k8s.io/cluster: private.example.com
+    kops.k8s.io/cluster: minimal.example.com
   name: nodes-us-test1-a
 spec:
   image: ubuntu-os-cloud/ubuntu-2004-focal-v20221018
