@@ -109,14 +109,44 @@ func (s *S3Context) getClient(region string) (*s3.S3, error) {
 	return s3Client, nil
 }
 
+func getProviderCredential(endpoint string, S3Credential string) (string, error) {
+	var providerCredentialName string
+
+	if strings.HasSuffix(endpoint, "scw.cloud") {
+		// Cloud provider is Scaleway
+		if S3Credential == "S3_ACCESS_KEY_ID" {
+			providerCredentialName = "SCW_ACCESS_KEY"
+		} else {
+			providerCredentialName = "SCW_SECRET_KEY"
+		}
+	}
+
+	providerCredential := os.Getenv(providerCredentialName)
+	if providerCredential == "" {
+		return "", fmt.Errorf("could not get %s from provider to use as %s", providerCredentialName, S3Credential)
+	}
+	err := os.Setenv(S3Credential, providerCredential)
+	if err != nil {
+		return "", fmt.Errorf("error setting %s: %w", S3Credential, err)
+	}
+	return providerCredential, nil
+}
+
 func getCustomS3Config(endpoint string, region string) (*aws.Config, error) {
+	var err error
 	accessKeyID := os.Getenv("S3_ACCESS_KEY_ID")
 	if accessKeyID == "" {
-		return nil, fmt.Errorf("S3_ACCESS_KEY_ID cannot be empty when S3_ENDPOINT is not empty")
+		accessKeyID, err = getProviderCredential(endpoint, "S3_ACCESS_KEY_ID")
+		if err != nil {
+			return nil, fmt.Errorf("S3_ACCESS_KEY_ID cannot be empty when S3_ENDPOINT is not empty: %w", err)
+		}
 	}
 	secretAccessKey := os.Getenv("S3_SECRET_ACCESS_KEY")
 	if secretAccessKey == "" {
-		return nil, fmt.Errorf("S3_SECRET_ACCESS_KEY cannot be empty when S3_ENDPOINT is not empty")
+		secretAccessKey, err = getProviderCredential(endpoint, "S3_SECRET_ACCESS_KEY")
+		if err != nil {
+			return nil, fmt.Errorf("S3_SECRET_ACCESS_KEY cannot be empty when S3_ENDPOINT is not empty: %w", err)
+		}
 	}
 
 	s3Config := &aws.Config{
