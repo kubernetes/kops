@@ -170,7 +170,7 @@ kubeAPIServer:
   - https://127.0.0.1:4001
   etcdServersOverrides:
   - /events#https://127.0.0.1:4002
-  image: registry.k8s.io/kube-apiserver:v1.26.0-alpha.0
+  image: registry.k8s.io/kube-apiserver:v1.26.0
   kubeletPreferredAddressTypes:
   - InternalIP
   - Hostname
@@ -196,7 +196,7 @@ kubeControllerManager:
   clusterCIDR: 100.96.0.0/11
   clusterName: minimal.example.com
   configureCloudRoutes: false
-  image: registry.k8s.io/kube-controller-manager:v1.26.0-alpha.0
+  image: registry.k8s.io/kube-controller-manager:v1.26.0
   leaderElection:
     leaderElect: true
   logLevel: 2
@@ -204,10 +204,10 @@ kubeControllerManager:
 kubeProxy:
   clusterCIDR: 100.96.0.0/11
   cpuRequest: 100m
-  image: registry.k8s.io/kube-proxy:v1.26.0-alpha.0
+  image: registry.k8s.io/kube-proxy:v1.26.0
   logLevel: 2
 kubeScheduler:
-  image: registry.k8s.io/kube-scheduler:v1.26.0-alpha.0
+  image: registry.k8s.io/kube-scheduler:v1.26.0
   leaderElection:
     leaderElect: true
   logLevel: 2
@@ -255,7 +255,7 @@ CloudProvider: gce
 ConfigBase: memfs://tests/minimal.example.com
 InstanceGroupName: master-us-test1-a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: fIzKX085QFa1EBdXb1+/0G7drH+LN4z6ujEHh+yhf9E=
+NodeupConfigHash: 1KmeUzDffebC/417Vyppxr8qTsUNs2Nx2gvijdezHe4=
 
 __EOF_KUBE_ENV
 

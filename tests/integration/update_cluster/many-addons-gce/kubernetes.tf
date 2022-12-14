@@ -516,7 +516,7 @@ resource "google_compute_instance_template" "nodes-minimal-example-com" {
     "k8s-io-instance-group" = "nodes"
     "k8s-io-role-node"      = ""
   }
-  machine_type = "n1-standard-2"
+  machine_type = "e2-medium"
   metadata = {
     "cluster-name"                    = "minimal.example.com"
     "kops-k8s-io-instance-group-name" = "nodes"
