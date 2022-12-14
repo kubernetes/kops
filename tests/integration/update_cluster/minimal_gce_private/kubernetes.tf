@@ -106,6 +106,22 @@ resource "aws_s3_object" "minimal-gce-private-example-com-addons-dns-controller-
   server_side_encryption = "AES256"
 }
 
+resource "aws_s3_object" "minimal-gce-private-example-com-addons-gcp-cloud-controller-addons-k8s-io-k8s-1-23" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_minimal-gce-private.example.com-addons-gcp-cloud-controller.addons.k8s.io-k8s-1.23_content")
+  key                    = "tests/minimal-gce-private.example.com/addons/gcp-cloud-controller.addons.k8s.io/k8s-1.23.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_object" "minimal-gce-private-example-com-addons-gcp-pd-csi-driver-addons-k8s-io-k8s-1-23" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_minimal-gce-private.example.com-addons-gcp-pd-csi-driver.addons.k8s.io-k8s-1.23_content")
+  key                    = "tests/minimal-gce-private.example.com/addons/gcp-pd-csi-driver.addons.k8s.io/k8s-1.23.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
 resource "aws_s3_object" "minimal-gce-private-example-com-addons-kops-controller-addons-k8s-io-k8s-1-16" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_minimal-gce-private.example.com-addons-kops-controller.addons.k8s.io-k8s-1.16_content")
@@ -138,14 +154,6 @@ resource "aws_s3_object" "minimal-gce-private-example-com-addons-metadata-proxy-
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_object" "minimal-gce-private-example-com-addons-rbac-addons-k8s-io-k8s-1-8" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_object_minimal-gce-private.example.com-addons-rbac.addons.k8s.io-k8s-1.8_content")
-  key                    = "tests/minimal-gce-private.example.com/addons/rbac.addons.k8s.io/k8s-1.8.yaml"
-  provider               = aws.files
-  server_side_encryption = "AES256"
-}
-
 resource "aws_s3_object" "minimal-gce-private-example-com-addons-storage-gce-addons-k8s-io-v1-7-0" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_minimal-gce-private.example.com-addons-storage-gce.addons.k8s.io-v1.7.0_content")
@@ -170,25 +178,25 @@ resource "aws_s3_object" "nodeupconfig-nodes" {
   server_side_encryption = "AES256"
 }
 
-resource "google_compute_disk" "d1-etcd-events-minimal-gce-private-example-com" {
+resource "google_compute_disk" "a-etcd-events-minimal-gce-private-example-com" {
   labels = {
     "k8s-io-cluster-name" = "minimal-gce-private-example-com"
-    "k8s-io-etcd-events"  = "1-2f1"
+    "k8s-io-etcd-events"  = "a-2fa"
     "k8s-io-role-master"  = "master"
   }
-  name = "d1-etcd-events-minimal-gce-private-example-com"
+  name = "a-etcd-events-minimal-gce-private-example-com"
   size = 20
   type = "pd-ssd"
   zone = "us-test1-a"
 }
 
-resource "google_compute_disk" "d1-etcd-main-minimal-gce-private-example-com" {
+resource "google_compute_disk" "a-etcd-main-minimal-gce-private-example-com" {
   labels = {
     "k8s-io-cluster-name" = "minimal-gce-private-example-com"
-    "k8s-io-etcd-main"    = "1-2f1"
+    "k8s-io-etcd-main"    = "a-2fa"
     "k8s-io-role-master"  = "master"
   }
-  name = "d1-etcd-main-minimal-gce-private-example-com"
+  name = "a-etcd-main-minimal-gce-private-example-com"
   size = 20
   type = "pd-ssd"
   zone = "us-test1-a"
@@ -199,7 +207,7 @@ resource "google_compute_firewall" "kubernetes-master-https-ipv6-minimal-gce-pri
     ports    = ["443"]
     protocol = "tcp"
   }
-  disabled      = true
+  disabled      = false
   name          = "kubernetes-master-https-ipv6-minimal-gce-private-example-com"
   network       = google_compute_network.minimal-gce-private-example-com.name
   source_ranges = ["::/0"]
@@ -353,7 +361,7 @@ resource "google_compute_firewall" "ssh-external-to-master-ipv6-minimal-gce-priv
     ports    = ["22"]
     protocol = "tcp"
   }
-  disabled      = true
+  disabled      = false
   name          = "ssh-external-to-master-ipv6-minimal-gce-private-example-com"
   network       = google_compute_network.minimal-gce-private-example-com.name
   source_ranges = ["::/0"]
@@ -377,7 +385,7 @@ resource "google_compute_firewall" "ssh-external-to-node-ipv6-minimal-gce-privat
     ports    = ["22"]
     protocol = "tcp"
   }
-  disabled      = true
+  disabled      = false
   name          = "ssh-external-to-node-ipv6-minimal-gce-private-example-com"
   network       = google_compute_network.minimal-gce-private-example-com.name
   source_ranges = ["::/0"]
@@ -428,7 +436,7 @@ resource "google_compute_instance_template" "master-us-test1-a-minimal-gce-priva
     interface    = ""
     mode         = "READ_WRITE"
     source       = ""
-    source_image = "https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-stable-57-9202-64-0"
+    source_image = "https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20221018"
     type         = "PERSISTENT"
   }
   labels = {
@@ -437,7 +445,7 @@ resource "google_compute_instance_template" "master-us-test1-a-minimal-gce-priva
     "k8s-io-role-control-plane" = ""
     "k8s-io-role-master"        = ""
   }
-  machine_type = "n1-standard-1"
+  machine_type = "e2-medium"
   metadata = {
     "cluster-name"                    = "minimal-gce-private.example.com"
     "kops-k8s-io-instance-group-name" = "master-us-test1-a"
@@ -474,7 +482,7 @@ resource "google_compute_instance_template" "nodes-minimal-gce-private-example-c
     interface    = ""
     mode         = "READ_WRITE"
     source       = ""
-    source_image = "https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-stable-57-9202-64-0"
+    source_image = "https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20221018"
     type         = "PERSISTENT"
   }
   labels = {
@@ -482,11 +490,11 @@ resource "google_compute_instance_template" "nodes-minimal-gce-private-example-c
     "k8s-io-instance-group" = "nodes"
     "k8s-io-role-node"      = ""
   }
-  machine_type = "n1-standard-2"
+  machine_type = "e2-medium"
   metadata = {
     "cluster-name"                    = "minimal-gce-private.example.com"
     "kops-k8s-io-instance-group-name" = "nodes"
-    "kube-env"                        = "AUTOSCALER_ENV_VARS: os_distribution=cos;arch=amd64;os=linux"
+    "kube-env"                        = "AUTOSCALER_ENV_VARS: os_distribution=ubuntu;arch=amd64;os=linux"
     "ssh-keys"                        = "admin: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCtWu40XQo8dczLsCq0OWV+hxm9uV3WxeH9Kgh4sMzQxNtoU1pvW0XdjpkBesRKGoolfWeCLXWxpyQb1IaiMkKoz7MdhQ/6UKjMjP66aFWWp3pwD0uj0HuJ7tq4gKHKRYGTaZIRWpzUiANBrjugVgA+Sd7E/mYwc/DMXkIyRZbvhQ=="
     "startup-script"                  = file("${path.module}/data/google_compute_instance_template_nodes-minimal-gce-private-example-com_metadata_startup-script")
   }
