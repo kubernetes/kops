@@ -7,14 +7,22 @@ spec:
   api:
     dns: {}
   authorization:
-    alwaysAllow: {}
+    rbac: {}
   channel: stable
   cloudConfig:
     gcpPDCSIDriver:
-      enabled: false
+      enabled: true
     manageStorageClasses: true
     multizone: true
     nodeTags: ha-gce-example-com-k8s-io-role-node
+  cloudControllerManager:
+    allocateNodeCIDRs: true
+    cidrAllocatorType: CloudAllocator
+    clusterCIDR: 100.96.0.0/11
+    clusterName: ha-gce-example-com
+    image: k8scloudprovidergcp/cloud-controller-manager:latest
+    leaderElection:
+      leaderElect: true
   cloudProvider: gce
   clusterDNSDomain: cluster.local
   configBase: memfs://tests/ha-gce.example.com
@@ -22,33 +30,39 @@ spec:
   containerRuntime: containerd
   containerd:
     logLevel: info
-    version: 1.4.13
+    runc:
+      version: 1.1.4
+    version: 1.6.12
   dnsZone: "1"
   docker:
     skipInstall: true
   etcdClusters:
   - backups:
       backupStore: memfs://tests/ha-gce.example.com/backups/etcd/main
+    cpuRequest: 200m
     etcdMembers:
     - instanceGroup: master-us-test1-a
-      name: "1"
+      name: a
     - instanceGroup: master-us-test1-b
-      name: "2"
+      name: b
     - instanceGroup: master-us-test1-c
-      name: "3"
+      name: c
+    memoryRequest: 100Mi
     name: main
-    version: 3.4.13
+    version: 3.5.6
   - backups:
       backupStore: memfs://tests/ha-gce.example.com/backups/etcd/events
+    cpuRequest: 100m
     etcdMembers:
     - instanceGroup: master-us-test1-a
-      name: "1"
+      name: a
     - instanceGroup: master-us-test1-b
-      name: "2"
+      name: b
     - instanceGroup: master-us-test1-c
-      name: "3"
+      name: c
+    memoryRequest: 100Mi
     name: events
-    version: 3.4.13
+    version: 3.5.6
   externalDns:
     provider: dns-controller
   iam:
@@ -60,9 +74,9 @@ spec:
     apiAudiences:
     - kubernetes.svc.default
     apiServerCount: 3
-    authorizationMode: AlwaysAllow
+    authorizationMode: Node,RBAC
     bindAddress: 0.0.0.0
-    cloudProvider: gce
+    cloudProvider: external
     enableAdmissionPlugins:
     - NamespaceLifecycle
     - LimitRanger
@@ -77,7 +91,7 @@ spec:
     - https://127.0.0.1:4001
     etcdServersOverrides:
     - /events#https://127.0.0.1:4002
-    image: registry.k8s.io/kube-apiserver:v1.21.0
+    image: registry.k8s.io/kube-apiserver:v1.26.0
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
@@ -99,11 +113,11 @@ spec:
   kubeControllerManager:
     allocateNodeCIDRs: true
     attachDetachReconcileSyncPeriod: 1m0s
-    cloudProvider: gce
+    cloudProvider: external
     clusterCIDR: 100.96.0.0/11
-    clusterName: ha-gce-example-com
+    clusterName: ha-gce.example.com
     configureCloudRoutes: false
-    image: registry.k8s.io/kube-controller-manager:v1.21.0
+    image: registry.k8s.io/kube-controller-manager:v1.26.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -125,10 +139,10 @@ spec:
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    image: registry.k8s.io/kube-proxy:v1.21.0
+    image: registry.k8s.io/kube-proxy:v1.26.0
     logLevel: 2
   kubeScheduler:
-    image: registry.k8s.io/kube-scheduler:v1.21.0
+    image: registry.k8s.io/kube-scheduler:v1.26.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -136,7 +150,7 @@ spec:
     anonymousAuth: false
     cgroupDriver: systemd
     cgroupRoot: /
-    cloudProvider: gce
+    cloudProvider: external
     clusterDNS: 100.64.0.10
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
@@ -144,21 +158,21 @@ spec:
     hairpinMode: promiscuous-bridge
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    networkPluginName: cni
     podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
+    protectKernelDefaults: true
     registerSchedulable: true
     shutdownGracePeriod: 30s
     shutdownGracePeriodCriticalPods: 10s
   kubernetesApiAccess:
   - 0.0.0.0/0
   - ::/0
-  kubernetesVersion: 1.21.0
+  kubernetesVersion: 1.26.0
   masterKubelet:
     anonymousAuth: false
     cgroupDriver: systemd
     cgroupRoot: /
-    cloudProvider: gce
+    cloudProvider: external
     clusterDNS: 100.64.0.10
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
@@ -166,9 +180,9 @@ spec:
     hairpinMode: promiscuous-bridge
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    networkPluginName: cni
     podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
+    protectKernelDefaults: true
     registerSchedulable: true
     shutdownGracePeriod: 30s
     shutdownGracePeriodCriticalPods: 10s

@@ -139,7 +139,7 @@ docker:
 kubeProxy:
   clusterCIDR: 100.96.0.0/11
   cpuRequest: 100m
-  image: registry.k8s.io/kube-proxy:v1.26.0-alpha.0
+  image: registry.k8s.io/kube-proxy:v1.26.0
   logLevel: 2
 kubelet:
   anonymousAuth: false
@@ -189,7 +189,7 @@ ConfigServer:
   server: https://kops-controller.internal.minimal.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: aEKaK0z9vjXY1z3aNvLQ78wY0ZzfyJ3HJ0gbKezLQGA=
+NodeupConfigHash: Yrf/sXALyKa6SEyO36ybxomqIZJLU8nN7amSsNG0VSQ=
 
 __EOF_KUBE_ENV
 

@@ -74,6 +74,22 @@ resource "aws_s3_object" "ha-gce-example-com-addons-dns-controller-addons-k8s-io
   server_side_encryption = "AES256"
 }
 
+resource "aws_s3_object" "ha-gce-example-com-addons-gcp-cloud-controller-addons-k8s-io-k8s-1-23" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_ha-gce.example.com-addons-gcp-cloud-controller.addons.k8s.io-k8s-1.23_content")
+  key                    = "tests/ha-gce.example.com/addons/gcp-cloud-controller.addons.k8s.io/k8s-1.23.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_object" "ha-gce-example-com-addons-gcp-pd-csi-driver-addons-k8s-io-k8s-1-23" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_ha-gce.example.com-addons-gcp-pd-csi-driver.addons.k8s.io-k8s-1.23_content")
+  key                    = "tests/ha-gce.example.com/addons/gcp-pd-csi-driver.addons.k8s.io/k8s-1.23.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
 resource "aws_s3_object" "ha-gce-example-com-addons-kops-controller-addons-k8s-io-k8s-1-16" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_ha-gce.example.com-addons-kops-controller.addons.k8s.io-k8s-1.16_content")
@@ -102,14 +118,6 @@ resource "aws_s3_object" "ha-gce-example-com-addons-metadata-proxy-addons-k8s-io
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_ha-gce.example.com-addons-metadata-proxy.addons.k8s.io-v0.1.12_content")
   key                    = "tests/ha-gce.example.com/addons/metadata-proxy.addons.k8s.io/v0.1.12.yaml"
-  provider               = aws.files
-  server_side_encryption = "AES256"
-}
-
-resource "aws_s3_object" "ha-gce-example-com-addons-rbac-addons-k8s-io-k8s-1-8" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_object_ha-gce.example.com-addons-rbac.addons.k8s.io-k8s-1.8_content")
-  key                    = "tests/ha-gce.example.com/addons/rbac.addons.k8s.io/k8s-1.8.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
@@ -218,73 +226,73 @@ resource "aws_s3_object" "nodeupconfig-nodes" {
   server_side_encryption = "AES256"
 }
 
-resource "google_compute_disk" "d1-etcd-events-ha-gce-example-com" {
+resource "google_compute_disk" "a-etcd-events-ha-gce-example-com" {
   labels = {
     "k8s-io-cluster-name" = "ha-gce-example-com"
-    "k8s-io-etcd-events"  = "1-2f1-2c2-2c3"
+    "k8s-io-etcd-events"  = "a-2fa-2cb-2cc"
     "k8s-io-role-master"  = "master"
   }
-  name = "d1-etcd-events-ha-gce-example-com"
+  name = "a-etcd-events-ha-gce-example-com"
   size = 20
   type = "pd-ssd"
   zone = "us-test1-a"
 }
 
-resource "google_compute_disk" "d1-etcd-main-ha-gce-example-com" {
+resource "google_compute_disk" "a-etcd-main-ha-gce-example-com" {
   labels = {
     "k8s-io-cluster-name" = "ha-gce-example-com"
-    "k8s-io-etcd-main"    = "1-2f1-2c2-2c3"
+    "k8s-io-etcd-main"    = "a-2fa-2cb-2cc"
     "k8s-io-role-master"  = "master"
   }
-  name = "d1-etcd-main-ha-gce-example-com"
+  name = "a-etcd-main-ha-gce-example-com"
   size = 20
   type = "pd-ssd"
   zone = "us-test1-a"
 }
 
-resource "google_compute_disk" "d2-etcd-events-ha-gce-example-com" {
+resource "google_compute_disk" "b-etcd-events-ha-gce-example-com" {
   labels = {
     "k8s-io-cluster-name" = "ha-gce-example-com"
-    "k8s-io-etcd-events"  = "2-2f1-2c2-2c3"
+    "k8s-io-etcd-events"  = "b-2fa-2cb-2cc"
     "k8s-io-role-master"  = "master"
   }
-  name = "d2-etcd-events-ha-gce-example-com"
+  name = "b-etcd-events-ha-gce-example-com"
   size = 20
   type = "pd-ssd"
   zone = "us-test1-b"
 }
 
-resource "google_compute_disk" "d2-etcd-main-ha-gce-example-com" {
+resource "google_compute_disk" "b-etcd-main-ha-gce-example-com" {
   labels = {
     "k8s-io-cluster-name" = "ha-gce-example-com"
-    "k8s-io-etcd-main"    = "2-2f1-2c2-2c3"
+    "k8s-io-etcd-main"    = "b-2fa-2cb-2cc"
     "k8s-io-role-master"  = "master"
   }
-  name = "d2-etcd-main-ha-gce-example-com"
+  name = "b-etcd-main-ha-gce-example-com"
   size = 20
   type = "pd-ssd"
   zone = "us-test1-b"
 }
 
-resource "google_compute_disk" "d3-etcd-events-ha-gce-example-com" {
+resource "google_compute_disk" "c-etcd-events-ha-gce-example-com" {
   labels = {
     "k8s-io-cluster-name" = "ha-gce-example-com"
-    "k8s-io-etcd-events"  = "3-2f1-2c2-2c3"
+    "k8s-io-etcd-events"  = "c-2fa-2cb-2cc"
     "k8s-io-role-master"  = "master"
   }
-  name = "d3-etcd-events-ha-gce-example-com"
+  name = "c-etcd-events-ha-gce-example-com"
   size = 20
   type = "pd-ssd"
   zone = "us-test1-c"
 }
 
-resource "google_compute_disk" "d3-etcd-main-ha-gce-example-com" {
+resource "google_compute_disk" "c-etcd-main-ha-gce-example-com" {
   labels = {
     "k8s-io-cluster-name" = "ha-gce-example-com"
-    "k8s-io-etcd-main"    = "3-2f1-2c2-2c3"
+    "k8s-io-etcd-main"    = "c-2fa-2cb-2cc"
     "k8s-io-role-master"  = "master"
   }
-  name = "d3-etcd-main-ha-gce-example-com"
+  name = "c-etcd-main-ha-gce-example-com"
   size = 20
   type = "pd-ssd"
   zone = "us-test1-c"
@@ -564,7 +572,7 @@ resource "google_compute_instance_template" "master-us-test1-a-ha-gce-example-co
     interface    = ""
     mode         = "READ_WRITE"
     source       = ""
-    source_image = "https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-stable-57-9202-64-0"
+    source_image = "https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20221018"
     type         = "PERSISTENT"
   }
   labels = {
@@ -573,7 +581,7 @@ resource "google_compute_instance_template" "master-us-test1-a-ha-gce-example-co
     "k8s-io-role-control-plane" = ""
     "k8s-io-role-master"        = ""
   }
-  machine_type = "n1-standard-1"
+  machine_type = "e2-medium"
   metadata = {
     "cluster-name"                    = "ha-gce.example.com"
     "kops-k8s-io-instance-group-name" = "master-us-test1-a"
@@ -612,7 +620,7 @@ resource "google_compute_instance_template" "master-us-test1-b-ha-gce-example-co
     interface    = ""
     mode         = "READ_WRITE"
     source       = ""
-    source_image = "https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-stable-57-9202-64-0"
+    source_image = "https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20221018"
     type         = "PERSISTENT"
   }
   labels = {
@@ -621,7 +629,7 @@ resource "google_compute_instance_template" "master-us-test1-b-ha-gce-example-co
     "k8s-io-role-control-plane" = ""
     "k8s-io-role-master"        = ""
   }
-  machine_type = "n1-standard-1"
+  machine_type = "e2-medium"
   metadata = {
     "cluster-name"                    = "ha-gce.example.com"
     "kops-k8s-io-instance-group-name" = "master-us-test1-b"
@@ -660,7 +668,7 @@ resource "google_compute_instance_template" "master-us-test1-c-ha-gce-example-co
     interface    = ""
     mode         = "READ_WRITE"
     source       = ""
-    source_image = "https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-stable-57-9202-64-0"
+    source_image = "https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20221018"
     type         = "PERSISTENT"
   }
   labels = {
@@ -669,7 +677,7 @@ resource "google_compute_instance_template" "master-us-test1-c-ha-gce-example-co
     "k8s-io-role-control-plane" = ""
     "k8s-io-role-master"        = ""
   }
-  machine_type = "n1-standard-1"
+  machine_type = "e2-medium"
   metadata = {
     "cluster-name"                    = "ha-gce.example.com"
     "kops-k8s-io-instance-group-name" = "master-us-test1-c"
@@ -708,7 +716,7 @@ resource "google_compute_instance_template" "nodes-ha-gce-example-com" {
     interface    = ""
     mode         = "READ_WRITE"
     source       = ""
-    source_image = "https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-stable-57-9202-64-0"
+    source_image = "https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20221018"
     type         = "PERSISTENT"
   }
   labels = {
@@ -716,11 +724,11 @@ resource "google_compute_instance_template" "nodes-ha-gce-example-com" {
     "k8s-io-instance-group" = "nodes"
     "k8s-io-role-node"      = ""
   }
-  machine_type = "n1-standard-2"
+  machine_type = "e2-medium"
   metadata = {
     "cluster-name"                    = "ha-gce.example.com"
     "kops-k8s-io-instance-group-name" = "nodes"
-    "kube-env"                        = "AUTOSCALER_ENV_VARS: os_distribution=cos;arch=amd64;os=linux"
+    "kube-env"                        = "AUTOSCALER_ENV_VARS: os_distribution=ubuntu;arch=amd64;os=linux"
     "ssh-keys"                        = "admin: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCtWu40XQo8dczLsCq0OWV+hxm9uV3WxeH9Kgh4sMzQxNtoU1pvW0XdjpkBesRKGoolfWeCLXWxpyQb1IaiMkKoz7MdhQ/6UKjMjP66aFWWp3pwD0uj0HuJ7tq4gKHKRYGTaZIRWpzUiANBrjugVgA+Sd7E/mYwc/DMXkIyRZbvhQ=="
     "startup-script"                  = file("${path.module}/data/google_compute_instance_template_nodes-ha-gce-example-com_metadata_startup-script")
   }

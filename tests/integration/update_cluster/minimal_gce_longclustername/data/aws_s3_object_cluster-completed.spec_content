@@ -7,7 +7,7 @@ spec:
   api:
     dns: {}
   authorization:
-    alwaysAllow: {}
+    rbac: {}
   channel: stable
   cloudConfig:
     gcpPDCSIDriver:
@@ -15,6 +15,14 @@ spec:
     manageStorageClasses: true
     multizone: true
     nodeTags: minimal-gce-with-a-very-very-very-very--96dqvi-k8s-io-role-node
+  cloudControllerManager:
+    allocateNodeCIDRs: true
+    cidrAllocatorType: CloudAllocator
+    clusterCIDR: 100.96.0.0/11
+    clusterName: minimal-gce-with-a-very-very-very-very-very-long-name-example-com
+    image: k8scloudprovidergcp/cloud-controller-manager:latest
+    leaderElection:
+      leaderElect: true
   cloudProvider: gce
   clusterDNSDomain: cluster.local
   configBase: memfs://tests/minimal-gce-with-a-very-very-very-very-very-long-name.example.com
@@ -31,16 +39,20 @@ spec:
   etcdClusters:
   - backups:
       backupStore: memfs://tests/minimal-gce-with-a-very-very-very-very-very-long-name.example.com/backups/etcd/main
+    cpuRequest: 200m
     etcdMembers:
     - instanceGroup: master-us-test1-a
-      name: "1"
+      name: a
+    memoryRequest: 100Mi
     name: main
     version: 3.5.6
   - backups:
       backupStore: memfs://tests/minimal-gce-with-a-very-very-very-very-very-long-name.example.com/backups/etcd/events
+    cpuRequest: 100m
     etcdMembers:
     - instanceGroup: master-us-test1-a
-      name: "1"
+      name: a
+    memoryRequest: 100Mi
     name: events
     version: 3.5.6
   externalDns:
@@ -54,9 +66,9 @@ spec:
     apiAudiences:
     - kubernetes.svc.default
     apiServerCount: 1
-    authorizationMode: AlwaysAllow
+    authorizationMode: Node,RBAC
     bindAddress: 0.0.0.0
-    cloudProvider: gce
+    cloudProvider: external
     enableAdmissionPlugins:
     - NamespaceLifecycle
     - LimitRanger
@@ -71,7 +83,7 @@ spec:
     - https://127.0.0.1:4001
     etcdServersOverrides:
     - /events#https://127.0.0.1:4002
-    image: registry.k8s.io/kube-apiserver:v1.23.0
+    image: registry.k8s.io/kube-apiserver:v1.26.0
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
@@ -93,12 +105,11 @@ spec:
   kubeControllerManager:
     allocateNodeCIDRs: true
     attachDetachReconcileSyncPeriod: 1m0s
-    cloudProvider: gce
+    cloudProvider: external
     clusterCIDR: 100.96.0.0/11
-    clusterName: minimal-gce-with-a-very-very-very-very-very-long-name-example-com
+    clusterName: minimal-gce-with-a-very-very-very-very-very-long-name.example.com
     configureCloudRoutes: false
-    enableLeaderMigration: true
-    image: registry.k8s.io/kube-controller-manager:v1.23.0
+    image: registry.k8s.io/kube-controller-manager:v1.26.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -120,10 +131,10 @@ spec:
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    image: registry.k8s.io/kube-proxy:v1.23.0
+    image: registry.k8s.io/kube-proxy:v1.26.0
     logLevel: 2
   kubeScheduler:
-    image: registry.k8s.io/kube-scheduler:v1.23.0
+    image: registry.k8s.io/kube-scheduler:v1.26.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -131,7 +142,7 @@ spec:
     anonymousAuth: false
     cgroupDriver: systemd
     cgroupRoot: /
-    cloudProvider: gce
+    cloudProvider: external
     clusterDNS: 100.64.0.10
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
@@ -139,7 +150,6 @@ spec:
     hairpinMode: promiscuous-bridge
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    networkPluginName: cni
     podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
@@ -148,12 +158,13 @@ spec:
     shutdownGracePeriodCriticalPods: 10s
   kubernetesApiAccess:
   - 0.0.0.0/0
-  kubernetesVersion: 1.23.0
+  - ::/0
+  kubernetesVersion: 1.26.0
   masterKubelet:
     anonymousAuth: false
     cgroupDriver: systemd
     cgroupRoot: /
-    cloudProvider: gce
+    cloudProvider: external
     clusterDNS: 100.64.0.10
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
@@ -161,7 +172,6 @@ spec:
     hairpinMode: promiscuous-bridge
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    networkPluginName: cni
     podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
@@ -178,6 +188,7 @@ spec:
   serviceClusterIPRange: 100.64.0.0/13
   sshAccess:
   - 0.0.0.0/0
+  - ::/0
   subnets:
   - cidr: 10.0.16.0/20
     name: us-test1

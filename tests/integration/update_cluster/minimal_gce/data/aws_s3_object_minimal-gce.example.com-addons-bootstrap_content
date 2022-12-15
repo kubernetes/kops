@@ -26,13 +26,6 @@ spec:
     selector:
       k8s-addon: kubelet-api.rbac.addons.k8s.io
     version: 9.99.0
-  - id: k8s-1.23
-    manifest: leader-migration.rbac.addons.k8s.io/k8s-1.23.yaml
-    manifestHash: b9c91e09c0f28c9b74ff140b8395d611834c627d698846d625c10975a74a48c4
-    name: leader-migration.rbac.addons.k8s.io
-    selector:
-      k8s-addon: leader-migration.rbac.addons.k8s.io
-    version: 9.99.0
   - manifest: limit-range.addons.k8s.io/v1.5.0.yaml
     manifestHash: 2d55c3bc5e354e84a3730a65b42f39aba630a59dc8d32b30859fcce3d3178bc2
     name: limit-range.addons.k8s.io
@@ -66,4 +59,51 @@ spec:
     name: metadata-proxy.addons.k8s.io
     selector:
       k8s-addon: metadata-proxy.addons.k8s.io
+    version: 9.99.0
+  - id: k8s-1.23
+    manifest: gcp-cloud-controller.addons.k8s.io/k8s-1.23.yaml
+    manifestHash: d799e7a4e8573b5ca14c04dead82e8d65b19a2f837b48b0bf164cc02ee14fb74
+    name: gcp-cloud-controller.addons.k8s.io
+    prune:
+      kinds:
+      - kind: ConfigMap
+        labelSelector: addon.kops.k8s.io/name=gcp-cloud-controller.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - kind: Service
+        labelSelector: addon.kops.k8s.io/name=gcp-cloud-controller.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - kind: ServiceAccount
+        labelSelector: addon.kops.k8s.io/name=gcp-cloud-controller.addons.k8s.io,app.kubernetes.io/managed-by=kops
+        namespaces:
+        - kube-system
+      - group: apps
+        kind: DaemonSet
+        labelSelector: addon.kops.k8s.io/name=gcp-cloud-controller.addons.k8s.io,app.kubernetes.io/managed-by=kops
+        namespaces:
+        - kube-system
+      - group: apps
+        kind: Deployment
+        labelSelector: addon.kops.k8s.io/name=gcp-cloud-controller.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: apps
+        kind: StatefulSet
+        labelSelector: addon.kops.k8s.io/name=gcp-cloud-controller.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: policy
+        kind: PodDisruptionBudget
+        labelSelector: addon.kops.k8s.io/name=gcp-cloud-controller.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: rbac.authorization.k8s.io
+        kind: ClusterRole
+        labelSelector: addon.kops.k8s.io/name=gcp-cloud-controller.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: rbac.authorization.k8s.io
+        kind: ClusterRoleBinding
+        labelSelector: addon.kops.k8s.io/name=gcp-cloud-controller.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: rbac.authorization.k8s.io
+        kind: Role
+        labelSelector: addon.kops.k8s.io/name=gcp-cloud-controller.addons.k8s.io,app.kubernetes.io/managed-by=kops
+        namespaces:
+        - kube-system
+      - group: rbac.authorization.k8s.io
+        kind: RoleBinding
+        labelSelector: addon.kops.k8s.io/name=gcp-cloud-controller.addons.k8s.io,app.kubernetes.io/managed-by=kops
+        namespaces:
+        - kube-system
+    selector:
+      k8s-addon: gcp-cloud-controller.addons.k8s.io
     version: 9.99.0
