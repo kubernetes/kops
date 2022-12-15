@@ -17,6 +17,7 @@ limitations under the License.
 package cloudup
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
@@ -30,6 +31,7 @@ import (
 const testAWSRegion = "us-test-1"
 
 func buildDefaultCluster(t *testing.T) *api.Cluster {
+	ctx := context.TODO()
 	cloud, c := buildMinimalCluster()
 
 	err := PerformAssignments(c, cloud)
@@ -37,7 +39,7 @@ func buildDefaultCluster(t *testing.T) *api.Cluster {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
 
-	fullSpec, err := mockedPopulateClusterSpec(c, cloud)
+	fullSpec, err := mockedPopulateClusterSpec(ctx, c, cloud)
 	if err != nil {
 		t.Fatalf("error from PopulateClusterSpec: %v", err)
 	}

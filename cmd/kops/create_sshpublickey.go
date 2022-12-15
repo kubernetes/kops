@@ -101,7 +101,7 @@ func RunCreateSSHPublicKey(ctx context.Context, f *util.Factory, out io.Writer, 
 		return fmt.Errorf("error reading SSH public key %v: %v", options.PublicKeyPath, err)
 	}
 
-	err = sshCredentialStore.AddSSHPublicKey(data)
+	err = sshCredentialStore.AddSSHPublicKey(ctx, data)
 	if err != nil {
 		return fmt.Errorf("error adding SSH public key: %v", err)
 	}

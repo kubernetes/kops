@@ -299,7 +299,7 @@ func updateInstanceGroup(ctx context.Context, clientset simple.Clientset, channe
 	}
 
 	assetBuilder := assets.NewAssetBuilder(cluster, false)
-	fullCluster, err := cloudup.PopulateClusterSpec(clientset, cluster, cloud, assetBuilder)
+	fullCluster, err := cloudup.PopulateClusterSpec(ctx, clientset, cluster, cloud, assetBuilder)
 	if err != nil {
 		return fmt.Sprintf("error populating cluster spec: %s", err), nil
 	}
