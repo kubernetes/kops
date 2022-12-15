@@ -73,7 +73,9 @@ func (s *MirrorKeystore) CheckChanges(a, e, changes *MirrorKeystore) error {
 
 // Render implements fi.Task::Render
 func (_ *MirrorKeystore) Render(c *fi.CloudupContext, a, e, changes *MirrorKeystore) error {
+	ctx := c.Context()
+
 	keystore := c.Keystore
 
-	return keystore.MirrorTo(e.MirrorPath)
+	return keystore.MirrorTo(ctx, e.MirrorPath)
 }

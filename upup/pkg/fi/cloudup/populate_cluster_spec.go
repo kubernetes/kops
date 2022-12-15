@@ -17,6 +17,7 @@ limitations under the License.
 package cloudup
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"strings"
@@ -55,13 +56,13 @@ type populateClusterSpec struct {
 
 // PopulateClusterSpec takes a user-specified cluster spec, and computes the full specification that should be set on the cluster.
 // We do this so that we don't need any real "brains" on the node side.
-func PopulateClusterSpec(clientset simple.Clientset, cluster *kopsapi.Cluster, cloud fi.Cloud, assetBuilder *assets.AssetBuilder) (*kopsapi.Cluster, error) {
+func PopulateClusterSpec(ctx context.Context, clientset simple.Clientset, cluster *kopsapi.Cluster, cloud fi.Cloud, assetBuilder *assets.AssetBuilder) (*kopsapi.Cluster, error) {
 	c := &populateClusterSpec{
 		cloud:        cloud,
 		InputCluster: cluster,
 		assetBuilder: assetBuilder,
 	}
-	err := c.run(clientset)
+	err := c.run(ctx, clientset)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +77,7 @@ func PopulateClusterSpec(clientset simple.Clientset, cluster *kopsapi.Cluster, c
 // very wrong.. but at least now my new cluster.Spec.Topology
 // struct is falling through..
 // @kris-nova
-func (c *populateClusterSpec) run(clientset simple.Clientset) error {
+func (c *populateClusterSpec) run(ctx context.Context, clientset simple.Clientset) error {
 	if errs := validation.ValidateCluster(c.InputCluster, false); len(errs) != 0 {
 		return errs.ToAggregate()
 	}
@@ -172,7 +173,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 		return fmt.Errorf("ConfigBase path is not cluster readable: %v", cluster.Spec.ConfigBase)
 	}
 
-	keyStore, err := clientset.KeyStore(cluster)
+	keyStore, err := clientset.KeyStore(ctx, cluster)
 	if err != nil {
 		return err
 	}

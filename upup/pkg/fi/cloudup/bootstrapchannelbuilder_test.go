@@ -17,6 +17,7 @@ limitations under the License.
 package cloudup
 
 import (
+	"context"
 	"os"
 	"path"
 	"testing"
@@ -81,6 +82,8 @@ func TestBootstrapChannelBuilder_AWSCloudController(t *testing.T) {
 }
 
 func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
+	ctx := context.TODO()
+
 	basedir := path.Join("tests/bootstrapchannelbuilder/", key)
 
 	clusterYamlPath := path.Join(basedir, "cluster.yaml")
@@ -103,7 +106,7 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 		t.Fatalf("error from PerformAssignments for %q: %v", key, err)
 	}
 
-	fullSpec, err := mockedPopulateClusterSpec(cluster, cloud)
+	fullSpec, err := mockedPopulateClusterSpec(ctx, cluster, cloud)
 	if err != nil {
 		t.Fatalf("error from PopulateClusterSpec for %q: %v", key, err)
 	}

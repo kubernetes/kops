@@ -649,7 +649,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	}
 
 	assetBuilder := assets.NewAssetBuilder(cluster, false)
-	fullCluster, err := cloudup.PopulateClusterSpec(clientset, cluster, cloud, assetBuilder)
+	fullCluster, err := cloudup.PopulateClusterSpec(ctx, clientset, cluster, cloud, assetBuilder)
 	if err != nil {
 		return err
 	}
@@ -759,13 +759,13 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	}
 
 	if len(c.SSHPublicKeys) != 0 {
-		sshCredentialStore, err := clientset.SSHCredentialStore(cluster)
+		sshCredentialStore, err := clientset.SSHCredentialStore(ctx, cluster)
 		if err != nil {
 			return err
 		}
 
 		for _, data := range c.SSHPublicKeys {
-			err = sshCredentialStore.AddSSHPublicKey(data)
+			err = sshCredentialStore.AddSSHPublicKey(ctx, data)
 			if err != nil {
 				return fmt.Errorf("error adding SSH public key: %v", err)
 			}

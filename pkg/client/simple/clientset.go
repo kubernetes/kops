@@ -53,10 +53,10 @@ type Clientset interface {
 	SecretStore(cluster *kops.Cluster) (fi.SecretStore, error)
 
 	// KeyStore builds the key store for the specified cluster
-	KeyStore(cluster *kops.Cluster) (fi.CAStore, error)
+	KeyStore(ctx context.Context, cluster *kops.Cluster) (fi.CAStore, error)
 
 	// SSHCredentialStore builds the SSHCredential store for the specified cluster
-	SSHCredentialStore(cluster *kops.Cluster) (fi.SSHCredentialStore, error)
+	SSHCredentialStore(ctx context.Context, cluster *kops.Cluster) (fi.SSHCredentialStore, error)
 
 	// DeleteCluster deletes all the state for the specified cluster
 	DeleteCluster(ctx context.Context, cluster *kops.Cluster) error

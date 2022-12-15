@@ -17,6 +17,7 @@ limitations under the License.
 package configserver
 
 import (
+	"context"
 	"crypto/x509"
 	"fmt"
 
@@ -48,12 +49,12 @@ func (s *configserverKeyStore) CreateKeypair(signer string, name string, templat
 }
 
 // StoreKeyset implements fi.Keystore
-func (s *configserverKeyStore) StoreKeyset(name string, keyset *fi.Keyset) error {
+func (s *configserverKeyStore) StoreKeyset(ctx context.Context, name string, keyset *fi.Keyset) error {
 	return fmt.Errorf("StoreKeyset not supported by configserverKeyStore")
 }
 
 // MirrorTo implements fi.Keystore
-func (s *configserverKeyStore) MirrorTo(basedir vfs.Path) error {
+func (s *configserverKeyStore) MirrorTo(ctx context.Context, basedir vfs.Path) error {
 	return fmt.Errorf("MirrorTo not supported by configserverKeyStore")
 }
 

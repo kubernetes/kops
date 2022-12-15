@@ -158,13 +158,13 @@ func RunCreateKeypair(ctx context.Context, f *util.Factory, out io.Writer, optio
 		return fmt.Errorf("error getting clientset: %v", err)
 	}
 
-	keyStore, err := clientSet.KeyStore(cluster)
+	keyStore, err := clientSet.KeyStore(ctx, cluster)
 	if err != nil {
 		return fmt.Errorf("error getting keystore: %v", err)
 	}
 
 	if options.Keyset != "all" {
-		return createKeypair(out, options, options.Keyset, keyStore)
+		return createKeypair(ctx, out, options, options.Keyset, keyStore)
 	}
 
 	keysets, err := keyStore.ListKeysets()
@@ -174,7 +174,7 @@ func RunCreateKeypair(ctx context.Context, f *util.Factory, out io.Writer, optio
 
 	for name := range keysets {
 		if rotatableKeysetFilter(name, nil) {
-			if err := createKeypair(out, options, name, keyStore); err != nil {
+			if err := createKeypair(ctx, out, options, name, keyStore); err != nil {
 				return fmt.Errorf("creating keypair for %s: %v", name, err)
 			}
 		}
@@ -183,7 +183,7 @@ func RunCreateKeypair(ctx context.Context, f *util.Factory, out io.Writer, optio
 	return nil
 }
 
-func createKeypair(out io.Writer, options *CreateKeypairOptions, name string, keyStore fi.CAStore) error {
+func createKeypair(ctx context.Context, out io.Writer, options *CreateKeypairOptions, name string, keyStore fi.CAStore) error {
 	var err error
 	var privateKey *pki.PrivateKey
 	if options.PrivateKeyPath != "" {
@@ -252,7 +252,7 @@ func createKeypair(out io.Writer, options *CreateKeypairOptions, name string, ke
 		return err
 	}
 
-	err = keyStore.StoreKeyset(name, keyset)
+	err = keyStore.StoreKeyset(ctx, name, keyset)
 	if err != nil {
 		return fmt.Errorf("error storing user provided keys %q %q: %v", options.CertPath, options.PrivateKeyPath, err)
 	}
@@ -268,7 +268,9 @@ func createKeypair(out io.Writer, options *CreateKeypairOptions, name string, ke
 }
 
 func completeKeyset(cluster *kopsapi.Cluster, clientSet simple.Clientset, args []string, filter func(name string, keyset *fi.Keyset) bool) (keyset *fi.Keyset, keyStore fi.CAStore, completions []string, directive cobra.ShellCompDirective) {
-	keyStore, err := clientSet.KeyStore(cluster)
+	ctx := context.TODO()
+
+	keyStore, err := clientSet.KeyStore(ctx, cluster)
 	if err != nil {
 		completions, directive := commandutils.CompletionError("getting keystore", err)
 		return nil, nil, completions, directive

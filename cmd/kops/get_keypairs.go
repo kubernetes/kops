@@ -175,7 +175,7 @@ func RunGetKeypairs(ctx context.Context, f commandutils.Factory, out io.Writer, 
 		return err
 	}
 
-	keyStore, err := clientset.KeyStore(cluster)
+	keyStore, err := clientset.KeyStore(ctx, cluster)
 	if err != nil {
 		return err
 	}

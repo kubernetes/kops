@@ -159,6 +159,8 @@ func (_ *Keypair) ShouldCreate(a, e, changes *Keypair) (bool, error) {
 }
 
 func (_ *Keypair) Render(c *fi.CloudupContext, a, e, changes *Keypair) error {
+	ctx := c.Context()
+
 	name := fi.ValueOf(e.Name)
 	if name == "" {
 		return fi.RequiredField("Name")
@@ -255,7 +257,7 @@ func (_ *Keypair) Render(c *fi.CloudupContext, a, e, changes *Keypair) error {
 		keyset.LegacyFormat = false
 		keyset.Items[ki.Id] = ki
 		keyset.Primary = ki
-		err = c.Keystore.StoreKeyset(name, keyset)
+		err = c.Keystore.StoreKeyset(ctx, name, keyset)
 		if err != nil {
 			return err
 		}
@@ -283,7 +285,7 @@ func (_ *Keypair) Render(c *fi.CloudupContext, a, e, changes *Keypair) error {
 			return err
 		}
 		keyset.LegacyFormat = false
-		err = c.Keystore.StoreKeyset(name, keyset)
+		err = c.Keystore.StoreKeyset(ctx, name, keyset)
 		if err != nil {
 			return err
 		}

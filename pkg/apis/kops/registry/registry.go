@@ -17,6 +17,7 @@ limitations under the License.
 package registry
 
 import (
+	"context"
 	"fmt"
 
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -33,7 +34,7 @@ const (
 	PathKopsVersionUpdated = "kops-version.txt"
 )
 
-func ConfigBase(c *api.Cluster) (vfs.Path, error) {
+func ConfigBase(ctx context.Context, c *api.Cluster) (vfs.Path, error) {
 	if c.Spec.ConfigBase == "" {
 		return nil, field.Required(field.NewPath("spec", "configBase"), "")
 	}

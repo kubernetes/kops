@@ -102,18 +102,18 @@ func (c *RESTClientset) SecretStore(cluster *kops.Cluster) (fi.SecretStore, erro
 	return secrets.NewClientsetSecretStore(cluster, c.KopsClient, namespace), nil
 }
 
-func (c *RESTClientset) KeyStore(cluster *kops.Cluster) (fi.CAStore, error) {
+func (c *RESTClientset) KeyStore(ctx context.Context, cluster *kops.Cluster) (fi.CAStore, error) {
 	namespace := restNamespaceForClusterName(cluster.Name)
 	return fi.NewClientsetCAStore(cluster, c.KopsClient, namespace), nil
 }
 
-func (c *RESTClientset) SSHCredentialStore(cluster *kops.Cluster) (fi.SSHCredentialStore, error) {
+func (c *RESTClientset) SSHCredentialStore(ctx context.Context, cluster *kops.Cluster) (fi.SSHCredentialStore, error) {
 	namespace := restNamespaceForClusterName(cluster.Name)
-	return fi.NewClientsetSSHCredentialStore(cluster, c.KopsClient, namespace), nil
+	return fi.NewClientsetSSHCredentialStore(ctx, cluster, c.KopsClient, namespace), nil
 }
 
 func (c *RESTClientset) DeleteCluster(ctx context.Context, cluster *kops.Cluster) error {
-	configBase, err := registry.ConfigBase(cluster)
+	configBase, err := registry.ConfigBase(ctx, cluster)
 	if err != nil {
 		return err
 	}

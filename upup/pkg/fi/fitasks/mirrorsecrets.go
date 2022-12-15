@@ -74,6 +74,8 @@ func (s *MirrorSecrets) CheckChanges(a, e, changes *MirrorSecrets) error {
 
 // Render implements fi.Task::Render
 func (_ *MirrorSecrets) Render(c *fi.CloudupContext, a, e, changes *MirrorSecrets) error {
+	ctx := c.Context()
+
 	secrets := c.SecretStore
-	return secrets.MirrorTo(e.MirrorPath)
+	return secrets.MirrorTo(ctx, e.MirrorPath)
 }

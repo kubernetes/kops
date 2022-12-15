@@ -207,12 +207,12 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Up
 		return results, err
 	}
 
-	keyStore, err := clientset.KeyStore(cluster)
+	keyStore, err := clientset.KeyStore(ctx, cluster)
 	if err != nil {
 		return results, err
 	}
 
-	sshCredentialStore, err := clientset.SSHCredentialStore(cluster)
+	sshCredentialStore, err := clientset.SSHCredentialStore(ctx, cluster)
 	if err != nil {
 		return results, err
 	}
@@ -230,7 +230,7 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Up
 		if err != nil {
 			return results, fmt.Errorf("error reading SSH key file %q: %v", c.SSHPublicKey, err)
 		}
-		err = sshCredentialStore.AddSSHPublicKey(authorized)
+		err = sshCredentialStore.AddSSHPublicKey(ctx, authorized)
 		if err != nil {
 			return results, fmt.Errorf("error adding SSH public key: %v", err)
 		}
