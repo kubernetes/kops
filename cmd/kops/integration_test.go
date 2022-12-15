@@ -311,35 +311,55 @@ func TestMinimalGossipIRSA(t *testing.T) {
 // TestMinimalGCE runs tests on a minimal GCE configuration
 func TestMinimalGCE(t *testing.T) {
 	newIntegrationTest("minimal-gce.example.com", "minimal_gce").
-		withAddons(dnsControllerAddon, leaderElectionAddon, "gcp-pd-csi-driver.addons.k8s.io-k8s-1.23").
+		withAddons(
+			dnsControllerAddon,
+			gcpCCMAddon,
+			gcpPDCSIAddon,
+		).
 		runTestTerraformGCE(t)
 }
 
 // TestMinimalGCEPrivate runs tests on a minimal GCE configuration with private topology.
 func TestMinimalGCEPrivate(t *testing.T) {
 	newIntegrationTest("minimal-gce-private.example.com", "minimal_gce_private").
-		withAddons(dnsControllerAddon, "rbac.addons.k8s.io-k8s-1.8").
+		withAddons(
+			dnsControllerAddon,
+			gcpCCMAddon,
+			gcpPDCSIAddon,
+		).
 		runTestTerraformGCE(t)
 }
 
 // TestMinimalGCEInternalLoadBalancer runs tests on a minimal GCE configuration with an internal load balancer.
 func TestMinimalGCEInternalLoadBalancer(t *testing.T) {
 	newIntegrationTest("minimal-gce-ilb.example.com", "minimal_gce_ilb").
-		withAddons(dnsControllerAddon, "rbac.addons.k8s.io-k8s-1.8").
+		withAddons(
+			dnsControllerAddon,
+			gcpCCMAddon,
+			gcpPDCSIAddon,
+		).
 		runTestTerraformGCE(t)
 }
 
 // TestMinimalGCELongClusterName runs tests on a minimal GCE configuration with a very long cluster name
 func TestMinimalGCELongClusterName(t *testing.T) {
 	newIntegrationTest("minimal-gce-with-a-very-very-very-very-very-long-name.example.com", "minimal_gce_longclustername").
-		withAddons(dnsControllerAddon, leaderElectionAddon, "gcp-pd-csi-driver.addons.k8s.io-k8s-1.23").
+		withAddons(
+			dnsControllerAddon,
+			gcpCCMAddon,
+			gcpPDCSIAddon,
+		).
 		runTestTerraformGCE(t)
 }
 
 // TestMinimalGCEInternalLoadBalancerLongClusterName runs tests on a minimal GCE configuration with an internal load balancer and a very long cluster name
 func TestMinimalGCEInternalLoadBalancerLongClusterName(t *testing.T) {
 	newIntegrationTest("minimal-gce-with-a-very-very-very-very-very-long-name.example.com", "minimal_gce_ilb_longclustername").
-		withAddons(dnsControllerAddon, leaderElectionAddon, "gcp-pd-csi-driver.addons.k8s.io-k8s-1.23").
+		withAddons(
+			dnsControllerAddon,
+			gcpCCMAddon,
+			gcpPDCSIAddon,
+		).
 		runTestTerraformGCE(t)
 }
 
@@ -354,7 +374,11 @@ func TestHA(t *testing.T) {
 // --zones us-test1-a,us-test1-b,us-test1-c --master-count=3
 func TestHighAvailabilityGCE(t *testing.T) {
 	newIntegrationTest("ha-gce.example.com", "ha_gce").withZones(3).
-		withAddons(dnsControllerAddon, "rbac.addons.k8s.io-k8s-1.8").
+		withAddons(
+			dnsControllerAddon,
+			gcpCCMAddon,
+			gcpPDCSIAddon,
+		).
 		runTestTerraformGCE(t)
 }
 
