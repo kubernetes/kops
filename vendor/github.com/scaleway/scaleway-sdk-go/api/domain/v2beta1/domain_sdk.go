@@ -39,9 +39,8 @@ var (
 	_ = namegenerator.GetRandomName
 )
 
-// API: DNS API
-//
-// Manage your DNS zones and records.
+// API: domains and DNS API documetation.
+// Manage your domains, DNS zones and records with the Domains and DNS API.
 type API struct {
 	client *scw.Client
 }
@@ -53,8 +52,7 @@ func NewAPI(client *scw.Client) *API {
 	}
 }
 
-// RegistrarAPI: domains registrar API
-//
+// RegistrarAPI: domains registrar API.
 // Manage your domains and contacts.
 type RegistrarAPI struct {
 	client *scw.Client
@@ -70,14 +68,10 @@ func NewRegistrarAPI(client *scw.Client) *RegistrarAPI {
 type ContactEmailStatus string
 
 const (
-	// ContactEmailStatusEmailStatusUnknown is [insert doc].
 	ContactEmailStatusEmailStatusUnknown = ContactEmailStatus("email_status_unknown")
-	// ContactEmailStatusValidated is [insert doc].
-	ContactEmailStatusValidated = ContactEmailStatus("validated")
-	// ContactEmailStatusNotValidated is [insert doc].
-	ContactEmailStatusNotValidated = ContactEmailStatus("not_validated")
-	// ContactEmailStatusInvalidEmail is [insert doc].
-	ContactEmailStatusInvalidEmail = ContactEmailStatus("invalid_email")
+	ContactEmailStatusValidated          = ContactEmailStatus("validated")
+	ContactEmailStatusNotValidated       = ContactEmailStatus("not_validated")
+	ContactEmailStatusInvalidEmail       = ContactEmailStatus("invalid_email")
 )
 
 func (enum ContactEmailStatus) String() string {
@@ -106,22 +100,14 @@ func (enum *ContactEmailStatus) UnmarshalJSON(data []byte) error {
 type ContactExtensionFRMode string
 
 const (
-	// ContactExtensionFRModeModeUnknown is [insert doc].
-	ContactExtensionFRModeModeUnknown = ContactExtensionFRMode("mode_unknown")
-	// ContactExtensionFRModeIndividual is [insert doc].
-	ContactExtensionFRModeIndividual = ContactExtensionFRMode("individual")
-	// ContactExtensionFRModeCompanyIdentificationCode is [insert doc].
+	ContactExtensionFRModeModeUnknown               = ContactExtensionFRMode("mode_unknown")
+	ContactExtensionFRModeIndividual                = ContactExtensionFRMode("individual")
 	ContactExtensionFRModeCompanyIdentificationCode = ContactExtensionFRMode("company_identification_code")
-	// ContactExtensionFRModeDuns is [insert doc].
-	ContactExtensionFRModeDuns = ContactExtensionFRMode("duns")
-	// ContactExtensionFRModeLocal is [insert doc].
-	ContactExtensionFRModeLocal = ContactExtensionFRMode("local")
-	// ContactExtensionFRModeAssociation is [insert doc].
-	ContactExtensionFRModeAssociation = ContactExtensionFRMode("association")
-	// ContactExtensionFRModeTrademark is [insert doc].
-	ContactExtensionFRModeTrademark = ContactExtensionFRMode("trademark")
-	// ContactExtensionFRModeCodeAuthAfnic is [insert doc].
-	ContactExtensionFRModeCodeAuthAfnic = ContactExtensionFRMode("code_auth_afnic")
+	ContactExtensionFRModeDuns                      = ContactExtensionFRMode("duns")
+	ContactExtensionFRModeLocal                     = ContactExtensionFRMode("local")
+	ContactExtensionFRModeAssociation               = ContactExtensionFRMode("association")
+	ContactExtensionFRModeTrademark                 = ContactExtensionFRMode("trademark")
+	ContactExtensionFRModeCodeAuthAfnic             = ContactExtensionFRMode("code_auth_afnic")
 )
 
 func (enum ContactExtensionFRMode) String() string {
@@ -150,44 +136,26 @@ func (enum *ContactExtensionFRMode) UnmarshalJSON(data []byte) error {
 type ContactExtensionNLLegalForm string
 
 const (
-	// ContactExtensionNLLegalFormLegalFormUnknown is [insert doc].
-	ContactExtensionNLLegalFormLegalFormUnknown = ContactExtensionNLLegalForm("legal_form_unknown")
-	// ContactExtensionNLLegalFormOther is [insert doc].
-	ContactExtensionNLLegalFormOther = ContactExtensionNLLegalForm("other")
-	// ContactExtensionNLLegalFormNonDutchEuCompany is [insert doc].
-	ContactExtensionNLLegalFormNonDutchEuCompany = ContactExtensionNLLegalForm("non_dutch_eu_company")
-	// ContactExtensionNLLegalFormNonDutchLegalFormEnterpriseSubsidiary is [insert doc].
+	ContactExtensionNLLegalFormLegalFormUnknown                      = ContactExtensionNLLegalForm("legal_form_unknown")
+	ContactExtensionNLLegalFormOther                                 = ContactExtensionNLLegalForm("other")
+	ContactExtensionNLLegalFormNonDutchEuCompany                     = ContactExtensionNLLegalForm("non_dutch_eu_company")
 	ContactExtensionNLLegalFormNonDutchLegalFormEnterpriseSubsidiary = ContactExtensionNLLegalForm("non_dutch_legal_form_enterprise_subsidiary")
-	// ContactExtensionNLLegalFormLimitedCompany is [insert doc].
-	ContactExtensionNLLegalFormLimitedCompany = ContactExtensionNLLegalForm("limited_company")
-	// ContactExtensionNLLegalFormLimitedCompanyInFormation is [insert doc].
-	ContactExtensionNLLegalFormLimitedCompanyInFormation = ContactExtensionNLLegalForm("limited_company_in_formation")
-	// ContactExtensionNLLegalFormCooperative is [insert doc].
-	ContactExtensionNLLegalFormCooperative = ContactExtensionNLLegalForm("cooperative")
-	// ContactExtensionNLLegalFormLimitedPartnership is [insert doc].
-	ContactExtensionNLLegalFormLimitedPartnership = ContactExtensionNLLegalForm("limited_partnership")
-	// ContactExtensionNLLegalFormSoleCompany is [insert doc].
-	ContactExtensionNLLegalFormSoleCompany = ContactExtensionNLLegalForm("sole_company")
-	// ContactExtensionNLLegalFormEuropeanEconomicInterestGroup is [insert doc].
-	ContactExtensionNLLegalFormEuropeanEconomicInterestGroup = ContactExtensionNLLegalForm("european_economic_interest_group")
-	// ContactExtensionNLLegalFormReligiousEntity is [insert doc].
-	ContactExtensionNLLegalFormReligiousEntity = ContactExtensionNLLegalForm("religious_entity")
-	// ContactExtensionNLLegalFormPartnership is [insert doc].
-	ContactExtensionNLLegalFormPartnership = ContactExtensionNLLegalForm("partnership")
-	// ContactExtensionNLLegalFormPublicCompany is [insert doc].
-	ContactExtensionNLLegalFormPublicCompany = ContactExtensionNLLegalForm("public_company")
-	// ContactExtensionNLLegalFormMutualBenefitCompany is [insert doc].
-	ContactExtensionNLLegalFormMutualBenefitCompany = ContactExtensionNLLegalForm("mutual_benefit_company")
-	// ContactExtensionNLLegalFormResidential is [insert doc].
-	ContactExtensionNLLegalFormResidential = ContactExtensionNLLegalForm("residential")
-	// ContactExtensionNLLegalFormShippingCompany is [insert doc].
-	ContactExtensionNLLegalFormShippingCompany = ContactExtensionNLLegalForm("shipping_company")
-	// ContactExtensionNLLegalFormFoundation is [insert doc].
-	ContactExtensionNLLegalFormFoundation = ContactExtensionNLLegalForm("foundation")
-	// ContactExtensionNLLegalFormAssociation is [insert doc].
-	ContactExtensionNLLegalFormAssociation = ContactExtensionNLLegalForm("association")
-	// ContactExtensionNLLegalFormTradingPartnership is [insert doc].
-	ContactExtensionNLLegalFormTradingPartnership = ContactExtensionNLLegalForm("trading_partnership")
+	ContactExtensionNLLegalFormLimitedCompany                        = ContactExtensionNLLegalForm("limited_company")
+	ContactExtensionNLLegalFormLimitedCompanyInFormation             = ContactExtensionNLLegalForm("limited_company_in_formation")
+	ContactExtensionNLLegalFormCooperative                           = ContactExtensionNLLegalForm("cooperative")
+	ContactExtensionNLLegalFormLimitedPartnership                    = ContactExtensionNLLegalForm("limited_partnership")
+	ContactExtensionNLLegalFormSoleCompany                           = ContactExtensionNLLegalForm("sole_company")
+	ContactExtensionNLLegalFormEuropeanEconomicInterestGroup         = ContactExtensionNLLegalForm("european_economic_interest_group")
+	ContactExtensionNLLegalFormReligiousEntity                       = ContactExtensionNLLegalForm("religious_entity")
+	ContactExtensionNLLegalFormPartnership                           = ContactExtensionNLLegalForm("partnership")
+	ContactExtensionNLLegalFormPublicCompany                         = ContactExtensionNLLegalForm("public_company")
+	ContactExtensionNLLegalFormMutualBenefitCompany                  = ContactExtensionNLLegalForm("mutual_benefit_company")
+	ContactExtensionNLLegalFormResidential                           = ContactExtensionNLLegalForm("residential")
+	ContactExtensionNLLegalFormShippingCompany                       = ContactExtensionNLLegalForm("shipping_company")
+	ContactExtensionNLLegalFormFoundation                            = ContactExtensionNLLegalForm("foundation")
+	ContactExtensionNLLegalFormAssociation                           = ContactExtensionNLLegalForm("association")
+	ContactExtensionNLLegalFormTradingPartnership                    = ContactExtensionNLLegalForm("trading_partnership")
+	ContactExtensionNLLegalFormNaturalPerson                         = ContactExtensionNLLegalForm("natural_person")
 )
 
 func (enum ContactExtensionNLLegalForm) String() string {
@@ -216,16 +184,11 @@ func (enum *ContactExtensionNLLegalForm) UnmarshalJSON(data []byte) error {
 type ContactLegalForm string
 
 const (
-	// ContactLegalFormLegalFormUnknown is [insert doc].
 	ContactLegalFormLegalFormUnknown = ContactLegalForm("legal_form_unknown")
-	// ContactLegalFormIndividual is [insert doc].
-	ContactLegalFormIndividual = ContactLegalForm("individual")
-	// ContactLegalFormCorporate is [insert doc].
-	ContactLegalFormCorporate = ContactLegalForm("corporate")
-	// ContactLegalFormAssociation is [insert doc].
-	ContactLegalFormAssociation = ContactLegalForm("association")
-	// ContactLegalFormOther is [insert doc].
-	ContactLegalFormOther = ContactLegalForm("other")
+	ContactLegalFormIndividual       = ContactLegalForm("individual")
+	ContactLegalFormCorporate        = ContactLegalForm("corporate")
+	ContactLegalFormAssociation      = ContactLegalForm("association")
+	ContactLegalFormOther            = ContactLegalForm("other")
 )
 
 func (enum ContactLegalForm) String() string {
@@ -254,16 +217,11 @@ func (enum *ContactLegalForm) UnmarshalJSON(data []byte) error {
 type DNSZoneStatus string
 
 const (
-	// DNSZoneStatusUnknown is [insert doc].
 	DNSZoneStatusUnknown = DNSZoneStatus("unknown")
-	// DNSZoneStatusActive is [insert doc].
-	DNSZoneStatusActive = DNSZoneStatus("active")
-	// DNSZoneStatusPending is [insert doc].
+	DNSZoneStatusActive  = DNSZoneStatus("active")
 	DNSZoneStatusPending = DNSZoneStatus("pending")
-	// DNSZoneStatusError is [insert doc].
-	DNSZoneStatusError = DNSZoneStatus("error")
-	// DNSZoneStatusLocked is [insert doc].
-	DNSZoneStatusLocked = DNSZoneStatus("locked")
+	DNSZoneStatusError   = DNSZoneStatus("error")
+	DNSZoneStatusLocked  = DNSZoneStatus("locked")
 )
 
 func (enum DNSZoneStatus) String() string {
@@ -292,32 +250,19 @@ func (enum *DNSZoneStatus) UnmarshalJSON(data []byte) error {
 type DSRecordAlgorithm string
 
 const (
-	// DSRecordAlgorithmRsamd5 is [insert doc].
-	DSRecordAlgorithmRsamd5 = DSRecordAlgorithm("rsamd5")
-	// DSRecordAlgorithmDh is [insert doc].
-	DSRecordAlgorithmDh = DSRecordAlgorithm("dh")
-	// DSRecordAlgorithmDsa is [insert doc].
-	DSRecordAlgorithmDsa = DSRecordAlgorithm("dsa")
-	// DSRecordAlgorithmRsasha1 is [insert doc].
-	DSRecordAlgorithmRsasha1 = DSRecordAlgorithm("rsasha1")
-	// DSRecordAlgorithmDsaNsec3Sha1 is [insert doc].
-	DSRecordAlgorithmDsaNsec3Sha1 = DSRecordAlgorithm("dsa_nsec3_sha1")
-	// DSRecordAlgorithmRsasha1Nsec3Sha1 is [insert doc].
+	DSRecordAlgorithmRsamd5           = DSRecordAlgorithm("rsamd5")
+	DSRecordAlgorithmDh               = DSRecordAlgorithm("dh")
+	DSRecordAlgorithmDsa              = DSRecordAlgorithm("dsa")
+	DSRecordAlgorithmRsasha1          = DSRecordAlgorithm("rsasha1")
+	DSRecordAlgorithmDsaNsec3Sha1     = DSRecordAlgorithm("dsa_nsec3_sha1")
 	DSRecordAlgorithmRsasha1Nsec3Sha1 = DSRecordAlgorithm("rsasha1_nsec3_sha1")
-	// DSRecordAlgorithmRsasha256 is [insert doc].
-	DSRecordAlgorithmRsasha256 = DSRecordAlgorithm("rsasha256")
-	// DSRecordAlgorithmRsasha512 is [insert doc].
-	DSRecordAlgorithmRsasha512 = DSRecordAlgorithm("rsasha512")
-	// DSRecordAlgorithmEccGost is [insert doc].
-	DSRecordAlgorithmEccGost = DSRecordAlgorithm("ecc_gost")
-	// DSRecordAlgorithmEcdsap256sha256 is [insert doc].
-	DSRecordAlgorithmEcdsap256sha256 = DSRecordAlgorithm("ecdsap256sha256")
-	// DSRecordAlgorithmEcdsap384sha384 is [insert doc].
-	DSRecordAlgorithmEcdsap384sha384 = DSRecordAlgorithm("ecdsap384sha384")
-	// DSRecordAlgorithmEd25519 is [insert doc].
-	DSRecordAlgorithmEd25519 = DSRecordAlgorithm("ed25519")
-	// DSRecordAlgorithmEd448 is [insert doc].
-	DSRecordAlgorithmEd448 = DSRecordAlgorithm("ed448")
+	DSRecordAlgorithmRsasha256        = DSRecordAlgorithm("rsasha256")
+	DSRecordAlgorithmRsasha512        = DSRecordAlgorithm("rsasha512")
+	DSRecordAlgorithmEccGost          = DSRecordAlgorithm("ecc_gost")
+	DSRecordAlgorithmEcdsap256sha256  = DSRecordAlgorithm("ecdsap256sha256")
+	DSRecordAlgorithmEcdsap384sha384  = DSRecordAlgorithm("ecdsap384sha384")
+	DSRecordAlgorithmEd25519          = DSRecordAlgorithm("ed25519")
+	DSRecordAlgorithmEd448            = DSRecordAlgorithm("ed448")
 )
 
 func (enum DSRecordAlgorithm) String() string {
@@ -346,14 +291,10 @@ func (enum *DSRecordAlgorithm) UnmarshalJSON(data []byte) error {
 type DSRecordDigestType string
 
 const (
-	// DSRecordDigestTypeSha1 is [insert doc].
-	DSRecordDigestTypeSha1 = DSRecordDigestType("sha_1")
-	// DSRecordDigestTypeSha256 is [insert doc].
-	DSRecordDigestTypeSha256 = DSRecordDigestType("sha_256")
-	// DSRecordDigestTypeGostR34_11_94 is [insert doc].
+	DSRecordDigestTypeSha1          = DSRecordDigestType("sha_1")
+	DSRecordDigestTypeSha256        = DSRecordDigestType("sha_256")
 	DSRecordDigestTypeGostR34_11_94 = DSRecordDigestType("gost_r_34_11_94")
-	// DSRecordDigestTypeSha384 is [insert doc].
-	DSRecordDigestTypeSha384 = DSRecordDigestType("sha_384")
+	DSRecordDigestTypeSha384        = DSRecordDigestType("sha_384")
 )
 
 func (enum DSRecordDigestType) String() string {
@@ -382,16 +323,11 @@ func (enum *DSRecordDigestType) UnmarshalJSON(data []byte) error {
 type DomainFeatureStatus string
 
 const (
-	// DomainFeatureStatusFeatureStatusUnknown is [insert doc].
 	DomainFeatureStatusFeatureStatusUnknown = DomainFeatureStatus("feature_status_unknown")
-	// DomainFeatureStatusEnabling is [insert doc].
-	DomainFeatureStatusEnabling = DomainFeatureStatus("enabling")
-	// DomainFeatureStatusEnabled is [insert doc].
-	DomainFeatureStatusEnabled = DomainFeatureStatus("enabled")
-	// DomainFeatureStatusDisabling is [insert doc].
-	DomainFeatureStatusDisabling = DomainFeatureStatus("disabling")
-	// DomainFeatureStatusDisabled is [insert doc].
-	DomainFeatureStatusDisabled = DomainFeatureStatus("disabled")
+	DomainFeatureStatusEnabling             = DomainFeatureStatus("enabling")
+	DomainFeatureStatusEnabled              = DomainFeatureStatus("enabled")
+	DomainFeatureStatusDisabling            = DomainFeatureStatus("disabling")
+	DomainFeatureStatusDisabled             = DomainFeatureStatus("disabled")
 )
 
 func (enum DomainFeatureStatus) String() string {
@@ -420,18 +356,12 @@ func (enum *DomainFeatureStatus) UnmarshalJSON(data []byte) error {
 type DomainRegistrationStatusTransferStatus string
 
 const (
-	// DomainRegistrationStatusTransferStatusStatusUnknown is [insert doc].
 	DomainRegistrationStatusTransferStatusStatusUnknown = DomainRegistrationStatusTransferStatus("status_unknown")
-	// DomainRegistrationStatusTransferStatusPending is [insert doc].
-	DomainRegistrationStatusTransferStatusPending = DomainRegistrationStatusTransferStatus("pending")
-	// DomainRegistrationStatusTransferStatusWaitingVote is [insert doc].
-	DomainRegistrationStatusTransferStatusWaitingVote = DomainRegistrationStatusTransferStatus("waiting_vote")
-	// DomainRegistrationStatusTransferStatusRejected is [insert doc].
-	DomainRegistrationStatusTransferStatusRejected = DomainRegistrationStatusTransferStatus("rejected")
-	// DomainRegistrationStatusTransferStatusProcessing is [insert doc].
-	DomainRegistrationStatusTransferStatusProcessing = DomainRegistrationStatusTransferStatus("processing")
-	// DomainRegistrationStatusTransferStatusDone is [insert doc].
-	DomainRegistrationStatusTransferStatusDone = DomainRegistrationStatusTransferStatus("done")
+	DomainRegistrationStatusTransferStatusPending       = DomainRegistrationStatusTransferStatus("pending")
+	DomainRegistrationStatusTransferStatusWaitingVote   = DomainRegistrationStatusTransferStatus("waiting_vote")
+	DomainRegistrationStatusTransferStatusRejected      = DomainRegistrationStatusTransferStatus("rejected")
+	DomainRegistrationStatusTransferStatusProcessing    = DomainRegistrationStatusTransferStatus("processing")
+	DomainRegistrationStatusTransferStatusDone          = DomainRegistrationStatusTransferStatus("done")
 )
 
 func (enum DomainRegistrationStatusTransferStatus) String() string {
@@ -460,34 +390,20 @@ func (enum *DomainRegistrationStatusTransferStatus) UnmarshalJSON(data []byte) e
 type DomainStatus string
 
 const (
-	// DomainStatusStatusUnknown is [insert doc].
 	DomainStatusStatusUnknown = DomainStatus("status_unknown")
-	// DomainStatusActive is [insert doc].
-	DomainStatusActive = DomainStatus("active")
-	// DomainStatusCreating is [insert doc].
-	DomainStatusCreating = DomainStatus("creating")
-	// DomainStatusCreateError is [insert doc].
-	DomainStatusCreateError = DomainStatus("create_error")
-	// DomainStatusRenewing is [insert doc].
-	DomainStatusRenewing = DomainStatus("renewing")
-	// DomainStatusRenewError is [insert doc].
-	DomainStatusRenewError = DomainStatus("renew_error")
-	// DomainStatusXfering is [insert doc].
-	DomainStatusXfering = DomainStatus("xfering")
-	// DomainStatusXferError is [insert doc].
-	DomainStatusXferError = DomainStatus("xfer_error")
-	// DomainStatusExpired is [insert doc].
-	DomainStatusExpired = DomainStatus("expired")
-	// DomainStatusExpiring is [insert doc].
-	DomainStatusExpiring = DomainStatus("expiring")
-	// DomainStatusUpdating is [insert doc].
-	DomainStatusUpdating = DomainStatus("updating")
-	// DomainStatusChecking is [insert doc].
-	DomainStatusChecking = DomainStatus("checking")
-	// DomainStatusLocked is [insert doc].
-	DomainStatusLocked = DomainStatus("locked")
-	// DomainStatusDeleting is [insert doc].
-	DomainStatusDeleting = DomainStatus("deleting")
+	DomainStatusActive        = DomainStatus("active")
+	DomainStatusCreating      = DomainStatus("creating")
+	DomainStatusCreateError   = DomainStatus("create_error")
+	DomainStatusRenewing      = DomainStatus("renewing")
+	DomainStatusRenewError    = DomainStatus("renew_error")
+	DomainStatusXfering       = DomainStatus("xfering")
+	DomainStatusXferError     = DomainStatus("xfer_error")
+	DomainStatusExpired       = DomainStatus("expired")
+	DomainStatusExpiring      = DomainStatus("expiring")
+	DomainStatusUpdating      = DomainStatus("updating")
+	DomainStatusChecking      = DomainStatus("checking")
+	DomainStatusLocked        = DomainStatus("locked")
+	DomainStatusDeleting      = DomainStatus("deleting")
 )
 
 func (enum DomainStatus) String() string {
@@ -516,14 +432,10 @@ func (enum *DomainStatus) UnmarshalJSON(data []byte) error {
 type HostStatus string
 
 const (
-	// HostStatusUnknownStatus is [insert doc].
 	HostStatusUnknownStatus = HostStatus("unknown_status")
-	// HostStatusActive is [insert doc].
-	HostStatusActive = HostStatus("active")
-	// HostStatusUpdating is [insert doc].
-	HostStatusUpdating = HostStatus("updating")
-	// HostStatusDeleting is [insert doc].
-	HostStatusDeleting = HostStatus("deleting")
+	HostStatusActive        = HostStatus("active")
+	HostStatusUpdating      = HostStatus("updating")
+	HostStatusDeleting      = HostStatus("deleting")
 )
 
 func (enum HostStatus) String() string {
@@ -552,12 +464,10 @@ func (enum *HostStatus) UnmarshalJSON(data []byte) error {
 type LanguageCode string
 
 const (
-	// LanguageCodeUnknownLanguageCode is [insert doc].
 	LanguageCodeUnknownLanguageCode = LanguageCode("unknown_language_code")
-	// LanguageCodeEnUS is [insert doc].
-	LanguageCodeEnUS = LanguageCode("en_US")
-	// LanguageCodeFrFR is [insert doc].
-	LanguageCodeFrFR = LanguageCode("fr_FR")
+	LanguageCodeEnUS                = LanguageCode("en_US")
+	LanguageCodeFrFR                = LanguageCode("fr_FR")
+	LanguageCodeDeDE                = LanguageCode("de_DE")
 )
 
 func (enum LanguageCode) String() string {
@@ -586,9 +496,7 @@ func (enum *LanguageCode) UnmarshalJSON(data []byte) error {
 type ListDNSZoneRecordsRequestOrderBy string
 
 const (
-	// ListDNSZoneRecordsRequestOrderByNameAsc is [insert doc].
-	ListDNSZoneRecordsRequestOrderByNameAsc = ListDNSZoneRecordsRequestOrderBy("name_asc")
-	// ListDNSZoneRecordsRequestOrderByNameDesc is [insert doc].
+	ListDNSZoneRecordsRequestOrderByNameAsc  = ListDNSZoneRecordsRequestOrderBy("name_asc")
 	ListDNSZoneRecordsRequestOrderByNameDesc = ListDNSZoneRecordsRequestOrderBy("name_desc")
 )
 
@@ -618,13 +526,9 @@ func (enum *ListDNSZoneRecordsRequestOrderBy) UnmarshalJSON(data []byte) error {
 type ListDNSZonesRequestOrderBy string
 
 const (
-	// ListDNSZonesRequestOrderByDomainAsc is [insert doc].
-	ListDNSZonesRequestOrderByDomainAsc = ListDNSZonesRequestOrderBy("domain_asc")
-	// ListDNSZonesRequestOrderByDomainDesc is [insert doc].
-	ListDNSZonesRequestOrderByDomainDesc = ListDNSZonesRequestOrderBy("domain_desc")
-	// ListDNSZonesRequestOrderBySubdomainAsc is [insert doc].
-	ListDNSZonesRequestOrderBySubdomainAsc = ListDNSZonesRequestOrderBy("subdomain_asc")
-	// ListDNSZonesRequestOrderBySubdomainDesc is [insert doc].
+	ListDNSZonesRequestOrderByDomainAsc     = ListDNSZonesRequestOrderBy("domain_asc")
+	ListDNSZonesRequestOrderByDomainDesc    = ListDNSZonesRequestOrderBy("domain_desc")
+	ListDNSZonesRequestOrderBySubdomainAsc  = ListDNSZonesRequestOrderBy("subdomain_asc")
 	ListDNSZonesRequestOrderBySubdomainDesc = ListDNSZonesRequestOrderBy("subdomain_desc")
 )
 
@@ -654,9 +558,7 @@ func (enum *ListDNSZonesRequestOrderBy) UnmarshalJSON(data []byte) error {
 type ListDomainsRequestOrderBy string
 
 const (
-	// ListDomainsRequestOrderByDomainAsc is [insert doc].
-	ListDomainsRequestOrderByDomainAsc = ListDomainsRequestOrderBy("domain_asc")
-	// ListDomainsRequestOrderByDomainDesc is [insert doc].
+	ListDomainsRequestOrderByDomainAsc  = ListDomainsRequestOrderBy("domain_asc")
 	ListDomainsRequestOrderByDomainDesc = ListDomainsRequestOrderBy("domain_desc")
 )
 
@@ -686,9 +588,7 @@ func (enum *ListDomainsRequestOrderBy) UnmarshalJSON(data []byte) error {
 type ListRenewableDomainsRequestOrderBy string
 
 const (
-	// ListRenewableDomainsRequestOrderByDomainAsc is [insert doc].
-	ListRenewableDomainsRequestOrderByDomainAsc = ListRenewableDomainsRequestOrderBy("domain_asc")
-	// ListRenewableDomainsRequestOrderByDomainDesc is [insert doc].
+	ListRenewableDomainsRequestOrderByDomainAsc  = ListRenewableDomainsRequestOrderBy("domain_asc")
 	ListRenewableDomainsRequestOrderByDomainDesc = ListRenewableDomainsRequestOrderBy("domain_desc")
 )
 
@@ -715,13 +615,47 @@ func (enum *ListRenewableDomainsRequestOrderBy) UnmarshalJSON(data []byte) error
 	return nil
 }
 
+type ListTasksRequestOrderBy string
+
+const (
+	ListTasksRequestOrderByDomainDesc    = ListTasksRequestOrderBy("domain_desc")
+	ListTasksRequestOrderByDomainAsc     = ListTasksRequestOrderBy("domain_asc")
+	ListTasksRequestOrderByTypeAsc       = ListTasksRequestOrderBy("type_asc")
+	ListTasksRequestOrderByTypeDesc      = ListTasksRequestOrderBy("type_desc")
+	ListTasksRequestOrderByStatusAsc     = ListTasksRequestOrderBy("status_asc")
+	ListTasksRequestOrderByStatusDesc    = ListTasksRequestOrderBy("status_desc")
+	ListTasksRequestOrderByUpdatedAtAsc  = ListTasksRequestOrderBy("updated_at_asc")
+	ListTasksRequestOrderByUpdatedAtDesc = ListTasksRequestOrderBy("updated_at_desc")
+)
+
+func (enum ListTasksRequestOrderBy) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "domain_desc"
+	}
+	return string(enum)
+}
+
+func (enum ListTasksRequestOrderBy) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *ListTasksRequestOrderBy) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = ListTasksRequestOrderBy(ListTasksRequestOrderBy(tmp).String())
+	return nil
+}
+
 type RawFormat string
 
 const (
-	// RawFormatUnknownRawFormat is [insert doc].
 	RawFormatUnknownRawFormat = RawFormat("unknown_raw_format")
-	// RawFormatBind is [insert doc].
-	RawFormatBind = RawFormat("bind")
+	RawFormatBind             = RawFormat("bind")
 )
 
 func (enum RawFormat) String() string {
@@ -750,12 +684,9 @@ func (enum *RawFormat) UnmarshalJSON(data []byte) error {
 type RecordHTTPServiceConfigStrategy string
 
 const (
-	// RecordHTTPServiceConfigStrategyRandom is [insert doc].
 	RecordHTTPServiceConfigStrategyRandom = RecordHTTPServiceConfigStrategy("random")
-	// RecordHTTPServiceConfigStrategyHashed is [insert doc].
 	RecordHTTPServiceConfigStrategyHashed = RecordHTTPServiceConfigStrategy("hashed")
-	// RecordHTTPServiceConfigStrategyAll is [insert doc].
-	RecordHTTPServiceConfigStrategyAll = RecordHTTPServiceConfigStrategy("all")
+	RecordHTTPServiceConfigStrategyAll    = RecordHTTPServiceConfigStrategy("all")
 )
 
 func (enum RecordHTTPServiceConfigStrategy) String() string {
@@ -784,46 +715,26 @@ func (enum *RecordHTTPServiceConfigStrategy) UnmarshalJSON(data []byte) error {
 type RecordType string
 
 const (
-	// RecordTypeUnknown is [insert doc].
 	RecordTypeUnknown = RecordType("unknown")
-	// RecordTypeA is [insert doc].
-	RecordTypeA = RecordType("A")
-	// RecordTypeAAAA is [insert doc].
-	RecordTypeAAAA = RecordType("AAAA")
-	// RecordTypeCNAME is [insert doc].
-	RecordTypeCNAME = RecordType("CNAME")
-	// RecordTypeTXT is [insert doc].
-	RecordTypeTXT = RecordType("TXT")
-	// RecordTypeSRV is [insert doc].
-	RecordTypeSRV = RecordType("SRV")
-	// RecordTypeTLSA is [insert doc].
-	RecordTypeTLSA = RecordType("TLSA")
-	// RecordTypeMX is [insert doc].
-	RecordTypeMX = RecordType("MX")
-	// RecordTypeNS is [insert doc].
-	RecordTypeNS = RecordType("NS")
-	// RecordTypePTR is [insert doc].
-	RecordTypePTR = RecordType("PTR")
-	// RecordTypeCAA is [insert doc].
-	RecordTypeCAA = RecordType("CAA")
-	// RecordTypeALIAS is [insert doc].
-	RecordTypeALIAS = RecordType("ALIAS")
-	// RecordTypeLOC is [insert doc].
-	RecordTypeLOC = RecordType("LOC")
-	// RecordTypeSSHFP is [insert doc].
-	RecordTypeSSHFP = RecordType("SSHFP")
-	// RecordTypeHINFO is [insert doc].
-	RecordTypeHINFO = RecordType("HINFO")
-	// RecordTypeRP is [insert doc].
-	RecordTypeRP = RecordType("RP")
-	// RecordTypeURI is [insert doc].
-	RecordTypeURI = RecordType("URI")
-	// RecordTypeDS is [insert doc].
-	RecordTypeDS = RecordType("DS")
-	// RecordTypeNAPTR is [insert doc].
-	RecordTypeNAPTR = RecordType("NAPTR")
-	// RecordTypeDNAME is [insert doc].
-	RecordTypeDNAME = RecordType("DNAME")
+	RecordTypeA       = RecordType("A")
+	RecordTypeAAAA    = RecordType("AAAA")
+	RecordTypeCNAME   = RecordType("CNAME")
+	RecordTypeTXT     = RecordType("TXT")
+	RecordTypeSRV     = RecordType("SRV")
+	RecordTypeTLSA    = RecordType("TLSA")
+	RecordTypeMX      = RecordType("MX")
+	RecordTypeNS      = RecordType("NS")
+	RecordTypePTR     = RecordType("PTR")
+	RecordTypeCAA     = RecordType("CAA")
+	RecordTypeALIAS   = RecordType("ALIAS")
+	RecordTypeLOC     = RecordType("LOC")
+	RecordTypeSSHFP   = RecordType("SSHFP")
+	RecordTypeHINFO   = RecordType("HINFO")
+	RecordTypeRP      = RecordType("RP")
+	RecordTypeURI     = RecordType("URI")
+	RecordTypeDS      = RecordType("DS")
+	RecordTypeNAPTR   = RecordType("NAPTR")
+	RecordTypeDNAME   = RecordType("DNAME")
 )
 
 func (enum RecordType) String() string {
@@ -852,14 +763,10 @@ func (enum *RecordType) UnmarshalJSON(data []byte) error {
 type RenewableDomainStatus string
 
 const (
-	// RenewableDomainStatusUnknown is [insert doc].
-	RenewableDomainStatusUnknown = RenewableDomainStatus("unknown")
-	// RenewableDomainStatusRenewable is [insert doc].
-	RenewableDomainStatusRenewable = RenewableDomainStatus("renewable")
-	// RenewableDomainStatusLateReneweable is [insert doc].
+	RenewableDomainStatusUnknown        = RenewableDomainStatus("unknown")
+	RenewableDomainStatusRenewable      = RenewableDomainStatus("renewable")
 	RenewableDomainStatusLateReneweable = RenewableDomainStatus("late_reneweable")
-	// RenewableDomainStatusNotRenewable is [insert doc].
-	RenewableDomainStatusNotRenewable = RenewableDomainStatus("not_renewable")
+	RenewableDomainStatusNotRenewable   = RenewableDomainStatus("not_renewable")
 )
 
 func (enum RenewableDomainStatus) String() string {
@@ -888,16 +795,11 @@ func (enum *RenewableDomainStatus) UnmarshalJSON(data []byte) error {
 type SSLCertificateStatus string
 
 const (
-	// SSLCertificateStatusUnknown is [insert doc].
 	SSLCertificateStatusUnknown = SSLCertificateStatus("unknown")
-	// SSLCertificateStatusNew is [insert doc].
-	SSLCertificateStatusNew = SSLCertificateStatus("new")
-	// SSLCertificateStatusPending is [insert doc].
+	SSLCertificateStatusNew     = SSLCertificateStatus("new")
 	SSLCertificateStatusPending = SSLCertificateStatus("pending")
-	// SSLCertificateStatusSuccess is [insert doc].
 	SSLCertificateStatusSuccess = SSLCertificateStatus("success")
-	// SSLCertificateStatusError is [insert doc].
-	SSLCertificateStatusError = SSLCertificateStatus("error")
+	SSLCertificateStatusError   = SSLCertificateStatus("error")
 )
 
 func (enum SSLCertificateStatus) String() string {
@@ -926,18 +828,12 @@ func (enum *SSLCertificateStatus) UnmarshalJSON(data []byte) error {
 type TaskStatus string
 
 const (
-	// TaskStatusUnavailable is [insert doc].
-	TaskStatusUnavailable = TaskStatus("unavailable")
-	// TaskStatusNew is [insert doc].
-	TaskStatusNew = TaskStatus("new")
-	// TaskStatusWaitingPayment is [insert doc].
+	TaskStatusUnavailable    = TaskStatus("unavailable")
+	TaskStatusNew            = TaskStatus("new")
 	TaskStatusWaitingPayment = TaskStatus("waiting_payment")
-	// TaskStatusPending is [insert doc].
-	TaskStatusPending = TaskStatus("pending")
-	// TaskStatusSuccess is [insert doc].
-	TaskStatusSuccess = TaskStatus("success")
-	// TaskStatusError is [insert doc].
-	TaskStatusError = TaskStatus("error")
+	TaskStatusPending        = TaskStatus("pending")
+	TaskStatusSuccess        = TaskStatus("success")
+	TaskStatusError          = TaskStatus("error")
 )
 
 func (enum TaskStatus) String() string {
@@ -966,50 +862,28 @@ func (enum *TaskStatus) UnmarshalJSON(data []byte) error {
 type TaskType string
 
 const (
-	// TaskTypeUnknown is [insert doc].
-	TaskTypeUnknown = TaskType("unknown")
-	// TaskTypeCreateDomain is [insert doc].
-	TaskTypeCreateDomain = TaskType("create_domain")
-	// TaskTypeCreateExternalDomain is [insert doc].
-	TaskTypeCreateExternalDomain = TaskType("create_external_domain")
-	// TaskTypeRenewDomain is [insert doc].
-	TaskTypeRenewDomain = TaskType("renew_domain")
-	// TaskTypeTransferDomain is [insert doc].
-	TaskTypeTransferDomain = TaskType("transfer_domain")
-	// TaskTypeTradeDomain is [insert doc].
-	TaskTypeTradeDomain = TaskType("trade_domain")
-	// TaskTypeLockDomainTransfer is [insert doc].
-	TaskTypeLockDomainTransfer = TaskType("lock_domain_transfer")
-	// TaskTypeUnlockDomainTransfer is [insert doc].
-	TaskTypeUnlockDomainTransfer = TaskType("unlock_domain_transfer")
-	// TaskTypeEnableDnssec is [insert doc].
-	TaskTypeEnableDnssec = TaskType("enable_dnssec")
-	// TaskTypeDisableDnssec is [insert doc].
-	TaskTypeDisableDnssec = TaskType("disable_dnssec")
-	// TaskTypeUpdateDomain is [insert doc].
-	TaskTypeUpdateDomain = TaskType("update_domain")
-	// TaskTypeUpdateContact is [insert doc].
-	TaskTypeUpdateContact = TaskType("update_contact")
-	// TaskTypeDeleteDomain is [insert doc].
-	TaskTypeDeleteDomain = TaskType("delete_domain")
-	// TaskTypeCancelTask is [insert doc].
-	TaskTypeCancelTask = TaskType("cancel_task")
-	// TaskTypeGenerateSslCertificate is [insert doc].
+	TaskTypeUnknown                = TaskType("unknown")
+	TaskTypeCreateDomain           = TaskType("create_domain")
+	TaskTypeCreateExternalDomain   = TaskType("create_external_domain")
+	TaskTypeRenewDomain            = TaskType("renew_domain")
+	TaskTypeTransferDomain         = TaskType("transfer_domain")
+	TaskTypeTradeDomain            = TaskType("trade_domain")
+	TaskTypeLockDomainTransfer     = TaskType("lock_domain_transfer")
+	TaskTypeUnlockDomainTransfer   = TaskType("unlock_domain_transfer")
+	TaskTypeEnableDnssec           = TaskType("enable_dnssec")
+	TaskTypeDisableDnssec          = TaskType("disable_dnssec")
+	TaskTypeUpdateDomain           = TaskType("update_domain")
+	TaskTypeUpdateContact          = TaskType("update_contact")
+	TaskTypeDeleteDomain           = TaskType("delete_domain")
+	TaskTypeCancelTask             = TaskType("cancel_task")
 	TaskTypeGenerateSslCertificate = TaskType("generate_ssl_certificate")
-	// TaskTypeRenewSslCertificate is [insert doc].
-	TaskTypeRenewSslCertificate = TaskType("renew_ssl_certificate")
-	// TaskTypeSendMessage is [insert doc].
-	TaskTypeSendMessage = TaskType("send_message")
-	// TaskTypeDeleteDomainExpired is [insert doc].
-	TaskTypeDeleteDomainExpired = TaskType("delete_domain_expired")
-	// TaskTypeDeleteExternalDomain is [insert doc].
-	TaskTypeDeleteExternalDomain = TaskType("delete_external_domain")
-	// TaskTypeCreateHost is [insert doc].
-	TaskTypeCreateHost = TaskType("create_host")
-	// TaskTypeUpdateHost is [insert doc].
-	TaskTypeUpdateHost = TaskType("update_host")
-	// TaskTypeDeleteHost is [insert doc].
-	TaskTypeDeleteHost = TaskType("delete_host")
+	TaskTypeRenewSslCertificate    = TaskType("renew_ssl_certificate")
+	TaskTypeSendMessage            = TaskType("send_message")
+	TaskTypeDeleteDomainExpired    = TaskType("delete_domain_expired")
+	TaskTypeDeleteExternalDomain   = TaskType("delete_external_domain")
+	TaskTypeCreateHost             = TaskType("create_host")
+	TaskTypeUpdateHost             = TaskType("update_host")
+	TaskTypeDeleteHost             = TaskType("delete_host")
 )
 
 func (enum TaskType) String() string {
@@ -1043,7 +917,7 @@ type AvailableDomain struct {
 	Tld *Tld `json:"tld"`
 }
 
-// CheckContactsCompatibilityResponse: check contacts compatibility response
+// CheckContactsCompatibilityResponse: check contacts compatibility response.
 type CheckContactsCompatibilityResponse struct {
 	Compatible bool `json:"compatible"`
 
@@ -1060,16 +934,14 @@ type CheckContactsCompatibilityResponseContactCheckResult struct {
 	ErrorMessage *string `json:"error_message"`
 }
 
-// ClearDNSZoneRecordsResponse: clear dns zone records response
+// ClearDNSZoneRecordsResponse: clear dns zone records response.
 type ClearDNSZoneRecordsResponse struct {
 }
 
-// Contact: contact
+// Contact: contact.
 type Contact struct {
 	ID string `json:"id"`
-	// LegalForm:
-	//
-	// Default value: legal_form_unknown
+	// LegalForm: default value: legal_form_unknown
 	LegalForm ContactLegalForm `json:"legal_form"`
 
 	Firstname string `json:"firstname"`
@@ -1099,9 +971,7 @@ type Contact struct {
 	VatIdentificationCode string `json:"vat_identification_code"`
 
 	CompanyIdentificationCode string `json:"company_identification_code"`
-	// Lang:
-	//
-	// Default value: unknown_language_code
+	// Lang: default value: unknown_language_code
 	Lang LanguageCode `json:"lang"`
 
 	Resale bool `json:"resale"`
@@ -1113,9 +983,7 @@ type Contact struct {
 	ExtensionEu *ContactExtensionEU `json:"extension_eu"`
 
 	WhoisOptIn bool `json:"whois_opt_in"`
-	// EmailStatus:
-	//
-	// Default value: email_status_unknown
+	// EmailStatus: default value: email_status_unknown
 	EmailStatus ContactEmailStatus `json:"email_status"`
 
 	State string `json:"state"`
@@ -1128,9 +996,7 @@ type ContactExtensionEU struct {
 }
 
 type ContactExtensionFR struct {
-	// Mode:
-	//
-	// Default value: mode_unknown
+	// Mode: default value: mode_unknown
 	Mode ContactExtensionFRMode `json:"mode"`
 
 	// Precisely one of AssociationInfo, CodeAuthAfnicInfo, DunsInfo, IndividualInfo, TrademarkInfo must be set.
@@ -1174,9 +1040,7 @@ type ContactExtensionFRTrademarkInfo struct {
 }
 
 type ContactExtensionNL struct {
-	// LegalForm:
-	//
-	// Default value: legal_form_unknown
+	// LegalForm: default value: legal_form_unknown
 	LegalForm ContactExtensionNLLegalForm `json:"legal_form"`
 
 	LegalFormRegistrationNumber string `json:"legal_form_registration_number"`
@@ -1212,9 +1076,7 @@ type DNSZone struct {
 	NsDefault []string `json:"ns_default"`
 
 	NsMaster []string `json:"ns_master"`
-	// Status:
-	//
-	// Default value: unknown
+	// Status: default value: unknown
 	Status DNSZoneStatus `json:"status"`
 
 	Message *string `json:"message"`
@@ -1232,9 +1094,7 @@ type DNSZoneVersion struct {
 
 type DSRecord struct {
 	KeyID uint32 `json:"key_id"`
-	// Algorithm:
-	//
-	// Default value: rsamd5
+	// Algorithm: default value: rsamd5
 	Algorithm DSRecordAlgorithm `json:"algorithm"`
 
 	// Precisely one of Digest, PublicKey must be set.
@@ -1245,9 +1105,7 @@ type DSRecord struct {
 }
 
 type DSRecordDigest struct {
-	// Type:
-	//
-	// Default value: sha_1
+	// Type: default value: sha_1
 	Type DSRecordDigestType `json:"type"`
 
 	Digest string `json:"digest"`
@@ -1259,28 +1117,26 @@ type DSRecordPublicKey struct {
 	Key string `json:"key"`
 }
 
-// DeleteDNSZoneResponse: delete dns zone response
+// DeleteDNSZoneResponse: delete dns zone response.
 type DeleteDNSZoneResponse struct {
 }
 
-// DeleteExternalDomainResponse: delete external domain response
+// DeleteExternalDomainResponse: delete external domain response.
 type DeleteExternalDomainResponse struct {
 }
 
-// DeleteSSLCertificateResponse: delete ssl certificate response
+// DeleteSSLCertificateResponse: delete ssl certificate response.
 type DeleteSSLCertificateResponse struct {
 }
 
-// Domain: domain
+// Domain: domain.
 type Domain struct {
 	Domain string `json:"domain"`
 
 	OrganizationID string `json:"organization_id"`
 
 	ProjectID string `json:"project_id"`
-	// AutoRenewStatus:
-	//
-	// Default value: feature_status_unknown
+	// AutoRenewStatus: default value: feature_status_unknown
 	AutoRenewStatus DomainFeatureStatus `json:"auto_renew_status"`
 
 	Dnssec *DomainDNSSEC `json:"dnssec"`
@@ -1294,9 +1150,7 @@ type Domain struct {
 	Registrar string `json:"registrar"`
 
 	IsExternal bool `json:"is_external"`
-	// Status:
-	//
-	// Default value: status_unknown
+	// Status: default value: status_unknown
 	Status DomainStatus `json:"status"`
 
 	DNSZones []*DNSZone `json:"dns_zones"`
@@ -1312,12 +1166,12 @@ type Domain struct {
 
 	// Precisely one of ExternalDomainRegistrationStatus, TransferRegistrationStatus must be set.
 	TransferRegistrationStatus *DomainRegistrationStatusTransfer `json:"transfer_registration_status,omitempty"`
+
+	Tld *Tld `json:"tld"`
 }
 
 type DomainDNSSEC struct {
-	// Status:
-	//
-	// Default value: feature_status_unknown
+	// Status: default value: feature_status_unknown
 	Status DomainFeatureStatus `json:"status"`
 
 	DsRecords []*DSRecord `json:"ds_records"`
@@ -1328,9 +1182,7 @@ type DomainRegistrationStatusExternalDomain struct {
 }
 
 type DomainRegistrationStatusTransfer struct {
-	// Status:
-	//
-	// Default value: status_unknown
+	// Status: default value: status_unknown
 	Status DomainRegistrationStatusTransferStatus `json:"status"`
 
 	VoteCurrentOwner bool `json:"vote_current_owner"`
@@ -1342,13 +1194,9 @@ type DomainSummary struct {
 	Domain string `json:"domain"`
 
 	ProjectID string `json:"project_id"`
-	// AutoRenewStatus:
-	//
-	// Default value: feature_status_unknown
+	// AutoRenewStatus: default value: feature_status_unknown
 	AutoRenewStatus DomainFeatureStatus `json:"auto_renew_status"`
-	// DnssecStatus:
-	//
-	// Default value: feature_status_unknown
+	// DnssecStatus: default value: feature_status_unknown
 	DnssecStatus DomainFeatureStatus `json:"dnssec_status"`
 
 	EppCode []string `json:"epp_code"`
@@ -1360,9 +1208,7 @@ type DomainSummary struct {
 	Registrar string `json:"registrar"`
 
 	IsExternal bool `json:"is_external"`
-	// Status:
-	//
-	// Default value: status_unknown
+	// Status: default value: status_unknown
 	Status DomainStatus `json:"status"`
 
 	// Precisely one of ExternalDomainRegistrationStatus, TransferRegistrationStatus must be set.
@@ -1374,7 +1220,7 @@ type DomainSummary struct {
 	OrganizationID string `json:"organization_id"`
 }
 
-// GetDNSZoneTsigKeyResponse: get dns zone tsig key response
+// GetDNSZoneTsigKeyResponse: get dns zone tsig key response.
 type GetDNSZoneTsigKeyResponse struct {
 	Name string `json:"name"`
 
@@ -1383,12 +1229,12 @@ type GetDNSZoneTsigKeyResponse struct {
 	Algorithm string `json:"algorithm"`
 }
 
-// GetDNSZoneVersionDiffResponse: get dns zone version diff response
+// GetDNSZoneVersionDiffResponse: get dns zone version diff response.
 type GetDNSZoneVersionDiffResponse struct {
 	Changes []*RecordChange `json:"changes"`
 }
 
-// GetDomainAuthCodeResponse: get domain auth code response
+// GetDomainAuthCodeResponse: get domain auth code response.
 type GetDomainAuthCodeResponse struct {
 	AuthCode string `json:"auth_code"`
 }
@@ -1399,9 +1245,7 @@ type Host struct {
 	Name string `json:"name"`
 
 	IPs []net.IP `json:"ips"`
-	// Status:
-	//
-	// Default value: unknown_status
+	// Status: default value: unknown_status
 	Status HostStatus `json:"status"`
 }
 
@@ -1409,7 +1253,7 @@ type ImportProviderDNSZoneRequestOnlineV1 struct {
 	Token string `json:"token"`
 }
 
-// ImportProviderDNSZoneResponse: import provider dns zone response
+// ImportProviderDNSZoneResponse: import provider dns zone response.
 type ImportProviderDNSZoneResponse struct {
 	Records []*Record `json:"records"`
 }
@@ -1432,85 +1276,85 @@ type ImportRawDNSZoneRequestTsigKey struct {
 	Algorithm string `json:"algorithm"`
 }
 
-// ImportRawDNSZoneResponse: import raw dns zone response
+// ImportRawDNSZoneResponse: import raw dns zone response.
 type ImportRawDNSZoneResponse struct {
 	Records []*Record `json:"records"`
 }
 
-// ListContactsResponse: list contacts response
+// ListContactsResponse: list contacts response.
 type ListContactsResponse struct {
 	TotalCount uint32 `json:"total_count"`
 
 	Contacts []*ContactRoles `json:"contacts"`
 }
 
-// ListDNSZoneNameserversResponse: list dns zone nameservers response
+// ListDNSZoneNameserversResponse: list dns zone nameservers response.
 type ListDNSZoneNameserversResponse struct {
-	// Ns: the returned DNS zone nameservers
+	// Ns: DNS zone name servers returned.
 	Ns []*Nameserver `json:"ns"`
 }
 
-// ListDNSZoneRecordsResponse: list dns zone records response
+// ListDNSZoneRecordsResponse: list dns zone records response.
 type ListDNSZoneRecordsResponse struct {
-	// TotalCount: the total number of DNS zone records
+	// TotalCount: total number of DNS zone records.
 	TotalCount uint32 `json:"total_count"`
-	// Records: the paginated returned DNS zone records
+	// Records: paginated returned DNS zone records.
 	Records []*Record `json:"records"`
 }
 
-// ListDNSZoneVersionRecordsResponse: list dns zone version records response
+// ListDNSZoneVersionRecordsResponse: list dns zone version records response.
 type ListDNSZoneVersionRecordsResponse struct {
-	// TotalCount: the total number of DNS zones versions records
+	// TotalCount: total number of DNS zones versions records.
 	TotalCount uint32 `json:"total_count"`
 
 	Records []*Record `json:"records"`
 }
 
-// ListDNSZoneVersionsResponse: list dns zone versions response
+// ListDNSZoneVersionsResponse: list dns zone versions response.
 type ListDNSZoneVersionsResponse struct {
-	// TotalCount: the total number of DNS zones versions
+	// TotalCount: total number of DNS zones versions.
 	TotalCount uint32 `json:"total_count"`
 
 	Versions []*DNSZoneVersion `json:"versions"`
 }
 
-// ListDNSZonesResponse: list dns zones response
+// ListDNSZonesResponse: list dns zones response.
 type ListDNSZonesResponse struct {
-	// TotalCount: the total number of DNS zones
+	// TotalCount: total number of DNS zones matching the requested criteria.
 	TotalCount uint32 `json:"total_count"`
-	// DNSZones: the paginated returned DNS zones
+	// DNSZones: paginated returned DNS zones.
 	DNSZones []*DNSZone `json:"dns_zones"`
 }
 
-// ListDomainHostsResponse: list domain hosts response
+// ListDomainHostsResponse: list domain hosts response.
 type ListDomainHostsResponse struct {
 	TotalCount uint32 `json:"total_count"`
 
 	Hosts []*Host `json:"hosts"`
 }
 
-// ListDomainsResponse: list domains response
+// ListDomainsResponse: list domains response.
 type ListDomainsResponse struct {
 	TotalCount uint32 `json:"total_count"`
 
 	Domains []*DomainSummary `json:"domains"`
 }
 
-// ListRenewableDomainsResponse: list renewable domains response
+// ListRenewableDomainsResponse: list renewable domains response.
 type ListRenewableDomainsResponse struct {
 	TotalCount uint32 `json:"total_count"`
 
 	Domains []*RenewableDomain `json:"domains"`
 }
 
-// ListSSLCertificatesResponse: list ssl certificates response
+// ListSSLCertificatesResponse: list ssl certificates response.
 type ListSSLCertificatesResponse struct {
 	TotalCount uint32 `json:"total_count"`
 
 	Certificates []*SSLCertificate `json:"certificates"`
 }
 
-// ListTasksResponse: list tasks response
+// ListTasksResponse: list tasks response.
 type ListTasksResponse struct {
 	TotalCount uint32 `json:"total_count"`
 
@@ -1524,9 +1368,7 @@ type Nameserver struct {
 }
 
 type NewContact struct {
-	// LegalForm:
-	//
-	// Default value: legal_form_unknown
+	// LegalForm: default value: legal_form_unknown
 	LegalForm ContactLegalForm `json:"legal_form"`
 
 	Firstname string `json:"firstname"`
@@ -1556,9 +1398,7 @@ type NewContact struct {
 	VatIdentificationCode *string `json:"vat_identification_code"`
 
 	CompanyIdentificationCode *string `json:"company_identification_code"`
-	// Lang:
-	//
-	// Default value: unknown_language_code
+	// Lang: default value: unknown_language_code
 	Lang LanguageCode `json:"lang"`
 
 	Resale bool `json:"resale"`
@@ -1596,9 +1436,7 @@ type Record struct {
 	Priority uint32 `json:"priority"`
 
 	TTL uint32 `json:"ttl"`
-	// Type:
-	//
-	// Default value: unknown
+	// Type: default value: unknown
 	Type RecordType `json:"type"`
 
 	Comment *string `json:"comment"`
@@ -1682,17 +1520,13 @@ type RecordHTTPServiceConfig struct {
 	URL string `json:"url"`
 
 	UserAgent *string `json:"user_agent"`
-	// Strategy:
-	//
-	// Default value: random
+	// Strategy: default value: random
 	Strategy RecordHTTPServiceConfigStrategy `json:"strategy"`
 }
 
 type RecordIdentifier struct {
 	Name string `json:"name"`
-	// Type:
-	//
-	// Default value: unknown
+	// Type: default value: unknown
 	Type RecordType `json:"type"`
 
 	Data *string `json:"data"`
@@ -1720,9 +1554,9 @@ type RecordWeightedConfigWeightedIP struct {
 	Weight uint32 `json:"weight"`
 }
 
-// RefreshDNSZoneResponse: refresh dns zone response
+// RefreshDNSZoneResponse: refresh dns zone response.
 type RefreshDNSZoneResponse struct {
-	// DNSZones: the returned DNS zones
+	// DNSZones: DNS zones returned.
 	DNSZones []*DNSZone `json:"dns_zones"`
 }
 
@@ -1744,17 +1578,23 @@ type RenewableDomain struct {
 	ProjectID string `json:"project_id"`
 
 	OrganizationID string `json:"organization_id"`
-	// Status:
-	//
-	// Default value: unknown
+	// Status: default value: unknown
 	Status RenewableDomainStatus `json:"status"`
 
 	RenewableDurationInYears *int32 `json:"renewable_duration_in_years"`
 
 	ExpiredAt *time.Time `json:"expired_at"`
+
+	LimitRenewAt *time.Time `json:"limit_renew_at"`
+
+	LimitRedemptionAt *time.Time `json:"limit_redemption_at"`
+
+	EstimatedDeleteAt *time.Time `json:"estimated_delete_at"`
+
+	Tld *Tld `json:"tld"`
 }
 
-// RestoreDNSZoneVersionResponse: restore dns zone version response
+// RestoreDNSZoneVersionResponse: restore dns zone version response.
 type RestoreDNSZoneVersionResponse struct {
 }
 
@@ -1762,9 +1602,7 @@ type SSLCertificate struct {
 	DNSZone string `json:"dns_zone"`
 
 	AlternativeDNSZones []string `json:"alternative_dns_zones"`
-	// Status:
-	//
-	// Default value: unknown
+	// Status: default value: unknown
 	Status SSLCertificateStatus `json:"status"`
 
 	PrivateKey string `json:"private_key"`
@@ -1776,9 +1614,9 @@ type SSLCertificate struct {
 	ExpiredAt *time.Time `json:"expired_at"`
 }
 
-// SearchAvailableDomainsResponse: search available domains response
+// SearchAvailableDomainsResponse: search available domains response.
 type SearchAvailableDomainsResponse struct {
-	// AvailableDomains: array of available domains
+	// AvailableDomains: array of available domains.
 	AvailableDomains []*AvailableDomain `json:"available_domains"`
 }
 
@@ -1790,13 +1628,9 @@ type Task struct {
 	OrganizationID string `json:"organization_id"`
 
 	Domain *string `json:"domain"`
-	// Type:
-	//
-	// Default value: unknown
+	// Type: default value: unknown
 	Type TaskType `json:"type"`
-	// Status:
-	//
-	// Default value: unavailable
+	// Status: default value: unavailable
 	Status TaskStatus `json:"status"`
 
 	StartedAt *time.Time `json:"started_at"`
@@ -1842,44 +1676,40 @@ type UpdateContactRequestQuestion struct {
 	Answer *string `json:"answer"`
 }
 
-// UpdateDNSZoneNameserversResponse: update dns zone nameservers response
+// UpdateDNSZoneNameserversResponse: update dns zone nameservers response.
 type UpdateDNSZoneNameserversResponse struct {
-	// Ns: the returned DNS zone nameservers
+	// Ns: DNS zone name servers returned.
 	Ns []*Nameserver `json:"ns"`
 }
 
-// UpdateDNSZoneRecordsResponse: update dns zone records response
+// UpdateDNSZoneRecordsResponse: update dns zone records response.
 type UpdateDNSZoneRecordsResponse struct {
-	// Records: the returned DNS zone records
+	// Records: DNS zone records returned.
 	Records []*Record `json:"records"`
 }
 
 // Service API
 
 type ListDNSZonesRequest struct {
-	// OrganizationID: the organization ID on which to filter the returned DNS zones
+	// OrganizationID: organization ID on which to filter the returned DNS zones.
 	OrganizationID *string `json:"-"`
-	// ProjectID: the project ID on which to filter the returned DNS zones
+	// ProjectID: project ID on which to filter the returned DNS zones.
 	ProjectID *string `json:"-"`
-	// OrderBy: the sort order of the returned DNS zones
-	//
+	// OrderBy: sort order of the returned DNS zones.
 	// Default value: domain_asc
 	OrderBy ListDNSZonesRequestOrderBy `json:"-"`
-	// Page: the page number for the returned DNS zones
+	// Page: page number to return, from the paginated results.
 	Page *int32 `json:"-"`
-	// PageSize: the maximum number of DNS zones per page
+	// PageSize: maximum number of DNS zones to return per page.
 	PageSize *uint32 `json:"-"`
-	// Domain: the domain on which to filter the returned DNS zones
+	// Domain: domain on which to filter the returned DNS zones.
 	Domain string `json:"-"`
-	// DNSZone: the DNS zone on which to filter the returned DNS zones
+	// DNSZone: DNS zone on which to filter the returned DNS zones.
 	DNSZone string `json:"-"`
 }
 
-// ListDNSZones: list DNS zones
-//
-// Returns a list of manageable DNS zones.
-// You can filter the DNS zones by domain name.
-//
+// ListDNSZones: list DNS zones.
+// Retrieve the list of DNS zones you can manage and filter DNS zones associated with specific domain names.
 func (s *API) ListDNSZones(req *ListDNSZonesRequest, opts ...scw.RequestOption) (*ListDNSZonesResponse, error) {
 	var err error
 
@@ -1914,17 +1744,16 @@ func (s *API) ListDNSZones(req *ListDNSZonesRequest, opts ...scw.RequestOption) 
 }
 
 type CreateDNSZoneRequest struct {
-	// Domain: the domain of the DNS zone to create
+	// Domain: domain in which to crreate the DNS zone.
 	Domain string `json:"domain"`
-	// Subdomain: the subdomain of the DNS zone to create
+	// Subdomain: subdomain of the DNS zone to create.
 	Subdomain string `json:"subdomain"`
-	// ProjectID: the project ID where the DNS zone will be created
+	// ProjectID: project ID in which to create the DNS zone.
 	ProjectID string `json:"project_id"`
 }
 
-// CreateDNSZone: create a DNS zone
-//
-// Create a new DNS zone.
+// CreateDNSZone: create a DNS zone.
+// Create a new DNS zone specified by the domain name, the subdomain and the Project ID.
 func (s *API) CreateDNSZone(req *CreateDNSZoneRequest, opts ...scw.RequestOption) (*DNSZone, error) {
 	var err error
 
@@ -1954,17 +1783,16 @@ func (s *API) CreateDNSZone(req *CreateDNSZoneRequest, opts ...scw.RequestOption
 }
 
 type UpdateDNSZoneRequest struct {
-	// DNSZone: the DNS zone to update
+	// DNSZone: DNS zone to update.
 	DNSZone string `json:"-"`
-	// NewDNSZone: the new DNS zone
+	// NewDNSZone: name of the new DNS zone to create.
 	NewDNSZone *string `json:"new_dns_zone"`
-	// ProjectID: the project ID of the new DNS zone
+	// ProjectID: project ID in which to create the new DNS zone.
 	ProjectID string `json:"project_id"`
 }
 
-// UpdateDNSZone: update a DNS zone
-//
-// Update the name and/or the organizations for a DNS zone.
+// UpdateDNSZone: update a DNS zone.
+// Update the name and/or the Organizations for a DNS zone.
 func (s *API) UpdateDNSZone(req *UpdateDNSZoneRequest, opts ...scw.RequestOption) (*DNSZone, error) {
 	var err error
 
@@ -1998,19 +1826,18 @@ func (s *API) UpdateDNSZone(req *UpdateDNSZoneRequest, opts ...scw.RequestOption
 }
 
 type CloneDNSZoneRequest struct {
-	// DNSZone: the DNS zone to clone
+	// DNSZone: DNS zone to clone.
 	DNSZone string `json:"-"`
-	// DestDNSZone: the destinaton DNS zone
+	// DestDNSZone: destination DNS zone in which to clone the chosen DNS zone.
 	DestDNSZone string `json:"dest_dns_zone"`
-	// Overwrite: whether or not the destination DNS zone will be overwritten
+	// Overwrite: specifies whether or not the destination DNS zone will be overwritten.
 	Overwrite bool `json:"overwrite"`
-	// ProjectID: the project ID of the destination DNS zone
+	// ProjectID: project ID of the destination DNS zone.
 	ProjectID *string `json:"project_id"`
 }
 
-// CloneDNSZone: clone a DNS zone
-//
-// Clone an existed DNS zone with all its records into a new one.
+// CloneDNSZone: clone a DNS zone.
+// Clone an existing DNS zone with all its records into a new DNS zone.
 func (s *API) CloneDNSZone(req *CloneDNSZoneRequest, opts ...scw.RequestOption) (*DNSZone, error) {
 	var err error
 
@@ -2039,15 +1866,14 @@ func (s *API) CloneDNSZone(req *CloneDNSZoneRequest, opts ...scw.RequestOption) 
 }
 
 type DeleteDNSZoneRequest struct {
-	// DNSZone: the DNS zone to delete
+	// DNSZone: DNS zone to delete.
 	DNSZone string `json:"-"`
-	// ProjectID: the project ID of the DNS zone to delete
+	// ProjectID: project ID of the DNS zone to delete.
 	ProjectID string `json:"-"`
 }
 
-// DeleteDNSZone: delete DNS zone
-//
-// Delete a DNS zone and all it's records.
+// DeleteDNSZone: delete a DNS zone.
+// Delete a DNS zone and all its records.
 func (s *API) DeleteDNSZone(req *DeleteDNSZoneRequest, opts ...scw.RequestOption) (*DeleteDNSZoneResponse, error) {
 	var err error
 
@@ -2080,33 +1906,29 @@ func (s *API) DeleteDNSZone(req *DeleteDNSZoneRequest, opts ...scw.RequestOption
 }
 
 type ListDNSZoneRecordsRequest struct {
-	// DNSZone: the DNS zone on which to filter the returned DNS zone records
+	// DNSZone: DNS zone on which to filter the returned DNS zone records.
 	DNSZone string `json:"-"`
-	// ProjectID: the project ID on which to filter the returned DNS zone records
+	// ProjectID: project ID on which to filter the returned DNS zone records.
 	ProjectID *string `json:"-"`
-	// OrderBy: the sort order of the returned DNS zone records
-	//
+	// OrderBy: sort order of the returned DNS zone records.
 	// Default value: name_asc
 	OrderBy ListDNSZoneRecordsRequestOrderBy `json:"-"`
-	// Page: the page number for the returned DNS zone records
+	// Page: page number to return, from the paginated results.
 	Page *int32 `json:"-"`
-	// PageSize: the maximum number of DNS zone records per page
+	// PageSize: maximum number of DNS zone records per page.
 	PageSize *uint32 `json:"-"`
-	// Name: the name on which to filter the returned DNS zone records
+	// Name: name on which to filter the returned DNS zone records.
 	Name string `json:"-"`
-	// Type: the record type on which to filter the returned DNS zone records
-	//
+	// Type: record type on which to filter the returned DNS zone records.
 	// Default value: unknown
 	Type RecordType `json:"-"`
-	// ID: the record ID on which to filter the returned DNS zone records
+	// ID: record ID on which to filter the returned DNS zone records.
 	ID *string `json:"-"`
 }
 
-// ListDNSZoneRecords: list DNS zone records
-//
-// Returns a list of DNS records of a DNS zone with default NS.
-// You can filter the records by type and name.
-//
+// ListDNSZoneRecords: list records within a DNS zone.
+// Retrieve a list of DNS records within a DNS zone that has default name servers.
+// You can filter records by type and name.
 func (s *API) ListDNSZoneRecords(req *ListDNSZoneRecordsRequest, opts ...scw.RequestOption) (*ListDNSZoneRecordsResponse, error) {
 	var err error
 
@@ -2145,38 +1967,28 @@ func (s *API) ListDNSZoneRecords(req *ListDNSZoneRecordsRequest, opts ...scw.Req
 }
 
 type UpdateDNSZoneRecordsRequest struct {
-	// DNSZone: the DNS zone where the DNS zone records will be updated
+	// DNSZone: DNS zone in which to update the DNS zone records.
 	DNSZone string `json:"-"`
-	// Changes: the changes made to the records
+	// Changes: changes made to the records.
 	Changes []*RecordChange `json:"changes"`
-	// ReturnAllRecords: whether or not to return all the records
+	// ReturnAllRecords: specifies whether or not to return all the records.
 	ReturnAllRecords *bool `json:"return_all_records"`
-	// DisallowNewZoneCreation: forbid the creation of the target zone if not existing (default action is yes)
+	// DisallowNewZoneCreation: disable the creation of the target zone if it does not exist. Target zone creation is disabled by default.
 	DisallowNewZoneCreation bool `json:"disallow_new_zone_creation"`
-	// Serial: don't use the autoincremenent serial but the provided one (0 to keep the same)
+	// Serial: use the provided serial (0) instead of the auto-increment serial.
 	Serial *uint64 `json:"serial"`
 }
 
-// UpdateDNSZoneRecords: update DNS zone records
+// UpdateDNSZoneRecords: update records within a DNS zone.
+// Update records within a DNS zone that has default name servers and perform several actions on your records.
 //
-// Only available with default NS.<br/>
-// Send a list of actions and records.
-//
-// Action can be:
-//  - add:
-//   - Add new record
-//   - Can be more specific and add a new IP to an existing A record for example
-//  - set:
-//   - Edit a record
-//   - Can be more specific and edit an IP from an existing A record for example
-//  - delete:
-//   - Delete a record
-//   - Can be more specific and delete an IP from an existing A record for example
-//  - clear:
-//   - Delete all records from a DNS zone
+// Actions include:
+//  - add: allows you to add a new record or add a new IP to an existing A record, for example
+//  - set: allows you to edit a record or edit an IP from an existing A record, for example
+//  - delete: allows you to delete a record or delete an IP from an existing A record, for example
+//  - clear: allows you to delete all records from a DNS zone
 //
 // All edits will be versioned.
-//
 func (s *API) UpdateDNSZoneRecords(req *UpdateDNSZoneRecordsRequest, opts ...scw.RequestOption) (*UpdateDNSZoneRecordsResponse, error) {
 	var err error
 
@@ -2205,15 +2017,14 @@ func (s *API) UpdateDNSZoneRecords(req *UpdateDNSZoneRecordsRequest, opts ...scw
 }
 
 type ListDNSZoneNameserversRequest struct {
-	// DNSZone: the DNS zone on which to filter the returned DNS zone nameservers
+	// DNSZone: DNS zone on which to filter the returned DNS zone name servers.
 	DNSZone string `json:"-"`
-	// ProjectID: the project ID on which to filter the returned DNS zone nameservers
+	// ProjectID: project ID on which to filter the returned DNS zone name servers.
 	ProjectID *string `json:"-"`
 }
 
-// ListDNSZoneNameservers: list DNS zone nameservers
-//
-// Returns a list of Nameservers and their optional glue records for a DNS zone.
+// ListDNSZoneNameservers: list name servers within a DNS zone.
+// Retrieve a list of name servers within a DNS zone and their optional glue records.
 func (s *API) ListDNSZoneNameservers(req *ListDNSZoneNameserversRequest, opts ...scw.RequestOption) (*ListDNSZoneNameserversResponse, error) {
 	var err error
 
@@ -2241,15 +2052,14 @@ func (s *API) ListDNSZoneNameservers(req *ListDNSZoneNameserversRequest, opts ..
 }
 
 type UpdateDNSZoneNameserversRequest struct {
-	// DNSZone: the DNS zone where the DNS zone nameservers will be updated
+	// DNSZone: DNS zone in which to update the DNS zone name servers.
 	DNSZone string `json:"-"`
-	// Ns: the new DNS zone nameservers
+	// Ns: new DNS zone name servers.
 	Ns []*Nameserver `json:"ns"`
 }
 
-// UpdateDNSZoneNameservers: update DNS zone nameservers
-//
-// Update DNS zone nameservers and set optional glue records.
+// UpdateDNSZoneNameservers: update name servers within a DNS zone.
+// Update name servers within a DNS zone and set optional glue records.
 func (s *API) UpdateDNSZoneNameservers(req *UpdateDNSZoneNameserversRequest, opts ...scw.RequestOption) (*UpdateDNSZoneNameserversResponse, error) {
 	var err error
 
@@ -2278,16 +2088,13 @@ func (s *API) UpdateDNSZoneNameservers(req *UpdateDNSZoneNameserversRequest, opt
 }
 
 type ClearDNSZoneRecordsRequest struct {
-	// DNSZone: the DNS zone to clear
+	// DNSZone: DNS zone to clear.
 	DNSZone string `json:"-"`
 }
 
-// ClearDNSZoneRecords: clear DNS zone records
-//
-// Only available with default NS.<br/>
-// Delete all the records from a DNS zone.
+// ClearDNSZoneRecords: clear records within a DNS zone.
+// Delete all records within a DNS zone that has default name servers.<br/>
 // All edits will be versioned.
-//
 func (s *API) ClearDNSZoneRecords(req *ClearDNSZoneRecordsRequest, opts ...scw.RequestOption) (*ClearDNSZoneRecordsResponse, error) {
 	var err error
 
@@ -2311,17 +2118,15 @@ func (s *API) ClearDNSZoneRecords(req *ClearDNSZoneRecordsRequest, opts ...scw.R
 }
 
 type ExportRawDNSZoneRequest struct {
-	// DNSZone: the DNS zone to export
+	// DNSZone: DNS zone to export.
 	DNSZone string `json:"-"`
-	// Format: format for DNS zone
-	//
+	// Format: DNS zone format.
 	// Default value: bind
 	Format RawFormat `json:"-"`
 }
 
-// ExportRawDNSZone: export raw DNS zone
-//
-// Get a DNS zone in a given format with default NS.
+// ExportRawDNSZone: export a raw DNS zone.
+// Export a DNS zone with default name servers, in a specific format.
 func (s *API) ExportRawDNSZone(req *ExportRawDNSZoneRequest, opts ...scw.RequestOption) (*scw.File, error) {
 	var err error
 
@@ -2349,27 +2154,24 @@ func (s *API) ExportRawDNSZone(req *ExportRawDNSZoneRequest, opts ...scw.Request
 }
 
 type ImportRawDNSZoneRequest struct {
-	// DNSZone: the DNS zone to import
+	// DNSZone: DNS zone to import.
 	DNSZone string `json:"-"`
 	// Deprecated
 	Content *string `json:"content,omitempty"`
 
 	ProjectID string `json:"project_id"`
-	// Deprecated: Format:
-	//
-	// Default value: unknown_raw_format
+	// Deprecated: Format: default value: unknown_raw_format
 	Format *RawFormat `json:"format,omitempty"`
-	// BindSource: import a bind file format
+	// BindSource: import a bind file format.
 	// Precisely one of AxfrSource, BindSource must be set.
 	BindSource *ImportRawDNSZoneRequestBindSource `json:"bind_source,omitempty"`
-	// AxfrSource: import from the nameserver given with tsig use or not
+	// AxfrSource: import from the name server given with TSIG, to use or not.
 	// Precisely one of AxfrSource, BindSource must be set.
 	AxfrSource *ImportRawDNSZoneRequestAXFRSource `json:"axfr_source,omitempty"`
 }
 
-// ImportRawDNSZone: import raw DNS zone
-//
-// Import and replace records from a given provider format with default NS.
+// ImportRawDNSZone: import a raw DNS zone.
+// Import and replace the format of records from a given provider, with default name servers.
 func (s *API) ImportRawDNSZone(req *ImportRawDNSZoneRequest, opts ...scw.RequestOption) (*ImportRawDNSZoneResponse, error) {
 	var err error
 
@@ -2409,9 +2211,8 @@ type ImportProviderDNSZoneRequest struct {
 	OnlineV1 *ImportProviderDNSZoneRequestOnlineV1 `json:"online_v1,omitempty"`
 }
 
-// ImportProviderDNSZone: import provider DNS zone
-//
-// Import and replace records from a given provider format with default NS.
+// ImportProviderDNSZone: import a DNS zone from another provider.
+// Import and replace the format of records from a given provider, with default name servers.
 func (s *API) ImportProviderDNSZone(req *ImportProviderDNSZoneRequest, opts ...scw.RequestOption) (*ImportProviderDNSZoneResponse, error) {
 	var err error
 
@@ -2440,19 +2241,17 @@ func (s *API) ImportProviderDNSZone(req *ImportProviderDNSZoneRequest, opts ...s
 }
 
 type RefreshDNSZoneRequest struct {
-	// DNSZone: the DNS zone to refresh
+	// DNSZone: DNS zone to refresh.
 	DNSZone string `json:"-"`
-	// RecreateDNSZone: whether or not to recreate the DNS zone
+	// RecreateDNSZone: specifies whether or not to recreate the DNS zone.
 	RecreateDNSZone bool `json:"recreate_dns_zone"`
-	// RecreateSubDNSZone: whether or not to recreate the sub DNS zone
+	// RecreateSubDNSZone: specifies whether or not to recreate the sub DNS zone.
 	RecreateSubDNSZone bool `json:"recreate_sub_dns_zone"`
 }
 
-// RefreshDNSZone: refresh DNS zone
-//
-// Refresh SOA DNS zone.
+// RefreshDNSZone: refresh a DNS zone.
+// Refresh an SOA DNS zone to reload the records in the DNS zone and update the SOA serial.
 // You can recreate the given DNS zone and its sub DNS zone if needed.
-//
 func (s *API) RefreshDNSZone(req *RefreshDNSZoneRequest, opts ...scw.RequestOption) (*RefreshDNSZoneResponse, error) {
 	var err error
 
@@ -2482,18 +2281,15 @@ func (s *API) RefreshDNSZone(req *RefreshDNSZoneRequest, opts ...scw.RequestOpti
 
 type ListDNSZoneVersionsRequest struct {
 	DNSZone string `json:"-"`
-	// Page: the page number for the returned DNS zones versions
+	// Page: page number to return, from the paginated results.
 	Page *int32 `json:"-"`
-	// PageSize: the maximum number of DNS zones versions per page
+	// PageSize: maximum number of DNS zones versions per page.
 	PageSize *uint32 `json:"-"`
 }
 
-// ListDNSZoneVersions: list DNS zone versions
-//
-// Get a list of DNS zone versions.<br/>
-// The maximum version count is 100.<br/>
-// If the count reaches this limit, the oldest version will be deleted after each new modification.
-//
+// ListDNSZoneVersions: list versions of a DNS zone.
+// Retrieve a list of a DNS zone's versions.<br/>
+// The maximum version count is 100. If the count reaches this limit, the oldest version will be deleted after each new modification.
 func (s *API) ListDNSZoneVersions(req *ListDNSZoneVersionsRequest, opts ...scw.RequestOption) (*ListDNSZoneVersionsResponse, error) {
 	var err error
 
@@ -2528,15 +2324,14 @@ func (s *API) ListDNSZoneVersions(req *ListDNSZoneVersionsRequest, opts ...scw.R
 
 type ListDNSZoneVersionRecordsRequest struct {
 	DNSZoneVersionID string `json:"-"`
-	// Page: the page number for the returned DNS zones versions records
+	// Page: page number to return, from the paginated results.
 	Page *int32 `json:"-"`
-	// PageSize: the maximum number of DNS zones versions records per page
+	// PageSize: maximum number of DNS zones versions records per page.
 	PageSize *uint32 `json:"-"`
 }
 
-// ListDNSZoneVersionRecords: list DNS zone version records
-//
-// Get a list of records from a previous DNS zone version.
+// ListDNSZoneVersionRecords: list records from a given version of a specific DNS zone.
+// Retrieve a list of records from a specific DNS zone version.
 func (s *API) ListDNSZoneVersionRecords(req *ListDNSZoneVersionRecordsRequest, opts ...scw.RequestOption) (*ListDNSZoneVersionRecordsResponse, error) {
 	var err error
 
@@ -2573,9 +2368,8 @@ type GetDNSZoneVersionDiffRequest struct {
 	DNSZoneVersionID string `json:"-"`
 }
 
-// GetDNSZoneVersionDiff: get DNS zone version diff
-//
-// Get all differences from a previous DNS zone version.
+// GetDNSZoneVersionDiff: access differences from a specific DNS zone version.
+// Access a previous DNS zone version to see the differences from another specific version.
 func (s *API) GetDNSZoneVersionDiff(req *GetDNSZoneVersionDiffRequest, opts ...scw.RequestOption) (*GetDNSZoneVersionDiffResponse, error) {
 	var err error
 
@@ -2602,9 +2396,8 @@ type RestoreDNSZoneVersionRequest struct {
 	DNSZoneVersionID string `json:"-"`
 }
 
-// RestoreDNSZoneVersion: restore DNS zone version
-//
-// Restore and activate a previous DNS zone version.
+// RestoreDNSZoneVersion: restore a DNS zone version.
+// Restore and activate a version of a specific DNS zone.
 func (s *API) RestoreDNSZoneVersion(req *RestoreDNSZoneVersionRequest, opts ...scw.RequestOption) (*RestoreDNSZoneVersionResponse, error) {
 	var err error
 
@@ -2636,7 +2429,8 @@ type GetSSLCertificateRequest struct {
 	DNSZone string `json:"-"`
 }
 
-// GetSSLCertificate: get the zone TLS certificate if it exists
+// GetSSLCertificate: get a DNS zone's TLS certificate.
+// Get the DNS zone's TLS certificate. If you do not have a certificate, the ouptut returns `no certificate found`.
 func (s *API) GetSSLCertificate(req *GetSSLCertificateRequest, opts ...scw.RequestOption) (*SSLCertificate, error) {
 	var err error
 
@@ -2665,7 +2459,8 @@ type CreateSSLCertificateRequest struct {
 	AlternativeDNSZones []string `json:"alternative_dns_zones"`
 }
 
-// CreateSSLCertificate: create or return the zone TLS certificate
+// CreateSSLCertificate: create or get the DNS zone's TLS certificate.
+// Create a new TLS certificate or retrieve information about an existing TLS certificate.
 func (s *API) CreateSSLCertificate(req *CreateSSLCertificateRequest, opts ...scw.RequestOption) (*SSLCertificate, error) {
 	var err error
 
@@ -2699,7 +2494,8 @@ type ListSSLCertificatesRequest struct {
 	ProjectID *string `json:"-"`
 }
 
-// ListSSLCertificates: list all user TLS certificates
+// ListSSLCertificates: list a user's TLS certificates.
+// List all the TLS certificates a user has created, specified by the user's Project ID and the DNS zone.
 func (s *API) ListSSLCertificates(req *ListSSLCertificatesRequest, opts ...scw.RequestOption) (*ListSSLCertificatesResponse, error) {
 	var err error
 
@@ -2734,7 +2530,8 @@ type DeleteSSLCertificateRequest struct {
 	DNSZone string `json:"-"`
 }
 
-// DeleteSSLCertificate: delete an TLS certificate
+// DeleteSSLCertificate: delete a TLS certificate.
+// Delete an existing TLS certificate specified by its DNS zone. Deleting a TLS certificate is permanent and cannot be undone.
 func (s *API) DeleteSSLCertificate(req *DeleteSSLCertificateRequest, opts ...scw.RequestOption) (*DeleteSSLCertificateResponse, error) {
 	var err error
 
@@ -2761,9 +2558,8 @@ type GetDNSZoneTsigKeyRequest struct {
 	DNSZone string `json:"-"`
 }
 
-// GetDNSZoneTsigKey: get the DNS zone TSIG Key
-//
-// Get the DNS zone TSIG Key to allow AXFR request.
+// GetDNSZoneTsigKey: get the DNS zone's TSIG key.
+// Retrieve information about the TSIG key of a given DNS zone to allow AXFR requests.
 func (s *API) GetDNSZoneTsigKey(req *GetDNSZoneTsigKeyRequest, opts ...scw.RequestOption) (*GetDNSZoneTsigKeyResponse, error) {
 	var err error
 
@@ -2790,7 +2586,8 @@ type DeleteDNSZoneTsigKeyRequest struct {
 	DNSZone string `json:"-"`
 }
 
-// DeleteDNSZoneTsigKey: delete the DNS zone TSIG Key
+// DeleteDNSZoneTsigKey: delete the DNS zone's TSIG key.
+// Delete an existing TSIG key specified by its DNS zone. Deleting a TSIG key is permanent and cannot be undone.
 func (s *API) DeleteDNSZoneTsigKey(req *DeleteDNSZoneTsigKeyRequest, opts ...scw.RequestOption) error {
 	var err error
 
@@ -2818,18 +2615,22 @@ type RegistrarAPIListTasksRequest struct {
 
 	PageSize *uint32 `json:"-"`
 
-	Domain string `json:"-"`
-
 	ProjectID *string `json:"-"`
 
 	OrganizationID *string `json:"-"`
+
+	Domain *string `json:"-"`
+
+	Types []TaskType `json:"-"`
+
+	Statuses []TaskStatus `json:"-"`
+	// OrderBy: default value: domain_desc
+	OrderBy ListTasksRequestOrderBy `json:"-"`
 }
 
-// ListTasks: list tasks
-//
+// ListTasks: list tasks.
 // List all account tasks.
 // You can filter the list by domain name.
-//
 func (s *RegistrarAPI) ListTasks(req *RegistrarAPIListTasksRequest, opts ...scw.RequestOption) (*ListTasksResponse, error) {
 	var err error
 
@@ -2841,9 +2642,12 @@ func (s *RegistrarAPI) ListTasks(req *RegistrarAPIListTasksRequest, opts ...scw.
 	query := url.Values{}
 	parameter.AddToQuery(query, "page", req.Page)
 	parameter.AddToQuery(query, "page_size", req.PageSize)
-	parameter.AddToQuery(query, "domain", req.Domain)
 	parameter.AddToQuery(query, "project_id", req.ProjectID)
 	parameter.AddToQuery(query, "organization_id", req.OrganizationID)
+	parameter.AddToQuery(query, "domain", req.Domain)
+	parameter.AddToQuery(query, "types", req.Types)
+	parameter.AddToQuery(query, "statuses", req.Statuses)
+	parameter.AddToQuery(query, "order_by", req.OrderBy)
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "GET",
@@ -2887,11 +2691,9 @@ type RegistrarAPIBuyDomainsRequest struct {
 	TechnicalContact *NewContact `json:"technical_contact,omitempty"`
 }
 
-// BuyDomains: buy one or more domains
-//
+// BuyDomains: buy one or more domains.
 // Request the registration of domain names.
 // You can provide an already existing domain's contact or a new contact.
-//
 func (s *RegistrarAPI) BuyDomains(req *RegistrarAPIBuyDomainsRequest, opts ...scw.RequestOption) (*OrderResponse, error) {
 	var err error
 
@@ -2928,10 +2730,8 @@ type RegistrarAPIRenewDomainsRequest struct {
 	ForceLateRenewal *bool `json:"force_late_renewal"`
 }
 
-// RenewDomains: renew one or more domains
-//
+// RenewDomains: renew one or more domains.
 // Request the renewal of domain names.
-//
 func (s *RegistrarAPI) RenewDomains(req *RegistrarAPIRenewDomainsRequest, opts ...scw.RequestOption) (*OrderResponse, error) {
 	var err error
 
@@ -2979,10 +2779,8 @@ type RegistrarAPITransferInDomainRequest struct {
 	TechnicalContact *NewContact `json:"technical_contact,omitempty"`
 }
 
-// TransferInDomain: transfer a domain
-//
+// TransferInDomain: transfer a domain.
 // Request the transfer from another registrar domain to Scaleway.
-//
 func (s *RegistrarAPI) TransferInDomain(req *RegistrarAPITransferInDomainRequest, opts ...scw.RequestOption) (*OrderResponse, error) {
 	var err error
 
@@ -3023,13 +2821,11 @@ type RegistrarAPITradeDomainRequest struct {
 	NewOwnerContact *NewContact `json:"new_owner_contact,omitempty"`
 }
 
-// TradeDomain: trade a domain contact
-//
+// TradeDomain: trade a domain contact.
 // Request a trade for the contact owner.<br/>
 // If an `organization_id` is given, the change is from the current Scaleway account to another Scaleway account.<br/>
 // If no contact is given, the first contact of the other Scaleway account is taken.<br/>
 // If the other Scaleway account has no contact. An error occurs.
-//
 func (s *RegistrarAPI) TradeDomain(req *RegistrarAPITradeDomainRequest, opts ...scw.RequestOption) (*OrderResponse, error) {
 	var err error
 
@@ -3063,10 +2859,8 @@ type RegistrarAPIRegisterExternalDomainRequest struct {
 	ProjectID string `json:"project_id"`
 }
 
-// RegisterExternalDomain: register an external domain
-//
+// RegisterExternalDomain: register an external domain.
 // Request the registration of an external domain name.
-//
 func (s *RegistrarAPI) RegisterExternalDomain(req *RegistrarAPIRegisterExternalDomainRequest, opts ...scw.RequestOption) (*RegisterExternalDomainResponse, error) {
 	var err error
 
@@ -3099,10 +2893,8 @@ type RegistrarAPIDeleteExternalDomainRequest struct {
 	Domain string `json:"-"`
 }
 
-// DeleteExternalDomain: delete an external domain
-//
+// DeleteExternalDomain: delete an external domain.
 // Delete an external domain name.
-//
 func (s *RegistrarAPI) DeleteExternalDomain(req *RegistrarAPIDeleteExternalDomainRequest, opts ...scw.RequestOption) (*DeleteExternalDomainResponse, error) {
 	var err error
 
@@ -3126,12 +2918,9 @@ func (s *RegistrarAPI) DeleteExternalDomain(req *RegistrarAPIDeleteExternalDomai
 }
 
 type RegistrarAPICheckContactsCompatibilityRequest struct {
+	Domains []string `json:"domains"`
 
-	// Precisely one of Domain, Tld must be set.
-	Domain *string `json:"domain,omitempty"`
-
-	// Precisely one of Domain, Tld must be set.
-	Tld *string `json:"tld,omitempty"`
+	Tlds []string `json:"tlds"`
 
 	// Precisely one of OwnerContact, OwnerContactID must be set.
 	OwnerContactID *string `json:"owner_contact_id,omitempty"`
@@ -3152,11 +2941,9 @@ type RegistrarAPICheckContactsCompatibilityRequest struct {
 	TechnicalContact *NewContact `json:"technical_contact,omitempty"`
 }
 
-// CheckContactsCompatibility: check if contacts are compatible against a domain or a tld
-//
+// CheckContactsCompatibility: check if contacts are compatible against a domain or a tld.
 // Check if contacts are compatible against a domain or a tld.
 // If not, it will return the information requiring a correction.
-//
 func (s *RegistrarAPI) CheckContactsCompatibility(req *RegistrarAPICheckContactsCompatibilityRequest, opts ...scw.RequestOption) (*CheckContactsCompatibilityResponse, error) {
 	var err error
 
@@ -3192,11 +2979,9 @@ type RegistrarAPIListContactsRequest struct {
 	OrganizationID *string `json:"-"`
 }
 
-// ListContacts: list contacts
-//
+// ListContacts: list contacts.
 // Return a list of contacts with their domains and roles.
 // You can filter the list by domain name.
-//
 func (s *RegistrarAPI) ListContacts(req *RegistrarAPIListContactsRequest, opts ...scw.RequestOption) (*ListContactsResponse, error) {
 	var err error
 
@@ -3232,8 +3017,7 @@ type RegistrarAPIGetContactRequest struct {
 	ContactID string `json:"-"`
 }
 
-// GetContact: get a contact
-//
+// GetContact: get a contact.
 // Return a contact details retrieved from the registrar using a given contact ID.
 func (s *RegistrarAPI) GetContact(req *RegistrarAPIGetContactRequest, opts ...scw.RequestOption) (*Contact, error) {
 	var err error
@@ -3281,9 +3065,7 @@ type RegistrarAPIUpdateContactRequest struct {
 	VatIdentificationCode *string `json:"vat_identification_code"`
 
 	CompanyIdentificationCode *string `json:"company_identification_code"`
-	// Lang:
-	//
-	// Default value: unknown_language_code
+	// Lang: default value: unknown_language_code
 	Lang LanguageCode `json:"lang"`
 
 	Resale *bool `json:"resale"`
@@ -3301,8 +3083,7 @@ type RegistrarAPIUpdateContactRequest struct {
 	ExtensionNl *ContactExtensionNL `json:"extension_nl"`
 }
 
-// UpdateContact: update contact
-//
+// UpdateContact: update contact.
 // You can edit the contact coordinates.
 func (s *RegistrarAPI) UpdateContact(req *RegistrarAPIUpdateContactRequest, opts ...scw.RequestOption) (*Contact, error) {
 	var err error
@@ -3335,15 +3116,11 @@ type RegistrarAPIListDomainsRequest struct {
 	Page *int32 `json:"-"`
 
 	PageSize *uint32 `json:"-"`
-	// OrderBy:
-	//
-	// Default value: domain_asc
+	// OrderBy: default value: domain_asc
 	OrderBy ListDomainsRequestOrderBy `json:"-"`
 
 	Registrar *string `json:"-"`
-	// Status:
-	//
-	// Default value: status_unknown
+	// Status: default value: status_unknown
 	Status DomainStatus `json:"-"`
 
 	ProjectID *string `json:"-"`
@@ -3355,8 +3132,7 @@ type RegistrarAPIListDomainsRequest struct {
 	Domain *string `json:"-"`
 }
 
-// ListDomains: list domains
-//
+// ListDomains: list domains.
 // Returns a list of domains owned by the user.
 func (s *RegistrarAPI) ListDomains(req *RegistrarAPIListDomainsRequest, opts ...scw.RequestOption) (*ListDomainsResponse, error) {
 	var err error
@@ -3397,9 +3173,7 @@ type RegistrarAPIListRenewableDomainsRequest struct {
 	Page *int32 `json:"-"`
 
 	PageSize *uint32 `json:"-"`
-	// OrderBy:
-	//
-	// Default value: domain_asc
+	// OrderBy: default value: domain_asc
 	OrderBy ListRenewableDomainsRequestOrderBy `json:"-"`
 
 	ProjectID *string `json:"-"`
@@ -3407,8 +3181,7 @@ type RegistrarAPIListRenewableDomainsRequest struct {
 	OrganizationID *string `json:"-"`
 }
 
-// ListRenewableDomains: list scaleway domains that can or not be renewed
-//
+// ListRenewableDomains: list scaleway domains that can or not be renewed.
 // Returns a list of domains owned by the user with a renew status and if renewable, the maximum renew duration in years.
 func (s *RegistrarAPI) ListRenewableDomains(req *RegistrarAPIListRenewableDomainsRequest, opts ...scw.RequestOption) (*ListRenewableDomainsResponse, error) {
 	var err error
@@ -3445,8 +3218,7 @@ type RegistrarAPIGetDomainRequest struct {
 	Domain string `json:"-"`
 }
 
-// GetDomain: get domain
-//
+// GetDomain: get domain.
 // Returns a the domain with more informations.
 func (s *RegistrarAPI) GetDomain(req *RegistrarAPIGetDomainRequest, opts ...scw.RequestOption) (*Domain, error) {
 	var err error
@@ -3492,11 +3264,9 @@ type RegistrarAPIUpdateDomainRequest struct {
 	AdministrativeContact *NewContact `json:"administrative_contact,omitempty"`
 }
 
-// UpdateDomain: update a domain
-//
+// UpdateDomain: update a domain.
 // Update the domain contacts or create a new one.<br/>
 // If you add the same contact for multiple roles. Only one ID will be created and used for all of them.
-//
 func (s *RegistrarAPI) UpdateDomain(req *RegistrarAPIUpdateDomainRequest, opts ...scw.RequestOption) (*Domain, error) {
 	var err error
 
@@ -3528,10 +3298,8 @@ type RegistrarAPILockDomainTransferRequest struct {
 	Domain string `json:"-"`
 }
 
-// LockDomainTransfer: lock domain transfer
-//
+// LockDomainTransfer: lock domain transfer.
 // Lock domain transfer. A locked domain transfer can't be transferred and the auth code can't be requested.
-//
 func (s *RegistrarAPI) LockDomainTransfer(req *RegistrarAPILockDomainTransferRequest, opts ...scw.RequestOption) (*Domain, error) {
 	var err error
 
@@ -3563,10 +3331,8 @@ type RegistrarAPIUnlockDomainTransferRequest struct {
 	Domain string `json:"-"`
 }
 
-// UnlockDomainTransfer: unlock domain transfer
-//
+// UnlockDomainTransfer: unlock domain transfer.
 // Unlock domain transfer. An unlocked domain can be transferred and the auth code can be requested for this.
-//
 func (s *RegistrarAPI) UnlockDomainTransfer(req *RegistrarAPIUnlockDomainTransferRequest, opts ...scw.RequestOption) (*Domain, error) {
 	var err error
 
@@ -3598,7 +3364,7 @@ type RegistrarAPIEnableDomainAutoRenewRequest struct {
 	Domain string `json:"-"`
 }
 
-// EnableDomainAutoRenew: enable domain auto renew
+// EnableDomainAutoRenew: enable domain auto renew.
 func (s *RegistrarAPI) EnableDomainAutoRenew(req *RegistrarAPIEnableDomainAutoRenewRequest, opts ...scw.RequestOption) (*Domain, error) {
 	var err error
 
@@ -3630,7 +3396,7 @@ type RegistrarAPIDisableDomainAutoRenewRequest struct {
 	Domain string `json:"-"`
 }
 
-// DisableDomainAutoRenew: disable domain auto renew
+// DisableDomainAutoRenew: disable domain auto renew.
 func (s *RegistrarAPI) DisableDomainAutoRenew(req *RegistrarAPIDisableDomainAutoRenewRequest, opts ...scw.RequestOption) (*Domain, error) {
 	var err error
 
@@ -3662,11 +3428,9 @@ type RegistrarAPIGetDomainAuthCodeRequest struct {
 	Domain string `json:"-"`
 }
 
-// GetDomainAuthCode: return domain auth code
-//
+// GetDomainAuthCode: return domain auth code.
 // If possible, return the auth code for an unlocked domain transfer, or an error if the domain is locked.
 // Some TLD may have a different procedure to retrieve the auth code, in that case, the information is given in the message field.
-//
 func (s *RegistrarAPI) GetDomainAuthCode(req *RegistrarAPIGetDomainAuthCodeRequest, opts ...scw.RequestOption) (*GetDomainAuthCodeResponse, error) {
 	var err error
 
@@ -3695,8 +3459,7 @@ type RegistrarAPIEnableDomainDNSSECRequest struct {
 	DsRecord *DSRecord `json:"ds_record"`
 }
 
-// EnableDomainDNSSEC: update domain DNSSEC
-//
+// EnableDomainDNSSEC: update domain DNSSEC.
 // If your domain has the default Scaleway NS and uses another registrar, you have to update the DS record manually.
 // For the algorithm, here are the code numbers for each type:
 //   - 1: RSAMD5
@@ -3715,8 +3478,7 @@ type RegistrarAPIEnableDomainDNSSECRequest struct {
 //   - 1: SHA_1
 //   - 2: SHA_256
 //   - 3: GOST_R_34_11_94
-//   - 4: SHA_384
-//
+//   - 4: SHA_384.
 func (s *RegistrarAPI) EnableDomainDNSSEC(req *RegistrarAPIEnableDomainDNSSECRequest, opts ...scw.RequestOption) (*Domain, error) {
 	var err error
 
@@ -3748,7 +3510,7 @@ type RegistrarAPIDisableDomainDNSSECRequest struct {
 	Domain string `json:"-"`
 }
 
-// DisableDomainDNSSEC: disable domain DNSSEC
+// DisableDomainDNSSEC: disable domain DNSSEC.
 func (s *RegistrarAPI) DisableDomainDNSSEC(req *RegistrarAPIDisableDomainDNSSECRequest, opts ...scw.RequestOption) (*Domain, error) {
 	var err error
 
@@ -3777,24 +3539,25 @@ func (s *RegistrarAPI) DisableDomainDNSSEC(req *RegistrarAPIDisableDomainDNSSECR
 }
 
 type RegistrarAPISearchAvailableDomainsRequest struct {
-	// Domains: a list of domain to search, TLD is optional
+	// Domains: a list of domain to search, TLD is optional.
 	Domains []string `json:"-"`
-	// Tlds: array of tlds to search on
+	// Tlds: array of tlds to search on.
 	Tlds []string `json:"-"`
+	// StrictSearch: search exact match.
+	StrictSearch bool `json:"-"`
 }
 
-// SearchAvailableDomains: search available domains
-//
+// SearchAvailableDomains: search available domains.
 // Search a domain (or at maximum, 10 domains).
 //
 // If the TLD list is empty or not set the search returns the results from the most popular TLDs.
-//
 func (s *RegistrarAPI) SearchAvailableDomains(req *RegistrarAPISearchAvailableDomainsRequest, opts ...scw.RequestOption) (*SearchAvailableDomainsResponse, error) {
 	var err error
 
 	query := url.Values{}
 	parameter.AddToQuery(query, "domains", req.Domains)
 	parameter.AddToQuery(query, "tlds", req.Tlds)
+	parameter.AddToQuery(query, "strict_search", req.StrictSearch)
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "GET",
@@ -3820,7 +3583,7 @@ type RegistrarAPICreateDomainHostRequest struct {
 	IPs []net.IP `json:"ips"`
 }
 
-// CreateDomainHost: create domain hostname with glue IPs
+// CreateDomainHost: create domain hostname with glue IPs.
 func (s *RegistrarAPI) CreateDomainHost(req *RegistrarAPICreateDomainHostRequest, opts ...scw.RequestOption) (*Host, error) {
 	var err error
 
@@ -3856,7 +3619,7 @@ type RegistrarAPIListDomainHostsRequest struct {
 	PageSize *uint32 `json:"-"`
 }
 
-// ListDomainHosts: list domain hostnames with they glue IPs
+// ListDomainHosts: list domain hostnames with they glue IPs.
 func (s *RegistrarAPI) ListDomainHosts(req *RegistrarAPIListDomainHostsRequest, opts ...scw.RequestOption) (*ListDomainHostsResponse, error) {
 	var err error
 
@@ -3897,7 +3660,7 @@ type RegistrarAPIUpdateDomainHostRequest struct {
 	IPs *[]string `json:"ips"`
 }
 
-// UpdateDomainHost: update domain hostname with glue IPs
+// UpdateDomainHost: update domain hostname with glue IPs.
 func (s *RegistrarAPI) UpdateDomainHost(req *RegistrarAPIUpdateDomainHostRequest, opts ...scw.RequestOption) (*Host, error) {
 	var err error
 
@@ -3935,7 +3698,7 @@ type RegistrarAPIDeleteDomainHostRequest struct {
 	Name string `json:"-"`
 }
 
-// DeleteDomainHost: delete domain hostname
+// DeleteDomainHost: delete domain hostname.
 func (s *RegistrarAPI) DeleteDomainHost(req *RegistrarAPIDeleteDomainHostRequest, opts ...scw.RequestOption) (*Host, error) {
 	var err error
 

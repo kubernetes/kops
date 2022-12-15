@@ -21,6 +21,7 @@ import (
 	"os"
 	"strings"
 
+	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
@@ -29,6 +30,7 @@ import (
 	"k8s.io/klog/v2"
 	kopsv "k8s.io/kops"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
+	dns "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/scaleway"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/upup/pkg/fi"
@@ -54,6 +56,7 @@ type ScwCloud interface {
 	Region() string
 	Zone() string
 
+	DomainService() *domain.API
 	IamService() *iam.API
 	InstanceService() *instance.API
 	LBService() *lb.ZonedAPI
@@ -67,11 +70,13 @@ type ScwCloud interface {
 	GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error)
 	GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error)
 
+	GetClusterDNSRecords(clusterName string) ([]*domain.Record, error)
 	GetClusterLoadBalancers(clusterName string) ([]*lb.LB, error)
 	GetClusterServers(clusterName string, instanceGroupName *string) ([]*instance.Server, error)
 	GetClusterSSHKeys(clusterName string) ([]*iam.SSHKey, error)
 	GetClusterVolumes(clusterName string) ([]*instance.Volume, error)
 
+	DeleteDNSRecord(record *domain.Record, clusterName string) error
 	DeleteLoadBalancer(loadBalancer *lb.LB) error
 	DeleteServer(server *instance.Server) error
 	DeleteSSHKey(sshkey *iam.SSHKey) error
@@ -86,8 +91,10 @@ type scwCloudImplementation struct {
 	client *scw.Client
 	region scw.Region
 	zone   scw.Zone
+	dns    dnsprovider.Interface
 	tags   map[string]string
 
+	domainAPI   *domain.API
 	iamAPI      *iam.API
 	instanceAPI *instance.API
 	lbAPI       *lb.ZonedAPI
@@ -130,7 +137,9 @@ func NewScwCloud(tags map[string]string) (ScwCloud, error) {
 		client:      scwClient,
 		region:      region,
 		zone:        zone,
+		dns:         dns.NewProvider(scwClient),
 		tags:        tags,
+		domainAPI:   domain.NewAPI(scwClient),
 		iamAPI:      iam.NewAPI(scwClient),
 		instanceAPI: instance.NewAPI(scwClient),
 		lbAPI:       lb.NewZonedAPI(scwClient),
@@ -147,8 +156,11 @@ func (s *scwCloudImplementation) ClusterName(tags []string) string {
 }
 
 func (s *scwCloudImplementation) DNS() (dnsprovider.Interface, error) {
-	klog.V(8).Infof("Scaleway DNS is not implemented yet")
-	return nil, fmt.Errorf("DNS is not implemented yet for Scaleway")
+	provider, err := dnsprovider.GetDnsProvider(dns.ProviderName, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error building DNS provider: %w", err)
+	}
+	return provider, nil
 }
 
 func (s *scwCloudImplementation) ProviderID() kops.CloudProviderID {
@@ -161,6 +173,10 @@ func (s *scwCloudImplementation) Region() string {
 
 func (s *scwCloudImplementation) Zone() string {
 	return string(s.zone)
+}
+
+func (s *scwCloudImplementation) DomainService() *domain.API {
+	return s.domainAPI
 }
 
 func (s *scwCloudImplementation) IamService() *iam.API {
@@ -373,6 +389,27 @@ func buildCloudGroup(ig *kops.InstanceGroup, sg []*instance.Server, nodeMap map[
 	return cloudInstanceGroup, nil
 }
 
+func (s *scwCloudImplementation) GetClusterDNSRecords(clusterName string) ([]*domain.Record, error) {
+	names := strings.SplitN(clusterName, ".", 2)
+	clusterNameShort := names[0]
+	domainName := names[1]
+
+	records, err := s.domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
+		DNSZone: domainName,
+	}, scw.WithAllPages())
+	if err != nil {
+		return nil, fmt.Errorf("listing cluster DNS records: %w", err)
+	}
+
+	clusterDNSRecords := []*domain.Record(nil)
+	for _, record := range records.Records {
+		if strings.HasSuffix(record.Name, clusterNameShort) {
+			clusterDNSRecords = append(clusterDNSRecords, record)
+		}
+	}
+	return clusterDNSRecords, nil
+}
+
 func (s *scwCloudImplementation) GetClusterLoadBalancers(clusterName string) ([]*lb.LB, error) {
 	loadBalancerName := "api." + clusterName
 	lbs, err := s.lbAPI.ListLBs(&lb.ZonedAPIListLBsRequest{
@@ -428,6 +465,29 @@ func (s *scwCloudImplementation) GetClusterVolumes(clusterName string) ([]*insta
 		return nil, fmt.Errorf("failed to list cluster volumes: %w", err)
 	}
 	return volumes.Volumes, nil
+}
+
+func (s *scwCloudImplementation) DeleteDNSRecord(record *domain.Record, clusterName string) error {
+	domainName := strings.SplitN(clusterName, ".", 2)[1]
+	recordDeleteRequest := &domain.UpdateDNSZoneRecordsRequest{
+		DNSZone: domainName,
+		Changes: []*domain.RecordChange{
+			{
+				Delete: &domain.RecordChangeDelete{
+					ID: scw.StringPtr(record.ID),
+				},
+			},
+		},
+	}
+	_, err := s.domainAPI.UpdateDNSZoneRecords(recordDeleteRequest)
+	if err != nil {
+		if is404Error(err) {
+			klog.V(8).Infof("DNS record %q (%s) was already deleted", record.Name, record.ID)
+			return nil
+		}
+		return fmt.Errorf("failed to delete record %s: %w", record.Name, err)
+	}
+	return nil
 }
 
 func (s *scwCloudImplementation) DeleteLoadBalancer(loadBalancer *lb.LB) error {
