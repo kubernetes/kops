@@ -27,6 +27,7 @@ import (
 	"sort"
 
 	"gopkg.in/square/go-jose.v2"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
@@ -97,7 +98,15 @@ func (b *IssuerDiscoveryModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			publicFileACL = nil
 		}
 	case *vfs.S3Path:
-		// ok
+		isPublic, err := discoveryStore.IsBucketPublic(ctx)
+		if err != nil {
+			return fmt.Errorf("checking if bucket was public: %w", err)
+		}
+		if !isPublic {
+			klog.Infof("serviceAccountIssuers bucket %q is not public, will use object ACL", discoveryStore.Bucket())
+		} else {
+			publicFileACL = nil
+		}
 
 	case *vfs.MemFSPath:
 		// ok
