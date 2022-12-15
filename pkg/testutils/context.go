@@ -1,5 +1,5 @@
 /*
-Copyright 2017 The Kubernetes Authors.
+Copyright 2022 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,17 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package acls
+package testutils
 
 import (
 	"context"
-
-	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/util/pkg/vfs"
+	"testing"
 )
 
-// ACLStrategy is the interface implemented by ACL strategy providers
-type ACLStrategy interface {
-	// GetACL returns the ACL if this strategy handles the vfs.Path, when writing for the specified cluster
-	GetACL(ctx context.Context, p vfs.Path, cluster *kops.Cluster) (vfs.ACL, error)
+// ContextForTest returns a Context for the given test scope.
+func ContextForTest(t *testing.T) context.Context {
+	ctx := context.TODO()
+	// We might choose to bind the test to the context in future,
+	// or bind the logger etc.
+	return ctx
 }

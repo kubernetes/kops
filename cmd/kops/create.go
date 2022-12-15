@@ -198,7 +198,7 @@ func RunCreate(ctx context.Context, f *util.Factory, out io.Writer, c *CreateOpt
 				}
 
 				sshKeyArr := []byte(v.Spec.PublicKey)
-				err = sshCredentialStore.AddSSHPublicKey(sshKeyArr)
+				err = sshCredentialStore.AddSSHPublicKey(ctx, sshKeyArr)
 				if err != nil {
 					return err
 				}

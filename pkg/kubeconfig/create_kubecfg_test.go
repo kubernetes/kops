@@ -17,6 +17,7 @@ limitations under the License.
 package kubeconfig
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -108,11 +109,11 @@ func (f fakeKeyStore) FindKeyset(name string) (*fi.Keyset, error) {
 	return f.FindKeysetFn(name)
 }
 
-func (f fakeKeyStore) StoreKeyset(name string, keyset *fi.Keyset) error {
+func (f fakeKeyStore) StoreKeyset(ctx context.Context, name string, keyset *fi.Keyset) error {
 	return f.StoreKeysetFn(name, keyset)
 }
 
-func (f fakeKeyStore) MirrorTo(basedir vfs.Path) error {
+func (f fakeKeyStore) MirrorTo(ctx context.Context, basedir vfs.Path) error {
 	return f.MirrorToFn(basedir)
 }
 

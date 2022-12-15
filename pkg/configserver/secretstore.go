@@ -17,6 +17,7 @@ limitations under the License.
 package configserver
 
 import (
+	"context"
 	"fmt"
 
 	"k8s.io/kops/upup/pkg/fi"
@@ -79,6 +80,6 @@ func (s *configserverSecretStore) ListSecrets() ([]string, error) {
 }
 
 // MirrorTo implements fi.SecretStore
-func (s *configserverSecretStore) MirrorTo(basedir vfs.Path) error {
+func (s *configserverSecretStore) MirrorTo(ctx context.Context, basedir vfs.Path) error {
 	return fmt.Errorf("MirrorTo not supported by configserverSecretStore")
 }

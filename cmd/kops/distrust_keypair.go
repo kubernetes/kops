@@ -125,7 +125,7 @@ func RunDistrustKeypair(ctx context.Context, f *util.Factory, out io.Writer, opt
 	}
 
 	if options.Keyset != "all" {
-		return distrustKeypair(out, options.Keyset, options.KeypairIDs[:], keyStore)
+		return distrustKeypair(ctx, out, options.Keyset, options.KeypairIDs[:], keyStore)
 	}
 
 	keysets, err := keyStore.ListKeysets()
@@ -135,7 +135,7 @@ func RunDistrustKeypair(ctx context.Context, f *util.Factory, out io.Writer, opt
 
 	for name := range keysets {
 		if rotatableKeysetFilter(name, nil) {
-			if err := distrustKeypair(out, name, nil, keyStore); err != nil {
+			if err := distrustKeypair(ctx, out, name, nil, keyStore); err != nil {
 				return fmt.Errorf("distrusting keypair for %s: %v", name, err)
 			}
 		}
@@ -144,7 +144,7 @@ func RunDistrustKeypair(ctx context.Context, f *util.Factory, out io.Writer, opt
 	return nil
 }
 
-func distrustKeypair(out io.Writer, name string, keypairIDs []string, keyStore fi.CAStore) error {
+func distrustKeypair(ctx context.Context, out io.Writer, name string, keypairIDs []string, keyStore fi.CAStore) error {
 	keyset, err := keyStore.FindKeyset(name)
 	if err != nil {
 		return err
@@ -182,7 +182,7 @@ func distrustKeypair(out io.Writer, name string, keypairIDs []string, keyStore f
 		now := time.Now().UTC().Round(0)
 		item.DistrustTimestamp = &now
 
-		if err := keyStore.StoreKeyset(name, keyset); err != nil {
+		if err := keyStore.StoreKeyset(ctx, name, keyset); err != nil {
 			return fmt.Errorf("error storing keyset: %w", err)
 		}
 
