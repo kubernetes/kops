@@ -238,7 +238,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		modelContext.SecretStore = configserver.NewSecretStore(nodeConfig.NodeSecrets)
 	} else if c.cluster.Spec.SecretStore != "" {
 		klog.Infof("Building SecretStore at %q", c.cluster.Spec.SecretStore)
-		p, err := vfs.Context.BuildVfsPath(c.cluster.Spec.SecretStore)
+		p, err := vfs.FromContext(ctx).BuildVfsPath(c.cluster.Spec.SecretStore)
 		if err != nil {
 			return fmt.Errorf("error building secret store path: %v", err)
 		}
@@ -253,7 +253,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		modelContext.KeyStore = configserver.NewKeyStore()
 	} else if c.cluster.Spec.KeyStore != "" {
 		klog.Infof("Building KeyStore at %q", c.cluster.Spec.KeyStore)
-		p, err := vfs.Context.BuildVfsPath(c.cluster.Spec.KeyStore)
+		p, err := vfs.FromContext(ctx).BuildVfsPath(c.cluster.Spec.KeyStore)
 		if err != nil {
 			return fmt.Errorf("error building key store path: %v", err)
 		}

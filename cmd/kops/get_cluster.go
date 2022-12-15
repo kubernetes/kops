@@ -157,7 +157,7 @@ func RunGetClusters(ctx context.Context, f commandutils.Factory, out io.Writer, 
 
 	if options.FullSpec {
 		var err error
-		clusters, err = fullClusterSpecs(clusters)
+		clusters, err = fullClusterSpecs(ctx, clusters)
 		if err != nil {
 			return err
 		}
@@ -278,10 +278,10 @@ func fullOutputYAML(out io.Writer, args ...runtime.Object) error {
 	return nil
 }
 
-func fullClusterSpecs(clusters []*kopsapi.Cluster) ([]*kopsapi.Cluster, error) {
+func fullClusterSpecs(ctx context.Context, clusters []*kopsapi.Cluster) ([]*kopsapi.Cluster, error) {
 	var fullSpecs []*kopsapi.Cluster
 	for _, cluster := range clusters {
-		configBase, err := registry.ConfigBase(cluster)
+		configBase, err := registry.ConfigBase(ctx, cluster)
 		if err != nil {
 			return nil, fmt.Errorf("error reading full cluster spec for %q: %v", cluster.ObjectMeta.Name, err)
 		}

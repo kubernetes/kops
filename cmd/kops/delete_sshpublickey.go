@@ -72,7 +72,7 @@ func RunDeleteSSHPublicKey(ctx context.Context, f *util.Factory, out io.Writer, 
 		return err
 	}
 
-	sshCredentialStore, err := clientset.SSHCredentialStore(cluster)
+	sshCredentialStore, err := clientset.SSHCredentialStore(ctx, cluster)
 	if err != nil {
 		return err
 	}

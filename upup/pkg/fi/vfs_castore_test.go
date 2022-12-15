@@ -17,6 +17,7 @@ limitations under the License.
 package fi
 
 import (
+	"context"
 	"math/big"
 	"math/rand"
 	"strings"
@@ -46,6 +47,8 @@ func TestBigInt_Format(t *testing.T) {
 }
 
 func TestVFSCAStoreRoundTrip(t *testing.T) {
+	ctx := context.TODO()
+
 	vfs.Context.ResetMemfsContext(true)
 
 	basePath, err := vfs.Context.BuildVfsPath("memfs://tests")
@@ -81,7 +84,7 @@ func TestVFSCAStoreRoundTrip(t *testing.T) {
 			},
 			Primary: item,
 		}
-		if err := s.StoreKeyset("kubernetes-ca", keyset); err != nil {
+		if err := s.StoreKeyset(ctx, "kubernetes-ca", keyset); err != nil {
 			t.Fatalf("error from StoreKeyset: %v", err)
 		}
 	}

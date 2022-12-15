@@ -18,6 +18,7 @@ package fi
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"os"
 	"sort"
@@ -59,7 +60,7 @@ func NewVFSCAStore(cluster *kops.Cluster, basedir vfs.Path) *VFSCAStore {
 }
 
 // NewVFSSSHCredentialStore creates a SSHCredentialStore backed by VFS
-func NewVFSSSHCredentialStore(cluster *kops.Cluster, basedir vfs.Path) SSHCredentialStore {
+func NewVFSSSHCredentialStore(ctx context.Context, cluster *kops.Cluster, basedir vfs.Path) SSHCredentialStore {
 	// Note currently identical to NewVFSCAStore
 	c := &VFSCAStore{
 		basedir: basedir,
@@ -174,7 +175,7 @@ func (k *Keyset) ToAPIObject(name string) (*kops.Keyset, error) {
 }
 
 // writeKeysetBundle writes a Keyset bundle to VFS.
-func writeKeysetBundle(cluster *kops.Cluster, p vfs.Path, name string, keyset *Keyset) error {
+func writeKeysetBundle(ctx context.Context, cluster *kops.Cluster, p vfs.Path, name string, keyset *Keyset) error {
 	p = p.Join("keyset.yaml")
 
 	o, err := keyset.ToAPIObject(name)
@@ -187,7 +188,7 @@ func writeKeysetBundle(cluster *kops.Cluster, p vfs.Path, name string, keyset *K
 		return err
 	}
 
-	acl, err := acls.GetACL(p, cluster)
+	acl, err := acls.GetACL(ctx, p, cluster)
 	if err != nil {
 		return err
 	}
@@ -271,7 +272,7 @@ func (c *VFSCAStore) ListKeysets() (map[string]*Keyset, error) {
 }
 
 // MirrorTo will copy keys to a vfs.Path, which is often easier for a machine to read
-func (c *VFSCAStore) MirrorTo(basedir vfs.Path) error {
+func (c *VFSCAStore) MirrorTo(ctx context.Context, basedir vfs.Path) error {
 	if basedir.Path() == c.basedir.Path() {
 		klog.V(2).Infof("Skipping key store mirror from %q to %q (same paths)", c.basedir, basedir)
 		return nil
@@ -284,7 +285,7 @@ func (c *VFSCAStore) MirrorTo(basedir vfs.Path) error {
 	}
 
 	for name, keyset := range keysets {
-		if err := mirrorKeyset(c.cluster, basedir, name, keyset); err != nil {
+		if err := mirrorKeyset(ctx, c.cluster, basedir, name, keyset); err != nil {
 			return err
 		}
 	}
@@ -295,7 +296,7 @@ func (c *VFSCAStore) MirrorTo(basedir vfs.Path) error {
 	}
 
 	for _, sshCredential := range sshCredentials {
-		if err := mirrorSSHCredential(c.cluster, basedir, sshCredential); err != nil {
+		if err := mirrorSSHCredential(ctx, c.cluster, basedir, sshCredential); err != nil {
 			return err
 		}
 	}
@@ -304,8 +305,8 @@ func (c *VFSCAStore) MirrorTo(basedir vfs.Path) error {
 }
 
 // mirrorKeyset writes Keyset bundles for the certificates & privatekeys.
-func mirrorKeyset(cluster *kops.Cluster, basedir vfs.Path, name string, keyset *Keyset) error {
-	if err := writeKeysetBundle(cluster, basedir.Join("private"), name, keyset); err != nil {
+func mirrorKeyset(ctx context.Context, cluster *kops.Cluster, basedir vfs.Path, name string, keyset *Keyset) error {
+	if err := writeKeysetBundle(ctx, cluster, basedir.Join("private"), name, keyset); err != nil {
 		return fmt.Errorf("writing private bundle: %v", err)
 	}
 
@@ -313,14 +314,14 @@ func mirrorKeyset(cluster *kops.Cluster, basedir vfs.Path, name string, keyset *
 }
 
 // mirrorSSHCredential writes the SSH credential file to the mirror location
-func mirrorSSHCredential(cluster *kops.Cluster, basedir vfs.Path, sshCredential *kops.SSHCredential) error {
+func mirrorSSHCredential(ctx context.Context, cluster *kops.Cluster, basedir vfs.Path, sshCredential *kops.SSHCredential) error {
 	id, err := sshcredentials.Fingerprint(sshCredential.Spec.PublicKey)
 	if err != nil {
 		return fmt.Errorf("error fingerprinting SSH public key %q: %v", sshCredential.Name, err)
 	}
 
 	p := basedir.Join("ssh", "public", sshCredential.Name, id)
-	acl, err := acls.GetACL(p, cluster)
+	acl, err := acls.GetACL(ctx, p, cluster)
 	if err != nil {
 		return err
 	}
@@ -333,7 +334,7 @@ func mirrorSSHCredential(cluster *kops.Cluster, basedir vfs.Path, sshCredential 
 	return nil
 }
 
-func (c *VFSCAStore) StoreKeyset(name string, keyset *Keyset) error {
+func (c *VFSCAStore) StoreKeyset(ctx context.Context, name string, keyset *Keyset) error {
 	if keyset.Primary == nil || keyset.Primary.Id == "" {
 		return fmt.Errorf("keyset must have a primary key")
 	}
@@ -353,7 +354,7 @@ func (c *VFSCAStore) StoreKeyset(name string, keyset *Keyset) error {
 
 	{
 		p := c.buildPrivateKeyPoolPath(name)
-		if err := writeKeysetBundle(c.cluster, p, name, keyset); err != nil {
+		if err := writeKeysetBundle(ctx, c.cluster, p, name, keyset); err != nil {
 			return fmt.Errorf("writing private bundle: %v", err)
 		}
 	}
@@ -396,7 +397,7 @@ func (c *VFSCAStore) findPrivateKeyset(id string) (*Keyset, error) {
 }
 
 // AddSSHPublicKey stores an SSH public key
-func (c *VFSCAStore) AddSSHPublicKey(pubkey []byte) error {
+func (c *VFSCAStore) AddSSHPublicKey(ctx context.Context, pubkey []byte) error {
 	id, err := sshcredentials.Fingerprint(strings.TrimSpace(string(pubkey)))
 	if err != nil {
 		return fmt.Errorf("error fingerprinting SSH public key: %v", err)
@@ -404,7 +405,7 @@ func (c *VFSCAStore) AddSSHPublicKey(pubkey []byte) error {
 
 	p := c.buildSSHPublicKeyPath(id)
 
-	acl, err := acls.GetACL(p, c.cluster)
+	acl, err := acls.GetACL(ctx, p, c.cluster)
 	if err != nil {
 		return err
 	}

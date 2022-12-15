@@ -130,7 +130,7 @@ func RunExportKubeconfig(ctx context.Context, f *util.Factory, out io.Writer, op
 	}
 
 	for _, cluster := range clusterList {
-		keyStore, err := clientset.KeyStore(cluster)
+		keyStore, err := clientset.KeyStore(ctx, cluster)
 		if err != nil {
 			return err
 		}

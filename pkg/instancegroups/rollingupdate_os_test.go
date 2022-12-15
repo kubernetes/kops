@@ -38,7 +38,7 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
-func getTestSetupOS(t *testing.T) (*RollingUpdateCluster, *openstack.MockCloud) {
+func getTestSetupOS(t *testing.T, ctx context.Context) (*RollingUpdateCluster, *openstack.MockCloud) {
 	vfs.Context.ResetMemfsContext(true)
 
 	k8sClient := fake.NewSimpleClientset()
@@ -61,18 +61,18 @@ func getTestSetupOS(t *testing.T) (*RollingUpdateCluster, *openstack.MockCloud) 
 	assetBuilder := assets.NewAssetBuilder(inCluster, false)
 	basePath, _ := vfs.Context.BuildVfsPath(inCluster.Spec.ConfigBase)
 	clientset := vfsclientset.NewVFSClientset(basePath)
-	cluster, err := cloudup.PopulateClusterSpec(clientset, inCluster, mockcloud, assetBuilder)
+	cluster, err := cloudup.PopulateClusterSpec(ctx, clientset, inCluster, mockcloud, assetBuilder)
 	if err != nil {
 		t.Fatalf("Failed to populate cluster spec: %v", err)
 	}
 
 	sshPublicKey := []byte("ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDF2sghZsClUBXJB4mBMIw8rb0hJWjg1Vz4eUeXwYmTdi92Gf1zNc5xISSip9Y+PWX/jJokPB7tgPnMD/2JOAKhG1bi4ZqB15pYRmbbBekVpM4o4E0dx+czbqjiAm6wlccTrINK5LYenbucAAQt19eH+D0gJwzYUK9SYz1hWnlGS+qurt2bz7rrsG73lN8E2eiNvGtIXqv3GabW/Hea3acOBgCUJQWUDTRu0OmmwxzKbFN/UpNKeRaHlCqwZWjVAsmqA8TX8LIocq7Np7MmIBwt7EpEeZJxThcmC8DEJs9ClAjD+jlLIvMPXKC3JWCPgwCLGxHjy7ckSGFCSzbyPduh")
-	sshCredentialStore, err := clientset.SSHCredentialStore(cluster)
+	sshCredentialStore, err := clientset.SSHCredentialStore(ctx, cluster)
 	if err != nil {
 		t.Fatalf("Failed to get credential store: %v", err)
 	}
 
-	sshCredentialStore.AddSSHPublicKey(sshPublicKey)
+	sshCredentialStore.AddSSHPublicKey(ctx, sshPublicKey)
 
 	c := &RollingUpdateCluster{
 		Cloud:                   mockcloud,
@@ -100,11 +100,13 @@ var TempTestSkip = func(t *testing.T, message string) {
 }
 
 func TestRollingUpdateDisabledSurgeOS(t *testing.T) {
+	ctx := context.TODO()
+
 	TempTestSkip(t, "Failing in new release PR when build is not yet published")
 
 	t.Setenv("OS_REGION_NAME", "us-test1")
 
-	c, cloud := getTestSetupOS(t)
+	c, cloud := getTestSetupOS(t, ctx)
 
 	groups, igList := getGroupsAllNeedUpdateOS(t, c)
 	err := c.RollingUpdate(groups, igList)

@@ -103,7 +103,7 @@ func RunTrustKeypair(ctx context.Context, f *util.Factory, out io.Writer, option
 		return err
 	}
 
-	keyStore, err := clientset.KeyStore(cluster)
+	keyStore, err := clientset.KeyStore(ctx, cluster)
 	if err != nil {
 		return err
 	}
@@ -125,7 +125,7 @@ func RunTrustKeypair(ctx context.Context, f *util.Factory, out io.Writer, option
 
 		item.DistrustTimestamp = nil
 
-		if err := keyStore.StoreKeyset(options.Keyset, keyset); err != nil {
+		if err := keyStore.StoreKeyset(ctx, options.Keyset, keyset); err != nil {
 			return fmt.Errorf("error storing keypair: %w", err)
 		}
 

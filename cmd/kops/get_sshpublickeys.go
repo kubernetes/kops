@@ -80,7 +80,7 @@ func RunGetSSHPublicKeys(ctx context.Context, f *util.Factory, out io.Writer, op
 		return err
 	}
 
-	sshCredentialStore, err := clientset.SSHCredentialStore(cluster)
+	sshCredentialStore, err := clientset.SSHCredentialStore(ctx, cluster)
 	if err != nil {
 		return err
 	}

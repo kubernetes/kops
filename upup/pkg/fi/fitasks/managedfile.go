@@ -123,6 +123,8 @@ func (s *ManagedFile) CheckChanges(a, e, changes *ManagedFile) error {
 }
 
 func (e *ManagedFile) getACL(c *fi.Context, p vfs.Path) (vfs.ACL, error) {
+	ctx := c.Context()
+
 	var acl vfs.ACL
 	if fi.ValueOf(e.PublicACL) {
 		switch p := p.(type) {
@@ -143,7 +145,7 @@ func (e *ManagedFile) getACL(c *fi.Context, p vfs.Path) (vfs.ACL, error) {
 		return acl, nil
 	}
 
-	return acls.GetACL(p, c.Cluster)
+	return acls.GetACL(ctx, p, c.Cluster)
 }
 
 func (_ *ManagedFile) Render(c *fi.Context, a, e, changes *ManagedFile) error {

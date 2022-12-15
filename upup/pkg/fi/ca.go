@@ -18,6 +18,7 @@ package fi
 
 import (
 	"bytes"
+	"context"
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
@@ -74,10 +75,10 @@ type Keystore interface {
 	FindKeyset(name string) (*Keyset, error)
 
 	// StoreKeyset writes a Keyset to the store.
-	StoreKeyset(name string, keyset *Keyset) error
+	StoreKeyset(ctx context.Context, name string, keyset *Keyset) error
 
 	// MirrorTo will copy secrets to a vfs.Path, which is often easier for a machine to read
-	MirrorTo(basedir vfs.Path) error
+	MirrorTo(ctx context.Context, basedir vfs.Path) error
 }
 
 // HasVFSPath is implemented by keystore & other stores that use a VFS path as their backing store
@@ -98,7 +99,7 @@ type SSHCredentialStore interface {
 	DeleteSSHCredential() error
 
 	// AddSSHPublicKey adds an SSH public key.
-	AddSSHPublicKey(data []byte) error
+	AddSSHPublicKey(ctx context.Context, data []byte) error
 
 	// FindSSHPublicKeys retrieves the SSH public keys.
 	FindSSHPublicKeys() ([]*kops.SSHCredential, error)

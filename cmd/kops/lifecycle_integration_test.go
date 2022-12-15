@@ -200,7 +200,7 @@ func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptio
 	beforeResources := AllAWSResources(cloud)
 
 	factory := newIntegrationTest(o.ClusterName, o.SrcDir).
-		setupCluster(t, inputYAML, ctx, stdout)
+		setupCluster(t, ctx, inputYAML, stdout)
 
 	updateEnsureNoChanges(ctx, t, factory, o.ClusterName, stdout)
 
@@ -437,7 +437,7 @@ func runLifecycleTestOpenstack(o *LifecycleTestOptions) {
 	inputYAML := "in-" + o.Version + ".yaml"
 
 	factory := newIntegrationTest(o.ClusterName, o.SrcDir).
-		setupCluster(t, inputYAML, ctx, stdout)
+		setupCluster(t, ctx, inputYAML, stdout)
 
 	updateEnsureNoChanges(ctx, t, factory, o.ClusterName, stdout)
 
@@ -489,7 +489,7 @@ func runLifecycleTestGCE(o *LifecycleTestOptions) {
 	inputYAML := "in-" + o.Version + ".yaml"
 
 	factory := newIntegrationTest(o.ClusterName, o.SrcDir).
-		setupCluster(t, inputYAML, ctx, stdout)
+		setupCluster(t, ctx, inputYAML, stdout)
 
 	updateEnsureNoChanges(ctx, t, factory, o.ClusterName, stdout)
 

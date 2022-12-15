@@ -17,6 +17,7 @@ limitations under the License.
 package vfsclientset
 
 import (
+	"context"
 	"testing"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -24,6 +25,8 @@ import (
 )
 
 func TestSSHCredentialStoreOnConfigBase(t *testing.T) {
+	ctx := context.TODO()
+
 	vfs.Context.ResetMemfsContext(true)
 	configBase := "memfs://some/config/base"
 	cluster := &kops.Cluster{
@@ -32,7 +35,7 @@ func TestSSHCredentialStoreOnConfigBase(t *testing.T) {
 		},
 	}
 
-	p, err := pkiPath(cluster)
+	p, err := pkiPath(ctx, cluster)
 	if err != nil {
 		t.Errorf("Failed to create ssh path: %v", err)
 	}
@@ -46,6 +49,8 @@ func TestSSHCredentialStoreOnConfigBase(t *testing.T) {
 }
 
 func TestSSHCredentialStoreOnOwnCFS(t *testing.T) {
+	ctx := context.TODO()
+
 	vfs.Context.ResetMemfsContext(true)
 	configBase := "memfs://some/config/base"
 	keyPath := "memfs://keys/some/config/base/pki"
@@ -56,7 +61,7 @@ func TestSSHCredentialStoreOnOwnCFS(t *testing.T) {
 		},
 	}
 
-	p, err := pkiPath(cluster)
+	p, err := pkiPath(ctx, cluster)
 	if err != nil {
 		t.Errorf("Failed to create ssh path: %v", err)
 	}

@@ -81,8 +81,9 @@ func (c *VFSClientset) AddonsFor(cluster *kops.Cluster) simple.AddonsClient {
 }
 
 func (c *VFSClientset) SecretStore(cluster *kops.Cluster) (fi.SecretStore, error) {
+	ctx := context.TODO()
 	if cluster.Spec.SecretStore == "" {
-		configBase, err := registry.ConfigBase(cluster)
+		configBase, err := registry.ConfigBase(ctx, cluster)
 		if err != nil {
 			return nil, err
 		}
@@ -94,8 +95,8 @@ func (c *VFSClientset) SecretStore(cluster *kops.Cluster) (fi.SecretStore, error
 	}
 }
 
-func (c *VFSClientset) KeyStore(cluster *kops.Cluster) (fi.CAStore, error) {
-	basedir, err := pkiPath(cluster)
+func (c *VFSClientset) KeyStore(ctx context.Context, cluster *kops.Cluster) (fi.CAStore, error) {
+	basedir, err := pkiPath(ctx, cluster)
 	if err != nil {
 		return nil, err
 	}
@@ -105,23 +106,23 @@ func (c *VFSClientset) KeyStore(cluster *kops.Cluster) (fi.CAStore, error) {
 	return fi.NewVFSCAStore(cluster, basedir), err
 }
 
-func (c *VFSClientset) SSHCredentialStore(cluster *kops.Cluster) (fi.SSHCredentialStore, error) {
-	basedir, err := pkiPath(cluster)
+func (c *VFSClientset) SSHCredentialStore(ctx context.Context, cluster *kops.Cluster) (fi.SSHCredentialStore, error) {
+	basedir, err := pkiPath(ctx, cluster)
 	if err != nil {
 		return nil, err
 	}
-	return fi.NewVFSSSHCredentialStore(cluster, basedir), nil
+	return fi.NewVFSSSHCredentialStore(ctx, cluster, basedir), nil
 }
 
-func pkiPath(cluster *kops.Cluster) (vfs.Path, error) {
+func pkiPath(ctx context.Context, cluster *kops.Cluster) (vfs.Path, error) {
 	if cluster.Spec.KeyStore == "" {
-		configBase, err := registry.ConfigBase(cluster)
+		configBase, err := registry.ConfigBase(ctx, cluster)
 		if err != nil {
 			return nil, err
 		}
 		return configBase.Join("pki"), nil
 	} else {
-		storePath, err := vfs.Context.BuildVfsPath(cluster.Spec.KeyStore)
+		storePath, err := vfs.FromContext(ctx).BuildVfsPath(cluster.Spec.KeyStore)
 		return storePath, err
 	}
 }
@@ -245,7 +246,7 @@ func (c *VFSClientset) DeleteCluster(ctx context.Context, cluster *kops.Cluster)
 		}
 	}
 
-	configBase, err := registry.ConfigBase(cluster)
+	configBase, err := registry.ConfigBase(ctx, cluster)
 	if err != nil {
 		return err
 	}

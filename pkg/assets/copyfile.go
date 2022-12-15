@@ -18,6 +18,7 @@ package assets
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"net/url"
 	"os"
@@ -54,6 +55,8 @@ func fileExtensionForSHA(sha string) (string, error) {
 }
 
 func (e *CopyFile) Run() error {
+	ctx := context.TODO()
+
 	expectedSHA := strings.TrimSpace(e.SHA)
 
 	shaExtension, err := fileExtensionForSHA(expectedSHA)
@@ -88,7 +91,7 @@ func (e *CopyFile) Run() error {
 
 	klog.V(2).Infof("copying bits from %q to %q", source, target)
 
-	if err := transferFile(e.Cluster, source, target, sourceSha); err != nil {
+	if err := transferFile(ctx, e.Cluster, source, target, sourceSha); err != nil {
 		return fmt.Errorf("unable to transfer %q to %q: %v", source, target, err)
 	}
 
@@ -97,11 +100,11 @@ func (e *CopyFile) Run() error {
 
 // transferFile downloads a file from the source location, validates the file matches the SHA,
 // and uploads the file to the target location.
-func transferFile(cluster *kops.Cluster, source string, target string, sha string) error {
+func transferFile(ctx context.Context, cluster *kops.Cluster, source string, target string, sha string) error {
 	// TODO drop file to disk, as vfs reads file into memory.  We load kubelet into memory for instance.
 	// TODO in s3 can we do a copy file ... would need to test
 
-	data, err := vfs.Context.ReadFile(source)
+	data, err := vfs.FromContext(ctx).ReadFile(source)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return fmt.Errorf("file not found %q: %v", source, err)
@@ -147,20 +150,20 @@ func transferFile(cluster *kops.Cluster, source string, target string, sha strin
 	}
 
 	klog.Infof("uploading %q to %q", source, objectStore)
-	if err := writeFile(cluster, uploadVFS, data); err != nil {
+	if err := writeFile(ctx, cluster, uploadVFS, data); err != nil {
 		return err
 	}
 
 	b := []byte(shaHash.Hex())
-	if err := writeFile(cluster, shaVFS, b); err != nil {
+	if err := writeFile(ctx, cluster, shaVFS, b); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func writeFile(cluster *kops.Cluster, p vfs.Path, data []byte) error {
-	acl, err := acls.GetACL(p, cluster)
+func writeFile(ctx context.Context, cluster *kops.Cluster, p vfs.Path, data []byte) error {
+	acl, err := acls.GetACL(ctx, p, cluster)
 	if err != nil {
 		return err
 	}

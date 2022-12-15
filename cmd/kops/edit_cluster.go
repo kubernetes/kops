@@ -264,7 +264,7 @@ func updateCluster(ctx context.Context, clientset simple.Clientset, oldCluster, 
 	}
 
 	assetBuilder := assets.NewAssetBuilder(newCluster, false)
-	fullCluster, err := cloudup.PopulateClusterSpec(clientset, newCluster, cloud, assetBuilder)
+	fullCluster, err := cloudup.PopulateClusterSpec(ctx, clientset, newCluster, cloud, assetBuilder)
 	if err != nil {
 		return fmt.Sprintf("error populating cluster spec: %s", err), nil
 	}

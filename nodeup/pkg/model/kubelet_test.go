@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"context"
 	"fmt"
 	"path/filepath"
 	"sort"
@@ -226,6 +227,8 @@ func runKubeletBuilder(t *testing.T, context *fi.ModelBuilderContext, nodeupMode
 }
 
 func BuildNodeupModelContext(model *testutils.Model) (*NodeupModelContext, error) {
+	ctx := context.TODO()
+
 	if model.Cluster == nil {
 		return nil, fmt.Errorf("no cluster found in model")
 	}
@@ -251,7 +254,7 @@ func BuildNodeupModelContext(model *testutils.Model) (*NodeupModelContext, error
 		return nil, fmt.Errorf("error from PerformAssignments: %v", err)
 	}
 
-	nodeupModelContext.Cluster, err = mockedPopulateClusterSpec(model.Cluster, cloud)
+	nodeupModelContext.Cluster, err = mockedPopulateClusterSpec(ctx, model.Cluster, cloud)
 	if err != nil {
 		return nil, fmt.Errorf("unexpected error from mockedPopulateClusterSpec: %v", err)
 	}
@@ -292,7 +295,7 @@ func BuildNodeupModelContext(model *testutils.Model) (*NodeupModelContext, error
 	return nodeupModelContext, nil
 }
 
-func mockedPopulateClusterSpec(c *kops.Cluster, cloud fi.Cloud) (*kops.Cluster, error) {
+func mockedPopulateClusterSpec(ctx context.Context, c *kops.Cluster, cloud fi.Cloud) (*kops.Cluster, error) {
 	vfs.Context.ResetMemfsContext(true)
 
 	assetBuilder := assets.NewAssetBuilder(c, false)
@@ -301,7 +304,7 @@ func mockedPopulateClusterSpec(c *kops.Cluster, cloud fi.Cloud) (*kops.Cluster, 
 		return nil, fmt.Errorf("error building vfspath: %v", err)
 	}
 	clientset := vfsclientset.NewVFSClientset(basePath)
-	return cloudup.PopulateClusterSpec(clientset, c, cloud, assetBuilder)
+	return cloudup.PopulateClusterSpec(ctx, clientset, c, cloud, assetBuilder)
 }
 
 // Fixed cert and key, borrowed from the create_kubecfg_test.go test
