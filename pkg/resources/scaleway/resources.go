@@ -17,6 +17,9 @@ limitations under the License.
 package scaleway
 
 import (
+	"strings"
+
+	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
@@ -27,6 +30,7 @@ import (
 )
 
 const (
+	resourceTypeDNSRecord    = "dns-record"
 	resourceTypeLoadBalancer = "load-balancer"
 	resourceTypeServer       = "server"
 	resourceTypeSSHKey       = "ssh-key"
@@ -45,6 +49,9 @@ func ListResources(cloud scaleway.ScwCloud, clusterInfo resources.ClusterInfo) (
 		listSSHKeys,
 		listVolumes,
 	}
+	if !strings.HasSuffix(clusterName, ".k8s.local") && !clusterInfo.UsesNoneDNS {
+		listFunctions = append(listFunctions, listDNSRecords)
+	}
 
 	for _, fn := range listFunctions {
 		rt, err := fn(cloud, clusterName)
@@ -54,6 +61,30 @@ func ListResources(cloud scaleway.ScwCloud, clusterInfo resources.ClusterInfo) (
 		for _, t := range rt {
 			resourceTrackers[t.Type+":"+t.ID] = t
 		}
+	}
+
+	return resourceTrackers, nil
+}
+
+func listDNSRecords(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+	c := cloud.(scaleway.ScwCloud)
+	records, err := c.GetClusterDNSRecords(clusterName)
+	if err != nil {
+		return nil, err
+	}
+
+	resourceTrackers := []*resources.Resource(nil)
+	for _, record := range records {
+		resourceTracker := &resources.Resource{
+			Name: record.Name,
+			ID:   record.ID,
+			Type: resourceTypeDNSRecord,
+			Deleter: func(cloud fi.Cloud, tracker *resources.Resource) error {
+				return deleteDNSRecord(cloud, tracker, clusterName)
+			},
+			Obj: record,
+		}
+		resourceTrackers = append(resourceTrackers, resourceTracker)
 	}
 
 	return resourceTrackers, nil
@@ -156,6 +187,13 @@ func listVolumes(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 	}
 
 	return resourceTrackers, nil
+}
+
+func deleteDNSRecord(cloud fi.Cloud, tracker *resources.Resource, domainName string) error {
+	c := cloud.(scaleway.ScwCloud)
+	record := tracker.Obj.(*domain.Record)
+
+	return c.DeleteDNSRecord(record, domainName)
 }
 
 func deleteLoadBalancer(cloud fi.Cloud, tracker *resources.Resource) error {

@@ -73,6 +73,11 @@ spec:
               name: digitalocean
               key: access-token
 {{- end }}
+{{- if eq GetCloudProvider "scaleway" }}
+        envFrom:
+          - secretRef:
+              name: scaleway-secret
+{{- end }}
         resources:
           requests:
             cpu: 50m
