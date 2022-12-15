@@ -139,8 +139,12 @@ docker:
 encryptionConfig: null
 etcdClusters:
   events:
+    cpuRequest: 100m
+    memoryRequest: 100Mi
     version: 3.5.6
   main:
+    cpuRequest: 200m
+    memoryRequest: 100Mi
     version: 3.5.6
 kubeAPIServer:
   allowPrivileged: true
@@ -148,9 +152,9 @@ kubeAPIServer:
   apiAudiences:
   - kubernetes.svc.default
   apiServerCount: 1
-  authorizationMode: AlwaysAllow
+  authorizationMode: Node,RBAC
   bindAddress: 0.0.0.0
-  cloudProvider: gce
+  cloudProvider: external
   enableAdmissionPlugins:
   - NamespaceLifecycle
   - LimitRanger
@@ -165,7 +169,7 @@ kubeAPIServer:
   - https://127.0.0.1:4001
   etcdServersOverrides:
   - /events#https://127.0.0.1:4002
-  image: registry.k8s.io/kube-apiserver:v1.23.0
+  image: registry.k8s.io/kube-apiserver:v1.26.0
   kubeletPreferredAddressTypes:
   - InternalIP
   - Hostname
@@ -187,12 +191,11 @@ kubeAPIServer:
 kubeControllerManager:
   allocateNodeCIDRs: true
   attachDetachReconcileSyncPeriod: 1m0s
-  cloudProvider: gce
+  cloudProvider: external
   clusterCIDR: 100.96.0.0/11
-  clusterName: minimal-gce-with-a-very-very-very-very-very-long-name-example-com
+  clusterName: minimal-gce-with-a-very-very-very-very-very-long-name.example.com
   configureCloudRoutes: false
-  enableLeaderMigration: true
-  image: registry.k8s.io/kube-controller-manager:v1.23.0
+  image: registry.k8s.io/kube-controller-manager:v1.26.0
   leaderElection:
     leaderElect: true
   logLevel: 2
@@ -200,10 +203,10 @@ kubeControllerManager:
 kubeProxy:
   clusterCIDR: 100.96.0.0/11
   cpuRequest: 100m
-  image: registry.k8s.io/kube-proxy:v1.23.0
+  image: registry.k8s.io/kube-proxy:v1.26.0
   logLevel: 2
 kubeScheduler:
-  image: registry.k8s.io/kube-scheduler:v1.23.0
+  image: registry.k8s.io/kube-scheduler:v1.26.0
   leaderElection:
     leaderElect: true
   logLevel: 2
@@ -211,7 +214,7 @@ kubelet:
   anonymousAuth: false
   cgroupDriver: systemd
   cgroupRoot: /
-  cloudProvider: gce
+  cloudProvider: external
   clusterDNS: 100.64.0.10
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
@@ -219,7 +222,6 @@ kubelet:
   hairpinMode: promiscuous-bridge
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
-  networkPluginName: cni
   podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
@@ -230,7 +232,7 @@ masterKubelet:
   anonymousAuth: false
   cgroupDriver: systemd
   cgroupRoot: /
-  cloudProvider: gce
+  cloudProvider: external
   clusterDNS: 100.64.0.10
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
@@ -238,7 +240,6 @@ masterKubelet:
   hairpinMode: promiscuous-bridge
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
-  networkPluginName: cni
   podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
@@ -253,7 +254,7 @@ CloudProvider: gce
 ConfigBase: memfs://tests/minimal-gce-with-a-very-very-very-very-very-long-name.example.com
 InstanceGroupName: master-us-test1-a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: NTtiwpEgZAHgYGDko/8kRtlRpaSW5vSgmw7CYAI3fVY=
+NodeupConfigHash: 2+GR6f9KnIhxSaXob8cbygpOUE1Wa8c4FLAZ4Cy0mQ4=
 
 __EOF_KUBE_ENV
 

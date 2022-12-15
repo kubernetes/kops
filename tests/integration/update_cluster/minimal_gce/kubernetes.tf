@@ -106,6 +106,14 @@ resource "aws_s3_object" "minimal-gce-example-com-addons-dns-controller-addons-k
   server_side_encryption = "AES256"
 }
 
+resource "aws_s3_object" "minimal-gce-example-com-addons-gcp-cloud-controller-addons-k8s-io-k8s-1-23" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_minimal-gce.example.com-addons-gcp-cloud-controller.addons.k8s.io-k8s-1.23_content")
+  key                    = "tests/minimal-gce.example.com/addons/gcp-cloud-controller.addons.k8s.io/k8s-1.23.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
 resource "aws_s3_object" "minimal-gce-example-com-addons-gcp-pd-csi-driver-addons-k8s-io-k8s-1-23" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_minimal-gce.example.com-addons-gcp-pd-csi-driver.addons.k8s.io-k8s-1.23_content")
@@ -126,14 +134,6 @@ resource "aws_s3_object" "minimal-gce-example-com-addons-kubelet-api-rbac-addons
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_minimal-gce.example.com-addons-kubelet-api.rbac.addons.k8s.io-k8s-1.9_content")
   key                    = "tests/minimal-gce.example.com/addons/kubelet-api.rbac.addons.k8s.io/k8s-1.9.yaml"
-  provider               = aws.files
-  server_side_encryption = "AES256"
-}
-
-resource "aws_s3_object" "minimal-gce-example-com-addons-leader-migration-rbac-addons-k8s-io-k8s-1-23" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_object_minimal-gce.example.com-addons-leader-migration.rbac.addons.k8s.io-k8s-1.23_content")
-  key                    = "tests/minimal-gce.example.com/addons/leader-migration.rbac.addons.k8s.io/k8s-1.23.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
@@ -178,25 +178,25 @@ resource "aws_s3_object" "nodeupconfig-nodes" {
   server_side_encryption = "AES256"
 }
 
-resource "google_compute_disk" "d1-etcd-events-minimal-gce-example-com" {
+resource "google_compute_disk" "a-etcd-events-minimal-gce-example-com" {
   labels = {
     "k8s-io-cluster-name" = "minimal-gce-example-com"
-    "k8s-io-etcd-events"  = "1-2f1"
+    "k8s-io-etcd-events"  = "a-2fa"
     "k8s-io-role-master"  = "master"
   }
-  name = "d1-etcd-events-minimal-gce-example-com"
+  name = "a-etcd-events-minimal-gce-example-com"
   size = 20
   type = "pd-ssd"
   zone = "us-test1-a"
 }
 
-resource "google_compute_disk" "d1-etcd-main-minimal-gce-example-com" {
+resource "google_compute_disk" "a-etcd-main-minimal-gce-example-com" {
   labels = {
     "k8s-io-cluster-name" = "minimal-gce-example-com"
-    "k8s-io-etcd-main"    = "1-2f1"
+    "k8s-io-etcd-main"    = "a-2fa"
     "k8s-io-role-master"  = "master"
   }
-  name = "d1-etcd-main-minimal-gce-example-com"
+  name = "a-etcd-main-minimal-gce-example-com"
   size = 20
   type = "pd-ssd"
   zone = "us-test1-a"
@@ -207,7 +207,7 @@ resource "google_compute_firewall" "kubernetes-master-https-ipv6-minimal-gce-exa
     ports    = ["443"]
     protocol = "tcp"
   }
-  disabled      = true
+  disabled      = false
   name          = "kubernetes-master-https-ipv6-minimal-gce-example-com"
   network       = google_compute_network.minimal-gce-example-com.name
   source_ranges = ["::/0"]
@@ -361,7 +361,7 @@ resource "google_compute_firewall" "ssh-external-to-master-ipv6-minimal-gce-exam
     ports    = ["22"]
     protocol = "tcp"
   }
-  disabled      = true
+  disabled      = false
   name          = "ssh-external-to-master-ipv6-minimal-gce-example-com"
   network       = google_compute_network.minimal-gce-example-com.name
   source_ranges = ["::/0"]
@@ -385,7 +385,7 @@ resource "google_compute_firewall" "ssh-external-to-node-ipv6-minimal-gce-exampl
     ports    = ["22"]
     protocol = "tcp"
   }
-  disabled      = true
+  disabled      = false
   name          = "ssh-external-to-node-ipv6-minimal-gce-example-com"
   network       = google_compute_network.minimal-gce-example-com.name
   source_ranges = ["::/0"]
@@ -445,7 +445,7 @@ resource "google_compute_instance_template" "master-us-test1-a-minimal-gce-examp
     "k8s-io-role-control-plane" = ""
     "k8s-io-role-master"        = ""
   }
-  machine_type = "n1-standard-1"
+  machine_type = "e2-medium"
   metadata = {
     "cluster-name"                    = "minimal-gce.example.com"
     "kops-k8s-io-instance-group-name" = "master-us-test1-a"
@@ -492,7 +492,7 @@ resource "google_compute_instance_template" "nodes-minimal-gce-example-com" {
     "k8s-io-instance-group" = "nodes"
     "k8s-io-role-node"      = ""
   }
-  machine_type = "n1-standard-2"
+  machine_type = "e2-medium"
   metadata = {
     "cluster-name"                    = "minimal-gce.example.com"
     "kops-k8s-io-instance-group-name" = "nodes"

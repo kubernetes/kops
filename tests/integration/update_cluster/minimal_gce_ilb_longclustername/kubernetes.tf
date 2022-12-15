@@ -106,6 +106,14 @@ resource "aws_s3_object" "minimal-gce-with-a-very-very-very-very-very-long-name-
   server_side_encryption = "AES256"
 }
 
+resource "aws_s3_object" "minimal-gce-with-a-very-very-very-very-very-long-name-example-com-addons-gcp-cloud-controller-addons-k8s-io-k8s-1-23" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_minimal-gce-with-a-very-very-very-very-very-long-name.example.com-addons-gcp-cloud-controller.addons.k8s.io-k8s-1.23_content")
+  key                    = "tests/minimal-gce-with-a-very-very-very-very-very-long-name.example.com/addons/gcp-cloud-controller.addons.k8s.io/k8s-1.23.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
 resource "aws_s3_object" "minimal-gce-with-a-very-very-very-very-very-long-name-example-com-addons-gcp-pd-csi-driver-addons-k8s-io-k8s-1-23" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_minimal-gce-with-a-very-very-very-very-very-long-name.example.com-addons-gcp-pd-csi-driver.addons.k8s.io-k8s-1.23_content")
@@ -126,14 +134,6 @@ resource "aws_s3_object" "minimal-gce-with-a-very-very-very-very-very-long-name-
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_minimal-gce-with-a-very-very-very-very-very-long-name.example.com-addons-kubelet-api.rbac.addons.k8s.io-k8s-1.9_content")
   key                    = "tests/minimal-gce-with-a-very-very-very-very-very-long-name.example.com/addons/kubelet-api.rbac.addons.k8s.io/k8s-1.9.yaml"
-  provider               = aws.files
-  server_side_encryption = "AES256"
-}
-
-resource "aws_s3_object" "minimal-gce-with-a-very-very-very-very-very-long-name-example-com-addons-leader-migration-rbac-addons-k8s-io-k8s-1-23" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_object_minimal-gce-with-a-very-very-very-very-very-long-name.example.com-addons-leader-migration.rbac.addons.k8s.io-k8s-1.23_content")
-  key                    = "tests/minimal-gce-with-a-very-very-very-very-very-long-name.example.com/addons/leader-migration.rbac.addons.k8s.io/k8s-1.23.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
@@ -188,25 +188,25 @@ resource "google_compute_backend_service" "api-minimal-gce-with-a-very-very-very
   protocol              = "TCP"
 }
 
-resource "google_compute_disk" "d1-etcd-events-minimal-gce-with-a-very-very-very-very-ve-96dqvi" {
+resource "google_compute_disk" "a-etcd-events-minimal-gce-with-a-very-very-very-very-ver-96dqvi" {
   labels = {
     "k8s-io-cluster-name" = "minimal-gce-with-a-very-very-very-very-very-long-name-example-com"
-    "k8s-io-etcd-events"  = "1-2f1"
+    "k8s-io-etcd-events"  = "a-2fa"
     "k8s-io-role-master"  = "master"
   }
-  name = "d1-etcd-events-minimal-gce-with-a-very-very-very-very-ve-96dqvi"
+  name = "a-etcd-events-minimal-gce-with-a-very-very-very-very-ver-96dqvi"
   size = 20
   type = "pd-ssd"
   zone = "us-test1-a"
 }
 
-resource "google_compute_disk" "d1-etcd-main-minimal-gce-with-a-very-very-very-very-very-96dqvi" {
+resource "google_compute_disk" "a-etcd-main-minimal-gce-with-a-very-very-very-very-very--96dqvi" {
   labels = {
     "k8s-io-cluster-name" = "minimal-gce-with-a-very-very-very-very-very-long-name-example-com"
-    "k8s-io-etcd-main"    = "1-2f1"
+    "k8s-io-etcd-main"    = "a-2fa"
     "k8s-io-role-master"  = "master"
   }
-  name = "d1-etcd-main-minimal-gce-with-a-very-very-very-very-very-96dqvi"
+  name = "a-etcd-main-minimal-gce-with-a-very-very-very-very-very--96dqvi"
   size = 20
   type = "pd-ssd"
   zone = "us-test1-a"
@@ -347,7 +347,7 @@ resource "google_compute_firewall" "ssh-external-to-master-ipv6-minimal-gce-with
     ports    = ["22"]
     protocol = "tcp"
   }
-  disabled      = true
+  disabled      = false
   name          = "ssh-external-to-master-ipv6-minimal-gce-with-a-very-very-96dqvi"
   network       = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-ex-96dqvi.name
   source_ranges = ["::/0"]
@@ -371,7 +371,7 @@ resource "google_compute_firewall" "ssh-external-to-node-ipv6-minimal-gce-with-a
     ports    = ["22"]
     protocol = "tcp"
   }
-  disabled      = true
+  disabled      = false
   name          = "ssh-external-to-node-ipv6-minimal-gce-with-a-very-very-v-96dqvi"
   network       = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-ex-96dqvi.name
   source_ranges = ["::/0"]
@@ -439,7 +439,7 @@ resource "google_compute_instance_template" "master-us-test1-a-minimal-gce-with-
     interface    = ""
     mode         = "READ_WRITE"
     source       = ""
-    source_image = "https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-stable-57-9202-64-0"
+    source_image = "https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20221018"
     type         = "PERSISTENT"
   }
   labels = {
@@ -448,7 +448,7 @@ resource "google_compute_instance_template" "master-us-test1-a-minimal-gce-with-
     "k8s-io-role-control-plane" = ""
     "k8s-io-role-master"        = ""
   }
-  machine_type = "n1-standard-1"
+  machine_type = "e2-medium"
   metadata = {
     "cluster-name"                    = "minimal-gce-with-a-very-very-very-very-very-long-name.example.com"
     "kops-k8s-io-instance-group-name" = "master-us-test1-a"
@@ -485,7 +485,7 @@ resource "google_compute_instance_template" "nodes-minimal-gce-with-a-very-very-
     interface    = ""
     mode         = "READ_WRITE"
     source       = ""
-    source_image = "https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-stable-57-9202-64-0"
+    source_image = "https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20221018"
     type         = "PERSISTENT"
   }
   labels = {
@@ -493,11 +493,11 @@ resource "google_compute_instance_template" "nodes-minimal-gce-with-a-very-very-
     "k8s-io-instance-group" = "nodes"
     "k8s-io-role-node"      = ""
   }
-  machine_type = "n1-standard-2"
+  machine_type = "e2-medium"
   metadata = {
     "cluster-name"                    = "minimal-gce-with-a-very-very-very-very-very-long-name.example.com"
     "kops-k8s-io-instance-group-name" = "nodes"
-    "kube-env"                        = "AUTOSCALER_ENV_VARS: os_distribution=cos;arch=amd64;os=linux"
+    "kube-env"                        = "AUTOSCALER_ENV_VARS: os_distribution=ubuntu;arch=amd64;os=linux"
     "ssh-keys"                        = "admin: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCtWu40XQo8dczLsCq0OWV+hxm9uV3WxeH9Kgh4sMzQxNtoU1pvW0XdjpkBesRKGoolfWeCLXWxpyQb1IaiMkKoz7MdhQ/6UKjMjP66aFWWp3pwD0uj0HuJ7tq4gKHKRYGTaZIRWpzUiANBrjugVgA+Sd7E/mYwc/DMXkIyRZbvhQ=="
     "startup-script"                  = file("${path.module}/data/google_compute_instance_template_nodes-minimal-gce-with-a-very-very-very-very-very-long-name-example-com_metadata_startup-script")
   }
