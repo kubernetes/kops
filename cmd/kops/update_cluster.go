@@ -230,7 +230,7 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Up
 		if err != nil {
 			return results, fmt.Errorf("error reading SSH key file %q: %v", c.SSHPublicKey, err)
 		}
-		err = sshCredentialStore.AddSSHPublicKey(authorized)
+		err = sshCredentialStore.AddSSHPublicKey(ctx, authorized)
 		if err != nil {
 			return results, fmt.Errorf("error adding SSH public key: %v", err)
 		}

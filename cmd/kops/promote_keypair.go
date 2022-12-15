@@ -105,7 +105,7 @@ func NewCmdPromoteKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 			return completePromoteKeyset(f, options, args, toComplete)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RunPromoteKeypair(context.TODO(), f, out, options)
+			return RunPromoteKeypair(cmd.Context(), f, out, options)
 		},
 	}
 
@@ -134,7 +134,7 @@ func RunPromoteKeypair(ctx context.Context, f *util.Factory, out io.Writer, opti
 	}
 
 	if options.Keyset != "all" {
-		return promoteKeypair(out, options.Keyset, options.KeypairID, keyStore)
+		return promoteKeypair(ctx, out, options.Keyset, options.KeypairID, keyStore)
 	}
 
 	keysets, err := keyStore.ListKeysets()
@@ -144,7 +144,7 @@ func RunPromoteKeypair(ctx context.Context, f *util.Factory, out io.Writer, opti
 
 	for name := range keysets {
 		if rotatableKeysetFilter(name, nil) {
-			if err := promoteKeypair(out, name, "", keyStore); err != nil {
+			if err := promoteKeypair(ctx, out, name, "", keyStore); err != nil {
 				return fmt.Errorf("promoting keypair for %s: %v", name, err)
 			}
 		}
@@ -153,7 +153,7 @@ func RunPromoteKeypair(ctx context.Context, f *util.Factory, out io.Writer, opti
 	return nil
 }
 
-func promoteKeypair(out io.Writer, name string, keypairID string, keyStore fi.CAStore) error {
+func promoteKeypair(ctx context.Context, out io.Writer, name string, keypairID string, keyStore fi.CAStore) error {
 	keyset, err := keyStore.FindKeyset(name)
 	if err != nil {
 		return fmt.Errorf("reading keyset: %v", err)
@@ -192,7 +192,7 @@ func promoteKeypair(out io.Writer, name string, keypairID string, keyStore fi.CA
 	}
 
 	keyset.Primary = keyset.Items[keypairID]
-	err = keyStore.StoreKeyset(name, keyset)
+	err = keyStore.StoreKeyset(ctx, name, keyset)
 	if err != nil {
 		return fmt.Errorf("writing keyset: %v", err)
 	}

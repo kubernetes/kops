@@ -207,7 +207,7 @@ func RunReplace(ctx context.Context, f *util.Factory, out io.Writer, c *ReplaceO
 				}
 
 				sshKeyArr := []byte(v.Spec.PublicKey)
-				err = sshCredentialStore.AddSSHPublicKey(sshKeyArr)
+				err = sshCredentialStore.AddSSHPublicKey(ctx, sshKeyArr)
 				if err != nil {
 					return fmt.Errorf("error replacing SSHCredential: %v", err)
 				}
