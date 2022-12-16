@@ -1,0 +1,8 @@
+CloudProvider: gce
+ClusterName: minimal.example.com
+Networking: cni
+KubernetesVersion: v1.26.0
+Project: testproject
+Zones:
+- us-test1-a
+DNSType: none
