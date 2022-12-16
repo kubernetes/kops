@@ -121,12 +121,14 @@ func buildMinimalCluster(clusterName string, masterPublicName string, lbCert boo
 	cluster := testutils.BuildMinimalCluster(clusterName)
 	cluster.Spec.API.PublicName = masterPublicName
 	cluster.Spec.KubernetesVersion = "1.24.0"
-	cluster.Spec.API.LoadBalancer = &kops.LoadBalancerAccessSpec{}
-	if lbCert {
-		cluster.Spec.API.LoadBalancer.SSLCertificate = "cert-arn"
-	}
-	if nlb {
-		cluster.Spec.API.LoadBalancer.Class = kops.LoadBalancerClassNetwork
+	if lbCert || nlb {
+		cluster.Spec.API.LoadBalancer = &kops.LoadBalancerAccessSpec{}
+		if lbCert {
+			cluster.Spec.API.LoadBalancer.SSLCertificate = "cert-arn"
+		}
+		if nlb {
+			cluster.Spec.API.LoadBalancer.Class = kops.LoadBalancerClassNetwork
+		}
 	}
 	return cluster
 }
@@ -160,10 +162,20 @@ func TestBuildKubecfg(t *testing.T) {
 
 	publicCluster := buildMinimalCluster("testcluster", "testcluster.test.com", false, false)
 	emptyMasterPublicNameCluster := buildMinimalCluster("emptyMasterPublicNameCluster", "", false, false)
-	gossipCluster := buildMinimalCluster("testgossipcluster.k8s.local", "", false, false)
+	gossipCluster := buildMinimalCluster("testgossipcluster.k8s.local", "", false, true)
 	certCluster := buildMinimalCluster("testcluster", "testcluster.test.com", true, false)
 	certNLBCluster := buildMinimalCluster("testcluster", "testcluster.test.com", true, true)
 	certGossipNLBCluster := buildMinimalCluster("testgossipcluster.k8s.local", "", true, true)
+
+	fakeStatus := fakeStatusCloud{
+		GetApiIngressStatusFn: func(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
+			return []fi.ApiIngressStatus{
+				{
+					Hostname: "elbHostName",
+				},
+			}, nil
+		},
+	}
 
 	tests := []struct {
 		name           string
@@ -176,7 +188,7 @@ func TestBuildKubecfg(t *testing.T) {
 			name: "Test Kube Config Data For Public DNS with admin",
 			args: args{
 				cluster: publicCluster,
-				status:  fakeStatusCloud{},
+				status:  fakeStatus,
 				admin:   DefaultKubecfgAdminLifetime,
 				user:    "",
 			},
@@ -192,12 +204,12 @@ func TestBuildKubecfg(t *testing.T) {
 			name: "Test Kube Config Data For Public DNS with admin and secondary NLB port",
 			args: args{
 				cluster: certNLBCluster,
-				status:  fakeStatusCloud{},
+				status:  fakeStatus,
 				admin:   DefaultKubecfgAdminLifetime,
 			},
 			want: &KubeconfigBuilder{
 				Context: "testcluster",
-				Server:  "https://testcluster.test.com:8443",
+				Server:  "https://elbHostName:8443",
 				CACerts: []byte(nextCertificate + certData),
 				User:    "testcluster",
 			},
@@ -207,12 +219,12 @@ func TestBuildKubecfg(t *testing.T) {
 			name: "Test Kube Config Data For Public DNS with admin and CLB ACM Certificate",
 			args: args{
 				cluster: certCluster,
-				status:  fakeStatusCloud{},
+				status:  fakeStatus,
 				admin:   DefaultKubecfgAdminLifetime,
 			},
 			want: &KubeconfigBuilder{
 				Context: "testcluster",
-				Server:  "https://testcluster.test.com",
+				Server:  "https://elbHostName",
 				CACerts: nil,
 				User:    "testcluster",
 			},
@@ -222,7 +234,7 @@ func TestBuildKubecfg(t *testing.T) {
 			name: "Test Kube Config Data For Public DNS without admin and with ACM certificate",
 			args: args{
 				cluster: certNLBCluster,
-				status:  fakeStatusCloud{},
+				status:  fakeStatus,
 				admin:   0,
 			},
 			want: &KubeconfigBuilder{
@@ -237,7 +249,7 @@ func TestBuildKubecfg(t *testing.T) {
 			name: "Test Kube Config Data For Public DNS without admin",
 			args: args{
 				cluster: publicCluster,
-				status:  fakeStatusCloud{},
+				status:  fakeStatus,
 				admin:   0,
 				user:    "myuser",
 			},
@@ -253,7 +265,7 @@ func TestBuildKubecfg(t *testing.T) {
 			name: "Test Kube Config Data For Public DNS with Empty Master Name",
 			args: args{
 				cluster: emptyMasterPublicNameCluster,
-				status:  fakeStatusCloud{},
+				status:  fakeStatus,
 				admin:   0,
 				user:    "",
 			},
@@ -269,15 +281,7 @@ func TestBuildKubecfg(t *testing.T) {
 			name: "Test Kube Config Data For Gossip cluster",
 			args: args{
 				cluster: gossipCluster,
-				status: fakeStatusCloud{
-					GetApiIngressStatusFn: func(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
-						return []fi.ApiIngressStatus{
-							{
-								Hostname: "elbHostName",
-							},
-						}, nil
-					},
-				},
+				status:  fakeStatus,
 			},
 			want: &KubeconfigBuilder{
 				Context: "testgossipcluster.k8s.local",
@@ -291,7 +295,7 @@ func TestBuildKubecfg(t *testing.T) {
 			name: "Public DNS with kops auth plugin",
 			args: args{
 				cluster:                     publicCluster,
-				status:                      fakeStatusCloud{},
+				status:                      fakeStatus,
 				admin:                       0,
 				useKopsAuthenticationPlugin: true,
 			},
@@ -314,7 +318,7 @@ func TestBuildKubecfg(t *testing.T) {
 			name: "Test Kube Config Data For internal DNS name with admin",
 			args: args{
 				cluster:  publicCluster,
-				status:   fakeStatusCloud{},
+				status:   fakeStatus,
 				admin:    DefaultKubecfgAdminLifetime,
 				internal: true,
 			},
@@ -330,20 +334,12 @@ func TestBuildKubecfg(t *testing.T) {
 			name: "Test Kube Config Data For Gossip cluster with admin and secondary NLB port",
 			args: args{
 				cluster: certGossipNLBCluster,
-				status: fakeStatusCloud{
-					GetApiIngressStatusFn: func(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
-						return []fi.ApiIngressStatus{
-							{
-								Hostname: "nlbHostName",
-							},
-						}, nil
-					},
-				},
-				admin: DefaultKubecfgAdminLifetime,
+				status:  fakeStatus,
+				admin:   DefaultKubecfgAdminLifetime,
 			},
 			want: &KubeconfigBuilder{
 				Context: "testgossipcluster.k8s.local",
-				Server:  "https://nlbHostName:8443",
+				Server:  "https://elbHostName:8443",
 				CACerts: []byte(nextCertificate + certData),
 				User:    "testgossipcluster.k8s.local",
 			},
