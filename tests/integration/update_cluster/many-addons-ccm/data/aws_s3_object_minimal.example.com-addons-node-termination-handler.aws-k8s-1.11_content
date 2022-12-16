@@ -199,14 +199,6 @@ spec:
           value: "true"
         - name: COMPLETE_LIFECYCLE_ACTION_DELAY_SECONDS
           value: "-1"
-        - name: ENABLE_SPOT_INTERRUPTION_DRAINING
-          value: "true"
-        - name: ENABLE_SCHEDULED_EVENT_DRAINING
-          value: "true"
-        - name: ENABLE_REBALANCE_MONITORING
-          value: "false"
-        - name: ENABLE_REBALANCE_DRAINING
-          value: "true"
         - name: ENABLE_SQS_TERMINATION_DRAINING
           value: "true"
         - name: QUEUE_URL
