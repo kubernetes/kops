@@ -1,5 +1,17 @@
 # Change Log
 
+## [v1.93.0] - 2022-12-15
+
+- #591 - @andrewsomething - tokens: Add initial support for new API.
+
+## [v1.92.0] - 2022-12-14
+
+- #589 - @wez470 - load-balancers: Minor doc fixup
+- #585 - @StephenVarela - Add firewall support for load balancers
+- #587 - @StephenVarela - Support new http alerts for load balancers
+- #586 - @andrewsomething - godo.go: Sort service lists.
+- #583 - @ddebarros - Adds support for functions trigger API
+
 ## [v1.91.1] - 2022-11-23
 
 - #582 - @StephenVarela - Load Balancers: Support new endpoints for http alerts
