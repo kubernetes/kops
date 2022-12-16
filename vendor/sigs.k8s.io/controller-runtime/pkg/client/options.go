@@ -67,6 +67,11 @@ type DeleteAllOfOption interface {
 	ApplyToDeleteAllOf(*DeleteAllOfOptions)
 }
 
+// SubResourceGetOption modifies options for a SubResource Get request.
+type SubResourceGetOption interface {
+	ApplyToSubResourceGet(*SubResourceGetOptions)
+}
+
 // SubResourceUpdateOption is some configuration that modifies options for a update request.
 type SubResourceUpdateOption interface {
 	// ApplyToSubResourceUpdate applies this configuration to the given update options.
