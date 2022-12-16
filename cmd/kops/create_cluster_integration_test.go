@@ -103,6 +103,7 @@ func TestCreateClusterHA(t *testing.T) {
 // TestCreateClusterMinimalGCE runs kops create cluster minimal.example.com --cloud gce --zones us-test1-a
 func TestCreateClusterMinimalGCE(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-1.26-gce", "v1alpha2")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-1.26-gce-dns-none", "v1alpha2")
 }
 
 // TestCreateClusterHAGCE runs kops create cluster ha-gce.example.com --cloud gce --zones us-test1-a,us-test1-b,us-test1-c --master-zones us-test1-a,us-test1-b,us-test1-c

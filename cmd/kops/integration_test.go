@@ -363,6 +363,16 @@ func TestMinimalGCEInternalLoadBalancerLongClusterName(t *testing.T) {
 		runTestTerraformGCE(t)
 }
 
+// TestMinimalGCEDNSNone runs tests on a minimal GCE configuration with --dns=none
+func TestMinimalGCEDNSNone(t *testing.T) {
+	newIntegrationTest("minimal-gce.example.com", "minimal_gce_dns-none").
+		withAddons(
+			gcpCCMAddon,
+			gcpPDCSIAddon,
+		).
+		runTestTerraformGCE(t)
+}
+
 // TestHA runs the test on a simple HA configuration, similar to kops create cluster minimal.example.com --zones us-west-1a,us-west-1b,us-west-1c --master-count=3
 func TestHA(t *testing.T) {
 	newIntegrationTest("ha.example.com", "ha").withZones(3).
