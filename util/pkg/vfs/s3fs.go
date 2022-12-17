@@ -18,6 +18,7 @@ package vfs
 
 import (
 	"bytes"
+	"context"
 	"encoding/hex"
 	"fmt"
 	"io"
@@ -501,6 +502,63 @@ func (p *S3Path) GetHTTPsUrl(dualstack bool) (string, error) {
 		url = fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", p.bucketDetails.name, p.bucketDetails.region, p.Key())
 	}
 	return strings.TrimSuffix(url, "/"), nil
+}
+
+func (p *S3Path) IsBucketPublic(ctx context.Context) (bool, error) {
+	client, err := p.client()
+	if err != nil {
+		return false, err
+	}
+
+	result, err := client.GetBucketPolicyStatusWithContext(ctx, &s3.GetBucketPolicyStatusInput{
+		Bucket: aws.String(p.bucket),
+	})
+	if err != nil && AWSErrorCode(err) != "NoSuchBucketPolicy" {
+		return false, fmt.Errorf("from AWS S3 GetBucketPolicyStatusWithContext: %w", err)
+	}
+	if err == nil && aws.BoolValue(result.PolicyStatus.IsPublic) {
+		return true, nil
+	}
+	return false, nil
+
+	// We could check bucket ACLs also...
+
+	// acl, err := client.GetBucketAclWithContext(ctx, &s3.GetBucketAclInput{
+	// 	Bucket: &p.bucket,
+	// })
+	// if err != nil {
+	// 	return false, fmt.Errorf("failed to get ACL for bucket %q: %w", p.bucket, err)
+	// }
+
+	// allowsAnonymousRead := false
+	// for _, grant := range acl.Grants {
+	// 	isAllUsers := false
+
+	// 	switch aws.StringValue(grant.Grantee.URI) {
+	// 	case "http://acs.amazonaws.com/groups/global/AllUsers":
+	// 		isAllUsers = true
+	// 	}
+
+	// 	if isAllUsers {
+	// 		permission := aws.StringValue(grant.Permission)
+	// 		switch permission {
+	// 		case "FULL_CONTROL":
+	// 			klog.Warningf("bucket %q allows anonymous users full access", p.bucket)
+	// 			allowsAnonymousRead = true
+	// 		case "WRITE", "WRITE_ACP":
+	// 			klog.Warningf("bucket %q allows anonymous users write access", p.bucket)
+	// 			// it's not _read_ access
+	// 		case "READ":
+	// 			allowsAnonymousRead = true
+	// 		case "READ_ACP":
+	// 			// does not grant read
+	// 		default:
+	// 			klog.Warningf("bucket %q has unknown permission %q for anonymous access", p.bucket, permission)
+	// 		}
+	// 	}
+	// }
+
+	// return allowsAnonymousRead, nil
 }
 
 func (p *S3Path) IsPublic() (bool, error) {
