@@ -86,13 +86,13 @@ func (b *AWSCloudControllerManagerOptionsBuilder) BuildOptions(o interface{}) er
 		// See https://us.gcr.io/k8s-artifacts-prod/provider-aws/cloud-controller-manager
 		switch b.KubernetesVersion.Minor {
 		case 21:
-			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.21.3"
+			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.21.6"
 		case 22:
-			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.22.2"
+			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.22.7"
 		case 23:
-			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.23.2"
+			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.23.6"
 		case 24:
-			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.24.1"
+			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.24.3"
 		case 25:
 			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.25.1"
 		case 26:
