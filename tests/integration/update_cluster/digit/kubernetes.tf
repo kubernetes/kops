@@ -594,7 +594,6 @@ resource "aws_s3_object" "cluster-completed-spec" {
 }
 
 resource "aws_s3_object" "discovery-json" {
-  acl                    = "public-read"
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_discovery.json_content")
   key                    = "discovery.example.com/123.example.com/.well-known/openid-configuration"
@@ -619,7 +618,6 @@ resource "aws_s3_object" "etcd-cluster-spec-main" {
 }
 
 resource "aws_s3_object" "keys-json" {
-  acl                    = "public-read"
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_keys.json_content")
   key                    = "discovery.example.com/123.example.com/openid/v1/jwks"
