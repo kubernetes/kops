@@ -76,7 +76,7 @@ func NewCmdCreate(f *util.Factory, out io.Writer) *cobra.Command {
 		Example: createExample,
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RunCreate(context.TODO(), f, out, options)
+			return RunCreate(cmd.Context(), f, out, options)
 		},
 	}
 
