@@ -70,7 +70,8 @@ type integrationTest struct {
 	bastionUserData                  bool
 	ciliumEtcd                       bool
 	// nth is true if we should check for files created by nth queue processor add on
-	nth bool
+	nth          bool
+	nthRebalance bool
 }
 
 func newIntegrationTest(clusterName, srcDir string) *integrationTest {
@@ -146,6 +147,11 @@ func (i *integrationTest) withDedicatedAPIServer() *integrationTest {
 
 func (i *integrationTest) withNTH() *integrationTest {
 	i.nth = true
+	return i
+}
+
+func (i *integrationTest) withNTHRebalance() *integrationTest {
+	i.nthRebalance = true
 	return i
 }
 
@@ -814,6 +820,7 @@ func TestCCM(t *testing.T) {
 			metricsServerAddon,
 		).
 		withNTH().
+		withNTHRebalance().
 		runTestTerraformAWS(t)
 }
 
@@ -1403,12 +1410,14 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 			expectedFilenames = append(expectedFilenames, []string{
 				"aws_s3_object_" + i.clusterName + "-addons-node-termination-handler.aws-k8s-1.11_content",
 				"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-ASGLifecycle_event_pattern",
-				"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-RebalanceRecommendation_event_pattern",
 				"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-SpotInterruption_event_pattern",
 				"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-InstanceStateChange_event_pattern",
 				"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-InstanceScheduledChange_event_pattern",
 				"aws_sqs_queue_" + strings.Replace(i.clusterName, ".", "-", -1) + "-nth_policy",
 			}...)
+		}
+		if i.nthRebalance {
+			expectedFilenames = append(expectedFilenames, "aws_cloudwatch_event_rule_"+awsup.GetClusterName40(i.clusterName)+"-RebalanceRecommendation_event_pattern")
 		}
 	}
 	expectedFilenames = append(expectedFilenames, i.expectServiceAccountRolePolicies...)

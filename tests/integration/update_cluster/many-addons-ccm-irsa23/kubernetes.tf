@@ -341,16 +341,6 @@ resource "aws_cloudwatch_event_rule" "minimal-example-com-InstanceStateChange" {
   }
 }
 
-resource "aws_cloudwatch_event_rule" "minimal-example-com-RebalanceRecommendation" {
-  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_minimal.example.com-RebalanceRecommendation_event_pattern")
-  name          = "minimal.example.com-RebalanceRecommendation"
-  tags = {
-    "KubernetesCluster"                         = "minimal.example.com"
-    "Name"                                      = "minimal.example.com-RebalanceRecommendation"
-    "kubernetes.io/cluster/minimal.example.com" = "owned"
-  }
-}
-
 resource "aws_cloudwatch_event_rule" "minimal-example-com-SpotInterruption" {
   event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_minimal.example.com-SpotInterruption_event_pattern")
   name          = "minimal.example.com-SpotInterruption"
@@ -374,11 +364,6 @@ resource "aws_cloudwatch_event_target" "minimal-example-com-InstanceScheduledCha
 resource "aws_cloudwatch_event_target" "minimal-example-com-InstanceStateChange-Target" {
   arn  = aws_sqs_queue.minimal-example-com-nth.arn
   rule = aws_cloudwatch_event_rule.minimal-example-com-InstanceStateChange.id
-}
-
-resource "aws_cloudwatch_event_target" "minimal-example-com-RebalanceRecommendation-Target" {
-  arn  = aws_sqs_queue.minimal-example-com-nth.arn
-  rule = aws_cloudwatch_event_rule.minimal-example-com-RebalanceRecommendation.id
 }
 
 resource "aws_cloudwatch_event_target" "minimal-example-com-SpotInterruption-Target" {

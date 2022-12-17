@@ -39,37 +39,42 @@ func DumpEventBridgeRule(op *resources.DumpOperation, r *resources.Resource) err
 	return nil
 }
 
-func DeleteEventBridgeRule(cloud fi.Cloud, r *resources.Resource) error {
+func EventBridgeRuleDeleter(cloud fi.Cloud, r *resources.Resource) error {
+	return DeleteEventBridgeRule(cloud, r.Name)
+}
+
+func DeleteEventBridgeRule(cloud fi.Cloud, ruleName string) error {
+
 	c := cloud.(awsup.AWSCloud)
 
 	targets, err := c.EventBridge().ListTargetsByRule(&eventbridge.ListTargetsByRuleInput{
-		Rule: aws.String(r.Name),
+		Rule: aws.String(ruleName),
 	})
 	if err != nil {
-		return fmt.Errorf("error listing targets for EventBridge rule %q: %v", r.Name, err)
+		return fmt.Errorf("listing targets for EventBridge rule %q: %w", ruleName, err)
 	}
 	if len(targets.Targets) > 0 {
 		var ids []*string
 		for _, target := range targets.Targets {
 			ids = append(ids, target.Id)
 		}
-		klog.V(2).Infof("Removing EventBridge Targets for rule %q", r.Name)
+		klog.V(2).Infof("Removing EventBridge Targets for rule %q", ruleName)
 		_, err = c.EventBridge().RemoveTargets(&eventbridge.RemoveTargetsInput{
 			Ids:  ids,
-			Rule: aws.String(r.Name),
+			Rule: aws.String(ruleName),
 		})
 		if err != nil {
-			return fmt.Errorf("error removing targets for EventBridge rule %q: %v", r.Name, err)
+			return fmt.Errorf("removing targets for EventBridge rule %q: %w", ruleName, err)
 		}
 	}
 
-	klog.V(2).Infof("Deleting EventBridge rule %q", r.Name)
+	klog.V(2).Infof("Deleting EventBridge rule %q", ruleName)
 	request := &eventbridge.DeleteRuleInput{
-		Name: aws.String(r.Name),
+		Name: aws.String(ruleName),
 	}
 	_, err = c.EventBridge().DeleteRule(request)
 	if err != nil {
-		return fmt.Errorf("error deleting EventBridge rule %q: %v", r.Name, err)
+		return fmt.Errorf("deleting EventBridge rule %q: %w", ruleName, err)
 	}
 	return nil
 }
@@ -101,7 +106,7 @@ func ListEventBridgeRules(cloud fi.Cloud, clusterName string) ([]*resources.Reso
 			Name:    *rule.Name,
 			ID:      *rule.Name,
 			Type:    "eventbridge",
-			Deleter: DeleteEventBridgeRule,
+			Deleter: EventBridgeRuleDeleter,
 			Dumper:  DumpEventBridgeRule,
 			Obj:     rule,
 		}
