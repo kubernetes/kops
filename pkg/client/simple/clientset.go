@@ -41,7 +41,7 @@ type Clientset interface {
 	ListClusters(ctx context.Context, options metav1.ListOptions) (*kops.ClusterList, error)
 
 	// ConfigBaseFor returns the vfs path where we will read configuration information from
-	ConfigBaseFor(cluster *kops.Cluster) (vfs.Path, error)
+	ConfigBaseFor(ctx context.Context, cluster *kops.Cluster) (vfs.Path, error)
 
 	// InstanceGroupsFor returns the InstanceGroupInterface bound to the namespace for a particular Cluster
 	InstanceGroupsFor(cluster *kops.Cluster) kopsinternalversion.InstanceGroupInterface
@@ -50,7 +50,7 @@ type Clientset interface {
 	AddonsFor(cluster *kops.Cluster) AddonsClient
 
 	// SecretStore builds the secret store for the specified cluster
-	SecretStore(cluster *kops.Cluster) (fi.SecretStore, error)
+	SecretStore(ctx context.Context, cluster *kops.Cluster) (fi.SecretStore, error)
 
 	// KeyStore builds the key store for the specified cluster
 	KeyStore(ctx context.Context, cluster *kops.Cluster) (fi.CAStore, error)

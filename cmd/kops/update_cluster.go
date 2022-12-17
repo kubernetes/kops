@@ -217,7 +217,7 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Up
 		return results, err
 	}
 
-	secretStore, err := clientset.SecretStore(cluster)
+	secretStore, err := clientset.SecretStore(ctx, cluster)
 	if err != nil {
 		return results, err
 	}

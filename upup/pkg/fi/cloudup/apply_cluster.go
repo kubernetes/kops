@@ -319,7 +319,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		return err
 	}
 
-	secretStore, err := c.Clientset.SecretStore(cluster)
+	secretStore, err := c.Clientset.SecretStore(ctx, cluster)
 	if err != nil {
 		return err
 	}

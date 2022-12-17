@@ -135,7 +135,7 @@ func RunExportKubeconfig(ctx context.Context, f *util.Factory, out io.Writer, op
 			return err
 		}
 
-		secretStore, err := clientset.SecretStore(cluster)
+		secretStore, err := clientset.SecretStore(ctx, cluster)
 		if err != nil {
 			return err
 		}

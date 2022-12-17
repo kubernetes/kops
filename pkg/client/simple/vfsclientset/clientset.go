@@ -64,9 +64,9 @@ func (c *VFSClientset) ListClusters(ctx context.Context, options metav1.ListOpti
 }
 
 // ConfigBaseFor implements the ConfigBaseFor method of simple.Clientset for a VFS-backed state store
-func (c *VFSClientset) ConfigBaseFor(cluster *kops.Cluster) (vfs.Path, error) {
+func (c *VFSClientset) ConfigBaseFor(ctx context.Context, cluster *kops.Cluster) (vfs.Path, error) {
 	if cluster.Spec.ConfigBase != "" {
-		return vfs.Context.BuildVfsPath(cluster.Spec.ConfigBase)
+		return vfs.FromContext(ctx).BuildVfsPath(cluster.Spec.ConfigBase)
 	}
 	return c.clusters().configBase(cluster.Name)
 }
@@ -80,8 +80,7 @@ func (c *VFSClientset) AddonsFor(cluster *kops.Cluster) simple.AddonsClient {
 	return newAddonsVFS(c, cluster)
 }
 
-func (c *VFSClientset) SecretStore(cluster *kops.Cluster) (fi.SecretStore, error) {
-	ctx := context.TODO()
+func (c *VFSClientset) SecretStore(ctx context.Context, cluster *kops.Cluster) (fi.SecretStore, error) {
 	if cluster.Spec.SecretStore == "" {
 		configBase, err := registry.ConfigBase(ctx, cluster)
 		if err != nil {

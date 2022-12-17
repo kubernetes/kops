@@ -77,13 +77,13 @@ func (c *RESTClientset) UpdateCluster(ctx context.Context, cluster *kops.Cluster
 }
 
 // ConfigBaseFor implements the ConfigBaseFor method of Clientset for a kubernetes-API state store
-func (c *RESTClientset) ConfigBaseFor(cluster *kops.Cluster) (vfs.Path, error) {
+func (c *RESTClientset) ConfigBaseFor(ctx context.Context, cluster *kops.Cluster) (vfs.Path, error) {
 	if cluster.Spec.ConfigBase != "" {
-		return vfs.Context.BuildVfsPath(cluster.Spec.ConfigBase)
+		return vfs.FromContext(ctx).BuildVfsPath(cluster.Spec.ConfigBase)
 	}
 	// URL for clusters looks like https://<server>/apis/kops/v1alpha2/namespaces/<cluster>/clusters/<cluster>
 	// We probably want to add a subresource for full resources
-	return vfs.Context.BuildVfsPath(c.BaseURL.String())
+	return vfs.FromContext(ctx).BuildVfsPath(c.BaseURL.String())
 }
 
 // ListClusters implements the ListClusters method of Clientset for a kubernetes-API state store
@@ -97,7 +97,7 @@ func (c *RESTClientset) InstanceGroupsFor(cluster *kops.Cluster) kopsinternalver
 	return c.KopsClient.InstanceGroups(namespace)
 }
 
-func (c *RESTClientset) SecretStore(cluster *kops.Cluster) (fi.SecretStore, error) {
+func (c *RESTClientset) SecretStore(ctx context.Context, cluster *kops.Cluster) (fi.SecretStore, error) {
 	namespace := restNamespaceForClusterName(cluster.Name)
 	return secrets.NewClientsetSecretStore(cluster, c.KopsClient, namespace), nil
 }
