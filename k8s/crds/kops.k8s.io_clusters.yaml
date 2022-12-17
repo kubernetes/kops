@@ -5335,13 +5335,14 @@ spec:
                     x-kubernetes-int-or-string: true
                   enableRebalanceDraining:
                     description: 'EnableRebalanceDraining makes node termination handler
-                      drain nodes when the rebalance recommendation notice is received
+                      drain nodes when the rebalance recommendation notice is received.
                       Default: false'
                     type: boolean
                   enableRebalanceMonitoring:
                     description: 'EnableRebalanceMonitoring makes node termination
                       handler cordon nodes when the rebalance recommendation notice
-                      is received Default: false'
+                      is received. In queue-processor mode, cannot be enabled without
+                      rebalance draining. Default: false'
                     type: boolean
                   enableSQSTerminationDraining:
                     description: 'EnableSQSTerminationDraining enables queue-processor
@@ -5351,12 +5352,14 @@ spec:
                   enableScheduledEventDraining:
                     description: 'EnableScheduledEventDraining makes node termination
                       handler drain nodes before the maintenance window starts for
-                      an EC2 instance scheduled event. Default: true'
+                      an EC2 instance scheduled event. Cannot be disabled in queue-processor
+                      mode. Default: true'
                     type: boolean
                   enableSpotInterruptionDraining:
                     description: 'EnableSpotInterruptionDraining makes node termination
                       handler drain nodes when spot interruption termination notice
-                      is received. Default: true'
+                      is received. Cannot be disabled in queue-processor mode. Default:
+                      true'
                     type: boolean
                   enabled:
                     description: 'Enabled enables the node termination handler. Default:
