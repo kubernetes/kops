@@ -17,8 +17,6 @@ limitations under the License.
 package commandutils
 
 import (
-	"context"
-
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -27,6 +25,8 @@ import (
 // CompleteClusterName returns a Cobra completion function for cluster names.
 func CompleteClusterName(f Factory, suppressIfArgs bool, suppressArgs bool) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		ctx := cmd.Context()
+
 		if suppressIfArgs && len(args) > 0 {
 			return nil, cobra.ShellCompDirectiveNoFileComp
 		}
@@ -38,7 +38,7 @@ func CompleteClusterName(f Factory, suppressIfArgs bool, suppressArgs bool) func
 			return CompletionError("getting clientset", err)
 		}
 
-		list, err := client.ListClusters(context.TODO(), metav1.ListOptions{})
+		list, err := client.ListClusters(ctx, metav1.ListOptions{})
 		if err != nil {
 			return CompletionError("listing clusters", err)
 		}

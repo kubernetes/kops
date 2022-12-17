@@ -52,7 +52,7 @@ func NewCmdGet(f *util.Factory, out io.Writer) *cobra.Command {
 		Short:      i18n.T(`Get one or many resources.`),
 		Args:       rootCommand.clusterNameArgs(&options.ClusterName),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RunGet(context.TODO(), f, out, options)
+			return RunGet(cmd.Context(), f, out, options)
 		},
 	}
 

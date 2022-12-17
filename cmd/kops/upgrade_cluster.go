@@ -73,7 +73,7 @@ func NewCmdUpgradeCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
 		ValidArgsFunction: commandutils.CompleteClusterName(f, true, false),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ctx := context.TODO()
+			ctx := cmd.Context()
 
 			return RunUpgradeCluster(ctx, f, out, options)
 		},

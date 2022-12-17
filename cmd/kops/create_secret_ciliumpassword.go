@@ -71,7 +71,7 @@ func NewCmdCreateSecretCiliumPassword(f *util.Factory, out io.Writer) *cobra.Com
 		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
 		ValidArgsFunction: commandutils.CompleteClusterName(f, true, false),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RunCreateSecretCiliumEncryptionConfig(context.TODO(), f, out, options)
+			return RunCreateSecretCiliumEncryptionConfig(cmd.Context(), f, out, options)
 		},
 	}
 

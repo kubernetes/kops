@@ -16,6 +16,9 @@ limitations under the License.
 
 package main // import "k8s.io/kops/cmd/kops"
 
+import "context"
+
 func main() {
-	Execute()
+	ctx := context.Background()
+	Execute(ctx)
 }

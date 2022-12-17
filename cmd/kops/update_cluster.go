@@ -107,7 +107,7 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
 		ValidArgsFunction: commandutils.CompleteClusterName(f, true, false),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			_, err := RunUpdateCluster(context.TODO(), f, out, options)
+			_, err := RunUpdateCluster(cmd.Context(), f, out, options)
 			return err
 		},
 	}
@@ -456,8 +456,9 @@ func hasKubecfg(contextName string) (bool, error) {
 
 func completeUpdateClusterTarget(f commandutils.Factory, options *UpdateClusterOptions) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		ctx := cmd.Context()
+
 		commandutils.ConfigureKlogForCompletion()
-		ctx := context.TODO()
 
 		cluster, _, _, directive := GetClusterForCompletion(ctx, f, nil)
 		if cluster == nil {
