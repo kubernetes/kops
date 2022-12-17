@@ -113,7 +113,7 @@ func openstackKeyPairName(org string) string {
 	return name
 }
 
-func (_ *SSHKey) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *SSHKey) error {
+func (_ *SSHKey) RenderOpenstack(ctx *fi.Context, t *openstack.OpenstackAPITarget, a, e, changes *SSHKey) error {
 	if a == nil {
 		klog.V(2).Infof("Creating Keypair with name:%q", fi.ValueOf(e.Name))
 

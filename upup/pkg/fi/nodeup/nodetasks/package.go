@@ -275,7 +275,7 @@ func (_ *Package) CheckChanges(a, e, changes *Package) error {
 // It just avoids unnecessary failures from running e.g. concurrent apt-get installs
 var packageManagerLock sync.Mutex
 
-func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) error {
+func (_ *Package) RenderLocal(ctx *fi.Context, t *local.LocalTarget, a, e, changes *Package) error {
 	packageManagerLock.Lock()
 	defer packageManagerLock.Unlock()
 
@@ -378,7 +378,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 	return nil
 }
 
-func (_ *Package) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *Package) error {
+func (_ *Package) RenderCloudInit(ctx *fi.Context, t *cloudinit.CloudInitTarget, a, e, changes *Package) error {
 	packageName := e.Name
 	if e.Source != nil {
 		localFile := path.Join(localPackageDir, packageName)

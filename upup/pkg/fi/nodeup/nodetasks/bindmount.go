@@ -185,7 +185,7 @@ type Executor interface {
 	CombinedOutput(args []string) ([]byte, error)
 }
 
-func (_ *BindMount) RenderLocal(t *local.LocalTarget, a, e, changes *BindMount) error {
+func (_ *BindMount) RenderLocal(ctx *fi.Context, t *local.LocalTarget, a, e, changes *BindMount) error {
 	return e.execute(t)
 }
 
@@ -250,6 +250,6 @@ func (e *BindMount) execute(t Executor) error {
 	return nil
 }
 
-func (_ *BindMount) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *BindMount) error {
+func (_ *BindMount) RenderCloudInit(ctx *fi.Context, t *cloudinit.CloudInitTarget, a, e, changes *BindMount) error {
 	return fmt.Errorf("BindMount::RenderCloudInit not implemented")
 }

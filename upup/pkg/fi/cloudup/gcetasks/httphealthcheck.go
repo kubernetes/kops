@@ -73,7 +73,7 @@ func (_ *HTTPHealthcheck) CheckChanges(a, e, changes *HTTPHealthcheck) error {
 	return nil
 }
 
-func (h *HTTPHealthcheck) RenderGCE(t *gce.GCEAPITarget, a, e, changes *HTTPHealthcheck) error {
+func (h *HTTPHealthcheck) RenderGCE(ctx *fi.Context, t *gce.GCEAPITarget, a, e, changes *HTTPHealthcheck) error {
 	if a == nil {
 		o := &compute.HttpHealthCheck{
 			Name:        fi.ValueOf(e.Name),

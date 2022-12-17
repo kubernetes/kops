@@ -127,7 +127,7 @@ func (_ *Address) CheckChanges(a, e, changes *Address) error {
 	return nil
 }
 
-func (_ *Address) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Address) error {
+func (_ *Address) RenderGCE(ctx *fi.Context, t *gce.GCEAPITarget, a, e, changes *Address) error {
 	cloud := t.Cloud
 	addr := &compute.Address{
 		Name:    *e.Name,
@@ -157,7 +157,7 @@ type terraformAddress struct {
 	Name *string `cty:"name"`
 }
 
-func (_ *Address) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Address) error {
+func (_ *Address) RenderTerraform(ctx *fi.Context, t *terraform.TerraformTarget, a, e, changes *Address) error {
 	tf := &terraformAddress{
 		Name: e.Name,
 	}

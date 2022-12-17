@@ -261,7 +261,7 @@ func (s *Service) CheckChanges(a, e, changes *Service) error {
 	return nil
 }
 
-func (_ *Service) RenderLocal(t *local.LocalTarget, a, e, changes *Service) error {
+func (_ *Service) RenderLocal(ctx *fi.Context, t *local.LocalTarget, a, e, changes *Service) error {
 	systemdSystemPath, err := e.systemdSystemPath()
 	if err != nil {
 		return err
@@ -377,7 +377,7 @@ func (_ *Service) RenderLocal(t *local.LocalTarget, a, e, changes *Service) erro
 	return nil
 }
 
-func (_ *Service) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *Service) error {
+func (_ *Service) RenderCloudInit(ctx *fi.Context, t *cloudinit.CloudInitTarget, a, e, changes *Service) error {
 	systemdSystemPath, err := e.systemdSystemPath()
 	if err != nil {
 		return err

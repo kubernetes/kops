@@ -259,7 +259,7 @@ func (e *SecurityGroupRule) Description() string {
 	return strings.Join(description, " ")
 }
 
-func (_ *SecurityGroupRule) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *SecurityGroupRule) error {
+func (_ *SecurityGroupRule) RenderAWS(ctx *fi.Context, t *awsup.AWSAPITarget, a, e, changes *SecurityGroupRule) error {
 	name := fi.ValueOf(e.Name)
 
 	if a == nil {
@@ -353,7 +353,7 @@ type terraformSecurityGroupIngress struct {
 	PrefixListIDs  []string `cty:"prefix_list_ids"`
 }
 
-func (_ *SecurityGroupRule) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SecurityGroupRule) error {
+func (_ *SecurityGroupRule) RenderTerraform(ctx *fi.Context, t *terraform.TerraformTarget, a, e, changes *SecurityGroupRule) error {
 	tf := &terraformSecurityGroupIngress{
 		Type:          fi.PtrTo("ingress"),
 		SecurityGroup: e.SecurityGroup.TerraformLink(),

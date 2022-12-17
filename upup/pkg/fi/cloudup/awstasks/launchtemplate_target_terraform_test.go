@@ -19,10 +19,13 @@ package awstasks
 import (
 	"testing"
 
+	"k8s.io/kops/pkg/testutils/testcontext"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
 func TestLaunchTemplateTerraformRender(t *testing.T) {
+	ctx := testcontext.ContextForTest(t)
+
 	cases := []*renderTest{
 		{
 			Resource: &LaunchTemplate{
@@ -193,5 +196,5 @@ terraform {
 `,
 		},
 	}
-	doRenderTests(t, "RenderTerraform", cases)
+	doRenderTests(ctx, t, "RenderTerraform", cases)
 }

@@ -122,9 +122,7 @@ func (s *ManagedFile) CheckChanges(a, e, changes *ManagedFile) error {
 	return nil
 }
 
-func (e *ManagedFile) getACL(c *fi.Context, p vfs.Path) (vfs.ACL, error) {
-	ctx := c.Context()
-
+func (e *ManagedFile) getACL(ctx *fi.Context, p vfs.Path) (vfs.ACL, error) {
 	var acl vfs.ACL
 	if fi.ValueOf(e.PublicACL) {
 		switch p := p.(type) {
@@ -145,10 +143,10 @@ func (e *ManagedFile) getACL(c *fi.Context, p vfs.Path) (vfs.ACL, error) {
 		return acl, nil
 	}
 
-	return acls.GetACL(ctx, p, c.Cluster)
+	return acls.GetACL(ctx, p, ctx.Cluster)
 }
 
-func (_ *ManagedFile) Render(c *fi.Context, a, e, changes *ManagedFile) error {
+func (_ *ManagedFile) Render(ctx *fi.Context, a, e, changes *ManagedFile) error {
 	location := fi.ValueOf(e.Location)
 	if location == "" {
 		return fi.RequiredField("Location")
@@ -159,13 +157,13 @@ func (_ *ManagedFile) Render(c *fi.Context, a, e, changes *ManagedFile) error {
 		return fmt.Errorf("error reading contents of ManagedFile: %v", err)
 	}
 
-	p, err := getBasePath(c, e)
+	p, err := getBasePath(ctx, e)
 	if err != nil {
 		return err
 	}
 	p = p.Join(location)
 
-	acl, err := e.getACL(c, p)
+	acl, err := e.getACL(ctx, p)
 	if err != nil {
 		return err
 	}

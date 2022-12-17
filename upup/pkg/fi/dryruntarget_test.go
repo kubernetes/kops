@@ -24,6 +24,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/pkg/testutils/testcontext"
 )
 
 func Test_tryResourceAsString(t *testing.T) {
@@ -67,6 +68,7 @@ func (*testTask) Run(_ *Context) error {
 }
 
 func Test_DryrunTarget_PrintReport(t *testing.T) {
+	ctx := testcontext.ContextForTest(t)
 	builder := assets.NewAssetBuilder(&api.Cluster{
 		Spec: api.ClusterSpec{
 			KubernetesVersion: "1.17.3",
@@ -74,6 +76,11 @@ func Test_DryrunTarget_PrintReport(t *testing.T) {
 	}, false)
 	var stdout bytes.Buffer
 	target := NewDryRunTarget(builder, &stdout)
+
+	context := &Context{
+		Context: ctx,
+		Target:  target,
+	}
 	tasks := map[string]Task{}
 	a := &testTask{
 		Name:      PtrTo("TestName"),
@@ -87,7 +94,7 @@ func Test_DryrunTarget_PrintReport(t *testing.T) {
 	}
 	changes := reflect.New(reflect.TypeOf(e).Elem()).Interface().(Task)
 	_ = BuildChanges(a, e, changes)
-	err := target.Render(a, e, changes)
+	err := target.Render(context, a, e, changes)
 	tasks[*e.Name] = e
 	assert.NoError(t, err, "target.Render()")
 

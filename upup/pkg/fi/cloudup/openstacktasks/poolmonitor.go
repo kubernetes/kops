@@ -98,7 +98,7 @@ func (_ *PoolMonitor) CheckChanges(a, e, changes *PoolMonitor) error {
 	return nil
 }
 
-func (_ *PoolMonitor) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *PoolMonitor) error {
+func (_ *PoolMonitor) RenderOpenstack(ctx *fi.Context, t *openstack.OpenstackAPITarget, a, e, changes *PoolMonitor) error {
 	if a == nil {
 		klog.V(2).Infof("Creating PoolMonitor with Name: %q", fi.ValueOf(e.Name))
 

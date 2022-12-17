@@ -94,7 +94,7 @@ func (s *IAMInstanceProfileRole) CheckChanges(a, e, changes *IAMInstanceProfileR
 	return nil
 }
 
-func (_ *IAMInstanceProfileRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMInstanceProfileRole) error {
+func (_ *IAMInstanceProfileRole) RenderAWS(ctx *fi.Context, t *awsup.AWSAPITarget, a, e, changes *IAMInstanceProfileRole) error {
 	if a == nil {
 		request := &iam.AddRoleToInstanceProfileInput{
 			InstanceProfileName: e.InstanceProfile.Name,
@@ -115,7 +115,7 @@ type terraformIAMInstanceProfile struct {
 	Tags map[string]string        `cty:"tags"`
 }
 
-func (_ *IAMInstanceProfileRole) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IAMInstanceProfileRole) error {
+func (_ *IAMInstanceProfileRole) RenderTerraform(ctx *fi.Context, t *terraform.TerraformTarget, a, e, changes *IAMInstanceProfileRole) error {
 	tf := &terraformIAMInstanceProfile{
 		Name: e.InstanceProfile.Name,
 		Role: e.Role.TerraformLink(),

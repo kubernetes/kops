@@ -85,7 +85,7 @@ func (_ *InstanceGroupManager) CheckChanges(a, e, changes *InstanceGroupManager)
 	return nil
 }
 
-func (_ *InstanceGroupManager) RenderGCE(t *gce.GCEAPITarget, a, e, changes *InstanceGroupManager) error {
+func (_ *InstanceGroupManager) RenderGCE(ctx *fi.Context, t *gce.GCEAPITarget, a, e, changes *InstanceGroupManager) error {
 	project := t.Cloud.Project()
 
 	instanceTemplateURL, err := e.InstanceTemplate.URL(project)
@@ -184,7 +184,7 @@ type terraformVersion struct {
 	InstanceTemplate *terraformWriter.Literal `cty:"instance_template"`
 }
 
-func (_ *InstanceGroupManager) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *InstanceGroupManager) error {
+func (_ *InstanceGroupManager) RenderTerraform(ctx *fi.Context, t *terraform.TerraformTarget, a, e, changes *InstanceGroupManager) error {
 	tf := &terraformInstanceGroupManager{
 		Name:             e.Name,
 		Zone:             e.Zone,

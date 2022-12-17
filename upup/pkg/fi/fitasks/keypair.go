@@ -158,9 +158,7 @@ func (_ *Keypair) ShouldCreate(a, e, changes *Keypair) (bool, error) {
 	return true, nil
 }
 
-func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
-	ctx := c.Context()
-
+func (_ *Keypair) Render(ctx *fi.Context, a, e, changes *Keypair) error {
 	name := fi.ValueOf(e.Name)
 	if name == "" {
 		return fi.RequiredField("Name")
@@ -195,7 +193,7 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 	if createCertificate {
 		klog.V(2).Infof("Creating PKI keypair %q", name)
 
-		keyset, err := c.Keystore.FindKeyset(name)
+		keyset, err := ctx.Keystore.FindKeyset(name)
 		if err != nil {
 			return err
 		}
@@ -242,7 +240,7 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 			PrivateKey:     privateKey,
 			Serial:         serial,
 		}
-		cert, privateKey, _, err := pki.IssueCert(&req, c.Keystore)
+		cert, privateKey, _, err := pki.IssueCert(&req, ctx.Keystore)
 		if err != nil {
 			return err
 		}
@@ -257,7 +255,7 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 		keyset.LegacyFormat = false
 		keyset.Items[ki.Id] = ki
 		keyset.Primary = ki
-		err = c.Keystore.StoreKeyset(ctx, name, keyset)
+		err = ctx.Keystore.StoreKeyset(ctx, name, keyset)
 		if err != nil {
 			return err
 		}
@@ -267,7 +265,7 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 		}
 
 		// Make double-sure it round-trips
-		_, err = c.Keystore.FindKeyset(name)
+		_, err = ctx.Keystore.FindKeyset(name)
 		if err != nil {
 			return err
 		}
@@ -280,12 +278,12 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 	if changeStoredFormat {
 		// We fetch and reinsert the same keypair, forcing an update to our preferred format
 		// TODO: We're assuming that we want to save in the preferred format
-		keyset, err := c.Keystore.FindKeyset(name)
+		keyset, err := ctx.Keystore.FindKeyset(name)
 		if err != nil {
 			return err
 		}
 		keyset.LegacyFormat = false
-		err = c.Keystore.StoreKeyset(ctx, name, keyset)
+		err = ctx.Keystore.StoreKeyset(ctx, name, keyset)
 		if err != nil {
 			return err
 		}

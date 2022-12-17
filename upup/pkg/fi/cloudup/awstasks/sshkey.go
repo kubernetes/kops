@@ -178,7 +178,7 @@ func (e *SSHKey) createKeypair(cloud awsup.AWSCloud) error {
 	return nil
 }
 
-func (_ *SSHKey) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *SSHKey) error {
+func (_ *SSHKey) RenderAWS(ctx *fi.Context, t *awsup.AWSAPITarget, a, e, changes *SSHKey) error {
 	if a == nil {
 		return e.createKeypair(t.Cloud)
 	}
@@ -195,7 +195,7 @@ type terraformSSHKey struct {
 	Tags      map[string]string        `cty:"tags"`
 }
 
-func (_ *SSHKey) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SSHKey) error {
+func (_ *SSHKey) RenderTerraform(ctx *fi.Context, t *terraform.TerraformTarget, a, e, changes *SSHKey) error {
 	// We don't want to render a key definition when we're using one that already exists
 	if e.IsExistingKey() {
 		return nil

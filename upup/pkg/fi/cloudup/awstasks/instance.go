@@ -207,7 +207,7 @@ func (_ *Instance) CheckChanges(a, e, changes *Instance) error {
 	return nil
 }
 
-func (_ *Instance) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Instance) error {
+func (_ *Instance) RenderAWS(ctx *fi.Context, t *awsup.AWSAPITarget, a, e, changes *Instance) error {
 	if a == nil {
 
 		if fi.ValueOf(e.Shared) {

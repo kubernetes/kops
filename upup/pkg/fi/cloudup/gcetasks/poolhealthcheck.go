@@ -84,7 +84,7 @@ func (_ *PoolHealthCheck) CheckChanges(a, e, changes *PoolHealthCheck) error {
 	return nil
 }
 
-func (p *PoolHealthCheck) RenderGCE(t *gce.GCEAPITarget, a, e, changes *PoolHealthCheck) error {
+func (p *PoolHealthCheck) RenderGCE(ctx *fi.Context, t *gce.GCEAPITarget, a, e, changes *PoolHealthCheck) error {
 	if a == nil {
 		targetPool := fi.ValueOf(p.Pool.Name)
 		req := &compute.TargetPoolsAddHealthCheckRequest{

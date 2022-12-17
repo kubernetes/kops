@@ -124,7 +124,7 @@ func (d *Droplet) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(d, c)
 }
 
-func (_ *Droplet) RenderDO(t *do.DOAPITarget, a, e, changes *Droplet) error {
+func (_ *Droplet) RenderDO(ctx *fi.Context, t *do.DOAPITarget, a, e, changes *Droplet) error {
 	userData, err := fi.ResourceAsString(e.UserData)
 	if err != nil {
 		return err

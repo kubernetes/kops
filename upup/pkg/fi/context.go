@@ -31,7 +31,7 @@ import (
 )
 
 type Context struct {
-	ctx context.Context
+	context.Context
 
 	Tmpdir string
 
@@ -50,10 +50,6 @@ type Context struct {
 	warnings []*Warning
 }
 
-func (c *Context) Context() context.Context {
-	return c.ctx
-}
-
 // Warning holds the details of a warning encountered during validation/creation
 type Warning struct {
 	Task    Task
@@ -62,7 +58,7 @@ type Warning struct {
 
 func NewContext(ctx context.Context, target Target, cluster *kops.Cluster, cloud Cloud, keystore Keystore, secretStore SecretStore, clusterConfigBase vfs.Path, checkExisting bool, tasks map[string]Task) (*Context, error) {
 	c := &Context{
-		ctx:               ctx,
+		Context:           ctx,
 		Cloud:             cloud,
 		Cluster:           cluster,
 		Target:            target,
@@ -173,7 +169,7 @@ func (c *Context) Render(a, e, changes Task) error {
 	}
 
 	if _, ok := c.Target.(*DryRunTarget); ok {
-		return c.Target.(*DryRunTarget).Render(a, e, changes)
+		return c.Target.(*DryRunTarget).Render(c, a, e, changes)
 	}
 
 	v := reflect.ValueOf(e)

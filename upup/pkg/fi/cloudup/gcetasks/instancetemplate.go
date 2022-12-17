@@ -448,7 +448,7 @@ func (e *InstanceTemplate) URL(project string) (string, error) {
 	return fmt.Sprintf("https://www.googleapis.com/compute/v1/projects/%s/global/instanceTemplates/%s", project, *e.ID), nil
 }
 
-func (_ *InstanceTemplate) RenderGCE(t *gce.GCEAPITarget, a, e, changes *InstanceTemplate) error {
+func (_ *InstanceTemplate) RenderGCE(ctx *fi.Context, t *gce.GCEAPITarget, a, e, changes *InstanceTemplate) error {
 	project := t.Cloud.Project()
 	region := t.Cloud.Region()
 
@@ -601,7 +601,7 @@ func mapServiceAccountsToTerraform(serviceAccounts []*ServiceAccount, saScopes [
 	return out
 }
 
-func (_ *InstanceTemplate) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *InstanceTemplate) error {
+func (_ *InstanceTemplate) RenderTerraform(ctx *fi.Context, t *terraform.TerraformTarget, a, e, changes *InstanceTemplate) error {
 	project := t.Project
 
 	i, err := e.mapToGCE(project, t.Cloud.Region())

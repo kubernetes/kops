@@ -116,7 +116,7 @@ func (s *IAMOIDCProvider) CheckChanges(a, e, changes *IAMOIDCProvider) error {
 	return nil
 }
 
-func (p *IAMOIDCProvider) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMOIDCProvider) error {
+func (p *IAMOIDCProvider) RenderAWS(ctx *fi.Context, t *awsup.AWSAPITarget, a, e, changes *IAMOIDCProvider) error {
 	thumbprints := e.Thumbprints
 
 	if a == nil {
@@ -219,7 +219,7 @@ type terraformIAMOIDCProvider struct {
 	Tags             map[string]string        `cty:"tags"`
 }
 
-func (p *IAMOIDCProvider) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IAMOIDCProvider) error {
+func (p *IAMOIDCProvider) RenderTerraform(ctx *fi.Context, t *terraform.TerraformTarget, a, e, changes *IAMOIDCProvider) error {
 	err := t.AddOutputVariable("iam_openid_connect_provider_arn", e.TerraformLink())
 	if err != nil {
 		return err

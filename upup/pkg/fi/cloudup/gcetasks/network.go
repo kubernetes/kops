@@ -137,7 +137,7 @@ func (_ *Network) CheckChanges(a, e, changes *Network) error {
 	return nil
 }
 
-func (_ *Network) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Network) error {
+func (_ *Network) RenderGCE(ctx *fi.Context, t *gce.GCEAPITarget, a, e, changes *Network) error {
 	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Verify the network was found
@@ -199,7 +199,7 @@ type terraformNetwork struct {
 	AutoCreateSubnetworks *bool   `cty:"auto_create_subnetworks"`
 }
 
-func (_ *Network) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Network) error {
+func (_ *Network) RenderTerraform(ctx *fi.Context, t *terraform.TerraformTarget, a, e, changes *Network) error {
 	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Not terraform owned / managed

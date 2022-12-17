@@ -149,7 +149,7 @@ func (*SecurityGroupRule) CheckChanges(a, e, changes *SecurityGroupRule) error {
 	return nil
 }
 
-func (*SecurityGroupRule) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *SecurityGroupRule) error {
+func (*SecurityGroupRule) RenderOpenstack(ctx *fi.Context, t *openstack.OpenstackAPITarget, a, e, changes *SecurityGroupRule) error {
 	if a == nil {
 		klog.V(2).Infof("Creating SecurityGroupRule")
 		etherType := fi.ValueOf(e.EtherType)

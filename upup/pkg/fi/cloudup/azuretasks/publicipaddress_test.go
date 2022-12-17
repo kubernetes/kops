@@ -24,6 +24,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-05-01/network"
 	"github.com/Azure/go-autorest/autorest/to"
+	"k8s.io/kops/pkg/testutils/testcontext"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 )
@@ -42,11 +43,17 @@ func newTestPublicIPAddress() *PublicIPAddress {
 }
 
 func TestPublicIPAddressRenderAzure(t *testing.T) {
+	ctx := testcontext.ContextForTest(t)
 	cloud := NewMockAzureCloud("eastus")
 	apiTarget := azure.NewAzureAPITarget(cloud)
+	context, err := fi.NewContext(ctx, apiTarget, nil, cloud, nil, nil, nil, false, nil)
+	if err != nil {
+		t.Fatalf("error from NewContext: %v", err)
+	}
+
 	publicIPAddress := &PublicIPAddress{}
 	expected := newTestPublicIPAddress()
-	if err := publicIPAddress.RenderAzure(apiTarget, nil, expected, nil); err != nil {
+	if err := publicIPAddress.RenderAzure(context, apiTarget, nil, expected, nil); err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
 
@@ -135,6 +142,7 @@ func TestPublicIPAddressRun(t *testing.T) {
 }
 
 func TestPublicIPAddressCheckChanges(t *testing.T) {
+
 	testCases := []struct {
 		a, e, changes *PublicIPAddress
 		success       bool

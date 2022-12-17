@@ -102,7 +102,7 @@ func (_ *Volume) CheckChanges(a, e, changes *Volume) error {
 	return nil
 }
 
-func (_ *Volume) RenderDO(t *do.DOAPITarget, a, e, changes *Volume) error {
+func (_ *Volume) RenderDO(ctx *fi.Context, t *do.DOAPITarget, a, e, changes *Volume) error {
 	if a != nil {
 		// in general, we shouldn't need to render changes to a volume
 		// however there can be cases where we may want to resize or rename.
@@ -137,7 +137,7 @@ type terraformVolume struct {
 	Region *string `cty:"region"`
 }
 
-func (_ *Volume) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Volume) error {
+func (_ *Volume) RenderTerraform(ctx *fi.Context, t *terraform.TerraformTarget, a, e, changes *Volume) error {
 	tf := &terraformVolume{
 		Name:   e.Name,
 		SizeGB: e.SizeGB,

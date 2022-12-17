@@ -267,7 +267,7 @@ func (s *VMScaleSet) CheckChanges(a, e, changes *VMScaleSet) error {
 }
 
 // RenderAzure creates or updates a VM Scale Set.
-func (s *VMScaleSet) RenderAzure(t *azure.AzureAPITarget, a, e, changes *VMScaleSet) error {
+func (s *VMScaleSet) RenderAzure(ctx *fi.Context, t *azure.AzureAPITarget, a, e, changes *VMScaleSet) error {
 	if a == nil {
 		klog.Infof("Creating a new VM Scale Set with name: %s", fi.ValueOf(e.Name))
 	} else {

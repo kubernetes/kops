@@ -66,7 +66,7 @@ func (s *UpdatePackages) CheckChanges(a, e, changes *UpdatePackages) error {
 	return nil
 }
 
-func (_ *UpdatePackages) RenderLocal(t *local.LocalTarget, a, e, changes *UpdatePackages) error {
+func (_ *UpdatePackages) RenderLocal(ctx *fi.Context, t *local.LocalTarget, a, e, changes *UpdatePackages) error {
 	if os.Getenv("SKIP_PACKAGE_UPDATE") != "" {
 		klog.Infof("SKIP_PACKAGE_UPDATE was set; skipping package update")
 		return nil
@@ -95,7 +95,7 @@ func (_ *UpdatePackages) RenderLocal(t *local.LocalTarget, a, e, changes *Update
 	return nil
 }
 
-func (_ *UpdatePackages) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *UpdatePackages) error {
+func (_ *UpdatePackages) RenderCloudInit(ctx *fi.Context, t *cloudinit.CloudInitTarget, a, e, changes *UpdatePackages) error {
 	t.Config.PackageUpdate = true
 	return nil
 }

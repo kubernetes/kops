@@ -86,7 +86,7 @@ func (t *DryRunTarget) ProcessDeletions() bool {
 	return true
 }
 
-func (t *DryRunTarget) Render(a, e, changes Task) error {
+func (t *DryRunTarget) Render(ctx *Context, a, e, changes Task) error {
 	valA := reflect.ValueOf(a)
 	aIsNil := valA.IsNil()
 

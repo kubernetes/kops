@@ -140,7 +140,7 @@ func (*Subnet) CheckChanges(a, e, changes *Subnet) error {
 	return nil
 }
 
-func (*Subnet) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Subnet) error {
+func (*Subnet) RenderOpenstack(ctx *fi.Context, t *openstack.OpenstackAPITarget, a, e, changes *Subnet) error {
 	if a == nil {
 		klog.V(2).Infof("Creating Subnet with name:%q", fi.ValueOf(e.Name))
 

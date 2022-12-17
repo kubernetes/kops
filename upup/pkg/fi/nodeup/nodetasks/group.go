@@ -88,7 +88,7 @@ func buildGroupaddArgs(e *GroupTask) []string {
 	return args
 }
 
-func (_ *GroupTask) RenderLocal(t *local.LocalTarget, a, e, changes *GroupTask) error {
+func (_ *GroupTask) RenderLocal(ctx *fi.Context, t *local.LocalTarget, a, e, changes *GroupTask) error {
 	if a == nil {
 		args := buildGroupaddArgs(e)
 		klog.Infof("Creating group %q", e.Name)
@@ -120,7 +120,7 @@ func (_ *GroupTask) RenderLocal(t *local.LocalTarget, a, e, changes *GroupTask) 
 	return nil
 }
 
-func (_ *GroupTask) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *GroupTask) error {
+func (_ *GroupTask) RenderCloudInit(ctx *fi.Context, t *cloudinit.CloudInitTarget, a, e, changes *GroupTask) error {
 	args := buildGroupaddArgs(e)
 	cmd := []string{"groupadd"}
 	cmd = append(cmd, args...)

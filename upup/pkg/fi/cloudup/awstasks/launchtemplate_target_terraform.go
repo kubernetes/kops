@@ -176,7 +176,7 @@ func (t *LaunchTemplate) VersionLink() *terraformWriter.Literal {
 }
 
 // RenderTerraform is responsible for rendering the terraform json
-func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e, changes *LaunchTemplate) error {
+func (t *LaunchTemplate) RenderTerraform(ctx *fi.Context, target *terraform.TerraformTarget, a, e, changes *LaunchTemplate) error {
 	var err error
 
 	cloud := target.Cloud.(awsup.AWSCloud)

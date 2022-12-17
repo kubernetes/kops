@@ -32,6 +32,11 @@ type AWSAPITarget struct {
 
 var _ fi.Target = &AWSAPITarget{}
 
+type AWSTask[T any] interface {
+	Run(*fi.Context) error
+	RenderAWS(ctx *fi.Context, t *AWSAPITarget, a, e, changes *T) error
+}
+
 func NewAWSAPITarget(cloud AWSCloud) *AWSAPITarget {
 	return &AWSAPITarget{
 		Cloud: cloud,

@@ -103,7 +103,7 @@ func (*ResourceGroup) CheckChanges(a, e, changes *ResourceGroup) error {
 }
 
 // RenderAzure creates or updates a resource group.
-func (*ResourceGroup) RenderAzure(t *azure.AzureAPITarget, a, e, changes *ResourceGroup) error {
+func (*ResourceGroup) RenderAzure(ctx *fi.Context, t *azure.AzureAPITarget, a, e, changes *ResourceGroup) error {
 	if a == nil {
 		klog.Infof("Creating a new Resource Group with name: %s", fi.ValueOf(e.Name))
 	} else {

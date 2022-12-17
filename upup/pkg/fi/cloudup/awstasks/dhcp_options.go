@@ -136,7 +136,7 @@ func (s *DHCPOptions) CheckChanges(a, e, changes *DHCPOptions) error {
 	return nil
 }
 
-func (_ *DHCPOptions) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DHCPOptions) error {
+func (_ *DHCPOptions) RenderAWS(ctx *fi.Context, t *awsup.AWSAPITarget, a, e, changes *DHCPOptions) error {
 	if a == nil {
 		klog.V(2).Infof("Creating DHCPOptions with Name:%q", *e.Name)
 
@@ -175,7 +175,7 @@ type terraformDHCPOptions struct {
 	Tags              map[string]string `cty:"tags"`
 }
 
-func (_ *DHCPOptions) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *DHCPOptions) error {
+func (_ *DHCPOptions) RenderTerraform(ctx *fi.Context, t *terraform.TerraformTarget, a, e, changes *DHCPOptions) error {
 	tf := &terraformDHCPOptions{
 		DomainName: e.DomainName,
 		Tags:       e.Tags,

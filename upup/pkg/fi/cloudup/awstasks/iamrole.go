@@ -152,7 +152,7 @@ func (s *IAMRole) CheckChanges(a, e, changes *IAMRole) error {
 	return nil
 }
 
-func (_ *IAMRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRole) error {
+func (_ *IAMRole) RenderAWS(ctx *fi.Context, t *awsup.AWSAPITarget, a, e, changes *IAMRole) error {
 	if e.RolePolicyDocument == nil {
 		klog.V(2).Infof("Deleting IAM role %q", a.Name)
 
@@ -343,7 +343,7 @@ type terraformIAMRole struct {
 	Tags                map[string]string        `cty:"tags"`
 }
 
-func (_ *IAMRole) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IAMRole) error {
+func (_ *IAMRole) RenderTerraform(ctx *fi.Context, t *terraform.TerraformTarget, a, e, changes *IAMRole) error {
 	policy, err := t.AddFileResource("aws_iam_role", *e.Name, "policy", e.RolePolicyDocument, false)
 	if err != nil {
 		return fmt.Errorf("error rendering RolePolicyDocument: %v", err)

@@ -194,7 +194,7 @@ func (s *File) CheckChanges(a, e, changes *File) error {
 	return nil
 }
 
-func (_ *File) RenderLocal(t *local.LocalTarget, a, e, changes *File) error {
+func (_ *File) RenderLocal(ctx *fi.Context, t *local.LocalTarget, a, e, changes *File) error {
 	dirMode := os.FileMode(0o755)
 	fileMode, err := fi.ParseFileMode(fi.ValueOf(e.Mode), 0o644)
 	if err != nil {
@@ -279,7 +279,7 @@ func (_ *File) RenderLocal(t *local.LocalTarget, a, e, changes *File) error {
 	return nil
 }
 
-func (_ *File) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *File) error {
+func (_ *File) RenderCloudInit(ctx *fi.Context, t *cloudinit.CloudInitTarget, a, e, changes *File) error {
 	dirMode := os.FileMode(0o755)
 	fileMode, err := fi.ParseFileMode(fi.ValueOf(e.Mode), 0o644)
 	if err != nil {

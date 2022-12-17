@@ -26,6 +26,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/testutils/testcontext"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
@@ -776,8 +777,14 @@ func Test_Port_RenderOpenstack(t *testing.T) {
 
 	for _, testCase := range tests {
 		t.Run(testCase.desc, func(t *testing.T) {
+			ctx := testcontext.ContextForTest(t)
+			context, err := fi.NewContext(ctx, nil, nil, nil, nil, nil, nil, false, nil)
+			if err != nil {
+				t.Fatalf("error from NewContext: %v", err)
+			}
+
 			var port Port
-			err := (&port).RenderOpenstack(testCase.target, testCase.actual, testCase.expected, testCase.changes)
+			err = (&port).RenderOpenstack(context, testCase.target, testCase.actual, testCase.expected, testCase.changes)
 
 			compareErrors(t, err, testCase.expectedError)
 

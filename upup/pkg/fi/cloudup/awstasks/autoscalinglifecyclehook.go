@@ -108,7 +108,7 @@ func (_ *AutoscalingLifecycleHook) CheckChanges(a, e, changes *AutoscalingLifecy
 	return nil
 }
 
-func (*AutoscalingLifecycleHook) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *AutoscalingLifecycleHook) error {
+func (*AutoscalingLifecycleHook) RenderAWS(ctx *fi.Context, t *awsup.AWSAPITarget, a, e, changes *AutoscalingLifecycleHook) error {
 	if changes != nil {
 		if fi.ValueOf(e.Enabled) {
 			request := &autoscaling.PutLifecycleHookInput{
@@ -145,7 +145,7 @@ type terraformASGLifecycleHook struct {
 	LifecycleTransition  *string                  `cty:"lifecycle_transition"`
 }
 
-func (_ *AutoscalingLifecycleHook) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *AutoscalingLifecycleHook) error {
+func (_ *AutoscalingLifecycleHook) RenderTerraform(ctx *fi.Context, t *terraform.TerraformTarget, a, e, changes *AutoscalingLifecycleHook) error {
 	if !fi.ValueOf(e.Enabled) {
 		return nil
 	}

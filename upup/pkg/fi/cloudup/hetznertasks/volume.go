@@ -101,7 +101,7 @@ func (_ *Volume) CheckChanges(a, e, changes *Volume) error {
 	return nil
 }
 
-func (_ *Volume) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *Volume) error {
+func (_ *Volume) RenderHetzer(ctx *fi.Context, t *hetzner.HetznerAPITarget, a, e, changes *Volume) error {
 	client := t.Cloud.VolumeClient()
 
 	if a == nil {
@@ -146,7 +146,7 @@ type terraformVolume struct {
 	Labels   map[string]string `cty:"labels"`
 }
 
-func (_ *Volume) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Volume) error {
+func (_ *Volume) RenderTerraform(ctx *fi.Context, t *terraform.TerraformTarget, a, e, changes *Volume) error {
 	tf := &terraformVolume{
 		Name:     e.Name,
 		Size:     fi.PtrTo(e.Size),

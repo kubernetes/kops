@@ -128,7 +128,7 @@ func (_ *EBSVolume) CheckChanges(a, e, changes *EBSVolume) error {
 	return nil
 }
 
-func (_ *EBSVolume) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *EBSVolume) error {
+func (_ *EBSVolume) RenderAWS(ctx *fi.Context, t *awsup.AWSAPITarget, a, e, changes *EBSVolume) error {
 	if a == nil {
 		klog.V(2).Infof("Creating PersistentVolume with Name:%q", *e.Name)
 
@@ -209,7 +209,7 @@ type terraformVolume struct {
 	Tags             map[string]string `cty:"tags"`
 }
 
-func (_ *EBSVolume) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *EBSVolume) error {
+func (_ *EBSVolume) RenderTerraform(ctx *fi.Context, t *terraform.TerraformTarget, a, e, changes *EBSVolume) error {
 	tf := &terraformVolume{
 		AvailabilityZone: e.AvailabilityZone,
 		Size:             e.SizeGB,

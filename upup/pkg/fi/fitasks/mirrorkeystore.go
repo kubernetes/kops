@@ -72,10 +72,8 @@ func (s *MirrorKeystore) CheckChanges(a, e, changes *MirrorKeystore) error {
 }
 
 // Render implements fi.Task::Render
-func (_ *MirrorKeystore) Render(c *fi.Context, a, e, changes *MirrorKeystore) error {
-	ctx := c.Context()
-
-	keystore := c.Keystore
+func (_ *MirrorKeystore) Render(ctx *fi.Context, a, e, changes *MirrorKeystore) error {
+	keystore := ctx.Keystore
 
 	return keystore.MirrorTo(ctx, e.MirrorPath)
 }

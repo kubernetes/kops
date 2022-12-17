@@ -229,7 +229,7 @@ func (_ *Subnet) ShouldCreate(a, e, changes *Subnet) (bool, error) {
 	return true, nil
 }
 
-func (_ *Subnet) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Subnet) error {
+func (_ *Subnet) RenderAWS(ctx *fi.Context, t *awsup.AWSAPITarget, a, e, changes *Subnet) error {
 	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Verify the subnet was found
@@ -383,7 +383,7 @@ type terraformSubnet struct {
 	Tags                                    map[string]string        `cty:"tags"`
 }
 
-func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Subnet) error {
+func (_ *Subnet) RenderTerraform(ctx *fi.Context, t *terraform.TerraformTarget, a, e, changes *Subnet) error {
 	if fi.ValueOf(e.ShortName) != "" {
 		name := fi.ValueOf(e.ShortName)
 		if err := t.AddOutputVariable("subnet_"+name+"_id", e.TerraformLink()); err != nil {

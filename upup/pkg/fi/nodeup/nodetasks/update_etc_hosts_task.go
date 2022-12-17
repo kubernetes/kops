@@ -72,7 +72,7 @@ func (_ *UpdateEtcHostsTask) CheckChanges(a, e, changes *UpdateEtcHostsTask) err
 	return nil
 }
 
-func (_ *UpdateEtcHostsTask) RenderLocal(t *local.LocalTarget, a, e, changes *UpdateEtcHostsTask) error {
+func (_ *UpdateEtcHostsTask) RenderLocal(ctx *fi.Context, t *local.LocalTarget, a, e, changes *UpdateEtcHostsTask) error {
 	etcHostsPath := "/etc/hosts"
 
 	mutator := func(existing []string) (*hosts.HostMap, error) {
@@ -95,6 +95,6 @@ func (_ *UpdateEtcHostsTask) RenderLocal(t *local.LocalTarget, a, e, changes *Up
 	return nil
 }
 
-func (_ *UpdateEtcHostsTask) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *UpdateEtcHostsTask) error {
+func (_ *UpdateEtcHostsTask) RenderCloudInit(ctx *fi.Context, t *cloudinit.CloudInitTarget, a, e, changes *UpdateEtcHostsTask) error {
 	return fmt.Errorf("UpdateEtcHostsTask::RenderCloudInit not supported")
 }

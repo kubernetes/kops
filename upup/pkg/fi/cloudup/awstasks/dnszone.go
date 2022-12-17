@@ -171,7 +171,7 @@ func (s *DNSZone) CheckChanges(a, e, changes *DNSZone) error {
 	return nil
 }
 
-func (_ *DNSZone) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSZone) error {
+func (_ *DNSZone) RenderAWS(ctx *fi.Context, t *awsup.AWSAPITarget, a, e, changes *DNSZone) error {
 	name := aws.StringValue(e.DNSName)
 	if a == nil {
 		request := &route53.CreateHostedZoneInput{}
@@ -230,7 +230,7 @@ type terraformRoute53ZoneAssociation struct {
 	Lifecycle *terraform.Lifecycle     `cty:"lifecycle"`
 }
 
-func (_ *DNSZone) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *DNSZone) error {
+func (_ *DNSZone) RenderTerraform(ctx *fi.Context, t *terraform.TerraformTarget, a, e, changes *DNSZone) error {
 	cloud := t.Cloud.(awsup.AWSCloud)
 
 	dnsName := fi.ValueOf(e.DNSName)

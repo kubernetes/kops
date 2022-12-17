@@ -73,9 +73,7 @@ func (s *MirrorSecrets) CheckChanges(a, e, changes *MirrorSecrets) error {
 }
 
 // Render implements fi.Task::Render
-func (_ *MirrorSecrets) Render(c *fi.Context, a, e, changes *MirrorSecrets) error {
-	ctx := c.Context()
-
-	secrets := c.SecretStore
+func (_ *MirrorSecrets) Render(ctx *fi.Context, a, e, changes *MirrorSecrets) error {
+	secrets := ctx.SecretStore
 	return secrets.MirrorTo(ctx, e.MirrorPath)
 }

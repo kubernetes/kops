@@ -117,7 +117,7 @@ func (*VirtualNetwork) CheckChanges(a, e, changes *VirtualNetwork) error {
 }
 
 // RenderAzure creates or updates a Virtual Network.
-func (*VirtualNetwork) RenderAzure(t *azure.AzureAPITarget, a, e, changes *VirtualNetwork) error {
+func (*VirtualNetwork) RenderAzure(ctx *fi.Context, t *azure.AzureAPITarget, a, e, changes *VirtualNetwork) error {
 	if a == nil {
 		klog.Infof("Creating a new Virtual Network with name: %s", fi.ValueOf(e.Name))
 	} else {

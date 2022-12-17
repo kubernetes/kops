@@ -134,7 +134,7 @@ func (_ *Archive) CheckChanges(a, e, changes *Archive) error {
 }
 
 // RenderLocal implements the fi.Task::Render functionality for a local target
-func (_ *Archive) RenderLocal(t *local.LocalTarget, a, e, changes *Archive) error {
+func (_ *Archive) RenderLocal(ctx *fi.Context, t *local.LocalTarget, a, e, changes *Archive) error {
 	if a == nil {
 		klog.Infof("Installing archive %q", e.Name)
 
@@ -213,7 +213,7 @@ func (_ *Archive) RenderLocal(t *local.LocalTarget, a, e, changes *Archive) erro
 }
 
 // RenderCloudInit implements fi.Task::Render functionality for a CloudInit target
-func (_ *Archive) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *Archive) error {
+func (_ *Archive) RenderCloudInit(ctx *fi.Context, t *cloudinit.CloudInitTarget, a, e, changes *Archive) error {
 	archiveName := e.Name
 
 	localFile := path.Join(localArchiveDir, archiveName)

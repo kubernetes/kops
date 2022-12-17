@@ -219,7 +219,7 @@ func (_ *ElasticIP) CheckChanges(a, e, changes *ElasticIP) error {
 }
 
 // RenderAWS is where we actually apply changes to AWS
-func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) error {
+func (_ *ElasticIP) RenderAWS(ctx *fi.Context, t *awsup.AWSAPITarget, a, e, changes *ElasticIP) error {
 	var publicIp *string
 	var eipId *string
 
@@ -275,7 +275,7 @@ type terraformElasticIP struct {
 	Tags map[string]string `cty:"tags"`
 }
 
-func (_ *ElasticIP) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ElasticIP) error {
+func (_ *ElasticIP) RenderTerraform(ctx *fi.Context, t *terraform.TerraformTarget, a, e, changes *ElasticIP) error {
 	if fi.ValueOf(e.Shared) {
 		if e.ID == nil {
 			return fmt.Errorf("ID must be set, if ElasticIP is shared: %v", e)

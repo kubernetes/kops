@@ -190,7 +190,7 @@ func (_ *LB) CheckChanges(a, e, changes *LB) error {
 	return nil
 }
 
-func (_ *LB) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *LB) error {
+func (_ *LB) RenderOpenstack(ctx *fi.Context, t *openstack.OpenstackAPITarget, a, e, changes *LB) error {
 	if a == nil {
 		klog.V(2).Infof("Creating LB with Name: %q", fi.ValueOf(e.Name))
 

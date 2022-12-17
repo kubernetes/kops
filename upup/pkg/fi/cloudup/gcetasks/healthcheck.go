@@ -95,7 +95,7 @@ func (_ *HealthCheck) CheckChanges(a, e, changes *HealthCheck) error {
 	return nil
 }
 
-func (_ *HealthCheck) RenderGCE(t *gce.GCEAPITarget, a, e, changes *HealthCheck) error {
+func (_ *HealthCheck) RenderGCE(ctx *fi.Context, t *gce.GCEAPITarget, a, e, changes *HealthCheck) error {
 	cloud := t.Cloud
 	hc := &compute.HealthCheck{
 		Name: *e.Name,
@@ -134,7 +134,7 @@ type terraformHealthCheck struct {
 	TCPHealthCheck terraformTCPBlock `cty:"tcp_health_check"`
 }
 
-func (_ *HealthCheck) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *HealthCheck) error {
+func (_ *HealthCheck) RenderTerraform(ctx *fi.Context, t *terraform.TerraformTarget, a, e, changes *HealthCheck) error {
 	tf := &terraformHealthCheck{
 		Name: *e.Name,
 		TCPHealthCheck: terraformTCPBlock{

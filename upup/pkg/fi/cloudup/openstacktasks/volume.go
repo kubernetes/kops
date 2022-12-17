@@ -121,7 +121,7 @@ func (_ *Volume) CheckChanges(a, e, changes *Volume) error {
 	return nil
 }
 
-func (_ *Volume) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Volume) error {
+func (_ *Volume) RenderOpenstack(ctx *fi.Context, t *openstack.OpenstackAPITarget, a, e, changes *Volume) error {
 	if a == nil {
 		klog.V(2).Infof("Creating PersistentVolume with Name:%q", fi.ValueOf(e.Name))
 

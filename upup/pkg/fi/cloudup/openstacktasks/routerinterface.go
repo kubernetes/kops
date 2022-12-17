@@ -119,7 +119,7 @@ func (*RouterInterface) CheckChanges(a, e, changes *RouterInterface) error {
 	return nil
 }
 
-func (_ *RouterInterface) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *RouterInterface) error {
+func (_ *RouterInterface) RenderOpenstack(ctx *fi.Context, t *openstack.OpenstackAPITarget, a, e, changes *RouterInterface) error {
 	if a == nil {
 		routerID := fi.ValueOf(e.Router.ID)
 		subnetID := fi.ValueOf(e.Subnet.ID)

@@ -83,7 +83,7 @@ func (s *VPCAmazonIPv6CIDRBlock) CheckChanges(a, e, changes *VPCAmazonIPv6CIDRBl
 	return nil
 }
 
-func (_ *VPCAmazonIPv6CIDRBlock) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPCAmazonIPv6CIDRBlock) error {
+func (_ *VPCAmazonIPv6CIDRBlock) RenderAWS(ctx *fi.Context, t *awsup.AWSAPITarget, a, e, changes *VPCAmazonIPv6CIDRBlock) error {
 	shared := aws.BoolValue(e.Shared)
 	if shared && a == nil {
 		// VPC not owned by kOps, no changes will be applied
@@ -105,7 +105,7 @@ func (_ *VPCAmazonIPv6CIDRBlock) RenderAWS(t *awsup.AWSAPITarget, a, e, changes 
 	return nil // no tags
 }
 
-func (_ *VPCAmazonIPv6CIDRBlock) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPCAmazonIPv6CIDRBlock) error {
+func (_ *VPCAmazonIPv6CIDRBlock) RenderTerraform(ctx *fi.Context, t *terraform.TerraformTarget, a, e, changes *VPCAmazonIPv6CIDRBlock) error {
 	// At the moment, this can only be done via the aws_vpc resource
 	return nil
 }

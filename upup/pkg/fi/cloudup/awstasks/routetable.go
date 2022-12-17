@@ -164,7 +164,7 @@ func (s *RouteTable) CheckChanges(a, e, changes *RouteTable) error {
 	return nil
 }
 
-func (_ *RouteTable) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *RouteTable) error {
+func (_ *RouteTable) RenderAWS(ctx *fi.Context, t *awsup.AWSAPITarget, a, e, changes *RouteTable) error {
 	if a == nil {
 		vpcID := e.VPC.ID
 		if vpcID == nil {
@@ -195,7 +195,7 @@ type terraformRouteTable struct {
 	Tags  map[string]string        `cty:"tags"`
 }
 
-func (_ *RouteTable) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *RouteTable) error {
+func (_ *RouteTable) RenderTerraform(ctx *fi.Context, t *terraform.TerraformTarget, a, e, changes *RouteTable) error {
 	// We use the role tag as a concise and stable identifier
 	tag := e.Tags[awsup.TagNameKopsRole]
 	if tag != "" {

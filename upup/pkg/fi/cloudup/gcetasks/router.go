@@ -144,7 +144,7 @@ func (*Router) CheckChanges(a, e, changes *Router) error {
 }
 
 // RenderGCE creates or updates a Router.
-func (*Router) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Router) error {
+func (*Router) RenderGCE(ctx *fi.Context, t *gce.GCEAPITarget, a, e, changes *Router) error {
 	cloud := t.Cloud
 	project := cloud.Project()
 	region := fi.ValueOf(e.Region)
@@ -206,7 +206,7 @@ type terraformRouter struct {
 }
 
 // RenderTerraform renders the Terraform config.
-func (*Router) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Router) error {
+func (*Router) RenderTerraform(ctx *fi.Context, t *terraform.TerraformTarget, a, e, changes *Router) error {
 	tr := &terraformRouter{
 		Name: e.Name,
 	}

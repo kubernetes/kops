@@ -91,7 +91,7 @@ func buildUseraddArgs(e *UserTask) []string {
 	return args
 }
 
-func (_ *UserTask) RenderLocal(t *local.LocalTarget, a, e, changes *UserTask) error {
+func (_ *UserTask) RenderLocal(ctx *fi.Context, t *local.LocalTarget, a, e, changes *UserTask) error {
 	if a == nil {
 		args := buildUseraddArgs(e)
 		klog.Infof("Creating user %q", e.Name)
@@ -129,7 +129,7 @@ func (_ *UserTask) RenderLocal(t *local.LocalTarget, a, e, changes *UserTask) er
 	return nil
 }
 
-func (_ *UserTask) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *UserTask) error {
+func (_ *UserTask) RenderCloudInit(ctx *fi.Context, t *cloudinit.CloudInitTarget, a, e, changes *UserTask) error {
 	args := buildUseraddArgs(e)
 	cmd := []string{"useradd"}
 	cmd = append(cmd, args...)

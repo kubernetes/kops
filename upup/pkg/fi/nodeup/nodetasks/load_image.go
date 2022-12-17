@@ -88,7 +88,7 @@ func (_ *LoadImageTask) CheckChanges(a, e, changes *LoadImageTask) error {
 	return nil
 }
 
-func (_ *LoadImageTask) RenderLocal(t *local.LocalTarget, a, e, changes *LoadImageTask) error {
+func (_ *LoadImageTask) RenderLocal(ctx *fi.Context, t *local.LocalTarget, a, e, changes *LoadImageTask) error {
 	runtime := e.Runtime
 	if runtime != "docker" && runtime != "containerd" {
 		return fmt.Errorf("no runtime specified")
@@ -169,6 +169,6 @@ func (_ *LoadImageTask) RenderLocal(t *local.LocalTarget, a, e, changes *LoadIma
 	return nil
 }
 
-func (_ *LoadImageTask) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *LoadImageTask) error {
+func (_ *LoadImageTask) RenderCloudInit(ctx *fi.Context, t *cloudinit.CloudInitTarget, a, e, changes *LoadImageTask) error {
 	return fmt.Errorf("LoadImageTask::RenderCloudInit not implemented")
 }

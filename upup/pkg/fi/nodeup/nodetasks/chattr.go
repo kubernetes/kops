@@ -66,7 +66,7 @@ func (s *Chattr) CheckChanges(a, e, changes *Chattr) error {
 	return nil
 }
 
-func (_ *Chattr) RenderLocal(t *local.LocalTarget, a, e, changes *Chattr) error {
+func (_ *Chattr) RenderLocal(ctx *fi.Context, t *local.LocalTarget, a, e, changes *Chattr) error {
 	return e.execute(t)
 }
 
@@ -81,6 +81,6 @@ func (e *Chattr) execute(t Executor) error {
 	return nil
 }
 
-func (_ *Chattr) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *Chattr) error {
+func (_ *Chattr) RenderCloudInit(ctx *fi.Context, t *cloudinit.CloudInitTarget, a, e, changes *Chattr) error {
 	return fmt.Errorf("Chattr::RenderCloudInit not implemented")
 }

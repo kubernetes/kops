@@ -209,7 +209,7 @@ func (s *DNSName) CheckChanges(a, e, changes *DNSName) error {
 	return nil
 }
 
-func (_ *DNSName) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSName) error {
+func (_ *DNSName) RenderAWS(ctx *fi.Context, t *awsup.AWSAPITarget, a, e, changes *DNSName) error {
 	rrs := &route53.ResourceRecordSet{
 		Name: e.ResourceName,
 		Type: e.ResourceType,
@@ -264,7 +264,7 @@ type terraformAlias struct {
 	EvaluateTargetHealth *bool                    `cty:"evaluate_target_health"`
 }
 
-func (_ *DNSName) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *DNSName) error {
+func (_ *DNSName) RenderTerraform(ctx *fi.Context, t *terraform.TerraformTarget, a, e, changes *DNSName) error {
 	tf := &terraformRoute53Record{
 		Name:   e.ResourceName,
 		ZoneID: e.Zone.TerraformLink(),

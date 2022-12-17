@@ -142,7 +142,7 @@ func findExistingRouteTableForSubnet(cloud awsup.AWSCloud, subnet *Subnet) (*ec2
 	return rt, nil
 }
 
-func (_ *RouteTableAssociation) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *RouteTableAssociation) error {
+func (_ *RouteTableAssociation) RenderAWS(ctx *fi.Context, t *awsup.AWSAPITarget, a, e, changes *RouteTableAssociation) error {
 	if a == nil {
 		// TODO: We might do better just to make the subnet the primary key here
 
@@ -191,7 +191,7 @@ type terraformRouteTableAssociation struct {
 	RouteTableID *terraformWriter.Literal `cty:"route_table_id"`
 }
 
-func (_ *RouteTableAssociation) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *RouteTableAssociation) error {
+func (_ *RouteTableAssociation) RenderTerraform(ctx *fi.Context, t *terraform.TerraformTarget, a, e, changes *RouteTableAssociation) error {
 	tf := &terraformRouteTableAssociation{
 		SubnetID:     e.Subnet.TerraformLink(),
 		RouteTableID: e.RouteTable.TerraformLink(),

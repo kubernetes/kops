@@ -91,7 +91,7 @@ func (_ *Router) CheckChanges(a, e, changes *Router) error {
 	return nil
 }
 
-func (_ *Router) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Router) error {
+func (_ *Router) RenderOpenstack(ctx *fi.Context, t *openstack.OpenstackAPITarget, a, e, changes *Router) error {
 	if a == nil {
 		klog.V(2).Infof("Creating Router with name:%q", fi.ValueOf(e.Name))
 

@@ -105,7 +105,7 @@ func (_ *EventBridgeTarget) CheckChanges(a, e, changes *EventBridgeTarget) error
 	return nil
 }
 
-func (eb *EventBridgeTarget) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *EventBridgeTarget) error {
+func (eb *EventBridgeTarget) RenderAWS(ctx *fi.Context, t *awsup.AWSAPITarget, a, e, changes *EventBridgeTarget) error {
 	if a == nil {
 		target := &eventbridge.Target{
 			Arn: eb.SQSQueue.ARN,
@@ -131,7 +131,7 @@ type terraformEventBridgeTarget struct {
 	TargetArn *terraformWriter.Literal `cty:"arn"`
 }
 
-func (_ *EventBridgeTarget) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *EventBridgeTarget) error {
+func (_ *EventBridgeTarget) RenderTerraform(ctx *fi.Context, t *terraform.TerraformTarget, a, e, changes *EventBridgeTarget) error {
 	tf := &terraformEventBridgeTarget{
 		RuleName:  e.Rule.TerraformLink(),
 		TargetArn: e.SQSQueue.TerraformLink(),

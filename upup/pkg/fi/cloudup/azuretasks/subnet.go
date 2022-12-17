@@ -102,7 +102,7 @@ func (*Subnet) CheckChanges(a, e, changes *Subnet) error {
 }
 
 // RenderAzure creates or updates a subnet.
-func (*Subnet) RenderAzure(t *azure.AzureAPITarget, a, e, changes *Subnet) error {
+func (*Subnet) RenderAzure(ctx *fi.Context, t *azure.AzureAPITarget, a, e, changes *Subnet) error {
 	if a == nil {
 		klog.Infof("Creating a new Subnet with name: %s", fi.ValueOf(e.Name))
 	} else {

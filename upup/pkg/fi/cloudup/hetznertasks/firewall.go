@@ -111,7 +111,7 @@ func (_ *Firewall) CheckChanges(a, e, changes *Firewall) error {
 	return nil
 }
 
-func (_ *Firewall) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *Firewall) error {
+func (_ *Firewall) RenderHetzer(ctx *fi.Context, t *hetzner.HetznerAPITarget, a, e, changes *Firewall) error {
 	client := t.Cloud.FirewallClient()
 	if a == nil {
 		opts := hcloud.FirewallCreateOpts{
@@ -225,7 +225,7 @@ type terraformFirewallRule struct {
 	Port      *string   `cty:"port"`
 }
 
-func (_ *Firewall) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Firewall) error {
+func (_ *Firewall) RenderTerraform(ctx *fi.Context, t *terraform.TerraformTarget, a, e, changes *Firewall) error {
 	{
 		tf := &terraformFirewall{
 			Name: e.Name,

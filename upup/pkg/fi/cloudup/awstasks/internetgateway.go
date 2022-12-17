@@ -135,7 +135,7 @@ func (s *InternetGateway) CheckChanges(a, e, changes *InternetGateway) error {
 	return nil
 }
 
-func (_ *InternetGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *InternetGateway) error {
+func (_ *InternetGateway) RenderAWS(ctx *fi.Context, t *awsup.AWSAPITarget, a, e, changes *InternetGateway) error {
 	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Verify the InternetGateway was found and matches our required settings
@@ -183,7 +183,7 @@ type terraformInternetGateway struct {
 	Tags  map[string]string        `cty:"tags"`
 }
 
-func (_ *InternetGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *InternetGateway) error {
+func (_ *InternetGateway) RenderTerraform(ctx *fi.Context, t *terraform.TerraformTarget, a, e, changes *InternetGateway) error {
 	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Not terraform owned / managed

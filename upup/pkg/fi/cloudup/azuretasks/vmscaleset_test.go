@@ -26,6 +26,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/go-autorest/autorest/to"
+	"k8s.io/kops/pkg/testutils/testcontext"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 )
@@ -91,11 +92,17 @@ func newTestVMScaleSet() *VMScaleSet {
 }
 
 func TestVMScaleSetRenderAzure(t *testing.T) {
+	ctx := testcontext.ContextForTest(t)
 	cloud := NewMockAzureCloud("eastus")
 	apiTarget := azure.NewAzureAPITarget(cloud)
+	context, err := fi.NewContext(ctx, apiTarget, nil, cloud, nil, nil, nil, false, nil)
+	if err != nil {
+		t.Fatalf("error from NewContext: %v", err)
+	}
+
 	vmss := &VMScaleSet{}
 	expected := newTestVMScaleSet()
-	if err := vmss.RenderAzure(apiTarget, nil, expected, nil); err != nil {
+	if err := vmss.RenderAzure(context, apiTarget, nil, expected, nil); err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
 
