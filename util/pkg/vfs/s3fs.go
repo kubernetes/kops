@@ -510,11 +510,13 @@ func (p *S3Path) IsBucketPublic(ctx context.Context) (bool, error) {
 		return false, err
 	}
 
-	result, err := client.GetBucketPolicyStatusWithContext(ctx, &s3.GetBucketPolicyStatusInput{})
-	if err != nil {
+	result, err := client.GetBucketPolicyStatusWithContext(ctx, &s3.GetBucketPolicyStatusInput{
+		Bucket: aws.String(p.bucket),
+	})
+	if err != nil && AWSErrorCode(err) != "NoSuchBucketPolicy" {
 		return false, fmt.Errorf("from AWS S3 GetBucketPolicyStatusWithContext: %w", err)
 	}
-	if aws.BoolValue(result.PolicyStatus.IsPublic) {
+	if err == nil && aws.BoolValue(result.PolicyStatus.IsPublic) {
 		return true, nil
 	}
 	return false, nil
