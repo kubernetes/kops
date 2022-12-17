@@ -57,7 +57,7 @@ func TestEditInstanceGroup(t *testing.T) {
 	if err != nil {
 		t.Fatalf("could not create cluster: %v", err)
 	}
-	_, err = clientSet.InstanceGroupsFor(cluster).Create(ctx, &nodes, v1.CreateOptions{})
+	_, err = clientSet.InstanceGroupsFor(ctx, cluster).Create(ctx, &nodes, v1.CreateOptions{})
 	if err != nil {
 		t.Fatalf("could not create instance group: %v", err)
 	}
@@ -74,7 +74,7 @@ func TestEditInstanceGroup(t *testing.T) {
 		}
 	}
 
-	storedIG, err := clientSet.InstanceGroupsFor(cluster).Get(ctx, "nodes", v1.GetOptions{})
+	storedIG, err := clientSet.InstanceGroupsFor(ctx, cluster).Get(ctx, "nodes", v1.GetOptions{})
 	if err != nil {
 		t.Fatalf("could not get instance group: %v", err)
 	}

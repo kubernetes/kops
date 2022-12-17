@@ -126,7 +126,7 @@ func RunValidateCluster(ctx context.Context, f *util.Factory, out io.Writer, opt
 		return nil, err
 	}
 
-	list, err := clientSet.InstanceGroupsFor(cluster).List(ctx, metav1.ListOptions{})
+	list, err := clientSet.InstanceGroupsFor(ctx, cluster).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("cannot get InstanceGroups for %q: %v", cluster.ObjectMeta.Name, err)
 	}

@@ -103,7 +103,7 @@ func RunDeleteSecret(ctx context.Context, f *util.Factory, out io.Writer, option
 		return err
 	}
 
-	secretStore, err := clientset.SecretStore(cluster)
+	secretStore, err := clientset.SecretStore(ctx, cluster)
 	if err != nil {
 		return err
 	}
@@ -129,7 +129,7 @@ func completeSecretNames(f commandutils.Factory) func(cmd *cobra.Command, args [
 			return completions, directive
 		}
 
-		secretStore, err := clientSet.SecretStore(cluster)
+		secretStore, err := clientSet.SecretStore(ctx, cluster)
 		if err != nil {
 			return commandutils.CompletionError("constructing secret store", err)
 		}

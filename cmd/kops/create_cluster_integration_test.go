@@ -301,7 +301,7 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 
 	// Compare instance groups
 
-	instanceGroups, err := clientset.InstanceGroupsFor(&clusters.Items[0]).List(ctx, metav1.ListOptions{})
+	instanceGroups, err := clientset.InstanceGroupsFor(ctx, &clusters.Items[0]).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		t.Fatalf("error listing instance groups: %v", err)
 	}
@@ -320,7 +320,7 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 	}
 
 	// Compare additional objects
-	addons, err := clientset.AddonsFor(&clusters.Items[0]).List()
+	addons, err := clientset.AddonsFor(ctx, &clusters.Items[0]).List()
 	if err != nil {
 		t.Fatalf("error listing addons: %v", err)
 	}

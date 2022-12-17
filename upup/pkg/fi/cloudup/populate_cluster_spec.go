@@ -193,7 +193,7 @@ func (c *populateClusterSpec) run(ctx context.Context, clientset simple.Clientse
 		}
 	}
 
-	secretStore, err := clientset.SecretStore(cluster)
+	secretStore, err := clientset.SecretStore(ctx, cluster)
 	if err != nil {
 		return err
 	}

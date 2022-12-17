@@ -92,7 +92,7 @@ func up(ctx context.Context) error {
 			Role:    api.InstanceGroupRoleControlPlane,
 			Subnets: masterZones,
 		}
-		_, err := clientset.InstanceGroupsFor(cluster).Create(ctx, ig, metav1.CreateOptions{})
+		_, err := clientset.InstanceGroupsFor(ctx, cluster).Create(ctx, ig, metav1.CreateOptions{})
 		if err != nil {
 			return err
 		}
@@ -107,7 +107,7 @@ func up(ctx context.Context) error {
 			Subnets: nodeZones,
 		}
 
-		_, err := clientset.InstanceGroupsFor(cluster).Create(ctx, ig, metav1.CreateOptions{})
+		_, err := clientset.InstanceGroupsFor(ctx, cluster).Create(ctx, ig, metav1.CreateOptions{})
 		if err != nil {
 			return err
 		}

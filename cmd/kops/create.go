@@ -169,7 +169,7 @@ func RunCreate(ctx context.Context, f *util.Factory, out io.Writer, c *CreateOpt
 					return fmt.Errorf("cluster %q not found", clusterName)
 				}
 
-				_, err = clientset.InstanceGroupsFor(cluster).Create(ctx, v, metav1.CreateOptions{})
+				_, err = clientset.InstanceGroupsFor(ctx, cluster).Create(ctx, v, metav1.CreateOptions{})
 				if err != nil {
 					if apierrors.IsAlreadyExists(err) {
 						return fmt.Errorf("instanceGroup %q already exists", v.ObjectMeta.Name)
@@ -225,7 +225,7 @@ func RunCreate(ctx context.Context, f *util.Factory, out io.Writer, c *CreateOpt
 		}
 		cluster := clusters[0]
 
-		addonsClient := clientset.AddonsFor(cluster)
+		addonsClient := clientset.AddonsFor(ctx, cluster)
 
 		if err := addonsClient.Replace(addons); err != nil {
 			return fmt.Errorf("error writing additional objects: %v", err)

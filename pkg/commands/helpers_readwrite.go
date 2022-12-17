@@ -90,7 +90,7 @@ func UpdateInstanceGroup(ctx context.Context, clientset simple.Clientset, cluste
 	}
 
 	// Validation was successful so commit the changed instance group.
-	_, err = clientset.InstanceGroupsFor(cluster).Update(ctx, instanceGroupToUpdate, metav1.UpdateOptions{})
+	_, err = clientset.InstanceGroupsFor(ctx, cluster).Update(ctx, instanceGroupToUpdate, metav1.UpdateOptions{})
 	if err != nil {
 		return err
 	}
@@ -100,7 +100,7 @@ func UpdateInstanceGroup(ctx context.Context, clientset simple.Clientset, cluste
 
 // ReadAllInstanceGroups reads all the instance groups for the cluster
 func ReadAllInstanceGroups(ctx context.Context, clientset simple.Clientset, cluster *kops.Cluster) ([]*kops.InstanceGroup, error) {
-	list, err := clientset.InstanceGroupsFor(cluster).List(ctx, metav1.ListOptions{})
+	list, err := clientset.InstanceGroupsFor(ctx, cluster).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}

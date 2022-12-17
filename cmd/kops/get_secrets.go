@@ -119,7 +119,7 @@ func RunGetSecrets(ctx context.Context, f *util.Factory, out io.Writer, options 
 	if err != nil {
 		return err
 	}
-	secretStore, err := clientset.SecretStore(cluster)
+	secretStore, err := clientset.SecretStore(ctx, cluster)
 	if err != nil {
 		return err
 	}

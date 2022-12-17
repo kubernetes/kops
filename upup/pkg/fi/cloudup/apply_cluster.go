@@ -169,7 +169,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		}
 	}
 	if c.InstanceGroups == nil {
-		list, err := c.Clientset.InstanceGroupsFor(c.Cluster).List(ctx, metav1.ListOptions{})
+		list, err := c.Clientset.InstanceGroupsFor(ctx, c.Cluster).List(ctx, metav1.ListOptions{})
 		if err != nil {
 			return err
 		}
@@ -181,7 +181,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	}
 
 	if c.AdditionalObjects == nil {
-		additionalObjects, err := c.Clientset.AddonsFor(c.Cluster).List()
+		additionalObjects, err := c.Clientset.AddonsFor(ctx, c.Cluster).List()
 		if err != nil {
 			return err
 		}
@@ -319,12 +319,12 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		return err
 	}
 
-	secretStore, err := c.Clientset.SecretStore(cluster)
+	secretStore, err := c.Clientset.SecretStore(ctx, cluster)
 	if err != nil {
 		return err
 	}
 
-	addonsClient := c.Clientset.AddonsFor(cluster)
+	addonsClient := c.Clientset.AddonsFor(ctx, cluster)
 	addons, err := addonsClient.List()
 	if err != nil {
 		return fmt.Errorf("error fetching addons: %v", err)

@@ -120,8 +120,10 @@ func TestRollingUpdateDisabledSurgeOS(t *testing.T) {
 
 func makeGroupOS(t *testing.T, groups map[string]*cloudinstances.CloudInstanceGroup, igList *kopsapi.InstanceGroupList,
 	c *RollingUpdateCluster, subnet string, role kopsapi.InstanceGroupRole, count int, needUpdate int) {
+	ctx := testutils.ContextForTest(t)
+
 	cloud := c.Cloud.(*openstack.MockCloud)
-	igif := c.Clientset.InstanceGroupsFor(c.Cluster)
+	igif := c.Clientset.InstanceGroupsFor(ctx, c.Cluster)
 	fakeClient := c.K8sClient.(*fake.Clientset)
 
 	var newIg kopsapi.InstanceGroup

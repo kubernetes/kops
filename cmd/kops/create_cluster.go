@@ -536,7 +536,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		c.NetworkID = c.OpenstackNetworkID
 	}
 
-	clusterResult, err := cloudup.NewCluster(&c.NewClusterOptions, clientset)
+	clusterResult, err := cloudup.NewCluster(ctx, &c.NewClusterOptions, clientset)
 	if err != nil {
 		return err
 	}

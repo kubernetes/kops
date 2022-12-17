@@ -164,7 +164,7 @@ func RunReplace(ctx context.Context, f *util.Factory, out io.Writer, c *ReplaceO
 				}
 				// check if the instancegroup exists already
 				igName := v.ObjectMeta.Name
-				ig, err := clientset.InstanceGroupsFor(cluster).Get(ctx, igName, metav1.GetOptions{})
+				ig, err := clientset.InstanceGroupsFor(ctx, cluster).Get(ctx, igName, metav1.GetOptions{})
 				if err != nil {
 					if errors.IsNotFound(err) {
 						if !c.Force {
@@ -177,12 +177,12 @@ func RunReplace(ctx context.Context, f *util.Factory, out io.Writer, c *ReplaceO
 				switch ig {
 				case nil:
 					klog.Infof("instanceGroup: %v was not found, creating resource now", igName)
-					_, err = clientset.InstanceGroupsFor(cluster).Create(ctx, v, metav1.CreateOptions{})
+					_, err = clientset.InstanceGroupsFor(ctx, cluster).Create(ctx, v, metav1.CreateOptions{})
 					if err != nil {
 						return fmt.Errorf("error creating instanceGroup: %v", err)
 					}
 				default:
-					_, err = clientset.InstanceGroupsFor(cluster).Update(ctx, v, metav1.UpdateOptions{})
+					_, err = clientset.InstanceGroupsFor(ctx, cluster).Update(ctx, v, metav1.UpdateOptions{})
 					if err != nil {
 						return fmt.Errorf("error replacing instanceGroup: %v", err)
 					}

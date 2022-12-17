@@ -344,7 +344,7 @@ func RunToolboxInstanceSelector(ctx context.Context, f commandutils.Factory, out
 	}
 
 	for _, ig := range newInstanceGroups {
-		_, err = clientset.InstanceGroupsFor(cluster).Create(ctx, ig, metav1.CreateOptions{})
+		_, err = clientset.InstanceGroupsFor(ctx, cluster).Create(ctx, ig, metav1.CreateOptions{})
 		if err != nil {
 			return fmt.Errorf("error storing InstanceGroup: %v", err)
 		}

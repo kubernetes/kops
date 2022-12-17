@@ -266,7 +266,7 @@ func RunUpgradeCluster(ctx context.Context, f *util.Factory, out io.Writer, opti
 	}
 
 	for _, g := range instanceGroups {
-		_, err := clientset.InstanceGroupsFor(cluster).Update(ctx, g, metav1.UpdateOptions{})
+		_, err := clientset.InstanceGroupsFor(ctx, cluster).Update(ctx, g, metav1.UpdateOptions{})
 		if err != nil {
 			return fmt.Errorf("error writing InstanceGroup %q: %v", g.ObjectMeta.Name, err)
 		}

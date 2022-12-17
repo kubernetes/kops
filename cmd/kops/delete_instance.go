@@ -173,7 +173,7 @@ func RunDeleteInstance(ctx context.Context, f *util.Factory, out io.Writer, opti
 		}
 	}
 
-	list, err := clientSet.InstanceGroupsFor(cluster).List(ctx, metav1.ListOptions{})
+	list, err := clientSet.InstanceGroupsFor(ctx, cluster).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -329,7 +329,7 @@ func completeInstanceOrNode(f commandutils.Factory, options *DeleteInstanceOptio
 			}
 		}
 
-		list, err := clientSet.InstanceGroupsFor(cluster).List(ctx, metav1.ListOptions{})
+		list, err := clientSet.InstanceGroupsFor(ctx, cluster).List(ctx, metav1.ListOptions{})
 		if err != nil {
 			return commandutils.CompletionError("listing instance groups", err)
 		}

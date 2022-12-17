@@ -164,7 +164,7 @@ func RunCreateInstanceGroup(ctx context.Context, f *util.Factory, out io.Writer,
 		klog.Warningf("%v", err)
 	}
 
-	existing, err := clientset.InstanceGroupsFor(cluster).Get(ctx, options.InstanceGroupName, metav1.GetOptions{})
+	existing, err := clientset.InstanceGroupsFor(ctx, cluster).Get(ctx, options.InstanceGroupName, metav1.GetOptions{})
 	if err != nil {
 		// We expect a NotFound error when creating the instance group
 		if !errors.IsNotFound(err) {
@@ -267,7 +267,7 @@ func RunCreateInstanceGroup(ctx context.Context, f *util.Factory, out io.Writer,
 		ig = group
 	}
 
-	_, err = clientset.InstanceGroupsFor(cluster).Create(ctx, ig, metav1.CreateOptions{})
+	_, err = clientset.InstanceGroupsFor(ctx, cluster).Create(ctx, ig, metav1.CreateOptions{})
 	if err != nil {
 		return fmt.Errorf("error storing InstanceGroup: %v", err)
 	}

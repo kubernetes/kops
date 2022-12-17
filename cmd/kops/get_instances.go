@@ -110,7 +110,7 @@ func RunGetInstances(ctx context.Context, f *util.Factory, out io.Writer, option
 		klog.Warningf("cannot list node names. Kubernetes API unavailable: %v", err)
 	}
 
-	igList, err := clientset.InstanceGroupsFor(cluster).List(ctx, metav1.ListOptions{})
+	igList, err := clientset.InstanceGroupsFor(ctx, cluster).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return err
 	}

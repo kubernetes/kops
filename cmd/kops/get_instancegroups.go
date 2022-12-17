@@ -103,7 +103,7 @@ func RunGetInstanceGroups(ctx context.Context, f commandutils.Factory, out io.Wr
 		return fmt.Errorf("cluster %q was not found", options.ClusterName)
 	}
 
-	list, err := clientset.InstanceGroupsFor(cluster).List(ctx, metav1.ListOptions{})
+	list, err := clientset.InstanceGroupsFor(ctx, cluster).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return err
 	}

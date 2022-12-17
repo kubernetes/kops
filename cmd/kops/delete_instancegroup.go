@@ -137,7 +137,7 @@ func RunDeleteInstanceGroup(ctx context.Context, f *util.Factory, out io.Writer,
 		return err
 	}
 
-	group, err := clientset.InstanceGroupsFor(cluster).Get(ctx, groupName, metav1.GetOptions{})
+	group, err := clientset.InstanceGroupsFor(ctx, cluster).Get(ctx, groupName, metav1.GetOptions{})
 	if err != nil {
 		return fmt.Errorf("error reading InstanceGroup %q: %v", groupName, err)
 	}
@@ -148,7 +148,7 @@ func RunDeleteInstanceGroup(ctx context.Context, f *util.Factory, out io.Writer,
 	fmt.Fprintf(out, "InstanceGroup %q found for deletion\n", groupName)
 
 	if group.Spec.Role == kops.InstanceGroupRoleControlPlane {
-		groups, err := clientset.InstanceGroupsFor(cluster).List(ctx, metav1.ListOptions{})
+		groups, err := clientset.InstanceGroupsFor(ctx, cluster).List(ctx, metav1.ListOptions{})
 		if err != nil {
 			return fmt.Errorf("listing InstanceGroups: %v", err)
 		}

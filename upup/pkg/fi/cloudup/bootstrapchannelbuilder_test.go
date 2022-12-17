@@ -125,7 +125,7 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 	}
 	clientset := vfsclientset.NewVFSClientset(basePath)
 
-	secretStore, err := clientset.SecretStore(cluster)
+	secretStore, err := clientset.SecretStore(ctx, cluster)
 	if err != nil {
 		t.Error(err)
 	}

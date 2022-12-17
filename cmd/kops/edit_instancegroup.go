@@ -140,7 +140,7 @@ func RunEditInstanceGroup(ctx context.Context, f *util.Factory, out io.Writer, o
 		return err
 	}
 
-	oldGroup, err := clientset.InstanceGroupsFor(cluster).Get(ctx, groupName, metav1.GetOptions{})
+	oldGroup, err := clientset.InstanceGroupsFor(ctx, cluster).Get(ctx, groupName, metav1.GetOptions{})
 	if err != nil {
 		return fmt.Errorf("error reading InstanceGroup %q: %v", groupName, err)
 	}
@@ -310,6 +310,6 @@ func updateInstanceGroup(ctx context.Context, clientset simple.Clientset, channe
 	}
 
 	// Note we perform as much validation as we can, before writing a bad config
-	_, err = clientset.InstanceGroupsFor(cluster).Update(ctx, newGroup, metav1.UpdateOptions{})
+	_, err = clientset.InstanceGroupsFor(ctx, cluster).Update(ctx, newGroup, metav1.UpdateOptions{})
 	return "", err
 }

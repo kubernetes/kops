@@ -264,7 +264,7 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 		}
 	}
 
-	list, err := clientset.InstanceGroupsFor(cluster).List(ctx, metav1.ListOptions{})
+	list, err := clientset.InstanceGroupsFor(ctx, cluster).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -467,7 +467,7 @@ func completeInstanceGroup(f commandutils.Factory, selectedInstanceGroups *[]str
 			return completions, directive
 		}
 
-		list, err := clientSet.InstanceGroupsFor(cluster).List(ctx, metav1.ListOptions{})
+		list, err := clientSet.InstanceGroupsFor(ctx, cluster).List(ctx, metav1.ListOptions{})
 		if err != nil {
 			return commandutils.CompletionError("listing instance groups", err)
 		}

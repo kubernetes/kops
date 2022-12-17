@@ -47,14 +47,14 @@ func CreateClusterConfig(ctx context.Context, clientset simple.Clientset, cluste
 	}
 
 	for _, ig := range groups {
-		_, err = clientset.InstanceGroupsFor(cluster).Create(ctx, ig, metav1.CreateOptions{})
+		_, err = clientset.InstanceGroupsFor(ctx, cluster).Create(ctx, ig, metav1.CreateOptions{})
 		if err != nil {
 			return fmt.Errorf("error writing updated instancegroup configuration: %v", err)
 		}
 	}
 
 	{
-		addonsClient := clientset.AddonsFor(cluster)
+		addonsClient := clientset.AddonsFor(ctx, cluster)
 
 		if err := addonsClient.Replace(addons); err != nil {
 			return fmt.Errorf("error writing updated addon configuration: %v", err)

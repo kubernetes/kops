@@ -87,7 +87,7 @@ func RunGetAll(ctx context.Context, f commandutils.Factory, out io.Writer, optio
 		return fmt.Errorf("no cluster found")
 	}
 
-	igList, err := client.InstanceGroupsFor(cluster).List(ctx, metav1.ListOptions{})
+	igList, err := client.InstanceGroupsFor(ctx, cluster).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -103,7 +103,7 @@ func RunGetAll(ctx context.Context, f commandutils.Factory, out io.Writer, optio
 
 	var addonObjects []*unstructured.Unstructured
 	{
-		addons, err := client.AddonsFor(cluster).List()
+		addons, err := client.AddonsFor(ctx, cluster).List()
 		if err != nil {
 			return err
 		}

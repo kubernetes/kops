@@ -49,7 +49,7 @@ func (c *RESTClientset) GetCluster(ctx context.Context, name string) (*kops.Clus
 }
 
 // AddonsFor fetches the AddonsClient for the cluster
-func (c *RESTClientset) AddonsFor(cluster *kops.Cluster) simple.AddonsClient {
+func (c *RESTClientset) AddonsFor(ctx context.Context, cluster *kops.Cluster) simple.AddonsClient {
 	// We should manage these directly in the cluster
 	klog.Fatalf("AddonsFor not implemented for RESTClientset")
 	return nil
@@ -77,7 +77,7 @@ func (c *RESTClientset) UpdateCluster(ctx context.Context, cluster *kops.Cluster
 }
 
 // ConfigBaseFor implements the ConfigBaseFor method of Clientset for a kubernetes-API state store
-func (c *RESTClientset) ConfigBaseFor(cluster *kops.Cluster) (vfs.Path, error) {
+func (c *RESTClientset) ConfigBaseFor(ctx context.Context, cluster *kops.Cluster) (vfs.Path, error) {
 	if cluster.Spec.ConfigBase != "" {
 		return vfs.Context.BuildVfsPath(cluster.Spec.ConfigBase)
 	}
@@ -92,12 +92,12 @@ func (c *RESTClientset) ListClusters(ctx context.Context, options metav1.ListOpt
 }
 
 // InstanceGroupsFor implements the InstanceGroupsFor method of Clientset for a kubernetes-API state store
-func (c *RESTClientset) InstanceGroupsFor(cluster *kops.Cluster) kopsinternalversion.InstanceGroupInterface {
+func (c *RESTClientset) InstanceGroupsFor(ctx context.Context, cluster *kops.Cluster) kopsinternalversion.InstanceGroupInterface {
 	namespace := restNamespaceForClusterName(cluster.Name)
 	return c.KopsClient.InstanceGroups(namespace)
 }
 
-func (c *RESTClientset) SecretStore(cluster *kops.Cluster) (fi.SecretStore, error) {
+func (c *RESTClientset) SecretStore(ctx context.Context, cluster *kops.Cluster) (fi.SecretStore, error) {
 	namespace := restNamespaceForClusterName(cluster.Name)
 	return secrets.NewClientsetSecretStore(cluster, c.KopsClient, namespace), nil
 }
