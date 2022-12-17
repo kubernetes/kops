@@ -77,7 +77,7 @@ func (b *IssuerDiscoveryModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		return err
 	}
 
-	publicFileACL := fi.PtrTo(true)
+	var publicFileACL *bool
 
 	discoveryStorePath := b.Cluster.Spec.ServiceAccountIssuerDiscovery.DiscoveryStore
 	discoveryStore, err := vfs.Context.BuildVfsPath(discoveryStorePath)
@@ -92,9 +92,8 @@ func (b *IssuerDiscoveryModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			return fmt.Errorf("checking if bucket was public: %w", err)
 		}
 		if !isPublic {
-			klog.Infof("serviceAccountIssuers bucket %q is not public, will use object ACL", discoveryStore.Bucket())
-		} else {
-			publicFileACL = nil
+			klog.Infof("serviceAccountIssuers bucket %q is not public; will use object ACL", discoveryStore.Bucket())
+			publicFileACL = fi.PtrTo(true)
 		}
 
 	case *vfs.MemFSPath:
