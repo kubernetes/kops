@@ -200,7 +200,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 				}
 			}
 
-			return RunCreateCluster(context.TODO(), f, out, options)
+			return RunCreateCluster(cmd.Context(), f, out, options)
 		},
 	}
 

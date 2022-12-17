@@ -73,7 +73,7 @@ func NewCmdReplace(f *util.Factory, out io.Writer) *cobra.Command {
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cobra.NoFileCompletions,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RunReplace(context.TODO(), f, out, options)
+			return RunReplace(cmd.Context(), f, out, options)
 		},
 	}
 	cmd.Flags().StringSliceVarP(&options.Filenames, "filename", "f", options.Filenames, "A list of one or more files separated by a comma.")

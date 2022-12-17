@@ -89,10 +89,10 @@ var rootCommand = RootCmd{
 	},
 }
 
-func Execute() {
+func Execute(ctx context.Context) {
 	goflag.Set("logtostderr", "true")
 	goflag.CommandLine.Parse([]string{})
-	if err := rootCommand.cobraCommand.Execute(); err != nil {
+	if err := rootCommand.cobraCommand.ExecuteContext(ctx); err != nil {
 		os.Exit(1)
 	}
 }

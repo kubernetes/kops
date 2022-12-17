@@ -128,10 +128,10 @@ func NewCmdCreateKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 			return nil
 		},
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			return completeCreateKeypair(f, options, args, toComplete)
+			return completeCreateKeypair(cmd.Context(), f, options, args, toComplete)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RunCreateKeypair(context.TODO(), f, out, options)
+			return RunCreateKeypair(cmd.Context(), f, out, options)
 		},
 	}
 
@@ -304,16 +304,15 @@ func completeKeyset(ctx context.Context, cluster *kopsapi.Cluster, clientSet sim
 	return keyset, keyStore, nil, cobra.ShellCompDirectiveNoFileComp
 }
 
-func completeCreateKeypair(f commandutils.Factory, options *CreateKeypairOptions, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func completeCreateKeypair(ctx context.Context, f commandutils.Factory, options *CreateKeypairOptions, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	commandutils.ConfigureKlogForCompletion()
-	ctx := context.TODO()
 
 	cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, f, nil)
 	if cluster == nil {
 		return completions, directive
 	}
 
-	keyset, _, completions, directive := completeKeyset(cluster, clientSet, args, rotatableKeysetFilter)
+	keyset, _, completions, directive := completeKeyset(ctx, cluster, clientSet, args, rotatableKeysetFilter)
 	if keyset == nil {
 		return completions, directive
 	}

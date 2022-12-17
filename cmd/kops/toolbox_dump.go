@@ -83,7 +83,7 @@ func NewCmdToolboxDump(f commandutils.Factory, out io.Writer) *cobra.Command {
 		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
 		ValidArgsFunction: commandutils.CompleteClusterName(f, true, false),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RunToolboxDump(context.TODO(), f, out, options)
+			return RunToolboxDump(cmd.Context(), f, out, options)
 		},
 	}
 
