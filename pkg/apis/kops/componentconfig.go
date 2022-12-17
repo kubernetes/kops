@@ -924,15 +924,18 @@ type NodeTerminationHandlerConfig struct {
 	// Default: true
 	Enabled *bool `json:"enabled,omitempty"`
 	// EnableSpotInterruptionDraining makes node termination handler drain nodes when spot interruption termination notice is received.
+	// Cannot be disabled in queue-processor mode.
 	// Default: true
 	EnableSpotInterruptionDraining *bool `json:"enableSpotInterruptionDraining,omitempty"`
 	// EnableScheduledEventDraining makes node termination handler drain nodes before the maintenance window starts for an EC2 instance scheduled event.
+	// Cannot be disabled in queue-processor mode.
 	// Default: true
 	EnableScheduledEventDraining *bool `json:"enableScheduledEventDraining,omitempty"`
-	// EnableRebalanceMonitoring makes node termination handler cordon nodes when the rebalance recommendation notice is received
+	// EnableRebalanceMonitoring makes node termination handler cordon nodes when the rebalance recommendation notice is received.
+	// In queue-processor mode, cannot be enabled without rebalance draining.
 	// Default: false
 	EnableRebalanceMonitoring *bool `json:"enableRebalanceMonitoring,omitempty"`
-	// EnableRebalanceDraining makes node termination handler drain nodes when the rebalance recommendation notice is received
+	// EnableRebalanceDraining makes node termination handler drain nodes when the rebalance recommendation notice is received.
 	// Default: false
 	EnableRebalanceDraining *bool `json:"enableRebalanceDraining,omitempty"`
 
