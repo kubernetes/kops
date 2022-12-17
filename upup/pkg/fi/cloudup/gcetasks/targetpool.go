@@ -78,7 +78,7 @@ func (e *TargetPool) URL(cloud gce.GCECloud) string {
 	return fmt.Sprintf("https://www.googleapis.com/compute/v1/projects/%s/regions/%s/targetPools/%s", cloud.Project(), cloud.Region(), name)
 }
 
-func (_ *TargetPool) RenderGCE(t *gce.GCEAPITarget, a, e, changes *TargetPool) error {
+func (_ *TargetPool) RenderGCE(ctx *fi.CloudupContext, t *gce.GCEAPITarget, a, e, changes *TargetPool) error {
 	name := fi.ValueOf(e.Name)
 
 	o := &compute.TargetPool{
@@ -111,7 +111,7 @@ type terraformTargetPool struct {
 	SessionAffinity string   `cty:"session_affinity"`
 }
 
-func (_ *TargetPool) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *TargetPool) error {
+func (_ *TargetPool) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *TargetPool) error {
 	name := fi.ValueOf(e.Name)
 
 	tf := &terraformTargetPool{

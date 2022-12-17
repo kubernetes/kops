@@ -343,7 +343,7 @@ func (s *Ocean) CheckChanges(a, e, changes *Ocean) error {
 	return nil
 }
 
-func (o *Ocean) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ocean) error {
+func (o *Ocean) RenderAWS(ctx *fi.CloudupContext, t *awsup.AWSAPITarget, a, e, changes *Ocean) error {
 	return o.createOrUpdate(t.Cloud, a, e, changes)
 }
 
@@ -1052,7 +1052,7 @@ type terraformOcean struct {
 	SecurityGroups           []*terraformWriter.Literal `cty:"security_groups"`
 }
 
-func (_ *Ocean) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Ocean) error {
+func (_ *Ocean) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *Ocean) error {
 	cloud := t.Cloud.(awsup.AWSCloud)
 
 	tf := &terraformOcean{

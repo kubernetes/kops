@@ -84,7 +84,7 @@ func (s *VPCDHCPOptionsAssociation) CheckChanges(a, e, changes *VPCDHCPOptionsAs
 	return nil
 }
 
-func (_ *VPCDHCPOptionsAssociation) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPCDHCPOptionsAssociation) error {
+func (_ *VPCDHCPOptionsAssociation) RenderAWS(ctx *fi.CloudupContext, t *awsup.AWSAPITarget, a, e, changes *VPCDHCPOptionsAssociation) error {
 	if changes.DHCPOptions != nil {
 		klog.V(2).Infof("calling EC2 AssociateDhcpOptions")
 		request := &ec2.AssociateDhcpOptionsInput{
@@ -106,7 +106,7 @@ type terraformVPCDHCPOptionsAssociation struct {
 	DHCPOptionsID *terraformWriter.Literal `cty:"dhcp_options_id"`
 }
 
-func (_ *VPCDHCPOptionsAssociation) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPCDHCPOptionsAssociation) error {
+func (_ *VPCDHCPOptionsAssociation) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *VPCDHCPOptionsAssociation) error {
 	tf := &terraformVPCDHCPOptionsAssociation{
 		VPCID:         e.VPC.TerraformLink(),
 		DHCPOptionsID: e.DHCPOptions.TerraformLink(),

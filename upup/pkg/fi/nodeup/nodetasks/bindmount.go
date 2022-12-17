@@ -184,7 +184,7 @@ type Executor interface {
 	CombinedOutput(args []string) ([]byte, error)
 }
 
-func (_ *BindMount) RenderLocal(t *local.LocalTarget, a, e, changes *BindMount) error {
+func (_ *BindMount) RenderLocal(c *fi.NodeupContext, t *local.LocalTarget, a, e, changes *BindMount) error {
 	return e.execute(t)
 }
 

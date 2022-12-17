@@ -168,7 +168,7 @@ func (_ *IAMRolePolicy) ShouldCreate(a, e, changes *IAMRolePolicy) (bool, error)
 	return true, nil
 }
 
-func (_ *IAMRolePolicy) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRolePolicy) error {
+func (_ *IAMRolePolicy) RenderAWS(ctx *fi.CloudupContext, t *awsup.AWSAPITarget, a, e, changes *IAMRolePolicy) error {
 	policy, err := e.policyDocumentString()
 	if err != nil {
 		return fmt.Errorf("error rendering PolicyDocument: %v", err)
@@ -310,7 +310,7 @@ type terraformIAMRolePolicy struct {
 	PolicyArn      *string                  `cty:"policy_arn"`
 }
 
-func (_ *IAMRolePolicy) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IAMRolePolicy) error {
+func (_ *IAMRolePolicy) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *IAMRolePolicy) error {
 	if e.ExternalPolicies != nil && len(*e.ExternalPolicies) > 0 {
 		for _, policy := range *e.ExternalPolicies {
 			// create a hash of the arn

@@ -86,7 +86,7 @@ func (_ *StorageBucketAcl) CheckChanges(a, e, changes *StorageBucketAcl) error {
 	return nil
 }
 
-func (_ *StorageBucketAcl) RenderGCE(t *gce.GCEAPITarget, a, e, changes *StorageBucketAcl) error {
+func (_ *StorageBucketAcl) RenderGCE(ctx *fi.CloudupContext, t *gce.GCEAPITarget, a, e, changes *StorageBucketAcl) error {
 	bucket := fi.ValueOf(e.Bucket)
 	entity := fi.ValueOf(e.Entity)
 	role := fi.ValueOf(e.Role)
@@ -121,7 +121,7 @@ type terraformStorageBucketAcl struct {
 	RoleEntity []string `cty:"role_entity"`
 }
 
-func (_ *StorageBucketAcl) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *StorageBucketAcl) error {
+func (_ *StorageBucketAcl) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *StorageBucketAcl) error {
 	var roleEntities []string
 	roleEntities = append(roleEntities, fi.ValueOf(e.Role)+":"+fi.ValueOf(e.Entity))
 	tf := &terraformStorageBucketAcl{

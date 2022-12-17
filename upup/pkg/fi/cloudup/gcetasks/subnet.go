@@ -101,7 +101,7 @@ func (_ *Subnet) CheckChanges(a, e, changes *Subnet) error {
 	return nil
 }
 
-func (_ *Subnet) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Subnet) error {
+func (_ *Subnet) RenderGCE(ctx *fi.CloudupContext, t *gce.GCEAPITarget, a, e, changes *Subnet) error {
 	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Verify the subnet was found
@@ -251,7 +251,7 @@ type terraformSubnetRange struct {
 	CIDR string `cty:"ip_cidr_range"`
 }
 
-func (_ *Subnet) RenderSubnet(t *terraform.TerraformTarget, a, e, changes *Subnet) error {
+func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Subnet) error {
 	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Not terraform owned / managed

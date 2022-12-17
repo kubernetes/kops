@@ -154,7 +154,7 @@ func (q *SQS) CheckChanges(a, e, changes *SQS) error {
 	return nil
 }
 
-func (q *SQS) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *SQS) error {
+func (q *SQS) RenderAWS(ctx *fi.CloudupContext, t *awsup.AWSAPITarget, a, e, changes *SQS) error {
 	policy, err := fi.ResourceAsString(e.Policy)
 	if err != nil {
 		return fmt.Errorf("error rendering RolePolicyDocument: %v", err)
@@ -195,7 +195,7 @@ type terraformSQSQueue struct {
 	Tags                    map[string]string        `cty:"tags"`
 }
 
-func (_ *SQS) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SQS) error {
+func (_ *SQS) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *SQS) error {
 	p, err := t.AddFileResource("aws_sqs_queue", *e.Name, "policy", e.Policy, false)
 	if err != nil {
 		return err

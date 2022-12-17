@@ -107,7 +107,7 @@ func (s *IAMInstanceProfile) CheckChanges(a, e, changes *IAMInstanceProfile) err
 	return nil
 }
 
-func (_ *IAMInstanceProfile) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMInstanceProfile) error {
+func (_ *IAMInstanceProfile) RenderAWS(ctx *fi.CloudupContext, t *awsup.AWSAPITarget, a, e, changes *IAMInstanceProfile) error {
 	if fi.ValueOf(e.Shared) {
 		if a == nil {
 			return fmt.Errorf("instance role profile with id %q not found", fi.ValueOf(e.ID))
@@ -175,7 +175,7 @@ func (_ *IAMInstanceProfile) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAM
 	return nil
 }
 
-func (_ *IAMInstanceProfile) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IAMInstanceProfile) error {
+func (_ *IAMInstanceProfile) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *IAMInstanceProfile) error {
 	// Done on IAMInstanceProfileRole
 	return nil
 }

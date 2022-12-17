@@ -496,7 +496,7 @@ func (s *Elastigroup) CheckChanges(a, e, changes *Elastigroup) error {
 	return nil
 }
 
-func (eg *Elastigroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Elastigroup) error {
+func (eg *Elastigroup) RenderAWS(ctx *fi.CloudupContext, t *awsup.AWSAPITarget, a, e, changes *Elastigroup) error {
 	return eg.createOrUpdate(t.Cloud, a, e, changes)
 }
 
@@ -1460,7 +1460,7 @@ type terraformTaint struct {
 	Effect *string `cty:"effect"`
 }
 
-func (_ *Elastigroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Elastigroup) error {
+func (_ *Elastigroup) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *Elastigroup) error {
 	cloud := t.Cloud.(awsup.AWSCloud)
 	e.applyDefaults()
 

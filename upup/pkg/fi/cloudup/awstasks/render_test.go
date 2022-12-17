@@ -17,6 +17,7 @@ limitations under the License.
 package awstasks
 
 import (
+	"context"
 	"os"
 	"path"
 	"reflect"
@@ -33,7 +34,7 @@ type renderTest struct {
 	Expected string
 }
 
-func doRenderTests(t *testing.T, method string, cases []*renderTest) {
+func doRenderTests(ctx context.Context, t *testing.T, method string, cases []*renderTest) {
 	outdir := t.TempDir()
 
 	for i, c := range cases {
@@ -41,6 +42,10 @@ func doRenderTests(t *testing.T, method string, cases []*renderTest) {
 		var target interface{}
 
 		cloud := awsup.BuildMockAWSCloud("eu-west-2", "abc")
+		context, err := fi.NewCloudupContext(ctx, nil, nil, cloud, nil, nil, nil, nil)
+		if err != nil {
+			t.Fatalf("error from NewCloudupContext: %v", err)
+		}
 
 		switch method {
 		case "RenderTerraform":
@@ -53,11 +58,11 @@ func doRenderTests(t *testing.T, method string, cases []*renderTest) {
 
 		// @step: build the inputs for the methods - hopefully these don't change between them
 		var inputs []reflect.Value
-		for _, x := range []interface{}{target, c.Resource, c.Resource, c.Resource} {
+		for _, x := range []interface{}{context, target, c.Resource, c.Resource, c.Resource} {
 			inputs = append(inputs, reflect.ValueOf(x))
 		}
 
-		err := func() error {
+		err = func() error {
 			// @step: invoke the rendering method of the target
 			resp := reflect.ValueOf(c.Resource).MethodByName(method).Call(inputs)
 			if err := resp[0].Interface(); err != nil {

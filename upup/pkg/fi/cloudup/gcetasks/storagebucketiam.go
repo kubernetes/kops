@@ -96,8 +96,8 @@ func (_ *StorageBucketIAM) CheckChanges(a, e, changes *StorageBucketIAM) error {
 	return nil
 }
 
-func (_ *StorageBucketIAM) RenderGCE(t *gce.GCEAPITarget, a, e, changes *StorageBucketIAM) error {
-	ctx := context.TODO()
+func (_ *StorageBucketIAM) RenderGCE(c *fi.CloudupContext, t *gce.GCEAPITarget, a, e, changes *StorageBucketIAM) error {
+	ctx := c.Context()
 
 	bucket := fi.ValueOf(e.Bucket)
 	member := fi.ValueOf(e.Member)
@@ -131,7 +131,7 @@ type terraformStorageBucketIAM struct {
 	Member string `cty:"member"`
 }
 
-func (_ *StorageBucketIAM) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *StorageBucketIAM) error {
+func (_ *StorageBucketIAM) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *StorageBucketIAM) error {
 	tf := &terraformStorageBucketIAM{
 		Bucket: fi.ValueOf(e.Bucket),
 		Role:   fi.ValueOf(e.Role),

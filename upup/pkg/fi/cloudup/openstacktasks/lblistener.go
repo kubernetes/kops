@@ -139,7 +139,7 @@ func (_ *LBListener) CheckChanges(a, e, changes *LBListener) error {
 	return nil
 }
 
-func (_ *LBListener) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *LBListener) error {
+func (_ *LBListener) RenderOpenstack(c *fi.CloudupContext, t *openstack.OpenstackAPITarget, a, e, changes *LBListener) error {
 	useVIPACL, err := t.Cloud.UseLoadBalancerVIPACL()
 	if err != nil {
 		return err

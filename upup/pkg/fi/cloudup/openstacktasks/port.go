@@ -190,7 +190,7 @@ func (_ *Port) CheckChanges(a, e, changes *Port) error {
 	return nil
 }
 
-func (*Port) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Port) error {
+func (*Port) RenderOpenstack(c *fi.CloudupContext, t *openstack.OpenstackAPITarget, a, e, changes *Port) error {
 	if a == nil {
 		klog.V(2).Infof("Creating Port with name: %q", fi.ValueOf(e.Name))
 

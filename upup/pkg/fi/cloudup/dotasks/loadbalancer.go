@@ -115,7 +115,7 @@ func (_ *LoadBalancer) CheckChanges(a, e, changes *LoadBalancer) error {
 	return nil
 }
 
-func (_ *LoadBalancer) RenderDO(t *do.DOAPITarget, a, e, changes *LoadBalancer) error {
+func (_ *LoadBalancer) RenderDO(c *fi.CloudupContext, t *do.DOAPITarget, a, e, changes *LoadBalancer) error {
 	Rules := []godo.ForwardingRule{
 		{
 			EntryProtocol:  "https",

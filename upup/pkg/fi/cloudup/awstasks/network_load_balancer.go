@@ -534,7 +534,7 @@ func (*NetworkLoadBalancer) CheckChanges(a, e, changes *NetworkLoadBalancer) err
 	return nil
 }
 
-func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NetworkLoadBalancer) error {
+func (_ *NetworkLoadBalancer) RenderAWS(ctx *fi.CloudupContext, t *awsup.AWSAPITarget, a, e, changes *NetworkLoadBalancer) error {
 	var loadBalancerName string
 	var loadBalancerArn string
 
@@ -760,7 +760,7 @@ type terraformNetworkLoadBalancerListenerAction struct {
 	TargetGroupARN *terraformWriter.Literal `cty:"target_group_arn"`
 }
 
-func (_ *NetworkLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *NetworkLoadBalancer) error {
+func (_ *NetworkLoadBalancer) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *NetworkLoadBalancer) error {
 	nlbTF := &terraformNetworkLoadBalancer{
 		Name:                   *e.LoadBalancerName,
 		Internal:               fi.ValueOf(e.Scheme) == elbv2.LoadBalancerSchemeEnumInternal,

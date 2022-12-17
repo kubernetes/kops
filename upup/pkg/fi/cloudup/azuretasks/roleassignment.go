@@ -151,7 +151,7 @@ func (r *RoleAssignment) CheckChanges(a, e, changes *RoleAssignment) error {
 }
 
 // RenderAzure creates or updates a Role Assignment.
-func (*RoleAssignment) RenderAzure(t *azure.AzureAPITarget, a, e, changes *RoleAssignment) error {
+func (*RoleAssignment) RenderAzure(c *fi.CloudupContext, t *azure.AzureAPITarget, a, e, changes *RoleAssignment) error {
 	if a == nil {
 		return createNewRoleAssignment(t, e)
 	}

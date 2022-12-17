@@ -122,7 +122,7 @@ func (_ *ServerGroup) CheckChanges(a, e, changes *ServerGroup) error {
 	return nil
 }
 
-func (_ *ServerGroup) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *ServerGroup) error {
+func (_ *ServerGroup) RenderOpenstack(c *fi.CloudupContext, t *openstack.OpenstackAPITarget, a, e, changes *ServerGroup) error {
 	if a == nil {
 		klog.V(2).Infof("Creating ServerGroup with Name:%q", fi.ValueOf(e.Name))
 

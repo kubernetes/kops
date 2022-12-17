@@ -158,7 +158,7 @@ func GetServerFixedIP(client *gophercloud.ServiceClient, serverID string, interf
 	return server, memberAddress, err
 }
 
-func (_ *PoolAssociation) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *PoolAssociation) error {
+func (_ *PoolAssociation) RenderOpenstack(c *fi.CloudupContext, t *openstack.OpenstackAPITarget, a, e, changes *PoolAssociation) error {
 	if a == nil {
 
 		for _, serverID := range e.ServerGroup.GetMembers() {

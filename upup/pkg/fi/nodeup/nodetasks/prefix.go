@@ -82,7 +82,7 @@ func (_ *Prefix) CheckChanges(a, e, changes *Prefix) error {
 	return nil
 }
 
-func (_ *Prefix) RenderLocal(t *local.LocalTarget, a, e, changes *Prefix) error {
+func (_ *Prefix) RenderLocal(c *fi.NodeupContext, t *local.LocalTarget, a, e, changes *Prefix) error {
 	mac, err := getInstanceMetadataFirstValue("mac")
 	if err != nil {
 		return err

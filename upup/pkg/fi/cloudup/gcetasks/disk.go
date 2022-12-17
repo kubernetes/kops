@@ -103,7 +103,7 @@ func (_ *Disk) CheckChanges(a, e, changes *Disk) error {
 	return nil
 }
 
-func (_ *Disk) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Disk) error {
+func (_ *Disk) RenderGCE(ctx *fi.CloudupContext, t *gce.GCEAPITarget, a, e, changes *Disk) error {
 	cloud := t.Cloud
 	typeURL := fmt.Sprintf("https://www.googleapis.com/compute/v1/projects/%s/zones/%s/diskTypes/%s",
 		cloud.Project(),
@@ -170,7 +170,7 @@ type terraformDisk struct {
 	Labels     map[string]string `cty:"labels"`
 }
 
-func (_ *Disk) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Disk) error {
+func (_ *Disk) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *Disk) error {
 	cloud := t.Cloud.(gce.GCECloud)
 
 	labels := make(map[string]string)

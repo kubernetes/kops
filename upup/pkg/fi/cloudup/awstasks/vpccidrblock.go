@@ -115,7 +115,7 @@ func (s *VPCCIDRBlock) CheckChanges(a, e, changes *VPCCIDRBlock) error {
 	return nil
 }
 
-func (_ *VPCCIDRBlock) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPCCIDRBlock) error {
+func (_ *VPCCIDRBlock) RenderAWS(ctx *fi.CloudupContext, t *awsup.AWSAPITarget, a, e, changes *VPCCIDRBlock) error {
 	shared := aws.BoolValue(e.Shared)
 	if shared && a == nil {
 		// VPC not owned by kOps, no changes will be applied
@@ -143,7 +143,7 @@ type terraformVPCCIDRBlock struct {
 	CIDRBlock *string                  `cty:"cidr_block"`
 }
 
-func (_ *VPCCIDRBlock) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPCCIDRBlock) error {
+func (_ *VPCCIDRBlock) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *VPCCIDRBlock) error {
 	shared := aws.BoolValue(e.Shared)
 	if shared && a == nil {
 		// VPC not owned by kOps, no changes will be applied

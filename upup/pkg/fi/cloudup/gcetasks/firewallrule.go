@@ -188,7 +188,7 @@ func (e *FirewallRule) mapToGCE(project string) (*compute.Firewall, error) {
 	return firewall, nil
 }
 
-func (_ *FirewallRule) RenderGCE(t *gce.GCEAPITarget, a, e, changes *FirewallRule) error {
+func (_ *FirewallRule) RenderGCE(ctx *fi.CloudupContext, t *gce.GCEAPITarget, a, e, changes *FirewallRule) error {
 	cloud := t.Cloud
 	firewall, err := e.mapToGCE(cloud.Project())
 	if err != nil {
@@ -229,7 +229,7 @@ type terraformFirewall struct {
 	Disabled bool `cty:"disabled"`
 }
 
-func (_ *FirewallRule) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *FirewallRule) error {
+func (_ *FirewallRule) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *FirewallRule) error {
 	g, err := e.mapToGCE(t.Project)
 	if err != nil {
 		return err

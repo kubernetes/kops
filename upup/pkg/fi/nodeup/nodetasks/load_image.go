@@ -87,7 +87,7 @@ func (_ *LoadImageTask) CheckChanges(a, e, changes *LoadImageTask) error {
 	return nil
 }
 
-func (_ *LoadImageTask) RenderLocal(t *local.LocalTarget, a, e, changes *LoadImageTask) error {
+func (_ *LoadImageTask) RenderLocal(c *fi.NodeupContext, t *local.LocalTarget, a, e, changes *LoadImageTask) error {
 	runtime := e.Runtime
 	if runtime != "docker" && runtime != "containerd" {
 		return fmt.Errorf("no runtime specified")

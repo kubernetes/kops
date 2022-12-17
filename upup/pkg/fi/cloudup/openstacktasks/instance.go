@@ -311,7 +311,7 @@ func generateInstanceName(e *Instance) (string, error) {
 	return strings.ToLower(fmt.Sprintf("%s-%s", fi.ValueOf(e.GroupName), hash[0:6])), nil
 }
 
-func (_ *Instance) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Instance) error {
+func (_ *Instance) RenderOpenstack(c *fi.CloudupContext, t *openstack.OpenstackAPITarget, a, e, changes *Instance) error {
 	cloud := t.Cloud
 	if a == nil {
 		serverName, err := generateInstanceName(e)

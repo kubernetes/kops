@@ -98,9 +98,8 @@ func (_ *ServiceAccount) CheckChanges(a, e, changes *ServiceAccount) error {
 	return nil
 }
 
-func (_ *ServiceAccount) RenderGCE(t *gce.GCEAPITarget, a, e, changes *ServiceAccount) error {
-	ctx := context.TODO()
-
+func (_ *ServiceAccount) RenderGCE(c *fi.CloudupContext, t *gce.GCEAPITarget, a, e, changes *ServiceAccount) error {
+	ctx := c.Context()
 	cloud := t.Cloud
 
 	email := fi.ValueOf(e.Email)
@@ -171,7 +170,7 @@ type terraformServiceAccount struct {
 	DisplayName *string `cty:"display_name"`
 }
 
-func (_ *ServiceAccount) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ServiceAccount) error {
+func (_ *ServiceAccount) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *ServiceAccount) error {
 	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Not terraform owned / managed

@@ -268,7 +268,7 @@ func (_ *Package) CheckChanges(a, e, changes *Package) error {
 // It just avoids unnecessary failures from running e.g. concurrent apt-get installs
 var packageManagerLock sync.Mutex
 
-func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) error {
+func (_ *Package) RenderLocal(c *fi.NodeupContext, t *local.LocalTarget, a, e, changes *Package) error {
 	packageManagerLock.Lock()
 	defer packageManagerLock.Unlock()
 

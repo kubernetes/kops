@@ -127,7 +127,7 @@ func (*LoadBalancer) CheckChanges(a, e, changes *LoadBalancer) error {
 }
 
 // RenderAzure creates or updates a Loadbalancer.
-func (*LoadBalancer) RenderAzure(t *azure.AzureAPITarget, a, e, changes *LoadBalancer) error {
+func (*LoadBalancer) RenderAzure(c *fi.CloudupContext, t *azure.AzureAPITarget, a, e, changes *LoadBalancer) error {
 	if a == nil {
 		klog.Infof("Creating a new Loadbalancer with name: %s", fi.ValueOf(e.Name))
 	} else {

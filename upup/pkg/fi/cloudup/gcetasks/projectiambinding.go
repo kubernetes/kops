@@ -97,8 +97,8 @@ func (_ *ProjectIAMBinding) CheckChanges(a, e, changes *ProjectIAMBinding) error
 	return nil
 }
 
-func (_ *ProjectIAMBinding) RenderGCE(t *gce.GCEAPITarget, a, e, changes *ProjectIAMBinding) error {
-	ctx := context.TODO()
+func (_ *ProjectIAMBinding) RenderGCE(c *fi.CloudupContext, t *gce.GCEAPITarget, a, e, changes *ProjectIAMBinding) error {
+	ctx := c.Context()
 
 	projectID := fi.ValueOf(e.Project)
 	member := fi.ValueOf(e.Member)
@@ -132,7 +132,7 @@ type terraformProjectIAMBinding struct {
 	Members []string `cty:"members"`
 }
 
-func (_ *ProjectIAMBinding) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ProjectIAMBinding) error {
+func (_ *ProjectIAMBinding) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *ProjectIAMBinding) error {
 	tf := &terraformProjectIAMBinding{
 		Project: fi.ValueOf(e.Project),
 		Role:    fi.ValueOf(e.Role),

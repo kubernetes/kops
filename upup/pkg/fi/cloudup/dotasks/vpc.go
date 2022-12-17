@@ -92,7 +92,7 @@ func (_ *VPC) CheckChanges(a, e, changes *VPC) error {
 	return nil
 }
 
-func (_ *VPC) RenderDO(t *do.DOAPITarget, a, e, changes *VPC) error {
+func (_ *VPC) RenderDO(c *fi.CloudupContext, t *do.DOAPITarget, a, e, changes *VPC) error {
 	if a != nil {
 		return nil
 	}

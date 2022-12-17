@@ -340,7 +340,7 @@ func (e *AutoscalingGroup) CheckChanges(a, ex, changes *AutoscalingGroup) error 
 }
 
 // RenderAWS is responsible for building the autoscaling group via AWS API
-func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *AutoscalingGroup) error {
+func (v *AutoscalingGroup) RenderAWS(ctx *fi.CloudupContext, t *awsup.AWSAPITarget, a, e, changes *AutoscalingGroup) error {
 	// @step: did we find an autoscaling group?
 	if a == nil {
 		klog.V(2).Infof("Creating autoscaling group with name: %s", fi.ValueOf(e.Name))
@@ -949,7 +949,7 @@ type terraformAutoscalingGroup struct {
 }
 
 // RenderTerraform is responsible for rendering the terraform codebase
-func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *AutoscalingGroup) error {
+func (_ *AutoscalingGroup) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *AutoscalingGroup) error {
 	tf := &terraformAutoscalingGroup{
 		Name:                e.Name,
 		MinSize:             e.MinSize,

@@ -133,7 +133,7 @@ func (_ *Archive) CheckChanges(a, e, changes *Archive) error {
 }
 
 // RenderLocal implements the fi.Task::Render functionality for a local target
-func (_ *Archive) RenderLocal(t *local.LocalTarget, a, e, changes *Archive) error {
+func (_ *Archive) RenderLocal(c *fi.NodeupContext, t *local.LocalTarget, a, e, changes *Archive) error {
 	if a == nil {
 		klog.Infof("Installing archive %q", e.Name)
 

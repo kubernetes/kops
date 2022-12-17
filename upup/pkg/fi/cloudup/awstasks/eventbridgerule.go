@@ -100,7 +100,7 @@ func (_ *EventBridgeRule) CheckChanges(a, e, changes *EventBridgeRule) error {
 	return nil
 }
 
-func (eb *EventBridgeRule) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *EventBridgeRule) error {
+func (eb *EventBridgeRule) RenderAWS(ctx *fi.CloudupContext, t *awsup.AWSAPITarget, a, e, changes *EventBridgeRule) error {
 	if e.EventPattern == nil {
 		return awsResources.DeleteEventBridgeRule(t.Cloud, *e.Name)
 	}
@@ -135,7 +135,7 @@ type terraformEventBridgeRule struct {
 	Tags         map[string]string        `cty:"tags"`
 }
 
-func (_ *EventBridgeRule) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *EventBridgeRule) error {
+func (_ *EventBridgeRule) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *EventBridgeRule) error {
 	m, err := t.AddFileBytes("aws_cloudwatch_event_rule", *e.Name, "event_pattern", []byte(*e.EventPattern), false)
 	if err != nil {
 		return err

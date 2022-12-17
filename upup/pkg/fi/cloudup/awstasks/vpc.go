@@ -171,7 +171,7 @@ func (e *VPC) Run(c *fi.CloudupContext) error {
 	return fi.CloudupDefaultDeltaRunMethod(e, c)
 }
 
-func (_ *VPC) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPC) error {
+func (_ *VPC) RenderAWS(ctx *fi.CloudupContext, t *awsup.AWSAPITarget, a, e, changes *VPC) error {
 	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Verify the VPC was found and matches our required settings
@@ -291,7 +291,7 @@ type terraformVPC struct {
 	Tags               map[string]string `cty:"tags"`
 }
 
-func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) error {
+func (_ *VPC) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *VPC) error {
 	if err := t.AddOutputVariable("vpc_id", e.TerraformLink()); err != nil {
 		return err
 	}

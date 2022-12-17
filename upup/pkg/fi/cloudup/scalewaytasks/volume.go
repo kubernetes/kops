@@ -100,7 +100,7 @@ func (_ *Volume) CheckChanges(a, e, changes *Volume) error {
 	return nil
 }
 
-func (_ *Volume) RenderScw(t *scaleway.ScwAPITarget, a, e, changes *Volume) error {
+func (_ *Volume) RenderScw(ctx *fi.CloudupContext, t *scaleway.ScwAPITarget, a, e, changes *Volume) error {
 	if a != nil {
 		klog.Infof("Scaleway does not support changes to volumes for the moment")
 		return nil

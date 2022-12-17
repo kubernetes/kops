@@ -177,7 +177,7 @@ func (c *Context[T]) Render(a, e, changes Task[T]) error {
 	}
 
 	if _, ok := c.Target.(*DryRunTarget[T]); ok {
-		return c.Target.(*DryRunTarget[T]).Render(a, e, changes)
+		return c.Target.(*DryRunTarget[T]).Render(c, a, e, changes)
 	}
 
 	v := reflect.ValueOf(e)

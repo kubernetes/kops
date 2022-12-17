@@ -87,7 +87,7 @@ func buildGroupaddArgs(e *GroupTask) []string {
 	return args
 }
 
-func (_ *GroupTask) RenderLocal(t *local.LocalTarget, a, e, changes *GroupTask) error {
+func (_ *GroupTask) RenderLocal(c *fi.NodeupContext, t *local.LocalTarget, a, e, changes *GroupTask) error {
 	if a == nil {
 		args := buildGroupaddArgs(e)
 		klog.Infof("Creating group %q", e.Name)

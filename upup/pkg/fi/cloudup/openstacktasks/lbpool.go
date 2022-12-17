@@ -123,7 +123,7 @@ func (_ *LBPool) CheckChanges(a, e, changes *LBPool) error {
 	return nil
 }
 
-func (_ *LBPool) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *LBPool) error {
+func (_ *LBPool) RenderOpenstack(c *fi.CloudupContext, t *openstack.OpenstackAPITarget, a, e, changes *LBPool) error {
 	if a == nil {
 
 		// wait that lb is in ACTIVE state

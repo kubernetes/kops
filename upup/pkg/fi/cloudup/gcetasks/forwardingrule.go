@@ -108,7 +108,7 @@ func (_ *ForwardingRule) CheckChanges(a, e, changes *ForwardingRule) error {
 	return nil
 }
 
-func (_ *ForwardingRule) RenderGCE(t *gce.GCEAPITarget, a, e, changes *ForwardingRule) error {
+func (_ *ForwardingRule) RenderGCE(ctx *fi.CloudupContext, t *gce.GCEAPITarget, a, e, changes *ForwardingRule) error {
 	name := fi.ValueOf(e.Name)
 
 	o := &compute.ForwardingRule{
@@ -209,7 +209,7 @@ type terraformForwardingRule struct {
 	BackendService      *terraformWriter.Literal `cty:"backend_service"`
 }
 
-func (_ *ForwardingRule) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ForwardingRule) error {
+func (_ *ForwardingRule) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *ForwardingRule) error {
 	name := fi.ValueOf(e.Name)
 
 	tf := &terraformForwardingRule{

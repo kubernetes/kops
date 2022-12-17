@@ -114,7 +114,7 @@ func (_ *Network) ShouldCreate(a, e, changes *Network) (bool, error) {
 	return false, nil
 }
 
-func (_ *Network) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Network) error {
+func (_ *Network) RenderOpenstack(c *fi.CloudupContext, t *openstack.OpenstackAPITarget, a, e, changes *Network) error {
 	if a == nil {
 		klog.V(2).Infof("Creating Network with name:%q", fi.ValueOf(e.Name))
 

@@ -349,7 +349,7 @@ func (s *LaunchSpec) CheckChanges(a, e, changes *LaunchSpec) error {
 	return nil
 }
 
-func (o *LaunchSpec) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LaunchSpec) error {
+func (o *LaunchSpec) RenderAWS(ctx *fi.CloudupContext, t *awsup.AWSAPITarget, a, e, changes *LaunchSpec) error {
 	return o.createOrUpdate(t.Cloud, a, e, changes)
 }
 
@@ -883,7 +883,7 @@ type terraformBlockDeviceMappingEBS struct {
 	DeleteOnTermination *bool   `cty:"delete_on_termination"`
 }
 
-func (_ *LaunchSpec) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LaunchSpec) error {
+func (_ *LaunchSpec) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *LaunchSpec) error {
 	cloud := t.Cloud.(awsup.AWSCloud)
 
 	tf := &terraformLaunchSpec{

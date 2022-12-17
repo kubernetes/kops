@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"k8s.io/kops/pkg/diff"
+	"k8s.io/kops/pkg/testutils/testcontext"
 	"k8s.io/kops/upup/pkg/fi"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -199,6 +200,8 @@ func TestProcessCompare(t *testing.T) {
 }
 
 func TestAutoscalingGroupTerraformRender(t *testing.T) {
+	ctx := testcontext.ForTest(t)
+
 	cases := []*renderTest{
 		{
 			Resource: &AutoscalingGroup{
@@ -335,7 +338,7 @@ terraform {
 		},
 	}
 
-	doRenderTests(t, "RenderTerraform", cases)
+	doRenderTests(ctx, t, "RenderTerraform", cases)
 }
 
 func TestTGsARNsChunks(t *testing.T) {

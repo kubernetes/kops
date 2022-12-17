@@ -82,7 +82,7 @@ func (*WarmPool) CheckChanges(a, e, changes *WarmPool) error {
 	return nil
 }
 
-func (*WarmPool) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *WarmPool) error {
+func (*WarmPool) RenderAWS(ctx *fi.CloudupContext, t *awsup.AWSAPITarget, a, e, changes *WarmPool) error {
 	svc := t.Cloud.Autoscaling()
 	if changes != nil {
 		if fi.ValueOf(e.Enabled) {
@@ -118,7 +118,7 @@ func (*WarmPool) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *WarmPool) error
 	return nil
 }
 
-func (_ *WarmPool) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *WarmPool) error {
+func (_ *WarmPool) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *WarmPool) error {
 	if changes != nil {
 		klog.Warning("ASG warm pool is not supported by the terraform target")
 	}

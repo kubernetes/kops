@@ -156,7 +156,7 @@ func (_ *SecurityGroup) CheckChanges(a, e, changes *SecurityGroup) error {
 	return nil
 }
 
-func (_ *SecurityGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *SecurityGroup) error {
+func (_ *SecurityGroup) RenderAWS(ctx *fi.CloudupContext, t *awsup.AWSAPITarget, a, e, changes *SecurityGroup) error {
 	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Do we want to do any verification of the security group?
@@ -191,7 +191,7 @@ type terraformSecurityGroup struct {
 	Tags        map[string]string        `cty:"tags"`
 }
 
-func (_ *SecurityGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SecurityGroup) error {
+func (_ *SecurityGroup) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *SecurityGroup) error {
 	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Not terraform owned / managed

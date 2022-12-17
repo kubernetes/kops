@@ -65,7 +65,7 @@ func (s *Chattr) CheckChanges(a, e, changes *Chattr) error {
 	return nil
 }
 
-func (_ *Chattr) RenderLocal(t *local.LocalTarget, a, e, changes *Chattr) error {
+func (_ *Chattr) RenderLocal(c *fi.NodeupContext, t *local.LocalTarget, a, e, changes *Chattr) error {
 	return e.execute(t)
 }
 

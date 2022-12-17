@@ -71,7 +71,7 @@ func (_ *UpdateEtcHostsTask) CheckChanges(a, e, changes *UpdateEtcHostsTask) err
 	return nil
 }
 
-func (_ *UpdateEtcHostsTask) RenderLocal(t *local.LocalTarget, a, e, changes *UpdateEtcHostsTask) error {
+func (_ *UpdateEtcHostsTask) RenderLocal(c *fi.NodeupContext, t *local.LocalTarget, a, e, changes *UpdateEtcHostsTask) error {
 	etcHostsPath := "/etc/hosts"
 
 	mutator := func(existing []string) (*hosts.HostMap, error) {

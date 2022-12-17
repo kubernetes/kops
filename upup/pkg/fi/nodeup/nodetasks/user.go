@@ -90,7 +90,7 @@ func buildUseraddArgs(e *UserTask) []string {
 	return args
 }
 
-func (_ *UserTask) RenderLocal(t *local.LocalTarget, a, e, changes *UserTask) error {
+func (_ *UserTask) RenderLocal(c *fi.NodeupContext, t *local.LocalTarget, a, e, changes *UserTask) error {
 	if a == nil {
 		args := buildUseraddArgs(e)
 		klog.Infof("Creating user %q", e.Name)

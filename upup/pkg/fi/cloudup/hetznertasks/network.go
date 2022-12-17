@@ -133,7 +133,7 @@ func (_ *Network) CheckChanges(a, e, changes *Network) error {
 	return nil
 }
 
-func (_ *Network) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *Network) error {
+func (_ *Network) RenderHetzer(c *fi.CloudupContext, t *hetzner.HetznerAPITarget, a, e, changes *Network) error {
 	client := t.Cloud.NetworkClient()
 
 	var network *hcloud.Network
@@ -217,7 +217,7 @@ type terraformNetworkSubnet struct {
 	IPRange     *string                  `cty:"ip_range"`
 }
 
-func (_ *Network) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Network) error {
+func (_ *Network) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *Network) error {
 	{
 		tf := &terraformNetwork{
 			Name:    e.Name,

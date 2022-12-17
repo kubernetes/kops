@@ -255,7 +255,7 @@ func (_ *FloatingIP) ShouldCreate(a, e, changes *FloatingIP) (bool, error) {
 	return false, nil
 }
 
-func (f *FloatingIP) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *FloatingIP) error {
+func (f *FloatingIP) RenderOpenstack(c *fi.CloudupContext, t *openstack.OpenstackAPITarget, a, e, changes *FloatingIP) error {
 	cloud := t.Cloud
 
 	if a == nil {

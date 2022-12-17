@@ -109,7 +109,7 @@ func (_ *SecurityGroup) CheckChanges(a, e, changes *SecurityGroup) error {
 	return nil
 }
 
-func (_ *SecurityGroup) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *SecurityGroup) error {
+func (_ *SecurityGroup) RenderOpenstack(c *fi.CloudupContext, t *openstack.OpenstackAPITarget, a, e, changes *SecurityGroup) error {
 	if a == nil {
 		klog.V(2).Infof("Creating SecurityGroup with Name:%q", fi.ValueOf(e.Name))
 

@@ -134,7 +134,7 @@ func (s *EgressOnlyInternetGateway) CheckChanges(a, e, changes *EgressOnlyIntern
 	return nil
 }
 
-func (_ *EgressOnlyInternetGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *EgressOnlyInternetGateway) error {
+func (_ *EgressOnlyInternetGateway) RenderAWS(ctx *fi.CloudupContext, t *awsup.AWSAPITarget, a, e, changes *EgressOnlyInternetGateway) error {
 	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Verify the EgressOnlyInternetGateway was found and matches our required settings
@@ -170,7 +170,7 @@ type terraformEgressOnlyInternetGateway struct {
 	Tags  map[string]string        `cty:"tags"`
 }
 
-func (_ *EgressOnlyInternetGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *EgressOnlyInternetGateway) error {
+func (_ *EgressOnlyInternetGateway) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *EgressOnlyInternetGateway) error {
 	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Not terraform owned / managed

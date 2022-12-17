@@ -423,7 +423,7 @@ func (s *ClassicLoadBalancer) CheckChanges(a, e, changes *ClassicLoadBalancer) e
 	return nil
 }
 
-func (_ *ClassicLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ClassicLoadBalancer) error {
+func (_ *ClassicLoadBalancer) RenderAWS(ctx *fi.CloudupContext, t *awsup.AWSAPITarget, a, e, changes *ClassicLoadBalancer) error {
 	shared := fi.ValueOf(e.Shared)
 	if shared {
 		return nil
@@ -646,7 +646,7 @@ type terraformLoadBalancerHealthCheck struct {
 	Timeout            *int64  `cty:"timeout"`
 }
 
-func (_ *ClassicLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ClassicLoadBalancer) error {
+func (_ *ClassicLoadBalancer) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *ClassicLoadBalancer) error {
 	shared := fi.ValueOf(e.Shared)
 	if shared {
 		return nil

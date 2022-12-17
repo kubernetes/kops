@@ -189,8 +189,9 @@ func (_ *LoadBalancer) CheckChanges(a, e, changes *LoadBalancer) error {
 	return nil
 }
 
-func (_ *LoadBalancer) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *LoadBalancer) error {
-	ctx := context.TODO()
+func (_ *LoadBalancer) RenderHetzer(c *fi.CloudupContext, t *hetzner.HetznerAPITarget, a, e, changes *LoadBalancer) error {
+	ctx := c.Context()
+
 	actionClient := t.Cloud.ActionClient()
 	client := t.Cloud.LoadBalancerClient()
 
@@ -345,7 +346,7 @@ type terraformLoadBalancerTarget struct {
 	UsePrivateIP   *bool                    `cty:"use_private_ip"`
 }
 
-func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LoadBalancer) error {
+func (_ *LoadBalancer) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *LoadBalancer) error {
 	{
 		tf := &terraformLoadBalancer{
 			Name:     e.Name,

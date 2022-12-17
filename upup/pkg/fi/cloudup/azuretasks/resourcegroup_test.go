@@ -24,13 +24,20 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2021-04-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
+	"k8s.io/kops/pkg/testutils/testcontext"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 )
 
 func TestResourceGroupRenderAzure(t *testing.T) {
+	ctx := testcontext.ForTest(t)
 	cloud := NewMockAzureCloud("eastus")
 	apiTarget := azure.NewAzureAPITarget(cloud)
+	context, err := fi.NewCloudupContext(ctx, apiTarget, nil, cloud, nil, nil, nil, nil)
+	if err != nil {
+		t.Fatalf("error from NewCloudupContext: %v", err)
+	}
+
 	rg := &ResourceGroup{}
 	expected := &ResourceGroup{
 		Name: to.StringPtr("rg"),
@@ -38,7 +45,7 @@ func TestResourceGroupRenderAzure(t *testing.T) {
 			"key": to.StringPtr("value"),
 		},
 	}
-	if err := rg.RenderAzure(apiTarget, nil, expected, nil); err != nil {
+	if err := rg.RenderAzure(context, apiTarget, nil, expected, nil); err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
 
@@ -66,7 +73,7 @@ func TestResourceGroupRenderAzure(t *testing.T) {
 			"key2": to.StringPtr("value2"),
 		},
 	}
-	if err := rg.RenderAzure(apiTarget, current, expected, changes); err != nil {
+	if err := rg.RenderAzure(context, apiTarget, current, expected, changes); err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
 	actual = cloud.ResourceGroupsClient.RGs[*expected.Name]

@@ -154,7 +154,7 @@ func (_ *ServerGroup) CheckChanges(a, e, changes *ServerGroup) error {
 	return nil
 }
 
-func (_ *ServerGroup) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *ServerGroup) error {
+func (_ *ServerGroup) RenderHetzer(c *fi.CloudupContext, t *hetzner.HetznerAPITarget, a, e, changes *ServerGroup) error {
 	client := t.Cloud.ServerClient()
 
 	if a != nil {
@@ -297,7 +297,7 @@ type terraformServerPublicNet struct {
 	EnableIPv6 *bool `cty:"ipv6_enabled"`
 }
 
-func (_ *ServerGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ServerGroup) error {
+func (_ *ServerGroup) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *ServerGroup) error {
 	name := terraformWriter.LiteralWithIndex(fi.ValueOf(e.Name))
 	tf := &terraformServer{
 		Count:      fi.PtrTo(e.Count),

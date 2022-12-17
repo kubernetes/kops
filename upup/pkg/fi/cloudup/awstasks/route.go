@@ -183,7 +183,7 @@ func (s *Route) CheckChanges(a, e, changes *Route) error {
 	return nil
 }
 
-func (_ *Route) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Route) error {
+func (_ *Route) RenderAWS(ctx *fi.CloudupContext, t *awsup.AWSAPITarget, a, e, changes *Route) error {
 	if a == nil {
 		request := &ec2.CreateRouteInput{}
 		request.RouteTableId = checkNotNil(e.RouteTable.ID)
@@ -292,7 +292,7 @@ type terraformRoute struct {
 	VPCPeeringConnectionID      *string                  `cty:"vpc_peering_connection_id"`
 }
 
-func (_ *Route) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Route) error {
+func (_ *Route) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *Route) error {
 	tf := &terraformRoute{
 		RouteTableID: e.RouteTable.TerraformLink(),
 		CIDR:         e.CIDR,

@@ -101,7 +101,7 @@ func (t *DryRunTarget[T]) DefaultCheckExisting() bool {
 	return true
 }
 
-func (t *DryRunTarget[T]) Render(a, e, changes Task[T]) error {
+func (t *DryRunTarget[T]) Render(ctx *Context[T], a, e, changes Task[T]) error {
 	valA := reflect.ValueOf(a)
 	aIsNil := valA.IsNil()
 

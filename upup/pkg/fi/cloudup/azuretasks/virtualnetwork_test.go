@@ -24,13 +24,20 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-05-01/network"
 	"github.com/Azure/go-autorest/autorest/to"
+	"k8s.io/kops/pkg/testutils/testcontext"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 )
 
 func TestVirtualNetworkRenderAzure(t *testing.T) {
+	ctx := testcontext.ForTest(t)
 	cloud := NewMockAzureCloud("eastus")
 	apiTarget := azure.NewAzureAPITarget(cloud)
+	context, err := fi.NewCloudupContext(ctx, apiTarget, nil, cloud, nil, nil, nil, nil)
+	if err != nil {
+		t.Fatalf("error from NewCloudupContext: %v", err)
+	}
+
 	vnet := &VirtualNetwork{}
 	expected := &VirtualNetwork{
 		Name: to.StringPtr("vnet"),
@@ -42,7 +49,7 @@ func TestVirtualNetworkRenderAzure(t *testing.T) {
 			"key": to.StringPtr("val"),
 		},
 	}
-	if err := vnet.RenderAzure(apiTarget, nil, expected, nil); err != nil {
+	if err := vnet.RenderAzure(context, apiTarget, nil, expected, nil); err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
 

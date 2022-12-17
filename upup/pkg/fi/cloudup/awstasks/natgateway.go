@@ -295,7 +295,7 @@ func (e *NatGateway) Run(c *fi.CloudupContext) error {
 	return fi.CloudupDefaultDeltaRunMethod(e, c)
 }
 
-func (_ *NatGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NatGateway) error {
+func (_ *NatGateway) RenderAWS(ctx *fi.CloudupContext, t *awsup.AWSAPITarget, a, e, changes *NatGateway) error {
 	// New NGW
 
 	var id *string
@@ -367,7 +367,7 @@ type terraformNATGateway struct {
 	Tag          map[string]string        `cty:"tags"`
 }
 
-func (_ *NatGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *NatGateway) error {
+func (_ *NatGateway) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *NatGateway) error {
 	if fi.ValueOf(e.Shared) {
 		if e.ID == nil {
 			return fmt.Errorf("ID must be set, if NatGateway is shared: %s", e)

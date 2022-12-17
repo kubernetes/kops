@@ -311,7 +311,7 @@ func (i *Instance) isZero() bool {
 	return reflect.DeepEqual(zero, i)
 }
 
-func (_ *Instance) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Instance) error {
+func (_ *Instance) RenderGCE(ctx *fi.CloudupContext, t *gce.GCEAPITarget, a, e, changes *Instance) error {
 	cloud := t.Cloud
 	project := cloud.Project()
 	zone := *e.Zone
@@ -419,7 +419,7 @@ type terraformInstanceAttachedDisk struct {
 	Size    int64  `cty:"size"`
 }
 
-func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Instance) error {
+func (_ *Instance) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *Instance) error {
 	project := t.Project
 
 	// This is a "little" hacky...

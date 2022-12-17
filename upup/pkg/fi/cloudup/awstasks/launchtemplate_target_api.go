@@ -31,7 +31,7 @@ import (
 )
 
 // RenderAWS is responsible for performing creating / updating the launch template
-func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchTemplate) error {
+func (t *LaunchTemplate) RenderAWS(ctx *fi.CloudupContext, c *awsup.AWSAPITarget, a, e, changes *LaunchTemplate) error {
 	// @step: resolve the image id to an AMI for us
 	image, err := c.Cloud.ResolveImage(fi.ValueOf(t.ImageID))
 	if err != nil {

@@ -103,7 +103,7 @@ func (_ *SSHKey) CheckChanges(a, e, changes *SSHKey) error {
 	return nil
 }
 
-func (_ *SSHKey) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *SSHKey) error {
+func (_ *SSHKey) RenderHetzer(c *fi.CloudupContext, t *hetzner.HetznerAPITarget, a, e, changes *SSHKey) error {
 	client := t.Cloud.SSHKeyClient()
 	if a == nil {
 		name := fi.ValueOf(e.Name)
@@ -136,7 +136,7 @@ type terraformSSHKey struct {
 	Labels    map[string]string `cty:"labels"`
 }
 
-func (_ *SSHKey) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SSHKey) error {
+func (_ *SSHKey) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *SSHKey) error {
 	tf := &terraformSSHKey{
 		Name:      e.Name,
 		PublicKey: fi.PtrTo(e.PublicKey),

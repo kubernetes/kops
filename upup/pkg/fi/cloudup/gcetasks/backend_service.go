@@ -103,7 +103,7 @@ func (_ *BackendService) CheckChanges(a, e, changes *BackendService) error {
 	return nil
 }
 
-func (_ *BackendService) RenderGCE(t *gce.GCEAPITarget, a, e, changes *BackendService) error {
+func (_ *BackendService) RenderGCE(ctx *fi.CloudupContext, t *gce.GCEAPITarget, a, e, changes *BackendService) error {
 	cloud := t.Cloud
 	var hcs []string
 	for _, hc := range e.HealthChecks {
@@ -160,7 +160,7 @@ type terraformBackendService struct {
 	Backend             []terraformBackend         `cty:"backend"`
 }
 
-func (_ *BackendService) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *BackendService) error {
+func (_ *BackendService) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *BackendService) error {
 	tf := &terraformBackendService{
 		Name:                e.Name,
 		LoadBalancingScheme: e.LoadBalancingScheme,

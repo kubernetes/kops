@@ -162,7 +162,7 @@ func (s *TargetGroup) CheckChanges(a, e, changes *TargetGroup) error {
 	return nil
 }
 
-func (_ *TargetGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *TargetGroup) error {
+func (_ *TargetGroup) RenderAWS(ctx *fi.CloudupContext, t *awsup.AWSAPITarget, a, e, changes *TargetGroup) error {
 	shared := fi.ValueOf(e.Shared)
 	if shared {
 		return nil
@@ -255,7 +255,7 @@ type terraformTargetGroupHealthCheck struct {
 	Protocol           string `cty:"protocol"`
 }
 
-func (_ *TargetGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *TargetGroup) error {
+func (_ *TargetGroup) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *TargetGroup) error {
 	shared := fi.ValueOf(e.Shared)
 	if shared {
 		return nil

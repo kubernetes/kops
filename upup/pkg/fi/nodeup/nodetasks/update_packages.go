@@ -65,7 +65,7 @@ func (s *UpdatePackages) CheckChanges(a, e, changes *UpdatePackages) error {
 	return nil
 }
 
-func (_ *UpdatePackages) RenderLocal(t *local.LocalTarget, a, e, changes *UpdatePackages) error {
+func (_ *UpdatePackages) RenderLocal(c *fi.NodeupContext, t *local.LocalTarget, a, e, changes *UpdatePackages) error {
 	if os.Getenv("SKIP_PACKAGE_UPDATE") != "" {
 		klog.Infof("SKIP_PACKAGE_UPDATE was set; skipping package update")
 		return nil
