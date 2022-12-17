@@ -90,7 +90,7 @@ func NewCmdExportKubeconfig(f *util.Factory, out io.Writer) *cobra.Command {
 		},
 		ValidArgsFunction: commandutils.CompleteClusterName(f, true, false),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RunExportKubeconfig(context.TODO(), f, out, options, args)
+			return RunExportKubeconfig(cmd.Context(), f, out, options, args)
 		},
 	}
 

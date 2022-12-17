@@ -104,7 +104,7 @@ func NewCmdEditInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 		},
 		ValidArgsFunction: completeInstanceGroup(f, nil, nil),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RunEditInstanceGroup(context.TODO(), f, out, options)
+			return RunEditInstanceGroup(cmd.Context(), f, out, options)
 		},
 	}
 

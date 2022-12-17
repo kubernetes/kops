@@ -72,10 +72,10 @@ func NewCmdGetKeypairs(f *util.Factory, out io.Writer, getOptions *GetOptions) *
 			return nil
 		},
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			return completeGetKeypairs(f, options, args, toComplete)
+			return completeGetKeypairs(cmd.Context(), f, options, args, toComplete)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RunGetKeypairs(context.TODO(), f, out, options)
+			return RunGetKeypairs(cmd.Context(), f, out, options)
 		},
 	}
 
@@ -259,9 +259,8 @@ func RunGetKeypairs(ctx context.Context, f commandutils.Factory, out io.Writer, 
 	return nil
 }
 
-func completeGetKeypairs(f commandutils.Factory, options *GetKeypairsOptions, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func completeGetKeypairs(ctx context.Context, f commandutils.Factory, options *GetKeypairsOptions, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	commandutils.ConfigureKlogForCompletion()
-	ctx := context.TODO()
 
 	cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, f, nil)
 	if cluster == nil {
@@ -269,7 +268,7 @@ func completeGetKeypairs(f commandutils.Factory, options *GetKeypairsOptions, ar
 	}
 
 	alreadySelected := sets.NewString(args...).Insert("all")
-	_, _, completions, directive = completeKeyset(cluster, clientSet, nil, func(name string, keyset *fi.Keyset) bool {
+	_, _, completions, directive = completeKeyset(ctx, cluster, clientSet, nil, func(name string, keyset *fi.Keyset) bool {
 		return !alreadySelected.Has(name)
 	})
 

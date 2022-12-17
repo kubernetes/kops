@@ -178,7 +178,7 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
 		ValidArgsFunction: commandutils.CompleteClusterName(f, true, false),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RunRollingUpdateCluster(context.TODO(), f, out, &options)
+			return RunRollingUpdateCluster(cmd.Context(), f, out, &options)
 		},
 	}
 
@@ -458,8 +458,9 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 
 func completeInstanceGroup(f commandutils.Factory, selectedInstanceGroups *[]string, selectedInstanceGroupRoles *[]string) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		ctx := cmd.Context()
+
 		commandutils.ConfigureKlogForCompletion()
-		ctx := context.TODO()
 
 		cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, f, args)
 		if cluster == nil {

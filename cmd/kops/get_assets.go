@@ -91,7 +91,7 @@ func NewCmdGetAssets(f *util.Factory, out io.Writer, getOptions *GetOptions) *co
 		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
 		ValidArgsFunction: commandutils.CompleteClusterName(f, true, false),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RunGetAssets(context.TODO(), f, out, &options)
+			return RunGetAssets(cmd.Context(), f, out, &options)
 		},
 	}
 

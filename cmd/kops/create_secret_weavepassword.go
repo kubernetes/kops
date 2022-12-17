@@ -78,7 +78,7 @@ func NewCmdCreateSecretWeavePassword(f *util.Factory, out io.Writer) *cobra.Comm
 		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
 		ValidArgsFunction: commandutils.CompleteClusterName(f, true, false),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RunCreateSecretWeavePassword(context.TODO(), f, out, options)
+			return RunCreateSecretWeavePassword(cmd.Context(), f, out, options)
 		},
 	}
 

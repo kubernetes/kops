@@ -108,7 +108,7 @@ func NewCmdGetCluster(f *util.Factory, out io.Writer, getOptions *GetOptions) *c
 		},
 		ValidArgsFunction: commandutils.CompleteClusterName(f, false, true),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RunGetClusters(context.TODO(), f, out, &options)
+			return RunGetClusters(cmd.Context(), f, out, &options)
 		},
 	}
 

@@ -98,10 +98,10 @@ func NewCmdDistrustKeypair(f *util.Factory, out io.Writer) *cobra.Command {
 			return nil
 		},
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			return completeDistrustKeyset(f, options, args, toComplete)
+			return completeDistrustKeyset(cmd.Context(), f, options, args, toComplete)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RunDistrustKeypair(context.TODO(), f, out, options)
+			return RunDistrustKeypair(cmd.Context(), f, out, options)
 		},
 	}
 
@@ -192,16 +192,15 @@ func distrustKeypair(ctx context.Context, out io.Writer, name string, keypairIDs
 	return nil
 }
 
-func completeDistrustKeyset(f commandutils.Factory, options *DistrustKeypairOptions, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func completeDistrustKeyset(ctx context.Context, f commandutils.Factory, options *DistrustKeypairOptions, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	commandutils.ConfigureKlogForCompletion()
-	ctx := context.TODO()
 
 	cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, f, nil)
 	if cluster == nil {
 		return completions, directive
 	}
 
-	keyset, _, completions, directive := completeKeyset(cluster, clientSet, args, rotatableKeysetFilter)
+	keyset, _, completions, directive := completeKeyset(ctx, cluster, clientSet, args, rotatableKeysetFilter)
 	if keyset == nil {
 		return completions, directive
 	}
