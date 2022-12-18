@@ -74,7 +74,9 @@ func TestDiskRenderAzure(t *testing.T) {
 func TestDiskFind(t *testing.T) {
 	cloud := NewMockAzureCloud("eastus")
 	ctx := &fi.CloudupContext{
-		Cloud: cloud,
+		T: fi.CloudupSubContext{
+			Cloud: cloud,
+		},
 	}
 
 	rg := &ResourceGroup{
@@ -133,7 +135,9 @@ func TestDiskFind(t *testing.T) {
 func TestDiskRun(t *testing.T) {
 	cloud := NewMockAzureCloud("eastus")
 	ctx := &fi.CloudupContext{
-		Cloud:  cloud,
+		T: fi.CloudupSubContext{
+			Cloud: cloud,
+		},
 		Target: azure.NewAzureAPITarget(cloud),
 	}
 

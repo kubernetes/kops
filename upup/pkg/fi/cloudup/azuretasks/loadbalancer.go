@@ -60,7 +60,7 @@ func (lb *LoadBalancer) IsForAPIServer() bool {
 
 // Find discovers the LoadBalancer in the cloud provider
 func (lb *LoadBalancer) Find(c *fi.CloudupContext) (*LoadBalancer, error) {
-	cloud := c.Cloud.(azure.AzureCloud)
+	cloud := c.T.Cloud.(azure.AzureCloud)
 	l, err := cloud.LoadBalancer().List(context.TODO(), *lb.ResourceGroup.Name)
 	if err != nil {
 		return nil, err
@@ -100,7 +100,7 @@ func (lb *LoadBalancer) Find(c *fi.CloudupContext) (*LoadBalancer, error) {
 }
 
 func (lb *LoadBalancer) Normalize(c *fi.CloudupContext) error {
-	c.Cloud.(azure.AzureCloud).AddClusterTags(lb.Tags)
+	c.T.Cloud.(azure.AzureCloud).AddClusterTags(lb.Tags)
 	return nil
 }
 

@@ -53,7 +53,7 @@ func (h *AutoscalingLifecycleHook) CompareWithID() *string {
 }
 
 func (h *AutoscalingLifecycleHook) Find(c *fi.CloudupContext) (*AutoscalingLifecycleHook, error) {
-	cloud := c.Cloud.(awsup.AWSCloud)
+	cloud := c.T.Cloud.(awsup.AWSCloud)
 
 	request := &autoscaling.DescribeLifecycleHooksInput{
 		AutoScalingGroupName: h.AutoscalingGroup.Name,

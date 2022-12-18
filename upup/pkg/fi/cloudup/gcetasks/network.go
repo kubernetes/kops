@@ -47,7 +47,7 @@ func (e *Network) CompareWithID() *string {
 }
 
 func (e *Network) Find(c *fi.CloudupContext) (*Network, error) {
-	cloud := c.Cloud.(gce.GCECloud)
+	cloud := c.T.Cloud.(gce.GCECloud)
 	project := cloud.Project()
 	if e.Project != nil {
 		project = *e.Project

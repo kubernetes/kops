@@ -71,7 +71,9 @@ func TestLoadBalancerRenderAzure(t *testing.T) {
 func TestLoadBalancerFind(t *testing.T) {
 	cloud := NewMockAzureCloud("eastus")
 	ctx := &fi.CloudupContext{
-		Cloud: cloud,
+		T: fi.CloudupSubContext{
+			Cloud: cloud,
+		},
 	}
 
 	rg := &ResourceGroup{
@@ -140,7 +142,9 @@ func TestLoadBalancerFind(t *testing.T) {
 func TestLoadBalancerRun(t *testing.T) {
 	cloud := NewMockAzureCloud("eastus")
 	ctx := &fi.CloudupContext{
-		Cloud:  cloud,
+		T: fi.CloudupSubContext{
+			Cloud: cloud,
+		},
 		Target: azure.NewAzureAPITarget(cloud),
 	}
 

@@ -63,7 +63,7 @@ func (e *Instance) CompareWithID() *string {
 }
 
 func (e *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
-	cloud := c.Cloud.(gce.GCECloud)
+	cloud := c.T.Cloud.(gce.GCECloud)
 
 	r, err := cloud.Compute().Instances().Get(cloud.Project(), *e.Zone, *e.Name)
 	if err != nil {

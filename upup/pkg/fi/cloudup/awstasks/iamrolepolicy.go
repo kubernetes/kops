@@ -55,7 +55,7 @@ type IAMRolePolicy struct {
 func (e *IAMRolePolicy) Find(c *fi.CloudupContext) (*IAMRolePolicy, error) {
 	var actual IAMRolePolicy
 
-	cloud := c.Cloud.(awsup.AWSCloud)
+	cloud := c.T.Cloud.(awsup.AWSCloud)
 
 	// Handle policy overrides
 	if e.ExternalPolicies != nil {

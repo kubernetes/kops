@@ -85,7 +85,7 @@ func (p *LBPool) Find(context *fi.CloudupContext) (*LBPool, error) {
 		return nil, nil
 	}
 
-	cloud := context.Cloud.(openstack.OpenstackCloud)
+	cloud := context.T.Cloud.(openstack.OpenstackCloud)
 	poolList, err := cloud.ListPools(v2pools.ListOpts{
 		ID:   fi.ValueOf(p.ID),
 		Name: fi.ValueOf(p.Name),

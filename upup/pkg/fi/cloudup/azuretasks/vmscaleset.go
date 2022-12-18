@@ -152,7 +152,7 @@ func (s *VMScaleSet) CompareWithID() *string {
 
 // Find discovers the VMScaleSet in the cloud provider.
 func (s *VMScaleSet) Find(c *fi.CloudupContext) (*VMScaleSet, error) {
-	cloud := c.Cloud.(azure.AzureCloud)
+	cloud := c.T.Cloud.(azure.AzureCloud)
 	found, err := cloud.VMScaleSet().Get(context.TODO(), *s.ResourceGroup.Name, *s.Name)
 	if err != nil && !strings.Contains(err.Error(), "ResourceNotFound") {
 		return nil, err
@@ -240,7 +240,7 @@ func (s *VMScaleSet) Find(c *fi.CloudupContext) (*VMScaleSet, error) {
 }
 
 func (s *VMScaleSet) Normalize(c *fi.CloudupContext) error {
-	c.Cloud.(azure.AzureCloud).AddClusterTags(s.Tags)
+	c.T.Cloud.(azure.AzureCloud).AddClusterTags(s.Tags)
 	return nil
 }
 

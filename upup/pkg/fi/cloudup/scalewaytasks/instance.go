@@ -47,7 +47,7 @@ func (s *Instance) CompareWithID() *string {
 }
 
 func (s *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
-	cloud := c.Cloud.(scaleway.ScwCloud)
+	cloud := c.T.Cloud.(scaleway.ScwCloud)
 
 	servers, err := cloud.GetClusterServers(cloud.ClusterName(s.Tags), s.Name)
 	if err != nil {
@@ -107,7 +107,7 @@ func (_ *Instance) CheckChanges(actual, expected, changes *Instance) error {
 }
 
 func (_ *Instance) RenderScw(c *fi.CloudupContext, actual, expected, changes *Instance) error {
-	cloud := c.Cloud.(scaleway.ScwCloud)
+	cloud := c.T.Cloud.(scaleway.ScwCloud)
 	instanceService := cloud.InstanceService()
 	zone := scw.Zone(fi.ValueOf(expected.Zone))
 

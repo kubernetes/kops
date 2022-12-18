@@ -90,7 +90,7 @@ func NewSubnetTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecyc
 }
 
 func (s *Subnet) Find(context *fi.CloudupContext) (*Subnet, error) {
-	cloud := context.Cloud.(openstack.OpenstackCloud)
+	cloud := context.T.Cloud.(openstack.OpenstackCloud)
 	opt := subnets.ListOpts{
 		ID:         fi.ValueOf(s.ID),
 		Name:       fi.ValueOf(s.Name),

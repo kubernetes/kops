@@ -56,7 +56,7 @@ func (i *RouterInterface) CompareWithID() *string {
 }
 
 func (i *RouterInterface) Find(context *fi.CloudupContext) (*RouterInterface, error) {
-	cloud := context.Cloud.(openstack.OpenstackCloud)
+	cloud := context.T.Cloud.(openstack.OpenstackCloud)
 	opt := ports.ListOpts{
 		NetworkID: fi.ValueOf(i.Subnet.Network.ID),
 		DeviceID:  fi.ValueOf(i.Router.ID),

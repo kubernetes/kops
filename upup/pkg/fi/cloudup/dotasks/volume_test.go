@@ -72,7 +72,9 @@ func (f fakeStorageClient) DeleteSnapshot(ctx context.Context, id string) (*godo
 
 func newContext(cloud fi.Cloud) *fi.CloudupContext {
 	return &fi.CloudupContext{
-		Cloud: cloud,
+		T: fi.CloudupSubContext{
+			Cloud: cloud,
+		},
 	}
 }
 

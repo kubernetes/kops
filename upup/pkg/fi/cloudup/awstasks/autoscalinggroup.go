@@ -110,7 +110,7 @@ func (e *AutoscalingGroup) CompareWithID() *string {
 
 // Find is used to discover the ASG in the cloud provider
 func (e *AutoscalingGroup) Find(c *fi.CloudupContext) (*AutoscalingGroup, error) {
-	cloud := c.Cloud.(awsup.AWSCloud)
+	cloud := c.T.Cloud.(awsup.AWSCloud)
 
 	g, err := findAutoscalingGroup(cloud, fi.ValueOf(e.Name))
 	if err != nil {
@@ -165,7 +165,7 @@ func (e *AutoscalingGroup) Find(c *fi.CloudupContext) (*AutoscalingGroup, error)
 			}
 		}
 		if apiLBTask != nil && len(actual.LoadBalancers) > 0 {
-			apiLBDesc, err := c.Cloud.(awsup.AWSCloud).FindELBByNameTag(fi.ValueOf(apiLBTask.Name))
+			apiLBDesc, err := c.T.Cloud.(awsup.AWSCloud).FindELBByNameTag(fi.ValueOf(apiLBTask.Name))
 			if err != nil {
 				return nil, err
 			}
@@ -318,7 +318,7 @@ func findAutoscalingGroup(cloud awsup.AWSCloud, name string) (*autoscaling.Group
 
 func (e *AutoscalingGroup) Normalize(c *fi.CloudupContext) error {
 	sort.Strings(e.Metrics)
-	c.Cloud.(awsup.AWSCloud).AddTags(e.Name, e.Tags)
+	c.T.Cloud.(awsup.AWSCloud).AddTags(e.Name, e.Tags)
 
 	return nil
 }

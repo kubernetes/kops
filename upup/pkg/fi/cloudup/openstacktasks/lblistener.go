@@ -101,7 +101,7 @@ func (s *LBListener) Find(context *fi.CloudupContext) (*LBListener, error) {
 		return nil, nil
 	}
 
-	cloud := context.Cloud.(openstack.OpenstackCloud)
+	cloud := context.T.Cloud.(openstack.OpenstackCloud)
 	listenerList, err := cloud.ListListeners(listeners.ListOpts{
 		ID:   fi.ValueOf(s.ID),
 		Name: fi.ValueOf(s.Name),
