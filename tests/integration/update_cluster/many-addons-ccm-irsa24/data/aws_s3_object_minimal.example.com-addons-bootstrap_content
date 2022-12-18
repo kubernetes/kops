@@ -55,7 +55,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.11
     manifest: metrics-server.addons.k8s.io/k8s-1.11.yaml
-    manifestHash: 2c50298a62f772220623daac250303f2757a9393c63a441acd89f077f1b4c2f7
+    manifestHash: d6501f6f54c0481b0016afb0abfababc0796b9831d101691e9defc38adc2a3b2
     name: metrics-server.addons.k8s.io
     needsPKI: true
     selector:
