@@ -388,7 +388,6 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	if err != nil {
 		klog.Exitf("error building context: %v", err)
 	}
-	defer context.Close()
 
 	var options fi.RunTasksOptions
 	options.InitDefaults()
