@@ -58,7 +58,7 @@ func (e *LoadBalancer) IsForAPIServer() bool {
 
 func (v *LoadBalancer) FindAddresses(c *fi.CloudupContext) ([]string, error) {
 	// TODO(hakman): Use mock to handle this more gracefully
-	if strings.HasPrefix(c.ClusterConfigBase.Path(), "memfs://tests/") {
+	if strings.HasPrefix(c.T.ClusterConfigBase.Path(), "memfs://tests/") {
 		return nil, nil
 	}
 

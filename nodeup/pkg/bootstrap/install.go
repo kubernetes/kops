@@ -28,7 +28,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/distributions"
-	"k8s.io/kops/util/pkg/vfs"
 )
 
 type Installation struct {
@@ -65,7 +64,6 @@ func (i *Installation) Run() error {
 		klog.Infof("No package task found; won't update packages")
 	}
 
-	var configBase vfs.Path
 	var cloud fi.Cloud
 	var keyStore fi.Keystore
 	var secretStore fi.SecretStore
@@ -75,7 +73,7 @@ func (i *Installation) Run() error {
 	}
 
 	checkExisting := true
-	context, err := fi.NewNodeupContext(ctx, target, nil, cloud, keyStore, secretStore, configBase, checkExisting, tasks)
+	context, err := fi.NewNodeupContext(ctx, target, nil, cloud, keyStore, secretStore, checkExisting, tasks)
 	if err != nil {
 		return fmt.Errorf("error building context: %v", err)
 	}
