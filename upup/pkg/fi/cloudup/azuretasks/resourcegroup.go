@@ -51,7 +51,7 @@ func (r *ResourceGroup) CompareWithID() *string {
 
 // Find discovers the ResourceGroup in the cloud provider.
 func (r *ResourceGroup) Find(c *fi.CloudupContext) (*ResourceGroup, error) {
-	cloud := c.Cloud.(azure.AzureCloud)
+	cloud := c.T.Cloud.(azure.AzureCloud)
 	l, err := cloud.ResourceGroup().List(context.TODO(), "" /* filter*/)
 	if err != nil {
 		return nil, err
@@ -76,7 +76,7 @@ func (r *ResourceGroup) Find(c *fi.CloudupContext) (*ResourceGroup, error) {
 }
 
 func (r *ResourceGroup) Normalize(c *fi.CloudupContext) error {
-	c.Cloud.(azure.AzureCloud).AddClusterTags(r.Tags)
+	c.T.Cloud.(azure.AzureCloud).AddClusterTags(r.Tags)
 	return nil
 }
 

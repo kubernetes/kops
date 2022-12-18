@@ -74,7 +74,7 @@ func (r *SecurityGroupRule) Find(context *fi.CloudupContext) (*SecurityGroupRule
 		return nil, nil
 	}
 
-	cloud := context.Cloud.(openstack.OpenstackCloud)
+	cloud := context.T.Cloud.(openstack.OpenstackCloud)
 
 	opt := sgr.ListOpts{
 		Direction:      fi.ValueOf(r.Direction),
@@ -231,7 +231,7 @@ func (o *SecurityGroupRule) FindDeletions(c *fi.CloudupContext) ([]fi.CloudupDel
 	if !fi.ValueOf(o.Delete) {
 		return nil, nil
 	}
-	cloud := c.Cloud.(openstack.OpenstackCloud)
+	cloud := c.T.Cloud.(openstack.OpenstackCloud)
 	rule, err := sgr.Get(cloud.NetworkingClient(), fi.ValueOf(o.ID)).Extract()
 	if err != nil {
 		return nil, err

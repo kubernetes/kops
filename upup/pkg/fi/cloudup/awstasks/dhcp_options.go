@@ -52,7 +52,7 @@ func (e *DHCPOptions) CompareWithID() *string {
 }
 
 func (e *DHCPOptions) Find(c *fi.CloudupContext) (*DHCPOptions, error) {
-	cloud := c.Cloud.(awsup.AWSCloud)
+	cloud := c.T.Cloud.(awsup.AWSCloud)
 
 	request := &ec2.DescribeDhcpOptionsInput{}
 	if e.ID != nil {

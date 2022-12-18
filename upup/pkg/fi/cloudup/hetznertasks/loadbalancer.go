@@ -63,7 +63,7 @@ func (v *LoadBalancer) FindAddresses(c *fi.CloudupContext) ([]string, error) {
 	}
 
 	ctx := context.TODO()
-	cloud := c.Cloud.(hetzner.HetznerCloud)
+	cloud := c.T.Cloud.(hetzner.HetznerCloud)
 	client := cloud.LoadBalancerClient()
 
 	// TODO(hakman): Find using label selector
@@ -94,7 +94,7 @@ func (v *LoadBalancer) FindAddresses(c *fi.CloudupContext) ([]string, error) {
 
 func (v *LoadBalancer) Find(c *fi.CloudupContext) (*LoadBalancer, error) {
 	ctx := context.TODO()
-	cloud := c.Cloud.(hetzner.HetznerCloud)
+	cloud := c.T.Cloud.(hetzner.HetznerCloud)
 	client := cloud.LoadBalancerClient()
 
 	// TODO(hakman): Find using label selector

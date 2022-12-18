@@ -68,7 +68,7 @@ func (e *TargetGroup) CompareWithID() *string {
 }
 
 func (e *TargetGroup) Find(c *fi.CloudupContext) (*TargetGroup, error) {
-	cloud := c.Cloud.(awsup.AWSCloud)
+	cloud := c.T.Cloud.(awsup.AWSCloud)
 
 	request := &elbv2.DescribeTargetGroupsInput{}
 	if e.ARN != nil {

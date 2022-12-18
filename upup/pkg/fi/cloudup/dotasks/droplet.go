@@ -57,7 +57,7 @@ func (d *Droplet) CompareWithID() *string {
 }
 
 func (d *Droplet) Find(c *fi.CloudupContext) (*Droplet, error) {
-	cloud := c.Cloud.(do.DOCloud)
+	cloud := c.T.Cloud.(do.DOCloud)
 
 	droplets, err := listDroplets(cloud)
 	if err != nil {

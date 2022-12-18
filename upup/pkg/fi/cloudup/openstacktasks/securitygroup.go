@@ -54,7 +54,7 @@ func (s *SecurityGroup) CompareWithID() *string {
 }
 
 func (s *SecurityGroup) Find(context *fi.CloudupContext) (*SecurityGroup, error) {
-	cloud := context.Cloud.(openstack.OpenstackCloud)
+	cloud := context.T.Cloud.(openstack.OpenstackCloud)
 	// avoid creating new group if it has removegroup flag
 	if s.RemoveGroup {
 		return s, nil
@@ -138,7 +138,7 @@ func (s *SecurityGroup) FindDeletions(c *fi.CloudupContext) ([]fi.CloudupDeletio
 		return nil, nil
 	}
 
-	cloud := c.Cloud.(openstack.OpenstackCloud)
+	cloud := c.T.Cloud.(openstack.OpenstackCloud)
 	if s.RemoveGroup {
 		sg, err := getSecurityGroupByName(s, cloud)
 		if err != nil {

@@ -55,7 +55,7 @@ type ServerGroup struct {
 }
 
 func (v *ServerGroup) Find(c *fi.CloudupContext) (*ServerGroup, error) {
-	cloud := c.Cloud.(hetzner.HetznerCloud)
+	cloud := c.T.Cloud.(hetzner.HetznerCloud)
 	client := cloud.ServerClient()
 
 	labelSelector := []string{

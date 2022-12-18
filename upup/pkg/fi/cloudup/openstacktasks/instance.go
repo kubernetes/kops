@@ -109,7 +109,7 @@ func (e *Instance) IsForAPIServer() bool {
 }
 
 func (e *Instance) FindAddresses(context *fi.CloudupContext) ([]string, error) {
-	cloud := context.Cloud.(openstack.OpenstackCloud)
+	cloud := context.T.Cloud.(openstack.OpenstackCloud)
 	if e.Port == nil {
 		return nil, nil
 	}
@@ -153,7 +153,7 @@ func (e *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 	if e == nil || e.Name == nil {
 		return nil, nil
 	}
-	cloud := c.Cloud.(openstack.OpenstackCloud)
+	cloud := c.T.Cloud.(openstack.OpenstackCloud)
 	computeClient := cloud.ComputeClient()
 	serverPage, err := servers.List(computeClient, servers.ListOpts{
 		Name: fmt.Sprintf("^%s", fi.ValueOf(e.GroupName)),

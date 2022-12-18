@@ -49,7 +49,7 @@ func (e *RouteTable) CompareWithID() *string {
 }
 
 func (e *RouteTable) Find(c *fi.CloudupContext) (*RouteTable, error) {
-	cloud := c.Cloud.(awsup.AWSCloud)
+	cloud := c.T.Cloud.(awsup.AWSCloud)
 
 	var rt *ec2.RouteTable
 	var err error

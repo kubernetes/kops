@@ -64,7 +64,6 @@ func (i *Installation) Run() error {
 		klog.Infof("No package task found; won't update packages")
 	}
 
-	var cloud fi.Cloud
 	var keyStore fi.Keystore
 	var secretStore fi.SecretStore
 
@@ -73,7 +72,7 @@ func (i *Installation) Run() error {
 	}
 
 	checkExisting := true
-	context, err := fi.NewNodeupContext(ctx, target, nil, cloud, keyStore, secretStore, checkExisting, tasks)
+	context, err := fi.NewNodeupContext(ctx, target, nil, keyStore, secretStore, checkExisting, tasks)
 	if err != nil {
 		return fmt.Errorf("error building context: %v", err)
 	}

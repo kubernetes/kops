@@ -42,7 +42,7 @@ func (e *HTTPHealthcheck) CompareWithID() *string {
 }
 
 func (e *HTTPHealthcheck) Find(c *fi.CloudupContext) (*HTTPHealthcheck, error) {
-	cloud := c.Cloud.(gce.GCECloud)
+	cloud := c.T.Cloud.(gce.GCECloud)
 	name := fi.ValueOf(e.Name)
 	r, err := cloud.Compute().HTTPHealthChecks().Get(cloud.Project(), name)
 	if err != nil {

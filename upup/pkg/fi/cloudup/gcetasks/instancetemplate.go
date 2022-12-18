@@ -90,7 +90,7 @@ func (e *InstanceTemplate) CompareWithID() *string {
 }
 
 func (e *InstanceTemplate) Find(c *fi.CloudupContext) (*InstanceTemplate, error) {
-	cloud := c.Cloud.(gce.GCECloud)
+	cloud := c.T.Cloud.(gce.GCECloud)
 
 	templates, err := cloud.Compute().InstanceTemplates().List(context.Background(), cloud.Project())
 	if err != nil {

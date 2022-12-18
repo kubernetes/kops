@@ -40,7 +40,7 @@ type VPCCIDRBlock struct {
 }
 
 func (e *VPCCIDRBlock) Find(c *fi.CloudupContext) (*VPCCIDRBlock, error) {
-	cloud := c.Cloud.(awsup.AWSCloud)
+	cloud := c.T.Cloud.(awsup.AWSCloud)
 
 	vpcID := aws.StringValue(e.VPC.ID)
 

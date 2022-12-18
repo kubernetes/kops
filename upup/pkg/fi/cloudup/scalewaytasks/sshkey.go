@@ -45,7 +45,7 @@ func (s *SSHKey) CompareWithID() *string {
 }
 
 func (s *SSHKey) Find(c *fi.CloudupContext) (*SSHKey, error) {
-	cloud := c.Cloud.(scaleway.ScwCloud)
+	cloud := c.T.Cloud.(scaleway.ScwCloud)
 
 	keysResp, err := cloud.IamService().ListSSHKeys(&iam.ListSSHKeysRequest{
 		Name: s.Name,
@@ -113,7 +113,7 @@ func (*SSHKey) RenderScw(c *fi.CloudupContext, actual, expected, changes *SSHKey
 		return nil
 	}
 
-	cloud := c.Cloud.(scaleway.ScwCloud)
+	cloud := c.T.Cloud.(scaleway.ScwCloud)
 
 	name := fi.ValueOf(expected.Name)
 	if name == "" {

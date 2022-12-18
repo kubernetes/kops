@@ -33,7 +33,6 @@ type Context[T SubContext] struct {
 	ctx context.Context
 
 	Target      Target[T]
-	Cloud       Cloud
 	Cluster     *kops.Cluster
 	Keystore    Keystore
 	SecretStore SecretStore
@@ -54,6 +53,7 @@ type SubContext interface {
 }
 
 type CloudupSubContext struct {
+	Cloud Cloud
 	// TODO: Few places use this. They could instead get it from the cluster spec.
 	ClusterConfigBase vfs.Path
 }
@@ -69,10 +69,9 @@ type Warning[T SubContext] struct {
 	Message string
 }
 
-func NewContext[T SubContext](ctx context.Context, target Target[T], cluster *kops.Cluster, cloud Cloud, keystore Keystore, secretStore SecretStore, checkExisting bool, sub T, tasks map[string]Task[T]) (*Context[T], error) {
+func NewContext[T SubContext](ctx context.Context, target Target[T], cluster *kops.Cluster, keystore Keystore, secretStore SecretStore, checkExisting bool, sub T, tasks map[string]Task[T]) (*Context[T], error) {
 	c := &Context[T]{
 		ctx:           ctx,
-		Cloud:         cloud,
 		Cluster:       cluster,
 		Target:        target,
 		Keystore:      keystore,
@@ -85,16 +84,17 @@ func NewContext[T SubContext](ctx context.Context, target Target[T], cluster *ko
 	return c, nil
 }
 
-func NewNodeupContext(ctx context.Context, target NodeupTarget, cluster *kops.Cluster, cloud Cloud, keystore Keystore, secretStore SecretStore, checkExisting bool, tasks map[string]NodeupTask) (*NodeupContext, error) {
+func NewNodeupContext(ctx context.Context, target NodeupTarget, cluster *kops.Cluster, keystore Keystore, secretStore SecretStore, checkExisting bool, tasks map[string]NodeupTask) (*NodeupContext, error) {
 	sub := NodeupSubContext{}
-	return NewContext[NodeupSubContext](ctx, target, cluster, cloud, keystore, secretStore, checkExisting, sub, tasks)
+	return NewContext[NodeupSubContext](ctx, target, cluster, keystore, secretStore, checkExisting, sub, tasks)
 }
 
 func NewCloudupContext(ctx context.Context, target CloudupTarget, cluster *kops.Cluster, cloud Cloud, keystore Keystore, secretStore SecretStore, clusterConfigBase vfs.Path, checkExisting bool, tasks map[string]CloudupTask) (*CloudupContext, error) {
 	sub := CloudupSubContext{
+		Cloud:             cloud,
 		ClusterConfigBase: clusterConfigBase,
 	}
-	return NewContext[CloudupSubContext](ctx, target, cluster, cloud, keystore, secretStore, checkExisting, sub, tasks)
+	return NewContext[CloudupSubContext](ctx, target, cluster, keystore, secretStore, checkExisting, sub, tasks)
 }
 
 func (c *Context[T]) AllTasks() map[string]Task[T] {

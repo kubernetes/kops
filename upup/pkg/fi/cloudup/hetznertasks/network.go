@@ -50,7 +50,7 @@ func (v *Network) CompareWithID() *string {
 }
 
 func (v *Network) Find(c *fi.CloudupContext) (*Network, error) {
-	cloud := c.Cloud.(hetzner.HetznerCloud)
+	cloud := c.T.Cloud.(hetzner.HetznerCloud)
 	client := cloud.NetworkClient()
 
 	idOrName := fi.ValueOf(v.Name)

@@ -147,7 +147,7 @@ func newPortTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle
 }
 
 func (s *Port) Find(context *fi.CloudupContext) (*Port, error) {
-	cloud := context.Cloud.(openstack.OpenstackCloud)
+	cloud := context.T.Cloud.(openstack.OpenstackCloud)
 	opt := ports.ListOpts{
 		Name: fi.ValueOf(s.Name),
 	}

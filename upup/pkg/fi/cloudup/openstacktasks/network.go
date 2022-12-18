@@ -61,7 +61,7 @@ func (n *Network) Find(context *fi.CloudupContext) (*Network, error) {
 		return nil, nil
 	}
 
-	cloud := context.Cloud.(openstack.OpenstackCloud)
+	cloud := context.T.Cloud.(openstack.OpenstackCloud)
 	opt := networks.ListOpts{
 		ID:   fi.ValueOf(n.ID),
 		Name: fi.ValueOf(n.Name),
