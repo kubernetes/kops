@@ -25,7 +25,6 @@ import (
 	"strings"
 
 	"k8s.io/klog/v2"
-	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/util/pkg/vfs"
 )
@@ -33,10 +32,7 @@ import (
 type Context[T SubContext] struct {
 	ctx context.Context
 
-	Tmpdir string
-
 	Target            Target[T]
-	DNS               dnsprovider.Interface
 	Cloud             Cloud
 	Cluster           *kops.Cluster
 	Keystore          Keystore
@@ -85,12 +81,6 @@ func NewContext[T SubContext](ctx context.Context, target Target[T], cluster *ko
 		T:                 sub,
 	}
 
-	t, err := os.MkdirTemp("", "deploy")
-	if err != nil {
-		return nil, fmt.Errorf("error creating temporary directory: %v", err)
-	}
-	c.Tmpdir = t
-
 	return c, nil
 }
 
@@ -114,28 +104,6 @@ func (c *Context[T]) RunTasks(options RunTasksOptions) error {
 		options: options,
 	}
 	return e.RunTasks(c.tasks)
-}
-
-func (c *Context[T]) Close() {
-	klog.V(2).Infof("deleting temp dir: %q", c.Tmpdir)
-	if c.Tmpdir != "" {
-		err := os.RemoveAll(c.Tmpdir)
-		if err != nil {
-			klog.Warningf("unable to delete temporary directory %q: %v", c.Tmpdir, err)
-		}
-	}
-}
-
-//func (c *Context) MergeOptions(options Options) error {
-//	return c.Options.Merge(options)
-//}
-
-func (c *Context[T]) NewTempDir(prefix string) (string, error) {
-	t, err := os.MkdirTemp(c.Tmpdir, prefix)
-	if err != nil {
-		return "", fmt.Errorf("error creating temporary directory: %v", err)
-	}
-	return t, nil
 }
 
 // Render dispatches the creation of an object to the appropriate handler defined on the Task,
