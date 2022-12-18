@@ -42,6 +42,8 @@ type DNSName struct {
 	TargetLoadBalancer DNSTarget
 }
 
+var _ awsup.AWSTask[DNSName] = &DNSName{}
+
 type DNSTarget interface {
 	fi.CloudupTask
 	getDNSName() *string

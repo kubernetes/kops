@@ -46,6 +46,8 @@ type AutoscalingLifecycleHook struct {
 	Enabled *bool
 }
 
+var _ awsup.AWSTask[AutoscalingLifecycleHook] = &AutoscalingLifecycleHook{}
+
 var _ fi.CompareWithID = &AutoscalingLifecycleHook{}
 
 func (h *AutoscalingLifecycleHook) CompareWithID() *string {

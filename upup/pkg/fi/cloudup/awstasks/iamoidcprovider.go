@@ -44,6 +44,8 @@ type IAMOIDCProvider struct {
 	arn *string
 }
 
+var _ awsup.AWSTask[IAMOIDCProvider] = &IAMOIDCProvider{}
+
 var _ fi.CompareWithID = &IAMOIDCProvider{}
 
 func (e *IAMOIDCProvider) CompareWithID() *string {

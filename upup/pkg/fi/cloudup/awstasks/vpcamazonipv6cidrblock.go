@@ -37,6 +37,8 @@ type VPCAmazonIPv6CIDRBlock struct {
 	Shared *bool
 }
 
+var _ awsup.AWSTask[VPCAmazonIPv6CIDRBlock] = &VPCAmazonIPv6CIDRBlock{}
+
 func (e *VPCAmazonIPv6CIDRBlock) Find(c *fi.CloudupContext) (*VPCAmazonIPv6CIDRBlock, error) {
 	cloud := c.T.Cloud.(awsup.AWSCloud)
 

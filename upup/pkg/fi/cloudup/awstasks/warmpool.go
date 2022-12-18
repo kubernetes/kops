@@ -43,6 +43,8 @@ type WarmPool struct {
 	AutoscalingGroup *AutoscalingGroup
 }
 
+var _ awsup.AWSTask[WarmPool] = &WarmPool{}
+
 // Find is used to discover the ASG in the cloud provider.
 func (e *WarmPool) Find(c *fi.CloudupContext) (*WarmPool, error) {
 	cloud := c.T.Cloud.(awsup.AWSCloud)

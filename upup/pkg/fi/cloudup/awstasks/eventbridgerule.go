@@ -41,6 +41,8 @@ type EventBridgeRule struct {
 	Tags map[string]string
 }
 
+var _ awsup.AWSTask[EventBridgeRule] = &EventBridgeRule{}
+
 var _ fi.CompareWithID = &EventBridgeRule{}
 
 func (eb *EventBridgeRule) CompareWithID() *string {

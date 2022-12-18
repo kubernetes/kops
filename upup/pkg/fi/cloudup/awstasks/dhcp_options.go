@@ -45,6 +45,8 @@ type DHCPOptions struct {
 	Tags map[string]string
 }
 
+var _ awsup.AWSTask[DHCPOptions] = &DHCPOptions{}
+
 var _ fi.CompareWithID = &DHCPOptions{}
 
 func (e *DHCPOptions) CompareWithID() *string {

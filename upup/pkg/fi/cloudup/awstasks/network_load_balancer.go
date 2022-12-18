@@ -73,6 +73,8 @@ type NetworkLoadBalancer struct {
 	AccessLog    *NetworkLoadBalancerAccessLog
 }
 
+var _ awsup.AWSTask[NetworkLoadBalancer] = &NetworkLoadBalancer{}
+
 var _ fi.CompareWithID = &NetworkLoadBalancer{}
 var _ fi.CloudupTaskNormalize = &NetworkLoadBalancer{}
 var _ fi.CloudupProducesDeletions = &NetworkLoadBalancer{}

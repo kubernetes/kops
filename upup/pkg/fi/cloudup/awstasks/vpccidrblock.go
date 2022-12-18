@@ -39,6 +39,8 @@ type VPCCIDRBlock struct {
 	Shared *bool
 }
 
+var _ awsup.AWSTask[VPCCIDRBlock] = &VPCCIDRBlock{}
+
 func (e *VPCCIDRBlock) Find(c *fi.CloudupContext) (*VPCCIDRBlock, error) {
 	cloud := c.T.Cloud.(awsup.AWSCloud)
 

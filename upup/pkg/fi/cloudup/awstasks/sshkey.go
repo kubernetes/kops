@@ -45,6 +45,8 @@ type SSHKey struct {
 	Tags map[string]string
 }
 
+var _ awsup.AWSTask[SSHKey] = &SSHKey{}
+
 var _ fi.CompareWithID = &SSHKey{}
 var _ fi.CloudupTaskNormalize = &SSHKey{}
 

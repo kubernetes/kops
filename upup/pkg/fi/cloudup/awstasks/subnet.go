@@ -55,6 +55,8 @@ type Subnet struct {
 	Tags map[string]string
 }
 
+var _ awsup.AWSTask[Subnet] = &Subnet{}
+
 var _ fi.CompareWithID = &Subnet{}
 
 func (e *Subnet) CompareWithID() *string {

@@ -48,6 +48,8 @@ type SecurityGroup struct {
 }
 
 var (
+	_ awsup.AWSTask[SecurityGroup] = &SecurityGroup{}
+
 	_ fi.CompareWithID            = &SecurityGroup{}
 	_ fi.CloudupProducesDeletions = &SecurityGroup{}
 )

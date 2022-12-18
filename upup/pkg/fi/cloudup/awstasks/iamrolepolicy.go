@@ -52,9 +52,10 @@ type IAMRolePolicy struct {
 	Managed bool
 }
 
+var _ awsup.AWSTask[IAMRolePolicy] = &IAMRolePolicy{}
+
 func (e *IAMRolePolicy) Find(c *fi.CloudupContext) (*IAMRolePolicy, error) {
 	var actual IAMRolePolicy
-
 	cloud := c.T.Cloud.(awsup.AWSCloud)
 
 	// Handle policy overrides

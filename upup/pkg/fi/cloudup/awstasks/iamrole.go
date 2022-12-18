@@ -54,6 +54,8 @@ type IAMRole struct {
 	ExportWithID *string
 }
 
+var _ awsup.AWSTask[IAMRole] = &IAMRole{}
+
 var _ fi.CompareWithID = &IAMRole{}
 
 func (e *IAMRole) CompareWithID() *string {

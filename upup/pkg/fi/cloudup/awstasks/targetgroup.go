@@ -61,6 +61,8 @@ type TargetGroup struct {
 	UnhealthyThreshold *int64
 }
 
+var _ awsup.AWSTask[TargetGroup] = &TargetGroup{}
+
 var _ fi.CompareWithID = &TargetGroup{}
 
 func (e *TargetGroup) CompareWithID() *string {

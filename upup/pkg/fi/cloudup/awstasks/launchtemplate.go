@@ -95,6 +95,8 @@ var (
 	_ fi.CloudupProducesDeletions = &LaunchTemplate{}
 	_ fi.CloudupTaskNormalize     = &LaunchTemplate{}
 	_ fi.CloudupDeletion          = &deleteLaunchTemplate{}
+
+	_ awsup.AWSTask[LaunchTemplate] = &LaunchTemplate{}
 )
 
 // CompareWithID implements the comparable interface

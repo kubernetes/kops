@@ -41,6 +41,8 @@ type EgressOnlyInternetGateway struct {
 	Tags map[string]string
 }
 
+var _ awsup.AWSTask[EgressOnlyInternetGateway] = &EgressOnlyInternetGateway{}
+
 var _ fi.CompareWithID = &EgressOnlyInternetGateway{}
 
 func (e *EgressOnlyInternetGateway) CompareWithID() *string {

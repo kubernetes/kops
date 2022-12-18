@@ -46,6 +46,8 @@ type SQS struct {
 	Tags map[string]string
 }
 
+var _ awsup.AWSTask[SQS] = &SQS{}
+
 var _ fi.CompareWithID = &SQS{}
 
 func (q *SQS) CompareWithID() *string {

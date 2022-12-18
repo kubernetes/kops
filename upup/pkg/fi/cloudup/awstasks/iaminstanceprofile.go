@@ -41,6 +41,8 @@ type IAMInstanceProfile struct {
 	Shared *bool
 }
 
+var _ awsup.AWSTask[IAMInstanceProfile] = &IAMInstanceProfile{}
+
 var _ fi.CompareWithID = &IAMInstanceProfile{}
 
 func (e *IAMInstanceProfile) CompareWithID() *string {

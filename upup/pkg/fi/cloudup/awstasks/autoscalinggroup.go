@@ -100,6 +100,8 @@ type AutoscalingGroup struct {
 	CapacityRebalance *bool
 }
 
+var _ awsup.AWSTask[AutoscalingGroup] = &AutoscalingGroup{}
+
 var _ fi.CompareWithID = &AutoscalingGroup{}
 var _ fi.CloudupTaskNormalize = &AutoscalingGroup{}
 

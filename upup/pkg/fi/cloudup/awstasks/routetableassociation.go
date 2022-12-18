@@ -38,6 +38,8 @@ type RouteTableAssociation struct {
 	Subnet     *Subnet
 }
 
+var _ awsup.AWSTask[RouteTableAssociation] = &RouteTableAssociation{}
+
 func (s *RouteTableAssociation) CompareWithID() *string {
 	return s.ID
 }

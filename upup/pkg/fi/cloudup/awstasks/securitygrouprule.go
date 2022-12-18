@@ -54,6 +54,8 @@ type SecurityGroupRule struct {
 	Tags map[string]string
 }
 
+var _ awsup.AWSTask[SecurityGroupRule] = &SecurityGroupRule{}
+
 func (e *SecurityGroupRule) Find(c *fi.CloudupContext) (*SecurityGroupRule, error) {
 	cloud := c.T.Cloud.(awsup.AWSCloud)
 

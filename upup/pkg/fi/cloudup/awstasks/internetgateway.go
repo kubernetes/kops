@@ -41,6 +41,8 @@ type InternetGateway struct {
 	Tags map[string]string
 }
 
+var _ awsup.AWSTask[InternetGateway] = &InternetGateway{}
+
 var _ fi.CompareWithID = &InternetGateway{}
 
 func (e *InternetGateway) CompareWithID() *string {

@@ -45,6 +45,8 @@ type EBSVolume struct {
 	VolumeType       *string
 }
 
+var _ awsup.AWSTask[EBSVolume] = &EBSVolume{}
+
 var _ fi.CompareWithID = &EBSVolume{}
 var _ fi.CloudupTaskNormalize = &EBSVolume{}
 

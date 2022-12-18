@@ -45,6 +45,8 @@ type DNSZone struct {
 	PrivateVPC *VPC
 }
 
+var _ awsup.AWSTask[DNSZone] = &DNSZone{}
+
 var _ fi.CompareWithID = &DNSZone{}
 
 func (e *DNSZone) CompareWithID() *string {

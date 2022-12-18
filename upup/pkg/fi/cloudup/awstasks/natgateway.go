@@ -51,6 +51,8 @@ type NatGateway struct {
 	AssociatedRouteTable *RouteTable
 }
 
+var _ awsup.AWSTask[NatGateway] = &NatGateway{}
+
 var _ fi.CompareWithID = &NatGateway{}
 
 func (e *NatGateway) CompareWithID() *string {

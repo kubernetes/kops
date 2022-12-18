@@ -47,6 +47,8 @@ type Route struct {
 	VPCPeeringConnectionID    *string
 }
 
+var _ awsup.AWSTask[Route] = &Route{}
+
 func (e *Route) Find(c *fi.CloudupContext) (*Route, error) {
 	cloud := c.T.Cloud.(awsup.AWSCloud)
 

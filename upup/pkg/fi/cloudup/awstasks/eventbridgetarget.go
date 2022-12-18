@@ -39,6 +39,8 @@ type EventBridgeTarget struct {
 	SQSQueue *SQS
 }
 
+var _ awsup.AWSTask[EventBridgeTarget] = &EventBridgeTarget{}
+
 var _ fi.CompareWithID = &EventBridgeTarget{}
 
 func (eb *EventBridgeTarget) CompareWithID() *string {

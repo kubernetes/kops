@@ -74,6 +74,8 @@ type ClassicLoadBalancer struct {
 	Shared *bool
 }
 
+var _ awsup.AWSTask[ClassicLoadBalancer] = &ClassicLoadBalancer{}
+
 var _ fi.CompareWithID = &ClassicLoadBalancer{}
 var _ fi.CloudupTaskNormalize = &ClassicLoadBalancer{}
 

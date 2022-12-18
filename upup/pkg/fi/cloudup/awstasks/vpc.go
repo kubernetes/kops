@@ -58,6 +58,8 @@ type VPC struct {
 }
 
 var (
+	_ awsup.AWSTask[VPC] = &VPC{}
+
 	_ fi.CompareWithID            = &VPC{}
 	_ fi.CloudupProducesDeletions = &VPC{}
 )

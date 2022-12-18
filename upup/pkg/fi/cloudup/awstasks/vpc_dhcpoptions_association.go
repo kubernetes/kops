@@ -36,6 +36,8 @@ type VPCDHCPOptionsAssociation struct {
 	DHCPOptions *DHCPOptions
 }
 
+var _ awsup.AWSTask[VPCDHCPOptionsAssociation] = &VPCDHCPOptionsAssociation{}
+
 func (e *VPCDHCPOptionsAssociation) Find(c *fi.CloudupContext) (*VPCDHCPOptionsAssociation, error) {
 	cloud := c.T.Cloud.(awsup.AWSCloud)
 

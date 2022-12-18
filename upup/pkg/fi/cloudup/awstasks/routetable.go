@@ -42,6 +42,8 @@ type RouteTable struct {
 	Tags map[string]string
 }
 
+var _ awsup.AWSTask[RouteTable] = &RouteTable{}
+
 var _ fi.CompareWithID = &RouteTable{}
 
 func (e *RouteTable) CompareWithID() *string {

@@ -26,6 +26,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
@@ -55,6 +56,8 @@ type Instance struct {
 	AssociatePublicIP  *bool
 	IAMInstanceProfile *IAMInstanceProfile
 }
+
+var _ awsup.AWSTask[Instance] = &Instance{}
 
 var _ fi.CompareWithID = &Instance{}
 
@@ -205,6 +208,11 @@ func (_ *Instance) CheckChanges(a, e, changes *Instance) error {
 		}
 	}
 	return nil
+}
+
+func (_ *Instance) RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *Instance) error {
+	// There's (likely) no barrier to implementing this, we simply haven't needed it
+	return fmt.Errorf("terraform rendering of Instances is not currently implemented")
 }
 
 func (_ *Instance) RenderAWS(ctx *fi.CloudupContext, t *awsup.AWSAPITarget, a, e, changes *Instance) error {

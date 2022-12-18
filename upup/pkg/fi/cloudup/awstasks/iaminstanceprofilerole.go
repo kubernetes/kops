@@ -38,6 +38,8 @@ type IAMInstanceProfileRole struct {
 	Role            *IAMRole
 }
 
+var _ awsup.AWSTask[IAMInstanceProfileRole] = &IAMInstanceProfileRole{}
+
 func (e *IAMInstanceProfileRole) Find(c *fi.CloudupContext) (*IAMInstanceProfileRole, error) {
 	cloud := c.T.Cloud.(awsup.AWSCloud)
 

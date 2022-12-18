@@ -24,6 +24,7 @@ import (
 	"k8s.io/klog/v2"
 
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
 type AWSAPITarget struct {
@@ -31,6 +32,14 @@ type AWSAPITarget struct {
 }
 
 var _ fi.CloudupTarget = &AWSAPITarget{}
+
+// AWS tasks should this function common signature; even though we currently invoke by reflection.
+// This lets us catch common mistakes, and we may be able to use this instead of reflection in future.
+type AWSTask[T any] interface {
+	fi.CloudupTask
+	RenderAWS(ctx *fi.CloudupContext, t *AWSAPITarget, a, e, changes *T) error
+	RenderTerraform(ctx *fi.CloudupContext, t *terraform.TerraformTarget, a, e, changes *T) error
+}
 
 func NewAWSAPITarget(cloud AWSCloud) *AWSAPITarget {
 	return &AWSAPITarget{
