@@ -79,7 +79,6 @@ func (i *Installation) Run() error {
 	if err != nil {
 		return fmt.Errorf("error building context: %v", err)
 	}
-	defer context.Close()
 
 	err = context.RunTasks(i.RunTasksOptions)
 	if err != nil {
