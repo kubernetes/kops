@@ -106,7 +106,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 	securityGroups = append(securityGroups, b.LinkToSecurityGroup(securityGroupName))
 
 	if b.Cluster.Spec.CloudProvider.Openstack.Loadbalancer == nil && ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
-		securityGroups = append(securityGroups, b.LinkToSecurityGroup(b.Cluster.Spec.API.PublicName))
+		securityGroups = append(securityGroups, b.LinkToSecurityGroup(b.APIResourceName()))
 	}
 
 	r := strings.NewReplacer("_", "-", ".", "-")
@@ -285,14 +285,14 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			return fmt.Errorf("could not find subnet for Kubernetes API loadbalancer")
 		}
 		lbTask := &openstacktasks.LB{
-			Name:      fi.PtrTo(b.Cluster.Spec.API.PublicName),
+			Name:      fi.PtrTo(b.APIResourceName()),
 			Subnet:    fi.PtrTo(lbSubnetName),
 			Lifecycle: b.Lifecycle,
 		}
 
 		useVIPACL := b.UseVIPACL()
 		if !useVIPACL {
-			lbTask.SecurityGroup = b.LinkToSecurityGroup(b.Cluster.Spec.API.PublicName)
+			lbTask.SecurityGroup = b.LinkToSecurityGroup(b.APIResourceName())
 		}
 
 		c.AddTask(lbTask)
