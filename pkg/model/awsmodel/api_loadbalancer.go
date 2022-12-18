@@ -187,6 +187,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			TargetGroups:     make([]*awstasks.TargetGroup, 0),
 
 			Tags:          tags,
+			ForAPIServer:  true,
 			VPC:           b.LinkToVPC(),
 			Type:          fi.PtrTo("network"),
 			IpAddressType: fi.PtrTo("ipv4"),
@@ -224,7 +225,8 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				Timeout: fi.PtrTo(int64(300)),
 			},
 
-			Tags: tags,
+			Tags:         tags,
+			ForAPIServer: true,
 		}
 
 		if b.Cluster.UsesNoneDNS() {
@@ -590,13 +592,6 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				})
 			}
 		}
-	}
-
-	if b.Cluster.IsGossip() || b.Cluster.UsesPrivateDNS() || b.Cluster.UsesNoneDNS() {
-		// Ensure the LB hostname is included in the TLS certificate,
-		// if we're not going to use an alias for it
-		clb.ForAPIServer = true
-		nlb.ForAPIServer = true
 	}
 
 	return nil
