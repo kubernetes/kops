@@ -57,12 +57,12 @@ type MasterVolumeBuilder struct {
 	Lifecycle fi.Lifecycle
 }
 
-var _ fi.ModelBuilder = &MasterVolumeBuilder{}
+var _ fi.CloudupModelBuilder = &MasterVolumeBuilder{}
 
-func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *MasterVolumeBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	for _, etcd := range b.Cluster.Spec.EtcdClusters {
 		for _, m := range etcd.Members {
-			// EBS volume for each member of the each etcd cluster
+			// EBS volume for each member of each etcd cluster
 			prefix := m.Name + ".etcd-" + etcd.Name
 			name := prefix + "." + b.ClusterName()
 
@@ -130,7 +130,7 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
-func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, zone string, etcd kops.EtcdClusterSpec, m kops.EtcdMemberSpec, allMembers []string) error {
+func (b *MasterVolumeBuilder) addAWSVolume(c *fi.CloudupModelBuilderContext, name string, volumeSize int32, zone string, etcd kops.EtcdClusterSpec, m kops.EtcdMemberSpec, allMembers []string) error {
 	// https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html
 	volumeType := fi.ValueOf(m.VolumeType)
 	if volumeType == "" {
@@ -223,7 +223,7 @@ func validateAWSVolume(name, volumeType string, volumeSize, volumeIops, volumeTh
 	return nil
 }
 
-func (b *MasterVolumeBuilder) addDOVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, zone string, etcd kops.EtcdClusterSpec, m kops.EtcdMemberSpec, allMembers []string) {
+func (b *MasterVolumeBuilder) addDOVolume(c *fi.CloudupModelBuilderContext, name string, volumeSize int32, zone string, etcd kops.EtcdClusterSpec, m kops.EtcdMemberSpec, allMembers []string) {
 	// required that names start with a lower case and only contains letters, numbers and hyphens
 	name = "kops-" + do.SafeClusterName(name)
 
@@ -250,7 +250,7 @@ func (b *MasterVolumeBuilder) addDOVolume(c *fi.ModelBuilderContext, name string
 	c.AddTask(t)
 }
 
-func (b *MasterVolumeBuilder) addGCEVolume(c *fi.ModelBuilderContext, prefix string, volumeSize int32, zone string, etcd kops.EtcdClusterSpec, m kops.EtcdMemberSpec, allMembers []string) {
+func (b *MasterVolumeBuilder) addGCEVolume(c *fi.CloudupModelBuilderContext, prefix string, volumeSize int32, zone string, etcd kops.EtcdClusterSpec, m kops.EtcdMemberSpec, allMembers []string) {
 	volumeType := fi.ValueOf(m.VolumeType)
 	if volumeType == "" {
 		volumeType = DefaultGCEEtcdVolumeType
@@ -298,7 +298,7 @@ func (b *MasterVolumeBuilder) addGCEVolume(c *fi.ModelBuilderContext, prefix str
 	c.AddTask(t)
 }
 
-func (b *MasterVolumeBuilder) addHetznerVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, zone string, etcd kops.EtcdClusterSpec, m kops.EtcdMemberSpec, allMembers []string) {
+func (b *MasterVolumeBuilder) addHetznerVolume(c *fi.CloudupModelBuilderContext, name string, volumeSize int32, zone string, etcd kops.EtcdClusterSpec, m kops.EtcdMemberSpec, allMembers []string) {
 	tags := make(map[string]string)
 	tags[hetzner.TagKubernetesClusterName] = b.Cluster.ObjectMeta.Name
 	tags[hetzner.TagKubernetesInstanceGroup] = fi.ValueOf(m.InstanceGroup)
@@ -316,7 +316,7 @@ func (b *MasterVolumeBuilder) addHetznerVolume(c *fi.ModelBuilderContext, name s
 	return
 }
 
-func (b *MasterVolumeBuilder) addOpenstackVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, zone string, etcd kops.EtcdClusterSpec, m kops.EtcdMemberSpec, allMembers []string) error {
+func (b *MasterVolumeBuilder) addOpenstackVolume(c *fi.CloudupModelBuilderContext, name string, volumeSize int32, zone string, etcd kops.EtcdClusterSpec, m kops.EtcdMemberSpec, allMembers []string) error {
 	volumeType := fi.ValueOf(m.VolumeType)
 
 	// The tags are how protokube knows to mount the volume and use it for etcd
@@ -349,7 +349,7 @@ func (b *MasterVolumeBuilder) addOpenstackVolume(c *fi.ModelBuilderContext, name
 }
 
 func (b *MasterVolumeBuilder) addAzureVolume(
-	c *fi.ModelBuilderContext,
+	c *fi.CloudupModelBuilderContext,
 	name string,
 	volumeSize int32,
 	zone string,
@@ -397,7 +397,7 @@ func (b *MasterVolumeBuilder) addAzureVolume(
 	return nil
 }
 
-func (b *MasterVolumeBuilder) addScalewayVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, zone string, etcd kops.EtcdClusterSpec, m kops.EtcdMemberSpec, allMembers []string) {
+func (b *MasterVolumeBuilder) addScalewayVolume(c *fi.CloudupModelBuilderContext, name string, volumeSize int32, zone string, etcd kops.EtcdClusterSpec, m kops.EtcdMemberSpec, allMembers []string) {
 	tags := []string{
 		fmt.Sprintf("%s=%s", scaleway.TagClusterName, b.Cluster.ObjectMeta.Name),
 		fmt.Sprintf("%s=%s", scaleway.TagNameEtcdClusterPrefix, etcd.Name),

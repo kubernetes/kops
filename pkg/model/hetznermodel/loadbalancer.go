@@ -34,9 +34,9 @@ type LoadBalancerModelBuilder struct {
 	Lifecycle fi.Lifecycle
 }
 
-var _ fi.ModelBuilder = &LoadBalancerModelBuilder{}
+var _ fi.CloudupModelBuilder = &LoadBalancerModelBuilder{}
 
-func (b *LoadBalancerModelBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *LoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	controlPlaneLabelSelector := []string{
 		fmt.Sprintf("%s=%s", hetzner.TagKubernetesClusterName, b.ClusterName()),
 		fmt.Sprintf("%s=%s", hetzner.TagKubernetesInstanceRole, string(kops.InstanceGroupRoleControlPlane)),

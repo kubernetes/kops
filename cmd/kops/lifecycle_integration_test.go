@@ -545,7 +545,7 @@ func updateEnsureNoChanges(ctx context.Context, t *testing.T, factory *util.Fact
 		t.Fatalf("error running update cluster %q: %v", clusterName, err)
 	}
 
-	target := results.Target.(*fi.DryRunTarget)
+	target := results.Target.(*fi.CloudupDryRunTarget)
 	if target.HasChanges() {
 		var b bytes.Buffer
 		if err := target.PrintReport(results.TaskMap, &b); err != nil {

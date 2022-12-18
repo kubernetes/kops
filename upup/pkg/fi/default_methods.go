@@ -23,10 +23,22 @@ import (
 	"k8s.io/kops/util/pkg/reflectutils"
 )
 
+// NodeupDefaultDeltaRunMethod implements the standard change-based run procedure:
+// find the existing item; compare properties; call render with (actual, expected, changes)
+func NodeupDefaultDeltaRunMethod(e NodeupTask, c *NodeupContext) error {
+	return DefaultDeltaRunMethod[NodeupSubContext](e, c)
+}
+
+// CloudupDefaultDeltaRunMethod implements the standard change-based run procedure:
+// find the existing item; compare properties; call render with (actual, expected, changes)
+func CloudupDefaultDeltaRunMethod(e CloudupTask, c *CloudupContext) error {
+	return DefaultDeltaRunMethod[CloudupSubContext](e, c)
+}
+
 // DefaultDeltaRunMethod implements the standard change-based run procedure:
 // find the existing item; compare properties; call render with (actual, expected, changes)
-func DefaultDeltaRunMethod(e Task, c *Context) error {
-	var a Task
+func DefaultDeltaRunMethod[T SubContext](e Task[T], c *Context[T]) error {
+	var a Task[T]
 	var err error
 
 	lifecycle := LifecycleSync
@@ -42,7 +54,7 @@ func DefaultDeltaRunMethod(e Task, c *Context) error {
 	}
 
 	checkExisting := c.CheckExisting
-	if hce, ok := e.(HasCheckExisting); ok {
+	if hce, ok := e.(HasCheckExisting[T]); ok {
 		checkExisting = hce.CheckExisting(c)
 	}
 
@@ -61,10 +73,10 @@ func DefaultDeltaRunMethod(e Task, c *Context) error {
 
 	if a == nil {
 		// This is kind of subtle.  We want an interface pointer to a struct of the correct type...
-		a = reflect.New(reflect.TypeOf(e)).Elem().Interface().(Task)
+		a = reflect.New(reflect.TypeOf(e)).Elem().Interface().(Task[T])
 	}
 
-	changes := reflect.New(reflect.TypeOf(e).Elem()).Interface().(Task)
+	changes := reflect.New(reflect.TypeOf(e).Elem()).Interface().(Task[T])
 	changed := BuildChanges(a, e, changes)
 
 	if changed {
@@ -86,17 +98,17 @@ func DefaultDeltaRunMethod(e Task, c *Context) error {
 		}
 	}
 
-	if producesDeletions, ok := e.(ProducesDeletions); ok && c.Target.ProcessDeletions() {
-		var deletions []Deletion
+	if producesDeletions, ok := e.(ProducesDeletions[T]); ok && c.Target.ProcessDeletions() {
+		var deletions []Deletion[T]
 		deletions, err = producesDeletions.FindDeletions(c)
 		if err != nil {
 			return err
 		}
 		for _, deletion := range deletions {
-			if _, ok := c.Target.(*DryRunTarget); ok {
-				err = c.Target.(*DryRunTarget).Delete(deletion)
-			} else if _, ok := c.Target.(*DryRunTarget); ok {
-				err = c.Target.(*DryRunTarget).Delete(deletion)
+			if _, ok := c.Target.(*DryRunTarget[T]); ok {
+				err = c.Target.(*DryRunTarget[T]).Delete(deletion)
+			} else if _, ok := c.Target.(*DryRunTarget[T]); ok {
+				err = c.Target.(*DryRunTarget[T]).Delete(deletion)
 			} else {
 				err = deletion.Delete(c.Target)
 			}
@@ -110,7 +122,7 @@ func DefaultDeltaRunMethod(e Task, c *Context) error {
 }
 
 // invokeCheckChanges calls the checkChanges method by reflection
-func invokeCheckChanges(a, e, changes Task) error {
+func invokeCheckChanges[T SubContext](a, e, changes Task[T]) error {
 	rv, err := reflectutils.InvokeMethod(e, "CheckChanges", a, e, changes)
 	if err != nil {
 		return err
@@ -122,14 +134,14 @@ func invokeCheckChanges(a, e, changes Task) error {
 }
 
 // invokeFind calls the find method by reflection
-func invokeFind(e Task, c *Context) (Task, error) {
+func invokeFind[T SubContext](e Task[T], c *Context[T]) (Task[T], error) {
 	rv, err := reflectutils.InvokeMethod(e, "Find", c)
 	if err != nil {
 		return nil, err
 	}
-	var task Task
+	var task Task[T]
 	if !rv[0].IsNil() {
-		task = rv[0].Interface().(Task)
+		task = rv[0].Interface().(Task[T])
 	}
 	if !rv[1].IsNil() {
 		err = rv[1].Interface().(error)
@@ -138,7 +150,7 @@ func invokeFind(e Task, c *Context) (Task, error) {
 }
 
 // invokeShouldCreate calls the ShouldCreate method by reflection, if it exists
-func invokeShouldCreate(a, e, changes Task) (bool, error) {
+func invokeShouldCreate[T SubContext](a, e, changes Task[T]) (bool, error) {
 	rv, err := reflectutils.InvokeMethod(e, "ShouldCreate", a, e, changes)
 	if err != nil {
 		if reflectutils.IsMethodNotFound(err) {

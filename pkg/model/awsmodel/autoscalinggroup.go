@@ -60,10 +60,10 @@ type AutoscalingGroupModelBuilder struct {
 	Cluster                *kops.Cluster
 }
 
-var _ fi.ModelBuilder = &AutoscalingGroupModelBuilder{}
+var _ fi.CloudupModelBuilder = &AutoscalingGroupModelBuilder{}
 
 // Build is responsible for constructing the aws autoscaling group from the kops spec
-func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	for _, ig := range b.InstanceGroups {
 		name := b.AutoscalingGroupName(ig)
 
@@ -131,7 +131,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 }
 
 // buildLaunchTemplateTask is responsible for creating the template task into the aws model
-func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilderContext, name string, ig *kops.InstanceGroup) (*awstasks.LaunchTemplate, error) {
+func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.CloudupModelBuilderContext, name string, ig *kops.InstanceGroup) (*awstasks.LaunchTemplate, error) {
 	// @step: add the iam instance profile
 	link, err := b.LinkToIAMInstanceProfile(ig)
 	if err != nil {
@@ -331,7 +331,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 }
 
 // buildSecurityGroups is responsible for building security groups for a launch template.
-func (b *AutoscalingGroupModelBuilder) buildSecurityGroups(c *fi.ModelBuilderContext, ig *kops.InstanceGroup) ([]*awstasks.SecurityGroup, error) {
+func (b *AutoscalingGroupModelBuilder) buildSecurityGroups(c *fi.CloudupModelBuilderContext, ig *kops.InstanceGroup) ([]*awstasks.SecurityGroup, error) {
 	// @step: if required we add the override for the security group for this instancegroup
 	sgLink := b.LinkToSecurityGroup(ig.Spec.Role)
 	if ig.Spec.SecurityGroupOverride != nil {
@@ -379,7 +379,7 @@ func (b *AutoscalingGroupModelBuilder) buildSecurityGroups(c *fi.ModelBuilderCon
 }
 
 // buildAutoscalingGroupTask is responsible for building the autoscaling task into the model
-func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuilderContext, name string, ig *kops.InstanceGroup) (*awstasks.AutoscalingGroup, error) {
+func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.CloudupModelBuilderContext, name string, ig *kops.InstanceGroup) (*awstasks.AutoscalingGroup, error) {
 	t := &awstasks.AutoscalingGroup{
 		Name:      fi.PtrTo(name),
 		Lifecycle: b.Lifecycle,

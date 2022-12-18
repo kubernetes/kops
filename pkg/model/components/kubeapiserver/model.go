@@ -36,11 +36,11 @@ type KubeApiserverBuilder struct {
 	AssetBuilder *assets.AssetBuilder
 }
 
-var _ fi.ModelBuilder = &KubeApiserverBuilder{}
+var _ fi.CloudupModelBuilder = &KubeApiserverBuilder{}
 
 // Build creates the tasks relating to kube-apiserver
 // Currently we only build the kube-apiserver-healthcheck sidecar
-func (b *KubeApiserverBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *KubeApiserverBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	manifest, err := b.buildManifest()
 	if err != nil {
 		return err

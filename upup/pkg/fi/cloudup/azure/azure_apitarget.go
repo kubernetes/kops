@@ -25,7 +25,7 @@ type AzureAPITarget struct {
 	Cloud AzureCloud
 }
 
-var _ fi.Target = &AzureAPITarget{}
+var _ fi.CloudupTarget = &AzureAPITarget{}
 
 // NewAzureAPITarget returns a new AzureAPITarget.
 func NewAzureAPITarget(cloud AzureCloud) *AzureAPITarget {
@@ -36,7 +36,7 @@ func NewAzureAPITarget(cloud AzureCloud) *AzureAPITarget {
 
 // Finish is called by a lifecycle drive to finish the lifecycle of
 // the target.
-func (t *AzureAPITarget) Finish(taskMap map[string]fi.Task) error {
+func (t *AzureAPITarget) Finish(taskMap map[string]fi.CloudupTask) error {
 	return nil
 }
 

@@ -31,10 +31,10 @@ type VolumesBuilder struct {
 	*NodeupModelContext
 }
 
-var _ fi.ModelBuilder = &VolumesBuilder{}
+var _ fi.NodeupModelBuilder = &VolumesBuilder{}
 
 // Build is responsible for handling the mounting additional volumes onto the instance
-func (b *VolumesBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *VolumesBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	// @step: check if the instancegroup has any volumes to mount
 	if !b.UseVolumeMounts() {
 		klog.V(1).Info("Skipping the volume builder, no volumes defined for this instancegroup")

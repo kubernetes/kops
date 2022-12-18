@@ -48,7 +48,7 @@ func (e *Subnet) CompareWithID() *string {
 	return e.Name
 }
 
-func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
+func (e *Subnet) Find(c *fi.CloudupContext) (*Subnet, error) {
 	cloud := c.Cloud.(gce.GCECloud)
 	_, project, err := gce.ParseNameAndProjectFromNetworkID(c.Cluster.Spec.Networking.NetworkID)
 	if err != nil {
@@ -93,8 +93,8 @@ func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
 	return actual, nil
 }
 
-func (e *Subnet) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
+func (e *Subnet) Run(c *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(e, c)
 }
 
 func (_ *Subnet) CheckChanges(a, e, changes *Subnet) error {

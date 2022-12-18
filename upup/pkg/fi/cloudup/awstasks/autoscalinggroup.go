@@ -101,7 +101,7 @@ type AutoscalingGroup struct {
 }
 
 var _ fi.CompareWithID = &AutoscalingGroup{}
-var _ fi.TaskNormalize = &AutoscalingGroup{}
+var _ fi.CloudupTaskNormalize = &AutoscalingGroup{}
 
 // CompareWithID returns the ID of the ASG
 func (e *AutoscalingGroup) CompareWithID() *string {
@@ -109,7 +109,7 @@ func (e *AutoscalingGroup) CompareWithID() *string {
 }
 
 // Find is used to discover the ASG in the cloud provider
-func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
+func (e *AutoscalingGroup) Find(c *fi.CloudupContext) (*AutoscalingGroup, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	g, err := findAutoscalingGroup(cloud, fi.ValueOf(e.Name))
@@ -316,7 +316,7 @@ func findAutoscalingGroup(cloud awsup.AWSCloud, name string) (*autoscaling.Group
 	return nil, fmt.Errorf("found multiple AutoscalingGroups with name: %q", name)
 }
 
-func (e *AutoscalingGroup) Normalize(c *fi.Context) error {
+func (e *AutoscalingGroup) Normalize(c *fi.CloudupContext) error {
 	sort.Strings(e.Metrics)
 	c.Cloud.(awsup.AWSCloud).AddTags(e.Name, e.Tags)
 
@@ -324,8 +324,8 @@ func (e *AutoscalingGroup) Normalize(c *fi.Context) error {
 }
 
 // Run is responsible for running the task
-func (e *AutoscalingGroup) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
+func (e *AutoscalingGroup) Run(c *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(e, c)
 }
 
 // CheckChanges is responsible for checking for changes??

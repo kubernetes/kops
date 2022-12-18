@@ -48,7 +48,7 @@ func NewCloudInitTarget(out io.Writer) *CloudInitTarget {
 	return t
 }
 
-var _ fi.Target = &CloudInitTarget{}
+var _ fi.NodeupTarget = &CloudInitTarget{}
 
 type CloudConfig struct {
 	PackageUpdate bool `json:"package_update"`
@@ -168,7 +168,7 @@ func (t *CloudInitTarget) AddCommand(addBehaviour AddBehaviour, args ...string) 
 	t.Config.RunCommmands = append(t.Config.RunCommmands, args)
 }
 
-func (t *CloudInitTarget) Finish(taskMap map[string]fi.Task) error {
+func (t *CloudInitTarget) Finish(taskMap map[string]fi.NodeupTask) error {
 	d, err := utils.YamlMarshal(t.Config)
 	if err != nil {
 		return fmt.Errorf("error serializing config to yaml: %v", err)

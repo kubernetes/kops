@@ -24,8 +24,8 @@ import (
 )
 
 func TestIssueCertFileDependencies(t *testing.T) {
-	context := &fi.ModelBuilderContext{
-		Tasks: make(map[string]fi.Task),
+	context := &fi.NodeupModelBuilderContext{
+		Tasks: make(map[string]fi.NodeupTask),
 	}
 
 	issue := &IssueCert{Name: "testCert"}
@@ -43,7 +43,7 @@ func TestIssueCertFileDependencies(t *testing.T) {
 		if !assert.NotNil(t, task) {
 			continue
 		}
-		deps := task.(fi.HasDependencies).GetDependencies(context.Tasks)
+		deps := task.(fi.NodeupHasDependencies).GetDependencies(context.Tasks)
 
 		taskNames = nil
 		for _, task := range deps {

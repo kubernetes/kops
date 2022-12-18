@@ -72,7 +72,7 @@ func TestSubnetCreate(t *testing.T) {
 	cloud.MockEC2 = c
 
 	// We define a function so we can rebuild the tasks, because we modify in-place when running
-	buildTasks := func() map[string]fi.Task {
+	buildTasks := func() map[string]fi.CloudupTask {
 		vpc1 := &VPC{
 			Name:      s("vpc1"),
 			Lifecycle: fi.LifecycleSync,
@@ -88,7 +88,7 @@ func TestSubnetCreate(t *testing.T) {
 			Tags:                map[string]string{"Name": "subnet1"},
 		}
 
-		return map[string]fi.Task{
+		return map[string]fi.CloudupTask{
 			"subnet1": subnet1,
 			"vpc1":    vpc1,
 		}
@@ -102,7 +102,7 @@ func TestSubnetCreate(t *testing.T) {
 			Cloud: cloud,
 		}
 
-		context, err := fi.NewContext(ctx, target, nil, cloud, nil, nil, nil, true, allTasks)
+		context, err := fi.NewCloudupContext(ctx, target, nil, cloud, nil, nil, nil, true, allTasks)
 		if err != nil {
 			t.Fatalf("error building context: %v", err)
 		}
@@ -157,7 +157,7 @@ func TestSubnetCreateIPv6(t *testing.T) {
 	cloud.MockEC2 = c
 
 	// We define a function so we can rebuild the tasks, because we modify in-place when running
-	buildTasks := func() map[string]fi.Task {
+	buildTasks := func() map[string]fi.CloudupTask {
 		vpc1 := &VPC{
 			Name:      s("vpc1"),
 			Lifecycle: fi.LifecycleSync,
@@ -180,7 +180,7 @@ func TestSubnetCreateIPv6(t *testing.T) {
 			Tags:                map[string]string{"Name": "subnet1"},
 		}
 
-		return map[string]fi.Task{
+		return map[string]fi.CloudupTask{
 			"vpc1":    vpc1,
 			"cidr1":   cidr1,
 			"subnet1": subnet1,
@@ -195,7 +195,7 @@ func TestSubnetCreateIPv6(t *testing.T) {
 			Cloud: cloud,
 		}
 
-		context, err := fi.NewContext(ctx, target, nil, cloud, nil, nil, nil, true, allTasks)
+		context, err := fi.NewCloudupContext(ctx, target, nil, cloud, nil, nil, nil, true, allTasks)
 		if err != nil {
 			t.Fatalf("error building context: %v", err)
 		}
@@ -259,7 +259,7 @@ func TestSubnetCreateIPv6NetNum(t *testing.T) {
 	cloud.MockEC2 = c
 
 	// We define a function so we can rebuild the tasks, because we modify in-place when running
-	buildTasks := func() map[string]fi.Task {
+	buildTasks := func() map[string]fi.CloudupTask {
 		vpc1 := &VPC{
 			Name:      s("vpc1"),
 			Lifecycle: fi.LifecycleSync,
@@ -281,7 +281,7 @@ func TestSubnetCreateIPv6NetNum(t *testing.T) {
 			Tags:      map[string]string{"Name": "subnet1"},
 		}
 
-		return map[string]fi.Task{
+		return map[string]fi.CloudupTask{
 			"vpc1":    vpc1,
 			"cidr1":   cidr1,
 			"subnet1": subnet1,
@@ -296,7 +296,7 @@ func TestSubnetCreateIPv6NetNum(t *testing.T) {
 			Cloud: cloud,
 		}
 
-		context, err := fi.NewContext(ctx, target, nil, cloud, nil, nil, nil, true, allTasks)
+		context, err := fi.NewCloudupContext(ctx, target, nil, cloud, nil, nil, nil, true, allTasks)
 		if err != nil {
 			t.Fatalf("error building context: %v", err)
 		}
@@ -398,7 +398,7 @@ func TestSharedSubnetCreateDoesNotCreateNew(t *testing.T) {
 	}
 
 	// We define a function so we can rebuild the tasks, because we modify in-place when running
-	buildTasks := func() map[string]fi.Task {
+	buildTasks := func() map[string]fi.CloudupTask {
 		vpc1 := &VPC{
 			Name:      s("vpc1"),
 			Lifecycle: fi.LifecycleSync,
@@ -417,7 +417,7 @@ func TestSharedSubnetCreateDoesNotCreateNew(t *testing.T) {
 			ID:        subnet.Subnet.SubnetId,
 		}
 
-		return map[string]fi.Task{
+		return map[string]fi.CloudupTask{
 			"subnet1": subnet1,
 			"vpc1":    vpc1,
 		}
@@ -431,7 +431,7 @@ func TestSharedSubnetCreateDoesNotCreateNew(t *testing.T) {
 			Cloud: cloud,
 		}
 
-		context, err := fi.NewContext(ctx, target, nil, cloud, nil, nil, nil, true, allTasks)
+		context, err := fi.NewCloudupContext(ctx, target, nil, cloud, nil, nil, nil, true, allTasks)
 		if err != nil {
 			t.Fatalf("error building context: %v", err)
 		}

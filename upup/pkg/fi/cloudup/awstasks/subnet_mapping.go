@@ -92,8 +92,8 @@ func subnetMappingSlicesEqualIgnoreOrder(l, r []*SubnetMapping) bool {
 	return true
 }
 
-func (e *SubnetMapping) GetDependencies(tasks map[string]fi.Task) []fi.Task {
-	var deps []fi.Task
+func (e *SubnetMapping) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
+	var deps []fi.CloudupTask
 	for _, task := range tasks {
 		if _, ok := task.(*Subnet); ok {
 			deps = append(deps, task)

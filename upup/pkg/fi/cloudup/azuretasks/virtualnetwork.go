@@ -41,9 +41,9 @@ type VirtualNetwork struct {
 }
 
 var (
-	_ fi.Task          = &VirtualNetwork{}
-	_ fi.CompareWithID = &VirtualNetwork{}
-	_ fi.TaskNormalize = &VirtualNetwork{}
+	_ fi.CloudupTask          = &VirtualNetwork{}
+	_ fi.CompareWithID        = &VirtualNetwork{}
+	_ fi.CloudupTaskNormalize = &VirtualNetwork{}
 )
 
 // CompareWithID returns the Name of the VM Scale Set.
@@ -52,7 +52,7 @@ func (n *VirtualNetwork) CompareWithID() *string {
 }
 
 // Find discovers the VirtualNetwork in the cloud provider.
-func (n *VirtualNetwork) Find(c *fi.Context) (*VirtualNetwork, error) {
+func (n *VirtualNetwork) Find(c *fi.CloudupContext) (*VirtualNetwork, error) {
 	cloud := c.Cloud.(azure.AzureCloud)
 	l, err := cloud.VirtualNetwork().List(context.TODO(), *n.ResourceGroup.Name)
 	if err != nil {
@@ -86,14 +86,14 @@ func (n *VirtualNetwork) Find(c *fi.Context) (*VirtualNetwork, error) {
 	}, nil
 }
 
-func (n *VirtualNetwork) Normalize(c *fi.Context) error {
+func (n *VirtualNetwork) Normalize(c *fi.CloudupContext) error {
 	c.Cloud.(azure.AzureCloud).AddClusterTags(n.Tags)
 	return nil
 }
 
 // Run implements fi.Task.Run.
-func (n *VirtualNetwork) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(n, c)
+func (n *VirtualNetwork) Run(c *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(n, c)
 }
 
 // CheckChanges returns an error if a change is not allowed.

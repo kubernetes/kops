@@ -35,7 +35,7 @@ type AptSource struct {
 	Sources []string
 }
 
-func (e *AptSource) Find(c *fi.Context) (*AptSource, error) {
+func (e *AptSource) Find(c *fi.NodeupContext) (*AptSource, error) {
 	return nil, nil
 }
 
@@ -47,8 +47,8 @@ func (f *AptSource) String() string {
 	return f.Name
 }
 
-func (f *AptSource) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(f, c)
+func (f *AptSource) Run(c *fi.NodeupContext) error {
+	return fi.NodeupDefaultDeltaRunMethod(f, c)
 }
 
 func (*AptSource) CheckChanges(a, e, changes *AptSource) error {

@@ -33,7 +33,7 @@ type ClassicLoadBalancerAccessLog struct {
 	S3BucketPrefix *string
 }
 
-func (_ *ClassicLoadBalancerAccessLog) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+func (_ *ClassicLoadBalancerAccessLog) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
 	return nil
 }
 
@@ -58,7 +58,7 @@ type ClassicLoadBalancerConnectionDraining struct {
 	Timeout *int64
 }
 
-func (_ *ClassicLoadBalancerConnectionDraining) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+func (_ *ClassicLoadBalancerConnectionDraining) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
 	return nil
 }
 
@@ -66,7 +66,7 @@ type ClassicLoadBalancerCrossZoneLoadBalancing struct {
 	Enabled *bool
 }
 
-func (_ *ClassicLoadBalancerCrossZoneLoadBalancing) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+func (_ *ClassicLoadBalancerCrossZoneLoadBalancing) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
 	return nil
 }
 
@@ -74,7 +74,7 @@ type ClassicLoadBalancerConnectionSettings struct {
 	IdleTimeout *int64
 }
 
-func (_ *ClassicLoadBalancerConnectionSettings) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+func (_ *ClassicLoadBalancerConnectionSettings) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
 	return nil
 }
 

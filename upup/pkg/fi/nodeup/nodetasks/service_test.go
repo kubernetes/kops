@@ -26,12 +26,12 @@ import (
 func TestServiceTask_Deps(t *testing.T) {
 	s := &Service{}
 
-	tasks := make(map[string]fi.Task)
+	tasks := make(map[string]fi.NodeupTask)
 	tasks["LoadImageTask1"] = &LoadImageTask{}
 	tasks["FileTask1"] = &File{}
 
 	deps := s.GetDependencies(tasks)
-	expected := []fi.Task{tasks["FileTask1"]}
+	expected := []fi.NodeupTask{tasks["FileTask1"]}
 	if !reflect.DeepEqual(expected, deps) {
 		t.Fatalf("unexpected deps.  expected=%v, actual=%v", expected, deps)
 	}
@@ -39,18 +39,18 @@ func TestServiceTask_Deps(t *testing.T) {
 
 type FakeTask struct{}
 
-func (t *FakeTask) Run(*fi.Context) error {
+func (t *FakeTask) Run(*fi.NodeupContext) error {
 	panic("not implemented")
 }
 
 func TestServiceTask_UnknownTypes(t *testing.T) {
 	s := &Service{}
 
-	tasks := make(map[string]fi.Task)
+	tasks := make(map[string]fi.NodeupTask)
 	tasks["FakeTask1"] = &FakeTask{}
 
 	deps := s.GetDependencies(tasks)
-	expected := []fi.Task{tasks["FakeTask1"]}
+	expected := []fi.NodeupTask{tasks["FakeTask1"]}
 	if !reflect.DeepEqual(expected, deps) {
 		t.Fatalf("unexpected deps.  expected=%v, actual=%v", expected, deps)
 	}

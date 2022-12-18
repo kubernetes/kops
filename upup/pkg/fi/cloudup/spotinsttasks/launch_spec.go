@@ -59,17 +59,17 @@ type LaunchSpec struct {
 }
 
 var (
-	_ fi.Task            = &LaunchSpec{}
-	_ fi.CompareWithID   = &LaunchSpec{}
-	_ fi.HasDependencies = &LaunchSpec{}
+	_ fi.CloudupTask            = &LaunchSpec{}
+	_ fi.CompareWithID          = &LaunchSpec{}
+	_ fi.CloudupHasDependencies = &LaunchSpec{}
 )
 
 func (o *LaunchSpec) CompareWithID() *string {
 	return o.Name
 }
 
-func (o *LaunchSpec) GetDependencies(tasks map[string]fi.Task) []fi.Task {
-	var deps []fi.Task
+func (o *LaunchSpec) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
+	var deps []fi.CloudupTask
 
 	if o.IAMInstanceProfile != nil {
 		deps = append(deps, o.IAMInstanceProfile)
@@ -124,9 +124,9 @@ func (o *LaunchSpec) find(svc spotinst.LaunchSpecService, oceanID string) (*aws.
 	return out, nil
 }
 
-var _ fi.HasCheckExisting = &LaunchSpec{}
+var _ fi.CloudupHasCheckExisting = &LaunchSpec{}
 
-func (o *LaunchSpec) Find(c *fi.Context) (*LaunchSpec, error) {
+func (o *LaunchSpec) Find(c *fi.CloudupContext) (*LaunchSpec, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	ocean, err := o.Ocean.find(cloud.Spotinst().Ocean())
@@ -333,13 +333,13 @@ func (o *LaunchSpec) Find(c *fi.Context) (*LaunchSpec, error) {
 	return actual, nil
 }
 
-func (o *LaunchSpec) CheckExisting(c *fi.Context) bool {
+func (o *LaunchSpec) CheckExisting(c *fi.CloudupContext) bool {
 	spec, err := o.Find(c)
 	return err == nil && spec != nil
 }
 
-func (o *LaunchSpec) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(o, c)
+func (o *LaunchSpec) Run(c *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(o, c)
 }
 
 func (s *LaunchSpec) CheckChanges(a, e, changes *LaunchSpec) error {

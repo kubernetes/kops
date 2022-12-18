@@ -137,7 +137,7 @@ func TestVMScaleSetRenderAzure(t *testing.T) {
 
 func TestVMScaleSetFind(t *testing.T) {
 	cloud := NewMockAzureCloud("eastus")
-	ctx := &fi.Context{
+	ctx := &fi.CloudupContext{
 		Cloud: cloud,
 	}
 
@@ -301,7 +301,7 @@ func TestVMScaleSetFind(t *testing.T) {
 
 func TestVMScaleSetRun(t *testing.T) {
 	cloud := NewMockAzureCloud("eastus")
-	ctx := &fi.Context{
+	ctx := &fi.CloudupContext{
 		Cloud:  cloud,
 		Target: azure.NewAzureAPITarget(cloud),
 	}

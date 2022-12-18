@@ -41,7 +41,7 @@ type DockerBuilder struct {
 	*NodeupModelContext
 }
 
-var _ fi.ModelBuilder = &DockerBuilder{}
+var _ fi.NodeupModelBuilder = &DockerBuilder{}
 
 func (b *DockerBuilder) dockerVersion() (string, error) {
 	dockerVersion := ""
@@ -55,7 +55,7 @@ func (b *DockerBuilder) dockerVersion() (string, error) {
 }
 
 // Build is responsible for configuring the docker daemon
-func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *DockerBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	if b.Cluster.Spec.ContainerRuntime != "docker" {
 		return nil
 	}
@@ -114,7 +114,7 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 				c.AddTask(&nodetasks.Chattr{
 					File: filepath.Join("/usr/bin", k),
 					Mode: "+i",
-					Deps: []fi.Task{fileTask},
+					Deps: []fi.NodeupTask{fileTask},
 				})
 			}
 		}
@@ -309,7 +309,7 @@ func (b *DockerBuilder) buildSystemdHealthCheckTimer() *nodetasks.Service {
 }
 
 // buildContainerOSConfigurationDropIn is responsible for configuring the docker daemon options
-func (b *DockerBuilder) buildContainerOSConfigurationDropIn(c *fi.ModelBuilderContext) error {
+func (b *DockerBuilder) buildContainerOSConfigurationDropIn(c *fi.NodeupModelBuilderContext) error {
 	lines := []string{
 		"[Service]",
 		"EnvironmentFile=/etc/sysconfig/docker",
@@ -345,7 +345,7 @@ func (b *DockerBuilder) buildContainerOSConfigurationDropIn(c *fi.ModelBuilderCo
 }
 
 // buildSysconfig is responsible for extracting the docker configuration and writing the sysconfig file
-func (b *DockerBuilder) buildSysconfig(c *fi.ModelBuilderContext) error {
+func (b *DockerBuilder) buildSysconfig(c *fi.NodeupModelBuilderContext) error {
 	var docker kops.DockerConfig
 	if b.Cluster.Spec.Docker != nil {
 		docker = *b.Cluster.Spec.Docker

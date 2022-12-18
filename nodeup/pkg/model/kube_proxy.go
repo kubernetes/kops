@@ -38,11 +38,11 @@ type KubeProxyBuilder struct {
 	*NodeupModelContext
 }
 
-var _ fi.ModelBuilder = &KubeProxyBuilder{}
+var _ fi.NodeupModelBuilder = &KubeProxyBuilder{}
 
 // Build is responsible for building the kube-proxy manifest
 // @TODO we should probably change this to a daemonset in the future and follow the kubeadm path
-func (b *KubeProxyBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *KubeProxyBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	if b.Cluster.Spec.KubeProxy.Enabled != nil && !*b.Cluster.Spec.KubeProxy.Enabled {
 		klog.V(2).Infof("Kube-proxy is disabled, will not create configuration for it.")
 		return nil

@@ -213,7 +213,7 @@ func (c *NodeupModelContext) KubeletKubeConfig() string {
 }
 
 // BuildIssuedKubeconfig generates a kubeconfig with a locally issued client certificate.
-func (c *NodeupModelContext) BuildIssuedKubeconfig(name string, subject nodetasks.PKIXName, ctx *fi.ModelBuilderContext) *fi.TaskDependentResource {
+func (c *NodeupModelContext) BuildIssuedKubeconfig(name string, subject nodetasks.PKIXName, ctx *fi.NodeupModelBuilderContext) *fi.NodeupTaskDependentResource {
 	issueCert := &nodetasks.IssueCert{
 		Name:      name,
 		Signer:    fi.CertificateIDCA,
@@ -248,8 +248,8 @@ func (c *NodeupModelContext) GetBootstrapCert(name string, signer string) (cert,
 	b, ok := c.bootstrapCerts[name]
 	if !ok {
 		b = &nodetasks.BootstrapCert{
-			Cert: &fi.TaskDependentResource{},
-			Key:  &fi.TaskDependentResource{},
+			Cert: &fi.NodeupTaskDependentResource{},
+			Key:  &fi.NodeupTaskDependentResource{},
 		}
 		c.bootstrapCerts[name] = b
 	}
@@ -261,7 +261,7 @@ func (c *NodeupModelContext) GetBootstrapCert(name string, signer string) (cert,
 }
 
 // BuildBootstrapKubeconfig generates a kubeconfig with a client certificate from either kops-controller or the state store.
-func (c *NodeupModelContext) BuildBootstrapKubeconfig(name string, ctx *fi.ModelBuilderContext) (fi.Resource, error) {
+func (c *NodeupModelContext) BuildBootstrapKubeconfig(name string, ctx *fi.NodeupModelBuilderContext) (fi.Resource, error) {
 	if c.UseKopsControllerForNodeBootstrap() {
 		cert, key, err := c.GetBootstrapCert(name, fi.CertificateIDCA)
 		if err != nil {
@@ -397,16 +397,16 @@ func (c *NodeupModelContext) KubectlPath() string {
 }
 
 // BuildCertificatePairTask creates the tasks to create the certificate and private key files.
-func (c *NodeupModelContext) BuildCertificatePairTask(ctx *fi.ModelBuilderContext, name, path, filename string, owner *string, beforeServices []string) error {
+func (c *NodeupModelContext) BuildCertificatePairTask(ctx *fi.NodeupModelBuilderContext, name, path, filename string, owner *string, beforeServices []string) error {
 	return c.buildCertificatePairTask(ctx, name, path, filename, owner, beforeServices, true)
 }
 
 // BuildPrivateKeyTask builds a task to create the private key file.
-func (c *NodeupModelContext) BuildPrivateKeyTask(ctx *fi.ModelBuilderContext, name, path, filename string, owner *string, beforeServices []string) error {
+func (c *NodeupModelContext) BuildPrivateKeyTask(ctx *fi.NodeupModelBuilderContext, name, path, filename string, owner *string, beforeServices []string) error {
 	return c.buildCertificatePairTask(ctx, name, path, filename, owner, beforeServices, false)
 }
 
-func (c *NodeupModelContext) buildCertificatePairTask(ctx *fi.ModelBuilderContext, name, path, filename string, owner *string, beforeServices []string, includeCert bool) error {
+func (c *NodeupModelContext) buildCertificatePairTask(ctx *fi.NodeupModelBuilderContext, name, path, filename string, owner *string, beforeServices []string, includeCert bool) error {
 	p := filepath.Join(path, filename)
 	if !filepath.IsAbs(p) {
 		p = filepath.Join(c.PathSrvKubernetes(), p)
@@ -474,7 +474,7 @@ func (c *NodeupModelContext) buildCertificatePairTask(ctx *fi.ModelBuilderContex
 }
 
 // BuildCertificateTask builds a task to create a certificate file.
-func (c *NodeupModelContext) BuildCertificateTask(ctx *fi.ModelBuilderContext, name, filename string, owner *string) error {
+func (c *NodeupModelContext) BuildCertificateTask(ctx *fi.NodeupModelBuilderContext, name, filename string, owner *string) error {
 	keyset, err := c.KeyStore.FindKeyset(name)
 	if err != nil {
 		return err
@@ -505,7 +505,7 @@ func (c *NodeupModelContext) BuildCertificateTask(ctx *fi.ModelBuilderContext, n
 }
 
 // BuildLegacyPrivateKeyTask builds a task to create a private key file.
-func (c *NodeupModelContext) BuildLegacyPrivateKeyTask(ctx *fi.ModelBuilderContext, name, filename string, owner *string) error {
+func (c *NodeupModelContext) BuildLegacyPrivateKeyTask(ctx *fi.NodeupModelBuilderContext, name, filename string, owner *string) error {
 	keyset, err := c.KeyStore.FindKeyset(name)
 	if err != nil {
 		return err
@@ -552,7 +552,7 @@ func (c *NodeupModelContext) NodeName() (string, error) {
 	return strings.ToLower(strings.TrimSpace(nodeName)), nil
 }
 
-func (b *NodeupModelContext) AddCNIBinAssets(c *fi.ModelBuilderContext, assetNames []string) error {
+func (b *NodeupModelContext) AddCNIBinAssets(c *fi.NodeupModelBuilderContext, assetNames []string) error {
 	for _, assetName := range assetNames {
 		re, err := regexp.Compile(fmt.Sprintf("^%s$", regexp.QuoteMeta(assetName)))
 		if err != nil {
@@ -565,7 +565,7 @@ func (b *NodeupModelContext) AddCNIBinAssets(c *fi.ModelBuilderContext, assetNam
 	return nil
 }
 
-func (b *NodeupModelContext) addCNIBinAsset(c *fi.ModelBuilderContext, assetPath *regexp.Regexp) error {
+func (b *NodeupModelContext) addCNIBinAsset(c *fi.NodeupModelBuilderContext, assetPath *regexp.Regexp) error {
 	name, res, err := b.Assets.FindMatch(assetPath)
 	if err != nil {
 		return err

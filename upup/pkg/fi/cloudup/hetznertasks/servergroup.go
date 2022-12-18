@@ -54,7 +54,7 @@ type ServerGroup struct {
 	Labels map[string]string
 }
 
-func (v *ServerGroup) Find(c *fi.Context) (*ServerGroup, error) {
+func (v *ServerGroup) Find(c *fi.CloudupContext) (*ServerGroup, error) {
 	cloud := c.Cloud.(hetzner.HetznerCloud)
 	client := cloud.ServerClient()
 
@@ -131,8 +131,8 @@ func (v *ServerGroup) Find(c *fi.Context) (*ServerGroup, error) {
 	return &actual, nil
 }
 
-func (v *ServerGroup) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(v, c)
+func (v *ServerGroup) Run(c *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(v, c)
 }
 
 func (_ *ServerGroup) CheckChanges(a, e, changes *ServerGroup) error {

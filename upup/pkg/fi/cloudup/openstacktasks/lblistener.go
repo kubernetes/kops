@@ -36,8 +36,8 @@ type LBListener struct {
 }
 
 // GetDependencies returns the dependencies of the Instance task
-func (e *LBListener) GetDependencies(tasks map[string]fi.Task) []fi.Task {
-	var deps []fi.Task
+func (e *LBListener) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
+	var deps []fi.CloudupTask
 	for _, task := range tasks {
 		if _, ok := task.(*LB); ok {
 			deps = append(deps, task)
@@ -96,7 +96,7 @@ func NewLBListenerTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lif
 	return listenerTask, nil
 }
 
-func (s *LBListener) Find(context *fi.Context) (*LBListener, error) {
+func (s *LBListener) Find(context *fi.CloudupContext) (*LBListener, error) {
 	if s.Name == nil {
 		return nil, nil
 	}
@@ -119,8 +119,8 @@ func (s *LBListener) Find(context *fi.Context) (*LBListener, error) {
 	return NewLBListenerTaskFromCloud(cloud, s.Lifecycle, &listenerList[0], s)
 }
 
-func (s *LBListener) Run(context *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(s, context)
+func (s *LBListener) Run(context *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(s, context)
 }
 
 func (_ *LBListener) CheckChanges(a, e, changes *LBListener) error {

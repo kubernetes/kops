@@ -38,11 +38,11 @@ type StorageAclBuilder struct {
 	Lifecycle fi.Lifecycle
 }
 
-var _ fi.ModelBuilder = &NetworkModelBuilder{}
+var _ fi.CloudupModelBuilder = &NetworkModelBuilder{}
 
 // Build creates the tasks that set up storage acls
 
-func (b *StorageAclBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *StorageAclBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	if featureflag.GoogleCloudBucketACL.Enabled() {
 		if b.Cluster.Spec.CloudConfig.GCEServiceAccount == "" {
 			return fmt.Errorf("featureflag GoogleCloudBucketACL not supported with per-instancegroup GCEServiceAccount")
