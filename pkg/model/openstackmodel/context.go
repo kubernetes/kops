@@ -73,6 +73,13 @@ func (c *OpenstackModelContext) GetNetworkName() (string, error) {
 	return network.Name, nil
 }
 
+func (c *OpenstackModelContext) APIResourceName() string {
+	if c.Cluster.Spec.API.PublicName != "" {
+		return c.Cluster.Spec.API.PublicName
+	}
+	return "api." + c.ClusterName()
+}
+
 func (c *OpenstackModelContext) findSubnetClusterSpec(subnet string) (string, error) {
 	for _, sp := range c.Cluster.Spec.Networking.Subnets {
 		if sp.Name == subnet {
