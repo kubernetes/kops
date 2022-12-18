@@ -43,7 +43,7 @@ func (e *Address) CompareWithID() *string {
 }
 
 func (e *Address) Find(c *fi.CloudupContext) (*Address, error) {
-	actual, err := e.find(c.Cloud.(gce.GCECloud))
+	actual, err := e.find(c.T.Cloud.(gce.GCECloud))
 	if actual != nil && err == nil {
 		if e.IPAddress == nil {
 			e.IPAddress = actual.IPAddress
@@ -101,7 +101,7 @@ func (e *Address) IsForAPIServer() bool {
 }
 
 func (e *Address) FindAddresses(context *fi.CloudupContext) ([]string, error) {
-	actual, err := e.find(context.Cloud.(gce.GCECloud))
+	actual, err := e.find(context.T.Cloud.(gce.GCECloud))
 	if err != nil {
 		return nil, fmt.Errorf("error querying for IP Address: %v", err)
 	}

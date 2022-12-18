@@ -242,7 +242,7 @@ func (e *NetworkLoadBalancer) getHostedZoneId() *string {
 }
 
 func (e *NetworkLoadBalancer) Find(c *fi.CloudupContext) (*NetworkLoadBalancer, error) {
-	cloud := c.Cloud.(awsup.AWSCloud)
+	cloud := c.T.Cloud.(awsup.AWSCloud)
 
 	lb, err := cloud.FindELBV2ByNameTag(e.Tags["Name"])
 	if err != nil {
@@ -329,7 +329,7 @@ func (e *NetworkLoadBalancer) Find(c *fi.CloudupContext) (*NetworkLoadBalancer, 
 					}
 					actual.TargetGroups = append(actual.TargetGroups, &TargetGroup{ARN: targetGroupARN, Name: fi.PtrTo(targetGroupName)})
 
-					cloud := c.Cloud.(awsup.AWSCloud)
+					cloud := c.T.Cloud.(awsup.AWSCloud)
 					descResp, err := cloud.ELBV2().DescribeTargetGroups(&elbv2.DescribeTargetGroupsInput{
 						TargetGroupArns: []*string{targetGroupARN},
 					})
@@ -440,7 +440,7 @@ func (e *NetworkLoadBalancer) IsForAPIServer() bool {
 func (e *NetworkLoadBalancer) FindAddresses(context *fi.CloudupContext) ([]string, error) {
 	var addresses []string
 
-	cloud := context.Cloud.(awsup.AWSCloud)
+	cloud := context.T.Cloud.(awsup.AWSCloud)
 	cluster := context.Cluster
 
 	{
@@ -844,7 +844,7 @@ func (e *NetworkLoadBalancer) FindDeletions(context *fi.CloudupContext) ([]fi.Cl
 		return nil, nil
 	}
 
-	cloud := context.Cloud.(awsup.AWSCloud)
+	cloud := context.T.Cloud.(awsup.AWSCloud)
 
 	lb, err := cloud.FindELBByNameTag(fi.ValueOf(e.CLBName))
 	if err != nil {

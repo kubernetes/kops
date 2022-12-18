@@ -54,7 +54,7 @@ func NewRouterTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecyc
 }
 
 func (n *Router) Find(context *fi.CloudupContext) (*Router, error) {
-	cloud := context.Cloud.(openstack.OpenstackCloud)
+	cloud := context.T.Cloud.(openstack.OpenstackCloud)
 	opt := routers.ListOpts{
 		Name: fi.ValueOf(n.Name),
 		ID:   fi.ValueOf(n.ID),

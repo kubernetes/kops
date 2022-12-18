@@ -141,7 +141,7 @@ func (e *Subnet) Find(c *fi.CloudupContext) (*Subnet, error) {
 }
 
 func (e *Subnet) findEc2Subnet(c *fi.CloudupContext) (*ec2.Subnet, error) {
-	cloud := c.Cloud.(awsup.AWSCloud)
+	cloud := c.T.Cloud.(awsup.AWSCloud)
 
 	request := &ec2.DescribeSubnetsInput{}
 	if e.ID != nil {

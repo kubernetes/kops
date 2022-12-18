@@ -46,7 +46,7 @@ func (e *StorageObjectAcl) CompareWithID() *string {
 }
 
 func (e *StorageObjectAcl) Find(c *fi.CloudupContext) (*StorageObjectAcl, error) {
-	cloud := c.Cloud.(gce.GCECloud)
+	cloud := c.T.Cloud.(gce.GCECloud)
 
 	bucket := fi.ValueOf(e.Bucket)
 	object := fi.ValueOf(e.Object)

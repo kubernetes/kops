@@ -46,7 +46,7 @@ func (e *Disk) CompareWithID() *string {
 }
 
 func (e *Disk) Find(c *fi.CloudupContext) (*Disk, error) {
-	cloud := c.Cloud.(gce.GCECloud)
+	cloud := c.T.Cloud.(gce.GCECloud)
 
 	r, err := cloud.Compute().Disks().Get(cloud.Project(), *e.Zone, *e.Name)
 	if err != nil {

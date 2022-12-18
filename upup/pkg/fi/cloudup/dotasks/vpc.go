@@ -41,7 +41,7 @@ func (v *VPC) CompareWithID() *string {
 }
 
 func (v *VPC) Find(c *fi.CloudupContext) (*VPC, error) {
-	cloud := c.Cloud.(do.DOCloud)
+	cloud := c.T.Cloud.(do.DOCloud)
 	vpcService := cloud.VPCsService()
 
 	opt := &godo.ListOptions{}

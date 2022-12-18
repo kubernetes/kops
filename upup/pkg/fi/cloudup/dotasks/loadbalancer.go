@@ -70,7 +70,7 @@ func (lb *LoadBalancer) Find(c *fi.CloudupContext) (*LoadBalancer, error) {
 		return nil, nil
 	}
 
-	cloud := c.Cloud.(do.DOCloud)
+	cloud := c.T.Cloud.(do.DOCloud)
 	lbService := cloud.LoadBalancersService()
 	loadbalancer, _, err := lbService.Get(context.TODO(), fi.ValueOf(lb.ID))
 	if err != nil {
@@ -194,7 +194,7 @@ func (lb *LoadBalancer) IsForAPIServer() bool {
 }
 
 func (lb *LoadBalancer) FindAddresses(c *fi.CloudupContext) ([]string, error) {
-	cloud := c.Cloud.(do.DOCloud)
+	cloud := c.T.Cloud.(do.DOCloud)
 	loadBalancerService := cloud.LoadBalancersService()
 	address := ""
 

@@ -384,7 +384,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("unsupported target type %q", c.Target)
 	}
 
-	context, err := fi.NewNodeupContext(ctx, target, c.cluster, cloud, keyStore, secretStore, checkExisting, taskMap)
+	context, err := fi.NewNodeupContext(ctx, target, c.cluster, keyStore, secretStore, checkExisting, taskMap)
 	if err != nil {
 		klog.Exitf("error building context: %v", err)
 	}

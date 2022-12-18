@@ -46,7 +46,7 @@ func (v *Volume) CompareWithID() *string {
 }
 
 func (v *Volume) Find(c *fi.CloudupContext) (*Volume, error) {
-	cloud := c.Cloud.(do.DOCloud)
+	cloud := c.T.Cloud.(do.DOCloud)
 	volService := cloud.VolumeService()
 
 	volumes, _, err := volService.ListVolumes(context.TODO(), &godo.ListVolumeParams{

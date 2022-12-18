@@ -48,7 +48,7 @@ func (e *BackendService) CompareWithID() *string {
 }
 
 func (e *BackendService) Find(c *fi.CloudupContext) (*BackendService, error) {
-	actual, err := e.find(c.Cloud.(gce.GCECloud))
+	actual, err := e.find(c.T.Cloud.(gce.GCECloud))
 	if actual != nil && err == nil {
 		// Ignore system fields
 		actual.Lifecycle = e.Lifecycle
