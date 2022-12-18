@@ -35,10 +35,10 @@ type CiliumBuilder struct {
 	*model.NodeupModelContext
 }
 
-var _ fi.ModelBuilder = &CiliumBuilder{}
+var _ fi.NodeupModelBuilder = &CiliumBuilder{}
 
 // Build is responsible for configuring the network cni
-func (b *CiliumBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *CiliumBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	cilium := b.Cluster.Spec.Networking.Cilium
 
 	// As long as the Cilium Etcd cluster exists, we should do this
@@ -63,7 +63,7 @@ func (b *CiliumBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
-func (b *CiliumBuilder) buildBPFMount(c *fi.ModelBuilderContext) error {
+func (b *CiliumBuilder) buildBPFMount(c *fi.NodeupModelBuilderContext) error {
 	var fsdata unix.Statfs_t
 	err := unix.Statfs("/sys/fs/bpf", &fsdata)
 	if err != nil {
@@ -104,7 +104,7 @@ WantedBy=multi-user.target
 	return nil
 }
 
-func (b *CiliumBuilder) buildCgroup2Mount(c *fi.ModelBuilderContext) error {
+func (b *CiliumBuilder) buildCgroup2Mount(c *fi.NodeupModelBuilderContext) error {
 	cgroupPath := "/run/cilium/cgroupv2"
 
 	var fsdata unix.Statfs_t
@@ -148,7 +148,7 @@ WantedBy=multi-user.target
 	return nil
 }
 
-func (b *CiliumBuilder) buildCiliumEtcdSecrets(c *fi.ModelBuilderContext) error {
+func (b *CiliumBuilder) buildCiliumEtcdSecrets(c *fi.NodeupModelBuilderContext) error {
 	name := "etcd-client-cilium"
 	dir := "/etc/kubernetes/pki/cilium"
 	signer := "etcd-clients-ca-cilium"

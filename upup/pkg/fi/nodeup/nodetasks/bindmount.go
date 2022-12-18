@@ -36,7 +36,7 @@ type BindMount struct {
 	Recursive  bool     `json:"recursive"`
 }
 
-var _ fi.Task = &BindMount{}
+var _ fi.NodeupTask = &BindMount{}
 
 func (s *BindMount) String() string {
 	return fmt.Sprintf("BindMount: %s->%s", s.Source, s.Mountpoint)
@@ -55,11 +55,11 @@ func (e *BindMount) GetName() *string {
 	return fi.PtrTo("BindMount-" + e.Mountpoint)
 }
 
-var _ fi.HasDependencies = &BindMount{}
+var _ fi.NodeupHasDependencies = &BindMount{}
 
 // GetDependencies implements HasDependencies::GetDependencies
-func (e *BindMount) GetDependencies(tasks map[string]fi.Task) []fi.Task {
-	var deps []fi.Task
+func (e *BindMount) GetDependencies(tasks map[string]fi.NodeupTask) []fi.NodeupTask {
+	var deps []fi.NodeupTask
 
 	// Requires parent directories to be created
 	deps = append(deps, findCreatesDirParents(e.Mountpoint, tasks)...)
@@ -84,7 +84,7 @@ func (e *BindMount) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	return deps
 }
 
-func findTaskInSlice(tasks []fi.Task, task fi.Task) int {
+func findTaskInSlice(tasks []fi.NodeupTask, task fi.NodeupTask) int {
 	for i, t := range tasks {
 		if t == task {
 			return i
@@ -93,7 +93,7 @@ func findTaskInSlice(tasks []fi.Task, task fi.Task) int {
 	return -1
 }
 
-func (e *BindMount) Find(c *fi.Context) (*BindMount, error) {
+func (e *BindMount) Find(c *fi.NodeupContext) (*BindMount, error) {
 	mounts, err := os.ReadFile("/proc/self/mountinfo")
 	if err != nil {
 		return nil, fmt.Errorf("error reading /proc/self/mountinfo: %v", err)
@@ -172,8 +172,8 @@ func (e *BindMount) Find(c *fi.Context) (*BindMount, error) {
 	return nil, nil
 }
 
-func (e *BindMount) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
+func (e *BindMount) Run(c *fi.NodeupContext) error {
+	return fi.NodeupDefaultDeltaRunMethod(e, c)
 }
 
 func (s *BindMount) CheckChanges(a, e, changes *BindMount) error {

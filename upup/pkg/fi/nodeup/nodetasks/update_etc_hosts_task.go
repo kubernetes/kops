@@ -37,7 +37,7 @@ type UpdateEtcHostsTask struct {
 
 // HostRecord holds an individual host's addresses.
 type HostRecord struct {
-	fi.NotADependency
+	fi.NodeupNotADependency
 
 	// Hostname is the "DNS" name that we want to configure.
 	Hostname string
@@ -46,7 +46,7 @@ type HostRecord struct {
 	Addresses []string
 }
 
-var _ fi.Task = &UpdateEtcHostsTask{}
+var _ fi.NodeupTask = &UpdateEtcHostsTask{}
 
 func (e *UpdateEtcHostsTask) String() string {
 	return fmt.Sprintf("UpdateEtcHostsTask: %s", e.Name)
@@ -58,14 +58,14 @@ func (f *UpdateEtcHostsTask) GetName() *string {
 	return &f.Name
 }
 
-func (e *UpdateEtcHostsTask) Find(c *fi.Context) (*UpdateEtcHostsTask, error) {
+func (e *UpdateEtcHostsTask) Find(c *fi.NodeupContext) (*UpdateEtcHostsTask, error) {
 	// UpdateHostsFileWithRecords skips the update /etc/hosts if there are no changes,
 	// so we don't check existing values here.
 	return nil, nil
 }
 
-func (e *UpdateEtcHostsTask) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
+func (e *UpdateEtcHostsTask) Run(c *fi.NodeupContext) error {
+	return fi.NodeupDefaultDeltaRunMethod(e, c)
 }
 
 func (_ *UpdateEtcHostsTask) CheckChanges(a, e, changes *UpdateEtcHostsTask) error {

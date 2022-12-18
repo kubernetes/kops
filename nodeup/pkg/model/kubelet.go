@@ -58,10 +58,10 @@ type KubeletBuilder struct {
 	*NodeupModelContext
 }
 
-var _ fi.ModelBuilder = &KubeletBuilder{}
+var _ fi.NodeupModelBuilder = &KubeletBuilder{}
 
 // Build is responsible for building the kubelet configuration
-func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *KubeletBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	err := b.buildKubeletServingCertificate(c)
 	if err != nil {
 		return fmt.Errorf("error building kubelet server cert: %v", err)
@@ -421,7 +421,7 @@ func (b *KubeletBuilder) usesContainerizedMounter() bool {
 }
 
 // addContainerizedMounter downloads and installs the containerized mounter, that we need on ContainerOS
-func (b *KubeletBuilder) addContainerizedMounter(c *fi.ModelBuilderContext) error {
+func (b *KubeletBuilder) addContainerizedMounter(c *fi.NodeupModelBuilderContext) error {
 	if !b.usesContainerizedMounter() {
 		return nil
 	}
@@ -609,7 +609,7 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 }
 
 // buildControlPlaneKubeletKubeconfig builds a kubeconfig for the master kubelet, self-signing the kubelet cert
-func (b *KubeletBuilder) buildControlPlaneKubeletKubeconfig(c *fi.ModelBuilderContext) (fi.Resource, error) {
+func (b *KubeletBuilder) buildControlPlaneKubeletKubeconfig(c *fi.NodeupModelBuilderContext) (fi.Resource, error) {
 	nodeName, err := b.NodeName()
 	if err != nil {
 		return nil, fmt.Errorf("error getting NodeName: %v", err)
@@ -622,7 +622,7 @@ func (b *KubeletBuilder) buildControlPlaneKubeletKubeconfig(c *fi.ModelBuilderCo
 	return b.BuildIssuedKubeconfig("kubelet", certName, c), nil
 }
 
-func (b *KubeletBuilder) buildKubeletServingCertificate(c *fi.ModelBuilderContext) error {
+func (b *KubeletBuilder) buildKubeletServingCertificate(c *fi.NodeupModelBuilderContext) error {
 	if b.UseKopsControllerForNodeBootstrap() {
 		name := "kubelet-server"
 		dir := b.PathSrvKubernetes()

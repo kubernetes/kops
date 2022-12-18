@@ -26,10 +26,10 @@ type EtcHostsBuilder struct {
 	*NodeupModelContext
 }
 
-var _ fi.ModelBuilder = &EtcHostsBuilder{}
+var _ fi.NodeupModelBuilder = &EtcHostsBuilder{}
 
 // Build is responsible for configuring the gossip DNS tasks.
-func (b *EtcHostsBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *EtcHostsBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 
 	task := &nodetasks.UpdateEtcHostsTask{
 		Name: "control-plane-address",

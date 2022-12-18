@@ -30,9 +30,9 @@ type ServiceAccountsBuilder struct {
 	Lifecycle fi.Lifecycle
 }
 
-var _ fi.ModelBuilder = &ServiceAccountsBuilder{}
+var _ fi.CloudupModelBuilder = &ServiceAccountsBuilder{}
 
-func (b *ServiceAccountsBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *ServiceAccountsBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	if b.Cluster.Spec.CloudConfig.GCEServiceAccount != "" {
 		serviceAccount := &gcetasks.ServiceAccount{
 			Name:      s("shared"),
@@ -90,7 +90,7 @@ func (b *ServiceAccountsBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
-func (b *ServiceAccountsBuilder) addInstanceGroupServiceAccountPermissions(c *fi.ModelBuilderContext, serviceAccountEmail string, role kops.InstanceGroupRole) error {
+func (b *ServiceAccountsBuilder) addInstanceGroupServiceAccountPermissions(c *fi.CloudupModelBuilderContext, serviceAccountEmail string, role kops.InstanceGroupRole) error {
 	member := "serviceAccount:" + serviceAccountEmail
 
 	// Ideally we would use a custom role here, but the deletion of a custom role takes 7 days,

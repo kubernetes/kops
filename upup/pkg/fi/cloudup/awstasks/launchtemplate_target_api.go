@@ -192,7 +192,7 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchT
 }
 
 // Find is responsible for finding the launch template for us
-func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
+func (t *LaunchTemplate) Find(c *fi.CloudupContext) (*LaunchTemplate, error) {
 	cloud, ok := c.Cloud.(awsup.AWSCloud)
 	if !ok {
 		return nil, fmt.Errorf("invalid cloud provider: %v, expected: %s", c.Cloud, "awsup.AWSCloud")
@@ -341,7 +341,7 @@ func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
 }
 
 // findAllLaunchTemplates returns all the launch templates for us
-func (t *LaunchTemplate) findAllLaunchTemplates(c *fi.Context) ([]*ec2.LaunchTemplate, error) {
+func (t *LaunchTemplate) findAllLaunchTemplates(c *fi.CloudupContext) ([]*ec2.LaunchTemplate, error) {
 	cloud, ok := c.Cloud.(awsup.AWSCloud)
 	if !ok {
 		return nil, fmt.Errorf("invalid cloud provider: %v, expected: %s", c.Cloud, "awsup.AWSCloud")
@@ -369,7 +369,7 @@ func (t *LaunchTemplate) findAllLaunchTemplates(c *fi.Context) ([]*ec2.LaunchTem
 }
 
 // findLatestLaunchTemplateVersion returns the latest template version
-func (t *LaunchTemplate) findLatestLaunchTemplateVersion(c *fi.Context) (*ec2.LaunchTemplateVersion, error) {
+func (t *LaunchTemplate) findLatestLaunchTemplateVersion(c *fi.CloudupContext) (*ec2.LaunchTemplateVersion, error) {
 	cloud, ok := c.Cloud.(awsup.AWSCloud)
 	if !ok {
 		return nil, fmt.Errorf("invalid cloud provider: %v, expected: awsup.AWSCloud", c.Cloud)
@@ -403,7 +403,7 @@ type deleteLaunchTemplate struct {
 	lc *ec2.LaunchTemplate
 }
 
-var _ fi.Deletion = &deleteLaunchTemplate{}
+var _ fi.CloudupDeletion = &deleteLaunchTemplate{}
 
 // TaskName returns the task name
 func (d *deleteLaunchTemplate) TaskName() string {
@@ -415,7 +415,7 @@ func (d *deleteLaunchTemplate) Item() string {
 	return fi.ValueOf(d.lc.LaunchTemplateName)
 }
 
-func (d *deleteLaunchTemplate) Delete(t fi.Target) error {
+func (d *deleteLaunchTemplate) Delete(t fi.CloudupTarget) error {
 	awsTarget, ok := t.(*awsup.AWSAPITarget)
 	if !ok {
 		return fmt.Errorf("unexpected target type for deletion: %T", t)

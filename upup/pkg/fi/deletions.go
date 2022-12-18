@@ -16,12 +16,16 @@ limitations under the License.
 
 package fi
 
-type ProducesDeletions interface {
-	FindDeletions(*Context) ([]Deletion, error)
+type ProducesDeletions[T SubContext] interface {
+	FindDeletions(*Context[T]) ([]Deletion[T], error)
 }
 
-type Deletion interface {
-	Delete(target Target) error
+type CloudupProducesDeletions = ProducesDeletions[CloudupSubContext]
+
+type Deletion[T SubContext] interface {
+	Delete(target Target[T]) error
 	TaskName() string
 	Item() string
 }
+
+type CloudupDeletion = Deletion[CloudupSubContext]

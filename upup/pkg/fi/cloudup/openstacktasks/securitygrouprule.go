@@ -53,8 +53,8 @@ type SecurityGroupRule struct {
 }
 
 // GetDependencies returns the dependencies of the Instance task
-func (e *SecurityGroupRule) GetDependencies(tasks map[string]fi.Task) []fi.Task {
-	var deps []fi.Task
+func (e *SecurityGroupRule) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
+	var deps []fi.CloudupTask
 	for _, task := range tasks {
 		if _, ok := task.(*SecurityGroup); ok {
 			deps = append(deps, task)
@@ -69,7 +69,7 @@ func (r *SecurityGroupRule) CompareWithID() *string {
 	return r.ID
 }
 
-func (r *SecurityGroupRule) Find(context *fi.Context) (*SecurityGroupRule, error) {
+func (r *SecurityGroupRule) Find(context *fi.CloudupContext) (*SecurityGroupRule, error) {
 	if r.SecGroup == nil || r.SecGroup.ID == nil {
 		return nil, nil
 	}
@@ -117,8 +117,8 @@ func (r *SecurityGroupRule) Find(context *fi.Context) (*SecurityGroupRule, error
 	return actual, nil
 }
 
-func (r *SecurityGroupRule) Run(context *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(r, context)
+func (r *SecurityGroupRule) Run(context *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(r, context)
 }
 
 func (*SecurityGroupRule) CheckChanges(a, e, changes *SecurityGroupRule) error {
@@ -227,7 +227,7 @@ func (o *SecurityGroupRule) String() string {
 		proto, fi.ValueOf(o.SecGroup.Name), dst, fi.ValueOf(o.PortRangeMin), fi.ValueOf(o.PortRangeMax))
 }
 
-func (o *SecurityGroupRule) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
+func (o *SecurityGroupRule) FindDeletions(c *fi.CloudupContext) ([]fi.CloudupDeletion, error) {
 	if !fi.ValueOf(o.Delete) {
 		return nil, nil
 	}
@@ -236,7 +236,7 @@ func (o *SecurityGroupRule) FindDeletions(c *fi.Context) ([]fi.Deletion, error) 
 	if err != nil {
 		return nil, err
 	}
-	return []fi.Deletion{
+	return []fi.CloudupDeletion{
 		&deleteSecurityGroupRule{
 			rule:          *rule,
 			securityGroup: o.SecGroup,

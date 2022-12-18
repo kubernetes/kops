@@ -36,10 +36,10 @@ const (
 	debianPackageName  = "unattended-upgrades"
 )
 
-var _ fi.ModelBuilder = &UpdateServiceBuilder{}
+var _ fi.NodeupModelBuilder = &UpdateServiceBuilder{}
 
 // Build is responsible for configuring automatic updates based on the OS.
-func (b *UpdateServiceBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *UpdateServiceBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	if b.Distribution == distributions.DistributionFlatcar {
 		b.buildFlatcarSystemdService(c)
 	} else if b.Distribution.IsDebianFamily() {
@@ -49,7 +49,7 @@ func (b *UpdateServiceBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
-func (b *UpdateServiceBuilder) buildFlatcarSystemdService(c *fi.ModelBuilderContext) {
+func (b *UpdateServiceBuilder) buildFlatcarSystemdService(c *fi.NodeupModelBuilderContext) {
 	if b.NodeupConfig.UpdatePolicy != kops.UpdatePolicyExternal {
 		klog.Infof("UpdatePolicy requests automatic updates; skipping creation of systemd unit %q", flatcarServiceName)
 		return
@@ -85,7 +85,7 @@ func (b *UpdateServiceBuilder) buildFlatcarSystemdService(c *fi.ModelBuilderCont
 	c.AddTask(service)
 }
 
-func (b *UpdateServiceBuilder) buildDebianPackage(c *fi.ModelBuilderContext) {
+func (b *UpdateServiceBuilder) buildDebianPackage(c *fi.NodeupModelBuilderContext) {
 	contents := ""
 	if b.NodeupConfig.UpdatePolicy == kops.UpdatePolicyExternal {
 		klog.Infof("UpdatePolicy requests automatic updates; skipping installation of package %q", debianPackageName)

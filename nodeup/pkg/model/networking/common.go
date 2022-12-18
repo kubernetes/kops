@@ -26,10 +26,10 @@ type CommonBuilder struct {
 	*model.NodeupModelContext
 }
 
-var _ fi.ModelBuilder = &CommonBuilder{}
+var _ fi.NodeupModelBuilder = &CommonBuilder{}
 
 // Build is responsible for copying the common CNI binaries
-func (b *CommonBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *CommonBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	// Based on https://github.com/containernetworking/plugins/releases/tag/v0.7.5
 	assets := []string{
 		"bridge",

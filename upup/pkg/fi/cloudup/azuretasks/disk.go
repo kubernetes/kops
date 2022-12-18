@@ -39,9 +39,9 @@ type Disk struct {
 }
 
 var (
-	_ fi.Task          = &Disk{}
-	_ fi.CompareWithID = &Disk{}
-	_ fi.TaskNormalize = &Disk{}
+	_ fi.CloudupTask          = &Disk{}
+	_ fi.CompareWithID        = &Disk{}
+	_ fi.CloudupTaskNormalize = &Disk{}
 )
 
 // CompareWithID returns the Name of the Disk.
@@ -50,7 +50,7 @@ func (d *Disk) CompareWithID() *string {
 }
 
 // Find discovers the Disk in the cloud provider.
-func (d *Disk) Find(c *fi.Context) (*Disk, error) {
+func (d *Disk) Find(c *fi.CloudupContext) (*Disk, error) {
 	cloud := c.Cloud.(azure.AzureCloud)
 	l, err := cloud.Disk().List(context.TODO(), *d.ResourceGroup.Name)
 	if err != nil {
@@ -79,14 +79,14 @@ func (d *Disk) Find(c *fi.Context) (*Disk, error) {
 	}, nil
 }
 
-func (d *Disk) Normalize(c *fi.Context) error {
+func (d *Disk) Normalize(c *fi.CloudupContext) error {
 	c.Cloud.(azure.AzureCloud).AddClusterTags(d.Tags)
 	return nil
 }
 
 // Run implements fi.Task.Run.
-func (d *Disk) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(d, c)
+func (d *Disk) Run(c *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(d, c)
 }
 
 // CheckChanges returns an error if a change is not allowed.

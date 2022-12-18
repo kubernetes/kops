@@ -60,12 +60,12 @@ type Service struct {
 }
 
 var (
-	_ fi.HasDependencies = &Service{}
-	_ fi.HasName         = &Service{}
+	_ fi.NodeupHasDependencies = &Service{}
+	_ fi.HasName               = &Service{}
 )
 
-func (p *Service) GetDependencies(tasks map[string]fi.Task) []fi.Task {
-	var deps []fi.Task
+func (p *Service) GetDependencies(tasks map[string]fi.NodeupTask) []fi.NodeupTask {
+	var deps []fi.NodeupTask
 	for _, v := range tasks {
 		// We assume that services depend on everything except for
 		// LoadImageTask or IssueCert. If there are any LoadImageTasks (e.g. we're
@@ -163,7 +163,7 @@ func (e *Service) systemdSystemPath() (string, error) {
 	}
 }
 
-func (e *Service) Find(c *fi.Context) (*Service, error) {
+func (e *Service) Find(c *fi.NodeupContext) (*Service, error) {
 	systemdSystemPath, err := e.systemdSystemPath()
 	if err != nil {
 		return nil, err
@@ -253,8 +253,8 @@ func getSystemdDependencies(serviceName string, definition string) ([]string, er
 	return dependencies, nil
 }
 
-func (e *Service) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
+func (e *Service) Run(c *fi.NodeupContext) error {
+	return fi.NodeupDefaultDeltaRunMethod(e, c)
 }
 
 func (s *Service) CheckChanges(a, e, changes *Service) error {

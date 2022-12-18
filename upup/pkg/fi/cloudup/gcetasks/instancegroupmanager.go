@@ -46,7 +46,7 @@ func (e *InstanceGroupManager) CompareWithID() *string {
 	return e.Name
 }
 
-func (e *InstanceGroupManager) Find(c *fi.Context) (*InstanceGroupManager, error) {
+func (e *InstanceGroupManager) Find(c *fi.CloudupContext) (*InstanceGroupManager, error) {
 	cloud := c.Cloud.(gce.GCECloud)
 
 	r, err := cloud.Compute().InstanceGroupManagers().Get(cloud.Project(), *e.Zone, *e.Name)
@@ -77,8 +77,8 @@ func (e *InstanceGroupManager) Find(c *fi.Context) (*InstanceGroupManager, error
 	return actual, nil
 }
 
-func (e *InstanceGroupManager) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
+func (e *InstanceGroupManager) Run(c *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(e, c)
 }
 
 func (_ *InstanceGroupManager) CheckChanges(a, e, changes *InstanceGroupManager) error {

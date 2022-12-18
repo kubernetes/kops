@@ -41,10 +41,10 @@ type ContainerdBuilder struct {
 	*NodeupModelContext
 }
 
-var _ fi.ModelBuilder = &ContainerdBuilder{}
+var _ fi.NodeupModelBuilder = &ContainerdBuilder{}
 
 // Build is responsible for configuring the containerd daemon
-func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *ContainerdBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	if b.skipInstall() {
 		klog.Infof("SkipInstall is set to true; won't install containerd")
 		return nil
@@ -94,7 +94,7 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 
 // installContainerd installs the binaries and services to run containerd.
 // We break it out because on immutable OSes we only configure containerd, we don't install it.
-func (b *ContainerdBuilder) installContainerd(c *fi.ModelBuilderContext) error {
+func (b *ContainerdBuilder) installContainerd(c *fi.NodeupModelBuilderContext) error {
 	// Add Apache2 license
 	{
 		t := &nodetasks.File{
@@ -262,7 +262,7 @@ func (b *ContainerdBuilder) containerdConfigFilePath() string {
 }
 
 // buildSystemdServiceOverrideContainerOS is responsible for overriding the containerd service for ContainerOS
-func (b *ContainerdBuilder) buildSystemdServiceOverrideContainerOS(c *fi.ModelBuilderContext) {
+func (b *ContainerdBuilder) buildSystemdServiceOverrideContainerOS(c *fi.NodeupModelBuilderContext) {
 	lines := []string{
 		"[Service]",
 		"EnvironmentFile=/etc/environment",
@@ -288,7 +288,7 @@ func (b *ContainerdBuilder) buildSystemdServiceOverrideContainerOS(c *fi.ModelBu
 }
 
 // buildSystemdServiceOverrideFlatcar is responsible for overriding the containerd service for Flatcar
-func (b *ContainerdBuilder) buildSystemdServiceOverrideFlatcar(c *fi.ModelBuilderContext) {
+func (b *ContainerdBuilder) buildSystemdServiceOverrideFlatcar(c *fi.NodeupModelBuilderContext) {
 	lines := []string{
 		"[Service]",
 		"EnvironmentFile=/etc/environment",
@@ -315,7 +315,7 @@ func (b *ContainerdBuilder) buildSystemdServiceOverrideFlatcar(c *fi.ModelBuilde
 }
 
 // buildSysconfigFile is responsible for creating the containerd sysconfig file
-func (b *ContainerdBuilder) buildSysconfigFile(c *fi.ModelBuilderContext) error {
+func (b *ContainerdBuilder) buildSysconfigFile(c *fi.NodeupModelBuilderContext) error {
 	var containerd kops.ContainerdConfig
 	if b.NodeupConfig.ContainerdConfig != nil {
 		containerd = *b.NodeupConfig.ContainerdConfig
@@ -341,7 +341,7 @@ func (b *ContainerdBuilder) buildSysconfigFile(c *fi.ModelBuilderContext) error 
 }
 
 // buildConfigFile is responsible for creating the containerd configuration file
-func (b *ContainerdBuilder) buildConfigFile(c *fi.ModelBuilderContext) error {
+func (b *ContainerdBuilder) buildConfigFile(c *fi.NodeupModelBuilderContext) error {
 	var config string
 
 	if b.NodeupConfig.ContainerdConfig != nil && b.NodeupConfig.ContainerdConfig.ConfigOverride != nil {
@@ -374,7 +374,7 @@ func (b *ContainerdBuilder) skipInstall() bool {
 }
 
 // addCritctlConfig creates /etc/crictl.yaml, which lets crictl work out-of-the-box.
-func (b *ContainerdBuilder) addCrictlConfig(c *fi.ModelBuilderContext) {
+func (b *ContainerdBuilder) addCrictlConfig(c *fi.NodeupModelBuilderContext) {
 	conf := `
 runtime-endpoint: unix:///run/containerd/containerd.sock
 `
@@ -388,7 +388,7 @@ runtime-endpoint: unix:///run/containerd/containerd.sock
 
 // buildIPMasqueradeRules creates the DNAT rules.
 // Network modes where pods don't have "real network" IPs, use NAT so that they assume the IP of the node.
-func (b *ContainerdBuilder) buildIPMasqueradeRules(c *fi.ModelBuilderContext) error {
+func (b *ContainerdBuilder) buildIPMasqueradeRules(c *fi.NodeupModelBuilderContext) error {
 	// TODO: Should we just rely on running nodeup on every boot, instead of setting up a systemd unit?
 
 	// This is based on rules from gce/cos/configure-helper.sh and the old logic in kubenet_linux.go
@@ -444,7 +444,7 @@ iptables -w -t nat -A IP-MASQ -m comment --comment "ip-masq: outbound traffic is
 }
 
 // buildCNIConfigTemplateFile is responsible for creating a special template for setups using Kubenet
-func (b *ContainerdBuilder) buildCNIConfigTemplateFile(c *fi.ModelBuilderContext) {
+func (b *ContainerdBuilder) buildCNIConfigTemplateFile(c *fi.NodeupModelBuilderContext) {
 	// Based on https://github.com/kubernetes/kubernetes/blob/15a8a8ec4a3275a33b7f8eb3d4d98db2abad55b7/cluster/gce/gci/configure-helper.sh#L2911-L2937
 
 	contents := `{

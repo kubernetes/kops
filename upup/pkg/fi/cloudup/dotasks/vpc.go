@@ -40,7 +40,7 @@ func (v *VPC) CompareWithID() *string {
 	return v.ID
 }
 
-func (v *VPC) Find(c *fi.Context) (*VPC, error) {
+func (v *VPC) Find(c *fi.CloudupContext) (*VPC, error) {
 	cloud := c.Cloud.(do.DOCloud)
 	vpcService := cloud.VPCsService()
 
@@ -66,8 +66,8 @@ func (v *VPC) Find(c *fi.Context) (*VPC, error) {
 	return nil, nil
 }
 
-func (v *VPC) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(v, c)
+func (v *VPC) Run(c *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(v, c)
 }
 
 func (_ *VPC) CheckChanges(a, e, changes *VPC) error {

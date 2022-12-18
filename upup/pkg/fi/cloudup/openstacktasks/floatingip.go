@@ -77,7 +77,7 @@ func (e *FloatingIP) IsForAPIServer() bool {
 	return e.ForAPIServer
 }
 
-func (e *FloatingIP) FindAddresses(context *fi.Context) ([]string, error) {
+func (e *FloatingIP) FindAddresses(context *fi.CloudupContext) ([]string, error) {
 	if e.ID == nil {
 		if e.LB != nil && e.LB.ID == nil {
 			return nil, nil
@@ -107,8 +107,8 @@ func (e *FloatingIP) FindAddresses(context *fi.Context) ([]string, error) {
 }
 
 // GetDependencies returns the dependencies of the Instance task
-func (e *FloatingIP) GetDependencies(tasks map[string]fi.Task) []fi.Task {
-	var deps []fi.Task
+func (e *FloatingIP) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
+	var deps []fi.CloudupTask
 	for _, task := range tasks {
 		if _, ok := task.(*LB); ok {
 			deps = append(deps, task)
@@ -128,7 +128,7 @@ func (e *FloatingIP) CompareWithID() *string {
 	return e.ID
 }
 
-func (e *FloatingIP) Find(c *fi.Context) (*FloatingIP, error) {
+func (e *FloatingIP) Find(c *fi.CloudupContext) (*FloatingIP, error) {
 	if e == nil {
 		return nil, nil
 	}
@@ -222,8 +222,8 @@ func findFipByPortID(cloud openstack.OpenstackCloud, id string) (fip *l3floating
 	return &fips[0], nil
 }
 
-func (e *FloatingIP) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
+func (e *FloatingIP) Run(c *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(e, c)
 }
 
 func (_ *FloatingIP) CheckChanges(a, e, changes *FloatingIP) error {

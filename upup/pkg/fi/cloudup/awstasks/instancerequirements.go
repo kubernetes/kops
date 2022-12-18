@@ -30,9 +30,9 @@ type InstanceRequirements struct {
 	MemoryMax    *int64
 }
 
-var _ fi.HasDependencies = &InstanceRequirements{}
+var _ fi.CloudupHasDependencies = &InstanceRequirements{}
 
-func (e *InstanceRequirements) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+func (e *InstanceRequirements) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
 	return nil
 }
 

@@ -60,11 +60,11 @@ const (
 	dockerPackageName           = "docker-ce"
 )
 
-var _ fi.HasDependencies = &Package{}
+var _ fi.NodeupHasDependencies = &Package{}
 
 // GetDependencies computes dependencies for the package task
-func (e *Package) GetDependencies(tasks map[string]fi.Task) []fi.Task {
-	var deps []fi.Task
+func (e *Package) GetDependencies(tasks map[string]fi.NodeupTask) []fi.NodeupTask {
+	var deps []fi.NodeupTask
 
 	// UpdatePackages before we install any packages
 	for _, v := range tasks {
@@ -128,7 +128,7 @@ func (p *Package) String() string {
 	return fmt.Sprintf("Package: %s", p.Name)
 }
 
-func (e *Package) Find(c *fi.Context) (*Package, error) {
+func (e *Package) Find(c *fi.NodeupContext) (*Package, error) {
 	d, err := distributions.FindDistribution("/")
 	if err != nil {
 		return nil, fmt.Errorf("unknown or unsupported distro: %v", err)
@@ -145,7 +145,7 @@ func (e *Package) Find(c *fi.Context) (*Package, error) {
 	return nil, fmt.Errorf("unsupported package system")
 }
 
-func (e *Package) findDpkg(c *fi.Context) (*Package, error) {
+func (e *Package) findDpkg(c *fi.NodeupContext) (*Package, error) {
 	args := []string{"dpkg-query", "-f", "${db:Status-Abbrev}${Version}\\n", "-W", e.Name}
 	human := strings.Join(args, " ")
 
@@ -212,7 +212,7 @@ func (e *Package) findDpkg(c *fi.Context) (*Package, error) {
 	}, nil
 }
 
-func (e *Package) findYum(c *fi.Context) (*Package, error) {
+func (e *Package) findYum(c *fi.NodeupContext) (*Package, error) {
 	args := []string{"/usr/bin/rpm", "-q", e.Name, "--queryformat", "%{NAME} %{VERSION}"}
 	human := strings.Join(args, " ")
 
@@ -263,8 +263,8 @@ func (e *Package) findYum(c *fi.Context) (*Package, error) {
 	}, nil
 }
 
-func (e *Package) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
+func (e *Package) Run(c *fi.NodeupContext) error {
+	return fi.NodeupDefaultDeltaRunMethod(e, c)
 }
 
 func (_ *Package) CheckChanges(a, e, changes *Package) error {

@@ -66,7 +66,7 @@ func findIAMInstanceProfile(cloud awsup.AWSCloud, name string) (*iam.InstancePro
 	return response.InstanceProfile, nil
 }
 
-func (e *IAMInstanceProfile) Find(c *fi.Context) (*IAMInstanceProfile, error) {
+func (e *IAMInstanceProfile) Find(c *fi.CloudupContext) (*IAMInstanceProfile, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	p, err := findIAMInstanceProfile(cloud, *e.Name)
@@ -94,8 +94,8 @@ func (e *IAMInstanceProfile) Find(c *fi.Context) (*IAMInstanceProfile, error) {
 	return actual, nil
 }
 
-func (e *IAMInstanceProfile) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
+func (e *IAMInstanceProfile) Run(c *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(e, c)
 }
 
 func (s *IAMInstanceProfile) CheckChanges(a, e, changes *IAMInstanceProfile) error {

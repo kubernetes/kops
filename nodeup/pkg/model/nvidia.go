@@ -28,10 +28,10 @@ type NvidiaBuilder struct {
 	*NodeupModelContext
 }
 
-var _ fi.ModelBuilder = &NvidiaBuilder{}
+var _ fi.NodeupModelBuilder = &NvidiaBuilder{}
 
 // Build is responsible for installing packages.
-func (b *NvidiaBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *NvidiaBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	if b.InstallNvidiaRuntime() && b.Distribution.IsUbuntu() {
 		version := ""
 		if b.Distribution.Version() >= 22.04 {
