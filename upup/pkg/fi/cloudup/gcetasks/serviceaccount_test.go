@@ -39,7 +39,7 @@ func TestServiceAccount(t *testing.T) {
 	cloud := gcemock.InstallMockGCECloud(region, project)
 
 	// We define a function so we can rebuild the tasks, because we modify in-place when running
-	buildTasks := func() map[string]fi.Task {
+	buildTasks := func() map[string]fi.CloudupTask {
 		serviceAccount := &ServiceAccount{
 			Name:      fi.PtrTo("test"),
 			Lifecycle: fi.LifecycleSync,
@@ -49,7 +49,7 @@ func TestServiceAccount(t *testing.T) {
 			DisplayName: fi.PtrTo("display name of ServiceAccount"),
 		}
 
-		return map[string]fi.Task{
+		return map[string]fi.CloudupTask{
 			*serviceAccount.Name: serviceAccount,
 		}
 	}
@@ -77,7 +77,7 @@ var testRunTasksOptions = fi.RunTasksOptions{
 }
 
 // TODO: Dedup with awstasks
-func checkNoChanges(t *testing.T, ctx context.Context, cloud fi.Cloud, allTasks map[string]fi.Task) {
+func checkNoChanges(t *testing.T, ctx context.Context, cloud fi.Cloud, allTasks map[string]fi.CloudupTask) {
 	target := doDryRun(t, ctx, cloud, allTasks)
 
 	if target.HasChanges() {
@@ -89,7 +89,7 @@ func checkNoChanges(t *testing.T, ctx context.Context, cloud fi.Cloud, allTasks 
 	}
 }
 
-func checkHasChanges(t *testing.T, ctx context.Context, cloud fi.Cloud, allTasks map[string]fi.Task) {
+func checkHasChanges(t *testing.T, ctx context.Context, cloud fi.Cloud, allTasks map[string]fi.CloudupTask) {
 	target := doDryRun(t, ctx, cloud, allTasks)
 
 	if !target.HasChanges() {
@@ -97,10 +97,10 @@ func checkHasChanges(t *testing.T, ctx context.Context, cloud fi.Cloud, allTasks
 	}
 }
 
-func runTasks(t *testing.T, ctx context.Context, cloud gce.GCECloud, allTasks map[string]fi.Task) {
+func runTasks(t *testing.T, ctx context.Context, cloud gce.GCECloud, allTasks map[string]fi.CloudupTask) {
 	target := gce.NewGCEAPITarget(cloud)
 
-	context, err := fi.NewContext(ctx, target, nil, cloud, nil, nil, nil, true, allTasks)
+	context, err := fi.NewCloudupContext(ctx, target, nil, cloud, nil, nil, nil, true, allTasks)
 	if err != nil {
 		t.Fatalf("error building context: %v", err)
 	}
@@ -111,7 +111,7 @@ func runTasks(t *testing.T, ctx context.Context, cloud gce.GCECloud, allTasks ma
 	}
 }
 
-func doDryRun(t *testing.T, ctx context.Context, cloud fi.Cloud, allTasks map[string]fi.Task) *fi.DryRunTarget {
+func doDryRun(t *testing.T, ctx context.Context, cloud fi.Cloud, allTasks map[string]fi.CloudupTask) *fi.CloudupDryRunTarget {
 
 	cluster := &kops.Cluster{
 		Spec: kops.ClusterSpec{
@@ -119,8 +119,8 @@ func doDryRun(t *testing.T, ctx context.Context, cloud fi.Cloud, allTasks map[st
 		},
 	}
 	assetBuilder := assets.NewAssetBuilder(cluster, false)
-	target := fi.NewDryRunTarget(assetBuilder, os.Stderr)
-	context, err := fi.NewContext(ctx, target, nil, cloud, nil, nil, nil, true, allTasks)
+	target := fi.NewCloudupDryRunTarget(assetBuilder, os.Stderr)
+	context, err := fi.NewCloudupContext(ctx, target, nil, cloud, nil, nil, nil, true, allTasks)
 	if err != nil {
 		t.Fatalf("error building context: %v", err)
 	}

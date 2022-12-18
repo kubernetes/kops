@@ -24,7 +24,7 @@ type HetznerAPITarget struct {
 	Cloud HetznerCloud
 }
 
-var _ fi.Target = &HetznerAPITarget{}
+var _ fi.CloudupTarget = &HetznerAPITarget{}
 
 func NewHetznerAPITarget(cloud HetznerCloud) *HetznerAPITarget {
 	return &HetznerAPITarget{
@@ -32,7 +32,7 @@ func NewHetznerAPITarget(cloud HetznerCloud) *HetznerAPITarget {
 	}
 }
 
-func (t *HetznerAPITarget) Finish(taskMap map[string]fi.Task) error {
+func (t *HetznerAPITarget) Finish(taskMap map[string]fi.CloudupTask) error {
 	return nil
 }
 

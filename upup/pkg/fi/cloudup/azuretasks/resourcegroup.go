@@ -39,9 +39,9 @@ type ResourceGroup struct {
 }
 
 var (
-	_ fi.Task          = &ResourceGroup{}
-	_ fi.CompareWithID = &ResourceGroup{}
-	_ fi.TaskNormalize = &ResourceGroup{}
+	_ fi.CloudupTask          = &ResourceGroup{}
+	_ fi.CompareWithID        = &ResourceGroup{}
+	_ fi.CloudupTaskNormalize = &ResourceGroup{}
 )
 
 // CompareWithID returns the Name of the VM Scale Set.
@@ -50,7 +50,7 @@ func (r *ResourceGroup) CompareWithID() *string {
 }
 
 // Find discovers the ResourceGroup in the cloud provider.
-func (r *ResourceGroup) Find(c *fi.Context) (*ResourceGroup, error) {
+func (r *ResourceGroup) Find(c *fi.CloudupContext) (*ResourceGroup, error) {
 	cloud := c.Cloud.(azure.AzureCloud)
 	l, err := cloud.ResourceGroup().List(context.TODO(), "" /* filter*/)
 	if err != nil {
@@ -75,14 +75,14 @@ func (r *ResourceGroup) Find(c *fi.Context) (*ResourceGroup, error) {
 	}, nil
 }
 
-func (r *ResourceGroup) Normalize(c *fi.Context) error {
+func (r *ResourceGroup) Normalize(c *fi.CloudupContext) error {
 	c.Cloud.(azure.AzureCloud).AddClusterTags(r.Tags)
 	return nil
 }
 
 // Run implements fi.Task.Run.
-func (r *ResourceGroup) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(r, c)
+func (r *ResourceGroup) Run(c *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(r, c)
 }
 
 // CheckChanges returns an error if a change is not allowed.

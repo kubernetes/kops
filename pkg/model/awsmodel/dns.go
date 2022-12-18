@@ -31,9 +31,9 @@ type DNSModelBuilder struct {
 	Lifecycle fi.Lifecycle
 }
 
-var _ fi.ModelBuilder = &DNSModelBuilder{}
+var _ fi.CloudupModelBuilder = &DNSModelBuilder{}
 
-func (b *DNSModelBuilder) ensureDNSZone(c *fi.ModelBuilderContext) error {
+func (b *DNSModelBuilder) ensureDNSZone(c *fi.CloudupModelBuilderContext) error {
 	if b.Cluster.IsGossip() || b.Cluster.UsesNoneDNS() {
 		return nil
 	}
@@ -70,7 +70,7 @@ func (b *DNSModelBuilder) ensureDNSZone(c *fi.ModelBuilderContext) error {
 	return c.EnsureTask(dnsZone)
 }
 
-func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *DNSModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	// Add a HostedZone if we are going to publish a dns record that depends on it
 	if !b.Cluster.IsGossip() && !b.Cluster.UsesNoneDNS() {
 		if err := b.ensureDNSZone(c); err != nil {

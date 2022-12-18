@@ -34,7 +34,7 @@ import (
 
 // PKIXName is a simplified form of pkix.Name, for better golden test output
 type PKIXName struct {
-	fi.NotADependency
+	fi.NodeupNotADependency
 	CommonName   string
 	Organization []string `json:",omitempty"`
 }
@@ -58,14 +58,14 @@ type IssueCert struct {
 	// IncludeRootCertificate will force the certificate data to include the full chain, not just the leaf
 	IncludeRootCertificate bool `json:"includeRootCertificate,omitempty"`
 
-	cert *fi.TaskDependentResource
-	key  *fi.TaskDependentResource
-	ca   *fi.TaskDependentResource
+	cert *fi.NodeupTaskDependentResource
+	key  *fi.NodeupTaskDependentResource
+	ca   *fi.NodeupTaskDependentResource
 }
 
 var (
-	_ fi.Task    = &IssueCert{}
-	_ fi.HasName = &IssueCert{}
+	_ fi.NodeupTask = &IssueCert{}
+	_ fi.HasName    = &IssueCert{}
 )
 
 func (i *IssueCert) GetName() *string {
@@ -77,16 +77,16 @@ func (i *IssueCert) String() string {
 	return fmt.Sprintf("IssueCert: %s", i.Name)
 }
 
-func (i *IssueCert) GetResources() (certResource, keyResource, caResource *fi.TaskDependentResource) {
+func (i *IssueCert) GetResources() (certResource, keyResource, caResource *fi.NodeupTaskDependentResource) {
 	if i.cert == nil {
-		i.cert = &fi.TaskDependentResource{Task: i}
-		i.key = &fi.TaskDependentResource{Task: i}
-		i.ca = &fi.TaskDependentResource{Task: i}
+		i.cert = &fi.NodeupTaskDependentResource{Task: i}
+		i.key = &fi.NodeupTaskDependentResource{Task: i}
+		i.ca = &fi.NodeupTaskDependentResource{Task: i}
 	}
 	return i.cert, i.key, i.ca
 }
 
-func (i *IssueCert) AddFileTasks(c *fi.ModelBuilderContext, dir string, name string, caName string, owner *string) error {
+func (i *IssueCert) AddFileTasks(c *fi.NodeupModelBuilderContext, dir string, name string, caName string, owner *string) error {
 	certResource, keyResource, caResource := i.GetResources()
 	err := c.EnsureTask(&File{
 		Path: dir,
@@ -129,7 +129,7 @@ func (i *IssueCert) AddFileTasks(c *fi.ModelBuilderContext, dir string, name str
 	return nil
 }
 
-func (e *IssueCert) Run(c *fi.Context) error {
+func (e *IssueCert) Run(c *fi.NodeupContext) error {
 	// Skew the certificate lifetime by up to 30 days based on information about the generating node.
 	// This is so that different nodes created at the same time have the certificates they generated
 	// expire at different times, but all certificates on a given node expire around the same time.

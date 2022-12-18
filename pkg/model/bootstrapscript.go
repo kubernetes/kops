@@ -61,7 +61,7 @@ type BootstrapScript struct {
 	Lifecycle fi.Lifecycle
 	ig        *kops.InstanceGroup
 	builder   *BootstrapScriptBuilder
-	resource  fi.TaskDependentResource
+	resource  fi.CloudupTaskDependentResource
 	// alternateNameTasks are tasks that contribute api-server IP addresses.
 	alternateNameTasks []fi.HasAddress
 
@@ -69,17 +69,17 @@ type BootstrapScript struct {
 	caTasks map[string]*fitasks.Keypair
 
 	// nodeupConfig contains the nodeup config.
-	nodeupConfig fi.TaskDependentResource
+	nodeupConfig fi.CloudupTaskDependentResource
 }
 
 var (
-	_ fi.Task            = &BootstrapScript{}
-	_ fi.HasName         = &BootstrapScript{}
-	_ fi.HasDependencies = &BootstrapScript{}
+	_ fi.CloudupTask            = &BootstrapScript{}
+	_ fi.HasName                = &BootstrapScript{}
+	_ fi.CloudupHasDependencies = &BootstrapScript{}
 )
 
 // kubeEnv returns the boot config for the instance group
-func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.Context) (*nodeup.BootConfig, error) {
+func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.CloudupContext) (*nodeup.BootConfig, error) {
 	var alternateNames []string
 
 	for _, hasAddress := range b.alternateNameTasks {
@@ -253,7 +253,7 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 
 // ResourceNodeUp generates and returns a nodeup (bootstrap) script from a
 // template file, substituting in specific env vars & cluster spec configuration
-func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.ModelBuilderContext, ig *kops.InstanceGroup) (fi.Resource, error) {
+func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.CloudupModelBuilderContext, ig *kops.InstanceGroup) (fi.Resource, error) {
 	keypairs := []string{"kubernetes-ca", "etcd-clients-ca"}
 	for _, etcdCluster := range b.Cluster.Spec.EtcdClusters {
 		k := etcdCluster.Name
@@ -317,8 +317,8 @@ func (b *BootstrapScript) GetName() *string {
 	return &b.Name
 }
 
-func (b *BootstrapScript) GetDependencies(tasks map[string]fi.Task) []fi.Task {
-	var deps []fi.Task
+func (b *BootstrapScript) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
+	var deps []fi.CloudupTask
 
 	for _, task := range tasks {
 		if hasAddress, ok := task.(fi.HasAddress); ok && hasAddress.IsForAPIServer() {
@@ -334,7 +334,7 @@ func (b *BootstrapScript) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	return deps
 }
 
-func (b *BootstrapScript) Run(c *fi.Context) error {
+func (b *BootstrapScript) Run(c *fi.CloudupContext) error {
 	if b.Lifecycle == fi.LifecycleIgnore {
 		return nil
 	}

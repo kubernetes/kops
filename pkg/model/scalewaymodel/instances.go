@@ -34,9 +34,9 @@ type InstanceModelBuilder struct {
 	Lifecycle              fi.Lifecycle
 }
 
-var _ fi.ModelBuilder = &InstanceModelBuilder{}
+var _ fi.CloudupModelBuilder = &InstanceModelBuilder{}
 
-func (d *InstanceModelBuilder) Build(c *fi.ModelBuilderContext) error {
+func (d *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	for _, ig := range d.InstanceGroups {
 		name := d.AutoscalingGroupName(ig)
 		zone, err := scw.ParseZone(ig.Spec.Subnets[0])

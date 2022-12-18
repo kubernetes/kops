@@ -49,7 +49,7 @@ func (p *Prefix) String() string {
 	return fmt.Sprintf("Prefix: %s", p.Name)
 }
 
-func (e *Prefix) Find(c *fi.Context) (*Prefix, error) {
+func (e *Prefix) Find(c *fi.NodeupContext) (*Prefix, error) {
 	if c.Cluster.Spec.GetCloudProvider() != kops.CloudProviderAWS {
 		return nil, fmt.Errorf("unsupported cloud provider: %s", c.Cluster.Spec.GetCloudProvider())
 	}
@@ -74,8 +74,8 @@ func (e *Prefix) Find(c *fi.Context) (*Prefix, error) {
 	return actual, nil
 }
 
-func (e *Prefix) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
+func (e *Prefix) Run(c *fi.NodeupContext) error {
+	return fi.NodeupDefaultDeltaRunMethod(e, c)
 }
 
 func (_ *Prefix) CheckChanges(a, e, changes *Prefix) error {

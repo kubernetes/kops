@@ -29,8 +29,8 @@ func TestAPILoadBalancerModelBuilder_Build(t *testing.T) {
 		AzureModelContext: newTestAzureModelContext(),
 	}
 	b.InstanceGroups[0].Spec.Role = kops.InstanceGroupRoleControlPlane
-	c := &fi.ModelBuilderContext{
-		Tasks: make(map[string]fi.Task),
+	c := &fi.CloudupModelBuilderContext{
+		Tasks: make(map[string]fi.CloudupTask),
 	}
 	err := b.Build(c)
 	if err != nil {

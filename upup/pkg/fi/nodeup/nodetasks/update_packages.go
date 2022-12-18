@@ -34,14 +34,14 @@ type UpdatePackages struct {
 	Updated bool
 }
 
-var _ fi.HasDependencies = &UpdatePackages{}
+var _ fi.NodeupHasDependencies = &UpdatePackages{}
 
 func NewUpdatePackages() *UpdatePackages {
 	return &UpdatePackages{Updated: true}
 }
 
-func (p *UpdatePackages) GetDependencies(tasks map[string]fi.Task) []fi.Task {
-	deps := []fi.Task{}
+func (p *UpdatePackages) GetDependencies(tasks map[string]fi.NodeupTask) []fi.NodeupTask {
+	var deps []fi.NodeupTask
 	for _, v := range tasks {
 		if _, ok := v.(*AptSource); ok {
 			deps = append(deps, v)
@@ -54,12 +54,12 @@ func (p *UpdatePackages) String() string {
 	return "UpdatePackages"
 }
 
-func (e *UpdatePackages) Find(c *fi.Context) (*UpdatePackages, error) {
+func (e *UpdatePackages) Find(c *fi.NodeupContext) (*UpdatePackages, error) {
 	return nil, nil
 }
 
-func (e *UpdatePackages) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
+func (e *UpdatePackages) Run(c *fi.NodeupContext) error {
+	return fi.NodeupDefaultDeltaRunMethod(e, c)
 }
 
 func (s *UpdatePackages) CheckChanges(a, e, changes *UpdatePackages) error {

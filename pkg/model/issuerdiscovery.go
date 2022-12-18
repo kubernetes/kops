@@ -53,7 +53,7 @@ type oidcDiscovery struct {
 	ClaimsSupported       []string `json:"claims_supported"`
 }
 
-func (b *IssuerDiscoveryModelBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *IssuerDiscoveryModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	ctx := context.TODO()
 
 	said := b.Cluster.Spec.ServiceAccountIssuerDiscovery
@@ -148,8 +148,8 @@ type OIDCKeys struct {
 }
 
 // GetDependencies adds CA to the list of dependencies
-func (o *OIDCKeys) GetDependencies(tasks map[string]fi.Task) []fi.Task {
-	return []fi.Task{
+func (o *OIDCKeys) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
+	return []fi.CloudupTask{
 		o.SigningKey,
 	}
 }

@@ -30,9 +30,9 @@ type ExternalAccessModelBuilder struct {
 	Lifecycle fi.Lifecycle
 }
 
-var _ fi.ModelBuilder = &ExternalAccessModelBuilder{}
+var _ fi.CloudupModelBuilder = &ExternalAccessModelBuilder{}
 
-func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	klog.Warningf("TODO: Harmonize gcemodel ExternalAccessModelBuilder with awsmodel")
 	if len(b.Cluster.Spec.API.Access) == 0 {
 		klog.Warningf("KubernetesAPIAccess is empty")

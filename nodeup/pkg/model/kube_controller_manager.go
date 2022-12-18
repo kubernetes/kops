@@ -44,10 +44,10 @@ type KubeControllerManagerBuilder struct {
 	*NodeupModelContext
 }
 
-var _ fi.ModelBuilder = &KubeControllerManagerBuilder{}
+var _ fi.NodeupModelBuilder = &KubeControllerManagerBuilder{}
 
 // Build is responsible for configuring the kube-controller-manager
-func (b *KubeControllerManagerBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *KubeControllerManagerBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	if !b.IsMaster {
 		return nil
 	}
@@ -114,7 +114,7 @@ func (b *KubeControllerManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
-func (b *KubeControllerManagerBuilder) writeServerCertificate(c *fi.ModelBuilderContext, kcm *kops.KubeControllerManagerConfig) error {
+func (b *KubeControllerManagerBuilder) writeServerCertificate(c *fi.NodeupModelBuilderContext, kcm *kops.KubeControllerManagerConfig) error {
 	pathSrvKCM := filepath.Join(b.PathSrvKubernetes(), "kube-controller-manager")
 
 	if kcm.TLSCertFile == nil {

@@ -46,13 +46,13 @@ type EBSVolume struct {
 }
 
 var _ fi.CompareWithID = &EBSVolume{}
-var _ fi.TaskNormalize = &EBSVolume{}
+var _ fi.CloudupTaskNormalize = &EBSVolume{}
 
 func (e *EBSVolume) CompareWithID() *string {
 	return e.ID
 }
 
-func (e *EBSVolume) Find(context *fi.Context) (*EBSVolume, error) {
+func (e *EBSVolume) Find(context *fi.CloudupContext) (*EBSVolume, error) {
 	cloud := context.Cloud.(awsup.AWSCloud)
 
 	filters := cloud.BuildFilters(e.Name)
@@ -96,13 +96,13 @@ func (e *EBSVolume) Find(context *fi.Context) (*EBSVolume, error) {
 	return actual, nil
 }
 
-func (e *EBSVolume) Normalize(c *fi.Context) error {
+func (e *EBSVolume) Normalize(c *fi.CloudupContext) error {
 	c.Cloud.(awsup.AWSCloud).AddTags(e.Name, e.Tags)
 	return nil
 }
 
-func (e *EBSVolume) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
+func (e *EBSVolume) Run(c *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(e, c)
 }
 
 func (_ *EBSVolume) CheckChanges(a, e, changes *EBSVolume) error {
@@ -242,7 +242,7 @@ func (e *EBSVolume) TerraformName() (string, bool) {
 }
 
 // PreRun is run before general task execution, and checks for terraform breaking changes.
-func (e *EBSVolume) PreRun(c *fi.Context) error {
+func (e *EBSVolume) PreRun(c *fi.CloudupContext) error {
 	if _, ok := c.Target.(*terraform.TerraformTarget); ok {
 		_, usedPrefix := e.TerraformName()
 		if usedPrefix {

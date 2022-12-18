@@ -39,13 +39,13 @@ type SSHKey struct {
 }
 
 var _ fi.CompareWithID = &SSHKey{}
-var _ fi.TaskNormalize = &SSHKey{}
+var _ fi.CloudupTaskNormalize = &SSHKey{}
 
 func (e *SSHKey) CompareWithID() *string {
 	return e.Name
 }
 
-func (e *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
+func (e *SSHKey) Find(c *fi.CloudupContext) (*SSHKey, error) {
 	cloud := c.Cloud.(openstack.OpenstackCloud)
 	rs, err := cloud.GetKeypair(openstackKeyPairName(fi.ValueOf(e.Name)))
 	if err != nil {
@@ -70,7 +70,7 @@ func (e *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
 	return actual, nil
 }
 
-func (e *SSHKey) Normalize(c *fi.Context) error {
+func (e *SSHKey) Normalize(c *fi.CloudupContext) error {
 	if e.KeyFingerprint == nil && e.PublicKey != nil {
 		publicKey, err := fi.ResourceAsString(e.PublicKey)
 		if err != nil {
@@ -87,8 +87,8 @@ func (e *SSHKey) Normalize(c *fi.Context) error {
 	return nil
 }
 
-func (e *SSHKey) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
+func (e *SSHKey) Run(c *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(e, c)
 }
 
 func (s *SSHKey) CheckChanges(a, e, changes *SSHKey) error {

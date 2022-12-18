@@ -61,7 +61,7 @@ func TestRoleAssignmentRenderAzure(t *testing.T) {
 
 func TestRoleAssignmentFind(t *testing.T) {
 	cloud := NewMockAzureCloud("eastus")
-	ctx := &fi.Context{
+	ctx := &fi.CloudupContext{
 		Cloud: cloud,
 	}
 
@@ -134,7 +134,7 @@ func TestRoleAssignmentFind(t *testing.T) {
 // when the principal ID of VM Scale Set hasn't yet been set.
 func TestRoleAssignmentFind_NoPrincipalID(t *testing.T) {
 	cloud := NewMockAzureCloud("eastus")
-	ctx := &fi.Context{
+	ctx := &fi.CloudupContext{
 		Cloud: cloud,
 	}
 

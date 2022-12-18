@@ -83,7 +83,7 @@ func TestResourceGroupRenderAzure(t *testing.T) {
 
 func TestResourceGroupFind(t *testing.T) {
 	cloud := NewMockAzureCloud("eastus")
-	ctx := &fi.Context{
+	ctx := &fi.CloudupContext{
 		Cloud: cloud,
 	}
 
@@ -140,7 +140,7 @@ func TestResourceGroupFind(t *testing.T) {
 
 func TestResourceGroupRun(t *testing.T) {
 	cloud := NewMockAzureCloud("eastus")
-	ctx := &fi.Context{
+	ctx := &fi.CloudupContext{
 		Cloud:  cloud,
 		Target: azure.NewAzureAPITarget(cloud),
 	}
