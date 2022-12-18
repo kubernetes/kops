@@ -233,7 +233,7 @@ func (b *FirewallModelBuilder) addNodePortRules(c *fi.ModelBuilderContext, sgMap
 func (b *FirewallModelBuilder) addHTTPSRules(c *fi.ModelBuilderContext, sgMap map[string]*openstacktasks.SecurityGroup, useVIPACL bool) error {
 	masterName := b.SecurityGroupName(kops.InstanceGroupRoleControlPlane)
 	nodeName := b.SecurityGroupName(kops.InstanceGroupRoleNode)
-	lbSGName := b.Cluster.Spec.API.PublicName
+	lbSGName := b.APIResourceName()
 	lbSG := sgMap[lbSGName]
 	masterSG := sgMap[masterName]
 	nodeSG := sgMap[nodeName]
@@ -579,7 +579,7 @@ func (b *FirewallModelBuilder) getExistingRules(sgMap map[string]*openstacktasks
 
 func (b *FirewallModelBuilder) addDefaultEgress(c *fi.ModelBuilderContext, sgMap map[string]*openstacktasks.SecurityGroup, useVIPACL bool) {
 	for name, sg := range sgMap {
-		if useVIPACL && name == b.Cluster.Spec.API.PublicName {
+		if useVIPACL && name == b.APIResourceName() {
 			continue
 		}
 		t := &openstacktasks.SecurityGroupRule{
@@ -616,7 +616,7 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		useVIPACL = true
 	}
 	sg := &openstacktasks.SecurityGroup{
-		Name:             s(b.Cluster.Spec.API.PublicName),
+		Name:             s(b.APIResourceName()),
 		Lifecycle:        b.Lifecycle,
 		RemoveExtraRules: []string{"port=443"},
 	}
@@ -624,7 +624,7 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		sg.RemoveGroup = true
 	}
 	c.AddTask(sg)
-	sgMap[b.Cluster.Spec.API.PublicName] = sg
+	sgMap[b.APIResourceName()] = sg
 	for _, role := range roles {
 
 		// Create Security Group for Role
