@@ -26,18 +26,18 @@ import (
 // NodeupDefaultDeltaRunMethod implements the standard change-based run procedure:
 // find the existing item; compare properties; call render with (actual, expected, changes)
 func NodeupDefaultDeltaRunMethod(e NodeupTask, c *NodeupContext) error {
-	return DefaultDeltaRunMethod[NodeupSubContext](e, c)
+	return defaultDeltaRunMethod[NodeupSubContext](e, c)
 }
 
 // CloudupDefaultDeltaRunMethod implements the standard change-based run procedure:
 // find the existing item; compare properties; call render with (actual, expected, changes)
 func CloudupDefaultDeltaRunMethod(e CloudupTask, c *CloudupContext) error {
-	return DefaultDeltaRunMethod[CloudupSubContext](e, c)
+	return defaultDeltaRunMethod[CloudupSubContext](e, c)
 }
 
-// DefaultDeltaRunMethod implements the standard change-based run procedure:
+// defaultDeltaRunMethod implements the standard change-based run procedure:
 // find the existing item; compare properties; call render with (actual, expected, changes)
-func DefaultDeltaRunMethod[T SubContext](e Task[T], c *Context[T]) error {
+func defaultDeltaRunMethod[T SubContext](e Task[T], c *Context[T]) error {
 	var a Task[T]
 	var err error
 
