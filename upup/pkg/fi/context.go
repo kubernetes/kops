@@ -69,7 +69,7 @@ type Warning[T SubContext] struct {
 	Message string
 }
 
-func NewContext[T SubContext](ctx context.Context, target Target[T], cluster *kops.Cluster, keystore Keystore, secretStore SecretStore, checkExisting bool, sub T, tasks map[string]Task[T]) (*Context[T], error) {
+func newContext[T SubContext](ctx context.Context, target Target[T], cluster *kops.Cluster, keystore Keystore, secretStore SecretStore, checkExisting bool, sub T, tasks map[string]Task[T]) (*Context[T], error) {
 	c := &Context[T]{
 		ctx:           ctx,
 		Cluster:       cluster,
@@ -86,7 +86,7 @@ func NewContext[T SubContext](ctx context.Context, target Target[T], cluster *ko
 
 func NewNodeupContext(ctx context.Context, target NodeupTarget, cluster *kops.Cluster, keystore Keystore, secretStore SecretStore, checkExisting bool, tasks map[string]NodeupTask) (*NodeupContext, error) {
 	sub := NodeupSubContext{}
-	return NewContext[NodeupSubContext](ctx, target, cluster, keystore, secretStore, checkExisting, sub, tasks)
+	return newContext[NodeupSubContext](ctx, target, cluster, keystore, secretStore, checkExisting, sub, tasks)
 }
 
 func NewCloudupContext(ctx context.Context, target CloudupTarget, cluster *kops.Cluster, cloud Cloud, keystore Keystore, secretStore SecretStore, clusterConfigBase vfs.Path, checkExisting bool, tasks map[string]CloudupTask) (*CloudupContext, error) {
@@ -94,7 +94,7 @@ func NewCloudupContext(ctx context.Context, target CloudupTarget, cluster *kops.
 		Cloud:             cloud,
 		ClusterConfigBase: clusterConfigBase,
 	}
-	return NewContext[CloudupSubContext](ctx, target, cluster, keystore, secretStore, checkExisting, sub, tasks)
+	return newContext[CloudupSubContext](ctx, target, cluster, keystore, secretStore, checkExisting, sub, tasks)
 }
 
 func (c *Context[T]) AllTasks() map[string]Task[T] {

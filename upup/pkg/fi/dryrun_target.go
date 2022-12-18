@@ -77,7 +77,7 @@ func (a DeletionByTaskName[T]) Less(i, j int) bool {
 
 var _ Target[CloudupSubContext] = &DryRunTarget[CloudupSubContext]{}
 
-func NewDryRunTarget[T SubContext](assetBuilder *assets.AssetBuilder, out io.Writer) *DryRunTarget[T] {
+func newDryRunTarget[T SubContext](assetBuilder *assets.AssetBuilder, out io.Writer) *DryRunTarget[T] {
 	t := &DryRunTarget[T]{}
 	t.out = out
 	t.assetBuilder = assetBuilder
@@ -85,11 +85,11 @@ func NewDryRunTarget[T SubContext](assetBuilder *assets.AssetBuilder, out io.Wri
 }
 
 func NewCloudupDryRunTarget(assetBuilder *assets.AssetBuilder, out io.Writer) *CloudupDryRunTarget {
-	return NewDryRunTarget[CloudupSubContext](assetBuilder, out)
+	return newDryRunTarget[CloudupSubContext](assetBuilder, out)
 }
 
 func NewNodeupDryRunTarget(assetBuilder *assets.AssetBuilder, out io.Writer) *NodeupDryRunTarget {
-	return NewDryRunTarget[NodeupSubContext](assetBuilder, out)
+	return newDryRunTarget[NodeupSubContext](assetBuilder, out)
 }
 
 func (t *DryRunTarget[T]) ProcessDeletions() bool {
