@@ -105,7 +105,8 @@ func (b *BootstrapClientTask) Run(c *fi.NodeupContext) error {
 		req.Certs[name] = string(pem.EncodeToMemory(&pem.Block{Type: "RSA PUBLIC KEY", Bytes: pkData}))
 	}
 
-	resp, err := b.Client.QueryBootstrap(ctx, &req)
+	var resp nodeup.BootstrapResponse
+	err := b.Client.Query(ctx, &req, &resp)
 	if err != nil {
 		return err
 	}

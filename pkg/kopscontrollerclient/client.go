@@ -24,7 +24,6 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -32,7 +31,6 @@ import (
 	"time"
 
 	"k8s.io/klog/v2"
-	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/resolver"
 	"k8s.io/kops/upup/pkg/fi"
@@ -89,7 +87,7 @@ func (b *Client) dial(ctx context.Context, network, addr string) (net.Conn, erro
 	return nil, errors[0]
 }
 
-func (b *Client) QueryBootstrap(ctx context.Context, req *nodeup.BootstrapRequest) (*nodeup.BootstrapResponse, error) {
+func (b *Client) Query(ctx context.Context, req any, resp any) error {
 	if b.httpClient == nil {
 		certPool := x509.NewCertPool()
 		certPool.AppendCertsFromPEM(b.CAs)
@@ -118,61 +116,50 @@ func (b *Client) QueryBootstrap(ctx context.Context, req *nodeup.BootstrapReques
 		// Don't check DNS when there's a custom resolver.
 	} else if ips, err := net.LookupIP(b.BaseURL.Hostname()); err != nil {
 		if dnsErr, ok := err.(*net.DNSError); ok && dnsErr.IsNotFound {
-			return nil, fi.NewTryAgainLaterError(fmt.Sprintf("kops-controller DNS not setup yet (not found: %v)", dnsErr))
+			return fi.NewTryAgainLaterError(fmt.Sprintf("kops-controller DNS not setup yet (not found: %v)", dnsErr))
 		}
-		return nil, err
+		return err
 	} else if len(ips) == 1 && (ips[0].String() == cloudup.PlaceholderIP || ips[0].String() == cloudup.PlaceholderIPv6) {
-		return nil, fi.NewTryAgainLaterError(fmt.Sprintf("kops-controller DNS not setup yet (placeholder IP found: %v)", ips))
+		return fi.NewTryAgainLaterError(fmt.Sprintf("kops-controller DNS not setup yet (placeholder IP found: %v)", ips))
 	}
 
 	reqBytes, err := json.Marshal(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	bootstrapURL := b.BaseURL
 	bootstrapURL.Path = path.Join(bootstrapURL.Path, "/bootstrap")
 	httpReq, err := http.NewRequestWithContext(ctx, "POST", bootstrapURL.String(), bytes.NewReader(reqBytes))
 	if err != nil {
-		return nil, err
+		return err
 	}
 	httpReq.Header.Set("Content-Type", "application/json")
 
 	token, err := b.Authenticator.CreateToken(reqBytes)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	httpReq.Header.Set("Authorization", token)
 
-	resp, err := b.httpClient.Do(httpReq)
+	response, err := b.httpClient.Do(httpReq)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	if resp.Body != nil {
-		defer resp.Body.Close()
+	if response.Body != nil {
+		defer response.Body.Close()
 	}
 
-	if resp.StatusCode != http.StatusOK {
+	if response.StatusCode != http.StatusOK {
 		detail := ""
-		if resp.Body != nil {
-			scanner := bufio.NewScanner(resp.Body)
+		if response.Body != nil {
+			scanner := bufio.NewScanner(response.Body)
 			if scanner.Scan() {
 				detail = scanner.Text()
 			}
 		}
-		return nil, fmt.Errorf("bootstrap returned status code %d: %s", resp.StatusCode, detail)
+		return fmt.Errorf("kops-controller returned status code %d: %s", response.StatusCode, detail)
 	}
 
-	var bootstrapResp nodeup.BootstrapResponse
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	err = json.Unmarshal(body, &bootstrapResp)
-	if err != nil {
-		return nil, err
-	}
-
-	return &bootstrapResp, nil
+	return json.NewDecoder(response.Body).Decode(resp)
 }

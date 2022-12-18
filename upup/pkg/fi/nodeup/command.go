@@ -785,7 +785,9 @@ func getNodeConfigFromServer(ctx context.Context, bootConfig *nodeup.BootConfig,
 		APIVersion:        nodeup.BootstrapAPIVersion,
 		IncludeNodeConfig: true,
 	}
-	return client.QueryBootstrap(ctx, &request)
+	var resp nodeup.BootstrapResponse
+	err = client.Query(ctx, &request, &resp)
+	return &resp, err
 }
 
 func getAWSConfigurationMode(c *model.NodeupModelContext) (string, error) {
