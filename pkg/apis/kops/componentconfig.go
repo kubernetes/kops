@@ -865,16 +865,12 @@ type CloudConfiguration struct {
 	NodeInstancePrefix *string `json:"nodeInstancePrefix,omitempty"`
 	// NodeIPFamilies controls the IP families reported for each node (AWS only).
 	NodeIPFamilies []string `json:"nodeIPFamilies,omitempty"`
-	// GCEServiceAccount specifies the service account with which the GCE VM runs
-	GCEServiceAccount string `json:"gceServiceAccount,omitempty"`
 	// AWS cloud-config options
 	DisableSecurityGroupIngress *bool   `json:"disableSecurityGroupIngress,omitempty"`
 	ElbSecurityGroup            *string `json:"elbSecurityGroup,omitempty"`
 	// Spotinst cloud-config specs
 	SpotinstProduct     *string `json:"spotinstProduct,omitempty"`
 	SpotinstOrientation *string `json:"spotinstOrientation,omitempty"`
-	// GCPPDCSIDriver is the config for the GCP PD CSI driver
-	GCPPDCSIDriver *GCPPDCSIDriver `json:"gcpPDCSIDriver,omitempty"`
 }
 
 // EBSCSIDriverSpec is the config for the AWS EBS CSI driver
@@ -902,8 +898,8 @@ type EBSCSIDriverSpec struct {
 	PodAnnotations map[string]string `json:"podAnnotations,omitempty"`
 }
 
-// GCPPDCSIDriver is the config for the GCP PD CSI driver
-type GCPPDCSIDriver struct {
+// PDCSIDriver is the config for the GCP PD CSI driver
+type PDCSIDriver struct {
 	// Enabled enables the GCP PD CSI driver
 	Enabled *bool `json:"enabled,omitempty"`
 }

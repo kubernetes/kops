@@ -12,6 +12,10 @@ spec:
   authorization:
     alwaysAllow: {}
   channel: stable
+  cloudConfig:
+    gceServiceAccount: gce-sa
+    gcpPDCSIDriver:
+      enabled: true
   cloudProvider: gce
   configBase: memfs://clusters.example.com/minimal.example.com
   etcdClusters:

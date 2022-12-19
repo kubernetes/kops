@@ -817,7 +817,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 				})
 			}
 		}
-		if b.Cluster.Spec.CloudConfig != nil && b.Cluster.Spec.CloudConfig.GCPPDCSIDriver != nil && fi.ValueOf(b.Cluster.Spec.CloudConfig.GCPPDCSIDriver.Enabled) {
+		if b.Cluster.Spec.CloudProvider.GCE != nil && b.Cluster.Spec.CloudProvider.GCE.PDCSIDriver != nil && fi.ValueOf(b.Cluster.Spec.CloudProvider.GCE.PDCSIDriver.Enabled) {
 			key := "gcp-pd-csi-driver.addons.k8s.io"
 			{
 				id := "k8s-1.23"
