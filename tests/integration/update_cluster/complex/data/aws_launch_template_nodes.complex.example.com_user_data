@@ -133,9 +133,6 @@ ensure-install-dir
 
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
-  awsEBSCSIDriver:
-    enabled: true
-    version: v1.13.0
   manageStorageClasses: true
 containerRuntime: containerd
 containerd:
