@@ -869,7 +869,41 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		if b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderGCE {
 			if b.Cluster.Spec.ExternalCloudControllerManager != nil {
 				key := "gcp-cloud-controller.addons.k8s.io"
+				useBuiltin := true
+
 				{
+					gkDaemonset := schema.GroupKind{Group: "apps", Kind: "DaemonSet"}
+					for _, addon := range b.ClusterAddons {
+						if addon.GroupVersionKind().GroupKind() == gkDaemonset &&
+							addon.GetName() == "cloud-controller-manager" &&
+							addon.GetNamespace() == "kube-system" {
+							klog.Infof("Found cloud-controller-manager in addons; won't use builtin")
+							useBuiltin = false
+
+							fnAny, ok := b.templates.TemplateFunctions["CloudControllerConfigArgv"]
+							if !ok {
+								return nil, nil, fmt.Errorf("unable to find TemplateFunction CloudControllerConfigArgv")
+							}
+							fn, ok := fnAny.(func() ([]string, error))
+							if !ok {
+								return nil, nil, fmt.Errorf("unexpected typed for TemplateFunction CloudControllerConfigArgv: %T", fnAny)
+							}
+							args, err := fn()
+							if err != nil {
+								return nil, nil, fmt.Errorf("error from TemplateFunction CloudControllerConfigArgv: %w", err)
+							}
+
+							if err := addon.VisitContainers(func(container map[string]interface{}) error {
+								// TODO: Check name?
+								container["args"] = args
+								return nil
+							}); err != nil {
+								return nil, nil, fmt.Errorf("error visiting containers: %w", err)
+							}
+						}
+					}
+				}
+				if useBuiltin {
 					id := "k8s-1.23"
 					location := key + "/" + id + ".yaml"
 					addon := addons.Add(&channelsapi.AddonSpec{
@@ -886,8 +920,21 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 
 	if b.Cluster.Spec.Networking.Kopeio != nil && !featureflag.UseAddonOperators.Enabled() {
 		key := "networking.kope.io"
+		useBuiltin := true
 
 		{
+			gkDaemonset := schema.GroupKind{Group: "apps", Kind: "DaemonSet"}
+			for _, addon := range b.ClusterAddons {
+				if addon.GroupVersionKind().GroupKind() == gkDaemonset &&
+					addon.GetName() == "kopeio-networking-agent" &&
+					addon.GetNamespace() == "kube-system" {
+					useBuiltin = false
+					klog.Infof("Found kopeio-networking-agent in addons; won't use builtin")
+				}
+			}
+		}
+
+		if useBuiltin {
 			location := key + "/k8s-1.12.yaml"
 			id := "k8s-1.12"
 
