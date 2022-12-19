@@ -51,19 +51,6 @@ func (i *Installation) Run() error {
 	}
 	i.Build(buildContext)
 
-	// If there is a package task, we need an update packages task
-	for _, t := range tasks {
-		if _, ok := t.(*nodetasks.Package); ok {
-			klog.Infof("Package task found; adding UpdatePackages task")
-			tasks["UpdatePackages"] = nodetasks.NewUpdatePackages()
-			break
-		}
-	}
-
-	if tasks["UpdatePackages"] == nil {
-		klog.Infof("No package task found; won't update packages")
-	}
-
 	var keyStore fi.Keystore
 	var secretStore fi.SecretStore
 
