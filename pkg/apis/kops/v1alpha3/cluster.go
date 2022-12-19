@@ -211,6 +211,10 @@ type DOSpec struct{}
 type GCESpec struct {
 	// Project is the cloud project we should use.
 	Project string `json:"project"`
+	// ServiceAccount specifies the service account with which the GCE VM runs.
+	ServiceAccount string `json:"serviceAccount,omitempty"`
+	// PDCSIDriver is the config for the PD CSI driver.
+	PDCSIDriver *PDCSIDriver `json:"pdCSIDriver,omitempty"`
 }
 
 // HetznerSpec configures the Hetzner cloud provider.

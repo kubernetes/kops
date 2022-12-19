@@ -154,6 +154,21 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 				return err
 			}
 		}
+		if in.CloudConfig.GCEServiceAccount != "" {
+			if out.CloudProvider.GCE == nil {
+				return field.Forbidden(field.NewPath("spec").Child("cloudConfig", "gceServiceAccount"), "GCE Service Account supports only GCE")
+			}
+			out.CloudProvider.GCE.ServiceAccount = in.CloudConfig.GCEServiceAccount
+		}
+		if in.CloudConfig.GCPPDCSIDriver != nil {
+			if out.CloudProvider.GCE == nil {
+				return field.Forbidden(field.NewPath("spec").Child("cloudConfig", "gcpPDCSIDriver"), "PD CSI driver supports only GCE")
+			}
+			out.CloudProvider.GCE.PDCSIDriver = &kops.PDCSIDriver{}
+			if err := autoConvert_v1alpha2_PDCSIDriver_To_kops_PDCSIDriver(in.CloudConfig.GCPPDCSIDriver, out.CloudProvider.GCE.PDCSIDriver, s); err != nil {
+				return err
+			}
+		}
 	}
 	if in.NodeTerminationHandler != nil {
 		if out.CloudProvider.AWS == nil {
@@ -331,7 +346,23 @@ func Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, out 
 			return err
 		}
 	case kops.CloudProviderGCE:
-		out.Project = in.CloudProvider.GCE.Project
+		gce := in.CloudProvider.GCE
+		out.Project = gce.Project
+		if gce.ServiceAccount != "" {
+			if out.CloudConfig == nil {
+				out.CloudConfig = &CloudConfiguration{}
+			}
+			out.CloudConfig.GCEServiceAccount = gce.ServiceAccount
+		}
+		if gce.PDCSIDriver != nil {
+			if out.CloudConfig == nil {
+				out.CloudConfig = &CloudConfiguration{}
+			}
+			out.CloudConfig.GCPPDCSIDriver = &PDCSIDriver{}
+			if err := autoConvert_kops_PDCSIDriver_To_v1alpha2_PDCSIDriver(gce.PDCSIDriver, out.CloudConfig.GCPPDCSIDriver, s); err != nil {
+				return err
+			}
+		}
 	case kops.CloudProviderOpenstack:
 		if out.CloudConfig == nil {
 			out.CloudConfig = &CloudConfiguration{}
