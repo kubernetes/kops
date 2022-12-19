@@ -614,7 +614,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				l.Builders = append(l.Builders, awsModelBuilder)
 			}
 
-			nth := c.Cluster.Spec.NodeTerminationHandler
+			nth := c.Cluster.Spec.CloudProvider.AWS.NodeTerminationHandler
 			if nth.IsQueueMode() {
 				l.Builders = append(l.Builders, &awsmodel.NodeTerminationHandlerBuilder{
 					AWSModelContext: awsModelContext,
@@ -1510,8 +1510,10 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 		config.NvidiaGPU = n.buildNvidiaConfig(ig)
 	}
 
-	if ig.Spec.WarmPool != nil || cluster.Spec.WarmPool != nil {
-		config.WarmPoolImages = n.buildWarmPoolImages(ig)
+	if cluster.Spec.CloudProvider.AWS != nil {
+		if ig.Spec.WarmPool != nil || cluster.Spec.CloudProvider.AWS.WarmPool != nil {
+			config.WarmPoolImages = n.buildWarmPoolImages(ig)
+		}
 	}
 
 	if ig.Spec.Packages != nil {

@@ -21,6 +21,8 @@ spec:
       type: Public
   authorization:
     alwaysAllow: {}
+  awsLoadBalancerController:
+    enableWAF: true
   channel: stable
   cloudProvider: aws
   configBase: memfs://clusters.example.com/minimal.example.com
@@ -66,8 +68,12 @@ spec:
   networkID: vpc-123456
   networking:
     amazonvpc: {}
+  nodeTerminationHandler:
+    enableSpotInterruptionDraining: true
   nonMasqueradeCIDR: 100.64.0.0/10
   podCIDR: 100.64.0.0/16
+  podIdentityWebhook:
+    replicas: 14
   serviceClusterIPRange: 100.65.0.0/16
   sshAccess:
   - 0.0.0.0/0
@@ -81,6 +87,8 @@ spec:
       type: None
     masters: public
     nodes: private
+  warmPool:
+    enableLifecycleHook: true
 
 ---
 

@@ -171,7 +171,11 @@ func setFieldValue(aStruct interface{}, fieldName string, fieldValue interface{}
 func assertResolvesValue(t *testing.T, name string, expected interface{}, warmPoolSpecDefault *WarmPoolSpec, ig *WarmPoolSpec, role InstanceGroupRole, msg interface{}) bool {
 	cluster := Cluster{
 		Spec: ClusterSpec{
-			WarmPool: warmPoolSpecDefault,
+			CloudProvider: CloudProviderSpec{
+				AWS: &AWSSpec{
+					WarmPool: warmPoolSpecDefault,
+				},
+			},
 		},
 	}
 	instanceGroup := InstanceGroup{
@@ -183,10 +187,10 @@ func assertResolvesValue(t *testing.T, name string, expected interface{}, warmPo
 	warmPoolSpecDefaultCopy := warmPoolSpecDefault.DeepCopy()
 	warmPoolSpecCopy := ig.DeepCopy()
 
-	resolved := cluster.Spec.WarmPool.ResolveDefaults(&instanceGroup)
+	resolved := cluster.Spec.CloudProvider.AWS.WarmPool.ResolveDefaults(&instanceGroup)
 	value := reflect.ValueOf(*resolved).FieldByName(name)
 
-	assert.Equal(t, warmPoolSpecDefault, cluster.Spec.WarmPool, "cluster not modified")
+	assert.Equal(t, warmPoolSpecDefault, cluster.Spec.CloudProvider.AWS.WarmPool, "cluster not modified")
 	assert.True(t, reflect.DeepEqual(warmPoolSpecDefault, warmPoolSpecDefaultCopy), "WarmPoolSpec not modified")
 	assert.Equal(t, ig, instanceGroup.Spec.WarmPool, "instancegroup not modified")
 	assert.True(t, reflect.DeepEqual(ig, warmPoolSpecCopy), "WarmPoolSpec not modified")

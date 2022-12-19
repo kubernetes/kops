@@ -23,7 +23,15 @@ spec:
     alwaysAllow: {}
   channel: stable
   cloudProvider:
-    aws: {}
+    aws:
+      loadBalancerController:
+        enableWAF: true
+      nodeTerminationHandler:
+        enableSpotInterruptionDraining: true
+      podIdentityWebhook:
+        replicas: 14
+      warmPool:
+        enableLifecycleHook: true
   configBase: memfs://clusters.example.com/minimal.example.com
   controlPlaneKubelet:
     cpuCFSQuota: true

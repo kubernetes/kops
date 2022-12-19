@@ -612,27 +612,29 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		}
 	}
 
-	nth := b.Cluster.Spec.NodeTerminationHandler
+	if b.Cluster.Spec.CloudProvider.AWS != nil {
+		nth := b.Cluster.Spec.CloudProvider.AWS.NodeTerminationHandler
 
-	if nth != nil && fi.ValueOf(nth.Enabled) {
+		if nth != nil && fi.ValueOf(nth.Enabled) {
 
-		key := "node-termination-handler.aws"
+			key := "node-termination-handler.aws"
 
-		{
-			location := key + "/k8s-1.11.yaml"
-			id := "k8s-1.11"
+			{
+				location := key + "/k8s-1.11.yaml"
+				id := "k8s-1.11"
 
-			addon := addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
-				Selector: map[string]string{"k8s-addon": key},
-				Manifest: fi.PtrTo(location),
-				Id:       id,
-			})
-			addon.BuildPrune = true
-		}
+				addon := addons.Add(&channelsapi.AddonSpec{
+					Name:     fi.PtrTo(key),
+					Selector: map[string]string{"k8s-addon": key},
+					Manifest: fi.PtrTo(location),
+					Id:       id,
+				})
+				addon.BuildPrune = true
+			}
 
-		if b.UseServiceAccountExternalPermissions() {
-			serviceAccountRoles = append(serviceAccountRoles, &nodeterminationhandler.ServiceAccount{})
+			if b.UseServiceAccountExternalPermissions() {
+				serviceAccountRoles = append(serviceAccountRoles, &nodeterminationhandler.ServiceAccount{})
+			}
 		}
 	}
 
@@ -681,44 +683,46 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		}
 	}
 
-	if b.Cluster.Spec.AWSLoadBalancerController != nil && fi.ValueOf(b.Cluster.Spec.AWSLoadBalancerController.Enabled) {
+	if b.Cluster.Spec.CloudProvider.AWS != nil {
+		if b.Cluster.Spec.CloudProvider.AWS.LoadBalancerController != nil && fi.ValueOf(b.Cluster.Spec.CloudProvider.AWS.LoadBalancerController.Enabled) {
 
-		key := "aws-load-balancer-controller.addons.k8s.io"
+			key := "aws-load-balancer-controller.addons.k8s.io"
 
-		location := key + "/k8s-1.19.yaml"
-		id := "k8s-1.19"
-
-		addons.Add(&channelsapi.AddonSpec{
-			Name:     fi.PtrTo(key),
-			Selector: map[string]string{"k8s-addon": key},
-			Manifest: fi.PtrTo(location),
-			Id:       id,
-			NeedsPKI: true,
-		})
-
-		// Generate aws-load-balancer-controller ServiceAccount IAM permissions
-		if b.UseServiceAccountExternalPermissions() {
-			serviceAccountRoles = append(serviceAccountRoles, &awsloadbalancercontroller.ServiceAccount{})
-		}
-	}
-
-	if b.Cluster.Spec.PodIdentityWebhook != nil && fi.ValueOf(&b.Cluster.Spec.PodIdentityWebhook.Enabled) {
-
-		key := "eks-pod-identity-webhook.addons.k8s.io"
-
-		{
-			id := "k8s-1.16"
-			location := key + "/" + id + ".yaml"
+			location := key + "/k8s-1.19.yaml"
+			id := "k8s-1.19"
 
 			addons.Add(&channelsapi.AddonSpec{
-				Name: fi.PtrTo(key),
-				Selector: map[string]string{
-					"k8s-addon": key,
-				},
+				Name:     fi.PtrTo(key),
+				Selector: map[string]string{"k8s-addon": key},
 				Manifest: fi.PtrTo(location),
 				Id:       id,
 				NeedsPKI: true,
 			})
+
+			// Generate aws-load-balancer-controller ServiceAccount IAM permissions
+			if b.UseServiceAccountExternalPermissions() {
+				serviceAccountRoles = append(serviceAccountRoles, &awsloadbalancercontroller.ServiceAccount{})
+			}
+		}
+
+		if b.Cluster.Spec.CloudProvider.AWS.PodIdentityWebhook != nil && fi.ValueOf(&b.Cluster.Spec.CloudProvider.AWS.PodIdentityWebhook.Enabled) {
+
+			key := "eks-pod-identity-webhook.addons.k8s.io"
+
+			{
+				id := "k8s-1.16"
+				location := key + "/" + id + ".yaml"
+
+				addons.Add(&channelsapi.AddonSpec{
+					Name: fi.PtrTo(key),
+					Selector: map[string]string{
+						"k8s-addon": key,
+					},
+					Manifest: fi.PtrTo(location),
+					Id:       id,
+					NeedsPKI: true,
+				})
+			}
 		}
 	}
 
