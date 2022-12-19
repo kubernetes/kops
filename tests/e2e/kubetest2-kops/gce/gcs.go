@@ -17,8 +17,6 @@ limitations under the License.
 package gce
 
 import (
-	"encoding/hex"
-	"math/rand"
 	"os"
 	"strings"
 
@@ -26,17 +24,18 @@ import (
 	"sigs.k8s.io/kubetest2/pkg/exec"
 )
 
+// GCSBucketName constructs a bucket name to use for the state store.
+// Note that this must be deterministic across invocations of kubetest2,
+// otherwise we won't use the same bucket between runs.
 func GCSBucketName(projectID string) string {
-	var s string
 	if jobID := os.Getenv("PROW_JOB_ID"); len(jobID) >= 2 {
-		s = jobID[:2]
+		s := jobID[:2]
+		bucket := strings.Join([]string{projectID, "state", s}, "-")
+		return bucket
 	} else {
-		b := make([]byte, 2)
-		rand.Read(b)
-		s = hex.EncodeToString(b)
+		bucket := "kops-state-" + projectID
+		return bucket
 	}
-	bucket := strings.Join([]string{projectID, "state", s}, "-")
-	return bucket
 }
 
 func EnsureGCSBucket(bucketPath, projectID string) error {
