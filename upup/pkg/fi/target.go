@@ -26,4 +26,5 @@ type Target[T SubContext] interface {
 }
 
 type CloudupTarget = Target[CloudupSubContext]
+type InstallTarget = Target[InstallSubContext]
 type NodeupTarget = Target[NodeupSubContext]
