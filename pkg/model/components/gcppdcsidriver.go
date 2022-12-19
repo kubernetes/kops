@@ -30,14 +30,13 @@ type GCPPDCSIDriverOptionsBuilder struct {
 var _ loader.OptionsBuilder = &GCPPDCSIDriverOptionsBuilder{}
 
 func (b *GCPPDCSIDriverOptionsBuilder) BuildOptions(o interface{}) error {
-	clusterSpec := o.(*kops.ClusterSpec)
-	if clusterSpec.GetCloudProvider() != kops.CloudProviderGCE {
+	gce := o.(*kops.ClusterSpec).CloudProvider.GCE
+	if gce == nil {
 		return nil
 	}
 
-	cc := clusterSpec.CloudConfig
-	if cc.GCPPDCSIDriver == nil {
-		cc.GCPPDCSIDriver = &kops.GCPPDCSIDriver{
+	if gce.PDCSIDriver == nil {
+		gce.PDCSIDriver = &kops.PDCSIDriver{
 			Enabled: fi.PtrTo(b.IsKubernetesGTE("1.23")),
 		}
 	}
