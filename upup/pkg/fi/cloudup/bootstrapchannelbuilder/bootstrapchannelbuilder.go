@@ -870,7 +870,47 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		if b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderGCE {
 			if b.Cluster.Spec.ExternalCloudControllerManager != nil {
 				key := "gcp-cloud-controller.addons.k8s.io"
-				{
+				useBuiltin := !b.hasExternalAddon(key)
+
+				if !useBuiltin {
+					klog.Infof("Found cloud-controller-manager in addons; won't use builtin")
+
+					// Until we make the manifest extensible, we still need to inject our arguments.
+					// TODO(justinsb): we don't really want to do this, it limits the ability for users to override things.
+					// However, this is behind a feature flag at the moment, and this way we can work towards something better.
+					gkDaemonset := schema.GroupKind{Group: "apps", Kind: "DaemonSet"}
+					for _, addon := range b.ClusterAddons {
+						if addon.GroupVersionKind().GroupKind() == gkDaemonset &&
+							addon.GetName() == "cloud-controller-manager" &&
+							addon.GetNamespace() == "kube-system" {
+
+							klog.Infof("replacing arguments in externally provided cloud-controller-manager")
+
+							fnAny, ok := b.templates.TemplateFunctions["CloudControllerConfigArgv"]
+							if !ok {
+								return nil, nil, fmt.Errorf("unable to find TemplateFunction CloudControllerConfigArgv")
+							}
+							fn, ok := fnAny.(func() ([]string, error))
+							if !ok {
+								return nil, nil, fmt.Errorf("unexpected type for TemplateFunction CloudControllerConfigArgv: %T", fnAny)
+							}
+							args, err := fn()
+							if err != nil {
+								return nil, nil, fmt.Errorf("in TemplateFunction CloudControllerConfigArgv: %w", err)
+							}
+
+							if err := addon.VisitContainers(func(container map[string]interface{}) error {
+								// TODO: Check name?
+								container["args"] = args
+								return nil
+							}); err != nil {
+								return nil, nil, fmt.Errorf("error visiting containers: %w", err)
+							}
+						}
+					}
+				}
+
+				if useBuiltin {
 					id := "k8s-1.23"
 					location := key + "/" + id + ".yaml"
 					addon := addons.Add(&channelsapi.AddonSpec{
@@ -887,8 +927,13 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 
 	if b.Cluster.Spec.Networking.Kopeio != nil && !featureflag.UseAddonOperators.Enabled() {
 		key := "networking.kope.io"
+		useBuiltin := !b.hasExternalAddon(key)
 
-		{
+		if !useBuiltin {
+			klog.Infof("Found kopeio-networking-agent in addons; won't use builtin")
+		}
+
+		if useBuiltin {
 			location := key + "/k8s-1.12.yaml"
 			id := "k8s-1.12"
 
@@ -1219,4 +1264,16 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		}
 	}
 	return addons, serviceAccounts, nil
+}
+
+// hasExternalAddon checks if the user has overridden a built-in manifest via additional objects.
+// We identify this by looking for objects with the matching label.
+func (b *BootstrapChannelBuilder) hasExternalAddon(key string) bool {
+	for _, o := range b.ClusterAddons {
+		labels := o.ToUnstructured().GetLabels()
+		if labels[addonmanifests.KopsAddonLabelKey] == key {
+			return true
+		}
+	}
+	return false
 }
