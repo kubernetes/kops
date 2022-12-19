@@ -123,8 +123,6 @@ ensure-install-dir
 
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
-  gcpPDCSIDriver:
-    enabled: true
   manageStorageClasses: true
   multizone: true
   nodeTags: minimal-gce-with-a-very-very-very-very--96dqvi-k8s-io-role-node
