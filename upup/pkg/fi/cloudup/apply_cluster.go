@@ -787,7 +787,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("error building context: %v", err)
 	}
-	defer context.Close()
 
 	var options fi.RunTasksOptions
 	if c.RunTasksOptions != nil {

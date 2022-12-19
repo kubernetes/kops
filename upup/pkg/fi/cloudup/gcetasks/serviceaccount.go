@@ -48,7 +48,7 @@ func (e *ServiceAccount) CompareWithID() *string {
 }
 
 func (e *ServiceAccount) Find(c *fi.CloudupContext) (*ServiceAccount, error) {
-	cloud := c.Cloud.(gce.GCECloud)
+	cloud := c.T.Cloud.(gce.GCECloud)
 
 	ctx := context.TODO()
 

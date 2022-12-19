@@ -186,7 +186,7 @@ func getBasePath(c *fi.CloudupContext, e *ManagedFile) (vfs.Path, error) {
 		return p, nil
 	}
 
-	return c.ClusterConfigBase, nil
+	return c.T.ClusterConfigBase, nil
 }
 
 // RenderTerraform is responsible for rendering the terraform json.

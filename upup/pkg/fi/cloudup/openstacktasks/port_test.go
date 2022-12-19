@@ -373,7 +373,9 @@ func Test_Port_Find(t *testing.T) {
 						Name: "clusterName",
 					},
 				},
-				Cloud: &portCloud{},
+				T: fi.CloudupSubContext{
+					Cloud: &portCloud{},
+				},
 			},
 			port: &Port{
 				Name:      fi.PtrTo("name"),
@@ -390,21 +392,23 @@ func Test_Port_Find(t *testing.T) {
 						Name: "clusterName",
 					},
 				},
-				Cloud: &portCloud{
-					listPorts: []ports.Port{
-						{
-							ID:        "id",
-							Name:      "name",
-							NetworkID: "networkID",
-							FixedIPs: []ports.IP{
-								{SubnetID: "subnet-a"},
-								{SubnetID: "subnet-b"},
+				T: fi.CloudupSubContext{
+					Cloud: &portCloud{
+						listPorts: []ports.Port{
+							{
+								ID:        "id",
+								Name:      "name",
+								NetworkID: "networkID",
+								FixedIPs: []ports.IP{
+									{SubnetID: "subnet-a"},
+									{SubnetID: "subnet-b"},
+								},
+								SecurityGroups: []string{
+									"sg-1",
+									"sg-2",
+								},
+								Tags: []string{"clusterName"},
 							},
-							SecurityGroups: []string{
-								"sg-1",
-								"sg-2",
-							},
-							Tags: []string{"clusterName"},
 						},
 					},
 				},
@@ -437,21 +441,23 @@ func Test_Port_Find(t *testing.T) {
 						Name: "clusterName",
 					},
 				},
-				Cloud: &portCloud{
-					listPorts: []ports.Port{
-						{
-							ID:        "id",
-							Name:      "name",
-							NetworkID: "networkID",
-							FixedIPs: []ports.IP{
-								{SubnetID: "subnet-a"},
-								{SubnetID: "subnet-b"},
+				T: fi.CloudupSubContext{
+					Cloud: &portCloud{
+						listPorts: []ports.Port{
+							{
+								ID:        "id",
+								Name:      "name",
+								NetworkID: "networkID",
+								FixedIPs: []ports.IP{
+									{SubnetID: "subnet-a"},
+									{SubnetID: "subnet-b"},
+								},
+								SecurityGroups: []string{
+									"sg-1",
+									"sg-2",
+								},
+								Tags: []string{"clusterName"},
 							},
-							SecurityGroups: []string{
-								"sg-1",
-								"sg-2",
-							},
-							Tags: []string{"clusterName"},
 						},
 					},
 				},
@@ -486,17 +492,19 @@ func Test_Port_Find(t *testing.T) {
 						Name: "clusterName",
 					},
 				},
-				Cloud: &portCloud{
-					listPorts: []ports.Port{
-						{
-							ID:   "id-1",
-							Name: "name",
-							Tags: []string{"clusterName"},
-						},
-						{
-							ID:   "id-2",
-							Name: "name",
-							Tags: []string{"clusterName"},
+				T: fi.CloudupSubContext{
+					Cloud: &portCloud{
+						listPorts: []ports.Port{
+							{
+								ID:   "id-1",
+								Name: "name",
+								Tags: []string{"clusterName"},
+							},
+							{
+								ID:   "id-2",
+								Name: "name",
+								Tags: []string{"clusterName"},
+							},
 						},
 					},
 				},
@@ -516,14 +524,16 @@ func Test_Port_Find(t *testing.T) {
 						Name: "clusterName",
 					},
 				},
-				Cloud: &portCloud{
-					listPorts: []ports.Port{
-						{
-							ID:   "id-1",
-							Name: "name",
+				T: fi.CloudupSubContext{
+					Cloud: &portCloud{
+						listPorts: []ports.Port{
+							{
+								ID:   "id-1",
+								Name: "name",
+							},
 						},
+						listPortsError: fmt.Errorf("list error"),
 					},
-					listPortsError: fmt.Errorf("list error"),
 				},
 			},
 			port: &Port{

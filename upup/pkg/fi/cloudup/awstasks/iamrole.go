@@ -61,7 +61,7 @@ func (e *IAMRole) CompareWithID() *string {
 }
 
 func (e *IAMRole) Find(c *fi.CloudupContext) (*IAMRole, error) {
-	cloud := c.Cloud.(awsup.AWSCloud)
+	cloud := c.T.Cloud.(awsup.AWSCloud)
 
 	request := &iam.GetRoleInput{RoleName: e.Name}
 

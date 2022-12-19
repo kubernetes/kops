@@ -54,7 +54,7 @@ func (e *PoolHealthCheck) CompareWithID() *string {
 }
 
 func (e *PoolHealthCheck) Find(c *fi.CloudupContext) (*PoolHealthCheck, error) {
-	cloud := c.Cloud.(gce.GCECloud)
+	cloud := c.T.Cloud.(gce.GCECloud)
 	name := fi.ValueOf(e.Pool.Name)
 	r, err := cloud.Compute().TargetPools().Get(cloud.Project(), cloud.Region(), name)
 	if err != nil {

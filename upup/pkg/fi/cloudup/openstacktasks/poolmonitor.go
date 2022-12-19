@@ -51,7 +51,7 @@ func (p *PoolMonitor) CompareWithID() *string {
 }
 
 func (p *PoolMonitor) Find(context *fi.CloudupContext) (*PoolMonitor, error) {
-	cloud := context.Cloud.(openstack.OpenstackCloud)
+	cloud := context.T.Cloud.(openstack.OpenstackCloud)
 
 	opt := monitors.ListOpts{
 		Name:   fi.ValueOf(p.Name),

@@ -62,7 +62,9 @@ func TestRoleAssignmentRenderAzure(t *testing.T) {
 func TestRoleAssignmentFind(t *testing.T) {
 	cloud := NewMockAzureCloud("eastus")
 	ctx := &fi.CloudupContext{
-		Cloud: cloud,
+		T: fi.CloudupSubContext{
+			Cloud: cloud,
+		},
 	}
 
 	rg := &ResourceGroup{
@@ -135,7 +137,9 @@ func TestRoleAssignmentFind(t *testing.T) {
 func TestRoleAssignmentFind_NoPrincipalID(t *testing.T) {
 	cloud := NewMockAzureCloud("eastus")
 	ctx := &fi.CloudupContext{
-		Cloud: cloud,
+		T: fi.CloudupSubContext{
+			Cloud: cloud,
+		},
 	}
 
 	// Create a VM Scale Set.

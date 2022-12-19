@@ -62,7 +62,9 @@ func TestPublicIPAddressRenderAzure(t *testing.T) {
 func TestPublicIPAddressFind(t *testing.T) {
 	cloud := NewMockAzureCloud("eastus")
 	ctx := &fi.CloudupContext{
-		Cloud: cloud,
+		T: fi.CloudupSubContext{
+			Cloud: cloud,
+		},
 	}
 
 	rg := &ResourceGroup{
@@ -112,7 +114,9 @@ func TestPublicIPAddressFind(t *testing.T) {
 func TestPublicIPAddressRun(t *testing.T) {
 	cloud := NewMockAzureCloud("eastus")
 	ctx := &fi.CloudupContext{
-		Cloud:  cloud,
+		T: fi.CloudupSubContext{
+			Cloud: cloud,
+		},
 		Target: azure.NewAzureAPITarget(cloud),
 	}
 

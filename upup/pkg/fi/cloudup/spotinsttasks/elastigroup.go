@@ -190,7 +190,7 @@ func (e *Elastigroup) find(svc spotinst.InstanceGroupService) (*aws.Group, error
 var _ fi.CloudupHasCheckExisting = &Elastigroup{}
 
 func (e *Elastigroup) Find(c *fi.CloudupContext) (*Elastigroup, error) {
-	cloud := c.Cloud.(awsup.AWSCloud)
+	cloud := c.T.Cloud.(awsup.AWSCloud)
 
 	group, err := e.find(cloud.Spotinst().Elastigroup())
 	if err != nil {
@@ -480,7 +480,7 @@ func (e *Elastigroup) Find(c *fi.CloudupContext) (*Elastigroup, error) {
 }
 
 func (e *Elastigroup) CheckExisting(c *fi.CloudupContext) bool {
-	cloud := c.Cloud.(awsup.AWSCloud)
+	cloud := c.T.Cloud.(awsup.AWSCloud)
 	group, err := e.find(cloud.Spotinst().Elastigroup())
 	return err == nil && group != nil
 }

@@ -58,12 +58,12 @@ func (e *LoadBalancer) IsForAPIServer() bool {
 
 func (v *LoadBalancer) FindAddresses(c *fi.CloudupContext) ([]string, error) {
 	// TODO(hakman): Use mock to handle this more gracefully
-	if strings.HasPrefix(c.ClusterConfigBase.Path(), "memfs://tests/") {
+	if strings.HasPrefix(c.T.ClusterConfigBase.Path(), "memfs://tests/") {
 		return nil, nil
 	}
 
 	ctx := context.TODO()
-	cloud := c.Cloud.(hetzner.HetznerCloud)
+	cloud := c.T.Cloud.(hetzner.HetznerCloud)
 	client := cloud.LoadBalancerClient()
 
 	// TODO(hakman): Find using label selector
@@ -94,7 +94,7 @@ func (v *LoadBalancer) FindAddresses(c *fi.CloudupContext) ([]string, error) {
 
 func (v *LoadBalancer) Find(c *fi.CloudupContext) (*LoadBalancer, error) {
 	ctx := context.TODO()
-	cloud := c.Cloud.(hetzner.HetznerCloud)
+	cloud := c.T.Cloud.(hetzner.HetznerCloud)
 	client := cloud.LoadBalancerClient()
 
 	// TODO(hakman): Find using label selector

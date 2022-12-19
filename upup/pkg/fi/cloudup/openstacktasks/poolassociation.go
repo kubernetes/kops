@@ -64,7 +64,7 @@ func (s *PoolAssociation) CompareWithID() *string {
 }
 
 func (p *PoolAssociation) Find(context *fi.CloudupContext) (*PoolAssociation, error) {
-	cloud := context.Cloud.(openstack.OpenstackCloud)
+	cloud := context.T.Cloud.(openstack.OpenstackCloud)
 
 	opt := v2pools.ListOpts{
 		Name: fi.ValueOf(p.Pool.Name),

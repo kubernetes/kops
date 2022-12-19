@@ -64,7 +64,7 @@ func findEgressOnlyInternetGateway(cloud awsup.AWSCloud, request *ec2.DescribeEg
 }
 
 func (e *EgressOnlyInternetGateway) Find(c *fi.CloudupContext) (*EgressOnlyInternetGateway, error) {
-	cloud := c.Cloud.(awsup.AWSCloud)
+	cloud := c.T.Cloud.(awsup.AWSCloud)
 
 	request := &ec2.DescribeEgressOnlyInternetGatewaysInput{}
 

@@ -47,7 +47,7 @@ func (e *StorageBucketIAM) CompareWithID() *string {
 func (e *StorageBucketIAM) Find(c *fi.CloudupContext) (*StorageBucketIAM, error) {
 	ctx := context.TODO()
 
-	cloud := c.Cloud.(gce.GCECloud)
+	cloud := c.T.Cloud.(gce.GCECloud)
 
 	bucket := fi.ValueOf(e.Bucket)
 	member := fi.ValueOf(e.Member)

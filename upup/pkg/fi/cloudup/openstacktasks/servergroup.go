@@ -59,7 +59,7 @@ func (s *ServerGroup) Find(context *fi.CloudupContext) (*ServerGroup, error) {
 	if s == nil || s.Name == nil {
 		return nil, nil
 	}
-	cloud := context.Cloud.(openstack.OpenstackCloud)
+	cloud := context.T.Cloud.(openstack.OpenstackCloud)
 	// TODO: move to cloud, add vfs backoff
 
 	page, err := servergroups.List(cloud.ComputeClient(), servergroups.ListOpts{}).AllPages()
