@@ -72,7 +72,7 @@ func awsValidateExternalCloudControllerManager(cluster *kops.Cluster) (allErrs f
 	fldPath := field.NewPath("spec", "externalCloudControllerManager")
 	if !hasAWSEBSCSIDriver(c) {
 		allErrs = append(allErrs, field.Forbidden(fldPath,
-			"AWS external CCM cannot be used without enabling spec.cloudConfig.AWSEBSCSIDriver."))
+			"AWS external CCM cannot be used without enabling spec.cloudProvider.aws.ebsCSIDriverSpec."))
 	}
 	return allErrs
 }
@@ -377,12 +377,12 @@ func awsValidateIAMAuthenticator(fieldPath *field.Path, spec *kops.AWSAuthentica
 }
 
 func hasAWSEBSCSIDriver(c kops.ClusterSpec) bool {
-	// AWSEBSCSIDriver will have a default value, so if this is all false, it will be populated on next pass
-	if c.CloudConfig == nil || c.CloudConfig.AWSEBSCSIDriver == nil || c.CloudConfig.AWSEBSCSIDriver.Enabled == nil {
+	// EBSCSIDriverSpec will have a default value, so if this is all false, it will be populated on next pass
+	if c.CloudProvider.AWS.EBSCSIDriver == nil || c.CloudProvider.AWS.EBSCSIDriver.Enabled == nil {
 		return true
 	}
 
-	return *c.CloudConfig.AWSEBSCSIDriver.Enabled
+	return *c.CloudProvider.AWS.EBSCSIDriver.Enabled
 }
 
 func awsValidateAdditionalRoutes(fieldPath *field.Path, routes []kops.RouteSpec, cidr string) field.ErrorList {

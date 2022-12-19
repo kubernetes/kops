@@ -164,11 +164,10 @@ func TestPolicyGeneration(t *testing.T) {
 						},
 					},
 					CloudProvider: kops.CloudProviderSpec{
-						AWS: &kops.AWSSpec{},
-					},
-					CloudConfig: &kops.CloudConfiguration{
-						AWSEBSCSIDriver: &kops.AWSEBSCSIDriver{
-							Enabled: fi.PtrTo(true),
+						AWS: &kops.AWSSpec{
+							EBSCSIDriver: &kops.EBSCSIDriverSpec{
+								Enabled: fi.PtrTo(true),
+							},
 						},
 					},
 					Networking: kops.NetworkingSpec{
