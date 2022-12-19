@@ -43,7 +43,7 @@ func (v *Volume) CompareWithID() *string {
 }
 
 func (v *Volume) Find(c *fi.CloudupContext) (*Volume, error) {
-	cloud := c.Cloud.(scaleway.ScwCloud)
+	cloud := c.T.Cloud.(scaleway.ScwCloud)
 	instanceService := cloud.InstanceService()
 	zone := cloud.Zone()
 

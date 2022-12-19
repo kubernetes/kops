@@ -46,7 +46,7 @@ func (v *Firewall) CompareWithID() *string {
 }
 
 func (v *Firewall) Find(c *fi.CloudupContext) (*Firewall, error) {
-	cloud := c.Cloud.(hetzner.HetznerCloud)
+	cloud := c.T.Cloud.(hetzner.HetznerCloud)
 	client := cloud.FirewallClient()
 
 	// TODO(hakman): Find using label selector

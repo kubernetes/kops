@@ -84,7 +84,7 @@ func (e *FloatingIP) FindAddresses(context *fi.CloudupContext) ([]string, error)
 		}
 	}
 
-	cloud := context.Cloud.(openstack.OpenstackCloud)
+	cloud := context.T.Cloud.(openstack.OpenstackCloud)
 	// try to find ip address using LB port
 	if e.ID == nil && e.LB != nil && e.LB.PortID != nil {
 		fips, err := findL3Floating(cloud, l3floatingip.ListOpts{
@@ -132,7 +132,7 @@ func (e *FloatingIP) Find(c *fi.CloudupContext) (*FloatingIP, error) {
 	if e == nil {
 		return nil, nil
 	}
-	cloud := c.Cloud.(openstack.OpenstackCloud)
+	cloud := c.T.Cloud.(openstack.OpenstackCloud)
 	if e.LB != nil && e.LB.PortID != nil {
 		fip, err := findFipByPortID(cloud, fi.ValueOf(e.LB.PortID))
 		if err != nil {

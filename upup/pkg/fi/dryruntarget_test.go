@@ -73,7 +73,7 @@ func Test_DryrunTarget_PrintReport(t *testing.T) {
 		},
 	}, false)
 	var stdout bytes.Buffer
-	target := NewDryRunTarget[CloudupSubContext](builder, &stdout)
+	target := newDryRunTarget[CloudupSubContext](builder, &stdout)
 	tasks := map[string]CloudupTask{}
 	a := &testTask{
 		Name:      PtrTo("TestName"),

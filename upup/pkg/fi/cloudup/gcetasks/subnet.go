@@ -49,7 +49,7 @@ func (e *Subnet) CompareWithID() *string {
 }
 
 func (e *Subnet) Find(c *fi.CloudupContext) (*Subnet, error) {
-	cloud := c.Cloud.(gce.GCECloud)
+	cloud := c.T.Cloud.(gce.GCECloud)
 	_, project, err := gce.ParseNameAndProjectFromNetworkID(c.Cluster.Spec.Networking.NetworkID)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing network name from cluster spec: %w", err)

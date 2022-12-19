@@ -25,7 +25,6 @@ import (
 	"strings"
 
 	"k8s.io/klog/v2"
-	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/util/pkg/vfs"
 )
@@ -33,15 +32,10 @@ import (
 type Context[T SubContext] struct {
 	ctx context.Context
 
-	Tmpdir string
-
-	Target            Target[T]
-	DNS               dnsprovider.Interface
-	Cloud             Cloud
-	Cluster           *kops.Cluster
-	Keystore          Keystore
-	SecretStore       SecretStore
-	ClusterConfigBase vfs.Path
+	Target      Target[T]
+	Cluster     *kops.Cluster
+	Keystore    Keystore
+	SecretStore SecretStore
 
 	CheckExisting bool
 
@@ -58,7 +52,11 @@ type SubContext interface {
 	CloudupSubContext | NodeupSubContext
 }
 
-type CloudupSubContext struct{}
+type CloudupSubContext struct {
+	Cloud Cloud
+	// TODO: Few places use this. They could instead get it from the cluster spec.
+	ClusterConfigBase vfs.Path
+}
 type NodeupSubContext struct{}
 
 func (c *Context[T]) Context() context.Context {
@@ -71,37 +69,32 @@ type Warning[T SubContext] struct {
 	Message string
 }
 
-func NewContext[T SubContext](ctx context.Context, target Target[T], cluster *kops.Cluster, cloud Cloud, keystore Keystore, secretStore SecretStore, clusterConfigBase vfs.Path, checkExisting bool, sub T, tasks map[string]Task[T]) (*Context[T], error) {
+func newContext[T SubContext](ctx context.Context, target Target[T], cluster *kops.Cluster, keystore Keystore, secretStore SecretStore, checkExisting bool, sub T, tasks map[string]Task[T]) (*Context[T], error) {
 	c := &Context[T]{
-		ctx:               ctx,
-		Cloud:             cloud,
-		Cluster:           cluster,
-		Target:            target,
-		Keystore:          keystore,
-		SecretStore:       secretStore,
-		ClusterConfigBase: clusterConfigBase,
-		CheckExisting:     checkExisting,
-		tasks:             tasks,
-		T:                 sub,
+		ctx:           ctx,
+		Cluster:       cluster,
+		Target:        target,
+		Keystore:      keystore,
+		SecretStore:   secretStore,
+		CheckExisting: checkExisting,
+		tasks:         tasks,
+		T:             sub,
 	}
-
-	t, err := os.MkdirTemp("", "deploy")
-	if err != nil {
-		return nil, fmt.Errorf("error creating temporary directory: %v", err)
-	}
-	c.Tmpdir = t
 
 	return c, nil
 }
 
-func NewNodeupContext(ctx context.Context, target NodeupTarget, cluster *kops.Cluster, cloud Cloud, keystore Keystore, secretStore SecretStore, clusterConfigBase vfs.Path, checkExisting bool, tasks map[string]NodeupTask) (*NodeupContext, error) {
+func NewNodeupContext(ctx context.Context, target NodeupTarget, cluster *kops.Cluster, keystore Keystore, secretStore SecretStore, checkExisting bool, tasks map[string]NodeupTask) (*NodeupContext, error) {
 	sub := NodeupSubContext{}
-	return NewContext[NodeupSubContext](ctx, target, cluster, cloud, keystore, secretStore, clusterConfigBase, checkExisting, sub, tasks)
+	return newContext[NodeupSubContext](ctx, target, cluster, keystore, secretStore, checkExisting, sub, tasks)
 }
 
 func NewCloudupContext(ctx context.Context, target CloudupTarget, cluster *kops.Cluster, cloud Cloud, keystore Keystore, secretStore SecretStore, clusterConfigBase vfs.Path, checkExisting bool, tasks map[string]CloudupTask) (*CloudupContext, error) {
-	sub := CloudupSubContext{}
-	return NewContext[CloudupSubContext](ctx, target, cluster, cloud, keystore, secretStore, clusterConfigBase, checkExisting, sub, tasks)
+	sub := CloudupSubContext{
+		Cloud:             cloud,
+		ClusterConfigBase: clusterConfigBase,
+	}
+	return newContext[CloudupSubContext](ctx, target, cluster, keystore, secretStore, checkExisting, sub, tasks)
 }
 
 func (c *Context[T]) AllTasks() map[string]Task[T] {
@@ -114,28 +107,6 @@ func (c *Context[T]) RunTasks(options RunTasksOptions) error {
 		options: options,
 	}
 	return e.RunTasks(c.tasks)
-}
-
-func (c *Context[T]) Close() {
-	klog.V(2).Infof("deleting temp dir: %q", c.Tmpdir)
-	if c.Tmpdir != "" {
-		err := os.RemoveAll(c.Tmpdir)
-		if err != nil {
-			klog.Warningf("unable to delete temporary directory %q: %v", c.Tmpdir, err)
-		}
-	}
-}
-
-//func (c *Context) MergeOptions(options Options) error {
-//	return c.Options.Merge(options)
-//}
-
-func (c *Context[T]) NewTempDir(prefix string) (string, error) {
-	t, err := os.MkdirTemp(c.Tmpdir, prefix)
-	if err != nil {
-		return "", fmt.Errorf("error creating temporary directory: %v", err)
-	}
-	return t, nil
 }
 
 // Render dispatches the creation of an object to the appropriate handler defined on the Task,

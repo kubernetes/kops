@@ -49,7 +49,7 @@ func (r *RouteTable) CompareWithID() *string {
 
 // Find discovers the RouteTable in the cloud provider.
 func (r *RouteTable) Find(c *fi.CloudupContext) (*RouteTable, error) {
-	cloud := c.Cloud.(azure.AzureCloud)
+	cloud := c.T.Cloud.(azure.AzureCloud)
 	l, err := cloud.RouteTable().List(context.TODO(), *r.ResourceGroup.Name)
 	if err != nil {
 		return nil, err
@@ -76,7 +76,7 @@ func (r *RouteTable) Find(c *fi.CloudupContext) (*RouteTable, error) {
 }
 
 func (r *RouteTable) Normalize(c *fi.CloudupContext) error {
-	c.Cloud.(azure.AzureCloud).AddClusterTags(r.Tags)
+	c.T.Cloud.(azure.AzureCloud).AddClusterTags(r.Tags)
 	return nil
 }
 

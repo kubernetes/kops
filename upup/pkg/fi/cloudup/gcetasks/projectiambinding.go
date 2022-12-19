@@ -47,7 +47,7 @@ func (e *ProjectIAMBinding) CompareWithID() *string {
 func (e *ProjectIAMBinding) Find(c *fi.CloudupContext) (*ProjectIAMBinding, error) {
 	ctx := context.TODO()
 
-	cloud := c.Cloud.(gce.GCECloud)
+	cloud := c.T.Cloud.(gce.GCECloud)
 
 	projectID := fi.ValueOf(e.Project)
 	member := fi.ValueOf(e.Member)

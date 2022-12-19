@@ -49,7 +49,7 @@ func (s *Subnet) CompareWithID() *string {
 
 // Find discovers the Subnet in the cloud provider.
 func (s *Subnet) Find(c *fi.CloudupContext) (*Subnet, error) {
-	cloud := c.Cloud.(azure.AzureCloud)
+	cloud := c.T.Cloud.(azure.AzureCloud)
 	l, err := cloud.Subnet().List(context.TODO(), *s.ResourceGroup.Name, *s.VirtualNetwork.Name)
 	if err != nil {
 		return nil, err

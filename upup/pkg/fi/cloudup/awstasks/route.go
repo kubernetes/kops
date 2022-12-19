@@ -48,7 +48,7 @@ type Route struct {
 }
 
 func (e *Route) Find(c *fi.CloudupContext) (*Route, error) {
-	cloud := c.Cloud.(awsup.AWSCloud)
+	cloud := c.T.Cloud.(awsup.AWSCloud)
 
 	if e.RouteTable == nil || (e.CIDR == nil && e.IPv6CIDR == nil) {
 		// TODO: Move to validate?

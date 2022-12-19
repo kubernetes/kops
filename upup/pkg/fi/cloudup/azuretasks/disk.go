@@ -51,7 +51,7 @@ func (d *Disk) CompareWithID() *string {
 
 // Find discovers the Disk in the cloud provider.
 func (d *Disk) Find(c *fi.CloudupContext) (*Disk, error) {
-	cloud := c.Cloud.(azure.AzureCloud)
+	cloud := c.T.Cloud.(azure.AzureCloud)
 	l, err := cloud.Disk().List(context.TODO(), *d.ResourceGroup.Name)
 	if err != nil {
 		return nil, err
@@ -80,7 +80,7 @@ func (d *Disk) Find(c *fi.CloudupContext) (*Disk, error) {
 }
 
 func (d *Disk) Normalize(c *fi.CloudupContext) error {
-	c.Cloud.(azure.AzureCloud).AddClusterTags(d.Tags)
+	c.T.Cloud.(azure.AzureCloud).AddClusterTags(d.Tags)
 	return nil
 }
 
