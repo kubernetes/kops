@@ -181,7 +181,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		}
 	}
 
-	if clusterSpec.CloudConfig != nil && clusterSpec.CloudConfig.AWSEBSCSIDriver != nil && fi.ValueOf(clusterSpec.CloudConfig.AWSEBSCSIDriver.Enabled) {
+	if clusterSpec.CloudProvider.AWS != nil && clusterSpec.CloudProvider.AWS.EBSCSIDriver != nil && fi.ValueOf(clusterSpec.CloudProvider.AWS.EBSCSIDriver.Enabled) {
 
 		if kcm.FeatureGates == nil {
 			kcm.FeatureGates = make(map[string]string)

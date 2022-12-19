@@ -181,7 +181,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		c.FeatureGates = make(map[string]string)
 	}
 
-	if clusterSpec.CloudConfig != nil && clusterSpec.CloudConfig.AWSEBSCSIDriver != nil && fi.ValueOf(clusterSpec.CloudConfig.AWSEBSCSIDriver.Enabled) {
+	if clusterSpec.CloudProvider.AWS != nil && clusterSpec.CloudProvider.AWS.EBSCSIDriver != nil && fi.ValueOf(clusterSpec.CloudProvider.AWS.EBSCSIDriver.Enabled) {
 
 		if _, found := c.FeatureGates["InTreePluginAWSUnregister"]; !found {
 			c.FeatureGates["InTreePluginAWSUnregister"] = "true"
