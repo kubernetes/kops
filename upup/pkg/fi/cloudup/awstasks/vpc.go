@@ -67,7 +67,7 @@ func (e *VPC) CompareWithID() *string {
 }
 
 func (e *VPC) Find(c *fi.CloudupContext) (*VPC, error) {
-	cloud := c.Cloud.(awsup.AWSCloud)
+	cloud := c.T.Cloud.(awsup.AWSCloud)
 
 	request := &ec2.DescribeVpcsInput{}
 
@@ -241,7 +241,7 @@ func (e *VPC) FindDeletions(c *fi.CloudupContext) ([]fi.CloudupDeletion, error) 
 	request := &ec2.DescribeVpcsInput{
 		VpcIds: []*string{e.ID},
 	}
-	cloud := c.Cloud.(awsup.AWSCloud)
+	cloud := c.T.Cloud.(awsup.AWSCloud)
 	response, err := cloud.EC2().DescribeVpcs(request)
 	if err != nil {
 		return nil, err

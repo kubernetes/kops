@@ -56,7 +56,7 @@ func (e *ForwardingRule) CompareWithID() *string {
 }
 
 func (e *ForwardingRule) Find(c *fi.CloudupContext) (*ForwardingRule, error) {
-	cloud := c.Cloud.(gce.GCECloud)
+	cloud := c.T.Cloud.(gce.GCECloud)
 	name := fi.ValueOf(e.Name)
 
 	r, err := cloud.Compute().ForwardingRules().Get(cloud.Project(), cloud.Region(), name)

@@ -210,7 +210,7 @@ func (e *ClassicLoadBalancer) getHostedZoneId() *string {
 }
 
 func (e *ClassicLoadBalancer) Find(c *fi.CloudupContext) (*ClassicLoadBalancer, error) {
-	cloud := c.Cloud.(awsup.AWSCloud)
+	cloud := c.T.Cloud.(awsup.AWSCloud)
 
 	lb, err := cloud.FindELBByNameTag(fi.ValueOf(e.Name))
 	if err != nil {
@@ -346,7 +346,7 @@ func (e *ClassicLoadBalancer) IsForAPIServer() bool {
 }
 
 func (e *ClassicLoadBalancer) FindAddresses(context *fi.CloudupContext) ([]string, error) {
-	cloud := context.Cloud.(awsup.AWSCloud)
+	cloud := context.T.Cloud.(awsup.AWSCloud)
 
 	lb, err := cloud.FindELBByNameTag(fi.ValueOf(e.Name))
 	if err != nil {

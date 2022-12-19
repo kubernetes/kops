@@ -45,7 +45,7 @@ func (e *HealthCheck) CompareWithID() *string {
 }
 
 func (e *HealthCheck) Find(c *fi.CloudupContext) (*HealthCheck, error) {
-	actual, err := e.find(c.Cloud.(gce.GCECloud))
+	actual, err := e.find(c.T.Cloud.(gce.GCECloud))
 	if actual != nil && err == nil {
 		// Ignore system fields
 		actual.Lifecycle = e.Lifecycle

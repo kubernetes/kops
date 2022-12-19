@@ -104,7 +104,6 @@ func runTasks(t *testing.T, ctx context.Context, cloud gce.GCECloud, allTasks ma
 	if err != nil {
 		t.Fatalf("error building context: %v", err)
 	}
-	defer context.Close()
 
 	if err := context.RunTasks(testRunTasksOptions); err != nil {
 		t.Fatalf("unexpected error during Run: %v", err)
@@ -124,7 +123,6 @@ func doDryRun(t *testing.T, ctx context.Context, cloud fi.Cloud, allTasks map[st
 	if err != nil {
 		t.Fatalf("error building context: %v", err)
 	}
-	defer context.Close()
 
 	if err := context.RunTasks(testRunTasksOptions); err != nil {
 		t.Fatalf("unexpected error during Run: %v", err)

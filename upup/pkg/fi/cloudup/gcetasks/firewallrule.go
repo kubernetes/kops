@@ -55,7 +55,7 @@ func (e *FirewallRule) CompareWithID() *string {
 }
 
 func (e *FirewallRule) Find(c *fi.CloudupContext) (*FirewallRule, error) {
-	cloud := c.Cloud.(gce.GCECloud)
+	cloud := c.T.Cloud.(gce.GCECloud)
 
 	r, err := cloud.Compute().Firewalls().Get(cloud.Project(), *e.Name)
 	if err != nil {

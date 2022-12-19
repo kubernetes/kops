@@ -44,7 +44,7 @@ func (c *Volume) CompareWithID() *string {
 }
 
 func (c *Volume) Find(context *fi.CloudupContext) (*Volume, error) {
-	cloud := context.Cloud.(openstack.OpenstackCloud)
+	cloud := context.T.Cloud.(openstack.OpenstackCloud)
 	opt := cinderv3.ListOpts{
 		Name:     fi.ValueOf(c.Name),
 		Metadata: c.Tags,
@@ -79,7 +79,7 @@ func (c *Volume) Find(context *fi.CloudupContext) (*Volume, error) {
 }
 
 func (c *Volume) Normalize(context *fi.CloudupContext) error {
-	cloud := context.Cloud.(openstack.OpenstackCloud)
+	cloud := context.T.Cloud.(openstack.OpenstackCloud)
 	for k, v := range cloud.GetCloudTags() {
 		c.Tags[k] = v
 	}

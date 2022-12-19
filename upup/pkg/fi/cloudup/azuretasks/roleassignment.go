@@ -72,7 +72,7 @@ func (r *RoleAssignment) Find(c *fi.CloudupContext) (*RoleAssignment, error) {
 		return nil, nil
 	}
 
-	cloud := c.Cloud.(azure.AzureCloud)
+	cloud := c.T.Cloud.(azure.AzureCloud)
 	rs, err := cloud.RoleAssignment().List(context.TODO(), *r.ResourceGroup.Name)
 	if err != nil {
 		return nil, err

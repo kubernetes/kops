@@ -66,7 +66,7 @@ func (r *Router) CompareWithID() *string {
 
 // Find discovers the Router in the cloud provider.
 func (r *Router) Find(c *fi.CloudupContext) (*Router, error) {
-	cloud := c.Cloud.(gce.GCECloud)
+	cloud := c.T.Cloud.(gce.GCECloud)
 
 	found, err := cloud.Compute().Routers().Get(cloud.Project(), *r.Region, *r.Name)
 	if err != nil {

@@ -149,7 +149,7 @@ func (s *LB) Find(context *fi.CloudupContext) (*LB, error) {
 		return nil, nil
 	}
 
-	cloud := context.Cloud.(openstack.OpenstackCloud)
+	cloud := context.T.Cloud.(openstack.OpenstackCloud)
 	lbPage, err := loadbalancers.List(cloud.LoadBalancerClient(), loadbalancers.ListOpts{
 		Name: fi.ValueOf(s.Name),
 	}).AllPages()

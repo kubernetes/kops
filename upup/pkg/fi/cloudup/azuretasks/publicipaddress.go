@@ -49,7 +49,7 @@ func (p *PublicIPAddress) CompareWithID() *string {
 
 // Find discovers the Public IP Address in the cloud provider
 func (p *PublicIPAddress) Find(c *fi.CloudupContext) (*PublicIPAddress, error) {
-	cloud := c.Cloud.(azure.AzureCloud)
+	cloud := c.T.Cloud.(azure.AzureCloud)
 	l, err := cloud.PublicIPAddress().List(context.TODO(), *p.ResourceGroup.Name)
 	if err != nil {
 		return nil, err
@@ -77,7 +77,7 @@ func (p *PublicIPAddress) Find(c *fi.CloudupContext) (*PublicIPAddress, error) {
 }
 
 func (p *PublicIPAddress) Normalize(c *fi.CloudupContext) error {
-	c.Cloud.(azure.AzureCloud).AddClusterTags(p.Tags)
+	c.T.Cloud.(azure.AzureCloud).AddClusterTags(p.Tags)
 	return nil
 }
 

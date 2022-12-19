@@ -48,7 +48,7 @@ func (v *SSHKey) CompareWithID() *string {
 }
 
 func (v *SSHKey) Find(c *fi.CloudupContext) (*SSHKey, error) {
-	cloud := c.Cloud.(hetzner.HetznerCloud)
+	cloud := c.T.Cloud.(hetzner.HetznerCloud)
 	client := cloud.SSHKeyClient()
 
 	sshkeys, err := client.All(context.TODO())

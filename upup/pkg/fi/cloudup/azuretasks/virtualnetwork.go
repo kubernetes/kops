@@ -53,7 +53,7 @@ func (n *VirtualNetwork) CompareWithID() *string {
 
 // Find discovers the VirtualNetwork in the cloud provider.
 func (n *VirtualNetwork) Find(c *fi.CloudupContext) (*VirtualNetwork, error) {
-	cloud := c.Cloud.(azure.AzureCloud)
+	cloud := c.T.Cloud.(azure.AzureCloud)
 	l, err := cloud.VirtualNetwork().List(context.TODO(), *n.ResourceGroup.Name)
 	if err != nil {
 		return nil, err
@@ -87,7 +87,7 @@ func (n *VirtualNetwork) Find(c *fi.CloudupContext) (*VirtualNetwork, error) {
 }
 
 func (n *VirtualNetwork) Normalize(c *fi.CloudupContext) error {
-	c.Cloud.(azure.AzureCloud).AddClusterTags(n.Tags)
+	c.T.Cloud.(azure.AzureCloud).AddClusterTags(n.Tags)
 	return nil
 }
 

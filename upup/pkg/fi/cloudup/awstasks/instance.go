@@ -63,7 +63,7 @@ func (s *Instance) CompareWithID() *string {
 }
 
 func (e *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
-	cloud := c.Cloud.(awsup.AWSCloud)
+	cloud := c.T.Cloud.(awsup.AWSCloud)
 	var request *ec2.DescribeInstancesInput
 
 	if fi.ValueOf(e.Shared) {
