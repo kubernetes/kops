@@ -27,6 +27,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
+	"k8s.io/kops/upup/pkg/fi/nodeup/install"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/util/pkg/distributions"
 )
@@ -59,12 +60,28 @@ type Service struct {
 	SmartRestart *bool `json:"smartRestart,omitempty"`
 }
 
+type InstallService struct {
+	Service
+}
+
 var (
-	_ fi.NodeupHasDependencies = &Service{}
-	_ fi.HasName               = &Service{}
+	_ fi.InstallHasDependencies = &InstallService{}
+	_ fi.NodeupHasDependencies  = &Service{}
+	_ fi.HasName                = &InstallService{}
+	_ fi.HasName                = &Service{}
 )
 
-func (p *Service) GetDependencies(tasks map[string]fi.NodeupTask) []fi.NodeupTask {
+func (i *InstallService) GetDependencies(tasks map[string]fi.InstallTask) []fi.InstallTask {
+	var deps []fi.InstallTask
+	for _, v := range tasks {
+		if _, ok := v.(*InstallService); !ok {
+			deps = append(deps, v)
+		}
+	}
+	return deps
+}
+
+func (s *Service) GetDependencies(tasks map[string]fi.NodeupTask) []fi.NodeupTask {
 	var deps []fi.NodeupTask
 	for _, v := range tasks {
 		// We assume that services depend on everything except for
@@ -77,13 +94,13 @@ func (p *Service) GetDependencies(tasks map[string]fi.NodeupTask) []fi.NodeupTas
 		case *Service, *PullImageTask, *IssueCert, *BootstrapClientTask, *KubeConfig:
 			// ignore
 		case *LoadImageTask:
-			if p.Name == kubeletService {
+			if s.Name == kubeletService {
 				deps = append(deps, v)
 			}
 		case *File:
 			if len(v.BeforeServices) > 0 {
-				for _, s := range v.BeforeServices {
-					if p.Name == s {
+				for _, b := range v.BeforeServices {
+					if s.Name == b {
 						deps = append(deps, v)
 					}
 				}
@@ -102,6 +119,10 @@ func (s *Service) String() string {
 	return fmt.Sprintf("Service: %s", s.Name)
 }
 
+func (i *InstallService) InitDefaults() *InstallService {
+	i.Service.InitDefaults()
+	return i
+}
 func (s *Service) InitDefaults() *Service {
 	// Default some values to true: Running, SmartRestart, ManageState
 	if s.Running == nil {
@@ -144,7 +165,7 @@ func getSystemdStatus(name string) (map[string]string, error) {
 	return properties, nil
 }
 
-func (e *Service) systemdSystemPath() (string, error) {
+func (_ *Service) systemdSystemPath() (string, error) {
 	d, err := distributions.FindDistribution("/")
 	if err != nil {
 		return "", fmt.Errorf("unknown or unsupported distro: %v", err)
@@ -163,7 +184,14 @@ func (e *Service) systemdSystemPath() (string, error) {
 	}
 }
 
-func (e *Service) Find(c *fi.NodeupContext) (*Service, error) {
+func (e *InstallService) Find(_ *fi.InstallContext) (*InstallService, error) {
+	actual, err := e.Service.Find(nil)
+	if actual == nil || err != nil {
+		return nil, err
+	}
+	return &InstallService{*actual}, nil
+}
+func (e *Service) Find(_ *fi.NodeupContext) (*Service, error) {
 	systemdSystemPath, err := e.systemdSystemPath()
 	if err != nil {
 		return nil, err
@@ -253,15 +281,31 @@ func getSystemdDependencies(serviceName string, definition string) ([]string, er
 	return dependencies, nil
 }
 
+func (e *InstallService) Run(c *fi.InstallContext) error {
+	return fi.InstallDefaultDeltaRunMethod(e, c)
+}
+
 func (e *Service) Run(c *fi.NodeupContext) error {
 	return fi.NodeupDefaultDeltaRunMethod(e, c)
+}
+
+func (i *InstallService) CheckChanges(a, e, changes *InstallService) error {
+	return nil
 }
 
 func (s *Service) CheckChanges(a, e, changes *Service) error {
 	return nil
 }
 
-func (_ *Service) RenderLocal(t *local.LocalTarget, a, e, changes *Service) error {
+func (i *InstallService) RenderInstall(_ *install.InstallTarget, a, e, changes *InstallService) error {
+	var actual *Service
+	if a != nil {
+		actual = &a.Service
+	}
+
+	return i.Service.RenderLocal(nil, actual, &e.Service, &changes.Service)
+}
+func (s *Service) RenderLocal(_ *local.LocalTarget, a, e, changes *Service) error {
 	systemdSystemPath, err := e.systemdSystemPath()
 	if err != nil {
 		return err
@@ -399,8 +443,6 @@ func (_ *Service) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *S
 	return nil
 }
 
-var _ fi.HasName = &Service{}
-
-func (f *Service) GetName() *string {
-	return &f.Name
+func (s *Service) GetName() *string {
+	return &s.Name
 }

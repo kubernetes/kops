@@ -23,6 +23,12 @@ import (
 	"k8s.io/kops/util/pkg/reflectutils"
 )
 
+// InstallDefaultDeltaRunMethod implements the standard change-based run procedure:
+// find the existing item; compare properties; call render with (actual, expected, changes)
+func InstallDefaultDeltaRunMethod(e InstallTask, c *InstallContext) error {
+	return defaultDeltaRunMethod[InstallSubContext](e, c)
+}
+
 // NodeupDefaultDeltaRunMethod implements the standard change-based run procedure:
 // find the existing item; compare properties; call render with (actual, expected, changes)
 func NodeupDefaultDeltaRunMethod(e NodeupTask, c *NodeupContext) error {

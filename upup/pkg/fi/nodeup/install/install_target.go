@@ -14,31 +14,30 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bootstrap
+package install
 
 import (
-	"path/filepath"
-	"testing"
+	"os/exec"
 
-	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-func TestBootstarapBuilder_Simple(t *testing.T) {
-	t.Setenv("AWS_REGION", "us-test1")
-
-	runInstallBuilderTest(t, "tests/simple")
+type InstallTarget struct {
 }
 
-func runInstallBuilderTest(t *testing.T, basedir string) {
-	installation := Installation{
-		Command: []string{"/opt/kops/bin/nodeup", "--conf=/opt/kops/conf/kube_env.yaml", "--v=8"},
-	}
-	tasks := make(map[string]fi.InstallTask)
-	buildContext := &fi.InstallModelBuilderContext{
-		Tasks: tasks,
-	}
-	installation.Build(buildContext)
+var _ fi.InstallTarget = &InstallTarget{}
 
-	testutils.ValidateTasks(t, filepath.Join(basedir, "tasks.yaml"), buildContext)
+func (t *InstallTarget) Finish(taskMap map[string]fi.InstallTask) error {
+	return nil
+}
+
+func (t *InstallTarget) ProcessDeletions() bool {
+	// We don't expect any, but it would be our job to process them
+	return true
+}
+
+// CombinedOutput is a helper function that executes a command, returning stdout & stderr combined
+func (t *InstallTarget) CombinedOutput(args []string) ([]byte, error) {
+	c := exec.Command(args[0], args[1:]...)
+	return c.CombinedOutput()
 }
