@@ -196,6 +196,8 @@ type CloudProviderSpec struct {
 
 // AWSSpec configures the AWS cloud provider.
 type AWSSpec struct {
+	// EBSCSIDriverSpec is the config for the EBS CSI driver.
+	EBSCSIDriver *EBSCSIDriverSpec `json:"ebsCSIDriver,omitempty"`
 	// NodeTerminationHandler determines the node termination handler configuration.
 	NodeTerminationHandler *NodeTerminationHandlerSpec `json:"nodeTerminationHandler,omitempty"`
 	// LoadbalancerController determines the Load Balancer Controller configuration.

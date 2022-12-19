@@ -30,18 +30,17 @@ type AWSEBSCSIDriverOptionsBuilder struct {
 var _ loader.OptionsBuilder = &AWSEBSCSIDriverOptionsBuilder{}
 
 func (b *AWSEBSCSIDriverOptionsBuilder) BuildOptions(o interface{}) error {
-	clusterSpec := o.(*kops.ClusterSpec)
-	if clusterSpec.GetCloudProvider() != kops.CloudProviderAWS {
+	aws := o.(*kops.ClusterSpec).CloudProvider.AWS
+	if aws == nil {
 		return nil
 	}
 
-	cc := clusterSpec.CloudConfig
-	if cc.AWSEBSCSIDriver == nil {
-		cc.AWSEBSCSIDriver = &kops.AWSEBSCSIDriver{
+	if aws.EBSCSIDriver == nil {
+		aws.EBSCSIDriver = &kops.EBSCSIDriverSpec{
 			Enabled: fi.PtrTo(b.IsKubernetesGTE("1.22")),
 		}
 	}
-	c := cc.AWSEBSCSIDriver
+	c := aws.EBSCSIDriver
 
 	if !fi.ValueOf(c.Enabled) {
 		return nil

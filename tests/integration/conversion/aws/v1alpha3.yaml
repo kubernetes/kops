@@ -22,8 +22,11 @@ spec:
   authorization:
     alwaysAllow: {}
   channel: stable
+  cloudConfig: {}
   cloudProvider:
     aws:
+      ebsCSIDriver:
+        volumeAttachLimit: 65
       loadBalancerController:
         enableWAF: true
       nodeTerminationHandler:

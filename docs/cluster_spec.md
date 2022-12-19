@@ -1580,6 +1580,7 @@ the removal of fields no longer in use.
 | api.loadBalancer.subnets.allocationId                  | api.loadBalancer.subnets.allocationID                          |
 | api.loadBalancer.useForInternalApi                     | api.loadBalancer.useForInternalAPI                             |
 | awsLoadBalancerController                              | cloudprovider.aws.loadBalancerController                       |
+| cloudConfig.awsEBSCSIDriver                            | cloudProvider.aws.ebsCSIDriver                                 |
 | cloudConfig.azure                                      | cloudProvider.azure                                            |
 | cloudConfig.azure.subscriptionId                       | cloudProvider.azure.subscriptionID                             |
 | cloudConfig.azure.tenantId                             | cloudProvider.azure.tenantID                                   |

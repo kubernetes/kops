@@ -1154,9 +1154,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 				serviceAccountRoles = append(serviceAccountRoles, &awscloudcontrollermanager.ServiceAccount{})
 			}
 		}
-		if b.Cluster.Spec.CloudConfig != nil && b.Cluster.Spec.CloudConfig.AWSEBSCSIDriver != nil &&
-			fi.ValueOf(b.Cluster.Spec.CloudConfig.AWSEBSCSIDriver.Enabled) &&
-			(b.Cluster.Spec.CloudConfig.AWSEBSCSIDriver.Managed == nil || fi.ValueOf(b.Cluster.Spec.CloudConfig.AWSEBSCSIDriver.Managed)) {
+		if b.Cluster.Spec.CloudProvider.AWS != nil && b.Cluster.Spec.CloudProvider.AWS.EBSCSIDriver != nil &&
+			fi.ValueOf(b.Cluster.Spec.CloudProvider.AWS.EBSCSIDriver.Enabled) &&
+			(b.Cluster.Spec.CloudProvider.AWS.EBSCSIDriver.Managed == nil || fi.ValueOf(b.Cluster.Spec.CloudProvider.AWS.EBSCSIDriver.Managed)) {
 			key := "aws-ebs-csi-driver.addons.k8s.io"
 
 			{

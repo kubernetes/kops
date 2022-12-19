@@ -88,10 +88,8 @@ func TestPopulateCluster_Subnets(t *testing.T) {
 			c.Spec.Networking.Kubenet = nil
 			c.Spec.Networking.CNI = &kopsapi.CNINetworkingSpec{}
 			c.Spec.ExternalCloudControllerManager = &kopsapi.CloudControllerManagerConfig{}
-			c.Spec.CloudConfig = &kopsapi.CloudConfiguration{
-				AWSEBSCSIDriver: &kopsapi.AWSEBSCSIDriver{
-					Enabled: fi.PtrTo(true),
-				},
+			c.Spec.CloudProvider.AWS.EBSCSIDriver = &kopsapi.EBSCSIDriverSpec{
+				Enabled: fi.PtrTo(true),
 			}
 
 			err := PerformAssignments(c, cloud)
