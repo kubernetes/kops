@@ -24,6 +24,7 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/bootstrap"
+	"k8s.io/kops/pkg/kopscontrollerclient"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -68,7 +69,7 @@ func (b BootstrapClientBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		Path:   "/",
 	}
 
-	bootstrapClient := &nodetasks.KopsBootstrapClient{
+	bootstrapClient := &kopscontrollerclient.Client{
 		Authenticator: authenticator,
 		CAs:           []byte(b.NodeupConfig.CAs[fi.CertificateIDCA]),
 		BaseURL:       baseURL,
