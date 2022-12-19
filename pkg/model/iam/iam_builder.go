@@ -424,7 +424,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 			}
 		}
 
-		if c := b.Cluster.Spec.AWSLoadBalancerController; c != nil && fi.ValueOf(b.Cluster.Spec.AWSLoadBalancerController.Enabled) {
+		if c := b.Cluster.Spec.CloudProvider.AWS.LoadBalancerController; c != nil && fi.ValueOf(b.Cluster.Spec.CloudProvider.AWS.LoadBalancerController.Enabled) {
 			AddAWSLoadbalancerControllerPermissions(p, c.EnableWAF, c.EnableWAFv2, c.EnableShield)
 		}
 
@@ -434,7 +434,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		}
 		AddClusterAutoscalerPermissions(p, useStaticInstanceList)
 
-		nth := b.Cluster.Spec.NodeTerminationHandler
+		nth := b.Cluster.Spec.CloudProvider.AWS.NodeTerminationHandler
 		if nth.IsQueueMode() {
 			AddNodeTerminationHandlerSQSPermissions(p)
 		}

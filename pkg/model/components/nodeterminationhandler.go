@@ -32,10 +32,10 @@ var _ loader.OptionsBuilder = &NodeTerminationHandlerOptionsBuilder{}
 
 func (b *NodeTerminationHandlerOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
-	if clusterSpec.NodeTerminationHandler == nil {
+	if clusterSpec.CloudProvider.AWS == nil || clusterSpec.CloudProvider.AWS.NodeTerminationHandler == nil {
 		return nil
 	}
-	nth := clusterSpec.NodeTerminationHandler
+	nth := clusterSpec.CloudProvider.AWS.NodeTerminationHandler
 	if nth.Enabled == nil {
 		nth.Enabled = fi.PtrTo(true)
 	}

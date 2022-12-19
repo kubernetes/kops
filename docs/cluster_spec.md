@@ -1579,6 +1579,7 @@ the removal of fields no longer in use.
 | additionalSans                                         | api.additionalSANs                                             |
 | api.loadBalancer.subnets.allocationId                  | api.loadBalancer.subnets.allocationID                          |
 | api.loadBalancer.useForInternalApi                     | api.loadBalancer.useForInternalAPI                             |
+| awsLoadBalancerController                              | cloudprovider.aws.loadBalancerController                       |
 | cloudConfig.azure                                      | cloudProvider.azure                                            |
 | cloudConfig.azure.subscriptionId                       | cloudProvider.azure.subscriptionID                             |
 | cloudConfig.azure.tenantId                             | cloudProvider.azure.tenantID                                   |
@@ -1617,8 +1618,10 @@ the removal of fields no longer in use.
 | networking.cilium.toFqdnsDnsRejectResponseCode         | networking.cilium.toFQDNsDNSRejectResponseCode                 |
 | networking.cilium.toFqdnsEnablePoller                  | networking.cilium.toFQDNsEnablePoller                          |
 | networking.kuberouter                                  | networking.kubeRouter                                          |
+| nodeTerminationHandler                                 | cloudProvider.aws.nodeTerminationHandler                       |
 | nonMasqueradeCIDR                                      | networking.nonMasqueradeCIDR                                   |
 | podCIDR                                                | networking.podCIDR                                             |
+| podIdentityWebhook                                     | cloudProvider.aws.podIdentityWebhook                           |
 | project                                                | cloudProvider.gce.project                                      |
 | serviceClusterIPRange                                  | networking.serviceClusterIPRange                               |
 | subnets                                                | networking.subnets                                             |
@@ -1626,3 +1629,4 @@ the removal of fields no longer in use.
 | topology                                               | networking.topology                                            |
 | topology.bastion.bastionPublicName                     | networking.topology.bastion.publicName                         |
 | topology.dns.type                                      | networking.topology.dns                                        |
+| warmPool                                               | cloudProvider.aws.warmPool                                     |

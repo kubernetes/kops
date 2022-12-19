@@ -120,17 +120,12 @@ type ClusterSpec struct {
 	ExternalDNS         *ExternalDNSConfig  `json:"externalDNS,omitempty"`
 	NTP                 *NTPConfig          `json:"ntp,omitempty"`
 
-	// NodeTerminationHandler determines the cluster autoscaler configuration.
-	NodeTerminationHandler *NodeTerminationHandlerConfig `json:"nodeTerminationHandler,omitempty"`
 	// NodeProblemDetector determines the node problem detector configuration.
 	NodeProblemDetector *NodeProblemDetectorConfig `json:"nodeProblemDetector,omitempty"`
 	// MetricsServer determines the metrics server configuration.
 	MetricsServer *MetricsServerConfig `json:"metricsServer,omitempty"`
 	// CertManager determines the metrics server configuration.
 	CertManager *CertManagerConfig `json:"certManager,omitempty"`
-	// AWSLoadbalancerControllerConfig determines the AWS LB controller configuration.
-	AWSLoadBalancerController *AWSLoadBalancerControllerConfig `json:"awsLoadBalancerController,omitempty"`
-
 	// Networking configuration
 	Networking NetworkingSpec `json:"networking,omitempty"`
 	// API controls how the Kubernetes API is exposed.
@@ -163,20 +158,16 @@ type ClusterSpec struct {
 	RollingUpdate *RollingUpdate `json:"rollingUpdate,omitempty"`
 	// ClusterAutoscaler defines the cluaster autoscaler configuration.
 	ClusterAutoscaler *ClusterAutoscalerConfig `json:"clusterAutoscaler,omitempty"`
-	// WarmPool defines the default warm pool settings for instance groups (AWS only).
-	WarmPool *WarmPoolSpec `json:"warmPool,omitempty"`
 	// ServiceAccountIssuerDiscovery configures the OIDC Issuer for ServiceAccounts.
 	ServiceAccountIssuerDiscovery *ServiceAccountIssuerDiscoveryConfig `json:"serviceAccountIssuerDiscovery,omitempty"`
 	// SnapshotController defines the CSI Snapshot Controller configuration.
 	SnapshotController *SnapshotControllerConfig `json:"snapshotController,omitempty"`
 	// Karpenter defines the Karpenter configuration.
 	Karpenter *KarpenterConfig `json:"karpenter,omitempty"`
-	// PodIdentityWebhook determines the EKS Pod Identity Webhook configuration.
-	PodIdentityWebhook *PodIdentityWebhookConfig `json:"podIdentityWebhook,omitempty"`
 }
 
-// PodIdentityWebhookConfig configures an EKS Pod Identity Webhook.
-type PodIdentityWebhookConfig struct {
+// PodIdentityWebhookSpec configures an EKS Pod Identity Webhook.
+type PodIdentityWebhookSpec struct {
 	Enabled  bool `json:"enabled,omitempty"`
 	Replicas int  `json:"replicas,omitempty"`
 }
@@ -200,7 +191,16 @@ type CloudProviderSpec struct {
 }
 
 // AWSSpec configures the AWS cloud provider.
-type AWSSpec struct{}
+type AWSSpec struct {
+	// NodeTerminationHandler determines the node termination handler configuration.
+	NodeTerminationHandler *NodeTerminationHandlerSpec `json:"nodeTerminationHandler,omitempty"`
+	// LoadBalancerController determines the Load Balancer Controller configuration.
+	LoadBalancerController *LoadBalancerControllerSpec `json:"loadBalancerController,omitempty"`
+	// PodIdentityWebhook determines the EKS Pod Identity Webhook configuration.
+	PodIdentityWebhook *PodIdentityWebhookSpec `json:"podIdentityWebhook,omitempty"`
+	// WarmPool defines the default warm pool settings for instance groups.
+	WarmPool *WarmPoolSpec `json:"warmPool,omitempty"`
+}
 
 // DOSpec configures the Digital Ocean cloud provider.
 type DOSpec struct{}
