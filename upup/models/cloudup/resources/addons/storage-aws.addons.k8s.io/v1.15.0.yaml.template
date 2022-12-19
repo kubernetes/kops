@@ -29,7 +29,7 @@ kind: StorageClass
 metadata:
   name: kops-ssd-1-17
   annotations:
-    storageclass.kubernetes.io/is-default-class: "{{ not ( WithDefaultBool .CloudConfig.AWSEBSCSIDriver.Enabled true ) }}"
+    storageclass.kubernetes.io/is-default-class: "{{ not ( WithDefaultBool .CloudProvider.AWS.EBSCSIDriver.Enabled true ) }}"
   labels:
     k8s-addon: storage-aws.addons.k8s.io
 provisioner: kubernetes.io/aws-ebs
@@ -39,7 +39,7 @@ parameters:
 allowVolumeExpansion: true
 volumeBindingMode: WaitForFirstConsumer
 
-{{ if WithDefaultBool .CloudConfig.AWSEBSCSIDriver.Enabled false }}
+{{ if WithDefaultBool .CloudProvider.AWS.EBSCSIDriver.Enabled false }}
 ---
 kind: StorageClass
 apiVersion: storage.k8s.io/v1

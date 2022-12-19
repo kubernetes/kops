@@ -1,4 +1,4 @@
-{{ with .CloudConfig.AWSEBSCSIDriver }}
+{{ with .CloudProvider.AWS.EBSCSIDriver }}
 # Latest Images Source: aws-ebs-csi-driver/values.yaml#L7-L34
 ---
 # Source: aws-ebs-csi-driver/templates/serviceaccount-csi-controller.yaml

@@ -144,6 +144,17 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 			string(kops.CloudProviderScaleway),
 		})
 	}
+	if in.CloudConfig != nil {
+		if in.CloudConfig.AWSEBSCSIDriver != nil {
+			if out.CloudProvider.AWS == nil {
+				return field.Forbidden(field.NewPath("spec").Child("cloudConfig", "awsEBSCSIDriver"), "EBS CSI driver supports only AWS")
+			}
+			out.CloudProvider.AWS.EBSCSIDriver = &kops.EBSCSIDriverSpec{}
+			if err := autoConvert_v1alpha2_EBSCSIDriverSpec_To_kops_EBSCSIDriverSpec(in.CloudConfig.AWSEBSCSIDriver, out.CloudProvider.AWS.EBSCSIDriver, s); err != nil {
+				return err
+			}
+		}
+	}
 	if in.NodeTerminationHandler != nil {
 		if out.CloudProvider.AWS == nil {
 			return field.Forbidden(field.NewPath("spec").Child("nodeTerminationHandler"), "node termination handler supports only AWS")
@@ -276,6 +287,15 @@ func Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, out 
 	switch kops.CloudProviderID(out.LegacyCloudProvider) {
 	case kops.CloudProviderAWS:
 		aws := in.CloudProvider.AWS
+		if aws.EBSCSIDriver != nil {
+			if out.CloudConfig == nil {
+				out.CloudConfig = &CloudConfiguration{}
+			}
+			out.CloudConfig.AWSEBSCSIDriver = &EBSCSIDriverSpec{}
+			if err := autoConvert_kops_EBSCSIDriverSpec_To_v1alpha2_EBSCSIDriverSpec(aws.EBSCSIDriver, out.CloudConfig.AWSEBSCSIDriver, s); err != nil {
+				return err
+			}
+		}
 		if aws.NodeTerminationHandler != nil {
 			out.NodeTerminationHandler = &NodeTerminationHandlerSpec{}
 			if err := autoConvert_kops_NodeTerminationHandlerSpec_To_v1alpha2_NodeTerminationHandlerSpec(aws.NodeTerminationHandler, out.NodeTerminationHandler, s); err != nil {

@@ -40,9 +40,11 @@ func TestAWSValidateExternalCloudConfig(t *testing.T) {
 		{
 			Input: kops.ClusterSpec{
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{},
-				CloudConfig: &kops.CloudConfiguration{
-					AWSEBSCSIDriver: &kops.AWSEBSCSIDriver{
-						Enabled: fi.PtrTo(false),
+				CloudProvider: kops.CloudProviderSpec{
+					AWS: &kops.AWSSpec{
+						EBSCSIDriver: &kops.EBSCSIDriverSpec{
+							Enabled: fi.PtrTo(false),
+						},
 					},
 				},
 			},
@@ -51,9 +53,11 @@ func TestAWSValidateExternalCloudConfig(t *testing.T) {
 		{
 			Input: kops.ClusterSpec{
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{},
-				CloudConfig: &kops.CloudConfiguration{
-					AWSEBSCSIDriver: &kops.AWSEBSCSIDriver{
-						Enabled: fi.PtrTo(true),
+				CloudProvider: kops.CloudProviderSpec{
+					AWS: &kops.AWSSpec{
+						EBSCSIDriver: &kops.EBSCSIDriverSpec{
+							Enabled: fi.PtrTo(true),
+						},
 					},
 				},
 			},
@@ -61,6 +65,9 @@ func TestAWSValidateExternalCloudConfig(t *testing.T) {
 		{
 			Input: kops.ClusterSpec{
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{},
+				CloudProvider: kops.CloudProviderSpec{
+					AWS: &kops.AWSSpec{},
+				},
 				KubeControllerManager: &kops.KubeControllerManagerConfig{
 					ExternalCloudVolumePlugin: "aws",
 				},

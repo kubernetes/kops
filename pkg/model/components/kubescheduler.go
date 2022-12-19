@@ -57,7 +57,7 @@ func (b *KubeSchedulerOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 	}
 
-	if clusterSpec.CloudConfig != nil && clusterSpec.CloudConfig.AWSEBSCSIDriver != nil && fi.ValueOf(clusterSpec.CloudConfig.AWSEBSCSIDriver.Enabled) {
+	if clusterSpec.CloudProvider.AWS != nil && clusterSpec.CloudProvider.AWS.EBSCSIDriver != nil && fi.ValueOf(clusterSpec.CloudProvider.AWS.EBSCSIDriver.Enabled) {
 
 		if config.FeatureGates == nil {
 			config.FeatureGates = make(map[string]string)

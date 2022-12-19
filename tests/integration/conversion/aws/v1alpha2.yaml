@@ -24,6 +24,9 @@ spec:
   awsLoadBalancerController:
     enableWAF: true
   channel: stable
+  cloudConfig:
+    awsEBSCSIDriver:
+      volumeAttachLimit: 65
   cloudProvider: aws
   configBase: memfs://clusters.example.com/minimal.example.com
   egressProxy:

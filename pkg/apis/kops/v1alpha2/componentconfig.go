@@ -900,13 +900,14 @@ type CloudConfiguration struct {
 	// +k8s:conversion-gen=false
 	Azure *AzureSpec `json:"azure,omitempty"`
 	// AWSEBSCSIDriver is the config for the AWS EBS CSI driver
-	AWSEBSCSIDriver *AWSEBSCSIDriver `json:"awsEBSCSIDriver,omitempty"`
+	// +k8s:conversion-gen=false
+	AWSEBSCSIDriver *EBSCSIDriverSpec `json:"awsEBSCSIDriver,omitempty"`
 	// GCPPDCSIDriver is the config for the GCP PD CSI driver
 	GCPPDCSIDriver *GCPPDCSIDriver `json:"gcpPDCSIDriver,omitempty"`
 }
 
-// AWSEBSCSIDriver is the config for the AWS EBS CSI driver
-type AWSEBSCSIDriver struct {
+// EBSCSIDriverSpec is the config for the AWS EBS CSI driver
+type EBSCSIDriverSpec struct {
 	// Enabled enables the AWS EBS CSI driver
 	// Default: false
 	Enabled *bool `json:"enabled,omitempty"`
