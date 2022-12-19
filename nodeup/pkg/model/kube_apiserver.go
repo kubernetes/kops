@@ -544,10 +544,7 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 		return nil, fmt.Errorf("error building kube-apiserver flags: %v", err)
 	}
 
-	// add cloud config file if needed
-	if b.Cluster.Spec.CloudConfig != nil {
-		flags = append(flags, fmt.Sprintf("--cloud-config=%s", InTreeCloudConfigFilePath))
-	}
+	flags = append(flags, fmt.Sprintf("--cloud-config=%s", InTreeCloudConfigFilePath))
 
 	pod := &v1.Pod{
 		TypeMeta: metav1.TypeMeta{
@@ -678,10 +675,7 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 		kubemanifest.AddHostPathMapping(pod, container, name, path)
 	}
 
-	// Add cloud config file if needed
-	if b.Cluster.Spec.CloudConfig != nil {
-		kubemanifest.AddHostPathMapping(pod, container, "cloudconfig", InTreeCloudConfigFilePath)
-	}
+	kubemanifest.AddHostPathMapping(pod, container, "cloudconfig", InTreeCloudConfigFilePath)
 
 	kubemanifest.AddHostPathMapping(pod, container, "kubernetesca", filepath.Join(b.PathSrvKubernetes(), "ca.crt"))
 
