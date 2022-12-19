@@ -153,10 +153,7 @@ func (b *KubeControllerManagerBuilder) buildPod(kcm *kops.KubeControllerManagerC
 		return nil, fmt.Errorf("error building kube-controller-manager flags: %v", err)
 	}
 
-	// Add cloud config file if needed
-	if b.Cluster.Spec.CloudConfig != nil {
-		flags = append(flags, "--cloud-config="+InTreeCloudConfigFilePath)
-	}
+	flags = append(flags, "--cloud-config="+InTreeCloudConfigFilePath)
 
 	// Add kubeconfig flags
 	for _, flag := range []string{"", "authentication-", "authorization-"} {
@@ -269,10 +266,7 @@ func (b *KubeControllerManagerBuilder) buildPod(kcm *kops.KubeControllerManagerC
 		kubemanifest.AddHostPathMapping(pod, container, name, path)
 	}
 
-	// Add cloud config file if needed
-	if b.Cluster.Spec.CloudConfig != nil {
-		kubemanifest.AddHostPathMapping(pod, container, "cloudconfig", InTreeCloudConfigFilePath)
-	}
+	kubemanifest.AddHostPathMapping(pod, container, "cloudconfig", InTreeCloudConfigFilePath)
 
 	kubemanifest.AddHostPathMapping(pod, container, "cabundle", filepath.Join(b.PathSrvKubernetes(), "ca.crt"))
 
