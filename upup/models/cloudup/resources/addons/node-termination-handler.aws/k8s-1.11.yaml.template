@@ -1,4 +1,4 @@
-{{ with .NodeTerminationHandler }}
+{{ with .CloudProvider.AWS.NodeTerminationHandler }}
 # Sourced from https://github.com/aws/aws-node-termination-handler/releases/download/v1.18.1/all-resources.yaml
 # and https://github.com/aws/aws-node-termination-handler/releases/download/v1.18.1/all-resources-queue-processor.yaml
 ---

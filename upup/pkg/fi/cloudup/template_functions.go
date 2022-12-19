@@ -311,7 +311,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["IsIPv6Only"] = tf.IsIPv6Only
 	dest["UseServiceAccountExternalPermissions"] = tf.UseServiceAccountExternalPermissions
 
-	if cluster.Spec.NodeTerminationHandler != nil {
+	if cluster.Spec.CloudProvider.AWS != nil && cluster.Spec.CloudProvider.AWS.NodeTerminationHandler != nil {
 		dest["DefaultQueueName"] = func() string {
 			s := strings.Replace(tf.ClusterName(), ".", "-", -1)
 			domain := ".amazonaws.com/"
@@ -322,7 +322,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 			return url
 		}
 
-		dest["EnableSQSTerminationDraining"] = func() bool { return cluster.Spec.NodeTerminationHandler.IsQueueMode() }
+		dest["EnableSQSTerminationDraining"] = func() bool { return cluster.Spec.CloudProvider.AWS.NodeTerminationHandler.IsQueueMode() }
 	}
 
 	dest["ArchitectureOfAMI"] = tf.architectureOfAMI

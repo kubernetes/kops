@@ -160,9 +160,11 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		InstanceGroupRole: role,
 	}
 
-	warmPool := cluster.Spec.WarmPool.ResolveDefaults(instanceGroup)
-	if warmPool.IsEnabled() && warmPool.EnableLifecycleHook {
-		config.EnableLifecycleHook = true
+	if cluster.Spec.CloudProvider.AWS != nil {
+		warmPool := cluster.Spec.CloudProvider.AWS.WarmPool.ResolveDefaults(instanceGroup)
+		if warmPool.IsEnabled() && warmPool.EnableLifecycleHook {
+			config.EnableLifecycleHook = true
+		}
 	}
 
 	if instanceGroup.Spec.UpdatePolicy != nil {

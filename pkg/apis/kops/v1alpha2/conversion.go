@@ -144,6 +144,42 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 			string(kops.CloudProviderScaleway),
 		})
 	}
+	if in.NodeTerminationHandler != nil {
+		if out.CloudProvider.AWS == nil {
+			return field.Forbidden(field.NewPath("spec").Child("nodeTerminationHandler"), "node termination handler supports only AWS")
+		}
+		out.CloudProvider.AWS.NodeTerminationHandler = &kops.NodeTerminationHandlerSpec{}
+		if err := autoConvert_v1alpha2_NodeTerminationHandlerSpec_To_kops_NodeTerminationHandlerSpec(in.NodeTerminationHandler, out.CloudProvider.AWS.NodeTerminationHandler, s); err != nil {
+			return err
+		}
+	}
+	if in.AWSLoadBalancerController != nil {
+		if out.CloudProvider.AWS == nil {
+			return field.Forbidden(field.NewPath("spec").Child("awsLoadBalancerController"), "AWS Load Balancer Controller supports only AWS")
+		}
+		out.CloudProvider.AWS.LoadBalancerController = &kops.LoadBalancerControllerSpec{}
+		if err := autoConvert_v1alpha2_LoadBalancerControllerSpec_To_kops_LoadBalancerControllerSpec(in.AWSLoadBalancerController, out.CloudProvider.AWS.LoadBalancerController, s); err != nil {
+			return err
+		}
+	}
+	if in.WarmPool != nil {
+		if out.CloudProvider.AWS == nil {
+			return field.Forbidden(field.NewPath("spec", "warmPool"), "warm pool only supported on AWS")
+		}
+		out.CloudProvider.AWS.WarmPool = &kops.WarmPoolSpec{}
+		if err := autoConvert_v1alpha2_WarmPoolSpec_To_kops_WarmPoolSpec(in.WarmPool, out.CloudProvider.AWS.WarmPool, s); err != nil {
+			return err
+		}
+	}
+	if in.PodIdentityWebhook != nil {
+		if out.CloudProvider.AWS == nil {
+			return field.Forbidden(field.NewPath("spec", "podIdentityWebhook"), "pod identity webhook supports only AWS")
+		}
+		out.CloudProvider.AWS.PodIdentityWebhook = &kops.PodIdentityWebhookSpec{}
+		if err := autoConvert_v1alpha2_PodIdentityWebhookSpec_To_kops_PodIdentityWebhookSpec(in.PodIdentityWebhook, out.CloudProvider.AWS.PodIdentityWebhook, s); err != nil {
+			return err
+		}
+	}
 	for i, hook := range in.Hooks {
 		if hook.Enabled != nil {
 			out.Hooks[i].Enabled = values.Bool(!*hook.Enabled)
@@ -238,6 +274,32 @@ func Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, out 
 	}
 	out.LegacyCloudProvider = string(in.GetCloudProvider())
 	switch kops.CloudProviderID(out.LegacyCloudProvider) {
+	case kops.CloudProviderAWS:
+		aws := in.CloudProvider.AWS
+		if aws.NodeTerminationHandler != nil {
+			out.NodeTerminationHandler = &NodeTerminationHandlerSpec{}
+			if err := autoConvert_kops_NodeTerminationHandlerSpec_To_v1alpha2_NodeTerminationHandlerSpec(aws.NodeTerminationHandler, out.NodeTerminationHandler, s); err != nil {
+				return err
+			}
+		}
+		if aws.LoadBalancerController != nil {
+			out.AWSLoadBalancerController = &LoadBalancerControllerSpec{}
+			if err := autoConvert_kops_LoadBalancerControllerSpec_To_v1alpha2_LoadBalancerControllerSpec(aws.LoadBalancerController, out.AWSLoadBalancerController, s); err != nil {
+				return err
+			}
+		}
+		if aws.WarmPool != nil {
+			out.WarmPool = &WarmPoolSpec{}
+			if err := autoConvert_kops_WarmPoolSpec_To_v1alpha2_WarmPoolSpec(aws.WarmPool, out.WarmPool, s); err != nil {
+				return err
+			}
+		}
+		if aws.PodIdentityWebhook != nil {
+			out.PodIdentityWebhook = &PodIdentityWebhookSpec{}
+			if err := autoConvert_kops_PodIdentityWebhookSpec_To_v1alpha2_PodIdentityWebhookSpec(aws.PodIdentityWebhook, out.PodIdentityWebhook, s); err != nil {
+				return err
+			}
+		}
 	case kops.CloudProviderAzure:
 		if out.CloudConfig == nil {
 			out.CloudConfig = &CloudConfiguration{}
