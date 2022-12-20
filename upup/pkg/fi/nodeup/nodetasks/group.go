@@ -24,7 +24,6 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 )
 
@@ -116,16 +115,6 @@ func (_ *GroupTask) RenderLocal(t *local.LocalTarget, a, e, changes *GroupTask) 
 			}
 		}
 	}
-
-	return nil
-}
-
-func (_ *GroupTask) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *GroupTask) error {
-	args := buildGroupaddArgs(e)
-	cmd := []string{"groupadd"}
-	cmd = append(cmd, args...)
-	klog.Infof("Creating group %q", e.Name)
-	t.AddCommand(cloudinit.Once, cmd...)
 
 	return nil
 }

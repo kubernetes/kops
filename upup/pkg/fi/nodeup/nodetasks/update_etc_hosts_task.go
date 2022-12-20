@@ -22,7 +22,6 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/protokube/pkg/gossip/dns/hosts"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 )
 
@@ -93,8 +92,4 @@ func (_ *UpdateEtcHostsTask) RenderLocal(t *local.LocalTarget, a, e, changes *Up
 		return fmt.Errorf("failed to update /etc/hosts: %w", err)
 	}
 	return nil
-}
-
-func (_ *UpdateEtcHostsTask) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *UpdateEtcHostsTask) error {
-	return fmt.Errorf("UpdateEtcHostsTask::RenderCloudInit not supported")
 }
