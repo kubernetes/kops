@@ -23,7 +23,7 @@ kops-acquire-latest
 # shellcheck disable=SC2034
 NETWORKING="amazonvpc"
 
-OVERRIDES="${OVERRIDES-} --set=cluster.spec.awsLoadBalancerController.enabled=true"
+OVERRIDES="${OVERRIDES-} --set=cluster.spec.cloudProvider.aws.loadBalancerController.enabled=true"
 OVERRIDES="${OVERRIDES} --set=cluster.spec.certManager.enabled=true"
 OVERRIDES="${OVERRIDES} --master-size=t4g.medium --node-size=t4g.medium"
 
