@@ -68,10 +68,12 @@ type ScwCloud interface {
 	GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error)
 	GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error)
 
+	GetClusterLoadBalancers(clusterName string) ([]*lb.LB, error)
 	GetClusterServers(clusterName string, serverName *string) ([]*instance.Server, error)
 	GetClusterSSHKeys(clusterName string) ([]*iam.SSHKey, error)
 	GetClusterVolumes(clusterName string) ([]*instance.Volume, error)
 
+	DeleteLoadBalancer(loadBalancer *lb.LB) error
 	DeleteServer(server *instance.Server) error
 	DeleteSSHKey(sshkey *iam.SSHKey) error
 	DeleteVolume(volume *instance.Volume) error
@@ -378,6 +380,18 @@ func buildCloudGroup(ig *kops.InstanceGroup, sg []*instance.Server, nodeMap map[
 	return cloudInstanceGroup, nil
 }
 
+func (s *scwCloudImplementation) GetClusterLoadBalancers(clusterName string) ([]*lb.LB, error) {
+	loadBalancerName := "api." + clusterName
+	lbs, err := s.lbAPI.ListLBs(&lb.ListLBsRequest{
+		Region: s.region,
+		Name:   &loadBalancerName,
+	}, scw.WithAllPages())
+	if err != nil {
+		return nil, fmt.Errorf("failed to list cluster load-balancers: %w", err)
+	}
+	return lbs.LBs, nil
+}
+
 func (s *scwCloudImplementation) GetClusterServers(clusterName string, serverName *string) ([]*instance.Server, error) {
 	request := &instance.ListServersRequest{
 		Zone: s.zone,
@@ -417,6 +431,45 @@ func (s *scwCloudImplementation) GetClusterVolumes(clusterName string) ([]*insta
 		return nil, fmt.Errorf("failed to list cluster volumes: %w", err)
 	}
 	return volumes.Volumes, nil
+}
+
+func (s *scwCloudImplementation) DeleteLoadBalancer(loadBalancer *lb.LB) error {
+	ipsToRelease := loadBalancer.IP
+
+	// We delete the load-balancer once it's in a stable state
+	_, err := s.lbAPI.WaitForLb(&lb.WaitForLBRequest{
+		LBID:   loadBalancer.ID,
+		Region: s.region,
+	})
+	if err != nil {
+		return fmt.Errorf("error waiting for load-balancer: %w", err)
+	}
+	err = s.lbAPI.DeleteLB(&lb.DeleteLBRequest{
+		Region: s.region,
+		LBID:   loadBalancer.ID,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to delete load-balancer %s: %w", loadBalancer.ID, err)
+	}
+
+	// We wait for the load-balancer to be deleted, then we detach its IPs
+	_, err = s.lbAPI.WaitForLb(&lb.WaitForLBRequest{
+		LBID:   loadBalancer.ID,
+		Region: s.region,
+	})
+	if !is404Error(err) {
+		return fmt.Errorf("error waiting for load-balancer %s after deletion: %w", loadBalancer.ID, err)
+	}
+	for _, ip := range ipsToRelease {
+		err := s.lbAPI.ReleaseIP(&lb.ReleaseIPRequest{
+			Region: s.region,
+			IPID:   ip.ID,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to delete load-balancer IP: %w", err)
+		}
+	}
+	return nil
 }
 
 func (s *scwCloudImplementation) DeleteServer(server *instance.Server) error {
