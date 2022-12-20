@@ -71,7 +71,8 @@ type NodeUpCommand struct {
 	CacheDir       string
 	ConfigLocation string
 	Target         string
-	cluster        *api.Cluster
+	// Deprecated: Fields should be accessed from NodeupConfig or BootConfig.
+	cluster *api.Cluster
 }
 
 // Run is responsible for perform the nodeup process
