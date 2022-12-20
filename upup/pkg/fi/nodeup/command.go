@@ -54,7 +54,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/gcediscovery"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm/gcetpmsigner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
-	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/upup/pkg/fi/secrets"
@@ -378,9 +377,6 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	case "dryrun":
 		assetBuilder := assets.NewAssetBuilder(c.cluster, false)
 		target = fi.NewNodeupDryRunTarget(assetBuilder, out)
-	case "cloudinit":
-		checkExisting = false
-		target = cloudinit.NewCloudInitTarget(out)
 	default:
 		return fmt.Errorf("unsupported target type %q", c.Target)
 	}
