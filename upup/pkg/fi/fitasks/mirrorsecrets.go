@@ -46,7 +46,7 @@ func (e *MirrorSecrets) GetDependencies(tasks map[string]fi.CloudupTask) []fi.Cl
 
 // Find implements fi.Task::Find
 func (e *MirrorSecrets) Find(c *fi.CloudupContext) (*MirrorSecrets, error) {
-	if vfsSecretStore, ok := c.SecretStore.(*secrets.VFSSecretStore); ok {
+	if vfsSecretStore, ok := c.T.SecretStore.(*secrets.VFSSecretStore); ok {
 		if vfsSecretStore.VFSPath().Path() == e.MirrorPath.Path() {
 			return e, nil
 		}
@@ -74,6 +74,6 @@ func (s *MirrorSecrets) CheckChanges(a, e, changes *MirrorSecrets) error {
 
 // Render implements fi.Task::Render
 func (_ *MirrorSecrets) Render(c *fi.CloudupContext, a, e, changes *MirrorSecrets) error {
-	secrets := c.SecretStore
+	secrets := c.T.SecretStore
 	return secrets.MirrorTo(e.MirrorPath)
 }
