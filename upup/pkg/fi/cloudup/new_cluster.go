@@ -563,7 +563,7 @@ func setupVPC(opt *NewClusterOptions, cluster *api.Cluster, cloud fi.Cloud) erro
 		if opt.GCEServiceAccount != "" {
 			// TODO remove this logging?
 			klog.Infof("VMs will be configured to use specified Service Account: %v", opt.GCEServiceAccount)
-			cluster.Spec.CloudConfig.GCEServiceAccount = opt.GCEServiceAccount
+			cluster.Spec.CloudProvider.GCE.ServiceAccount = opt.GCEServiceAccount
 		}
 
 	case api.CloudProviderOpenstack:
