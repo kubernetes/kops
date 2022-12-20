@@ -44,3 +44,7 @@ func (t *AzureAPITarget) Finish(taskMap map[string]fi.CloudupTask) error {
 func (t *AzureAPITarget) ProcessDeletions() bool {
 	return true
 }
+
+func (t *AzureAPITarget) DefaultCheckExisting() bool {
+	return true
+}

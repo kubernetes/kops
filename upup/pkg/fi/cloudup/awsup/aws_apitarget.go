@@ -42,6 +42,10 @@ func (t *AWSAPITarget) ProcessDeletions() bool {
 	return true
 }
 
+func (t *AWSAPITarget) DefaultCheckExisting() bool {
+	return true
+}
+
 func (t *AWSAPITarget) Finish(taskMap map[string]fi.CloudupTask) error {
 	return nil
 }

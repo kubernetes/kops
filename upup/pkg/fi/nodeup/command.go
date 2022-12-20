@@ -71,7 +71,8 @@ type NodeUpCommand struct {
 	CacheDir       string
 	ConfigLocation string
 	Target         string
-	cluster        *api.Cluster
+	// Deprecated: Fields should be accessed from NodeupConfig or BootConfig.
+	cluster *api.Cluster
 }
 
 // Run is responsible for perform the nodeup process
@@ -233,7 +234,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	}
 
 	var secretStore fi.SecretStore
-	var keyStore fi.Keystore
+	var keyStore fi.KeystoreReader
 	if nodeConfig != nil {
 		modelContext.SecretStore = configserver.NewSecretStore(nodeConfig.NodeSecrets)
 	} else if c.cluster.Spec.SecretStore != "" {
@@ -364,7 +365,6 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	// Protokube load image task is in ProtokubeBuilder
 
 	var target fi.NodeupTarget
-	checkExisting := true
 
 	switch c.Target {
 	case "direct":
@@ -379,7 +379,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("unsupported target type %q", c.Target)
 	}
 
-	context, err := fi.NewNodeupContext(ctx, target, keyStore, secretStore, checkExisting, &bootConfig, &nodeupConfig, taskMap)
+	context, err := fi.NewNodeupContext(ctx, target, keyStore, &bootConfig, &nodeupConfig, taskMap)
 	if err != nil {
 		klog.Exitf("error building context: %v", err)
 	}

@@ -66,12 +66,18 @@ type KeysetItem struct {
 	PrivateKey *pki.PrivateKey
 }
 
-// Keystore contains just the functions we need to issue keypairs, not to list / manage them
-type Keystore interface {
+// KeystoreReader contains just the functions we need to consume keypairs, not to update them.
+type KeystoreReader interface {
 	pki.Keystore
 
 	// FindKeyset finds a Keyset.
 	FindKeyset(name string) (*Keyset, error)
+}
+
+// Keystore contains just the functions we need to issue keypairs, not to list / manage them
+
+type Keystore interface {
+	KeystoreReader
 
 	// StoreKeyset writes a Keyset to the store.
 	StoreKeyset(name string, keyset *Keyset) error

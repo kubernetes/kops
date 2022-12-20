@@ -45,7 +45,7 @@ func (e *MirrorKeystore) GetDependencies(tasks map[string]fi.CloudupTask) []fi.C
 
 // Find implements fi.Task::Find
 func (e *MirrorKeystore) Find(c *fi.CloudupContext) (*MirrorKeystore, error) {
-	if vfsKeystore, ok := c.Keystore.(*fi.VFSCAStore); ok {
+	if vfsKeystore, ok := c.T.Keystore.(*fi.VFSCAStore); ok {
 		if vfsKeystore.VFSPath().Path() == e.MirrorPath.Path() {
 			return e, nil
 		}
@@ -73,7 +73,7 @@ func (s *MirrorKeystore) CheckChanges(a, e, changes *MirrorKeystore) error {
 
 // Render implements fi.Task::Render
 func (_ *MirrorKeystore) Render(c *fi.CloudupContext, a, e, changes *MirrorKeystore) error {
-	keystore := c.Keystore
+	keystore := c.T.Keystore
 
 	return keystore.MirrorTo(e.MirrorPath)
 }

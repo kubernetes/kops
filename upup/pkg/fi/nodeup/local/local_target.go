@@ -38,6 +38,10 @@ func (t *LocalTarget) ProcessDeletions() bool {
 	return true
 }
 
+func (t *LocalTarget) DefaultCheckExisting() bool {
+	return true
+}
+
 // CombinedOutput is a helper function that executes a command, returning stdout & stderr combined
 func (t *LocalTarget) CombinedOutput(args []string) ([]byte, error) {
 	c := exec.Command(args[0], args[1:]...)

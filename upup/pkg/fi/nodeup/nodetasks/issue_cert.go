@@ -155,7 +155,7 @@ func (e *IssueCert) Run(c *fi.NodeupContext) error {
 		Validity:       time.Hour * time.Duration(validHours),
 	}
 
-	keystore, err := newStaticKeystore(e.Signer, e.KeypairID, c.Keystore)
+	keystore, err := newStaticKeystore(e.Signer, e.KeypairID, c.T.Keystore)
 	if err != nil {
 		return err
 	}
@@ -215,7 +215,7 @@ func (s staticKeystore) FindPrimaryKeypair(name string) (*pki.Certificate, *pki.
 	return s.certificate, s.key, nil
 }
 
-func newStaticKeystore(signer string, keypairID string, keystore fi.Keystore) (pki.Keystore, error) {
+func newStaticKeystore(signer string, keypairID string, keystore fi.KeystoreReader) (pki.Keystore, error) {
 	if signer == "" {
 		return nil, nil
 	}

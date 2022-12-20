@@ -23,6 +23,10 @@ type Target[T SubContext] interface {
 	// ProcessDeletions returns true if we should delete resources
 	// Some providers (e.g. Terraform) actively keep state, and will delete resources automatically
 	ProcessDeletions() bool
+
+	// DefaultCheckExisting returns true if DefaultDeltaRun tasks which aren't HasCheckExisting
+	// should invoke Find() when running against this Target.
+	DefaultCheckExisting() bool
 }
 
 type CloudupTarget = Target[CloudupSubContext]
