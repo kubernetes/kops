@@ -369,10 +369,8 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	switch c.Target {
 	case "direct":
 		target = &local.LocalTarget{
-			CacheDir:   c.CacheDir,
-			Cloud:      cloud,
-			InstanceID: modelContext.InstanceID,
-			Cluster:    c.cluster,
+			CacheDir: c.CacheDir,
+			Cloud:    cloud,
 		}
 	case "dryrun":
 		assetBuilder := assets.NewAssetBuilder(c.cluster, false)
