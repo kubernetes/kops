@@ -143,7 +143,7 @@ func (e *ManagedFile) getACL(c *fi.CloudupContext, p vfs.Path) (vfs.ACL, error) 
 		return acl, nil
 	}
 
-	return acls.GetACL(p, c.Cluster)
+	return acls.GetACL(p, c.T.Cluster)
 }
 
 func (_ *ManagedFile) Render(c *fi.CloudupContext, a, e, changes *ManagedFile) error {

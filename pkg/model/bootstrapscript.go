@@ -350,7 +350,7 @@ func (b *BootstrapScript) Run(c *fi.CloudupContext) error {
 
 	{
 		nodeupScript.EnvironmentVariables = func() (string, error) {
-			env, err := b.buildEnvironmentVariables(c.Cluster)
+			env, err := b.buildEnvironmentVariables(c.T.Cluster)
 			if err != nil {
 				return "", err
 			}
@@ -370,11 +370,11 @@ func (b *BootstrapScript) Run(c *fi.CloudupContext) error {
 		}
 
 		nodeupScript.ProxyEnv = func() (string, error) {
-			return b.createProxyEnv(c.Cluster.Spec.Networking.EgressProxy)
+			return b.createProxyEnv(c.T.Cluster.Spec.Networking.EgressProxy)
 		}
 
 		nodeupScript.ClusterSpec = func() (string, error) {
-			cs := c.Cluster.Spec
+			cs := c.T.Cluster.Spec
 
 			spec := make(map[string]interface{})
 			spec["cloudConfig"] = cs.CloudConfig
@@ -433,7 +433,7 @@ func (b *BootstrapScript) Run(c *fi.CloudupContext) error {
 	// See https://github.com/kubernetes/kops/issues/10206 for details.
 	nodeupScript.SetSysctls = setSysctls()
 
-	nodeupScript.CloudProvider = string(c.Cluster.Spec.GetCloudProvider())
+	nodeupScript.CloudProvider = string(c.T.Cluster.Spec.GetCloudProvider())
 
 	nodeupScriptResource, err := nodeupScript.Build()
 	if err != nil {

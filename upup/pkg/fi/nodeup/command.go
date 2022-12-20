@@ -181,7 +181,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("nodeup config hash mismatch (was %q, expected %q)", got, want)
 	}
 
-	cloudProvider := api.CloudProviderID(bootConfig.CloudProvider)
+	cloudProvider := bootConfig.CloudProvider
 	if cloudProvider == "" {
 		cloudProvider = c.cluster.Spec.GetCloudProvider()
 	}
@@ -381,7 +381,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("unsupported target type %q", c.Target)
 	}
 
-	context, err := fi.NewNodeupContext(ctx, target, c.cluster, keyStore, secretStore, checkExisting, taskMap)
+	context, err := fi.NewNodeupContext(ctx, target, keyStore, secretStore, checkExisting, &bootConfig, &nodeupConfig, taskMap)
 	if err != nil {
 		klog.Exitf("error building context: %v", err)
 	}
@@ -684,7 +684,7 @@ func loadKernelModules(context *model.NodeupModelContext) error {
 
 // getRegion queries the cloud provider for the region.
 func getRegion(ctx context.Context, bootConfig *nodeup.BootConfig) (string, error) {
-	switch api.CloudProviderID(bootConfig.CloudProvider) {
+	switch bootConfig.CloudProvider {
 	case api.CloudProviderAWS:
 		region, err := awsup.RegionFromMetadata(ctx)
 		if err != nil {
@@ -699,7 +699,7 @@ func getRegion(ctx context.Context, bootConfig *nodeup.BootConfig) (string, erro
 
 // seedRNG adds entropy to the random number generator.
 func seedRNG(ctx context.Context, bootConfig *nodeup.BootConfig, region string) error {
-	switch api.CloudProviderID(bootConfig.CloudProvider) {
+	switch bootConfig.CloudProvider {
 	case api.CloudProviderAWS:
 		config := aws.NewConfig().WithCredentialsChainVerboseErrors(true).WithRegion(region)
 		sess, err := session.NewSession(config)
@@ -735,7 +735,7 @@ func getNodeConfigFromServer(ctx context.Context, bootConfig *nodeup.BootConfig,
 	var authenticator bootstrap.Authenticator
 	var resolver resolver.Resolver
 
-	switch api.CloudProviderID(bootConfig.CloudProvider) {
+	switch bootConfig.CloudProvider {
 	case api.CloudProviderAWS:
 		a, err := awsup.NewAWSAuthenticator(region)
 		if err != nil {
