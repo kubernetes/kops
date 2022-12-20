@@ -24,7 +24,6 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/util/pkg/distributions"
 )
@@ -92,10 +91,5 @@ func (_ *UpdatePackages) RenderLocal(t *local.LocalTarget, a, e, changes *Update
 		return fmt.Errorf("error update packages: %v: %s", err, string(output))
 	}
 
-	return nil
-}
-
-func (_ *UpdatePackages) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *UpdatePackages) error {
-	t.Config.PackageUpdate = true
 	return nil
 }

@@ -24,7 +24,6 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 )
 
@@ -125,16 +124,6 @@ func (_ *UserTask) RenderLocal(t *local.LocalTarget, a, e, changes *UserTask) er
 			}
 		}
 	}
-
-	return nil
-}
-
-func (_ *UserTask) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *UserTask) error {
-	args := buildUseraddArgs(e)
-	cmd := []string{"useradd"}
-	cmd = append(cmd, args...)
-	klog.Infof("Creating user %q", e.Name)
-	t.AddCommand(cloudinit.Once, cmd...)
 
 	return nil
 }

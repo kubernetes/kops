@@ -29,7 +29,6 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/util/pkg/hashing"
 )
@@ -208,24 +207,6 @@ func (_ *Archive) RenderLocal(t *local.LocalTarget, a, e, changes *Archive) erro
 			klog.Warningf("cannot apply archive changes for %q: %v", e.Name, changes)
 		}
 	}
-
-	return nil
-}
-
-// RenderCloudInit implements fi.Task::Render functionality for a CloudInit target
-func (_ *Archive) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *Archive) error {
-	archiveName := e.Name
-
-	localFile := path.Join(localArchiveDir, archiveName)
-	t.AddMkdirpCommand(localArchiveDir, 0o755)
-
-	targetDir := e.TargetDir
-	t.AddMkdirpCommand(targetDir, 0o755)
-
-	url := e.Source
-	t.AddDownloadCommand(cloudinit.Always, url, localFile)
-
-	t.AddCommand(cloudinit.Always, "tar", "xf", localFile, "-C", targetDir)
 
 	return nil
 }

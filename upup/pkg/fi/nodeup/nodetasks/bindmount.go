@@ -24,7 +24,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 )
 
@@ -248,8 +247,4 @@ func (e *BindMount) execute(t Executor) error {
 	}
 
 	return nil
-}
-
-func (_ *BindMount) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *BindMount) error {
-	return fmt.Errorf("BindMount::RenderCloudInit not implemented")
 }
