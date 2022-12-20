@@ -35,6 +35,14 @@ type AddonsSpec struct {
 	Addons []*AddonSpec `json:"addons,omitempty"`
 }
 
+type NeedsRollingUpdate string
+
+const (
+	NeedsRollingUpdateControlPlane NeedsRollingUpdate = "control-plane"
+	NeedsRollingUpdateWorkers      NeedsRollingUpdate = "workers"
+	NeedsRollingUpdateAll          NeedsRollingUpdate = "all"
+)
+
 type AddonSpec struct {
 	Name *string `json:"name,omitempty"`
 
@@ -63,7 +71,7 @@ type AddonSpec struct {
 	// NeedsRollingUpdate determines if we should mark nodes as needing an update.
 	// Legal values are control-plane, workers, and all
 	// Empty value means no update needed
-	NeedsRollingUpdate string `json:"needsRollingUpdate,omitempty"`
+	NeedsRollingUpdate NeedsRollingUpdate `json:"needsRollingUpdate,omitempty"`
 
 	// NeedsPKI determines if channels should provision a CA and a cert-manager issuer for the addon.
 	NeedsPKI bool `json:"needsPKI,omitempty"`

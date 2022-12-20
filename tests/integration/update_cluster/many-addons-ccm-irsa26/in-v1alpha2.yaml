@@ -35,6 +35,9 @@ spec:
     useServiceAccountExternalPermissions: true
   kubelet:
     anonymousAuth: false
+  kubeDNS:
+    nodeLocalDNS:
+      enabled: true
   kubernetesVersion: v1.26.0-alpha.0
   masterPublicName: api.minimal.example.com
   networkCIDR: 172.20.0.0/16
