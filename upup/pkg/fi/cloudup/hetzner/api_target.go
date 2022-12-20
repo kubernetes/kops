@@ -39,3 +39,7 @@ func (t *HetznerAPITarget) Finish(taskMap map[string]fi.CloudupTask) error {
 func (t *HetznerAPITarget) ProcessDeletions() bool {
 	return true
 }
+
+func (t *HetznerAPITarget) DefaultCheckExisting() bool {
+	return true
+}
