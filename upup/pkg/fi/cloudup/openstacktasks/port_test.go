@@ -368,13 +368,13 @@ func Test_Port_Find(t *testing.T) {
 		{
 			desc: "nothing found",
 			context: &fi.CloudupContext{
-				Cluster: &kops.Cluster{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: "clusterName",
-					},
-				},
 				T: fi.CloudupSubContext{
 					Cloud: &portCloud{},
+					Cluster: &kops.Cluster{
+						ObjectMeta: metav1.ObjectMeta{
+							Name: "clusterName",
+						},
+					},
 				},
 			},
 			port: &Port{
@@ -387,11 +387,6 @@ func Test_Port_Find(t *testing.T) {
 		{
 			desc: "port found no tags",
 			context: &fi.CloudupContext{
-				Cluster: &kops.Cluster{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: "clusterName",
-					},
-				},
 				T: fi.CloudupSubContext{
 					Cloud: &portCloud{
 						listPorts: []ports.Port{
@@ -409,6 +404,11 @@ func Test_Port_Find(t *testing.T) {
 								},
 								Tags: []string{"clusterName"},
 							},
+						},
+					},
+					Cluster: &kops.Cluster{
+						ObjectMeta: metav1.ObjectMeta{
+							Name: "clusterName",
 						},
 					},
 				},
@@ -436,11 +436,6 @@ func Test_Port_Find(t *testing.T) {
 		{
 			desc: "port found with tags",
 			context: &fi.CloudupContext{
-				Cluster: &kops.Cluster{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: "clusterName",
-					},
-				},
 				T: fi.CloudupSubContext{
 					Cloud: &portCloud{
 						listPorts: []ports.Port{
@@ -458,6 +453,11 @@ func Test_Port_Find(t *testing.T) {
 								},
 								Tags: []string{"clusterName"},
 							},
+						},
+					},
+					Cluster: &kops.Cluster{
+						ObjectMeta: metav1.ObjectMeta{
+							Name: "clusterName",
 						},
 					},
 				},
@@ -487,11 +487,6 @@ func Test_Port_Find(t *testing.T) {
 		{
 			desc: "multiple ports found",
 			context: &fi.CloudupContext{
-				Cluster: &kops.Cluster{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: "clusterName",
-					},
-				},
 				T: fi.CloudupSubContext{
 					Cloud: &portCloud{
 						listPorts: []ports.Port{
@@ -507,6 +502,11 @@ func Test_Port_Find(t *testing.T) {
 							},
 						},
 					},
+					Cluster: &kops.Cluster{
+						ObjectMeta: metav1.ObjectMeta{
+							Name: "clusterName",
+						},
+					},
 				},
 			},
 			port: &Port{
@@ -519,11 +519,6 @@ func Test_Port_Find(t *testing.T) {
 		{
 			desc: "error listing ports",
 			context: &fi.CloudupContext{
-				Cluster: &kops.Cluster{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: "clusterName",
-					},
-				},
 				T: fi.CloudupSubContext{
 					Cloud: &portCloud{
 						listPorts: []ports.Port{
@@ -533,6 +528,11 @@ func Test_Port_Find(t *testing.T) {
 							},
 						},
 						listPortsError: fmt.Errorf("list error"),
+					},
+					Cluster: &kops.Cluster{
+						ObjectMeta: metav1.ObjectMeta{
+							Name: "clusterName",
+						},
 					},
 				},
 			},
