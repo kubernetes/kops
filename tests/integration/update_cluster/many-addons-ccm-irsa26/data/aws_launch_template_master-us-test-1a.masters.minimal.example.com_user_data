@@ -217,7 +217,7 @@ kubelet:
   cgroupDriver: systemd
   cgroupRoot: /
   cloudProvider: external
-  clusterDNS: 172.20.0.10
+  clusterDNS: 169.254.20.10
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
@@ -237,7 +237,7 @@ masterKubelet:
   cgroupDriver: systemd
   cgroupRoot: /
   cloudProvider: external
-  clusterDNS: 172.20.0.10
+  clusterDNS: 169.254.20.10
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
@@ -260,7 +260,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: EZ085e5LwWbE9B8aEBWt4xhWuBMncsEoELr+Cnkit6s=
+NodeupConfigHash: g9+bX1jV2ku+DZ4KFstDA6YwxvBJnAzwxclXNoYoLmc=
 
 __EOF_KUBE_ENV
 

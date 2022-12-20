@@ -145,8 +145,10 @@ spec:
     memoryRequest: 70Mi
     nodeLocalDNS:
       cpuRequest: 25m
-      enabled: false
+      enabled: true
+      forwardToKubeDNS: false
       image: registry.k8s.io/dns/k8s-dns-node-cache:1.22.15
+      localIP: 169.254.20.10
       memoryRequest: 5Mi
     provider: CoreDNS
     serverIP: 172.20.0.10
@@ -167,7 +169,7 @@ spec:
     cgroupDriver: systemd
     cgroupRoot: /
     cloudProvider: external
-    clusterDNS: 172.20.0.10
+    clusterDNS: 169.254.20.10
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
@@ -190,7 +192,7 @@ spec:
     cgroupDriver: systemd
     cgroupRoot: /
     cloudProvider: external
-    clusterDNS: 172.20.0.10
+    clusterDNS: 169.254.20.10
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%

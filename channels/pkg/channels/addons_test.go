@@ -175,7 +175,7 @@ func Test_NeedsRollingUpdate(t *testing.T) {
 				Spec: &api.AddonSpec{
 					Name:               fi.PtrTo("test"),
 					ManifestHash:       "originalHash",
-					NeedsRollingUpdate: "all",
+					NeedsRollingUpdate: api.NeedsRollingUpdateAll,
 				},
 			},
 		},
@@ -185,7 +185,7 @@ func Test_NeedsRollingUpdate(t *testing.T) {
 				Spec: &api.AddonSpec{
 					Name:               fi.PtrTo("test"),
 					ManifestHash:       "newHash",
-					NeedsRollingUpdate: "all",
+					NeedsRollingUpdate: api.NeedsRollingUpdateAll,
 				},
 			},
 			updateRequired:      true,
@@ -197,7 +197,7 @@ func Test_NeedsRollingUpdate(t *testing.T) {
 				Spec: &api.AddonSpec{
 					Name:               fi.PtrTo("test"),
 					ManifestHash:       "newHash",
-					NeedsRollingUpdate: "worker",
+					NeedsRollingUpdate: api.NeedsRollingUpdateWorkers,
 				},
 			},
 			updateRequired:      true,
@@ -209,7 +209,7 @@ func Test_NeedsRollingUpdate(t *testing.T) {
 				Spec: &api.AddonSpec{
 					Name:               fi.PtrTo("test"),
 					ManifestHash:       "newHash",
-					NeedsRollingUpdate: "control-plane",
+					NeedsRollingUpdate: api.NeedsRollingUpdateControlPlane,
 				},
 			},
 			updateRequired:      true,
@@ -221,7 +221,7 @@ func Test_NeedsRollingUpdate(t *testing.T) {
 				Spec: &api.AddonSpec{
 					Name:               fi.PtrTo("test"),
 					ManifestHash:       "newHash",
-					NeedsRollingUpdate: "all",
+					NeedsRollingUpdate: api.NeedsRollingUpdateAll,
 				},
 			},
 			originalAnnotations: map[string]string{

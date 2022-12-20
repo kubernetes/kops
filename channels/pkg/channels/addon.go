@@ -233,9 +233,9 @@ func (a *Addon) patchNeedsUpdateLabel(ctx context.Context, k8sClient kubernetes.
 	klog.Infof("addon %v wants to update %v nodes", a.Name, a.Spec.NeedsRollingUpdate)
 	selector := ""
 	switch a.Spec.NeedsRollingUpdate {
-	case "control-plane":
+	case api.NeedsRollingUpdateControlPlane:
 		selector = "node-role.kubernetes.io/master="
-	case "worker":
+	case api.NeedsRollingUpdateWorkers:
 		selector = "node-role.kubernetes.io/node="
 	}
 
