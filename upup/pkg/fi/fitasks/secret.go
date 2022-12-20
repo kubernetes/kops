@@ -36,7 +36,7 @@ func (e *Secret) CheckExisting(c *fi.CloudupContext) bool {
 }
 
 func (e *Secret) Find(c *fi.CloudupContext) (*Secret, error) {
-	secrets := c.SecretStore
+	secrets := c.T.SecretStore
 
 	name := fi.ValueOf(e.Name)
 	if name == "" {
@@ -80,7 +80,7 @@ func (_ *Secret) Render(c *fi.CloudupContext, a, e, changes *Secret) error {
 		return fi.RequiredField("Name")
 	}
 
-	secrets := c.SecretStore
+	secrets := c.T.SecretStore
 
 	secret, err := fi.CreateSecret()
 	if err != nil {
