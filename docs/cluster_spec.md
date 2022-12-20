@@ -1579,7 +1579,7 @@ the removal of fields no longer in use.
 | additionalSans                                         | api.additionalSANs                                             |
 | api.loadBalancer.subnets.allocationId                  | api.loadBalancer.subnets.allocationID                          |
 | api.loadBalancer.useForInternalApi                     | api.loadBalancer.useForInternalAPI                             |
-| awsLoadBalancerController                              | cloudprovider.aws.loadBalancerController                       |
+| awsLoadBalancerController                              | cloudProvider.aws.loadBalancerController                       |
 | cloudConfig.awsEBSCSIDriver                            | cloudProvider.aws.ebsCSIDriver                                 |
 | cloudConfig.azure                                      | cloudProvider.azure                                            |
 | cloudConfig.azure.subscriptionId                       | cloudProvider.azure.subscriptionID                             |
