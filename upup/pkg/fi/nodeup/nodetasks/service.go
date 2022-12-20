@@ -26,7 +26,6 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/install"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/util/pkg/distributions"
@@ -416,28 +415,6 @@ func (s *Service) RenderLocal(_ *local.LocalTarget, a, e, changes *Service) erro
 		if err != nil {
 			return fmt.Errorf("error doing 'systemctl %v': %v\nOutput: %s", args, err, output)
 		}
-	}
-
-	return nil
-}
-
-func (_ *Service) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *Service) error {
-	systemdSystemPath, err := e.systemdSystemPath()
-	if err != nil {
-		return err
-	}
-
-	serviceName := e.Name
-
-	servicePath := path.Join(systemdSystemPath, serviceName)
-	err = t.WriteFile(servicePath, fi.NewStringResource(*e.Definition), 0o644, 0o755)
-	if err != nil {
-		return err
-	}
-
-	if fi.ValueOf(e.ManageState) {
-		t.AddCommand(cloudinit.Once, "systemctl", "daemon-reload")
-		t.AddCommand(cloudinit.Once, "systemctl", "start", "--no-block", serviceName)
 	}
 
 	return nil

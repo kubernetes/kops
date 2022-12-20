@@ -22,7 +22,6 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 )
 
@@ -79,8 +78,4 @@ func (e *Chattr) execute(t Executor) error {
 	}
 
 	return nil
-}
-
-func (_ *Chattr) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *Chattr) error {
-	return fmt.Errorf("Chattr::RenderCloudInit not implemented")
 }
