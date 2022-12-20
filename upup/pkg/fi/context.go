@@ -46,10 +46,11 @@ type Context[T SubContext] struct {
 }
 
 type CloudupContext = Context[CloudupSubContext]
+type InstallContext = Context[InstallSubContext]
 type NodeupContext = Context[NodeupSubContext]
 
 type SubContext interface {
-	CloudupSubContext | NodeupSubContext
+	CloudupSubContext | InstallSubContext | NodeupSubContext
 }
 
 type CloudupSubContext struct {
@@ -57,6 +58,7 @@ type CloudupSubContext struct {
 	// TODO: Few places use this. They could instead get it from the cluster spec.
 	ClusterConfigBase vfs.Path
 }
+type InstallSubContext struct{}
 type NodeupSubContext struct{}
 
 func (c *Context[T]) Context() context.Context {
@@ -84,6 +86,10 @@ func newContext[T SubContext](ctx context.Context, target Target[T], cluster *ko
 	return c, nil
 }
 
+func NewInstallContext(ctx context.Context, target InstallTarget, tasks map[string]InstallTask) (*InstallContext, error) {
+	sub := InstallSubContext{}
+	return newContext[InstallSubContext](ctx, target, nil, nil, nil, true, sub, tasks)
+}
 func NewNodeupContext(ctx context.Context, target NodeupTarget, cluster *kops.Cluster, keystore Keystore, secretStore SecretStore, checkExisting bool, tasks map[string]NodeupTask) (*NodeupContext, error) {
 	sub := NodeupSubContext{}
 	return newContext[NodeupSubContext](ctx, target, cluster, keystore, secretStore, checkExisting, sub, tasks)
