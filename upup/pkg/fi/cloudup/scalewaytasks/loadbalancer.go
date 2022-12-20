@@ -159,7 +159,6 @@ func (l *LoadBalancer) RenderScw(t *scaleway.ScwAPITarget, actual, expected, cha
 		Name:   fi.ValueOf(expected.Name),
 		IPID:   nil,
 		Tags:   expected.Tags,
-		//Type:  expected.Type,
 	})
 	if err != nil {
 		return err
