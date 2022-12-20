@@ -340,7 +340,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 				Name:               fi.PtrTo(key),
 				Selector:           map[string]string{"k8s-addon": key},
 				Manifest:           fi.PtrTo(location),
-				NeedsRollingUpdate: "control-plane",
+				NeedsRollingUpdate: channelsapi.NeedsRollingUpdateControlPlane,
 				Id:                 id,
 			})
 		}
@@ -1057,7 +1057,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 				Selector:           networkingSelector(),
 				Manifest:           fi.PtrTo(location),
 				Id:                 id,
-				NeedsRollingUpdate: "all",
+				NeedsRollingUpdate: channelsapi.NeedsRollingUpdateAll,
 			})
 		}
 	}
