@@ -27,7 +27,6 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/install"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 )
@@ -309,40 +308,6 @@ func (_ *File) RenderLocal(_ *local.LocalTarget, a, e, changes *File) error {
 				return fmt.Errorf("error executing command %q: %v\nOutput: %s", human, err, output)
 			}
 		}
-	}
-
-	return nil
-}
-
-func (_ *File) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *File) error {
-	dirMode := os.FileMode(0o755)
-	fileMode, err := fi.ParseFileMode(fi.ValueOf(e.Mode), 0o644)
-	if err != nil {
-		return fmt.Errorf("invalid file mode for %s: %q", e.Path, *e.Mode)
-	}
-
-	if e.Type == FileType_Symlink {
-		t.AddCommand(cloudinit.Always, "ln", "-s", fi.ValueOf(e.Symlink), e.Path)
-	} else if e.Type == FileType_Directory {
-		parent := filepath.Dir(strings.TrimSuffix(e.Path, "/"))
-		t.AddCommand(cloudinit.Once, "mkdir", "-p", "-m", fi.FileModeToString(dirMode), parent)
-		t.AddCommand(cloudinit.Once, "mkdir", "-m", fi.FileModeToString(dirMode), e.Path)
-	} else if e.Type == FileType_File {
-		err = t.WriteFile(e.Path, e.Contents, fileMode, dirMode)
-		if err != nil {
-			return err
-		}
-	} else {
-		return fmt.Errorf("File type=%q not valid/supported", e.Type)
-	}
-
-	if e.Owner != nil || e.Group != nil {
-		t.Chown(e.Path, fi.ValueOf(e.Owner), fi.ValueOf(e.Group))
-	}
-
-	if e.OnChangeExecute != nil {
-		return fmt.Errorf("OnChangeExecute not supported with CloudInit")
-		// t.AddCommand(cloudinit.Always, e.OnChangeExecute...)
 	}
 
 	return nil

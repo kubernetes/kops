@@ -28,7 +28,6 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/util/pkg/distributions"
 	"k8s.io/kops/util/pkg/hashing"
@@ -373,27 +372,6 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 		if !reflect.DeepEqual(changes, &Package{}) {
 			klog.Warningf("cannot apply package changes for %q: %+v", e.Name, changes)
 		}
-	}
-
-	return nil
-}
-
-func (_ *Package) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *Package) error {
-	packageName := e.Name
-	if e.Source != nil {
-		localFile := path.Join(localPackageDir, packageName)
-		t.AddMkdirpCommand(localPackageDir, 0o755)
-
-		url := *e.Source
-		t.AddDownloadCommand(cloudinit.Always, url, localFile)
-
-		t.AddCommand(cloudinit.Always, "dpkg", "-i", localFile)
-	} else {
-		packageSpec := packageName
-		if e.Version != nil {
-			packageSpec += " " + *e.Version
-		}
-		t.Config.Packages = append(t.Config.Packages, packageSpec)
 	}
 
 	return nil
