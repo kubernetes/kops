@@ -74,7 +74,7 @@ func (e *Keypair) Find(c *fi.CloudupContext) (*Keypair, error) {
 		return nil, nil
 	}
 
-	keyset, err := c.Keystore.FindKeyset(name)
+	keyset, err := c.T.Keystore.FindKeyset(name)
 	if err != nil {
 		return nil, err
 	}
@@ -193,7 +193,7 @@ func (_ *Keypair) Render(c *fi.CloudupContext, a, e, changes *Keypair) error {
 	if createCertificate {
 		klog.V(2).Infof("Creating PKI keypair %q", name)
 
-		keyset, err := c.Keystore.FindKeyset(name)
+		keyset, err := c.T.Keystore.FindKeyset(name)
 		if err != nil {
 			return err
 		}
@@ -240,7 +240,7 @@ func (_ *Keypair) Render(c *fi.CloudupContext, a, e, changes *Keypair) error {
 			PrivateKey:     privateKey,
 			Serial:         serial,
 		}
-		cert, privateKey, _, err := pki.IssueCert(&req, c.Keystore)
+		cert, privateKey, _, err := pki.IssueCert(&req, c.T.Keystore)
 		if err != nil {
 			return err
 		}
@@ -255,7 +255,7 @@ func (_ *Keypair) Render(c *fi.CloudupContext, a, e, changes *Keypair) error {
 		keyset.LegacyFormat = false
 		keyset.Items[ki.Id] = ki
 		keyset.Primary = ki
-		err = c.Keystore.StoreKeyset(name, keyset)
+		err = c.T.Keystore.StoreKeyset(name, keyset)
 		if err != nil {
 			return err
 		}
@@ -265,7 +265,7 @@ func (_ *Keypair) Render(c *fi.CloudupContext, a, e, changes *Keypair) error {
 		}
 
 		// Make double-sure it round-trips
-		_, err = c.Keystore.FindKeyset(name)
+		_, err = c.T.Keystore.FindKeyset(name)
 		if err != nil {
 			return err
 		}
@@ -278,12 +278,12 @@ func (_ *Keypair) Render(c *fi.CloudupContext, a, e, changes *Keypair) error {
 	if changeStoredFormat {
 		// We fetch and reinsert the same keypair, forcing an update to our preferred format
 		// TODO: We're assuming that we want to save in the preferred format
-		keyset, err := c.Keystore.FindKeyset(name)
+		keyset, err := c.T.Keystore.FindKeyset(name)
 		if err != nil {
 			return err
 		}
 		keyset.LegacyFormat = false
-		err = c.Keystore.StoreKeyset(name, keyset)
+		err = c.T.Keystore.StoreKeyset(name, keyset)
 		if err != nil {
 			return err
 		}
