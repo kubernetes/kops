@@ -44,7 +44,7 @@ var _ fi.CloudupModelBuilder = &NetworkModelBuilder{}
 
 func (b *StorageAclBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	if featureflag.GoogleCloudBucketACL.Enabled() {
-		if b.Cluster.Spec.CloudConfig.GCEServiceAccount == "" {
+		if b.Cluster.Spec.CloudProvider.GCE.ServiceAccount == "" {
 			return fmt.Errorf("featureflag GoogleCloudBucketACL not supported with per-instancegroup GCEServiceAccount")
 		}
 
@@ -114,7 +114,7 @@ func (b *StorageAclBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		return nil
 	}
 
-	if b.Cluster.Spec.CloudConfig.GCEServiceAccount != "" {
+	if b.Cluster.Spec.CloudProvider.GCE.ServiceAccount != "" {
 		// We can't set up per-instancegroup permissions if we're using a cluster-level account
 		// Historically, we did not grant the serviceaccount permissions in this case.
 		return nil

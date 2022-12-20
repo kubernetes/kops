@@ -865,6 +865,7 @@ type CloudConfiguration struct {
 	// NodeIPFamilies controls the IP families reported for each node (AWS only).
 	NodeIPFamilies []string `json:"nodeIPFamilies,omitempty"`
 	// GCEServiceAccount specifies the service account with which the GCE VM runs
+	// +k8s:conversion-gen=false
 	GCEServiceAccount string `json:"gceServiceAccount,omitempty"`
 	// AWS cloud-config options
 	DisableSecurityGroupIngress *bool   `json:"disableSecurityGroupIngress,omitempty"`
@@ -903,7 +904,8 @@ type CloudConfiguration struct {
 	// +k8s:conversion-gen=false
 	AWSEBSCSIDriver *EBSCSIDriverSpec `json:"awsEBSCSIDriver,omitempty"`
 	// GCPPDCSIDriver is the config for the GCP PD CSI driver
-	GCPPDCSIDriver *GCPPDCSIDriver `json:"gcpPDCSIDriver,omitempty"`
+	// +k8s:conversion-gen=false
+	GCPPDCSIDriver *PDCSIDriver `json:"gcpPDCSIDriver,omitempty"`
 }
 
 // EBSCSIDriverSpec is the config for the AWS EBS CSI driver
@@ -931,8 +933,8 @@ type EBSCSIDriverSpec struct {
 	PodAnnotations map[string]string `json:"podAnnotations,omitempty"`
 }
 
-// GCPPDCSIDriver is the config for the GCP PD CSI driver
-type GCPPDCSIDriver struct {
+// PDCSIDriver is the config for the GCP PD CSI driver
+type PDCSIDriver struct {
 	// Enabled enables the GCP PD CSI driver
 	Enabled *bool `json:"enabled,omitempty"`
 }

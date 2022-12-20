@@ -2,7 +2,7 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: standard
-{{ if or (eq .CloudConfig.GCPPDCSIDriver nil) (not (WithDefaultBool .CloudConfig.GCPPDCSIDriver.Enabled false))}}
+{{ if or (eq .CloudProvider.GCE.PDCSIDriver nil) (not (WithDefaultBool .CloudProvider.GCE.PDCSIDriver.Enabled false))}}
   annotations:
     storageclass.kubernetes.io/is-default-class: "true"
 {{ end }}

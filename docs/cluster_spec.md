@@ -1584,6 +1584,8 @@ the removal of fields no longer in use.
 | cloudConfig.azure                                      | cloudProvider.azure                                            |
 | cloudConfig.azure.subscriptionId                       | cloudProvider.azure.subscriptionID                             |
 | cloudConfig.azure.tenantId                             | cloudProvider.azure.tenantID                                   |
+| cloudConfig.gcpPDCSIDriver                             | cloudProvider.gce.pdCSIDriver                                  |
+| cloudConfig.gceServiceAccount                          | cloudProvider.gce.serviceAccount                               |
 | cloudConfig.openstack                                  | cloudProvider.openstack                                        |
 | cloudProvider (string)                                 | cloudProvider (map)                                            |
 | DisableSubnetTags                                      | tagSubnets (value inverted)                                    |

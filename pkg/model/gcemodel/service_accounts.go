@@ -33,10 +33,10 @@ type ServiceAccountsBuilder struct {
 var _ fi.CloudupModelBuilder = &ServiceAccountsBuilder{}
 
 func (b *ServiceAccountsBuilder) Build(c *fi.CloudupModelBuilderContext) error {
-	if b.Cluster.Spec.CloudConfig.GCEServiceAccount != "" {
+	if b.Cluster.Spec.CloudProvider.GCE.ServiceAccount != "" {
 		serviceAccount := &gcetasks.ServiceAccount{
 			Name:      s("shared"),
-			Email:     &b.Cluster.Spec.CloudConfig.GCEServiceAccount,
+			Email:     &b.Cluster.Spec.CloudProvider.GCE.ServiceAccount,
 			Shared:    fi.PtrTo(true),
 			Lifecycle: b.Lifecycle,
 		}

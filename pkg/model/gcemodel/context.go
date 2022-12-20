@@ -142,12 +142,12 @@ func (c *GCEModelContext) NetworkingIsGCERoutes() bool {
 
 // LinkToServiceAccount returns a link to the GCE ServiceAccount object for VMs in the given role
 func (c *GCEModelContext) LinkToServiceAccount(ig *kops.InstanceGroup) *gcetasks.ServiceAccount {
-	if c.Cluster.Spec.CloudConfig.GCEServiceAccount != "" {
+	if c.Cluster.Spec.CloudProvider.GCE.ServiceAccount != "" {
 		// This is a legacy setting because the nodes & control-plane run under the same serviceaccount
-		klog.Warningf("using legacy spec.cloudConfig.gceServiceAccount=%q setting", c.Cluster.Spec.CloudConfig.GCEServiceAccount)
+		klog.Warningf("using legacy spec.cloudProvider.gce.serviceAccount=%q setting", c.Cluster.Spec.CloudProvider.GCE.ServiceAccount)
 		return &gcetasks.ServiceAccount{
 			Name:   s("shared"),
-			Email:  &c.Cluster.Spec.CloudConfig.GCEServiceAccount,
+			Email:  &c.Cluster.Spec.CloudProvider.GCE.ServiceAccount,
 			Shared: fi.PtrTo(true),
 		}
 	}
