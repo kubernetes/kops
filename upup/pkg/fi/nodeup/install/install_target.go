@@ -36,6 +36,10 @@ func (t *InstallTarget) ProcessDeletions() bool {
 	return true
 }
 
+func (t *InstallTarget) DefaultCheckExisting() bool {
+	return true
+}
+
 // CombinedOutput is a helper function that executes a command, returning stdout & stderr combined
 func (t *InstallTarget) CombinedOutput(args []string) ([]byte, error) {
 	c := exec.Command(args[0], args[1:]...)

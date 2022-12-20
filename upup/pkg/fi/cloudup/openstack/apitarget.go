@@ -39,3 +39,7 @@ func (t *OpenstackAPITarget) Finish(taskMap map[string]fi.CloudupTask) error {
 func (t *OpenstackAPITarget) ProcessDeletions() bool {
 	return true
 }
+
+func (t *OpenstackAPITarget) DefaultCheckExisting() bool {
+	return true
+}

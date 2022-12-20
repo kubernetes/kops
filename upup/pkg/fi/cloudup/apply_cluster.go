@@ -396,8 +396,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		return err
 	}
 
-	checkExisting := true
-
 	project := ""
 
 	var sshPublicKeys [][]byte
@@ -729,7 +727,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		}
 
 	case TargetTerraform:
-		checkExisting = false
 		outDir := c.OutDir
 		var vfsProvider *vfs.TerraformProvider
 		if tfPath, ok := configBase.(vfs.TerraformPath); ok && featureflag.TerraformManagedFiles.Enabled() {
@@ -776,14 +773,14 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	}
 	c.Target = target
 
-	if checkExisting {
+	if target.DefaultCheckExisting() {
 		c.TaskMap, err = l.FindDeletions(cloud, c.LifecycleOverrides)
 		if err != nil {
 			return fmt.Errorf("error finding deletions: %w", err)
 		}
 	}
 
-	context, err := fi.NewCloudupContext(ctx, target, cluster, cloud, keyStore, secretStore, configBase, checkExisting, c.TaskMap)
+	context, err := fi.NewCloudupContext(ctx, target, cluster, cloud, keyStore, secretStore, configBase, c.TaskMap)
 	if err != nil {
 		return fmt.Errorf("error building context: %v", err)
 	}

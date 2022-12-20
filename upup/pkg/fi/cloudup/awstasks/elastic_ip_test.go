@@ -81,7 +81,7 @@ func TestElasticIPCreate(t *testing.T) {
 			Cloud: cloud,
 		}
 
-		context, err := fi.NewCloudupContext(ctx, target, nil, cloud, nil, nil, nil, true, allTasks)
+		context, err := fi.NewCloudupContext(ctx, target, nil, cloud, nil, nil, nil, allTasks)
 		if err != nil {
 			t.Fatalf("error building context: %v", err)
 		}
@@ -129,7 +129,7 @@ func checkNoChanges(t *testing.T, ctx context.Context, cloud fi.Cloud, allTasks 
 	}
 	assetBuilder := assets.NewAssetBuilder(cluster, false)
 	target := fi.NewCloudupDryRunTarget(assetBuilder, os.Stderr)
-	context, err := fi.NewCloudupContext(ctx, target, nil, cloud, nil, nil, nil, true, allTasks)
+	context, err := fi.NewCloudupContext(ctx, target, nil, cloud, nil, nil, nil, allTasks)
 	if err != nil {
 		t.Fatalf("error building context: %v", err)
 	}
