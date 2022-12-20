@@ -14,9 +14,13 @@ spec:
   authorization:
     alwaysAllow: {}
   channel: stable
+  cloudConfig: {}
   cloudProvider:
     gce:
+      pdCSIDriver:
+        enabled: true
       project: testProject
+      serviceAccount: gce-sa
   configBase: memfs://clusters.example.com/minimal.example.com
   etcdClusters:
   - cpuRequest: 200m
