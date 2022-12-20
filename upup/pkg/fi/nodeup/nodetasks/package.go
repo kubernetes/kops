@@ -197,10 +197,7 @@ func (e *Package) findDpkg(c *fi.NodeupContext) (*Package, error) {
 		}
 	}
 
-	// TODO: Take InstanceGroup-level overriding of the Cluster-level update policy into account
-	// here. Doing so requires that we make the current InstanceGroup available within Package's
-	// methods.
-	if fi.ValueOf(c.Cluster.Spec.UpdatePolicy) != kops.UpdatePolicyExternal || !installed {
+	if c.T.NodeupConfig.UpdatePolicy != kops.UpdatePolicyExternal || !installed {
 		return nil, nil
 	}
 
@@ -248,10 +245,7 @@ func (e *Package) findYum(c *fi.NodeupContext) (*Package, error) {
 		healthy = fi.PtrTo(true)
 	}
 
-	// TODO: Take InstanceGroup-level overriding of the Cluster-level update policy into account
-	// here. Doing so requires that we make the current InstanceGroup available within Package's
-	// methods.
-	if fi.ValueOf(c.Cluster.Spec.UpdatePolicy) != kops.UpdatePolicyExternal || !installed {
+	if c.T.NodeupConfig.UpdatePolicy != kops.UpdatePolicyExternal || !installed {
 		return nil, nil
 	}
 

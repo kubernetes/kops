@@ -26,6 +26,7 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -33,7 +34,6 @@ type Context[T SubContext] struct {
 	ctx context.Context
 
 	Target      Target[T]
-	Cluster     *kops.Cluster
 	Keystore    Keystore
 	SecretStore SecretStore
 
@@ -54,12 +54,16 @@ type SubContext interface {
 }
 
 type CloudupSubContext struct {
-	Cloud Cloud
+	Cloud   Cloud
+	Cluster *kops.Cluster
 	// TODO: Few places use this. They could instead get it from the cluster spec.
 	ClusterConfigBase vfs.Path
 }
 type InstallSubContext struct{}
-type NodeupSubContext struct{}
+type NodeupSubContext struct {
+	BootConfig   *nodeup.BootConfig
+	NodeupConfig *nodeup.Config
+}
 
 func (c *Context[T]) Context() context.Context {
 	return c.ctx
@@ -71,10 +75,9 @@ type Warning[T SubContext] struct {
 	Message string
 }
 
-func newContext[T SubContext](ctx context.Context, target Target[T], cluster *kops.Cluster, keystore Keystore, secretStore SecretStore, checkExisting bool, sub T, tasks map[string]Task[T]) (*Context[T], error) {
+func newContext[T SubContext](ctx context.Context, target Target[T], keystore Keystore, secretStore SecretStore, checkExisting bool, sub T, tasks map[string]Task[T]) (*Context[T], error) {
 	c := &Context[T]{
 		ctx:           ctx,
-		Cluster:       cluster,
 		Target:        target,
 		Keystore:      keystore,
 		SecretStore:   secretStore,
@@ -88,19 +91,23 @@ func newContext[T SubContext](ctx context.Context, target Target[T], cluster *ko
 
 func NewInstallContext(ctx context.Context, target InstallTarget, tasks map[string]InstallTask) (*InstallContext, error) {
 	sub := InstallSubContext{}
-	return newContext[InstallSubContext](ctx, target, nil, nil, nil, true, sub, tasks)
+	return newContext[InstallSubContext](ctx, target, nil, nil, true, sub, tasks)
 }
-func NewNodeupContext(ctx context.Context, target NodeupTarget, cluster *kops.Cluster, keystore Keystore, secretStore SecretStore, checkExisting bool, tasks map[string]NodeupTask) (*NodeupContext, error) {
-	sub := NodeupSubContext{}
-	return newContext[NodeupSubContext](ctx, target, cluster, keystore, secretStore, checkExisting, sub, tasks)
+func NewNodeupContext(ctx context.Context, target NodeupTarget, keystore Keystore, secretStore SecretStore, checkExisting bool, bootConfig *nodeup.BootConfig, nodeupConfig *nodeup.Config, tasks map[string]NodeupTask) (*NodeupContext, error) {
+	sub := NodeupSubContext{
+		BootConfig:   bootConfig,
+		NodeupConfig: nodeupConfig,
+	}
+	return newContext[NodeupSubContext](ctx, target, keystore, secretStore, checkExisting, sub, tasks)
 }
 
 func NewCloudupContext(ctx context.Context, target CloudupTarget, cluster *kops.Cluster, cloud Cloud, keystore Keystore, secretStore SecretStore, clusterConfigBase vfs.Path, checkExisting bool, tasks map[string]CloudupTask) (*CloudupContext, error) {
 	sub := CloudupSubContext{
 		Cloud:             cloud,
+		Cluster:           cluster,
 		ClusterConfigBase: clusterConfigBase,
 	}
-	return newContext[CloudupSubContext](ctx, target, cluster, keystore, secretStore, checkExisting, sub, tasks)
+	return newContext[CloudupSubContext](ctx, target, keystore, secretStore, checkExisting, sub, tasks)
 }
 
 func (c *Context[T]) AllTasks() map[string]Task[T] {
