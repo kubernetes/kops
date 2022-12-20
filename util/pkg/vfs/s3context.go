@@ -17,6 +17,7 @@ limitations under the License.
 package vfs
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -130,7 +131,7 @@ func getCustomS3Config(endpoint string, region string) (*aws.Config, error) {
 	return s3Config, nil
 }
 
-func (s *S3Context) getDetailsForBucket(bucket string) (*S3BucketDetails, error) {
+func (s *S3Context) getDetailsForBucket(ctx context.Context, bucket string) (*S3BucketDetails, error) {
 	s.mutex.Lock()
 	bucketDetails := s.bucketDetails[bucket]
 	s.mutex.Unlock()
@@ -189,12 +190,12 @@ func (s *S3Context) getDetailsForBucket(bucket string) (*S3BucketDetails, error)
 		return bucketDetails, fmt.Errorf("error connecting to S3: %s", err)
 	}
 	// Attempt one GetBucketLocation call the "normal" way (i.e. as the bucket owner)
-	response, err = s3Client.GetBucketLocation(request)
+	response, err = s3Client.GetBucketLocationWithContext(ctx, request)
 
 	// and fallback to brute-forcing if it fails
 	if err != nil {
 		klog.V(2).Infof("unable to get bucket location from region %q; scanning all regions: %v", awsRegion, err)
-		response, err = bruteforceBucketLocation(&awsRegion, request)
+		response, err = bruteforceBucketLocation(ctx, &awsRegion, request)
 	}
 
 	if err != nil {
@@ -221,7 +222,7 @@ func (s *S3Context) getDetailsForBucket(bucket string) (*S3BucketDetails, error)
 	return bucketDetails, nil
 }
 
-func (b *S3BucketDetails) hasServerSideEncryptionByDefault() bool {
+func (b *S3BucketDetails) hasServerSideEncryptionByDefault(ctx context.Context) bool {
 	b.mutex.Lock()
 	defer b.mutex.Unlock()
 
@@ -247,7 +248,7 @@ func (b *S3BucketDetails) hasServerSideEncryptionByDefault() bool {
 
 	klog.V(8).Infof("Calling S3 GetBucketEncryption Bucket=%q", b.name)
 
-	result, err := client.GetBucketEncryption(request)
+	result, err := client.GetBucketEncryptionWithContext(ctx, request)
 	if err != nil {
 		// the following cases might lead to the operation failing:
 		// 1. A deny policy on s3:GetEncryptionConfiguration
@@ -282,7 +283,7 @@ out the first result.
 
 See also: https://docs.aws.amazon.com/goto/WebAPI/s3-2006-03-01/GetBucketLocationRequest
 */
-func bruteforceBucketLocation(region *string, request *s3.GetBucketLocationInput) (*s3.GetBucketLocationOutput, error) {
+func bruteforceBucketLocation(ctx context.Context, region *string, request *s3.GetBucketLocationInput) (*s3.GetBucketLocationOutput, error) {
 	config := &aws.Config{Region: region}
 	config = config.WithCredentialsChainVerboseErrors(true)
 
@@ -306,7 +307,7 @@ func bruteforceBucketLocation(region *string, request *s3.GetBucketLocationInput
 		go func(regionName string) {
 			klog.V(8).Infof("Doing GetBucketLocation in %q", regionName)
 			s3Client := s3.New(session, &aws.Config{Region: aws.String(regionName)})
-			result, bucketError := s3Client.GetBucketLocation(request)
+			result, bucketError := s3Client.GetBucketLocationWithContext(ctx, request)
 			if bucketError == nil {
 				klog.V(8).Infof("GetBucketLocation succeeded in %q", regionName)
 				out <- result
