@@ -17,6 +17,7 @@ limitations under the License.
 package gce
 
 import (
+	"context"
 	"fmt"
 
 	storage "google.golang.org/api/storage/v1"
@@ -35,6 +36,8 @@ var _ acls.ACLStrategy = &gcsAclStrategy{}
 
 // GetACL returns the ACL to use if this is a google cloud storage path
 func (s *gcsAclStrategy) GetACL(p vfs.Path, cluster *kops.Cluster) (vfs.ACL, error) {
+	ctx := context.TODO()
+
 	if cluster.Spec.GetCloudProvider() != kops.CloudProviderGCE {
 		return nil, nil
 	}
@@ -44,10 +47,13 @@ func (s *gcsAclStrategy) GetACL(p vfs.Path, cluster *kops.Cluster) (vfs.ACL, err
 	}
 
 	bucketName := gcsPath.Bucket()
-	client := gcsPath.Client()
+	client, err := gcsPath.Client(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	// TODO: Cache?
-	bucket, err := client.Buckets.Get(bucketName).Do()
+	bucket, err := client.Buckets.Get(bucketName).Context(ctx).Do()
 	if err != nil {
 		return nil, fmt.Errorf("error querying bucket %q: %v", bucketName, err)
 	}
