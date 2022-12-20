@@ -23,6 +23,7 @@ import (
 
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/errors"
@@ -56,6 +57,7 @@ type ScwCloud interface {
 
 	IamService() *iam.API
 	InstanceService() *instance.API
+	LBService() *lb.API
 
 	DeleteGroup(group *cloudinstances.CloudInstanceGroup) error
 	DeleteInstance(i *cloudinstances.CloudInstance) error
@@ -87,6 +89,7 @@ type scwCloudImplementation struct {
 
 	iamAPI      *iam.API
 	instanceAPI *instance.API
+	lbAPI       *lb.API
 }
 
 // NewScwCloud returns a Cloud with a Scaleway Client using the env vars SCW_ACCESS_KEY, SCW_SECRET_KEY and SCW_DEFAULT_PROJECT_ID
@@ -135,6 +138,7 @@ func NewScwCloud(tags map[string]string) (ScwCloud, error) {
 		tags:        tags,
 		iamAPI:      iam.NewAPI(scwClient),
 		instanceAPI: instance.NewAPI(scwClient),
+		lbAPI:       lb.NewAPI(scwClient),
 	}, nil
 }
 
@@ -172,6 +176,10 @@ func (s *scwCloudImplementation) InstanceService() *instance.API {
 	return s.instanceAPI
 }
 
+func (s *scwCloudImplementation) LBService() *lb.API {
+	return s.lbAPI
+}
+
 func (s *scwCloudImplementation) DeleteGroup(group *cloudinstances.CloudInstanceGroup) error {
 	toDelete := append(group.NeedUpdate, group.Ready...)
 	for _, cloudInstance := range toDelete {
@@ -205,8 +213,44 @@ func (s *scwCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstance)
 }
 
 func (s *scwCloudImplementation) DeregisterInstance(i *cloudinstances.CloudInstance) error {
-	klog.V(8).Infof("Scaleway DeregisterInstance is not implemented yet")
-	return fmt.Errorf("DeregisterInstance is not implemented yet for Scaleway")
+	server, err := s.instanceAPI.GetServer(&instance.GetServerRequest{
+		Zone:     s.zone,
+		ServerID: i.ID,
+	})
+	if err != nil {
+		return fmt.Errorf("error deregistering cloud instance %s of group %q: %w", i.ID, i.CloudInstanceGroup.HumanName, err)
+	}
+
+	// We remove the instance's IP from load-balancers
+	lbs, err := s.GetClusterLoadBalancers(s.ClusterName(server.Server.Tags))
+	if err != nil {
+		return fmt.Errorf("error deregistering cloud instance %s of group %q: %w", i.ID, i.CloudInstanceGroup.HumanName, err)
+	}
+	for _, loadBalancer := range lbs {
+		backEnds, err := s.lbAPI.ListBackends(&lb.ListBackendsRequest{
+			Region: s.region,
+			LBID:   loadBalancer.ID,
+		}, scw.WithAllPages())
+		if err != nil {
+			return fmt.Errorf("eerror deregistering cloud instance %s of group %q: error listing load-balancer's back-ends for instance creation: %w", i.ID, i.CloudInstanceGroup.HumanName, err)
+		}
+		for _, backEnd := range backEnds.Backends {
+			for _, serverIP := range backEnd.Pool {
+				if serverIP == fi.ValueOf(server.Server.PrivateIP) {
+					_, err := s.lbAPI.RemoveBackendServers(&lb.RemoveBackendServersRequest{
+						Region:    s.region,
+						BackendID: backEnd.ID,
+						ServerIP:  []string{serverIP},
+					})
+					if err != nil {
+						return fmt.Errorf("error deregistering cloud instance %s of group %q: error removing IP from lb: %w", i.ID, i.CloudInstanceGroup.HumanName, err)
+					}
+				}
+			}
+		}
+	}
+
+	return nil
 }
 
 func (s *scwCloudImplementation) DetachInstance(i *cloudinstances.CloudInstance) error {
@@ -227,8 +271,31 @@ func (s *scwCloudImplementation) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 }
 
 func (s *scwCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
-	klog.V(8).Info("Scaleway clusters don't have load-balancers yet so GetApiIngressStatus is not implemented")
-	return nil, nil
+	var ingresses []fi.ApiIngressStatus
+	name := "api." + cluster.Name
+
+	responseLoadBalancers, err := s.lbAPI.ListLBs(&lb.ListLBsRequest{
+		Region: scw.Region(s.Region()),
+		Name:   &name,
+	}, scw.WithAllPages())
+	if err != nil {
+		return nil, fmt.Errorf("error finding load-balancers: %w", err)
+	}
+	if len(responseLoadBalancers.LBs) == 0 {
+		klog.V(8).Infof("could not find any load-balancers for cluster %s", cluster.Name)
+		return nil, nil
+	}
+	if len(responseLoadBalancers.LBs) > 1 {
+		klog.V(4).Infof("more than 1 load-balancer with the name %s was found", name)
+	}
+
+	for _, loadBalancer := range responseLoadBalancers.LBs {
+		for _, lbIP := range loadBalancer.IP {
+			ingresses = append(ingresses, fi.ApiIngressStatus{IP: lbIP.IPAddress})
+		}
+	}
+
+	return ingresses, nil
 }
 
 func (s *scwCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
