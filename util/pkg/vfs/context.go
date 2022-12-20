@@ -52,7 +52,8 @@ type vfsContextState struct {
 	memfsContext *MemFSContext
 
 	// The google cloud storage client, if initialized
-	gcsClient *storage.Service
+	cachedGCSClient *storage.Service
+
 	// swiftClient is the openstack swift client
 	swiftClient *gophercloud.ServiceClient
 
@@ -78,7 +79,7 @@ func (v *VFSContext) WithGCSClient(gcsClient *storage.Service) *VFSContext {
 	v2 := &VFSContext{
 		vfsContextState: v.vfsContextState,
 	}
-	v2.gcsClient = gcsClient
+	v2.cachedGCSClient = gcsClient
 	return v2
 }
 
@@ -176,6 +177,9 @@ func (c *VFSContext) ReadFile(location string, options ...VFSOption) ([]byte, er
 }
 
 func (c *VFSContext) BuildVfsPath(p string) (Path, error) {
+	// NOTE: we do not want this function to take a context.Context, we consider this a "builder".
+	// Instead, we are aiming to defer creation of clients to the first "real" operation (read/write/etc)
+
 	if !strings.Contains(p, "://") {
 		return NewFSPath(p), nil
 	}
@@ -409,34 +413,28 @@ func (c *VFSContext) buildGCSPath(p string) (*GSPath, error) {
 
 	bucket := strings.TrimSuffix(u.Host, "/")
 
-	gcsClient, err := c.getGCSClient()
-	if err != nil {
-		return nil, err
-	}
-
-	gcsPath := NewGSPath(gcsClient, bucket, u.Path)
+	gcsPath := NewGSPath(c, bucket, u.Path)
 	return gcsPath, nil
 }
 
 // getGCSClient returns the google storage.Service client, caching it for future calls
-func (c *VFSContext) getGCSClient() (*storage.Service, error) {
+func (c *VFSContext) getGCSClient(ctx context.Context) (*storage.Service, error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
-	if c.gcsClient != nil {
-		return c.gcsClient, nil
+	if c.cachedGCSClient != nil {
+		return c.cachedGCSClient, nil
 	}
 
 	// TODO: Should we fall back to read-only?
 	scope := storage.DevstorageReadWriteScope
 
-	ctx := context.Background()
 	gcsClient, err := storage.NewService(ctx, option.WithScopes(scope))
 	if err != nil {
 		return nil, fmt.Errorf("error building GCS client: %v", err)
 	}
 
-	c.gcsClient = gcsClient
+	c.cachedGCSClient = gcsClient
 	return gcsClient, nil
 }
 
