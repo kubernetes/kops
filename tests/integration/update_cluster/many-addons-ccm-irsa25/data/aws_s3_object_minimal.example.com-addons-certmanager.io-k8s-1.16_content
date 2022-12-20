@@ -8,21 +8,9 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: certificaterequests.cert-manager.io
 spec:
-  conversion:
-    strategy: Webhook
-    webhook:
-      clientConfig:
-        caBundle: ""
-        service:
-          name: cert-manager-webhook
-          namespace: kube-system
-          path: /convert
-          port: 443
-      conversionReviewVersions:
-      - v1beta1
   group: cert-manager.io
   names:
     categories:
@@ -151,15 +139,15 @@ spec:
                   the CSR spec Defaults to `digital signature` and `key encipherment`
                   if not specified.
                 items:
-                  description: 'KeyUsage specifies valid usage contexts for keys.
+                  description: "KeyUsage specifies valid usage contexts for keys.
                     See: https://tools.ietf.org/html/rfc5280#section-4.2.1.3 https://tools.ietf.org/html/rfc5280#section-4.2.1.12
-                    Valid KeyUsage values are as follows: "signing", "digital signature",
-                    "content commitment", "key encipherment", "key agreement", "data
-                    encipherment", "cert sign", "crl sign", "encipher only", "decipher
-                    only", "any", "server auth", "client auth", "code signing", "email
-                    protection", "s/mime", "ipsec end system", "ipsec tunnel", "ipsec
-                    user", "timestamping", "ocsp signing", "microsoft sgc", "netscape
-                    sgc"'
+                    \n Valid KeyUsage values are as follows: \"signing\", \"digital
+                    signature\", \"content commitment\", \"key encipherment\", \"key
+                    agreement\", \"data encipherment\", \"cert sign\", \"crl sign\",
+                    \"encipher only\", \"decipher only\", \"any\", \"server auth\",
+                    \"client auth\", \"code signing\", \"email protection\", \"s/mime\",
+                    \"ipsec end system\", \"ipsec tunnel\", \"ipsec user\", \"timestamping\",
+                    \"ocsp signing\", \"microsoft sgc\", \"netscape sgc\""
                   enum:
                   - signing
                   - digital signature
@@ -279,21 +267,9 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: certificates.cert-manager.io
 spec:
-  conversion:
-    strategy: Webhook
-    webhook:
-      clientConfig:
-        caBundle: ""
-        service:
-          name: cert-manager-webhook
-          namespace: kube-system
-          path: /convert
-          port: 443
-      conversionReviewVersions:
-      - v1beta1
   group: cert-manager.io
   names:
     categories:
@@ -668,15 +644,15 @@ spec:
                   the certificate. Defaults to `digital signature` and `key encipherment`
                   if not specified.
                 items:
-                  description: 'KeyUsage specifies valid usage contexts for keys.
+                  description: "KeyUsage specifies valid usage contexts for keys.
                     See: https://tools.ietf.org/html/rfc5280#section-4.2.1.3 https://tools.ietf.org/html/rfc5280#section-4.2.1.12
-                    Valid KeyUsage values are as follows: "signing", "digital signature",
-                    "content commitment", "key encipherment", "key agreement", "data
-                    encipherment", "cert sign", "crl sign", "encipher only", "decipher
-                    only", "any", "server auth", "client auth", "code signing", "email
-                    protection", "s/mime", "ipsec end system", "ipsec tunnel", "ipsec
-                    user", "timestamping", "ocsp signing", "microsoft sgc", "netscape
-                    sgc"'
+                    \n Valid KeyUsage values are as follows: \"signing\", \"digital
+                    signature\", \"content commitment\", \"key encipherment\", \"key
+                    agreement\", \"data encipherment\", \"cert sign\", \"crl sign\",
+                    \"encipher only\", \"decipher only\", \"any\", \"server auth\",
+                    \"client auth\", \"code signing\", \"email protection\", \"s/mime\",
+                    \"ipsec end system\", \"ipsec tunnel\", \"ipsec user\", \"timestamping\",
+                    \"ocsp signing\", \"microsoft sgc\", \"netscape sgc\""
                   enum:
                   - signing
                   - digital signature
@@ -827,21 +803,9 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: challenges.acme.cert-manager.io
 spec:
-  conversion:
-    strategy: Webhook
-    webhook:
-      clientConfig:
-        caBundle: ""
-        service:
-          name: cert-manager-webhook
-          namespace: kube-system
-          path: /convert
-          port: 443
-      conversionReviewVersions:
-      - v1beta1
   group: acme.cert-manager.io
   names:
     categories:
@@ -1251,9 +1215,11 @@ spec:
                             type: string
                           accessKeyIDSecretRef:
                             description: 'The SecretAccessKey is used for authentication.
-                              If neither the Access Key nor Key ID are set, we fall-back
-                              to using env vars, shared credentials file or AWS Instance
-                              metadata, see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials'
+                              If set, pull the AWS access key ID from a key within
+                              a Kubernetes Secret. Cannot be set when AccessKeyID
+                              is set. If neither the Access Key nor Key ID are set,
+                              we fall-back to using env vars, shared credentials file
+                              or AWS Instance metadata, see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials'
                             properties:
                               key:
                                 description: The key of the entry in the Secret resource's
@@ -1283,9 +1249,10 @@ spec:
                               shared credentials file or AWS Instance metadata
                             type: string
                           secretAccessKeySecretRef:
-                            description: The SecretAccessKey is used for authentication.
-                              If not set we fall-back to using env vars, shared credentials
-                              file or AWS Instance metadata https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
+                            description: 'The SecretAccessKey is used for authentication.
+                              If neither the Access Key nor Key ID are set, we fall-back
+                              to using env vars, shared credentials file or AWS Instance
+                              metadata, see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials'
                             properties:
                               key:
                                 description: The key of the entry in the Secret resource's
@@ -1358,18 +1325,15 @@ spec:
                               parentRefs should be used when creating the HTTPRoute.
                               Usually, the parentRef references a Gateway. See: https://gateway-api.sigs.k8s.io/v1alpha2/api-types/httproute/#attaching-to-gateways'
                             items:
-                              description: "ParentRef identifies an API object (usually
-                                a Gateway) that can be considered a parent of this
-                                resource (usually a route). The only kind of parent
-                                resource with \"Core\" support is Gateway. This API
-                                may be extended in the future to support additional
-                                kinds of parent resources, such as HTTPRoute. \n The
-                                API object must be valid in the cluster; the Group
-                                and Kind must be registered in the cluster for this
-                                reference to be valid. \n References to objects with
-                                invalid Group and Kind are not valid, and must be
-                                rejected by the implementation, with appropriate Conditions
-                                set on the containing object."
+                              description: "ParentReference identifies an API object
+                                (usually a Gateway) that can be considered a parent
+                                of this resource (usually a route). The only kind
+                                of parent resource with \"Core\" support is Gateway.
+                                This API may be extended in the future to support
+                                additional kinds of parent resources, such as HTTPRoute.
+                                \n The API object must be valid in the cluster; the
+                                Group and Kind must be registered in the cluster for
+                                this reference to be valid."
                               properties:
                                 group:
                                   default: gateway.networking.k8s.io
@@ -1381,7 +1345,7 @@ spec:
                                 kind:
                                   default: Gateway
                                   description: "Kind is kind of the referent. \n Support:
-                                    Core (Gateway) Support: Custom (Other Resources)"
+                                    Core (Gateway) \n Support: Custom (Other Resources)"
                                   maxLength: 63
                                   minLength: 1
                                   pattern: ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$
@@ -1401,26 +1365,59 @@ spec:
                                   minLength: 1
                                   pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
                                   type: string
+                                port:
+                                  description: "Port is the network port this Route
+                                    targets. It can be interpreted differently based
+                                    on the type of parent resource. \n When the parent
+                                    resource is a Gateway, this targets all listeners
+                                    listening on the specified port that also support
+                                    this kind of Route(and select this Route). It's
+                                    not recommended to set `Port` unless the networking
+                                    behaviors specified in a Route must apply to a
+                                    specific port as opposed to a listener(s) whose
+                                    port(s) may be changed. When both Port and SectionName
+                                    are specified, the name and port of the selected
+                                    listener must match both specified values. \n
+                                    Implementations MAY choose to support other parent
+                                    resources. Implementations supporting other types
+                                    of parent resources MUST clearly document how/if
+                                    Port is interpreted. \n For the purpose of status,
+                                    an attachment is considered successful as long
+                                    as the parent resource accepts it partially. For
+                                    example, Gateway listeners can restrict which
+                                    Routes can attach to them by Route kind, namespace,
+                                    or hostname. If 1 of 2 Gateway listeners accept
+                                    attachment from the referencing Route, the Route
+                                    MUST be considered successfully attached. If no
+                                    Gateway listeners accept attachment from this
+                                    Route, the Route MUST be considered detached from
+                                    the Gateway. \n Support: Extended \n <gateway:experimental>"
+                                  format: int32
+                                  maximum: 65535
+                                  minimum: 1
+                                  type: integer
                                 sectionName:
                                   description: "SectionName is the name of a section
                                     within the target resource. In the following resources,
                                     SectionName is interpreted as the following: \n
-                                    * Gateway: Listener Name \n Implementations MAY
-                                    choose to support attaching Routes to other resources.
-                                    If that is the case, they MUST clearly document
-                                    how SectionName is interpreted. \n When unspecified
-                                    (empty string), this will reference the entire
-                                    resource. For the purpose of status, an attachment
-                                    is considered successful if at least one section
-                                    in the parent resource accepts it. For example,
-                                    Gateway listeners can restrict which Routes can
-                                    attach to them by Route kind, namespace, or hostname.
-                                    If 1 of 2 Gateway listeners accept attachment
-                                    from the referencing Route, the Route MUST be
-                                    considered successfully attached. If no Gateway
-                                    listeners accept attachment from this Route, the
-                                    Route MUST be considered detached from the Gateway.
-                                    \n Support: Core"
+                                    * Gateway: Listener Name. When both Port (experimental)
+                                    and SectionName are specified, the name and port
+                                    of the selected listener must match both specified
+                                    values. \n Implementations MAY choose to support
+                                    attaching Routes to other resources. If that is
+                                    the case, they MUST clearly document how SectionName
+                                    is interpreted. \n When unspecified (empty string),
+                                    this will reference the entire resource. For the
+                                    purpose of status, an attachment is considered
+                                    successful if at least one section in the parent
+                                    resource accepts it. For example, Gateway listeners
+                                    can restrict which Routes can attach to them by
+                                    Route kind, namespace, or hostname. If 1 of 2
+                                    Gateway listeners accept attachment from the referencing
+                                    Route, the Route MUST be considered successfully
+                                    attached. If no Gateway listeners accept attachment
+                                    from this Route, the Route MUST be considered
+                                    detached from the Gateway. \n Support: Core"
                                   maxLength: 253
                                   minLength: 1
                                   pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
@@ -1647,6 +1644,7 @@ spec:
                                                         type: object
                                                       type: array
                                                   type: object
+                                                  x-kubernetes-map-type: atomic
                                                 weight:
                                                   description: Weight associated with
                                                     matching the corresponding nodeSelectorTerm,
@@ -1778,10 +1776,12 @@ spec:
                                                         type: object
                                                       type: array
                                                   type: object
+                                                  x-kubernetes-map-type: atomic
                                                 type: array
                                             required:
                                             - nodeSelectorTerms
                                             type: object
+                                            x-kubernetes-map-type: atomic
                                         type: object
                                       podAffinity:
                                         description: Describes pod affinity scheduling
@@ -1887,6 +1887,7 @@ spec:
                                                             are ANDed.
                                                           type: object
                                                       type: object
+                                                      x-kubernetes-map-type: atomic
                                                     namespaceSelector:
                                                       description: A label query over
                                                         the set of namespaces that
@@ -1967,6 +1968,7 @@ spec:
                                                             are ANDed.
                                                           type: object
                                                       type: object
+                                                      x-kubernetes-map-type: atomic
                                                     namespaces:
                                                       description: namespaces specifies
                                                         a static list of namespace
@@ -2101,6 +2103,7 @@ spec:
                                                         are ANDed.
                                                       type: object
                                                   type: object
+                                                  x-kubernetes-map-type: atomic
                                                 namespaceSelector:
                                                   description: A label query over
                                                     the set of namespaces that the
@@ -2173,6 +2176,7 @@ spec:
                                                         are ANDed.
                                                       type: object
                                                   type: object
+                                                  x-kubernetes-map-type: atomic
                                                 namespaces:
                                                   description: namespaces specifies
                                                     a static list of namespace names
@@ -2308,6 +2312,7 @@ spec:
                                                             are ANDed.
                                                           type: object
                                                       type: object
+                                                      x-kubernetes-map-type: atomic
                                                     namespaceSelector:
                                                       description: A label query over
                                                         the set of namespaces that
@@ -2388,6 +2393,7 @@ spec:
                                                             are ANDed.
                                                           type: object
                                                       type: object
+                                                      x-kubernetes-map-type: atomic
                                                     namespaces:
                                                       description: namespaces specifies
                                                         a static list of namespace
@@ -2522,6 +2528,7 @@ spec:
                                                         are ANDed.
                                                       type: object
                                                   type: object
+                                                  x-kubernetes-map-type: atomic
                                                 namespaceSelector:
                                                   description: A label query over
                                                     the set of namespaces that the
@@ -2594,6 +2601,7 @@ spec:
                                                         are ANDed.
                                                       type: object
                                                   type: object
+                                                  x-kubernetes-map-type: atomic
                                                 namespaces:
                                                   description: namespaces specifies
                                                     a static list of namespace names
@@ -2821,21 +2829,9 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: clusterissuers.cert-manager.io
 spec:
-  conversion:
-    strategy: Webhook
-    webhook:
-      clientConfig:
-        caBundle: ""
-        service:
-          name: cert-manager-webhook
-          namespace: kube-system
-          path: /convert
-          port: 443
-      conversionReviewVersions:
-      - v1beta1
   group: cert-manager.io
   names:
     categories:
@@ -3338,10 +3334,33 @@ spec:
                               properties:
                                 accessKeyID:
                                   description: 'The AccessKeyID is used for authentication.
-                                    If not set we fall-back to using env vars, shared
-                                    credentials file or AWS Instance metadata see:
-                                    https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials'
+                                    Cannot be set when SecretAccessKeyID is set. If
+                                    neither the Access Key nor Key ID are set, we
+                                    fall-back to using env vars, shared credentials
+                                    file or AWS Instance metadata, see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials'
                                   type: string
+                                accessKeyIDSecretRef:
+                                  description: 'The SecretAccessKey is used for authentication.
+                                    If set, pull the AWS access key ID from a key
+                                    within a Kubernetes Secret. Cannot be set when
+                                    AccessKeyID is set. If neither the Access Key
+                                    nor Key ID are set, we fall-back to using env
+                                    vars, shared credentials file or AWS Instance
+                                    metadata, see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials'
+                                  properties:
+                                    key:
+                                      description: The key of the entry in the Secret
+                                        resource's `data` field to be used. Some instances
+                                        of this field may be defaulted, in others
+                                        it may be required.
+                                      type: string
+                                    name:
+                                      description: 'Name of the resource being referred
+                                        to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                                      type: string
+                                  required:
+                                  - name
+                                  type: object
                                 hostedZoneID:
                                   description: If set, the provider will manage only
                                     this zone in Route53 and will not do an lookup
@@ -3359,9 +3378,10 @@ spec:
                                     shared credentials file or AWS Instance metadata
                                   type: string
                                 secretAccessKeySecretRef:
-                                  description: The SecretAccessKey is used for authentication.
-                                    If not set we fall-back to using env vars, shared
-                                    credentials file or AWS Instance metadata https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
+                                  description: 'The SecretAccessKey is used for authentication.
+                                    If neither the Access Key nor Key ID are set,
+                                    we fall-back to using env vars, shared credentials
+                                    file or AWS Instance metadata, see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials'
                                   properties:
                                     key:
                                       description: The key of the entry in the Secret
@@ -3440,20 +3460,16 @@ spec:
                                     when creating the HTTPRoute. Usually, the parentRef
                                     references a Gateway. See: https://gateway-api.sigs.k8s.io/v1alpha2/api-types/httproute/#attaching-to-gateways'
                                   items:
-                                    description: "ParentRef identifies an API object
-                                      (usually a Gateway) that can be considered a
-                                      parent of this resource (usually a route). The
-                                      only kind of parent resource with \"Core\" support
-                                      is Gateway. This API may be extended in the
-                                      future to support additional kinds of parent
-                                      resources, such as HTTPRoute. \n The API object
-                                      must be valid in the cluster; the Group and
-                                      Kind must be registered in the cluster for this
-                                      reference to be valid. \n References to objects
-                                      with invalid Group and Kind are not valid, and
-                                      must be rejected by the implementation, with
-                                      appropriate Conditions set on the containing
-                                      object."
+                                    description: "ParentReference identifies an API
+                                      object (usually a Gateway) that can be considered
+                                      a parent of this resource (usually a route).
+                                      The only kind of parent resource with \"Core\"
+                                      support is Gateway. This API may be extended
+                                      in the future to support additional kinds of
+                                      parent resources, such as HTTPRoute. \n The
+                                      API object must be valid in the cluster; the
+                                      Group and Kind must be registered in the cluster
+                                      for this reference to be valid."
                                     properties:
                                       group:
                                         default: gateway.networking.k8s.io
@@ -3465,7 +3481,7 @@ spec:
                                       kind:
                                         default: Gateway
                                         description: "Kind is kind of the referent.
-                                          \n Support: Core (Gateway) Support: Custom
+                                          \n Support: Core (Gateway) \n Support: Custom
                                           (Other Resources)"
                                         maxLength: 63
                                         minLength: 1
@@ -3486,19 +3502,58 @@ spec:
                                         minLength: 1
                                         pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
                                         type: string
+                                      port:
+                                        description: "Port is the network port this
+                                          Route targets. It can be interpreted differently
+                                          based on the type of parent resource. \n
+                                          When the parent resource is a Gateway, this
+                                          targets all listeners listening on the specified
+                                          port that also support this kind of Route(and
+                                          select this Route). It's not recommended
+                                          to set `Port` unless the networking behaviors
+                                          specified in a Route must apply to a specific
+                                          port as opposed to a listener(s) whose port(s)
+                                          may be changed. When both Port and SectionName
+                                          are specified, the name and port of the
+                                          selected listener must match both specified
+                                          values. \n Implementations MAY choose to
+                                          support other parent resources. Implementations
+                                          supporting other types of parent resources
+                                          MUST clearly document how/if Port is interpreted.
+                                          \n For the purpose of status, an attachment
+                                          is considered successful as long as the
+                                          parent resource accepts it partially. For
+                                          example, Gateway listeners can restrict
+                                          which Routes can attach to them by Route
+                                          kind, namespace, or hostname. If 1 of 2
+                                          Gateway listeners accept attachment from
+                                          the referencing Route, the Route MUST be
+                                          considered successfully attached. If no
+                                          Gateway listeners accept attachment from
+                                          this Route, the Route MUST be considered
+                                          detached from the Gateway. \n Support: Extended
+                                          \n <gateway:experimental>"
+                                        format: int32
+                                        maximum: 65535
+                                        minimum: 1
+                                        type: integer
                                       sectionName:
                                         description: "SectionName is the name of a
                                           section within the target resource. In the
                                           following resources, SectionName is interpreted
                                           as the following: \n * Gateway: Listener
-                                          Name \n Implementations MAY choose to support
-                                          attaching Routes to other resources. If
-                                          that is the case, they MUST clearly document
-                                          how SectionName is interpreted. \n When
-                                          unspecified (empty string), this will reference
-                                          the entire resource. For the purpose of
-                                          status, an attachment is considered successful
-                                          if at least one section in the parent resource
+                                          Name. When both Port (experimental) and
+                                          SectionName are specified, the name and
+                                          port of the selected listener must match
+                                          both specified values. \n Implementations
+                                          MAY choose to support attaching Routes to
+                                          other resources. If that is the case, they
+                                          MUST clearly document how SectionName is
+                                          interpreted. \n When unspecified (empty
+                                          string), this will reference the entire
+                                          resource. For the purpose of status, an
+                                          attachment is considered successful if at
+                                          least one section in the parent resource
                                           accepts it. For example, Gateway listeners
                                           can restrict which Routes can attach to
                                           them by Route kind, namespace, or hostname.
@@ -3766,6 +3821,7 @@ spec:
                                                               type: object
                                                             type: array
                                                         type: object
+                                                        x-kubernetes-map-type: atomic
                                                       weight:
                                                         description: Weight associated
                                                           with matching the corresponding
@@ -3922,10 +3978,12 @@ spec:
                                                               type: object
                                                             type: array
                                                         type: object
+                                                        x-kubernetes-map-type: atomic
                                                       type: array
                                                   required:
                                                   - nodeSelectorTerms
                                                   type: object
+                                                  x-kubernetes-map-type: atomic
                                               type: object
                                             podAffinity:
                                               description: Describes pod affinity
@@ -4050,6 +4108,7 @@ spec:
                                                                   ANDed.
                                                                 type: object
                                                             type: object
+                                                            x-kubernetes-map-type: atomic
                                                           namespaceSelector:
                                                             description: A label query
                                                               over the set of namespaces
@@ -4147,6 +4206,7 @@ spec:
                                                                   ANDed.
                                                                 type: object
                                                             type: object
+                                                            x-kubernetes-map-type: atomic
                                                           namespaces:
                                                             description: namespaces
                                                               specifies a static list
@@ -4302,6 +4362,7 @@ spec:
                                                               ANDed.
                                                             type: object
                                                         type: object
+                                                        x-kubernetes-map-type: atomic
                                                       namespaceSelector:
                                                         description: A label query
                                                           over the set of namespaces
@@ -4386,6 +4447,7 @@ spec:
                                                               ANDed.
                                                             type: object
                                                         type: object
+                                                        x-kubernetes-map-type: atomic
                                                       namespaces:
                                                         description: namespaces specifies
                                                           a static list of namespace
@@ -4544,6 +4606,7 @@ spec:
                                                                   ANDed.
                                                                 type: object
                                                             type: object
+                                                            x-kubernetes-map-type: atomic
                                                           namespaceSelector:
                                                             description: A label query
                                                               over the set of namespaces
@@ -4641,6 +4704,7 @@ spec:
                                                                   ANDed.
                                                                 type: object
                                                             type: object
+                                                            x-kubernetes-map-type: atomic
                                                           namespaces:
                                                             description: namespaces
                                                               specifies a static list
@@ -4796,6 +4860,7 @@ spec:
                                                               ANDed.
                                                             type: object
                                                         type: object
+                                                        x-kubernetes-map-type: atomic
                                                       namespaceSelector:
                                                         description: A label query
                                                           over the set of namespaces
@@ -4880,6 +4945,7 @@ spec:
                                                               ANDed.
                                                             type: object
                                                         type: object
+                                                        x-kubernetes-map-type: atomic
                                                       namespaces:
                                                         description: namespaces specifies
                                                           a static list of namespace
@@ -5190,9 +5256,33 @@ spec:
                       Vault server certificate. Only used if the Server URL is using
                       HTTPS protocol. This parameter is ignored for plain HTTP protocol
                       connection. If not set the system root certificates are used
-                      to validate the TLS connection.
+                      to validate the TLS connection. Mutually exclusive with CABundleSecretRef.
+                      If neither CABundle nor CABundleSecretRef are defined, the cert-manager
+                      controller system root certificates are used to validate the
+                      TLS connection.
                     format: byte
                     type: string
+                  caBundleSecretRef:
+                    description: CABundleSecretRef is a reference to a Secret which
+                      contains the CABundle which will be used when connecting to
+                      Vault when using HTTPS. Mutually exclusive with CABundle. If
+                      neither CABundleSecretRef nor CABundle are defined, the cert-manager
+                      controller system root certificates are used to validate the
+                      TLS connection. If no key for the Secret is specified, cert-manager
+                      will default to 'ca.crt'.
+                    properties:
+                      key:
+                        description: The key of the entry in the Secret resource's
+                          `data` field to be used. Some instances of this field may
+                          be defaulted, in others it may be required.
+                        type: string
+                      name:
+                        description: 'Name of the resource being referred to. More
+                          info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                        type: string
+                    required:
+                    - name
+                    type: object
                   namespace:
                     description: 'Name of the vault namespace. Namespaces is a set
                       of features within Vault Enterprise that allows Vault environments
@@ -5371,21 +5461,9 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: issuers.cert-manager.io
 spec:
-  conversion:
-    strategy: Webhook
-    webhook:
-      clientConfig:
-        caBundle: ""
-        service:
-          name: cert-manager-webhook
-          namespace: kube-system
-          path: /convert
-          port: 443
-      conversionReviewVersions:
-      - v1beta1
   group: cert-manager.io
   names:
     categories:
@@ -6013,20 +6091,16 @@ spec:
                                     when creating the HTTPRoute. Usually, the parentRef
                                     references a Gateway. See: https://gateway-api.sigs.k8s.io/v1alpha2/api-types/httproute/#attaching-to-gateways'
                                   items:
-                                    description: "ParentRef identifies an API object
-                                      (usually a Gateway) that can be considered a
-                                      parent of this resource (usually a route). The
-                                      only kind of parent resource with \"Core\" support
-                                      is Gateway. This API may be extended in the
-                                      future to support additional kinds of parent
-                                      resources, such as HTTPRoute. \n The API object
-                                      must be valid in the cluster; the Group and
-                                      Kind must be registered in the cluster for this
-                                      reference to be valid. \n References to objects
-                                      with invalid Group and Kind are not valid, and
-                                      must be rejected by the implementation, with
-                                      appropriate Conditions set on the containing
-                                      object."
+                                    description: "ParentReference identifies an API
+                                      object (usually a Gateway) that can be considered
+                                      a parent of this resource (usually a route).
+                                      The only kind of parent resource with \"Core\"
+                                      support is Gateway. This API may be extended
+                                      in the future to support additional kinds of
+                                      parent resources, such as HTTPRoute. \n The
+                                      API object must be valid in the cluster; the
+                                      Group and Kind must be registered in the cluster
+                                      for this reference to be valid."
                                     properties:
                                       group:
                                         default: gateway.networking.k8s.io
@@ -6038,7 +6112,7 @@ spec:
                                       kind:
                                         default: Gateway
                                         description: "Kind is kind of the referent.
-                                          \n Support: Core (Gateway) Support: Custom
+                                          \n Support: Core (Gateway) \n Support: Custom
                                           (Other Resources)"
                                         maxLength: 63
                                         minLength: 1
@@ -6059,19 +6133,58 @@ spec:
                                         minLength: 1
                                         pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
                                         type: string
+                                      port:
+                                        description: "Port is the network port this
+                                          Route targets. It can be interpreted differently
+                                          based on the type of parent resource. \n
+                                          When the parent resource is a Gateway, this
+                                          targets all listeners listening on the specified
+                                          port that also support this kind of Route(and
+                                          select this Route). It's not recommended
+                                          to set `Port` unless the networking behaviors
+                                          specified in a Route must apply to a specific
+                                          port as opposed to a listener(s) whose port(s)
+                                          may be changed. When both Port and SectionName
+                                          are specified, the name and port of the
+                                          selected listener must match both specified
+                                          values. \n Implementations MAY choose to
+                                          support other parent resources. Implementations
+                                          supporting other types of parent resources
+                                          MUST clearly document how/if Port is interpreted.
+                                          \n For the purpose of status, an attachment
+                                          is considered successful as long as the
+                                          parent resource accepts it partially. For
+                                          example, Gateway listeners can restrict
+                                          which Routes can attach to them by Route
+                                          kind, namespace, or hostname. If 1 of 2
+                                          Gateway listeners accept attachment from
+                                          the referencing Route, the Route MUST be
+                                          considered successfully attached. If no
+                                          Gateway listeners accept attachment from
+                                          this Route, the Route MUST be considered
+                                          detached from the Gateway. \n Support: Extended
+                                          \n <gateway:experimental>"
+                                        format: int32
+                                        maximum: 65535
+                                        minimum: 1
+                                        type: integer
                                       sectionName:
                                         description: "SectionName is the name of a
                                           section within the target resource. In the
                                           following resources, SectionName is interpreted
                                           as the following: \n * Gateway: Listener
-                                          Name \n Implementations MAY choose to support
-                                          attaching Routes to other resources. If
-                                          that is the case, they MUST clearly document
-                                          how SectionName is interpreted. \n When
-                                          unspecified (empty string), this will reference
-                                          the entire resource. For the purpose of
-                                          status, an attachment is considered successful
-                                          if at least one section in the parent resource
+                                          Name. When both Port (experimental) and
+                                          SectionName are specified, the name and
+                                          port of the selected listener must match
+                                          both specified values. \n Implementations
+                                          MAY choose to support attaching Routes to
+                                          other resources. If that is the case, they
+                                          MUST clearly document how SectionName is
+                                          interpreted. \n When unspecified (empty
+                                          string), this will reference the entire
+                                          resource. For the purpose of status, an
+                                          attachment is considered successful if at
+                                          least one section in the parent resource
                                           accepts it. For example, Gateway listeners
                                           can restrict which Routes can attach to
                                           them by Route kind, namespace, or hostname.
@@ -6339,6 +6452,7 @@ spec:
                                                               type: object
                                                             type: array
                                                         type: object
+                                                        x-kubernetes-map-type: atomic
                                                       weight:
                                                         description: Weight associated
                                                           with matching the corresponding
@@ -6495,10 +6609,12 @@ spec:
                                                               type: object
                                                             type: array
                                                         type: object
+                                                        x-kubernetes-map-type: atomic
                                                       type: array
                                                   required:
                                                   - nodeSelectorTerms
                                                   type: object
+                                                  x-kubernetes-map-type: atomic
                                               type: object
                                             podAffinity:
                                               description: Describes pod affinity
@@ -6623,6 +6739,7 @@ spec:
                                                                   ANDed.
                                                                 type: object
                                                             type: object
+                                                            x-kubernetes-map-type: atomic
                                                           namespaceSelector:
                                                             description: A label query
                                                               over the set of namespaces
@@ -6720,6 +6837,7 @@ spec:
                                                                   ANDed.
                                                                 type: object
                                                             type: object
+                                                            x-kubernetes-map-type: atomic
                                                           namespaces:
                                                             description: namespaces
                                                               specifies a static list
@@ -6875,6 +6993,7 @@ spec:
                                                               ANDed.
                                                             type: object
                                                         type: object
+                                                        x-kubernetes-map-type: atomic
                                                       namespaceSelector:
                                                         description: A label query
                                                           over the set of namespaces
@@ -6959,6 +7078,7 @@ spec:
                                                               ANDed.
                                                             type: object
                                                         type: object
+                                                        x-kubernetes-map-type: atomic
                                                       namespaces:
                                                         description: namespaces specifies
                                                           a static list of namespace
@@ -7117,6 +7237,7 @@ spec:
                                                                   ANDed.
                                                                 type: object
                                                             type: object
+                                                            x-kubernetes-map-type: atomic
                                                           namespaceSelector:
                                                             description: A label query
                                                               over the set of namespaces
@@ -7214,6 +7335,7 @@ spec:
                                                                   ANDed.
                                                                 type: object
                                                             type: object
+                                                            x-kubernetes-map-type: atomic
                                                           namespaces:
                                                             description: namespaces
                                                               specifies a static list
@@ -7369,6 +7491,7 @@ spec:
                                                               ANDed.
                                                             type: object
                                                         type: object
+                                                        x-kubernetes-map-type: atomic
                                                       namespaceSelector:
                                                         description: A label query
                                                           over the set of namespaces
@@ -7453,6 +7576,7 @@ spec:
                                                               ANDed.
                                                             type: object
                                                         type: object
+                                                        x-kubernetes-map-type: atomic
                                                       namespaces:
                                                         description: namespaces specifies
                                                           a static list of namespace
@@ -7763,9 +7887,33 @@ spec:
                       Vault server certificate. Only used if the Server URL is using
                       HTTPS protocol. This parameter is ignored for plain HTTP protocol
                       connection. If not set the system root certificates are used
-                      to validate the TLS connection.
+                      to validate the TLS connection. Mutually exclusive with CABundleSecretRef.
+                      If neither CABundle nor CABundleSecretRef are defined, the cert-manager
+                      controller system root certificates are used to validate the
+                      TLS connection.
                     format: byte
                     type: string
+                  caBundleSecretRef:
+                    description: CABundleSecretRef is a reference to a Secret which
+                      contains the CABundle which will be used when connecting to
+                      Vault when using HTTPS. Mutually exclusive with CABundle. If
+                      neither CABundleSecretRef nor CABundle are defined, the cert-manager
+                      controller system root certificates are used to validate the
+                      TLS connection. If no key for the Secret is specified, cert-manager
+                      will default to 'ca.crt'.
+                    properties:
+                      key:
+                        description: The key of the entry in the Secret resource's
+                          `data` field to be used. Some instances of this field may
+                          be defaulted, in others it may be required.
+                        type: string
+                      name:
+                        description: 'Name of the resource being referred to. More
+                          info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                        type: string
+                    required:
+                    - name
+                    type: object
                   namespace:
                     description: 'Name of the vault namespace. Namespaces is a set
                       of features within Vault Enterprise that allows Vault environments
@@ -7944,21 +8092,9 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: orders.acme.cert-manager.io
 spec:
-  conversion:
-    strategy: Webhook
-    webhook:
-      clientConfig:
-        caBundle: ""
-        service:
-          name: cert-manager-webhook
-          namespace: kube-system
-          path: /convert
-          port: 443
-      conversionReviewVersions:
-      - v1beta1
   group: acme.cert-manager.io
   names:
     categories:
@@ -8205,7 +8341,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cainjector
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager-cainjector
   namespace: kube-system
 
@@ -8223,7 +8359,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager
   namespace: kube-system
 
@@ -8241,7 +8377,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager-webhook
   namespace: kube-system
 
@@ -8275,7 +8411,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cainjector
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager-cainjector
 rules:
 - apiGroups:
@@ -8345,7 +8481,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager-controller-issuers
 rules:
 - apiGroups:
@@ -8396,7 +8532,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager-controller-clusterissuers
 rules:
 - apiGroups:
@@ -8447,7 +8583,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager-controller-certificates
 rules:
 - apiGroups:
@@ -8521,7 +8657,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager-controller-orders
 rules:
 - apiGroups:
@@ -8592,7 +8728,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager-controller-challenges
 rules:
 - apiGroups:
@@ -8702,7 +8838,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager-controller-ingress-shim
 rules:
 - apiGroups:
@@ -8776,7 +8912,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
     rbac.authorization.k8s.io/aggregate-to-edit: "true"
     rbac.authorization.k8s.io/aggregate-to-view: "true"
@@ -8815,7 +8951,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
     rbac.authorization.k8s.io/aggregate-to-edit: "true"
   name: cert-manager-edit
@@ -8863,7 +8999,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager-controller-approve:cert-manager-io
 rules:
 - apiGroups:
@@ -8889,7 +9025,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager-controller-certificatesigningrequests
 rules:
 - apiGroups:
@@ -8937,7 +9073,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager-webhook:subjectaccessreviews
 rules:
 - apiGroups:
@@ -8960,7 +9096,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cainjector
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager-cainjector
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -8984,7 +9120,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager-controller-issuers
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -9008,7 +9144,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager-controller-clusterissuers
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -9032,7 +9168,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager-controller-certificates
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -9056,7 +9192,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager-controller-orders
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -9080,7 +9216,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager-controller-challenges
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -9104,7 +9240,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager-controller-ingress-shim
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -9128,7 +9264,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager-controller-approve:cert-manager-io
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -9152,7 +9288,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager-controller-certificatesigningrequests
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -9176,7 +9312,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager-webhook:subjectaccessreviews
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -9201,7 +9337,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cainjector
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager-cainjector:leaderelection
   namespace: kube-system
 rules:
@@ -9236,7 +9372,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager:leaderelection
   namespace: kube-system
 rules:
@@ -9270,7 +9406,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager-webhook:dynamic-serving
   namespace: kube-system
 rules:
@@ -9305,7 +9441,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cainjector
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager-cainjector:leaderelection
   namespace: kube-system
 roleRef:
@@ -9330,7 +9466,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager:leaderelection
   namespace: kube-system
 roleRef:
@@ -9356,7 +9492,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager-webhook:dynamic-serving
   namespace: kube-system
 roleRef:
@@ -9382,7 +9518,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager
   namespace: kube-system
 spec:
@@ -9410,7 +9546,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager-webhook
   namespace: kube-system
 spec:
@@ -9418,7 +9554,7 @@ spec:
   - name: https
     port: 443
     protocol: TCP
-    targetPort: 10250
+    targetPort: https
   selector:
     app.kubernetes.io/component: webhook
     app.kubernetes.io/instance: cert-manager
@@ -9438,7 +9574,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cainjector
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager-cainjector
   namespace: kube-system
 spec:
@@ -9456,7 +9592,7 @@ spec:
         app.kubernetes.io/component: cainjector
         app.kubernetes.io/instance: cert-manager
         app.kubernetes.io/name: cainjector
-        app.kubernetes.io/version: v1.9.1
+        app.kubernetes.io/version: v1.10.1
         kops.k8s.io/managed-by: kops
     spec:
       affinity:
@@ -9478,15 +9614,20 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: quay.io/jetstack/cert-manager-cainjector:v1.9.1
+        image: quay.io/jetstack/cert-manager-cainjector:v1.10.1
         imagePullPolicy: IfNotPresent
-        name: cert-manager
+        name: cert-manager-cainjector
         securityContext:
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
       nodeSelector: null
       priorityClassName: system-cluster-critical
       securityContext:
         runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName: cert-manager-cainjector
       tolerations:
       - key: node-role.kubernetes.io/control-plane
@@ -9507,7 +9648,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager
   namespace: kube-system
 spec:
@@ -9529,7 +9670,7 @@ spec:
         app.kubernetes.io/component: controller
         app.kubernetes.io/instance: cert-manager
         app.kubernetes.io/name: cert-manager
-        app.kubernetes.io/version: v1.9.1
+        app.kubernetes.io/version: v1.10.1
         kops.k8s.io/managed-by: kops
     spec:
       affinity:
@@ -9553,20 +9694,24 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: quay.io/jetstack/cert-manager-controller:v1.9.1
+        image: quay.io/jetstack/cert-manager-controller:v1.10.1
         imagePullPolicy: IfNotPresent
-        name: cert-manager
+        name: cert-manager-controller
         ports:
         - containerPort: 9402
           name: http-metrics
           protocol: TCP
-        resources: {}
         securityContext:
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
       nodeSelector: null
       priorityClassName: system-cluster-critical
       securityContext:
         runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName: cert-manager
       tolerations:
       - key: node-role.kubernetes.io/control-plane
@@ -9587,7 +9732,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager-webhook
   namespace: kube-system
 spec:
@@ -9605,7 +9750,7 @@ spec:
         app.kubernetes.io/component: webhook
         app.kubernetes.io/instance: cert-manager
         app.kubernetes.io/name: webhook
-        app.kubernetes.io/version: v1.9.1
+        app.kubernetes.io/version: v1.10.1
         kops.k8s.io/managed-by: kops
     spec:
       affinity:
@@ -9624,13 +9769,15 @@ spec:
         - --secure-port=10250
         - --dynamic-serving-ca-secret-namespace=$(POD_NAMESPACE)
         - --dynamic-serving-ca-secret-name=cert-manager-webhook-ca
-        - --dynamic-serving-dns-names=cert-manager-webhook,cert-manager-webhook.kube-system,cert-manager-webhook.kube-system.svc
+        - --dynamic-serving-dns-names=cert-manager-webhook
+        - --dynamic-serving-dns-names=cert-manager-webhook.$(POD_NAMESPACE)
+        - --dynamic-serving-dns-names=cert-manager-webhook.$(POD_NAMESPACE).svc
         env:
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: quay.io/jetstack/cert-manager-webhook:v1.9.1
+        image: quay.io/jetstack/cert-manager-webhook:v1.10.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -9642,10 +9789,13 @@ spec:
           periodSeconds: 10
           successThreshold: 1
           timeoutSeconds: 1
-        name: cert-manager
+        name: cert-manager-webhook
         ports:
         - containerPort: 10250
           name: https
+          protocol: TCP
+        - containerPort: 6080
+          name: healthcheck
           protocol: TCP
         readinessProbe:
           failureThreshold: 3
@@ -9659,10 +9809,15 @@ spec:
           timeoutSeconds: 1
         securityContext:
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
       nodeSelector: null
       priorityClassName: system-cluster-critical
       securityContext:
         runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName: cert-manager-webhook
       tolerations:
       - key: node-role.kubernetes.io/control-plane
@@ -9685,7 +9840,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager-webhook
 webhooks:
 - admissionReviewVersions:
@@ -9727,7 +9882,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: webhook
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.10.1
   name: cert-manager-webhook
 webhooks:
 - admissionReviewVersions:
@@ -9749,7 +9904,7 @@ webhooks:
     - key: name
       operator: NotIn
       values:
-      - cert-manager
+      - kube-system
   rules:
   - apiGroups:
     - cert-manager.io
