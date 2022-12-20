@@ -71,6 +71,10 @@ func (t *TerraformTarget) ProcessDeletions() bool {
 	return false
 }
 
+func (t *TerraformTarget) DefaultCheckExisting() bool {
+	return false
+}
+
 // tfGetProviderExtraConfig is a helper function to get extra config with safety checks on the pointers.
 func tfGetProviderExtraConfig(c *kops.TargetSpec) map[string]string {
 	if c != nil &&
