@@ -785,6 +785,7 @@ func TestManyAddonsCCMIRSA26(t *testing.T) {
 			"networking.amazon-vpc-routed-eni-k8s-1.16",
 			"snapshot-controller.addons.k8s.io-k8s-1.20",
 			"aws-cloud-controller.addons.k8s.io-k8s-1.18",
+			"nodelocaldns.addons.k8s.io-k8s-1.12",
 			metricsServerAddon,
 			dnsControllerAddon,
 		).

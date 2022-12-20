@@ -142,7 +142,7 @@ kubelet:
   cgroupDriver: systemd
   cgroupRoot: /
   cloudProvider: external
-  clusterDNS: 172.20.0.10
+  clusterDNS: 169.254.20.10
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
@@ -187,7 +187,7 @@ ConfigServer:
   server: https://kops-controller.internal.minimal.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: 6RxdcfylXyflqq5zWWTSF4mb+N0tl6OhDQcifw+ljMg=
+NodeupConfigHash: uHznXRp7KoAmyuocxQozIURmfpy8+nWmjhX8ZL33kSw=
 
 __EOF_KUBE_ENV
 
