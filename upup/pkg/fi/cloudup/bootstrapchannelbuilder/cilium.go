@@ -35,7 +35,7 @@ func addCiliumAddon(b *BootstrapChannelBuilder, addons *AddonList) error {
 				Selector:           networkingSelector(),
 				Manifest:           fi.PtrTo(location),
 				Id:                 id,
-				NeedsRollingUpdate: "all",
+				NeedsRollingUpdate: api.NeedsRollingUpdateAll,
 			}
 			if cilium.Hubble != nil && fi.ValueOf(cilium.Hubble.Enabled) {
 				addon.NeedsPKI = true
