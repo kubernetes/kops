@@ -19,8 +19,8 @@ package nodeup
 import (
 	"strings"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/architectures"
 )
 
@@ -85,7 +85,7 @@ type Config struct {
 // BootConfig is the configuration for the nodeup binary that might be too big to fit in userdata.
 type BootConfig struct {
 	// CloudProvider is the cloud provider in use.
-	CloudProvider string
+	CloudProvider kops.CloudProviderID
 	// ConfigBase is the base VFS path for config objects.
 	ConfigBase *string `json:",omitempty"`
 	// ConfigServer holds the configuration for the configuration server.
@@ -155,7 +155,7 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 	}
 
 	bootConfig := BootConfig{
-		CloudProvider:     string(cluster.Spec.GetCloudProvider()),
+		CloudProvider:     cluster.Spec.GetCloudProvider(),
 		InstanceGroupName: instanceGroup.ObjectMeta.Name,
 		InstanceGroupRole: role,
 	}
@@ -176,7 +176,7 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 	}
 
 	if cluster.Spec.Networking.AmazonVPC != nil {
-		config.DefaultMachineType = fi.PtrTo(strings.Split(instanceGroup.Spec.MachineType, ",")[0])
+		config.DefaultMachineType = aws.String(strings.Split(instanceGroup.Spec.MachineType, ",")[0])
 	}
 
 	if UsesInstanceIDForNodeName(cluster) {
