@@ -49,7 +49,7 @@ func main() {
 	flag.StringVar(&flagCacheDir, "cache", "/var/cache/nodeup", "the location for the local asset cache")
 	flag.IntVar(&flagRetries, "retries", -1, "maximum number of retries on failure: -1 means retry forever")
 	flag.BoolVar(&dryrun, "dryrun", false, "Don't create cloud resources; just show what would be done")
-	flag.StringVar(&target, "target", target, "Target - direct, cloudinit")
+	flag.StringVar(&target, "target", target, "Target - direct, dryrun")
 	flag.BoolVar(&installSystemdUnit, "install-systemd-unit", installSystemdUnit, "If true, will install a systemd unit instead of running directly")
 
 	if dryrun {

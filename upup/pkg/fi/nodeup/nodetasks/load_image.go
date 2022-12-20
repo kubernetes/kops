@@ -27,7 +27,6 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/backoff"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/hashing"
@@ -167,8 +166,4 @@ func (_ *LoadImageTask) RenderLocal(t *local.LocalTarget, a, e, changes *LoadIma
 	}
 
 	return nil
-}
-
-func (_ *LoadImageTask) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *LoadImageTask) error {
-	return fmt.Errorf("LoadImageTask::RenderCloudInit not implemented")
 }
