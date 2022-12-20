@@ -59,7 +59,7 @@ func defaultDeltaRunMethod[T SubContext](e Task[T], c *Context[T]) error {
 		return nil
 	}
 
-	checkExisting := c.CheckExisting
+	checkExisting := c.Target.DefaultCheckExisting()
 	if hce, ok := e.(HasCheckExisting[T]); ok {
 		checkExisting = hce.CheckExisting(c)
 	}
