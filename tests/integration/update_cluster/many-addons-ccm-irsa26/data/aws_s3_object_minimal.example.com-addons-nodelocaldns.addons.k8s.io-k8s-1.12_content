@@ -1,0 +1,202 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: nodelocaldns.addons.k8s.io
+    addonmanager.kubernetes.io/mode: Reconcile
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: nodelocaldns.addons.k8s.io
+    kubernetes.io/cluster-service: "true"
+  name: node-local-dns
+  namespace: kube-system
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: nodelocaldns.addons.k8s.io
+    addonmanager.kubernetes.io/mode: Reconcile
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: nodelocaldns.addons.k8s.io
+    k8s-app: kube-dns
+    kubernetes.io/cluster-service: "true"
+    kubernetes.io/name: KubeDNSUpstream
+  name: kube-dns-upstream
+  namespace: kube-system
+spec:
+  ports:
+  - name: dns
+    port: 53
+    protocol: UDP
+    targetPort: 53
+  - name: dns-tcp
+    port: 53
+    protocol: TCP
+    targetPort: 53
+  selector:
+    k8s-app: kube-dns
+
+---
+
+apiVersion: v1
+data:
+  Corefile: |-
+    cluster.local:53 {
+        errors
+        cache {
+          success 9984 30
+          denial 9984 5
+        }
+        reload
+        loop
+        bind 169.254.20.10
+        forward . __PILLAR__CLUSTER__DNS__ {
+          force_tcp
+        }
+        prometheus :9253
+        health 169.254.20.10:3989
+    }
+    in-addr.arpa:53 {
+        errors
+        cache 30
+        reload
+        loop
+        bind 169.254.20.10
+        forward . __PILLAR__CLUSTER__DNS__ {
+          force_tcp
+        }
+        prometheus :9253
+    }
+    ip6.arpa:53 {
+        errors
+        cache 30
+        reload
+        loop
+        bind 169.254.20.10
+        forward . __PILLAR__CLUSTER__DNS__ {
+          force_tcp
+        }
+        prometheus :9253
+    }
+    .:53 {
+        errors
+        cache 30
+        reload
+        loop
+        bind 169.254.20.10
+        forward . __PILLAR__UPSTREAM__SERVERS__
+        prometheus :9253
+    }
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: nodelocaldns.addons.k8s.io
+    addonmanager.kubernetes.io/mode: Reconcile
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: nodelocaldns.addons.k8s.io
+  name: node-local-dns
+  namespace: kube-system
+
+---
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: nodelocaldns.addons.k8s.io
+    addonmanager.kubernetes.io/mode: Reconcile
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: nodelocaldns.addons.k8s.io
+    k8s-app: node-local-dns
+    kubernetes.io/cluster-service: "true"
+  name: node-local-dns
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      k8s-app: node-local-dns
+  template:
+    metadata:
+      annotations:
+        prometheus.io/port: "9253"
+        prometheus.io/scrape: "true"
+      creationTimestamp: null
+      labels:
+        k8s-app: node-local-dns
+        kops.k8s.io/managed-by: kops
+    spec:
+      containers:
+      - args:
+        - -localip=169.254.20.10
+        - -conf=/etc/Corefile
+        - -upstreamsvc=kube-dns-upstream
+        - -setupiptables=false
+        image: registry.k8s.io/dns/k8s-dns-node-cache:1.22.15
+        livenessProbe:
+          httpGet:
+            host: 169.254.20.10
+            path: /health
+            port: 3989
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+        name: node-cache
+        ports:
+        - containerPort: 53
+          name: dns
+          protocol: UDP
+        - containerPort: 53
+          name: dns-tcp
+          protocol: TCP
+        - containerPort: 9253
+          name: metrics
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 25m
+            memory: 5Mi
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN
+        volumeMounts:
+        - mountPath: /run/xtables.lock
+          name: xtables-lock
+          readOnly: false
+        - mountPath: /etc/coredns
+          name: config-volume
+        - mountPath: /etc/kube-dns
+          name: kube-dns-config
+      dnsPolicy: Default
+      hostNetwork: true
+      priorityClassName: system-node-critical
+      serviceAccountName: node-local-dns
+      tolerations:
+      - key: CriticalAddonsOnly
+        operator: Exists
+      - effect: NoExecute
+        operator: Exists
+      - effect: NoSchedule
+        operator: Exists
+      volumes:
+      - hostPath:
+          path: /run/xtables.lock
+          type: FileOrCreate
+        name: xtables-lock
+      - configMap:
+          name: kube-dns
+          optional: true
+        name: kube-dns-config
+      - configMap:
+          items:
+          - key: Corefile
+            path: Corefile.base
+          name: node-local-dns
+        name: config-volume
+  updateStrategy:
+    type: OnDelete
