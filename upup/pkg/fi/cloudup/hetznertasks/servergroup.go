@@ -59,7 +59,7 @@ func (v *ServerGroup) Find(c *fi.CloudupContext) (*ServerGroup, error) {
 	client := cloud.ServerClient()
 
 	labelSelector := []string{
-		fmt.Sprintf("%s=%s", hetzner.TagKubernetesClusterName, c.Cluster.Name),
+		fmt.Sprintf("%s=%s", hetzner.TagKubernetesClusterName, c.T.Cluster.Name),
 		fmt.Sprintf("%s=%s", hetzner.TagKubernetesInstanceGroup, fi.ValueOf(v.Name)),
 	}
 	listOptions := hcloud.ListOpts{

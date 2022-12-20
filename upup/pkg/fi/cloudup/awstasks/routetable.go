@@ -74,7 +74,7 @@ func (e *RouteTable) Find(c *fi.CloudupContext) (*RouteTable, error) {
 		var filters []*ec2.Filter
 		filters = append(filters, &ec2.Filter{
 			Name:   aws.String("tag-key"),
-			Values: aws.StringSlice([]string{"kubernetes.io/cluster/" + c.Cluster.Name}),
+			Values: aws.StringSlice([]string{"kubernetes.io/cluster/" + c.T.Cluster.Name}),
 		})
 		filters = append(filters, &ec2.Filter{
 			Name:   aws.String("tag:" + awsup.TagNameKopsRole),

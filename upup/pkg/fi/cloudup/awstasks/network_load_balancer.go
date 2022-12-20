@@ -441,7 +441,7 @@ func (e *NetworkLoadBalancer) FindAddresses(context *fi.CloudupContext) ([]strin
 	var addresses []string
 
 	cloud := context.T.Cloud.(awsup.AWSCloud)
-	cluster := context.Cluster
+	cluster := context.T.Cluster
 
 	{
 		lb, err := cloud.FindELBV2ByNameTag(e.Tags["Name"])

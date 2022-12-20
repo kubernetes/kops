@@ -190,7 +190,7 @@ func TestBootstrapUserData(t *testing.T) {
 		}
 
 		require.Contains(t, c.Tasks, "BootstrapScript/testIG")
-		err = c.Tasks["BootstrapScript/testIG"].Run(&fi.CloudupContext{Cluster: cluster})
+		err = c.Tasks["BootstrapScript/testIG"].Run(&fi.CloudupContext{T: fi.CloudupSubContext{Cluster: cluster}})
 		require.NoError(t, err, "running task")
 
 		actual, err := fi.ResourceAsString(res)
