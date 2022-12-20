@@ -28,6 +28,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
+	"k8s.io/kops/upup/pkg/fi/nodeup/install"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 )
 
@@ -53,12 +54,22 @@ type File struct {
 	Symlink         *string     `json:"symlink,omitempty"`
 	Type            string      `json:"type"`
 }
+type InstallFile struct {
+	File
+}
 
 var (
-	_ fi.NodeupTask            = &File{}
-	_ fi.NodeupHasDependencies = &File{}
-	_ fi.HasName               = &File{}
+	_ fi.InstallTask            = &InstallFile{}
+	_ fi.HasName                = &InstallFile{}
+	_ fi.NodeupTask             = &File{}
+	_ fi.InstallHasDependencies = &InstallFile{}
+	_ fi.NodeupHasDependencies  = &File{}
+	_ fi.HasName                = &File{}
 )
+
+func (e *InstallFile) GetDependencies(tasks map[string]fi.InstallTask) []fi.InstallTask {
+	return nil
+}
 
 // GetDependencies implements HasDependencies::GetDependencies
 func (e *File) GetDependencies(tasks map[string]fi.NodeupTask) []fi.NodeupTask {
@@ -95,8 +106,6 @@ func (e *File) GetDependencies(tasks map[string]fi.NodeupTask) []fi.NodeupTask {
 	return deps
 }
 
-var _ fi.HasName = &File{}
-
 func (f *File) GetName() *string {
 	return &f.Path
 }
@@ -105,6 +114,7 @@ func (f *File) String() string {
 	return fmt.Sprintf("File: %q", f.Path)
 }
 
+var _ CreatesDir = &InstallFile{}
 var _ CreatesDir = &File{}
 
 // Dir implements CreatesDir::Dir
@@ -167,9 +177,17 @@ func findFile(p string) (*File, error) {
 	return actual, nil
 }
 
-func (e *File) Find(c *fi.NodeupContext) (*File, error) {
+func (e *InstallFile) Find(_ *fi.InstallContext) (*InstallFile, error) {
+	actual, err := e.File.Find(nil)
+	if actual == nil || err != nil {
+		return nil, err
+	}
+	return &InstallFile{*actual}, nil
+}
+
+func (e *File) Find(_ *fi.NodeupContext) (*File, error) {
 	actual, err := findFile(e.Path)
-	if err != nil {
+	if actual == nil || err != nil {
 		return nil, err
 	}
 	if actual == nil {
@@ -190,11 +208,28 @@ func (e *File) Run(c *fi.NodeupContext) error {
 	return fi.NodeupDefaultDeltaRunMethod(e, c)
 }
 
-func (s *File) CheckChanges(a, e, changes *File) error {
+func (e *InstallFile) Run(c *fi.InstallContext) error {
+	return fi.InstallDefaultDeltaRunMethod(e, c)
+}
+
+func (f *File) CheckChanges(a, e, changes *File) error {
 	return nil
 }
 
-func (_ *File) RenderLocal(t *local.LocalTarget, a, e, changes *File) error {
+func (i *InstallFile) CheckChanges(a, e, changes *InstallFile) error {
+	return nil
+}
+
+func (i *InstallFile) RenderInstall(_ *install.InstallTarget, a, e, changes *InstallFile) error {
+	var actual *File
+	if a != nil {
+		actual = &a.File
+	}
+
+	return i.File.RenderLocal(nil, actual, &e.File, &changes.File)
+}
+
+func (_ *File) RenderLocal(_ *local.LocalTarget, a, e, changes *File) error {
 	dirMode := os.FileMode(0o755)
 	fileMode, err := fi.ParseFileMode(fi.ValueOf(e.Mode), 0o644)
 	if err != nil {

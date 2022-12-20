@@ -29,6 +29,7 @@ type HasDependencies[T SubContext] interface {
 }
 
 type CloudupHasDependencies = HasDependencies[CloudupSubContext]
+type InstallHasDependencies = HasDependencies[InstallSubContext]
 type NodeupHasDependencies = HasDependencies[NodeupSubContext]
 
 // NotADependency is a marker type to prevent FindTaskDependencies() from considering it a potential dependency.

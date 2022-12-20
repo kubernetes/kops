@@ -30,6 +30,7 @@ type Task[T SubContext] interface {
 }
 
 type CloudupTask = Task[CloudupSubContext]
+type InstallTask = Task[InstallSubContext]
 type NodeupTask = Task[NodeupSubContext]
 
 // TaskPreRun is implemented by tasks that perform some initial validation.
@@ -119,6 +120,7 @@ func (c *ModelBuilderContext[T]) Context() context.Context {
 	return ctx
 }
 
+type InstallModelBuilderContext = ModelBuilderContext[InstallSubContext]
 type NodeupModelBuilderContext = ModelBuilderContext[NodeupSubContext]
 type CloudupModelBuilderContext = ModelBuilderContext[CloudupSubContext]
 

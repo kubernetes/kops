@@ -25,7 +25,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/nodeup/local"
+	"k8s.io/kops/upup/pkg/fi/nodeup/install"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/distributions"
 )
@@ -44,35 +44,16 @@ func (i *Installation) Run() error {
 		return fmt.Errorf("error determining OS distribution: %v", err)
 	}
 
-	tasks := make(map[string]fi.NodeupTask)
+	tasks := make(map[string]fi.InstallTask)
 
-	buildContext := &fi.NodeupModelBuilderContext{
+	buildContext := &fi.InstallModelBuilderContext{
 		Tasks: tasks,
 	}
 	i.Build(buildContext)
 
-	// If there is a package task, we need an update packages task
-	for _, t := range tasks {
-		if _, ok := t.(*nodetasks.Package); ok {
-			klog.Infof("Package task found; adding UpdatePackages task")
-			tasks["UpdatePackages"] = nodetasks.NewUpdatePackages()
-			break
-		}
-	}
+	target := &install.InstallTarget{}
 
-	if tasks["UpdatePackages"] == nil {
-		klog.Infof("No package task found; won't update packages")
-	}
-
-	var keyStore fi.Keystore
-	var secretStore fi.SecretStore
-
-	target := &local.LocalTarget{
-		CacheDir: i.CacheDir,
-	}
-
-	checkExisting := true
-	context, err := fi.NewNodeupContext(ctx, target, nil, keyStore, secretStore, checkExisting, tasks)
+	context, err := fi.NewInstallContext(ctx, target, tasks)
 	if err != nil {
 		return fmt.Errorf("error building context: %v", err)
 	}
@@ -90,12 +71,12 @@ func (i *Installation) Run() error {
 	return nil
 }
 
-func (i *Installation) Build(c *fi.NodeupModelBuilderContext) {
+func (i *Installation) Build(c *fi.InstallModelBuilderContext) {
 	c.AddTask(i.buildEnvFile())
 	c.AddTask(i.buildSystemdJob())
 }
 
-func (i *Installation) buildEnvFile() *nodetasks.File {
+func (i *Installation) buildEnvFile() *nodetasks.InstallFile {
 	envVars := make(map[string]string)
 
 	if os.Getenv("AWS_REGION") != "" {
@@ -165,16 +146,16 @@ func (i *Installation) buildEnvFile() *nodetasks.File {
 		sysconfig += key + "=" + value + "\n"
 	}
 
-	task := &nodetasks.File{
+	task := &nodetasks.InstallFile{File: nodetasks.File{
 		Path:     "/etc/sysconfig/kops-configuration",
 		Contents: fi.NewStringResource(sysconfig),
 		Type:     nodetasks.FileType_File,
-	}
+	}}
 
 	return task
 }
 
-func (i *Installation) buildSystemdJob() *nodetasks.Service {
+func (i *Installation) buildSystemdJob() *nodetasks.InstallService {
 	command := strings.Join(i.Command, " ")
 
 	serviceName := "kops-configuration.service"
@@ -193,10 +174,10 @@ func (i *Installation) buildSystemdJob() *nodetasks.Service {
 	manifestString := manifest.Render()
 	klog.V(8).Infof("Built service manifest %q\n%s", serviceName, manifestString)
 
-	service := &nodetasks.Service{
+	service := &nodetasks.InstallService{Service: nodetasks.Service{
 		Name:       serviceName,
 		Definition: fi.PtrTo(manifestString),
-	}
+	}}
 
 	service.InitDefaults()
 
