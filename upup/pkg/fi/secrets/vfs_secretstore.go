@@ -31,22 +31,20 @@ import (
 )
 
 type VFSSecretStore struct {
+	VFSSecretStoreReader
 	cluster *kops.Cluster
-	basedir vfs.Path
 }
 
 var _ fi.SecretStore = &VFSSecretStore{}
 
 func NewVFSSecretStore(cluster *kops.Cluster, basedir vfs.Path) fi.SecretStore {
 	c := &VFSSecretStore{
+		VFSSecretStoreReader: VFSSecretStoreReader{
+			basedir: basedir,
+		},
 		cluster: cluster,
-		basedir: basedir,
 	}
 	return c
-}
-
-func (c *VFSSecretStore) VFSPath() vfs.Path {
-	return c.basedir
 }
 
 func (c *VFSSecretStore) MirrorTo(ctx context.Context, basedir vfs.Path) error {
@@ -89,23 +87,6 @@ func (c *VFSSecretStore) MirrorTo(ctx context.Context, basedir vfs.Path) error {
 	return nil
 }
 
-func BuildVfsSecretPath(basedir vfs.Path, name string) vfs.Path {
-	return basedir.Join(name)
-}
-
-func (c *VFSSecretStore) buildSecretPath(name string) vfs.Path {
-	return BuildVfsSecretPath(c.basedir, name)
-}
-
-func (c *VFSSecretStore) FindSecret(id string) (*fi.Secret, error) {
-	p := c.buildSecretPath(id)
-	s, err := c.loadSecret(p)
-	if err != nil {
-		return nil, err
-	}
-	return s, nil
-}
-
 // DeleteSecret implements fi.SecretStore DeleteSecret
 func (c *VFSSecretStore) DeleteSecret(name string) error {
 	p := c.buildSecretPath(name)
@@ -126,17 +107,6 @@ func (c *VFSSecretStore) ListSecrets() ([]string, error) {
 		ids = append(ids, id)
 	}
 	return ids, nil
-}
-
-func (c *VFSSecretStore) Secret(id string) (*fi.Secret, error) {
-	s, err := c.FindSecret(id)
-	if err != nil {
-		return nil, err
-	}
-	if s == nil {
-		return nil, fmt.Errorf("secret %q not found", id)
-	}
-	return s, nil
 }
 
 func (c *VFSSecretStore) GetOrCreateSecret(ctx context.Context, id string, secret *fi.Secret) (*fi.Secret, bool, error) {
@@ -200,21 +170,6 @@ func (c *VFSSecretStore) ReplaceSecret(id string, secret *fi.Secret) (*fi.Secret
 	s, err := c.loadSecret(p)
 	if err != nil {
 		return nil, fmt.Errorf("unable to load secret immediately after creation %v: %v", p, err)
-	}
-	return s, nil
-}
-
-func (c *VFSSecretStore) loadSecret(p vfs.Path) (*fi.Secret, error) {
-	data, err := p.ReadFile()
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, nil
-		}
-	}
-	s := &fi.Secret{}
-	err = json.Unmarshal(data, s)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing secret from %q: %v", p, err)
 	}
 	return s, nil
 }

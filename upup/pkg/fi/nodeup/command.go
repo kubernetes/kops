@@ -227,7 +227,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		NodeupConfig: &nodeupConfig,
 	}
 
-	var secretStore fi.SecretStore
+	var secretStore fi.SecretStoreReader
 	var keyStore fi.KeystoreReader
 	if nodeConfig != nil {
 		modelContext.SecretStore = configserver.NewSecretStore(nodeConfig.NodeSecrets)
@@ -238,7 +238,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			return fmt.Errorf("error building secret store path: %v", err)
 		}
 
-		secretStore = secrets.NewVFSSecretStore(c.cluster, p)
+		secretStore = secrets.NewVFSSecretStoreReader(p)
 		modelContext.SecretStore = secretStore
 	} else {
 		return fmt.Errorf("SecretStore not set")
