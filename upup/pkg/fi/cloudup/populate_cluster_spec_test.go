@@ -110,7 +110,7 @@ func TestPopulateCluster_Subnets(t *testing.T) {
 func mockedPopulateClusterSpec(ctx context.Context, c *kopsapi.Cluster, cloud fi.Cloud) (*kopsapi.Cluster, error) {
 	vfs.Context.ResetMemfsContext(true)
 
-	assetBuilder := assets.NewAssetBuilder(c, false)
+	assetBuilder := assets.NewAssetBuilder(c.Spec.Assets, c.Spec.KubernetesVersion, false)
 	basePath, err := vfs.Context.BuildVfsPath("memfs://tests")
 	if err != nil {
 		return nil, fmt.Errorf("error building vfspath: %v", err)

@@ -78,7 +78,7 @@ func TestImage(t *testing.T) {
 			}
 		}
 
-		assetBuilder := assets.NewAssetBuilder(g.Cluster, false)
+		assetBuilder := assets.NewAssetBuilder(g.Cluster.Spec.Assets, g.Cluster.Spec.KubernetesVersion, false)
 		actual, err := Image(g.Component, &g.Cluster.Spec, assetBuilder)
 		if err != nil {
 			t.Errorf("unexpected error from image %q %v: %v",
