@@ -116,7 +116,7 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		"--cloud", d.CloudProvider,
 		"--kubernetes-version", d.KubernetesVersion,
 		"--ssh-public-key", d.SSHPublicKeyPath,
-		"--override", "cluster.spec.nodePortAccess=0.0.0.0/0",
+		"--set", "cluster.spec.nodePortAccess=0.0.0.0/0",
 	}
 	if yes {
 		args = append(args, "--yes")
@@ -138,7 +138,7 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 	args = appendIfUnset(args, "--master-volume-size", "48")
 	args = appendIfUnset(args, "--node-count", "4")
 	args = appendIfUnset(args, "--node-volume-size", "48")
-	args = appendIfUnset(args, "--override", adminAccess)
+	args = appendIfUnset(args, "--set", adminAccess)
 	args = appendIfUnset(args, "--zones", strings.Join(zones, ","))
 
 	switch d.CloudProvider {
@@ -294,7 +294,7 @@ func (d *deployer) zones() ([]string, error) {
 }
 
 // appendIfUnset will append an argument and its value to args if the arg is not already present
-// This shouldn't be used for arguments that can be specified multiple times like --override
+// This shouldn't be used for arguments that can be specified multiple times like --set
 func appendIfUnset(args []string, arg, value string) []string {
 	for _, existingArg := range args {
 		existingKey := strings.Split(existingArg, "=")
