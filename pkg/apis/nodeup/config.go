@@ -80,6 +80,11 @@ type Config struct {
 	NvidiaGPU *kops.NvidiaGPUConfig `json:",omitempty"`
 	// UseInstanceIDForNodeName uses the instance ID instead of the hostname for the node name.
 	UseInstanceIDForNodeName bool `json:"useInstanceIDForNodeName,omitempty"`
+
+	// GCE-specific
+	Multizone          *bool   `json:"multizone,omitempty"`
+	NodeTags           *string `json:"nodeTags,omitempty"`
+	NodeInstancePrefix *string `json:"nodeInstancePrefix,omitempty"`
 }
 
 // BootConfig is the configuration for the nodeup binary that might be too big to fit in userdata.
@@ -165,6 +170,13 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		if warmPool.IsEnabled() && warmPool.EnableLifecycleHook {
 			config.EnableLifecycleHook = true
 		}
+	}
+
+	if cluster.Spec.CloudProvider.GCE != nil {
+		gce := cluster.Spec.CloudProvider.GCE
+		config.Multizone = gce.Multizone
+		config.NodeTags = gce.NodeTags
+		config.NodeInstancePrefix = gce.NodeInstancePrefix
 	}
 
 	if instanceGroup.Spec.UpdatePolicy != nil {
