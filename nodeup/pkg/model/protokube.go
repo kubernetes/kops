@@ -184,6 +184,7 @@ type ProtokubeFlags struct {
 func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*ProtokubeFlags, error) {
 	f := &ProtokubeFlags{
 		Channels:      t.NodeupConfig.Channels,
+		Cloud:         fi.PtrTo(string(t.BootConfig.CloudProvider)),
 		Containerized: fi.PtrTo(false),
 		LogLevel:      fi.PtrTo(int32(4)),
 		Master:        b(t.IsMaster),
@@ -225,10 +226,6 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 		internalSuffix := t.Cluster.APIInternalName()
 		internalSuffix = strings.TrimPrefix(internalSuffix, "api.")
 		f.DNSInternalSuffix = fi.PtrTo(internalSuffix)
-	}
-
-	if t.CloudProvider != "" {
-		f.Cloud = fi.PtrTo(string(t.CloudProvider))
 	}
 
 	if f.DNSInternalSuffix == nil {
@@ -284,7 +281,7 @@ func (t *ProtokubeBuilder) buildEnvFile() (*nodetasks.File, error) {
 		}
 	}
 
-	if t.CloudProvider == kops.CloudProviderDO && os.Getenv("DIGITALOCEAN_ACCESS_TOKEN") != "" {
+	if t.BootConfig.CloudProvider == kops.CloudProviderDO && os.Getenv("DIGITALOCEAN_ACCESS_TOKEN") != "" {
 		envVars["DIGITALOCEAN_ACCESS_TOKEN"] = os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
 	}
 
@@ -305,7 +302,7 @@ func (t *ProtokubeBuilder) buildEnvFile() (*nodetasks.File, error) {
 		envVars["AZURE_STORAGE_ACCOUNT"] = os.Getenv("AZURE_STORAGE_ACCOUNT")
 	}
 
-	if t.CloudProvider == kops.CloudProviderScaleway {
+	if t.BootConfig.CloudProvider == kops.CloudProviderScaleway {
 		envVars["SCW_ACCESS_KEY"] = os.Getenv("SCW_ACCESS_KEY")
 		envVars["SCW_SECRET_KEY"] = os.Getenv("SCW_SECRET_KEY")
 		envVars["SCW_DEFAULT_PROJECT_ID"] = os.Getenv("SCW_DEFAULT_PROJECT_ID")

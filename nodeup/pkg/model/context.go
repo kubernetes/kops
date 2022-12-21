@@ -76,8 +76,6 @@ type NodeupModelContext struct {
 	ConfigurationMode string
 	InstanceID        string
 	MachineType       string
-
-	CloudProvider kops.CloudProviderID
 }
 
 // Init completes initialization of the object, for example pre-parsing the kubernetes version
@@ -373,7 +371,7 @@ func (c *NodeupModelContext) UsesSecondaryIP() bool {
 	return (c.Cluster.Spec.Networking.CNI != nil && c.Cluster.Spec.Networking.CNI.UsesSecondaryIP) ||
 		c.Cluster.Spec.Networking.AmazonVPC != nil ||
 		(c.Cluster.Spec.Networking.Cilium != nil && c.Cluster.Spec.Networking.Cilium.IPAM == kops.CiliumIpamEni) ||
-		c.CloudProvider == kops.CloudProviderHetzner
+		c.BootConfig.CloudProvider == kops.CloudProviderHetzner
 }
 
 // UseBootstrapTokens checks if we are using bootstrap tokens
@@ -601,19 +599,19 @@ func (c *NodeupModelContext) InstallNvidiaRuntime() bool {
 
 // RunningOnGCE returns true if we are running on GCE
 func (c *NodeupModelContext) RunningOnGCE() bool {
-	return c.CloudProvider == kops.CloudProviderGCE
+	return c.BootConfig.CloudProvider == kops.CloudProviderGCE
 }
 
 // RunningOnAzure returns true if we are running on Azure
 func (c *NodeupModelContext) RunningOnAzure() bool {
-	return c.CloudProvider == kops.CloudProviderAzure
+	return c.BootConfig.CloudProvider == kops.CloudProviderAzure
 }
 
 // GetMetadataLocalIP returns the local IP address read from metadata
 func (c *NodeupModelContext) GetMetadataLocalIP() (string, error) {
 	var internalIP string
 
-	switch c.CloudProvider {
+	switch c.BootConfig.CloudProvider {
 	case kops.CloudProviderAWS:
 		sess := session.Must(session.NewSession())
 		metadata := ec2metadata.New(sess)
@@ -651,7 +649,7 @@ func (c *NodeupModelContext) GetMetadataLocalIP() (string, error) {
 		}
 
 	default:
-		return "", fmt.Errorf("getting local IP from metadata is not supported for cloud provider: %q", c.CloudProvider)
+		return "", fmt.Errorf("getting local IP from metadata is not supported for cloud provider: %q", c.BootConfig.CloudProvider)
 	}
 
 	return internalIP, nil

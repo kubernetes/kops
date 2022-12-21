@@ -45,7 +45,7 @@ func (b BootstrapClientBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 
 	var authenticator bootstrap.Authenticator
 	var err error
-	switch b.CloudProvider {
+	switch b.BootConfig.CloudProvider {
 	case kops.CloudProviderAWS:
 		authenticator, err = awsup.NewAWSAuthenticator(b.Cloud.Region())
 	case kops.CloudProviderGCE:
@@ -56,7 +56,7 @@ func (b BootstrapClientBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		authenticator, err = hetzner.NewHetznerAuthenticator()
 
 	default:
-		return fmt.Errorf("unsupported cloud provider for authenticator %q", b.CloudProvider)
+		return fmt.Errorf("unsupported cloud provider for authenticator %q", b.BootConfig.CloudProvider)
 	}
 
 	if err != nil {

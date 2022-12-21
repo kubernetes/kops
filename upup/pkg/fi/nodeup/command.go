@@ -182,12 +182,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("nodeup config hash mismatch (was %q, expected %q)", got, want)
 	}
 
-	cloudProvider := bootConfig.CloudProvider
-	if cloudProvider == "" {
-		cloudProvider = c.cluster.Spec.GetCloudProvider()
-	}
-
-	err = evaluateSpec(c, &nodeupConfig, cloudProvider)
+	err = evaluateSpec(c, &nodeupConfig, bootConfig.CloudProvider)
 	if err != nil {
 		return err
 	}
@@ -213,7 +208,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 
 	var cloud fi.Cloud
 
-	if cloudProvider == api.CloudProviderAWS {
+	if bootConfig.CloudProvider == api.CloudProviderAWS {
 		awsCloud, err := awsup.NewAWSCloud(region, nil)
 		if err != nil {
 			return err
@@ -222,15 +217,14 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	}
 
 	modelContext := &model.NodeupModelContext{
-		Cloud:         cloud,
-		CloudProvider: cloudProvider,
-		Architecture:  architecture,
-		Assets:        assetStore,
-		Cluster:       c.cluster,
-		ConfigBase:    configBase,
-		Distribution:  distribution,
-		BootConfig:    &bootConfig,
-		NodeupConfig:  &nodeupConfig,
+		Cloud:        cloud,
+		Architecture: architecture,
+		Assets:       assetStore,
+		Cluster:      c.cluster,
+		ConfigBase:   configBase,
+		Distribution: distribution,
+		BootConfig:   &bootConfig,
+		NodeupConfig: &nodeupConfig,
 	}
 
 	var secretStore fi.SecretStore
@@ -269,7 +263,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return err
 	}
 
-	if cloudProvider == api.CloudProviderAWS {
+	if bootConfig.CloudProvider == api.CloudProviderAWS {
 		instanceIDBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/instance-id")
 		if err != nil {
 			return fmt.Errorf("error reading instance-id from AWS metadata: %v", err)
@@ -301,7 +295,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 				modelContext.GPUVendor = architectures.GPUVendorNvidia
 			}
 		}
-	} else if cloudProvider == api.CloudProviderOpenstack {
+	} else if bootConfig.CloudProvider == api.CloudProviderOpenstack {
 		// NvidiaGPU possible to enable only in instance group level in OpenStack. When we assume that GPU is supported
 		if nodeupConfig.NvidiaGPU != nil && fi.ValueOf(nodeupConfig.NvidiaGPU.Enabled) {
 			klog.Info("instance supports GPU acceleration")
@@ -398,7 +392,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	}
 
 	if nodeupConfig.EnableLifecycleHook {
-		if cloudProvider == api.CloudProviderAWS {
+		if bootConfig.CloudProvider == api.CloudProviderAWS {
 			err := completeWarmingLifecycleAction(cloud.(awsup.AWSCloud), modelContext)
 			if err != nil {
 				return fmt.Errorf("failed to complete lifecylce action: %w", err)
