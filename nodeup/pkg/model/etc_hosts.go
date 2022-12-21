@@ -53,7 +53,7 @@ func (b *EtcHostsBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		})
 		if b.UseKopsControllerForNodeBootstrap() {
 			task.Records = append(task.Records, nodetasks.HostRecord{
-				Hostname:  "kops-controller.internal." + b.Cluster.Name,
+				Hostname:  "kops-controller.internal." + b.NodeupConfig.ClusterName,
 				Addresses: []string{b.BootConfig.APIServerIP},
 			})
 		}

@@ -190,7 +190,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 		Master:        b(t.IsMaster),
 	}
 
-	f.ClusterID = fi.PtrTo(t.Cluster.ObjectMeta.Name)
+	f.ClusterID = fi.PtrTo(t.NodeupConfig.ClusterName)
 
 	zone := t.Cluster.Spec.DNSZone
 	if zone != "" {
@@ -208,7 +208,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 	}
 
 	if t.Cluster.IsGossip() {
-		klog.Warningf("Cluster name %q implies gossip DNS", t.Cluster.Name)
+		klog.Warningf("Cluster name %q implies gossip DNS", t.NodeupConfig.ClusterName)
 		f.Gossip = fi.PtrTo(true)
 		if t.Cluster.Spec.GossipConfig != nil {
 			f.GossipProtocol = t.Cluster.Spec.GossipConfig.Protocol
@@ -229,7 +229,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 	}
 
 	if f.DNSInternalSuffix == nil {
-		f.DNSInternalSuffix = fi.PtrTo(".internal." + t.Cluster.ObjectMeta.Name)
+		f.DNSInternalSuffix = fi.PtrTo(".internal." + t.NodeupConfig.ClusterName)
 	}
 
 	f.BootstrapMasterNodeLabels = true

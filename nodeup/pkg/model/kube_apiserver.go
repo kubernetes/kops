@@ -511,7 +511,7 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 	// we need to replace 127.0.0.1 for etcd urls with the dns names in case this apiserver is not
 	// running on master nodes
 	if !b.IsMaster {
-		clusterName := b.Cluster.ObjectMeta.Name
+		clusterName := b.NodeupConfig.ClusterName
 		mainEtcdDNSName := "main.etcd." + clusterName
 		eventsEtcdDNSName := "events.etcd." + clusterName
 		for i := range kubeAPIServer.EtcdServers {

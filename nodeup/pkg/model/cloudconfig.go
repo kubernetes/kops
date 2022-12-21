@@ -228,7 +228,7 @@ func (b *CloudConfigBuilder) build(c *fi.NodeupModelBuilderContext, inTree bool)
 
 		vnetName := b.Cluster.Spec.Networking.NetworkID
 		if vnetName == "" {
-			vnetName = b.Cluster.Name
+			vnetName = b.NodeupConfig.ClusterName
 		}
 
 		az := b.Cluster.Spec.CloudProvider.Azure
