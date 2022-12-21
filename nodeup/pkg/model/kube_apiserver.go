@@ -373,7 +373,7 @@ func (b *KubeAPIServerBuilder) writeServerCertificate(c *fi.NodeupModelBuilderCo
 		if b.Cluster.Spec.API.PublicName != "" {
 			alternateNames = append(alternateNames, b.Cluster.Spec.API.PublicName)
 		}
-		alternateNames = append(alternateNames, b.Cluster.APIInternalName())
+		alternateNames = append(alternateNames, "api.internal."+b.NodeupConfig.ClusterName)
 		alternateNames = append(alternateNames, b.Cluster.Spec.API.AdditionalSANs...)
 
 		// Load balancer IPs passed in through NodeupConfig
@@ -514,7 +514,7 @@ func (b *KubeAPIServerBuilder) buildPod(ctx context.Context, kubeAPIServer *kops
 	// we need to replace 127.0.0.1 for etcd urls with the dns names in case this apiserver is not
 	// running on master nodes
 	if !b.IsMaster {
-		clusterName := b.Cluster.ObjectMeta.Name
+		clusterName := b.NodeupConfig.ClusterName
 		mainEtcdDNSName := "main.etcd.internal." + clusterName
 		eventsEtcdDNSName := "events.etcd.internal." + clusterName
 		for i := range kubeAPIServer.EtcdServers {
@@ -735,7 +735,7 @@ func (b *KubeAPIServerBuilder) buildAnnotations() map[string]string {
 	}
 
 	if b.Cluster.Spec.API.LoadBalancer == nil || !b.Cluster.Spec.API.LoadBalancer.UseForInternalAPI {
-		annotations["dns.alpha.kubernetes.io/internal"] = b.Cluster.APIInternalName()
+		annotations["dns.alpha.kubernetes.io/internal"] = "api.internal." + b.NodeupConfig.ClusterName
 	}
 
 	if b.Cluster.Spec.API.DNS != nil && b.Cluster.Spec.API.PublicName != "" {

@@ -33,6 +33,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/nodeup"
+	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -68,6 +69,9 @@ type NodeupModelContext struct {
 	// HasAPIServer is true if the InstanceGroup has a role of master or apiserver (pupulated by Init)
 	HasAPIServer bool
 
+	// IsGossip is true if the cluster runs Gossip DNS.
+	IsGossip bool
+
 	kubernetesVersion   semver.Version
 	bootstrapCerts      map[string]*nodetasks.BootstrapCert
 	bootstrapKeypairIDs map[string]string
@@ -97,6 +101,11 @@ func (c *NodeupModelContext) Init() error {
 	if role == kops.InstanceGroupRoleControlPlane || role == kops.InstanceGroupRoleAPIServer {
 		c.HasAPIServer = true
 	}
+
+	if !c.Cluster.UsesNoneDNS() && dns.IsGossipClusterName(c.NodeupConfig.ClusterName) {
+		c.IsGossip = true
+	}
+
 	return nil
 }
 
@@ -233,7 +242,7 @@ func (c *NodeupModelContext) BuildIssuedKubeconfig(name string, subject nodetask
 		// @note: use https even for local connections, so we can turn off the insecure port
 		kubeConfig.ServerURL = "https://127.0.0.1"
 	} else {
-		kubeConfig.ServerURL = "https://" + c.Cluster.APIInternalName()
+		kubeConfig.ServerURL = "https://api.internal." + c.NodeupConfig.ClusterName
 	}
 	ctx.AddTask(kubeConfig)
 	return kubeConfig.GetConfig()
@@ -277,7 +286,7 @@ func (c *NodeupModelContext) BuildBootstrapKubeconfig(name string, ctx *fi.Nodeu
 			// @note: use https even for local connections, so we can turn off the insecure port
 			kubeConfig.ServerURL = "https://127.0.0.1"
 		} else {
-			kubeConfig.ServerURL = "https://" + c.Cluster.APIInternalName()
+			kubeConfig.ServerURL = "https://api.internal." + c.NodeupConfig.ClusterName
 		}
 
 		err = ctx.EnsureTask(kubeConfig)
@@ -325,7 +334,7 @@ func (c *NodeupModelContext) BuildBootstrapKubeconfig(name string, ctx *fi.Nodeu
 			// This code path is used for the kubelet cert in Kubernetes 1.18 and earlier.
 			kubeConfig.ServerURL = "https://127.0.0.1"
 		} else {
-			kubeConfig.ServerURL = "https://" + c.Cluster.APIInternalName()
+			kubeConfig.ServerURL = "https://api.internal." + c.NodeupConfig.ClusterName
 		}
 
 		err = kubeConfig.Run(nil)

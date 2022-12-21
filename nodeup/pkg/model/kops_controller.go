@@ -60,7 +60,7 @@ func (b *KopsControllerBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		KeypairID:      b.NodeupConfig.KeypairIDs[fi.CertificateIDCA],
 		Type:           "server",
 		Subject:        nodetasks.PKIXName{CommonName: "kops-controller"},
-		AlternateNames: []string{"kops-controller.internal." + b.Cluster.ObjectMeta.Name},
+		AlternateNames: []string{"kops-controller.internal." + b.NodeupConfig.ClusterName},
 	}
 	if b.BootConfig.APIServerIP != "" {
 		issueCert.AlternateNames = append(issueCert.AlternateNames, b.BootConfig.APIServerIP)
