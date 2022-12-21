@@ -153,6 +153,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			return fmt.Errorf("unexpected object type for Cluster %s: %T", clusterDescription, o)
 		}
 	}
+	c.cluster.Name = "use NodeupConfig.ClusterName instead"
 
 	var nodeupConfig nodeup.Config
 	var nodeupConfigHash [32]byte
@@ -418,7 +419,7 @@ func getMachineType() (string, error) {
 }
 
 func completeWarmingLifecycleAction(cloud awsup.AWSCloud, modelContext *model.NodeupModelContext) error {
-	asgName := modelContext.BootConfig.InstanceGroupName + "." + modelContext.Cluster.GetName()
+	asgName := modelContext.BootConfig.InstanceGroupName + "." + modelContext.NodeupConfig.ClusterName
 	hookName := "kops-warmpool"
 	svc := cloud.Autoscaling()
 	hooks, err := svc.DescribeLifecycleHooks(&autoscaling.DescribeLifecycleHooksInput{
