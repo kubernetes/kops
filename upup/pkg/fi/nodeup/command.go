@@ -253,7 +253,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			return fmt.Errorf("error building key store path: %v", err)
 		}
 
-		modelContext.KeyStore = fi.NewVFSCAStore(c.cluster, p)
+		modelContext.KeyStore = fi.NewVFSKeystoreReader(p)
 		keyStore = modelContext.KeyStore
 	} else {
 		return fmt.Errorf("KeyStore not set")
