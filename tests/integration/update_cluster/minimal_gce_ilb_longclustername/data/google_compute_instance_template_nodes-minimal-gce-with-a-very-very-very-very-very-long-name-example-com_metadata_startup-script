@@ -124,8 +124,6 @@ ensure-install-dir
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   manageStorageClasses: true
-  multizone: true
-  nodeTags: minimal-gce-with-a-very-very-very-very--96dqvi-k8s-io-role-node
 containerRuntime: containerd
 containerd:
   logLevel: info
@@ -187,7 +185,7 @@ ConfigServer:
   server: https://kops-controller.internal.minimal-gce-with-a-very-very-very-very-very-long-name.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: cBetjY2lAKCab/hj4GkPJZHfvO9ZqHPIMW1m3uoDr0I=
+NodeupConfigHash: hS9DIjv/IHzzeGUQh+YybjSbp8f/MZy40cBi5b+jAcE=
 
 __EOF_KUBE_ENV
 

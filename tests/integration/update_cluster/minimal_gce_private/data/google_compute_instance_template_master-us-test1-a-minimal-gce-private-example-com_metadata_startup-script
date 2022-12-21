@@ -124,8 +124,6 @@ ensure-install-dir
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   manageStorageClasses: true
-  multizone: true
-  nodeTags: minimal-gce-private-example-com-k8s-io-role-node
 containerRuntime: containerd
 containerd:
   logLevel: info
@@ -252,7 +250,7 @@ CloudProvider: gce
 ConfigBase: memfs://tests/minimal-gce-private.example.com
 InstanceGroupName: master-us-test1-a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: vycHqsmL2AK9kn7msnSH1gX4uxg1MkgLhXQqNY0uJ88=
+NodeupConfigHash: KJekz8CfBi+4tWNDPL9O4rRC5mQ9v4FZLaNmzTs1JL0=
 
 __EOF_KUBE_ENV
 
