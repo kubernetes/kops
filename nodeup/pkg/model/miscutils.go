@@ -49,6 +49,8 @@ func (b *MiscUtilsBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		packages = append(packages, "wget")
 		packages = append(packages, "python2")
 		packages = append(packages, "git")
+	} else if b.Distribution.IsDebianFamily() {
+		klog.V(2).Infof("Detected debian; won't install misc. utils")
 	} else {
 		klog.Warningf("unknown distribution, skipping misc utils install: %v", b.Distribution)
 		return nil
