@@ -30,8 +30,8 @@ KOPS_BASE_URL="https://artifacts.k8s.io/binaries/kops/1.21.5"
 KOPS=$(kops-download-from-base)
 
 # Start with a cluster running nodeTerminationHandler
-ARGS="--set=cluster.spec.nodeTerminationHandler.enabled=true"
-ARGS="${ARGS} --set=cluster.spec.nodeTerminationHandler.enableSQSTerminationDraining=false"
+ARGS="--set=cluster.spec.cloudProvider.aws.nodeTerminationHandler.enabled=true"
+ARGS="${ARGS} --set=cluster.spec.cloudProvider.aws.nodeTerminationHandler.enableSQSTerminationDraining=false"
 
 ${KUBETEST2} \
     --up \
@@ -51,7 +51,7 @@ kops-acquire-latest
 cp "${KOPS}" "${WORKSPACE}/kops"
 
 # Switch to queue mode. This should remove the DS and install a Deployment instead
-kops edit cluster "${CLUSTER_NAME}" "--set=cluster.spec.nodeTerminationHandler.enableSQSTerminationDraining=true"
+kops edit cluster "${CLUSTER_NAME}" "--set=cluster.spec.cloudProvider.aws.nodeTerminationHandler.enableSQSTerminationDraining=true"
 
 # allow downgrade is a bug where the version written to VFS is not the same as the running version.
 kops update cluster --allow-kops-downgrade
