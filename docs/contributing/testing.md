@@ -86,7 +86,7 @@ kubetest2 kops \
 If you don't specify any additional flags, the kOps deployer Go module will create a kubernetes cluster using the following defaults.
 
 ```shell
-kops create cluster --name my.testcluster.com --admin-access <Client Public IP> --cloud aws --kubernetes-version v1.20.2 --master-count 1 --master-volume-size 48 --node-count 4 --node-volume-size 48 --override cluster.spec.nodePortAccess=0.0.0.0/0 --ssh-public-key /home/ubuntu/.ssh/id_rsa.pub --yes --zones <Random Zone> --master-size c5.large --networking calico
+kops create cluster --name my.testcluster.com --admin-access <Client Public IP> --cloud aws --kubernetes-version v1.20.2 --master-count 1 --master-volume-size 48 --node-count 4 --node-volume-size 48 --set cluster.spec.nodePortAccess=0.0.0.0/0 --ssh-public-key /home/ubuntu/.ssh/id_rsa.pub --yes --zones <Random Zone> --master-size c5.large --networking calico
 ```
 
 For the `--zones` flag, the kOps deployer will select a random zone based on the `--cloud-provider` flag, for `aws` the full list of AWS zones can be found [here](https://github.com/kubernetes/kops/blob/master/tests/e2e/kubetest2-kops/aws/zones.go) and for `gce` the full list of GCE zones can be found [here](https://github.com/kubernetes/kops/blob/master/tests/e2e/kubetest2-kops/gce/zones.go).
