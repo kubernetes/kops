@@ -44,7 +44,6 @@ export KOPS_BASE_URL
 export KOPS
 export CHANNELS
 
-export KOPS_FEATURE_FLAGS="SpecOverrideFlag"
 export KOPS_RUN_TOO_NEW_VERSION=1
 
 if [[ -z "${DISCOVERY_STORE-}" ]]; then 
