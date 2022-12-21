@@ -16,6 +16,9 @@ spec:
     gceServiceAccount: gce-sa
     gcpPDCSIDriver:
       enabled: true
+    multizone: true
+    nodeInstancePrefix: instancePrefix
+    nodeTags: tagone,tagtwo
   cloudProvider: gce
   configBase: memfs://clusters.example.com/minimal.example.com
   etcdClusters:

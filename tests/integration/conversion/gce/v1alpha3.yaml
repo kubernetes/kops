@@ -17,6 +17,9 @@ spec:
   cloudConfig: {}
   cloudProvider:
     gce:
+      multizone: true
+      nodeInstancePrefix: instancePrefix
+      nodeTags: tagone,tagtwo
       pdCSIDriver:
         enabled: true
       project: testProject
