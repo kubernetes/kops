@@ -60,7 +60,7 @@ type NodeupModelContext struct {
 	KeyStore     fi.KeystoreReader
 	BootConfig   *nodeup.BootConfig
 	NodeupConfig *nodeup.Config
-	SecretStore  fi.SecretStore
+	SecretStore  fi.SecretStoreReader
 
 	// IsMaster is true if the InstanceGroup has a role of master (populated by Init)
 	IsMaster bool
