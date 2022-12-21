@@ -26,13 +26,17 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
-type SecretStore interface {
+type SecretStoreReader interface {
 	// Secret returns a secret.  Returns an error if not found
 	Secret(id string) (*Secret, error)
-	// DeleteSecret deletes the specified secret
-	DeleteSecret(id string) error
 	// FindSecret finds a secret, if exists.  Returns nil,nil if not found
 	FindSecret(id string) (*Secret, error)
+}
+
+type SecretStore interface {
+	SecretStoreReader
+	// DeleteSecret deletes the specified secret
+	DeleteSecret(id string) error
 	// GetOrCreateSecret creates a secret
 	GetOrCreateSecret(ctx context.Context, id string, secret *Secret) (current *Secret, created bool, err error)
 	// ReplaceSecret will forcefully update an existing secret if it exists
