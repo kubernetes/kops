@@ -149,8 +149,8 @@ func (d *deployer) verifyKopsFlags() error {
 		if err != nil {
 			return err
 		}
-		klog.Infof("Using cluster name: %v", d.ClusterName)
 		d.ClusterName = name
+		klog.Infof("Using cluster name: %v", d.ClusterName)
 	}
 
 	if d.KopsBinaryPath == "" && d.KopsVersionMarker == "" {
