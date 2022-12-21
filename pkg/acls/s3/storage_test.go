@@ -37,7 +37,7 @@ func Test_Strategy(t *testing.T) {
 	cluster := &kops.Cluster{
 		Spec: kops.ClusterSpec{
 			ConfigStore: "s3://my_state_store/cluster",
-			Assets: &kops.Assets{
+			Assets: &kops.AssetsSpec{
 				FileRepository: values.String("https://s3.amazonaws.com/test"),
 			},
 		},
@@ -66,7 +66,7 @@ func Test_In_StateStore(t *testing.T) {
 	cluster := &kops.Cluster{
 		Spec: kops.ClusterSpec{
 			ConfigStore: "s3://my_state_store/cluster",
-			Assets: &kops.Assets{
+			Assets: &kops.AssetsSpec{
 				FileRepository: values.String("https://s3.amazonaws.com/my_state_store/opps"),
 			},
 		},

@@ -58,7 +58,7 @@ func getTestSetupOS(t *testing.T, ctx context.Context) (*RollingUpdateCluster, *
 		t.Fatalf("Failed to perform assignments: %v", err)
 	}
 
-	assetBuilder := assets.NewAssetBuilder(inCluster, false)
+	assetBuilder := assets.NewAssetBuilder(inCluster.Spec.Assets, inCluster.Spec.KubernetesVersion, false)
 	basePath, _ := vfs.Context.BuildVfsPath(inCluster.Spec.ConfigBase)
 	clientset := vfsclientset.NewVFSClientset(basePath)
 	cluster, err := cloudup.PopulateClusterSpec(ctx, clientset, inCluster, mockcloud, assetBuilder)
