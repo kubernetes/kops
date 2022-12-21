@@ -21,16 +21,16 @@ export KOPS_BASE_URL
 KOPS_BASE_URL="$(curl -s https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt)"
 KOPS=$(kops-download-from-base)
 
-ARGS="--override=cluster.spec.networking.cilium.hubble.enabled=true --override=cluster.spec.certManager.enabled=true"
+ARGS="--set=cluster.spec.networking.cilium.hubble.enabled=true --set=cluster.spec.certManager.enabled=true"
 
 if [[ $1 == "kube-proxy" ]]; then
-    ARGS="${ARGS} --override=cluster.spec.networking.cilium.enableNodePort=false --override=cluster.spec.kubeProxy.enabled=true"
+    ARGS="${ARGS} --set=cluster.spec.networking.cilium.enableNodePort=false --set=cluster.spec.kubeProxy.enabled=true"
 # This test requires private topology, which kubetest2 does not support.
 #elif [[ $1 == "eni"]]
-#    ARGS="${ARGS} --override=cluster.spec.cilium.ipam=eni --override=cluster.spec.cilium.disable-masquerade"
+#    ARGS="${ARGS} --set=cluster.spec.cilium.ipam=eni --set=cluster.spec.cilium.disable-masquerade"
 #    ARGS="${ARGS} --topology private"
 elif [[ $1 == "node-local-dns" ]]; then
-    ARGS="${ARGS} --override=cluster.spec.kubeDNS.provider=CoreDNS --override=cluster.spec.kubeDNS.nodeLocalDNS.enabled=true"
+    ARGS="${ARGS} --set=cluster.spec.kubeDNS.provider=CoreDNS --set=cluster.spec.kubeDNS.nodeLocalDNS.enabled=true"
 fi
 
 ${KUBETEST2} \
