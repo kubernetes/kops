@@ -438,6 +438,23 @@ func (c *VFSContext) getGCSClient(ctx context.Context) (*storage.Service, error)
 	return gcsClient, nil
 }
 
+// getSwiftClient returns the openstack switch client, caching it for future calls
+func (c *VFSContext) getSwiftClient(ctx context.Context) (*gophercloud.ServiceClient, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	if c.swiftClient != nil {
+		return c.swiftClient, nil
+	}
+
+	swiftClient, err := NewSwiftClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+	c.swiftClient = swiftClient
+	return swiftClient, nil
+}
+
 func (c *VFSContext) buildOpenstackSwiftPath(p string) (*SwiftPath, error) {
 	u, err := url.Parse(p)
 	if err != nil {
@@ -453,15 +470,7 @@ func (c *VFSContext) buildOpenstackSwiftPath(p string) (*SwiftPath, error) {
 		return nil, fmt.Errorf("invalid swift path: %q", p)
 	}
 
-	if c.swiftClient == nil {
-		swiftClient, err := NewSwiftClient()
-		if err != nil {
-			return nil, err
-		}
-		c.swiftClient = swiftClient
-	}
-
-	return NewSwiftPath(c.swiftClient, bucket, u.Path)
+	return NewSwiftPath(c, bucket, u.Path)
 }
 
 func (c *VFSContext) buildAzureBlobPath(p string) (*AzureBlobPath, error) {
