@@ -276,6 +276,8 @@ containerdConfig:
 etcdManifests:
 - memfs://tests/minimal-gce-with-a-very-very-very-very-very-long-name.example.com/manifests/etcd/main-master-us-test1-a.yaml
 - memfs://tests/minimal-gce-with-a-very-very-very-very-very-long-name.example.com/manifests/etcd/events-master-us-test1-a.yaml
+multizone: true
+nodeTags: minimal-gce-with-a-very-very-very-very--96dqvi-k8s-io-role-node
 staticManifests:
 - key: kube-apiserver-healthcheck
   path: manifests/static/kube-apiserver-healthcheck.yaml
