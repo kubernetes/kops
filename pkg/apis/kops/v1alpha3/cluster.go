@@ -140,7 +140,7 @@ type ClusterSpec struct {
 	// Hooks for custom actions e.g. on first installation
 	Hooks []HookSpec `json:"hooks,omitempty"`
 	// Alternative locations for files and containers
-	Assets *Assets `json:"assets,omitempty"`
+	Assets *AssetsSpec `json:"assets,omitempty"`
 	// IAM field adds control over the IAM security policies applied to resources
 	IAM *IAMSpec `json:"iam,omitempty"`
 	// EncryptionConfig holds the encryption config
@@ -295,8 +295,8 @@ type FileAssetSpec struct {
 	Mode string `json:"mode,omitempty"`
 }
 
-// Assets defined the privately hosted assets
-type Assets struct {
+// AssetsSpec defined the privately hosted assets
+type AssetsSpec struct {
 	// ContainerRegistry is a url for to a docker registry
 	ContainerRegistry *string `json:"containerRegistry,omitempty"`
 	// FileRepository is the url for a private file serving repository

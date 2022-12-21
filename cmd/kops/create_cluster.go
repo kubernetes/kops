@@ -649,7 +649,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		return err
 	}
 
-	assetBuilder := assets.NewAssetBuilder(cluster, false)
+	assetBuilder := assets.NewAssetBuilder(cluster.Spec.Assets, cluster.Spec.KubernetesVersion, false)
 	fullCluster, err := cloudup.PopulateClusterSpec(ctx, clientset, cluster, cloud, assetBuilder)
 	if err != nil {
 		return err
