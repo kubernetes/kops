@@ -23,7 +23,6 @@ import (
 	"os"
 	"sort"
 	"strings"
-	"sync"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -32,17 +31,13 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/pkg/kopscodecs"
-	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/pkg/sshcredentials"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
 type VFSCAStore struct {
-	basedir vfs.Path
+	VFSKeystoreReader
 	cluster *kops.Cluster
-
-	mutex    sync.Mutex
-	cachedCA *Keyset
 }
 
 var (
@@ -52,7 +47,9 @@ var (
 
 func NewVFSCAStore(cluster *kops.Cluster, basedir vfs.Path) *VFSCAStore {
 	c := &VFSCAStore{
-		basedir: basedir,
+		VFSKeystoreReader: VFSKeystoreReader{
+			basedir: basedir,
+		},
 		cluster: cluster,
 	}
 
@@ -63,66 +60,13 @@ func NewVFSCAStore(cluster *kops.Cluster, basedir vfs.Path) *VFSCAStore {
 func NewVFSSSHCredentialStore(cluster *kops.Cluster, basedir vfs.Path) SSHCredentialStore {
 	// Note currently identical to NewVFSCAStore
 	c := &VFSCAStore{
-		basedir: basedir,
+		VFSKeystoreReader: VFSKeystoreReader{
+			basedir: basedir,
+		},
 		cluster: cluster,
 	}
 
 	return c
-}
-
-func (c *VFSCAStore) VFSPath() vfs.Path {
-	return c.basedir
-}
-
-func (c *VFSCAStore) buildPrivateKeyPoolPath(name string) vfs.Path {
-	return c.basedir.Join("private", name)
-}
-
-func (c *VFSCAStore) parseKeysetYaml(data []byte) (*kops.Keyset, bool, error) {
-	defaultReadVersion := v1alpha2.SchemeGroupVersion.WithKind("Keyset")
-
-	object, gvk, err := kopscodecs.Decode(data, &defaultReadVersion)
-	if err != nil {
-		return nil, false, fmt.Errorf("error parsing keyset: %v", err)
-	}
-
-	keyset, ok := object.(*kops.Keyset)
-	if !ok {
-		return nil, false, fmt.Errorf("object was not a keyset, was a %T", object)
-	}
-
-	if gvk == nil {
-		return nil, false, fmt.Errorf("object did not have GroupVersionKind: %q", keyset.Name)
-	}
-
-	return keyset, gvk.Version != keysetFormatLatest, nil
-}
-
-// loadKeyset loads a Keyset from the path.
-// Returns (nil, nil) if the file is not found
-// Bundles avoid the need for a list-files permission, which can be tricky on e.g. GCE
-func (c *VFSCAStore) loadKeyset(ctx context.Context, p vfs.Path) (*Keyset, error) {
-	bundlePath := p.Join("keyset.yaml")
-	data, err := bundlePath.ReadFile(ctx)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, nil
-		}
-		return nil, fmt.Errorf("unable to read bundle %q: %v", p, err)
-	}
-
-	o, legacyFormat, err := c.parseKeysetYaml(data)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing bundle %q: %v", p, err)
-	}
-
-	keyset, err := parseKeyset(o)
-	if err != nil {
-		return nil, fmt.Errorf("error mapping bundle %q: %v", p, err)
-	}
-
-	keyset.LegacyFormat = legacyFormat
-	return keyset, nil
 }
 
 func (k *Keyset) ToAPIObject(name string) (*kops.Keyset, error) {
@@ -209,33 +153,6 @@ func serializeKeysetBundle(o *kops.Keyset) ([]byte, error) {
 		return nil, fmt.Errorf("error serializing keyset: %v", err)
 	}
 	return objectData.Bytes(), nil
-}
-
-// FindPrimaryKeypair implements pki.Keystore
-func (c *VFSCAStore) FindPrimaryKeypair(ctx context.Context, name string) (*pki.Certificate, *pki.PrivateKey, error) {
-	return FindPrimaryKeypair(ctx, c, name)
-}
-
-var legacyKeysetMappings = map[string]string{
-	// The strange name is because kOps prior to 1.19 used the api-server TLS key for this.
-	"service-account": "master",
-	// Renamed in kOps 1.22
-	"kubernetes-ca": "ca",
-}
-
-// FindKeyset implements KeystoreReader.
-func (c *VFSCAStore) FindKeyset(ctx context.Context, id string) (*Keyset, error) {
-	keys, err := c.findPrivateKeyset(ctx, id)
-	if keys == nil || os.IsNotExist(err) {
-		if legacyId := legacyKeysetMappings[id]; legacyId != "" {
-			keys, err = c.findPrivateKeyset(ctx, legacyId)
-			if keys != nil {
-				keys.LegacyFormat = true
-			}
-		}
-	}
-
-	return keys, err
 }
 
 // ListKeysets implements CAStore::ListKeysets
@@ -364,40 +281,6 @@ func (c *VFSCAStore) StoreKeyset(ctx context.Context, name string, keyset *Keyse
 	}
 
 	return nil
-}
-
-func (c *VFSCAStore) findPrivateKeyset(ctx context.Context, id string) (*Keyset, error) {
-	var keys *Keyset
-	var err error
-	if id == CertificateIDCA {
-		c.mutex.Lock()
-		defer c.mutex.Unlock()
-
-		cached := c.cachedCA
-		if cached != nil {
-			return cached, nil
-		}
-
-		keys, err = c.loadKeyset(ctx, c.buildPrivateKeyPoolPath(id))
-		if err != nil {
-			return nil, err
-		}
-
-		if keys == nil {
-			klog.Warningf("CA private key was not found")
-			// We no longer generate CA certificates automatically - too race-prone
-		} else {
-			c.cachedCA = keys
-		}
-	} else {
-		p := c.buildPrivateKeyPoolPath(id)
-		keys, err = c.loadKeyset(ctx, p)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return keys, nil
 }
 
 // AddSSHPublicKey stores an SSH public key
