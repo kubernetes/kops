@@ -16,8 +16,6 @@
 
 REPO_ROOT=$(git rev-parse --show-toplevel)
 SCENARIO_ROOT="${REPO_ROOT}/tests/e2e/scenarios/upgrade-ha-leader-migration"
-KOPS_FEATURE_FLAGS=SpecOverrideFlag
-export KOPS_FEATURE_FLAGS
 (cd "$REPO_ROOT" && make test-e2e-install)
 
 KUBETEST2="kubetest2 kops -v=2 --cloud-provider=${CLOUD_PROVIDER} --kops-root=${REPO_ROOT}"

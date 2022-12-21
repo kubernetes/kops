@@ -57,8 +57,6 @@ var (
 	ExperimentalClusterDNS = new("ExperimentalClusterDNS", Bool(false))
 	// GoogleCloudBucketACL means the ACL will be set on a bucket when using GCS
 	GoogleCloudBucketACL = new("GoogleCloudBucketAcl", Bool(false))
-	// SpecOverrideFlag allows setting spec values on create
-	SpecOverrideFlag = new("SpecOverrideFlag", Bool(true))
 	// Spotinst toggles the use of Spotinst integration.
 	Spotinst = new("Spotinst", Bool(false))
 	// SpotinstOcean toggles the use of Spotinst Ocean instance group implementation.

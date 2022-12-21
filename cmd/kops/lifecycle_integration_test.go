@@ -34,7 +34,6 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/commands"
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -182,12 +181,6 @@ func TestLifecycleManyAddons(t *testing.T) {
 
 func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptions, cloud *awsup.MockAWSCloud) {
 	ctx := context.Background()
-
-	featureflag.ParseFlags("+SpecOverrideFlag")
-	unsetFeatureFlags := func() {
-		featureflag.ParseFlags("-SpecOverrideFlag")
-	}
-	defer unsetFeatureFlags()
 
 	t := o.t
 
