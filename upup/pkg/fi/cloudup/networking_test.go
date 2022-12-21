@@ -34,7 +34,7 @@ func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
 	cluster := &api.Cluster{}
 	cluster.Spec.KubernetesVersion = "v1.18.0"
 
-	assetBuilder := assets.NewAssetBuilder(cluster, false)
+	assetBuilder := assets.NewAssetBuilder(cluster.Spec.Assets, cluster.Spec.KubernetesVersion, false)
 	cniAsset, cniAssetHash, err := findCNIAssets(cluster, assetBuilder, architectures.ArchitectureAmd64)
 	if err != nil {
 		t.Errorf("Unable to parse CNI version %s", err)
@@ -56,7 +56,7 @@ func Test_FindCNIAssetFromDefaults118(t *testing.T) {
 	cluster := &api.Cluster{}
 	cluster.Spec.KubernetesVersion = "v1.18.0"
 
-	assetBuilder := assets.NewAssetBuilder(cluster, false)
+	assetBuilder := assets.NewAssetBuilder(cluster.Spec.Assets, cluster.Spec.KubernetesVersion, false)
 	cniAsset, cniAssetHash, err := findCNIAssets(cluster, assetBuilder, architectures.ArchitectureAmd64)
 	if err != nil {
 		t.Errorf("Unable to parse CNI version %s", err)
@@ -78,7 +78,7 @@ func Test_FindCNIAssetFromDefaults122(t *testing.T) {
 	cluster := &api.Cluster{}
 	cluster.Spec.KubernetesVersion = "v1.22.0"
 
-	assetBuilder := assets.NewAssetBuilder(cluster, false)
+	assetBuilder := assets.NewAssetBuilder(cluster.Spec.Assets, cluster.Spec.KubernetesVersion, false)
 	cniAsset, cniAssetHash, err := findCNIAssets(cluster, assetBuilder, architectures.ArchitectureAmd64)
 	if err != nil {
 		t.Errorf("Unable to parse CNI version %s", err)

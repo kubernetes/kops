@@ -245,7 +245,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		clusterLifecycle = fi.LifecycleIgnore
 	}
 
-	assetBuilder := assets.NewAssetBuilder(c.Cluster, c.GetAssets)
+	assetBuilder := assets.NewAssetBuilder(c.Cluster.Spec.Assets, c.Cluster.Spec.KubernetesVersion, c.GetAssets)
 	err = c.upgradeSpecs(ctx, assetBuilder)
 	if err != nil {
 		return err

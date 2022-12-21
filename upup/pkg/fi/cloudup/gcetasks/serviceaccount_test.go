@@ -117,7 +117,7 @@ func doDryRun(t *testing.T, ctx context.Context, cloud fi.Cloud, allTasks map[st
 			KubernetesVersion: "v1.23.0",
 		},
 	}
-	assetBuilder := assets.NewAssetBuilder(cluster, false)
+	assetBuilder := assets.NewAssetBuilder(cluster.Spec.Assets, cluster.Spec.KubernetesVersion, false)
 	target := fi.NewCloudupDryRunTarget(assetBuilder, os.Stderr)
 	context, err := fi.NewCloudupContext(ctx, target, nil, cloud, nil, nil, nil, allTasks)
 	if err != nil {

@@ -44,7 +44,7 @@ import (
 type AssetBuilder struct {
 	ImageAssets    []*ImageAsset
 	FileAssets     []*FileAsset
-	AssetsLocation *kops.Assets
+	AssetsLocation *kops.AssetsSpec
 	GetAssets      bool
 
 	// KubernetesVersion is the version of kubernetes we are installing
@@ -101,16 +101,16 @@ type FileAsset struct {
 }
 
 // NewAssetBuilder creates a new AssetBuilder.
-func NewAssetBuilder(cluster *kops.Cluster, getAssets bool) *AssetBuilder {
+func NewAssetBuilder(assets *kops.AssetsSpec, kubernetesVersion string, getAssets bool) *AssetBuilder {
 	a := &AssetBuilder{
-		AssetsLocation: cluster.Spec.Assets,
+		AssetsLocation: assets,
 		GetAssets:      getAssets,
 	}
 
-	version, err := util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
+	version, err := util.ParseKubernetesVersion(kubernetesVersion)
 	if err != nil {
 		// This should have already been validated
-		klog.Fatalf("unexpected error from ParseKubernetesVersion %s: %v", cluster.Spec.KubernetesVersion, err)
+		klog.Fatalf("unexpected error from ParseKubernetesVersion %s: %v", kubernetesVersion, err)
 	}
 	a.KubernetesVersion = *version
 

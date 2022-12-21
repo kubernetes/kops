@@ -127,7 +127,7 @@ func checkNoChanges(t *testing.T, ctx context.Context, cloud fi.Cloud, allTasks 
 			KubernetesVersion: "v1.9.0",
 		},
 	}
-	assetBuilder := assets.NewAssetBuilder(cluster, false)
+	assetBuilder := assets.NewAssetBuilder(cluster.Spec.Assets, cluster.Spec.KubernetesVersion, false)
 	target := fi.NewCloudupDryRunTarget(assetBuilder, os.Stderr)
 	context, err := fi.NewCloudupContext(ctx, target, nil, cloud, nil, nil, nil, allTasks)
 	if err != nil {
