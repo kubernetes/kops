@@ -48,6 +48,12 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud, strict bool) f
 		if len(g.Spec.Subnets) == 0 {
 			allErrs = append(allErrs, field.Required(field.NewPath("spec", "subnets"), "master InstanceGroup must specify at least one Subnet"))
 		}
+		if fi.ValueOf(g.Spec.MinSize) > 1 {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "minSize"), fi.ValueOf(g.Spec.MinSize), "controlPlane InstanceGroup must have minSize set to 1"))
+		}
+		if fi.ValueOf(g.Spec.MaxSize) > 1 {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "maxSize"), fi.ValueOf(g.Spec.MaxSize), "controlPlane InstanceGroup must have maxSize set to 1, add more InstanceGroups instead"))
+		}
 	case kops.InstanceGroupRoleNode:
 	case kops.InstanceGroupRoleBastion:
 	case kops.InstanceGroupRoleAPIServer:
