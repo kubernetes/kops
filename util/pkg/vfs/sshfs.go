@@ -18,6 +18,7 @@ package vfs
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"math/rand"
@@ -52,7 +53,7 @@ func NewSSHPath(client *ssh.Client, server string, path string, sudo bool) *SSHP
 	}
 }
 
-func (p *SSHPath) newClient() (*sftp.Client, error) {
+func (p *SSHPath) newClient(ctx context.Context) (*sftp.Client, error) {
 	if !p.sudo {
 		sftpClient, err := sftp.NewClient(p.client)
 		if err != nil {
@@ -96,7 +97,9 @@ func (p *SSHPath) String() string {
 }
 
 func (p *SSHPath) Remove() error {
-	sftpClient, err := p.newClient()
+	ctx := context.TODO()
+
+	sftpClient, err := p.newClient(ctx)
 	if err != nil {
 		return err
 	}
@@ -152,7 +155,9 @@ func mkdirAll(sftpClient *sftp.Client, dir string) error {
 }
 
 func (p *SSHPath) WriteFile(data io.ReadSeeker, acl ACL) error {
-	sftpClient, err := p.newClient()
+	ctx := context.TODO()
+
+	sftpClient, err := p.newClient(ctx)
 	if err != nil {
 		return err
 	}
@@ -269,7 +274,9 @@ func (p *SSHPath) ReadFile() ([]byte, error) {
 // WriteTo reads the file (in a streaming way)
 // This implements io.WriterTo
 func (p *SSHPath) WriteTo(out io.Writer) (int64, error) {
-	sftpClient, err := p.newClient()
+	ctx := context.TODO()
+
+	sftpClient, err := p.newClient(ctx)
 	if err != nil {
 		return 0, fmt.Errorf("error creating sftp client: %w", err)
 	}
@@ -285,7 +292,9 @@ func (p *SSHPath) WriteTo(out io.Writer) (int64, error) {
 }
 
 func (p *SSHPath) ReadDir() ([]Path, error) {
-	sftpClient, err := p.newClient()
+	ctx := context.TODO()
+
+	sftpClient, err := p.newClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -305,7 +314,9 @@ func (p *SSHPath) ReadDir() ([]Path, error) {
 }
 
 func (p *SSHPath) ReadTree() ([]Path, error) {
-	sftpClient, err := p.newClient()
+	ctx := context.TODO()
+
+	sftpClient, err := p.newClient(ctx)
 	if err != nil {
 		return nil, err
 	}
