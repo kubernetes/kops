@@ -55,7 +55,6 @@ import (
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/openstack/designate"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
-	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
 )
@@ -321,7 +320,7 @@ var _ fi.Cloud = &openstackCloud{}
 
 var openstackCloudInstances = make(map[string]OpenstackCloud)
 
-func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec, uagent string) (OpenstackCloud, error) {
+func NewOpenstackCloud(cluster *kops.Cluster, uagent string) (OpenstackCloud, error) {
 	config := vfs.OpenstackConfig{}
 
 	region, err := config.GetRegion()
@@ -348,9 +347,9 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec, uagent st
 	provider.UserAgent = ua
 	klog.V(4).Infof("Using user-agent %s", ua.Join())
 
-	if spec != nil && spec.CloudProvider.Openstack != nil && spec.CloudProvider.Openstack.InsecureSkipVerify != nil {
+	if cluster != nil && cluster.Spec.CloudProvider.Openstack != nil && cluster.Spec.CloudProvider.Openstack.InsecureSkipVerify != nil {
 		tlsconfig := &tls.Config{}
-		tlsconfig.InsecureSkipVerify = fi.ValueOf(spec.CloudProvider.Openstack.InsecureSkipVerify)
+		tlsconfig.InsecureSkipVerify = fi.ValueOf(cluster.Spec.CloudProvider.Openstack.InsecureSkipVerify)
 		transport := &http.Transport{TLSClientConfig: tlsconfig}
 		provider.HTTPClient = http.Client{
 			Transport: transport,
@@ -364,10 +363,15 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec, uagent st
 		return nil, fmt.Errorf("error building openstack authenticated client: %v", err)
 	}
 
-	return buildClients(provider, tags, spec.CloudProvider.Openstack, config, region)
+	tags := map[string]string{
+		TagClusterName: cluster.Name,
+	}
+
+	hasDNS := !cluster.IsGossip() && !cluster.UsesNoneDNS()
+	return buildClients(provider, tags, cluster.Spec.CloudProvider.Openstack, config, region, hasDNS)
 }
 
-func buildClients(provider *gophercloud.ProviderClient, tags map[string]string, spec *kops.OpenstackSpec, config vfs.OpenstackConfig, region string) (OpenstackCloud, error) {
+func buildClients(provider *gophercloud.ProviderClient, tags map[string]string, spec *kops.OpenstackSpec, config vfs.OpenstackConfig, region string, hasDNS bool) (OpenstackCloud, error) {
 	cinderClient, err := os.NewBlockStorageV3(provider, gophercloud.EndpointOpts{
 		Type:   "volumev3",
 		Region: region,
@@ -403,7 +407,7 @@ func buildClients(provider *gophercloud.ProviderClient, tags map[string]string, 
 	}
 
 	var dnsClient *gophercloud.ServiceClient
-	if !dns.IsGossipClusterName(tags[TagClusterName]) {
+	if hasDNS {
 		// TODO: This should be replaced with the environment variable methods as done above
 		endpointOpt, err := config.GetServiceConfig("Designate")
 		if err != nil {
