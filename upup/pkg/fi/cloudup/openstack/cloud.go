@@ -320,7 +320,7 @@ var _ fi.Cloud = &openstackCloud{}
 
 var openstackCloudInstances = make(map[string]OpenstackCloud)
 
-func NewOpenstackCloud(tags map[string]string, cluster *kops.Cluster, uagent string) (OpenstackCloud, error) {
+func NewOpenstackCloud(cluster *kops.Cluster, uagent string) (OpenstackCloud, error) {
 	config := vfs.OpenstackConfig{}
 
 	region, err := config.GetRegion()
@@ -361,6 +361,10 @@ func NewOpenstackCloud(tags map[string]string, cluster *kops.Cluster, uagent str
 	err = os.Authenticate(provider, authOption)
 	if err != nil {
 		return nil, fmt.Errorf("error building openstack authenticated client: %v", err)
+	}
+
+	tags := map[string]string{
+		TagClusterName: cluster.Name,
 	}
 
 	hasDNS := !cluster.IsGossip() && !cluster.UsesNoneDNS()

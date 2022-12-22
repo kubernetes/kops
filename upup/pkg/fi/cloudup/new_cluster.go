@@ -333,9 +333,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 				MaxRetries: fi.PtrTo(3),
 			},
 		}
-		tags := make(map[string]string)
-		tags[openstack.TagClusterName] = cluster.GetName()
-		osCloud, err := openstack.NewOpenstackCloud(tags, cluster, "openstackmodel")
+		osCloud, err := openstack.NewOpenstackCloud(cluster, "openstackmodel")
 		if err != nil {
 			return nil, err
 		}
@@ -572,9 +570,7 @@ func setupVPC(opt *NewClusterOptions, cluster *api.Cluster, cloud fi.Cloud) erro
 		}
 
 		if cluster.Spec.Networking.NetworkID == "" && len(opt.SubnetIDs) > 0 {
-			tags := make(map[string]string)
-			tags[openstack.TagClusterName] = cluster.Name
-			osCloud, err := openstack.NewOpenstackCloud(tags, cluster, "new-cluster-setupvpc")
+			osCloud, err := openstack.NewOpenstackCloud(cluster, "new-cluster-setupvpc")
 			if err != nil {
 				return fmt.Errorf("error loading cloud: %v", err)
 			}
@@ -716,9 +712,7 @@ func setupZones(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.Stri
 
 	case api.CloudProviderOpenstack:
 		if len(opt.Zones) > 0 && len(opt.SubnetIDs) > 0 {
-			tags := make(map[string]string)
-			tags[openstack.TagClusterName] = cluster.Name
-			zoneToSubnetProviderID, err = getOpenstackZoneToSubnetProviderID(cluster, allZones.List(), opt.SubnetIDs, tags)
+			zoneToSubnetProviderID, err = getOpenstackZoneToSubnetProviderID(cluster, allZones.List(), opt.SubnetIDs)
 			if err != nil {
 				return nil, err
 			}
@@ -783,9 +777,9 @@ func getAWSZoneToSubnetProviderID(VPCID string, region string, subnetIDs []strin
 	return res, nil
 }
 
-func getOpenstackZoneToSubnetProviderID(cluster *api.Cluster, zones []string, subnetIDs []string, tags map[string]string) (map[string]string, error) {
+func getOpenstackZoneToSubnetProviderID(cluster *api.Cluster, zones []string, subnetIDs []string) (map[string]string, error) {
 	res := make(map[string]string)
-	osCloud, err := openstack.NewOpenstackCloud(tags, cluster, "new-cluster-zone-to-subnet")
+	osCloud, err := openstack.NewOpenstackCloud(cluster, "new-cluster-zone-to-subnet")
 	if err != nil {
 		return res, fmt.Errorf("error loading cloud: %v", err)
 	}
@@ -1210,9 +1204,7 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 					return nil, err
 				}
 			case api.CloudProviderOpenstack:
-				tags := make(map[string]string)
-				tags[openstack.TagClusterName] = cluster.Name
-				zoneToSubnetProviderID, err = getOpenstackZoneToSubnetProviderID(cluster, allZones.List(), opt.UtilitySubnetIDs, tags)
+				zoneToSubnetProviderID, err = getOpenstackZoneToSubnetProviderID(cluster, allZones.List(), opt.UtilitySubnetIDs)
 				if err != nil {
 					return nil, err
 				}
