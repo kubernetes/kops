@@ -56,34 +56,35 @@ func (p *SSHPath) newClient() (*sftp.Client, error) {
 	if !p.sudo {
 		sftpClient, err := sftp.NewClient(p.client)
 		if err != nil {
-			return nil, fmt.Errorf("error creating sftp client: %v", err)
+			return nil, fmt.Errorf("error creating sftp client: %w", err)
 		}
 
 		return sftpClient, nil
 	}
 	s, err := p.client.NewSession()
 	if err != nil {
-		return nil, fmt.Errorf("error creating sftp client (in new-session): %v", err)
+		return nil, fmt.Errorf("error creating sftp client (in new-session): %w", err)
 	}
 
-	//if err := s.R("sftp"); err != nil {
-	//	return nil, fmt.Errorf("error creating sftp client (in new-session): %v", err)
-	//}
 	stdin, err := s.StdinPipe()
 	if err != nil {
-		return nil, fmt.Errorf("error creating sftp client (at stdin pipe): %v", err)
+		return nil, fmt.Errorf("error creating sftp client (at stdin pipe): %w", err)
 	}
 	stdout, err := s.StdoutPipe()
 	if err != nil {
-		return nil, fmt.Errorf("error creating sftp client (at stdout pipe): %v", err)
+		return nil, fmt.Errorf("error creating sftp client (at stdout pipe): %w", err)
 	}
 
 	err = s.Start("sudo /usr/lib/openssh/sftp-server")
 	if err != nil {
-		return nil, fmt.Errorf("error creating sftp client (executing 'sudo /usr/lib/openssh/sftp-server'): %v", err)
+		return nil, fmt.Errorf("error creating sftp client (executing 'sudo /usr/lib/openssh/sftp-server'): %w", err)
 	}
 
-	return sftp.NewClientPipe(stdout, stdin)
+	c, err := sftp.NewClientPipe(stdout, stdin)
+	if err != nil {
+		return nil, fmt.Errorf("error starting sftp (executing 'sudo /usr/lib/openssh/sftp-server'): %w", err)
+	}
+	return c, nil
 }
 
 func (p *SSHPath) Path() string {
@@ -106,7 +107,7 @@ func (p *SSHPath) Remove() error {
 		if os.IsNotExist(err) {
 			return err
 		}
-		return fmt.Errorf("error deleting %s: %v", p, err)
+		return fmt.Errorf("error deleting %s: %w", p, err)
 	}
 
 	return nil
@@ -145,7 +146,7 @@ func mkdirAll(sftpClient *sftp.Client, dir string) error {
 
 	err = sftpClient.Mkdir(dir)
 	if err != nil {
-		return fmt.Errorf("error creating directory %q over sftp: %v", dir, err)
+		return fmt.Errorf("error creating directory %q over sftp: %w", dir, err)
 	}
 	return nil
 }
@@ -167,7 +168,7 @@ func (p *SSHPath) WriteFile(data io.ReadSeeker, acl ACL) error {
 	f, err := sftpClient.Create(tempfile)
 	if err != nil {
 		// TODO: Retry if concurrently created?
-		return fmt.Errorf("error creating temp file in %q: %v", dir, err)
+		return fmt.Errorf("error creating temp file in %q: %w", dir, err)
 	}
 
 	// Note from here on in we have to close f and delete or rename the temp file
@@ -186,32 +187,39 @@ func (p *SSHPath) WriteFile(data io.ReadSeeker, acl ACL) error {
 			} else {
 				err = sftpClient.Chmod(tempfile, sshACL.Mode)
 				if err != nil {
-					err = fmt.Errorf("error during chmod of %q: %v", tempfile, err)
+					err = fmt.Errorf("error during chmod of %q: %w", tempfile, err)
 				}
 			}
 		}
 	}
 
 	if err == nil {
-		var session *ssh.Session
-		session, err = p.client.NewSession()
-		if err != nil {
-			err = fmt.Errorf("error creating session for rename: %v", err)
-		} else {
-			cmd := "mv " + tempfile + " " + p.path
-			if p.sudo {
-				cmd = "sudo " + cmd
-			}
-			err = session.Run(cmd)
+		// posix rename will replace the destination (normal sftp rename does not)
+		usePosixRename := true
+		if usePosixRename {
+			err = sftpClient.Rename(tempfile, p.path)
 			if err != nil {
-				err = fmt.Errorf("error renaming file %q -> %q: %v", tempfile, p.path, err)
+				err = fmt.Errorf("error renaming file %q -> %q (with posix rename): %w", tempfile, p.path, err)
+			}
+		} else {
+			var session *ssh.Session
+			session, err = p.client.NewSession()
+			if err != nil {
+				err = fmt.Errorf("error creating session for rename: %w", err)
+			} else {
+				defer session.Close()
+
+				cmd := "mv " + tempfile + " " + p.path
+				if p.sudo {
+					cmd = "sudo " + cmd
+				}
+				err = session.Run(cmd)
+				if err != nil {
+					err = fmt.Errorf("error renaming file %q -> %q (with %q): %w", tempfile, p.path, cmd, err)
+				}
 			}
 		}
-		// sftp rename seems to fail if dest file exists
-		//err = sftpClient.Rename(tempfile, p.path)
-		//if err != nil {
-		//	err = fmt.Errorf("error during file write of %q: rename failed: %v", p.path, err)
-		//}
+
 	}
 
 	if err == nil {
@@ -258,17 +266,18 @@ func (p *SSHPath) ReadFile() ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-// WriteTo implements io.WriterTo
+// WriteTo reads the file (in a streaming way)
+// This implements io.WriterTo
 func (p *SSHPath) WriteTo(out io.Writer) (int64, error) {
 	sftpClient, err := p.newClient()
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("error creating sftp client: %w", err)
 	}
 	defer sftpClient.Close()
 
 	f, err := sftpClient.Open(p.path)
 	if err != nil {
-		return 0, fmt.Errorf("error opening file %s over sftp: %v", p, err)
+		return 0, fmt.Errorf("error opening file %s over sftp: %w", p, err)
 	}
 	defer f.Close()
 
@@ -333,86 +342,3 @@ func readSFTPTree(sftpClient *sftp.Client, p *SSHPath, dest *[]Path) error {
 func (p *SSHPath) Base() string {
 	return path.Base(p.path)
 }
-
-//
-//// scpMkdir executes a mkdir against the SSH target, using SCP
-//func (s *SSHPath) scpMkdir(dest string, mode os.FileMode) error {
-//	klog.V(4).Infof("Doing SSH SCP mkdir: %q", dest)
-//	session, err := s.client.NewSession()
-//	if err != nil {
-//		return fmt.Errorf("error establishing SSH session: %v", err)
-//	}
-//	defer session.Close()
-//
-//	name := path.Base(dest)
-//	scpBase := path.Dir(dest)
-//	//scpBase = "." + scpBase
-//
-//	var stdinErr error
-//	go func() {
-//		w, _ := session.StdinPipe()
-//		defer w.Close()
-//		_, stdinErr = fmt.Fprintln(w, "D0"+toOctal(mode), 0, name)
-//		if stdinErr != nil {
-//			return
-//		}
-//	}()
-//	output, err := session.CombinedOutput("/usr/bin/scp -tr " + scpBase)
-//	if err != nil {
-//		klog.Warningf("Error output from SCP: %s", output)
-//		return fmt.Errorf("error doing SCP mkdir: %v", err)
-//	}
-//	if stdinErr != nil {
-//		klog.Warningf("Error output from SCP: %s", output)
-//		return fmt.Errorf("error doing SCP mkdir (writing to stdin): %v", stdinErr)
-//	}
-//
-//	return nil
-//}
-//
-//func toOctal(mode os.FileMode) string {
-//	return strconv.FormatUint(uint64(mode), 8)
-//}
-//
-//// scpPut copies a file to the SSH target, using SCP
-//func (s *SSHPath) scpPut(dest string, length int, content io.Reader, mode os.FileMode) error {
-//	klog.V(4).Infof("Doing SSH SCP upload: %q", dest)
-//	session, err := s.client.NewSession()
-//	if err != nil {
-//		return fmt.Errorf("error establishing SSH session: %v", err)
-//	}
-//	defer session.Close()
-//
-//	name := path.Base(dest)
-//	scpBase := path.Dir(dest)
-//	//scpBase = "." + scpBase
-//
-//	var stdinErr error
-//	go func() {
-//		w, _ := session.StdinPipe()
-//		defer w.Close()
-//		_, stdinErr = fmt.Fprintln(w, "C0"+toOctal(mode), length, name)
-//		if stdinErr != nil {
-//			return
-//		}
-//		_, stdinErr = io.Copy(w, content)
-//		if stdinErr != nil {
-//			return
-//		}
-//		_, stdinErr = fmt.Fprint(w, "\x00")
-//		if stdinErr != nil {
-//			return
-//		}
-//	}()
-//	output, err := session.CombinedOutput("/usr/bin/scp -tr " + scpBase)
-//	if err != nil {
-//		klog.Warningf("Error output from SCP: %s", output)
-//		return fmt.Errorf("error doing SCP put: %v", err)
-//	}
-//	if stdinErr != nil {
-//		klog.Warningf("Error output from SCP: %s", output)
-//		return fmt.Errorf("error doing SCP put (writing to stdin): %v", stdinErr)
-//	}
-//
-//	return nil
-//}
