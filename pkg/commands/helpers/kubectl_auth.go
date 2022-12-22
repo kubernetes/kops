@@ -255,7 +255,7 @@ func buildCredentials(ctx context.Context, f *util.Factory, options *HelperKubec
 		},
 		Validity: options.Lifetime,
 	}
-	cert, privateKey, _, err := pki.IssueCert(ctx, &req, keyStore)
+	cert, privateKey, _, err := pki.IssueCert(ctx, &req, fi.NewPKIKeystoreAdapter(keyStore))
 	if err != nil {
 		return nil, fmt.Errorf("unable to issue certificate: %v", err)
 	}
