@@ -244,7 +244,7 @@ func (_ *Keypair) Render(c *fi.CloudupContext, a, e, changes *Keypair) error {
 			PrivateKey:     privateKey,
 			Serial:         serial,
 		}
-		cert, privateKey, _, err := pki.IssueCert(ctx, &req, c.T.Keystore)
+		cert, privateKey, _, err := pki.IssueCert(ctx, &req, fi.NewPKIKeystoreAdapter(c.T.Keystore))
 		if err != nil {
 			return err
 		}

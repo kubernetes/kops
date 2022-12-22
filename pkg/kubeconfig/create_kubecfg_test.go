@@ -101,13 +101,6 @@ type fakeKeyStore struct {
 	MirrorToFn func(basedir vfs.Path) error
 }
 
-var _ fi.Keystore = &fakeKeyStore{}
-
-// FindPrimaryKeypair implements pki.Keystore
-func (f fakeKeyStore) FindPrimaryKeypair(ctx context.Context, name string) (*pki.Certificate, *pki.PrivateKey, error) {
-	return fi.FindPrimaryKeypair(ctx, f, name)
-}
-
 // FindKeyset implements KeystoreReader.
 func (f fakeKeyStore) FindKeyset(ctx context.Context, name string) (*fi.Keyset, error) {
 	return f.FindKeysetFn(name)
