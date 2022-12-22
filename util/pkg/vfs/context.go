@@ -488,15 +488,11 @@ func (c *VFSContext) buildAzureBlobPath(p string) (*AzureBlobPath, error) {
 		return nil, fmt.Errorf("no container specified: %q", p)
 	}
 
-	client, err := c.getAzureBlobClient()
-	if err != nil {
-		return nil, err
-	}
-
-	return NewAzureBlobPath(client, container, u.Path), nil
+	return NewAzureBlobPath(c, container, u.Path), nil
 }
 
-func (c *VFSContext) getAzureBlobClient() (*azureClient, error) {
+// getAzureBlobClient returns the client for azure blob storage, caching it for future reuse.
+func (c *VFSContext) getAzureBlobClient(ctx context.Context) (*azureClient, error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
@@ -504,7 +500,7 @@ func (c *VFSContext) getAzureBlobClient() (*azureClient, error) {
 		return c.azureClient, nil
 	}
 
-	client, err := newAzureClient()
+	client, err := newAzureClient(ctx)
 	if err != nil {
 		return nil, err
 	}
