@@ -2084,21 +2084,26 @@ func resolveImage(ssmClient ssmiface.SSMAPI, ec2Client ec2iface.EC2API, name str
 		}
 	}
 
-	response, err := ec2Client.DescribeImages(request)
+	var image *ec2.Image
+	err := ec2Client.DescribeImagesPagesWithContext(context.TODO(), request, func(output *ec2.DescribeImagesOutput, b bool) bool {
+		for _, v := range output.Images {
+			if image == nil {
+				image = v
+			} else {
+				itime, _ := time.Parse(time.RFC3339, *image.CreationDate)
+				vtime, _ := time.Parse(time.RFC3339, *v.CreationDate)
+				if vtime.After(itime) {
+					image = v
+				}
+			}
+		}
+		return true
+	})
 	if err != nil {
 		return nil, fmt.Errorf("error listing images: %v", err)
 	}
-	if response == nil || len(response.Images) == 0 {
+	if image == nil {
 		return nil, fmt.Errorf("could not find Image for %q", name)
-	}
-
-	image := response.Images[0]
-	for _, v := range response.Images {
-		itime, _ := time.Parse(time.RFC3339, *image.CreationDate)
-		vtime, _ := time.Parse(time.RFC3339, *v.CreationDate)
-		if vtime.After(itime) {
-			image = v
-		}
 	}
 
 	klog.V(4).Infof("Resolved image %q", aws.StringValue(image.ImageId))
