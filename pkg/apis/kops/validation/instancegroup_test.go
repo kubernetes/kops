@@ -402,7 +402,7 @@ func TestValidInstanceGroup(t *testing.T) {
 				},
 			},
 			ExpectedErrors: []string{},
-			Description:    "Valid master instance group failed to validate",
+			Description:    "Valid control-plane instance group failed to validate",
 		},
 		{
 			IG: &kops.InstanceGroup{
@@ -466,6 +466,25 @@ func TestValidInstanceGroup(t *testing.T) {
 			},
 			ExpectedErrors: []string{"Forbidden::spec.image"},
 			Description:    "Valid instance group must have image set",
+		},
+		{
+			IG: &kops.InstanceGroup{
+				ObjectMeta: v1.ObjectMeta{
+					Name: "eu-central-1a",
+				},
+				Spec: kops.InstanceGroupSpec{
+					Role:    kops.InstanceGroupRoleMaster,
+					Subnets: []string{"eu-central-1a"},
+					MaxSize: fi.PtrTo(int32(2)),
+					MinSize: fi.PtrTo(int32(2)),
+					Image:   "my-image",
+				},
+			},
+			ExpectedErrors: []string{
+				"Invalid value::spec.minSize",
+				"Invalid value::spec.maxSize",
+			},
+			Description: "Invalid master instance group sizes",
 		},
 	}
 	for _, g := range grid {
