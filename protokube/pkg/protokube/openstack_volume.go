@@ -231,11 +231,7 @@ func NewOpenStackCloudProvider() (*OpenStackCloudProvider, error) {
 		return nil, fmt.Errorf("Failed to get server metadata: %v", err)
 	}
 
-	tags := make(map[string]string)
-	// Cluster name needed to bypass missing designate options
-	tags[openstack.TagClusterName] = metadata.UserMeta.ClusterName
-
-	oscloud, err := openstack.NewOpenstackCloud(tags, nil, "protokube")
+	oscloud, err := openstack.NewOpenstackCloud(nil, "protokube")
 	if err != nil {
 		return nil, fmt.Errorf("Failed to initialize OpenStackCloudProvider: %v", err)
 	}
