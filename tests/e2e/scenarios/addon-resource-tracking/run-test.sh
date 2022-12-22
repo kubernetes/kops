@@ -30,8 +30,8 @@ KOPS_BASE_URL="https://artifacts.k8s.io/binaries/kops/1.22.6"
 KOPS=$(kops-download-from-base)
 
 # Start with a cluster running nodeTerminationHandler
-ARGS="--set=cluster.spec.cloudProvider.aws.nodeTerminationHandler.enabled=true"
-ARGS="${ARGS} --set=cluster.spec.cloudProvider.aws.nodeTerminationHandler.enableSQSTerminationDraining=false"
+ARGS="--set=cluster.spec.nodeTerminationHandler.enabled=true"
+ARGS="${ARGS} --set=cluster.spec.nodeTerminationHandler.enableSQSTerminationDraining=false"
 
 ${KUBETEST2} \
     --up \
