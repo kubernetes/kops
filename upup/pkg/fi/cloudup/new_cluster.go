@@ -196,7 +196,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		return nil, err
 	}
 
-	cluster := api.Cluster{
+	cluster := &api.Cluster{
 		ObjectMeta: v1.ObjectMeta{
 			Name: opt.ClusterName,
 		},
@@ -213,7 +213,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 	}
 
 	cluster.Spec.ConfigBase = opt.ConfigBase
-	configBase, err := clientset.ConfigBaseFor(&cluster)
+	configBase, err := clientset.ConfigBaseFor(cluster)
 	if err != nil {
 		return nil, fmt.Errorf("error building ConfigBase for cluster: %v", err)
 	}
@@ -335,7 +335,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		}
 		tags := make(map[string]string)
 		tags[openstack.TagClusterName] = cluster.GetName()
-		osCloud, err := openstack.NewOpenstackCloud(tags, &cluster.Spec, "openstackmodel")
+		osCloud, err := openstack.NewOpenstackCloud(tags, cluster, "openstackmodel")
 		if err != nil {
 			return nil, err
 		}
@@ -361,27 +361,27 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		}
 	}
 
-	err = setupVPC(opt, &cluster, cloud)
+	err = setupVPC(opt, cluster, cloud)
 	if err != nil {
 		return nil, err
 	}
 
-	zoneToSubnetMap, err := setupZones(opt, &cluster, allZones)
+	zoneToSubnetMap, err := setupZones(opt, cluster, allZones)
 	if err != nil {
 		return nil, err
 	}
 
-	err = setupNetworking(opt, &cluster)
+	err = setupNetworking(opt, cluster)
 	if err != nil {
 		return nil, err
 	}
 
-	bastions, err := setupTopology(opt, &cluster, allZones)
+	bastions, err := setupTopology(opt, cluster, allZones)
 	if err != nil {
 		return nil, err
 	}
 
-	controlPlanes, err := setupControlPlane(opt, &cluster, zoneToSubnetMap)
+	controlPlanes, err := setupControlPlane(opt, cluster, zoneToSubnetMap)
 	if err != nil {
 		return nil, err
 	}
@@ -396,12 +396,12 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		cluster.Spec.Karpenter = &api.KarpenterConfig{
 			Enabled: true,
 		}
-		nodes, err = setupKarpenterNodes(opt, &cluster, zoneToSubnetMap)
+		nodes, err = setupKarpenterNodes(opt, cluster, zoneToSubnetMap)
 		if err != nil {
 			return nil, err
 		}
 	case "cloudgroups":
-		nodes, err = setupNodes(opt, &cluster, zoneToSubnetMap)
+		nodes, err = setupNodes(opt, cluster, zoneToSubnetMap)
 		if err != nil {
 			return nil, err
 		}
@@ -409,12 +409,12 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		return nil, fmt.Errorf("invalid value %q for --instance-manager", opt.InstanceManager)
 	}
 
-	apiservers, err := setupAPIServers(opt, &cluster, zoneToSubnetMap)
+	apiservers, err := setupAPIServers(opt, cluster, zoneToSubnetMap)
 	if err != nil {
 		return nil, err
 	}
 
-	err = setupAPI(opt, &cluster)
+	err = setupAPI(opt, cluster)
 	if err != nil {
 		return nil, err
 	}
@@ -435,7 +435,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 				if err != nil {
 					return nil, err
 				}
-				instanceGroup.Spec.Image, err = defaultImage(&cluster, channel, architecture)
+				instanceGroup.Spec.Image, err = defaultImage(cluster, channel, architecture)
 				if err != nil {
 					return nil, err
 				}
@@ -445,7 +445,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		// TODO: Clean up
 		if g.IsControlPlane() {
 			if g.Spec.MachineType == "" {
-				g.Spec.MachineType, err = defaultMachineType(cloud, &cluster, ig)
+				g.Spec.MachineType, err = defaultMachineType(cloud, cluster, ig)
 				if err != nil {
 					return nil, fmt.Errorf("error assigning default machine type for control plane: %v", err)
 				}
@@ -453,7 +453,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 			}
 		} else if g.Spec.Role == api.InstanceGroupRoleBastion {
 			if g.Spec.MachineType == "" {
-				g.Spec.MachineType, err = defaultMachineType(cloud, &cluster, g)
+				g.Spec.MachineType, err = defaultMachineType(cloud, cluster, g)
 				if err != nil {
 					return nil, fmt.Errorf("error assigning default machine type for bastions: %v", err)
 				}
@@ -463,7 +463,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 				return nil, fmt.Errorf("apiserver nodes requires the APIServerNodes feature flag to be enabled")
 			}
 			if g.Spec.MachineType == "" {
-				g.Spec.MachineType, err = defaultMachineType(cloud, &cluster, g)
+				g.Spec.MachineType, err = defaultMachineType(cloud, cluster, g)
 				if err != nil {
 					return nil, fmt.Errorf("error assigning default machine type for nodes: %v", err)
 				}
@@ -518,7 +518,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 	}
 
 	result := NewClusterResult{
-		Cluster:        &cluster,
+		Cluster:        cluster,
 		InstanceGroups: instanceGroups,
 		Channel:        channel,
 	}
@@ -574,7 +574,7 @@ func setupVPC(opt *NewClusterOptions, cluster *api.Cluster, cloud fi.Cloud) erro
 		if cluster.Spec.Networking.NetworkID == "" && len(opt.SubnetIDs) > 0 {
 			tags := make(map[string]string)
 			tags[openstack.TagClusterName] = cluster.Name
-			osCloud, err := openstack.NewOpenstackCloud(tags, &cluster.Spec, "new-cluster-setupvpc")
+			osCloud, err := openstack.NewOpenstackCloud(tags, cluster, "new-cluster-setupvpc")
 			if err != nil {
 				return fmt.Errorf("error loading cloud: %v", err)
 			}
@@ -718,7 +718,7 @@ func setupZones(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.Stri
 		if len(opt.Zones) > 0 && len(opt.SubnetIDs) > 0 {
 			tags := make(map[string]string)
 			tags[openstack.TagClusterName] = cluster.Name
-			zoneToSubnetProviderID, err = getOpenstackZoneToSubnetProviderID(&cluster.Spec, allZones.List(), opt.SubnetIDs, tags)
+			zoneToSubnetProviderID, err = getOpenstackZoneToSubnetProviderID(cluster, allZones.List(), opt.SubnetIDs, tags)
 			if err != nil {
 				return nil, err
 			}
@@ -783,20 +783,20 @@ func getAWSZoneToSubnetProviderID(VPCID string, region string, subnetIDs []strin
 	return res, nil
 }
 
-func getOpenstackZoneToSubnetProviderID(spec *api.ClusterSpec, zones []string, subnetIDs []string, tags map[string]string) (map[string]string, error) {
+func getOpenstackZoneToSubnetProviderID(cluster *api.Cluster, zones []string, subnetIDs []string, tags map[string]string) (map[string]string, error) {
 	res := make(map[string]string)
-	osCloud, err := openstack.NewOpenstackCloud(tags, spec, "new-cluster-zone-to-subnet")
+	osCloud, err := openstack.NewOpenstackCloud(tags, cluster, "new-cluster-zone-to-subnet")
 	if err != nil {
 		return res, fmt.Errorf("error loading cloud: %v", err)
 	}
 	osCloud.UseZones(zones)
 
-	networkInfo, err := osCloud.FindVPCInfo(spec.Networking.NetworkID)
+	networkInfo, err := osCloud.FindVPCInfo(cluster.Spec.Networking.NetworkID)
 	if err != nil {
 		return res, fmt.Errorf("error describing Network: %v", err)
 	}
 	if networkInfo == nil {
-		return res, fmt.Errorf("network %q not found", spec.Networking.NetworkID)
+		return res, fmt.Errorf("network %q not found", cluster.Spec.Networking.NetworkID)
 	}
 
 	subnetByID := make(map[string]*fi.SubnetInfo)
@@ -807,7 +807,7 @@ func getOpenstackZoneToSubnetProviderID(spec *api.ClusterSpec, zones []string, s
 	for _, subnetID := range subnetIDs {
 		subnet, ok := subnetByID[subnetID]
 		if !ok {
-			return res, fmt.Errorf("subnet %s not found in network %s", subnetID, spec.Networking.NetworkID)
+			return res, fmt.Errorf("subnet %s not found in network %s", subnetID, cluster.Spec.Networking.NetworkID)
 		}
 
 		if res[subnet.Zone] != "" {
@@ -1212,7 +1212,7 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 			case api.CloudProviderOpenstack:
 				tags := make(map[string]string)
 				tags[openstack.TagClusterName] = cluster.Name
-				zoneToSubnetProviderID, err = getOpenstackZoneToSubnetProviderID(&cluster.Spec, allZones.List(), opt.UtilitySubnetIDs, tags)
+				zoneToSubnetProviderID, err = getOpenstackZoneToSubnetProviderID(cluster, allZones.List(), opt.UtilitySubnetIDs, tags)
 				if err != nil {
 					return nil, err
 				}
