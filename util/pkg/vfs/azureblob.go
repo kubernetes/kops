@@ -33,10 +33,10 @@ import (
 
 // AzureBlobPath is a path in the VFS space backed by Azure Blob.
 type AzureBlobPath struct {
-	client    *azureClient
-	container string
-	key       string
-	md5Hash   string
+	vfsContext *VFSContext
+	container  string
+	key        string
+	md5Hash    string
 }
 
 var (
@@ -45,11 +45,11 @@ var (
 )
 
 // NewAzureBlobPath returns a new AzureBlobPath.
-func NewAzureBlobPath(client *azureClient, container string, key string) *AzureBlobPath {
+func NewAzureBlobPath(vfsContext *VFSContext, container string, key string) *AzureBlobPath {
 	return &AzureBlobPath{
-		client:    client,
-		container: strings.TrimSuffix(container, "/"),
-		key:       strings.TrimPrefix(key, "/"),
+		vfsContext: vfsContext,
+		container:  strings.TrimSuffix(container, "/"),
+		key:        strings.TrimPrefix(key, "/"),
 	}
 }
 
@@ -92,9 +92,9 @@ func (p *AzureBlobPath) Join(relativePath ...string) Path {
 	args = append(args, relativePath...)
 	joined := path.Join(args...)
 	return &AzureBlobPath{
-		client:    p.client,
-		container: p.container,
-		key:       joined,
+		vfsContext: p.vfsContext,
+		container:  p.container,
+		key:        joined,
 	}
 }
 
@@ -110,12 +110,19 @@ func (p *AzureBlobPath) ReadFile() ([]byte, error) {
 
 // WriteTo writes the content of the blob to the writer.
 func (p *AzureBlobPath) WriteTo(w io.Writer) (n int64, err error) {
-	cURL, err := p.client.newContainerURL(p.container)
+	ctx := context.TODO()
+
+	client, err := p.getClient(ctx)
+	if err != nil {
+		return 0, err
+	}
+
+	cURL, err := client.newContainerURL(p.container)
 	if err != nil {
 		return 0, err
 	}
 	resp, err := cURL.NewBlockBlobURL(p.key).Download(
-		context.TODO(),
+		ctx,
 		0, /* offset */
 		azblob.CountToEnd,
 		azblob.BlobAccessConditions{},
@@ -158,6 +165,13 @@ func (p *AzureBlobPath) CreateFile(data io.ReadSeeker, acl ACL) error {
 //
 // TODO(kenji): Support ACL.
 func (p *AzureBlobPath) WriteFile(data io.ReadSeeker, acl ACL) error {
+	ctx := context.TODO()
+
+	client, err := p.getClient(ctx)
+	if err != nil {
+		return err
+	}
+
 	md5Hash, err := hashing.HashAlgorithmMD5.Hash(data)
 	if err != nil {
 		return err
@@ -166,14 +180,14 @@ func (p *AzureBlobPath) WriteFile(data io.ReadSeeker, acl ACL) error {
 		return fmt.Errorf("error seeking to start of data stream: %v", err)
 	}
 
-	cURL, err := p.client.newContainerURL(p.container)
+	cURL, err := client.newContainerURL(p.container)
 	if err != nil {
 		return err
 	}
 	// Use block blob. Other options are page blobs (optimized for
 	// random read/write) and append blob (optimized for append).
 	_, err = cURL.NewBlockBlobURL(p.key).Upload(
-		context.TODO(),
+		ctx,
 		data,
 		azblob.BlobHTTPHeaders{
 			ContentType: "application/octet-stream",
@@ -191,29 +205,50 @@ func (p *AzureBlobPath) WriteFile(data io.ReadSeeker, acl ACL) error {
 
 // Remove deletes the blob.
 func (p *AzureBlobPath) Remove() error {
-	cURL, err := p.client.newContainerURL(p.container)
+	ctx := context.TODO()
+
+	client, err := p.getClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	cURL, err := client.newContainerURL(p.container)
 	if err != nil {
 		return err
 	}
 	// Delete the blob, but keep its snapshot.
-	_, err = cURL.NewBlockBlobURL(p.key).Delete(context.TODO(), azblob.DeleteSnapshotsOptionNone, azblob.BlobAccessConditions{})
+	_, err = cURL.NewBlockBlobURL(p.key).Delete(ctx, azblob.DeleteSnapshotsOptionNone, azblob.BlobAccessConditions{})
 	return err
 }
 
 func (p *AzureBlobPath) RemoveAllVersions() error {
-	cURL, err := p.client.newContainerURL(p.container)
+	ctx := context.TODO()
+
+	client, err := p.getClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	cURL, err := client.newContainerURL(p.container)
 	if err != nil {
 		return err
 	}
 	// Delete the blob and its snapshot.
-	_, err = cURL.NewBlockBlobURL(p.key).Delete(context.TODO(), azblob.DeleteSnapshotsOptionInclude, azblob.BlobAccessConditions{})
+	_, err = cURL.NewBlockBlobURL(p.key).Delete(ctx, azblob.DeleteSnapshotsOptionInclude, azblob.BlobAccessConditions{})
 	return err
 }
 
 // ReadDir lists the blobs under the current Path.
 func (p *AzureBlobPath) ReadDir() ([]Path, error) {
+	ctx := context.TODO()
+
+	client, err := p.getClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	var paths []Path
-	cURL, err := p.client.newContainerURL(p.container)
+	cURL, err := client.newContainerURL(p.container)
 	if err != nil {
 		return nil, err
 	}
@@ -223,7 +258,6 @@ func (p *AzureBlobPath) ReadDir() ([]Path, error) {
 		prefix += "/"
 	}
 
-	ctx := context.TODO()
 	for m := (azblob.Marker{}); m.NotDone(); {
 		// List all blobs that have the same prefix (without
 		// recursion).  By specifying "/", the request will
@@ -248,17 +282,17 @@ func (p *AzureBlobPath) ReadDir() ([]Path, error) {
 		}
 		for _, item := range resp.Segment.BlobItems {
 			paths = append(paths, &AzureBlobPath{
-				client:    p.client,
-				container: p.container,
-				key:       item.Name,
-				md5Hash:   string(item.Properties.ContentMD5),
+				vfsContext: p.vfsContext,
+				container:  p.container,
+				key:        item.Name,
+				md5Hash:    string(item.Properties.ContentMD5),
 			})
 		}
 		for _, prefix := range resp.Segment.BlobPrefixes {
 			paths = append(paths, &AzureBlobPath{
-				client:    p.client,
-				container: p.container,
-				key:       prefix.Name,
+				vfsContext: p.vfsContext,
+				container:  p.container,
+				key:        prefix.Name,
 			})
 		}
 
@@ -270,12 +304,18 @@ func (p *AzureBlobPath) ReadDir() ([]Path, error) {
 
 // ReadTree lists all blobs (recursively) in the subtree rooted at the current Path.
 func (p *AzureBlobPath) ReadTree() ([]Path, error) {
-	var paths []Path
-	cURL, err := p.client.newContainerURL(p.container)
+	ctx := context.TODO()
+
+	client, err := p.getClient(ctx)
 	if err != nil {
 		return nil, err
 	}
-	ctx := context.TODO()
+
+	var paths []Path
+	cURL, err := client.newContainerURL(p.container)
+	if err != nil {
+		return nil, err
+	}
 	for m := (azblob.Marker{}); m.NotDone(); {
 		resp, err := cURL.ListBlobsFlatSegment(ctx, m, azblob.ListBlobsSegmentOptions{Prefix: p.key})
 		if err != nil {
@@ -283,14 +323,19 @@ func (p *AzureBlobPath) ReadTree() ([]Path, error) {
 		}
 		for _, item := range resp.Segment.BlobItems {
 			paths = append(paths, &AzureBlobPath{
-				client:    p.client,
-				container: p.container,
-				key:       item.Name,
-				md5Hash:   string(item.Properties.ContentMD5),
+				vfsContext: p.vfsContext,
+				container:  p.container,
+				key:        item.Name,
+				md5Hash:    string(item.Properties.ContentMD5),
 			})
 		}
 		m = resp.NextMarker
 
 	}
 	return paths, nil
+}
+
+// getClient returns the client for azure blob storage.
+func (p *AzureBlobPath) getClient(ctx context.Context) (*azureClient, error) {
+	return p.vfsContext.getAzureBlobClient(ctx)
 }
