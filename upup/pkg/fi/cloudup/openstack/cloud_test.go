@@ -541,7 +541,7 @@ func Test_BuildClients(t *testing.T) {
 
 		t.Run(g.name, func(t *testing.T) {
 
-			cloud, err := buildClients(provider, tags, g.spec, vfs.OpenstackConfig{}, "")
+			cloud, err := buildClients(provider, tags, g.spec, vfs.OpenstackConfig{}, "", false)
 			if g.expectError {
 				if err != nil {
 					return
