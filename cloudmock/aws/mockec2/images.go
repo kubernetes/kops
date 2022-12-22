@@ -46,18 +46,18 @@ func (m *MockEC2) DescribeImagesWithContext(aws.Context, *ec2.DescribeImagesInpu
 	panic("Not implemented")
 }
 
-func (m *MockEC2) DescribeImages(request *ec2.DescribeImagesInput) (*ec2.DescribeImagesOutput, error) {
+func (m *MockEC2) DescribeImagesPagesWithContext(ctx aws.Context, request *ec2.DescribeImagesInput, callback func(output *ec2.DescribeImagesOutput, b bool) bool, options ...request.Option) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	klog.Infof("DescribeImages: %v", request)
+	klog.Infof("DescribeImagesPages: %v", request)
 
 	var images []*ec2.Image
 
 	for _, image := range m.Images {
 		matches, err := m.imageMatchesFilter(image, request.Filters)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		if !matches {
 			continue
@@ -72,7 +72,9 @@ func (m *MockEC2) DescribeImages(request *ec2.DescribeImagesInput) (*ec2.Describ
 		Images: images,
 	}
 
-	return response, nil
+	callback(response, false)
+
+	return nil
 }
 
 func (m *MockEC2) DescribeImportImageTasksRequest(*ec2.DescribeImportImageTasksInput) (*request.Request, *ec2.DescribeImportImageTasksOutput) {
