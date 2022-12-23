@@ -81,7 +81,7 @@ func NewCmdEditCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
 		ValidArgsFunction: commandutils.CompleteClusterName(f, true, false),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RunEditCluster(context.TODO(), f, out, options)
+			return RunEditCluster(cmd.Context(), f, out, options)
 		},
 	}
 
@@ -264,7 +264,7 @@ func updateCluster(ctx context.Context, clientset simple.Clientset, oldCluster, 
 	}
 
 	assetBuilder := assets.NewAssetBuilder(newCluster, false)
-	fullCluster, err := cloudup.PopulateClusterSpec(clientset, newCluster, cloud, assetBuilder)
+	fullCluster, err := cloudup.PopulateClusterSpec(ctx, clientset, newCluster, cloud, assetBuilder)
 	if err != nil {
 		return fmt.Sprintf("error populating cluster spec: %s", err), nil
 	}

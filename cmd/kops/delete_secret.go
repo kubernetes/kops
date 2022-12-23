@@ -79,7 +79,7 @@ func NewCmdDeleteSecret(f *util.Factory, out io.Writer) *cobra.Command {
 		},
 		ValidArgsFunction: completeSecretNames(f),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RunDeleteSecret(context.TODO(), f, out, options)
+			return RunDeleteSecret(cmd.Context(), f, out, options)
 		},
 	}
 
@@ -120,8 +120,9 @@ func RunDeleteSecret(ctx context.Context, f *util.Factory, out io.Writer, option
 
 func completeSecretNames(f commandutils.Factory) func(cmd *cobra.Command, args []string, complete string) ([]string, cobra.ShellCompDirective) {
 	return func(cmd *cobra.Command, args []string, complete string) ([]string, cobra.ShellCompDirective) {
+		ctx := cmd.Context()
+
 		commandutils.ConfigureKlogForCompletion()
-		ctx := context.TODO()
 
 		cluster, clientSet, completions, directive := GetClusterForCompletion(ctx, f, nil)
 		if cluster == nil {

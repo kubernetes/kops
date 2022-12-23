@@ -152,7 +152,7 @@ func NewCmdToolboxInstanceSelector(f commandutils.Factory, out io.Writer) *cobra
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 	commandline.Command.RunE = func(cmd *cobra.Command, args []string) error {
-		return RunToolboxInstanceSelector(context.TODO(), f, out, &commandline, options)
+		return RunToolboxInstanceSelector(cmd.Context(), f, out, &commandline, options)
 	}
 
 	cpuArchs := []string{cpuArchitectureAMD64, cpuArchitectureARM64}

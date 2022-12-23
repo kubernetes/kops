@@ -200,8 +200,7 @@ func (c *ClientsetCAStore) ListKeysets() (map[string]*Keyset, error) {
 }
 
 // StoreKeyset implements CAStore::StoreKeyset
-func (c *ClientsetCAStore) StoreKeyset(name string, keyset *Keyset) error {
-	ctx := context.TODO()
+func (c *ClientsetCAStore) StoreKeyset(ctx context.Context, name string, keyset *Keyset) error {
 	return c.storeKeyset(ctx, name, keyset)
 }
 
@@ -283,9 +282,7 @@ func (c *ClientsetCAStore) deleteSSHCredential(ctx context.Context) error {
 }
 
 // AddSSHPublicKey implements CAStore::AddSSHPublicKey
-func (c *ClientsetCAStore) AddSSHPublicKey(pubkey []byte) error {
-	ctx := context.TODO()
-
+func (c *ClientsetCAStore) AddSSHPublicKey(ctx context.Context, pubkey []byte) error {
 	_, _, _, _, err := ssh.ParseAuthorizedKey(pubkey)
 	if err != nil {
 		return fmt.Errorf("error parsing SSH public key: %v", err)
@@ -318,14 +315,14 @@ func (c *ClientsetCAStore) DeleteSSHCredential() error {
 	return c.deleteSSHCredential(ctx)
 }
 
-func (c *ClientsetCAStore) MirrorTo(basedir vfs.Path) error {
+func (c *ClientsetCAStore) MirrorTo(ctx context.Context, basedir vfs.Path) error {
 	keysets, err := c.ListKeysets()
 	if err != nil {
 		return err
 	}
 
 	for name, keyset := range keysets {
-		if err := mirrorKeyset(c.cluster, basedir, name, keyset); err != nil {
+		if err := mirrorKeyset(ctx, c.cluster, basedir, name, keyset); err != nil {
 			return err
 		}
 	}
@@ -336,7 +333,7 @@ func (c *ClientsetCAStore) MirrorTo(basedir vfs.Path) error {
 	}
 
 	for _, sshCredential := range sshCredentials {
-		if err := mirrorSSHCredential(c.cluster, basedir, sshCredential); err != nil {
+		if err := mirrorSSHCredential(ctx, c.cluster, basedir, sshCredential); err != nil {
 			return err
 		}
 	}

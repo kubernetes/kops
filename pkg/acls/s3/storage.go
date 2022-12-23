@@ -17,6 +17,7 @@ limitations under the License.
 package s3
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"strings"
@@ -37,7 +38,7 @@ var _ acls.ACLStrategy = &s3PublicAclStrategy{}
 // GetACL creates a s3PublicAclStrategy object for writing public files with assets FileRepository.
 // This strategy checks if the files are inside the state store, and if the files are located inside
 // the state store, this returns nil and logs a message (level 8) that it will not run.
-func (s *s3PublicAclStrategy) GetACL(p vfs.Path, cluster *kops.Cluster) (vfs.ACL, error) {
+func (s *s3PublicAclStrategy) GetACL(ctx context.Context, p vfs.Path, cluster *kops.Cluster) (vfs.ACL, error) {
 	if cluster.Spec.Assets == nil || cluster.Spec.Assets.FileRepository == nil {
 		return nil, nil
 	}

@@ -17,6 +17,7 @@ limitations under the License.
 package fi
 
 import (
+	"context"
 	crypto_rand "crypto/rand"
 	"encoding/base64"
 	"fmt"
@@ -40,7 +41,7 @@ type SecretStore interface {
 	ListSecrets() ([]string, error)
 
 	// MirrorTo will copy secrets to a vfs.Path, which is often easier for a machine to read
-	MirrorTo(basedir vfs.Path) error
+	MirrorTo(ctx context.Context, basedir vfs.Path) error
 }
 
 type Secret struct {

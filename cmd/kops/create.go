@@ -76,7 +76,7 @@ func NewCmdCreate(f *util.Factory, out io.Writer) *cobra.Command {
 		Example: createExample,
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RunCreate(context.TODO(), f, out, options)
+			return RunCreate(cmd.Context(), f, out, options)
 		},
 	}
 
@@ -198,7 +198,7 @@ func RunCreate(ctx context.Context, f *util.Factory, out io.Writer, c *CreateOpt
 				}
 
 				sshKeyArr := []byte(v.Spec.PublicKey)
-				err = sshCredentialStore.AddSSHPublicKey(sshKeyArr)
+				err = sshCredentialStore.AddSSHPublicKey(ctx, sshKeyArr)
 				if err != nil {
 					return err
 				}

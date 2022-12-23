@@ -125,7 +125,7 @@ func up(ctx context.Context) error {
 		if err != nil {
 			return fmt.Errorf("error reading SSH key file %q: %v", f, err)
 		}
-		err = sshCredentialStore.AddSSHPublicKey(pubKey)
+		err = sshCredentialStore.AddSSHPublicKey(ctx, pubKey)
 		if err != nil {
 			return fmt.Errorf("error adding SSH public key: %v", err)
 		}

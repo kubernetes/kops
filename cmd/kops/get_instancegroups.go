@@ -81,7 +81,7 @@ func NewCmdGetInstanceGroups(f *util.Factory, out io.Writer, getOptions *GetOpti
 			return completeInstanceGroup(f, &args, nil)(cmd, nil, toComplete)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RunGetInstanceGroups(context.TODO(), f, out, &options)
+			return RunGetInstanceGroups(cmd.Context(), f, out, &options)
 		},
 	}
 

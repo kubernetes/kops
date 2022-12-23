@@ -83,7 +83,7 @@ func (c *vfsAddonsClient) Replace(addons kubemanifest.ObjectList) error {
 
 	configPath := c.basePath.Join("default")
 
-	acl, err := acls.GetACL(configPath, c.cluster)
+	acl, err := acls.GetACL(ctx, configPath, c.cluster)
 	if err != nil {
 		return err
 	}
