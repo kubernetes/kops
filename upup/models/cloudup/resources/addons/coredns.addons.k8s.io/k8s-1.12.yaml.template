@@ -76,8 +76,8 @@ data:
           fallthrough in-addr.arpa ip6.arpa
           ttl 30
         }
-    {{- if GossipDomains }}
-        hosts /rootfs/etc/hosts {{ join " " GossipDomains }} {
+    {{- if GossipName }}
+        hosts /rootfs/etc/hosts k8s.local {
           ttl 30
           fallthrough
         }
@@ -167,7 +167,7 @@ spec:
         - name: config-volume
           mountPath: /etc/coredns
           readOnly: true
-{{- if GossipDomains }}
+{{- if GossipName }}
         - name: etc-hosts
           mountPath: /rootfs/etc/hosts
           readOnly: true
@@ -209,7 +209,7 @@ spec:
         - name: config-volume
           configMap:
             name: coredns
-{{- if GossipDomains }}
+{{- if GossipName }}
         - name: etc-hosts
           hostPath:
             path: /etc/hosts
