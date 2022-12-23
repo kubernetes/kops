@@ -45,15 +45,14 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
-	"k8s.io/kops/pkg/flagbuilder"
-	"sigs.k8s.io/yaml"
-
 	kopscontrollerconfig "k8s.io/kops/cmd/kops-controller/pkg/config"
 	"k8s.io/kops/pkg/apis/kops"
 	apiModel "k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/nodeup"
+	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components/kopscontroller"
@@ -66,6 +65,7 @@ import (
 	gcetpm "k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/util/pkg/env"
+	"sigs.k8s.io/yaml"
 )
 
 // TemplateFunctions provides a collection of methods used throughout the templates
@@ -124,14 +124,17 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		return cluster.Spec.KubeDNS
 	}
 
-	dest["GossipDomains"] = func() []string {
-		var names []string
-
+	dest["GossipEnabled"] = func() bool {
 		if cluster.IsGossip() {
-			names = append(names, "k8s.local")
+			return true
 		}
-
-		return names
+		return false
+	}
+	dest["GossipName"] = func() bool {
+		if dns.IsGossipClusterName(cluster.Name) {
+			return true
+		}
+		return false
 	}
 
 	dest["NodeLocalDNSClusterIP"] = func() string {
