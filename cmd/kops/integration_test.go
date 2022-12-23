@@ -42,6 +42,7 @@ import (
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/pkg/testutils/golden"
+	"k8s.io/kops/pkg/testutils/testcontext"
 	"k8s.io/kops/pkg/truncate"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -1338,7 +1339,7 @@ func storeKeyset(t *testing.T, ctx context.Context, keyStore fi.Keystore, name s
 }
 
 func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
-	ctx := testutils.ContextForTest(t)
+	ctx := testcontext.ForTest(t)
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
@@ -1426,7 +1427,7 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 }
 
 func (i *integrationTest) runTestPhase(t *testing.T, phase cloudup.Phase) {
-	ctx := testutils.ContextForTest(t)
+	ctx := testcontext.ForTest(t)
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
@@ -1471,7 +1472,7 @@ func (i *integrationTest) runTestPhase(t *testing.T, phase cloudup.Phase) {
 }
 
 func (i *integrationTest) runTestTerraformGCE(t *testing.T) {
-	ctx := testutils.ContextForTest(t)
+	ctx := testcontext.ForTest(t)
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
@@ -1510,7 +1511,7 @@ func (i *integrationTest) runTestTerraformGCE(t *testing.T) {
 }
 
 func (i *integrationTest) runTestTerraformHetzner(t *testing.T) {
-	ctx := testutils.ContextForTest(t)
+	ctx := testcontext.ForTest(t)
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 

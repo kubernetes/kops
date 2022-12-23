@@ -21,9 +21,12 @@ import (
 	"os"
 	"path"
 	"testing"
+
+	"k8s.io/kops/pkg/testutils/testcontext"
 )
 
 func TestCreateFile(t *testing.T) {
+	ctx := testcontext.ForTest(t)
 	TempDir := t.TempDir()
 
 	tests := []struct {
@@ -38,13 +41,13 @@ func TestCreateFile(t *testing.T) {
 	for _, test := range tests {
 		fspath := &FSPath{test.path}
 		// Create file
-		err := fspath.CreateFile(bytes.NewReader(test.data), nil)
+		err := fspath.CreateFile(ctx, bytes.NewReader(test.data), nil)
 		if err != nil {
 			t.Fatalf("Error writing file %s, error: %v", test.path, err)
 		}
 
 		// Create file again should result in error
-		err = fspath.CreateFile(bytes.NewReader([]byte("data")), nil)
+		err = fspath.CreateFile(ctx, bytes.NewReader([]byte("data")), nil)
 		if err != os.ErrExist {
 			t.Errorf("Expected to get os.ErrExist, got: %v", err)
 		}
@@ -61,6 +64,8 @@ func TestCreateFile(t *testing.T) {
 }
 
 func TestWriteTo(t *testing.T) {
+	ctx := testcontext.ForTest(t)
+
 	TempDir := t.TempDir()
 
 	tests := []struct {
@@ -77,7 +82,7 @@ func TestWriteTo(t *testing.T) {
 
 		fspath := NewFSPath(test.path)
 		// Create file
-		err := fspath.CreateFile(bytes.NewReader(test.data), nil)
+		err := fspath.CreateFile(ctx, bytes.NewReader(test.data), nil)
 		if err != nil {
 			t.Fatalf("Error writing file %s, error: %v", test.path, err)
 		}

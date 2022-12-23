@@ -17,6 +17,7 @@ limitations under the License.
 package vfs
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -50,7 +51,7 @@ func (p *FSPath) Join(relativePath ...string) Path {
 	return &FSPath{location: joined}
 }
 
-func (p *FSPath) WriteFile(data io.ReadSeeker, acl ACL) error {
+func (p *FSPath) WriteFile(ctx context.Context, data io.ReadSeeker, acl ACL) error {
 	dir := path.Dir(p.location)
 	err := os.MkdirAll(dir, 0o755)
 	if err != nil {
@@ -96,7 +97,7 @@ func (p *FSPath) WriteFile(data io.ReadSeeker, acl ACL) error {
 // TODO: should we take a file lock or equivalent here?  Can we use RENAME_NOREPLACE ?
 var createFileLock sync.Mutex
 
-func (p *FSPath) CreateFile(data io.ReadSeeker, acl ACL) error {
+func (p *FSPath) CreateFile(ctx context.Context, data io.ReadSeeker, acl ACL) error {
 	createFileLock.Lock()
 	defer createFileLock.Unlock()
 
@@ -110,7 +111,7 @@ func (p *FSPath) CreateFile(data io.ReadSeeker, acl ACL) error {
 		return err
 	}
 
-	return p.WriteFile(data, acl)
+	return p.WriteFile(ctx, data, acl)
 }
 
 // ReadFile implements Path::ReadFile
