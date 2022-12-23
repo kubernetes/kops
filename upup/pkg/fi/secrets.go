@@ -34,7 +34,7 @@ type SecretStore interface {
 	// FindSecret finds a secret, if exists.  Returns nil,nil if not found
 	FindSecret(id string) (*Secret, error)
 	// GetOrCreateSecret creates a secret
-	GetOrCreateSecret(id string, secret *Secret) (current *Secret, created bool, err error)
+	GetOrCreateSecret(ctx context.Context, id string, secret *Secret) (current *Secret, created bool, err error)
 	// ReplaceSecret will forcefully update an existing secret if it exists
 	ReplaceSecret(id string, secret *Secret) (current *Secret, err error)
 	// ListSecrets lists the ids of all known secrets
