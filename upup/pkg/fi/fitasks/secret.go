@@ -75,6 +75,8 @@ func (s *Secret) CheckChanges(a, e, changes *Secret) error {
 }
 
 func (_ *Secret) Render(c *fi.CloudupContext, a, e, changes *Secret) error {
+	ctx := c.Context()
+
 	name := fi.ValueOf(e.Name)
 	if name == "" {
 		return fi.RequiredField("Name")
@@ -87,7 +89,7 @@ func (_ *Secret) Render(c *fi.CloudupContext, a, e, changes *Secret) error {
 		return fmt.Errorf("error creating secret %q: %v", name, err)
 	}
 
-	_, _, err = secrets.GetOrCreateSecret(name, secret)
+	_, _, err = secrets.GetOrCreateSecret(ctx, name, secret)
 	if err != nil {
 		return fmt.Errorf("error creating secret %q: %v", name, err)
 	}

@@ -123,7 +123,7 @@ func RunCreateSecretEncryptionConfig(ctx context.Context, f commandutils.Factory
 	}
 
 	if !options.Force {
-		_, created, err := secretStore.GetOrCreateSecret("encryptionconfig", secret)
+		_, created, err := secretStore.GetOrCreateSecret(ctx, "encryptionconfig", secret)
 		if err != nil {
 			return fmt.Errorf("adding encryptionconfig secret: %v", err)
 		}
