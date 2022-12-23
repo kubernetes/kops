@@ -119,7 +119,7 @@ func NewCmdCreateInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 			return nil, cobra.ShellCompDirectiveNoFileComp
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RunCreateInstanceGroup(context.TODO(), f, out, options)
+			return RunCreateInstanceGroup(cmd.Context(), f, out, options)
 		},
 	}
 
@@ -277,8 +277,9 @@ func RunCreateInstanceGroup(ctx context.Context, f *util.Factory, out io.Writer,
 
 func completeClusterSubnet(f commandutils.Factory, excludeSubnets *[]string) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		ctx := cmd.Context()
+
 		commandutils.ConfigureKlogForCompletion()
-		ctx := context.TODO()
 
 		cluster, _, completions, directive := GetClusterForCompletion(ctx, f, nil)
 		if cluster == nil {

@@ -17,6 +17,7 @@ limitations under the License.
 package acls
 
 import (
+	"context"
 	"fmt"
 	"sync"
 
@@ -30,14 +31,14 @@ var (
 )
 
 // GetACL returns the ACL for the vfs.Path, by consulting all registered strategies
-func GetACL(p vfs.Path, cluster *kops.Cluster) (vfs.ACL, error) {
+func GetACL(ctx context.Context, p vfs.Path, cluster *kops.Cluster) (vfs.ACL, error) {
 	strategiesMutex.Lock()
 	defer strategiesMutex.Unlock()
 
 	for k, strategy := range strategies {
-		acl, err := strategy.GetACL(p, cluster)
+		acl, err := strategy.GetACL(ctx, p, cluster)
 		if err != nil {
-			return nil, fmt.Errorf("error from acl provider %q: %v", k, err)
+			return nil, fmt.Errorf("error from acl provider %q: %w", k, err)
 		}
 		if acl != nil {
 			return acl, nil

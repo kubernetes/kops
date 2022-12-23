@@ -76,7 +76,7 @@ func NewCmdCreateSecretDockerConfig(f *util.Factory, out io.Writer) *cobra.Comma
 		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
 		ValidArgsFunction: commandutils.CompleteClusterName(f, true, false),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RunCreateSecretDockerConfig(context.TODO(), f, out, options)
+			return RunCreateSecretDockerConfig(cmd.Context(), f, out, options)
 		},
 	}
 

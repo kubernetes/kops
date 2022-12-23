@@ -92,7 +92,7 @@ func (c *commonVFS) create(ctx context.Context, cluster *kops.Cluster, i runtime
 		objectMeta.SetCreationTimestamp(metav1.NewTime(time.Now().UTC()))
 	}
 
-	err = c.writeConfig(cluster, c.basePath.Join(objectMeta.GetName()), i, vfs.WriteOptionCreate)
+	err = c.writeConfig(ctx, cluster, c.basePath.Join(objectMeta.GetName()), i, vfs.WriteOptionCreate)
 	if err != nil {
 		if os.IsExist(err) {
 			return err
@@ -129,7 +129,7 @@ func (c *commonVFS) readConfig(configPath vfs.Path) (runtime.Object, error) {
 	return object, nil
 }
 
-func (c *commonVFS) writeConfig(cluster *kops.Cluster, configPath vfs.Path, o runtime.Object, writeOptions ...vfs.WriteOption) error {
+func (c *commonVFS) writeConfig(ctx context.Context, cluster *kops.Cluster, configPath vfs.Path, o runtime.Object, writeOptions ...vfs.WriteOption) error {
 	data, err := c.serialize(o)
 	if err != nil {
 		return fmt.Errorf("error marshaling object: %v", err)
@@ -153,7 +153,7 @@ func (c *commonVFS) writeConfig(cluster *kops.Cluster, configPath vfs.Path, o ru
 		}
 	}
 
-	acl, err := acls.GetACL(configPath, cluster)
+	acl, err := acls.GetACL(ctx, configPath, cluster)
 	if err != nil {
 		return err
 	}
@@ -192,7 +192,7 @@ func (c *commonVFS) update(ctx context.Context, cluster *kops.Cluster, i runtime
 		objectMeta.SetCreationTimestamp(metav1.NewTime(time.Now().UTC()))
 	}
 
-	err = c.writeConfig(cluster, c.basePath.Join(objectMeta.GetName()), i, vfs.WriteOptionOnlyIfExists)
+	err = c.writeConfig(ctx, cluster, c.basePath.Join(objectMeta.GetName()), i, vfs.WriteOptionOnlyIfExists)
 	if err != nil {
 		return fmt.Errorf("error writing %s: %v", c.kind, err)
 	}

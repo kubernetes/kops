@@ -57,9 +57,7 @@ func NewClientsetSecretStore(cluster *kops.Cluster, clientset kopsinternalversio
 	return c
 }
 
-func (c *ClientsetSecretStore) MirrorTo(basedir vfs.Path) error {
-	ctx := context.TODO()
-
+func (c *ClientsetSecretStore) MirrorTo(ctx context.Context, basedir vfs.Path) error {
 	list, err := c.clientset.Keysets(c.namespace).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return fmt.Errorf("error listing keysets: %v", err)
@@ -88,7 +86,7 @@ func (c *ClientsetSecretStore) MirrorTo(basedir vfs.Path) error {
 			return fmt.Errorf("error serializing secret: %v", err)
 		}
 
-		acl, err := acls.GetACL(p, c.cluster)
+		acl, err := acls.GetACL(ctx, p, c.cluster)
 		if err != nil {
 			return err
 		}

@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"context"
 	"crypto/x509"
 	"fmt"
 	"testing"
@@ -86,10 +87,10 @@ func (k fakeKeystore) CreateKeypair(signer string, name string, template *x509.C
 	panic("fakeKeystore does not implement CreateKeypair")
 }
 
-func (k fakeKeystore) StoreKeyset(name string, keyset *fi.Keyset) error {
+func (k fakeKeystore) StoreKeyset(ctx context.Context, name string, keyset *fi.Keyset) error {
 	panic("fakeKeystore does not implement StoreKeyset")
 }
 
-func (k fakeKeystore) MirrorTo(basedir vfs.Path) error {
+func (k fakeKeystore) MirrorTo(ctx context.Context, basedir vfs.Path) error {
 	panic("fakeKeystore does not implement MirrorTo")
 }
