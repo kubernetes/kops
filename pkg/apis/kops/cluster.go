@@ -820,10 +820,10 @@ func (c *Cluster) IsSharedAzureRouteTable() bool {
 }
 
 func (c *Cluster) IsGossip() bool {
-	if dns.IsGossipClusterName(c.Name) {
-		return true
+	if c.UsesNoneDNS() || !dns.IsGossipClusterName(c.Name) {
+		return false
 	}
-	return false
+	return true
 }
 
 func (c *Cluster) UsesPublicDNS() bool {
