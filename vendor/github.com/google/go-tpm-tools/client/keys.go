@@ -172,6 +172,7 @@ func NewCachedKey(rw io.ReadWriter, parent tpmutil.Handle, template tpm2.Public,
 //     is created in the specified hierarchy (using CreatePrimary).
 //   - If parent is a valid key handle, a normal key object is created under
 //     that parent (using Create and Load). NOTE: Not yet supported.
+//
 // This function also assumes that the desired key:
 //   - Does not have its usage locked to specific PCR values
 //   - Usable with empty authorization sessions (i.e. doesn't need a password)
