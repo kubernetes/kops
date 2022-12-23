@@ -216,15 +216,17 @@ func (blder *Builder) project(obj client.Object, proj objectProjection) (client.
 
 func (blder *Builder) doWatch() error {
 	// Reconcile type
-	typeForSrc, err := blder.project(blder.forInput.object, blder.forInput.objectProjection)
-	if err != nil {
-		return err
-	}
-	src := &source.Kind{Type: typeForSrc}
-	hdler := &handler.EnqueueRequestForObject{}
-	allPredicates := append(blder.globalPredicates, blder.forInput.predicates...)
-	if err := blder.ctrl.Watch(src, hdler, allPredicates...); err != nil {
-		return err
+	if blder.forInput.object != nil {
+		typeForSrc, err := blder.project(blder.forInput.object, blder.forInput.objectProjection)
+		if err != nil {
+			return err
+		}
+		src := &source.Kind{Type: typeForSrc}
+		hdler := &handler.EnqueueRequestForObject{}
+		allPredicates := append(blder.globalPredicates, blder.forInput.predicates...)
+		if err := blder.ctrl.Watch(src, hdler, allPredicates...); err != nil {
+			return err
+		}
 	}
 
 	// Watches the managed types
