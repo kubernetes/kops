@@ -1,5 +1,8 @@
+//go:build !race
+// +build !race
+
 /*
-Copyright 2017 The Kubernetes Authors.
+Copyright 2021 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,14 +17,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package install
+package roundtrip
 
-import (
-	"testing"
-
-	roundtrip "k8s.io/apimachinery/pkg/api/apitesting/roundtrip"
-)
-
-func TestRoundTripTypes(t *testing.T) {
-	roundtrip.RoundTripTestForAPIGroup(t, Install, nil)
-}
+// in non-race-detection mode, a higher number of iterations is reasonable
+const defaultFuzzIters = 20
