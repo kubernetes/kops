@@ -17,6 +17,7 @@ limitations under the License.
 package vfs
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"strings"
@@ -49,9 +50,9 @@ type Path interface {
 	// If the file did not exist, err = os.ErrNotExist
 	// As this reads the entire file into memory, consider using WriteTo for bigger files
 	ReadFile() ([]byte, error)
-	WriteFile(data io.ReadSeeker, acl ACL) error
+	WriteFile(ctx context.Context, data io.ReadSeeker, acl ACL) error
 	// CreateFile writes the file contents, but only if the file does not already exist
-	CreateFile(data io.ReadSeeker, acl ACL) error
+	CreateFile(ctx context.Context, data io.ReadSeeker, acl ACL) error
 
 	// Remove deletes the file
 	Remove() error

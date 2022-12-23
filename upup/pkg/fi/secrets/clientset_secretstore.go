@@ -91,7 +91,7 @@ func (c *ClientsetSecretStore) MirrorTo(ctx context.Context, basedir vfs.Path) e
 			return err
 		}
 
-		if err := p.WriteFile(bytes.NewReader(data), acl); err != nil {
+		if err := p.WriteFile(ctx, bytes.NewReader(data), acl); err != nil {
 			return fmt.Errorf("error writing secret to %q: %v", p, err)
 		}
 	}

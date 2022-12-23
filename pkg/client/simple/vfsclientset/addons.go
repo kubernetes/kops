@@ -89,7 +89,7 @@ func (c *vfsAddonsClient) Replace(addons kubemanifest.ObjectList) error {
 	}
 
 	rs := bytes.NewReader(b)
-	if err := configPath.WriteFile(rs, acl); err != nil {
+	if err := configPath.WriteFile(ctx, rs, acl); err != nil {
 		return fmt.Errorf("error writing addons file %s: %v", configPath, err)
 	}
 

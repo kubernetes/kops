@@ -192,7 +192,7 @@ func writeKeysetBundle(ctx context.Context, cluster *kops.Cluster, p vfs.Path, n
 	if err != nil {
 		return err
 	}
-	return p.WriteFile(bytes.NewReader(objectData), acl)
+	return p.WriteFile(ctx, bytes.NewReader(objectData), acl)
 }
 
 // serializeKeysetBundle converts a Keyset bundle to yaml, for writing to VFS.
@@ -326,7 +326,7 @@ func mirrorSSHCredential(ctx context.Context, cluster *kops.Cluster, basedir vfs
 		return err
 	}
 
-	err = p.WriteFile(bytes.NewReader([]byte(sshCredential.Spec.PublicKey)), acl)
+	err = p.WriteFile(ctx, bytes.NewReader([]byte(sshCredential.Spec.PublicKey)), acl)
 	if err != nil {
 		return fmt.Errorf("error writing %q: %v", p, err)
 	}
@@ -410,7 +410,7 @@ func (c *VFSCAStore) AddSSHPublicKey(ctx context.Context, pubkey []byte) error {
 		return err
 	}
 
-	return p.WriteFile(bytes.NewReader(pubkey), acl)
+	return p.WriteFile(ctx, bytes.NewReader(pubkey), acl)
 }
 
 func (c *VFSCAStore) buildSSHPublicKeyPath(id string) vfs.Path {

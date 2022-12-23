@@ -154,9 +154,7 @@ func mkdirAll(sftpClient *sftp.Client, dir string) error {
 	return nil
 }
 
-func (p *SSHPath) WriteFile(data io.ReadSeeker, acl ACL) error {
-	ctx := context.TODO()
-
+func (p *SSHPath) WriteFile(ctx context.Context, data io.ReadSeeker, acl ACL) error {
 	sftpClient, err := p.newClient(ctx)
 	if err != nil {
 		return err
@@ -244,7 +242,7 @@ func (p *SSHPath) WriteFile(data io.ReadSeeker, acl ACL) error {
 // Not a great approach, but fine for a single process (with low concurrency)
 var createFileLockSSH sync.Mutex
 
-func (p *SSHPath) CreateFile(data io.ReadSeeker, acl ACL) error {
+func (p *SSHPath) CreateFile(ctx context.Context, data io.ReadSeeker, acl ACL) error {
 	createFileLockSSH.Lock()
 	defer createFileLockSSH.Unlock()
 
@@ -258,7 +256,7 @@ func (p *SSHPath) CreateFile(data io.ReadSeeker, acl ACL) error {
 		return err
 	}
 
-	return p.WriteFile(data, acl)
+	return p.WriteFile(ctx, data, acl)
 }
 
 // ReadFile implements Path::ReadFile
