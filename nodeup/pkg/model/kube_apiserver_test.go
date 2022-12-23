@@ -148,6 +148,13 @@ func TestKubeAPIServerBuilder(t *testing.T) {
 	})
 }
 
+func TestAuditConfigAPIServerBuilder(t *testing.T) {
+	RunGoldenTest(t, "tests/golden/audit", "kube-apiserver", func(nodeupModelContext *NodeupModelContext, target *fi.NodeupModelBuilderContext) error {
+		builder := KubeAPIServerBuilder{NodeupModelContext: nodeupModelContext}
+		return builder.Build(target)
+	})
+}
+
 func TestDeddicatedAPIServerBuilder(t *testing.T) {
 	RunGoldenTest(t, "tests/golden/dedicated-apiserver", "kube-apiserver", func(nodeupModelContext *NodeupModelContext, target *fi.NodeupModelBuilderContext) error {
 		builder := KubeAPIServerBuilder{NodeupModelContext: nodeupModelContext}
