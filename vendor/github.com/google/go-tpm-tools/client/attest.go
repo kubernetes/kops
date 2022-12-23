@@ -3,9 +3,11 @@ package client
 import (
 	"crypto/x509"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
+	sabi "github.com/google/go-sev-guest/abi"
+	sg "github.com/google/go-sev-guest/client"
 	pb "github.com/google/go-tpm-tools/proto/attest"
 )
 
@@ -13,6 +15,16 @@ const (
 	maxIssuingCertificateURLs = 3
 	maxCertChainLength        = 4
 )
+
+// TEEDevice is an interface to add an attestation report from a TEE technology's
+// attestation driver.
+type TEEDevice interface {
+	// AddAttestation uses the TEE device's attestation driver to collect an
+	// attestation report, then adds it to the correct field of `attestation`.
+	AddAttestation(attestation *pb.Attestation, options AttestOpts) error
+	// Close finalizes any resources in use by the TEEDevice.
+	Close() error
+}
 
 // AttestOpts allows for customizing the functionality of Attest.
 type AttestOpts struct {
@@ -36,6 +48,16 @@ type AttestOpts struct {
 	// Key.Attest() will construct the certificate chain by making GET requests to
 	// the contents of Key.cert.IssuingCertificateURL using this client.
 	CertChainFetcher *http.Client
+	// TEEDevice implements the TEEDevice interface for collecting a Trusted execution
+	// environment attestation. If nil, then Attest will try all known TEE devices,
+	// and TEENonce must be nil. If not nil, Attest will not call Close() on the device.
+	TEEDevice TEEDevice
+	// TEENonce is the nonce that will be used in the TEE's attestation collection
+	// mechanism. It is expected to be the size required by the technology. If nil,
+	// then the nonce will be populated with Nonce, either truncated or zero-filled
+	// depending on the technology's size. Leaving this nil is not recommended. If
+	// nil, then TEEDevice must be nil.
+	TEENonce []byte
 }
 
 // Given a certificate, iterates through its IssuingCertificateURLs and returns
@@ -67,7 +89,7 @@ func fetchIssuingCertificate(client *http.Client, cert *x509.Certificate) (*x509
 			lastErr = fmt.Errorf("certificate retrieval from %s returned non-OK status: %v", url, resp.StatusCode)
 			continue
 		}
-		certBytes, err := ioutil.ReadAll(resp.Body)
+		certBytes, err := io.ReadAll(resp.Body)
 		resp.Body.Close()
 		if err != nil {
 			lastErr = fmt.Errorf("failed to read response body from %s: %w", url, err)
@@ -109,6 +131,81 @@ func (k *Key) getCertificateChain(client *http.Client) ([][]byte, error) {
 	return nil, fmt.Errorf("max certificate chain length (%v) exceeded", maxCertChainLength)
 }
 
+// SevSnpDevice encapsulates the SEV-SNP attestation device to add its attestation report
+// to a pb.Attestation.
+type SevSnpDevice struct {
+	Device sg.Device
+}
+
+// CreateSevSnpDevice opens the SEV-SNP attestation driver and wraps it with behavior
+// that allows it to add an attestation report to pb.Attestation.
+func CreateSevSnpDevice() (*SevSnpDevice, error) {
+	d, err := sg.OpenDevice()
+	if err != nil {
+		return nil, err
+	}
+	return &SevSnpDevice{Device: d}, nil
+}
+
+// AddAttestation will get the SEV-SNP attestation report given opts.TEENonce with
+// associated certificates and add them to `attestation`. If opts.TEENonce is empty,
+// then uses contents of opts.Nonce.
+func (d *SevSnpDevice) AddAttestation(attestation *pb.Attestation, opts AttestOpts) error {
+	var snpNonce [sabi.ReportDataSize]byte
+	if len(opts.TEENonce) == 0 {
+		copy(snpNonce[:], opts.Nonce[:])
+	} else if len(opts.TEENonce) != sabi.ReportDataSize {
+		return fmt.Errorf("the TEENonce size is %d. SEV-SNP device requires 64", len(opts.TEENonce))
+	} else {
+		copy(snpNonce[:], opts.TEENonce)
+	}
+	extReport, err := sg.GetExtendedReport(d.Device, snpNonce)
+	if err != nil {
+		return err
+	}
+	attestation.TeeAttestation = &pb.Attestation_SevSnpAttestation{
+		SevSnpAttestation: extReport,
+	}
+	return nil
+}
+
+// Close will free the device handle held by the SevSnpDevice. Calling more
+// than once has no effect.
+func (d *SevSnpDevice) Close() error {
+	if d.Device != nil {
+		err := d.Device.Close()
+		d.Device = nil
+		return err
+	}
+	return nil
+}
+
+// Does best effort to get a TEE hardware rooted attestation, but won't fail fatally
+// unless the user provided a TEEDevice object.
+func getTEEAttestationReport(attestation *pb.Attestation, opts AttestOpts) error {
+	device := opts.TEEDevice
+	if device != nil {
+		return device.AddAttestation(attestation, opts)
+	}
+
+	// TEEDevice can't be nil while TEENonce is non-nil
+	if opts.TEENonce != nil {
+		return fmt.Errorf("got non-nil TEENonce when TEEDevice is nil: %v", opts.TEENonce)
+	}
+
+	// Try SEV-SNP.
+	if device, err := CreateSevSnpDevice(); err == nil {
+		// Don't return errors if the attestation collection fails, since
+		// the user didn't specify a TEEDevice.
+		device.AddAttestation(attestation, opts)
+		device.Close()
+		return nil
+	}
+
+	// Add more devices here.
+	return nil
+}
+
 // Attest generates an Attestation containing the TCG Event Log and a Quote over
 // all PCR banks. The provided nonce can be used to guarantee freshness of the
 // attestation. This function will return an error if the key is not a
@@ -117,12 +214,12 @@ func (k *Key) getCertificateChain(client *http.Client) ([][]byte, error) {
 // AttestOpts is used for additional configuration of the Attestation process.
 // This is primarily used to pass the attestation's nonce:
 //
-//   attestation, err := key.Attest(client.AttestOpts{Nonce: my_nonce})
+//	attestation, err := key.Attest(client.AttestOpts{Nonce: my_nonce})
 func (k *Key) Attest(opts AttestOpts) (*pb.Attestation, error) {
 	if len(opts.Nonce) == 0 {
 		return nil, fmt.Errorf("provided nonce must not be empty")
 	}
-	sels, err := implementedPCRs(k.rw)
+	sels, err := allocatedPCRs(k.rw)
 	if err != nil {
 		return nil, err
 	}
@@ -153,6 +250,10 @@ func (k *Key) Attest(opts AttestOpts) (*pb.Attestation, error) {
 		if err != nil {
 			return nil, fmt.Errorf("fetching certificate chain: %w", err)
 		}
+	}
+
+	if err := getTEEAttestationReport(&attestation, opts); err != nil {
+		return nil, fmt.Errorf("collecting TEE attestation report: %w", err)
 	}
 
 	return &attestation, nil

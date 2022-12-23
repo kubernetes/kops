@@ -1347,8 +1347,8 @@ func newAWSCloud(cfg CloudConfig, awsServices Services) (*Cloud, error) {
 	}
 
 	if !cfg.Global.DisableStrictZoneCheck {
-		if !isRegionValid(regionName, metadata) {
-			return nil, fmt.Errorf("not a valid AWS zone (unknown region): %s", zone)
+		if err := validateRegion(regionName, metadata); err != nil {
+			return nil, fmt.Errorf("not a valid AWS zone (unknown region): %s, %w", zone, err)
 		}
 	} else {
 		klog.Warningf("Strict AWS zone checking is disabled.  Proceeding with zone: %s", zone)
@@ -1442,16 +1442,17 @@ func NewAWSCloud(cfg CloudConfig, awsServices Services) (*Cloud, error) {
 	return newAWSCloud(cfg, awsServices)
 }
 
-// isRegionValid accepts an AWS region name and returns if the region is a
+// validateRegion accepts an AWS region name and returns if the region is a
 // valid region known to the AWS SDK. Considers the region returned from the
 // EC2 metadata service to be a valid region as it's only available on a host
 // running in a valid AWS region.
-func isRegionValid(region string, metadata EC2Metadata) bool {
-	// Does the AWS SDK know about the region?
+func validateRegion(region string, metadata EC2Metadata) error {
+	// Does the AWS SDK know about the region? Any region known by the SDK is a
+	// valid one.
 	for _, p := range endpoints.DefaultPartitions() {
 		for r := range p.Regions() {
 			if r == region {
-				return true
+				return nil
 			}
 		}
 	}
@@ -1460,20 +1461,27 @@ func isRegionValid(region string, metadata EC2Metadata) bool {
 	// requires an access request (for more details see):
 	// https://github.com/aws/aws-sdk-go/issues/1863
 	if region == "ap-northeast-3" {
-		return true
+		return nil
 	}
 
 	// Fallback to checking if the region matches the instance metadata region
 	// (ignoring any user overrides). This just accounts for running an old
 	// build of Kubernetes in a new region that wasn't compiled into the SDK
 	// when Kubernetes was built.
-	if az, err := getAvailabilityZone(metadata); err == nil {
-		if r, err := azToRegion(az); err == nil && region == r {
-			return true
-		}
+	az, err := getAvailabilityZone(metadata)
+	if err != nil {
+		return err
+	}
+	ec2Region, err := azToRegion(az)
+	if err != nil {
+		return err
+	}
+	if region != ec2Region {
+		return fmt.Errorf("region %s is not known, and does not match EC2 instance's region, %s",
+			region, ec2Region)
 	}
 
-	return false
+	return nil
 }
 
 // Initialize passes a Kubernetes clientBuilder interface to the cloud provider
