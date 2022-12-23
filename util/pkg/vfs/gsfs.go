@@ -482,5 +482,6 @@ func isGCSNotFound(err error) bool {
 }
 
 func (p *GSPath) getStorageClient(ctx context.Context) (*storage.Service, error) {
-	return p.vfsContext.getGCSClient(ctx)
+	vfsContext := FromContext(ctx)
+	return vfsContext.getGCSClient(ctx)
 }
