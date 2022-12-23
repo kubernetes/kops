@@ -6,18 +6,20 @@ metadata:
   labels:
     k8s-addon: external-dns.addons.k8s.io
     k8s-app: external-dns
-    version: v0.12.2
+    version: v0.13.1
 spec:
   replicas: 1
   selector:
     matchLabels:
       k8s-app: external-dns
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
         k8s-addon: external-dns.addons.k8s.io
         k8s-app: external-dns
-        version: v0.12.2
+        version: v0.13.1
     spec:
       affinity:
         nodeAffinity:
@@ -51,7 +53,7 @@ spec:
           readOnlyRootFilesystem: true
           capabilities:
             drop: ["ALL"]
-        image: registry.k8s.io/external-dns/external-dns:v0.12.2
+        image: registry.k8s.io/external-dns/external-dns:v0.13.1
         args:
 {{ range $arg := ExternalDnsArgv }}
         - "{{ $arg }}"
