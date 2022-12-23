@@ -130,7 +130,7 @@ func RunCreateSecretDockerConfig(ctx context.Context, f commandutils.Factory, ou
 	}
 
 	if !options.Force {
-		_, created, err := secretStore.GetOrCreateSecret("dockerconfig", secret)
+		_, created, err := secretStore.GetOrCreateSecret(ctx, "dockerconfig", secret)
 		if err != nil {
 			return fmt.Errorf("adding dockerconfig secret: %v", err)
 		}
