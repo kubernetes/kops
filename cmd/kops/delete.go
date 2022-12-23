@@ -60,7 +60,7 @@ func NewCmdDelete(f *util.Factory, out io.Writer) *cobra.Command {
 		SuggestFor: []string{"rm"},
 		Args:       cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RunDelete(context.TODO(), f, out, options)
+			return RunDelete(cmd.Context(), f, out, options)
 		},
 	}
 

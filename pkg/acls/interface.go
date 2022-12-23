@@ -17,6 +17,8 @@ limitations under the License.
 package acls
 
 import (
+	"context"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/util/pkg/vfs"
 )
@@ -24,5 +26,5 @@ import (
 // ACLStrategy is the interface implemented by ACL strategy providers
 type ACLStrategy interface {
 	// GetACL returns the ACL if this strategy handles the vfs.Path, when writing for the specified cluster
-	GetACL(p vfs.Path, cluster *kops.Cluster) (vfs.ACL, error)
+	GetACL(ctx context.Context, p vfs.Path, cluster *kops.Cluster) (vfs.ACL, error)
 }

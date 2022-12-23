@@ -86,7 +86,7 @@ func NewCmdDeleteInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 		},
 		ValidArgsFunction: completeInstanceGroup(f, nil, &[]string{kops.InstanceGroupRoleControlPlane.ToLowerString()}),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ctx := context.TODO()
+			ctx := cmd.Context()
 
 			if !options.Yes {
 				message := fmt.Sprintf("Do you really want to delete instance group %q? This action cannot be undone.", options.GroupName)

@@ -73,7 +73,7 @@ func NewCmdGetInstances(f *util.Factory, out io.Writer, options *GetOptions) *co
 		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
 		ValidArgsFunction: commandutils.CompleteClusterName(f, true, false),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RunGetInstances(context.TODO(), f, out, options)
+			return RunGetInstances(cmd.Context(), f, out, options)
 		},
 	}
 

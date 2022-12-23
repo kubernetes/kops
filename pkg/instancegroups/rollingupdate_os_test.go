@@ -38,7 +38,7 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
-func getTestSetupOS(t *testing.T) (*RollingUpdateCluster, *openstack.MockCloud) {
+func getTestSetupOS(t *testing.T, ctx context.Context) (*RollingUpdateCluster, *openstack.MockCloud) {
 	vfs.Context.ResetMemfsContext(true)
 
 	k8sClient := fake.NewSimpleClientset()
@@ -61,7 +61,7 @@ func getTestSetupOS(t *testing.T) (*RollingUpdateCluster, *openstack.MockCloud) 
 	assetBuilder := assets.NewAssetBuilder(inCluster, false)
 	basePath, _ := vfs.Context.BuildVfsPath(inCluster.Spec.ConfigBase)
 	clientset := vfsclientset.NewVFSClientset(basePath)
-	cluster, err := cloudup.PopulateClusterSpec(clientset, inCluster, mockcloud, assetBuilder)
+	cluster, err := cloudup.PopulateClusterSpec(ctx, clientset, inCluster, mockcloud, assetBuilder)
 	if err != nil {
 		t.Fatalf("Failed to populate cluster spec: %v", err)
 	}
@@ -72,7 +72,7 @@ func getTestSetupOS(t *testing.T) (*RollingUpdateCluster, *openstack.MockCloud) 
 		t.Fatalf("Failed to get credential store: %v", err)
 	}
 
-	sshCredentialStore.AddSSHPublicKey(sshPublicKey)
+	sshCredentialStore.AddSSHPublicKey(ctx, sshPublicKey)
 
 	c := &RollingUpdateCluster{
 		Cloud:                   mockcloud,
@@ -86,7 +86,7 @@ func getTestSetupOS(t *testing.T) (*RollingUpdateCluster, *openstack.MockCloud) 
 		ValidateTickDuration:    1 * time.Millisecond,
 		ValidateSuccessDuration: 5 * time.Millisecond,
 		ValidateCount:           2,
-		Ctx:                     context.Background(),
+		Ctx:                     ctx,
 		Cluster:                 cluster,
 		Clientset:               clientset,
 	}
@@ -100,11 +100,13 @@ var TempTestSkip = func(t *testing.T, message string) {
 }
 
 func TestRollingUpdateDisabledSurgeOS(t *testing.T) {
+	ctx := context.TODO()
+
 	TempTestSkip(t, "Failing in new release PR when build is not yet published")
 
 	t.Setenv("OS_REGION_NAME", "us-test1")
 
-	c, cloud := getTestSetupOS(t)
+	c, cloud := getTestSetupOS(t, ctx)
 
 	groups, igList := getGroupsAllNeedUpdateOS(t, c)
 	err := c.RollingUpdate(groups, igList)

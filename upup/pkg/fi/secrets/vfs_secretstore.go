@@ -18,6 +18,7 @@ package secrets
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -48,7 +49,7 @@ func (c *VFSSecretStore) VFSPath() vfs.Path {
 	return c.basedir
 }
 
-func (c *VFSSecretStore) MirrorTo(basedir vfs.Path) error {
+func (c *VFSSecretStore) MirrorTo(ctx context.Context, basedir vfs.Path) error {
 	if basedir.Path() == c.basedir.Path() {
 		klog.V(2).Infof("Skipping mirror of secret store from %q to %q (same path)", c.basedir, basedir)
 		return nil
@@ -72,7 +73,7 @@ func (c *VFSSecretStore) MirrorTo(basedir vfs.Path) error {
 
 		p := BuildVfsSecretPath(basedir, name)
 
-		acl, err := acls.GetACL(p, c.cluster)
+		acl, err := acls.GetACL(ctx, p, c.cluster)
 		if err != nil {
 			return fmt.Errorf("error building acl for secret %q for mirror: %v", name, err)
 		}
@@ -139,6 +140,8 @@ func (c *VFSSecretStore) Secret(id string) (*fi.Secret, error) {
 }
 
 func (c *VFSSecretStore) GetOrCreateSecret(id string, secret *fi.Secret) (*fi.Secret, bool, error) {
+	ctx := context.TODO()
+
 	p := c.buildSecretPath(id)
 
 	for i := 0; i < 2; i++ {
@@ -151,7 +154,7 @@ func (c *VFSSecretStore) GetOrCreateSecret(id string, secret *fi.Secret) (*fi.Se
 			return s, false, nil
 		}
 
-		acl, err := acls.GetACL(p, c.cluster)
+		acl, err := acls.GetACL(ctx, p, c.cluster)
 		if err != nil {
 			return nil, false, err
 		}
@@ -181,9 +184,11 @@ func (c *VFSSecretStore) GetOrCreateSecret(id string, secret *fi.Secret) (*fi.Se
 }
 
 func (c *VFSSecretStore) ReplaceSecret(id string, secret *fi.Secret) (*fi.Secret, error) {
+	ctx := context.TODO()
+
 	p := c.buildSecretPath(id)
 
-	acl, err := acls.GetACL(p, c.cluster)
+	acl, err := acls.GetACL(ctx, p, c.cluster)
 	if err != nil {
 		return nil, err
 	}

@@ -17,6 +17,7 @@ limitations under the License.
 package s3
 
 import (
+	"context"
 	"testing"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -25,6 +26,8 @@ import (
 )
 
 func Test_Strategy(t *testing.T) {
+	ctx := context.TODO()
+
 	context := &vfs.VFSContext{}
 	path, err := context.BuildVfsPath("s3://test/foo")
 	if err != nil {
@@ -41,7 +44,7 @@ func Test_Strategy(t *testing.T) {
 	}
 
 	s := &s3PublicAclStrategy{}
-	acl, err := s.GetACL(path, cluster)
+	acl, err := s.GetACL(ctx, path, cluster)
 	if err != nil {
 		t.Errorf("error getting ACL: %v", err)
 	}
@@ -52,6 +55,8 @@ func Test_Strategy(t *testing.T) {
 }
 
 func Test_In_StateStore(t *testing.T) {
+	ctx := context.TODO()
+
 	context := &vfs.VFSContext{}
 	stateStore, err := context.BuildVfsPath("s3://my_state_store/cluster")
 	if err != nil {
@@ -68,7 +73,7 @@ func Test_In_StateStore(t *testing.T) {
 	}
 
 	s := &s3PublicAclStrategy{}
-	acl, err := s.GetACL(stateStore, cluster)
+	acl, err := s.GetACL(ctx, stateStore, cluster)
 	if err != nil {
 		t.Errorf("error getting ACL: %v", err)
 	}

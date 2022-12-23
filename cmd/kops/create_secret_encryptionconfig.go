@@ -70,7 +70,7 @@ func NewCmdCreateSecretEncryptionConfig(f *util.Factory, out io.Writer) *cobra.C
 		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
 		ValidArgsFunction: commandutils.CompleteClusterName(f, true, false),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RunCreateSecretEncryptionConfig(context.TODO(), f, out, options)
+			return RunCreateSecretEncryptionConfig(cmd.Context(), f, out, options)
 		},
 	}
 

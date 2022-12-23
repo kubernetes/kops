@@ -104,7 +104,7 @@ func NewCmdEditInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 		},
 		ValidArgsFunction: completeInstanceGroup(f, nil, nil),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RunEditInstanceGroup(context.TODO(), f, out, options)
+			return RunEditInstanceGroup(cmd.Context(), f, out, options)
 		},
 	}
 
@@ -299,7 +299,7 @@ func updateInstanceGroup(ctx context.Context, clientset simple.Clientset, channe
 	}
 
 	assetBuilder := assets.NewAssetBuilder(cluster, false)
-	fullCluster, err := cloudup.PopulateClusterSpec(clientset, cluster, cloud, assetBuilder)
+	fullCluster, err := cloudup.PopulateClusterSpec(ctx, clientset, cluster, cloud, assetBuilder)
 	if err != nil {
 		return fmt.Sprintf("error populating cluster spec: %s", err), nil
 	}
