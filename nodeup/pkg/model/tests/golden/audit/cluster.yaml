@@ -27,7 +27,44 @@ spec:
     provider: Manager
     backups:
       backupStore: memfs://clusters.example.com/minimal.example.com/backups/etcd-events
+  fileAssets:
+  - name: audit-policy-config
+    path: /etc/kubernetes/audit/policy-config.yaml
+    roles:
+    - Master
+    content: |
+      apiVersion: audit.k8s.io/v1
+      kind: Policy
+      rules:
+      - level: Metadata
+  - name: audit-webhook-config
+    path: /etc/kubernetes/audit/webhook-config.yaml
+    roles:
+    - Master
+    content: |
+      apiVersion: v1
+      kind: Config
+      clusters:
+      - name: server
+        cluster:
+          server: https://my-webhook-receiver
+      contexts:
+      - context:
+          cluster: server
+          user: ""
+        name: default-context
+      current-context: default-context
+      preferences: {}
+      users: []
   iam: {}
+  kubeAPIServer:
+    auditLogMaxAge: 10
+    auditLogMaxBackups: 1
+    auditLogMaxSize: 100
+    auditLogPath: /var/log/kube-apiserver-audit.log
+    auditPolicyFile: /etc/kubernetes/audit/policy-config.yaml
+    auditWebhookBatchMaxWait: 5s
+    auditWebhookConfigFile: /etc/kubernetes/audit/webhook-config.yaml
   kubelet:
     anonymousAuth: false
   kubernetesVersion: v1.23.0
