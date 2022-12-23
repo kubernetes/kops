@@ -127,7 +127,7 @@ func RunCreateSecretWeavePassword(ctx context.Context, f commandutils.Factory, o
 	}
 
 	if !options.Force {
-		_, created, err := secretStore.GetOrCreateSecret("weavepassword", secret)
+		_, created, err := secretStore.GetOrCreateSecret(ctx, "weavepassword", secret)
 		if err != nil {
 			return fmt.Errorf("adding weavepassword secret: %v", err)
 		}

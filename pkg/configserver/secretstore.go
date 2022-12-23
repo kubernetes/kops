@@ -65,7 +65,7 @@ func (s *configserverSecretStore) FindSecret(id string) (*fi.Secret, error) {
 }
 
 // GetOrCreateSecret implements fi.SecretStore
-func (s *configserverSecretStore) GetOrCreateSecret(id string, secret *fi.Secret) (current *fi.Secret, created bool, err error) {
+func (s *configserverSecretStore) GetOrCreateSecret(ctx context.Context, id string, secret *fi.Secret) (current *fi.Secret, created bool, err error) {
 	return nil, false, fmt.Errorf("GetOrCreateSecret not supported by configserverSecretStore")
 }
 
