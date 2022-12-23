@@ -124,14 +124,17 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		return cluster.Spec.KubeDNS
 	}
 
-	dest["GossipDomains"] = func() []string {
-		var names []string
-
-		if dns.IsGossipClusterName(cluster.Name) {
-			names = append(names, "k8s.local")
+	dest["GossipEnabled"] = func() bool {
+		if cluster.IsGossip() {
+			return true
 		}
-
-		return names
+		return false
+	}
+	dest["GossipName"] = func() bool {
+		if dns.IsGossipClusterName(cluster.Name) {
+			return true
+		}
+		return false
 	}
 
 	dest["NodeLocalDNSClusterIP"] = func() string {
