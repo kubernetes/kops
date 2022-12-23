@@ -1,9 +1,7 @@
 package client
 
-import (
-	"io/ioutil"
-)
+import "os"
 
 func getRealEventLog() ([]byte, error) {
-	return ioutil.ReadFile("/sys/kernel/security/tpm0/binary_bios_measurements")
+	return os.ReadFile("/sys/kernel/security/tpm0/binary_bios_measurements")
 }

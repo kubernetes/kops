@@ -11,7 +11,7 @@ import (
 	"net/http"
 )
 
-//region Cluster
+// region Cluster
 func (s *ServiceOp) ListClusters(ctx context.Context, input *ListClustersInput) (*ListClustersOutput, error) {
 	r := client.NewRequest(http.MethodGet, "/ocean/spark/cluster")
 
@@ -178,7 +178,7 @@ func clusterFromJSON(in []byte) (*Cluster, error) {
 
 //endregion
 
-//region Virtual Node Group
+// region Virtual Node Group
 func (s *ServiceOp) DetachVirtualNodeGroup(ctx context.Context, input *DetachVngInput) (*DetachVngOutput, error) {
 	if input == nil {
 		return nil, fmt.Errorf("input is nil")
