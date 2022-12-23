@@ -80,7 +80,7 @@ func (c *VFSSecretStore) MirrorTo(ctx context.Context, basedir vfs.Path) error {
 
 		klog.Infof("mirroring secret %s -> %s", name, p)
 
-		err = createSecret(secret, p, acl, true)
+		err = createSecret(ctx, secret, p, acl, true)
 		if err != nil {
 			return fmt.Errorf("error writing secret %q for mirror: %v", name, err)
 		}
@@ -157,7 +157,7 @@ func (c *VFSSecretStore) GetOrCreateSecret(ctx context.Context, id string, secre
 			return nil, false, err
 		}
 
-		err = createSecret(secret, p, acl, false)
+		err = createSecret(ctx, secret, p, acl, false)
 		if err != nil {
 			if os.IsExist(err) && i == 0 {
 				klog.Infof("Got already-exists error when writing secret; likely due to concurrent creation.  Will retry")
@@ -191,7 +191,7 @@ func (c *VFSSecretStore) ReplaceSecret(id string, secret *fi.Secret) (*fi.Secret
 		return nil, err
 	}
 
-	err = createSecret(secret, p, acl, true)
+	err = createSecret(ctx, secret, p, acl, true)
 	if err != nil {
 		return nil, fmt.Errorf("unable to write secret: %v", err)
 	}
@@ -220,7 +220,7 @@ func (c *VFSSecretStore) loadSecret(p vfs.Path) (*fi.Secret, error) {
 }
 
 // createSecret will create the Secret, overwriting an existing secret if replace is true
-func createSecret(s *fi.Secret, p vfs.Path, acl vfs.ACL, replace bool) error {
+func createSecret(ctx context.Context, s *fi.Secret, p vfs.Path, acl vfs.ACL, replace bool) error {
 	data, err := json.Marshal(s)
 	if err != nil {
 		return fmt.Errorf("error serializing secret: %v", err)
@@ -228,7 +228,7 @@ func createSecret(s *fi.Secret, p vfs.Path, acl vfs.ACL, replace bool) error {
 
 	rs := bytes.NewReader(data)
 	if replace {
-		return p.WriteFile(rs, acl)
+		return p.WriteFile(ctx, rs, acl)
 	}
-	return p.CreateFile(rs, acl)
+	return p.CreateFile(ctx, rs, acl)
 }

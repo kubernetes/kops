@@ -323,9 +323,7 @@ func (p *SwiftPath) Join(relativePath ...string) Path {
 	}
 }
 
-func (p *SwiftPath) WriteFile(data io.ReadSeeker, acl ACL) error {
-	ctx := context.TODO()
-
+func (p *SwiftPath) WriteFile(ctx context.Context, data io.ReadSeeker, acl ACL) error {
 	done, err := RetryWithBackoff(swiftWriteBackoff, func() (bool, error) {
 		client, err := p.getClient(ctx)
 		if err != nil {
@@ -360,9 +358,7 @@ func (p *SwiftPath) WriteFile(data io.ReadSeeker, acl ACL) error {
 // TODO: should we enable versioning?
 var createFileLockSwift sync.Mutex
 
-func (p *SwiftPath) CreateFile(data io.ReadSeeker, acl ACL) error {
-	ctx := context.TODO()
-
+func (p *SwiftPath) CreateFile(ctx context.Context, data io.ReadSeeker, acl ACL) error {
 	client, err := p.getClient(ctx)
 	if err != nil {
 		return err
@@ -394,7 +390,7 @@ func (p *SwiftPath) CreateFile(data io.ReadSeeker, acl ACL) error {
 		return err
 	}
 
-	return p.WriteFile(data, acl)
+	return p.WriteFile(ctx, data, acl)
 }
 
 func (p *SwiftPath) createBucket() error {

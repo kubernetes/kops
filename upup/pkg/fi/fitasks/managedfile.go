@@ -149,6 +149,8 @@ func (e *ManagedFile) getACL(c *fi.CloudupContext, p vfs.Path) (vfs.ACL, error) 
 }
 
 func (_ *ManagedFile) Render(c *fi.CloudupContext, a, e, changes *ManagedFile) error {
+	ctx := c.Context()
+
 	location := fi.ValueOf(e.Location)
 	if location == "" {
 		return fi.RequiredField("Location")
@@ -170,7 +172,7 @@ func (_ *ManagedFile) Render(c *fi.CloudupContext, a, e, changes *ManagedFile) e
 		return err
 	}
 
-	err = p.WriteFile(bytes.NewReader(data), acl)
+	err = p.WriteFile(ctx, bytes.NewReader(data), acl)
 	if err != nil {
 		return fmt.Errorf("error creating ManagedFile %q: %v", location, err)
 	}

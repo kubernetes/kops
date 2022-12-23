@@ -23,10 +23,12 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/pkg/testutils/testcontext"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
 func TestImage(t *testing.T) {
+	ctx := testcontext.ForTest(t)
 	featureflag.ParseFlags("-ImageDigest")
 	grid := []struct {
 		Component string
@@ -70,7 +72,7 @@ func TestImage(t *testing.T) {
 				t.Errorf("error building vfs path for %s: %v", k, err)
 				continue
 			}
-			if err := p.WriteFile(bytes.NewReader([]byte(v)), nil); err != nil {
+			if err := p.WriteFile(ctx, bytes.NewReader([]byte(v)), nil); err != nil {
 				t.Errorf("error writing vfs path %s: %v", k, err)
 				continue
 			}

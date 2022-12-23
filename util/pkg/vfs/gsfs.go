@@ -167,9 +167,7 @@ func (p *GSPath) Join(relativePath ...string) Path {
 	}
 }
 
-func (p *GSPath) WriteFile(data io.ReadSeeker, acl ACL) error {
-	ctx := context.TODO()
-
+func (p *GSPath) WriteFile(ctx context.Context, data io.ReadSeeker, acl ACL) error {
 	md5Hash, err := hashing.HashAlgorithmMD5.Hash(data)
 	if err != nil {
 		return err
@@ -224,7 +222,7 @@ func (p *GSPath) WriteFile(data io.ReadSeeker, acl ACL) error {
 // TODO: should we enable versioning?
 var createFileLockGCS sync.Mutex
 
-func (p *GSPath) CreateFile(data io.ReadSeeker, acl ACL) error {
+func (p *GSPath) CreateFile(ctx context.Context, data io.ReadSeeker, acl ACL) error {
 	createFileLockGCS.Lock()
 	defer createFileLockGCS.Unlock()
 
@@ -238,7 +236,7 @@ func (p *GSPath) CreateFile(data io.ReadSeeker, acl ACL) error {
 		return err
 	}
 
-	return p.WriteFile(data, acl)
+	return p.WriteFile(ctx, data, acl)
 }
 
 // ReadFile implements Path::ReadFile
