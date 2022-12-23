@@ -141,7 +141,7 @@ rules:
   - list
   - watch
   - patch
-{{- if GossipDomains }}
+{{- if GossipEnabled }}
 - apiGroups:
   - ""
   resources:
@@ -213,7 +213,7 @@ rules:
   - leases
   verbs:
   - create
-{{- if GossipDomains }}
+{{- if GossipEnabled }}
 - apiGroups:
   - ""
   resources:
