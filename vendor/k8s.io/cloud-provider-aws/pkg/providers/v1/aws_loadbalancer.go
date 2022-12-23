@@ -618,7 +618,12 @@ func (c *Cloud) ensureTargetGroup(targetGroup *elbv2.TargetGroup, serviceName ty
 			return nil, fmt.Errorf("expected only one target group on CreateTargetGroup, got %d groups", len(result.TargetGroups))
 		}
 
-		targetGroup = result.TargetGroups[0]
+		tg := result.TargetGroups[0]
+		tgARN := aws.StringValue(tg.TargetGroupArn)
+		if err := c.ensureTargetGroupTargets(tgARN, expectedTargets, nil); err != nil {
+			return nil, err
+		}
+		return tg, nil
 	}
 
 	// handle instances in service

@@ -35,7 +35,7 @@ import (
 	"github.com/GoogleCloudPlatform/k8s-cloud-provider/pkg/cloud"
 	"github.com/GoogleCloudPlatform/k8s-cloud-provider/pkg/cloud/filter"
 	"github.com/GoogleCloudPlatform/k8s-cloud-provider/pkg/cloud/meta"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -855,4 +855,21 @@ func (g *Cloud) GetNodeTags(nodeNames []string) ([]string, error) {
 	g.lastKnownNodeNames = hosts
 	g.lastComputedNodeTags = tags
 	return tags, nil
+}
+
+// NodeNetworkInterfacesByProviderID returns a list of node interfaces that exist on the node.
+func (g *Cloud) InstanceByProviderID(providerID string) (res *compute.Instance, err error) {
+	ctx, cancel := cloud.ContextWithCallTimeout()
+	defer cancel()
+
+	_, zone, name, err := splitProviderID(providerID)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err = g.c.Instances().Get(ctx, meta.ZonalKey(canonicalizeInstanceName(name), zone))
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }
