@@ -168,7 +168,7 @@ func writeFile(ctx context.Context, cluster *kops.Cluster, p vfs.Path, data []by
 		return err
 	}
 
-	if err = p.WriteFile(bytes.NewReader(data), acl); err != nil {
+	if err = p.WriteFile(ctx, bytes.NewReader(data), acl); err != nil {
 		return fmt.Errorf("error writing path %v: %v", p, err)
 	}
 

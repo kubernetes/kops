@@ -160,9 +160,9 @@ func (c *commonVFS) writeConfig(ctx context.Context, cluster *kops.Cluster, conf
 
 	rs := bytes.NewReader(data)
 	if create {
-		err = configPath.CreateFile(rs, acl)
+		err = configPath.CreateFile(ctx, rs, acl)
 	} else {
-		err = configPath.WriteFile(rs, acl)
+		err = configPath.WriteFile(ctx, rs, acl)
 	}
 	if err != nil {
 		if create && os.IsExist(err) {

@@ -14,15 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package testutils
+package testcontext
 
 import (
 	"context"
 	"testing"
 )
 
-// ContextForTest returns a Context for the given test scope.
-func ContextForTest(t *testing.T) context.Context {
+// ForTest returns a Context for the given test scope.
+func ForTest(t *testing.T) context.Context {
 	ctx := context.TODO()
 	// We might choose to bind the test to the context in future,
 	// or bind the logger etc.

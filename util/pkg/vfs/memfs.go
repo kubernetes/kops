@@ -17,6 +17,7 @@ limitations under the License.
 package vfs
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -104,7 +105,7 @@ func (p *MemFSPath) Join(relativePath ...string) Path {
 	return current
 }
 
-func (p *MemFSPath) WriteFile(r io.ReadSeeker, acl ACL) error {
+func (p *MemFSPath) WriteFile(ctx context.Context, r io.ReadSeeker, acl ACL) error {
 	data, err := io.ReadAll(r)
 	if err != nil {
 		return fmt.Errorf("error reading data: %v", err)
@@ -114,13 +115,13 @@ func (p *MemFSPath) WriteFile(r io.ReadSeeker, acl ACL) error {
 	return nil
 }
 
-func (p *MemFSPath) CreateFile(data io.ReadSeeker, acl ACL) error {
+func (p *MemFSPath) CreateFile(ctx context.Context, data io.ReadSeeker, acl ACL) error {
 	// Check if exists
 	if p.contents != nil {
 		return os.ErrExist
 	}
 
-	return p.WriteFile(data, acl)
+	return p.WriteFile(ctx, data, acl)
 }
 
 // ReadFile implements Path::ReadFile
