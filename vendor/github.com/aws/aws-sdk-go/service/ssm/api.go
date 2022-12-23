@@ -50161,13 +50161,15 @@ type PutResourcePolicyInput struct {
 	Policy *string `type:"string" required:"true"`
 
 	// ID of the current policy version. The hash helps to prevent a situation where
-	// multiple users attempt to overwrite a policy.
+	// multiple users attempt to overwrite a policy. You must provide this hash
+	// when updating or deleting a policy.
 	PolicyHash *string `type:"string"`
 
 	// The policy ID.
 	PolicyId *string `type:"string"`
 
-	// Amazon Resource Name (ARN) of the resource to which the policies are attached.
+	// Amazon Resource Name (ARN) of the resource to which you want to attach a
+	// policy.
 	//
 	// ResourceArn is a required field
 	ResourceArn *string `min:"20" type:"string" required:"true"`
@@ -50237,9 +50239,7 @@ func (s *PutResourcePolicyInput) SetResourceArn(v string) *PutResourcePolicyInpu
 type PutResourcePolicyOutput struct {
 	_ struct{} `type:"structure"`
 
-	// ID of the current policy version. The hash helps to prevent a situation where
-	// multiple users attempt to overwrite a policy. You must provide this hash
-	// when updating or deleting a policy.
+	// ID of the current policy version.
 	PolicyHash *string `type:"string"`
 
 	// The policy ID. To update a policy, you must specify PolicyId and PolicyHash.

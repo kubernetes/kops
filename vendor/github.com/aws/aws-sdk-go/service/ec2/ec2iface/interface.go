@@ -1146,6 +1146,9 @@ type EC2API interface {
 	DescribeImagesWithContext(aws.Context, *ec2.DescribeImagesInput, ...request.Option) (*ec2.DescribeImagesOutput, error)
 	DescribeImagesRequest(*ec2.DescribeImagesInput) (*request.Request, *ec2.DescribeImagesOutput)
 
+	DescribeImagesPages(*ec2.DescribeImagesInput, func(*ec2.DescribeImagesOutput, bool) bool) error
+	DescribeImagesPagesWithContext(aws.Context, *ec2.DescribeImagesInput, func(*ec2.DescribeImagesOutput, bool) bool, ...request.Option) error
+
 	DescribeImportImageTasks(*ec2.DescribeImportImageTasksInput) (*ec2.DescribeImportImageTasksOutput, error)
 	DescribeImportImageTasksWithContext(aws.Context, *ec2.DescribeImportImageTasksInput, ...request.Option) (*ec2.DescribeImportImageTasksOutput, error)
 	DescribeImportImageTasksRequest(*ec2.DescribeImportImageTasksInput) (*request.Request, *ec2.DescribeImportImageTasksOutput)
