@@ -1646,6 +1646,9 @@ func validateExternalDNS(cluster *kops.Cluster, spec *kops.ExternalDNSConfig, fl
 		if cluster.IsGossip() || cluster.UsesNoneDNS() {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("provider"), "external-dns requires public or private DNS topology"))
 		}
+		if cluster.Spec.IsIPv6Only() {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("provider"), "external-dns does not support IPv6 clusters"))
+		}
 	}
 
 	return allErrs
