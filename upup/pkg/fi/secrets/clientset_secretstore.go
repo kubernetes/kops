@@ -171,9 +171,7 @@ func (c *ClientsetSecretStore) DeleteSecret(name string) error {
 }
 
 // GetOrCreateSecret implements fi.SecretStore::GetOrCreateSecret
-func (c *ClientsetSecretStore) GetOrCreateSecret(name string, secret *fi.Secret) (*fi.Secret, bool, error) {
-	ctx := context.TODO()
-
+func (c *ClientsetSecretStore) GetOrCreateSecret(ctx context.Context, name string, secret *fi.Secret) (*fi.Secret, bool, error) {
 	for i := 0; i < 2; i++ {
 		s, err := c.FindSecret(name)
 		if err != nil {

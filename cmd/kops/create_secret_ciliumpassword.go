@@ -125,7 +125,7 @@ func RunCreateSecretCiliumEncryptionConfig(ctx context.Context, f commandutils.F
 	}
 
 	if !options.Force {
-		_, created, err := secretStore.GetOrCreateSecret("ciliumpassword", secret)
+		_, created, err := secretStore.GetOrCreateSecret(ctx, "ciliumpassword", secret)
 		if err != nil {
 			return fmt.Errorf("error adding Cilium IPSec secret: %v", err)
 		}
