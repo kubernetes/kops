@@ -21,6 +21,13 @@ contents: |
       - --anonymous-auth=false
       - --api-audiences=kubernetes.svc.default
       - --apiserver-count=1
+      - --audit-log-maxage=10
+      - --audit-log-maxbackup=1
+      - --audit-log-maxsize=100
+      - --audit-log-path=/var/log/kube-apiserver-audit.log
+      - --audit-policy-file=/etc/kubernetes/audit/policy-config.yaml
+      - --audit-webhook-batch-max-wait=5s
+      - --audit-webhook-config-file=/etc/kubernetes/audit/webhook-config.yaml
       - --authorization-mode=AlwaysAllow
       - --bind-address=0.0.0.0
       - --client-ca-file=/srv/kubernetes/ca.crt
@@ -114,6 +121,11 @@ contents: |
       - mountPath: /srv/sshproxy
         name: srvsshproxy
         readOnly: true
+      - mountPath: /var/log
+        name: auditlogpathdir
+      - mountPath: /etc/kubernetes/audit
+        name: auditconfigdir
+        readOnly: true
     hostNetwork: true
     priorityClassName: system-cluster-critical
     tolerations:
@@ -162,6 +174,12 @@ contents: |
     - hostPath:
         path: /srv/sshproxy
       name: srvsshproxy
+    - hostPath:
+        path: /var/log
+      name: auditlogpathdir
+    - hostPath:
+        path: /etc/kubernetes/audit
+      name: auditconfigdir
   status: {}
 path: /etc/kubernetes/manifests/kube-apiserver.manifest
 type: file
