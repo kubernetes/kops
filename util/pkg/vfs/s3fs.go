@@ -257,8 +257,7 @@ func (p *S3Path) getRequestACL(aclObj ACL) (*string, error) {
 	return nil, nil
 }
 
-func (p *S3Path) WriteFile(data io.ReadSeeker, aclObj ACL) error {
-	ctx := context.TODO()
+func (p *S3Path) WriteFile(ctx context.Context, data io.ReadSeeker, aclObj ACL) error {
 	client, err := p.client(ctx)
 	if err != nil {
 		return err
@@ -300,7 +299,7 @@ func (p *S3Path) WriteFile(data io.ReadSeeker, aclObj ACL) error {
 // TODO: should we enable versioning?
 var createFileLockS3 sync.Mutex
 
-func (p *S3Path) CreateFile(data io.ReadSeeker, acl ACL) error {
+func (p *S3Path) CreateFile(ctx context.Context, data io.ReadSeeker, acl ACL) error {
 	createFileLockS3.Lock()
 	defer createFileLockS3.Unlock()
 
@@ -314,7 +313,7 @@ func (p *S3Path) CreateFile(data io.ReadSeeker, acl ACL) error {
 		return err
 	}
 
-	return p.WriteFile(data, acl)
+	return p.WriteFile(ctx, data, acl)
 }
 
 // ReadFile implements Path::ReadFile

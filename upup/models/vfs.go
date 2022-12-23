@@ -17,6 +17,7 @@ limitations under the License.
 package models
 
 import (
+	"context"
 	"embed"
 	"errors"
 	"io"
@@ -52,11 +53,11 @@ func (p *AssetPath) Join(relativePath ...string) vfs.Path {
 	return &AssetPath{location: joined}
 }
 
-func (p *AssetPath) WriteFile(data io.ReadSeeker, acl vfs.ACL) error {
+func (p *AssetPath) WriteFile(ctx context.Context, data io.ReadSeeker, acl vfs.ACL) error {
 	return ReadOnlyError
 }
 
-func (p *AssetPath) CreateFile(data io.ReadSeeker, acl vfs.ACL) error {
+func (p *AssetPath) CreateFile(ctx context.Context, data io.ReadSeeker, acl vfs.ACL) error {
 	return ReadOnlyError
 }
 
