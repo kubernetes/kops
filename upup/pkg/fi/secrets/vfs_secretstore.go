@@ -139,9 +139,7 @@ func (c *VFSSecretStore) Secret(id string) (*fi.Secret, error) {
 	return s, nil
 }
 
-func (c *VFSSecretStore) GetOrCreateSecret(id string, secret *fi.Secret) (*fi.Secret, bool, error) {
-	ctx := context.TODO()
-
+func (c *VFSSecretStore) GetOrCreateSecret(ctx context.Context, id string, secret *fi.Secret) (*fi.Secret, bool, error) {
 	p := c.buildSecretPath(id)
 
 	for i := 0; i < 2; i++ {
