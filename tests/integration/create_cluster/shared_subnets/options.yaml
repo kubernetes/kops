@@ -6,4 +6,4 @@ Networking: cni
 NetworkID: vpc-12345678
 SubnetIDs:
 - subnet-1
-KubernetesVersion: v1.21.0
+KubernetesVersion: v1.26.0

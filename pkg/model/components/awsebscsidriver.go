@@ -37,7 +37,7 @@ func (b *AWSEBSCSIDriverOptionsBuilder) BuildOptions(o interface{}) error {
 
 	if aws.EBSCSIDriver == nil {
 		aws.EBSCSIDriver = &kops.EBSCSIDriverSpec{
-			Enabled: fi.PtrTo(b.IsKubernetesGTE("1.22")),
+			Enabled: fi.PtrTo(true),
 		}
 	}
 	c := aws.EBSCSIDriver

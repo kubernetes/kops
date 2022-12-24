@@ -87,11 +87,7 @@ func (b *KubeSchedulerBuilder) buildSchedulerConfig() ([]byte, error) {
 	} else {
 		config = &unstructured.Unstructured{}
 		config.SetKind("KubeSchedulerConfiguration")
-		if b.IsKubernetesGTE("1.22") {
-			config.SetAPIVersion("kubescheduler.config.k8s.io/v1beta2")
-		} else {
-			config.SetAPIVersion("kubescheduler.config.k8s.io/v1beta1")
-		}
+		config.SetAPIVersion("kubescheduler.config.k8s.io/v1beta2")
 		// We need to store the object, because we are often called repeatedly (until we converge)
 		b.AdditionalObjects = append(b.AdditionalObjects, kubemanifest.NewObject(config.Object))
 	}

@@ -9,4 +9,4 @@ ControlPlaneZones:
 - us-test-1c
 CloudProvider: aws
 Networking: cni
-KubernetesVersion: v1.21.0
+KubernetesVersion: v1.26.0

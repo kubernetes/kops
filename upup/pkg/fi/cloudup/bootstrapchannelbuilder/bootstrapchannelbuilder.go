@@ -961,19 +961,8 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 				Id:       id,
 			})
 			addon.BuildPrune = true
-		} else if b.IsKubernetesGTE("v1.22.0") {
-			id := "k8s-1.22"
-			location := key + "/" + id + ".yaml"
-
-			addon := addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
-				Selector: networkingSelector(),
-				Manifest: fi.PtrTo(location),
-				Id:       id,
-			})
-			addon.BuildPrune = true
 		} else {
-			id := "k8s-1.16"
+			id := "k8s-1.22"
 			location := key + "/" + id + ".yaml"
 
 			addon := addons.Add(&channelsapi.AddonSpec{
@@ -1000,19 +989,8 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 				Id:       id,
 			})
 			addon.BuildPrune = true
-		} else if b.IsKubernetesGTE("v1.22.0") {
-			id := "k8s-1.22"
-			location := key + "/" + id + ".yaml"
-
-			addon := addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
-				Selector: networkingSelector(),
-				Manifest: fi.PtrTo(location),
-				Id:       id,
-			})
-			addon.BuildPrune = true
 		} else {
-			id := "k8s-1.16"
+			id := "k8s-1.22"
 			location := key + "/" + id + ".yaml"
 
 			addon := addons.Add(&channelsapi.AddonSpec{

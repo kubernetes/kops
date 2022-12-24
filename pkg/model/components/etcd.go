@@ -42,11 +42,7 @@ func (b *EtcdOptionsBuilder) BuildOptions(o interface{}) error {
 		// Ensure the version is set
 		if c.Version == "" {
 			// We run the k8s-recommended versions of etcd
-			if b.IsKubernetesGTE("1.22") {
-				c.Version = DefaultEtcd3Version_1_22
-			} else {
-				c.Version = DefaultEtcd3Version_1_20
-			}
+			c.Version = DefaultEtcd3Version_1_22
 		}
 	}
 
