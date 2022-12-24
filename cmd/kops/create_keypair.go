@@ -215,7 +215,7 @@ func createKeypair(ctx context.Context, out io.Writer, options *CreateKeypairOpt
 			Serial:     serial,
 			PrivateKey: privateKey,
 		}
-		cert, _, _, err = pki.IssueCert(&req, nil)
+		cert, _, _, err = pki.IssueCert(ctx, &req, nil)
 		if err != nil {
 			return fmt.Errorf("error issuing certificate: %v", err)
 		}
@@ -232,7 +232,7 @@ func createKeypair(ctx context.Context, out io.Writer, options *CreateKeypairOpt
 		}
 	}
 
-	keyset, err := keyStore.FindKeyset(name)
+	keyset, err := keyStore.FindKeyset(ctx, name)
 	var item *fi.KeysetItem
 	if os.IsNotExist(err) || (err == nil && keyset == nil) {
 		if options.Primary {
@@ -295,11 +295,13 @@ func completeKeyset(ctx context.Context, cluster *kopsapi.Cluster, clientSet sim
 		return nil, nil, keysets, cobra.ShellCompDirectiveNoFileComp
 	}
 
-	keyset, err = keyStore.FindKeyset(args[0])
+	keyset, err = keyStore.FindKeyset(ctx, args[0])
 	if err != nil {
 		completions, directive := commandutils.CompletionError("finding keyset", err)
 		return nil, keyStore, completions, directive
 	}
+
+	// keyset may be nil if not found
 
 	return keyset, keyStore, nil, cobra.ShellCompDirectiveNoFileComp
 }

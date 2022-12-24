@@ -101,11 +101,15 @@ type fakeKeyStore struct {
 	MirrorToFn func(basedir vfs.Path) error
 }
 
-func (f fakeKeyStore) FindPrimaryKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error) {
-	return fi.FindPrimaryKeypair(f, name)
+var _ fi.Keystore = &fakeKeyStore{}
+
+// FindPrimaryKeypair implements pki.Keystore
+func (f fakeKeyStore) FindPrimaryKeypair(ctx context.Context, name string) (*pki.Certificate, *pki.PrivateKey, error) {
+	return fi.FindPrimaryKeypair(ctx, f, name)
 }
 
-func (f fakeKeyStore) FindKeyset(name string) (*fi.Keyset, error) {
+// FindKeyset implements KeystoreReader.
+func (f fakeKeyStore) FindKeyset(ctx context.Context, name string) (*fi.Keyset, error) {
 	return f.FindKeysetFn(name)
 }
 
@@ -349,6 +353,8 @@ func TestBuildKubecfg(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.TODO()
+
 			kopsStateStore := "memfs://example-state-store"
 
 			keyStore := fakeKeyStore{
@@ -358,7 +364,7 @@ func TestBuildKubecfg(t *testing.T) {
 				},
 			}
 
-			got, err := BuildKubecfg(tt.args.cluster, keyStore, tt.args.secretStore, tt.args.status, tt.args.admin, tt.args.user, tt.args.internal, kopsStateStore, tt.args.useKopsAuthenticationPlugin)
+			got, err := BuildKubecfg(ctx, tt.args.cluster, keyStore, tt.args.secretStore, tt.args.status, tt.args.admin, tt.args.user, tt.args.internal, kopsStateStore, tt.args.useKopsAuthenticationPlugin)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("BuildKubecfg() error = %v, wantErr %v", err, tt.wantErr)
 				return

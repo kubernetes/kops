@@ -180,7 +180,7 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 	validHours := (455 * 24) + (hash.Sum32() % (30 * 24))
 
 	for name, pubKey := range req.Certs {
-		cert, err := s.issueCert(name, pubKey, id, validHours, req.KeypairIDs)
+		cert, err := s.issueCert(ctx, name, pubKey, id, validHours, req.KeypairIDs)
 		if err != nil {
 			klog.Infof("bootstrap %s cert %q issue err: %v", r.RemoteAddr, name, err)
 			w.WriteHeader(http.StatusBadRequest)
@@ -195,7 +195,7 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 	klog.Infof("bootstrap %s %s success", r.RemoteAddr, id.NodeName)
 }
 
-func (s *Server) issueCert(name string, pubKey string, id *bootstrap.VerifyResult, validHours uint32, keypairIDs map[string]string) (string, error) {
+func (s *Server) issueCert(ctx context.Context, name string, pubKey string, id *bootstrap.VerifyResult, validHours uint32, keypairIDs map[string]string) (string, error) {
 	block, _ := pem.Decode([]byte(pubKey))
 	if block.Type != "RSA PUBLIC KEY" {
 		return "", fmt.Errorf("unexpected key type %q", block.Type)
@@ -251,7 +251,7 @@ func (s *Server) issueCert(name string, pubKey string, id *bootstrap.VerifyResul
 		}
 	}
 
-	cert, _, _, err := pki.IssueCert(issueReq, s.keystore)
+	cert, _, _, err := pki.IssueCert(ctx, issueReq, s.keystore)
 	if err != nil {
 		return "", fmt.Errorf("issuing certificate: %v", err)
 	}

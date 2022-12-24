@@ -17,6 +17,7 @@ limitations under the License.
 package pki
 
 import (
+	"context"
 	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
@@ -38,7 +39,8 @@ type mockKeystore struct {
 	invoked bool
 }
 
-func (m *mockKeystore) FindPrimaryKeypair(name string) (*Certificate, *PrivateKey, error) {
+// FindPrimaryKeypair implements pki.Keystore
+func (m *mockKeystore) FindPrimaryKeypair(ctx context.Context, name string) (*Certificate, *PrivateKey, error) {
 	assert.False(m.t, m.invoked, "invoked already")
 	m.invoked = true
 	assert.Equal(m.t, m.signer, name, "name argument")
@@ -139,6 +141,8 @@ func TestIssueCert(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
+			ctx := context.TODO()
+
 			var minExpectedValidity int64
 			if tc.req.Validity == 0 {
 				minExpectedValidity = time.Now().Add(time.Hour * 10 * 365 * 24).Unix()
@@ -156,7 +160,7 @@ func TestIssueCert(t *testing.T) {
 					key:    caPrivateKey,
 				}
 			}
-			certificate, key, caCert, err := IssueCert(&tc.req, keystore)
+			certificate, key, caCert, err := IssueCert(ctx, &tc.req, keystore)
 			require.NoError(t, err)
 
 			cert := certificate.Certificate

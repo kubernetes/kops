@@ -36,8 +36,9 @@ type fakeKeystore struct {
 
 var _ fi.Keystore = &fakeKeystore{}
 
-func (k fakeKeystore) FindPrimaryKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error) {
-	keyset, err := k.FindKeyset(name)
+// FindPrimaryKeypair implements pki.Keystore
+func (k fakeKeystore) FindPrimaryKeypair(ctx context.Context, name string) (*pki.Certificate, *pki.PrivateKey, error) {
+	keyset, err := k.FindKeyset(ctx, name)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -45,7 +46,8 @@ func (k fakeKeystore) FindPrimaryKeypair(name string) (*pki.Certificate, *pki.Pr
 	return keyset.Primary.Certificate, keyset.Primary.PrivateKey, nil
 }
 
-func (k fakeKeystore) FindKeyset(name string) (*fi.Keyset, error) {
+// FindKeyset implements KeystoreReader.
+func (k fakeKeystore) FindKeyset(ctx context.Context, name string) (*fi.Keyset, error) {
 	kopsKeyset := k.privateKeysets[name]
 	if kopsKeyset == nil {
 		return nil, nil

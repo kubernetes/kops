@@ -145,7 +145,7 @@ func RunDistrustKeypair(ctx context.Context, f *util.Factory, out io.Writer, opt
 }
 
 func distrustKeypair(ctx context.Context, out io.Writer, name string, keypairIDs []string, keyStore fi.CAStore) error {
-	keyset, err := keyStore.FindKeyset(name)
+	keyset, err := keyStore.FindKeyset(ctx, name)
 	if err != nil {
 		return err
 	} else if keyset == nil {
