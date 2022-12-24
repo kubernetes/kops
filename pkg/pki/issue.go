@@ -17,6 +17,7 @@ limitations under the License.
 package pki
 
 import (
+	"context"
 	"crypto"
 	"crypto/x509"
 	"crypto/x509/pkix"
@@ -58,11 +59,12 @@ type IssueCertRequest struct {
 type Keystore interface {
 	// FindPrimaryKeypair finds a cert & private key, returning nil where either is not found
 	// (if the certificate is found but not keypair, that is not an error: only the cert will be returned).
-	FindPrimaryKeypair(name string) (*Certificate, *PrivateKey, error)
+	// Also note that if the keypair is not found at all, this returns (nil, nil, nil)
+	FindPrimaryKeypair(ctx context.Context, name string) (*Certificate, *PrivateKey, error)
 }
 
 // IssueCert issues a certificate, either a self-signed CA or from a CA in a keystore.
-func IssueCert(request *IssueCertRequest, keystore Keystore) (issuedCertificate *Certificate, issuedKey *PrivateKey, caCertificate *Certificate, err error) {
+func IssueCert(ctx context.Context, request *IssueCertRequest, keystore Keystore) (issuedCertificate *Certificate, issuedKey *PrivateKey, caCertificate *Certificate, err error) {
 	certificateType := request.Type
 	if expanded, found := wellKnownCertificateTypes[certificateType]; found {
 		certificateType = expanded
@@ -116,7 +118,7 @@ func IssueCert(request *IssueCertRequest, keystore Keystore) (issuedCertificate 
 	var signer *x509.Certificate
 	if !template.IsCA {
 		var err error
-		caCertificate, caPrivateKey, err = keystore.FindPrimaryKeypair(request.Signer)
+		caCertificate, caPrivateKey, err = keystore.FindPrimaryKeypair(ctx, request.Signer)
 		if err != nil {
 			return nil, nil, nil, err
 		}

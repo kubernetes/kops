@@ -18,6 +18,7 @@ package nodetasks
 
 import (
 	"bytes"
+	"context"
 	"crypto/x509/pkix"
 	"fmt"
 	"hash/fnv"
@@ -130,6 +131,8 @@ func (i *IssueCert) AddFileTasks(c *fi.NodeupModelBuilderContext, dir string, na
 }
 
 func (e *IssueCert) Run(c *fi.NodeupContext) error {
+	ctx := c.Context()
+
 	// Skew the certificate lifetime by up to 30 days based on information about the generating node.
 	// This is so that different nodes created at the same time have the certificates they generated
 	// expire at different times, but all certificates on a given node expire around the same time.
@@ -155,13 +158,13 @@ func (e *IssueCert) Run(c *fi.NodeupContext) error {
 		Validity:       time.Hour * time.Duration(validHours),
 	}
 
-	keystore, err := newStaticKeystore(e.Signer, e.KeypairID, c.T.Keystore)
+	keystore, err := newStaticKeystore(ctx, e.Signer, e.KeypairID, c.T.Keystore)
 	if err != nil {
 		return err
 	}
 
 	klog.Infof("signing certificate for %q", e.Name)
-	certificate, privateKey, caCertificate, err := pki.IssueCert(req, keystore)
+	certificate, privateKey, caCertificate, err := pki.IssueCert(ctx, req, keystore)
 	if err != nil {
 		return err
 	}
@@ -208,14 +211,15 @@ type staticKeystore struct {
 	key         *pki.PrivateKey
 }
 
-func (s staticKeystore) FindPrimaryKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error) {
+// FindPrimaryKeypair implements pki.Keystore
+func (s staticKeystore) FindPrimaryKeypair(ctx context.Context, name string) (*pki.Certificate, *pki.PrivateKey, error) {
 	if name != s.keyset {
 		return nil, nil, fmt.Errorf("wrong signer: expected %q got %q", s.keyset, name)
 	}
 	return s.certificate, s.key, nil
 }
 
-func newStaticKeystore(signer string, keypairID string, keystore fi.KeystoreReader) (pki.Keystore, error) {
+func newStaticKeystore(ctx context.Context, signer string, keypairID string, keystore fi.KeystoreReader) (pki.Keystore, error) {
 	if signer == "" {
 		return nil, nil
 	}
@@ -224,9 +228,12 @@ func newStaticKeystore(signer string, keypairID string, keystore fi.KeystoreRead
 		return nil, fmt.Errorf("missing keypairID for %s", signer)
 	}
 
-	keyset, err := keystore.FindKeyset(signer)
+	keyset, err := keystore.FindKeyset(ctx, signer)
 	if err != nil {
 		return nil, fmt.Errorf("reading keyset for %s: %v", signer, err)
+	}
+	if keyset == nil {
+		return nil, fmt.Errorf("keyset %q not found", signer)
 	}
 
 	item := keyset.Items[keypairID]
