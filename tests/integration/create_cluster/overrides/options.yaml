@@ -3,6 +3,6 @@ Zones:
 - us-test-1a
 CloudProvider: aws
 Networking: cni
-KubernetesVersion: v1.21.0
+KubernetesVersion: v1.26.0
 Sets:
 - cluster.spec.nodePortAccess=1.2.3.4/32,10.20.30.0/24
