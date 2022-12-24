@@ -17,6 +17,7 @@ limitations under the License.
 package kubeconfig
 
 import (
+	"context"
 	"crypto/x509/pkix"
 	"fmt"
 	"os/user"
@@ -32,7 +33,7 @@ import (
 
 const DefaultKubecfgAdminLifetime = 18 * time.Hour
 
-func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.SecretStore, cloud fi.Cloud, admin time.Duration, configUser string, internal bool, kopsStateStore string, useKopsAuthenticationPlugin bool) (*KubeconfigBuilder, error) {
+func BuildKubecfg(ctx context.Context, cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.SecretStore, cloud fi.Cloud, admin time.Duration, configUser string, internal bool, kopsStateStore string, useKopsAuthenticationPlugin bool) (*KubeconfigBuilder, error) {
 	clusterName := cluster.ObjectMeta.Name
 
 	var server string
@@ -88,7 +89,7 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 	// add the CA Cert to the kubeconfig only if we didn't specify a certificate for the LB
 	//  or if we're using admin credentials and the secondary port
 	if cluster.Spec.API.LoadBalancer == nil || cluster.Spec.API.LoadBalancer.SSLCertificate == "" || cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork || internal {
-		keySet, err := keyStore.FindKeyset(fi.CertificateIDCA)
+		keySet, err := keyStore.FindKeyset(ctx, fi.CertificateIDCA)
 		if err != nil {
 			return nil, fmt.Errorf("error fetching CA keypair: %v", err)
 		}
@@ -120,7 +121,7 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 			},
 			Validity: admin,
 		}
-		cert, privateKey, _, err := pki.IssueCert(&req, keyStore)
+		cert, privateKey, _, err := pki.IssueCert(ctx, &req, keyStore)
 		if err != nil {
 			return nil, err
 		}

@@ -289,9 +289,12 @@ func (c *NodeupModelContext) BuildBootstrapKubeconfig(name string, ctx *fi.Nodeu
 
 		return kubeConfig.GetConfig(), nil
 	} else {
-		keyset, err := c.KeyStore.FindKeyset(name)
+		keyset, err := c.KeyStore.FindKeyset(ctx.Context(), name)
 		if err != nil {
-			return nil, fmt.Errorf("error fetching keyset: %v from keystore: %v", name, err)
+			return nil, fmt.Errorf("error fetching keyset %q from keystore: %w", name, err)
+		}
+		if keyset == nil {
+			return nil, fmt.Errorf("keyset %q not found", name)
 		}
 
 		keypairID := c.NodeupConfig.KeypairIDs[name]
@@ -422,9 +425,12 @@ func (c *NodeupModelContext) buildCertificatePairTask(ctx *fi.NodeupModelBuilder
 		return fmt.Errorf("no keypair ID for %q", name)
 	}
 
-	keyset, err := c.KeyStore.FindKeyset(name)
+	keyset, err := c.KeyStore.FindKeyset(ctx.Context(), name)
 	if err != nil {
 		return err
+	}
+	if keyset == nil {
+		return fmt.Errorf("keyset %q not found", name)
 	}
 
 	item := keyset.Items[keypairID]
@@ -476,7 +482,7 @@ func (c *NodeupModelContext) buildCertificatePairTask(ctx *fi.NodeupModelBuilder
 
 // BuildCertificateTask builds a task to create a certificate file.
 func (c *NodeupModelContext) BuildCertificateTask(ctx *fi.NodeupModelBuilderContext, name, filename string, owner *string) error {
-	keyset, err := c.KeyStore.FindKeyset(name)
+	keyset, err := c.KeyStore.FindKeyset(ctx.Context(), name)
 	if err != nil {
 		return err
 	}
@@ -507,7 +513,7 @@ func (c *NodeupModelContext) BuildCertificateTask(ctx *fi.NodeupModelBuilderCont
 
 // BuildLegacyPrivateKeyTask builds a task to create a private key file.
 func (c *NodeupModelContext) BuildLegacyPrivateKeyTask(ctx *fi.NodeupModelBuilderContext, name, filename string, owner *string) error {
-	keyset, err := c.KeyStore.FindKeyset(name)
+	keyset, err := c.KeyStore.FindKeyset(ctx.Context(), name)
 	if err != nil {
 		return err
 	}
