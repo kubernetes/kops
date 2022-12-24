@@ -687,15 +687,20 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 		kubemanifest.AddHostPathMapping(pod, container, "srvsshproxy", pathSrvSshproxy)
 	}
 
-	auditLogPath := kubeAPIServer.AuditLogPath
+	auditLogPath := fi.ValueOf(kubeAPIServer.AuditLogPath)
 	// Don't mount a volume if the mount path is set to '-' for stdout logging
 	// See https://kubernetes.io/docs/tasks/debug-application-cluster/audit/#audit-backends
-	if auditLogPath != nil && *auditLogPath != "-" {
+	if auditLogPath != "" && auditLogPath != "-" {
 		// Mount the directory of the path instead, as kube-apiserver rotates the log by renaming the file.
 		// Renaming is not possible when the file is mounted as the host path, and will return a
 		// 'Device or resource busy' error
-		auditLogPathDir := filepath.Dir(*auditLogPath)
+		auditLogPathDir := filepath.Dir(auditLogPath)
 		kubemanifest.AddHostPathMapping(pod, container, "auditlogpathdir", auditLogPathDir).WithReadWrite()
+	}
+	if kubeAPIServer.AuditPolicyFile != "" {
+		// The audit config dir will be used for both the audit policy and the audit webhook config
+		auditConfigDir := filepath.Dir(kubeAPIServer.AuditPolicyFile)
+		kubemanifest.AddHostPathMapping(pod, container, "auditconfigdir", auditConfigDir)
 	}
 
 	if b.Cluster.Spec.Authentication != nil {

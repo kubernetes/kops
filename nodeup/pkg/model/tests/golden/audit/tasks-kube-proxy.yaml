@@ -1,0 +1,145 @@
+contents: |
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: null
+    labels:
+      k8s-app: kube-proxy
+      kubernetes.io/managed-by: nodeup
+      tier: node
+    name: kube-proxy
+    namespace: kube-system
+  spec:
+    containers:
+    - args:
+      - --log-file=/var/log/kube-proxy.log
+      - --also-stdout
+      - /usr/local/bin/kube-proxy
+      - --cluster-cidr=100.96.0.0/11
+      - --conntrack-max-per-core=131072
+      - --kubeconfig=/var/lib/kube-proxy/kubeconfig
+      - --master=https://127.0.0.1
+      - --oom-score-adj=-998
+      - --v=2
+      command:
+      - /go-runner
+      image: registry.k8s.io/kube-proxy:v1.23.0
+      name: kube-proxy
+      resources:
+        requests:
+          cpu: 100m
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - mountPath: /var/log/kube-proxy.log
+        name: logfile
+      - mountPath: /var/lib/kube-proxy/kubeconfig
+        name: kubeconfig
+        readOnly: true
+      - mountPath: /lib/modules
+        name: modules
+        readOnly: true
+      - mountPath: /etc/ssl/certs
+        name: ssl-certs-hosts
+        readOnly: true
+      - mountPath: /run/xtables.lock
+        name: iptableslock
+    hostNetwork: true
+    priorityClassName: system-node-critical
+    tolerations:
+    - key: CriticalAddonsOnly
+      operator: Exists
+    volumes:
+    - hostPath:
+        path: /var/log/kube-proxy.log
+      name: logfile
+    - hostPath:
+        path: /var/lib/kube-proxy/kubeconfig
+      name: kubeconfig
+    - hostPath:
+        path: /lib/modules
+      name: modules
+    - hostPath:
+        path: /usr/share/ca-certificates
+      name: ssl-certs-hosts
+    - hostPath:
+        path: /run/xtables.lock
+        type: FileOrCreate
+      name: iptableslock
+  status: {}
+path: /etc/kubernetes/manifests/kube-proxy.manifest
+type: file
+---
+beforeServices:
+- kubelet.service
+contents:
+  task:
+    CA:
+      task:
+        Name: kube-proxy
+        keypairID: "3"
+        signer: kubernetes-ca
+        subject:
+          CommonName: system:kube-proxy
+        type: client
+    Cert:
+      task:
+        Name: kube-proxy
+        keypairID: "3"
+        signer: kubernetes-ca
+        subject:
+          CommonName: system:kube-proxy
+        type: client
+    Key:
+      task:
+        Name: kube-proxy
+        keypairID: "3"
+        signer: kubernetes-ca
+        subject:
+          CommonName: system:kube-proxy
+        type: client
+    Name: kube-proxy
+    ServerURL: https://127.0.0.1
+mode: "0400"
+path: /var/lib/kube-proxy/kubeconfig
+type: file
+---
+contents: ""
+ifNotExists: true
+mode: "0400"
+path: /var/log/kube-proxy.log
+type: file
+---
+Name: kube-proxy
+keypairID: "3"
+signer: kubernetes-ca
+subject:
+  CommonName: system:kube-proxy
+type: client
+---
+CA:
+  task:
+    Name: kube-proxy
+    keypairID: "3"
+    signer: kubernetes-ca
+    subject:
+      CommonName: system:kube-proxy
+    type: client
+Cert:
+  task:
+    Name: kube-proxy
+    keypairID: "3"
+    signer: kubernetes-ca
+    subject:
+      CommonName: system:kube-proxy
+    type: client
+Key:
+  task:
+    Name: kube-proxy
+    keypairID: "3"
+    signer: kubernetes-ca
+    subject:
+      CommonName: system:kube-proxy
+    type: client
+Name: kube-proxy
+ServerURL: https://127.0.0.1
