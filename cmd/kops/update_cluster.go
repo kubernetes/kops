@@ -325,6 +325,7 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Up
 		// TODO: Another flag?
 		useKopsAuthenticationPlugin := false
 		conf, err := kubeconfig.BuildKubecfg(
+			ctx,
 			cluster,
 			keyStore,
 			secretStore,

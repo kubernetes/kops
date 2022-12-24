@@ -137,7 +137,7 @@ spec:
 			t.Fatalf("unexpected private/ca/keyset.yaml: %q", string(privateKeysetYaml))
 		}
 
-		keyset, err := s.FindKeyset("kubernetes-ca")
+		keyset, err := s.FindKeyset(ctx, "kubernetes-ca")
 		if err != nil {
 			t.Fatalf("error reading certificate pool: %v", err)
 		}

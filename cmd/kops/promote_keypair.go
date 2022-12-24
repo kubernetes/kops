@@ -154,7 +154,7 @@ func RunPromoteKeypair(ctx context.Context, f *util.Factory, out io.Writer, opti
 }
 
 func promoteKeypair(ctx context.Context, out io.Writer, name string, keypairID string, keyStore fi.CAStore) error {
-	keyset, err := keyStore.FindKeyset(name)
+	keyset, err := keyStore.FindKeyset(ctx, name)
 	if err != nil {
 		return fmt.Errorf("reading keyset: %v", err)
 	} else if keyset == nil {

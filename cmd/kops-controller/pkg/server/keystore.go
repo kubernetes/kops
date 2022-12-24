@@ -17,6 +17,7 @@ limitations under the License.
 package server
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path"
@@ -36,7 +37,8 @@ type keystoreEntry struct {
 
 var _ pki.Keystore = keystore{}
 
-func (k keystore) FindPrimaryKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error) {
+// FindPrimaryKeypair implements pki.Keystore
+func (k keystore) FindPrimaryKeypair(ctx context.Context, name string) (*pki.Certificate, *pki.PrivateKey, error) {
 	entry, ok := k.keys[name]
 	if !ok {
 		return nil, nil, fmt.Errorf("unknown CA %q", name)
