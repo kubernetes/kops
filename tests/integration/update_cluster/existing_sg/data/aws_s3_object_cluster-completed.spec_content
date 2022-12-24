@@ -14,8 +14,17 @@ spec:
   channel: stable
   cloudConfig:
     awsEBSCSIDriver:
-      enabled: false
+      enabled: true
+      version: v1.14.0
     manageStorageClasses: true
+  cloudControllerManager:
+    allocateNodeCIDRs: true
+    clusterCIDR: 100.64.0.0/10
+    clusterName: existingsg.example.com
+    configureCloudRoutes: false
+    image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.26.0
+    leaderElection:
+      leaderElect: true
   cloudProvider: aws
   clusterDNSDomain: cluster.local
   configBase: memfs://clusters.example.com/existingsg.example.com
@@ -23,7 +32,9 @@ spec:
   containerRuntime: containerd
   containerd:
     logLevel: info
-    version: 1.4.13
+    runc:
+      version: 1.1.4
+    version: 1.6.14
   dnsZone: Z1AFAKE1ZON3YO
   docker:
     skipInstall: true
@@ -38,7 +49,7 @@ spec:
     - instanceGroup: master-us-test-1c
       name: c
     name: main
-    version: 3.4.13
+    version: 3.5.6
   - backups:
       backupStore: memfs://clusters.example.com/existingsg.example.com/backups/etcd/events
     etcdMembers:
@@ -49,7 +60,7 @@ spec:
     - instanceGroup: master-us-test-1c
       name: c
     name: events
-    version: 3.4.13
+    version: 3.5.6
   externalDns:
     provider: dns-controller
   iam:
@@ -63,7 +74,7 @@ spec:
     apiServerCount: 3
     authorizationMode: AlwaysAllow
     bindAddress: 0.0.0.0
-    cloudProvider: aws
+    cloudProvider: external
     enableAdmissionPlugins:
     - NamespaceLifecycle
     - LimitRanger
@@ -78,7 +89,10 @@ spec:
     - https://127.0.0.1:4001
     etcdServersOverrides:
     - /events#https://127.0.0.1:4002
-    image: registry.k8s.io/kube-apiserver:v1.21.0
+    featureGates:
+      CSIMigrationAWS: "true"
+      InTreePluginAWSUnregister: "true"
+    image: registry.k8s.io/kube-apiserver:v1.26.0
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
@@ -100,11 +114,14 @@ spec:
   kubeControllerManager:
     allocateNodeCIDRs: true
     attachDetachReconcileSyncPeriod: 1m0s
-    cloudProvider: aws
+    cloudProvider: external
     clusterCIDR: 100.96.0.0/11
     clusterName: existingsg.example.com
     configureCloudRoutes: false
-    image: registry.k8s.io/kube-controller-manager:v1.21.0
+    featureGates:
+      CSIMigrationAWS: "true"
+      InTreePluginAWSUnregister: "true"
+    image: registry.k8s.io/kube-controller-manager:v1.26.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -126,10 +143,13 @@ spec:
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    image: registry.k8s.io/kube-proxy:v1.21.0
+    image: registry.k8s.io/kube-proxy:v1.26.0
     logLevel: 2
   kubeScheduler:
-    image: registry.k8s.io/kube-scheduler:v1.21.0
+    featureGates:
+      CSIMigrationAWS: "true"
+      InTreePluginAWSUnregister: "true"
+    image: registry.k8s.io/kube-scheduler:v1.26.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -137,36 +157,42 @@ spec:
     anonymousAuth: false
     cgroupDriver: systemd
     cgroupRoot: /
-    cloudProvider: aws
+    cloudProvider: external
     clusterDNS: 100.64.0.10
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+    featureGates:
+      CSIMigrationAWS: "true"
+      InTreePluginAWSUnregister: "true"
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    networkPluginName: cni
     podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
+    protectKernelDefaults: true
     registerSchedulable: true
     shutdownGracePeriod: 30s
     shutdownGracePeriodCriticalPods: 10s
   kubernetesApiAccess:
   - 0.0.0.0/0
-  kubernetesVersion: 1.21.0
+  kubernetesVersion: 1.26.0
   masterKubelet:
     anonymousAuth: false
     cgroupDriver: systemd
     cgroupRoot: /
-    cloudProvider: aws
+    cloudProvider: external
     clusterDNS: 100.64.0.10
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+    featureGates:
+      CSIMigrationAWS: "true"
+      InTreePluginAWSUnregister: "true"
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    networkPluginName: cni
     podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
+    protectKernelDefaults: true
     registerSchedulable: true
     shutdownGracePeriod: 30s
     shutdownGracePeriodCriticalPods: 10s

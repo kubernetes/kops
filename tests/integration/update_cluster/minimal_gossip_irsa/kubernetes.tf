@@ -1,23 +1,27 @@
 locals {
-  cluster_name                       = "minimal.k8s.local"
-  iam_openid_connect_provider_arn    = aws_iam_openid_connect_provider.minimal-k8s-local.arn
-  iam_openid_connect_provider_issuer = "discovery.example.com/minimal.example.com"
-  master_autoscaling_group_ids       = [aws_autoscaling_group.master-us-test-1a-masters-minimal-k8s-local.id]
-  master_security_group_ids          = [aws_security_group.masters-minimal-k8s-local.id]
-  masters_role_arn                   = aws_iam_role.masters-minimal-k8s-local.arn
-  masters_role_name                  = aws_iam_role.masters-minimal-k8s-local.name
-  node_autoscaling_group_ids         = [aws_autoscaling_group.nodes-minimal-k8s-local.id]
-  node_security_group_ids            = [aws_security_group.nodes-minimal-k8s-local.id]
-  node_subnet_ids                    = [aws_subnet.us-test-1a-minimal-k8s-local.id]
-  nodes_role_arn                     = aws_iam_role.nodes-minimal-k8s-local.arn
-  nodes_role_name                    = aws_iam_role.nodes-minimal-k8s-local.name
-  region                             = "us-test-1"
-  route_table_public_id              = aws_route_table.minimal-k8s-local.id
-  subnet_us-test-1a_id               = aws_subnet.us-test-1a-minimal-k8s-local.id
-  vpc_cidr_block                     = aws_vpc.minimal-k8s-local.cidr_block
-  vpc_id                             = aws_vpc.minimal-k8s-local.id
-  vpc_ipv6_cidr_block                = aws_vpc.minimal-k8s-local.ipv6_cidr_block
-  vpc_ipv6_cidr_length               = local.vpc_ipv6_cidr_block == null ? null : tonumber(regex(".*/(\\d+)", local.vpc_ipv6_cidr_block)[0])
+  cluster_name                                       = "minimal.k8s.local"
+  iam_openid_connect_provider_arn                    = aws_iam_openid_connect_provider.minimal-k8s-local.arn
+  iam_openid_connect_provider_issuer                 = "discovery.example.com/minimal.example.com"
+  kube-system-aws-cloud-controller-manager_role_arn  = aws_iam_role.aws-cloud-controller-manager-kube-system-sa-minimal-k8s-local.arn
+  kube-system-aws-cloud-controller-manager_role_name = aws_iam_role.aws-cloud-controller-manager-kube-system-sa-minimal-k8s-local.name
+  kube-system-ebs-csi-controller-sa_role_arn         = aws_iam_role.ebs-csi-controller-sa-kube-system-sa-minimal-k8s-local.arn
+  kube-system-ebs-csi-controller-sa_role_name        = aws_iam_role.ebs-csi-controller-sa-kube-system-sa-minimal-k8s-local.name
+  master_autoscaling_group_ids                       = [aws_autoscaling_group.master-us-test-1a-masters-minimal-k8s-local.id]
+  master_security_group_ids                          = [aws_security_group.masters-minimal-k8s-local.id]
+  masters_role_arn                                   = aws_iam_role.masters-minimal-k8s-local.arn
+  masters_role_name                                  = aws_iam_role.masters-minimal-k8s-local.name
+  node_autoscaling_group_ids                         = [aws_autoscaling_group.nodes-minimal-k8s-local.id]
+  node_security_group_ids                            = [aws_security_group.nodes-minimal-k8s-local.id]
+  node_subnet_ids                                    = [aws_subnet.us-test-1a-minimal-k8s-local.id]
+  nodes_role_arn                                     = aws_iam_role.nodes-minimal-k8s-local.arn
+  nodes_role_name                                    = aws_iam_role.nodes-minimal-k8s-local.name
+  region                                             = "us-test-1"
+  route_table_public_id                              = aws_route_table.minimal-k8s-local.id
+  subnet_us-test-1a_id                               = aws_subnet.us-test-1a-minimal-k8s-local.id
+  vpc_cidr_block                                     = aws_vpc.minimal-k8s-local.cidr_block
+  vpc_id                                             = aws_vpc.minimal-k8s-local.id
+  vpc_ipv6_cidr_block                                = aws_vpc.minimal-k8s-local.ipv6_cidr_block
+  vpc_ipv6_cidr_length                               = local.vpc_ipv6_cidr_block == null ? null : tonumber(regex(".*/(\\d+)", local.vpc_ipv6_cidr_block)[0])
 }
 
 output "cluster_name" {
@@ -30,6 +34,22 @@ output "iam_openid_connect_provider_arn" {
 
 output "iam_openid_connect_provider_issuer" {
   value = "discovery.example.com/minimal.example.com"
+}
+
+output "kube-system-aws-cloud-controller-manager_role_arn" {
+  value = aws_iam_role.aws-cloud-controller-manager-kube-system-sa-minimal-k8s-local.arn
+}
+
+output "kube-system-aws-cloud-controller-manager_role_name" {
+  value = aws_iam_role.aws-cloud-controller-manager-kube-system-sa-minimal-k8s-local.name
+}
+
+output "kube-system-ebs-csi-controller-sa_role_arn" {
+  value = aws_iam_role.ebs-csi-controller-sa-kube-system-sa-minimal-k8s-local.arn
+}
+
+output "kube-system-ebs-csi-controller-sa_role_name" {
+  value = aws_iam_role.ebs-csi-controller-sa-kube-system-sa-minimal-k8s-local.name
 }
 
 output "master_autoscaling_group_ids" {
@@ -133,17 +153,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-minimal-k8s-local" {
     value               = ""
   }
   tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
-    propagate_at_launch = true
-    value               = "master"
-  }
-  tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"
-    propagate_at_launch = true
-    value               = ""
-  }
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"
     propagate_at_launch = true
     value               = ""
   }
@@ -196,11 +206,6 @@ resource "aws_autoscaling_group" "nodes-minimal-k8s-local" {
     key                 = "Name"
     propagate_at_launch = true
     value               = "nodes.minimal.k8s.local"
-  }
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
-    propagate_at_launch = true
-    value               = "node"
   }
   tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"
@@ -290,6 +295,30 @@ resource "aws_iam_openid_connect_provider" "minimal-k8s-local" {
   url             = "https://discovery.example.com/minimal.example.com"
 }
 
+resource "aws_iam_role" "aws-cloud-controller-manager-kube-system-sa-minimal-k8s-local" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_aws-cloud-controller-manager.kube-system.sa.minimal.k8s.local_policy")
+  name               = "aws-cloud-controller-manager.kube-system.sa.minimal.k8s.local"
+  tags = {
+    "KubernetesCluster"                       = "minimal.k8s.local"
+    "Name"                                    = "aws-cloud-controller-manager.kube-system.sa.minimal.k8s.local"
+    "kubernetes.io/cluster/minimal.k8s.local" = "owned"
+    "service-account.kops.k8s.io/name"        = "aws-cloud-controller-manager"
+    "service-account.kops.k8s.io/namespace"   = "kube-system"
+  }
+}
+
+resource "aws_iam_role" "ebs-csi-controller-sa-kube-system-sa-minimal-k8s-local" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ebs-csi-controller-sa.kube-system.sa.minimal.k8s.local_policy")
+  name               = "ebs-csi-controller-sa.kube-system.sa.minimal.k8s.local"
+  tags = {
+    "KubernetesCluster"                       = "minimal.k8s.local"
+    "Name"                                    = "ebs-csi-controller-sa.kube-system.sa.minimal.k8s.local"
+    "kubernetes.io/cluster/minimal.k8s.local" = "owned"
+    "service-account.kops.k8s.io/name"        = "ebs-csi-controller-sa"
+    "service-account.kops.k8s.io/namespace"   = "kube-system"
+  }
+}
+
 resource "aws_iam_role" "masters-minimal-k8s-local" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.minimal.k8s.local_policy")
   name               = "masters.minimal.k8s.local"
@@ -308,6 +337,18 @@ resource "aws_iam_role" "nodes-minimal-k8s-local" {
     "Name"                                    = "nodes.minimal.k8s.local"
     "kubernetes.io/cluster/minimal.k8s.local" = "owned"
   }
+}
+
+resource "aws_iam_role_policy" "aws-cloud-controller-manager-kube-system-sa-minimal-k8s-local" {
+  name   = "aws-cloud-controller-manager.kube-system.sa.minimal.k8s.local"
+  policy = file("${path.module}/data/aws_iam_role_policy_aws-cloud-controller-manager.kube-system.sa.minimal.k8s.local_policy")
+  role   = aws_iam_role.aws-cloud-controller-manager-kube-system-sa-minimal-k8s-local.name
+}
+
+resource "aws_iam_role_policy" "ebs-csi-controller-sa-kube-system-sa-minimal-k8s-local" {
+  name   = "ebs-csi-controller-sa.kube-system.sa.minimal.k8s.local"
+  policy = file("${path.module}/data/aws_iam_role_policy_ebs-csi-controller-sa.kube-system.sa.minimal.k8s.local_policy")
+  role   = aws_iam_role.ebs-csi-controller-sa-kube-system-sa-minimal-k8s-local.name
 }
 
 resource "aws_iam_role_policy" "masters-minimal-k8s-local" {
@@ -388,9 +429,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-k8s-local" {
       "KubernetesCluster"                                                                                     = "minimal.k8s.local"
       "Name"                                                                                                  = "master-us-test-1a.masters.minimal.k8s.local"
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
-      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                                      = "master"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
-      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
       "k8s.io/role/control-plane"                                                                             = "1"
       "k8s.io/role/master"                                                                                    = "1"
@@ -404,9 +443,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-k8s-local" {
       "KubernetesCluster"                                                                                     = "minimal.k8s.local"
       "Name"                                                                                                  = "master-us-test-1a.masters.minimal.k8s.local"
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
-      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                                      = "master"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
-      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
       "k8s.io/role/control-plane"                                                                             = "1"
       "k8s.io/role/master"                                                                                    = "1"
@@ -418,9 +455,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-k8s-local" {
     "KubernetesCluster"                                                                                     = "minimal.k8s.local"
     "Name"                                                                                                  = "master-us-test-1a.masters.minimal.k8s.local"
     "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
-    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                                      = "master"
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
-    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
     "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
     "k8s.io/role/control-plane"                                                                             = "1"
     "k8s.io/role/master"                                                                                    = "1"
@@ -472,7 +507,6 @@ resource "aws_launch_template" "nodes-minimal-k8s-local" {
     tags = {
       "KubernetesCluster"                                                          = "minimal.k8s.local"
       "Name"                                                                       = "nodes.minimal.k8s.local"
-      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
       "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -484,7 +518,6 @@ resource "aws_launch_template" "nodes-minimal-k8s-local" {
     tags = {
       "KubernetesCluster"                                                          = "minimal.k8s.local"
       "Name"                                                                       = "nodes.minimal.k8s.local"
-      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
       "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -494,7 +527,6 @@ resource "aws_launch_template" "nodes-minimal-k8s-local" {
   tags = {
     "KubernetesCluster"                                                          = "minimal.k8s.local"
     "Name"                                                                       = "nodes.minimal.k8s.local"
-    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
     "k8s.io/role/node"                                                           = "1"
     "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -598,6 +630,22 @@ resource "aws_s3_object" "manifests-static-kube-apiserver-healthcheck" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_manifests-static-kube-apiserver-healthcheck_content")
   key                    = "clusters.example.com/minimal.k8s.local/manifests/static/kube-apiserver-healthcheck.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_object" "minimal-k8s-local-addons-aws-cloud-controller-addons-k8s-io-k8s-1-18" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_minimal.k8s.local-addons-aws-cloud-controller.addons.k8s.io-k8s-1.18_content")
+  key                    = "clusters.example.com/minimal.k8s.local/addons/aws-cloud-controller.addons.k8s.io/k8s-1.18.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_object" "minimal-k8s-local-addons-aws-ebs-csi-driver-addons-k8s-io-k8s-1-17" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_minimal.k8s.local-addons-aws-ebs-csi-driver.addons.k8s.io-k8s-1.17_content")
+  key                    = "clusters.example.com/minimal.k8s.local/addons/aws-ebs-csi-driver.addons.k8s.io/k8s-1.17.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
@@ -823,8 +871,10 @@ resource "aws_security_group_rule" "from-nodes-minimal-k8s-local-ingress-udp-1to
 }
 
 resource "aws_subnet" "us-test-1a-minimal-k8s-local" {
-  availability_zone = "us-test-1a"
-  cidr_block        = "172.20.32.0/19"
+  availability_zone                           = "us-test-1a"
+  cidr_block                                  = "172.20.32.0/19"
+  enable_resource_name_dns_a_record_on_launch = true
+  private_dns_hostname_type_on_launch         = "resource-name"
   tags = {
     "KubernetesCluster"                            = "minimal.k8s.local"
     "Name"                                         = "us-test-1a.minimal.k8s.local"

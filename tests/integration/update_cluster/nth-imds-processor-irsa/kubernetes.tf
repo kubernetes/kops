@@ -2,10 +2,14 @@ locals {
   cluster_name                                       = "nthimdsprocessor.longclustername.example.com"
   iam_openid_connect_provider_arn                    = aws_iam_openid_connect_provider.nthimdsprocessor-longclustername-example-com.arn
   iam_openid_connect_provider_issuer                 = "discovery.example.com/minimal.example.com"
+  kube-system-aws-cloud-controller-manager_role_arn  = aws_iam_role.aws-cloud-controller-manager-kube-system-sa-nthimdsproces-25s838.arn
+  kube-system-aws-cloud-controller-manager_role_name = aws_iam_role.aws-cloud-controller-manager-kube-system-sa-nthimdsproces-25s838.name
   kube-system-aws-node-termination-handler_role_arn  = aws_iam_role.aws-node-termination-handler-kube-system-sa-nthimdsproces-vt9566.arn
   kube-system-aws-node-termination-handler_role_name = aws_iam_role.aws-node-termination-handler-kube-system-sa-nthimdsproces-vt9566.name
   kube-system-dns-controller_role_arn                = aws_iam_role.dns-controller-kube-system-sa-nthimdsprocessor-longcluste-e6uuer.arn
   kube-system-dns-controller_role_name               = aws_iam_role.dns-controller-kube-system-sa-nthimdsprocessor-longcluste-e6uuer.name
+  kube-system-ebs-csi-controller-sa_role_arn         = aws_iam_role.ebs-csi-controller-sa-kube-system-sa-nthimdsprocessor-lon-kfj86l.arn
+  kube-system-ebs-csi-controller-sa_role_name        = aws_iam_role.ebs-csi-controller-sa-kube-system-sa-nthimdsprocessor-lon-kfj86l.name
   master_autoscaling_group_ids                       = [aws_autoscaling_group.master-us-test-1a-masters-nthimdsprocessor-longclustername-example-com.id]
   master_security_group_ids                          = [aws_security_group.masters-nthimdsprocessor-longclustername-example-com.id]
   masters_role_arn                                   = aws_iam_role.masters-nthimdsprocessor-longclustername-example-com.arn
@@ -36,6 +40,14 @@ output "iam_openid_connect_provider_issuer" {
   value = "discovery.example.com/minimal.example.com"
 }
 
+output "kube-system-aws-cloud-controller-manager_role_arn" {
+  value = aws_iam_role.aws-cloud-controller-manager-kube-system-sa-nthimdsproces-25s838.arn
+}
+
+output "kube-system-aws-cloud-controller-manager_role_name" {
+  value = aws_iam_role.aws-cloud-controller-manager-kube-system-sa-nthimdsproces-25s838.name
+}
+
 output "kube-system-aws-node-termination-handler_role_arn" {
   value = aws_iam_role.aws-node-termination-handler-kube-system-sa-nthimdsproces-vt9566.arn
 }
@@ -50,6 +62,14 @@ output "kube-system-dns-controller_role_arn" {
 
 output "kube-system-dns-controller_role_name" {
   value = aws_iam_role.dns-controller-kube-system-sa-nthimdsprocessor-longcluste-e6uuer.name
+}
+
+output "kube-system-ebs-csi-controller-sa_role_arn" {
+  value = aws_iam_role.ebs-csi-controller-sa-kube-system-sa-nthimdsprocessor-lon-kfj86l.arn
+}
+
+output "kube-system-ebs-csi-controller-sa_role_name" {
+  value = aws_iam_role.ebs-csi-controller-sa-kube-system-sa-nthimdsprocessor-lon-kfj86l.name
 }
 
 output "master_autoscaling_group_ids" {
@@ -153,17 +173,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-nthimdsprocessor-lon
     value               = ""
   }
   tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
-    propagate_at_launch = true
-    value               = "master"
-  }
-  tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"
-    propagate_at_launch = true
-    value               = ""
-  }
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"
     propagate_at_launch = true
     value               = ""
   }
@@ -216,11 +226,6 @@ resource "aws_autoscaling_group" "nodes-nthimdsprocessor-longclustername-example
     key                 = "Name"
     propagate_at_launch = true
     value               = "nodes.nthimdsprocessor.longclustername.example.com"
-  }
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
-    propagate_at_launch = true
-    value               = "node"
   }
   tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"
@@ -310,6 +315,18 @@ resource "aws_iam_openid_connect_provider" "nthimdsprocessor-longclustername-exa
   url             = "https://discovery.example.com/minimal.example.com"
 }
 
+resource "aws_iam_role" "aws-cloud-controller-manager-kube-system-sa-nthimdsproces-25s838" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_aws-cloud-controller-manager.kube-system.sa.nthimdsproces-25s838_policy")
+  name               = "aws-cloud-controller-manager.kube-system.sa.nthimdsproces-25s838"
+  tags = {
+    "KubernetesCluster"                                                  = "nthimdsprocessor.longclustername.example.com"
+    "Name"                                                               = "aws-cloud-controller-manager.kube-system.sa.nthimdsproces-25s838"
+    "kubernetes.io/cluster/nthimdsprocessor.longclustername.example.com" = "owned"
+    "service-account.kops.k8s.io/name"                                   = "aws-cloud-controller-manager"
+    "service-account.kops.k8s.io/namespace"                              = "kube-system"
+  }
+}
+
 resource "aws_iam_role" "aws-node-termination-handler-kube-system-sa-nthimdsproces-vt9566" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_aws-node-termination-handler.kube-system.sa.nthimdsproces-vt9566_policy")
   name               = "aws-node-termination-handler.kube-system.sa.nthimdsproces-vt9566"
@@ -334,6 +351,18 @@ resource "aws_iam_role" "dns-controller-kube-system-sa-nthimdsprocessor-longclus
   }
 }
 
+resource "aws_iam_role" "ebs-csi-controller-sa-kube-system-sa-nthimdsprocessor-lon-kfj86l" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ebs-csi-controller-sa.kube-system.sa.nthimdsprocessor.lon-kfj86l_policy")
+  name               = "ebs-csi-controller-sa.kube-system.sa.nthimdsprocessor.lon-kfj86l"
+  tags = {
+    "KubernetesCluster"                                                  = "nthimdsprocessor.longclustername.example.com"
+    "Name"                                                               = "ebs-csi-controller-sa.kube-system.sa.nthimdsprocessor.lon-kfj86l"
+    "kubernetes.io/cluster/nthimdsprocessor.longclustername.example.com" = "owned"
+    "service-account.kops.k8s.io/name"                                   = "ebs-csi-controller-sa"
+    "service-account.kops.k8s.io/namespace"                              = "kube-system"
+  }
+}
+
 resource "aws_iam_role" "masters-nthimdsprocessor-longclustername-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.nthimdsprocessor.longclustername.example.com_policy")
   name               = "masters.nthimdsprocessor.longclustername.example.com"
@@ -354,6 +383,12 @@ resource "aws_iam_role" "nodes-nthimdsprocessor-longclustername-example-com" {
   }
 }
 
+resource "aws_iam_role_policy" "aws-cloud-controller-manager-kube-system-sa-nthimdsproces-25s838" {
+  name   = "aws-cloud-controller-manager.kube-system.sa.nthimdsproces-25s838"
+  policy = file("${path.module}/data/aws_iam_role_policy_aws-cloud-controller-manager.kube-system.sa.nthimdsproces-25s838_policy")
+  role   = aws_iam_role.aws-cloud-controller-manager-kube-system-sa-nthimdsproces-25s838.name
+}
+
 resource "aws_iam_role_policy" "aws-node-termination-handler-kube-system-sa-nthimdsproces-vt9566" {
   name   = "aws-node-termination-handler.kube-system.sa.nthimdsproces-vt9566"
   policy = file("${path.module}/data/aws_iam_role_policy_aws-node-termination-handler.kube-system.sa.nthimdsproces-vt9566_policy")
@@ -364,6 +399,12 @@ resource "aws_iam_role_policy" "dns-controller-kube-system-sa-nthimdsprocessor-l
   name   = "dns-controller.kube-system.sa.nthimdsprocessor.longcluste-e6uuer"
   policy = file("${path.module}/data/aws_iam_role_policy_dns-controller.kube-system.sa.nthimdsprocessor.longcluste-e6uuer_policy")
   role   = aws_iam_role.dns-controller-kube-system-sa-nthimdsprocessor-longcluste-e6uuer.name
+}
+
+resource "aws_iam_role_policy" "ebs-csi-controller-sa-kube-system-sa-nthimdsprocessor-lon-kfj86l" {
+  name   = "ebs-csi-controller-sa.kube-system.sa.nthimdsprocessor.lon-kfj86l"
+  policy = file("${path.module}/data/aws_iam_role_policy_ebs-csi-controller-sa.kube-system.sa.nthimdsprocessor.lon-kfj86l_policy")
+  role   = aws_iam_role.ebs-csi-controller-sa-kube-system-sa-nthimdsprocessor-lon-kfj86l.name
 }
 
 resource "aws_iam_role_policy" "masters-nthimdsprocessor-longclustername-example-com" {
@@ -444,9 +485,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-nthimdsprocessor-longc
       "KubernetesCluster"                                                                                     = "nthimdsprocessor.longclustername.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.nthimdsprocessor.longclustername.example.com"
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
-      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                                      = "master"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
-      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
       "k8s.io/role/control-plane"                                                                             = "1"
       "k8s.io/role/master"                                                                                    = "1"
@@ -460,9 +499,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-nthimdsprocessor-longc
       "KubernetesCluster"                                                                                     = "nthimdsprocessor.longclustername.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.nthimdsprocessor.longclustername.example.com"
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
-      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                                      = "master"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
-      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
       "k8s.io/role/control-plane"                                                                             = "1"
       "k8s.io/role/master"                                                                                    = "1"
@@ -474,9 +511,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-nthimdsprocessor-longc
     "KubernetesCluster"                                                                                     = "nthimdsprocessor.longclustername.example.com"
     "Name"                                                                                                  = "master-us-test-1a.masters.nthimdsprocessor.longclustername.example.com"
     "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
-    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                                      = "master"
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
-    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
     "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
     "k8s.io/role/control-plane"                                                                             = "1"
     "k8s.io/role/master"                                                                                    = "1"
@@ -528,7 +563,6 @@ resource "aws_launch_template" "nodes-nthimdsprocessor-longclustername-example-c
     tags = {
       "KubernetesCluster"                                                          = "nthimdsprocessor.longclustername.example.com"
       "Name"                                                                       = "nodes.nthimdsprocessor.longclustername.example.com"
-      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
       "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -540,7 +574,6 @@ resource "aws_launch_template" "nodes-nthimdsprocessor-longclustername-example-c
     tags = {
       "KubernetesCluster"                                                          = "nthimdsprocessor.longclustername.example.com"
       "Name"                                                                       = "nodes.nthimdsprocessor.longclustername.example.com"
-      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
       "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -550,7 +583,6 @@ resource "aws_launch_template" "nodes-nthimdsprocessor-longclustername-example-c
   tags = {
     "KubernetesCluster"                                                          = "nthimdsprocessor.longclustername.example.com"
     "Name"                                                                       = "nodes.nthimdsprocessor.longclustername.example.com"
-    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
     "k8s.io/role/node"                                                           = "1"
     "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -670,6 +702,22 @@ resource "aws_s3_object" "nodeupconfig-nodes" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_nodeupconfig-nodes_content")
   key                    = "clusters.example.com/nthimdsprocessor.longclustername.example.com/igconfig/node/nodes/nodeupconfig.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_object" "nthimdsprocessor-longclustername-example-com-addons-aws-cloud-controller-addons-k8s-io-k8s-1-18" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_nthimdsprocessor.longclustername.example.com-addons-aws-cloud-controller.addons.k8s.io-k8s-1.18_content")
+  key                    = "clusters.example.com/nthimdsprocessor.longclustername.example.com/addons/aws-cloud-controller.addons.k8s.io/k8s-1.18.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_object" "nthimdsprocessor-longclustername-example-com-addons-aws-ebs-csi-driver-addons-k8s-io-k8s-1-17" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_nthimdsprocessor.longclustername.example.com-addons-aws-ebs-csi-driver.addons.k8s.io-k8s-1.17_content")
+  key                    = "clusters.example.com/nthimdsprocessor.longclustername.example.com/addons/aws-ebs-csi-driver.addons.k8s.io/k8s-1.17.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
@@ -887,8 +935,10 @@ resource "aws_security_group_rule" "from-nodes-nthimdsprocessor-longclustername-
 }
 
 resource "aws_subnet" "us-test-1a-nthimdsprocessor-longclustername-example-com" {
-  availability_zone = "us-test-1a"
-  cidr_block        = "172.20.32.0/19"
+  availability_zone                           = "us-test-1a"
+  cidr_block                                  = "172.20.32.0/19"
+  enable_resource_name_dns_a_record_on_launch = true
+  private_dns_hostname_type_on_launch         = "resource-name"
   tags = {
     "KubernetesCluster"                                                  = "nthimdsprocessor.longclustername.example.com"
     "Name"                                                               = "us-test-1a.nthimdsprocessor.longclustername.example.com"

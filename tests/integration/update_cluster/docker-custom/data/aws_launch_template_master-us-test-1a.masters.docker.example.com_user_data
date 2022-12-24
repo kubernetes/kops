@@ -150,9 +150,9 @@ docker:
 encryptionConfig: null
 etcdClusters:
   events:
-    version: 3.4.13
+    version: 3.5.6
   main:
-    version: 3.4.13
+    version: 3.5.6
 kubeAPIServer:
   allowPrivileged: true
   anonymousAuth: false
@@ -176,7 +176,10 @@ kubeAPIServer:
   - https://127.0.0.1:4001
   etcdServersOverrides:
   - /events#https://127.0.0.1:4002
-  image: registry.k8s.io/kube-apiserver:v1.21.0
+  featureGates:
+    CSIMigrationAWS: "true"
+    InTreePluginAWSUnregister: "true"
+  image: registry.k8s.io/kube-apiserver:v1.23.0
   kubeletPreferredAddressTypes:
   - InternalIP
   - Hostname
@@ -202,7 +205,11 @@ kubeControllerManager:
   clusterCIDR: 100.96.0.0/11
   clusterName: docker.example.com
   configureCloudRoutes: false
-  image: registry.k8s.io/kube-controller-manager:v1.21.0
+  enableLeaderMigration: true
+  featureGates:
+    CSIMigrationAWS: "true"
+    InTreePluginAWSUnregister: "true"
+  image: registry.k8s.io/kube-controller-manager:v1.23.0
   leaderElection:
     leaderElect: true
   logLevel: 2
@@ -210,10 +217,13 @@ kubeControllerManager:
 kubeProxy:
   clusterCIDR: 100.96.0.0/11
   cpuRequest: 100m
-  image: registry.k8s.io/kube-proxy:v1.21.0
+  image: registry.k8s.io/kube-proxy:v1.23.0
   logLevel: 2
 kubeScheduler:
-  image: registry.k8s.io/kube-scheduler:v1.21.0
+  featureGates:
+    CSIMigrationAWS: "true"
+    InTreePluginAWSUnregister: "true"
+  image: registry.k8s.io/kube-scheduler:v1.23.0
   leaderElection:
     leaderElect: true
   logLevel: 2
@@ -226,11 +236,15 @@ kubelet:
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+  featureGates:
+    CSIMigrationAWS: "true"
+    InTreePluginAWSUnregister: "true"
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
   podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
+  protectKernelDefaults: true
   registerSchedulable: true
   shutdownGracePeriod: 30s
   shutdownGracePeriodCriticalPods: 10s
@@ -243,11 +257,15 @@ masterKubelet:
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+  featureGates:
+    CSIMigrationAWS: "true"
+    InTreePluginAWSUnregister: "true"
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
   podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
+  protectKernelDefaults: true
   registerSchedulable: true
   shutdownGracePeriod: 30s
   shutdownGracePeriodCriticalPods: 10s
@@ -259,7 +277,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/docker.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: dQoLRGMD60cy0GlQpNjoFxN+Z4ZOHecktBvo2KFfzxE=
+NodeupConfigHash: sdmNZLDBYqNaRy/uxJqyVR85NAjyNhoUOEJ6im/aTjM=
 
 __EOF_KUBE_ENV
 
