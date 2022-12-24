@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -668,6 +669,17 @@ func validateKubeAPIServer(v *kops.KubeAPIServerConfig, c *kops.Cluster, fldPath
 			field.Forbidden(fldPath.Child("insecurePort"), "insecurePort must not be set as of Kubernetes 1.24")
 		} else if insecurePort != 0 {
 			field.Forbidden(fldPath.Child("insecurePort"), "insecurePort can only be 0 or nil")
+		}
+	}
+
+	if v.AuditPolicyFile == "" && v.AuditWebhookConfigFile != "" {
+		allErrs = append(allErrs, field.Invalid(fldPath.Child("auditWebhookConfigFile"), v.AuditWebhookConfigFile, "an audit policy is required for the audit webhook config"))
+	}
+	if v.AuditPolicyFile != "" && v.AuditWebhookConfigFile != "" {
+		auditPolicyDir := filepath.Dir(v.AuditPolicyFile)
+		auditWebhookConfigDir := filepath.Dir(v.AuditWebhookConfigFile)
+		if auditPolicyDir != auditWebhookConfigDir {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("auditWebhookConfigFile"), v.AuditWebhookConfigFile, "the audit webhook config must be placed in the same directory as the audit policy"))
 		}
 	}
 
