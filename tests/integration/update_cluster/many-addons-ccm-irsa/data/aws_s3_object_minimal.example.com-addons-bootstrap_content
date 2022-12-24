@@ -6,7 +6,7 @@ spec:
   addons:
   - id: k8s-1.16
     manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: 7aa454b1c425bb37e7849a1aec4d9a09ce2fdc83604b0e0608bdc60a6ff18d56
+    manifestHash: cddd5184400908784a845114b5bfc877c752fc73a461913e681ad9b3d5944e73
     name: kops-controller.addons.k8s.io
     needsRollingUpdate: control-plane
     selector:
@@ -14,7 +14,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: coredns.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: 53db4d18f323010fd56c1ebd5788c512de2709e08e4a113b804e596b05fcc7e8
+    manifestHash: 285eafc6fde8bfaec8a9fbec97dd539083e453cffd1da4c81b172231b848c667
     name: coredns.addons.k8s.io
     selector:
       k8s-addon: coredns.addons.k8s.io
@@ -41,14 +41,14 @@ spec:
     version: 9.99.0
   - id: k8s-1.15
     manifest: cluster-autoscaler.addons.k8s.io/k8s-1.15.yaml
-    manifestHash: 9354cc2e3ac54edabf28bbee0ae8ea0ad4fd75a7c42da735beb21239402312d2
+    manifestHash: 10c96e535d61975b58b27ac8beef2da578df330febaed51db73c249d545d20da
     name: cluster-autoscaler.addons.k8s.io
     selector:
       k8s-addon: cluster-autoscaler.addons.k8s.io
     version: 9.99.0
   - id: k8s-1.11
     manifest: metrics-server.addons.k8s.io/k8s-1.11.yaml
-    manifestHash: 0313211d108d06b2332842135605cc774e5742dad7830fd68c708783e7df0e0a
+    manifestHash: d6501f6f54c0481b0016afb0abfababc0796b9831d101691e9defc38adc2a3b2
     name: metrics-server.addons.k8s.io
     needsPKI: true
     selector:
@@ -106,7 +106,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.11
     manifest: node-termination-handler.aws/k8s-1.11.yaml
-    manifestHash: 76165f5029c21038f9470db4def5a1aeef4cf378ef88693c353c941ddf0f6f84
+    manifestHash: c2bf3ef23db2c89345ffbd50db5a0b02610eb224346a27b091cb4e1220ff89cb
     name: node-termination-handler.aws
     prune:
       kinds:
@@ -151,7 +151,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.19
     manifest: aws-load-balancer-controller.addons.k8s.io/k8s-1.19.yaml
-    manifestHash: 19ea2082a06998052ce085e25c25a2434d0d284a73c8dcb908744727b84c8deb
+    manifestHash: da760fddf2cf54757b8715a92146a7ce5f332199b885bd9b308645180ea215e1
     name: aws-load-balancer-controller.addons.k8s.io
     needsPKI: true
     selector:
@@ -174,14 +174,14 @@ spec:
     version: 9.99.0
   - id: k8s-1.18
     manifest: aws-cloud-controller.addons.k8s.io/k8s-1.18.yaml
-    manifestHash: 4a8b542c2cfebbf97865c7330f48b4911424514227eb871305eb9e9cf6089596
+    manifestHash: 86d34a0bcf10900b080784156e938fdd1ec705fc42a9aa78e384d2c187beaa00
     name: aws-cloud-controller.addons.k8s.io
     selector:
       k8s-addon: aws-cloud-controller.addons.k8s.io
     version: 9.99.0
   - id: k8s-1.17
     manifest: aws-ebs-csi-driver.addons.k8s.io/k8s-1.17.yaml
-    manifestHash: e1459daa7c184fc7b44f3697dd0c8d7141d71e42c630db17a7737426e64e3ce4
+    manifestHash: 34ca65bcc6559b50e6c3fdd75252e6cbd2607785819fc78f049c6f3aab71d3a7
     name: aws-ebs-csi-driver.addons.k8s.io
     selector:
       k8s-addon: aws-ebs-csi-driver.addons.k8s.io

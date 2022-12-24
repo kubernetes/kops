@@ -163,11 +163,6 @@ resource "aws_autoscaling_group" "bastion-privatekopeio-example-com" {
     value               = "bastion.privatekopeio.example.com"
   }
   tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
-    propagate_at_launch = true
-    value               = "node"
-  }
-  tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"
     propagate_at_launch = true
     value               = ""
@@ -220,17 +215,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-privatekopeio-exampl
     value               = ""
   }
   tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
-    propagate_at_launch = true
-    value               = "master"
-  }
-  tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"
-    propagate_at_launch = true
-    value               = ""
-  }
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"
     propagate_at_launch = true
     value               = ""
   }
@@ -283,11 +268,6 @@ resource "aws_autoscaling_group" "nodes-privatekopeio-example-com" {
     key                 = "Name"
     propagate_at_launch = true
     value               = "nodes.privatekopeio.example.com"
-  }
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
-    propagate_at_launch = true
-    value               = "node"
   }
   tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"
@@ -513,7 +493,6 @@ resource "aws_launch_template" "bastion-privatekopeio-example-com" {
     tags = {
       "KubernetesCluster"                                                          = "privatekopeio.example.com"
       "Name"                                                                       = "bastion.privatekopeio.example.com"
-      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/bastion"                                                        = "1"
       "kops.k8s.io/instancegroup"                                                  = "bastion"
@@ -525,7 +504,6 @@ resource "aws_launch_template" "bastion-privatekopeio-example-com" {
     tags = {
       "KubernetesCluster"                                                          = "privatekopeio.example.com"
       "Name"                                                                       = "bastion.privatekopeio.example.com"
-      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/bastion"                                                        = "1"
       "kops.k8s.io/instancegroup"                                                  = "bastion"
@@ -535,7 +513,6 @@ resource "aws_launch_template" "bastion-privatekopeio-example-com" {
   tags = {
     "KubernetesCluster"                                                          = "privatekopeio.example.com"
     "Name"                                                                       = "bastion.privatekopeio.example.com"
-    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
     "k8s.io/role/bastion"                                                        = "1"
     "kops.k8s.io/instancegroup"                                                  = "bastion"
@@ -590,9 +567,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-privatekopeio-example-
       "KubernetesCluster"                                                                                     = "privatekopeio.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.privatekopeio.example.com"
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
-      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                                      = "master"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
-      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
       "k8s.io/role/control-plane"                                                                             = "1"
       "k8s.io/role/master"                                                                                    = "1"
@@ -606,9 +581,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-privatekopeio-example-
       "KubernetesCluster"                                                                                     = "privatekopeio.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.privatekopeio.example.com"
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
-      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                                      = "master"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
-      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
       "k8s.io/role/control-plane"                                                                             = "1"
       "k8s.io/role/master"                                                                                    = "1"
@@ -620,9 +593,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-privatekopeio-example-
     "KubernetesCluster"                                                                                     = "privatekopeio.example.com"
     "Name"                                                                                                  = "master-us-test-1a.masters.privatekopeio.example.com"
     "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
-    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                                      = "master"
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
-    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
     "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
     "k8s.io/role/control-plane"                                                                             = "1"
     "k8s.io/role/master"                                                                                    = "1"
@@ -674,7 +645,6 @@ resource "aws_launch_template" "nodes-privatekopeio-example-com" {
     tags = {
       "KubernetesCluster"                                                          = "privatekopeio.example.com"
       "Name"                                                                       = "nodes.privatekopeio.example.com"
-      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
       "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -686,7 +656,6 @@ resource "aws_launch_template" "nodes-privatekopeio-example-com" {
     tags = {
       "KubernetesCluster"                                                          = "privatekopeio.example.com"
       "Name"                                                                       = "nodes.privatekopeio.example.com"
-      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
       "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -696,7 +665,6 @@ resource "aws_launch_template" "nodes-privatekopeio-example-com" {
   tags = {
     "KubernetesCluster"                                                          = "privatekopeio.example.com"
     "Name"                                                                       = "nodes.privatekopeio.example.com"
-    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
     "k8s.io/role/node"                                                           = "1"
     "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -906,6 +874,22 @@ resource "aws_s3_object" "nodeupconfig-nodes" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_nodeupconfig-nodes_content")
   key                    = "clusters.example.com/privatekopeio.example.com/igconfig/node/nodes/nodeupconfig.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_object" "privatekopeio-example-com-addons-aws-cloud-controller-addons-k8s-io-k8s-1-18" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_privatekopeio.example.com-addons-aws-cloud-controller.addons.k8s.io-k8s-1.18_content")
+  key                    = "clusters.example.com/privatekopeio.example.com/addons/aws-cloud-controller.addons.k8s.io/k8s-1.18.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_object" "privatekopeio-example-com-addons-aws-ebs-csi-driver-addons-k8s-io-k8s-1-17" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_privatekopeio.example.com-addons-aws-ebs-csi-driver.addons.k8s.io-k8s-1.17_content")
+  key                    = "clusters.example.com/privatekopeio.example.com/addons/aws-ebs-csi-driver.addons.k8s.io/k8s-1.17.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
@@ -1253,8 +1237,10 @@ resource "aws_security_group_rule" "icmp-pmtu-ssh-nlb-172-20-8-0--22" {
 }
 
 resource "aws_subnet" "us-test-1a-privatekopeio-example-com" {
-  availability_zone = "us-test-1a"
-  cidr_block        = "172.20.32.0/19"
+  availability_zone                           = "us-test-1a"
+  cidr_block                                  = "172.20.32.0/19"
+  enable_resource_name_dns_a_record_on_launch = true
+  private_dns_hostname_type_on_launch         = "resource-name"
   tags = {
     "KubernetesCluster"                               = "privatekopeio.example.com"
     "Name"                                            = "us-test-1a.privatekopeio.example.com"
@@ -1268,8 +1254,10 @@ resource "aws_subnet" "us-test-1a-privatekopeio-example-com" {
 }
 
 resource "aws_subnet" "us-test-1b-privatekopeio-example-com" {
-  availability_zone = "us-test-1b"
-  cidr_block        = "172.20.64.0/19"
+  availability_zone                           = "us-test-1b"
+  cidr_block                                  = "172.20.64.0/19"
+  enable_resource_name_dns_a_record_on_launch = true
+  private_dns_hostname_type_on_launch         = "resource-name"
   tags = {
     "KubernetesCluster"                               = "privatekopeio.example.com"
     "Name"                                            = "us-test-1b.privatekopeio.example.com"
@@ -1282,8 +1270,10 @@ resource "aws_subnet" "us-test-1b-privatekopeio-example-com" {
 }
 
 resource "aws_subnet" "utility-us-test-1a-privatekopeio-example-com" {
-  availability_zone = "us-test-1a"
-  cidr_block        = "172.20.4.0/22"
+  availability_zone                           = "us-test-1a"
+  cidr_block                                  = "172.20.4.0/22"
+  enable_resource_name_dns_a_record_on_launch = true
+  private_dns_hostname_type_on_launch         = "resource-name"
   tags = {
     "KubernetesCluster"                               = "privatekopeio.example.com"
     "Name"                                            = "utility-us-test-1a.privatekopeio.example.com"
@@ -1296,8 +1286,10 @@ resource "aws_subnet" "utility-us-test-1a-privatekopeio-example-com" {
 }
 
 resource "aws_subnet" "utility-us-test-1b-privatekopeio-example-com" {
-  availability_zone = "us-test-1b"
-  cidr_block        = "172.20.8.0/22"
+  availability_zone                           = "us-test-1b"
+  cidr_block                                  = "172.20.8.0/22"
+  enable_resource_name_dns_a_record_on_launch = true
+  private_dns_hostname_type_on_launch         = "resource-name"
   tags = {
     "KubernetesCluster"                               = "privatekopeio.example.com"
     "Name"                                            = "utility-us-test-1b.privatekopeio.example.com"

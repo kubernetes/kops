@@ -137,8 +137,10 @@ resource "aws_route_table_association" "utility-us-test-1a-lifecyclephases-examp
 }
 
 resource "aws_subnet" "us-test-1a-lifecyclephases-example-com" {
-  availability_zone = "us-test-1a"
-  cidr_block        = "172.20.32.0/19"
+  availability_zone                           = "us-test-1a"
+  cidr_block                                  = "172.20.32.0/19"
+  enable_resource_name_dns_a_record_on_launch = true
+  private_dns_hostname_type_on_launch         = "resource-name"
   tags = {
     "KubernetesCluster"                                 = "lifecyclephases.example.com"
     "Name"                                              = "us-test-1a.lifecyclephases.example.com"
@@ -152,8 +154,10 @@ resource "aws_subnet" "us-test-1a-lifecyclephases-example-com" {
 }
 
 resource "aws_subnet" "utility-us-test-1a-lifecyclephases-example-com" {
-  availability_zone = "us-test-1a"
-  cidr_block        = "172.20.4.0/22"
+  availability_zone                           = "us-test-1a"
+  cidr_block                                  = "172.20.4.0/22"
+  enable_resource_name_dns_a_record_on_launch = true
+  private_dns_hostname_type_on_launch         = "resource-name"
   tags = {
     "KubernetesCluster"                                 = "lifecyclephases.example.com"
     "Name"                                              = "utility-us-test-1a.lifecyclephases.example.com"
