@@ -108,9 +108,12 @@ func RunTrustKeypair(ctx context.Context, f *util.Factory, out io.Writer, option
 		return err
 	}
 
-	keyset, err := keyStore.FindKeyset(options.Keyset)
+	keyset, err := keyStore.FindKeyset(ctx, options.Keyset)
 	if err != nil {
 		return err
+	}
+	if keyset == nil {
+		return fmt.Errorf("keyset %q not found", options.Keyset)
 	}
 
 	for _, id := range options.KeypairIDs {

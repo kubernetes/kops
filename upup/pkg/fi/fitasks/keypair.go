@@ -69,12 +69,14 @@ func (e *Keypair) CompareWithID() *string {
 }
 
 func (e *Keypair) Find(c *fi.CloudupContext) (*Keypair, error) {
+	ctx := c.Context()
+
 	name := fi.ValueOf(e.Name)
 	if name == "" {
 		return nil, nil
 	}
 
-	keyset, err := c.T.Keystore.FindKeyset(name)
+	keyset, err := c.T.Keystore.FindKeyset(ctx, name)
 	if err != nil {
 		return nil, err
 	}
@@ -195,7 +197,7 @@ func (_ *Keypair) Render(c *fi.CloudupContext, a, e, changes *Keypair) error {
 	if createCertificate {
 		klog.V(2).Infof("Creating PKI keypair %q", name)
 
-		keyset, err := c.T.Keystore.FindKeyset(name)
+		keyset, err := c.T.Keystore.FindKeyset(ctx, name)
 		if err != nil {
 			return err
 		}
@@ -242,7 +244,7 @@ func (_ *Keypair) Render(c *fi.CloudupContext, a, e, changes *Keypair) error {
 			PrivateKey:     privateKey,
 			Serial:         serial,
 		}
-		cert, privateKey, _, err := pki.IssueCert(&req, c.T.Keystore)
+		cert, privateKey, _, err := pki.IssueCert(ctx, &req, c.T.Keystore)
 		if err != nil {
 			return err
 		}
@@ -267,9 +269,10 @@ func (_ *Keypair) Render(c *fi.CloudupContext, a, e, changes *Keypair) error {
 		}
 
 		// Make double-sure it round-trips
-		_, err = c.T.Keystore.FindKeyset(name)
-		if err != nil {
+		if roundtrip, err := c.T.Keystore.FindKeyset(ctx, name); err != nil {
 			return err
+		} else if roundtrip == nil {
+			return fmt.Errorf("unable to find created certificate %q: %w", name, err)
 		}
 
 		klog.V(8).Infof("created certificate with cn=%s", cert.Subject.CommonName)
@@ -280,10 +283,14 @@ func (_ *Keypair) Render(c *fi.CloudupContext, a, e, changes *Keypair) error {
 	if changeStoredFormat {
 		// We fetch and reinsert the same keypair, forcing an update to our preferred format
 		// TODO: We're assuming that we want to save in the preferred format
-		keyset, err := c.T.Keystore.FindKeyset(name)
+		keyset, err := c.T.Keystore.FindKeyset(ctx, name)
 		if err != nil {
 			return err
 		}
+		if keyset == nil {
+			return fmt.Errorf("keyset %q not found", name)
+		}
+
 		keyset.LegacyFormat = false
 		err = c.T.Keystore.StoreKeyset(ctx, name, keyset)
 		if err != nil {

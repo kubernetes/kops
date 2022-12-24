@@ -17,6 +17,7 @@ limitations under the License.
 package configserver
 
 import (
+	"context"
 	"fmt"
 
 	"k8s.io/kops/pkg/pki"
@@ -31,11 +32,11 @@ func NewKeyStore() fi.KeystoreReader {
 }
 
 // FindPrimaryKeypair implements pki.Keystore
-func (s *configserverKeyStore) FindPrimaryKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error) {
+func (s *configserverKeyStore) FindPrimaryKeypair(ctx context.Context, name string) (*pki.Certificate, *pki.PrivateKey, error) {
 	return nil, nil, fmt.Errorf("FindPrimaryKeypair %q not supported by configserverKeyStore", name)
 }
 
-// FindKeyset implements fi.Keystore
-func (s *configserverKeyStore) FindKeyset(name string) (*fi.Keyset, error) {
+// FindKeyset implements KeystoreReader.
+func (s *configserverKeyStore) FindKeyset(ctx context.Context, name string) (*fi.Keyset, error) {
 	return nil, fmt.Errorf("FindKeyset %q not supported by configserverKeyStore", name)
 }

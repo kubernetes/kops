@@ -211,8 +211,9 @@ func serializeKeysetBundle(o *kops.Keyset) ([]byte, error) {
 	return objectData.Bytes(), nil
 }
 
-func (c *VFSCAStore) FindPrimaryKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error) {
-	return FindPrimaryKeypair(c, name)
+// FindPrimaryKeypair implements pki.Keystore
+func (c *VFSCAStore) FindPrimaryKeypair(ctx context.Context, name string) (*pki.Certificate, *pki.PrivateKey, error) {
+	return FindPrimaryKeypair(ctx, c, name)
 }
 
 var legacyKeysetMappings = map[string]string{
@@ -222,7 +223,8 @@ var legacyKeysetMappings = map[string]string{
 	"kubernetes-ca": "ca",
 }
 
-func (c *VFSCAStore) FindKeyset(id string) (*Keyset, error) {
+// FindKeyset implements KeystoreReader.
+func (c *VFSCAStore) FindKeyset(ctx context.Context, id string) (*Keyset, error) {
 	keys, err := c.findPrivateKeyset(id)
 	if keys == nil || os.IsNotExist(err) {
 		if legacyId := legacyKeysetMappings[id]; legacyId != "" {
