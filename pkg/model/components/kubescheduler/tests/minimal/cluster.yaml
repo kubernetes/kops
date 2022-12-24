@@ -3,4 +3,4 @@ kind: Cluster
 metadata:
   name: minimal.example.com
 spec:
-  kubernetesVersion: v1.21.0
+  kubernetesVersion: v1.26.0

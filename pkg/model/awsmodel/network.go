@@ -279,7 +279,7 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Tags:             tags,
 		}
 
-		if b.Cluster.Spec.ExternalCloudControllerManager != nil && b.Cluster.IsKubernetesGTE("1.22") {
+		if b.Cluster.Spec.ExternalCloudControllerManager != nil {
 			subnet.ResourceBasedNaming = fi.PtrTo(true)
 		}
 
