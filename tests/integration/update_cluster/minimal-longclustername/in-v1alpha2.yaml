@@ -18,7 +18,7 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: events
-  kubernetesVersion: v1.21.0
+  kubernetesVersion: v1.26.0
   masterPublicName: api.this.is.truly.a.really.really.long.cluster-name.minimal.example.com
   networkCIDR: 172.20.0.0/16
   networking:
