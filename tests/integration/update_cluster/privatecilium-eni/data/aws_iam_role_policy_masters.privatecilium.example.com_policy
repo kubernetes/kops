@@ -100,39 +100,6 @@
         "StringEquals": {
           "aws:RequestTag/KubernetesCluster": "privatecilium.example.com",
           "ec2:CreateAction": [
-            "CreateSecurityGroup"
-          ]
-        }
-      },
-      "Effect": "Allow",
-      "Resource": [
-        "arn:aws-test:ec2:*:*:security-group/*"
-      ]
-    },
-    {
-      "Action": [
-        "ec2:CreateTags",
-        "ec2:DeleteTags"
-      ],
-      "Condition": {
-        "Null": {
-          "aws:RequestTag/KubernetesCluster": "true"
-        },
-        "StringEquals": {
-          "aws:ResourceTag/KubernetesCluster": "privatecilium.example.com"
-        }
-      },
-      "Effect": "Allow",
-      "Resource": [
-        "arn:aws-test:ec2:*:*:security-group/*"
-      ]
-    },
-    {
-      "Action": "ec2:CreateTags",
-      "Condition": {
-        "StringEquals": {
-          "aws:RequestTag/KubernetesCluster": "privatecilium.example.com",
-          "ec2:CreateAction": [
             "CreateVolume",
             "CreateSnapshot"
           ]
@@ -164,6 +131,39 @@
       ]
     },
     {
+      "Action": "ec2:CreateTags",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestTag/KubernetesCluster": "privatecilium.example.com",
+          "ec2:CreateAction": [
+            "CreateSecurityGroup"
+          ]
+        }
+      },
+      "Effect": "Allow",
+      "Resource": [
+        "arn:aws-test:ec2:*:*:security-group/*"
+      ]
+    },
+    {
+      "Action": [
+        "ec2:CreateTags",
+        "ec2:DeleteTags"
+      ],
+      "Condition": {
+        "Null": {
+          "aws:RequestTag/KubernetesCluster": "true"
+        },
+        "StringEquals": {
+          "aws:ResourceTag/KubernetesCluster": "privatecilium.example.com"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": [
+        "arn:aws-test:ec2:*:*:security-group/*"
+      ]
+    },
+    {
       "Action": [
         "autoscaling:DescribeAutoScalingGroups",
         "autoscaling:DescribeAutoScalingInstances",
@@ -172,15 +172,9 @@
         "autoscaling:DescribeTags",
         "ec2:AssignPrivateIpAddresses",
         "ec2:AttachNetworkInterface",
-        "ec2:AttachVolume",
-        "ec2:AuthorizeSecurityGroupIngress",
         "ec2:CreateNetworkInterface",
-        "ec2:CreateSecurityGroup",
         "ec2:CreateTags",
         "ec2:DeleteNetworkInterface",
-        "ec2:DeleteRoute",
-        "ec2:DeleteSecurityGroup",
-        "ec2:DeleteVolume",
         "ec2:DescribeAccountAttributes",
         "ec2:DescribeAvailabilityZones",
         "ec2:DescribeInstanceTypes",
@@ -197,23 +191,14 @@
         "ec2:DescribeVpcPeeringConnections",
         "ec2:DescribeVpcs",
         "ec2:DetachNetworkInterface",
-        "ec2:DetachVolume",
-        "ec2:ModifyInstanceAttribute",
         "ec2:ModifyNetworkInterfaceAttribute",
-        "ec2:ModifyVolume",
         "ec2:UnassignPrivateIpAddresses",
-        "elasticloadbalancing:AddTags",
-        "elasticloadbalancing:CreateListener",
-        "elasticloadbalancing:CreateTargetGroup",
-        "elasticloadbalancing:DeleteListener",
         "elasticloadbalancing:DescribeListeners",
         "elasticloadbalancing:DescribeLoadBalancerAttributes",
         "elasticloadbalancing:DescribeLoadBalancerPolicies",
         "elasticloadbalancing:DescribeLoadBalancers",
         "elasticloadbalancing:DescribeTargetGroups",
         "elasticloadbalancing:DescribeTargetHealth",
-        "elasticloadbalancing:ModifyListener",
-        "elasticloadbalancing:RegisterTargets",
         "iam:GetServerCertificate",
         "iam:ListServerCertificates",
         "kms:DescribeKey",

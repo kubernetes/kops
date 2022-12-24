@@ -24,7 +24,7 @@ spec:
     clusterCIDR: 172.20.0.0/16
     clusterName: minimal.example.com
     configureCloudRoutes: false
-    image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.21.6
+    image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.26.0
     leaderElection:
       leaderElect: true
   cloudProvider: aws
@@ -33,7 +33,7 @@ spec:
     balanceSimilarNodeGroups: false
     enabled: true
     expander: random
-    image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.21.3
+    image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.26.0
     maxNodeProvisionTime: 15m0s
     newPodScaleUpDelay: 0s
     scaleDownDelayAfterAdd: 10m0s
@@ -48,7 +48,9 @@ spec:
   containerRuntime: containerd
   containerd:
     logLevel: info
-    version: 1.4.13
+    runc:
+      version: 1.1.4
+    version: 1.6.14
   dnsZone: Z1AFAKE1ZON3YO
   docker:
     skipInstall: true
@@ -59,14 +61,14 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: main
-    version: 3.4.13
+    version: 3.5.6
   - backups:
       backupStore: memfs://clusters.example.com/minimal.example.com/backups/etcd/events
     etcdMembers:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: events
-    version: 3.4.13
+    version: 3.5.6
   externalDns:
     provider: dns-controller
   iam:
@@ -100,7 +102,7 @@ spec:
     featureGates:
       CSIMigrationAWS: "true"
       InTreePluginAWSUnregister: "true"
-    image: registry.k8s.io/kube-apiserver:v1.21.0
+    image: registry.k8s.io/kube-apiserver:v1.26.0
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
@@ -129,7 +131,7 @@ spec:
     featureGates:
       CSIMigrationAWS: "true"
       InTreePluginAWSUnregister: "true"
-    image: registry.k8s.io/kube-controller-manager:v1.21.0
+    image: registry.k8s.io/kube-controller-manager:v1.26.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -150,13 +152,13 @@ spec:
     serverIP: 172.20.0.10
   kubeProxy:
     cpuRequest: 100m
-    image: registry.k8s.io/kube-proxy:v1.21.0
+    image: registry.k8s.io/kube-proxy:v1.26.0
     logLevel: 2
   kubeScheduler:
     featureGates:
       CSIMigrationAWS: "true"
       InTreePluginAWSUnregister: "true"
-    image: registry.k8s.io/kube-scheduler:v1.21.0
+    image: registry.k8s.io/kube-scheduler:v1.26.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -174,15 +176,15 @@ spec:
       InTreePluginAWSUnregister: "true"
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    networkPluginName: cni
     podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
+    protectKernelDefaults: true
     registerSchedulable: true
     shutdownGracePeriod: 0s
     shutdownGracePeriodCriticalPods: 0s
   kubernetesApiAccess:
   - 0.0.0.0/0
-  kubernetesVersion: 1.21.0
+  kubernetesVersion: 1.26.0
   masterKubelet:
     anonymousAuth: false
     cgroupDriver: systemd
@@ -197,9 +199,9 @@ spec:
       InTreePluginAWSUnregister: "true"
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    networkPluginName: cni
     podInfraContainerImage: registry.k8s.io/pause:3.6
     podManifestPath: /etc/kubernetes/manifests
+    protectKernelDefaults: true
     registerSchedulable: true
     shutdownGracePeriod: 0s
     shutdownGracePeriodCriticalPods: 0s
