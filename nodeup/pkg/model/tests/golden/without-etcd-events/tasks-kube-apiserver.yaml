@@ -14,6 +14,9 @@ contents: |
   spec:
     containers:
     - args:
+      - --log-file=/var/log/kube-apiserver.log
+      - --also-stdout
+      - /usr/local/bin/kube-apiserver
       - --allow-privileged=true
       - --anonymous-auth=false
       - --api-audiences=kubernetes.svc.default
@@ -22,12 +25,13 @@ contents: |
       - --bind-address=0.0.0.0
       - --client-ca-file=/srv/kubernetes/ca.crt
       - --cloud-config=/etc/kubernetes/in-tree-cloud.config
-      - --cloud-provider=aws
+      - --cloud-provider=external
       - --enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,NodeRestriction,ResourceQuota
       - --etcd-cafile=/srv/kubernetes/kube-apiserver/etcd-ca.crt
       - --etcd-certfile=/srv/kubernetes/kube-apiserver/etcd-client.crt
       - --etcd-keyfile=/srv/kubernetes/kube-apiserver/etcd-client.key
       - --etcd-servers=https://127.0.0.1:4001
+      - --feature-gates=CSIMigrationAWS=true,InTreePluginAWSUnregister=true
       - --kubelet-client-certificate=/srv/kubernetes/kube-apiserver/kubelet-api.crt
       - --kubelet-client-key=/srv/kubernetes/kube-apiserver/kubelet-api.key
       - --kubelet-preferred-address-types=InternalIP,Hostname,ExternalIP
@@ -48,12 +52,9 @@ contents: |
       - --tls-cert-file=/srv/kubernetes/kube-apiserver/server.crt
       - --tls-private-key-file=/srv/kubernetes/kube-apiserver/server.key
       - --v=2
-      - --logtostderr=false
-      - --alsologtostderr
-      - --log-file=/var/log/kube-apiserver.log
       command:
-      - /usr/local/bin/kube-apiserver
-      image: registry.k8s.io/kube-apiserver:v1.21.0
+      - /go-runner
+      image: registry.k8s.io/kube-apiserver:v1.26.0
       livenessProbe:
         httpGet:
           host: 127.0.0.1
