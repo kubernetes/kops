@@ -45,6 +45,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
+	kopsroot "k8s.io/kops"
 	kopscontrollerconfig "k8s.io/kops/cmd/kops-controller/pkg/config"
 	"k8s.io/kops/pkg/apis/kops"
 	apiModel "k8s.io/kops/pkg/apis/kops/model"
@@ -351,6 +352,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["IsKubernetesLT"] = tf.IsKubernetesLT
 
 	dest["KopsFeatureEnabled"] = tf.kopsFeatureEnabled
+	dest["KopsVersion"] = func() string { return kopsroot.KOPS_RELEASE_VERSION }
 
 	return nil
 }
