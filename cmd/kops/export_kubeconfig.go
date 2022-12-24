@@ -145,6 +145,7 @@ func RunExportKubeconfig(ctx context.Context, f *util.Factory, out io.Writer, op
 			return err
 		}
 		conf, err := kubeconfig.BuildKubecfg(
+			ctx,
 			cluster,
 			keyStore,
 			secretStore,

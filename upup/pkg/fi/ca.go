@@ -71,8 +71,8 @@ type KeysetItem struct {
 type KeystoreReader interface {
 	pki.Keystore
 
-	// FindKeyset finds a Keyset.
-	FindKeyset(name string) (*Keyset, error)
+	// FindKeyset finds a Keyset.  If the keyset is not found, it returns (nil, nil)
+	FindKeyset(ctx context.Context, name string) (*Keyset, error)
 }
 
 // Keystore contains just the functions we need to issue keypairs, not to list / manage them
@@ -112,8 +112,8 @@ type SSHCredentialStore interface {
 }
 
 // FindPrimaryKeypair is a common implementation of pki.FindPrimaryKeypair.
-func FindPrimaryKeypair(c Keystore, name string) (*pki.Certificate, *pki.PrivateKey, error) {
-	keyset, err := c.FindKeyset(name)
+func FindPrimaryKeypair(ctx context.Context, c Keystore, name string) (*pki.Certificate, *pki.PrivateKey, error) {
+	keyset, err := c.FindKeyset(ctx, name)
 	if err != nil {
 		return nil, nil, err
 	}
