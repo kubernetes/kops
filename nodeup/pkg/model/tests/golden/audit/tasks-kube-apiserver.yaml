@@ -1,0 +1,386 @@
+contents: |
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      dns.alpha.kubernetes.io/external: api.minimal.example.com
+      dns.alpha.kubernetes.io/internal: api.internal.minimal.example.com
+      kubectl.kubernetes.io/default-container: kube-apiserver
+    creationTimestamp: null
+    labels:
+      k8s-app: kube-apiserver
+    name: kube-apiserver
+    namespace: kube-system
+  spec:
+    containers:
+    - args:
+      - --log-file=/var/log/kube-apiserver.log
+      - --also-stdout
+      - /usr/local/bin/kube-apiserver
+      - --allow-privileged=true
+      - --anonymous-auth=false
+      - --api-audiences=kubernetes.svc.default
+      - --apiserver-count=1
+      - --audit-log-maxage=10
+      - --audit-log-maxbackup=1
+      - --audit-log-maxsize=100
+      - --audit-log-path=/var/log/kube-apiserver-audit.log
+      - --audit-policy-file=/etc/kubernetes/audit/policy-config.yaml
+      - --audit-webhook-batch-max-wait=5s
+      - --audit-webhook-config-file=/etc/kubernetes/audit/webhook-config.yaml
+      - --authorization-mode=AlwaysAllow
+      - --bind-address=0.0.0.0
+      - --client-ca-file=/srv/kubernetes/ca.crt
+      - --cloud-config=/etc/kubernetes/in-tree-cloud.config
+      - --cloud-provider=aws
+      - --enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,NodeRestriction,ResourceQuota
+      - --etcd-cafile=/srv/kubernetes/kube-apiserver/etcd-ca.crt
+      - --etcd-certfile=/srv/kubernetes/kube-apiserver/etcd-client.crt
+      - --etcd-keyfile=/srv/kubernetes/kube-apiserver/etcd-client.key
+      - --etcd-servers-overrides=/events#https://127.0.0.1:4002
+      - --etcd-servers=https://127.0.0.1:4001
+      - --feature-gates=CSIMigrationAWS=true,InTreePluginAWSUnregister=true
+      - --kubelet-client-certificate=/srv/kubernetes/kube-apiserver/kubelet-api.crt
+      - --kubelet-client-key=/srv/kubernetes/kube-apiserver/kubelet-api.key
+      - --kubelet-preferred-address-types=InternalIP,Hostname,ExternalIP
+      - --proxy-client-cert-file=/srv/kubernetes/kube-apiserver/apiserver-aggregator.crt
+      - --proxy-client-key-file=/srv/kubernetes/kube-apiserver/apiserver-aggregator.key
+      - --requestheader-allowed-names=aggregator
+      - --requestheader-client-ca-file=/srv/kubernetes/kube-apiserver/apiserver-aggregator-ca.crt
+      - --requestheader-extra-headers-prefix=X-Remote-Extra-
+      - --requestheader-group-headers=X-Remote-Group
+      - --requestheader-username-headers=X-Remote-User
+      - --secure-port=443
+      - --service-account-issuer=https://api.internal.minimal.example.com
+      - --service-account-jwks-uri=https://api.internal.minimal.example.com/openid/v1/jwks
+      - --service-account-key-file=/srv/kubernetes/kube-apiserver/service-account.pub
+      - --service-account-signing-key-file=/srv/kubernetes/kube-apiserver/service-account.key
+      - --service-cluster-ip-range=100.64.0.0/13
+      - --storage-backend=etcd3
+      - --tls-cert-file=/srv/kubernetes/kube-apiserver/server.crt
+      - --tls-private-key-file=/srv/kubernetes/kube-apiserver/server.key
+      - --v=2
+      command:
+      - /go-runner
+      image: registry.k8s.io/kube-apiserver:v1.23.0
+      livenessProbe:
+        httpGet:
+          host: 127.0.0.1
+          path: /healthz
+          port: 443
+          scheme: HTTPS
+        initialDelaySeconds: 45
+        timeoutSeconds: 15
+      name: kube-apiserver
+      ports:
+      - containerPort: 443
+        hostPort: 443
+        name: https
+      resources:
+        requests:
+          cpu: 150m
+      volumeMounts:
+      - mountPath: /var/log/kube-apiserver.log
+        name: logfile
+      - mountPath: /etc/ssl
+        name: etcssl
+        readOnly: true
+      - mountPath: /etc/pki/tls
+        name: etcpkitls
+        readOnly: true
+      - mountPath: /etc/pki/ca-trust
+        name: etcpkica-trust
+        readOnly: true
+      - mountPath: /usr/share/ssl
+        name: usrsharessl
+        readOnly: true
+      - mountPath: /usr/ssl
+        name: usrssl
+        readOnly: true
+      - mountPath: /usr/lib/ssl
+        name: usrlibssl
+        readOnly: true
+      - mountPath: /usr/local/openssl
+        name: usrlocalopenssl
+        readOnly: true
+      - mountPath: /var/ssl
+        name: varssl
+        readOnly: true
+      - mountPath: /etc/openssl
+        name: etcopenssl
+        readOnly: true
+      - mountPath: /etc/kubernetes/in-tree-cloud.config
+        name: cloudconfig
+        readOnly: true
+      - mountPath: /srv/kubernetes/ca.crt
+        name: kubernetesca
+        readOnly: true
+      - mountPath: /srv/kubernetes/kube-apiserver
+        name: srvkapi
+        readOnly: true
+      - mountPath: /srv/sshproxy
+        name: srvsshproxy
+        readOnly: true
+      - mountPath: /var/log
+        name: auditlogpathdir
+      - mountPath: /etc/kubernetes/audit
+        name: auditconfigdir
+        readOnly: true
+    hostNetwork: true
+    priorityClassName: system-cluster-critical
+    tolerations:
+    - key: CriticalAddonsOnly
+      operator: Exists
+    volumes:
+    - hostPath:
+        path: /var/log/kube-apiserver.log
+      name: logfile
+    - hostPath:
+        path: /etc/ssl
+      name: etcssl
+    - hostPath:
+        path: /etc/pki/tls
+      name: etcpkitls
+    - hostPath:
+        path: /etc/pki/ca-trust
+      name: etcpkica-trust
+    - hostPath:
+        path: /usr/share/ssl
+      name: usrsharessl
+    - hostPath:
+        path: /usr/ssl
+      name: usrssl
+    - hostPath:
+        path: /usr/lib/ssl
+      name: usrlibssl
+    - hostPath:
+        path: /usr/local/openssl
+      name: usrlocalopenssl
+    - hostPath:
+        path: /var/ssl
+      name: varssl
+    - hostPath:
+        path: /etc/openssl
+      name: etcopenssl
+    - hostPath:
+        path: /etc/kubernetes/in-tree-cloud.config
+      name: cloudconfig
+    - hostPath:
+        path: /srv/kubernetes/ca.crt
+      name: kubernetesca
+    - hostPath:
+        path: /srv/kubernetes/kube-apiserver
+      name: srvkapi
+    - hostPath:
+        path: /srv/sshproxy
+      name: srvsshproxy
+    - hostPath:
+        path: /var/log
+      name: auditlogpathdir
+    - hostPath:
+        path: /etc/kubernetes/audit
+      name: auditconfigdir
+  status: {}
+path: /etc/kubernetes/manifests/kube-apiserver.manifest
+type: file
+---
+mode: "0755"
+path: /srv/kubernetes/kube-apiserver
+type: directory
+---
+contents: ""
+mode: "0644"
+path: /srv/kubernetes/kube-apiserver/apiserver-aggregator-ca.crt
+type: file
+---
+contents:
+  task:
+    Name: apiserver-aggregator
+    keypairID: ""
+    signer: apiserver-aggregator-ca
+    subject:
+      CommonName: aggregator
+    type: client
+mode: "0644"
+path: /srv/kubernetes/kube-apiserver/apiserver-aggregator.crt
+type: file
+---
+contents:
+  task:
+    Name: apiserver-aggregator
+    keypairID: ""
+    signer: apiserver-aggregator-ca
+    subject:
+      CommonName: aggregator
+    type: client
+mode: "0600"
+path: /srv/kubernetes/kube-apiserver/apiserver-aggregator.key
+type: file
+---
+contents: ""
+mode: "0644"
+path: /srv/kubernetes/kube-apiserver/etcd-ca.crt
+type: file
+---
+contents:
+  task:
+    Name: etcd-client
+    keypairID: ""
+    signer: etcd-clients-ca
+    subject:
+      CommonName: kube-apiserver
+    type: client
+mode: "0644"
+path: /srv/kubernetes/kube-apiserver/etcd-client.crt
+type: file
+---
+contents:
+  task:
+    Name: etcd-client
+    keypairID: ""
+    signer: etcd-clients-ca
+    subject:
+      CommonName: kube-apiserver
+    type: client
+mode: "0600"
+path: /srv/kubernetes/kube-apiserver/etcd-client.key
+type: file
+---
+contents:
+  task:
+    Name: kubelet-api
+    keypairID: "3"
+    signer: kubernetes-ca
+    subject:
+      CommonName: kubelet-api
+    type: client
+mode: "0644"
+path: /srv/kubernetes/kube-apiserver/kubelet-api.crt
+type: file
+---
+contents:
+  task:
+    Name: kubelet-api
+    keypairID: "3"
+    signer: kubernetes-ca
+    subject:
+      CommonName: kubelet-api
+    type: client
+mode: "0600"
+path: /srv/kubernetes/kube-apiserver/kubelet-api.key
+type: file
+---
+contents:
+  task:
+    Name: master
+    alternateNames:
+    - kubernetes
+    - kubernetes.default
+    - kubernetes.default.svc
+    - kubernetes.default.svc.cluster.local
+    - api.minimal.example.com
+    - api.internal.minimal.example.com
+    - 100.64.0.1
+    - 127.0.0.1
+    includeRootCertificate: true
+    keypairID: "3"
+    signer: kubernetes-ca
+    subject:
+      CommonName: kubernetes-master
+    type: server
+mode: "0644"
+path: /srv/kubernetes/kube-apiserver/server.crt
+type: file
+---
+contents:
+  task:
+    Name: master
+    alternateNames:
+    - kubernetes
+    - kubernetes.default
+    - kubernetes.default.svc
+    - kubernetes.default.svc.cluster.local
+    - api.minimal.example.com
+    - api.internal.minimal.example.com
+    - 100.64.0.1
+    - 127.0.0.1
+    includeRootCertificate: true
+    keypairID: "3"
+    signer: kubernetes-ca
+    subject:
+      CommonName: kubernetes-master
+    type: server
+mode: "0600"
+path: /srv/kubernetes/kube-apiserver/server.key
+type: file
+---
+contents: |
+  -----BEGIN RSA PRIVATE KEY-----
+  MIIBPQIBAAJBANiW3hfHTcKnxCig+uWhpVbOfH1pANKmXVSysPKgE80QSU4tZ6m4
+  9pAEeIMsvwvDMaLsb2v6JvXe0qvCmueU+/sCAwEAAQJBAKt/gmpHqP3qA3u8RA5R
+  2W6L360Z2Mnza1FmkI/9StCCkJGjuE5yDhxU4JcVnFyX/nMxm2ockEEQDqRSu7Oo
+  xTECIQD2QsUsgFL4FnXWzTclySJ6ajE4Cte3gSDOIvyMNMireQIhAOEnsV8UaSI+
+  ZyL7NMLzMPLCgtsrPnlamr8gdrEHf9ITAiEAxCCLbpTI/4LL2QZZrINTLVGT34Fr
+  Kl/yI5pjrrp/M2kCIQDfOktQyRuzJ8t5kzWsUxCkntS+FxHJn1rtQ3Jp8dV4oQIh
+  AOyiVWDyLZJvg7Y24Ycmp86BZjM9Wk/BfWpBXKnl9iDY
+  -----END RSA PRIVATE KEY-----
+mode: "0600"
+path: /srv/kubernetes/kube-apiserver/service-account.key
+type: file
+---
+contents: |
+  -----BEGIN RSA PUBLIC KEY-----
+  MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANiW3hfHTcKnxCig+uWhpVbOfH1pANKm
+  XVSysPKgE80QSU4tZ6m49pAEeIMsvwvDMaLsb2v6JvXe0qvCmueU+/sCAwEAAQ==
+  -----END RSA PUBLIC KEY-----
+  -----BEGIN RSA PUBLIC KEY-----
+  MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAKOE64nZbH+GM91AIrqf7HEk4hvzqsZF
+  Ftxc+8xir1XC3mI/RhCCrs6AdVRZNZ26A6uHArhi33c2kHQkCjyLA7sCAwEAAQ==
+  -----END RSA PUBLIC KEY-----
+mode: "0600"
+path: /srv/kubernetes/kube-apiserver/service-account.pub
+type: file
+---
+contents: ""
+ifNotExists: true
+mode: "0400"
+path: /var/log/kube-apiserver.log
+type: file
+---
+Name: apiserver-aggregator
+keypairID: ""
+signer: apiserver-aggregator-ca
+subject:
+  CommonName: aggregator
+type: client
+---
+Name: etcd-client
+keypairID: ""
+signer: etcd-clients-ca
+subject:
+  CommonName: kube-apiserver
+type: client
+---
+Name: kubelet-api
+keypairID: "3"
+signer: kubernetes-ca
+subject:
+  CommonName: kubelet-api
+type: client
+---
+Name: master
+alternateNames:
+- kubernetes
+- kubernetes.default
+- kubernetes.default.svc
+- kubernetes.default.svc.cluster.local
+- api.minimal.example.com
+- api.internal.minimal.example.com
+- 100.64.0.1
+- 127.0.0.1
+includeRootCertificate: true
+keypairID: "3"
+signer: kubernetes-ca
+subject:
+  CommonName: kubernetes-master
+type: server
