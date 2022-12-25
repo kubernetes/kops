@@ -242,9 +242,6 @@ func makeTestCluster(hookSpecRoles []kops.InstanceGroupRole, fileAssetSpecRoles 
 					Image:   "gcr.io/etcd-development/etcd:v3.1.11",
 				},
 			},
-			CloudConfig: &kops.CloudConfiguration{
-				NodeTags: fi.PtrTo("something"),
-			},
 			ContainerRuntime: "docker",
 			Containerd: &kops.ContainerdConfig{
 				LogLevel: fi.PtrTo("info"),

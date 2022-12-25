@@ -859,10 +859,6 @@ type CloudConfiguration struct {
 	// StorageClasses, one of which it nominates as the default class for the cluster.
 	ManageStorageClasses *bool `json:"manageStorageClasses,omitempty"`
 
-	// GCE cloud-config options
-	Multizone          *bool   `json:"multizone,omitempty"`
-	NodeTags           *string `json:"nodeTags,omitempty"`
-	NodeInstancePrefix *string `json:"nodeInstancePrefix,omitempty"`
 	// NodeIPFamilies controls the IP families reported for each node (AWS only).
 	NodeIPFamilies []string `json:"nodeIPFamilies,omitempty"`
 	// AWS cloud-config options

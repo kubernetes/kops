@@ -30,7 +30,7 @@ var _ fi.NodeupModelBuilder = &WarmPoolBuilder{}
 
 func (b *WarmPoolBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	// Check if the cloud provider is AWS
-	if b.CloudProvider != kops.CloudProviderAWS {
+	if b.BootConfig.CloudProvider != kops.CloudProviderAWS {
 		return nil
 	}
 

@@ -50,7 +50,7 @@ func (b *NTPBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	}
 
 	var ntpHost string
-	switch b.CloudProvider {
+	switch b.BootConfig.CloudProvider {
 	case kops.CloudProviderAWS:
 		ntpHost = "169.254.169.123"
 	case kops.CloudProviderGCE:
