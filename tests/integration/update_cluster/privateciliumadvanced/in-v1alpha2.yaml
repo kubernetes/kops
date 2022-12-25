@@ -27,7 +27,7 @@ spec:
     anonymousAuth: false
   kubeProxy:
     enabled: false
-  kubernetesVersion: v1.21.0
+  kubernetesVersion: v1.26.0
   masterPublicName: api.privateciliumadvanced.example.com
   networkCIDR: 172.20.0.0/16
   networking:

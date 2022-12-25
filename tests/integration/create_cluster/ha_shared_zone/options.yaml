@@ -4,4 +4,4 @@ Zones:
 ControlPlaneCount: 3
 CloudProvider: aws
 Networking: cni
-KubernetesVersion: v1.21.0
+KubernetesVersion: v1.26.0

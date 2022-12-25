@@ -123,17 +123,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-sharedvpc-example-co
     value               = ""
   }
   tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
-    propagate_at_launch = true
-    value               = "master"
-  }
-  tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"
-    propagate_at_launch = true
-    value               = ""
-  }
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"
     propagate_at_launch = true
     value               = ""
   }
@@ -186,11 +176,6 @@ resource "aws_autoscaling_group" "nodes-sharedvpc-example-com" {
     key                 = "Name"
     propagate_at_launch = true
     value               = "nodes.sharedvpc.example.com"
-  }
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
-    propagate_at_launch = true
-    value               = "node"
   }
   tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"
@@ -358,9 +343,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-sharedvpc-example-com"
       "KubernetesCluster"                                                                                     = "sharedvpc.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.sharedvpc.example.com"
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
-      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                                      = "master"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
-      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
       "k8s.io/role/control-plane"                                                                             = "1"
       "k8s.io/role/master"                                                                                    = "1"
@@ -374,9 +357,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-sharedvpc-example-com"
       "KubernetesCluster"                                                                                     = "sharedvpc.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.sharedvpc.example.com"
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
-      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                                      = "master"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
-      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
       "k8s.io/role/control-plane"                                                                             = "1"
       "k8s.io/role/master"                                                                                    = "1"
@@ -388,9 +369,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-sharedvpc-example-com"
     "KubernetesCluster"                                                                                     = "sharedvpc.example.com"
     "Name"                                                                                                  = "master-us-test-1a.masters.sharedvpc.example.com"
     "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
-    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                                      = "master"
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
-    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"                          = ""
     "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
     "k8s.io/role/control-plane"                                                                             = "1"
     "k8s.io/role/master"                                                                                    = "1"
@@ -442,7 +421,6 @@ resource "aws_launch_template" "nodes-sharedvpc-example-com" {
     tags = {
       "KubernetesCluster"                                                          = "sharedvpc.example.com"
       "Name"                                                                       = "nodes.sharedvpc.example.com"
-      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
       "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -454,7 +432,6 @@ resource "aws_launch_template" "nodes-sharedvpc-example-com" {
     tags = {
       "KubernetesCluster"                                                          = "sharedvpc.example.com"
       "Name"                                                                       = "nodes.sharedvpc.example.com"
-      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
       "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -464,7 +441,6 @@ resource "aws_launch_template" "nodes-sharedvpc-example-com" {
   tags = {
     "KubernetesCluster"                                                          = "sharedvpc.example.com"
     "Name"                                                                       = "nodes.sharedvpc.example.com"
-    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
     "k8s.io/role/node"                                                           = "1"
     "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -568,6 +544,22 @@ resource "aws_s3_object" "nodeupconfig-nodes" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_nodeupconfig-nodes_content")
   key                    = "clusters.example.com/sharedvpc.example.com/igconfig/node/nodes/nodeupconfig.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_object" "sharedvpc-example-com-addons-aws-cloud-controller-addons-k8s-io-k8s-1-18" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_sharedvpc.example.com-addons-aws-cloud-controller.addons.k8s.io-k8s-1.18_content")
+  key                    = "clusters.example.com/sharedvpc.example.com/addons/aws-cloud-controller.addons.k8s.io/k8s-1.18.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_object" "sharedvpc-example-com-addons-aws-ebs-csi-driver-addons-k8s-io-k8s-1-17" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_sharedvpc.example.com-addons-aws-ebs-csi-driver.addons.k8s.io-k8s-1.17_content")
+  key                    = "clusters.example.com/sharedvpc.example.com/addons/aws-ebs-csi-driver.addons.k8s.io/k8s-1.17.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
@@ -777,8 +769,10 @@ resource "aws_security_group_rule" "from-nodes-sharedvpc-example-com-ingress-udp
 }
 
 resource "aws_subnet" "us-test-1a-sharedvpc-example-com" {
-  availability_zone = "us-test-1a"
-  cidr_block        = "172.20.32.0/19"
+  availability_zone                           = "us-test-1a"
+  cidr_block                                  = "172.20.32.0/19"
+  enable_resource_name_dns_a_record_on_launch = true
+  private_dns_hostname_type_on_launch         = "resource-name"
   tags = {
     "KubernetesCluster"                            = "sharedvpc.example.com"
     "Name"                                         = "us-test-1a.sharedvpc.example.com"

@@ -40,7 +40,7 @@ spec:
   kubernetesApiAccess:
   - 0.0.0.0/0
   - ::/0
-  kubernetesVersion: v1.21.0
+  kubernetesVersion: v1.26.0
   masterPublicName: api.private.example.com
   networkCIDR: 172.20.0.0/16
   networking:
@@ -77,6 +77,9 @@ metadata:
   name: bastions
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221206
+  instanceMetadata:
+    httpPutResponseHopLimit: 1
+    httpTokens: required
   machineType: t2.micro
   maxSize: 1
   minSize: 1
@@ -98,6 +101,9 @@ spec:
   - sg-exampleid3
   - sg-exampleid4
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221206
+  instanceMetadata:
+    httpPutResponseHopLimit: 3
+    httpTokens: required
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -119,6 +125,9 @@ spec:
   - sg-exampleid
   - sg-exampleid2
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221206
+  instanceMetadata:
+    httpPutResponseHopLimit: 1
+    httpTokens: required
   machineType: t2.medium
   maxSize: 1
   minSize: 1
