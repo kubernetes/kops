@@ -125,9 +125,6 @@ ensure-install-dir
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   manageStorageClasses: true
-  nodeIPFamilies:
-  - ipv6
-  - ipv4
 containerRuntime: containerd
 containerd:
   logLevel: info
@@ -264,7 +261,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal-ipv6.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: 8ri9MukZwIWcJEB5D5gjM3zWMuaKyY5Ph+/lydn5fmA=
+NodeupConfigHash: LqCl+CWurpKhh4iS66VdDvtnZMHpaIgkzD1urnqbeH4=
 
 __EOF_KUBE_ENV
 
