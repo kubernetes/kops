@@ -1,4 +1,4 @@
-apiVersion: policy/v1beta1
+apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   creationTimestamp: null
@@ -342,7 +342,7 @@ spec:
         env:
         - name: AWS_REGION
           value: us-test-1
-        image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.21.3
+        image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.26.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3

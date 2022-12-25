@@ -1,0 +1,34 @@
+## Release notes for kOps 1.27 series
+
+**&#9888; kOps 1.27 has not been released yet! &#9888;**
+
+This is a document to gather the release notes prior to the release.
+
+# Significant changes
+
+## AWS
+
+## GCP
+
+# Breaking changes
+
+## Other breaking changes
+
+* Support for Kubernetes version 1.21 has been removed.
+
+# Deprecations
+
+* Support for Kubernetes version 1.22 is deprecated and will be removed in kOps 1.28.
+
+* Support for Kubernetes version 1.23 is deprecated and will be removed in kOps 1.29.
+
+* Support for Ubuntu 18.04 is deprecated and will be removed in kOps 1.28.
+
+* Support for AWS Classic Load Balancer for API is deprecated and should not be used for newly created clusters.
+
+* All legacy addons are deprecated in favor of managed addons, including the [metrics server addon](https://github.com/kubernetes/kops/tree/master/addons/metrics-server) and the [autoscaler addon](https://github.com/kubernetes/kops/tree/master/addons/cluster-autoscaler).
+
+# Help Wanted
+
+* kOps needs maintainers for Canal, Flannel, and Kube-Router, to keep versions up to date and move the integration from experimental to stable.
+If no volunteers step up by the time kOps 1.27 is released, support will be phased out.

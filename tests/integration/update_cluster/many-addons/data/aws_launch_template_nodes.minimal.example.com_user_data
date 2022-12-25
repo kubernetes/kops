@@ -128,18 +128,20 @@ cloudConfig:
 containerRuntime: containerd
 containerd:
   logLevel: info
-  version: 1.4.13
+  runc:
+    version: 1.1.4
+  version: 1.6.14
 docker:
   skipInstall: true
 kubeProxy:
   cpuRequest: 100m
-  image: registry.k8s.io/kube-proxy:v1.21.0
+  image: registry.k8s.io/kube-proxy:v1.26.0
   logLevel: 2
 kubelet:
   anonymousAuth: false
   cgroupDriver: systemd
   cgroupRoot: /
-  cloudProvider: aws
+  cloudProvider: external
   clusterDNS: 172.20.0.10
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
@@ -149,9 +151,9 @@ kubelet:
     InTreePluginAWSUnregister: "true"
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
-  networkPluginName: cni
   podInfraContainerImage: registry.k8s.io/pause:3.6
   podManifestPath: /etc/kubernetes/manifests
+  protectKernelDefaults: true
   registerSchedulable: true
   shutdownGracePeriod: 0s
   shutdownGracePeriodCriticalPods: 0s
@@ -185,7 +187,7 @@ ConfigServer:
   server: https://kops-controller.internal.minimal.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: 8Qw7UOUVg9x5snrAQb/kgYryIF3wYDM8hh5AI/LIfq4=
+NodeupConfigHash: Daks/KAPYmKjSobpn3fkBQd7A0KA2845po3xnwkxlzw=
 
 __EOF_KUBE_ENV
 

@@ -29,7 +29,7 @@ spec:
     anonymousAuth: false
   kubernetesApiAccess:
   - 0.0.0.0/0
-  kubernetesVersion: v1.21.0
+  kubernetesVersion: v1.26.0
   networking:
     cni: {}
   networkCIDR: 192.168.0.0/16

@@ -11,5 +11,5 @@ NodeSecurityGroups:
 ControlPlaneSecurityGroups:
 - sg-exampleid3
 - sg-exampleid4
-KubernetesVersion: v1.21.0
+KubernetesVersion: v1.26.0
 cloudLabels: "Owner=John Doe,dn=\"cn=John Doe: dc=example dc=com\", foo/bar=fib+baz"
