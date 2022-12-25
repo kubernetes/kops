@@ -25,14 +25,20 @@ spec:
   cloudConfig: {}
   cloudProvider:
     aws:
+      disableSecurityGroupIngress: true
       ebsCSIDriver:
         volumeAttachLimit: 65
+      elbSecurityGroup: sg-elb
       loadBalancerController:
         enableWAF: true
+      nodeIPFamilies:
+      - ipv6
       nodeTerminationHandler:
         enableSpotInterruptionDraining: true
       podIdentityWebhook:
         replicas: 14
+      spotinstOrientation: spot-orientation
+      spotinstProduct: spot-product
       warmPool:
         enableLifecycleHook: true
   configBase: memfs://clusters.example.com/minimal.example.com

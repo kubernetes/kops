@@ -160,6 +160,20 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 			}
 			out.CloudProvider.GCE.ServiceAccount = in.CloudConfig.GCEServiceAccount
 		}
+		if in.CloudConfig.DisableSecurityGroupIngress != nil {
+			if out.CloudProvider.AWS == nil {
+				return field.Forbidden(field.NewPath("spec").Child("cloudConfig", "disableSecurityGroupIngress"), "disableSecurityGroupIngress supports only AWS")
+			}
+			val := *in.CloudConfig.DisableSecurityGroupIngress
+			out.CloudProvider.AWS.DisableSecurityGroupIngress = &val
+		}
+		if in.CloudConfig.ElbSecurityGroup != nil {
+			if out.CloudProvider.AWS == nil {
+				return field.Forbidden(field.NewPath("spec").Child("cloudConfig", "elbSecurityGroup"), "elbSecurityGroup supports only AWS")
+			}
+			val := *in.CloudConfig.ElbSecurityGroup
+			out.CloudProvider.AWS.ElbSecurityGroup = &val
+		}
 		if in.CloudConfig.GCPPDCSIDriver != nil {
 			if out.CloudProvider.GCE == nil {
 				return field.Forbidden(field.NewPath("spec").Child("cloudConfig", "gcpPDCSIDriver"), "PD CSI driver supports only GCE")
@@ -175,6 +189,12 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 			}
 			out.CloudProvider.GCE.Multizone = in.CloudConfig.Multizone
 		}
+		if in.CloudConfig.NodeIPFamilies != nil {
+			if out.CloudProvider.AWS == nil {
+				return field.Forbidden(field.NewPath("spec").Child("cloudConfig", "nodeIPFamilies"), "nodeIPFamilies supports only AWS")
+			}
+			out.CloudProvider.AWS.NodeIPFamilies = append([]string(nil), in.CloudConfig.NodeIPFamilies...)
+		}
 		if in.CloudConfig.NodeTags != nil {
 			if out.CloudProvider.GCE == nil {
 				return field.Forbidden(field.NewPath("spec").Child("cloudConfig", "nodeTags"), "nodeTags supports only GCE")
@@ -186,6 +206,20 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 				return field.Forbidden(field.NewPath("spec").Child("cloudConfig", "nodeInstancePrefix"), "nodeInstancePrefix supports only GCE")
 			}
 			out.CloudProvider.GCE.NodeInstancePrefix = in.CloudConfig.NodeInstancePrefix
+		}
+		if in.CloudConfig.SpotinstOrientation != nil {
+			if out.CloudProvider.AWS == nil {
+				return field.Forbidden(field.NewPath("spec").Child("cloudConfig", "spotinstOrientation"), "Spotinst supports only AWS")
+			}
+			val := *in.CloudConfig.SpotinstOrientation
+			out.CloudProvider.AWS.SpotinstOrientation = &val
+		}
+		if in.CloudConfig.SpotinstProduct != nil {
+			if out.CloudProvider.AWS == nil {
+				return field.Forbidden(field.NewPath("spec").Child("cloudConfig", "spotinstProduct"), "Spotinst supports only AWS")
+			}
+			val := *in.CloudConfig.SpotinstProduct
+			out.CloudProvider.AWS.SpotinstProduct = &val
 		}
 	}
 	if in.NodeTerminationHandler != nil {
@@ -320,6 +354,13 @@ func Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, out 
 	switch kops.CloudProviderID(out.LegacyCloudProvider) {
 	case kops.CloudProviderAWS:
 		aws := in.CloudProvider.AWS
+		if aws.DisableSecurityGroupIngress != nil {
+			if out.CloudConfig == nil {
+				out.CloudConfig = &CloudConfiguration{}
+			}
+			val := *aws.DisableSecurityGroupIngress
+			out.CloudConfig.DisableSecurityGroupIngress = &val
+		}
 		if aws.EBSCSIDriver != nil {
 			if out.CloudConfig == nil {
 				out.CloudConfig = &CloudConfiguration{}
@@ -328,6 +369,13 @@ func Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, out 
 			if err := autoConvert_kops_EBSCSIDriverSpec_To_v1alpha2_EBSCSIDriverSpec(aws.EBSCSIDriver, out.CloudConfig.AWSEBSCSIDriver, s); err != nil {
 				return err
 			}
+		}
+		if aws.ElbSecurityGroup != nil {
+			if out.CloudConfig == nil {
+				out.CloudConfig = &CloudConfiguration{}
+			}
+			val := *aws.ElbSecurityGroup
+			out.CloudConfig.ElbSecurityGroup = &val
 		}
 		if aws.NodeTerminationHandler != nil {
 			out.NodeTerminationHandler = &NodeTerminationHandlerSpec{}
@@ -340,6 +388,26 @@ func Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, out 
 			if err := autoConvert_kops_LoadBalancerControllerSpec_To_v1alpha2_LoadBalancerControllerSpec(aws.LoadBalancerController, out.AWSLoadBalancerController, s); err != nil {
 				return err
 			}
+		}
+		if aws.NodeIPFamilies != nil {
+			if out.CloudConfig == nil {
+				out.CloudConfig = &CloudConfiguration{}
+			}
+			out.CloudConfig.NodeIPFamilies = append([]string(nil), aws.NodeIPFamilies...)
+		}
+		if aws.SpotinstOrientation != nil {
+			if out.CloudConfig == nil {
+				out.CloudConfig = &CloudConfiguration{}
+			}
+			val := *aws.SpotinstOrientation
+			out.CloudConfig.SpotinstOrientation = &val
+		}
+		if aws.SpotinstProduct != nil {
+			if out.CloudConfig == nil {
+				out.CloudConfig = &CloudConfiguration{}
+			}
+			val := *aws.SpotinstProduct
+			out.CloudConfig.SpotinstProduct = &val
 		}
 		if aws.WarmPool != nil {
 			out.WarmPool = &WarmPoolSpec{}

@@ -858,15 +858,6 @@ type CloudConfiguration struct {
 	// ManageStorageClasses specifies whether kOps should create and maintain a set of
 	// StorageClasses, one of which it nominates as the default class for the cluster.
 	ManageStorageClasses *bool `json:"manageStorageClasses,omitempty"`
-
-	// NodeIPFamilies controls the IP families reported for each node (AWS only).
-	NodeIPFamilies []string `json:"nodeIPFamilies,omitempty"`
-	// AWS cloud-config options
-	DisableSecurityGroupIngress *bool   `json:"disableSecurityGroupIngress,omitempty"`
-	ElbSecurityGroup            *string `json:"elbSecurityGroup,omitempty"`
-	// Spotinst cloud-config specs
-	SpotinstProduct     *string `json:"spotinstProduct,omitempty"`
-	SpotinstOrientation *string `json:"spotinstOrientation,omitempty"`
 }
 
 // EBSCSIDriverSpec is the config for the AWS EBS CSI driver
