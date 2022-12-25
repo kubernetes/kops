@@ -206,6 +206,20 @@ type AWSSpec struct {
 	PodIdentityWebhook *PodIdentityWebhookSpec `json:"podIdentityWebhook,omitempty"`
 	// WarmPool defines the default warm pool settings for instance groups.
 	WarmPool *WarmPoolSpec `json:"warmPool,omitempty"`
+
+	// NodeIPFamilies control the IP families reported for each node.
+	NodeIPFamilies []string `json:"nodeIPFamilies,omitempty"`
+	// DisableSecurityGroupIngress disables the Cloud Controller Manager's creation
+	// of an AWS Security Group for each load balancer provisioned for a Service.
+	DisableSecurityGroupIngress *bool `json:"disableSecurityGroupIngress,omitempty"`
+	// ElbSecurityGroup specifies an existing AWS Security group for the Cloud Controller
+	// Manager to assign to each ELB provisioned for a Service, instead of creating
+	// one per ELB.
+	ElbSecurityGroup *string `json:"elbSecurityGroup,omitempty"`
+
+	// Spotinst cloud-config specs
+	SpotinstProduct     *string `json:"spotinstProduct,omitempty"`
+	SpotinstOrientation *string `json:"spotinstOrientation,omitempty"`
 }
 
 // DOSpec configures the Digital Ocean cloud provider.

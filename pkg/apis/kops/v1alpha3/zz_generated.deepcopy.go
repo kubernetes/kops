@@ -178,6 +178,31 @@ func (in *AWSSpec) DeepCopyInto(out *AWSSpec) {
 		*out = new(WarmPoolSpec)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.NodeIPFamilies != nil {
+		in, out := &in.NodeIPFamilies, &out.NodeIPFamilies
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
+	if in.DisableSecurityGroupIngress != nil {
+		in, out := &in.DisableSecurityGroupIngress, &out.DisableSecurityGroupIngress
+		*out = new(bool)
+		**out = **in
+	}
+	if in.ElbSecurityGroup != nil {
+		in, out := &in.ElbSecurityGroup, &out.ElbSecurityGroup
+		*out = new(string)
+		**out = **in
+	}
+	if in.SpotinstProduct != nil {
+		in, out := &in.SpotinstProduct, &out.SpotinstProduct
+		*out = new(string)
+		**out = **in
+	}
+	if in.SpotinstOrientation != nil {
+		in, out := &in.SpotinstOrientation, &out.SpotinstOrientation
+		*out = new(string)
+		**out = **in
+	}
 	return
 }
 
@@ -630,31 +655,6 @@ func (in *CloudConfiguration) DeepCopyInto(out *CloudConfiguration) {
 	if in.ManageStorageClasses != nil {
 		in, out := &in.ManageStorageClasses, &out.ManageStorageClasses
 		*out = new(bool)
-		**out = **in
-	}
-	if in.NodeIPFamilies != nil {
-		in, out := &in.NodeIPFamilies, &out.NodeIPFamilies
-		*out = make([]string, len(*in))
-		copy(*out, *in)
-	}
-	if in.DisableSecurityGroupIngress != nil {
-		in, out := &in.DisableSecurityGroupIngress, &out.DisableSecurityGroupIngress
-		*out = new(bool)
-		**out = **in
-	}
-	if in.ElbSecurityGroup != nil {
-		in, out := &in.ElbSecurityGroup, &out.ElbSecurityGroup
-		*out = new(string)
-		**out = **in
-	}
-	if in.SpotinstProduct != nil {
-		in, out := &in.SpotinstProduct, &out.SpotinstProduct
-		*out = new(string)
-		**out = **in
-	}
-	if in.SpotinstOrientation != nil {
-		in, out := &in.SpotinstOrientation, &out.SpotinstOrientation
-		*out = new(string)
 		**out = **in
 	}
 	return
