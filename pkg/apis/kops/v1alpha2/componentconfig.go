@@ -859,8 +859,11 @@ type CloudConfiguration struct {
 	ManageStorageClasses *bool `json:"manageStorageClasses,omitempty"`
 
 	// GCE cloud-config options
-	Multizone          *bool   `json:"multizone,omitempty"`
-	NodeTags           *string `json:"nodeTags,omitempty"`
+	// +k8s:conversion-gen=false
+	Multizone *bool `json:"multizone,omitempty"`
+	// +k8s:conversion-gen=false
+	NodeTags *string `json:"nodeTags,omitempty"`
+	// +k8s:conversion-gen=false
 	NodeInstancePrefix *string `json:"nodeInstancePrefix,omitempty"`
 	// NodeIPFamilies controls the IP families reported for each node (AWS only).
 	NodeIPFamilies []string `json:"nodeIPFamilies,omitempty"`

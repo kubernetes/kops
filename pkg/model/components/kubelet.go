@@ -141,8 +141,8 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		if clusterSpec.CloudConfig == nil {
 			clusterSpec.CloudConfig = &kops.CloudConfiguration{}
 		}
-		clusterSpec.CloudConfig.Multizone = fi.PtrTo(true)
-		clusterSpec.CloudConfig.NodeTags = fi.PtrTo(gce.TagForRole(b.ClusterName, kops.InstanceGroupRoleNode))
+		clusterSpec.CloudProvider.GCE.Multizone = fi.PtrTo(true)
+		clusterSpec.CloudProvider.GCE.NodeTags = fi.PtrTo(gce.TagForRole(b.ClusterName, kops.InstanceGroupRoleNode))
 
 	}
 

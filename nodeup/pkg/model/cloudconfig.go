@@ -86,7 +86,7 @@ func (b *CloudConfigBuilder) build(c *fi.NodeupModelBuilderContext, inTree bool)
 	// Add cloud config file if needed
 	var lines []string
 
-	cloudProvider := b.CloudProvider
+	cloudProvider := b.BootConfig.CloudProvider
 	cloudConfig := b.Cluster.Spec.CloudConfig
 
 	if cloudConfig == nil {
@@ -96,17 +96,17 @@ func (b *CloudConfigBuilder) build(c *fi.NodeupModelBuilderContext, inTree bool)
 	var config string
 	requireGlobal := true
 	switch cloudProvider {
-	case "gce":
-		if cloudConfig.NodeTags != nil {
-			lines = append(lines, "node-tags = "+*cloudConfig.NodeTags)
+	case kops.CloudProviderGCE:
+		if b.NodeupConfig.NodeTags != nil {
+			lines = append(lines, "node-tags = "+*b.NodeupConfig.NodeTags)
 		}
-		if cloudConfig.NodeInstancePrefix != nil {
-			lines = append(lines, "node-instance-prefix = "+*cloudConfig.NodeInstancePrefix)
+		if b.NodeupConfig.NodeInstancePrefix != nil {
+			lines = append(lines, "node-instance-prefix = "+*b.NodeupConfig.NodeInstancePrefix)
 		}
-		if cloudConfig.Multizone != nil {
-			lines = append(lines, fmt.Sprintf("multizone = %t", *cloudConfig.Multizone))
+		if b.NodeupConfig.Multizone != nil {
+			lines = append(lines, fmt.Sprintf("multizone = %t", *b.NodeupConfig.Multizone))
 		}
-	case "aws":
+	case kops.CloudProviderAWS:
 		if cloudConfig.DisableSecurityGroupIngress != nil {
 			lines = append(lines, fmt.Sprintf("DisableSecurityGroupIngress = %t", *cloudConfig.DisableSecurityGroupIngress))
 		}
@@ -118,7 +118,7 @@ func (b *CloudConfigBuilder) build(c *fi.NodeupModelBuilderContext, inTree bool)
 				lines = append(lines, "NodeIPFamilies = "+family)
 			}
 		}
-	case "openstack":
+	case kops.CloudProviderOpenstack:
 		osc := b.Cluster.Spec.CloudProvider.Openstack
 		if osc == nil {
 			break
@@ -212,7 +212,7 @@ func (b *CloudConfigBuilder) build(c *fi.NodeupModelBuilderContext, inTree bool)
 				lines = append(lines, "")
 			}
 		}
-	case "azure":
+	case kops.CloudProviderAzure:
 		requireGlobal = false
 
 		var region string

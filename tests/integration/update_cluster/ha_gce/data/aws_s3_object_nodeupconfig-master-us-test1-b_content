@@ -276,6 +276,8 @@ containerdConfig:
 etcdManifests:
 - memfs://tests/ha-gce.example.com/manifests/etcd/main-master-us-test1-b.yaml
 - memfs://tests/ha-gce.example.com/manifests/etcd/events-master-us-test1-b.yaml
+multizone: true
+nodeTags: ha-gce-example-com-k8s-io-role-node
 staticManifests:
 - key: kube-apiserver-healthcheck
   path: manifests/static/kube-apiserver-healthcheck.yaml

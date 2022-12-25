@@ -2155,9 +2155,6 @@ func Convert_kops_CiliumNetworkingSpec_To_v1alpha3_CiliumNetworkingSpec(in *kops
 
 func autoConvert_v1alpha3_CloudConfiguration_To_kops_CloudConfiguration(in *CloudConfiguration, out *kops.CloudConfiguration, s conversion.Scope) error {
 	out.ManageStorageClasses = in.ManageStorageClasses
-	out.Multizone = in.Multizone
-	out.NodeTags = in.NodeTags
-	out.NodeInstancePrefix = in.NodeInstancePrefix
 	out.NodeIPFamilies = in.NodeIPFamilies
 	out.DisableSecurityGroupIngress = in.DisableSecurityGroupIngress
 	out.ElbSecurityGroup = in.ElbSecurityGroup
@@ -2173,9 +2170,6 @@ func Convert_v1alpha3_CloudConfiguration_To_kops_CloudConfiguration(in *CloudCon
 
 func autoConvert_kops_CloudConfiguration_To_v1alpha3_CloudConfiguration(in *kops.CloudConfiguration, out *CloudConfiguration, s conversion.Scope) error {
 	out.ManageStorageClasses = in.ManageStorageClasses
-	out.Multizone = in.Multizone
-	out.NodeTags = in.NodeTags
-	out.NodeInstancePrefix = in.NodeInstancePrefix
 	out.NodeIPFamilies = in.NodeIPFamilies
 	out.DisableSecurityGroupIngress = in.DisableSecurityGroupIngress
 	out.ElbSecurityGroup = in.ElbSecurityGroup
@@ -3986,6 +3980,9 @@ func Convert_kops_GCENetworkingSpec_To_v1alpha3_GCENetworkingSpec(in *kops.GCENe
 func autoConvert_v1alpha3_GCESpec_To_kops_GCESpec(in *GCESpec, out *kops.GCESpec, s conversion.Scope) error {
 	out.Project = in.Project
 	out.ServiceAccount = in.ServiceAccount
+	out.Multizone = in.Multizone
+	out.NodeTags = in.NodeTags
+	out.NodeInstancePrefix = in.NodeInstancePrefix
 	if in.PDCSIDriver != nil {
 		in, out := &in.PDCSIDriver, &out.PDCSIDriver
 		*out = new(kops.PDCSIDriver)
@@ -4006,6 +4003,9 @@ func Convert_v1alpha3_GCESpec_To_kops_GCESpec(in *GCESpec, out *kops.GCESpec, s 
 func autoConvert_kops_GCESpec_To_v1alpha3_GCESpec(in *kops.GCESpec, out *GCESpec, s conversion.Scope) error {
 	out.Project = in.Project
 	out.ServiceAccount = in.ServiceAccount
+	out.Multizone = in.Multizone
+	out.NodeTags = in.NodeTags
+	out.NodeInstancePrefix = in.NodeInstancePrefix
 	if in.PDCSIDriver != nil {
 		in, out := &in.PDCSIDriver, &out.PDCSIDriver
 		*out = new(PDCSIDriver)

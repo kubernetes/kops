@@ -139,8 +139,7 @@ echo "== nodeup node config starting =="
 ensure-install-dir
 
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
-cloudConfig:
-  nodeTags: something
+cloudConfig: null
 containerRuntime: docker
 containerd:
   logLevel: info
