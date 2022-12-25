@@ -290,6 +290,7 @@ func (c *populateClusterSpec) run(ctx context.Context, clientset simple.Clientse
 			codeModels = append(codeModels, &components.ClusterAutoscalerOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.NodeTerminationHandlerOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.NodeProblemDetectorOptionsBuilder{OptionsContext: optionsContext})
+			codeModels = append(codeModels, &components.AWSOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.AWSEBSCSIDriverOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.AWSCloudControllerManagerOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.GCPCloudControllerManagerOptionsBuilder{OptionsContext: optionsContext})

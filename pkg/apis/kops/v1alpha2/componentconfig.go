@@ -866,13 +866,20 @@ type CloudConfiguration struct {
 	// +k8s:conversion-gen=false
 	NodeInstancePrefix *string `json:"nodeInstancePrefix,omitempty"`
 	// NodeIPFamilies controls the IP families reported for each node (AWS only).
+	// +k8s:conversion-gen=false
 	NodeIPFamilies []string `json:"nodeIPFamilies,omitempty"`
 	// GCEServiceAccount specifies the service account with which the GCE VM runs
 	// +k8s:conversion-gen=false
 	GCEServiceAccount string `json:"gceServiceAccount,omitempty"`
-	// AWS cloud-config options
-	DisableSecurityGroupIngress *bool   `json:"disableSecurityGroupIngress,omitempty"`
-	ElbSecurityGroup            *string `json:"elbSecurityGroup,omitempty"`
+	// DisableSecurityGroupIngress disables the Cloud Controller Manager's creation
+	// of an AWS Security Group for each load balancer provisioned for a Service (AWS only).
+	// +k8s:conversion-gen=false
+	DisableSecurityGroupIngress *bool `json:"disableSecurityGroupIngress,omitempty"`
+	// ElbSecurityGroup specifies an existing AWS Security group for the Cloud Controller
+	// Manager to assign to each ELB provisioned for a Service, instead of creating
+	// one per ELB (AWS only).
+	// +k8s:conversion-gen=false
+	ElbSecurityGroup *string `json:"elbSecurityGroup,omitempty"`
 	// VSphereUsername is unused.
 	// +k8s:conversion-gen=false
 	VSphereUsername *string `json:"vSphereUsername,omitempty"`
@@ -895,7 +902,9 @@ type CloudConfiguration struct {
 	// +k8s:conversion-gen=false
 	VSphereCoreDNSServer *string `json:"vSphereCoreDNSServer,omitempty"`
 	// Spotinst cloud-config specs
-	SpotinstProduct     *string `json:"spotinstProduct,omitempty"`
+	// +k8s:conversion-gen=false
+	SpotinstProduct *string `json:"spotinstProduct,omitempty"`
+	// +k8s:conversion-gen=false
 	SpotinstOrientation *string `json:"spotinstOrientation,omitempty"`
 	// Openstack cloud-config options
 	// +k8s:conversion-gen=false

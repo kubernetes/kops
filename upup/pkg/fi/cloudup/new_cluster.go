@@ -542,6 +542,15 @@ func setupVPC(opt *NewClusterOptions, cluster *api.Cluster, cloud fi.Cloud) erro
 			cluster.Spec.Networking.NetworkID = *res.Subnets[0].VpcId
 		}
 
+		if featureflag.Spotinst.Enabled() {
+			if opt.SpotinstProduct != "" {
+				cluster.Spec.CloudProvider.AWS.SpotinstProduct = fi.PtrTo(opt.SpotinstProduct)
+			}
+			if opt.SpotinstOrientation != "" {
+				cluster.Spec.CloudProvider.AWS.SpotinstOrientation = fi.PtrTo(opt.SpotinstOrientation)
+			}
+		}
+
 	case api.CloudProviderGCE:
 		if cluster.Spec.CloudConfig == nil {
 			cluster.Spec.CloudConfig = &api.CloudConfiguration{}
@@ -594,18 +603,6 @@ func setupVPC(opt *NewClusterOptions, cluster *api.Cluster, cloud fi.Cloud) erro
 		// Creating an empty CloudConfig so that --cloud-config is passed to kubelet, api-server, etc.
 		if cluster.Spec.CloudConfig == nil {
 			cluster.Spec.CloudConfig = &api.CloudConfiguration{}
-		}
-	}
-
-	if featureflag.Spotinst.Enabled() {
-		if cluster.Spec.CloudConfig == nil {
-			cluster.Spec.CloudConfig = &api.CloudConfiguration{}
-		}
-		if opt.SpotinstProduct != "" {
-			cluster.Spec.CloudConfig.SpotinstProduct = fi.PtrTo(opt.SpotinstProduct)
-		}
-		if opt.SpotinstOrientation != "" {
-			cluster.Spec.CloudConfig.SpotinstOrientation = fi.PtrTo(opt.SpotinstOrientation)
 		}
 	}
 

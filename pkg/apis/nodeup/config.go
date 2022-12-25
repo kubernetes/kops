@@ -37,8 +37,6 @@ type Config struct {
 	Channels []string `json:"channels,omitempty"`
 	// ApiserverAdditionalIPs are additional IP address to put in the apiserver server cert.
 	ApiserverAdditionalIPs []string `json:",omitempty"`
-	// WarmPoolImages are the container images to pre-pull during instance pre-initialization
-	WarmPoolImages []string `json:"warmPoolImages,omitempty"`
 	// Packages specifies additional packages to be installed.
 	Packages []string `json:"packages,omitempty"`
 
@@ -78,8 +76,21 @@ type Config struct {
 	APIServerConfig *APIServerConfig `json:",omitempty"`
 	// NvidiaGPU contains the configuration for nvidia
 	NvidiaGPU *kops.NvidiaGPUConfig `json:",omitempty"`
+
+	// AWS-specific
+	// DisableSecurityGroupIngress disables the Cloud Controller Manager's creation
+	// of an AWS Security Group for each load balancer provisioned for a Service.
+	DisableSecurityGroupIngress *bool `json:"disableSecurityGroupIngress,omitempty"`
+	// ElbSecurityGroup specifies an existing AWS Security group for the Cloud Controller
+	// Manager to assign to each ELB provisioned for a Service, instead of creating
+	// one per ELB.
+	ElbSecurityGroup *string `json:"elbSecurityGroup,omitempty"`
+	// NodeIPFamilies controls the IP families reported for each node.
+	NodeIPFamilies []string `json:"nodeIPFamilies,omitempty"`
 	// UseInstanceIDForNodeName uses the instance ID instead of the hostname for the node name.
 	UseInstanceIDForNodeName bool `json:"useInstanceIDForNodeName,omitempty"`
+	// WarmPoolImages are the container images to pre-pull during instance pre-initialization
+	WarmPoolImages []string `json:"warmPoolImages,omitempty"`
 
 	// GCE-specific
 	Multizone          *bool   `json:"multizone,omitempty"`
@@ -166,9 +177,16 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 	}
 
 	if cluster.Spec.CloudProvider.AWS != nil {
-		warmPool := cluster.Spec.CloudProvider.AWS.WarmPool.ResolveDefaults(instanceGroup)
+		aws := cluster.Spec.CloudProvider.AWS
+		warmPool := aws.WarmPool.ResolveDefaults(instanceGroup)
 		if warmPool.IsEnabled() && warmPool.EnableLifecycleHook {
 			config.EnableLifecycleHook = true
+		}
+
+		if instanceGroup.IsControlPlane() {
+			config.DisableSecurityGroupIngress = aws.DisableSecurityGroupIngress
+			config.ElbSecurityGroup = aws.ElbSecurityGroup
+			config.NodeIPFamilies = aws.NodeIPFamilies
 		}
 	}
 

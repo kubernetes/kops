@@ -2094,10 +2094,10 @@ func autoConvert_v1alpha2_CloudConfiguration_To_kops_CloudConfiguration(in *Clou
 	// INFO: in.Multizone opted out of conversion generation
 	// INFO: in.NodeTags opted out of conversion generation
 	// INFO: in.NodeInstancePrefix opted out of conversion generation
-	out.NodeIPFamilies = in.NodeIPFamilies
+	// INFO: in.NodeIPFamilies opted out of conversion generation
 	// INFO: in.GCEServiceAccount opted out of conversion generation
-	out.DisableSecurityGroupIngress = in.DisableSecurityGroupIngress
-	out.ElbSecurityGroup = in.ElbSecurityGroup
+	// INFO: in.DisableSecurityGroupIngress opted out of conversion generation
+	// INFO: in.ElbSecurityGroup opted out of conversion generation
 	// INFO: in.VSphereUsername opted out of conversion generation
 	// INFO: in.VSpherePassword opted out of conversion generation
 	// INFO: in.VSphereServer opted out of conversion generation
@@ -2105,8 +2105,8 @@ func autoConvert_v1alpha2_CloudConfiguration_To_kops_CloudConfiguration(in *Clou
 	// INFO: in.VSphereResourcePool opted out of conversion generation
 	// INFO: in.VSphereDatastore opted out of conversion generation
 	// INFO: in.VSphereCoreDNSServer opted out of conversion generation
-	out.SpotinstProduct = in.SpotinstProduct
-	out.SpotinstOrientation = in.SpotinstOrientation
+	// INFO: in.SpotinstProduct opted out of conversion generation
+	// INFO: in.SpotinstOrientation opted out of conversion generation
 	// INFO: in.Openstack opted out of conversion generation
 	// INFO: in.Azure opted out of conversion generation
 	// INFO: in.AWSEBSCSIDriver opted out of conversion generation
@@ -2121,11 +2121,6 @@ func Convert_v1alpha2_CloudConfiguration_To_kops_CloudConfiguration(in *CloudCon
 
 func autoConvert_kops_CloudConfiguration_To_v1alpha2_CloudConfiguration(in *kops.CloudConfiguration, out *CloudConfiguration, s conversion.Scope) error {
 	out.ManageStorageClasses = in.ManageStorageClasses
-	out.NodeIPFamilies = in.NodeIPFamilies
-	out.DisableSecurityGroupIngress = in.DisableSecurityGroupIngress
-	out.ElbSecurityGroup = in.ElbSecurityGroup
-	out.SpotinstProduct = in.SpotinstProduct
-	out.SpotinstOrientation = in.SpotinstOrientation
 	return nil
 }
 
