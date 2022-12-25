@@ -24,6 +24,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -64,8 +65,10 @@ func TestBuildAzure(t *testing.T) {
 
 	b := &CloudConfigBuilder{
 		NodeupModelContext: &NodeupModelContext{
-			CloudProvider: kops.CloudProviderAzure,
-			Cluster:       cluster,
+			BootConfig: &nodeup.BootConfig{
+				CloudProvider: kops.CloudProviderAzure,
+			},
+			Cluster: cluster,
 		},
 	}
 	ctx := &fi.NodeupModelBuilderContext{
@@ -137,8 +140,10 @@ func TestBuildAWSCustomNodeIPFamilies(t *testing.T) {
 
 	b := &CloudConfigBuilder{
 		NodeupModelContext: &NodeupModelContext{
-			CloudProvider: kops.CloudProviderAWS,
-			Cluster:       cluster,
+			BootConfig: &nodeup.BootConfig{
+				CloudProvider: kops.CloudProviderAWS,
+			},
+			Cluster: cluster,
 		},
 	}
 	ctx := &fi.NodeupModelBuilderContext{

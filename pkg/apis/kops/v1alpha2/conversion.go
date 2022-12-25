@@ -169,6 +169,24 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 				return err
 			}
 		}
+		if in.CloudConfig.Multizone != nil {
+			if out.CloudProvider.GCE == nil {
+				return field.Forbidden(field.NewPath("spec").Child("cloudConfig", "multizone"), "multizone supports only GCE")
+			}
+			out.CloudProvider.GCE.Multizone = in.CloudConfig.Multizone
+		}
+		if in.CloudConfig.NodeTags != nil {
+			if out.CloudProvider.GCE == nil {
+				return field.Forbidden(field.NewPath("spec").Child("cloudConfig", "nodeTags"), "nodeTags supports only GCE")
+			}
+			out.CloudProvider.GCE.NodeTags = in.CloudConfig.NodeTags
+		}
+		if in.CloudConfig.NodeInstancePrefix != nil {
+			if out.CloudProvider.GCE == nil {
+				return field.Forbidden(field.NewPath("spec").Child("cloudConfig", "nodeInstancePrefix"), "nodeInstancePrefix supports only GCE")
+			}
+			out.CloudProvider.GCE.NodeInstancePrefix = in.CloudConfig.NodeInstancePrefix
+		}
 	}
 	if in.NodeTerminationHandler != nil {
 		if out.CloudProvider.AWS == nil {
@@ -348,6 +366,24 @@ func Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, out 
 	case kops.CloudProviderGCE:
 		gce := in.CloudProvider.GCE
 		out.Project = gce.Project
+		if gce.Multizone != nil {
+			if out.CloudConfig == nil {
+				out.CloudConfig = &CloudConfiguration{}
+			}
+			out.CloudConfig.Multizone = gce.Multizone
+		}
+		if gce.NodeTags != nil {
+			if out.CloudConfig == nil {
+				out.CloudConfig = &CloudConfiguration{}
+			}
+			out.CloudConfig.NodeTags = gce.NodeTags
+		}
+		if gce.NodeInstancePrefix != nil {
+			if out.CloudConfig == nil {
+				out.CloudConfig = &CloudConfiguration{}
+			}
+			out.CloudConfig.NodeInstancePrefix = gce.NodeInstancePrefix
+		}
 		if gce.ServiceAccount != "" {
 			if out.CloudConfig == nil {
 				out.CloudConfig = &CloudConfiguration{}

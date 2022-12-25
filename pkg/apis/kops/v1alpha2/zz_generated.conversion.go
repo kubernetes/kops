@@ -2091,9 +2091,9 @@ func Convert_kops_ClassicNetworkingSpec_To_v1alpha2_ClassicNetworkingSpec(in *ko
 
 func autoConvert_v1alpha2_CloudConfiguration_To_kops_CloudConfiguration(in *CloudConfiguration, out *kops.CloudConfiguration, s conversion.Scope) error {
 	out.ManageStorageClasses = in.ManageStorageClasses
-	out.Multizone = in.Multizone
-	out.NodeTags = in.NodeTags
-	out.NodeInstancePrefix = in.NodeInstancePrefix
+	// INFO: in.Multizone opted out of conversion generation
+	// INFO: in.NodeTags opted out of conversion generation
+	// INFO: in.NodeInstancePrefix opted out of conversion generation
 	out.NodeIPFamilies = in.NodeIPFamilies
 	// INFO: in.GCEServiceAccount opted out of conversion generation
 	out.DisableSecurityGroupIngress = in.DisableSecurityGroupIngress
@@ -2121,9 +2121,6 @@ func Convert_v1alpha2_CloudConfiguration_To_kops_CloudConfiguration(in *CloudCon
 
 func autoConvert_kops_CloudConfiguration_To_v1alpha2_CloudConfiguration(in *kops.CloudConfiguration, out *CloudConfiguration, s conversion.Scope) error {
 	out.ManageStorageClasses = in.ManageStorageClasses
-	out.Multizone = in.Multizone
-	out.NodeTags = in.NodeTags
-	out.NodeInstancePrefix = in.NodeInstancePrefix
 	out.NodeIPFamilies = in.NodeIPFamilies
 	out.DisableSecurityGroupIngress = in.DisableSecurityGroupIngress
 	out.ElbSecurityGroup = in.ElbSecurityGroup
