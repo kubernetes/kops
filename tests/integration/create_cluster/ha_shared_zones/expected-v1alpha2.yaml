@@ -58,7 +58,7 @@ spec:
   kubernetesApiAccess:
   - 0.0.0.0/0
   - ::/0
-  kubernetesVersion: v1.21.0
+  kubernetesVersion: v1.26.0
   masterPublicName: api.ha.example.com
   networkCIDR: 172.20.0.0/16
   networking:
@@ -93,6 +93,9 @@ metadata:
   name: control-plane-us-test-1a-1
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221206
+  instanceMetadata:
+    httpPutResponseHopLimit: 3
+    httpTokens: required
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -111,6 +114,9 @@ metadata:
   name: control-plane-us-test-1a-2
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221206
+  instanceMetadata:
+    httpPutResponseHopLimit: 3
+    httpTokens: required
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -129,6 +135,9 @@ metadata:
   name: control-plane-us-test-1a-3
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221206
+  instanceMetadata:
+    httpPutResponseHopLimit: 3
+    httpTokens: required
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -147,6 +156,9 @@ metadata:
   name: control-plane-us-test-1b-1
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221206
+  instanceMetadata:
+    httpPutResponseHopLimit: 3
+    httpTokens: required
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -165,6 +177,9 @@ metadata:
   name: control-plane-us-test-1b-2
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221206
+  instanceMetadata:
+    httpPutResponseHopLimit: 3
+    httpTokens: required
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -183,6 +198,9 @@ metadata:
   name: nodes-us-test-1a
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221206
+  instanceMetadata:
+    httpPutResponseHopLimit: 1
+    httpTokens: required
   machineType: t2.medium
   maxSize: 1
   minSize: 1
@@ -201,6 +219,9 @@ metadata:
   name: nodes-us-test-1b
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221206
+  instanceMetadata:
+    httpPutResponseHopLimit: 1
+    httpTokens: required
   machineType: t2.medium
   maxSize: 1
   minSize: 1

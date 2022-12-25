@@ -7,7 +7,7 @@ spec:
   authorization:
     alwaysAllow: {}
   cloudProvider: {}
-  kubernetesVersion: v1.21.0
+  kubernetesVersion: v1.26.0
   networking:
     topology:
       controlPlane: public

@@ -880,16 +880,14 @@ func setupControlPlane(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubne
 				g.Spec.Zones = []string{zone}
 			}
 
-			if cluster.IsKubernetesGTE("1.22") {
-				if cloudProvider == api.CloudProviderAWS {
-					g.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
-						HTTPPutResponseHopLimit: fi.PtrTo(int64(3)),
-						HTTPTokens:              fi.PtrTo("required"),
-					}
+			if cloudProvider == api.CloudProviderAWS {
+				g.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
+					HTTPPutResponseHopLimit: fi.PtrTo(int64(3)),
+					HTTPTokens:              fi.PtrTo("required"),
 				}
-				if cluster.IsKubernetesGTE("1.26") && fi.ValueOf(cluster.Spec.IAM.UseServiceAccountExternalPermissions) {
-					g.Spec.InstanceMetadata.HTTPPutResponseHopLimit = fi.PtrTo(int64(1))
-				}
+			}
+			if cluster.IsKubernetesGTE("1.26") && fi.ValueOf(cluster.Spec.IAM.UseServiceAccountExternalPermissions) {
+				g.Spec.InstanceMetadata.HTTPPutResponseHopLimit = fi.PtrTo(int64(1))
 			}
 
 			g.Spec.MachineType = opt.ControlPlaneSize
@@ -1011,12 +1009,10 @@ func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap ma
 			g.Spec.Zones = []string{zone}
 		}
 
-		if cluster.IsKubernetesGTE("1.22") {
-			if cloudProvider == api.CloudProviderAWS {
-				g.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
-					HTTPPutResponseHopLimit: fi.PtrTo(int64(1)),
-					HTTPTokens:              fi.PtrTo("required"),
-				}
+		if cloudProvider == api.CloudProviderAWS {
+			g.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
+				HTTPPutResponseHopLimit: fi.PtrTo(int64(1)),
+				HTTPTokens:              fi.PtrTo("required"),
 			}
 		}
 
@@ -1080,12 +1076,10 @@ func setupAPIServers(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetM
 			g.Spec.Zones = []string{zone}
 		}
 
-		if cluster.IsKubernetesGTE("1.22") {
-			if cloudProvider == api.CloudProviderAWS {
-				g.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
-					HTTPPutResponseHopLimit: fi.PtrTo(int64(1)),
-					HTTPTokens:              fi.PtrTo("required"),
-				}
+		if cloudProvider == api.CloudProviderAWS {
+			g.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
+				HTTPPutResponseHopLimit: fi.PtrTo(int64(1)),
+				HTTPTokens:              fi.PtrTo("required"),
 			}
 		}
 
@@ -1284,11 +1278,9 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 				bastionGroup.Spec.Zones = allZones.List()
 			}
 
-			if cluster.IsKubernetesGTE("1.22") {
-				bastionGroup.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
-					HTTPPutResponseHopLimit: fi.PtrTo(int64(1)),
-					HTTPTokens:              fi.PtrTo("required"),
-				}
+			bastionGroup.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
+				HTTPPutResponseHopLimit: fi.PtrTo(int64(1)),
+				HTTPTokens:              fi.PtrTo("required"),
 			}
 
 			bastionGroup.Spec.Image = opt.BastionImage

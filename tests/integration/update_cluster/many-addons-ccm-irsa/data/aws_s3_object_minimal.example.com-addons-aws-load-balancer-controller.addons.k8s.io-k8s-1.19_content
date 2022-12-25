@@ -857,7 +857,7 @@ metadata:
   name: aws-load-balancer-controller
   namespace: kube-system
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app.kubernetes.io/component: controller
@@ -870,16 +870,6 @@ spec:
         app.kubernetes.io/name: aws-load-balancer-controller
         kops.k8s.io/managed-by: kops
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: node-role.kubernetes.io/control-plane
-                operator: Exists
-            - matchExpressions:
-              - key: node-role.kubernetes.io/master
-                operator: Exists
       containers:
       - args:
         - --cluster-name=minimal.example.com
@@ -933,11 +923,6 @@ spec:
         fsGroup: 1337
       serviceAccountName: aws-load-balancer-controller
       terminationGracePeriodSeconds: 10
-      tolerations:
-      - key: node-role.kubernetes.io/control-plane
-        operator: Exists
-      - key: node-role.kubernetes.io/master
-        operator: Exists
       topologySpreadConstraints:
       - labelSelector:
           matchLabels:
@@ -1147,7 +1132,7 @@ spec:
 
 ---
 
-apiVersion: policy/v1beta1
+apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   creationTimestamp: null

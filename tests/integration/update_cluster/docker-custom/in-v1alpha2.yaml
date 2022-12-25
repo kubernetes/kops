@@ -28,7 +28,7 @@ spec:
   iam: {}
   kubelet:
     anonymousAuth: false
-  kubernetesVersion: v1.21.0
+  kubernetesVersion: v1.23.0
   masterPublicName: api.docker.example.com
   networkCIDR: 172.20.0.0/16
   networking:
