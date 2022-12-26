@@ -31,6 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/cmd/kops-controller/pkg/config"
 	"k8s.io/kops/pkg/apis/kops"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -40,6 +41,9 @@ import (
 // HostsReconciler populates an /etc/hosts style file in the CoreDNS config map,
 // supporting in-pod resolution of our k8s.local entries.
 type HostsReconciler struct {
+	// clusterName identifies the kOps cluster
+	clusterName string
+
 	// configMapID identifies the configmap we should update
 	configMapID types.NamespacedName
 
@@ -57,8 +61,9 @@ type HostsReconciler struct {
 }
 
 // NewHostsReconciler is the constructor for a HostsReconciler
-func NewHostsReconciler(mgr manager.Manager, configMapID types.NamespacedName) (*HostsReconciler, error) {
+func NewHostsReconciler(mgr manager.Manager, opt *config.Options, configMapID types.NamespacedName) (*HostsReconciler, error) {
 	r := &HostsReconciler{
+		clusterName: opt.ClusterName,
 		client:      mgr.GetClient(),
 		log:         ctrl.Log.WithName("controllers").WithName("Hosts"),
 		configMapID: configMapID,
@@ -102,9 +107,16 @@ func (r *HostsReconciler) updateHosts(ctx context.Context, endpointsList *corev1
 		endpoints := &endpointsList.Items[i]
 
 		hostname := endpoints.Labels[kops.DiscoveryLabelKey]
+		hostname = strings.TrimSuffix(hostname, ".")
 		if hostname == "" {
 			klog.Warningf("endpoints %s/%s found without discovery label %q; filtering is not working correctly", endpoints.Name, endpoints.Namespace, kops.DiscoveryLabelKey)
 			continue
+		}
+		suffix := ".internal." + r.clusterName
+		if !strings.HasSuffix(hostname, suffix) {
+			hostname = hostname + suffix
+		} else {
+			klog.Warningf("endpoints %s/%s found with full internal name for discovery label %q; use short name %q instead", endpoints.Name, endpoints.Namespace, kops.DiscoveryLabelKey, strings.TrimSuffix(hostname, suffix))
 		}
 
 		for j := range endpoints.Subsets {
