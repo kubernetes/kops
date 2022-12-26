@@ -68,7 +68,8 @@ func TestBuildAzure(t *testing.T) {
 			BootConfig: &nodeup.BootConfig{
 				CloudProvider: kops.CloudProviderAzure,
 			},
-			Cluster: cluster,
+			Cluster:  cluster,
+			IsMaster: true,
 		},
 	}
 	ctx := &fi.NodeupModelBuilderContext{
@@ -118,32 +119,15 @@ func TestBuildAzure(t *testing.T) {
 }
 
 func TestBuildAWSCustomNodeIPFamilies(t *testing.T) {
-	cluster := &kops.Cluster{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "testcluster.test.com",
-		},
-		Spec: kops.ClusterSpec{
-			CloudProvider: kops.CloudProviderSpec{
-				AWS: &kops.AWSSpec{},
-			},
-			CloudConfig: &kops.CloudConfiguration{
-				NodeIPFamilies: []string{"ipv6"},
-			},
-			ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
-				CloudProvider: string(kops.CloudProviderAWS),
-			},
-			Networking: kops.NetworkingSpec{
-				NonMasqueradeCIDR: "::/0",
-			},
-		},
-	}
-
 	b := &CloudConfigBuilder{
 		NodeupModelContext: &NodeupModelContext{
 			BootConfig: &nodeup.BootConfig{
 				CloudProvider: kops.CloudProviderAWS,
 			},
-			Cluster: cluster,
+			NodeupConfig: &nodeup.Config{
+				NodeIPFamilies: []string{"ipv6"},
+			},
+			IsMaster: true,
 		},
 	}
 	ctx := &fi.NodeupModelBuilderContext{

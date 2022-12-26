@@ -199,9 +199,9 @@ func (b *SpotInstanceGroupModelBuilder) buildElastigroup(c *fi.CloudupModelBuild
 	}
 
 	// Cloud config.
-	if cfg := b.Cluster.Spec.CloudConfig; cfg != nil {
-		group.Product = cfg.SpotinstProduct
-		group.Orientation = cfg.SpotinstOrientation
+	if aws := b.Cluster.Spec.CloudProvider.AWS; aws != nil {
+		group.Product = aws.SpotinstProduct
+		group.Orientation = aws.SpotinstOrientation
 	}
 
 	// Strategy.

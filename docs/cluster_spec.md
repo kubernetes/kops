@@ -1585,8 +1585,13 @@ the removal of fields no longer in use.
 | cloudConfig.azure.subscriptionId                       | cloudProvider.azure.subscriptionID                             |
 | cloudConfig.azure.tenantId                             | cloudProvider.azure.tenantID                                   |
 | cloudConfig.gcpPDCSIDriver                             | cloudProvider.gce.pdCSIDriver                                  |
+| cloudConfig.disableSecurityGroupIngress                | cloudProvider.aws.disableSecurityGroupIngress                  |
+| cloudConfig.elbSecurityGroup                           | cloudProvider.aws.elbSecurityGroup                             |
 | cloudConfig.gceServiceAccount                          | cloudProvider.gce.serviceAccount                               |
+| cloudConfig.nodeIPFamilies                             | cloudProvider.aws.nodeIPFamilies                               |
 | cloudConfig.openstack                                  | cloudProvider.openstack                                        |
+| cloudConfig.spotinstOrientation                        | cloudProvider.aws.spotinstOrientation                          |
+| cloudConfig.spotinstProduct                            | cloudProvider.aws.spotinstProduct                              |
 | cloudProvider (string)                                 | cloudProvider (map)                                            |
 | DisableSubnetTags                                      | tagSubnets (value inverted)                                    |
 | egressProxy                                            | networking.egressProxy                                         |
