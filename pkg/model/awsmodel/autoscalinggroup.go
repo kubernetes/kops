@@ -288,8 +288,6 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.CloudupMode
 
 	if ig.Spec.InstanceMetadata != nil && ig.Spec.InstanceMetadata.HTTPPutResponseHopLimit != nil {
 		lt.HTTPPutResponseHopLimit = ig.Spec.InstanceMetadata.HTTPPutResponseHopLimit
-	} else if ig.IsControlPlane() && (b.Cluster.IsKubernetesLT("1.26") || !b.UseServiceAccountExternalPermissions()) {
-		lt.HTTPPutResponseHopLimit = fi.PtrTo[int64](3)
 	}
 
 	if ig.Spec.InstanceMetadata != nil && ig.Spec.InstanceMetadata.HTTPTokens != nil {
