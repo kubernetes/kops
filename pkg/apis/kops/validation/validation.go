@@ -437,10 +437,9 @@ func validateTopology(c *kops.Cluster, topology *kops.TopologySpec, fieldPath *f
 
 	if topology.DNS != "" {
 		cloud := c.Spec.GetCloudProvider()
-		value := string(topology.DNS)
-		allErrs = append(allErrs, IsValidValue(fieldPath.Child("dns", "type"), &value, kops.SupportedDnsTypes)...)
-		if value == string(kops.DNSTypeNone) && cloud != kops.CloudProviderHetzner && cloud != kops.CloudProviderAWS && cloud != kops.CloudProviderGCE {
-			allErrs = append(allErrs, field.Invalid(fieldPath.Child("dns", "type"), &value, fmt.Sprintf("not supported for %q", c.Spec.GetCloudProvider())))
+		allErrs = append(allErrs, IsValidValue(fieldPath.Child("dns", "type"), &topology.DNS, kops.SupportedDnsTypes)...)
+		if topology.DNS == kops.DNSTypeNone && cloud != kops.CloudProviderHetzner && cloud != kops.CloudProviderAWS && cloud != kops.CloudProviderGCE {
+			allErrs = append(allErrs, field.Invalid(fieldPath.Child("dns", "type"), topology.DNS, fmt.Sprintf("not supported for %q", c.Spec.GetCloudProvider())))
 		}
 	}
 
@@ -523,11 +522,11 @@ func validateSubnet(subnet *kops.ClusterSubnetSpec, c *kops.ClusterSpec, fieldPa
 		}
 	}
 
-	allErrs = append(allErrs, IsValidValue(fieldPath.Child("type"), fi.PtrTo(string(subnet.Type)), []string{
-		string(kops.SubnetTypePublic),
-		string(kops.SubnetTypePrivate),
-		string(kops.SubnetTypeDualStack),
-		string(kops.SubnetTypeUtility),
+	allErrs = append(allErrs, IsValidValue(fieldPath.Child("type"), &subnet.Type, []kops.SubnetType{
+		kops.SubnetTypePublic,
+		kops.SubnetTypePrivate,
+		kops.SubnetTypeDualStack,
+		kops.SubnetTypeUtility,
 	})...)
 
 	if subnet.Type == kops.SubnetTypeDualStack && !c.IsIPv6Only() {
@@ -1047,8 +1046,7 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("encryptionType"), "encryptionType requires enableEncryption"))
 		}
 
-		encryptionType := string(v.EncryptionType)
-		allErrs = append(allErrs, IsValidValue(fldPath.Child("encryptionType"), &encryptionType, []string{"ipsec", "wireguard"})...)
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("encryptionType"), &v.EncryptionType, []kops.CiliumEncryptionType{kops.CiliumEncryptionTypeIPSec, kops.CiliumEncryptionTypeWireguard})...)
 
 		if v.EncryptionType == "wireguard" {
 			// Cilium with Wireguard integration follow-up --> https://github.com/cilium/cilium/issues/15462.
@@ -1131,8 +1129,7 @@ func validateAdditionalPolicy(role string, policy string, fldPath *field.Path) f
 		if statement.Effect == "" {
 			allErrs = append(allErrs, field.Required(fldEffect, "Effect must be specified for IAM policy"))
 		} else {
-			value := string(statement.Effect)
-			allErrs = append(allErrs, IsValidValue(fldEffect, &value, []string{"Allow", "Deny"})...)
+			allErrs = append(allErrs, IsValidValue(fldEffect, &statement.Effect, []iam.StatementEffect{iam.StatementEffectAllow, iam.StatementEffectDeny})...)
 		}
 	}
 
@@ -1165,8 +1162,7 @@ func validateEtcdClusterSpec(spec kops.EtcdClusterSpec, c *kops.Cluster, fieldPa
 	allErrs = append(allErrs, IsValidValue(fieldPath.Child("name"), &spec.Name, []string{"cilium", "main", "events"})...)
 
 	if spec.Provider != "" {
-		value := string(spec.Provider)
-		allErrs = append(allErrs, IsValidValue(fieldPath.Child("provider"), &value, []string{string(kops.EtcdProviderTypeManager)})...)
+		allErrs = append(allErrs, IsValidValue(fieldPath.Child("provider"), &spec.Provider, []kops.EtcdProviderType{kops.EtcdProviderTypeManager})...)
 	}
 	if len(spec.Members) == 0 {
 		allErrs = append(allErrs, field.Required(fieldPath.Child("etcdMembers"), "No members defined in etcd cluster"))
@@ -1654,7 +1650,7 @@ func validateClusterAutoscaler(cluster *kops.Cluster, spec *kops.ClusterAutoscal
 }
 
 func validateExternalDNS(cluster *kops.Cluster, spec *kops.ExternalDNSConfig, fldPath *field.Path) (allErrs field.ErrorList) {
-	allErrs = append(allErrs, IsValidValue(fldPath.Child("provider"), (*string)(&spec.Provider), []string{"", "dns-controller", "external-dns", "none"})...)
+	allErrs = append(allErrs, IsValidValue(fldPath.Child("provider"), &spec.Provider, []kops.ExternalDNSProvider{"", kops.ExternalDNSProviderDNSController, kops.ExternalDNSProviderExternalDNS, kops.ExternalDNSProviderNone})...)
 
 	if spec.WatchNamespace != "" {
 		if spec.WatchNamespace != "kube-system" {
