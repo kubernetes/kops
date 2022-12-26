@@ -40,7 +40,7 @@ spec:
   subnets:
   - name: us-test1
     region: us-test1
-    type: Public
+    type: Private
   topology:
     dns:
       type: Private
