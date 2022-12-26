@@ -1055,32 +1055,24 @@ func (in *ClusterSpec) DeepCopyInto(out *ClusterSpec) {
 	}
 	if in.ExternalPolicies != nil {
 		in, out := &in.ExternalPolicies, &out.ExternalPolicies
-		*out = new(map[string][]string)
-		if **in != nil {
-			in, out := *in, *out
-			*out = make(map[string][]string, len(*in))
-			for key, val := range *in {
-				var outVal []string
-				if val == nil {
-					(*out)[key] = nil
-				} else {
-					in, out := &val, &outVal
-					*out = make([]string, len(*in))
-					copy(*out, *in)
-				}
-				(*out)[key] = outVal
+		*out = make(map[string][]string, len(*in))
+		for key, val := range *in {
+			var outVal []string
+			if val == nil {
+				(*out)[key] = nil
+			} else {
+				in, out := &val, &outVal
+				*out = make([]string, len(*in))
+				copy(*out, *in)
 			}
+			(*out)[key] = outVal
 		}
 	}
 	if in.AdditionalPolicies != nil {
 		in, out := &in.AdditionalPolicies, &out.AdditionalPolicies
-		*out = new(map[string]string)
-		if **in != nil {
-			in, out := *in, *out
-			*out = make(map[string]string, len(*in))
-			for key, val := range *in {
-				(*out)[key] = val
-			}
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
 		}
 	}
 	if in.FileAssets != nil {
@@ -5293,24 +5285,16 @@ func (in *TerraformSpec) DeepCopyInto(out *TerraformSpec) {
 	*out = *in
 	if in.ProviderExtraConfig != nil {
 		in, out := &in.ProviderExtraConfig, &out.ProviderExtraConfig
-		*out = new(map[string]string)
-		if **in != nil {
-			in, out := *in, *out
-			*out = make(map[string]string, len(*in))
-			for key, val := range *in {
-				(*out)[key] = val
-			}
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
 		}
 	}
 	if in.FilesProviderExtraConfig != nil {
 		in, out := &in.FilesProviderExtraConfig, &out.FilesProviderExtraConfig
-		*out = new(map[string]string)
-		if **in != nil {
-			in, out := *in, *out
-			*out = make(map[string]string, len(*in))
-			for key, val := range *in {
-				(*out)[key] = val
-			}
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
 		}
 	}
 	return

@@ -324,12 +324,11 @@ func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, c *fi.
 				var externalPolicies []string
 
 				if b.Cluster.Spec.ExternalPolicies != nil {
-					p := *(b.Cluster.Spec.ExternalPolicies)
 					key := roleKey
 					if key == "master" {
 						key = "control-plane"
 					}
-					externalPolicies = append(externalPolicies, p[key]...)
+					externalPolicies = append(externalPolicies, b.Cluster.Spec.ExternalPolicies[key]...)
 				}
 				sort.Strings(externalPolicies)
 
@@ -349,9 +348,7 @@ func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, c *fi.
 			{
 				additionalPolicy := ""
 				if b.Cluster.Spec.AdditionalPolicies != nil {
-					additionalPolicies := *(b.Cluster.Spec.AdditionalPolicies)
-
-					additionalPolicy = additionalPolicies[roleKey]
+					additionalPolicy = b.Cluster.Spec.AdditionalPolicies[roleKey]
 				}
 
 				additionalPolicyName := "additional." + iamName
