@@ -33,7 +33,7 @@ func isValidAPIServersURL(s string) bool {
 	return true
 }
 
-func IsValidValue(fldPath *field.Path, v *string, validValues []string) field.ErrorList {
+func IsValidValue[T ~string](fldPath *field.Path, v *T, validValues []T) field.ErrorList {
 	allErrs := field.ErrorList{}
 	if v != nil {
 		found := false
@@ -44,7 +44,11 @@ func IsValidValue(fldPath *field.Path, v *string, validValues []string) field.Er
 			}
 		}
 		if !found {
-			allErrs = append(allErrs, field.NotSupported(fldPath, *v, validValues))
+			var valid []string
+			for _, v := range validValues {
+				valid = append(valid, string(v))
+			}
+			allErrs = append(allErrs, field.NotSupported(fldPath, *v, valid))
 		}
 	}
 	return allErrs
