@@ -67,6 +67,7 @@ func NewLogDumper(clusterName string, sshConfig *ssh.ClientConfig, keyRing agent
 		"protokube",
 	}
 	d.files = []string{
+		"kops-controller",
 		"kube-apiserver",
 		"kube-scheduler",
 		"rescheduler",
