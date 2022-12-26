@@ -76,24 +76,23 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 		return err
 	}
 	if in.AdditionalPolicies != nil {
-		policies := make(map[string]string, len(*in.AdditionalPolicies))
-		for k, v := range *in.AdditionalPolicies {
+		out.AdditionalPolicies = make(map[string]string, len(in.AdditionalPolicies))
+		for k, v := range in.AdditionalPolicies {
 			if k == "master" {
 				k = "control-plane"
 			}
-			policies[k] = v
+			out.AdditionalPolicies[k] = v
 		}
-		out.AdditionalPolicies = &policies
 	}
 	if in.ExternalPolicies != nil {
-		policies := make(map[string][]string, len(*in.ExternalPolicies))
-		for k, v := range *in.ExternalPolicies {
+		policies := make(map[string][]string, len(in.ExternalPolicies))
+		for k, v := range in.ExternalPolicies {
 			if k == "master" {
 				k = "control-plane"
 			}
 			policies[k] = v
 		}
-		out.ExternalPolicies = &policies
+		out.ExternalPolicies = policies
 	}
 	if in.LegacyNetworking != nil {
 		if err := autoConvert_v1alpha2_NetworkingSpec_To_kops_NetworkingSpec(in.LegacyNetworking, &out.Networking, s); err != nil {
@@ -317,24 +316,22 @@ func Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, out 
 		return err
 	}
 	if in.AdditionalPolicies != nil {
-		policies := make(map[string]string, len(*in.AdditionalPolicies))
-		for k, v := range *in.AdditionalPolicies {
+		out.AdditionalPolicies = make(map[string]string, len(in.AdditionalPolicies))
+		for k, v := range in.AdditionalPolicies {
 			if k == "control-plane" {
 				k = "master"
 			}
-			policies[k] = v
+			out.AdditionalPolicies[k] = v
 		}
-		out.AdditionalPolicies = &policies
 	}
 	if in.ExternalPolicies != nil {
-		policies := make(map[string][]string, len(*in.ExternalPolicies))
-		for k, v := range *in.ExternalPolicies {
+		out.ExternalPolicies = make(map[string][]string, len(in.ExternalPolicies))
+		for k, v := range in.ExternalPolicies {
 			if k == "control-plane" {
 				k = "master"
 			}
-			policies[k] = v
+			out.ExternalPolicies[k] = v
 		}
-		out.ExternalPolicies = &policies
 	}
 	out.LegacyNetworking = &NetworkingSpec{}
 	if err := autoConvert_kops_NetworkingSpec_To_v1alpha2_NetworkingSpec(&in.Networking, out.LegacyNetworking, s); err != nil {
