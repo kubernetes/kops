@@ -472,9 +472,9 @@ type AccessLogSpec struct {
 	BucketPrefix *string `json:"bucketPrefix,omitempty"`
 }
 
-var SupportedLoadBalancerClasses = []string{
-	string(LoadBalancerClassClassic),
-	string(LoadBalancerClassNetwork),
+var SupportedLoadBalancerClasses = []LoadBalancerClass{
+	LoadBalancerClassClassic,
+	LoadBalancerClassNetwork,
 }
 
 // LoadBalancerSubnetSpec provides configuration for subnets used for a load balancer
