@@ -50,8 +50,6 @@ func (t *templateFunctions) GossipServices() ([]*corev1.Service, error) {
 		return nil, nil
 	}
 
-	suffix := t.Cluster.Name
-
 	var services []*corev1.Service
 
 	// api service
@@ -64,7 +62,7 @@ func (t *templateFunctions) GossipServices() ([]*corev1.Service, error) {
 			"k8s-app": "kops-controller",
 		}
 		service.Labels = map[string]string{
-			kops.DiscoveryLabelKey: "api.internal." + suffix,
+			kops.DiscoveryLabelKey: "api",
 		}
 		services = append(services, service)
 	}
@@ -79,7 +77,7 @@ func (t *templateFunctions) GossipServices() ([]*corev1.Service, error) {
 			"k8s-app": "kops-controller",
 		}
 		service.Labels = map[string]string{
-			kops.DiscoveryLabelKey: "kops-controller.internal." + suffix,
+			kops.DiscoveryLabelKey: "kops-controller",
 		}
 		services = append(services, service)
 	}
@@ -97,7 +95,7 @@ func (t *templateFunctions) GossipServices() ([]*corev1.Service, error) {
 				{Name: "https", Port: int32(ports.ClientPort), Protocol: corev1.ProtocolTCP},
 			}
 			service.Labels = map[string]string{
-				kops.DiscoveryLabelKey: etcdCluster.Name + ".etcd." + suffix,
+				kops.DiscoveryLabelKey: etcdCluster.Name + ".etcd",
 			}
 			service.Spec.Selector = etcdmanager.SelectorForCluster(etcdCluster)
 			services = append(services, service)
