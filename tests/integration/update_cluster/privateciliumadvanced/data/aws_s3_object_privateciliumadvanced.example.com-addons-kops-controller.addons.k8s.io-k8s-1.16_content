@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
   config.yaml: |
-    {"cloud":"aws","configBase":"memfs://clusters.example.com/privateciliumadvanced.example.com","server":{"Listen":":3988","provider":{"aws":{"nodesRoles":["nodes.privateciliumadvanced.example.com"],"Region":"us-test-1"}},"serverKeyPath":"/etc/kubernetes/kops-controller/pki/kops-controller.key","serverCertificatePath":"/etc/kubernetes/kops-controller/pki/kops-controller.crt","caBasePath":"/etc/kubernetes/kops-controller/pki","signingCAs":["kubernetes-ca","etcd-clients-ca-cilium"],"certNames":["kubelet","kubelet-server","etcd-client-cilium"]}}
+    {"clusterName":"privateciliumadvanced.example.com","cloud":"aws","configBase":"memfs://clusters.example.com/privateciliumadvanced.example.com","server":{"Listen":":3988","provider":{"aws":{"nodesRoles":["nodes.privateciliumadvanced.example.com"],"Region":"us-test-1"}},"serverKeyPath":"/etc/kubernetes/kops-controller/pki/kops-controller.key","serverCertificatePath":"/etc/kubernetes/kops-controller/pki/kops-controller.crt","caBasePath":"/etc/kubernetes/kops-controller/pki","signingCAs":["kubernetes-ca","etcd-clients-ca-cilium"],"certNames":["kubelet","kubelet-server","etcd-client-cilium"]}}
 kind: ConfigMap
 metadata:
   creationTimestamp: null

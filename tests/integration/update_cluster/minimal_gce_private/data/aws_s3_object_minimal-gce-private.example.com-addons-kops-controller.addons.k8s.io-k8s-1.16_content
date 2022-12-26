@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
   config.yaml: |
-    {"cloud":"gce","configBase":"memfs://tests/minimal-gce-private.example.com"}
+    {"clusterName":"minimal-gce-private.example.com","cloud":"gce","configBase":"memfs://tests/minimal-gce-private.example.com"}
 kind: ConfigMap
 metadata:
   creationTimestamp: null

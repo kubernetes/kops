@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
   config.yaml: |
-    {"cloud":"hetzner","configBase":"memfs://tests/minimal.k8s.local","discovery":{"enabled":true}}
+    {"clusterName":"minimal.k8s.local","cloud":"hetzner","configBase":"memfs://tests/minimal.k8s.local","discovery":{"enabled":true}}
 kind: ConfigMap
 metadata:
   creationTimestamp: null
@@ -251,7 +251,7 @@ metadata:
   labels:
     addon.kops.k8s.io/name: kops-controller.addons.k8s.io
     app.kubernetes.io/managed-by: kops
-    discovery.kops.k8s.io/internal-name: api.internal.minimal.k8s.local
+    discovery.kops.k8s.io/internal-name: api
     k8s-addon: kops-controller.addons.k8s.io
   name: api-internal
   namespace: kube-system
@@ -275,7 +275,7 @@ metadata:
   labels:
     addon.kops.k8s.io/name: kops-controller.addons.k8s.io
     app.kubernetes.io/managed-by: kops
-    discovery.kops.k8s.io/internal-name: kops-controller.internal.minimal.k8s.local
+    discovery.kops.k8s.io/internal-name: kops-controller
     k8s-addon: kops-controller.addons.k8s.io
   name: kops-controller-internal
   namespace: kube-system
