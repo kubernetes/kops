@@ -279,6 +279,9 @@ containerdConfig:
 etcdManifests:
 - memfs://clusters.example.com/minimal-ipv6.example.com/manifests/etcd/main-master-us-test-1a.yaml
 - memfs://clusters.example.com/minimal-ipv6.example.com/manifests/etcd/events-master-us-test-1a.yaml
+nodeIPFamilies:
+- ipv6
+- ipv4
 staticManifests:
 - key: kube-apiserver-healthcheck
   path: manifests/static/kube-apiserver-healthcheck.yaml

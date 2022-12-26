@@ -27,6 +27,12 @@ spec:
   cloudConfig:
     awsEBSCSIDriver:
       volumeAttachLimit: 65
+    disableSecurityGroupIngress: true
+    elbSecurityGroup: sg-elb
+    nodeIPFamilies:
+    - ipv6
+    spotinstOrientation: spot-orientation
+    spotinstProduct: spot-product
   cloudProvider: aws
   configBase: memfs://clusters.example.com/minimal.example.com
   egressProxy:

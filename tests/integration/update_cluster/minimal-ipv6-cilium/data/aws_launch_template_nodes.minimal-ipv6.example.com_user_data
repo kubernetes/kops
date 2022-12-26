@@ -125,9 +125,6 @@ ensure-install-dir
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   manageStorageClasses: true
-  nodeIPFamilies:
-  - ipv6
-  - ipv4
 containerRuntime: containerd
 containerd:
   logLevel: info

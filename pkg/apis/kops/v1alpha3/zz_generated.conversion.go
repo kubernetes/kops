@@ -1453,6 +1453,11 @@ func autoConvert_v1alpha3_AWSSpec_To_kops_AWSSpec(in *AWSSpec, out *kops.AWSSpec
 	} else {
 		out.WarmPool = nil
 	}
+	out.NodeIPFamilies = in.NodeIPFamilies
+	out.DisableSecurityGroupIngress = in.DisableSecurityGroupIngress
+	out.ElbSecurityGroup = in.ElbSecurityGroup
+	out.SpotinstProduct = in.SpotinstProduct
+	out.SpotinstOrientation = in.SpotinstOrientation
 	return nil
 }
 
@@ -1507,6 +1512,11 @@ func autoConvert_kops_AWSSpec_To_v1alpha3_AWSSpec(in *kops.AWSSpec, out *AWSSpec
 	} else {
 		out.WarmPool = nil
 	}
+	out.NodeIPFamilies = in.NodeIPFamilies
+	out.DisableSecurityGroupIngress = in.DisableSecurityGroupIngress
+	out.ElbSecurityGroup = in.ElbSecurityGroup
+	out.SpotinstProduct = in.SpotinstProduct
+	out.SpotinstOrientation = in.SpotinstOrientation
 	return nil
 }
 
@@ -2155,11 +2165,6 @@ func Convert_kops_CiliumNetworkingSpec_To_v1alpha3_CiliumNetworkingSpec(in *kops
 
 func autoConvert_v1alpha3_CloudConfiguration_To_kops_CloudConfiguration(in *CloudConfiguration, out *kops.CloudConfiguration, s conversion.Scope) error {
 	out.ManageStorageClasses = in.ManageStorageClasses
-	out.NodeIPFamilies = in.NodeIPFamilies
-	out.DisableSecurityGroupIngress = in.DisableSecurityGroupIngress
-	out.ElbSecurityGroup = in.ElbSecurityGroup
-	out.SpotinstProduct = in.SpotinstProduct
-	out.SpotinstOrientation = in.SpotinstOrientation
 	return nil
 }
 
@@ -2170,11 +2175,6 @@ func Convert_v1alpha3_CloudConfiguration_To_kops_CloudConfiguration(in *CloudCon
 
 func autoConvert_kops_CloudConfiguration_To_v1alpha3_CloudConfiguration(in *kops.CloudConfiguration, out *CloudConfiguration, s conversion.Scope) error {
 	out.ManageStorageClasses = in.ManageStorageClasses
-	out.NodeIPFamilies = in.NodeIPFamilies
-	out.DisableSecurityGroupIngress = in.DisableSecurityGroupIngress
-	out.ElbSecurityGroup = in.ElbSecurityGroup
-	out.SpotinstProduct = in.SpotinstProduct
-	out.SpotinstOrientation = in.SpotinstOrientation
 	return nil
 }
 
