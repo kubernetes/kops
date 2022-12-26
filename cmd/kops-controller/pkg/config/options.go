@@ -23,6 +23,7 @@ import (
 )
 
 type Options struct {
+	ClusterName           string         `json:"clusterName,omitempty"`
 	Cloud                 string         `json:"cloud,omitempty"`
 	ConfigBase            string         `json:"configBase,omitempty"`
 	SecretStore           string         `json:"secretStore,omitempty"`
