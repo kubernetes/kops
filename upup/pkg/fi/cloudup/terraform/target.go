@@ -78,9 +78,8 @@ func (t *TerraformTarget) DefaultCheckExisting() bool {
 // tfGetProviderExtraConfig is a helper function to get extra config with safety checks on the pointers.
 func tfGetProviderExtraConfig(c *kops.TargetSpec) map[string]string {
 	if c != nil &&
-		c.Terraform != nil &&
-		c.Terraform.FilesProviderExtraConfig != nil {
-		return *c.Terraform.ProviderExtraConfig
+		c.Terraform != nil {
+		return c.Terraform.ProviderExtraConfig
 	}
 	return nil
 }
@@ -88,9 +87,8 @@ func tfGetProviderExtraConfig(c *kops.TargetSpec) map[string]string {
 // tfGetFilesProviderExtraConfig is a helper function to get extra config with safety checks on the pointers.
 func tfGetFilesProviderExtraConfig(c *kops.TargetSpec) map[string]string {
 	if c != nil &&
-		c.Terraform != nil &&
-		c.Terraform.FilesProviderExtraConfig != nil {
-		return *c.Terraform.FilesProviderExtraConfig
+		c.Terraform != nil {
+		return c.Terraform.FilesProviderExtraConfig
 	}
 	return nil
 }

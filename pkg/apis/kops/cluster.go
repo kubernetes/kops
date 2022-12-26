@@ -97,9 +97,9 @@ type ClusterSpec struct {
 	//   'external': do not apply updates automatically; they are applied manually or by an external system
 	UpdatePolicy *string `json:"updatePolicy,omitempty"`
 	// ExternalPolicies allows the insertion of pre-existing managed policies on IG Roles
-	ExternalPolicies *map[string][]string `json:"externalPolicies,omitempty"`
+	ExternalPolicies map[string][]string `json:"externalPolicies,omitempty"`
 	// Additional policies to add for roles
-	AdditionalPolicies *map[string]string `json:"additionalPolicies,omitempty"`
+	AdditionalPolicies map[string]string `json:"additionalPolicies,omitempty"`
 	// A collection of files assets for deployed cluster wide
 	FileAssets []FileAssetSpec `json:"fileAssets,omitempty"`
 	// EtcdClusters stores the configuration for each cluster
@@ -757,13 +757,13 @@ func (t *TargetSpec) IsEmpty() bool {
 // TerraformSpec allows us to specify terraform config in an extensible way
 type TerraformSpec struct {
 	// ProviderExtraConfig contains key/value pairs to add to the main terraform provider block
-	ProviderExtraConfig *map[string]string `json:"providerExtraConfig,omitempty"`
+	ProviderExtraConfig map[string]string `json:"providerExtraConfig,omitempty"`
 	// FilesProviderExtraConfig contains key/value pairs to add to the terraform provider block used for managed files
-	FilesProviderExtraConfig *map[string]string `json:"filesProviderExtraConfig,omitempty"`
+	FilesProviderExtraConfig map[string]string `json:"filesProviderExtraConfig,omitempty"`
 }
 
 func (t *TerraformSpec) IsEmpty() bool {
-	return t.ProviderExtraConfig == nil
+	return len(t.ProviderExtraConfig) == 0 && len(t.FilesProviderExtraConfig) == 0
 }
 
 // FillDefaults populates default values.
