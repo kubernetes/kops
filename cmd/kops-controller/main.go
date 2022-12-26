@@ -278,7 +278,7 @@ func addGossipController(mgr manager.Manager, opt *config.Options) error {
 		Name:      "coredns",
 	}
 
-	controller, err := controllers.NewHostsReconciler(mgr, configMapID)
+	controller, err := controllers.NewHostsReconciler(mgr, opt, configMapID)
 	if err != nil {
 		return err
 	}
