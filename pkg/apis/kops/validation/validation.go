@@ -189,16 +189,12 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 	}
 
 	// IAM additional policies
-	if spec.AdditionalPolicies != nil {
-		for k, v := range *spec.AdditionalPolicies {
-			allErrs = append(allErrs, validateAdditionalPolicy(k, v, fieldPath.Child("additionalPolicies"))...)
-		}
+	for k, v := range spec.AdditionalPolicies {
+		allErrs = append(allErrs, validateAdditionalPolicy(k, v, fieldPath.Child("additionalPolicies"))...)
 	}
 	// IAM external policies
-	if spec.ExternalPolicies != nil {
-		for k, v := range *spec.ExternalPolicies {
-			allErrs = append(allErrs, validateExternalPolicies(k, v, fieldPath.Child("externalPolicies"))...)
-		}
+	for k, v := range spec.ExternalPolicies {
+		allErrs = append(allErrs, validateExternalPolicies(k, v, fieldPath.Child("externalPolicies"))...)
 	}
 
 	// EtcdClusters

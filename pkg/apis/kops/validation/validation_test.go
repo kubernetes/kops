@@ -435,7 +435,7 @@ func Test_Validate_AdditionalPolicies(t *testing.T) {
 	for _, g := range grid {
 		clusterSpec := &kops.ClusterSpec{
 			KubernetesVersion:  "1.17.0",
-			AdditionalPolicies: &g.Input,
+			AdditionalPolicies: g.Input,
 			Networking: kops.NetworkingSpec{
 				Subnets: []kops.ClusterSubnetSpec{
 					{Name: "subnet1", Type: kops.SubnetTypePublic},
