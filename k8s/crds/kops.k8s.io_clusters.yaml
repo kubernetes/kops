@@ -382,9 +382,15 @@ spec:
                     - tenantId
                     type: object
                   disableSecurityGroupIngress:
-                    description: AWS cloud-config options
+                    description: DisableSecurityGroupIngress disables the Cloud Controller
+                      Manager's creation of an AWS Security Group for each load balancer
+                      provisioned for a Service (AWS only).
                     type: boolean
                   elbSecurityGroup:
+                    description: ElbSecurityGroup specifies an existing AWS Security
+                      group for the Cloud Controller Manager to assign to each ELB
+                      provisioned for a Service, instead of creating one per ELB (AWS
+                      only).
                     type: string
                   gceServiceAccount:
                     description: GCEServiceAccount specifies the service account with

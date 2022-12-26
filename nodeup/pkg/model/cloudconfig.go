@@ -73,6 +73,10 @@ type CloudConfigBuilder struct {
 var _ fi.NodeupModelBuilder = &CloudConfigBuilder{}
 
 func (b *CloudConfigBuilder) Build(c *fi.NodeupModelBuilderContext) error {
+	if !b.IsMaster {
+		return nil
+	}
+
 	if err := b.build(c, true); err != nil {
 		return err
 	}
@@ -87,11 +91,6 @@ func (b *CloudConfigBuilder) build(c *fi.NodeupModelBuilderContext, inTree bool)
 	var lines []string
 
 	cloudProvider := b.BootConfig.CloudProvider
-	cloudConfig := b.Cluster.Spec.CloudConfig
-
-	if cloudConfig == nil {
-		cloudConfig = &kops.CloudConfiguration{}
-	}
 
 	var config string
 	requireGlobal := true
@@ -107,14 +106,14 @@ func (b *CloudConfigBuilder) build(c *fi.NodeupModelBuilderContext, inTree bool)
 			lines = append(lines, fmt.Sprintf("multizone = %t", *b.NodeupConfig.Multizone))
 		}
 	case kops.CloudProviderAWS:
-		if cloudConfig.DisableSecurityGroupIngress != nil {
-			lines = append(lines, fmt.Sprintf("DisableSecurityGroupIngress = %t", *cloudConfig.DisableSecurityGroupIngress))
+		if b.NodeupConfig.DisableSecurityGroupIngress != nil {
+			lines = append(lines, fmt.Sprintf("DisableSecurityGroupIngress = %t", *b.NodeupConfig.DisableSecurityGroupIngress))
 		}
-		if cloudConfig.ElbSecurityGroup != nil {
-			lines = append(lines, "ElbSecurityGroup = "+*cloudConfig.ElbSecurityGroup)
+		if b.NodeupConfig.ElbSecurityGroup != nil {
+			lines = append(lines, "ElbSecurityGroup = "+*b.NodeupConfig.ElbSecurityGroup)
 		}
 		if !inTree {
-			for _, family := range cloudConfig.NodeIPFamilies {
+			for _, family := range b.NodeupConfig.NodeIPFamilies {
 				lines = append(lines, "NodeIPFamilies = "+family)
 			}
 		}
