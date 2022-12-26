@@ -36,10 +36,21 @@ func awsValidateCluster(c *kops.Cluster) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	if c.Spec.API.LoadBalancer != nil {
-		allErrs = append(allErrs, awsValidateAdditionalSecurityGroups(field.NewPath("spec", "api", "loadBalancer", "additionalSecurityGroups"), c.Spec.API.LoadBalancer.AdditionalSecurityGroups)...)
-		allErrs = append(allErrs, awsValidateSSLPolicy(field.NewPath("spec", "api", "loadBalancer", "sslPolicy"), c.Spec.API.LoadBalancer)...)
-		allErrs = append(allErrs, awsValidateLoadBalancerSubnets(field.NewPath("spec", "api", "loadBalancer", "subnets"), c.Spec)...)
-		allErrs = append(allErrs, awsValidateTopologyDNS(field.NewPath("spec", "api", "loadBalancer", "type"), c)...)
+		lbPath := field.NewPath("spec", "api", "loadBalancer")
+		lbSpec := c.Spec.API.LoadBalancer
+		value := string(lbSpec.Class)
+		allErrs = append(allErrs, IsValidValue(lbPath.Child("class"), &value, kops.SupportedLoadBalancerClasses)...)
+		allErrs = append(allErrs, awsValidateTopologyDNS(lbPath.Child("type"), c)...)
+		allErrs = append(allErrs, awsValidateSecurityGroupOverride(lbPath.Child("securityGroupOverride"), lbSpec)...)
+		allErrs = append(allErrs, awsValidateAdditionalSecurityGroups(lbPath.Child("additionalSecurityGroups"), lbSpec.AdditionalSecurityGroups)...)
+		if lbSpec.Class == kops.LoadBalancerClassNetwork && lbSpec.UseForInternalAPI && lbSpec.Type == kops.LoadBalancerTypeInternal {
+			allErrs = append(allErrs, field.Forbidden(lbPath.Child("useForInternalAPI"), "useForInternalAPI cannot be used with internal NLB due lack of hairpinning support"))
+		}
+		if lbSpec.SSLCertificate != "" && lbSpec.Class != kops.LoadBalancerClassNetwork {
+			allErrs = append(allErrs, field.Forbidden(lbPath.Child("sslCertificate"), "sslCertificate requires a network load balancer. See https://github.com/kubernetes/kops/blob/master/permalinks/acm_nlb.md"))
+		}
+		allErrs = append(allErrs, awsValidateSSLPolicy(lbPath.Child("sslPolicy"), lbSpec)...)
+		allErrs = append(allErrs, awsValidateLoadBalancerSubnets(lbPath.Child("subnets"), c.Spec)...)
 	}
 
 	allErrs = append(allErrs, awsValidateExternalCloudControllerManager(c)...)
@@ -152,6 +163,27 @@ func awsValidateAdditionalSecurityGroups(fieldPath *field.Path, groups []string)
 		if !strings.HasPrefix(s, "sg-") {
 			allErrs = append(allErrs, field.Invalid(fieldPath.Index(i), s, "security group does not match the expected AWS format"))
 		}
+	}
+
+	return allErrs
+}
+
+func awsValidateSecurityGroupOverride(fieldPath *field.Path, lbSpec *kops.LoadBalancerAccessSpec) field.ErrorList {
+	if lbSpec.SecurityGroupOverride == nil {
+		return nil
+	}
+
+	allErrs := field.ErrorList{}
+
+	override := *lbSpec.SecurityGroupOverride
+	if strings.TrimSpace(override) == "" {
+		return append(allErrs, field.Invalid(fieldPath, override, "security group override cannot be empty, if specified"))
+	}
+	if !strings.HasPrefix(override, "sg-") {
+		allErrs = append(allErrs, field.Invalid(fieldPath, override, "security group override does not match the expected AWS format"))
+	}
+	if lbSpec.Class == kops.LoadBalancerClassNetwork {
+		allErrs = append(allErrs, field.Forbidden(fieldPath, "security group override cannot be specified for a Network Load Balancer"))
 	}
 
 	return allErrs
