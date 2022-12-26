@@ -183,7 +183,7 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 			config.EnableLifecycleHook = true
 		}
 
-		if instanceGroup.IsControlPlane() {
+		if instanceGroup.HasAPIServer() {
 			config.DisableSecurityGroupIngress = aws.DisableSecurityGroupIngress
 			config.ElbSecurityGroup = aws.ElbSecurityGroup
 			config.NodeIPFamilies = aws.NodeIPFamilies
