@@ -181,7 +181,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.CloudupMode
 		Lifecycle:                    b.Lifecycle,
 		CPUCredits:                   fi.PtrTo(fi.ValueOf(ig.Spec.CPUCredits)),
 		HTTPPutResponseHopLimit:      fi.PtrTo(int64(1)),
-		HTTPTokens:                   fi.PtrTo(ec2.LaunchTemplateHttpTokensStateOptional),
+		HTTPTokens:                   fi.PtrTo(ec2.LaunchTemplateHttpTokensStateRequired),
 		HTTPProtocolIPv6:             fi.PtrTo(ec2.LaunchTemplateInstanceMetadataProtocolIpv6Disabled),
 		IAMInstanceProfile:           link,
 		ImageID:                      fi.PtrTo(ig.Spec.Image),
@@ -281,10 +281,14 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.CloudupMode
 
 	if ig.Spec.InstanceMetadata != nil && ig.Spec.InstanceMetadata.HTTPPutResponseHopLimit != nil {
 		lt.HTTPPutResponseHopLimit = ig.Spec.InstanceMetadata.HTTPPutResponseHopLimit
+	} else if ig.IsControlPlane() && (b.Cluster.IsKubernetesLT("1.26") || !b.UseServiceAccountExternalPermissions()) {
+		lt.HTTPPutResponseHopLimit = fi.PtrTo[int64](3)
 	}
 
 	if ig.Spec.InstanceMetadata != nil && ig.Spec.InstanceMetadata.HTTPTokens != nil {
 		lt.HTTPTokens = ig.Spec.InstanceMetadata.HTTPTokens
+	} else if b.IsKubernetesLT("1.27") {
+		lt.HTTPTokens = fi.PtrTo(ec2.LaunchTemplateHttpTokensStateOptional)
 	}
 
 	if rootVolumeType == ec2.VolumeTypeIo1 || rootVolumeType == ec2.VolumeTypeIo2 {
