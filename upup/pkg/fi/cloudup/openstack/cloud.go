@@ -717,32 +717,35 @@ func getApiIngressStatus(c OpenstackCloud, cluster *kops.Cluster) ([]fi.ApiIngre
 
 func getLoadBalancerIngressStatus(c OpenstackCloud, cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
 	var ingresses []fi.ApiIngressStatus
+	lbName := "api." + cluster.Name
 	if cluster.Spec.API.PublicName != "" {
-		// Note that this must match OpenstackModel lb name
-		klog.V(2).Infof("Querying Openstack to find Loadbalancers for API (%q)", cluster.Name)
-		lbList, err := c.ListLBs(loadbalancers.ListOpts{
-			Name: cluster.Spec.API.PublicName,
+		lbName = cluster.Spec.API.PublicName
+	}
+	// Note that this must match OpenstackModel lb name
+	klog.V(2).Infof("Querying Openstack to find Loadbalancers for API (%q)", cluster.Name)
+	lbList, err := c.ListLBs(loadbalancers.ListOpts{
+		Name: lbName,
+	})
+	if err != nil {
+		return ingresses, fmt.Errorf("GetApiIngressStatus: Failed to list openstack loadbalancers: %v", err)
+	}
+	for _, lb := range lbList {
+		// Must Find Floating IP related to this lb
+		fips, err := c.ListL3FloatingIPs(l3floatingip.ListOpts{
+			PortID: lb.VipPortID,
 		})
 		if err != nil {
-			return ingresses, fmt.Errorf("GetApiIngressStatus: Failed to list openstack loadbalancers: %v", err)
+			return ingresses, fmt.Errorf("GetApiIngressStatus: Failed to list floating IP's: %v", err)
 		}
-		for _, lb := range lbList {
-			// Must Find Floating IP related to this lb
-			fips, err := c.ListL3FloatingIPs(l3floatingip.ListOpts{
-				PortID: lb.VipPortID,
-			})
-			if err != nil {
-				return ingresses, fmt.Errorf("GetApiIngressStatus: Failed to list floating IP's: %v", err)
-			}
-			for _, fip := range fips {
-				if fip.PortID == lb.VipPortID {
-					ingresses = append(ingresses, fi.ApiIngressStatus{
-						IP: fip.FloatingIP,
-					})
-				}
+		for _, fip := range fips {
+			if fip.PortID == lb.VipPortID {
+				ingresses = append(ingresses, fi.ApiIngressStatus{
+					IP: fip.FloatingIP,
+				})
 			}
 		}
 	}
+
 	return ingresses, nil
 }
 
