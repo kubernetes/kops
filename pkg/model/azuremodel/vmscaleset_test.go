@@ -142,9 +142,11 @@ func TestGetStorageProfile(t *testing.T) {
 	}{
 		{
 			spec: kops.InstanceGroupSpec{
-				Image:          "Canonical:UbuntuServer:18.04-LTS:latest",
-				RootVolumeType: fi.PtrTo(string(compute.StorageAccountTypesStandardLRS)),
-				RootVolumeSize: fi.PtrTo(int32(128)),
+				Image: "Canonical:UbuntuServer:18.04-LTS:latest",
+				RootVolume: &kops.InstanceRootVolumeSpec{
+					Type: fi.PtrTo(string(compute.StorageAccountTypesStandardLRS)),
+					Size: fi.PtrTo(int32(128)),
+				},
 			},
 			profile: &compute.VirtualMachineScaleSetStorageProfile{
 				ImageReference: &compute.ImageReference{

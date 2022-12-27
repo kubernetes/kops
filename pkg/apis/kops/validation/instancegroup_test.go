@@ -211,17 +211,19 @@ func TestValidBootDevice(t *testing.T) {
 		},
 		{
 			volumeType: "st1",
-			expected:   []string{"Unsupported value::spec.rootVolumeType"},
+			expected:   []string{"Unsupported value::spec.rootVolume.type"},
 		},
 		{
 			volumeType: "sc1",
-			expected:   []string{"Unsupported value::spec.rootVolumeType"},
+			expected:   []string{"Unsupported value::spec.rootVolume.type"},
 		},
 	}
 
 	for _, g := range grid {
 		ig := createMinimalInstanceGroup()
-		ig.Spec.RootVolumeType = fi.PtrTo(g.volumeType)
+		ig.Spec.RootVolume = &kops.InstanceRootVolumeSpec{
+			Type: fi.PtrTo(g.volumeType),
+		}
 		errs := CrossValidateInstanceGroup(ig, cluster, nil, true)
 		testErrors(t, g.volumeType, errs, g.expected)
 	}
