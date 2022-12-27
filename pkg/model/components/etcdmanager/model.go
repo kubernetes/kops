@@ -262,7 +262,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 	var clientHost string
 
 	if featureflag.APIServerNodes.Enabled() {
-		clientHost = etcdCluster.Name + ".etcd." + b.ClusterName()
+		clientHost = etcdCluster.Name + ".etcd.internal." + b.ClusterName()
 	} else {
 		clientHost = "__name__"
 	}
