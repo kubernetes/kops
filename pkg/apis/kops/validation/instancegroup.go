@@ -89,12 +89,14 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud, strict bool) f
 		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "image"), "image must be specified."))
 	}
 
-	if fi.ValueOf(g.Spec.RootVolumeIOPS) < 0 {
-		allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "rootVolumeIOPS"), g.Spec.RootVolumeIOPS, "RootVolumeIOPS must be greater than 0"))
-	}
+	if g.Spec.RootVolume != nil {
+		if fi.ValueOf(g.Spec.RootVolume.IOPS) < 0 {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "rootVolume", "iops"), g.Spec.RootVolume.IOPS, "IOPS must be greater than 0"))
+		}
 
-	if fi.ValueOf(g.Spec.RootVolumeThroughput) < 0 {
-		allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "rootVolumeThroughput"), g.Spec.RootVolumeThroughput, "RootVolumeThroughput must be greater than 0"))
+		if fi.ValueOf(g.Spec.RootVolume.Throughput) < 0 {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "rootVolume", "throughput"), g.Spec.RootVolume.Throughput, "Throughput must be greater than 0"))
+		}
 	}
 
 	// @check all the hooks are valid in this instancegroup
@@ -254,8 +256,8 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, cl
 	}
 
 	if cluster.Spec.GetCloudProvider() == kops.CloudProviderAWS {
-		if g.Spec.RootVolumeType != nil {
-			allErrs = append(allErrs, IsValidValue(field.NewPath("spec", "rootVolumeType"), g.Spec.RootVolumeType, []string{"standard", "gp3", "gp2", "io1", "io2"})...)
+		if g.Spec.RootVolume != nil && g.Spec.RootVolume.Type != nil {
+			allErrs = append(allErrs, IsValidValue(field.NewPath("spec", "rootVolume", "type"), g.Spec.RootVolume.Type, []string{"standard", "gp3", "gp2", "io1", "io2"})...)
 		}
 
 		warmPool := cluster.Spec.CloudProvider.AWS.WarmPool.ResolveDefaults(g)

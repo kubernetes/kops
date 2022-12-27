@@ -4090,14 +4090,15 @@ func autoConvert_v1alpha2_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 	out.MaxSize = in.MaxSize
 	out.Autoscale = in.Autoscale
 	out.MachineType = in.MachineType
-	out.RootVolumeSize = in.RootVolumeSize
-	out.RootVolumeType = in.RootVolumeType
-	out.RootVolumeIOPS = in.RootVolumeIOPS
-	out.RootVolumeThroughput = in.RootVolumeThroughput
-	out.RootVolumeOptimization = in.RootVolumeOptimization
+	out.RootVolume = in.RootVolume
+	// INFO: in.RootVolumeSize opted out of conversion generation
+	// INFO: in.RootVolumeType opted out of conversion generation
+	// INFO: in.RootVolumeIOPS opted out of conversion generation
+	// INFO: in.RootVolumeThroughput opted out of conversion generation
+	// INFO: in.RootVolumeOptimization opted out of conversion generation
 	// INFO: in.RootVolumeDeleteOnTermination opted out of conversion generation
-	out.RootVolumeEncryption = in.RootVolumeEncryption
-	out.RootVolumeEncryptionKey = in.RootVolumeEncryptionKey
+	// INFO: in.RootVolumeEncryption opted out of conversion generation
+	// INFO: in.RootVolumeEncryptionKey opted out of conversion generation
 	if in.Volumes != nil {
 		in, out := &in.Volumes, &out.Volumes
 		*out = make([]kops.VolumeSpec, len(*in))
@@ -4272,13 +4273,7 @@ func autoConvert_kops_InstanceGroupSpec_To_v1alpha2_InstanceGroupSpec(in *kops.I
 	out.MaxSize = in.MaxSize
 	out.Autoscale = in.Autoscale
 	out.MachineType = in.MachineType
-	out.RootVolumeSize = in.RootVolumeSize
-	out.RootVolumeType = in.RootVolumeType
-	out.RootVolumeIOPS = in.RootVolumeIOPS
-	out.RootVolumeThroughput = in.RootVolumeThroughput
-	out.RootVolumeOptimization = in.RootVolumeOptimization
-	out.RootVolumeEncryption = in.RootVolumeEncryption
-	out.RootVolumeEncryptionKey = in.RootVolumeEncryptionKey
+	out.RootVolume = in.RootVolume
 	if in.Volumes != nil {
 		in, out := &in.Volumes, &out.Volumes
 		*out = make([]VolumeSpec, len(*in))

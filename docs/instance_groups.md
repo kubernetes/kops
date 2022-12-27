@@ -355,4 +355,10 @@ the removal of fields no longer in use.
 |------------------------------------------|------------------------------------------|
 | associatePublicIp                        | associatePublicIP                        |
 | externalLoadBalancers[\*].targetGroupArn | externalLoadBalancers[\*].targetGroupARN |
-| rootVolumeIops                           | rootVolumeIOPS                           |
+| rootVolumeEncryption                     | rootVolume.encryption                    |
+| rootVolumeEncryptionKey                  | rootVolume.encryptionKey                 |
+| rootVolumeIops                           | rootVolume.iops                          |
+| rootVolumeOptimization                   | rootVolume.optimization                  |
+| rootVolumeSize                           | rootVolume.size                          |
+| rootVolumeThroughput                     | rootVolume.throughput                    |
+| rootVolumeType                           | rootVolume.type                          |

@@ -62,14 +62,18 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 		}
 
 		{
-			volumeSize := fi.ValueOf(ig.Spec.RootVolumeSize)
+			var volumeSize int32
+			var volumeType string
+			if ig.Spec.RootVolume != nil {
+				volumeSize = fi.ValueOf(ig.Spec.RootVolume.Size)
+				volumeType = fi.ValueOf(ig.Spec.RootVolume.Type)
+			}
 			if volumeSize == 0 {
 				volumeSize, err = defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
 				if err != nil {
 					return nil, err
 				}
 			}
-			volumeType := fi.ValueOf(ig.Spec.RootVolumeType)
 			if volumeType == "" {
 				volumeType = DefaultVolumeType
 			}
