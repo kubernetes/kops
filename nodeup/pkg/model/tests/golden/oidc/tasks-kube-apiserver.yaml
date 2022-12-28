@@ -36,6 +36,14 @@ contents: |
       - --kubelet-client-certificate=/srv/kubernetes/kube-apiserver/kubelet-api.crt
       - --kubelet-client-key=/srv/kubernetes/kube-apiserver/kubelet-api.key
       - --kubelet-preferred-address-types=InternalIP,Hostname,ExternalIP
+      - --oidc-client-id=oidc-client
+      - --oidc-groups-claim=groupclaim1,groupclaim2
+      - '--oidc-groups-prefix=oidcgroup:'
+      - --oidc-issuer-url=https://oidc-issuer.nonexistent
+      - --oidc-required-claim=claim1=value1
+      - --oidc-required-claim=claim2=value2
+      - --oidc-username-claim=user
+      - '--oidc-username-prefix=oidc:'
       - --proxy-client-cert-file=/srv/kubernetes/kube-apiserver/apiserver-aggregator.crt
       - --proxy-client-key-file=/srv/kubernetes/kube-apiserver/apiserver-aggregator.key
       - --requestheader-allowed-names=aggregator
