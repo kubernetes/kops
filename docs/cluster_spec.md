@@ -1605,6 +1605,12 @@ the removal of fields no longer in use.
 | kubeAPIServer.authorizationWebhookCacheAuthorizedTtl   | kubeAPIServer.authorizationWebhookCacheAuthorizedTTL           |
 | kubeAPIServer.authorizationWebhookCacheUnauthorizedTtl | kubeAPIServer.authorizationWebhookCacheUnauthorizedTTL         |
 | kubeAPIServer.etcdCaFile                               | kubeAPIServer.etcdCAFile                                       |
+| kubeAPIServer.oidcClientID                             | authentication.oidc.clientID                                   |
+| kubeAPIServer.oidcGroupsPrefix                         | authentication.oidc.groupsPrefix                               |
+| kubeAPIServer.oidcIssuerURL                            | authentication.oidc.issuerURL                                  |
+| kubeAPIServer.oidcRequiredClaim (list)                 | authentication.oidc.oidcRequiredClaims (map)                   |
+| kubeAPIServer.oidcUsernameClaim                        | authentication.oidc.usernameClaim                              |
+| kubeAPIServer.oidcUsernamePrefix                       | authentication.oidc.usernamePrefix                             |
 | kubeAPIServer.targetRamMb                              | kubeAPIServer.targetRamMB                                      |
 | kubeControllerManager.concurrentRcSyncs                | kubeControllerManager.concurrentRCSyncs                        |
 | kubelet.authenticationTokenWebhookCacheTtl             | kubelet.authenticationTokenWebhookCacheTTL                     |
