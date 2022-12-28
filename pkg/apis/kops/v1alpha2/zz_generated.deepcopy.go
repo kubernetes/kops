@@ -289,6 +289,11 @@ func (in *AuthenticationSpec) DeepCopyInto(out *AuthenticationSpec) {
 		*out = new(AWSAuthenticationSpec)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.OIDC != nil {
+		in, out := &in.OIDC, &out.OIDC
+		*out = new(kops.OIDCAuthenticationSpec)
+		(*in).DeepCopyInto(*out)
+	}
 	return
 }
 

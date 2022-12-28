@@ -17,6 +17,9 @@ limitations under the License.
 package v1alpha2
 
 import (
+	"sort"
+	"strings"
+
 	"k8s.io/apimachinery/pkg/conversion"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
@@ -93,6 +96,40 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 			policies[k] = v
 		}
 		out.ExternalPolicies = policies
+	}
+	if in.KubeAPIServer != nil {
+		kube := in.KubeAPIServer
+		if kube.OIDCClientID != nil ||
+			kube.OIDCGroupsClaim != nil ||
+			kube.OIDCGroupsPrefix != nil ||
+			kube.OIDCIssuerURL != nil ||
+			kube.OIDCRequiredClaim != nil ||
+			kube.OIDCUsernameClaim != nil ||
+			kube.OIDCUsernamePrefix != nil {
+			if out.Authentication == nil {
+				out.Authentication = &kops.AuthenticationSpec{}
+			}
+			if out.Authentication.OIDC == nil {
+				out.Authentication.OIDC = &kops.OIDCAuthenticationSpec{}
+			}
+
+			oidc := out.Authentication.OIDC
+			oidc.ClientID = kube.OIDCClientID
+			if kube.OIDCGroupsClaim != nil {
+				oidc.GroupsClaims = strings.Split(*kube.OIDCGroupsClaim, ",")
+			}
+			oidc.GroupsPrefix = kube.OIDCGroupsPrefix
+			oidc.IssuerURL = kube.OIDCIssuerURL
+			if kube.OIDCRequiredClaim != nil {
+				oidc.RequiredClaims = make(map[string]string, len(kube.OIDCRequiredClaim))
+				for _, claim := range kube.OIDCRequiredClaim {
+					split := strings.SplitN(claim, "=", 2)
+					oidc.RequiredClaims[split[0]] = split[1]
+				}
+			}
+			oidc.UsernameClaim = kube.OIDCUsernameClaim
+			oidc.UsernamePrefix = kube.OIDCUsernamePrefix
+		}
 	}
 	if in.LegacyNetworking != nil {
 		if err := autoConvert_v1alpha2_NetworkingSpec_To_kops_NetworkingSpec(in.LegacyNetworking, &out.Networking, s); err != nil {
@@ -323,6 +360,29 @@ func Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, out 
 			}
 			out.AdditionalPolicies[k] = v
 		}
+	}
+	if in.Authentication != nil && in.Authentication.OIDC != nil {
+		if out.KubeAPIServer == nil {
+			out.KubeAPIServer = &KubeAPIServerConfig{}
+		}
+		oidc := in.Authentication.OIDC
+		kube := out.KubeAPIServer
+		kube.OIDCClientID = oidc.ClientID
+		if oidc.GroupsClaims != nil {
+			join := strings.Join(oidc.GroupsClaims, ",")
+			kube.OIDCGroupsClaim = &join
+		}
+		kube.OIDCGroupsPrefix = oidc.GroupsPrefix
+		kube.OIDCIssuerURL = oidc.IssuerURL
+		if oidc.RequiredClaims != nil {
+			kube.OIDCRequiredClaim = make([]string, 0, len(oidc.RequiredClaims))
+			for claim, value := range oidc.RequiredClaims {
+				kube.OIDCRequiredClaim = append(kube.OIDCRequiredClaim, claim+"="+value)
+			}
+			sort.Strings(kube.OIDCRequiredClaim)
+		}
+		kube.OIDCUsernameClaim = oidc.UsernameClaim
+		kube.OIDCUsernamePrefix = oidc.UsernamePrefix
 	}
 	if in.ExternalPolicies != nil {
 		out.ExternalPolicies = make(map[string][]string, len(in.ExternalPolicies))

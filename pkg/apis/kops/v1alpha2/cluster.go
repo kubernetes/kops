@@ -389,8 +389,9 @@ type ExecContainerAction struct {
 }
 
 type AuthenticationSpec struct {
-	Kopeio *KopeioAuthenticationSpec `json:"kopeio,omitempty"`
-	AWS    *AWSAuthenticationSpec    `json:"aws,omitempty"`
+	Kopeio *KopeioAuthenticationSpec    `json:"kopeio,omitempty"`
+	AWS    *AWSAuthenticationSpec       `json:"aws,omitempty"`
+	OIDC   *kops.OIDCAuthenticationSpec `json:"-"`
 }
 
 func (s *AuthenticationSpec) IsEmpty() bool {

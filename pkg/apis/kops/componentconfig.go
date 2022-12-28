@@ -366,28 +366,28 @@ type KubeAPIServerConfig struct {
 	// OIDCUsernameClaim is the OpenID claim to use as the user name.
 	// Note that claims other than the default ('sub') is not guaranteed to be
 	// unique and immutable.
-	OIDCUsernameClaim *string `json:"oidcUsernameClaim,omitempty" flag:"oidc-username-claim"`
+	OIDCUsernameClaim *string `json:"-" flag:"oidc-username-claim"`
 	// OIDCUsernamePrefix is the prefix prepended to username claims to prevent
 	// clashes with existing names (such as 'system:' users).
-	OIDCUsernamePrefix *string `json:"oidcUsernamePrefix,omitempty" flag:"oidc-username-prefix"`
+	OIDCUsernamePrefix *string `json:"-" flag:"oidc-username-prefix"`
 	// OIDCGroupsClaim if provided, the name of a custom OpenID Connect claim for
 	// specifying user groups.
 	// The claim value is expected to be a string or array of strings.
-	OIDCGroupsClaim *string `json:"oidcGroupsClaim,omitempty" flag:"oidc-groups-claim"`
+	OIDCGroupsClaim *string `json:"-" flag:"oidc-groups-claim"`
 	// OIDCGroupsPrefix is the prefix prepended to group claims to prevent
 	// clashes with existing names (such as 'system:' groups)
-	OIDCGroupsPrefix *string `json:"oidcGroupsPrefix,omitempty" flag:"oidc-groups-prefix"`
+	OIDCGroupsPrefix *string `json:"-" flag:"oidc-groups-prefix"`
 	// OIDCIssuerURL is the URL of the OpenID issuer, only HTTPS scheme will
 	// be accepted.
 	// If set, it will be used to verify the OIDC JSON Web Token (JWT).
-	OIDCIssuerURL *string `json:"oidcIssuerURL,omitempty" flag:"oidc-issuer-url"`
+	OIDCIssuerURL *string `json:"-" flag:"oidc-issuer-url"`
 	// OIDCClientID is the client ID for the OpenID Connect client, must be set
 	// if oidc-issuer-url is set.
-	OIDCClientID *string `json:"oidcClientID,omitempty" flag:"oidc-client-id"`
+	OIDCClientID *string `json:"-" flag:"oidc-client-id"`
 	// A key=value pair that describes a required claim in the ID Token.
 	// If set, the claim is verified to be present in the ID Token with a matching value.
 	// Repeat this flag to specify multiple claims.
-	OIDCRequiredClaim []string `json:"oidcRequiredClaim,omitempty" flag:"oidc-required-claim,repeat"`
+	OIDCRequiredClaim []string `json:"-" flag:"oidc-required-claim,repeat"`
 	// OIDCCAFile if set, the OpenID server's certificate will be verified by one
 	// of the authorities in the oidc-ca-file
 	OIDCCAFile *string `json:"oidcCAFile,omitempty" flag:"oidc-ca-file"`
