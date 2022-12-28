@@ -587,6 +587,7 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 	cluster := tf.Cluster
 
 	config := &kopscontrollerconfig.Options{
+		ClusterName: cluster.Name,
 		Cloud:       string(cluster.Spec.GetCloudProvider()),
 		ConfigBase:  cluster.Spec.ConfigBase,
 		SecretStore: cluster.Spec.SecretStore,

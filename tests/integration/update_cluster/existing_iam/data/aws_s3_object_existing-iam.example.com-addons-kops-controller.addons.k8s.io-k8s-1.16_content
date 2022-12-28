@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
   config.yaml: |
-    {"cloud":"aws","configBase":"memfs://tests/existing-iam.example.com","secretStore":"memfs://tests/existing-iam.example.com/secrets","server":{"Listen":":3988","provider":{"aws":{"nodesRoles":["kops-custom-node-role"],"Region":"us-test-1"}},"serverKeyPath":"/etc/kubernetes/kops-controller/pki/kops-controller.key","serverCertificatePath":"/etc/kubernetes/kops-controller/pki/kops-controller.crt","caBasePath":"/etc/kubernetes/kops-controller/pki","signingCAs":["kubernetes-ca"],"certNames":["kubelet","kubelet-server","kube-proxy"]}}
+    {"clusterName":"existing-iam.example.com","cloud":"aws","configBase":"memfs://tests/existing-iam.example.com","secretStore":"memfs://tests/existing-iam.example.com/secrets","server":{"Listen":":3988","provider":{"aws":{"nodesRoles":["kops-custom-node-role"],"Region":"us-test-1"}},"serverKeyPath":"/etc/kubernetes/kops-controller/pki/kops-controller.key","serverCertificatePath":"/etc/kubernetes/kops-controller/pki/kops-controller.crt","caBasePath":"/etc/kubernetes/kops-controller/pki","signingCAs":["kubernetes-ca"],"certNames":["kubelet","kubelet-server","kube-proxy"]}}
 kind: ConfigMap
 metadata:
   creationTimestamp: null
