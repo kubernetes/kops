@@ -1,0 +1,87 @@
+contents:
+  Asset:
+    AssetPath: /path/to/kubectl/asset
+    Key: kubectl
+mode: "0755"
+path: /opt/kops/bin/kubectl
+type: file
+---
+contents:
+  task:
+    CA:
+      task:
+        Name: kubecfg
+        keypairID: "3"
+        signer: kubernetes-ca
+        subject:
+          CommonName: kubecfg
+          Organization:
+          - system:masters
+        type: client
+    Cert:
+      task:
+        Name: kubecfg
+        keypairID: "3"
+        signer: kubernetes-ca
+        subject:
+          CommonName: kubecfg
+          Organization:
+          - system:masters
+        type: client
+    Key:
+      task:
+        Name: kubecfg
+        keypairID: "3"
+        signer: kubernetes-ca
+        subject:
+          CommonName: kubecfg
+          Organization:
+          - system:masters
+        type: client
+    Name: kubecfg
+    ServerURL: https://127.0.0.1
+mode: "0400"
+path: /var/lib/kubectl/kubeconfig
+type: file
+---
+Name: kubecfg
+keypairID: "3"
+signer: kubernetes-ca
+subject:
+  CommonName: kubecfg
+  Organization:
+  - system:masters
+type: client
+---
+CA:
+  task:
+    Name: kubecfg
+    keypairID: "3"
+    signer: kubernetes-ca
+    subject:
+      CommonName: kubecfg
+      Organization:
+      - system:masters
+    type: client
+Cert:
+  task:
+    Name: kubecfg
+    keypairID: "3"
+    signer: kubernetes-ca
+    subject:
+      CommonName: kubecfg
+      Organization:
+      - system:masters
+    type: client
+Key:
+  task:
+    Name: kubecfg
+    keypairID: "3"
+    signer: kubernetes-ca
+    subject:
+      CommonName: kubecfg
+      Organization:
+      - system:masters
+    type: client
+Name: kubecfg
+ServerURL: https://127.0.0.1
