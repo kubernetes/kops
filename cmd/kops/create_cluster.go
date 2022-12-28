@@ -33,6 +33,7 @@ import (
 	"github.com/spf13/pflag"
 	"go.uber.org/multierr"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
@@ -698,6 +699,20 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 			group.ObjectMeta.Labels = make(map[string]string)
 			group.ObjectMeta.Labels[api.LabelClusterName] = cluster.ObjectMeta.Name
 			obj = append(obj, group)
+		}
+
+		for name, key := range c.SSHPublicKeys {
+			obj = append(obj, &api.SSHCredential{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: name,
+					Labels: map[string]string{
+						api.LabelClusterName: cluster.Name,
+					},
+				},
+				Spec: api.SSHCredentialSpec{
+					PublicKey: strings.TrimSpace(string(key)),
+				},
+			})
 		}
 
 		for _, o := range addons {
