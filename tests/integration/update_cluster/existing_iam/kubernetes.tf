@@ -459,7 +459,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-existing-iam-example-c
   metadata_options {
     http_endpoint               = "enabled"
     http_protocol_ipv6          = "disabled"
-    http_put_response_hop_limit = 3
+    http_put_response_hop_limit = 1
     http_tokens                 = "optional"
   }
   monitoring {
@@ -542,7 +542,7 @@ resource "aws_launch_template" "master-us-test-1b-masters-existing-iam-example-c
   metadata_options {
     http_endpoint               = "enabled"
     http_protocol_ipv6          = "disabled"
-    http_put_response_hop_limit = 3
+    http_put_response_hop_limit = 1
     http_tokens                 = "optional"
   }
   monitoring {
@@ -625,7 +625,7 @@ resource "aws_launch_template" "master-us-test-1c-masters-existing-iam-example-c
   metadata_options {
     http_endpoint               = "enabled"
     http_protocol_ipv6          = "disabled"
-    http_put_response_hop_limit = 3
+    http_put_response_hop_limit = 1
     http_tokens                 = "optional"
   }
   monitoring {
