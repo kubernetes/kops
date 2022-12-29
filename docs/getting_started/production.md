@@ -4,19 +4,19 @@ The getting started-documentation is a fast way of spinning up a Kubernetes clus
 
 ## High availability
 
-Running only a single master can be error prone and disruptive. 
+Running only a single control-plane node can be error-prone and disruptive. 
 
 Read through the [high availability documentation](../operations/high_availability.md) to learn how to set up a cluster with redundant control plane.
 
 ## Networking
 
-The default networking of kOps, kubenet, is **not** recommended for production. Most importantly, it does not support network policies, nor does it support internal networking.
+The default networking of kOps, Cilium, is suitable for production.
 
-Read through the [networking page](../networking.md) and choose a stable CNI.
+Read through the [networking page](../networking.md) to see what the other CNI choices are.
 
 ## Private topology
 
-By default kOps will create clusters using public topology, where all nodes and the Kubernetes API are exposed on public Internet.
+By default, kOps will create IPv4 clusters using public topology, where all nodes and the Kubernetes API are exposed on public Internet.
 
 Read through the [topology page](../topology.md) to understand the options you have running nodes in internal IP addresses and using a [bastion](../bastion.md) for SSH access.
 
