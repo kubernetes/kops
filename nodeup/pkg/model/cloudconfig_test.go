@@ -68,8 +68,8 @@ func TestBuildAzure(t *testing.T) {
 			BootConfig: &nodeup.BootConfig{
 				CloudProvider: kops.CloudProviderAzure,
 			},
-			Cluster:  cluster,
-			IsMaster: true,
+			Cluster:      cluster,
+			HasAPIServer: true,
 		},
 	}
 	ctx := &fi.NodeupModelBuilderContext{
@@ -127,7 +127,7 @@ func TestBuildAWSCustomNodeIPFamilies(t *testing.T) {
 			NodeupConfig: &nodeup.Config{
 				NodeIPFamilies: []string{"ipv6"},
 			},
-			IsMaster: true,
+			HasAPIServer: true,
 		},
 	}
 	ctx := &fi.NodeupModelBuilderContext{

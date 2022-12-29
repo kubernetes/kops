@@ -73,7 +73,7 @@ type CloudConfigBuilder struct {
 var _ fi.NodeupModelBuilder = &CloudConfigBuilder{}
 
 func (b *CloudConfigBuilder) Build(c *fi.NodeupModelBuilderContext) error {
-	if !b.IsMaster {
+	if !b.HasAPIServer && b.NodeupConfig.KubeletConfig.CloudProvider == "external" {
 		return nil
 	}
 
