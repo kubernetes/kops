@@ -363,12 +363,15 @@ func NewOpenstackCloud(cluster *kops.Cluster, uagent string) (OpenstackCloud, er
 		return nil, fmt.Errorf("error building openstack authenticated client: %v", err)
 	}
 
-	tags := map[string]string{
-		TagClusterName: cluster.Name,
+	if cluster != nil {
+		hasDNS := !cluster.IsGossip() && !cluster.UsesNoneDNS()
+		tags := map[string]string{
+			TagClusterName: cluster.Name,
+		}
+		return buildClients(provider, tags, cluster.Spec.CloudProvider.Openstack, config, region, hasDNS)
 	}
-
-	hasDNS := !cluster.IsGossip() && !cluster.UsesNoneDNS()
-	return buildClients(provider, tags, cluster.Spec.CloudProvider.Openstack, config, region, hasDNS)
+	// used by protokube
+	return buildClients(provider, nil, nil, config, region, false)
 }
 
 func buildClients(provider *gophercloud.ProviderClient, tags map[string]string, spec *kops.OpenstackSpec, config vfs.OpenstackConfig, region string, hasDNS bool) (OpenstackCloud, error) {
