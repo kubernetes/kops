@@ -1400,7 +1400,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 		}
 	}
 
-	if isMaster {
+	if hasAPIServer {
 		config.ApiserverAdditionalIPs = apiserverAdditionalIPs
 	}
 
