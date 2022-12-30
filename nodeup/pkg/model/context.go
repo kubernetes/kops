@@ -109,6 +109,10 @@ func (c *NodeupModelContext) Init() error {
 	return nil
 }
 
+func (c *NodeupModelContext) APIInternalName() string {
+	return "api.internal." + c.NodeupConfig.ClusterName
+}
+
 // SSLHostPaths returns the TLS paths for the distribution
 func (c *NodeupModelContext) SSLHostPaths() []string {
 	paths := []string{"/etc/ssl", "/etc/pki/tls", "/etc/pki/ca-trust"}
@@ -242,7 +246,7 @@ func (c *NodeupModelContext) BuildIssuedKubeconfig(name string, subject nodetask
 		// @note: use https even for local connections, so we can turn off the insecure port
 		kubeConfig.ServerURL = "https://127.0.0.1"
 	} else {
-		kubeConfig.ServerURL = "https://api.internal." + c.NodeupConfig.ClusterName
+		kubeConfig.ServerURL = "https://" + c.APIInternalName()
 	}
 	ctx.AddTask(kubeConfig)
 	return kubeConfig.GetConfig()
@@ -286,7 +290,7 @@ func (c *NodeupModelContext) BuildBootstrapKubeconfig(name string, ctx *fi.Nodeu
 			// @note: use https even for local connections, so we can turn off the insecure port
 			kubeConfig.ServerURL = "https://127.0.0.1"
 		} else {
-			kubeConfig.ServerURL = "https://api.internal." + c.NodeupConfig.ClusterName
+			kubeConfig.ServerURL = "https://" + c.APIInternalName()
 		}
 
 		err = ctx.EnsureTask(kubeConfig)
@@ -334,7 +338,7 @@ func (c *NodeupModelContext) BuildBootstrapKubeconfig(name string, ctx *fi.Nodeu
 			// This code path is used for the kubelet cert in Kubernetes 1.18 and earlier.
 			kubeConfig.ServerURL = "https://127.0.0.1"
 		} else {
-			kubeConfig.ServerURL = "https://api.internal." + c.NodeupConfig.ClusterName
+			kubeConfig.ServerURL = "https://" + c.APIInternalName()
 		}
 
 		err = kubeConfig.Run(nil)

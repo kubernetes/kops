@@ -221,7 +221,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 		}
 
 		// @TODO: This is hacky, but we want it so that we can have a different internal & external name
-		internalSuffix := "api.internal." + t.NodeupConfig.ClusterName
+		internalSuffix := t.APIInternalName()
 		internalSuffix = strings.TrimPrefix(internalSuffix, "api.")
 		f.DNSInternalSuffix = fi.PtrTo(internalSuffix)
 	}
