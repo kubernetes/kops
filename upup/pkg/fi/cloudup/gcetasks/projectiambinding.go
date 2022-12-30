@@ -104,6 +104,11 @@ func (_ *ProjectIAMBinding) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Projec
 	member := fi.ValueOf(e.Member)
 	role := fi.ValueOf(e.Role)
 
+	// Avoid concurrent operations
+	localMutex := gce.MutexForProjectIAM(projectID)
+	localMutex.Lock()
+	defer localMutex.Unlock()
+
 	request := &cloudresourcemanager.GetIamPolicyRequest{}
 	policy, err := t.Cloud.CloudResourceManager().Projects.GetIamPolicy(projectID, request).Context(ctx).Do()
 	if err != nil {
