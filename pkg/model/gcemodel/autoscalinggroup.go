@@ -92,7 +92,7 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 				Preemptible:          fi.PtrTo(fi.ValueOf(ig.Spec.GCPProvisioningModel) == "SPOT"),
 				GCPProvisioningModel: ig.Spec.GCPProvisioningModel,
 
-				HasExternalIP: fi.PtrTo(b.Cluster.Spec.Networking.Topology.ControlPlane == kops.TopologyPublic),
+				HasExternalIP: fi.PtrTo(subnet.Type == kops.SubnetTypePublic || subnet.Type == kops.SubnetTypeUtility),
 
 				Scopes: []string{
 					"compute-rw",
