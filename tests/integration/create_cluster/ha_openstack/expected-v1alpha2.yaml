@@ -4,6 +4,9 @@ metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   name: minimal.k8s.local
 spec:
+  api:
+    loadBalancer:
+      type: Public
   authorization:
     rbac: {}
   channel: stable
