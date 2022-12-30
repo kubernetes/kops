@@ -23,3 +23,13 @@ kops create cluster --name=kubescheduler.k8s.local --zones us-east-2a --add docs
 kops update cluster --name=kubescheduler.k8s.local --yes --admin
 kops validate cluster --name=kubescheduler.k8s.local
 ```
+
+To replace/add an object to an existing cluster use `kops replace`; that replaces matching objects or creates missing ones:
+
+```
+export KOPS_FEATURE_FLAGS=ClusterAddons
+kops replace --name=kubescheduler.k8s.local -f docs/examples/addons/kubescheduler.yaml
+kops update cluster --name=kubescheduler.k8s.local --yes --admin
+kops rolling-update cluster --name=kubescheduler.k8s.local --yes
+kops validate cluster --name=kubescheduler.k8s.local
+```
