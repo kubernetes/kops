@@ -512,8 +512,8 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 	// running on master nodes
 	if !b.IsMaster {
 		clusterName := b.Cluster.ObjectMeta.Name
-		mainEtcdDNSName := "main.etcd." + clusterName
-		eventsEtcdDNSName := "events.etcd." + clusterName
+		mainEtcdDNSName := "main.etcd.internal." + clusterName
+		eventsEtcdDNSName := "events.etcd.internal." + clusterName
 		for i := range kubeAPIServer.EtcdServers {
 			kubeAPIServer.EtcdServers[i] = strings.ReplaceAll(kubeAPIServer.EtcdServers[i], "127.0.0.1", mainEtcdDNSName)
 		}
