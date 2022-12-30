@@ -872,6 +872,7 @@ spec:
     spec:
       containers:
       - args:
+        - --metrics-bind-addr=:9442
         - --cluster-name=minimal.example.com
         - --enable-waf=false
         - --enable-wafv2=false
