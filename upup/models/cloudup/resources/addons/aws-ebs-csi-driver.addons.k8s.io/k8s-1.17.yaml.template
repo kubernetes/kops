@@ -479,6 +479,7 @@ spec:
       priorityClassName: system-cluster-critical
       nodeSelector: null
       {{ if not UseServiceAccountExternalPermissions }}
+      hostNetwork: true
       tolerations:
         - operator: Exists
       {{ end }}
