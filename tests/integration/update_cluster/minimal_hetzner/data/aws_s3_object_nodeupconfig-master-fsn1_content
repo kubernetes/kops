@@ -225,9 +225,9 @@ FileAssets:
 - content: |
     apiVersion: kubescheduler.config.k8s.io/v1beta2
     clientConnection:
-      kubeconfig: /var/lib/kube-scheduler/kubeconfig
+      kubeconfig: /etc/kubernetes/kube-scheduler/secrets/kubeconfig
     kind: KubeSchedulerConfiguration
-  path: /var/lib/kube-scheduler/config.yaml
+  path: /etc/kubernetes/kube-scheduler/config/config.yaml
 Hooks:
 - null
 - null

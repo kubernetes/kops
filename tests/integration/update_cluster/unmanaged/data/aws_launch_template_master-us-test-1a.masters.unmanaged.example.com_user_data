@@ -247,7 +247,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/unmanaged.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: Pm43h4XT6N7UwKV81RpR6ig2D4j5s1NkOhkVimUdurA=
+NodeupConfigHash: cUp1lv8Y7ELeIN9KCbkf1Vyhgb6aMthlXYF2Z5p6g34=
 
 __EOF_KUBE_ENV
 

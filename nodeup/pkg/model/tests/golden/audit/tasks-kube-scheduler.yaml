@@ -13,8 +13,8 @@ contents: |
       - --log-file=/var/log/kube-scheduler.log
       - --also-stdout
       - /usr/local/bin/kube-scheduler
-      - --authentication-kubeconfig=/var/lib/kube-scheduler/kubeconfig
-      - --authorization-kubeconfig=/var/lib/kube-scheduler/kubeconfig
+      - --authentication-kubeconfig=/etc/kubernetes/kube-scheduler/secrets/kubeconfig
+      - --authorization-kubeconfig=/etc/kubernetes/kube-scheduler/secrets/kubeconfig
       - --config=/var/lib/kube-scheduler/config.yaml
       - --feature-gates=CSIMigrationAWS=true,InTreePluginAWSUnregister=true
       - --leader-elect=true
@@ -99,7 +99,7 @@ type: file
 contents: |
   apiVersion: kubescheduler.config.k8s.io/v1beta2
   clientConnection:
-    kubeconfig: /var/lib/kube-scheduler/kubeconfig
+    kubeconfig: /etc/kubernetes/kube-scheduler/secrets/kubeconfig
   kind: KubeSchedulerConfiguration
 mode: "0400"
 path: /var/lib/kube-scheduler/config.yaml
@@ -134,7 +134,7 @@ contents:
     Name: kube-scheduler
     ServerURL: https://127.0.0.1
 mode: "0400"
-path: /var/lib/kube-scheduler/kubeconfig
+path: /etc/kubernetes/kube-scheduler/secrets/kubeconfig
 type: file
 ---
 contents: ""

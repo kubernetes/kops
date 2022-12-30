@@ -1,108 +1,19 @@
-contents: |
-  apiVersion: v1
-  kind: Pod
-  metadata:
-    creationTimestamp: null
-    labels:
-      k8s-app: kube-scheduler
-    name: kube-scheduler
-    namespace: kube-system
-  spec:
-    containers:
-    - args:
-      - --authentication-kubeconfig=/var/lib/kube-scheduler/kubeconfig
-      - --authorization-kubeconfig=/var/lib/kube-scheduler/kubeconfig
-      - --config=/var/lib/kube-scheduler/config.yaml
-      - --feature-gates=CSIMigrationAWS=true,InTreePluginAWSUnregister=true
-      - --leader-elect=true
-      - --tls-cert-file=/srv/kubernetes/kube-scheduler/server.crt
-      - --tls-private-key-file=/srv/kubernetes/kube-scheduler/server.key
-      - --v=2
-      - --logtostderr=false
-      - --alsologtostderr
-      - --log-file=/var/log/kube-scheduler.log
-      command:
-      - /usr/local/bin/kube-scheduler
-      image: k8s.gcr.io/kube-scheduler-arm64:v1.22.0
-      livenessProbe:
-        httpGet:
-          host: 127.0.0.1
-          path: /healthz
-          port: 10251
-        initialDelaySeconds: 15
-        timeoutSeconds: 15
-      name: kube-scheduler
-      resources:
-        requests:
-          cpu: 100m
-      volumeMounts:
-      - mountPath: /var/lib/kube-scheduler
-        name: varlibkubescheduler
-        readOnly: true
-      - mountPath: /srv/kubernetes/kube-scheduler
-        name: srvscheduler
-        readOnly: true
-      - mountPath: /var/log/kube-scheduler.log
-        name: logfile
-    hostNetwork: true
-    priorityClassName: system-cluster-critical
-    tolerations:
-    - key: CriticalAddonsOnly
-      operator: Exists
-    volumes:
-    - hostPath:
-        path: /var/lib/kube-scheduler
-      name: varlibkubescheduler
-    - hostPath:
-        path: /srv/kubernetes/kube-scheduler
-      name: srvscheduler
-    - hostPath:
-        path: /var/log/kube-scheduler.log
-      name: logfile
-  status: {}
-path: /etc/kubernetes/manifests/kube-scheduler.manifest
-type: file
----
 mode: "0755"
-path: /srv/kubernetes/kube-scheduler
+path: /etc/kubernetes/kube-scheduler/config
 type: directory
----
-contents:
-  task:
-    Name: kube-scheduler-server
-    alternateNames:
-    - kube-scheduler.kube-system.svc.cluster.local
-    keypairID: "3"
-    signer: kubernetes-ca
-    subject:
-      CommonName: kube-scheduler
-    type: server
-mode: "0644"
-path: /srv/kubernetes/kube-scheduler/server.crt
-type: file
----
-contents:
-  task:
-    Name: kube-scheduler-server
-    alternateNames:
-    - kube-scheduler.kube-system.svc.cluster.local
-    keypairID: "3"
-    signer: kubernetes-ca
-    subject:
-      CommonName: kube-scheduler
-    type: server
-mode: "0600"
-path: /srv/kubernetes/kube-scheduler/server.key
-type: file
 ---
 contents: |
   apiVersion: kubescheduler.config.k8s.io/v1beta2
   clientConnection:
-    kubeconfig: /var/lib/kube-scheduler/kubeconfig
+    kubeconfig: /etc/kubernetes/kube-scheduler/secrets/kubeconfig
   kind: KubeSchedulerConfiguration
 mode: "0400"
-path: /var/lib/kube-scheduler/config.yaml
+path: /etc/kubernetes/kube-scheduler/config/config.yaml
 type: file
+---
+mode: "0400"
+path: /etc/kubernetes/kube-scheduler/secrets
+type: directory
 ---
 contents:
   task:
@@ -133,7 +44,100 @@ contents:
     Name: kube-scheduler
     ServerURL: https://127.0.0.1
 mode: "0400"
-path: /var/lib/kube-scheduler/kubeconfig
+path: /etc/kubernetes/kube-scheduler/secrets/kubeconfig
+type: file
+---
+contents:
+  task:
+    Name: kube-scheduler-server
+    alternateNames:
+    - kube-scheduler.kube-system.svc.cluster.local
+    keypairID: "3"
+    signer: kubernetes-ca
+    subject:
+      CommonName: kube-scheduler
+    type: server
+mode: "0644"
+path: /etc/kubernetes/kube-scheduler/secrets/server.crt
+type: file
+---
+contents:
+  task:
+    Name: kube-scheduler-server
+    alternateNames:
+    - kube-scheduler.kube-system.svc.cluster.local
+    keypairID: "3"
+    signer: kubernetes-ca
+    subject:
+      CommonName: kube-scheduler
+    type: server
+mode: "0600"
+path: /etc/kubernetes/kube-scheduler/secrets/server.key
+type: file
+---
+contents: |
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: null
+    labels:
+      k8s-app: kube-scheduler
+    name: kube-scheduler
+    namespace: kube-system
+  spec:
+    containers:
+    - args:
+      - --authentication-kubeconfig=/etc/kubernetes/kube-scheduler/secrets/kubeconfig
+      - --authorization-kubeconfig=/etc/kubernetes/kube-scheduler/secrets/kubeconfig
+      - --config=/etc/kubernetes/kube-scheduler/config/config.yaml
+      - --feature-gates=CSIMigrationAWS=true,InTreePluginAWSUnregister=true
+      - --leader-elect=true
+      - --tls-cert-file=/etc/kubernetes/kube-scheduler/secrets/server.crt
+      - --tls-private-key-file=/etc/kubernetes/kube-scheduler/secrets/server.key
+      - --v=2
+      - --logtostderr=false
+      - --alsologtostderr
+      - --log-file=/var/log/kube-scheduler.log
+      command:
+      - /usr/local/bin/kube-scheduler
+      image: k8s.gcr.io/kube-scheduler-arm64:v1.22.0
+      livenessProbe:
+        httpGet:
+          host: 127.0.0.1
+          path: /healthz
+          port: 10251
+        initialDelaySeconds: 15
+        timeoutSeconds: 15
+      name: kube-scheduler
+      resources:
+        requests:
+          cpu: 100m
+      volumeMounts:
+      - mountPath: /etc/kubernetes/kube-scheduler/secrets
+        name: componentsecrets
+        readOnly: true
+      - mountPath: /etc/kubernetes/kube-scheduler/config
+        name: componentconfig
+        readOnly: true
+      - mountPath: /var/log/kube-scheduler.log
+        name: logfile
+    hostNetwork: true
+    priorityClassName: system-cluster-critical
+    tolerations:
+    - key: CriticalAddonsOnly
+      operator: Exists
+    volumes:
+    - hostPath:
+        path: /etc/kubernetes/kube-scheduler/secrets
+      name: componentsecrets
+    - hostPath:
+        path: /etc/kubernetes/kube-scheduler/config
+      name: componentconfig
+    - hostPath:
+        path: /var/log/kube-scheduler.log
+      name: logfile
+  status: {}
+path: /etc/kubernetes/manifests/kube-scheduler.manifest
 type: file
 ---
 contents: ""

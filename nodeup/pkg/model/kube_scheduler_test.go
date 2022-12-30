@@ -31,7 +31,7 @@ func TestParseDefault(t *testing.T) {
 	want := []byte(
 		`apiVersion: kubescheduler.config.k8s.io/v1beta2
 clientConnection:
-  kubeconfig: /var/lib/kube-scheduler/kubeconfig
+  kubeconfig: /etc/kubernetes/kube-scheduler/secrets/kubeconfig
 kind: KubeSchedulerConfiguration
 `)
 
@@ -52,7 +52,7 @@ func TestParse(t *testing.T) {
 		`apiVersion: kubescheduler.config.k8s.io/v1beta2
 clientConnection:
   burst: 100
-  kubeconfig: /var/lib/kube-scheduler/kubeconfig
+  kubeconfig: /etc/kubernetes/kube-scheduler/secrets/kubeconfig
   qps: 3.1
 kind: KubeSchedulerConfiguration
 `)
