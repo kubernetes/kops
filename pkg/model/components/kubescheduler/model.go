@@ -35,10 +35,10 @@ import (
 )
 
 // KubeSchedulerConfigPath is the path where we write the kube-scheduler config file (on the control-plane nodes)
-const KubeSchedulerConfigPath = "/var/lib/kube-scheduler/config.yaml"
+const KubeSchedulerConfigPath = "/etc/kubernetes/kube-scheduler/config/config.yaml"
 
 // Kubeconfig is the path where we write the kube-scheduler kubeconfig file (on the control-plane nodes)
-const KubeConfigPath = "/var/lib/kube-scheduler/kubeconfig"
+const KubeConfigPath = "/etc/kubernetes/kube-scheduler/secrets/kubeconfig"
 
 // KubeSchedulerBuilder builds the configuration file for kube-scheduler
 type KubeSchedulerBuilder struct {

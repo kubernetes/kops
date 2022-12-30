@@ -194,6 +194,16 @@ func (c *NodeupModelContext) PathSrvKubernetes() string {
 	}
 }
 
+// PathForComponentSecrets returns the path for secrets for a component.
+func (c *NodeupModelContext) PathForComponentSecrets(component string) string {
+	return filepath.Join("/etc/kubernetes", component, "secrets")
+}
+
+// PathForComponentConfig returns the path for (non-secret) config for a component.
+func (c *NodeupModelContext) PathForComponentConfig(component string) string {
+	return filepath.Join("/etc/kubernetes", component, "config")
+}
+
 // FileAssetsDefaultPath is the default location for assets which have no path
 func (c *NodeupModelContext) FileAssetsDefaultPath() string {
 	return filepath.Join(c.PathSrvKubernetes(), "assets")

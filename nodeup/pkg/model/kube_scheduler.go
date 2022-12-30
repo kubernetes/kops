@@ -66,6 +66,17 @@ func (b *KubeSchedulerBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		return nil
 	}
 
+	c.EnsureTask(&nodetasks.File{
+		Path: b.ConfigDir(),
+		Type: nodetasks.FileType_Directory,
+		Mode: s("0755"),
+	})
+	c.EnsureTask(&nodetasks.File{
+		Path: b.SecretsDir(),
+		Type: nodetasks.FileType_Directory,
+		Mode: s("0400"),
+	})
+
 	kubeScheduler := *b.Cluster.Spec.KubeScheduler
 
 	if err := b.writeServerCertificate(c, &kubeScheduler); err != nil {
@@ -147,8 +158,16 @@ func NewSchedulerConfig(apiVersion string) *SchedulerConfig {
 	return schedConfig
 }
 
+func (b *KubeSchedulerBuilder) ConfigDir() string {
+	return b.PathForComponentConfig("kube-scheduler")
+}
+
+func (b *KubeSchedulerBuilder) SecretsDir() string {
+	return b.PathForComponentSecrets("kube-scheduler")
+}
+
 func (b *KubeSchedulerBuilder) writeServerCertificate(c *fi.NodeupModelBuilderContext, kubeScheduler *kops.KubeSchedulerConfig) error {
-	pathSrvScheduler := filepath.Join(b.PathSrvKubernetes(), "kube-scheduler")
+	secretsDir := b.SecretsDir()
 
 	if kubeScheduler.TLSCertFile == nil {
 		alternateNames := []string{
@@ -165,13 +184,13 @@ func (b *KubeSchedulerBuilder) writeServerCertificate(c *fi.NodeupModelBuilderCo
 		}
 
 		c.AddTask(issueCert)
-		err := issueCert.AddFileTasks(c, pathSrvScheduler, "server", "", nil)
+		err := issueCert.AddFileTasks(c, secretsDir, "server", "", nil)
 		if err != nil {
 			return err
 		}
 
-		kubeScheduler.TLSCertFile = fi.PtrTo(filepath.Join(pathSrvScheduler, "server.crt"))
-		kubeScheduler.TLSPrivateKeyFile = filepath.Join(pathSrvScheduler, "server.key")
+		kubeScheduler.TLSCertFile = fi.PtrTo(filepath.Join(secretsDir, "server.crt"))
+		kubeScheduler.TLSPrivateKeyFile = filepath.Join(secretsDir, "server.key")
 	}
 
 	return nil
@@ -179,14 +198,15 @@ func (b *KubeSchedulerBuilder) writeServerCertificate(c *fi.NodeupModelBuilderCo
 
 // buildPod is responsible for constructing the pod specification
 func (b *KubeSchedulerBuilder) buildPod(kubeScheduler *kops.KubeSchedulerConfig) (*v1.Pod, error) {
-	pathSrvScheduler := filepath.Join(b.PathSrvKubernetes(), "kube-scheduler")
+	secretsDir := b.SecretsDir()
+	configDir := b.ConfigDir()
 
 	flags, err := flagbuilder.BuildFlagsList(kubeScheduler)
 	if err != nil {
 		return nil, fmt.Errorf("error building kube-scheduler flags: %v", err)
 	}
 
-	flags = append(flags, "--config="+"/var/lib/kube-scheduler/config.yaml")
+	flags = append(flags, "--config="+kubescheduler.KubeSchedulerConfigPath)
 
 	// Add kubeconfig flags
 	for _, flag := range []string{"authentication-", "authorization-"} {
@@ -241,8 +261,8 @@ func (b *KubeSchedulerBuilder) buildPod(kubeScheduler *kops.KubeSchedulerConfig)
 			},
 		},
 	}
-	kubemanifest.AddHostPathMapping(pod, container, "varlibkubescheduler", "/var/lib/kube-scheduler")
-	kubemanifest.AddHostPathMapping(pod, container, "srvscheduler", pathSrvScheduler)
+	kubemanifest.AddHostPathMapping(pod, container, "componentsecrets", secretsDir)
+	kubemanifest.AddHostPathMapping(pod, container, "componentconfig", configDir)
 
 	// Log both to docker and to the logfile
 	kubemanifest.AddHostPathMapping(pod, container, "logfile", "/var/log/kube-scheduler.log").WithReadWrite()
