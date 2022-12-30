@@ -71,8 +71,6 @@ func newValidateCluster(cluster *kops.Cluster, strict bool) field.ErrorList {
 		allErrs = append(allErrs, awsValidateCluster(cluster)...)
 	case kops.CloudProviderGCE:
 		allErrs = append(allErrs, gceValidateCluster(cluster)...)
-	case kops.CloudProviderOpenstack:
-		allErrs = append(allErrs, openstackValidateCluster(cluster)...)
 	}
 
 	return allErrs
@@ -609,6 +607,14 @@ func validateSubnet(subnet *kops.ClusterSubnetSpec, c *kops.ClusterSpec, fieldPa
 
 	if subnet.Type == kops.SubnetTypeDualStack && !c.IsIPv6Only() {
 		allErrs = append(allErrs, field.Forbidden(fieldPath.Child("type"), "subnet type DualStack may only be used in IPv6 clusters"))
+	}
+
+	if c.CloudProvider.Openstack != nil {
+		if c.CloudProvider.Openstack.Router == nil || c.CloudProvider.Openstack.Router.ExternalNetwork == nil {
+			if subnet.Type == kops.SubnetTypePublic {
+				allErrs = append(allErrs, field.Forbidden(fieldPath.Child("type"), "subnet type Public requires an external network"))
+			}
+		}
 	}
 
 	return allErrs
