@@ -373,7 +373,7 @@ func (b *KubeAPIServerBuilder) writeServerCertificate(c *fi.NodeupModelBuilderCo
 		if b.Cluster.Spec.API.PublicName != "" {
 			alternateNames = append(alternateNames, b.Cluster.Spec.API.PublicName)
 		}
-		alternateNames = append(alternateNames, "api.internal."+b.NodeupConfig.ClusterName)
+		alternateNames = append(alternateNames, b.APIInternalName())
 		alternateNames = append(alternateNames, b.Cluster.Spec.API.AdditionalSANs...)
 
 		// Load balancer IPs passed in through NodeupConfig
@@ -735,7 +735,7 @@ func (b *KubeAPIServerBuilder) buildAnnotations() map[string]string {
 	}
 
 	if b.Cluster.Spec.API.LoadBalancer == nil || !b.Cluster.Spec.API.LoadBalancer.UseForInternalAPI {
-		annotations["dns.alpha.kubernetes.io/internal"] = "api.internal." + b.NodeupConfig.ClusterName
+		annotations["dns.alpha.kubernetes.io/internal"] = b.APIInternalName()
 	}
 
 	if b.Cluster.Spec.API.DNS != nil && b.Cluster.Spec.API.PublicName != "" {
