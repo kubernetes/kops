@@ -1163,7 +1163,6 @@ resource "aws_subnet" "us-east-1a-utility-complex-example-com" {
     "foo/bar"                                   = "fib+baz"
     "kubernetes.io/cluster/complex.example.com" = "owned"
     "kubernetes.io/role/elb"                    = "1"
-    "kubernetes.io/role/internal-elb"           = "1"
   }
   vpc_id = aws_vpc.complex-example-com.id
 }
@@ -1183,7 +1182,6 @@ resource "aws_subnet" "us-test-1a-complex-example-com" {
     "kops.k8s.io/instance-group/nodes"             = "true"
     "kubernetes.io/cluster/complex.example.com"    = "owned"
     "kubernetes.io/role/elb"                       = "1"
-    "kubernetes.io/role/internal-elb"              = "1"
   }
   vpc_id = aws_vpc.complex-example-com.id
 }
