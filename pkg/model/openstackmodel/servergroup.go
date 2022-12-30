@@ -122,6 +122,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.CloudupModelBuilderContex
 
 		var az *string
 		var subnets []*openstacktasks.Subnet
+		havePublicSubnet := false
 		if len(ig.Spec.Subnets) > 0 {
 			subnet := ig.Spec.Subnets[int(i)%len(ig.Spec.Subnets)]
 			// bastion subnet name might contain a "utility-" prefix
@@ -131,11 +132,14 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.CloudupModelBuilderContex
 				az = fi.PtrTo(subnet)
 			}
 
-			subnetName, err := b.findSubnetClusterSpec(subnet)
+			subnetName, subnetType, err := b.findSubnetClusterSpec(subnet)
 			if err != nil {
 				return err
 			}
 			subnets = append(subnets, b.LinkToSubnet(s(subnetName)))
+			if subnetType == kops.SubnetTypePublic || subnetType == kops.SubnetTypeUtility {
+				havePublicSubnet = true
+			}
 		}
 		if len(ig.Spec.Zones) > 0 {
 			zone := ig.Spec.Zones[int(i)%len(ig.Spec.Zones)]
@@ -196,39 +200,21 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.CloudupModelBuilderContex
 		c.AddTask(instanceTask)
 
 		// Associate a floating IP to the instances if we have external network in router
-		// and respective topology is "public"
+		// and respective subnet is "Public" or "Utility".
 		if b.Cluster.Spec.CloudProvider.Openstack.Router != nil {
 			if ig.Spec.AssociatePublicIP != nil && !fi.ValueOf(ig.Spec.AssociatePublicIP) {
 				continue
 			}
-			switch ig.Spec.Role {
-			case kops.InstanceGroupRoleBastion:
+			if havePublicSubnet || ig.Spec.Role == kops.InstanceGroupRoleBastion {
 				t := &openstacktasks.FloatingIP{
 					Name:      fi.PtrTo(fmt.Sprintf("%s-%s", "fip", *instanceTask.Name)),
 					Lifecycle: b.Lifecycle,
 				}
 				c.AddTask(t)
-				instanceTask.FloatingIP = t
-			case kops.InstanceGroupRoleControlPlane:
-
-				if b.Cluster.Spec.Networking.Topology == nil || b.Cluster.Spec.Networking.Topology.ControlPlane != kops.TopologyPrivate {
-					t := &openstacktasks.FloatingIP{
-						Name:      fi.PtrTo(fmt.Sprintf("%s-%s", "fip", *instanceTask.Name)),
-						Lifecycle: b.Lifecycle,
-					}
-					c.AddTask(t)
+				if ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
 					b.associateFIPToKeypair(t)
-					instanceTask.FloatingIP = t
 				}
-			default:
-				if b.Cluster.Spec.Networking.Topology == nil || b.Cluster.Spec.Networking.Topology.Nodes != kops.TopologyPrivate {
-					t := &openstacktasks.FloatingIP{
-						Name:      fi.PtrTo(fmt.Sprintf("%s-%s", "fip", *instanceTask.Name)),
-						Lifecycle: b.Lifecycle,
-					}
-					c.AddTask(t)
-					instanceTask.FloatingIP = t
-				}
+				instanceTask.FloatingIP = t
 			}
 		}
 	}
