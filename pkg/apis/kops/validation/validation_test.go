@@ -17,6 +17,7 @@ limitations under the License.
 package validation
 
 import (
+	"net"
 	"testing"
 
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -66,7 +67,7 @@ func TestValidateCIDR(t *testing.T) {
 		},
 	}
 	for _, g := range grid {
-		errs := validateCIDR(g.Input, field.NewPath("CIDR"))
+		errs := validateCIDR(g.Input, field.NewPath("CIDR"), nil)
 
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 
@@ -191,10 +192,12 @@ func TestValidateSubnets(t *testing.T) {
 				AWS: &kops.AWSSpec{},
 			},
 			Networking: kops.NetworkingSpec{
-				Subnets: g.Input,
+				NetworkCIDR: "10.0.0.0/8",
+				Subnets:     g.Input,
 			},
 		}
-		errs := validateSubnets(cluster, field.NewPath("subnets"))
+		_, ipNet, _ := net.ParseCIDR(cluster.Networking.NetworkCIDR)
+		errs := validateSubnets(cluster, cluster.Networking.Subnets, field.NewPath("subnets"), true, &cloudProviderConstraints{}, []*net.IPNet{ipNet})
 
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
@@ -386,10 +389,23 @@ func Test_Validate_Networking_Flannel(t *testing.T) {
 		},
 	}
 	for _, g := range grid {
-		cluster := &kops.Cluster{}
-		cluster.Spec.Networking.Flannel = &g.Input
+		cluster := &kops.Cluster{
+			Spec: kops.ClusterSpec{
+				Networking: kops.NetworkingSpec{
+					NetworkCIDR: "10.0.0.0/8",
+					Subnets: []kops.ClusterSubnetSpec{
+						{
+							Name: "sg-test",
+							CIDR: "10.11.0.0/16",
+							Type: "Public",
+						},
+					},
+					Flannel: &g.Input,
+				},
+			},
+		}
 
-		errs := validateNetworking(cluster, &cluster.Spec.Networking, field.NewPath("networking"))
+		errs := validateNetworking(cluster, &cluster.Spec.Networking, field.NewPath("networking"), true, &cloudProviderConstraints{})
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }
@@ -436,9 +452,17 @@ func Test_Validate_AdditionalPolicies(t *testing.T) {
 		clusterSpec := &kops.ClusterSpec{
 			KubernetesVersion:  "1.17.0",
 			AdditionalPolicies: g.Input,
+			CloudProvider: kops.CloudProviderSpec{
+				AWS: &kops.AWSSpec{},
+			},
 			Networking: kops.NetworkingSpec{
+				NetworkCIDR: "10.10.0.0/16",
 				Subnets: []kops.ClusterSubnetSpec{
-					{Name: "subnet1", Type: kops.SubnetTypePublic},
+					{
+						Name: "subnet1",
+						Type: kops.SubnetTypePublic,
+						CIDR: "10.10.10.0/24",
+					},
 				},
 			},
 			EtcdClusters: []kops.EtcdClusterSpec{
@@ -453,7 +477,7 @@ func Test_Validate_AdditionalPolicies(t *testing.T) {
 				},
 			},
 		}
-		errs := validateClusterSpec(clusterSpec, &kops.Cluster{Spec: *clusterSpec}, field.NewPath("spec"))
+		errs := validateClusterSpec(clusterSpec, &kops.Cluster{Spec: *clusterSpec}, field.NewPath("spec"), true)
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }
