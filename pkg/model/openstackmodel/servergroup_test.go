@@ -67,6 +67,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						Subnets: []kops.ClusterSubnetSpec{
 							{
 								Name:   "subnet",
+								Type:   kops.SubnetTypePublic,
 								Region: "region",
 							},
 						},
@@ -129,10 +130,12 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						Subnets: []kops.ClusterSubnetSpec{
 							{
 								Name:   "subnet",
+								Type:   kops.SubnetTypePrivate,
 								Region: "region",
 							},
 							{
 								Name:   "utility-subnet",
+								Type:   kops.SubnetTypeUtility,
 								Region: "region",
 							},
 						},
@@ -220,14 +223,17 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						Subnets: []kops.ClusterSubnetSpec{
 							{
 								Name:   "subnet-a",
+								Type:   kops.SubnetTypePublic,
 								Region: "region",
 							},
 							{
 								Name:   "subnet-b",
+								Type:   kops.SubnetTypePublic,
 								Region: "region",
 							},
 							{
 								Name:   "subnet-c",
+								Type:   kops.SubnetTypePublic,
 								Region: "region",
 							},
 						},
@@ -346,6 +352,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						Subnets: []kops.ClusterSubnetSpec{
 							{
 								Name:   "subnet",
+								Type:   kops.SubnetTypePublic,
 								Region: "region",
 							},
 						},
@@ -703,14 +710,17 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						Subnets: []kops.ClusterSubnetSpec{
 							{
 								Name:   "subnet-a",
+								Type:   kops.SubnetTypePublic,
 								Region: "region",
 							},
 							{
 								Name:   "subnet-b",
+								Type:   kops.SubnetTypePublic,
 								Region: "region",
 							},
 							{
 								Name:   "subnet-c",
+								Type:   kops.SubnetTypePublic,
 								Region: "region",
 							},
 						},
@@ -829,14 +839,17 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						Subnets: []kops.ClusterSubnetSpec{
 							{
 								Name:   "subnet-a",
+								Type:   kops.SubnetTypePublic,
 								Region: "region",
 							},
 							{
 								Name:   "subnet-b",
+								Type:   kops.SubnetTypePublic,
 								Region: "region",
 							},
 							{
 								Name:   "subnet-c",
+								Type:   kops.SubnetTypePublic,
 								Region: "region",
 							},
 						},
@@ -915,6 +928,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						Subnets: []kops.ClusterSubnetSpec{
 							{
 								Name:   "subnet",
+								Type:   kops.SubnetTypePublic,
 								Region: "region",
 							},
 						},
@@ -979,10 +993,12 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						Subnets: []kops.ClusterSubnetSpec{
 							{
 								Name:   "subnet",
+								Type:   kops.SubnetTypePrivate,
 								Region: "region",
 							},
 							{
 								Name:   "utility-subnet",
+								Type:   kops.SubnetTypeUtility,
 								Region: "region",
 							},
 						},
@@ -1066,6 +1082,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						Subnets: []kops.ClusterSubnetSpec{
 							{
 								Name:   "subnet",
+								Type:   kops.SubnetTypePublic,
 								Region: "region",
 							},
 						},
@@ -1114,6 +1131,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						Subnets: []kops.ClusterSubnetSpec{
 							{
 								Name:   "subnet",
+								Type:   kops.SubnetTypePublic,
 								Region: "region",
 							},
 						},
@@ -1164,6 +1182,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						Subnets: []kops.ClusterSubnetSpec{
 							{
 								Name:   "subnet",
+								Type:   kops.SubnetTypePublic,
 								Region: "region",
 							},
 						},
@@ -1212,6 +1231,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						Subnets: []kops.ClusterSubnetSpec{
 							{
 								Name:   "subnet",
+								Type:   kops.SubnetTypePublic,
 								Region: "region",
 							},
 						},
@@ -1260,6 +1280,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						Subnets: []kops.ClusterSubnetSpec{
 							{
 								Name:   "subnet",
+								Type:   kops.SubnetTypePublic,
 								Region: "region",
 							},
 						},
@@ -1308,6 +1329,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						Subnets: []kops.ClusterSubnetSpec{
 							{
 								Name:   "subnet",
+								Type:   kops.SubnetTypePublic,
 								Region: "region",
 							},
 						},

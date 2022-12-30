@@ -400,13 +400,11 @@ func (b *KubeAPIServerBuilder) writeServerCertificate(c *fi.NodeupModelBuilderCo
 			}
 		}
 		if b.BootConfig.CloudProvider == kops.CloudProviderOpenstack {
-			if b.Cluster.Spec.Networking.Topology != nil && b.Cluster.Spec.Networking.Topology.ControlPlane == kops.TopologyPrivate {
-				instanceAddress, err := getInstanceAddress()
-				if err != nil {
-					return err
-				}
-				alternateNames = append(alternateNames, instanceAddress)
+			instanceAddress, err := getInstanceAddress()
+			if err != nil {
+				return err
 			}
+			alternateNames = append(alternateNames, instanceAddress)
 		}
 
 		issueCert := &nodetasks.IssueCert{
