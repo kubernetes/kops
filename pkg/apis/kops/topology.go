@@ -26,10 +26,10 @@ var SupportedTopologies = []string{
 	TopologyPrivate,
 }
 
-var SupportedDnsTypes = []string{
-	string(DNSTypePublic),
-	string(DNSTypePrivate),
-	string(DNSTypeNone),
+var SupportedDnsTypes = []DNSType{
+	DNSTypePublic,
+	DNSTypePrivate,
+	DNSTypeNone,
 }
 
 type TopologySpec struct {
