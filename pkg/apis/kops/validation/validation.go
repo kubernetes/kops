@@ -237,14 +237,30 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 	if spec.API.LoadBalancer != nil {
 		lbSpec := spec.API.LoadBalancer
 		lbPath := fieldPath.Child("api", "loadBalancer")
-		if spec.GetCloudProvider() == kops.CloudProviderAWS {
-			value := string(lbSpec.Class)
-			allErrs = append(allErrs, IsValidValue(lbPath.Child("class"), &value, kops.SupportedLoadBalancerClasses)...)
-			if lbSpec.SSLCertificate != "" && lbSpec.Class != kops.LoadBalancerClassNetwork {
-				allErrs = append(allErrs, field.Forbidden(lbPath, "sslCertificate requires network loadbalancer. See https://github.com/kubernetes/kops/blob/master/permalinks/acm_nlb.md"))
+		if spec.GetCloudProvider() != kops.CloudProviderAWS {
+			if lbSpec.Class != "" {
+				allErrs = append(allErrs, field.Forbidden(lbPath.Child("class"), "class is only supported on AWS"))
 			}
-			if lbSpec.Class == kops.LoadBalancerClassNetwork && lbSpec.UseForInternalAPI && lbSpec.Type == kops.LoadBalancerTypeInternal {
-				allErrs = append(allErrs, field.Forbidden(lbPath, "useForInternalAPI cannot be used with internal NLB due lack of hairpinning support"))
+			if lbSpec.IdleTimeoutSeconds != nil {
+				allErrs = append(allErrs, field.Forbidden(lbPath.Child("idleTimeoutSeconds"), "idleTimeoutSeconds is only supported on AWS"))
+			}
+			if lbSpec.SecurityGroupOverride != nil {
+				allErrs = append(allErrs, field.Forbidden(lbPath.Child("securityGroupOverride"), "securityGroupOverride is only supported on AWS"))
+			}
+			if lbSpec.AdditionalSecurityGroups != nil {
+				allErrs = append(allErrs, field.Forbidden(lbPath.Child("additionalSecurityGroups"), "additionalSecurityGroups is only supported on AWS"))
+			}
+			if lbSpec.SSLCertificate != "" {
+				allErrs = append(allErrs, field.Forbidden(lbPath.Child("sslCertificate"), "sslCertificate is only supported on AWS"))
+			}
+			if lbSpec.SSLPolicy != nil {
+				allErrs = append(allErrs, field.Forbidden(lbPath.Child("sslPolicy"), "sslPolicy is only supported on AWS"))
+			}
+			if lbSpec.CrossZoneLoadBalancing != nil {
+				allErrs = append(allErrs, field.Forbidden(lbPath.Child("crossZoneLoadBalancing"), "crossZoneLoadBalancing is only supported on AWS"))
+			}
+			if lbSpec.AccessLog != nil {
+				allErrs = append(allErrs, field.Forbidden(lbPath.Child("accessLog"), "accessLog is only supported on AWS"))
 			}
 		}
 
