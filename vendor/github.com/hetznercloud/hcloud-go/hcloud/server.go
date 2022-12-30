@@ -664,7 +664,7 @@ func (c *ServerClient) CreateImage(ctx context.Context, server *Server, opts *Se
 			reqBody.Description = opts.Description
 		}
 		if opts.Type != "" {
-			reqBody.Type = String(string(opts.Type))
+			reqBody.Type = Ptr(string(opts.Type))
 		}
 		if opts.Labels != nil {
 			reqBody.Labels = &opts.Labels
@@ -707,7 +707,7 @@ type ServerEnableRescueResult struct {
 // EnableRescue enables rescue mode for a server.
 func (c *ServerClient) EnableRescue(ctx context.Context, server *Server, opts ServerEnableRescueOpts) (ServerEnableRescueResult, *Response, error) {
 	reqBody := schema.ServerActionEnableRescueRequest{
-		Type: String(string(opts.Type)),
+		Type: Ptr(string(opts.Type)),
 	}
 	for _, sshKey := range opts.SSHKeys {
 		reqBody.SSHKeys = append(reqBody.SSHKeys, sshKey.ID)
@@ -832,7 +832,7 @@ func (c *ServerClient) DetachISO(ctx context.Context, server *Server) (*Action, 
 func (c *ServerClient) EnableBackup(ctx context.Context, server *Server, window string) (*Action, *Response, error) {
 	reqBody := schema.ServerActionEnableBackupRequest{}
 	if window != "" {
-		reqBody.BackupWindow = String(window)
+		reqBody.BackupWindow = Ptr(window)
 	}
 	reqBodyData, err := json.Marshal(reqBody)
 	if err != nil {
@@ -985,10 +985,10 @@ func (c *ServerClient) AttachToNetwork(ctx context.Context, server *Server, opts
 		Network: opts.Network.ID,
 	}
 	if opts.IP != nil {
-		reqBody.IP = String(opts.IP.String())
+		reqBody.IP = Ptr(opts.IP.String())
 	}
 	for _, aliasIP := range opts.AliasIPs {
-		reqBody.AliasIPs = append(reqBody.AliasIPs, String(aliasIP.String()))
+		reqBody.AliasIPs = append(reqBody.AliasIPs, Ptr(aliasIP.String()))
 	}
 	reqBodyData, err := json.Marshal(reqBody)
 	if err != nil {

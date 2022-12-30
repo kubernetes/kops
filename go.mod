@@ -14,7 +14,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/apparentlymart/go-cidr v1.1.0
 	github.com/aws/amazon-ec2-instance-selector/v2 v2.4.0
-	github.com/aws/aws-sdk-go v1.44.166
+	github.com/aws/aws-sdk-go v1.44.170
 	github.com/blang/semver/v4 v4.0.0
 	github.com/cert-manager/cert-manager v1.10.1
 	github.com/digitalocean/godo v1.93.0
@@ -27,7 +27,7 @@ require (
 	github.com/google/go-tpm-tools v0.3.10
 	github.com/google/uuid v1.3.0
 	github.com/gophercloud/gophercloud v1.1.1
-	github.com/hetznercloud/hcloud-go v1.38.0
+	github.com/hetznercloud/hcloud-go v1.39.0
 	github.com/jacksontj/memberlistmesh v0.0.0-20190905163944-93462b9d2bb7
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/pelletier/go-toml v1.9.5
@@ -43,7 +43,7 @@ require (
 	github.com/weaveworks/mesh v0.0.0-20191105120815-58dbcc3e8e63
 	go.uber.org/multierr v1.9.0
 	golang.org/x/crypto v0.4.0
-	golang.org/x/exp v0.0.0-20221217163422-3c43f8badb15
+	golang.org/x/exp v0.0.0-20221229233502-02c3fc3b3eb4
 	golang.org/x/net v0.4.0
 	golang.org/x/oauth2 v0.3.0
 	golang.org/x/sync v0.1.0

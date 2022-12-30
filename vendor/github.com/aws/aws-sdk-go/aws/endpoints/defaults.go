@@ -38,7 +38,7 @@ const (
 	EuWest3RegionID      = "eu-west-3"      // Europe (Paris).
 	MeCentral1RegionID   = "me-central-1"   // Middle East (UAE).
 	MeSouth1RegionID     = "me-south-1"     // Middle East (Bahrain).
-	SaEast1RegionID      = "sa-east-1"      // South America (Sao Paulo).
+	SaEast1RegionID      = "sa-east-1"      // South America (São Paulo).
 	UsEast1RegionID      = "us-east-1"      // US East (N. Virginia).
 	UsEast2RegionID      = "us-east-2"      // US East (Ohio).
 	UsWest1RegionID      = "us-west-1"      // US West (N. California).
@@ -206,7 +206,7 @@ var awsPartition = partition{
 			Description: "Middle East (Bahrain)",
 		},
 		"sa-east-1": region{
-			Description: "South America (Sao Paulo)",
+			Description: "South America (São Paulo)",
 		},
 		"us-east-1": region{
 			Description: "US East (N. Virginia)",
@@ -17532,6 +17532,9 @@ var awsPartition = partition{
 					Region: "ap-southeast-2",
 				}: endpoint{},
 				endpointKey{
+					Region: "ap-southeast-3",
+				}: endpoint{},
+				endpointKey{
 					Region: "ca-central-1",
 				}: endpoint{},
 				endpointKey{
@@ -23056,6 +23059,15 @@ var awsPartition = partition{
 					Hostname: "servicediscovery.ap-south-1.amazonaws.com",
 				},
 				endpointKey{
+					Region: "ap-south-2",
+				}: endpoint{},
+				endpointKey{
+					Region:  "ap-south-2",
+					Variant: dualStackVariant,
+				}: endpoint{
+					Hostname: "servicediscovery.ap-south-2.amazonaws.com",
+				},
+				endpointKey{
 					Region: "ap-southeast-1",
 				}: endpoint{},
 				endpointKey{
@@ -23116,6 +23128,15 @@ var awsPartition = partition{
 					Hostname: "servicediscovery.eu-central-1.amazonaws.com",
 				},
 				endpointKey{
+					Region: "eu-central-2",
+				}: endpoint{},
+				endpointKey{
+					Region:  "eu-central-2",
+					Variant: dualStackVariant,
+				}: endpoint{
+					Hostname: "servicediscovery.eu-central-2.amazonaws.com",
+				},
+				endpointKey{
 					Region: "eu-north-1",
 				}: endpoint{},
 				endpointKey{
@@ -23132,6 +23153,15 @@ var awsPartition = partition{
 					Variant: dualStackVariant,
 				}: endpoint{
 					Hostname: "servicediscovery.eu-south-1.amazonaws.com",
+				},
+				endpointKey{
+					Region: "eu-south-2",
+				}: endpoint{},
+				endpointKey{
+					Region:  "eu-south-2",
+					Variant: dualStackVariant,
+				}: endpoint{
+					Hostname: "servicediscovery.eu-south-2.amazonaws.com",
 				},
 				endpointKey{
 					Region: "eu-west-1",
@@ -23680,6 +23710,12 @@ var awsPartition = partition{
 					Region: "ca-central-1",
 				}: endpoint{},
 				endpointKey{
+					Region:  "ca-central-1",
+					Variant: fipsVariant,
+				}: endpoint{
+					Hostname: "sms-voice-fips.ca-central-1.amazonaws.com",
+				},
+				endpointKey{
 					Region: "eu-central-1",
 				}: endpoint{},
 				endpointKey{
@@ -23689,11 +23725,50 @@ var awsPartition = partition{
 					Region: "eu-west-2",
 				}: endpoint{},
 				endpointKey{
+					Region: "fips-ca-central-1",
+				}: endpoint{
+					Hostname: "sms-voice-fips.ca-central-1.amazonaws.com",
+					CredentialScope: credentialScope{
+						Region: "ca-central-1",
+					},
+					Deprecated: boxedTrue,
+				},
+				endpointKey{
+					Region: "fips-us-east-1",
+				}: endpoint{
+					Hostname: "sms-voice-fips.us-east-1.amazonaws.com",
+					CredentialScope: credentialScope{
+						Region: "us-east-1",
+					},
+					Deprecated: boxedTrue,
+				},
+				endpointKey{
+					Region: "fips-us-west-2",
+				}: endpoint{
+					Hostname: "sms-voice-fips.us-west-2.amazonaws.com",
+					CredentialScope: credentialScope{
+						Region: "us-west-2",
+					},
+					Deprecated: boxedTrue,
+				},
+				endpointKey{
 					Region: "us-east-1",
 				}: endpoint{},
 				endpointKey{
+					Region:  "us-east-1",
+					Variant: fipsVariant,
+				}: endpoint{
+					Hostname: "sms-voice-fips.us-east-1.amazonaws.com",
+				},
+				endpointKey{
 					Region: "us-west-2",
 				}: endpoint{},
+				endpointKey{
+					Region:  "us-west-2",
+					Variant: fipsVariant,
+				}: endpoint{
+					Hostname: "sms-voice-fips.us-west-2.amazonaws.com",
+				},
 			},
 		},
 		"snowball": service{
@@ -26200,6 +26275,21 @@ var awsPartition = partition{
 					Region: "ca-central-1",
 				}: endpoint{},
 				endpointKey{
+					Region:  "ca-central-1",
+					Variant: fipsVariant,
+				}: endpoint{
+					Hostname: "voice-chime-fips.ca-central-1.amazonaws.com",
+				},
+				endpointKey{
+					Region: "ca-central-1-fips",
+				}: endpoint{
+					Hostname: "voice-chime-fips.ca-central-1.amazonaws.com",
+					CredentialScope: credentialScope{
+						Region: "ca-central-1",
+					},
+					Deprecated: boxedTrue,
+				},
+				endpointKey{
 					Region: "eu-central-1",
 				}: endpoint{},
 				endpointKey{
@@ -26215,12 +26305,12 @@ var awsPartition = partition{
 					Region:  "us-east-1",
 					Variant: fipsVariant,
 				}: endpoint{
-					Hostname: "fips.voice-chime.us-east-1.amazonaws.com",
+					Hostname: "voice-chime-fips.us-east-1.amazonaws.com",
 				},
 				endpointKey{
 					Region: "us-east-1-fips",
 				}: endpoint{
-					Hostname: "fips.voice-chime.us-east-1.amazonaws.com",
+					Hostname: "voice-chime-fips.us-east-1.amazonaws.com",
 					CredentialScope: credentialScope{
 						Region: "us-east-1",
 					},
@@ -26233,12 +26323,12 @@ var awsPartition = partition{
 					Region:  "us-west-2",
 					Variant: fipsVariant,
 				}: endpoint{
-					Hostname: "fips.voice-chime.us-west-2.amazonaws.com",
+					Hostname: "voice-chime-fips.us-west-2.amazonaws.com",
 				},
 				endpointKey{
 					Region: "us-west-2-fips",
 				}: endpoint{
-					Hostname: "fips.voice-chime.us-west-2.amazonaws.com",
+					Hostname: "voice-chime-fips.us-west-2.amazonaws.com",
 					CredentialScope: credentialScope{
 						Region: "us-west-2",
 					},
@@ -33121,6 +33211,13 @@ var awsusgovPartition = partition{
 				},
 			},
 		},
+		"pi": service{
+			Endpoints: serviceEndpoints{
+				endpointKey{
+					Region: "us-gov-east-1",
+				}: endpoint{},
+			},
+		},
 		"pinpoint": service{
 			Defaults: endpointDefaults{
 				defaultKey{}: endpoint{
@@ -34167,8 +34264,23 @@ var awsusgovPartition = partition{
 		"sms-voice": service{
 			Endpoints: serviceEndpoints{
 				endpointKey{
+					Region: "fips-us-gov-west-1",
+				}: endpoint{
+					Hostname: "sms-voice-fips.us-gov-west-1.amazonaws.com",
+					CredentialScope: credentialScope{
+						Region: "us-gov-west-1",
+					},
+					Deprecated: boxedTrue,
+				},
+				endpointKey{
 					Region: "us-gov-west-1",
 				}: endpoint{},
+				endpointKey{
+					Region:  "us-gov-west-1",
+					Variant: fipsVariant,
+				}: endpoint{
+					Hostname: "sms-voice-fips.us-gov-west-1.amazonaws.com",
+				},
 			},
 		},
 		"snowball": service{
