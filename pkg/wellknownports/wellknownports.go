@@ -73,6 +73,9 @@ const (
 	// VxlanUDP is the port used by VXLAN tunneling over UDP
 	VxlanUDP = 8472
 
+	// AWSLBCMetricsPort is reserved for the AWS Load Balancer Controller's metrics.
+	AWSLBCMetricsPort = 9442
+
 	// KubeletAPI is the port where kubelet listens
 	KubeletAPI = 10250
 )
