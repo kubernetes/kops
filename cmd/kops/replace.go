@@ -138,6 +138,12 @@ func RunReplace(ctx context.Context, f *util.Factory, out io.Writer, c *ReplaceO
 						if !c.Force {
 							return fmt.Errorf("cluster %v does not exist (try adding --force flag)", clusterName)
 						}
+
+						err = cloudup.PerformAssignments(v, cloud)
+						if err != nil {
+							return fmt.Errorf("error populating configuration: %v", err)
+						}
+
 						_, err = clientset.CreateCluster(ctx, v)
 						if err != nil {
 							return fmt.Errorf("error creating cluster: %v", err)
