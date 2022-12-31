@@ -217,9 +217,14 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	infoByZone := make(map[string]*zoneInfo)
 
 	haveDualStack := map[string]bool{}
+	haveAnyPrivate := false
 	for _, subnetSpec := range b.Cluster.Spec.Networking.Subnets {
-		if subnetSpec.Type == kops.SubnetTypeDualStack {
+		switch subnetSpec.Type {
+		case kops.SubnetTypeDualStack:
 			haveDualStack[subnetSpec.Zone] = true
+			haveAnyPrivate = true
+		case kops.SubnetTypePrivate:
+			haveAnyPrivate = true
 		}
 	}
 
@@ -240,8 +245,8 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				tags[aws.TagNameSubnetPublicELB] = "1"
 
 				// AWS ALB contoller won't provision any internal ELBs unless this tag is set.
-				// So we add this to public subnets as well if we do not expect any private subnets.
-				if b.Cluster.Spec.Networking.Topology.Nodes == kops.TopologyPublic {
+				// So we add this to public subnets as well if we do not have any private subnets.
+				if !haveAnyPrivate {
 					tags[aws.TagNameSubnetInternalELB] = "1"
 				}
 
