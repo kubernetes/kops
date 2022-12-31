@@ -518,14 +518,9 @@ func validateTopology(c *kops.Cluster, topology *kops.TopologySpec, fieldPath *f
 func validateSubnets(c *kops.ClusterSpec, subnets []kops.ClusterSubnetSpec, fieldPath *field.Path, strict bool, providerConstraints *cloudProviderConstraints, networkCIDRs []*net.IPNet) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	// TODO these both can't be right. Can some cloud providers truly avoid specifying subnets?
 	if providerConstraints.requiresSubnets && len(subnets) == 0 {
 		// TODO: Auto choose zones from region?
 		allErrs = append(allErrs, field.Required(fieldPath, "must configure at least one subnet (use --zones)"))
-	}
-	// cannot be empty
-	if len(subnets) == 0 {
-		allErrs = append(allErrs, field.Required(fieldPath, ""))
 	}
 
 	// Each subnet must be valid
