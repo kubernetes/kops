@@ -48,10 +48,12 @@ func newClusterVFS(basePath vfs.Path) *ClusterVFS {
 }
 
 func (c *ClusterVFS) Get(name string, options metav1.GetOptions) (*api.Cluster, error) {
+	ctx := context.TODO()
+
 	if options.ResourceVersion != "" {
 		return nil, fmt.Errorf("ResourceVersion not supported in ClusterVFS::Get")
 	}
-	o, err := c.find(name)
+	o, err := c.find(ctx, name)
 	if err != nil {
 		return nil, err
 	}
@@ -71,6 +73,8 @@ func (c *ClusterVFS) configBase(clusterName string) (vfs.Path, error) {
 }
 
 func (c *ClusterVFS) List(options metav1.ListOptions) (*api.ClusterList, error) {
+	ctx := context.TODO()
+
 	names, err := c.listNames()
 	if err != nil {
 		return nil, err
@@ -79,7 +83,7 @@ func (c *ClusterVFS) List(options metav1.ListOptions) (*api.ClusterList, error) 
 	var items []api.Cluster
 
 	for _, clusterName := range names {
-		cluster, err := c.find(clusterName)
+		cluster, err := c.find(ctx, clusterName)
 		if err != nil {
 			klog.Warningf("cluster %q found in state store listing, but cannot be loaded: %v", clusterName, err)
 			continue
@@ -180,13 +184,13 @@ func (r *ClusterVFS) listNames() ([]string, error) {
 	return keys, nil
 }
 
-func (r *ClusterVFS) find(clusterName string) (*api.Cluster, error) {
+func (r *ClusterVFS) find(ctx context.Context, clusterName string) (*api.Cluster, error) {
 	if clusterName == "" {
 		return nil, fmt.Errorf("clusterName is required")
 	}
 	configPath := r.basePath.Join(clusterName, registry.PathCluster)
 
-	o, err := r.readConfig(configPath)
+	o, err := r.readConfig(ctx, configPath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, nil

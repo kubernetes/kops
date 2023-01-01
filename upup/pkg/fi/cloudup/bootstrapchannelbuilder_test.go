@@ -112,7 +112,7 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 	}
 	cluster = fullSpec
 
-	templates, err := templates.LoadTemplates(cluster, models.NewAssetPath("cloudup/resources"))
+	templates, err := templates.LoadTemplates(ctx, cluster, models.NewAssetPath("cloudup/resources"))
 	if err != nil {
 		t.Fatalf("error building templates for %q: %v", key, err)
 	}

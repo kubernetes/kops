@@ -17,6 +17,7 @@ limitations under the License.
 package vfs
 
 import (
+	"context"
 	"sync"
 	"time"
 )
@@ -44,6 +45,8 @@ type cacheEntry struct {
 }
 
 func (c *Cache) Read(p Path, ttl time.Duration) ([]byte, error) {
+	ctx := context.TODO()
+
 	key := p.Path()
 
 	c.mutex.Lock()
@@ -62,7 +65,7 @@ func (c *Cache) Read(p Path, ttl time.Duration) ([]byte, error) {
 		return entry.Contents, nil
 	}
 
-	b, err := p.ReadFile()
+	b, err := p.ReadFile(ctx)
 	if err != nil {
 		return nil, err
 	}
