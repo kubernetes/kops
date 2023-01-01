@@ -227,7 +227,7 @@ func (p *GSPath) CreateFile(ctx context.Context, data io.ReadSeeker, acl ACL) er
 	defer createFileLockGCS.Unlock()
 
 	// Check if exists
-	_, err := p.ReadFile()
+	_, err := p.ReadFile(ctx)
 	if err == nil {
 		return os.ErrExist
 	}
@@ -240,7 +240,7 @@ func (p *GSPath) CreateFile(ctx context.Context, data io.ReadSeeker, acl ACL) er
 }
 
 // ReadFile implements Path::ReadFile
-func (p *GSPath) ReadFile() ([]byte, error) {
+func (p *GSPath) ReadFile(ctx context.Context) ([]byte, error) {
 	var b bytes.Buffer
 	done, err := RetryWithBackoff(gcsReadBackoff, func() (bool, error) {
 		b.Reset()

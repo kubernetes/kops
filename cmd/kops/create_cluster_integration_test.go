@@ -318,7 +318,7 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 	}
 
 	// Compare additional objects
-	addons, err := clientset.AddonsFor(&clusters.Items[0]).List()
+	addons, err := clientset.AddonsFor(&clusters.Items[0]).List(ctx)
 	if err != nil {
 		t.Fatalf("error listing addons: %v", err)
 	}

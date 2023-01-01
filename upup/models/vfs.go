@@ -63,7 +63,9 @@ func (p *AssetPath) CreateFile(ctx context.Context, data io.ReadSeeker, acl vfs.
 
 // WriteTo implements io.WriterTo
 func (p *AssetPath) WriteTo(out io.Writer) (int64, error) {
-	data, err := p.ReadFile()
+	ctx := context.TODO()
+
+	data, err := p.ReadFile(ctx)
 	if err != nil {
 		return 0, err
 	}
@@ -72,7 +74,7 @@ func (p *AssetPath) WriteTo(out io.Writer) (int64, error) {
 }
 
 // ReadFile implements Path::ReadFile
-func (p *AssetPath) ReadFile() ([]byte, error) {
+func (p *AssetPath) ReadFile(ctx context.Context) ([]byte, error) {
 	data, err := content.ReadFile(p.location)
 	if _, ok := err.(*fs.PathError); ok {
 		return nil, os.ErrNotExist

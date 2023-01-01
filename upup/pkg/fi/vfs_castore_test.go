@@ -113,7 +113,7 @@ func TestVFSCAStoreRoundTrip(t *testing.T) {
 
 	// Check private/kubernetes-ca/keyset.yaml round-tripped
 	{
-		privateKeysetYaml, err := pathMap["memfs://tests/private/kubernetes-ca/keyset.yaml"].ReadFile()
+		privateKeysetYaml, err := pathMap["memfs://tests/private/kubernetes-ca/keyset.yaml"].ReadFile(ctx)
 		if err != nil {
 			t.Fatalf("error reading file memfs://tests/private/kubernetes-ca/keyset.yaml: %v", err)
 		}

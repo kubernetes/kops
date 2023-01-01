@@ -121,7 +121,7 @@ func serverVersion(f *util.Factory, options *VersionOptions) string {
 		return "could not talk to vfs"
 	}
 
-	kopsVersionUpdatedBytes, err := configBase.Join(registry.PathKopsVersionUpdated).ReadFile()
+	kopsVersionUpdatedBytes, err := configBase.Join(registry.PathKopsVersionUpdated).ReadFile(ctx)
 	if err != nil {
 		return "could get cluster version"
 	}

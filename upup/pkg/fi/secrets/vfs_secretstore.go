@@ -98,8 +98,10 @@ func (c *VFSSecretStore) buildSecretPath(name string) vfs.Path {
 }
 
 func (c *VFSSecretStore) FindSecret(id string) (*fi.Secret, error) {
+	ctx := context.TODO()
+
 	p := c.buildSecretPath(id)
-	s, err := c.loadSecret(p)
+	s, err := c.loadSecret(ctx, p)
 	if err != nil {
 		return nil, err
 	}
@@ -173,7 +175,7 @@ func (c *VFSSecretStore) GetOrCreateSecret(ctx context.Context, id string, secre
 	}
 
 	// Make double-sure it round-trips
-	s, err := c.loadSecret(p)
+	s, err := c.loadSecret(ctx, p)
 	if err != nil {
 		klog.Fatalf("unable to load secret immediately after creation %v: %v", p, err)
 		return nil, false, err
@@ -197,15 +199,15 @@ func (c *VFSSecretStore) ReplaceSecret(id string, secret *fi.Secret) (*fi.Secret
 	}
 
 	// Confirm the secret exists
-	s, err := c.loadSecret(p)
+	s, err := c.loadSecret(ctx, p)
 	if err != nil {
 		return nil, fmt.Errorf("unable to load secret immediately after creation %v: %v", p, err)
 	}
 	return s, nil
 }
 
-func (c *VFSSecretStore) loadSecret(p vfs.Path) (*fi.Secret, error) {
-	data, err := p.ReadFile()
+func (c *VFSSecretStore) loadSecret(ctx context.Context, p vfs.Path) (*fi.Secret, error) {
+	data, err := p.ReadFile(ctx)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, nil

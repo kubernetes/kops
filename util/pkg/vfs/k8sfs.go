@@ -95,7 +95,7 @@ func (p *KubernetesPath) CreateFile(ctx context.Context, data io.ReadSeeker, acl
 }
 
 // ReadFile implements Path::ReadFile
-func (p *KubernetesPath) ReadFile() ([]byte, error) {
+func (p *KubernetesPath) ReadFile(ctx context.Context) ([]byte, error) {
 	var b bytes.Buffer
 	_, err := p.WriteTo(&b)
 	if err != nil {

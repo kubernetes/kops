@@ -115,7 +115,7 @@ func (p *FSPath) CreateFile(ctx context.Context, data io.ReadSeeker, acl ACL) er
 }
 
 // ReadFile implements Path::ReadFile
-func (p *FSPath) ReadFile() ([]byte, error) {
+func (p *FSPath) ReadFile(ctx context.Context) ([]byte, error) {
 	file, err := os.ReadFile(p.location)
 	if errors.Is(err, syscall.ENOENT) {
 		err = os.ErrNotExist

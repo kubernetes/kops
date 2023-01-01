@@ -35,6 +35,8 @@ var _ fi.NodeupModelBuilder = &ManifestsBuilder{}
 
 // Build creates tasks for copying the manifests
 func (b *ManifestsBuilder) Build(c *fi.NodeupModelBuilderContext) error {
+	ctx := c.Context()
+
 	// Write etcd manifests (currently etcd <=> master)
 	if b.IsMaster {
 		for _, manifest := range b.NodeupConfig.EtcdManifests {
@@ -42,7 +44,7 @@ func (b *ManifestsBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			if err != nil {
 				return fmt.Errorf("error parsing path for etcd manifest %s: %v", manifest, err)
 			}
-			data, err := p.ReadFile()
+			data, err := p.ReadFile(ctx)
 			if err != nil {
 				return fmt.Errorf("error reading etcd manifest %s: %v", manifest, err)
 			}
