@@ -576,14 +576,14 @@ resource "google_storage_bucket_object" "keys-json" {
   source   = "${path.module}/data/google_storage_bucket_object_keys.json_content"
 }
 
-resource "google_storage_object_access_control" "discovery-json" {
+resource "google_storage_object_acl" "discovery-json" {
   bucket      = "mock-public-discovery"
   object      = google_storage_bucket_object.discovery-json.output_name
   provider    = google.files
   role_entity = ["READER:user-12345678-compute@developer.gserviceaccount.com"]
 }
 
-resource "google_storage_object_access_control" "keys-json" {
+resource "google_storage_object_acl" "keys-json" {
   bucket      = "mock-public-discovery"
   object      = google_storage_bucket_object.keys-json.output_name
   provider    = google.files

@@ -495,7 +495,7 @@ func (p *GSPath) RenderTerraform(w *terraformWriter.TerraformWriter, name string
 			// https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/storage_object_acl#role_entity
 			tfACL.RoleEntity = append(tfACL.RoleEntity, fmt.Sprintf("%v:%v", re.Role, re.Entity))
 		}
-		return w.RenderResource("google_storage_object_access_control", name, tfACL)
+		return w.RenderResource("google_storage_object_acl", name, tfACL)
 	}
 	return nil
 }
