@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"sort"
 
+	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
@@ -132,11 +133,13 @@ func (t *TerraformTarget) writeProviders(buf *bytes.Buffer) {
 		Write(buf, 0, fmt.Sprintf("provider %q", providerName))
 	buf.WriteString("\n")
 
-	// Add the second provider definition for managed files
-	if t.filesProvider != nil {
+	// Add any additional provider definition for managed files
+	keys := sortedKeysForMap(t.TerraformWriter.Providers)
+	for _, key := range keys {
+		provider := t.TerraformWriter.Providers[key]
 		providerBody := map[string]string{}
 		providerBody["alias"] = "files"
-		for k, v := range t.filesProvider.Arguments {
+		for k, v := range provider.Arguments {
 			providerBody[k] = v
 		}
 		for k, v := range tfGetFilesProviderExtraConfig(t.clusterSpecTarget) {
@@ -144,9 +147,18 @@ func (t *TerraformTarget) writeProviders(buf *bytes.Buffer) {
 		}
 		mapToElement(providerBody).
 			ToObject().
-			Write(buf, 0, fmt.Sprintf("provider %q", t.filesProvider.Name))
+			Write(buf, 0, fmt.Sprintf("provider %q", provider.Name))
 		buf.WriteString("\n")
 	}
+}
+
+func sortedKeysForMap[K ~string, V any](m map[K]V) []K {
+	var keys []K
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
+	return keys
 }
 
 func (t *TerraformTarget) writeResources(buf *bytes.Buffer, resourcesByType map[string]map[string]interface{}) {
@@ -196,29 +208,66 @@ func (t *TerraformTarget) writeTerraform(buf *bytes.Buffer) {
 	buf.WriteString("  required_version = \">= 0.15.0\"\n")
 	buf.WriteString("  required_providers {\n")
 
+	providers := make(map[string]bool)
+	providerAliases := make(map[string][]string)
 	if t.Cloud.ProviderID() == kops.CloudProviderGCE {
-		mapToElement(map[string]string{
-			"source":  "hashicorp/google",
-			"version": ">= 2.19.0",
-		}).Write(buf, 4, "google")
+		providers["google"] = true
 	} else if t.Cloud.ProviderID() == kops.CloudProviderHetzner {
-		mapToElement(map[string]string{
-			"source":  "hetznercloud/hcloud",
-			"version": ">= 1.35.1",
-		}).Write(buf, 4, "hcloud")
+		providers["hcloud"] = true
 	} else if t.Cloud.ProviderID() == kops.CloudProviderAWS {
-		configurationAlias := terraformWriter.LiteralTokens("aws", "files")
-		mapToElement(map[string]*terraformWriter.Literal{
-			"source":                terraformWriter.LiteralFromStringValue("hashicorp/aws"),
-			"version":               terraformWriter.LiteralFromStringValue(">= 4.0.0"),
-			"configuration_aliases": terraformWriter.LiteralListExpression(configurationAlias),
-		}).Write(buf, 4, "aws")
+		providers["aws"] = true
 		if featureflag.Spotinst.Enabled() {
-			mapToElement(map[string]string{
-				"source":  "spotinst/spotinst",
-				"version": ">= 1.33.0",
-			}).Write(buf, 4, "spotinst")
+			providers["spotinst"] = true
 		}
+	}
+
+	for _, tfProvider := range t.TerraformWriter.Providers {
+		providers[tfProvider.Name] = true
+		providerAliases[tfProvider.Name] = append(providerAliases[tfProvider.Name], "files")
+	}
+
+	providerKeys := sortedKeysForMap(providers)
+	for _, provider := range providerKeys {
+		var tf map[string]*terraformWriter.Literal
+		switch provider {
+		case "aws":
+			tf = map[string]*terraformWriter.Literal{
+				"source":  terraformWriter.LiteralFromStringValue("hashicorp/aws"),
+				"version": terraformWriter.LiteralFromStringValue(">= 4.0.0"),
+			}
+
+		case "google":
+			tf = map[string]*terraformWriter.Literal{
+				"source":  terraformWriter.LiteralFromStringValue("hashicorp/google"),
+				"version": terraformWriter.LiteralFromStringValue(">= 2.19.0"),
+			}
+
+		case "hcloud":
+			tf = map[string]*terraformWriter.Literal{
+				"source":  terraformWriter.LiteralFromStringValue("hetznercloud/hcloud"),
+				"version": terraformWriter.LiteralFromStringValue(">= 1.35.1"),
+			}
+
+		case "spotinst":
+			tf = map[string]*terraformWriter.Literal{
+				"source":  terraformWriter.LiteralFromStringValue("spotinst/spotinst"),
+				"version": terraformWriter.LiteralFromStringValue(">= 1.33.0"),
+			}
+
+		default:
+			klog.Fatalf("unhandled provider %q", provider)
+		}
+
+		if aliases := providerAliases[provider]; len(aliases) != 0 {
+			var configurationAliases []*terraformWriter.Literal
+			for _, alias := range providerAliases[provider] {
+				configurationAlias := terraformWriter.LiteralTokens(provider, alias)
+				configurationAliases = append(configurationAliases, configurationAlias)
+			}
+			tf["configuration_aliases"] = terraformWriter.LiteralListExpression(configurationAliases...)
+		}
+
+		mapToElement(tf).Write(buf, 4, provider)
 	}
 
 	buf.WriteString("  }\n")

@@ -44,7 +44,7 @@ func doRenderTests(t *testing.T, method string, cases []*renderTest) {
 
 		switch method {
 		case "RenderTerraform":
-			target = terraform.NewTerraformTarget(cloud, "test", nil, outdir, nil)
+			target = terraform.NewTerraformTarget(cloud, "test", outdir, nil)
 			filename = "kubernetes.tf"
 		default:
 			t.Errorf("unknown render method: %s", method)
