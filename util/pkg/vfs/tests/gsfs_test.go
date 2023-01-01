@@ -122,13 +122,13 @@ func TestGSRenderTerraform(t *testing.T) {
 				t.FailNow()
 			}
 
-			if objs := res["google_storage_object_access_control"]; objs == nil {
-				t.Fatalf("google_storage_object_access_control resources not found: %v", res)
+			if objs := res["google_storage_object_acl"]; objs == nil {
+				t.Fatalf("google_storage_object_acl resources not found: %v", res)
 			}
-			if obj := res["google_storage_object_access_control"][tc.gsObject]; obj == nil {
-				t.Fatalf("google_storage_object_access_control object not found: %v", res["google_storage_object_access_control"])
+			if obj := res["google_storage_object_acl"][tc.gsObject]; obj == nil {
+				t.Fatalf("google_storage_object_acl object not found: %v", res["google_storage_object_acl"])
 			}
-			actualACL, err := json.Marshal(res["google_storage_object_access_control"][tc.gsObject])
+			actualACL, err := json.Marshal(res["google_storage_object_acl"][tc.gsObject])
 			if err != nil {
 				t.Fatalf("error marshaling gs ACL: %v", err)
 			}
