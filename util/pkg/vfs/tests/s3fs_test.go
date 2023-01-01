@@ -63,11 +63,7 @@ func TestS3RenderTerraform(t *testing.T) {
 				t.Fatalf("error building VFS path: %v", err)
 			}
 
-			vfsProvider, err := path.(vfs.TerraformPath).TerraformProvider()
-			if err != nil {
-				t.Fatalf("error building VFS Terraform provider: %v", err)
-			}
-			target := terraform.NewTerraformTarget(cloud, "", vfsProvider, "/dev/null", nil)
+			target := terraform.NewTerraformTarget(cloud, "", "/dev/null", nil)
 
 			err = path.(*vfs.S3Path).RenderTerraform(
 				&target.TerraformWriter, tc.s3Object, strings.NewReader(content), vfs.S3Acl{},
