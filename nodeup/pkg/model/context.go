@@ -294,10 +294,7 @@ func (c *NodeupModelContext) BuildBootstrapKubeconfig(name string, ctx *fi.Nodeu
 			kubeConfig.ServerURL = "https://" + c.APIInternalName()
 		}
 
-		err = ctx.EnsureTask(kubeConfig)
-		if err != nil {
-			return nil, err
-		}
+		ctx.EnsureTask(kubeConfig)
 
 		return kubeConfig.GetConfig(), nil
 	} else {

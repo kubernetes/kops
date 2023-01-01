@@ -115,10 +115,7 @@ func (b *KubeletBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			if err != nil {
 				return err
 			}
-			err = c.EnsureTask(t)
-			if err != nil {
-				return err
-			}
+			c.EnsureTask(t)
 		}
 	}
 	{

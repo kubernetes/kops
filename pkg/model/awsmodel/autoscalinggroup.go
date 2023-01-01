@@ -354,9 +354,7 @@ func (b *AutoscalingGroupModelBuilder) buildSecurityGroups(c *fi.CloudupModelBui
 				Name:      fi.PtrTo("nlb-" + id),
 				Shared:    fi.PtrTo(true),
 			}
-			if err := c.EnsureTask(sgTask); err != nil {
-				return nil, err
-			}
+			c.EnsureTask(sgTask)
 			securityGroups = append(securityGroups, sgTask)
 		}
 	}
@@ -369,9 +367,7 @@ func (b *AutoscalingGroupModelBuilder) buildSecurityGroups(c *fi.CloudupModelBui
 			Name:      fi.PtrTo(id),
 			Shared:    fi.PtrTo(true),
 		}
-		if err := c.EnsureTask(sgTask); err != nil {
-			return nil, err
-		}
+		c.EnsureTask(sgTask)
 		securityGroups = append(securityGroups, sgTask)
 	}
 
@@ -480,9 +476,7 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.CloudupMo
 				Shared:           fi.PtrTo(true),
 			}
 			t.LoadBalancers = append(t.LoadBalancers, lb)
-			if err := c.EnsureTask(lb); err != nil {
-				return nil, err
-			}
+			c.EnsureTask(lb)
 		}
 
 		if extLB.TargetGroupARN != nil {
@@ -497,9 +491,7 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.CloudupMo
 				Shared:    fi.PtrTo(true),
 			}
 			t.TargetGroups = append(t.TargetGroups, tg)
-			if err := c.EnsureTask(tg); err != nil {
-				return nil, err
-			}
+			c.EnsureTask(tg)
 		}
 	}
 	sort.Stable(awstasks.OrderLoadBalancersByName(t.LoadBalancers))
