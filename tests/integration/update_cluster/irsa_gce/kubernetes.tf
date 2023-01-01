@@ -593,6 +593,11 @@ resource "google_storage_object_access_control" "keys-json" {
 terraform {
   required_version = ">= 0.15.0"
   required_providers {
+    aws = {
+      "configuration_aliases" = [aws.files]
+      "source"                = "hashicorp/aws"
+      "version"               = ">= 4.0.0"
+    }
     google = {
       "configuration_aliases" = [google.files]
       "source"                = "hashicorp/google"
