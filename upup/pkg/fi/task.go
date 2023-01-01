@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/debug"
 )
 
 type Task[T SubContext] interface {
@@ -130,7 +131,7 @@ func (c *ModelBuilderContext[T]) AddTask(task Task[T]) {
 
 	existing, found := c.Tasks[key]
 	if found {
-		klog.Fatalf("found duplicate tasks with name %q: %v and %v", key, task, existing)
+		klog.Fatalf("found duplicate tasks with name %q: %v and %v", key, debug.JSON(task), debug.JSON(existing))
 	}
 	c.Tasks[key] = task
 }
@@ -147,12 +148,12 @@ func (c *ModelBuilderContext[T]) EnsureTask(task Task[T]) {
 	existing, found := c.Tasks[key]
 	if found {
 		if reflect.DeepEqual(task, existing) {
-			klog.V(8).Infof("EnsureTask ignoring identical ")
+			klog.V(8).Infof("EnsureTask ignoring identical tasks")
 			return
 		}
 		klog.Warningf("EnsureTask found task mismatch for %q", key)
-		klog.Warningf("\tExisting: %v", existing)
-		klog.Warningf("\tNew: %v", task)
+		klog.Warningf("\tExisting: %v", debug.JSON(existing))
+		klog.Warningf("\tNew: %v", debug.JSON(task))
 
 		// c.Errorf("cannot add different task with same key %q", key)
 		klog.Fatalf("cannot add different task with same key %q", key)

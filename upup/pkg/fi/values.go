@@ -73,6 +73,7 @@ func ArrayContains(array []string, word string) bool {
 	return false
 }
 
+// Deprecated: prefer debug.JSON
 func DebugPrint(o interface{}) string {
 	if o == nil {
 		return "<nil>"
@@ -115,6 +116,7 @@ func DebugPrint(o interface{}) string {
 	return fmt.Sprint(o)
 }
 
+// Deprecated: prefer debug.JSON
 func DebugAsJsonString(v interface{}) string {
 	data, err := json.Marshal(v)
 	if err != nil {
@@ -123,6 +125,7 @@ func DebugAsJsonString(v interface{}) string {
 	return string(data)
 }
 
+// Deprecated: prefer debug.JSON
 func DebugAsJsonStringIndent(v interface{}) string {
 	data, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
