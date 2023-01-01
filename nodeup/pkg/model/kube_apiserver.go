@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"context"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -53,6 +54,8 @@ var _ fi.NodeupModelBuilder = &KubeAPIServerBuilder{}
 
 // Build is responsible for generating the configuration for the kube-apiserver.
 func (b *KubeAPIServerBuilder) Build(c *fi.NodeupModelBuilderContext) error {
+	ctx := c.Context()
+
 	if !b.HasAPIServer {
 		return nil
 	}
@@ -181,7 +184,7 @@ func (b *KubeAPIServerBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	}
 
 	{
-		pod, err := b.buildPod(&kubeAPIServer)
+		pod, err := b.buildPod(ctx, &kubeAPIServer)
 		if err != nil {
 			return fmt.Errorf("error building kube-apiserver manifest: %v", err)
 		}
@@ -507,7 +510,7 @@ func (b *KubeAPIServerBuilder) allAuthTokens() (map[string]string, error) {
 }
 
 // buildPod is responsible for generating the kube-apiserver pod and thus manifest file
-func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig) (*v1.Pod, error) {
+func (b *KubeAPIServerBuilder) buildPod(ctx context.Context, kubeAPIServer *kops.KubeAPIServerConfig) (*v1.Pod, error) {
 	// we need to replace 127.0.0.1 for etcd urls with the dns names in case this apiserver is not
 	// running on master nodes
 	if !b.IsMaster {
@@ -715,7 +718,7 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 	kubemanifest.MarkPodAsClusterCritical(pod)
 
 	if useHealthcheckProxy {
-		if err := b.addHealthcheckSidecar(pod); err != nil {
+		if err := b.addHealthcheckSidecar(ctx, pod); err != nil {
 			return nil, err
 		}
 	}

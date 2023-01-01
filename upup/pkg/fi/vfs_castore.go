@@ -101,9 +101,9 @@ func (c *VFSCAStore) parseKeysetYaml(data []byte) (*kops.Keyset, bool, error) {
 // loadKeyset loads a Keyset from the path.
 // Returns (nil, nil) if the file is not found
 // Bundles avoid the need for a list-files permission, which can be tricky on e.g. GCE
-func (c *VFSCAStore) loadKeyset(p vfs.Path) (*Keyset, error) {
+func (c *VFSCAStore) loadKeyset(ctx context.Context, p vfs.Path) (*Keyset, error) {
 	bundlePath := p.Join("keyset.yaml")
-	data, err := bundlePath.ReadFile()
+	data, err := bundlePath.ReadFile(ctx)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, nil
@@ -225,10 +225,10 @@ var legacyKeysetMappings = map[string]string{
 
 // FindKeyset implements KeystoreReader.
 func (c *VFSCAStore) FindKeyset(ctx context.Context, id string) (*Keyset, error) {
-	keys, err := c.findPrivateKeyset(id)
+	keys, err := c.findPrivateKeyset(ctx, id)
 	if keys == nil || os.IsNotExist(err) {
 		if legacyId := legacyKeysetMappings[id]; legacyId != "" {
-			keys, err = c.findPrivateKeyset(legacyId)
+			keys, err = c.findPrivateKeyset(ctx, legacyId)
 			if keys != nil {
 				keys.LegacyFormat = true
 			}
@@ -240,6 +240,8 @@ func (c *VFSCAStore) FindKeyset(ctx context.Context, id string) (*Keyset, error)
 
 // ListKeysets implements CAStore::ListKeysets
 func (c *VFSCAStore) ListKeysets() (map[string]*Keyset, error) {
+	ctx := context.TODO()
+
 	baseDir := c.basedir.Join("private")
 	files, err := baseDir.ReadTree()
 	if err != nil {
@@ -261,7 +263,7 @@ func (c *VFSCAStore) ListKeysets() (map[string]*Keyset, error) {
 		}
 
 		name := tokens[0]
-		loadedKeyset, err := c.loadKeyset(baseDir.Join(name))
+		loadedKeyset, err := c.loadKeyset(ctx, baseDir.Join(name))
 		if err != nil {
 			klog.Warningf("ignoring keyset %q: %w", name, err)
 			continue
@@ -364,7 +366,7 @@ func (c *VFSCAStore) StoreKeyset(ctx context.Context, name string, keyset *Keyse
 	return nil
 }
 
-func (c *VFSCAStore) findPrivateKeyset(id string) (*Keyset, error) {
+func (c *VFSCAStore) findPrivateKeyset(ctx context.Context, id string) (*Keyset, error) {
 	var keys *Keyset
 	var err error
 	if id == CertificateIDCA {
@@ -376,7 +378,7 @@ func (c *VFSCAStore) findPrivateKeyset(id string) (*Keyset, error) {
 			return cached, nil
 		}
 
-		keys, err = c.loadKeyset(c.buildPrivateKeyPoolPath(id))
+		keys, err = c.loadKeyset(ctx, c.buildPrivateKeyPoolPath(id))
 		if err != nil {
 			return nil, err
 		}
@@ -389,7 +391,7 @@ func (c *VFSCAStore) findPrivateKeyset(id string) (*Keyset, error) {
 		}
 	} else {
 		p := c.buildPrivateKeyPoolPath(id)
-		keys, err = c.loadKeyset(p)
+		keys, err = c.loadKeyset(ctx, p)
 		if err != nil {
 			return nil, err
 		}
@@ -422,6 +424,8 @@ func (c *VFSCAStore) buildSSHPublicKeyPath(id string) vfs.Path {
 }
 
 func (c *VFSCAStore) FindSSHPublicKeys() ([]*kops.SSHCredential, error) {
+	ctx := context.TODO()
+
 	p := c.basedir.Join("ssh", "public", "admin")
 
 	files, err := p.ReadDir()
@@ -435,7 +439,7 @@ func (c *VFSCAStore) FindSSHPublicKeys() ([]*kops.SSHCredential, error) {
 	var items []*kops.SSHCredential
 
 	for _, f := range files {
-		data, err := f.ReadFile()
+		data, err := f.ReadFile(ctx)
 		if err != nil {
 			if os.IsNotExist(err) {
 				klog.V(2).Infof("Ignoring not-found issue reading %q", f)

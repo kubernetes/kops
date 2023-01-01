@@ -18,6 +18,7 @@ package fi
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -188,7 +189,9 @@ func NewVFSResource(path vfs.Path) *VFSResource {
 }
 
 func (r *VFSResource) Open() (io.Reader, error) {
-	data, err := r.Path.ReadFile()
+	ctx := context.TODO()
+
+	data, err := r.Path.ReadFile(ctx)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, err

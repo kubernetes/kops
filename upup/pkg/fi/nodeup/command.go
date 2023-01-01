@@ -137,7 +137,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			p := configBase.Join(registry.PathClusterCompleted)
 			var err error
 
-			b, err = p.ReadFile()
+			b, err = p.ReadFile(ctx)
 			if err != nil {
 				return fmt.Errorf("error loading Cluster %q: %v", p, err)
 			}
@@ -165,7 +165,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	} else if bootConfig.InstanceGroupName != "" {
 		nodeupConfigLocation := configBase.Join("igconfig", bootConfig.InstanceGroupRole.ToLowerString(), bootConfig.InstanceGroupName, "nodeupconfig.yaml")
 
-		b, err := nodeupConfigLocation.ReadFile()
+		b, err := nodeupConfigLocation.ReadFile(ctx)
 		if err != nil {
 			return fmt.Errorf("error loading NodeupConfig %q: %v", nodeupConfigLocation, err)
 		}

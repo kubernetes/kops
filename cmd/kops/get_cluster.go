@@ -286,7 +286,7 @@ func fullClusterSpecs(ctx context.Context, clusters []*kopsapi.Cluster) ([]*kops
 			return nil, fmt.Errorf("error reading full cluster spec for %q: %v", cluster.ObjectMeta.Name, err)
 		}
 		configPath := configBase.Join(registry.PathClusterCompleted)
-		b, err := configPath.ReadFile()
+		b, err := configPath.ReadFile(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("error loading Cluster %q: %v", configPath, err)
 		}
