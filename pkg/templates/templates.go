@@ -18,6 +18,7 @@ package templates
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -36,13 +37,13 @@ type Templates struct {
 	TemplateFunctions template.FuncMap
 }
 
-func LoadTemplates(cluster *kops.Cluster, base vfs.Path) (*Templates, error) {
+func LoadTemplates(ctx context.Context, cluster *kops.Cluster, base vfs.Path) (*Templates, error) {
 	t := &Templates{
 		cluster:           cluster,
 		resources:         make(map[string]fi.Resource),
 		TemplateFunctions: make(template.FuncMap),
 	}
-	err := t.loadFrom(base)
+	err := t.loadFrom(ctx, base)
 	if err != nil {
 		return nil, err
 	}
@@ -53,14 +54,14 @@ func (t *Templates) Find(key string) fi.Resource {
 	return t.resources[key]
 }
 
-func (t *Templates) loadFrom(base vfs.Path) error {
+func (t *Templates) loadFrom(ctx context.Context, base vfs.Path) error {
 	files, err := base.ReadTree()
 	if err != nil {
 		return fmt.Errorf("error reading from %s", base)
 	}
 
 	for _, f := range files {
-		contents, err := f.ReadFile()
+		contents, err := f.ReadFile(ctx)
 		if err != nil {
 			if os.IsNotExist(err) {
 				// This is just an annoyance of gobindata - we can't tell the difference between files & directories.  Ignore.
