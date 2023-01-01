@@ -727,15 +727,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 	case TargetTerraform:
 		outDir := c.OutDir
-		var vfsProvider *vfs.TerraformProvider
-		if tfPath, ok := configBase.(vfs.TerraformPath); ok && featureflag.TerraformManagedFiles.Enabled() {
-			var err error
-			vfsProvider, err = tfPath.TerraformProvider()
-			if err != nil {
-				return err
-			}
-		}
-		tf := terraform.NewTerraformTarget(cloud, project, vfsProvider, outDir, cluster.Spec.Target)
+		tf := terraform.NewTerraformTarget(cloud, project, outDir, cluster.Spec.Target)
 
 		// We include a few "util" variables in the TF output
 		if err := tf.AddOutputVariable("region", terraformWriter.LiteralFromStringValue(cloud.Region())); err != nil {
