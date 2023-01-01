@@ -49,7 +49,7 @@ type Path interface {
 	// ReadFile returns the contents of the file, or an error if the file could not be read.
 	// If the file did not exist, err = os.ErrNotExist
 	// As this reads the entire file into memory, consider using WriteTo for bigger files
-	ReadFile() ([]byte, error)
+	ReadFile(ctx context.Context) ([]byte, error)
 	WriteFile(ctx context.Context, data io.ReadSeeker, acl ACL) error
 	// CreateFile writes the file contents, but only if the file does not already exist
 	CreateFile(ctx context.Context, data io.ReadSeeker, acl ACL) error

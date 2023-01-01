@@ -69,5 +69,5 @@ type AddonsClient interface {
 	Replace(objects kubemanifest.ObjectList) error
 
 	// List returns all the addon objects
-	List() (kubemanifest.ObjectList, error)
+	List(ctx context.Context) (kubemanifest.ObjectList, error)
 }

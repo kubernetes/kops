@@ -54,7 +54,7 @@ func TestMemFsCreateFile(t *testing.T) {
 		}
 
 		// Check file content
-		data, err := memfspath.ReadFile()
+		data, err := memfspath.ReadFile(ctx)
 		if err != nil {
 			t.Errorf("Failed reading path %s, error: %v", test.path, err)
 			continue

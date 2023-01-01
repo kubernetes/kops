@@ -304,7 +304,7 @@ func (p *S3Path) CreateFile(ctx context.Context, data io.ReadSeeker, acl ACL) er
 	defer createFileLockS3.Unlock()
 
 	// Check if exists
-	_, err := p.ReadFile()
+	_, err := p.ReadFile(ctx)
 	if err == nil {
 		return os.ErrExist
 	}
@@ -317,7 +317,7 @@ func (p *S3Path) CreateFile(ctx context.Context, data io.ReadSeeker, acl ACL) er
 }
 
 // ReadFile implements Path::ReadFile
-func (p *S3Path) ReadFile() ([]byte, error) {
+func (p *S3Path) ReadFile(ctx context.Context) ([]byte, error) {
 	var b bytes.Buffer
 	_, err := p.WriteTo(&b)
 	if err != nil {

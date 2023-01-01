@@ -44,7 +44,7 @@ func (s *Server) getNodeConfig(ctx context.Context, req *nodeup.BootstrapRequest
 	{
 		p := s.configBase.Join(registry.PathClusterCompleted)
 
-		b, err := p.ReadFile()
+		b, err := p.ReadFile(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("error loading cluster config %q: %w", p, err)
 		}
@@ -54,7 +54,7 @@ func (s *Server) getNodeConfig(ctx context.Context, req *nodeup.BootstrapRequest
 	{
 		p := s.configBase.Join("igconfig", "node", instanceGroupName, "nodeupconfig.yaml")
 
-		b, err := p.ReadFile()
+		b, err := p.ReadFile(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("error loading NodeupConfig %q: %v", p, err)
 		}

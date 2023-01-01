@@ -423,7 +423,7 @@ func (p *SwiftPath) createBucket() error {
 }
 
 // ReadFile implements Path::ReadFile
-func (p *SwiftPath) ReadFile() ([]byte, error) {
+func (p *SwiftPath) ReadFile(ctx context.Context) ([]byte, error) {
 	var b bytes.Buffer
 	done, err := RetryWithBackoff(swiftReadBackoff, func() (bool, error) {
 		b.Reset()

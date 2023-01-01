@@ -173,7 +173,7 @@ func (c *VFSContext) ReadFile(location string, options ...VFSOption) ([]byte, er
 	if err != nil {
 		return nil, err
 	}
-	return p.ReadFile()
+	return p.ReadFile(ctx)
 }
 
 func (c *VFSContext) BuildVfsPath(p string) (Path, error) {
