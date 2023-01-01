@@ -148,7 +148,9 @@ func RunReplace(ctx context.Context, f *util.Factory, out io.Writer, opt *Replac
 				klog.V(2).Infof("Type of object was %T", v)
 				return fmt.Errorf("unhandled kind %v", gvk)
 			}
-			clusterName = v.GetLabels()[kopsapi.LabelClusterName]
+			// To encourage use of the cluster-name flag, we don't recognize the label on additional objects.
+			// This will let us move towards something better, likely spec.clusterName or spec.clusterRef.
+			// clusterName = v.GetLabels()[kopsapi.LabelClusterName]
 
 		default:
 			klog.V(2).Infof("Type of object was %T", v)
