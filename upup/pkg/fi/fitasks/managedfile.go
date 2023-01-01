@@ -49,6 +49,8 @@ type ManagedFile struct {
 }
 
 func (e *ManagedFile) Find(c *fi.CloudupContext) (*ManagedFile, error) {
+	ctx := c.Context()
+
 	managedFiles, err := getBasePath(c, e)
 	if err != nil {
 		return nil, err
@@ -61,7 +63,7 @@ func (e *ManagedFile) Find(c *fi.CloudupContext) (*ManagedFile, error) {
 
 	filePath := managedFiles.Join(location)
 
-	existingData, err := filePath.ReadFile()
+	existingData, err := filePath.ReadFile(ctx)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, nil

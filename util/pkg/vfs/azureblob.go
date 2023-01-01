@@ -99,7 +99,7 @@ func (p *AzureBlobPath) Join(relativePath ...string) Path {
 }
 
 // ReadFile returns the content of the blob.
-func (p *AzureBlobPath) ReadFile() ([]byte, error) {
+func (p *AzureBlobPath) ReadFile(ctx context.Context) ([]byte, error) {
 	var b bytes.Buffer
 	_, err := p.WriteTo(&b)
 	if err != nil {
@@ -151,7 +151,7 @@ func (p *AzureBlobPath) CreateFile(ctx context.Context, data io.ReadSeeker, acl 
 	defer createFileLockAzureBlob.Unlock()
 
 	// Check if the blob exists.
-	_, err := p.ReadFile()
+	_, err := p.ReadFile(ctx)
 	if err == nil {
 		return os.ErrExist
 	}

@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"context"
 	"fmt"
 
 	corev1 "k8s.io/api/core/v1"
@@ -31,7 +32,7 @@ func (b *KubeAPIServerBuilder) findHealthcheckManifest() *nodeup.StaticManifest 
 	return b.findStaticManifest("kube-apiserver-healthcheck")
 }
 
-func (b *KubeAPIServerBuilder) addHealthcheckSidecar(pod *corev1.Pod) error {
+func (b *KubeAPIServerBuilder) addHealthcheckSidecar(ctx context.Context, pod *corev1.Pod) error {
 	manifest := b.findHealthcheckManifest()
 	if manifest == nil {
 		return nil
@@ -39,7 +40,7 @@ func (b *KubeAPIServerBuilder) addHealthcheckSidecar(pod *corev1.Pod) error {
 
 	p := b.ConfigBase.Join(manifest.Path)
 
-	data, err := p.ReadFile()
+	data, err := p.ReadFile(ctx)
 	if err != nil {
 		return fmt.Errorf("error reading kube-apiserver-healthcheck manifest %s: %v", manifest.Path, err)
 	}

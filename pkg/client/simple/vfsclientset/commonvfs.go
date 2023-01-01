@@ -60,7 +60,7 @@ func (c *commonVFS) init(kind string, basePath vfs.Path, storeVersion runtime.Gr
 }
 
 func (c *commonVFS) find(ctx context.Context, name string) (runtime.Object, error) {
-	o, err := c.readConfig(c.basePath.Join(name))
+	o, err := c.readConfig(ctx, c.basePath.Join(name))
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, nil
@@ -113,8 +113,8 @@ func (c *commonVFS) serialize(o runtime.Object) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-func (c *commonVFS) readConfig(configPath vfs.Path) (runtime.Object, error) {
-	data, err := configPath.ReadFile()
+func (c *commonVFS) readConfig(ctx context.Context, configPath vfs.Path) (runtime.Object, error) {
+	data, err := configPath.ReadFile(ctx)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, err
@@ -141,7 +141,7 @@ func (c *commonVFS) writeConfig(ctx context.Context, cluster *kops.Cluster, conf
 		case vfs.WriteOptionCreate:
 			create = true
 		case vfs.WriteOptionOnlyIfExists:
-			_, err = configPath.ReadFile()
+			_, err = configPath.ReadFile(ctx)
 			if err != nil {
 				if os.IsNotExist(err) {
 					return fmt.Errorf("cannot update configuration file %s: does not exist", configPath)

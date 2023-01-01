@@ -103,7 +103,7 @@ func RunGetAll(ctx context.Context, f commandutils.Factory, out io.Writer, optio
 
 	var addonObjects []*unstructured.Unstructured
 	{
-		addons, err := client.AddonsFor(cluster).List()
+		addons, err := client.AddonsFor(cluster).List(ctx)
 		if err != nil {
 			return err
 		}

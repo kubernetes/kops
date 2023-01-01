@@ -247,7 +247,7 @@ func (p *SSHPath) CreateFile(ctx context.Context, data io.ReadSeeker, acl ACL) e
 	defer createFileLockSSH.Unlock()
 
 	// Check if exists
-	_, err := p.ReadFile()
+	_, err := p.ReadFile(ctx)
 	if err == nil {
 		return os.ErrExist
 	}
@@ -260,7 +260,7 @@ func (p *SSHPath) CreateFile(ctx context.Context, data io.ReadSeeker, acl ACL) e
 }
 
 // ReadFile implements Path::ReadFile
-func (p *SSHPath) ReadFile() ([]byte, error) {
+func (p *SSHPath) ReadFile(ctx context.Context) ([]byte, error) {
 	var b bytes.Buffer
 	_, err := p.WriteTo(&b)
 	if err != nil {

@@ -53,7 +53,7 @@ func TestCreateFile(t *testing.T) {
 		}
 
 		// Check file content
-		data, err := fspath.ReadFile()
+		data, err := fspath.ReadFile(ctx)
 		if err != nil {
 			t.Errorf("Error reading file %s, error: %v", test.path, err)
 		}

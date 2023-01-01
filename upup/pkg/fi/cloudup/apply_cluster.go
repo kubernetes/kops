@@ -181,7 +181,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	}
 
 	if c.AdditionalObjects == nil {
-		additionalObjects, err := c.Clientset.AddonsFor(c.Cluster).List()
+		additionalObjects, err := c.Clientset.AddonsFor(c.Cluster).List(ctx)
 		if err != nil {
 			return err
 		}
@@ -269,7 +269,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	}
 
 	if !c.AllowKopsDowngrade {
-		kopsVersionUpdatedBytes, err := configBase.Join(registry.PathKopsVersionUpdated).ReadFile()
+		kopsVersionUpdatedBytes, err := configBase.Join(registry.PathKopsVersionUpdated).ReadFile(ctx)
 		if err == nil {
 			kopsVersionUpdated := strings.TrimSpace(string(kopsVersionUpdatedBytes))
 			version, err := semver.Parse(kopsVersionUpdated)
@@ -325,7 +325,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	}
 
 	addonsClient := c.Clientset.AddonsFor(cluster)
-	addons, err := addonsClient.List()
+	addons, err := addonsClient.List(ctx)
 	if err != nil {
 		return fmt.Errorf("error fetching addons: %v", err)
 	}
@@ -522,7 +522,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	}
 
 	{
-		templates, err := templates.LoadTemplates(cluster, models.NewAssetPath("cloudup/resources"))
+		templates, err := templates.LoadTemplates(ctx, cluster, models.NewAssetPath("cloudup/resources"))
 		if err != nil {
 			return fmt.Errorf("error loading templates: %v", err)
 		}

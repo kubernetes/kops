@@ -125,7 +125,7 @@ func (p *MemFSPath) CreateFile(ctx context.Context, data io.ReadSeeker, acl ACL)
 }
 
 // ReadFile implements Path::ReadFile
-func (p *MemFSPath) ReadFile() ([]byte, error) {
+func (p *MemFSPath) ReadFile(ctx context.Context) ([]byte, error) {
 	if p.contents == nil {
 		return nil, os.ErrNotExist
 	}

@@ -96,10 +96,10 @@ func (c *vfsAddonsClient) Replace(addons kubemanifest.ObjectList) error {
 	return nil
 }
 
-func (c *vfsAddonsClient) List() (kubemanifest.ObjectList, error) {
+func (c *vfsAddonsClient) List(ctx context.Context) (kubemanifest.ObjectList, error) {
 	configPath := c.basePath.Join("default")
 
-	b, err := configPath.ReadFile()
+	b, err := configPath.ReadFile(ctx)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, nil
