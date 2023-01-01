@@ -182,10 +182,11 @@ func (b *KubeSchedulerBuilder) writeServerCertificate(c *fi.NodeupModelBuilderCo
 			Subject:        nodetasks.PKIXName{CommonName: "kube-scheduler"},
 			AlternateNames: alternateNames,
 		}
-
 		c.AddTask(issueCert)
-		err := issueCert.AddFileTasks(c, secretsDir, "server", "", nil)
-		if err != nil {
+		if err := issueCert.AddCertificateFileTasks(c, secretsDir, "server", "", nil); err != nil {
+			return err
+		}
+		if err := issueCert.AddKeyFileTasks(c, secretsDir, "server", nil); err != nil {
 			return err
 		}
 

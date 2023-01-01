@@ -87,27 +87,46 @@ func (i *IssueCert) GetResources() (certResource, keyResource, caResource *fi.No
 	return i.cert, i.key, i.ca
 }
 
+// AddFileTasks creates the directory, certificates and keys.
+// For more control, prefer calling AddCertificateFileTasks and AddKeyFileTasks directly.
 func (i *IssueCert) AddFileTasks(c *fi.NodeupModelBuilderContext, dir string, name string, caName string, owner *string) error {
-	certResource, keyResource, caResource := i.GetResources()
 	c.EnsureTask(&File{
 		Path: dir,
 		Type: FileType_Directory,
 		Mode: fi.PtrTo("0755"),
 	})
 
-	c.AddTask(&File{
-		Path:     filepath.Join(dir, name+".crt"),
-		Contents: certResource,
-		Type:     FileType_File,
-		Mode:     fi.PtrTo("0644"),
-		Owner:    owner,
-	})
+	if err := i.AddCertificateFileTasks(c, dir, name, caName, owner); err != nil {
+		return err
+	}
+	if err := i.AddKeyFileTasks(c, dir, name, owner); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (i *IssueCert) AddKeyFileTasks(c *fi.NodeupModelBuilderContext, dir string, name string, owner *string) error {
+	_, keyResource, _ := i.GetResources()
 
 	c.AddTask(&File{
 		Path:     filepath.Join(dir, name+".key"),
 		Contents: keyResource,
 		Type:     FileType_File,
 		Mode:     fi.PtrTo("0600"),
+		Owner:    owner,
+	})
+
+	return nil
+}
+
+func (i *IssueCert) AddCertificateFileTasks(c *fi.NodeupModelBuilderContext, dir string, name string, caName string, owner *string) error {
+	certResource, _, caResource := i.GetResources()
+
+	c.AddTask(&File{
+		Path:     filepath.Join(dir, name+".crt"),
+		Contents: certResource,
+		Type:     FileType_File,
+		Mode:     fi.PtrTo("0644"),
 		Owner:    owner,
 	})
 
