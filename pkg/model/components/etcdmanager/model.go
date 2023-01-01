@@ -129,14 +129,12 @@ func (b *EtcdManagerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		})
 
 		// Because API server can only have a single client-cert, we need to share a client CA
-		if err := c.EnsureTask(&fitasks.Keypair{
+		c.EnsureTask(&fitasks.Keypair{
 			Name:      fi.PtrTo("etcd-clients-ca"),
 			Lifecycle: b.Lifecycle,
 			Subject:   "cn=etcd-clients-ca",
 			Type:      "ca",
-		}); err != nil {
-			return err
-		}
+		})
 
 		if etcdCluster.Name == "cilium" {
 			clientsCaCilium := &fitasks.Keypair{

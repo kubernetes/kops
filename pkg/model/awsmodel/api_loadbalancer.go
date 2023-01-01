@@ -520,9 +520,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				ID:        fi.PtrTo(id),
 				Shared:    fi.PtrTo(true),
 			}
-			if err := c.EnsureTask(t); err != nil {
-				return err
-			}
+			c.EnsureTask(t)
 			clb.SecurityGroups = append(clb.SecurityGroups, t)
 		}
 	}

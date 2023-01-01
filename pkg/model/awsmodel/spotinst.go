@@ -640,9 +640,7 @@ func (b *SpotInstanceGroupModelBuilder) buildSecurityGroups(c *fi.CloudupModelBu
 			Name:      fi.PtrTo(id),
 			Shared:    fi.PtrTo(true),
 		}
-		if err := c.EnsureTask(sg); err != nil {
-			return nil, err
-		}
+		c.EnsureTask(sg)
 		securityGroups = append(securityGroups, sg)
 	}
 

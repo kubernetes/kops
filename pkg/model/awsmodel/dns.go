@@ -67,7 +67,8 @@ func (b *DNSModelBuilder) ensureDNSZone(c *fi.CloudupModelBuilderContext) error 
 		dnsZone.DNSName = fi.PtrTo(b.Cluster.Spec.DNSZone)
 	}
 
-	return c.EnsureTask(dnsZone)
+	c.EnsureTask(dnsZone)
+	return nil
 }
 
 func (b *DNSModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
@@ -131,7 +132,7 @@ func (b *DNSModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 
 			// Using EnsureTask as APIInternalName() and APIPublicName could be the same
 			{
-				err := c.EnsureTask(&awstasks.DNSName{
+				c.EnsureTask(&awstasks.DNSName{
 					Name:               fi.PtrTo(b.Cluster.APIInternalName()),
 					ResourceName:       fi.PtrTo(b.Cluster.APIInternalName()),
 					Lifecycle:          b.Lifecycle,
@@ -139,12 +140,9 @@ func (b *DNSModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 					ResourceType:       fi.PtrTo("A"),
 					TargetLoadBalancer: targetLoadBalancer,
 				})
-				if err != nil {
-					return err
-				}
 			}
 			if b.UseIPv6ForAPI() {
-				err := c.EnsureTask(&awstasks.DNSName{
+				c.EnsureTask(&awstasks.DNSName{
 					Name:               fi.PtrTo(b.Cluster.APIInternalName() + "-AAAA"),
 					ResourceName:       fi.PtrTo(b.Cluster.APIInternalName()),
 					Lifecycle:          b.Lifecycle,
@@ -152,9 +150,6 @@ func (b *DNSModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 					ResourceType:       fi.PtrTo("AAAA"),
 					TargetLoadBalancer: targetLoadBalancer,
 				})
-				if err != nil {
-					return err
-				}
 			}
 		}
 	}
