@@ -516,6 +516,166 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 			},
 		},
 		{
+			desc: "multizone setup 3 masters 3 nodes without bastion with API loadbalancer dns none",
+			cluster: &kops.Cluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "cluster",
+				},
+				Spec: kops.ClusterSpec{
+					API: kops.APISpec{
+						LoadBalancer: &kops.LoadBalancerAccessSpec{
+							Type: kops.LoadBalancerTypePublic,
+						},
+					},
+					CloudProvider: kops.CloudProviderSpec{
+						Openstack: &kops.OpenstackSpec{
+							BlockStorage: &kops.OpenstackBlockStorageConfig{
+								Version:            fi.PtrTo("v3"),
+								IgnoreAZ:           fi.PtrTo(false),
+								CreateStorageClass: fi.PtrTo(false),
+								CSITopologySupport: fi.PtrTo(true),
+							},
+							Loadbalancer: &kops.OpenstackLoadbalancerConfig{
+								FloatingNetwork: fi.PtrTo("test"),
+								FloatingSubnet:  fi.PtrTo("test-lb-subnet"),
+								Method:          fi.PtrTo("ROUND_ROBIN"),
+								Provider:        fi.PtrTo("amphora"),
+								UseOctavia:      fi.PtrTo(true),
+							},
+							Monitor: &kops.OpenstackMonitor{
+								Delay:      fi.PtrTo("1m"),
+								MaxRetries: fi.PtrTo(3),
+								Timeout:    fi.PtrTo("30s"),
+							},
+							Network: &kops.OpenstackNetwork{
+								AvailabilityZoneHints: []*string{fi.PtrTo("zone-1"), fi.PtrTo("zone-2"), fi.PtrTo("zone-3")},
+							},
+							Router: &kops.OpenstackRouter{
+								DNSServers:            fi.PtrTo("8.8.8.8,8.8.4.4"),
+								ExternalSubnet:        fi.PtrTo("test-router-subnet"),
+								ExternalNetwork:       fi.PtrTo("test"),
+								AvailabilityZoneHints: []*string{fi.PtrTo("ha-zone")},
+							},
+							Metadata: &kops.OpenstackMetadata{
+								ConfigDrive: fi.PtrTo(false),
+							},
+						},
+					},
+					KubernetesVersion: "1.25.0",
+					Networking: kops.NetworkingSpec{
+						Subnets: []kops.ClusterSubnetSpec{
+							{
+								Name: "subnet-1",
+								Zone: "zone-1",
+								Type: kops.SubnetTypePrivate,
+							},
+							{
+								Name: "subnet-2",
+								Zone: "zone-2",
+								Type: kops.SubnetTypePrivate,
+							},
+							{
+								Name: "subnet-3",
+								Zone: "zone-3",
+								Type: kops.SubnetTypePrivate,
+							},
+						},
+						Topology: &kops.TopologySpec{
+							ControlPlane: kops.TopologyPrivate,
+							DNS:          kops.DNSTypeNone,
+							Nodes:        kops.TopologyPrivate,
+						},
+					},
+				},
+			},
+			instanceGroups: []*kops.InstanceGroup{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "master-a",
+					},
+					Spec: kops.InstanceGroupSpec{
+						Role:        kops.InstanceGroupRoleControlPlane,
+						Image:       "image",
+						MinSize:     i32(1),
+						MaxSize:     i32(1),
+						MachineType: "blc.1-2",
+						Subnets:     []string{"subnet-1"},
+						Zones:       []string{"zone-1"},
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "node-a",
+					},
+					Spec: kops.InstanceGroupSpec{
+						Role:        kops.InstanceGroupRoleNode,
+						Image:       "image",
+						MinSize:     i32(1),
+						MaxSize:     i32(1),
+						MachineType: "blc.1-2",
+						Subnets:     []string{"subnet-1"},
+						Zones:       []string{"zone-1"},
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "master-b",
+					},
+					Spec: kops.InstanceGroupSpec{
+						Role:        kops.InstanceGroupRoleControlPlane,
+						Image:       "image",
+						MinSize:     i32(1),
+						MaxSize:     i32(1),
+						MachineType: "blc.1-2",
+						Subnets:     []string{"subnet-2"},
+						Zones:       []string{"zone-2"},
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "node-b",
+					},
+					Spec: kops.InstanceGroupSpec{
+						Role:        kops.InstanceGroupRoleNode,
+						Image:       "image",
+						MinSize:     i32(1),
+						MaxSize:     i32(1),
+						MachineType: "blc.1-2",
+						Subnets:     []string{"subnet-2"},
+						Zones:       []string{"zone-2"},
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "master-c",
+					},
+					Spec: kops.InstanceGroupSpec{
+						Role:        kops.InstanceGroupRoleControlPlane,
+						Image:       "image",
+						MinSize:     i32(1),
+						MaxSize:     i32(1),
+						MachineType: "blc.1-2",
+						Subnets:     []string{"subnet-3"},
+						Zones:       []string{"zone-3"},
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "node-c",
+					},
+					Spec: kops.InstanceGroupSpec{
+						Role:        kops.InstanceGroupRoleNode,
+						Image:       "image",
+						MinSize:     i32(1),
+						MaxSize:     i32(1),
+						MachineType: "blc.1-2",
+						Subnets:     []string{"subnet-3"},
+						Zones:       []string{"zone-3"},
+					},
+				},
+			},
+		},
+		{
 			desc: "multizone setup 3 masters 3 nodes without external router",
 			cluster: &kops.Cluster{
 				ObjectMeta: metav1.ObjectMeta{
