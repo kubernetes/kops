@@ -284,6 +284,7 @@ func BuildNodeupModelContext(model *testutils.Model) (*NodeupModelContext, error
 		nodeupModelContext.NodeupConfig.APIServerConfig.ServiceAccountPublicKeys = saPublicKeys
 	}
 
+	nodeupModelContext.NodeupConfig.ContainerRuntime = nodeupModelContext.Cluster.Spec.ContainerRuntime
 	nodeupModelContext.NodeupConfig.ContainerdConfig = nodeupModelContext.Cluster.Spec.Containerd
 	updatePolicy := nodeupModelContext.Cluster.Spec.UpdatePolicy
 	if updatePolicy == nil {

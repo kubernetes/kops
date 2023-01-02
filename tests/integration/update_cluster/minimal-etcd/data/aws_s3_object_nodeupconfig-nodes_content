@@ -13,6 +13,7 @@ Assets:
   - dbb71e737eaef454a406ce21fd021bd8f1b35afb7635016745992bbd7c17a223@https://github.com/opencontainers/runc/releases/download/v1.1.4/runc.arm64
 CAs: {}
 ClusterName: minimal-etcd.example.com
+ContainerRuntime: containerd
 Hooks:
 - null
 - null

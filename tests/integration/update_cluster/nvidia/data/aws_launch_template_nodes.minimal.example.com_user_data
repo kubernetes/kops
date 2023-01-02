@@ -125,7 +125,6 @@ ensure-install-dir
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   manageStorageClasses: true
-containerRuntime: containerd
 containerd:
   logLevel: info
   nvidiaGPU:
@@ -191,7 +190,7 @@ ConfigServer:
   server: https://kops-controller.internal.minimal.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: gvLpWOyXZhH0Mm3sgJeG0e4s6eTtyY7KnM/eDd7UIXI=
+NodeupConfigHash: xVW3txAr8em/+fyp4qPTSZulsXs6iQkee5+pDk46k2o=
 
 __EOF_KUBE_ENV
 
