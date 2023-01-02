@@ -44,3 +44,7 @@ KubeletConfig:
 UpdatePolicy: automatic
 channels:
 - memfs://clusters.example.com/docker.example.com/addons/bootstrap-channel.yaml
+containerdConfig:
+  configOverride: |
+    disabled_plugins = ["cri"]
+  logLevel: info

@@ -140,8 +140,6 @@ ensure-install-dir
 
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig: null
-containerd:
-  logLevel: info
 docker:
   logLevel: INFO
 encryptionConfig: null
@@ -175,7 +173,7 @@ cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
 InstanceGroupName: testIG
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: g1fTKq7LYsnY6/NvPHB/1Gt/ob63v8vQiug49GFpkXs=
+NodeupConfigHash: zXULrdjHoqwnFb2Z6Hr5VPYchOvJpEM3ubFfp/iHmTU=
 
 __EOF_KUBE_ENV
 

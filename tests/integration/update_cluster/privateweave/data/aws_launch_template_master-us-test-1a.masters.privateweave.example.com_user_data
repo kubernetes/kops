@@ -125,9 +125,6 @@ ensure-install-dir
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   manageStorageClasses: true
-containerd:
-  logLevel: info
-  version: 1.4.13
 docker:
   skipInstall: true
 encryptionConfig: null

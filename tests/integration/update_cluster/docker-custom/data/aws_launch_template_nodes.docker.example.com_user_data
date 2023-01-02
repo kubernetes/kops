@@ -125,10 +125,6 @@ ensure-install-dir
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   manageStorageClasses: true
-containerd:
-  configOverride: |
-    disabled_plugins = ["cri"]
-  logLevel: info
 docker:
   execOpt:
   - native.cgroupdriver=systemd
@@ -202,7 +198,7 @@ ConfigServer:
   server: https://kops-controller.internal.docker.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: r1Fv9g7nMswonEA0D0FYIyu/Oep5d0lm6F0/j2Yp1Gg=
+NodeupConfigHash: u1CI+Pyp3RtaMNX1/ZJo/lHGHd9gYIAs+DnQOJUylq0=
 
 __EOF_KUBE_ENV
 

@@ -125,10 +125,6 @@ ensure-install-dir
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   manageStorageClasses: true
-containerd:
-  configOverride: |
-    disabled_plugins = ["cri"]
-  logLevel: info
 docker:
   execOpt:
   - native.cgroupdriver=systemd
@@ -276,7 +272,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/docker.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: gu2gJoBLOFNsB+tl4hi2Xr1IhFBbgm6JG2FomPyALSc=
+NodeupConfigHash: R/k1au2Oa/K2a0oqnhrC7qYYNioBBRMg2es0afmiLXM=
 
 __EOF_KUBE_ENV
 

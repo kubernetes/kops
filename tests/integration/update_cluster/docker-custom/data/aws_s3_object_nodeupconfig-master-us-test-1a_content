@@ -273,6 +273,10 @@ KubeletConfig:
 UpdatePolicy: automatic
 channels:
 - memfs://clusters.example.com/docker.example.com/addons/bootstrap-channel.yaml
+containerdConfig:
+  configOverride: |
+    disabled_plugins = ["cri"]
+  logLevel: info
 etcdManifests:
 - memfs://clusters.example.com/docker.example.com/manifests/etcd/main-master-us-test-1a.yaml
 - memfs://clusters.example.com/docker.example.com/manifests/etcd/events-master-us-test-1a.yaml
