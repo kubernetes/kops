@@ -39,7 +39,7 @@ func (b *WarmPoolBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		for _, image := range b.NodeupConfig.WarmPoolImages {
 			c.AddTask(&nodetasks.PullImageTask{
 				Name:    image,
-				Runtime: b.Cluster.Spec.ContainerRuntime,
+				Runtime: b.NodeupConfig.ContainerRuntime,
 			})
 		}
 	}

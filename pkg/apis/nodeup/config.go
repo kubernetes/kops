@@ -69,6 +69,8 @@ type Config struct {
 	FileAssets []kops.FileAssetSpec `json:",omitempty"`
 	// Hooks are for custom actions, for example on first installation.
 	Hooks [][]kops.HookSpec
+	// ContainerRuntime is the container runtime to use for Kubernetes.
+	ContainerRuntime string
 	// ContainerdConfig config holds the configuration for containerd
 	ContainerdConfig *kops.ContainerdConfig `json:"containerdConfig,omitempty"`
 
@@ -168,6 +170,7 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		VolumeMounts:     instanceGroup.Spec.VolumeMounts,
 		FileAssets:       append(filterFileAssets(instanceGroup.Spec.FileAssets, role), filterFileAssets(cluster.Spec.FileAssets, role)...),
 		Hooks:            [][]kops.HookSpec{igHooks, clusterHooks},
+		ContainerRuntime: cluster.Spec.ContainerRuntime,
 	}
 
 	bootConfig := BootConfig{

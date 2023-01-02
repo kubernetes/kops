@@ -197,6 +197,7 @@ func TestContainerdConfig(t *testing.T) {
 		NodeupModelContext: &NodeupModelContext{
 			Cluster: cluster,
 			NodeupConfig: &nodeup.Config{
+				ContainerRuntime: "containerd",
 				ContainerdConfig: &kops.ContainerdConfig{},
 			},
 		},
