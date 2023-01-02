@@ -3,6 +3,7 @@ APIServerConfig:
     image: CoreOS
   ServiceAccountPublicKeys: ""
 CAs: {}
+ContainerRuntime: docker
 FileAssets:
 - content: blah blah
   name: iptables-restore

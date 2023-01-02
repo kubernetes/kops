@@ -36,6 +36,7 @@ CAs:
     MQNfAQ==
     -----END CERTIFICATE-----
 ClusterName: privateciliumadvanced.example.com
+ContainerRuntime: containerd
 Hooks:
 - null
 - null
