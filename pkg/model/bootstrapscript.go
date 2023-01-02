@@ -378,7 +378,6 @@ func (b *BootstrapScript) Run(c *fi.CloudupContext) error {
 
 			spec := make(map[string]interface{})
 			spec["cloudConfig"] = cs.CloudConfig
-			spec["containerd"] = cs.Containerd
 			spec["docker"] = cs.Docker
 			spec["kubeProxy"] = cs.KubeProxy
 			spec["kubelet"] = cs.Kubelet
