@@ -51,6 +51,7 @@ Metadata:
 Name: master-1-tom-software-dev-playground-real33-k8s-local
 Port:
   AdditionalSecurityGroups: null
+  ForAPIServer: false
   ID: null
   InstanceGroupName: master
   Lifecycle: Sync
@@ -134,6 +135,7 @@ Metadata:
 Name: node-1-tom-software-dev-playground-real33-k8s-local
 Port:
   AdditionalSecurityGroups: null
+  ForAPIServer: false
   ID: null
   InstanceGroupName: node
   Lifecycle: Sync
@@ -308,6 +310,7 @@ Name: nodeupconfig-node
 PublicACL: null
 ---
 AdditionalSecurityGroups: null
+ForAPIServer: false
 ID: null
 InstanceGroupName: master
 Lifecycle: Sync
@@ -345,6 +348,7 @@ Tags:
 - KubernetesCluster=tom-software-dev-playground-real33--kngu8l
 ---
 AdditionalSecurityGroups: null
+ForAPIServer: false
 ID: null
 InstanceGroupName: node
 Lifecycle: Sync
