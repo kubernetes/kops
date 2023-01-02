@@ -73,7 +73,8 @@ type CloudConfigBuilder struct {
 var _ fi.NodeupModelBuilder = &CloudConfigBuilder{}
 
 func (b *CloudConfigBuilder) Build(c *fi.NodeupModelBuilderContext) error {
-	if !b.HasAPIServer && b.NodeupConfig.KubeletConfig.CloudProvider == "external" {
+	// openstack needs cloud.config currently in all nodes because of csi components
+	if b.BootConfig.CloudProvider != kops.CloudProviderOpenstack && !b.HasAPIServer && b.NodeupConfig.KubeletConfig.CloudProvider == "external" {
 		return nil
 	}
 
