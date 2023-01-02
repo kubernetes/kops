@@ -72,8 +72,10 @@ type Config struct {
 	Hooks [][]kops.HookSpec
 	// ContainerRuntime is the container runtime to use for Kubernetes.
 	ContainerRuntime string
-	// ContainerdConfig config holds the configuration for containerd
+	// ContainerdConfig holds the configuration for containerd.
 	ContainerdConfig *kops.ContainerdConfig `json:"containerdConfig,omitempty"`
+	// Docker holds the configuration for docker.
+	Docker *kops.DockerConfig `json:"docker,omitempty"`
 
 	// APIServerConfig is additional configuration for nodes running an APIServer.
 	APIServerConfig *APIServerConfig `json:",omitempty"`
@@ -172,6 +174,7 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		FileAssets:       append(filterFileAssets(instanceGroup.Spec.FileAssets, role), filterFileAssets(cluster.Spec.FileAssets, role)...),
 		Hooks:            [][]kops.HookSpec{igHooks, clusterHooks},
 		ContainerRuntime: cluster.Spec.ContainerRuntime,
+		Docker:           cluster.Spec.Docker,
 	}
 
 	bootConfig := BootConfig{
