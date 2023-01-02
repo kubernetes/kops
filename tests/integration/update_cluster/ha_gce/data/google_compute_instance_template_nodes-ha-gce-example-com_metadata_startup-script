@@ -124,8 +124,6 @@ ensure-install-dir
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   manageStorageClasses: true
-docker:
-  skipInstall: true
 kubeProxy:
   clusterCIDR: 100.96.0.0/11
   cpuRequest: 100m
@@ -179,7 +177,7 @@ ConfigServer:
   server: https://kops-controller.internal.ha-gce.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: DC2N+oA5AQqyJX1AB/tXcGlElAJmSFLKqHKZ28NA9L4=
+NodeupConfigHash: NhoqhTmtulzl0svyvFgR9SSmTihR6rEFk+7sdtbSwrk=
 
 __EOF_KUBE_ENV
 

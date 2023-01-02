@@ -124,8 +124,6 @@ ensure-install-dir
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   manageStorageClasses: true
-docker:
-  skipInstall: true
 kubeProxy:
   clusterCIDR: 100.96.0.0/11
   cpuRequest: 100m
@@ -178,7 +176,7 @@ ConfigServer:
   server: https://:3988/
 InstanceGroupName: nodes-fsn1
 InstanceGroupRole: Node
-NodeupConfigHash: woRJHkRnwOmUT38W5eaSewQ4VEZB6q84ReNBvmJx5Mg=
+NodeupConfigHash: 2ujZ+YQBQC0MkOfGTySQHAmTiVRi77T2HDaKoj0pITE=
 
 __EOF_KUBE_ENV
 

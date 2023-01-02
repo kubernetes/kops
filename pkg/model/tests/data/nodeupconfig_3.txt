@@ -16,3 +16,5 @@ KubeletConfig:
 UpdatePolicy: automatic
 containerdConfig:
   logLevel: info
+docker:
+  logLevel: INFO
