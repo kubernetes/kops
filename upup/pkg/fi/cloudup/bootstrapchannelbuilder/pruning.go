@@ -63,6 +63,8 @@ func (b *BootstrapChannelBuilder) addPruneDirectivesForAddon(addon *Addon) error
 		{Group: "", Kind: "ConfigMap"},
 		{Group: "", Kind: "Service"},
 		{Group: "", Kind: "ServiceAccount"},
+		{Group: "admissionregistration.k8s.io", Kind: "MutatingWebhookConfiguration"},
+		{Group: "admissionregistration.k8s.io", Kind: "ValidatingWebhookConfiguration"},
 		{Group: "apps", Kind: "Deployment"},
 		{Group: "apps", Kind: "DaemonSet"},
 		{Group: "apps", Kind: "StatefulSet"},
