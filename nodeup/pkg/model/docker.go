@@ -45,8 +45,8 @@ var _ fi.NodeupModelBuilder = &DockerBuilder{}
 
 func (b *DockerBuilder) dockerVersion() (string, error) {
 	dockerVersion := ""
-	if b.Cluster.Spec.Docker != nil {
-		dockerVersion = fi.ValueOf(b.Cluster.Spec.Docker.Version)
+	if b.NodeupConfig.Docker != nil {
+		dockerVersion = fi.ValueOf(b.NodeupConfig.Docker.Version)
 	}
 	if dockerVersion == "" {
 		return "", fmt.Errorf("error finding Docker version")
@@ -201,7 +201,7 @@ func (b *DockerBuilder) buildSystemdService(dockerVersion semver.Version) *nodet
 
 	manifest.Set("Service", "Type", "notify")
 	// Restore the default SELinux security contexts for the Docker binaries
-	if b.Distribution.IsRHELFamily() && b.Cluster.Spec.Docker != nil && fi.ValueOf(b.Cluster.Spec.Docker.SelinuxEnabled) {
+	if b.Distribution.IsRHELFamily() && b.NodeupConfig.Docker != nil && fi.ValueOf(b.NodeupConfig.Docker.SelinuxEnabled) {
 		manifest.Set("Service", "ExecStartPre", "/bin/sh -c 'restorecon -v /usr/bin/docker*'")
 	}
 	// the default is not to use systemd for cgroups because the delegate issues still
@@ -347,8 +347,8 @@ func (b *DockerBuilder) buildContainerOSConfigurationDropIn(c *fi.NodeupModelBui
 // buildSysconfig is responsible for extracting the docker configuration and writing the sysconfig file
 func (b *DockerBuilder) buildSysconfig(c *fi.NodeupModelBuilderContext) error {
 	var docker kops.DockerConfig
-	if b.Cluster.Spec.Docker != nil {
-		docker = *b.Cluster.Spec.Docker
+	if b.NodeupConfig.Docker != nil {
+		docker = *b.NodeupConfig.Docker
 	}
 
 	// ContainerOS now sets the storage flag in /etc/docker/daemon.json, and it is an error to set it twice
@@ -413,7 +413,7 @@ func (b *DockerBuilder) buildSysconfig(c *fi.NodeupModelBuilderContext) error {
 
 // skipInstall determines if kops should skip the installation and configuration of Docker
 func (b *DockerBuilder) skipInstall() bool {
-	d := b.Cluster.Spec.Docker
+	d := b.NodeupConfig.Docker
 
 	// don't skip install if the user hasn't specified anything
 	if d == nil {
@@ -425,7 +425,7 @@ func (b *DockerBuilder) skipInstall() bool {
 
 // healthCheck determines if kops should enable the health-check for Docker
 func (b *DockerBuilder) healthCheck() bool {
-	d := b.Cluster.Spec.Docker
+	d := b.NodeupConfig.Docker
 
 	// don't enable the health-check if the user hasn't specified anything
 	if d == nil {

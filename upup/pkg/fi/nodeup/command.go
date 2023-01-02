@@ -467,7 +467,7 @@ func evaluateSpec(c *NodeUpCommand, nodeupConfig *nodeup.Config, cloudProvider a
 	}
 
 	if nodeupConfig.ContainerRuntime == "docker" {
-		err = evaluateDockerSpecStorage(c.cluster.Spec.Docker)
+		err = evaluateDockerSpecStorage(nodeupConfig.Docker)
 		if err != nil {
 			return err
 		}
