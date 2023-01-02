@@ -125,7 +125,6 @@ ensure-install-dir
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   manageStorageClasses: true
-containerRuntime: containerd
 containerd:
   logLevel: info
   runc:
@@ -188,7 +187,7 @@ ConfigServer:
   server: https://kops-controller.internal.minimal.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: XJtTRJ29cwcimxpwNxq6So1KaK3zZtFW9OHZbRlQ+l4=
+NodeupConfigHash: xd4G0RB1bTO6RPNF91q9qPdJeS7capQFE5LFo+Rlcqc=
 
 __EOF_KUBE_ENV
 

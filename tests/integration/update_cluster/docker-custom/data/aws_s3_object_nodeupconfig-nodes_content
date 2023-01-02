@@ -11,6 +11,7 @@ Assets:
   - 000000000000000000000000000000000000000000000000000000000000000b@https://download.docker.com/linux/static/stable/aarch64/docker-20.10.1.tgz
 CAs: {}
 ClusterName: docker.example.com
+ContainerRuntime: docker
 Hooks:
 - null
 - null

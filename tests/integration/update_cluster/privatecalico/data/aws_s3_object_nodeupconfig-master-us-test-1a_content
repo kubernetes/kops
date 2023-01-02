@@ -223,6 +223,7 @@ CAs:
     9B7UD2ushcVFPtaeoL9Gfu8aY4KJBeqqg5ojl4qmRnThjw==
     -----END CERTIFICATE-----
 ClusterName: privatecalico.example.com
+ContainerRuntime: containerd
 FileAssets:
 - content: |
     apiVersion: kubescheduler.config.k8s.io/v1beta2

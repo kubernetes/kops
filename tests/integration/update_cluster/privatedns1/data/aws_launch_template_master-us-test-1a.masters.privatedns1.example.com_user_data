@@ -125,7 +125,6 @@ ensure-install-dir
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   manageStorageClasses: true
-containerRuntime: containerd
 containerd:
   logLevel: info
   version: 1.4.13
@@ -260,7 +259,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privatedns1.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: hCSw04MOAT3ww+gqaU2WAO7BGCrto5cepOSQRVYMhFE=
+NodeupConfigHash: 67M4Wy9+Z+Dz1M+pUrKnHRoGkBKKFkW7bMDILyMAJfY=
 
 __EOF_KUBE_ENV
 
