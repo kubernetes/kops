@@ -168,8 +168,8 @@ func (b *ContainerdBuilder) installContainerd(c *fi.NodeupModelBuilderContext) e
 			return fmt.Errorf("error finding contained version")
 		}
 	} else {
-		if b.Cluster.Spec.Docker != nil {
-			containerRuntimeVersion = fi.ValueOf(b.Cluster.Spec.Docker.Version)
+		if b.NodeupConfig.Docker != nil {
+			containerRuntimeVersion = fi.ValueOf(b.NodeupConfig.Docker.Version)
 		} else {
 			return fmt.Errorf("error finding Docker version")
 		}
@@ -196,7 +196,7 @@ func (b *ContainerdBuilder) buildSystemdService(sv semver.Version) *nodetasks.Se
 	manifest.Set("Unit", "After", "network.target local-fs.target")
 
 	// Restore the default SELinux security contexts for the containerd and runc binaries
-	if b.Distribution.IsRHELFamily() && b.Cluster.Spec.Docker != nil && fi.ValueOf(b.Cluster.Spec.Docker.SelinuxEnabled) {
+	if b.Distribution.IsRHELFamily() && b.NodeupConfig.Docker != nil && fi.ValueOf(b.NodeupConfig.Docker.SelinuxEnabled) {
 		manifest.Set("Service", "ExecStartPre", "/bin/sh -c 'restorecon -v /usr/bin/runc'")
 		manifest.Set("Service", "ExecStartPre", "/bin/sh -c 'restorecon -v /usr/bin/containerd*'")
 	}
