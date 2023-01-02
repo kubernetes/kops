@@ -28,7 +28,7 @@ import (
 
 func buildAssetBuilder(t *testing.T) *AssetBuilder {
 	builder := &AssetBuilder{
-		AssetsLocation: &kops.Assets{},
+		AssetsLocation: &kops.AssetsSpec{},
 		ImageAssets:    []*ImageAsset{},
 	}
 	return builder

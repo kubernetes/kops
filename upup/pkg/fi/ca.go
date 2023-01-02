@@ -112,7 +112,7 @@ type SSHCredentialStore interface {
 }
 
 // FindPrimaryKeypair is a common implementation of pki.FindPrimaryKeypair.
-func FindPrimaryKeypair(ctx context.Context, c Keystore, name string) (*pki.Certificate, *pki.PrivateKey, error) {
+func FindPrimaryKeypair(ctx context.Context, c KeystoreReader, name string) (*pki.Certificate, *pki.PrivateKey, error) {
 	keyset, err := c.FindKeyset(ctx, name)
 	if err != nil {
 		return nil, nil, err

@@ -153,6 +153,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			return fmt.Errorf("unexpected object type for Cluster %s: %T", clusterDescription, o)
 		}
 	}
+	c.cluster.Name = "use NodeupConfig.ClusterName instead"
 
 	var nodeupConfig nodeup.Config
 	var nodeupConfigHash [32]byte
@@ -227,7 +228,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		NodeupConfig: &nodeupConfig,
 	}
 
-	var secretStore fi.SecretStore
+	var secretStore fi.SecretStoreReader
 	var keyStore fi.KeystoreReader
 	if nodeConfig != nil {
 		modelContext.SecretStore = configserver.NewSecretStore(nodeConfig.NodeSecrets)
@@ -238,7 +239,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			return fmt.Errorf("error building secret store path: %v", err)
 		}
 
-		secretStore = secrets.NewVFSSecretStore(c.cluster, p)
+		secretStore = secrets.NewVFSSecretStoreReader(p)
 		modelContext.SecretStore = secretStore
 	} else {
 		return fmt.Errorf("SecretStore not set")
@@ -253,7 +254,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			return fmt.Errorf("error building key store path: %v", err)
 		}
 
-		modelContext.KeyStore = fi.NewVFSCAStore(c.cluster, p)
+		modelContext.KeyStore = fi.NewVFSKeystoreReader(p)
 		keyStore = modelContext.KeyStore
 	} else {
 		return fmt.Errorf("KeyStore not set")
@@ -367,7 +368,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			Cloud:    cloud,
 		}
 	case "dryrun":
-		assetBuilder := assets.NewAssetBuilder(c.cluster, false)
+		assetBuilder := assets.NewAssetBuilder(c.cluster.Spec.Assets, c.cluster.Spec.KubernetesVersion, false)
 		target = fi.NewNodeupDryRunTarget(assetBuilder, out)
 	default:
 		return fmt.Errorf("unsupported target type %q", c.Target)
@@ -418,7 +419,7 @@ func getMachineType() (string, error) {
 }
 
 func completeWarmingLifecycleAction(cloud awsup.AWSCloud, modelContext *model.NodeupModelContext) error {
-	asgName := modelContext.BootConfig.InstanceGroupName + "." + modelContext.Cluster.GetName()
+	asgName := modelContext.BootConfig.InstanceGroupName + "." + modelContext.NodeupConfig.ClusterName
 	hookName := "kops-warmpool"
 	svc := cloud.Autoscaling()
 	hooks, err := svc.DescribeLifecycleHooks(&autoscaling.DescribeLifecycleHooksInput{
