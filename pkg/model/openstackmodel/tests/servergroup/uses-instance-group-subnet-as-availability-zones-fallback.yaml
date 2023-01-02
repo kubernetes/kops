@@ -26,6 +26,7 @@ Name: node-1-cluster
 Port:
   AdditionalSecurityGroups:
   - additional-sg
+  ForAPIServer: false
   ID: null
   InstanceGroupName: node
   Lifecycle: Sync
@@ -192,6 +193,7 @@ PublicACL: null
 ---
 AdditionalSecurityGroups:
 - additional-sg
+ForAPIServer: false
 ID: null
 InstanceGroupName: node
 Lifecycle: Sync

@@ -1,0 +1,156 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  name: ha.example.com
+spec:
+  api:
+    loadBalancer:
+      type: Public
+  authorization:
+    rbac: {}
+  channel: stable
+  cloudConfig:
+    openstack:
+      blockStorage:
+        bs-version: v3
+        ignore-volume-az: false
+      loadbalancer:
+        floatingNetwork: vlan1
+        floatingSubnet: vlan1lbsubnet
+        method: ROUND_ROBIN
+        provider: octavia
+        useOctavia: true
+      monitor:
+        delay: 15s
+        maxRetries: 3
+        timeout: 10s
+      router:
+        dnsServers: 1.1.1.1
+        externalNetwork: vlan1
+        externalSubnet: vlan1subnet
+  cloudProvider: openstack
+  configBase: memfs://tests/ha.example.com
+  etcdClusters:
+  - cpuRequest: 200m
+    etcdMembers:
+    - instanceGroup: control-plane-us-test1-1
+      name: etcd-1
+    - instanceGroup: control-plane-us-test1-2
+      name: etcd-2
+    - instanceGroup: control-plane-us-test1-3
+      name: etcd-3
+    memoryRequest: 100Mi
+    name: main
+  - cpuRequest: 100m
+    etcdMembers:
+    - instanceGroup: control-plane-us-test1-1
+      name: etcd-1
+    - instanceGroup: control-plane-us-test1-2
+      name: etcd-2
+    - instanceGroup: control-plane-us-test1-3
+      name: etcd-3
+    memoryRequest: 100Mi
+    name: events
+  iam:
+    allowContainerRegistry: true
+    legacy: false
+  kubelet:
+    anonymousAuth: false
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  - ::/0
+  kubernetesVersion: v1.25.0
+  networkCIDR: 10.0.0.0/16
+  networking:
+    calico: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  sshAccess:
+  - 0.0.0.0/0
+  - ::/0
+  subnets:
+  - cidr: 10.0.32.0/19
+    name: us-test1
+    type: Private
+    zone: us-test1
+  - cidr: 10.0.0.0/22
+    name: utility-us-test1
+    type: Utility
+    zone: us-test1
+  topology:
+    dns:
+      type: None
+    masters: private
+    nodes: private
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: ha.example.com
+  name: control-plane-us-test1-1
+spec:
+  image: ubuntu-20.04
+  machineType: m1.medium
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - us-test1
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: ha.example.com
+  name: control-plane-us-test1-2
+spec:
+  image: ubuntu-20.04
+  machineType: m1.medium
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - us-test1
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: ha.example.com
+  name: control-plane-us-test1-3
+spec:
+  image: ubuntu-20.04
+  machineType: m1.medium
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - us-test1
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: ha.example.com
+  name: nodes-us-test1
+spec:
+  image: ubuntu-20.04
+  machineType: m1.large
+  maxSize: 1
+  minSize: 1
+  role: Node
+  subnets:
+  - us-test1
