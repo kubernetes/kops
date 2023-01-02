@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/architectures"
@@ -66,6 +67,7 @@ func TestKubeProxyBuilder_buildPod(t *testing.T) {
 			fields{
 				&NodeupModelContext{
 					Cluster:           cluster,
+					NodeupConfig:      &nodeup.Config{},
 					kubernetesVersion: semver.Version{Major: 1, Minor: 20},
 				},
 			},
