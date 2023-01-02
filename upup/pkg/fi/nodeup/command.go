@@ -354,7 +354,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		taskMap["LoadImage."+strconv.Itoa(i)] = &nodetasks.LoadImageTask{
 			Sources: image.Sources,
 			Hash:    image.Hash,
-			Runtime: c.cluster.Spec.ContainerRuntime,
+			Runtime: nodeupConfig.ContainerRuntime,
 		}
 	}
 	// Protokube load image task is in ProtokubeBuilder
@@ -466,7 +466,7 @@ func evaluateSpec(c *NodeUpCommand, nodeupConfig *nodeup.Config, cloudProvider a
 		return err
 	}
 
-	if c.cluster.Spec.ContainerRuntime == "docker" {
+	if nodeupConfig.ContainerRuntime == "docker" {
 		err = evaluateDockerSpecStorage(c.cluster.Spec.Docker)
 		if err != nil {
 			return err

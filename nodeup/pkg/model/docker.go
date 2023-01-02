@@ -56,7 +56,7 @@ func (b *DockerBuilder) dockerVersion() (string, error) {
 
 // Build is responsible for configuring the docker daemon
 func (b *DockerBuilder) Build(c *fi.NodeupModelBuilderContext) error {
-	if b.Cluster.Spec.ContainerRuntime != "docker" {
+	if b.NodeupConfig.ContainerRuntime != "docker" {
 		return nil
 	}
 	if b.skipInstall() {
