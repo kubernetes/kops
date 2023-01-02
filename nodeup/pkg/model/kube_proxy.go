@@ -126,7 +126,7 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 			// which would mean that DNS can't rely on API to come up
 			c.Master = "https://127.0.0.1"
 		} else {
-			c.Master = "https://" + b.Cluster.APIInternalName()
+			c.Master = "https://" + b.APIInternalName()
 		}
 	}
 
@@ -227,7 +227,7 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 		sslCertsHost.VolumeMount.MountPath = "/etc/ssl/certs"
 	}
 
-	if b.Cluster.IsGossip() {
+	if b.IsGossip {
 		// Map /etc/hosts from host, so that we see the updates that are made by protokube
 		kubemanifest.AddHostPathMapping(pod, container, "etchosts", "/etc/hosts")
 	}

@@ -181,7 +181,7 @@ func TestValidate_ClusterName_Import(t *testing.T) {
 func TestValidate_ContainerRegistry_and_ContainerProxy_exclusivity(t *testing.T) {
 	c := buildDefaultCluster(t)
 
-	assets := new(api.Assets)
+	assets := new(api.AssetsSpec)
 	c.Spec.Assets = assets
 
 	expectNoErrorFromValidate(t, c)

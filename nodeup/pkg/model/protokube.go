@@ -45,10 +45,8 @@ var _ fi.NodeupModelBuilder = &ProtokubeBuilder{}
 
 // Build is responsible for generating the options for protokube
 func (t *ProtokubeBuilder) Build(c *fi.NodeupModelBuilderContext) error {
-	useGossip := t.Cluster.IsGossip()
-
 	// check is not a master and we are not using gossip (https://github.com/kubernetes/kops/pull/3091)
-	if !t.IsMaster && !useGossip {
+	if !t.IsMaster && !t.IsGossip {
 		klog.V(2).Infof("skipping the provisioning of protokube on the nodes")
 		return nil
 	}
@@ -190,7 +188,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 		Master:        b(t.IsMaster),
 	}
 
-	f.ClusterID = fi.PtrTo(t.Cluster.ObjectMeta.Name)
+	f.ClusterID = fi.PtrTo(t.NodeupConfig.ClusterName)
 
 	zone := t.Cluster.Spec.DNSZone
 	if zone != "" {
@@ -207,8 +205,8 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 		// argv = append(argv, "--zone=*/*")
 	}
 
-	if t.Cluster.IsGossip() {
-		klog.Warningf("Cluster name %q implies gossip DNS", t.Cluster.Name)
+	if t.IsGossip {
+		klog.Warningf("Cluster name %q implies gossip DNS", t.NodeupConfig.ClusterName)
 		f.Gossip = fi.PtrTo(true)
 		if t.Cluster.Spec.GossipConfig != nil {
 			f.GossipProtocol = t.Cluster.Spec.GossipConfig.Protocol
@@ -223,13 +221,13 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 		}
 
 		// @TODO: This is hacky, but we want it so that we can have a different internal & external name
-		internalSuffix := t.Cluster.APIInternalName()
+		internalSuffix := t.APIInternalName()
 		internalSuffix = strings.TrimPrefix(internalSuffix, "api.")
 		f.DNSInternalSuffix = fi.PtrTo(internalSuffix)
 	}
 
 	if f.DNSInternalSuffix == nil {
-		f.DNSInternalSuffix = fi.PtrTo(".internal." + t.Cluster.ObjectMeta.Name)
+		f.DNSInternalSuffix = fi.PtrTo(".internal." + t.NodeupConfig.ClusterName)
 	}
 
 	f.BootstrapMasterNodeLabels = true

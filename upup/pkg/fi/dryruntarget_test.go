@@ -22,7 +22,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 )
 
@@ -67,11 +66,7 @@ func (*testTask) Run(_ *CloudupContext) error {
 }
 
 func Test_DryrunTarget_PrintReport(t *testing.T) {
-	builder := assets.NewAssetBuilder(&api.Cluster{
-		Spec: api.ClusterSpec{
-			KubernetesVersion: "1.17.3",
-		},
-	}, false)
+	builder := assets.NewAssetBuilder(nil, "1.17.3", false)
 	var stdout bytes.Buffer
 	target := newDryRunTarget[CloudupSubContext](builder, &stdout)
 	tasks := map[string]CloudupTask{}
