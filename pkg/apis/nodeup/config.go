@@ -22,6 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/util/pkg/architectures"
+	"k8s.io/kops/util/pkg/reflectutils"
 )
 
 // Config is the configuration for the nodeup binary
@@ -179,6 +180,14 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		InstanceGroupRole: role,
 	}
 
+	if cluster.Spec.Containerd != nil || instanceGroup.Spec.Containerd != nil {
+		config.ContainerdConfig = buildContainerdConfig(cluster, instanceGroup)
+	}
+
+	if (cluster.Spec.Containerd != nil && cluster.Spec.Containerd.NvidiaGPU != nil) || (instanceGroup.Spec.Containerd != nil && instanceGroup.Spec.Containerd.NvidiaGPU != nil) {
+		config.NvidiaGPU = buildNvidiaConfig(cluster, instanceGroup)
+	}
+
 	if cluster.Spec.CloudProvider.AWS != nil {
 		aws := cluster.Spec.CloudProvider.AWS
 		warmPool := aws.WarmPool.ResolveDefaults(instanceGroup)
@@ -227,6 +236,33 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 	}
 
 	return &config, &bootConfig
+}
+
+// buildContainerdConfig builds containerd configuration for instance. Instance group configuration will override cluster configuration
+func buildContainerdConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) *kops.ContainerdConfig {
+	config := cluster.Spec.Containerd.DeepCopy()
+	if instanceGroup.Spec.Containerd != nil {
+		reflectutils.JSONMergeStruct(&config, instanceGroup.Spec.Containerd)
+	}
+	return config
+}
+
+// buildNvidiaConfig builds nvidia configuration for instance group
+func buildNvidiaConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) *kops.NvidiaGPUConfig {
+	config := &kops.NvidiaGPUConfig{}
+	if cluster.Spec.Containerd != nil && cluster.Spec.Containerd.NvidiaGPU != nil {
+		config = cluster.Spec.Containerd.NvidiaGPU
+	}
+
+	if instanceGroup.Spec.Containerd != nil && instanceGroup.Spec.Containerd.NvidiaGPU != nil {
+		reflectutils.JSONMergeStruct(&config, instanceGroup.Spec.Containerd.NvidiaGPU)
+	}
+
+	if config.DriverPackage == "" {
+		config.DriverPackage = kops.NvidiaDefaultDriverPackage
+	}
+
+	return config
 }
 
 func UsesInstanceIDForNodeName(cluster *kops.Cluster) bool {
