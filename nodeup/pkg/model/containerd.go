@@ -162,7 +162,7 @@ func (b *ContainerdBuilder) installContainerd(c *fi.NodeupModelBuilderContext) e
 
 	var containerRuntimeVersion string
 	if b.NodeupConfig.ContainerRuntime == "containerd" {
-		if b.Cluster.Spec.Containerd != nil {
+		if b.NodeupConfig.ContainerdConfig != nil {
 			containerRuntimeVersion = fi.ValueOf(b.NodeupConfig.ContainerdConfig.Version)
 		} else {
 			return fmt.Errorf("error finding contained version")
