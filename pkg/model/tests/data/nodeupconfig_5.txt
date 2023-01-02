@@ -32,3 +32,5 @@ KeypairIDs: {}
 KubeletConfig:
   kubeconfigPath: /etc/kubernetes/igconfig.txt
 UpdatePolicy: automatic
+containerdConfig:
+  logLevel: info

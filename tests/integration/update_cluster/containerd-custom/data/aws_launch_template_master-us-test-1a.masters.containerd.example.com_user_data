@@ -125,19 +125,6 @@ ensure-install-dir
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   manageStorageClasses: true
-containerd:
-  logLevel: info
-  packages:
-    hashAmd64: "0000000000000000000000000000000000000000000000000000000000000000"
-    urlAmd64: https://github.com/containerd/containerd/releases/download/v1.3.9/cri-containerd-cni-1.3.9-linux-amd64.tar.gz
-  registryMirrors:
-    '*':
-    - http://HostIP2:Port2
-    docker.io:
-    - https://registry-1.docker.io
-  runc:
-    version: 1.1.4
-  version: 1.6.14
 docker:
   skipInstall: true
 encryptionConfig: null
