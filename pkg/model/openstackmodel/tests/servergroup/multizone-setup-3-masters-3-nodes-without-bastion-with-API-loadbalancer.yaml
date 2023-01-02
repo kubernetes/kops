@@ -85,6 +85,7 @@ Metadata:
 Name: master-a-1-cluster
 Port:
   AdditionalSecurityGroups: null
+  ForAPIServer: false
   ID: null
   InstanceGroupName: master-a
   Lifecycle: Sync
@@ -159,6 +160,7 @@ Metadata:
 Name: master-b-1-cluster
 Port:
   AdditionalSecurityGroups: null
+  ForAPIServer: false
   ID: null
   InstanceGroupName: master-b
   Lifecycle: Sync
@@ -233,6 +235,7 @@ Metadata:
 Name: master-c-1-cluster
 Port:
   AdditionalSecurityGroups: null
+  ForAPIServer: false
   ID: null
   InstanceGroupName: master-c
   Lifecycle: Sync
@@ -310,6 +313,7 @@ Metadata:
 Name: node-a-1-cluster
 Port:
   AdditionalSecurityGroups: null
+  ForAPIServer: false
   ID: null
   InstanceGroupName: node-a
   Lifecycle: Sync
@@ -387,6 +391,7 @@ Metadata:
 Name: node-b-1-cluster
 Port:
   AdditionalSecurityGroups: null
+  ForAPIServer: false
   ID: null
   InstanceGroupName: node-b
   Lifecycle: Sync
@@ -464,6 +469,7 @@ Metadata:
 Name: node-c-1-cluster
 Port:
   AdditionalSecurityGroups: null
+  ForAPIServer: false
   ID: null
   InstanceGroupName: node-c
   Lifecycle: Sync
@@ -655,6 +661,7 @@ Pool:
     Subnet: subnet-a.cluster
     VipSubnet: null
   Name: master-public-name-https
+Port: 443
 ---
 ID: null
 Lifecycle: Sync
@@ -864,6 +871,7 @@ Pool:
   Name: master-public-name-https
 ---
 AdditionalSecurityGroups: null
+ForAPIServer: false
 ID: null
 InstanceGroupName: master-a
 Lifecycle: Sync
@@ -895,6 +903,7 @@ Tags:
 - KubernetesCluster=cluster
 ---
 AdditionalSecurityGroups: null
+ForAPIServer: false
 ID: null
 InstanceGroupName: master-b
 Lifecycle: Sync
@@ -926,6 +935,7 @@ Tags:
 - KubernetesCluster=cluster
 ---
 AdditionalSecurityGroups: null
+ForAPIServer: false
 ID: null
 InstanceGroupName: master-c
 Lifecycle: Sync
@@ -957,6 +967,7 @@ Tags:
 - KubernetesCluster=cluster
 ---
 AdditionalSecurityGroups: null
+ForAPIServer: false
 ID: null
 InstanceGroupName: node-a
 Lifecycle: Sync
@@ -988,6 +999,7 @@ Tags:
 - KubernetesCluster=cluster
 ---
 AdditionalSecurityGroups: null
+ForAPIServer: false
 ID: null
 InstanceGroupName: node-b
 Lifecycle: Sync
@@ -1019,6 +1031,7 @@ Tags:
 - KubernetesCluster=cluster
 ---
 AdditionalSecurityGroups: null
+ForAPIServer: false
 ID: null
 InstanceGroupName: node-c
 Lifecycle: Sync
