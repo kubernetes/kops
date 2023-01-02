@@ -125,8 +125,6 @@ ensure-install-dir
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   manageStorageClasses: true
-docker:
-  skipInstall: true
 kubeProxy:
   cpuRequest: 100m
   image: registry.k8s.io/kube-proxy:v1.26.0
@@ -181,7 +179,7 @@ ConfigServer:
   server: https://kops-controller.internal.minimal.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: ABlSllfCG+rsNECHiYY/7DTk2vfEj4xYoQ4pSl+eDWc=
+NodeupConfigHash: tYhLoG7Z4LtM9i6DVA42Kzmp4Eb18GpVcieX10jexEw=
 
 __EOF_KUBE_ENV
 

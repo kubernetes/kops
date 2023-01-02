@@ -47,3 +47,5 @@ channels:
 containerdConfig:
   logLevel: info
   version: 1.4.13
+docker:
+  skipInstall: true

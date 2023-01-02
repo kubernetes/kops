@@ -179,6 +179,8 @@ channels:
 containerdConfig:
   logLevel: info
   version: 1.4.13
+docker:
+  skipInstall: true
 staticManifests:
 - key: kube-apiserver-healthcheck
   path: manifests/static/kube-apiserver-healthcheck.yaml

@@ -125,8 +125,6 @@ ensure-install-dir
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   manageStorageClasses: true
-docker:
-  skipInstall: true
 encryptionConfig: null
 etcdClusters:
   events:
@@ -254,7 +252,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privatecilium.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: nVaI/335J7bUqdXJDnv9ImN+B08m7rCXh7cBYk7+RQs=
+NodeupConfigHash: qiBgX8Q9cbumO/83S9e7LgJSC8xL0BlOKgf8HVBJvpM=
 
 __EOF_KUBE_ENV
 

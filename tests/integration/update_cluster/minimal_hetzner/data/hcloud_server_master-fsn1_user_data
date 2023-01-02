@@ -125,8 +125,6 @@ ensure-install-dir
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   manageStorageClasses: true
-docker:
-  skipInstall: true
 encryptionConfig: null
 etcdClusters:
   events:
@@ -243,7 +241,7 @@ CloudProvider: hetzner
 ConfigBase: memfs://tests/minimal.example.com
 InstanceGroupName: master-fsn1
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: Rca4D+V3FgTk3YL6O78DZX4c2jaH0L+i81G/4h8atdE=
+NodeupConfigHash: OVam6HUoF0GjyUrQUFAj5jLhVQK+Uv/eFrUEqyfHOIw=
 
 __EOF_KUBE_ENV
 
