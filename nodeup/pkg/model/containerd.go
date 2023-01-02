@@ -57,7 +57,7 @@ func (b *ContainerdBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	case distributions.DistributionFlatcar:
 		klog.Infof("Detected Flatcar; won't install containerd")
 		installContainerd = false
-		if b.Cluster.Spec.ContainerRuntime == "containerd" {
+		if b.NodeupConfig.ContainerRuntime == "containerd" {
 			b.buildSystemdServiceOverrideFlatcar(c)
 		}
 	case distributions.DistributionContainerOS:
@@ -66,7 +66,7 @@ func (b *ContainerdBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		b.buildSystemdServiceOverrideContainerOS(c)
 	}
 
-	if b.Cluster.Spec.ContainerRuntime == "containerd" {
+	if b.NodeupConfig.ContainerRuntime == "containerd" {
 		// Using containerd with Kubenet requires special configuration.
 		// This is a temporary backwards-compatible solution for kubenet users and will be deprecated when Kubenet is deprecated:
 		// https://github.com/containerd/containerd/blob/master/docs/cri/config.md#cni-config-template
@@ -106,7 +106,7 @@ func (b *ContainerdBuilder) installContainerd(c *fi.NodeupModelBuilderContext) e
 	}
 
 	// Add binaries from assets
-	if b.Cluster.Spec.ContainerRuntime == "containerd" {
+	if b.NodeupConfig.ContainerRuntime == "containerd" {
 		// Add containerd binaries from containerd release package
 		f := b.Assets.FindMatches(regexp.MustCompile(`^bin/(containerd|ctr)`))
 		if len(f) == 0 {
@@ -161,7 +161,7 @@ func (b *ContainerdBuilder) installContainerd(c *fi.NodeupModelBuilderContext) e
 	}
 
 	var containerRuntimeVersion string
-	if b.Cluster.Spec.ContainerRuntime == "containerd" {
+	if b.NodeupConfig.ContainerRuntime == "containerd" {
 		if b.Cluster.Spec.Containerd != nil {
 			containerRuntimeVersion = fi.ValueOf(b.NodeupConfig.ContainerdConfig.Version)
 		} else {
@@ -207,7 +207,7 @@ func (b *ContainerdBuilder) buildSystemdService(sv semver.Version) *nodetasks.Se
 	manifest.Set("Service", "ExecStart", "/usr/bin/containerd -c "+b.containerdConfigFilePath()+" \"$CONTAINERD_OPTS\"")
 
 	// notify the daemon's readiness to systemd
-	if (b.Cluster.Spec.ContainerRuntime == "containerd" && sv.GTE(semver.MustParse("1.3.4"))) || sv.GTE(semver.MustParse("19.3.13")) {
+	if (b.NodeupConfig.ContainerRuntime == "containerd" && sv.GTE(semver.MustParse("1.3.4"))) || sv.GTE(semver.MustParse("19.3.13")) {
 		manifest.Set("Service", "Type", "notify")
 	}
 
@@ -476,7 +476,7 @@ func (b *ContainerdBuilder) buildCNIConfigTemplateFile(c *fi.NodeupModelBuilderC
 }
 
 func (b *ContainerdBuilder) buildContainerdConfig() (string, error) {
-	if b.Cluster.Spec.ContainerRuntime != "containerd" {
+	if b.NodeupConfig.ContainerRuntime != "containerd" {
 		return "", nil
 	}
 
