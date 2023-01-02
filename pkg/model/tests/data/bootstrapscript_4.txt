@@ -140,8 +140,6 @@ ensure-install-dir
 
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig: null
-docker:
-  logLevel: INFO
 kubeProxy:
   cpuLimit: 30m
   cpuRequest: 30m
@@ -158,7 +156,7 @@ cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
 InstanceGroupName: testIG
 InstanceGroupRole: Node
-NodeupConfigHash: HnS7FZVihse0lpXlDBtVWIzDjnuZf+qnyjzE05colKg=
+NodeupConfigHash: LxsGYCB8Qxowvtmt2Ak2367hT1H5JU7SEkCVY3fD75U=
 
 __EOF_KUBE_ENV
 

@@ -274,6 +274,8 @@ containerdConfig:
   runc:
     version: 1.1.4
   version: 1.6.14
+docker:
+  skipInstall: true
 etcdManifests:
 - memfs://tests/minimal-gce-with-a-very-very-very-very-very-long-name.example.com/manifests/etcd/main-master-us-test1-a.yaml
 - memfs://tests/minimal-gce-with-a-very-very-very-very-very-long-name.example.com/manifests/etcd/events-master-us-test1-a.yaml

@@ -125,8 +125,6 @@ ensure-install-dir
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   manageStorageClasses: true
-docker:
-  skipInstall: true
 kubeProxy:
   clusterCIDR: 100.96.0.0/11
   cpuRequest: 100m
@@ -161,7 +159,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: apiserver
 InstanceGroupRole: APIServer
-NodeupConfigHash: gouzgmaZZLVcikzMdZQd95zyHRfnLi0LcJFOumNkFFs=
+NodeupConfigHash: vYbskPDI3k2nU17RtTF/2uq4sfcxZX3NyHl7wJ4db0Y=
 
 __EOF_KUBE_ENV
 
