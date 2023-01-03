@@ -140,13 +140,6 @@ ensure-install-dir
 
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig: null
-kubeProxy:
-  cpuLimit: 30m
-  cpuRequest: 30m
-  featureGates:
-    AdvancedAuditing: "true"
-  memoryLimit: 30Mi
-  memoryRequest: 30Mi
 kubelet:
   kubeconfigPath: /etc/kubernetes/config.txt
 
@@ -156,7 +149,7 @@ cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
 InstanceGroupName: testIG
 InstanceGroupRole: Node
-NodeupConfigHash: ApI8of4o1v0oYuFEkLOEvHztTT+rLkxbtFfHyF3NVp8=
+NodeupConfigHash: 2B7kjr5B2CTl7AI1X0Rxt5Ob73GpNs90Agcut0TBJL0=
 
 __EOF_KUBE_ENV
 

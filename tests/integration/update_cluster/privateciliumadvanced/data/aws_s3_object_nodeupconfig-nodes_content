@@ -43,6 +43,7 @@ Hooks:
 KeypairIDs:
   etcd-clients-ca-cilium: "6977087239278090025924899436"
   kubernetes-ca: "6982820025135291416230495506"
+KubeProxy: null
 KubeletConfig:
   anonymousAuth: false
   cgroupDriver: systemd
