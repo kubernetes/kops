@@ -26,7 +26,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/pkg/kopscodecs"
-	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -100,10 +99,6 @@ func (c *VFSKeystoreReader) loadKeyset(ctx context.Context, p vfs.Path) (*Keyset
 
 	keyset.LegacyFormat = legacyFormat
 	return keyset, nil
-}
-
-func (c *VFSKeystoreReader) FindPrimaryKeypair(ctx context.Context, name string) (*pki.Certificate, *pki.PrivateKey, error) {
-	return FindPrimaryKeypair(ctx, c, name)
 }
 
 var legacyKeysetMappings = map[string]string{
