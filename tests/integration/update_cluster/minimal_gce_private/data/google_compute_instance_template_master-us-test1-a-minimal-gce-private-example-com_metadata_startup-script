@@ -188,11 +188,6 @@ kubeControllerManager:
     leaderElect: true
   logLevel: 2
   useServiceAccountCredentials: true
-kubeProxy:
-  clusterCIDR: 100.96.0.0/11
-  cpuRequest: 100m
-  image: registry.k8s.io/kube-proxy:v1.26.0
-  logLevel: 2
 kubeScheduler:
   image: registry.k8s.io/kube-scheduler:v1.26.0
   leaderElection:
@@ -242,7 +237,7 @@ CloudProvider: gce
 ConfigBase: memfs://tests/minimal-gce-private.example.com
 InstanceGroupName: master-us-test1-a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: yACN2PZfRYMHJT6fsUBMk1Tekpwvba1Nmzhz/ycuo0U=
+NodeupConfigHash: 1uSCjpomyiBF/YVZbe+AJrQQfexNPNiTbJ4lfCWiWIM=
 
 __EOF_KUBE_ENV
 

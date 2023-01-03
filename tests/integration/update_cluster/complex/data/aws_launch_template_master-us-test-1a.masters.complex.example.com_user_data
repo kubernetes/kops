@@ -206,11 +206,6 @@ kubeControllerManager:
     leaderElect: true
   logLevel: 2
   useServiceAccountCredentials: true
-kubeProxy:
-  clusterCIDR: 100.96.0.0/11
-  cpuRequest: 100m
-  image: registry.k8s.io/kube-proxy:v1.24.0
-  logLevel: 2
 kubeScheduler:
   featureGates:
     CSIMigrationAWS: "true"
@@ -267,7 +262,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/complex.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: vLcDsmlRydUGsPtc/90JGOkLQKNkIVIYxpT7xYS8AYI=
+NodeupConfigHash: +u0TAInMBsYMa1dXPMfK9WuWufc0Jt2BUToT2G3G7TI=
 
 __EOF_KUBE_ENV
 
