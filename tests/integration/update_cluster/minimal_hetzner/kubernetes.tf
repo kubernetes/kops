@@ -308,6 +308,11 @@ resource "hcloud_volume" "etcd-1-etcd-main-minimal-example-com" {
 terraform {
   required_version = ">= 0.15.0"
   required_providers {
+    aws = {
+      "configuration_aliases" = [aws.files]
+      "source"                = "hashicorp/aws"
+      "version"               = ">= 4.0.0"
+    }
     hcloud = {
       "source"  = "hetznercloud/hcloud"
       "version" = ">= 1.35.1"
