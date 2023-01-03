@@ -93,7 +93,7 @@ func PerformAssignments(c *kops.Cluster, cloud fi.Cloud) error {
 		}
 
 		// Amazon VPC CNI uses the same network
-		if c.Spec.Networking.AmazonVPC != nil {
+		if c.Spec.Networking.AmazonVPC != nil && c.Spec.Networking.NonMasqueradeCIDR != "::/0" {
 			c.Spec.Networking.NonMasqueradeCIDR = c.Spec.Networking.NetworkCIDR
 		}
 	}
