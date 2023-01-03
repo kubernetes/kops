@@ -282,7 +282,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		}
 
 		// If Nvidia is enabled in the cluster, check if this instance has support for it.
-		nvidia := c.cluster.Spec.Containerd.NvidiaGPU
+		nvidia := modelContext.NodeupConfig.ContainerdConfig.NvidiaGPU
 		if nvidia != nil && fi.ValueOf(nvidia.Enabled) {
 			awsCloud := cloud.(awsup.AWSCloud)
 			// Get the instance type's detailed information.
@@ -354,7 +354,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		taskMap["LoadImage."+strconv.Itoa(i)] = &nodetasks.LoadImageTask{
 			Sources: image.Sources,
 			Hash:    image.Hash,
-			Runtime: c.cluster.Spec.ContainerRuntime,
+			Runtime: nodeupConfig.ContainerRuntime,
 		}
 	}
 	// Protokube load image task is in ProtokubeBuilder
@@ -466,8 +466,8 @@ func evaluateSpec(c *NodeUpCommand, nodeupConfig *nodeup.Config, cloudProvider a
 		return err
 	}
 
-	if c.cluster.Spec.ContainerRuntime == "docker" {
-		err = evaluateDockerSpecStorage(c.cluster.Spec.Docker)
+	if nodeupConfig.ContainerRuntime == "docker" {
+		err = evaluateDockerSpecStorage(nodeupConfig.Docker)
 		if err != nil {
 			return err
 		}

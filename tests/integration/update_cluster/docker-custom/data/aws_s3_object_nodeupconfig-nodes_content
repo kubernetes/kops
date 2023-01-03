@@ -11,6 +11,7 @@ Assets:
   - 000000000000000000000000000000000000000000000000000000000000000b@https://download.docker.com/linux/static/stable/aarch64/docker-20.10.1.tgz
 CAs: {}
 ClusterName: docker.example.com
+ContainerRuntime: docker
 Hooks:
 - null
 - null
@@ -43,3 +44,24 @@ KubeletConfig:
 UpdatePolicy: automatic
 channels:
 - memfs://clusters.example.com/docker.example.com/addons/bootstrap-channel.yaml
+containerdConfig:
+  configOverride: |
+    disabled_plugins = ["cri"]
+  logLevel: info
+docker:
+  execOpt:
+  - native.cgroupdriver=systemd
+  ipMasq: false
+  ipTables: false
+  logDriver: json-file
+  logLevel: info
+  logOpt:
+  - max-size=10m
+  - max-file=5
+  packages:
+    hashAmd64: 000000000000000000000000000000000000000000000000000000000000000a
+    hashArm64: 000000000000000000000000000000000000000000000000000000000000000b
+    urlAmd64: https://download.docker.com/linux/static/stable/x86_64/docker-20.10.1.tgz
+    urlArm64: https://download.docker.com/linux/static/stable/aarch64/docker-20.10.1.tgz
+  storage: overlay2,overlay,aufs
+  version: 20.10.17

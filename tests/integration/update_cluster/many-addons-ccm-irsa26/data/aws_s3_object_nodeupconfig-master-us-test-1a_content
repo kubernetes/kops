@@ -224,6 +224,7 @@ CAs:
     9B7UD2ushcVFPtaeoL9Gfu8aY4KJBeqqg5ojl4qmRnThjw==
     -----END CERTIFICATE-----
 ClusterName: minimal.example.com
+ContainerRuntime: containerd
 DefaultMachineType: m3.medium
 FileAssets:
 - content: |
@@ -278,6 +279,8 @@ containerdConfig:
   runc:
     version: 1.1.4
   version: 1.6.14
+docker:
+  skipInstall: true
 etcdManifests:
 - memfs://clusters.example.com/minimal.example.com/manifests/etcd/main-master-us-test-1a.yaml
 - memfs://clusters.example.com/minimal.example.com/manifests/etcd/events-master-us-test-1a.yaml

@@ -145,12 +145,12 @@ func runDockerBuilderTest(t *testing.T, key string) {
 
 	nodeUpModelContext.Distribution = distributions.DistributionUbuntu2004
 
-	if nodeUpModelContext.Cluster.Spec.Docker.SkipInstall == false {
-		if nodeUpModelContext.Cluster == nil || nodeUpModelContext.Cluster.Spec.Docker == nil || nodeUpModelContext.Cluster.Spec.Docker.Version == nil {
+	if nodeUpModelContext.NodeupConfig.Docker.SkipInstall == false {
+		if nodeUpModelContext.NodeupConfig.Docker.Version == nil {
 			t.Fatalf("error finding Docker version")
 			return
 		}
-		dv := fi.ValueOf(nodeUpModelContext.Cluster.Spec.Docker.Version)
+		dv := fi.ValueOf(nodeUpModelContext.NodeupConfig.Docker.Version)
 		sv, err := semver.ParseTolerant(dv)
 		if err != nil {
 			t.Fatalf("error parsing Docker version %q: %v", dv, err)

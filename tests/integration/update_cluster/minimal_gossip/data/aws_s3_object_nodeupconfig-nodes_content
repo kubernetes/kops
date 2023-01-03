@@ -17,6 +17,7 @@ Assets:
   - 9d842e3636a95de2315cdea2be7a282355aac0658ef0b86d5dc2449066538f13@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/arm64/channels,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/channels-linux-arm64
 CAs: {}
 ClusterName: minimal.k8s.local
+ContainerRuntime: containerd
 Hooks:
 - null
 - null
@@ -52,4 +53,6 @@ containerdConfig:
   runc:
     version: 1.1.4
   version: 1.6.14
+docker:
+  skipInstall: true
 useInstanceIDForNodeName: true

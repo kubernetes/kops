@@ -125,28 +125,6 @@ ensure-install-dir
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   manageStorageClasses: true
-containerRuntime: docker
-containerd:
-  configOverride: |
-    disabled_plugins = ["cri"]
-  logLevel: info
-docker:
-  execOpt:
-  - native.cgroupdriver=systemd
-  ipMasq: false
-  ipTables: false
-  logDriver: json-file
-  logLevel: info
-  logOpt:
-  - max-size=10m
-  - max-file=5
-  packages:
-    hashAmd64: 000000000000000000000000000000000000000000000000000000000000000a
-    hashArm64: 000000000000000000000000000000000000000000000000000000000000000b
-    urlAmd64: https://download.docker.com/linux/static/stable/x86_64/docker-20.10.1.tgz
-    urlArm64: https://download.docker.com/linux/static/stable/aarch64/docker-20.10.1.tgz
-  storage: overlay2,overlay,aufs
-  version: 20.10.17
 kubeProxy:
   clusterCIDR: 100.96.0.0/11
   cpuRequest: 100m
@@ -203,7 +181,7 @@ ConfigServer:
   server: https://kops-controller.internal.docker.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: meqetrvbuU9VK/28lrN0d3NjMzyOU02HM2cpZzylZck=
+NodeupConfigHash: h8rTwvxpl/fAtFBdygR5JGWg2EsMR1alWnfjQ8QK9Bg=
 
 __EOF_KUBE_ENV
 
