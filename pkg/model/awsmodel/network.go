@@ -246,7 +246,9 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 
 				// AWS ALB contoller won't provision any internal ELBs unless this tag is set.
 				// So we add this to public subnets as well if we do not have any private subnets.
-				if !haveAnyPrivate {
+				// AWS cannot provision internal load balancers into networks with an IPv6 default
+				// route to an Internet Gateway, though.
+				if !haveAnyPrivate && !b.Cluster.Spec.IsIPv6Only() {
 					tags[aws.TagNameSubnetInternalELB] = "1"
 				}
 
