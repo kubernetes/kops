@@ -125,12 +125,6 @@ ensure-install-dir
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   manageStorageClasses: true
-containerRuntime: containerd
-containerd:
-  logLevel: info
-  version: 1.4.13
-docker:
-  skipInstall: true
 encryptionConfig: null
 etcdClusters:
   events:
@@ -260,7 +254,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privateweave.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: 035sckKWZApRj9slS/A+0fxHk2FukhyTwB2FPm5aK6g=
+NodeupConfigHash: 2HgzTBeUBHWzFk3Oc7TOi2vMP2iYHkgKEEz1Rb4ZRFA=
 
 __EOF_KUBE_ENV
 

@@ -222,6 +222,7 @@ CAs:
     9B7UD2ushcVFPtaeoL9Gfu8aY4KJBeqqg5ojl4qmRnThjw==
     -----END CERTIFICATE-----
 ClusterName: ha-gce.example.com
+ContainerRuntime: containerd
 FileAssets:
 - content: |
     apiVersion: kubescheduler.config.k8s.io/v1beta2
@@ -273,6 +274,8 @@ containerdConfig:
   runc:
     version: 1.1.4
   version: 1.6.14
+docker:
+  skipInstall: true
 etcdManifests:
 - memfs://tests/ha-gce.example.com/manifests/etcd/main-master-us-test1-c.yaml
 - memfs://tests/ha-gce.example.com/manifests/etcd/events-master-us-test1-c.yaml

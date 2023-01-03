@@ -238,10 +238,6 @@ func BuildNodeupModelContext(model *testutils.Model) (*NodeupModelContext, error
 		BootConfig: &nodeup.BootConfig{
 			CloudProvider: model.Cluster.Spec.GetCloudProvider(),
 		},
-		NodeupConfig: &nodeup.Config{
-			CAs:        map[string]string{},
-			KeypairIDs: map[string]string{},
-		},
 	}
 
 	// Populate the cluster
@@ -262,7 +258,8 @@ func BuildNodeupModelContext(model *testutils.Model) (*NodeupModelContext, error
 
 	if len(model.InstanceGroups) == 0 {
 		// We tolerate this - not all tests need an instance group
-		// we then use the cluser kubelet config directly
+		// we then use the cluster kubelet config directly
+		nodeupModelContext.NodeupConfig, nodeupModelContext.BootConfig = nodeup.NewConfig(nodeupModelContext.Cluster, &kops.InstanceGroup{})
 		nodeupModelContext.NodeupConfig.KubeletConfig = *nodeupModelContext.Cluster.Spec.Kubelet
 	} else if len(model.InstanceGroups) == 1 {
 		ig := model.InstanceGroups[0]
@@ -283,13 +280,6 @@ func BuildNodeupModelContext(model *testutils.Model) (*NodeupModelContext, error
 		saPublicKeys, _ := rotatingPrivateKeyset().ToPublicKeys()
 		nodeupModelContext.NodeupConfig.APIServerConfig.ServiceAccountPublicKeys = saPublicKeys
 	}
-
-	nodeupModelContext.NodeupConfig.ContainerdConfig = nodeupModelContext.Cluster.Spec.Containerd
-	updatePolicy := nodeupModelContext.Cluster.Spec.UpdatePolicy
-	if updatePolicy == nil {
-		updatePolicy = fi.PtrTo(kops.UpdatePolicyAutomatic)
-	}
-	nodeupModelContext.NodeupConfig.UpdatePolicy = *updatePolicy
 
 	nodeupModelContext.NodeupConfig.KubeletConfig.PodManifestPath = "/etc/kubernetes/manifests"
 

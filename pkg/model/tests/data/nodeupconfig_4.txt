@@ -1,4 +1,5 @@
 CAs: {}
+ContainerRuntime: docker
 FileAssets:
 - content: blah blah
   name: iptables-restore
@@ -31,3 +32,7 @@ KeypairIDs: {}
 KubeletConfig:
   kubeconfigPath: /etc/kubernetes/igconfig.txt
 UpdatePolicy: automatic
+containerdConfig:
+  logLevel: info
+docker:
+  logLevel: INFO

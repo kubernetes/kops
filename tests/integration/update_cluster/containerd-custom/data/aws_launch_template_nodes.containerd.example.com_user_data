@@ -125,22 +125,6 @@ ensure-install-dir
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   manageStorageClasses: true
-containerRuntime: containerd
-containerd:
-  logLevel: info
-  packages:
-    hashAmd64: "0000000000000000000000000000000000000000000000000000000000000000"
-    urlAmd64: https://github.com/containerd/containerd/releases/download/v1.3.9/cri-containerd-cni-1.3.9-linux-amd64.tar.gz
-  registryMirrors:
-    '*':
-    - http://HostIP2:Port2
-    docker.io:
-    - https://registry-1.docker.io
-  runc:
-    version: 1.1.4
-  version: 1.6.14
-docker:
-  skipInstall: true
 kubeProxy:
   clusterCIDR: 100.96.0.0/11
   cpuRequest: 100m
@@ -196,7 +180,7 @@ ConfigServer:
   server: https://kops-controller.internal.containerd.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: cbCj1NRKl3gJFs6sTHbny6W6ec2Sm0liay1G1BNjYkk=
+NodeupConfigHash: QsSdFMWwMNJz7QrrzNEWZpxLQTbDi8eZiIZcPwAidvg=
 
 __EOF_KUBE_ENV
 
