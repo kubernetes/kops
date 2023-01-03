@@ -46,8 +46,7 @@ func (c *Volume) CompareWithID() *string {
 func (c *Volume) Find(context *fi.CloudupContext) (*Volume, error) {
 	cloud := context.T.Cloud.(openstack.OpenstackCloud)
 	opt := cinderv3.ListOpts{
-		Name:     fi.ValueOf(c.Name),
-		Metadata: c.Tags,
+		Name: fi.ValueOf(c.Name),
 	}
 	volumes, err := cloud.ListVolumes(opt)
 	if err != nil {
