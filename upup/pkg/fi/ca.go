@@ -69,9 +69,7 @@ type KeysetItem struct {
 
 // KeystoreReader contains just the functions we need to consume keypairs, not to update them.
 type KeystoreReader interface {
-	pki.Keystore
-
-	// FindKeyset finds a Keyset.  If the keyset is not found, it returns (nil, nil)
+	// FindKeyset finds a Keyset.  If the keyset is not found, it returns (nil, nil).
 	FindKeyset(ctx context.Context, name string) (*Keyset, error)
 }
 
@@ -109,18 +107,6 @@ type SSHCredentialStore interface {
 
 	// FindSSHPublicKeys retrieves the SSH public keys.
 	FindSSHPublicKeys() ([]*kops.SSHCredential, error)
-}
-
-// FindPrimaryKeypair is a common implementation of pki.FindPrimaryKeypair.
-func FindPrimaryKeypair(ctx context.Context, c KeystoreReader, name string) (*pki.Certificate, *pki.PrivateKey, error) {
-	keyset, err := c.FindKeyset(ctx, name)
-	if err != nil {
-		return nil, nil, err
-	}
-	if keyset == nil || keyset.Primary == nil {
-		return nil, nil, nil
-	}
-	return keyset.Primary.Certificate, keyset.Primary.PrivateKey, nil
 }
 
 // KeysetItemIdOlder returns whether the KeysetItem Id a is older than b.
@@ -253,4 +239,23 @@ func (k *Keyset) AddItem(cert *pki.Certificate, privateKey *pki.PrivateKey, prim
 	}
 
 	return ki, nil
+}
+
+type pkiKeystoreAdapter struct {
+	reader KeystoreReader
+}
+
+func (p pkiKeystoreAdapter) FindPrimaryKeypair(ctx context.Context, name string) (*pki.Certificate, *pki.PrivateKey, error) {
+	keyset, err := p.reader.FindKeyset(ctx, name)
+	if err != nil {
+		return nil, nil, err
+	}
+	if keyset == nil || keyset.Primary == nil {
+		return nil, nil, nil
+	}
+	return keyset.Primary.Certificate, keyset.Primary.PrivateKey, nil
+}
+
+func NewPKIKeystoreAdapter(reader KeystoreReader) pki.Keystore {
+	return &pkiKeystoreAdapter{reader: reader}
 }

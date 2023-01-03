@@ -33,7 +33,7 @@ import (
 
 const DefaultKubecfgAdminLifetime = 18 * time.Hour
 
-func BuildKubecfg(ctx context.Context, cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.SecretStore, cloud fi.Cloud, admin time.Duration, configUser string, internal bool, kopsStateStore string, useKopsAuthenticationPlugin bool) (*KubeconfigBuilder, error) {
+func BuildKubecfg(ctx context.Context, cluster *kops.Cluster, keyStore fi.KeystoreReader, secretStore fi.SecretStore, cloud fi.Cloud, admin time.Duration, configUser string, internal bool, kopsStateStore string, useKopsAuthenticationPlugin bool) (*KubeconfigBuilder, error) {
 	clusterName := cluster.ObjectMeta.Name
 
 	var server string
@@ -121,7 +121,7 @@ func BuildKubecfg(ctx context.Context, cluster *kops.Cluster, keyStore fi.Keysto
 			},
 			Validity: admin,
 		}
-		cert, privateKey, _, err := pki.IssueCert(ctx, &req, keyStore)
+		cert, privateKey, _, err := pki.IssueCert(ctx, &req, fi.NewPKIKeystoreAdapter(keyStore))
 		if err != nil {
 			return nil, err
 		}
