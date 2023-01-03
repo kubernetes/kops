@@ -79,9 +79,6 @@ type TerraformPath interface {
 	Path
 	// RenderTerraform renders the file to a TerraformWriter.
 	RenderTerraform(writer *terraformWriter.TerraformWriter, name string, data io.Reader, acl ACL) error
-
-	// TerraformProvider returns provider information
-	TerraformProvider() (*terraformWriter.TerraformProvider, error)
 }
 
 type HasHash interface {

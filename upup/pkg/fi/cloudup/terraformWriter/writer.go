@@ -94,12 +94,17 @@ func (t *TerraformWriter) AddFileBytes(resourceType string, resourceName string,
 	return LiteralFunctionExpression(fn, path), nil
 }
 
-func (t *TerraformWriter) EnsureTerraformProvider(tfProvider *TerraformProvider) {
+func (t *TerraformWriter) EnsureTerraformProvider(name string, arguments map[string]string) *TerraformProvider {
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
 
 	if t.Providers == nil {
 		t.Providers = make(map[string]*TerraformProvider)
+	}
+
+	tfProvider := &TerraformProvider{
+		Name:      name,
+		Arguments: arguments,
 	}
 
 	key := tfProvider.Name
@@ -108,11 +113,12 @@ func (t *TerraformWriter) EnsureTerraformProvider(tfProvider *TerraformProvider)
 	if existing != nil {
 		if reflect.DeepEqual(tfProvider, existing) {
 			// already exists and matches
-			return
+			return existing
 		}
 		klog.Fatalf("attempt to add different tfProvider with key %q", key)
 	}
 	t.Providers[key] = tfProvider
+	return tfProvider
 }
 
 func (t *TerraformWriter) AddFilePath(resourceType string, resourceName string, key string, data []byte, base64 bool) (*Literal, error) {

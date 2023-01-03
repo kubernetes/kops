@@ -119,15 +119,6 @@ func (p *GSPath) String() string {
 	return p.Path()
 }
 
-// TerraformProvider returns the provider name and necessary arguments
-func (p *GSPath) TerraformProvider() (*terraformWriter.TerraformProvider, error) {
-	provider := &terraformWriter.TerraformProvider{
-		Name:      "google",
-		Arguments: map[string]string{}, // GCS doesn't need the project and region specified
-	}
-	return provider, nil
-}
-
 func (p *GSPath) Remove() error {
 	ctx := context.TODO()
 	done, err := RetryWithBackoff(gcsWriteBackoff, func() (bool, error) {
@@ -434,11 +425,8 @@ func (p *GSPath) RenderTerraform(w *terraformWriter.TerraformWriter, name string
 		return fmt.Errorf("reading data: %v", err)
 	}
 
-	tfProvider, err := p.TerraformProvider()
-	if err != nil {
-		return err
-	}
-	w.EnsureTerraformProvider(tfProvider)
+	tfProviderArguments := map[string]string{} // GCS doesn't need the project and region specified
+	w.EnsureTerraformProvider("google", tfProviderArguments)
 
 	content, err := w.AddFilePath("google_storage_bucket_object", name, "content", bytes, false)
 	if err != nil {
