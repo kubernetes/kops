@@ -22,6 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/util/pkg/architectures"
+	"k8s.io/kops/util/pkg/reflectutils"
 )
 
 // Config is the configuration for the nodeup binary
@@ -69,8 +70,12 @@ type Config struct {
 	FileAssets []kops.FileAssetSpec `json:",omitempty"`
 	// Hooks are for custom actions, for example on first installation.
 	Hooks [][]kops.HookSpec
-	// ContainerdConfig config holds the configuration for containerd
+	// ContainerRuntime is the container runtime to use for Kubernetes.
+	ContainerRuntime string
+	// ContainerdConfig holds the configuration for containerd.
 	ContainerdConfig *kops.ContainerdConfig `json:"containerdConfig,omitempty"`
+	// Docker holds the configuration for docker.
+	Docker *kops.DockerConfig `json:"docker,omitempty"`
 
 	// APIServerConfig is additional configuration for nodes running an APIServer.
 	APIServerConfig *APIServerConfig `json:",omitempty"`
@@ -168,12 +173,22 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		VolumeMounts:     instanceGroup.Spec.VolumeMounts,
 		FileAssets:       append(filterFileAssets(instanceGroup.Spec.FileAssets, role), filterFileAssets(cluster.Spec.FileAssets, role)...),
 		Hooks:            [][]kops.HookSpec{igHooks, clusterHooks},
+		ContainerRuntime: cluster.Spec.ContainerRuntime,
+		Docker:           cluster.Spec.Docker,
 	}
 
 	bootConfig := BootConfig{
 		CloudProvider:     cluster.Spec.GetCloudProvider(),
 		InstanceGroupName: instanceGroup.ObjectMeta.Name,
 		InstanceGroupRole: role,
+	}
+
+	if cluster.Spec.Containerd != nil || instanceGroup.Spec.Containerd != nil {
+		config.ContainerdConfig = buildContainerdConfig(cluster, instanceGroup)
+	}
+
+	if (cluster.Spec.Containerd != nil && cluster.Spec.Containerd.NvidiaGPU != nil) || (instanceGroup.Spec.Containerd != nil && instanceGroup.Spec.Containerd.NvidiaGPU != nil) {
+		config.NvidiaGPU = buildNvidiaConfig(cluster, instanceGroup)
 	}
 
 	if cluster.Spec.CloudProvider.AWS != nil {
@@ -224,6 +239,33 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 	}
 
 	return &config, &bootConfig
+}
+
+// buildContainerdConfig builds containerd configuration for instance. Instance group configuration will override cluster configuration
+func buildContainerdConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) *kops.ContainerdConfig {
+	config := cluster.Spec.Containerd.DeepCopy()
+	if instanceGroup.Spec.Containerd != nil {
+		reflectutils.JSONMergeStruct(&config, instanceGroup.Spec.Containerd)
+	}
+	return config
+}
+
+// buildNvidiaConfig builds nvidia configuration for instance group
+func buildNvidiaConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) *kops.NvidiaGPUConfig {
+	config := &kops.NvidiaGPUConfig{}
+	if cluster.Spec.Containerd != nil && cluster.Spec.Containerd.NvidiaGPU != nil {
+		config = cluster.Spec.Containerd.NvidiaGPU
+	}
+
+	if instanceGroup.Spec.Containerd != nil && instanceGroup.Spec.Containerd.NvidiaGPU != nil {
+		reflectutils.JSONMergeStruct(&config, instanceGroup.Spec.Containerd.NvidiaGPU)
+	}
+
+	if config.DriverPackage == "" {
+		config.DriverPackage = kops.NvidiaDefaultDriverPackage
+	}
+
+	return config
 }
 
 func UsesInstanceIDForNodeName(cluster *kops.Cluster) bool {
