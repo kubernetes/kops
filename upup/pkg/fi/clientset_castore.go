@@ -155,11 +155,6 @@ func FindPrimary(keyset *kops.Keyset) *kops.KeysetItem {
 	return primary
 }
 
-// FindPrimaryKeypair implements pki.Keystore
-func (c *ClientsetCAStore) FindPrimaryKeypair(ctx context.Context, name string) (*pki.Certificate, *pki.PrivateKey, error) {
-	return FindPrimaryKeypair(ctx, c, name)
-}
-
 // FindKeyset implements KeystoreReader.
 func (c *ClientsetCAStore) FindKeyset(ctx context.Context, name string) (*Keyset, error) {
 	return c.loadKeyset(ctx, name)
