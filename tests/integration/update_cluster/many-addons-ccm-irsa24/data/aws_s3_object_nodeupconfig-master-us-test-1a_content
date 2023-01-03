@@ -245,6 +245,10 @@ KeypairIDs:
   etcd-peers-ca-main: "6982279353998887468930183660"
   kubernetes-ca: "6982820025135291416230495506"
   service-account: "2"
+KubeProxy:
+  cpuRequest: 100m
+  image: registry.k8s.io/kube-proxy:v1.24.0
+  logLevel: 2
 KubeletConfig:
   anonymousAuth: false
   cgroupDriver: systemd
