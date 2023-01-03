@@ -378,7 +378,6 @@ func (b *BootstrapScript) Run(c *fi.CloudupContext) error {
 
 			spec := make(map[string]interface{})
 			spec["cloudConfig"] = cs.CloudConfig
-			spec["kubeProxy"] = cs.KubeProxy
 			spec["kubelet"] = cs.Kubelet
 
 			if cs.KubeAPIServer != nil && cs.KubeAPIServer.EnableBootstrapAuthToken != nil {
