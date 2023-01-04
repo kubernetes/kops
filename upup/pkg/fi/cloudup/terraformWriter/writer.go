@@ -19,9 +19,12 @@ package terraformWriter
 import (
 	"fmt"
 	"path"
+	"reflect"
 	"strconv"
 	"strings"
 	"sync"
+
+	"k8s.io/klog/v2"
 )
 
 type TerraformWriter struct {
@@ -33,6 +36,10 @@ type TerraformWriter struct {
 	resources []*terraformResource
 	// outputs is a list of our TF output variables
 	outputs map[string]*terraformOutputVariable
+
+	// Providers is a list of TF Providers we need for writing files
+	Providers map[string]*TerraformProvider
+
 	// Files is a map of TF resource Files that should be created
 	Files map[string][]byte
 }
@@ -75,7 +82,6 @@ func (t *TerraformWriter) InitTerraformWriter() {
 }
 
 func (t *TerraformWriter) AddFileBytes(resourceType string, resourceName string, key string, data []byte, base64 bool) (*Literal, error) {
-
 	path, err := t.AddFilePath(resourceType, resourceName, key, data, base64)
 	if err != nil {
 		return nil, err
@@ -86,6 +92,27 @@ func (t *TerraformWriter) AddFileBytes(resourceType string, resourceName string,
 		fn = "filebase64"
 	}
 	return LiteralFunctionExpression(fn, path), nil
+}
+
+func (t *TerraformWriter) EnsureTerraformProvider(tfProvider *TerraformProvider) {
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
+
+	if t.Providers == nil {
+		t.Providers = make(map[string]*TerraformProvider)
+	}
+
+	key := tfProvider.Name
+
+	existing := t.Providers[key]
+	if existing != nil {
+		if reflect.DeepEqual(tfProvider, existing) {
+			// already exists and matches
+			return
+		}
+		klog.Fatalf("attempt to add different tfProvider with key %q", key)
+	}
+	t.Providers[key] = tfProvider
 }
 
 func (t *TerraformWriter) AddFilePath(resourceType string, resourceName string, key string, data []byte, base64 bool) (*Literal, error) {

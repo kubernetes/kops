@@ -55,11 +55,6 @@ provider "aws" {
   region = "us-test-1"
 }
 
-provider "aws" {
-  alias  = "files"
-  region = "us-test-1"
-}
-
 resource "aws_eip" "us-test-1a-lifecyclephases-example-com" {
   tags = {
     "KubernetesCluster"                                 = "lifecyclephases.example.com"
@@ -200,9 +195,8 @@ terraform {
   required_version = ">= 0.15.0"
   required_providers {
     aws = {
-      "configuration_aliases" = [aws.files]
-      "source"                = "hashicorp/aws"
-      "version"               = ">= 4.0.0"
+      "source"  = "hashicorp/aws"
+      "version" = ">= 4.0.0"
     }
   }
 }

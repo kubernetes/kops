@@ -81,11 +81,7 @@ func TestGSRenderTerraform(t *testing.T) {
 				t.Fatalf("error building VFS path: %v", err)
 			}
 
-			vfsProvider, err := path.(vfs.TerraformPath).TerraformProvider()
-			if err != nil {
-				t.Fatalf("error building VFS Terraform provider: %v", err)
-			}
-			target := terraform.NewTerraformTarget(cloud, "", vfsProvider, "/dev/null", nil)
+			target := terraform.NewTerraformTarget(cloud, "", "/dev/null", nil)
 
 			acl := &vfs.GSAcl{
 				Acl: []*storage.ObjectAccessControl{
