@@ -54,6 +54,7 @@ KubeletConfig:
   systemReserved:
     cpu: 500m
     memory: 1G
+KubernetesVersion: 1.25.0
 UpdatePolicy: automatic
 channels:
 - memfs://clusters.example.com/minimal.example.com/addons/bootstrap-channel.yaml
