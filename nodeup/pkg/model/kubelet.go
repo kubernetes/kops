@@ -690,8 +690,7 @@ func (b *KubeletBuilder) kubeletNames() ([]string, error) {
 		return nil, fmt.Errorf("error describing instances: %v", err)
 	}
 
-	useInstanceIDForNodeName := b.Cluster.Spec.ExternalCloudControllerManager != nil && b.IsKubernetesGTE("1.23")
-	return awsup.GetInstanceCertificateNames(result, useInstanceIDForNodeName)
+	return awsup.GetInstanceCertificateNames(result, b.NodeupConfig.UseInstanceIDForNodeName)
 }
 
 func (b *KubeletBuilder) buildCgroupService(name string) *nodetasks.Service {
