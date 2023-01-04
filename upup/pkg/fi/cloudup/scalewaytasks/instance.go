@@ -19,7 +19,6 @@ package scalewaytasks
 import (
 	"bytes"
 	"fmt"
-	"os"
 
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
@@ -120,7 +119,7 @@ func (_ *Instance) RenderScw(c *fi.CloudupContext, actual, expected, changes *In
 	cloud := c.T.Cloud.(scaleway.ScwCloud)
 	instanceService := cloud.InstanceService()
 	zone := scw.Zone(fi.ValueOf(expected.Zone))
-	mastersPrivateIPs := []string(nil)
+	controlPlanePrivateIPs := []string(nil)
 
 	userData, err := fi.ResourceAsBytes(*expected.UserData)
 	if err != nil {
@@ -195,25 +194,25 @@ func (_ *Instance) RenderScw(c *fi.CloudupContext, actual, expected, changes *In
 			ServerID: srv.Server.ID,
 		})
 		if err != nil {
-			return fmt.Errorf("error getting server %s: %s", srv.Server.ID, err)
+			return fmt.Errorf("getting server %s: %s", srv.Server.ID, err)
 		}
 
-		// If instance has role master, we add its private IP to the list to add it to the lb's backend
+		// If instance has control-plane role, we add its private IP to the list to add it to the lb's backend
 		for _, tag := range expected.Tags {
-			if tag == scaleway.TagNameRolePrefix+"="+scaleway.TagRoleMaster {
-				mastersPrivateIPs = append(mastersPrivateIPs, *server.Server.PrivateIP)
+			if tag == scaleway.TagNameRolePrefix+"="+scaleway.TagRoleControlPlane {
+				controlPlanePrivateIPs = append(controlPlanePrivateIPs, *server.Server.PrivateIP)
 			}
 		}
 	}
 
-	// If IG is master, we add the new servers' IPs to the load-balancer's back-end
-	if len(mastersPrivateIPs) > 0 {
+	// If IG is control-plane, we add the new servers' IPs to the load-balancer's back-end
+	if len(controlPlanePrivateIPs) > 0 {
 		lbService := cloud.LBService()
-		region := scw.Region(os.Getenv("SCW_DEFAULT_REGION"))
+		region := scw.Region(cloud.Region())
 
 		lbs, err := cloud.GetClusterLoadBalancers(cloud.ClusterName(expected.Tags))
 		if err != nil {
-			return fmt.Errorf("error listing load-balancers for instance creation: %w", err)
+			return fmt.Errorf("listing load-balancers for instance creation: %w", err)
 		}
 
 		for _, loadBalancer := range lbs {
@@ -222,20 +221,20 @@ func (_ *Instance) RenderScw(c *fi.CloudupContext, actual, expected, changes *In
 				LBID:   loadBalancer.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error listing load-balancer's back-ends for instance creation: %w", err)
+				return fmt.Errorf("listing load-balancer's back-ends for instance creation: %w", err)
 			}
 			if backEnds.TotalCount > 1 {
-				return fmt.Errorf("found multiple back-ends for load-balancer %s, exiting now", loadBalancer.ID)
+				return fmt.Errorf("cannot have multiple back-ends for load-balancer %s", loadBalancer.ID)
 			}
 			backEnd := backEnds.Backends[0]
 
 			_, err = lbService.AddBackendServers(&lb.AddBackendServersRequest{
 				Region:    region,
 				BackendID: backEnd.ID,
-				ServerIP:  mastersPrivateIPs,
+				ServerIP:  controlPlanePrivateIPs,
 			})
 			if err != nil {
-				return fmt.Errorf("error adding servers' IPs to load-balancer's back-end: %w", err)
+				return fmt.Errorf("adding servers' IPs to load-balancer's back-end: %w", err)
 			}
 
 			_, err = lbService.WaitForLb(&lb.WaitForLBRequest{
@@ -243,7 +242,7 @@ func (_ *Instance) RenderScw(c *fi.CloudupContext, actual, expected, changes *In
 				Region: region,
 			})
 			if err != nil {
-				return fmt.Errorf("error waiting for load-balancer %s: %w", loadBalancer.ID, err)
+				return fmt.Errorf("waiting for load-balancer %s: %w", loadBalancer.ID, err)
 			}
 		}
 	}

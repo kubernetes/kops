@@ -203,12 +203,12 @@ func (s *scwCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstance)
 			klog.V(4).Infof("error deleting cloud instance %s of group %s : instance was already deleted", i.ID, i.CloudInstanceGroup.HumanName)
 			return nil
 		}
-		return fmt.Errorf("error deleting cloud instance %s of group %s: %w", i.ID, i.CloudInstanceGroup.HumanName, err)
+		return fmt.Errorf("deleting cloud instance %s of group %s: %w", i.ID, i.CloudInstanceGroup.HumanName, err)
 	}
 
 	err = s.DeleteServer(server.Server)
 	if err != nil {
-		return fmt.Errorf("error deleting cloud instance %s of group %s: %w", i.ID, i.CloudInstanceGroup.HumanName, err)
+		return fmt.Errorf("deleting cloud instance %s of group %s: %w", i.ID, i.CloudInstanceGroup.HumanName, err)
 	}
 
 	return nil
@@ -220,13 +220,13 @@ func (s *scwCloudImplementation) DeregisterInstance(i *cloudinstances.CloudInsta
 		ServerID: i.ID,
 	})
 	if err != nil {
-		return fmt.Errorf("error deregistering cloud instance %s of group %q: %w", i.ID, i.CloudInstanceGroup.HumanName, err)
+		return fmt.Errorf("deregistering cloud instance %s of group %q: %w", i.ID, i.CloudInstanceGroup.HumanName, err)
 	}
 
 	// We remove the instance's IP from load-balancers
 	lbs, err := s.GetClusterLoadBalancers(s.ClusterName(server.Server.Tags))
 	if err != nil {
-		return fmt.Errorf("error deregistering cloud instance %s of group %q: %w", i.ID, i.CloudInstanceGroup.HumanName, err)
+		return fmt.Errorf("deregistering cloud instance %s of group %q: %w", i.ID, i.CloudInstanceGroup.HumanName, err)
 	}
 	for _, loadBalancer := range lbs {
 		backEnds, err := s.lbAPI.ListBackends(&lb.ListBackendsRequest{
@@ -234,7 +234,7 @@ func (s *scwCloudImplementation) DeregisterInstance(i *cloudinstances.CloudInsta
 			LBID:   loadBalancer.ID,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("eerror deregistering cloud instance %s of group %q: error listing load-balancer's back-ends for instance creation: %w", i.ID, i.CloudInstanceGroup.HumanName, err)
+			return fmt.Errorf("deregistering cloud instance %s of group %q: listing load-balancer's back-ends for instance creation: %w", i.ID, i.CloudInstanceGroup.HumanName, err)
 		}
 		for _, backEnd := range backEnds.Backends {
 			for _, serverIP := range backEnd.Pool {
@@ -245,7 +245,7 @@ func (s *scwCloudImplementation) DeregisterInstance(i *cloudinstances.CloudInsta
 						ServerIP:  []string{serverIP},
 					})
 					if err != nil {
-						return fmt.Errorf("error deregistering cloud instance %s of group %q: error removing IP from lb: %w", i.ID, i.CloudInstanceGroup.HumanName, err)
+						return fmt.Errorf("deregistering cloud instance %s of group %q: removing IP from lb: %w", i.ID, i.CloudInstanceGroup.HumanName, err)
 					}
 				}
 			}
@@ -281,14 +281,14 @@ func (s *scwCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]f
 		Name:   &name,
 	}, scw.WithAllPages())
 	if err != nil {
-		return nil, fmt.Errorf("error finding load-balancers: %w", err)
+		return nil, fmt.Errorf("finding load-balancers: %w", err)
 	}
 	if len(responseLoadBalancers.LBs) == 0 {
-		klog.V(8).Infof("could not find any load-balancers for cluster %s", cluster.Name)
+		klog.V(8).Infof("Could not find any load-balancers for cluster %s", cluster.Name)
 		return nil, nil
 	}
 	if len(responseLoadBalancers.LBs) > 1 {
-		klog.V(4).Infof("more than 1 load-balancer with the name %s was found", name)
+		klog.V(4).Infof("More than 1 load-balancer with the name %s was found", name)
 	}
 
 	for _, loadBalancer := range responseLoadBalancers.LBs {
@@ -387,7 +387,7 @@ func (s *scwCloudImplementation) GetClusterLoadBalancers(clusterName string) ([]
 		Name:   &loadBalancerName,
 	}, scw.WithAllPages())
 	if err != nil {
-		return nil, fmt.Errorf("failed to list cluster load-balancers: %w", err)
+		return nil, fmt.Errorf("listing cluster load-balancers: %w", err)
 	}
 	return lbs.LBs, nil
 }
@@ -442,14 +442,14 @@ func (s *scwCloudImplementation) DeleteLoadBalancer(loadBalancer *lb.LB) error {
 		Region: s.region,
 	})
 	if err != nil {
-		return fmt.Errorf("error waiting for load-balancer: %w", err)
+		return fmt.Errorf("waiting for load-balancer: %w", err)
 	}
 	err = s.lbAPI.DeleteLB(&lb.DeleteLBRequest{
 		Region: s.region,
 		LBID:   loadBalancer.ID,
 	})
 	if err != nil {
-		return fmt.Errorf("failed to delete load-balancer %s: %w", loadBalancer.ID, err)
+		return fmt.Errorf("deleting load-balancer %s: %w", loadBalancer.ID, err)
 	}
 
 	// We wait for the load-balancer to be deleted, then we detach its IPs
@@ -458,7 +458,7 @@ func (s *scwCloudImplementation) DeleteLoadBalancer(loadBalancer *lb.LB) error {
 		Region: s.region,
 	})
 	if !is404Error(err) {
-		return fmt.Errorf("error waiting for load-balancer %s after deletion: %w", loadBalancer.ID, err)
+		return fmt.Errorf("waiting for load-balancer %s after deletion: %w", loadBalancer.ID, err)
 	}
 	for _, ip := range ipsToRelease {
 		err := s.lbAPI.ReleaseIP(&lb.ReleaseIPRequest{
@@ -466,7 +466,7 @@ func (s *scwCloudImplementation) DeleteLoadBalancer(loadBalancer *lb.LB) error {
 			IPID:   ip.ID,
 		})
 		if err != nil {
-			return fmt.Errorf("failed to delete load-balancer IP: %w", err)
+			return fmt.Errorf("deleting load-balancer IP: %w", err)
 		}
 	}
 	return nil

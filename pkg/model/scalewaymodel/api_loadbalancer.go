@@ -18,9 +18,7 @@ package scalewaymodel
 
 import (
 	"fmt"
-	"os"
 
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
@@ -44,34 +42,28 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 	}
 
 	lbSpec := b.Cluster.Spec.API.LoadBalancer
-	if lbSpec == nil {
-		// Skipping API LB creation; not requested in Spec
-		return nil
-	}
 
 	switch lbSpec.Type {
 	case kops.LoadBalancerTypePublic:
 		klog.V(8).Infof("Using public load-balancer")
 	case kops.LoadBalancerTypeInternal:
-		return fmt.Errorf("internal load-balancers are not yet supported by Scaleway on kops")
+		return fmt.Errorf("Scaleway clusters don't have a VPC yet, so internal load-balancers are not supported at the time")
 	default:
 		return fmt.Errorf("unhandled load-balancer type %q", lbSpec.Type)
 	}
 
-	loadBalancerName := "api." + b.ClusterName()
-	region, err := scw.ParseRegion(os.Getenv("SCW_DEFAULT_REGION"))
-	if err != nil {
-		return fmt.Errorf("error building load-balancer task for %q: %w", loadBalancerName, err)
+	lbTags := []string(nil)
+	for k, v := range b.CloudTags(b.ClusterName(), false) {
+		lbTags = append(lbTags, fmt.Sprintf("%s=%s", k, v))
 	}
+	lbTags = append(lbTags, fmt.Sprintf("%s=%s", scaleway.TagNameRolePrefix, scaleway.TagRoleControlPlane))
 
+	loadBalancerName := "api." + b.ClusterName()
 	loadBalancer := &scalewaytasks.LoadBalancer{
 		Name:      fi.PtrTo(loadBalancerName),
-		Region:    fi.PtrTo(string(region)),
+		Region:    fi.PtrTo(b.Region),
 		Lifecycle: b.Lifecycle,
-		Tags: []string{
-			scaleway.TagClusterName + "=" + b.ClusterName(),
-			scaleway.TagNameRolePrefix + "=" + scaleway.TagRoleMaster,
-		},
+		Tags:      lbTags,
 	}
 
 	c.AddTask(loadBalancer)
