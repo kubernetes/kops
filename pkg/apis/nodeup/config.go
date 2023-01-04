@@ -61,6 +61,8 @@ type Config struct {
 	KubeletConfig kops.KubeletConfigSpec
 	// KubeProxy defines the kube-proxy configuration.
 	KubeProxy *kops.KubeProxyConfig
+	// NTPUnmanaged is true when NTP is not managed by kOps.
+	NTPUnmanaged bool `json:",omitempty"`
 	// SysctlParameters will configure kernel parameters using sysctl(8). When
 	// specified, each parameter must follow the form variable=value, the way
 	// it would appear in sysctl.conf.
@@ -197,6 +199,10 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 	}
 
 	config.KubeProxy = buildKubeProxy(cluster, instanceGroup)
+
+	if cluster.Spec.NTP != nil && cluster.Spec.NTP.Managed != nil && !*cluster.Spec.NTP.Managed {
+		config.NTPUnmanaged = true
+	}
 
 	if cluster.Spec.CloudProvider.AWS != nil {
 		aws := cluster.Spec.CloudProvider.AWS
