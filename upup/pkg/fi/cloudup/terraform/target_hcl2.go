@@ -228,34 +228,35 @@ func (t *TerraformTarget) writeTerraform(buf *bytes.Buffer) {
 
 	providerKeys := sortedKeysForMap(providers)
 	for _, provider := range providerKeys {
-		var tf map[string]*terraformWriter.Literal
-		switch provider {
-		case "aws":
-			tf = map[string]*terraformWriter.Literal{
-				"source":  terraformWriter.LiteralFromStringValue("hashicorp/aws"),
-				"version": terraformWriter.LiteralFromStringValue(">= 4.0.0"),
-			}
+		// providerVersions could be a constant, but keeping it here
+		// because it isn't shared and to allow for more complex logic in future.
+		providerVersions := map[string]map[string]string{
+			"aws": {
+				"source":  "hashicorp/aws",
+				"version": ">= 4.0.0",
+			},
+			"google": {
+				"source":  "hashicorp/google",
+				"version": ">= 2.19.0",
+			},
+			"hcloud": {
+				"source":  "hetznercloud/hcloud",
+				"version": ">= 1.35.1",
+			},
+			"spotinst": {
+				"source":  "spotinst/spotinst",
+				"version": ">= 1.33.0",
+			},
+		}
 
-		case "google":
-			tf = map[string]*terraformWriter.Literal{
-				"source":  terraformWriter.LiteralFromStringValue("hashicorp/google"),
-				"version": terraformWriter.LiteralFromStringValue(">= 2.19.0"),
-			}
-
-		case "hcloud":
-			tf = map[string]*terraformWriter.Literal{
-				"source":  terraformWriter.LiteralFromStringValue("hetznercloud/hcloud"),
-				"version": terraformWriter.LiteralFromStringValue(">= 1.35.1"),
-			}
-
-		case "spotinst":
-			tf = map[string]*terraformWriter.Literal{
-				"source":  terraformWriter.LiteralFromStringValue("spotinst/spotinst"),
-				"version": terraformWriter.LiteralFromStringValue(">= 1.33.0"),
-			}
-
-		default:
+		providerVersion := providerVersions[provider]
+		if providerVersion == nil {
 			klog.Fatalf("unhandled provider %q", provider)
+		}
+
+		tf := make(map[string]*terraformWriter.Literal)
+		for k, v := range providerVersion {
+			tf[k] = terraformWriter.LiteralFromStringValue(v)
 		}
 
 		if aliases := providerAliases[provider]; len(aliases) != 0 {
