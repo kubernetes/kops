@@ -23,10 +23,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/blang/semver/v4"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/pkg/systemd"
@@ -111,12 +109,7 @@ func (t *ProtokubeBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 
 // buildSystemdService generates the manifest for the protokube service
 func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
-	k8sVersion, err := util.ParseKubernetesVersion(t.Cluster.Spec.KubernetesVersion)
-	if err != nil || k8sVersion == nil {
-		return nil, fmt.Errorf("unable to parse KubernetesVersion %q", t.Cluster.Spec.KubernetesVersion)
-	}
-
-	protokubeFlags, err := t.ProtokubeFlags(*k8sVersion)
+	protokubeFlags, err := t.ProtokubeFlags()
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +172,7 @@ type ProtokubeFlags struct {
 }
 
 // ProtokubeFlags is responsible for building the command line flags for protokube
-func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*ProtokubeFlags, error) {
+func (t *ProtokubeBuilder) ProtokubeFlags() (*ProtokubeFlags, error) {
 	f := &ProtokubeFlags{
 		Channels:      t.NodeupConfig.Channels,
 		Cloud:         fi.PtrTo(string(t.BootConfig.CloudProvider)),
