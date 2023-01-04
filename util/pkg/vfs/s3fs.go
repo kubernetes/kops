@@ -37,11 +37,10 @@ import (
 )
 
 type S3Path struct {
-	s3Context     *S3Context
-	bucket        string
-	bucketDetails *S3BucketDetails
-	key           string
-	etag          *string
+	s3Context *S3Context
+	bucket    string
+	key       string
+	etag      *string
 
 	// scheme is configurable in case an S3 compatible custom
 	// endpoint is specified
@@ -94,14 +93,15 @@ func (p *S3Path) String() string {
 func (p *S3Path) TerraformProvider() (*TerraformProvider, error) {
 	ctx := context.TODO()
 
-	if err := p.ensureBucketDetails(ctx); err != nil {
+	bucketDetails, err := p.getBucketDetails(ctx)
+	if err != nil {
 		return nil, err
 	}
 
 	provider := &TerraformProvider{
 		Name: "aws",
 		Arguments: map[string]string{
-			"region": p.bucketDetails.region,
+			"region": bucketDetails.region,
 		},
 	}
 	return provider, nil
@@ -225,11 +225,11 @@ func (p *S3Path) getServerSideEncryption(ctx context.Context) (sse *string, sseL
 	// standard.
 	sseLog = "-"
 	if p.sse {
-		err := p.ensureBucketDetails(ctx)
+		bucketDetails, err := p.getBucketDetails(ctx)
 		if err != nil {
 			return nil, "", err
 		}
-		defaultEncryption := p.bucketDetails.hasServerSideEncryptionByDefault(ctx)
+		defaultEncryption := bucketDetails.hasServerSideEncryptionByDefault(ctx)
 		if defaultEncryption {
 			sseLog = "DefaultBucketEncryption"
 		} else {
@@ -442,26 +442,22 @@ func (p *S3Path) ReadTree() ([]Path, error) {
 	return paths, nil
 }
 
-func (p *S3Path) ensureBucketDetails(ctx context.Context) error {
-	if p.bucketDetails == nil || p.bucketDetails.region == "" {
-		bucketDetails, err := p.s3Context.getDetailsForBucket(ctx, p.bucket)
-
-		p.bucketDetails = bucketDetails
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (p *S3Path) client(ctx context.Context) (*s3.S3, error) {
-	err := p.ensureBucketDetails(ctx)
+func (p *S3Path) getBucketDetails(ctx context.Context) (*S3BucketDetails, error) {
+	bucketDetails, err := p.s3Context.getDetailsForBucket(ctx, p.bucket)
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := p.s3Context.getClient(p.bucketDetails.region)
+	return bucketDetails, nil
+}
+
+func (p *S3Path) client(ctx context.Context) (*s3.S3, error) {
+	bucketDetails, err := p.getBucketDetails(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := p.s3Context.getClient(bucketDetails.region)
 	if err != nil {
 		return nil, err
 	}
@@ -499,18 +495,16 @@ func (p *S3Path) Hash(a hashing.HashAlgorithm) (*hashing.Hash, error) {
 func (p *S3Path) GetHTTPsUrl(dualstack bool) (string, error) {
 	ctx := context.TODO()
 
-	if p.bucketDetails == nil {
-		bucketDetails, err := p.s3Context.getDetailsForBucket(ctx, p.bucket)
-		if err != nil {
-			return "", fmt.Errorf("failed to get bucket details for %q: %w", p.String(), err)
-		}
-		p.bucketDetails = bucketDetails
+	bucketDetails, err := p.getBucketDetails(ctx)
+	if err != nil {
+		return "", fmt.Errorf("failed to get bucket details for %q: %w", p.String(), err)
 	}
+
 	var url string
 	if dualstack {
-		url = fmt.Sprintf("https://s3.dualstack.%s.amazonaws.com/%s/%s", p.bucketDetails.region, p.bucketDetails.name, p.Key())
+		url = fmt.Sprintf("https://s3.dualstack.%s.amazonaws.com/%s/%s", bucketDetails.region, bucketDetails.name, p.Key())
 	} else {
-		url = fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", p.bucketDetails.name, p.bucketDetails.region, p.Key())
+		url = fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", bucketDetails.name, bucketDetails.region, p.Key())
 	}
 	return strings.TrimSuffix(url, "/"), nil
 }
