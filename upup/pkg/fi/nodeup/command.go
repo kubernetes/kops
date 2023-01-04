@@ -183,7 +183,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("nodeup config hash mismatch (was %q, expected %q)", got, want)
 	}
 
-	err = evaluateSpec(c, &nodeupConfig, bootConfig.CloudProvider)
+	err = evaluateSpec(&nodeupConfig, bootConfig.CloudProvider)
 	if err != nil {
 		return err
 	}
@@ -448,7 +448,7 @@ func completeWarmingLifecycleAction(cloud awsup.AWSCloud, modelContext *model.No
 	return nil
 }
 
-func evaluateSpec(c *NodeUpCommand, nodeupConfig *nodeup.Config, cloudProvider api.CloudProviderID) error {
+func evaluateSpec(nodeupConfig *nodeup.Config, cloudProvider api.CloudProviderID) error {
 	hostnameOverride, err := evaluateHostnameOverride(cloudProvider, nodeupConfig.UseInstanceIDForNodeName)
 	if err != nil {
 		return err
@@ -456,14 +456,12 @@ func evaluateSpec(c *NodeUpCommand, nodeupConfig *nodeup.Config, cloudProvider a
 
 	nodeupConfig.KubeletConfig.HostnameOverride = hostnameOverride
 
-	if c.cluster.Spec.KubeProxy == nil {
-		c.cluster.Spec.KubeProxy = &api.KubeProxyConfig{}
-	}
-
-	c.cluster.Spec.KubeProxy.HostnameOverride = hostnameOverride
-	c.cluster.Spec.KubeProxy.BindAddress, err = evaluateBindAddress(c.cluster.Spec.KubeProxy.BindAddress)
-	if err != nil {
-		return err
+	if nodeupConfig.KubeProxy != nil {
+		nodeupConfig.KubeProxy.HostnameOverride = hostnameOverride
+		nodeupConfig.KubeProxy.BindAddress, err = evaluateBindAddress(nodeupConfig.KubeProxy.BindAddress)
+		if err != nil {
+			return err
+		}
 	}
 
 	if nodeupConfig.ContainerRuntime == "docker" {

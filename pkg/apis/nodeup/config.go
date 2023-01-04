@@ -57,6 +57,8 @@ type Config struct {
 	StaticManifests []*StaticManifest `json:"staticManifests,omitempty"`
 	// KubeletConfig defines the kubelet configuration.
 	KubeletConfig kops.KubeletConfigSpec
+	// KubeProxy defines the kube-proxy configuration.
+	KubeProxy *kops.KubeProxyConfig
 	// SysctlParameters will configure kernel parameters using sysctl(8). When
 	// specified, each parameter must follow the form variable=value, the way
 	// it would appear in sysctl.conf.
@@ -191,6 +193,8 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		config.NvidiaGPU = buildNvidiaConfig(cluster, instanceGroup)
 	}
 
+	config.KubeProxy = buildKubeProxy(cluster, instanceGroup)
+
 	if cluster.Spec.CloudProvider.AWS != nil {
 		aws := cluster.Spec.CloudProvider.AWS
 		warmPool := aws.WarmPool.ResolveDefaults(instanceGroup)
@@ -263,6 +267,22 @@ func buildNvidiaConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup)
 
 	if config.DriverPackage == "" {
 		config.DriverPackage = kops.NvidiaDefaultDriverPackage
+	}
+
+	return config
+}
+
+// buildkubeProxy builds the kube-proxy configuration for an instance group.
+func buildKubeProxy(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) *kops.KubeProxyConfig {
+	config := &kops.KubeProxyConfig{}
+	if cluster.Spec.KubeProxy != nil {
+		config = cluster.Spec.KubeProxy
+	}
+	if config.Enabled != nil && !*config.Enabled {
+		return nil
+	}
+	if instanceGroup.IsControlPlane() && cluster.Spec.Networking.IsolateControlPlane != nil && *cluster.Spec.Networking.IsolateControlPlane {
+		return nil
 	}
 
 	return config

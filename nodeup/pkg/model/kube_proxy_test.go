@@ -45,6 +45,10 @@ func TestKubeProxyBuilder_buildPod(t *testing.T) {
 	cluster.Spec.KubeProxy.CPURequest = resource.NewScaledQuantity(20, resource.Milli)
 	cluster.Spec.KubeProxy.CPULimit = resource.NewScaledQuantity(30, resource.Milli)
 
+	nodeupConfig := &nodeup.Config{
+		KubeProxy: cluster.Spec.KubeProxy,
+	}
+
 	flags, _ := flagbuilder.BuildFlagsList(cluster.Spec.KubeProxy)
 
 	flags = append(flags, []string{
@@ -67,7 +71,7 @@ func TestKubeProxyBuilder_buildPod(t *testing.T) {
 			fields{
 				&NodeupModelContext{
 					Cluster:           cluster,
-					NodeupConfig:      &nodeup.Config{},
+					NodeupConfig:      nodeupConfig,
 					kubernetesVersion: semver.Version{Major: 1, Minor: 20},
 				},
 			},

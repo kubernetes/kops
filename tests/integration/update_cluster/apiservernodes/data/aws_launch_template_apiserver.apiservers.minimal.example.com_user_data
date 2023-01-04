@@ -125,11 +125,6 @@ ensure-install-dir
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   manageStorageClasses: true
-kubeProxy:
-  clusterCIDR: 100.96.0.0/11
-  cpuRequest: 100m
-  image: registry.k8s.io/kube-proxy:v1.22.0
-  logLevel: 2
 kubelet:
   anonymousAuth: false
   cgroupDriver: systemd
@@ -159,7 +154,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: apiserver
 InstanceGroupRole: APIServer
-NodeupConfigHash: vYbskPDI3k2nU17RtTF/2uq4sfcxZX3NyHl7wJ4db0Y=
+NodeupConfigHash: YCG6VABFo9H8QQVAzHvc/QqaOE82N1VIWmhC0mCyUcY=
 
 __EOF_KUBE_ENV
 
