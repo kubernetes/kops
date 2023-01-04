@@ -250,9 +250,8 @@ terraform {
   required_version = ">= 0.15.0"
   required_providers {
     aws = {
-      "configuration_aliases" = [aws.files]
-      "source"                = "hashicorp/aws"
-      "version"               = ">= 4.0.0"
+      "source"  = "hashicorp/aws"
+      "version" = ">= 4.0.0"
     }
   }
 }
@@ -325,9 +324,8 @@ terraform {
   required_version = ">= 0.15.0"
   required_providers {
     aws = {
-      "configuration_aliases" = [aws.files]
-      "source"                = "hashicorp/aws"
-      "version"               = ">= 4.0.0"
+      "source"  = "hashicorp/aws"
+      "version" = ">= 4.0.0"
     }
   }
 }
