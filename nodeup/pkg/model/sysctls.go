@@ -135,8 +135,8 @@ func (b *SysctlBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	}
 
 	// Running Flannel on Amazon Linux 2 needs custom settings
-	if b.Cluster.Spec.Networking.Flannel != nil && b.Distribution == distributions.DistributionAmazonLinux2 {
-		proxyMode := b.Cluster.Spec.KubeProxy.ProxyMode
+	if b.Cluster.Spec.Networking.Flannel != nil && b.Distribution == distributions.DistributionAmazonLinux2 && b.NodeupConfig.KubeProxy != nil {
+		proxyMode := b.NodeupConfig.KubeProxy.ProxyMode
 		if proxyMode == "" || proxyMode == "iptables" {
 			sysctls = append(sysctls,
 				"# Flannel settings on Amazon Linux 2",

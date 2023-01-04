@@ -189,11 +189,6 @@ kubeControllerManager:
     leaderElect: true
   logLevel: 2
   useServiceAccountCredentials: true
-kubeProxy:
-  clusterCIDR: 100.96.0.0/11
-  cpuRequest: 100m
-  image: registry.k8s.io/kube-proxy:v1.25.0
-  logLevel: 2
 kubeScheduler:
   image: registry.k8s.io/kube-scheduler:v1.25.0
   leaderElection:
@@ -241,7 +236,7 @@ CloudProvider: hetzner
 ConfigBase: memfs://tests/minimal.example.com
 InstanceGroupName: master-fsn1
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: OVam6HUoF0GjyUrQUFAj5jLhVQK+Uv/eFrUEqyfHOIw=
+NodeupConfigHash: ck8Jg4ndgMoRHwNzlKeM26CZpDQwuk1EDUlEMG1B9PU=
 
 __EOF_KUBE_ENV
 

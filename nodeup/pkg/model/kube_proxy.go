@@ -43,18 +43,9 @@ var _ fi.NodeupModelBuilder = &KubeProxyBuilder{}
 // Build is responsible for building the kube-proxy manifest
 // @TODO we should probably change this to a daemonset in the future and follow the kubeadm path
 func (b *KubeProxyBuilder) Build(c *fi.NodeupModelBuilderContext) error {
-	if b.Cluster.Spec.KubeProxy.Enabled != nil && !*b.Cluster.Spec.KubeProxy.Enabled {
+	if b.NodeupConfig.KubeProxy == nil {
 		klog.V(2).Infof("Kube-proxy is disabled, will not create configuration for it.")
 		return nil
-	}
-
-	if b.IsMaster {
-		// If this is a master that is not isolated, run it as a normal node also (start kube-proxy etc)
-		// This lets e.g. daemonset pods communicate with other pods in the system
-		if fi.ValueOf(b.Cluster.Spec.Networking.IsolateControlPlane) {
-			klog.V(2).Infof("Running on Master with IsolateMaster=true; skipping kube-proxy installation")
-			return nil
-		}
 	}
 
 	{
@@ -114,7 +105,7 @@ func (b *KubeProxyBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 
 // buildPod is responsible constructing the pod spec
 func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
-	c := b.Cluster.Spec.KubeProxy
+	c := b.NodeupConfig.KubeProxy
 	if c == nil {
 		return nil, fmt.Errorf("KubeProxy not configured")
 	}

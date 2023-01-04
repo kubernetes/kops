@@ -20,6 +20,10 @@ Hooks:
 - null
 KeypairIDs:
   kubernetes-ca: "6982820025135291416230495506"
+KubeProxy:
+  cpuRequest: 100m
+  image: registry.k8s.io/kube-proxy:v1.25.0-rc.1
+  logLevel: 2
 KubeletConfig:
   anonymousAuth: false
   cgroupDriver: systemd
