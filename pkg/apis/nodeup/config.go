@@ -38,6 +38,8 @@ type Config struct {
 	Channels []string `json:"channels,omitempty"`
 	// ApiserverAdditionalIPs are additional IP address to put in the apiserver server cert.
 	ApiserverAdditionalIPs []string `json:",omitempty"`
+	// KubernetesVersion is the version of Kubernetes to install.
+	KubernetesVersion string
 	// Packages specifies additional packages to be installed.
 	Packages []string `json:"packages,omitempty"`
 
@@ -168,15 +170,16 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 	igHooks := filterHooks(instanceGroup.Spec.Hooks, instanceGroup.Spec.Role)
 
 	config := Config{
-		ClusterName:      cluster.ObjectMeta.Name,
-		CAs:              map[string]string{},
-		KeypairIDs:       map[string]string{},
-		SysctlParameters: instanceGroup.Spec.SysctlParameters,
-		VolumeMounts:     instanceGroup.Spec.VolumeMounts,
-		FileAssets:       append(filterFileAssets(instanceGroup.Spec.FileAssets, role), filterFileAssets(cluster.Spec.FileAssets, role)...),
-		Hooks:            [][]kops.HookSpec{igHooks, clusterHooks},
-		ContainerRuntime: cluster.Spec.ContainerRuntime,
-		Docker:           cluster.Spec.Docker,
+		ClusterName:       cluster.ObjectMeta.Name,
+		KubernetesVersion: cluster.Spec.KubernetesVersion,
+		CAs:               map[string]string{},
+		KeypairIDs:        map[string]string{},
+		SysctlParameters:  instanceGroup.Spec.SysctlParameters,
+		VolumeMounts:      instanceGroup.Spec.VolumeMounts,
+		FileAssets:        append(filterFileAssets(instanceGroup.Spec.FileAssets, role), filterFileAssets(cluster.Spec.FileAssets, role)...),
+		Hooks:             [][]kops.HookSpec{igHooks, clusterHooks},
+		ContainerRuntime:  cluster.Spec.ContainerRuntime,
+		Docker:            cluster.Spec.Docker,
 	}
 
 	bootConfig := BootConfig{

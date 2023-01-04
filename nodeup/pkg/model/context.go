@@ -34,6 +34,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/dns"
+	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -84,9 +85,9 @@ type NodeupModelContext struct {
 
 // Init completes initialization of the object, for example pre-parsing the kubernetes version
 func (c *NodeupModelContext) Init() error {
-	k8sVersion, err := util.ParseKubernetesVersion(c.Cluster.Spec.KubernetesVersion)
+	k8sVersion, err := util.ParseKubernetesVersion(c.NodeupConfig.KubernetesVersion)
 	if err != nil || k8sVersion == nil {
-		return fmt.Errorf("unable to parse KubernetesVersion %q", c.Cluster.Spec.KubernetesVersion)
+		return fmt.Errorf("unable to parse KubernetesVersion %q", c.NodeupConfig.KubernetesVersion)
 	}
 	c.kubernetesVersion = *k8sVersion
 	c.bootstrapCerts = map[string]*nodetasks.BootstrapCert{}
@@ -353,6 +354,17 @@ func (c *NodeupModelContext) BuildBootstrapKubeconfig(name string, ctx *fi.Nodeu
 
 		return fi.NewBytesResource(config), nil
 	}
+}
+
+// RemapImage applies any needed remapping to an image reference.
+func (c *NodeupModelContext) RemapImage(image string) string {
+	if components.IsBaseURL(c.NodeupConfig.KubernetesVersion) && c.IsKubernetesLT("1.25") {
+		image = strings.Replace(image, "registry.k8s.io", "k8s.gcr.io", 1)
+	}
+	if c.Architecture != architectures.ArchitectureAmd64 {
+		image = strings.Replace(image, "-amd64", "-"+string(c.Architecture), 1)
+	}
+	return image
 }
 
 // IsKubernetesGTE checks if the version is greater-than-or-equal
