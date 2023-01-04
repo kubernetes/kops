@@ -49,6 +49,7 @@ KubeletConfig:
   shutdownGracePeriodCriticalPods: 10s
   taints:
   - nvidia.com/gpu:NoSchedule
+KubernetesVersion: 1.26.0
 NvidiaGPU:
   enabled: true
   package: nvidia-headless-515-server

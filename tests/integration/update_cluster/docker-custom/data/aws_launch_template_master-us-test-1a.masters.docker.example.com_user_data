@@ -250,7 +250,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/docker.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: tOwLUTtknWs7qZRL/NRsGYMDDh60sMK4bnCRtTA9eFw=
+NodeupConfigHash: 3qXT58LJEECc/GBeSd/Jrdyf/7au1YexOn3jdvNQ1l4=
 
 __EOF_KUBE_ENV
 

@@ -50,6 +50,7 @@ KubeletConfig:
   registerSchedulable: true
   shutdownGracePeriod: 30s
   shutdownGracePeriodCriticalPods: 10s
+KubernetesVersion: 1.26.0
 UpdatePolicy: automatic
 channels:
 - memfs://clusters.example.com/minimal.k8s.local/addons/bootstrap-channel.yaml
