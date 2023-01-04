@@ -20,6 +20,7 @@ KubeProxy:
   memoryRequest: 30Mi
 KubeletConfig:
   kubeconfigPath: /etc/kubernetes/igconfig.txt
+KubernetesVersion: 1.20.0
 UpdatePolicy: automatic
 containerdConfig:
   logLevel: info

@@ -278,6 +278,7 @@ KubeletConfig:
   shutdownGracePeriodCriticalPods: 0s
   taints:
   - node-role.kubernetes.io/master=:NoSchedule
+KubernetesVersion: 1.23.0
 UpdatePolicy: automatic
 channels:
 - memfs://clusters.example.com/minimal.example.com/addons/bootstrap-channel.yaml
