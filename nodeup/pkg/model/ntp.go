@@ -35,7 +35,7 @@ var _ fi.NodeupModelBuilder = &NTPBuilder{}
 
 // Build is responsible for configuring NTP
 func (b *NTPBuilder) Build(c *fi.NodeupModelBuilderContext) error {
-	if !b.managed() {
+	if b.NodeupModelContext.NodeupConfig.NTPUnmanaged {
 		klog.Infof("Managed is set to false; won't install NTP")
 		return nil
 	}
@@ -115,12 +115,4 @@ NTP=` + host + `
 		Type:     nodetasks.FileType_File,
 		Mode:     s("0644"),
 	}
-}
-
-// managed determines if kops should manage the installation and configuration of NTP.
-func (b *NTPBuilder) managed() bool {
-	n := b.Cluster.Spec.NTP
-	// Consider the NTP is managed when the NTP configuration
-	// is not specified (for backward compatibility).
-	return n == nil || n.Managed == nil || *n.Managed
 }
