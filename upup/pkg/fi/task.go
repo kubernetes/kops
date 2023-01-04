@@ -138,8 +138,9 @@ func (c *ModelBuilderContext[T]) AddTask(task Task[T]) {
 // EnsureTask ensures that the specified task is configured.
 // It adds the task if it does not already exist.
 // If it does exist, it verifies that the existing task reflect.DeepEqual the new task,
-// if they are different an error is returned.
-func (c *ModelBuilderContext[T]) EnsureTask(task Task[T]) error {
+// if they are different we panic; otherwise it's too easy to forget to check the error code,
+// and realistically we have yet to find a scenario where we can recover from an error here.
+func (c *ModelBuilderContext[T]) EnsureTask(task Task[T]) {
 	task = c.setLifecycleOverride(task)
 	key := buildTaskKey(task)
 
@@ -147,16 +148,17 @@ func (c *ModelBuilderContext[T]) EnsureTask(task Task[T]) error {
 	if found {
 		if reflect.DeepEqual(task, existing) {
 			klog.V(8).Infof("EnsureTask ignoring identical ")
-			return nil
+			return
 		}
 		klog.Warningf("EnsureTask found task mismatch for %q", key)
 		klog.Warningf("\tExisting: %v", existing)
 		klog.Warningf("\tNew: %v", task)
 
-		return fmt.Errorf("cannot add different task with same key %q", key)
+		// c.Errorf("cannot add different task with same key %q", key)
+		klog.Fatalf("cannot add different task with same key %q", key)
+		return
 	}
 	c.Tasks[key] = task
-	return nil
 }
 
 // setLifecycleOverride determines if a Lifecycle is in the LifecycleOverrides map for the current task.

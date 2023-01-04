@@ -666,10 +666,7 @@ func addAdditionalRoutes(routes []kops.RouteSpec, sbName string, rt *awstasks.Ro
 				ID:        fi.PtrTo(r.Target),
 				Shared:    fi.PtrTo(true),
 			}
-			err := c.EnsureTask(inst)
-			if err != nil {
-				return err
-			}
+			c.EnsureTask(inst)
 			t.Instance = inst
 			c.AddTask(t)
 		} else if strings.HasPrefix(r.Target, "nat-") {
@@ -679,10 +676,7 @@ func addAdditionalRoutes(routes []kops.RouteSpec, sbName string, rt *awstasks.Ro
 				ID:        fi.PtrTo(r.Target),
 				Shared:    fi.PtrTo(true),
 			}
-			err := c.EnsureTask(nat)
-			if err != nil {
-				return err
-			}
+			c.EnsureTask(nat)
 			t.NatGateway = nat
 			c.AddTask(t)
 		} else if strings.HasPrefix(r.Target, "tgw-") {
@@ -695,10 +689,7 @@ func addAdditionalRoutes(routes []kops.RouteSpec, sbName string, rt *awstasks.Ro
 				ID:        fi.PtrTo(r.Target),
 				Shared:    fi.PtrTo(true),
 			}
-			err := c.EnsureTask(internetGW)
-			if err != nil {
-				return err
-			}
+			c.EnsureTask(internetGW)
 			t.InternetGateway = internetGW
 			c.AddTask(t)
 		} else if strings.HasPrefix(r.Target, "eigw-") {
@@ -708,10 +699,7 @@ func addAdditionalRoutes(routes []kops.RouteSpec, sbName string, rt *awstasks.Ro
 				ID:        fi.PtrTo(r.Target),
 				Shared:    fi.PtrTo(true),
 			}
-			err := c.EnsureTask(eigw)
-			if err != nil {
-				return err
-			}
+			c.EnsureTask(eigw)
 			t.EgressOnlyInternetGateway = eigw
 			c.AddTask(t)
 		}
