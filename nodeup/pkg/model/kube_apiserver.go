@@ -33,7 +33,6 @@ import (
 	"k8s.io/kops/pkg/wellknownusers"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
-	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/proxy"
 
 	v1 "k8s.io/api/core/v1"
@@ -606,13 +605,7 @@ func (b *KubeAPIServerBuilder) buildPod(ctx context.Context, kubeAPIServer *kops
 		resourceLimits["memory"] = *kubeAPIServer.MemoryLimit
 	}
 
-	image := kubeAPIServer.Image
-	if components.IsBaseURL(b.Cluster.Spec.KubernetesVersion) && b.IsKubernetesLT("1.25") {
-		image = strings.Replace(image, "registry.k8s.io", "k8s.gcr.io", 1)
-	}
-	if b.Architecture != architectures.ArchitectureAmd64 {
-		image = strings.Replace(image, "-amd64", "-"+string(b.Architecture), 1)
-	}
+	image := b.RemapImage(kubeAPIServer.Image)
 
 	container := &v1.Container{
 		Name:  "kube-apiserver",
