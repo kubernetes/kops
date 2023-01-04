@@ -33,6 +33,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 
 	"github.com/blang/semver/v4"
 	utilnet "k8s.io/apimachinery/pkg/util/net"
@@ -233,6 +234,14 @@ func (b *KopsModelContext) CloudTags(name string, shared bool) map[string]string
 			for k, v := range b.Cluster.Spec.CloudLabels {
 				tags[k] = v
 			}
+		}
+	case kops.CloudProviderScaleway:
+		for k, v := range b.Cluster.Spec.CloudLabels {
+			if k == scaleway.TagClusterName && shared == true {
+				klog.V(4).Infof("Skipping %q tag for shared resource", scaleway.TagClusterName)
+				continue
+			}
+			tags[k] = v
 		}
 	}
 	return tags

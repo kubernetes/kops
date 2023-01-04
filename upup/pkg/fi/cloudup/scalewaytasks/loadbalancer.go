@@ -32,18 +32,18 @@ type LoadBalancer struct {
 	Name      *string
 	Lifecycle fi.Lifecycle
 
-	Region              *string
-	LoadBalancerId      *string
-	LoadBalancerAddress *string
-	Tags                []string
-	ForAPIServer        bool
+	Region       *string
+	LBID         *string
+	LBAddresses  []string
+	Tags         []string
+	ForAPIServer bool
 }
 
 var _ fi.CompareWithID = &LoadBalancer{}
 var _ fi.HasAddress = &LoadBalancer{}
 
 func (l *LoadBalancer) CompareWithID() *string {
-	return l.LoadBalancerId
+	return l.LBID
 }
 
 func (l *LoadBalancer) IsForAPIServer() bool {
@@ -51,7 +51,7 @@ func (l *LoadBalancer) IsForAPIServer() bool {
 }
 
 func (l *LoadBalancer) Find(context *fi.CloudupContext) (*LoadBalancer, error) {
-	if fi.ValueOf(l.LoadBalancerId) == "" {
+	if fi.ValueOf(l.LBID) == "" {
 		return nil, nil
 	}
 
@@ -60,24 +60,24 @@ func (l *LoadBalancer) Find(context *fi.CloudupContext) (*LoadBalancer, error) {
 
 	loadBalancer, err := lbService.GetLB(&lb.GetLBRequest{
 		Region: scw.Region(cloud.Region()),
-		LBID:   fi.ValueOf(l.LoadBalancerId),
+		LBID:   fi.ValueOf(l.LBID),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("error getting load-balancer %s: %s", fi.ValueOf(l.LoadBalancerId), err)
+		return nil, fmt.Errorf("getting load-balancer %s: %s", fi.ValueOf(l.LBID), err)
 	}
 
-	lbIP := loadBalancer.IP[0].IPAddress
-	if len(loadBalancer.IP) > 1 {
-		klog.V(4).Infof("multiple IPs found for load-balancer, using %s", lbIP)
+	lbIPs := []string(nil)
+	for _, IP := range loadBalancer.IP {
+		lbIPs = append(lbIPs, IP.IPAddress)
 	}
 
 	return &LoadBalancer{
-		Name:                &loadBalancer.Name,
-		LoadBalancerId:      &loadBalancer.ID,
-		LoadBalancerAddress: &lbIP,
-		Tags:                loadBalancer.Tags,
-		Lifecycle:           l.Lifecycle,
-		ForAPIServer:        l.ForAPIServer,
+		Name:         &loadBalancer.Name,
+		LBID:         &loadBalancer.ID,
+		LBAddresses:  lbIPs,
+		Tags:         loadBalancer.Tags,
+		Lifecycle:    l.Lifecycle,
+		ForAPIServer: l.ForAPIServer,
 	}, nil
 }
 
@@ -85,13 +85,13 @@ func (l *LoadBalancer) FindAddresses(context *fi.CloudupContext) ([]string, erro
 	cloud := context.T.Cloud.(scaleway.ScwCloud)
 	lbService := cloud.LBService()
 
-	if l.LoadBalancerId == nil {
+	if l.LBID == nil {
 		return nil, nil
 	}
 
 	loadBalancer, err := lbService.GetLB(&lb.GetLBRequest{
 		Region: scw.Region(cloud.Region()),
-		LBID:   fi.ValueOf(l.LoadBalancerId),
+		LBID:   fi.ValueOf(l.LBID),
 	})
 	if err != nil {
 		return nil, err
@@ -114,7 +114,7 @@ func (_ *LoadBalancer) CheckChanges(actual, expected, changes *LoadBalancer) err
 		if changes.Name != nil {
 			return fi.CannotChangeField("Name")
 		}
-		if changes.LoadBalancerId != nil {
+		if changes.LBID != nil {
 			return fi.CannotChangeField("ID")
 		}
 		if changes.Region != nil {
@@ -133,100 +133,156 @@ func (_ *LoadBalancer) CheckChanges(actual, expected, changes *LoadBalancer) err
 
 func (l *LoadBalancer) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes *LoadBalancer) error {
 	lbService := t.Cloud.LBService()
+	region := scw.Region(fi.ValueOf(expected.Region))
+	var loadBalancer *lb.LB
+	backEndToCreate := true
+	frontEndToCreate := true
 
-	// We check if the load-balancer already exists
-	lbs, err := lbService.ListLBs(&lb.ListLBsRequest{
-		Region: scw.Region(fi.ValueOf(expected.Region)),
-		Name:   expected.Name,
-	}, scw.WithAllPages())
-	if err != nil {
-		return fmt.Errorf("error listing existing load-balancers: %w", err)
-	}
+	if actual != nil {
+		klog.Infof("Updating existing load-balancer with name %q", expected.Name)
 
-	if lbs.TotalCount > 0 {
-		loadBalancer := lbs.LBs[0]
-		lbIP := loadBalancer.IP[0].IPAddress
-		if len(loadBalancer.IP) > 1 {
-			klog.V(4).Infof("multiple IPs found for load-balancer, using %s", lbIP)
+		lbToUpdate, err := lbService.GetLB(&lb.GetLBRequest{
+			Region: region,
+			LBID:   fi.ValueOf(actual.LBID),
+		})
+		if err != nil {
+			return fmt.Errorf("getting load-balancer %q (%s): %w", fi.ValueOf(actual.Name), fi.ValueOf(actual.LBID), err)
 		}
-		expected.LoadBalancerId = &loadBalancer.ID
-		expected.LoadBalancerAddress = &lbIP
-		return nil
+
+		// We update the tags
+		if changes != nil || len(actual.Tags) != len(expected.Tags) {
+			_, err = lbService.UpdateLB(&lb.UpdateLBRequest{
+				Region:                region,
+				LBID:                  lbToUpdate.ID,
+				Name:                  lbToUpdate.Name,
+				Description:           lbToUpdate.Description,
+				SslCompatibilityLevel: lbToUpdate.SslCompatibilityLevel,
+				Tags:                  expected.Tags,
+			})
+			if err != nil {
+				return fmt.Errorf("updatings tags for load-balancer %q: %w", fi.ValueOf(expected.Name), err)
+			}
+		}
+
+		// We check that the back-end exists
+		backEnds, err := lbService.ListBackends(&lb.ListBackendsRequest{
+			Region: region,
+			LBID:   lbToUpdate.ID,
+			Name:   scw.StringPtr("lb-backend"),
+		})
+		if err != nil {
+			return fmt.Errorf("listing back-ends for load-balancer %q: %w", fi.ValueOf(expected.Name), err)
+		}
+		if backEnds.TotalCount > 0 {
+			backEndToCreate = false
+		}
+
+		// We check that the front-end exists
+		frontEnds, err := lbService.ListFrontends(&lb.ListFrontendsRequest{
+			Region: region,
+			LBID:   lbToUpdate.ID,
+			Name:   scw.StringPtr("lb-frontend"),
+		})
+		if err != nil {
+			return fmt.Errorf("listing front-ends for load-balancer %q: %w", fi.ValueOf(expected.Name), err)
+		}
+		if frontEnds.TotalCount > 0 {
+			frontEndToCreate = false
+		}
+
+		lbIPs := []string(nil)
+		for _, ip := range lbToUpdate.IP {
+			lbIPs = append(lbIPs, ip.IPAddress)
+		}
+		expected.LBID = &lbToUpdate.ID
+		expected.LBAddresses = lbIPs
+
+		loadBalancer = lbToUpdate
+
+	} else {
+		klog.Infof("Creating new load-balancer with name %q", expected.Name)
+
+		lbCreated, err := lbService.CreateLB(&lb.CreateLBRequest{
+			Region: region,
+			Name:   fi.ValueOf(expected.Name),
+			Tags:   expected.Tags,
+		})
+		if err != nil {
+			return fmt.Errorf("creating load-balancer: %w", err)
+		}
+
+		_, err = lbService.WaitForLb(&lb.WaitForLBRequest{
+			LBID:   lbCreated.ID,
+			Region: region,
+		})
+		if err != nil {
+			return fmt.Errorf("waiting for load-balancer %s: %w", lbCreated.ID, err)
+		}
+
+		lbIPs := []string(nil)
+		for _, ip := range lbCreated.IP {
+			lbIPs = append(lbIPs, ip.IPAddress)
+		}
+		expected.LBID = &lbCreated.ID
+		expected.LBAddresses = lbIPs
+
+		loadBalancer = lbCreated
 	}
 
-	loadBalancer, err := lbService.CreateLB(&lb.CreateLBRequest{
-		Region: scw.Region(fi.ValueOf(expected.Region)),
-		Name:   fi.ValueOf(expected.Name),
-		IPID:   nil,
-		Tags:   expected.Tags,
-	})
-	if err != nil {
-		return err
+	backEndID := ""
+
+	// We create the load-balancer's backend if needed
+	if backEndToCreate == true {
+		backEnd, err := lbService.CreateBackend(&lb.CreateBackendRequest{
+			Region:               region,
+			LBID:                 loadBalancer.ID,
+			Name:                 "lb-backend",
+			ForwardProtocol:      "tcp",
+			ForwardPort:          443,
+			ForwardPortAlgorithm: "roundrobin",
+			StickySessions:       "none",
+			HealthCheck: &lb.HealthCheck{
+				CheckMaxRetries: 5,
+				TCPConfig:       &lb.HealthCheckTCPConfig{},
+				Port:            443,
+				CheckTimeout:    scw.TimeDurationPtr(3000),
+				CheckDelay:      scw.TimeDurationPtr(1001),
+			},
+			ProxyProtocol: "proxy_protocol_none",
+		})
+		if err != nil {
+			return fmt.Errorf("creating back-end for load-balancer %s: %w", loadBalancer.ID, err)
+		}
+
+		_, err = lbService.WaitForLb(&lb.WaitForLBRequest{
+			LBID:   loadBalancer.ID,
+			Region: region,
+		})
+		if err != nil {
+			return fmt.Errorf("waiting for load-balancer %s: %w", loadBalancer.ID, err)
+		}
+		backEndID = backEnd.ID
 	}
 
-	_, err = lbService.WaitForLb(&lb.WaitForLBRequest{
-		LBID:   loadBalancer.ID,
-		Region: scw.Region(fi.ValueOf(expected.Region)),
-	})
-	if err != nil {
-		return fmt.Errorf("error waiting for load-balancer %s: %w", loadBalancer.ID, err)
-	}
-
-	expected.LoadBalancerId = &loadBalancer.ID
-
-	if len(loadBalancer.IP) > 1 {
-		klog.V(8).Infof("got more more than 1 IP for LB (got %d)", len(loadBalancer.IP))
-	}
-	ip := (*loadBalancer.IP[0]).IPAddress
-	expected.LoadBalancerAddress = &ip
-
-	// We create the load-balancer's backend
-	backEnd, err := lbService.CreateBackend(&lb.CreateBackendRequest{
-		Region:               scw.Region(fi.ValueOf(expected.Region)),
-		LBID:                 loadBalancer.ID,
-		Name:                 "lb-backend",
-		ForwardProtocol:      "tcp",
-		ForwardPort:          443,
-		ForwardPortAlgorithm: "roundrobin",
-		StickySessions:       "none",
-		HealthCheck: &lb.HealthCheck{
-			CheckMaxRetries: 5,
-			TCPConfig:       &lb.HealthCheckTCPConfig{},
-			Port:            443,
-			CheckTimeout:    scw.TimeDurationPtr(3000),
-			CheckDelay:      scw.TimeDurationPtr(1001),
-		},
-		ProxyProtocol: "proxy_protocol_none",
-	})
-	if err != nil {
-		return fmt.Errorf("error creating back-end for load-balancer %s: %w", loadBalancer.ID, err)
-	}
-
-	_, err = lbService.WaitForLb(&lb.WaitForLBRequest{
-		LBID:   loadBalancer.ID,
-		Region: scw.Region(fi.ValueOf(expected.Region)),
-	})
-	if err != nil {
-		return fmt.Errorf("error waiting for load-balancer %s: %w", loadBalancer.ID, err)
-	}
-
-	// We create the load-balancer's front-end
-	_, err = lbService.CreateFrontend(&lb.CreateFrontendRequest{
-		Region:      scw.Region(fi.ValueOf(expected.Region)),
-		LBID:        loadBalancer.ID,
-		Name:        "lb-frontend",
-		InboundPort: 443,
-		BackendID:   backEnd.ID,
-	})
-	if err != nil {
-		return fmt.Errorf("error creating front-end for load-balancer %s: %w", loadBalancer.ID, err)
-	}
-	_, err = lbService.WaitForLb(&lb.WaitForLBRequest{
-		LBID:   loadBalancer.ID,
-		Region: scw.Region(fi.ValueOf(expected.Region)),
-	})
-	if err != nil {
-		return fmt.Errorf("error waiting for load-balancer %s: %w", loadBalancer.ID, err)
+	// We create the load-balancer's front-end if needed
+	if frontEndToCreate == true {
+		_, err := lbService.CreateFrontend(&lb.CreateFrontendRequest{
+			Region:      region,
+			LBID:        loadBalancer.ID,
+			Name:        "lb-frontend",
+			InboundPort: 443,
+			BackendID:   backEndID,
+		})
+		if err != nil {
+			return fmt.Errorf("creating front-end for load-balancer %s: %w", loadBalancer.ID, err)
+		}
+		_, err = lbService.WaitForLb(&lb.WaitForLBRequest{
+			LBID:   loadBalancer.ID,
+			Region: region,
+		})
+		if err != nil {
+			return fmt.Errorf("waiting for load-balancer %s: %w", loadBalancer.ID, err)
+		}
 	}
 
 	return nil

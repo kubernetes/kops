@@ -177,6 +177,9 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 				"zone":                  string(zone),
 				"region":                string(region),
 			}
+			for k, v := range cluster.Spec.CloudLabels {
+				cloudTags[k] = v
+			}
 
 			scwCloud, err := scaleway.NewScwCloud(cloudTags)
 			if err != nil {
