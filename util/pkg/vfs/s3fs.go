@@ -89,24 +89,6 @@ func (p *S3Path) String() string {
 	return p.Path()
 }
 
-// TerraformProvider returns the provider name and necessary arguments
-func (p *S3Path) TerraformProvider() (*terraformWriter.TerraformProvider, error) {
-	ctx := context.TODO()
-
-	bucketDetails, err := p.getBucketDetails(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	provider := &terraformWriter.TerraformProvider{
-		Name: "aws",
-		Arguments: map[string]string{
-			"region": bucketDetails.region,
-		},
-	}
-	return provider, nil
-}
-
 func (p *S3Path) Remove() error {
 	ctx := context.TODO()
 
@@ -605,11 +587,15 @@ func (p *S3Path) RenderTerraform(w *terraformWriter.TerraformWriter, name string
 		return fmt.Errorf("reading data: %v", err)
 	}
 
-	tfProvider, err := p.TerraformProvider()
+	bucketDetails, err := p.getBucketDetails(ctx)
 	if err != nil {
 		return err
 	}
-	w.EnsureTerraformProvider(tfProvider)
+
+	tfProviderArguments := map[string]string{
+		"region": bucketDetails.region,
+	}
+	w.EnsureTerraformProvider("aws", tfProviderArguments)
 
 	content, err := w.AddFileBytes("aws_s3_object", name, "content", bytes, false)
 	if err != nil {
