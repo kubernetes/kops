@@ -125,11 +125,6 @@ ensure-install-dir
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   manageStorageClasses: true
-kubeProxy:
-  clusterCIDR: 100.96.0.0/11
-  cpuRequest: 100m
-  image: registry.k8s.io/kube-proxy:v1.26.0
-  logLevel: 2
 kubelet:
   anonymousAuth: false
   cgroupDriver: systemd
@@ -180,7 +175,7 @@ ConfigServer:
   server: https://kops-controller.internal.minimal-etcd.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: 7atWxJBo0Ge4gVF4Xia6KbDvl0x4l8+Kjo0sib99seg=
+NodeupConfigHash: A5wbwrwRy2W0+aztKZCy1TiHbSP3mMNFTTkLTVL6CLM=
 
 __EOF_KUBE_ENV
 
