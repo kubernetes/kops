@@ -213,8 +213,8 @@ func (p *MemFSPath) IsPublic() (bool, error) {
 
 // Terraform support for integration tests.
 
-func (p *MemFSPath) TerraformProvider() (*TerraformProvider, error) {
-	return &TerraformProvider{
+func (p *MemFSPath) TerraformProvider() (*terraformWriter.TerraformProvider, error) {
+	return &terraformWriter.TerraformProvider{
 		Name: "aws",
 		Arguments: map[string]string{
 			"region": "us-test-1",
@@ -236,6 +236,12 @@ func (p *MemFSPath) RenderTerraform(w *terraformWriter.TerraformWriter, name str
 	if err != nil {
 		return fmt.Errorf("reading data: %v", err)
 	}
+
+	tfProvider, err := p.TerraformProvider()
+	if err != nil {
+		return err
+	}
+	w.EnsureTerraformProvider(tfProvider)
 
 	content, err := w.AddFileBytes("aws_s3_object", name, "content", bytes, false)
 	if err != nil {
