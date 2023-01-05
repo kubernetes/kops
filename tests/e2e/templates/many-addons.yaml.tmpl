@@ -11,9 +11,8 @@ spec:
     enabled: true
   channel: stable
   cloudProvider: {{.cloudProvider}}
-#  https://github.com/kubernetes/kops/issues/14875
-#  clusterAutoscaler:
-#    enabled: true
+  clusterAutoscaler:
+    enabled: true
   configBase: "{{.stateStore}}/{{.clusterName}}"
   etcdClusters:
   - etcdMembers:
