@@ -114,6 +114,14 @@ spec:
   maxSize: 2
   minSize: 2
   role: Node
+  rootVolume:
+    encryption: true
+    encryptionKey: 1234abcd-12ab-34cd-56ef-1234567890ab
+    iops: 300
+    optimization: true
+    size: 33
+    throughput: 421
+    type: gp3
   subnets:
   - us-test-1a
 

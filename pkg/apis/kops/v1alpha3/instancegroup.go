@@ -68,20 +68,8 @@ type InstanceGroupSpec struct {
 	Autoscale *bool `json:"autoscale,omitempty"`
 	// MachineType is the instance class
 	MachineType string `json:"machineType,omitempty"`
-	// RootVolumeSize is the size of the EBS root volume to use, in GB
-	RootVolumeSize *int32 `json:"rootVolumeSize,omitempty"`
-	// RootVolumeType is the type of the EBS root volume to use (e.g. gp2)
-	RootVolumeType *string `json:"rootVolumeType,omitempty"`
-	// RootVolumeIOPS is the provisioned IOPS when the volume type is io1, io2 or gp3 (AWS only).
-	RootVolumeIOPS *int32 `json:"rootVolumeIOPS,omitempty"`
-	// RootVolumeThroughput is the volume throughput in MBps when the volume type is gp3 (AWS only).
-	RootVolumeThroughput *int32 `json:"rootVolumeThroughput,omitempty"`
-	// RootVolumeOptimization enables EBS optimization for an instance
-	RootVolumeOptimization *bool `json:"rootVolumeOptimization,omitempty"`
-	// RootVolumeEncryption enables EBS root volume encryption for an instance
-	RootVolumeEncryption *bool `json:"rootVolumeEncryption,omitempty"`
-	// RootVolumeEncryptionKey provides the key identifier for root volume encryption
-	RootVolumeEncryptionKey *string `json:"rootVolumeEncryptionKey,omitempty"`
+	// RootVolume specifies options for the instances' root volumes.
+	RootVolume *InstanceRootVolumeSpec `json:"rootVolume,omitempty"`
 	// Volumes is a collection of additional volumes to create for instances within this InstanceGroup
 	Volumes []VolumeSpec `json:"volumes,omitempty"`
 	// VolumeMounts a collection of volume mounts
@@ -169,6 +157,24 @@ type InstanceGroupSpec struct {
 	//   'STANDARD': (default) standard provisioning with user controlled run time, no discounts
 	//   'SPOT': heavily discounted, no guaranteed run time.
 	GCPProvisioningModel *string `json:"gcpProvisioningModel,omitempty"`
+}
+
+// InstanceRootVolumeSpec specifies options for an instance's root volume.
+type InstanceRootVolumeSpec struct {
+	// Size is the size of the EBS root volume to use, in GB.
+	Size *int32 `json:"size,omitempty"`
+	// Type is the type of the EBS root volume to use (for example gp2).
+	Type *string `json:"type,omitempty"`
+	// IOPS is the provisioned IOPS when the volume type is io1, io2 or gp3 (AWS only).
+	IOPS *int32 `json:"iops,omitempty"`
+	// Throughput is the volume throughput in MBps when the volume type is gp3 (AWS only).
+	Throughput *int32 `json:"throughput,omitempty"`
+	// Optimization enables EBS optimization for an instance.
+	Optimization *bool `json:"optimization,omitempty"`
+	// Encryption enables EBS root volume encryption for an instance.
+	Encryption *bool `json:"encryption,omitempty"`
+	// EncryptionKey provides the key identifier for root volume encryption.
+	EncryptionKey *string `json:"encryptionKey,omitempty"`
 }
 
 // InstanceMetadataOptions defines the EC2 instance metadata service options (AWS Only)

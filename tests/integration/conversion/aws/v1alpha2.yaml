@@ -115,6 +115,13 @@ spec:
   maxSize: 2
   minSize: 2
   role: Node
+  rootVolumeEncryption: true
+  rootVolumeEncryptionKey: 1234abcd-12ab-34cd-56ef-1234567890ab
+  rootVolumeIops: 300
+  rootVolumeOptimization: true
+  rootVolumeSize: 33
+  rootVolumeThroughput: 421
+  rootVolumeType: gp3
   subnets:
   - us-test-1a
 
