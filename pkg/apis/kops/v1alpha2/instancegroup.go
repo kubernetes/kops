@@ -68,8 +68,9 @@ type InstanceGroupSpec struct {
 	// Autoscale determines if autoscaling will be enabled for this instance group if cluster autoscaler is enabled
 	Autoscale *bool `json:"autoscale,omitempty"`
 	// MachineType is the instance class
-	MachineType string                       `json:"machineType,omitempty"` // RootVolume specifies options for the instances' root volumes.
-	RootVolume  *kops.InstanceRootVolumeSpec `json:"-"`
+	MachineType string `json:"machineType,omitempty"`
+	// RootVolume specifies options for the instances' root volumes.
+	RootVolume *kops.InstanceRootVolumeSpec `json:"-"`
 	// RootVolumeSize is the size of the EBS root volume to use, in GB
 	// +k8s:conversion-gen=false
 	RootVolumeSize *int32 `json:"rootVolumeSize,omitempty"`
