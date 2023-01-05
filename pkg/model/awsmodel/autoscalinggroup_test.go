@@ -51,7 +51,10 @@ func buildNodeInstanceGroup(subnets ...string) *kops.InstanceGroup {
 func TestRootVolumeOptimizationFlag(t *testing.T) {
 	cluster := buildMinimalCluster()
 	ig := buildNodeInstanceGroup("subnet-us-test-1a")
-	ig.Spec.RootVolumeOptimization = fi.PtrTo(true)
+	if ig.Spec.RootVolume == nil {
+		ig.Spec.RootVolume = &kops.InstanceRootVolumeSpec{}
+	}
+	ig.Spec.RootVolume.Optimization = fi.PtrTo(true)
 
 	k := [][]byte{}
 	k = append(k, []byte(sshPublicKeyEntry))

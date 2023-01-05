@@ -142,23 +142,27 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.CloudupMode
 	if err != nil {
 		return nil, err
 	}
-	if fi.ValueOf(ig.Spec.RootVolumeSize) > 0 {
-		rootVolumeSize = fi.ValueOf(ig.Spec.RootVolumeSize)
-	}
+	var rootVolumeType string
+	rootVolumeEncryption := DefaultVolumeEncryption
+	rootVolumeKmsKey := ""
 
-	rootVolumeType := fi.ValueOf(ig.Spec.RootVolumeType)
+	if ig.Spec.RootVolume != nil {
+		if fi.ValueOf(ig.Spec.RootVolume.Size) > 0 {
+			rootVolumeSize = fi.ValueOf(ig.Spec.RootVolume.Size)
+		}
+
+		rootVolumeType = fi.ValueOf(ig.Spec.RootVolume.Type)
+
+		if ig.Spec.RootVolume.Encryption != nil {
+			rootVolumeEncryption = fi.ValueOf(ig.Spec.RootVolume.Encryption)
+		}
+
+		if fi.ValueOf(ig.Spec.RootVolume.Encryption) && ig.Spec.RootVolume.EncryptionKey != nil {
+			rootVolumeKmsKey = *ig.Spec.RootVolume.EncryptionKey
+		}
+	}
 	if rootVolumeType == "" {
 		rootVolumeType = DefaultVolumeType
-	}
-
-	rootVolumeEncryption := DefaultVolumeEncryption
-	if ig.Spec.RootVolumeEncryption != nil {
-		rootVolumeEncryption = fi.ValueOf(ig.Spec.RootVolumeEncryption)
-	}
-
-	rootVolumeKmsKey := ""
-	if fi.ValueOf(ig.Spec.RootVolumeEncryption) && ig.Spec.RootVolumeEncryptionKey != nil {
-		rootVolumeKmsKey = *ig.Spec.RootVolumeEncryptionKey
 	}
 
 	securityGroups, err := b.buildSecurityGroups(c, ig)
@@ -188,8 +192,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.CloudupMode
 		InstanceInterruptionBehavior: ig.Spec.InstanceInterruptionBehavior,
 		InstanceMonitoring:           fi.PtrTo(false),
 		IPv6AddressCount:             fi.PtrTo(int64(0)),
-		RootVolumeIops:               fi.PtrTo(int64(fi.ValueOf(ig.Spec.RootVolumeIOPS))),
-		RootVolumeOptimization:       ig.Spec.RootVolumeOptimization,
+		RootVolumeIops:               fi.PtrTo(int64(0)),
 		RootVolumeSize:               fi.PtrTo(int64(rootVolumeSize)),
 		RootVolumeType:               fi.PtrTo(rootVolumeType),
 		RootVolumeEncryption:         fi.PtrTo(rootVolumeEncryption),
@@ -197,6 +200,10 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.CloudupMode
 		SecurityGroups:               securityGroups,
 		Tags:                         tags,
 		UserData:                     userData,
+	}
+	if ig.Spec.RootVolume != nil {
+		lt.RootVolumeIops = fi.PtrTo(int64(fi.ValueOf(ig.Spec.RootVolume.IOPS)))
+		lt.RootVolumeOptimization = ig.Spec.RootVolume.Optimization
 	}
 
 	if ig.Spec.Manager == kops.InstanceManagerCloudGroup {
@@ -288,17 +295,17 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.CloudupMode
 	}
 
 	if rootVolumeType == ec2.VolumeTypeIo1 || rootVolumeType == ec2.VolumeTypeIo2 {
-		if fi.ValueOf(ig.Spec.RootVolumeIOPS) < 100 {
+		if ig.Spec.RootVolume == nil || fi.ValueOf(ig.Spec.RootVolume.IOPS) < 100 {
 			lt.RootVolumeIops = fi.PtrTo(int64(DefaultVolumeIonIops))
 		}
 	} else if rootVolumeType == ec2.VolumeTypeGp3 {
-		if fi.ValueOf(ig.Spec.RootVolumeIOPS) < 3000 {
+		if ig.Spec.RootVolume == nil || fi.ValueOf(ig.Spec.RootVolume.IOPS) < 3000 {
 			lt.RootVolumeIops = fi.PtrTo(int64(DefaultVolumeGp3Iops))
 		}
-		if fi.ValueOf(ig.Spec.RootVolumeThroughput) < 125 {
+		if ig.Spec.RootVolume == nil || fi.ValueOf(ig.Spec.RootVolume.Throughput) < 125 {
 			lt.RootVolumeThroughput = fi.PtrTo(int64(DefaultVolumeGp3Throughput))
 		} else {
-			lt.RootVolumeThroughput = fi.PtrTo(int64(fi.ValueOf(ig.Spec.RootVolumeThroughput)))
+			lt.RootVolumeThroughput = fi.PtrTo(int64(fi.ValueOf(ig.Spec.RootVolume.Throughput)))
 		}
 	} else {
 		lt.RootVolumeIops = nil

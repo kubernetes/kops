@@ -586,6 +586,48 @@ func Convert_v1alpha2_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *InstanceGr
 	if in.Role == "Master" {
 		out.Role = kops.InstanceGroupRoleControlPlane
 	}
+	if in.RootVolumeEncryption != nil {
+		if out.RootVolume == nil {
+			out.RootVolume = &kops.InstanceRootVolumeSpec{}
+		}
+		out.RootVolume.Encryption = in.RootVolumeEncryption
+	}
+	if in.RootVolumeEncryptionKey != nil {
+		if out.RootVolume == nil {
+			out.RootVolume = &kops.InstanceRootVolumeSpec{}
+		}
+		out.RootVolume.EncryptionKey = in.RootVolumeEncryptionKey
+	}
+	if in.RootVolumeIOPS != nil {
+		if out.RootVolume == nil {
+			out.RootVolume = &kops.InstanceRootVolumeSpec{}
+		}
+		out.RootVolume.IOPS = in.RootVolumeIOPS
+	}
+	if in.RootVolumeOptimization != nil {
+		if out.RootVolume == nil {
+			out.RootVolume = &kops.InstanceRootVolumeSpec{}
+		}
+		out.RootVolume.Optimization = in.RootVolumeOptimization
+	}
+	if in.RootVolumeSize != nil {
+		if out.RootVolume == nil {
+			out.RootVolume = &kops.InstanceRootVolumeSpec{}
+		}
+		out.RootVolume.Size = in.RootVolumeSize
+	}
+	if in.RootVolumeThroughput != nil {
+		if out.RootVolume == nil {
+			out.RootVolume = &kops.InstanceRootVolumeSpec{}
+		}
+		out.RootVolume.Throughput = in.RootVolumeThroughput
+	}
+	if in.RootVolumeType != nil {
+		if out.RootVolume == nil {
+			out.RootVolume = &kops.InstanceRootVolumeSpec{}
+		}
+		out.RootVolume.Type = in.RootVolumeType
+	}
 	return nil
 }
 
@@ -595,6 +637,16 @@ func Convert_kops_InstanceGroupSpec_To_v1alpha2_InstanceGroupSpec(in *kops.Insta
 	}
 	if in.Role == kops.InstanceGroupRoleControlPlane {
 		out.Role = "Master"
+	}
+	if in.RootVolume != nil {
+		rv := in.RootVolume
+		out.RootVolumeEncryption = rv.Encryption
+		out.RootVolumeEncryptionKey = rv.EncryptionKey
+		out.RootVolumeIOPS = rv.IOPS
+		out.RootVolumeOptimization = rv.Optimization
+		out.RootVolumeSize = rv.Size
+		out.RootVolumeThroughput = rv.Throughput
+		out.RootVolumeType = rv.Type
 	}
 	return nil
 }

@@ -165,8 +165,8 @@ func TestDecorateWithInstanceGroupSpecs(t *testing.T) {
 	if *actualIG.Spec.MinSize != instanceGroupOpts.NodeCountMin {
 		t.Fatalf("expected instance group MinSize to be %d but got %d", instanceGroupOpts.NodeCountMin, actualIG.Spec.MinSize)
 	}
-	if *actualIG.Spec.RootVolumeSize != *instanceGroupOpts.NodeVolumeSize {
-		t.Fatalf("expected instance group RootVolumeSize to be %d but got %d", instanceGroupOpts.NodeVolumeSize, actualIG.Spec.RootVolumeSize)
+	if *actualIG.Spec.RootVolume.Size != *instanceGroupOpts.NodeVolumeSize {
+		t.Fatalf("expected instance group RootVolumeSize to be %d but got %d", instanceGroupOpts.NodeVolumeSize, actualIG.Spec.RootVolume.Size)
 	}
 	if !reflect.DeepEqual(actualIG.Spec.AdditionalSecurityGroups, instanceGroupOpts.NodeSecurityGroups) {
 		t.Fatalf("expected instance group MaxSize to be %d but got %d", instanceGroupOpts.NodeCountMax, actualIG.Spec.MaxSize)

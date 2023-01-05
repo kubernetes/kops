@@ -169,8 +169,8 @@ func getCapacity(spec *kops.InstanceGroupSpec) (*int64, error) {
 
 func getStorageProfile(spec *kops.InstanceGroupSpec) (*compute.VirtualMachineScaleSetStorageProfile, error) {
 	var volumeSize int32
-	if spec.RootVolumeSize != nil {
-		volumeSize = *spec.RootVolumeSize
+	if spec.RootVolume != nil && spec.RootVolume.Size != nil {
+		volumeSize = *spec.RootVolume.Size
 	} else {
 		var err error
 		volumeSize, err = defaults.DefaultInstanceGroupVolumeSize(spec.Role)
@@ -180,8 +180,8 @@ func getStorageProfile(spec *kops.InstanceGroupSpec) (*compute.VirtualMachineSca
 	}
 
 	var storageAccountType compute.StorageAccountTypes
-	if spec.RootVolumeType != nil {
-		storageAccountType = compute.StorageAccountTypes(*spec.RootVolumeType)
+	if spec.RootVolume != nil && spec.RootVolume.Type != nil {
+		storageAccountType = compute.StorageAccountTypes(*spec.RootVolume.Type)
 	} else {
 		storageAccountType = compute.StorageAccountTypesPremiumLRS
 	}
