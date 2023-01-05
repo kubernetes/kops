@@ -338,7 +338,7 @@ spec:
         - --logtostderr=true
         - --stderrthreshold=info
         - --v=4
-        image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.26.0
+        image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.26.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
