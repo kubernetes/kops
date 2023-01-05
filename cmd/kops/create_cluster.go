@@ -596,13 +596,19 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 
 	if c.ControlPlaneVolumeSize != 0 {
 		for _, group := range controlPlanes {
-			group.Spec.RootVolumeSize = fi.PtrTo(c.ControlPlaneVolumeSize)
+			if group.Spec.RootVolume == nil {
+				group.Spec.RootVolume = &api.InstanceRootVolumeSpec{}
+			}
+			group.Spec.RootVolume.Size = fi.PtrTo(c.ControlPlaneVolumeSize)
 		}
 	}
 
 	if c.NodeVolumeSize != 0 {
 		for _, group := range nodes {
-			group.Spec.RootVolumeSize = fi.PtrTo(c.NodeVolumeSize)
+			if group.Spec.RootVolume == nil {
+				group.Spec.RootVolume = &api.InstanceRootVolumeSpec{}
+			}
+			group.Spec.RootVolume.Size = fi.PtrTo(c.NodeVolumeSize)
 		}
 	}
 

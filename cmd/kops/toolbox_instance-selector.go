@@ -501,7 +501,10 @@ func decorateWithInstanceGroupSpecs(instanceGroup *kops.InstanceGroup, instanceG
 	ig := instanceGroup
 	ig.Spec.MinSize = &instanceGroupOpts.NodeCountMin
 	ig.Spec.MaxSize = &instanceGroupOpts.NodeCountMax
-	ig.Spec.RootVolumeSize = instanceGroupOpts.NodeVolumeSize
+	if ig.Spec.RootVolume == nil {
+		ig.Spec.RootVolume = &kops.InstanceRootVolumeSpec{}
+	}
+	ig.Spec.RootVolume.Size = instanceGroupOpts.NodeVolumeSize
 	ig.Spec.AdditionalSecurityGroups = instanceGroupOpts.NodeSecurityGroups
 	return ig
 }

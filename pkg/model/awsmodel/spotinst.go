@@ -707,56 +707,51 @@ func (b *SpotInstanceGroupModelBuilder) buildPublicIPOpts(ig *kops.InstanceGroup
 func (b *SpotInstanceGroupModelBuilder) buildRootVolumeOpts(ig *kops.InstanceGroup) (*spotinsttasks.RootVolumeOpts, error) {
 	opts := new(spotinsttasks.RootVolumeOpts)
 
-	// Optimization.
-	{
-		if fi.ValueOf(ig.Spec.RootVolumeOptimization) {
-			opts.Optimization = ig.Spec.RootVolumeOptimization
-		}
-	}
-
-	// Encryption.
-	{
-		if fi.ValueOf(ig.Spec.RootVolumeEncryption) {
-			opts.Encryption = ig.Spec.RootVolumeEncryption
-		}
-	}
-
-	// Size.
-	{
-		size := fi.ValueOf(ig.Spec.RootVolumeSize)
-		if size == 0 {
-			var err error
-			size, err = defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
-			if err != nil {
-				return nil, err
+	var size int32
+	var typ string
+	var iops int32
+	var throughput int32
+	if ig.Spec.RootVolume != nil {
+		// Optimization.
+		{
+			if fi.ValueOf(ig.Spec.RootVolume.Optimization) {
+				opts.Optimization = ig.Spec.RootVolume.Optimization
 			}
 		}
-		opts.Size = fi.PtrTo(int64(size))
+
+		// Encryption.
+		{
+			if fi.ValueOf(ig.Spec.RootVolume.Encryption) {
+				opts.Encryption = ig.Spec.RootVolume.Encryption
+			}
+		}
+
+		size = fi.ValueOf(ig.Spec.RootVolume.Size)
+		typ = fi.ValueOf(ig.Spec.RootVolume.Type)
+		iops = fi.ValueOf(ig.Spec.RootVolume.IOPS)
+		throughput = fi.ValueOf(ig.Spec.RootVolume.Throughput)
 	}
 
-	// Type.
-	{
-		typ := fi.ValueOf(ig.Spec.RootVolumeType)
-		if typ == "" {
-			typ = "gp2"
-		}
-		opts.Type = fi.PtrTo(typ)
-	}
-
-	// IOPS.
-	{
-		iops := fi.ValueOf(ig.Spec.RootVolumeIOPS)
-		if iops > 0 {
-			opts.IOPS = fi.PtrTo(int64(iops))
+	if size == 0 {
+		var err error
+		size, err = defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
+		if err != nil {
+			return nil, err
 		}
 	}
+	opts.Size = fi.PtrTo(int64(size))
 
-	// Throughput.
-	{
-		throughput := fi.ValueOf(ig.Spec.RootVolumeThroughput)
-		if throughput > 0 {
-			opts.Throughput = fi.PtrTo(int64(throughput))
-		}
+	if typ == "" {
+		typ = "gp2"
+	}
+	opts.Type = fi.PtrTo(typ)
+
+	if iops > 0 {
+		opts.IOPS = fi.PtrTo(int64(iops))
+	}
+
+	if throughput > 0 {
+		opts.Throughput = fi.PtrTo(int64(throughput))
 	}
 
 	return opts, nil

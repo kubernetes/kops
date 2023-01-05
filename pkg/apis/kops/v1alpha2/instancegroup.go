@@ -19,6 +19,7 @@ package v1alpha2
 import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/kops/pkg/apis/kops"
 )
 
 // +genclient
@@ -68,22 +69,31 @@ type InstanceGroupSpec struct {
 	Autoscale *bool `json:"autoscale,omitempty"`
 	// MachineType is the instance class
 	MachineType string `json:"machineType,omitempty"`
+	// RootVolume specifies options for the instances' root volumes.
+	RootVolume *kops.InstanceRootVolumeSpec `json:"-"`
 	// RootVolumeSize is the size of the EBS root volume to use, in GB
+	// +k8s:conversion-gen=false
 	RootVolumeSize *int32 `json:"rootVolumeSize,omitempty"`
 	// RootVolumeType is the type of the EBS root volume to use (e.g. gp2)
+	// +k8s:conversion-gen=false
 	RootVolumeType *string `json:"rootVolumeType,omitempty"`
 	// RootVolumeIOPS is the provisioned IOPS when the volume type is io1, io2 or gp3 (AWS only).
+	// +k8s:conversion-gen=false
 	RootVolumeIOPS *int32 `json:"rootVolumeIops,omitempty"`
 	// RootVolumeThroughput is the volume throughput in MBps when the volume type is gp3 (AWS only).
+	// +k8s:conversion-gen=false
 	RootVolumeThroughput *int32 `json:"rootVolumeThroughput,omitempty"`
 	// RootVolumeOptimization enables EBS optimization for an instance
+	// +k8s:conversion-gen=false
 	RootVolumeOptimization *bool `json:"rootVolumeOptimization,omitempty"`
 	// RootVolumeDeleteOnTermination is unused.
 	// +k8s:conversion-gen=false
 	RootVolumeDeleteOnTermination *bool `json:"rootVolumeDeleteOnTermination,omitempty"`
 	// RootVolumeEncryption enables EBS root volume encryption for an instance
+	// +k8s:conversion-gen=false
 	RootVolumeEncryption *bool `json:"rootVolumeEncryption,omitempty"`
 	// RootVolumeEncryptionKey provides the key identifier for root volume encryption
+	// +k8s:conversion-gen=false
 	RootVolumeEncryptionKey *string `json:"rootVolumeEncryptionKey,omitempty"`
 	// Volumes is a collection of additional volumes to create for instances within this InstanceGroup
 	Volumes []VolumeSpec `json:"volumes,omitempty"`
