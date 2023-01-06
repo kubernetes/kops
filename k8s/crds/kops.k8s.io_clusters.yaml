@@ -1199,6 +1199,11 @@ spec:
                           description: BackupInterval which is used for backups. The
                             default is 15 minutes.
                           type: string
+                        backupRetentionDays:
+                          description: BackupRetentionDays which is used for backups.
+                            The default is 90 days.
+                          format: int32
+                          type: integer
                         discoveryPollInterval:
                           description: DiscoveryPollInterval which is used for discovering
                             other cluster members. The default is 60 seconds.

@@ -1433,8 +1433,12 @@ func initializeOpenstack(opt *NewClusterOptions, cluster *api.Cluster) {
 }
 
 func createEtcdCluster(etcdCluster string, controlPlanes []*api.InstanceGroup, encryptEtcdStorage bool, etcdStorageType string) api.EtcdClusterSpec {
-	etcd := api.EtcdClusterSpec{}
-	etcd.Name = etcdCluster
+	etcd := api.EtcdClusterSpec{
+		Name: etcdCluster,
+		Manager: &api.EtcdManagerSpec{
+			BackupRetentionDays: fi.PtrTo[uint32](90),
+		},
+	}
 
 	// if this is the main cluster, we use 200 millicores by default.
 	// otherwise we use 100 millicores by default.  100Mi is always default
