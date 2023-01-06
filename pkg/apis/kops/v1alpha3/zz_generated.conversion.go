@@ -3799,6 +3799,7 @@ func autoConvert_v1alpha3_EtcdManagerSpec_To_kops_EtcdManagerSpec(in *EtcdManage
 		out.Env = nil
 	}
 	out.BackupInterval = in.BackupInterval
+	out.BackupRetentionDays = in.BackupRetentionDays
 	out.DiscoveryPollInterval = in.DiscoveryPollInterval
 	out.LogLevel = in.LogLevel
 	return nil
@@ -3823,6 +3824,7 @@ func autoConvert_kops_EtcdManagerSpec_To_v1alpha3_EtcdManagerSpec(in *kops.EtcdM
 		out.Env = nil
 	}
 	out.BackupInterval = in.BackupInterval
+	out.BackupRetentionDays = in.BackupRetentionDays
 	out.DiscoveryPollInterval = in.DiscoveryPollInterval
 	out.LogLevel = in.LogLevel
 	return nil
