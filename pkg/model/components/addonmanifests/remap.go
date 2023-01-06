@@ -31,6 +31,10 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
+// KopsAddonLabelKey is the label we use for objects in kOps manifests.
+// The value corresponds to the name of the addon.
+const KopsAddonLabelKey = "addon.kops.k8s.io/name"
+
 func RemapAddonManifest(addon *addonsapi.AddonSpec, context *model.KopsModelContext, assetBuilder *assets.AssetBuilder, manifest []byte, serviceAccounts map[string]iam.Subject) ([]byte, error) {
 	name := fi.ValueOf(addon.Name)
 
@@ -119,7 +123,7 @@ func addLabels(addon *addonsapi.AddonSpec, objects kubemanifest.ObjectList) erro
 		}
 
 		meta.Labels["app.kubernetes.io/managed-by"] = "kops"
-		meta.Labels["addon.kops.k8s.io/name"] = *addon.Name
+		meta.Labels[KopsAddonLabelKey] = *addon.Name
 
 		// ensure selector is set where applicable
 		for key, val := range addon.Selector {
