@@ -46,6 +46,7 @@ func (d *deployer) DumpClusterLogs() error {
 	cmd := exec.Command(args[0], args[1:]...)
 	cmd.SetEnv(d.env()...)
 	cmd.SetStdout(yamlFile)
+	cmd.SetStderr(os.Stderr)
 	if err := cmd.Run(); err != nil {
 		return err
 	}
@@ -197,6 +198,7 @@ func (d *deployer) dumpClusterInfoSSH() error {
 	klog.Info(strings.Join(toolboxDumpArgs, " "))
 
 	cmd := exec.Command(toolboxDumpArgs[0], toolboxDumpArgs[1:]...)
+	cmd.SetStderr(os.Stderr)
 	dumpOutput, err := exec.Output(cmd)
 	if err != nil {
 		return err
