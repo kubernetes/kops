@@ -1534,6 +1534,18 @@ type ClusterUpdate struct {
 	// DesiredShieldedNodes: Configuration for Shielded Nodes.
 	DesiredShieldedNodes *ShieldedNodes `json:"desiredShieldedNodes,omitempty"`
 
+	// DesiredStackType: The desired stack type of the cluster. If a stack
+	// type is provided and does not match the current stack type of the
+	// cluster, update will attempt to change the stack type to the new
+	// type.
+	//
+	// Possible values:
+	//   "STACK_TYPE_UNSPECIFIED" - Default value, will be defaulted as IPV4
+	// only
+	//   "IPV4" - Cluster is IPV4 only
+	//   "IPV4_IPV6" - Cluster can use both IPv4 and IPv6
+	DesiredStackType string `json:"desiredStackType,omitempty"`
+
 	// DesiredVerticalPodAutoscaling: Cluster-level Vertical Pod Autoscaling
 	// configuration.
 	DesiredVerticalPodAutoscaling *VerticalPodAutoscaling `json:"desiredVerticalPodAutoscaling,omitempty"`
