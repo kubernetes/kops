@@ -27,6 +27,7 @@ import (
 
 	channelsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/pkg/kubemanifest"
+	"k8s.io/kops/pkg/model/components/addonmanifests"
 )
 
 func (b *BootstrapChannelBuilder) addPruneDirectives(addons *AddonList) error {
@@ -49,8 +50,8 @@ func (b *BootstrapChannelBuilder) addPruneDirectivesForAddon(addon *Addon) error
 
 	// We add these labels to all objects we manage, so we reuse them for pruning.
 	selectorMap := map[string]string{
-		"app.kubernetes.io/managed-by": "kops",
-		"addon.kops.k8s.io/name":       *addon.Spec.Name,
+		"app.kubernetes.io/managed-by":   "kops",
+		addonmanifests.KopsAddonLabelKey: *addon.Spec.Name,
 	}
 	selector, err := labels.ValidatedSelectorFromSet(selectorMap)
 	if err != nil {
