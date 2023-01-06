@@ -19,11 +19,11 @@ package model
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"strings"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
@@ -73,8 +73,7 @@ type CloudConfigBuilder struct {
 var _ fi.NodeupModelBuilder = &CloudConfigBuilder{}
 
 func (b *CloudConfigBuilder) Build(c *fi.NodeupModelBuilderContext) error {
-	// openstack needs cloud.config currently in all nodes because of csi components
-	if b.BootConfig.CloudProvider != kops.CloudProviderOpenstack && !b.HasAPIServer && b.NodeupConfig.KubeletConfig.CloudProvider == "external" {
+	if !b.HasAPIServer && b.NodeupConfig.KubeletConfig.CloudProvider == "external" {
 		return nil
 	}
 
@@ -123,95 +122,9 @@ func (b *CloudConfigBuilder) build(c *fi.NodeupModelBuilderContext, inTree bool)
 		if osc == nil {
 			break
 		}
-		// Support mapping of older keystone API
-		tenantName := os.Getenv("OS_TENANT_NAME")
-		if tenantName == "" {
-			tenantName = os.Getenv("OS_PROJECT_NAME")
-		}
-		tenantID := os.Getenv("OS_TENANT_ID")
-		if tenantID == "" {
-			tenantID = os.Getenv("OS_PROJECT_ID")
-		}
-		lines = append(lines,
-			fmt.Sprintf("auth-url=\"%s\"", os.Getenv("OS_AUTH_URL")),
-			fmt.Sprintf("username=\"%s\"", os.Getenv("OS_USERNAME")),
-			fmt.Sprintf("password=\"%s\"", os.Getenv("OS_PASSWORD")),
-			fmt.Sprintf("region=\"%s\"", os.Getenv("OS_REGION_NAME")),
-			fmt.Sprintf("tenant-id=\"%s\"", tenantID),
-			fmt.Sprintf("tenant-name=\"%s\"", tenantName),
-			fmt.Sprintf("domain-name=\"%s\"", os.Getenv("OS_DOMAIN_NAME")),
-			fmt.Sprintf("domain-id=\"%s\"", os.Getenv("OS_DOMAIN_ID")),
-		)
-		if b.Cluster.Spec.ExternalCloudControllerManager != nil {
-			lines = append(lines,
-				fmt.Sprintf("application-credential-id=\"%s\"", os.Getenv("OS_APPLICATION_CREDENTIAL_ID")),
-				fmt.Sprintf("application-credential-secret=\"%s\"", os.Getenv("OS_APPLICATION_CREDENTIAL_SECRET")),
-			)
-		}
 
-		lines = append(lines,
-			"",
-		)
+		lines = append(lines, openstack.MakeCloudConfig(b.Cluster.Spec)...)
 
-		if lb := osc.Loadbalancer; lb != nil {
-			ingressHostnameSuffix := "nip.io"
-			if fi.ValueOf(lb.IngressHostnameSuffix) != "" {
-				ingressHostnameSuffix = fi.ValueOf(lb.IngressHostnameSuffix)
-			}
-
-			lines = append(lines,
-				"[LoadBalancer]",
-				fmt.Sprintf("floating-network-id=%s", fi.ValueOf(lb.FloatingNetworkID)),
-				fmt.Sprintf("lb-method=%s", fi.ValueOf(lb.Method)),
-				fmt.Sprintf("lb-provider=%s", fi.ValueOf(lb.Provider)),
-				fmt.Sprintf("use-octavia=%t", fi.ValueOf(lb.UseOctavia)),
-				fmt.Sprintf("manage-security-groups=%t", fi.ValueOf(lb.ManageSecGroups)),
-				fmt.Sprintf("enable-ingress-hostname=%t", fi.ValueOf(lb.EnableIngressHostname)),
-				fmt.Sprintf("ingress-hostname-suffix=%s", ingressHostnameSuffix),
-				"",
-			)
-
-			if monitor := osc.Monitor; monitor != nil {
-				lines = append(lines,
-					"create-monitor=yes",
-					fmt.Sprintf("monitor-delay=%s", fi.ValueOf(monitor.Delay)),
-					fmt.Sprintf("monitor-timeout=%s", fi.ValueOf(monitor.Timeout)),
-					fmt.Sprintf("monitor-max-retries=%d", fi.ValueOf(monitor.MaxRetries)),
-					"",
-				)
-			}
-		}
-
-		if bs := osc.BlockStorage; bs != nil {
-			// Block Storage Config
-			lines = append(lines,
-				"[BlockStorage]",
-				fmt.Sprintf("bs-version=%s", fi.ValueOf(bs.Version)),
-				fmt.Sprintf("ignore-volume-az=%t", fi.ValueOf(bs.IgnoreAZ)),
-				"")
-		}
-
-		if networking := osc.Network; networking != nil {
-			// Networking Config
-			// https://github.com/kubernetes/cloud-provider-openstack/blob/master/docs/openstack-cloud-controller-manager/using-openstack-cloud-controller-manager.md#networking
-			var networkingLines []string
-
-			if networking.IPv6SupportDisabled != nil {
-				networkingLines = append(networkingLines, fmt.Sprintf("ipv6-support-disabled=%t", fi.ValueOf(networking.IPv6SupportDisabled)))
-			}
-			for _, name := range networking.PublicNetworkNames {
-				networkingLines = append(networkingLines, fmt.Sprintf("public-network-name=%s", fi.ValueOf(name)))
-			}
-			for _, name := range networking.InternalNetworkNames {
-				networkingLines = append(networkingLines, fmt.Sprintf("internal-network-name=%s", fi.ValueOf(name)))
-			}
-
-			if len(networkingLines) > 0 {
-				lines = append(lines, "[Networking]")
-				lines = append(lines, networkingLines...)
-				lines = append(lines, "")
-			}
-		}
 	case kops.CloudProviderAzure:
 		requireGlobal = false
 
