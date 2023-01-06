@@ -3,6 +3,10 @@ kind: Cluster
 metadata:
   name: {{.clusterName}}
 spec:
+  api:
+    loadBalancer:
+      type: Public
+      class: Network
   awsLoadBalancerController:
     enabled: true
   kubernetesApiAccess:
@@ -35,7 +39,6 @@ spec:
     provider: CoreDNS
     nodeLocalDNS:
       enabled: true
-  masterPublicName: api.{{.clusterName}}
   metricsServer:
     enabled: true
   networkCIDR: 172.20.0.0/16
@@ -54,6 +57,8 @@ spec:
   sshAccess:
     - {{.publicIP}}
   topology:
+    dns:
+      type: None
     masters: public
     nodes: public
   subnets:
