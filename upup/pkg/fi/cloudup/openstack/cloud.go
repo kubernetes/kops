@@ -20,12 +20,13 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/blang/semver/v4"
 	"github.com/gophercloud/gophercloud"
-	os "github.com/gophercloud/gophercloud/openstack"
+	"github.com/gophercloud/gophercloud/openstack"
 	cinder "github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
 	az "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
@@ -338,7 +339,7 @@ func NewOpenstackCloud(cluster *kops.Cluster, uagent string) (OpenstackCloud, er
 		return nil, err
 	}
 
-	provider, err := os.NewClient(authOption.IdentityEndpoint)
+	provider, err := openstack.NewClient(authOption.IdentityEndpoint)
 	if err != nil {
 		return nil, fmt.Errorf("error building openstack provider client: %v", err)
 	}
@@ -358,7 +359,7 @@ func NewOpenstackCloud(cluster *kops.Cluster, uagent string) (OpenstackCloud, er
 
 	klog.V(2).Info("authenticating to keystone")
 
-	err = os.Authenticate(provider, authOption)
+	err = openstack.Authenticate(provider, authOption)
 	if err != nil {
 		return nil, fmt.Errorf("error building openstack authenticated client: %v", err)
 	}
@@ -375,7 +376,7 @@ func NewOpenstackCloud(cluster *kops.Cluster, uagent string) (OpenstackCloud, er
 }
 
 func buildClients(provider *gophercloud.ProviderClient, tags map[string]string, spec *kops.OpenstackSpec, config vfs.OpenstackConfig, region string, hasDNS bool) (OpenstackCloud, error) {
-	cinderClient, err := os.NewBlockStorageV3(provider, gophercloud.EndpointOpts{
+	cinderClient, err := openstack.NewBlockStorageV3(provider, gophercloud.EndpointOpts{
 		Type:   "volumev3",
 		Region: region,
 	})
@@ -383,7 +384,7 @@ func buildClients(provider *gophercloud.ProviderClient, tags map[string]string, 
 		return nil, fmt.Errorf("error building cinder client: %w", err)
 	}
 
-	neutronClient, err := os.NewNetworkV2(provider, gophercloud.EndpointOpts{
+	neutronClient, err := openstack.NewNetworkV2(provider, gophercloud.EndpointOpts{
 		Type:   "network",
 		Region: region,
 	})
@@ -391,7 +392,7 @@ func buildClients(provider *gophercloud.ProviderClient, tags map[string]string, 
 		return nil, fmt.Errorf("error building neutron client: %w", err)
 	}
 
-	novaClient, err := os.NewComputeV2(provider, gophercloud.EndpointOpts{
+	novaClient, err := openstack.NewComputeV2(provider, gophercloud.EndpointOpts{
 		Type:   "compute",
 		Region: region,
 	})
@@ -401,7 +402,7 @@ func buildClients(provider *gophercloud.ProviderClient, tags map[string]string, 
 	// 2.47 is the minimum version where the compute API /server/details returns flavor names
 	novaClient.Microversion = "2.47"
 
-	glanceClient, err := os.NewImageServiceV2(provider, gophercloud.EndpointOpts{
+	glanceClient, err := openstack.NewImageServiceV2(provider, gophercloud.EndpointOpts{
 		Type:   "image",
 		Region: region,
 	})
@@ -417,7 +418,7 @@ func buildClients(provider *gophercloud.ProviderClient, tags map[string]string, 
 			return nil, fmt.Errorf("failed to get service config: %w", err)
 		}
 
-		dnsClient, err = os.NewDNSV2(provider, endpointOpt)
+		dnsClient, err = openstack.NewDNSV2(provider, endpointOpt)
 		if err != nil {
 			return nil, fmt.Errorf("error building dns client: %w", err)
 		}
@@ -488,7 +489,7 @@ func buildLoadBalancerClient(c *openstackCloud, spec *kops.OpenstackSpec, provid
 	var lbClient *gophercloud.ServiceClient
 	if octavia {
 		klog.V(2).Infof("Openstack using Octavia lbaasv2 api")
-		client, err := os.NewLoadBalancerV2(provider, gophercloud.EndpointOpts{
+		client, err := openstack.NewLoadBalancerV2(provider, gophercloud.EndpointOpts{
 			Region: region,
 		})
 		if err != nil {
@@ -497,7 +498,7 @@ func buildLoadBalancerClient(c *openstackCloud, spec *kops.OpenstackSpec, provid
 		lbClient = client
 	} else {
 		klog.V(2).Infof("Openstack using deprecated lbaasv2 api")
-		client, err := os.NewNetworkV2(provider, gophercloud.EndpointOpts{
+		client, err := openstack.NewNetworkV2(provider, gophercloud.EndpointOpts{
 			Region: region,
 		})
 		if err != nil {
@@ -815,4 +816,105 @@ func isNotFound(err error) bool {
 	}
 
 	return false
+}
+
+func MakeCloudConfig(spec kops.ClusterSpec) []string {
+	var lines []string
+
+	osc := spec.CloudProvider.Openstack
+	if osc == nil {
+		return nil
+	}
+
+	// Support mapping of older keystone API
+	tenantName := os.Getenv("OS_TENANT_NAME")
+	if tenantName == "" {
+		tenantName = os.Getenv("OS_PROJECT_NAME")
+	}
+	tenantID := os.Getenv("OS_TENANT_ID")
+	if tenantID == "" {
+		tenantID = os.Getenv("OS_PROJECT_ID")
+	}
+	lines = append(lines,
+		fmt.Sprintf("auth-url=\"%s\"", os.Getenv("OS_AUTH_URL")),
+		fmt.Sprintf("username=\"%s\"", os.Getenv("OS_USERNAME")),
+		fmt.Sprintf("password=\"%s\"", os.Getenv("OS_PASSWORD")),
+		fmt.Sprintf("region=\"%s\"", os.Getenv("OS_REGION_NAME")),
+		fmt.Sprintf("tenant-id=\"%s\"", tenantID),
+		fmt.Sprintf("tenant-name=\"%s\"", tenantName),
+		fmt.Sprintf("domain-name=\"%s\"", os.Getenv("OS_DOMAIN_NAME")),
+		fmt.Sprintf("domain-id=\"%s\"", os.Getenv("OS_DOMAIN_ID")),
+	)
+	if spec.ExternalCloudControllerManager != nil {
+		lines = append(lines,
+			fmt.Sprintf("application-credential-id=\"%s\"", os.Getenv("OS_APPLICATION_CREDENTIAL_ID")),
+			fmt.Sprintf("application-credential-secret=\"%s\"", os.Getenv("OS_APPLICATION_CREDENTIAL_SECRET")),
+		)
+	}
+
+	lines = append(lines,
+		"",
+	)
+
+	if lb := osc.Loadbalancer; lb != nil {
+		ingressHostnameSuffix := "nip.io"
+		if fi.ValueOf(lb.IngressHostnameSuffix) != "" {
+			ingressHostnameSuffix = fi.ValueOf(lb.IngressHostnameSuffix)
+		}
+
+		lines = append(lines,
+			"[LoadBalancer]",
+			fmt.Sprintf("floating-network-id=%s", fi.ValueOf(lb.FloatingNetworkID)),
+			fmt.Sprintf("lb-method=%s", fi.ValueOf(lb.Method)),
+			fmt.Sprintf("lb-provider=%s", fi.ValueOf(lb.Provider)),
+			fmt.Sprintf("use-octavia=%t", fi.ValueOf(lb.UseOctavia)),
+			fmt.Sprintf("manage-security-groups=%t", fi.ValueOf(lb.ManageSecGroups)),
+			fmt.Sprintf("enable-ingress-hostname=%t", fi.ValueOf(lb.EnableIngressHostname)),
+			fmt.Sprintf("ingress-hostname-suffix=%s", ingressHostnameSuffix),
+			"",
+		)
+
+		if monitor := osc.Monitor; monitor != nil {
+			lines = append(lines,
+				"create-monitor=yes",
+				fmt.Sprintf("monitor-delay=%s", fi.ValueOf(monitor.Delay)),
+				fmt.Sprintf("monitor-timeout=%s", fi.ValueOf(monitor.Timeout)),
+				fmt.Sprintf("monitor-max-retries=%d", fi.ValueOf(monitor.MaxRetries)),
+				"",
+			)
+		}
+	}
+
+	if bs := osc.BlockStorage; bs != nil {
+		// Block Storage Config
+		lines = append(lines,
+			"[BlockStorage]",
+			fmt.Sprintf("bs-version=%s", fi.ValueOf(bs.Version)),
+			fmt.Sprintf("ignore-volume-az=%t", fi.ValueOf(bs.IgnoreAZ)),
+			"")
+	}
+
+	if networking := osc.Network; networking != nil {
+		// Networking Config
+		// https://github.com/kubernetes/cloud-provider-openstack/blob/master/docs/openstack-cloud-controller-manager/using-openstack-cloud-controller-manager.md#networking
+		var networkingLines []string
+
+		if networking.IPv6SupportDisabled != nil {
+			networkingLines = append(networkingLines, fmt.Sprintf("ipv6-support-disabled=%t", fi.ValueOf(networking.IPv6SupportDisabled)))
+		}
+		for _, name := range networking.PublicNetworkNames {
+			networkingLines = append(networkingLines, fmt.Sprintf("public-network-name=%s", fi.ValueOf(name)))
+		}
+		for _, name := range networking.InternalNetworkNames {
+			networkingLines = append(networkingLines, fmt.Sprintf("internal-network-name=%s", fi.ValueOf(name)))
+		}
+
+		if len(networkingLines) > 0 {
+			lines = append(lines, "[Networking]")
+			lines = append(lines, networkingLines...)
+			lines = append(lines, "")
+		}
+	}
+
+	return lines
 }
