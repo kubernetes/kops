@@ -182,6 +182,14 @@ func (d *deployer) env() []string {
 		fmt.Sprintf("KOPS_FEATURE_FLAGS=%v", d.featureFlags()),
 		"KOPS_RUN_TOO_NEW_VERSION=1",
 	}...)
+
+	// Pass-through some env vars if set (on all clouds)
+	for _, k := range []string{"KOPS_ARCH"} {
+		if v := os.Getenv(k); v != "" {
+			vars = append(vars, k+"="+v)
+		}
+	}
+
 	if d.CloudProvider == "aws" {
 		// Pass through some env vars if set
 		for _, k := range []string{"AWS_PROFILE", "AWS_SHARED_CREDENTIALS_FILE"} {
