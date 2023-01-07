@@ -72,6 +72,12 @@ func NewVFSContext() *VFSContext {
 	return v
 }
 
+func NewTestingVFSContext() *VFSContext {
+	vfsContext := NewVFSContext()
+	vfsContext.ResetMemfsContext(true)
+	return vfsContext
+}
+
 func (v *VFSContext) WithGCSClient(gcsClient *storage.Service) *VFSContext {
 	v.mutex.Lock()
 	defer v.mutex.Unlock()

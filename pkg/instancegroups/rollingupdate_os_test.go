@@ -60,7 +60,7 @@ func getTestSetupOS(t *testing.T, ctx context.Context) (*RollingUpdateCluster, *
 
 	assetBuilder := assets.NewAssetBuilder(inCluster.Spec.Assets, inCluster.Spec.KubernetesVersion, false)
 	basePath, _ := vfs.Context.BuildVfsPath(inCluster.Spec.ConfigBase)
-	clientset := vfsclientset.NewVFSClientset(basePath)
+	clientset := vfsclientset.NewVFSClientset(vfs.Context, basePath)
 	cluster, err := cloudup.PopulateClusterSpec(ctx, clientset, inCluster, mockcloud, assetBuilder)
 	if err != nil {
 		t.Fatalf("Failed to populate cluster spec: %v", err)

@@ -27,10 +27,11 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 func up(ctx context.Context) error {
-	clientset := vfsclientset.NewVFSClientset(registryBase)
+	clientset := vfsclientset.NewVFSClientset(vfs.Context, registryBase)
 
 	cluster := &api.Cluster{}
 	cluster.ObjectMeta.Name = clusterName

@@ -113,12 +113,13 @@ func (f *Factory) KopsClient() (simple.Clientset, error) {
 				return nil, fmt.Errorf("error building kops API client: %v", err)
 			}
 
-			f.clientset = &api.RESTClientset{
-				BaseURL: &url.URL{
+			f.clientset = api.NewRESTClientset(
+				f.VFSContext(),
+				&url.URL{
 					Scheme: "k8s",
 				},
-				KopsClient: kopsClient.Kops(),
-			}
+				kopsClient.Kops(),
+			)
 		} else {
 			basePath, err := f.VFSContext().BuildVfsPath(registryPath)
 			if err != nil {
@@ -129,7 +130,7 @@ func (f *Factory) KopsClient() (simple.Clientset, error) {
 				return nil, field.Invalid(field.NewPath("State Store"), registryPath, INVALID_STATE_ERROR)
 			}
 
-			f.clientset = vfsclientset.NewVFSClientset(basePath)
+			f.clientset = vfsclientset.NewVFSClientset(f.VFSContext(), basePath)
 		}
 		if strings.HasPrefix(registryPath, "file://") {
 			klog.Warning("The local filesystem state store is not functional for running clusters")

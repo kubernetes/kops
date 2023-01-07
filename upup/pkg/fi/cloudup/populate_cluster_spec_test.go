@@ -115,7 +115,7 @@ func mockedPopulateClusterSpec(ctx context.Context, c *kopsapi.Cluster, cloud fi
 	if err != nil {
 		return nil, fmt.Errorf("error building vfspath: %v", err)
 	}
-	clientset := vfsclientset.NewVFSClientset(basePath)
+	clientset := vfsclientset.NewVFSClientset(vfs.Context, basePath)
 	return PopulateClusterSpec(ctx, clientset, c, cloud, assetBuilder)
 }
 

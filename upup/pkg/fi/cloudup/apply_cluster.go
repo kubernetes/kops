@@ -266,7 +266,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 	cluster := c.Cluster
 
-	configBase, err := vfs.Context.BuildVfsPath(cluster.Spec.ConfigBase)
+	configBase, err := c.Clientset.VFSContext().BuildVfsPath(cluster.Spec.ConfigBase)
 	if err != nil {
 		return fmt.Errorf("error parsing config base %q: %v", cluster.Spec.ConfigBase, err)
 	}
