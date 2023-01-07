@@ -350,15 +350,14 @@ spec:
           volumeMounts:
             - name: socket-dir
               mountPath: /csi
-            - mountPath: /etc/kubernetes/cloud.config
+            - mountPath: /etc/kubernetes
               name: cloudconfig
               readOnly: true
       volumes:
         - name: socket-dir
           emptyDir: {}
-        - hostPath:
-            path: /etc/kubernetes/cloud.config
-            type: ""
+        - secret:
+            secretName: openstack-project
           name: cloudconfig
 
 ---
@@ -493,7 +492,7 @@ spec:
             - name: pods-probe-dir
               mountPath: /dev
               mountPropagation: "HostToContainer"
-            - mountPath: /etc/kubernetes/cloud.config
+            - mountPath: /etc/kubernetes
               name: cloudconfig
               readOnly: true
       volumes:
@@ -513,9 +512,8 @@ spec:
           hostPath:
             path: /dev
             type: Directory
-        - hostPath:
-            path: /etc/kubernetes/cloud.config
-            type: ""
+        - secret:
+            secretName: openstack-project
           name: cloudconfig
 ---
 apiVersion: storage.k8s.io/v1
