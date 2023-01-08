@@ -150,7 +150,12 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		kcm.ConfigureCloudRoutes = fi.PtrTo(true)
 	} else if networking.GCE != nil {
 		kcm.ConfigureCloudRoutes = fi.PtrTo(false)
-		kcm.CIDRAllocatorType = fi.PtrTo("CloudAllocator")
+		if kcm.CloudProvider == "external" {
+			// kcm should not allocate node cidrs with the CloudAllocator if we're using the external CCM
+			kcm.AllocateNodeCIDRs = fi.PtrTo(false)
+		} else {
+			kcm.CIDRAllocatorType = fi.PtrTo("CloudAllocator")
+		}
 	} else if networking.External != nil {
 		kcm.ConfigureCloudRoutes = fi.PtrTo(false)
 	} else if UsesCNI(networking) {
