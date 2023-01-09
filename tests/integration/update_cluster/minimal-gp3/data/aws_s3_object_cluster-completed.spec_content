@@ -45,6 +45,11 @@ spec:
       volumeSize: 50
       volumeThroughput: 125
       volumeType: gp3
+    manager:
+      backupRetentionDays: 90
+      env:
+      - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
+        value: 90d
     name: main
     version: 3.5.6
   - backups:
@@ -54,6 +59,11 @@ spec:
       name: us-test-1a
       volumeSize: 20
       volumeType: gp3
+    manager:
+      backupRetentionDays: 90
+      env:
+      - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
+        value: 90d
     name: events
     version: 3.5.6
   externalDns:

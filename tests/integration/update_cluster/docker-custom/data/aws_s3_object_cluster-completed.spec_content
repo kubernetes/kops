@@ -47,6 +47,11 @@ spec:
     etcdMembers:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
+    manager:
+      backupRetentionDays: 90
+      env:
+      - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
+        value: 90d
     name: main
     version: 3.5.6
   - backups:
@@ -54,6 +59,11 @@ spec:
     etcdMembers:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
+    manager:
+      backupRetentionDays: 90
+      env:
+      - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
+        value: 90d
     name: events
     version: 3.5.6
   externalDns:

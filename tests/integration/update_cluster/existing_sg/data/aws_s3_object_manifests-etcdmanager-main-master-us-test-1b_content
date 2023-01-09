@@ -19,6 +19,11 @@ spec:
       --volume-provider=aws --volume-tag=k8s.io/etcd/main --volume-tag=k8s.io/role/control-plane=1
       --volume-tag=kubernetes.io/cluster/existingsg.example.com=owned > /tmp/pipe
       2>&1
+    env:
+    - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
+      value: 90d
+    - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
+      value: 90d
     image: registry.k8s.io/etcdadm/etcd-manager:v3.0.20230119-slim
     name: etcd-manager
     resources:
