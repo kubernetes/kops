@@ -32,6 +32,8 @@ spec:
       name: etcd-2
     - instanceGroup: control-plane-us-test1-3
       name: etcd-3
+    manager:
+      backupRetentionDays: 90
     memoryRequest: 100Mi
     name: main
   - cpuRequest: 100m
@@ -42,6 +44,8 @@ spec:
       name: etcd-2
     - instanceGroup: control-plane-us-test1-3
       name: etcd-3
+    manager:
+      backupRetentionDays: 90
     memoryRequest: 100Mi
     name: events
   iam:

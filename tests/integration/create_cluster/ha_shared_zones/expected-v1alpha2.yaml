@@ -29,6 +29,8 @@ spec:
     - encryptedVolume: true
       instanceGroup: control-plane-us-test-1a-3
       name: a-3
+    manager:
+      backupRetentionDays: 90
     memoryRequest: 100Mi
     name: main
   - cpuRequest: 100m
@@ -48,6 +50,8 @@ spec:
     - encryptedVolume: true
       instanceGroup: control-plane-us-test-1a-3
       name: a-3
+    manager:
+      backupRetentionDays: 90
     memoryRequest: 100Mi
     name: events
   iam:

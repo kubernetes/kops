@@ -23,12 +23,16 @@ spec:
     etcdMembers:
     - instanceGroup: control-plane-us-test1-a
       name: a
+    manager:
+      backupRetentionDays: 90
     memoryRequest: 100Mi
     name: main
   - cpuRequest: 100m
     etcdMembers:
     - instanceGroup: control-plane-us-test1-a
       name: a
+    manager:
+      backupRetentionDays: 90
     memoryRequest: 100Mi
     name: events
   iam:
