@@ -834,6 +834,33 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		}
 	}
 
+	if b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderScaleway {
+		{
+			key := "scaleway-cloud-controller.addons.k8s.io"
+			id := "k8s-1.24"
+			location := key + "/" + id + ".yaml"
+
+			addons.Add(&channelsapi.AddonSpec{
+				Name:     fi.PtrTo(key),
+				Selector: map[string]string{"k8s-addon": key},
+				Manifest: fi.PtrTo(location),
+				Id:       id,
+			})
+		}
+		{
+			key := "scaleway-csi-driver.addons.k8s.io"
+			id := "k8s-1.24"
+			location := key + "/" + id + ".yaml"
+
+			addons.Add(&channelsapi.AddonSpec{
+				Name:     fi.PtrTo(key),
+				Selector: map[string]string{"k8s-addon": key},
+				Manifest: fi.PtrTo(location),
+				Id:       id,
+			})
+		}
+	}
+
 	if featureflag.Spotinst.Enabled() && featureflag.SpotinstController.Enabled() {
 		key := "spotinst-kubernetes-cluster-controller.addons.k8s.io"
 
