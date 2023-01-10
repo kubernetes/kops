@@ -562,6 +562,31 @@ func TestRollingUpdateValidationErrorInstanceGroupNil(t *testing.T) {
 	assertGroupInstanceCount(t, cloud, "bastion-1", 1)
 }
 
+func TestRollingUpdateValidationErrorInstanceGroupExitableError(t *testing.T) {
+	c, cloud := getTestSetup()
+
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	makeGroup(groups, c.K8sClient, cloud, "node-1", kopsapi.InstanceGroupRoleNode, 3, 3)
+	makeGroup(groups, c.K8sClient, cloud, "node-2", kopsapi.InstanceGroupRoleNode, 3, 3)
+	makeGroup(groups, c.K8sClient, cloud, "node-3", kopsapi.InstanceGroupRoleNode, 3, 3)
+	makeGroup(groups, c.K8sClient, cloud, "master-1", kopsapi.InstanceGroupRoleControlPlane, 2, 0)
+	makeGroup(groups, c.K8sClient, cloud, "bastion-1", kopsapi.InstanceGroupRoleBastion, 1, 0)
+
+	c.ClusterValidator = &instanceGroupNodeSpecificErrorClusterValidator{
+		InstanceGroup: groups["node-2"].InstanceGroup,
+	}
+
+	err := c.RollingUpdate(groups, &kopsapi.InstanceGroupList{})
+	assert.Error(t, err, "rolling update")
+
+	assertGroupInstanceCount(t, cloud, "node-1", 0)
+	assertGroupInstanceCount(t, cloud, "node-2", 3)
+	assertGroupInstanceCount(t, cloud, "node-3", 3)
+	assertGroupInstanceCount(t, cloud, "master-1", 2)
+	assertGroupInstanceCount(t, cloud, "bastion-1", 1)
+
+}
+
 func TestRollingUpdateClusterFailsValidationAfterOneNode(t *testing.T) {
 	c, cloud := getTestSetup()
 

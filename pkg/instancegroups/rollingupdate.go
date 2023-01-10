@@ -18,6 +18,7 @@ package instancegroups
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 	"sort"
 	"sync"
@@ -191,7 +192,10 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 			if err != nil {
 				klog.Errorf("failed to roll InstanceGroup %q: %v", k, err)
 			}
-			// TODO: Bail on error?
+
+			if isExitableError(err) {
+				return err
+			}
 		}
 	}
 
@@ -213,7 +217,10 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 			if err != nil {
 				klog.Errorf("failed to roll InstanceGroup %q: %v", k, err)
 			}
-			// TODO: Bail on error?
+
+			if isExitableError(err) {
+				return err
+			}
 		}
 	}
 
@@ -235,4 +242,14 @@ func sortGroups(groupMap map[string]*cloudinstances.CloudInstanceGroup) []string
 	}
 	sort.Strings(groups)
 	return groups
+}
+
+// isExitableError inspects an error to determine if the error is
+// fatal enough that the rolling update cannot continue.
+//
+// For example, if a cluster is unable to be validated by the deadline, then it
+// is unlikely that it will validate on the next instance roll, so an early exit as a
+// warning to the user is more appropriate.
+func isExitableError(err error) bool {
+	return stderrors.Is(err, &ValidationTimeoutError{})
 }
