@@ -32,7 +32,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"sigs.k8s.io/yaml"
 
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/model/resources"
@@ -213,15 +212,6 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 	if cluster.Spec.GetCloudProvider() == kops.CloudProviderScaleway {
 		errList := []error(nil)
 
-		region, err := scw.ParseRegion(os.Getenv("SCW_DEFAULT_REGION"))
-		if err != nil {
-			errList = append(errList, fmt.Errorf("error parsing SCW_DEFAULT_REGION: %w", err))
-		}
-		zone, err := scw.ParseZone(os.Getenv("SCW_DEFAULT_ZONE"))
-		if err != nil {
-			errList = append(errList, fmt.Errorf("error parsing SCW_DEFAULT_ZONE: %w", err))
-		}
-
 		// We make sure that the credentials env vars are defined
 		scwAccessKey := os.Getenv("SCW_ACCESS_KEY")
 		if scwAccessKey == "" {
@@ -241,8 +231,6 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 			return nil, errors.NewAggregate(errList)
 		}
 
-		env["SCW_DEFAULT_REGION"] = string(region)
-		env["SCW_DEFAULT_ZONE"] = string(zone)
 		env["SCW_ACCESS_KEY"] = scwAccessKey
 		env["SCW_SECRET_KEY"] = scwSecretKey
 		env["SCW_DEFAULT_PROJECT_ID"] = scwProjectID
