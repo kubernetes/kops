@@ -43,6 +43,30 @@ import (
 
 const rollingUpdateTaintKey = "kops.k8s.io/scheduled-for-update"
 
+// ValidationTimeoutError represents an error that occurs when
+// the cluster fails to validate within the designated timeout.
+type ValidationTimeoutError struct {
+	operation string
+	err       error
+}
+
+func (v *ValidationTimeoutError) Error() string {
+	return fmt.Sprintf("error validating cluster%s: %s", v.operation, v.err.Error())
+}
+
+func (v *ValidationTimeoutError) Unwrap() error {
+	return v.err
+}
+
+// Is checks that a given error is a ValidationTimeoutError.
+func (v *ValidationTimeoutError) Is(err error) bool {
+	// Currently all validation timeout errors are equivalent
+	// If you wish to differentiate, please update the instances of `errors.Is` that check
+	// this error to take that into account
+	_, ok := err.(*ValidationTimeoutError)
+	return ok
+}
+
 // promptInteractive asks the user to continue, mostly copied from vendor/google.golang.org/api/examples/gmail.go.
 func promptInteractive(upgradedHostID, upgradedHostName string) (stopPrompting bool, err error) {
 	stopPrompting = false
@@ -480,7 +504,10 @@ func (c *RollingUpdateCluster) maybeValidate(operation string, validateCount int
 
 			if c.FailOnValidate {
 				klog.Errorf("Cluster did not validate within %s", c.ValidationTimeout)
-				return fmt.Errorf("error validating cluster%s: %v", operation, err)
+				return &ValidationTimeoutError{
+					operation: operation,
+					err:       err,
+				}
 			}
 
 			klog.Warningf("Cluster validation failed%s, proceeding since fail-on-validate is set to false: %v", operation, err)
