@@ -310,9 +310,10 @@ func TestNvidia(t *testing.T) {
 func TestMinimalGossip(t *testing.T) {
 	newIntegrationTest("minimal.k8s.local", "minimal_gossip").
 		withAddons(
+			"rbac.addons.k8s.io-k8s-1.8",
+			awsCCMAddon,
 			awsEBSCSIAddon,
 			dnsControllerAddon,
-			awsCCMAddon,
 		).
 		runTestTerraformAWS(t)
 }
@@ -324,9 +325,10 @@ func TestMinimalGossipIRSA(t *testing.T) {
 		withServiceAccountRole("aws-cloud-controller-manager.kube-system", true).
 		withServiceAccountRole("ebs-csi-controller-sa.kube-system", true).
 		withAddons(
+			"rbac.addons.k8s.io-k8s-1.8",
+			awsCCMAddon,
 			awsEBSCSIAddon,
 			dnsControllerAddon,
-			awsCCMAddon,
 		).
 		runTestTerraformAWS(t)
 }
