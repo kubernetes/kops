@@ -18,9 +18,12 @@ package scaleway
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"k8s.io/kops/pkg/apis/kops"
 )
 
 // isHTTPCodeError returns true if err is an http error with code statusCode
@@ -40,4 +43,24 @@ func isHTTPCodeError(err error, statusCode int) bool {
 func is404Error(err error) bool {
 	notFoundError := &scw.ResourceNotFoundError{}
 	return isHTTPCodeError(err, http.StatusNotFound) || errors.As(err, &notFoundError)
+}
+
+func ParseZoneFromClusterSpec(clusterSpec kops.ClusterSpec) (scw.Zone, error) {
+	zone := ""
+	for _, subnet := range clusterSpec.Networking.Subnets {
+		if zone == "" {
+			zone = subnet.Zone
+		} else if zone != subnet.Zone {
+			return "", fmt.Errorf("scaleway currently only supports clusters in the same zone")
+		}
+	}
+	return scw.Zone(zone), nil
+}
+
+func ParseRegionFromZone(zone scw.Zone) (region scw.Region, err error) {
+	region, err = scw.ParseRegion(strings.TrimRight(string(zone), "-123"))
+	if err != nil {
+		return "", fmt.Errorf("could not determine region from zone %s: %w", zone, err)
+	}
+	return region, nil
 }

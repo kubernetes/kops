@@ -66,6 +66,7 @@ import (
 	gcetpm "k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
+	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"k8s.io/kops/util/pkg/env"
 	"sigs.k8s.io/yaml"
 )
@@ -188,6 +189,23 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["OPENSTACK_CONF"] = func() string {
 		lines := openstack.MakeCloudConfig(cluster.Spec)
 		return "[global]\n" + strings.Join(lines, "\n") + "\n"
+	}
+
+	dest["SCW_ACCESS_KEY"] = func() string {
+		return os.Getenv("SCW_ACCESS_KEY")
+	}
+	dest["SCW_SECRET_KEY"] = func() string {
+		return os.Getenv("SCW_SECRET_KEY")
+	}
+	dest["SCW_DEFAULT_PROJECT_ID"] = func() string {
+		return os.Getenv("SCW_DEFAULT_PROJECT_ID")
+	}
+	dest["SCW_DEFAULT_REGION"] = func() string {
+		return tf.cloud.Region()
+	}
+	dest["SCW_DEFAULT_ZONE"] = func() string {
+		scwCloud := tf.cloud.(scaleway.ScwCloud)
+		return scwCloud.Zone()
 	}
 
 	if featureflag.Spotinst.Enabled() {
