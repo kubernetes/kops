@@ -6,7 +6,7 @@ spec:
   addons:
   - id: k8s-1.16
     manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: 21c53eab91715d95b2d1330753eda0586dbc860c7e7ed75514423cdc4bad6645
+    manifestHash: 87491394e7ba274b291d93dee740e683da8fd3799ebb53233aeac37747057e16
     name: kops-controller.addons.k8s.io
     needsRollingUpdate: control-plane
     selector:
@@ -18,6 +18,13 @@ spec:
     name: coredns.addons.k8s.io
     selector:
       k8s-addon: coredns.addons.k8s.io
+    version: 9.99.0
+  - id: k8s-1.8
+    manifest: rbac.addons.k8s.io/k8s-1.8.yaml
+    manifestHash: f81bd7c57bc1902ca342635d7ad7d01b82dfeaff01a1192b076e66907d87871e
+    name: rbac.addons.k8s.io
+    selector:
+      k8s-addon: rbac.addons.k8s.io
     version: 9.99.0
   - id: k8s-1.9
     manifest: kubelet-api.rbac.addons.k8s.io/k8s-1.9.yaml

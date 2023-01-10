@@ -2,6 +2,19 @@
   "Statement": [
     {
       "Action": [
+        "s3:Get*"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+        "arn:aws-test:s3:::placeholder-read-bucket/clusters.example.com/minimal.k8s.local/cluster-completed.spec",
+        "arn:aws-test:s3:::placeholder-read-bucket/clusters.example.com/minimal.k8s.local/igconfig/node/*",
+        "arn:aws-test:s3:::placeholder-read-bucket/clusters.example.com/minimal.k8s.local/pki/private/kube-proxy/*",
+        "arn:aws-test:s3:::placeholder-read-bucket/clusters.example.com/minimal.k8s.local/pki/private/kubelet/*",
+        "arn:aws-test:s3:::placeholder-read-bucket/clusters.example.com/minimal.k8s.local/secrets/dockerconfig"
+      ]
+    },
+    {
+      "Action": [
         "s3:GetBucketLocation",
         "s3:GetEncryptionConfiguration",
         "s3:ListBucket",

@@ -605,6 +605,14 @@ resource "aws_s3_object" "minimal-k8s-local-addons-limit-range-addons-k8s-io" {
   server_side_encryption = "AES256"
 }
 
+resource "aws_s3_object" "minimal-k8s-local-addons-rbac-addons-k8s-io-k8s-1-8" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_minimal.k8s.local-addons-rbac.addons.k8s.io-k8s-1.8_content")
+  key                    = "clusters.example.com/minimal.k8s.local/addons/rbac.addons.k8s.io/k8s-1.8.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
 resource "aws_s3_object" "minimal-k8s-local-addons-storage-aws-addons-k8s-io-v1-15-0" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_minimal.k8s.local-addons-storage-aws.addons.k8s.io-v1.15.0_content")
