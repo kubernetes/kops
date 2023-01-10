@@ -22,6 +22,10 @@ import (
 
 // UseKopsControllerForNodeBootstrap is true if nodeup should use kops-controller for bootstrapping.
 func UseKopsControllerForNodeBootstrap(cluster *kops.Cluster) bool {
+	if cluster.IsGossip() {
+		return false
+	}
+
 	switch cluster.Spec.GetCloudProvider() {
 	case kops.CloudProviderAWS:
 		return true

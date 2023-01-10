@@ -388,6 +388,10 @@ func (c *NodeupModelContext) UseVolumeMounts() bool {
 
 // UseKopsControllerForNodeBootstrap checks if nodeup should use kops-controller to bootstrap.
 func (c *NodeupModelContext) UseKopsControllerForNodeBootstrap() bool {
+	if c.IsGossip {
+		return false
+	}
+
 	return model.UseKopsControllerForNodeBootstrap(c.Cluster)
 }
 
