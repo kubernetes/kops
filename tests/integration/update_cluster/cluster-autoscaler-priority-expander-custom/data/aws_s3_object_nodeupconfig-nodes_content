@@ -13,17 +13,11 @@ Assets:
   - dbb71e737eaef454a406ce21fd021bd8f1b35afb7635016745992bbd7c17a223@https://github.com/opencontainers/runc/releases/download/v1.1.4/runc.arm64
 CAs: {}
 ClusterName: cas-priority-expander-custom.example.com
-ContainerRuntime: containerd
 Hooks:
 - null
 - null
 KeypairIDs:
   kubernetes-ca: "6982820025135291416230495506"
-KubeProxy:
-  clusterCIDR: 100.96.0.0/11
-  cpuRequest: 100m
-  image: registry.k8s.io/kube-proxy:v1.26.0-alpha.2
-  logLevel: 2
 KubeletConfig:
   cgroupDriver: systemd
   cgroupRoot: /
@@ -45,7 +39,6 @@ KubeletConfig:
   registerSchedulable: true
   shutdownGracePeriod: 30s
   shutdownGracePeriodCriticalPods: 10s
-KubernetesVersion: 1.26.0-alpha.2
 UpdatePolicy: automatic
 channels:
 - memfs://clusters.example.com/cas-priority-expander-custom.example.com/addons/bootstrap-channel.yaml
@@ -54,6 +47,4 @@ containerdConfig:
   runc:
     version: 1.1.4
   version: 1.6.14
-docker:
-  skipInstall: true
 useInstanceIDForNodeName: true

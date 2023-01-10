@@ -6,7 +6,7 @@ spec:
   addons:
   - id: k8s-1.16
     manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: a1e84d6010af17c29d573fee4aa6c8d136a5d5cb9ad8a8019a8ccc0f25a1aebe
+    manifestHash: fcad6a37f3f643fdd3abb84b30edcffe3ea8a776d72869514d1578bcfc83404a
     name: kops-controller.addons.k8s.io
     needsRollingUpdate: control-plane
     selector:
@@ -34,14 +34,14 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: dns-controller.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: 14f10f92425bf9940ee94b45263f617527eedc9bf377f7d7bc09109a94d20bf6
+    manifestHash: 7c44d87008cf554a402e09171ddb7d6eb5701b6e7e6da88a8251983dc235e29e
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
     version: 9.99.0
   - id: k8s-1.15
     manifest: cluster-autoscaler.addons.k8s.io/k8s-1.15.yaml
-    manifestHash: 0d05ba3aed6a1168bef3f20442260058fad95edf7415db6daa34ddb922e071f9
+    manifestHash: ecaac8d875aade47265db6d67676f76ab4e6947b11aafc9692256a646ad082ef
     name: cluster-autoscaler.addons.k8s.io
     selector:
       k8s-addon: cluster-autoscaler.addons.k8s.io
@@ -62,7 +62,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.17
     manifest: aws-ebs-csi-driver.addons.k8s.io/k8s-1.17.yaml
-    manifestHash: e502af711efaad6f271fbf0d1128250db18f082a88ace658bf7570740724e1f2
+    manifestHash: f6c45e166d39d5f24e87a4ac3c9836dc49f6c9b268884fb31106ee949cacf1da
     name: aws-ebs-csi-driver.addons.k8s.io
     selector:
       k8s-addon: aws-ebs-csi-driver.addons.k8s.io

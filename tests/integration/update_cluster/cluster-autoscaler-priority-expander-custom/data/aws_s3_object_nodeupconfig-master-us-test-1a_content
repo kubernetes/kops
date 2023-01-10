@@ -223,7 +223,6 @@ CAs:
     9B7UD2ushcVFPtaeoL9Gfu8aY4KJBeqqg5ojl4qmRnThjw==
     -----END CERTIFICATE-----
 ClusterName: cas-priority-expander-custom.example.com
-ContainerRuntime: containerd
 FileAssets:
 - content: |
     apiVersion: kubescheduler.config.k8s.io/v1beta2
@@ -243,11 +242,6 @@ KeypairIDs:
   etcd-peers-ca-main: "6982279353998887468930183660"
   kubernetes-ca: "6982820025135291416230495506"
   service-account: "2"
-KubeProxy:
-  clusterCIDR: 100.96.0.0/11
-  cpuRequest: 100m
-  image: registry.k8s.io/kube-proxy:v1.26.0-alpha.2
-  logLevel: 2
 KubeletConfig:
   cgroupDriver: systemd
   cgroupRoot: /
@@ -273,7 +267,6 @@ KubeletConfig:
   shutdownGracePeriodCriticalPods: 10s
   taints:
   - node-role.kubernetes.io/control-plane=:NoSchedule
-KubernetesVersion: 1.26.0-alpha.2
 UpdatePolicy: automatic
 channels:
 - memfs://clusters.example.com/cas-priority-expander-custom.example.com/addons/bootstrap-channel.yaml
@@ -282,8 +275,6 @@ containerdConfig:
   runc:
     version: 1.1.4
   version: 1.6.14
-docker:
-  skipInstall: true
 etcdManifests:
 - memfs://clusters.example.com/cas-priority-expander-custom.example.com/manifests/etcd/main-master-us-test-1a.yaml
 - memfs://clusters.example.com/cas-priority-expander-custom.example.com/manifests/etcd/events-master-us-test-1a.yaml

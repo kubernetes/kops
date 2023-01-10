@@ -125,6 +125,19 @@ ensure-install-dir
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   manageStorageClasses: true
+containerRuntime: containerd
+containerd:
+  logLevel: info
+  runc:
+    version: 1.1.4
+  version: 1.6.14
+docker:
+  skipInstall: true
+kubeProxy:
+  clusterCIDR: 100.96.0.0/11
+  cpuRequest: 100m
+  image: registry.k8s.io/kube-proxy:v1.26.0-alpha.2
+  logLevel: 2
 kubelet:
   cgroupDriver: systemd
   cgroupRoot: /
@@ -174,7 +187,7 @@ ConfigServer:
   server: https://kops-controller.internal.cas-priority-expander.example.com:3988/
 InstanceGroupName: nodes-high-priority
 InstanceGroupRole: Node
-NodeupConfigHash: 08cy0+ry4z7kC6tGnQRehgACMr+MCWuYhL7prDZC9TA=
+NodeupConfigHash: +f1YI8fFpCjf3/aEKbwM+RqojoQWFKpDkFxj2qIUwJA=
 
 __EOF_KUBE_ENV
 

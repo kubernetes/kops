@@ -125,6 +125,14 @@ ensure-install-dir
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   manageStorageClasses: true
+containerRuntime: containerd
+containerd:
+  logLevel: info
+  runc:
+    version: 1.1.4
+  version: 1.6.14
+docker:
+  skipInstall: true
 encryptionConfig: null
 etcdClusters:
   events:
@@ -191,6 +199,11 @@ kubeControllerManager:
     leaderElect: true
   logLevel: 2
   useServiceAccountCredentials: true
+kubeProxy:
+  clusterCIDR: 100.96.0.0/11
+  cpuRequest: 100m
+  image: registry.k8s.io/kube-proxy:v1.26.0-alpha.2
+  logLevel: 2
 kubeScheduler:
   featureGates:
     CSIMigrationAWS: "true"
@@ -245,7 +258,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/cas-priority-expander.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: QvuaW7vdhX/ycv4HMncSvT9ADe5IgDlVi6jXBH2RxvM=
+NodeupConfigHash: 5Z6ZaAIuVvhX1NEwE6puNFJsJNSpa1VhjSaCtC07t0Y=
 
 __EOF_KUBE_ENV
 
