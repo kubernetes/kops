@@ -723,6 +723,12 @@ spec:
     matchLabels:
       app.kubernetes.io/component: controller
       app.kubernetes.io/name: aws-load-balancer-controller
+  {{ if not (and UseServiceAccountExternalPermissions (IsKubernetesGTE "1.24")) }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
+  {{ end }}
   template:
     metadata:
       labels:
@@ -744,6 +750,7 @@ spec:
       {{ end }}
       containers:
       - args:
+        - --metrics-bind-addr=:9442
         - --cluster-name={{ ClusterName }}
         - --enable-waf={{ .EnableWAF }}
         - --enable-wafv2={{ .EnableWAFv2 }}
@@ -789,6 +796,7 @@ spec:
       serviceAccountName: aws-load-balancer-controller
       terminationGracePeriodSeconds: 10
       {{ if not (and UseServiceAccountExternalPermissions (IsKubernetesGTE "1.24")) }}
+      hostNetwork: true
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists

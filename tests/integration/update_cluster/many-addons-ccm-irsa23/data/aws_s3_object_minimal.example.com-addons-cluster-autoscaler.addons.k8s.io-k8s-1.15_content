@@ -296,6 +296,10 @@ spec:
   selector:
     matchLabels:
       app: cluster-autoscaler
+  strategy:
+    rollingUpdate:
+      maxSurge: 0
+    type: RollingUpdate
   template:
     metadata:
       annotations:
