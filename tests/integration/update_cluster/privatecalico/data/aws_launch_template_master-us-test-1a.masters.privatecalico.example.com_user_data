@@ -247,7 +247,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privatecalico.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: neYl7rEXJ7q0jguNSMOxDNwoEvj3IvAUxdSMsxpUEk8=
+NodeupConfigHash: MhWNiiV+EQjT+TuKY9PP1IB9kLymvb2/RsDMtNkqSYI=
 
 __EOF_KUBE_ENV
 
