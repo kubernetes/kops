@@ -378,7 +378,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-ipv6-example-c
   metadata_options {
     http_endpoint               = "enabled"
     http_protocol_ipv6          = "enabled"
-    http_put_response_hop_limit = 1
+    http_put_response_hop_limit = 3
     http_tokens                 = "optional"
   }
   monitoring {
