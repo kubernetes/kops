@@ -746,6 +746,7 @@ spec:
         volumeMounts:
         - mountPath: /csi
           name: socket-dir
+      hostNetwork: true
       nodeSelector: null
       priorityClassName: system-cluster-critical
       securityContext:
