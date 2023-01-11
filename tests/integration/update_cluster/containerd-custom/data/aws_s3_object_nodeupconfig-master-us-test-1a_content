@@ -66,7 +66,7 @@ Assets:
   - fb033c1d079cac8babb04a25abecbc6cc1a2afb53f56ef1d73f8dc3b15b3c09e@https://storage.googleapis.com/kubernetes-release/release/v1.26.0/bin/linux/arm64/kubelet
   - 79b14e4ddada9e81d2989f36a89faa9e56f8abe6e0246e7bdc305c93c3731ea4@https://storage.googleapis.com/kubernetes-release/release/v1.26.0/bin/linux/arm64/kubectl
   - ef17764ffd6cdcb16d76401bac1db6acc050c9b088f1be5efa0e094ea3b01df0@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-arm64-v0.9.1.tgz
-  - 3ccb61218e60cbba0e1bbe1e5e2bf809ac1ead8eafbbff36c3195d3edd0e4809@https://github.com/containerd/containerd/releases/download/v1.6.14/containerd-1.6.14-linux-arm64.tar.gz
+  - d63e4d27c51e33cd10f8b5621c559f09ece8a65fec66d80551b36cac9e61a07d@https://github.com/containerd/containerd/releases/download/v1.6.15/containerd-1.6.15-linux-arm64.tar.gz
   - dbb71e737eaef454a406ce21fd021bd8f1b35afb7635016745992bbd7c17a223@https://github.com/opencontainers/runc/releases/download/v1.1.4/runc.arm64
   - 2f599c3d54f4c4bdbcc95aaf0c7b513a845d8f9503ec5b34c9f86aa1bc34fc0c@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/arm64/protokube,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/protokube-linux-arm64
   - 9d842e3636a95de2315cdea2be7a282355aac0658ef0b86d5dc2449066538f13@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/arm64/channels,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/channels-linux-arm64
@@ -290,7 +290,7 @@ containerdConfig:
     - https://registry-1.docker.io
   runc:
     version: 1.1.4
-  version: 1.6.14
+  version: 1.6.15
 docker:
   skipInstall: true
 etcdManifests:
