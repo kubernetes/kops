@@ -2487,7 +2487,7 @@
       }
     }
   },
-  "revision": "20221031",
+  "revision": "20221114",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -3351,6 +3351,20 @@
         "desiredShieldedNodes": {
           "$ref": "ShieldedNodes",
           "description": "Configuration for Shielded Nodes."
+        },
+        "desiredStackType": {
+          "description": "The desired stack type of the cluster. If a stack type is provided and does not match the current stack type of the cluster, update will attempt to change the stack type to the new type.",
+          "enum": [
+            "STACK_TYPE_UNSPECIFIED",
+            "IPV4",
+            "IPV4_IPV6"
+          ],
+          "enumDescriptions": [
+            "Default value, will be defaulted as IPV4 only",
+            "Cluster is IPV4 only",
+            "Cluster can use both IPv4 and IPv6"
+          ],
+          "type": "string"
         },
         "desiredVerticalPodAutoscaling": {
           "$ref": "VerticalPodAutoscaling",

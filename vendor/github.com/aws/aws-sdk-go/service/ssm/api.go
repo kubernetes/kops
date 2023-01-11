@@ -30441,8 +30441,16 @@ type DocumentRequires struct {
 	// Name is a required field
 	Name *string `type:"string" required:"true"`
 
+	// The document type of the required SSM document.
+	RequireType *string `type:"string"`
+
 	// The document version required by the current document.
 	Version *string `type:"string"`
+
+	// An optional field specifying the version of the artifact associated with
+	// the document. For example, "Release 12, Update 6". This value is unique across
+	// all versions of a document, and can't be changed.
+	VersionName *string `type:"string"`
 }
 
 // String returns the string representation.
@@ -30482,9 +30490,21 @@ func (s *DocumentRequires) SetName(v string) *DocumentRequires {
 	return s
 }
 
+// SetRequireType sets the RequireType field's value.
+func (s *DocumentRequires) SetRequireType(v string) *DocumentRequires {
+	s.RequireType = &v
+	return s
+}
+
 // SetVersion sets the Version field's value.
 func (s *DocumentRequires) SetVersion(v string) *DocumentRequires {
 	s.Version = &v
+	return s
+}
+
+// SetVersionName sets the VersionName field's value.
+func (s *DocumentRequires) SetVersionName(v string) *DocumentRequires {
+	s.VersionName = &v
 	return s
 }
 
@@ -55540,7 +55560,7 @@ type Tag struct {
 	// The value of the tag.
 	//
 	// Value is a required field
-	Value *string `min:"1" type:"string" required:"true"`
+	Value *string `type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -55572,9 +55592,6 @@ func (s *Tag) Validate() error {
 	}
 	if s.Value == nil {
 		invalidParams.Add(request.NewErrParamRequired("Value"))
-	}
-	if s.Value != nil && len(*s.Value) < 1 {
-		invalidParams.Add(request.NewErrParamMinLen("Value", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -60640,6 +60657,9 @@ const (
 
 	// DocumentTypeConformancePackTemplate is a DocumentType enum value
 	DocumentTypeConformancePackTemplate = "ConformancePackTemplate"
+
+	// DocumentTypeQuickSetup is a DocumentType enum value
+	DocumentTypeQuickSetup = "QuickSetup"
 )
 
 // DocumentType_Values returns all elements of the DocumentType enum
@@ -60659,6 +60679,7 @@ func DocumentType_Values() []string {
 		DocumentTypeProblemAnalysisTemplate,
 		DocumentTypeCloudFormation,
 		DocumentTypeConformancePackTemplate,
+		DocumentTypeQuickSetup,
 	}
 }
 
