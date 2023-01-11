@@ -76,8 +76,6 @@ func BuildSystemComponentEnvVars(spec *kops.ClusterSpec) EnvVars {
 	vars.addEnvVariableIfExist("SCW_ACCESS_KEY")
 	vars.addEnvVariableIfExist("SCW_SECRET_KEY")
 	vars.addEnvVariableIfExist("SCW_DEFAULT_PROJECT_ID")
-	vars.addEnvVariableIfExist("SCW_DEFAULT_REGION")
-	vars.addEnvVariableIfExist("SCW_DEFAULT_ZONE")
 
 	return vars
 }
