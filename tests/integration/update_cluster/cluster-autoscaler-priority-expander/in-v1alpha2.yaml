@@ -1,0 +1,123 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: "2016-12-10T22:42:27Z"
+  name: cas-priority-expander.example.com
+spec:
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  channel: stable
+  cloudControllerManager:
+    cloudProvider: aws
+  cloudProvider: aws
+  configBase: memfs://clusters.example.com/cas-priority-expander.example.com
+  clusterAutoscaler:
+    expander: priority
+    enabled: true
+  etcdClusters:
+  - etcdMembers:
+    - instanceGroup: master-us-test-1a
+      name: us-test-1a
+    name: main
+  - etcdMembers:
+    - instanceGroup: master-us-test-1a
+      name: us-test-1a
+    name: events
+  kubernetesVersion: v1.26.0-alpha.2
+  masterInternalName: api.internal.cas-priority-expander.example.com
+  masterPublicName: api.cas-priority-expander.example.com
+  networkCIDR: 172.20.0.0/16
+  networking:
+    cni: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  sshAccess:
+    - 0.0.0.0/0
+  topology:
+    masters: public
+    nodes: public
+  subnets:
+  - cidr: 172.20.32.0/19
+    name: us-test-1a
+    type: Public
+    zone: us-test-1a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2016-12-10T22:42:28Z"
+  name: nodes-high-priority
+  labels:
+    kops.k8s.io/cluster: cas-priority-expander.example.com
+spec:
+  autoscale: true
+  autoscalePriority: 100
+  associatePublicIp: true
+  image: ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404
+  machineType: t2.medium
+  maxSize: 2
+  minSize: 2
+  role: Node
+  subnets:
+  - us-test-1a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2016-12-10T22:42:28Z"
+  name: nodes
+  labels:
+    kops.k8s.io/cluster: cas-priority-expander.example.com
+spec:
+  autoscale: true
+  associatePublicIp: true
+  image: ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404
+  machineType: t2.medium
+  maxSize: 2
+  minSize: 2
+  role: Node
+  subnets:
+  - us-test-1a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2016-12-10T22:42:28Z"
+  name: nodes-low-priority
+  labels:
+    kops.k8s.io/cluster: cas-priority-expander.example.com
+spec:
+  autoscale: true
+  autoscalePriority: 50
+  associatePublicIp: true
+  image: ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404
+  machineType: t2.medium
+  maxSize: 2
+  minSize: 2
+  role: Node
+  subnets:
+  - us-test-1a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2016-12-10T22:42:28Z"
+  name: master-us-test-1a
+  labels:
+    kops.k8s.io/cluster: cas-priority-expander.example.com
+spec:
+  associatePublicIp: true
+  image: ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404
+  machineType: m3.medium
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - us-test-1a

@@ -91,6 +91,10 @@ spec:
                 description: Autoscale determines if autoscaling will be enabled for
                   this instance group if cluster autoscaler is enabled
                 type: boolean
+              autoscalePriority:
+                description: AutoscalePriority determines the InstanceGroup priority
+                  for scaling when cluster autoscaler uses the priority expander.
+                type: integer
               capacityRebalance:
                 description: CapacityRebalance makes ASGs proactively replace spot
                   instances when the ASG receives a rebalance recommendation (AWS
