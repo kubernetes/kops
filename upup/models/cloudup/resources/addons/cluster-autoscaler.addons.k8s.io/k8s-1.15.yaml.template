@@ -273,6 +273,12 @@ spec:
   selector:
     matchLabels:
       app: cluster-autoscaler
+  {{ if not (and UseServiceAccountExternalPermissions (IsKubernetesGTE "1.24")) }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
+  {{ end }}
   template:
     metadata:
       annotations:
@@ -360,6 +366,7 @@ spec:
               memory: {{ or .MemoryRequest "300Mi"}}
       serviceAccountName: cluster-autoscaler
       {{ if not UseServiceAccountExternalPermissions }}
+      hostNetwork: true
       tolerations:
       - operator: "Exists"
         key: node-role.kubernetes.io/control-plane

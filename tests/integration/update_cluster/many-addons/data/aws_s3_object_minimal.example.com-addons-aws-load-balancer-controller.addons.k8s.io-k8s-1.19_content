@@ -862,6 +862,10 @@ spec:
     matchLabels:
       app.kubernetes.io/component: controller
       app.kubernetes.io/name: aws-load-balancer-controller
+  strategy:
+    rollingUpdate:
+      maxSurge: 0
+    type: RollingUpdate
   template:
     metadata:
       creationTimestamp: null
@@ -882,6 +886,7 @@ spec:
                 operator: Exists
       containers:
       - args:
+        - --metrics-bind-addr=:9442
         - --cluster-name=minimal.example.com
         - --enable-waf=false
         - --enable-wafv2=false
@@ -921,6 +926,7 @@ spec:
         - mountPath: /tmp/k8s-webhook-server/serving-certs
           name: cert
           readOnly: true
+      hostNetwork: true
       nodeSelector: null
       priorityClassName: system-cluster-critical
       securityContext:

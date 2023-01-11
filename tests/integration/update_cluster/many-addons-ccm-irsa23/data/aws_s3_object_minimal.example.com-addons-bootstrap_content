@@ -48,7 +48,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.15
     manifest: cluster-autoscaler.addons.k8s.io/k8s-1.15.yaml
-    manifestHash: 882f5927c098b3c7bd5837f7db3adde4a7e2d98e3cef924c91c9d5211d6cbbbc
+    manifestHash: d8e860b6e887d2e05b326668f6961d6b05f6d05808c2427364adc593ae699087
     name: cluster-autoscaler.addons.k8s.io
     selector:
       k8s-addon: cluster-autoscaler.addons.k8s.io
@@ -170,7 +170,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.19
     manifest: aws-load-balancer-controller.addons.k8s.io/k8s-1.19.yaml
-    manifestHash: 615a3bf4083d8d907e99738f5eb1cddafd5fae8c42b5cf02fcd574447bdc846b
+    manifestHash: 11496be318917da3ff3ebcc92709c83ae4ba795eb21692f8cb896ba9505588a3
     name: aws-load-balancer-controller.addons.k8s.io
     needsPKI: true
     selector:
