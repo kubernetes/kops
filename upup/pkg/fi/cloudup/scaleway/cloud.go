@@ -89,18 +89,17 @@ type scwCloudImplementation struct {
 	instanceAPI *instance.API
 }
 
-// NewScwCloud returns a Cloud with a Scaleway Client using the env vars SCW_ACCESS_KEY, SCW_SECRET_KEY,
-// SCW_DEFAULT_PROJECT_ID, SCW_DEFAULT_REGION and SCW_DEFAULT_ZONE
+// NewScwCloud returns a Cloud with a Scaleway Client using the env vars SCW_ACCESS_KEY, SCW_SECRET_KEY and SCW_DEFAULT_PROJECT_ID
 func NewScwCloud(tags map[string]string) (ScwCloud, error) {
 	errList := []error(nil)
 
-	region, err := scw.ParseRegion(os.Getenv("SCW_DEFAULT_REGION"))
+	region, err := scw.ParseRegion(tags["region"])
 	if err != nil {
-		errList = append(errList, fmt.Errorf("error parsing SCW_DEFAULT_REGION: %w", err))
+		errList = append(errList, fmt.Errorf("error parsing Scaleway region: %w", err))
 	}
-	zone, err := scw.ParseZone(os.Getenv("SCW_DEFAULT_ZONE"))
+	zone, err := scw.ParseZone(tags["zone"])
 	if err != nil {
-		errList = append(errList, fmt.Errorf("error parsing SCW_DEFAULT_ZONE: %w", err))
+		errList = append(errList, fmt.Errorf("error parsing Scaleway zone: %w", err))
 	}
 
 	// We make sure that the credentials env vars are defined
