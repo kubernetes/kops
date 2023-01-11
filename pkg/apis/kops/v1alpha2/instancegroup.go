@@ -67,6 +67,8 @@ type InstanceGroupSpec struct {
 	MaxSize *int32 `json:"maxSize,omitempty"`
 	// Autoscale determines if autoscaling will be enabled for this instance group if cluster autoscaler is enabled
 	Autoscale *bool `json:"autoscale,omitempty"`
+	// AutoscalePriority determines the InstanceGroup priority for scaling when cluster autoscaler uses the priority expander.
+	AutoscalePriority int16 `json:"autoscalePriority,omitempty"`
 	// MachineType is the instance class
 	MachineType string `json:"machineType,omitempty"`
 	// RootVolume specifies options for the instances' root volumes.

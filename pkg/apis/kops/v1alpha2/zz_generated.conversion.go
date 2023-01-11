@@ -2237,6 +2237,8 @@ func autoConvert_v1alpha2_ClusterAutoscalerConfig_To_kops_ClusterAutoscalerConfi
 	out.CPURequest = in.CPURequest
 	out.MaxNodeProvisionTime = in.MaxNodeProvisionTime
 	out.PodAnnotations = in.PodAnnotations
+	out.CreatePriorityExpenderConfig = in.CreatePriorityExpenderConfig
+	out.CustomPriorityExpanderConfig = in.CustomPriorityExpanderConfig
 	return nil
 }
 
@@ -2263,6 +2265,8 @@ func autoConvert_kops_ClusterAutoscalerConfig_To_v1alpha2_ClusterAutoscalerConfi
 	out.CPURequest = in.CPURequest
 	out.MaxNodeProvisionTime = in.MaxNodeProvisionTime
 	out.PodAnnotations = in.PodAnnotations
+	out.CreatePriorityExpenderConfig = in.CreatePriorityExpenderConfig
+	out.CustomPriorityExpanderConfig = in.CustomPriorityExpanderConfig
 	return nil
 }
 
@@ -4089,6 +4093,7 @@ func autoConvert_v1alpha2_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 	out.MinSize = in.MinSize
 	out.MaxSize = in.MaxSize
 	out.Autoscale = in.Autoscale
+	out.AutoscalePriority = in.AutoscalePriority
 	out.MachineType = in.MachineType
 	out.RootVolume = in.RootVolume
 	// INFO: in.RootVolumeSize opted out of conversion generation
@@ -4272,6 +4277,7 @@ func autoConvert_kops_InstanceGroupSpec_To_v1alpha2_InstanceGroupSpec(in *kops.I
 	out.MinSize = in.MinSize
 	out.MaxSize = in.MaxSize
 	out.Autoscale = in.Autoscale
+	out.AutoscalePriority = in.AutoscalePriority
 	out.MachineType = in.MachineType
 	out.RootVolume = in.RootVolume
 	if in.Volumes != nil {
