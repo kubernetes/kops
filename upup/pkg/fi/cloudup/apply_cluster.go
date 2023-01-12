@@ -1407,28 +1407,24 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 	// Set API server address to an IP from the cluster network CIDR
 	if cluster.UsesNoneDNS() {
 		switch cluster.Spec.GetCloudProvider() {
-		case kops.CloudProviderAWS, kops.CloudProviderHetzner:
+		case kops.CloudProviderAWS, kops.CloudProviderHetzner, kops.CloudProviderOpenstack:
 			// Use a private IP address that belongs to the cluster network CIDR (some additional addresses may be FQDNs or public IPs)
-			for _, networkCIDR := range append(cluster.Spec.Networking.AdditionalNetworkCIDRs, cluster.Spec.Networking.NetworkCIDR) {
-				_, cidr, err := net.ParseCIDR(networkCIDR)
-				if err != nil {
-					return nil, nil, fmt.Errorf("failed to parse network CIDR %q: %w", networkCIDR, err)
-				}
-				for _, additionalIP := range apiserverAdditionalIPs {
+			for _, additionalIP := range apiserverAdditionalIPs {
+				for _, networkCIDR := range append(cluster.Spec.Networking.AdditionalNetworkCIDRs, cluster.Spec.Networking.NetworkCIDR) {
+					_, cidr, err := net.ParseCIDR(networkCIDR)
+					if err != nil {
+						return nil, nil, fmt.Errorf("failed to parse network CIDR %q: %w", networkCIDR, err)
+					}
 					if cidr.Contains(net.ParseIP(additionalIP)) {
-						bootConfig.APIServerIP = additionalIP
-						break
+						bootConfig.APIServerIPs = append(bootConfig.APIServerIPs, additionalIP)
 					}
 				}
-				if bootConfig.APIServerIP != "" {
-					break
-				}
 			}
+
 		case kops.CloudProviderGCE:
 			// Use any IP address that is found (including public ones)
 			for _, additionalIP := range apiserverAdditionalIPs {
-				bootConfig.APIServerIP = additionalIP
-				break
+				bootConfig.APIServerIPs = append(bootConfig.APIServerIPs, additionalIP)
 			}
 		default:
 			return nil, nil, fmt.Errorf("'none' DNS topology is not supported for cloud %q", cluster.Spec.GetCloudProvider())
@@ -1438,8 +1434,8 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 	useConfigServer := apiModel.UseKopsControllerForNodeConfig(cluster) && !ig.HasAPIServer()
 	if useConfigServer {
 		host := "kops-controller.internal." + cluster.ObjectMeta.Name
-		if cluster.UsesNoneDNS() {
-			host = bootConfig.APIServerIP
+		if cluster.UsesNoneDNS() && len(bootConfig.APIServerIPs) > 0 {
+			host = bootConfig.APIServerIPs[0] // TODO: how we could support array?
 		}
 		baseURL := url.URL{
 			Scheme: "https",

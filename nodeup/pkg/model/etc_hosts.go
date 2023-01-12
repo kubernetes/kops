@@ -46,15 +46,15 @@ func (b *EtcHostsBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 				Addresses: []string{"127.0.0.1"},
 			})
 		}
-	} else if b.BootConfig.APIServerIP != "" {
+	} else if len(b.BootConfig.APIServerIPs) > 0 {
 		task.Records = append(task.Records, nodetasks.HostRecord{
 			Hostname:  b.Cluster.APIInternalName(),
-			Addresses: []string{b.BootConfig.APIServerIP},
+			Addresses: b.BootConfig.APIServerIPs,
 		})
 		if b.UseKopsControllerForNodeBootstrap() {
 			task.Records = append(task.Records, nodetasks.HostRecord{
 				Hostname:  "kops-controller.internal." + b.Cluster.Name,
-				Addresses: []string{b.BootConfig.APIServerIP},
+				Addresses: b.BootConfig.APIServerIPs,
 			})
 		}
 	}
