@@ -66,7 +66,6 @@ metadata:
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221206
   instanceMetadata:
-    httpPutResponseHopLimit: 3
     httpTokens: required
   machineType: m3.medium
   maxSize: 1
