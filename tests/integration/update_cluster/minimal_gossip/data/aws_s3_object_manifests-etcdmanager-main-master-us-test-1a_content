@@ -14,7 +14,7 @@ spec:
     - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /etcd-manager
       --backup-store=memfs://clusters.example.com/minimal.k8s.local/backups/etcd/main
       --client-urls=https://__name__:4001 --cluster-name=etcd --containerized=true
-      --dns-suffix=internal.minimal.k8s.local --grpc-port=3996 --peer-urls=https://__name__:2380
+      --dns-suffix=.internal.minimal.k8s.local --grpc-port=3996 --peer-urls=https://__name__:2380
       --quarantine-client-urls=https://__name__:3994 --v=6 --volume-name-tag=k8s.io/etcd/main
       --volume-provider=aws --volume-tag=k8s.io/etcd/main --volume-tag=k8s.io/role/control-plane=1
       --volume-tag=kubernetes.io/cluster/minimal.k8s.local=owned > /tmp/pipe 2>&1
