@@ -25,6 +25,7 @@ Metadata:
 Name: node-1-cluster
 Port:
   AdditionalSecurityGroups: null
+  ForAPIServer: false
   ID: null
   InstanceGroupName: node
   Lifecycle: Sync
@@ -189,6 +190,7 @@ Name: nodeupconfig-node
 PublicACL: null
 ---
 AdditionalSecurityGroups: null
+ForAPIServer: false
 ID: null
 InstanceGroupName: node
 Lifecycle: Sync
