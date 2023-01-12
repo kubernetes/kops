@@ -319,6 +319,10 @@ spec:
   selector:
     matchLabels:
       app: cluster-autoscaler
+  strategy:
+    rollingUpdate:
+      maxSurge: 0
+    type: RollingUpdate
   template:
     metadata:
       annotations:
@@ -388,6 +392,7 @@ spec:
             cpu: 100m
             memory: 300Mi
       dnsPolicy: ClusterFirst
+      hostNetwork: true
       nodeSelector: null
       priorityClassName: system-cluster-critical
       serviceAccountName: cluster-autoscaler
