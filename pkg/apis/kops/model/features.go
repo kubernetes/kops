@@ -34,6 +34,14 @@ func UseKopsControllerForNodeBootstrap(cluster *kops.Cluster) bool {
 	}
 }
 
+// UseKopsControllerForNodeConfig checks if nodeup should use kops-controller to get nodeup.Config.
+func UseKopsControllerForNodeConfig(cluster *kops.Cluster) bool {
+	if cluster.IsGossip() {
+		return false
+	}
+	return UseKopsControllerForNodeBootstrap(cluster)
+}
+
 // UseCiliumEtcd is true if we are using the Cilium etcd cluster.
 func UseCiliumEtcd(cluster *kops.Cluster) bool {
 	if cluster.Spec.Networking.Cilium == nil {
