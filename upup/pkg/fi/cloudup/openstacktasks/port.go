@@ -39,6 +39,7 @@ type Port struct {
 	AdditionalSecurityGroups []string
 	Lifecycle                fi.Lifecycle
 	Tags                     []string
+	ForAPIServer             bool
 }
 
 // GetDependencies returns the dependencies of the Port task
@@ -62,6 +63,26 @@ var _ fi.CompareWithID = &Port{}
 
 func (s *Port) CompareWithID() *string {
 	return s.ID
+}
+
+func (s *Port) FindAddresses(context *fi.CloudupContext) ([]string, error) {
+	cloud := context.T.Cloud.(openstack.OpenstackCloud)
+	if s.ID == nil {
+		return nil, nil
+	}
+	port, err := cloud.GetPort(fi.ValueOf(s.ID))
+	if err != nil {
+		return nil, err
+	}
+	addrs := []string{}
+	for _, addr := range port.FixedIPs {
+		addrs = append(addrs, addr.IPAddress)
+	}
+	return addrs, nil
+}
+
+func (s *Port) IsForAPIServer() bool {
+	return s.ForAPIServer
 }
 
 func newPortTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle, port *ports.Port, find *Port) (*Port, error) {
