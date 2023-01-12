@@ -290,16 +290,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 
 	// The dns suffix logic mirrors the existing logic, so we should be compatible with existing clusters
 	// (etcd makes it difficult to change peer urls, treating it as a cluster event, for reasons unknown)
-	dnsInternalSuffix := ""
-	if b.Cluster.IsGossip() {
-		// @TODO: This is hacky, but we want it so that we can have a different internal & external name
-		dnsInternalSuffix = b.Cluster.APIInternalName()
-		dnsInternalSuffix = strings.TrimPrefix(dnsInternalSuffix, "api.")
-	}
-
-	if dnsInternalSuffix == "" {
-		dnsInternalSuffix = ".internal." + b.Cluster.ObjectMeta.Name
-	}
+	dnsInternalSuffix := ".internal." + b.Cluster.Name
 
 	ports, err := PortsForCluster(etcdCluster)
 	if err != nil {
