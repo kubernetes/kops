@@ -47,14 +47,14 @@ spec:
 
 ## instanceMetadata
 
-By default, IMDSv2 is enabled for newly created clusters. The default hop limit is 1 for all node roles, except for control plane nodes with Kubernetes version lower than 1.26 or IRSA disabled, for which the default hop limit is 3. As of Kubernetes 1.27, these defaults are applied to existing clusters also.
+By default, IMDSv2 is enabled for newly created clusters. As of Kubernetes 1.27, this default is applied to existing clusters as well.
+The default hop limit is 1 for all node roles. 
 
-To enable IMDSv2 add the following configuration to the instance group:
+To enable IMDSv2, add the following configuration to the instance group:
 
 ```YAML
 spec:
   instanceMetadata:
-    httpPutResponseHopLimit: 1
     httpTokens: required
 ```
 
