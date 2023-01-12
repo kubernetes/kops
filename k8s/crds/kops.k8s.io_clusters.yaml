@@ -682,6 +682,20 @@ spec:
                       100m'
                     pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                     x-kubernetes-int-or-string: true
+                  createPriorityExpanderConfig:
+                    description: 'CreatePriorityExpenderConfig makes kOps create the
+                      priority-expander ConfigMap Default: true'
+                    type: boolean
+                  customPriorityExpanderConfig:
+                    additionalProperties:
+                      items:
+                        type: string
+                      type: array
+                    description: CustomPriorityExpanderConfig overides the priority-expander
+                      ConfigMap with the provided configuration. Any InstanceGroup
+                      configuration will be ignored if this is set. This could be
+                      useful in order to use regex on priorities configuration
+                    type: object
                   enabled:
                     description: 'Enabled enables the cluster autoscaler. Default:
                       false'
@@ -690,8 +704,9 @@ spec:
                     description: 'Expander determines the strategy for which instance
                       group gets expanded. Supported values: least-waste, most-pods,
                       random, price, priority. The price expander is only supported
-                      on GCE. The priority expander requires additional configuration
-                      via a ConfigMap. Default: least-waste'
+                      on GCE. By default, kOps will generate the priority expander
+                      ConfigMap based on the `autoscale` and `autoscalePriority` fields
+                      in the InstanceGroup specs. Default: least-waste'
                     type: string
                   image:
                     description: 'Image is the docker container used. Default: the

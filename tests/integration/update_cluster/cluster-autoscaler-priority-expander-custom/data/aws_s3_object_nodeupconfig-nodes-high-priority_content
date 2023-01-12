@@ -1,0 +1,50 @@
+Assets:
+  amd64:
+  - 1208ebac31d91df9bbb8f57cfa0a41eb4b194497c0e27b3bbad4686e5342db8f@https://storage.googleapis.com/kubernetes-release/release/v1.26.0-alpha.2/bin/linux/amd64/kubelet
+  - d044a23ec5bfe9cce9618d003d8e382345ba3c5f03340b087c79fa0de5d96304@https://storage.googleapis.com/kubernetes-release/release/v1.26.0-alpha.2/bin/linux/amd64/kubectl
+  - 962100bbc4baeaaa5748cdbfce941f756b1531c2eadb290129401498bfac21e7@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz
+  - 191bb4f6e4afc237efc5c85b5866b6fdfed731bde12cceaa6017a9c7f8aeda02@https://github.com/containerd/containerd/releases/download/v1.6.15/containerd-1.6.15-linux-amd64.tar.gz
+  - db772be63147a4e747b4fe286c7c16a2edc4a8458bd3092ea46aaee77750e8ce@https://github.com/opencontainers/runc/releases/download/v1.1.4/runc.amd64
+  arm64:
+  - ca0451394c1ae9d3c170f52d30d094a3fbeacd987f1a7ab0dec7c62a60bf567f@https://storage.googleapis.com/kubernetes-release/release/v1.26.0-alpha.2/bin/linux/arm64/kubelet
+  - d5e23c682928d2f4657e23d87ff59cda3a3498d7981b3c544c607efbe7f41822@https://storage.googleapis.com/kubernetes-release/release/v1.26.0-alpha.2/bin/linux/arm64/kubectl
+  - ef17764ffd6cdcb16d76401bac1db6acc050c9b088f1be5efa0e094ea3b01df0@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-arm64-v0.9.1.tgz
+  - d63e4d27c51e33cd10f8b5621c559f09ece8a65fec66d80551b36cac9e61a07d@https://github.com/containerd/containerd/releases/download/v1.6.15/containerd-1.6.15-linux-arm64.tar.gz
+  - dbb71e737eaef454a406ce21fd021bd8f1b35afb7635016745992bbd7c17a223@https://github.com/opencontainers/runc/releases/download/v1.1.4/runc.arm64
+CAs: {}
+ClusterName: cas-priority-expander-custom.example.com
+Hooks:
+- null
+- null
+KeypairIDs:
+  kubernetes-ca: "6982820025135291416230495506"
+KubeletConfig:
+  cgroupDriver: systemd
+  cgroupRoot: /
+  cloudProvider: external
+  clusterDNS: 100.64.0.10
+  clusterDomain: cluster.local
+  enableDebuggingHandlers: true
+  evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+  featureGates:
+    CSIMigrationAWS: "true"
+    InTreePluginAWSUnregister: "true"
+  kubeconfigPath: /var/lib/kubelet/kubeconfig
+  logLevel: 2
+  nodeLabels:
+    node-role.kubernetes.io/node: ""
+  podInfraContainerImage: registry.k8s.io/pause:3.6
+  podManifestPath: /etc/kubernetes/manifests
+  protectKernelDefaults: true
+  registerSchedulable: true
+  shutdownGracePeriod: 30s
+  shutdownGracePeriodCriticalPods: 10s
+UpdatePolicy: automatic
+channels:
+- memfs://clusters.example.com/cas-priority-expander-custom.example.com/addons/bootstrap-channel.yaml
+containerdConfig:
+  logLevel: info
+  runc:
+    version: 1.1.4
+  version: 1.6.15
+useInstanceIDForNodeName: true
