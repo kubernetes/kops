@@ -4,7 +4,7 @@
       "Action": "ec2:AttachVolume",
       "Condition": {
         "StringEquals": {
-          "aws:ResourceTag/KubernetesCluster": "iam-builder-test.nonexistant",
+          "aws:ResourceTag/KubernetesCluster": "iam-builder-test.k8s.local",
           "aws:ResourceTag/k8s.io/role/master": "1"
         }
       },
@@ -36,7 +36,7 @@
       "Action": "ec2:CreateTags",
       "Condition": {
         "StringEquals": {
-          "aws:RequestTag/KubernetesCluster": "iam-builder-test.nonexistant",
+          "aws:RequestTag/KubernetesCluster": "iam-builder-test.k8s.local",
           "ec2:CreateAction": [
             "CreateSecurityGroup"
           ]
@@ -57,7 +57,7 @@
           "aws:RequestTag/KubernetesCluster": "true"
         },
         "StringEquals": {
-          "aws:ResourceTag/KubernetesCluster": "iam-builder-test.nonexistant"
+          "aws:ResourceTag/KubernetesCluster": "iam-builder-test.k8s.local"
         }
       },
       "Effect": "Allow",
@@ -69,7 +69,7 @@
       "Action": "ec2:CreateTags",
       "Condition": {
         "StringEquals": {
-          "aws:RequestTag/KubernetesCluster": "iam-builder-test.nonexistant",
+          "aws:RequestTag/KubernetesCluster": "iam-builder-test.k8s.local",
           "ec2:CreateAction": [
             "CreateVolume",
             "CreateSnapshot"
@@ -92,7 +92,7 @@
           "aws:RequestTag/KubernetesCluster": "true"
         },
         "StringEquals": {
-          "aws:ResourceTag/KubernetesCluster": "iam-builder-test.nonexistant"
+          "aws:ResourceTag/KubernetesCluster": "iam-builder-test.k8s.local"
         }
       },
       "Effect": "Allow",
@@ -131,6 +131,13 @@
         "ec2:DetachVolume",
         "ec2:ModifyInstanceAttribute",
         "ec2:ModifyVolume",
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:BatchGetImage",
+        "ecr:DescribeRepositories",
+        "ecr:GetAuthorizationToken",
+        "ecr:GetDownloadUrlForLayer",
+        "ecr:GetRepositoryPolicy",
+        "ecr:ListImages",
         "elasticloadbalancing:AddTags",
         "elasticloadbalancing:CreateListener",
         "elasticloadbalancing:CreateTargetGroup",
@@ -193,7 +200,7 @@
       ],
       "Condition": {
         "StringEquals": {
-          "aws:ResourceTag/KubernetesCluster": "iam-builder-test.nonexistant"
+          "aws:ResourceTag/KubernetesCluster": "iam-builder-test.k8s.local"
         }
       },
       "Effect": "Allow",
@@ -210,7 +217,7 @@
       ],
       "Condition": {
         "StringEquals": {
-          "aws:RequestTag/KubernetesCluster": "iam-builder-test.nonexistant"
+          "aws:RequestTag/KubernetesCluster": "iam-builder-test.k8s.local"
         }
       },
       "Effect": "Allow",
