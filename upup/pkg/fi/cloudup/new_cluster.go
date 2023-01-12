@@ -333,7 +333,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 				MaxRetries: fi.PtrTo(3),
 			},
 		}
-		initializeOpenstackAPI(opt, cluster)
+		initializeOpenstack(opt, cluster)
 		osCloud, err := openstack.NewOpenstackCloud(cluster, "openstackmodel")
 		if err != nil {
 			return nil, err
@@ -1304,6 +1304,14 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 		}
 	}
 
+	err := setupDNSTopology(opt, cluster)
+	if err != nil {
+		return nil, err
+	}
+	return bastions, nil
+}
+
+func setupDNSTopology(opt *NewClusterOptions, cluster *api.Cluster) error {
 	switch strings.ToLower(opt.DNSType) {
 	case "":
 		if cluster.IsGossip() {
@@ -1320,10 +1328,9 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 	case "none":
 		cluster.Spec.Networking.Topology.DNS = api.DNSTypeNone
 	default:
-		return nil, fmt.Errorf("unknown DNSType: %q", opt.DNSType)
+		return fmt.Errorf("unknown DNSType: %q", opt.DNSType)
 	}
-
-	return bastions, nil
+	return nil
 }
 
 func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
@@ -1385,7 +1392,7 @@ func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
 	return nil
 }
 
-func initializeOpenstackAPI(opt *NewClusterOptions, cluster *api.Cluster) {
+func initializeOpenstack(opt *NewClusterOptions, cluster *api.Cluster) {
 	if opt.APILoadBalancerType != "" {
 		cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
 		provider := "haproxy"
@@ -1410,6 +1417,17 @@ func initializeOpenstackAPI(opt *NewClusterOptions, cluster *api.Cluster) {
 
 		if opt.OpenstackLBSubnet != "" {
 			cluster.Spec.CloudProvider.Openstack.Loadbalancer.FloatingSubnet = fi.PtrTo(opt.OpenstackLBSubnet)
+		}
+	}
+
+	// this is needed in new clusters, otherwise openstack clients will automatically try to use openstack designate
+	if strings.ToLower(opt.DNSType) == "none" {
+		if cluster.Spec.Networking.Topology == nil {
+			cluster.Spec.Networking.Topology = &api.TopologySpec{
+				DNS: api.DNSTypeNone,
+			}
+		} else {
+			cluster.Spec.Networking.Topology.DNS = api.DNSTypeNone
 		}
 	}
 }

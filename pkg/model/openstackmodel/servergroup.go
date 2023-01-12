@@ -26,6 +26,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/truncate"
+	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks"
@@ -165,6 +166,10 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.CloudupModelBuilderContex
 			Lifecycle:                b.Lifecycle,
 		}
 		c.AddTask(portTask)
+
+		if b.Cluster.UsesNoneDNS() && ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
+			portTask.ForAPIServer = true
+		}
 
 		metaWithName := make(map[string]string)
 		for k, v := range igMeta {
@@ -315,8 +320,10 @@ func (b *ServerGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error 
 		}
 		c.AddTask(poolTask)
 
+		nameForResource := fi.ValueOf(lbTask.Name)
 		listenerTask := &openstacktasks.LBListener{
-			Name:      lbTask.Name,
+			Name:      fi.PtrTo(nameForResource),
+			Port:      fi.PtrTo(wellknownports.KubeAPIServer),
 			Lifecycle: b.Lifecycle,
 			Pool:      poolTask,
 		}
@@ -334,7 +341,7 @@ func (b *ServerGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error 
 		c.AddTask(listenerTask)
 
 		monitorTask := &openstacktasks.PoolMonitor{
-			Name:      lbTask.Name,
+			Name:      fi.PtrTo(nameForResource),
 			Pool:      poolTask,
 			Lifecycle: b.Lifecycle,
 		}
@@ -350,7 +357,7 @@ func (b *ServerGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error 
 				Pool:          poolTask,
 				ServerGroup:   mastersg,
 				InterfaceName: fi.PtrTo(ifName),
-				ProtocolPort:  fi.PtrTo(443),
+				ProtocolPort:  fi.PtrTo(wellknownports.KubeAPIServer),
 				Lifecycle:     b.Lifecycle,
 				Weight:        fi.PtrTo(1),
 			}

@@ -30,6 +30,7 @@ import (
 type LBListener struct {
 	ID           *string
 	Name         *string
+	Port         *int
 	Pool         *LBPool
 	Lifecycle    fi.Lifecycle
 	AllowedCIDRs []string
@@ -61,6 +62,7 @@ func NewLBListenerTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lif
 	listenerTask := &LBListener{
 		ID:           fi.PtrTo(listener.ID),
 		Name:         fi.PtrTo(listener.Name),
+		Port:         fi.PtrTo(listener.ProtocolPort),
 		AllowedCIDRs: listener.AllowedCIDRs,
 		Lifecycle:    lifecycle,
 	}
@@ -152,7 +154,7 @@ func (_ *LBListener) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, chan
 			DefaultPoolID:  fi.ValueOf(e.Pool.ID),
 			LoadbalancerID: fi.ValueOf(e.Pool.Loadbalancer.ID),
 			Protocol:       listeners.ProtocolTCP,
-			ProtocolPort:   443,
+			ProtocolPort:   fi.ValueOf(e.Port),
 		}
 
 		if useVIPACL && (fi.ValueOf(e.Pool.Loadbalancer.Provider) != "ovn") {
