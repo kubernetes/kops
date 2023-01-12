@@ -116,7 +116,6 @@ metadata:
 spec:
   image: ami-control-plane
   instanceMetadata:
-    httpPutResponseHopLimit: 3
     httpTokens: required
   machineType: m3.medium
   maxSize: 1
