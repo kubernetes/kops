@@ -222,7 +222,7 @@ func (c *ImageClient) Update(ctx context.Context, image *Image, opts ImageUpdate
 		Description: opts.Description,
 	}
 	if opts.Type != "" {
-		reqBody.Type = String(string(opts.Type))
+		reqBody.Type = Ptr(string(opts.Type))
 	}
 	if opts.Labels != nil {
 		reqBody.Labels = &opts.Labels
