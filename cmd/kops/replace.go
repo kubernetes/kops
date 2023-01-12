@@ -141,7 +141,7 @@ func RunReplace(ctx context.Context, f *util.Factory, out io.Writer, c *ReplaceO
 
 						err = cloudup.PerformAssignments(v, cloud)
 						if err != nil {
-							return fmt.Errorf("error populating configuration: %v", err)
+							return fmt.Errorf("error populating configuration: %w", err)
 						}
 
 						_, err = clientset.CreateCluster(ctx, v)
