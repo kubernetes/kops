@@ -982,7 +982,7 @@ type DeleteUserRequest struct {
 	UserID string `json:"-"`
 }
 
-// DeleteUser: delete a user
+// DeleteUser: delete a guest user from an organization
 func (s *API) DeleteUser(req *DeleteUserRequest, opts ...scw.RequestOption) error {
 	var err error
 
