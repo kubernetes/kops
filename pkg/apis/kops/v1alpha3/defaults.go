@@ -18,7 +18,6 @@ package v1alpha3
 
 import (
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/klog/v2"
 )
 
 func addDefaultingFuncs(scheme *runtime.Scheme) error {
@@ -44,30 +43,6 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 
 	if obj.Networking.Topology.DNS == "" {
 		obj.Networking.Topology.DNS = DNSTypePublic
-	}
-
-	if obj.CloudProvider.Openstack == nil {
-		if obj.API.DNS == nil && obj.API.LoadBalancer == nil {
-			switch obj.Networking.Topology.ControlPlane {
-			case TopologyPublic:
-				obj.API.DNS = &DNSAccessSpec{}
-
-			case TopologyPrivate:
-				obj.API.LoadBalancer = &LoadBalancerAccessSpec{}
-
-			default:
-				klog.Infof("unknown controlPlane topology type: %q", obj.Networking.Topology.ControlPlane)
-			}
-		}
-
-		if obj.API.LoadBalancer != nil && obj.API.LoadBalancer.Type == "" {
-			obj.API.LoadBalancer.Type = LoadBalancerTypePublic
-		}
-
-	}
-
-	if obj.API.LoadBalancer != nil && obj.API.LoadBalancer.Class == "" && obj.CloudProvider.AWS != nil {
-		obj.API.LoadBalancer.Class = LoadBalancerClassClassic
 	}
 
 	if obj.Authorization == nil {

@@ -41,7 +41,7 @@ func UpdateCluster(ctx context.Context, clientset simple.Clientset, cluster *kop
 	}
 
 	assetBuilder := assets.NewAssetBuilder(clientset.VFSContext(), cluster.Spec.Assets, cluster.Spec.KubernetesVersion, false)
-	fullCluster, err := cloudup.PopulateClusterSpec(ctx, clientset, cluster, cloud, assetBuilder)
+	fullCluster, err := cloudup.PopulateClusterSpec(ctx, clientset, cluster, instanceGroups, cloud, assetBuilder)
 	if err != nil {
 		return err
 	}
@@ -79,7 +79,7 @@ func UpdateInstanceGroup(ctx context.Context, clientset simple.Clientset, cluste
 	}
 
 	assetBuilder := assets.NewAssetBuilder(clientset.VFSContext(), cluster.Spec.Assets, cluster.Spec.KubernetesVersion, false)
-	fullCluster, err := cloudup.PopulateClusterSpec(ctx, clientset, cluster, cloud, assetBuilder)
+	fullCluster, err := cloudup.PopulateClusterSpec(ctx, clientset, cluster, allInstanceGroups, cloud, assetBuilder)
 	if err != nil {
 		return err
 	}

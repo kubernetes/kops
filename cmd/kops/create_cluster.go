@@ -657,7 +657,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	}
 
 	assetBuilder := assets.NewAssetBuilder(clientset.VFSContext(), cluster.Spec.Assets, cluster.Spec.KubernetesVersion, false)
-	fullCluster, err := cloudup.PopulateClusterSpec(ctx, clientset, cluster, cloud, assetBuilder)
+	fullCluster, err := cloudup.PopulateClusterSpec(ctx, clientset, cluster, instanceGroups, cloud, assetBuilder)
 	if err != nil {
 		return err
 	}

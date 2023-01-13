@@ -32,13 +32,15 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
-func awsValidateCluster(c *kops.Cluster) field.ErrorList {
+func awsValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	if c.Spec.API.LoadBalancer != nil {
 		lbPath := field.NewPath("spec", "api", "loadBalancer")
 		lbSpec := c.Spec.API.LoadBalancer
-		allErrs = append(allErrs, IsValidValue(lbPath.Child("class"), &lbSpec.Class, kops.SupportedLoadBalancerClasses)...)
+		if strict || lbSpec.Class != "" {
+			allErrs = append(allErrs, IsValidValue(lbPath.Child("class"), &lbSpec.Class, kops.SupportedLoadBalancerClasses)...)
+		}
 		allErrs = append(allErrs, awsValidateTopologyDNS(lbPath.Child("type"), c)...)
 		allErrs = append(allErrs, awsValidateSecurityGroupOverride(lbPath.Child("securityGroupOverride"), lbSpec)...)
 		allErrs = append(allErrs, awsValidateAdditionalSecurityGroups(lbPath.Child("additionalSecurityGroups"), lbSpec.AdditionalSecurityGroups)...)

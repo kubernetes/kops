@@ -815,7 +815,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 // upgradeSpecs ensures that fields are fully populated / defaulted
 func (c *ApplyClusterCmd) upgradeSpecs(ctx context.Context, assetBuilder *assets.AssetBuilder) error {
-	fullCluster, err := PopulateClusterSpec(ctx, c.Clientset, c.Cluster, c.Cloud, assetBuilder)
+	fullCluster, err := PopulateClusterSpec(ctx, c.Clientset, c.Cluster, c.InstanceGroups, c.Cloud, assetBuilder)
 	if err != nil {
 		return err
 	}

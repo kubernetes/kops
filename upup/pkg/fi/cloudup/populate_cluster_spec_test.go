@@ -116,7 +116,7 @@ func mockedPopulateClusterSpec(ctx context.Context, c *kopsapi.Cluster, cloud fi
 		return nil, fmt.Errorf("error building vfspath: %v", err)
 	}
 	clientset := vfsclientset.NewVFSClientset(vfs.Context, basePath)
-	return PopulateClusterSpec(ctx, clientset, c, cloud, assetBuilder)
+	return PopulateClusterSpec(ctx, clientset, c, nil, cloud, assetBuilder)
 }
 
 func TestPopulateCluster_Docker_Spec(t *testing.T) {
