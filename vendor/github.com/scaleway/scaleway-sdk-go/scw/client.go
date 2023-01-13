@@ -8,12 +8,10 @@ import (
 	"math"
 	"net"
 	"net/http"
-	"net/http/httputil"
 	"reflect"
 	"strconv"
 	"strings"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/scaleway/scaleway-sdk-go/internal/auth"
@@ -71,6 +69,11 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 	if s.insecure {
 		logger.Debugf("client: using insecure mode")
 		setInsecureMode(s.httpClient)
+	}
+
+	if logger.ShouldLog(logger.LogLevelDebug) {
+		logger.Debugf("client: using request logger")
+		setRequestLogging(s.httpClient)
 	}
 
 	logger.Debugf("client: using sdk version " + version)
@@ -182,13 +185,8 @@ func (c *Client) Do(req *ScalewayRequest, res interface{}, opts ...RequestOption
 	return c.do(req, res)
 }
 
-// requestNumber auto increments on each do().
-// This allows easy distinguishing of concurrently performed requests in log.
-var requestNumber uint32
-
 // do performs a single HTTP request based on the ScalewayRequest object.
 func (c *Client) do(req *ScalewayRequest, res interface{}) (sdkErr error) {
-	currentRequestNumber := atomic.AddUint32(&requestNumber, 1)
 
 	if req == nil {
 		return errors.New("request must be non-nil")
@@ -213,29 +211,6 @@ func (c *Client) do(req *ScalewayRequest, res interface{}) (sdkErr error) {
 		httpRequest = httpRequest.WithContext(req.ctx)
 	}
 
-	if logger.ShouldLog(logger.LogLevelDebug) {
-		// Keep original headers (before anonymization)
-		originalHeaders := httpRequest.Header
-
-		// Get anonymized headers
-		httpRequest.Header = req.getAllHeaders(req.auth, c.userAgent, true)
-
-		dump, err := httputil.DumpRequestOut(httpRequest, true)
-		if err != nil {
-			logger.Warningf("cannot dump outgoing request: %s", err)
-		} else {
-			var logString string
-			logString += "\n--------------- Scaleway SDK REQUEST %d : ---------------\n"
-			logString += "%s\n"
-			logString += "---------------------------------------------------------"
-
-			logger.Debugf(logString, currentRequestNumber, dump)
-		}
-
-		// Restore original headers before sending the request
-		httpRequest.Header = originalHeaders
-	}
-
 	// execute request
 	httpResponse, err := c.httpClient.Do(httpRequest)
 	if err != nil {
@@ -248,19 +223,6 @@ func (c *Client) do(req *ScalewayRequest, res interface{}) (sdkErr error) {
 			sdkErr = errors.Wrap(closeErr, "could not close http response")
 		}
 	}()
-	if logger.ShouldLog(logger.LogLevelDebug) {
-		dump, err := httputil.DumpResponse(httpResponse, true)
-		if err != nil {
-			logger.Warningf("cannot dump ingoing response: %s", err)
-		} else {
-			var logString string
-			logString += "\n--------------- Scaleway SDK RESPONSE %d : ---------------\n"
-			logString += "%s\n"
-			logString += "----------------------------------------------------------"
-
-			logger.Debugf(logString, currentRequestNumber, dump)
-		}
-	}
 
 	sdkErr = hasResponseError(httpResponse)
 	if sdkErr != nil {
@@ -560,4 +522,19 @@ func setInsecureMode(c httpClient) {
 		transportClient.TLSClientConfig = &tls.Config{}
 	}
 	transportClient.TLSClientConfig.InsecureSkipVerify = true
+}
+
+func setRequestLogging(c httpClient) {
+	standardHTTPClient, ok := c.(*http.Client)
+	if !ok {
+		logger.Warningf("client: cannot use request logger with HTTP client of type %T", c)
+		return
+	}
+	// Do not wrap transport if it is already a logger
+	// As client is a pointer, changing transport will change given client
+	// If the same httpClient is used in multiple scwClient, it would add multiple logger transports
+	_, isLogger := standardHTTPClient.Transport.(*requestLoggerTransport)
+	if !isLogger {
+		standardHTTPClient.Transport = &requestLoggerTransport{rt: standardHTTPClient.Transport}
+	}
 }
