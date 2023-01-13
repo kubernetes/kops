@@ -19,7 +19,6 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
-export KOPS_FEATURE_FLAGS="SpecOverrideFlag,${KOPS_FEATURE_FLAGS:-}"
 REPO_ROOT=$(git rev-parse --show-toplevel);
 KOPSPATH=$REPO_ROOT/.build/dist/$(go env GOOS)/$(go env GOARCH)
 PATH=$KOPSPATH:$PATH
