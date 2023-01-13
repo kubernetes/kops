@@ -154,12 +154,10 @@ type VenafiTPP struct {
 	// The secret must contain two keys, 'username' and 'password'.
 	CredentialsRef cmmeta.LocalObjectReference `json:"credentialsRef"`
 
-	// CABundle is a PEM encoded TLS certificate to use to verify connections to
-	// the TPP instance.
-	// If specified, system roots will not be used and the issuing CA for the
-	// TPP instance must be verifiable using the provided root.
-	// If not specified, the connection will be verified using the cert-manager
-	// system root certificates.
+	// Base64-encoded bundle of PEM CAs which will be used to validate the certificate
+	// chain presented by the TPP server. Only used if using HTTPS; ignored for HTTP.
+	// If undefined, the certificate bundle in the cert-manager controller container
+	// is used to validate the chain.
 	// +optional
 	CABundle []byte `json:"caBundle,omitempty"`
 }
@@ -203,19 +201,20 @@ type VaultIssuer struct {
 	// +optional
 	Namespace string `json:"namespace,omitempty"`
 
-	// PEM-encoded CA bundle (base64-encoded) used to validate Vault server
-	// certificate. Only used if the Server URL is using HTTPS protocol. This
-	// parameter is ignored for plain HTTP protocol connection. If not set the
-	// system root certificates are used to validate the TLS connection.
-	// Mutually exclusive with CABundleSecretRef. If neither CABundle nor CABundleSecretRef are defined,
-	// the cert-manager controller system root certificates are used to validate the TLS connection.
+	// Base64-encoded bundle of PEM CAs which will be used to validate the certificate
+	// chain presented by Vault. Only used if using HTTPS to connect to Vault and
+	// ignored for HTTP connections.
+	// Mutually exclusive with CABundleSecretRef.
+	// If neither CABundle nor CABundleSecretRef are defined, the certificate bundle in
+	// the cert-manager controller container is used to validate the TLS connection.
 	// +optional
 	CABundle []byte `json:"caBundle,omitempty"`
 
-	// CABundleSecretRef is a reference to a Secret which contains the CABundle which will be used when
-	// connecting to Vault when using HTTPS.
-	// Mutually exclusive with CABundle. If neither CABundleSecretRef nor CABundle are defined, the cert-manager
-	// controller system root certificates are used to validate the TLS connection.
+	// Reference to a Secret containing a bundle of PEM-encoded CAs to use when
+	// verifying the certificate chain presented by Vault when using HTTPS.
+	// Mutually exclusive with CABundle.
+	// If neither CABundle nor CABundleSecretRef are defined, the certificate bundle in
+	// the cert-manager controller container is used to validate the TLS connection.
 	// If no key for the Secret is specified, cert-manager will default to 'ca.crt'.
 	// +optional
 	CABundleSecretRef *cmmeta.SecretKeySelector `json:"caBundleSecretRef,omitempty"`
