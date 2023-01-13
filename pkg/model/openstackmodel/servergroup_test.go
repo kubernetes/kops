@@ -137,7 +137,8 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 							},
 						},
 						Topology: &kops.TopologySpec{
-							Nodes: "private",
+							ControlPlane: "private",
+							Nodes:        "private",
 						},
 					},
 				},
@@ -348,6 +349,10 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 								Region: "region",
 							},
 						},
+						Topology: &kops.TopologySpec{
+							ControlPlane: kops.TopologyPublic,
+							Nodes:        kops.TopologyPublic,
+						},
 					},
 				},
 			},
@@ -424,6 +429,7 @@ func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
 						},
 						Topology: &kops.TopologySpec{
 							ControlPlane: kops.TopologyPrivate,
+							Nodes:        kops.TopologyPrivate,
 						},
 					},
 				},
