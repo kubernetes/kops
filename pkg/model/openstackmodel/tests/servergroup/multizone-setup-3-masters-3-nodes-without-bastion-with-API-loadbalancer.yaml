@@ -37,27 +37,6 @@ LB:
 Lifecycle: Sync
 Name: fip-master-public-name
 ---
-ForAPIServer: false
-ID: null
-IP: null
-LB: null
-Lifecycle: Sync
-Name: fip-node-a-1-cluster
----
-ForAPIServer: false
-ID: null
-IP: null
-LB: null
-Lifecycle: Sync
-Name: fip-node-b-1-cluster
----
-ForAPIServer: false
-ID: null
-IP: null
-LB: null
-Lifecycle: Sync
-Name: fip-node-c-1-cluster
----
 AvailabilityZone: zone-1
 ConfigDrive: false
 Flavor: blc.1-2
@@ -286,13 +265,7 @@ UserData:
 AvailabilityZone: zone-1
 ConfigDrive: false
 Flavor: blc.1-2
-FloatingIP:
-  ForAPIServer: false
-  ID: null
-  IP: null
-  LB: null
-  Lifecycle: Sync
-  Name: fip-node-a-1-cluster
+FloatingIP: null
 ForAPIServer: false
 GroupName: node-a
 ID: null
@@ -364,13 +337,7 @@ UserData:
 AvailabilityZone: zone-2
 ConfigDrive: false
 Flavor: blc.1-2
-FloatingIP:
-  ForAPIServer: false
-  ID: null
-  IP: null
-  LB: null
-  Lifecycle: Sync
-  Name: fip-node-b-1-cluster
+FloatingIP: null
 ForAPIServer: false
 GroupName: node-b
 ID: null
@@ -442,13 +409,7 @@ UserData:
 AvailabilityZone: zone-3
 ConfigDrive: false
 Flavor: blc.1-2
-FloatingIP:
-  ForAPIServer: false
-  ID: null
-  IP: null
-  LB: null
-  Lifecycle: Sync
-  Name: fip-node-c-1-cluster
+FloatingIP: null
 ForAPIServer: false
 GroupName: node-c
 ID: null
