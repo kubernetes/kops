@@ -48,8 +48,8 @@ unexport SKIP_REGION_CHECK S3_ACCESS_KEY_ID S3_ENDPOINT S3_REGION S3_SECRET_ACCE
 
 VERSION=$(shell tools/get_version.sh | grep VERSION | awk '{print $$2}')
 
-KOPS_RELEASE_VERSION:=$(shell grep 'KOPS_RELEASE_VERSION\s*=' version.go | awk '{print $$3}' | sed -e 's_"__g')
-KOPS_CI_VERSION:=$(shell grep 'KOPS_CI_VERSION\s*=' version.go | awk '{print $$3}' | sed -e 's_"__g')
+KOPS_RELEASE_VERSION:=$(shell grep 'KOPS_RELEASE_VERSION\s*=' kops-version.go | awk '{print $$3}' | sed -e 's_"__g')
+KOPS_CI_VERSION:=$(shell grep 'KOPS_CI_VERSION\s*=' kops-version.go | awk '{print $$3}' | sed -e 's_"__g')
 
 # kops local location
 KOPS=${DIST}/$(shell go env GOOS)/$(shell go env GOARCH)/kops
