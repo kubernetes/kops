@@ -2487,7 +2487,7 @@
       }
     }
   },
-  "revision": "20221114",
+  "revision": "20230104",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -2926,6 +2926,10 @@
         },
         "endpoint": {
           "description": "[Output only] The IP address of this cluster's master endpoint. The endpoint can be accessed from the internet at `https://username:password@endpoint/`. See the `masterAuth` property of this resource for username and password information.",
+          "type": "string"
+        },
+        "etag": {
+          "description": "This checksum is computed by the server based on the value of cluster fields, and may be sent on update requests to ensure the client has an up-to-date value before proceeding.",
           "type": "string"
         },
         "expireTime": {
@@ -3373,6 +3377,10 @@
         "desiredWorkloadIdentityConfig": {
           "$ref": "WorkloadIdentityConfig",
           "description": "Configuration for Workload Identity."
+        },
+        "etag": {
+          "description": "The current etag of the cluster. If an etag is provided and does not match the current etag of the cluster, update will be blocked and an ABORTED error will be returned.",
+          "type": "string"
         }
       },
       "type": "object"
@@ -3526,10 +3534,12 @@
           "description": "cluster_dns_scope indicates the scope of access to cluster DNS records.",
           "enum": [
             "DNS_SCOPE_UNSPECIFIED",
+            "CLUSTER_SCOPE",
             "VPC_SCOPE"
           ],
           "enumDescriptions": [
             "Default value, will be inferred as cluster scope.",
+            "DNS records are accessible from within the cluster.",
             "DNS records are accessible from within the VPC."
           ],
           "type": "string"
@@ -3603,6 +3613,18 @@
       "description": "A generic empty message that you can re-use to avoid defining duplicated empty messages in your APIs. A typical example is to use it as the request or the response type of an API method. For instance: service Foo { rpc Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }",
       "id": "Empty",
       "properties": {},
+      "type": "object"
+    },
+    "EphemeralStorageLocalSsdConfig": {
+      "description": "EphemeralStorageLocalSsdConfig contains configuration for the node ephemeral storage using Local SSD.",
+      "id": "EphemeralStorageLocalSsdConfig",
+      "properties": {
+        "localSsdCount": {
+          "description": "Number of local SSDs to use to back ephemeral storage. Uses NVMe interfaces. Each local SSD is 375 GB in size. If zero, it means to disable using local SSDs as ephemeral storage. The limit for this value is dependent upon the maximum number of disks available on a machine per zone. See: https://cloud.google.com/compute/docs/disks/local-ssd for more information.",
+          "format": "int32",
+          "type": "integer"
+        }
+      },
       "type": "object"
     },
     "FastSocket": {
@@ -4134,6 +4156,18 @@
       },
       "type": "object"
     },
+    "LocalNvmeSsdBlockConfig": {
+      "description": "LocalNvmeSsdBlockConfig contains configuration for using raw-block local NVMe SSD.",
+      "id": "LocalNvmeSsdBlockConfig",
+      "properties": {
+        "localSsdCount": {
+          "description": "The number of raw-block local NVMe SSD disks to be attached to the node. Each local SSD is 375 GB in size. If zero, it means no raw-block local NVMe SSD disks to be attached to the node. The limit for this value is dependent upon the maximum number of disks available on a machine per zone. See: https://cloud.google.com/compute/docs/disks/local-ssd for more information.",
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
     "LoggingComponentConfig": {
       "description": "LoggingComponentConfig is cluster logging component configuration.",
       "id": "LoggingComponentConfig",
@@ -4577,6 +4611,10 @@
           "description": "Type of the disk attached to each node (e.g. 'pd-standard', 'pd-ssd' or 'pd-balanced') If unspecified, the default disk type is 'pd-standard'",
           "type": "string"
         },
+        "ephemeralStorageLocalSsdConfig": {
+          "$ref": "EphemeralStorageLocalSsdConfig",
+          "description": "Parameters for the node ephemeral storage using Local SSDs. If unspecified, ephemeral storage is backed by the boot disk."
+        },
         "fastSocket": {
           "$ref": "FastSocket",
           "description": "Enable or disable NCCL fast socket for the node pool."
@@ -4607,6 +4645,10 @@
         "linuxNodeConfig": {
           "$ref": "LinuxNodeConfig",
           "description": "Parameters that can be configured on Linux nodes."
+        },
+        "localNvmeSsdBlockConfig": {
+          "$ref": "LocalNvmeSsdBlockConfig",
+          "description": "Parameters for using raw-block Local NVMe SSDs."
         },
         "localSsdCount": {
           "description": "The number of local SSD disks to be attached to the node. The limit for this value is dependent upon the maximum number of disks available on a machine per zone. See: https://cloud.google.com/compute/docs/disks/local-ssd for more information.",
@@ -4687,6 +4729,10 @@
             "$ref": "NodeTaint"
           },
           "type": "array"
+        },
+        "windowsNodeConfig": {
+          "$ref": "WindowsNodeConfig",
+          "description": "Parameters that can be configured on Windows nodes."
         },
         "workloadMetadataConfig": {
           "$ref": "WorkloadMetadataConfig",
@@ -4812,6 +4858,10 @@
         "config": {
           "$ref": "NodeConfig",
           "description": "The node configuration of the pool."
+        },
+        "etag": {
+          "description": "This checksum is computed by the server based on the value of node pool fields, and may be sent on update requests to ensure the client has an up-to-date value before proceeding.",
+          "type": "string"
         },
         "initialNodeCount": {
           "description": "The initial node count for the pool. You must ensure that your Compute Engine [resource quota](https://cloud.google.com/compute/quotas) is sufficient for this number of instances. You must also have available firewall and routes quota.",
@@ -6257,6 +6307,10 @@
           "$ref": "ConfidentialNodes",
           "description": "Confidential nodes config. All the nodes in the node pool will be Confidential VM once enabled."
         },
+        "etag": {
+          "description": "The current etag of the node pool. If an etag is provided and does not match the current etag of the node pool, update will be blocked and an ABORTED error will be returned.",
+          "type": "string"
+        },
         "fastSocket": {
           "$ref": "FastSocket",
           "description": "Enable or disable NCCL fast socket for the node pool."
@@ -6331,6 +6385,10 @@
         "upgradeSettings": {
           "$ref": "UpgradeSettings",
           "description": "Upgrade settings control disruption and speed of the upgrade."
+        },
+        "windowsNodeConfig": {
+          "$ref": "WindowsNodeConfig",
+          "description": "Parameters that can be configured on Windows nodes."
         },
         "workloadMetadataConfig": {
           "$ref": "WorkloadMetadataConfig",
@@ -6534,6 +6592,27 @@
         "enabled": {
           "description": "Whether gVNIC features are enabled in the node pool.",
           "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "WindowsNodeConfig": {
+      "description": "Parameters that can be configured on Windows nodes. Windows Node Config that define the parameters that will be used to configure the Windows node pool settings",
+      "id": "WindowsNodeConfig",
+      "properties": {
+        "osVersion": {
+          "description": "OSVersion specifies the Windows node config to be used on the node",
+          "enum": [
+            "OS_VERSION_UNSPECIFIED",
+            "OS_VERSION_LTSC2019",
+            "OS_VERSION_LTSC2022"
+          ],
+          "enumDescriptions": [
+            "When OSVersion is not specified",
+            "LTSC2019 specifies to use LTSC2019 as the Windows Servercore Base Image",
+            "LTSC2022 specifies to use LTSC2022 as the Windows Servercore Base Image"
+          ],
+          "type": "string"
         }
       },
       "type": "object"
