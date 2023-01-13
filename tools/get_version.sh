@@ -19,8 +19,8 @@
 GITSHA=$(git describe --always 2>/dev/null)
 
 # When we cut a new release we need to increment these accordingly
-KOPS_RELEASE_VERSION=$(grep 'KOPS_RELEASE_VERSION\s*=' version.go  | awk '{print $3}' | sed -e 's_"__g')
-KOPS_CI_VERSION=$(grep 'KOPS_CI_VERSION\s*=' version.go  |  awk '{print $3}' | sed -e 's_"__g')
+KOPS_RELEASE_VERSION=$(grep 'KOPS_RELEASE_VERSION\s*=' kops-version.go  | awk '{print $3}' | sed -e 's_"__g')
+KOPS_CI_VERSION=$(grep 'KOPS_CI_VERSION\s*=' kops-version.go  |  awk '{print $3}' | sed -e 's_"__g')
 
 if [[ -z "${VERSION}" ]]; then
   if [[ -z "${CI}" ]]; then
@@ -37,7 +37,7 @@ if [[ -n "${CI}" ]]; then
     if [[ -n "${EXACT_TAG}" ]]; then
         VERSION="${EXACT_TAG#v}" # Remove the v prefix from the git tag
         if [[ "${VERSION}" != "${KOPS_RELEASE_VERSION}" ]]; then
-            echo "Build was tagged with ${VERSION}, but version.go had version ${KOPS_RELEASE_VERSION}"
+            echo "Build was tagged with ${VERSION}, but kops-version.go had version ${KOPS_RELEASE_VERSION}"
             exit 1
         fi
     fi
