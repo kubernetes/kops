@@ -222,17 +222,13 @@ func (d *deployer) env() []string {
 
 // featureFlags returns the kops feature flags to set
 func (d *deployer) featureFlags() string {
-	ff := []string{
-		"+SpecOverrideFlag",
-	}
-	val := strings.Join(ff, ",")
 	for _, env := range d.Env {
 		e := strings.Split(env, "=")
 		if e[0] == "KOPS_FEATURE_FLAGS" && len(e) > 1 {
-			val = fmt.Sprintf("%v,%v", val, e[1])
+			return e[1]
 		}
 	}
-	return val
+	return ""
 }
 
 // defaultClusterName returns a kops cluster name to use when ClusterName is not set

@@ -36,7 +36,6 @@ import (
 	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kops/pkg/edit"
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/pkg/pretty"
 	"k8s.io/kops/pkg/try"
@@ -108,16 +107,14 @@ func NewCmdEditInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 		},
 	}
 
-	if featureflag.SpecOverrideFlag.Enabled() {
-		cmd.Flags().StringSliceVar(&options.Sets, "set", options.Sets, "Directly set values in the spec")
-		cmd.RegisterFlagCompletionFunc("set", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			return nil, cobra.ShellCompDirectiveNoFileComp
-		})
-		cmd.Flags().StringSliceVar(&options.Unsets, "unset", options.Unsets, "Directly unset values in the spec")
-		cmd.RegisterFlagCompletionFunc("unset", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			return nil, cobra.ShellCompDirectiveNoFileComp
-		})
-	}
+	cmd.Flags().StringSliceVar(&options.Sets, "set", options.Sets, "Directly set values in the spec")
+	cmd.RegisterFlagCompletionFunc("set", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	})
+	cmd.Flags().StringSliceVar(&options.Unsets, "unset", options.Unsets, "Directly unset values in the spec")
+	cmd.RegisterFlagCompletionFunc("unset", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	})
 
 	return cmd
 }
