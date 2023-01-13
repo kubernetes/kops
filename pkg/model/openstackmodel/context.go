@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
@@ -78,17 +79,17 @@ func (c *OpenstackModelContext) APIResourceName() string {
 	return "api." + c.ClusterName()
 }
 
-func (c *OpenstackModelContext) findSubnetClusterSpec(subnet string) (string, error) {
+func (c *OpenstackModelContext) findSubnetClusterSpec(subnet string) (string, kops.SubnetType, error) {
 	for _, sp := range c.Cluster.Spec.Networking.Subnets {
 		if sp.Name == subnet {
 			name, err := c.findSubnetNameByID(sp.ID, sp.Name)
 			if err != nil {
-				return "", err
+				return "", "", err
 			}
-			return name, nil
+			return name, sp.Type, nil
 		}
 	}
-	return "", fmt.Errorf("could not find subnet %s from clusterSpec", subnet)
+	return "", "", fmt.Errorf("could not find subnet %s from clusterSpec", subnet)
 }
 
 func (c *OpenstackModelContext) findSubnetNameByID(subnetID string, subnetName string) (string, error) {
