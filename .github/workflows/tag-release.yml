@@ -6,7 +6,7 @@ on:
       - master
       - 'release-*'
     paths:
-      - version.go
+      - kops-version.go
 
 jobs:
   tag-release:
