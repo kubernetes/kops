@@ -16,8 +16,15 @@ limitations under the License.
 
 package v1
 
-// Common annotation keys added to resources.
 const (
+
+	// Common label keys added to resources
+
+	// Label key that indicates that a resource is of interest to cert-manager controller
+	PartOfCertManagerControllerLabelKey = "controller.cert-manager.io/fao"
+
+	// Common annotation keys added to resources
+
 	// Annotation key for DNS subjectAltNames.
 	AltNamesAnnotationKey = "cert-manager.io/alt-names"
 
@@ -231,6 +238,21 @@ const (
 	UsageOCSPSigning       KeyUsage = "ocsp signing"
 	UsageMicrosoftSGC      KeyUsage = "microsoft sgc"
 	UsageNetscapeSGC       KeyUsage = "netscape sgc"
+)
+
+// Keystore specific secret keys
+const (
+	// PKCS12SecretKey is the name of the data entry in the Secret resource
+	// used to store the p12 file.
+	PKCS12SecretKey = "keystore.p12"
+	// Data Entry Name in the Secret resource for PKCS12 containing Certificate Authority
+	PKCS12TruststoreKey = "truststore.p12"
+
+	// JKSSecretKey is the name of the data entry in the Secret resource
+	// used to store the jks file.
+	JKSSecretKey = "keystore.jks"
+	// Data Entry Name in the Secret resource for JKS containing Certificate Authority
+	JKSTruststoreKey = "truststore.jks"
 )
 
 // DefaultKeyUsages contains the default list of key usages
