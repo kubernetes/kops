@@ -14,13 +14,6 @@ LB: null
 Lifecycle: Sync
 Name: fip-bastion-1-cluster
 ---
-ForAPIServer: true
-ID: null
-IP: null
-LB: null
-Lifecycle: Sync
-Name: fip-master-1-cluster
----
 AvailabilityZone: zone-1
 ConfigDrive: false
 Flavor: blc.1-2
@@ -101,13 +94,7 @@ UserData:
 AvailabilityZone: zone-1
 ConfigDrive: false
 Flavor: blc.1-2
-FloatingIP:
-  ForAPIServer: true
-  ID: null
-  IP: null
-  LB: null
-  Lifecycle: Sync
-  Name: fip-master-1-cluster
+FloatingIP: null
 ForAPIServer: false
 GroupName: master
 ID: null
