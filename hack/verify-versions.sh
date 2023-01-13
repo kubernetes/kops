@@ -22,7 +22,7 @@ set -o pipefail
 
 cd "${KOPS_ROOT}"
 
-KOPS_RELEASE_VERSION=$(grep 'KOPS_RELEASE_VERSION\s*=' version.go  | awk '{print $3}' | sed -e 's_"__g')
+KOPS_RELEASE_VERSION=$(grep 'KOPS_RELEASE_VERSION\s*=' kops-version.go  | awk '{print $3}' | sed -e 's_"__g')
 "$(dirname "${BASH_SOURCE[0]}")/set-version" "${KOPS_RELEASE_VERSION}"
 
 changed_files=$(git status --porcelain --untracked-files=no || true)
