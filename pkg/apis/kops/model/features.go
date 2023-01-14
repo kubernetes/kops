@@ -29,6 +29,8 @@ func UseKopsControllerForNodeBootstrap(cluster *kops.Cluster) bool {
 		return cluster.IsKubernetesGTE("1.22")
 	case kops.CloudProviderHetzner:
 		return true
+	case kops.CloudProviderOpenstack:
+		return true
 	default:
 		return false
 	}

@@ -30,6 +30,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm/gcetpmsigner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
+	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
@@ -54,6 +55,8 @@ func (b BootstrapClientBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		// instead we use this as a check that protokube has now started.
 	case kops.CloudProviderHetzner:
 		authenticator, err = hetzner.NewHetznerAuthenticator()
+	case kops.CloudProviderOpenstack:
+		authenticator, err = openstack.NewOpenstackAuthenticator()
 
 	default:
 		return fmt.Errorf("unsupported cloud provider for authenticator %q", b.CloudProvider)

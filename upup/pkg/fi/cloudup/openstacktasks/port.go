@@ -163,6 +163,7 @@ func newPortTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle
 		find.ID = actual.ID
 		actual.InstanceGroupName = find.InstanceGroupName
 		actual.AdditionalSecurityGroups = find.AdditionalSecurityGroups
+		actual.ForAPIServer = find.ForAPIServer
 	}
 	return actual, nil
 }

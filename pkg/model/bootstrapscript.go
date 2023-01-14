@@ -168,10 +168,10 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 			)
 		}
 
-		// credentials needed always when using swift but when using None dns only in control plane
-		passEnvs := true
-		if !strings.HasPrefix(cluster.Spec.ConfigBase, "swift://") && cluster.UsesNoneDNS() && !b.ig.IsControlPlane() {
-			passEnvs = false
+		// credentials needed always in control-plane and when using gossip also in nodes
+		passEnvs := false
+		if b.ig.IsControlPlane() || cluster.IsGossip() {
+			passEnvs = true
 		}
 		// Pass in required credentials when using user-defined swift endpoint
 		if os.Getenv("OS_AUTH_URL") != "" && passEnvs {
