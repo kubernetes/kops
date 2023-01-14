@@ -174,13 +174,13 @@ spec:
 ```
 
 
-## Use existing networks
+## Use existing subnets
 
 Instead of kOps creating new subnets for the cluster, you can reuse an existing subnet.
 
 When you create a new cluster, you can specify subnets using the `--subnets` and `--utility-subnets` flags.
 
-## Example
+### Example
 
 ```bash
 kops create cluster \
@@ -206,10 +206,10 @@ kops create cluster \
   --os-octavia=true --yes
 ```
 
-# Using with self-signed certificates in OpenStack
+# Using self-signed certificates in OpenStack
 
 kOps can be configured to use insecure mode towards OpenStack. However, this is not recommended as OpenStack cloudprovider in kubernetes does not support it.
-If you use insecure flag in kOps it might be that the cluster does not work correctly.
+If you use the insecure flag in kOps the cluster might not work correctly.
 
 ```yaml
 spec:
@@ -218,6 +218,16 @@ spec:
       insecureSkipVerify: true
 ```
 
-## Next steps
+# Security of node bootstrap
+
+As of kOps 1.27, the node bootstrap process uses an instance's UUID as a plaintext password.
+Anything able to obtain this UUID and query port 3988 on the control plane will be
+able to impersonate the instance and join the cluster as that node.
+
+Furthermore, any instance in the account which has a `KopsInstanceGroup` tag
+set to the name of an instance group in the cluster and which is able to query port
+3988 on the control plane will be able to join as a node in that instance group.
+
+# Next steps
 
 Now that you have a working kOps cluster, read through the [recommendations for production setups guide](production.md) to learn more about how to configure kOps for production workloads.

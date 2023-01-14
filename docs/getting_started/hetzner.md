@@ -72,6 +72,17 @@ kOps for Hetzner Cloud currently does not support the following features:
 * Autoscaling using [Cluster Autoscaler](https://github.com/hetznercloud/autoscaler)
 * Terraform support using [terraform-provider-hcloud](https://github.com/hetznercloud/terraform-provider-hcloud) 
 
+## Security of node bootstrap
+
+The kOps node bootstrap process uses a server's ID as a plaintext password.
+Anything able to obtain this ID and query port 3988 on the control plane will be
+able to impersonate the server and join the cluster as that node.
+
+Furthermore, any server in the account which has a `kops.k8s.io/instance-group` label
+set to the name of an instance group in the cluster and which is able to query port
+3988 on the control plane will be able to join as a node in that instance group,
+even if it is not part of a server group owned by that cluster.
+
 ## Next steps
 
 Now that you have a working kOps cluster, read through the recommendations for [production setups guide](production.md) to learn more about how to configure kOps for production workloads.
