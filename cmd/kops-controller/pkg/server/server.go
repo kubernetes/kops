@@ -40,6 +40,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/secrets"
 	"k8s.io/kops/util/pkg/vfs"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 type Server struct {
@@ -54,6 +55,8 @@ type Server struct {
 	// configBase is the base of the configuration storage.
 	configBase vfs.Path
 }
+
+var _ manager.LeaderElectionRunnable = &Server{}
 
 func NewServer(opt *config.Options, verifier bootstrap.Verifier) (*Server, error) {
 	server := &http.Server{
@@ -88,6 +91,10 @@ func NewServer(opt *config.Options, verifier bootstrap.Verifier) (*Server, error
 	server.Handler = recovery(r)
 
 	return s, nil
+}
+
+func (s *Server) NeedLeaderElection() bool {
+	return false
 }
 
 func (s *Server) Start(ctx context.Context) error {
