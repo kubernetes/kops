@@ -43,6 +43,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm/gcetpmverifier"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
+	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/yaml"
@@ -123,6 +124,12 @@ func main() {
 			}
 		} else if opt.Server.Provider.Hetzner != nil {
 			verifier, err = hetzner.NewHetznerVerifier(opt.Server.Provider.Hetzner)
+			if err != nil {
+				setupLog.Error(err, "unable to create verifier")
+				os.Exit(1)
+			}
+		} else if opt.Server.Provider.OpenStack != nil {
+			verifier, err = openstack.NewOpenstackVerifier(opt.Server.Provider.OpenStack)
 			if err != nil {
 				setupLog.Error(err, "unable to create verifier")
 				os.Exit(1)

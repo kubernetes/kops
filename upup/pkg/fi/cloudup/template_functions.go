@@ -716,6 +716,9 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 		case kops.CloudProviderHetzner:
 			config.Server.Provider.Hetzner = &hetzner.HetznerVerifierOptions{}
 
+		case kops.CloudProviderOpenstack:
+			config.Server.Provider.OpenStack = &openstack.OpenStackVerifierOptions{}
+
 		default:
 			return "", fmt.Errorf("unsupported cloud provider %s", cluster.Spec.GetCloudProvider())
 		}
