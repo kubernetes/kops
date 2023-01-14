@@ -35,6 +35,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	utilvalidation "k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+	"k8s.io/kops/pkg/util/subnet"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
@@ -127,7 +128,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 	}
 
 	if spec.KubeAPIServer != nil {
-		allErrs = append(allErrs, validateKubeAPIServer(spec.KubeAPIServer, c, fieldPath.Child("kubeAPIServer"))...)
+		allErrs = append(allErrs, validateKubeAPIServer(spec.KubeAPIServer, c, fieldPath.Child("kubeAPIServer"), strict)...)
 	}
 
 	if spec.ExternalCloudControllerManager == nil && spec.IsIPv6Only() {
@@ -290,17 +291,21 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 }
 
 type cloudProviderConstraints struct {
-	requiresSubnets      bool
-	requiresNetworkCIDR  bool
-	prohibitsNetworkCIDR bool
-	requiresSubnetCIDR   bool
+	requiresSubnets                                 bool
+	requiresNetworkCIDR                             bool
+	prohibitsNetworkCIDR                            bool
+	requiresNonMasqueradeCIDR                       bool
+	requiresServiceClusterSubnetOfNonMasqueradeCIDR bool
+	requiresSubnetCIDR                              bool
 }
 
 func validateCloudProvider(c *kops.Cluster, provider *kops.CloudProviderSpec, fieldSpec *field.Path) (allErrs field.ErrorList, constraints *cloudProviderConstraints) {
 	constraints = &cloudProviderConstraints{
-		requiresSubnets:     true,
-		requiresNetworkCIDR: true,
-		requiresSubnetCIDR:  true,
+		requiresSubnets:                                 true,
+		requiresNetworkCIDR:                             true,
+		requiresNonMasqueradeCIDR:                       true,
+		requiresServiceClusterSubnetOfNonMasqueradeCIDR: true,
+		requiresSubnetCIDR:                              true,
 	}
 
 	optionTaken := false
@@ -335,6 +340,8 @@ func validateCloudProvider(c *kops.Cluster, provider *kops.CloudProviderSpec, fi
 		if c.Spec.Networking.NetworkCIDR != "" {
 			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("networking", "networkCIDR"), "networkCIDR should not be set on GCE"))
 		}
+		constraints.requiresNonMasqueradeCIDR = false
+		constraints.requiresServiceClusterSubnetOfNonMasqueradeCIDR = false
 	}
 	if c.Spec.CloudProvider.Hetzner != nil {
 		if optionTaken {
@@ -679,7 +686,7 @@ func validateExecContainerAction(v *kops.ExecContainerAction, fldPath *field.Pat
 	return allErrs
 }
 
-func validateKubeAPIServer(v *kops.KubeAPIServerConfig, c *kops.Cluster, fldPath *field.Path) field.ErrorList {
+func validateKubeAPIServer(v *kops.KubeAPIServerConfig, c *kops.Cluster, fldPath *field.Path, strict bool) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	if len(v.AdmissionControl) > 0 {
@@ -774,6 +781,12 @@ func validateKubeAPIServer(v *kops.KubeAPIServerConfig, c *kops.Cluster, fldPath
 		}
 	}
 
+	if v.ServiceClusterIPRange != c.Spec.Networking.ServiceClusterIPRange {
+		if strict || v.ServiceClusterIPRange != "" {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("serviceClusterIPRange"), "kubeAPIServer serviceClusterIPRange did not match cluster serviceClusterIPRange"))
+		}
+	}
+
 	return allErrs
 }
 
@@ -865,6 +878,10 @@ func validateKubelet(k *kops.KubeletConfigSpec, c *kops.Cluster, kubeletPath *fi
 			if k.NonMasqueradeCIDR != nil {
 				allErrs = append(allErrs, field.Forbidden(kubeletPath.Child("nonMasqueradeCIDR"), "nonMasqueradeCIDR has been removed on Kubernetes >=1.24"))
 			}
+		} else {
+			if c.Spec.ContainerRuntime == "docker" && fi.ValueOf(c.Spec.Kubelet.NetworkPluginName) == "kubenet" && fi.ValueOf(k.NonMasqueradeCIDR) != c.Spec.Networking.NonMasqueradeCIDR {
+				allErrs = append(allErrs, field.Forbidden(kubeletPath.Child("nonMasqueradeCIDR"), "kubelet nonMasqueradeCIDR does not match cluster nonMasqueradeCIDR"))
+			}
 		}
 
 		if k.ShutdownGracePeriodCriticalPods != nil {
@@ -905,6 +922,40 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 
 	for i, cidr := range v.AdditionalNetworkCIDRs {
 		allErrs = append(allErrs, validateCIDR(cidr, fldPath.Child("additionalNetworkCIDRs").Index(i), &networkCIDRs)...)
+	}
+
+	var nonMasqueradeCIDRs []*net.IPNet
+	{
+		if v.NonMasqueradeCIDR == "" {
+			if providerConstraints.requiresNonMasqueradeCIDR {
+				allErrs = append(allErrs, field.Required(fldPath.Child("nonMasqueradeCIDR"), "Cluster does not have nonMasqueradeCIDR set"))
+			}
+		} else {
+			allErrs = append(allErrs, validateCIDR(v.NonMasqueradeCIDR, fldPath.Child("nonMasqueradeCIDR"), &nonMasqueradeCIDRs)...)
+
+			if strings.Contains(v.NonMasqueradeCIDR, ":") && v.NonMasqueradeCIDR != "::/0" {
+				allErrs = append(allErrs, field.Forbidden(fldPath.Child("nonMasqueradeCIDR"), "IPv6 clusters must have a nonMasqueradeCIDR of \"::/0\""))
+			}
+
+			if len(networkCIDRs) > 0 && subnet.Overlap(nonMasqueradeCIDRs[0], networkCIDRs[0]) && v.AmazonVPC == nil && (v.Cilium == nil || v.Cilium.IPAM != kops.CiliumIpamEni) {
+				allErrs = append(allErrs, field.Forbidden(fldPath.Child("nonMasqueradeCIDR"), fmt.Sprintf("nonMasqueradeCIDR %q cannot overlap with networkCIDR %q", v.NonMasqueradeCIDR, v.NetworkCIDR)))
+			}
+		}
+	}
+
+	var serviceClusterIPRanges []*net.IPNet
+	{
+		if v.ServiceClusterIPRange == "" {
+			if strict {
+				allErrs = append(allErrs, field.Required(fldPath.Child("serviceClusterIPRange"), "Cluster did not have serviceClusterIPRange set"))
+			}
+		} else {
+			allErrs = append(allErrs, validateCIDR(v.ServiceClusterIPRange, fldPath.Child("serviceClusterIPRange"), &serviceClusterIPRanges)...)
+
+			if len(nonMasqueradeCIDRs) > 0 && providerConstraints.requiresServiceClusterSubnetOfNonMasqueradeCIDR && !subnet.BelongsTo(nonMasqueradeCIDRs[0], serviceClusterIPRanges[0]) {
+				allErrs = append(allErrs, field.Forbidden(fldPath.Child("serviceClusterIPRange"), fmt.Sprintf("serviceClusterIPRange %q must be a subnet of nonMasqueradeCIDR %q", v.ServiceClusterIPRange, v.NonMasqueradeCIDR)))
+			}
+		}
 	}
 
 	allErrs = append(allErrs, validateSubnets(&cluster.Spec, v.Subnets, fldPath.Child("subnets"), strict, providerConstraints, networkCIDRs)...)
