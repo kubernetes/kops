@@ -497,6 +497,24 @@ func (b *FirewallModelBuilder) addCNIRules(c *fi.CloudupModelBuilderContext, sgM
 	return nil
 }
 
+// addKopsControllerRules - Add rules for kops-controller for node bootstrap
+func (b *FirewallModelBuilder) addKopsControllerRules(c *fi.CloudupModelBuilderContext, sgMap map[string]*openstacktasks.SecurityGroup) error {
+	masterName := b.SecurityGroupName(kops.InstanceGroupRoleControlPlane)
+	nodeName := b.SecurityGroupName(kops.InstanceGroupRoleNode)
+	masterSG := sgMap[masterName]
+	nodeSG := sgMap[nodeName]
+	kopsControllerRule := &openstacktasks.SecurityGroupRule{
+		Lifecycle:    b.Lifecycle,
+		Direction:    s(string(rules.DirIngress)),
+		Protocol:     s(string(rules.ProtocolTCP)),
+		EtherType:    s(string(rules.EtherType4)),
+		PortRangeMin: i(wellknownports.KopsControllerPort),
+		PortRangeMax: i(wellknownports.KopsControllerPort),
+	}
+	b.addDirectionalGroupRule(c, masterSG, nodeSG, kopsControllerRule)
+	return nil
+}
+
 // addProtokubeRules - Add rules for protokube if gossip DNS is enabled
 func (b *FirewallModelBuilder) addProtokubeRules(c *fi.CloudupModelBuilderContext, sgMap map[string]*openstacktasks.SecurityGroup) error {
 	if b.Cluster.IsGossip() {
@@ -668,6 +686,8 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	b.addNodeExporterAndOccmRules(c, sgMap)
 	// Protokube Rules
 	b.addProtokubeRules(c, sgMap)
+	// Kops-controller Rules
+	b.addKopsControllerRules(c, sgMap)
 	// Allow necessary local traffic
 	b.addCNIRules(c, sgMap)
 	// ETCD Leader Election
