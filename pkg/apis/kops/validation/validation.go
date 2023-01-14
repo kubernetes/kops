@@ -937,8 +937,15 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 				allErrs = append(allErrs, field.Forbidden(fldPath.Child("nonMasqueradeCIDR"), "IPv6 clusters must have a nonMasqueradeCIDR of \"::/0\""))
 			}
 
-			if len(networkCIDRs) > 0 && subnet.Overlap(nonMasqueradeCIDRs[0], networkCIDRs[0]) && v.AmazonVPC == nil && (v.Cilium == nil || v.Cilium.IPAM != kops.CiliumIpamEni) {
-				allErrs = append(allErrs, field.Forbidden(fldPath.Child("nonMasqueradeCIDR"), fmt.Sprintf("nonMasqueradeCIDR %q cannot overlap with networkCIDR %q", v.NonMasqueradeCIDR, v.NetworkCIDR)))
+			if len(networkCIDRs) > 0 && v.AmazonVPC == nil && (v.Cilium == nil || v.Cilium.IPAM != kops.CiliumIpamEni) {
+				if subnet.Overlap(nonMasqueradeCIDRs[0], networkCIDRs[0]) {
+					allErrs = append(allErrs, field.Forbidden(fldPath.Child("nonMasqueradeCIDR"), fmt.Sprintf("nonMasqueradeCIDR %q cannot overlap with networkCIDR %q", v.NonMasqueradeCIDR, v.NetworkCIDR)))
+				}
+				for i, cidr := range networkCIDRs[1:] {
+					if subnet.Overlap(nonMasqueradeCIDRs[0], cidr) {
+						allErrs = append(allErrs, field.Forbidden(fldPath.Child("nonMasqueradeCIDR"), fmt.Sprintf("nonMasqueradeCIDR %q cannot overlap with additionalNetworkCIDRs[%d] %q", v.NonMasqueradeCIDR, i, cidr)))
+					}
+				}
 			}
 		}
 	}
