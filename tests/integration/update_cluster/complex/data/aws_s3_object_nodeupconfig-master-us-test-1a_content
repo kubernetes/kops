@@ -1,4 +1,6 @@
 APIServerConfig:
+  Authentication:
+    aws: {}
   KubeAPIServer:
     allowPrivileged: true
     anonymousAuth: false

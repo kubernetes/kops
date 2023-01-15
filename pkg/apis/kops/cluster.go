@@ -382,10 +382,11 @@ type ExecContainerAction struct {
 type AuthenticationSpec struct {
 	Kopeio *KopeioAuthenticationSpec `json:"kopeio,omitempty"`
 	AWS    *AWSAuthenticationSpec    `json:"aws,omitempty"`
+	OIDC   *OIDCAuthenticationSpec   `json:"oidc,omitempty"`
 }
 
 func (s *AuthenticationSpec) IsEmpty() bool {
-	return s.Kopeio == nil && s.AWS == nil
+	return s.Kopeio == nil && s.AWS == nil && s.OIDC == nil
 }
 
 type KopeioAuthenticationSpec struct{}
@@ -416,6 +417,32 @@ type AWSAuthenticationIdentityMappingSpec struct {
 	Username string `json:"username,omitempty"`
 	// Groups to be attached to your users/roles
 	Groups []string `json:"groups,omitempty"`
+}
+
+type OIDCAuthenticationSpec struct {
+	// UsernameClaim is the OpenID claim to use as the username.
+	// Note that claims other than the default ('sub') are not guaranteed to be
+	// unique and immutable.
+	UsernameClaim *string `json:"usernameClaim,omitempty"`
+	// UsernamePrefix is the prefix prepended to username claims to prevent
+	// clashes with existing names (such as 'system:' users).
+	UsernamePrefix *string `json:"usernamePrefix,omitempty"`
+	// GroupsClaims are the names of the custom OpenID Connect claims for
+	// specifying user groups (optional).
+	GroupsClaims []string `json:"groupsClaims,omitempty"`
+	// GroupsPrefix is the prefix prepended to group claims to prevent
+	// clashes with existing names (such as 'system:' groups).
+	GroupsPrefix *string `json:"groupsPrefix,omitempty"`
+	// IssuerURL is the URL of the OpenID issuer. Only the HTTPS scheme will
+	// be accepted.
+	// If set, will be used to verify the OIDC JSON Web Token (JWT).
+	IssuerURL *string `json:"issuerURL,omitempty"`
+	// ClientID is the client ID for the OpenID Connect client. Must be set
+	// if issuerURL is set.
+	ClientID *string `json:"clientID,omitempty"`
+	// RequiredClaims are key/value pairs that describe required claims in the ID Token.
+	// If set, the claims are verified to be present in the ID Token with corresponding values.
+	RequiredClaims map[string]string `json:"requiredClaims,omitempty"`
 }
 
 type AuthorizationSpec struct {
