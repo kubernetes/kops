@@ -21,22 +21,33 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	corev1 "k8s.io/api/core/v1"
+	expirationcache "k8s.io/client-go/tools/cache"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/nodeidentity"
+	"k8s.io/kops/pkg/nodelabels"
+	kos "k8s.io/kops/upup/pkg/fi/cloudup/openstack"
+)
+
+const (
+	cacheTTL = 60 * time.Minute
 )
 
 // nodeIdentifier identifies a node
 type nodeIdentifier struct {
-	novaClient *gophercloud.ServiceClient
+	novaClient   *gophercloud.ServiceClient
+	cache        expirationcache.Store
+	cacheEnabled bool
 }
 
-// New creates and returns a nodeidentity.LegacyIdentifier for Nodes running on OpenStack
-func New() (nodeidentity.LegacyIdentifier, error) {
+// New creates and returns a nodeidentity.Identifier for Nodes running on OpenStack
+func New(CacheNodeidentityInfo bool) (nodeidentity.Identifier, error) {
 	env, err := openstack.AuthOptionsFromEnv()
 	if err != nil {
 		return nil, err
@@ -73,12 +84,14 @@ func New() (nodeidentity.LegacyIdentifier, error) {
 	}
 
 	return &nodeIdentifier{
-		novaClient: novaClient,
+		novaClient:   novaClient,
+		cache:        expirationcache.NewTTLStore(stringKeyFunc, cacheTTL),
+		cacheEnabled: CacheNodeidentityInfo,
 	}, nil
 }
 
 // IdentifyNode queries OpenStack for the node identity information
-func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*nodeidentity.LegacyInfo, error) {
+func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*nodeidentity.Info, error) {
 	providerID := node.Spec.ProviderID
 	if providerID == "" {
 		return nil, fmt.Errorf("providerID was not set for node %s", node.Name)
@@ -93,25 +106,55 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 
 	instanceID = strings.TrimPrefix(instanceID, "/")
 
-	kopsGroup, err := i.getInstanceGroup(instanceID)
+	// If caching is enabled try pulling nodeidentity.Info from cache before doing a Hetzner Cloud API call.
+	if i.cacheEnabled {
+		obj, exists, err := i.cache.GetByKey(instanceID)
+		if err != nil {
+			klog.Warningf("Nodeidentity info cache lookup failure: %v", err)
+		}
+		if exists {
+			return obj.(*nodeidentity.Info), nil
+		}
+	}
+
+	server, err := servers.Get(i.novaClient, instanceID).Extract()
 	if err != nil {
 		return nil, err
 	}
 
-	info := &nodeidentity.LegacyInfo{}
-	info.InstanceGroup = kopsGroup
+	labels := map[string]string{}
+	value, ok := server.Metadata[kos.TagKopsRole]
+	if ok {
+		switch kops.InstanceGroupRole(value) {
+		case kops.InstanceGroupRoleControlPlane:
+			labels[nodelabels.RoleLabelControlPlane20] = ""
+		case kops.InstanceGroupRoleNode:
+			labels[nodelabels.RoleLabelNode16] = ""
+		case kops.InstanceGroupRoleAPIServer:
+			labels[nodelabels.RoleLabelAPIServer16] = ""
+		default:
+			klog.Warningf("Unknown node role %q for server %s(%d)", value, server.Name, server.ID)
+		}
+	}
+
+	info := &nodeidentity.Info{
+		InstanceID: instanceID,
+		Labels:     labels,
+	}
+
+	// If caching is enabled add the nodeidentity.Info to cache.
+	if i.cacheEnabled {
+		err = i.cache.Add(info)
+		if err != nil {
+			klog.Warningf("Failed to add node identity info to cache: %v", err)
+		}
+	}
 
 	return info, nil
 }
 
-func (i *nodeIdentifier) getInstanceGroup(instanceID string) (string, error) {
-	instance, err := servers.Get(i.novaClient, instanceID).Extract()
-	if err != nil {
-		return "", err
-	}
-
-	if val, ok := instance.Metadata["KopsInstanceGroup"]; ok {
-		return val, nil
-	}
-	return "", fmt.Errorf("could not find tag 'KopsInstanceGroup' from instance metadata")
+// stringKeyFunc is a string as cache key function
+func stringKeyFunc(obj interface{}) (string, error) {
+	key := obj.(*nodeidentity.Info).InstanceID
+	return key, nil
 }
