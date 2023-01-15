@@ -64,7 +64,7 @@ func NewTPMVerifier(opt *gcetpm.TPMVerifierOptions) (bootstrap.Verifier, error) 
 
 var _ bootstrap.Verifier = &tpmVerifier{}
 
-func (v *tpmVerifier) VerifyToken(ctx context.Context, authToken string, body []byte, useInstanceIDForNodeName bool) (*bootstrap.VerifyResult, error) {
+func (v *tpmVerifier) VerifyToken(ctx context.Context, authToken string, remoteAddr string, body []byte, useInstanceIDForNodeName bool) (*bootstrap.VerifyResult, error) {
 	// Reminder: we shouldn't trust any data we get from the client until we've checked the signature (and even then...)
 	// Thankfully the GCE SDK does seem to escape the parameters correctly, for example.
 

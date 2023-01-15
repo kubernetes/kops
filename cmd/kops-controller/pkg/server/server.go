@@ -28,6 +28,7 @@ import (
 	"io"
 	"net/http"
 	"runtime/debug"
+	"strings"
 	"time"
 
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -133,7 +134,8 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	id, err := s.verifier.VerifyToken(ctx, r.Header.Get("Authorization"), body, s.opt.Server.UseInstanceIDForNodeName)
+	remoteAddress := strings.Split(r.RemoteAddr, ":")[0]
+	id, err := s.verifier.VerifyToken(ctx, r.Header.Get("Authorization"), remoteAddress, body, s.opt.Server.UseInstanceIDForNodeName)
 	if err != nil {
 		klog.Infof("bootstrap %s verify err: %v", r.RemoteAddr, err)
 		w.WriteHeader(http.StatusForbidden)

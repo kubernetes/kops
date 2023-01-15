@@ -80,7 +80,7 @@ func NewOpenstackVerifier(opt *OpenStackVerifierOptions) (bootstrap.Verifier, er
 	}, nil
 }
 
-func (o openstackVerifier) VerifyToken(ctx context.Context, token string, body []byte, useInstanceIDForNodeName bool) (*bootstrap.VerifyResult, error) {
+func (o openstackVerifier) VerifyToken(ctx context.Context, token string, remoteAddr string, body []byte, useInstanceIDForNodeName bool) (*bootstrap.VerifyResult, error) {
 	if !strings.HasPrefix(token, OpenstackAuthenticationTokenPrefix) {
 		return nil, fmt.Errorf("incorrect authorization type")
 	}
@@ -103,6 +103,17 @@ func (o openstackVerifier) VerifyToken(ctx context.Context, token string, body [
 		for _, props := range addrList {
 			addrs = append(addrs, props.Addr)
 		}
+	}
+
+	allowed := false
+	for _, addr := range addrs {
+		if addr == remoteAddr {
+			allowed = true
+			break
+		}
+	}
+	if !allowed {
+		return nil, fmt.Errorf("request is not coming from trusted sources %v (request: %s)", addrs, remoteAddr)
 	}
 
 	result := &bootstrap.VerifyResult{

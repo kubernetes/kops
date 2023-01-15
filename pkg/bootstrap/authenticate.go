@@ -39,5 +39,5 @@ type VerifyResult struct {
 
 // Verifier verifies authentication credentials for requests.
 type Verifier interface {
-	VerifyToken(ctx context.Context, token string, body []byte, useInstanceIDForNodeName bool) (*VerifyResult, error)
+	VerifyToken(ctx context.Context, token string, remoteAddr string, body []byte, useInstanceIDForNodeName bool) (*VerifyResult, error)
 }
