@@ -21,7 +21,7 @@ spec:
     clusterCIDR: 100.64.0.0/10
     clusterName: privateflannel.example.com
     configureCloudRoutes: false
-    image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.25.1
+    image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.25.2
     leaderElection:
       leaderElect: true
   cloudProvider: aws
