@@ -637,7 +637,7 @@ func (b *KubeAPIServerBuilder) buildPod(ctx context.Context, kubeAPIServer *kops
 	container := &v1.Container{
 		Name:  "kube-apiserver",
 		Image: image,
-		Env:   proxy.GetProxyEnvVars(b.Cluster.Spec.Networking.EgressProxy),
+		Env:   proxy.GetProxyEnvVars(b.NodeupConfig.Networking.EgressProxy),
 		LivenessProbe: &v1.Probe{
 			ProbeHandler: v1.ProbeHandler{
 				HTTPGet: probeAction,
