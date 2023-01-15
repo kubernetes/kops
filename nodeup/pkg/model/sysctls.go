@@ -147,7 +147,7 @@ func (b *SysctlBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		}
 	}
 
-	if b.Cluster.Spec.IsIPv6Only() {
+	if b.IsIPv6Only() {
 		if b.Distribution == distributions.DistributionDebian11 {
 			// Accepting Router Advertisements must be enabled for each existing network interface to take effect.
 			// net.ipv6.conf.all.accept_ra takes effect only for newly created network interfaces.
