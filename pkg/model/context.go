@@ -238,6 +238,11 @@ func (b *KopsModelContext) CloudTags(name string, shared bool) map[string]string
 	return tags
 }
 
+// UseJWTForBootstrap checks if cluster should use JWT to bootstrap.
+func (b *KopsModelContext) UseJWTForBootstrap() bool {
+	return model.UseJWTForBootstrap(b.Cluster)
+}
+
 // UseKopsControllerForNodeBootstrap checks if nodeup should use kops-controller to bootstrap.
 func (b *KopsModelContext) UseKopsControllerForNodeBootstrap() bool {
 	return model.UseKopsControllerForNodeBootstrap(b.Cluster)

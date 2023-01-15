@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"fmt"
 	"path/filepath"
 
 	"k8s.io/kops/pkg/apis/kops/model"
@@ -86,6 +87,19 @@ func (b *KopsControllerBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	caList := []string{fi.CertificateIDCA}
 	if model.UseCiliumEtcd(b.Cluster) {
 		caList = append(caList, "etcd-clients-ca-cilium")
+	}
+	if model.UseJWTForBootstrap(b.Cluster) {
+		content, ok := b.NodeupConfig.CAs["bootstrap-ca"]
+		if !ok {
+			return fmt.Errorf("could not find CA bootstrap-ca")
+		}
+		c.AddTask(&nodetasks.File{
+			Path:     filepath.Join(pkiDir, "bootstrap-ca.crt"),
+			Contents: fi.NewStringResource(content),
+			Type:     nodetasks.FileType_File,
+			Mode:     s("0600"),
+			Owner:    s(wellknownusers.KopsControllerName),
+		})
 	}
 	for _, cert := range caList {
 		owner := wellknownusers.KopsControllerName

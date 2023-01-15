@@ -22,7 +22,7 @@ import (
 
 // Authenticator generates authentication credentials for requests.
 type Authenticator interface {
-	CreateToken(body []byte) (string, error)
+	CreateToken(body []byte, jwt string) (string, error)
 }
 
 // VerifyResult is the result of a successfully verified request.

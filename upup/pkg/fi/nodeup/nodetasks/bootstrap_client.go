@@ -106,7 +106,7 @@ func (b *BootstrapClientTask) Run(c *fi.NodeupContext) error {
 	}
 
 	var resp nodeup.BootstrapResponse
-	err := b.Client.Query(ctx, &req, &resp)
+	err := b.Client.Query(ctx, &req, &resp, c.T.BootConfig.BootstrapToken)
 	if err != nil {
 		return err
 	}

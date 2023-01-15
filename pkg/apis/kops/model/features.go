@@ -36,6 +36,15 @@ func UseKopsControllerForNodeBootstrap(cluster *kops.Cluster) bool {
 	}
 }
 
+func UseJWTForBootstrap(cluster *kops.Cluster) bool {
+	switch cluster.Spec.GetCloudProvider() {
+	case kops.CloudProviderOpenstack:
+		return true
+	default:
+		return false
+	}
+}
+
 // UseKopsControllerForNodeConfig checks if nodeup should use kops-controller to get nodeup.Config.
 func UseKopsControllerForNodeConfig(cluster *kops.Cluster) bool {
 	if cluster.IsGossip() {

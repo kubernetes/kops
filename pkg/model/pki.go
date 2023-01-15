@@ -45,6 +45,16 @@ func (b *PKIModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	}
 	c.AddTask(defaultCA)
 
+	if b.UseJWTForBootstrap() {
+		bootstrapCA := &fitasks.Keypair{
+			Name:      fi.PtrTo("bootstrap-ca"),
+			Lifecycle: b.Lifecycle,
+			Subject:   "cn=bootstrap-ca",
+			Type:      "ca",
+		}
+		c.AddTask(bootstrapCA)
+	}
+
 	{
 		// @check if kops-controller bootstrap or bootstrap tokens are enabled. If so, disable the creation of the kubelet certificate - we also
 		// block at the IAM level for AWS cluster for pre-existing clusters.

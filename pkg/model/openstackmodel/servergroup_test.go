@@ -1440,6 +1440,7 @@ func RunGoldenTest(t *testing.T, basedir string, testCase serverGroupModelBuilde
 		"etcd-peers-ca-events",
 		"etcd-peers-ca-main",
 		"service-account",
+		"bootstrap-ca",
 	} {
 		task := &fitasks.Keypair{
 			Name:    fi.PtrTo(keypair),

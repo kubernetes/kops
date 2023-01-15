@@ -63,7 +63,7 @@ func NewTPMAuthenticator() (bootstrap.Authenticator, error) {
 	}, nil
 }
 
-func (a *tpmAuthenticator) CreateToken(body []byte) (string, error) {
+func (a *tpmAuthenticator) CreateToken(body []byte, jwt string) (string, error) {
 	requestHash := sha256.Sum256(body)
 
 	tpmStart := time.Now()

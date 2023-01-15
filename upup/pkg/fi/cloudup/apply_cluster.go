@@ -29,8 +29,10 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/blang/semver/v4"
+	"github.com/golang-jwt/jwt/v4"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
 	kopsbase "k8s.io/kops"
@@ -1419,6 +1421,43 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 			}
 		default:
 			return nil, nil, fmt.Errorf("'none' DNS topology is not supported for cloud %q", cluster.Spec.GetCloudProvider())
+		}
+	}
+
+	if apiModel.UseJWTForBootstrap(cluster) {
+		if !ig.HasAPIServer() {
+			keyset := keysets["bootstrap-ca"]
+			if keyset == nil {
+				return nil, nil, fmt.Errorf("key bootstrap-ca not found")
+			}
+
+			if keyset.Primary != nil && keyset.Primary.PrivateKey != nil {
+				b, err := keyset.Primary.PrivateKey.AsBytes()
+				if err != nil {
+					return nil, nil, fmt.Errorf("unable to find privatekey: %w", err)
+				}
+
+				key, err := jwt.ParseRSAPrivateKeyFromPEM(b)
+				if err != nil {
+					return nil, nil, fmt.Errorf("parsing pem key failed: %w", err)
+				}
+				now := time.Now().UTC()
+				claims := jwt.MapClaims{
+					"ig":  ig.Name,
+					"iat": now.Unix(),
+					"nbf": now.Unix(),
+					"exp": now.Add(time.Hour).Unix(),
+				}
+				token, err := jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(key)
+				if err != nil {
+					return nil, nil, fmt.Errorf("sign token failed: %w", err)
+				}
+				bootConfig.BootstrapToken = token
+			}
+		} else {
+			if err := loadCertificates(keysets, "bootstrap-ca", config, false); err != nil {
+				return nil, nil, err
+			}
 		}
 	}
 

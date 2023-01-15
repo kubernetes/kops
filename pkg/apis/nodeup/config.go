@@ -128,6 +128,8 @@ type BootConfig struct {
 	InstanceGroupRole kops.InstanceGroupRole
 	// NodeupConfigHash holds a secure hash of the nodeup.Config.
 	NodeupConfigHash string
+	// BootstrapToken contains token for downloading bootstrap setup from kops-controller
+	BootstrapToken string `json:",omitempty"`
 }
 
 type ConfigServerOptions struct {

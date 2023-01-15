@@ -22,6 +22,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/gophercloud/gophercloud"
 	gos "github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
@@ -80,11 +81,46 @@ func NewOpenstackVerifier(opt *OpenStackVerifierOptions) (bootstrap.Verifier, er
 	}, nil
 }
 
+func validateJWTToken(token string) (jwt.MapClaims, error) {
+	certBytes, err := os.ReadFile("/etc/kubernetes/kops-controller/pki/bootstrap-ca.crt")
+	if err != nil {
+		return nil, fmt.Errorf("reading certificate: %v", err)
+	}
+
+	key, err := jwt.ParseRSAPublicKeyFromPEM(certBytes)
+	if err != nil {
+		return nil, fmt.Errorf("validate: parse key: %w", err)
+	}
+	tok, err := jwt.Parse(token, func(jwtToken *jwt.Token) (interface{}, error) {
+		if _, ok := jwtToken.Method.(*jwt.SigningMethodRSA); !ok {
+			return nil, fmt.Errorf("unexpected method: %s", jwtToken.Header["alg"])
+		}
+		return key, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("validate: %w", err)
+	}
+	claims, ok := tok.Claims.(jwt.MapClaims)
+	if !ok || !tok.Valid {
+		return nil, fmt.Errorf("validate: invalid")
+	}
+	return claims, nil
+}
+
 func (o openstackVerifier) VerifyToken(ctx context.Context, token string, body []byte, useInstanceIDForNodeName bool) (*bootstrap.VerifyResult, error) {
 	if !strings.HasPrefix(token, OpenstackAuthenticationTokenPrefix) {
 		return nil, fmt.Errorf("incorrect authorization type")
 	}
-	serverID := strings.TrimPrefix(token, OpenstackAuthenticationTokenPrefix)
+	token = strings.TrimPrefix(token, OpenstackAuthenticationTokenPrefix)
+	tmp := strings.Split(token, ":")
+	if len(tmp) != 2 {
+		return nil, fmt.Errorf("invalid token")
+	}
+	serverID := tmp[0]
+	claims, err := validateJWTToken(tmp[1])
+	if err != nil {
+		return nil, err
+	}
 
 	instance, err := servers.Get(o.novaClient, serverID).Extract()
 	if err != nil {
@@ -111,7 +147,13 @@ func (o openstackVerifier) VerifyToken(ctx context.Context, token string, body [
 	}
 	value, ok := instance.Metadata[TagKopsInstanceGroup]
 	if ok {
-		result.InstanceGroupName = value
+		igValue, found := claims["ig"]
+		if found {
+			if igValue != value {
+				return nil, fmt.Errorf("claim mismatch %s != %s", igValue, value)
+			}
+			result.InstanceGroupName = value
+		}
 	}
 	return result, nil
 }

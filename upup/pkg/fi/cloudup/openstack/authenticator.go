@@ -33,10 +33,10 @@ func NewOpenstackAuthenticator() (bootstrap.Authenticator, error) {
 	return &openstackAuthenticator{}, nil
 }
 
-func (o openstackAuthenticator) CreateToken(body []byte) (string, error) {
+func (o openstackAuthenticator) CreateToken(body []byte, jwtToken string) (string, error) {
 	metadata, err := GetLocalMetadata()
 	if err != nil {
 		return "", fmt.Errorf("unable to fetch metadata: %w", err)
 	}
-	return OpenstackAuthenticationTokenPrefix + metadata.ServerID, nil
+	return fmt.Sprintf("%s%s:%s", OpenstackAuthenticationTokenPrefix, metadata.ServerID, jwtToken), nil
 }

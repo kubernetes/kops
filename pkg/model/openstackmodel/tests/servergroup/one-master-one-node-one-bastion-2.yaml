@@ -241,6 +241,15 @@ subject: cn=apiserver-aggregator-ca
 type: ca
 ---
 Lifecycle: ""
+Name: bootstrap-ca
+Signer: null
+alternateNames: null
+issuer: ""
+oldFormat: false
+subject: cn=bootstrap-ca
+type: ca
+---
+Lifecycle: ""
 Name: etcd-clients-ca
 Signer: null
 alternateNames: null

@@ -87,7 +87,7 @@ func (b *Client) dial(ctx context.Context, network, addr string) (net.Conn, erro
 	return nil, errors[0]
 }
 
-func (b *Client) Query(ctx context.Context, req any, resp any) error {
+func (b *Client) Query(ctx context.Context, req any, resp any, jwt string) error {
 	if b.httpClient == nil {
 		certPool := x509.NewCertPool()
 		certPool.AppendCertsFromPEM(b.CAs)
@@ -136,10 +136,11 @@ func (b *Client) Query(ctx context.Context, req any, resp any) error {
 	}
 	httpReq.Header.Set("Content-Type", "application/json")
 
-	token, err := b.Authenticator.CreateToken(reqBytes)
+	token, err := b.Authenticator.CreateToken(reqBytes, jwt)
 	if err != nil {
 		return err
 	}
+
 	httpReq.Header.Set("Authorization", token)
 
 	response, err := b.httpClient.Do(httpReq)

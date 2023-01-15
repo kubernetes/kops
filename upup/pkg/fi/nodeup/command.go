@@ -783,7 +783,7 @@ func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig
 			IncludeNodeConfig: true,
 		}
 		var resp nodeup.BootstrapResponse
-		err = client.Query(ctx, &request, &resp)
+		err = client.Query(ctx, &request, &resp, bootConfig.BootstrapToken)
 		if err != nil {
 			merr = multierr.Append(merr, err)
 			continue

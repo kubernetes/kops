@@ -71,7 +71,7 @@ func NewAWSAuthenticator(region string) (bootstrap.Authenticator, error) {
 	}, nil
 }
 
-func (a awsAuthenticator) CreateToken(body []byte) (string, error) {
+func (a awsAuthenticator) CreateToken(body []byte, jwt string) (string, error) {
 	sha := sha256.Sum256(body)
 
 	stsRequest, _ := a.sts.GetCallerIdentityRequest(nil)
