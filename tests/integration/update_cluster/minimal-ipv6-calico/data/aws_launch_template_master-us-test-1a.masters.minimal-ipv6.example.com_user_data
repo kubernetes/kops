@@ -249,7 +249,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal-ipv6.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: fe6lUSIV68mIe6EYk76UKn28k7NlxIs/f3tj7o1BQUw=
+NodeupConfigHash: X0pX0z8uxaKPRMuyQTRhHwN6PQEuyU0WC7cpslivk0U=
 
 __EOF_KUBE_ENV
 
