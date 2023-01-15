@@ -265,6 +265,10 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		}
 	}
 
+	if instanceGroup.HasAPIServer() || cluster.IsGossip() {
+		config.Networking.EgressProxy = cluster.Spec.Networking.EgressProxy
+	}
+
 	return &config, &bootConfig
 }
 
