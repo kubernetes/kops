@@ -157,6 +157,8 @@ type StaticManifest struct {
 type APIServerConfig struct {
 	// KubeAPIServer is a copy of the KubeAPIServerConfig from the cluster spec.
 	KubeAPIServer *kops.KubeAPIServerConfig
+	// Authentication is a copy of the AuthenticationSpec from the cluster spec.
+	Authentication *kops.AuthenticationSpec `json:",omitempty"`
 	// EncryptionConfigSecretHash is a hash of the encryptionconfig secret.
 	// It is empty if EncryptionConfig is not enabled.
 	// TODO: give secrets IDs and look them up like we do keypairs.
@@ -248,6 +250,13 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 	if instanceGroup.HasAPIServer() {
 		config.APIServerConfig = &APIServerConfig{
 			KubeAPIServer: cluster.Spec.KubeAPIServer,
+		}
+		if cluster.Spec.Authentication != nil {
+			config.APIServerConfig.Authentication = cluster.Spec.Authentication
+			if cluster.Spec.Authentication.AWS != nil {
+				// The values go into the manifest and aren't needed by nodeup.
+				config.APIServerConfig.Authentication.AWS = &kops.AWSAuthenticationSpec{}
+			}
 		}
 	}
 

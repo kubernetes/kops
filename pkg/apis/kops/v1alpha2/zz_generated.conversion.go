@@ -1568,6 +1568,7 @@ func autoConvert_v1alpha2_AuthenticationSpec_To_kops_AuthenticationSpec(in *Auth
 	} else {
 		out.AWS = nil
 	}
+	out.OIDC = in.OIDC
 	return nil
 }
 
@@ -1595,6 +1596,7 @@ func autoConvert_kops_AuthenticationSpec_To_v1alpha2_AuthenticationSpec(in *kops
 	} else {
 		out.AWS = nil
 	}
+	out.OIDC = in.OIDC
 	return nil
 }
 
@@ -4766,13 +4768,13 @@ func autoConvert_v1alpha2_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.AnonymousAuth = in.AnonymousAuth
 	out.KubeletPreferredAddressTypes = in.KubeletPreferredAddressTypes
 	out.StorageBackend = in.StorageBackend
-	out.OIDCUsernameClaim = in.OIDCUsernameClaim
-	out.OIDCUsernamePrefix = in.OIDCUsernamePrefix
-	out.OIDCGroupsClaim = in.OIDCGroupsClaim
-	out.OIDCGroupsPrefix = in.OIDCGroupsPrefix
-	out.OIDCIssuerURL = in.OIDCIssuerURL
-	out.OIDCClientID = in.OIDCClientID
-	out.OIDCRequiredClaim = in.OIDCRequiredClaim
+	// INFO: in.OIDCUsernameClaim opted out of conversion generation
+	// INFO: in.OIDCUsernamePrefix opted out of conversion generation
+	// INFO: in.OIDCGroupsClaim opted out of conversion generation
+	// INFO: in.OIDCGroupsPrefix opted out of conversion generation
+	// INFO: in.OIDCIssuerURL opted out of conversion generation
+	// INFO: in.OIDCClientID opted out of conversion generation
+	// INFO: in.OIDCRequiredClaim opted out of conversion generation
 	out.OIDCCAFile = in.OIDCCAFile
 	out.ProxyClientCertFile = in.ProxyClientCertFile
 	out.ProxyClientKeyFile = in.ProxyClientKeyFile

@@ -11,6 +11,19 @@ spec:
     - proxy.api.minimal.example.com
     dns: {}
     publicName: api.minimal.example.com
+  authentication:
+    oidc:
+      clientID: oidc-client
+      groupsClaims:
+      - groupclaim1
+      - groupclaim2
+      groupsPrefix: 'oidcgroup:'
+      issuerURL: https://oidc-issuer.nonexistent
+      requiredClaims:
+        claim1: value1
+        claim2: value2
+      usernameClaim: user
+      usernamePrefix: 'oidc:'
   authorization:
     alwaysAllow: {}
   channel: stable
@@ -37,6 +50,7 @@ spec:
     memoryRequest: 100Mi
     name: events
   iam: {}
+  kubeAPIServer: {}
   kubernetesVersion: v1.21.0
   networking:
     kubeRouter: {}

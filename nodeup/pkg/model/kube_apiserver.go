@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -76,6 +77,7 @@ func (b *KubeAPIServerBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		}
 	}
 
+	b.configureOIDC(&kubeAPIServer)
 	if err := b.writeAuthenticationConfig(c, &kubeAPIServer); err != nil {
 		return err
 	}
@@ -218,12 +220,39 @@ func (b *KubeAPIServerBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	return nil
 }
 
+func (b *KubeAPIServerBuilder) configureOIDC(kubeAPIServer *kops.KubeAPIServerConfig) {
+	if b.NodeupConfig.APIServerConfig.Authentication == nil || b.NodeupConfig.APIServerConfig.Authentication.OIDC == nil {
+		return
+	}
+
+	oidc := b.NodeupConfig.APIServerConfig.Authentication.OIDC
+	kubeAPIServer.OIDCClientID = oidc.ClientID
+	if oidc.GroupsClaims != nil {
+		join := strings.Join(oidc.GroupsClaims, ",")
+		kubeAPIServer.OIDCGroupsClaim = &join
+	}
+	kubeAPIServer.OIDCGroupsPrefix = oidc.GroupsPrefix
+	kubeAPIServer.OIDCIssuerURL = oidc.IssuerURL
+	if oidc.RequiredClaims != nil {
+		kubeAPIServer.OIDCRequiredClaim = make([]string, 0, len(oidc.RequiredClaims))
+		for claim, value := range oidc.RequiredClaims {
+			kubeAPIServer.OIDCRequiredClaim = append(kubeAPIServer.OIDCRequiredClaim, claim+"="+value)
+		}
+		sort.Strings(kubeAPIServer.OIDCRequiredClaim)
+	}
+	kubeAPIServer.OIDCUsernameClaim = oidc.UsernameClaim
+	kubeAPIServer.OIDCUsernamePrefix = oidc.UsernamePrefix
+}
+
 func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.NodeupModelBuilderContext, kubeAPIServer *kops.KubeAPIServerConfig) error {
-	if b.Cluster.Spec.Authentication == nil || b.Cluster.Spec.Authentication.IsEmpty() {
+	if b.NodeupConfig.APIServerConfig.Authentication == nil {
+		return nil
+	}
+	if b.NodeupConfig.APIServerConfig.Authentication.AWS == nil && b.NodeupConfig.APIServerConfig.Authentication.Kopeio == nil {
 		return nil
 	}
 
-	if b.Cluster.Spec.Authentication.Kopeio != nil {
+	if b.NodeupConfig.APIServerConfig.Authentication.Kopeio != nil {
 		cluster := kubeconfig.KubectlCluster{
 			Server: "http://127.0.0.1:9001/hooks/authn",
 		}
@@ -263,7 +292,7 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.NodeupModelBuilde
 		return nil
 	}
 
-	if b.Cluster.Spec.Authentication.AWS != nil {
+	if b.NodeupConfig.APIServerConfig.Authentication.AWS != nil {
 		id := "aws-iam-authenticator"
 		kubeAPIServer.AuthenticationTokenWebhookConfigFile = fi.PtrTo(PathAuthnConfig)
 
@@ -353,7 +382,7 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.NodeupModelBuilde
 		return nil
 	}
 
-	return fmt.Errorf("unrecognized authentication config %v", b.Cluster.Spec.Authentication)
+	return fmt.Errorf("unrecognized authentication config %v", b.NodeupConfig.APIServerConfig.Authentication)
 }
 
 func (b *KubeAPIServerBuilder) writeServerCertificate(c *fi.NodeupModelBuilderContext, kubeAPIServer *kops.KubeAPIServerConfig) error {
@@ -697,8 +726,8 @@ func (b *KubeAPIServerBuilder) buildPod(ctx context.Context, kubeAPIServer *kops
 		kubemanifest.AddHostPathMapping(pod, container, "auditconfigdir", auditConfigDir)
 	}
 
-	if b.Cluster.Spec.Authentication != nil {
-		if b.Cluster.Spec.Authentication.Kopeio != nil || b.Cluster.Spec.Authentication.AWS != nil {
+	if b.NodeupConfig.APIServerConfig.Authentication != nil {
+		if b.NodeupConfig.APIServerConfig.Authentication.Kopeio != nil || b.NodeupConfig.APIServerConfig.Authentication.AWS != nil {
 			kubemanifest.AddHostPathMapping(pod, container, "authn-config", PathAuthnConfig)
 		}
 	}
