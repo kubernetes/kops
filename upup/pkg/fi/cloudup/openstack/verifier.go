@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/gophercloud/gophercloud"
 	gos "github.com/gophercloud/gophercloud/openstack"
@@ -114,6 +115,12 @@ func (o openstackVerifier) VerifyToken(ctx context.Context, token string, remote
 	}
 	if !allowed {
 		return nil, fmt.Errorf("request is not coming from trusted sources %v (request: %s)", addrs, remoteAddr)
+	}
+
+	now := time.Now()
+	diff := now.Sub(instance.Created)
+	if diff > 30*time.Minute || diff < 0 {
+		return nil, fmt.Errorf("instance created time diff is %s, denying request", diff)
 	}
 
 	result := &bootstrap.VerifyResult{
