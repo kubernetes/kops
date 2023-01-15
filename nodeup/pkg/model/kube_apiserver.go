@@ -409,7 +409,7 @@ func (b *KubeAPIServerBuilder) writeServerCertificate(c *fi.NodeupModelBuilderCo
 
 		// Referencing it by internal IP should work also
 		{
-			ip, err := components.WellKnownServiceIP(&b.Cluster.Spec, 1)
+			ip, err := components.WellKnownServiceIP(&b.NodeupConfig.Networking, 1)
 			if err != nil {
 				return err
 			}
