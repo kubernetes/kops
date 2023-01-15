@@ -181,7 +181,8 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		CAs:               map[string]string{},
 		KeypairIDs:        map[string]string{},
 		Networking: kops.NetworkingSpec{
-			NonMasqueradeCIDR: cluster.Spec.Networking.NonMasqueradeCIDR,
+			NonMasqueradeCIDR:     cluster.Spec.Networking.NonMasqueradeCIDR,
+			ServiceClusterIPRange: cluster.Spec.Networking.ServiceClusterIPRange,
 		},
 		SysctlParameters: instanceGroup.Spec.SysctlParameters,
 		VolumeMounts:     instanceGroup.Spec.VolumeMounts,
