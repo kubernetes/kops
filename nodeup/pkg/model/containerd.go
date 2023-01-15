@@ -407,12 +407,12 @@ iptables -w -t nat -A IP-MASQ -d {{.NonMasqueradeCIDR}} -m comment --comment "ip
 iptables -w -t nat -A IP-MASQ -m comment --comment "ip-masq: outbound traffic is subject to MASQUERADE (must be last in chain)" -j MASQUERADE
 `
 
-	if b.Cluster.Spec.Networking.NonMasqueradeCIDR == "" {
+	if b.NodeupConfig.Networking.NonMasqueradeCIDR == "" {
 		// We could fall back to the pod CIDR, that is likely more correct anyway
 		return fmt.Errorf("NonMasqueradeCIDR is not set")
 	}
 
-	script = strings.ReplaceAll(script, "{{.NonMasqueradeCIDR}}", b.Cluster.Spec.Networking.NonMasqueradeCIDR)
+	script = strings.ReplaceAll(script, "{{.NonMasqueradeCIDR}}", b.NodeupConfig.Networking.NonMasqueradeCIDR)
 
 	c.AddTask(&nodetasks.File{
 		Path:     "/opt/kops/bin/cni-iptables-setup",
