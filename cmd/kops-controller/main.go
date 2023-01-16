@@ -211,7 +211,7 @@ func addNodeController(mgr manager.Manager, opt *config.Options) error {
 		}
 
 	case "openstack":
-		legacyIdentifier, err = nodeidentityos.New()
+		identifier, err = nodeidentityos.New(opt.CacheNodeidentityInfo)
 		if err != nil {
 			return fmt.Errorf("error building identifier: %v", err)
 		}
