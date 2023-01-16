@@ -276,6 +276,7 @@ KubeletConfig:
   - node-role.kubernetes.io/control-plane=:NoSchedule
 KubernetesVersion: 1.24.0
 Networking:
+  cilium: {}
   nonMasqueradeCIDR: 100.64.0.0/10
   serviceClusterIPRange: 100.64.0.0/13
 UpdatePolicy: automatic
