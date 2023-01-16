@@ -181,7 +181,8 @@ ConfigServer:
     MA0GCSqGSIb3DQEBCwUAA0EAVQVx5MUtuAIeePuP9o51xtpT2S6Fvfi8J4ICxnlA
     9B7UD2ushcVFPtaeoL9Gfu8aY4KJBeqqg5ojl4qmRnThjw==
     -----END CERTIFICATE-----
-  server: https://kops-controller.internal.privateciliumadvanced.example.com:3988/
+  servers:
+  - https://kops-controller.internal.privateciliumadvanced.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
 NodeupConfigHash: wuX1AqCvPq+rf4YEELokVnc5SB6MRE2oma/RSBgfUJM=
