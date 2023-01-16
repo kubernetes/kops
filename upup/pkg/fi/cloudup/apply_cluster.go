@@ -1424,21 +1424,21 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 
 	useConfigServer := apiModel.UseKopsControllerForNodeConfig(cluster) && !ig.HasAPIServer()
 	if useConfigServer {
-		host := "kops-controller.internal." + cluster.ObjectMeta.Name
+		hosts := []string{"kops-controller.internal." + cluster.ObjectMeta.Name}
 		if cluster.UsesNoneDNS() && len(bootConfig.APIServerIPs) > 0 {
-			host = bootConfig.APIServerIPs[0] // TODO: how we could support array?
+			hosts = bootConfig.APIServerIPs
 		}
-		baseURL := url.URL{
-			Scheme: "https",
-			Host:   net.JoinHostPort(host, strconv.Itoa(wellknownports.KopsControllerPort)),
-			Path:   "/",
-		}
-
 		configServer := &nodeup.ConfigServerOptions{
-			Server:         baseURL.String(),
 			CACertificates: config.CAs[fi.CertificateIDCA],
 		}
-
+		for _, host := range hosts {
+			baseURL := url.URL{
+				Scheme: "https",
+				Host:   net.JoinHostPort(host, strconv.Itoa(wellknownports.KopsControllerPort)),
+				Path:   "/",
+			}
+			configServer.Servers = append(configServer.Servers, baseURL.String())
+		}
 		bootConfig.ConfigServer = configServer
 		delete(config.CAs, fi.CertificateIDCA)
 	} else {
