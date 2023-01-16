@@ -46,9 +46,6 @@ KubeletConfig:
   shutdownGracePeriod: 30s
   shutdownGracePeriodCriticalPods: 10s
 KubernetesVersion: 1.25.0
-Networking:
-  nonMasqueradeCIDR: ::/0
-  serviceClusterIPRange: fd00:5e4f:ce::/108
 UpdatePolicy: automatic
 channels:
 - memfs://clusters.example.com/minimal-ipv6.example.com/addons/bootstrap-channel.yaml

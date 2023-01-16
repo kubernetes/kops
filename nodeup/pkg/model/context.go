@@ -38,7 +38,6 @@ import (
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
-	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/distributions"
 	"k8s.io/kops/util/pkg/vfs"
@@ -113,14 +112,6 @@ func (c *NodeupModelContext) Init() error {
 
 func (c *NodeupModelContext) APIInternalName() string {
 	return "api.internal." + c.NodeupConfig.ClusterName
-}
-
-func (c *NodeupModelContext) IsIPv6Only() bool {
-	return utils.IsIPv6CIDR(c.NodeupConfig.Networking.NonMasqueradeCIDR)
-}
-
-func (c *NodeupModelContext) IsKopsControllerIPAM() bool {
-	return c.IsIPv6Only()
 }
 
 // SSLHostPaths returns the TLS paths for the distribution

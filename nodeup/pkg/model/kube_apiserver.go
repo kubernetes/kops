@@ -409,7 +409,7 @@ func (b *KubeAPIServerBuilder) writeServerCertificate(c *fi.NodeupModelBuilderCo
 
 		// Referencing it by internal IP should work also
 		{
-			ip, err := components.WellKnownServiceIP(&b.NodeupConfig.Networking, 1)
+			ip, err := components.WellKnownServiceIP(&b.Cluster.Spec, 1)
 			if err != nil {
 				return err
 			}
@@ -637,7 +637,7 @@ func (b *KubeAPIServerBuilder) buildPod(ctx context.Context, kubeAPIServer *kops
 	container := &v1.Container{
 		Name:  "kube-apiserver",
 		Image: image,
-		Env:   proxy.GetProxyEnvVars(b.NodeupConfig.Networking.EgressProxy),
+		Env:   proxy.GetProxyEnvVars(b.Cluster.Spec.Networking.EgressProxy),
 		LivenessProbe: &v1.Probe{
 			ProbeHandler: v1.ProbeHandler{
 				HTTPGet: probeAction,

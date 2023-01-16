@@ -77,7 +77,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		if clusterSpec.KubeDNS != nil && clusterSpec.KubeDNS.NodeLocalDNS != nil && fi.ValueOf(clusterSpec.KubeDNS.NodeLocalDNS.Enabled) {
 			clusterSpec.Kubelet.ClusterDNS = clusterSpec.KubeDNS.NodeLocalDNS.LocalIP
 		} else {
-			ip, err := WellKnownServiceIP(&clusterSpec.Networking, 10)
+			ip, err := WellKnownServiceIP(clusterSpec, 10)
 			if err != nil {
 				return err
 			}

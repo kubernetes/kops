@@ -50,9 +50,6 @@ KubeletConfig:
   taints:
   - nvidia.com/gpu:NoSchedule
 KubernetesVersion: 1.26.0
-Networking:
-  nonMasqueradeCIDR: 100.64.0.0/10
-  serviceClusterIPRange: 100.64.0.0/13
 NvidiaGPU:
   enabled: true
   package: nvidia-headless-515-server

@@ -364,7 +364,7 @@ func (b *KopsModelContext) UseIPv6ForAPI() bool {
 
 // WellKnownServiceIP returns a service ip with the service cidr
 func (b *KopsModelContext) WellKnownServiceIP(id int) (net.IP, error) {
-	return components.WellKnownServiceIP(&b.Cluster.Spec.Networking, id)
+	return components.WellKnownServiceIP(&b.Cluster.Spec, id)
 }
 
 // NodePortRange returns the range of ports allocated to NodePorts

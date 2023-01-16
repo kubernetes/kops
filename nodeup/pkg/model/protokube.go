@@ -299,7 +299,7 @@ func (t *ProtokubeBuilder) buildEnvFile() (*nodetasks.File, error) {
 		envVars["SCW_DEFAULT_PROJECT_ID"] = os.Getenv("SCW_DEFAULT_PROJECT_ID")
 	}
 
-	for _, envVar := range proxy.GetProxyEnvVars(t.NodeupConfig.Networking.EgressProxy) {
+	for _, envVar := range proxy.GetProxyEnvVars(t.Cluster.Spec.Networking.EgressProxy) {
 		envVars[envVar.Name] = envVar.Value
 	}
 

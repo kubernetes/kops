@@ -28,7 +28,7 @@ type PrefixBuilder struct {
 var _ fi.NodeupModelBuilder = &PrefixBuilder{}
 
 func (b *PrefixBuilder) Build(c *fi.NodeupModelBuilderContext) error {
-	if !b.IsKopsControllerIPAM() {
+	if !b.Cluster.Spec.IsKopsControllerIPAM() {
 		return nil
 	}
 	c.AddTask(&nodetasks.Prefix{

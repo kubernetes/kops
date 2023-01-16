@@ -61,8 +61,6 @@ type Config struct {
 	KubeletConfig kops.KubeletConfigSpec
 	// KubeProxy defines the kube-proxy configuration.
 	KubeProxy *kops.KubeProxyConfig
-	// Networking configures networking.
-	Networking kops.NetworkingSpec
 	// NTPUnmanaged is true when NTP is not managed by kOps.
 	NTPUnmanaged bool `json:",omitempty"`
 	// SysctlParameters will configure kernel parameters using sysctl(8). When
@@ -180,16 +178,12 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		KubernetesVersion: cluster.Spec.KubernetesVersion,
 		CAs:               map[string]string{},
 		KeypairIDs:        map[string]string{},
-		Networking: kops.NetworkingSpec{
-			NonMasqueradeCIDR:     cluster.Spec.Networking.NonMasqueradeCIDR,
-			ServiceClusterIPRange: cluster.Spec.Networking.ServiceClusterIPRange,
-		},
-		SysctlParameters: instanceGroup.Spec.SysctlParameters,
-		VolumeMounts:     instanceGroup.Spec.VolumeMounts,
-		FileAssets:       append(filterFileAssets(instanceGroup.Spec.FileAssets, role), filterFileAssets(cluster.Spec.FileAssets, role)...),
-		Hooks:            [][]kops.HookSpec{igHooks, clusterHooks},
-		ContainerRuntime: cluster.Spec.ContainerRuntime,
-		Docker:           cluster.Spec.Docker,
+		SysctlParameters:  instanceGroup.Spec.SysctlParameters,
+		VolumeMounts:      instanceGroup.Spec.VolumeMounts,
+		FileAssets:        append(filterFileAssets(instanceGroup.Spec.FileAssets, role), filterFileAssets(cluster.Spec.FileAssets, role)...),
+		Hooks:             [][]kops.HookSpec{igHooks, clusterHooks},
+		ContainerRuntime:  cluster.Spec.ContainerRuntime,
+		Docker:            cluster.Spec.Docker,
 	}
 
 	bootConfig := BootConfig{
@@ -264,10 +258,6 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 				config.APIServerConfig.Authentication.AWS = &kops.AWSAuthenticationSpec{}
 			}
 		}
-	}
-
-	if instanceGroup.HasAPIServer() || cluster.IsGossip() {
-		config.Networking.EgressProxy = cluster.Spec.Networking.EgressProxy
 	}
 
 	return &config, &bootConfig

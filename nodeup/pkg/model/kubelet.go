@@ -325,7 +325,7 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 		flags += " --tls-private-key-file=" + b.PathSrvKubernetes() + "/kubelet-server.key"
 	}
 
-	if b.IsIPv6Only() {
+	if b.Cluster.Spec.IsIPv6Only() {
 		flags += " --node-ip=::"
 	}
 
