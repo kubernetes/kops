@@ -48,7 +48,7 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if clusterSpec.KubeDNS.ServerIP == "" {
-		ip, err := WellKnownServiceIP(clusterSpec, 10)
+		ip, err := WellKnownServiceIP(&clusterSpec.Networking, 10)
 		if err != nil {
 			return err
 		}
