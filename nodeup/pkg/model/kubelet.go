@@ -33,7 +33,6 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
-	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
@@ -147,7 +146,7 @@ func (b *KubeletBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		}
 	}
 
-	if components.UsesCNI(&b.Cluster.Spec.Networking) {
+	if !b.NodeupConfig.UsesKubenet {
 		c.AddTask(&nodetasks.File{
 			Path: b.CNIConfDir(),
 			Type: nodetasks.FileType_Directory,

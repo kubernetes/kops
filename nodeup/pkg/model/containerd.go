@@ -29,7 +29,6 @@ import (
 	"k8s.io/kops/nodeup/pkg/model/resources"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
-	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -70,7 +69,7 @@ func (b *ContainerdBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		// Using containerd with Kubenet requires special configuration.
 		// This is a temporary backwards-compatible solution for kubenet users and will be deprecated when Kubenet is deprecated:
 		// https://github.com/containerd/containerd/blob/master/docs/cri/config.md#cni-config-template
-		if components.UsesKubenet(&b.Cluster.Spec.Networking) {
+		if b.NodeupConfig.UsesKubenet {
 			b.buildCNIConfigTemplateFile(c)
 			if err := b.buildIPMasqueradeRules(c); err != nil {
 				return err
@@ -498,7 +497,7 @@ func (b *ContainerdBuilder) buildContainerdConfig() (string, error) {
 	config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "containerd", "runtimes", "runc", "runtime_type"}, "io.containerd.runc.v2")
 	// only enable systemd cgroups for kubernetes >= 1.20
 	config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "containerd", "runtimes", "runc", "options", "SystemdCgroup"}, true)
-	if components.UsesKubenet(&b.Cluster.Spec.Networking) {
+	if b.NodeupConfig.UsesKubenet {
 		// Using containerd with Kubenet requires special configuration.
 		// This is a temporary backwards-compatible solution for kubenet users and will be deprecated when Kubenet is deprecated:
 		// https://github.com/containerd/containerd/blob/master/docs/cri/config.md#cni-config-template
