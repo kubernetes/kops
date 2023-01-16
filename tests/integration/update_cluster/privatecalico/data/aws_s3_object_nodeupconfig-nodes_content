@@ -48,6 +48,7 @@ KubeletConfig:
   shutdownGracePeriodCriticalPods: 10s
 KubernetesVersion: 1.25.0
 Networking:
+  calico: {}
   nonMasqueradeCIDR: 100.64.0.0/10
   serviceClusterIPRange: 100.64.0.0/13
 UpdatePolicy: automatic
