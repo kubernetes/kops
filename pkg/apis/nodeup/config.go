@@ -242,7 +242,24 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 	}
 
 	if cluster.Spec.Networking.AmazonVPC != nil {
+		config.Networking.AmazonVPC = &kops.AmazonVPCNetworkingSpec{}
 		config.DefaultMachineType = aws.String(strings.Split(instanceGroup.Spec.MachineType, ",")[0])
+	}
+
+	if cluster.Spec.Networking.Calico != nil {
+		config.Networking.Calico = &kops.CalicoNetworkingSpec{}
+	}
+
+	if cluster.Spec.Networking.Cilium != nil {
+		config.Networking.Cilium = &kops.CiliumNetworkingSpec{}
+	}
+
+	if cluster.Spec.Networking.Flannel != nil {
+		config.Networking.Flannel = &kops.FlannelNetworkingSpec{}
+	}
+
+	if cluster.Spec.Networking.KubeRouter != nil {
+		config.Networking.KubeRouter = &kops.KuberouterNetworkingSpec{}
 	}
 
 	if UsesInstanceIDForNodeName(cluster) {

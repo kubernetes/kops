@@ -524,7 +524,7 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 		c.BootstrapKubeconfig = ""
 	}
 
-	if b.Cluster.Spec.Networking.AmazonVPC != nil {
+	if b.NodeupConfig.Networking.AmazonVPC != nil {
 		sess := session.Must(session.NewSession())
 		metadata := ec2metadata.New(sess)
 
