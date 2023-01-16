@@ -21,6 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/reflectutils"
 )
@@ -63,6 +64,8 @@ type Config struct {
 	KubeProxy *kops.KubeProxyConfig
 	// Networking configures networking.
 	Networking kops.NetworkingSpec
+	// UseCiliumEtcd is true when a Cilium etcd cluster is present.
+	UseCiliumEtcd bool `json:",omitempty"`
 	// NTPUnmanaged is true when NTP is not managed by kOps.
 	NTPUnmanaged bool `json:",omitempty"`
 	// SysctlParameters will configure kernel parameters using sysctl(8). When
@@ -252,6 +255,16 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 
 	if cluster.Spec.Networking.Cilium != nil {
 		config.Networking.Cilium = &kops.CiliumNetworkingSpec{}
+		if cluster.Spec.Networking.Cilium.IPAM == kops.CiliumIpamEni {
+			config.Networking.Cilium.IPAM = kops.CiliumIpamEni
+		}
+		if model.UseCiliumEtcd(cluster) {
+			config.UseCiliumEtcd = true
+		}
+	}
+
+	if cluster.Spec.Networking.CNI != nil && cluster.Spec.Networking.CNI.UsesSecondaryIP {
+		config.Networking.CNI = &kops.CNINetworkingSpec{UsesSecondaryIP: true}
 	}
 
 	if cluster.Spec.Networking.Flannel != nil {
