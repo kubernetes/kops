@@ -68,9 +68,12 @@ KubeletConfig:
   shutdownGracePeriodCriticalPods: 10s
 KubernetesVersion: 1.26.0
 Networking:
+  cilium:
+    ipam: eni
   nonMasqueradeCIDR: 100.64.0.0/10
   serviceClusterIPRange: 100.64.0.0/13
 UpdatePolicy: automatic
+UseCiliumEtcd: true
 channels:
 - memfs://clusters.example.com/privateciliumadvanced.example.com/addons/bootstrap-channel.yaml
 containerdConfig:
