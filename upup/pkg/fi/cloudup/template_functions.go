@@ -207,9 +207,6 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		scwCloud := tf.cloud.(scaleway.ScwCloud)
 		return scwCloud.Zone()
 	}
-	dest["SCW_DEFAULT_ZONE"] = func() string {
-		return os.Getenv("SCW_DEFAULT_ZONE")
-	}
 	dest["SCW_DNS_ZONE"] = func() string {
 		return cluster.Spec.DNSZone
 	}

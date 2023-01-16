@@ -203,8 +203,6 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	configAssets := nodeupConfig.Assets[architecture]
 	assetStore := fi.NewAssetStore(c.CacheDir)
 	for _, asset := range configAssets {
-		// TODO(Mia-Cross): remove this print later
-		fmt.Printf("***** adding asset [%s]", asset)
 		err := assetStore.Add(asset)
 		if err != nil {
 			return fmt.Errorf("error adding asset %q: %v", asset, err)

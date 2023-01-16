@@ -102,6 +102,7 @@ func (_ *Volume) CheckChanges(a, e, changes *Volume) error {
 
 func (_ *Volume) RenderScw(t *scaleway.ScwAPITarget, a, e, changes *Volume) error {
 	if a != nil {
+		// TODO(Mia-Cross): handle the update of tags at least
 		klog.Infof("Scaleway does not support changes to volumes for the moment")
 		return nil
 	}

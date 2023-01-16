@@ -71,6 +71,7 @@ func NewScwCloudProvider() (*ScwCloudProvider, error) {
 		scw.WithEnv(),
 		scw.WithDefaultRegion(region),
 		scw.WithDefaultZone(zone),
+		scw.WithDefaultRegion(region),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error creating client: %w", err)

@@ -145,8 +145,6 @@ func displayEnv() {
 
 	fmt.Printf(fmt.Sprintf("SCW_ACCESS_KEY = %s\n", os.Getenv("SCW_ACCESS_KEY")))
 	fmt.Printf(fmt.Sprintf("SCW_SECRET_KEY = %s\n", os.Getenv("SCW_SECRET_KEY")))
-	fmt.Printf(fmt.Sprintf("SCW_DEFAULT_REGION = %s\n", os.Getenv("SCW_DEFAULT_REGION")))
-	fmt.Printf(fmt.Sprintf("SCW_DEFAULT_ZONE = %s\n", os.Getenv("SCW_DEFAULT_ZONE")))
 	fmt.Printf(fmt.Sprintf("SCW_DEFAULT_PROJECT_ID = %s\n", os.Getenv("SCW_DEFAULT_PROJECT_ID")))
 
 	fmt.Printf("\n********************* S3 credentials *********************\n\n")
