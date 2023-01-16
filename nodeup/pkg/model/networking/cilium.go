@@ -39,8 +39,6 @@ var _ fi.NodeupModelBuilder = &CiliumBuilder{}
 
 // Build is responsible for configuring the network cni
 func (b *CiliumBuilder) Build(c *fi.NodeupModelBuilderContext) error {
-	cilium := b.Cluster.Spec.Networking.Cilium
-
 	// As long as the Cilium Etcd cluster exists, we should do this
 	if apiModel.UseCiliumEtcd(b.Cluster) {
 		if err := b.buildCiliumEtcdSecrets(c); err != nil {
@@ -48,7 +46,7 @@ func (b *CiliumBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		}
 	}
 
-	if cilium == nil {
+	if b.NodeupConfig.Networking.Cilium == nil {
 		return nil
 	}
 
