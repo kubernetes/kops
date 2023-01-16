@@ -66,6 +66,8 @@ type Config struct {
 	Networking kops.NetworkingSpec
 	// UseCiliumEtcd is true when a Cilium etcd cluster is present.
 	UseCiliumEtcd bool `json:",omitempty"`
+	// UsesKubenet specifies that the CNI is derived from Kubenet.
+	UsesKubenet bool `json:",omitempty"`
 	// NTPUnmanaged is true when NTP is not managed by kOps.
 	NTPUnmanaged bool `json:",omitempty"`
 	// SysctlParameters will configure kernel parameters using sysctl(8). When
@@ -187,6 +189,7 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 			NonMasqueradeCIDR:     cluster.Spec.Networking.NonMasqueradeCIDR,
 			ServiceClusterIPRange: cluster.Spec.Networking.ServiceClusterIPRange,
 		},
+		UsesKubenet:      cluster.Spec.Networking.UsesKubenet(),
 		SysctlParameters: instanceGroup.Spec.SysctlParameters,
 		VolumeMounts:     instanceGroup.Spec.VolumeMounts,
 		FileAssets:       append(filterFileAssets(instanceGroup.Spec.FileAssets, role), filterFileAssets(cluster.Spec.FileAssets, role)...),
