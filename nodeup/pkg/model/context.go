@@ -403,8 +403,8 @@ func (c *NodeupModelContext) UseKopsControllerForNodeBootstrap() bool {
 // UsesSecondaryIP checks if the CNI in use attaches secondary interfaces to the host.
 func (c *NodeupModelContext) UsesSecondaryIP() bool {
 	return (c.Cluster.Spec.Networking.CNI != nil && c.Cluster.Spec.Networking.CNI.UsesSecondaryIP) ||
-		c.Cluster.Spec.Networking.AmazonVPC != nil ||
-		(c.Cluster.Spec.Networking.Cilium != nil && c.Cluster.Spec.Networking.Cilium.IPAM == kops.CiliumIpamEni) ||
+		c.NodeupConfig.Networking.AmazonVPC != nil ||
+		(c.NodeupConfig.Networking.Cilium != nil && c.Cluster.Spec.Networking.Cilium.IPAM == kops.CiliumIpamEni) ||
 		c.BootConfig.CloudProvider == kops.CloudProviderHetzner
 }
 

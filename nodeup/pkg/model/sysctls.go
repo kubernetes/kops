@@ -135,7 +135,7 @@ func (b *SysctlBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	}
 
 	// Running Flannel on Amazon Linux 2 needs custom settings
-	if b.Cluster.Spec.Networking.Flannel != nil && b.Distribution == distributions.DistributionAmazonLinux2 && b.NodeupConfig.KubeProxy != nil {
+	if b.NodeupConfig.Networking.Flannel != nil && b.Distribution == distributions.DistributionAmazonLinux2 && b.NodeupConfig.KubeProxy != nil {
 		proxyMode := b.NodeupConfig.KubeProxy.ProxyMode
 		if proxyMode == "" || proxyMode == "iptables" {
 			sysctls = append(sysctls,
@@ -176,7 +176,7 @@ func (b *SysctlBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			"")
 	}
 
-	if b.Cluster.Spec.Networking.Cilium != nil {
+	if b.NodeupConfig.Networking.Cilium != nil {
 		sysctls = append(sysctls,
 			"# Depending on systemd version, cloud and distro, rp_filters may be enabled.",
 			"# Cilium requires this to be disabled. See https://github.com/cilium/cilium/issues/10645",

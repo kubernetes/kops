@@ -32,9 +32,7 @@ var _ fi.NodeupModelBuilder = &KuberouterBuilder{}
 
 // Build is responsible for configuring the kube-router
 func (b *KuberouterBuilder) Build(c *fi.NodeupModelBuilderContext) error {
-	networking := b.Cluster.Spec.Networking
-
-	if networking.KubeRouter == nil {
+	if b.NodeupConfig.Networking.KubeRouter == nil {
 		return nil
 	}
 
