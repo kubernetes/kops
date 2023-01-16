@@ -78,10 +78,10 @@ func UsesCNI(networking *kops.NetworkingSpec) bool {
 	return !UsesKubenet(networking)
 }
 
-func WellKnownServiceIP(clusterSpec *kops.ClusterSpec, id int) (net.IP, error) {
-	_, cidr, err := net.ParseCIDR(clusterSpec.Networking.ServiceClusterIPRange)
+func WellKnownServiceIP(networkingSpec *kops.NetworkingSpec, id int) (net.IP, error) {
+	_, cidr, err := net.ParseCIDR(networkingSpec.ServiceClusterIPRange)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing ServiceClusterIPRange %q: %v", clusterSpec.Networking.ServiceClusterIPRange, err)
+		return nil, fmt.Errorf("error parsing ServiceClusterIPRange %q: %v", networkingSpec.ServiceClusterIPRange, err)
 	}
 
 	ip4 := cidr.IP.To4()
@@ -107,7 +107,7 @@ func WellKnownServiceIP(clusterSpec *kops.ClusterSpec, id int) (net.IP, error) {
 		return serviceIP, nil
 	}
 
-	return nil, fmt.Errorf("unexpected IP address type for ServiceClusterIPRange: %s", clusterSpec.Networking.ServiceClusterIPRange)
+	return nil, fmt.Errorf("unexpected IP address type for ServiceClusterIPRange: %s", networkingSpec.ServiceClusterIPRange)
 }
 
 func IsBaseURL(kubernetesVersion string) bool {

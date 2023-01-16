@@ -43,6 +43,12 @@ KubeProxy:
 KubeletConfig:
   kubeconfigPath: /etc/kubernetes/igconfig.txt
 KubernetesVersion: 1.20.0
+Networking:
+  egressProxy:
+    httpProxy:
+      host: example.com
+      port: 80
+  nonMasqueradeCIDR: 10.100.0.0/16
 UpdatePolicy: automatic
 containerdConfig:
   logLevel: info
