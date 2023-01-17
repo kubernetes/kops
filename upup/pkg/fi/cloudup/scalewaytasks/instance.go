@@ -224,7 +224,9 @@ func (_ *Instance) RenderScw(c *fi.CloudupContext, actual, expected, changes *In
 				return fmt.Errorf("listing load-balancer's back-ends for instance creation: %w", err)
 			}
 			if backEnds.TotalCount > 1 {
-				return fmt.Errorf("cannot have multiple back-ends for load-balancer %s", loadBalancer.ID)
+				return fmt.Errorf("cannot have multiple back-ends for load-balancer %s", loadBalancer.Name)
+			} else if backEnds.TotalCount < 1 {
+				return fmt.Errorf("load-balancer %s should have 1 back-end, got 0", loadBalancer.Name)
 			}
 			backEnd := backEnds.Backends[0]
 
