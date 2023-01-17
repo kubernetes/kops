@@ -52,6 +52,10 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 		return fmt.Errorf("unhandled load-balancer type %q", lbSpec.Type)
 	}
 
+	zone, err := scaleway.ParseZoneFromClusterSpec(b.Cluster.Spec)
+	if err != nil {
+		return fmt.Errorf("building load-balancer task: %w", err)
+	}
 	lbTags := []string(nil)
 	for k, v := range b.CloudTags(b.ClusterName(), false) {
 		lbTags = append(lbTags, fmt.Sprintf("%s=%s", k, v))
@@ -60,10 +64,12 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 
 	loadBalancerName := "api." + b.ClusterName()
 	loadBalancer := &scalewaytasks.LoadBalancer{
-		Name:      fi.PtrTo(loadBalancerName),
-		Region:    fi.PtrTo(b.Region),
-		Lifecycle: b.Lifecycle,
-		Tags:      lbTags,
+		Name:                  fi.PtrTo(loadBalancerName),
+		Zone:                  fi.PtrTo(string(zone)),
+		Lifecycle:             b.Lifecycle,
+		Tags:                  lbTags,
+		Description:           "Load-balancer for kops cluster " + b.ClusterName(),
+		SslCompatibilityLevel: string(lb.SSLCompatibilityLevelSslCompatibilityLevelUnknown),
 	}
 
 	c.AddTask(loadBalancer)

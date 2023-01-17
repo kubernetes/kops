@@ -208,7 +208,7 @@ func (_ *Instance) RenderScw(c *fi.CloudupContext, actual, expected, changes *In
 	// If IG is control-plane, we add the new servers' IPs to the load-balancer's back-end
 	if len(controlPlanePrivateIPs) > 0 {
 		lbService := cloud.LBService()
-		region := scw.Region(cloud.Region())
+		zone := scw.Zone(cloud.Zone())
 
 		lbs, err := cloud.GetClusterLoadBalancers(cloud.ClusterName(expected.Tags))
 		if err != nil {
@@ -216,9 +216,9 @@ func (_ *Instance) RenderScw(c *fi.CloudupContext, actual, expected, changes *In
 		}
 
 		for _, loadBalancer := range lbs {
-			backEnds, err := lbService.ListBackends(&lb.ListBackendsRequest{
-				Region: region,
-				LBID:   loadBalancer.ID,
+			backEnds, err := lbService.ListBackends(&lb.ZonedAPIListBackendsRequest{
+				Zone: zone,
+				LBID: loadBalancer.ID,
 			})
 			if err != nil {
 				return fmt.Errorf("listing load-balancer's back-ends for instance creation: %w", err)
@@ -228,8 +228,8 @@ func (_ *Instance) RenderScw(c *fi.CloudupContext, actual, expected, changes *In
 			}
 			backEnd := backEnds.Backends[0]
 
-			_, err = lbService.AddBackendServers(&lb.AddBackendServersRequest{
-				Region:    region,
+			_, err = lbService.AddBackendServers(&lb.ZonedAPIAddBackendServersRequest{
+				Zone:      zone,
 				BackendID: backEnd.ID,
 				ServerIP:  controlPlanePrivateIPs,
 			})
@@ -237,9 +237,9 @@ func (_ *Instance) RenderScw(c *fi.CloudupContext, actual, expected, changes *In
 				return fmt.Errorf("adding servers' IPs to load-balancer's back-end: %w", err)
 			}
 
-			_, err = lbService.WaitForLb(&lb.WaitForLBRequest{
-				LBID:   loadBalancer.ID,
-				Region: region,
+			_, err = lbService.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+				LBID: loadBalancer.ID,
+				Zone: zone,
 			})
 			if err != nil {
 				return fmt.Errorf("waiting for load-balancer %s: %w", loadBalancer.ID, err)

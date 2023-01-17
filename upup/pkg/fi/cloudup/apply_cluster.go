@@ -688,7 +688,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				KopsModelContext: modelContext,
 			}
 			l.Builders = append(l.Builders,
-				&scalewaymodel.APILoadBalancerModelBuilder{ScwModelContext: scwModelContext, Lifecycle: clusterLifecycle},
+				&scalewaymodel.APILoadBalancerModelBuilder{ScwModelContext: scwModelContext, Lifecycle: networkLifecycle},
 				&scalewaymodel.InstanceModelBuilder{ScwModelContext: scwModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: clusterLifecycle},
 				&scalewaymodel.SSHKeyModelBuilder{ScwModelContext: scwModelContext, Lifecycle: securityLifecycle},
 			)
