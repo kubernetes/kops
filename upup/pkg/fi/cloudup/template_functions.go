@@ -64,6 +64,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	gcetpm "k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
+	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/util/pkg/env"
 	"sigs.k8s.io/yaml"
 )
@@ -181,6 +182,11 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 			return cluster.Spec.Networking.NetworkID
 		}
 		return cluster.Name
+	}
+
+	dest["OPENSTACK_CONF"] = func() string {
+		lines := openstack.MakeCloudConfig(cluster.Spec)
+		return "[global]\n" + strings.Join(lines, "\n") + "\n"
 	}
 
 	if featureflag.Spotinst.Enabled() {
@@ -689,6 +695,9 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 
 		case kops.CloudProviderHetzner:
 			config.Server.Provider.Hetzner = &hetzner.HetznerVerifierOptions{}
+
+		case kops.CloudProviderOpenstack:
+			config.Server.Provider.OpenStack = &openstack.OpenStackVerifierOptions{}
 
 		default:
 			return "", fmt.Errorf("unsupported cloud provider %s", cluster.Spec.GetCloudProvider())

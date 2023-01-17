@@ -54,6 +54,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/gcediscovery"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm/gcetpmsigner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
+	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/upup/pkg/fi/secrets"
@@ -754,6 +755,12 @@ func getNodeConfigFromServer(ctx context.Context, bootConfig *nodeup.BootConfig,
 		resolver = discovery
 	case api.CloudProviderHetzner:
 		a, err := hetzner.NewHetznerAuthenticator()
+		if err != nil {
+			return nil, err
+		}
+		authenticator = a
+	case api.CloudProviderOpenstack:
+		a, err := openstack.NewOpenstackAuthenticator()
 		if err != nil {
 			return nil, err
 		}
