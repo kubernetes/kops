@@ -37,6 +37,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/kms"
+	"go.uber.org/multierr"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/nodeup/pkg/model"
 	"k8s.io/kops/nodeup/pkg/model/networking"
@@ -112,8 +113,8 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	// If we're using a config server instead of vfs, nodeConfig will hold our configuration
 	var nodeConfig *nodeup.NodeConfig
 
-	if bootConfig.ConfigServer != nil {
-		response, err := getNodeConfigFromServer(ctx, &bootConfig, region)
+	if bootConfig.ConfigServer != nil && len(bootConfig.ConfigServer.Servers) > 0 {
+		response, err := getNodeConfigFromServers(ctx, &bootConfig, region)
 		if err != nil {
 			return fmt.Errorf("failed to get node config from server: %w", err)
 		}
@@ -722,8 +723,8 @@ func seedRNG(ctx context.Context, bootConfig *nodeup.BootConfig, region string) 
 	return nil
 }
 
-// getNodeConfigFromServer queries kops-controller for our node's configuration.
-func getNodeConfigFromServer(ctx context.Context, bootConfig *nodeup.BootConfig, region string) (*nodeup.BootstrapResponse, error) {
+// getNodeConfigFromServers queries kops-controllers for our node's configuration.
+func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig, region string) (*nodeup.BootstrapResponse, error) {
 	var authenticator bootstrap.Authenticator
 	var resolver resolver.Resolver
 
@@ -765,22 +766,31 @@ func getNodeConfigFromServer(ctx context.Context, bootConfig *nodeup.BootConfig,
 	client := &kopscontrollerclient.Client{
 		Authenticator: authenticator,
 		Resolver:      resolver,
+		CAs:           []byte(bootConfig.ConfigServer.CACertificates),
 	}
 
-	u, err := url.Parse(bootConfig.ConfigServer.Server)
-	if err != nil {
-		return nil, fmt.Errorf("unable to parse configuration server url %q: %w", bootConfig.ConfigServer.Server, err)
-	}
-	client.BaseURL = *u
-	client.CAs = []byte(bootConfig.ConfigServer.CACertificates)
+	var merr error
+	for _, server := range bootConfig.ConfigServer.Servers {
+		u, err := url.Parse(server)
+		if err != nil {
+			merr = multierr.Append(merr, fmt.Errorf("unable to parse configuration server url %q: %w", server, err))
+			continue
+		}
+		client.BaseURL = *u
 
-	request := nodeup.BootstrapRequest{
-		APIVersion:        nodeup.BootstrapAPIVersion,
-		IncludeNodeConfig: true,
+		request := nodeup.BootstrapRequest{
+			APIVersion:        nodeup.BootstrapAPIVersion,
+			IncludeNodeConfig: true,
+		}
+		var resp nodeup.BootstrapResponse
+		err = client.Query(ctx, &request, &resp)
+		if err != nil {
+			merr = multierr.Append(merr, err)
+			continue
+		}
+		return &resp, nil
 	}
-	var resp nodeup.BootstrapResponse
-	err = client.Query(ctx, &request, &resp)
-	return &resp, err
+	return nil, merr
 }
 
 func getAWSConfigurationMode(c *model.NodeupModelContext) (string, error) {
