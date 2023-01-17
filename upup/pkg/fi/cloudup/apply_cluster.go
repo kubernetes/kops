@@ -92,6 +92,7 @@ var TerraformCloudProviders = []kops.CloudProviderID{
 	kops.CloudProviderGCE,
 	kops.CloudProviderHetzner,
 	kops.CloudProviderScaleway,
+	kops.CloudProviderDO,
 }
 
 type ApplyClusterCmd struct {
