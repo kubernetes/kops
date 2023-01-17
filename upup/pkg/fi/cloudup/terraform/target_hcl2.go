@@ -52,7 +52,51 @@ func (t *TerraformTarget) finishHCL2() error {
 
 	t.writeDataSources(buf, dataSourcesByType)
 
+<<<<<<< HEAD
 	t.writeTerraform(buf)
+=======
+			element.Write(buf, 0, fmt.Sprintf("data %q %q", dataSourceType, dataSourceName))
+			buf.WriteString("\n")
+		}
+	}
+
+	buf.WriteString("terraform {\n")
+	buf.WriteString("  required_version = \">= 0.15.0\"\n")
+	buf.WriteString("  required_providers {\n")
+
+	if t.Cloud.ProviderID() == kops.CloudProviderGCE {
+		writeMap(buf, 4, "google", map[string]*terraformWriter.Literal{
+			"source":  terraformWriter.LiteralFromStringValue("hashicorp/google"),
+			"version": terraformWriter.LiteralFromStringValue(">= 2.19.0"),
+		})
+	} else if t.Cloud.ProviderID() == kops.CloudProviderHetzner {
+		writeMap(buf, 4, "hcloud", map[string]*terraformWriter.Literal{
+			"source":  terraformWriter.LiteralFromStringValue("hetznercloud/hcloud"),
+			"version": terraformWriter.LiteralFromStringValue(">= 1.35.1"),
+		})
+	} else if t.Cloud.ProviderID() == kops.CloudProviderAWS {
+		configurationAlias := terraformWriter.LiteralTokens("aws", "files")
+		writeMap(buf, 4, "aws", map[string]*terraformWriter.Literal{
+			"source":                terraformWriter.LiteralFromStringValue("hashicorp/aws"),
+			"version":               terraformWriter.LiteralFromStringValue(">= 4.0.0"),
+			"configuration_aliases": terraformWriter.LiteralListExpression(configurationAlias),
+		})
+		if featureflag.Spotinst.Enabled() {
+			writeMap(buf, 4, "spotinst", map[string]*terraformWriter.Literal{
+				"source":  terraformWriter.LiteralFromStringValue("spotinst/spotinst"),
+				"version": terraformWriter.LiteralFromStringValue(">= 1.33.0"),
+			})
+		}
+	} else if t.Cloud.ProviderID() == kops.CloudProviderDO {
+		writeMap(buf, 4, "digitalocean", map[string]*terraformWriter.Literal{
+			"source":  terraformWriter.LiteralFromStringValue("digitalocean/digitalocean"),
+			"version": terraformWriter.LiteralFromStringValue("~> 2.0"),
+		})
+	}
+
+	buf.WriteString("  }\n")
+	buf.WriteString("}\n")
+>>>>>>> 58d3d04107 (Initial changes for terraform support)
 
 	t.Files["kubernetes.tf"] = buf.Bytes()
 
