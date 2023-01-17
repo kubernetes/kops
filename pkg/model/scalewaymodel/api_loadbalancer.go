@@ -19,6 +19,7 @@ package scalewaymodel
 import (
 	"fmt"
 
+	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
@@ -73,6 +74,30 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 	}
 
 	c.AddTask(loadBalancer)
+
+	lbBackend := &scalewaytasks.LBBackend{
+		Name:                 fi.PtrTo("lb-backend"),
+		Lifecycle:            b.Lifecycle,
+		LBName:               fi.PtrTo(loadBalancerName),
+		Zone:                 fi.PtrTo(string(zone)),
+		ForwardProtocol:      fi.PtrTo(string(lb.ProtocolTCP)),
+		ForwardPort:          fi.PtrTo(int32(443)),
+		ForwardPortAlgorithm: fi.PtrTo(string(lb.ForwardPortAlgorithmRoundrobin)),
+		StickySessions:       fi.PtrTo(string(lb.StickySessionsTypeNone)),
+		ProxyProtocol:        fi.PtrTo(string(lb.ProxyProtocolProxyProtocolUnknown)),
+	}
+
+	c.AddTask(lbBackend)
+
+	lbFrontend := &scalewaytasks.LBFrontend{
+		Name:        fi.PtrTo("lb-frontend"),
+		Lifecycle:   b.Lifecycle,
+		LBName:      fi.PtrTo(loadBalancerName),
+		Zone:        fi.PtrTo(string(zone)),
+		InboundPort: fi.PtrTo(int32(443)),
+	}
+
+	c.AddTask(lbFrontend)
 
 	if dns.IsGossipClusterName(b.Cluster.Name) || b.Cluster.UsesPrivateDNS() || b.Cluster.UsesNoneDNS() {
 		// Ensure the LB hostname is included in the TLS certificate,

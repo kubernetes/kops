@@ -39,18 +39,6 @@ var (
 	_ = namegenerator.GetRandomName
 )
 
-// API: this API allows you to manage your load balancer service
-type API struct {
-	client *scw.Client
-}
-
-// Deprecated NewAPI returns a API object from a Scaleway client.
-func NewAPI(client *scw.Client) *API {
-	return &API{
-		client: client,
-	}
-}
-
 // ZonedAPI: this API allows you to manage your load balancer service
 type ZonedAPI struct {
 	client *scw.Client
@@ -59,6 +47,18 @@ type ZonedAPI struct {
 // NewZonedAPI returns a ZonedAPI object from a Scaleway client.
 func NewZonedAPI(client *scw.Client) *ZonedAPI {
 	return &ZonedAPI{
+		client: client,
+	}
+}
+
+// API: this API allows you to manage your load balancer service
+type API struct {
+	client *scw.Client
+}
+
+// Deprecated NewAPI returns a API object from a Scaleway client.
+func NewAPI(client *scw.Client) *API {
+	return &API{
 		client: client,
 	}
 }
@@ -996,55 +996,58 @@ type ACLSpec struct {
 
 // Backend: backend
 type Backend struct {
+	// ID: load balancer Backend ID
 	ID string `json:"id"`
-
+	// Name: load balancer Backend name
 	Name string `json:"name"`
-	// ForwardProtocol:
+	// ForwardProtocol: type of backend protocol
 	//
 	// Default value: tcp
 	ForwardProtocol Protocol `json:"forward_protocol"`
-
+	// ForwardPort: user sessions will be forwarded to this port of backend servers
 	ForwardPort int32 `json:"forward_port"`
-	// ForwardPortAlgorithm:
+	// ForwardPortAlgorithm: load balancer algorithm used to select the backend server
 	//
 	// Default value: roundrobin
 	ForwardPortAlgorithm ForwardPortAlgorithm `json:"forward_port_algorithm"`
-	// StickySessions:
+	// StickySessions: enables cookie-based session persistence
 	//
 	// Default value: none
 	StickySessions StickySessionsType `json:"sticky_sessions"`
-
+	// StickySessionsCookieName: cookie name for sticky sessions
 	StickySessionsCookieName string `json:"sticky_sessions_cookie_name"`
-
+	// HealthCheck: health Check used to verify backend servers status
 	HealthCheck *HealthCheck `json:"health_check"`
-
+	// Pool: servers IP addresses attached to the backend
 	Pool []string `json:"pool"`
-
+	// LB: load balancer the backend is attached to
 	LB *LB `json:"lb"`
-	// Deprecated
+	// Deprecated: SendProxyV2: deprecated in favor of proxy_protocol field
 	SendProxyV2 *bool `json:"send_proxy_v2,omitempty"`
-
+	// TimeoutServer: maximum server connection inactivity time (allowed time the server has to process the request)
 	TimeoutServer *time.Duration `json:"timeout_server"`
-
+	// TimeoutConnect: maximum initial server connection establishment time
 	TimeoutConnect *time.Duration `json:"timeout_connect"`
-
+	// TimeoutTunnel: maximum tunnel inactivity time after Websocket is established (take precedence over client and server timeout)
 	TimeoutTunnel *time.Duration `json:"timeout_tunnel"`
-	// OnMarkedDownAction:
+	// OnMarkedDownAction: defines what occurs when a backend server is marked down
 	//
 	// Default value: on_marked_down_action_none
 	OnMarkedDownAction OnMarkedDownAction `json:"on_marked_down_action"`
-	// ProxyProtocol:
+	// ProxyProtocol: pROXY protocol, forward client's address (must be supported by backend servers software)
 	//
 	// Default value: proxy_protocol_unknown
 	ProxyProtocol ProxyProtocol `json:"proxy_protocol"`
-
+	// CreatedAt: date at which the backend was created
 	CreatedAt *time.Time `json:"created_at"`
-
+	// UpdatedAt: date at which the backend was updated
 	UpdatedAt *time.Time `json:"updated_at"`
-
+	// FailoverHost: scaleway S3 bucket website to be served in case all backend servers are down
 	FailoverHost *string `json:"failover_host"`
-
+	// SslBridging: enable SSL between load balancer and backend servers
 	SslBridging *bool `json:"ssl_bridging"`
+	// IgnoreSslServerVerify: whether or not the server certificate should be verified
+	IgnoreSslServerVerify *bool `json:"ignore_ssl_server_verify"`
 }
 
 func (m *Backend) UnmarshalJSON(b []byte) error {
@@ -1087,9 +1090,9 @@ func (m Backend) MarshalJSON() ([]byte, error) {
 	return json.Marshal(tmp)
 }
 
-// BackendServerStats: state and statistics of your backend server like last healthcheck status, server uptime, result state of your backend server
+// BackendServerStats: state and statistics of your backend server like last health check status, server uptime, result state of your backend server
 type BackendServerStats struct {
-	// InstanceID: ID of your loadbalancer cluster server
+	// InstanceID: ID of your Load balancer cluster server
 	InstanceID string `json:"instance_id"`
 	// BackendID: ID of your Backend
 	BackendID string `json:"backend_id"`
@@ -1157,25 +1160,28 @@ type CreateCertificateRequestLetsencryptConfig struct {
 
 // Frontend: frontend
 type Frontend struct {
+	// ID: load balancer Frontend ID
 	ID string `json:"id"`
-
+	// Name: load balancer Frontend name
 	Name string `json:"name"`
-
+	// InboundPort: TCP port to listen on the front side
 	InboundPort int32 `json:"inbound_port"`
-
+	// Backend: backend resource the Frontend is attached to
 	Backend *Backend `json:"backend"`
-
+	// LB: load balancer the frontend is attached to
 	LB *LB `json:"lb"`
-
+	// TimeoutClient: maximum inactivity time on the client side
 	TimeoutClient *time.Duration `json:"timeout_client"`
-	// Deprecated
+	// Deprecated: Certificate: certificate, deprecated in favor of certificate_ids array
 	Certificate *Certificate `json:"certificate,omitempty"`
-
+	// CertificateIDs: list of certificate IDs to bind on the frontend
 	CertificateIDs []string `json:"certificate_ids"`
-
+	// CreatedAt: date at which the frontend was created
 	CreatedAt *time.Time `json:"created_at"`
-
+	// UpdatedAt: date at which the frontend was updated
 	UpdatedAt *time.Time `json:"updated_at"`
+	// EnableHTTP3: whether or not HTTP3 protocol is enabled
+	EnableHTTP3 bool `json:"enable_http3"`
 }
 
 func (m *Frontend) UnmarshalJSON(b []byte) error {
@@ -1221,27 +1227,27 @@ type HealthCheck struct {
 	// RedisConfig: the response is analyzed to find the +PONG response message
 	// Precisely one of HTTPConfig, HTTPSConfig, LdapConfig, MysqlConfig, PgsqlConfig, RedisConfig, TCPConfig must be set.
 	RedisConfig *HealthCheckRedisConfig `json:"redis_config,omitempty"`
-
+	// CheckMaxRetries: number of consecutive unsuccessful health checks, after which the server will be considered dead
 	CheckMaxRetries int32 `json:"check_max_retries"`
-
+	// TCPConfig: basic TCP health check
 	// Precisely one of HTTPConfig, HTTPSConfig, LdapConfig, MysqlConfig, PgsqlConfig, RedisConfig, TCPConfig must be set.
 	TCPConfig *HealthCheckTCPConfig `json:"tcp_config,omitempty"`
-
+	// PgsqlConfig: postgreSQL health check
 	// Precisely one of HTTPConfig, HTTPSConfig, LdapConfig, MysqlConfig, PgsqlConfig, RedisConfig, TCPConfig must be set.
 	PgsqlConfig *HealthCheckPgsqlConfig `json:"pgsql_config,omitempty"`
-
+	// HTTPConfig: HTTP health check
 	// Precisely one of HTTPConfig, HTTPSConfig, LdapConfig, MysqlConfig, PgsqlConfig, RedisConfig, TCPConfig must be set.
 	HTTPConfig *HealthCheckHTTPConfig `json:"http_config,omitempty"`
-
+	// HTTPSConfig: HTTPS health check
 	// Precisely one of HTTPConfig, HTTPSConfig, LdapConfig, MysqlConfig, PgsqlConfig, RedisConfig, TCPConfig must be set.
 	HTTPSConfig *HealthCheckHTTPSConfig `json:"https_config,omitempty"`
-
+	// Port: TCP port to use for the backend server health check
 	Port int32 `json:"port"`
-
+	// CheckTimeout: maximum time a backend server has to reply to the health check
 	CheckTimeout *time.Duration `json:"check_timeout"`
-
+	// CheckDelay: time between two consecutive health checks
 	CheckDelay *time.Duration `json:"check_delay"`
-	// CheckSendProxy: it defines whether the healthcheck should be done considering the proxy protocol
+	// CheckSendProxy: it defines whether the health check should be done considering the proxy protocol
 	CheckSendProxy bool `json:"check_send_proxy"`
 }
 
@@ -1281,20 +1287,44 @@ func (m HealthCheck) MarshalJSON() ([]byte, error) {
 	return json.Marshal(tmp)
 }
 
+// HealthCheckHTTPConfig: health check. http config
 type HealthCheckHTTPConfig struct {
+	// URI: HTTP uri used with the request
+	//
+	// HTTP uri used for Healthcheck to the backend servers
 	URI string `json:"uri"`
-
+	// Method: HTTP method used with the request
+	//
+	// HTTP method used for Healthcheck to the backend servers
 	Method string `json:"method"`
-
+	// Code: HTTP response code so the Healthcheck is considered successfull
+	//
+	// A health check response will be considered as valid if the response's status code match
 	Code *int32 `json:"code"`
+	// HostHeader: HTTP host header used with the request
+	HostHeader string `json:"host_header"`
 }
 
+// HealthCheckHTTPSConfig: health check. https config
 type HealthCheckHTTPSConfig struct {
+	// URI: HTTP uri used with the request
+	//
+	// HTTP uri used for Healthcheck to the backend servers
 	URI string `json:"uri"`
-
+	// Method: HTTP method used with the request
+	//
+	// HTTP method used for Healthcheck to the backend servers
 	Method string `json:"method"`
-
+	// Code: HTTP response code so the Healthcheck is considered successfull
+	//
+	// A health check response will be considered as valid if the response's status code match
 	Code *int32 `json:"code"`
+	// HostHeader: HTTP host header used with the request
+	HostHeader string `json:"host_header"`
+	// Sni: specifies the SNI to use to do health checks over SSL
+	//
+	// Specifies the SNI to use to do health checks over SSL
+	Sni string `json:"sni"`
 }
 
 type HealthCheckLdapConfig struct {
@@ -1316,91 +1346,95 @@ type HealthCheckTCPConfig struct {
 
 // IP: ip
 type IP struct {
+	// ID: flexible IP ID
 	ID string `json:"id"`
-
+	// IPAddress: IP address
 	IPAddress string `json:"ip_address"`
-
+	// OrganizationID: organization ID
 	OrganizationID string `json:"organization_id"`
-
-	LBID *string `json:"lb_id"`
-
-	Reverse string `json:"reverse"`
-
+	// ProjectID: project ID
 	ProjectID string `json:"project_id"`
-	// Deprecated
+	// LBID: load balancer ID
+	LBID *string `json:"lb_id"`
+	// Reverse: reverse FQDN
+	Reverse string `json:"reverse"`
+	// Deprecated: Region: the region the Flexible IP is in
 	Region *scw.Region `json:"region,omitempty"`
-
+	// Zone: the zone the Flexible IP is in
 	Zone scw.Zone `json:"zone"`
 }
 
+// Instance: instance
 type Instance struct {
+	// ID: underlying Instance ID
 	ID string `json:"id"`
-	// Status:
+	// Status: instance status
 	//
 	// Default value: unknown
 	Status InstanceStatus `json:"status"`
-
+	// IPAddress: instance IP address
 	IPAddress string `json:"ip_address"`
-
+	// CreatedAt: date at which the Instance was created
 	CreatedAt *time.Time `json:"created_at"`
-
+	// UpdatedAt: date at which the Instance was updated
 	UpdatedAt *time.Time `json:"updated_at"`
-	// Deprecated
+	// Deprecated: Region: the region the instance is in
 	Region *scw.Region `json:"region,omitempty"`
-
+	// Zone: the zone the instance is in
 	Zone scw.Zone `json:"zone"`
 }
 
 // LB: lb
 type LB struct {
+	// ID: underlying Instance ID
 	ID string `json:"id"`
-
+	// Name: load balancer name
 	Name string `json:"name"`
-
+	// Description: load balancer description
 	Description string `json:"description"`
-	// Status:
+	// Status: load balancer status
 	//
 	// Default value: unknown
 	Status LBStatus `json:"status"`
-
+	// Instances: list of underlying instances
 	Instances []*Instance `json:"instances"`
-
+	// OrganizationID: organization ID
 	OrganizationID string `json:"organization_id"`
-
+	// ProjectID: project ID
+	ProjectID string `json:"project_id"`
+	// IP: list of IPs attached to the Load balancer
 	IP []*IP `json:"ip"`
-
+	// Tags: load balancer tags
 	Tags []string `json:"tags"`
-
+	// FrontendCount: number of frontends the Load balancer has
 	FrontendCount int32 `json:"frontend_count"`
-
+	// BackendCount: number of backends the Load balancer has
 	BackendCount int32 `json:"backend_count"`
-
+	// Type: load balancer offer type
 	Type string `json:"type"`
-
+	// Subscriber: subscriber information
 	Subscriber *Subscriber `json:"subscriber"`
-	// SslCompatibilityLevel:
+	// SslCompatibilityLevel: determines the minimal SSL version which needs to be supported on client side
 	//
 	// Default value: ssl_compatibility_level_unknown
 	SslCompatibilityLevel SSLCompatibilityLevel `json:"ssl_compatibility_level"`
-
-	ProjectID string `json:"project_id"`
-
+	// CreatedAt: date at which the Load balancer was created
 	CreatedAt *time.Time `json:"created_at"`
-
+	// UpdatedAt: date at which the Load balancer was updated
 	UpdatedAt *time.Time `json:"updated_at"`
-
+	// PrivateNetworkCount: number of private networks attached to the Load balancer
 	PrivateNetworkCount int32 `json:"private_network_count"`
-
+	// RouteCount: number of routes the Load balancer has
 	RouteCount int32 `json:"route_count"`
-	// Deprecated
+	// Deprecated: Region: the region the Load balancer is in
 	Region *scw.Region `json:"region,omitempty"`
-
+	// Zone: the zone the Load balancer is in
 	Zone scw.Zone `json:"zone"`
 }
 
 // LBStats: lb stats
 type LBStats struct {
-	// BackendServersStats: list stats object of your loadbalancer
+	// BackendServersStats: list stats object of your Load balancer
 	BackendServersStats []*BackendServerStats `json:"backend_servers_stats"`
 }
 
@@ -1428,7 +1462,7 @@ type ListACLResponse struct {
 
 // ListBackendStatsResponse: list backend stats response
 type ListBackendStatsResponse struct {
-	// BackendServersStats: list backend stats object of your loadbalancer
+	// BackendServersStats: list backend stats object of your Load balancer
 	BackendServersStats []*BackendServerStats `json:"backend_servers_stats"`
 	// TotalCount: the total number of items
 	TotalCount uint32 `json:"total_count"`
@@ -1442,15 +1476,17 @@ type ListBackendsResponse struct {
 	TotalCount uint32 `json:"total_count"`
 }
 
+// ListCertificatesResponse: list certificates response
 type ListCertificatesResponse struct {
+	// Certificates: list of certificates
 	Certificates []*Certificate `json:"certificates"`
-
+	// TotalCount: the total number of items
 	TotalCount uint32 `json:"total_count"`
 }
 
 // ListFrontendsResponse: list frontends response
 type ListFrontendsResponse struct {
-	// Frontends: list frontends object of your loadbalancer
+	// Frontends: list frontends object of your Load balancer
 	Frontends []*Frontend `json:"frontends"`
 	// TotalCount: total count, wihtout pagination
 	TotalCount uint32 `json:"total_count"`
@@ -1464,22 +1500,27 @@ type ListIPsResponse struct {
 	TotalCount uint32 `json:"total_count"`
 }
 
+// ListLBPrivateNetworksResponse: list lb private networks response
 type ListLBPrivateNetworksResponse struct {
+	// PrivateNetwork: private networks of a given load balancer
 	PrivateNetwork []*PrivateNetwork `json:"private_network"`
-
+	// TotalCount: the total number of items
 	TotalCount uint32 `json:"total_count"`
 }
 
+// ListLBTypesResponse: list lb types response
 type ListLBTypesResponse struct {
+	// LBTypes: different types of LB
 	LBTypes []*LBType `json:"lb_types"`
-
+	// TotalCount: the total number of items
 	TotalCount uint32 `json:"total_count"`
 }
 
-// ListLBsResponse: list lbs response
+// ListLBsResponse: get list of Load balancers
 type ListLBsResponse struct {
+	// LBs: list of Load balancer
 	LBs []*LB `json:"lbs"`
-
+	// TotalCount: the total number of items
 	TotalCount uint32 `json:"total_count"`
 }
 
@@ -1586,3005 +1627,12 @@ type SubscriberWebhookConfig struct {
 	URI string `json:"uri"`
 }
 
-// Service API
-
-type ListLBsRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// Name: use this to search by name
-	Name *string `json:"-"`
-	// OrderBy:
-	//
-	// Default value: created_at_asc
-	OrderBy ListLBsRequestOrderBy `json:"-"`
-
-	PageSize *uint32 `json:"-"`
-
-	Page *int32 `json:"-"`
-	// OrganizationID: filter LBs by organization ID
-	OrganizationID *string `json:"-"`
-	// ProjectID: filter LBs by project ID
-	ProjectID *string `json:"-"`
-}
-
-// ListLBs: list load balancers
-func (s *API) ListLBs(req *ListLBsRequest, opts ...scw.RequestOption) (*ListLBsResponse, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	defaultPageSize, exist := s.client.GetDefaultPageSize()
-	if (req.PageSize == nil || *req.PageSize == 0) && exist {
-		req.PageSize = &defaultPageSize
-	}
-
-	query := url.Values{}
-	parameter.AddToQuery(query, "name", req.Name)
-	parameter.AddToQuery(query, "order_by", req.OrderBy)
-	parameter.AddToQuery(query, "page_size", req.PageSize)
-	parameter.AddToQuery(query, "page", req.Page)
-	parameter.AddToQuery(query, "organization_id", req.OrganizationID)
-	parameter.AddToQuery(query, "project_id", req.ProjectID)
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "GET",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs",
-		Query:   query,
-		Headers: http.Header{},
-	}
-
-	var resp ListLBsResponse
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type CreateLBRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// Deprecated: OrganizationID: owner of resources
-	// Precisely one of OrganizationID, ProjectID must be set.
-	OrganizationID *string `json:"organization_id,omitempty"`
-	// ProjectID: assign the resource to a project ID
-	// Precisely one of OrganizationID, ProjectID must be set.
-	ProjectID *string `json:"project_id,omitempty"`
-	// Name: resource names
-	Name string `json:"name"`
-	// Description: resource description
-	Description string `json:"description"`
-	// IPID: just like for compute instances, when you destroy a load balancer, you can keep its highly available IP address and reuse it for another load balancer later
-	IPID *string `json:"ip_id"`
-	// Tags: list of keyword
-	Tags []string `json:"tags"`
-	// Type: load balancer offer type
-	Type string `json:"type"`
-	// SslCompatibilityLevel:
-	//
-	// Enforces minimal SSL version (in SSL/TLS offloading context).
-	// - `intermediate` General-purpose servers with a variety of clients, recommended for almost all systems (Supports Firefox 27, Android 4.4.2, Chrome 31, Edge, IE 11 on Windows 7, Java 8u31, OpenSSL 1.0.1, Opera 20, and Safari 9).
-	// - `modern` Services with clients that support TLS 1.3 and don't need backward compatibility (Firefox 63, Android 10.0, Chrome 70, Edge 75, Java 11, OpenSSL 1.1.1, Opera 57, and Safari 12.1).
-	// - `old` Compatible with a number of very old clients, and should be used only as a last resort (Firefox 1, Android 2.3, Chrome 1, Edge 12, IE8 on Windows XP, Java 6, OpenSSL 0.9.8, Opera 5, and Safari 1).
-	//
-	// Default value: ssl_compatibility_level_unknown
-	SslCompatibilityLevel SSLCompatibilityLevel `json:"ssl_compatibility_level"`
-}
-
-// CreateLB: create a load balancer
-func (s *API) CreateLB(req *CreateLBRequest, opts ...scw.RequestOption) (*LB, error) {
-	var err error
-
-	defaultProjectID, exist := s.client.GetDefaultProjectID()
-	if exist && req.OrganizationID == nil && req.ProjectID == nil {
-		req.ProjectID = &defaultProjectID
-	}
-
-	defaultOrganizationID, exist := s.client.GetDefaultOrganizationID()
-	if exist && req.OrganizationID == nil && req.ProjectID == nil {
-		req.OrganizationID = &defaultOrganizationID
-	}
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if req.Name == "" {
-		req.Name = namegenerator.GetRandomName("lb")
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "POST",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs",
-		Headers: http.Header{},
-	}
-
-	err = scwReq.SetBody(req)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp LB
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type GetLBRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// LBID: load balancer ID
-	LBID string `json:"-"`
-}
-
-// GetLB: get a load balancer
-func (s *API) GetLB(req *GetLBRequest, opts ...scw.RequestOption) (*LB, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.LBID) == "" {
-		return nil, errors.New("field LBID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "GET",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LBID) + "",
-		Headers: http.Header{},
-	}
-
-	var resp LB
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type UpdateLBRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// LBID: load balancer ID
-	LBID string `json:"-"`
-	// Name: resource name
-	Name string `json:"name"`
-	// Description: resource description
-	Description string `json:"description"`
-	// Tags: list of keywords
-	Tags []string `json:"tags"`
-	// SslCompatibilityLevel:
-	//
-	// Enforces minimal SSL version (in SSL/TLS offloading context).
-	// - `intermediate` General-purpose servers with a variety of clients, recommended for almost all systems (Supports Firefox 27, Android 4.4.2, Chrome 31, Edge, IE 11 on Windows 7, Java 8u31, OpenSSL 1.0.1, Opera 20, and Safari 9).
-	// - `modern` Services with clients that support TLS 1.3 and don't need backward compatibility (Firefox 63, Android 10.0, Chrome 70, Edge 75, Java 11, OpenSSL 1.1.1, Opera 57, and Safari 12.1).
-	// - `old` Compatible with a number of very old clients, and should be used only as a last resort (Firefox 1, Android 2.3, Chrome 1, Edge 12, IE8 on Windows XP, Java 6, OpenSSL 0.9.8, Opera 5, and Safari 1).
-	//
-	// Default value: ssl_compatibility_level_unknown
-	SslCompatibilityLevel SSLCompatibilityLevel `json:"ssl_compatibility_level"`
-}
-
-// UpdateLB: update a load balancer
-func (s *API) UpdateLB(req *UpdateLBRequest, opts ...scw.RequestOption) (*LB, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.LBID) == "" {
-		return nil, errors.New("field LBID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "PUT",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LBID) + "",
-		Headers: http.Header{},
-	}
-
-	err = scwReq.SetBody(req)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp LB
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type DeleteLBRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// LBID: load balancer ID
-	LBID string `json:"-"`
-	// ReleaseIP: set true if you don't want to keep this IP address
-	ReleaseIP bool `json:"-"`
-}
-
-// DeleteLB: delete a load balancer
-func (s *API) DeleteLB(req *DeleteLBRequest, opts ...scw.RequestOption) error {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	query := url.Values{}
-	parameter.AddToQuery(query, "release_ip", req.ReleaseIP)
-
-	if fmt.Sprint(req.Region) == "" {
-		return errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.LBID) == "" {
-		return errors.New("field LBID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "DELETE",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LBID) + "",
-		Query:   query,
-		Headers: http.Header{},
-	}
-
-	err = s.client.Do(scwReq, nil, opts...)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-type MigrateLBRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// LBID: load balancer ID
-	LBID string `json:"-"`
-	// Type: load balancer type (check /lb-types to list all type)
-	Type string `json:"type"`
-}
-
-// MigrateLB: migrate a load balancer
-func (s *API) MigrateLB(req *MigrateLBRequest, opts ...scw.RequestOption) (*LB, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.LBID) == "" {
-		return nil, errors.New("field LBID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "POST",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LBID) + "/migrate",
-		Headers: http.Header{},
-	}
-
-	err = scwReq.SetBody(req)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp LB
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type ListIPsRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// Page: page number
-	Page *int32 `json:"-"`
-	// PageSize: the number of items to return
-	PageSize *uint32 `json:"-"`
-	// IPAddress: use this to search by IP address
-	IPAddress *string `json:"-"`
-	// OrganizationID: filter IPs by organization id
-	OrganizationID *string `json:"-"`
-	// ProjectID: filter IPs by project ID
-	ProjectID *string `json:"-"`
-}
-
-// ListIPs: list IPs
-func (s *API) ListIPs(req *ListIPsRequest, opts ...scw.RequestOption) (*ListIPsResponse, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	defaultPageSize, exist := s.client.GetDefaultPageSize()
-	if (req.PageSize == nil || *req.PageSize == 0) && exist {
-		req.PageSize = &defaultPageSize
-	}
-
-	query := url.Values{}
-	parameter.AddToQuery(query, "page", req.Page)
-	parameter.AddToQuery(query, "page_size", req.PageSize)
-	parameter.AddToQuery(query, "ip_address", req.IPAddress)
-	parameter.AddToQuery(query, "organization_id", req.OrganizationID)
-	parameter.AddToQuery(query, "project_id", req.ProjectID)
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "GET",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/ips",
-		Query:   query,
-		Headers: http.Header{},
-	}
-
-	var resp ListIPsResponse
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type CreateIPRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// Deprecated: OrganizationID: owner of resources
-	// Precisely one of OrganizationID, ProjectID must be set.
-	OrganizationID *string `json:"organization_id,omitempty"`
-	// ProjectID: assign the resource to a project ID
-	// Precisely one of OrganizationID, ProjectID must be set.
-	ProjectID *string `json:"project_id,omitempty"`
-	// Reverse: reverse domain name
-	Reverse *string `json:"reverse"`
-}
-
-// CreateIP: create an IP
-func (s *API) CreateIP(req *CreateIPRequest, opts ...scw.RequestOption) (*IP, error) {
-	var err error
-
-	defaultProjectID, exist := s.client.GetDefaultProjectID()
-	if exist && req.OrganizationID == nil && req.ProjectID == nil {
-		req.ProjectID = &defaultProjectID
-	}
-
-	defaultOrganizationID, exist := s.client.GetDefaultOrganizationID()
-	if exist && req.OrganizationID == nil && req.ProjectID == nil {
-		req.OrganizationID = &defaultOrganizationID
-	}
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "POST",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/ips",
-		Headers: http.Header{},
-	}
-
-	err = scwReq.SetBody(req)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp IP
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type GetIPRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// IPID: IP address ID
-	IPID string `json:"-"`
-}
-
-// GetIP: get an IP
-func (s *API) GetIP(req *GetIPRequest, opts ...scw.RequestOption) (*IP, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.IPID) == "" {
-		return nil, errors.New("field IPID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "GET",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/ips/" + fmt.Sprint(req.IPID) + "",
-		Headers: http.Header{},
-	}
-
-	var resp IP
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type ReleaseIPRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// IPID: IP address ID
-	IPID string `json:"-"`
-}
-
-// ReleaseIP: delete an IP
-func (s *API) ReleaseIP(req *ReleaseIPRequest, opts ...scw.RequestOption) error {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.IPID) == "" {
-		return errors.New("field IPID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "DELETE",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/ips/" + fmt.Sprint(req.IPID) + "",
-		Headers: http.Header{},
-	}
-
-	err = s.client.Do(scwReq, nil, opts...)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-type UpdateIPRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// IPID: IP address ID
-	IPID string `json:"-"`
-	// Reverse: reverse DNS
-	Reverse *string `json:"reverse"`
-}
-
-// UpdateIP: update an IP
-func (s *API) UpdateIP(req *UpdateIPRequest, opts ...scw.RequestOption) (*IP, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.IPID) == "" {
-		return nil, errors.New("field IPID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "PATCH",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/ips/" + fmt.Sprint(req.IPID) + "",
-		Headers: http.Header{},
-	}
-
-	err = scwReq.SetBody(req)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp IP
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type ListBackendsRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// LBID: load balancer ID
-	LBID string `json:"-"`
-	// Name: use this to search by name
-	Name *string `json:"-"`
-	// OrderBy: choose order of response
-	//
-	// Default value: created_at_asc
-	OrderBy ListBackendsRequestOrderBy `json:"-"`
-	// Page: page number
-	Page *int32 `json:"-"`
-	// PageSize: the number of items to returns
-	PageSize *uint32 `json:"-"`
-}
-
-// ListBackends: list backends in a given load balancer
-func (s *API) ListBackends(req *ListBackendsRequest, opts ...scw.RequestOption) (*ListBackendsResponse, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	defaultPageSize, exist := s.client.GetDefaultPageSize()
-	if (req.PageSize == nil || *req.PageSize == 0) && exist {
-		req.PageSize = &defaultPageSize
-	}
-
-	query := url.Values{}
-	parameter.AddToQuery(query, "name", req.Name)
-	parameter.AddToQuery(query, "order_by", req.OrderBy)
-	parameter.AddToQuery(query, "page", req.Page)
-	parameter.AddToQuery(query, "page_size", req.PageSize)
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.LBID) == "" {
-		return nil, errors.New("field LBID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "GET",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LBID) + "/backends",
-		Query:   query,
-		Headers: http.Header{},
-	}
-
-	var resp ListBackendsResponse
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type CreateBackendRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// LBID: load balancer ID
-	LBID string `json:"-"`
-	// Name: resource name
-	Name string `json:"name"`
-	// ForwardProtocol: backend protocol. TCP or HTTP
-	//
-	// Default value: tcp
-	ForwardProtocol Protocol `json:"forward_protocol"`
-	// ForwardPort: user sessions will be forwarded to this port of backend servers
-	ForwardPort int32 `json:"forward_port"`
-	// ForwardPortAlgorithm: load balancing algorithm
-	//
-	// Default value: roundrobin
-	ForwardPortAlgorithm ForwardPortAlgorithm `json:"forward_port_algorithm"`
-	// StickySessions: enables cookie-based session persistence
-	//
-	// Default value: none
-	StickySessions StickySessionsType `json:"sticky_sessions"`
-	// StickySessionsCookieName: cookie name for for sticky sessions
-	StickySessionsCookieName string `json:"sticky_sessions_cookie_name"`
-	// HealthCheck: see the Healthcheck object description
-	HealthCheck *HealthCheck `json:"health_check"`
-	// ServerIP: backend server IP addresses list (IPv4 or IPv6)
-	ServerIP []string `json:"server_ip"`
-	// Deprecated: SendProxyV2: deprecated in favor of proxy_protocol field !
-	SendProxyV2 *bool `json:"send_proxy_v2,omitempty"`
-	// TimeoutServer: maximum server connection inactivity time
-	TimeoutServer *time.Duration `json:"timeout_server"`
-	// TimeoutConnect: maximum initical server connection establishment time
-	TimeoutConnect *time.Duration `json:"timeout_connect"`
-	// TimeoutTunnel: maximum tunnel inactivity time
-	TimeoutTunnel *time.Duration `json:"timeout_tunnel"`
-	// OnMarkedDownAction: modify what occurs when a backend server is marked down
-	//
-	// Default value: on_marked_down_action_none
-	OnMarkedDownAction OnMarkedDownAction `json:"on_marked_down_action"`
-	// ProxyProtocol: pROXY protocol, forward client's address (must be supported by backend servers software)
-	//
-	// The PROXY protocol informs the other end about the incoming connection, so that it can know the client's address or the public address it accessed to, whatever the upper layer protocol.
-	//
-	// * `proxy_protocol_none` Disable proxy protocol.
-	// * `proxy_protocol_v1` Version one (text format).
-	// * `proxy_protocol_v2` Version two (binary format).
-	// * `proxy_protocol_v2_ssl` Version two with SSL connection.
-	// * `proxy_protocol_v2_ssl_cn` Version two with SSL connection and common name information.
-	//
-	// Default value: proxy_protocol_unknown
-	ProxyProtocol ProxyProtocol `json:"proxy_protocol"`
-	// FailoverHost: scaleway S3 bucket website to be served in case all backend servers are down
-	//
-	// Only the host part of the Scaleway S3 bucket website is expected.
-	// E.g. `failover-website.s3-website.fr-par.scw.cloud` if your bucket website URL is `https://failover-website.s3-website.fr-par.scw.cloud/`.
-	//
-	FailoverHost *string `json:"failover_host"`
-	// SslBridging: enable SSL between load balancer and backend servers
-	SslBridging *bool `json:"ssl_bridging"`
-}
-
-func (m *CreateBackendRequest) UnmarshalJSON(b []byte) error {
-	type tmpType CreateBackendRequest
-	tmp := struct {
-		tmpType
-
-		TmpTimeoutServer  *marshaler.Duration `json:"timeout_server"`
-		TmpTimeoutConnect *marshaler.Duration `json:"timeout_connect"`
-		TmpTimeoutTunnel  *marshaler.Duration `json:"timeout_tunnel"`
-	}{}
-	err := json.Unmarshal(b, &tmp)
-	if err != nil {
-		return err
-	}
-
-	*m = CreateBackendRequest(tmp.tmpType)
-
-	m.TimeoutServer = tmp.TmpTimeoutServer.Standard()
-	m.TimeoutConnect = tmp.TmpTimeoutConnect.Standard()
-	m.TimeoutTunnel = tmp.TmpTimeoutTunnel.Standard()
-	return nil
-}
-
-func (m CreateBackendRequest) MarshalJSON() ([]byte, error) {
-	type tmpType CreateBackendRequest
-	tmp := struct {
-		tmpType
-
-		TmpTimeoutServer  *marshaler.Duration `json:"timeout_server"`
-		TmpTimeoutConnect *marshaler.Duration `json:"timeout_connect"`
-		TmpTimeoutTunnel  *marshaler.Duration `json:"timeout_tunnel"`
-	}{
-		tmpType: tmpType(m),
-
-		TmpTimeoutServer:  marshaler.NewDuration(m.TimeoutServer),
-		TmpTimeoutConnect: marshaler.NewDuration(m.TimeoutConnect),
-		TmpTimeoutTunnel:  marshaler.NewDuration(m.TimeoutTunnel),
-	}
-	return json.Marshal(tmp)
-}
-
-// CreateBackend: create a backend in a given load balancer
-func (s *API) CreateBackend(req *CreateBackendRequest, opts ...scw.RequestOption) (*Backend, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if req.Name == "" {
-		req.Name = namegenerator.GetRandomName("lbb")
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.LBID) == "" {
-		return nil, errors.New("field LBID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "POST",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LBID) + "/backends",
-		Headers: http.Header{},
-	}
-
-	err = scwReq.SetBody(req)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp Backend
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type GetBackendRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// BackendID: backend ID
-	BackendID string `json:"-"`
-}
-
-// GetBackend: get a backend in a given load balancer
-func (s *API) GetBackend(req *GetBackendRequest, opts ...scw.RequestOption) (*Backend, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.BackendID) == "" {
-		return nil, errors.New("field BackendID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "GET",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/backends/" + fmt.Sprint(req.BackendID) + "",
-		Headers: http.Header{},
-	}
-
-	var resp Backend
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type UpdateBackendRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// BackendID: backend ID to update
-	BackendID string `json:"-"`
-	// Name: resource name
-	Name string `json:"name"`
-	// ForwardProtocol: backend protocol. TCP or HTTP
-	//
-	// Default value: tcp
-	ForwardProtocol Protocol `json:"forward_protocol"`
-	// ForwardPort: user sessions will be forwarded to this port of backend servers
-	ForwardPort int32 `json:"forward_port"`
-	// ForwardPortAlgorithm: load balancing algorithm
-	//
-	// Default value: roundrobin
-	ForwardPortAlgorithm ForwardPortAlgorithm `json:"forward_port_algorithm"`
-	// StickySessions: enable cookie-based session persistence
-	//
-	// Default value: none
-	StickySessions StickySessionsType `json:"sticky_sessions"`
-	// StickySessionsCookieName: cookie name for for sticky sessions
-	StickySessionsCookieName string `json:"sticky_sessions_cookie_name"`
-	// Deprecated: SendProxyV2: deprecated in favor of proxy_protocol field!
-	SendProxyV2 *bool `json:"send_proxy_v2,omitempty"`
-	// TimeoutServer: maximum server connection inactivity time
-	TimeoutServer *time.Duration `json:"timeout_server"`
-	// TimeoutConnect: maximum initial server connection establishment time
-	TimeoutConnect *time.Duration `json:"timeout_connect"`
-	// TimeoutTunnel: maximum tunnel inactivity time
-	TimeoutTunnel *time.Duration `json:"timeout_tunnel"`
-	// OnMarkedDownAction: modify what occurs when a backend server is marked down
-	//
-	// Default value: on_marked_down_action_none
-	OnMarkedDownAction OnMarkedDownAction `json:"on_marked_down_action"`
-	// ProxyProtocol: pROXY protocol, forward client's address (must be supported by backend servers software)
-	//
-	// The PROXY protocol informs the other end about the incoming connection, so that it can know the client's address or the public address it accessed to, whatever the upper layer protocol is.
-	//
-	// * `proxy_protocol_none` Disable proxy protocol.
-	// * `proxy_protocol_v1` Version one (text format).
-	// * `proxy_protocol_v2` Version two (binary format).
-	// * `proxy_protocol_v2_ssl` Version two with SSL connection.
-	// * `proxy_protocol_v2_ssl_cn` Version two with SSL connection and common name information.
-	//
-	// Default value: proxy_protocol_unknown
-	ProxyProtocol ProxyProtocol `json:"proxy_protocol"`
-	// FailoverHost: scaleway S3 bucket website to be served in case all backend servers are down
-	//
-	// Only the host part of the Scaleway S3 bucket website is expected.
-	// Example: `failover-website.s3-website.fr-par.scw.cloud` if your bucket website URL is `https://failover-website.s3-website.fr-par.scw.cloud/`.
-	//
-	FailoverHost *string `json:"failover_host"`
-	// SslBridging: enable SSL between load balancer and backend servers
-	SslBridging *bool `json:"ssl_bridging"`
-}
-
-func (m *UpdateBackendRequest) UnmarshalJSON(b []byte) error {
-	type tmpType UpdateBackendRequest
-	tmp := struct {
-		tmpType
-
-		TmpTimeoutServer  *marshaler.Duration `json:"timeout_server"`
-		TmpTimeoutConnect *marshaler.Duration `json:"timeout_connect"`
-		TmpTimeoutTunnel  *marshaler.Duration `json:"timeout_tunnel"`
-	}{}
-	err := json.Unmarshal(b, &tmp)
-	if err != nil {
-		return err
-	}
-
-	*m = UpdateBackendRequest(tmp.tmpType)
-
-	m.TimeoutServer = tmp.TmpTimeoutServer.Standard()
-	m.TimeoutConnect = tmp.TmpTimeoutConnect.Standard()
-	m.TimeoutTunnel = tmp.TmpTimeoutTunnel.Standard()
-	return nil
-}
-
-func (m UpdateBackendRequest) MarshalJSON() ([]byte, error) {
-	type tmpType UpdateBackendRequest
-	tmp := struct {
-		tmpType
-
-		TmpTimeoutServer  *marshaler.Duration `json:"timeout_server"`
-		TmpTimeoutConnect *marshaler.Duration `json:"timeout_connect"`
-		TmpTimeoutTunnel  *marshaler.Duration `json:"timeout_tunnel"`
-	}{
-		tmpType: tmpType(m),
-
-		TmpTimeoutServer:  marshaler.NewDuration(m.TimeoutServer),
-		TmpTimeoutConnect: marshaler.NewDuration(m.TimeoutConnect),
-		TmpTimeoutTunnel:  marshaler.NewDuration(m.TimeoutTunnel),
-	}
-	return json.Marshal(tmp)
-}
-
-// UpdateBackend: update a backend in a given load balancer
-func (s *API) UpdateBackend(req *UpdateBackendRequest, opts ...scw.RequestOption) (*Backend, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.BackendID) == "" {
-		return nil, errors.New("field BackendID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "PUT",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/backends/" + fmt.Sprint(req.BackendID) + "",
-		Headers: http.Header{},
-	}
-
-	err = scwReq.SetBody(req)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp Backend
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type DeleteBackendRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// BackendID: ID of the backend to delete
-	BackendID string `json:"-"`
-}
-
-// DeleteBackend: delete a backend in a given load balancer
-func (s *API) DeleteBackend(req *DeleteBackendRequest, opts ...scw.RequestOption) error {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.BackendID) == "" {
-		return errors.New("field BackendID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "DELETE",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/backends/" + fmt.Sprint(req.BackendID) + "",
-		Headers: http.Header{},
-	}
-
-	err = s.client.Do(scwReq, nil, opts...)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-type AddBackendServersRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// BackendID: backend ID
-	BackendID string `json:"-"`
-	// ServerIP: set all IPs to add on your backend
-	ServerIP []string `json:"server_ip"`
-}
-
-// AddBackendServers: add a set of servers in a given backend
-func (s *API) AddBackendServers(req *AddBackendServersRequest, opts ...scw.RequestOption) (*Backend, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.BackendID) == "" {
-		return nil, errors.New("field BackendID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "POST",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/backends/" + fmt.Sprint(req.BackendID) + "/servers",
-		Headers: http.Header{},
-	}
-
-	err = scwReq.SetBody(req)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp Backend
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type RemoveBackendServersRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// BackendID: backend ID
-	BackendID string `json:"-"`
-	// ServerIP: set all IPs to remove of your backend
-	ServerIP []string `json:"server_ip"`
-}
-
-// RemoveBackendServers: remove a set of servers for a given backend
-func (s *API) RemoveBackendServers(req *RemoveBackendServersRequest, opts ...scw.RequestOption) (*Backend, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.BackendID) == "" {
-		return nil, errors.New("field BackendID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "DELETE",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/backends/" + fmt.Sprint(req.BackendID) + "/servers",
-		Headers: http.Header{},
-	}
-
-	err = scwReq.SetBody(req)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp Backend
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type SetBackendServersRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// BackendID: backend ID
-	BackendID string `json:"-"`
-	// ServerIP: set all IPs to add on your backend and remove all other
-	ServerIP []string `json:"server_ip"`
-}
-
-// SetBackendServers: define all servers in a given backend
-func (s *API) SetBackendServers(req *SetBackendServersRequest, opts ...scw.RequestOption) (*Backend, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.BackendID) == "" {
-		return nil, errors.New("field BackendID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "PUT",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/backends/" + fmt.Sprint(req.BackendID) + "/servers",
-		Headers: http.Header{},
-	}
-
-	err = scwReq.SetBody(req)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp Backend
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type UpdateHealthCheckRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// BackendID: backend ID
-	BackendID string `json:"-"`
-	// Port: specify the port used to health check
-	Port int32 `json:"port"`
-	// CheckDelay: time between two consecutive health checks
-	CheckDelay *time.Duration `json:"check_delay"`
-	// CheckTimeout: additional check timeout, after the connection has been already established
-	CheckTimeout *time.Duration `json:"check_timeout"`
-	// CheckMaxRetries: number of consecutive unsuccessful health checks, after wich the server will be considered dead
-	CheckMaxRetries int32 `json:"check_max_retries"`
-	// MysqlConfig: the check requires MySQL >=3.22, for older version, please use TCP check
-	// Precisely one of HTTPConfig, HTTPSConfig, LdapConfig, MysqlConfig, PgsqlConfig, RedisConfig, TCPConfig must be set.
-	MysqlConfig *HealthCheckMysqlConfig `json:"mysql_config,omitempty"`
-	// LdapConfig: the response is analyzed to find an LDAPv3 response message
-	// Precisely one of HTTPConfig, HTTPSConfig, LdapConfig, MysqlConfig, PgsqlConfig, RedisConfig, TCPConfig must be set.
-	LdapConfig *HealthCheckLdapConfig `json:"ldap_config,omitempty"`
-	// RedisConfig: the response is analyzed to find the +PONG response message
-	// Precisely one of HTTPConfig, HTTPSConfig, LdapConfig, MysqlConfig, PgsqlConfig, RedisConfig, TCPConfig must be set.
-	RedisConfig *HealthCheckRedisConfig `json:"redis_config,omitempty"`
-
-	// Precisely one of HTTPConfig, HTTPSConfig, LdapConfig, MysqlConfig, PgsqlConfig, RedisConfig, TCPConfig must be set.
-	PgsqlConfig *HealthCheckPgsqlConfig `json:"pgsql_config,omitempty"`
-
-	// Precisely one of HTTPConfig, HTTPSConfig, LdapConfig, MysqlConfig, PgsqlConfig, RedisConfig, TCPConfig must be set.
-	TCPConfig *HealthCheckTCPConfig `json:"tcp_config,omitempty"`
-
-	// Precisely one of HTTPConfig, HTTPSConfig, LdapConfig, MysqlConfig, PgsqlConfig, RedisConfig, TCPConfig must be set.
-	HTTPConfig *HealthCheckHTTPConfig `json:"http_config,omitempty"`
-
-	// Precisely one of HTTPConfig, HTTPSConfig, LdapConfig, MysqlConfig, PgsqlConfig, RedisConfig, TCPConfig must be set.
-	HTTPSConfig *HealthCheckHTTPSConfig `json:"https_config,omitempty"`
-	// CheckSendProxy: it defines whether the healthcheck should be done considering the proxy protocol
-	CheckSendProxy bool `json:"check_send_proxy"`
-}
-
-func (m *UpdateHealthCheckRequest) UnmarshalJSON(b []byte) error {
-	type tmpType UpdateHealthCheckRequest
-	tmp := struct {
-		tmpType
-
-		TmpCheckDelay   *marshaler.Duration `json:"check_delay"`
-		TmpCheckTimeout *marshaler.Duration `json:"check_timeout"`
-	}{}
-	err := json.Unmarshal(b, &tmp)
-	if err != nil {
-		return err
-	}
-
-	*m = UpdateHealthCheckRequest(tmp.tmpType)
-
-	m.CheckDelay = tmp.TmpCheckDelay.Standard()
-	m.CheckTimeout = tmp.TmpCheckTimeout.Standard()
-	return nil
-}
-
-func (m UpdateHealthCheckRequest) MarshalJSON() ([]byte, error) {
-	type tmpType UpdateHealthCheckRequest
-	tmp := struct {
-		tmpType
-
-		TmpCheckDelay   *marshaler.Duration `json:"check_delay"`
-		TmpCheckTimeout *marshaler.Duration `json:"check_timeout"`
-	}{
-		tmpType: tmpType(m),
-
-		TmpCheckDelay:   marshaler.NewDuration(m.CheckDelay),
-		TmpCheckTimeout: marshaler.NewDuration(m.CheckTimeout),
-	}
-	return json.Marshal(tmp)
-}
-
-// UpdateHealthCheck: update an healthcheck for a given backend
-func (s *API) UpdateHealthCheck(req *UpdateHealthCheckRequest, opts ...scw.RequestOption) (*HealthCheck, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.BackendID) == "" {
-		return nil, errors.New("field BackendID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "PUT",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/backends/" + fmt.Sprint(req.BackendID) + "/healthcheck",
-		Headers: http.Header{},
-	}
-
-	err = scwReq.SetBody(req)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp HealthCheck
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type ListFrontendsRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// LBID: load balancer ID
-	LBID string `json:"-"`
-	// Name: use this to search by name
-	Name *string `json:"-"`
-	// OrderBy: response order
-	//
-	// Default value: created_at_asc
-	OrderBy ListFrontendsRequestOrderBy `json:"-"`
-	// Page: page number
-	Page *int32 `json:"-"`
-	// PageSize: the number of items to returns
-	PageSize *uint32 `json:"-"`
-}
-
-// ListFrontends: list frontends in a given load balancer
-func (s *API) ListFrontends(req *ListFrontendsRequest, opts ...scw.RequestOption) (*ListFrontendsResponse, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	defaultPageSize, exist := s.client.GetDefaultPageSize()
-	if (req.PageSize == nil || *req.PageSize == 0) && exist {
-		req.PageSize = &defaultPageSize
-	}
-
-	query := url.Values{}
-	parameter.AddToQuery(query, "name", req.Name)
-	parameter.AddToQuery(query, "order_by", req.OrderBy)
-	parameter.AddToQuery(query, "page", req.Page)
-	parameter.AddToQuery(query, "page_size", req.PageSize)
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.LBID) == "" {
-		return nil, errors.New("field LBID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "GET",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LBID) + "/frontends",
-		Query:   query,
-		Headers: http.Header{},
-	}
-
-	var resp ListFrontendsResponse
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type CreateFrontendRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// LBID: load balancer ID
-	LBID string `json:"-"`
-	// Name: resource name
-	Name string `json:"name"`
-	// InboundPort: TCP port to listen on the front side
-	InboundPort int32 `json:"inbound_port"`
-	// BackendID: backend ID
-	BackendID string `json:"backend_id"`
-	// TimeoutClient: set the maximum inactivity time on the client side
-	TimeoutClient *time.Duration `json:"timeout_client"`
-	// Deprecated: CertificateID: certificate ID, deprecated in favor of certificate_ids array !
-	CertificateID *string `json:"certificate_id,omitempty"`
-	// CertificateIDs: list of certificate IDs to bind on the frontend
-	CertificateIDs *[]string `json:"certificate_ids"`
-}
-
-func (m *CreateFrontendRequest) UnmarshalJSON(b []byte) error {
-	type tmpType CreateFrontendRequest
-	tmp := struct {
-		tmpType
-
-		TmpTimeoutClient *marshaler.Duration `json:"timeout_client"`
-	}{}
-	err := json.Unmarshal(b, &tmp)
-	if err != nil {
-		return err
-	}
-
-	*m = CreateFrontendRequest(tmp.tmpType)
-
-	m.TimeoutClient = tmp.TmpTimeoutClient.Standard()
-	return nil
-}
-
-func (m CreateFrontendRequest) MarshalJSON() ([]byte, error) {
-	type tmpType CreateFrontendRequest
-	tmp := struct {
-		tmpType
-
-		TmpTimeoutClient *marshaler.Duration `json:"timeout_client"`
-	}{
-		tmpType: tmpType(m),
-
-		TmpTimeoutClient: marshaler.NewDuration(m.TimeoutClient),
-	}
-	return json.Marshal(tmp)
-}
-
-// CreateFrontend: create a frontend in a given load balancer
-func (s *API) CreateFrontend(req *CreateFrontendRequest, opts ...scw.RequestOption) (*Frontend, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if req.Name == "" {
-		req.Name = namegenerator.GetRandomName("lbf")
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.LBID) == "" {
-		return nil, errors.New("field LBID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "POST",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LBID) + "/frontends",
-		Headers: http.Header{},
-	}
-
-	err = scwReq.SetBody(req)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp Frontend
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type GetFrontendRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// FrontendID: frontend ID
-	FrontendID string `json:"-"`
-}
-
-// GetFrontend: get a frontend
-func (s *API) GetFrontend(req *GetFrontendRequest, opts ...scw.RequestOption) (*Frontend, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.FrontendID) == "" {
-		return nil, errors.New("field FrontendID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "GET",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/frontends/" + fmt.Sprint(req.FrontendID) + "",
-		Headers: http.Header{},
-	}
-
-	var resp Frontend
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type UpdateFrontendRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// FrontendID: frontend ID
-	FrontendID string `json:"-"`
-	// Name: resource name
-	Name string `json:"name"`
-	// InboundPort: TCP port to listen on the front side
-	InboundPort int32 `json:"inbound_port"`
-	// BackendID: backend ID
-	BackendID string `json:"backend_id"`
-	// TimeoutClient: client session maximum inactivity time
-	TimeoutClient *time.Duration `json:"timeout_client"`
-	// Deprecated: CertificateID: certificate ID, deprecated in favor of `certificate_ids` array!
-	CertificateID *string `json:"certificate_id,omitempty"`
-	// CertificateIDs: list of certificate IDs to bind on the frontend
-	CertificateIDs *[]string `json:"certificate_ids"`
-}
-
-func (m *UpdateFrontendRequest) UnmarshalJSON(b []byte) error {
-	type tmpType UpdateFrontendRequest
-	tmp := struct {
-		tmpType
-
-		TmpTimeoutClient *marshaler.Duration `json:"timeout_client"`
-	}{}
-	err := json.Unmarshal(b, &tmp)
-	if err != nil {
-		return err
-	}
-
-	*m = UpdateFrontendRequest(tmp.tmpType)
-
-	m.TimeoutClient = tmp.TmpTimeoutClient.Standard()
-	return nil
-}
-
-func (m UpdateFrontendRequest) MarshalJSON() ([]byte, error) {
-	type tmpType UpdateFrontendRequest
-	tmp := struct {
-		tmpType
-
-		TmpTimeoutClient *marshaler.Duration `json:"timeout_client"`
-	}{
-		tmpType: tmpType(m),
-
-		TmpTimeoutClient: marshaler.NewDuration(m.TimeoutClient),
-	}
-	return json.Marshal(tmp)
-}
-
-// UpdateFrontend: update a frontend
-func (s *API) UpdateFrontend(req *UpdateFrontendRequest, opts ...scw.RequestOption) (*Frontend, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.FrontendID) == "" {
-		return nil, errors.New("field FrontendID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "PUT",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/frontends/" + fmt.Sprint(req.FrontendID) + "",
-		Headers: http.Header{},
-	}
-
-	err = scwReq.SetBody(req)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp Frontend
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type DeleteFrontendRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// FrontendID: frontend ID to delete
-	FrontendID string `json:"-"`
-}
-
-// DeleteFrontend: delete a frontend
-func (s *API) DeleteFrontend(req *DeleteFrontendRequest, opts ...scw.RequestOption) error {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.FrontendID) == "" {
-		return errors.New("field FrontendID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "DELETE",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/frontends/" + fmt.Sprint(req.FrontendID) + "",
-		Headers: http.Header{},
-	}
-
-	err = s.client.Do(scwReq, nil, opts...)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-type ListRoutesRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// OrderBy:
-	//
-	// Default value: created_at_asc
-	OrderBy ListRoutesRequestOrderBy `json:"-"`
-
-	PageSize *uint32 `json:"-"`
-
-	Page *int32 `json:"-"`
-
-	FrontendID *string `json:"-"`
-}
-
-// ListRoutes: list all backend redirections
-func (s *API) ListRoutes(req *ListRoutesRequest, opts ...scw.RequestOption) (*ListRoutesResponse, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	defaultPageSize, exist := s.client.GetDefaultPageSize()
-	if (req.PageSize == nil || *req.PageSize == 0) && exist {
-		req.PageSize = &defaultPageSize
-	}
-
-	query := url.Values{}
-	parameter.AddToQuery(query, "order_by", req.OrderBy)
-	parameter.AddToQuery(query, "page_size", req.PageSize)
-	parameter.AddToQuery(query, "page", req.Page)
-	parameter.AddToQuery(query, "frontend_id", req.FrontendID)
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "GET",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/routes",
-		Query:   query,
-		Headers: http.Header{},
-	}
-
-	var resp ListRoutesResponse
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type CreateRouteRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// FrontendID: origin of redirection
-	FrontendID string `json:"frontend_id"`
-	// BackendID: destination of destination
-	BackendID string `json:"backend_id"`
-	// Match: value to match a redirection
-	Match *RouteMatch `json:"match"`
-}
-
-// CreateRoute: create a backend redirection
-func (s *API) CreateRoute(req *CreateRouteRequest, opts ...scw.RequestOption) (*Route, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "POST",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/routes",
-		Headers: http.Header{},
-	}
-
-	err = scwReq.SetBody(req)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp Route
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type GetRouteRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// RouteID: id of route to get
-	RouteID string `json:"-"`
-}
-
-// GetRoute: get single backend redirection
-func (s *API) GetRoute(req *GetRouteRequest, opts ...scw.RequestOption) (*Route, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.RouteID) == "" {
-		return nil, errors.New("field RouteID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "GET",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/routes/" + fmt.Sprint(req.RouteID) + "",
-		Headers: http.Header{},
-	}
-
-	var resp Route
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type UpdateRouteRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// RouteID: route id to update
-	RouteID string `json:"-"`
-	// BackendID: backend id of redirection
-	BackendID string `json:"backend_id"`
-	// Match: value to match a redirection
-	Match *RouteMatch `json:"match"`
-}
-
-// UpdateRoute: edit a backend redirection
-func (s *API) UpdateRoute(req *UpdateRouteRequest, opts ...scw.RequestOption) (*Route, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.RouteID) == "" {
-		return nil, errors.New("field RouteID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "PUT",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/routes/" + fmt.Sprint(req.RouteID) + "",
-		Headers: http.Header{},
-	}
-
-	err = scwReq.SetBody(req)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp Route
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type DeleteRouteRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// RouteID: route id to delete
-	RouteID string `json:"-"`
-}
-
-// DeleteRoute: delete a backend redirection
-func (s *API) DeleteRoute(req *DeleteRouteRequest, opts ...scw.RequestOption) error {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.RouteID) == "" {
-		return errors.New("field RouteID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "DELETE",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/routes/" + fmt.Sprint(req.RouteID) + "",
-		Headers: http.Header{},
-	}
-
-	err = s.client.Do(scwReq, nil, opts...)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-type GetLBStatsRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// LBID: load balancer ID
-	LBID string `json:"-"`
-}
-
-// Deprecated: GetLBStats: get usage statistics of a given load balancer
-func (s *API) GetLBStats(req *GetLBStatsRequest, opts ...scw.RequestOption) (*LBStats, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.LBID) == "" {
-		return nil, errors.New("field LBID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "GET",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LBID) + "/stats",
-		Headers: http.Header{},
-	}
-
-	var resp LBStats
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type ListBackendStatsRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// LBID: load balancer ID
-	LBID string `json:"-"`
-	// Page: page number
-	Page *int32 `json:"-"`
-	// PageSize: the number of items to return
-	PageSize *uint32 `json:"-"`
-}
-
-func (s *API) ListBackendStats(req *ListBackendStatsRequest, opts ...scw.RequestOption) (*ListBackendStatsResponse, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	defaultPageSize, exist := s.client.GetDefaultPageSize()
-	if (req.PageSize == nil || *req.PageSize == 0) && exist {
-		req.PageSize = &defaultPageSize
-	}
-
-	query := url.Values{}
-	parameter.AddToQuery(query, "page", req.Page)
-	parameter.AddToQuery(query, "page_size", req.PageSize)
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.LBID) == "" {
-		return nil, errors.New("field LBID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "GET",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LBID) + "/backend-stats",
-		Query:   query,
-		Headers: http.Header{},
-	}
-
-	var resp ListBackendStatsResponse
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type ListACLsRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// FrontendID: ID of your frontend
-	FrontendID string `json:"-"`
-	// OrderBy: you can order the response by created_at asc/desc or name asc/desc
-	//
-	// Default value: created_at_asc
-	OrderBy ListACLRequestOrderBy `json:"-"`
-	// Page: page number
-	Page *int32 `json:"-"`
-	// PageSize: the number of items to return
-	PageSize *uint32 `json:"-"`
-	// Name: filter acl per name
-	Name *string `json:"-"`
-}
-
-// ListACLs: list ACL for a given frontend
-func (s *API) ListACLs(req *ListACLsRequest, opts ...scw.RequestOption) (*ListACLResponse, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	defaultPageSize, exist := s.client.GetDefaultPageSize()
-	if (req.PageSize == nil || *req.PageSize == 0) && exist {
-		req.PageSize = &defaultPageSize
-	}
-
-	query := url.Values{}
-	parameter.AddToQuery(query, "order_by", req.OrderBy)
-	parameter.AddToQuery(query, "page", req.Page)
-	parameter.AddToQuery(query, "page_size", req.PageSize)
-	parameter.AddToQuery(query, "name", req.Name)
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.FrontendID) == "" {
-		return nil, errors.New("field FrontendID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "GET",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/frontends/" + fmt.Sprint(req.FrontendID) + "/acls",
-		Query:   query,
-		Headers: http.Header{},
-	}
-
-	var resp ListACLResponse
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type CreateACLRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// FrontendID: ID of your frontend
-	FrontendID string `json:"-"`
-	// Name: name of your ACL ressource
-	Name string `json:"name"`
-	// Action: action to undertake when an ACL filter matches
-	Action *ACLAction `json:"action"`
-	// Match: the ACL match rule
-	//
-	// The ACL match rule. You can have one of those three cases:
-	//
-	//   - `ip_subnet` is defined
-	//   - `http_filter` and `http_filter_value` are defined
-	//   - `ip_subnet`, `http_filter` and `http_filter_value` are defined
-	//
-	Match *ACLMatch `json:"match"`
-	// Index: order between your Acls (ascending order, 0 is first acl executed)
-	Index int32 `json:"index"`
-}
-
-// CreateACL: create an ACL for a given frontend
-func (s *API) CreateACL(req *CreateACLRequest, opts ...scw.RequestOption) (*ACL, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if req.Name == "" {
-		req.Name = namegenerator.GetRandomName("acl")
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.FrontendID) == "" {
-		return nil, errors.New("field FrontendID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "POST",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/frontends/" + fmt.Sprint(req.FrontendID) + "/acls",
-		Headers: http.Header{},
-	}
-
-	err = scwReq.SetBody(req)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp ACL
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type GetACLRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// ACLID: ID of your ACL ressource
-	ACLID string `json:"-"`
-}
-
-// GetACL: get an ACL
-func (s *API) GetACL(req *GetACLRequest, opts ...scw.RequestOption) (*ACL, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.ACLID) == "" {
-		return nil, errors.New("field ACLID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "GET",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/acls/" + fmt.Sprint(req.ACLID) + "",
-		Headers: http.Header{},
-	}
-
-	var resp ACL
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type UpdateACLRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// ACLID: ID of your ACL ressource
-	ACLID string `json:"-"`
-	// Name: name of your ACL ressource
-	Name string `json:"name"`
-	// Action: action to undertake when an ACL filter matches
-	Action *ACLAction `json:"action"`
-	// Match: the ACL match rule. At least `ip_subnet` or `http_filter` and `http_filter_value` are required
-	Match *ACLMatch `json:"match"`
-	// Index: order between your Acls (ascending order, 0 is first acl executed)
-	Index int32 `json:"index"`
-}
-
-// UpdateACL: update an ACL
-func (s *API) UpdateACL(req *UpdateACLRequest, opts ...scw.RequestOption) (*ACL, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.ACLID) == "" {
-		return nil, errors.New("field ACLID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "PUT",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/acls/" + fmt.Sprint(req.ACLID) + "",
-		Headers: http.Header{},
-	}
-
-	err = scwReq.SetBody(req)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp ACL
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type DeleteACLRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// ACLID: ID of your ACL ressource
-	ACLID string `json:"-"`
-}
-
-// DeleteACL: delete an ACL
-func (s *API) DeleteACL(req *DeleteACLRequest, opts ...scw.RequestOption) error {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.ACLID) == "" {
-		return errors.New("field ACLID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "DELETE",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/acls/" + fmt.Sprint(req.ACLID) + "",
-		Headers: http.Header{},
-	}
-
-	err = s.client.Do(scwReq, nil, opts...)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-type CreateCertificateRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// LBID: load balancer ID
-	LBID string `json:"-"`
-	// Name: certificate name
-	Name string `json:"name"`
-	// Letsencrypt: let's Encrypt type
-	// Precisely one of CustomCertificate, Letsencrypt must be set.
-	Letsencrypt *CreateCertificateRequestLetsencryptConfig `json:"letsencrypt,omitempty"`
-	// CustomCertificate: custom import certificate
-	// Precisely one of CustomCertificate, Letsencrypt must be set.
-	CustomCertificate *CreateCertificateRequestCustomCertificate `json:"custom_certificate,omitempty"`
-}
-
-// CreateCertificate: create a TLS certificate
-//
-// Generate a new TLS certificate using Let's Encrypt or import your certificate.
-func (s *API) CreateCertificate(req *CreateCertificateRequest, opts ...scw.RequestOption) (*Certificate, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if req.Name == "" {
-		req.Name = namegenerator.GetRandomName("certiticate")
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.LBID) == "" {
-		return nil, errors.New("field LBID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "POST",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LBID) + "/certificates",
-		Headers: http.Header{},
-	}
-
-	err = scwReq.SetBody(req)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp Certificate
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type ListCertificatesRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// LBID: load balancer ID
-	LBID string `json:"-"`
-	// OrderBy: you can order the response by created_at asc/desc or name asc/desc
-	//
-	// Default value: created_at_asc
-	OrderBy ListCertificatesRequestOrderBy `json:"-"`
-	// Page: page number
-	Page *int32 `json:"-"`
-	// PageSize: the number of items to return
-	PageSize *uint32 `json:"-"`
-	// Name: use this to search by name
-	Name *string `json:"-"`
-}
-
-// ListCertificates: list all TLS certificates on a given load balancer
-func (s *API) ListCertificates(req *ListCertificatesRequest, opts ...scw.RequestOption) (*ListCertificatesResponse, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	defaultPageSize, exist := s.client.GetDefaultPageSize()
-	if (req.PageSize == nil || *req.PageSize == 0) && exist {
-		req.PageSize = &defaultPageSize
-	}
-
-	query := url.Values{}
-	parameter.AddToQuery(query, "order_by", req.OrderBy)
-	parameter.AddToQuery(query, "page", req.Page)
-	parameter.AddToQuery(query, "page_size", req.PageSize)
-	parameter.AddToQuery(query, "name", req.Name)
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.LBID) == "" {
-		return nil, errors.New("field LBID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "GET",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LBID) + "/certificates",
-		Query:   query,
-		Headers: http.Header{},
-	}
-
-	var resp ListCertificatesResponse
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type GetCertificateRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// CertificateID: certificate ID
-	CertificateID string `json:"-"`
-}
-
-// GetCertificate: get a TLS certificate
-func (s *API) GetCertificate(req *GetCertificateRequest, opts ...scw.RequestOption) (*Certificate, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.CertificateID) == "" {
-		return nil, errors.New("field CertificateID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "GET",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/certificates/" + fmt.Sprint(req.CertificateID) + "",
-		Headers: http.Header{},
-	}
-
-	var resp Certificate
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type UpdateCertificateRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// CertificateID: certificate ID
-	CertificateID string `json:"-"`
-	// Name: certificate name
-	Name string `json:"name"`
-}
-
-// UpdateCertificate: update a TLS certificate
-func (s *API) UpdateCertificate(req *UpdateCertificateRequest, opts ...scw.RequestOption) (*Certificate, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.CertificateID) == "" {
-		return nil, errors.New("field CertificateID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "PUT",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/certificates/" + fmt.Sprint(req.CertificateID) + "",
-		Headers: http.Header{},
-	}
-
-	err = scwReq.SetBody(req)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp Certificate
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type DeleteCertificateRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// CertificateID: certificate ID
-	CertificateID string `json:"-"`
-}
-
-// DeleteCertificate: delete a TLS certificate
-func (s *API) DeleteCertificate(req *DeleteCertificateRequest, opts ...scw.RequestOption) error {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.CertificateID) == "" {
-		return errors.New("field CertificateID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "DELETE",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/certificates/" + fmt.Sprint(req.CertificateID) + "",
-		Headers: http.Header{},
-	}
-
-	err = s.client.Do(scwReq, nil, opts...)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-type ListLBTypesRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// Page: page number
-	Page *int32 `json:"-"`
-	// PageSize: the number of items to return
-	PageSize *uint32 `json:"-"`
-}
-
-// ListLBTypes: list all load balancer offer type
-func (s *API) ListLBTypes(req *ListLBTypesRequest, opts ...scw.RequestOption) (*ListLBTypesResponse, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	defaultPageSize, exist := s.client.GetDefaultPageSize()
-	if (req.PageSize == nil || *req.PageSize == 0) && exist {
-		req.PageSize = &defaultPageSize
-	}
-
-	query := url.Values{}
-	parameter.AddToQuery(query, "page", req.Page)
-	parameter.AddToQuery(query, "page_size", req.PageSize)
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "GET",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lb-types",
-		Query:   query,
-		Headers: http.Header{},
-	}
-
-	var resp ListLBTypesResponse
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type CreateSubscriberRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// Name: subscriber name
-	Name string `json:"name"`
-	// EmailConfig: email address configuration
-	// Precisely one of EmailConfig, WebhookConfig must be set.
-	EmailConfig *SubscriberEmailConfig `json:"email_config,omitempty"`
-	// WebhookConfig: webHook URI configuration
-	// Precisely one of EmailConfig, WebhookConfig must be set.
-	WebhookConfig *SubscriberWebhookConfig `json:"webhook_config,omitempty"`
-	// Deprecated: OrganizationID: owner of resources
-	// Precisely one of OrganizationID, ProjectID must be set.
-	OrganizationID *string `json:"organization_id,omitempty"`
-	// ProjectID: assign the resource to a project ID
-	// Precisely one of OrganizationID, ProjectID must be set.
-	ProjectID *string `json:"project_id,omitempty"`
-}
-
-// CreateSubscriber: create a subscriber, webhook or email
-func (s *API) CreateSubscriber(req *CreateSubscriberRequest, opts ...scw.RequestOption) (*Subscriber, error) {
-	var err error
-
-	defaultProjectID, exist := s.client.GetDefaultProjectID()
-	if exist && req.OrganizationID == nil && req.ProjectID == nil {
-		req.ProjectID = &defaultProjectID
-	}
-
-	defaultOrganizationID, exist := s.client.GetDefaultOrganizationID()
-	if exist && req.OrganizationID == nil && req.ProjectID == nil {
-		req.OrganizationID = &defaultOrganizationID
-	}
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "POST",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/subscribers",
-		Headers: http.Header{},
-	}
-
-	err = scwReq.SetBody(req)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp Subscriber
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type GetSubscriberRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// SubscriberID: subscriber ID
-	SubscriberID string `json:"-"`
-}
-
-// GetSubscriber: get a subscriber
-func (s *API) GetSubscriber(req *GetSubscriberRequest, opts ...scw.RequestOption) (*Subscriber, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.SubscriberID) == "" {
-		return nil, errors.New("field SubscriberID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "GET",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/subscribers/" + fmt.Sprint(req.SubscriberID) + "",
-		Headers: http.Header{},
-	}
-
-	var resp Subscriber
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type ListSubscriberRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// OrderBy: you can order the response by created_at asc/desc or name asc/desc
-	//
-	// Default value: created_at_asc
-	OrderBy ListSubscriberRequestOrderBy `json:"-"`
-	// Page: page number
-	Page *int32 `json:"-"`
-	// PageSize: the number of items to return
-	PageSize *uint32 `json:"-"`
-	// Name: use this to search by name
-	Name *string `json:"-"`
-	// OrganizationID: filter Subscribers by organization ID
-	OrganizationID *string `json:"-"`
-	// ProjectID: filter Subscribers by project ID
-	ProjectID *string `json:"-"`
-}
-
-// ListSubscriber: list all subscriber
-func (s *API) ListSubscriber(req *ListSubscriberRequest, opts ...scw.RequestOption) (*ListSubscriberResponse, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	defaultPageSize, exist := s.client.GetDefaultPageSize()
-	if (req.PageSize == nil || *req.PageSize == 0) && exist {
-		req.PageSize = &defaultPageSize
-	}
-
-	query := url.Values{}
-	parameter.AddToQuery(query, "order_by", req.OrderBy)
-	parameter.AddToQuery(query, "page", req.Page)
-	parameter.AddToQuery(query, "page_size", req.PageSize)
-	parameter.AddToQuery(query, "name", req.Name)
-	parameter.AddToQuery(query, "organization_id", req.OrganizationID)
-	parameter.AddToQuery(query, "project_id", req.ProjectID)
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "GET",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/subscribers",
-		Query:   query,
-		Headers: http.Header{},
-	}
-
-	var resp ListSubscriberResponse
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type UpdateSubscriberRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// SubscriberID: assign the resource to a project IDs
-	SubscriberID string `json:"-"`
-	// Name: subscriber name
-	Name string `json:"name"`
-	// EmailConfig: email address configuration
-	// Precisely one of EmailConfig, WebhookConfig must be set.
-	EmailConfig *SubscriberEmailConfig `json:"email_config,omitempty"`
-	// WebhookConfig: webHook URI configuration
-	// Precisely one of EmailConfig, WebhookConfig must be set.
-	WebhookConfig *SubscriberWebhookConfig `json:"webhook_config,omitempty"`
-}
-
-// UpdateSubscriber: update a subscriber
-func (s *API) UpdateSubscriber(req *UpdateSubscriberRequest, opts ...scw.RequestOption) (*Subscriber, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.SubscriberID) == "" {
-		return nil, errors.New("field SubscriberID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "PUT",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/subscribers/" + fmt.Sprint(req.SubscriberID) + "",
-		Headers: http.Header{},
-	}
-
-	err = scwReq.SetBody(req)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp Subscriber
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type DeleteSubscriberRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// SubscriberID: subscriber ID
-	SubscriberID string `json:"-"`
-}
-
-// DeleteSubscriber: delete a subscriber
-func (s *API) DeleteSubscriber(req *DeleteSubscriberRequest, opts ...scw.RequestOption) error {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.SubscriberID) == "" {
-		return errors.New("field SubscriberID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "DELETE",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lb/subscriber/" + fmt.Sprint(req.SubscriberID) + "",
-		Headers: http.Header{},
-	}
-
-	err = s.client.Do(scwReq, nil, opts...)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-type SubscribeToLBRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// LBID: load balancer ID
-	LBID string `json:"-"`
-	// SubscriberID: subscriber ID
-	SubscriberID string `json:"subscriber_id"`
-}
-
-// SubscribeToLB: subscribe a subscriber to a given load balancer
-func (s *API) SubscribeToLB(req *SubscribeToLBRequest, opts ...scw.RequestOption) (*LB, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.LBID) == "" {
-		return nil, errors.New("field LBID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "POST",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lb/" + fmt.Sprint(req.LBID) + "/subscribe",
-		Headers: http.Header{},
-	}
-
-	err = scwReq.SetBody(req)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp LB
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type UnsubscribeFromLBRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// LBID: load balancer ID
-	LBID string `json:"-"`
-}
-
-// UnsubscribeFromLB: unsubscribe a subscriber from a given load balancer
-func (s *API) UnsubscribeFromLB(req *UnsubscribeFromLBRequest, opts ...scw.RequestOption) (*LB, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.LBID) == "" {
-		return nil, errors.New("field LBID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "DELETE",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lb/" + fmt.Sprint(req.LBID) + "/unsubscribe",
-		Headers: http.Header{},
-	}
-
-	var resp LB
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type ListLBPrivateNetworksRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-
-	LBID string `json:"-"`
-	// OrderBy:
-	//
-	// Default value: created_at_asc
-	OrderBy ListPrivateNetworksRequestOrderBy `json:"-"`
-
-	PageSize *uint32 `json:"-"`
-
-	Page *int32 `json:"-"`
-}
-
-// ListLBPrivateNetworks: list attached private network of load balancer
-func (s *API) ListLBPrivateNetworks(req *ListLBPrivateNetworksRequest, opts ...scw.RequestOption) (*ListLBPrivateNetworksResponse, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	defaultPageSize, exist := s.client.GetDefaultPageSize()
-	if (req.PageSize == nil || *req.PageSize == 0) && exist {
-		req.PageSize = &defaultPageSize
-	}
-
-	query := url.Values{}
-	parameter.AddToQuery(query, "order_by", req.OrderBy)
-	parameter.AddToQuery(query, "page_size", req.PageSize)
-	parameter.AddToQuery(query, "page", req.Page)
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.LBID) == "" {
-		return nil, errors.New("field LBID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "GET",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LBID) + "/private-networks",
-		Query:   query,
-		Headers: http.Header{},
-	}
-
-	var resp ListLBPrivateNetworksResponse
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type AttachPrivateNetworkRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// LBID: load balancer ID
-	LBID string `json:"-"`
-	// PrivateNetworkID: set your instance private network id
-	PrivateNetworkID string `json:"-"`
-	// StaticConfig: define two local ip address of your choice for each load balancer instance
-	// Precisely one of DHCPConfig, StaticConfig must be set.
-	StaticConfig *PrivateNetworkStaticConfig `json:"static_config,omitempty"`
-	// DHCPConfig: set to true if you want to let DHCP assign IP addresses
-	// Precisely one of DHCPConfig, StaticConfig must be set.
-	DHCPConfig *PrivateNetworkDHCPConfig `json:"dhcp_config,omitempty"`
-}
-
-// AttachPrivateNetwork: add load balancer on instance private network
-func (s *API) AttachPrivateNetwork(req *AttachPrivateNetworkRequest, opts ...scw.RequestOption) (*PrivateNetwork, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.LBID) == "" {
-		return nil, errors.New("field LBID cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.PrivateNetworkID) == "" {
-		return nil, errors.New("field PrivateNetworkID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "POST",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LBID) + "/private-networks/" + fmt.Sprint(req.PrivateNetworkID) + "/attach",
-		Headers: http.Header{},
-	}
-
-	err = scwReq.SetBody(req)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp PrivateNetwork
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type DetachPrivateNetworkRequest struct {
-	// Region:
-	//
-	// Region to target. If none is passed will use default region from the config
-	Region scw.Region `json:"-"`
-	// LBID: load balancer ID
-	LBID string `json:"-"`
-	// PrivateNetworkID: set your instance private network id
-	PrivateNetworkID string `json:"-"`
-}
-
-// DetachPrivateNetwork: remove load balancer of private network
-func (s *API) DetachPrivateNetwork(req *DetachPrivateNetworkRequest, opts ...scw.RequestOption) error {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	if fmt.Sprint(req.Region) == "" {
-		return errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.LBID) == "" {
-		return errors.New("field LBID cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.PrivateNetworkID) == "" {
-		return errors.New("field PrivateNetworkID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "POST",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LBID) + "/private-networks/" + fmt.Sprint(req.PrivateNetworkID) + "/detach",
-		Headers: http.Header{},
-	}
-
-	err = scwReq.SetBody(req)
-	if err != nil {
-		return err
-	}
-
-	err = s.client.Do(scwReq, nil, opts...)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 // Service ZonedAPI
+
+// Zones list localities the api is available in
+func (s *ZonedAPI) Zones() []scw.Zone {
+	return []scw.Zone{scw.ZoneFrPar1, scw.ZoneFrPar2, scw.ZoneNlAms1, scw.ZoneNlAms2, scw.ZonePlWaw1, scw.ZonePlWaw2}
+}
 
 type ZonedAPIListLBsRequest struct {
 	// Zone:
@@ -4593,13 +1641,13 @@ type ZonedAPIListLBsRequest struct {
 	Zone scw.Zone `json:"-"`
 	// Name: use this to search by name
 	Name *string `json:"-"`
-	// OrderBy:
+	// OrderBy: response order
 	//
 	// Default value: created_at_asc
 	OrderBy ListLBsRequestOrderBy `json:"-"`
-
+	// PageSize: the number of items to return
 	PageSize *uint32 `json:"-"`
-
+	// Page: page number
 	Page *int32 `json:"-"`
 	// OrganizationID: filter LBs by organization ID
 	OrganizationID *string `json:"-"`
@@ -5176,13 +2224,13 @@ type ZonedAPIListBackendsRequest struct {
 	LBID string `json:"-"`
 	// Name: use this to search by name
 	Name *string `json:"-"`
-	// OrderBy: choose order of response
+	// OrderBy: response order
 	//
 	// Default value: created_at_asc
 	OrderBy ListBackendsRequestOrderBy `json:"-"`
 	// Page: page number
 	Page *int32 `json:"-"`
-	// PageSize: the number of items to returns
+	// PageSize: the number of items to return
 	PageSize *uint32 `json:"-"`
 }
 
@@ -5253,7 +2301,7 @@ type ZonedAPICreateBackendRequest struct {
 	//
 	// Default value: none
 	StickySessions StickySessionsType `json:"sticky_sessions"`
-	// StickySessionsCookieName: cookie name for for sticky sessions
+	// StickySessionsCookieName: cookie name for sticky sessions
 	StickySessionsCookieName string `json:"sticky_sessions_cookie_name"`
 	// HealthCheck: see the Healthcheck object description
 	HealthCheck *HealthCheck `json:"health_check"`
@@ -5261,11 +2309,11 @@ type ZonedAPICreateBackendRequest struct {
 	ServerIP []string `json:"server_ip"`
 	// Deprecated: SendProxyV2: deprecated in favor of proxy_protocol field !
 	SendProxyV2 *bool `json:"send_proxy_v2,omitempty"`
-	// TimeoutServer: maximum server connection inactivity time
+	// TimeoutServer: maximum server connection inactivity time (allowed time the server has to process the request)
 	TimeoutServer *time.Duration `json:"timeout_server"`
-	// TimeoutConnect: maximum initical server connection establishment time
+	// TimeoutConnect: maximum initial server connection establishment time
 	TimeoutConnect *time.Duration `json:"timeout_connect"`
-	// TimeoutTunnel: maximum tunnel inactivity time
+	// TimeoutTunnel: maximum tunnel inactivity time after Websocket is established (take precedence over client and server timeout)
 	TimeoutTunnel *time.Duration `json:"timeout_tunnel"`
 	// OnMarkedDownAction: modify what occurs when a backend server is marked down
 	//
@@ -5291,6 +2339,8 @@ type ZonedAPICreateBackendRequest struct {
 	FailoverHost *string `json:"failover_host"`
 	// SslBridging: enable SSL between load balancer and backend servers
 	SslBridging *bool `json:"ssl_bridging"`
+	// IgnoreSslServerVerify: set to true to ignore server certificate verification
+	IgnoreSslServerVerify *bool `json:"ignore_ssl_server_verify"`
 }
 
 func (m *ZonedAPICreateBackendRequest) UnmarshalJSON(b []byte) error {
@@ -5438,15 +2488,15 @@ type ZonedAPIUpdateBackendRequest struct {
 	//
 	// Default value: none
 	StickySessions StickySessionsType `json:"sticky_sessions"`
-	// StickySessionsCookieName: cookie name for for sticky sessions
+	// StickySessionsCookieName: cookie name for sticky sessions
 	StickySessionsCookieName string `json:"sticky_sessions_cookie_name"`
 	// Deprecated: SendProxyV2: deprecated in favor of proxy_protocol field!
 	SendProxyV2 *bool `json:"send_proxy_v2,omitempty"`
-	// TimeoutServer: maximum server connection inactivity time
+	// TimeoutServer: maximum server connection inactivity time (allowed time the server has to process the request)
 	TimeoutServer *time.Duration `json:"timeout_server"`
 	// TimeoutConnect: maximum initial server connection establishment time
 	TimeoutConnect *time.Duration `json:"timeout_connect"`
-	// TimeoutTunnel: maximum tunnel inactivity time
+	// TimeoutTunnel: maximum tunnel inactivity time after Websocket is established (take precedence over client and server timeout)
 	TimeoutTunnel *time.Duration `json:"timeout_tunnel"`
 	// OnMarkedDownAction: modify what occurs when a backend server is marked down
 	//
@@ -5472,6 +2522,8 @@ type ZonedAPIUpdateBackendRequest struct {
 	FailoverHost *string `json:"failover_host"`
 	// SslBridging: enable SSL between load balancer and backend servers
 	SslBridging *bool `json:"ssl_bridging"`
+	// IgnoreSslServerVerify: set to true to ignore server certificate verification
+	IgnoreSslServerVerify *bool `json:"ignore_ssl_server_verify"`
 }
 
 func (m *ZonedAPIUpdateBackendRequest) UnmarshalJSON(b []byte) error {
@@ -5745,9 +2797,9 @@ type ZonedAPIUpdateHealthCheckRequest struct {
 	Port int32 `json:"port"`
 	// CheckDelay: time between two consecutive health checks
 	CheckDelay *time.Duration `json:"check_delay"`
-	// CheckTimeout: additional check timeout, after the connection has been already established
+	// CheckTimeout: maximum time a backend server has to reply to the health check
 	CheckTimeout *time.Duration `json:"check_timeout"`
-	// CheckMaxRetries: number of consecutive unsuccessful health checks, after wich the server will be considered dead
+	// CheckMaxRetries: number of consecutive unsuccessful health checks, after which the server will be considered dead
 	CheckMaxRetries int32 `json:"check_max_retries"`
 	// MysqlConfig: the check requires MySQL >=3.22, for older version, please use TCP check
 	// Precisely one of HTTPConfig, HTTPSConfig, LdapConfig, MysqlConfig, PgsqlConfig, RedisConfig, TCPConfig must be set.
@@ -5758,19 +2810,19 @@ type ZonedAPIUpdateHealthCheckRequest struct {
 	// RedisConfig: the response is analyzed to find the +PONG response message
 	// Precisely one of HTTPConfig, HTTPSConfig, LdapConfig, MysqlConfig, PgsqlConfig, RedisConfig, TCPConfig must be set.
 	RedisConfig *HealthCheckRedisConfig `json:"redis_config,omitempty"`
-
+	// PgsqlConfig: postgreSQL health check
 	// Precisely one of HTTPConfig, HTTPSConfig, LdapConfig, MysqlConfig, PgsqlConfig, RedisConfig, TCPConfig must be set.
 	PgsqlConfig *HealthCheckPgsqlConfig `json:"pgsql_config,omitempty"`
-
+	// TCPConfig: basic TCP health check
 	// Precisely one of HTTPConfig, HTTPSConfig, LdapConfig, MysqlConfig, PgsqlConfig, RedisConfig, TCPConfig must be set.
 	TCPConfig *HealthCheckTCPConfig `json:"tcp_config,omitempty"`
-
+	// HTTPConfig: HTTP health check
 	// Precisely one of HTTPConfig, HTTPSConfig, LdapConfig, MysqlConfig, PgsqlConfig, RedisConfig, TCPConfig must be set.
 	HTTPConfig *HealthCheckHTTPConfig `json:"http_config,omitempty"`
-
+	// HTTPSConfig: HTTPS health check
 	// Precisely one of HTTPConfig, HTTPSConfig, LdapConfig, MysqlConfig, PgsqlConfig, RedisConfig, TCPConfig must be set.
 	HTTPSConfig *HealthCheckHTTPSConfig `json:"https_config,omitempty"`
-	// CheckSendProxy: it defines whether the healthcheck should be done considering the proxy protocol
+	// CheckSendProxy: it defines whether the health check should be done considering the proxy protocol
 	CheckSendProxy bool `json:"check_send_proxy"`
 }
 
@@ -5862,7 +2914,7 @@ type ZonedAPIListFrontendsRequest struct {
 	OrderBy ListFrontendsRequestOrderBy `json:"-"`
 	// Page: page number
 	Page *int32 `json:"-"`
-	// PageSize: the number of items to returns
+	// PageSize: the number of items to return
 	PageSize *uint32 `json:"-"`
 }
 
@@ -5929,6 +2981,8 @@ type ZonedAPICreateFrontendRequest struct {
 	CertificateID *string `json:"certificate_id,omitempty"`
 	// CertificateIDs: list of certificate IDs to bind on the frontend
 	CertificateIDs *[]string `json:"certificate_ids"`
+	// EnableHTTP3: activate HTTP 3 protocol (beta)
+	EnableHTTP3 bool `json:"enable_http3"`
 }
 
 func (m *ZonedAPICreateFrontendRequest) UnmarshalJSON(b []byte) error {
@@ -6064,6 +3118,8 @@ type ZonedAPIUpdateFrontendRequest struct {
 	CertificateID *string `json:"certificate_id,omitempty"`
 	// CertificateIDs: list of certificate IDs to bind on the frontend
 	CertificateIDs *[]string `json:"certificate_ids"`
+	// EnableHTTP3: activate HTTP 3 protocol (beta)
+	EnableHTTP3 bool `json:"enable_http3"`
 }
 
 func (m *ZonedAPIUpdateFrontendRequest) UnmarshalJSON(b []byte) error {
@@ -6179,13 +3235,13 @@ type ZonedAPIListRoutesRequest struct {
 	//
 	// Zone to target. If none is passed will use default zone from the config
 	Zone scw.Zone `json:"-"`
-	// OrderBy:
+	// OrderBy: response order
 	//
 	// Default value: created_at_asc
 	OrderBy ListRoutesRequestOrderBy `json:"-"`
-
+	// PageSize: the number of items to return
 	PageSize *uint32 `json:"-"`
-
+	// Page: page number
 	Page *int32 `json:"-"`
 
 	FrontendID *string `json:"-"`
@@ -6509,7 +3565,7 @@ type ZonedAPIListACLsRequest struct {
 	Zone scw.Zone `json:"-"`
 	// FrontendID: ID of your frontend
 	FrontendID string `json:"-"`
-	// OrderBy: you can order the response by created_at asc/desc or name asc/desc
+	// OrderBy: response order
 	//
 	// Default value: created_at_asc
 	OrderBy ListACLRequestOrderBy `json:"-"`
@@ -6879,7 +3935,7 @@ type ZonedAPIListCertificatesRequest struct {
 	Zone scw.Zone `json:"-"`
 	// LBID: load balancer ID
 	LBID string `json:"-"`
-	// OrderBy: you can order the response by created_at asc/desc or name asc/desc
+	// OrderBy: response order
 	//
 	// Default value: created_at_asc
 	OrderBy ListCertificatesRequestOrderBy `json:"-"`
@@ -7222,7 +4278,7 @@ type ZonedAPIListSubscriberRequest struct {
 	//
 	// Zone to target. If none is passed will use default zone from the config
 	Zone scw.Zone `json:"-"`
-	// OrderBy: you can order the response by created_at asc/desc or name asc/desc
+	// OrderBy: response order
 	//
 	// Default value: created_at_asc
 	OrderBy ListSubscriberRequestOrderBy `json:"-"`
@@ -7467,15 +4523,15 @@ type ZonedAPIListLBPrivateNetworksRequest struct {
 	//
 	// Zone to target. If none is passed will use default zone from the config
 	Zone scw.Zone `json:"-"`
-
+	// LBID: load balancer ID
 	LBID string `json:"-"`
-	// OrderBy:
+	// OrderBy: response order
 	//
 	// Default value: created_at_asc
 	OrderBy ListPrivateNetworksRequestOrderBy `json:"-"`
-
+	// PageSize: the number of items to return
 	PageSize *uint32 `json:"-"`
-
+	// Page: page number
 	Page *int32 `json:"-"`
 }
 
@@ -7615,6 +4671,3017 @@ func (s *ZonedAPI) DetachPrivateNetwork(req *ZonedAPIDetachPrivateNetworkRequest
 	scwReq := &scw.ScalewayRequest{
 		Method:  "POST",
 		Path:    "/lb/v1/zones/" + fmt.Sprint(req.Zone) + "/lbs/" + fmt.Sprint(req.LBID) + "/private-networks/" + fmt.Sprint(req.PrivateNetworkID) + "/detach",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return err
+	}
+
+	err = s.client.Do(scwReq, nil, opts...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Service API
+
+// Regions list localities the api is available in
+func (s *API) Regions() []scw.Region {
+	return []scw.Region{scw.RegionFrPar, scw.RegionNlAms, scw.RegionPlWaw}
+}
+
+type ListLBsRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// Name: use this to search by name
+	Name *string `json:"-"`
+	// OrderBy: response order
+	//
+	// Default value: created_at_asc
+	OrderBy ListLBsRequestOrderBy `json:"-"`
+	// PageSize: the number of items to return
+	PageSize *uint32 `json:"-"`
+	// Page: page number
+	Page *int32 `json:"-"`
+	// OrganizationID: filter LBs by organization ID
+	OrganizationID *string `json:"-"`
+	// ProjectID: filter LBs by project ID
+	ProjectID *string `json:"-"`
+}
+
+// ListLBs: list load balancers
+func (s *API) ListLBs(req *ListLBsRequest, opts ...scw.RequestOption) (*ListLBsResponse, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	defaultPageSize, exist := s.client.GetDefaultPageSize()
+	if (req.PageSize == nil || *req.PageSize == 0) && exist {
+		req.PageSize = &defaultPageSize
+	}
+
+	query := url.Values{}
+	parameter.AddToQuery(query, "name", req.Name)
+	parameter.AddToQuery(query, "order_by", req.OrderBy)
+	parameter.AddToQuery(query, "page_size", req.PageSize)
+	parameter.AddToQuery(query, "page", req.Page)
+	parameter.AddToQuery(query, "organization_id", req.OrganizationID)
+	parameter.AddToQuery(query, "project_id", req.ProjectID)
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs",
+		Query:   query,
+		Headers: http.Header{},
+	}
+
+	var resp ListLBsResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type CreateLBRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// Deprecated: OrganizationID: owner of resources
+	// Precisely one of OrganizationID, ProjectID must be set.
+	OrganizationID *string `json:"organization_id,omitempty"`
+	// ProjectID: assign the resource to a project ID
+	// Precisely one of OrganizationID, ProjectID must be set.
+	ProjectID *string `json:"project_id,omitempty"`
+	// Name: resource names
+	Name string `json:"name"`
+	// Description: resource description
+	Description string `json:"description"`
+	// IPID: just like for compute instances, when you destroy a load balancer, you can keep its highly available IP address and reuse it for another load balancer later
+	IPID *string `json:"ip_id"`
+	// Tags: list of keyword
+	Tags []string `json:"tags"`
+	// Type: load balancer offer type
+	Type string `json:"type"`
+	// SslCompatibilityLevel:
+	//
+	// Enforces minimal SSL version (in SSL/TLS offloading context).
+	// - `intermediate` General-purpose servers with a variety of clients, recommended for almost all systems (Supports Firefox 27, Android 4.4.2, Chrome 31, Edge, IE 11 on Windows 7, Java 8u31, OpenSSL 1.0.1, Opera 20, and Safari 9).
+	// - `modern` Services with clients that support TLS 1.3 and don't need backward compatibility (Firefox 63, Android 10.0, Chrome 70, Edge 75, Java 11, OpenSSL 1.1.1, Opera 57, and Safari 12.1).
+	// - `old` Compatible with a number of very old clients, and should be used only as a last resort (Firefox 1, Android 2.3, Chrome 1, Edge 12, IE8 on Windows XP, Java 6, OpenSSL 0.9.8, Opera 5, and Safari 1).
+	//
+	// Default value: ssl_compatibility_level_unknown
+	SslCompatibilityLevel SSLCompatibilityLevel `json:"ssl_compatibility_level"`
+}
+
+// CreateLB: create a load balancer
+func (s *API) CreateLB(req *CreateLBRequest, opts ...scw.RequestOption) (*LB, error) {
+	var err error
+
+	defaultProjectID, exist := s.client.GetDefaultProjectID()
+	if exist && req.OrganizationID == nil && req.ProjectID == nil {
+		req.ProjectID = &defaultProjectID
+	}
+
+	defaultOrganizationID, exist := s.client.GetDefaultOrganizationID()
+	if exist && req.OrganizationID == nil && req.ProjectID == nil {
+		req.OrganizationID = &defaultOrganizationID
+	}
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if req.Name == "" {
+		req.Name = namegenerator.GetRandomName("lb")
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "POST",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp LB
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type GetLBRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// LBID: load balancer ID
+	LBID string `json:"-"`
+}
+
+// GetLB: get a load balancer
+func (s *API) GetLB(req *GetLBRequest, opts ...scw.RequestOption) (*LB, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.LBID) == "" {
+		return nil, errors.New("field LBID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LBID) + "",
+		Headers: http.Header{},
+	}
+
+	var resp LB
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type UpdateLBRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// LBID: load balancer ID
+	LBID string `json:"-"`
+	// Name: resource name
+	Name string `json:"name"`
+	// Description: resource description
+	Description string `json:"description"`
+	// Tags: list of keywords
+	Tags []string `json:"tags"`
+	// SslCompatibilityLevel:
+	//
+	// Enforces minimal SSL version (in SSL/TLS offloading context).
+	// - `intermediate` General-purpose servers with a variety of clients, recommended for almost all systems (Supports Firefox 27, Android 4.4.2, Chrome 31, Edge, IE 11 on Windows 7, Java 8u31, OpenSSL 1.0.1, Opera 20, and Safari 9).
+	// - `modern` Services with clients that support TLS 1.3 and don't need backward compatibility (Firefox 63, Android 10.0, Chrome 70, Edge 75, Java 11, OpenSSL 1.1.1, Opera 57, and Safari 12.1).
+	// - `old` Compatible with a number of very old clients, and should be used only as a last resort (Firefox 1, Android 2.3, Chrome 1, Edge 12, IE8 on Windows XP, Java 6, OpenSSL 0.9.8, Opera 5, and Safari 1).
+	//
+	// Default value: ssl_compatibility_level_unknown
+	SslCompatibilityLevel SSLCompatibilityLevel `json:"ssl_compatibility_level"`
+}
+
+// UpdateLB: update a load balancer
+func (s *API) UpdateLB(req *UpdateLBRequest, opts ...scw.RequestOption) (*LB, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.LBID) == "" {
+		return nil, errors.New("field LBID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "PUT",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LBID) + "",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp LB
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type DeleteLBRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// LBID: load balancer ID
+	LBID string `json:"-"`
+	// ReleaseIP: set true if you don't want to keep this IP address
+	ReleaseIP bool `json:"-"`
+}
+
+// DeleteLB: delete a load balancer
+func (s *API) DeleteLB(req *DeleteLBRequest, opts ...scw.RequestOption) error {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	query := url.Values{}
+	parameter.AddToQuery(query, "release_ip", req.ReleaseIP)
+
+	if fmt.Sprint(req.Region) == "" {
+		return errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.LBID) == "" {
+		return errors.New("field LBID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "DELETE",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LBID) + "",
+		Query:   query,
+		Headers: http.Header{},
+	}
+
+	err = s.client.Do(scwReq, nil, opts...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type MigrateLBRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// LBID: load balancer ID
+	LBID string `json:"-"`
+	// Type: load balancer type (check /lb-types to list all type)
+	Type string `json:"type"`
+}
+
+// MigrateLB: migrate a load balancer
+func (s *API) MigrateLB(req *MigrateLBRequest, opts ...scw.RequestOption) (*LB, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.LBID) == "" {
+		return nil, errors.New("field LBID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "POST",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LBID) + "/migrate",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp LB
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type ListIPsRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// Page: page number
+	Page *int32 `json:"-"`
+	// PageSize: the number of items to return
+	PageSize *uint32 `json:"-"`
+	// IPAddress: use this to search by IP address
+	IPAddress *string `json:"-"`
+	// OrganizationID: filter IPs by organization id
+	OrganizationID *string `json:"-"`
+	// ProjectID: filter IPs by project ID
+	ProjectID *string `json:"-"`
+}
+
+// ListIPs: list IPs
+func (s *API) ListIPs(req *ListIPsRequest, opts ...scw.RequestOption) (*ListIPsResponse, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	defaultPageSize, exist := s.client.GetDefaultPageSize()
+	if (req.PageSize == nil || *req.PageSize == 0) && exist {
+		req.PageSize = &defaultPageSize
+	}
+
+	query := url.Values{}
+	parameter.AddToQuery(query, "page", req.Page)
+	parameter.AddToQuery(query, "page_size", req.PageSize)
+	parameter.AddToQuery(query, "ip_address", req.IPAddress)
+	parameter.AddToQuery(query, "organization_id", req.OrganizationID)
+	parameter.AddToQuery(query, "project_id", req.ProjectID)
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/ips",
+		Query:   query,
+		Headers: http.Header{},
+	}
+
+	var resp ListIPsResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type CreateIPRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// Deprecated: OrganizationID: owner of resources
+	// Precisely one of OrganizationID, ProjectID must be set.
+	OrganizationID *string `json:"organization_id,omitempty"`
+	// ProjectID: assign the resource to a project ID
+	// Precisely one of OrganizationID, ProjectID must be set.
+	ProjectID *string `json:"project_id,omitempty"`
+	// Reverse: reverse domain name
+	Reverse *string `json:"reverse"`
+}
+
+// CreateIP: create an IP
+func (s *API) CreateIP(req *CreateIPRequest, opts ...scw.RequestOption) (*IP, error) {
+	var err error
+
+	defaultProjectID, exist := s.client.GetDefaultProjectID()
+	if exist && req.OrganizationID == nil && req.ProjectID == nil {
+		req.ProjectID = &defaultProjectID
+	}
+
+	defaultOrganizationID, exist := s.client.GetDefaultOrganizationID()
+	if exist && req.OrganizationID == nil && req.ProjectID == nil {
+		req.OrganizationID = &defaultOrganizationID
+	}
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "POST",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/ips",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp IP
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type GetIPRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// IPID: IP address ID
+	IPID string `json:"-"`
+}
+
+// GetIP: get an IP
+func (s *API) GetIP(req *GetIPRequest, opts ...scw.RequestOption) (*IP, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.IPID) == "" {
+		return nil, errors.New("field IPID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/ips/" + fmt.Sprint(req.IPID) + "",
+		Headers: http.Header{},
+	}
+
+	var resp IP
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type ReleaseIPRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// IPID: IP address ID
+	IPID string `json:"-"`
+}
+
+// ReleaseIP: delete an IP
+func (s *API) ReleaseIP(req *ReleaseIPRequest, opts ...scw.RequestOption) error {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.IPID) == "" {
+		return errors.New("field IPID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "DELETE",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/ips/" + fmt.Sprint(req.IPID) + "",
+		Headers: http.Header{},
+	}
+
+	err = s.client.Do(scwReq, nil, opts...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type UpdateIPRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// IPID: IP address ID
+	IPID string `json:"-"`
+	// Reverse: reverse DNS
+	Reverse *string `json:"reverse"`
+}
+
+// UpdateIP: update an IP
+func (s *API) UpdateIP(req *UpdateIPRequest, opts ...scw.RequestOption) (*IP, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.IPID) == "" {
+		return nil, errors.New("field IPID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "PATCH",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/ips/" + fmt.Sprint(req.IPID) + "",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp IP
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type ListBackendsRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// LBID: load balancer ID
+	LBID string `json:"-"`
+	// Name: use this to search by name
+	Name *string `json:"-"`
+	// OrderBy: response order
+	//
+	// Default value: created_at_asc
+	OrderBy ListBackendsRequestOrderBy `json:"-"`
+	// Page: page number
+	Page *int32 `json:"-"`
+	// PageSize: the number of items to return
+	PageSize *uint32 `json:"-"`
+}
+
+// ListBackends: list backends in a given load balancer
+func (s *API) ListBackends(req *ListBackendsRequest, opts ...scw.RequestOption) (*ListBackendsResponse, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	defaultPageSize, exist := s.client.GetDefaultPageSize()
+	if (req.PageSize == nil || *req.PageSize == 0) && exist {
+		req.PageSize = &defaultPageSize
+	}
+
+	query := url.Values{}
+	parameter.AddToQuery(query, "name", req.Name)
+	parameter.AddToQuery(query, "order_by", req.OrderBy)
+	parameter.AddToQuery(query, "page", req.Page)
+	parameter.AddToQuery(query, "page_size", req.PageSize)
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.LBID) == "" {
+		return nil, errors.New("field LBID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LBID) + "/backends",
+		Query:   query,
+		Headers: http.Header{},
+	}
+
+	var resp ListBackendsResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type CreateBackendRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// LBID: load balancer ID
+	LBID string `json:"-"`
+	// Name: resource name
+	Name string `json:"name"`
+	// ForwardProtocol: backend protocol. TCP or HTTP
+	//
+	// Default value: tcp
+	ForwardProtocol Protocol `json:"forward_protocol"`
+	// ForwardPort: user sessions will be forwarded to this port of backend servers
+	ForwardPort int32 `json:"forward_port"`
+	// ForwardPortAlgorithm: load balancing algorithm
+	//
+	// Default value: roundrobin
+	ForwardPortAlgorithm ForwardPortAlgorithm `json:"forward_port_algorithm"`
+	// StickySessions: enables cookie-based session persistence
+	//
+	// Default value: none
+	StickySessions StickySessionsType `json:"sticky_sessions"`
+	// StickySessionsCookieName: cookie name for sticky sessions
+	StickySessionsCookieName string `json:"sticky_sessions_cookie_name"`
+	// HealthCheck: see the Healthcheck object description
+	HealthCheck *HealthCheck `json:"health_check"`
+	// ServerIP: backend server IP addresses list (IPv4 or IPv6)
+	ServerIP []string `json:"server_ip"`
+	// Deprecated: SendProxyV2: deprecated in favor of proxy_protocol field !
+	SendProxyV2 *bool `json:"send_proxy_v2,omitempty"`
+	// TimeoutServer: maximum server connection inactivity time (allowed time the server has to process the request)
+	TimeoutServer *time.Duration `json:"timeout_server"`
+	// TimeoutConnect: maximum initial server connection establishment time
+	TimeoutConnect *time.Duration `json:"timeout_connect"`
+	// TimeoutTunnel: maximum tunnel inactivity time after Websocket is established (take precedence over client and server timeout)
+	TimeoutTunnel *time.Duration `json:"timeout_tunnel"`
+	// OnMarkedDownAction: modify what occurs when a backend server is marked down
+	//
+	// Default value: on_marked_down_action_none
+	OnMarkedDownAction OnMarkedDownAction `json:"on_marked_down_action"`
+	// ProxyProtocol: pROXY protocol, forward client's address (must be supported by backend servers software)
+	//
+	// The PROXY protocol informs the other end about the incoming connection, so that it can know the client's address or the public address it accessed to, whatever the upper layer protocol.
+	//
+	// * `proxy_protocol_none` Disable proxy protocol.
+	// * `proxy_protocol_v1` Version one (text format).
+	// * `proxy_protocol_v2` Version two (binary format).
+	// * `proxy_protocol_v2_ssl` Version two with SSL connection.
+	// * `proxy_protocol_v2_ssl_cn` Version two with SSL connection and common name information.
+	//
+	// Default value: proxy_protocol_unknown
+	ProxyProtocol ProxyProtocol `json:"proxy_protocol"`
+	// FailoverHost: scaleway S3 bucket website to be served in case all backend servers are down
+	//
+	// Only the host part of the Scaleway S3 bucket website is expected.
+	// E.g. `failover-website.s3-website.fr-par.scw.cloud` if your bucket website URL is `https://failover-website.s3-website.fr-par.scw.cloud/`.
+	//
+	FailoverHost *string `json:"failover_host"`
+	// SslBridging: enable SSL between load balancer and backend servers
+	SslBridging *bool `json:"ssl_bridging"`
+	// IgnoreSslServerVerify: set to true to ignore server certificate verification
+	IgnoreSslServerVerify *bool `json:"ignore_ssl_server_verify"`
+}
+
+func (m *CreateBackendRequest) UnmarshalJSON(b []byte) error {
+	type tmpType CreateBackendRequest
+	tmp := struct {
+		tmpType
+
+		TmpTimeoutServer  *marshaler.Duration `json:"timeout_server"`
+		TmpTimeoutConnect *marshaler.Duration `json:"timeout_connect"`
+		TmpTimeoutTunnel  *marshaler.Duration `json:"timeout_tunnel"`
+	}{}
+	err := json.Unmarshal(b, &tmp)
+	if err != nil {
+		return err
+	}
+
+	*m = CreateBackendRequest(tmp.tmpType)
+
+	m.TimeoutServer = tmp.TmpTimeoutServer.Standard()
+	m.TimeoutConnect = tmp.TmpTimeoutConnect.Standard()
+	m.TimeoutTunnel = tmp.TmpTimeoutTunnel.Standard()
+	return nil
+}
+
+func (m CreateBackendRequest) MarshalJSON() ([]byte, error) {
+	type tmpType CreateBackendRequest
+	tmp := struct {
+		tmpType
+
+		TmpTimeoutServer  *marshaler.Duration `json:"timeout_server"`
+		TmpTimeoutConnect *marshaler.Duration `json:"timeout_connect"`
+		TmpTimeoutTunnel  *marshaler.Duration `json:"timeout_tunnel"`
+	}{
+		tmpType: tmpType(m),
+
+		TmpTimeoutServer:  marshaler.NewDuration(m.TimeoutServer),
+		TmpTimeoutConnect: marshaler.NewDuration(m.TimeoutConnect),
+		TmpTimeoutTunnel:  marshaler.NewDuration(m.TimeoutTunnel),
+	}
+	return json.Marshal(tmp)
+}
+
+// CreateBackend: create a backend in a given load balancer
+func (s *API) CreateBackend(req *CreateBackendRequest, opts ...scw.RequestOption) (*Backend, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if req.Name == "" {
+		req.Name = namegenerator.GetRandomName("lbb")
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.LBID) == "" {
+		return nil, errors.New("field LBID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "POST",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LBID) + "/backends",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp Backend
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type GetBackendRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// BackendID: backend ID
+	BackendID string `json:"-"`
+}
+
+// GetBackend: get a backend in a given load balancer
+func (s *API) GetBackend(req *GetBackendRequest, opts ...scw.RequestOption) (*Backend, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.BackendID) == "" {
+		return nil, errors.New("field BackendID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/backends/" + fmt.Sprint(req.BackendID) + "",
+		Headers: http.Header{},
+	}
+
+	var resp Backend
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type UpdateBackendRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// BackendID: backend ID to update
+	BackendID string `json:"-"`
+	// Name: resource name
+	Name string `json:"name"`
+	// ForwardProtocol: backend protocol. TCP or HTTP
+	//
+	// Default value: tcp
+	ForwardProtocol Protocol `json:"forward_protocol"`
+	// ForwardPort: user sessions will be forwarded to this port of backend servers
+	ForwardPort int32 `json:"forward_port"`
+	// ForwardPortAlgorithm: load balancing algorithm
+	//
+	// Default value: roundrobin
+	ForwardPortAlgorithm ForwardPortAlgorithm `json:"forward_port_algorithm"`
+	// StickySessions: enable cookie-based session persistence
+	//
+	// Default value: none
+	StickySessions StickySessionsType `json:"sticky_sessions"`
+	// StickySessionsCookieName: cookie name for sticky sessions
+	StickySessionsCookieName string `json:"sticky_sessions_cookie_name"`
+	// Deprecated: SendProxyV2: deprecated in favor of proxy_protocol field!
+	SendProxyV2 *bool `json:"send_proxy_v2,omitempty"`
+	// TimeoutServer: maximum server connection inactivity time (allowed time the server has to process the request)
+	TimeoutServer *time.Duration `json:"timeout_server"`
+	// TimeoutConnect: maximum initial server connection establishment time
+	TimeoutConnect *time.Duration `json:"timeout_connect"`
+	// TimeoutTunnel: maximum tunnel inactivity time after Websocket is established (take precedence over client and server timeout)
+	TimeoutTunnel *time.Duration `json:"timeout_tunnel"`
+	// OnMarkedDownAction: modify what occurs when a backend server is marked down
+	//
+	// Default value: on_marked_down_action_none
+	OnMarkedDownAction OnMarkedDownAction `json:"on_marked_down_action"`
+	// ProxyProtocol: pROXY protocol, forward client's address (must be supported by backend servers software)
+	//
+	// The PROXY protocol informs the other end about the incoming connection, so that it can know the client's address or the public address it accessed to, whatever the upper layer protocol is.
+	//
+	// * `proxy_protocol_none` Disable proxy protocol.
+	// * `proxy_protocol_v1` Version one (text format).
+	// * `proxy_protocol_v2` Version two (binary format).
+	// * `proxy_protocol_v2_ssl` Version two with SSL connection.
+	// * `proxy_protocol_v2_ssl_cn` Version two with SSL connection and common name information.
+	//
+	// Default value: proxy_protocol_unknown
+	ProxyProtocol ProxyProtocol `json:"proxy_protocol"`
+	// FailoverHost: scaleway S3 bucket website to be served in case all backend servers are down
+	//
+	// Only the host part of the Scaleway S3 bucket website is expected.
+	// Example: `failover-website.s3-website.fr-par.scw.cloud` if your bucket website URL is `https://failover-website.s3-website.fr-par.scw.cloud/`.
+	//
+	FailoverHost *string `json:"failover_host"`
+	// SslBridging: enable SSL between load balancer and backend servers
+	SslBridging *bool `json:"ssl_bridging"`
+	// IgnoreSslServerVerify: set to true to ignore server certificate verification
+	IgnoreSslServerVerify *bool `json:"ignore_ssl_server_verify"`
+}
+
+func (m *UpdateBackendRequest) UnmarshalJSON(b []byte) error {
+	type tmpType UpdateBackendRequest
+	tmp := struct {
+		tmpType
+
+		TmpTimeoutServer  *marshaler.Duration `json:"timeout_server"`
+		TmpTimeoutConnect *marshaler.Duration `json:"timeout_connect"`
+		TmpTimeoutTunnel  *marshaler.Duration `json:"timeout_tunnel"`
+	}{}
+	err := json.Unmarshal(b, &tmp)
+	if err != nil {
+		return err
+	}
+
+	*m = UpdateBackendRequest(tmp.tmpType)
+
+	m.TimeoutServer = tmp.TmpTimeoutServer.Standard()
+	m.TimeoutConnect = tmp.TmpTimeoutConnect.Standard()
+	m.TimeoutTunnel = tmp.TmpTimeoutTunnel.Standard()
+	return nil
+}
+
+func (m UpdateBackendRequest) MarshalJSON() ([]byte, error) {
+	type tmpType UpdateBackendRequest
+	tmp := struct {
+		tmpType
+
+		TmpTimeoutServer  *marshaler.Duration `json:"timeout_server"`
+		TmpTimeoutConnect *marshaler.Duration `json:"timeout_connect"`
+		TmpTimeoutTunnel  *marshaler.Duration `json:"timeout_tunnel"`
+	}{
+		tmpType: tmpType(m),
+
+		TmpTimeoutServer:  marshaler.NewDuration(m.TimeoutServer),
+		TmpTimeoutConnect: marshaler.NewDuration(m.TimeoutConnect),
+		TmpTimeoutTunnel:  marshaler.NewDuration(m.TimeoutTunnel),
+	}
+	return json.Marshal(tmp)
+}
+
+// UpdateBackend: update a backend in a given load balancer
+func (s *API) UpdateBackend(req *UpdateBackendRequest, opts ...scw.RequestOption) (*Backend, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.BackendID) == "" {
+		return nil, errors.New("field BackendID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "PUT",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/backends/" + fmt.Sprint(req.BackendID) + "",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp Backend
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type DeleteBackendRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// BackendID: ID of the backend to delete
+	BackendID string `json:"-"`
+}
+
+// DeleteBackend: delete a backend in a given load balancer
+func (s *API) DeleteBackend(req *DeleteBackendRequest, opts ...scw.RequestOption) error {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.BackendID) == "" {
+		return errors.New("field BackendID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "DELETE",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/backends/" + fmt.Sprint(req.BackendID) + "",
+		Headers: http.Header{},
+	}
+
+	err = s.client.Do(scwReq, nil, opts...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type AddBackendServersRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// BackendID: backend ID
+	BackendID string `json:"-"`
+	// ServerIP: set all IPs to add on your backend
+	ServerIP []string `json:"server_ip"`
+}
+
+// AddBackendServers: add a set of servers in a given backend
+func (s *API) AddBackendServers(req *AddBackendServersRequest, opts ...scw.RequestOption) (*Backend, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.BackendID) == "" {
+		return nil, errors.New("field BackendID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "POST",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/backends/" + fmt.Sprint(req.BackendID) + "/servers",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp Backend
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type RemoveBackendServersRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// BackendID: backend ID
+	BackendID string `json:"-"`
+	// ServerIP: set all IPs to remove of your backend
+	ServerIP []string `json:"server_ip"`
+}
+
+// RemoveBackendServers: remove a set of servers for a given backend
+func (s *API) RemoveBackendServers(req *RemoveBackendServersRequest, opts ...scw.RequestOption) (*Backend, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.BackendID) == "" {
+		return nil, errors.New("field BackendID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "DELETE",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/backends/" + fmt.Sprint(req.BackendID) + "/servers",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp Backend
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type SetBackendServersRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// BackendID: backend ID
+	BackendID string `json:"-"`
+	// ServerIP: set all IPs to add on your backend and remove all other
+	ServerIP []string `json:"server_ip"`
+}
+
+// SetBackendServers: define all servers in a given backend
+func (s *API) SetBackendServers(req *SetBackendServersRequest, opts ...scw.RequestOption) (*Backend, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.BackendID) == "" {
+		return nil, errors.New("field BackendID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "PUT",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/backends/" + fmt.Sprint(req.BackendID) + "/servers",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp Backend
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type UpdateHealthCheckRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// BackendID: backend ID
+	BackendID string `json:"-"`
+	// Port: specify the port used to health check
+	Port int32 `json:"port"`
+	// CheckDelay: time between two consecutive health checks
+	CheckDelay *time.Duration `json:"check_delay"`
+	// CheckTimeout: maximum time a backend server has to reply to the health check
+	CheckTimeout *time.Duration `json:"check_timeout"`
+	// CheckMaxRetries: number of consecutive unsuccessful health checks, after which the server will be considered dead
+	CheckMaxRetries int32 `json:"check_max_retries"`
+	// MysqlConfig: the check requires MySQL >=3.22, for older version, please use TCP check
+	// Precisely one of HTTPConfig, HTTPSConfig, LdapConfig, MysqlConfig, PgsqlConfig, RedisConfig, TCPConfig must be set.
+	MysqlConfig *HealthCheckMysqlConfig `json:"mysql_config,omitempty"`
+	// LdapConfig: the response is analyzed to find an LDAPv3 response message
+	// Precisely one of HTTPConfig, HTTPSConfig, LdapConfig, MysqlConfig, PgsqlConfig, RedisConfig, TCPConfig must be set.
+	LdapConfig *HealthCheckLdapConfig `json:"ldap_config,omitempty"`
+	// RedisConfig: the response is analyzed to find the +PONG response message
+	// Precisely one of HTTPConfig, HTTPSConfig, LdapConfig, MysqlConfig, PgsqlConfig, RedisConfig, TCPConfig must be set.
+	RedisConfig *HealthCheckRedisConfig `json:"redis_config,omitempty"`
+	// PgsqlConfig: postgreSQL health check
+	// Precisely one of HTTPConfig, HTTPSConfig, LdapConfig, MysqlConfig, PgsqlConfig, RedisConfig, TCPConfig must be set.
+	PgsqlConfig *HealthCheckPgsqlConfig `json:"pgsql_config,omitempty"`
+	// TCPConfig: basic TCP health check
+	// Precisely one of HTTPConfig, HTTPSConfig, LdapConfig, MysqlConfig, PgsqlConfig, RedisConfig, TCPConfig must be set.
+	TCPConfig *HealthCheckTCPConfig `json:"tcp_config,omitempty"`
+	// HTTPConfig: HTTP health check
+	// Precisely one of HTTPConfig, HTTPSConfig, LdapConfig, MysqlConfig, PgsqlConfig, RedisConfig, TCPConfig must be set.
+	HTTPConfig *HealthCheckHTTPConfig `json:"http_config,omitempty"`
+	// HTTPSConfig: HTTPS health check
+	// Precisely one of HTTPConfig, HTTPSConfig, LdapConfig, MysqlConfig, PgsqlConfig, RedisConfig, TCPConfig must be set.
+	HTTPSConfig *HealthCheckHTTPSConfig `json:"https_config,omitempty"`
+	// CheckSendProxy: it defines whether the health check should be done considering the proxy protocol
+	CheckSendProxy bool `json:"check_send_proxy"`
+}
+
+func (m *UpdateHealthCheckRequest) UnmarshalJSON(b []byte) error {
+	type tmpType UpdateHealthCheckRequest
+	tmp := struct {
+		tmpType
+
+		TmpCheckDelay   *marshaler.Duration `json:"check_delay"`
+		TmpCheckTimeout *marshaler.Duration `json:"check_timeout"`
+	}{}
+	err := json.Unmarshal(b, &tmp)
+	if err != nil {
+		return err
+	}
+
+	*m = UpdateHealthCheckRequest(tmp.tmpType)
+
+	m.CheckDelay = tmp.TmpCheckDelay.Standard()
+	m.CheckTimeout = tmp.TmpCheckTimeout.Standard()
+	return nil
+}
+
+func (m UpdateHealthCheckRequest) MarshalJSON() ([]byte, error) {
+	type tmpType UpdateHealthCheckRequest
+	tmp := struct {
+		tmpType
+
+		TmpCheckDelay   *marshaler.Duration `json:"check_delay"`
+		TmpCheckTimeout *marshaler.Duration `json:"check_timeout"`
+	}{
+		tmpType: tmpType(m),
+
+		TmpCheckDelay:   marshaler.NewDuration(m.CheckDelay),
+		TmpCheckTimeout: marshaler.NewDuration(m.CheckTimeout),
+	}
+	return json.Marshal(tmp)
+}
+
+// UpdateHealthCheck: update an health check for a given backend
+func (s *API) UpdateHealthCheck(req *UpdateHealthCheckRequest, opts ...scw.RequestOption) (*HealthCheck, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.BackendID) == "" {
+		return nil, errors.New("field BackendID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "PUT",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/backends/" + fmt.Sprint(req.BackendID) + "/healthcheck",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp HealthCheck
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type ListFrontendsRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// LBID: load balancer ID
+	LBID string `json:"-"`
+	// Name: use this to search by name
+	Name *string `json:"-"`
+	// OrderBy: response order
+	//
+	// Default value: created_at_asc
+	OrderBy ListFrontendsRequestOrderBy `json:"-"`
+	// Page: page number
+	Page *int32 `json:"-"`
+	// PageSize: the number of items to return
+	PageSize *uint32 `json:"-"`
+}
+
+// ListFrontends: list frontends in a given load balancer
+func (s *API) ListFrontends(req *ListFrontendsRequest, opts ...scw.RequestOption) (*ListFrontendsResponse, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	defaultPageSize, exist := s.client.GetDefaultPageSize()
+	if (req.PageSize == nil || *req.PageSize == 0) && exist {
+		req.PageSize = &defaultPageSize
+	}
+
+	query := url.Values{}
+	parameter.AddToQuery(query, "name", req.Name)
+	parameter.AddToQuery(query, "order_by", req.OrderBy)
+	parameter.AddToQuery(query, "page", req.Page)
+	parameter.AddToQuery(query, "page_size", req.PageSize)
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.LBID) == "" {
+		return nil, errors.New("field LBID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LBID) + "/frontends",
+		Query:   query,
+		Headers: http.Header{},
+	}
+
+	var resp ListFrontendsResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type CreateFrontendRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// LBID: load balancer ID
+	LBID string `json:"-"`
+	// Name: resource name
+	Name string `json:"name"`
+	// InboundPort: TCP port to listen on the front side
+	InboundPort int32 `json:"inbound_port"`
+	// BackendID: backend ID
+	BackendID string `json:"backend_id"`
+	// TimeoutClient: set the maximum inactivity time on the client side
+	TimeoutClient *time.Duration `json:"timeout_client"`
+	// Deprecated: CertificateID: certificate ID, deprecated in favor of certificate_ids array !
+	CertificateID *string `json:"certificate_id,omitempty"`
+	// CertificateIDs: list of certificate IDs to bind on the frontend
+	CertificateIDs *[]string `json:"certificate_ids"`
+	// EnableHTTP3: activate HTTP 3 protocol (beta)
+	EnableHTTP3 bool `json:"enable_http3"`
+}
+
+func (m *CreateFrontendRequest) UnmarshalJSON(b []byte) error {
+	type tmpType CreateFrontendRequest
+	tmp := struct {
+		tmpType
+
+		TmpTimeoutClient *marshaler.Duration `json:"timeout_client"`
+	}{}
+	err := json.Unmarshal(b, &tmp)
+	if err != nil {
+		return err
+	}
+
+	*m = CreateFrontendRequest(tmp.tmpType)
+
+	m.TimeoutClient = tmp.TmpTimeoutClient.Standard()
+	return nil
+}
+
+func (m CreateFrontendRequest) MarshalJSON() ([]byte, error) {
+	type tmpType CreateFrontendRequest
+	tmp := struct {
+		tmpType
+
+		TmpTimeoutClient *marshaler.Duration `json:"timeout_client"`
+	}{
+		tmpType: tmpType(m),
+
+		TmpTimeoutClient: marshaler.NewDuration(m.TimeoutClient),
+	}
+	return json.Marshal(tmp)
+}
+
+// CreateFrontend: create a frontend in a given load balancer
+func (s *API) CreateFrontend(req *CreateFrontendRequest, opts ...scw.RequestOption) (*Frontend, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if req.Name == "" {
+		req.Name = namegenerator.GetRandomName("lbf")
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.LBID) == "" {
+		return nil, errors.New("field LBID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "POST",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LBID) + "/frontends",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp Frontend
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type GetFrontendRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// FrontendID: frontend ID
+	FrontendID string `json:"-"`
+}
+
+// GetFrontend: get a frontend
+func (s *API) GetFrontend(req *GetFrontendRequest, opts ...scw.RequestOption) (*Frontend, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.FrontendID) == "" {
+		return nil, errors.New("field FrontendID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/frontends/" + fmt.Sprint(req.FrontendID) + "",
+		Headers: http.Header{},
+	}
+
+	var resp Frontend
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type UpdateFrontendRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// FrontendID: frontend ID
+	FrontendID string `json:"-"`
+	// Name: resource name
+	Name string `json:"name"`
+	// InboundPort: TCP port to listen on the front side
+	InboundPort int32 `json:"inbound_port"`
+	// BackendID: backend ID
+	BackendID string `json:"backend_id"`
+	// TimeoutClient: client session maximum inactivity time
+	TimeoutClient *time.Duration `json:"timeout_client"`
+	// Deprecated: CertificateID: certificate ID, deprecated in favor of `certificate_ids` array!
+	CertificateID *string `json:"certificate_id,omitempty"`
+	// CertificateIDs: list of certificate IDs to bind on the frontend
+	CertificateIDs *[]string `json:"certificate_ids"`
+	// EnableHTTP3: activate HTTP 3 protocol (beta)
+	EnableHTTP3 bool `json:"enable_http3"`
+}
+
+func (m *UpdateFrontendRequest) UnmarshalJSON(b []byte) error {
+	type tmpType UpdateFrontendRequest
+	tmp := struct {
+		tmpType
+
+		TmpTimeoutClient *marshaler.Duration `json:"timeout_client"`
+	}{}
+	err := json.Unmarshal(b, &tmp)
+	if err != nil {
+		return err
+	}
+
+	*m = UpdateFrontendRequest(tmp.tmpType)
+
+	m.TimeoutClient = tmp.TmpTimeoutClient.Standard()
+	return nil
+}
+
+func (m UpdateFrontendRequest) MarshalJSON() ([]byte, error) {
+	type tmpType UpdateFrontendRequest
+	tmp := struct {
+		tmpType
+
+		TmpTimeoutClient *marshaler.Duration `json:"timeout_client"`
+	}{
+		tmpType: tmpType(m),
+
+		TmpTimeoutClient: marshaler.NewDuration(m.TimeoutClient),
+	}
+	return json.Marshal(tmp)
+}
+
+// UpdateFrontend: update a frontend
+func (s *API) UpdateFrontend(req *UpdateFrontendRequest, opts ...scw.RequestOption) (*Frontend, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.FrontendID) == "" {
+		return nil, errors.New("field FrontendID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "PUT",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/frontends/" + fmt.Sprint(req.FrontendID) + "",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp Frontend
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type DeleteFrontendRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// FrontendID: frontend ID to delete
+	FrontendID string `json:"-"`
+}
+
+// DeleteFrontend: delete a frontend
+func (s *API) DeleteFrontend(req *DeleteFrontendRequest, opts ...scw.RequestOption) error {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.FrontendID) == "" {
+		return errors.New("field FrontendID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "DELETE",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/frontends/" + fmt.Sprint(req.FrontendID) + "",
+		Headers: http.Header{},
+	}
+
+	err = s.client.Do(scwReq, nil, opts...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type ListRoutesRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// OrderBy: response order
+	//
+	// Default value: created_at_asc
+	OrderBy ListRoutesRequestOrderBy `json:"-"`
+	// PageSize: the number of items to return
+	PageSize *uint32 `json:"-"`
+	// Page: page number
+	Page *int32 `json:"-"`
+
+	FrontendID *string `json:"-"`
+}
+
+// ListRoutes: list all backend redirections
+func (s *API) ListRoutes(req *ListRoutesRequest, opts ...scw.RequestOption) (*ListRoutesResponse, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	defaultPageSize, exist := s.client.GetDefaultPageSize()
+	if (req.PageSize == nil || *req.PageSize == 0) && exist {
+		req.PageSize = &defaultPageSize
+	}
+
+	query := url.Values{}
+	parameter.AddToQuery(query, "order_by", req.OrderBy)
+	parameter.AddToQuery(query, "page_size", req.PageSize)
+	parameter.AddToQuery(query, "page", req.Page)
+	parameter.AddToQuery(query, "frontend_id", req.FrontendID)
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/routes",
+		Query:   query,
+		Headers: http.Header{},
+	}
+
+	var resp ListRoutesResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type CreateRouteRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// FrontendID: origin of redirection
+	FrontendID string `json:"frontend_id"`
+	// BackendID: destination of destination
+	BackendID string `json:"backend_id"`
+	// Match: value to match a redirection
+	Match *RouteMatch `json:"match"`
+}
+
+// CreateRoute: create a backend redirection
+func (s *API) CreateRoute(req *CreateRouteRequest, opts ...scw.RequestOption) (*Route, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "POST",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/routes",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp Route
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type GetRouteRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// RouteID: id of route to get
+	RouteID string `json:"-"`
+}
+
+// GetRoute: get single backend redirection
+func (s *API) GetRoute(req *GetRouteRequest, opts ...scw.RequestOption) (*Route, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.RouteID) == "" {
+		return nil, errors.New("field RouteID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/routes/" + fmt.Sprint(req.RouteID) + "",
+		Headers: http.Header{},
+	}
+
+	var resp Route
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type UpdateRouteRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// RouteID: route id to update
+	RouteID string `json:"-"`
+	// BackendID: backend id of redirection
+	BackendID string `json:"backend_id"`
+	// Match: value to match a redirection
+	Match *RouteMatch `json:"match"`
+}
+
+// UpdateRoute: edit a backend redirection
+func (s *API) UpdateRoute(req *UpdateRouteRequest, opts ...scw.RequestOption) (*Route, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.RouteID) == "" {
+		return nil, errors.New("field RouteID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "PUT",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/routes/" + fmt.Sprint(req.RouteID) + "",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp Route
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type DeleteRouteRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// RouteID: route id to delete
+	RouteID string `json:"-"`
+}
+
+// DeleteRoute: delete a backend redirection
+func (s *API) DeleteRoute(req *DeleteRouteRequest, opts ...scw.RequestOption) error {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.RouteID) == "" {
+		return errors.New("field RouteID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "DELETE",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/routes/" + fmt.Sprint(req.RouteID) + "",
+		Headers: http.Header{},
+	}
+
+	err = s.client.Do(scwReq, nil, opts...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type GetLBStatsRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// LBID: load balancer ID
+	LBID string `json:"-"`
+}
+
+// Deprecated: GetLBStats: get usage statistics of a given load balancer
+func (s *API) GetLBStats(req *GetLBStatsRequest, opts ...scw.RequestOption) (*LBStats, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.LBID) == "" {
+		return nil, errors.New("field LBID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LBID) + "/stats",
+		Headers: http.Header{},
+	}
+
+	var resp LBStats
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type ListBackendStatsRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// LBID: load balancer ID
+	LBID string `json:"-"`
+	// Page: page number
+	Page *int32 `json:"-"`
+	// PageSize: the number of items to return
+	PageSize *uint32 `json:"-"`
+}
+
+func (s *API) ListBackendStats(req *ListBackendStatsRequest, opts ...scw.RequestOption) (*ListBackendStatsResponse, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	defaultPageSize, exist := s.client.GetDefaultPageSize()
+	if (req.PageSize == nil || *req.PageSize == 0) && exist {
+		req.PageSize = &defaultPageSize
+	}
+
+	query := url.Values{}
+	parameter.AddToQuery(query, "page", req.Page)
+	parameter.AddToQuery(query, "page_size", req.PageSize)
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.LBID) == "" {
+		return nil, errors.New("field LBID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LBID) + "/backend-stats",
+		Query:   query,
+		Headers: http.Header{},
+	}
+
+	var resp ListBackendStatsResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type ListACLsRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// FrontendID: ID of your frontend
+	FrontendID string `json:"-"`
+	// OrderBy: response order
+	//
+	// Default value: created_at_asc
+	OrderBy ListACLRequestOrderBy `json:"-"`
+	// Page: page number
+	Page *int32 `json:"-"`
+	// PageSize: the number of items to return
+	PageSize *uint32 `json:"-"`
+	// Name: filter acl per name
+	Name *string `json:"-"`
+}
+
+// ListACLs: list ACL for a given frontend
+func (s *API) ListACLs(req *ListACLsRequest, opts ...scw.RequestOption) (*ListACLResponse, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	defaultPageSize, exist := s.client.GetDefaultPageSize()
+	if (req.PageSize == nil || *req.PageSize == 0) && exist {
+		req.PageSize = &defaultPageSize
+	}
+
+	query := url.Values{}
+	parameter.AddToQuery(query, "order_by", req.OrderBy)
+	parameter.AddToQuery(query, "page", req.Page)
+	parameter.AddToQuery(query, "page_size", req.PageSize)
+	parameter.AddToQuery(query, "name", req.Name)
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.FrontendID) == "" {
+		return nil, errors.New("field FrontendID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/frontends/" + fmt.Sprint(req.FrontendID) + "/acls",
+		Query:   query,
+		Headers: http.Header{},
+	}
+
+	var resp ListACLResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type CreateACLRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// FrontendID: ID of your frontend
+	FrontendID string `json:"-"`
+	// Name: name of your ACL ressource
+	Name string `json:"name"`
+	// Action: action to undertake when an ACL filter matches
+	Action *ACLAction `json:"action"`
+	// Match: the ACL match rule
+	//
+	// The ACL match rule. You can have one of those three cases:
+	//
+	//   - `ip_subnet` is defined
+	//   - `http_filter` and `http_filter_value` are defined
+	//   - `ip_subnet`, `http_filter` and `http_filter_value` are defined
+	//
+	Match *ACLMatch `json:"match"`
+	// Index: order between your Acls (ascending order, 0 is first acl executed)
+	Index int32 `json:"index"`
+}
+
+// CreateACL: create an ACL for a given frontend
+func (s *API) CreateACL(req *CreateACLRequest, opts ...scw.RequestOption) (*ACL, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if req.Name == "" {
+		req.Name = namegenerator.GetRandomName("acl")
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.FrontendID) == "" {
+		return nil, errors.New("field FrontendID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "POST",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/frontends/" + fmt.Sprint(req.FrontendID) + "/acls",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp ACL
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type GetACLRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// ACLID: ID of your ACL ressource
+	ACLID string `json:"-"`
+}
+
+// GetACL: get an ACL
+func (s *API) GetACL(req *GetACLRequest, opts ...scw.RequestOption) (*ACL, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.ACLID) == "" {
+		return nil, errors.New("field ACLID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/acls/" + fmt.Sprint(req.ACLID) + "",
+		Headers: http.Header{},
+	}
+
+	var resp ACL
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type UpdateACLRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// ACLID: ID of your ACL ressource
+	ACLID string `json:"-"`
+	// Name: name of your ACL ressource
+	Name string `json:"name"`
+	// Action: action to undertake when an ACL filter matches
+	Action *ACLAction `json:"action"`
+	// Match: the ACL match rule. At least `ip_subnet` or `http_filter` and `http_filter_value` are required
+	Match *ACLMatch `json:"match"`
+	// Index: order between your Acls (ascending order, 0 is first acl executed)
+	Index int32 `json:"index"`
+}
+
+// UpdateACL: update an ACL
+func (s *API) UpdateACL(req *UpdateACLRequest, opts ...scw.RequestOption) (*ACL, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.ACLID) == "" {
+		return nil, errors.New("field ACLID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "PUT",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/acls/" + fmt.Sprint(req.ACLID) + "",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp ACL
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type DeleteACLRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// ACLID: ID of your ACL ressource
+	ACLID string `json:"-"`
+}
+
+// DeleteACL: delete an ACL
+func (s *API) DeleteACL(req *DeleteACLRequest, opts ...scw.RequestOption) error {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.ACLID) == "" {
+		return errors.New("field ACLID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "DELETE",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/acls/" + fmt.Sprint(req.ACLID) + "",
+		Headers: http.Header{},
+	}
+
+	err = s.client.Do(scwReq, nil, opts...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type CreateCertificateRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// LBID: load balancer ID
+	LBID string `json:"-"`
+	// Name: certificate name
+	Name string `json:"name"`
+	// Letsencrypt: let's Encrypt type
+	// Precisely one of CustomCertificate, Letsencrypt must be set.
+	Letsencrypt *CreateCertificateRequestLetsencryptConfig `json:"letsencrypt,omitempty"`
+	// CustomCertificate: custom import certificate
+	// Precisely one of CustomCertificate, Letsencrypt must be set.
+	CustomCertificate *CreateCertificateRequestCustomCertificate `json:"custom_certificate,omitempty"`
+}
+
+// CreateCertificate: create a TLS certificate
+//
+// Generate a new TLS certificate using Let's Encrypt or import your certificate.
+func (s *API) CreateCertificate(req *CreateCertificateRequest, opts ...scw.RequestOption) (*Certificate, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if req.Name == "" {
+		req.Name = namegenerator.GetRandomName("certiticate")
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.LBID) == "" {
+		return nil, errors.New("field LBID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "POST",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LBID) + "/certificates",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp Certificate
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type ListCertificatesRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// LBID: load balancer ID
+	LBID string `json:"-"`
+	// OrderBy: response order
+	//
+	// Default value: created_at_asc
+	OrderBy ListCertificatesRequestOrderBy `json:"-"`
+	// Page: page number
+	Page *int32 `json:"-"`
+	// PageSize: the number of items to return
+	PageSize *uint32 `json:"-"`
+	// Name: use this to search by name
+	Name *string `json:"-"`
+}
+
+// ListCertificates: list all TLS certificates on a given load balancer
+func (s *API) ListCertificates(req *ListCertificatesRequest, opts ...scw.RequestOption) (*ListCertificatesResponse, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	defaultPageSize, exist := s.client.GetDefaultPageSize()
+	if (req.PageSize == nil || *req.PageSize == 0) && exist {
+		req.PageSize = &defaultPageSize
+	}
+
+	query := url.Values{}
+	parameter.AddToQuery(query, "order_by", req.OrderBy)
+	parameter.AddToQuery(query, "page", req.Page)
+	parameter.AddToQuery(query, "page_size", req.PageSize)
+	parameter.AddToQuery(query, "name", req.Name)
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.LBID) == "" {
+		return nil, errors.New("field LBID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LBID) + "/certificates",
+		Query:   query,
+		Headers: http.Header{},
+	}
+
+	var resp ListCertificatesResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type GetCertificateRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// CertificateID: certificate ID
+	CertificateID string `json:"-"`
+}
+
+// GetCertificate: get a TLS certificate
+func (s *API) GetCertificate(req *GetCertificateRequest, opts ...scw.RequestOption) (*Certificate, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.CertificateID) == "" {
+		return nil, errors.New("field CertificateID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/certificates/" + fmt.Sprint(req.CertificateID) + "",
+		Headers: http.Header{},
+	}
+
+	var resp Certificate
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type UpdateCertificateRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// CertificateID: certificate ID
+	CertificateID string `json:"-"`
+	// Name: certificate name
+	Name string `json:"name"`
+}
+
+// UpdateCertificate: update a TLS certificate
+func (s *API) UpdateCertificate(req *UpdateCertificateRequest, opts ...scw.RequestOption) (*Certificate, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.CertificateID) == "" {
+		return nil, errors.New("field CertificateID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "PUT",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/certificates/" + fmt.Sprint(req.CertificateID) + "",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp Certificate
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type DeleteCertificateRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// CertificateID: certificate ID
+	CertificateID string `json:"-"`
+}
+
+// DeleteCertificate: delete a TLS certificate
+func (s *API) DeleteCertificate(req *DeleteCertificateRequest, opts ...scw.RequestOption) error {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.CertificateID) == "" {
+		return errors.New("field CertificateID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "DELETE",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/certificates/" + fmt.Sprint(req.CertificateID) + "",
+		Headers: http.Header{},
+	}
+
+	err = s.client.Do(scwReq, nil, opts...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type ListLBTypesRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// Page: page number
+	Page *int32 `json:"-"`
+	// PageSize: the number of items to return
+	PageSize *uint32 `json:"-"`
+}
+
+// ListLBTypes: list all load balancer offer type
+func (s *API) ListLBTypes(req *ListLBTypesRequest, opts ...scw.RequestOption) (*ListLBTypesResponse, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	defaultPageSize, exist := s.client.GetDefaultPageSize()
+	if (req.PageSize == nil || *req.PageSize == 0) && exist {
+		req.PageSize = &defaultPageSize
+	}
+
+	query := url.Values{}
+	parameter.AddToQuery(query, "page", req.Page)
+	parameter.AddToQuery(query, "page_size", req.PageSize)
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lb-types",
+		Query:   query,
+		Headers: http.Header{},
+	}
+
+	var resp ListLBTypesResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type CreateSubscriberRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// Name: subscriber name
+	Name string `json:"name"`
+	// EmailConfig: email address configuration
+	// Precisely one of EmailConfig, WebhookConfig must be set.
+	EmailConfig *SubscriberEmailConfig `json:"email_config,omitempty"`
+	// WebhookConfig: webHook URI configuration
+	// Precisely one of EmailConfig, WebhookConfig must be set.
+	WebhookConfig *SubscriberWebhookConfig `json:"webhook_config,omitempty"`
+	// Deprecated: OrganizationID: owner of resources
+	// Precisely one of OrganizationID, ProjectID must be set.
+	OrganizationID *string `json:"organization_id,omitempty"`
+	// ProjectID: assign the resource to a project ID
+	// Precisely one of OrganizationID, ProjectID must be set.
+	ProjectID *string `json:"project_id,omitempty"`
+}
+
+// CreateSubscriber: create a subscriber, webhook or email
+func (s *API) CreateSubscriber(req *CreateSubscriberRequest, opts ...scw.RequestOption) (*Subscriber, error) {
+	var err error
+
+	defaultProjectID, exist := s.client.GetDefaultProjectID()
+	if exist && req.OrganizationID == nil && req.ProjectID == nil {
+		req.ProjectID = &defaultProjectID
+	}
+
+	defaultOrganizationID, exist := s.client.GetDefaultOrganizationID()
+	if exist && req.OrganizationID == nil && req.ProjectID == nil {
+		req.OrganizationID = &defaultOrganizationID
+	}
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "POST",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/subscribers",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp Subscriber
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type GetSubscriberRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// SubscriberID: subscriber ID
+	SubscriberID string `json:"-"`
+}
+
+// GetSubscriber: get a subscriber
+func (s *API) GetSubscriber(req *GetSubscriberRequest, opts ...scw.RequestOption) (*Subscriber, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.SubscriberID) == "" {
+		return nil, errors.New("field SubscriberID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/subscribers/" + fmt.Sprint(req.SubscriberID) + "",
+		Headers: http.Header{},
+	}
+
+	var resp Subscriber
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type ListSubscriberRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// OrderBy: response order
+	//
+	// Default value: created_at_asc
+	OrderBy ListSubscriberRequestOrderBy `json:"-"`
+	// Page: page number
+	Page *int32 `json:"-"`
+	// PageSize: the number of items to return
+	PageSize *uint32 `json:"-"`
+	// Name: use this to search by name
+	Name *string `json:"-"`
+	// OrganizationID: filter Subscribers by organization ID
+	OrganizationID *string `json:"-"`
+	// ProjectID: filter Subscribers by project ID
+	ProjectID *string `json:"-"`
+}
+
+// ListSubscriber: list all subscriber
+func (s *API) ListSubscriber(req *ListSubscriberRequest, opts ...scw.RequestOption) (*ListSubscriberResponse, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	defaultPageSize, exist := s.client.GetDefaultPageSize()
+	if (req.PageSize == nil || *req.PageSize == 0) && exist {
+		req.PageSize = &defaultPageSize
+	}
+
+	query := url.Values{}
+	parameter.AddToQuery(query, "order_by", req.OrderBy)
+	parameter.AddToQuery(query, "page", req.Page)
+	parameter.AddToQuery(query, "page_size", req.PageSize)
+	parameter.AddToQuery(query, "name", req.Name)
+	parameter.AddToQuery(query, "organization_id", req.OrganizationID)
+	parameter.AddToQuery(query, "project_id", req.ProjectID)
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/subscribers",
+		Query:   query,
+		Headers: http.Header{},
+	}
+
+	var resp ListSubscriberResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type UpdateSubscriberRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// SubscriberID: assign the resource to a project IDs
+	SubscriberID string `json:"-"`
+	// Name: subscriber name
+	Name string `json:"name"`
+	// EmailConfig: email address configuration
+	// Precisely one of EmailConfig, WebhookConfig must be set.
+	EmailConfig *SubscriberEmailConfig `json:"email_config,omitempty"`
+	// WebhookConfig: webHook URI configuration
+	// Precisely one of EmailConfig, WebhookConfig must be set.
+	WebhookConfig *SubscriberWebhookConfig `json:"webhook_config,omitempty"`
+}
+
+// UpdateSubscriber: update a subscriber
+func (s *API) UpdateSubscriber(req *UpdateSubscriberRequest, opts ...scw.RequestOption) (*Subscriber, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.SubscriberID) == "" {
+		return nil, errors.New("field SubscriberID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "PUT",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/subscribers/" + fmt.Sprint(req.SubscriberID) + "",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp Subscriber
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type DeleteSubscriberRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// SubscriberID: subscriber ID
+	SubscriberID string `json:"-"`
+}
+
+// DeleteSubscriber: delete a subscriber
+func (s *API) DeleteSubscriber(req *DeleteSubscriberRequest, opts ...scw.RequestOption) error {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.SubscriberID) == "" {
+		return errors.New("field SubscriberID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "DELETE",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lb/subscriber/" + fmt.Sprint(req.SubscriberID) + "",
+		Headers: http.Header{},
+	}
+
+	err = s.client.Do(scwReq, nil, opts...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type SubscribeToLBRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// LBID: load balancer ID
+	LBID string `json:"-"`
+	// SubscriberID: subscriber ID
+	SubscriberID string `json:"subscriber_id"`
+}
+
+// SubscribeToLB: subscribe a subscriber to a given load balancer
+func (s *API) SubscribeToLB(req *SubscribeToLBRequest, opts ...scw.RequestOption) (*LB, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.LBID) == "" {
+		return nil, errors.New("field LBID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "POST",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lb/" + fmt.Sprint(req.LBID) + "/subscribe",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp LB
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type UnsubscribeFromLBRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// LBID: load balancer ID
+	LBID string `json:"-"`
+}
+
+// UnsubscribeFromLB: unsubscribe a subscriber from a given load balancer
+func (s *API) UnsubscribeFromLB(req *UnsubscribeFromLBRequest, opts ...scw.RequestOption) (*LB, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.LBID) == "" {
+		return nil, errors.New("field LBID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "DELETE",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lb/" + fmt.Sprint(req.LBID) + "/unsubscribe",
+		Headers: http.Header{},
+	}
+
+	var resp LB
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type ListLBPrivateNetworksRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// LBID: load balancer ID
+	LBID string `json:"-"`
+	// OrderBy: response order
+	//
+	// Default value: created_at_asc
+	OrderBy ListPrivateNetworksRequestOrderBy `json:"-"`
+	// PageSize: the number of items to return
+	PageSize *uint32 `json:"-"`
+	// Page: page number
+	Page *int32 `json:"-"`
+}
+
+// ListLBPrivateNetworks: list attached private network of load balancer
+func (s *API) ListLBPrivateNetworks(req *ListLBPrivateNetworksRequest, opts ...scw.RequestOption) (*ListLBPrivateNetworksResponse, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	defaultPageSize, exist := s.client.GetDefaultPageSize()
+	if (req.PageSize == nil || *req.PageSize == 0) && exist {
+		req.PageSize = &defaultPageSize
+	}
+
+	query := url.Values{}
+	parameter.AddToQuery(query, "order_by", req.OrderBy)
+	parameter.AddToQuery(query, "page_size", req.PageSize)
+	parameter.AddToQuery(query, "page", req.Page)
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.LBID) == "" {
+		return nil, errors.New("field LBID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LBID) + "/private-networks",
+		Query:   query,
+		Headers: http.Header{},
+	}
+
+	var resp ListLBPrivateNetworksResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type AttachPrivateNetworkRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// LBID: load balancer ID
+	LBID string `json:"-"`
+	// PrivateNetworkID: set your instance private network id
+	PrivateNetworkID string `json:"-"`
+	// StaticConfig: define two local ip address of your choice for each load balancer instance
+	// Precisely one of DHCPConfig, StaticConfig must be set.
+	StaticConfig *PrivateNetworkStaticConfig `json:"static_config,omitempty"`
+	// DHCPConfig: set to true if you want to let DHCP assign IP addresses
+	// Precisely one of DHCPConfig, StaticConfig must be set.
+	DHCPConfig *PrivateNetworkDHCPConfig `json:"dhcp_config,omitempty"`
+}
+
+// AttachPrivateNetwork: add load balancer on instance private network
+func (s *API) AttachPrivateNetwork(req *AttachPrivateNetworkRequest, opts ...scw.RequestOption) (*PrivateNetwork, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.LBID) == "" {
+		return nil, errors.New("field LBID cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.PrivateNetworkID) == "" {
+		return nil, errors.New("field PrivateNetworkID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "POST",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LBID) + "/private-networks/" + fmt.Sprint(req.PrivateNetworkID) + "/attach",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp PrivateNetwork
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type DetachPrivateNetworkRequest struct {
+	// Region:
+	//
+	// Region to target. If none is passed will use default region from the config
+	Region scw.Region `json:"-"`
+	// LBID: load balancer ID
+	LBID string `json:"-"`
+	// PrivateNetworkID: set your instance private network id
+	PrivateNetworkID string `json:"-"`
+}
+
+// DetachPrivateNetwork: remove load balancer of private network
+func (s *API) DetachPrivateNetwork(req *DetachPrivateNetworkRequest, opts ...scw.RequestOption) error {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.LBID) == "" {
+		return errors.New("field LBID cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.PrivateNetworkID) == "" {
+		return errors.New("field PrivateNetworkID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "POST",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LBID) + "/private-networks/" + fmt.Sprint(req.PrivateNetworkID) + "/detach",
 		Headers: http.Header{},
 	}
 
