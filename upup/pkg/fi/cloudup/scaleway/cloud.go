@@ -57,7 +57,7 @@ type ScwCloud interface {
 
 	IamService() *iam.API
 	InstanceService() *instance.API
-	LBService() *lb.API
+	LBService() *lb.ZonedAPI
 
 	DeleteGroup(group *cloudinstances.CloudInstanceGroup) error
 	DeleteInstance(i *cloudinstances.CloudInstance) error
@@ -91,7 +91,7 @@ type scwCloudImplementation struct {
 
 	iamAPI      *iam.API
 	instanceAPI *instance.API
-	lbAPI       *lb.API
+	lbAPI       *lb.ZonedAPI
 }
 
 // NewScwCloud returns a Cloud with a Scaleway Client using the env vars SCW_ACCESS_KEY, SCW_SECRET_KEY and SCW_DEFAULT_PROJECT_ID
@@ -140,7 +140,7 @@ func NewScwCloud(tags map[string]string) (ScwCloud, error) {
 		tags:        tags,
 		iamAPI:      iam.NewAPI(scwClient),
 		instanceAPI: instance.NewAPI(scwClient),
-		lbAPI:       lb.NewAPI(scwClient),
+		lbAPI:       lb.NewZonedAPI(scwClient),
 	}, nil
 }
 
@@ -178,7 +178,7 @@ func (s *scwCloudImplementation) InstanceService() *instance.API {
 	return s.instanceAPI
 }
 
-func (s *scwCloudImplementation) LBService() *lb.API {
+func (s *scwCloudImplementation) LBService() *lb.ZonedAPI {
 	return s.lbAPI
 }
 
@@ -229,9 +229,9 @@ func (s *scwCloudImplementation) DeregisterInstance(i *cloudinstances.CloudInsta
 		return fmt.Errorf("deregistering cloud instance %s of group %q: %w", i.ID, i.CloudInstanceGroup.HumanName, err)
 	}
 	for _, loadBalancer := range lbs {
-		backEnds, err := s.lbAPI.ListBackends(&lb.ListBackendsRequest{
-			Region: s.region,
-			LBID:   loadBalancer.ID,
+		backEnds, err := s.lbAPI.ListBackends(&lb.ZonedAPIListBackendsRequest{
+			Zone: s.zone,
+			LBID: loadBalancer.ID,
 		}, scw.WithAllPages())
 		if err != nil {
 			return fmt.Errorf("deregistering cloud instance %s of group %q: listing load-balancer's back-ends for instance creation: %w", i.ID, i.CloudInstanceGroup.HumanName, err)
@@ -239,8 +239,8 @@ func (s *scwCloudImplementation) DeregisterInstance(i *cloudinstances.CloudInsta
 		for _, backEnd := range backEnds.Backends {
 			for _, serverIP := range backEnd.Pool {
 				if serverIP == fi.ValueOf(server.Server.PrivateIP) {
-					_, err := s.lbAPI.RemoveBackendServers(&lb.RemoveBackendServersRequest{
-						Region:    s.region,
+					_, err := s.lbAPI.RemoveBackendServers(&lb.ZonedAPIRemoveBackendServersRequest{
+						Zone:      s.zone,
 						BackendID: backEnd.ID,
 						ServerIP:  []string{serverIP},
 					})
@@ -276,9 +276,9 @@ func (s *scwCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]f
 	var ingresses []fi.ApiIngressStatus
 	name := "api." + cluster.Name
 
-	responseLoadBalancers, err := s.lbAPI.ListLBs(&lb.ListLBsRequest{
-		Region: scw.Region(s.Region()),
-		Name:   &name,
+	responseLoadBalancers, err := s.lbAPI.ListLBs(&lb.ZonedAPIListLBsRequest{
+		Zone: s.zone,
+		Name: &name,
 	}, scw.WithAllPages())
 	if err != nil {
 		return nil, fmt.Errorf("finding load-balancers: %w", err)
@@ -382,9 +382,9 @@ func buildCloudGroup(ig *kops.InstanceGroup, sg []*instance.Server, nodeMap map[
 
 func (s *scwCloudImplementation) GetClusterLoadBalancers(clusterName string) ([]*lb.LB, error) {
 	loadBalancerName := "api." + clusterName
-	lbs, err := s.lbAPI.ListLBs(&lb.ListLBsRequest{
-		Region: s.region,
-		Name:   &loadBalancerName,
+	lbs, err := s.lbAPI.ListLBs(&lb.ZonedAPIListLBsRequest{
+		Zone: s.zone,
+		Name: &loadBalancerName,
 	}, scw.WithAllPages())
 	if err != nil {
 		return nil, fmt.Errorf("listing cluster load-balancers: %w", err)
@@ -437,33 +437,33 @@ func (s *scwCloudImplementation) DeleteLoadBalancer(loadBalancer *lb.LB) error {
 	ipsToRelease := loadBalancer.IP
 
 	// We delete the load-balancer once it's in a stable state
-	_, err := s.lbAPI.WaitForLb(&lb.WaitForLBRequest{
-		LBID:   loadBalancer.ID,
-		Region: s.region,
+	_, err := s.lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+		LBID: loadBalancer.ID,
+		Zone: s.zone,
 	})
 	if err != nil {
 		return fmt.Errorf("waiting for load-balancer: %w", err)
 	}
-	err = s.lbAPI.DeleteLB(&lb.DeleteLBRequest{
-		Region: s.region,
-		LBID:   loadBalancer.ID,
+	err = s.lbAPI.DeleteLB(&lb.ZonedAPIDeleteLBRequest{
+		Zone: s.zone,
+		LBID: loadBalancer.ID,
 	})
 	if err != nil {
 		return fmt.Errorf("deleting load-balancer %s: %w", loadBalancer.ID, err)
 	}
 
 	// We wait for the load-balancer to be deleted, then we detach its IPs
-	_, err = s.lbAPI.WaitForLb(&lb.WaitForLBRequest{
-		LBID:   loadBalancer.ID,
-		Region: s.region,
+	_, err = s.lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+		LBID: loadBalancer.ID,
+		Zone: s.zone,
 	})
 	if !is404Error(err) {
 		return fmt.Errorf("waiting for load-balancer %s after deletion: %w", loadBalancer.ID, err)
 	}
 	for _, ip := range ipsToRelease {
-		err := s.lbAPI.ReleaseIP(&lb.ReleaseIPRequest{
-			Region: s.region,
-			IPID:   ip.ID,
+		err := s.lbAPI.ReleaseIP(&lb.ZonedAPIReleaseIPRequest{
+			Zone: s.zone,
+			IPID: ip.ID,
 		})
 		if err != nil {
 			return fmt.Errorf("deleting load-balancer IP: %w", err)
