@@ -63,6 +63,13 @@ func (d *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			},
 		}
 
+		if ig.IsControlPlane() {
+			instance.Tags = append(instance.Tags, scaleway.TagNameRolePrefix+"="+scaleway.TagRoleControlPlane)
+			instance.Role = fi.PtrTo(scaleway.TagRoleControlPlane)
+		} else {
+			instance.Role = fi.PtrTo(scaleway.TagRoleWorker)
+		}
+
 		c.AddTask(&instance)
 	}
 	return nil
