@@ -1,6 +1,6 @@
 {{ with .CloudProvider.AWS.NodeTerminationHandler }}
-# Sourced from https://github.com/aws/aws-node-termination-handler/releases/download/v1.18.1/all-resources.yaml
-# and https://github.com/aws/aws-node-termination-handler/releases/download/v1.18.1/all-resources-queue-processor.yaml
+# Sourced from https://github.com/aws/aws-node-termination-handler/releases/download/v1.18.3/all-resources.yaml
+# and https://github.com/aws/aws-node-termination-handler/releases/download/v1.18.3/all-resources-queue-processor.yaml
 ---
 # Source: aws-node-termination-handler/templates/serviceaccount.yaml
 apiVersion: v1
@@ -299,7 +299,6 @@ spec:
         app.kubernetes.io/component: daemonset
         kubernetes.io/os: linux
         k8s-app: aws-node-termination-handler
-        kubernetes.io/os: linux
     spec:
       serviceAccountName: aws-node-termination-handler
       securityContext:
