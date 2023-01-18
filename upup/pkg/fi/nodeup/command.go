@@ -767,6 +767,7 @@ func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig
 		Authenticator: authenticator,
 		Resolver:      resolver,
 		CAs:           []byte(bootConfig.ConfigServer.CACertificates),
+		Token:         bootConfig.BootstrapToken,
 	}
 
 	var merr error
@@ -783,7 +784,7 @@ func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig
 			IncludeNodeConfig: true,
 		}
 		var resp nodeup.BootstrapResponse
-		err = client.Query(ctx, &request, &resp, bootConfig.BootstrapToken)
+		err = client.Query(ctx, &request, &resp)
 		if err != nil {
 			merr = multierr.Append(merr, err)
 			continue

@@ -76,6 +76,7 @@ func (b BootstrapClientBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		Authenticator: authenticator,
 		CAs:           []byte(b.NodeupConfig.CAs[fi.CertificateIDCA]),
 		BaseURL:       baseURL,
+		Token:         b.BootConfig.BootstrapToken,
 	}
 
 	bootstrapClientTask := &nodetasks.BootstrapClientTask{

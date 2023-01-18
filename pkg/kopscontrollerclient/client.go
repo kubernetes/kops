@@ -51,6 +51,9 @@ type Client struct {
 	Resolver resolver.Resolver
 
 	httpClient *http.Client
+
+	// Token contains authentication token for authenticator
+	Token string
 }
 
 // dial implements a DialContext resolver function, for when a custom resolver is in use
@@ -87,7 +90,7 @@ func (b *Client) dial(ctx context.Context, network, addr string) (net.Conn, erro
 	return nil, errors[0]
 }
 
-func (b *Client) Query(ctx context.Context, req any, resp any, jwt string) error {
+func (b *Client) Query(ctx context.Context, req any, resp any) error {
 	if b.httpClient == nil {
 		certPool := x509.NewCertPool()
 		certPool.AppendCertsFromPEM(b.CAs)
@@ -136,7 +139,7 @@ func (b *Client) Query(ctx context.Context, req any, resp any, jwt string) error
 	}
 	httpReq.Header.Set("Content-Type", "application/json")
 
-	token, err := b.Authenticator.CreateToken(reqBytes, jwt)
+	token, err := b.Authenticator.CreateToken(reqBytes, b.Token)
 	if err != nil {
 		return err
 	}
