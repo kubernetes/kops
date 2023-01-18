@@ -36,8 +36,8 @@ func UseKopsControllerForNodeBootstrap(cluster *kops.Cluster) bool {
 	}
 }
 
-func UseJWTForBootstrap(cluster *kops.Cluster) bool {
-	switch cluster.Spec.GetCloudProvider() {
+func UseJWTForBootstrap(provider kops.CloudProviderID) bool {
+	switch provider {
 	case kops.CloudProviderOpenstack:
 		return true
 	default:

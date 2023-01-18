@@ -88,7 +88,7 @@ func (b *KopsControllerBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	if model.UseCiliumEtcd(b.Cluster) {
 		caList = append(caList, "etcd-clients-ca-cilium")
 	}
-	if model.UseJWTForBootstrap(b.Cluster) {
+	if model.UseJWTForBootstrap(b.BootConfig.CloudProvider) {
 		content, ok := b.NodeupConfig.CAs["bootstrap-ca"]
 		if !ok {
 			return fmt.Errorf("could not find CA bootstrap-ca")

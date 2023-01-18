@@ -1424,7 +1424,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 		}
 	}
 
-	if apiModel.UseJWTForBootstrap(cluster) {
+	if apiModel.UseJWTForBootstrap(cluster.Spec.GetCloudProvider()) {
 		if !ig.HasAPIServer() {
 			keyset := keysets["bootstrap-ca"]
 			if keyset == nil {

@@ -248,7 +248,7 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 // template file, substituting in specific env vars & cluster spec configuration
 func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.CloudupModelBuilderContext, ig *kops.InstanceGroup) (fi.Resource, error) {
 	keypairs := []string{"kubernetes-ca", "etcd-clients-ca"}
-	if model.UseJWTForBootstrap(b.Cluster) {
+	if model.UseJWTForBootstrap(b.Cluster.Spec.GetCloudProvider()) {
 		keypairs = append(keypairs, "bootstrap-ca")
 	}
 

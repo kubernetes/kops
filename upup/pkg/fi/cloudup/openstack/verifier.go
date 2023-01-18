@@ -148,12 +148,13 @@ func (o openstackVerifier) VerifyToken(ctx context.Context, token string, body [
 	value, ok := instance.Metadata[TagKopsInstanceGroup]
 	if ok {
 		igValue, found := claims["ig"]
-		if found {
-			if igValue != value {
-				return nil, fmt.Errorf("claim mismatch %s != %s", igValue, value)
-			}
-			result.InstanceGroupName = value
+		if !found {
+			return nil, fmt.Errorf("ig claim not found")
 		}
+		if igValue != value {
+			return nil, fmt.Errorf("claim value mismatch %s != %s", igValue, value)
+		}
+		result.InstanceGroupName = value
 	}
 	return result, nil
 }
