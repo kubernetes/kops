@@ -436,7 +436,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 			config.VolumeTag = []string{
 				fmt.Sprintf("%s=%s", scaleway.TagClusterName, b.Cluster.Name),
 				fmt.Sprintf("%s=%s", scaleway.TagNameEtcdClusterPrefix, etcdCluster.Name),
-				fmt.Sprintf("%s=%s", scaleway.TagNameRolePrefix, scaleway.TagRoleMaster),
+				fmt.Sprintf("%s=%s", scaleway.TagNameRolePrefix, scaleway.TagRoleControlPlane),
 			}
 			config.VolumeNameTag = fmt.Sprintf("%s=%s", scaleway.TagInstanceGroup, instanceGroupName)
 		default:
