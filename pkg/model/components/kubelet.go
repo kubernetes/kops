@@ -168,7 +168,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 
 	if clusterSpec.ContainerRuntime == "docker" || clusterSpec.ContainerRuntime == "" {
 		networking := &clusterSpec.Networking
-		if UsesKubenet(networking) && b.IsKubernetesLT("1.24") {
+		if networking.UsesKubenet() && b.IsKubernetesLT("1.24") {
 			clusterSpec.Kubelet.NetworkPluginName = fi.PtrTo("kubenet")
 			clusterSpec.Kubelet.NetworkPluginMTU = fi.PtrTo(int32(9001))
 			clusterSpec.Kubelet.NonMasqueradeCIDR = fi.PtrTo(networking.NonMasqueradeCIDR)

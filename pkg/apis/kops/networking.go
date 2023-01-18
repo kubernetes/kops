@@ -80,6 +80,27 @@ type NetworkingSpec struct {
 	GCE        *GCENetworkingSpec        `json:"gce,omitempty"`
 }
 
+// UsesKubenet returns true if our networking is derived from kubenet
+func (n *NetworkingSpec) UsesKubenet() bool {
+	if n == nil {
+		panic("no networking mode set")
+	}
+	if n.Kubenet != nil {
+		return true
+	} else if n.GCE != nil {
+		// GCE IP Alias networking is based on kubenet
+		return true
+	} else if n.External != nil {
+		// external is based on kubenet
+		return true
+	} else if n.Kopeio != nil {
+		// Kopeio is based on kubenet / external
+		return true
+	}
+
+	return false
+}
+
 // ClassicNetworkingSpec is the specification of classic networking mode, integrated into kubernetes.
 // Support been removed since Kubernetes 1.4.
 type ClassicNetworkingSpec struct{}
