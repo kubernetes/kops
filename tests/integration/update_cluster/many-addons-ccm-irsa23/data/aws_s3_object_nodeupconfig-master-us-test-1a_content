@@ -280,6 +280,7 @@ KubeletConfig:
   - node-role.kubernetes.io/master=:NoSchedule
 KubernetesVersion: 1.23.0
 Networking:
+  amazonVPC: {}
   nonMasqueradeCIDR: 172.20.0.0/16
   serviceClusterIPRange: 172.20.0.0/19
 UpdatePolicy: automatic
