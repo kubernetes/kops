@@ -953,6 +953,8 @@ type ACL struct {
 	CreatedAt *time.Time `json:"created_at"`
 	// UpdatedAt: date at which the ACL was last updated
 	UpdatedAt *time.Time `json:"updated_at"`
+	// Description: description of your ACL ressource
+	Description string `json:"description"`
 }
 
 // ACLAction: acl action
@@ -992,6 +994,8 @@ type ACLSpec struct {
 	Match *ACLMatch `json:"match"`
 	// Index: order between your Acls (ascending order, 0 is first acl executed)
 	Index int32 `json:"index"`
+	// Description: description of your ACL ressource
+	Description string `json:"description"`
 }
 
 // Backend: backend
@@ -3643,6 +3647,8 @@ type ZonedAPICreateACLRequest struct {
 	Match *ACLMatch `json:"match"`
 	// Index: order between your Acls (ascending order, 0 is first acl executed)
 	Index int32 `json:"index"`
+	// Description: description of your ACL ressource
+	Description string `json:"description"`
 }
 
 // CreateACL: create an ACL for a given frontend
@@ -3742,6 +3748,8 @@ type ZonedAPIUpdateACLRequest struct {
 	Match *ACLMatch `json:"match"`
 	// Index: order between your Acls (ascending order, 0 is first acl executed)
 	Index int32 `json:"index"`
+	// Description: description of your ACL ressource
+	Description *string `json:"description"`
 }
 
 // UpdateACL: update an ACL
@@ -6702,6 +6710,8 @@ type CreateACLRequest struct {
 	Match *ACLMatch `json:"match"`
 	// Index: order between your Acls (ascending order, 0 is first acl executed)
 	Index int32 `json:"index"`
+	// Description: description of your ACL ressource
+	Description string `json:"description"`
 }
 
 // CreateACL: create an ACL for a given frontend
@@ -6801,6 +6811,8 @@ type UpdateACLRequest struct {
 	Match *ACLMatch `json:"match"`
 	// Index: order between your Acls (ascending order, 0 is first acl executed)
 	Index int32 `json:"index"`
+	// Description: description of your ACL ressource
+	Description *string `json:"description"`
 }
 
 // UpdateACL: update an ACL

@@ -78,23 +78,24 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 	lbBackend := &scalewaytasks.LBBackend{
 		Name:                 fi.PtrTo("lb-backend"),
 		Lifecycle:            b.Lifecycle,
-		LBName:               fi.PtrTo(loadBalancerName),
 		Zone:                 fi.PtrTo(string(zone)),
 		ForwardProtocol:      fi.PtrTo(string(lb.ProtocolTCP)),
 		ForwardPort:          fi.PtrTo(int32(443)),
 		ForwardPortAlgorithm: fi.PtrTo(string(lb.ForwardPortAlgorithmRoundrobin)),
 		StickySessions:       fi.PtrTo(string(lb.StickySessionsTypeNone)),
 		ProxyProtocol:        fi.PtrTo(string(lb.ProxyProtocolProxyProtocolUnknown)),
+		LoadBalancer:         loadBalancer,
 	}
 
 	c.AddTask(lbBackend)
 
 	lbFrontend := &scalewaytasks.LBFrontend{
-		Name:        fi.PtrTo("lb-frontend"),
-		Lifecycle:   b.Lifecycle,
-		LBName:      fi.PtrTo(loadBalancerName),
-		Zone:        fi.PtrTo(string(zone)),
-		InboundPort: fi.PtrTo(int32(443)),
+		Name:         fi.PtrTo("lb-frontend"),
+		Lifecycle:    b.Lifecycle,
+		Zone:         fi.PtrTo(string(zone)),
+		InboundPort:  fi.PtrTo(int32(443)),
+		LoadBalancer: loadBalancer,
+		LBBackend:    lbBackend,
 	}
 
 	c.AddTask(lbFrontend)
