@@ -51,6 +51,7 @@ Networking:
   nonMasqueradeCIDR: 100.64.0.0/10
   serviceClusterIPRange: 100.64.0.0/13
 UpdatePolicy: automatic
+UsesKubenet: true
 channels:
 - memfs://clusters.example.com/privatekopeio.example.com/addons/bootstrap-channel.yaml
 containerdConfig:

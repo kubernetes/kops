@@ -275,6 +275,7 @@ KubeletConfig:
   - node-role.kubernetes.io/control-plane=:NoSchedule
 KubernetesVersion: 1.25.0
 Networking:
+  calico: {}
   nonMasqueradeCIDR: ::/0
   serviceClusterIPRange: fd00:5e4f:ce::/108
 UpdatePolicy: automatic
