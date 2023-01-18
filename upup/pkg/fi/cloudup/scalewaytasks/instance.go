@@ -38,7 +38,9 @@ type Instance struct {
 	Image          *string
 	Tags           []string
 	Count          int
-	UserData       *fi.Resource
+
+	UserData     *fi.Resource
+	LoadBalancer *LoadBalancer
 }
 
 var _ fi.CloudupTask = &Instance{}
@@ -188,24 +190,44 @@ func (_ *Instance) RenderScw(c *fi.CloudupContext, actual, expected, changes *In
 			return fmt.Errorf("error waiting for instance %s of group %q: %w", srv.Server.ID, fi.ValueOf(expected.Name), err)
 		}
 
-		// We update the server's infos (to get its IP)
-		server, err := instanceService.GetServer(&instance.GetServerRequest{
-			Zone:     zone,
-			ServerID: srv.Server.ID,
-		})
+		// If instance has control-plane role, we add its private IP to the list to add it to the lb's backend
+		if fi.ValueOf(expected.Role) == scaleway.TagRoleControlPlane {
+
+			// We update the server's infos (to get its IP)
+			server, err := instanceService.GetServer(&instance.GetServerRequest{
+				Zone:     zone,
+				ServerID: srv.Server.ID,
+			})
+			if err != nil {
+				return fmt.Errorf("getting server %s: %s", srv.Server.ID, err)
+			}
+			controlPlanePrivateIPs = append(controlPlanePrivateIPs, *server.Server.PrivateIP)
+		}
+	}
+
+	// If newInstanceCount < 0, we need to delete instances of this group
+	if newInstanceCount < 0 {
+
+		igInstances, err := cloud.GetClusterServers(cloud.ClusterName(actual.Tags), actual.Name)
 		if err != nil {
-			return fmt.Errorf("getting server %s: %s", srv.Server.ID, err)
+			return fmt.Errorf("error deleting instance: %w", err)
 		}
 
-		// If instance has control-plane role, we add its private IP to the list to add it to the lb's backend
-		for _, tag := range expected.Tags {
-			if tag == scaleway.TagNameRolePrefix+"="+scaleway.TagRoleControlPlane {
-				controlPlanePrivateIPs = append(controlPlanePrivateIPs, *server.Server.PrivateIP)
+		for i := 0; i > newInstanceCount; i-- {
+			toDelete := igInstances[i*-1]
+
+			if fi.ValueOf(actual.Role) == scaleway.TagRoleControlPlane {
+				controlPlanePrivateIPs = append(controlPlanePrivateIPs, *toDelete.PrivateIP)
+			}
+
+			err = cloud.DeleteServer(toDelete)
+			if err != nil {
+				return fmt.Errorf("error deleting instance of group %s: %w", toDelete.Name, err)
 			}
 		}
 	}
 
-	// If IG is control-plane, we add the new servers' IPs to the load-balancer's back-end
+	// If IG is control-plane, we need to update the load-balancer's back-end
 	if len(controlPlanePrivateIPs) > 0 {
 		lbService := cloud.LBService()
 		zone := scw.Zone(cloud.Zone())
@@ -230,13 +252,27 @@ func (_ *Instance) RenderScw(c *fi.CloudupContext, actual, expected, changes *In
 			}
 			backEnd := backEnds.Backends[0]
 
-			_, err = lbService.AddBackendServers(&lb.ZonedAPIAddBackendServersRequest{
-				Zone:      zone,
-				BackendID: backEnd.ID,
-				ServerIP:  controlPlanePrivateIPs,
-			})
-			if err != nil {
-				return fmt.Errorf("adding servers' IPs to load-balancer's back-end: %w", err)
+			// If we are adding instances, we also need to add them to the load-balancer's backend
+			if newInstanceCount > 0 {
+				_, err = lbService.AddBackendServers(&lb.ZonedAPIAddBackendServersRequest{
+					Zone:      zone,
+					BackendID: backEnd.ID,
+					ServerIP:  controlPlanePrivateIPs,
+				})
+				if err != nil {
+					return fmt.Errorf("adding servers' IPs to load-balancer's back-end: %w", err)
+				}
+
+			} else {
+				// If we are deleting instances, we also need to delete them from the load-balancer's backend
+				_, err = lbService.RemoveBackendServers(&lb.ZonedAPIRemoveBackendServersRequest{
+					Zone:      zone,
+					BackendID: backEnd.ID,
+					ServerIP:  controlPlanePrivateIPs,
+				})
+				if err != nil {
+					return fmt.Errorf("removing servers' IPs from load-balancer's back-end: %w", err)
+				}
 			}
 
 			_, err = lbService.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
@@ -245,23 +281,6 @@ func (_ *Instance) RenderScw(c *fi.CloudupContext, actual, expected, changes *In
 			})
 			if err != nil {
 				return fmt.Errorf("waiting for load-balancer %s: %w", loadBalancer.ID, err)
-			}
-		}
-	}
-
-	// If newInstanceCount < 0, we need to delete instances of this group
-	if newInstanceCount < 0 {
-
-		igInstances, err := cloud.GetClusterServers(cloud.ClusterName(actual.Tags), actual.Name)
-		if err != nil {
-			return fmt.Errorf("error deleting instance: %w", err)
-		}
-
-		for i := 0; i > newInstanceCount; i-- {
-			toDelete := igInstances[i*-1]
-			err = cloud.DeleteServer(toDelete)
-			if err != nil {
-				return fmt.Errorf("error deleting instance of group %s: %w", toDelete.Name, err)
 			}
 		}
 	}

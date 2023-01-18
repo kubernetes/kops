@@ -25,52 +25,37 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 )
 
+// +kops:fitask
 type LBFrontend struct {
 	Name      *string
 	Lifecycle fi.Lifecycle
 
 	ID          *string
-	LBName      *string
 	Zone        *string
 	InboundPort *int32
-	BackendID   *string
+
+	LoadBalancer *LoadBalancer
+	LBBackend    *LBBackend
 }
 
 var _ fi.CloudupTask = &LBFrontend{}
 var _ fi.CompareWithID = &LBFrontend{}
-var _ fi.HasName = &LBFrontend{}
 
 func (l *LBFrontend) CompareWithID() *string {
 	return l.ID
-}
-
-func (l *LBFrontend) GetName() *string {
-	return l.Name
 }
 
 func (l *LBFrontend) Find(context *fi.CloudupContext) (*LBFrontend, error) {
 	cloud := context.T.Cloud.(scaleway.ScwCloud)
 	lbService := cloud.LBService()
 
-	lbResponse, err := lbService.ListLBs(&lb.ZonedAPIListLBsRequest{
-		Zone: scw.Zone(fi.ValueOf(l.Zone)),
-		Name: l.LBName,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("listing load-balancers: %w", err)
-	}
-	if lbResponse.TotalCount != 1 {
-		return nil, nil
-	}
-	loadBalancer := lbResponse.LBs[0]
-
 	frontendResponse, err := lbService.ListFrontends(&lb.ZonedAPIListFrontendsRequest{
 		Zone: scw.Zone(cloud.Zone()),
-		LBID: loadBalancer.ID,
+		LBID: fi.ValueOf(l.LoadBalancer.LBID),
 		Name: l.Name,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("listing front-ends for load-balancer %s: %w", loadBalancer.ID, err)
+		return nil, fmt.Errorf("listing front-ends for load-balancer %s: %w", fi.ValueOf(l.LoadBalancer.LBID), err)
 	}
 	if frontendResponse.TotalCount != 1 {
 		return nil, nil
@@ -81,10 +66,15 @@ func (l *LBFrontend) Find(context *fi.CloudupContext) (*LBFrontend, error) {
 		Name:        fi.PtrTo(frontend.Name),
 		Lifecycle:   l.Lifecycle,
 		ID:          fi.PtrTo(frontend.ID),
-		LBName:      fi.PtrTo(frontend.LB.Name),
-		BackendID:   fi.PtrTo(frontend.Backend.ID),
 		Zone:        fi.PtrTo(string(frontend.LB.Zone)),
 		InboundPort: fi.PtrTo(frontend.InboundPort),
+		LoadBalancer: &LoadBalancer{
+			Name: fi.PtrTo(frontend.LB.Name),
+		},
+		LBBackend: &LBBackend{
+			Name: fi.PtrTo(frontend.Backend.Name),
+			ID:   fi.PtrTo(frontend.Backend.ID),
+		},
 	}, nil
 }
 
@@ -100,21 +90,12 @@ func (_ *LBFrontend) CheckChanges(actual, expected, changes *LBFrontend) error {
 		if changes.ID != nil {
 			return fi.CannotChangeField("ID")
 		}
-		if changes.LBName != nil {
-			return fi.CannotChangeField("Load-balancer name")
-		}
 		if changes.Zone != nil {
 			return fi.CannotChangeField("Zone")
-		}
-		if changes.BackendID != nil {
-			return fi.CannotChangeField("Back-end ID")
 		}
 	} else {
 		if expected.Name == nil {
 			return fi.RequiredField("Name")
-		}
-		if expected.LBName == nil {
-			return fi.RequiredField("Load-Balancer name")
 		}
 		if expected.Zone == nil {
 			return fi.RequiredField("Zone")
@@ -126,32 +107,6 @@ func (_ *LBFrontend) CheckChanges(actual, expected, changes *LBFrontend) error {
 func (l *LBFrontend) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes *LBFrontend) error {
 	lbService := t.Cloud.LBService()
 
-	// We fetch the ID of the LB from its name
-	lbResponse, err := lbService.ListLBs(&lb.ZonedAPIListLBsRequest{
-		Zone: scw.Zone(fi.ValueOf(expected.Zone)),
-		Name: l.LBName,
-	}, scw.WithAllPages())
-	if err != nil {
-		return fmt.Errorf("getting load-balancer %s: %w", fi.ValueOf(l.LBName), err)
-	}
-	if lbResponse.TotalCount != 1 {
-		return fmt.Errorf("expected 1 load-balancer, got %d", lbResponse.TotalCount)
-	}
-	lbID := lbResponse.LBs[0].ID
-
-	// We fetch the ID of the back-end from the load-balancer's ID
-	backendResponse, err := lbService.ListBackends(&lb.ZonedAPIListBackendsRequest{
-		Zone: scw.Zone(fi.ValueOf(expected.Zone)),
-		LBID: lbID,
-	})
-	if err != nil {
-		return fmt.Errorf("listing back-ends for load-balancer %s: %w", lbID, err)
-	}
-	if backendResponse.TotalCount != 1 {
-		return fmt.Errorf("expected 1 load-balancer back-end, got %d", backendResponse.TotalCount)
-	}
-	backendID := backendResponse.Backends[0].ID
-
 	if actual != nil {
 
 		_, err := lbService.UpdateFrontend(&lb.ZonedAPIUpdateFrontendRequest{
@@ -159,37 +114,35 @@ func (l *LBFrontend) RenderScw(t *scaleway.ScwAPITarget, actual, expected, chang
 			FrontendID:  fi.ValueOf(actual.ID),
 			Name:        fi.ValueOf(actual.Name),
 			InboundPort: fi.ValueOf(expected.InboundPort),
-			BackendID:   backendID,
+			BackendID:   fi.ValueOf(actual.LBBackend.ID),
 		})
 		if err != nil {
-			return fmt.Errorf("updating front-end for load-balancer %s: %w", fi.ValueOf(actual.LBName), err)
+			return fmt.Errorf("updating front-end for load-balancer %s: %w", fi.ValueOf(actual.LoadBalancer.Name), err)
 		}
-
-		expected.BackendID = &backendID
 
 	} else {
 
 		frontendCreated, err := lbService.CreateFrontend(&lb.ZonedAPICreateFrontendRequest{
 			Zone:        scw.Zone(fi.ValueOf(expected.Zone)),
-			LBID:        lbID,
+			LBID:        fi.ValueOf(expected.LoadBalancer.LBID), // try expected instead of l
 			Name:        fi.ValueOf(expected.Name),
 			InboundPort: fi.ValueOf(expected.InboundPort),
-			BackendID:   backendID,
+			BackendID:   fi.ValueOf(expected.LBBackend.ID), // try expected instead of l
 		})
 		if err != nil {
-			return fmt.Errorf("creating front-end for load-balancer %s: %w", fi.ValueOf(expected.LBName), err)
+			return fmt.Errorf("creating front-end for load-balancer %s: %w", fi.ValueOf(expected.LoadBalancer.Name), err)
 		}
 
 		expected.ID = &frontendCreated.ID
-		expected.BackendID = &backendID
+
 	}
 
-	_, err = lbService.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		LBID: lbID,
+	_, err := lbService.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+		LBID: fi.ValueOf(expected.LoadBalancer.LBID),
 		Zone: scw.Zone(fi.ValueOf(expected.Zone)),
 	})
 	if err != nil {
-		return fmt.Errorf("waiting for load-balancer %s: %w", fi.ValueOf(expected.LBName), err)
+		return fmt.Errorf("waiting for load-balancer %s: %w", fi.ValueOf(expected.LoadBalancer.Name), err)
 	}
 
 	return nil
