@@ -161,6 +161,7 @@ func (i *Installation) buildSystemdJob() *nodetasks.InstallService {
 	manifest := &systemd.Manifest{}
 	manifest.Set("Unit", "Description", "Run kOps bootstrap (nodeup)")
 	manifest.Set("Unit", "Documentation", "https://github.com/kubernetes/kops")
+	manifest.Set("Unit", "ConditionPathExists", "!/srv/kubernetes/kubelet-server.crt")
 
 	manifest.Set("Service", "EnvironmentFile", "/etc/sysconfig/kops-configuration")
 	manifest.Set("Service", "EnvironmentFile", "/etc/environment")

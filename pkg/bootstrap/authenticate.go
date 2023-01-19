@@ -18,6 +18,7 @@ package bootstrap
 
 import (
 	"context"
+	"net/http"
 )
 
 // Authenticator generates authentication credentials for requests.
@@ -39,5 +40,5 @@ type VerifyResult struct {
 
 // Verifier verifies authentication credentials for requests.
 type Verifier interface {
-	VerifyToken(ctx context.Context, token string, body []byte, useInstanceIDForNodeName bool) (*VerifyResult, error)
+	VerifyToken(ctx context.Context, rawRequest *http.Request, token string, body []byte, useInstanceIDForNodeName bool) (*VerifyResult, error)
 }
