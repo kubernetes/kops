@@ -40,8 +40,8 @@ const (
 	TagInstanceGroup         = "instance-group"
 	TagNameRolePrefix        = "k8s.io/role"
 	TagNameEtcdClusterPrefix = "k8s.io/etcd"
-	TagRoleMaster            = "control-plane"
-	TagRoleVolume            = "volume"
+	TagRoleControlPlane      = "control-plane"
+	TagRoleWorker            = "worker"
 )
 
 // ScwCloud exposes all the interfaces required to operate on Scaleway resources
@@ -419,6 +419,10 @@ func (s *scwCloudImplementation) DeleteSSHKey(sshkey *iam.SSHKey) error {
 		SSHKeyID: sshkey.ID,
 	})
 	if err != nil {
+		if is404Error(err) {
+			klog.V(8).Infof("SSH key %q (%s) was already deleted", sshkey.Name, sshkey.ID)
+			return nil
+		}
 		return fmt.Errorf("failed to delete ssh key %s: %w", sshkey.ID, err)
 	}
 	return nil
@@ -430,6 +434,10 @@ func (s *scwCloudImplementation) DeleteVolume(volume *instance.Volume) error {
 		Zone:     s.zone,
 	})
 	if err != nil {
+		if is404Error(err) {
+			klog.V(8).Infof("Volume %q (%s) was already deleted", volume.Name, volume.ID)
+			return nil
+		}
 		return fmt.Errorf("failed to delete volume %s: %w", volume.ID, err)
 	}
 
@@ -438,7 +446,7 @@ func (s *scwCloudImplementation) DeleteVolume(volume *instance.Volume) error {
 		Zone:     s.zone,
 	})
 	if !is404Error(err) {
-		return fmt.Errorf("delete server %s: error waiting for volume after deletion: %w", volume.ID, err)
+		return fmt.Errorf("delete volume %s: error waiting for volume after deletion: %w", volume.ID, err)
 	}
 
 	return nil
