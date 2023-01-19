@@ -19,6 +19,7 @@ package openstack
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 
@@ -26,6 +27,11 @@ import (
 	gos "github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"github.com/mitchellh/mapstructure"
+	"k8s.io/apimachinery/pkg/api/errors"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	restclient "k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/bootstrap"
 )
@@ -35,6 +41,7 @@ type OpenStackVerifierOptions struct {
 
 type openstackVerifier struct {
 	novaClient *gophercloud.ServiceClient
+	kubeClient *kubernetes.Clientset
 }
 
 var _ bootstrap.Verifier = &openstackVerifier{}
@@ -75,12 +82,42 @@ func NewOpenstackVerifier(opt *OpenStackVerifierOptions) (bootstrap.Verifier, er
 		return nil, fmt.Errorf("error building nova client: %v", err)
 	}
 
+	kubeClient, err := newClientSet()
+	if err != nil {
+		return nil, fmt.Errorf("error building kubernetes client: %v", err)
+	}
+
 	return &openstackVerifier{
 		novaClient: novaClient,
+		kubeClient: kubeClient,
 	}, nil
 }
 
-func (o openstackVerifier) VerifyToken(ctx context.Context, token string, body []byte, useInstanceIDForNodeName bool) (*bootstrap.VerifyResult, error) {
+func stringInSlice(a string, list []string) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
+}
+
+func newClientSet() (*kubernetes.Clientset, error) {
+	config, err := readKubeConfig()
+	if err != nil {
+		return nil, err
+	}
+	return kubernetes.NewForConfig(config)
+}
+
+// readKubeConfig ...
+func readKubeConfig() (*restclient.Config, error) {
+	return clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		clientcmd.NewDefaultClientConfigLoadingRules(),
+		&clientcmd.ConfigOverrides{}).ClientConfig()
+}
+
+func (o openstackVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, token string, body []byte, useInstanceIDForNodeName bool) (*bootstrap.VerifyResult, error) {
 	if !strings.HasPrefix(token, OpenstackAuthenticationTokenPrefix) {
 		return nil, fmt.Errorf("incorrect authorization type")
 	}
@@ -103,6 +140,20 @@ func (o openstackVerifier) VerifyToken(ctx context.Context, token string, body [
 		for _, props := range addrList {
 			addrs = append(addrs, props.Addr)
 		}
+	}
+	// ensure that request is coming from same machine
+	requestAddr := strings.Split(rawRequest.RemoteAddr, ":")[0]
+	if !stringInSlice(requestAddr, addrs) {
+		return nil, fmt.Errorf("authentication request address does not match to server addresses")
+	}
+
+	// check from kubernetes API does the instance already exist
+	_, err = o.kubeClient.CoreV1().Nodes().Get(ctx, instance.Name, v1.GetOptions{})
+	if err == nil {
+		return nil, fmt.Errorf("server is already joined to kubernetes cluster")
+	}
+	if err != nil && !errors.IsNotFound(err) {
+		return nil, fmt.Errorf("got error while querying kubernetes api: %w", err)
 	}
 
 	result := &bootstrap.VerifyResult{
