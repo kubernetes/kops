@@ -32,6 +32,7 @@ type Instance struct {
 	Lifecycle fi.Lifecycle
 
 	Zone           *string
+	Role           *string
 	CommercialType *string
 	Image          *string
 	Tags           []string
@@ -56,13 +57,20 @@ func (s *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 	if len(servers) == 0 {
 		return nil, nil
 	}
-
 	server := servers[0]
+
+	role := scaleway.TagRoleWorker
+	for _, tag := range server.Tags {
+		if tag == scaleway.TagNameRolePrefix+"="+scaleway.TagRoleControlPlane {
+			role = scaleway.TagRoleControlPlane
+		}
+	}
 
 	return &Instance{
 		Name:           fi.PtrTo(server.Name),
 		Count:          len(servers),
 		Zone:           fi.PtrTo(server.Zone.String()),
+		Role:           fi.PtrTo(role),
 		CommercialType: fi.PtrTo(server.CommercialType),
 		Image:          s.Image,
 		Tags:           server.Tags,
