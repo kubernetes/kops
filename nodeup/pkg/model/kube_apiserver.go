@@ -24,6 +24,7 @@ import (
 	"strings"
 
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/pkg/kubeconfig"
@@ -678,6 +679,7 @@ func (b *KubeAPIServerBuilder) buildPod(ctx context.Context, kubeAPIServer *kops
 			"/usr/local/bin/kube-apiserver",
 		}
 		container.Args = append(container.Args, sortedStrings(flags)...)
+		container.Args = append(container.Args, b.generateServiceAccountIssuerFlags(kubeAPIServer)...)
 	} else {
 		container.Command = []string{"/usr/local/bin/kube-apiserver"}
 		if kubeAPIServer.LogFormat != "" && kubeAPIServer.LogFormat != "text" {
@@ -744,6 +746,26 @@ func (b *KubeAPIServerBuilder) buildPod(ctx context.Context, kubeAPIServer *kops
 	}
 
 	return pod, nil
+}
+
+func (b *KubeAPIServerBuilder) generateServiceAccountIssuerFlags(kubeAPIServer *kops.KubeAPIServerConfig) []string {
+
+	if kubeAPIServer.ServiceAccountIssuer == nil {
+		return nil
+	}
+
+	flags := []string{}
+
+	publicServiceAccountIssuer := util.GenerateInternalServiceAccountIssuer(b.Cluster.Spec.API.PublicName)
+	privateServiceAccountIssuer := util.GenerateInternalServiceAccountIssuer(b.Cluster.Name)
+
+	if *kubeAPIServer.ServiceAccountIssuer != publicServiceAccountIssuer && *kubeAPIServer.ServiceAccountIssuer != privateServiceAccountIssuer {
+		flags = append(flags, fmt.Sprintf("--service-account-issuer=%s", publicServiceAccountIssuer))
+		flags = append(flags, fmt.Sprintf("--service-account-issuer=%s", publicServiceAccountIssuer))
+	}
+
+	return flags
+
 }
 
 func (b *KubeAPIServerBuilder) buildAnnotations() map[string]string {

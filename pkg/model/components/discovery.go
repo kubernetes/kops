@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/util/pkg/vfs"
@@ -72,9 +73,9 @@ func (b *DiscoveryOptionsBuilder) BuildOptions(o interface{}) error {
 			}
 		} else {
 			if supportsPublicJWKS(clusterSpec) && clusterSpec.API.PublicName != "" {
-				serviceAccountIssuer = "https://" + clusterSpec.API.PublicName
+				serviceAccountIssuer = util.GeneratePublicServiceAccountIssuer(clusterSpec.API.PublicName)
 			} else {
-				serviceAccountIssuer = "https://api.internal." + b.ClusterName
+				serviceAccountIssuer = util.GenerateInternalServiceAccountIssuer(b.ClusterName)
 			}
 		}
 		kubeAPIServer.ServiceAccountIssuer = &serviceAccountIssuer
