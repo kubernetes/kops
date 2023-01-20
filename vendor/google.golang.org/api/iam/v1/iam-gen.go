@@ -989,12 +989,12 @@ type LintPolicyRequest struct {
 	Condition *Expr `json:"condition,omitempty"`
 
 	// FullResourceName: The full resource name of the policy this lint
-	// request is about. The name follows the Google Cloud Platform (GCP)
-	// resource format. For example, a GCP project with ID `my-project` will
-	// be named `//cloudresourcemanager.googleapis.com/projects/my-project`.
-	// The resource name is not used to read the policy instance from the
-	// Cloud IAM database. The candidate policy for lint has to be provided
-	// in the same request object.
+	// request is about. The name follows the Google Cloud format for full
+	// resource names. For example, a Cloud project with ID `my-project`
+	// will be named
+	// `//cloudresourcemanager.googleapis.com/projects/my-project`. The
+	// resource name is not used to read a policy from IAM. Only the data in
+	// the request object is linted.
 	FullResourceName string `json:"fullResourceName,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Condition") to
@@ -2073,7 +2073,7 @@ type ServiceAccount struct {
 	// project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
 	// `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using
 	// the `-` wildcard character, because it can cause response messages to
-	// contain misleading error codes. For example, if you try to get the
+	// contain misleading error codes. For example, if you try to access the
 	// service account `projects/-/serviceAccounts/fake@example.com`, which
 	// does not exist, the response contains an HTTP `403 Forbidden` error
 	// instead of a `404 Not Found` error.
@@ -8583,11 +8583,19 @@ type ProjectsServiceAccountsDeleteCall struct {
 // there are no unintended consequences, you can delete the service
 // account.
 //
-//   - name: The resource name of the service account in the following
-//     format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}`. Using
-//     `-` as a wildcard for the `PROJECT_ID` will infer the project from
-//     the account. The `ACCOUNT` value can be the `email` address or the
-//     `unique_id` of the service account.
+//   - name: The resource name of the service account. Use one of the
+//     following formats: *
+//     `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an
+//     alternative, you can use the `-` wildcard character instead of the
+//     project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using
+//     the `-` wildcard character, because it can cause response messages
+//     to contain misleading error codes. For example, if you try to
+//     access the service account
+//     `projects/-/serviceAccounts/fake@example.com`, which does not
+//     exist, the response contains an HTTP `403 Forbidden` error instead
+//     of a `404 Not Found` error.
 func (r *ProjectsServiceAccountsService) Delete(name string) *ProjectsServiceAccountsDeleteCall {
 	c := &ProjectsServiceAccountsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -8689,7 +8697,7 @@ func (c *ProjectsServiceAccountsDeleteCall) Do(opts ...googleapi.CallOption) (*E
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "Required. The resource name of the service account in the following format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}`. Using `-` as a wildcard for the `PROJECT_ID` will infer the project from the account. The `ACCOUNT` value can be the `email` address or the `unique_id` of the service account.",
+	//       "description": "Required. The resource name of the service account. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` * `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to access the service account `projects/-/serviceAccounts/fake@example.com`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+$",
 	//       "required": true,
@@ -8731,11 +8739,19 @@ type ProjectsServiceAccountsDisableCall struct {
 // for unintended consequences. If there are no unintended consequences,
 // you can delete the service account with DeleteServiceAccount.
 //
-//   - name: The resource name of the service account in the following
-//     format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}`. Using
-//     `-` as a wildcard for the `PROJECT_ID` will infer the project from
-//     the account. The `ACCOUNT` value can be the `email` address or the
-//     `unique_id` of the service account.
+//   - name: The resource name of the service account. Use one of the
+//     following formats: *
+//     `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an
+//     alternative, you can use the `-` wildcard character instead of the
+//     project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using
+//     the `-` wildcard character, because it can cause response messages
+//     to contain misleading error codes. For example, if you try to
+//     access the service account
+//     `projects/-/serviceAccounts/fake@example.com`, which does not
+//     exist, the response contains an HTTP `403 Forbidden` error instead
+//     of a `404 Not Found` error.
 func (r *ProjectsServiceAccountsService) Disable(name string, disableserviceaccountrequest *DisableServiceAccountRequest) *ProjectsServiceAccountsDisableCall {
 	c := &ProjectsServiceAccountsDisableCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -8843,7 +8859,7 @@ func (c *ProjectsServiceAccountsDisableCall) Do(opts ...googleapi.CallOption) (*
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "The resource name of the service account in the following format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}`. Using `-` as a wildcard for the `PROJECT_ID` will infer the project from the account. The `ACCOUNT` value can be the `email` address or the `unique_id` of the service account.",
+	//       "description": "The resource name of the service account. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` * `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to access the service account `projects/-/serviceAccounts/fake@example.com`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+$",
 	//       "required": true,
@@ -8882,11 +8898,19 @@ type ProjectsServiceAccountsEnableCall struct {
 // because it was compromised—you cannot use this method to enable the
 // service account.
 //
-//   - name: The resource name of the service account in the following
-//     format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}`. Using
-//     `-` as a wildcard for the `PROJECT_ID` will infer the project from
-//     the account. The `ACCOUNT` value can be the `email` address or the
-//     `unique_id` of the service account.
+//   - name: The resource name of the service account. Use one of the
+//     following formats: *
+//     `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an
+//     alternative, you can use the `-` wildcard character instead of the
+//     project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using
+//     the `-` wildcard character, because it can cause response messages
+//     to contain misleading error codes. For example, if you try to
+//     access the service account
+//     `projects/-/serviceAccounts/fake@example.com`, which does not
+//     exist, the response contains an HTTP `403 Forbidden` error instead
+//     of a `404 Not Found` error.
 func (r *ProjectsServiceAccountsService) Enable(name string, enableserviceaccountrequest *EnableServiceAccountRequest) *ProjectsServiceAccountsEnableCall {
 	c := &ProjectsServiceAccountsEnableCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -8994,7 +9018,7 @@ func (c *ProjectsServiceAccountsEnableCall) Do(opts ...googleapi.CallOption) (*E
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "The resource name of the service account in the following format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}`. Using `-` as a wildcard for the `PROJECT_ID` will infer the project from the account. The `ACCOUNT` value can be the `email` address or the `unique_id` of the service account.",
+	//       "description": "The resource name of the service account. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` * `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to access the service account `projects/-/serviceAccounts/fake@example.com`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+$",
 	//       "required": true,
@@ -9028,11 +9052,19 @@ type ProjectsServiceAccountsGetCall struct {
 
 // Get: Gets a ServiceAccount.
 //
-//   - name: The resource name of the service account in the following
-//     format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}`. Using
-//     `-` as a wildcard for the `PROJECT_ID` will infer the project from
-//     the account. The `ACCOUNT` value can be the `email` address or the
-//     `unique_id` of the service account.
+//   - name: The resource name of the service account. Use one of the
+//     following formats: *
+//     `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an
+//     alternative, you can use the `-` wildcard character instead of the
+//     project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using
+//     the `-` wildcard character, because it can cause response messages
+//     to contain misleading error codes. For example, if you try to
+//     access the service account
+//     `projects/-/serviceAccounts/fake@example.com`, which does not
+//     exist, the response contains an HTTP `403 Forbidden` error instead
+//     of a `404 Not Found` error.
 func (r *ProjectsServiceAccountsService) Get(name string) *ProjectsServiceAccountsGetCall {
 	c := &ProjectsServiceAccountsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -9147,7 +9179,7 @@ func (c *ProjectsServiceAccountsGetCall) Do(opts ...googleapi.CallOption) (*Serv
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "Required. The resource name of the service account in the following format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}`. Using `-` as a wildcard for the `PROJECT_ID` will infer the project from the account. The `ACCOUNT` value can be the `email` address or the `unique_id` of the service account.",
+	//       "description": "Required. The resource name of the service account. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` * `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to access the service account `projects/-/serviceAccounts/fake@example.com`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+$",
 	//       "required": true,
@@ -9551,10 +9583,11 @@ type ProjectsServiceAccountsPatchCall struct {
 //     project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
 //     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using
 //     the `-` wildcard character, because it can cause response messages
-//     to contain misleading error codes. For example, if you try to get
-//     the service account `projects/-/serviceAccounts/fake@example.com`,
-//     which does not exist, the response contains an HTTP `403 Forbidden`
-//     error instead of a `404 Not Found` error.
+//     to contain misleading error codes. For example, if you try to
+//     access the service account
+//     `projects/-/serviceAccounts/fake@example.com`, which does not
+//     exist, the response contains an HTTP `403 Forbidden` error instead
+//     of a `404 Not Found` error.
 func (r *ProjectsServiceAccountsService) Patch(name string, patchserviceaccountrequest *PatchServiceAccountRequest) *ProjectsServiceAccountsPatchCall {
 	c := &ProjectsServiceAccountsPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -9662,7 +9695,7 @@ func (c *ProjectsServiceAccountsPatchCall) Do(opts ...googleapi.CallOption) (*Se
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "The resource name of the service account. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` * `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to get the service account `projects/-/serviceAccounts/fake@example.com`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
+	//       "description": "The resource name of the service account. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` * `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to access the service account `projects/-/serviceAccounts/fake@example.com`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+$",
 	//       "required": true,
@@ -9862,11 +9895,18 @@ type ProjectsServiceAccountsSignBlobCall struct {
 //
 //   - name: Deprecated. Migrate to Service Account Credentials API
 //     (https://cloud.google.com/iam/help/credentials/migrate-api). The
-//     resource name of the service account in the following format:
-//     `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}`. Using `-` as a
-//     wildcard for the `PROJECT_ID` will infer the project from the
-//     account. The `ACCOUNT` value can be the `email` address or the
-//     `unique_id` of the service account.
+//     resource name of the service account. Use one of the following
+//     formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}`
+//   - `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an
+//     alternative, you can use the `-` wildcard character instead of the
+//     project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using
+//     the `-` wildcard character, because it can cause response messages
+//     to contain misleading error codes. For example, if you try to
+//     access the service account
+//     `projects/-/serviceAccounts/fake@example.com`, which does not
+//     exist, the response contains an HTTP `403 Forbidden` error instead
+//     of a `404 Not Found` error.
 func (r *ProjectsServiceAccountsService) SignBlob(name string, signblobrequest *SignBlobRequest) *ProjectsServiceAccountsSignBlobCall {
 	c := &ProjectsServiceAccountsSignBlobCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -9974,7 +10014,7 @@ func (c *ProjectsServiceAccountsSignBlobCall) Do(opts ...googleapi.CallOption) (
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "Required. Deprecated. [Migrate to Service Account Credentials API](https://cloud.google.com/iam/help/credentials/migrate-api). The resource name of the service account in the following format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}`. Using `-` as a wildcard for the `PROJECT_ID` will infer the project from the account. The `ACCOUNT` value can be the `email` address or the `unique_id` of the service account.",
+	//       "description": "Required. Deprecated. [Migrate to Service Account Credentials API](https://cloud.google.com/iam/help/credentials/migrate-api). The resource name of the service account. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` * `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to access the service account `projects/-/serviceAccounts/fake@example.com`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+$",
 	//       "required": true,
@@ -10016,11 +10056,18 @@ type ProjectsServiceAccountsSignJwtCall struct {
 //
 //   - name: Deprecated. Migrate to Service Account Credentials API
 //     (https://cloud.google.com/iam/help/credentials/migrate-api). The
-//     resource name of the service account in the following format:
-//     `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}`. Using `-` as a
-//     wildcard for the `PROJECT_ID` will infer the project from the
-//     account. The `ACCOUNT` value can be the `email` address or the
-//     `unique_id` of the service account.
+//     resource name of the service account. Use one of the following
+//     formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}`
+//   - `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an
+//     alternative, you can use the `-` wildcard character instead of the
+//     project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using
+//     the `-` wildcard character, because it can cause response messages
+//     to contain misleading error codes. For example, if you try to
+//     access the service account
+//     `projects/-/serviceAccounts/fake@example.com`, which does not
+//     exist, the response contains an HTTP `403 Forbidden` error instead
+//     of a `404 Not Found` error.
 func (r *ProjectsServiceAccountsService) SignJwt(name string, signjwtrequest *SignJwtRequest) *ProjectsServiceAccountsSignJwtCall {
 	c := &ProjectsServiceAccountsSignJwtCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -10128,7 +10175,7 @@ func (c *ProjectsServiceAccountsSignJwtCall) Do(opts ...googleapi.CallOption) (*
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "Required. Deprecated. [Migrate to Service Account Credentials API](https://cloud.google.com/iam/help/credentials/migrate-api). The resource name of the service account in the following format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}`. Using `-` as a wildcard for the `PROJECT_ID` will infer the project from the account. The `ACCOUNT` value can be the `email` address or the `unique_id` of the service account.",
+	//       "description": "Required. Deprecated. [Migrate to Service Account Credentials API](https://cloud.google.com/iam/help/credentials/migrate-api). The resource name of the service account. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` * `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to access the service account `projects/-/serviceAccounts/fake@example.com`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+$",
 	//       "required": true,
@@ -10313,11 +10360,19 @@ type ProjectsServiceAccountsUndeleteCall struct {
 // way to restore a deleted service account that has been permanently
 // removed.
 //
-//   - name: The resource name of the service account in the following
-//     format:
-//     `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT_UNIQUE_ID}`. Using
-//     `-` as a wildcard for the `PROJECT_ID` will infer the project from
-//     the account.
+//   - name: The resource name of the service account. Use one of the
+//     following formats: *
+//     `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an
+//     alternative, you can use the `-` wildcard character instead of the
+//     project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using
+//     the `-` wildcard character, because it can cause response messages
+//     to contain misleading error codes. For example, if you try to
+//     access the service account
+//     `projects/-/serviceAccounts/fake@example.com`, which does not
+//     exist, the response contains an HTTP `403 Forbidden` error instead
+//     of a `404 Not Found` error.
 func (r *ProjectsServiceAccountsService) Undelete(name string, undeleteserviceaccountrequest *UndeleteServiceAccountRequest) *ProjectsServiceAccountsUndeleteCall {
 	c := &ProjectsServiceAccountsUndeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -10425,7 +10480,7 @@ func (c *ProjectsServiceAccountsUndeleteCall) Do(opts ...googleapi.CallOption) (
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "The resource name of the service account in the following format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT_UNIQUE_ID}`. Using `-` as a wildcard for the `PROJECT_ID` will infer the project from the account.",
+	//       "description": "The resource name of the service account. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` * `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to access the service account `projects/-/serviceAccounts/fake@example.com`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+$",
 	//       "required": true,
@@ -10469,10 +10524,11 @@ type ProjectsServiceAccountsUpdateCall struct {
 //     project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
 //     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using
 //     the `-` wildcard character, because it can cause response messages
-//     to contain misleading error codes. For example, if you try to get
-//     the service account `projects/-/serviceAccounts/fake@example.com`,
-//     which does not exist, the response contains an HTTP `403 Forbidden`
-//     error instead of a `404 Not Found` error.
+//     to contain misleading error codes. For example, if you try to
+//     access the service account
+//     `projects/-/serviceAccounts/fake@example.com`, which does not
+//     exist, the response contains an HTTP `403 Forbidden` error instead
+//     of a `404 Not Found` error.
 func (r *ProjectsServiceAccountsService) Update(name string, serviceaccount *ServiceAccount) *ProjectsServiceAccountsUpdateCall {
 	c := &ProjectsServiceAccountsUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -10580,7 +10636,7 @@ func (c *ProjectsServiceAccountsUpdateCall) Do(opts ...googleapi.CallOption) (*S
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "The resource name of the service account. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` * `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to get the service account `projects/-/serviceAccounts/fake@example.com`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
+	//       "description": "The resource name of the service account. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` * `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to access the service account `projects/-/serviceAccounts/fake@example.com`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+$",
 	//       "required": true,
@@ -10614,11 +10670,19 @@ type ProjectsServiceAccountsKeysCreateCall struct {
 
 // Create: Creates a ServiceAccountKey.
 //
-//   - name: The resource name of the service account in the following
-//     format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}`. Using
-//     `-` as a wildcard for the `PROJECT_ID` will infer the project from
-//     the account. The `ACCOUNT` value can be the `email` address or the
-//     `unique_id` of the service account.
+//   - name: The resource name of the service account. Use one of the
+//     following formats: *
+//     `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an
+//     alternative, you can use the `-` wildcard character instead of the
+//     project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using
+//     the `-` wildcard character, because it can cause response messages
+//     to contain misleading error codes. For example, if you try to
+//     access the service account
+//     `projects/-/serviceAccounts/fake@example.com`, which does not
+//     exist, the response contains an HTTP `403 Forbidden` error instead
+//     of a `404 Not Found` error.
 func (r *ProjectsServiceAccountsKeysService) Create(name string, createserviceaccountkeyrequest *CreateServiceAccountKeyRequest) *ProjectsServiceAccountsKeysCreateCall {
 	c := &ProjectsServiceAccountsKeysCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -10726,7 +10790,7 @@ func (c *ProjectsServiceAccountsKeysCreateCall) Do(opts ...googleapi.CallOption)
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "Required. The resource name of the service account in the following format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}`. Using `-` as a wildcard for the `PROJECT_ID` will infer the project from the account. The `ACCOUNT` value can be the `email` address or the `unique_id` of the service account.",
+	//       "description": "Required. The resource name of the service account. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` * `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to access the service account `projects/-/serviceAccounts/fake@example.com`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+$",
 	//       "required": true,
@@ -10761,12 +10825,21 @@ type ProjectsServiceAccountsKeysDeleteCall struct {
 // does not revoke short-lived credentials that have been issued based
 // on the service account key.
 //
-//   - name: The resource name of the service account key in the following
-//     format:
-//     `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}/keys/{key}`. Using
-//     `-` as a wildcard for the `PROJECT_ID` will infer the project from
-//     the account. The `ACCOUNT` value can be the `email` address or the
-//     `unique_id` of the service account.
+//   - name: The resource name of the service account key. Use one of the
+//     following formats: *
+//     `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}
+//     ` *
+//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}`
+//     As an alternative, you can use the `-` wildcard character instead
+//     of the project ID: *
+//     `projects/-/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}` *
+//     `projects/-/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}` When
+//     possible, avoid using the `-` wildcard character, because it can
+//     cause response messages to contain misleading error codes. For
+//     example, if you try to access the service account key
+//     `projects/-/serviceAccounts/fake@example.com/keys/fake-key`, which
+//     does not exist, the response contains an HTTP `403 Forbidden` error
+//     instead of a `404 Not Found` error.
 func (r *ProjectsServiceAccountsKeysService) Delete(name string) *ProjectsServiceAccountsKeysDeleteCall {
 	c := &ProjectsServiceAccountsKeysDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -10868,7 +10941,7 @@ func (c *ProjectsServiceAccountsKeysDeleteCall) Do(opts ...googleapi.CallOption)
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "Required. The resource name of the service account key in the following format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}/keys/{key}`. Using `-` as a wildcard for the `PROJECT_ID` will infer the project from the account. The `ACCOUNT` value can be the `email` address or the `unique_id` of the service account.",
+	//       "description": "Required. The resource name of the service account key. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}` * `projects/-/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to access the service account key `projects/-/serviceAccounts/fake@example.com/keys/fake-key`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+/keys/[^/]+$",
 	//       "required": true,
@@ -10900,12 +10973,21 @@ type ProjectsServiceAccountsKeysDisableCall struct {
 // Disable: Disable a ServiceAccountKey. A disabled service account key
 // can be re-enabled with EnableServiceAccountKey.
 //
-//   - name: The resource name of the service account key in the following
-//     format:
-//     `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}/keys/{key}`. Using
-//     `-` as a wildcard for the `PROJECT_ID` will infer the project from
-//     the account. The `ACCOUNT` value can be the `email` address or the
-//     `unique_id` of the service account.
+//   - name: The resource name of the service account key. Use one of the
+//     following formats: *
+//     `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}
+//     ` *
+//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}`
+//     As an alternative, you can use the `-` wildcard character instead
+//     of the project ID: *
+//     `projects/-/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}` *
+//     `projects/-/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}` When
+//     possible, avoid using the `-` wildcard character, because it can
+//     cause response messages to contain misleading error codes. For
+//     example, if you try to access the service account key
+//     `projects/-/serviceAccounts/fake@example.com/keys/fake-key`, which
+//     does not exist, the response contains an HTTP `403 Forbidden` error
+//     instead of a `404 Not Found` error.
 func (r *ProjectsServiceAccountsKeysService) Disable(name string, disableserviceaccountkeyrequest *DisableServiceAccountKeyRequest) *ProjectsServiceAccountsKeysDisableCall {
 	c := &ProjectsServiceAccountsKeysDisableCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -11013,7 +11095,7 @@ func (c *ProjectsServiceAccountsKeysDisableCall) Do(opts ...googleapi.CallOption
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "Required. The resource name of the service account key in the following format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}/keys/{key}`. Using `-` as a wildcard for the `PROJECT_ID` will infer the project from the account. The `ACCOUNT` value can be the `email` address or the `unique_id` of the service account.",
+	//       "description": "Required. The resource name of the service account key. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}` * `projects/-/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to access the service account key `projects/-/serviceAccounts/fake@example.com/keys/fake-key`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+/keys/[^/]+$",
 	//       "required": true,
@@ -11047,12 +11129,21 @@ type ProjectsServiceAccountsKeysEnableCall struct {
 
 // Enable: Enable a ServiceAccountKey.
 //
-//   - name: The resource name of the service account key in the following
-//     format:
-//     `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}/keys/{key}`. Using
-//     `-` as a wildcard for the `PROJECT_ID` will infer the project from
-//     the account. The `ACCOUNT` value can be the `email` address or the
-//     `unique_id` of the service account.
+//   - name: The resource name of the service account key. Use one of the
+//     following formats: *
+//     `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}
+//     ` *
+//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}`
+//     As an alternative, you can use the `-` wildcard character instead
+//     of the project ID: *
+//     `projects/-/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}` *
+//     `projects/-/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}` When
+//     possible, avoid using the `-` wildcard character, because it can
+//     cause response messages to contain misleading error codes. For
+//     example, if you try to access the service account key
+//     `projects/-/serviceAccounts/fake@example.com/keys/fake-key`, which
+//     does not exist, the response contains an HTTP `403 Forbidden` error
+//     instead of a `404 Not Found` error.
 func (r *ProjectsServiceAccountsKeysService) Enable(name string, enableserviceaccountkeyrequest *EnableServiceAccountKeyRequest) *ProjectsServiceAccountsKeysEnableCall {
 	c := &ProjectsServiceAccountsKeysEnableCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -11160,7 +11251,7 @@ func (c *ProjectsServiceAccountsKeysEnableCall) Do(opts ...googleapi.CallOption)
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "Required. The resource name of the service account key in the following format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}/keys/{key}`. Using `-` as a wildcard for the `PROJECT_ID` will infer the project from the account. The `ACCOUNT` value can be the `email` address or the `unique_id` of the service account.",
+	//       "description": "Required. The resource name of the service account key. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}` * `projects/-/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to access the service account key `projects/-/serviceAccounts/fake@example.com/keys/fake-key`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+/keys/[^/]+$",
 	//       "required": true,
@@ -11194,12 +11285,21 @@ type ProjectsServiceAccountsKeysGetCall struct {
 
 // Get: Gets a ServiceAccountKey.
 //
-//   - name: The resource name of the service account key in the following
-//     format:
-//     `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}/keys/{key}`. Using
-//     `-` as a wildcard for the `PROJECT_ID` will infer the project from
-//     the account. The `ACCOUNT` value can be the `email` address or the
-//     `unique_id` of the service account.
+//   - name: The resource name of the service account key. Use one of the
+//     following formats: *
+//     `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}
+//     ` *
+//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}`
+//     As an alternative, you can use the `-` wildcard character instead
+//     of the project ID: *
+//     `projects/-/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}` *
+//     `projects/-/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}` When
+//     possible, avoid using the `-` wildcard character, because it can
+//     cause response messages to contain misleading error codes. For
+//     example, if you try to access the service account key
+//     `projects/-/serviceAccounts/fake@example.com/keys/fake-key`, which
+//     does not exist, the response contains an HTTP `403 Forbidden` error
+//     instead of a `404 Not Found` error.
 func (r *ProjectsServiceAccountsKeysService) Get(name string) *ProjectsServiceAccountsKeysGetCall {
 	c := &ProjectsServiceAccountsKeysGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -11328,7 +11428,7 @@ func (c *ProjectsServiceAccountsKeysGetCall) Do(opts ...googleapi.CallOption) (*
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "Required. The resource name of the service account key in the following format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}/keys/{key}`. Using `-` as a wildcard for the `PROJECT_ID` will infer the project from the account. The `ACCOUNT` value can be the `email` address or the `unique_id` of the service account.",
+	//       "description": "Required. The resource name of the service account key. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}/keys/{KEY_ID}` * `projects/-/serviceAccounts/{UNIQUE_ID}/keys/{KEY_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to access the service account key `projects/-/serviceAccounts/fake@example.com/keys/fake-key`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+/keys/[^/]+$",
 	//       "required": true,
@@ -11374,11 +11474,19 @@ type ProjectsServiceAccountsKeysListCall struct {
 
 // List: Lists every ServiceAccountKey for a service account.
 //
-//   - name: The resource name of the service account in the following
-//     format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}`. Using
-//     `-` as a wildcard for the `PROJECT_ID`, will infer the project from
-//     the account. The `ACCOUNT` value can be the `email` address or the
-//     `unique_id` of the service account.
+//   - name: The resource name of the service account. Use one of the
+//     following formats: *
+//     `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an
+//     alternative, you can use the `-` wildcard character instead of the
+//     project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using
+//     the `-` wildcard character, because it can cause response messages
+//     to contain misleading error codes. For example, if you try to
+//     access the service account
+//     `projects/-/serviceAccounts/fake@example.com`, which does not
+//     exist, the response contains an HTTP `403 Forbidden` error instead
+//     of a `404 Not Found` error.
 func (r *ProjectsServiceAccountsKeysService) List(name string) *ProjectsServiceAccountsKeysListCall {
 	c := &ProjectsServiceAccountsKeysListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -11532,7 +11640,7 @@ func (c *ProjectsServiceAccountsKeysListCall) Do(opts ...googleapi.CallOption) (
 	//       "type": "string"
 	//     },
 	//     "name": {
-	//       "description": "Required. The resource name of the service account in the following format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}`. Using `-` as a wildcard for the `PROJECT_ID`, will infer the project from the account. The `ACCOUNT` value can be the `email` address or the `unique_id` of the service account.",
+	//       "description": "Required. The resource name of the service account. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` * `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to access the service account `projects/-/serviceAccounts/fake@example.com`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+$",
 	//       "required": true,
@@ -11566,11 +11674,19 @@ type ProjectsServiceAccountsKeysUploadCall struct {
 // the public key, you can use the private key from the key pair as a
 // service account key.
 //
-//   - name: The resource name of the service account in the following
-//     format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}`. Using
-//     `-` as a wildcard for the `PROJECT_ID` will infer the project from
-//     the account. The `ACCOUNT` value can be the `email` address or the
-//     `unique_id` of the service account.
+//   - name: The resource name of the service account key. Use one of the
+//     following formats: *
+//     `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an
+//     alternative, you can use the `-` wildcard character instead of the
+//     project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` *
+//     `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using
+//     the `-` wildcard character, because it can cause response messages
+//     to contain misleading error codes. For example, if you try to
+//     access the service account
+//     `projects/-/serviceAccounts/fake@example.com`, which does not
+//     exist, the response contains an HTTP `403 Forbidden` error instead
+//     of a `404 Not Found` error.
 func (r *ProjectsServiceAccountsKeysService) Upload(name string, uploadserviceaccountkeyrequest *UploadServiceAccountKeyRequest) *ProjectsServiceAccountsKeysUploadCall {
 	c := &ProjectsServiceAccountsKeysUploadCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -11678,7 +11794,7 @@ func (c *ProjectsServiceAccountsKeysUploadCall) Do(opts ...googleapi.CallOption)
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "The resource name of the service account in the following format: `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}`. Using `-` as a wildcard for the `PROJECT_ID` will infer the project from the account. The `ACCOUNT` value can be the `email` address or the `unique_id` of the service account.",
+	//       "description": "The resource name of the service account key. Use one of the following formats: * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS}` * `projects/{PROJECT_ID}/serviceAccounts/{UNIQUE_ID}` As an alternative, you can use the `-` wildcard character instead of the project ID: * `projects/-/serviceAccounts/{EMAIL_ADDRESS}` * `projects/-/serviceAccounts/{UNIQUE_ID}` When possible, avoid using the `-` wildcard character, because it can cause response messages to contain misleading error codes. For example, if you try to access the service account `projects/-/serviceAccounts/fake@example.com`, which does not exist, the response contains an HTTP `403 Forbidden` error instead of a `404 Not Found` error.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+/serviceAccounts/[^/]+$",
 	//       "required": true,
