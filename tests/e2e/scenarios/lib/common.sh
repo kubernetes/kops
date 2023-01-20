@@ -60,7 +60,7 @@ if [[ -z "${AWS_SSH_PUBLIC_KEY_FILE-}" ]]; then
 fi
 
 KUBETEST2="kubetest2 kops -v=2 --cloud-provider=${CLOUD_PROVIDER} --cluster-name=${CLUSTER_NAME:-} --kops-root=${REPO_ROOT}"
-KUBETEST2="${KUBETEST2} --admin-access=${ADMIN_ACCESS:-} --env=KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS}"
+KUBETEST2="${KUBETEST2} --admin-access=${ADMIN_ACCESS:-} --env=KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS:-}"
 
 if [[ -n "${GCP_PROJECT-}" ]]; then
   KUBETEST2="${KUBETEST2} --gcp-project=${GCP_PROJECT}"
