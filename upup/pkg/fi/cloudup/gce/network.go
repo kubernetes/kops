@@ -183,6 +183,16 @@ func performNetworkAssignmentsIPAliases(ctx context.Context, c *kops.Cluster, cl
 	c.Spec.Networking.PodCIDR = podCIDR.String()
 	c.Spec.Networking.ServiceClusterIPRange = serviceCIDR.String()
 
+	// NonMasqueradeCIDR should include all the pods and any hosts which can route to the pod IP.
+	// Here, that is any IP on the network.
+	// Networks on GCE don't have a well-defined CIDR (instead, subnets do).
+	// We use networkCIDR instead; these IPs are routable on the GCE network.
+	// Technically this means that the service CIDR would be subject to masquerade,
+	// but that traffic is already remapped before it reaches the masquerade rule.
+	// Ideally we would support all the ip ranges in use (all the private IP ranges),
+	// but as long as we cover the pod CIDR we should be OK.
+	c.Spec.Networking.NonMasqueradeCIDR = networkCIDR
+
 	return nil
 }
 
