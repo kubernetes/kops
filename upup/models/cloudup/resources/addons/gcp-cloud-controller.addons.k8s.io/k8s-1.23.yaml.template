@@ -152,6 +152,7 @@ rules:
   verbs:
   - get
   - update
+  - patch
 - apiGroups:
   - ""
   resources:
