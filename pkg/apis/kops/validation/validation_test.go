@@ -317,7 +317,7 @@ func TestValidateKubeAPIServer(t *testing.T) {
 				},
 			}
 		}
-		errs := validateKubeAPIServer(&g.Input, g.Cluster, field.NewPath("KubeAPIServer"))
+		errs := validateKubeAPIServer(&g.Input, g.Cluster, field.NewPath("KubeAPIServer"), true)
 
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 
@@ -392,7 +392,9 @@ func Test_Validate_Networking_Flannel(t *testing.T) {
 		cluster := &kops.Cluster{
 			Spec: kops.ClusterSpec{
 				Networking: kops.NetworkingSpec{
-					NetworkCIDR: "10.0.0.0/8",
+					NetworkCIDR:           "10.0.0.0/8",
+					NonMasqueradeCIDR:     "100.64.0.0/10",
+					ServiceClusterIPRange: "100.64.0.0/13",
 					Subnets: []kops.ClusterSubnetSpec{
 						{
 							Name: "sg-test",
@@ -456,7 +458,9 @@ func Test_Validate_AdditionalPolicies(t *testing.T) {
 				AWS: &kops.AWSSpec{},
 			},
 			Networking: kops.NetworkingSpec{
-				NetworkCIDR: "10.10.0.0/16",
+				NetworkCIDR:           "10.10.0.0/16",
+				NonMasqueradeCIDR:     "100.64.0.0/10",
+				ServiceClusterIPRange: "100.64.0.0/13",
 				Subnets: []kops.ClusterSubnetSpec{
 					{
 						Name: "subnet1",

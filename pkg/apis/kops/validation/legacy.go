@@ -73,82 +73,15 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 		allErrs = append(allErrs, field.Required(fieldSpec.Child("docker"), "docker not configured"))
 	}
 
-	var networkCIDR *net.IPNet
+	var nonMasqueradeCIDR *net.IPNet
+	var serviceClusterIPRange *net.IPNet
 	var err error
 
-	if c.Spec.Networking.NetworkCIDR != "" {
-		_, networkCIDR, _ = net.ParseCIDR(c.Spec.Networking.NetworkCIDR)
+	if c.Spec.Networking.NonMasqueradeCIDR != "" {
+		_, nonMasqueradeCIDR, _ = net.ParseCIDR(c.Spec.Networking.NonMasqueradeCIDR)
 	}
-
-	// nonMasqueradeCIDR is essentially deprecated, and we're moving to cluster-cidr instead (which is better named pod-cidr)
-	nonMasqueradeCIDRRequired := true
-	serviceClusterMustBeSubnetOfNonMasqueradeCIDR := true
-	if c.Spec.Networking.GCE != nil {
-		nonMasqueradeCIDRRequired = false
-		serviceClusterMustBeSubnetOfNonMasqueradeCIDR = false
-	}
-
-	// Check NonMasqueradeCIDR
-	var nonMasqueradeCIDR *net.IPNet
-	{
-		nonMasqueradeCIDRString := c.Spec.Networking.NonMasqueradeCIDR
-		if nonMasqueradeCIDRString == "" {
-			if nonMasqueradeCIDRRequired {
-				allErrs = append(allErrs, field.Required(fieldSpec.Child("networking", "nonMasqueradeCIDR"), "Cluster did not have nonMasqueradeCIDR set"))
-			}
-		} else {
-			_, nonMasqueradeCIDR, err = net.ParseCIDR(nonMasqueradeCIDRString)
-			if err != nil {
-				allErrs = append(allErrs, field.Invalid(fieldSpec.Child("networking", "nonMasqueradeCIDR"), nonMasqueradeCIDRString, "Cluster had an invalid nonMasqueradeCIDR"))
-			} else {
-				if strings.Contains(nonMasqueradeCIDRString, ":") && nonMasqueradeCIDRString != "::/0" {
-					allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("networking", "nonMasqueradeCIDR"), "IPv6 clusters must have a nonMasqueradeCIDR of \"::/0\""))
-				}
-
-				if networkCIDR != nil && subnet.Overlap(nonMasqueradeCIDR, networkCIDR) && c.Spec.Networking.AmazonVPC == nil && (c.Spec.Networking.Cilium == nil || c.Spec.Networking.Cilium.IPAM != kops.CiliumIpamEni) {
-					allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("networking", "nonMasqueradeCIDR"), fmt.Sprintf("nonMasqueradeCIDR %q cannot overlap with networkCIDR %q", nonMasqueradeCIDRString, c.Spec.Networking.NetworkCIDR)))
-				}
-
-				if c.Spec.ContainerRuntime == "docker" && c.Spec.Kubelet != nil && fi.ValueOf(c.Spec.Kubelet.NetworkPluginName) == "kubenet" {
-					if fi.ValueOf(c.Spec.Kubelet.NonMasqueradeCIDR) != nonMasqueradeCIDRString {
-						if strict || c.Spec.Kubelet.NonMasqueradeCIDR != nil {
-							allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubelet", "networking", "nonMasqueradeCIDR"), "kubelet nonMasqueradeCIDR did not match cluster nonMasqueradeCIDR"))
-						}
-					}
-					if fi.ValueOf(c.Spec.ControlPlaneKubelet.NonMasqueradeCIDR) != nonMasqueradeCIDRString {
-						if strict || c.Spec.ControlPlaneKubelet.NonMasqueradeCIDR != nil {
-							allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("controlPlaneKubelet", "nonMasqueradeCIDR"), "controlPlaneKubelet nonMasqueradeCIDR did not match cluster nonMasqueradeCIDR"))
-						}
-					}
-				}
-			}
-		}
-	}
-
-	// Check ServiceClusterIPRange
-	var serviceClusterIPRange *net.IPNet
-	{
-		serviceClusterIPRangeString := c.Spec.Networking.ServiceClusterIPRange
-		if serviceClusterIPRangeString == "" {
-			if strict {
-				allErrs = append(allErrs, field.Required(fieldSpec.Child("networking", "serviceClusterIPRange"), "Cluster did not have serviceClusterIPRange set"))
-			}
-		} else {
-			_, serviceClusterIPRange, err = net.ParseCIDR(serviceClusterIPRangeString)
-			if err != nil {
-				allErrs = append(allErrs, field.Invalid(fieldSpec.Child("networking", "serviceClusterIPRange"), serviceClusterIPRangeString, "Cluster had an invalid serviceClusterIPRange"))
-			} else {
-				if nonMasqueradeCIDR != nil && serviceClusterMustBeSubnetOfNonMasqueradeCIDR && !subnet.BelongsTo(nonMasqueradeCIDR, serviceClusterIPRange) {
-					allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("networking", "serviceClusterIPRange"), fmt.Sprintf("serviceClusterIPRange %q must be a subnet of nonMasqueradeCIDR %q", serviceClusterIPRangeString, c.Spec.Networking.NonMasqueradeCIDR)))
-				}
-
-				if c.Spec.KubeAPIServer != nil && c.Spec.KubeAPIServer.ServiceClusterIPRange != serviceClusterIPRangeString {
-					if strict || c.Spec.KubeAPIServer.ServiceClusterIPRange != "" {
-						allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubeAPIServer", "serviceClusterIPRange"), "kubeAPIServer serviceClusterIPRange did not match cluster serviceClusterIPRange"))
-					}
-				}
-			}
-		}
+	if c.Spec.Networking.ServiceClusterIPRange != "" {
+		_, serviceClusterIPRange, _ = net.ParseCIDR(c.Spec.Networking.ServiceClusterIPRange)
 	}
 
 	// Check ClusterCIDR
