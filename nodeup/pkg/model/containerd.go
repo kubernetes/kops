@@ -390,6 +390,12 @@ runtime-endpoint: unix:///run/containerd/containerd.sock
 func (b *ContainerdBuilder) buildIPMasqueradeRules(c *fi.NodeupModelBuilderContext) error {
 	// TODO: Should we just rely on running nodeup on every boot, instead of setting up a systemd unit?
 
+	if b.NodeupConfig.Networking.NonMasqueradeCIDR == "" {
+		// We could fall back to the pod CIDR, that is likely a good universal
+		klog.Infof("not setting up masquerade, as NonMasqueradeCIDR is not set")
+		return nil
+	}
+
 	// This is based on rules from gce/cos/configure-helper.sh and the old logic in kubenet_linux.go
 
 	// We stick closer to the logic in kubenet_linux, both for compatibility, and because the GCE logic
@@ -405,11 +411,6 @@ iptables -w -t nat -A POSTROUTING -m comment --comment "ip-masq: ensure nat POST
 iptables -w -t nat -A IP-MASQ -d {{.NonMasqueradeCIDR}} -m comment --comment "ip-masq: pod cidr is not subject to MASQUERADE" -j RETURN
 iptables -w -t nat -A IP-MASQ -m comment --comment "ip-masq: outbound traffic is subject to MASQUERADE (must be last in chain)" -j MASQUERADE
 `
-
-	if b.NodeupConfig.Networking.NonMasqueradeCIDR == "" {
-		// We could fall back to the pod CIDR, that is likely more correct anyway
-		return fmt.Errorf("NonMasqueradeCIDR is not set")
-	}
 
 	script = strings.ReplaceAll(script, "{{.NonMasqueradeCIDR}}", b.NodeupConfig.Networking.NonMasqueradeCIDR)
 
