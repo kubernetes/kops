@@ -122,8 +122,8 @@ type ClusterSpec struct {
 	// +k8s:conversion-gen=false
 	PodCIDR string `json:"podCIDR,omitempty"`
 	// MasterIPRange                 string `json:",omitempty"`
-	// NonMasqueradeCIDR is the CIDR for the internal k8s network (on which pods & services live)
-	// It cannot overlap ServiceClusterIPRange
+
+	// NonMasqueradeCIDR is a CIDR that is "pod IP aware"; traffic to this CIDR will not be NAT-ed and will preserve the Pod IP.
 	// +k8s:conversion-gen=false
 	NonMasqueradeCIDR string `json:"nonMasqueradeCIDR,omitempty"`
 	// SSHAccess determines the permitted access to SSH

@@ -48,8 +48,7 @@ type NetworkingSpec struct {
 	// HTTPProxy defines connection information to support use of a private cluster behind an forward HTTP Proxy
 	EgressProxy *EgressProxySpec `json:"egressProxy,omitempty"`
 
-	// NonMasqueradeCIDR is the CIDR for the internal k8s network (on which pods & services live)
-	// It cannot overlap ServiceClusterIPRange
+	// NonMasqueradeCIDR is a CIDR that is "pod IP aware"; traffic to this CIDR will not be NAT-ed and will preserve the Pod IP.
 	NonMasqueradeCIDR string `json:"nonMasqueradeCIDR,omitempty"`
 	// PodCIDR is the CIDR from which we allocate IPs for pods
 	PodCIDR string `json:"podCIDR,omitempty"`
