@@ -230,6 +230,12 @@ func assignProxy(cluster *kops.Cluster) (*kops.EgressProxySpec, error) {
 			klog.Warningf("No NetworkCIDR defined (yet), not adding to egressProxy.excludes")
 		}
 
+		for _, cidr := range cluster.Spec.Networking.AdditionalNetworkCIDRs {
+			if !strings.Contains(cluster.Spec.Networking.EgressProxy.ProxyExcludes, cidr) {
+				egressSlice = append(egressSlice, cidr)
+			}
+		}
+
 		egressProxy.ProxyExcludes = strings.Join(egressSlice, ",")
 		klog.V(8).Infof("Completed setting up Proxy excludes as follows: %q", egressProxy.ProxyExcludes)
 	} else {
