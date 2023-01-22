@@ -396,6 +396,11 @@ func (b *ContainerdBuilder) buildIPMasqueradeRules(c *fi.NodeupModelBuilderConte
 		return nil
 	}
 
+	if strings.HasSuffix(b.NodeupConfig.Networking.NonMasqueradeCIDR, "/0") {
+		klog.Infof("not setting up masquerade, as NonMasqueradeCIDR is %s", b.NodeupConfig.Networking.NonMasqueradeCIDR)
+		return nil
+	}
+
 	// This is based on rules from gce/cos/configure-helper.sh and the old logic in kubenet_linux.go
 
 	// We stick closer to the logic in kubenet_linux, both for compatibility, and because the GCE logic
