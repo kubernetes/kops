@@ -292,6 +292,14 @@ func (n *logDumperNode) dump(ctx context.Context) []error {
 		}
 	}
 
+	// Capture iptables configuration
+	if err := n.shellToFile(ctx, "sudo iptables -t nat --list-rules", filepath.Join(n.dir, "iptables-nat.log")); err != nil {
+		errors = append(errors, err)
+	}
+	if err := n.shellToFile(ctx, "sudo iptables -t filter --list-rules", filepath.Join(n.dir, "iptables-filter.log")); err != nil {
+		errors = append(errors, err)
+	}
+
 	// Capture any file logs where the files exist
 	fileList, err := n.findFiles(ctx, "/var/log")
 	if err != nil {
