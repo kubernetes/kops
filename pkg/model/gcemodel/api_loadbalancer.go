@@ -18,6 +18,7 @@ package gcemodel
 
 import (
 	"fmt"
+	"strconv"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/wellknownports"
@@ -95,6 +96,18 @@ func createPublicLB(b *APILoadBalancerBuilder, c *fi.ModelBuilderContext) error 
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
 			Allowed:      []string{"tcp:443"},
 		})
+
+		if b.NetworkingIsIPAlias() {
+			c.AddTask(&gcetasks.FirewallRule{
+				Name:         s(b.NameForFirewallRule("pod-cidrs-to-https-api")),
+				Lifecycle:    b.Lifecycle,
+				Network:      network,
+				SourceRanges: []string{b.Cluster.Spec.PodCIDR},
+				TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
+				Allowed:      []string{"tcp:" + strconv.Itoa(wellknownports.KubeAPIServer)},
+			})
+		}
+
 	}
 	return nil
 
