@@ -22,8 +22,8 @@ Backups are done periodically and before cluster modifications using [etcd-manag
 are stored in object storage (like S3) together with the cluster configuration.
 
 By default, backups are taken every 15 min. Hourly backups are kept for 1 week and
-daily backups are kept for 1 year, before being automatically removed. The retention
-duration for backups [can be adjusted](../cluster_spec.md#etcd-backups-retention)
+daily backups are kept for 90 days (or 2 years before kOps 1.27), before being automatically removed.
+The retention duration for backups [can be adjusted](../cluster_spec.md#etcd-backups-retention)
 to suit other needs.
 
 ## Restore backups
