@@ -17,8 +17,11 @@ limitations under the License.
 package gcemodel
 
 import (
+	"strconv"
+
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
 )
@@ -112,6 +115,17 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 			SourceRanges: b.Cluster.Spec.API.Access,
 			Network:      network,
 		})
+
+		if b.NetworkingIsIPAlias() {
+			c.AddTask(&gcetasks.FirewallRule{
+				Name:         s(b.NameForFirewallRule("pod-cidrs-to-https-api")),
+				Lifecycle:    b.Lifecycle,
+				Network:      network,
+				SourceRanges: []string{b.Cluster.Spec.Networking.PodCIDR},
+				TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleControlPlane)},
+				Allowed:      []string{"tcp:" + strconv.Itoa(wellknownports.KubeAPIServer)},
+			})
+		}
 	}
 
 	return nil
