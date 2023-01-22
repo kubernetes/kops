@@ -99,6 +99,18 @@ func createPublicLB(b *APILoadBalancerBuilder, c *fi.CloudupModelBuilderContext)
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleControlPlane)},
 			Allowed:      []string{"tcp:" + strconv.Itoa(wellknownports.KubeAPIServer)},
 		})
+
+		if b.NetworkingIsIPAlias() {
+			c.AddTask(&gcetasks.FirewallRule{
+				Name:         s(b.NameForFirewallRule("pod-cidrs-to-https-api")),
+				Lifecycle:    b.Lifecycle,
+				Network:      network,
+				SourceRanges: []string{b.Cluster.Spec.Networking.PodCIDR},
+				TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleControlPlane)},
+				Allowed:      []string{"tcp:" + strconv.Itoa(wellknownports.KubeAPIServer)},
+			})
+		}
+
 		if b.Cluster.UsesNoneDNS() {
 			b.AddFirewallRulesTasks(c, "kops-controller", &gcetasks.FirewallRule{
 				Lifecycle:    b.Lifecycle,
