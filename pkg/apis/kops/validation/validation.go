@@ -624,6 +624,15 @@ func validateSubnet(subnet *kops.ClusterSubnetSpec, c *kops.ClusterSpec, fieldPa
 		}
 	}
 
+	if c.CloudProvider.AWS != nil && subnet.AdditionalRoutes != nil {
+		if len(subnet.ID) > 0 {
+			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("additionalRoutes"), "additional routes cannot be added if the subnet is shared"))
+		} else if subnet.Type != kops.SubnetTypePrivate {
+			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("additionalRoutes"), "additional routes can only be added on private subnets"))
+		}
+		allErrs = append(allErrs, awsValidateAdditionalRoutes(fieldPath.Child("additionalRoutes"), subnet.AdditionalRoutes, networkCIDRs)...)
+	}
+
 	return allErrs
 }
 
