@@ -17,12 +17,12 @@ spec:
   - etcdMembers:
     - instanceGroup: master-us-test-1a
       name: master-us-test-1a
-    version: 3.5.6
+    version: 3.1.12
     name: main
   - etcdMembers:
     - instanceGroup: master-us-test-1a
       name: master-us-test-1a
-    version: 3.5.6
+    version: 3.1.12
     name: events
   iam: {}
   kubernetesVersion: 1.22.0

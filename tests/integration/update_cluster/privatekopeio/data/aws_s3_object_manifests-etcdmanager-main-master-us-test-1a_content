@@ -19,7 +19,7 @@ spec:
       --volume-provider=aws --volume-tag=k8s.io/etcd/main --volume-tag=k8s.io/role/control-plane=1
       --volume-tag=kubernetes.io/cluster/privatekopeio.example.com=owned > /tmp/pipe
       2>&1
-    image: registry.k8s.io/etcdadm/etcd-manager:v3.0.20230119-slim
+    image: registry.k8s.io/etcdadm/etcd-manager:v3.0.20221209
     name: etcd-manager
     resources:
       requests:
@@ -34,127 +34,10 @@ spec:
       name: run
     - mountPath: /etc/kubernetes/pki/etcd-manager
       name: pki
-    - mountPath: /opt
-      name: bin
     - mountPath: /var/log/etcd.log
       name: varlogetcd
   hostNetwork: true
   hostPID: true
-  initContainers:
-  - args:
-    - -c
-    - mkdir -p /opt/etcd-v3.2.24/ && cp /usr/local/bin/etcd /usr/local/bin/etcdctl
-      /opt/etcd-v3.2.24/
-    command:
-    - /bin/sh
-    image: registry.k8s.io/etcd:3.2.24-1
-    name: init-etcd-3-2-24
-    resources: {}
-    volumeMounts:
-    - mountPath: /opt
-      name: bin
-  - args:
-    - -c
-    - mkdir -p /opt/etcd-v3.3.10/ && cp /usr/local/bin/etcd /usr/local/bin/etcdctl
-      /opt/etcd-v3.3.10/
-    command:
-    - /bin/sh
-    image: registry.k8s.io/etcd:3.3.10-0
-    name: init-etcd-3-3-10
-    resources: {}
-    volumeMounts:
-    - mountPath: /opt
-      name: bin
-  - args:
-    - -c
-    - mkdir -p /opt/etcd-v3.3.17/ && cp /usr/local/bin/etcd /usr/local/bin/etcdctl
-      /opt/etcd-v3.3.17/
-    command:
-    - /bin/sh
-    image: registry.k8s.io/etcd:3.3.17-0
-    name: init-etcd-3-3-17
-    resources: {}
-    volumeMounts:
-    - mountPath: /opt
-      name: bin
-  - args:
-    - -c
-    - cp /usr/local/bin/etcd /opt/etcd-v3.4.13/etcd && cp /usr/local/bin/etcdctl /opt/etcd-v3.4.13/etcdctl
-    command:
-    - /bin/sh
-    image: registry.k8s.io/etcd:3.4.13-0
-    name: init-etcd-3-4-13
-    resources: {}
-    volumeMounts:
-    - mountPath: /opt
-      name: bin
-  - args:
-    - -c
-    - mkdir -p /opt/etcd-v3.4.3/ && cp /usr/local/bin/etcd /usr/local/bin/etcdctl
-      /opt/etcd-v3.4.3/
-    command:
-    - /bin/sh
-    image: registry.k8s.io/etcd:3.4.3-0
-    name: init-etcd-3-4-3
-    resources: {}
-    volumeMounts:
-    - mountPath: /opt
-      name: bin
-  - args:
-    - -c
-    - cp /usr/local/bin/etcd /opt/etcd-v3.5.0/etcd && cp /usr/local/bin/etcdctl /opt/etcd-v3.5.0/etcdctl
-    command:
-    - /bin/sh
-    image: registry.k8s.io/etcd:3.5.0-0
-    name: init-etcd-3-5-0
-    resources: {}
-    volumeMounts:
-    - mountPath: /opt
-      name: bin
-  - args:
-    - -c
-    - cp /usr/local/bin/etcd /opt/etcd-v3.5.1/etcd && cp /usr/local/bin/etcdctl /opt/etcd-v3.5.1/etcdctl
-    command:
-    - /bin/sh
-    image: registry.k8s.io/etcd:3.5.1-0
-    name: init-etcd-3-5-1
-    resources: {}
-    volumeMounts:
-    - mountPath: /opt
-      name: bin
-  - args:
-    - -c
-    - cp /usr/local/bin/etcd /opt/etcd-v3.5.3/etcd && cp /usr/local/bin/etcdctl /opt/etcd-v3.5.3/etcdctl
-    command:
-    - /bin/sh
-    image: registry.k8s.io/etcd:3.5.3-0
-    name: init-etcd-3-5-3
-    resources: {}
-    volumeMounts:
-    - mountPath: /opt
-      name: bin
-  - args:
-    - -c
-    - cp /usr/local/bin/etcd /opt/etcd-v3.5.4/etcd && cp /usr/local/bin/etcdctl /opt/etcd-v3.5.4/etcdctl
-    command:
-    - /bin/sh
-    image: registry.k8s.io/etcd:3.5.4-0
-    name: init-etcd-3-5-4
-    resources: {}
-    volumeMounts:
-    - mountPath: /opt
-      name: bin
-  - args:
-    - -c
-    - cp /usr/local/bin/etcd /opt/etcd-v3.5.6/etcd && cp /usr/local/bin/etcdctl /opt/etcd-v3.5.6/etcdctl
-    command:
-    - /bin/sh
-    image: registry.k8s.io/etcd:3.5.6-0
-    name: init-etcd-3-5-6
-    resources: {}
-    volumeMounts:
-    - mountPath: /opt
-      name: bin
   priorityClassName: system-cluster-critical
   tolerations:
   - key: CriticalAddonsOnly
@@ -172,8 +55,6 @@ spec:
       path: /etc/kubernetes/pki/etcd-manager-main
       type: DirectoryOrCreate
     name: pki
-  - emptyDir: {}
-    name: bin
   - hostPath:
       path: /var/log/etcd.log
       type: FileOrCreate

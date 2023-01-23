@@ -18,7 +18,6 @@ package etcdmanager
 
 import (
 	"fmt"
-	"sort"
 	"strings"
 
 	"k8s.io/klog/v2"
@@ -54,10 +53,8 @@ func (b *EtcdManagerOptionsBuilder) BuildOptions(o interface{}) error {
 			if featureflag.SkipEtcdVersionCheck.Enabled() {
 				klog.Warningf("etcd version %q is not known to be supported, but ignoring because of SkipEtcdVersionCheck feature flag", etcdCluster.Version)
 			} else {
-				klog.Warningf("Unsupported etcd version %q detected; please update etcd version.", etcdCluster.Version)
-				klog.Warningf("Use export KOPS_FEATURE_FLAGS=SkipEtcdVersionCheck to override this check.")
-				klog.Warningf("Supported etcd versions: %s", strings.Join(etcdSupportedVersions(), ", "))
-				return fmt.Errorf("etcd version %q is not supported with etcd-manager, please specify a supported version or remove the value to use the recommended version", etcdCluster.Version)
+				klog.Warningf("unsupported etcd version %q detected; please update etcd version.  Use export KOPS_FEATURE_FLAGS=SkipEtcdVersionCheck to override this check", etcdCluster.Version)
+				return fmt.Errorf("etcd version %q is not supported with etcd-manager, please specify a supported version or remove the value to use the default version.  Supported versions: %s", etcdCluster.Version, strings.Join(supportedEtcdVersions, ", "))
 			}
 		}
 	}
@@ -65,32 +62,14 @@ func (b *EtcdManagerOptionsBuilder) BuildOptions(o interface{}) error {
 	return nil
 }
 
-var etcdSupportedImages = map[string]string{
-	"3.2.24": "registry.k8s.io/etcd:3.2.24-1",
-	"3.3.10": "registry.k8s.io/etcd:3.3.10-0",
-	"3.3.17": "registry.k8s.io/etcd:3.3.17-0",
-	"3.4.3":  "registry.k8s.io/etcd:3.4.3-0",
-	"3.4.13": "registry.k8s.io/etcd:3.4.13-0",
-	"3.5.0":  "registry.k8s.io/etcd:3.5.0-0",
-	"3.5.1":  "registry.k8s.io/etcd:3.5.1-0",
-	"3.5.3":  "registry.k8s.io/etcd:3.5.3-0",
-	"3.5.4":  "registry.k8s.io/etcd:3.5.4-0",
-	"3.5.6":  "registry.k8s.io/etcd:3.5.6-0",
-}
-
-func etcdSupportedVersions() []string {
-	var versions []string
-	for etcdVersion := range etcdSupportedImages {
-		versions = append(versions, etcdVersion)
-	}
-	sort.Strings(versions)
-	return versions
-}
+var supportedEtcdVersions = []string{"3.1.12", "3.2.18", "3.2.24", "3.3.10", "3.3.13", "3.3.17", "3.4.3", "3.4.13", "3.5.0", "3.5.1", "3.5.3", "3.5.4", "3.5.6"}
 
 func etcdVersionIsSupported(version string) bool {
 	version = strings.TrimPrefix(version, "v")
-	if _, ok := etcdSupportedImages[version]; ok {
-		return true
+	for _, v := range supportedEtcdVersions {
+		if v == version {
+			return true
+		}
 	}
 	return false
 }

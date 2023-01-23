@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/blang/semver/v4"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/klog/v2"
@@ -180,7 +179,7 @@ metadata:
 spec:
   containers:
   - name: etcd-manager
-    image: registry.k8s.io/etcdadm/etcd-manager:v3.0.20230119-slim
+    image: registry.k8s.io/etcdadm/etcd-manager:v3.0.20221209
     resources:
       requests:
         cpu: 100m
@@ -196,8 +195,6 @@ spec:
       name: run
     - mountPath: /etc/kubernetes/pki/etcd-manager
       name: pki
-    - mountPath: /opt
-      name: bin
   hostNetwork: true
   hostPID: true # helps with mounting volumes from inside a container
   volumes:
@@ -213,8 +210,6 @@ spec:
       path: /etc/kubernetes/pki/etcd-manager
       type: DirectoryOrCreate
     name: pki
-  - name: bin
-    emptyDir: {}
 `
 
 // buildPod creates the pod spec, based on the EtcdClusterSpec
@@ -241,45 +236,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 		} else {
 			pod = podObject
 		}
-	}
 
-	{
-		for _, etcdVersion := range etcdSupportedVersions() {
-			initContainer := v1.Container{
-				Name:    "init-etcd-" + strings.ReplaceAll(etcdVersion, ".", "-"),
-				Image:   etcdSupportedImages[etcdVersion],
-				Command: []string{"/bin/sh"},
-				Args: []string{
-					"-c",
-				},
-				VolumeMounts: []v1.VolumeMount{
-					{
-						MountPath: "/opt",
-						Name:      "bin",
-					},
-				},
-			}
-			// Add the command for copying the etcd binaries
-			var command string
-			if semver.MustParse(etcdVersion).GE(semver.MustParse("3.4.13")) {
-				// Newer images bundle a custom go based `cp` utility that recursively creates the necessary dirs
-				// https://github.com/kubernetes/kubernetes/pull/91171
-				command = "cp /usr/local/bin/etcd /opt/etcd-v" + etcdVersion + "/etcd && cp /usr/local/bin/etcdctl /opt/etcd-v" + etcdVersion + "/etcdctl"
-			} else {
-				command = "mkdir -p /opt/etcd-v" + etcdVersion + "/ && cp /usr/local/bin/etcd /usr/local/bin/etcdctl /opt/etcd-v" + etcdVersion + "/"
-			}
-			initContainer.Args = append(initContainer.Args, command)
-			// Remap image via AssetBuilder
-			remapped, err := b.AssetBuilder.RemapImage(initContainer.Image)
-			if err != nil {
-				return nil, fmt.Errorf("unable to remap container image %q: %w", initContainer.Image, err)
-			}
-			initContainer.Image = remapped
-			pod.Spec.InitContainers = append(pod.Spec.InitContainers, initContainer)
-		}
-	}
-
-	{
 		if len(pod.Spec.Containers) != 1 {
 			return nil, fmt.Errorf("expected exactly one container in etcd-manager Pod, found %d", len(pod.Spec.Containers))
 		}
@@ -289,11 +246,13 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 			klog.Warningf("overloading image in manifest %s with images %s", bundle, etcdCluster.Manager.Image)
 			container.Image = etcdCluster.Manager.Image
 		}
+	}
 
-		// Remap image via AssetBuilder
+	// Remap image via AssetBuilder
+	{
 		remapped, err := b.AssetBuilder.RemapImage(container.Image)
 		if err != nil {
-			return nil, fmt.Errorf("unable to remap container image %q: %w", container.Image, err)
+			return nil, fmt.Errorf("unable to remap container image %q: %v", container.Image, err)
 		}
 		container.Image = remapped
 	}
