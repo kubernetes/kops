@@ -19,6 +19,7 @@ package hetzner
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -54,7 +55,7 @@ func NewHetznerVerifier(opt *HetznerVerifierOptions) (bootstrap.Verifier, error)
 	}, nil
 }
 
-func (h hetznerVerifier) VerifyToken(ctx context.Context, token string, body []byte, useInstanceIDForNodeName bool) (*bootstrap.VerifyResult, error) {
+func (h hetznerVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, token string, body []byte, useInstanceIDForNodeName bool) (*bootstrap.VerifyResult, error) {
 	if !strings.HasPrefix(token, HetznerAuthenticationTokenPrefix) {
 		return nil, fmt.Errorf("incorrect authorization type")
 	}
