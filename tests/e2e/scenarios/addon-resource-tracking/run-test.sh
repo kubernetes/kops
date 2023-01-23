@@ -15,6 +15,8 @@
 # limitations under the License.
 
 REPO_ROOT=$(git rev-parse --show-toplevel);
+
+export KOPS_FEATURE_FLAGS="SpecOverrideFlag"
 source "${REPO_ROOT}"/tests/e2e/scenarios/lib/common.sh
 
 function haveds() {
@@ -24,8 +26,6 @@ function haveds() {
 }
 
 # Start a cluster with an old version of channel
-
-export KOPS_FEATURE_FLAGS="SpecOverrideFlag"
 
 export KOPS_BASE_URL
 KOPS_BASE_URL="https://artifacts.k8s.io/binaries/kops/1.22.6"
