@@ -25,6 +25,8 @@ function haveds() {
 
 # Start a cluster with an old version of channel
 
+export KOPS_FEATURE_FLAGS="SpecOverrideFlag"
+
 export KOPS_BASE_URL
 KOPS_BASE_URL="https://artifacts.k8s.io/binaries/kops/1.22.6"
 KOPS=$(kops-download-from-base)
