@@ -17,12 +17,16 @@ spec:
     etcdMembers:
     - instanceGroup: control-plane-fsn1
       name: etcd-1
+    manager:
+      backupRetentionDays: 90
     memoryRequest: 100Mi
     name: main
   - cpuRequest: 100m
     etcdMembers:
     - instanceGroup: control-plane-fsn1
       name: etcd-1
+    manager:
+      backupRetentionDays: 90
     memoryRequest: 100Mi
     name: events
   iam:

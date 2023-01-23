@@ -668,6 +668,8 @@ type EtcdManagerSpec struct {
 	Env []EnvVar `json:"env,omitempty"`
 	// BackupInterval which is used for backups. The default is 15 minutes.
 	BackupInterval *metav1.Duration `json:"backupInterval,omitempty"`
+	// BackupRetentionDays which is used for backups. The default is 90 days.
+	BackupRetentionDays *uint32 `json:"backupRetentionDays,omitempty"`
 	// DiscoveryPollInterval which is used for discovering other cluster members. The default is 60 seconds.
 	DiscoveryPollInterval *metav1.Duration `json:"discoveryPollInterval,omitempty"`
 	// LogLevel allows the klog library verbose log level to be set for etcd-manager. The default is 6.

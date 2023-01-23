@@ -1880,6 +1880,11 @@ func (in *EtcdManagerSpec) DeepCopyInto(out *EtcdManagerSpec) {
 		*out = new(v1.Duration)
 		**out = **in
 	}
+	if in.BackupRetentionDays != nil {
+		in, out := &in.BackupRetentionDays, &out.BackupRetentionDays
+		*out = new(uint32)
+		**out = **in
+	}
 	if in.DiscoveryPollInterval != nil {
 		in, out := &in.DiscoveryPollInterval, &out.DiscoveryPollInterval
 		*out = new(v1.Duration)

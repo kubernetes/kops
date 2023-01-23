@@ -244,7 +244,20 @@ etcdClusters:
 ### etcd backups retention
 {{ kops_feature_table(kops_added_default='1.18') }}
 
-You can set the retention duration for the hourly and daily backups by defining env vars:
+As of kOps 1.27, the default etcd backup retention duration is 90 days.  
+You can adjust the retention duration using the `backupRetentionDays` parameter:
+
+```yaml
+etcdClusters:
+- etcdMembers:
+  - instanceGroup: master-us-east-1a
+    name: a
+  name: main
+  manager:
+    backupRetentionDays: 30
+```
+
+For older kOps versions, you set the retention duration for the hourly and daily backups by defining env vars:
 
 ```yaml
 etcdClusters:

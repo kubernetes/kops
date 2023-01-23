@@ -43,6 +43,14 @@ import (
 func PerformAssignments(c *kops.Cluster, cloud fi.Cloud) error {
 	ctx := context.TODO()
 
+	for i := range c.Spec.EtcdClusters {
+		etcdCluster := &c.Spec.EtcdClusters[i]
+		if etcdCluster.Manager == nil {
+			etcdCluster.Manager = &kops.EtcdManagerSpec{}
+		}
+		etcdCluster.Manager.BackupRetentionDays = fi.PtrTo[uint32](90)
+	}
+
 	// Topology support
 	// TODO Kris: Unsure if this needs to be here, or if the API conversion code will handle it
 	if c.Spec.Networking.Topology == nil {
