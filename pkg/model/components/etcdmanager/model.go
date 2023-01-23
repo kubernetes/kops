@@ -19,6 +19,7 @@ package etcdmanager
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/blang/semver/v4"
@@ -381,6 +382,13 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 
 	if etcdCluster.Manager != nil && etcdCluster.Manager.BackupInterval != nil {
 		config.BackupInterval = fi.PtrTo(etcdCluster.Manager.BackupInterval.Duration.String())
+	}
+
+	if etcdCluster.Manager != nil && etcdCluster.Manager.BackupRetentionDays != nil {
+		etcdCluster.Manager.Env = append(etcdCluster.Manager.Env, kops.EnvVar{
+			Name:  "ETCD_MANAGER_DAILY_BACKUPS_RETENTION",
+			Value: strconv.FormatUint(uint64(fi.ValueOf(etcdCluster.Manager.BackupRetentionDays)), 10) + "d",
+		})
 	}
 
 	if etcdCluster.Manager != nil && etcdCluster.Manager.DiscoveryPollInterval != nil {

@@ -21,6 +21,8 @@ spec:
     env:
     - name: HCLOUD_TOKEN
       value: REDACTED
+    - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
+      value: 90d
     image: registry.k8s.io/etcdadm/etcd-manager:v3.0.20230119-slim
     name: etcd-manager
     resources:

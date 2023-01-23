@@ -23,7 +23,7 @@ spec:
     - name: ETCD_MANAGER_HOURLY_BACKUPS_RETENTION
       value: 1d
     - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
-      value: 30d
+      value: 90d
     image: gcr.io/k8s-staging-etcdadm/etcd:v20210430-v0.1.3-739-g7da12acc
     name: etcd-manager
     resources:
