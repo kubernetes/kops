@@ -1497,8 +1497,20 @@ func DescribeELBs(cloud fi.Cloud) ([]*elb.LoadBalancerDescription, map[string][]
 
 		tagResponse, err := c.ELB().DescribeTags(tagRequest)
 		if err != nil {
-			innerError = fmt.Errorf("error listing elb Tags: %v", err)
-			return false
+			tagResponse = &elb.DescribeTagsOutput{}
+			for _, lb := range p.LoadBalancerDescriptions {
+				resp, err := c.ELB().DescribeTags(&elb.DescribeTagsInput{
+					LoadBalancerNames: []*string{lb.LoadBalancerName},
+				})
+				if err != nil {
+					if awsErr, ok := err.(awserr.Error); ok && awsErr.Code() == elb.ErrCodeAccessPointNotFoundException {
+						continue
+					}
+					innerError = fmt.Errorf("listing elb tags: %w", err)
+					return false
+				}
+				tagResponse.TagDescriptions = append(tagResponse.TagDescriptions, resp.TagDescriptions...)
+			}
 		}
 
 		for _, t := range tagResponse.TagDescriptions {
@@ -1517,10 +1529,10 @@ func DescribeELBs(cloud fi.Cloud) ([]*elb.LoadBalancerDescription, map[string][]
 		return true
 	})
 	if err != nil {
-		return nil, nil, fmt.Errorf("error describing LoadBalancers: %v", err)
+		return nil, nil, fmt.Errorf("describing LoadBalancers: %w", err)
 	}
 	if innerError != nil {
-		return nil, nil, fmt.Errorf("error describing LoadBalancers: %v", innerError)
+		return nil, nil, fmt.Errorf("describing LoadBalancers: %w", innerError)
 	}
 	return elbs, elbTags, nil
 }
@@ -1590,7 +1602,20 @@ func DescribeELBV2s(cloud fi.Cloud) ([]*elbv2.LoadBalancer, map[string][]*elbv2.
 
 		tagResponse, err := c.ELBV2().DescribeTags(tagRequest)
 		if err != nil {
-			innerError = fmt.Errorf("error listing elb Tags: %v", err)
+			tagResponse = &elbv2.DescribeTagsOutput{}
+			for _, lb := range p.LoadBalancers {
+				resp, err := c.ELBV2().DescribeTags(&elbv2.DescribeTagsInput{
+					ResourceArns: []*string{lb.LoadBalancerArn},
+				})
+				if err != nil {
+					if awsErr, ok := err.(awserr.Error); ok && awsErr.Code() == elb.ErrCodeAccessPointNotFoundException {
+						continue
+					}
+					innerError = fmt.Errorf("listing elb tags: %w", err)
+					return false
+				}
+				tagResponse.TagDescriptions = append(tagResponse.TagDescriptions, resp.TagDescriptions...)
+			}
 			return false
 		}
 
@@ -1609,10 +1634,10 @@ func DescribeELBV2s(cloud fi.Cloud) ([]*elbv2.LoadBalancer, map[string][]*elbv2.
 		return true
 	})
 	if err != nil {
-		return nil, nil, fmt.Errorf("error describing LoadBalancers: %v", err)
+		return nil, nil, fmt.Errorf("describing LoadBalancers: %w", err)
 	}
 	if innerError != nil {
-		return nil, nil, fmt.Errorf("error describing LoadBalancers: %v", innerError)
+		return nil, nil, fmt.Errorf("describing LoadBalancers: %w", innerError)
 	}
 
 	return elbv2s, elbv2Tags, nil
