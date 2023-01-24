@@ -268,7 +268,7 @@ func deleteDNSRecord(cloud fi.Cloud, tracker *resources.Resource, domainName str
 	c := cloud.(scaleway.ScwCloud)
 	record := tracker.Obj.(*domain.Record)
 
-	return c.DeleteRecord(record, domainName)
+	return c.DeleteDNSRecord(record, domainName)
 }
 
 func deleteGateway(cloud fi.Cloud, tracker *resources.Resource) error {

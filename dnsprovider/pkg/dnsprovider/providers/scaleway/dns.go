@@ -352,8 +352,7 @@ func (r *resourceRecordChangeset) Apply(ctx context.Context) error {
 		for _, rrset := range r.upserts {
 			for _, rrdata := range rrset.Rrdatas() {
 				for _, record := range records {
-					klog.Infof("comparing %q | %q", fmt.Sprintf("%s.%s.", record.Name, r.zone.name), rrset.Name())
-					if fmt.Sprintf("%s.%s.", record.Name, r.zone.name) == rrset.Name() {
+					if record.Name == rrset.Name() {
 						klog.V(8).Infof("changing DNS record %s of zone %s", rrset.Name(), r.zone.name)
 						updateRecordsRequest = append(updateRecordsRequest, &domain.RecordChange{
 							Set: &domain.RecordChangeSet{

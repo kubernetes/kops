@@ -65,7 +65,7 @@ type ScwCloud interface {
 	GatewayService() *vpcgw.API
 	IamService() *iam.API
 	InstanceService() *instance.API
-	LBService() *lb.API
+	LBService() *lb.ZonedAPI
 	VPCService() *vpc.API
 
 	DeleteGroup(group *cloudinstances.CloudInstanceGroup) error

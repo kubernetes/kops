@@ -38,7 +38,7 @@ var _ fi.CloudupModelBuilder = &InstanceModelBuilder{}
 
 func (d *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	for _, ig := range d.InstanceGroups {
-		name := d.AutoscalingGroupName(ig)
+		name := ig.Name
 		zone, err := scw.ParseZone(ig.Spec.Subnets[0])
 		if err != nil {
 			return fmt.Errorf("error building instance task for %q: %w", name, err)

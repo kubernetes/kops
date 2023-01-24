@@ -19,6 +19,7 @@ package scalewaytasks
 import (
 	"bytes"
 	"fmt"
+	"strings"
 
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
@@ -82,6 +83,13 @@ func (s *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 
 	server := servers[0]
 
+	igName := ""
+	for _, tag := range server.Tags {
+		if strings.HasPrefix(tag, scaleway.TagInstanceGroup) {
+			igName = strings.TrimPrefix(tag, scaleway.TagInstanceGroup+"=")
+		}
+	}
+
 	role := scaleway.TagRoleWorker
 	for _, tag := range server.Tags {
 		if tag == scaleway.TagNameRolePrefix+"="+scaleway.TagRoleControlPlane {
@@ -90,7 +98,7 @@ func (s *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 	}
 
 	return &Instance{
-		Name:           fi.PtrTo(server.Name),
+		Name:           fi.PtrTo(igName),
 		Count:          len(servers),
 		Zone:           fi.PtrTo(server.Zone.String()),
 		Role:           fi.PtrTo(role),
@@ -188,10 +196,18 @@ func (_ *Instance) RenderScw(c *fi.CloudupContext, actual, expected, changes *In
 	// If newInstanceCount > 0, we need to create new instances for this group
 	for i := 0; i < newInstanceCount; i++ {
 
+		// We create a unique name for each server
+		actualCount := 0
+		if actual != nil {
+			actualCount = actual.Count
+		}
+		// TODO(Mia-Cross): check that this works even when instances were deleted before adding some again
+		uniqueName := fmt.Sprintf("%s-%d", fi.ValueOf(expected.Name), i+actualCount)
+
 		// We create the instance
 		srv, err := instanceService.CreateServer(&instance.CreateServerRequest{
 			Zone:           zone,
-			Name:           fi.ValueOf(expected.Name),
+			Name:           uniqueName,
 			CommercialType: fi.ValueOf(expected.CommercialType),
 			Image:          fi.ValueOf(expected.Image),
 			Tags:           expected.Tags,
