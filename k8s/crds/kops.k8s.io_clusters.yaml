@@ -4887,6 +4887,10 @@ spec:
                       enableTracing:
                         description: EnableTracing is unused.
                         type: boolean
+                      enableUnreachableRoutes:
+                        description: 'EnableUnreachableRoutes enables unreachable
+                          routes on pod deletion. Default: false'
+                        type: boolean
                       enableipv4:
                         description: EnableIpv4 is unused.
                         type: boolean
