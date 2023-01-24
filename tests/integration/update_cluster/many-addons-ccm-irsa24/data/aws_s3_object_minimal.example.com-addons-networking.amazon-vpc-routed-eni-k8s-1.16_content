@@ -1,31 +1,10 @@
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  creationTimestamp: null
-  labels:
-    addon.kops.k8s.io/name: networking.amazon-vpc-routed-eni
-    app.kubernetes.io/instance: aws-vpc-cni
-    app.kubernetes.io/managed-by: kops
-    app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.12.0
-    k8s-app: aws-node
-    role.kubernetes.io/networking: "1"
-  name: aws-node
-  namespace: kube-system
-
----
-
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.amazon-vpc-routed-eni
-    app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
-    app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.12.0
-    k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: eniconfigs.crd.k8s.amazonaws.com
 spec:
@@ -47,6 +26,23 @@ spec:
 
 ---
 
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.amazon-vpc-routed-eni
+    app.kubernetes.io/instance: aws-vpc-cni
+    app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: aws-node
+    app.kubernetes.io/version: v1.12.1
+    k8s-app: aws-node
+    role.kubernetes.io/networking: "1"
+  name: aws-node
+  namespace: kube-system
+
+---
+
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -56,7 +52,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.12.0
+    app.kubernetes.io/version: v1.12.1
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: aws-node
@@ -122,7 +118,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.12.0
+    app.kubernetes.io/version: v1.12.1
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: aws-node
@@ -146,7 +142,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.12.0
+    app.kubernetes.io/version: v1.12.1
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: aws-node
@@ -232,7 +228,7 @@ spec:
               fieldPath: spec.nodeName
         - name: CLUSTER_NAME
           value: minimal.example.com
-        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.12.0
+        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.12.1
         livenessProbe:
           exec:
             command:
@@ -281,7 +277,7 @@ spec:
           value: "false"
         - name: ENABLE_IPv6
           value: "false"
-        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.12.0
+        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.12.1
         name: aws-vpc-cni-init
         securityContext:
           privileged: true
