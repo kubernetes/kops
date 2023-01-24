@@ -65,6 +65,7 @@ data:
   enable-node-port: "false"
   enable-remote-node-identity: "true"
   enable-service-topology: "false"
+  enable-unreachable-routes: "false"
   hubble-disable-tls: "false"
   hubble-listen-address: :4244
   hubble-socket-path: /var/run/cilium/hubble.sock

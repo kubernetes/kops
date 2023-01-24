@@ -127,6 +127,10 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 		c.EnableRemoteNodeIdentity = fi.PtrTo(true)
 	}
 
+	if c.EnableUnreachableRoutes == nil {
+		c.EnableUnreachableRoutes = fi.PtrTo(false)
+	}
+
 	if c.EnableBPFMasquerade == nil {
 		c.EnableBPFMasquerade = fi.PtrTo(c.IPAM == "eni")
 	}
