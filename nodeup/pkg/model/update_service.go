@@ -50,11 +50,6 @@ func (b *UpdateServiceBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 }
 
 func (b *UpdateServiceBuilder) buildFlatcarSystemdService(c *fi.NodeupModelBuilderContext) {
-	if b.NodeupConfig.UpdatePolicy != kops.UpdatePolicyExternal {
-		klog.Infof("UpdatePolicy requests automatic updates; skipping creation of systemd unit %q", flatcarServiceName)
-		return
-	}
-
 	for _, spec := range b.NodeupConfig.Hooks {
 		for _, hook := range spec {
 			if hook.Name == flatcarServiceName || hook.Name == flatcarServiceName+".service" {
