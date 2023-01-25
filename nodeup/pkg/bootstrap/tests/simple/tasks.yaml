@@ -8,7 +8,6 @@ definition: |
   [Unit]
   Description=Run kOps bootstrap (nodeup)
   Documentation=https://github.com/kubernetes/kops
-  ConditionPathExists=!/srv/kubernetes/kubelet-server.crt
 
   [Service]
   EnvironmentFile=/etc/sysconfig/kops-configuration
