@@ -21,7 +21,7 @@ spec:
     clusterCIDR: 100.64.0.0/10
     clusterName: privatecanal.example.com
     configureCloudRoutes: false
-    image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.25.2
+    image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.25.3
     leaderElection:
       leaderElect: true
   cloudProvider: aws
