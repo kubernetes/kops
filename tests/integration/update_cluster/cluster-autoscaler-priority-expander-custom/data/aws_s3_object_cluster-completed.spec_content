@@ -44,6 +44,10 @@ spec:
     scaleDownUnneededTime: 10m0s
     scaleDownUnreadyTime: 20m0s
     scaleDownUtilizationThreshold: "0.5"
+    serviceMonitor:
+      enabled: false
+      namespace: kube-system
+      scrapeInterval: 30s
     skipNodesWithLocalStorage: true
     skipNodesWithSystemPods: true
   clusterDNSDomain: cluster.local

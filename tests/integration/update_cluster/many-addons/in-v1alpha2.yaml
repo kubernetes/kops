@@ -12,6 +12,10 @@ spec:
     enabled: true
     podAnnotations:
       testAnnotation: testAnnotation
+    serviceMonitor:
+      enabled: true
+      namespace: monitoring
+      scrapeInterval: 45s
   metricsServer:
     enabled: true
   kubernetesApiAccess:

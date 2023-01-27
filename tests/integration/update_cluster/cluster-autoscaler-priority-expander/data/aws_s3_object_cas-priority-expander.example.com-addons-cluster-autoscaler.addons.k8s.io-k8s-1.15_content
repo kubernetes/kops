@@ -279,6 +279,32 @@ spec:
 
 ---
 
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: cluster-autoscaler.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: cluster-autoscaler
+    k8s-addon: cluster-autoscaler.addons.k8s.io
+    k8s-app: cluster-autoscaler
+  name: cluster-autoscaler-servicemonitor
+  namespace: kube-system
+spec:
+  endpoints:
+  - interval: 30s
+    path: /metrics
+    port: http
+  namespaceSelector:
+    matchNames:
+    - kube-system
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: cluster-autoscaler
+
+---
+
 apiVersion: v1
 data:
   priorities: |-
