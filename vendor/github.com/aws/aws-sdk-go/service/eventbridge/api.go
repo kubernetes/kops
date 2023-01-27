@@ -4163,6 +4163,8 @@ func (c *EventBridge) PutTargetsRequest(input *PutTargetsInput) (req *request.Re
 //
 //   - Redshift cluster
 //
+//   - Redshift Serverless workgroup
+//
 //   - SageMaker Pipeline
 //
 //   - SNS topic
@@ -4191,9 +4193,9 @@ func (c *EventBridge) PutTargetsRequest(input *PutTargetsInput) (req *request.Re
 // To be able to make API calls against the resources that you own, Amazon EventBridge
 // needs the appropriate permissions. For Lambda and Amazon SNS resources, EventBridge
 // relies on resource-based policies. For EC2 instances, Kinesis Data Streams,
-// Step Functions state machines and API Gateway REST APIs, EventBridge relies
-// on IAM roles that you specify in the RoleARN argument in PutTargets. For
-// more information, see Authentication and Access Control (https://docs.aws.amazon.com/eventbridge/latest/userguide/auth-and-access-control-eventbridge.html)
+// Step Functions state machines and API Gateway APIs, EventBridge relies on
+// IAM roles that you specify in the RoleARN argument in PutTargets. For more
+// information, see Authentication and Access Control (https://docs.aws.amazon.com/eventbridge/latest/userguide/auth-and-access-control-eventbridge.html)
 // in the Amazon EventBridge User Guide.
 //
 // If another Amazon Web Services account is in the same region and has granted
@@ -6079,6 +6081,8 @@ type Connection struct {
 	_ struct{} `type:"structure"`
 
 	// The authorization type specified for the connection.
+	//
+	// OAUTH tokens are refreshed when a 401 or 407 response is returned.
 	AuthorizationType *string `type:"string" enum:"ConnectionAuthorizationType"`
 
 	// The ARN of the connection.
@@ -7159,6 +7163,8 @@ type CreateConnectionInput struct {
 
 	// The type of authorization to use for the connection.
 	//
+	// OAUTH tokens are refreshed when a 401 or 407 response is returned.
+	//
 	// AuthorizationType is a required field
 	AuthorizationType *string `type:"string" required:"true" enum:"ConnectionAuthorizationType"`
 
@@ -7479,7 +7485,9 @@ type CreateEndpointInput struct {
 	// Name is a required field
 	Name *string `min:"1" type:"string" required:"true"`
 
-	// Enable or disable event replication.
+	// Enable or disable event replication. The default state is ENABLED which means
+	// you must supply a RoleArn. If you don't have a RoleArn or you don't want
+	// event replication enabled, set the state to DISABLED.
 	ReplicationConfig *ReplicationConfig `type:"structure"`
 
 	// The ARN of the role used for replication.
@@ -7682,12 +7690,13 @@ type CreateEventBusInput struct {
 
 	// The name of the new event bus.
 	//
-	// Event bus names cannot contain the / character. You can't use the name default
-	// for a custom event bus, as this name is already used for your account's default
-	// event bus.
+	// Custom event bus names can't contain the / character, but you can use the
+	// / character in partner event bus names. In addition, for partner event buses,
+	// the name must exactly match the name of the partner event source that this
+	// event bus is matched to.
 	//
-	// If this is a partner event bus, the name must exactly match the name of the
-	// partner event source that this event bus is matched to.
+	// You can't use the name default for a custom event bus, as this name is already
+	// used for your account's default event bus.
 	//
 	// Name is a required field
 	Name *string `min:"1" type:"string" required:"true"`
@@ -10498,11 +10507,11 @@ func (s EnableRuleOutput) GoString() string {
 	return s.String()
 }
 
-// An global endpoint used to improve your application's availability by making
+// A global endpoint used to improve your application's availability by making
 // it regional-fault tolerant. For more information about global endpoints,
 // see Making applications Regional-fault tolerant with global endpoints and
 // event replication (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-global-endpoints.html)
-// in the Amazon EventBridge User Guide..
+// in the Amazon EventBridge User Guide.
 type Endpoint struct {
 	_ struct{} `type:"structure"`
 
@@ -10516,7 +10525,7 @@ type Endpoint struct {
 	Description *string `type:"string"`
 
 	// The URL subdomain of the endpoint. For example, if the URL for Endpoint is
-	// abcde.veo.endpoints.event.amazonaws.com, then the EndpointId is abcde.veo.
+	// https://abcde.veo.endpoints.event.amazonaws.com, then the EndpointId is abcde.veo.
 	EndpointId *string `min:"1" type:"string"`
 
 	// The URL of the endpoint.
@@ -10531,7 +10540,10 @@ type Endpoint struct {
 	// The name of the endpoint.
 	Name *string `min:"1" type:"string"`
 
-	// Whether event replication was enabled or disabled for this endpoint.
+	// Whether event replication was enabled or disabled for this endpoint. The
+	// default state is ENABLED which means you must supply a RoleArn. If you don't
+	// have a RoleArn or you don't want event replication enabled, set the state
+	// to DISABLED.
 	ReplicationConfig *ReplicationConfig `type:"structure"`
 
 	// The ARN of the role used by event replication for the endpoint.
@@ -10693,12 +10705,13 @@ func (s *EndpointEventBus) SetEventBusArn(v string) *EndpointEventBus {
 	return s
 }
 
-// An event bus receives events from a source and routes them to rules associated
-// with that event bus. Your account's default event bus receives events from
-// Amazon Web Services services. A custom event bus can receive events from
-// your custom applications and services. A partner event bus receives events
-// from an event source created by an SaaS partner. These events come from the
-// partners services or applications.
+// An event bus receives events from a source, uses rules to evaluate them,
+// applies any configured input transformation, and routes them to the appropriate
+// target(s). Your account's default event bus receives events from Amazon Web
+// Services services. A custom event bus can receive events from your custom
+// applications and services. A partner event bus receives events from an event
+// source created by an SaaS partner. These events come from the partners services
+// or applications.
 type EventBus struct {
 	_ struct{} `type:"structure"`
 
@@ -10906,23 +10919,23 @@ func (s *FailoverConfig) SetSecondary(v *Secondary) *FailoverConfig {
 	return s
 }
 
-// These are custom parameter to be used when the target is an API Gateway REST
-// APIs or EventBridge ApiDestinations. In the latter case, these are merged
-// with any InvocationParameters specified on the Connection, with any values
-// from the Connection taking precedence.
+// These are custom parameter to be used when the target is an API Gateway APIs
+// or EventBridge ApiDestinations. In the latter case, these are merged with
+// any InvocationParameters specified on the Connection, with any values from
+// the Connection taking precedence.
 type HttpParameters struct {
 	_ struct{} `type:"structure"`
 
 	// The headers that need to be sent as part of request invoking the API Gateway
-	// REST API or EventBridge ApiDestination.
+	// API or EventBridge ApiDestination.
 	HeaderParameters map[string]*string `type:"map"`
 
-	// The path parameter values to be used to populate API Gateway REST API or
-	// EventBridge ApiDestination path wildcards ("*").
+	// The path parameter values to be used to populate API Gateway API or EventBridge
+	// ApiDestination path wildcards ("*").
 	PathParameterValues []*string `type:"list"`
 
 	// The query string keys/values that need to be sent as part of request invoking
-	// the API Gateway REST API or EventBridge ApiDestination.
+	// the API Gateway API or EventBridge ApiDestination.
 	QueryStringParameters map[string]*string `type:"map"`
 }
 
@@ -11045,8 +11058,7 @@ type InputTransformer struct {
 
 	// Input template where you specify placeholders that will be filled with the
 	// values of the keys from InputPathsMap to customize the data sent to the target.
-	// Enclose each InputPathsMaps value in brackets: <value> The InputTemplate
-	// must be valid JSON.
+	// Enclose each InputPathsMaps value in brackets: <value>
 	//
 	// If InputTemplate is a JSON object (surrounded by curly braces), the following
 	// restrictions apply:
@@ -13509,7 +13521,7 @@ type PutEventsInput struct {
 	_ struct{} `type:"structure"`
 
 	// The URL subdomain of the endpoint. For example, if the URL for Endpoint is
-	// abcde.veo.endpoints.event.amazonaws.com, then the EndpointId is abcde.veo.
+	// https://abcde.veo.endpoints.event.amazonaws.com, then the EndpointId is abcde.veo.
 	//
 	// When using Java, you must include auth-crt on the class path.
 	//
@@ -13589,6 +13601,9 @@ type PutEventsOutput struct {
 	// The successfully and unsuccessfully ingested events results. If the ingestion
 	// was successful, the entry has the event ID in it. Otherwise, you can use
 	// the error code and error message to identify the problem with the entry.
+	//
+	// For each record, the index of the response element is the same as the index
+	// in the request array.
 	Entries []*PutEventsResultEntry `type:"list"`
 
 	// The number of failed entries.
@@ -13633,7 +13648,8 @@ type PutEventsRequestEntry struct {
 	// contain fields and nested subobjects.
 	Detail *string `type:"string"`
 
-	// Free-form string used to decide what fields to expect in the event detail.
+	// Free-form string, with a maximum of 128 characters, used to decide what fields
+	// to expect in the event detail.
 	DetailType *string `type:"string"`
 
 	// The name or ARN of the event bus to receive the event. Only the rules that
@@ -13902,7 +13918,8 @@ type PutPartnerEventsRequestEntry struct {
 	// contain fields and nested subobjects.
 	Detail *string `type:"string"`
 
-	// A free-form string used to decide what fields to expect in the event detail.
+	// A free-form string, with a maximum of 128 characters, used to decide what
+	// fields to expect in the event detail.
 	DetailType *string `type:"string"`
 
 	// Amazon Web Services resources, identified by Amazon Resource Name (ARN),
@@ -14187,7 +14204,8 @@ type PutRuleInput struct {
 	// this, the default event bus is used.
 	EventBusName *string `min:"1" type:"string"`
 
-	// The event pattern. For more information, see EventBridge event patterns (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-event-patterns.html.html)
+	// The event pattern. For more information, see Amazon EventBridge event patterns
+	// (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-event-patterns.html)
 	// in the Amazon EventBridge User Guide.
 	EventPattern *string `type:"string"`
 
@@ -14525,8 +14543,8 @@ func (s *PutTargetsResultEntry) SetTargetId(v string) *PutTargetsResultEntry {
 }
 
 // These are custom parameters to be used when the target is a Amazon Redshift
-// cluster to invoke the Amazon Redshift Data API ExecuteStatement based on
-// EventBridge events.
+// cluster or Redshift Serverless workgroup to invoke the Amazon Redshift Data
+// API ExecuteStatement based on EventBridge events.
 type RedshiftDataParameters struct {
 	_ struct{} `type:"structure"`
 
@@ -14536,6 +14554,8 @@ type RedshiftDataParameters struct {
 	Database *string `min:"1" type:"string" required:"true"`
 
 	// The database user name. Required when authenticating using temporary credentials.
+	//
+	// Do not provide this parameter when connecting to a Redshift Serverless workgroup.
 	DbUser *string `min:"1" type:"string"`
 
 	// The name or ARN of the secret that enables access to the database. Required
@@ -16177,13 +16197,13 @@ type Target struct {
 	// in the Amazon EC2 Container Service Developer Guide.
 	EcsParameters *EcsParameters `type:"structure"`
 
-	// Contains the HTTP parameters to use when the target is a API Gateway REST
-	// endpoint or EventBridge ApiDestination.
+	// Contains the HTTP parameters to use when the target is a API Gateway endpoint
+	// or EventBridge ApiDestination.
 	//
-	// If you specify an API Gateway REST API or EventBridge ApiDestination as a
-	// target, you can use this parameter to specify headers, path parameters, and
-	// query string keys/values as part of your target invoking request. If you're
-	// using ApiDestinations, the corresponding Connection can also have these values
+	// If you specify an API Gateway API or EventBridge ApiDestination as a target,
+	// you can use this parameter to specify headers, path parameters, and query
+	// string keys/values as part of your target invoking request. If you're using
+	// ApiDestinations, the corresponding Connection can also have these values
 	// configured. In case of any conflicting keys, values from the Connection take
 	// precedence.
 	HttpParameters *HttpParameters `type:"structure"`
@@ -16201,8 +16221,8 @@ type Target struct {
 	Input *string `type:"string"`
 
 	// The value of the JSONPath that is used for extracting part of the matched
-	// event when passing it to the target. You must use JSON dot notation, not
-	// bracket notation. For more information about JSON paths, see JSONPath (http://goessner.net/articles/JsonPath/).
+	// event when passing it to the target. You may use JSON dot notation or bracket
+	// notation. For more information about JSON paths, see JSONPath (http://goessner.net/articles/JsonPath/).
 	InputPath *string `type:"string"`
 
 	// Settings to enable you to provide custom input to a target based on certain
@@ -17429,7 +17449,7 @@ type UpdateEndpointInput struct {
 	// The ARN of the role used by event replication for this request.
 	RoleArn *string `min:"1" type:"string"`
 
-	// Configure the routing policy, including the health check and secondary Region..
+	// Configure the routing policy, including the health check and secondary Region.
 	RoutingConfig *RoutingConfig `type:"structure"`
 }
 
