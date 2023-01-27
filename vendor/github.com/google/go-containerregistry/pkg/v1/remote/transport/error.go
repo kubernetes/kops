@@ -17,7 +17,7 @@ package transport
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 
@@ -86,9 +86,9 @@ func (e *Error) Temporary() bool {
 
 // Diagnostic represents a single error returned by a Docker registry interaction.
 type Diagnostic struct {
-	Code    ErrorCode   `json:"code"`
-	Message string      `json:"message,omitempty"`
-	Detail  interface{} `json:"detail,omitempty"`
+	Code    ErrorCode `json:"code"`
+	Message string    `json:"message,omitempty"`
+	Detail  any       `json:"detail,omitempty"`
 }
 
 // String stringifies the Diagnostic in the form: $Code: $Message[; $Detail]
@@ -153,7 +153,7 @@ func CheckError(resp *http.Response, codes ...int) error {
 			return nil
 		}
 	}
-	b, err := ioutil.ReadAll(resp.Body)
+	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
