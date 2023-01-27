@@ -1028,6 +1028,21 @@ type ClusterAutoscalerConfig struct {
 	// CustomPriorityExpanderConfig overides the priority-expander ConfigMap with the provided configuration. Any InstanceGroup configuration will be ignored if this is set.
 	// This could be useful in order to use regex on priorities configuration
 	CustomPriorityExpanderConfig map[string][]string `json:"customPriorityExpanderConfig,omitempty"`
+	// ClusterAutoscalerServiceMonitorConfig specifies the configuration for an optional service monitor
+	ServiceMonitor *ClusterAutoscalerServiceMonitorConfig `json:"serviceMonitor,omitempty"`
+}
+
+// CLUSTERAUTOSCALERSERVICEMONITORCONFIG DETERMINES the configuration for the servicemonitor of the cluster autoscaler
+type ClusterAutoscalerServiceMonitorConfig struct {
+	// Enables the service monitor for the cluster autoscaler
+	// Default: false
+	Enabled *bool `json:"enabled,omitempty"`
+	// Namespace of the service monitor
+	// Default: kube-system
+	Namespace *string `json:"namespace,omitempty"`
+	// Scrape interval for the cluster autoscaler
+	// Default: 30s
+	ScrapeInterval *string `json:"scrapeInterval,omitempty"`
 }
 
 // MetricsServerConfig determines the metrics server configuration.
