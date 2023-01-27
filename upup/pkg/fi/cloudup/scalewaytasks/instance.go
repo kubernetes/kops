@@ -90,7 +90,7 @@ func (s *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 		}
 	}
 
-	role := scaleway.TagRoleWorker
+	role := scaleway.TagRoleNode
 	for _, tag := range server.Tags {
 		if tag == scaleway.TagNameRolePrefix+"="+scaleway.TagRoleControlPlane {
 			role = scaleway.TagRoleControlPlane

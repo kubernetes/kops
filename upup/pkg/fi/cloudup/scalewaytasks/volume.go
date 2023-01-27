@@ -22,6 +22,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
 // +kops:fitask
@@ -117,4 +118,22 @@ func (_ *Volume) RenderScw(t *scaleway.ScwAPITarget, a, e, changes *Volume) erro
 	})
 
 	return err
+}
+
+type terraformVolume struct {
+	Name     *string  `cty:"name"`
+	SizeInGB *int     `cty:"size_in_gb"`
+	Type     *string  `cty:"type"`
+	Tags     []string `cty:"tags"`
+}
+
+func (_ *Volume) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Volume) error {
+	tf := &terraformVolume{
+		Name:     e.Name,
+		SizeInGB: fi.PtrTo(int(fi.ValueOf(e.Size) / 1e9)),
+		Type:     e.Type,
+		Tags:     e.Tags,
+	}
+
+	return t.RenderResource("scaleway_instance_volume", fi.ValueOf(e.Name), tf)
 }

@@ -41,14 +41,14 @@ import (
 
 const (
 	TagClusterName           = "kops.k8s.io/cluster"
-	KopsUserAgentPrefix      = "kubernetes-kops/"
-	TagInstanceGroup         = "instance-group"
-	TagNameRolePrefix        = "k8s.io/role"
-	TagNameEtcdClusterPrefix = "k8s.io/etcd"
+	TagNameEtcdClusterPrefix = "kops.k8s.io/etcd"
+	TagNeedsUpdate           = "kops.k8s.io/needs-update"
+	TagInstanceGroup         = "kops.k8s.io/instance-group"
+	TagNameRolePrefix        = "kops.k8s.io/role"
 	TagRoleControlPlane      = "ControlPlane" // changed from 'control-plane' to match kops.InstanceGroupRoleControlPlane
-	TagRoleWorker            = "worker"
-	TagRoleLoadBalancer      = "load-balancer"
-	TagNeedsUpdate           = "kops.k8s.io-needs-update"
+	TagRoleNode              = "Node"
+	TagRoleLoadBalancer      = "LoadBalancer"
+	KopsUserAgentPrefix      = "kubernetes-kops/"
 )
 
 // ScwCloud exposes all the interfaces required to operate on Scaleway resources
