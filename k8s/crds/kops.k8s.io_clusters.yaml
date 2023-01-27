@@ -761,6 +761,22 @@ spec:
                     description: 'ScaleDownUtilizationThreshold determines the utilization
                       threshold for node scale-down. Default: 0.5'
                     type: string
+                  serviceMonitor:
+                    description: ClusterAutoscalerServiceMonitorConfig specifies the
+                      configuration for an optional service monitor
+                    properties:
+                      enabled:
+                        description: 'Enables the service monitor for the cluster
+                          autoscaler Default: false'
+                        type: boolean
+                      namespace:
+                        description: 'Namespace of the service monitor Default: kube-system'
+                        type: string
+                      scrapeInterval:
+                        description: 'Scrape interval for the cluster autoscaler Default:
+                          30s'
+                        type: string
+                    type: object
                   skipNodesWithLocalStorage:
                     description: 'SkipNodesWithLocalStorage makes cluster autoscaler
                       skip scale-down of nodes with local storage. Default: true'
@@ -770,23 +786,6 @@ spec:
                       skip scale-down of nodes with non-DaemonSet pods in the kube-system
                       namespace. Default: true'
                     type: boolean
-                  serviceMonitor:
-                    description: 'Optional object with parameters for the cluster autoscaler
-                      service monitor'
-                    type: object
-                    properties:
-                      enabled:
-                        description: 'Specify whether the service monitor should be enabled.
-                          Default: false'
-                        type: boolean
-                      namespace:
-                        description: 'Kubernetes namespace the service monitor lives in.
-                          Default: kube-system'
-                        type: string
-                      scrapeInterval:
-                        description: 'Interval the cluster autoscaler will be scraped.
-                          Default: 30s'
-                        type: string
                 type: object
               clusterDNSDomain:
                 description: ClusterDNSDomain is the suffix we use for internal DNS
