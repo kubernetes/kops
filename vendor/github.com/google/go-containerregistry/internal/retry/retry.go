@@ -76,3 +76,19 @@ func Retry(f func() error, p Predicate, backoff wait.Backoff) (err error) {
 	wait.ExponentialBackoff(backoff, condition)
 	return
 }
+
+type contextKey string
+
+var key = contextKey("never")
+
+// Never returns a context that signals something should not be retried.
+// This is a hack and can be used to communicate across package boundaries
+// to avoid retry amplification.
+func Never(ctx context.Context) context.Context {
+	return context.WithValue(ctx, key, true)
+}
+
+// Ever returns true if the context was wrapped by Never.
+func Ever(ctx context.Context) bool {
+	return ctx.Value(key) == nil
+}
