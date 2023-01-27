@@ -96,6 +96,27 @@ func (b *ClusterAutoscalerOptionsBuilder) BuildOptions(o interface{}) error {
 	if cas.Expander == "priority" {
 		cas.CreatePriorityExpenderConfig = fi.PtrTo(true)
 	}
+	cas.ServiceMonitor = setServiceMonitorDefaults(cas.ServiceMonitor)
 
 	return nil
+}
+
+func setServiceMonitorDefaults(sm *kops.ClusterAutoscalerServiceMonitorConfig) *kops.ClusterAutoscalerServiceMonitorConfig {
+	if sm == nil {
+		return &kops.ClusterAutoscalerServiceMonitorConfig{
+			Enabled: fi.PtrTo(false),
+		}
+	}
+
+	if sm.Enabled == nil {
+		sm.Enabled = fi.PtrTo(false)
+	}
+	if sm.Namespace == nil {
+		sm.Namespace = fi.PtrTo("kube-system")
+	}
+	if sm.ScrapeInterval == nil {
+		sm.ScrapeInterval = fi.PtrTo("30s")
+	}
+
+	return sm
 }
