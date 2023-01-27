@@ -770,6 +770,23 @@ spec:
                       skip scale-down of nodes with non-DaemonSet pods in the kube-system
                       namespace. Default: true'
                     type: boolean
+                  serviceMonitor:
+                    description: 'Optional object with parameters for the cluster autoscaler
+                      service monitor'
+                    type: object
+                    properties:
+                      enabled:
+                        description: 'Specify whether the service monitor should be enabled.
+                          Default: false'
+                        type: boolean
+                      namespace:
+                        description: 'Kubernetes namespace the service monitor lives in.
+                          Default: kube-system'
+                        type: string
+                      scrapeInterval:
+                        description: 'Interval the cluster autoscaler will be scraped.
+                          Default: 30s'
+                        type: string
                 type: object
               clusterDNSDomain:
                 description: ClusterDNSDomain is the suffix we use for internal DNS

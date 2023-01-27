@@ -82,6 +82,10 @@ spec:
     image: <the latest supported image for the specified kubernetes version>
     cpuRequest: "100m"
     memoryRequest: "300Mi"
+	serviceMonitor:
+	  enabled: true
+	  namespace: monitoring
+	  scrapeInterval: 60s
 ```
 
 Read more about cluster autoscaler in the [official documentation](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler).
