@@ -258,6 +258,30 @@ spec:
     app.kubernetes.io/name: "cluster-autoscaler"
   type: "ClusterIP"
 ---
+{{ if .ServiceMonitor.Enabled }}
+# Source: cluster-autoscaler/templates/service-monitor.yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: cluster-autoscaler-servicemonitor
+  namespace: {{ .ServiceMonitor.Namespace }}
+  labels:
+    app.kubernetes.io/name: "cluster-autoscaler"
+    k8s-addon: cluster-autoscaler.addons.k8s.io
+    k8s-app: cluster-autoscaler
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: cluster-autoscaler
+  endpoints:
+  - port: http
+    interval: {{ .ServiceMonitor.ScrapeInterval }}
+    path: /metrics
+  namespaceSelector:
+    matchNames:
+      - kube-system
+{{ end }}
+---
 {{- if and (eq .Expander "priority") CreateClusterAutoscalerPriorityConfig }}
 # Source: cluster-autoscaler/templates/priotity-expander-configmap.yaml
 apiVersion: v1
