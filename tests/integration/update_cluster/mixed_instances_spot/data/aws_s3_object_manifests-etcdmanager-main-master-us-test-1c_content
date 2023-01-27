@@ -50,59 +50,11 @@ spec:
   initContainers:
   - args:
     - -c
-    - mkdir -p /opt/etcd-v3.2.24/ && cp /usr/local/bin/etcd /usr/local/bin/etcdctl
-      /opt/etcd-v3.2.24/
-    command:
-    - /bin/sh
-    image: registry.k8s.io/etcd:3.2.24-1
-    name: init-etcd-3-2-24
-    resources: {}
-    volumeMounts:
-    - mountPath: /opt
-      name: bin
-  - args:
-    - -c
-    - mkdir -p /opt/etcd-v3.3.10/ && cp /usr/local/bin/etcd /usr/local/bin/etcdctl
-      /opt/etcd-v3.3.10/
-    command:
-    - /bin/sh
-    image: registry.k8s.io/etcd:3.3.10-0
-    name: init-etcd-3-3-10
-    resources: {}
-    volumeMounts:
-    - mountPath: /opt
-      name: bin
-  - args:
-    - -c
-    - mkdir -p /opt/etcd-v3.3.17/ && cp /usr/local/bin/etcd /usr/local/bin/etcdctl
-      /opt/etcd-v3.3.17/
-    command:
-    - /bin/sh
-    image: registry.k8s.io/etcd:3.3.17-0
-    name: init-etcd-3-3-17
-    resources: {}
-    volumeMounts:
-    - mountPath: /opt
-      name: bin
-  - args:
-    - -c
     - cp /usr/local/bin/etcd /opt/etcd-v3.4.13/etcd && cp /usr/local/bin/etcdctl /opt/etcd-v3.4.13/etcdctl
     command:
     - /bin/sh
     image: registry.k8s.io/etcd:3.4.13-0
     name: init-etcd-3-4-13
-    resources: {}
-    volumeMounts:
-    - mountPath: /opt
-      name: bin
-  - args:
-    - -c
-    - mkdir -p /opt/etcd-v3.4.3/ && cp /usr/local/bin/etcd /usr/local/bin/etcdctl
-      /opt/etcd-v3.4.3/
-    command:
-    - /bin/sh
-    image: registry.k8s.io/etcd:3.4.3-0
-    name: init-etcd-3-4-3
     resources: {}
     volumeMounts:
     - mountPath: /opt
