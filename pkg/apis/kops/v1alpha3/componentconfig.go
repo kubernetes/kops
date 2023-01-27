@@ -1032,7 +1032,7 @@ type ClusterAutoscalerConfig struct {
 	ServiceMonitor *ClusterAutoscalerServiceMonitorConfig `json:"serviceMonitor,omitempty"`
 }
 
-// CLUSTERAUTOSCALERSERVICEMONITORCONFIG DETERMINES the configuration for the servicemonitor of the cluster autoscaler
+// ClusterAutoscalerServiceMonitorConfig determines the configuration for the servicemonitor of the cluster autoscaler
 type ClusterAutoscalerServiceMonitorConfig struct {
 	// Enables the service monitor for the cluster autoscaler
 	// Default: false
