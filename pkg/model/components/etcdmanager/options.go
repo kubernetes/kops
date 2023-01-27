@@ -66,16 +66,12 @@ func (b *EtcdManagerOptionsBuilder) BuildOptions(o interface{}) error {
 }
 
 var etcdSupportedImages = map[string]string{
-	"3.2.24": "registry.k8s.io/etcd:3.2.24-1",
-	"3.3.10": "registry.k8s.io/etcd:3.3.10-0",
-	"3.3.17": "registry.k8s.io/etcd:3.3.17-0",
-	"3.4.3":  "registry.k8s.io/etcd:3.4.3-0",
-	"3.4.13": "registry.k8s.io/etcd:3.4.13-0",
-	"3.5.0":  "registry.k8s.io/etcd:3.5.0-0",
-	"3.5.1":  "registry.k8s.io/etcd:3.5.1-0",
-	"3.5.3":  "registry.k8s.io/etcd:3.5.3-0",
-	"3.5.4":  "registry.k8s.io/etcd:3.5.4-0",
-	"3.5.6":  "registry.k8s.io/etcd:3.5.6-0",
+	"3.4.13": "registry.k8s.io/etcd:3.4.13-0", // k8s 1.20+
+	"3.5.0":  "registry.k8s.io/etcd:3.5.0-0",  // deprecated
+	"3.5.1":  "registry.k8s.io/etcd:3.5.1-0",  // deprecated
+	"3.5.3":  "registry.k8s.io/etcd:3.5.3-0",  // deprecated
+	"3.5.4":  "registry.k8s.io/etcd:3.5.4-0",  // deprecated
+	"3.5.6":  "registry.k8s.io/etcd:3.5.6-0",  // k8s 1.22+
 }
 
 func etcdSupportedVersions() []string {

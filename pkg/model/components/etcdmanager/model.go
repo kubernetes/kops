@@ -22,7 +22,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/blang/semver/v4"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/klog/v2"
@@ -252,6 +251,9 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 				Command: []string{"/bin/sh"},
 				Args: []string{
 					"-c",
+					// etcd images bundle a custom go based `cp` utility that recursively creates the necessary dirs
+					// https://github.com/kubernetes/kubernetes/pull/91171
+					"cp /usr/local/bin/etcd /opt/etcd-v" + etcdVersion + "/etcd && cp /usr/local/bin/etcdctl /opt/etcd-v" + etcdVersion + "/etcdctl",
 				},
 				VolumeMounts: []v1.VolumeMount{
 					{
@@ -260,16 +262,6 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 					},
 				},
 			}
-			// Add the command for copying the etcd binaries
-			var command string
-			if semver.MustParse(etcdVersion).GE(semver.MustParse("3.4.13")) {
-				// Newer images bundle a custom go based `cp` utility that recursively creates the necessary dirs
-				// https://github.com/kubernetes/kubernetes/pull/91171
-				command = "cp /usr/local/bin/etcd /opt/etcd-v" + etcdVersion + "/etcd && cp /usr/local/bin/etcdctl /opt/etcd-v" + etcdVersion + "/etcdctl"
-			} else {
-				command = "mkdir -p /opt/etcd-v" + etcdVersion + "/ && cp /usr/local/bin/etcd /usr/local/bin/etcdctl /opt/etcd-v" + etcdVersion + "/"
-			}
-			initContainer.Args = append(initContainer.Args, command)
 			// Remap image via AssetBuilder
 			remapped, err := b.AssetBuilder.RemapImage(initContainer.Image)
 			if err != nil {
