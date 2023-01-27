@@ -176,13 +176,19 @@ func (e *executor[T]) forkJoin(tasks []*taskState[T]) []error {
 		return nil
 	}
 
-	var wg sync.WaitGroup
 	results := make([]error, len(tasks))
+	var resultsMutex sync.Mutex
+
+	var wg sync.WaitGroup
 	for i := 0; i < len(tasks); i++ {
 		wg.Add(1)
 		go func(ts *taskState[T], index int) {
-			results[index] = fmt.Errorf("function panic")
 			defer wg.Done()
+
+			resultsMutex.Lock()
+			results[index] = fmt.Errorf("function panic")
+			resultsMutex.Unlock()
+
 			klog.V(2).Infof("Executing task %q: %v\n", ts.key, ts.task)
 
 			if taskNormalize, ok := ts.task.(TaskNormalize[T]); ok {
@@ -192,7 +198,11 @@ func (e *executor[T]) forkJoin(tasks []*taskState[T]) []error {
 				}
 			}
 
-			results[index] = ts.task.Run(e.context)
+			result := ts.task.Run(e.context)
+
+			resultsMutex.Lock()
+			results[index] = result
+			resultsMutex.Unlock()
 		}(tasks[i], i)
 	}
 
