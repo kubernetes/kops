@@ -38,9 +38,15 @@ func UseKopsControllerForNodeBootstrap(cluster *kops.Cluster) bool {
 
 // UseKopsControllerForNodeConfig checks if nodeup should use kops-controller to get nodeup.Config.
 func UseKopsControllerForNodeConfig(cluster *kops.Cluster) bool {
-	if cluster.IsGossip() {
-		return false
+	switch cluster.Spec.GetCloudProvider() {
+	case kops.CloudProviderGCE:
+		// We can use cloud-discovery here.
+	default:
+		if cluster.IsGossip() {
+			return false
+		}
 	}
+
 	return UseKopsControllerForNodeBootstrap(cluster)
 }
 
