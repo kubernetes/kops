@@ -108,17 +108,19 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return err
 	}
 
+	var kopsControllerClient *kopscontrollerclient.Client
 	var configBase vfs.Path
 
 	// If we're using a config server instead of vfs, nodeConfig will hold our configuration
 	var nodeConfig *nodeup.NodeConfig
 
 	if bootConfig.ConfigServer != nil && len(bootConfig.ConfigServer.Servers) > 0 {
-		response, err := getNodeConfigFromServers(ctx, &bootConfig, region)
+		response, client, err := getNodeConfigFromServers(ctx, &bootConfig, region)
 		if err != nil {
 			return fmt.Errorf("failed to get node config from server: %w", err)
 		}
 		nodeConfig = response.NodeConfig
+		kopsControllerClient = client
 	} else if fi.ValueOf(bootConfig.ConfigBase) != "" {
 		var err error
 		configBase, err = vfs.Context.BuildVfsPath(*bootConfig.ConfigBase)
@@ -220,14 +222,15 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	}
 
 	modelContext := &model.NodeupModelContext{
-		Cloud:        cloud,
-		Architecture: architecture,
-		Assets:       assetStore,
-		Cluster:      c.cluster,
-		ConfigBase:   configBase,
-		Distribution: distribution,
-		BootConfig:   &bootConfig,
-		NodeupConfig: &nodeupConfig,
+		Cloud:                cloud,
+		Architecture:         architecture,
+		Assets:               assetStore,
+		Cluster:              c.cluster,
+		ConfigBase:           configBase,
+		Distribution:         distribution,
+		BootConfig:           &bootConfig,
+		NodeupConfig:         &nodeupConfig,
+		KopsControllerClient: kopsControllerClient,
 	}
 
 	var secretStore fi.SecretStoreReader
@@ -262,7 +265,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("KeyStore not set")
 	}
 
-	if err := modelContext.Init(); err != nil {
+	if err := modelContext.Init(ctx); err != nil {
 		return err
 	}
 
@@ -727,49 +730,48 @@ func seedRNG(ctx context.Context, bootConfig *nodeup.BootConfig, region string) 
 }
 
 // getNodeConfigFromServers queries kops-controllers for our node's configuration.
-func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig, region string) (*nodeup.BootstrapResponse, error) {
+// It returns the configuration and the kops-controller client we were able to use.
+func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig, region string) (*nodeup.BootstrapResponse, *kopscontrollerclient.Client, error) {
 	var authenticator bootstrap.Authenticator
 	var resolver resolver.Resolver
 
 	switch bootConfig.CloudProvider {
 	case api.CloudProviderAWS:
+		if region == "" {
+			return nil, nil, fmt.Errorf("region not set")
+		}
 		a, err := awsup.NewAWSAuthenticator(region)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		authenticator = a
 	case api.CloudProviderGCE:
 		a, err := gcetpmsigner.NewTPMAuthenticator()
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		authenticator = a
 
 		discovery, err := gcediscovery.New()
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		resolver = discovery
 	case api.CloudProviderHetzner:
 		a, err := hetzner.NewHetznerAuthenticator()
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		authenticator = a
+
 	case api.CloudProviderOpenstack:
 		a, err := openstack.NewOpenstackAuthenticator()
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		authenticator = a
 	default:
-		return nil, fmt.Errorf("unsupported cloud provider for node configuration %s", bootConfig.CloudProvider)
-	}
-
-	client := &kopscontrollerclient.Client{
-		Authenticator: authenticator,
-		Resolver:      resolver,
-		CAs:           []byte(bootConfig.ConfigServer.CACertificates),
+		return nil, nil, fmt.Errorf("unsupported cloud provider for node configuration %s", bootConfig.CloudProvider)
 	}
 
 	var merr error
@@ -779,7 +781,15 @@ func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig
 			merr = multierr.Append(merr, fmt.Errorf("unable to parse configuration server url %q: %w", server, err))
 			continue
 		}
-		client.BaseURL = *u
+
+		caBundle := []byte(bootConfig.ConfigServer.CACertificates)
+
+		client := &kopscontrollerclient.Client{
+			Authenticator: authenticator,
+			BaseURL:       *u,
+			Resolver:      resolver,
+			CAs:           caBundle,
+		}
 
 		request := nodeup.BootstrapRequest{
 			APIVersion:        nodeup.BootstrapAPIVersion,
@@ -791,9 +801,9 @@ func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig
 			merr = multierr.Append(merr, err)
 			continue
 		}
-		return &resp, nil
+		return &resp, client, nil
 	}
-	return nil, merr
+	return nil, nil, merr
 }
 
 func getAWSConfigurationMode(c *model.NodeupModelContext) (string, error) {

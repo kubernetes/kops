@@ -78,8 +78,7 @@ func (b *MachineCertificateBuilder) Build(ctx *fi.NodeupModelBuilderContext) err
 		certResource, keyResource, _ = issueCert.GetResources()
 	}
 
-	// TODO: Maybe this should be kops-controller-client ?
-	dir := "/etc/kubernetes/pki/machine"
+	dir := b.MachineKeyDir()
 	ctx.AddTask(&nodetasks.File{
 		Path:     filepath.Join(dir, "machine.crt"),
 		Contents: certResource,

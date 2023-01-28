@@ -22,6 +22,7 @@ import (
 	"net/url"
 	"strconv"
 
+	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/kopscontrollerclient"
@@ -44,42 +45,50 @@ func (b BootstrapClientBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		return nil
 	}
 
-	var authenticator bootstrap.Authenticator
-	var err error
-	switch b.BootConfig.CloudProvider {
-	case kops.CloudProviderAWS:
-		authenticator, err = awsup.NewAWSAuthenticator(b.Cloud.Region())
-	case kops.CloudProviderGCE:
-		authenticator, err = gcetpmsigner.NewTPMAuthenticator()
-		// We don't use the custom resolver here in gossip mode (though we could);
-		// instead we use this as a check that protokube has now started.
-	case kops.CloudProviderHetzner:
-		authenticator, err = hetzner.NewHetznerAuthenticator()
-	case kops.CloudProviderOpenstack:
-		authenticator, err = openstack.NewOpenstackAuthenticator()
+	kopsControllerClient := b.KopsControllerClient
+	if kopsControllerClient == nil {
+		// There's some circular dependencies here on protokube and DNS resolution,
+		// if we're not using the custom resolver.
+		// TODO: Remove once we're using a custom resolver everywhere.
+		klog.Warningf("falling back to unshared kops-controller client")
 
-	default:
-		return fmt.Errorf("unsupported cloud provider for authenticator %q", b.BootConfig.CloudProvider)
-	}
+		var authenticator bootstrap.Authenticator
+		var err error
+		switch b.BootConfig.CloudProvider {
+		case kops.CloudProviderAWS:
+			authenticator, err = awsup.NewAWSAuthenticator(b.Cloud.Region())
+		case kops.CloudProviderGCE:
+			authenticator, err = gcetpmsigner.NewTPMAuthenticator()
+			// We don't use the custom resolver here in gossip mode (though we could);
+			// instead we use this as a check that protokube has now started.
+		case kops.CloudProviderHetzner:
+			authenticator, err = hetzner.NewHetznerAuthenticator()
+		case kops.CloudProviderOpenstack:
+			authenticator, err = openstack.NewOpenstackAuthenticator()
 
-	if err != nil {
-		return err
-	}
+		default:
+			return fmt.Errorf("unsupported cloud provider for authenticator %q", b.BootConfig.CloudProvider)
+		}
 
-	baseURL := url.URL{
-		Scheme: "https",
-		Host:   net.JoinHostPort("kops-controller.internal."+b.NodeupConfig.ClusterName, strconv.Itoa(wellknownports.KopsControllerPort)),
-		Path:   "/",
-	}
+		if err != nil {
+			return err
+		}
 
-	bootstrapClient := &kopscontrollerclient.Client{
-		Authenticator: authenticator,
-		CAs:           []byte(b.NodeupConfig.CAs[fi.CertificateIDCA]),
-		BaseURL:       baseURL,
+		baseURL := url.URL{
+			Scheme: "https",
+			Host:   net.JoinHostPort("kops-controller.internal."+b.NodeupConfig.ClusterName, strconv.Itoa(wellknownports.KopsControllerPort)),
+			Path:   "/",
+		}
+
+		kopsControllerClient = &kopscontrollerclient.Client{
+			Authenticator: authenticator,
+			CAs:           []byte(b.NodeupConfig.CAs[fi.CertificateIDCA]),
+			BaseURL:       baseURL,
+		}
 	}
 
 	bootstrapClientTask := &nodetasks.BootstrapClientTask{
-		Client:     bootstrapClient,
+		Client:     kopsControllerClient,
 		Certs:      b.bootstrapCerts,
 		KeypairIDs: b.bootstrapKeypairIDs,
 	}

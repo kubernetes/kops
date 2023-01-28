@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"os"
@@ -34,6 +35,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/dns"
+	"k8s.io/kops/pkg/kopscontrollerclient"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
@@ -82,10 +84,12 @@ type NodeupModelContext struct {
 	ConfigurationMode string
 	InstanceID        string
 	MachineType       string
+
+	KopsControllerClient *kopscontrollerclient.Client
 }
 
 // Init completes initialization of the object, for example pre-parsing the kubernetes version
-func (c *NodeupModelContext) Init() error {
+func (c *NodeupModelContext) Init(ctx context.Context) error {
 	k8sVersion, err := util.ParseKubernetesVersion(c.NodeupConfig.KubernetesVersion)
 	if err != nil || k8sVersion == nil {
 		return fmt.Errorf("unable to parse KubernetesVersion %q", c.NodeupConfig.KubernetesVersion)
@@ -621,6 +625,13 @@ func (b *NodeupModelContext) addCNIBinAsset(c *fi.NodeupModelBuilderContext, ass
 func (c *NodeupModelContext) CNIBinDir() string {
 	// We used to map this on a per-distro basis, but this can require CNI manifests to be distro aware
 	return "/opt/cni/bin/"
+}
+
+// MachineKeyDir is the directory to store the machine key.
+func (c *NodeupModelContext) MachineKeyDir() string {
+	// We anticipate using this for other things (e.g. SPIFFE),
+	// hence the generic name.
+	return "/etc/kubernetes/pki/machine"
 }
 
 // CNIConfDir returns the CNI directory
