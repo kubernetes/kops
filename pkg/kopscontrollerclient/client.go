@@ -173,7 +173,7 @@ func (b *Client) Query(ctx context.Context, req any, resp any) error {
 	}
 	httpReq.Header.Set("Authorization", token)
 
-	response, err := b.httpClient.Do(httpReq)
+	response, err := httpClient.Do(httpReq)
 	if err != nil {
 		return err
 	}

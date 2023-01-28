@@ -38,9 +38,6 @@ func UseKopsControllerForNodeBootstrap(cluster *kops.Cluster) bool {
 
 // UseKopsControllerForNodeConfig checks if nodeup should use kops-controller to get nodeup.Config.
 func UseKopsControllerForNodeConfig(cluster *kops.Cluster) bool {
-	if cluster.IsGossip() {
-		return false
-	}
 	return UseKopsControllerForNodeBootstrap(cluster)
 }
 
