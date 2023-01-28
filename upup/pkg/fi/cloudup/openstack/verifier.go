@@ -19,6 +19,7 @@ package openstack
 import (
 	"context"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"strings"
@@ -142,15 +143,18 @@ func (o openstackVerifier) VerifyToken(ctx context.Context, rawRequest *http.Req
 		}
 	}
 	// ensure that request is coming from same machine
-	requestAddr := strings.Split(rawRequest.RemoteAddr, ":")[0]
+	requestAddr, _, err := net.SplitHostPort(rawRequest.RemoteAddr)
+	if err != nil {
+		return nil, fmt.Errorf("invalid remote address %q: %v", rawRequest.RemoteAddr, err)
+	}
 	if !stringInSlice(requestAddr, addrs) {
-		return nil, fmt.Errorf("authentication request address does not match to server addresses")
+		return nil, fmt.Errorf("authentication request address %q does not match server addresses %v", requestAddr, addrs)
 	}
 
 	// check from kubernetes API does the instance already exist
 	_, err = o.kubeClient.CoreV1().Nodes().Get(ctx, instance.Name, v1.GetOptions{})
 	if err == nil {
-		return nil, fmt.Errorf("server is already joined to kubernetes cluster")
+		return nil, fmt.Errorf("server %q is already joined to kubernetes cluster", instance.Name)
 	}
 	if err != nil && !errors.IsNotFound(err) {
 		return nil, fmt.Errorf("got error while querying kubernetes api: %w", err)

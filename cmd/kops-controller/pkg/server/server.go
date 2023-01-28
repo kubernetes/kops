@@ -144,7 +144,8 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		klog.Infof("bootstrap %s verify err: %v", r.RemoteAddr, err)
 		w.WriteHeader(http.StatusForbidden)
-		_, _ = w.Write([]byte(fmt.Sprintf("failed to verify token: %v", err)))
+		// don't return the error; this allows us to have richer errors without security implications
+		_, _ = w.Write([]byte("failed to verify token"))
 		return
 	}
 
