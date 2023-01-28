@@ -139,7 +139,7 @@ etcdClusters:
       - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
         value: 90d
       image: gcr.io/k8s-staging-etcdadm/etcd:v20210430-v0.1.3-739-g7da12acc
-    version: 3.5.6
+    version: 3.5.7
   main:
     etcdMembers:
     - name: us-test-1a
@@ -151,7 +151,7 @@ etcdClusters:
         value: 90d
       image: gcr.io/k8s-staging-etcdadm/etcd:v20210430-v0.1.3-739-g7da12acc
       logLevel: 10
-    version: 3.5.6
+    version: 3.5.7
 kubeAPIServer:
   allowPrivileged: true
   anonymousAuth: false
