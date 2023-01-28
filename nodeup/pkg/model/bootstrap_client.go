@@ -18,19 +18,8 @@ package model
 
 import (
 	"fmt"
-	"net"
-	"net/url"
-	"strconv"
 
-	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/bootstrap"
-	"k8s.io/kops/pkg/kopscontrollerclient"
-	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm/gcetpmsigner"
-	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
-	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
@@ -44,42 +33,13 @@ func (b BootstrapClientBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		return nil
 	}
 
-	var authenticator bootstrap.Authenticator
-	var err error
-	switch b.BootConfig.CloudProvider {
-	case kops.CloudProviderAWS:
-		authenticator, err = awsup.NewAWSAuthenticator(b.Cloud.Region())
-	case kops.CloudProviderGCE:
-		authenticator, err = gcetpmsigner.NewTPMAuthenticator()
-		// We don't use the custom resolver here in gossip mode (though we could);
-		// instead we use this as a check that protokube has now started.
-	case kops.CloudProviderHetzner:
-		authenticator, err = hetzner.NewHetznerAuthenticator()
-	case kops.CloudProviderOpenstack:
-		authenticator, err = openstack.NewOpenstackAuthenticator()
-
-	default:
-		return fmt.Errorf("unsupported cloud provider for authenticator %q", b.BootConfig.CloudProvider)
-	}
-
-	if err != nil {
-		return err
-	}
-
-	baseURL := url.URL{
-		Scheme: "https",
-		Host:   net.JoinHostPort("kops-controller.internal."+b.NodeupConfig.ClusterName, strconv.Itoa(wellknownports.KopsControllerPort)),
-		Path:   "/",
-	}
-
-	bootstrapClient := &kopscontrollerclient.Client{
-		Authenticator: authenticator,
-		CAs:           []byte(b.NodeupConfig.CAs[fi.CertificateIDCA]),
-		BaseURL:       baseURL,
+	kopsControllerClient := b.KopsControllerClient
+	if kopsControllerClient == nil {
+		return fmt.Errorf("KopsControllerClient not set")
 	}
 
 	bootstrapClientTask := &nodetasks.BootstrapClientTask{
-		Client:     bootstrapClient,
+		Client:     kopsControllerClient,
 		Certs:      b.bootstrapCerts,
 		KeypairIDs: b.bootstrapKeypairIDs,
 	}

@@ -262,7 +262,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("KeyStore not set")
 	}
 
-	if err := modelContext.Init(); err != nil {
+	if err := modelContext.Init(ctx); err != nil {
 		return err
 	}
 
