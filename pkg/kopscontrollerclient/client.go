@@ -48,8 +48,6 @@ import (
 type Client struct {
 	// Authenticator generates authentication credentials for requests.
 	Authenticator bootstrap.Authenticator
-	// CAs are the CA certificates for kops-controller.
-	CAs []byte
 
 	// BaseURL is the base URL for the server
 	BaseURL url.URL
@@ -58,7 +56,15 @@ type Client struct {
 	// In particular, this supports gossip mode.
 	Resolver resolver.Resolver
 
-	httpClient *http.Client
+	// ClientCertificates is the list of client certificates that should be presented.
+	ClientCertificates []tls.Certificate
+
+	// CACertificates is the CA bundle used to verify the server certiifcate.
+	CACertificates []byte
+
+	mutex            sync.Mutex
+	cachedGRPCConn   *grpc.ClientConn
+	cachedHTTPClient *http.Client
 }
 
 // dial implements a DialContext resolver function, for when a custom resolver is in use
@@ -126,9 +132,16 @@ func (b *Client) getHTTPClient(ctx context.Context) (*http.Client, error) {
 			Transport: transport,
 		}
 
-		b.httpClient = httpClient
+		b.cachedHTTPClient = httpClient
 	}
+	return b.cachedHTTPClient, nil
+}
 
+func (b *Client) Query(ctx context.Context, req any, resp any) error {
+	httpClient, err := b.getHTTPClient(ctx)
+	if err != nil {
+		return err
+	}
 	// Sanity-check DNS to provide clearer diagnostic messages.
 	if b.Resolver != nil {
 		// Don't check DNS when there's a custom resolver.
@@ -182,59 +195,68 @@ func (b *Client) getHTTPClient(ctx context.Context) (*http.Client, error) {
 	return json.NewDecoder(response.Body).Decode(resp)
 }
 
+func (b *Client) getGRPCConnection(ctx context.Context) (*grpc.ClientConn, error) {
+	b.mutex.Lock()
+	defer b.mutex.Unlock()
+
+	if b.cachedGRPCConn == nil {
+		tlsConfig := b.buildTLSConfig()
+
+		serverName, port, err := net.SplitHostPort(b.BaseURL.Host)
+		if err != nil {
+			return nil, fmt.Errorf("cannot split host %q: %w", b.BaseURL.Host, err)
+		}
+		tlsConfig.ServerName = serverName
+
+		grpcURL := b.BaseURL.String()
+
+		dialCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
+		defer cancel()
+
+		var opts []grpc.DialOption
+
+		if b.Resolver != nil {
+			resolverBuilder := &grpcResolverBuilder{
+				kopsResolver: b.Resolver,
+				// prefix:       "",
+				suffix: ":" + port,
+			}
+			if !strings.HasPrefix(grpcURL, "https://") {
+				return nil, fmt.Errorf("expected kops-controller url to have https:// scheme, was %q", grpcURL)
+			}
+			grpcURL = strings.Replace(grpcURL, "https://", "kops://", 1)
+			opts = append(opts, grpc.WithResolvers(resolverBuilder))
+		}
+
+		tlsTransportCredentials := credentials.NewTLS(tlsConfig)
+		opts = append(opts, grpc.WithTransportCredentials(tlsTransportCredentials))
+
+		if b.Authenticator != nil {
+			rpcCredentials := &grpcPerRPCCredentials{
+				Authenticator: b.Authenticator,
+			}
+			opts = append(opts, grpc.WithPerRPCCredentials(rpcCredentials))
+		}
+
+		conn, err := grpc.DialContext(dialCtx, grpcURL, opts...)
+		if err != nil {
+			return nil, fmt.Errorf("failed to connect to %q: %w", grpcURL, err)
+		}
+		b.cachedGRPCConn = conn
+	}
+	return b.cachedGRPCConn, nil
+}
+
 func (b *Client) DiscoverHosts(ctx context.Context, req *pb.DiscoverHostsRequest) (pb.KopsControllerService_DiscoverHostsClient, error) {
-	certPool := x509.NewCertPool()
-	certPool.AppendCertsFromPEM(b.CAs)
-	tlsConfig := &tls.Config{
-		RootCAs:    certPool,
-		MinVersion: tls.VersionTLS12,
-	}
-
-	serverName, port, err := net.SplitHostPort(b.BaseURL.Host)
+	conn, err := b.getGRPCConnection(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("cannot split host %q: %w", b.BaseURL.Host, err)
-	}
-	tlsConfig.ServerName = serverName
-
-	grpcURL := b.BaseURL.String()
-
-	dialCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
-	defer cancel()
-
-	var opts []grpc.DialOption
-
-	if b.Resolver != nil {
-		resolverBuilder := &grpcResolverBuilder{
-			kopsResolver: b.Resolver,
-			// prefix:       "",
-			suffix: ":" + port,
-		}
-		if !strings.HasPrefix(grpcURL, "https://") {
-			return nil, fmt.Errorf("expected kops-controller url to have https:// scheme, was %q", grpcURL)
-		}
-		grpcURL = strings.Replace(grpcURL, "https://", "kops://", 1)
-		opts = append(opts, grpc.WithResolvers(resolverBuilder))
-	}
-
-	tlsTransportCredentials := credentials.NewTLS(tlsConfig)
-	opts = append(opts, grpc.WithTransportCredentials(tlsTransportCredentials))
-
-	if b.Authenticator != nil {
-		rpcCredentials := &grpcPerRPCCredentials{
-			Authenticator: b.Authenticator,
-		}
-		opts = append(opts, grpc.WithPerRPCCredentials(rpcCredentials))
-	}
-
-	conn, err := grpc.DialContext(dialCtx, grpcURL, opts...)
-	if err != nil {
-		return nil, fmt.Errorf("failed to connect to %q: %w", grpcURL, err)
+		return nil, err
 	}
 	client := pb.NewKopsControllerServiceClient(conn)
 
 	stream, err := client.DiscoverHosts(ctx, req)
 	if err != nil {
-		return nil, fmt.Errorf("error from DiscoverHosts request to %q: %w", grpcURL, err)
+		return nil, fmt.Errorf("error from DiscoverHosts request to %q: %w", b.BaseURL.String(), err)
 	}
 	return stream, nil
 }

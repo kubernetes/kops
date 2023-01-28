@@ -627,6 +627,13 @@ func (c *NodeupModelContext) CNIBinDir() string {
 	return "/opt/cni/bin/"
 }
 
+// MachineKeyDir is the directory to store the machine key.
+func (c *NodeupModelContext) MachineKeyDir() string {
+	// We anticipate using this for other things (e.g. SPIFFE),
+	// hence the generic name.
+	return "/etc/kubernetes/pki/machine"
+}
+
 // CNIConfDir returns the CNI directory
 func (c *NodeupModelContext) CNIConfDir() string {
 	return "/etc/cni/net.d/"

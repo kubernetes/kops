@@ -106,6 +106,19 @@ func run(ctx context.Context) error {
 	flags.AddGoFlagSet(flag.CommandLine)
 	flags.Parse(os.Args)
 
+	var clientCertificates []tls.Certificate
+
+	if machineKeyDir != "" {
+		certFile := filepath.Join(machineKeyDir, "machine.crt")
+		keyFile := filepath.Join(machineKeyDir, "machine.key")
+		cert, err := tls.LoadX509KeyPair(certFile, keyFile)
+		if err != nil {
+			klog.Errorf("error loading x509 keypair from %v: %v", machineKeyDir, err)
+			os.Exit(1)
+		}
+		clientCertificates = append(clientCertificates, cert)
+	}
+
 	var cloudProvider protokube.CloudProvider
 	if cloud == "aws" {
 		awsCloudProvider, err := protokube.NewAWSCloudProvider()
