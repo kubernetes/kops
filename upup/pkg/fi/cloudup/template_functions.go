@@ -585,14 +585,14 @@ func (tf *TemplateFunctions) DNSControllerArgv() ([]string, error) {
 			// 	argv = append(argv, "--dns=none")
 
 			// default:
-				argv = append(argv, "--dns=gossip")
+			argv = append(argv, "--dns=gossip")
 
-				// Default to primary mesh and secondary memberlist
-				argv = append(argv, fmt.Sprintf("--gossip-seed=127.0.0.1:%d", wellknownports.ProtokubeGossipWeaveMesh))
+			// Default to primary mesh and secondary memberlist
+			argv = append(argv, fmt.Sprintf("--gossip-seed=127.0.0.1:%d", wellknownports.ProtokubeGossipWeaveMesh))
 
-				argv = append(argv, "--gossip-protocol-secondary=memberlist")
-				argv = append(argv, fmt.Sprintf("--gossip-listen-secondary=0.0.0.0:%d", wellknownports.DNSControllerGossipMemberlist))
-				argv = append(argv, fmt.Sprintf("--gossip-seed-secondary=127.0.0.1:%d", wellknownports.ProtokubeGossipMemberlist))
+			argv = append(argv, "--gossip-protocol-secondary=memberlist")
+			argv = append(argv, fmt.Sprintf("--gossip-listen-secondary=0.0.0.0:%d", wellknownports.DNSControllerGossipMemberlist))
+			argv = append(argv, fmt.Sprintf("--gossip-seed-secondary=127.0.0.1:%d", wellknownports.ProtokubeGossipMemberlist))
 			// }
 		}
 	} else {
