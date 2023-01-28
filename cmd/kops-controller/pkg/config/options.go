@@ -48,6 +48,8 @@ type ServerOptions struct {
 	// Provider is the cloud provider.
 	Provider ServerProviderOptions `json:"provider"`
 
+	// ClientCAPath is the path to our the CA certificates to be used to verify client certificates.
+	ClientCAPath string `json:"clientCAPath,omitempty"`
 	// ServerKeyPath is the path to our TLS serving private key.
 	ServerKeyPath string `json:"serverKeyPath,omitempty"`
 	// ServerCertificatePath is the path to our TLS serving certificate.

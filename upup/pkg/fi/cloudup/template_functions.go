@@ -674,6 +674,7 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 		pkiDir := "/etc/kubernetes/kops-controller/pki"
 		config.Server = &kopscontrollerconfig.ServerOptions{
 			Listen:                fmt.Sprintf(":%d", wellknownports.KopsControllerPort),
+			ClientCAPath:          path.Join(pkiDir, "client-ca.crt"),
 			ServerCertificatePath: path.Join(pkiDir, "kops-controller.crt"),
 			ServerKeyPath:         path.Join(pkiDir, "kops-controller.key"),
 			CABasePath:            pkiDir,

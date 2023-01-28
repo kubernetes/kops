@@ -22,6 +22,10 @@ import (
 	"strings"
 	"time"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/peer"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/prototext"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
@@ -34,8 +38,24 @@ func (s *Server) DiscoverHosts(req *pb.DiscoverHostsRequest, stream pb.KopsContr
 	klog.Infof("DiscoverHosts %v", prototext.Format(req))
 	ctx := stream.Context()
 
-	// TODO: Authentication
+	peerInfo, ok := peer.FromContext(ctx)
+	if !ok {
+		klog.Warningf("no peer info in request")
+		return status.Errorf(codes.Unauthenticated, "no peer info")
+	}
 
+	tlsInfo, ok := peerInfo.AuthInfo.(credentials.TLSInfo)
+	if !ok {
+		klog.Warningf("peer AuthInfo was not tlsInfo, was %T", peerInfo.AuthInfo)
+		return status.Errorf(codes.Unauthenticated, "must use client certificates")
+	}
+
+	for _, verifiedChain := range tlsInfo.State.VerifiedChains {
+		subject := verifiedChain[0].Subject
+		klog.Infof("subject is %v", subject)
+	}
+
+	klog.Infof("peer is %v", tlsInfo.State)
 	lastHosts := "dummyvalue"
 
 	for {

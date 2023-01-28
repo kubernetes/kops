@@ -82,6 +82,19 @@ func (b *KopsControllerBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		Owner:    s(wellknownusers.KopsControllerName),
 	})
 
+	// The CAs used for client-certificate authentication.
+	// We use our "main" CA.
+	{
+		clientCAs := fi.NewStringResource(b.NodeupConfig.CAs[fi.CertificateIDCA])
+		c.AddTask(&nodetasks.File{
+			Path:     filepath.Join(pkiDir, "client-ca.crt"),
+			Contents: clientCAs,
+			Type:     nodetasks.FileType_File,
+			Mode:     s("0644"),
+			Owner:    s(wellknownusers.KopsControllerName),
+		})
+	}
+
 	caList := []string{fi.CertificateIDCA}
 	if b.NodeupConfig.UseCiliumEtcd {
 		caList = append(caList, "etcd-clients-ca-cilium")

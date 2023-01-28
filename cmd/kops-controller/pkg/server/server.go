@@ -28,6 +28,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"os"
 	"runtime/debug"
 	"time"
 
@@ -56,6 +57,8 @@ type Server struct {
 	certNames  sets.String
 	keypairIDs map[string]string
 
+	clientCAs *x509.CertPool
+
 	// httpServer *http.Server
 	httpHandler http.Handler
 
@@ -83,6 +86,17 @@ func NewServer(opt *config.Options, client client.Client, verifier bootstrap.Ver
 		// httpServer: httpServer,
 		// grpcHandler: grpcHandler,
 		verifier: verifier,
+	}
+
+	if opt.Server.ClientCAPath != "" {
+		b, err := os.ReadFile(opt.Server.ClientCAPath)
+		if err != nil {
+			return nil, fmt.Errorf("error reading %q: %w", opt.Server.ClientCAPath, err)
+		}
+		s.clientCAs = x509.NewCertPool()
+		if !s.clientCAs.AppendCertsFromPEM(b) {
+			return nil, fmt.Errorf("no certificates found in %q", opt.Server.ClientCAPath)
+		}
 	}
 
 	configBase, err := vfs.Context.BuildVfsPath(opt.ConfigBase)
@@ -122,12 +136,18 @@ func (s *Server) Start(ctx context.Context) error {
 		return err
 	}
 
+	tlsConfig := &tls.Config{
+		MinVersion:               tls.VersionTLS12,
+		PreferServerCipherSuites: true,
+	}
+	if s.clientCAs != nil {
+		tlsConfig.ClientAuth = tls.VerifyClientCertIfGiven
+		tlsConfig.ClientCAs = s.clientCAs
+	}
+
 	httpServer := &http.Server{
-		Addr: s.opt.Server.Listen,
-		TLSConfig: &tls.Config{
-			MinVersion:               tls.VersionTLS12,
-			PreferServerCipherSuites: true,
-		},
+		Addr:      s.opt.Server.Listen,
+		TLSConfig: tlsConfig,
 	}
 	httpServer.Handler = s.httpHandler
 
