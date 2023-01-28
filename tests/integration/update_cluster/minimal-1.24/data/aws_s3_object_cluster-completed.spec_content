@@ -51,7 +51,7 @@ spec:
         value: 90d
     memoryRequest: 100Mi
     name: main
-    version: 3.5.6
+    version: 3.5.7
   - backups:
       backupStore: memfs://tests/minimal.example.com/backups/etcd/events
     cpuRequest: 100m
@@ -66,7 +66,7 @@ spec:
         value: 90d
     memoryRequest: 100Mi
     name: events
-    version: 3.5.6
+    version: 3.5.7
   externalDns:
     provider: dns-controller
   iam:

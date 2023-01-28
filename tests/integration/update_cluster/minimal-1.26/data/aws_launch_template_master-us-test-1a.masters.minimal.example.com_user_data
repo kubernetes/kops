@@ -135,7 +135,7 @@ etcdClusters:
       - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
         value: 90d
     memoryRequest: 100Mi
-    version: 3.5.6
+    version: 3.5.7
   main:
     cpuRequest: 200m
     manager:
@@ -144,7 +144,7 @@ etcdClusters:
       - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
         value: 90d
     memoryRequest: 100Mi
-    version: 3.5.6
+    version: 3.5.7
 kubeAPIServer:
   allowPrivileged: true
   anonymousAuth: false

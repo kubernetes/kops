@@ -157,6 +157,17 @@ spec:
     volumeMounts:
     - mountPath: /opt
       name: bin
+  - args:
+    - -c
+    - cp /usr/local/bin/etcd /opt/etcd-v3.5.7/etcd && cp /usr/local/bin/etcdctl /opt/etcd-v3.5.7/etcdctl
+    command:
+    - /bin/sh
+    image: registry.k8s.io/etcd:3.5.7-0
+    name: init-etcd-3-5-7
+    resources: {}
+    volumeMounts:
+    - mountPath: /opt
+      name: bin
   priorityClassName: system-cluster-critical
   tolerations:
   - key: CriticalAddonsOnly
