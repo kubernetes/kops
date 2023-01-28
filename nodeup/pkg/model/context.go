@@ -634,6 +634,11 @@ func (c *NodeupModelContext) InstallNvidiaRuntime() bool {
 		c.GPUVendor == architectures.GPUVendorNvidia
 }
 
+// CloudProvider returns the CloudProviderID for the cloud we are running on.
+func (c *NodeupModelContext) CloudProvider() kops.CloudProviderID {
+	return c.BootConfig.CloudProvider
+}
+
 // RunningOnGCE returns true if we are running on GCE
 func (c *NodeupModelContext) RunningOnGCE() bool {
 	return c.BootConfig.CloudProvider == kops.CloudProviderGCE

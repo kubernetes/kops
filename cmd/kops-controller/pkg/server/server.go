@@ -248,6 +248,17 @@ func (s *Server) issueCert(ctx context.Context, name string, pubKey string, id *
 		issueReq.Subject = pkix.Name{
 			CommonName: rbac.KubeRouter,
 		}
+
+	case "machine-key":
+		clusterName := s.opt.ClusterName
+
+		issueReq.Subject = pkix.Name{
+			CommonName: fmt.Sprintf("kops:%s:machine:%s", clusterName, id.NodeName),
+			Organization: []string{
+				fmt.Sprintf("kops:%s:machines", clusterName),
+			},
+		}
+
 	default:
 		return "", fmt.Errorf("unexpected key name")
 	}
