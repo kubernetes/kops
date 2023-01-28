@@ -657,6 +657,10 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 			certNames = append(certNames, "kube-router")
 		}
 
+		if tf.cloud.ProviderID() == kops.CloudProviderGCE {
+			certNames = append(certNames, "machine-key")
+		}
+
 		pkiDir := "/etc/kubernetes/kops-controller/pki"
 		config.Server = &kopscontrollerconfig.ServerOptions{
 			Listen:                fmt.Sprintf(":%d", wellknownports.KopsControllerPort),
