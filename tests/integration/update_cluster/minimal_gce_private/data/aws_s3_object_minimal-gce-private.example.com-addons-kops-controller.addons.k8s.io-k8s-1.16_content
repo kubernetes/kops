@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
   config.yaml: |
-    {"clusterName":"minimal-gce-private.example.com","cloud":"gce","configBase":"memfs://tests/minimal-gce-private.example.com","secretStore":"memfs://tests/minimal-gce-private.example.com/secrets","server":{"Listen":":3988","provider":{"gce":{"projectID":"testproject","region":"us-test1","clusterName":"minimal-gce-private.example.com","MaxTimeSkew":300}},"serverKeyPath":"/etc/kubernetes/kops-controller/pki/kops-controller.key","serverCertificatePath":"/etc/kubernetes/kops-controller/pki/kops-controller.crt","caBasePath":"/etc/kubernetes/kops-controller/pki","signingCAs":["kubernetes-ca"],"certNames":["kubelet","kubelet-server","kube-proxy"]}}
+    {"clusterName":"minimal-gce-private.example.com","cloud":"gce","configBase":"memfs://tests/minimal-gce-private.example.com","secretStore":"memfs://tests/minimal-gce-private.example.com/secrets","server":{"Listen":":3988","provider":{"gce":{"projectID":"testproject","region":"us-test1","clusterName":"minimal-gce-private.example.com","MaxTimeSkew":300}},"serverKeyPath":"/etc/kubernetes/kops-controller/pki/kops-controller.key","serverCertificatePath":"/etc/kubernetes/kops-controller/pki/kops-controller.crt","caBasePath":"/etc/kubernetes/kops-controller/pki","signingCAs":["kubernetes-ca"],"certNames":["kubelet","kubelet-server","kube-proxy","machine-key"]}}
 kind: ConfigMap
 metadata:
   creationTimestamp: null
