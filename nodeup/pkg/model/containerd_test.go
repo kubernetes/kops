@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/testutils"
+	"k8s.io/kops/pkg/testutils/testcontext"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/distributions"
 )
@@ -132,6 +133,7 @@ func TestContainerdBuilder_BuildFlags(t *testing.T) {
 }
 
 func runContainerdBuilderTest(t *testing.T, key string, distro distributions.Distribution) {
+	ctx := testcontext.ForTest(t)
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
@@ -162,7 +164,7 @@ func runContainerdBuilderTest(t *testing.T, key string, distro distributions.Dis
 	nodeUpModelContext.Assets.AddForTest("ctr", "bin/ctr", "testing containerd content")
 	nodeUpModelContext.Assets.AddForTest("runc.amd64", "https://github.com/opencontainers/runc/releases/download/v1.1.0/runc.amd64", "testing runc content")
 
-	if err := nodeUpModelContext.Init(); err != nil {
+	if err := nodeUpModelContext.Init(ctx); err != nil {
 		t.Fatalf("error from nodeupModelContext.Init(): %v", err)
 		return
 	}

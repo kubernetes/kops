@@ -26,6 +26,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/testutils"
+	"k8s.io/kops/pkg/testutils/testcontext"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/distributions"
 )
@@ -124,6 +125,7 @@ func TestDockerBuilder_BuildFlags(t *testing.T) {
 }
 
 func runDockerBuilderTest(t *testing.T, key string) {
+	ctx := testcontext.ForTest(t)
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
@@ -178,7 +180,7 @@ func runDockerBuilderTest(t *testing.T, key string) {
 		}
 	}
 
-	if err := nodeUpModelContext.Init(); err != nil {
+	if err := nodeUpModelContext.Init(ctx); err != nil {
 		t.Fatalf("error from nodeUpModelContext.Init(): %v", err)
 	}
 	context := &fi.NodeupModelBuilderContext{

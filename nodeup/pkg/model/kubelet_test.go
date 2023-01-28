@@ -33,6 +33,7 @@ import (
 	"k8s.io/kops/pkg/client/simple/vfsclientset"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/pkg/testutils"
+	"k8s.io/kops/pkg/testutils/testcontext"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/distributions"
@@ -54,6 +55,7 @@ func TestTaintsApplied(t *testing.T) {
 	}
 
 	for _, g := range tests {
+		ctx := testcontext.ForTest(t)
 		cluster := &kops.Cluster{Spec: kops.ClusterSpec{KubernetesVersion: g.version}}
 		input := testutils.BuildMinimalMasterInstanceGroup("eu-central-1a")
 		input.Spec.Taints = g.taints
@@ -71,7 +73,7 @@ func TestTaintsApplied(t *testing.T) {
 				NodeupConfig: config,
 			},
 		}
-		if err := b.Init(); err != nil {
+		if err := b.Init(ctx); err != nil {
 			t.Error(err)
 		}
 
@@ -179,7 +181,8 @@ func Test_RunKubeletBuilderWarmPool(t *testing.T) {
 }
 
 func runKubeletBuilder(t *testing.T, context *fi.NodeupModelBuilderContext, nodeupModelContext *NodeupModelContext) {
-	if err := nodeupModelContext.Init(); err != nil {
+	ctx := context.Context()
+	if err := nodeupModelContext.Init(ctx); err != nil {
 		t.Fatalf("error from nodeupModelContext.Init(): %v", err)
 	}
 
@@ -349,6 +352,7 @@ func mustParseKey(s string) *pki.PrivateKey {
 }
 
 func RunGoldenTest(t *testing.T, basedir string, key string, builder func(*NodeupModelContext, *fi.NodeupModelBuilderContext) error) {
+	ctx := testcontext.ForTest(t)
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
@@ -385,7 +389,7 @@ func RunGoldenTest(t *testing.T, basedir string, key string, builder func(*Nodeu
 
 	nodeupModelContext.Distribution = distributions.DistributionUbuntu2004
 
-	if err := nodeupModelContext.Init(); err != nil {
+	if err := nodeupModelContext.Init(ctx); err != nil {
 		t.Fatalf("error from nodeupModelContext.Init(): %v", err)
 	}
 
