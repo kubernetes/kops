@@ -257,7 +257,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privateflannel.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: R/GDTgebcDUZwTBwzQiFAPZrK/W63gbgMg4s3V4RBCg=
+NodeupConfigHash: QpMImgLPDkQpVAo1UEk2X5Sg3oRzGNecwj1i/z8B2Rs=
 
 __EOF_KUBE_ENV
 
