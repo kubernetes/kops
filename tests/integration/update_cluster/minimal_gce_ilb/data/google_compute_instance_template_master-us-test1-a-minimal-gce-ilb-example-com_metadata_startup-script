@@ -131,7 +131,7 @@ containerd:
   logLevel: info
   runc:
     version: 1.1.4
-  version: 1.6.15
+  version: 1.6.16
 docker:
   skipInstall: true
 encryptionConfig: null
@@ -252,7 +252,7 @@ CloudProvider: gce
 ConfigBase: memfs://tests/minimal-gce-ilb.example.com
 InstanceGroupName: master-us-test1-a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: 8+VKm1Rj5aw5BUtf9MEV5u3HYyIHXO7A/vfxkYT3WOo=
+NodeupConfigHash: x54fyNrpvbiezplW3NmWfKqOiu0wr/aLUkkeHTsUbvY=
 
 __EOF_KUBE_ENV
 

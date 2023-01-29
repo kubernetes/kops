@@ -130,7 +130,7 @@ containerd:
   logLevel: info
   runc:
     version: 1.1.4
-  version: 1.6.15
+  version: 1.6.16
 docker:
   skipInstall: true
 kubeProxy:
@@ -188,7 +188,7 @@ ConfigServer:
   - https://kops-controller.internal.cas-priority-expander.example.com:3988/
 InstanceGroupName: nodes-low-priority
 InstanceGroupRole: Node
-NodeupConfigHash: UKWZN9uNOoNu0GY5xySOnj6G3yPfq8P/6ELGKZNSZDI=
+NodeupConfigHash: waaQCkto76GSFIhMy7XVUWb/lHRSDeLJIJKnELC86bc=
 
 __EOF_KUBE_ENV
 
