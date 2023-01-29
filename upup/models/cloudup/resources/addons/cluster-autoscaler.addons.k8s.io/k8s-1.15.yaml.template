@@ -258,7 +258,7 @@ spec:
     app.kubernetes.io/name: "cluster-autoscaler"
   type: "ClusterIP"
 ---
-{{ if .ServiceMonitor.Enabled }}
+{{- if WithDefaultBool .ServiceMonitor.Enabled false }}
 # Source: cluster-autoscaler/templates/service-monitor.yaml
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
