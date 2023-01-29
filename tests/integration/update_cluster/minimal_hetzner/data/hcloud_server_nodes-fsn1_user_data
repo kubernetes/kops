@@ -130,7 +130,7 @@ containerd:
   logLevel: info
   runc:
     version: 1.1.4
-  version: 1.6.15
+  version: 1.6.16
 docker:
   skipInstall: true
 kubeProxy:
@@ -162,7 +162,7 @@ CloudProvider: hetzner
 ConfigBase: memfs://tests/minimal.k8s.local
 InstanceGroupName: nodes-fsn1
 InstanceGroupRole: Node
-NodeupConfigHash: ACnqyPbtQRCAYTkV5OsY8Ds58IdG63EAaLhBhiz8pZ8=
+NodeupConfigHash: 5IR1va+VU/JmoUymLp2D8iEvZjCXO5vSJ59micKehkU=
 
 __EOF_KUBE_ENV
 
