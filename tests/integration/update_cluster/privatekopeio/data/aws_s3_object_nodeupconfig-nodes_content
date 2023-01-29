@@ -3,13 +3,13 @@ Assets:
   - b64949fe696c77565edbe4100a315b6bf8f0e2325daeb762f7e865f16a6e54b5@https://storage.googleapis.com/kubernetes-release/release/v1.26.0/bin/linux/amd64/kubelet
   - b6769d8ac6a0ed0f13b307d289dc092ad86180b08f5b5044af152808c04950ae@https://storage.googleapis.com/kubernetes-release/release/v1.26.0/bin/linux/amd64/kubectl
   - 962100bbc4baeaaa5748cdbfce941f756b1531c2eadb290129401498bfac21e7@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz
-  - 191bb4f6e4afc237efc5c85b5866b6fdfed731bde12cceaa6017a9c7f8aeda02@https://github.com/containerd/containerd/releases/download/v1.6.15/containerd-1.6.15-linux-amd64.tar.gz
+  - 2415b431a900275c14942f87f751e1e13d513c1c2f062322b5ca5a9a2190f22a@https://github.com/containerd/containerd/releases/download/v1.6.16/containerd-1.6.16-linux-amd64.tar.gz
   - db772be63147a4e747b4fe286c7c16a2edc4a8458bd3092ea46aaee77750e8ce@https://github.com/opencontainers/runc/releases/download/v1.1.4/runc.amd64
   arm64:
   - fb033c1d079cac8babb04a25abecbc6cc1a2afb53f56ef1d73f8dc3b15b3c09e@https://storage.googleapis.com/kubernetes-release/release/v1.26.0/bin/linux/arm64/kubelet
   - 79b14e4ddada9e81d2989f36a89faa9e56f8abe6e0246e7bdc305c93c3731ea4@https://storage.googleapis.com/kubernetes-release/release/v1.26.0/bin/linux/arm64/kubectl
   - ef17764ffd6cdcb16d76401bac1db6acc050c9b088f1be5efa0e094ea3b01df0@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-arm64-v0.9.1.tgz
-  - d63e4d27c51e33cd10f8b5621c559f09ece8a65fec66d80551b36cac9e61a07d@https://github.com/containerd/containerd/releases/download/v1.6.15/containerd-1.6.15-linux-arm64.tar.gz
+  - c2bf51fde02ec9cf8b9c18721bc4f53bd1f19fb2bb3251f41ece61af7347e082@https://github.com/containerd/containerd/releases/download/v1.6.16/containerd-1.6.16-linux-arm64.tar.gz
   - dbb71e737eaef454a406ce21fd021bd8f1b35afb7635016745992bbd7c17a223@https://github.com/opencontainers/runc/releases/download/v1.1.4/runc.arm64
 CAs: {}
 ClusterName: privatekopeio.example.com
@@ -58,7 +58,7 @@ containerdConfig:
   logLevel: info
   runc:
     version: 1.1.4
-  version: 1.6.15
+  version: 1.6.16
 docker:
   skipInstall: true
 useInstanceIDForNodeName: true
