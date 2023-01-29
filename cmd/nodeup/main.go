@@ -44,6 +44,7 @@ func main() {
 	if kops.GitVersion != "" {
 		gitVersion = fmt.Sprintf(" (git-%s)", kops.GitVersion)
 	}
+	fmt.Printf("test change - do not merge\n")
 	fmt.Printf("nodeup version %s%s\n", kops.Version, gitVersion)
 	flag.StringVar(&flagConf, "conf", "node.yaml", "configuration location")
 	flag.StringVar(&flagCacheDir, "cache", "/var/cache/nodeup", "the location for the local asset cache")

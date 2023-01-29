@@ -23,6 +23,7 @@ type Instance struct {
 	PrivateAddresses []string `json:"privateAddresses,omitempty"`
 	Roles            []string `json:"roles,omitempty"`
 	SSHUser          string   `json:"sshUser,omitempty"`
+	State            string   `json:"state,omitempty"`
 }
 
 // Subnet is the type for an subnetwork in a dump

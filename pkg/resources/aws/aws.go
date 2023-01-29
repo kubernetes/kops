@@ -479,6 +479,9 @@ func DumpInstance(op *resources.DumpOperation, r *resources.Resource) error {
 	i := &resources.Instance{
 		Name: r.ID,
 	}
+	if ec2Instance.State != nil {
+		i.State = aws.StringValue(ec2Instance.State.Name)
+	}
 	for _, networkInterface := range ec2Instance.NetworkInterfaces {
 		if networkInterface.Association != nil {
 			publicIP := aws.StringValue(networkInterface.Association.PublicIp)

@@ -199,6 +199,7 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 		var additionalIPs []string
 		var additionalPrivateIPs []string
 		for _, instance := range d.Instances {
+			klog.Infof("instance %q has state %q", instance.Name, instance.State)
 			if len(instance.PublicAddresses) != 0 {
 				additionalIPs = append(additionalIPs, instance.PublicAddresses[0])
 			} else if len(instance.PrivateAddresses) != 0 {
