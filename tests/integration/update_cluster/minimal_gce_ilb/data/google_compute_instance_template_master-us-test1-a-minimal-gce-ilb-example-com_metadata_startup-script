@@ -247,7 +247,7 @@ CloudProvider: gce
 ConfigBase: memfs://tests/minimal-gce-ilb.example.com
 InstanceGroupName: master-us-test1-a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: K2sceimbDqzAbsnTabp3s5KjHOBX7RyhtG9/JBnAelE=
+NodeupConfigHash: UlT+oa5fXjLKa0xHpWF316f4JTsv0AMhCpaC2QP0Uxk=
 
 __EOF_KUBE_ENV
 
