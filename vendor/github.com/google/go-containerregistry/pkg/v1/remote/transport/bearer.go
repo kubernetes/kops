@@ -19,7 +19,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
@@ -268,13 +268,11 @@ func (bt *bearerTransport) refreshOauth(ctx context.Context) ([]byte, error) {
 	defer resp.Body.Close()
 
 	if err := CheckError(resp, http.StatusOK); err != nil {
-		if bt.basic == authn.Anonymous {
-			logs.Warn.Printf("No matching credentials were found for %q", bt.registry)
-		}
+		logs.Warn.Printf("No matching credentials were found for %q", bt.registry)
 		return nil, err
 	}
 
-	return io.ReadAll(resp.Body)
+	return ioutil.ReadAll(resp.Body)
 }
 
 // https://docs.docker.com/registry/spec/auth/token/
@@ -310,11 +308,9 @@ func (bt *bearerTransport) refreshBasic(ctx context.Context) ([]byte, error) {
 	defer resp.Body.Close()
 
 	if err := CheckError(resp, http.StatusOK); err != nil {
-		if bt.basic == authn.Anonymous {
-			logs.Warn.Printf("No matching credentials were found for %q", bt.registry)
-		}
+		logs.Warn.Printf("No matching credentials were found for %q", bt.registry)
 		return nil, err
 	}
 
-	return io.ReadAll(resp.Body)
+	return ioutil.ReadAll(resp.Body)
 }

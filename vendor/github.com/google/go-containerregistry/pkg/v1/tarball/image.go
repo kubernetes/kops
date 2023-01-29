@@ -21,13 +21,13 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
 	"sync"
 
-	comp "github.com/google/go-containerregistry/internal/compression"
-	"github.com/google/go-containerregistry/pkg/compression"
+	"github.com/google/go-containerregistry/internal/gzip"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/partial"
@@ -166,13 +166,7 @@ func (i *image) areLayersCompressed() (bool, error) {
 		return false, err
 	}
 	defer blob.Close()
-
-	cp, _, err := comp.PeekCompression(blob)
-	if err != nil {
-		return false, err
-	}
-
-	return cp != compression.None, nil
+	return gzip.Is(blob)
 }
 
 func (i *image) loadTarDescriptorAndConfig() error {
@@ -201,7 +195,7 @@ func (i *image) loadTarDescriptorAndConfig() error {
 	}
 	defer cfg.Close()
 
-	i.config, err = io.ReadAll(cfg)
+	i.config, err = ioutil.ReadAll(cfg)
 	if err != nil {
 		return err
 	}

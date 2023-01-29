@@ -20424,9 +20424,6 @@ const (
 
 	// CloudWatchRegionUsIsobEast1 is a CloudWatchRegion enum value
 	CloudWatchRegionUsIsobEast1 = "us-isob-east-1"
-
-	// CloudWatchRegionApSoutheast4 is a CloudWatchRegion enum value
-	CloudWatchRegionApSoutheast4 = "ap-southeast-4"
 )
 
 // CloudWatchRegion_Values returns all elements of the CloudWatchRegion enum
@@ -20465,7 +20462,6 @@ func CloudWatchRegion_Values() []string {
 		CloudWatchRegionUsIsoEast1,
 		CloudWatchRegionUsIsoWest1,
 		CloudWatchRegionUsIsobEast1,
-		CloudWatchRegionApSoutheast4,
 	}
 }
 
@@ -20793,9 +20789,6 @@ const (
 
 	// ResourceRecordSetRegionEuSouth2 is a ResourceRecordSetRegion enum value
 	ResourceRecordSetRegionEuSouth2 = "eu-south-2"
-
-	// ResourceRecordSetRegionApSoutheast4 is a ResourceRecordSetRegion enum value
-	ResourceRecordSetRegionApSoutheast4 = "ap-southeast-4"
 )
 
 // ResourceRecordSetRegion_Values returns all elements of the ResourceRecordSetRegion enum
@@ -20829,7 +20822,6 @@ func ResourceRecordSetRegion_Values() []string {
 		ResourceRecordSetRegionAfSouth1,
 		ResourceRecordSetRegionEuSouth1,
 		ResourceRecordSetRegionEuSouth2,
-		ResourceRecordSetRegionApSoutheast4,
 	}
 }
 
@@ -20985,9 +20977,6 @@ const (
 
 	// VPCRegionEuSouth2 is a VPCRegion enum value
 	VPCRegionEuSouth2 = "eu-south-2"
-
-	// VPCRegionApSoutheast4 is a VPCRegion enum value
-	VPCRegionApSoutheast4 = "ap-southeast-4"
 )
 
 // VPCRegion_Values returns all elements of the VPCRegion enum
@@ -21025,6 +21014,5 @@ func VPCRegion_Values() []string {
 		VPCRegionAfSouth1,
 		VPCRegionEuSouth1,
 		VPCRegionEuSouth2,
-		VPCRegionApSoutheast4,
 	}
 }

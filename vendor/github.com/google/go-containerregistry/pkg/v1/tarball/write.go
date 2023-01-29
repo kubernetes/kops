@@ -315,7 +315,6 @@ func getSizeAndManifest(refToImage map[name.Reference]v1.Image) (int64, []byte, 
 func calculateTarballSize(refToImage map[name.Reference]v1.Image, mBytes []byte) (size int64, err error) {
 	imageToTags := dedupRefToImage(refToImage)
 
-	seenLayerDigests := make(map[string]struct{})
 	for img, name := range imageToTags {
 		manifest, err := img.Manifest()
 		if err != nil {
@@ -323,11 +322,6 @@ func calculateTarballSize(refToImage map[name.Reference]v1.Image, mBytes []byte)
 		}
 		size += calculateSingleFileInTarSize(manifest.Config.Size)
 		for _, l := range manifest.Layers {
-			hex := l.Digest.Hex
-			if _, ok := seenLayerDigests[hex]; ok {
-				continue
-			}
-			seenLayerDigests[hex] = struct{}{}
 			size += calculateSingleFileInTarSize(l.Size)
 		}
 	}

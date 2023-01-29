@@ -14,15 +14,15 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/apparentlymart/go-cidr v1.1.0
 	github.com/aws/amazon-ec2-instance-selector/v2 v2.4.0
-	github.com/aws/aws-sdk-go v1.44.188
+	github.com/aws/aws-sdk-go v1.44.183
 	github.com/blang/semver/v4 v4.0.0
 	github.com/cert-manager/cert-manager v1.11.0
-	github.com/digitalocean/godo v1.95.0
+	github.com/digitalocean/godo v1.93.0
 	github.com/go-ini/ini v1.67.0
 	github.com/go-logr/logr v1.2.3
 	github.com/gogo/protobuf v1.3.2
 	github.com/google/go-cmp v0.5.9
-	github.com/google/go-containerregistry v0.13.0
+	github.com/google/go-containerregistry v0.12.1
 	github.com/google/go-tpm v0.3.3
 	github.com/google/go-tpm-tools v0.3.10
 	github.com/google/uuid v1.3.0
@@ -43,7 +43,7 @@ require (
 	github.com/weaveworks/mesh v0.0.0-20191105120815-58dbcc3e8e63
 	go.uber.org/multierr v1.9.0
 	golang.org/x/crypto v0.5.0
-	golang.org/x/exp v0.0.0-20230126173853-a67bb567ff2e
+	golang.org/x/exp v0.0.0-20230118134722-a68e582fa157
 	golang.org/x/net v0.5.0
 	golang.org/x/oauth2 v0.4.0
 	golang.org/x/sync v0.1.0
@@ -62,7 +62,7 @@ require (
 	k8s.io/cloud-provider-gcp/providers v0.25.5
 	k8s.io/component-base v0.26.1
 	k8s.io/gengo v0.0.0-20221011193443-fad74ee6edd9
-	k8s.io/klog/v2 v2.90.0
+	k8s.io/klog/v2 v2.80.1
 	k8s.io/kubectl v0.26.1
 	k8s.io/kubelet v0.26.1
 	k8s.io/mount-utils v0.26.1

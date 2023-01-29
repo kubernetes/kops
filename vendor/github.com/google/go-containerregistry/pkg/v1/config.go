@@ -90,10 +90,8 @@ type HealthConfig struct {
 }
 
 // Config is a submessage of the config file described as:
-//
-//	The execution parameters which SHOULD be used as a base when running
-//	a container using the image.
-//
+//   The execution parameters which SHOULD be used as a base when running
+//   a container using the image.
 // The names of the fields in this message are chosen to reflect the JSON
 // payload of the Config as defined here:
 // https://git.io/vrAET

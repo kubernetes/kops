@@ -16,24 +16,24 @@
 package logs
 
 import (
-	"io"
+	"io/ioutil"
 	"log"
 )
 
 var (
 	// Warn is used to log non-fatal errors.
-	Warn = log.New(io.Discard, "", log.LstdFlags)
+	Warn = log.New(ioutil.Discard, "", log.LstdFlags)
 
 	// Progress is used to log notable, successful events.
-	Progress = log.New(io.Discard, "", log.LstdFlags)
+	Progress = log.New(ioutil.Discard, "", log.LstdFlags)
 
 	// Debug is used to log information that is useful for debugging.
-	Debug = log.New(io.Discard, "", log.LstdFlags)
+	Debug = log.New(ioutil.Discard, "", log.LstdFlags)
 )
 
 // Enabled checks to see if the logger's writer is set to something other
-// than io.Discard. This allows callers to avoid expensive operations
+// than ioutil.Discard. This allows callers to avoid expensive operations
 // that will end up in /dev/null anyway.
 func Enabled(l *log.Logger) bool {
-	return l.Writer() != io.Discard
+	return l.Writer() != ioutil.Discard
 }

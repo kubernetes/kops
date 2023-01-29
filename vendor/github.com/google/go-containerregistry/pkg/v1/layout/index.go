@@ -19,7 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
+	"io/ioutil"
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/partial"
@@ -45,7 +45,7 @@ func ImageIndexFromPath(path string) (v1.ImageIndex, error) {
 
 // ImageIndex returns a v1.ImageIndex for the Path.
 func (l Path) ImageIndex() (v1.ImageIndex, error) {
-	rawIndex, err := os.ReadFile(l.path("index.json"))
+	rawIndex, err := ioutil.ReadFile(l.path("index.json"))
 	if err != nil {
 		return nil, err
 	}

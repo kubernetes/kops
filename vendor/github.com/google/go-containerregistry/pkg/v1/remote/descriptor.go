@@ -19,6 +19,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -259,7 +260,7 @@ func (f *fetcher) fetchManifest(ref name.Reference, acceptable []types.MediaType
 		return nil, nil, err
 	}
 
-	manifest, err := io.ReadAll(resp.Body)
+	manifest, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, nil, err
 	}
