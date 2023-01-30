@@ -216,6 +216,7 @@ spec:
       enableEndpointHealthChecking: true
       enableL7Proxy: true
       enableRemoteNodeIdentity: true
+      enableUnreachableRoutes: false
       hubble:
         enabled: false
       identityAllocationMode: crd

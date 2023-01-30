@@ -631,6 +631,11 @@ func (in *CiliumNetworkingSpec) DeepCopyInto(out *CiliumNetworkingSpec) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.EnableUnreachableRoutes != nil {
+		in, out := &in.EnableUnreachableRoutes, &out.EnableUnreachableRoutes
+		*out = new(bool)
+		**out = **in
+	}
 	if in.Hubble != nil {
 		in, out := &in.Hubble, &out.Hubble
 		*out = new(HubbleSpec)

@@ -55,6 +55,7 @@ data:
   enable-node-port: "true"
   enable-remote-node-identity: "true"
   enable-service-topology: "false"
+  enable-unreachable-routes: "false"
   etcd-config: |-
     ---
     endpoints:
