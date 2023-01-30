@@ -23,6 +23,7 @@ import (
 
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/errors"
@@ -56,6 +57,7 @@ type ScwCloud interface {
 
 	IamService() *iam.API
 	InstanceService() *instance.API
+	LBService() *lb.ZonedAPI
 
 	DeleteGroup(group *cloudinstances.CloudInstanceGroup) error
 	DeleteInstance(i *cloudinstances.CloudInstance) error
@@ -66,10 +68,12 @@ type ScwCloud interface {
 	GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error)
 	GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error)
 
+	GetClusterLoadBalancers(clusterName string) ([]*lb.LB, error)
 	GetClusterServers(clusterName string, serverName *string) ([]*instance.Server, error)
 	GetClusterSSHKeys(clusterName string) ([]*iam.SSHKey, error)
 	GetClusterVolumes(clusterName string) ([]*instance.Volume, error)
 
+	DeleteLoadBalancer(loadBalancer *lb.LB) error
 	DeleteServer(server *instance.Server) error
 	DeleteSSHKey(sshkey *iam.SSHKey) error
 	DeleteVolume(volume *instance.Volume) error
@@ -87,6 +91,7 @@ type scwCloudImplementation struct {
 
 	iamAPI      *iam.API
 	instanceAPI *instance.API
+	lbAPI       *lb.ZonedAPI
 }
 
 // NewScwCloud returns a Cloud with a Scaleway Client using the env vars SCW_ACCESS_KEY, SCW_SECRET_KEY and SCW_DEFAULT_PROJECT_ID
@@ -135,6 +140,7 @@ func NewScwCloud(tags map[string]string) (ScwCloud, error) {
 		tags:        tags,
 		iamAPI:      iam.NewAPI(scwClient),
 		instanceAPI: instance.NewAPI(scwClient),
+		lbAPI:       lb.NewZonedAPI(scwClient),
 	}, nil
 }
 
@@ -172,6 +178,10 @@ func (s *scwCloudImplementation) InstanceService() *instance.API {
 	return s.instanceAPI
 }
 
+func (s *scwCloudImplementation) LBService() *lb.ZonedAPI {
+	return s.lbAPI
+}
+
 func (s *scwCloudImplementation) DeleteGroup(group *cloudinstances.CloudInstanceGroup) error {
 	toDelete := append(group.NeedUpdate, group.Ready...)
 	for _, cloudInstance := range toDelete {
@@ -193,20 +203,56 @@ func (s *scwCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstance)
 			klog.V(4).Infof("error deleting cloud instance %s of group %s : instance was already deleted", i.ID, i.CloudInstanceGroup.HumanName)
 			return nil
 		}
-		return fmt.Errorf("error deleting cloud instance %s of group %s: %w", i.ID, i.CloudInstanceGroup.HumanName, err)
+		return fmt.Errorf("deleting cloud instance %s of group %s: %w", i.ID, i.CloudInstanceGroup.HumanName, err)
 	}
 
 	err = s.DeleteServer(server.Server)
 	if err != nil {
-		return fmt.Errorf("error deleting cloud instance %s of group %s: %w", i.ID, i.CloudInstanceGroup.HumanName, err)
+		return fmt.Errorf("deleting cloud instance %s of group %s: %w", i.ID, i.CloudInstanceGroup.HumanName, err)
 	}
 
 	return nil
 }
 
 func (s *scwCloudImplementation) DeregisterInstance(i *cloudinstances.CloudInstance) error {
-	klog.V(8).Infof("Scaleway DeregisterInstance is not implemented yet")
-	return fmt.Errorf("DeregisterInstance is not implemented yet for Scaleway")
+	server, err := s.instanceAPI.GetServer(&instance.GetServerRequest{
+		Zone:     s.zone,
+		ServerID: i.ID,
+	})
+	if err != nil {
+		return fmt.Errorf("deregistering cloud instance %s of group %q: %w", i.ID, i.CloudInstanceGroup.HumanName, err)
+	}
+
+	// We remove the instance's IP from load-balancers
+	lbs, err := s.GetClusterLoadBalancers(s.ClusterName(server.Server.Tags))
+	if err != nil {
+		return fmt.Errorf("deregistering cloud instance %s of group %q: %w", i.ID, i.CloudInstanceGroup.HumanName, err)
+	}
+	for _, loadBalancer := range lbs {
+		backEnds, err := s.lbAPI.ListBackends(&lb.ZonedAPIListBackendsRequest{
+			Zone: s.zone,
+			LBID: loadBalancer.ID,
+		}, scw.WithAllPages())
+		if err != nil {
+			return fmt.Errorf("deregistering cloud instance %s of group %q: listing load-balancer's back-ends for instance creation: %w", i.ID, i.CloudInstanceGroup.HumanName, err)
+		}
+		for _, backEnd := range backEnds.Backends {
+			for _, serverIP := range backEnd.Pool {
+				if serverIP == fi.ValueOf(server.Server.PrivateIP) {
+					_, err := s.lbAPI.RemoveBackendServers(&lb.ZonedAPIRemoveBackendServersRequest{
+						Zone:      s.zone,
+						BackendID: backEnd.ID,
+						ServerIP:  []string{serverIP},
+					})
+					if err != nil {
+						return fmt.Errorf("deregistering cloud instance %s of group %q: removing IP from lb: %w", i.ID, i.CloudInstanceGroup.HumanName, err)
+					}
+				}
+			}
+		}
+	}
+
+	return nil
 }
 
 func (s *scwCloudImplementation) DetachInstance(i *cloudinstances.CloudInstance) error {
@@ -227,8 +273,31 @@ func (s *scwCloudImplementation) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 }
 
 func (s *scwCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
-	klog.V(8).Info("Scaleway clusters don't have load-balancers yet so GetApiIngressStatus is not implemented")
-	return nil, nil
+	var ingresses []fi.ApiIngressStatus
+	name := "api." + cluster.Name
+
+	responseLoadBalancers, err := s.lbAPI.ListLBs(&lb.ZonedAPIListLBsRequest{
+		Zone: s.zone,
+		Name: &name,
+	}, scw.WithAllPages())
+	if err != nil {
+		return nil, fmt.Errorf("finding load-balancers: %w", err)
+	}
+	if len(responseLoadBalancers.LBs) == 0 {
+		klog.V(8).Infof("Could not find any load-balancers for cluster %s", cluster.Name)
+		return nil, nil
+	}
+	if len(responseLoadBalancers.LBs) > 1 {
+		klog.V(4).Infof("More than 1 load-balancer with the name %s was found", name)
+	}
+
+	for _, loadBalancer := range responseLoadBalancers.LBs {
+		for _, lbIP := range loadBalancer.IP {
+			ingresses = append(ingresses, fi.ApiIngressStatus{IP: lbIP.IPAddress})
+		}
+	}
+
+	return ingresses, nil
 }
 
 func (s *scwCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
@@ -311,6 +380,18 @@ func buildCloudGroup(ig *kops.InstanceGroup, sg []*instance.Server, nodeMap map[
 	return cloudInstanceGroup, nil
 }
 
+func (s *scwCloudImplementation) GetClusterLoadBalancers(clusterName string) ([]*lb.LB, error) {
+	loadBalancerName := "api." + clusterName
+	lbs, err := s.lbAPI.ListLBs(&lb.ZonedAPIListLBsRequest{
+		Zone: s.zone,
+		Name: &loadBalancerName,
+	}, scw.WithAllPages())
+	if err != nil {
+		return nil, fmt.Errorf("listing cluster load-balancers: %w", err)
+	}
+	return lbs.LBs, nil
+}
+
 func (s *scwCloudImplementation) GetClusterServers(clusterName string, serverName *string) ([]*instance.Server, error) {
 	request := &instance.ListServersRequest{
 		Zone: s.zone,
@@ -350,6 +431,45 @@ func (s *scwCloudImplementation) GetClusterVolumes(clusterName string) ([]*insta
 		return nil, fmt.Errorf("failed to list cluster volumes: %w", err)
 	}
 	return volumes.Volumes, nil
+}
+
+func (s *scwCloudImplementation) DeleteLoadBalancer(loadBalancer *lb.LB) error {
+	ipsToRelease := loadBalancer.IP
+
+	// We delete the load-balancer once it's in a stable state
+	_, err := s.lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+		LBID: loadBalancer.ID,
+		Zone: s.zone,
+	})
+	if err != nil {
+		return fmt.Errorf("waiting for load-balancer: %w", err)
+	}
+	err = s.lbAPI.DeleteLB(&lb.ZonedAPIDeleteLBRequest{
+		Zone: s.zone,
+		LBID: loadBalancer.ID,
+	})
+	if err != nil {
+		return fmt.Errorf("deleting load-balancer %s: %w", loadBalancer.ID, err)
+	}
+
+	// We wait for the load-balancer to be deleted, then we detach its IPs
+	_, err = s.lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+		LBID: loadBalancer.ID,
+		Zone: s.zone,
+	})
+	if !is404Error(err) {
+		return fmt.Errorf("waiting for load-balancer %s after deletion: %w", loadBalancer.ID, err)
+	}
+	for _, ip := range ipsToRelease {
+		err := s.lbAPI.ReleaseIP(&lb.ZonedAPIReleaseIPRequest{
+			Zone: s.zone,
+			IPID: ip.ID,
+		})
+		if err != nil {
+			return fmt.Errorf("deleting load-balancer IP: %w", err)
+		}
+	}
+	return nil
 }
 
 func (s *scwCloudImplementation) DeleteServer(server *instance.Server) error {

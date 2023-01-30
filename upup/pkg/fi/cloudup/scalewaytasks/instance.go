@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
@@ -37,7 +38,9 @@ type Instance struct {
 	Image          *string
 	Tags           []string
 	Count          int
-	UserData       *fi.Resource
+
+	UserData     *fi.Resource
+	LoadBalancer *LoadBalancer
 }
 
 var _ fi.CloudupTask = &Instance{}
@@ -118,6 +121,7 @@ func (_ *Instance) RenderScw(c *fi.CloudupContext, actual, expected, changes *In
 	cloud := c.T.Cloud.(scaleway.ScwCloud)
 	instanceService := cloud.InstanceService()
 	zone := scw.Zone(fi.ValueOf(expected.Zone))
+	controlPlanePrivateIPs := []string(nil)
 
 	userData, err := fi.ResourceAsBytes(*expected.UserData)
 	if err != nil {
@@ -185,6 +189,20 @@ func (_ *Instance) RenderScw(c *fi.CloudupContext, actual, expected, changes *In
 		if err != nil {
 			return fmt.Errorf("error waiting for instance %s of group %q: %w", srv.Server.ID, fi.ValueOf(expected.Name), err)
 		}
+
+		// If instance has control-plane role, we add its private IP to the list to add it to the lb's backend
+		if fi.ValueOf(expected.Role) == scaleway.TagRoleControlPlane {
+
+			// We update the server's infos (to get its IP)
+			server, err := instanceService.GetServer(&instance.GetServerRequest{
+				Zone:     zone,
+				ServerID: srv.Server.ID,
+			})
+			if err != nil {
+				return fmt.Errorf("getting server %s: %s", srv.Server.ID, err)
+			}
+			controlPlanePrivateIPs = append(controlPlanePrivateIPs, *server.Server.PrivateIP)
+		}
 	}
 
 	// If newInstanceCount < 0, we need to delete instances of this group
@@ -197,9 +215,72 @@ func (_ *Instance) RenderScw(c *fi.CloudupContext, actual, expected, changes *In
 
 		for i := 0; i > newInstanceCount; i-- {
 			toDelete := igInstances[i*-1]
+
+			if fi.ValueOf(actual.Role) == scaleway.TagRoleControlPlane {
+				controlPlanePrivateIPs = append(controlPlanePrivateIPs, *toDelete.PrivateIP)
+			}
+
 			err = cloud.DeleteServer(toDelete)
 			if err != nil {
 				return fmt.Errorf("error deleting instance of group %s: %w", toDelete.Name, err)
+			}
+		}
+	}
+
+	// If IG is control-plane, we need to update the load-balancer's back-end
+	if len(controlPlanePrivateIPs) > 0 {
+		lbService := cloud.LBService()
+		zone := scw.Zone(cloud.Zone())
+
+		lbs, err := cloud.GetClusterLoadBalancers(cloud.ClusterName(expected.Tags))
+		if err != nil {
+			return fmt.Errorf("listing load-balancers for instance creation: %w", err)
+		}
+
+		for _, loadBalancer := range lbs {
+			backEnds, err := lbService.ListBackends(&lb.ZonedAPIListBackendsRequest{
+				Zone: zone,
+				LBID: loadBalancer.ID,
+			})
+			if err != nil {
+				return fmt.Errorf("listing load-balancer's back-ends for instance creation: %w", err)
+			}
+			if backEnds.TotalCount > 1 {
+				return fmt.Errorf("cannot have multiple back-ends for load-balancer %s", loadBalancer.Name)
+			} else if backEnds.TotalCount < 1 {
+				return fmt.Errorf("load-balancer %s should have 1 back-end, got 0", loadBalancer.Name)
+			}
+			backEnd := backEnds.Backends[0]
+
+			// If we are adding instances, we also need to add them to the load-balancer's backend
+			if newInstanceCount > 0 {
+				_, err = lbService.AddBackendServers(&lb.ZonedAPIAddBackendServersRequest{
+					Zone:      zone,
+					BackendID: backEnd.ID,
+					ServerIP:  controlPlanePrivateIPs,
+				})
+				if err != nil {
+					return fmt.Errorf("adding servers' IPs to load-balancer's back-end: %w", err)
+				}
+
+			} else {
+				// If we are deleting instances, we also need to delete them from the load-balancer's backend
+				_, err = lbService.RemoveBackendServers(&lb.ZonedAPIRemoveBackendServersRequest{
+					Zone:      zone,
+					BackendID: backEnd.ID,
+					ServerIP:  controlPlanePrivateIPs,
+				})
+				if err != nil {
+					return fmt.Errorf("removing servers' IPs from load-balancer's back-end: %w", err)
+				}
+			}
+
+			_, err = lbService.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+				LBID: loadBalancer.ID,
+				Zone: zone,
+			})
+			if err != nil {
+				return fmt.Errorf("waiting for load-balancer %s: %w", loadBalancer.ID, err)
 			}
 		}
 	}

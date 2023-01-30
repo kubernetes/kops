@@ -23,12 +23,14 @@ import (
 
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 )
 
 const (
-	resourceTypeServer = "server"
-	resourceTypeSSHKey = "ssh-key"
-	resourceTypeVolume = "volume"
+	resourceTypeLoadBalancer = "load-balancer"
+	resourceTypeServer       = "server"
+	resourceTypeSSHKey       = "ssh-key"
+	resourceTypeVolume       = "volume"
 )
 
 type listFn func(fi.Cloud, string) ([]*resources.Resource, error)
@@ -38,6 +40,7 @@ func ListResources(cloud scaleway.ScwCloud, clusterInfo resources.ClusterInfo) (
 	clusterName := clusterInfo.Name
 
 	listFunctions := []listFn{
+		listLoadBalancers,
 		listServers,
 		listSSHKeys,
 		listVolumes,
@@ -51,6 +54,30 @@ func ListResources(cloud scaleway.ScwCloud, clusterInfo resources.ClusterInfo) (
 		for _, t := range rt {
 			resourceTrackers[t.Type+":"+t.ID] = t
 		}
+	}
+
+	return resourceTrackers, nil
+}
+
+func listLoadBalancers(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+	c := cloud.(scaleway.ScwCloud)
+	lbs, err := c.GetClusterLoadBalancers(clusterName)
+	if err != nil {
+		return nil, err
+	}
+
+	resourceTrackers := []*resources.Resource(nil)
+	for _, loadBalancer := range lbs {
+		resourceTracker := &resources.Resource{
+			Name: loadBalancer.Name,
+			ID:   loadBalancer.ID,
+			Type: resourceTypeLoadBalancer,
+			Deleter: func(cloud fi.Cloud, tracker *resources.Resource) error {
+				return deleteLoadBalancer(cloud, tracker)
+			},
+			Obj: loadBalancer,
+		}
+		resourceTrackers = append(resourceTrackers, resourceTracker)
 	}
 
 	return resourceTrackers, nil
@@ -129,6 +156,13 @@ func listVolumes(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 	}
 
 	return resourceTrackers, nil
+}
+
+func deleteLoadBalancer(cloud fi.Cloud, tracker *resources.Resource) error {
+	c := cloud.(scaleway.ScwCloud)
+	loadBalancer := tracker.Obj.(*lb.LB)
+
+	return c.DeleteLoadBalancer(loadBalancer)
 }
 
 func deleteServer(cloud fi.Cloud, tracker *resources.Resource) error {
