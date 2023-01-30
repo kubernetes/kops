@@ -180,6 +180,6 @@ func (i *Installation) buildSystemdJob() *nodetasks.InstallService {
 	}}
 
 	service.InitDefaults()
-
+	service.Enabled = fi.PtrTo(false)
 	return service
 }
