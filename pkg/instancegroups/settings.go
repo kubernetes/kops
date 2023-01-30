@@ -26,20 +26,14 @@ import (
 
 func resolveSettings(cluster *kops.Cluster, group *kops.InstanceGroup, numInstances int) kops.RollingUpdate {
 	rollingUpdate := kops.RollingUpdate{}
-	if group.Spec.RollingUpdate != nil {
-		rollingUpdate = *group.Spec.RollingUpdate
+
+	if cluster.Spec.RollingUpdate != nil {
+		rollingUpdate = *cluster.Spec.RollingUpdate
 	}
 
-	if def := cluster.Spec.RollingUpdate; def != nil {
-		if rollingUpdate.DrainAndTerminate == nil {
-			rollingUpdate.DrainAndTerminate = def.DrainAndTerminate
-		}
-		if rollingUpdate.MaxUnavailable == nil {
-			rollingUpdate.MaxUnavailable = def.MaxUnavailable
-		}
-		if rollingUpdate.MaxSurge == nil {
-			rollingUpdate.MaxSurge = def.MaxSurge
-		}
+	// individual instanceGroup settings override cluster settings.
+	if group.Spec.RollingUpdate != nil {
+		rollingUpdate = *group.Spec.RollingUpdate
 	}
 
 	if rollingUpdate.DrainAndTerminate == nil {
