@@ -473,6 +473,9 @@ type CiliumNetworkingSpec struct {
 	// EnableRemoteNodeIdentity enables the remote-node-identity.
 	// Default: true
 	EnableRemoteNodeIdentity *bool `json:"enableRemoteNodeIdentity,omitempty"`
+	// EnableUnreachableRoutes enables unreachable routes on pod deletion.
+	// Default: false
+	EnableUnreachableRoutes *bool `json:"enableUnreachableRoutes,omitempty"`
 	// Hubble configures the Hubble service on the Cilium agent.
 	Hubble *HubbleSpec `json:"hubble,omitempty"`
 

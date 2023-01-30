@@ -232,6 +232,7 @@ spec:
       enableL7Proxy: true
       enableNodePort: true
       enableRemoteNodeIdentity: true
+      enableUnreachableRoutes: false
       etcdManaged: true
       hubble:
         enabled: false

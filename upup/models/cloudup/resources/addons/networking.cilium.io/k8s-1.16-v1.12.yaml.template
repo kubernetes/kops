@@ -259,6 +259,9 @@ data:
   # Enable use of remote node identity (default false)
   enable-remote-node-identity: "{{ .EnableRemoteNodeIdentity }}"
 
+  # Enable unreachable routes on pod deletion (default false)
+  enable-unreachable-routes: "{{ .EnableUnreachableRoutes }}"
+
   # enable-l7-proxy enables L7 proxy for L7 policy enforcement. (default true)
   enable-l7-proxy: "{{ .EnableL7Proxy }}"
 
