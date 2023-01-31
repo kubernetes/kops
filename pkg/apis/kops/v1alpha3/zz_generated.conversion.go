@@ -6555,6 +6555,7 @@ func autoConvert_v1alpha3_OpenstackBlockStorageConfig_To_kops_OpenstackBlockStor
 	out.Version = in.Version
 	out.IgnoreAZ = in.IgnoreAZ
 	out.OverrideAZ = in.OverrideAZ
+	out.IgnoreVolumeMicroVersion = in.IgnoreVolumeMicroVersion
 	out.CreateStorageClass = in.CreateStorageClass
 	out.CSIPluginImage = in.CSIPluginImage
 	out.CSITopologySupport = in.CSITopologySupport
@@ -6570,6 +6571,7 @@ func autoConvert_kops_OpenstackBlockStorageConfig_To_v1alpha3_OpenstackBlockStor
 	out.Version = in.Version
 	out.IgnoreAZ = in.IgnoreAZ
 	out.OverrideAZ = in.OverrideAZ
+	out.IgnoreVolumeMicroVersion = in.IgnoreVolumeMicroVersion
 	out.CreateStorageClass = in.CreateStorageClass
 	out.CSIPluginImage = in.CSIPluginImage
 	out.CSITopologySupport = in.CSITopologySupport

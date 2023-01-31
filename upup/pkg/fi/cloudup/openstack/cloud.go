@@ -891,6 +891,7 @@ func MakeCloudConfig(spec kops.ClusterSpec) []string {
 			"[BlockStorage]",
 			fmt.Sprintf("bs-version=%s", fi.ValueOf(bs.Version)),
 			fmt.Sprintf("ignore-volume-az=%t", fi.ValueOf(bs.IgnoreAZ)),
+			fmt.Sprintf("ignore-volume-microversion=%t", fi.ValueOf(bs.IgnoreVolumeMicroVersion)),
 			"")
 	}
 
