@@ -35,6 +35,74 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
+func Test_OpenstackCloud_MakeCloud(t *testing.T) {
+	baseCloudConfigWithBlockStorage := []string{
+		"auth-url=\"\"",
+		"username=\"\"",
+		"password=\"\"",
+		"region=\"\"",
+		"tenant-id=\"\"",
+		"tenant-name=\"\"",
+		"domain-name=\"\"",
+		"domain-id=\"\"",
+		"",
+		"[BlockStorage]",
+		"bs-version=",
+		"ignore-volume-az=false",
+	}
+
+	tests := []struct {
+		desc                string
+		cluster             *kops.Cluster
+		expectedCloudConfig []string
+	}{
+		{
+			desc: "Ignore volume microversion is set to false when not configured",
+			cluster: &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					CloudProvider: kops.CloudProviderSpec{
+						Openstack: &kops.OpenstackSpec{
+							BlockStorage: &kops.OpenstackBlockStorageConfig{},
+						},
+					},
+				},
+			},
+			expectedCloudConfig: append(baseCloudConfigWithBlockStorage,
+				"ignore-volume-microversion=false",
+				"",
+			),
+		},
+		{
+			desc: "Ignore volume microversion is set to configured value",
+			cluster: &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					CloudProvider: kops.CloudProviderSpec{
+						Openstack: &kops.OpenstackSpec{
+							BlockStorage: &kops.OpenstackBlockStorageConfig{
+								IgnoreVolumeMicroVersion: fi.PtrTo(true),
+							},
+						},
+					},
+				},
+			},
+			expectedCloudConfig: append(baseCloudConfigWithBlockStorage,
+				"ignore-volume-microversion=true",
+				"",
+			),
+		},
+	}
+
+	for _, testCase := range tests {
+		t.Run(testCase.desc, func(t *testing.T) {
+			actualCloudConfig := MakeCloudConfig(testCase.cluster.Spec)
+
+			if !reflect.DeepEqual(actualCloudConfig, testCase.expectedCloudConfig) {
+				t.Errorf("Ingress status differ: expected\n%+#v\n\tgot:\n%+#v\n", testCase.expectedCloudConfig, actualCloudConfig)
+			}
+		})
+	}
+}
+
 func Test_OpenstackCloud_GetApiIngressStatus(t *testing.T) {
 	tests := []struct {
 		desc                 string
