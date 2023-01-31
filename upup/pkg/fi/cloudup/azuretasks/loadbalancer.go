@@ -149,7 +149,7 @@ func (*LoadBalancer) RenderAzure(t *azure.AzureAPITarget, a, e, changes *LoadBal
 	lb := network.LoadBalancer{
 		Location: to.StringPtr(t.Cloud.Region()),
 		Sku: &network.LoadBalancerSku{
-			Name: network.LoadBalancerSkuNameBasic,
+			Name: network.LoadBalancerSkuNameStandard,
 		},
 		LoadBalancerPropertiesFormat: &network.LoadBalancerPropertiesFormat{
 			FrontendIPConfigurations: &[]network.FrontendIPConfiguration{
