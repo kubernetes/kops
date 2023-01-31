@@ -788,9 +788,10 @@ type OpenstackLoadbalancerConfig struct {
 }
 
 type OpenstackBlockStorageConfig struct {
-	Version    *string `json:"bs-version,omitempty"`
-	IgnoreAZ   *bool   `json:"ignore-volume-az,omitempty"`
-	OverrideAZ *string `json:"override-volume-az,omitempty"`
+	Version                  *string `json:"bs-version,omitempty"`
+	IgnoreAZ                 *bool   `json:"ignore-volume-az,omitempty"`
+	OverrideAZ               *string `json:"override-volume-az,omitempty"`
+	IgnoreVolumeMicroVersion *bool   `json:"ignore-volume-microversion,omitempty"`
 	// CreateStorageClass provisions a default class for the Cinder plugin
 	CreateStorageClass *bool  `json:"createStorageClass,omitempty"`
 	CSIPluginImage     string `json:"csiPluginImage,omitempty"`

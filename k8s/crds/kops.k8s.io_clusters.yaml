@@ -438,6 +438,8 @@ spec:
                             type: boolean
                           ignore-volume-az:
                             type: boolean
+                          ignore-volume-microversion:
+                            type: boolean
                           override-volume-az:
                             type: string
                         type: object
