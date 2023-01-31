@@ -699,6 +699,7 @@ func setupZones(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.Stri
 			}
 			zoneToSubnetMap[zoneName] = subnet
 		}
+		return zoneToSubnetMap, nil
 
 	case api.CloudProviderAWS:
 		if len(opt.Zones) > 0 && len(opt.SubnetIDs) > 0 {
