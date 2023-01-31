@@ -17,7 +17,7 @@ definition: |
 
   [Install]
   WantedBy=multi-user.target
-enabled: true
+enabled: false
 manageState: true
 running: true
 smartRestart: true
