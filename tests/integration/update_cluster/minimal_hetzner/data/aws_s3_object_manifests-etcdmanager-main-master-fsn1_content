@@ -21,7 +21,7 @@ spec:
     env:
     - name: HCLOUD_TOKEN
       value: REDACTED
-    image: registry.k8s.io/etcdadm/etcd-manager:v3.0.20221209
+    image: registry.k8s.io/etcdadm/etcd-manager:v3.0.20230201
     name: etcd-manager
     resources:
       requests:
