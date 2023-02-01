@@ -36,7 +36,8 @@ import (
 )
 
 const (
-	cacheTTL = 60 * time.Minute
+	cacheTTL                           = 60 * time.Minute
+	ClusterAutoscalerNodeTemplateLabel = "k8s.io_cluster-autoscaler_node-template_label_"
 )
 
 // nodeIdentifier identifies a node
@@ -134,6 +135,13 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 			labels[nodelabels.RoleLabelAPIServer16] = ""
 		default:
 			klog.Warningf("Unknown node role %q for server %s(%d)", value, server.Name, server.ID)
+		}
+	}
+
+	for key, value := range server.Metadata {
+		if strings.HasPrefix(key, ClusterAutoscalerNodeTemplateLabel) {
+			trimKey := strings.ReplaceAll(strings.TrimPrefix(key, ClusterAutoscalerNodeTemplateLabel), "_", "/")
+			labels[trimKey] = value
 		}
 	}
 
