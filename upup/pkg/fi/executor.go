@@ -176,34 +176,65 @@ func (e *executor[T]) forkJoin(tasks []*taskState[T]) []error {
 		return nil
 	}
 
-	results := make([]error, len(tasks))
-	var resultsMutex sync.Mutex
+	// a worker based execution of the tasks, based on my findings from here:
+	//   * https://stackoverflow.com/questions/55203251/limiting-number-of-go-routines-running
+	//   * https://golangbot.com/buffered-channels-worker-pools/
 
+	// TODO: make configurable
+	numberOfWorkers := 10
+
+	// if numberOfWorkers not specified, or the actual number of tasks being less than the wanted number of workers,
+	// set the number of workers to the number of tasks, thus also - more or less - preserving the old behavior
+	if numberOfWorkers < 0 || numberOfWorkers > len(tasks) {
+		numberOfWorkers = len(tasks)
+	}
+
+	// the reason why using the indices rather than the tasks themselves is that the resulting error slice has to match
+	// the order of the tasks slice
+	// TODO: write a test for that (for forkJoin before making those changes, and then see if everything is still the same)
+	taskIndices := make(chan int)
+	// feed the workers with the indices of the task slice
+	go func() {
+		for i := 0; i < len(tasks); i++ {
+			taskIndices <- i
+		}
+		// workers will exit from range loop when channel is closed
+		close(taskIndices)
+	}()
+
+	results := make([]error, len(tasks))
+
+	var resultsMutex sync.Mutex
 	var wg sync.WaitGroup
-	for i := 0; i < len(tasks); i++ {
+
+	for i := 0; i < numberOfWorkers; i++ {
 		wg.Add(1)
-		go func(ts *taskState[T], index int) {
+		go func() {
 			defer wg.Done()
 
-			resultsMutex.Lock()
-			results[index] = fmt.Errorf("function panic")
-			resultsMutex.Unlock()
+			for index := range taskIndices {
+				ts := tasks[index]
 
-			klog.V(2).Infof("Executing task %q: %v\n", ts.key, ts.task)
+				resultsMutex.Lock()
+				results[index] = fmt.Errorf("function panic")
+				resultsMutex.Unlock()
 
-			if taskNormalize, ok := ts.task.(TaskNormalize[T]); ok {
-				if err := taskNormalize.Normalize(e.context); err != nil {
-					results[index] = err
-					return
+				klog.V(2).Infof("Executing task %q: %v\n", ts.key, ts.task)
+
+				if taskNormalize, ok := ts.task.(TaskNormalize[T]); ok {
+					if err := taskNormalize.Normalize(e.context); err != nil {
+						results[index] = err
+						return
+					}
 				}
+
+				result := ts.task.Run(e.context)
+
+				resultsMutex.Lock()
+				results[index] = result
+				resultsMutex.Unlock()
 			}
-
-			result := ts.task.Run(e.context)
-
-			resultsMutex.Lock()
-			results[index] = result
-			resultsMutex.Unlock()
-		}(tasks[i], i)
+		}()
 	}
 
 	wg.Wait()
