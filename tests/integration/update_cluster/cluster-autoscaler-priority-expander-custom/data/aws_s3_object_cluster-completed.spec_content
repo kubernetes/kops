@@ -65,14 +65,14 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: main
-    version: 3.5.6
+    version: 3.5.7
   - backups:
       backupStore: memfs://clusters.example.com/cas-priority-expander-custom.example.com/backups/etcd/events
     etcdMembers:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: events
-    version: 3.5.6
+    version: 3.5.7
   externalDns:
     provider: dns-controller
   keyStore: memfs://clusters.example.com/cas-priority-expander-custom.example.com/pki

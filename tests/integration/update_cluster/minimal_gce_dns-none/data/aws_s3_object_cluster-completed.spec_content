@@ -48,7 +48,7 @@ spec:
       name: a
     memoryRequest: 100Mi
     name: main
-    version: 3.5.6
+    version: 3.5.7
   - backups:
       backupStore: memfs://tests/minimal-gce.example.com/backups/etcd/events
     cpuRequest: 100m
@@ -57,7 +57,7 @@ spec:
       name: a
     memoryRequest: 100Mi
     name: events
-    version: 3.5.6
+    version: 3.5.7
   iam:
     legacy: false
   keyStore: memfs://tests/minimal-gce.example.com/pki
