@@ -57,11 +57,13 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 	if err != nil {
 		return fmt.Errorf("building load-balancer task: %w", err)
 	}
-	lbTags := []string(nil)
+	lbTags := []string{
+		fmt.Sprintf("%s=%s", scaleway.TagClusterName, b.ClusterName()),
+		fmt.Sprintf("%s=%s", scaleway.TagNameRolePrefix, scaleway.TagRoleControlPlane),
+	}
 	for k, v := range b.CloudTags(b.ClusterName(), false) {
 		lbTags = append(lbTags, fmt.Sprintf("%s=%s", k, v))
 	}
-	lbTags = append(lbTags, fmt.Sprintf("%s=%s", scaleway.TagNameRolePrefix, scaleway.TagRoleControlPlane))
 
 	loadBalancerName := "api." + b.ClusterName()
 	loadBalancer := &scalewaytasks.LoadBalancer{

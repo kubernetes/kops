@@ -17,6 +17,7 @@ limitations under the License.
 package scalewaytasks
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
@@ -118,6 +119,9 @@ func (_ *Volume) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes *
 		Size:       scw.SizePtr(scw.Size(fi.ValueOf(expected.Size))),
 		Tags:       expected.Tags,
 	})
+	if err != nil {
+		return fmt.Errorf("rendering volume: %w", err)
+	}
 
 	return err
 }

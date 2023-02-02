@@ -47,8 +47,8 @@ const (
 	TagNameRolePrefix        = "kops.k8s.io/role"
 	TagRoleControlPlane      = "ControlPlane" // changed from 'control-plane' to match kops.InstanceGroupRoleControlPlane
 	TagRoleNode              = "Node"
-	TagRoleLoadBalancer      = "LoadBalancer"
 	KopsUserAgentPrefix      = "kubernetes-kops/"
+	//TagRoleLoadBalancer      = "LoadBalancer"
 )
 
 // ScwCloud exposes all the interfaces required to operate on Scaleway resources

@@ -36,31 +36,36 @@ type InstanceModelBuilder struct {
 
 var _ fi.CloudupModelBuilder = &InstanceModelBuilder{}
 
-func (d *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
-	for _, ig := range d.InstanceGroups {
+func (b *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
+	for _, ig := range b.InstanceGroups {
 		name := ig.Name
 		zone, err := scw.ParseZone(ig.Spec.Subnets[0])
 		if err != nil {
 			return fmt.Errorf("error building instance task for %q: %w", name, err)
 		}
 
-		userData, err := d.BootstrapScriptBuilder.ResourceNodeUp(c, ig)
+		userData, err := b.BootstrapScriptBuilder.ResourceNodeUp(c, ig)
 		if err != nil {
 			return fmt.Errorf("error building bootstrap script for %q: %w", name, err)
+		}
+
+		instanceTags := []string{
+			scaleway.TagInstanceGroup + "=" + ig.Name,
+			scaleway.TagClusterName + "=" + b.Cluster.Name,
+		}
+		for k, v := range b.CloudTags(b.ClusterName(), false) {
+			instanceTags = append(instanceTags, fmt.Sprintf("%s=%s", k, v))
 		}
 
 		instance := scalewaytasks.Instance{
 			Count:          int(fi.ValueOf(ig.Spec.MinSize)),
 			Name:           fi.PtrTo(name),
-			Lifecycle:      d.Lifecycle,
+			Lifecycle:      b.Lifecycle,
 			Zone:           fi.PtrTo(string(zone)),
 			CommercialType: fi.PtrTo(ig.Spec.MachineType),
 			Image:          fi.PtrTo(ig.Spec.Image),
 			UserData:       &userData,
-			Tags: []string{
-				scaleway.TagInstanceGroup + "=" + ig.Name,
-				scaleway.TagClusterName + "=" + d.Cluster.Name,
-			},
+			Tags:           instanceTags,
 		}
 
 		if ig.IsControlPlane() {
