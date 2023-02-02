@@ -33,7 +33,7 @@ func (b *NvidiaBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	if b.InstallNvidiaRuntime() && b.Distribution.IsUbuntu() {
 		c.AddTask(&nodetasks.AptSource{
 			Name:    "nvidia-container-runtime",
-			Keyring: "https://nvidia.github.io/nvidia-container-runtime/gpgkey",
+			Keyring: "https://nvidia.github.io/libnvidia-container/gpgkey",
 			Sources: []string{
 				"deb https://nvidia.github.io/libnvidia-container/stable/ubuntu18.04/$(ARCH) /",
 			},
