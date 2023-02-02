@@ -32,13 +32,13 @@ var _ fi.NodeupModelBuilder = &NvidiaBuilder{}
 func (b *NvidiaBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	if b.InstallNvidiaRuntime() && b.Distribution.IsUbuntu() {
 		c.AddTask(&nodetasks.AptSource{
-			Name:    "nvidia-container-runtime",
+			Name:    "nvidia-container-toolkit",
 			Keyring: "https://nvidia.github.io/libnvidia-container/gpgkey",
 			Sources: []string{
 				"deb https://nvidia.github.io/libnvidia-container/stable/ubuntu18.04/$(ARCH) /",
 			},
 		})
-		c.AddTask(&nodetasks.Package{Name: "nvidia-container-runtime"})
+		c.AddTask(&nodetasks.Package{Name: "nvidia-container-toolkit"})
 		c.AddTask(&nodetasks.Package{Name: b.NodeupConfig.NvidiaGPU.DriverPackage})
 	}
 	return nil
