@@ -24,6 +24,7 @@ import (
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -107,13 +108,13 @@ func (s *SSHKey) CheckChanges(actual, expected, changes *SSHKey) error {
 	return nil
 }
 
-func (*SSHKey) RenderScw(c *fi.CloudupContext, actual, expected, changes *SSHKey) error {
+func (*SSHKey) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes *SSHKey) error {
 	if actual != nil {
 		klog.Infof("Scaleway does not support changes to ssh keys for the moment")
 		return nil
 	}
 
-	cloud := c.T.Cloud.(scaleway.ScwCloud)
+	cloud := t.Cloud.(scaleway.ScwCloud)
 
 	name := fi.ValueOf(expected.Name)
 	if name == "" {
@@ -140,4 +141,22 @@ func (*SSHKey) RenderScw(c *fi.CloudupContext, actual, expected, changes *SSHKey
 	klog.V(2).Infof("Created a new SSH keypair, id=%q fingerprint=%q", key.ID, key.Fingerprint)
 
 	return nil
+}
+
+type terraformSSHKey struct {
+	Name      *string `cty:"name"`
+	PublicKey *string `cty:"public_key"`
+}
+
+func (_ *SSHKey) RenderTerraform(t *terraform.TerraformTarget, actual, expected, changes *SSHKey) error {
+	tfName := strings.Replace(fi.ValueOf(expected.Name), ".", "-", -1)
+	publicKeyStr, err := fi.ResourceAsString(fi.ValueOf(expected.PublicKey))
+	if err != nil {
+		return err
+	}
+	tf := terraformSSHKey{
+		Name:      expected.Name,
+		PublicKey: fi.PtrTo(publicKeyStr),
+	}
+	return t.RenderResource("scaleway_iam_ssh_key", tfName, tf)
 }

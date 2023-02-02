@@ -17,6 +17,8 @@ limitations under the License.
 package scalewaytasks
 
 import (
+	"strings"
+
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"k8s.io/klog/v2"
@@ -76,8 +78,8 @@ func (v *Volume) Run(c *fi.CloudupContext) error {
 	return fi.CloudupDefaultDeltaRunMethod(v, c)
 }
 
-func (_ *Volume) CheckChanges(a, e, changes *Volume) error {
-	if a != nil {
+func (_ *Volume) CheckChanges(actual, expected, changes *Volume) error {
+	if actual != nil {
 		if changes.Name != nil {
 			return fi.CannotChangeField("Name")
 		}
@@ -88,21 +90,21 @@ func (_ *Volume) CheckChanges(a, e, changes *Volume) error {
 			return fi.CannotChangeField("Zone")
 		}
 	} else {
-		if e.Name == nil {
+		if expected.Name == nil {
 			return fi.RequiredField("Name")
 		}
-		if e.Size == nil {
+		if expected.Size == nil {
 			return fi.RequiredField("Size")
 		}
-		if e.Zone == nil {
+		if expected.Zone == nil {
 			return fi.RequiredField("Zone")
 		}
 	}
 	return nil
 }
 
-func (_ *Volume) RenderScw(t *scaleway.ScwAPITarget, a, e, changes *Volume) error {
-	if a != nil {
+func (_ *Volume) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes *Volume) error {
+	if actual != nil {
 		// TODO(Mia-Cross): handle the update of tags at least
 		klog.Infof("Scaleway does not support changes to volumes for the moment")
 		return nil
@@ -110,11 +112,11 @@ func (_ *Volume) RenderScw(t *scaleway.ScwAPITarget, a, e, changes *Volume) erro
 
 	instanceService := t.Cloud.InstanceService()
 	_, err := instanceService.CreateVolume(&instance.CreateVolumeRequest{
-		Zone:       scw.Zone(fi.ValueOf(e.Zone)),
-		Name:       fi.ValueOf(e.Name),
-		VolumeType: instance.VolumeVolumeType(fi.ValueOf(e.Type)),
-		Size:       scw.SizePtr(scw.Size(fi.ValueOf(e.Size))),
-		Tags:       e.Tags,
+		Zone:       scw.Zone(fi.ValueOf(expected.Zone)),
+		Name:       fi.ValueOf(expected.Name),
+		VolumeType: instance.VolumeVolumeType(fi.ValueOf(expected.Type)),
+		Size:       scw.SizePtr(scw.Size(fi.ValueOf(expected.Size))),
+		Tags:       expected.Tags,
 	})
 
 	return err
@@ -127,13 +129,14 @@ type terraformVolume struct {
 	Tags     []string `cty:"tags"`
 }
 
-func (_ *Volume) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Volume) error {
+func (_ *Volume) RenderTerraform(t *terraform.TerraformTarget, actual, expected, changes *Volume) error {
+	tfName := strings.Replace(fi.ValueOf(expected.Name), ".", "-", -1)
 	tf := &terraformVolume{
-		Name:     e.Name,
-		SizeInGB: fi.PtrTo(int(fi.ValueOf(e.Size) / 1e9)),
-		Type:     e.Type,
-		Tags:     e.Tags,
+		Name:     expected.Name,
+		SizeInGB: fi.PtrTo(int(fi.ValueOf(expected.Size) / 1e9)),
+		Type:     expected.Type,
+		Tags:     expected.Tags,
 	}
 
-	return t.RenderResource("scaleway_instance_volume", fi.ValueOf(e.Name), tf)
+	return t.RenderResource("scaleway_instance_volume", tfName, tf)
 }

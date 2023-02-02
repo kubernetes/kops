@@ -18,10 +18,13 @@ package scalewaytasks
 
 import (
 	"fmt"
+	"strings"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -194,4 +197,45 @@ func (l *LoadBalancer) RenderScw(t *scaleway.ScwAPITarget, actual, expected, cha
 	}
 
 	return nil
+}
+
+type terraformLBIP struct {
+	ID *string
+}
+
+type terraformLoadBalancer struct {
+	Type string                   `cty:"type"`
+	Name *string                  `cty:"name"`
+	Tags []string                 `cty:"tags"`
+	IPID *terraformWriter.Literal `cty:"ip_id"`
+	//LBName *string
+}
+
+func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, actual, expected, changes *LoadBalancer) error {
+	tfName := strings.Replace(fi.ValueOf(expected.Name), ".", "-", -1)
+	{
+		tf := terraformLBIP{}
+		err := t.RenderResource("scaleway_lb_ip", tfName, tf)
+		if err != nil {
+			return err
+		}
+	}
+	{
+		tf := terraformLoadBalancer{
+			Type: "LB-S",
+			Name: expected.Name,
+			Tags: expected.Tags,
+			IPID: expected.TerraformLinkIPID(tfName),
+			//LBName:
+		}
+		err := t.RenderResource("scaleway_lb", tfName, tf)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (l *LoadBalancer) TerraformLinkIPID(tfName string) *terraformWriter.Literal {
+	return terraformWriter.LiteralProperty("scaleway_lb_ip", tfName, "id")
 }
