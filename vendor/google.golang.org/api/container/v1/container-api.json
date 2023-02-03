@@ -2487,7 +2487,7 @@
       }
     }
   },
-  "revision": "20230104",
+  "revision": "20230117",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -2632,7 +2632,7 @@
           "type": "string"
         },
         "imageType": {
-          "description": "The image type to use for NAP created node.",
+          "description": "The image type to use for NAP created node. Please see https://cloud.google.com/kubernetes-engine/docs/concepts/node-images for available image types.",
           "type": "string"
         },
         "management": {
@@ -2640,7 +2640,7 @@
           "description": "Specifies the node management options for NAP created node-pools."
         },
         "minCpuPlatform": {
-          "description": "Deprecated. Minimum CPU platform to be used for NAP created node pools. The instance may be scheduled on the specified or newer CPU platform. Applicable values are the friendly names of CPU platforms, such as minCpuPlatform: Intel Haswell or minCpuPlatform: Intel Sandy Bridge. For more information, read [how to specify min CPU platform](https://cloud.google.com/compute/docs/instances/specify-min-cpu-platform). This field is deprecated, min_cpu_platform should be specified using https://cloud.google.com/requested-min-cpu-platform label selector on the pod. To unset the min cpu platform field pass \"automatic\" as field value.",
+          "description": "Deprecated. Minimum CPU platform to be used for NAP created node pools. The instance may be scheduled on the specified or newer CPU platform. Applicable values are the friendly names of CPU platforms, such as minCpuPlatform: Intel Haswell or minCpuPlatform: Intel Sandy Bridge. For more information, read [how to specify min CPU platform](https://cloud.google.com/compute/docs/instances/specify-min-cpu-platform). This field is deprecated, min_cpu_platform should be specified using `cloud.google.com/requested-min-cpu-platform` label selector on the pod. To unset the min cpu platform field pass \"automatic\" as field value.",
           "type": "string"
         },
         "oauthScopes": {
@@ -3930,6 +3930,11 @@
           "description": "The IP address range of the services IPs in this cluster. If blank, a range will be automatically chosen with the default size. This field is only applicable when `use_ip_aliases` is true. Set to blank to have a range chosen with the default size. Set to /netmask (e.g. `/14`) to have a range chosen with a specific netmask. Set to a [CIDR](http://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing) notation (e.g. `10.96.0.0/14`) from the RFC-1918 private networks (e.g. `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`) to pick a specific range to use.",
           "type": "string"
         },
+        "servicesIpv6CidrBlock": {
+          "description": "Output only. [Output only] The services IPv6 CIDR block for the cluster.",
+          "readOnly": true,
+          "type": "string"
+        },
         "servicesSecondaryRangeName": {
           "description": "The name of the secondary range to be used as for the services CIDR block. The secondary range will be used for service ClusterIPs. This must be an existing secondary range associated with the cluster subnetwork. This field is only applicable with use_ip_aliases is true and create_subnetwork is false.",
           "type": "string"
@@ -3946,6 +3951,11 @@
             "Cluster is IPV4 only",
             "Cluster can use both IPv4 and IPv6"
           ],
+          "type": "string"
+        },
+        "subnetIpv6CidrBlock": {
+          "description": "Output only. [Output only] The subnet's IPv6 CIDR block used by nodes and pods.",
+          "readOnly": true,
           "type": "string"
         },
         "subnetworkName": {
@@ -4628,7 +4638,7 @@
           "description": "Enable or disable gvnic in the node pool."
         },
         "imageType": {
-          "description": "The image type to use for this node. Note that for a given image type, the latest version of it will be used.",
+          "description": "The image type to use for this node. Note that for a given image type, the latest version of it will be used. Please see https://cloud.google.com/kubernetes-engine/docs/concepts/node-images for available image types.",
           "type": "string"
         },
         "kubeletConfig": {
@@ -4947,7 +4957,7 @@
           "description": "Upgrade settings control disruption and speed of the upgrade."
         },
         "version": {
-          "description": "The version of the Kubernetes of this node.",
+          "description": "The version of Kubernetes running on this NodePool's nodes. If unspecified, it defaults as described [here](https://cloud.google.com/kubernetes-engine/versioning#specifying_node_version).",
           "type": "string"
         }
       },
@@ -6324,7 +6334,7 @@
           "description": "Enable or disable gvnic on the node pool."
         },
         "imageType": {
-          "description": "Required. The desired image type for the node pool.",
+          "description": "Required. The desired image type for the node pool. Please see https://cloud.google.com/kubernetes-engine/docs/concepts/node-images for available image types.",
           "type": "string"
         },
         "kubeletConfig": {
@@ -6502,7 +6512,7 @@
             "SURGE"
           ],
           "enumDescriptions": [
-            "Default value.",
+            "Default value if unset. GKE internally defaults the update strategy to SURGE for unspecified strategies.",
             "blue-green upgrade.",
             "SURGE is the traditional way of upgrade a node pool. max_surge and max_unavailable determines the level of upgrade parallelism."
           ],
