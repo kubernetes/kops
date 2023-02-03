@@ -96,6 +96,7 @@ func (e *Instance) GetDependencies(tasks map[string]fi.CloudupTask) []fi.Cloudup
 
 var _ fi.CompareWithID = &Instance{}
 
+// TODO: delete this as this function is not used anywhere?
 func (e *Instance) WaitForStatusActive(t *openstack.OpenstackAPITarget) error {
 	return servers.WaitForStatus(t.Cloud.ComputeClient(), *e.ID, "ACTIVE", 120)
 }
