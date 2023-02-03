@@ -23,11 +23,6 @@ The function [`GetConfigPath`](https://godoc.org/github.com/scaleway/scaleway-sd
 3. Unix home directory: `$HOME/.config/scw/config.yaml`
 4. Windows home directory: `%USERPROFILE%/.config/scw/config.yaml`
 
-## V1 config (DEPRECATED)
-
-The V1 config (AKA legacy config) `.scwrc` is deprecated.
-To migrate the V1 config to the new format use the function [`MigrateLegacyConfig`](https://godoc.org/github.com/scaleway/scaleway-sdk-go/scw#MigrateLegacyConfig), this will create a [proper config file](#tl-dr) the new [config file path](#config-file-path).
-
 ## Reading config order
 
 [ClientOption](https://godoc.org/github.com/scaleway/scaleway-sdk-go/scw#ClientOption) ordering will decide the order in which the config should apply:

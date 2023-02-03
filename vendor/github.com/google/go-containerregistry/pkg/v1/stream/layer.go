@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package stream implements a single-pass streaming v1.Layer.
 package stream
 
 import (

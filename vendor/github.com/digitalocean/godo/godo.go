@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	libraryVersion = "1.92.0"
+	libraryVersion = "1.97.0"
 	defaultBaseURL = "https://api.digitalocean.com/"
 	userAgent      = "godo/" + libraryVersion
 	mediaType      = "application/json"
@@ -82,6 +82,7 @@ type Client struct {
 	StorageActions    StorageActionsService
 	Tags              TagsService
 	Tokens            TokensService
+	UptimeChecks      UptimeChecksService
 	VPCs              VPCsService
 
 	// Optional function called after every successful request made to the DO APIs
@@ -252,6 +253,7 @@ func NewClient(httpClient *http.Client) *Client {
 	c.StorageActions = &StorageActionsServiceOp{client: c}
 	c.Tags = &TagsServiceOp{client: c}
 	c.Tokens = &TokensServiceOp{client: c}
+	c.UptimeChecks = &UptimeChecksServiceOp{client: c}
 	c.VPCs = &VPCsServiceOp{client: c}
 
 	c.headers = make(map[string]string)

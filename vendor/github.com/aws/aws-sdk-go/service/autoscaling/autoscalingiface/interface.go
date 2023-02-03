@@ -312,6 +312,10 @@ type AutoScalingAPI interface {
 	ResumeProcessesWithContext(aws.Context, *autoscaling.ScalingProcessQuery, ...request.Option) (*autoscaling.ResumeProcessesOutput, error)
 	ResumeProcessesRequest(*autoscaling.ScalingProcessQuery) (*request.Request, *autoscaling.ResumeProcessesOutput)
 
+	RollbackInstanceRefresh(*autoscaling.RollbackInstanceRefreshInput) (*autoscaling.RollbackInstanceRefreshOutput, error)
+	RollbackInstanceRefreshWithContext(aws.Context, *autoscaling.RollbackInstanceRefreshInput, ...request.Option) (*autoscaling.RollbackInstanceRefreshOutput, error)
+	RollbackInstanceRefreshRequest(*autoscaling.RollbackInstanceRefreshInput) (*request.Request, *autoscaling.RollbackInstanceRefreshOutput)
+
 	SetDesiredCapacity(*autoscaling.SetDesiredCapacityInput) (*autoscaling.SetDesiredCapacityOutput, error)
 	SetDesiredCapacityWithContext(aws.Context, *autoscaling.SetDesiredCapacityInput, ...request.Option) (*autoscaling.SetDesiredCapacityOutput, error)
 	SetDesiredCapacityRequest(*autoscaling.SetDesiredCapacityInput) (*request.Request, *autoscaling.SetDesiredCapacityOutput)

@@ -1,5 +1,23 @@
 # Change Log
 
+## [v1.97.0] - 2023-02-10
+
+- #601 - @jcodybaker - APPS-6813: update app platform - pending_deployment + timing
+- #602 - @jcodybaker - Use App Platform active deployment for GetLogs if not specified
+
+## [v1.96.0] - 2023-01-23
+
+- #599 - @markpaulson - Adding PromoteReplicaToPrimary to client interface.
+
+## [v1.95.0] - 2023-01-23
+
+- #595 - @dweinshenker - Add UpgradeMajorVersion to godo
+
+## [v1.94.0] - 2022-01-23
+
+- #596 - @DMW2151 - DBAAS-3906: Include updatePool for DB Clusters
+- #593 - @danaelhe - Add Uptime Checks and Alerts Support
+
 ## [v1.93.0] - 2022-12-15
 
 - #591 - @andrewsomething - tokens: Add initial support for new API.

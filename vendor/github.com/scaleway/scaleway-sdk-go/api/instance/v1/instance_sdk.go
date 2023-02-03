@@ -1402,6 +1402,7 @@ type ServerLocation struct {
 }
 
 type ServerMaintenance struct {
+	Reason string `json:"reason"`
 }
 
 type ServerSummary struct {
@@ -1776,6 +1777,11 @@ type setSnapshotResponse struct {
 }
 
 // Service API
+
+// Zones list localities the api is available in
+func (s *API) Zones() []scw.Zone {
+	return []scw.Zone{scw.ZoneFrPar1, scw.ZoneFrPar2, scw.ZoneFrPar3, scw.ZoneNlAms1, scw.ZoneNlAms2, scw.ZonePlWaw1, scw.ZonePlWaw2}
+}
 
 type GetServerTypesAvailabilityRequest struct {
 	// Zone:
@@ -2715,7 +2721,7 @@ type CreateImageRequest struct {
 	// Default value: x86_64
 	Arch Arch `json:"arch"`
 	// DefaultBootscript: default bootscript of the image
-	DefaultBootscript string `json:"default_bootscript,omitempty"`
+	DefaultBootscript *string `json:"default_bootscript,omitempty"`
 	// ExtraVolumes: additional volumes of the image
 	ExtraVolumes map[string]*VolumeTemplate `json:"extra_volumes,omitempty"`
 	// Deprecated: Organization: organization ID of the image
@@ -2727,7 +2733,7 @@ type CreateImageRequest struct {
 	// Tags: the tags of the image
 	Tags []string `json:"tags,omitempty"`
 	// Public: true to create a public image
-	Public bool `json:"public,omitempty"`
+	Public *bool `json:"public,omitempty"`
 }
 
 // CreateImage: create an instance image
@@ -5035,7 +5041,7 @@ type ListPrivateNICsRequest struct {
 	//
 	// Zone to target. If none is passed will use default zone from the config
 	Zone scw.Zone `json:"-"`
-
+	// ServerID: the server the private NIC is attached to
 	ServerID string `json:"-"`
 }
 
@@ -5078,9 +5084,9 @@ type CreatePrivateNICRequest struct {
 	//
 	// Zone to target. If none is passed will use default zone from the config
 	Zone scw.Zone `json:"-"`
-
+	// ServerID: UUID of the server the private NIC will be attached to
 	ServerID string `json:"-"`
-
+	// PrivateNetworkID: UUID of the private network where the private NIC will be attached
 	PrivateNetworkID string `json:"private_network_id,omitempty"`
 }
 
@@ -5128,9 +5134,9 @@ type GetPrivateNICRequest struct {
 	//
 	// Zone to target. If none is passed will use default zone from the config
 	Zone scw.Zone `json:"-"`
-
+	// ServerID: the server the private NIC is attached to
 	ServerID string `json:"-"`
-
+	// PrivateNicID: the private NIC unique ID
 	PrivateNicID string `json:"-"`
 }
 
@@ -5177,9 +5183,9 @@ type DeletePrivateNICRequest struct {
 	//
 	// Zone to target. If none is passed will use default zone from the config
 	Zone scw.Zone `json:"-"`
-
+	// ServerID: the server the private NIC is attached to
 	ServerID string `json:"-"`
-
+	// PrivateNicID: the private NIC unique ID
 	PrivateNicID string `json:"-"`
 }
 

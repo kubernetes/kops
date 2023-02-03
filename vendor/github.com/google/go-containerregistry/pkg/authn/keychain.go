@@ -123,6 +123,10 @@ func (dk *defaultKeychain) Resolve(target Resource) (Authenticator, error) {
 		if err != nil {
 			return nil, err
 		}
+		// cf.GetAuthConfig automatically sets the ServerAddress attribute. Since
+		// we don't make use of it, clear the value for a proper "is-empty" test.
+		// See: https://github.com/google/go-containerregistry/issues/1510
+		cfg.ServerAddress = ""
 		if cfg != empty {
 			break
 		}

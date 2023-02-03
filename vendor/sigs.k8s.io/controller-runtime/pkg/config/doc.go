@@ -22,4 +22,6 @@ limitations under the License.
 // This uses a deferred file decoding allowing you to chain your configuration
 // setup. You can pass this into manager.Options#File and it will load your
 // config.
+//
+// Deprecated: This package has been deprecated and will be removed in a future release.
 package config

@@ -18,7 +18,6 @@ import (
 	"archive/tar"
 	"bytes"
 	"io"
-	"io/ioutil"
 	"sort"
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -57,7 +56,7 @@ func Layer(filemap map[string][]byte) (v1.Layer, error) {
 
 	// Return a new copy of the buffer each time it's opened.
 	return tarball.LayerFromOpener(func() (io.ReadCloser, error) {
-		return ioutil.NopCloser(bytes.NewBuffer(b.Bytes())), nil
+		return io.NopCloser(bytes.NewBuffer(b.Bytes())), nil
 	})
 }
 

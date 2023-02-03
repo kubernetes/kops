@@ -187,9 +187,11 @@ func filterEmpty(h []v1.History) []v1.History {
 // One manifest.json file at the top level containing information about several images.
 // One repositories file mapping from the image <registry>/<repo name> to <tag> to the id of the top most layer.
 // For every layer, a directory named with the layer ID is created with the following contents:
-//   layer.tar - The uncompressed layer tarball.
-//   <layer id>.json- Layer metadata json.
-//   VERSION- Schema version string. Always set to "1.0".
+//
+//	layer.tar - The uncompressed layer tarball.
+//	<layer id>.json- Layer metadata json.
+//	VERSION- Schema version string. Always set to "1.0".
+//
 // One file for the config blob, named after its SHA.
 func MultiWrite(refToImage map[name.Reference]v1.Image, w io.Writer) error {
 	tf := tar.NewWriter(w)

@@ -350,7 +350,7 @@ type SetAllServerUserDataRequest struct {
 	UserData map[string]io.Reader `json:"-"`
 }
 
-// SetAllServerUserData sets all user data on a server.
+// SetAllServerUserData sets all user data on a server, it deletes every keys previously set.
 func (s *API) SetAllServerUserData(req *SetAllServerUserDataRequest, opts ...scw.RequestOption) error {
 	var err error
 
