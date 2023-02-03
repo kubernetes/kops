@@ -17,8 +17,6 @@ limitations under the License.
 package model
 
 import (
-	"fmt"
-
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
@@ -33,24 +31,14 @@ var _ fi.NodeupModelBuilder = &NvidiaBuilder{}
 // Build is responsible for installing packages.
 func (b *NvidiaBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	if b.InstallNvidiaRuntime() && b.Distribution.IsUbuntu() {
-		version := ""
-		if b.Distribution.Version() >= 22.04 {
-			version = "22.04"
-		} else if b.Distribution.Version() >= 20.04 {
-			version = "20.04"
-		} else {
-			version = "18.04"
-		}
 		c.AddTask(&nodetasks.AptSource{
-			Name:    "nvidia-container-runtime",
-			Keyring: "https://nvidia.github.io/nvidia-container-runtime/gpgkey",
+			Name:    "nvidia-container-toolkit",
+			Keyring: "https://nvidia.github.io/libnvidia-container/gpgkey",
 			Sources: []string{
-				fmt.Sprintf("deb https://nvidia.github.io/nvidia-container-runtime/stable/ubuntu%s/$(ARCH) /", version),
-				fmt.Sprintf("deb https://nvidia.github.io/libnvidia-container/stable/ubuntu%s/$(ARCH) /", version),
-				fmt.Sprintf("deb https://nvidia.github.io/nvidia-docker/ubuntu%s/$(ARCH) /", version),
+				"deb https://nvidia.github.io/libnvidia-container/stable/ubuntu18.04/$(ARCH) /",
 			},
 		})
-		c.AddTask(&nodetasks.Package{Name: "nvidia-container-runtime"})
+		c.AddTask(&nodetasks.Package{Name: "nvidia-container-toolkit"})
 		c.AddTask(&nodetasks.Package{Name: b.NodeupConfig.NvidiaGPU.DriverPackage})
 	}
 	return nil
