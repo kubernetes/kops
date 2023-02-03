@@ -13,11 +13,11 @@ require (
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/apparentlymart/go-cidr v1.1.0
-	github.com/aws/amazon-ec2-instance-selector/v2 v2.4.0
-	github.com/aws/aws-sdk-go v1.44.188
+	github.com/aws/amazon-ec2-instance-selector/v2 v2.4.1
+	github.com/aws/aws-sdk-go v1.44.193
 	github.com/blang/semver/v4 v4.0.0
 	github.com/cert-manager/cert-manager v1.11.0
-	github.com/digitalocean/godo v1.95.0
+	github.com/digitalocean/godo v1.96.0
 	github.com/go-ini/ini v1.67.0
 	github.com/go-logr/logr v1.2.3
 	github.com/gogo/protobuf v1.3.2
@@ -26,7 +26,7 @@ require (
 	github.com/google/go-tpm v0.3.3
 	github.com/google/go-tpm-tools v0.3.10
 	github.com/google/uuid v1.3.0
-	github.com/gophercloud/gophercloud v1.1.1
+	github.com/gophercloud/gophercloud v1.2.0
 	github.com/hetznercloud/hcloud-go v1.39.0
 	github.com/jacksontj/memberlistmesh v0.0.0-20190905163944-93462b9d2bb7
 	github.com/mitchellh/mapstructure v1.5.0
@@ -43,12 +43,12 @@ require (
 	github.com/weaveworks/mesh v0.0.0-20191105120815-58dbcc3e8e63
 	go.uber.org/multierr v1.9.0
 	golang.org/x/crypto v0.5.0
-	golang.org/x/exp v0.0.0-20230126173853-a67bb567ff2e
+	golang.org/x/exp v0.0.0-20230202163644-54bba9f4231b
 	golang.org/x/net v0.5.0
 	golang.org/x/oauth2 v0.4.0
 	golang.org/x/sync v0.1.0
 	golang.org/x/sys v0.4.0
-	google.golang.org/api v0.108.0
+	google.golang.org/api v0.109.0
 	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/inf.v0 v0.9.1
 	gopkg.in/square/go-jose.v2 v2.6.0
@@ -66,8 +66,8 @@ require (
 	k8s.io/kubectl v0.26.1
 	k8s.io/kubelet v0.26.1
 	k8s.io/mount-utils v0.26.1
-	k8s.io/utils v0.0.0-20230115233650-391b47cb4029
-	sigs.k8s.io/controller-runtime v0.14.1
+	k8s.io/utils v0.0.0-20230202215443-34013725500c
+	sigs.k8s.io/controller-runtime v0.14.2
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3
 	sigs.k8s.io/yaml v1.3.0
 )
@@ -215,7 +215,7 @@ require (
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apiextensions-apiserver v0.26.0 // indirect
+	k8s.io/apiextensions-apiserver v0.26.1 // indirect
 	k8s.io/cloud-provider v0.26.0 // indirect
 	k8s.io/csi-translation-lib v0.26.0 // indirect
 	k8s.io/klog v1.0.0 // indirect

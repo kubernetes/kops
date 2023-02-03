@@ -553,7 +553,9 @@ type AutoprovisioningNodePoolDefaults struct {
 	// 'pd-standard'
 	DiskType string `json:"diskType,omitempty"`
 
-	// ImageType: The image type to use for NAP created node.
+	// ImageType: The image type to use for NAP created node. Please see
+	// https://cloud.google.com/kubernetes-engine/docs/concepts/node-images
+	// for available image types.
 	ImageType string `json:"imageType,omitempty"`
 
 	// Management: Specifies the node management options for NAP created
@@ -568,9 +570,9 @@ type AutoprovisioningNodePoolDefaults struct {
 	// platform
 	// (https://cloud.google.com/compute/docs/instances/specify-min-cpu-platform).
 	// This field is deprecated, min_cpu_platform should be specified using
-	// https://cloud.google.com/requested-min-cpu-platform label selector on
-	// the pod. To unset the min cpu platform field pass "automatic" as
-	// field value.
+	// `cloud.google.com/requested-min-cpu-platform` label selector on the
+	// pod. To unset the min cpu platform field pass "automatic" as field
+	// value.
 	MinCpuPlatform string `json:"minCpuPlatform,omitempty"`
 
 	// OauthScopes: Scopes that are used by NAP when creating node pools.
@@ -2644,6 +2646,10 @@ type IPAllocationPolicy struct {
 	// specific range to use.
 	ServicesIpv4CidrBlock string `json:"servicesIpv4CidrBlock,omitempty"`
 
+	// ServicesIpv6CidrBlock: Output only. [Output only] The services IPv6
+	// CIDR block for the cluster.
+	ServicesIpv6CidrBlock string `json:"servicesIpv6CidrBlock,omitempty"`
+
 	// ServicesSecondaryRangeName: The name of the secondary range to be
 	// used as for the services CIDR block. The secondary range will be used
 	// for service ClusterIPs. This must be an existing secondary range
@@ -2659,6 +2665,10 @@ type IPAllocationPolicy struct {
 	//   "IPV4" - Cluster is IPV4 only
 	//   "IPV4_IPV6" - Cluster can use both IPv4 and IPv6
 	StackType string `json:"stackType,omitempty"`
+
+	// SubnetIpv6CidrBlock: Output only. [Output only] The subnet's IPv6
+	// CIDR block used by nodes and pods.
+	SubnetIpv6CidrBlock string `json:"subnetIpv6CidrBlock,omitempty"`
 
 	// SubnetworkName: A custom subnetwork name to be used if
 	// `create_subnetwork` is true. If this field is empty, then an
@@ -3935,7 +3945,9 @@ type NodeConfig struct {
 	Gvnic *VirtualNIC `json:"gvnic,omitempty"`
 
 	// ImageType: The image type to use for this node. Note that for a given
-	// image type, the latest version of it will be used.
+	// image type, the latest version of it will be used. Please see
+	// https://cloud.google.com/kubernetes-engine/docs/concepts/node-images
+	// for available image types.
 	ImageType string `json:"imageType,omitempty"`
 
 	// KubeletConfig: Node kubelet configs.
@@ -4415,7 +4427,9 @@ type NodePool struct {
 	// upgrade.
 	UpgradeSettings *UpgradeSettings `json:"upgradeSettings,omitempty"`
 
-	// Version: The version of the Kubernetes of this node.
+	// Version: The version of Kubernetes running on this NodePool's nodes.
+	// If unspecified, it defaults as described here
+	// (https://cloud.google.com/kubernetes-engine/versioning#specifying_node_version).
 	Version string `json:"version,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -6773,7 +6787,10 @@ type UpdateNodePoolRequest struct {
 	// Gvnic: Enable or disable gvnic on the node pool.
 	Gvnic *VirtualNIC `json:"gvnic,omitempty"`
 
-	// ImageType: Required. The desired image type for the node pool.
+	// ImageType: Required. The desired image type for the node pool. Please
+	// see
+	// https://cloud.google.com/kubernetes-engine/docs/concepts/node-images
+	// for available image types.
 	ImageType string `json:"imageType,omitempty"`
 
 	// KubeletConfig: Node kubelet configs.
@@ -7035,7 +7052,9 @@ type UpgradeSettings struct {
 	// Strategy: Update strategy of the node pool.
 	//
 	// Possible values:
-	//   "NODE_POOL_UPDATE_STRATEGY_UNSPECIFIED" - Default value.
+	//   "NODE_POOL_UPDATE_STRATEGY_UNSPECIFIED" - Default value if unset.
+	// GKE internally defaults the update strategy to SURGE for unspecified
+	// strategies.
 	//   "BLUE_GREEN" - blue-green upgrade.
 	//   "SURGE" - SURGE is the traditional way of upgrade a node pool.
 	// max_surge and max_unavailable determines the level of upgrade

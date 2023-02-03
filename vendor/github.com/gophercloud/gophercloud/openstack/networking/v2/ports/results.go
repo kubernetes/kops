@@ -111,6 +111,9 @@ type Port struct {
 	// Tags optionally set via extensions/attributestags
 	Tags []string `json:"tags"`
 
+	// Extra parameters to include in the request.
+	ValueSpecs map[string]string `json:"value_specs"`
+
 	// RevisionNumber optionally set via extensions/standard-attr-revisions
 	RevisionNumber int `json:"revision_number"`
 

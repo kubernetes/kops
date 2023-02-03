@@ -1,5 +1,9 @@
 # Change Log
 
+## [v1.96.0] - 2023-01-23
+
+- #599 - @markpaulson - Adding PromoteReplicaToPrimary to client interface.
+
 ## [v1.95.0] - 2023-01-23
 
 - #595 - @dweinshenker - Add UpgradeMajorVersion to godo
