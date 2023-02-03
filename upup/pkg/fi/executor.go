@@ -18,6 +18,8 @@ package fi
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -171,6 +173,26 @@ func (e *executor[T]) RunTasks(taskMap map[string]Task[T]) error {
 	return nil
 }
 
+// getExecutorPoolSize determines the executor pool size for executing tasks in parallel
+//
+// It will determine the pool size based on the current number of tasks and the maximum pool size.
+// If the maximum pool size is not specified or greater than the actual number of tasks, then the function returns the number of tasks as the pool size.
+// Otherwise it will return the defined maximum pool size.
+//
+// Currently, the max pool size can be set by specifying the ENV variable "KOPS_EXECUTOR_POOL_MAX_SIZE".
+func (e *executor[T]) getExecutorPoolSize(numberOfTasks int) int {
+	// TODO: make configurable via flag rather than env var?
+	executorPoolMaxSize, _ := strconv.Atoi(os.Getenv("KOPS_EXECUTOR_POOL_MAX_SIZE"))
+
+	// if executorPoolMaxSize not specified, or the actual number of tasks being less than the wanted number of workers,
+	// set the number of workers to the number of tasks, thus also - more or less - preserving the old behavior
+	if executorPoolMaxSize <= 0 || executorPoolMaxSize > numberOfTasks {
+		return numberOfTasks
+	}
+
+	return executorPoolMaxSize
+}
+
 func (e *executor[T]) forkJoin(tasks []*taskState[T]) []error {
 	if len(tasks) == 0 {
 		return nil
@@ -180,14 +202,9 @@ func (e *executor[T]) forkJoin(tasks []*taskState[T]) []error {
 	//   * https://stackoverflow.com/questions/55203251/limiting-number-of-go-routines-running
 	//   * https://golangbot.com/buffered-channels-worker-pools/
 
-	// TODO: make configurable
-	numberOfWorkers := 10
-
-	// if numberOfWorkers not specified, or the actual number of tasks being less than the wanted number of workers,
-	// set the number of workers to the number of tasks, thus also - more or less - preserving the old behavior
-	if numberOfWorkers < 0 || numberOfWorkers > len(tasks) {
-		numberOfWorkers = len(tasks)
-	}
+	executorPoolSize := e.getExecutorPoolSize(len(tasks))
+	// TODO: set to V(>0)
+	klog.V(0).Infof("Executor pool size: %d\n", executorPoolSize)
 
 	// the reason why using the indices rather than the tasks themselves is that the resulting error slice has to match
 	// the order of the tasks slice
@@ -207,7 +224,7 @@ func (e *executor[T]) forkJoin(tasks []*taskState[T]) []error {
 	var resultsMutex sync.Mutex
 	var wg sync.WaitGroup
 
-	for i := 0; i < numberOfWorkers; i++ {
+	for i := 0; i < executorPoolSize; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
