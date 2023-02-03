@@ -35,7 +35,7 @@ require (
 	github.com/StackExchange/wmi v1.2.1 // indirect
 	github.com/acomagu/bufpipe v1.0.3 // indirect
 	github.com/apparentlymart/go-cidr v1.1.0 // indirect
-	github.com/aws/aws-sdk-go v1.44.188 // indirect
+	github.com/aws/aws-sdk-go v1.44.193 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
@@ -72,7 +72,7 @@ require (
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.2.1 // indirect
 	github.com/googleapis/gax-go/v2 v2.7.0 // indirect
-	github.com/gophercloud/gophercloud v1.1.1 // indirect
+	github.com/gophercloud/gophercloud v1.2.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
@@ -113,7 +113,7 @@ require (
 	go.opencensus.io v0.24.0 // indirect
 	go4.org v0.0.0-20201209231011-d4a079459e60 // indirect
 	golang.org/x/crypto v0.5.0 // indirect
-	golang.org/x/exp v0.0.0-20230126173853-a67bb567ff2e // indirect
+	golang.org/x/exp v0.0.0-20230202163644-54bba9f4231b // indirect
 	golang.org/x/mod v0.7.0 // indirect
 	golang.org/x/net v0.5.0 // indirect
 	golang.org/x/oauth2 v0.4.0 // indirect
@@ -124,7 +124,7 @@ require (
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.4.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
-	google.golang.org/api v0.108.0 // indirect
+	google.golang.org/api v0.109.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20221227171554-f9683d7f8bef // indirect
 	google.golang.org/grpc v1.52.0 // indirect
@@ -136,7 +136,7 @@ require (
 	k8s.io/kube-openapi v0.0.0-20221207184640-f3cff1453715 // indirect
 	k8s.io/release v0.7.1-0.20210204090829-09fb5e3883b8 // indirect
 	k8s.io/test-infra v0.0.0-20210730160938-8ad9b8c53bd8 // indirect
-	k8s.io/utils v0.0.0-20230115233650-391b47cb4029 // indirect
+	k8s.io/utils v0.0.0-20230202215443-34013725500c // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 )

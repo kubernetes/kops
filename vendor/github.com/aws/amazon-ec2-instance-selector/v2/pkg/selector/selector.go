@@ -367,7 +367,7 @@ func sortInstanceTypeInfo(instanceTypeInfoSlice []*instancetypes.Details) []*ins
 // executeFilters accepts a mapping of filter name to filter pairs which are iterated through
 // to determine if the instance type matches the filter values.
 func (itf Selector) executeFilters(filterToInstanceSpecMapping map[string]filterPair, instanceType string) (bool, error) {
-	abort := make(chan bool, len(filterToInstanceSpecMapping))
+	verdict := make(chan bool, len(filterToInstanceSpecMapping) + 1)
 	errs := make(chan error)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -385,30 +385,28 @@ func (itf Selector) executeFilters(filterToInstanceSpecMapping map[string]filter
 					errs <- err
 				}
 				if !ok {
-					abort <- true
+					verdict <- false
 				}
 			}
 		}(ctx, filterName, filter)
 	}
-	done := make(chan bool)
 	go func() {
 		wg.Wait()
-		done <- true
+		verdict <- true
 	}()
-	select {
-	case <-abort:
-		cancel()
-		var err error
-		for {
-			select {
-			case e := <-errs:
-				err = multierr.Append(err, e)
-			default:
-				return false, err
-			}
-		}
-	case <-done:
+
+	if <-verdict {
 		return true, nil
+	}
+	cancel()
+	var err error
+	for {
+		select {
+		case e := <-errs:
+			err = multierr.Append(err, e)
+		default:
+			return false, err
+		}
 	}
 }
 
