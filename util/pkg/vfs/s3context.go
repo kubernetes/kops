@@ -30,7 +30,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
-	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -174,10 +173,6 @@ func (s *S3Context) getDetailsForBucket(ctx context.Context, bucket string) (*S3
 	if awsRegion == "" {
 		awsRegion = "us-east-1"
 		klog.V(2).Infof("defaulting region to %q", awsRegion)
-	}
-
-	if err := validateRegion(awsRegion); err != nil {
-		return bucketDetails, err
 	}
 
 	request := &s3.GetBucketLocationInput{
@@ -369,19 +364,6 @@ func getRegionFromMetadata() (string, error) {
 	}
 
 	return metadataRegion, nil
-}
-
-func validateRegion(region string) error {
-	resolver := endpoints.DefaultResolver()
-	partitions := resolver.(endpoints.EnumPartitions).Partitions()
-	for _, p := range partitions {
-		for _, r := range p.Regions() {
-			if r.ID() == region {
-				return nil
-			}
-		}
-	}
-	return fmt.Errorf("%s is not a valid region\nPlease check that your region is formatted correctly (e.g. us-east-1)", region)
 }
 
 func VFSPath(url string) (string, error) {
