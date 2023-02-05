@@ -139,6 +139,8 @@ spec:
   machineType: e2-medium
   maxSize: 1
   minSize: 1
+  nodeLabels:
+    cloud.google.com/metadata-proxy-ready: "true"
   role: Node
   subnets:
   - us-test1
@@ -159,6 +161,8 @@ spec:
   machineType: e2-medium
   maxSize: 1
   minSize: 1
+  nodeLabels:
+    cloud.google.com/metadata-proxy-ready: "true"
   role: Node
   subnets:
   - us-test1
@@ -179,6 +183,8 @@ spec:
   machineType: e2-medium
   maxSize: 1
   minSize: 1
+  nodeLabels:
+    cloud.google.com/metadata-proxy-ready: "true"
   role: Node
   subnets:
   - us-test1
