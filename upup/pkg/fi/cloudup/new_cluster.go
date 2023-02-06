@@ -1013,6 +1013,13 @@ func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap ma
 			}
 		}
 
+		if cloudProvider == api.CloudProviderGCE {
+			if g.Spec.NodeLabels == nil {
+				g.Spec.NodeLabels = make(map[string]string)
+			}
+			g.Spec.NodeLabels["cloud.google.com/metadata-proxy-ready"] = "true"
+		}
+
 		g.Spec.MachineType = opt.NodeSize
 		g.Spec.Image = opt.NodeImage
 
