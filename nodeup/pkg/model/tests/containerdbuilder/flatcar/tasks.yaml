@@ -40,16 +40,16 @@ contents: |
 
             [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
               SystemdCgroup = true
-path: /etc/containerd/config-kops.toml
+path: /etc/containerd/config.toml
 type: file
 ---
 afterFiles:
-- /etc/containerd/config-kops.toml
+- /etc/containerd/config.toml
 contents: |-
   [Service]
   EnvironmentFile=/etc/environment
   ExecStart=
-  ExecStart=/usr/bin/containerd --config /etc/containerd/config-kops.toml
+  ExecStart=/usr/bin/containerd --config /etc/containerd/config.toml
 onChangeExecute:
 - - systemctl
   - daemon-reload

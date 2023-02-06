@@ -1,6 +1,6 @@
 contents: |
   disabled_plugins = ["cri"]
-path: /etc/containerd/config-kops.toml
+path: /etc/containerd/config.toml
 type: file
 ---
 contents: CONTAINERD_OPTS=--log-level=info
@@ -214,7 +214,7 @@ definition: |
   EnvironmentFile=/etc/sysconfig/containerd
   EnvironmentFile=/etc/environment
   ExecStartPre=-/sbin/modprobe overlay
-  ExecStart=/usr/bin/containerd -c /etc/containerd/config-kops.toml "$CONTAINERD_OPTS"
+  ExecStart=/usr/bin/containerd -c /etc/containerd/config.toml "$CONTAINERD_OPTS"
   Type=notify
   Delegate=yes
   KillMode=process
