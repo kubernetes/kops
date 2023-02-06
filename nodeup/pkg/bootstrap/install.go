@@ -175,7 +175,7 @@ func (i *Installation) buildSystemdJob() *nodetasks.InstallService {
 	service := &nodetasks.InstallService{Service: nodetasks.Service{
 		Name:       serviceName,
 		Definition: fi.PtrTo(manifestString),
-		Enabled:    fi.PtrTo(false),
+		Enabled:    fi.PtrTo(true),
 	}}
 
 	service.InitDefaults()
