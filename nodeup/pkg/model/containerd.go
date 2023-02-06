@@ -35,6 +35,8 @@ import (
 	"k8s.io/kops/util/pkg/distributions"
 )
 
+const containerdConfigFilePath = "/etc/containerd/config.toml"
+
 // ContainerdBuilder install containerd (just the packages at the moment)
 type ContainerdBuilder struct {
 	*NodeupModelContext
@@ -203,7 +205,7 @@ func (b *ContainerdBuilder) buildSystemdService(sv semver.Version) *nodetasks.Se
 	manifest.Set("Service", "EnvironmentFile", "/etc/sysconfig/containerd")
 	manifest.Set("Service", "EnvironmentFile", "/etc/environment")
 	manifest.Set("Service", "ExecStartPre", "-/sbin/modprobe overlay")
-	manifest.Set("Service", "ExecStart", "/usr/bin/containerd -c "+b.containerdConfigFilePath()+" \"$CONTAINERD_OPTS\"")
+	manifest.Set("Service", "ExecStart", "/usr/bin/containerd -c "+containerdConfigFilePath+" \"$CONTAINERD_OPTS\"")
 
 	// notify the daemon's readiness to systemd
 	if (b.NodeupConfig.ContainerRuntime == "containerd" && sv.GTE(semver.MustParse("1.3.4"))) || sv.GTE(semver.MustParse("19.3.13")) {
@@ -248,18 +250,6 @@ func (b *ContainerdBuilder) buildSystemdService(sv semver.Version) *nodetasks.Se
 	return service
 }
 
-// containerdConfigFilePath returns the path we use for the containerd config file
-// We normally use a different path for clarity, but on some OSes we can't override the path.
-// TODO: Should we just use config.toml everywhere?
-func (b *ContainerdBuilder) containerdConfigFilePath() string {
-	switch b.Distribution {
-	case distributions.DistributionContainerOS:
-		return "/etc/containerd/config.toml"
-	default:
-		return "/etc/containerd/config-kops.toml"
-	}
-}
-
 // buildSystemdServiceOverrideContainerOS is responsible for overriding the containerd service for ContainerOS
 func (b *ContainerdBuilder) buildSystemdServiceOverrideContainerOS(c *fi.NodeupModelBuilderContext) {
 	lines := []string{
@@ -273,7 +263,7 @@ func (b *ContainerdBuilder) buildSystemdServiceOverrideContainerOS(c *fi.NodeupM
 		Path:       "/etc/systemd/system/containerd.service.d/10-kops.conf",
 		Contents:   fi.NewStringResource(contents),
 		Type:       nodetasks.FileType_File,
-		AfterFiles: []string{b.containerdConfigFilePath()},
+		AfterFiles: []string{containerdConfigFilePath},
 		OnChangeExecute: [][]string{
 			{"systemctl", "daemon-reload"},
 			{"systemctl", "restart", "containerd.service"},
@@ -292,7 +282,7 @@ func (b *ContainerdBuilder) buildSystemdServiceOverrideFlatcar(c *fi.NodeupModel
 		"[Service]",
 		"EnvironmentFile=/etc/environment",
 		"ExecStart=",
-		"ExecStart=/usr/bin/containerd --config " + b.containerdConfigFilePath(),
+		"ExecStart=/usr/bin/containerd --config " + containerdConfigFilePath,
 	}
 	contents := strings.Join(lines, "\n")
 
@@ -300,7 +290,7 @@ func (b *ContainerdBuilder) buildSystemdServiceOverrideFlatcar(c *fi.NodeupModel
 		Path:       "/etc/systemd/system/containerd.service.d/10-kops.conf",
 		Contents:   fi.NewStringResource(contents),
 		Type:       nodetasks.FileType_File,
-		AfterFiles: []string{b.containerdConfigFilePath()},
+		AfterFiles: []string{containerdConfigFilePath},
 		OnChangeExecute: [][]string{
 			{"systemctl", "daemon-reload"},
 			{"systemctl", "restart", "containerd.service"},
@@ -353,7 +343,7 @@ func (b *ContainerdBuilder) buildConfigFile(c *fi.NodeupModelBuilderContext) err
 		}
 	}
 	c.AddTask(&nodetasks.File{
-		Path:     b.containerdConfigFilePath(),
+		Path:     containerdConfigFilePath,
 		Contents: fi.NewStringResource(config),
 		Type:     nodetasks.FileType_File,
 	})
