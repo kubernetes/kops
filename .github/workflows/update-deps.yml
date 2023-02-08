@@ -25,7 +25,7 @@ jobs:
         id: update_deps
         run: |
           make depup
-          echo "::set-output name=changes::$(git status --porcelain)"
+          echo "changes=$(git status --porcelain)" >> $GITHUB_OUTPUT
       - name: Create PR
         if: ${{ steps.update_deps.outputs.changes != '' }}
         uses: peter-evans/create-pull-request@2b011faafdcbc9ceb11414d64d0573f37c774b04
