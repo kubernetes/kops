@@ -306,6 +306,7 @@ The kOps CLI requires additional IAM permissions to manage the requisite EventBr
         "events:RemoveTargets",
         "events:TagResource",
         "sqs:CreateQueue",
+        "sqs:TagQueue",
         "sqs:DeleteQueue",
         "sqs:GetQueueAttributes",
         "sqs:ListQueues",
