@@ -165,11 +165,11 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 		{
 			zone, err := scaleway.ParseZoneFromClusterSpec(cluster.Spec)
 			if err != nil {
-				return nil, fmt.Errorf("error initializing Scaleway cloud: %w", err)
+				return nil, fmt.Errorf("initializing Scaleway cloud: %w", err)
 			}
 			region, err := scaleway.ParseRegionFromZone(zone)
 			if err != nil {
-				return nil, fmt.Errorf("error initializing Scaleway cloud: %w", err)
+				return nil, fmt.Errorf("initializing Scaleway cloud: %w", err)
 			}
 
 			cloudTags := map[string]string{

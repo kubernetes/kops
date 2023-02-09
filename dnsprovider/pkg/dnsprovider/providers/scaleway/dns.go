@@ -2,7 +2,6 @@ package dns
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -50,10 +49,10 @@ func (t *TokenSource) Token() (*oauth2.Token, error) {
 
 func newClient() (*scw.Client, error) {
 	if accessKey := os.Getenv("SCW_ACCESS_KEY"); accessKey == "" {
-		return nil, errors.New("SCW_ACCESS_KEY is required")
+		return nil, fmt.Errorf("SCW_ACCESS_KEY is required")
 	}
 	if secretKey := os.Getenv("SCW_SECRET_KEY"); secretKey == "" {
-		return nil, errors.New("SCW_SECRET_KEY is required")
+		return nil, fmt.Errorf("SCW_SECRET_KEY is required")
 	}
 
 	scwClient, err := scw.NewClient(

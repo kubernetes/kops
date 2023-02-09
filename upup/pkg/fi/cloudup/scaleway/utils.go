@@ -22,91 +22,108 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"time"
 
-	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	k8serrors "k8s.io/apimachinery/pkg/util/errors"
+	kopsv "k8s.io/kops"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
-const (
-	defaultInstanceWaitRetryInterval = 5 * time.Second
-	defaultInstanceWaitTimeout       = 10 * time.Minute
-)
-
-func reachState(instanceAPI *instance.API, zone scw.Zone, serverID string, toState instance.ServerState) error {
-	// TODO(Mia-Cross): this function is not that useful, remove it
-	response, err := instanceAPI.GetServer(&instance.GetServerRequest{
-		Zone:     zone,
-		ServerID: serverID,
-	})
-	if err != nil {
-		return err
-	}
-	fromState := response.Server.State
-
-	if response.Server.State == toState {
-		return nil
-	}
-
-	transitionMap := map[[2]instance.ServerState][]instance.ServerAction{
-		{instance.ServerStateStopped, instance.ServerStateRunning}:        {instance.ServerActionPoweron},
-		{instance.ServerStateStopped, instance.ServerStateStoppedInPlace}: {instance.ServerActionPoweron, instance.ServerActionStopInPlace},
-		{instance.ServerStateRunning, instance.ServerStateStopped}:        {instance.ServerActionPoweroff},
-		{instance.ServerStateRunning, instance.ServerStateStoppedInPlace}: {instance.ServerActionStopInPlace},
-		{instance.ServerStateStoppedInPlace, instance.ServerStateRunning}: {instance.ServerActionPoweron},
-		{instance.ServerStateStoppedInPlace, instance.ServerStateStopped}: {instance.ServerActionPoweron, instance.ServerActionPoweroff},
-	}
-
-	actions, exist := transitionMap[[2]instance.ServerState{fromState, toState}]
-	if !exist {
-		return fmt.Errorf("don't know how to reach state %s from state %s for server %s", toState, fromState, serverID)
-	}
-
-	retryInterval := defaultInstanceWaitRetryInterval
-
-	// We need to check that all volumes are ready
-	for _, volume := range response.Server.Volumes {
-		if volume.State != instance.VolumeServerStateAvailable {
-			_, err = instanceAPI.WaitForVolume(&instance.WaitForVolumeRequest{
-				Zone:          zone,
-				VolumeID:      volume.ID,
-				RetryInterval: &retryInterval,
-			})
-			if err != nil {
-				return err
-			}
+func ParseZoneFromClusterSpec(clusterSpec kops.ClusterSpec) (scw.Zone, error) {
+	zone := ""
+	for _, subnet := range clusterSpec.Networking.Subnets {
+		if zone == "" {
+			zone = subnet.Zone
+		} else if zone != subnet.Zone {
+			return "", fmt.Errorf("scaleway currently only supports clusters in the same zone")
 		}
 	}
-
-	for _, a := range actions {
-		err = instanceAPI.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
-			ServerID:      serverID,
-			Action:        a,
-			Zone:          zone,
-			Timeout:       scw.TimeDurationPtr(defaultInstanceWaitTimeout),
-			RetryInterval: &retryInterval,
-		})
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	return scw.Zone(zone), nil
 }
 
-func WaitForInstanceServer(api *instance.API, zone scw.Zone, id string) (*instance.Server, error) {
-	// TODO(Mia-Cross): this function is not that useful, replace all calls by api.WaitForServer ??
-	retryInterval := defaultInstanceWaitRetryInterval
-	timeout := defaultInstanceWaitTimeout
+func ParseRegionFromZone(zone scw.Zone) (region scw.Region, err error) {
+	region, err = scw.ParseRegion(strings.TrimRight(string(zone), "-123"))
+	if err != nil {
+		return "", fmt.Errorf("could not determine region from zone %s: %w", zone, err)
+	}
+	return region, nil
+}
 
-	server, err := api.WaitForServer(&instance.WaitForServerRequest{
-		Zone:          zone,
-		ServerID:      id,
-		Timeout:       scw.TimeDurationPtr(timeout),
-		RetryInterval: &retryInterval,
-	})
+func getScalewayProfile() (*scw.Profile, error) {
+	scwProfileName := os.Getenv("SCW_PROFILE")
+	if scwProfileName == "" {
+		return nil, nil
+	}
+	config, err := scw.LoadConfig()
+	if err != nil {
+		return nil, fmt.Errorf("loading Scaleway config file: %w", err)
+	}
+	profile, ok := config.Profiles[scwProfileName]
+	if !ok {
+		return nil, fmt.Errorf("could not find Scaleway profile %q", scwProfileName)
+	}
+	return profile, nil
+}
 
-	return server, err
+func checkCredentials(accessKey, secretKey, projectID string) []error {
+	errList := []error(nil)
+	if accessKey == "" {
+		errList = append(errList, fmt.Errorf("SCW_ACCESS_KEY has to be set"))
+	}
+	if secretKey == "" {
+		errList = append(errList, fmt.Errorf("SCW_SECRET_KEY has to be set"))
+	}
+	if projectID == "" {
+		errList = append(errList, fmt.Errorf("SCW_DEFAULT_PROJECT_ID has to be set"))
+	}
+	return errList
+}
+
+func CreateValidScalewayProfile() (*scw.Profile, error) {
+	profile := &scw.Profile{
+		AccessKey:        fi.PtrTo(os.Getenv("SCW_ACCESS_KEY")),
+		SecretKey:        fi.PtrTo(os.Getenv("SCW_SECRET_KEY")),
+		DefaultProjectID: fi.PtrTo(os.Getenv("SCW_DEFAULT_PROJECT_ID")),
+	}
+
+	// If SCW_PROFILE is set, we load the credentials from the profile rather than from the environment
+	p, err := getScalewayProfile()
+	if err != nil {
+		return nil, err
+	}
+	if p != nil {
+		profile.AccessKey = p.AccessKey
+		profile.SecretKey = p.SecretKey
+		profile.DefaultProjectID = p.DefaultProjectID
+	}
+
+	// We check that the profile has an access key, a secret key and a default project ID
+	if errList := checkCredentials(fi.ValueOf(profile.AccessKey), fi.ValueOf(profile.SecretKey), fi.ValueOf(profile.DefaultProjectID)); errList != nil {
+		errMsg := k8serrors.NewAggregate(errList).Error()
+		if scwProfileName := os.Getenv("SCW_PROFILE"); scwProfileName != "" {
+			errMsg += fmt.Sprintf(" in profile %q", scwProfileName)
+		} else {
+			errMsg += " in a Scaleway profile or as an environment variable"
+		}
+		return nil, fmt.Errorf(errMsg)
+	}
+	return profile, nil
+}
+
+func CreateScalewayClient(clientOptions ...scw.ClientOption) (*scw.Client, error) {
+	profile, err := CreateValidScalewayProfile()
+	if err != nil {
+		return nil, err
+	}
+	clientOptions = append(clientOptions, scw.WithProfile(profile))
+	clientOptions = append(clientOptions, scw.WithUserAgent(KopsUserAgentPrefix+kopsv.Version))
+
+	scwClient, err := scw.NewClient(clientOptions...)
+	if err != nil {
+		return nil, err
+	}
+	return scwClient, nil
 }
 
 // isHTTPCodeError returns true if err is an http error with code statusCode
@@ -126,18 +143,6 @@ func isHTTPCodeError(err error, statusCode int) bool {
 func is404Error(err error) bool {
 	notFoundError := &scw.ResourceNotFoundError{}
 	return isHTTPCodeError(err, http.StatusNotFound) || errors.As(err, &notFoundError)
-}
-
-// parseZonedID parses a zonedID and extracts the resource zone and id.
-func parseZonedID(zonedID string) (zone scw.Zone, id string, err error) {
-	tab := strings.Split(zonedID, "/")
-	if len(tab) != 2 {
-		return "", zonedID, fmt.Errorf("can't parse zoned id: %s", zonedID)
-	}
-	locality := tab[0]
-	id = tab[1]
-	zone, err = scw.ParseZone(locality)
-	return zone, id, err
 }
 
 func displayEnv() {
@@ -177,24 +182,4 @@ func displayEnv() {
 	fmt.Printf(fmt.Sprintf("KOPS_FEATURE_FLAGS = %s\n", os.Getenv("KOPS_FEATURE_FLAGS")))
 	fmt.Printf(fmt.Sprintf("KOPS_ARCH = %s\n", os.Getenv("KOPS_ARCH")))
 	fmt.Printf(fmt.Sprintf("KOPS_VERSION = %s\n\n", os.Getenv("KOPS_VERSION")))
-}
-
-func ParseZoneFromClusterSpec(clusterSpec kops.ClusterSpec) (scw.Zone, error) {
-	zone := ""
-	for _, subnet := range clusterSpec.Networking.Subnets {
-		if zone == "" {
-			zone = subnet.Zone
-		} else if zone != subnet.Zone {
-			return "", fmt.Errorf("scaleway currently only supports clusters in the same zone")
-		}
-	}
-	return scw.Zone(zone), nil
-}
-
-func ParseRegionFromZone(zone scw.Zone) (region scw.Region, err error) {
-	region, err = scw.ParseRegion(strings.TrimRight(string(zone), "-123"))
-	if err != nil {
-		return "", fmt.Errorf("could not determine region from zone %s: %w", zone, err)
-	}
-	return region, nil
 }

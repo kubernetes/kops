@@ -18,7 +18,6 @@ package scaleway
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
@@ -29,9 +28,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/klog/v2"
-	kopsv "k8s.io/kops"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	dns "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/scaleway"
 	"k8s.io/kops/pkg/apis/kops"
@@ -113,45 +110,27 @@ type scwCloudImplementation struct {
 	vpcAPI      *vpc.API
 }
 
-// NewScwCloud returns a Cloud with a Scaleway Client using the env vars SCW_ACCESS_KEY, SCW_SECRET_KEY and SCW_DEFAULT_PROJECT_ID
+// NewScwCloud returns a Cloud with a Scaleway Client using the env vars SCW_PROFILE or
+// SCW_ACCESS_KEY, SCW_SECRET_KEY and SCW_DEFAULT_PROJECT_ID
 func NewScwCloud(tags map[string]string) (ScwCloud, error) {
 	displayEnv()
 
-	errList := []error(nil)
-
 	region, err := scw.ParseRegion(tags["region"])
 	if err != nil {
-		errList = append(errList, fmt.Errorf("error parsing Scaleway region: %w", err))
+		return nil, err
 	}
 	zone, err := scw.ParseZone(tags["zone"])
 	if err != nil {
-		errList = append(errList, fmt.Errorf("error parsing Scaleway zone: %w", err))
+		return nil, err
+	}
+	clientOptions := []scw.ClientOption{
+		scw.WithDefaultZone(zone),
+		scw.WithDefaultRegion(region),
 	}
 
-	// We make sure that the credentials env vars are defined
-	scwAccessKey := os.Getenv("SCW_ACCESS_KEY")
-	if scwAccessKey == "" {
-		errList = append(errList, fmt.Errorf("SCW_ACCESS_KEY has to be set as an environment variable"))
-	}
-	scwSecretKey := os.Getenv("SCW_SECRET_KEY")
-	if scwSecretKey == "" {
-		errList = append(errList, fmt.Errorf("SCW_SECRET_KEY has to be set as an environment variable"))
-	}
-	scwProjectID := os.Getenv("SCW_DEFAULT_PROJECT_ID")
-	if scwProjectID == "" {
-		errList = append(errList, fmt.Errorf("SCW_DEFAULT_PROJECT_ID has to be set as an environment variable"))
-	}
-
-	if len(errList) != 0 {
-		return nil, errors.NewAggregate(errList)
-	}
-
-	scwClient, err := scw.NewClient(
-		scw.WithUserAgent(KopsUserAgentPrefix+kopsv.Version),
-		scw.WithEnv(),
-	)
+	scwClient, err := CreateScalewayClient(clientOptions...)
 	if err != nil {
-		return nil, fmt.Errorf("error building client for Scaleway Cloud: %w", err)
+		return nil, fmt.Errorf("creating client for Scaleway Cloud: %w", err)
 	}
 
 	return &scwCloudImplementation{

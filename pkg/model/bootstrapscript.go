@@ -26,9 +26,9 @@ import (
 	"strconv"
 	"strings"
 
-	"k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops/model"
+	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"sigs.k8s.io/yaml"
 
@@ -215,30 +215,13 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 	}
 
 	if cluster.Spec.GetCloudProvider() == kops.CloudProviderScaleway {
-		errList := []error(nil)
-
-		// We make sure that the credentials env vars are defined
-		scwAccessKey := os.Getenv("SCW_ACCESS_KEY")
-		if scwAccessKey == "" {
-			errList = append(errList, fmt.Errorf("SCW_ACCESS_KEY has to be set as an environment variable"))
+		profile, err := scaleway.CreateValidScalewayProfile()
+		if err != nil {
+			return nil, err
 		}
-		scwSecretKey := os.Getenv("SCW_SECRET_KEY")
-		if scwSecretKey == "" {
-			errList = append(errList, fmt.Errorf("SCW_SECRET_KEY has to be set as an environment variable"))
-		}
-		scwProjectID := os.Getenv("SCW_DEFAULT_PROJECT_ID")
-		if scwProjectID == "" {
-			errList = append(errList, fmt.Errorf("SCW_DEFAULT_PROJECT_ID has to be set as an environment variable"))
-		}
-
-		// In theory all these variables will have been checked in NewScwCloud already
-		if len(errList) != 0 {
-			return nil, errors.NewAggregate(errList)
-		}
-
-		env["SCW_ACCESS_KEY"] = scwAccessKey
-		env["SCW_SECRET_KEY"] = scwSecretKey
-		env["SCW_DEFAULT_PROJECT_ID"] = scwProjectID
+		env["SCW_ACCESS_KEY"] = fi.ValueOf(profile.AccessKey)
+		env["SCW_SECRET_KEY"] = fi.ValueOf(profile.SecretKey)
+		env["SCW_DEFAULT_PROJECT_ID"] = fi.ValueOf(profile.DefaultProjectID)
 	}
 
 	return env, nil
