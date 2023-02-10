@@ -25,6 +25,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"k8s.io/kops/upup/pkg/fi/nodeup/install"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/distributions"
@@ -133,10 +134,14 @@ func (i *Installation) buildEnvFile() *nodetasks.InstallFile {
 		envVars["AZURE_STORAGE_ACCOUNT"] = os.Getenv("AZURE_STORAGE_ACCOUNT")
 	}
 
-	if os.Getenv("SCW_SECRET_KEY") != "" {
-		envVars["SCW_ACCESS_KEY"] = os.Getenv("SCW_ACCESS_KEY")
-		envVars["SCW_SECRET_KEY"] = os.Getenv("SCW_SECRET_KEY")
-		envVars["SCW_DEFAULT_PROJECT_ID"] = os.Getenv("SCW_DEFAULT_PROJECT_ID")
+	if os.Getenv("SCW_PROFILE") != "" || os.Getenv("SCW_SECRET_KEY") != "" {
+		profile, err := scaleway.CreateValidScalewayProfile()
+		if err != nil {
+			return nil
+		}
+		envVars["SCW_ACCESS_KEY"] = fi.ValueOf(profile.AccessKey)
+		envVars["SCW_SECRET_KEY"] = fi.ValueOf(profile.SecretKey)
+		envVars["SCW_DEFAULT_PROJECT_ID"] = fi.ValueOf(profile.DefaultProjectID)
 	}
 
 	sysconfig := ""

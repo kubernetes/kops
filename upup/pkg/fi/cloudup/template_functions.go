@@ -192,13 +192,25 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	}
 
 	dest["SCW_ACCESS_KEY"] = func() string {
-		return os.Getenv("SCW_ACCESS_KEY")
+		profile, err := scaleway.CreateValidScalewayProfile()
+		if err != nil {
+			return ""
+		}
+		return fi.ValueOf(profile.AccessKey)
 	}
 	dest["SCW_SECRET_KEY"] = func() string {
-		return os.Getenv("SCW_SECRET_KEY")
+		profile, err := scaleway.CreateValidScalewayProfile()
+		if err != nil {
+			return ""
+		}
+		return fi.ValueOf(profile.SecretKey)
 	}
 	dest["SCW_DEFAULT_PROJECT_ID"] = func() string {
-		return os.Getenv("SCW_DEFAULT_PROJECT_ID")
+		profile, err := scaleway.CreateValidScalewayProfile()
+		if err != nil {
+			return ""
+		}
+		return fi.ValueOf(profile.DefaultProjectID)
 	}
 	dest["SCW_DEFAULT_REGION"] = func() string {
 		return tf.cloud.Region()
