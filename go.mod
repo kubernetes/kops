@@ -14,7 +14,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/apparentlymart/go-cidr v1.1.0
 	github.com/aws/amazon-ec2-instance-selector/v2 v2.4.1
-	github.com/aws/aws-sdk-go v1.44.193
+	github.com/aws/aws-sdk-go v1.44.198
 	github.com/blang/semver/v4 v4.0.0
 	github.com/cert-manager/cert-manager v1.11.0
 	github.com/digitalocean/godo v1.96.0
@@ -33,7 +33,7 @@ require (
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pkg/sftp v1.13.5
 	github.com/prometheus/client_golang v1.14.0
-	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.12
+	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.13
 	github.com/sergi/go-diff v1.3.1
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/pflag v1.0.5
@@ -42,17 +42,17 @@ require (
 	github.com/stretchr/testify v1.8.1
 	github.com/weaveworks/mesh v0.0.0-20191105120815-58dbcc3e8e63
 	go.uber.org/multierr v1.9.0
-	golang.org/x/crypto v0.5.0
-	golang.org/x/exp v0.0.0-20230202163644-54bba9f4231b
-	golang.org/x/net v0.5.0
-	golang.org/x/oauth2 v0.4.0
+	golang.org/x/crypto v0.6.0
+	golang.org/x/exp v0.0.0-20230206171751-46f607a40771
+	golang.org/x/net v0.6.0
+	golang.org/x/oauth2 v0.5.0
 	golang.org/x/sync v0.1.0
-	golang.org/x/sys v0.4.0
+	golang.org/x/sys v0.5.0
 	google.golang.org/api v0.109.0
 	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/inf.v0 v0.9.1
 	gopkg.in/square/go-jose.v2 v2.6.0
-	helm.sh/helm/v3 v3.11.0
+	helm.sh/helm/v3 v3.11.1
 	k8s.io/api v0.26.1
 	k8s.io/apimachinery v0.26.1
 	k8s.io/apiserver v0.26.1
@@ -66,8 +66,8 @@ require (
 	k8s.io/kubectl v0.26.1
 	k8s.io/kubelet v0.26.1
 	k8s.io/mount-utils v0.26.1
-	k8s.io/utils v0.0.0-20230202215443-34013725500c
-	sigs.k8s.io/controller-runtime v0.14.2
+	k8s.io/utils v0.0.0-20230209194617-a36077c30491
+	sigs.k8s.io/controller-runtime v0.14.4
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3
 	sigs.k8s.io/yaml v1.3.0
 )
@@ -202,8 +202,8 @@ require (
 	go.starlark.net v0.0.0-20200306205701-8dd3e2ee1dd5 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	golang.org/x/mod v0.7.0 // indirect
-	golang.org/x/term v0.4.0 // indirect
-	golang.org/x/text v0.6.0 // indirect
+	golang.org/x/term v0.5.0 // indirect
+	golang.org/x/text v0.7.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.4.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
