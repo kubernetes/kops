@@ -42,7 +42,7 @@ func (l *requestLoggerTransport) RoundTrip(request *http.Request) (*http.Respons
 	if requestError != nil {
 		_, isSdkError := requestError.(SdkError)
 		if !isSdkError {
-			return response, err
+			return response, requestError
 		}
 	}
 

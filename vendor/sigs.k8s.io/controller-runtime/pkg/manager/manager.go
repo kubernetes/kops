@@ -36,8 +36,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/cluster"
-	"sigs.k8s.io/controller-runtime/pkg/config"
-	"sigs.k8s.io/controller-runtime/pkg/config/v1alpha1"
+	"sigs.k8s.io/controller-runtime/pkg/config"          //nolint:staticcheck
+	"sigs.k8s.io/controller-runtime/pkg/config/v1alpha1" //nolint:staticcheck
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	intrec "sigs.k8s.io/controller-runtime/pkg/internal/recorder"
 	"sigs.k8s.io/controller-runtime/pkg/leaderelection"
@@ -94,7 +94,11 @@ type Manager interface {
 	GetLogger() logr.Logger
 
 	// GetControllerOptions returns controller global configuration options.
-	GetControllerOptions() v1alpha1.ControllerConfigurationSpec
+	//
+	// Deprecated: In a future version, the returned value is going to be replaced with a
+	// different type that doesn't rely on component configuration types.
+	// This is a temporary warning, and no action is needed as of today.
+	GetControllerOptions() v1alpha1.ControllerConfigurationSpec //nolint:staticcheck
 }
 
 // Options are the arguments for creating a new Manager.
@@ -297,7 +301,11 @@ type Options struct {
 	// Controller contains global configuration options for controllers
 	// registered within this manager.
 	// +optional
-	Controller v1alpha1.ControllerConfigurationSpec
+	//
+	// Deprecated: In a future version, the type of this field is going to be replaced with a
+	// different struct that doesn't rely on component configuration types.
+	// This is a temporary warning, and no action is needed as of today.
+	Controller v1alpha1.ControllerConfigurationSpec //nolint:staticcheck
 
 	// makeBroadcaster allows deferring the creation of the broadcaster to
 	// avoid leaking goroutines if we never call Start on this manager.  It also
@@ -456,6 +464,8 @@ func New(config *rest.Config, options Options) (Manager, error) {
 // AndFrom will use a supplied type and convert to Options
 // any options already set on Options will be ignored, this is used to allow
 // cli flags to override anything specified in the config file.
+//
+// Deprecated: This method will be removed in a future release.
 func (o Options) AndFrom(loader config.ControllerManagerConfiguration) (Options, error) {
 	if inj, wantsScheme := loader.(inject.Scheme); wantsScheme {
 		err := inj.InjectScheme(o.Scheme)
@@ -521,6 +531,8 @@ func (o Options) AndFrom(loader config.ControllerManagerConfiguration) (Options,
 }
 
 // AndFromOrDie will use options.AndFrom() and will panic if there are errors.
+//
+// Deprecated: This method will be removed in a future release.
 func (o Options) AndFromOrDie(loader config.ControllerManagerConfiguration) Options {
 	o, err := o.AndFrom(loader)
 	if err != nil {
@@ -529,7 +541,7 @@ func (o Options) AndFromOrDie(loader config.ControllerManagerConfiguration) Opti
 	return o
 }
 
-func (o Options) setLeaderElectionConfig(obj v1alpha1.ControllerManagerConfigurationSpec) Options {
+func (o Options) setLeaderElectionConfig(obj v1alpha1.ControllerManagerConfigurationSpec) Options { //nolint:staticcheck
 	if obj.LeaderElection == nil {
 		// The source does not have any configuration; noop
 		return o

@@ -1402,6 +1402,7 @@ type ServerLocation struct {
 }
 
 type ServerMaintenance struct {
+	Reason string `json:"reason"`
 }
 
 type ServerSummary struct {
