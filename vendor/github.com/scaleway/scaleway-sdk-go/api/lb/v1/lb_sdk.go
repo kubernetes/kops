@@ -63,6 +63,38 @@ func NewAPI(client *scw.Client) *API {
 	}
 }
 
+type ACLActionRedirectRedirectType string
+
+const (
+	// ACLActionRedirectRedirectTypeLocation is [insert doc].
+	ACLActionRedirectRedirectTypeLocation = ACLActionRedirectRedirectType("location")
+	// ACLActionRedirectRedirectTypeScheme is [insert doc].
+	ACLActionRedirectRedirectTypeScheme = ACLActionRedirectRedirectType("scheme")
+)
+
+func (enum ACLActionRedirectRedirectType) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "location"
+	}
+	return string(enum)
+}
+
+func (enum ACLActionRedirectRedirectType) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *ACLActionRedirectRedirectType) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = ACLActionRedirectRedirectType(ACLActionRedirectRedirectType(tmp).String())
+	return nil
+}
+
 type ACLActionType string
 
 const (
@@ -70,6 +102,8 @@ const (
 	ACLActionTypeAllow = ACLActionType("allow")
 	// ACLActionTypeDeny is [insert doc].
 	ACLActionTypeDeny = ACLActionType("deny")
+	// ACLActionTypeRedirect is [insert doc].
+	ACLActionTypeRedirect = ACLActionType("redirect")
 )
 
 func (enum ACLActionType) String() string {
@@ -963,6 +997,29 @@ type ACLAction struct {
 	//
 	// Default value: allow
 	Type ACLActionType `json:"type"`
+	// Redirect: redirect parameters when using an ACL with `redirect` action
+	Redirect *ACLActionRedirect `json:"redirect"`
+}
+
+// ACLActionRedirect: acl action redirect
+type ACLActionRedirect struct {
+	// Type: redirect type
+	//
+	// Default value: location
+	Type ACLActionRedirectRedirectType `json:"type"`
+	// Target: redirect target (target URL for `location`, or target `scheme`)
+	//
+	// An URL can be used in case of a location redirect (e.g. `https://scaleway.com` will redirect to this same URL).
+	// A scheme name (e.g. `https`, `http`, `ftp`, `git`) will replace the request's original scheme. This can be useful to implement HTTP to HTTPS redirects.
+	// Placeholders can be used when using a `location` redirect in order to insert original request's parts, these are:
+	// - `{{ host }}` for the current request's Host header
+	// - `{{ query }}` for the current request's query string
+	// - `{{ path }}` for the current request's URL path
+	// - `{{ scheme }}` for the current request's scheme
+	//
+	Target string `json:"target"`
+	// Code: HTTP redirect code to use. Valid values are 301, 302, 303, 307 and 308. Default value is 302
+	Code *int32 `json:"code"`
 }
 
 // ACLMatch: acl match
@@ -1594,7 +1651,13 @@ type RouteMatch struct {
 	// Sni: server Name Indication TLS extension (SNI)
 	//
 	// Server Name Indication TLS extension (SNI) field from an incoming connection made via an SSL/TLS transport layer
-	Sni *string `json:"sni"`
+	// Precisely one of HostHeader, Sni must be set.
+	Sni *string `json:"sni,omitempty"`
+	// HostHeader: HTTP host header to match
+	//
+	// The Host request header specifies the host of the server to which the request is being sent
+	// Precisely one of HostHeader, Sni must be set.
+	HostHeader *string `json:"host_header,omitempty"`
 }
 
 // SetACLsResponse: set acls response
