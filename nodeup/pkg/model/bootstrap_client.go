@@ -24,9 +24,11 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/bootstrap"
+	"k8s.io/kops/pkg/resolver"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce/gcediscovery"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm/gcetpmsigner"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
@@ -42,14 +44,20 @@ func (b BootstrapClientBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	var authenticator bootstrap.Authenticator
+	var resolver resolver.Resolver
+
 	var err error
 	switch b.CloudProvider {
 	case kops.CloudProviderAWS:
 		authenticator, err = awsup.NewAWSAuthenticator(b.Cloud.Region())
 	case kops.CloudProviderGCE:
 		authenticator, err = gcetpmsigner.NewTPMAuthenticator()
-		// We don't use the custom resolver here in gossip mode (though we could);
-		// instead we use this as a check that protokube has now started.
+
+		discovery, err := gcediscovery.New()
+		if err != nil {
+			return err
+		}
+		resolver = discovery
 
 	default:
 		return fmt.Errorf("unsupported cloud provider for authenticator %q", b.CloudProvider)
@@ -69,6 +77,7 @@ func (b BootstrapClientBuilder) Build(c *fi.ModelBuilderContext) error {
 		Authenticator: authenticator,
 		CAs:           []byte(b.NodeupConfig.CAs[fi.CertificateIDCA]),
 		BaseURL:       baseURL,
+		Resolver:      resolver,
 	}
 
 	bootstrapClientTask := &nodetasks.BootstrapClientTask{
