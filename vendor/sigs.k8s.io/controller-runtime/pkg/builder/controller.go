@@ -285,7 +285,7 @@ func (blder *Builder) getControllerName(gvk schema.GroupVersionKind, hasGVK bool
 }
 
 func (blder *Builder) doController(r reconcile.Reconciler) error {
-	globalOpts := blder.mgr.GetControllerOptions()
+	globalOpts := blder.mgr.GetControllerOptions() //nolint:staticcheck
 
 	ctrlOptions := blder.ctrlOptions
 	if ctrlOptions.Reconciler == nil {
