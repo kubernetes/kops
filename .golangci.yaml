@@ -1,33 +1,28 @@
 run:
   timeout: 30m
   skip-files:
-    - "^zz_generated.*"
+  - "^zz_generated.*"
 
 issues:
   max-same-issues: 0
   # Excluding configuration per-path, per-linter, per-text and per-source
   exclude-rules:
-    # exclude ineffassing linter for generated files for conversion
-    - path: conversion\.go
-      linters:
-        - ineffassign
+  # exclude ineffassing linter for generated files for conversion
+  - path: conversion\.go
+    linters:
+    - ineffassign
 
 linters:
   disable-all: true
-  enable: # please keep this alphabetized
-  # Don't use soon to deprecated[1] linters that lead to false
-  # https://github.com/golangci/golangci-lint/issues/1841
-  # - deadcode
-  # - structcheck
-    - ineffassign
-    - staticcheck
-    - tenv
-    - unused
-    - varcheck
+  enable:
+  - govet
+  - ineffassign
+  - staticcheck
+  - tenv
 
 linters-settings: # please keep this alphabetized
   staticcheck:
-    go: "1.17"
+    go: "1.19"
     checks: [
       "all",
       "-ST1000",  # Incorrect or missing package comment
@@ -36,10 +31,5 @@ linters-settings: # please keep this alphabetized
       "-ST1006",  # Poorly chosen receiver name
       "-ST1012",  # Poorly chosen name for error variable
       "-ST1016",  # Use consistent method receiver names
-      "-ST1020",  # Comment on exported method should be of the form ...
-      "-ST1021",  # Comment on exported type should be of the form ...
-      "-ST1022",  # Comment on exported const should be of the form ...
-      "-SA5011"   # TODO(fix) Possible nil pointer dereference
+      "-SA1019",  # Using a deprecated function, variable, constant or field
     ]
-  unused:
-    go: "1.17"
