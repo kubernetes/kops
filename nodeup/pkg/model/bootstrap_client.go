@@ -46,25 +46,27 @@ func (b BootstrapClientBuilder) Build(c *fi.ModelBuilderContext) error {
 	var authenticator bootstrap.Authenticator
 	var resolver resolver.Resolver
 
-	var err error
 	switch b.CloudProvider {
 	case kops.CloudProviderAWS:
-		authenticator, err = awsup.NewAWSAuthenticator(b.Cloud.Region())
-	case kops.CloudProviderGCE:
-		authenticator, err = gcetpmsigner.NewTPMAuthenticator()
-
-		discovery, err := gcediscovery.New()
+		a, err := awsup.NewAWSAuthenticator(b.Cloud.Region())
 		if err != nil {
 			return err
 		}
-		resolver = discovery
+		authenticator = a
+	case kops.CloudProviderGCE:
+		a, err := gcetpmsigner.NewTPMAuthenticator()
+		if err != nil {
+			return err
+		}
+		authenticator = a
+		r, err := gcediscovery.New()
+		if err != nil {
+			return err
+		}
+		resolver = r
 
 	default:
 		return fmt.Errorf("unsupported cloud provider for authenticator %q", b.CloudProvider)
-	}
-
-	if err != nil {
-		return err
 	}
 
 	baseURL := url.URL{
