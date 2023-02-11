@@ -51,7 +51,7 @@ func BuildDump(ctx context.Context, cloud fi.Cloud, resources map[string]*Resour
 
 	for k, r := range resources {
 		if r.Dumper == nil {
-			klog.V(8).Infof("skipping dump of %q (does not implement Dumpable)", k)
+			klog.V(8).Infof("skipping dump of %q (does not have Dumper)", k)
 			continue
 		}
 
