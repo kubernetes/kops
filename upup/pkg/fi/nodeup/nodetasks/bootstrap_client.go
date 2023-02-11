@@ -55,8 +55,12 @@ func (b *BootstrapClientTask) GetDependencies(tasks map[string]fi.NodeupTask) []
 	// BootstrapClient depends on the protokube service to ensure gossip DNS
 	var deps []fi.NodeupTask
 	for _, v := range tasks {
-		if svc, ok := v.(*Service); ok && svc.Name == protokubeService {
-			deps = append(deps, v)
+		// If we aren't using a custom resolver, then
+		// BootstrapClient depends on the protokube service to ensure gossip DNS
+		if b.Client.Resolver == nil {
+			if svc, ok := v.(*Service); ok && svc.Name == protokubeService {
+				deps = append(deps, v)
+			}
 		}
 	}
 	return deps
