@@ -25,9 +25,11 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/kopscontrollerclient"
+	"k8s.io/kops/pkg/resolver"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce/gcediscovery"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm/gcetpmsigner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
@@ -45,25 +47,41 @@ func (b BootstrapClientBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	}
 
 	var authenticator bootstrap.Authenticator
-	var err error
+	var resolver resolver.Resolver
+
 	switch b.BootConfig.CloudProvider {
 	case kops.CloudProviderAWS:
-		authenticator, err = awsup.NewAWSAuthenticator(b.Cloud.Region())
+		a, err := awsup.NewAWSAuthenticator(b.Cloud.Region())
+		if err != nil {
+			return err
+		}
+		authenticator = a
 	case kops.CloudProviderGCE:
-		authenticator, err = gcetpmsigner.NewTPMAuthenticator()
-		// We don't use the custom resolver here in gossip mode (though we could);
-		// instead we use this as a check that protokube has now started.
+		a, err := gcetpmsigner.NewTPMAuthenticator()
+		if err != nil {
+			return err
+		}
+		authenticator = a
+		r, err := gcediscovery.New()
+		if err != nil {
+			return err
+		}
+		resolver = r
 	case kops.CloudProviderHetzner:
-		authenticator, err = hetzner.NewHetznerAuthenticator()
+		a, err := hetzner.NewHetznerAuthenticator()
+		if err != nil {
+			return err
+		}
+		authenticator = a
 	case kops.CloudProviderOpenstack:
-		authenticator, err = openstack.NewOpenstackAuthenticator()
+		a, err := openstack.NewOpenstackAuthenticator()
+		if err != nil {
+			return err
+		}
+		authenticator = a
 
 	default:
 		return fmt.Errorf("unsupported cloud provider for authenticator %q", b.BootConfig.CloudProvider)
-	}
-
-	if err != nil {
-		return err
 	}
 
 	baseURL := url.URL{
@@ -76,6 +94,7 @@ func (b BootstrapClientBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		Authenticator: authenticator,
 		CAs:           []byte(b.NodeupConfig.CAs[fi.CertificateIDCA]),
 		BaseURL:       baseURL,
+		Resolver:      resolver,
 	}
 
 	bootstrapClientTask := &nodetasks.BootstrapClientTask{
