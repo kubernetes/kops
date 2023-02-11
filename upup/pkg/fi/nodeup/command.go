@@ -42,6 +42,7 @@ import (
 	"k8s.io/kops/nodeup/pkg/model"
 	"k8s.io/kops/nodeup/pkg/model/networking"
 	api "k8s.io/kops/pkg/apis/kops"
+	kopsmodel "k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/assets"
@@ -50,6 +51,7 @@ import (
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/pkg/kopscontrollerclient"
 	"k8s.io/kops/pkg/resolver"
+	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/gcediscovery"
@@ -763,6 +765,23 @@ func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig
 		return nil, fmt.Errorf("unsupported cloud provider for node configuration %s", bootConfig.CloudProvider)
 	}
 
+	var challengeListener *bootstrap.ChallengeListener
+
+	if kopsmodel.UseChallengeCallback() {
+		challengeServer, err := bootstrap.NewChallengeServer(bootConfig.ClusterName, []byte(bootConfig.ConfigServer.CACertificates))
+		if err != nil {
+			return nil, err
+		}
+		listen := ":" + strconv.Itoa(wellknownports.NodeupChallenge)
+
+		l, err := challengeServer.NewListener(ctx, listen)
+		if err != nil {
+			return nil, fmt.Errorf("error starting challenge listener: %w", err)
+		}
+		challengeListener = l
+		defer challengeListener.Stop()
+	}
+
 	client := &kopscontrollerclient.Client{
 		Authenticator: authenticator,
 		Resolver:      resolver,
@@ -782,6 +801,11 @@ func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig
 			APIVersion:        nodeup.BootstrapAPIVersion,
 			IncludeNodeConfig: true,
 		}
+
+		if challengeListener != nil {
+			request.Challenge = challengeListener.CreateChallenge()
+		}
+
 		var resp nodeup.BootstrapResponse
 		err = client.Query(ctx, &request, &resp)
 		if err != nil {

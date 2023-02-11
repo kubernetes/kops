@@ -127,6 +127,8 @@ type BootConfig struct {
 	// APIServerIPs is the API server IP addresses.
 	// This field is used for adding an alias for api.internal. in /etc/hosts, when Topology.DNS.Type == DNSTypeNone.
 	APIServerIPs []string `json:",omitempty"`
+	// ClusterName is the name of the cluster.
+	ClusterName string `json:",omitempty"`
 	// InstanceGroupName is the name of the instance group.
 	InstanceGroupName string `json:",omitempty"`
 	// InstanceGroupRole is the instance group role.
@@ -200,6 +202,7 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 
 	bootConfig := BootConfig{
 		CloudProvider:     cluster.Spec.GetCloudProvider(),
+		ClusterName:       cluster.ObjectMeta.Name,
 		InstanceGroupName: instanceGroup.ObjectMeta.Name,
 		InstanceGroupRole: role,
 	}

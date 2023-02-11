@@ -396,6 +396,11 @@ func (c *NodeupModelContext) UseKopsControllerForNodeBootstrap() bool {
 	return model.UseKopsControllerForNodeBootstrap(c.Cluster)
 }
 
+// UseChallengeCallback is true if we should use a callback challenge during node provisioning with kops-controller.
+func (c *NodeupModelContext) UseChallengeCallback() bool {
+	return model.UseChallengeCallback()
+}
+
 // UsesSecondaryIP checks if the CNI in use attaches secondary interfaces to the host.
 func (c *NodeupModelContext) UsesSecondaryIP() bool {
 	return (c.NodeupConfig.Networking.CNI != nil && c.NodeupConfig.Networking.CNI.UsesSecondaryIP) ||

@@ -36,6 +36,11 @@ func UseKopsControllerForNodeBootstrap(cluster *kops.Cluster) bool {
 	}
 }
 
+// UseChallengeCallback is true if we should use a callback challenge during node provisioning with kops-controller.
+func UseChallengeCallback() bool {
+	return true
+}
+
 // UseKopsControllerForNodeConfig checks if nodeup should use kops-controller to get nodeup.Config.
 func UseKopsControllerForNodeConfig(cluster *kops.Cluster) bool {
 	switch cluster.Spec.GetCloudProvider() {

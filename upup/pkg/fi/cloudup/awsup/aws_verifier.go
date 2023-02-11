@@ -38,6 +38,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/sts"
 	"k8s.io/kops/pkg/bootstrap"
 	nodeidentityaws "k8s.io/kops/pkg/nodeidentity/aws"
+	"k8s.io/kops/pkg/wellknownports"
 )
 
 type AWSVerifierOptions struct {
@@ -237,9 +238,32 @@ func (a awsVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, 
 		return nil, err
 	}
 
+	var challengeEndpoints []string
+	for _, nic := range instance.NetworkInterfaces {
+		if ip := aws.StringValue(nic.PrivateIpAddress); ip != "" {
+			challengeEndpoints = append(challengeEndpoints, net.JoinHostPort(ip, strconv.Itoa(wellknownports.NodeupChallenge)))
+		}
+		for _, a := range nic.PrivateIpAddresses {
+			if ip := aws.StringValue(a.PrivateIpAddress); ip != "" {
+				challengeEndpoints = append(challengeEndpoints, net.JoinHostPort(ip, strconv.Itoa(wellknownports.NodeupChallenge)))
+			}
+		}
+
+		for _, a := range nic.Ipv6Addresses {
+			if ip := aws.StringValue(a.Ipv6Address); ip != "" {
+				challengeEndpoints = append(challengeEndpoints, net.JoinHostPort(ip, strconv.Itoa(wellknownports.NodeupChallenge)))
+			}
+		}
+	}
+
+	if len(challengeEndpoints) == 0 {
+		return nil, fmt.Errorf("cannot determine challenge endpoint for instance id: %s", instanceID)
+	}
+
 	result := &bootstrap.VerifyResult{
-		NodeName:         addrs[0],
-		CertificateNames: addrs,
+		NodeName:          addrs[0],
+		CertificateNames:  addrs,
+		ChallengeEndpoint: challengeEndpoints[0],
 	}
 
 	for _, tag := range instance.Tags {

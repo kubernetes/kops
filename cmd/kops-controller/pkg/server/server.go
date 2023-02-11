@@ -61,6 +61,9 @@ type Server struct {
 
 	// uncachedClient is an uncached client for the kube apiserver
 	uncachedClient client.Client
+
+	// challengeClient performs our callback-challenge into the node
+	challengeClient *bootstrap.ChallengeClient
 }
 
 var _ manager.LeaderElectionRunnable = &Server{}
@@ -94,6 +97,17 @@ func NewServer(opt *config.Options, verifier bootstrap.Verifier, uncachedClient 
 	}
 	s.secretStore = secrets.NewVFSSecretStore(nil, p)
 
+	s.keystore, s.keypairIDs, err = newKeystore(opt.Server.CABasePath, opt.Server.SigningCAs)
+	if err != nil {
+		return nil, err
+	}
+
+	challengeClient, err := bootstrap.NewChallengeClient(s.keystore)
+	if err != nil {
+		return nil, err
+	}
+	s.challengeClient = challengeClient
+
 	r := http.NewServeMux()
 	r.Handle("/bootstrap", http.HandlerFunc(s.bootstrap))
 	server.Handler = recovery(r)
@@ -106,12 +120,6 @@ func (s *Server) NeedLeaderElection() bool {
 }
 
 func (s *Server) Start(ctx context.Context) error {
-	var err error
-	s.keystore, s.keypairIDs, err = newKeystore(s.opt.Server.CABasePath, s.opt.Server.SigningCAs)
-	if err != nil {
-		return err
-	}
-
 	go func() {
 		<-ctx.Done()
 
@@ -197,6 +205,15 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte("unexpected APIVersion"))
 		return
 	}
+
+	if err := s.challengeClient.DoCallbackChallenge(ctx, s.opt.ClusterName, id.ChallengeEndpoint, req); err != nil {
+		klog.Infof("bootstrap %s callback challenge failed: %v", r.RemoteAddr, err)
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte("callback failed"))
+		return
+	}
+
+	klog.Infof("performed successful callback challenge with %s; identified as %s", id.ChallengeEndpoint, id.NodeName)
 
 	resp := &nodeup.BootstrapResponse{
 		Certs: map[string]string{},

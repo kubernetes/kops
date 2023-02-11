@@ -102,6 +102,8 @@ func (b BootstrapClientBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		Certs:      b.bootstrapCerts,
 		KeypairIDs: b.bootstrapKeypairIDs,
 	}
+	bootstrapClientTask.UseChallengeCallback = b.UseChallengeCallback()
+	bootstrapClientTask.ClusterName = b.NodeupConfig.ClusterName
 
 	for _, cert := range b.bootstrapCerts {
 		cert.Cert.Task = bootstrapClientTask
