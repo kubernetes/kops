@@ -356,10 +356,10 @@ func dumpDroplet(op *resources.DumpOperation, r *resources.Resource) error {
 	i := &resources.Instance{
 		Name: r.ID,
 	}
-	if ip, err := droplet.PublicIPv4(); err == nil {
+	if ip, err := droplet.PublicIPv4(); ip != "" && err == nil {
 		i.PublicAddresses = append(i.PublicAddresses, ip)
 	}
-	if ip, err := droplet.PublicIPv6(); err == nil {
+	if ip, err := droplet.PublicIPv6(); ip != "" && err == nil {
 		i.PublicAddresses = append(i.PublicAddresses, ip)
 	}
 	if img := droplet.Image; img != nil {
