@@ -45,6 +45,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/pkg/aws/awsdiscovery"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/configserver"
 	"k8s.io/kops/pkg/kopscodecs"
@@ -108,13 +109,23 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return err
 	}
 
+	var cloud fi.Cloud
+
+	if bootConfig.CloudProvider == api.CloudProviderAWS {
+		awsCloud, err := awsup.NewAWSCloud(region, nil)
+		if err != nil {
+			return err
+		}
+		cloud = awsCloud
+	}
+
 	var configBase vfs.Path
 
 	// If we're using a config server instead of vfs, nodeConfig will hold our configuration
 	var nodeConfig *nodeup.NodeConfig
 
 	if bootConfig.ConfigServer != nil && len(bootConfig.ConfigServer.Servers) > 0 {
-		response, err := getNodeConfigFromServers(ctx, &bootConfig, region)
+		response, err := getNodeConfigFromServers(ctx, &bootConfig, cloud, region)
 		if err != nil {
 			return fmt.Errorf("failed to get node config from server: %w", err)
 		}
@@ -207,16 +218,6 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		if err != nil {
 			return fmt.Errorf("error adding asset %q: %v", asset, err)
 		}
-	}
-
-	var cloud fi.Cloud
-
-	if bootConfig.CloudProvider == api.CloudProviderAWS {
-		awsCloud, err := awsup.NewAWSCloud(region, nil)
-		if err != nil {
-			return err
-		}
-		cloud = awsCloud
 	}
 
 	modelContext := &model.NodeupModelContext{
@@ -724,7 +725,7 @@ func seedRNG(ctx context.Context, bootConfig *nodeup.BootConfig, region string) 
 }
 
 // getNodeConfigFromServers queries kops-controllers for our node's configuration.
-func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig, region string) (*nodeup.BootstrapResponse, error) {
+func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig, cloud fi.Cloud, region string) (*nodeup.BootstrapResponse, error) {
 	var authenticator bootstrap.Authenticator
 	var resolver resolver.Resolver
 
@@ -735,6 +736,13 @@ func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig
 			return nil, err
 		}
 		authenticator = a
+
+		awsCloud := cloud.(awsup.AWSCloud)
+		r, err := awsdiscovery.New(awsCloud.EC2(), bootConfig.ClusterName)
+		if err != nil {
+			return nil, err
+		}
+		resolver = r
 	case api.CloudProviderGCE:
 		a, err := gcetpmsigner.NewTPMAuthenticator()
 		if err != nil {

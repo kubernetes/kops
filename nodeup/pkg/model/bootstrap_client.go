@@ -23,6 +23,7 @@ import (
 	"strconv"
 
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/aws/awsdiscovery"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/kopscontrollerclient"
 	"k8s.io/kops/pkg/resolver"
@@ -56,6 +57,13 @@ func (b BootstrapClientBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			return err
 		}
 		authenticator = a
+
+		awsCloud := b.Cloud.(awsup.AWSCloud)
+		r, err := awsdiscovery.New(awsCloud.EC2(), b.NodeupConfig.ClusterName)
+		if err != nil {
+			return err
+		}
+		resolver = r
 	case kops.CloudProviderGCE:
 		a, err := gcetpmsigner.NewTPMAuthenticator()
 		if err != nil {

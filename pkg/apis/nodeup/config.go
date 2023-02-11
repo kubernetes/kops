@@ -118,6 +118,8 @@ type Config struct {
 
 // BootConfig is the configuration for the nodeup binary that might be too big to fit in userdata.
 type BootConfig struct {
+	// ClusterName is the name of our cluster.
+	ClusterName string `json:",omitempty"`
 	// CloudProvider is the cloud provider in use.
 	CloudProvider kops.CloudProviderID
 	// ConfigBase is the base VFS path for config objects.
@@ -199,6 +201,7 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 	}
 
 	bootConfig := BootConfig{
+		ClusterName:       config.ClusterName,
 		CloudProvider:     cluster.Spec.GetCloudProvider(),
 		InstanceGroupName: instanceGroup.ObjectMeta.Name,
 		InstanceGroupRole: role,

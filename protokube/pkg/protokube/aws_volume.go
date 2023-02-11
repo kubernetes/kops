@@ -151,7 +151,11 @@ func (a *AWSCloudProvider) GossipSeeds() (gossip.SeedProvider, error) {
 	tags := make(map[string]string)
 	tags[awsup.TagClusterName] = a.clusterTag
 
-	return gossipaws.NewSeedProvider(a.ec2, tags)
+	seeds, err := gossipaws.NewSeedProvider(a.ec2, tags)
+	if err != nil {
+		return nil, err
+	}
+	return seeds, nil
 }
 
 func (a *AWSCloudProvider) InstanceID() string {
