@@ -91,6 +91,10 @@ func (c *doCloudMockImplementation) GetApiIngressStatus(cluster *kops.Cluster) (
 	return nil, errors.New("not tested")
 }
 
+func (c *doCloudMockImplementation) KeysService() godo.KeysService {
+	panic("KeyService not implemented by doCloudMockImplementation")
+}
+
 func (c *doCloudMockImplementation) DropletsService() godo.DropletsService {
 	return c.Client.Droplets
 }
