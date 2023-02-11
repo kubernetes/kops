@@ -23,6 +23,7 @@ import (
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
@@ -177,6 +178,7 @@ func listServers(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 			ID:      strconv.Itoa(server.ID),
 			Type:    resourceTypeServer,
 			Deleter: deleteServer,
+			Dumper:  dumpServer,
 			Obj:     server,
 		}
 
@@ -290,6 +292,51 @@ func deleteVolume(cloud fi.Cloud, r *resources.Resource) error {
 	if err != nil {
 		return fmt.Errorf("failed to delete volume %s(%s): %w", r.Name, r.ID, err)
 	}
+
+	return nil
+}
+
+func dumpServer(op *resources.DumpOperation, r *resources.Resource) error {
+	server := r.Obj.(*hcloud.Server)
+
+	data := make(map[string]interface{})
+	data["id"] = r.ID
+	data["type"] = r.Type
+	data["raw"] = r.Obj
+	op.Dump.Resources = append(op.Dump.Resources, data)
+
+	i := &resources.Instance{
+		Name: r.ID,
+	}
+	if ip := server.PublicNet.IPv4.IP; ip != nil {
+		i.PublicAddresses = append(i.PublicAddresses, ip.String())
+	}
+	if ip := server.PublicNet.IPv6.IP; ip != nil {
+		i.PublicAddresses = append(i.PublicAddresses, ip.String())
+	}
+	for _, network := range server.PrivateNet {
+		if ip := network.IP; ip != nil {
+			i.PrivateAddresses = append(i.PrivateAddresses, ip.String())
+		}
+	}
+
+	for key, value := range server.Labels {
+		if key == hetzner.TagKubernetesInstanceRole {
+			role := kops.InstanceGroupRole(value)
+			switch role {
+			case kops.InstanceGroupRoleControlPlane:
+				i.Roles = append(i.Roles, string(role))
+			case kops.InstanceGroupRoleNode:
+				i.Roles = append(i.Roles, string(role))
+			case kops.InstanceGroupRoleAPIServer:
+				i.Roles = append(i.Roles, string(role))
+			default:
+				klog.Warningf("Unknown node role %q for server %s(%d)", value, server.Name, server.ID)
+			}
+		}
+	}
+
+	op.Dump.Instances = append(op.Dump.Instances, i)
 
 	return nil
 }
