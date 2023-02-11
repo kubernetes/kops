@@ -38,7 +38,7 @@ type Droplet struct {
 	Region      *string
 	Size        *string
 	Image       *string
-	SSHKey      *string
+	SSHKey      *SSHKey
 	VPCUUID     *string
 	NetworkCIDR *string
 	VPCName     *string
@@ -125,6 +125,8 @@ func (d *Droplet) Run(c *fi.CloudupContext) error {
 }
 
 func (_ *Droplet) RenderDO(t *do.DOAPITarget, a, e, changes *Droplet) error {
+	ctx := context.TODO()
+
 	userData, err := fi.ResourceAsString(e.UserData)
 	if err != nil {
 		return err
@@ -152,16 +154,17 @@ func (_ *Droplet) RenderDO(t *do.DOAPITarget, a, e, changes *Droplet) error {
 	// associate vpcuuid to the droplet if set.
 	vpcUUID := ""
 	if fi.ValueOf(e.NetworkCIDR) != "" {
-		vpcUUID, err = t.Cloud.GetVPCUUID(fi.ValueOf(e.NetworkCIDR), fi.ValueOf(e.VPCName))
+		s, err := t.Cloud.GetVPCUUID(fi.ValueOf(e.NetworkCIDR), fi.ValueOf(e.VPCName))
 		if err != nil {
-			return fmt.Errorf("Error fetching vpcUUID from network cidr=%s", fi.ValueOf(e.NetworkCIDR))
+			return fmt.Errorf("fetching vpcUUID from network cidr=%s: %w", fi.ValueOf(e.NetworkCIDR), err)
 		}
+		vpcUUID = s
 	} else if fi.ValueOf(e.VPCUUID) != "" {
 		vpcUUID = fi.ValueOf(e.VPCUUID)
 	}
 
 	for i := 0; i < newDropletCount; i++ {
-		_, _, err = t.Cloud.DropletsService().Create(context.TODO(), &godo.DropletCreateRequest{
+		req := &godo.DropletCreateRequest{
 			Name:     fi.ValueOf(e.Name),
 			Region:   fi.ValueOf(e.Region),
 			Size:     fi.ValueOf(e.Size),
@@ -169,15 +172,21 @@ func (_ *Droplet) RenderDO(t *do.DOAPITarget, a, e, changes *Droplet) error {
 			Tags:     e.Tags,
 			VPCUUID:  vpcUUID,
 			UserData: userData,
-			SSHKeys:  []godo.DropletCreateSSHKey{{Fingerprint: fi.ValueOf(e.SSHKey)}},
-		})
+		}
 
+		if e.SSHKey != nil {
+			req.SSHKeys = append(req.SSHKeys, godo.DropletCreateSSHKey{
+				ID: *e.SSHKey.ID,
+			})
+		}
+
+		_, _, err := t.Cloud.DropletsService().Create(ctx, req)
 		if err != nil {
-			return fmt.Errorf("Error creating droplet with Name=%s", fi.ValueOf(e.Name))
+			return fmt.Errorf("error creating droplet with name %q: %w", fi.ValueOf(e.Name), err)
 		}
 	}
 
-	return err
+	return nil
 }
 
 func (_ *Droplet) CheckChanges(a, e, changes *Droplet) error {
