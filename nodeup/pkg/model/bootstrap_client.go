@@ -29,6 +29,7 @@ import (
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/gcediscovery"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm/gcetpmsigner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
@@ -75,6 +76,13 @@ func (b BootstrapClientBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		authenticator = a
 	case kops.CloudProviderOpenstack:
 		a, err := openstack.NewOpenstackAuthenticator()
+		if err != nil {
+			return err
+		}
+		authenticator = a
+
+	case kops.CloudProviderDO:
+		a, err := do.NewAuthenticator()
 		if err != nil {
 			return err
 		}
