@@ -159,6 +159,7 @@ __EOF_CLUSTER_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 CloudProvider: aws
+ClusterName: complex.example.com
 ConfigServer:
   CACertificates: |
     -----BEGIN CERTIFICATE-----
