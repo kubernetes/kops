@@ -271,12 +271,12 @@ spec:
         kops.k8s.io/managed-by: kops
     spec:
       containers:
-      - image: k8s.gcr.io/sig-storage/csi-attacher:v3.2.1
+      - image: registry.k8s.io/sig-storage/csi-attacher:v3.2.1
         name: csi-attacher
         volumeMounts:
         - mountPath: /run/csi
           name: socket-dir
-      - image: k8s.gcr.io/sig-storage/csi-resizer:v1.2.0
+      - image: registry.k8s.io/sig-storage/csi-resizer:v1.2.0
         name: csi-resizer
         volumeMounts:
         - mountPath: /run/csi
@@ -284,7 +284,7 @@ spec:
       - args:
         - --feature-gates=Topology=true
         - --default-fstype=ext4
-        image: k8s.gcr.io/sig-storage/csi-provisioner:v2.2.2
+        image: registry.k8s.io/sig-storage/csi-provisioner:v2.2.2
         name: csi-provisioner
         volumeMounts:
         - mountPath: /run/csi
@@ -328,7 +328,7 @@ spec:
         volumeMounts:
         - mountPath: /run/csi
           name: socket-dir
-      - image: k8s.gcr.io/sig-storage/livenessprobe:v2.3.0
+      - image: registry.k8s.io/sig-storage/livenessprobe:v2.3.0
         imagePullPolicy: Always
         name: liveness-probe
         volumeMounts:
@@ -375,7 +375,7 @@ spec:
       containers:
       - args:
         - --kubelet-registration-path=/var/lib/kubelet/plugins/csi.hetzner.cloud/socket
-        image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.2.0
+        image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.2.0
         name: csi-node-driver-registrar
         volumeMounts:
         - mountPath: /run/csi
@@ -418,7 +418,7 @@ spec:
           name: plugin-dir
         - mountPath: /dev
           name: device-dir
-      - image: k8s.gcr.io/sig-storage/livenessprobe:v2.3.0
+      - image: registry.k8s.io/sig-storage/livenessprobe:v2.3.0
         imagePullPolicy: Always
         name: liveness-probe
         volumeMounts:
