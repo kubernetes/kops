@@ -30,7 +30,10 @@ func TestRandomZones(t *testing.T) {
 		{1, nil},
 		{2, nil},
 		{3, nil},
-		{4, ErrNoEligibleRegion},
+		{4, nil}, // us-east-1 currently has 6 zones
+		{5, nil}, // us-east-1 currently has 6 zones
+		{6, nil}, // us-east-1 currently has 6 zones
+		{7, ErrNoEligibleRegion},
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("%v zones", tt.count), func(t *testing.T) {
