@@ -605,9 +605,6 @@ func (b *KubeAPIServerBuilder) buildPod(kubeAPIServer *kops.KubeAPIServerConfig)
 	}
 
 	image := kubeAPIServer.Image
-	if components.IsBaseURL(b.Cluster.Spec.KubernetesVersion) && b.IsKubernetesLT("1.25") {
-		image = strings.Replace(image, "registry.k8s.io", "k8s.gcr.io", 1)
-	}
 	if b.Architecture != architectures.ArchitectureAmd64 {
 		image = strings.Replace(image, "-amd64", "-"+string(b.Architecture), 1)
 	}

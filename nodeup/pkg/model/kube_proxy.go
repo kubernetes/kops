@@ -27,7 +27,6 @@ import (
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/pkg/kubemanifest"
-	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -166,9 +165,6 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	image := c.Image
 	if b.Architecture != architectures.ArchitectureAmd64 {
 		image = strings.Replace(image, "-amd64", "-"+string(b.Architecture), 1)
-	}
-	if components.IsBaseURL(b.Cluster.Spec.KubernetesVersion) && b.IsKubernetesLT("1.25") {
-		image = strings.Replace(image, "registry.k8s.io", "k8s.gcr.io", 1)
 	}
 
 	container := &v1.Container{
