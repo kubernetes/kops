@@ -256,6 +256,8 @@ type PodIdentityWebhookSpec struct {
 
 type KarpenterConfig struct {
 	Enabled bool `json:"enabled,omitempty"`
+	// Version is the version of karpenter to run.
+	Version string `json:"version,omitempty"`
 }
 
 // ServiceAccountIssuerDiscoveryConfig configures an OIDC Issuer.

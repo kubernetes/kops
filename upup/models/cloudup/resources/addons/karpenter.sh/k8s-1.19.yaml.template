@@ -874,7 +874,7 @@ spec:
       dnsPolicy: Default
       containers:
         - name: controller
-          image: public.ecr.aws/karpenter/controller:v0.16.3
+          image: public.ecr.aws/karpenter/controller:{{ or .Karpenter.Version "v0.16.3" }}
           imagePullPolicy: IfNotPresent
           resources:
             limits:
@@ -985,7 +985,7 @@ spec:
       dnsPolicy: Default
       containers:
         - name: webhook
-          image: public.ecr.aws/karpenter/webhook:v0.16.3
+          image: public.ecr.aws/karpenter/webhook:{{ or .Karpenter.Version "v0.16.3" }}
           imagePullPolicy: IfNotPresent
           args:
             - -port=8443
@@ -1185,6 +1185,16 @@ spec:
 {{ range $name, $spec := GetNodeInstanceGroups }}
 {{ if eq $spec.Manager "Karpenter" }}
 ---
+apiVersion: karpenter.k8s.aws/v1alpha1
+kind: AWSNodeTemplate
+metadata:
+  name: {{ $name }}
+spec:
+  subnetSelector:
+    kops.k8s.io/instance-group/{{ $name }}: "*"
+    kubernetes.io/cluster/{{ ClusterName }}: "*"
+  launchTemplate: {{ $name }}.{{ ClusterName }}
+---
 apiVersion: karpenter.sh/v1alpha5
 kind: Provisioner
 metadata:
@@ -1247,10 +1257,7 @@ spec:
     {{ $key }}: "{{ $value }}"
   {{ end }}
 {{ end }}
-  provider:
-    launchTemplate: {{ $name }}.{{ ClusterName }}
-    subnetSelector:
-      kops.k8s.io/instance-group/{{ $name }}: "*"
-      kubernetes.io/cluster/{{ ClusterName }}: "*"
+  providerRef:
+    name: {{ $name }}
 {{ end }}
 {{ end }}
