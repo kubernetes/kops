@@ -23,7 +23,7 @@ contents: |
       - --log-file=/var/log/kube-proxy.log
       command:
       - /usr/local/bin/kube-proxy
-      image: k8s.gcr.io/kube-proxy-arm64:v1.22.0
+      image: registry.k8s.io/kube-proxy-arm64:v1.22.0
       name: kube-proxy
       resources:
         requests:

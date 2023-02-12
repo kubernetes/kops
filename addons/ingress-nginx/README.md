@@ -13,7 +13,7 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons
 ## Creating a simple ingress
 
 ```
-kubectl run echoheaders --image=k8s.gcr.io/echoserver:1.4 --replicas=1 --port=8080
+kubectl run echoheaders --image=registry.k8s.io/echoserver:1.4 --replicas=1 --port=8080
 kubectl expose deployment echoheaders --port=80 --target-port=8080 --name=echoheaders-x
 kubectl expose deployment echoheaders --port=80 --target-port=8080 --name=echoheaders-y
 
