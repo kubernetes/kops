@@ -18,8 +18,11 @@ package bootstrap
 
 import (
 	"context"
+	"errors"
 	"net/http"
 )
+
+var ErrAlreadyExists = errors.New("node already exists")
 
 // Authenticator generates authentication credentials for requests.
 type Authenticator interface {

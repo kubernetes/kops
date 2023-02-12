@@ -142,6 +142,12 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 
 	id, err := s.verifier.VerifyToken(ctx, r, r.Header.Get("Authorization"), body, s.opt.Server.UseInstanceIDForNodeName)
 	if err != nil {
+		// means that we should exit nodeup gracefully
+		if err == bootstrap.ErrAlreadyExists {
+			w.WriteHeader(http.StatusNoContent)
+			klog.Infof("%s: %v", r.RemoteAddr, err)
+			return
+		}
 		klog.Infof("bootstrap %s verify err: %v", r.RemoteAddr, err)
 		w.WriteHeader(http.StatusForbidden)
 		// don't return the error; this allows us to have richer errors without security implications
