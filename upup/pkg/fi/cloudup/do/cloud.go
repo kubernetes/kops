@@ -66,6 +66,7 @@ type DOCloud interface {
 	DropletActionService() godo.DropletActionsService
 	VolumeService() godo.StorageService
 	VolumeActionService() godo.StorageActionsService
+	KeysService() godo.KeysService
 	LoadBalancersService() godo.LoadBalancersService
 	DomainService() godo.DomainsService
 	ActionsService() godo.ActionsService
@@ -207,6 +208,11 @@ func (c *doCloudImplementation) DNS() (dnsprovider.Interface, error) {
 		return nil, fmt.Errorf("error building DNS provider: %v", err)
 	}
 	return provider, nil
+}
+
+// KeysService returns an implementation of godo.KeysService
+func (c *doCloudImplementation) KeysService() godo.KeysService {
+	return c.Client.Keys
 }
 
 // Volumes returns an implementation of godo.StorageService
