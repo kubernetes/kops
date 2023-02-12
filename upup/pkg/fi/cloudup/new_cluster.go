@@ -1438,6 +1438,11 @@ func initializeOpenstack(opt *NewClusterOptions, cluster *api.Cluster) {
 			cluster.Spec.Networking.Topology.DNS = api.DNSTypeNone
 		}
 	}
+
+	if cluster.Spec.ExternalCloudControllerManager == nil {
+		cluster.Spec.ExternalCloudControllerManager = &api.CloudControllerManagerConfig{}
+	}
+	cluster.Spec.ExternalCloudControllerManager.ClusterName = opt.ClusterName
 }
 
 func createEtcdCluster(etcdCluster string, controlPlanes []*api.InstanceGroup, encryptEtcdStorage bool, etcdStorageType string) api.EtcdClusterSpec {
