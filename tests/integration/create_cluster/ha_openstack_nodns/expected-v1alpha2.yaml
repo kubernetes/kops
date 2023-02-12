@@ -29,6 +29,8 @@ spec:
         dnsServers: 1.1.1.1
         externalNetwork: vlan1
         externalSubnet: vlan1subnet
+  cloudControllerManager:
+    clusterName: ha.example.com
   cloudProvider: openstack
   configBase: memfs://tests/ha.example.com
   etcdClusters:

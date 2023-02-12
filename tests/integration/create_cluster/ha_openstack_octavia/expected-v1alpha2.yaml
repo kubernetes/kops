@@ -27,6 +27,8 @@ spec:
       router:
         dnsServers: 1.1.1.1
         externalNetwork: vlan1
+  cloudControllerManager:
+    clusterName: minimal.k8s.local
   cloudProvider: openstack
   configBase: memfs://tests/minimal.k8s.local
   etcdClusters:
