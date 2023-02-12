@@ -154,7 +154,7 @@ func (o openstackVerifier) VerifyToken(ctx context.Context, rawRequest *http.Req
 	// check from kubernetes API does the instance already exist
 	_, err = o.kubeClient.CoreV1().Nodes().Get(ctx, instance.Name, v1.GetOptions{})
 	if err == nil {
-		return nil, fmt.Errorf("server %q is already joined to kubernetes cluster", instance.Name)
+		return nil, bootstrap.ErrAlreadyExists
 	}
 	if err != nil && !errors.IsNotFound(err) {
 		return nil, fmt.Errorf("got error while querying kubernetes api: %w", err)
