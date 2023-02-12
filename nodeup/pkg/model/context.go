@@ -34,7 +34,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/dns"
-	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -364,9 +363,6 @@ func (c *NodeupModelContext) BuildBootstrapKubeconfig(name string, ctx *fi.Nodeu
 
 // RemapImage applies any needed remapping to an image reference.
 func (c *NodeupModelContext) RemapImage(image string) string {
-	if components.IsBaseURL(c.NodeupConfig.KubernetesVersion) && c.IsKubernetesLT("1.25") {
-		image = strings.Replace(image, "registry.k8s.io", "k8s.gcr.io", 1)
-	}
 	if c.Architecture != architectures.ArchitectureAmd64 {
 		image = strings.Replace(image, "-amd64", "-"+string(c.Architecture), 1)
 	}
