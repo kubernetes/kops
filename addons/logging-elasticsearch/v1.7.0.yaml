@@ -113,7 +113,7 @@ spec:
       serviceAccountName: fluentd-es
       containers:
       - name: fluentd-es
-        image: k8s.gcr.io/fluentd-elasticsearch:1.22
+        image: registry.k8s.io/fluentd-elasticsearch:1.22
         command:
           - '/bin/sh'
           - '-c'
@@ -185,7 +185,7 @@ spec:
     spec:
       serviceAccountName: elasticsearch-logging
       containers:
-      - image: k8s.gcr.io/elasticsearch:v5.6.4
+      - image: registry.k8s.io/elasticsearch:v5.6.4
         name: elasticsearch-logging
         resources:
           # need more cpu upon initialization, therefore burstable class

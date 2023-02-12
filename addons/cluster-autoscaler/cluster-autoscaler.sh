@@ -19,7 +19,7 @@ set -e
 #Set all the variables in this section
 CLUSTER_NAME="myfirstcluster.k8s.local"
 CLOUD_PROVIDER=aws
-IMAGE=k8s.gcr.io/cluster-autoscaler:v1.1.0
+IMAGE=registry.k8s.io/cluster-autoscaler:v1.1.0
 MIN_NODES=2
 MAX_NODES=20
 AWS_REGION=us-east-1
