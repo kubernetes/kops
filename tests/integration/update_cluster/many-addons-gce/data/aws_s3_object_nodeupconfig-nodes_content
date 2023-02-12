@@ -4,14 +4,14 @@ Assets:
   - b6769d8ac6a0ed0f13b307d289dc092ad86180b08f5b5044af152808c04950ae@https://storage.googleapis.com/kubernetes-release/release/v1.26.0/bin/linux/amd64/kubectl
   - 63357fad748af9065e09517628072960775a9145cc8853f2e30abcfa9eaab73d@https://storage.googleapis.com/kubernetes-release/release/v1.26.0/bin/linux/amd64/mounter
   - 962100bbc4baeaaa5748cdbfce941f756b1531c2eadb290129401498bfac21e7@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz
-  - 2415b431a900275c14942f87f751e1e13d513c1c2f062322b5ca5a9a2190f22a@https://github.com/containerd/containerd/releases/download/v1.6.16/containerd-1.6.16-linux-amd64.tar.gz
+  - 5f0584d000769d0cf08fc0e25135614ef5bf52971a6069175c78437699f3b8d4@https://github.com/containerd/containerd/releases/download/v1.6.17/containerd-1.6.17-linux-amd64.tar.gz
   - db772be63147a4e747b4fe286c7c16a2edc4a8458bd3092ea46aaee77750e8ce@https://github.com/opencontainers/runc/releases/download/v1.1.4/runc.amd64
   arm64:
   - fb033c1d079cac8babb04a25abecbc6cc1a2afb53f56ef1d73f8dc3b15b3c09e@https://storage.googleapis.com/kubernetes-release/release/v1.26.0/bin/linux/arm64/kubelet
   - 79b14e4ddada9e81d2989f36a89faa9e56f8abe6e0246e7bdc305c93c3731ea4@https://storage.googleapis.com/kubernetes-release/release/v1.26.0/bin/linux/arm64/kubectl
   - f534c82bac121907300e0ac7c540cc3ab63c461763a8906e002edc867b6f80b6@https://storage.googleapis.com/kubernetes-release/release/v1.26.0/bin/linux/arm64/mounter
   - ef17764ffd6cdcb16d76401bac1db6acc050c9b088f1be5efa0e094ea3b01df0@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-arm64-v0.9.1.tgz
-  - c2bf51fde02ec9cf8b9c18721bc4f53bd1f19fb2bb3251f41ece61af7347e082@https://github.com/containerd/containerd/releases/download/v1.6.16/containerd-1.6.16-linux-arm64.tar.gz
+  - 7e110faa738bff2f5f0ffd54c4ec2c17c05fd2af6de4877c839794ca3dadd61c@https://github.com/containerd/containerd/releases/download/v1.6.17/containerd-1.6.17-linux-arm64.tar.gz
   - dbb71e737eaef454a406ce21fd021bd8f1b35afb7635016745992bbd7c17a223@https://github.com/opencontainers/runc/releases/download/v1.1.4/runc.arm64
 CAs: {}
 ClusterName: minimal.example.com
@@ -47,4 +47,4 @@ containerdConfig:
   logLevel: info
   runc:
     version: 1.1.4
-  version: 1.6.16
+  version: 1.6.17
