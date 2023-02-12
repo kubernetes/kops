@@ -76,7 +76,7 @@ spec:
             memory: 200Mi
             cpu: 200m
       - name: addon-resizer
-        image: k8s.gcr.io/addon-resizer:1.0
+        image: registry.k8s.io/addon-resizer:1.0
         resources:
           limits:
             cpu: 100m
