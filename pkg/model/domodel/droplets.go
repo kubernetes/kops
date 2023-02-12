@@ -37,13 +37,27 @@ type DropletBuilder struct {
 var _ fi.CloudupModelBuilder = &DropletBuilder{}
 
 func (d *DropletBuilder) Build(c *fi.CloudupModelBuilderContext) error {
-	sshKeyName, err := d.SSHKeyName()
-	if err != nil {
-		return err
-	}
+	var sshKey *dotasks.SSHKey
+	if len(d.SSHPublicKeys) != 0 {
+		sshPublicKey := d.SSHPublicKeys[0]
 
-	splitSSHKeyName := strings.Split(sshKeyName, "-")
-	sshKeyFingerPrint := splitSSHKeyName[len(splitSSHKeyName)-1]
+		sshKeyName, err := d.SSHKeyName()
+		if err != nil {
+			return err
+		}
+
+		splitSSHKeyName := strings.Split(sshKeyName, "-")
+		sshKeyFingerPrint := splitSSHKeyName[len(splitSSHKeyName)-1]
+
+		sshKey = &dotasks.SSHKey{
+			Name:      &sshKeyName,
+			Lifecycle: d.Lifecycle,
+
+			PublicKey:      fi.NewBytesResource(sshPublicKey),
+			KeyFingerprint: &sshKeyFingerPrint,
+		}
+		c.AddTask(sshKey)
+	}
 
 	// replace "." with "-" since DO API does not accept "."
 	clusterName := do.SafeClusterName(d.ClusterName())
@@ -65,7 +79,7 @@ func (d *DropletBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Region: fi.PtrTo(d.Cluster.Spec.Networking.Subnets[0].Region),
 			Size:   fi.PtrTo(ig.Spec.MachineType),
 			Image:  fi.PtrTo(ig.Spec.Image),
-			SSHKey: fi.PtrTo(sshKeyFingerPrint),
+			SSHKey: sshKey,
 			Tags:   []string{clusterTag},
 		}
 
