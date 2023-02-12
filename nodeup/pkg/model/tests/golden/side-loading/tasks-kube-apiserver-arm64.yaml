@@ -55,7 +55,7 @@ contents: |
       - --log-file=/var/log/kube-apiserver.log
       command:
       - /usr/local/bin/kube-apiserver
-      image: k8s.gcr.io/kube-apiserver-arm64:v1.22.0
+      image: registry.k8s.io/kube-apiserver-arm64:v1.22.0
       livenessProbe:
         httpGet:
           host: 127.0.0.1
