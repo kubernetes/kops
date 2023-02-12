@@ -801,7 +801,7 @@ spec:
       serviceAccount: csi-do-controller-sa
       containers:
         - name: csi-provisioner
-          image: k8s.gcr.io/sig-storage/csi-provisioner:v3.2.1
+          image: registry.k8s.io/sig-storage/csi-provisioner:v3.2.1
           args:
             - "--csi-address=$(ADDRESS)"
             - "--default-fstype=ext4"
@@ -814,7 +814,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: csi-attacher
-          image: k8s.gcr.io/sig-storage/csi-attacher:v3.5.0
+          image: registry.k8s.io/sig-storage/csi-attacher:v3.5.0
           args:
             - "--csi-address=$(ADDRESS)"
             - "--v=5"
@@ -828,7 +828,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: csi-snapshotter
-          image: k8s.gcr.io/sig-storage/csi-snapshotter:v6.0.1
+          image: registry.k8s.io/sig-storage/csi-snapshotter:v6.0.1
           args:
             - "--csi-address=$(ADDRESS)"
             - "--v=5"
@@ -840,7 +840,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: csi-resizer
-          image: k8s.gcr.io/sig-storage/csi-resizer:v1.5.0
+          image: registry.k8s.io/sig-storage/csi-resizer:v1.5.0
           args:
             - "--csi-address=$(ADDRESS)"
             - "--timeout=30s"
@@ -1088,7 +1088,7 @@ spec:
               mountPath: /etc/udev/rules.d/
       containers:
         - name: csi-node-driver-registrar
-          image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.5.1
+          image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.5.1
           args:
             - "--v=5"
             - "--csi-address=$(ADDRESS)"
@@ -1230,7 +1230,7 @@ spec:
       serviceAccountName: snapshot-controller
       containers:
         - name: snapshot-controller
-          image: k8s.gcr.io/sig-storage/snapshot-controller:v6.0.1
+          image: registry.k8s.io/sig-storage/snapshot-controller:v6.0.1
           args:
             - "--v=5"
           imagePullPolicy: IfNotPresent
