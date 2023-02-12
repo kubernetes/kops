@@ -264,7 +264,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/privateciliumadvanced.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: JxwcVLPw2pznwqA2GMdkQzthOJgqdVwtLT06pYo0I5Q=
+NodeupConfigHash: bMn52eCeeDNx9Ls9qVbzRCH3Op20OG+TEy1Ho4eu8Ps=
 
 __EOF_KUBE_ENV
 
