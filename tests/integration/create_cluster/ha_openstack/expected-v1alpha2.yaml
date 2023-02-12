@@ -21,6 +21,8 @@ spec:
         timeout: 10s
       router:
         externalNetwork: ""
+  cloudControllerManager:
+    clusterName: minimal.k8s.local
   cloudProvider: openstack
   configBase: memfs://tests/minimal.k8s.local
   etcdClusters:
