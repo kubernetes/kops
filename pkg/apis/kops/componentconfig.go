@@ -946,6 +946,9 @@ type NodeTerminationHandlerSpec struct {
 	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
 	// Version is the container image tag used.
 	Version *string `json:"version,omitempty"`
+
+	// If specified, posts event data to URL upon instance interruption action.
+	WebhookURL *string `json:"webhookURL,omitempty"`
 }
 
 func (n *NodeTerminationHandlerSpec) IsQueueMode() bool {
