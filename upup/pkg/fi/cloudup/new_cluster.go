@@ -324,8 +324,9 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 				ExternalNetwork: fi.PtrTo(opt.OpenstackExternalNet),
 			},
 			BlockStorage: &api.OpenstackBlockStorageConfig{
-				Version:  fi.PtrTo("v3"),
-				IgnoreAZ: fi.PtrTo(opt.OpenstackStorageIgnoreAZ),
+				Version:     fi.PtrTo("v3"),
+				IgnoreAZ:    fi.PtrTo(opt.OpenstackStorageIgnoreAZ),
+				ClusterName: opt.ClusterName,
 			},
 			Monitor: &api.OpenstackMonitor{
 				Delay:      fi.PtrTo("15s"),
