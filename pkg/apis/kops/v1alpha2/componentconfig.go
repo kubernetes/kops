@@ -796,6 +796,8 @@ type OpenstackBlockStorageConfig struct {
 	CreateStorageClass *bool  `json:"createStorageClass,omitempty"`
 	CSIPluginImage     string `json:"csiPluginImage,omitempty"`
 	CSITopologySupport *bool  `json:"csiTopologySupport,omitempty"`
+	// ClusterName sets the --cluster flag for the cinder-csi-plugin to the provided name
+	ClusterName string `json:"clusterName,omitempty"`
 }
 
 // OpenstackMonitor defines the config for a health monitor
