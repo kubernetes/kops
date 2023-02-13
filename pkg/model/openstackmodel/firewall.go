@@ -148,9 +148,7 @@ func (b *FirewallModelBuilder) addSSHRules(c *fi.CloudupModelBuilderContext, sgM
 // addETCDRules - Add ETCD access rules based on which CNI might need to access __ETCD_ENDPOINTS__
 func (b *FirewallModelBuilder) addETCDRules(c *fi.CloudupModelBuilderContext, sgMap map[string]*openstacktasks.SecurityGroup) error {
 	masterName := b.SecurityGroupName(kops.InstanceGroupRoleControlPlane)
-	nodeName := b.SecurityGroupName(kops.InstanceGroupRoleNode)
 	masterSG := sgMap[masterName]
-	nodeSG := sgMap[nodeName]
 
 	// ETCD Peer Discovery
 	etcdRule := &openstacktasks.SecurityGroupRule{
@@ -182,21 +180,6 @@ func (b *FirewallModelBuilder) addETCDRules(c *fi.CloudupModelBuilderContext, sg
 			PortRangeMax: i(portRange.Max),
 		}
 		b.addDirectionalGroupRule(c, masterSG, masterSG, etcdMgmrRule)
-	}
-
-	if b.Cluster.Spec.Networking.Calico != nil {
-
-		etcdCNIRule := &openstacktasks.SecurityGroupRule{
-			Lifecycle:    b.Lifecycle,
-			Direction:    s(string(rules.DirIngress)),
-			Protocol:     s(string(rules.ProtocolTCP)),
-			EtherType:    s(IPV4),
-			PortRangeMin: i(4001),
-			PortRangeMax: i(4001),
-		}
-		// Master access from other masters covered above
-		// Allow nodes to reach ETCD endpoints
-		b.addDirectionalGroupRule(c, masterSG, nodeSG, etcdCNIRule)
 	}
 	return nil
 }
@@ -408,9 +391,6 @@ func (b *FirewallModelBuilder) addCNIRules(c *fi.CloudupModelBuilderContext, sgM
 	udpPorts := []int{}
 	tcpPorts := []int{}
 	protocols := []string{}
-
-	// allow cadvisor
-	tcpPorts = append(tcpPorts, 4194)
 
 	if b.Cluster.Spec.Networking.Kopeio != nil {
 		// VXLAN over UDP
