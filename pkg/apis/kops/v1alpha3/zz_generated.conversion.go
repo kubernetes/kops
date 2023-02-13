@@ -6559,6 +6559,7 @@ func autoConvert_v1alpha3_OpenstackBlockStorageConfig_To_kops_OpenstackBlockStor
 	out.CreateStorageClass = in.CreateStorageClass
 	out.CSIPluginImage = in.CSIPluginImage
 	out.CSITopologySupport = in.CSITopologySupport
+	out.ClusterName = in.ClusterName
 	return nil
 }
 
@@ -6575,6 +6576,7 @@ func autoConvert_kops_OpenstackBlockStorageConfig_To_v1alpha3_OpenstackBlockStor
 	out.CreateStorageClass = in.CreateStorageClass
 	out.CSIPluginImage = in.CSIPluginImage
 	out.CSITopologySupport = in.CSITopologySupport
+	out.ClusterName = in.ClusterName
 	return nil
 }
 
