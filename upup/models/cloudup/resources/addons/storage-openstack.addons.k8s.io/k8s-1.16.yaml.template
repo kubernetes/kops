@@ -333,7 +333,7 @@ spec:
             - name: CLOUD_CONFIG
               value: /etc/kubernetes/cloud.config
             - name: CLUSTER_NAME
-              value: kubernetes
+              value: "{{- if .CloudProvider.Openstack.BlockStorage.ClusterName -}} {{ .CloudProvider.Openstack.BlockStorage.ClusterName }} {{- else -}} kubernetes {{- end -}}"
           imagePullPolicy: "IfNotPresent"
           ports:
             - containerPort: 9808
@@ -465,11 +465,18 @@ spec:
             - /bin/cinder-csi-plugin
             - "--endpoint=$(CSI_ENDPOINT)"
             - "--cloud-config=$(CLOUD_CONFIG)"
+{{- if .CloudProvider.Openstack.BlockStorage.ClusterName }}
+            - "--cluster=$(CLUSTER_NAME)"
+{{- end }}
           env:
             - name: CSI_ENDPOINT
               value: unix://csi/csi.sock
             - name: CLOUD_CONFIG
               value: /etc/kubernetes/cloud.config
+{{- if .CloudProvider.Openstack.BlockStorage.ClusterName }}
+            - name: CLUSTER_NAME
+              value: {{ .CloudProvider.Openstack.BlockStorage.ClusterName }}
+{{- end }}
           imagePullPolicy: "IfNotPresent"
           ports:
             - containerPort: 9808
