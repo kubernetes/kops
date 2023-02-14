@@ -100,7 +100,9 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) e
 			if warmPool.IsEnabled() {
 				warmPoolTask.MinSize = warmPool.MinSize
 				warmPoolTask.MaxSize = warmPool.MaxSize
-
+				tsk.WarmPool = warmPoolTask
+			} else {
+				tsk.WarmPool = nil
 			}
 			c.AddTask(warmPoolTask)
 
