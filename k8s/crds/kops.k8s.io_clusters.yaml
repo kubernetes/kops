@@ -422,6 +422,10 @@ spec:
                         properties:
                           bs-version:
                             type: string
+                          clusterName:
+                            description: ClusterName sets the --cluster flag for the
+                              cinder-csi-plugin to the provided name
+                            type: string
                           createStorageClass:
                             description: CreateStorageClass provisions a default class
                               for the Cinder plugin
