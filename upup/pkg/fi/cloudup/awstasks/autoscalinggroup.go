@@ -97,6 +97,8 @@ type AutoscalingGroup struct {
 	Tags map[string]string
 	// TargetGroups is a list of ALB/NLB target group ARNs to add to the autoscaling group
 	TargetGroups []*TargetGroup
+	// WarmPool is the WarmPool config for the ASG
+	WarmPool *WarmPool
 }
 
 var _ fi.CompareWithID = &AutoscalingGroup{}
@@ -930,6 +932,11 @@ type terraformMixedInstancesPolicy struct {
 	InstanceDistribution []*terraformAutoscalingInstanceDistribution `cty:"instances_distribution"`
 }
 
+type terraformWarmPool struct {
+	MinSize *int64 `cty:"min_size"`
+	MaxSize *int64 `cty:"max_group_prepared_capacity"`
+}
+
 type terraformAutoscalingGroup struct {
 	Name                    *string                                          `cty:"name"`
 	LaunchConfigurationName *terraformWriter.Literal                         `cty:"launch_configuration"`
@@ -946,6 +953,7 @@ type terraformAutoscalingGroup struct {
 	LoadBalancers           []*terraformWriter.Literal                       `cty:"load_balancers"`
 	TargetGroupARNs         []*terraformWriter.Literal                       `cty:"target_group_arns"`
 	MaxInstanceLifetime     *int64                                           `cty:"max_instance_lifetime"`
+	WarmPool                *terraformWarmPool                               `cty:"warm_pool"`
 }
 
 // RenderTerraform is responsible for rendering the terraform codebase
@@ -1064,6 +1072,13 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 		}
 	}
 	tf.SuspendedProcesses = processes
+
+	if e.WarmPool != nil && *e.WarmPool.Enabled {
+		tf.WarmPool = &terraformWarmPool{
+			MinSize: &e.WarmPool.MinSize,
+			MaxSize: e.WarmPool.MaxSize,
+		}
+	}
 
 	return t.RenderResource("aws_autoscaling_group", *e.Name, tf)
 }
