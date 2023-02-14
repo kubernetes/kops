@@ -70,15 +70,6 @@ func getConfigV2FilePath() (string, bool) {
 	return filepath.Clean(filepath.Join(configDir, defaultConfigFileName)), true
 }
 
-// getConfigV1FilePath returns the path to the v1 config file
-func getConfigV1FilePath() (string, bool) {
-	path, err := os.UserHomeDir()
-	if err != nil {
-		return "", false
-	}
-	return filepath.Clean(filepath.Join(path, ".scwrc")), true
-}
-
 // GetScwConfigDir returns the path to scw config folder
 func GetScwConfigDir() (string, error) {
 	if xdgPath := os.Getenv(xdgConfigDirEnv); xdgPath != "" {

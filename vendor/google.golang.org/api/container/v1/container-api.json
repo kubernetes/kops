@@ -2487,7 +2487,7 @@
       }
     }
   },
-  "revision": "20221114",
+  "revision": "20230117",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -2632,7 +2632,7 @@
           "type": "string"
         },
         "imageType": {
-          "description": "The image type to use for NAP created node.",
+          "description": "The image type to use for NAP created node. Please see https://cloud.google.com/kubernetes-engine/docs/concepts/node-images for available image types.",
           "type": "string"
         },
         "management": {
@@ -2640,7 +2640,7 @@
           "description": "Specifies the node management options for NAP created node-pools."
         },
         "minCpuPlatform": {
-          "description": "Deprecated. Minimum CPU platform to be used for NAP created node pools. The instance may be scheduled on the specified or newer CPU platform. Applicable values are the friendly names of CPU platforms, such as minCpuPlatform: Intel Haswell or minCpuPlatform: Intel Sandy Bridge. For more information, read [how to specify min CPU platform](https://cloud.google.com/compute/docs/instances/specify-min-cpu-platform). This field is deprecated, min_cpu_platform should be specified using https://cloud.google.com/requested-min-cpu-platform label selector on the pod. To unset the min cpu platform field pass \"automatic\" as field value.",
+          "description": "Deprecated. Minimum CPU platform to be used for NAP created node pools. The instance may be scheduled on the specified or newer CPU platform. Applicable values are the friendly names of CPU platforms, such as minCpuPlatform: Intel Haswell or minCpuPlatform: Intel Sandy Bridge. For more information, read [how to specify min CPU platform](https://cloud.google.com/compute/docs/instances/specify-min-cpu-platform). This field is deprecated, min_cpu_platform should be specified using `cloud.google.com/requested-min-cpu-platform` label selector on the pod. To unset the min cpu platform field pass \"automatic\" as field value.",
           "type": "string"
         },
         "oauthScopes": {
@@ -2926,6 +2926,10 @@
         },
         "endpoint": {
           "description": "[Output only] The IP address of this cluster's master endpoint. The endpoint can be accessed from the internet at `https://username:password@endpoint/`. See the `masterAuth` property of this resource for username and password information.",
+          "type": "string"
+        },
+        "etag": {
+          "description": "This checksum is computed by the server based on the value of cluster fields, and may be sent on update requests to ensure the client has an up-to-date value before proceeding.",
           "type": "string"
         },
         "expireTime": {
@@ -3373,6 +3377,10 @@
         "desiredWorkloadIdentityConfig": {
           "$ref": "WorkloadIdentityConfig",
           "description": "Configuration for Workload Identity."
+        },
+        "etag": {
+          "description": "The current etag of the cluster. If an etag is provided and does not match the current etag of the cluster, update will be blocked and an ABORTED error will be returned.",
+          "type": "string"
         }
       },
       "type": "object"
@@ -3526,10 +3534,12 @@
           "description": "cluster_dns_scope indicates the scope of access to cluster DNS records.",
           "enum": [
             "DNS_SCOPE_UNSPECIFIED",
+            "CLUSTER_SCOPE",
             "VPC_SCOPE"
           ],
           "enumDescriptions": [
             "Default value, will be inferred as cluster scope.",
+            "DNS records are accessible from within the cluster.",
             "DNS records are accessible from within the VPC."
           ],
           "type": "string"
@@ -3603,6 +3613,18 @@
       "description": "A generic empty message that you can re-use to avoid defining duplicated empty messages in your APIs. A typical example is to use it as the request or the response type of an API method. For instance: service Foo { rpc Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }",
       "id": "Empty",
       "properties": {},
+      "type": "object"
+    },
+    "EphemeralStorageLocalSsdConfig": {
+      "description": "EphemeralStorageLocalSsdConfig contains configuration for the node ephemeral storage using Local SSD.",
+      "id": "EphemeralStorageLocalSsdConfig",
+      "properties": {
+        "localSsdCount": {
+          "description": "Number of local SSDs to use to back ephemeral storage. Uses NVMe interfaces. Each local SSD is 375 GB in size. If zero, it means to disable using local SSDs as ephemeral storage. The limit for this value is dependent upon the maximum number of disks available on a machine per zone. See: https://cloud.google.com/compute/docs/disks/local-ssd for more information.",
+          "format": "int32",
+          "type": "integer"
+        }
+      },
       "type": "object"
     },
     "FastSocket": {
@@ -3908,6 +3930,11 @@
           "description": "The IP address range of the services IPs in this cluster. If blank, a range will be automatically chosen with the default size. This field is only applicable when `use_ip_aliases` is true. Set to blank to have a range chosen with the default size. Set to /netmask (e.g. `/14`) to have a range chosen with a specific netmask. Set to a [CIDR](http://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing) notation (e.g. `10.96.0.0/14`) from the RFC-1918 private networks (e.g. `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`) to pick a specific range to use.",
           "type": "string"
         },
+        "servicesIpv6CidrBlock": {
+          "description": "Output only. [Output only] The services IPv6 CIDR block for the cluster.",
+          "readOnly": true,
+          "type": "string"
+        },
         "servicesSecondaryRangeName": {
           "description": "The name of the secondary range to be used as for the services CIDR block. The secondary range will be used for service ClusterIPs. This must be an existing secondary range associated with the cluster subnetwork. This field is only applicable with use_ip_aliases is true and create_subnetwork is false.",
           "type": "string"
@@ -3924,6 +3951,11 @@
             "Cluster is IPV4 only",
             "Cluster can use both IPv4 and IPv6"
           ],
+          "type": "string"
+        },
+        "subnetIpv6CidrBlock": {
+          "description": "Output only. [Output only] The subnet's IPv6 CIDR block used by nodes and pods.",
+          "readOnly": true,
           "type": "string"
         },
         "subnetworkName": {
@@ -4130,6 +4162,18 @@
             "$ref": "UsableSubnetwork"
           },
           "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "LocalNvmeSsdBlockConfig": {
+      "description": "LocalNvmeSsdBlockConfig contains configuration for using raw-block local NVMe SSD.",
+      "id": "LocalNvmeSsdBlockConfig",
+      "properties": {
+        "localSsdCount": {
+          "description": "The number of raw-block local NVMe SSD disks to be attached to the node. Each local SSD is 375 GB in size. If zero, it means no raw-block local NVMe SSD disks to be attached to the node. The limit for this value is dependent upon the maximum number of disks available on a machine per zone. See: https://cloud.google.com/compute/docs/disks/local-ssd for more information.",
+          "format": "int32",
+          "type": "integer"
         }
       },
       "type": "object"
@@ -4577,6 +4621,10 @@
           "description": "Type of the disk attached to each node (e.g. 'pd-standard', 'pd-ssd' or 'pd-balanced') If unspecified, the default disk type is 'pd-standard'",
           "type": "string"
         },
+        "ephemeralStorageLocalSsdConfig": {
+          "$ref": "EphemeralStorageLocalSsdConfig",
+          "description": "Parameters for the node ephemeral storage using Local SSDs. If unspecified, ephemeral storage is backed by the boot disk."
+        },
         "fastSocket": {
           "$ref": "FastSocket",
           "description": "Enable or disable NCCL fast socket for the node pool."
@@ -4590,7 +4638,7 @@
           "description": "Enable or disable gvnic in the node pool."
         },
         "imageType": {
-          "description": "The image type to use for this node. Note that for a given image type, the latest version of it will be used.",
+          "description": "The image type to use for this node. Note that for a given image type, the latest version of it will be used. Please see https://cloud.google.com/kubernetes-engine/docs/concepts/node-images for available image types.",
           "type": "string"
         },
         "kubeletConfig": {
@@ -4607,6 +4655,10 @@
         "linuxNodeConfig": {
           "$ref": "LinuxNodeConfig",
           "description": "Parameters that can be configured on Linux nodes."
+        },
+        "localNvmeSsdBlockConfig": {
+          "$ref": "LocalNvmeSsdBlockConfig",
+          "description": "Parameters for using raw-block Local NVMe SSDs."
         },
         "localSsdCount": {
           "description": "The number of local SSD disks to be attached to the node. The limit for this value is dependent upon the maximum number of disks available on a machine per zone. See: https://cloud.google.com/compute/docs/disks/local-ssd for more information.",
@@ -4687,6 +4739,10 @@
             "$ref": "NodeTaint"
           },
           "type": "array"
+        },
+        "windowsNodeConfig": {
+          "$ref": "WindowsNodeConfig",
+          "description": "Parameters that can be configured on Windows nodes."
         },
         "workloadMetadataConfig": {
           "$ref": "WorkloadMetadataConfig",
@@ -4813,6 +4869,10 @@
           "$ref": "NodeConfig",
           "description": "The node configuration of the pool."
         },
+        "etag": {
+          "description": "This checksum is computed by the server based on the value of node pool fields, and may be sent on update requests to ensure the client has an up-to-date value before proceeding.",
+          "type": "string"
+        },
         "initialNodeCount": {
           "description": "The initial node count for the pool. You must ensure that your Compute Engine [resource quota](https://cloud.google.com/compute/quotas) is sufficient for this number of instances. You must also have available firewall and routes quota.",
           "format": "int32",
@@ -4897,7 +4957,7 @@
           "description": "Upgrade settings control disruption and speed of the upgrade."
         },
         "version": {
-          "description": "The version of the Kubernetes of this node.",
+          "description": "The version of Kubernetes running on this NodePool's nodes. If unspecified, it defaults as described [here](https://cloud.google.com/kubernetes-engine/versioning#specifying_node_version).",
           "type": "string"
         }
       },
@@ -6257,6 +6317,10 @@
           "$ref": "ConfidentialNodes",
           "description": "Confidential nodes config. All the nodes in the node pool will be Confidential VM once enabled."
         },
+        "etag": {
+          "description": "The current etag of the node pool. If an etag is provided and does not match the current etag of the node pool, update will be blocked and an ABORTED error will be returned.",
+          "type": "string"
+        },
         "fastSocket": {
           "$ref": "FastSocket",
           "description": "Enable or disable NCCL fast socket for the node pool."
@@ -6270,7 +6334,7 @@
           "description": "Enable or disable gvnic on the node pool."
         },
         "imageType": {
-          "description": "Required. The desired image type for the node pool.",
+          "description": "Required. The desired image type for the node pool. Please see https://cloud.google.com/kubernetes-engine/docs/concepts/node-images for available image types.",
           "type": "string"
         },
         "kubeletConfig": {
@@ -6331,6 +6395,10 @@
         "upgradeSettings": {
           "$ref": "UpgradeSettings",
           "description": "Upgrade settings control disruption and speed of the upgrade."
+        },
+        "windowsNodeConfig": {
+          "$ref": "WindowsNodeConfig",
+          "description": "Parameters that can be configured on Windows nodes."
         },
         "workloadMetadataConfig": {
           "$ref": "WorkloadMetadataConfig",
@@ -6444,7 +6512,7 @@
             "SURGE"
           ],
           "enumDescriptions": [
-            "Default value.",
+            "Default value if unset. GKE internally defaults the update strategy to SURGE for unspecified strategies.",
             "blue-green upgrade.",
             "SURGE is the traditional way of upgrade a node pool. max_surge and max_unavailable determines the level of upgrade parallelism."
           ],
@@ -6534,6 +6602,27 @@
         "enabled": {
           "description": "Whether gVNIC features are enabled in the node pool.",
           "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "WindowsNodeConfig": {
+      "description": "Parameters that can be configured on Windows nodes. Windows Node Config that define the parameters that will be used to configure the Windows node pool settings",
+      "id": "WindowsNodeConfig",
+      "properties": {
+        "osVersion": {
+          "description": "OSVersion specifies the Windows node config to be used on the node",
+          "enum": [
+            "OS_VERSION_UNSPECIFIED",
+            "OS_VERSION_LTSC2019",
+            "OS_VERSION_LTSC2022"
+          ],
+          "enumDescriptions": [
+            "When OSVersion is not specified",
+            "LTSC2019 specifies to use LTSC2019 as the Windows Servercore Base Image",
+            "LTSC2022 specifies to use LTSC2022 as the Windows Servercore Base Image"
+          ],
+          "type": "string"
         }
       },
       "type": "object"
