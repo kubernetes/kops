@@ -331,34 +331,34 @@ terraform {
 }
 `,
 		},
-                {
-                        Resource: &AutoscalingGroup{
-                                Name:                        fi.PtrTo("test1"),
-                                LaunchTemplate:              &LaunchTemplate{Name: fi.PtrTo("test_lt")},
-                                MaxSize:                     fi.PtrTo(int64(10)),
-                                Metrics:                     []string{"test"},
-                                MinSize:                     fi.PtrTo(int64(5)),
-                                MixedInstanceOverrides:      []string{"t2.medium", "t2.large"},
-                                MixedOnDemandBase:           fi.PtrTo(int64(4)),
-                                MixedOnDemandAboveBase:      fi.PtrTo(int64(30)),
-                                MixedSpotAllocationStrategy: fi.PtrTo("capacity-optimized"),
-                                WarmPool: &WarmPool{
-				  Enabled: fi.PtrTo(true),
-                                  MinSize: 3,
-                                  MaxSize: fi.PtrTo(int64(5)),
-                                },
-                                Subnets: []*Subnet{
-                                        {
-                                                Name: fi.PtrTo("test-sg"),
-                                                ID:   fi.PtrTo("sg-1111"),
-                                        },
-                                },
-                                Tags: map[string]string{
-                                        "test":    "tag",
-                                        "cluster": "test",
-                                },
-                        },
-                        Expected: `provider "aws" {
+		{
+			Resource: &AutoscalingGroup{
+				Name:                        fi.PtrTo("test1"),
+				LaunchTemplate:              &LaunchTemplate{Name: fi.PtrTo("test_lt")},
+				MaxSize:                     fi.PtrTo(int64(10)),
+				Metrics:                     []string{"test"},
+				MinSize:                     fi.PtrTo(int64(5)),
+				MixedInstanceOverrides:      []string{"t2.medium", "t2.large"},
+				MixedOnDemandBase:           fi.PtrTo(int64(4)),
+				MixedOnDemandAboveBase:      fi.PtrTo(int64(30)),
+				MixedSpotAllocationStrategy: fi.PtrTo("capacity-optimized"),
+				WarmPool: &WarmPool{
+					Enabled: fi.PtrTo(true),
+					MinSize: 3,
+					MaxSize: fi.PtrTo(int64(5)),
+				},
+				Subnets: []*Subnet{
+					{
+						Name: fi.PtrTo("test-sg"),
+						ID:   fi.PtrTo("sg-1111"),
+					},
+				},
+				Tags: map[string]string{
+					"test":    "tag",
+					"cluster": "test",
+				},
+			},
+			Expected: `provider "aws" {
   region = "eu-west-2"
 }
 
@@ -413,7 +413,7 @@ terraform {
   }
 }
 `,
-                },
+		},
 	}
 
 	doRenderTests(t, "RenderTerraform", cases)
