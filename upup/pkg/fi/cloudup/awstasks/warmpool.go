@@ -119,10 +119,8 @@ func (*WarmPool) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *WarmPool) error
 	return nil
 }
 
+// For the terraform target, warmpool config is rendered inside the AutoscalingGroup resource
 func (_ *WarmPool) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *WarmPool) error {
-	if changes != nil {
-		klog.Warning("ASG warm pool is not supported by the terraform target")
-	}
 	return nil
 }
 
