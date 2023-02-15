@@ -213,6 +213,10 @@ resource "aws_autoscaling_group" "nodes-minimal-warmpool-example-com" {
     value               = "owned"
   }
   vpc_zone_identifier = [aws_subnet.us-test-1a-minimal-warmpool-example-com.id]
+  warm_pool {
+    max_group_prepared_capacity = 1
+    min_size                    = 0
+  }
 }
 
 resource "aws_autoscaling_lifecycle_hook" "kops-warmpool-nodes" {
