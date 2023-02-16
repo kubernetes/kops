@@ -114,17 +114,6 @@ func getDefaultPriorities() []string {
 	}
 }
 
-// isRelevantPriority returns true if priority of a Pod is in priorities and false if not,
-// thus determining if the priority is relevant for validation.
-func isRelevantPriority(priority string, priorities []string) bool {
-	for _, relevantPriority := range priorities {
-		if priority == relevantPriority {
-			return true
-		}
-	}
-	return false
-}
-
 func NewClusterValidator(cluster *kops.Cluster, cloud fi.Cloud, instanceGroupList *kops.InstanceGroupList, host string, k8sClient kubernetes.Interface, additionalPriorities []string) (ClusterValidator, error) {
 	var instanceGroups []*kops.InstanceGroup
 
@@ -242,7 +231,7 @@ func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kuber
 		}
 
 		priority := pod.Spec.PriorityClassName
-		if !isRelevantPriority(priority, priorities) {
+		if !fi.ArrayContains(priorities, priority) {
 			return nil
 		}
 		if pod.Status.Phase == v1.PodSucceeded {
