@@ -130,7 +130,7 @@ containerd:
   logLevel: info
   runc:
     version: 1.1.4
-  version: 1.6.17
+  version: 1.6.18
 docker:
   skipInstall: true
 kubeProxy:
@@ -189,7 +189,7 @@ ConfigServer:
   - https://kops-controller.internal.minimal.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: ELHVd2e/YI7QN6+T4pIgzuDVQnl4g4HAOBUL1R3Eqgw=
+NodeupConfigHash: HDRphEz520EYrduwZGlGSksrc7rqcL8oizU6Av88/7M=
 
 __EOF_KUBE_ENV
 
