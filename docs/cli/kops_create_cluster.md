@@ -94,6 +94,7 @@ kops create cluster [CLUSTER] [flags]
       --gce-service-account string              Service account with which the GCE VM runs. Warning: if not set, VMs will run as default compute service account.
   -h, --help                                    help for cluster
       --image string                            Machine image for all instances
+      --instance-manager string                 Instance manager to use (cloudgroups or karpenter. Default: cloudgroups) (default "cloudgroups")
       --ipv6                                    Use IPv6 for the pod network (AWS only)
       --kubernetes-feature-gates strings        List of Kubernetes feature gates to enable/disable
       --kubernetes-version string               Version of Kubernetes to run (defaults to version in channel)

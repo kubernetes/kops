@@ -469,12 +469,10 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		return pflag.NormalizedName(name)
 	})
 
-	if featureflag.Karpenter.Enabled() {
-		cmd.Flags().StringVar(&options.InstanceManager, "instance-manager", options.InstanceManager, "Instance manager to use (cloudgroups or karpenter. Default: cloudgroups)")
-		cmd.RegisterFlagCompletionFunc("instance-manager", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			return []string{"cloudgroups", "karpenter"}, cobra.ShellCompDirectiveNoFileComp
-		})
-	}
+	cmd.Flags().StringVar(&options.InstanceManager, "instance-manager", options.InstanceManager, "Instance manager to use (cloudgroups or karpenter. Default: cloudgroups)")
+	cmd.RegisterFlagCompletionFunc("instance-manager", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"cloudgroups", "karpenter"}, cobra.ShellCompDirectiveNoFileComp
+	})
 	return cmd
 }
 

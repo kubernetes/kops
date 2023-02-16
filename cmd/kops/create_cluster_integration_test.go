@@ -186,11 +186,6 @@ func TestCreateClusterDifferentAMIs(t *testing.T) {
 
 // TestCreateClusterKarpenter runs kops create cluster --instance-manager=karpenter
 func TestCreateClusterKarpenter(t *testing.T) {
-	featureflag.ParseFlags("+Karpenter")
-	unsetFeatureFlags := func() {
-		featureflag.ParseFlags("-Karpenter")
-	}
-	defer unsetFeatureFlags()
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/karpenter", "v1alpha2")
 }
 
