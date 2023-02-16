@@ -206,7 +206,7 @@ spec:
         - name: WORKERS
           value: "10"
         - name: WEBHOOK_URL
-          value: <nil>
+          value: "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX"
         image: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.18.3
         imagePullPolicy: IfNotPresent
         livenessProbe:

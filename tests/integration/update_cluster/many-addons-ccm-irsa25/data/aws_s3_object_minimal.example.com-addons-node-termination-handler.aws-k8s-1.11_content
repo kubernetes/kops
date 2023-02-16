@@ -196,7 +196,7 @@ spec:
         - name: WORKERS
           value: "10"
         - name: WEBHOOK_URL
-          value: <nil>
+          value: "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX"
         - name: AWS_ROLE_ARN
           value: arn:aws-test:iam::123456789012:role/aws-node-termination-handler.kube-system.sa.minimal.example.com
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
