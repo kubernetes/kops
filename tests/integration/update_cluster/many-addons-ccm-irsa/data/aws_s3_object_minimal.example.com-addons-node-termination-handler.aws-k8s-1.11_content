@@ -195,6 +195,8 @@ spec:
           value: https://sqs.us-test-1.amazonaws.com/123456789012/minimal-example-com-nth
         - name: WORKERS
           value: "10"
+        - name: WEBHOOK_URL
+          value: <nil>
         - name: AWS_ROLE_ARN
           value: arn:aws-test:iam::123456789012:role/aws-node-termination-handler.kube-system.sa.minimal.example.com
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
