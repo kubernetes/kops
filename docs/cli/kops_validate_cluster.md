@@ -29,11 +29,12 @@ kops validate cluster [CLUSTER] [flags]
 ### Options
 
 ```
-      --count int           Number of consecutive successful validations required
-  -h, --help                help for cluster
-      --kubeconfig string   Path to the kubeconfig file
-  -o, --output string       Output format. One of json|yaml|table. (default "table")
-      --wait duration       Amount of time to wait for the cluster to become ready
+      --additional-priorities strings   Additional priorities of Pods to consider when validating
+      --count int                       Number of consecutive successful validations required
+  -h, --help                            help for cluster
+      --kubeconfig string               Path to the kubeconfig file
+  -o, --output string                   Output format. One of json|yaml|table. (default "table")
+      --wait duration                   Amount of time to wait for the cluster to become ready
 ```
 
 ### Options inherited from parent commands

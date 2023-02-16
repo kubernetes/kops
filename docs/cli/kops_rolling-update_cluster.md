@@ -56,6 +56,7 @@ kops rolling-update cluster [CLUSTER] [flags]
 ### Options
 
 ```
+      --additional-priorities strings     Additional priorities of Pods to consider when validating
       --bastion-interval duration         Time to wait between restarting bastions (default 15s)
       --cloudonly                         Perform rolling update without confirming progress with Kubernetes
       --control-plane-interval duration   Time to wait between restarting control plane nodes (default 15s)
