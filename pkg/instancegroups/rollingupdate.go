@@ -91,6 +91,10 @@ type RollingUpdateOptions struct {
 	// DeregisterControlPlaneNodes controls if we deregister control plane instances from load balacners etc before draining/terminating.
 	// When a cluster only has a single apiserver, we don't want to do this, as we can't drain after deregistering it.
 	DeregisterControlPlaneNodes bool
+
+	// AdditionalPriorities specifies that the validation will consider pods with these PriorityClassNames as well,
+	// in addition to the default system critical ones (todo: improve wording...).
+	AdditionalPriorities []string
 }
 
 func (o *RollingUpdateOptions) InitDefaults() {

@@ -125,7 +125,7 @@ func isRelevantPriority(priority string, priorities []string) bool {
 	return false
 }
 
-func NewClusterValidator(cluster *kops.Cluster, cloud fi.Cloud, instanceGroupList *kops.InstanceGroupList, host string, k8sClient kubernetes.Interface) (ClusterValidator, error) {
+func NewClusterValidator(cluster *kops.Cluster, cloud fi.Cloud, instanceGroupList *kops.InstanceGroupList, host string, k8sClient kubernetes.Interface, additionalPriorities []string) (ClusterValidator, error) {
 	var instanceGroups []*kops.InstanceGroup
 
 	for i := range instanceGroupList.Items {
@@ -138,6 +138,10 @@ func NewClusterValidator(cluster *kops.Cluster, cloud fi.Cloud, instanceGroupLis
 	}
 
 	priorities := getDefaultPriorities()
+
+	if additionalPriorities != nil {
+		priorities = append(priorities, additionalPriorities...)
+	}
 
 	return &clusterValidatorImpl{
 		cluster:        cluster,

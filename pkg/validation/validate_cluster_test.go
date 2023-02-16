@@ -68,7 +68,7 @@ func (c *MockCloud) GetCloudGroups(cluster *kopsapi.Cluster, instancegroups []*k
 	return c.Groups, nil
 }
 
-func testValidate(t *testing.T, groups map[string]*cloudinstances.CloudInstanceGroup, objects []runtime.Object) (*ValidationCluster, error) {
+func testValidate(t *testing.T, groups map[string]*cloudinstances.CloudInstanceGroup, objects []runtime.Object, additionalPriorities []string) (*ValidationCluster, error) {
 	cluster := &kopsapi.Cluster{
 		ObjectMeta: metav1.ObjectMeta{Name: "testcluster.k8s.local"},
 		Spec: kopsapi.ClusterSpec{
@@ -126,7 +126,7 @@ func testValidate(t *testing.T, groups map[string]*cloudinstances.CloudInstanceG
 
 	mockcloud := BuildMockCloud(t, groups, cluster, instanceGroups)
 
-	validator, err := NewClusterValidator(cluster, mockcloud, &kopsapi.InstanceGroupList{Items: instanceGroups}, "https://api.testcluster.k8s.local", fake.NewSimpleClientset(objects...))
+	validator, err := NewClusterValidator(cluster, mockcloud, &kopsapi.InstanceGroupList{Items: instanceGroups}, "https://api.testcluster.k8s.local", fake.NewSimpleClientset(objects...), additionalPriorities)
 	if err != nil {
 		return nil, err
 	}
@@ -156,7 +156,7 @@ func Test_ValidateCloudGroupMissing(t *testing.T) {
 
 	mockcloud := BuildMockCloud(t, nil, cluster, instanceGroups)
 
-	validator, err := NewClusterValidator(cluster, mockcloud, &kopsapi.InstanceGroupList{Items: instanceGroups}, "https://api.testcluster.k8s.local", fake.NewSimpleClientset())
+	validator, err := NewClusterValidator(cluster, mockcloud, &kopsapi.InstanceGroupList{Items: instanceGroups}, "https://api.testcluster.k8s.local", fake.NewSimpleClientset(), nil)
 	require.NoError(t, err)
 	v, err := validator.Validate()
 	require.NoError(t, err)
@@ -212,7 +212,7 @@ func Test_ValidateNodesNotEnough(t *testing.T) {
 		},
 	}
 
-	v, err := testValidate(t, groups, nil)
+	v, err := testValidate(t, groups, nil, nil)
 	require.NoError(t, err)
 	if !assert.Len(t, v.Failures, 1) ||
 		!assert.Equal(t, &ValidationError{
@@ -267,7 +267,7 @@ func Test_ValidateDetachedNodesDontCount(t *testing.T) {
 		},
 	}
 
-	v, err := testValidate(t, groups, nil)
+	v, err := testValidate(t, groups, nil, nil)
 	require.NoError(t, err)
 	if !assert.Len(t, v.Failures, 1) ||
 		!assert.Equal(t, &ValidationError{
@@ -321,7 +321,7 @@ func Test_ValidateNodeNotReady(t *testing.T) {
 		},
 	}
 
-	v, err := testValidate(t, groups, nil)
+	v, err := testValidate(t, groups, nil, nil)
 	require.NoError(t, err)
 	if !assert.Len(t, v.Failures, 1) ||
 		!assert.Equal(t, &ValidationError{
@@ -375,7 +375,7 @@ func Test_ValidateMastersNotEnough(t *testing.T) {
 		},
 	}
 
-	v, err := testValidate(t, groups, nil)
+	v, err := testValidate(t, groups, nil, nil)
 	require.NoError(t, err)
 	if !assert.Len(t, v.Failures, 1) ||
 		!assert.Equal(t, &ValidationError{
@@ -429,7 +429,7 @@ func Test_ValidateMasterNotReady(t *testing.T) {
 		},
 	}
 
-	v, err := testValidate(t, groups, nil)
+	v, err := testValidate(t, groups, nil, nil)
 	require.NoError(t, err)
 	if !assert.Len(t, v.Failures, 1) ||
 		!assert.Equal(t, &ValidationError{
@@ -560,7 +560,7 @@ func Test_ValidateMasterStaticPods(t *testing.T) {
 		})
 	}
 
-	v, err := testValidate(t, groups, makePodList(podList))
+	v, err := testValidate(t, groups, makePodList(podList), nil)
 	require.NoError(t, err)
 	if !assert.ElementsMatch(t, v.Failures, expectedFailures) {
 		printDebug(t, v)
@@ -618,7 +618,7 @@ func Test_ValidateNoPodFailures(t *testing.T) {
 		}
 	}
 
-	v, err := testValidate(t, nil, makePodList(testpods))
+	v, err := testValidate(t, nil, makePodList(testpods), nil)
 
 	require.NoError(t, err)
 	if !assert.Empty(t, v.Failures) {
@@ -733,7 +733,7 @@ func Test_ValidatePodFailure(t *testing.T) {
 									"hostip":            hostIp,
 								},
 							},
-						))
+						), nil)
 
 						var podInstanceGroup *kopsapi.InstanceGroup
 						if priority == "node" {
@@ -830,7 +830,7 @@ func Test_ValidateBastionNodes(t *testing.T) {
 	// When an instancegroup's nodes are not ready, that is an error
 	t.Run("instancegroup's nodes not ready", func(t *testing.T) {
 		groups["ig1"].InstanceGroup.Spec.Role = kopsapi.InstanceGroupRoleNode
-		v, err := testValidate(t, groups, nil)
+		v, err := testValidate(t, groups, nil, nil)
 		require.NoError(t, err)
 		if !assert.Len(t, v.Failures, 1) {
 			printDebug(t, v)
@@ -842,7 +842,7 @@ func Test_ValidateBastionNodes(t *testing.T) {
 	// Except for a bastion instancegroup - those are not expected to join as nodes
 	t.Run("bastion instancegroup nodes not ready", func(t *testing.T) {
 		groups["ig1"].InstanceGroup.Spec.Role = kopsapi.InstanceGroupRoleBastion
-		v, err := testValidate(t, groups, nil)
+		v, err := testValidate(t, groups, nil, nil)
 		require.NoError(t, err)
 		if !assert.Empty(t, v.Failures, "Bastion nodes are not expected to join cluster") {
 			printDebug(t, v)
@@ -895,7 +895,7 @@ func Test_ValidateDetachedNodesNotValidated(t *testing.T) {
 		},
 	}
 
-	v, err := testValidate(t, groups, nil)
+	v, err := testValidate(t, groups, nil, nil)
 	require.NoError(t, err)
 	if !assert.Empty(t, v.Failures) {
 		printDebug(t, v)

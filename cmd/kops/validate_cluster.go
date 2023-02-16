@@ -46,7 +46,7 @@ import (
 var (
 	validateClusterLong = templates.LongDesc(i18n.T(`
 		This commands validates the following components:
-	
+
 		1. All control plane nodes are running and have "Ready" status.
 		2. All worker nodes are running and have "Ready" status.
 		3. All control plane nodes have the expected pods.
@@ -67,6 +67,9 @@ type ValidateClusterOptions struct {
 	wait        time.Duration
 	count       int
 	kubeconfig  string
+	// AdditionalPriorities specifies that the validation will consider pods with these PriorityClassNames as well,
+	// in addition to the default system critical ones (todo: improve wording...).
+	AdditionalPriorities []string
 }
 
 func (o *ValidateClusterOptions) InitDefaults() {
@@ -106,6 +109,7 @@ func NewCmdValidateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().DurationVar(&options.wait, "wait", options.wait, "Amount of time to wait for the cluster to become ready")
 	cmd.Flags().IntVar(&options.count, "count", options.count, "Number of consecutive successful validations required")
 	cmd.Flags().StringVar(&options.kubeconfig, "kubeconfig", "", "Path to the kubeconfig file")
+	cmd.Flags().StringSliceVar(&options.AdditionalPriorities, "additional-priorities", options.AdditionalPriorities, "Additional priorities of Pods to consider when validating")
 
 	return cmd
 }
@@ -166,7 +170,7 @@ func RunValidateCluster(ctx context.Context, f *util.Factory, out io.Writer, opt
 	timeout := time.Now().Add(options.wait)
 	pollInterval := 10 * time.Second
 
-	validator, err := validation.NewClusterValidator(cluster, cloud, list, config.Host, k8sClient)
+	validator, err := validation.NewClusterValidator(cluster, cloud, list, config.Host, k8sClient, options.AdditionalPriorities)
 	if err != nil {
 		return nil, fmt.Errorf("unexpected error creating validatior: %v", err)
 	}

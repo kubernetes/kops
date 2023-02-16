@@ -70,6 +70,10 @@ type DeleteInstanceOptions struct {
 	InstanceID string
 
 	Surge bool
+
+	// AdditionalPriorities specifies that the validation will consider pods with these PriorityClassNames as well,
+	// in addition to the default system critical ones (todo: improve wording...).
+	AdditionalPriorities []string
 }
 
 func (o *DeleteInstanceOptions) initDefaults() {
@@ -89,7 +93,7 @@ func (o *DeleteInstanceOptions) initDefaults() {
 
 func NewCmdDeleteInstance(f *util.Factory, out io.Writer) *cobra.Command {
 	deleteInstanceLong := templates.LongDesc(i18n.T(`
-		Delete an instance. By default, it will detach the instance from 
+		Delete an instance. By default, it will detach the instance from
 		the instance group, drain it, then terminate it.`))
 
 	deleteInstanceExample := templates.Examples(i18n.T(`
@@ -146,6 +150,7 @@ func NewCmdDeleteInstance(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().BoolVar(&options.FailOnDrainError, "fail-on-drain-error", true, "Fail if draining a node fails")
 	cmd.Flags().BoolVar(&options.FailOnValidate, "fail-on-validate-error", true, "Fail if the cluster fails to validate")
+	cmd.Flags().StringSliceVar(&options.AdditionalPriorities, "additional-priorities", options.AdditionalPriorities, "Additional priorities of Pods to consider when validating")
 
 	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", options.Yes, "Specify --yes to immediately delete the instance")
 
@@ -216,6 +221,10 @@ func RunDeleteInstance(ctx context.Context, f *util.Factory, out io.Writer, opti
 		return nil
 	}
 
+	rollingUpdateOptions := instancegroups.RollingUpdateOptions{}
+	rollingUpdateOptions.InitDefaults()
+	rollingUpdateOptions.AdditionalPriorities = options.AdditionalPriorities
+
 	d := &instancegroups.RollingUpdateCluster{
 		Clientset:         clientSet,
 		Cluster:           cluster,
@@ -237,11 +246,12 @@ func RunDeleteInstance(ctx context.Context, f *util.Factory, out io.Writer, opti
 		// TODO should we expose this to the UI?
 		ValidateTickDuration:    30 * time.Second,
 		ValidateSuccessDuration: 10 * time.Second,
+		Options:                 rollingUpdateOptions,
 	}
 
 	var clusterValidator validation.ClusterValidator
 	if !options.CloudOnly {
-		clusterValidator, err = validation.NewClusterValidator(cluster, cloud, list, host, k8sClient)
+		clusterValidator, err = validation.NewClusterValidator(cluster, cloud, list, host, k8sClient, options.AdditionalPriorities)
 		if err != nil {
 			return fmt.Errorf("cannot create cluster validator: %v", err)
 		}
