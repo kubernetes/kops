@@ -69,7 +69,7 @@ type clusterValidatorImpl struct {
 	instanceGroups []*kops.InstanceGroup
 	host           string
 	k8sClient      kubernetes.Interface
-	priorities     []string
+	filters        map[string][]string
 }
 
 func (v *ValidationCluster) addError(failure *ValidationError) {
@@ -114,7 +114,7 @@ func getDefaultPriorities() []string {
 	}
 }
 
-func NewClusterValidator(cluster *kops.Cluster, cloud fi.Cloud, instanceGroupList *kops.InstanceGroupList, host string, k8sClient kubernetes.Interface, additionalPriorities []string) (ClusterValidator, error) {
+func NewClusterValidator(cluster *kops.Cluster, cloud fi.Cloud, instanceGroupList *kops.InstanceGroupList, host string, k8sClient kubernetes.Interface, additionalFilters []string) (ClusterValidator, error) {
 	var instanceGroups []*kops.InstanceGroup
 
 	for i := range instanceGroupList.Items {
@@ -126,10 +126,28 @@ func NewClusterValidator(cluster *kops.Cluster, cloud fi.Cloud, instanceGroupLis
 		return nil, fmt.Errorf("no InstanceGroup objects found")
 	}
 
-	priorities := getDefaultPriorities()
+	// TODO: func()!
+	supportedKeys := []string{
+		"priority-class-name",
+		"namespace",
+	}
 
-	if additionalPriorities != nil {
-		priorities = append(priorities, additionalPriorities...)
+	filters := make(map[string][]string)
+
+	filters["priority-class-name"] = getDefaultPriorities()
+
+	for _, additionalFilter := range additionalFilters {
+		key, value, ok := strings.Cut(additionalFilter, "=")
+		if !ok || !fi.ArrayContains(supportedKeys, key) {
+			// TODO: error/warning message
+			continue
+		}
+
+		if values, ok := filters[key]; ok {
+			filters[key] = append(values, value)
+		} else {
+			filters[key] = []string{value}
+		}
 	}
 
 	return &clusterValidatorImpl{
@@ -138,7 +156,7 @@ func NewClusterValidator(cluster *kops.Cluster, cloud fi.Cloud, instanceGroupLis
 		instanceGroups: instanceGroups,
 		host:           host,
 		k8sClient:      k8sClient,
-		priorities:     priorities,
+		filters:        filters,
 	}, nil
 }
 
@@ -187,7 +205,7 @@ func (v *clusterValidatorImpl) Validate() (*ValidationCluster, error) {
 	}
 	readyNodes, nodeInstanceGroupMapping := validation.validateNodes(cloudGroups, v.instanceGroups)
 
-	if err := validation.collectPodFailures(ctx, v.k8sClient, readyNodes, nodeInstanceGroupMapping, v.priorities); err != nil {
+	if err := validation.collectPodFailures(ctx, v.k8sClient, readyNodes, nodeInstanceGroupMapping, v.filters); err != nil {
 		return nil, fmt.Errorf("cannot get pod health for %q: %v", v.cluster.Name, err)
 	}
 
@@ -201,7 +219,7 @@ var masterStaticPods = []string{
 }
 
 func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kubernetes.Interface, nodes []v1.Node,
-	nodeInstanceGroupMapping map[string]*kops.InstanceGroup, priorities []string,
+	nodeInstanceGroupMapping map[string]*kops.InstanceGroup, filters map[string][]string,
 ) error {
 	masterWithoutPod := map[string]map[string]bool{}
 	nodeByAddress := map[string]string{}
@@ -231,7 +249,7 @@ func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kuber
 		}
 
 		priority := pod.Spec.PriorityClassName
-		if !fi.ArrayContains(priorities, priority) {
+		if !fi.ArrayContains(filters["priority-class-name"], priority) {
 			return nil
 		}
 		if pod.Status.Phase == v1.PodSucceeded {

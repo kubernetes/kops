@@ -208,7 +208,7 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().BoolVar(&options.FailOnDrainError, "fail-on-drain-error", true, "Fail if draining a node fails")
 	cmd.Flags().BoolVar(&options.FailOnValidate, "fail-on-validate-error", true, "Fail if the cluster fails to validate")
-	cmd.Flags().StringSliceVar(&options.AdditionalPriorities, "additional-priorities", options.AdditionalPriorities, "Additional priorities of Pods to consider when validating")
+	cmd.Flags().StringSliceVar(&options.AdditionalFilters, "additional-filters", options.AdditionalFilters, "Additional filters to consider when validating")
 
 	cmd.Flags().SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {
 		switch name {
@@ -447,7 +447,7 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 
 	var clusterValidator validation.ClusterValidator
 	if !options.CloudOnly {
-		clusterValidator, err = validation.NewClusterValidator(cluster, cloud, list, config.Host, k8sClient, options.AdditionalPriorities)
+		clusterValidator, err = validation.NewClusterValidator(cluster, cloud, list, config.Host, k8sClient, options.AdditionalFilters)
 		if err != nil {
 			return fmt.Errorf("cannot create cluster validator: %v", err)
 		}

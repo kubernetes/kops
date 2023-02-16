@@ -68,7 +68,7 @@ func (c *MockCloud) GetCloudGroups(cluster *kopsapi.Cluster, instancegroups []*k
 	return c.Groups, nil
 }
 
-func testValidate(t *testing.T, groups map[string]*cloudinstances.CloudInstanceGroup, objects []runtime.Object, additionalPriorities []string) (*ValidationCluster, error) {
+func testValidate(t *testing.T, groups map[string]*cloudinstances.CloudInstanceGroup, objects []runtime.Object, additionalFilters []string) (*ValidationCluster, error) {
 	cluster := &kopsapi.Cluster{
 		ObjectMeta: metav1.ObjectMeta{Name: "testcluster.k8s.local"},
 		Spec: kopsapi.ClusterSpec{
@@ -126,7 +126,7 @@ func testValidate(t *testing.T, groups map[string]*cloudinstances.CloudInstanceG
 
 	mockcloud := BuildMockCloud(t, groups, cluster, instanceGroups)
 
-	validator, err := NewClusterValidator(cluster, mockcloud, &kopsapi.InstanceGroupList{Items: instanceGroups}, "https://api.testcluster.k8s.local", fake.NewSimpleClientset(objects...), additionalPriorities)
+	validator, err := NewClusterValidator(cluster, mockcloud, &kopsapi.InstanceGroupList{Items: instanceGroups}, "https://api.testcluster.k8s.local", fake.NewSimpleClientset(objects...), additionalFilters)
 	if err != nil {
 		return nil, err
 	}

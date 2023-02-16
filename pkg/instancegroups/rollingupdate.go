@@ -92,9 +92,12 @@ type RollingUpdateOptions struct {
 	// When a cluster only has a single apiserver, we don't want to do this, as we can't drain after deregistering it.
 	DeregisterControlPlaneNodes bool
 
-	// AdditionalPriorities specifies that the validation will consider pods with these PriorityClassNames as well,
-	// in addition to the default system critical ones (todo: improve wording...).
-	AdditionalPriorities []string
+	// AdditionalFilters specifies filters in the form of "<key>=<value>" which are considered when validating a cluster.
+	//
+	// Currently, the flag supports the following filters:
+	//   * priority-class-name=<priority class name>
+	//   * namespace=<namespace>
+	AdditionalFilters []string
 }
 
 func (o *RollingUpdateOptions) InitDefaults() {
