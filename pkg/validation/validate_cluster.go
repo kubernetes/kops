@@ -37,6 +37,11 @@ import (
 	"k8s.io/kops/pkg/cloudinstances"
 )
 
+const (
+	systemClusterCriticalPriority = "system-cluster-critical"
+	systemNodeCriticalPriority    = "system-node-critical"
+)
+
 // ValidationCluster uses a cluster to validate.
 type ValidationCluster struct {
 	Failures []*ValidationError `json:"failures,omitempty"`
@@ -64,6 +69,7 @@ type clusterValidatorImpl struct {
 	instanceGroups []*kops.InstanceGroup
 	host           string
 	k8sClient      kubernetes.Interface
+	priorities     []string
 }
 
 func (v *ValidationCluster) addError(failure *ValidationError) {
@@ -100,6 +106,25 @@ func hasPlaceHolderIP(host string) (string, error) {
 	return "", nil
 }
 
+// getDefaultPriorities returns the default priorities relevant for validating Pods.
+func getDefaultPriorities() []string {
+	return []string{
+		systemClusterCriticalPriority,
+		systemNodeCriticalPriority,
+	}
+}
+
+// isRelevantPriority returns true if priority of a Pod is in priorities and false if not,
+// thus determining if the priority is relevant for validation.
+func isRelevantPriority(priority string, priorities []string) bool {
+	for _, relevantPriority := range priorities {
+		if priority == relevantPriority {
+			return true
+		}
+	}
+	return false
+}
+
 func NewClusterValidator(cluster *kops.Cluster, cloud fi.Cloud, instanceGroupList *kops.InstanceGroupList, host string, k8sClient kubernetes.Interface) (ClusterValidator, error) {
 	var instanceGroups []*kops.InstanceGroup
 
@@ -112,12 +137,15 @@ func NewClusterValidator(cluster *kops.Cluster, cloud fi.Cloud, instanceGroupLis
 		return nil, fmt.Errorf("no InstanceGroup objects found")
 	}
 
+	priorities := getDefaultPriorities()
+
 	return &clusterValidatorImpl{
 		cluster:        cluster,
 		cloud:          cloud,
 		instanceGroups: instanceGroups,
 		host:           host,
 		k8sClient:      k8sClient,
+		priorities:     priorities,
 	}, nil
 }
 
@@ -166,7 +194,7 @@ func (v *clusterValidatorImpl) Validate() (*ValidationCluster, error) {
 	}
 	readyNodes, nodeInstanceGroupMapping := validation.validateNodes(cloudGroups, v.instanceGroups)
 
-	if err := validation.collectPodFailures(ctx, v.k8sClient, readyNodes, nodeInstanceGroupMapping); err != nil {
+	if err := validation.collectPodFailures(ctx, v.k8sClient, readyNodes, nodeInstanceGroupMapping, v.priorities); err != nil {
 		return nil, fmt.Errorf("cannot get pod health for %q: %v", v.cluster.Name, err)
 	}
 
@@ -180,7 +208,7 @@ var masterStaticPods = []string{
 }
 
 func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kubernetes.Interface, nodes []v1.Node,
-	nodeInstanceGroupMapping map[string]*kops.InstanceGroup,
+	nodeInstanceGroupMapping map[string]*kops.InstanceGroup, priorities []string,
 ) error {
 	masterWithoutPod := map[string]map[string]bool{}
 	nodeByAddress := map[string]string{}
@@ -210,7 +238,7 @@ func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kuber
 		}
 
 		priority := pod.Spec.PriorityClassName
-		if priority != "system-cluster-critical" && priority != "system-node-critical" {
+		if !isRelevantPriority(priority, priorities) {
 			return nil
 		}
 		if pod.Status.Phase == v1.PodSucceeded {
@@ -218,7 +246,7 @@ func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kuber
 		}
 
 		var podNode *kops.InstanceGroup
-		if priority == "system-node-critical" {
+		if priority == systemNodeCriticalPriority {
 			podNode = nodeInstanceGroupMapping[nodeByAddress[pod.Status.HostIP]]
 		}
 
