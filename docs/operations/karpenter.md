@@ -2,15 +2,7 @@
 
 [Karpenter](https://karpenter.sh) is a Kubernetes-native capacity manager that directly provisions Nodes and underlying instances based on Pod requirements. On AWS, kOps supports managing an InstanceGroup with either Karpenter or an AWS Auto Scaling Group (ASG).
 
-Karpenter is a fairly new project, and it is still not determined how Karpenter should work with kOps. Because of this, Karpenter is behind the `Karpenter` feature flag.
-
 ## Installing
-
-Enable the Karpenter feature flag:
-
-```sh
-export KOPS_FEATURE_FLAGS="Karpenter"
-```
 
 Karpenter requires that external permissions for ServiceAccounts be enabled for the cluster. See [AWS IAM roles for ServiceAccounts documentation](/cluster_spec#service-account-issuer-discovery-and-aws-iam-roles-for-service-accounts-irsa) for how to enable this. 
 
