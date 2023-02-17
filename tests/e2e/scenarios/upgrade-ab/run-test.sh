@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+export KOPS_FEATURE_FLAGS="SpecOverrideFlag,"
+
 REPO_ROOT=$(git rev-parse --show-toplevel);
 source "${REPO_ROOT}"/tests/e2e/scenarios/lib/common.sh
 
@@ -78,7 +80,10 @@ else
   KOPS="${KOPS_A}"
 fi
 
-
+create_args=""
+if [[ ${KOPS_IRSA-} = true ]]; then
+  create_args="${create_args} --discovery-store=${DISCOVERY_STORE}/${CLUSTER_NAME}/discovery"
+fi
 
 ${KUBETEST2} \
     --up \
@@ -86,7 +91,7 @@ ${KUBETEST2} \
     --kubernetes-version="${K8S_VERSION_A}" \
     --control-plane-size="${KOPS_CONTROL_PLANE_SIZE:-1}" \
     --template-path="${KOPS_TEMPLATE:-}" \
-    --create-args="--networking calico"
+    --create-args="--networking calico ${KOPS_EXTRA_FLAGS:-} ${create_args}"
 
 # Export kubeconfig-a
 KUBECONFIG_A=$(mktemp -t kops.XXXXXXXXX)
