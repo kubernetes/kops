@@ -153,7 +153,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.k8s.local
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: fj7TmUbZ96cxflV77Pa1RweYDcNoEAWurL7GjTOxYXU=
+NodeupConfigHash: xiZMSXyKxjJ2UJPUu2USszBMMd6iraXSlTuhYtY/jzY=
 
 __EOF_KUBE_ENV
 
