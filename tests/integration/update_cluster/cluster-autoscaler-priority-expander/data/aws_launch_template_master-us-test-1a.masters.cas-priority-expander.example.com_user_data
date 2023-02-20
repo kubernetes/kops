@@ -130,7 +130,7 @@ containerd:
   logLevel: info
   runc:
     version: 1.1.4
-  version: 1.6.17
+  version: 1.6.18
 docker:
   skipInstall: true
 encryptionConfig: null
@@ -258,7 +258,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/cas-priority-expander.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: 4+klYruwBZB0W/3/XkK8zaOt674q3XHlkpSB4JFzYnU=
+NodeupConfigHash: EyeoSnd3yHZVC3lFkG+mAZJS1vlAIMfQ39SHCUByk4o=
 
 __EOF_KUBE_ENV
 
