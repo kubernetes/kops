@@ -141,16 +141,19 @@ func (t *TerraformTarget) finishHCL2() error {
 
 // writeLocalsOutputs creates the locals block and output blocks for all output variables
 // Example:
-// locals {
-//   key1 = "value1"
-//   key2 = "value2"
-// }
-// output "key1" {
-//   value = "value1"
-// }
-// output "key2" {
-//   value = "value2"
-// }
+//
+//	locals {
+//	  key1 = "value1"
+//	  key2 = "value2"
+//	}
+//
+//	output "key1" {
+//	  value = "value1"
+//	}
+//
+//	output "key2" {
+//	  value = "value2"
+//	}
 func writeLocalsOutputs(body *hclwrite.Body, outputs map[string]terraformWriter.OutputValue) error {
 	if len(outputs) == 0 {
 		return nil

@@ -40,7 +40,8 @@ import (
 // https://docs.aws.amazon.com/general/latest/gr/s3.html
 // TODO: match fips and S3 access point naming conventions
 // TODO: perhaps make region regex more specific, i.e. (us|eu|ap|cn|ca|sa), to prevent matching bucket names that match region format?
-//       but that will mean updating this list when AWS introduces new regions
+//
+//	but that will mean updating this list when AWS introduces new regions
 var s3UrlRegexp = regexp.MustCompile(`(s3([-.](?P<region>\w{2}(-gov)?-\w+-\d{1})|[-.](?P<bucket>[\w.\-\_]+)|)?|(?P<bucket>[\w.\-\_]+)[.]s3([.-](?P<region>\w{2}(-gov)?-\w+-\d{1}))?)[.]amazonaws[.]com([.]cn)?(?P<path>.*)?`)
 
 type S3BucketDetails struct {

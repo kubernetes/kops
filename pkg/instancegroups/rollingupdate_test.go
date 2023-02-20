@@ -1344,21 +1344,34 @@ func TestRollingUpdateDetachFails(t *testing.T) {
 }
 
 // Request validate (1)            -->
-//                                 <-- validated
+//
+//	<-- validated
+//
 // Detach instance                 -->
 // Request validate (2)            -->
-//                                 <-- validated
+//
+//	<-- validated
+//
 // Detach instance                 -->
 // Request validate (3)            -->
-//                                 <-- validated
+//
+//	<-- validated
+//
 // Request terminate 3 nodes       -->
-//                                 <-- 3 nodes terminated, 1 left
+//
+//	<-- 3 nodes terminated, 1 left
+//
 // Request validate (4)            -->
-//                                 <-- validated
+//
+//	<-- validated
+//
 // Request terminate 1 node        -->
-//                                 <-- 1 node terminated, 0 left
+//
+//	<-- 1 node terminated, 0 left
+//
 // Request validate (5)            -->
-//                                 <-- validated
+//
+//	<-- validated
 type alreadyDetachedTest struct {
 	ec2iface.EC2API
 	t                       *testing.T
