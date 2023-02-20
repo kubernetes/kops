@@ -151,8 +151,8 @@ func (b *Client) Query(ctx context.Context, req any, resp any) error {
 		defer response.Body.Close()
 	}
 
-	// if we receive StatusNoContent it means that we should exit gracefully
-	if response.StatusCode == http.StatusNoContent {
+	// if we receive StatusConflict it means that we should exit gracefully
+	if response.StatusCode == http.StatusConflict {
 		klog.Infof("kops-controller returned status code %d", response.StatusCode)
 		os.Exit(0)
 	}
