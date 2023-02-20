@@ -144,7 +144,7 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// means that we should exit nodeup gracefully
 		if err == bootstrap.ErrAlreadyExists {
-			w.WriteHeader(http.StatusNoContent)
+			w.WriteHeader(http.StatusConflict)
 			klog.Infof("%s: %v", r.RemoteAddr, err)
 			return
 		}
