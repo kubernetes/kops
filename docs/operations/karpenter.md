@@ -61,7 +61,7 @@ On EKS, Karpener creates its own launch templates for Provisioners. These launch
 
 ### Unmanaged Provisioner resources
 
-As mentioned above, kOps will manage a Provisioner resource per InstanceGroup. It is technically possible to create Provsioner resources directly, but you have to ensure that you configure Provisioners according to kOps requirements. As mentioned above, Karpenter-managed launch templates do not work and you have to maintain your own kOps-compatible launch templates.
+As mentioned above, kOps will manage a Provisioner resource per InstanceGroup. It is technically possible to create Provisioner resources directly, but you have to ensure that you configure Provisioners according to kOps requirements. As mentioned above, Karpenter-managed launch templates do not work and you have to maintain your own kOps-compatible launch templates.
 
 ### Other minor limitations
 
