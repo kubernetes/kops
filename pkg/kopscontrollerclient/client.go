@@ -27,6 +27,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"path"
 	"time"
 
@@ -148,6 +149,12 @@ func (b *Client) Query(ctx context.Context, req any, resp any) error {
 	}
 	if response.Body != nil {
 		defer response.Body.Close()
+	}
+
+	// if we receive StatusConflict it means that we should exit gracefully
+	if response.StatusCode == http.StatusConflict {
+		klog.Infof("kops-controller returned status code %d", response.StatusCode)
+		os.Exit(0)
 	}
 
 	if response.StatusCode != http.StatusOK {
