@@ -22,6 +22,8 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"k8s.io/kops/util/pkg/proxy"
 )
 
@@ -73,9 +75,12 @@ func BuildSystemComponentEnvVars(spec *kops.ClusterSpec) EnvVars {
 	vars.addEnvVariableIfExist("AZURE_STORAGE_ACCOUNT")
 
 	// Scaleway related values.
-	vars.addEnvVariableIfExist("SCW_ACCESS_KEY")
-	vars.addEnvVariableIfExist("SCW_SECRET_KEY")
-	vars.addEnvVariableIfExist("SCW_DEFAULT_PROJECT_ID")
+	profile, err := scaleway.CreateValidScalewayProfile()
+	if err == nil {
+		vars["SCW_ACCESS_KEY"] = fi.ValueOf(profile.AccessKey)
+		vars["SCW_SECRET_KEY"] = fi.ValueOf(profile.SecretKey)
+		vars["SCW_DEFAULT_PROJECT_ID"] = fi.ValueOf(profile.DefaultProjectID)
+	}
 
 	return vars
 }
