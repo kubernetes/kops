@@ -22,6 +22,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/cloudmock/aws/mockec2"
 
 	"k8s.io/kops/upup/pkg/fi"
@@ -676,14 +677,17 @@ func TestAWSAuthentication(t *testing.T) {
 
 func TestAWSAdditionalRoutes(t *testing.T) {
 	tests := []struct {
-		clusterCidr string
-		providerId  string
-		subnetType  kops.SubnetType
-		route       []kops.RouteSpec
-		expected    []string
+		name                   string
+		clusterCIDR            string
+		additionalClusterCIDRs []string
+		providerId             string
+		subnetType             kops.SubnetType
+		route                  []kops.RouteSpec
+		expected               []string
 	}{
-		{ // valid pcx
-			clusterCidr: "100.64.0.0/10",
+		{
+			name:        "valid pcx",
+			clusterCIDR: "100.64.0.0/10",
 			subnetType:  kops.SubnetTypePrivate,
 			route: []kops.RouteSpec{
 				{
@@ -692,8 +696,9 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 				},
 			},
 		},
-		{ // valid instance
-			clusterCidr: "100.64.0.0/10",
+		{
+			name:        "valid instance",
+			clusterCIDR: "100.64.0.0/10",
 			subnetType:  kops.SubnetTypePrivate,
 			route: []kops.RouteSpec{
 				{
@@ -702,8 +707,9 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 				},
 			},
 		},
-		{ // valid nat
-			clusterCidr: "100.64.0.0/10",
+		{
+			name:        "valid nat",
+			clusterCIDR: "100.64.0.0/10",
 			subnetType:  kops.SubnetTypePrivate,
 			route: []kops.RouteSpec{
 				{
@@ -712,8 +718,9 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 				},
 			},
 		},
-		{ // valid transit gateway
-			clusterCidr: "100.64.0.0/10",
+		{
+			name:        "valid transit gateway",
+			clusterCIDR: "100.64.0.0/10",
 			subnetType:  kops.SubnetTypePrivate,
 			route: []kops.RouteSpec{
 				{
@@ -722,8 +729,9 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 				},
 			},
 		},
-		{ // valid internet gateway
-			clusterCidr: "100.64.0.0/10",
+		{
+			name:        "valid internet gateway",
+			clusterCIDR: "100.64.0.0/10",
 			subnetType:  kops.SubnetTypePrivate,
 			route: []kops.RouteSpec{
 				{
@@ -732,8 +740,9 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 				},
 			},
 		},
-		{ // valid egress only internet gateway
-			clusterCidr: "100.64.0.0/10",
+		{
+			name:        "valid egress only internet gateway",
+			clusterCIDR: "100.64.0.0/10",
 			subnetType:  kops.SubnetTypePrivate,
 			route: []kops.RouteSpec{
 				{
@@ -742,8 +751,9 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 				},
 			},
 		},
-		{ // bad cluster cidr
-			clusterCidr: "not cidr",
+		{
+			name:        "bad cluster cidr",
+			clusterCIDR: "not cidr",
 			subnetType:  kops.SubnetTypePrivate,
 			route: []kops.RouteSpec{
 				{
@@ -753,8 +763,9 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 			},
 			expected: []string{"Invalid value::spec.networking.networkCIDR"},
 		},
-		{ // bad cidr
-			clusterCidr: "100.64.0.0/10",
+		{
+			name:        "bad cidr",
+			clusterCIDR: "100.64.0.0/10",
 			subnetType:  kops.SubnetTypePrivate,
 			route: []kops.RouteSpec{
 				{
@@ -764,8 +775,9 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 			},
 			expected: []string{"Invalid value::spec.networking.subnets[0].additionalRoutes[0].cidr"},
 		},
-		{ // bad target
-			clusterCidr: "100.64.0.0/10",
+		{
+			name:        "bad target",
+			clusterCIDR: "100.64.0.0/10",
 			subnetType:  kops.SubnetTypePrivate,
 			route: []kops.RouteSpec{
 				{
@@ -775,8 +787,9 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 			},
 			expected: []string{"Invalid value::spec.networking.subnets[0].additionalRoutes[0].target"},
 		},
-		{ // target more specific
-			clusterCidr: "100.64.0.0/10",
+		{
+			name:        "target more specific",
+			clusterCIDR: "100.64.0.0/10",
 			subnetType:  kops.SubnetTypePrivate,
 			route: []kops.RouteSpec{
 				{
@@ -786,8 +799,22 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 			},
 			expected: []string{"Forbidden::spec.networking.subnets[0].additionalRoutes[0].target"},
 		},
-		{ // duplicates cidr
-			clusterCidr: "100.64.0.0/10",
+		{
+			name:                   "target more specific additionalCIDR",
+			clusterCIDR:            "100.64.0.0/16",
+			additionalClusterCIDRs: []string{"100.66.0.0/16", "100.67.0.0/16"},
+			subnetType:             kops.SubnetTypePrivate,
+			route: []kops.RouteSpec{
+				{
+					CIDR:   "100.66.2.0/24",
+					Target: "pcx-abcdef",
+				},
+			},
+			expected: []string{"Forbidden::spec.networking.subnets[0].additionalRoutes[0].target"},
+		},
+		{
+			name:        "duplicates cidr",
+			clusterCIDR: "100.64.0.0/10",
 			subnetType:  kops.SubnetTypePrivate,
 			route: []kops.RouteSpec{
 				{
@@ -801,8 +828,9 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 			},
 			expected: []string{"Duplicate value::spec.networking.subnets[0].additionalRoutes[1].cidr"},
 		},
-		{ // shared subnet
-			clusterCidr: "100.64.0.0/10",
+		{
+			name:        "shared subnet",
+			clusterCIDR: "100.64.0.0/10",
 			subnetType:  kops.SubnetTypePrivate,
 			providerId:  "123456",
 			route: []kops.RouteSpec{
@@ -811,10 +839,11 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 					Target: "pcx-abcdef",
 				},
 			},
-			expected: []string{"Invalid value::spec.networking.subnets[0]"},
+			expected: []string{"Forbidden::spec.networking.subnets[0].additionalRoutes"},
 		},
-		{ // not a private subnet
-			clusterCidr: "100.64.0.0/10",
+		{
+			name:        "not a private subnet",
+			clusterCIDR: "100.64.0.0/10",
 			subnetType:  kops.SubnetTypePublic,
 			route: []kops.RouteSpec{
 				{
@@ -822,26 +851,33 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 					Target: "pcx-abcdef",
 				},
 			},
-			expected: []string{"Invalid value::spec.networking.subnets[0]"},
+			expected: []string{"Forbidden::spec.networking.subnets[0].additionalRoutes"},
 		},
 	}
 
 	for _, test := range tests {
-		cluster := kops.Cluster{
-			Spec: kops.ClusterSpec{
-				Networking: kops.NetworkingSpec{
-					NetworkCIDR: test.clusterCidr,
-					Subnets: []kops.ClusterSubnetSpec{
-						{
-							ID:               test.providerId,
-							Type:             test.subnetType,
-							AdditionalRoutes: test.route,
+		t.Run(test.name, func(t *testing.T) {
+			cluster := kops.Cluster{
+				Spec: kops.ClusterSpec{
+					CloudProvider: kops.CloudProviderSpec{
+						AWS: &kops.AWSSpec{},
+					},
+					Networking: kops.NetworkingSpec{
+						NetworkCIDR:            test.clusterCIDR,
+						AdditionalNetworkCIDRs: test.additionalClusterCIDRs,
+						Subnets: []kops.ClusterSubnetSpec{
+							{
+								Name:             "us-east-1a",
+								ID:               test.providerId,
+								Type:             test.subnetType,
+								AdditionalRoutes: test.route,
+							},
 						},
 					},
 				},
-			},
-		}
-		errs := awsValidateCluster(&cluster)
-		testErrors(t, test, errs, test.expected)
+			}
+			errs := validateNetworking(&cluster, &cluster.Spec.Networking, field.NewPath("spec", "networking"), false, &cloudProviderConstraints{})
+			testErrors(t, test, errs, test.expected)
+		})
 	}
 }
