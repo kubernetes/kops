@@ -420,11 +420,11 @@ func awsValidateAdditionalRoutes(fieldPath *field.Path, routes []kops.RouteSpec,
 			allErrs = append(allErrs, field.Invalid(f.Child("target"), r, "unknown target type for route"))
 		}
 
-		var routeCIDRs []*net.IPNet
-		allErrs = append(allErrs, validateCIDR(r.CIDR, f.Child("cidr"), &routeCIDRs)...)
-		if len(routeCIDRs) > 0 {
+		routeCIDR, errs := parseCIDR(f.Child("cidr"), r.CIDR)
+		allErrs = append(allErrs, errs...)
+		if routeCIDR != nil {
 			for _, clusterNet := range networkCIDRs {
-				if clusterNet.Contains(routeCIDRs[0].IP) && strings.HasPrefix(r.Target, "pcx-") {
+				if clusterNet.Contains(routeCIDR.IP) && strings.HasPrefix(r.Target, "pcx-") {
 					allErrs = append(allErrs, field.Forbidden(f.Child("target"), "target is more specific than a network CIDR block. This route can target only an interface or an instance."))
 				}
 			}
