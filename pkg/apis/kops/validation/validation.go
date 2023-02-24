@@ -87,7 +87,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 				allErrs = append(allErrs, field.Invalid(fieldPath.Child("sshAccess").Index(i), cidr, "Prefix List ID only supported for AWS"))
 			}
 		} else {
-			allErrs = append(allErrs, validateCIDR(cidr, fieldPath.Child("sshAccess").Index(i), nil)...)
+			allErrs = append(allErrs, validateCIDR(fieldPath.Child("sshAccess").Index(i), cidr)...)
 		}
 	}
 
@@ -98,7 +98,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 				allErrs = append(allErrs, field.Invalid(fieldPath.Child("kubernetesAPIAccess").Index(i), cidr, "Prefix List ID only supported for AWS"))
 			}
 		} else {
-			allErrs = append(allErrs, validateCIDR(cidr, fieldPath.Child("kubernetesAPIAccess").Index(i), nil)...)
+			allErrs = append(allErrs, validateCIDR(fieldPath.Child("kubernetesAPIAccess").Index(i), cidr)...)
 		}
 	}
 
@@ -109,7 +109,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 				allErrs = append(allErrs, field.Invalid(fieldPath.Child("nodePortAccess").Index(i), cidr, "Prefix List ID only supported for AWS"))
 			}
 		} else {
-			allErrs = append(allErrs, validateCIDR(cidr, fieldPath.Child("nodePortAccess").Index(i), nil)...)
+			allErrs = append(allErrs, validateCIDR(fieldPath.Child("nodePortAccess").Index(i), cidr)...)
 		}
 	}
 
@@ -435,7 +435,17 @@ func validateSAExternalPermissions(externalPermissions []kops.ServiceAccountExte
 	return allErrs
 }
 
-func validateCIDR(cidr string, fieldPath *field.Path, ipNets *[]*net.IPNet) field.ErrorList {
+// validateCIDR verifies that the cidr string can be parsed as a valid net.IPNet.
+// Behaviour should be consistent with parseCIDR.
+func validateCIDR(fieldPath *field.Path, cidr string) field.ErrorList {
+	_, errs := parseCIDR(fieldPath, cidr)
+	return errs
+}
+
+// parseCIDR is like net.ParseCIDR, but returns an error message that includes the field path.
+// We also try to give some more hints on common errors.
+// Hint: use validateCIDR if we don't need the parsed CIDR value.
+func parseCIDR(fieldPath *field.Path, cidr string) (*net.IPNet, field.ErrorList) {
 	allErrs := field.ErrorList{}
 
 	ip, ipNet, err := net.ParseCIDR(cidr)
@@ -458,14 +468,14 @@ func validateCIDR(cidr string, fieldPath *field.Path, ipNets *[]*net.IPNet) fiel
 		allErrs = append(allErrs, field.Invalid(fieldPath, cidr, detail))
 	}
 
-	if ipNets != nil && ipNet != nil {
-		*ipNets = append(*ipNets, ipNet)
-	}
-
-	return allErrs
+	return ipNet, allErrs
 }
 
-func validateIPv6CIDR(cidr string, fieldPath *field.Path, ipNets *[]*net.IPNet) field.ErrorList {
+// validateIPv6CIDR verifies that `cidr` specifies a valid IPv6 network range.
+// We recognize the normal CIDR syntax - e.g. `2001:db8::/32`
+// We also recognize values like /64#0, meaning "the first available /64 subnet", for dynamic allocations.
+// See utils.ParseCIDRNotation for details.
+func validateIPv6CIDR(fieldPath *field.Path, cidr string) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	if strings.HasPrefix(cidr, "/") {
@@ -478,7 +488,7 @@ func validateIPv6CIDR(cidr string, fieldPath *field.Path, ipNets *[]*net.IPNet) 
 			allErrs = append(allErrs, field.Invalid(fieldPath, cidr, "IPv6 CIDR subnet size must be a value between 0 and 128"))
 		}
 	} else {
-		allErrs = append(allErrs, validateCIDR(cidr, fieldPath, ipNets)...)
+		allErrs = append(allErrs, validateCIDR(fieldPath, cidr)...)
 
 		if !utils.IsIPv6CIDR(cidr) {
 			allErrs = append(allErrs, field.Invalid(fieldPath, cidr, "Network is not an IPv6 CIDR"))
@@ -582,16 +592,16 @@ func validateSubnet(subnet *kops.ClusterSubnetSpec, c *kops.ClusterSpec, fieldPa
 			}
 		}
 	} else {
-		var subnetCIDRs []*net.IPNet
-		allErrs = append(allErrs, validateCIDR(subnet.CIDR, fieldPath.Child("cidr"), &subnetCIDRs)...)
-		if len(networkCIDRs) > 0 && len(subnetCIDRs) > 0 && !validateSubnetCIDR(networkCIDRs, subnetCIDRs[0]) {
+		subnetCIDR, errs := parseCIDR(fieldPath.Child("cidr"), subnet.CIDR)
+		allErrs = append(allErrs, errs...)
+		if len(networkCIDRs) > 0 && subnetCIDR != nil && !validateSubnetCIDR(networkCIDRs, subnetCIDR) {
 			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("cidr"), fmt.Sprintf("subnet %q had a cidr %q that was not a subnet of the networkCIDR %q", subnet.Name, subnet.CIDR, c.Networking.NetworkCIDR)))
 		}
 	}
 
 	// IPv6CIDR
 	if subnet.IPv6CIDR != "" {
-		allErrs = append(allErrs, validateIPv6CIDR(subnet.IPv6CIDR, fieldPath.Child("ipv6CIDR"), nil)...)
+		allErrs = append(allErrs, validateIPv6CIDR(fieldPath.Child("ipv6CIDR"), subnet.IPv6CIDR)...)
 	}
 
 	if subnet.Egress != "" {
@@ -916,10 +926,15 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 			allErrs = append(allErrs, field.Required(fldPath.Child("networkCIDR"), "Cluster does not have networkCIDR set"))
 		}
 	} else {
-		allErrs = append(allErrs, validateCIDR(v.NetworkCIDR, fldPath.Child("networkCIDR"), &networkCIDRs)...)
+		networkCIDR, errs := parseCIDR(fldPath.Child("networkCIDR"), v.NetworkCIDR)
+		allErrs = append(allErrs, errs...)
+		if networkCIDR != nil {
+			networkCIDRs = append(networkCIDRs, networkCIDR)
+		}
+
 		if cluster.Spec.GetCloudProvider() == kops.CloudProviderDO {
 			// verify if the NetworkCIDR is in a private range as per RFC1918
-			if len(networkCIDRs) > 0 && !networkCIDRs[0].IP.IsPrivate() {
+			if networkCIDR != nil && !networkCIDR.IP.IsPrivate() {
 				allErrs = append(allErrs, field.Invalid(fldPath.Child("networkCIDR"), v.NetworkCIDR, "networkCIDR must be within a private IP range"))
 			}
 			// verify if networkID is not specified. In case of DO, this is mutually exclusive.
@@ -930,7 +945,11 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 	}
 
 	for i, cidr := range v.AdditionalNetworkCIDRs {
-		allErrs = append(allErrs, validateCIDR(cidr, fldPath.Child("additionalNetworkCIDRs").Index(i), &networkCIDRs)...)
+		networkCIDR, errs := parseCIDR(fldPath.Child("additionalNetworkCIDRs").Index(i), cidr)
+		allErrs = append(allErrs, errs...)
+		if networkCIDR != nil {
+			networkCIDRs = append(networkCIDRs, networkCIDR)
+		}
 	}
 
 	var nonMasqueradeCIDRs []*net.IPNet
@@ -940,13 +959,17 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 				allErrs = append(allErrs, field.Required(fldPath.Child("nonMasqueradeCIDR"), "Cluster does not have nonMasqueradeCIDR set"))
 			}
 		} else {
-			allErrs = append(allErrs, validateCIDR(v.NonMasqueradeCIDR, fldPath.Child("nonMasqueradeCIDR"), &nonMasqueradeCIDRs)...)
+			nonMasqueradeCIDR, errs := parseCIDR(fldPath.Child("nonMasqueradeCIDR"), v.NonMasqueradeCIDR)
+			allErrs = append(allErrs, errs...)
+			if nonMasqueradeCIDR != nil {
+				nonMasqueradeCIDRs = append(nonMasqueradeCIDRs, nonMasqueradeCIDR)
+			}
 
 			if strings.Contains(v.NonMasqueradeCIDR, ":") && v.NonMasqueradeCIDR != "::/0" {
 				allErrs = append(allErrs, field.Forbidden(fldPath.Child("nonMasqueradeCIDR"), "IPv6 clusters must have a nonMasqueradeCIDR of \"::/0\""))
 			}
 
-			if len(networkCIDRs) > 0 && v.AmazonVPC == nil && (v.Cilium == nil || v.Cilium.IPAM != kops.CiliumIpamEni) {
+			if len(nonMasqueradeCIDRs) > 0 && len(networkCIDRs) > 0 && v.AmazonVPC == nil && (v.Cilium == nil || v.Cilium.IPAM != kops.CiliumIpamEni) {
 				if subnet.Overlap(nonMasqueradeCIDRs[0], networkCIDRs[0]) {
 					allErrs = append(allErrs, field.Forbidden(fldPath.Child("nonMasqueradeCIDR"), fmt.Sprintf("nonMasqueradeCIDR %q cannot overlap with networkCIDR %q", v.NonMasqueradeCIDR, v.NetworkCIDR)))
 				}
@@ -959,16 +982,16 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 		}
 	}
 
-	var serviceClusterIPRanges []*net.IPNet
 	{
 		if v.ServiceClusterIPRange == "" {
 			if strict {
 				allErrs = append(allErrs, field.Required(fldPath.Child("serviceClusterIPRange"), "Cluster did not have serviceClusterIPRange set"))
 			}
 		} else {
-			allErrs = append(allErrs, validateCIDR(v.ServiceClusterIPRange, fldPath.Child("serviceClusterIPRange"), &serviceClusterIPRanges)...)
+			serviceClusterIPRange, errs := parseCIDR(fldPath.Child("serviceClusterIPRange"), v.ServiceClusterIPRange)
+			allErrs = append(allErrs, errs...)
 
-			if len(nonMasqueradeCIDRs) > 0 && providerConstraints.requiresServiceClusterSubnetOfNonMasqueradeCIDR && !subnet.BelongsTo(nonMasqueradeCIDRs[0], serviceClusterIPRanges[0]) {
+			if serviceClusterIPRange != nil && len(nonMasqueradeCIDRs) > 0 && providerConstraints.requiresServiceClusterSubnetOfNonMasqueradeCIDR && !subnet.BelongsTo(nonMasqueradeCIDRs[0], serviceClusterIPRange) {
 				allErrs = append(allErrs, field.Forbidden(fldPath.Child("serviceClusterIPRange"), fmt.Sprintf("serviceClusterIPRange %q must be a subnet of nonMasqueradeCIDR %q", v.ServiceClusterIPRange, v.NonMasqueradeCIDR)))
 			}
 		}

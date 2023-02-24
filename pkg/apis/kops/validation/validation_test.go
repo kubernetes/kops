@@ -67,7 +67,7 @@ func TestValidateCIDR(t *testing.T) {
 		},
 	}
 	for _, g := range grid {
-		errs := validateCIDR(g.Input, field.NewPath("CIDR"), nil)
+		errs := validateCIDR(field.NewPath("CIDR"), g.Input)
 
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 
