@@ -137,6 +137,7 @@ func (m *MockClient) mockServers() {
 				r.ParseForm()
 				m.listServers(w, r.Form)
 			}
+			m.getServer(w, serverID)
 		case http.MethodPost:
 			m.createServer(w, r)
 		case http.MethodDelete:
@@ -147,6 +148,24 @@ func (m *MockClient) mockServers() {
 	}
 	m.Mux.HandleFunc("/servers/", handler)
 	m.Mux.HandleFunc("/servers", handler)
+}
+
+func (m *MockClient) getServer(w http.ResponseWriter, serverID string) {
+	if server, ok := m.servers[serverID]; ok {
+		getResponse := serverGetResponse{
+			Server: server,
+		}
+		jsonResponse, err := json.Marshal(getResponse)
+		if err != nil {
+			panic(fmt.Sprintf("failed to marshal %+v", getResponse))
+		}
+		_, err = w.Write(jsonResponse)
+		if err != nil {
+			panic("failed to write body")
+		}
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+	}
 }
 
 func (m *MockClient) listServers(w http.ResponseWriter, vals url.Values) {
@@ -197,6 +216,7 @@ func (m *MockClient) createServer(w http.ResponseWriter, r *http.Request) {
 		ID:       uuid.New().String(),
 		Name:     create.Server.Name,
 		Metadata: create.Server.Metadata,
+		Status:   "ACTIVE",
 	}
 	securityGroups := make([]map[string]interface{}, len(create.Server.SecurityGroups))
 	for i, groupName := range create.Server.SecurityGroups {
