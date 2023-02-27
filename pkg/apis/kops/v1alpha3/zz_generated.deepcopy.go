@@ -733,6 +733,11 @@ func (in *CloudControllerManagerConfig) DeepCopyInto(out *CloudControllerManager
 		x := (*in).DeepCopy()
 		*out = &x
 	}
+	if in.NodeStatusUpdateFrequency != nil {
+		in, out := &in.NodeStatusUpdateFrequency, &out.NodeStatusUpdateFrequency
+		*out = new(v1.Duration)
+		**out = **in
+	}
 	return
 }
 
