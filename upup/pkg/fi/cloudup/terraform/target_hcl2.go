@@ -122,7 +122,7 @@ func (t *TerraformTarget) writeProviders(buf *bytes.Buffer) {
 	if t.Cloud.ProviderID() == kops.CloudProviderGCE {
 		providerBody["project"] = t.Project
 	}
-	if t.Cloud.ProviderID() != kops.CloudProviderHetzner {
+	if t.Cloud.ProviderID() != kops.CloudProviderHetzner && t.Cloud.ProviderID() != kops.CloudProviderDO {
 		providerBody["region"] = t.Cloud.Region()
 	}
 	for k, v := range tfGetProviderExtraConfig(t.clusterSpecTarget) {
