@@ -656,6 +656,10 @@ spec:
                   master:
                     description: Master is the url for the kube api master.
                     type: string
+                  nodeStatusUpdateFrequency:
+                    description: 'NodeStatusUpdateFrequency is the duration between
+                      node status updates. (default: 5m)'
+                    type: string
                   useServiceAccountCredentials:
                     description: UseServiceAccountCredentials controls whether we
                       use individual service account credentials for each controller.
