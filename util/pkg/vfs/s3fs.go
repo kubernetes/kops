@@ -579,6 +579,13 @@ type terraformS3File struct {
 	Provider *terraformWriter.Literal `json:"provider,omitempty" cty:"provider"`
 }
 
+type terraformDOFile struct {
+	Bucket  string                   `json:"bucket" cty:"bucket"`
+	Region  string                   `json:"region" cty:"region"`
+	Key     string                   `json:"key" cty:"key"`
+	Content *terraformWriter.Literal `json:"content,omitempty" cty:"content"`
+}
+
 func (p *S3Path) RenderTerraform(w *terraformWriter.TerraformWriter, name string, data io.Reader, acl ACL) error {
 	ctx := context.TODO()
 
@@ -587,40 +594,66 @@ func (p *S3Path) RenderTerraform(w *terraformWriter.TerraformWriter, name string
 		return fmt.Errorf("reading data: %v", err)
 	}
 
-	bucketDetails, err := p.getBucketDetails(ctx)
-	if err != nil {
-		return err
+	// render DO's terraform
+	if p.scheme == "do" {
+
+		content, err := w.AddFileBytes("digitalocean_spaces_bucket_object", name, "content", bytes, false)
+		if err != nil {
+			return fmt.Errorf("rendering DO file: %v", err)
+		}
+
+		// retrieve space region from endpoint
+		endpoint := os.Getenv("S3_ENDPOINT")
+		if endpoint == "" {
+			return fmt.Errorf("S3 Endpoint is empty")
+		}
+		region := strings.Split(endpoint, ".")[0]
+
+		tf := &terraformDOFile{
+			Bucket:  p.Bucket(),
+			Region:  region,
+			Key:     p.Key(),
+			Content: content,
+		}
+		return w.RenderResource("digitalocean_spaces_bucket_object", name, tf)
+
+	} else {
+		bucketDetails, err := p.getBucketDetails(ctx)
+		if err != nil {
+			return err
+		}
+
+		tfProviderArguments := map[string]string{
+			"region": bucketDetails.region,
+		}
+		w.EnsureTerraformProvider("aws", tfProviderArguments)
+
+		content, err := w.AddFileBytes("aws_s3_object", name, "content", bytes, false)
+		if err != nil {
+			return fmt.Errorf("rendering S3 file: %v", err)
+		}
+
+		sse, _, err := p.getServerSideEncryption(ctx)
+		if err != nil {
+			return err
+		}
+
+		requestACL, err := p.getRequestACL(acl)
+		if err != nil {
+			return err
+		}
+
+		tf := &terraformS3File{
+			Bucket:   p.Bucket(),
+			Key:      p.Key(),
+			Content:  content,
+			SSE:      sse,
+			Acl:      requestACL,
+			Provider: terraformWriter.LiteralTokens("aws", "files"),
+		}
+		return w.RenderResource("aws_s3_object", name, tf)
 	}
 
-	tfProviderArguments := map[string]string{
-		"region": bucketDetails.region,
-	}
-	w.EnsureTerraformProvider("aws", tfProviderArguments)
-
-	content, err := w.AddFileBytes("aws_s3_object", name, "content", bytes, false)
-	if err != nil {
-		return fmt.Errorf("rendering S3 file: %v", err)
-	}
-
-	sse, _, err := p.getServerSideEncryption(ctx)
-	if err != nil {
-		return err
-	}
-
-	requestACL, err := p.getRequestACL(acl)
-	if err != nil {
-		return err
-	}
-
-	tf := &terraformS3File{
-		Bucket:   p.Bucket(),
-		Key:      p.Key(),
-		Content:  content,
-		SSE:      sse,
-		Acl:      requestACL,
-		Provider: terraformWriter.LiteralTokens("aws", "files"),
-	}
-	return w.RenderResource("aws_s3_object", name, tf)
 }
 
 // AWSErrorCode returns the aws error code, if it is an awserr.Error, otherwise ""
