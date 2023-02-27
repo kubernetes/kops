@@ -11,6 +11,7 @@ require (
 	github.com/blang/semver/v4 v4.0.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/octago/sflags v0.2.0
+	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.24
 	github.com/spf13/pflag v1.0.5
 	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f
 	k8s.io/api v0.30.0

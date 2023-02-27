@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+
+# Copyright 2021 The Kubernetes Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o xtrace
+
+REPO_ROOT=$(git rev-parse --show-toplevel);
+KOPSPATH=$REPO_ROOT/.build/dist/$(go env GOOS)/$(go env GOARCH)
+PATH=$KOPSPATH:$PATH
+
+KUBETEST2_COMMON_ARGS="-v=2 --cloud-provider=scaleway --cluster-name=e2e-test-scw.k8s.local --kops-binary-path=${KOPSPATH}/kops"
+#KUBETEST2_COMMON_ARGS="${KUBETEST2_COMMON_ARGS} --admin-access=${ADMIN_ACCESS:-}"
+
+export GO111MODULE=on
+make test-e2e-install
+
+kubetest2 kops ${KUBETEST2_COMMON_ARGS} \
+		-v 10 \
+		--up --down \
+		--env JOB_NAME=pull-kops-e2e-kubernetes-scw-kubetest2 \
+		--env KOPS_FEATURE_FLAGS=Scaleway \
+		--create-args "--networking=cilium --node-count=2 --master-count=3" \
+		--env KOPS_FEATURE_FLAGS=Scaleway \
+    --env S3_REGION=fr-par \
+    --env S3_ENDPOINT=https://s3.fr-par.scw.cloud \
+    --kubernetes-version=v1.25.5 \
+		--test=kops \
+		-- \
+		--ginkgo-args="--debug" \
+		--test-package-marker=v1.27.0-alpha.1 \
+		--test-package-version=v1.27.0 \
+		--parallel 25 \
+		--skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler|nfs|NFS|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*NodePort.*listening.*same.*port|TCP.CLOSE_WAIT|should.*run.*through.*the.*lifecycle.*of.*Pods.*and.*PodStatus"
+#    --ssh-public-key=$REPO_ROOT/tests/integration/update_cluster/minimal_scaleway/id_rsa.pub \
+#		--kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.20/latest-ci.txt \
