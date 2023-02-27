@@ -2247,6 +2247,7 @@ func autoConvert_v1alpha3_CloudControllerManagerConfig_To_kops_CloudControllerMa
 	out.UseServiceAccountCredentials = in.UseServiceAccountCredentials
 	out.EnableLeaderMigration = in.EnableLeaderMigration
 	out.CPURequest = in.CPURequest
+	out.NodeStatusUpdateFrequency = in.NodeStatusUpdateFrequency
 	return nil
 }
 
@@ -2279,6 +2280,7 @@ func autoConvert_kops_CloudControllerManagerConfig_To_v1alpha3_CloudControllerMa
 	out.UseServiceAccountCredentials = in.UseServiceAccountCredentials
 	out.EnableLeaderMigration = in.EnableLeaderMigration
 	out.CPURequest = in.CPURequest
+	out.NodeStatusUpdateFrequency = in.NodeStatusUpdateFrequency
 	return nil
 }
 

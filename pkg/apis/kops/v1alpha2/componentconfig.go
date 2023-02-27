@@ -702,6 +702,8 @@ type CloudControllerManagerConfig struct {
 	// CPURequest of CloudControllerManager container.
 	// Default: 200m
 	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
+	// NodeStatusUpdateFrequency is the duration between node status updates. (default: 5m)
+	NodeStatusUpdateFrequency *metav1.Duration `json:"nodeStatusUpdateFrequency,omitempty" flag:"node-status-update-frequency"`
 }
 
 // KubeSchedulerConfig is the configuration for the kube-scheduler
