@@ -41,6 +41,9 @@ metadata:
     addonmanager.kubernetes.io/mode: Reconcile
 data:
   Corefile: |
+  {{- if KubeDNS.NodeLocalDNS.ExternalCoreFile }}
+{{ KubeDNS.NodeLocalDNS.ExternalCoreFile | indent 4 }}
+  {{- else }}
     {{ KubeDNS.Domain }}:53 {
         errors
         cache {
@@ -104,6 +107,7 @@ data:
         {{- end }}
     }
     {{- end }}
+  {{- end }}
 ---
 apiVersion: apps/v1
 kind: DaemonSet
