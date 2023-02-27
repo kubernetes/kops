@@ -762,8 +762,8 @@ spec:
                       threshold for node scale-down. Default: 0.5'
                     type: string
                   serviceMonitor:
-                    description: ClusterAutoscalerServiceMonitorConfig specifies the
-                      configuration for an optional service monitor
+                    description: serviceMonitor specifies the configuration for an
+                      optional service monitor
                     properties:
                       enabled:
                         description: 'Enables the service monitor for the cluster
