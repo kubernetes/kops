@@ -17,10 +17,9 @@ limitations under the License.
 package components
 
 import (
-	"encoding/json"
-	"reflect"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 )
@@ -96,10 +95,8 @@ func Test_ClusterAutoscalerOptionsBuilder_ServiceMonitorConfig(t *testing.T) {
 
 			got := *clusterSpec.ClusterAutoscaler.ServiceMonitor
 
-			if !reflect.DeepEqual(got, test.want) {
-				jsonGot, _ := json.Marshal(got)
-				jsonWant, _ := json.Marshal(test.want)
-				t.Errorf("Mismatch. Wanted: %+v, got: %+v", string(jsonWant), string(jsonGot))
+			if diff := cmp.Diff(test.want, got); diff != "" {
+				t.Errorf("MakeGatewayInfo() mismatch (-want +got):\n%s", diff)
 			}
 		})
 	}
