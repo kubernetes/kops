@@ -1035,7 +1035,7 @@ type ClusterAutoscalerConfig struct {
 	// CustomPriorityExpanderConfig overides the priority-expander ConfigMap with the provided configuration. Any InstanceGroup configuration will be ignored if this is set.
 	// This could be useful in order to use regex on priorities configuration
 	CustomPriorityExpanderConfig map[string][]string `json:"customPriorityExpanderConfig,omitempty"`
-	// ClusterAutoscalerServiceMonitorConfig specifies the configuration for an optional service monitor
+	// serviceMonitor specifies the configuration for an optional service monitor
 	ServiceMonitor *ClusterAutoscalerServiceMonitorConfig `json:"serviceMonitor,omitempty"`
 }
 
