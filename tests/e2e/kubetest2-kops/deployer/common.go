@@ -102,6 +102,18 @@ func (d *deployer) initialize() error {
 		} else if d.SSHPrivateKeyPath == "" && os.Getenv("KUBE_SSH_KEY_PATH") != "" {
 			d.SSHPrivateKeyPath = os.Getenv("KUBE_SSH_KEY_PATH")
 		}
+	case "scaleway":
+		if d.SSHPrivateKeyPath == "" || d.SSHPublicKeyPath == "" {
+			publicKeyPath, privateKeyPath, err := util.CreateSSHKeyPair(d.ClusterName)
+			if err != nil {
+				return err
+			}
+			d.SSHPublicKeyPath = publicKeyPath
+			d.SSHPrivateKeyPath = privateKeyPath
+		}
+		if d.SSHUser == "" {
+			d.SSHUser = "root"
+		}
 	}
 
 	if d.commonOptions.ShouldBuild() {
@@ -157,6 +169,7 @@ func (d *deployer) verifyKopsFlags() error {
 	case "aws":
 	case "gce":
 	case "digitalocean":
+	case "scaleway":
 	default:
 		return errors.New("unsupported --cloud-provider value")
 	}
@@ -206,6 +219,25 @@ func (d *deployer) env() []string {
 			} else {
 				klog.Warningf("DO env var %s is empty..", k)
 			}
+		}
+	} else if d.CloudProvider == "scaleway" {
+		// Pass through some env vars if set
+		if accessKey := os.Getenv("SCW_ACCESS_KEY"); accessKey != "" {
+			vars = append(vars, "SCW_ACCESS_KEY="+accessKey)
+			vars = append(vars, "S3_ACCESS_KEY_ID="+accessKey)
+		} else {
+			klog.Warningf("SCW_ACCESS_KEY is empty")
+		}
+		if secretKey := os.Getenv("SCW_SECRET_KEY"); secretKey != "" {
+			vars = append(vars, "SCW_SECRET_KEY="+secretKey)
+			vars = append(vars, "S3_SECRET_ACCESS_KEY="+secretKey)
+		} else {
+			klog.Warningf("SCW_SECRET_KEY is empty")
+		}
+		if projectID := os.Getenv("SCW_DEFAULT_PROJECT_ID"); projectID != "" {
+			vars = append(vars, "SCW_DEFAULT_PROJECT_ID="+projectID)
+		} else {
+			klog.Warningf("SCW_DEFAULT_PROJECT_ID is empty")
 		}
 	}
 	if d.KopsBaseURL != "" {
@@ -301,6 +333,8 @@ func (d *deployer) stateStore() string {
 			ss = "gs://" + gce.GCSBucketName(d.GCPProject, "state")
 		case "digitalocean":
 			ss = "do://e2e-kops-space"
+		case "scaleway":
+			ss = "scw://kops-state-store-testing"
 		}
 	}
 	return ss
