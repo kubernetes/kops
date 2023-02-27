@@ -25,12 +25,14 @@ import (
 	"strings"
 
 	"github.com/octago/sflags/gen/gpflag"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	unversioned "k8s.io/kops/pkg/apis/kops"
 	api "k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/tests/e2e/pkg/kops"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"sigs.k8s.io/kubetest2/pkg/artifacts"
 	"sigs.k8s.io/kubetest2/pkg/testers/ginkgo"
 )
@@ -151,6 +153,7 @@ func (t *Tester) addProviderFlag() error {
 	case "aws", "gce":
 		provider = cluster.Spec.LegacyCloudProvider
 	case "digitalocean":
+	case "scaleway":
 	default:
 		klog.Warningf("unhandled cluster.spec.cloudProvider %q for determining ginkgo Provider", cluster.Spec.LegacyCloudProvider)
 	}
@@ -255,6 +258,12 @@ func (t *Tester) addRegionFlag() error {
 		region = zone[:len(zone)-1]
 	case "gce":
 		region = cluster.Spec.Subnets[0].Region
+	case "scaleway":
+		scwRegion, err := scaleway.ParseRegionFromZone(scw.Zone(cluster.Spec.Subnets[0].Zone))
+		if err != nil {
+			return fmt.Errorf("adding region flag: %w", err)
+		}
+		region = string(scwRegion)
 	default:
 		klog.Warningf("unhandled region detection for cloud provider: %v", cluster.Spec.LegacyCloudProvider)
 	}
