@@ -57,6 +57,24 @@ func (b *GCPCloudControllerManagerOptionsBuilder) BuildOptions(options interface
 	if ccmConfig.ClusterCIDR == "" {
 		ccmConfig.ClusterCIDR = clusterSpec.Networking.PodCIDR
 	}
+
+	if clusterSpec.Networking.GCE != nil {
+		// "GCE" networking mode is called "ip-alias" or "vpc-native" on GKE.
+		// We don't need to configure routes if we are using "real" IPs.
+		ccmConfig.ConfigureCloudRoutes = fi.PtrTo(false)
+	}
+
+	if ccmConfig.Controllers == nil {
+		ccmConfig.Controllers = []string{
+			"*",
+
+			// Don't run gkenetworkparamset controller, looks for some CRDs (GKENetworkParamSet and Network) which are only installed on GKE
+			// However, the version we're current running doesn't support this controller anyway, so we need to introduce this later,
+			// possibly based on the image version.
+			// "-gkenetworkparams",
+		}
+	}
+
 	if ccmConfig.Image == "" {
 		// TODO: Implement CCM image publishing
 		switch b.KubernetesVersion.Minor {
