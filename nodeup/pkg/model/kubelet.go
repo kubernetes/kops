@@ -381,7 +381,7 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	if b.NodeupConfig.KubeletConfig.CgroupDriver == "systemd" && b.NodeupConfig.ContainerRuntime == "containerd" {
 		cgroup := b.NodeupConfig.KubeletConfig.KubeletCgroups
 		if cgroup != "" {
-			manifest.Set("Service", "Slice", strings.Trim(cgroup, "/")+".slice")
+			manifest.Set("Service", "Slice", strings.Trim(cgroup, "/"))
 		}
 	}
 
@@ -700,7 +700,7 @@ func (b *KubeletBuilder) buildCgroupService(name string) *nodetasks.Service {
 	manifestString := manifest.Render()
 
 	service := &nodetasks.Service{
-		Name:       name + ".slice",
+		Name:       name,
 		Definition: s(manifestString),
 	}
 

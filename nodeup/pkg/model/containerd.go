@@ -233,7 +233,7 @@ func (b *ContainerdBuilder) buildSystemdService(sv semver.Version) *nodetasks.Se
 	if b.NodeupConfig.KubeletConfig.CgroupDriver == "systemd" {
 		cgroup := b.NodeupConfig.KubeletConfig.RuntimeCgroups
 		if cgroup != "" {
-			manifest.Set("Service", "Slice", strings.Trim(cgroup, "/")+".slice")
+			manifest.Set("Service", "Slice", strings.Trim(cgroup, "/"))
 		}
 	}
 
