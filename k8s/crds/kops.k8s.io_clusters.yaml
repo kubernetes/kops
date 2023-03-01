@@ -3224,6 +3224,11 @@ spec:
                       enabled:
                         description: Enabled activates the node-local-dns addon.
                         type: boolean
+                      externalCoreFile:
+                        description: ExternalCoreFile is used to provide a complete
+                          NodeLocalDNS CoreFile by the user - ignores other provided
+                          flags which modify the CoreFile.
+                        type: string
                       forwardToKubeDNS:
                         description: If enabled, nodelocal dns will use kubedns as
                           a default upstream

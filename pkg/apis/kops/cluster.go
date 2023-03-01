@@ -580,6 +580,8 @@ type KubeDNSConfig struct {
 type NodeLocalDNSConfig struct {
 	// Enabled activates the node-local-dns addon.
 	Enabled *bool `json:"enabled,omitempty"`
+	// ExternalCoreFile is used to provide a complete NodeLocalDNS CoreFile by the user - ignores other provided flags which modify the CoreFile.
+	ExternalCoreFile string `json:"externalCoreFile,omitempty"`
 	// Image overrides the default docker image used for node-local-dns addon.
 	Image *string `json:"image,omitempty"`
 	// Local listen IP address. It can be any IP in the 169.254.20.0/16 space or any other IP address that can be guaranteed to not collide with any existing IP.

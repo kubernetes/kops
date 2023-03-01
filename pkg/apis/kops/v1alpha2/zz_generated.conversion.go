@@ -6272,6 +6272,7 @@ func Convert_kops_NodeAuthorizerSpec_To_v1alpha2_NodeAuthorizerSpec(in *kops.Nod
 
 func autoConvert_v1alpha2_NodeLocalDNSConfig_To_kops_NodeLocalDNSConfig(in *NodeLocalDNSConfig, out *kops.NodeLocalDNSConfig, s conversion.Scope) error {
 	out.Enabled = in.Enabled
+	out.ExternalCoreFile = in.ExternalCoreFile
 	out.Image = in.Image
 	out.LocalIP = in.LocalIP
 	out.ForwardToKubeDNS = in.ForwardToKubeDNS
@@ -6288,6 +6289,7 @@ func Convert_v1alpha2_NodeLocalDNSConfig_To_kops_NodeLocalDNSConfig(in *NodeLoca
 
 func autoConvert_kops_NodeLocalDNSConfig_To_v1alpha2_NodeLocalDNSConfig(in *kops.NodeLocalDNSConfig, out *NodeLocalDNSConfig, s conversion.Scope) error {
 	out.Enabled = in.Enabled
+	out.ExternalCoreFile = in.ExternalCoreFile
 	out.Image = in.Image
 	out.LocalIP = in.LocalIP
 	out.ForwardToKubeDNS = in.ForwardToKubeDNS
