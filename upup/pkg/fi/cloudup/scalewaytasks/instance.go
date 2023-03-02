@@ -19,12 +19,15 @@ package scalewaytasks
 import (
 	"bytes"
 	"fmt"
+	"strings"
 
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // +kops:fitask
@@ -117,8 +120,8 @@ func (_ *Instance) CheckChanges(actual, expected, changes *Instance) error {
 	return nil
 }
 
-func (_ *Instance) RenderScw(c *fi.CloudupContext, actual, expected, changes *Instance) error {
-	cloud := c.T.Cloud.(scaleway.ScwCloud)
+func (_ *Instance) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes *Instance) error {
+	cloud := t.Cloud.(scaleway.ScwCloud)
 	instanceService := cloud.InstanceService()
 	zone := scw.Zone(fi.ValueOf(expected.Zone))
 	controlPlanePrivateIPs := []string(nil)
@@ -286,4 +289,48 @@ func (_ *Instance) RenderScw(c *fi.CloudupContext, actual, expected, changes *In
 	}
 
 	return nil
+}
+
+type terraformInstanceIP struct{}
+
+type terraformInstance struct {
+	Name     *string                             `cty:"name"`
+	IPID     *terraformWriter.Literal            `cty:"ip_id"`
+	Type     *string                             `cty:"type"`
+	Tags     []string                            `cty:"tags"`
+	Image    *string                             `cty:"image"`
+	UserData map[string]*terraformWriter.Literal `cty:"user_data"`
+}
+
+func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, actual, expected, changes *Instance) error {
+	tfName := strings.ReplaceAll(fi.ValueOf(expected.Name), ".", "-")
+
+	tfInstanceIP := terraformInstanceIP{}
+	err := t.RenderResource("scaleway_instance_ip", tfName, tfInstanceIP)
+	if err != nil {
+		return err
+	}
+
+	tfInstance := terraformInstance{
+		Name:  expected.Name,
+		IPID:  terraformWriter.LiteralProperty("scaleway_instance_ip", tfName, "id"),
+		Type:  expected.CommercialType,
+		Tags:  expected.Tags,
+		Image: expected.Image,
+	}
+	if expected.UserData != nil {
+		userDataBytes, err := fi.ResourceAsBytes(fi.ValueOf(expected.UserData))
+		if err != nil {
+			return err
+		}
+		if userDataBytes != nil {
+			tfUserData, err := t.AddFileBytes("scaleway_instance_server", tfName, "user_data", userDataBytes, true)
+			if err != nil {
+				return err
+			}
+			tfInstance.UserData = map[string]*terraformWriter.Literal{
+				"cloud-init": tfUserData}
+		}
+	}
+	return t.RenderResource("scaleway_instance_server", tfName, tfInstance)
 }

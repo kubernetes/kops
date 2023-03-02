@@ -105,6 +105,11 @@ func CreateValidScalewayProfile() (*scw.Profile, error) {
 		DefaultProjectID: fi.PtrTo(os.Getenv("SCW_DEFAULT_PROJECT_ID")),
 	}
 
+	// If the profile is REDACTED, we're running integration tests so no need to return any credentials
+	if profileName := os.Getenv("SCW_PROFILE"); profileName == "REDACTED" {
+		return profile, nil
+	}
+
 	// If SCW_PROFILE is set, we load the credentials from the profile rather than from the environment
 	p, err := getScalewayProfile()
 	if err != nil {
