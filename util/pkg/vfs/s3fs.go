@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -599,13 +600,13 @@ func (p *S3Path) RenderTerraform(w *terraformWriter.TerraformWriter, name string
 
 		content, err := w.AddFileBytes("digitalocean_spaces_bucket_object", name, "content", bytes, false)
 		if err != nil {
-			return fmt.Errorf("rendering DO file: %v", err)
+			return fmt.Errorf("error rendering DO file: %w", err)
 		}
 
 		// retrieve space region from endpoint
 		endpoint := os.Getenv("S3_ENDPOINT")
 		if endpoint == "" {
-			return fmt.Errorf("S3 Endpoint is empty")
+			return errors.New("S3 Endpoint is empty")
 		}
 		region := strings.Split(endpoint, ".")[0]
 

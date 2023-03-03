@@ -246,12 +246,12 @@ func (_ *Droplet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *D
 	if e.UserData != nil {
 		d, err := fi.ResourceAsBytes(e.UserData)
 		if err != nil {
-			return err
+			return fmt.Errorf("Error retrieving droplet from resource bytes: %w", err)
 		}
 		if d != nil {
 			tf.UserData, err = t.AddFileBytes("digitalocean_droplet", fi.ValueOf(e.Name), "user_data", d, false)
 			if err != nil {
-				return err
+				return fmt.Errorf("Error adding user data bytes to terraform resource: %w", err)
 			}
 		}
 	}
