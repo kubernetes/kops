@@ -20,6 +20,8 @@ spec:
     cidrAllocatorType: CloudAllocator
     clusterCIDR: 100.96.0.0/11
     clusterName: minimal-gce-with-a-very-very-very-very-very-long-name-example-com
+    controllers:
+    - '*'
     image: k8scloudprovidergcp/cloud-controller-manager:latest
     leaderElection:
       leaderElect: true
