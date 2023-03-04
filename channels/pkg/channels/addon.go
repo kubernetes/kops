@@ -197,12 +197,26 @@ func (a *Addon) updateAddon(ctx context.Context, k8sClient kubernetes.Interface,
 		return fmt.Errorf("error reading manifest: %w", err)
 	}
 
-	if err := applier.Apply(ctx, data); err != nil {
-		return fmt.Errorf("error applying update from %q: %w", manifestURL, err)
+	var merr error
+	var applyError, pruneError error
+
+	if applyError = applier.Apply(ctx, data); applyError != nil {
+		merr = multierr.Append(merr, fmt.Errorf("error applying update: %w", applyError))
 	}
 
-	if err := pruner.Prune(ctx, data, a.Spec.Prune); err != nil {
-		return fmt.Errorf("error pruning manifest from %q: %w", manifestURL, err)
+	if pruneError = pruner.Prune(ctx, data, a.Spec.Prune); pruneError != nil {
+		merr = multierr.Append(merr, fmt.Errorf("error pruning manifest: %w", pruneError))
+	}
+
+	if applyError != nil && pruneError == nil {
+		// If we failed to apply, but not prune, we should try to apply again
+		if err := applier.Apply(ctx, data); err != nil {
+			merr = multierr.Append(merr, fmt.Errorf("error applying update after prune: %w", err))
+		}
+	}
+
+	if merr != nil {
+		return fmt.Errorf("error updating addon from %q: %w", manifestURL, merr)
 	}
 
 	if err := a.AddNeedsUpdateLabel(ctx, k8sClient, required); err != nil {
