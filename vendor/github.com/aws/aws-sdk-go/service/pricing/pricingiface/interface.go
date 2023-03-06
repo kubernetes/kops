@@ -74,12 +74,23 @@ type PricingAPI interface {
 	GetAttributeValuesPages(*pricing.GetAttributeValuesInput, func(*pricing.GetAttributeValuesOutput, bool) bool) error
 	GetAttributeValuesPagesWithContext(aws.Context, *pricing.GetAttributeValuesInput, func(*pricing.GetAttributeValuesOutput, bool) bool, ...request.Option) error
 
+	GetPriceListFileUrl(*pricing.GetPriceListFileUrlInput) (*pricing.GetPriceListFileUrlOutput, error)
+	GetPriceListFileUrlWithContext(aws.Context, *pricing.GetPriceListFileUrlInput, ...request.Option) (*pricing.GetPriceListFileUrlOutput, error)
+	GetPriceListFileUrlRequest(*pricing.GetPriceListFileUrlInput) (*request.Request, *pricing.GetPriceListFileUrlOutput)
+
 	GetProducts(*pricing.GetProductsInput) (*pricing.GetProductsOutput, error)
 	GetProductsWithContext(aws.Context, *pricing.GetProductsInput, ...request.Option) (*pricing.GetProductsOutput, error)
 	GetProductsRequest(*pricing.GetProductsInput) (*request.Request, *pricing.GetProductsOutput)
 
 	GetProductsPages(*pricing.GetProductsInput, func(*pricing.GetProductsOutput, bool) bool) error
 	GetProductsPagesWithContext(aws.Context, *pricing.GetProductsInput, func(*pricing.GetProductsOutput, bool) bool, ...request.Option) error
+
+	ListPriceLists(*pricing.ListPriceListsInput) (*pricing.ListPriceListsOutput, error)
+	ListPriceListsWithContext(aws.Context, *pricing.ListPriceListsInput, ...request.Option) (*pricing.ListPriceListsOutput, error)
+	ListPriceListsRequest(*pricing.ListPriceListsInput) (*request.Request, *pricing.ListPriceListsOutput)
+
+	ListPriceListsPages(*pricing.ListPriceListsInput, func(*pricing.ListPriceListsOutput, bool) bool) error
+	ListPriceListsPagesWithContext(aws.Context, *pricing.ListPriceListsInput, func(*pricing.ListPriceListsOutput, bool) bool, ...request.Option) error
 }
 
 var _ PricingAPI = (*pricing.Pricing)(nil)

@@ -7,8 +7,8 @@ const (
 	// ErrCodeActiveInstanceRefreshNotFoundFault for service response error code
 	// "ActiveInstanceRefreshNotFound".
 	//
-	// The request failed because an active instance refresh for the specified Auto
-	// Scaling group was not found.
+	// The request failed because an active instance refresh or rollback for the
+	// specified Auto Scaling group was not found.
 	ErrCodeActiveInstanceRefreshNotFoundFault = "ActiveInstanceRefreshNotFound"
 
 	// ErrCodeAlreadyExistsFault for service response error code
@@ -21,8 +21,8 @@ const (
 	// ErrCodeInstanceRefreshInProgressFault for service response error code
 	// "InstanceRefreshInProgress".
 	//
-	// The request failed because an active instance refresh operation already exists
-	// for the specified Auto Scaling group.
+	// The request failed because an active instance refresh already exists for
+	// the specified Auto Scaling group.
 	ErrCodeInstanceRefreshInProgressFault = "InstanceRefreshInProgress"
 
 	// ErrCodeInvalidNextToken for service response error code
@@ -30,6 +30,15 @@ const (
 	//
 	// The NextToken value is not valid.
 	ErrCodeInvalidNextToken = "InvalidNextToken"
+
+	// ErrCodeIrreversibleInstanceRefreshFault for service response error code
+	// "IrreversibleInstanceRefresh".
+	//
+	// The request failed because a desired configuration was not found or an incompatible
+	// launch template (uses a Systems Manager parameter instead of an AMI ID) or
+	// launch template version ($Latest or $Default) is present on the Auto Scaling
+	// group.
+	ErrCodeIrreversibleInstanceRefreshFault = "IrreversibleInstanceRefresh"
 
 	// ErrCodeLimitExceededFault for service response error code
 	// "LimitExceeded".

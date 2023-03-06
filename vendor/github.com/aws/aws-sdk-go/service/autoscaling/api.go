@@ -624,13 +624,16 @@ func (c *AutoScaling) CancelInstanceRefreshRequest(input *CancelInstanceRefreshI
 
 // CancelInstanceRefresh API operation for Auto Scaling.
 //
-// Cancels an instance refresh operation in progress. Cancellation does not
-// roll back any replacements that have already been completed, but it prevents
-// new replacements from being started.
+// Cancels an instance refresh or rollback that is in progress. If an instance
+// refresh or rollback is not in progress, an ActiveInstanceRefreshNotFound
+// error occurs.
 //
 // This operation is part of the instance refresh feature (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-instance-refresh.html)
 // in Amazon EC2 Auto Scaling, which helps you update instances in your Auto
 // Scaling group after you make configuration changes.
+//
+// When you cancel an instance refresh, this does not roll back any changes
+// that it made. Use the RollbackInstanceRefresh API to roll back instead.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -652,8 +655,8 @@ func (c *AutoScaling) CancelInstanceRefreshRequest(input *CancelInstanceRefreshI
 //     (for example, an Auto Scaling group, instance, or load balancer).
 //
 //   - ErrCodeActiveInstanceRefreshNotFoundFault "ActiveInstanceRefreshNotFound"
-//     The request failed because an active instance refresh for the specified Auto
-//     Scaling group was not found.
+//     The request failed because an active instance refresh or rollback for the
+//     specified Auto Scaling group was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/CancelInstanceRefresh
 func (c *AutoScaling) CancelInstanceRefresh(input *CancelInstanceRefreshInput) (*CancelInstanceRefreshOutput, error) {
@@ -2410,28 +2413,13 @@ func (c *AutoScaling) DescribeInstanceRefreshesRequest(input *DescribeInstanceRe
 // in Amazon EC2 Auto Scaling, which helps you update instances in your Auto
 // Scaling group after you make configuration changes.
 //
-// To help you determine the status of an instance refresh, this operation returns
-// information about the instance refreshes you previously initiated, including
-// their status, end time, the percentage of the instance refresh that is complete,
-// and the number of instances remaining to update before the instance refresh
-// is complete.
-//
-// The following are the possible statuses:
-//
-//   - Pending - The request was created, but the operation has not started.
-//
-//   - InProgress - The operation is in progress.
-//
-//   - Successful - The operation completed successfully.
-//
-//   - Failed - The operation failed to complete. You can troubleshoot using
-//     the status reason and the scaling activities.
-//
-//   - Cancelling - An ongoing operation is being cancelled. Cancellation does
-//     not roll back any replacements that have already been completed, but it
-//     prevents new replacements from being started.
-//
-//   - Cancelled - The operation is cancelled.
+// To help you determine the status of an instance refresh, Amazon EC2 Auto
+// Scaling returns information about the instance refreshes you previously initiated,
+// including their status, start time, end time, the percentage of the instance
+// refresh that is complete, and the number of instances remaining to update
+// before the instance refresh is complete. If a rollback is initiated while
+// an instance refresh is in progress, Amazon EC2 Auto Scaling also returns
+// information about the rollback of the instance refresh.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5762,6 +5750,124 @@ func (c *AutoScaling) ResumeProcessesWithContext(ctx aws.Context, input *Scaling
 	return out, req.Send()
 }
 
+const opRollbackInstanceRefresh = "RollbackInstanceRefresh"
+
+// RollbackInstanceRefreshRequest generates a "aws/request.Request" representing the
+// client's request for the RollbackInstanceRefresh operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See RollbackInstanceRefresh for more information on using the RollbackInstanceRefresh
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the RollbackInstanceRefreshRequest method.
+//	req, resp := client.RollbackInstanceRefreshRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/RollbackInstanceRefresh
+func (c *AutoScaling) RollbackInstanceRefreshRequest(input *RollbackInstanceRefreshInput) (req *request.Request, output *RollbackInstanceRefreshOutput) {
+	op := &request.Operation{
+		Name:       opRollbackInstanceRefresh,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &RollbackInstanceRefreshInput{}
+	}
+
+	output = &RollbackInstanceRefreshOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// RollbackInstanceRefresh API operation for Auto Scaling.
+//
+// Cancels an instance refresh that is in progress and rolls back any changes
+// that it made. Amazon EC2 Auto Scaling replaces any instances that were replaced
+// during the instance refresh. This restores your Auto Scaling group to the
+// configuration that it was using before the start of the instance refresh.
+//
+// This operation is part of the instance refresh feature (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-instance-refresh.html)
+// in Amazon EC2 Auto Scaling, which helps you update instances in your Auto
+// Scaling group after you make configuration changes.
+//
+// A rollback is not supported in the following situations:
+//
+//   - There is no desired configuration specified for the instance refresh.
+//
+//   - The Auto Scaling group has a launch template that uses an Amazon Web
+//     Services Systems Manager parameter instead of an AMI ID for the ImageId
+//     property.
+//
+//   - The Auto Scaling group uses the launch template's $Latest or $Default
+//     version.
+//
+// When you receive a successful response from this operation, Amazon EC2 Auto
+// Scaling immediately begins replacing instances. You can check the status
+// of this operation through the DescribeInstanceRefreshes API operation.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Auto Scaling's
+// API operation RollbackInstanceRefresh for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeLimitExceededFault "LimitExceeded"
+//     You have already reached a limit for your Amazon EC2 Auto Scaling resources
+//     (for example, Auto Scaling groups, launch configurations, or lifecycle hooks).
+//     For more information, see DescribeAccountLimits (https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_DescribeAccountLimits.html)
+//     in the Amazon EC2 Auto Scaling API Reference.
+//
+//   - ErrCodeResourceContentionFault "ResourceContention"
+//     You already have a pending update to an Amazon EC2 Auto Scaling resource
+//     (for example, an Auto Scaling group, instance, or load balancer).
+//
+//   - ErrCodeActiveInstanceRefreshNotFoundFault "ActiveInstanceRefreshNotFound"
+//     The request failed because an active instance refresh or rollback for the
+//     specified Auto Scaling group was not found.
+//
+//   - ErrCodeIrreversibleInstanceRefreshFault "IrreversibleInstanceRefresh"
+//     The request failed because a desired configuration was not found or an incompatible
+//     launch template (uses a Systems Manager parameter instead of an AMI ID) or
+//     launch template version ($Latest or $Default) is present on the Auto Scaling
+//     group.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/RollbackInstanceRefresh
+func (c *AutoScaling) RollbackInstanceRefresh(input *RollbackInstanceRefreshInput) (*RollbackInstanceRefreshOutput, error) {
+	req, out := c.RollbackInstanceRefreshRequest(input)
+	return out, req.Send()
+}
+
+// RollbackInstanceRefreshWithContext is the same as RollbackInstanceRefresh with the addition of
+// the ability to pass a context and additional request options.
+//
+// See RollbackInstanceRefresh for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AutoScaling) RollbackInstanceRefreshWithContext(ctx aws.Context, input *RollbackInstanceRefreshInput, opts ...request.Option) (*RollbackInstanceRefreshOutput, error) {
+	req, out := c.RollbackInstanceRefreshRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opSetDesiredCapacity = "SetDesiredCapacity"
 
 // SetDesiredCapacityRequest generates a "aws/request.Request" representing the
@@ -6076,9 +6182,9 @@ func (c *AutoScaling) StartInstanceRefreshRequest(input *StartInstanceRefreshInp
 
 // StartInstanceRefresh API operation for Auto Scaling.
 //
-// Starts a new instance refresh operation. An instance refresh performs a rolling
-// replacement of all or some instances in an Auto Scaling group. Each instance
-// is terminated first and then replaced, which temporarily reduces the capacity
+// Starts an instance refresh. During an instance refresh, Amazon EC2 Auto Scaling
+// performs a rolling update of instances in an Auto Scaling group. Instances
+// are terminated first and then replaced, which temporarily reduces the capacity
 // available within your Auto Scaling group.
 //
 // This operation is part of the instance refresh feature (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-instance-refresh.html)
@@ -6088,11 +6194,23 @@ func (c *AutoScaling) StartInstanceRefreshRequest(input *StartInstanceRefreshInp
 // that specifies the new AMI or user data script. Then start an instance refresh
 // to immediately begin the process of updating instances in the group.
 //
-// If the call succeeds, it creates a new instance refresh request with a unique
-// ID that you can use to track its progress. To query its status, call the
-// DescribeInstanceRefreshes API. To describe the instance refreshes that have
-// already run, call the DescribeInstanceRefreshes API. To cancel an instance
-// refresh operation in progress, use the CancelInstanceRefresh API.
+// If successful, the request's response contains a unique ID that you can use
+// to track the progress of the instance refresh. To query its status, call
+// the DescribeInstanceRefreshes API. To describe the instance refreshes that
+// have already run, call the DescribeInstanceRefreshes API. To cancel an instance
+// refresh that is in progress, use the CancelInstanceRefresh API.
+//
+// An instance refresh might fail for several reasons, such as EC2 launch failures,
+// misconfigured health checks, or not ignoring or allowing the termination
+// of instances that are in Standby state or protected from scale in. You can
+// monitor for failed EC2 launches using the scaling activities. To find the
+// scaling activities, call the DescribeScalingActivities API.
+//
+// If you enable auto rollback, your Auto Scaling group will be rolled back
+// automatically when the instance refresh fails. You can enable this feature
+// before starting an instance refresh by specifying the AutoRollback property
+// in the instance refresh preferences. Otherwise, to roll back an instance
+// refresh before it finishes, use the RollbackInstanceRefresh API.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -6114,8 +6232,8 @@ func (c *AutoScaling) StartInstanceRefreshRequest(input *StartInstanceRefreshInp
 //     (for example, an Auto Scaling group, instance, or load balancer).
 //
 //   - ErrCodeInstanceRefreshInProgressFault "InstanceRefreshInProgress"
-//     The request failed because an active instance refresh operation already exists
-//     for the specified Auto Scaling group.
+//     The request failed because an active instance refresh already exists for
+//     the specified Auto Scaling group.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/StartInstanceRefresh
 func (c *AutoScaling) StartInstanceRefresh(input *StartInstanceRefreshInput) (*StartInstanceRefreshOutput, error) {
@@ -7507,7 +7625,8 @@ func (s *CancelInstanceRefreshInput) SetAutoScalingGroupName(v string) *CancelIn
 type CancelInstanceRefreshOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The instance refresh ID.
+	// The instance refresh ID associated with the request. This is the unique ID
+	// assigned to the instance refresh when it was started.
 	InstanceRefreshId *string `min:"1" type:"string"`
 }
 
@@ -7753,23 +7872,24 @@ type CreateAutoScalingGroupInput struct {
 	// Default: 300 seconds
 	DefaultCooldown *int64 `type:"integer"`
 
-	// The amount of time, in seconds, until a newly launched instance can contribute
-	// to the Amazon CloudWatch metrics. This delay lets an instance finish initializing
-	// before Amazon EC2 Auto Scaling aggregates instance metrics, resulting in
-	// more reliable usage data. Set this value equal to the amount of time that
-	// it takes for resource consumption to become stable after an instance reaches
-	// the InService state. For more information, see Set the default instance warmup
-	// for an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-default-instance-warmup.html)
+	// The amount of time, in seconds, until a new instance is considered to have
+	// finished initializing and resource consumption to become stable after it
+	// enters the InService state.
+	//
+	// During an instance refresh, Amazon EC2 Auto Scaling waits for the warm-up
+	// period after it replaces an instance before it moves on to replacing the
+	// next instance. Amazon EC2 Auto Scaling also waits for the warm-up period
+	// before aggregating the metrics for new instances with existing instances
+	// in the Amazon CloudWatch metrics that are used for scaling, resulting in
+	// more reliable usage data. For more information, see Set the default instance
+	// warmup for an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-default-instance-warmup.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	//
-	// To manage your warm-up settings at the group level, we recommend that you
-	// set the default instance warmup, even if its value is set to 0 seconds. This
-	// also optimizes the performance of scaling policies that scale continuously,
-	// such as target tracking and step scaling policies.
-	//
-	// If you need to remove a value that you previously set, include the property
-	// but specify -1 for the value. However, we strongly recommend keeping the
-	// default instance warmup enabled by specifying a minimum value of 0.
+	// To manage various warm-up settings at the group level, we recommend that
+	// you set the default instance warmup, even if it is set to 0 seconds. To remove
+	// a value that you previously set, include the property but specify -1 for
+	// the value. However, we strongly recommend keeping the default instance warmup
+	// enabled by specifying a value of 0 or other nominal value.
 	//
 	// Default: None
 	DefaultInstanceWarmup *int64 `type:"integer"`
@@ -13201,6 +13321,10 @@ type Group struct {
 	// The termination policies for the group.
 	TerminationPolicies []*string `type:"list"`
 
+	// Reserved for use with Amazon VPC Lattice, which is in preview release and
+	// is subject to change. Do not use this parameter for production workloads.
+	// It is also subject to change.
+	//
 	// The unique identifiers of the traffic sources.
 	TrafficSources []*TrafficSourceIdentifier `type:"list"`
 
@@ -13823,7 +13947,7 @@ type InstanceRefresh struct {
 	// The name of the Auto Scaling group.
 	AutoScalingGroupName *string `min:"1" type:"string"`
 
-	// Describes the specific update you want to deploy.
+	// Describes the desired configuration for the instance refresh.
 	DesiredConfiguration *DesiredConfiguration `type:"structure"`
 
 	// The date and time at which the instance refresh ended.
@@ -13834,6 +13958,10 @@ type InstanceRefresh struct {
 
 	// The number of instances remaining to update before the instance refresh is
 	// complete.
+	//
+	// If you roll back the instance refresh, InstancesToUpdate shows you the number
+	// of instances that were not yet updated by the instance refresh. Therefore,
+	// these instances don't need to be replaced as part of the rollback.
 	InstancesToUpdate *int64 `type:"integer"`
 
 	// The percentage of the instance refresh that is complete. For each instance
@@ -13841,6 +13969,9 @@ type InstanceRefresh struct {
 	// and warm-up time. When the instance's health status changes to healthy and
 	// the specified warm-up time passes, the instance is considered updated and
 	// is added to the percentage complete.
+	//
+	// PercentageComplete does not include instances that are replaced during a
+	// rollback. This value gradually goes back down to zero during a rollback.
 	PercentageComplete *int64 `type:"integer"`
 
 	// Describes the preferences for an instance refresh.
@@ -13849,28 +13980,37 @@ type InstanceRefresh struct {
 	// Additional progress details for an Auto Scaling group that has a warm pool.
 	ProgressDetails *InstanceRefreshProgressDetails `type:"structure"`
 
+	// The rollback details.
+	RollbackDetails *RollbackDetails `type:"structure"`
+
 	// The date and time at which the instance refresh began.
 	StartTime *time.Time `type:"timestamp"`
 
 	// The current status for the instance refresh operation:
 	//
-	//    * Pending - The request was created, but the operation has not started.
+	//    * Pending - The request was created, but the instance refresh has not
+	//    started.
 	//
-	//    * InProgress - The operation is in progress.
+	//    * InProgress - An instance refresh is in progress.
 	//
-	//    * Successful - The operation completed successfully.
+	//    * Successful - An instance refresh completed successfully.
 	//
-	//    * Failed - The operation failed to complete. You can troubleshoot using
-	//    the status reason and the scaling activities.
+	//    * Failed - An instance refresh failed to complete. You can troubleshoot
+	//    using the status reason and the scaling activities.
 	//
-	//    * Cancelling - An ongoing operation is being cancelled. Cancellation does
-	//    not roll back any replacements that have already been completed, but it
-	//    prevents new replacements from being started.
+	//    * Cancelling - An ongoing instance refresh is being cancelled.
 	//
-	//    * Cancelled - The operation is cancelled.
+	//    * Cancelled - The instance refresh is cancelled.
+	//
+	//    * RollbackInProgress - An instance refresh is being rolled back.
+	//
+	//    * RollbackFailed - The rollback failed to complete. You can troubleshoot
+	//    using the status reason and the scaling activities.
+	//
+	//    * RollbackSuccessful - The rollback completed successfully.
 	Status *string `type:"string" enum:"InstanceRefreshStatus"`
 
-	// Provides more details about the current status of the instance refresh.
+	// The explanation for the specific status assigned to this operation.
 	StatusReason *string `min:"1" type:"string"`
 }
 
@@ -13940,6 +14080,12 @@ func (s *InstanceRefresh) SetProgressDetails(v *InstanceRefreshProgressDetails) 
 	return s
 }
 
+// SetRollbackDetails sets the RollbackDetails field's value.
+func (s *InstanceRefresh) SetRollbackDetails(v *RollbackDetails) *InstanceRefresh {
+	s.RollbackDetails = v
+	return s
+}
+
 // SetStartTime sets the StartTime field's value.
 func (s *InstanceRefresh) SetStartTime(v time.Time) *InstanceRefresh {
 	s.StartTime = &v
@@ -13958,8 +14104,7 @@ func (s *InstanceRefresh) SetStatusReason(v string) *InstanceRefresh {
 	return s
 }
 
-// Reports the progress of an instance refresh on instances that are in the
-// Auto Scaling group.
+// Reports progress on replacing instances that are in the Auto Scaling group.
 type InstanceRefreshLivePoolProgress struct {
 	_ struct{} `type:"structure"`
 
@@ -14004,18 +14149,16 @@ func (s *InstanceRefreshLivePoolProgress) SetPercentageComplete(v int64) *Instan
 	return s
 }
 
-// Reports the progress of an instance refresh on an Auto Scaling group that
-// has a warm pool. This includes separate details for instances in the warm
-// pool and instances in the Auto Scaling group (the live pool).
+// Reports progress on replacing instances in an Auto Scaling group that has
+// a warm pool. This includes separate details for instances in the warm pool
+// and instances in the Auto Scaling group (the live pool).
 type InstanceRefreshProgressDetails struct {
 	_ struct{} `type:"structure"`
 
-	// Indicates the progress of an instance refresh on instances that are in the
-	// Auto Scaling group.
+	// Reports progress on replacing instances that are in the Auto Scaling group.
 	LivePoolProgress *InstanceRefreshLivePoolProgress `type:"structure"`
 
-	// Indicates the progress of an instance refresh on instances that are in the
-	// warm pool.
+	// Reports progress on replacing instances that are in the warm pool.
 	WarmPoolProgress *InstanceRefreshWarmPoolProgress `type:"structure"`
 }
 
@@ -14049,8 +14192,7 @@ func (s *InstanceRefreshProgressDetails) SetWarmPoolProgress(v *InstanceRefreshW
 	return s
 }
 
-// Reports the progress of an instance refresh on instances that are in the
-// warm pool.
+// Reports progress on replacing instances that are in the warm pool.
 type InstanceRefreshWarmPoolProgress struct {
 	_ struct{} `type:"structure"`
 
@@ -18466,27 +18608,48 @@ func (s RecordLifecycleActionHeartbeatOutput) GoString() string {
 type RefreshPreferences struct {
 	_ struct{} `type:"structure"`
 
-	// The amount of time, in seconds, to wait after a checkpoint before continuing.
-	// This property is optional, but if you specify a value for it, you must also
-	// specify a value for CheckpointPercentages. If you specify a value for CheckpointPercentages
-	// and not for CheckpointDelay, the CheckpointDelay defaults to 3600 (1 hour).
+	// (Optional) Indicates whether to roll back the Auto Scaling group to its previous
+	// configuration if the instance refresh fails. The default is false.
+	//
+	// A rollback is not supported in the following situations:
+	//
+	//    * There is no desired configuration specified for the instance refresh.
+	//
+	//    * The Auto Scaling group has a launch template that uses an Amazon Web
+	//    Services Systems Manager parameter instead of an AMI ID for the ImageId
+	//    property.
+	//
+	//    * The Auto Scaling group uses the launch template's $Latest or $Default
+	//    version.
+	AutoRollback *bool `type:"boolean"`
+
+	// (Optional) The amount of time, in seconds, to wait after a checkpoint before
+	// continuing. This property is optional, but if you specify a value for it,
+	// you must also specify a value for CheckpointPercentages. If you specify a
+	// value for CheckpointPercentages and not for CheckpointDelay, the CheckpointDelay
+	// defaults to 3600 (1 hour).
 	CheckpointDelay *int64 `type:"integer"`
 
-	// Threshold values for each checkpoint in ascending order. Each number must
-	// be unique. To replace all instances in the Auto Scaling group, the last number
-	// in the array must be 100.
+	// (Optional) Threshold values for each checkpoint in ascending order. Each
+	// number must be unique. To replace all instances in the Auto Scaling group,
+	// the last number in the array must be 100.
 	//
 	// For usage examples, see Adding checkpoints to an instance refresh (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-adding-checkpoints-instance-refresh.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	CheckpointPercentages []*int64 `type:"list"`
 
-	// Not needed if the default instance warmup is defined for the group.
+	// A time period, in seconds, during which an instance refresh waits before
+	// moving on to replacing the next instance after a new instance enters the
+	// InService state.
 	//
-	// The duration of the instance warmup, in seconds.
+	// This property is not required for normal usage. Instead, use the DefaultInstanceWarmup
+	// property of the Auto Scaling group. The InstanceWarmup and DefaultInstanceWarmup
+	// properties work the same way. Only specify this property if you must override
+	// the DefaultInstanceWarmup property.
 	//
-	// The default is to use the value for the default instance warmup defined for
-	// the group. If default instance warmup is null, then InstanceWarmup falls
-	// back to the value of the health check grace period.
+	// If you do not specify this property, the instance warmup by default is the
+	// value of the DefaultInstanceWarmup property, if defined (which is recommended
+	// in all cases), or the HealthCheckGracePeriod property otherwise.
 	InstanceWarmup *int64 `type:"integer"`
 
 	// The amount of capacity in the Auto Scaling group that must pass your group's
@@ -18499,12 +18662,57 @@ type RefreshPreferences struct {
 	// has the effect of replacing all instances at the same time.
 	MinHealthyPercentage *int64 `type:"integer"`
 
-	// A boolean value that indicates whether skip matching is enabled. If true,
+	// Choose the behavior that you want Amazon EC2 Auto Scaling to use if instances
+	// protected from scale in are found.
+	//
+	// The following lists the valid values:
+	//
+	// Refresh
+	//
+	// Amazon EC2 Auto Scaling replaces instances that are protected from scale
+	// in.
+	//
+	// Ignore
+	//
+	// Amazon EC2 Auto Scaling ignores instances that are protected from scale in
+	// and continues to replace instances that are not protected.
+	//
+	// Wait (default)
+	//
+	// Amazon EC2 Auto Scaling waits one hour for you to remove scale-in protection.
+	// Otherwise, the instance refresh will fail.
+	ScaleInProtectedInstances *string `type:"string" enum:"ScaleInProtectedInstances"`
+
+	// (Optional) Indicates whether skip matching is enabled. If enabled (true),
 	// then Amazon EC2 Auto Scaling skips replacing instances that match the desired
 	// configuration. If no desired configuration is specified, then it skips replacing
-	// instances that have the same configuration that is already set on the group.
-	// The default is false.
+	// instances that have the same launch template and instance types that the
+	// Auto Scaling group was using before the start of the instance refresh. The
+	// default is false.
+	//
+	// For more information, see Use an instance refresh with skip matching (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-instance-refresh-skip-matching.html)
+	// in the Amazon EC2 Auto Scaling User Guide.
 	SkipMatching *bool `type:"boolean"`
+
+	// Choose the behavior that you want Amazon EC2 Auto Scaling to use if instances
+	// in Standby state are found.
+	//
+	// The following lists the valid values:
+	//
+	// Terminate
+	//
+	// Amazon EC2 Auto Scaling terminates instances that are in Standby.
+	//
+	// Ignore
+	//
+	// Amazon EC2 Auto Scaling ignores instances that are in Standby and continues
+	// to replace instances that are in the InService state.
+	//
+	// Wait (default)
+	//
+	// Amazon EC2 Auto Scaling waits one hour for you to return the instances to
+	// service. Otherwise, the instance refresh will fail.
+	StandbyInstances *string `type:"string" enum:"StandbyInstances"`
 }
 
 // String returns the string representation.
@@ -18523,6 +18731,12 @@ func (s RefreshPreferences) String() string {
 // value will be replaced with "sensitive".
 func (s RefreshPreferences) GoString() string {
 	return s.String()
+}
+
+// SetAutoRollback sets the AutoRollback field's value.
+func (s *RefreshPreferences) SetAutoRollback(v bool) *RefreshPreferences {
+	s.AutoRollback = &v
+	return s
 }
 
 // SetCheckpointDelay sets the CheckpointDelay field's value.
@@ -18549,9 +18763,21 @@ func (s *RefreshPreferences) SetMinHealthyPercentage(v int64) *RefreshPreference
 	return s
 }
 
+// SetScaleInProtectedInstances sets the ScaleInProtectedInstances field's value.
+func (s *RefreshPreferences) SetScaleInProtectedInstances(v string) *RefreshPreferences {
+	s.ScaleInProtectedInstances = &v
+	return s
+}
+
 // SetSkipMatching sets the SkipMatching field's value.
 func (s *RefreshPreferences) SetSkipMatching(v bool) *RefreshPreferences {
 	s.SkipMatching = &v
+	return s
+}
+
+// SetStandbyInstances sets the StandbyInstances field's value.
+func (s *RefreshPreferences) SetStandbyInstances(v string) *RefreshPreferences {
+	s.StandbyInstances = &v
 	return s
 }
 
@@ -18575,6 +18801,153 @@ func (s ResumeProcessesOutput) String() string {
 // value will be replaced with "sensitive".
 func (s ResumeProcessesOutput) GoString() string {
 	return s.String()
+}
+
+// Details about an instance refresh rollback.
+type RollbackDetails struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates the value of InstancesToUpdate at the time the rollback started.
+	InstancesToUpdateOnRollback *int64 `type:"integer"`
+
+	// Indicates the value of PercentageComplete at the time the rollback started.
+	PercentageCompleteOnRollback *int64 `type:"integer"`
+
+	// Reports progress on replacing instances in an Auto Scaling group that has
+	// a warm pool. This includes separate details for instances in the warm pool
+	// and instances in the Auto Scaling group (the live pool).
+	ProgressDetailsOnRollback *InstanceRefreshProgressDetails `type:"structure"`
+
+	// The reason for this instance refresh rollback (for example, whether a manual
+	// or automatic rollback was initiated).
+	RollbackReason *string `min:"1" type:"string"`
+
+	// The date and time at which the rollback began.
+	RollbackStartTime *time.Time `type:"timestamp"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RollbackDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RollbackDetails) GoString() string {
+	return s.String()
+}
+
+// SetInstancesToUpdateOnRollback sets the InstancesToUpdateOnRollback field's value.
+func (s *RollbackDetails) SetInstancesToUpdateOnRollback(v int64) *RollbackDetails {
+	s.InstancesToUpdateOnRollback = &v
+	return s
+}
+
+// SetPercentageCompleteOnRollback sets the PercentageCompleteOnRollback field's value.
+func (s *RollbackDetails) SetPercentageCompleteOnRollback(v int64) *RollbackDetails {
+	s.PercentageCompleteOnRollback = &v
+	return s
+}
+
+// SetProgressDetailsOnRollback sets the ProgressDetailsOnRollback field's value.
+func (s *RollbackDetails) SetProgressDetailsOnRollback(v *InstanceRefreshProgressDetails) *RollbackDetails {
+	s.ProgressDetailsOnRollback = v
+	return s
+}
+
+// SetRollbackReason sets the RollbackReason field's value.
+func (s *RollbackDetails) SetRollbackReason(v string) *RollbackDetails {
+	s.RollbackReason = &v
+	return s
+}
+
+// SetRollbackStartTime sets the RollbackStartTime field's value.
+func (s *RollbackDetails) SetRollbackStartTime(v time.Time) *RollbackDetails {
+	s.RollbackStartTime = &v
+	return s
+}
+
+type RollbackInstanceRefreshInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the Auto Scaling group.
+	AutoScalingGroupName *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RollbackInstanceRefreshInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RollbackInstanceRefreshInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RollbackInstanceRefreshInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RollbackInstanceRefreshInput"}
+	if s.AutoScalingGroupName != nil && len(*s.AutoScalingGroupName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AutoScalingGroupName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAutoScalingGroupName sets the AutoScalingGroupName field's value.
+func (s *RollbackInstanceRefreshInput) SetAutoScalingGroupName(v string) *RollbackInstanceRefreshInput {
+	s.AutoScalingGroupName = &v
+	return s
+}
+
+type RollbackInstanceRefreshOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The instance refresh ID associated with the request. This is the unique ID
+	// assigned to the instance refresh when it was started.
+	InstanceRefreshId *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RollbackInstanceRefreshOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RollbackInstanceRefreshOutput) GoString() string {
+	return s.String()
+}
+
+// SetInstanceRefreshId sets the InstanceRefreshId field's value.
+func (s *RollbackInstanceRefreshOutput) SetInstanceRefreshId(v string) *RollbackInstanceRefreshOutput {
+	s.InstanceRefreshId = &v
+	return s
 }
 
 // Describes a scaling policy.
@@ -19432,21 +19805,25 @@ type StartInstanceRefreshInput struct {
 	// When you specify a new launch template or a new version of the current launch
 	// template for your desired configuration, consider enabling the SkipMatching
 	// property in preferences. If it's enabled, Amazon EC2 Auto Scaling skips replacing
-	// instances that already use the specified launch template and version. This
-	// can help you reduce the number of replacements that are required to apply
-	// updates.
+	// instances that already use the specified launch template and instance types.
+	// This can help you reduce the number of replacements that are required to
+	// apply updates.
 	DesiredConfiguration *DesiredConfiguration `type:"structure"`
 
-	// Set of preferences associated with the instance refresh request. If not provided,
-	// the default values are used.
+	// Sets your preferences for the instance refresh so that it performs as expected
+	// when you start it. Includes the instance warmup time, the minimum healthy
+	// percentage, and the behaviors that you want Amazon EC2 Auto Scaling to use
+	// if instances that are in Standby state or protected from scale in are found.
+	// You can also choose to enable additional features, such as the following:
+	//
+	//    * Auto rollback
+	//
+	//    * Checkpoints
+	//
+	//    * Skip matching
 	Preferences *RefreshPreferences `type:"structure"`
 
 	// The strategy to use for the instance refresh. The only valid value is Rolling.
-	//
-	// A rolling update helps you update your instances gradually. A rolling update
-	// can fail due to failed health checks or if instances are on standby or are
-	// protected from scale in. If the rolling update process fails, any instances
-	// that are replaced are not rolled back to their previous configuration.
 	Strategy *string `type:"string" enum:"RefreshStrategy"`
 }
 
@@ -19516,7 +19893,7 @@ func (s *StartInstanceRefreshInput) SetStrategy(v string) *StartInstanceRefreshI
 type StartInstanceRefreshOutput struct {
 	_ struct{} `type:"structure"`
 
-	// A unique ID for tracking the progress of the request.
+	// A unique ID for tracking the progress of the instance refresh.
 	InstanceRefreshId *string `min:"1" type:"string"`
 }
 
@@ -20452,23 +20829,24 @@ type UpdateAutoScalingGroupInput struct {
 	// in the Amazon EC2 Auto Scaling User Guide.
 	DefaultCooldown *int64 `type:"integer"`
 
-	// The amount of time, in seconds, until a newly launched instance can contribute
-	// to the Amazon CloudWatch metrics. This delay lets an instance finish initializing
-	// before Amazon EC2 Auto Scaling aggregates instance metrics, resulting in
-	// more reliable usage data. Set this value equal to the amount of time that
-	// it takes for resource consumption to become stable after an instance reaches
-	// the InService state. For more information, see Set the default instance warmup
-	// for an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-default-instance-warmup.html)
+	// The amount of time, in seconds, until a new instance is considered to have
+	// finished initializing and resource consumption to become stable after it
+	// enters the InService state.
+	//
+	// During an instance refresh, Amazon EC2 Auto Scaling waits for the warm-up
+	// period after it replaces an instance before it moves on to replacing the
+	// next instance. Amazon EC2 Auto Scaling also waits for the warm-up period
+	// before aggregating the metrics for new instances with existing instances
+	// in the Amazon CloudWatch metrics that are used for scaling, resulting in
+	// more reliable usage data. For more information, see Set the default instance
+	// warmup for an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-default-instance-warmup.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	//
-	// To manage your warm-up settings at the group level, we recommend that you
-	// set the default instance warmup, even if its value is set to 0 seconds. This
-	// also optimizes the performance of scaling policies that scale continuously,
-	// such as target tracking and step scaling policies.
-	//
-	// If you need to remove a value that you previously set, include the property
-	// but specify -1 for the value. However, we strongly recommend keeping the
-	// default instance warmup enabled by specifying a minimum value of 0.
+	// To manage various warm-up settings at the group level, we recommend that
+	// you set the default instance warmup, even if it is set to 0 seconds. To remove
+	// a value that you previously set, include the property but specify -1 for
+	// the value. However, we strongly recommend keeping the default instance warmup
+	// enabled by specifying a value of 0 or other nominal value.
 	DefaultInstanceWarmup *int64 `type:"integer"`
 
 	// The desired capacity is the initial capacity of the Auto Scaling group after
@@ -21120,6 +21498,15 @@ const (
 
 	// InstanceRefreshStatusCancelled is a InstanceRefreshStatus enum value
 	InstanceRefreshStatusCancelled = "Cancelled"
+
+	// InstanceRefreshStatusRollbackInProgress is a InstanceRefreshStatus enum value
+	InstanceRefreshStatusRollbackInProgress = "RollbackInProgress"
+
+	// InstanceRefreshStatusRollbackFailed is a InstanceRefreshStatus enum value
+	InstanceRefreshStatusRollbackFailed = "RollbackFailed"
+
+	// InstanceRefreshStatusRollbackSuccessful is a InstanceRefreshStatus enum value
+	InstanceRefreshStatusRollbackSuccessful = "RollbackSuccessful"
 )
 
 // InstanceRefreshStatus_Values returns all elements of the InstanceRefreshStatus enum
@@ -21131,6 +21518,9 @@ func InstanceRefreshStatus_Values() []string {
 		InstanceRefreshStatusFailed,
 		InstanceRefreshStatusCancelling,
 		InstanceRefreshStatusCancelled,
+		InstanceRefreshStatusRollbackInProgress,
+		InstanceRefreshStatusRollbackFailed,
+		InstanceRefreshStatusRollbackSuccessful,
 	}
 }
 
@@ -21439,6 +21829,26 @@ func RefreshStrategy_Values() []string {
 }
 
 const (
+	// ScaleInProtectedInstancesRefresh is a ScaleInProtectedInstances enum value
+	ScaleInProtectedInstancesRefresh = "Refresh"
+
+	// ScaleInProtectedInstancesIgnore is a ScaleInProtectedInstances enum value
+	ScaleInProtectedInstancesIgnore = "Ignore"
+
+	// ScaleInProtectedInstancesWait is a ScaleInProtectedInstances enum value
+	ScaleInProtectedInstancesWait = "Wait"
+)
+
+// ScaleInProtectedInstances_Values returns all elements of the ScaleInProtectedInstances enum
+func ScaleInProtectedInstances_Values() []string {
+	return []string{
+		ScaleInProtectedInstancesRefresh,
+		ScaleInProtectedInstancesIgnore,
+		ScaleInProtectedInstancesWait,
+	}
+}
+
+const (
 	// ScalingActivityStatusCodePendingSpotBidPlacement is a ScalingActivityStatusCode enum value
 	ScalingActivityStatusCodePendingSpotBidPlacement = "PendingSpotBidPlacement"
 
@@ -21491,6 +21901,26 @@ func ScalingActivityStatusCode_Values() []string {
 		ScalingActivityStatusCodeSuccessful,
 		ScalingActivityStatusCodeFailed,
 		ScalingActivityStatusCodeCancelled,
+	}
+}
+
+const (
+	// StandbyInstancesTerminate is a StandbyInstances enum value
+	StandbyInstancesTerminate = "Terminate"
+
+	// StandbyInstancesIgnore is a StandbyInstances enum value
+	StandbyInstancesIgnore = "Ignore"
+
+	// StandbyInstancesWait is a StandbyInstances enum value
+	StandbyInstancesWait = "Wait"
+)
+
+// StandbyInstances_Values returns all elements of the StandbyInstances enum
+func StandbyInstances_Values() []string {
+	return []string{
+		StandbyInstancesTerminate,
+		StandbyInstancesIgnore,
+		StandbyInstancesWait,
 	}
 }
 

@@ -38,14 +38,14 @@
 //
 // # Signing Requests
 //
-// Requests must be signed by using an access key ID and a secret access key.
-// We strongly recommend that you do not use your Amazon Web Services account
-// (root) access key ID and secret access key for everyday work with KMS. Instead,
-// use the access key ID and secret access key for an IAM user. You can also
-// use the Amazon Web Services Security Token Service to generate temporary
-// security credentials that you can use to sign requests.
+// Requests must be signed using an access key ID and a secret access key. We
+// strongly recommend that you do not use your Amazon Web Services account root
+// access key ID and secret access key for everyday work. You can use the access
+// key ID and secret access key for an IAM user or you can use the Security
+// Token Service (STS) to generate temporary security credentials and use those
+// to sign requests.
 //
-// All KMS operations require Signature Version 4 (https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html).
+// All KMS requests must be signed with Signature Version 4 (https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html).
 //
 // # Logging API Requests
 //
