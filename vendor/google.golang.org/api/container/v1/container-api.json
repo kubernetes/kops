@@ -2487,7 +2487,7 @@
       }
     }
   },
-  "revision": "20230117",
+  "revision": "20230207",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -5046,7 +5046,7 @@
       "type": "object"
     },
     "NodeTaint": {
-      "description": "Kubernetes taint is comprised of three fields: key, value, and effect. Effect can only be one of three types: NoSchedule, PreferNoSchedule or NoExecute. See [here](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration) for more information, including usage and the valid values.",
+      "description": "Kubernetes taint is composed of three fields: key, value, and effect. Effect can only be one of three types: NoSchedule, PreferNoSchedule or NoExecute. See [here](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration) for more information, including usage and the valid values.",
       "id": "NodeTaint",
       "properties": {
         "effect": {

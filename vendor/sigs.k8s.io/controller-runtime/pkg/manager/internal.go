@@ -41,7 +41,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/cluster"
-	"sigs.k8s.io/controller-runtime/pkg/config/v1alpha1" //nolint:staticcheck
+	"sigs.k8s.io/controller-runtime/pkg/config/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/internal/httpserver"
 	intrec "sigs.k8s.io/controller-runtime/pkg/internal/recorder"
@@ -108,7 +108,7 @@ type controllerManager struct {
 	healthzHandler *healthz.Handler
 
 	// controllerOptions are the global controller options.
-	controllerOptions v1alpha1.ControllerConfigurationSpec //nolint:staticcheck
+	controllerOptions v1alpha1.ControllerConfigurationSpec
 
 	// Logger is the logger that should be used by this manager.
 	// If none is set, it defaults to log.Log global logger.
@@ -325,7 +325,7 @@ func (cm *controllerManager) GetLogger() logr.Logger {
 	return cm.logger
 }
 
-func (cm *controllerManager) GetControllerOptions() v1alpha1.ControllerConfigurationSpec { //nolint:staticcheck
+func (cm *controllerManager) GetControllerOptions() v1alpha1.ControllerConfigurationSpec {
 	return cm.controllerOptions
 }
 
@@ -528,7 +528,12 @@ func (cm *controllerManager) engageStopProcedure(stopComplete <-chan struct{}) e
 	//
 	// The shutdown context immediately expires if the gracefulShutdownTimeout is not set.
 	var shutdownCancel context.CancelFunc
-	cm.shutdownCtx, shutdownCancel = context.WithTimeout(context.Background(), cm.gracefulShutdownTimeout)
+	if cm.gracefulShutdownTimeout < 0 {
+		// We want to wait forever for the runnables to stop.
+		cm.shutdownCtx, shutdownCancel = context.WithCancel(context.Background())
+	} else {
+		cm.shutdownCtx, shutdownCancel = context.WithTimeout(context.Background(), cm.gracefulShutdownTimeout)
+	}
 	defer shutdownCancel()
 
 	// Start draining the errors before acquiring the lock to make sure we don't deadlock

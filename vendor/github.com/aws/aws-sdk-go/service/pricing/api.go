@@ -4,6 +4,7 @@ package pricing
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awsutil"
@@ -317,6 +318,103 @@ func (c *Pricing) GetAttributeValuesPagesWithContext(ctx aws.Context, input *Get
 	return p.Err()
 }
 
+const opGetPriceListFileUrl = "GetPriceListFileUrl"
+
+// GetPriceListFileUrlRequest generates a "aws/request.Request" representing the
+// client's request for the GetPriceListFileUrl operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetPriceListFileUrl for more information on using the GetPriceListFileUrl
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetPriceListFileUrlRequest method.
+//	req, resp := client.GetPriceListFileUrlRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/pricing-2017-10-15/GetPriceListFileUrl
+func (c *Pricing) GetPriceListFileUrlRequest(input *GetPriceListFileUrlInput) (req *request.Request, output *GetPriceListFileUrlOutput) {
+	op := &request.Operation{
+		Name:       opGetPriceListFileUrl,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &GetPriceListFileUrlInput{}
+	}
+
+	output = &GetPriceListFileUrlOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetPriceListFileUrl API operation for AWS Price List Service.
+//
+//	This feature is in preview release and is subject to change. Your use of
+//	Amazon Web Services Price List API is subject to the Beta Service Participation
+//	terms of the Amazon Web Services Service Terms (https://aws.amazon.com/service-terms/)
+//	(Section 1.10).
+//
+// This returns the URL that you can retrieve your Price List file from. This
+// URL is based on the PriceListArn and FileFormat that you retrieve from the
+// ListPriceLists (https://docs.aws.amazon.com/aws-cost-management/latest/APIReference/API_pricing_ListPriceLists.html)
+// response.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Price List Service's
+// API operation GetPriceListFileUrl for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
+//
+//   - InvalidParameterException
+//     One or more parameters had an invalid value.
+//
+//   - NotFoundException
+//     The requested resource can't be found.
+//
+//   - AccessDeniedException
+//     General authentication failure. The request wasn't signed correctly.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/pricing-2017-10-15/GetPriceListFileUrl
+func (c *Pricing) GetPriceListFileUrl(input *GetPriceListFileUrlInput) (*GetPriceListFileUrlOutput, error) {
+	req, out := c.GetPriceListFileUrlRequest(input)
+	return out, req.Send()
+}
+
+// GetPriceListFileUrlWithContext is the same as GetPriceListFileUrl with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetPriceListFileUrl for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Pricing) GetPriceListFileUrlWithContext(ctx aws.Context, input *GetPriceListFileUrlInput, opts ...request.Option) (*GetPriceListFileUrlOutput, error) {
+	req, out := c.GetPriceListFileUrlRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opGetProducts = "GetProducts"
 
 // GetProductsRequest generates a "aws/request.Request" representing the
@@ -464,6 +562,234 @@ func (c *Pricing) GetProductsPagesWithContext(ctx aws.Context, input *GetProduct
 	}
 
 	return p.Err()
+}
+
+const opListPriceLists = "ListPriceLists"
+
+// ListPriceListsRequest generates a "aws/request.Request" representing the
+// client's request for the ListPriceLists operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListPriceLists for more information on using the ListPriceLists
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListPriceListsRequest method.
+//	req, resp := client.ListPriceListsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/pricing-2017-10-15/ListPriceLists
+func (c *Pricing) ListPriceListsRequest(input *ListPriceListsInput) (req *request.Request, output *ListPriceListsOutput) {
+	op := &request.Operation{
+		Name:       opListPriceLists,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListPriceListsInput{}
+	}
+
+	output = &ListPriceListsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListPriceLists API operation for AWS Price List Service.
+//
+//	This feature is in preview release and is subject to change. Your use of
+//	Amazon Web Services Price List API is subject to the Beta Service Participation
+//	terms of the Amazon Web Services Service Terms (https://aws.amazon.com/service-terms/)
+//	(Section 1.10).
+//
+// This returns a list of Price List references that the requester if authorized
+// to view, given a ServiceCode, CurrencyCode, and an EffectiveDate. Use without
+// a RegionCode filter to list Price List references from all available Amazon
+// Web Services Regions. Use with a RegionCode filter to get the Price List
+// reference that's specific to a specific Amazon Web Services Region. You can
+// use the PriceListArn from the response to get your preferred Price List files
+// through the GetPriceListFileUrl (https://docs.aws.amazon.com/aws-cost-management/latest/APIReference/API_pricing_GetPriceListFileUrl.html)
+// API.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Price List Service's
+// API operation ListPriceLists for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
+//
+//   - InvalidParameterException
+//     One or more parameters had an invalid value.
+//
+//   - NotFoundException
+//     The requested resource can't be found.
+//
+//   - InvalidNextTokenException
+//     The pagination token is invalid. Try again without a pagination token.
+//
+//   - ExpiredNextTokenException
+//     The pagination token expired. Try again without a pagination token.
+//
+//   - AccessDeniedException
+//     General authentication failure. The request wasn't signed correctly.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/pricing-2017-10-15/ListPriceLists
+func (c *Pricing) ListPriceLists(input *ListPriceListsInput) (*ListPriceListsOutput, error) {
+	req, out := c.ListPriceListsRequest(input)
+	return out, req.Send()
+}
+
+// ListPriceListsWithContext is the same as ListPriceLists with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListPriceLists for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Pricing) ListPriceListsWithContext(ctx aws.Context, input *ListPriceListsInput, opts ...request.Option) (*ListPriceListsOutput, error) {
+	req, out := c.ListPriceListsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListPriceListsPages iterates over the pages of a ListPriceLists operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListPriceLists method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListPriceLists operation.
+//	pageNum := 0
+//	err := client.ListPriceListsPages(params,
+//	    func(page *pricing.ListPriceListsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *Pricing) ListPriceListsPages(input *ListPriceListsInput, fn func(*ListPriceListsOutput, bool) bool) error {
+	return c.ListPriceListsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListPriceListsPagesWithContext same as ListPriceListsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Pricing) ListPriceListsPagesWithContext(ctx aws.Context, input *ListPriceListsInput, fn func(*ListPriceListsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListPriceListsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListPriceListsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListPriceListsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+// General authentication failure. The request wasn't signed correctly.
+type AccessDeniedException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"Message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AccessDeniedException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AccessDeniedException) GoString() string {
+	return s.String()
+}
+
+func newErrorAccessDeniedException(v protocol.ResponseMetadata) error {
+	return &AccessDeniedException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *AccessDeniedException) Code() string {
+	return "AccessDeniedException"
+}
+
+// Message returns the exception's message.
+func (s *AccessDeniedException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *AccessDeniedException) OrigErr() error {
+	return nil
+}
+
+func (s *AccessDeniedException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *AccessDeniedException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *AccessDeniedException) RequestID() string {
+	return s.RespMetadata.RequestID
 }
 
 // The values of a given attribute, such as Throughput Optimized HDD or Provisioned
@@ -714,10 +1040,10 @@ type Filter struct {
 	// Type is a required field
 	Type *string `type:"string" required:"true" enum:"FilterType"`
 
-	// The service code or attribute value that you want to filter by. If you are
+	// The service code or attribute value that you want to filter by. If you're
 	// filtering by service code this is the actual service code, such as AmazonEC2.
-	// If you are filtering by attribute name, this is the attribute value that
-	// you want the returned products to match, such as a Provisioned IOPS volume.
+	// If you're filtering by attribute name, this is the attribute value that you
+	// want the returned products to match, such as a Provisioned IOPS volume.
 	//
 	// Value is a required field
 	Value *string `type:"string" required:"true"`
@@ -900,6 +1226,107 @@ func (s *GetAttributeValuesOutput) SetAttributeValues(v []*AttributeValue) *GetA
 // SetNextToken sets the NextToken field's value.
 func (s *GetAttributeValuesOutput) SetNextToken(v string) *GetAttributeValuesOutput {
 	s.NextToken = &v
+	return s
+}
+
+type GetPriceListFileUrlInput struct {
+	_ struct{} `type:"structure"`
+
+	// The format that you want to retrieve your Price List files in. The FileFormat
+	// can be obtained from the ListPriceLists (https://docs.aws.amazon.com/aws-cost-management/latest/APIReference/API_pricing_ListPriceLists.html)
+	// response.
+	//
+	// FileFormat is a required field
+	FileFormat *string `min:"1" type:"string" required:"true"`
+
+	// The unique identifier that maps to where your Price List files are located.
+	// PriceListArn can be obtained from the ListPriceLists (https://docs.aws.amazon.com/aws-cost-management/latest/APIReference/API_pricing_ListPriceLists.html)
+	// response.
+	//
+	// PriceListArn is a required field
+	PriceListArn *string `min:"18" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetPriceListFileUrlInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetPriceListFileUrlInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetPriceListFileUrlInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetPriceListFileUrlInput"}
+	if s.FileFormat == nil {
+		invalidParams.Add(request.NewErrParamRequired("FileFormat"))
+	}
+	if s.FileFormat != nil && len(*s.FileFormat) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("FileFormat", 1))
+	}
+	if s.PriceListArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("PriceListArn"))
+	}
+	if s.PriceListArn != nil && len(*s.PriceListArn) < 18 {
+		invalidParams.Add(request.NewErrParamMinLen("PriceListArn", 18))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFileFormat sets the FileFormat field's value.
+func (s *GetPriceListFileUrlInput) SetFileFormat(v string) *GetPriceListFileUrlInput {
+	s.FileFormat = &v
+	return s
+}
+
+// SetPriceListArn sets the PriceListArn field's value.
+func (s *GetPriceListFileUrlInput) SetPriceListArn(v string) *GetPriceListFileUrlInput {
+	s.PriceListArn = &v
+	return s
+}
+
+type GetPriceListFileUrlOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The URL to download your Price List file from.
+	Url *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetPriceListFileUrlOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetPriceListFileUrlOutput) GoString() string {
+	return s.String()
+}
+
+// SetUrl sets the Url field's value.
+func (s *GetPriceListFileUrlOutput) SetUrl(v string) *GetPriceListFileUrlOutput {
+	s.Url = &v
 	return s
 }
 
@@ -1245,6 +1672,170 @@ func (s *InvalidParameterException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+type ListPriceListsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The three alphabetical character ISO-4217 currency code that the Price List
+	// files are denominated in.
+	//
+	// CurrencyCode is a required field
+	CurrencyCode *string `type:"string" required:"true"`
+
+	// The date that the Price List file prices are effective from.
+	//
+	// EffectiveDate is a required field
+	EffectiveDate *time.Time `type:"timestamp" required:"true"`
+
+	// The maximum number of results to return in the response.
+	MaxResults *int64 `min:"1" type:"integer"`
+
+	// The pagination token that indicates the next set of results that you want
+	// to retrieve.
+	NextToken *string `type:"string"`
+
+	// This is used to filter the Price List by Amazon Web Services Region. For
+	// example, to get the price list only for the US East (N. Virginia) Region,
+	// use us-east-1. If nothing is specified, you retrieve price lists for all
+	// applicable Regions. The available RegionCode list can be retrieved from GetAttributeValues
+	// (https://docs.aws.amazon.com/aws-cost-management/latest/APIReference/API_pricing_GetAttributeValues.html)
+	// API.
+	RegionCode *string `min:"1" type:"string"`
+
+	// The service code or the Savings Plan service code for the attributes that
+	// you want to retrieve. For example, to get the list of applicable Amazon EC2
+	// price lists, use AmazonEC2. For a full list of service codes containing On-Demand
+	// and Reserved Instance (RI) pricing, use the DescribeServices (https://docs.aws.amazon.com/aws-cost-management/latest/APIReference/API_pricing_DescribeServices.html#awscostmanagement-pricing_DescribeServices-request-FormatVersion)
+	// API.
+	//
+	// To retrieve the Compute Savings Plan price lists, use ComputeSavingsPlans.
+	// To retrieve Machine Learning Savings Plans price lists, use MachineLearningSavingsPlans.
+	//
+	// ServiceCode is a required field
+	ServiceCode *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListPriceListsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListPriceListsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListPriceListsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListPriceListsInput"}
+	if s.CurrencyCode == nil {
+		invalidParams.Add(request.NewErrParamRequired("CurrencyCode"))
+	}
+	if s.EffectiveDate == nil {
+		invalidParams.Add(request.NewErrParamRequired("EffectiveDate"))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.RegionCode != nil && len(*s.RegionCode) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RegionCode", 1))
+	}
+	if s.ServiceCode == nil {
+		invalidParams.Add(request.NewErrParamRequired("ServiceCode"))
+	}
+	if s.ServiceCode != nil && len(*s.ServiceCode) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ServiceCode", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCurrencyCode sets the CurrencyCode field's value.
+func (s *ListPriceListsInput) SetCurrencyCode(v string) *ListPriceListsInput {
+	s.CurrencyCode = &v
+	return s
+}
+
+// SetEffectiveDate sets the EffectiveDate field's value.
+func (s *ListPriceListsInput) SetEffectiveDate(v time.Time) *ListPriceListsInput {
+	s.EffectiveDate = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListPriceListsInput) SetMaxResults(v int64) *ListPriceListsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListPriceListsInput) SetNextToken(v string) *ListPriceListsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetRegionCode sets the RegionCode field's value.
+func (s *ListPriceListsInput) SetRegionCode(v string) *ListPriceListsInput {
+	s.RegionCode = &v
+	return s
+}
+
+// SetServiceCode sets the ServiceCode field's value.
+func (s *ListPriceListsInput) SetServiceCode(v string) *ListPriceListsInput {
+	s.ServiceCode = &v
+	return s
+}
+
+type ListPriceListsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The pagination token that indicates the next set of results to retrieve.
+	NextToken *string `type:"string"`
+
+	// The type of price list references that match your request.
+	PriceLists []*PriceList `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListPriceListsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListPriceListsOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListPriceListsOutput) SetNextToken(v string) *ListPriceListsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetPriceLists sets the PriceLists field's value.
+func (s *ListPriceListsOutput) SetPriceLists(v []*PriceList) *ListPriceListsOutput {
+	s.PriceLists = v
+	return s
+}
+
 // The requested resource can't be found.
 type NotFoundException struct {
 	_            struct{}                  `type:"structure"`
@@ -1307,6 +1898,80 @@ func (s *NotFoundException) StatusCode() int {
 // RequestID returns the service's response RequestID for request.
 func (s *NotFoundException) RequestID() string {
 	return s.RespMetadata.RequestID
+}
+
+//	This feature is in preview release and is subject to change. Your use of
+//	Amazon Web Services Price List API is subject to the Beta Service Participation
+//	terms of the Amazon Web Services Service Terms (https://aws.amazon.com/service-terms/)
+//	(Section 1.10).
+//
+// This is the type of price list references that match your request.
+type PriceList struct {
+	_ struct{} `type:"structure"`
+
+	// The three alphabetical character ISO-4217 currency code the Price List files
+	// are denominated in.
+	CurrencyCode *string `type:"string"`
+
+	// The format you want to retrieve your Price List files. The FileFormat can
+	// be obtained from the ListPriceList (https://docs.aws.amazon.com/aws-cost-management/latest/APIReference/API_pricing_ListPriceLists.html)
+	// response.
+	FileFormats []*string `type:"list"`
+
+	// The unique identifier that maps to where your Price List files are located.
+	// PriceListArn can be obtained from the ListPriceList (https://docs.aws.amazon.com/aws-cost-management/latest/APIReference/API_pricing_ListPriceLists.html)
+	// response.
+	PriceListArn *string `min:"18" type:"string"`
+
+	// This is used to filter the Price List by Amazon Web Services Region. For
+	// example, to get the price list only for the US East (N. Virginia) Region,
+	// use us-east-1. If nothing is specified, you retrieve price lists for all
+	// applicable Regions. The available RegionCode list can be retrieved from GetAttributeValues
+	// (https://docs.aws.amazon.com/aws-cost-management/latest/APIReference/API_pricing_GetAttributeValues.html)
+	// API.
+	RegionCode *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PriceList) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PriceList) GoString() string {
+	return s.String()
+}
+
+// SetCurrencyCode sets the CurrencyCode field's value.
+func (s *PriceList) SetCurrencyCode(v string) *PriceList {
+	s.CurrencyCode = &v
+	return s
+}
+
+// SetFileFormats sets the FileFormats field's value.
+func (s *PriceList) SetFileFormats(v []*string) *PriceList {
+	s.FileFormats = v
+	return s
+}
+
+// SetPriceListArn sets the PriceListArn field's value.
+func (s *PriceList) SetPriceListArn(v string) *PriceList {
+	s.PriceListArn = &v
+	return s
+}
+
+// SetRegionCode sets the RegionCode field's value.
+func (s *PriceList) SetRegionCode(v string) *PriceList {
+	s.RegionCode = &v
+	return s
 }
 
 // The metadata for a service, such as the service code and available attribute

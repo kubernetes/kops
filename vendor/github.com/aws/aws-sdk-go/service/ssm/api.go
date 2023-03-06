@@ -12318,8 +12318,8 @@ func (c *SSM) ModifyDocumentPermissionRequest(input *ModifyDocumentPermissionInp
 //
 // Shares a Amazon Web Services Systems Manager document (SSM document)publicly
 // or privately. If you share a document privately, you must specify the Amazon
-// Web Services user account IDs for those people who can use the document.
-// If you share a document publicly, you must specify All as the account ID.
+// Web Services user IDs for those people who can use the document. If you share
+// a document publicly, you must specify All as the account ID.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -12341,8 +12341,8 @@ func (c *SSM) ModifyDocumentPermissionRequest(input *ModifyDocumentPermissionInp
 //     type.
 //
 //   - DocumentPermissionLimit
-//     The document can't be shared with more Amazon Web Services user accounts.
-//     You can specify a maximum of 20 accounts per API operation to share a private
+//     The document can't be shared with more Amazon Web Services accounts. You
+//     can specify a maximum of 20 accounts per API operation to share a private
 //     document.
 //
 //     By default, you can share a private document with a maximum of 1,000 accounts
@@ -14505,13 +14505,12 @@ func (c *SSM) UpdateAssociationRequest(input *UpdateAssociationInput) (req *requ
 // that you call the DescribeAssociation API operation and make a note of all
 // optional parameters required for your UpdateAssociation call.
 //
-// In order to call this API operation, your Identity and Access Management
-// (IAM) user account, group, or role must be configured with permission to
-// call the DescribeAssociation API operation. If you don't have permission
-// to call DescribeAssociation, then you receive the following error: An error
-// occurred (AccessDeniedException) when calling the UpdateAssociation operation:
-// User: <user_arn> isn't authorized to perform: ssm:DescribeAssociation on
-// resource: <resource_arn>
+// In order to call this API operation, a user, group, or role must be granted
+// permission to call the DescribeAssociation API operation. If you don't have
+// permission to call DescribeAssociation, then you receive the following error:
+// An error occurred (AccessDeniedException) when calling the UpdateAssociation
+// operation: User: <user_arn> isn't authorized to perform: ssm:DescribeAssociation
+// on resource: <resource_arn>
 //
 // When you update an association, the association immediately runs against
 // the specified targets. You can add the ApplyOnlyAtCronInterval parameter
@@ -16261,9 +16260,11 @@ type AlarmConfiguration struct {
 	// Alarms is a required field
 	Alarms []*Alarm `min:"1" type:"list" required:"true"`
 
-	// If you specify true for this value, your automation or command continue to
-	// run even if we can't gather information about the state of your CloudWatch
-	// alarm. The default value is false.
+	// When this value is true, your automation or command continues to run in cases
+	// where we can’t retrieve alarm status information from CloudWatch. In cases
+	// where we successfully retrieve an alarm status of OK or INSUFFICIENT_DATA,
+	// the automation or command continues to run, regardless of this value. Default
+	// is false.
 	IgnorePollAlarmFailure *bool `type:"boolean"`
 }
 
@@ -21948,7 +21949,7 @@ type CreateAssociationInput struct {
 	// the configuration information for the managed node.
 	//
 	// You can specify Amazon Web Services-predefined documents, documents you created,
-	// or a document that is shared with you from another account.
+	// or a document that is shared with you from another Amazon Web Services account.
 	//
 	// For Systems Manager documents (SSM documents) that are shared with you from
 	// other Amazon Web Services accounts, you must specify the complete SSM document
@@ -22279,9 +22280,11 @@ type CreateDocumentInput struct {
 	// A list of key-value pairs that describe attachments to a version of a document.
 	Attachments []*AttachmentsSource `type:"list"`
 
-	// The content for the new SSM document in JSON or YAML format. We recommend
-	// storing the contents for your new document in an external JSON or YAML file
-	// and referencing the file in a command.
+	// The content for the new SSM document in JSON or YAML format. The content
+	// of the document must not exceed 64KB. This quota also includes the content
+	// specified for input parameters at runtime. We recommend storing the contents
+	// for your new document in an external JSON or YAML file and referencing the
+	// file in a command.
 	//
 	// For examples, see the following topics in the Amazon Web Services Systems
 	// Manager User Guide.
@@ -29602,7 +29605,7 @@ type DocumentDescription struct {
 	// The name of the SSM document.
 	Name *string `type:"string"`
 
-	// The Amazon Web Services user account that created the document.
+	// The Amazon Web Services user that created the document.
 	Owner *string `type:"string"`
 
 	// A description of the parameters for a document.
@@ -29941,7 +29944,7 @@ type DocumentIdentifier struct {
 	// The name of the SSM document.
 	Name *string `type:"string"`
 
-	// The Amazon Web Services user account that created the document.
+	// The Amazon Web Services user that created the document.
 	Owner *string `type:"string"`
 
 	// The operating system platform.
@@ -30297,7 +30300,7 @@ func (s *DocumentMetadataResponseInfo) SetReviewerResponse(v []*DocumentReviewer
 	return s
 }
 
-// Parameters specified in a System Manager document that run on the server
+// Parameters specified in a Systems Manager document that run on the server
 // when the command is run.
 type DocumentParameter struct {
 	_ struct{} `type:"structure"`
@@ -30359,8 +30362,8 @@ func (s *DocumentParameter) SetType(v string) *DocumentParameter {
 	return s
 }
 
-// The document can't be shared with more Amazon Web Services user accounts.
-// You can specify a maximum of 20 accounts per API operation to share a private
+// The document can't be shared with more Amazon Web Services accounts. You
+// can specify a maximum of 20 accounts per API operation to share a private
 // document.
 //
 // By default, you can share a private document with a maximum of 1,000 accounts
@@ -35190,6 +35193,8 @@ type GetServiceSettingInput struct {
 	_ struct{} `type:"structure"`
 
 	// The ID of the service setting to get. The setting ID can be one of the following.
+	//
+	//    * /ssm/managed-instance/default-ec2-instance-management-role
 	//
 	//    * /ssm/automation/customer-script-log-destination
 	//
@@ -44719,15 +44724,14 @@ func (s *MetadataValue) SetValue(v string) *MetadataValue {
 type ModifyDocumentPermissionInput struct {
 	_ struct{} `type:"structure"`
 
-	// The Amazon Web Services user accounts that should have access to the document.
-	// The account IDs can either be a group of account IDs or All.
+	// The Amazon Web Services users that should have access to the document. The
+	// account IDs can either be a group of account IDs or All.
 	AccountIdsToAdd []*string `type:"list"`
 
-	// The Amazon Web Services user accounts that should no longer have access to
-	// the document. The Amazon Web Services user account can either be a group
-	// of account IDs or All. This action has a higher priority than AccountIdsToAdd.
-	// If you specify an account ID to add and the same ID to remove, the system
-	// removes access to the document.
+	// The Amazon Web Services users that should no longer have access to the document.
+	// The Amazon Web Services user can either be a group of account IDs or All.
+	// This action has a higher priority than AccountIdsToAdd. If you specify an
+	// ID to add and the same ID to remove, the system removes access to the document.
 	AccountIdsToRemove []*string `type:"list"`
 
 	// The name of the document that you want to share.
@@ -49812,9 +49816,21 @@ type PutParameterInput struct {
 	// When you create a String parameter and specify aws:ec2:image, Amazon Web
 	// Services Systems Manager validates the parameter value is in the required
 	// format, such as ami-12345abcdeEXAMPLE, and that the specified AMI is available
-	// in your Amazon Web Services account. For more information, see Native parameter
-	// support for Amazon Machine Image (AMI) IDs (https://docs.aws.amazon.com/systems-manager/latest/userguide/parameter-store-ec2-aliases.html)
-	// in the Amazon Web Services Systems Manager User Guide.
+	// in your Amazon Web Services account.
+	//
+	// If the action is successful, the service sends back an HTTP 200 response
+	// which indicates a successful PutParameter call for all cases except for data
+	// type aws:ec2:image. If you call PutParameter with aws:ec2:image data type,
+	// a successful HTTP 200 response does not guarantee that your parameter was
+	// successfully created or updated. The aws:ec2:image value is validated asynchronously,
+	// and the PutParameter call returns before the validation is complete. If you
+	// submit an invalid AMI value, the PutParameter operation will return success,
+	// but the asynchronous validation will fail and the parameter will not be created
+	// or updated. To monitor whether your aws:ec2:image parameters are created
+	// successfully, see Setting up notifications or trigger actions based on Parameter
+	// Store events (https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-paramstore-cwe.html).
+	// For more information about AMI format validation , see Native parameter support
+	// for Amazon Machine Image (AMI) IDs (https://docs.aws.amazon.com/systems-manager/latest/userguide/parameter-store-ec2-aliases.html).
 	DataType *string `type:"string"`
 
 	// Information about the parameter that you want to add to the system. Optional
@@ -49824,16 +49840,12 @@ type PutParameterInput struct {
 	Description *string `type:"string"`
 
 	// The Key Management Service (KMS) ID that you want to use to encrypt a parameter.
-	// Either the default KMS key automatically assigned to your Amazon Web Services
-	// account or a custom key. Required for parameters that use the SecureString
-	// data type.
+	// Use a custom key for better security. Required for parameters that use the
+	// SecureString data type.
 	//
 	// If you don't specify a key ID, the system uses the default key associated
-	// with your Amazon Web Services account.
-	//
-	//    * To use your default KMS key, choose the SecureString data type, and
-	//    do not specify the Key ID when you create the parameter. The system automatically
-	//    populates Key ID with your default KMS key.
+	// with your Amazon Web Services account which is not as secure as using a custom
+	// key.
 	//
 	//    * To use a custom KMS key, choose the SecureString data type with the
 	//    Key ID parameter.
@@ -53971,7 +53983,7 @@ type Session struct {
 	// Reserved for future use.
 	OutputUrl *SessionManagerOutputUrl `type:"structure"`
 
-	// The ID of the Amazon Web Services user account that started the session.
+	// The ID of the Amazon Web Services user that started the session.
 	Owner *string `min:"1" type:"string"`
 
 	// The reason for connecting to the instance.
@@ -54096,8 +54108,8 @@ type SessionFilter struct {
 	//    * Target: Specify a managed node to which session connections have been
 	//    made.
 	//
-	//    * Owner: Specify an Amazon Web Services user account to see a list of
-	//    sessions started by that user.
+	//    * Owner: Specify an Amazon Web Services user to see a list of sessions
+	//    started by that user.
 	//
 	//    * Status: Specify a valid session status to see a list of all sessions
 	//    with that status. Status values you can specify include: Connected Connecting
@@ -59695,6 +59707,8 @@ type UpdateServiceSettingInput struct {
 	// The Amazon Resource Name (ARN) of the service setting to reset. For example,
 	// arn:aws:ssm:us-east-1:111122223333:servicesetting/ssm/parameter-store/high-throughput-enabled.
 	// The setting ID can be one of the following.
+	//
+	//    * /ssm/managed-instance/default-ec2-instance-management-role
 	//
 	//    * /ssm/automation/customer-script-log-destination
 	//

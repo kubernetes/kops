@@ -23,11 +23,11 @@ type PlacementGroup struct {
 	Type    PlacementGroupType
 }
 
-// PlacementGroupType specifies the type of a Placement Group
+// PlacementGroupType specifies the type of a Placement Group.
 type PlacementGroupType string
 
 const (
-	// PlacementGroupTypeSpread spreads all servers in the group on different vhosts
+	// PlacementGroupTypeSpread spreads all servers in the group on different vhosts.
 	PlacementGroupTypeSpread PlacementGroupType = "spread"
 )
 
@@ -158,7 +158,7 @@ type PlacementGroupCreateOpts struct {
 	Type   PlacementGroupType
 }
 
-// Validate checks if options are valid
+// Validate checks if options are valid.
 func (o PlacementGroupCreateOpts) Validate() error {
 	if o.Name == "" {
 		return errors.New("missing name")
@@ -172,7 +172,7 @@ type PlacementGroupCreateResult struct {
 	Action         *Action
 }
 
-// Create creates a new PlacementGroup
+// Create creates a new PlacementGroup.
 func (c *PlacementGroupClient) Create(ctx context.Context, opts PlacementGroupCreateOpts) (PlacementGroupCreateResult, *Response, error) {
 	if err := opts.Validate(); err != nil {
 		return PlacementGroupCreateResult{}, nil, err
