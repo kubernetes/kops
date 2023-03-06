@@ -4614,7 +4614,7 @@ func (s *NodePoolLoggingConfig) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// NodeTaint: Kubernetes taint is comprised of three fields: key, value,
+// NodeTaint: Kubernetes taint is composed of three fields: key, value,
 // and effect. Effect can only be one of three types: NoSchedule,
 // PreferNoSchedule or NoExecute. See here
 // (https://kubernetes.io/docs/concepts/configuration/taint-and-toleration)
