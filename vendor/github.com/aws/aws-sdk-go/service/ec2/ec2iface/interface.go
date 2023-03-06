@@ -2884,6 +2884,9 @@ type EC2API interface {
 	WaitUntilSnapshotCompleted(*ec2.DescribeSnapshotsInput) error
 	WaitUntilSnapshotCompletedWithContext(aws.Context, *ec2.DescribeSnapshotsInput, ...request.WaiterOption) error
 
+	WaitUntilSnapshotImported(*ec2.DescribeImportSnapshotTasksInput) error
+	WaitUntilSnapshotImportedWithContext(aws.Context, *ec2.DescribeImportSnapshotTasksInput, ...request.WaiterOption) error
+
 	WaitUntilSpotInstanceRequestFulfilled(*ec2.DescribeSpotInstanceRequestsInput) error
 	WaitUntilSpotInstanceRequestFulfilledWithContext(aws.Context, *ec2.DescribeSpotInstanceRequestsInput, ...request.WaiterOption) error
 

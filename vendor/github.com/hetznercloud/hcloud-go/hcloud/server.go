@@ -464,13 +464,14 @@ type ServerDeleteResult struct {
 }
 
 // Delete deletes a server.
-// This method is deprecated, use ServerClient.DeleteWithResult instead.
+//
+// Deprecated: Use [ServerClient.DeleteWithResult] instead.
 func (c *ServerClient) Delete(ctx context.Context, server *Server) (*Response, error) {
 	_, resp, err := c.DeleteWithResult(ctx, server)
 	return resp, err
 }
 
-// Delete deletes a server and returns the parsed response containing the action.
+// DeleteWithResult deletes a server and returns the parsed response containing the action.
 func (c *ServerClient) DeleteWithResult(ctx context.Context, server *Server) (*ServerDeleteResult, *Response, error) {
 	req, err := c.client.NewRequest(ctx, "DELETE", fmt.Sprintf("/servers/%d", server.ID), nil)
 	if err != nil {
@@ -756,8 +757,23 @@ type ServerRebuildOpts struct {
 	Image *Image
 }
 
+// ServerRebuildResult is the result of a create server call.
+type ServerRebuildResult struct {
+	Action       *Action
+	RootPassword string
+}
+
 // Rebuild rebuilds a server.
+//
+// Deprecated: Use [ServerClient.RebuildWithResult] instead.
 func (c *ServerClient) Rebuild(ctx context.Context, server *Server, opts ServerRebuildOpts) (*Action, *Response, error) {
+	result, resp, err := c.RebuildWithResult(ctx, server, opts)
+
+	return result.Action, resp, err
+}
+
+// RebuildWithResult rebuilds a server.
+func (c *ServerClient) RebuildWithResult(ctx context.Context, server *Server, opts ServerRebuildOpts) (ServerRebuildResult, *Response, error) {
 	reqBody := schema.ServerActionRebuildRequest{}
 	if opts.Image.ID != 0 {
 		reqBody.Image = opts.Image.ID
@@ -766,21 +782,29 @@ func (c *ServerClient) Rebuild(ctx context.Context, server *Server, opts ServerR
 	}
 	reqBodyData, err := json.Marshal(reqBody)
 	if err != nil {
-		return nil, nil, err
+		return ServerRebuildResult{}, nil, err
 	}
 
 	path := fmt.Sprintf("/servers/%d/actions/rebuild", server.ID)
 	req, err := c.client.NewRequest(ctx, "POST", path, bytes.NewReader(reqBodyData))
 	if err != nil {
-		return nil, nil, err
+		return ServerRebuildResult{}, nil, err
 	}
 
 	respBody := schema.ServerActionRebuildResponse{}
 	resp, err := c.client.Do(req, &respBody)
 	if err != nil {
-		return nil, resp, err
+		return ServerRebuildResult{}, resp, err
 	}
-	return ActionFromSchema(respBody.Action), resp, nil
+
+	result := ServerRebuildResult{
+		Action: ActionFromSchema(respBody.Action),
+	}
+	if respBody.RootPassword != nil {
+		result.RootPassword = *respBody.RootPassword
+	}
+
+	return result, resp, nil
 }
 
 // AttachISO attaches an ISO to a server.
