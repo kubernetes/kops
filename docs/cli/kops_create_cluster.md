@@ -28,15 +28,15 @@ kops create cluster [CLUSTER] [flags]
   # has also been configured for private networking in a kops-managed VPC.
   # The bastion flag is set to create an entrypoint for admins to SSH.
   export KOPS_STATE_STORE="s3://my-state-store"
-  export CONTROL_PLANE_SIZE="c5.large"
+  export MASTER_SIZE="c5.large"
   export NODE_SIZE="m5.large"
   export ZONES="us-east-1a,us-east-1b,us-east-1c"
   kops create cluster k8s-cluster.example.com \
   --node-count 3 \
   --zones $ZONES \
   --node-size $NODE_SIZE \
-  --control-plane-size $CONTROL_PLANE_SIZE \
-  --control-plane-zones $ZONES \
+  --master-size $MASTER_SIZE \
+  --master-zones $ZONES \
   --networking cilium \
   --topology private \
   --bastion="true" \
@@ -48,7 +48,7 @@ kops create cluster [CLUSTER] [flags]
   kops create cluster k8s-cluster.example.com \
   --cloud digitalocean \
   --zones $ZONES \
-  --control-plane-zones $ZONES \
+  --master-zones $ZONES \
   --node-count 3 \
   --yes
   
@@ -69,7 +69,7 @@ kops create cluster [CLUSTER] [flags]
       --api-loadbalancer-type string            Type of load balancer for the Kubernetes API: public or internal
       --api-public-name string                  Domain name of the public Kubernetes API
       --api-ssl-certificate string              ARN of the SSL Certificate to use for the Kubernetes API load balancer (AWS only)
-      --associate-public-ip                     Specify --associate-public-ip=[true|false] to enable/disable association of public IP for control-plane ASG and nodes. Default is 'true'.
+      --associate-public-ip                     Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'.
       --authorization string                    Authorization mode: AlwaysAllow or RBAC (default "RBAC")
       --bastion                                 Enable a bastion instance group. Only applies to private topology.
       --bastion-image string                    Machine image for bastions. Takes precedence over --image
@@ -77,13 +77,6 @@ kops create cluster [CLUSTER] [flags]
       --cloud string                            Cloud provider to use - aws, digitalocean, gce, hetzner, openstack
       --cloud-labels string                     A list of key/value pairs used to tag all instance groups (for example "Owner=John Doe,Team=Some Team").
       --container-runtime string                Container runtime to use: containerd, docker
-      --control-plane-count int32               Number of control-plane nodes. Defaults to one control-plane node per control-plane-zone
-      --control-plane-image string              Machine image for control-plane nodes. Takes precedence over --image
-      --control-plane-security-groups strings   Additional pre-created security groups to add to control-plane nodes.
-      --control-plane-size string               Machine type for control-plane nodes
-      --control-plane-tenancy string            Tenancy of the control-plane group (AWS only): default or dedicated
-      --control-plane-volume-size int32         Instance volume size (in GB) for control-plane nodes
-      --control-plane-zones strings             Zones in which to run control-plane nodes. (must be an odd number)
       --disable-subnet-tags                     Disable automatic subnet tagging
       --discovery-store string                  A public location where we publish OIDC-compatible discovery information under a cluster-specific directory. Enables IRSA in AWS.
       --dns string                              DNS type to use: public, private, none
@@ -97,6 +90,14 @@ kops create cluster [CLUSTER] [flags]
       --ipv6                                    Use IPv6 for the pod network (AWS only)
       --kubernetes-feature-gates strings        List of Kubernetes feature gates to enable/disable
       --kubernetes-version string               Version of Kubernetes to run (defaults to version in channel)
+      --master-count int32                      Number of masters. Defaults to one master per master-zone
+      --master-image string                     Machine image for masters. Takes precedence over --image
+      --master-public-name string               Domain name of the public Kubernetes API
+      --master-security-groups strings          Additional precreated security groups to add to masters.
+      --master-size string                      Machine type for masters
+      --master-tenancy string                   Tenancy of the master group (AWS only): default or dedicated
+      --master-volume-size int32                Instance volume size (in GB) for masters
+      --master-zones strings                    Zones in which to run masters (must be an odd number)
       --network-cidr string                     Network CIDR to use
       --network-id string                       Shared Network or VPC to use
       --networking string                       Networking mode.  kubenet, external, weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, amazonvpc, cilium, cilium-etcd, cni. (default "cilium")
