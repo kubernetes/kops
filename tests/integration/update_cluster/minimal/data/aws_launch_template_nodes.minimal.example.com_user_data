@@ -134,7 +134,6 @@ kubelet:
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
   featureGates:
-    CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
@@ -175,7 +174,7 @@ ConfigServer:
   - https://kops-controller.internal.minimal.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: CijA+/e4TyCQMOWKuG9cIDmsSObl7nI9mJ0UUs+pXkA=
+NodeupConfigHash: hxKFNl0FmjKAp4JYI67LnZwYfLJn2iYMX87YsKLE+7I=
 
 __EOF_KUBE_ENV
 
