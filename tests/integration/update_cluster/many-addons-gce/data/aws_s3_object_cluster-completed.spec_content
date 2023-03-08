@@ -22,6 +22,8 @@ spec:
     cidrAllocatorType: CloudAllocator
     clusterCIDR: 100.96.0.0/11
     clusterName: minimal-example-com
+    controllers:
+    - '*'
     image: k8scloudprovidergcp/cloud-controller-manager:latest
     leaderElection:
       leaderElect: true
