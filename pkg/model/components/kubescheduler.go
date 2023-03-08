@@ -67,7 +67,7 @@ func (b *KubeSchedulerOptionsBuilder) BuildOptions(o interface{}) error {
 			config.FeatureGates["InTreePluginAWSUnregister"] = "true"
 		}
 
-		if _, found := config.FeatureGates["CSIMigrationAWS"]; !found {
+		if _, found := config.FeatureGates["CSIMigrationAWS"]; !found && b.IsKubernetesLT("1.27") {
 			config.FeatureGates["CSIMigrationAWS"] = "true"
 		}
 	}
