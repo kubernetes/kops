@@ -165,9 +165,8 @@ kubeAPIServer:
   etcdServersOverrides:
   - /events#https://127.0.0.1:4002
   featureGates:
-    CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
-  image: registry.k8s.io/kube-apiserver:v1.26.0
+  image: registry.k8s.io/kube-apiserver:v1.27.0-alpha.3
   kubeletPreferredAddressTypes:
   - InternalIP
   - Hostname
@@ -194,18 +193,16 @@ kubeControllerManager:
   clusterName: minimal.example.com
   configureCloudRoutes: false
   featureGates:
-    CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
-  image: registry.k8s.io/kube-controller-manager:v1.26.0
+  image: registry.k8s.io/kube-controller-manager:v1.27.0-alpha.3
   leaderElection:
     leaderElect: true
   logLevel: 2
   useServiceAccountCredentials: true
 kubeScheduler:
   featureGates:
-    CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
-  image: registry.k8s.io/kube-scheduler:v1.26.0
+  image: registry.k8s.io/kube-scheduler:v1.27.0-alpha.3
   leaderElection:
     leaderElect: true
   logLevel: 2
@@ -218,7 +215,6 @@ kubelet:
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
   featureGates:
-    CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
@@ -237,7 +233,6 @@ masterKubelet:
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
   featureGates:
-    CSIMigrationAWS: "true"
     InTreePluginAWSUnregister: "true"
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
@@ -255,7 +250,7 @@ CloudProvider: aws
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: qs2Dqrv+n4jC1CyCgW7GHJb4vxxWX0kTclrpISNaXbM=
+NodeupConfigHash: LK28jx4zFWr03Rl5sqhQ9qw6m5KA9oSUFPVQn8UO9sM=
 
 __EOF_KUBE_ENV
 

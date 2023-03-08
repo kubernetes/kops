@@ -87,9 +87,8 @@ spec:
     etcdServersOverrides:
     - /events#https://127.0.0.1:4002
     featureGates:
-      CSIMigrationAWS: "true"
       InTreePluginAWSUnregister: "true"
-    image: registry.k8s.io/kube-apiserver:v1.26.0
+    image: registry.k8s.io/kube-apiserver:v1.27.0-alpha.3
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
@@ -116,9 +115,8 @@ spec:
     clusterName: minimal.example.com
     configureCloudRoutes: false
     featureGates:
-      CSIMigrationAWS: "true"
       InTreePluginAWSUnregister: "true"
-    image: registry.k8s.io/kube-controller-manager:v1.26.0
+    image: registry.k8s.io/kube-controller-manager:v1.27.0-alpha.3
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -140,13 +138,12 @@ spec:
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    image: registry.k8s.io/kube-proxy:v1.26.0
+    image: registry.k8s.io/kube-proxy:v1.27.0-alpha.3
     logLevel: 2
   kubeScheduler:
     featureGates:
-      CSIMigrationAWS: "true"
       InTreePluginAWSUnregister: "true"
-    image: registry.k8s.io/kube-scheduler:v1.26.0
+    image: registry.k8s.io/kube-scheduler:v1.27.0-alpha.3
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -159,7 +156,6 @@ spec:
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
     featureGates:
-      CSIMigrationAWS: "true"
       InTreePluginAWSUnregister: "true"
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
@@ -171,7 +167,7 @@ spec:
     shutdownGracePeriodCriticalPods: 10s
   kubernetesApiAccess:
   - 0.0.0.0/0
-  kubernetesVersion: 1.26.0
+  kubernetesVersion: 1.27.0-alpha.3
   masterKubelet:
     cgroupDriver: systemd
     cgroupRoot: /
@@ -181,7 +177,6 @@ spec:
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
     featureGates:
-      CSIMigrationAWS: "true"
       InTreePluginAWSUnregister: "true"
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
