@@ -31,10 +31,10 @@ const (
 	CertificateStatusTypePending CertificateStatusType = "pending"
 	CertificateStatusTypeFailed  CertificateStatusType = "failed"
 
-	// only in issuance
+	// only in issuance.
 	CertificateStatusTypeCompleted CertificateStatusType = "completed"
 
-	// only in renewal
+	// only in renewal.
 	CertificateStatusTypeScheduled   CertificateStatusType = "scheduled"
 	CertificateStatusTypeUnavailable CertificateStatusType = "unavailable"
 )

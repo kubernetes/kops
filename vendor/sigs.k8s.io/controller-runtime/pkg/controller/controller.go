@@ -141,7 +141,7 @@ func NewUnmanaged(name string, mgr manager.Manager, options Options) (Controller
 	}
 
 	if options.RecoverPanic == nil {
-		options.RecoverPanic = mgr.GetControllerOptions().RecoverPanic //nolint:staticcheck
+		options.RecoverPanic = mgr.GetControllerOptions().RecoverPanic
 	}
 
 	// Create controller with dependencies set

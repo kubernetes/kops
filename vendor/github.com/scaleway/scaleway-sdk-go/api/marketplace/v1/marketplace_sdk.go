@@ -39,7 +39,7 @@ var (
 	_ = namegenerator.GetRandomName
 )
 
-// API: marketplace API
+// API: marketplace API.
 type API struct {
 	client *scw.Client
 }
@@ -59,31 +59,29 @@ type GetVersionResponse struct {
 	Version *Version `json:"version"`
 }
 
-// Image: image
+// Image: image.
 type Image struct {
-	// ID: UUID of this image
+	// ID: UUID of this image.
 	ID string `json:"id"`
-	// Name: name of the image
+	// Name: name of the image.
 	Name string `json:"name"`
-	// Description: text description of this image
+	// Description: text description of this image.
 	Description string `json:"description"`
-	// Logo: URL of this image's logo
+	// Logo: URL of this image's logo.
 	Logo string `json:"logo"`
-	// Categories: list of categories this image belongs to
+	// Categories: list of categories this image belongs to.
 	Categories []string `json:"categories"`
-	// CreationDate: creation date of this image
+	// CreationDate: creation date of this image.
 	CreationDate *time.Time `json:"creation_date"`
-	// ModificationDate: date of the last modification of this image
+	// ModificationDate: date of the last modification of this image.
 	ModificationDate *time.Time `json:"modification_date"`
-	// ValidUntil: expiration date of this image
+	// ValidUntil: expiration date of this image.
 	ValidUntil *time.Time `json:"valid_until"`
-	// Label: label of this image
-	//
-	// Typically an identifier for a distribution (ex. "ubuntu_focal").
+	// Label: typically an identifier for a distribution (ex. "ubuntu_focal").
 	Label string `json:"label"`
-	// Versions: list of versions of this image
+	// Versions: list of versions of this image.
 	Versions []*Version `json:"versions"`
-	// Organization: organization this image belongs to
+	// Organization: organization this image belongs to.
 	Organization *Organization `json:"organization"`
 
 	CurrentPublicVersion string `json:"current_public_version"`
@@ -101,17 +99,15 @@ type ListVersionsResponse struct {
 	TotalCount uint32 `json:"total_count"`
 }
 
-// LocalImage: local image
+// LocalImage: local image.
 type LocalImage struct {
-	// ID: UUID of this local image
-	//
-	// Version you will typically use to define an image in an API call.
+	// ID: version you will typically use to define an image in an API call.
 	ID string `json:"id"`
-	// CompatibleCommercialTypes: list of all commercial types that are compatible with this local image
+	// CompatibleCommercialTypes: list of all commercial types that are compatible with this local image.
 	CompatibleCommercialTypes []string `json:"compatible_commercial_types"`
-	// Arch: supported architecture for this local image
+	// Arch: supported architecture for this local image.
 	Arch string `json:"arch"`
-	// Zone: availability Zone where this local image is available
+	// Zone: availability Zone where this local image is available.
 	Zone scw.Zone `json:"zone"`
 }
 
@@ -121,30 +117,30 @@ type Organization struct {
 	Name string `json:"name"`
 }
 
-// Version: version
+// Version: version.
 type Version struct {
-	// ID: UUID of this version
+	// ID: UUID of this version.
 	ID string `json:"id"`
-	// Name: name of this version
+	// Name: name of this version.
 	Name string `json:"name"`
-	// CreationDate: creation date of this image version
+	// CreationDate: creation date of this image version.
 	CreationDate *time.Time `json:"creation_date"`
-	// ModificationDate: date of the last modification of this version
+	// ModificationDate: date of the last modification of this version.
 	ModificationDate *time.Time `json:"modification_date"`
-	// LocalImages: list of local images available in this version
+	// LocalImages: list of local images available in this version.
 	LocalImages []*LocalImage `json:"local_images"`
 }
 
 // Service API
 
 type ListImagesRequest struct {
-	// PerPage: a positive integer lower or equal to 100 to select the number of items to display
+	// PerPage: a positive integer lower or equal to 100 to select the number of items to display.
 	PerPage *uint32 `json:"-"`
-	// Page: a positive integer to choose the page to display
+	// Page: a positive integer to choose the page to display.
 	Page *int32 `json:"-"`
 }
 
-// ListImages: list marketplace images
+// ListImages: list marketplace images.
 func (s *API) ListImages(req *ListImagesRequest, opts ...scw.RequestOption) (*ListImagesResponse, error) {
 	var err error
 
@@ -174,11 +170,11 @@ func (s *API) ListImages(req *ListImagesRequest, opts ...scw.RequestOption) (*Li
 }
 
 type GetImageRequest struct {
-	// ImageID: display the image name
+	// ImageID: display the image name.
 	ImageID string `json:"-"`
 }
 
-// GetImage: get a specific marketplace image
+// GetImage: get a specific marketplace image.
 func (s *API) GetImage(req *GetImageRequest, opts ...scw.RequestOption) (*GetImageResponse, error) {
 	var err error
 

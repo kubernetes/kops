@@ -149,7 +149,8 @@ type instanceCache struct {
 	snapshot *allInstancesSnapshot
 }
 
-// Gets the full information about these instance from the EC2 API
+// Gets the full information about these instance from the EC2 API. Caller must have acquired c.mutex before
+// calling describeAllInstancesUncached.
 func (c *instanceCache) describeAllInstancesUncached() (*allInstancesSnapshot, error) {
 	now := time.Now()
 
@@ -168,10 +169,6 @@ func (c *instanceCache) describeAllInstancesUncached() (*allInstancesSnapshot, e
 	}
 
 	snapshot := &allInstancesSnapshot{now, m}
-
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
-
 	if c.snapshot != nil && snapshot.olderThan(c.snapshot) {
 		// If this happens a lot, we could run this function in a mutex and only return one result
 		klog.Infof("Not caching concurrent AWS DescribeInstances results")
@@ -195,30 +192,14 @@ type cacheCriteria struct {
 
 // describeAllInstancesCached returns all instances, using cached results if applicable
 func (c *instanceCache) describeAllInstancesCached(criteria cacheCriteria) (*allInstancesSnapshot, error) {
-	var err error
-	snapshot := c.getSnapshot()
-	if snapshot != nil && !snapshot.MeetsCriteria(criteria) {
-		snapshot = nil
-	}
-
-	if snapshot == nil {
-		snapshot, err = c.describeAllInstancesUncached()
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		klog.V(6).Infof("EC2 DescribeInstances - using cached results")
-	}
-
-	return snapshot, nil
-}
-
-// getSnapshot returns a snapshot if one exists
-func (c *instanceCache) getSnapshot() *allInstancesSnapshot {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
+	if c.snapshot != nil && c.snapshot.MeetsCriteria(criteria) {
+		klog.V(6).Infof("EC2 DescribeInstances - using cached results")
+		return c.snapshot, nil
+	}
 
-	return c.snapshot
+	return c.describeAllInstancesUncached()
 }
 
 // olderThan is a simple helper to encapsulate timestamp comparison
