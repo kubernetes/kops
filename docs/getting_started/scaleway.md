@@ -10,7 +10,6 @@
 
 ### Coming soon
 
-* Load-balancers
 * Scaleway DNS (to create clusters with a custom domain name)
 * Private network
 
