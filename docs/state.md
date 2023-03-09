@@ -17,6 +17,7 @@ As of now the following state stores are supported:
 * Google Cloud (`gs://`)
 * Kubernetes (`k8s://`)
 * OpenStack Swift (`swift://`)
+* Scaleway (`scw://`)
 
 The state store is just files; you can copy the files down and put them into git (or your preferred version control system).
 
@@ -179,3 +180,6 @@ gcsClient, err := storage.New(httpClient)
 
 ```
 
+## Scaleway (scw://)
+
+Scaleway storage is configured as a flavor of a S3 store. For more information on how to create a bucket with Scaleway, visit [this page](https://www.scaleway.com/en/docs/storage/object/quickstart/).
