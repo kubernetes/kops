@@ -122,8 +122,8 @@ const (
 	// ErrCodeDocumentPermissionLimit for service response error code
 	// "DocumentPermissionLimit".
 	//
-	// The document can't be shared with more Amazon Web Services user accounts.
-	// You can specify a maximum of 20 accounts per API operation to share a private
+	// The document can't be shared with more Amazon Web Services accounts. You
+	// can specify a maximum of 20 accounts per API operation to share a private
 	// document.
 	//
 	// By default, you can share a private document with a maximum of 1,000 accounts

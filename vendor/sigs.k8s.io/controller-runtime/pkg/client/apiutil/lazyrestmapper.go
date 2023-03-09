@@ -33,7 +33,7 @@ type lazyRESTMapper struct {
 	mapper      meta.RESTMapper
 	client      *discovery.DiscoveryClient
 	knownGroups map[string]*restmapper.APIGroupResources
-	apiGroups   *metav1.APIGroupList
+	apiGroups   []metav1.APIGroup
 
 	// mutex to provide thread-safe mapper reloading.
 	mu sync.Mutex
@@ -45,6 +45,7 @@ func newLazyRESTMapperWithClient(discoveryClient *discovery.DiscoveryClient) (me
 		mapper:      restmapper.NewDiscoveryRESTMapper([]*restmapper.APIGroupResources{}),
 		client:      discoveryClient,
 		knownGroups: map[string]*restmapper.APIGroupResources{},
+		apiGroups:   []metav1.APIGroup{},
 	}, nil
 }
 
@@ -147,7 +148,7 @@ func (m *lazyRESTMapper) addKnownGroupAndReload(groupName string, versions ...st
 	// This operation requires 2 requests: /api and /apis, but only once. For all subsequent calls
 	// this data will be taken from cache.
 	if len(versions) == 0 {
-		apiGroup, err := m.findAPIGroupByName(groupName)
+		apiGroup, err := m.findAPIGroupByNameLocked(groupName)
 		if err != nil {
 			return err
 		}
@@ -176,11 +177,22 @@ func (m *lazyRESTMapper) addKnownGroupAndReload(groupName string, versions ...st
 	}
 
 	// Update information for group resources about the API group by adding new versions.
+	// Ignore the versions that are already registered.
 	for _, version := range versions {
-		groupResources.Group.Versions = append(groupResources.Group.Versions, metav1.GroupVersionForDiscovery{
-			GroupVersion: metav1.GroupVersion{Group: groupName, Version: version}.String(),
-			Version:      version,
-		})
+		found := false
+		for _, v := range groupResources.Group.Versions {
+			if v.Version == version {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			groupResources.Group.Versions = append(groupResources.Group.Versions, metav1.GroupVersionForDiscovery{
+				GroupVersion: metav1.GroupVersion{Group: groupName, Version: version}.String(),
+				Version:      version,
+			})
+		}
 	}
 
 	// Update data in the cache.
@@ -197,28 +209,34 @@ func (m *lazyRESTMapper) addKnownGroupAndReload(groupName string, versions ...st
 	return nil
 }
 
-// findAPIGroupByName returns API group by its name.
-func (m *lazyRESTMapper) findAPIGroupByName(groupName string) (metav1.APIGroup, error) {
-	// Ensure that required info about existing API groups is received and stored in the mapper.
-	// It will make 2 API calls to /api and /apis, but only once.
-	if m.apiGroups == nil {
-		apiGroups, err := m.client.ServerGroups()
-		if err != nil {
-			return metav1.APIGroup{}, fmt.Errorf("failed to get server groups: %w", err)
-		}
-		if len(apiGroups.Groups) == 0 {
-			return metav1.APIGroup{}, fmt.Errorf("received an empty API groups list")
-		}
-
-		m.apiGroups = apiGroups
-	}
-
-	for i := range m.apiGroups.Groups {
-		if groupName == (&m.apiGroups.Groups[i]).Name {
-			return m.apiGroups.Groups[i], nil
+// findAPIGroupByNameLocked returns API group by its name.
+func (m *lazyRESTMapper) findAPIGroupByNameLocked(groupName string) (metav1.APIGroup, error) {
+	// Looking in the cache first.
+	for _, apiGroup := range m.apiGroups {
+		if groupName == apiGroup.Name {
+			return apiGroup, nil
 		}
 	}
 
+	// Update the cache if nothing was found.
+	apiGroups, err := m.client.ServerGroups()
+	if err != nil {
+		return metav1.APIGroup{}, fmt.Errorf("failed to get server groups: %w", err)
+	}
+	if len(apiGroups.Groups) == 0 {
+		return metav1.APIGroup{}, fmt.Errorf("received an empty API groups list")
+	}
+
+	m.apiGroups = apiGroups.Groups
+
+	// Looking in the cache again.
+	for _, apiGroup := range m.apiGroups {
+		if groupName == apiGroup.Name {
+			return apiGroup, nil
+		}
+	}
+
+	// If there is still nothing, return an error.
 	return metav1.APIGroup{}, fmt.Errorf("failed to find API group %s", groupName)
 }
 

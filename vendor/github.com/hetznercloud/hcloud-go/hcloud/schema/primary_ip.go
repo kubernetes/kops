@@ -2,7 +2,7 @@ package schema
 
 import "time"
 
-// PrimaryIP defines a Primary IP
+// PrimaryIP defines a Primary IP.
 type PrimaryIP struct {
 	ID           int                 `json:"id"`
 	IP           string              `json:"ip"`
