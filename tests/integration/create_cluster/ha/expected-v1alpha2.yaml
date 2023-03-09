@@ -88,7 +88,7 @@ metadata:
     kops.k8s.io/cluster: ha.example.com
   name: control-plane-us-test-1a
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230303
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302
   instanceMetadata:
     httpTokens: required
   machineType: m3.medium
@@ -108,7 +108,7 @@ metadata:
     kops.k8s.io/cluster: ha.example.com
   name: control-plane-us-test-1b
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230303
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302
   instanceMetadata:
     httpTokens: required
   machineType: m3.medium
@@ -128,7 +128,7 @@ metadata:
     kops.k8s.io/cluster: ha.example.com
   name: control-plane-us-test-1c
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230303
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302
   instanceMetadata:
     httpTokens: required
   machineType: m3.medium
@@ -148,7 +148,7 @@ metadata:
     kops.k8s.io/cluster: ha.example.com
   name: nodes-us-test-1a
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230303
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302
   instanceMetadata:
     httpPutResponseHopLimit: 1
     httpTokens: required
@@ -169,7 +169,7 @@ metadata:
     kops.k8s.io/cluster: ha.example.com
   name: nodes-us-test-1b
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230303
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302
   instanceMetadata:
     httpPutResponseHopLimit: 1
     httpTokens: required
@@ -190,7 +190,7 @@ metadata:
     kops.k8s.io/cluster: ha.example.com
   name: nodes-us-test-1c
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230303
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302
   instanceMetadata:
     httpPutResponseHopLimit: 1
     httpTokens: required
