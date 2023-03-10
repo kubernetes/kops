@@ -81,7 +81,7 @@ func makeHostURL(projectsAPIEndpoint, projectID, zone, host string) string {
 // ToInstanceReferences returns instance references by links
 func (g *Cloud) ToInstanceReferences(zone string, instanceNames []string) (refs []*compute.InstanceReference) {
 	for _, ins := range instanceNames {
-		instanceLink := makeHostURL(g.service.BasePath, g.projectID, zone, ins)
+		instanceLink := makeHostURL(g.projectsBasePath, g.projectID, zone, ins)
 		refs = append(refs, &compute.InstanceReference{Instance: instanceLink})
 	}
 	return refs
@@ -551,17 +551,28 @@ func (g *Cloud) AliasRangesByProviderID(providerID string) (cidrs []string, err 
 		for _, r := range networkInterface.AliasIpRanges {
 			cidrs = append(cidrs, r.IpCidrRange)
 		}
-		ipv6Addr := getIPV6AddressFromInterface(networkInterface)
-		if ipv6Addr != "" {
-			// The podCIDR range is the first /112 subrange from the /96 assigned to
-			// the node
-			ipv6PodCIDR := fmt.Sprintf("%s/112", ipv6Addr)
-			cidrs = append(cidrs, ipv6PodCIDR)
-		} else {
-			klog.Infof("No IPv6 addresses found for %s", providerID)
+		ipv6Addr := g.GetIPV6Address(networkInterface)
+		if ipv6Addr != nil {
+			cidrs = append(cidrs, ipv6Addr.String())
 		}
 	}
 	return
+}
+
+// GetIPV6Address fetches the IPv6 addressses associated with a network interface.
+func (g *Cloud) GetIPV6Address(networkInterface *compute.NetworkInterface) *net.IPNet {
+	ipv6Addr := getIPV6AddressFromInterface(networkInterface)
+	if ipv6Addr == "" {
+		return nil
+	}
+	addr := net.ParseIP(ipv6Addr)
+	// The podCIDR range is the first /112 subrange from the /96 assigned to
+	// the node
+	mask := net.CIDRMask(112, 128)
+	return &net.IPNet{
+		IP:   addr.Mask(mask),
+		Mask: mask,
+	}
 }
 
 // AddAliasToInstanceByProviderID adds an alias to the given instance from the named

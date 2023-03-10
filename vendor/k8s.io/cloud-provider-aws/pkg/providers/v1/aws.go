@@ -300,6 +300,12 @@ const (
 	volumeDetachedStatus = "detached"
 )
 
+const (
+	localZoneType               = "local-zone"
+	wavelengthZoneType          = "wavelength-zone"
+	regularAvailabilityZoneType = "availability-zone"
+)
+
 // awsTagNameMasterRoles is a set of well-known AWS tag names that indicate the instance is a master
 // The major consequence is that it is then not considered for AWS zone discovery for dynamic volume creation.
 var awsTagNameMasterRoles = sets.NewString("kubernetes.io/role/master", "k8s.io/role/master")
@@ -364,6 +370,8 @@ type EC2 interface {
 	RevokeSecurityGroupIngress(*ec2.RevokeSecurityGroupIngressInput) (*ec2.RevokeSecurityGroupIngressOutput, error)
 
 	DescribeSubnets(*ec2.DescribeSubnetsInput) ([]*ec2.Subnet, error)
+
+	DescribeAvailabilityZones(request *ec2.DescribeAvailabilityZonesInput) ([]*ec2.AvailabilityZone, error)
 
 	CreateTags(*ec2.CreateTagsInput) (*ec2.CreateTagsOutput, error)
 	DeleteTags(input *ec2.DeleteTagsInput) (*ec2.DeleteTagsOutput, error)
@@ -1154,6 +1162,15 @@ func (s *awsSdkEC2) DescribeSubnets(request *ec2.DescribeSubnetsInput) ([]*ec2.S
 		return nil, fmt.Errorf("error listing AWS subnets: %q", err)
 	}
 	return response.Subnets, nil
+}
+
+func (s *awsSdkEC2) DescribeAvailabilityZones(request *ec2.DescribeAvailabilityZonesInput) ([]*ec2.AvailabilityZone, error) {
+	// AZs are not paged
+	response, err := s.ec2.DescribeAvailabilityZones(request)
+	if err != nil {
+		return nil, fmt.Errorf("error listing AWS availability zones: %q", err)
+	}
+	return response.AvailabilityZones, err
 }
 
 func (s *awsSdkEC2) CreateSecurityGroup(request *ec2.CreateSecurityGroupInput) (*ec2.CreateSecurityGroupOutput, error) {
@@ -3516,6 +3533,35 @@ func (c *Cloud) findSubnets() ([]*ec2.Subnet, error) {
 	return subnets, nil
 }
 
+// Returns a mapping between availability zone names and their types
+// Zone will not be included in the map in case it was not found in AWS by name
+func (c *Cloud) getZoneTypesByName(azNames []string) (map[string]string, error) {
+	if len(azNames) == 0 {
+		// if az names slice is empty, no need to make a request, return early with empty map
+		return map[string]string{}, nil
+	}
+	azFilter := newEc2Filter("zone-name", azNames...)
+	azRequest := &ec2.DescribeAvailabilityZonesInput{}
+	azRequest.Filters = []*ec2.Filter{azFilter}
+
+	azs, err := c.ec2.DescribeAvailabilityZones(azRequest)
+	if err != nil {
+		return nil, fmt.Errorf("error describe availability zones: %q", err)
+	}
+
+	azTypesMapping := make(map[string]string)
+	for _, az := range azs {
+		name := aws.StringValue(az.ZoneName)
+		zoneType := aws.StringValue(az.ZoneType)
+		if name == "" || zoneType == "" {
+			klog.Warningf("Ignoring zone with empty name/type: %v", az)
+			continue
+		}
+		azTypesMapping[name] = zoneType
+	}
+	return azTypesMapping, nil
+}
+
 // Finds the subnets to use for an ELB we are creating.
 // Normal (Internet-facing) ELBs must use public subnets, so we skip private subnets.
 // Internal ELBs can use public or private subnets, but if we have a private subnet we should prefer that.
@@ -3604,8 +3650,20 @@ func (c *Cloud) findELBSubnets(internalELB bool) ([]string, error) {
 
 	sort.Strings(azNames)
 
+	azTypesMapping, err := c.getZoneTypesByName(azNames)
+	if err != nil {
+		return nil, fmt.Errorf("error get availability zone types: %q", err)
+	}
+
 	var subnetIDs []string
 	for _, key := range azNames {
+		azType, found := azTypesMapping[key]
+		if found && azType != regularAvailabilityZoneType {
+			// take subnets only from zones with `availability-zone` type
+			// because another zone types (like local, wavelength and outpost zones)
+			// does not support NLB/CLB for the moment, only ALB.
+			continue
+		}
 		subnetIDs = append(subnetIDs, aws.StringValue(subnetsByAZ[key].SubnetId))
 	}
 
