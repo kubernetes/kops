@@ -264,6 +264,28 @@ func (ec2i *FakeEC2Impl) RemoveSubnets() {
 	ec2i.Subnets = ec2i.Subnets[:0]
 }
 
+// DescribeAvailabilityZones returns fake availability zones
+// For every input returns a hardcoded list of fake availability zones for the moment
+func (ec2i *FakeEC2Impl) DescribeAvailabilityZones(request *ec2.DescribeAvailabilityZonesInput) ([]*ec2.AvailabilityZone, error) {
+	var azs []*ec2.AvailabilityZone
+
+	fakeZones := [5]string{"az-local", "az-wavelength", "us-west-2a", "us-west-2b", "us-west-2c"}
+	for _, name := range fakeZones {
+		var zoneType *string
+		switch name {
+		case "az-local":
+			zoneType = aws.String(localZoneType)
+		case "az-wavelength":
+			zoneType = aws.String(wavelengthZoneType)
+		default:
+			zoneType = aws.String(regularAvailabilityZoneType)
+		}
+		zone := &ec2.AvailabilityZone{ZoneName: aws.String(name), ZoneType: zoneType, ZoneId: aws.String(name)}
+		azs = append(azs, zone)
+	}
+	return azs, nil
+}
+
 // CreateTags is a mock for CreateTags from EC2
 func (ec2i *FakeEC2Impl) CreateTags(input *ec2.CreateTagsInput) (*ec2.CreateTagsOutput, error) {
 	for _, id := range input.Resources {
