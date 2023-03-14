@@ -57,6 +57,12 @@ func NewScwCloudProvider() (*ScwCloudProvider, error) {
 	}
 	klog.V(4).Infof("Found zone of the running server: %v", zone)
 
+	region, err := scaleway.ParseRegionFromZone(zone)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse Scaleway region: %s", err)
+	}
+	klog.V(4).Infof("Found region of the running server: %v", region)
+
 	privateIP := metadata.PrivateIP
 	klog.V(4).Infof("Found first private net IP of the running server: %q", privateIP)
 
@@ -64,6 +70,7 @@ func NewScwCloudProvider() (*ScwCloudProvider, error) {
 		scw.WithUserAgent(scaleway.KopsUserAgentPrefix+kopsv.Version),
 		scw.WithEnv(),
 		scw.WithDefaultZone(zone),
+		scw.WithDefaultRegion(region),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error creating client: %w", err)
