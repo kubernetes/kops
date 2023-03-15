@@ -23,6 +23,8 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // HTTPHealthcheck represents a GCE Healthcheck
@@ -92,4 +94,21 @@ func (h *HTTPHealthcheck) RenderGCE(t *gce.GCEAPITarget, a, e, changes *HTTPHeal
 		h.SelfLink = r.TargetLink
 	}
 	return nil
+}
+
+type terraformHTTPHealthcheck struct {
+	Name string `cty:"name"`
+	Port *int64 `cty:"port"`
+}
+
+func (_ *HTTPHealthcheck) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *HTTPHealthcheck) error {
+	tf := &terraformHTTPHealthcheck{
+		Name: *e.Name,
+		Port: e.Port,
+	}
+	return t.RenderResource("google_compute_http_health_check", *e.Name, tf)
+}
+
+func (e *HTTPHealthcheck) TerraformAddress() *terraformWriter.Literal {
+	return terraformWriter.LiteralProperty("google_compute_http_health_check", *e.Name, "id")
 }
