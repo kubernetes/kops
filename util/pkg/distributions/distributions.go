@@ -37,20 +37,21 @@ type Distribution struct {
 }
 
 var (
-	DistributionDebian10     = Distribution{packageFormat: "deb", project: "debian", id: "buster", version: 10}
-	DistributionDebian11     = Distribution{packageFormat: "deb", project: "debian", id: "bullseye", version: 11}
-	DistributionDebian12     = Distribution{packageFormat: "deb", project: "debian", id: "bookworm", version: 12}
-	DistributionUbuntu1804   = Distribution{packageFormat: "deb", project: "ubuntu", id: "bionic", version: 18.04}
-	DistributionUbuntu2004   = Distribution{packageFormat: "deb", project: "ubuntu", id: "focal", version: 20.04}
-	DistributionUbuntu2010   = Distribution{packageFormat: "deb", project: "ubuntu", id: "groovy", version: 20.10}
-	DistributionUbuntu2104   = Distribution{packageFormat: "deb", project: "ubuntu", id: "hirsute", version: 21.04}
-	DistributionUbuntu2110   = Distribution{packageFormat: "deb", project: "ubuntu", id: "impish", version: 21.10}
-	DistributionUbuntu2204   = Distribution{packageFormat: "deb", project: "ubuntu", id: "jammy", version: 22.04}
-	DistributionAmazonLinux2 = Distribution{packageFormat: "rpm", project: "amazonlinux2", id: "amazonlinux2", version: 0}
-	DistributionRhel8        = Distribution{packageFormat: "rpm", project: "rhel", id: "rhel8", version: 8}
-	DistributionRocky8       = Distribution{packageFormat: "rpm", project: "rocky", id: "rocky8", version: 8}
-	DistributionFlatcar      = Distribution{packageFormat: "", project: "flatcar", id: "flatcar", version: 0}
-	DistributionContainerOS  = Distribution{packageFormat: "", project: "containeros", id: "containeros", version: 0}
+	DistributionDebian10        = Distribution{packageFormat: "deb", project: "debian", id: "buster", version: 10}
+	DistributionDebian11        = Distribution{packageFormat: "deb", project: "debian", id: "bullseye", version: 11}
+	DistributionDebian12        = Distribution{packageFormat: "deb", project: "debian", id: "bookworm", version: 12}
+	DistributionUbuntu1804      = Distribution{packageFormat: "deb", project: "ubuntu", id: "bionic", version: 18.04}
+	DistributionUbuntu2004      = Distribution{packageFormat: "deb", project: "ubuntu", id: "focal", version: 20.04}
+	DistributionUbuntu2010      = Distribution{packageFormat: "deb", project: "ubuntu", id: "groovy", version: 20.10}
+	DistributionUbuntu2104      = Distribution{packageFormat: "deb", project: "ubuntu", id: "hirsute", version: 21.04}
+	DistributionUbuntu2110      = Distribution{packageFormat: "deb", project: "ubuntu", id: "impish", version: 21.10}
+	DistributionUbuntu2204      = Distribution{packageFormat: "deb", project: "ubuntu", id: "jammy", version: 22.04}
+	DistributionAmazonLinux2    = Distribution{packageFormat: "rpm", project: "amazonlinux2", id: "amazonlinux2", version: 0}
+	DistributionAmazonLinux2023 = Distribution{packageFormat: "rpm", project: "amazonlinux2023", id: "amzn", version: 2023}
+	DistributionRhel8           = Distribution{packageFormat: "rpm", project: "rhel", id: "rhel8", version: 8}
+	DistributionRocky8          = Distribution{packageFormat: "rpm", project: "rocky", id: "rocky8", version: 8}
+	DistributionFlatcar         = Distribution{packageFormat: "", project: "flatcar", id: "flatcar", version: 0}
+	DistributionContainerOS     = Distribution{packageFormat: "", project: "containeros", id: "containeros", version: 0}
 )
 
 // IsDebianFamily returns true if this distribution uses deb packages and generally follows debian package names
@@ -82,7 +83,7 @@ func (d *Distribution) DefaultUsers() ([]string, error) {
 		return []string{"ubuntu", "root"}, nil
 	case "centos":
 		return []string{"centos"}, nil
-	case "rhel", "amazonlinux2":
+	case "rhel", "amazonlinux2", "amazonlinux2023":
 		return []string{"ec2-user"}, nil
 	case "rocky":
 		return []string{"rocky"}, nil
