@@ -23,6 +23,8 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // HTTPHealthcheck represents a GCE Healthcheck
@@ -31,8 +33,9 @@ type HTTPHealthcheck struct {
 	Name      *string
 	Lifecycle fi.Lifecycle
 
-	SelfLink string
-	Port     *int64
+	SelfLink    string
+	Port        *int64
+	RequestPath *string
 }
 
 var _ fi.CompareWithID = &HTTPHealthcheck{}
@@ -52,9 +55,10 @@ func (e *HTTPHealthcheck) Find(c *fi.CloudupContext) (*HTTPHealthcheck, error) {
 		return nil, fmt.Errorf("error getting HealthCheck %q: %v", name, err)
 	}
 	actual := &HTTPHealthcheck{
-		Name:     fi.PtrTo(r.Name),
-		Port:     fi.PtrTo(r.Port),
-		SelfLink: r.SelfLink,
+		Name:        fi.PtrTo(r.Name),
+		Port:        fi.PtrTo(r.Port),
+		RequestPath: fi.PtrTo(r.RequestPath),
+		SelfLink:    r.SelfLink,
 	}
 	// System fields
 	actual.Lifecycle = e.Lifecycle
@@ -78,7 +82,7 @@ func (h *HTTPHealthcheck) RenderGCE(t *gce.GCEAPITarget, a, e, changes *HTTPHeal
 		o := &compute.HttpHealthCheck{
 			Name:        fi.ValueOf(e.Name),
 			Port:        fi.ValueOf(e.Port),
-			RequestPath: "/healthz",
+			RequestPath: fi.ValueOf(e.RequestPath),
 		}
 
 		klog.V(4).Infof("Creating Healthcheck %q", o.Name)
@@ -92,4 +96,23 @@ func (h *HTTPHealthcheck) RenderGCE(t *gce.GCEAPITarget, a, e, changes *HTTPHeal
 		h.SelfLink = r.TargetLink
 	}
 	return nil
+}
+
+type terraformHTTPHealthcheck struct {
+	Name        string  `cty:"name"`
+	Port        *int64  `cty:"port"`
+	RequestPath *string `cty:"request_path"`
+}
+
+func (_ *HTTPHealthcheck) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *HTTPHealthcheck) error {
+	tf := &terraformHTTPHealthcheck{
+		Name:        *e.Name,
+		Port:        e.Port,
+		RequestPath: e.RequestPath,
+	}
+	return t.RenderResource("google_compute_http_health_check", *e.Name, tf)
+}
+
+func (e *HTTPHealthcheck) TerraformLink() *terraformWriter.Literal {
+	return terraformWriter.LiteralSelfLink("google_compute_http_health_check", *e.Name)
 }
