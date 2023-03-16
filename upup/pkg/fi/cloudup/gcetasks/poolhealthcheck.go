@@ -22,6 +22,7 @@ import (
 	compute "google.golang.org/api/compute/v1"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
 // PoolHealthCheck represents a GCE target pool HealthCheck
@@ -103,5 +104,9 @@ func (p *PoolHealthCheck) RenderGCE(t *gce.GCEAPITarget, a, e, changes *PoolHeal
 			return fmt.Errorf("error creating PoolHealthCheck: %v", err)
 		}
 	}
+	return nil
+}
+
+func (_ *PoolHealthCheck) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *PoolHealthCheck) error {
 	return nil
 }
