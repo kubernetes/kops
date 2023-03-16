@@ -113,6 +113,6 @@ func (_ *HTTPHealthcheck) RenderTerraform(t *terraform.TerraformTarget, a, e, ch
 	return t.RenderResource("google_compute_http_health_check", *e.Name, tf)
 }
 
-func (e *HTTPHealthcheck) TerraformAddress() *terraformWriter.Literal {
-	return terraformWriter.LiteralProperty("google_compute_http_health_check", *e.Name, "id")
+func (e *HTTPHealthcheck) TerraformLink() *terraformWriter.Literal {
+	return terraformWriter.LiteralSelfLink("google_compute_http_health_check", *e.Name)
 }

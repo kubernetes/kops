@@ -565,9 +565,8 @@ resource "google_compute_subnetwork" "us-test1-minimal-gce-plb-example-com" {
 }
 
 resource "google_compute_target_pool" "api-minimal-gce-plb-example-com" {
-  description      = ""
-  name             = "api-minimal-gce-plb-example-com"
-  session_affinity = ""
+  health_checks = [google_compute_http_health_check.api-minimal-gce-plb-example-com.self_link]
+  name          = "api-minimal-gce-plb-example-com"
 }
 
 resource "google_project_iam_binding" "serviceaccount-control-plane" {
