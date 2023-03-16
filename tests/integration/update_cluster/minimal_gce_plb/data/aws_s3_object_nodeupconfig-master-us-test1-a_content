@@ -222,7 +222,6 @@ CAs:
     9B7UD2ushcVFPtaeoL9Gfu8aY4KJBeqqg5ojl4qmRnThjw==
     -----END CERTIFICATE-----
 ClusterName: minimal-gce-plb.example.com
-ContainerRuntime: containerd
 FileAssets:
 - content: |
     apiVersion: kubescheduler.config.k8s.io/v1beta2
@@ -242,11 +241,6 @@ KeypairIDs:
   etcd-peers-ca-main: "6982279353998887468930183660"
   kubernetes-ca: "6982820025135291416230495506"
   service-account: "2"
-KubeProxy:
-  clusterCIDR: 100.96.0.0/11
-  cpuRequest: 100m
-  image: registry.k8s.io/kube-proxy:v1.26.0
-  logLevel: 2
 KubeletConfig:
   anonymousAuth: false
   cgroupDriver: systemd
@@ -271,10 +265,6 @@ KubeletConfig:
   shutdownGracePeriodCriticalPods: 10s
   taints:
   - node-role.kubernetes.io/control-plane=:NoSchedule
-KubernetesVersion: 1.26.0
-Networking:
-  nonMasqueradeCIDR: 100.64.0.0/10
-  serviceClusterIPRange: 100.64.0.0/13
 UpdatePolicy: automatic
 channels:
 - memfs://tests/minimal-gce-plb.example.com/addons/bootstrap-channel.yaml
@@ -283,13 +273,9 @@ containerdConfig:
   runc:
     version: 1.1.4
   version: 1.6.18
-docker:
-  skipInstall: true
 etcdManifests:
 - memfs://tests/minimal-gce-plb.example.com/manifests/etcd/main-master-us-test1-a.yaml
 - memfs://tests/minimal-gce-plb.example.com/manifests/etcd/events-master-us-test1-a.yaml
-multizone: true
-nodeTags: minimal-gce-plb-example-com-k8s-io-role-node
 staticManifests:
 - key: kube-apiserver-healthcheck
   path: manifests/static/kube-apiserver-healthcheck.yaml

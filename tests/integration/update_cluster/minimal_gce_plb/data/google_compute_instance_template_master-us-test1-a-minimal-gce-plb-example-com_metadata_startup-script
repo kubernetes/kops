@@ -124,24 +124,24 @@ ensure-install-dir
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   manageStorageClasses: true
+  multizone: true
+  nodeTags: minimal-gce-plb-example-com-k8s-io-role-node
+containerRuntime: containerd
+containerd:
+  logLevel: info
+  runc:
+    version: 1.1.4
+  version: 1.6.18
+docker:
+  skipInstall: true
 encryptionConfig: null
 etcdClusters:
   events:
     cpuRequest: 100m
-    manager:
-      backupRetentionDays: 90
-      env:
-      - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
-        value: 90d
     memoryRequest: 100Mi
     version: 3.5.7
   main:
     cpuRequest: 200m
-    manager:
-      backupRetentionDays: 90
-      env:
-      - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
-        value: 90d
     memoryRequest: 100Mi
     version: 3.5.7
 kubeAPIServer:
@@ -198,6 +198,11 @@ kubeControllerManager:
     leaderElect: true
   logLevel: 2
   useServiceAccountCredentials: true
+kubeProxy:
+  clusterCIDR: 100.96.0.0/11
+  cpuRequest: 100m
+  image: registry.k8s.io/kube-proxy:v1.26.0
+  logLevel: 2
 kubeScheduler:
   image: registry.k8s.io/kube-scheduler:v1.26.0
   leaderElection:
@@ -247,7 +252,7 @@ CloudProvider: gce
 ConfigBase: memfs://tests/minimal-gce-plb.example.com
 InstanceGroupName: master-us-test1-a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: AzBifUhWOqi0e5vhwQJ5YeRmvdmTevvsg/uUpdUdPlI=
+NodeupConfigHash: e4ri7JXDghqqNZ2DwTR2Z4lF16SrRUmp15s3BR1V0SA=
 
 __EOF_KUBE_ENV
 

@@ -124,6 +124,21 @@ ensure-install-dir
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   manageStorageClasses: true
+  multizone: true
+  nodeTags: minimal-gce-plb-example-com-k8s-io-role-node
+containerRuntime: containerd
+containerd:
+  logLevel: info
+  runc:
+    version: 1.1.4
+  version: 1.6.18
+docker:
+  skipInstall: true
+kubeProxy:
+  clusterCIDR: 100.96.0.0/11
+  cpuRequest: 100m
+  image: registry.k8s.io/kube-proxy:v1.26.0
+  logLevel: 2
 kubelet:
   anonymousAuth: false
   cgroupDriver: systemd
@@ -173,7 +188,7 @@ ConfigServer:
   - https://kops-controller.internal.minimal-gce-plb.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: UJ13z60DGXFz672Thc1rqhBVpeV1mvqtatOIV4ZW8Sg=
+NodeupConfigHash: mrZ4csco+m69jI7c8rjT+LrArTPplsf4NqHhDsVCS5s=
 
 __EOF_KUBE_ENV
 
