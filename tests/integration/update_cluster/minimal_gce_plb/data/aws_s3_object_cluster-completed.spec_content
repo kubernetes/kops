@@ -8,7 +8,7 @@ spec:
     loadBalancer:
       subnets:
       - name: us-test-1
-      type: Internal
+      type: Public
       useForInternalApi: true
   authorization:
     rbac: {}
