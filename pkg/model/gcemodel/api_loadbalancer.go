@@ -38,13 +38,6 @@ var _ fi.CloudupModelBuilder = &APILoadBalancerBuilder{}
 // createPublicLB validates the existence of a target pool with the given name,
 // and creates an IP address and forwarding rule pointing to that target pool.
 func createPublicLB(b *APILoadBalancerBuilder, c *fi.CloudupModelBuilderContext) error {
-	// TODO: point target pool to instance group managers, as done in internal LB.
-	targetPool := &gcetasks.TargetPool{
-		Name:      s(b.NameForTargetPool("api")),
-		Lifecycle: b.Lifecycle,
-	}
-	c.AddTask(targetPool)
-
 	healthCheck := &gcetasks.HTTPHealthcheck{
 		Name:        s(b.NameForHealthcheck("api")),
 		Port:        i64(wellknownports.KubeAPIServerHealthCheck),
@@ -52,6 +45,14 @@ func createPublicLB(b *APILoadBalancerBuilder, c *fi.CloudupModelBuilderContext)
 		Lifecycle:   b.Lifecycle,
 	}
 	c.AddTask(healthCheck)
+
+	// TODO: point target pool to instance group managers, as done in internal LB.
+	targetPool := &gcetasks.TargetPool{
+		Name:        s(b.NameForTargetPool("api")),
+		HealthCheck: healthCheck,
+		Lifecycle:   b.Lifecycle,
+	}
+	c.AddTask(targetPool)
 
 	poolHealthCheck := &gcetasks.PoolHealthCheck{
 		Name:        s(b.NameForPoolHealthcheck("api")),
