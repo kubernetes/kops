@@ -350,8 +350,11 @@ func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, c *fi.
 				additionalPolicy := ""
 				if b.Cluster.Spec.AdditionalPolicies != nil {
 					additionalPolicies := *(b.Cluster.Spec.AdditionalPolicies)
-
-					additionalPolicy = additionalPolicies[roleKey]
+					key := roleKey
+					if key == "master" {
+						key = "control-plane"
+					}
+					additionalPolicy = additionalPolicies[key]
 				}
 
 				additionalPolicyName := "additional." + iamName
