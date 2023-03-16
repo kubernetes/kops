@@ -6,7 +6,7 @@ metadata:
 spec:
   api:
     loadBalancer:
-      type: Internal
+      type: Public
       useForInternalApi: true
       subnets:
         - name: us-test-1
