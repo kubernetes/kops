@@ -46,9 +46,10 @@ func createPublicLB(b *APILoadBalancerBuilder, c *fi.CloudupModelBuilderContext)
 	c.AddTask(targetPool)
 
 	healthCheck := &gcetasks.HTTPHealthcheck{
-		Name:      s(b.NameForHealthcheck("api")),
-		Port:      i64(wellknownports.KubeAPIServerHealthCheck),
-		Lifecycle: b.Lifecycle,
+		Name:        s(b.NameForHealthcheck("api")),
+		Port:        i64(wellknownports.KubeAPIServerHealthCheck),
+		RequestPath: s("/healthz"),
+		Lifecycle:   b.Lifecycle,
 	}
 	c.AddTask(healthCheck)
 

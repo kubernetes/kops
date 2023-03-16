@@ -33,8 +33,9 @@ type HTTPHealthcheck struct {
 	Name      *string
 	Lifecycle fi.Lifecycle
 
-	SelfLink string
-	Port     *int64
+	SelfLink    string
+	Port        *int64
+	RequestPath *string
 }
 
 var _ fi.CompareWithID = &HTTPHealthcheck{}
@@ -54,9 +55,10 @@ func (e *HTTPHealthcheck) Find(c *fi.CloudupContext) (*HTTPHealthcheck, error) {
 		return nil, fmt.Errorf("error getting HealthCheck %q: %v", name, err)
 	}
 	actual := &HTTPHealthcheck{
-		Name:     fi.PtrTo(r.Name),
-		Port:     fi.PtrTo(r.Port),
-		SelfLink: r.SelfLink,
+		Name:        fi.PtrTo(r.Name),
+		Port:        fi.PtrTo(r.Port),
+		RequestPath: fi.PtrTo(r.RequestPath),
+		SelfLink:    r.SelfLink,
 	}
 	// System fields
 	actual.Lifecycle = e.Lifecycle
@@ -80,7 +82,7 @@ func (h *HTTPHealthcheck) RenderGCE(t *gce.GCEAPITarget, a, e, changes *HTTPHeal
 		o := &compute.HttpHealthCheck{
 			Name:        fi.ValueOf(e.Name),
 			Port:        fi.ValueOf(e.Port),
-			RequestPath: "/healthz",
+			RequestPath: fi.ValueOf(e.RequestPath),
 		}
 
 		klog.V(4).Infof("Creating Healthcheck %q", o.Name)
@@ -97,14 +99,16 @@ func (h *HTTPHealthcheck) RenderGCE(t *gce.GCEAPITarget, a, e, changes *HTTPHeal
 }
 
 type terraformHTTPHealthcheck struct {
-	Name string `cty:"name"`
-	Port *int64 `cty:"port"`
+	Name        string  `cty:"name"`
+	Port        *int64  `cty:"port"`
+	RequestPath *string `cty:"request_path"`
 }
 
 func (_ *HTTPHealthcheck) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *HTTPHealthcheck) error {
 	tf := &terraformHTTPHealthcheck{
-		Name: *e.Name,
-		Port: e.Port,
+		Name:        *e.Name,
+		Port:        e.Port,
+		RequestPath: e.RequestPath,
 	}
 	return t.RenderResource("google_compute_http_health_check", *e.Name, tf)
 }

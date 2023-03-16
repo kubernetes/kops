@@ -417,8 +417,9 @@ resource "google_compute_forwarding_rule" "api-minimal-gce-plb-example-com" {
 }
 
 resource "google_compute_http_health_check" "api-minimal-gce-plb-example-com" {
-  name = "api-minimal-gce-plb-example-com"
-  port = 3990
+  name         = "api-minimal-gce-plb-example-com"
+  port         = 3990
+  request_path = "/healthz"
 }
 
 resource "google_compute_instance_group_manager" "a-master-us-test1-a-minimal-gce-plb-example-com" {
