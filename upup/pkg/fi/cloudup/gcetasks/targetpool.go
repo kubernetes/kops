@@ -30,7 +30,9 @@ import (
 // TargetPool represents a GCE TargetPool
 // +kops:fitask
 type TargetPool struct {
-	Name      *string
+	Name        *string
+	HealthCheck *HTTPHealthcheck
+
 	Lifecycle fi.Lifecycle
 }
 
@@ -56,6 +58,7 @@ func (e *TargetPool) Find(c *fi.CloudupContext) (*TargetPool, error) {
 	actual.Name = fi.PtrTo(r.Name)
 
 	// Avoid spurious changes
+	actual.HealthCheck = e.HealthCheck
 	actual.Lifecycle = e.Lifecycle
 
 	return actual, nil
@@ -104,11 +107,8 @@ func (_ *TargetPool) RenderGCE(t *gce.GCEAPITarget, a, e, changes *TargetPool) e
 }
 
 type terraformTargetPool struct {
-	Name            string   `cty:"name"`
-	Description     string   `cty:"description"`
-	HealthChecks    []string `cty:"health_checks"`
-	Instances       []string `cty:"instances"`
-	SessionAffinity string   `cty:"session_affinity"`
+	Name         string                     `cty:"name"`
+	HealthChecks []*terraformWriter.Literal `cty:"health_checks"`
 }
 
 func (_ *TargetPool) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *TargetPool) error {
@@ -116,6 +116,9 @@ func (_ *TargetPool) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 
 	tf := &terraformTargetPool{
 		Name: name,
+		HealthChecks: []*terraformWriter.Literal{
+			e.HealthCheck.TerraformLink(),
+		},
 	}
 
 	return t.RenderResource("google_compute_target_pool", name, tf)

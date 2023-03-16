@@ -364,6 +364,17 @@ func TestMinimalGCEInternalLoadBalancer(t *testing.T) {
 		runTestTerraformGCE(t)
 }
 
+// TestMinimalGCEPublicLoadBalancer runs tests on a minimal GCE configuration with a public load balancer.
+func TestMinimalGCEPublicLoadBalancer(t *testing.T) {
+	newIntegrationTest("minimal-gce-plb.example.com", "minimal_gce_plb").
+		withAddons(
+			dnsControllerAddon,
+			gcpCCMAddon,
+			gcpPDCSIAddon,
+		).
+		runTestTerraformGCE(t)
+}
+
 // TestMinimalGCELongClusterName runs tests on a minimal GCE configuration with a very long cluster name
 func TestMinimalGCELongClusterName(t *testing.T) {
 	newIntegrationTest("minimal-gce-with-a-very-very-very-very-very-long-name.example.com", "minimal_gce_longclustername").
