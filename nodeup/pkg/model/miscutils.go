@@ -45,9 +45,11 @@ func (b *MiscUtilsBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	var packages []string
 	if b.Distribution.IsRHELFamily() {
 		// TODO: These packages have been auto-installed for a long time, and likely we don't need all of them any longer
-		packages = append(packages, "curl")
 		packages = append(packages, "wget")
-		packages = append(packages, "python2")
+		if b.Distribution != distributions.DistributionAmazonLinux2023 {
+			packages = append(packages, "curl")
+			packages = append(packages, "python2")
+		}
 		packages = append(packages, "git")
 	} else if b.Distribution.IsDebianFamily() {
 		klog.V(2).Infof("Detected debian; won't install misc. utils")

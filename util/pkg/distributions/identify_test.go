@@ -35,6 +35,11 @@ func TestFindDistribution(t *testing.T) {
 			expected: DistributionAmazonLinux2,
 		},
 		{
+			rootfs:   "amazonlinux2023",
+			err:      nil,
+			expected: DistributionAmazonLinux2023,
+		},
+		{
 			rootfs:   "centos7",
 			err:      fmt.Errorf("unsupported distro: centos-7"),
 			expected: Distribution{},
