@@ -346,6 +346,38 @@ func TestBuildKubecfg(t *testing.T) {
 			},
 			wantClientCert: true,
 		},
+		{
+			name: "Test Kube Config Data for Public cluster with admin and internal option",
+			args: args{
+				cluster:  publicCluster,
+				status:   fakeStatus,
+				admin:    DefaultKubecfgAdminLifetime,
+				internal: true,
+			},
+			want: &KubeconfigBuilder{
+				Context: "testcluster",
+				Server:  "https://api.internal.testcluster",
+				CACerts: []byte(nextCertificate + certData),
+				User:    "testcluster",
+			},
+			wantClientCert: true,
+		},
+		{
+			name: "Test Kube Config Data for Public cluster without admin and with internal option",
+			args: args{
+				cluster:  publicCluster,
+				status:   fakeStatus,
+				admin:    0,
+				internal: true,
+			},
+			want: &KubeconfigBuilder{
+				Context: "testcluster",
+				Server:  "https://api.internal.testcluster",
+				CACerts: []byte(nextCertificate + certData),
+				User:    "testcluster",
+			},
+			wantClientCert: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
