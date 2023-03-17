@@ -1,0 +1,332 @@
+contents: |
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: null
+    labels:
+      k8s-app: kube-controller-manager
+    name: kube-controller-manager
+    namespace: kube-system
+  spec:
+    containers:
+    - args:
+      - --log-file=/var/log/kube-controller-manager.log
+      - --also-stdout
+      - /usr/local/bin/kube-controller-manager
+      - --allocate-node-cidrs=true
+      - --attach-detach-reconcile-sync-period=1m0s
+      - --authentication-kubeconfig=/var/lib/kube-controller-manager/kubeconfig
+      - --authorization-kubeconfig=/var/lib/kube-controller-manager/kubeconfig
+      - --cloud-config=/etc/kubernetes/in-tree-cloud.config
+      - --cloud-provider=aws
+      - --cluster-cidr=100.96.0.0/11
+      - --cluster-name=minimal.example.com
+      - --cluster-signing-cert-file=/srv/kubernetes/kube-controller-manager/ca.crt
+      - --cluster-signing-key-file=/srv/kubernetes/kube-controller-manager/ca.key
+      - --configure-cloud-routes=true
+      - --enable-leader-migration=true
+      - --feature-gates=CSIMigrationAWS=true,InTreePluginAWSUnregister=true
+      - --flex-volume-plugin-dir=/usr/libexec/kubernetes/kubelet-plugins/volume/exec/
+      - --kubeconfig=/var/lib/kube-controller-manager/kubeconfig
+      - --leader-elect=true
+      - --root-ca-file=/srv/kubernetes/ca.crt
+      - --service-account-private-key-file=/srv/kubernetes/kube-controller-manager/service-account.key
+      - --tls-cert-file=/srv/kubernetes/kube-controller-manager/server.crt
+      - --tls-private-key-file=/srv/kubernetes/kube-controller-manager/server.key
+      - --use-service-account-credentials=true
+      - --v=2
+      command:
+      - /go-runner
+      image: registry.k8s.io/kube-controller-manager:v1.23.0
+      livenessProbe:
+        httpGet:
+          host: 127.0.0.1
+          path: /healthz
+          port: 10257
+          scheme: HTTPS
+        initialDelaySeconds: 15
+        timeoutSeconds: 15
+      name: kube-controller-manager
+      resources:
+        requests:
+          cpu: 100m
+      volumeMounts:
+      - mountPath: /var/log/kube-controller-manager.log
+        name: logfile
+      - mountPath: /etc/ssl
+        name: etcssl
+        readOnly: true
+      - mountPath: /etc/pki/tls
+        name: etcpkitls
+        readOnly: true
+      - mountPath: /etc/pki/ca-trust
+        name: etcpkica-trust
+        readOnly: true
+      - mountPath: /usr/share/ssl
+        name: usrsharessl
+        readOnly: true
+      - mountPath: /usr/ssl
+        name: usrssl
+        readOnly: true
+      - mountPath: /usr/lib/ssl
+        name: usrlibssl
+        readOnly: true
+      - mountPath: /usr/local/openssl
+        name: usrlocalopenssl
+        readOnly: true
+      - mountPath: /var/ssl
+        name: varssl
+        readOnly: true
+      - mountPath: /etc/openssl
+        name: etcopenssl
+        readOnly: true
+      - mountPath: /etc/kubernetes/in-tree-cloud.config
+        name: cloudconfig
+        readOnly: true
+      - mountPath: /srv/kubernetes/ca.crt
+        name: cabundle
+        readOnly: true
+      - mountPath: /srv/kubernetes/kube-controller-manager
+        name: srvkcm
+        readOnly: true
+      - mountPath: /var/lib/kube-controller-manager
+        name: varlibkcm
+        readOnly: true
+      - mountPath: /usr/libexec/kubernetes/kubelet-plugins/volume/exec/
+        name: volplugins
+    hostNetwork: true
+    priorityClassName: system-cluster-critical
+    tolerations:
+    - key: CriticalAddonsOnly
+      operator: Exists
+    volumes:
+    - hostPath:
+        path: /var/log/kube-controller-manager.log
+      name: logfile
+    - hostPath:
+        path: /etc/ssl
+      name: etcssl
+    - hostPath:
+        path: /etc/pki/tls
+      name: etcpkitls
+    - hostPath:
+        path: /etc/pki/ca-trust
+      name: etcpkica-trust
+    - hostPath:
+        path: /usr/share/ssl
+      name: usrsharessl
+    - hostPath:
+        path: /usr/ssl
+      name: usrssl
+    - hostPath:
+        path: /usr/lib/ssl
+      name: usrlibssl
+    - hostPath:
+        path: /usr/local/openssl
+      name: usrlocalopenssl
+    - hostPath:
+        path: /var/ssl
+      name: varssl
+    - hostPath:
+        path: /etc/openssl
+      name: etcopenssl
+    - hostPath:
+        path: /etc/kubernetes/in-tree-cloud.config
+      name: cloudconfig
+    - hostPath:
+        path: /srv/kubernetes/ca.crt
+      name: cabundle
+    - hostPath:
+        path: /srv/kubernetes/kube-controller-manager
+      name: srvkcm
+    - hostPath:
+        path: /var/lib/kube-controller-manager
+      name: varlibkcm
+    - hostPath:
+        path: /usr/libexec/kubernetes/kubelet-plugins/volume/exec/
+      name: volplugins
+  status: {}
+path: /etc/kubernetes/manifests/kube-controller-manager.manifest
+type: file
+---
+mode: "0755"
+path: /srv/kubernetes/kube-controller-manager
+type: directory
+---
+contents: |
+  -----BEGIN CERTIFICATE-----
+  MIIC2DCCAcCgAwIBAgIRALJXAkVj964tq67wMSI8oJQwDQYJKoZIhvcNAQELBQAw
+  FTETMBEGA1UEAxMKa3ViZXJuZXRlczAeFw0xNzEyMjcyMzUyNDBaFw0yNzEyMjcy
+  MzUyNDBaMBUxEzARBgNVBAMTCmt1YmVybmV0ZXMwggEiMA0GCSqGSIb3DQEBAQUA
+  A4IBDwAwggEKAoIBAQDgnCkSmtnmfxEgS3qNPaUCH5QOBGDH/inHbWCODLBCK9gd
+  XEcBl7FVv8T2kFr1DYb0HVDtMI7tixRVFDLgkwNlW34xwWdZXB7GeoFgU1xWOQSY
+  OACC8JgYTQ/139HBEvgq4sej67p+/s/SNcw34Kk7HIuFhlk1rRk5kMexKIlJBKP1
+  YYUYetsJ/QpUOkqJ5HW4GoetE76YtHnORfYvnybviSMrh2wGGaN6r/s4ChOaIbZC
+  An8/YiPKGIDaZGpj6GXnmXARRX/TIdgSQkLwt0aTDBnPZ4XvtpI8aaL8DYJIqAzA
+  NPH2b4/uNylat5jDo0b0G54agMi97+2AUrC9UUXpAgMBAAGjIzAhMA4GA1UdDwEB
+  /wQEAwIBBjAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBAQBVGR2r
+  hzXzRMU5wriPQAJScszNORvoBpXfZoZ09FIupudFxBVU3d4hV9StKnQgPSGA5XQO
+  HE97+BxJDuA/rB5oBUsMBjc7y1cde/T6hmi3rLoEYBSnSudCOXJE4G9/0f8byAJe
+  rN8+No1r2VgZvZh6p74TEkXv/l3HBPWM7IdUV0HO9JDhSgOVF1fyQKJxRuLJR8jt
+  O6mPH2UX0vMwVa4jvwtkddqk2OAdYQvH9rbDjjbzaiW0KnmdueRo92KHAN7BsDZy
+  VpXHpqo1Kzg7D3fpaXCf5si7lqqrdJVXH4JC72zxsPehqgi8eIuqOBkiDWmRxAxh
+  8yGeRx9AbknHh4Ia
+  -----END CERTIFICATE-----
+mode: "0600"
+path: /srv/kubernetes/kube-controller-manager/ca.crt
+type: file
+---
+contents: |
+  -----BEGIN RSA PRIVATE KEY-----
+  MIIEpAIBAAKCAQEA4JwpEprZ5n8RIEt6jT2lAh+UDgRgx/4px21gjgywQivYHVxH
+  AZexVb/E9pBa9Q2G9B1Q7TCO7YsUVRQy4JMDZVt+McFnWVwexnqBYFNcVjkEmDgA
+  gvCYGE0P9d/RwRL4KuLHo+u6fv7P0jXMN+CpOxyLhYZZNa0ZOZDHsSiJSQSj9WGF
+  GHrbCf0KVDpKieR1uBqHrRO+mLR5zkX2L58m74kjK4dsBhmjeq/7OAoTmiG2QgJ/
+  P2IjyhiA2mRqY+hl55lwEUV/0yHYEkJC8LdGkwwZz2eF77aSPGmi/A2CSKgMwDTx
+  9m+P7jcpWreYw6NG9BueGoDIve/tgFKwvVFF6QIDAQABAoIBAA0ktjaTfyrAxsTI
+  Bezb7Zr5NBW55dvuII299cd6MJo+rI/TRYhvUv48kY8IFXp/hyUjzgeDLunxmIf9
+  /Zgsoic9Ol44/g45mMduhcGYPzAAeCdcJ5OB9rR9VfDCXyjYLlN8H8iU0734tTqM
+  0V13tQ9zdSqkGPZOIcq/kR/pylbOZaQMe97BTlsAnOMSMKDgnftY4122Lq3GYy+t
+  vpr+bKVaQZwvkLoSU3rECCaKaghgwCyX7jft9aEkhdJv+KlwbsGY6WErvxOaLWHd
+  cuMQjGapY1Fa/4UD00mvrA260NyKfzrp6+P46RrVMwEYRJMIQ8YBAk6N6Hh7dc0G
+  8Z6i1m0CgYEA9HeCJR0TSwbIQ1bDXUrzpftHuidG5BnSBtax/ND9qIPhR/FBW5nj
+  22nwLc48KkyirlfIULd0ae4qVXJn7wfYcuX/cJMLDmSVtlM5Dzmi/91xRiFgIzx1
+  AsbBzaFjISP2HpSgL+e9FtSXaaqeZVrflitVhYKUpI/AKV31qGHf04sCgYEA6zTV
+  99Sb49Wdlns5IgsfnXl6ToRttB18lfEKcVfjAM4frnkk06JpFAZeR+9GGKUXZHqs
+  z2qcplw4d/moCC6p3rYPBMLXsrGNEUFZqBlgz72QA6BBq3X0Cg1Bc2ZbK5VIzwkg
+  ST2SSux6ccROfgULmN5ZiLOtdUKNEZpFF3i3qtsCgYADT/s7dYFlatobz3kmMnXK
+  sfTu2MllHdRys0YGHu7Q8biDuQkhrJwhxPW0KS83g4JQym+0aEfzh36bWcl+u6R7
+  KhKj+9oSf9pndgk345gJz35RbPJYh+EuAHNvzdgCAvK6x1jETWeKf6btj5pF1U1i
+  Q4QNIw/QiwIXjWZeubTGsQKBgQCbduLu2rLnlyyAaJZM8DlHZyH2gAXbBZpxqU8T
+  t9mtkJDUS/KRiEoYGFV9CqS0aXrayVMsDfXY6B/S/UuZjO5u7LtklDzqOf1aKG3Q
+  dGXPKibknqqJYH+bnUNjuYYNerETV57lijMGHuSYCf8vwLn3oxBfERRX61M/DU8Z
+  worz/QKBgQDCTJI2+jdXg26XuYUmM4XXfnocfzAXhXBULt1nENcogNf1fcptAVtu
+  BAiz4/HipQKqoWVUYmxfgbbLRKKLK0s0lOWKbYdVjhEm/m2ZU8wtXTagNwkIGoyq
+  Y/C1Lox4f1ROJnCjc/hfcOjcxX5M8A8peecHWlVtUPKTJgxQ7oMKcw==
+  -----END RSA PRIVATE KEY-----
+mode: "0600"
+path: /srv/kubernetes/kube-controller-manager/ca.key
+type: file
+---
+contents:
+  task:
+    Name: kube-controller-manager-server
+    alternateNames:
+    - kube-controller-manager.kube-system.svc.cluster.local
+    keypairID: "3"
+    signer: kubernetes-ca
+    subject:
+      CommonName: kube-controller-manager
+    type: server
+mode: "0644"
+path: /srv/kubernetes/kube-controller-manager/server.crt
+type: file
+---
+contents:
+  task:
+    Name: kube-controller-manager-server
+    alternateNames:
+    - kube-controller-manager.kube-system.svc.cluster.local
+    keypairID: "3"
+    signer: kubernetes-ca
+    subject:
+      CommonName: kube-controller-manager
+    type: server
+mode: "0600"
+path: /srv/kubernetes/kube-controller-manager/server.key
+type: file
+---
+contents: |
+  -----BEGIN RSA PRIVATE KEY-----
+  MIIBPQIBAAJBANiW3hfHTcKnxCig+uWhpVbOfH1pANKmXVSysPKgE80QSU4tZ6m4
+  9pAEeIMsvwvDMaLsb2v6JvXe0qvCmueU+/sCAwEAAQJBAKt/gmpHqP3qA3u8RA5R
+  2W6L360Z2Mnza1FmkI/9StCCkJGjuE5yDhxU4JcVnFyX/nMxm2ockEEQDqRSu7Oo
+  xTECIQD2QsUsgFL4FnXWzTclySJ6ajE4Cte3gSDOIvyMNMireQIhAOEnsV8UaSI+
+  ZyL7NMLzMPLCgtsrPnlamr8gdrEHf9ITAiEAxCCLbpTI/4LL2QZZrINTLVGT34Fr
+  Kl/yI5pjrrp/M2kCIQDfOktQyRuzJ8t5kzWsUxCkntS+FxHJn1rtQ3Jp8dV4oQIh
+  AOyiVWDyLZJvg7Y24Ycmp86BZjM9Wk/BfWpBXKnl9iDY
+  -----END RSA PRIVATE KEY-----
+mode: "0600"
+path: /srv/kubernetes/kube-controller-manager/service-account.key
+type: file
+---
+contents:
+  task:
+    CA:
+      task:
+        Name: kube-controller-manager
+        keypairID: "3"
+        signer: kubernetes-ca
+        subject:
+          CommonName: system:kube-controller-manager
+        type: client
+    Cert:
+      task:
+        Name: kube-controller-manager
+        keypairID: "3"
+        signer: kubernetes-ca
+        subject:
+          CommonName: system:kube-controller-manager
+        type: client
+    Key:
+      task:
+        Name: kube-controller-manager
+        keypairID: "3"
+        signer: kubernetes-ca
+        subject:
+          CommonName: system:kube-controller-manager
+        type: client
+    Name: kube-controller-manager
+    ServerURL: https://127.0.0.1
+mode: "0400"
+path: /var/lib/kube-controller-manager/kubeconfig
+type: file
+---
+contents: ""
+ifNotExists: true
+mode: "0400"
+path: /var/log/kube-controller-manager.log
+type: file
+---
+Name: kube-controller-manager
+keypairID: "3"
+signer: kubernetes-ca
+subject:
+  CommonName: system:kube-controller-manager
+type: client
+---
+Name: kube-controller-manager-server
+alternateNames:
+- kube-controller-manager.kube-system.svc.cluster.local
+keypairID: "3"
+signer: kubernetes-ca
+subject:
+  CommonName: kube-controller-manager
+type: server
+---
+CA:
+  task:
+    Name: kube-controller-manager
+    keypairID: "3"
+    signer: kubernetes-ca
+    subject:
+      CommonName: system:kube-controller-manager
+    type: client
+Cert:
+  task:
+    Name: kube-controller-manager
+    keypairID: "3"
+    signer: kubernetes-ca
+    subject:
+      CommonName: system:kube-controller-manager
+    type: client
+Key:
+  task:
+    Name: kube-controller-manager
+    keypairID: "3"
+    signer: kubernetes-ca
+    subject:
+      CommonName: system:kube-controller-manager
+    type: client
+Name: kube-controller-manager
+ServerURL: https://127.0.0.1
