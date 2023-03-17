@@ -30,26 +30,27 @@ spec:
 
 The following table provides the support status for various distros with regards to kOps version:
 
-| Distro                              | Experimental | Stable | Deprecated | Removed |
-|-------------------------------------|-------------:|-------:|-----------:|--------:|
-| [Amazon Linux 2](#amazon-linux-2)   |         1.10 |   1.18 |          - |       - |
-| CentOS 7                            |            - |    1.5 |       1.21 |    1.23 |
-| CentOS 8                            |         1.15 |      - |       1.21 |    1.23 |
-| CoreOS                              |          1.6 |    1.9 |       1.17 |    1.18 |
-| Debian 8                            |            - |    1.5 |       1.17 |    1.18 |
-| Debian 9                            |          1.8 |   1.10 |       1.21 |    1.23 |
-| [Debian 10](#debian-10-buster)      |         1.13 |   1.17 |          - |       - |
-| [Debian 11](#debian-11-bullseye)    |       1.21.1 |      - |          - |       - |
-| [Debian 12](#debian-12-bookworm)    |       1.26.3 |      - |          - |       - |
-| [Flatcar](#flatcar)                 |       1.15.1 |   1.17 |          - |       - |
-| Kope.io                             |            - |      - |       1.18 |    1.23 |
-| RHEL 7                              |            - |    1.5 |       1.21 |    1.23 |
-| [RHEL 8](#rhel-8)                   |         1.15 |   1.18 |          - |       - |
-| [Rocky 8](#rocky-8)                 |       1.23.2 |   1.24 |          - |       - |
-| Ubuntu 16.04                        |          1.5 |   1.10 |       1.17 |    1.20 |
-| [Ubuntu 18.04](#ubuntu-1804-bionic) |         1.10 |   1.16 |       1.26 |       - |
-| [Ubuntu 20.04](#ubuntu-2004-focal)  |       1.16.2 |   1.18 |          - |       - |
-| [Ubuntu 22.04](#ubuntu-2204-jammy)  |         1.23 |   1.24 |          - |       - |
+| Distro                                  | Experimental | Stable | Deprecated | Removed |
+|-----------------------------------------|-------------:|-------:|-----------:|--------:|
+| [Amazon Linux 2](#amazon-linux-2)       |         1.10 |   1.18 |          - |       - |
+| [Amazon Linux 2023](#amazon-linux-2023) |         1.27 |      - |          - |       - |
+| CentOS 7                                |            - |    1.5 |       1.21 |    1.23 |
+| CentOS 8                                |         1.15 |      - |       1.21 |    1.23 |
+| CoreOS                                  |          1.6 |    1.9 |       1.17 |    1.18 |
+| Debian 8                                |            - |    1.5 |       1.17 |    1.18 |
+| Debian 9                                |          1.8 |   1.10 |       1.21 |    1.23 |
+| [Debian 10](#debian-10-buster)          |         1.13 |   1.17 |          - |       - |
+| [Debian 11](#debian-11-bullseye)        |       1.21.1 |      - |          - |       - |
+| [Debian 12](#debian-12-bookworm)        |       1.26.3 |      - |          - |       - |
+| [Flatcar](#flatcar)                     |       1.15.1 |   1.17 |          - |       - |
+| Kope.io                                 |            - |      - |       1.18 |    1.23 |
+| RHEL 7                                  |            - |    1.5 |       1.21 |    1.23 |
+| [RHEL 8](#rhel-8)                       |         1.15 |   1.18 |          - |       - |
+| [Rocky 8](#rocky-8)                     |       1.23.2 |   1.24 |          - |       - |
+| Ubuntu 16.04                            |          1.5 |   1.10 |       1.17 |    1.20 |
+| [Ubuntu 18.04](#ubuntu-1804-bionic)     |         1.10 |   1.16 |       1.26 |       - |
+| [Ubuntu 20.04](#ubuntu-2004-focal)      |       1.16.2 |   1.18 |          - |       - |
+| [Ubuntu 22.04](#ubuntu-2204-jammy)      |         1.23 |   1.24 |          - |       - |
 
 ## Supported Distros
 
@@ -63,9 +64,22 @@ Available images can be listed using:
 
 ```bash
 aws ec2 describe-images --region us-east-1 --output table \
-  --owners 137112412989 \
+  --filters "Name=owner-alias,Values=amazon" \
   --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
   --filters "Name=name,Values=amzn2-ami-kernel-5.10-hvm-2*-x86_64-gp2"
+```
+
+### Amazon Linux 2023
+
+Amazon Linux 2023 uses Kernel version 6.1. More information is available in the [AWS Documentation](https://aws.amazon.com/linux/amazon-linux-2023/faqs/). Only the standard AMI is supported, the [minimal AMI](https://docs.aws.amazon.com/linux/al2023/ug/AMI-minimal-and-standard-differences.html) is not supported.
+
+Available images can be listed using:
+
+```bash
+aws ec2 describe-images --region us-east-1 --output table \
+  --filters "Name=owner-alias,Values=amazon" \
+  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
+  --filters "Name=name,Values=al2023-ami-2*-kernel-6.1-x86_64"
 ```
 
 ### Debian 10 (Buster)
