@@ -220,7 +220,7 @@ spec:
         operator: Exists
       containers:
       - name: openstack-cloud-controller-manager
-        image: "{{- if .ExternalCloudControllerManager.Image -}} {{ .ExternalCloudControllerManager.Image }} {{- else -}} docker.io/k8scloudprovider/openstack-cloud-controller-manager:{{OpenStackCCMTag}} {{- end -}}"
+        image: "{{- if .ExternalCloudControllerManager.Image -}} {{ .ExternalCloudControllerManager.Image }} {{- else -}} registry.k8s.io/provider-os/openstack-cloud-controller-manager:{{OpenStackCCMTag}} {{- end -}}"
         args:
           - /bin/openstack-cloud-controller-manager
 {{- range $arg := CloudControllerConfigArgv }}
