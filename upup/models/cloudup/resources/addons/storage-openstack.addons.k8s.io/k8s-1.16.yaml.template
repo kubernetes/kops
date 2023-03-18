@@ -321,7 +321,7 @@ spec:
             - mountPath: /var/lib/csi/sockets/pluginproxy/
               name: socket-dir
         - name: cinder-csi-plugin
-          image: "{{- if .CloudProvider.Openstack.BlockStorage.CSIPluginImage -}} {{ .CloudProvider.Openstack.BlockStorage.CSIPluginImage }} {{- else -}} docker.io/k8scloudprovider/cinder-csi-plugin:{{OpenStackCSITag}} {{- end -}}"
+          image: "{{- if .CloudProvider.Openstack.BlockStorage.CSIPluginImage -}} {{ .CloudProvider.Openstack.BlockStorage.CSIPluginImage }} {{- else -}} registry.k8s.io/provider-os/cinder-csi-plugin:{{OpenStackCSITag}} {{- end -}}"
           args:
             - /bin/cinder-csi-plugin
             - "--endpoint=$(CSI_ENDPOINT)"
