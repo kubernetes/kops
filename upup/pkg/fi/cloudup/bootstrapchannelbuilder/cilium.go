@@ -17,31 +17,37 @@ limitations under the License.
 package bootstrapchannelbuilder
 
 import (
+	"k8s.io/klog/v2"
 	"k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
 func addCiliumAddon(b *BootstrapChannelBuilder, addons *AddonList) error {
 	cilium := b.Cluster.Spec.Networking.Cilium
-	if cilium != nil {
-		key := "networking.cilium.io"
+	if cilium == nil {
+		return nil
+	}
 
-		{
-			id := "k8s-1.16"
-			location := key + "/" + id + "-v1.12.yaml"
+	key := "networking.cilium.io"
+	useBuiltin := !b.hasExternalAddon(key)
 
-			addon := &api.AddonSpec{
-				Name:               fi.PtrTo(key),
-				Selector:           networkingSelector(),
-				Manifest:           fi.PtrTo(location),
-				Id:                 id,
-				NeedsRollingUpdate: api.NeedsRollingUpdateAll,
-			}
-			if cilium.Hubble != nil && fi.ValueOf(cilium.Hubble.Enabled) {
-				addon.NeedsPKI = true
-			}
-			addons.Add(addon)
+	if !useBuiltin {
+		klog.Infof("found cilium (%q) in addons; won't use builtin", key)
+	} else {
+		id := "k8s-1.16"
+		location := key + "/" + id + "-v1.12.yaml"
+
+		addon := &api.AddonSpec{
+			Name:               fi.PtrTo(key),
+			Selector:           networkingSelector(),
+			Manifest:           fi.PtrTo(location),
+			Id:                 id,
+			NeedsRollingUpdate: api.NeedsRollingUpdateAll,
 		}
+		if cilium.Hubble != nil && fi.ValueOf(cilium.Hubble.Enabled) {
+			addon.NeedsPKI = true
+		}
+		addons.Add(addon)
 	}
 	return nil
 }
