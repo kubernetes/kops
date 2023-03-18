@@ -90,6 +90,24 @@ func (e *ForwardingRule) Find(c *fi.CloudupContext) (*ForwardingRule, error) {
 		}
 		actual.IPAddress = address
 	}
+	if r.BackendService != "" {
+		actual.BackendService = &BackendService{
+			Name: fi.PtrTo(lastComponent(r.BackendService)),
+		}
+	}
+	if r.LoadBalancingScheme != "" {
+		actual.LoadBalancingScheme = fi.PtrTo(r.LoadBalancingScheme)
+	}
+	if r.Network != "" {
+		actual.Network = &Network{
+			Name: fi.PtrTo(lastComponent(r.Network)),
+		}
+	}
+	if r.Subnetwork != "" {
+		actual.Subnetwork = &Subnet{
+			Name: fi.PtrTo(lastComponent(r.Subnetwork)),
+		}
+	}
 
 	// Ignore "system" fields
 	actual.Lifecycle = e.Lifecycle
