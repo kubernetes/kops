@@ -240,7 +240,7 @@ func (_ *Droplet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *D
 		Region: e.Region,
 		Name:   e.Name,
 		Tags:   e.Tags,
-		SSHKey: []string{fi.ValueOf(e.SSHKey)},
+		SSHKey: []string{fi.ValueOf(e.SSHKey.KeyFingerprint)},
 	}
 
 	if e.UserData != nil {
