@@ -26,6 +26,7 @@ Name: node-1-cluster
 Port:
   AdditionalSecurityGroups:
   - additional-sg
+  AllowedAddressPairs: null
   ForAPIServer: false
   ID: null
   InstanceGroupName: node
@@ -193,6 +194,7 @@ PublicACL: null
 ---
 AdditionalSecurityGroups:
 - additional-sg
+AllowedAddressPairs: null
 ForAPIServer: false
 ID: null
 InstanceGroupName: node
