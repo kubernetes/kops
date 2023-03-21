@@ -240,10 +240,43 @@ kind: InstanceGroup
 metadata:
   annotations:
     openstack.kops.io/allowedAddressPair/0: 192.168.0.0/16
-    openstack.kops.io/allowedAddressPair/1: 10.123.0.0,12:34:56:78:90:AB
+    openstack.kops.io/allowedAddressPair/1: 10.123.0.10,12:34:56:78:90:AB
 ```
 
 For more information about allowed address pairs refer to the [OpenStack Network API documentation](https://docs.openstack.org/api-ref/network/v2/#allowed-address-pairs).
+
+### Using boot from volume
+
+By default kOps provisions servers with "boot from image".
+
+To use "boot from volume" for servers specify the following annotations in the respective Instance Group manifests:
+
+```yaml
+kind: InstanceGroup
+metadata:
+  annotations:
+    openstack.kops.io/osVolumeBoot: true
+    openstack.kops.io/osVolumeSize: 10
+```
+
+Setting the size of the volume with `osVolumeSize` is optional and if not specified kOps will use the value of the image's minimum amount of disk space required to boot it. The value of it needs to be an integer and is the mount of GBs the root volume will use.
+
+Please note that when enabling "boot from volume" the servers will use the default volume type and the volumes will be deleted when the servers are terminated.
+
+### Using a custom server group policy
+
+By default kOps provisions the server groups in OpenStack with `anti-affinity`.
+
+To override this add the following annotation to the Instance Group configuration where kOps should provision a server group with another policy:
+
+```yaml
+kind: InstanceGroup
+metadata:
+  annotations:
+    openstack.kops.io/serverGroupAffinity: soft-anti-affinity
+```
+
+Please refer to the [OpenStack Compute API documentation](https://docs.openstack.org/api-ref/compute/?expanded=create-server-group-detail#create-server-group) for supported policies.
 
 ## Next steps
 
