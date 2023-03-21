@@ -22,7 +22,6 @@ locals {
   vpc_cidr_block                    = data.aws_vpc.minimal-ipv6-example-com.cidr_block
   vpc_id                            = "vpc-12345678"
   vpc_ipv6_cidr_block               = data.aws_vpc.minimal-ipv6-example-com.ipv6_cidr_block
-  vpc_ipv6_cidr_length              = local.vpc_ipv6_cidr_block == null ? null : tonumber(regex(".*/(\\d+)", local.vpc_ipv6_cidr_block)[0])
 }
 
 output "cluster_name" {
@@ -115,10 +114,6 @@ output "vpc_id" {
 
 output "vpc_ipv6_cidr_block" {
   value = data.aws_vpc.minimal-ipv6-example-com.ipv6_cidr_block
-}
-
-output "vpc_ipv6_cidr_length" {
-  value = local.vpc_ipv6_cidr_block == null ? null : tonumber(regex(".*/(\\d+)", local.vpc_ipv6_cidr_block)[0])
 }
 
 provider "aws" {
